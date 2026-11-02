@@ -4,7 +4,7 @@ Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P1**. Começada pelo RT em 
 
 Aceite do backlog: "UBS registra atendimento básico". Subtarefas do backlog: fluxo de atendimento; evolução; CID/CIAP; conduta; encaminhamento.
 
-Este documento é o diagnóstico. Nada de código ou banco antes das decisões D1 a D7 do RT.
+Este documento é o diagnóstico. **Decisões do RT em 02/11/2026: A em D1 a D7** ("Sim, todas A"). A implementação segue as partes 2.1 a 2.4, cada uma com o próprio PR.
 
 ## Fonte da atenção primária
 
@@ -58,6 +58,8 @@ O atendimento de hoje é o da porta. Todo o caminho depende de quatro coisas que
 **O que está fora desta tarefa:** a agenda (tarefa 3), a CIAP-2 (tarefa 4), o encaminhamento à regulação acompanhado (tarefa 5) e o envio ao SISAB pelo e-SUS APS.
 
 ## Decisões do RT
+
+Todas na opção A, em 02/11/2026.
 
 | # | Pergunta | Opções | Recomendação |
 |---|---|---|---|
