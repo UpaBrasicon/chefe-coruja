@@ -71,6 +71,31 @@ Todas na opção A, em 02/11/2026.
 | D6 | BPA dos atendimentos da UBS | **A)** não geram linha de BPA até a decisão do e-SUS APS. **B)** geram como na porta | A: a UBS não fatura consulta pelo BPA |
 | D7 | Tela do médico | **A)** a mesma tela "Atendimento" de hoje, com a fila da UBS por ordem de chegada (e prioridade da escuta, quando houver) e a janela sem cor, sem reclassificação e com "Conduta" no lugar de "Desfecho"; layout pelo Refero antes. **B)** uma tela nova só da UBS | A |
 
+## Parte 2.1, banco (02/11/2026)
+
+Migrations `20270211000001_tipo_setor_consultorio.sql` e `20270211000002_atendimento_ubs.sql`; teste `supabase/tests/5a_atendimento_ubs.sql`.
+
+- **`consultorio`** no `tipo_setor`, numa migration só.
+- **`episodios`:** `tipo_atendimento_aps`, `problemas_aps`, `cid_aps` e `conduta_aps`, anuláveis, com CHECK pelas listas da ficha. O episódio da UBS é o que tem `tipo_atendimento_aps`.
+- **Códigos das listas** (Manual do CDS 2.1):
+  - tipo de atendimento: `consulta_programada`, `consulta_agendada`, `escuta_inicial`, `consulta_no_dia`, `atendimento_urgencia`;
+  - problema/condição: `asma`, `desnutricao`, `diabetes`, `dpoc`, `hipertensao_arterial`, `obesidade`, `pre_natal`, `puericultura`, `puerperio`, `saude_sexual_reprodutiva`, `tabagismo`, `uso_alcool`, `uso_outras_drogas`, `saude_mental`, `reabilitacao`, `tuberculose`, `hanseniase`, `dengue`, `dst`, `rastreamento_cancer_colo_utero`, `rastreamento_cancer_mama`, `rastreamento_risco_cardiovascular`; fora da lista, CID-10 em `cid_aps`;
+  - conduta: `retorno_consulta_agendada`, `retorno_cuidado_continuado`, `agendamento_grupos`, `agendamento_nasf`, `alta_episodio`, `encaminhamento_interno`, `encaminhamento_especializado`, `encaminhamento_caps`, `encaminhamento_internacao`, `encaminhamento_urgencia`, `encaminhamento_atencao_domiciliar`, `encaminhamento_intersetorial`.
+- **`registrar_ficha`:** numa UBS, só no consultório e com `p_dados.tipo_atendimento`; o episódio nasce em `atendimento`. Fora da UBS, nada muda (o consultório de uma UPA é recusado).
+- **`registrar_conduta_aps`** (nova): médico de plantão no consultório, atendimento aberto, SOAP com Avaliação, tipo, ao menos um problema (lista ou CID-10) e uma conduta. Encerra o episódio sem `desfecho` (o `desfecho` é da porta), com `desfecho_por` e `encerrado_por`; encerra a prescrição e cancela o parecer pendente, como a alta da porta. Auditoria `consulta_aps_encerrada`.
+- **`registrar_desfecho`:** recusa o episódio da UBS, menos a evasão (o paciente que sai sem a consulta).
+- **`bpa_i_linhas`:** a unidade UBS não gera linha. O BPA-C e a conta usam a mesma fonte, então também ficam sem linha.
+- **Sem mudança:** `iniciar_atendimento` e `registrar_soap` já servem; `classificar_risco` já recusa o episódio da UBS (não está em triagem e não tem cor).
+- **Frontend só de tipos:** o enum, o rótulo "Consultório" e a nova RPC. A tela de Setores mostra "Consultório" em toda unidade; filtrar pelo tipo da unidade fica para a parte 2.2.
+
+**Homologação (02/11/2026):**
+- as duas migrations aplicadas duas vezes (idempotentes) e as versões registradas;
+- `5a_atendimento_ubs.sql`: ok (ficha, consulta, conduta, evasão, BPA, listas iguais);
+- rollback: as três funções voltam ao md5 de antes, que é o da produção (`registrar_ficha` cb88de2a…, `registrar_desfecho` 5daa9634…, `bpa_i_linhas` b6bc780c…); o teste falha; reaplicado, o retrato fica igual ao de depois;
+- `src/lib` (235), testes clínicos (1105), tipos e lint passando.
+
+**Produção (02/11/2026, ok do RT):** as duas migrations aplicadas por `producao:push`. Versões registradas; md5 das funções (`registrar_ficha` b466e655…, `registrar_desfecho` 4b0de6a8…, `bpa_i_linhas` 42636c5e…, `registrar_conduta_aps` eb104c86…, `lista_aps` 8f05aa7f…), grants, dono, colunas, CHECKs e enum iguais aos da homologação.
+
 ## 2. Subtarefas técnicas
 
 Com as recomendações:

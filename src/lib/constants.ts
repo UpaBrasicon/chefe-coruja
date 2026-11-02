@@ -48,6 +48,7 @@ export const TIPO_SETOR_LABEL: Record<TipoSetor, string> = {
   isolamento: 'Isolamento',
   uti: 'UTI',
   outro: 'Outro',
+  consultorio: 'Consultório',
 }
 
 export const TIPO_LEITO_LABEL: Record<TipoLeito, string> = {

@@ -50,7 +50,7 @@ import { cn } from '@/lib/utils'
 
 const setorSchema = z.object({
   nome: z.string().min(2, 'Informe o nome do setor.'),
-  tipo: z.enum(['emergencia', 'observacao', 'internacao', 'isolamento', 'uti', 'outro']),
+  tipo: z.enum(['emergencia', 'observacao', 'internacao', 'isolamento', 'uti', 'outro', 'consultorio']),
 })
 
 type SetorForm = z.infer<typeof setorSchema>
