@@ -3632,7 +3632,9 @@ export type Database = {
           atendimento_iniciado_em: string | null
           atendimento_medico_id: string | null
           chegada_em: string
+          cid_aps: string[] | null
           classificado_em: string | null
+          conduta_aps: string[] | null
           cor_atual: string | null
           created_at: string
           desfecho: string | null
@@ -3646,12 +3648,14 @@ export type Database = {
           id: string
           paciente_id: string
           prioridades_legais: string[]
+          problemas_aps: string[] | null
           publico: string | null
           queixa: string
           reavaliar_em: string | null
           setor_id: string
           suspeita_infeccao_em: string | null
           suspeita_infeccao_por: string | null
+          tipo_atendimento_aps: string | null
           unidade_id: string
           updated_at: string
         }
@@ -3660,7 +3664,9 @@ export type Database = {
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
+          cid_aps?: string[] | null
           classificado_em?: string | null
+          conduta_aps?: string[] | null
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
@@ -3674,12 +3680,14 @@ export type Database = {
           id?: string
           paciente_id: string
           prioridades_legais?: string[]
+          problemas_aps?: string[] | null
           publico?: string | null
           queixa: string
           reavaliar_em?: string | null
           setor_id: string
           suspeita_infeccao_em?: string | null
           suspeita_infeccao_por?: string | null
+          tipo_atendimento_aps?: string | null
           unidade_id: string
           updated_at?: string
         }
@@ -3688,7 +3696,9 @@ export type Database = {
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
+          cid_aps?: string[] | null
           classificado_em?: string | null
+          conduta_aps?: string[] | null
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
@@ -3702,12 +3712,14 @@ export type Database = {
           id?: string
           paciente_id?: string
           prioridades_legais?: string[]
+          problemas_aps?: string[] | null
           publico?: string | null
           queixa?: string
           reavaliar_em?: string | null
           setor_id?: string
           suspeita_infeccao_em?: string | null
           suspeita_infeccao_por?: string | null
+          tipo_atendimento_aps?: string | null
           unidade_id?: string
           updated_at?: string
         }
@@ -12646,6 +12658,17 @@ export type Database = {
         Args: { p_lat?: number; p_lng?: number; p_registro: string }
         Returns: undefined
       }
+      registrar_conduta_aps: {
+        Args: {
+          p_cids: string[]
+          p_condutas: string[]
+          p_episodio: string
+          p_obs?: string
+          p_problemas: string[]
+          p_tipo: string
+        }
+        Returns: undefined
+      }
       registrar_contingencia: {
         Args: { p_fim: string; p_inicio: string; p_motivo: string; p_unidade: string }
         Returns: string
@@ -13484,6 +13507,7 @@ export type Database = {
         | "isolamento"
         | "uti"
         | "outro"
+        | "consultorio"
       tipo_unidade: "hospital" | "upa" | "clinica" | "ubs"
     }
     CompositeTypes: {
@@ -13855,6 +13879,7 @@ export const Constants = {
         "isolamento",
         "uti",
         "outro",
+        "consultorio",
       ],
       tipo_unidade: ["hospital", "upa", "clinica", "ubs"],
     },

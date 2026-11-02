@@ -15,7 +15,7 @@ import { rotaDoLeito } from '@/components/internacao/rotas'
 const STATUS_ATIVOS = ['admitido', 'em_observacao', 'internado']
 const TIPO_SETOR: Record<string, string> = {
   emergencia: 'Emergência', observacao: 'Observação', internacao: 'Internação',
-  isolamento: 'Isolamento', uti: 'UTI', outro: 'Outro',
+  isolamento: 'Isolamento', uti: 'UTI', outro: 'Outro', consultorio: 'Consultório',
 }
 const SIT_FALTA: Record<string, string> = { registrada: 'Registrada', em_cotacao: 'Em cotação' }
 const FRESCO = 30_000
