@@ -117,7 +117,7 @@ export default function Notificacoes() {
     },
   })
 
-  const rotas = new Set(itensDeNavegacao(papelAtivo).map((i) => i.to))
+  const rotas = new Set(itensDeNavegacao(papelAtivo, false, false, unidadeAtiva?.unidade.tipo ?? null).map((i) => i.to))
   const todos = notificacoes ?? []
   const categorias = new Set(todos.map((n) => categoria(n.tipo)))
   const filtros = [...FILTROS, ...FILTROS_SE_HOUVER.filter((c) => categorias.has(c))]

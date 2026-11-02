@@ -28,7 +28,7 @@ import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } fr
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
 
-import type { Papel } from '@/types/database'
+import type { Papel, TipoUnidade } from '@/types/database'
 
 /** Chave da nota numérica (contagem em âmbar ao lado do item). */
 export type ChaveNota = 'avisos' | 'triagem' | 'farmacia' | 'pedidos' | 'tele' | 'revisao' | 'fila_medica' | 'plataformas' | 'chamados'
@@ -222,12 +222,32 @@ const ITEM_REGULACAO: ItemNav = { to: '/regulacao', rotulo: 'Regulação', icone
 // Fase 4, tarefa 12: módulo de papéis de rede (o super admin liga por organização)
 const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede', curto: 'Rede', icone: Network, exato: true }
 
+// 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
+// internação nem AIH; os itens dessas telas somem do menu.
+const FORA_DA_UBS = new Set([
+  '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/contingencia',
+  '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/aih', '/apac',
+  '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
+  '/recepcao/fila-triagem', '/recepcao/painel',
+])
+
+/** A tela não cabe numa unidade deste tipo (e não entra no menu). */
+export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {
+  return tipoUnidade === 'ubs' && FORA_DA_UBS.has(to)
+}
+
 /**
  * Itens do papel em foco. O responsável técnico (nomeação da rede, não papel
  * da unidade) ganha a Revisão Clínica em qualquer perfil; o super admin ganha
- * "Erros e alertas" no perfil de administrador.
+ * "Erros e alertas" no perfil de administrador. O tipo da unidade tira o que
+ * não cabe nela (UBS).
  */
-export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false): ItemNav[] {
+export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false,
+  tipoUnidade: TipoUnidade | null = null): ItemNav[] {
+  return itensDoPapel(papel, responsavelTecnico, superAdmin).filter((i) => !foraDoTipo(i.to, tipoUnidade))
+}
+
+function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdmin: boolean): ItemNav[] {
   const itens = [...POR_PAPEL[papel ?? 'plantonista']]
   if (papel === 'admin' && superAdmin) {
     const i = itens.findIndex((x) => x.to === '/servidores')
@@ -308,8 +328,13 @@ export const ABAS_ESTREITAS_PLANTONISTA: ItemNav[] = [
   { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
 ]
 
+/** As abas estreitas do plantonista que cabem no tipo da unidade. */
+export function abasEstreitasPlantonista(tipoUnidade: TipoUnidade | null = null): ItemNav[] {
+  return ABAS_ESTREITAS_PLANTONISTA.filter((i) => !foraDoTipo(i.to, tipoUnidade))
+}
+
 /** Página inicial do papel: o logotipo leva a ela. */
-export function inicioDoPapel(papel: Papel | null): string {
-  return itensDeNavegacao(papel)[0]?.to ?? '/'
+export function inicioDoPapel(papel: Papel | null, tipoUnidade: TipoUnidade | null = null): string {
+  return itensDeNavegacao(papel, false, false, tipoUnidade)[0]?.to ?? '/'
 }
 

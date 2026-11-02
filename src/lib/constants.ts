@@ -38,6 +38,7 @@ export const TIPO_UNIDADE_LABEL: Record<TipoUnidade, string> = {
   hospital: 'Hospital',
   upa: 'UPA',
   clinica: 'Clínica',
+  ubs: 'UBS',
 }
 
 export const TIPO_SETOR_LABEL: Record<TipoSetor, string> = {

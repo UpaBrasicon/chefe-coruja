@@ -25,7 +25,7 @@ import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTu
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
-import { ABAS_ESTREITAS_PLANTONISTA, agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { abasEstreitasPlantonista, agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
@@ -249,8 +249,9 @@ function Casca() {
 
   const { data: papelTecnico } = useMeuPapelTecnico()
   const ehRt = !!papelTecnico?.some((p) => p.tipo === 'medico')
-  const itens = React.useMemo(() => itensDeNavegacao(papelAtivo, ehRt, ehSuperAdmin), [papelAtivo, ehRt, ehSuperAdmin])
-  const inicio = inicioDoPapel(papelAtivo)
+  const tipoUnidade = unidadeAtiva?.unidade.tipo ?? null
+  const itens = React.useMemo(() => itensDeNavegacao(papelAtivo, ehRt, ehSuperAdmin, tipoUnidade), [papelAtivo, ehRt, ehSuperAdmin, tipoUnidade])
+  const inicio = inicioDoPapel(papelAtivo, tipoUnidade)
   const notas = useNotasNav(unidadeId, papelAtivo)
   const barra = React.useMemo(() => dividirBarraCelular(papelAtivo, itens), [papelAtivo, itens])
   const ehPlantonista = papelAtivo === 'plantonista'
@@ -338,7 +339,7 @@ function Casca() {
 
   function trocarPapel(p: Papel) {
     setPapelAtivo(p)
-    navigate(inicioDoPapel(p))
+    navigate(inicioDoPapel(p, tipoUnidade))
   }
 
   const papelTexto = papelAtivo ? PAPEL_LABEL[papelAtivo] : ''
@@ -490,7 +491,7 @@ function Casca() {
             plantao={{ em: emPlantao, rotulo: fimTurno ? `Plantão até ${fimTurno}` : 'Plantão', to: '/plantao' }}
             avatar={menu(38)}
             onSair={() => setSaidaAberta(true)}
-            abas={ABAS_ESTREITAS_PLANTONISTA}
+            abas={abasEstreitasPlantonista(tipoUnidade)}
             notas={notas}
           />
         ) : (

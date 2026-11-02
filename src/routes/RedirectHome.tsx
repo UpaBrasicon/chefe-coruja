@@ -1,11 +1,12 @@
 import { Navigate } from 'react-router-dom'
 
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { foraDoTipo, inicioDoPapel } from '@/components/casca/navegacao'
 import { ROTA_INICIAL } from '@/lib/constants'
 import { Spinner } from '@/components/ui/spinner'
 
 export function RedirectHome() {
-  const { status, unidades, papelAtivo } = useUnidade()
+  const { status, unidades, papelAtivo, unidadeAtiva } = useUnidade()
 
   if (status === 'carregando') {
     return (
@@ -25,6 +26,9 @@ export function RedirectHome() {
 
   // papelAtivo é o último perfil escolhido em "Trocar perfil" (guardado por
   // unidade); sem escolha, o contexto cai no primeiro por precedência.
-  const alvo = papelAtivo ? ROTA_INICIAL[papelAtivo] : undefined
+  // Numa UBS, a tela inicial de porta ou leito dá lugar ao primeiro item do menu.
+  const tipo = unidadeAtiva?.unidade.tipo ?? null
+  const inicial = papelAtivo ? ROTA_INICIAL[papelAtivo] : undefined
+  const alvo = inicial && foraDoTipo(inicial, tipo) ? inicioDoPapel(papelAtivo, tipo) : inicial
   return <Navigate to={alvo ?? '/aguardando'} replace />
 }
