@@ -4,6 +4,7 @@ import { AlertTriangle, DoorOpen, Printer } from 'lucide-react'
 import * as React from 'react'
 
 import { abrirImpressao } from '@/lib/prontuario'
+import { dataHoraInput } from '@/lib/formato'
 import { escapeHtml } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,10 +36,8 @@ const SAIDA_SEM_ESPERA = ['obito', 'transferencia_externa']
 const impedeSaida = (tipo: string, x: { tipo: string }) =>
   SAIDA_SEM_ESPERA.includes(tipo) ? x.tipo === 'agravo' : true
 
-const paraInputLocal = (d: Date) => {
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
-}
+// o campo datetime-local mostra e devolve a hora de Brasília, não a do aparelho
+const doCampo = (v: string) => new Date(`${v}:00-03:00`)
 
 export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
   i: Internacao; impeditivos: { tipo: string; descricao: string }[]; acao: Acao
@@ -55,7 +54,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
   const [numeroDo, setNumeroDo] = React.useState('')
   const [confirmar, setConfirmar] = React.useState(false)
   const [abertoEm] = React.useState(() => Date.now())
-  const retroativa = !!quando && Date.parse(quando) < abertoEm - 30 * 60_000
+  const retroativa = !!quando && doCampo(quando).getTime() < abertoEm - 30 * 60_000
   const impedem = impeditivos.filter((x) => impedeSaida(tipo, x))
   const seraoCancelados = SAIDA_SEM_ESPERA.includes(tipo) ? impeditivos.filter((x) => x.tipo !== 'agravo' && x.tipo !== 'documento') : []
 
@@ -72,7 +71,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
         )}
         <Button size="xs" variant="outline" className="self-start"
           disabled={impeditivos.some((x) => x.tipo === 'agravo')}
-          onClick={() => { setQuando(paraInputLocal(new Date())); if (!cid && cidSugerido) setCid(cidSugerido); setAberto(true) }}>
+          onClick={() => { setQuando(dataHoraInput()); if (!cid && cidSugerido) setCid(cidSugerido); setAberto(true) }}>
           <DoorOpen /> Dar alta
         </Button>
       </Secao>
@@ -140,7 +139,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
             <Button size="sm"
               onClick={() => acao(() => rpc('dar_alta', {
                 p_internacao: i.id, p_tipo: tipo, p_cid: cid.trim() || null,
-                p_quando: quando ? new Date(quando).toISOString() : null,
+                p_quando: quando ? doCampo(quando).toISOString() : null,
                 p_justificativa: justificativa || null, p_observacoes: obs || null, p_detalhes: detalhes,
               }), 'Alta registrada.').then((r) => { if (r !== null) setAberto(false); setConfirmar(false) })}>
               Sim, dar alta

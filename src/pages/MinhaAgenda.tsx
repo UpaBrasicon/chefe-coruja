@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CalendarRange, ChevronLeft, ChevronRight as Next } from 'lucide-react'
 import * as React from 'react'
 
+import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { useAuth } from '@/contexts/AuthContext'
@@ -34,8 +35,8 @@ const CORES_UNIDADE = [
 
 export default function MinhaAgenda({ embutido = false }: { embutido?: boolean } = {}) {
   const { perfil } = useAuth()
-  const hoje = new Date()
-  const [mes, setMes] = React.useState(`${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`)
+  // mês corrente pelo dia de Brasília
+  const [mes, setMes] = React.useState(() => dataIso().slice(0, 7))
 
   const { data: plantoes, isLoading } = useQuery({
     queryKey: ['minha-agenda', perfil?.id, mes],
