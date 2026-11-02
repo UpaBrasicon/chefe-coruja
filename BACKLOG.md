@@ -919,6 +919,8 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 | 6 | P2 | Retorno pós-UPA/hospital | Criar fluxo de contrarreferência; alertar UBS; exibir histórico | UBS recebe retorno do paciente |
 | 7 | P2 | Programas básicos | Hiperdia, pré-natal, puericultura por prioridade comercial | Pelo menos um programa básico funcional |
 
+**5A começada pelo RT em 02/11/2026** ("Começar a 5A"), com a 5C parada só pela credencial da RNDS (5.5b e 5.5c voltam quando ela chegar). Tarefa 1: diagnóstico em `docs/ubs/TAREFA1-TIPO-UBS-DIAGNOSTICO.md`, aguardando as decisões D1 a D5 do RT. Achado do diagnóstico: o gestor consegue mudar pela API direta o tipo, o nome, o `ativo` e a organização da própria unidade (proposta D4: fechar nesta tarefa).
+
 ### Fase 5B — Faturamento Inicial
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
 |---|---|---|---|---|
