@@ -57,26 +57,26 @@ SET LOCAL ROLE authenticated;
 
 -- ── 1. abrir ────────────────────────────────────────────────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
-SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', current_date + 30)$$,
+SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', (now() AT TIME ZONE 'America/Sao_Paulo')::date + 30)$$,
   'Quem abre a implantação é o implantador', 'gestor não abre');
 SELECT pg_temp.ok(public.implantacao_painel('21000000-0000-4000-8000-000000000096')->'implantacao' = 'null'::jsonb,
   'gestor vê o painel vazio antes de abrir');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
-SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'ambulatorio', current_date + 30)$$,
+SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'ambulatorio', (now() AT TIME ZONE 'America/Sao_Paulo')::date + 30)$$,
   'Ambulatório: o módulo ainda está a construir', 'ambulatório a construir');
 SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', NULL)$$,
   'Informe a data da virada', 'D0 obrigatório');
--- D0 = hoje em Brasília (VD15): com current_date, das 21h às 24h o D0 era
--- amanhã e o atendimento de agora ficava antes do D0
+-- D0 e as demais datas = hoje em Brasília (VD15): com current_date, das 21h
+-- às 24h o D0 era amanhã e o atendimento de agora ficava antes do D0
 INSERT INTO t SELECT 'imp', public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', (now() AT TIME ZONE 'America/Sao_Paulo')::date)::text;
-SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', current_date)$$,
+SELECT pg_temp.falha($$SELECT public.implantacao_abrir('21000000-0000-4000-8000-000000000096', 'upa', (now() AT TIME ZONE 'America/Sao_Paulo')::date)$$,
   'Esta unidade já tem uma implantação aberta', 'uma implantação aberta por unidade');
 
 -- ── 2. itens por tipo ───────────────────────────────────────────────────────
 SELECT pg_temp.ok(pg_temp.item('P05') IS NOT NULL AND pg_temp.item('P12') IS NULL AND pg_temp.item('P13') IS NOT NULL
               AND (pg_temp.item('P09') IS NULL) AND (pg_temp.item('P10')->>'obrigatorio')::boolean = false,
   'UPA: protocolo de classificação, sem os itens só de hospital, estoque recomendado');
-SELECT pg_temp.ok((pg_temp.item('P01')->>'prazo')::date = current_date - 30 AND (pg_temp.item('E01')->>'prazo')::date = current_date + 30,
+SELECT pg_temp.ok((pg_temp.item('P01')->>'prazo')::date = (now() AT TIME ZONE 'America/Sao_Paulo')::date - 30 AND (pg_temp.item('E01')->>'prazo')::date = (now() AT TIME ZONE 'America/Sao_Paulo')::date + 30,
   'prazos contados a partir do D0');
 
 -- ── 3. conferências automáticas ─────────────────────────────────────────────
@@ -99,7 +99,7 @@ INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   ('10000000-0000-4000-8000-000000000002', '21000000-0000-4000-8000-000000000096', 'plantonista');
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min)
 SELECT '21000000-0000-4000-8000-000000000096', '22000000-0000-4000-8000-000000000961', '10000000-0000-4000-8000-000000000002',
-       current_date + n, 'manha', (current_date + n)::timestamptz + interval '10 hours', 360 FROM generate_series(0, 5) n;
+       (now() AT TIME ZONE 'America/Sao_Paulo')::date + n, 'manha', ((now() AT TIME ZONE 'America/Sao_Paulo')::date + n)::timestamptz + interval '10 hours', 360 FROM generate_series(0, 5) n;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 SELECT pg_temp.ok((pg_temp.item('P01')->>'ok')::boolean AND (pg_temp.item('P03')->>'ok')::boolean AND (pg_temp.item('P04')->>'ok')::boolean
@@ -111,7 +111,7 @@ SELECT pg_temp.ok(NOT (pg_temp.item('P08')->>'ok')::boolean AND pg_temp.item('P0
 RESET ROLE;
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min)
 VALUES ('21000000-0000-4000-8000-000000000096', '22000000-0000-4000-8000-000000000961', '10000000-0000-4000-8000-000000000002',
-        current_date + 6, 'manha', (current_date + 6)::timestamptz + interval '10 hours', 360);
+        (now() AT TIME ZONE 'America/Sao_Paulo')::date + 6, 'manha', ((now() AT TIME ZONE 'America/Sao_Paulo')::date + 6)::timestamptz + interval '10 hours', 360);
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.ok((pg_temp.item('P08')->>'ok')::boolean, 'escala de D0 a D+6 completa');
 
@@ -119,7 +119,7 @@ SELECT pg_temp.ok((pg_temp.item('P08')->>'ok')::boolean, 'escala de D0 a D+6 com
 SELECT pg_temp.ok(pg_temp.item('P15')->>'detalhe' = '0 de 4 vínculo(s) treinado(s)', 'ninguém treinado ainda');
 SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'enfermeiro'),
   'Esta pessoa não tem esse papel na unidade', 'treinamento só no papel que a pessoa tem');
-SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L, current_date + 1)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'recepcao'),
+SELECT pg_temp.falha(format('SELECT public.implantacao_treinar(%L, %L, %L, (now() AT TIME ZONE 'America/Sao_Paulo')::date + 1)', pg_temp.v('imp'), '10000000-0000-4000-8000-000000000005', 'recepcao'),
   'O treinamento não pode ter data futura', 'sem data futura');
 -- VD11 (lote "Virada de data"): o futuro é pelo dia de Brasília, não o UTC
 RESET ROLE;
@@ -168,7 +168,7 @@ SELECT pg_temp.falha(format('SELECT public.implantacao_aceitar(%L, %L)', pg_temp
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 SELECT pg_temp.ok((public.implantacao_aceitar(pg_temp.v('imp')::uuid, 'virada')->>'situacao') = 'em_operacao',
   'com o aceite do implantador, a unidade fica em operação');
-SELECT pg_temp.falha(format('SELECT public.implantacao_mudar_d0(%L, current_date + 3, %L)', pg_temp.v('imp'), 'Mudança de data qualquer'),
+SELECT pg_temp.falha(format('SELECT public.implantacao_mudar_d0(%L, (now() AT TIME ZONE 'America/Sao_Paulo')::date + 3, %L)', pg_temp.v('imp'), 'Mudança de data qualquer'),
   'A virada já aconteceu', 'D0 não muda depois da virada');
 
 -- ── 6. encerramento ─────────────────────────────────────────────────────────
