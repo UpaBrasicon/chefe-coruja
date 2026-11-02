@@ -94,6 +94,8 @@ Migrations `20270211000001_tipo_setor_consultorio.sql` e `20270211000002_atendim
 - rollback: as três funções voltam ao md5 de antes, que é o da produção (`registrar_ficha` cb88de2a…, `registrar_desfecho` 5daa9634…, `bpa_i_linhas` b6bc780c…); o teste falha; reaplicado, o retrato fica igual ao de depois;
 - `src/lib` (235), testes clínicos (1105), tipos e lint passando.
 
+**Produção (02/11/2026, ok do RT):** as duas migrations aplicadas por `producao:push`. Versões registradas; md5 das funções (`registrar_ficha` b466e655…, `registrar_desfecho` 4b0de6a8…, `bpa_i_linhas` 42636c5e…, `registrar_conduta_aps` eb104c86…, `lista_aps` 8f05aa7f…), grants, dono, colunas, CHECKs e enum iguais aos da homologação.
+
 ## 2. Subtarefas técnicas
 
 Com as recomendações:
