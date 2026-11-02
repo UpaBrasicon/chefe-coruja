@@ -4,7 +4,7 @@ Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P1**. Começada pelo RT em 
 
 Aceite do backlog: "UBS pode ser cadastrada e operar sem inconsistência".
 
-Este documento é o diagnóstico. Nada de código ou banco antes das decisões D1 a D5 do RT.
+**Decisões do RT em 02/11/2026: opção A em D1 a D5 ("Sim, todas A").** A implementação segue em PR próprio.
 
 ## 1. Diagnóstico do estado atual
 
