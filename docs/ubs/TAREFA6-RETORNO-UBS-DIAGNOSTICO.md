@@ -94,3 +94,24 @@ Migration `20270217000001_contrarreferencia_ubs.sql`; teste `supabase/tests/5a_c
 - rollback: a tabela, as 11 funções e os 2 gatilhos saem, e o teste falha; reaplicada, o retrato fica igual (md5 das funções 98f63658…).
 
 **Produção (03/11/2026, ok do RT):** migration `20270217000001` aplicada por `producao:push`. Versão registrada e retrato igual ao da homologação: tabela, 11 funções com md5 98f63658…, 2 gatilhos e sem acesso direto do `authenticated`.
+
+## Parte 6.2, telas (03/11/2026)
+
+Sem migration. Teste de tela em `src/lib/encaminhamentoUbs.test.ts`.
+
+- **Orientação à UBS (I3):** campo opcional no desfecho da porta (`AbaDesfecho`) e na alta da internação (`Alta`), menos no óbito. Vai em `orientacao_ubs` nos detalhes e não trava a alta.
+- **Aba Retornos na tela Encaminhados (I4):**
+  - Enviados e Retornos, com a contagem dos "a ver"; a notificação abre direto em Retornos (`?aba=retornos`);
+  - lista com o paciente, o desfecho, a unidade e a hora;
+  - à direita, "Ver o resumo" (médico, enfermeiro e gestor), que registra o acesso e marca "visto": orientação à UBS em destaque, entrada e saída, CID de alta, médico, último registro, retorno pedido na alta e documentos emitidos;
+  - evasão e alta a pedido mostram o lembrete da busca ativa;
+  - "Agendar retorno" abre a agenda da UBS com o paciente (consulta programada);
+  - a recepção vê a lista e agenda, sem o resumo clínico.
+- **Janela da consulta da UBS, aba Encaminhar:** os retornos do paciente, com o atalho para a aba Retornos.
+- **Notificações:** categoria nova "Retorno" para os avisos `ubs_retorno_<número>`.
+
+**Conferido na página de teste (03/11/2026):**
+- a lista com a contagem;
+- a abertura do resumo (`p_id`), com o escolhido fixo depois de a lista voltar reordenada;
+- o link da agenda (`/agenda-consultas?paciente=…&consulta=consulta_programada`);
+- a recepção sem o botão do resumo e o lembrete da busca ativa na evasão.

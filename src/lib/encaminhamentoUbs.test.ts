@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { etapasDoEnvio, linkRegulacaoDaConsulta, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
+import { DESFECHO_RETORNO, etapasDoEnvio, linkRegulacaoDaConsulta, pedeBuscaAtiva, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
+import { linkMarcarNaAgenda } from '../domain/agenda.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
 // 5A, tarefa 5 (decisões H1 a H5 e opção C da tela "Encaminhados", RT em
@@ -86,4 +87,39 @@ test('H4: a folha SMS003a leva o número e o destino da regulação em andamento
   assert.match(folha, /const numReg = f\.numReg\.trim\(\) \|\| daRegulacao\?\.numero \|\| ''/)
   assert.match(folha, /const destino = f\.destino\.trim\(\) \|\| daRegulacao\?\.destino \|\| ''/)
   assert.match(folha, / {6}destino,\n {6}destinoNaRede,\n {6}numReg,\n/)
+})
+
+// ── tarefa 6: retorno à UBS (decisões I1 a I5, RT em 03/11/2026) ────────────
+const migRetorno = readFileSync('supabase/migrations/20270217000001_contrarreferencia_ubs.sql', 'utf8').replace(/\r/g, '')
+
+test('I5: todo fim de atendimento que gera retorno tem rótulo; evasão e alta a pedido pedem busca ativa', () => {
+  const porta = migRetorno.match(/coalesce\(NEW\.desfecho, ''\) IN \(([^)]*)\)/)![1].match(/'([a-z_]+)'/g)!.map((s) => s.slice(1, -1))
+  const internacao = migRetorno.match(/altas text\[\] := ARRAY\[([^\]]*)\]/)![1].match(/'([a-z_]+)'/g)!.map((s) => s.slice(1, -1))
+  assert.deepEqual(porta, ['alta', 'alta_apos_medicacao', 'alta_a_pedido', 'transferencia', 'evasao', 'obito'])
+  for (const d of [...porta, ...internacao]) assert.ok(DESFECHO_RETORNO[d], `${d} sem rótulo`)
+  assert.ok(pedeBuscaAtiva('evasao') && pedeBuscaAtiva('alta_a_pedido') && pedeBuscaAtiva('alta_evasao'))
+  assert.ok(!pedeBuscaAtiva('alta') && !pedeBuscaAtiva('obito'))
+})
+
+test('I4: "Agendar retorno" marca pelo paciente da UBS, sem episódio de origem', () => {
+  assert.equal(linkMarcarNaAgenda('p9', null, 'consulta_programada'), '/agenda-consultas?paciente=p9&consulta=consulta_programada')
+  const retornos = readFileSync('src/pages/encaminhados/Retornos.tsx', 'utf8')
+  assert.match(retornos, /linkMarcarNaAgenda\(r\.paciente_ubs_id, null, 'consulta_programada'\)/)
+  assert.match(retornos, /rpc\('contrarreferencia_abrir', \{ p_id: r\.id \}\)/)
+  const pagina = readFileSync('src/pages/encaminhados/Encaminhados.tsx', 'utf8')
+  assert.match(pagina, /busca\.get\('aba'\) === 'retornos'/)
+  const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
+  assert.match(janela, /<RetornosDoPaciente pacienteId=\{ep\.paciente_id\} \/>/)
+  const notif = readFileSync('src/pages/Notificacoes.tsx', 'utf8')
+  assert.match(notif, /if \(tipo\.startsWith\('ubs_retorno_'\)\) return 'Retorno'/)
+  assert.match(notif, /to: '\/encaminhados\?aba=retornos'/)
+  assert.match(migRetorno, /'ubs_retorno_' \|\| x\.numero/)
+})
+
+test('I3: a orientação à UBS sai do desfecho da porta e da alta da internação, na chave que o banco lê', () => {
+  assert.match(migRetorno, /d ->> 'orientacao_ubs'/)
+  const desfecho = readFileSync('src/pages/plantao/porta/AbaDesfecho.tsx', 'utf8')
+  assert.match(desfecho, /if \(d !== 'obito' && orientacaoUbs\.trim\(\)\) det\.orientacao_ubs = orientacaoUbs\.trim\(\)/)
+  const alta = readFileSync('src/components/internacao/caderno/Alta.tsx', 'utf8')
+  assert.match(alta, /if \(tipo !== 'obito' && orientacaoUbs\.trim\(\)\) detalhes\.orientacao_ubs = orientacaoUbs\.trim\(\)/)
 })

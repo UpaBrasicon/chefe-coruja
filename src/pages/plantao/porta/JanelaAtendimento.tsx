@@ -30,6 +30,7 @@ import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { EnviosDoPaciente } from '@/components/encaminhamento/EnviosDoPaciente'
+import { RetornosDoPaciente } from '@/components/encaminhamento/RetornosDoPaciente'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
@@ -292,6 +293,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 <div className="flex flex-col gap-4">
                   {/* tarefa 5 (H3): o que já foi enviado e a regulação do paciente */}
                   <EnviosDoPaciente pacienteId={ep.paciente_id} />
+                  <RetornosDoPaciente pacienteId={ep.paciente_id} />
                   <HistoricoRegulacao pacienteId={ep.paciente_id} />
                   <AbaEncaminhamento pacienteId={ep.paciente_id} episodioId={ep.id} />
                 </div>

@@ -94,6 +94,7 @@ export function AbaDesfecho({
   const [cidAlta, setCidAlta] = React.useState<string | null>(null) // null = o do atendimento
   const [proc, setProc] = React.useState('')
   const [obsAlta, setObsAlta] = React.useState('')
+  const [orientacaoUbs, setOrientacaoUbs] = React.useState('') // 5A, tarefa 6 (I3): vai à UBS do paciente
   const [setorInt, setSetorInt] = React.useState('')
   const [leitoInt, setLeitoInt] = React.useState('')
 
@@ -197,6 +198,7 @@ export function AbaDesfecho({
         if (cid) det.cid_alta = cid
         if (soDigitos(proc)) det.procedimento = soDigitos(proc)
         if (obsAlta.trim()) det.observacoes_alta = obsAlta.trim()
+        if (d !== 'obito' && orientacaoUbs.trim()) det.orientacao_ubs = orientacaoUbs.trim()
       }
       const { error } = await supabase.rpc('registrar_desfecho', {
         p_episodio: episodioId, p_desfecho: d!, p_relato: RELATO[d!] ? relato.trim() : undefined, p_detalhes: det,
@@ -297,6 +299,13 @@ export function AbaDesfecho({
             <Label htmlFor="alta-obs">Observações de alta</Label>
             <Textarea id="alta-obs" rows={2} value={obsAlta} onChange={(e) => setObsAlta(e.target.value)} />
           </div>
+          {d !== 'obito' && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="alta-ubs">Orientação à UBS (opcional)</Label>
+              <Textarea id="alta-ubs" rows={2} value={orientacaoUbs} placeholder="Ex.: reavaliar a pressão em 7 dias" onChange={(e) => setOrientacaoUbs(e.target.value)} />
+              <span className="text-rotulo text-tinta-sussurro">Vai à UBS do paciente junto com o resumo do atendimento.</span>
+            </div>
+          )}
           {d === 'obito' && (
             <div className="grid gap-3 md:grid-cols-3">
               <div className="flex flex-col gap-1.5">

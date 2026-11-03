@@ -3,12 +3,14 @@
 // lista, e à direita o rastreio em etapas do escolhido (ref. Shop, acompanhar o
 // pedido). Envio à UPA: enviado → aguardando a chegada (12 h) → chegou / não
 // chegou / cancelado. Regulação: a situação da central e do destino.
+// 5A, tarefa 6 (I4): a aba Retornos traz o paciente que voltou da UPA ou do
+// hospital; a notificação abre direto nela (?aba=retornos).
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Ambulance, Send, Waypoints, X } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
-import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Estado } from '@/components/porta/Estado'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -23,6 +25,9 @@ import { dataIso, diaMesHora } from '@/lib/formato'
 import { STATUS } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+
+import { Retornos } from './Retornos'
+import { useRetornos } from './useRetornos'
 
 type Regulacao = {
   id: string; numero: number; status: keyof typeof STATUS; tipo: string; especialidade: string | null; procedimento_nome: string | null
@@ -82,6 +87,22 @@ function Trilha({ etapas }: { etapas: Etapa[] }) {
 export default function Encaminhados() {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
+  const [busca, setBusca] = useSearchParams()
+  const aba = busca.get('aba') === 'retornos' ? 'retornos' : 'enviados'
+  const aVer = (useRetornos(unidadeId).data ?? []).filter((r) => r.situacao === 'a_ver').length
+  return (
+    <>
+      <TituloPagina titulo="Encaminhados" descricao="Envios à UPA, solicitações de regulação e retornos da UPA ou do hospital nos últimos 30 dias." />
+      <Chips rotulo="Encaminhados">
+        <Chip ativo={aba === 'enviados'} onClick={() => setBusca({}, { replace: true })}>Enviados</Chip>
+        <Chip ativo={aba === 'retornos'} contagem={aVer || undefined} onClick={() => setBusca({ aba: 'retornos' }, { replace: true })}>Retornos</Chip>
+      </Chips>
+      {aba === 'retornos' ? <Retornos unidadeId={unidadeId} /> : <Enviados unidadeId={unidadeId} />}
+    </>
+  )
+}
+
+function Enviados({ unidadeId }: { unidadeId: string | undefined }) {
   const envios = useQuery({
     queryKey: ['encaminhamentos-upa', 'origem', unidadeId],
     enabled: !!unidadeId,
@@ -113,7 +134,6 @@ export default function Encaminhados() {
 
   return (
     <>
-      <TituloPagina titulo="Encaminhados" descricao="Envios à UPA e solicitações de regulação da unidade nos últimos 30 dias." />
       {envios.isLoading ? <Spinner /> : envios.error ? <p className="text-apoio text-critico">{msg(envios.error)}</p>
         : itens.length === 0 ? <Vazio icone={Send} titulo="Nada encaminhado" texto="Os envios à UPA e as solicitações de regulação aparecem aqui." /> : (
           <div className="grid items-start overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,340px)_1fr]">
