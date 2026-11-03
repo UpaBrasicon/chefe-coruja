@@ -27,6 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
+import { Ear } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -111,6 +112,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // Enfermagem (P/index.html 32225–32230): o técnico não tem Triagem nem
   // Notificações; a tela inicial dele segue a escala (InicioEnfermagem).
   enfermeiro: [
+    // 5A, tarefa 2, parte 2.4: na UBS a triagem é a escuta inicial do CAB 28
+    { to: '/escuta', rotulo: 'Escuta inicial', curto: 'Escuta', icone: Ear, exato: true, nota: 'triagem' },
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
@@ -230,10 +233,12 @@ const FORA_DA_UBS = new Set([
   '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
   '/recepcao/fila-triagem', '/recepcao/painel',
 ])
+// e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
+const SO_NA_UBS = new Set(['/escuta'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {
-  return tipoUnidade === 'ubs' && FORA_DA_UBS.has(to)
+  return tipoUnidade === 'ubs' ? FORA_DA_UBS.has(to) : SO_NA_UBS.has(to)
 }
 
 /**
@@ -305,7 +310,7 @@ export const ICONE_GRUPO: Record<string, LucideIcon> = {
  */
 export const MAX_BARRA_CELULAR = 5
 const FIXOS_CELULAR: Partial<Record<Papel, string[]>> = {
-  enfermeiro: ['/triagem', '/enfermagem/internacao', '/notificacao-compulsoria', '/alta-vigilancia'],
+  enfermeiro: ['/escuta', '/triagem', '/enfermagem/internacao', '/notificacao-compulsoria', '/alta-vigilancia'],
 }
 export function dividirBarraCelular(papel: Papel | null, itens: ItemNav[]): { fixos: ItemNav[]; mais: ItemNav[] } {
   if (itens.length <= MAX_BARRA_CELULAR) return { fixos: itens, mais: [] }

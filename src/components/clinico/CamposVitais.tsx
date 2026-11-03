@@ -13,6 +13,7 @@ export function CamposVitais({
   somenteLeitura = [],
   rotulo,
   dica,
+  opcionais = false,
 }: {
   publico: Publico | null
   valores: Record<string, string>
@@ -26,6 +27,8 @@ export function CamposVitais({
   rotulo?: (k: string, padrao: string) => string
   /** texto de ajuda no campo (placeholder) no lugar da unidade */
   dica?: (k: string) => string | undefined
+  /** todos opcionais, sem o asterisco (escuta inicial da UBS) */
+  opcionais?: boolean
 }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -36,7 +39,7 @@ export function CamposVitais({
             <div className="flex items-start gap-1">
               <Label htmlFor={`${prefixo}-${v.k}`}>
                 {rotulo ? rotulo(v.k, v.rotulo) : v.rotulo}
-                {obrigatorio(v, publico) ? ' *' : ''}
+                {!opcionais && obrigatorio(v, publico) ? ' *' : ''}
               </Label>
               {aoLadoDoRotulo?.(v.k)}
             </div>

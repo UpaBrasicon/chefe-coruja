@@ -206,6 +206,38 @@ Migration `20270213000001_escuta_inicial_ubs.sql`; teste `supabase/tests/5a_escu
 
 **Tela: o RT escolheu a opção C** (grade aguda × não aguda, como a figura do CAB 28; ref. Descript, cartões em grade), entre A (cartões empilhados, ref. Promova) e B (fila e escuta lado a lado, ref. Dock). Falta: a tela da escuta e a fila do médico pela cor, em PR próprio.
 
+## Parte 2.4, telas da escuta (02/11/2026)
+
+Sem migration.
+
+- **Menu:** "Escuta inicial" (`/escuta`) só na UBS, para o enfermeiro, e é a tela inicial dele lá. Na UPA o item não aparece. A rota usa a mesma página da triagem, que na UBS vira a escuta.
+- **Escuta inicial** (`EscutaInicial.tsx`, opção C):
+  - queixa editável;
+  - sinais vitais opcionais, sem asterisco;
+  - a grade do CAB 28: três cartões da situação aguda (vão para a consulta) e o azul à parte, com "Orientação" ou "Agendamento" dentro dele;
+  - a saída escrita antes de registrar;
+  - observação, obrigatória no azul (mínimo de 10 letras);
+  - sem data de nascimento, pede adulto ou pediatria.
+
+  Nenhuma cor vem marcada. A tela cita a fonte (CAB 28, vol. II, p. 19).
+- **Página da escuta na UBS:**
+  - abas "Aguardando escuta" e "Escutados aguardando o médico";
+  - sem tempo-alvo, sem reclassificar e sem a folha da classificação da porta;
+  - a chamada usa a sala do consultório.
+- **Fila do médico na UBS** (`ordemFilaUbs`): imediato, depois prioritário, depois os outros (o verde e quem não passou pela escuta) por prioridade legal e chegada. O CAB 28 diz que só o prioritário "influencia na ordem de atendimento". A cor da escuta aparece na coluna Tipo, e as saídas mostram "Encerrada na escuta" para o azul.
+- **Janela da consulta:** a seção "Escuta inicial (CAB 28)" mostra a cor, a queixa, a observação, quem escutou e a hora; os sinais aparecem como "Sinais da escuta".
+- **Recepção da UBS:** a fila do consultório mostra também quem aguarda a escuta (etiqueta "Aguarda escuta") e a cor de quem já foi escutado. O aviso da ficha diz "fila da escuta inicial".
+- Na UPA nada muda (conferido na página de teste: "Triagem", "Triar", alvo da cor).
+
+**Conferência (02/11/2026):**
+- `src/lib/telaUbsEscuta.test.ts` (cores e saídas iguais às do banco, ordem da fila, tela e página); `menuUbs.test.ts` (escuta só na UBS); `src/lib` (250), testes clínicos (1105), tipos, lint e padrão do frontend passando.
+- Página de teste com dados fictícios:
+  - amarelo com temperatura: envio de `registrar_escuta_aps` com cor, saída "consulta", queixa e sinais;
+  - azul sem data de nascimento: pede o grupo, a saída e o texto; envio com "orientacao", "adulto" e a orientação;
+  - aba de espera sem "Reclassificar";
+  - sem rolagem lateral no celular.
+- Falta a escuta com login numa UBS de teste da homologação: a tela da homologação fica atrás do login da Vercel. O banco já foi testado de ponta a ponta (`5a_escuta_inicial.sql`).
+
 ## 2. Subtarefas técnicas
 
 Com as recomendações:

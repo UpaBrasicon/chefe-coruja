@@ -11,7 +11,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
-import { TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
+import { ordemFilaUbs, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
@@ -196,9 +196,13 @@ export default function Recepcao() {
   })
   const filaTriagem = React.useMemo(() => (fila.data ?? []).filter((e) => e.etapa === 'triagem').sort(ordemTriagem), [fila.data])
   const filaMedica = React.useMemo(() => {
+    // na UBS: quem aguarda a escuta e quem aguarda a consulta, na ordem da fila
+    // do médico (imediato e prioritário da escuta, depois prioridade legal e chegada)
+    if (ubs) {
+      const todos = fila.data ?? []
+      return [...todos.filter((e) => !e.atendimento_iniciado_em).sort(ordemFilaUbs), ...todos.filter((e) => e.atendimento_iniciado_em).sort(ordemFilaUbs)]
+    }
     const lista = (fila.data ?? []).filter((e) => e.etapa === 'atendimento')
-    // na UBS não há cor: prioridade legal e ordem de chegada
-    if (ubs) return [...lista.filter((e) => !e.atendimento_iniciado_em).sort(ordemTriagem), ...lista.filter((e) => e.atendimento_iniciado_em).sort(ordemTriagem)]
     const esperando = lista.filter((e) => !e.atendimento_iniciado_em)
     const emAtendimento = lista.filter((e) => e.atendimento_iniciado_em)
     const ordenar = (l: NaFila[]) =>
@@ -424,7 +428,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     },
     onSuccess: (r) => {
       const nome = modo === 'existente' ? existente?.nome : dados.nome.trim()
-      setAviso(`${nome || 'Paciente'} entrou na fila ${ubs ? 'do consultório' : 'da triagem'} · prontuário ${r.prontuario}.`)
+      setAviso(`${nome || 'Paciente'} entrou na fila ${ubs ? (tipoAps === 'escuta_inicial' ? 'da escuta inicial' : 'do consultório') : 'da triagem'} · prontuário ${r.prontuario}.`)
       limpar()
       setTermo('')
       setBuscado('')
@@ -747,7 +751,11 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
 
   return (
     <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0">
-      {ubs ? null : medica ? (
+      {ubs ? (
+        e.etapa === 'triagem'
+          ? <span className={cn(pilula, 'min-w-[76px] justify-center bg-trilha text-tinta-sussurro')}>Aguarda escuta</span>
+          : e.cor_atual ? <PilulaRisco cor={e.cor_atual} /> : null
+      ) : medica ? (
         <PilulaRisco cor={e.cor_atual} />
       ) : (
         <span className={cn(pilula, 'min-w-[76px] justify-center bg-trilha text-tinta-sussurro')}>Sem triagem</span>

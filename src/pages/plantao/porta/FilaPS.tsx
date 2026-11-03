@@ -12,8 +12,8 @@ import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { homonimos } from '@/domain/homonimos'
-import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
-import { rotuloCondutaAps, rotuloTipoAps, rotuloTipoApsCurto } from '@/domain/aps'
+import { rotulosPrioridade } from '@/domain/prioridade'
+import { ordemFilaUbs, rotuloCondutaAps, rotuloTipoAps, rotuloTipoApsCurto } from '@/domain/aps'
 import { gravidade, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -162,7 +162,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
         .in('setor_id', meusSetores)
         .eq('etapa', 'atendimento')
       if (error) throw error
-      return ((data ?? []) as unknown as EpFila[]).sort(ubs ? ordemTriagem : ordemMedica)
+      // na UBS, o imediato e o prioritário da escuta (CAB 28) vêm antes
+      return ((data ?? []) as unknown as EpFila[]).sort(ubs ? ordemFilaUbs : ordemMedica)
     },
   })
   // finalizados e excluídos do dia (desde 0h de Brasília)
@@ -232,7 +233,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
           </TabsList>
           {/* o que passou do alvo aparece em qualquer aba: não some ao olhar outra lista */}
           <span className={cn('pb-2.5 text-apoio', acimaDoAlvo ? 'font-medium text-critico' : 'text-tinta-sussurro')}>
-            {ubs ? 'prioridade legal e ordem de chegada' : acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
+            {ubs ? 'imediato e prioritário da escuta, depois prioridade legal e chegada' : acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
           </span>
         </div>
 
@@ -264,7 +265,13 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                         <Queixa texto={e.queixa} />
                         <TableCell className={cn('tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{minutos(esperaDesde(e), agora)}</TableCell>
                         {ubs
-                          ? <TableCell className="whitespace-nowrap text-tinta-apoio" title={rotuloTipoAps(e.tipo_atendimento_aps)}>{rotuloTipoApsCurto(e.tipo_atendimento_aps) || <Nada />}</TableCell>
+                          ? (
+                            <TableCell className="whitespace-nowrap text-tinta-apoio" title={rotuloTipoAps(e.tipo_atendimento_aps)}>
+                              {/* a cor da escuta inicial (CAB 28), quando houve */}
+                              {e.cor_atual && <PilulaRisco cor={e.cor_atual} className="mr-2" />}
+                              {rotuloTipoApsCurto(e.tipo_atendimento_aps) || <Nada />}
+                            </TableCell>
+                          )
                           : <TableCell className="tabular-nums text-tinta-sussurro">{alvoDe(e.cor_atual)} min</TableCell>}
                         <TableCell>
                           {n === 0 ? <Estado tom="cinza">Aguardando</Estado>
@@ -362,7 +369,9 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                             ? <Estado tom="vermelho">Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Estado>
                             : conduta
                               ? <Estado tom="verde">{rotuloCondutaAps(conduta[0])}{conduta.length > 1 ? ` +${conduta.length - 1}` : ''}</Estado>
-                              : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
+                              : ubs && !s.desfecho
+                                ? <Estado tom="cinza">Encerrada na escuta</Estado>
+                                : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
                         </TableCell>
                         <TableCell className="tabular-nums text-tinta-apoio">{cid || <Nada />}</TableCell>
                         <TableCell className="max-w-[280px] truncate text-tinta-apoio" title={destino || undefined}>{destino || <Nada />}</TableCell>

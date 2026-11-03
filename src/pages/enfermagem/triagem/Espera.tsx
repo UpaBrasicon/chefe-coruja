@@ -16,16 +16,18 @@ import { CelulaPaciente, QueixaCelula } from './Fila'
 // visual 3.4 (opção B do RT): tabela na segunda aba da triagem; a espera desde a
 // classificação passa ao vermelho acima do alvo da cor, como na fila do PS.
 
-export function EsperaMedico({ lista, carregando, erro, onReclassificar }: {
+export function EsperaMedico({ lista, carregando, erro, onReclassificar, ubs = false }: {
   lista: NaEspera[]; carregando: boolean; erro: Error | null; onReclassificar: (ep: NaEspera) => void
+  /** escuta da UBS (5A, parte 2.4): o CAB 28 não tem tempo-alvo, e a UBS não reclassifica */
+  ubs?: boolean
 }) {
   const iguais = homonimos(lista)
   return (
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-      <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-sussurro">Na ordem da fila médica · reclassifique se o quadro mudou na espera</p>
+      <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-sussurro">{ubs ? 'Na ordem da fila do médico: imediato, prioritário, depois prioridade legal e chegada' : 'Na ordem da fila médica · reclassifique se o quadro mudou na espera'}</p>
       {carregando && <p className="px-5 py-5 text-controle text-tinta-sussurro">Carregando…</p>}
       {erro && <p className="px-5 py-5 text-controle text-critico">{erro.message}</p>}
-      {!carregando && !erro && lista.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">Ninguém classificado aguardando o médico.</p>}
+      {!carregando && !erro && lista.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">{ubs ? 'Ninguém escutado aguardando o médico.' : 'Ninguém classificado aguardando o médico.'}</p>}
       {lista.length > 0 && (
         <Table aria-label="Classificados aguardando o médico">
           <TableHeader>
@@ -41,7 +43,7 @@ export function EsperaMedico({ lista, carregando, erro, onReclassificar }: {
           <TableBody>
             {lista.map((e) => {
               const desde = esperaMin(e.classificado_em)
-              const acima = desde > ALVO_MIN[e.cor_atual]
+              const acima = !ubs && desde > ALVO_MIN[e.cor_atual]
               return (
                 <TableRow key={e.id}>
                   <TableCell><PilulaRisco cor={e.cor_atual} className="min-w-[70px]" /></TableCell>
@@ -52,9 +54,11 @@ export function EsperaMedico({ lista, carregando, erro, onReclassificar }: {
                     {desde} min
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" onClick={() => onReclassificar(e)}>
-                      <RefreshCw /> Reclassificar
-                    </Button>
+                    {!ubs && (
+                      <Button size="sm" variant="outline" onClick={() => onReclassificar(e)}>
+                        <RefreshCw /> Reclassificar
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               )

@@ -11,9 +11,9 @@ import { gravarSala, lerSala, type NaFila } from './comum'
 export type SalaTriagem = { id: string; nome: string; setor_id: string; setor: { nome: string } | null }
 export type UltimaChamada = { numero: number; sala: string; em: string }
 
-function useSalasTriagem(setores: string[]) {
+function useSalasTriagem(setores: string[], ubs: boolean) {
   return useQuery({
-    queryKey: ['salas-triagem', setores.join(',')],
+    queryKey: ['salas-triagem', setores.join(','), ubs],
     enabled: setores.length > 0,
     staleTime: 10 * 60_000,
     queryFn: async () => {
@@ -21,7 +21,8 @@ function useSalasTriagem(setores: string[]) {
         .from('salas')
         .select('id, nome, setor_id, setor:setores(nome)')
         .in('setor_id', setores)
-        .eq('tipo', 'triagem')
+        // na UBS não há sala de triagem: a escuta chama para o consultório
+        .in('tipo', ubs ? ['triagem', 'consultorio'] : ['triagem'])
         .eq('ativo', true)
         .order('ordem')
       if (error) throw error
@@ -55,9 +56,9 @@ function useChamadasTriagem(setores: string[]) {
 }
 
 /** Sala, chamadas e escolha da sala da fila da triagem (a sala fica no aparelho). */
-export function useSalaTriagem(fila: NaFila[]) {
+export function useSalaTriagem(fila: NaFila[], ubs = false) {
   const setores = React.useMemo(() => [...new Set(fila.map((e) => e.setor_id))], [fila])
-  const salas = useSalasTriagem(setores)
+  const salas = useSalasTriagem(setores, ubs)
   const chamadas = useChamadasTriagem(setores)
   const [escolhidas, setEscolhidas] = React.useState<Record<string, string>>({})
   // a sala guardada no aparelho vale enquanto existir nesta porta
