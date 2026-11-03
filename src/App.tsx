@@ -28,6 +28,7 @@ const InicioEnfermagem = lazy(() => import('@/pages/enfermagem/InicioEnfermagem'
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
 const AgendaConsultas = lazy(() => import('@/pages/agenda/AgendaConsultas'))
+const Encaminhados = lazy(() => import('@/pages/encaminhados/Encaminhados'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
 const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const PacoteAlta = lazy(() => import('@/pages/public/PacoteAlta'))
@@ -328,6 +329,10 @@ export default function App() {
                       {/* 5A, tarefa 3: agenda de consultas da UBS (F2: marca a recepção, a enfermagem, o médico e o gestor) */}
                       <Route element={<RequireRole papeis={['recepcao', 'enfermeiro', 'tecnico_enfermagem', 'plantonista', 'gestor']} />}>
                         <Route path="/agenda-consultas" element={<AgendaConsultas />} />
+                      </Route>
+                      {/* 5A, tarefa 5: envios à UPA e regulações da UBS, com o rastreio */}
+                      <Route element={<RequireRole papeis={['recepcao', 'enfermeiro', 'plantonista', 'gestor']} />}>
+                        <Route path="/encaminhados" element={<Encaminhados />} />
                       </Route>
 
                       <Route element={<RequireRole papeis={['admin']} />}>

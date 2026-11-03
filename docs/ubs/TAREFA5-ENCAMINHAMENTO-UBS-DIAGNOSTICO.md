@@ -97,3 +97,26 @@ Migration `20270216000001_encaminhamento_upa.sql`; teste `supabase/tests/5a_enca
 **Produção (03/11/2026, ok do RT):** migration `20270216000001` aplicada por `producao:push`. Versão registrada; retrato igual ao da homologação: tabela, 10 funções com md5 f7fa7356…, job `encaminhamento-upa-prazo` e sem acesso direto do `authenticated`.
 
 **Tela: o RT escolheu a opção C** para "Encaminhados" (lista e rastreio em etapas; ref. Shop, acompanhar o pedido), entre A (abas e tabela, ref. Kitchen.co) e B (quadro por situação, ref. Linear). Vem na parte 5.2.
+
+## Parte 5.2, telas (03/11/2026)
+
+Sem migration. Teste de tela `src/lib/encaminhamentoUbs.test.ts`.
+
+- **Enviar à UPA (H1, H5):**
+  - na aba Conduta, quando a conduta marca "encaminhamento para urgência";
+  - na escuta inicial, quando a cor é vermelha;
+  - o diálogo lista as unidades da rede e leva o motivo (a hipótese da consulta ou a queixa da escuta), que se pode editar.
+- **Regulação aberta da consulta (H2):** com "encaminhamento para internação" ou "para serviço especializado" na conduta, o botão "Solicitar regulação" abre a Regulação em outra aba, já com o paciente, o tipo (leito ou consulta), o CID, o quadro e a hipótese. O médico confere e completa.
+- **Encaminhados (H3, opção C):**
+  - item novo do menu, só na UBS, para recepção, enfermagem, médicos e gestor;
+  - lista dos últimos 30 dias, com os envios à UPA e as regulações da unidade (as regulações só para quem já as vê: médico, gestor e NIR);
+  - à direita, o rastreio em etapas (enviado, aguardando a chegada, chegou, não chegou ou cancelado), o resumo enviado e o cancelamento com motivo.
+- **Vindo da UBS (H1):** na recepção da UPA, aba Ficha, os pacientes enviados pela UBS, com o resumo. "Chegou" liga a ficha aberta hoje (a de mesmo nome vem marcada). "Não chegou" pede o relato. Quem enviou é avisado.
+- **Janela da consulta da UBS, aba Encaminhar:** os envios à UPA do paciente e o histórico da regulação, acima da folha SMS003a.
+- **Notificações:** categoria nova "Encaminhamento" para os avisos `ubs_upa_<número>`, com atalho para Encaminhados ou para a recepção.
+
+**Conferido na página de teste (03/11/2026):** a lista e o rastreio dos quatro estados, o cancelamento (`p_id` e `p_motivo`), a chegada ligada à ficha de mesmo nome (`p_chegou` e `p_episodio`) e o envio (`p_episodio`, `p_destino` e `p_motivo`).
+
+**Ainda não feito:**
+- `regulacao_contexto` não traz o tipo da unidade. Por isso a lista do "Enviar à UPA" mostra também as outras UBS da rede; o servidor recusa com "Escolha uma UPA ou um hospital da rede.". O conserto pede uma migration (tipo na lista da rede) e fica registrado para depois.
+- As telas com login na homologação, que ficam atrás do login da Vercel.

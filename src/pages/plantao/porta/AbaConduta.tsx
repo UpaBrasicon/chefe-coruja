@@ -6,10 +6,11 @@
 // aparecem antes de enviar; o servidor (registrar_conduta_aps) confere de novo.
 // Nada aqui sugere problema, CID ou conduta.
 import { useMutation } from '@tanstack/react-query'
-import { CalendarPlus, Check, CircleAlert, ClipboardCheck, UserX, X } from 'lucide-react'
+import { Ambulance, CalendarPlus, Check, CircleAlert, ClipboardCheck, UserX, Waypoints, X } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { EnviarUpa } from '@/components/encaminhamento/EnviarUpa'
 import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
 import { Chip } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -17,7 +18,9 @@ import { CaixaMarcar } from '@/components/ui/caixa-marcar'
 import { Label } from '@/components/ui/label'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Textarea } from '@/components/ui/textarea'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { linkMarcarNaAgenda } from '@/domain/agenda'
+import { linkRegulacaoDaConsulta } from '@/domain/encaminhamento'
 import { CONDUTAS_APS, PROBLEMAS_APS, TIPOS_ATENDIMENTO_APS, rotuloProblemaAps } from '@/domain/aps'
 import { useTerminologia } from '@/hooks/useTerminologia'
 import type { MotivoEvasao } from '@/lib/evasao'
@@ -138,6 +141,17 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
   // F6 da tarefa 3: o retorno pode ser marcado direto na agenda (a conduta vale sem a marcação)
   const retorno = condutas.includes('retorno_cuidado_continuado') ? 'consulta_programada'
     : condutas.includes('retorno_consulta_agendada') ? 'consulta_agendada' : null
+  // tarefa 5 (H1, H2): urgência vai à UPA da rede; especializado e internação, pela regulação
+  const { unidadeAtiva } = useUnidade()
+  const [enviarUpa, setEnviarUpa] = React.useState(false)
+  const [avisoEnvio, setAvisoEnvio] = React.useState<string | null>(null)
+  const urgencia = condutas.includes('encaminhamento_urgencia')
+  const regulacao = condutas.includes('encaminhamento_internacao') ? 'leito'
+    : condutas.includes('encaminhamento_especializado') ? 'consulta' : null
+  const ultimo = [...registros].reverse().find((r) => r.avaliacao?.trim())
+  const cidDaConsulta = problemas.flatMap((p) => ('cid' in p ? [p.cid] : []))[0] ?? (soap.cid.trim() || ultimo?.cid || null)
+  const quadro = [soap.s.trim() || ultimo?.subjetivo, soap.o.trim() || ultimo?.objetivo].filter(Boolean).join(' ')
+  const hipotese = soap.a.trim() || ultimo?.avaliacao || null
 
   const encerrar = useMutation({
     mutationFn: async () => {
@@ -201,6 +215,22 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
           <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
             <span className="flex-1">O encaminhamento (interno, ou para outra unidade no SMS003a) se faz na aba Encaminhar.</span>
             <Button size="xs" variant="outline" onClick={() => onIrPara('enc')}>Abrir Encaminhar</Button>
+          </div>
+        )}
+        {urgencia && unidadeAtiva && (
+          <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
+            <span className="flex-1">{avisoEnvio ?? 'Paciente vai à UPA da rede? O envio avisa a UPA com o resumo e acompanha a chegada.'}</span>
+            {!avisoEnvio && <Button size="xs" variant="outline" onClick={() => setEnviarUpa(true)}><Ambulance /> Enviar à UPA</Button>}
+            <EnviarUpa aberto={enviarUpa} onFechar={() => setEnviarUpa(false)} episodioId={episodioId} unidadeId={unidadeAtiva.unidade_id}
+              nome={nome} motivoInicial={hipotese ?? ''} onEnviado={(a) => { setAvisoEnvio(a); setEnviarUpa(false) }} />
+          </div>
+        )}
+        {regulacao && (
+          <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
+            <span className="flex-1">{regulacao === 'leito' ? 'A internação' : 'O serviço especializado'} se pede pela regulação da rede (abre em outra aba, já com o paciente, o CID e o quadro).</span>
+            <Button size="xs" variant="outline" render={<Link to={linkRegulacaoDaConsulta({ paciente: pacienteId, tipo: regulacao, cid: cidDaConsulta, quadro, hipotese })} target="_blank" rel="noopener" />}>
+              <Waypoints /> Solicitar regulação
+            </Button>
           </div>
         )}
         {retorno && (
