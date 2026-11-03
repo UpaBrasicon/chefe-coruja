@@ -2165,10 +2165,12 @@ export type Database = {
           motivo: string | null
           oxigenio: Json | null
           paciente_id: string
+          protocolo: string | null
           publico: string
           publico_pela_idade: string | null
           queixa: string | null
           reclassificacao: boolean
+          saida_escuta: string | null
           unidade_id: string
         }
         Insert: {
@@ -2191,10 +2193,12 @@ export type Database = {
           motivo?: string | null
           oxigenio?: Json | null
           paciente_id: string
+          protocolo?: string | null
           publico: string
           publico_pela_idade?: string | null
           queixa?: string | null
           reclassificacao?: boolean
+          saida_escuta?: string | null
           unidade_id: string
         }
         Update: {
@@ -2217,10 +2221,12 @@ export type Database = {
           motivo?: string | null
           oxigenio?: Json | null
           paciente_id?: string
+          protocolo?: string | null
           publico?: string
           publico_pela_idade?: string | null
           queixa?: string | null
           reclassificacao?: boolean
+          saida_escuta?: string | null
           unidade_id?: string
         }
         Relationships: [
@@ -12668,6 +12674,18 @@ export type Database = {
           p_tipo: string
         }
         Returns: undefined
+      }
+      registrar_escuta_aps: {
+        Args: {
+          p_cor: string
+          p_episodio: string
+          p_obs?: string
+          p_publico?: string
+          p_queixa?: string
+          p_saida: string
+          p_sinais?: Json
+        }
+        Returns: string
       }
       registrar_contingencia: {
         Args: { p_fim: string; p_inicio: string; p_motivo: string; p_unidade: string }
