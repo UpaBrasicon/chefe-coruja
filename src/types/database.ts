@@ -9911,6 +9911,9 @@ export type Database = {
       encaminhamentos_upa_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       encaminhamentos_upa_origem: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
       encaminhar_upa: { Args: { p_destino: string; p_episodio: string; p_motivo: string }; Returns: string }
+      contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
+      contrarreferencias_da_unidade: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
+      contrarreferencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       agenda_cancelar: { Args: { p_agendamento: string; p_motivo?: string }; Returns: undefined }
       agenda_configuracao: { Args: { p_unidade: string }; Returns: Json }
       agenda_definir_configuracao: {
