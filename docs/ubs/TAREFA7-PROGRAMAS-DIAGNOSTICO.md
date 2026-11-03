@@ -169,3 +169,26 @@ Sem migration. Teste de tela `src/lib/hiperdia.test.ts`.
 - o registro dos pés (`p_episodio`, `p_resultado` e `p_observacao`) e a saída do programa (`p_participante` e `p_motivo`).
 
 **Fica para depois:** incluir paciente direto do painel. Hoje a inclusão é automática pela consulta ou à mão na consulta.
+
+## Parte 7.3, ponta a ponta (03/11/2026)
+
+Teste `supabase/tests/5a_hiperdia_ponta_a_ponta.sql`, rodado na homologação em transação desfeita. Usa as mesmas chamadas das telas, cada uma com o papel de quem a usa:
+- a recepção abre a ficha da escuta;
+- o enfermeiro faz a escuta com pressão, peso e altura;
+- o médico atende, pede a hemoglobina glicada pelo nome (a SIGTAP do CI é reduzida; o código 02.02.01.050-3 também vale), avalia os pés e encerra com hipertensão e diabetes;
+- o paciente entra nos dois programas, e o painel mostra a consulta, a pressão, o peso com altura, a HbA1c e os pés;
+- o gestor configura a agenda e a recepção marca o retorno, que aparece no painel como próxima consulta.
+
+Os testes vizinhos passam de novo na homologação: `5a_hiperdia`, `5a_escuta_inicial` e `5a_agenda`.
+
+## Tarefa 7 concluída (03/11/2026)
+
+O aceite "pelo menos um programa básico funcional" está cumprido pelo hiperdia.
+- 7.1, banco: PR #429, produção em 03/11/2026.
+- 7.2, telas: PR #430.
+- 7.3, ponta a ponta: este PR.
+
+**Ainda não feito:**
+- pré-natal (C3) e puericultura (C2), que dependem de ACS, vacina e saúde bucal;
+- incluir paciente direto do painel;
+- as telas com login na homologação.
