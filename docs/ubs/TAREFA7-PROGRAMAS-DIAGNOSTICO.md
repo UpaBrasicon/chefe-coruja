@@ -175,7 +175,7 @@ Sem migration. Teste de tela `src/lib/hiperdia.test.ts`.
 Teste `supabase/tests/5a_hiperdia_ponta_a_ponta.sql`, rodado na homologação em transação desfeita. Usa as mesmas chamadas das telas, cada uma com o papel de quem a usa:
 - a recepção abre a ficha da escuta;
 - o enfermeiro faz a escuta com pressão, peso e altura;
-- o médico atende, pede a hemoglobina glicada (SIGTAP 02.02.01.050-3), avalia os pés e encerra com hipertensão e diabetes;
+- o médico atende, pede a hemoglobina glicada pelo nome (a SIGTAP do CI é reduzida; o código 02.02.01.050-3 também vale), avalia os pés e encerra com hipertensão e diabetes;
 - o paciente entra nos dois programas, e o painel mostra a consulta, a pressão, o peso com altura, a HbA1c e os pés;
 - o gestor configura a agenda e a recepção marca o retorno, que aparece no painel como próxima consulta.
 

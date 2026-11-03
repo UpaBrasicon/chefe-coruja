@@ -82,7 +82,8 @@ SELECT pg_temp.como('med');
 SELECT public.iniciar_atendimento(pg_temp.v('ep'));
 SELECT public.registrar_soap(pg_temp.v('ep'), 'Hipertenso e diabético, sem queixas', 'PA 148x92', 'Hipertensão e diabetes sem controle ideal',
   'Ajuste da medicação, HbA1c e retorno', 'I10');
-SELECT public.pedir_exames(pg_temp.v('ep'), '[{"procedimento":"0202010503"}]');
+-- pelo nome: a SIGTAP do CI é reduzida (na homologação o código 02.02.01.050-3 também vale)
+SELECT public.pedir_exames(pg_temp.v('ep'), '[{"nome":"Hemoglobina glicada (HbA1c)"}]');
 SELECT public.registrar_avaliacao_pes(pg_temp.v('ep'), 'sem_alteracao');
 SELECT public.registrar_conduta_aps(pg_temp.v('ep'), 'consulta_programada', '{hipertensao_arterial,diabetes}', '{}',
   '{retorno_cuidado_continuado}', 'Retorno em 30 dias com a HbA1c', '{}');
