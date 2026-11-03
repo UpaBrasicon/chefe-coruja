@@ -202,7 +202,9 @@ Migration `20270213000001_escuta_inicial_ubs.sql`; teste `supabase/tests/5a_escu
 - `5a_escuta_inicial.sql` ok; `5a_atendimento_ubs.sql`, `5a_consultorio_fila.sql` e `5a_consulta_ubs_ponta_a_ponta.sql` seguem ok com ela;
 - rollback: a função nova sai e a `registrar_ficha` volta ao md5 de antes (b466e655…, o da produção); o teste falha; reaplicada, o retrato fica igual ao de depois (`registrar_ficha` 7a2c173d…, `registrar_escuta_aps` 00b2aa49…). As colunas novas ficam no rollback (expand), sem uso.
 
-**Falta:** a tela da escuta (fila da enfermagem da UBS e o formulário), com opções do Refero para o RT escolher, e a fila do médico pela cor.
+**Produção (02/11/2026, ok do RT):** migration `20270213000001` aplicada por `producao:push`. Versão registrada; md5 igual ao da homologação (`registrar_ficha` 7a2c173d…, `registrar_escuta_aps` 00b2aa49…), mesmo dono e grants, colunas e CHECKs presentes.
+
+**Tela: o RT escolheu a opção C** (grade aguda × não aguda, como a figura do CAB 28; ref. Descript, cartões em grade), entre A (cartões empilhados, ref. Promova) e B (fila e escuta lado a lado, ref. Dock). Falta: a tela da escuta e a fila do médico pela cor, em PR próprio.
 
 ## 2. Subtarefas técnicas
 
