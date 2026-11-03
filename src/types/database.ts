@@ -9902,6 +9902,15 @@ export type Database = {
       }
     }
     Functions: {
+      encaminhamento_upa_cancelar: { Args: { p_id: string; p_motivo: string }; Returns: undefined }
+      encaminhamento_upa_marcar_chegada: {
+        Args: { p_chegou: boolean; p_episodio?: string; p_id: string; p_observacao?: string }
+        Returns: Json
+      }
+      encaminhamentos_upa_destino: { Args: { p_unidade: string }; Returns: Json }
+      encaminhamentos_upa_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      encaminhamentos_upa_origem: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
+      encaminhar_upa: { Args: { p_destino: string; p_episodio: string; p_motivo: string }; Returns: string }
       agenda_cancelar: { Args: { p_agendamento: string; p_motivo?: string }; Returns: undefined }
       agenda_configuracao: { Args: { p_unidade: string }; Returns: Json }
       agenda_definir_configuracao: {
