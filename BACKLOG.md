@@ -1310,6 +1310,30 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
 
 ---
 
+## Portão da Fase 5 — teste de ponta a ponta com login (pedido do RT em 03/11/2026)
+
+**Pedido do RT em 03/11/2026**, com a 5A concluída ("Portão da Fase 5"). Todas as tarefas da UBS fecharam sem ver as telas com login na homologação; esta rodada cobre isso e o resto da Fase 5. Decisões do RT em 03/11/2026: **A em K1 a K3**.
+
+- **Escopo (K1 = A):** a Fase 5 inteira e a regressão do fluxo da UPA pelos scripts de `scripts/e2e/`.
+  - UBS (5A, tarefas 1 a 7);
+  - faturamento (5B): conta, procedimentos, medicamentos, AIH/APAC, pré-auditoria e glosas;
+  - integrações (5C): API de laboratório, imagem e ERP, e webhooks.
+- **Ambiente (K2 = A):** homologação (Supabase `kswurfyx`).
+  - No banco, cada etapa roda como o papel, por SQL e com RLS ligado, como na Rodada 2.
+  - Nas telas, o master atual é publicado na homologação. O RT libera o link de compartilhamento da Vercel para `homolog.chefecoruja.com.br`, e as telas são percorridas no navegador embutido com as contas de teste, por papel, no computador e no celular.
+- **Cenário (K3 = A):** rede de teste nova na homologação.
+  - UBS, UPA e hospital de teste na mesma organização, com CNES fictícios;
+  - uma conta fictícia por papel, com a senha definida pelo RT e fora do repositório;
+  - coorte de cerca de 12 pacientes de APS: hipertenso, diabético, gestante, criança, escuta vermelha enviada à UPA, envio que não chegou em 12 h, evasão na UPA, internação com alta e retorno, alta desfeita, regulação de consulta pela conduta, cancelamento e paciente com cadastro em duas UBS.
+- **Regra:** nada é corrigido durante a rodada. Primeiro vem o relatório, com os defeitos por severidade; o RT decide a ordem das correções.
+- **Entregáveis:**
+  - `produto/docs/teste-e2e/RELATORIO_E2E_FASE5_AAAA-MM-DD.md`;
+  - os scripts e seeds da rodada em `scripts/e2e/` (de `40_` em diante);
+  - as perguntas de produto para o RT.
+- **Fica com o RT:** o link da Vercel, a senha das contas de teste e o segundo fator nas telas.
+
+---
+
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
 
 **Pedido do RT:** "organizar o frontend e manter o padrão daqui pra frente". Entra agora, com a 5C
