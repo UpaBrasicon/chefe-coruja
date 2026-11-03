@@ -1,0 +1,74 @@
+# 5A, tarefa 3: agenda básica da UBS
+
+Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P1**. Começada em 02/11/2026, na ordem combinada com o RT ("Vamos seguir sua ordem"), depois da tarefa 2 concluída.
+
+O aceite do backlog é: "UBS agenda consulta e atende paciente". As subtarefas são agenda por profissional, horários, marcação, cancelamento e faltas.
+
+Este documento é o diagnóstico. As decisões F1 a F6 são do RT; a implementação só começa depois delas.
+
+## Fonte
+
+**Ministério da Saúde, e-SUS APS, *Manual do PEC*** (sisaps.saude.gov.br/sistemas/esusaps/docs/manual/PEC, versão de 2026):
+
+- **Configurar a agenda (cap. 3, seção 3.5.5):**
+  - feita pelo gerente ou coordenador da UBS, por profissional e lotação;
+  - horário de início e de fim por período e por dia da semana, ou o "horário-padrão" da instalação;
+  - sábado e domingo aparecem só quando marcados.
+- **Fechamento da agenda (seção 3.5.6):** período, com data inicial e final, e motivo: atestado, curso, férias, licença, reunião ou outro (este com "Especifique").
+- **Intervalo entre consultas (seção 3.2.1):** definido por categoria profissional (CBO), com um padrão.
+- **Agenda (cap. 5):**
+  - marcar consulta, reserva ou atendimento entre profissionais (seção 5.1), só em horário futuro, com observação opcional;
+  - reserva de horário para atendimento externo, atividade coletiva, reunião ou outro, só para atividade curta dentro do turno (seção 5.2);
+  - as situações do agendamento são: agendado, cidadão presente na unidade, atendimento realizado, não aguardou, não compareceu e cancelado;
+  - "não compareceu" só depois do horário, e só pode ser desfeito no próprio dia (seções 5.1.3 e 5.1.6);
+  - o agendado chega e entra na lista de atendimentos, como "cidadão presente na unidade" (seção 5.1.2);
+  - o cancelamento é só antes do horário e não pede justificativa; depois do horário, registra-se a falta (seção 5.1.5).
+
+## 1. Diagnóstico do estado atual
+
+**Não existe agenda de paciente.**
+
+- **A agenda que existe é a escala.**
+  - `/agenda` ("Minha agenda") é o calendário de plantões: `AgendaGrupo`, `escala_plantao` e `escala_fixa`, por turno (manhã, tarde, noite), sem horário de consulta.
+  - "Falta", nesse módulo, é a falta do profissional (`solicitacoes_escala`).
+- **"Consulta agendada" é só um rótulo.** É o tipo de atendimento da ficha da UBS (`episodios.tipo_atendimento_aps`), sem ligação com nenhum horário marcado.
+- **O retorno é só texto.** A conduta "retorno para consulta agendada" e a saída "agendamento" da escuta (azul) não criam horário: ficam escritos na conduta ou na observação.
+- **O mais parecido é `regulacao_solicitacoes`:** tem a situação agendada, realizada e falta, mas é o encaminhamento para outro serviço, não a agenda da própria UBS.
+- **O acesso depende da escala.** O médico atende só de plantão no consultório, com check-in (D2 da tarefa 2). A agenda tem de conviver com essa regra.
+- **O nome `/agenda` já está ocupado** pela escala. A agenda de consultas precisa de outro endereço e de outro nome no menu.
+
+## 2. Decisões do RT (F1 a F6)
+
+| # | Pergunta | Opções | Recomendação |
+|---|---|---|---|
+| F1 | De onde vêm os horários | **A)** uma configuração própria por profissional na unidade, como no PEC: dias, períodos e horário de início e de fim, mais a duração da consulta. O atendimento continua exigindo a escala, e a tela avisa quando um horário da agenda cai fora dela. **B)** os horários saem da escala fixa: cada turno vira horários de consulta pela duração, sem configuração própria | A: a agenda do PEC é por profissional; a escala diz quem está de plantão, não quantas consultas cabem |
+| F2 | Quem configura e quem marca | **A)** o gestor configura a agenda, a duração e o fechamento (o "coordenador" do PEC); a recepção, a enfermagem e o próprio profissional marcam e cancelam. **B)** só a recepção marca | A |
+| F3 | A chegada do paciente | **A)** na recepção, "chegou" no agendamento abre a ficha da UBS já ligada a ele: com o tipo do agendamento, na fila do consultório, e o agendamento passa a "presente". Ao encerrar a consulta, passa a "realizado"; se o paciente sair antes, a "não aguardou". **B)** a agenda fica à parte, e a ficha é aberta como hoje, sem ligação | A: é o que fecha o aceite ("agenda consulta e atende paciente") |
+| F4 | Falta e cancelamento | **A)** como no PEC: cancelar só antes do horário, sem justificativa; "não compareceu" só depois do horário, desfeito só no mesmo dia; tudo na auditoria. **B)** cancelamento e falta com motivo obrigatório | A: segue a fonte; o motivo fica opcional |
+| F5 | Reserva e fechamento | **A)** os dois, como no PEC: a reserva de um horário (atendimento externo, atividade coletiva, reunião, outro) e o fechamento de um período (atestado, curso, férias, licença, reunião, outro), sem marcar por cima. **B)** só o fechamento | A |
+| F6 | Marcar a partir da consulta | **A)** a conduta "retorno para consulta agendada" e a saída "agendamento" da escuta ganham um atalho para marcar direto na agenda; a conduta continua valendo sem a marcação. **B)** marca-se só pela tela da agenda | A |
+
+**Fora desta tarefa:**
+- a agenda online do cidadão (seção 3.5.7 do PEC), que depende do e-Gestor APS;
+- o atendimento entre profissionais com videochamada;
+- o envio ao SISAB.
+
+## 3. Proposta técnica (com as recomendações)
+
+Em partes, cada uma com o próprio PR:
+
+| Parte | Entrega |
+|---|---|
+| 3.1 banco | `agenda_configuracoes`, `agenda_fechamentos`, `agendamentos` (consulta ou reserva, situação, ligação com o episódio); RPCs de configurar, marcar, cancelar, chegar, falta e não aguardou; ligação na conduta e na evasão; testes |
+| 3.2 telas | "Agenda de consultas" (dia e semana por profissional; marcar, cancelar, chegou e falta) e a configuração do gestor; opções do Refero para o RT escolher antes |
+| 3.3 atalhos | marcar a partir da conduta e da escuta (F6) |
+
+**Banco (expand):**
+- só tabelas novas, com RLS por papel na unidade, sem mexer na escala nem no episódio além de uma coluna anulável `episodios.agendamento_id`;
+- um mesmo profissional não fica com dois agendamentos no mesmo horário, e não se marca dentro de um fechamento;
+- o rollback é derrubar as tabelas novas, que só a agenda usa.
+
+**Riscos:**
+- **A UBS precisa de escala montada** para atender (D2 da tarefa 2). Se a agenda não bater com a escala, o profissional tem paciente marcado e não consegue abrir a consulta; daí o aviso da F1.
+- **Fuso e horário de verão:** os horários ficam em `timestamptz`, mostrados em America/Sao_Paulo, como o resto do app.
+- **Produção:** a UPA Centro não tem equipe, e nenhuma UBS está em uso, então nada muda para quem usa hoje.
