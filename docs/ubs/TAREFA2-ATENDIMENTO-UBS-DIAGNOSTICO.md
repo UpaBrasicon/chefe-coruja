@@ -144,6 +144,66 @@ Sem migration: usa `registrar_conduta_aps` e `registrar_desfecho` (evasão) da p
 - página de teste com dados fictícios: abas sem Reavaliação, Procedimentos e Desfecho; busca com a lista e a CID-10; envio de `registrar_conduta_aps` com o tipo, o problema e a conduta; janela fechada com o aviso; SMS003a sem o lembrete; sem rolagem lateral no celular.
 - Falta a consulta inteira numa UBS de teste na homologação, com login (critério de aceite da tarefa).
 
+## Teste de ponta a ponta na homologação (02/11/2026)
+
+`supabase/tests/5a_consulta_ubs_ponta_a_ponta.sql`: as mesmas chamadas que as telas fazem, na ordem da tela, cada uma com o papel de quem usa (JWT simulado, RLS valendo), numa UBS nova criada no próprio teste.
+
+- **Recepção:** o consultório aparece como porta; duas fichas; a fila mostra as duas; vê a chamada do médico.
+- **Médico:** de plantão no consultório; a fila tem as fichas com o tipo; o consultório tem sala; a sala do plantão fica guardada; a chamada é registrada.
+- **Janela:** sem classificação; o painel e as alergias abrem; o rascunho do SOAP volta do servidor.
+- **Conduta:** SOAP registrado; a consulta encerra com o tipo, o problema da lista, a CID-10, as condutas e a observação; entra nas saídas; a fila fica só com a segunda ficha.
+- **Evasão** registrada na UBS.
+
+Rodou inteiro na homologação, sem gravar nada. Limites: o segundo fator fica desligado no teste, como nos outros testes de banco; a tela da homologação fica atrás do login da Vercel, então o caminho foi o das chamadas, não o do navegador.
+
+## Parte 2.4, escuta inicial: fonte e diagnóstico (02/11/2026)
+
+**Fonte conferida.** Ministério da Saúde, *Acolhimento à demanda espontânea*, Cadernos de Atenção Básica nº 28:
+- **Vol. I (2011; 1ª reimpressão 2013), p. 34 e 35:** a classificação da demanda espontânea por risco e vulnerabilidade:
+  - **situação não aguda:** orientação, adiantamento de ações de protocolo, agendamento;
+  - **situação aguda:**
+    - atendimento imediato (alto risco de vida), obrigatoriamente com o médico;
+    - atendimento prioritário (risco moderado): "influencia na ordem de atendimento";
+    - atendimento no dia (risco baixo, ou sem risco com vulnerabilidade importante).
+  - O texto diz que as categorias "podem" ser representadas por cores, sem defini-las.
+- **Vol. II, *Queixas mais comuns na Atenção Básica* (2012; 1ª reimpressão 2013), p. 18 e 19:** a mesma classificação, com as cores na figura "Classificação geral dos casos de demanda espontânea na Atenção Básica": **azul**, não aguda; **vermelho**, atendimento imediato; **amarelo**, prioritário; **verde**, no dia. Conferido pelas cores das caixas da figura no PDF do MS (bvsms).
+- **Sem tempo-alvo em minutos.** A fonte não dá minutos por cor. Os tempos que circulam em material de curso não estão no Caderno e não entram.
+- **Quem escuta:** a FAI do e-SUS APS (Manual do CDS 2.1, p. 58) fala de profissional de nível superior. O CAB 28 (vol. I, p. 29) admite o enfermeiro ou, em algumas modelagens, o técnico de enfermagem com o enfermeiro e o médico na retaguarda.
+- **A classificação não é a de Manchester.** São quatro categorias, sem laranja, sem fluxograma e discriminador, e a vulnerabilidade pesa junto com o risco.
+
+**O que o sistema já tem:**
+- a cor no episódio (`cor_atual`), com vermelho, amarelo, verde e azul no mesmo tipo;
+- a fila da enfermagem (triagem da porta) e a classificação da porta (`classificar_risco`), que recusa a UBS: exige fluxograma e discriminador e a etapa `triagem`;
+- o tipo de atendimento "escuta inicial / orientação" na ficha da UBS, que hoje vai direto à fila do médico;
+- a fila do médico na UBS, por prioridade legal e chegada, sem cor.
+
+**O que falta:** o caminho da escuta (quem chega, quem escuta, o que se registra e para onde vai), a classificação do CAB 28 no banco e a fila do médico pela cor da escuta.
+
+**Decisões do RT (02/11/2026), todas na recomendação:**
+
+| # | Pergunta | Decisão |
+|---|---|---|
+| E1 | Quem chega para a escuta | **Pela ficha:** o tipo "escuta inicial / orientação" vai para a fila da enfermagem; os outros tipos seguem direto para o médico |
+| E2 | Quem escuta e classifica | **Só o enfermeiro** (nível superior, como a FAI); a cor continua sendo da enfermagem |
+| E3 | Saídas da escuta | **As do CAB 28:** azul orienta e encerra, ou deixa o agendamento escrito (a agenda é a tarefa 3); vermelho, amarelo e verde vão para a fila do médico, pela cor, depois prioridade legal e chegada; sem tempo-alvo |
+| E4 | Sinais vitais | **Opcionais**; quando registrados, aparecem crus para o médico |
+
+## Parte 2.4, banco (02/11/2026)
+
+Migration `20270213000001_escuta_inicial_ubs.sql`; teste `supabase/tests/5a_escuta_inicial.sql`.
+
+- **`classificacoes_risco.protocolo`** (`cab28`; nulo é Manchester, da porta) e **`saida_escuta`** (`orientacao`, `agendamento`, `consulta`), anuláveis, com CHECK: no CAB 28 não há laranja, e o azul é o único que orienta ou agenda. A escuta grava na mesma tabela da classificação (só inserção, auditada), e os sinais vitais vão para `observacao`, como na porta.
+- **`registrar_ficha`:** na UBS, o tipo "escuta inicial" nasce em `triagem`; os outros, em `atendimento`. Troca na definição atual.
+- **`registrar_escuta_aps`** (nova): só o enfermeiro de plantão no consultório; sinais vitais opcionais; azul encerra com o texto da orientação ou do agendamento (mínimo de 10 letras), sem desfecho da porta; vermelho, amarelo e verde vão para a fila do médico com a cor. Auditoria `escuta_aps_registrada` (cor, saída, escala).
+- **Sem mudança:** `classificar_risco` segue recusando a UBS; `classificacoes_do_episodio` já mostra a escuta ao médico (cor, queixa, sinais).
+
+**Homologação (02/11/2026):**
+- migration aplicada duas vezes (idempotente) e versão registrada;
+- `5a_escuta_inicial.sql` ok; `5a_atendimento_ubs.sql`, `5a_consultorio_fila.sql` e `5a_consulta_ubs_ponta_a_ponta.sql` seguem ok com ela;
+- rollback: a função nova sai e a `registrar_ficha` volta ao md5 de antes (b466e655…, o da produção); o teste falha; reaplicada, o retrato fica igual ao de depois (`registrar_ficha` 7a2c173d…, `registrar_escuta_aps` 00b2aa49…). As colunas novas ficam no rollback (expand), sem uso.
+
+**Falta:** a tela da escuta (fila da enfermagem da UBS e o formulário), com opções do Refero para o RT escolher, e a fila do médico pela cor.
+
 ## 2. Subtarefas técnicas
 
 Com as recomendações:
