@@ -115,3 +115,29 @@ Sem migration. Teste de tela em `src/lib/encaminhamentoUbs.test.ts`.
 - a abertura do resumo (`p_id`), com o escolhido fixo depois de a lista voltar reordenada;
 - o link da agenda (`/agenda-consultas?paciente=…&consulta=consulta_programada`);
 - a recepção sem o botão do resumo e o lembrete da busca ativa na evasão.
+
+## Parte 6.3, ponta a ponta (03/11/2026)
+
+Teste `supabase/tests/5a_retorno_ponta_a_ponta.sql`, rodado na homologação em transação desfeita. Usa as mesmas chamadas das telas, cada uma com o papel de quem a usa:
+- **Na UBS:** a recepção abre a ficha; o médico atende e envia à UPA.
+- **Na UPA:** a recepção vê "Vindo da UBS", abre a ficha e marca a chegada; o médico atende e dá alta com a orientação à UBS.
+- **De volta à UBS:**
+  - "Encaminhados" mostra que o paciente chegou;
+  - o médico e o enfermeiro recebem o aviso;
+  - a aba Retornos lista um só retorno, porque o envio e o CNS apontam para a mesma UBS;
+  - o enfermeiro abre o resumo e a orientação, e o retorno fica "visto";
+  - o gestor configura a grade e a recepção agenda o retorno do paciente.
+
+Os testes vizinhos passam de novo na homologação: `5a_encaminhamento_upa`, `5a_contrarreferencia` e `5a_consulta_ubs_ponta_a_ponta`.
+
+`portao2_desfecho_data` falha com "O setor não pertence à unidade do plantão.". A falha é anterior a esta tarefa: com o gatilho da contrarreferência desligado, o erro é o mesmo. O teste depende das unidades semente fixas (`21000000-…`), que a homologação não tem.
+
+## Tarefa 6 concluída (03/11/2026)
+
+- 6.1, banco: PR #426, produção em 03/11/2026.
+- 6.2, telas: PR #427.
+- 6.3, ponta a ponta: este PR.
+
+**Ainda não feito:**
+- as telas com login na homologação, que fica atrás do login da Vercel;
+- o envio à RNDS, que espera a credencial.
