@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { etapasDoEnvio, linkRegulacaoDaConsulta, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
+import { etapasDoEnvio, linkRegulacaoDaConsulta, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
 // 5A, tarefa 5 (decisões H1 a H5 e opção C da tela "Encaminhados", RT em
@@ -71,4 +71,19 @@ test('H1/H3: a conduta, a escuta vermelha, a recepção da UPA e a janela levam 
   const notif = readFileSync('src/pages/Notificacoes.tsx', 'utf8')
   assert.match(notif, /if \(tipo\.startsWith\('ubs_upa_'\)\) return 'Encaminhamento'/)
   assert.match(migration, /p_tipo \|\| '_' \|\| x\.numero/)
+})
+
+test('H4: a folha SMS003a leva o número e o destino da regulação em andamento da unidade', () => {
+  const r = (numero: number, status: string, criada_em: string, outra_unidade = false, destino: string | null = 'Hospital Teste') =>
+    ({ numero, status, criada_em, outra_unidade, destino })
+  assert.equal(regulacaoDaFolha([]), null)
+  assert.equal(regulacaoDaFolha([r(1, 'rascunho', '2026-11-03'), r(2, 'realizada', '2026-11-02'), r(3, 'cancelada', '2026-11-01')]), null)
+  assert.equal(regulacaoDaFolha([r(4, 'autorizada', '2026-11-03', true)]), null)
+  assert.deepEqual(regulacaoDaFolha([r(5, 'enviada', '2026-11-01'), r(6, 'autorizada', '2026-11-03', false, null), r(7, 'negada', '2026-11-04')]),
+    { numero: '6', destino: '', status: 'autorizada' })
+  const folha = readFileSync('src/components/encaminhamento/EncaminhamentoSms003a.tsx', 'utf8').replace(/\r/g, '')
+  // o que se digita vale por cima; a sugestão não entra no rascunho (TEXTOS lê só o formulário)
+  assert.match(folha, /const numReg = f\.numReg\.trim\(\) \|\| daRegulacao\?\.numero \|\| ''/)
+  assert.match(folha, /const destino = f\.destino\.trim\(\) \|\| daRegulacao\?\.destino \|\| ''/)
+  assert.match(folha, / {6}destino,\n {6}destinoNaRede,\n {6}numReg,\n/)
 })
