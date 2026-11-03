@@ -332,3 +332,19 @@ Com as recomendações:
 ## 11. Demonstração comercial
 
 A mesma secretaria acompanha a UPA e a UBS no mesmo prontuário. Por exemplo, o paciente atendido na UBS de manhã chega à UPA à noite com o SOAP, os problemas e as condutas da consulta já à vista. A UBS registra no padrão da ficha do e-SUS APS desde o primeiro dia, e isso prepara o envio ao SISAB sem redigitar.
+
+## Fechamento da tarefa 2 (02/11/2026)
+
+| Critério de aceite | Evidência |
+|---|---|
+| UBS registra atendimento básico | `5a_consulta_ubs_ponta_a_ponta.sql` (ficha, fila, chamada, janela, SOAP, conduta, saídas, evasão), rodado na homologação; `5a_atendimento_ubs.sql` |
+| Evolução, CID/CIAP, conduta e encaminhamento | SOAP mais problema/condição com CID-10 e conduta da ficha do e-SUS APS; encaminhamento interno e SMS003a na aba Encaminhar. A CIAP-2 fica para a tarefa 4 |
+| Escuta inicial (D3) | `5a_escuta_inicial.sql`; tela com a classificação do CAB 28 |
+| A porta não muda | testes de banco e de tela da porta passando na CI; UPA conferida na página de teste |
+
+PRs: #412 (2.1), #413 (2.2), #414 (2.3), #415 e #416 (2.4). Migrations na produção com o ok do RT: `20270211000001`, `20270211000002`, `20270212000001` e `20270213000001`.
+
+**Fica para depois:**
+- a consulta com login na tela da homologação, que fica atrás do login da Vercel;
+- o envio ao SISAB pelo e-SUS APS, fora desta tarefa;
+- a CIAP-2, que é a tarefa 4.
