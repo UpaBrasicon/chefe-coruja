@@ -58,10 +58,10 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
           return (
             <span key={chave(p)} className="inline-flex max-w-full items-center gap-1 rounded-controle border border-acao/30 bg-acao/10 py-1 pr-1 pl-2.5 text-apoio font-medium text-acao">
               <span className="truncate">{rotulo}</span>
-              <button type="button" aria-label={`Tirar ${rotulo}`} onClick={() => onTirar(p)}
-                className="grid size-6 shrink-0 place-items-center rounded-[5px] hover:bg-acao/15">
+              <Button size="icon-xs" variant="ghost" aria-label={`Tirar ${rotulo}`} onClick={() => onTirar(p)}
+                className="shrink-0 text-acao hover:bg-acao/15 hover:text-acao">
                 <X className="size-3.5" aria-hidden />
-              </button>
+              </Button>
             </span>
           )
         })}
