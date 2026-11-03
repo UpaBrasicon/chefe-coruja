@@ -68,3 +68,5 @@ Migration `20270215000001_ciap2.sql` (gerada da página do LEDI por um script, c
 - migration aplicada duas vezes (idempotente) e versão registrada;
 - `5a_ciap2.sql` passa; `5a_atendimento_ubs`, `5a_consulta_ubs_ponta_a_ponta`, `5a_escuta_inicial` e `5a_agenda` seguem passando;
 - rollback: a busca volta ao md5 de antes (39729d9d…) e a conduta ao de 6 parâmetros (eb104c86…, o da produção); o teste falha; reaplicada, o retrato fica igual ao de depois (busca 077c596b…, conduta cd9b711d…).
+
+**Produção (03/11/2026, ok do RT):** migration `20270215000001` aplicada por `producao:push`. Versão registrada; retrato igual ao da homologação: 686 códigos, busca 077c596b…, conduta de 7 parâmetros cd9b711d…, mesmos grants, coluna presente, leitura da tabela pelo `authenticated`.
