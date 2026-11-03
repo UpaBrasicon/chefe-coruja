@@ -52,7 +52,7 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
 
   return (
     <div className="relative">
-      <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-controle border border-fio bg-campo px-2 py-1.5 transition-[border-color] focus-within:border-acao">
+      <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-controle border border-fio bg-campo px-2 py-1.5 transition-[border-color,box-shadow] focus-within:border-acao focus-within:shadow-anel-campo">
         {escolhidos.map((p) => {
           const rotulo = 'lista' in p ? rotuloProblemaAps(p.lista) : `${p.cid} · ${p.descricao}`
           return (
@@ -67,7 +67,7 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
         })}
         <input id="conduta-problema" role="combobox" aria-expanded={aberta} aria-controls="conduta-problema-opcoes" aria-autocomplete="list"
           value={termo} autoComplete="off" spellCheck={false} placeholder={escolhidos.length ? 'Mais um…' : 'Digite o problema ou a CID-10'}
-          className="min-w-40 flex-1 bg-transparent px-1 py-1 text-corpo text-tinta outline-none placeholder:text-tinta-sussurro md:text-controle"
+          className="min-w-40 flex-1 bg-transparent px-1 py-1 text-corpo text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:shadow-none md:text-controle"
           onFocus={() => setFoco(true)} onBlur={() => window.setTimeout(() => setFoco(false), 150)}
           onChange={(e) => setTermo(e.target.value)}
           onKeyDown={(e) => {
