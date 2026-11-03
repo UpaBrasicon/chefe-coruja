@@ -4,7 +4,7 @@ Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P1**. Começada em 03/11/20
 
 O aceite do backlog é: "Atendimento UBS aceita CIAP-2". As subtarefas são importar a terminologia, criar a busca e vincular ao atendimento.
 
-Este documento é o diagnóstico. As decisões G1 a G4 são do RT; a implementação só começa depois delas.
+Este documento é o diagnóstico. **Decisões do RT em 03/11/2026: A em G1 a G4** ("Sim, todas A").
 
 ## Fonte
 
@@ -25,7 +25,7 @@ A Ficha de Atendimento Individual (Manual do CDS 2.1, p. 62 a 65) pede, em "Prob
   - Os dados grandes entram por arquivo à parte (`supabase/homolog/partes`); a CIAP-2, com 686 linhas, cabe numa migration.
 - **No atendimento da UBS**, a aba Conduta já aceita o problema/condição pela lista da ficha e pela CID-10 (`episodios.problemas_aps` e `cid_aps`, em `registrar_conduta_aps`). Falta a CIAP-2.
 
-## 2. Decisões do RT (G1 a G4)
+## 2. Decisões do RT (G1 a G4): todas A em 03/11/2026
 
 | # | Pergunta | Opções | Recomendação |
 |---|---|---|---|
@@ -51,3 +51,20 @@ Duas partes, cada uma com o próprio PR:
 **Riscos:**
 - a tabela do MS pode mudar de versão: o teste confere a contagem e alguns códigos, e a migration diz de qual versão veio;
 - a relação com a CID-10 é só referência e não entra sozinha (G3).
+
+## Parte 4.1, banco (03/11/2026)
+
+Migration `20270215000001_ciap2.sql` (gerada da página do LEDI por um script, com os 686 códigos); teste `supabase/tests/5a_ciap2.sql`.
+
+- **`terminologia.ciap2`:** código, descrição, capítulo e CID-10 relacionada, esta no formato da CID do app, com ponto (R688 vira R68.8). Busca por `terminologia_buscar('ciap2', ...)`, por nome e por código; o `extra` traz o capítulo e a CID relacionada.
+- **`episodios.ciap_aps`** (anulável).
+- **`registrar_conduta_aps`:** ganha `p_ciaps` opcional no fim.
+  - A CIAP-2, conferida na tabela e sem repetir, conta como problema/condição avaliada.
+  - A versão de 6 parâmetros sai na mesma transação, e não há duas funções com o mesmo nome. Os grants continuam os mesmos.
+  - Quem chama sem a CIAP-2 continua igual.
+- **Também corrigido:** o teste `5a_agenda.sql` dependia da hora em que rodava. Depois da meia-noite, "agora menos 1 hora" caía no dia anterior. Agora usa o meio-dia e as 00:00 de hoje.
+
+**Homologação (03/11/2026):**
+- migration aplicada duas vezes (idempotente) e versão registrada;
+- `5a_ciap2.sql` passa; `5a_atendimento_ubs`, `5a_consulta_ubs_ponta_a_ponta`, `5a_escuta_inicial` e `5a_agenda` seguem passando;
+- rollback: a busca volta ao md5 de antes (39729d9d…) e a conduta ao de 6 parâmetros (eb104c86…, o da produção); o teste falha; reaplicada, o retrato fica igual ao de depois (busca 077c596b…, conduta cd9b711d…).

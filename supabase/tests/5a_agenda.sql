@@ -184,10 +184,12 @@ SELECT pg_temp.ok((SELECT jsonb_array_length(e -> 'horarios') = 23
 RESET ROLE;
 CREATE TEMP TABLE hj ON COMMIT DROP AS
 SELECT gen_random_uuid() AS id, n, p, i, s
-  FROM (VALUES ('hoje1', 'p1', date_trunc('minute', now()), 'agendado'),
-               ('hoje2', 'p2', date_trunc('minute', now()) + interval '1 minute', 'agendado'),
-               ('hoje3', 'p3', date_trunc('minute', now()) + interval '2 minutes', 'agendado'),
-               ('passado', 'p4', date_trunc('minute', now()) - interval '1 hour', 'agendado'),
+  -- independente da hora em que o teste roda: chegada ao meio-dia de hoje;
+  -- falta às 00:00 de hoje (já passou e é o mesmo dia)
+  FROM (VALUES ('hoje1', 'p1', pg_temp.h(0, '12:00'), 'agendado'),
+               ('hoje2', 'p2', pg_temp.h(0, '12:20'), 'agendado'),
+               ('hoje3', 'p3', pg_temp.h(0, '12:40'), 'agendado'),
+               ('passado', 'p4', pg_temp.h(0, '00:00'), 'agendado'),
                ('ontem', 'p4', now() - interval '1 day', 'nao_compareceu')) v(n, p, i, s);
 INSERT INTO public.agendamentos (id, unidade_id, perfil_id, tipo, paciente_id, tipo_atendimento_aps, inicio, fim, marcado_por, situacao)
 SELECT id, pg_temp.id('ubs'), pg_temp.id('med'), 'consulta', pg_temp.id(p), 'consulta_agendada', i, i + interval '20 minutes', pg_temp.id('ges'), s

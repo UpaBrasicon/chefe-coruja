@@ -3639,6 +3639,7 @@ export type Database = {
           atendimento_iniciado_em: string | null
           atendimento_medico_id: string | null
           chegada_em: string
+          ciap_aps: string[] | null
           cid_aps: string[] | null
           classificado_em: string | null
           conduta_aps: string[] | null
@@ -3672,6 +3673,7 @@ export type Database = {
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
+          ciap_aps?: string[] | null
           cid_aps?: string[] | null
           classificado_em?: string | null
           conduta_aps?: string[] | null
@@ -3705,6 +3707,7 @@ export type Database = {
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
+          ciap_aps?: string[] | null
           cid_aps?: string[] | null
           classificado_em?: string | null
           conduta_aps?: string[] | null
@@ -12700,6 +12703,7 @@ export type Database = {
       }
       registrar_conduta_aps: {
         Args: {
+          p_ciaps?: string[]
           p_cids: string[]
           p_condutas: string[]
           p_episodio: string
