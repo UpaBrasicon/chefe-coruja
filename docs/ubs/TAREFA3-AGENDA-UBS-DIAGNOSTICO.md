@@ -105,3 +105,42 @@ Migration `20270214000001_agenda_ubs.sql`; teste `supabase/tests/5a_agenda.sql`.
 **Produção (02/11/2026, ok do RT):** migration `20270214000001` aplicada por `producao:push`. Versão registrada; retrato igual ao da homologação: 3 tabelas, 18 funções com md5 e1a71b87…, coluna, gatilho, `registrar_ficha` sem mudança e sem acesso direto do `authenticated`.
 
 **Tela: o RT escolheu a opção B** (lista do dia e marcação por horários livres; ref. Cal.com, escolha de horário), entre A (dia em colunas por profissional, ref. GlossGenius) e C (semana de um profissional com painel, ref. Mangomint). Vem na parte 3.2.
+
+## Parte 3.2, telas (02/11/2026)
+
+Sem migration. Opção B do RT.
+
+- **Menu:** "Agenda de consultas" (`/agenda-consultas`) só na UBS, para a recepção, a enfermagem (enfermeiro e técnico), o médico e o gestor (F2). O `/agenda` continua sendo a escala de plantões.
+- **Dia** (`AgendaConsultas.tsx`):
+  - lista do dia em ordem de horário, com filtros (todos, agendados, presentes, faltas);
+  - em cada linha, a situação e as ações que valem naquela hora:
+    - "Chegou", no dia: escolhe o consultório e o motivo e abre a ficha ligada ao agendamento;
+    - "Falta", depois do horário;
+    - "Desfazer falta", só no dia;
+    - "Cancelar", antes do horário, com motivo opcional;
+  - aviso quando o horário marcado está fora da escala do profissional (F1);
+  - aviso quando a agenda do profissional está fechada no dia.
+- **Painel de marcar:**
+  - consulta (paciente, profissional, calendário com os dias da grade, horários livres, consulta agendada ou cuidado continuado, observação) ou reserva (motivo);
+  - horário fora da escala aparece marcado com o aviso.
+- **Configuração** (aba só do gestor, `ConfiguracaoAgenda.tsx`):
+  - grade por profissional (dia × manhã/tarde/noite, início, fim e duração), com "copiar a segunda para terça a sexta";
+  - fechamentos, com reabrir.
+- As regras da tela estão em `src/domain/agenda.ts` e repetem as do servidor.
+
+**Conferência (02/11/2026):**
+- `src/lib/agendaUbs.test.ts`:
+  - motivos iguais aos do banco;
+  - ações por situação e horário;
+  - lista e horários livres;
+  - menu só na UBS;
+- `src/lib` (254), testes clínicos (1105), tipos, lint e padrão do frontend passando.
+- Página de teste com dados fictícios:
+  - lista do dia com as ações certas;
+  - marcação enviando `agenda_marcar` com 09:00 de Brasília = 12:00 UTC;
+  - ocupado fora dos livres e fora da escala com "*" e o aviso;
+  - gestor salvando a grade (`agenda_definir_configuracao`) e fechando (`agenda_fechar`);
+  - sem rolagem lateral no celular.
+- Falta a agenda com login na homologação, que fica atrás do login da Vercel.
+
+**Limite:** marca-se só paciente já cadastrado. O cadastro novo continua na "Nova ficha" da recepção.
