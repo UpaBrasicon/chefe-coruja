@@ -6,8 +6,9 @@
 // aparecem antes de enviar; o servidor (registrar_conduta_aps) confere de novo.
 // Nada aqui sugere problema, CID ou conduta.
 import { useMutation } from '@tanstack/react-query'
-import { Check, CircleAlert, ClipboardCheck, UserX, X } from 'lucide-react'
+import { CalendarPlus, Check, CircleAlert, ClipboardCheck, UserX, X } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
 import { Chip } from '@/components/monitor/Pagina'
@@ -16,6 +17,7 @@ import { CaixaMarcar } from '@/components/ui/caixa-marcar'
 import { Label } from '@/components/ui/label'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Textarea } from '@/components/ui/textarea'
+import { linkMarcarNaAgenda } from '@/domain/agenda'
 import { CONDUTAS_APS, PROBLEMAS_APS, TIPOS_ATENDIMENTO_APS, rotuloProblemaAps } from '@/domain/aps'
 import { useTerminologia } from '@/hooks/useTerminologia'
 import type { MotivoEvasao } from '@/lib/evasao'
@@ -90,8 +92,8 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
   )
 }
 
-export function AbaConduta({ episodioId, nome, tipoInicial, registros, soap, onIrPara, onConfirmado }: {
-  episodioId: string; nome: string; tipoInicial: string | null | undefined
+export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registros, soap, onIrPara, onConfirmado }: {
+  episodioId: string; pacienteId: string; nome: string; tipoInicial: string | null | undefined
   registros: RegistroSoap[]; soap: Soap
   /** leva a outra aba da janela (Atendimento, Encaminhar) */
   onIrPara: (aba: 'atend' | 'enc') => void
@@ -111,6 +113,9 @@ export function AbaConduta({ episodioId, nome, tipoInicial, registros, soap, onI
   ]
   const tudoOk = regras.every((r) => r.ok)
   const encaminha = condutas.some((c) => c === 'encaminhamento_interno' || c === 'encaminhamento_especializado')
+  // F6 da tarefa 3: o retorno pode ser marcado direto na agenda (a conduta vale sem a marcação)
+  const retorno = condutas.includes('retorno_cuidado_continuado') ? 'consulta_programada'
+    : condutas.includes('retorno_consulta_agendada') ? 'consulta_agendada' : null
 
   const encerrar = useMutation({
     mutationFn: async () => {
@@ -173,6 +178,14 @@ export function AbaConduta({ episodioId, nome, tipoInicial, registros, soap, onI
           <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
             <span className="flex-1">O encaminhamento (interno, ou para outra unidade no SMS003a) se faz na aba Encaminhar.</span>
             <Button size="xs" variant="outline" onClick={() => onIrPara('enc')}>Abrir Encaminhar</Button>
+          </div>
+        )}
+        {retorno && (
+          <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
+            <span className="flex-1">O retorno pode ser marcado agora na agenda (abre em outra aba; esta consulta continua aberta).</span>
+            <Button size="xs" variant="outline" render={<Link to={linkMarcarNaAgenda(pacienteId, episodioId, retorno)} target="_blank" rel="noopener" />}>
+              <CalendarPlus /> Marcar na agenda
+            </Button>
           </div>
         )}
       </fieldset>
