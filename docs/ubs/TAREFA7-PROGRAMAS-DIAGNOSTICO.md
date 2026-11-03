@@ -115,3 +115,22 @@ Três partes, cada uma com o próprio PR:
 - MS/SAPS. Nota Metodológica C4 - Cuidado da pessoa com diabetes. 2026. [Link](https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/fichas-tecnicas/equipe-de-atencao-primaria-e-saude-da-familia/nota-metodologica-c4-cuidado-da-pessoa-com-diabetes/view)
 - MS/SAPS. Nota Metodológica C3 - Cuidado na gestação e puerpério. 2026. [Link](https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/fichas-tecnicas/equipe-de-atencao-primaria-e-saude-da-familia/nota-metodologica-c3-cuidado-na-gestacao-e-puerperio/view)
 - MS/SAPS. Nota Metodológica C2 - Cuidado no desenvolvimento infantil. 2026. [Link](https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/fichas-tecnicas/equipe-de-atencao-primaria-e-saude-da-familia/nota-metodologica-c2-cuidado-no-desenvolvimento-infantil/view)
+
+## Parte 7.1, banco (03/11/2026)
+
+Migration `20270218000001_hiperdia.sql`; teste `supabase/tests/5a_hiperdia.sql`.
+
+- **`programa_participantes`:** o paciente da UBS no programa (hipertensão ou diabetes), com a origem (consulta ou manual), a entrada e a saída com motivo. Um ativo por paciente e programa.
+- **Entrada pela consulta (J2):** gatilho na consulta da UBS que encerra. Inclui pelo problema "hipertensão arterial" ou "diabetes", ou pelo código elegível da nota:
+  - hipertensão (C5): CIAP-2 K86 e K87; CID-10 I10 a I13, I15, O10 e O11;
+  - diabetes (C4): CIAP-2 T89 e T90; CID-10 E10, E11 e E14.
+  Um erro aqui vira aviso no log e nunca trava a consulta.
+- **`programa_incluir` e `programa_retirar`:** feitos pelo médico ou pelo enfermeiro da UBS. A saída pede motivo.
+- **Avaliação dos pés (J4):** `avaliacoes_pes` e `registrar_avaliacao_pes`, na consulta aberta da UBS, pelo médico ou enfermeiro de plantão no consultório. O resultado é sem ou com alteração; com alteração, a descrição é obrigatória.
+- **`hiperdia_painel` e `hiperdia_do_paciente` (J3, J5):** por paciente, os programas e as datas da última consulta (com conduta), da última pressão, do último peso com altura no mesmo dia, da última hemoglobina glicada (pedida pela SIGTAP 02.02.01.050-3 ou pelo nome, ou com resultado) e da última avaliação dos pés, e a próxima consulta marcada. Só para médico, enfermagem (enfermeiro e técnico) e gestor. A regra de "em dia" e dos pontos fica na tela (`src/domain/hiperdia.ts`), com a nota.
+
+**Homologação (03/11/2026):**
+- migration aplicada duas vezes (idempotente) e versão registrada;
+- `5a_hiperdia.sql` passa: entrada pelo problema, pelo CID e pela CIAP; sem duplicar; inclusão e saída à mão; pés; painel e acesso;
+- rollback: as 2 tabelas, as 9 funções e o gatilho saem, e o teste falha; reaplicada, o retrato fica igual (md5 das funções c809de14…);
+- os testes vizinhos `5a_consulta_ubs_ponta_a_ponta` e `5a_contrarreferencia` passam.

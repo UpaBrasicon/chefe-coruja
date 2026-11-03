@@ -9912,6 +9912,11 @@ export type Database = {
       encaminhamentos_upa_origem: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
       encaminhar_upa: { Args: { p_destino: string; p_episodio: string; p_motivo: string }; Returns: string }
       contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
+      hiperdia_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      hiperdia_painel: { Args: { p_unidade: string }; Returns: Json }
+      programa_incluir: { Args: { p_paciente: string; p_programa: string }; Returns: string }
+      programa_retirar: { Args: { p_motivo: string; p_participante: string }; Returns: undefined }
+      registrar_avaliacao_pes: { Args: { p_episodio: string; p_observacao?: string; p_resultado: string }; Returns: string }
       contrarreferencias_da_unidade: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
       contrarreferencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       agenda_cancelar: { Args: { p_agendamento: string; p_motivo?: string }; Returns: undefined }
