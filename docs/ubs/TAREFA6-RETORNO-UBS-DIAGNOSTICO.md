@@ -64,3 +64,31 @@ Três partes, cada uma com o próprio PR:
 - **Paciente com cadastro em mais de uma UBS:** todas recebem. É raro e não esconde nada de quem cuida.
 - **Ligação pelo CNS ou CPF:** só com dígito válido, a mesma regra da regulação. Sem CNS nem CPF, só o paciente enviado pela UBS gera retorno.
 - **Produção:** nenhuma UBS em uso e a UPA Centro sem equipe. O gatilho não acha UBS e não gera nada, então nada muda para quem usa hoje.
+
+## Parte 6.1, banco (03/11/2026)
+
+Migration `20270217000001_contrarreferencia_ubs.sql`; teste `supabase/tests/5a_contrarreferencia.sql`.
+
+- **`contrarreferencias`:**
+  - origem: UPA, hospital ou clínica da rede, com o episódio ou a internação;
+  - destino: a UBS e o cadastro do paciente nela;
+  - ligação com o envio à UPA, quando houver;
+  - desfecho, saída, resumo, orientação à UBS e situação (a ver, visto ou cancelada);
+  - RLS, com acesso só pelas RPCs.
+- **Quem recebe (I1):** a UBS que enviou o paciente à UPA (o envio que chegou e está ligado à ficha da UPA) e toda UBS da mesma organização com cadastro do paciente pelo CNS ou CPF válido, ou cadastro unificado. É a regra da regulação. A UBS de outra organização não recebe.
+- **Quando (I5):**
+  - gatilho no episódio que encerra com alta, alta após medicação, alta a pedido, transferência, evasão ou óbito;
+  - gatilho na alta da internação, em todas as saídas;
+  - a alta desfeita cancela o retorno;
+  - o fim da consulta na própria UBS não gera.
+- **Sem mudança em `registrar_desfecho` e `dar_alta` (I3):** a orientação à UBS vai nos detalhes (`orientacao_ubs`). Um erro na contrarreferência vira aviso no log e nunca trava a alta.
+- **Resumo (I2):** unidade, entrada e saída, desfecho, CID de alta com a descrição, relato, destino da transferência, médico, último registro (avaliação e plano), documentos emitidos (tipo e hora) e, na internação, o retorno do pacote de alta.
+- **Avisos e leitura (I4):**
+  - o médico, o enfermeiro e o gestor da UBS recebem o aviso `ubs_retorno_<número>`;
+  - `contrarreferencias_da_unidade` e `contrarreferencias_do_paciente` mostram a todos da UBS que o paciente voltou, sem o resumo;
+  - `contrarreferencia_abrir` é só do médico, do enfermeiro e do gestor: registra o acesso no prontuário da unidade de origem e marca "visto".
+
+**Homologação (03/11/2026):**
+- migration aplicada duas vezes (idempotente) e versão registrada;
+- `5a_contrarreferencia.sql` passa, com o envio, a evasão pelo CNS, a outra rede, a consulta da UBS, a alta e a alta desfeita da internação, os avisos, a lista, a leitura e o acesso;
+- rollback: a tabela, as 11 funções e os 2 gatilhos saem, e o teste falha; reaplicada, o retrato fica igual (md5 das funções 98f63658…).
