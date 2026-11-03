@@ -122,6 +122,8 @@ Migration `20270212000001_consultorio_fila_salas.sql`; teste `supabase/tests/5a_
 - telas conferidas numa página de teste com dados fictícios (fila, saídas, ficha com o tipo obrigatório, fila da recepção);
 - `src/lib` (241), testes clínicos (1105), tipos e lint passando.
 
+**Produção (02/11/2026, ok do RT):** migration `20270212000001` aplicada por `producao:push`. Versão registrada; md5 das funções igual ao da homologação (`acompanha_porta` d6b69d6e…, `porta_nova_ganha_salas` 12a68ff0…), mesmo dono e grants. A produção ainda não tem consultório, então o preenchimento das salas não criou nenhuma.
+
 ## 2. Subtarefas técnicas
 
 Com as recomendações:
