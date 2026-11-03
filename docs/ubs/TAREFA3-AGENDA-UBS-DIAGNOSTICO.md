@@ -101,3 +101,7 @@ Migration `20270214000001_agenda_ubs.sql`; teste `supabase/tests/5a_agenda.sql`.
 - `5a_agenda.sql` passa: 10 blocos, com a chegada, a conduta, a evasão, a ficha por engano e a falta no próprio dia;
 - `5a_atendimento_ubs`, `5a_consultorio_fila`, `5a_consulta_ubs_ponta_a_ponta` e `5a_escuta_inicial` seguem passando com ela;
 - rollback: as tabelas, a coluna, o gatilho e as 18 funções saem; o teste falha; reaplicada, o retrato fica igual ao de depois (md5 das funções e1a71b87…).
+
+**Produção (02/11/2026, ok do RT):** migration `20270214000001` aplicada por `producao:push`. Versão registrada; retrato igual ao da homologação: 3 tabelas, 18 funções com md5 e1a71b87…, coluna, gatilho, `registrar_ficha` sem mudança e sem acesso direto do `authenticated`.
+
+**Tela: o RT escolheu a opção B** (lista do dia e marcação por horários livres; ref. Cal.com, escolha de horário), entre A (dia em colunas por profissional, ref. GlossGenius) e C (semana de um profissional com painel, ref. Mangomint). Vem na parte 3.2.
