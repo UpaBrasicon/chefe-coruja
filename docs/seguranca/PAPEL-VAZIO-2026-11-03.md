@@ -31,3 +31,5 @@ O teste `supabase/tests/papel_vazio_sem_acesso.sql` verifica três coisas:
 ## Lição
 
 O padrão veio de `documentos_porta` (05/10) e foi copiado depois, inclusive nas tarefas 3, 5 e 6 da 5A. Para liberar pelo vínculo, use `coalesce(private.papel_na_unidade(x), '') <> ''` ou `private.tenho_papel(x, papel) IS TRUE`. O teste do CI barra o padrão antigo.
+
+**Produção (03/11/2026, ok do RT):** migration aplicada por `producao:push`. Antes, o retrato era igual ao da homologação: 9 funções com o padrão errado, mesmo md5 e mesmos grants. Depois, nenhuma função com o padrão errado, md5 0e57f444…, grants iguais e versão registrada.
