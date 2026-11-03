@@ -96,6 +96,34 @@ Migrations `20270211000001_tipo_setor_consultorio.sql` e `20270211000002_atendim
 
 **Produção (02/11/2026, ok do RT):** as duas migrations aplicadas por `producao:push`. Versões registradas; md5 das funções (`registrar_ficha` b466e655…, `registrar_desfecho` 4b0de6a8…, `bpa_i_linhas` 42636c5e…, `registrar_conduta_aps` eb104c86…, `lista_aps` 8f05aa7f…), grants, dono, colunas, CHECKs e enum iguais aos da homologação.
 
+## Telas: escolha do RT (02/11/2026)
+
+Três opções da aba Conduta, montadas a partir de telas do Refero e mostradas ao RT:
+- A, grade de marcação, como a ficha em papel (Yelp, "More Categories", tela f7caf399);
+- B, pílulas que acendem ao toque (Pop Site, seleção do cadastro inicial, tela a4cc8729);
+- C, busca única, com o escolhido em etiquetas e a conduta em caixas de marcar (Intercom, escolha de tags, tela 2ab15aa7).
+
+**O RT escolheu a C.** A busca mostra primeiro a lista da ficha e depois a CID-10. A fila e a recepção seguem o padrão de hoje.
+
+## Parte 2.2, recepção e fila (02/11/2026)
+
+Migration `20270212000001_consultorio_fila_salas.sql`; teste `supabase/tests/5a_consultorio_fila.sql`.
+
+- **Banco:** a fila da recepção (`fila_da_porta`) e as últimas chamadas aceitam o consultório. O consultório novo ganha uma sala com o nome dele (D5, "sala padrão de consultório"); sem ela, o médico não chama o paciente. Os consultórios que já existem ganham a sala que faltava.
+- **Recepção da UBS:** a ficha abre no consultório de plantão e pede o tipo de atendimento. As telas são só "Nova ficha" e "Fila do consultório", sem triagem e sem painel. A fila ordena por prioridade legal e chegada, sem cor nem alvo.
+- **Fila do médico na UBS (tela Atendimento, título "Consultório"):** sem as colunas Cor e Alvo; a espera conta da ficha; a coluna Tipo mostra o tipo de atendimento. As saídas mostram a conduta, a CID-10 e a observação.
+- **Listas da ficha no frontend:** `src/domain/aps.ts`; o teste `src/lib/apsListas.test.ts` confere que são as mesmas do banco.
+- O menu da UBS já começa em Atendimento para o médico (tarefa 1), sem mudança.
+
+**Homologação (02/11/2026):**
+- migration aplicada duas vezes (idempotente) e versão registrada;
+- `5a_consultorio_fila.sql` ok; `5a_atendimento_ubs.sql` segue ok;
+- rollback: as duas funções voltam ao md5 de antes; o teste falha; reaplicado, o retrato fica igual ao de depois;
+- telas conferidas numa página de teste com dados fictícios (fila, saídas, ficha com o tipo obrigatório, fila da recepção);
+- `src/lib` (241), testes clínicos (1105), tipos e lint passando.
+
+**Produção (02/11/2026, ok do RT):** migration `20270212000001` aplicada por `producao:push`. Versão registrada; md5 das funções igual ao da homologação (`acompanha_porta` d6b69d6e…, `porta_nova_ganha_salas` 12a68ff0…), mesmo dono e grants. A produção ainda não tem consultório, então o preenchimento das salas não criou nenhuma.
+
 ## 2. Subtarefas técnicas
 
 Com as recomendações:

@@ -2,6 +2,7 @@ import { Stethoscope } from 'lucide-react'
 import * as React from 'react'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
+import { useUnidade } from '@/contexts/UnidadeContext'
 
 import { FilaPS } from './porta/FilaPS'
 import { JanelaAtendimento } from './porta/JanelaAtendimento'
@@ -13,6 +14,8 @@ import type { EpFila } from './porta/comum'
 // cor ou conduta (ADR 0007). As peças moram em ./porta/.
 
 export default function AtendimentoPorta() {
+  const { unidadeAtiva } = useUnidade()
+  const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
   const [atual, setAtual] = React.useState<EpFila | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
 
@@ -28,7 +31,9 @@ export default function AtendimentoPorta() {
 
   return (
     <>
-      <TituloPagina icone={Stethoscope} titulo="Pronto-Socorro" descricao="Pacientes triados por prioridade · chamar e atender. A cor manda; 80+ e prioridade legal só desempatam dentro da mesma cor." />
+      {ubs
+        ? <TituloPagina icone={Stethoscope} titulo="Consultório" descricao="Pacientes da UBS por ordem de chegada, com a prioridade legal na frente · chamar e atender." />
+        : <TituloPagina icone={Stethoscope} titulo="Pronto-Socorro" descricao="Pacientes triados por prioridade · chamar e atender. A cor manda; 80+ e prioridade legal só desempatam dentro da mesma cor." />}
       <FilaPS aviso={aviso} onAbrir={(e) => { setAviso(null); setAtual(e) }} />
     </>
   )

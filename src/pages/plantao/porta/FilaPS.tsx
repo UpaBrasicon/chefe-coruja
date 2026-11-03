@@ -12,7 +12,8 @@ import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { homonimos } from '@/domain/homonimos'
-import { rotulosPrioridade } from '@/domain/prioridade'
+import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
+import { rotuloCondutaAps, rotuloTipoAps, rotuloTipoApsCurto } from '@/domain/aps'
 import { gravidade, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -34,6 +35,7 @@ import { Estado } from '@/components/porta/Estado'
 type Saida = {
   id: string; cor_atual: CorRisco | null; queixa: string; desfecho: string | null; desfecho_motivo: string | null
   desfecho_detalhes: Record<string, unknown> | null; desfecho_em: string | null; encerrado_em: string | null; desfecho_por: string | null
+  conduta_aps: string[] | null; cid_aps: string[] | null
   paciente: { nome: string; nome_social: string | null; data_nascimento: string | null } | null
 }
 
@@ -116,6 +118,9 @@ const Queixa = ({ texto }: { texto: string }) => (
 
 export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: EpFila) => void }) {
   const { unidadeAtiva } = useUnidade()
+  // 5A, tarefa 2 (D7 do RT em 02/11/2026): na UBS a fila é do consultório, sem
+  // cor nem alvo; prioridade legal e ordem de chegada; a saída é a conduta.
+  const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
   const agora = useAgora()
   const [busca, setBusca] = useSearchParams()
   const aba: Aba = ABAS.some((a) => a.valor === busca.get('fila')) ? (busca.get('fila') as Aba) : 'aguardando'
@@ -147,32 +152,34 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   const alvoDe = (cor: CorRisco) => limites.alvos_medico[cor]
 
   const fila = useQuery({
-    queryKey: ['fila-medica', unidadeAtiva?.unidade_id, meusSetores],
+    queryKey: ['fila-medica', unidadeAtiva?.unidade_id, meusSetores, ubs],
     enabled: meusSetores.length > 0,
     refetchInterval: 20_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome)')
+        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, tipo_atendimento_aps, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome)')
         .in('setor_id', meusSetores)
         .eq('etapa', 'atendimento')
       if (error) throw error
-      return ((data ?? []) as unknown as EpFila[]).sort(ordemMedica)
+      return ((data ?? []) as unknown as EpFila[]).sort(ubs ? ordemTriagem : ordemMedica)
     },
   })
   // finalizados e excluídos do dia (desde 0h de Brasília)
   const saidas = useQuery({
-    queryKey: ['saidas-plantao', unidadeAtiva?.unidade_id, meusSetores],
+    queryKey: ['saidas-plantao', unidadeAtiva?.unidade_id, meusSetores, ubs],
     enabled: meusSetores.length > 0,
     refetchInterval: 60_000,
     queryFn: async () => {
       const desde = new Date(`${hoje()}T00:00:00-03:00`).toISOString()
-      const { data, error } = await supabase
+      let q = supabase
         .from('episodios')
-        .select('id, cor_atual, queixa, desfecho, desfecho_motivo, desfecho_detalhes, desfecho_em, encerrado_em, desfecho_por, paciente:pacientes(nome, nome_social, data_nascimento)')
+        .select('id, cor_atual, queixa, desfecho, desfecho_motivo, desfecho_detalhes, desfecho_em, encerrado_em, desfecho_por, conduta_aps, cid_aps, paciente:pacientes(nome, nome_social, data_nascimento)')
         .in('setor_id', meusSetores)
         .not('etapa', 'in', '(triagem,atendimento)')
-        .not('desfecho', 'is', null)
+      // a consulta da UBS encerra pela conduta, sem desfecho da porta
+      if (!ubs) q = q.not('desfecho', 'is', null)
+      const { data, error } = await q
         .or(`desfecho_em.gte.${desde},encerrado_em.gte.${desde}`)
         .limit(200)
       if (error) throw error
@@ -182,7 +189,9 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
 
   const aguardando = (fila.data ?? []).filter((e) => !e.atendimento_iniciado_em)
   const emAtendimento = (fila.data ?? []).filter((e) => e.atendimento_iniciado_em)
-  const acimaDoAlvo = aguardando.filter((e) => minDesde(e.classificado_em, agora) > alvoDe(e.cor_atual)).length
+  // na UBS a espera conta da ficha (não há classificação) e não há alvo
+  const esperaDesde = (e: EpFila) => (ubs ? e.chegada_em : e.classificado_em)
+  const acimaDoAlvo = ubs ? 0 : aguardando.filter((e) => minDesde(e.classificado_em, agora) > alvoDe(e.cor_atual)).length
   const contagem: Record<Aba, number> = { aguardando: aguardando.length, atendimento: emAtendimento.length, saidas: (saidas.data ?? []).length }
   const iguais = homonimos(fila.data ?? [])
   const setoresDaFila = [...new Set((fila.data ?? []).map((e) => e.setor_id))]
@@ -205,7 +214,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
       {erro && <p className="text-apoio text-critico">{(erro as Error).message}</p>}
       {!carregando && !erro && meusSetores.length === 0 && (
         <p className="rounded-container border border-fio bg-superficie px-5 py-4 text-apoio text-tinta-sussurro">
-          Você não está na escala de nenhuma porta agora: a fila aparece para quem está de plantão.
+          Você não está na escala de {ubs ? 'nenhum consultório' : 'nenhuma porta'} agora: a fila aparece para quem está de plantão.
         </p>
       )}
 
@@ -213,7 +222,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
 
       <Tabs value={aba} onValueChange={(v) => trocarAba(v as Aba)} className="gap-3">
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
-          <TabsList aria-label="Fila do Pronto-Socorro" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
+          <TabsList aria-label={ubs ? 'Fila do consultório' : 'Fila do Pronto-Socorro'} className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
             {ABAS.map((a) => (
               <TabsTrigger key={a.valor} value={a.valor}>
                 {a.rotulo}
@@ -223,38 +232,40 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
           </TabsList>
           {/* o que passou do alvo aparece em qualquer aba: não some ao olhar outra lista */}
           <span className={cn('pb-2.5 text-apoio', acimaDoAlvo ? 'font-medium text-critico' : 'text-tinta-sussurro')}>
-            {acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
+            {ubs ? 'prioridade legal e ordem de chegada' : acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
           </span>
         </div>
 
         <TabsContent value="aguardando">
           <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
             {carregando && <div className="px-5 py-4"><Spinner /></div>}
-            {!carregando && aguardando.length === 0 && <Vazio>Nenhum paciente triado aguardando.</Vazio>}
+            {!carregando && aguardando.length === 0 && <Vazio>{ubs ? 'Ninguém aguardando a consulta.' : 'Nenhum paciente triado aguardando.'}</Vazio>}
             {aguardando.length > 0 && (
               <Table aria-label="Aguardando atendimento">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <Cabeca col="cor" ordem={ordemAg} alternar={alternarAg}>Cor</Cabeca>
+                    {!ubs && <Cabeca col="cor" ordem={ordemAg} alternar={alternarAg}>Cor</Cabeca>}
                     <Cabeca>Paciente</Cabeca>
                     <Cabeca>Queixa</Cabeca>
                     <Cabeca col="espera" ordem={ordemAg} alternar={alternarAg}>Espera</Cabeca>
-                    <Cabeca>Alvo</Cabeca>
+                    <Cabeca>{ubs ? 'Tipo' : 'Alvo'}</Cabeca>
                     <Cabeca>Situação</Cabeca>
                     <Cabeca className="text-right"><span className="sr-only">Ações</span></Cabeca>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ordenar(aguardando, ordemAg, { cor: porCor, espera: (e) => minDesde(e.classificado_em, agora) }).map((e) => {
-                    const acima = minDesde(e.classificado_em, agora) > alvoDe(e.cor_atual)
+                  {ordenar(aguardando, ordemAg, { cor: porCor, espera: (e) => minDesde(esperaDesde(e), agora) }).map((e) => {
+                    const acima = !ubs && minDesde(e.classificado_em, agora) > alvoDe(e.cor_atual)
                     const n = chamadas.data?.get(e.id) ?? 0
                     return (
                       <TableRow key={e.id}>
-                        <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>
+                        {!ubs && <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>}
                         <TableCell><Paciente e={e} iguais={iguais} /></TableCell>
                         <Queixa texto={e.queixa} />
-                        <TableCell className={cn('tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{minutos(e.classificado_em, agora)}</TableCell>
-                        <TableCell className="tabular-nums text-tinta-sussurro">{alvoDe(e.cor_atual)} min</TableCell>
+                        <TableCell className={cn('tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{minutos(esperaDesde(e), agora)}</TableCell>
+                        {ubs
+                          ? <TableCell className="whitespace-nowrap text-tinta-apoio" title={rotuloTipoAps(e.tipo_atendimento_aps)}>{rotuloTipoApsCurto(e.tipo_atendimento_aps) || <Nada />}</TableCell>
+                          : <TableCell className="tabular-nums text-tinta-sussurro">{alvoDe(e.cor_atual)} min</TableCell>}
                         <TableCell>
                           {n === 0 ? <Estado tom="cinza">Aguardando</Estado>
                             : <Estado tom={n >= 3 ? 'vermelho' : 'ambar'}>Chamado {n} {n === 1 ? 'vez' : 'vezes'}</Estado>}
@@ -282,7 +293,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
               <Table aria-label="Em atendimento">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <Cabeca col="cor" ordem={ordemAt} alternar={alternarAt}>Cor</Cabeca>
+                    {!ubs && <Cabeca col="cor" ordem={ordemAt} alternar={alternarAt}>Cor</Cabeca>}
                     <Cabeca>Paciente</Cabeca>
                     <Cabeca>Queixa</Cabeca>
                     <Cabeca col="ha" ordem={ordemAt} alternar={alternarAt}>Há</Cabeca>
@@ -296,7 +307,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     const atrasada = reav && Date.parse(e.reavaliar_em!) < agora
                     return (
                       <TableRow key={e.id}>
-                        <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>
+                        {!ubs && <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>}
                         <TableCell><Paciente e={e} iguais={iguais} /></TableCell>
                         <Queixa texto={e.queixa} />
                         <TableCell className="tabular-nums text-tinta-apoio">{minutos(e.atendimento_iniciado_em, agora)}</TableCell>
@@ -324,11 +335,11 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
               <Table aria-label="Saídas do plantão">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <Cabeca col="cor" ordem={ordemSa} alternar={alternarSa}>Cor</Cabeca>
+                    {!ubs && <Cabeca col="cor" ordem={ordemSa} alternar={alternarSa}>Cor</Cabeca>}
                     <Cabeca>Paciente</Cabeca>
-                    <Cabeca>Desfecho</Cabeca>
+                    <Cabeca>{ubs ? 'Conduta' : 'Desfecho'}</Cabeca>
                     <Cabeca>CID</Cabeca>
-                    <Cabeca>Destino ou motivo</Cabeca>
+                    <Cabeca>{ubs ? 'Observação ou motivo' : 'Destino ou motivo'}</Cabeca>
                     <Cabeca col="hora" ordem={ordemSa} alternar={alternarSa}>Hora</Cabeca>
                   </TableRow>
                 </TableHeader>
@@ -338,17 +349,22 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     const excluido = s.desfecho === 'cancelado' || (s.desfecho === 'evasao' && !s.desfecho_por)
                     const [codigo, ...resto] = (s.desfecho_motivo ?? '').split(': ')
                     const d = s.desfecho_detalhes ?? {}
-                    const destino = excluido ? resto.join(': ') || s.desfecho_motivo : d.destino ? String(d.destino) : ''
+                    const conduta = s.conduta_aps?.length ? s.conduta_aps : null
+                    const destino = excluido ? resto.join(': ') || s.desfecho_motivo
+                      : conduta ? s.desfecho_motivo ?? '' : d.destino ? String(d.destino) : ''
+                    const cid = conduta ? (s.cid_aps ?? []).join(', ') : d.cid_alta ? String(d.cid_alta) : ''
                     return (
                       <TableRow key={s.id}>
-                        <TableCell><PilulaRisco cor={s.cor_atual} /></TableCell>
+                        {!ubs && <TableCell><PilulaRisco cor={s.cor_atual} /></TableCell>}
                         <TableCell><Paciente e={s} /></TableCell>
                         <TableCell>
                           {excluido
                             ? <Estado tom="vermelho">Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Estado>
-                            : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
+                            : conduta
+                              ? <Estado tom="verde">{rotuloCondutaAps(conduta[0])}{conduta.length > 1 ? ` +${conduta.length - 1}` : ''}</Estado>
+                              : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
                         </TableCell>
-                        <TableCell className="tabular-nums text-tinta-apoio">{d.cid_alta ? String(d.cid_alta) : <Nada />}</TableCell>
+                        <TableCell className="tabular-nums text-tinta-apoio">{cid || <Nada />}</TableCell>
                         <TableCell className="max-w-[280px] truncate text-tinta-apoio" title={destino || undefined}>{destino || <Nada />}</TableCell>
                         <TableCell className="tabular-nums text-tinta-apoio">{hora(s.desfecho_em ?? s.encerrado_em)}</TableCell>
                       </TableRow>
