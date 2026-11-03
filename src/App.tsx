@@ -27,6 +27,7 @@ const InternacaoEnfermagem = lazy(() => import('@/pages/enfermagem/InternacaoEnf
 const InicioEnfermagem = lazy(() => import('@/pages/enfermagem/InicioEnfermagem'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
+const AgendaConsultas = lazy(() => import('@/pages/agenda/AgendaConsultas'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
 const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const PacoteAlta = lazy(() => import('@/pages/public/PacoteAlta'))
@@ -322,6 +323,11 @@ export default function App() {
                         <Route path="/triagem" element={<Triagem />} />
                         {/* 5A, tarefa 2, parte 2.4: na UBS, a mesma tela é a escuta inicial do CAB 28 */}
                         <Route path="/escuta" element={<Triagem />} />
+                      </Route>
+
+                      {/* 5A, tarefa 3: agenda de consultas da UBS (F2: marca a recepção, a enfermagem, o médico e o gestor) */}
+                      <Route element={<RequireRole papeis={['recepcao', 'enfermeiro', 'tecnico_enfermagem', 'plantonista', 'gestor']} />}>
+                        <Route path="/agenda-consultas" element={<AgendaConsultas />} />
                       </Route>
 
                       <Route element={<RequireRole papeis={['admin']} />}>

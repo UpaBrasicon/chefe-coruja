@@ -27,7 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
-import { Ear } from 'lucide-react'
+import { CalendarDays, Ear } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -57,6 +57,8 @@ const ITEM_PRONTUARIOS: ItemNav = { to: '/prontuarios', rotulo: 'Prontuários', 
 const ITEM_AVISOS: ItemNav = { to: '/notificacoes', rotulo: 'Avisos', icone: Bell, exato: true, nota: 'avisos' }
 // Aba Escala (E3): a escala de quem não é plantonista, gestor nem administrador
 const ITEM_ESCALA: ItemNav = { to: '/minha-escala', rotulo: 'Escala', icone: CalendarClock, exato: true }
+// 5A, tarefa 3: agenda de consultas da UBS (o /agenda é a escala de plantões)
+const ITEM_AGENDA_CONSULTAS: ItemNav = { to: '/agenda-consultas', rotulo: 'Agenda de consultas', curto: 'Consultas', icone: CalendarDays, exato: true }
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
@@ -64,6 +66,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/plantao', rotulo: 'Plantão', icone: Activity },
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
+    ITEM_AGENDA_CONSULTAS,
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: MonitorSmartphone, exato: true, nota: 'tele' },
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
@@ -75,6 +78,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   gestor: [
     // Parte 4.11 do padrão do frontend (RT "2a 3a"): menu agrupado por área.
     { to: '/gestao', rotulo: 'Painel', icone: LayoutDashboard, exato: true },
+    ITEM_AGENDA_CONSULTAS,
     // ── Porta
     { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true, grupo: 'Porta' },
     { to: '/gestao/intercorrencias', rotulo: 'Intercorrências', curto: 'Intercorr.', icone: Siren, exato: true, grupo: 'Porta' },
@@ -115,6 +119,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     // 5A, tarefa 2, parte 2.4: na UBS a triagem é a escuta inicial do CAB 28
     { to: '/escuta', rotulo: 'Escuta inicial', curto: 'Escuta', icone: Ear, exato: true, nota: 'triagem' },
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
+    ITEM_AGENDA_CONSULTAS,
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
@@ -133,6 +138,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
     // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
     { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
+    ITEM_AGENDA_CONSULTAS,
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
     ITEM_ESCALA,
@@ -141,6 +147,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // contagem das duas filas.
   recepcao: [
     { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true },
+    ITEM_AGENDA_CONSULTAS,
     { to: '/recepcao/fila-triagem', rotulo: 'Fila da triagem', curto: 'Triagem', icone: Hourglass, exato: true, nota: 'triagem' },
     { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica' },
     { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
@@ -234,7 +241,7 @@ const FORA_DA_UBS = new Set([
   '/recepcao/fila-triagem', '/recepcao/painel',
 ])
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
-const SO_NA_UBS = new Set(['/escuta'])
+const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {
