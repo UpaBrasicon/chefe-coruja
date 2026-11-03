@@ -35,7 +35,7 @@ import { Estado } from '@/components/porta/Estado'
 type Saida = {
   id: string; cor_atual: CorRisco | null; queixa: string; desfecho: string | null; desfecho_motivo: string | null
   desfecho_detalhes: Record<string, unknown> | null; desfecho_em: string | null; encerrado_em: string | null; desfecho_por: string | null
-  conduta_aps: string[] | null; cid_aps: string[] | null
+  conduta_aps: string[] | null; cid_aps: string[] | null; ciap_aps?: string[] | null
   paciente: { nome: string; nome_social: string | null; data_nascimento: string | null } | null
 }
 
@@ -175,7 +175,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
       const desde = new Date(`${hoje()}T00:00:00-03:00`).toISOString()
       let q = supabase
         .from('episodios')
-        .select('id, cor_atual, queixa, desfecho, desfecho_motivo, desfecho_detalhes, desfecho_em, encerrado_em, desfecho_por, conduta_aps, cid_aps, paciente:pacientes(nome, nome_social, data_nascimento)')
+        .select('id, cor_atual, queixa, desfecho, desfecho_motivo, desfecho_detalhes, desfecho_em, encerrado_em, desfecho_por, conduta_aps, cid_aps, ciap_aps, paciente:pacientes(nome, nome_social, data_nascimento)')
         .in('setor_id', meusSetores)
         .not('etapa', 'in', '(triagem,atendimento)')
       // a consulta da UBS encerra pela conduta, sem desfecho da porta
@@ -359,7 +359,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     const conduta = s.conduta_aps?.length ? s.conduta_aps : null
                     const destino = excluido ? resto.join(': ') || s.desfecho_motivo
                       : conduta ? s.desfecho_motivo ?? '' : d.destino ? String(d.destino) : ''
-                    const cid = conduta ? (s.cid_aps ?? []).join(', ') : d.cid_alta ? String(d.cid_alta) : ''
+                    const cid = conduta ? [...(s.ciap_aps ?? []), ...(s.cid_aps ?? [])].join(', ') : d.cid_alta ? String(d.cid_alta) : ''
                     return (
                       <TableRow key={s.id}>
                         {!ubs && <TableCell><PilulaRisco cor={s.cor_atual} /></TableCell>}

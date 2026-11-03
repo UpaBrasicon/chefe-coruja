@@ -27,6 +27,7 @@ const ROTULO_TIPO: Record<TipoTerminologia, string> = {
   cbo: 'Ocupação (CBO)',
   medicamento_cmed: 'Medicamento (CMED)',
   loinc: 'Exame (LOINC)',
+  ciap2: 'CIAP-2',
 }
 
 type Props = {

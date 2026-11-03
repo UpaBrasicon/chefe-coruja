@@ -27,11 +27,14 @@ import { cn } from '@/lib/utils'
 import type { RegistroSoap } from './AbaAtendimento'
 import { RELATO, hora, msg, soapVazio, type Soap } from './comum'
 
-/** Problema escolhido: da lista da ficha (código do banco) ou da CID-10. */
-type Problema = { lista: string } | { cid: string; descricao: string }
+/** Problema escolhido: da lista da ficha (código do banco), da CIAP-2 (tarefa 4,
+ *  com a CID-10 relacionada da tabela do e-SUS APS) ou da CID-10. */
+type Problema = { lista: string } | { ciap: string; descricao: string; cidRelacionada: string | null } | { cid: string; descricao: string }
 
 const semAcento = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
-const chave = (p: Problema) => ('lista' in p ? `l:${p.lista}` : `c:${p.cid}`)
+const chave = (p: Problema) => ('lista' in p ? `l:${p.lista}` : 'ciap' in p ? `a:${p.ciap}` : `c:${p.cid}`)
+const rotuloDe = (p: Problema) =>
+  'lista' in p ? rotuloProblemaAps(p.lista) : 'ciap' in p ? `${p.ciap} · ${p.descricao}` : p.descricao ? `${p.cid} · ${p.descricao}` : p.cid
 const GRUPOS_CONDUTA = [...new Set(CONDUTAS_APS.map((c) => c.grupo!))]
 
 function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
@@ -43,20 +46,27 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
   const ja = new Set(escolhidos.map(chave))
   const daLista = t.length < 2 ? [] : PROBLEMAS_APS
     .filter((o) => semAcento(o.rotulo).includes(t) && !ja.has(`l:${o.valor}`))
+  const ciap = useTerminologia('ciap2', foco ? termo : '', 6)
+  const daCiap = termo.trim().length < 2 ? [] : (ciap.data ?? []).filter((r) => !ja.has(`a:${r.codigo.toUpperCase()}`))
   const cid = useTerminologia('cid10', foco ? termo : '', 6)
   const daCid = termo.trim().length < 2 ? [] : (cid.data ?? []).filter((r) => !ja.has(`c:${r.codigo.toUpperCase()}`))
   const opcoes: Problema[] = [
     ...daLista.map((o) => ({ lista: o.valor })),
+    ...daCiap.map((r) => ({ ciap: r.codigo.toUpperCase(), descricao: r.descricao,
+      cidRelacionada: ((r.extra as { cid10?: string | null } | null)?.cid10) ?? null })),
     ...daCid.map((r) => ({ cid: r.codigo.toUpperCase(), descricao: r.descricao })),
   ]
   const aberta = foco && opcoes.length > 0
+  // G3: para cada CIAP escolhida, a CID-10 relacionada que ainda não está na lista
+  const relacionadas = escolhidos.flatMap((p) => ('ciap' in p && p.cidRelacionada && !ja.has(`c:${p.cidRelacionada}`)
+    ? [{ ciap: p.ciap, cid: p.cidRelacionada }] : []))
   const escolher = (p: Problema) => { onAdicionar(p); setTermo('') }
 
   return (
     <div className="relative">
       <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-controle border border-fio bg-campo px-2 py-1.5 transition-[border-color,box-shadow] focus-within:border-acao focus-within:shadow-anel-campo">
         {escolhidos.map((p) => {
-          const rotulo = 'lista' in p ? rotuloProblemaAps(p.lista) : `${p.cid} · ${p.descricao}`
+          const rotulo = rotuloDe(p)
           return (
             <span key={chave(p)} className="inline-flex max-w-full items-center gap-1 rounded-controle border border-acao/30 bg-acao/10 py-1 pr-1 pl-2.5 text-apoio font-medium text-acao">
               <span className="truncate">{rotulo}</span>
@@ -68,7 +78,7 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
           )
         })}
         <input id="conduta-problema" role="combobox" aria-expanded={aberta} aria-controls="conduta-problema-opcoes" aria-autocomplete="list"
-          value={termo} autoComplete="off" spellCheck={false} placeholder={escolhidos.length ? 'Mais um…' : 'Digite o problema ou a CID-10'}
+          value={termo} autoComplete="off" spellCheck={false} placeholder={escolhidos.length ? 'Mais um…' : 'Digite o problema, a CIAP-2 ou a CID-10'}
           className="min-w-40 flex-1 bg-transparent px-1 py-1 text-corpo text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:shadow-none md:text-controle"
           onFocus={() => setFoco(true)} onBlur={() => window.setTimeout(() => setFoco(false), 150)}
           onChange={(e) => setTermo(e.target.value)}
@@ -77,12 +87,24 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
             if (e.key === 'Backspace' && !termo && escolhidos.length) onTirar(escolhidos[escolhidos.length - 1])
           }} />
       </div>
+      {relacionadas.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-rotulo text-tinta-sussurro">
+          <span>CID-10 relacionada (tabela do e-SUS APS, só referência):</span>
+          {relacionadas.map((r) => (
+            <Button key={r.ciap} size="xs" variant="outline" onClick={() => onAdicionar({ cid: r.cid, descricao: '' })}>
+              {r.ciap} → {r.cid}
+            </Button>
+          ))}
+        </div>
+      )}
       {aberta && (
         <div id="conduta-problema-opcoes" role="listbox" className="absolute top-full left-0 z-20 mt-1 max-h-72 w-full max-w-2xl overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
           {opcoes.map((p) => (
             <OpcaoLista key={chave(p)} onClick={() => escolher(p)} className="items-baseline">
               {'lista' in p
                 ? <><span className="text-tinta">{rotuloProblemaAps(p.lista)}</span><span className="text-rotulo text-tinta-sussurro">lista da ficha</span></>
+                : 'ciap' in p
+                ? <><span className="text-tinta"><strong className="tabular-nums">{p.ciap}</strong> · {p.descricao}</span><span className="text-rotulo text-tinta-sussurro">CIAP-2</span></>
                 : <><span className="text-tinta"><strong className="tabular-nums">{p.cid}</strong> · {p.descricao}</span><span className="text-rotulo text-tinta-sussurro">CID-10</span></>}
             </OpcaoLista>
           ))}
@@ -131,6 +153,7 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
         p_tipo: tipo,
         p_problemas: problemas.flatMap((p) => ('lista' in p ? [p.lista] : [])),
         p_cids: problemas.flatMap((p) => ('cid' in p ? [p.cid] : [])),
+        p_ciaps: problemas.flatMap((p) => ('ciap' in p ? [p.ciap] : [])),
         p_condutas: condutas,
         p_obs: obs.trim() || undefined,
       })
@@ -156,7 +179,7 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
         <BuscaProblema escolhidos={problemas}
           onAdicionar={(p) => setProblemas((x) => [...x, p])}
           onTirar={(p) => setProblemas((x) => x.filter((y) => chave(y) !== chave(p)))} />
-        <span className="text-rotulo text-tinta-sussurro">O que foi avaliado e manejado nesta consulta. A busca mostra primeiro a lista da ficha e depois a CID-10.</span>
+        <span className="text-rotulo text-tinta-sussurro">O que foi avaliado e manejado nesta consulta. A busca mostra a lista da ficha, depois a CIAP-2 e depois a CID-10.</span>
       </div>
 
       <fieldset className="flex flex-col gap-3">

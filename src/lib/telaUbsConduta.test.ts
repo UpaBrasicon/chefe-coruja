@@ -42,3 +42,12 @@ test('o SMS003a da UBS não mostra o lembrete da regulação do internado', () =
   assert.match(sms, /avisoRegulacao = !!pacienteFixo/)
   assert.match(sms, /\{pacienteFixo && avisoRegulacao && \(/)
 })
+
+test('5A, tarefa 4: a CIAP-2 entra na busca do problema, com a CID relacionada só como referência', () => {
+  assert.match(conduta, /useTerminologia\('ciap2'/)
+  assert.match(conduta, /p_ciaps: problemas\.flatMap\(\(p\) => \('ciap' in p \? \[p\.ciap\] : \[\]\)\)/)
+  // a CID relacionada não entra sozinha: só pelo botão
+  assert.match(conduta, /onClick=\{\(\) => onAdicionar\(\{ cid: r\.cid, descricao: '' \}\)\}/)
+  const ordem = ['...daLista.map', '...daCiap.map', '...daCid.map'].map((t) => conduta.indexOf(t))
+  assert.ok(ordem.every((i, k) => i > 0 && (k === 0 || i > ordem[k - 1])), 'lista da ficha, CIAP-2, CID-10')
+})

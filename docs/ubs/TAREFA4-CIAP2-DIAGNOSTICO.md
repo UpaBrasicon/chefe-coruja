@@ -70,3 +70,30 @@ Migration `20270215000001_ciap2.sql` (gerada da página do LEDI por um script, c
 - rollback: a busca volta ao md5 de antes (39729d9d…) e a conduta ao de 6 parâmetros (eb104c86…, o da produção); o teste falha; reaplicada, o retrato fica igual ao de depois (busca 077c596b…, conduta cd9b711d…).
 
 **Produção (03/11/2026, ok do RT):** migration `20270215000001` aplicada por `producao:push`. Versão registrada; retrato igual ao da homologação: 686 códigos, busca 077c596b…, conduta de 7 parâmetros cd9b711d…, mesmos grants, coluna presente, leitura da tabela pelo `authenticated`.
+
+## Parte 4.2, tela (03/11/2026)
+
+Sem migration.
+
+- **Aba Conduta:**
+  - a busca única do problema/condição mostra a lista da ficha, depois a CIAP-2 e depois a CID-10;
+  - a CIAP escolhida vira etiqueta ("K86 · HIPERTENSÃO SEM COMPLICAÇÕES"), na descrição oficial em maiúsculas;
+  - o envio leva `p_ciaps`.
+- **G3:** para cada CIAP escolhida, a tela mostra a CID-10 relacionada da tabela do e-SUS APS, como referência, com um botão para acrescentar ("K86 → I10"). Nada entra sozinho.
+- **Saídas do plantão:** a coluna da CID passa a mostrar também a CIAP-2.
+- **Conferência:**
+  - teste de tela em `telaUbsConduta.test.ts` (a ordem lista → CIAP → CID, `p_ciaps` e a CID relacionada só pelo botão);
+  - `src/lib` (256), testes clínicos (1105), tipos, lint e padrão passando;
+  - na página de teste: as opções na ordem certa, a referência e o envio com `p_ciaps: [K86]` e `p_cids: [I10]`.
+
+## Fechamento da tarefa 4 (03/11/2026)
+
+| Critério de aceite | Evidência |
+|---|---|
+| Atendimento UBS aceita CIAP-2 | `supabase/tests/5a_ciap2.sql`, rodado na homologação: tabela, busca, conduta só com a CIAP, código fora da tabela recusado, chamada sem a CIAP igual a antes; tela da Conduta conferida |
+| Importar a terminologia | `terminologia.ciap2` com os 686 códigos do LEDI 8.7.0, na produção |
+| Criar a busca | `terminologia_buscar('ciap2')`, por nome e por código |
+
+PRs: #421 (banco) e o desta parte (tela). Migration na produção com o ok do RT: `20270215000001`.
+
+**Fica para depois:** a CIAP-2 na escuta inicial (G4); a conduta com login na tela da homologação.
