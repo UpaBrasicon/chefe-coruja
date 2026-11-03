@@ -124,6 +124,26 @@ Migration `20270212000001_consultorio_fila_salas.sql`; teste `supabase/tests/5a_
 
 **Produção (02/11/2026, ok do RT):** migration `20270212000001` aplicada por `producao:push`. Versão registrada; md5 das funções igual ao da homologação (`acompanha_porta` d6b69d6e…, `porta_nova_ganha_salas` 12a68ff0…), mesmo dono e grants. A produção ainda não tem consultório, então o preenchimento das salas não criou nenhuma.
 
+## Parte 2.3, janela da consulta e aba Conduta (02/11/2026)
+
+Sem migration: usa `registrar_conduta_aps` e `registrar_desfecho` (evasão) da parte 2.1.
+
+- **Janela da consulta da UBS** (o episódio tem `tipo_atendimento_aps`): a mesma da porta, sem a cor, a aba Reavaliação, a reclassificação, a classificação de risco e os procedimentos do BPA (D6). O cabeçalho diz "Consulta da UBS" e o tipo de atendimento. O rodapé tem "Salvar e fechar" e "Encerrar consulta", sem "Aguardar reavaliação".
+- **Aba Conduta** (opção C), no lugar do Desfecho:
+  - tipo de atendimento, já marcado com o da recepção, que o médico confirma ou corrige;
+  - problema/condição avaliada numa busca só: a lista da ficha primeiro, depois a CID-10 (`terminologia_buscar`); o escolhido fica em etiquetas;
+  - conduta em caixas de marcar, pelos grupos da ficha;
+  - observação opcional;
+  - as regras antes de encerrar (SOAP com Avaliação, tipo, um problema, uma conduta). O rascunho do SOAP vira registro antes, como no Desfecho;
+  - "Saiu sem a consulta": a evasão, com o motivo e o relato, a única saída pelo desfecho da porta.
+- **Encaminhar:** na UBS a aba tem "Dentro da unidade" e "Para outra unidade" (SMS003a), sem o lembrete da regulação, que é do internado. Marcar um encaminhamento na Conduta mostra o atalho para essa aba.
+- Na porta nada muda.
+
+**Conferência (02/11/2026):**
+- testes de tela `src/lib/telaUbsConduta.test.ts`; `src/lib` (245), testes clínicos (1105), tipos e lint passando;
+- página de teste com dados fictícios: abas sem Reavaliação, Procedimentos e Desfecho; busca com a lista e a CID-10; envio de `registrar_conduta_aps` com o tipo, o problema e a conduta; janela fechada com o aviso; SMS003a sem o lembrete; sem rolagem lateral no celular.
+- Falta a consulta inteira numa UBS de teste na homologação, com login (critério de aceite da tarefa).
+
 ## 2. Subtarefas técnicas
 
 Com as recomendações:

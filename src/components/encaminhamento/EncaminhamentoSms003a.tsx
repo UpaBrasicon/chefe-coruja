@@ -102,12 +102,14 @@ function doConteudo(conteudo: string): FormEnc {
 
 const dataBr = (iso: string) => (iso ? iso.split('-').reverse().join('/') : '')
 
-export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }: {
+export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '', avisoRegulacao = !!pacienteFixo }: {
   unidadeId?: string
   perfilId?: string
   /** Dentro do leito: o paciente não troca, e a tela lembra que transferir é regulação. */
   pacienteFixo?: string
   leito?: string
+  /** O lembrete da regulação é do internado; a consulta da UBS (5A) fixa o paciente sem ele. */
+  avisoRegulacao?: boolean
 }) {
   const qc = useQueryClient()
   const [pacienteEscolhido, escolherPaciente] = usePacienteDoDocumento('encaminhamento', unidadeId, perfilId)
@@ -234,7 +236,7 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }
         aoCopiar={(conteudo) => atualizar(doConteudo(conteudo))}
       />
 
-      {pacienteFixo && (
+      {pacienteFixo && avisoRegulacao && (
         <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio">
           <Waypoints className="size-4 shrink-0 text-atencao" aria-hidden />
           <span className="flex-1">

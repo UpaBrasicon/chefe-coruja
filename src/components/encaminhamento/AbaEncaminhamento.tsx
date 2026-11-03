@@ -44,7 +44,7 @@ export function AbaEncaminhamento({ pacienteId, episodioId, internacaoId, leito 
       <div role="tabpanel">
         {opcao === 'dentro'
           ? <AbaEncaminhamentoInterno pacienteId={pacienteId} episodioId={episodioId} internacaoId={internacaoId} />
-          : <Encaminhamento unidadeId={unidadeAtiva?.unidade_id} perfilId={perfil?.id} pacienteFixo={pacienteId} leito={leito} />}
+          : <Encaminhamento unidadeId={unidadeAtiva?.unidade_id} perfilId={perfil?.id} pacienteFixo={pacienteId} leito={leito} avisoRegulacao={!!internacaoId} />}
       </div>
     </div>
   )
