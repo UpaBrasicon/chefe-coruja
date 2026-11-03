@@ -3635,6 +3635,7 @@ export type Database = {
       episodios: {
         Row: {
           aberto_por: string
+          agendamento_id: string | null
           atendimento_iniciado_em: string | null
           atendimento_medico_id: string | null
           chegada_em: string
@@ -3667,6 +3668,7 @@ export type Database = {
         }
         Insert: {
           aberto_por: string
+          agendamento_id?: string | null
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
@@ -3699,6 +3701,7 @@ export type Database = {
         }
         Update: {
           aberto_por?: string
+          agendamento_id?: string | null
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
@@ -9896,6 +9899,37 @@ export type Database = {
       }
     }
     Functions: {
+      agenda_cancelar: { Args: { p_agendamento: string; p_motivo?: string }; Returns: undefined }
+      agenda_configuracao: { Args: { p_unidade: string }; Returns: Json }
+      agenda_definir_configuracao: {
+        Args: { p_horarios: Json; p_perfil: string; p_unidade: string }
+        Returns: undefined
+      }
+      agenda_desfazer_falta: { Args: { p_agendamento: string }; Returns: undefined }
+      agenda_dia: { Args: { p_data: string; p_unidade: string }; Returns: Json }
+      agenda_fechar: {
+        Args: { p_especifique?: string; p_fim: string; p_inicio: string; p_motivo: string; p_perfil: string; p_unidade: string }
+        Returns: string
+      }
+      agenda_marcar: {
+        Args: {
+          p_inicio: string
+          p_observacao?: string
+          p_origem_episodio?: string
+          p_paciente: string
+          p_perfil: string
+          p_tipo_atendimento?: string
+          p_unidade: string
+        }
+        Returns: string
+      }
+      agenda_reabrir: { Args: { p_fechamento: string }; Returns: undefined }
+      agenda_registrar_chegada: { Args: { p_agendamento: string; p_queixa: string; p_setor: string }; Returns: Json }
+      agenda_registrar_falta: { Args: { p_agendamento: string }; Returns: undefined }
+      agenda_reservar: {
+        Args: { p_especifique?: string; p_inicio: string; p_motivo: string; p_perfil: string; p_unidade: string }
+        Returns: string
+      }
       abrir_chamado_tecnico: {
         Args: {
           p_categoria: string

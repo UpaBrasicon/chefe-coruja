@@ -4,7 +4,7 @@ Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P1**. Começada em 02/11/20
 
 O aceite do backlog é: "UBS agenda consulta e atende paciente". As subtarefas são agenda por profissional, horários, marcação, cancelamento e faltas.
 
-Este documento é o diagnóstico. As decisões F1 a F6 são do RT; a implementação só começa depois delas.
+Este documento é o diagnóstico. **Decisões do RT em 02/11/2026: A em F1 a F6** ("Sim pode", à pergunta "todas na recomendação"). A implementação segue as partes 3.1 a 3.3, cada uma com o próprio PR.
 
 ## Fonte
 
@@ -37,7 +37,7 @@ Este documento é o diagnóstico. As decisões F1 a F6 são do RT; a implementa�
 - **O acesso depende da escala.** O médico atende só de plantão no consultório, com check-in (D2 da tarefa 2). A agenda tem de conviver com essa regra.
 - **O nome `/agenda` já está ocupado** pela escala. A agenda de consultas precisa de outro endereço e de outro nome no menu.
 
-## 2. Decisões do RT (F1 a F6)
+## 2. Decisões do RT (F1 a F6): todas A em 02/11/2026
 
 | # | Pergunta | Opções | Recomendação |
 |---|---|---|---|
@@ -72,3 +72,32 @@ Em partes, cada uma com o próprio PR:
 - **A UBS precisa de escala montada** para atender (D2 da tarefa 2). Se a agenda não bater com a escala, o profissional tem paciente marcado e não consegue abrir a consulta; daí o aviso da F1.
 - **Fuso e horário de verão:** os horários ficam em `timestamptz`, mostrados em America/Sao_Paulo, como o resto do app.
 - **Produção:** a UPA Centro não tem equipe, e nenhuma UBS está em uso, então nada muda para quem usa hoje.
+
+## Parte 3.1, banco (02/11/2026)
+
+Migration `20270214000001_agenda_ubs.sql`; teste `supabase/tests/5a_agenda.sql`.
+
+- **Tabelas:** `agenda_configuracoes`, `agenda_fechamentos` e `agendamentos`.
+  - Têm RLS, sem acesso direto: a leitura e a escrita são só pelas RPCs.
+  - `episodios.agendamento_id`, anulável e único.
+- **RPCs** (só na UBS, com segundo fator e auditoria):
+  - `agenda_definir_configuracao` e `agenda_fechar`/`agenda_reabrir`: só o gestor (F2);
+  - `agenda_marcar` (com a origem opcional para o atalho, F6) e `agenda_reservar`: recepção, enfermagem, médico e gestor (F2).
+    - O horário tem de estar na grade e ser futuro.
+    - Não pode estar dentro de um fechamento nem cair por cima de outro agendamento: uma trava por profissional impede duas marcações juntas.
+    - Um paciente tem uma consulta por dia com o mesmo profissional.
+  - `agenda_cancelar`: só antes do horário, sem justificativa obrigatória (F4);
+  - `agenda_registrar_falta`: só depois do horário; `agenda_desfazer_falta`: só no mesmo dia (F4);
+  - `agenda_registrar_chegada`: no dia da consulta, abre a ficha da UBS pelo `registrar_ficha`, com o tipo do agendamento e ligada a ele (F3);
+  - `agenda_dia` e `agenda_configuracao`, para as telas. Cada horário mostra se cabe na escala do profissional (F1).
+- **Gatilho `trg_agendamento_segue_episodio`:** quando o episódio encerra, o agendamento muda conforme o caso:
+  - consulta concluída: "realizado";
+  - evasão: "não aguardou";
+  - ficha retirada por engano ou duplicada: volta a "agendado", e a chegada pode ser refeita.
+- **Sem mudança:** `registrar_ficha`, `registrar_conduta_aps`, `registrar_desfecho` e `retirar_da_fila`. O md5 de `registrar_ficha` é o mesmo de antes (7a2c173d…).
+
+**Homologação (02/11/2026):**
+- migration aplicada duas vezes (idempotente) e versão registrada;
+- `5a_agenda.sql` passa: 10 blocos, com a chegada, a conduta, a evasão, a ficha por engano e a falta no próprio dia;
+- `5a_atendimento_ubs`, `5a_consultorio_fila`, `5a_consulta_ubs_ponta_a_ponta` e `5a_escuta_inicial` seguem passando com ela;
+- rollback: as tabelas, a coluna, o gatilho e as 18 funções saem; o teste falha; reaplicada, o retrato fica igual ao de depois (md5 das funções e1a71b87…).
