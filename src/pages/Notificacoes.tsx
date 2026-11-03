@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BedDouble, Bell, CalendarClock, Clock, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
+import { Ambulance, BedDouble, Bell, CalendarClock, Clock, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -19,7 +19,7 @@ import type { MinhaNotificacao } from '@/types/database'
 // por aviso e "Marcar todas como lidas", com desfazer que volta no servidor
 // (marcar_avisos_lidos / reabrir_avisos). A categoria sai do tipo do aviso.
 
-type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'AIH' | 'APAC' | 'Exames' | 'RNDS' | 'Outros'
+type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'Encaminhamento' | 'AIH' | 'APAC' | 'Exames' | 'RNDS' | 'Outros'
 
 function categoria(tipo: string): Categoria {
   if (/^(noite|manha|tarde|turno)_/.test(tipo)) return 'Turno'
@@ -33,6 +33,8 @@ function categoria(tipo: string): Categoria {
   if (tipo.startsWith('cand_')) return 'Candidatura'
   if (tipo.startsWith('chat_')) return 'Mensagem'
   if (tipo.startsWith('reg_')) return 'Regulação'
+  // paciente enviado pela UBS à UPA, chegada ou não chegada (5A, tarefa 5)
+  if (tipo.startsWith('ubs_upa_')) return 'Encaminhamento'
   // resultado de exame liberado ou crítico (Fase 5C, etapa 1.2)
   if (tipo.startsWith('exame_')) return 'Exames'
   // certificado, credencial e bloqueio da RNDS (Fase 5C, etapa 5.4)
@@ -59,6 +61,8 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | 
   Candidatura: { icone: Users, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver vagas' } },
   Mensagem: { icone: MessageSquare, cor: 'text-tinta-apoio bg-trilha' },
   Regulação: { icone: Waypoints, cor: 'text-acao bg-acao/10', acao: { to: '/regulacao', rotulo: 'Abrir Regulação' } },
+  Encaminhamento: { icone: Ambulance, cor: 'text-atencao bg-atencao/10', acao: [
+    { to: '/encaminhados', rotulo: 'Abrir Encaminhados' }, { to: '/recepcao', rotulo: 'Abrir recepção' }, { to: '/atendimento', rotulo: 'Abrir atendimento' }] },
   AIH: { icone: FileText, cor: 'text-acao bg-acao/10', acao: { to: '/aih', rotulo: 'Abrir AIH' } },
   APAC: { icone: FileCheck, cor: 'text-acao bg-acao/10', acao: { to: '/apac', rotulo: 'Abrir APAC' } },
   Exames: { icone: FlaskConical, cor: 'text-critico bg-critico/10', acao: [
@@ -68,7 +72,7 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | 
 }
 const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura', 'Regulação', 'AIH', 'APAC', 'Exames'] as const
 // categorias que só aparecem no filtro quando há aviso delas
-const FILTROS_SE_HOUVER = ['Triagem', 'Farmácia', 'Leitos', 'Mensagem', 'RNDS', 'Outros'] as const
+const FILTROS_SE_HOUVER = ['Triagem', 'Farmácia', 'Leitos', 'Encaminhamento', 'Mensagem', 'RNDS', 'Outros'] as const
 
 function haQuanto(iso: string) {
   const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)

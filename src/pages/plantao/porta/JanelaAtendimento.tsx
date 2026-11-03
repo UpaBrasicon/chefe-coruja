@@ -29,6 +29,8 @@ import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
+import { EnviosDoPaciente } from '@/components/encaminhamento/EnviosDoPaciente'
+import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { QuadroProcedimentos } from '@/components/paciente/ProcedimentosRealizados'
@@ -286,7 +288,14 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             <TabsContent value="aval"><AbaAvaliacaoCrescimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
             <TabsContent value="enc">
               {/* na UBS o encaminhamento para outra unidade (SMS003a) é conduta da ficha */}
-              {ubs ? <AbaEncaminhamento pacienteId={ep.paciente_id} episodioId={ep.id} />
+              {ubs ? (
+                <div className="flex flex-col gap-4">
+                  {/* tarefa 5 (H3): o que já foi enviado e a regulação do paciente */}
+                  <EnviosDoPaciente pacienteId={ep.paciente_id} />
+                  <HistoricoRegulacao pacienteId={ep.paciente_id} />
+                  <AbaEncaminhamento pacienteId={ep.paciente_id} episodioId={ep.id} />
+                </div>
+              )
                 : <AbaEncaminhamentoInterno pacienteId={ep.paciente_id} episodioId={ep.id} />}
             </TabsContent>
             <TabsContent value="termo"><AbaTermoConsentimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>

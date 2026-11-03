@@ -11,6 +11,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
+import { VindoDaUbs } from '@/components/encaminhamento/VindoDaUbs'
 import { ordemFilaUbs, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -260,6 +261,8 @@ export default function Recepcao() {
       {porta && aba === 'ficha' && (
         // o formulário fica estreito mesmo com a página na largura da coluna
         <div className="w-full max-w-4xl">
+          {/* 5A, tarefa 5 (H1): na UPA, quem a UBS da rede enviou */}
+          {!ubs && <VindoDaUbs unidadeId={unidadeId!} fichas={fila.data ?? []} />}
           <NovaFicha
             porta={porta}
             ubs={ubs}

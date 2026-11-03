@@ -28,6 +28,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronDown, ChevronRight, FileText, Paperclip, Send, Waypoints, X } from 'lucide-react'
 import * as React from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
@@ -112,6 +113,24 @@ export default function Regulacao() {
   const souGestorDaUnidade = papeisDaUnidade.includes('gestor')
   const [recemEnviada, setRecemEnviada] = React.useState<string | null>(null)
   const [aba, setAba] = React.useState<'pedidos' | 'indicadores'>('pedidos')
+  // 5A, tarefa 5 (H2): vindo da consulta da UBS, o formulário abre preenchido
+  const [busca] = useSearchParams()
+  const pacienteUrl = busca.get('paciente')
+  const daUrl = useQuery({
+    queryKey: ['regulacao-paciente-url', pacienteUrl],
+    enabled: !!pacienteUrl,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes').select('id, nome, nome_social, data_nascimento, prontuario').eq('id', pacienteUrl!).maybeSingle()
+      if (error) throw error
+      return data as Paciente | null
+    },
+  })
+  const tipoUrl = busca.get('tipo')
+  const inicial: InicialSolicitacao | undefined = daUrl.data ? {
+    paciente: daUrl.data,
+    tipo: tipoUrl === 'consulta' || tipoUrl === 'exame' || tipoUrl === 'leito' ? tipoUrl : undefined,
+    cid: busca.get('cid') ?? undefined, quadro: busca.get('quadro') ?? undefined, hipotese: busca.get('hipotese') ?? undefined,
+  } : undefined
   const ctx = useQuery({
     queryKey: ['regulacao-contexto', unidadeId],
     enabled: !!unidadeId,
@@ -154,7 +173,7 @@ export default function Regulacao() {
             texto="A administração da plataforma define a central da organização. Até lá, não há para onde enviar." />
         ) : c.pode_solicitar ? (
           <>
-            <NovaSolicitacao unidadeId={unidadeId} ctx={c} aoEnviar={setRecemEnviada} />
+            <NovaSolicitacao key={inicial?.paciente.id ?? 'nova'} unidadeId={unidadeId} ctx={c} aoEnviar={setRecemEnviada} inicial={inicial} />
             <PainelSla unidadeId={unidadeId} central={false}
               detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
             <Lista unidadeId={unidadeId} central={false} podeRegistrarExterno={false} abrir={recemEnviada} />
@@ -252,7 +271,13 @@ function CampoTerminologia({ rotulo, tipo, escolhido, onEscolher, onLimpar }: {
 
 type DocumentoProntuario = { id: string; tipo: string; numero: string | null; versao: number; emitido_em: string; autor: string | null }
 
-function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx: Contexto; aoEnviar: (id: string) => void }) {
+type InicialSolicitacao = { paciente: Paciente; tipo?: 'consulta' | 'exame' | 'leito'; cid?: string; quadro?: string; hipotese?: string }
+
+function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
+  unidadeId: string; ctx: Contexto; aoEnviar: (id: string) => void
+  /** 5A, tarefa 5 (H2): a solicitação aberta da consulta da UBS vem preenchida; o médico confere e completa */
+  inicial?: InicialSolicitacao
+}) {
   const qc = useQueryClient()
   // quem é médico e gestor na unidade solicita como médico (o banco decide igual)
   const { papeisDaUnidade } = useUnidade()
@@ -260,14 +285,18 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar }: { unidadeId: string; ctx:
   // Fase 4, tarefa 11: o NIR abre o pedido em nome do médico assistente (obrigatório)
   const souNir = papeisDaUnidade.includes('nir') && !papeisDaUnidade.includes('plantonista') && !papeisDaUnidade.includes('gestor')
   const [termo, setTermo] = React.useState('')
-  const [paciente, setPaciente] = React.useState<Paciente | null>(null)
+  const [paciente, setPaciente] = React.useState<Paciente | null>(inicial?.paciente ?? null)
   const [ligar, setLigar] = React.useState<'episodio' | 'internacao' | 'nenhum'>('nenhum')
   const [medico, setMedico] = React.useState('')
   const [naoIdentificado, setNaoIdentificado] = React.useState(false)
   const [vulnerabilidades, setVulnerabilidades] = React.useState<Vulnerabilidade[]>([])
   const criterios = useCriterios(unidadeId)
-  const [f, setF] = React.useState<Formulario>(FORMULARIO_VAZIO)
-  const [cidRotulo, setCidRotulo] = React.useState('')
+  const [f, setF] = React.useState<Formulario>(() => ({
+    ...FORMULARIO_VAZIO,
+    ...(inicial?.tipo ? { tipo: inicial.tipo } : {}),
+    cid: inicial?.cid ?? '', quadro_clinico: inicial?.quadro ?? '', hipotese: inicial?.hipotese ?? '',
+  }))
+  const [cidRotulo, setCidRotulo] = React.useState(inicial?.cid ?? '')
   const [procRotulo, setProcRotulo] = React.useState('')
   const [cboRotulo, setCboRotulo] = React.useState('')
   const [enviada, setEnviada] = React.useState<{ numero: number; duplicidade: boolean; anexos: number; falhas: string[] } | null>(null)

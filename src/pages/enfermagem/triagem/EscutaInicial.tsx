@@ -6,11 +6,13 @@
 // pré-seleciona. Sinais vitais opcionais (decisão do RT). O servidor
 // (registrar_escuta_aps) confere tudo de novo.
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CalendarPlus, Check } from 'lucide-react'
+import { Ambulance, CalendarPlus, Check } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { CamposVitais } from '@/components/clinico/CamposVitais'
+import { EnviarUpa } from '@/components/encaminhamento/EnviarUpa'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { Chip } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -75,6 +77,8 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
   const [saidaAzul, setSaidaAzul] = React.useState<Exclude<SaidaEscuta, 'consulta'> | null>(null)
   const [obs, setObs] = React.useState('')
   const [tentou, setTentou] = React.useState(false)
+  const [enviarUpa, setEnviarUpa] = React.useState(false)
+  const { unidadeAtiva } = useUnidade()
 
   const erroAtual = (() => {
     if (!publico) return 'Sem data de nascimento: escolha adulto ou pediatria.'
@@ -161,6 +165,16 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
           )}
         </Cartao>
       </div>
+
+      {/* tarefa 5 (H5): sem médico para o imediato, o enfermeiro envia à UPA da rede */}
+      {cor === 'vermelho' && unidadeAtiva && (
+        <div role="note" className="flex flex-wrap items-center gap-2 rounded-container border border-mts-vermelho/30 bg-alerta-critico px-3.5 py-2.5 text-apoio text-tinta">
+          <span className="flex-1">Atendimento imediato: sem médico na UBS agora, envie à UPA da rede (a ficha da UBS encerra com o envio).</span>
+          <Button size="sm" variant="outline" onClick={() => setEnviarUpa(true)}><Ambulance /> Enviar à UPA</Button>
+          <EnviarUpa aberto={enviarUpa} onFechar={() => setEnviarUpa(false)} episodioId={ep.id} unidadeId={unidadeAtiva.unidade_id}
+            nome={nomeDe(ep)} motivoInicial={queixa} onEnviado={(a) => { setEnviarUpa(false); void queryClient.invalidateQueries({ queryKey: ['triagem-fila'] }); onFim(a) }} />
+        </div>
+      )}
 
       {cor && (
         <p role="status" className="rounded-container border border-fio bg-campo px-3.5 py-2.5 text-apoio text-tinta">

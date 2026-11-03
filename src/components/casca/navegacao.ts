@@ -27,7 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
-import { CalendarDays, Ear } from 'lucide-react'
+import { CalendarDays, Ear, Send } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -59,6 +59,8 @@ const ITEM_AVISOS: ItemNav = { to: '/notificacoes', rotulo: 'Avisos', icone: Bel
 const ITEM_ESCALA: ItemNav = { to: '/minha-escala', rotulo: 'Escala', icone: CalendarClock, exato: true }
 // 5A, tarefa 3: agenda de consultas da UBS (o /agenda é a escala de plantões)
 const ITEM_AGENDA_CONSULTAS: ItemNav = { to: '/agenda-consultas', rotulo: 'Agenda de consultas', curto: 'Consultas', icone: CalendarDays, exato: true }
+// 5A, tarefa 5: envios à UPA e regulações da UBS, com o rastreio
+const ITEM_ENCAMINHADOS: ItemNav = { to: '/encaminhados', rotulo: 'Encaminhados', icone: Send, exato: true }
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
@@ -67,6 +69,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
     ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: MonitorSmartphone, exato: true, nota: 'tele' },
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
@@ -79,6 +82,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     // Parte 4.11 do padrão do frontend (RT "2a 3a"): menu agrupado por área.
     { to: '/gestao', rotulo: 'Painel', icone: LayoutDashboard, exato: true },
     ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
     // ── Porta
     { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true, grupo: 'Porta' },
     { to: '/gestao/intercorrencias', rotulo: 'Intercorrências', curto: 'Intercorr.', icone: Siren, exato: true, grupo: 'Porta' },
@@ -120,6 +124,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/escuta', rotulo: 'Escuta inicial', curto: 'Escuta', icone: Ear, exato: true, nota: 'triagem' },
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
     ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
@@ -148,6 +153,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   recepcao: [
     { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true },
     ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
     { to: '/recepcao/fila-triagem', rotulo: 'Fila da triagem', curto: 'Triagem', icone: Hourglass, exato: true, nota: 'triagem' },
     { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica' },
     { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
@@ -241,7 +247,7 @@ const FORA_DA_UBS = new Set([
   '/recepcao/fila-triagem', '/recepcao/painel',
 ])
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
-const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas'])
+const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas', '/encaminhados'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {
