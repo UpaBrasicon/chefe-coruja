@@ -4,7 +4,7 @@ Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P2**. Começada em 03/11/20
 
 O aceite do backlog é: "Pelo menos um programa básico funcional". O backlog pede hiperdia, pré-natal e puericultura, na ordem da prioridade comercial.
 
-Este documento é o diagnóstico. As decisões do RT (J1 a J5) estão na seção 3, ainda **pendentes**.
+Este documento é o diagnóstico. **Decisões do RT em 03/11/2026: A em J1 a J5** ("Sim, todas A"): o hiperdia vem primeiro.
 
 ## 1. A régua do Ministério da Saúde (conferida na fonte)
 
@@ -79,7 +79,7 @@ O cofinanciamento federal da APS (Portaria GM/MS nº 3.493/2024) tem um componen
 - **Pré-natal:** 6 de 11 boas práticas (A, B, C, D, I e os exames de G/H).
 - **Puericultura:** 3 de 5 boas práticas, e sem as curvas.
 
-## 3. Decisões do RT (J1 a J5): pendentes
+## 3. Decisões do RT (J1 a J5): todas A em 03/11/2026
 
 | # | Pergunta | Opções | Recomendação |
 |---|---|---|---|
