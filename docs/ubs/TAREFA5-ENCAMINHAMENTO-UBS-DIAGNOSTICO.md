@@ -4,7 +4,7 @@ Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P1**. Começada em 03/11/20
 
 O aceite do backlog é: "UBS encaminha e acompanha". As subtarefas são criar o documento ou a solicitação, vincular ao paciente e rastrear o status.
 
-O retorno do paciente à UBS (contrarreferência) é a tarefa 6. Este documento é o diagnóstico. As decisões H1 a H5 são do RT; a implementação só começa depois delas.
+O retorno do paciente à UBS (contrarreferência) é a tarefa 6. Este documento é o diagnóstico. **Decisões do RT em 03/11/2026: A em H1 a H5** ("pode seguir", à pergunta "todas na recomendação").
 
 ## 1. Diagnóstico do estado atual
 
@@ -36,7 +36,7 @@ O retorno do paciente à UBS (contrarreferência) é a tarefa 6. Este documento 
 **UBS → UPA:**
 - Não existe. A UPA da rede não sabe que o paciente vem: não há aviso de chegada, pré-ficha nem registro de que ele chegou ou não.
 
-## 2. Decisões do RT (H1 a H5)
+## 2. Decisões do RT (H1 a H5): todas A em 03/11/2026
 
 | # | Pergunta | Opções | Recomendação |
 |---|---|---|---|
@@ -65,3 +65,31 @@ Três partes, cada uma com o próprio PR:
 - **Dado clínico entre unidades.** O resumo só é visto pela UPA de destino e pela UBS de origem, com auditoria, como a regulação já faz.
 - **A UPA precisa estar na mesma organização.** Fora da rede, fica o documento impresso (H4).
 - **Produção:** nenhuma UBS em uso e a UPA Centro sem equipe, então nada muda para quem usa hoje.
+
+## Parte 5.1, banco (03/11/2026)
+
+Migration `20270216000001_encaminhamento_upa.sql`; teste `supabase/tests/5a_encaminhamento_upa.sql`.
+
+- **`encaminhamentos_upa`:**
+  - origem (UBS, episódio e paciente) e destino (UPA ou hospital da mesma organização);
+  - motivo e resumo da consulta, tirado no momento do envio: paciente (nome, nascimento, CNS, CPF, mãe), queixa, tipo, cor da escuta, último SOAP e sinais;
+  - situação: enviado, chegou, não chegou ou cancelado;
+  - RLS, com acesso só pelas RPCs.
+- **`encaminhar_upa` (H1, H5):**
+  - envia o médico ou o enfermeiro de plantão no consultório;
+  - um envio aberto por consulta;
+  - da escuta, a ficha da UBS encerra com o envio; da consulta, o médico encerra pela conduta;
+  - avisa a recepção, a enfermagem, os médicos e o gestor da UPA.
+- **`encaminhamento_upa_marcar_chegada`:** a UPA marca "chegou" (ligado à ficha dela) ou "não chegou" (com relato). Também corrige o "não chegou" automático. Avisa quem enviou.
+- **`encaminhamento_upa_cancelar`:** quem enviou, um médico ou o gestor da UBS, com motivo.
+- **Prazo de 12 h:** `private.encaminhamentos_upa_prazo()` roda pelo `pg_cron` `encaminhamento-upa-prazo` de 15 em 15 minutos, marca "não chegou" e avisa quem enviou.
+- **Listas (H3):**
+  - `encaminhamentos_upa_origem` (Encaminhados da UBS);
+  - `encaminhamentos_upa_destino` (Vindo da UBS, só para quem é da UPA);
+  - `encaminhamentos_upa_do_paciente`.
+- **Sem mudança:** a regulação (H2), que a tela abre já preenchida, e as funções que já existiam.
+
+**Homologação (03/11/2026):**
+- migration aplicada duas vezes (idempotente) e versão registrada;
+- `5a_encaminhamento_upa.sql` passa, com quem envia, destino, motivo, consulta e escuta, avisos, chegada, prazo, correção, cancelamento e listas;
+- rollback: a tabela, as 10 funções e o job saem; o teste falha; reaplicada, o retrato fica igual (md5 das funções f7fa7356…).
