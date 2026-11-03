@@ -93,3 +93,7 @@ Migration `20270216000001_encaminhamento_upa.sql`; teste `supabase/tests/5a_enca
 - migration aplicada duas vezes (idempotente) e versão registrada;
 - `5a_encaminhamento_upa.sql` passa, com quem envia, destino, motivo, consulta e escuta, avisos, chegada, prazo, correção, cancelamento e listas;
 - rollback: a tabela, as 10 funções e o job saem; o teste falha; reaplicada, o retrato fica igual (md5 das funções f7fa7356…).
+
+**Produção (03/11/2026, ok do RT):** migration `20270216000001` aplicada por `producao:push`. Versão registrada; retrato igual ao da homologação: tabela, 10 funções com md5 f7fa7356…, job `encaminhamento-upa-prazo` e sem acesso direto do `authenticated`.
+
+**Tela: o RT escolheu a opção C** para "Encaminhados" (lista e rastreio em etapas; ref. Shop, acompanhar o pedido), entre A (abas e tabela, ref. Kitchen.co) e B (quadro por situação, ref. Linear). Vem na parte 5.2.
