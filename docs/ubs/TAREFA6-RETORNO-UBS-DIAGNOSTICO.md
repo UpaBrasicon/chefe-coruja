@@ -92,3 +92,5 @@ Migration `20270217000001_contrarreferencia_ubs.sql`; teste `supabase/tests/5a_c
 - migration aplicada duas vezes (idempotente) e versão registrada;
 - `5a_contrarreferencia.sql` passa, com o envio, a evasão pelo CNS, a outra rede, a consulta da UBS, a alta e a alta desfeita da internação, os avisos, a lista, a leitura e o acesso;
 - rollback: a tabela, as 11 funções e os 2 gatilhos saem, e o teste falha; reaplicada, o retrato fica igual (md5 das funções 98f63658…).
+
+**Produção (03/11/2026, ok do RT):** migration `20270217000001` aplicada por `producao:push`. Versão registrada e retrato igual ao da homologação: tabela, 11 funções com md5 98f63658…, 2 gatilhos e sem acesso direto do `authenticated`.
