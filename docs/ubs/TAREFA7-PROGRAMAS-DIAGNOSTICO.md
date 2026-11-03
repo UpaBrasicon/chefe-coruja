@@ -134,3 +134,5 @@ Migration `20270218000001_hiperdia.sql`; teste `supabase/tests/5a_hiperdia.sql`.
 - `5a_hiperdia.sql` passa: entrada pelo problema, pelo CID e pela CIAP; sem duplicar; inclusão e saída à mão; pés; painel e acesso;
 - rollback: as 2 tabelas, as 9 funções e o gatilho saem, e o teste falha; reaplicada, o retrato fica igual (md5 das funções c809de14…);
 - os testes vizinhos `5a_consulta_ubs_ponta_a_ponta` e `5a_contrarreferencia` passam.
+
+**Produção (03/11/2026, ok do RT):** migration `20270218000001` aplicada por `producao:push`. Versão registrada e retrato igual ao da homologação: 2 tabelas, 9 funções com md5 c809de14…, o gatilho e sem acesso direto do `authenticated`.
