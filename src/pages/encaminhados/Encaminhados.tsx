@@ -224,7 +224,7 @@ function DetalheRegulacao({ r }: { r: Regulacao }) {
         {TIPO_REG[r.tipo] ?? r.tipo}{r.especialidade ? `: ${r.especialidade}` : ''}{r.procedimento_nome ? ` · ${r.procedimento_nome}` : ''}
       </p>
       <Trilha etapas={etapasDaRegulacao(r)} />
-      <div><Button size="sm" variant="outline" render={<Link to="/regulacao" />}><Waypoints /> Abrir na regulação</Button></div>
+      <div><Button size="sm" variant="outline" render={<Link to="/regulacao" />} nativeButton={false}><Waypoints /> Abrir na regulação</Button></div>
     </section>
   )
 }

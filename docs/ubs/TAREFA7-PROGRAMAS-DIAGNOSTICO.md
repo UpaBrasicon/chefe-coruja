@@ -136,3 +136,36 @@ Migration `20270218000001_hiperdia.sql`; teste `supabase/tests/5a_hiperdia.sql`.
 - os testes vizinhos `5a_consulta_ubs_ponta_a_ponta` e `5a_contrarreferencia` passam.
 
 **Produção (03/11/2026, ok do RT):** migration `20270218000001` aplicada por `producao:push`. Versão registrada e retrato igual ao da homologação: 2 tabelas, 9 funções com md5 c809de14…, o gatilho e sem acesso direto do `authenticated`.
+
+**Tela: o RT escolheu a opção A** em 03/11/2026: cartões no topo e uma matriz com uma linha por paciente e uma coluna por boa prática (ref. Wrike Analytics). As outras opções eram B, lista e checklist do paciente (ref. DocuSign), e C, fila por pendência (ref. Aboard).
+
+## Parte 7.2, telas (03/11/2026)
+
+Sem migration. Teste de tela `src/lib/hiperdia.test.ts`.
+
+- **Regra (`src/domain/hiperdia.ts`):**
+  - estados de cada item: em dia, atrasado, sem registro, não se aplica, ou fora do app (o ACS);
+  - validades de 6 meses (consulta e pressão) e de 12 meses (peso e altura, HbA1c, pés);
+  - pontos do Quadro 01 das notas C5 e C4, com teto no app de 75 na hipertensão e 80 no diabetes;
+  - resumo da unidade.
+- **Painel `/hiperdia` (opção A):**
+  - item novo do menu, só na UBS, para médico, enfermeiro, técnico e gestor;
+  - cartões no topo: total, em dia, com algo atrasado e pontuação média;
+  - filtros: todos, atrasados, hipertensão, diabetes, sem consulta marcada;
+  - matriz: consulta, pressão, peso e altura, HbA1c e pés, cada um com a data, mais a próxima consulta, os pontos e "Agendar" (agenda da UBS, consulta programada);
+  - rodapé com a régua e o aviso de que a pontuação oficial é a do SISAB.
+- **Na consulta da UBS (aba Conduta):**
+  - bloco Hiperdia com os programas do paciente e o que está pendente;
+  - incluir hipertensão ou diabetes à mão, e retirar com motivo;
+  - avaliação dos pés (sem ou com alteração, com a descrição) quando o paciente está no diabetes.
+  O bloco não aparece para quem não vê o hiperdia.
+- **Ajustes:**
+  - `useAgora` passa a viver em `src/hooks` (componente não importa tela);
+  - os botões-link novos e os da tarefa 6 levam `nativeButton={false}`.
+
+**Conferido na página de teste (03/11/2026):**
+- os pontos e as médias batem com a regra (por exemplo, hipertensão 75 e diabetes 50 para quem tem a HbA1c vencida e os pés sem registro);
+- os filtros;
+- o registro dos pés (`p_episodio`, `p_resultado` e `p_observacao`) e a saída do programa (`p_participante` e `p_motivo`).
+
+**Fica para depois:** incluir paciente direto do painel. Hoje a inclusão é automática pela consulta ou à mão na consulta.

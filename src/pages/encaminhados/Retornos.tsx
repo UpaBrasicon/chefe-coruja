@@ -107,7 +107,7 @@ function DetalheRetorno({ r, veResumo, onAberto }: { r: Retorno; veResumo: boole
         <span className="text-rotulo text-tinta-sussurro">Visto{r.visto_por ? ` por ${r.visto_por}` : ''} em {diaMesHora(r.visto_em)}</span>
       )}
       <div>
-        <Button size="sm" variant="outline" render={<Link to={linkMarcarNaAgenda(r.paciente_ubs_id, null, 'consulta_programada')} />}>
+        <Button size="sm" variant="outline" render={<Link to={linkMarcarNaAgenda(r.paciente_ubs_id, null, 'consulta_programada')} />} nativeButton={false}>
           <CalendarPlus /> Agendar retorno
         </Button>
       </div>
