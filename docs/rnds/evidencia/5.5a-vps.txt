@@ -1,0 +1,21 @@
+# 5.5a — simulador por unidade e evidência (29/10/2026)
+# fila da HOMOLOGAÇÃO → serviço rnds-envio no VPS 179.199.128.141 (branch fase5/rnds-homologacao-oficial, 013c83a)
+
+## Serviço
+{"evento":"inicio","simulador":true,"unidades_no_simulador":1,"producao":false,"cofre":true}
+RNDS_SIMULADOR_UNIDADES = UPA RNDS E2E (teste). As outras unidades com credencial iriam à homologação oficial;
+na homologação do Supabase nenhuma outra tem credencial nem envio ligado.
+
+## Envio da unidade de teste (atendimento novo …e513)
+{"item":"ac89e669-…","tipo":"rac","resultado":"enviado"}
+resposta gravada: HTTP 201, headers location e content-location /api/fhir/r4/Bundle/86cb3f6a-…, content-type, date
+
+## Evidência
+npm run rnds:evidencia -- --item ac89e669-84a5-4931-a496-27a59232e5a5
+  evidencia-rnds-rac-ac89e669.pdf (54 KB, 5 páginas): validador local oficial sem falhas (1 item, 0 falhas),
+  HTTP 201 com os headers e o Bundle enviado. O PDF não entra no repositório (dados fictícios de paciente).
+Item que não existe: "rnds:evidencia: item … não encontrado como enviado, com o Bundle gravado".
+
+## Testes
+services/rnds-envio/tests/envio.test.ts: unidade da lista vai ao simulador; fora da lista, à homologação oficial;
+sem lista, todas ao simulador; a resposta grava os headers. npm run test:interop: 66 passaram.

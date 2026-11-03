@@ -7,7 +7,7 @@ UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_se
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   ('10000000-0000-4000-8000-000000000005', '21000000-0000-4000-8000-000000000001', 'faturamento') ON CONFLICT DO NOTHING;
 INSERT INTO terminologia.sigtap_procedimento (codigo, nome, complexidade, sexo, idade_min, idade_max, competencia, valor_sa, valor_sh, valor_sp)
-VALUES ('0204030153', 'RADIOGRAFIA DE TORAX TESTE', '2', 'I', 0, 1560, to_char(now(), 'YYYYMM'), 10.50, 0, 0)
+VALUES ('0204030153', 'RADIOGRAFIA DE TORAX TESTE', '2', 'I', 0, 1560, to_char(private.data_atual(), 'YYYYMM'), 10.50, 0, 0)
 ON CONFLICT (codigo) DO UPDATE SET valor_sa = 10.50;
 INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, setor_id, sexo) VALUES
   ('23000000-0000-4000-8000-0000000d6201', '21000000-0000-4000-8000-000000000001', 'Paciente Glosa', '1975-03-03', 'GL-1',
@@ -20,7 +20,7 @@ INSERT INTO public.apacs (id, unidade_id, paciente_id, episodio_id, tipo, proced
                          validade_inicio, validade_fim, solicitada_por)
 VALUES ('2c000000-0000-4000-8000-0000000d6201', '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-0000000d6201',
         '25000000-0000-4000-8000-0000000d6201', '1', '0204030153', 'S52.5', '02', 'autorizada', '3526100000099',
-        current_date - 5, current_date + 85, '10000000-0000-4000-8000-000000000002');
+        private.data_atual() - 5, private.data_atual() + 85, '10000000-0000-4000-8000-000000000002');
 
 CREATE TEMP TABLE t (k text PRIMARY KEY, v text);
 GRANT ALL ON t TO authenticated;
@@ -40,8 +40,8 @@ BEGIN
 END $$;
 GRANT EXECUTE ON FUNCTION pg_temp.falha(text, text, text) TO authenticated;
 INSERT INTO t SELECT 'conta', id::text FROM public.contas WHERE episodio_id = '25000000-0000-4000-8000-0000000d6201';
-INSERT INTO t VALUES ('apac', '2c000000-0000-4000-8000-0000000d6201'), ('comp', to_char(now(), 'YYYYMM')),
-                     ('depois', to_char(now() + interval '1 month', 'YYYYMM')), ('antes', to_char(now() - interval '2 months', 'YYYYMM'));
+INSERT INTO t VALUES ('apac', '2c000000-0000-4000-8000-0000000d6201'), ('comp', to_char(private.data_atual(), 'YYYYMM')),
+                     ('depois', to_char(private.data_atual() + interval '1 month', 'YYYYMM')), ('antes', to_char(private.data_atual() - interval '2 months', 'YYYYMM'));
 
 -- 6a. só em conta fechada ou faturada
 SET LOCAL ROLE authenticated;

@@ -53,12 +53,15 @@ END $$;
 GRANT EXECUTE ON FUNCTION pg_temp.falha(text, text, text) TO authenticated;
 
 -- ── 4.5: o farmacêutico publica; a publicada não se edita ───────────────────
+-- A diluição do farmacêutico é da unidade dele (ponto 2 das telas do farmacêutico,
+-- 27/10/2026: o modelo da rede é só do super admin; migration 20270109000001).
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format('SELECT public.salvar_diluicao(NULL, %L)', json_build_object('medicamento_id', pg_temp.u('cef'), 'via', 'EV')),
   'Diluição é do farmacêutico', 'só o farmacêutico mexe em diluição');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 INSERT INTO t SELECT 'd1', public.salvar_diluicao(NULL, json_build_object('medicamento_id', pg_temp.u('cef'), 'via', 'EV',
+  'unidade_id', '21000000-0000-4000-8000-000000000001',
   'fonte', 'Manual de diluição da unidade, v1', 'reconstituicao_diluente', 'AD', 'reconstituicao_volume_ml', '10',
   'diluicao_solucao', json_build_array('SF 0,9%'), 'diluicao_volume_min_ml', '100')::jsonb);
 SELECT pg_temp.falha(format('SELECT public.publicar_diluicao_versao(%L)', pg_temp.u('d1')), 'Sem o CRF do revisor', 'sem CRF do revisor não publica');
@@ -161,8 +164,8 @@ BEGIN
   RAISE NOTICE 'OK  diluição publicada não se edita: muda só por nova versão';
   IF (SELECT status FROM public.diluicao WHERE id = pg_temp.u('d1')) <> 'substituido'
      OR (SELECT versao FROM public.diluicao WHERE id = pg_temp.u('d2')) <> 2
-     OR (SELECT versao FROM public.diluicao_vigente(pg_temp.u('cef'), 'EV', '2026-01-15')) <> 1
-     OR (SELECT versao FROM public.diluicao_vigente(pg_temp.u('cef'), 'EV')) <> 2 THEN
+     OR (SELECT versao FROM public.diluicao_vigente(pg_temp.u('cef'), 'EV', '2026-01-15', '21000000-0000-4000-8000-000000000001')) <> 1
+     OR (SELECT versao FROM public.diluicao_vigente(pg_temp.u('cef'), 'EV', now(), '21000000-0000-4000-8000-000000000001')) <> 2 THEN
     RAISE EXCEPTION 'FALHOU: vigência das versões';
   END IF;
   RAISE NOTICE 'OK  a versão 1 fica visível como substituída; em 15/01 vale a 1, hoje vale a 2';

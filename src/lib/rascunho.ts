@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { cifrar, decifrar, estaCifrado, temChave } from '@/lib/cofreLocal'
-import { hora } from './formato.ts'
+import { cifrar, decifrar, estaCifrado, temChave } from './cofreLocal.ts'
+import { dataIso, hora } from './formato.ts'
 
 /** TTL de rascunhos clínicos no navegador (LGPD — computador compartilhado de UPA). */
 const TTL_RASCUNHO_MS = 12 * 60 * 60 * 1000 // 12 horas
@@ -24,12 +24,9 @@ export type DadosPaciente = {
 
 export const DIETAS = ['Dieta livre', 'Dieta branda', 'Dieta líquida', 'Dieta zero (jejum)', 'Dieta para diabético', 'Dieta hipossódica', 'Outra']
 
+// o dia de Brasília, não o do relógio do aparelho
 export function hojeLocal() {
-  const d = new Date()
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  return dataIso()
 }
 
 export function fmtData(iso: string) {
@@ -43,7 +40,10 @@ export function idadeTexto(nascimento: string, dataAtual: string) {
   const partes = nascimento.split('/')
   if (partes.length !== 3) return ''
   const dn = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]))
-  const da = new Date(dataAtual)
+  // "AAAA-MM-DD" lido como dia local: new Date('AAAA-MM-DD') é meia-noite UTC,
+  // 21h da véspera em Brasília (VD8)
+  const [ya, ma, dd] = dataAtual.slice(0, 10).split('-').map(Number)
+  const da = new Date(ya, ma - 1, dd)
   if (isNaN(dn.getTime()) || isNaN(da.getTime())) return ''
   let anos = da.getFullYear() - dn.getFullYear()
   let meses = da.getMonth() - dn.getMonth()

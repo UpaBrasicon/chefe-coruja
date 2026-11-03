@@ -12,9 +12,8 @@ sessão.
 
 - A migration `20270203000005_admissao_unica_reavaliacao` foi aplicada na
   homologação, com a versão registrada e o rollback testado.
-- A tela está no PR do branch `fase-plantonista/admissao-reavaliacao`,
-  publicado na homologação.
-- A produção espera o "ok produção" do RT.
+- A tela foi publicada na homologação e juntada ao master no PR #383.
+- Em produção desde 01/11/2026 (ver a seção 7).
 
 ```
 Vamos trabalhar a tarefa: ponto 10, uma admissão por internação, com correção e reavaliação do quadro.
@@ -128,3 +127,13 @@ Na aba Admissão do leito (`FichaAdmissao.tsx`):
 | Alguma internação já ter duas admissões | Conferido na homologação: nenhuma. Na produção, o índice único falha antes de gravar se houver, e nada muda |
 | Correção pelo caminho antigo sem a ficha | O gatilho recusa no fim da transação |
 | Ampliar o `CHECK` de `tipo_documento` | Ampliar é expand: os valores antigos continuam valendo, e a validação roda depois de criar a restrição (`NOT VALID` seguido de `VALIDATE`) |
+
+## 7. Produção
+
+- 01/11/2026: com o "ok produção" do RT, a migration
+  `20270203000005_admissao_unica_reavaliacao` foi aplicada na produção (`db push --include-all`), com a
+  versão registrada e as permissões conferidas.
+- 01/11/2026: PR #383 juntado ao master; o CI ficou verde e a Vercel publicou.
+- 01/11/2026: a função `folha` foi publicada na produção a partir do master
+  `9a23850f`, com o `folhas.ts` dos pontos 10 e 15. Sem token, ela
+  responde 401.

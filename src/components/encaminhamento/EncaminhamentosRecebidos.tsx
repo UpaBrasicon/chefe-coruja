@@ -12,6 +12,7 @@ import { ArrowRightLeft } from 'lucide-react'
 import * as React from 'react'
 
 import { idadeEm } from '@/domain/idade'
+import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -30,7 +31,7 @@ export type EncaminhamentosRecebidosProps = {
 
 function idadeTexto(nasc: string | null) {
   if (!nasc) return null
-  const i = idadeEm(nasc, new Date())
+  const i = idadeEm(nasc, dataIso())
   if (!i) return null
   return i.anos >= 2 ? `${i.anos} anos` : i.anos === 1 ? `1 ano e ${i.meses} m` : `${i.meses} m ${i.dias} d`
 }

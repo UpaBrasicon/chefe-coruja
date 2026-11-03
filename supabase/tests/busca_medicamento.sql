@@ -23,10 +23,13 @@ INSERT INTO public.medicamento (principio_ativo, principio_ativo_norm, apresenta
   ('Dipitestona', 'dipitestona', 'solução oral gotas', '500 mg/mL', 'teste-busca', NULL),
   ('Dipitestona', 'dipitestona', 'comprimido', '500 mg', 'teste-busca', NULL),
   ('Testinol', 'testinol', 'comprimido', '5 mg', 'teste-busca', NULL),
+  ('Noratestina', 'noratestina', 'ampola 4 mL', '1 mg/mL', 'teste-busca', NULL),
   ('Localtestina', 'localtestina', 'comprimido', '10 mg', 'teste-busca', ARRAY['00000000-0000-4000-8000-0000000b0b01']::uuid[]);
 INSERT INTO public.medicamento_sinonimo (principio_ativo_norm, concentracao, termo, termo_norm, tipo, fonte) VALUES
   ('cloreto de testio', '0,9 %', 'SFT 0,9%', 'sft 0 9', 'sigla', 'teste-busca'),
-  ('dipitestona', NULL, 'Metatestol', 'metatestol', 'sinonimo', 'teste-busca');
+  ('dipitestona', NULL, 'Metatestol', 'metatestol', 'sinonimo', 'teste-busca'),
+  -- como norepinefrina/epinefrina: o sinônimo de um contém o do outro
+  ('noratestina', NULL, 'Normetatestol', 'normetatestol', 'sinonimo', 'teste-busca');
 
 CREATE TEMP TABLE t (nome text PRIMARY KEY, valor text) ON COMMIT DROP;
 GRANT ALL ON t TO authenticated;
@@ -81,7 +84,9 @@ BEGIN
   -- sinônimo do princípio ativo: as duas apresentações
   v := pg_temp.b(pg_temp.u('u1'), 'metatestol');
   IF v <> 'Dipitestona [500 mg] Metatestol | Dipitestona [500 mg/mL] Metatestol' THEN RAISE EXCEPTION 'FALHOU: sinônimo do princípio ativo — %', v; END IF;
-  RAISE NOTICE 'OK  sinônimo vale para todas as apresentações';
+  RAISE NOTICE 'OK  sinônimo vale para todas as apresentações, e só pelo começo da palavra (Normetatestol fica de fora)';
+  v := pg_temp.b(pg_temp.u('u1'), 'normetatestol');
+  IF v <> 'Noratestina [1 mg/mL] Normetatestol' THEN RAISE EXCEPTION 'FALHOU: sinônimo inteiro — %', v; END IF;
   -- várias palavras, em qualquer ordem
   v := pg_temp.b(pg_temp.u('u1'), 'clavutest amoxites');
   IF v <> 'Amoxitestina + clavutestato [875 mg + 125 mg]' THEN RAISE EXCEPTION 'FALHOU: palavras fora de ordem — %', v; END IF;

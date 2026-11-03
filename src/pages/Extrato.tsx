@@ -3,7 +3,7 @@ import { Download, Wallet } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
-import { dataHora, dataPura, moeda } from '@/lib/formato'
+import { dataHora, dataIso, dataPura, moeda } from '@/lib/formato'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -32,13 +32,13 @@ export default function Extrato({ embutido = false }: { embutido?: boolean } = {
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
 
-  const hoje = new Date()
-  const [inicio, setInicio] = React.useState(
-    new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0, 10)
-  )
-  const [fim, setFim] = React.useState(
-    new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().slice(0, 10)
-  )
+  // mês corrente pelo dia de Brasília, não pelo relógio do aparelho
+  const hoje = dataIso()
+  const [inicio, setInicio] = React.useState(`${hoje.slice(0, 7)}-01`)
+  const [fim, setFim] = React.useState(() => {
+    const [a, m] = hoje.split('-').map(Number)
+    return `${hoje.slice(0, 7)}-${String(new Date(Date.UTC(a, m, 0)).getUTCDate()).padStart(2, '0')}`
+  })
 
   const { data: linhas, isLoading } = useQuery({
     queryKey: ['extrato', unidadeId, inicio, fim],

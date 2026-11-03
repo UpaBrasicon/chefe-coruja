@@ -9,6 +9,7 @@ import { RequireRole } from '@/routes/RequireRole'
 import { RequireSuperAdmin } from '@/routes/RequireSuperAdmin'
 import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
+import { destinoEscala } from '@/lib/rotaEscala'
 import { AppShell } from '@/components/AppShell'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { ErroForcado } from '@/components/ErroForcado'
@@ -26,6 +27,9 @@ const InternacaoEnfermagem = lazy(() => import('@/pages/enfermagem/InternacaoEnf
 const InicioEnfermagem = lazy(() => import('@/pages/enfermagem/InicioEnfermagem'))
 const Recepcao = lazy(() => import('@/pages/recepcao/Recepcao'))
 const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
+const AgendaConsultas = lazy(() => import('@/pages/agenda/AgendaConsultas'))
+const Encaminhados = lazy(() => import('@/pages/encaminhados/Encaminhados'))
+const Hiperdia = lazy(() => import('@/pages/hiperdia/Hiperdia'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
 const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const PacoteAlta = lazy(() => import('@/pages/public/PacoteAlta'))
@@ -142,6 +146,13 @@ function PorPapel({ plantonista, gestao }: { plantonista: ReactNode; gestao: Rea
   const { papeisDaUnidade } = useUnidade()
   const ehGestao = papeisDaUnidade.includes('gestor') || papeisDaUnidade.includes('admin')
   return <>{ehGestao ? gestao : plantonista}</>
+}
+
+/** `/escala` pelo papel ativo, não pela lista de papéis (ver `destinoEscala`). */
+function RotaEscala() {
+  const { papelAtivo } = useUnidade()
+  const destino = destinoEscala(papelAtivo)
+  return destino ? <Redirecionar para={destino} /> : <EscalaGrupo />
 }
 
 /**
@@ -312,6 +323,21 @@ export default function App() {
                       {/* Classificação de risco é do enfermeiro (CONTEXT.md) */}
                       <Route element={<RequireRole papeis={['enfermeiro']} />}>
                         <Route path="/triagem" element={<Triagem />} />
+                        {/* 5A, tarefa 2, parte 2.4: na UBS, a mesma tela é a escuta inicial do CAB 28 */}
+                        <Route path="/escuta" element={<Triagem />} />
+                      </Route>
+
+                      {/* 5A, tarefa 3: agenda de consultas da UBS (F2: marca a recepção, a enfermagem, o médico e o gestor) */}
+                      <Route element={<RequireRole papeis={['recepcao', 'enfermeiro', 'tecnico_enfermagem', 'plantonista', 'gestor']} />}>
+                        <Route path="/agenda-consultas" element={<AgendaConsultas />} />
+                      </Route>
+                      {/* 5A, tarefa 5: envios à UPA e regulações da UBS, com o rastreio */}
+                      <Route element={<RequireRole papeis={['recepcao', 'enfermeiro', 'plantonista', 'gestor']} />}>
+                        <Route path="/encaminhados" element={<Encaminhados />} />
+                      </Route>
+                      {/* 5A, tarefa 7 (J5): hiperdia da UBS */}
+                      <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem', 'plantonista', 'gestor']} />}>
+                        <Route path="/hiperdia" element={<Hiperdia />} />
                       </Route>
 
                       <Route element={<RequireRole papeis={['admin']} />}>
@@ -414,15 +440,7 @@ export default function App() {
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
 
-                        <Route
-                          path="/escala"
-                          element={
-                            <PorPapel
-                              plantonista={<Redirecionar para="/agenda?aba=escala" />}
-                              gestao={<EscalaGrupo />}
-                            />
-                          }
-                        />
+                        <Route path="/escala" element={<RotaEscala />} />
                         <Route
                           path="/internacao"
                           element={

@@ -73,9 +73,11 @@ export function CampoCid({ id, valor, onChange, placeholder }: { id: string; val
 }
 
 export function AbaAtendimento({
-  episodioId, pacienteId, faixa, corAtual, soap, setSoap, salvoEm, classificacoes, registros, aoRegistrar,
+  episodioId, pacienteId, faixa, corAtual, soap, setSoap, salvoEm, classificacoes, registros, aoRegistrar, ubs = false,
 }: {
   episodioId: string; pacienteId: string
+  /** consulta da UBS (5A, D7): sem classificação de risco nem reclassificação */
+  ubs?: boolean
   /** faixa pela IDADE do paciente (JanelaAtendimento), nunca pela porta */
   faixa: FaixaEtaria
   corAtual: CorRisco
@@ -109,7 +111,7 @@ export function AbaAtendimento({
           <Label htmlFor="soap-o">Objetivo · exame físico</Label>
           <Textarea id="soap-o" rows={6} value={soap.o} onChange={muda('o')} />
           <span className="text-rotulo text-tinta-sussurro [text-wrap:pretty]">
-            {sinais ? <>Sinais da triagem{comSinais ? ` (${hora(comSinais.criado_em)})` : ''}: {sinais}</> : 'Sem sinais vitais da triagem.'}
+            {sinais ? <>Sinais {ubs ? 'da escuta' : 'da triagem'}{comSinais ? ` (${hora(comSinais.criado_em)})` : ''}: {sinais}</> : ubs ? 'Sem sinais vitais registrados antes da consulta.' : 'Sem sinais vitais da triagem.'}
           </span>
         </div>
       </div>
@@ -152,18 +154,31 @@ export function AbaAtendimento({
         </section>
       )}
 
-      <section id={`triagem-${episodioId}`} className="flex scroll-mt-4 flex-col gap-1.5">
-        <h3 className="rotulo text-tinta-sussurro">Classificação de risco</h3>
-        {classificacoes.map((c) => (
-          <div key={c.id} className="text-apoio text-tinta-apoio">
-            <PilulaRisco cor={c.cor} className="mr-2" />
-            {c.reclassificacao ? `Reclassificado ${c.autor_papel === 'enfermeiro' ? 'pela enfermagem na espera' : 'pelo médico'}: ${c.motivo}` : [c.fluxograma_nome, c.discriminador].filter(Boolean).join(' · ')}
-            {c.justificativa && ` · justificativa: ${c.justificativa}`}
-            <span className="text-rotulo text-tinta-sussurro"> · {c.autor_nome ? `${c.autor_nome} · ` : ''}{hora(c.criado_em)}</span>
+      {!ubs && (
+        <section id={`triagem-${episodioId}`} className="flex scroll-mt-4 flex-col gap-1.5">
+          <h3 className="rotulo text-tinta-sussurro">Classificação de risco</h3>
+          {classificacoes.map((c) => (
+            <div key={c.id} className="text-apoio text-tinta-apoio">
+              <PilulaRisco cor={c.cor} className="mr-2" />
+              {c.reclassificacao ? `Reclassificado ${c.autor_papel === 'enfermeiro' ? 'pela enfermagem na espera' : 'pelo médico'}: ${c.motivo}` : [c.fluxograma_nome, c.discriminador].filter(Boolean).join(' · ')}
+              {c.justificativa && ` · justificativa: ${c.justificativa}`}
+              <span className="text-rotulo text-tinta-sussurro"> · {c.autor_nome ? `${c.autor_nome} · ` : ''}{hora(c.criado_em)}</span>
+            </div>
+          ))}
+          {!triagem && <p className="text-apoio text-tinta-sussurro">Sem classificação registrada.</p>}
+        </section>
+      )}
+      {/* 5A, parte 2.4: na UBS, a escuta inicial da enfermagem (CAB 28), quando houve */}
+      {ubs && triagem && (
+        <section id={`triagem-${episodioId}`} className="flex scroll-mt-4 flex-col gap-1.5">
+          <h3 className="rotulo text-tinta-sussurro">Escuta inicial (CAB 28)</h3>
+          <div className="text-apoio text-tinta-apoio">
+            <PilulaRisco cor={triagem.cor} className="mr-2" />
+            {[triagem.queixa, triagem.motivo].filter(Boolean).join(' · ')}
+            <span className="text-rotulo text-tinta-sussurro"> · {triagem.autor_nome ? `${triagem.autor_nome} · ` : ''}{hora(triagem.criado_em)}</span>
           </div>
-        ))}
-        {!triagem && <p className="text-apoio text-tinta-sussurro">Sem classificação registrada.</p>}
-      </section>
+        </section>
+      )}
 
       {/* Pela idade, não pela porta (criança na porta adulta vê; adolescente de
           15 na porta pediátrica não). Sem data de nascimento o bloco não some
@@ -179,7 +194,7 @@ export function AbaAtendimento({
       {/* Sem data de nascimento, vitais com o público pediátrico: PA opcional
           (exigi-la travaria a reclassificação de uma criança onde não há
           manguito pediátrico); os demais obrigatórios são os mesmos. */}
-      <Reclassificar episodioId={episodioId} publico={publicoDosVitais(faixa)} corAtual={corAtual} aoRegistrar={aoRegistrar} />
+      {!ubs && <Reclassificar episodioId={episodioId} publico={publicoDosVitais(faixa)} corAtual={corAtual} aoRegistrar={aoRegistrar} />}
     </div>
   )
 }

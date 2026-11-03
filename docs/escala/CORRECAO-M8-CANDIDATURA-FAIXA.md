@@ -44,4 +44,4 @@ esta faixa."; em 27/10 → "Este plantão já passou."; a enfermeira 002 → "A 
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (publica a tela).
+Migration `20270208000010` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 30/10/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e conferida (gatilhos e grants: RPCs com execute para `authenticated`, não para `anon`). PR #362 mesclado em 30/10/2026 (publica a tela), com o arquivo da migration idêntico ao aplicado. Concluído.

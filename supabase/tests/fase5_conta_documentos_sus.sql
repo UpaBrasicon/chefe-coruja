@@ -24,8 +24,8 @@ GRANT EXECUTE ON FUNCTION pg_temp.como(text) TO authenticated;
 CREATE FUNCTION pg_temp.doc(p_conta uuid) RETURNS jsonb LANGUAGE sql AS $$ SELECT public.conta_detalhe(p_conta) -> 'documentos_sus' $$;
 GRANT EXECUTE ON FUNCTION pg_temp.doc(uuid) TO authenticated;
 INSERT INTO t SELECT 'porta', id::text FROM public.contas WHERE episodio_id = '25000000-0000-4000-8000-0000000d4201';
-INSERT INTO t VALUES ('c1', to_char(now() - interval '2 months', 'YYYYMM')), ('c2', to_char(now() - interval '1 month', 'YYYYMM')),
-                     ('c3', to_char(now(), 'YYYYMM'));
+INSERT INTO t VALUES ('c1', to_char(private.data_atual() - interval '2 months', 'YYYYMM')), ('c2', to_char(private.data_atual() - interval '1 month', 'YYYYMM')),
+                     ('c3', to_char(private.data_atual(), 'YYYYMM'));
 
 -- APAC da porta: uma autorizada, com execução em três competências (uma no
 -- arquivo, uma fora dele por crítica, uma ainda aberta); outra só solicitada
@@ -33,7 +33,7 @@ INSERT INTO public.apacs (id, unidade_id, paciente_id, episodio_id, tipo, proced
                          validade_inicio, validade_fim, solicitada_por, solicitada_em)
 VALUES ('2c000000-0000-4000-8000-0000000d4201', '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-0000000d4201',
         '25000000-0000-4000-8000-0000000d4201', '1', '0204030153', 'J44.9', '01', 'autorizada', '3526100000011',
-        current_date - 70, current_date + 20, '10000000-0000-4000-8000-000000000002', now() - interval '140 minutes'),
+        private.data_atual() - 70, private.data_atual() + 20, '10000000-0000-4000-8000-000000000002', now() - interval '140 minutes'),
        ('2c000000-0000-4000-8000-0000000d4202', '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-0000000d4201',
         '25000000-0000-4000-8000-0000000d4201', '1', '0204030153', 'J44.9', '01', 'solicitada', NULL,
         NULL, NULL, '10000000-0000-4000-8000-000000000002', now() - interval '130 minutes');

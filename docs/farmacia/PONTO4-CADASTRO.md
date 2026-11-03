@@ -122,3 +122,5 @@ Migration `supabase/migrations/20270106000001_cadastro_medicamentos.sql`, só ad
 4. Como médico da mesma unidade: o item aparece na busca da prescrição.
 5. "Corrigir" com motivo muda o item; "Inativar" o tira das buscas.
 6. Na coluna "Forma", preencher a forma de um item da rede.
+
+**Teste do RT em 27/10/2026: ok na homologação.** Falta o "ok produção".

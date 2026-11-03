@@ -225,7 +225,7 @@ function mesAnterior(c: string, delta: number) {
 
 function AbaPlantoes({ unidadeId, unidadeNome }: { unidadeId: string; unidadeNome: string }) {
   const qc = useQueryClient()
-  const atual = compDe(new Date())
+  const atual = dataIso().slice(0, 7).replace('-', '')  // competência pelo dia de Brasília
   const [comp, setComp] = React.useState(() => mesAnterior(atual, -1))
   const [acao, setAcao] = React.useState<'fechar' | 'reabrir' | null>(null)
   const [motivo, setMotivo] = React.useState('')

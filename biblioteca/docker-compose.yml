@@ -16,8 +16,11 @@ services:
     restart: unless-stopped
     ports: ["127.0.0.1:11434:11434"]
     volumes: ["ollama_models:/root/.ollama"]
+    # -1 = o bge-m3 nunca sai da memória. Recarregá-lo no CPU do VPS levava
+    # 41–60+ s e estourava o limite de 60 s da busca (medido em 27/10/2026).
+    # Ver infra/biblioteca-ollama-quente.md.
     environment:
-      OLLAMA_KEEP_ALIVE: "30m"
+      OLLAMA_KEEP_ALIVE: "-1"
       OLLAMA_NUM_PARALLEL: "2"
     # bge-m3 mapeado em memória + buffers: com 2500m o Ollama ficava no limite
     # e a ingestão caía para ~24 chunks/min.

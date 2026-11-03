@@ -1,4 +1,5 @@
 import { ehPediatrico } from '../../domain/idade.ts'
+import { dataIso } from '../../lib/formato.ts'
 import { escoreZ, lmsNaIdade, medidaNoEscoreZ, percentil, type LinhaLms, type Lms } from './lms.ts'
 
 import bfaF05 from './dados/bfa-meninas-0-5.json' with { type: 'json' }
@@ -76,14 +77,11 @@ export function sexoDaTabela(sexo: string | null | undefined): Sexo | null {
   return null
 }
 
-/** Dia de calendário (UTC) de 'AAAA-MM-DD' ou de um instante na hora local. */
+/** Dia de calendário (UTC) de 'AAAA-MM-DD' ou de um instante no dia de Brasília. */
 function diaUtc(x: string | Date): number {
-  if (typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x)) {
-    const [a, m, d] = x.split('-').map(Number)
-    return Date.UTC(a, m - 1, d)
-  }
-  const d = new Date(x)
-  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())
+  const dia = typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : dataIso(x)
+  const [a, m, d] = dia.split('-').map(Number)
+  return Date.UTC(a, m - 1, d)
 }
 
 /**
@@ -154,11 +152,11 @@ export function imc(pesoKg: number, estaturaCm: number): number | null {
 export type Medida = { aferidoEm: string; valor: number }
 
 /**
- * Pontos de IMC: peso e estatura aferidos no MESMO dia (data de calendário
- * local). Se houver mais de um no dia, vale o último de cada.
+ * Pontos de IMC: peso e estatura aferidos no MESMO dia (dia de Brasília). Se
+ * houver mais de um no dia, vale o último de cada.
  */
 export function paresImc(pesos: Medida[], estaturas: Medida[]): Medida[] {
-  const dia = (iso: string) => { const d = new Date(iso); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` }
+  const dia = (iso: string) => dataIso(iso)
   const ultimo = (lista: Medida[]) => {
     const m = new Map<string, Medida>()
     for (const x of [...lista].sort((a, b) => a.aferidoEm.localeCompare(b.aferidoEm))) m.set(dia(x.aferidoEm), x)

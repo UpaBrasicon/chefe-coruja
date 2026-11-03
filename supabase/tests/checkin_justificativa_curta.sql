@@ -65,9 +65,11 @@ INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   (pg_temp.id('enf'),  pg_temp.id('semgps'), 'enfermeiro'),
   (pg_temp.id('tec'),  pg_temp.id('comgps'), 'tecnico_enfermagem'),
   (pg_temp.id('tec2'), pg_temp.id('comgps'), 'tecnico_enfermagem');
--- os três de plantão agora
+-- os três de plantão agora. A data é a do plantão em curso: das 00h às 07h de
+-- Brasília a noite começou ONTEM (data_atual() + 'noite' daria 19h de hoje,
+-- no futuro). Menos 7 h dá a data certa nos três turnos.
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno)
-SELECT u, s, p, private.data_atual(), private.turno_atual()
+SELECT u, s, p, ((now() AT TIME ZONE 'America/Sao_Paulo') - interval '7 hours')::date, private.turno_atual()
   FROM (VALUES (pg_temp.id('semgps'), pg_temp.id('s1'), pg_temp.id('enf')),
                (pg_temp.id('comgps'), pg_temp.id('s2'), pg_temp.id('tec')),
                (pg_temp.id('comgps'), pg_temp.id('s2'), pg_temp.id('tec2'))) x(u, s, p);

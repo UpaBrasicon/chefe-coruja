@@ -5,6 +5,7 @@
 // - o JSON sai como veio, com um cabeçalho de contexto;
 // - o CSV achata cada linha nas colunas abaixo, com o padrão de csv.ts.
 import { gerarCsv, type ValorCsv } from './csv.ts'
+import { dataIso } from './formato.ts'
 
 export type Conjunto = 'atendimentos' | 'internacoes' | 'leitos' | 'pacientes' | 'documentos'
 export type Formato = 'csv' | 'json'
@@ -166,7 +167,7 @@ export function montarArquivo(formato: Formato, ctx: Contexto, linhas: Linha[]):
 
 /** Nome do arquivo: conjunto_unidade_periodo.ext, sem acento. */
 export function nomeArquivo(formato: Formato, ctx: Contexto): string {
-  const base = [ctx.conjunto, ctx.unidade, CONJUNTOS[ctx.conjunto].comPeriodo ? `${ctx.desde}_a_${ctx.ate}` : ctx.geradoEm.slice(0, 10),
+  const base = [ctx.conjunto, ctx.unidade, CONJUNTOS[ctx.conjunto].comPeriodo ? `${ctx.desde}_a_${ctx.ate}` : dataIso(ctx.geradoEm),
     ctx.mascarado ? '' : 'completo']
     .filter(Boolean).join('_')
   const limpo = base.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')

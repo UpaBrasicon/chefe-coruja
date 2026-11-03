@@ -75,9 +75,11 @@ def auth(h: str | None):
 
 def embed(t: str) -> list[float]:
     # keep_alive: sem ele o Ollama descarrega o modelo após 5 min parado e a
-    # próxima pergunta espera a recarga (5–15 s no CPU do VPS)
+    # próxima pergunta espera a recarga (41–60+ s no CPU do VPS, medido em
+    # 27/10/2026). "-1m" (negativo) = nunca descarrega; o pedido vale mais que
+    # o OLLAMA_KEEP_ALIVE do contêiner do Ollama, por isso fica aqui também.
     r = httpx.post(f"{E['OLLAMA_URL']}/api/embed",
-                   json={"model": E["EMBED_MODEL"], "input": [t], "keep_alive": E.get("OLLAMA_KEEP_ALIVE", "24h")},
+                   json={"model": E["EMBED_MODEL"], "input": [t], "keep_alive": E.get("OLLAMA_KEEP_ALIVE", "-1m")},
                    timeout=60)
     r.raise_for_status()
     return r.json()["embeddings"][0]

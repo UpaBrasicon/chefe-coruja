@@ -67,4 +67,4 @@ em transação desfeita:
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (publica a tela).
+PR #353 mesclado em 29/10/2026: a tela está no ar (o colega não vê mais "Aprovar", e o gestor vê e decide as trocas). Migration `20270208000005` aplicada na produção em 30/10/2026, com o "ok produção" do RT, pela sessão principal; versão registrada; `aprovar_troca` conferida (só o gestor aplica). Concluído.

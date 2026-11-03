@@ -1235,6 +1235,50 @@ chegou antes):
 - Ainda falta a tela onde a unidade define os alvos novos (classificação, exame, medicação, permanência).
   Até lá, só o alvo da cor e a hora de reavaliação marcam atraso.
 
+## Fila do PS com dados novos (P2, 27/10/2026)
+
+Pedido do RT em 21/10/2026. Diagnóstico em `docs/porta/FILA-PS-DADOS-NOVOS-DIAGNOSTICO.md`; decisões D1–D5
+aceitas pelo RT em 27/10/2026; banco (`fila_ps_detalhes`) na homologação. Esta parte é só o desenho.
+
+**Hoje** (`fila-hoje-aguardando-claro|escuro.png`, `fila-hoje-atendimento-claro.png`, a fila real com dados
+fictícios): três abas em tabela. Aguardando tem cor, paciente, queixa, espera, alvo, situação e as ações
+(sala, chamar, abrir); Em atendimento tem cor, paciente, queixa, há quanto tempo e situação. Para saber da
+alergia, da sala, do médico, dos exames ou da medicação, o médico abre o atendimento. Na foto, o amarelo
+mostra o alvo fixo de 60 min, enquanto a unidade fictícia usa 30: José, há 35 min, não aparece atrasado (o
+achado D5).
+
+**Pedido** (D1–D5): Aguardando ganha alergia e sala; Em atendimento ganha alergia, médico, exames e
+medicação. Alergia: "Nega alergia", "Desconhece", as substâncias (até duas, "+N") com a grave em vermelho e
+um sinal, ou "Alergia não perguntada" em âmbar. Medicação de colega só em contagem ("2 pendentes", "checada
+14:54"). Exames "N de M prontos". O alvo da cor passa a ser o da unidade.
+
+**Referências do Refero:** Attio (`4230ed22`: tabela larga, um dado por coluna, com ponto e texto na
+situação); Lemni (`fc91cfac`: na lista, o título com uma segunda linha de dados embaixo); Wrike
+(`3d3e2910`: tabela com a ficha do item escolhido ao lado).
+
+**Opções** (`fila-A|B|C-claro|escuro.png`; as duas abas uma embaixo da outra só para a foto; na tela continuam
+abas). Em todas: o mesmo texto de alergia, exames e medicação, e o alvo da unidade:
+
+- **A · uma coluna para cada dado** (Attio): Aguardando com Alergia e Sala em colunas próprias (9 colunas);
+  Em atendimento com Alergia, Médico, Exames e Medicação (10 colunas). Tudo lido na horizontal, ordenável
+  por coluna. Custo: a 1.100 px a tabela já passa da largura, e a situação e as ações saem da tela (rola de
+  lado).
+- **B · embaixo do nome e uma coluna "Andamento"** (Lemni): a alergia e a sala (ou o médico) numa segunda
+  linha sob o nome do paciente, onde o olho já está; em Em atendimento, uma coluna "Andamento" com "Exames: 1
+  de 4 prontos" e "Medicação: 2 pendentes". As abas ficam com 7 colunas, como hoje, e cabem a 1.100 px.
+  Linhas um pouco mais altas.
+- **C · a fila de hoje e a ficha ao lado** (Wrike): a tabela fica enxuta, só com um sinal de alergia ao lado
+  do nome (vermelho na grave, âmbar no "não perguntado"), e a linha escolhida abre uma ficha à direita com
+  alergia, sala, médico, exames, medicação, alvo e "Abrir atendimento". Custo: para ver os dados de cada
+  paciente é preciso clicar nele; a fila perde largura para a ficha.
+
+**Decisão do RT (27/10/2026): nenhuma das três.** A fila fica como está, sem as colunas novas. Entram só o
+consultório do plantão (uma barra no topo da fila, no molde da sala da triagem, guardado no banco e preso ao
+plantão; as linhas ficam só com "Chamar" e "Abrir") e o alvo da cor da unidade na fila do médico. Aplicado na
+branch `feat/fila-consultorio-do-plantao` (PR #281); fotos `fila-consultorio-vazio-claro.png` e
+`fila-consultorio-escolhido-claro|escuro.png`: sem consultório escolhido o "Chamar" espera a escolha; com ele,
+cada linha cabe a 1.100 px, e o amarelo usa o alvo de 30 min da unidade (José, há 35 min, fica atrasado).
+
 ## Fase 5C-3.4 — telas do ERP (27/10/2026)
 
 Pedido do RT: "criar o ERP usando o Refero". A tela nova "Envio ao ERP" tem duas abas:
@@ -1272,6 +1316,109 @@ Os dados, as regras e a API já estão em produção (3.1 a 3.3).
     medicamentos e as glosas.
   - **Plantões:** uma linha por mês (em andamento, pronto para fechar, conciliado), que abre com
     o aviso, a tabela por profissional e o botão de fechar.
+
+**Escolha do RT (27/10/2026): A, lista com filtro e gaveta.** Aplicada na branch `fase5/erp-telas`:
+
+- **`EnvioErp.tsx`** (`/faturamento/erp`, menu "Envio ao ERP"), com duas abas:
+  - **Contas:** filtros pela situação no ERP com a contagem. "Estornar no ERP" é a versão substituída
+    que o ERP já tinha lançado. A tabela das versões abre a gaveta da conta, com o aviso da situação,
+    as versões, os itens (o que fica fora do arquivo aparece apagado), os medicamentos e as glosas.
+  - **Plantões do mês:** só o gestor. Tem o mês com setas, a situação (aberto, em andamento ou a
+    conciliação da versão vigente), CSV e JSON, fechar com confirmação e reabrir com motivo. A tabela
+    vai por profissional, com a coluna "Atenção" (falta justificada, sem presença, sem saída) e o
+    total; embaixo, o histórico das versões.
+- **`src/lib/erp.ts`:** a situação de cada versão, o resumo por profissional e o arquivo CSV/JSON, com
+  testes em `erp.test.ts`.
+- **Conferida na página de teste** com a tela real e dados fictícios, nos dois temas e em 390 px, sem
+  rolagem lateral (`erp-A-aplicada-*.png`). Mostra a gaveta, a confirmação de fechar e o mês fechado.
+
+## Fase 5C-4.3 — tela dos webhooks (27/10/2026)
+
+A tela fica em Integrações (`/integracoes`), ao lado das chaves da API. O super admin cadastra o
+destino; o gestor da unidade vê, desliga e reenvia. O banco, o envio e a API já estão no master
+(4.1 e 4.2, PRs #295 e #297).
+
+**Referências do Refero** (busca de telas, web):
+
+| Referência | Tela (id) | O que vem dela |
+|---|---|---|
+| Lemon Squeezy, webhooks | `93431736-e58f-4308-9eab-040095bc0c40` | lista de destinos (endereço e quantos eventos) dentro das configurações |
+| fal, histórico de requisições | `3471468c-e203-4b57-997b-f962de757646` | inspetor à direita com o resultado do webhook |
+| Cal.com, criar webhook | `476006bd-428f-4f94-af6a-e6ffb90d8016` | diálogo com endereço, eventos e segredo |
+| Stripe, Developers › eventos | `2c78596b-cd33-4f68-aa5b-1be5bfb5a00e` | entregas como registro próprio, com filtro pela situação |
+| Zendesk, status | `7957c520-682f-4b22-ba1d-d86b77ed661c` | saúde de cada serviço em barras no tempo |
+| Enode, detalhe do webhook | `c11a3f63-ddbb-4567-965f-3ff68cc9e525` | o corpo enviado num diálogo, para conferir |
+
+**Opções** (`wh-A|B|C-*-claro|escuro.png`; dados fictícios). Nas três opções:
+- as abas são "Chaves da API" e "Webhooks";
+- o "Novo destino" é o diálogo de `wh-A-novo` (nome, endereço, chave, unidades da chave e eventos);
+- depois de criar, o segredo aparece uma vez só, com "Copiar" (`wh-A-segredo`).
+
+- **A · lista com gaveta** (Lemon Squeezy, fal, Cal.com).
+  - **Lista:** tabela dos destinos com os eventos, as unidades, as últimas 24 h (entregues, na fila,
+    falharam) e a situação (ligado, falhando, desligado).
+  - **Gaveta:** a linha abre a gaveta com:
+    - o aviso de falha;
+    - a chave, as unidades, os eventos e o segredo (só a data da troca);
+    - as entregas recentes, com "Reenviar";
+    - "Desligar" e "Trocar segredo".
+- **B · entregas como registro** (Stripe).
+  - **Aba Webhooks:** um cartão por destino, com as ações nele.
+  - **Aba Entregas:** a terceira aba junta as entregas de todos os destinos, com o aviso do que
+    falhou ("Reenviar os 2"), os filtros pela situação e pelo destino e "Reenviar" em cada linha.
+- **C · saúde por destino** (Zendesk e Enode).
+  - **Linha do destino:** cada destino mostra as últimas 24 h em barras, uma por hora (verde
+    entregou, vermelho falhou).
+  - **Linha aberta:** mostra as entregas.
+  - **Entrega:** o clique abre o aviso enviado (cabeçalhos e corpo, sem o segredo), com "Reenviar
+    agora".
+
+**Escolha do RT (27/10/2026): A, lista com gaveta.** Aplicada na branch `fase5/webhooks-tela`:
+
+- **`Integracoes.tsx`** virou página com abas: "Chaves da API" (o que já havia) e "Webhooks"
+  (`WebhooksAba.tsx`).
+- **Lista:** a tabela dos destinos, com os eventos, as unidades, as últimas 24 h e a situação
+  (ligado, falhando, chave vencida, desligado).
+- **Gaveta:**
+  - um aviso pela situação;
+  - a chave, as unidades, os eventos, a data do segredo e o cadastro;
+  - as entregas recentes, com a próxima tentativa ou "Reenviar";
+  - "Desligar" com motivo (gestor e super admin);
+  - "Religar" e "Trocar segredo" (só o super admin; o segredo novo aparece uma vez).
+- **Novo destino** (só o super admin): o diálogo confere o endereço com a mesma regra do banco, mostra
+  as unidades da chave escolhida e, no fim, o segredo com "Copiar".
+- **`src/lib/webhooks.ts`:** a situação, o resumo das 24 h, a resposta de cada entrega e o endereço,
+  com testes em `webhooks.test.ts`.
+- **Conferida na página de teste** com a tela real e dados fictícios: dois temas, o diálogo com um
+  endereço recusado, o gestor (sem "Novo destino" nem "Trocar segredo") e 390 px sem rolagem lateral
+  (`wh-A-aplicada-*.png`).
+
+## Fase 5C-5.4c — aba RNDS em Integrações (29/10/2026)
+
+Opções mostradas ao RT com telas do Refero. Escolha: "todas a".
+
+| Referência | Tela | O que serviu |
+|---|---|---|
+| Lovable, domínio | `5b07549e-4869-4520-b1df-e55db3247885` | faixa do que pede ação no topo, linha de números e seções empilhadas (opção A) |
+| Linear, lista com SLA | `cb07661a-3372-4bf9-80ce-4b308e947548` | opção B, fila agrupada pelo que pede ação (não escolhida) |
+| Dub, configuração de SSO | `7ae28be7-f1a8-4209-91b5-3e6744342542` | opção C, cartões de configuração (não escolhida) |
+| Appwrite, enviar arquivo | `02cac7d9-3f77-4f4f-b211-a836245d36d3` | diálogo com área de soltar o arquivo e aviso de segurança |
+| Fibery, registro de atividade | `2cec7602-2f2f-4abe-afc4-cdb4a03b094f` | fila em tabela com filtro |
+| Enode, regenerar segredo | `850a9864-9559-4998-8ec0-145da0e55768` | confirmar a produção digitando o nome |
+
+- **Escolhas do RT:**
+  - a) desenho A, estado no topo;
+  - b) certificado num diálogo;
+  - c) fila com os últimos 50 e filtro por situação;
+  - d) produção confirmada digitando o nome da credencial;
+  - e) categoria "RNDS" no sino, que leva à aba.
+- **Tela:** `src/pages/admin/RndsAba.tsx`. As regras ficam em `src/lib/rnds.ts`, com testes em `rnds.test.ts`.
+- **Conferida na página de teste** com a tela real e dados fictícios (`rnds-*.png`):
+  - os dois temas;
+  - os cenários tudo certo, pausado e vencido com bloqueio, vence em 7 dias e sem credencial;
+  - os diálogos do certificado, da credencial e da produção;
+  - o gestor não vê a troca de ambiente;
+  - 390 px sem rolagem lateral.
 
 ## O que o padrão já fixou (não muda nesta parte)
 

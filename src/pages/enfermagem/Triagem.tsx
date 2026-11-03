@@ -10,12 +10,14 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
+import { ordemFilaUbs } from '@/domain/aps'
 import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
 import { ordemMedica, rotuloCor, type CorRisco } from '@/domain/risco'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { AlergiaNaTela } from './AlergiaNaTela'
 import { Classificar } from './triagem/Classificar'
+import { EscutaInicial } from './triagem/EscutaInicial'
 import { EsperaMedico } from './triagem/Espera'
 import { BarraSalaTriagem, FilaTriagem } from './triagem/Fila'
 import { useSalaTriagem } from './triagem/useSalaTriagem'
@@ -31,15 +33,23 @@ import { acimaDoAlvo, dataSP, esperaMin, nomeDe, type NaEspera, type NaFila } fr
 // Revisão visual 3.4 (opção B do RT, 25/10/2026): as duas listas em abas, como a
 // fila do PS; a aba fica na URL (?fila=), e a maior espera da triagem e quem
 // passou do alvo da cor aparecem à direita das abas, em qualquer aba.
+// 5A, tarefa 2, parte 2.4 (decisões E1 a E4 e opção C do RT, 02/11/2026): na
+// UBS a mesma tela é a escuta inicial, com a classificação do CAB 28, sem
+// tempo-alvo, sem reclassificação e sem a folha da classificação da porta.
 
 const ABAS = [
   { valor: 'triagem', rotulo: 'Aguardando triagem' },
   { valor: 'medico', rotulo: 'Classificados aguardando o médico' },
 ] as const
+const ABAS_UBS = [
+  { valor: 'triagem', rotulo: 'Aguardando escuta' },
+  { valor: 'medico', rotulo: 'Escutados aguardando o médico' },
+] as const
 type Aba = (typeof ABAS)[number]['valor']
 
 export default function Triagem() {
   const { unidadeAtiva } = useUnidade()
+  const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
   const [atual, setAtual] = React.useState<NaFila | null>(null)
   // cor da última classificação quando a janela é de reclassificação
   const [corAtual, setCorAtual] = React.useState<CorRisco | null>(null)
@@ -66,7 +76,7 @@ export default function Triagem() {
   })
 
   const espera = useQuery({
-    queryKey: ['triagem-espera', unidadeAtiva?.unidade_id],
+    queryKey: ['triagem-espera', unidadeAtiva?.unidade_id, ubs],
     enabled: !!unidadeAtiva,
     refetchInterval: 20_000,
     queryFn: async () => {
@@ -82,17 +92,17 @@ export default function Triagem() {
         .is('atendimento_iniciado_em', null)
         .not('cor_atual', 'is', null)
       if (error) throw error
-      return ((data ?? []) as unknown as NaEspera[]).sort(ordemMedica)
+      return ((data ?? []) as unknown as NaEspera[]).sort(ubs ? ordemFilaUbs : ordemMedica)
     },
   })
 
   const [busca, setBusca] = useSearchParams()
   const aba: Aba = busca.get('fila') === 'medico' ? 'medico' : 'triagem'
   const trocarAba = (v: Aba) => setBusca((b) => { const n = new URLSearchParams(b); if (v === 'triagem') n.delete('fila'); else n.set('fila', v); return n }, { replace: true })
-  const sala = useSalaTriagem(fila.data ?? [])
+  const sala = useSalaTriagem(fila.data ?? [], ubs)
   const contagem: Record<Aba, number> = { triagem: (fila.data ?? []).length, medico: (espera.data ?? []).length }
   const maiorEspera = Math.max(0, ...(fila.data ?? []).map((e) => esperaMin(e.chegada_em)))
-  const acima = acimaDoAlvo(espera.data ?? [])
+  const acima = ubs ? 0 : acimaDoAlvo(espera.data ?? [])
 
   const fechar = (msg: string | null) => {
     if (msg && atual) setAviso({ texto: msg, episodioId: atual.id })
@@ -103,22 +113,26 @@ export default function Triagem() {
 
   return (
     <>
-      <TituloPagina titulo="Triagem" descricao="Fichas da recepção aguardando classificação. O protocolo é referência; a cor é sua." />
+      {ubs
+        ? <TituloPagina titulo="Escuta inicial" descricao="Fichas de escuta inicial da recepção. A classificação do CAB 28 é referência; a cor é sua." />
+        : <TituloPagina titulo="Triagem" descricao="Fichas da recepção aguardando classificação. O protocolo é referência; a cor é sua." />}
       {aviso && (
         <div role="status" className="mb-3 flex flex-wrap items-center gap-[9px] rounded-container border border-acao/20 bg-acao/5 px-[15px] py-[11px] text-controle text-acao">
           <Check className="size-[15px]" aria-hidden />
           <span className="flex-[1_1_220px]">{aviso.texto}</span>
-          <Button variant="outline" size="sm" className="border-acao/35 bg-superficie text-acao"
-            onClick={() => void imprimirRelatorio({ tipo: 'classificacao', episodioId: aviso.episodioId })}>
-            <Printer /> Imprimir resumo
-          </Button>
+          {!ubs && (
+            <Button variant="outline" size="sm" className="border-acao/35 bg-superficie text-acao"
+              onClick={() => void imprimirRelatorio({ tipo: 'classificacao', episodioId: aviso.episodioId })}>
+              <Printer /> Imprimir resumo
+            </Button>
+          )}
         </div>
       )}
       <div className="mb-3 empty:hidden"><BarraSalaTriagem sala={sala} /></div>
       <Tabs value={aba} onValueChange={(v) => trocarAba(v as Aba)} className="gap-3">
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
           <TabsList aria-label="Triagem" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
-            {ABAS.map((a) => (
+            {(ubs ? ABAS_UBS : ABAS).map((a) => (
               <TabsTrigger key={a.valor} value={a.valor}>
                 {a.rotulo}
                 <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem[a.valor]}</span>
@@ -127,8 +141,8 @@ export default function Triagem() {
           </TabsList>
           {/* o que pede atenção aparece em qualquer aba */}
           <span className="pb-2.5 text-apoio text-tinta-sussurro">
-            {contagem.triagem > 0 && <>maior espera na triagem {maiorEspera} min · </>}
-            <span className={cn(acima > 0 && 'font-medium text-critico')}>{acima} acima do alvo da cor</span>
+            {contagem.triagem > 0 && <>maior espera {ubs ? 'na escuta' : 'na triagem'} {maiorEspera} min{!ubs && ' · '}</>}
+            {!ubs && <span className={cn(acima > 0 && 'font-medium text-critico')}>{acima} acima do alvo da cor</span>}
           </span>
         </div>
         <TabsContent value="triagem">
@@ -137,6 +151,7 @@ export default function Triagem() {
             carregando={fila.isLoading}
             erro={fila.error as Error | null}
             sala={sala}
+            ubs={ubs}
             onTriar={(e) => { setAviso(null); setCorAtual(null); setAtual(e) }}
           />
         </TabsContent>
@@ -145,6 +160,7 @@ export default function Triagem() {
             lista={espera.data ?? []}
             carregando={espera.isLoading}
             erro={espera.error as Error | null}
+            ubs={ubs}
             onReclassificar={(e) => { setAviso(null); setCorAtual(e.cor_atual); setAtual(e) }}
           />
         </TabsContent>
@@ -156,7 +172,7 @@ export default function Triagem() {
             <>
               <div className="flex flex-col gap-1 pr-10">
                 <span className="text-rotulo font-semibold text-tinta-sussurro">
-                  {corAtual ? `Reclassificação · hoje ${rotuloCor(corAtual)}` : 'Triagem'}
+                  {ubs ? 'Escuta inicial' : corAtual ? `Reclassificação · hoje ${rotuloCor(corAtual)}` : 'Triagem'}
                 </span>
                 <DialogTitle>
                   {nomeDe(atual)}{' '}
@@ -169,12 +185,16 @@ export default function Triagem() {
                 <DialogDescription>
                   {[`Queixa referida: ${atual.queixa}`, prios.length ? `Prioridade legal: ${prios.join(', ')}` : ''].filter(Boolean).join(' · ')}
                   <br />
-                  {corAtual
+                  {ubs
+                    ? 'Na situação aguda o paciente vai para a fila do médico; na não aguda a ficha encerra na escuta.'
+                    : corAtual
                     ? 'O paciente continua na fila do atendimento médico, na posição da nova prioridade.'
                     : 'Ao registrar a classificação, o paciente vai para a fila do atendimento médico.'}
                 </DialogDescription>
               </div>
-              <Classificar key={`${atual.id}-${corAtual ?? 'nova'}`} ep={atual} corAtual={corAtual} onFim={fechar} />
+              {ubs
+                ? <EscutaInicial key={atual.id} ep={atual} onFim={fechar} />
+                : <Classificar key={`${atual.id}-${corAtual ?? 'nova'}`} ep={atual} corAtual={corAtual} onFim={fechar} />}
             </>
           )}
         </DialogContent>

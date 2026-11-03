@@ -1,0 +1,12 @@
+{
+  "name": "rnds-envio",
+  "private": true,
+  "description": "Serviço de envio à RNDS (Fase 5C, tarefa 5). Só as dependências de execução da imagem; o código roda com o Node 24 direto do TypeScript.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.106.2"
+  }
+}

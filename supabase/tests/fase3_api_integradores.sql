@@ -77,7 +77,7 @@ SELECT pg_temp.falha($$SELECT public.api_criar_chave('Secretaria X', 'live', ARR
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 SELECT pg_temp.falha($$SELECT public.api_criar_chave('Secretaria X', 'live', ARRAY['21000000-0000-4000-8000-000000000094']::uuid[], ARRAY['pacientes'], ARRAY['não-é-ip'])$$,
   'IP ou faixa inválida', 'IP inválido recusado');
-SELECT pg_temp.falha($$SELECT public.api_criar_chave('Secretaria X', 'live', ARRAY['21000000-0000-4000-8000-000000000094']::uuid[], ARRAY['financeiro'])$$,
+SELECT pg_temp.falha($$SELECT public.api_criar_chave('Secretaria X', 'live', ARRAY['21000000-0000-4000-8000-000000000094']::uuid[], ARRAY['folha'])$$,
   'Confira o nome', 'recurso fora da lista recusado');
 INSERT INTO t SELECT 'k1', public.api_criar_chave('Secretaria de Saúde de Teste', 'live',
   ARRAY['21000000-0000-4000-8000-000000000094']::uuid[], ARRAY['pacientes', 'atendimentos'], '{}', 3)::text;

@@ -100,7 +100,7 @@ def calcular_metricas_unidade(ctx, unidade_id: str, janela: str) -> list[dict]:
             data_plantao = (r.get("escala_plantao") or {}).get("data")
             if not data_plantao:
                 continue
-            plantao_ms = ms_epoch(f"{data_plantao}T23:59:59")
+            plantao_ms = ms_epoch(f"{data_plantao}T23:59:59-03:00")  # fim do dia em Brasília (VD11)
             criado_ms = ms_epoch(r.get("created_at"))
             if plantao_ms is not None and criado_ms is not None and plantao_ms - criado_ms < 48 * 3_600_000:
                 tardio += 1

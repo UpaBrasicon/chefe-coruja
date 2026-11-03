@@ -2165,10 +2165,12 @@ export type Database = {
           motivo: string | null
           oxigenio: Json | null
           paciente_id: string
+          protocolo: string | null
           publico: string
           publico_pela_idade: string | null
           queixa: string | null
           reclassificacao: boolean
+          saida_escuta: string | null
           unidade_id: string
         }
         Insert: {
@@ -2191,10 +2193,12 @@ export type Database = {
           motivo?: string | null
           oxigenio?: Json | null
           paciente_id: string
+          protocolo?: string | null
           publico: string
           publico_pela_idade?: string | null
           queixa?: string | null
           reclassificacao?: boolean
+          saida_escuta?: string | null
           unidade_id: string
         }
         Update: {
@@ -2217,10 +2221,12 @@ export type Database = {
           motivo?: string | null
           oxigenio?: Json | null
           paciente_id?: string
+          protocolo?: string | null
           publico?: string
           publico_pela_idade?: string | null
           queixa?: string | null
           reclassificacao?: boolean
+          saida_escuta?: string | null
           unidade_id?: string
         }
         Relationships: [
@@ -3629,10 +3635,14 @@ export type Database = {
       episodios: {
         Row: {
           aberto_por: string
+          agendamento_id: string | null
           atendimento_iniciado_em: string | null
           atendimento_medico_id: string | null
           chegada_em: string
+          ciap_aps: string[] | null
+          cid_aps: string[] | null
           classificado_em: string | null
+          conduta_aps: string[] | null
           cor_atual: string | null
           created_at: string
           desfecho: string | null
@@ -3646,21 +3656,27 @@ export type Database = {
           id: string
           paciente_id: string
           prioridades_legais: string[]
+          problemas_aps: string[] | null
           publico: string | null
           queixa: string
           reavaliar_em: string | null
           setor_id: string
           suspeita_infeccao_em: string | null
           suspeita_infeccao_por: string | null
+          tipo_atendimento_aps: string | null
           unidade_id: string
           updated_at: string
         }
         Insert: {
           aberto_por: string
+          agendamento_id?: string | null
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
+          ciap_aps?: string[] | null
+          cid_aps?: string[] | null
           classificado_em?: string | null
+          conduta_aps?: string[] | null
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
@@ -3674,21 +3690,27 @@ export type Database = {
           id?: string
           paciente_id: string
           prioridades_legais?: string[]
+          problemas_aps?: string[] | null
           publico?: string | null
           queixa: string
           reavaliar_em?: string | null
           setor_id: string
           suspeita_infeccao_em?: string | null
           suspeita_infeccao_por?: string | null
+          tipo_atendimento_aps?: string | null
           unidade_id: string
           updated_at?: string
         }
         Update: {
           aberto_por?: string
+          agendamento_id?: string | null
           atendimento_iniciado_em?: string | null
           atendimento_medico_id?: string | null
           chegada_em?: string
+          ciap_aps?: string[] | null
+          cid_aps?: string[] | null
           classificado_em?: string | null
+          conduta_aps?: string[] | null
           cor_atual?: string | null
           created_at?: string
           desfecho?: string | null
@@ -3702,12 +3724,14 @@ export type Database = {
           id?: string
           paciente_id?: string
           prioridades_legais?: string[]
+          problemas_aps?: string[] | null
           publico?: string | null
           queixa?: string
           reavaliar_em?: string | null
           setor_id?: string
           suspeita_infeccao_em?: string | null
           suspeita_infeccao_por?: string | null
+          tipo_atendimento_aps?: string | null
           unidade_id?: string
           updated_at?: string
         }
@@ -9878,6 +9902,54 @@ export type Database = {
       }
     }
     Functions: {
+      encaminhamento_upa_cancelar: { Args: { p_id: string; p_motivo: string }; Returns: undefined }
+      encaminhamento_upa_marcar_chegada: {
+        Args: { p_chegou: boolean; p_episodio?: string; p_id: string; p_observacao?: string }
+        Returns: Json
+      }
+      encaminhamentos_upa_destino: { Args: { p_unidade: string }; Returns: Json }
+      encaminhamentos_upa_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      encaminhamentos_upa_origem: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
+      encaminhar_upa: { Args: { p_destino: string; p_episodio: string; p_motivo: string }; Returns: string }
+      contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
+      hiperdia_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      hiperdia_painel: { Args: { p_unidade: string }; Returns: Json }
+      programa_incluir: { Args: { p_paciente: string; p_programa: string }; Returns: string }
+      programa_retirar: { Args: { p_motivo: string; p_participante: string }; Returns: undefined }
+      registrar_avaliacao_pes: { Args: { p_episodio: string; p_observacao?: string; p_resultado: string }; Returns: string }
+      contrarreferencias_da_unidade: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
+      contrarreferencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      agenda_cancelar: { Args: { p_agendamento: string; p_motivo?: string }; Returns: undefined }
+      agenda_configuracao: { Args: { p_unidade: string }; Returns: Json }
+      agenda_definir_configuracao: {
+        Args: { p_horarios: Json; p_perfil: string; p_unidade: string }
+        Returns: undefined
+      }
+      agenda_desfazer_falta: { Args: { p_agendamento: string }; Returns: undefined }
+      agenda_dia: { Args: { p_data: string; p_unidade: string }; Returns: Json }
+      agenda_fechar: {
+        Args: { p_especifique?: string; p_fim: string; p_inicio: string; p_motivo: string; p_perfil: string; p_unidade: string }
+        Returns: string
+      }
+      agenda_marcar: {
+        Args: {
+          p_inicio: string
+          p_observacao?: string
+          p_origem_episodio?: string
+          p_paciente: string
+          p_perfil: string
+          p_tipo_atendimento?: string
+          p_unidade: string
+        }
+        Returns: string
+      }
+      agenda_reabrir: { Args: { p_fechamento: string }; Returns: undefined }
+      agenda_registrar_chegada: { Args: { p_agendamento: string; p_queixa: string; p_setor: string }; Returns: Json }
+      agenda_registrar_falta: { Args: { p_agendamento: string }; Returns: undefined }
+      agenda_reservar: {
+        Args: { p_especifique?: string; p_inicio: string; p_motivo: string; p_perfil: string; p_unidade: string }
+        Returns: string
+      }
       abrir_chamado_tecnico: {
         Args: {
           p_categoria: string
@@ -10052,6 +10124,28 @@ export type Database = {
       definir_bpa_config: { Args: { p_dados: Json; p_unidade: string }; Returns: undefined }
       definir_meu_cns: { Args: { p_cns: string }; Returns: string }
       definir_cnes_unidade: { Args: { p_cnes: string; p_unidade: string }; Returns: string }
+      admin_criar_unidade: {
+        Args: {
+          p_cnes?: string
+          p_municipio?: string
+          p_nome: string
+          p_organizacao: string
+          p_tipo: Database["public"]["Enums"]["tipo_unidade"]
+          p_uf?: string
+        }
+        Returns: string
+      }
+      admin_editar_unidade: {
+        Args: {
+          p_ativo: boolean
+          p_municipio?: string
+          p_nome: string
+          p_tipo: Database["public"]["Enums"]["tipo_unidade"]
+          p_uf?: string
+          p_unidade: string
+        }
+        Returns: undefined
+      }
       marcar_sempre_bpa_c: { Args: { p_id: string; p_sempre: boolean }; Returns: undefined }
       apac_conferencia: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
       apac_fechamentos_da_unidade: { Args: { p_unidade: string }; Returns: Json }
@@ -10428,18 +10522,6 @@ export type Database = {
         Args: { p_a_conferir?: boolean; p_busca?: string }
         Returns: Json
       }
-      ajustar_estoque: {
-        Args: { p_medicamento: string; p_motivo: string; p_quantidade: number; p_unidade: string }
-        Returns: Json
-      }
-      extrato_estoque: {
-        Args: { p_dias?: number; p_medicamento: string; p_unidade: string }
-        Returns: Json
-      }
-      registrar_entrada_estoque: {
-        Args: { p_documento: string; p_medicamento: string; p_motivo?: string; p_quantidade: number; p_unidade: string }
-        Returns: Json
-      }
       cadastrar_medicamento: {
         Args: { p_dados: Json; p_unidade: string }
         Returns: Json
@@ -10475,6 +10557,18 @@ export type Database = {
       usar_medicamento_na_unidade: {
         Args: { p_medicamento: string; p_unidade: string }
         Returns: undefined
+      }
+      ajustar_estoque: {
+        Args: { p_medicamento: string; p_motivo: string; p_quantidade: number; p_unidade: string }
+        Returns: Json
+      }
+      extrato_estoque: {
+        Args: { p_dias?: number; p_medicamento: string; p_unidade: string }
+        Returns: Json
+      }
+      registrar_entrada_estoque: {
+        Args: { p_documento: string; p_medicamento: string; p_motivo?: string; p_quantidade: number; p_unidade: string }
+        Returns: Json
       }
       lancar_procedimento_conta: {
         Args: { p_conta: string; p_procedimento: string; p_profissional?: string; p_quantidade?: number; p_realizado_em?: string }
@@ -12533,6 +12627,10 @@ export type Database = {
         Args: { p_conteudo: string; p_ficha: Json; p_internacao: string }
         Returns: string
       }
+      definir_categoria_modelo_termo: {
+        Args: { p_categoria: string; p_modelo: string }
+        Returns: undefined
+      }
       corrigir_admissao: {
         Args: { p_conteudo: string; p_documento: string; p_ficha: Json; p_justificativa: string }
         Returns: string
@@ -12542,10 +12640,6 @@ export type Database = {
         Returns: string
       }
       reavaliacoes_do_quadro: { Args: { p_internacao: string }; Returns: Json }
-      definir_categoria_modelo_termo: {
-        Args: { p_categoria: string; p_modelo: string }
-        Returns: undefined
-      }
       registrar_afericao_crescimento: {
         Args: {
           p_data: string
@@ -12623,6 +12717,30 @@ export type Database = {
       registrar_checkout: {
         Args: { p_lat?: number; p_lng?: number; p_registro: string }
         Returns: undefined
+      }
+      registrar_conduta_aps: {
+        Args: {
+          p_ciaps?: string[]
+          p_cids: string[]
+          p_condutas: string[]
+          p_episodio: string
+          p_obs?: string
+          p_problemas: string[]
+          p_tipo: string
+        }
+        Returns: undefined
+      }
+      registrar_escuta_aps: {
+        Args: {
+          p_cor: string
+          p_episodio: string
+          p_obs?: string
+          p_publico?: string
+          p_queixa?: string
+          p_saida: string
+          p_sinais?: Json
+        }
+        Returns: string
       }
       registrar_contingencia: {
         Args: { p_fim: string; p_inicio: string; p_motivo: string; p_unidade: string }
@@ -13462,7 +13580,8 @@ export type Database = {
         | "isolamento"
         | "uti"
         | "outro"
-      tipo_unidade: "hospital" | "upa" | "clinica"
+        | "consultorio"
+      tipo_unidade: "hospital" | "upa" | "clinica" | "ubs"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -13833,8 +13952,9 @@ export const Constants = {
         "isolamento",
         "uti",
         "outro",
+        "consultorio",
       ],
-      tipo_unidade: ["hospital", "upa", "clinica"],
+      tipo_unidade: ["hospital", "upa", "clinica", "ubs"],
     },
   },
   terminologia: {

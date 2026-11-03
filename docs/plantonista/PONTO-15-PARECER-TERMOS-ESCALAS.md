@@ -19,9 +19,8 @@ tarefa" do `BACKLOG.md`. Diagnóstico e pesquisa estão em
 
 - A migration `20270203000006_termo_paliativo_pergunta_surpresa` foi aplicada
   na homologação, com a versão registrada e o rollback testado.
-- A tela está no PR do branch `fase-plantonista/parecer-termos-escalas`,
-  publicado na homologação.
-- A produção espera o "ok produção" do RT.
+- A tela foi publicada na homologação e juntada ao master no PR #387.
+- Em produção desde 01/11/2026 (ver a seção 7).
 
 ## 1. Diagnóstico
 
@@ -114,3 +113,13 @@ tarefa" do `BACKLOG.md`. Diagnóstico e pesquisa estão em
 | Pergunta surpresa só no adulto, com a fonte | pgTAP, rodada na homologação e teste da ficha |
 | Termo paliativo com modelo da unidade da categoria | pgTAP e rodada na homologação; o RT confere |
 | Escalas da enfermagem na aba Escalas | O RT confere |
+
+## 7. Produção
+
+- 01/11/2026: com o "ok produção" do RT, a migration
+  `20270203000006_termo_paliativo_pergunta_surpresa` foi aplicada na produção (`db push --include-all`), com a
+  versão registrada e as permissões conferidas.
+- 01/11/2026: PR #387 juntado ao master; o CI ficou verde e a Vercel publicou.
+- 01/11/2026: a função `folha` foi publicada na produção a partir do master
+  `9a23850f`, com o `folhas.ts` dos pontos 10 e 15. Sem token, ela
+  responde 401.

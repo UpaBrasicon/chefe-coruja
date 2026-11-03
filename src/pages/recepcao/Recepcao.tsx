@@ -11,7 +11,10 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
+import { VindoDaUbs } from '@/components/encaminhamento/VindoDaUbs'
+import { ordemFilaUbs, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
@@ -80,6 +83,14 @@ const ABAS: { aba: Aba; rotulo: string; icone: LucideIcon; titulo: string; descr
     descricao: 'Abre em outra janela para espelhar na televisão da sala de espera. Mostra o nome do paciente e a sala de quem chamou, com aviso sonoro e voz.' },
 ]
 
+// 5A, tarefa 2 (D3 e D7 do RT em 02/11/2026): na UBS a ficha vai direto para
+// a fila do consultório, sem triagem e sem painel da porta.
+const ABAS_UBS: typeof ABAS = [
+  { ...ABAS[0], descricao: 'Procure o paciente antes de cadastrar: quem já tem cadastro abre a ficha com um clique. A ficha vai para a fila do consultório.' },
+  { ...ABAS[2], rotulo: 'Fila do consultório', titulo: 'Fila do consultório',
+    descricao: 'Pacientes aguardando a consulta, com prioridade legal primeiro e depois por ordem de chegada. Quem chama é o médico.' },
+]
+
 const ROTA: Record<Aba, string> = { ficha: '', triagem: 'fila-triagem', medica: 'fila-medica', painel: 'painel' }
 
 /** Maior espera de quem ainda não foi atendido (desde a ficha ou a classificação). */
@@ -137,6 +148,8 @@ export default function Recepcao() {
   const { unidadeAtiva, papeisDaUnidade, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const ehGestor = papeisDaUnidade.includes('gestor')
+  const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
+  const abas = ubs ? ABAS_UBS : ABAS
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { tela } = useParams()
@@ -149,12 +162,13 @@ export default function Recepcao() {
   const mostrarAbas = papelAtivo !== 'recepcao'
   const agora = useAgora(30_000)
 
-  // ── portas (setores de emergência) em que a pessoa pode abrir ficha ──────
+  // ── portas (setores de emergência; na UBS, consultórios) em que a pessoa pode abrir ficha
   const { data: portas } = useQuery({
-    queryKey: ['recepcao-portas', unidadeId, ehGestor],
+    queryKey: ['recepcao-portas', unidadeId, ehGestor, ubs],
     enabled: !!unidadeId,
     queryFn: async (): Promise<Porta[]> => {
-      let q = supabase.from('setores').select('id, nome, publico').eq('unidade_id', unidadeId!).eq('tipo', 'emergencia').eq('ativo', true)
+      let q = supabase.from('setores').select('id, nome, publico').eq('unidade_id', unidadeId!)
+        .eq('tipo', ubs ? 'consultorio' : 'emergencia').eq('ativo', true)
       if (!ehGestor) {
         const { data: ids, error } = await supabase.rpc('setores_na_escala_agora')
         if (error) throw error
@@ -183,6 +197,12 @@ export default function Recepcao() {
   })
   const filaTriagem = React.useMemo(() => (fila.data ?? []).filter((e) => e.etapa === 'triagem').sort(ordemTriagem), [fila.data])
   const filaMedica = React.useMemo(() => {
+    // na UBS: quem aguarda a escuta e quem aguarda a consulta, na ordem da fila
+    // do médico (imediato e prioritário da escuta, depois prioridade legal e chegada)
+    if (ubs) {
+      const todos = fila.data ?? []
+      return [...todos.filter((e) => !e.atendimento_iniciado_em).sort(ordemFilaUbs), ...todos.filter((e) => e.atendimento_iniciado_em).sort(ordemFilaUbs)]
+    }
     const lista = (fila.data ?? []).filter((e) => e.etapa === 'atendimento')
     const esperando = lista.filter((e) => !e.atendimento_iniciado_em)
     const emAtendimento = lista.filter((e) => e.atendimento_iniciado_em)
@@ -191,7 +211,7 @@ export default function Recepcao() {
         .sort(ordemMedica)
         .map(({ _cor, ...e }) => ({ ...e, cor_atual: _cor }))
     return [...ordenar(esperando), ...ordenar(emAtendimento)]
-  }, [fila.data])
+  }, [fila.data, ubs])
 
   const chamadas = useQuery({
     queryKey: ['recepcao-chamadas', porta?.id],
@@ -205,7 +225,7 @@ export default function Recepcao() {
   })
 
   const contagem: Partial<Record<Aba, number>> = { triagem: filaTriagem.length, medica: filaMedica.filter((e) => !e.atendimento_iniciado_em).length }
-  const atual = ABAS.find((a) => a.aba === aba)!
+  const atual = abas.find((a) => a.aba === aba) ?? abas[0]
 
   return (
     <div className="flex w-full max-w-5xl flex-col">
@@ -213,7 +233,7 @@ export default function Recepcao() {
 
       {mostrarAbas && (
         <Chips rotulo="Telas da Recepção">
-          {ABAS.map((a) => (
+          {abas.map((a) => (
             <Chip key={a.aba} ativo={aba === a.aba} onClick={() => irPara(a.aba)} contagem={porta && contagem[a.aba] ? contagem[a.aba] : undefined}>
               <a.icone className="size-3.5" aria-hidden /> {a.rotulo}
             </Chip>
@@ -222,11 +242,13 @@ export default function Recepcao() {
       )}
 
       {portas && portas.length === 0 && (
-        <Vazio icone={ClipboardList} titulo="Você não está escalado numa porta agora" texto="A ficha abre numa porta (setor de emergência) em que você está de plantão." />
+        ubs
+          ? <Vazio icone={ClipboardList} titulo="Você não está escalado num consultório agora" texto="Na UBS, a ficha abre no consultório em que você está de plantão." />
+          : <Vazio icone={ClipboardList} titulo="Você não está escalado numa porta agora" texto="A ficha abre numa porta (setor de emergência) em que você está de plantão." />
       )}
 
       {portas && portas.length > 1 && (
-        <Chips rotulo="Porta de entrada">
+        <Chips rotulo={ubs ? 'Consultório' : 'Porta de entrada'}>
           {portas.map((p) => (
             <Chip key={p.id} ativo={porta?.id === p.id} onClick={() => setPortaId(p.id)}>
               {p.nome}
@@ -234,13 +256,16 @@ export default function Recepcao() {
           ))}
         </Chips>
       )}
-      {portas && portas.length > 1 && !porta && <p className="text-apoio text-tinta-sussurro">Escolha a porta de entrada.</p>}
+      {portas && portas.length > 1 && !porta && <p className="text-apoio text-tinta-sussurro">{ubs ? 'Escolha o consultório.' : 'Escolha a porta de entrada.'}</p>}
 
       {porta && aba === 'ficha' && (
         // o formulário fica estreito mesmo com a página na largura da coluna
         <div className="w-full max-w-4xl">
+          {/* 5A, tarefa 5 (H1): na UPA, quem a UBS da rede enviou */}
+          {!ubs && <VindoDaUbs unidadeId={unidadeId!} fichas={fila.data ?? []} />}
           <NovaFicha
             porta={porta}
+            ubs={ubs}
             unidadeId={unidadeId!}
             aoAbrir={() => {
               void queryClient.invalidateQueries({ queryKey: ['recepcao-fila'] })
@@ -264,14 +289,15 @@ export default function Recepcao() {
         <ListaFila
           carregando={fila.isLoading}
           erro={fila.error as Error | null}
-          vazia="Ninguém aguardando atendimento médico."
+          vazia={ubs ? 'Ninguém aguardando a consulta.' : 'Ninguém aguardando atendimento médico.'}
           agora={agora}
+          ubs={ubs}
           grupos={[
             {
               titulo: 'Aguardando o médico',
               itens: filaMedica.filter((e) => !e.atendimento_iniciado_em),
               maiorEspera: maiorEspera(filaMedica, agora),
-              acimaDoAlvo: acimaDoAlvo(filaMedica, agora),
+              acimaDoAlvo: ubs ? undefined : acimaDoAlvo(filaMedica, agora),
             },
             { titulo: 'Em atendimento', itens: filaMedica.filter((e) => e.atendimento_iniciado_em) },
           ]}
@@ -286,7 +312,7 @@ export default function Recepcao() {
 
 // ── Nova ficha ───────────────────────────────────────────────────────────────
 
-function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: string; aoAbrir: () => void }) {
+function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: boolean; unidadeId: string; aoAbrir: () => void }) {
   const queryClient = useQueryClient()
   const [termo, setTermo] = React.useState('')
   const [buscado, setBuscado] = React.useState('')
@@ -295,6 +321,8 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
   const [dados, setDados] = React.useState<Cadastro>(CADASTRO_VAZIO)
   const [queixa, setQueixa] = React.useState('')
   const [prioridades, setPrioridades] = React.useState<PrioridadeLegal[]>([])
+  // UBS: tipo de atendimento da ficha do e-SUS APS (o médico confirma na consulta)
+  const [tipoAps, setTipoAps] = React.useState('')
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
   const [rnAberto, setRnAberto] = React.useState(false)
@@ -343,6 +371,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
     setDados(CADASTRO_VAZIO)
     setQueixa('')
     setPrioridades([])
+    setTipoAps('')
     setDuplicata(null)
     setErroLocal(null)
     setAlvoAberto(null)
@@ -393,7 +422,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
         p_setor: porta.id,
         p_queixa: queixa.trim(),
         p_paciente: pacienteId ?? existente?.id ?? undefined,
-        p_dados: enviados,
+        p_dados: ubs ? { ...enviados, tipo_atendimento: tipoAps } : enviados,
         p_prioridades: prioridades,
         p_outra_pessoa: outraPessoa ?? false,
       })
@@ -402,7 +431,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
     },
     onSuccess: (r) => {
       const nome = modo === 'existente' ? existente?.nome : dados.nome.trim()
-      setAviso(`${nome || 'Paciente'} entrou na fila da triagem · prontuário ${r.prontuario}.`)
+      setAviso(`${nome || 'Paciente'} entrou na fila ${ubs ? (tipoAps === 'escuta_inicial' ? 'da escuta inicial' : 'do consultório') : 'da triagem'} · prontuário ${r.prontuario}.`)
       limpar()
       setTermo('')
       setBuscado('')
@@ -430,6 +459,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
     const primeiro = Object.values(erros)[0]
     if (primeiro) return setErroLocal(primeiro)
     if (queixa.trim().length < 3) return setErroLocal('Escreva a queixa referida.')
+    if (ubs && !tipoAps) return setErroLocal('Escolha o tipo de atendimento.')
     setErroLocal(null)
     registrar.mutate({})
   }
@@ -585,6 +615,15 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
 
           {foraDaPorta && <p className="text-apoio text-atencao">{foraDaPorta}</p>}
 
+          {ubs && (
+            <Campo id="rec-tipo-aps" rotulo="Tipo de atendimento">
+              <CampoSelecao id="rec-tipo-aps" value={tipoAps} onChange={(e) => { setTipoAps(e.target.value); setErroLocal(null) }}>
+                <option value="">Escolha o tipo de atendimento</option>
+                {TIPOS_ATENDIMENTO_APS.map((t) => <option key={t.valor} value={t.valor}>{t.grupo ? `${t.grupo}: ${t.rotulo}` : t.rotulo}</option>)}
+              </CampoSelecao>
+            </Campo>
+          )}
+
           <Campo id="rec-queixa" rotulo="Queixa referida pelo paciente">
             <Input id="rec-queixa" value={queixa} onChange={(e) => { setQueixa(e.target.value); setErroLocal(null) }} placeholder="Nas palavras do paciente ou do acompanhante" />
           </Campo>
@@ -613,7 +652,7 @@ function NovaFicha({ porta, unidadeId, aoAbrir }: { porta: Porta; unidadeId: str
             <span role={erro ? 'alert' : undefined} className="min-w-0 flex-[1_1_240px] text-apoio text-critico">{erro}</span>
             <Button variant="outline" onClick={limpar}>Cancelar</Button>
             <Button disabled={registrar.isPending || temAberto} onClick={enviar}>
-              {registrar.isPending ? <Spinner className="size-4" /> : <ArrowRight />} Enviar para a triagem
+              {registrar.isPending ? <Spinner className="size-4" /> : <ArrowRight />} {ubs ? 'Enviar para o consultório' : 'Enviar para a triagem'}
             </Button>
           </div>
         </section>
@@ -646,8 +685,8 @@ type GrupoFila = { titulo: string; itens: NaFila[]; maiorEspera?: string; acimaD
 // referência do Refero: lista da Linear agrupada por status). O cabeçalho do
 // grupo leva a contagem, a maior espera e quem passou do alvo da cor, no lugar
 // da antiga faixa de contadores. Grupo vazio não aparece.
-function ListaFila({ grupos, carregando, erro, vazia, agora }: {
-  grupos: GrupoFila[]; carregando: boolean; erro: Error | null; vazia: string; agora: number
+function ListaFila({ grupos, carregando, erro, vazia, agora, ubs = false }: {
+  grupos: GrupoFila[]; carregando: boolean; erro: Error | null; vazia: string; agora: number; ubs?: boolean
 }) {
   const hoje = hojeSP()
   const visiveis = grupos.filter((g) => g.itens.length > 0)
@@ -670,15 +709,16 @@ function ListaFila({ grupos, carregando, erro, vazia, agora }: {
               </span>
             )}
           </div>
-          {g.itens.map((e) => <LinhaFila key={e.episodio_id} e={e} agora={agora} hoje={hoje} />)}
+          {g.itens.map((e) => <LinhaFila key={e.episodio_id} e={e} agora={agora} hoje={hoje} ubs={ubs} />)}
         </section>
       ))}
     </div>
   )
 }
 
-function LinhaFila({ e, agora, hoje }: { e: NaFila; agora: number; hoje: string }) {
-  const medica = e.etapa === 'atendimento'
+function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: string; ubs: boolean }) {
+  // na UBS não há classificação: a espera conta da ficha, sem cor nem alvo
+  const medica = e.etapa === 'atendimento' && !ubs
   const desde = medica ? (e.classificado_em ?? e.chegada_em) : e.chegada_em
   const ate = e.atendimento_iniciado_em ? new Date(e.atendimento_iniciado_em).getTime() : agora
   const espera = Math.max(0, Math.round((ate - new Date(desde).getTime()) / 60_000))
@@ -714,7 +754,11 @@ function LinhaFila({ e, agora, hoje }: { e: NaFila; agora: number; hoje: string 
 
   return (
     <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0">
-      {medica ? (
+      {ubs ? (
+        e.etapa === 'triagem'
+          ? <span className={cn(pilula, 'min-w-[76px] justify-center bg-trilha text-tinta-sussurro')}>Aguarda escuta</span>
+          : e.cor_atual ? <PilulaRisco cor={e.cor_atual} /> : null
+      ) : medica ? (
         <PilulaRisco cor={e.cor_atual} />
       ) : (
         <span className={cn(pilula, 'min-w-[76px] justify-center bg-trilha text-tinta-sussurro')}>Sem triagem</span>

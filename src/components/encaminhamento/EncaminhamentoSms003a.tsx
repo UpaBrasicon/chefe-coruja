@@ -10,6 +10,10 @@
 // ao leito ("Para outra unidade", com o paciente fixo; salvar_rascunho liga o
 // documento à internação aberta). O destino vem da lista de unidades da rede
 // (regulacao_contexto); se a unidade não estiver lá, digita-se o nome.
+//
+// 5A, tarefa 5 (H4 do RT, 03/11/2026): com uma solicitação de regulação em
+// andamento feita pela unidade, o número e o destino entram sozinhos (o que se
+// digita vale por cima). Sem gravar no rascunho: abrir a folha não deixa rastro.
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpRight, Waypoints } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -28,6 +32,9 @@ import { AnexosLaudo, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pendencias, Pi
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { Button } from '@/components/ui/button'
+import { useUnidade } from '@/contexts/UnidadeContext'
+import { regulacaoDaFolha } from '@/domain/encaminhamento'
+import { STATUS, type StatusRegulacao } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 
 type Prioridade = (typeof PRIORIDADES_ENC)[number]
@@ -102,12 +109,14 @@ function doConteudo(conteudo: string): FormEnc {
 
 const dataBr = (iso: string) => (iso ? iso.split('-').reverse().join('/') : '')
 
-export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }: {
+export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '', avisoRegulacao = !!pacienteFixo }: {
   unidadeId?: string
   perfilId?: string
   /** Dentro do leito: o paciente não troca, e a tela lembra que transferir é regulação. */
   pacienteFixo?: string
   leito?: string
+  /** O lembrete da regulação é do internado; a consulta da UBS (5A) fixa o paciente sem ele. */
+  avisoRegulacao?: boolean
 }) {
   const qc = useQueryClient()
   const [pacienteEscolhido, escolherPaciente] = usePacienteDoDocumento('encaminhamento', unidadeId, perfilId)
@@ -135,6 +144,24 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }
   })
   const unidadesRede = (rede.data ?? []).filter((u) => u.id !== unidadeId).map((u) => u.nome)
 
+  // a regulação em andamento do paciente (a mesma lista do histórico; médico e gestor)
+  const { papeisDaUnidade } = useUnidade()
+  const veRegulacao = papeisDaUnidade.includes('plantonista') || papeisDaUnidade.includes('gestor')
+  const historicoReg = useQuery({
+    queryKey: ['regulacao-historico', pacienteId],
+    enabled: veRegulacao && !!pacienteId,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_historico_paciente', { p_paciente: pacienteId! })
+      if (error) throw error
+      return (data ?? []) as unknown as Parameters<typeof regulacaoDaFolha>[0]
+    },
+  })
+  const daRegulacao = regulacaoDaFolha(historicoReg.data ?? [])
+  const numReg = f.numReg.trim() || daRegulacao?.numero || ''
+  const destino = f.destino.trim() || daRegulacao?.destino || ''
+  const destinoNaRede = (f.destino.trim() ? f.destinoRede : true) && unidadesRede.includes(destino)
+
   const laudo = useLeituraLaudo({
     nomePaciente: cab.nome,
     anexos: f.anexos,
@@ -151,9 +178,9 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }
       prioridade: f.prioridade,
       cid: f.cid.trim(),
       hipotese: f.hipotese.trim(),
-      destino: f.destino.trim(),
-      destinoNaRede: f.destinoRede && unidadesRede.includes(f.destino.trim()),
-      numReg: f.numReg.trim(),
+      destino,
+      destinoNaRede,
+      numReg,
       procCod: f.procCod,
       procDesc: f.procDesc.trim(),
       motivo: f.motivo.trim(),
@@ -185,12 +212,12 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }
   const cidCod = f.cid.trim().split(/\s/)[0]
   if (cidCod && !/^[A-Z]\d{2}(\.?\d)?$/i.test(cidCod)) conferir.push('CID-10 fora do formato (ex.: J18.9).')
   if (!f.prioridade) conferir.push('Prioridade não marcada (Emergência, Urgência ou Eletivo).')
-  if ((f.prioridade === 'Emergência' || f.prioridade === 'Urgência') && !f.numReg.trim()) {
+  if ((f.prioridade === 'Emergência' || f.prioridade === 'Urgência') && !numReg) {
     conferir.push('Urgência ou emergência sem número de solicitação na regulação.')
   }
   if (f.procCod && !/^\d{2}\.\d{2}\.\d{2}\.\d{3}-\d$/.test(f.procCod.trim())) conferir.push('Código SIGTAP fora do formato 00.00.00.000-0.')
   if (!f.tratamento.trim()) conferir.push('Tratamento realizado na origem não informado.')
-  if (f.destino.trim() && !unidadesRede.includes(f.destino.trim())) conferir.push('Destino fora da lista da rede: confira o nome da unidade.')
+  if (destino && !unidadesRede.includes(destino)) conferir.push('Destino fora da lista da rede: confira o nome da unidade.')
   if (pacienteId && ident.alergiasCarregadas && !cab.temAlergia && !cab.semAlergia && !cab.desconheceAlergia) conferir.push('Alergias não registradas.')
 
   async function emitir() {
@@ -234,7 +261,7 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }
         aoCopiar={(conteudo) => atualizar(doConteudo(conteudo))}
       />
 
-      {pacienteFixo && (
+      {pacienteFixo && avisoRegulacao && (
         <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio">
           <Waypoints className="size-4 shrink-0 text-atencao" aria-hidden />
           <span className="flex-1">
@@ -290,12 +317,13 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '' }
             <Pilulas opcoes={PRIORIDADES_ENC} valor={f.prioridade} onChange={set('prioridade')} rotuloAria="Prioridade" />
           </Campo>
           <BuscaLista
-            id="enc-destino" rotulo="Unidade ou serviço de destino" valor={f.destino} opcoes={unidadesRede} largura="medio"
+            id="enc-destino" rotulo="Unidade ou serviço de destino" valor={f.destino || daRegulacao?.destino || ''} opcoes={unidadesRede} largura="medio"
             dica="Escolha da rede ou digite outra unidade. Em branco: a definir pela regulação"
             onDigitar={(v) => atualizar({ destino: v, destinoRede: false })}
             onEscolher={(v) => atualizar({ destino: v, destinoRede: true })}
           />
-          <Texto id="enc-numreg" rotulo="Nº da solicitação na regulação" valor={f.numReg} onChange={set('numReg')} dica="Se já houver" />
+          <Texto id="enc-numreg" rotulo="Nº da solicitação na regulação" valor={f.numReg || daRegulacao?.numero || ''} onChange={set('numReg')} dica="Se já houver"
+            ajuda={daRegulacao && !f.numReg.trim() ? `Da regulação em andamento (${STATUS[daRegulacao.status as StatusRegulacao] ?? daRegulacao.status}). Digite outro para trocar.` : undefined} />
           <Texto id="enc-hipotese" rotulo="Hipótese diagnóstica" valor={f.hipotese} onChange={set('hipotese')} dica="Por extenso" largura="cheio" />
           <BuscaProcedimento
             key={f.cidOk ? f.cid : ''}

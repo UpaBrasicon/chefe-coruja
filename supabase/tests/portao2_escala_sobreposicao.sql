@@ -66,9 +66,16 @@ SELECT pg_temp.falha(format($q$INSERT INTO public.escala_plantao (unidade_id, se
   'Escala sobreposta: Plantonista de Teste já está escalado(a) no setor Clínica Médica (Unidade Teste)',
   'outra unidade no mesmo horário é recusada');
 -- outra pessoa no Pronto Socorro de manhã; passar esse plantão para quem já
--- está escalado no horário (passagem, candidatura) trava
-INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno)
-VALUES ('21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000006', pg_temp.dia(), 'manha');
+-- está escalado no horário (passagem, candidatura) trava. Desde a E1
+-- (20270202000002), passagem e troca só valem na mesma categoria: a outra pessoa
+-- também é plantonista, e o plantão é de plantonista, para chegar à sobreposição.
+RESET ROLE;
+INSERT INTO public.vinculos (perfil_id, unidade_id, papel)
+VALUES ('10000000-0000-4000-8000-000000000006', '21000000-0000-4000-8000-000000000001', 'plantonista')
+ON CONFLICT DO NOTHING;
+SET LOCAL ROLE authenticated;
+INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, papel)
+VALUES ('21000000-0000-4000-8000-000000000001', '22000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000006', pg_temp.dia(), 'manha', 'plantonista');
 SELECT pg_temp.falha(format($q$UPDATE public.escala_plantao SET perfil_id = '10000000-0000-4000-8000-000000000002'
   WHERE setor_id = '22000000-0000-4000-8000-000000000003' AND data = %L AND turno = 'manha'
     AND perfil_id = '10000000-0000-4000-8000-000000000006'$q$, pg_temp.dia()),

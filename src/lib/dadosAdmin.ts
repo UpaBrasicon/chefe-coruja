@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import type { TipoUnidade } from '@/types/database'
 import { numeroAte } from './formato.ts'
 
 // Dados das telas do administrador (Rede, Plataformas, Pendências técnicas,
@@ -100,6 +101,32 @@ export function useUnidadesRede() {
       const { data, error } = await supabase.rpc('admin_unidades')
       if (error) throw error
       return (data ?? []) as UnidadeRede[]
+    },
+  })
+}
+
+export type UnidadeCadastro = {
+  id: string
+  nome: string
+  tipo: TipoUnidade
+  cnes: string | null
+  municipio: string | null
+  uf: string | null
+  ativo: boolean
+  organizacao_id: string
+}
+
+/** 5A, tarefa 1: todas as unidades que o administrador enxerga, ativas e inativas. */
+export function useUnidadesCadastro() {
+  return useQuery({
+    queryKey: ['unidades-cadastro'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('unidades')
+        .select('id, nome, tipo, cnes, municipio, uf, ativo, organizacao_id')
+        .order('nome')
+      if (error) throw error
+      return (data ?? []) as UnidadeCadastro[]
     },
   })
 }

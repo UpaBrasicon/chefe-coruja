@@ -28,6 +28,7 @@ import {
 } from '@/lib/apac'
 import { codigoSigtapNaTela, competenciasNaJanela, type ProfissionalParaFaturar } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
@@ -145,7 +146,7 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
 
 function Autorizar({ a, fechar, aoMudar }: { a: Apac; fechar: () => void; aoMudar: () => void }) {
   const [numero, setNumero] = React.useState('')
-  const [ini, setIni] = React.useState(new Date().toISOString().slice(0, 10))
+  const [ini, setIni] = React.useState(dataIso())
   const [fim, setFim] = React.useState('')
   const [obs, setObs] = React.useState('')
   const m = useMutation({

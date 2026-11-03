@@ -53,4 +53,4 @@ de Pronto Socorro em 03/11 (noite) foi aprovada pela coordenação."; histórico
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (sem tela).
+Migration `20270208000008` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 30/10/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e conferida (gatilhos e grants: RPCs com execute para `authenticated`, não para `anon`). PR #359 mesclado em 30/10/2026, com o arquivo da migration idêntico ao aplicado. Concluído.

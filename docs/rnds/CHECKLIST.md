@@ -49,13 +49,13 @@ para a versão anterior na hora de pedir.
 | # | Item | Situação |
 |---|---|---|
 | I1 | **IP fixo de saída:** VPS `179.199.128.141` | IPv4 de datacenter da Hostinger (bloco `179.199.128.0/19`, LACNIC/RDAP, consultado em 10/10/2026). Fica fixo enquanto o VPS existir. Recriar ou migrar o VPS pode trocar o IP, e a faixa só se altera com a credencial **já em produção**. O RT confere no painel da Hostinger que o IP é dedicado. Declarar inicial = final = `179.199.128.141` (início igual ao fim é inferência: o manual não proíbe nem confirma) |
-| I2 | **Serviço de envio no VPS:** lê `interop_outbox`, pede o token com TLS mútuo e o certificado da unidade, envia o Bundle e grava `id_rnds`, `enviado_em`, `tentativas` e `ultimo_erro` | a construir; não é desta tarefa |
-| I3 | **Cofre de certificados no VPS:** um `.pfx` por unidade, cifrado, fora do repositório e do Supabase. Senha em segredo do serviço. Aviso de vencimento ao gestor | a construir |
+| I2 | **Serviço de envio no VPS:** lê `interop_outbox`, pede o token com TLS mútuo e o certificado da unidade, envia o Bundle e grava `id_rnds`, `enviado_em`, `tentativas` e `ultimo_erro` | 5C-5.3: o banco (fila, carga e conferência noturna) está pronto na 5.3a; o serviço e o simulador, na 5.3b (`ENVIO.md`); a subida no VPS, na 5.3c (`infra/rnds-envio.md`). Funcionando no VPS desde 28/10/2026, contra o simulador (`evidencia/5.3c-e2e-vps.txt`) |
+| I3 | **Cofre de certificados no VPS:** um `.pfx` por unidade, cifrado, fora do repositório e do Supabase. Senha em segredo do serviço. Aviso de vencimento ao gestor | banco pronto na 5C-5.4a (`ENVIO.md`): cifrado no navegador com a chave pública do VPS, avisos 30/15/7/1 dia. O serviço abre o cofre desde a 5.4b: chave privada só no VPS, leitura do titular e da validade, vencido para o envio (`evidencia/5.4b-cofre-vps.txt`). A tela, com o envio do certificado e os avisos no sino, é a 5.4c (aba RNDS em Integrações) |
 | I4 | **Endereços:** Auth homologação `ehr-auth-hmg.saude.gov.br`; EHR homologação `ehr-services-hmg.saude.gov.br` (com hífen desde 09/07/2024; o manual RAC e o guia ainda trazem o antigo); Auth produção `ehr-auth.saude.gov.br`; EHR produção `{uf}-ehr-services.saude.gov.br`, pela UF do CNES | configurar no serviço de envio |
 | I5 | **Header `Authorization`:** CNS do profissional logado (`usuario()`), nunca fixo no código. O header pede CNS; dentro do documento vai o CPF | regra |
-| I6 | **Bloqueio do profissional sem CBO no CNES:** não enfileirar em nome dele e avisar o gestor | a construir com o envio |
-| I7 | **Corrigir os documentos gerados** (`src/interop/fhir/`): há divergências com os exemplos e o validador oficiais (seção 7) | a construir antes da homologação |
-| I8 | **Validador local:** baixado (seção 6). Não foi executado | rodar só com o ok do RT |
+| I6 | **Bloqueio do profissional sem CBO no CNES:** não enfileirar em nome dele e avisar o gestor | banco pronto na 5C-5.4a: ERR906/ERR879 bloqueia e avisa; os documentos seguintes ficam retidos até o desbloqueio |
+| I7 | **Corrigir os documentos gerados** (`src/interop/fhir/`): havia divergências com os exemplos e o validador oficiais (seção 7) | feito na 5C-5.2 (28/10/2026): RAC e SA passam no validador oficial sem erro |
+| I8 | **Validador local:** baixado (seção 6) | roda desde a 5C-5.2, num contêiner sem rede, só com documentos de teste (`VALIDADOR.md`) |
 | I9 | **Modelos RIA e REL:** o código atual só monta RAC e SA | a construir quando houver unidade que vacina ou laboratório no escopo do REL |
 
 ## 4. Dados que o formulário de credencial pede
@@ -95,8 +95,7 @@ Regras da faixa de IP (p. 18–19):
 - **Validador local:** `rnds-oficial/validador/SOA-RNDS_ValidadorLocal_Aplicativo.zip` (65,7 MB).
   - É um aplicativo Java, sem assinatura conferível, montado em 2020 sobre o HAPI FHIR 5.1.0.
   - As definições por modelo estão em `sa/definicoes-validador-sa.zip` e `ria/definicoes-validador-ria.zip`.
-  - Não foi executado. Rodar só com o ok do RT, numa máquina separada, sem dado real.
-  - O `npm run fhir:validar` espera o JAR em `tools/rnds/validador-rnds.jar` (ver `VALIDADOR.md`).
+  - Roda desde a 5C-5.2 (decisão do RT): num contêiner sem rede, só com documentos de teste, pelo `npm run fhir:validar` (ver `VALIDADOR.md`).
 - **Evidência** (manual de apoio, p. 30–33; manual RAC §4.2): um único arquivo **PDF ou PNG de até 10 MB**, com três prints:
   - o validador local sem erro;
   - o header da resposta 201;
@@ -107,7 +106,8 @@ Regras da faixa de IP (p. 18–19):
 ## 7. Divergências entre o código atual e o oficial
 
 Detalhe em `rnds-manuais-oficiais.md`, seção 6. Resumo do que precisa mudar
-antes da homologação (item I7):
+antes da homologação (item I7). **Corrigido na 5C-5.2**, com o validador oficial; o que vale
+hoje está em `VALIDADOR.md`. A lista fica como registro:
 
 1. **Bundle:**
    - falta `fullUrl` em `urn:uuid`, e as referências são relativas;
@@ -157,6 +157,11 @@ Seguir o validador e confirmar por chamado.
 4. O header `Authorization` aceita CPF do profissional, já que o comunicado prioriza o CPF?
 5. RAC: qual perfil de profissional vale, `BRProfissional-1.0` com CPF ou `BRLotacaoProfissional-1.0` com CNS e CNES? E o token é GET ou POST?
 6. Prazo de análise para RAC e SA.
+
+**5C-5.5a (29/10/2026):**
+- O formulário do item E5 está em `FORMULARIO-CREDENCIAL.md`.
+- O chamado do item E8 está em `CHAMADO-DATASUS.md`.
+- A evidência da seção 6 sai pelo `npm run rnds:evidencia`.
 
 ## 9. Ordem de execução quando as credenciais chegarem
 

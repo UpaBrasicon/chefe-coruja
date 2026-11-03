@@ -96,6 +96,37 @@ info:
       versão.
     - **Reenvio:** reenviar o mesmo retorno não muda nada.
 
+    ## Prescrição e regulação
+
+    - `GET /prescricoes/{id}` (recurso `prescricoes`): a prescrição
+      assinada, com o médico e os itens vigentes. A versão anterior de um item
+      alterado não aparece; o item suspenso vem com `suspenso_em`.
+    - `GET /regulacao/{id}` (recurso `regulacao`): a solicitação de
+      regulação, para a unidade de origem ou a de destino.
+    - Só campos estruturados. O texto livre clínico (observação, quadro
+      clínico, sinais vitais, hipótese) não sai pela API.
+
+    ## Webhooks
+
+    O Chefe Coruja avisa o seu sistema quando algo acontece, por um POST
+    para o endereço https cadastrado pelo administrador. O destino fica
+    ligado a uma chave da API e só recebe eventos das unidades dela.
+
+    - **Conteúdo:** o evento é enxuto, com `id`, `type`, `timestamp` e
+      `data` (só ids, a unidade e, na regulação, o status). Do paciente vai
+      só o id. Para o detalhe, use a API com a mesma chave.
+    - **Assinatura:** padrão [Standard Webhooks](https://www.standardwebhooks.com).
+      Confira `webhook-signature` (`v1,` + HMAC-SHA256 em base64 de
+      `<webhook-id>.<webhook-timestamp>.<corpo>`, com o segredo `whsec_`
+      entregue no cadastro). Recuse o horário distante mais de 5 minutos do seu.
+    - **Repetição:** o `webhook-id` é o mesmo em todas as tentativas da
+      entrega. Guarde e descarte o repetido.
+    - **Resposta:** responda 2xx em até 10 s. Qualquer outra resposta, ou
+      nenhuma, vira nova tentativa: 5 s, 5 min, 30 min, 2 h, 5 h e 10 h,
+      até 24 h do evento. Redirecionamento não é seguido.
+    - **Destino falhando:** depois de 3 dias seguidos sem nenhuma entrega com
+      sucesso, o destino é desligado e o gestor da unidade é avisado.
+
     ## Versões
 
     - A versão vai no caminho (`/v1`).
@@ -128,6 +159,10 @@ tags:
     description: Porta FHIR R4 para o sistema do laboratório (LIS) e o de imagem (RIS/PACS) lerem os pedidos de exame e devolverem coleta, exame feito, situação e laudo. Chave com o recurso `laboratorio` e/ou `imagem`.
   - name: Financeiro (ERP)
     description: Contas faturadas e plantões do mês para o ERP, por versão, com o retorno do lançamento (conciliação). Chave com o recurso `financeiro`.
+  - name: Prescrição e regulação
+    description: Leitura por id do que o webhook avisa. Chave com o recurso `prescricoes` e/ou `regulacao`.
+  - name: Webhooks
+    description: Eventos que o Chefe Coruja manda para o endereço cadastrado, assinados no padrão Standard Webhooks.
 paths:
   /unidades:
     get:
@@ -313,6 +348,48 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Atendimento' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /prescricoes/{id}:
+    get:
+      tags: [Prescrição e regulação]
+      operationId: obterPrescricao
+      summary: Prescrição pelo identificador
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: A prescrição (rascunho não aparece).
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Prescricao' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/ForaDoEscopo' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '429': { $ref: '#/components/responses/LimiteExcedido' }
+        '500': { $ref: '#/components/responses/ErroInterno' }
+
+  /regulacao/{id}:
+    get:
+      tags: [Prescrição e regulação]
+      operationId: obterRegulacao
+      summary: Solicitação de regulação pelo identificador
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: A solicitação (rascunho e excluída não aparecem).
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/RequestId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Regulacao' }
         '401': { $ref: '#/components/responses/NaoAutenticado' }
         '403': { $ref: '#/components/responses/ForaDoEscopo' }
         '404': { $ref: '#/components/responses/NaoEncontrado' }
@@ -860,6 +937,169 @@ paths:
         '429': { $ref: '#/components/responses/FhirErro' }
         '500': { $ref: '#/components/responses/FhirErro' }
 
+webhooks:
+  paciente.criado:
+    post:
+      tags: [Webhooks]
+      operationId: evento_paciente_criado
+      summary: Paciente cadastrado
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: paciente.criado }
+                    data: { $ref: '#/components/schemas/DadosPaciente' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
+  atendimento.aberto:
+    post:
+      tags: [Webhooks]
+      operationId: evento_atendimento_aberto
+      summary: Atendimento aberto
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: atendimento.aberto }
+                    data: { $ref: '#/components/schemas/DadosAtendimento' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
+  atendimento.encerrado:
+    post:
+      tags: [Webhooks]
+      operationId: evento_atendimento_encerrado
+      summary: Atendimento encerrado (inclui a observação que teve alta)
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: atendimento.encerrado }
+                    data: { $ref: '#/components/schemas/DadosAtendimento' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
+  internacao.iniciada:
+    post:
+      tags: [Webhooks]
+      operationId: evento_internacao_iniciada
+      summary: Paciente passou a internado
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: internacao.iniciada }
+                    data: { $ref: '#/components/schemas/DadosInternacao' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
+  internacao.alta:
+    post:
+      tags: [Webhooks]
+      operationId: evento_internacao_alta
+      summary: Alta, óbito ou transferência de quem chegou a internar
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: internacao.alta }
+                    data: { $ref: '#/components/schemas/DadosInternacao' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
+  prescricao.assinada:
+    post:
+      tags: [Webhooks]
+      operationId: evento_prescricao_assinada
+      summary: Prescrição assinada
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: prescricao.assinada }
+                    data: { $ref: '#/components/schemas/DadosPrescricao' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
+  regulacao.status_alterado:
+    post:
+      tags: [Webhooks]
+      operationId: evento_regulacao_status_alterado
+      summary: Status da solicitação de regulação mudou (origem e destino)
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: regulacao.status_alterado }
+                    data: { $ref: '#/components/schemas/DadosRegulacao' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
+
 components:
   securitySchemes:
     chave:
@@ -893,6 +1133,24 @@ components:
       name: cursor
       in: query
       description: Valor de `proximo_cursor` da página anterior.
+      schema: { type: string }
+    WebhookId:
+      name: webhook-id
+      in: header
+      required: true
+      description: Id da entrega, o mesmo em todas as tentativas. Use para descartar o repetido.
+      schema: { type: string, format: uuid }
+    WebhookTimestamp:
+      name: webhook-timestamp
+      in: header
+      required: true
+      description: Segundos desde 1970-01-01 UTC. Recuse se estiver a mais de 5 minutos do seu relógio.
+      schema: { type: string, pattern: '^[0-9]+$' }
+    WebhookSignature:
+      name: webhook-signature
+      in: header
+      required: true
+      description: '"v1," + base64(HMAC-SHA256(segredo, "<webhook-id>.<webhook-timestamp>.<corpo>")). Pode trazer mais de uma assinatura separada por espaço.'
       schema: { type: string }
     UnidadeOpcional:
       name: unidade_id
@@ -1057,7 +1315,7 @@ components:
         uf: { type: [string, 'null'] }
         recursos:
           type: array
-          items: { type: string, enum: [pacientes, atendimentos, leitos, producao, laboratorio, imagem, financeiro] }
+          items: { type: string, enum: [pacientes, atendimentos, leitos, producao, laboratorio, imagem, financeiro, prescricoes, regulacao] }
 
     PacienteResumo:
       type: object
@@ -1362,3 +1620,143 @@ components:
         alterada_em: { type: string, format: date-time }
         conciliacao: { $ref: '#/components/schemas/Conciliacao' }
         retorno: { $ref: '#/components/schemas/RetornoDaVersao' }
+
+    Prescricao:
+      type: object
+      required: [id, unidade_id, status, itens]
+      properties:
+        id: { type: string, format: uuid }
+        unidade_id: { type: string, format: uuid }
+        paciente: { $ref: '#/components/schemas/PacienteResumo' }
+        atendimento_id: { type: [string, 'null'], format: uuid }
+        internacao_id: { type: [string, 'null'], format: uuid }
+        status: { type: string, description: 'assinada, encerrada etc.' }
+        assinada_em: { type: [string, 'null'], format: date-time }
+        valida_ate: { type: [string, 'null'], format: date-time }
+        encerrada_em: { type: [string, 'null'], format: date-time }
+        medico:
+          type: [object, 'null']
+          properties:
+            nome: { type: string }
+            crm: { type: [string, 'null'] }
+            uf_crm: { type: [string, 'null'] }
+        itens:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              tipo: { type: [string, 'null'] }
+              descricao: { type: string }
+              dose: { type: [string, 'null'] }
+              via: { type: [string, 'null'] }
+              posologia: { type: [string, 'null'] }
+              horarios: { type: [array, 'null'], items: { type: string } }
+              duracao: { type: [string, 'null'] }
+              se_necessario: { type: [boolean, 'null'] }
+              diluicao: { type: [string, 'null'] }
+              versao: { type: [integer, 'null'] }
+              suspenso_em: { type: [string, 'null'], format: date-time }
+
+    Regulacao:
+      type: object
+      required: [id, numero, unidade_origem_id, tipo, status]
+      properties:
+        id: { type: string, format: uuid }
+        numero: { type: integer }
+        unidade_origem_id: { type: string, format: uuid }
+        cnes_solicitante: { type: string }
+        paciente:
+          oneOf:
+            - $ref: '#/components/schemas/PacienteResumo'
+            - type: 'null'
+        paciente_nao_identificado: { type: boolean }
+        atendimento_id: { type: [string, 'null'], format: uuid }
+        internacao_id: { type: [string, 'null'], format: uuid }
+        tipo: { type: string, enum: [consulta, exame, leito, transferencia] }
+        procedimento: { type: string, description: Código SIGTAP (10 dígitos). }
+        especialidade: { type: [string, 'null'] }
+        cbo: { type: [string, 'null'] }
+        tipo_leito: { type: [string, 'null'] }
+        isolamento: { type: [string, 'null'], description: 'contato, goticula ou aerossol; null sem isolamento.' }
+        carater: { type: [string, 'null'] }
+        prioridade: { type: [string, 'null'], description: 'A prioridade que vale (regulador, central ou a pedida).' }
+        cid: { type: [string, 'null'] }
+        transporte: { type: [string, 'null'] }
+        destino:
+          type: object
+          properties:
+            tipo: { type: [string, 'null'], enum: [rede, externo, a_definir, null] }
+            unidade_id: { type: [string, 'null'], format: uuid }
+            externo: { type: [string, 'null'] }
+            resposta: { type: [string, 'null'], enum: [aceita, recusada, null] }
+        status: { type: string }
+        motivo_negacao: { type: [string, 'null'] }
+        cancelamento_origem: { type: [string, 'null'] }
+        externo:
+          type: [object, 'null']
+          properties:
+            sistema: { type: [string, 'null'] }
+            protocolo: { type: string }
+        criada_em: { type: string, format: date-time }
+        autorizada_em: { type: [string, 'null'], format: date-time }
+        data_prevista: { type: [string, 'null'], format: date-time }
+        saida_em: { type: [string, 'null'], format: date-time }
+        realizada_em: { type: [string, 'null'], format: date-time }
+        negada_em: { type: [string, 'null'], format: date-time }
+        cancelada_em: { type: [string, 'null'], format: date-time }
+
+    EventoWebhook:
+      type: object
+      required: [id, type, timestamp, data]
+      properties:
+        id: { type: string, format: uuid, description: Id do evento (o mesmo para todos os destinos). }
+        type: { type: string }
+        timestamp: { type: string, format: date-time, description: Quando aconteceu (UTC). }
+        data: { type: object }
+
+    DadosPaciente:
+      type: object
+      required: [unidade_id, paciente_id]
+      properties:
+        unidade_id: { type: string, format: uuid }
+        paciente_id: { type: string, format: uuid }
+
+    DadosAtendimento:
+      type: object
+      required: [unidade_id, atendimento_id, paciente_id]
+      properties:
+        unidade_id: { type: string, format: uuid }
+        atendimento_id: { type: string, format: uuid }
+        paciente_id: { type: string, format: uuid }
+
+    DadosInternacao:
+      type: object
+      required: [unidade_id, internacao_id, paciente_id]
+      properties:
+        unidade_id: { type: string, format: uuid }
+        internacao_id: { type: string, format: uuid }
+        paciente_id: { type: string, format: uuid }
+        atendimento_id: { type: [string, 'null'], format: uuid }
+
+    DadosPrescricao:
+      type: object
+      required: [unidade_id, prescricao_id, paciente_id]
+      properties:
+        unidade_id: { type: string, format: uuid }
+        prescricao_id: { type: string, format: uuid }
+        paciente_id: { type: string, format: uuid }
+        atendimento_id: { type: [string, 'null'], format: uuid }
+        internacao_id: { type: [string, 'null'], format: uuid }
+
+    DadosRegulacao:
+      type: object
+      required: [unidade_id, solicitacao_id, numero, tipo, status]
+      properties:
+        unidade_id: { type: string, format: uuid, description: A unidade avisada (origem ou destino). }
+        solicitacao_id: { type: string, format: uuid }
+        numero: { type: integer }
+        tipo: { type: string, enum: [consulta, exame, leito, transferencia] }
+        paciente_id: { type: [string, 'null'], format: uuid }
+        status: { type: string }
+        status_anterior: { type: [string, 'null'] }

@@ -26,6 +26,8 @@ import type {
   ServiceRequest,
 } from '@medplum/fhirtypes'
 
+import type { EnvioRnds } from './tipos.ts'
+
 const RNDS = 'http://www.saude.gov.br/fhir/r4'
 export const PERFIL_REGULACAO = `${RNDS}/StructureDefinition/BRRegulacaoAssistencial`
 const PERFIL_REQUISICAO = `${RNDS}/StructureDefinition/BRRequisicaoRegulacaoAssistencial`
@@ -60,16 +62,8 @@ export type DadosMira = {
   realizada_em: string | null
 }
 
-export type EnvioMira = {
-  /** hora do envio (Bundle.timestamp e Composition.date) */
-  agora: string
-  /** identificador do solicitante dado pela RNDS na credencial; sem ele, o Bundle sai sem identifier */
-  identificadorSolicitante?: string | null
-  /** id RNDS do último documento enviado desta solicitação: o novo o substitui */
-  idRndsAnterior?: string | null
-  /** gera os urn:uuid das entradas (o teste passa um determinístico) */
-  uuid?: () => string
-}
+/** O mesmo envio do RAC e do SA (tipos.ts). */
+export type EnvioMira = EnvioRnds
 
 // status da requisição (request-status) e do agendamento (appointmentstatus +
 // BRStatusAgendamentoRegulacaoAssistencial) para cada status MIRA — conferir

@@ -27,8 +27,9 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
+import { CalendarDays, Ear, HeartPulse, Send } from 'lucide-react'
 
-import type { Papel } from '@/types/database'
+import type { Papel, TipoUnidade } from '@/types/database'
 
 /** Chave da nota numérica (contagem em âmbar ao lado do item). */
 export type ChaveNota = 'avisos' | 'triagem' | 'farmacia' | 'pedidos' | 'tele' | 'revisao' | 'fila_medica' | 'plataformas' | 'chamados'
@@ -56,6 +57,12 @@ const ITEM_PRONTUARIOS: ItemNav = { to: '/prontuarios', rotulo: 'Prontuários', 
 const ITEM_AVISOS: ItemNav = { to: '/notificacoes', rotulo: 'Avisos', icone: Bell, exato: true, nota: 'avisos' }
 // Aba Escala (E3): a escala de quem não é plantonista, gestor nem administrador
 const ITEM_ESCALA: ItemNav = { to: '/minha-escala', rotulo: 'Escala', icone: CalendarClock, exato: true }
+// 5A, tarefa 3: agenda de consultas da UBS (o /agenda é a escala de plantões)
+const ITEM_AGENDA_CONSULTAS: ItemNav = { to: '/agenda-consultas', rotulo: 'Agenda de consultas', curto: 'Consultas', icone: CalendarDays, exato: true }
+// 5A, tarefa 5: envios à UPA e regulações da UBS, com o rastreio
+const ITEM_ENCAMINHADOS: ItemNav = { to: '/encaminhados', rotulo: 'Encaminhados', icone: Send, exato: true }
+// 5A, tarefa 7 (J5): hiperdia da UBS, só para médico, enfermagem e gestor
+const ITEM_HIPERDIA: ItemNav = { to: '/hiperdia', rotulo: 'Hiperdia', icone: HeartPulse, exato: true }
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
@@ -63,6 +70,9 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/plantao', rotulo: 'Plantão', icone: Activity },
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
+    ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
+    ITEM_HIPERDIA,
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: MonitorSmartphone, exato: true, nota: 'tele' },
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
@@ -74,6 +84,9 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   gestor: [
     // Parte 4.11 do padrão do frontend (RT "2a 3a"): menu agrupado por área.
     { to: '/gestao', rotulo: 'Painel', icone: LayoutDashboard, exato: true },
+    ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
+    ITEM_HIPERDIA,
     // ── Porta
     { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true, grupo: 'Porta' },
     { to: '/gestao/intercorrencias', rotulo: 'Intercorrências', curto: 'Intercorr.', icone: Siren, exato: true, grupo: 'Porta' },
@@ -111,7 +124,12 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // Enfermagem (P/index.html 32225–32230): o técnico não tem Triagem nem
   // Notificações; a tela inicial dele segue a escala (InicioEnfermagem).
   enfermeiro: [
+    // 5A, tarefa 2, parte 2.4: na UBS a triagem é a escuta inicial do CAB 28
+    { to: '/escuta', rotulo: 'Escuta inicial', curto: 'Escuta', icone: Ear, exato: true, nota: 'triagem' },
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
+    ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
+    ITEM_HIPERDIA,
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
@@ -130,6 +148,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
     // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
     { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
+    ITEM_AGENDA_CONSULTAS,
+    ITEM_HIPERDIA,
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
     ITEM_ESCALA,
@@ -138,6 +158,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // contagem das duas filas.
   recepcao: [
     { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true },
+    ITEM_AGENDA_CONSULTAS,
+    ITEM_ENCAMINHADOS,
     { to: '/recepcao/fila-triagem', rotulo: 'Fila da triagem', curto: 'Triagem', icone: Hourglass, exato: true, nota: 'triagem' },
     { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica' },
     { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
@@ -222,12 +244,34 @@ const ITEM_REGULACAO: ItemNav = { to: '/regulacao', rotulo: 'Regulação', icone
 // Fase 4, tarefa 12: módulo de papéis de rede (o super admin liga por organização)
 const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede', curto: 'Rede', icone: Network, exato: true }
 
+// 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
+// internação nem AIH; os itens dessas telas somem do menu.
+const FORA_DA_UBS = new Set([
+  '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/contingencia',
+  '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/aih', '/apac',
+  '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
+  '/recepcao/fila-triagem', '/recepcao/painel',
+])
+// e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
+const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas', '/encaminhados', '/hiperdia'])
+
+/** A tela não cabe numa unidade deste tipo (e não entra no menu). */
+export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {
+  return tipoUnidade === 'ubs' ? FORA_DA_UBS.has(to) : SO_NA_UBS.has(to)
+}
+
 /**
  * Itens do papel em foco. O responsável técnico (nomeação da rede, não papel
  * da unidade) ganha a Revisão Clínica em qualquer perfil; o super admin ganha
- * "Erros e alertas" no perfil de administrador.
+ * "Erros e alertas" no perfil de administrador. O tipo da unidade tira o que
+ * não cabe nela (UBS).
  */
-export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false): ItemNav[] {
+export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false,
+  tipoUnidade: TipoUnidade | null = null): ItemNav[] {
+  return itensDoPapel(papel, responsavelTecnico, superAdmin).filter((i) => !foraDoTipo(i.to, tipoUnidade))
+}
+
+function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdmin: boolean): ItemNav[] {
   const itens = [...POR_PAPEL[papel ?? 'plantonista']]
   if (papel === 'admin' && superAdmin) {
     const i = itens.findIndex((x) => x.to === '/servidores')
@@ -285,7 +329,7 @@ export const ICONE_GRUPO: Record<string, LucideIcon> = {
  */
 export const MAX_BARRA_CELULAR = 5
 const FIXOS_CELULAR: Partial<Record<Papel, string[]>> = {
-  enfermeiro: ['/triagem', '/enfermagem/internacao', '/notificacao-compulsoria', '/alta-vigilancia'],
+  enfermeiro: ['/escuta', '/triagem', '/enfermagem/internacao', '/notificacao-compulsoria', '/alta-vigilancia'],
 }
 export function dividirBarraCelular(papel: Papel | null, itens: ItemNav[]): { fixos: ItemNav[]; mais: ItemNav[] } {
   if (itens.length <= MAX_BARRA_CELULAR) return { fixos: itens, mais: [] }
@@ -308,8 +352,13 @@ export const ABAS_ESTREITAS_PLANTONISTA: ItemNav[] = [
   { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
 ]
 
+/** As abas estreitas do plantonista que cabem no tipo da unidade. */
+export function abasEstreitasPlantonista(tipoUnidade: TipoUnidade | null = null): ItemNav[] {
+  return ABAS_ESTREITAS_PLANTONISTA.filter((i) => !foraDoTipo(i.to, tipoUnidade))
+}
+
 /** Página inicial do papel: o logotipo leva a ela. */
-export function inicioDoPapel(papel: Papel | null): string {
-  return itensDeNavegacao(papel)[0]?.to ?? '/'
+export function inicioDoPapel(papel: Papel | null, tipoUnidade: TipoUnidade | null = null): string {
+  return itensDeNavegacao(papel, false, false, tipoUnidade)[0]?.to ?? '/'
 }
 

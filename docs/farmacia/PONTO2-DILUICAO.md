@@ -34,6 +34,11 @@ Tela `src/pages/farmacia/Diluicoes.tsx`.
 
 - **"Nova diluição":** virou botão no topo e aparece em todas as abas. A diluição nova vale só nesta
   unidade e aceita as vias EV, IM, SC, IN e VO.
+- **Um passo só** (pergunta do RT no teste de 27/10/2026: "vai diluir em que? qual quantidade?"): a
+  "Nova diluição" já mostra todos os campos, com "Diluir em", "Volume mínimo de diluente" e "Tempo de
+  infusão" no topo, e tem "Salvar rascunho" e "Publicar aos prescritores". Antes, esses campos só
+  apareciam depois de criar o rascunho. Se faltar campo para publicar, o rascunho fica salvo e a tela
+  diz o que falta. O editor usa os mesmos campos, na mesma ordem.
 - **"Rascunhos":** mostra só os desta unidade. "Substituídas" mostra a rede e esta unidade.
 - **Modelo da rede:** abre só para leitura, com a indicação de usar "Ajustar esta linha".
 
@@ -89,3 +94,7 @@ da migration `20261009000001`. As linhas criadas como da unidade continuam da un
    unidade".
 3. Com outro farmacêutico, de outra unidade, a linha não aparece.
 4. Um item cadastrado pela farmácia (ponto 4) também aceita "Nova diluição".
+
+**Teste do RT em 27/10/2026: ok na homologação**, com o formulário de um passo (diluente, volume e tempo de infusão no mesmo formulário).
+
+**Formulário enxuto (pedido do RT no teste de 27/10/2026, PR #283):** saíram concentração máxima, velocidade máxima, concentração após reconstituir e as duas estabilidades; o acesso virou seleção (periférico ou central). Os valores que as linhas já têm continuam no banco e no texto da prescrição. **Teste do RT em 27/10/2026: ok na homologação.**

@@ -48,4 +48,4 @@ em transação desfeita, no PS da UPA E2E em 31/10 manhã:
 
 ## Produção
 
-Nada aplicado. Ordem: "ok produção" do RT → migration pelo SQL, versão registrada → merge (sem tela).
+Migration `20270208000003` aplicada na produção (`saqjrjtrkzkswsxxvdxn`) em 29/10/2026, com o "ok produção" do RT, pela sessão principal; versão registrada e conferida. Conferido: `escala_vagas_aberta_categoria` com `NULLS NOT DISTINCT`, `escala_vagas_aberta` fora. PR #352 mesclado. Concluído.

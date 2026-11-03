@@ -32,7 +32,9 @@ CREATE INDEX IF NOT EXISTS medicamento_sinonimo_principio ON public.medicamento_
 ALTER TABLE public.medicamento_sinonimo ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS medicamento_sinonimo_select ON public.medicamento_sinonimo;
 CREATE POLICY medicamento_sinonimo_select ON public.medicamento_sinonimo FOR SELECT TO authenticated USING (true);
-REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.medicamento_sinonimo FROM PUBLIC, anon, authenticated;
+-- só leitura pela API: nenhum outro privilégio na tabela
+REVOKE ALL ON public.medicamento_sinonimo FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.medicamento_sinonimo TO authenticated;
 
 -- "0,9 %" e "0,9%" são a mesma concentração
 CREATE OR REPLACE FUNCTION private.norm_concentracao(t text)
@@ -68,7 +70,7 @@ BEGIN
                (SELECT s.termo FROM unnest(sin.termos, sin.normas) AS s(termo, norma)
                  WHERE EXISTS (SELECT 1 FROM unnest(v_palavras) p
                                 WHERE length(p) >= 2 AND p !~ '^[0-9]+$'
-                                  AND s.norma LIKE '%' || p || '%' AND m.principio_ativo_norm NOT LIKE '%' || p || '%')
+                                  AND ' ' || s.norma LIKE '% ' || p || '%' AND m.principio_ativo_norm NOT LIKE '%' || p || '%')
                  ORDER BY length(s.termo) LIMIT 1) AS casou_por,
                CASE WHEN m.principio_ativo_norm LIKE v_palavras[1] || '%' THEN 0
                     WHEN EXISTS (SELECT 1 FROM unnest(sin.normas) n WHERE n LIKE v_palavras[1] || '%') THEN 1
@@ -82,11 +84,14 @@ BEGIN
                     OR private.norm_concentracao(s.concentracao) = private.norm_concentracao(m.concentracao))) sin
          WHERE m.ativo
            AND (m.unidades_locais IS NULL OR (p_unidade IS NOT NULL AND p_unidade = ANY (m.unidades_locais)))
+           -- no nome, na apresentação e na concentração vale qualquer pedaço
+           -- ("dip" acha dipirona); no sinônimo, só o começo de uma palavra:
+           -- "epinefrina" não pode achar a noradrenalina por "norepinefrina"
            AND NOT EXISTS (
              SELECT 1 FROM unnest(v_palavras) p
               WHERE (m.principio_ativo_norm || ' ' || coalesce(private.norm_medicamento(m.apresentacao), '') || ' '
-                     || coalesce(private.norm_medicamento(m.concentracao), '') || ' ' || array_to_string(sin.normas, ' '))
-                    NOT LIKE '%' || p || '%')
+                     || coalesce(private.norm_medicamento(m.concentracao), '')) NOT LIKE '%' || p || '%'
+                AND ' ' || array_to_string(sin.normas, ' ') NOT LIKE '% ' || p || '%')
          ORDER BY ordem, m.principio_ativo, m.apresentacao
          LIMIT 20) x), '[]'::jsonb);
 END $$;

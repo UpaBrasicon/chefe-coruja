@@ -21,6 +21,8 @@ export type EpFila = {
   prioridades_legais: string[]
   atendimento_iniciado_em: string | null
   reavaliar_em: string | null
+  /** UBS: tipo de atendimento da ficha do e-SUS APS (nulo na porta). */
+  tipo_atendimento_aps?: string | null
   paciente: {
     nome: string; nome_social: string | null; data_nascimento: string | null
     /** para separar gêmeos e homônimos na fila (correções do portão, tarefa 8) */

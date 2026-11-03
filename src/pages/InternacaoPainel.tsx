@@ -3,7 +3,7 @@ import { ArrowRightLeft, BedDouble, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
-import { data as dataDoInstante } from '@/lib/formato'
+import { data as dataDoInstante, dataIso } from '@/lib/formato'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useLimitesUnidade } from '@/lib/limitesUnidade'
 import { Button } from '@/components/ui/button'
@@ -141,7 +141,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `auditoria_transferencias_${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `auditoria_transferencias_${dataIso()}.csv`
     a.click()
     URL.revokeObjectURL(url)
   }

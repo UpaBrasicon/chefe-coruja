@@ -4,6 +4,9 @@
 // Abrir a janela = iniciar o atendimento no servidor (marca médico e hora e
 // abre o prontuário, consulta registrada). Tudo o que grava é do servidor;
 // a tela só mostra e pede. Nada sugere dose, cor ou conduta.
+// Na consulta da UBS (5A, tarefa 2, D7; o episódio tem tipo_atendimento_aps)
+// a janela é a mesma, sem cor, reavaliação, reclassificação e procedimentos do
+// BPA, e com a aba "Conduta" da ficha do e-SUS APS no lugar do "Desfecho".
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, Check, Clock, FileText, History, X } from 'lucide-react'
 import * as React from 'react'
@@ -16,6 +19,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
 import { aplicaCuidadoPediatrico, faixaEtaria } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
+import { rotuloTipoAps } from '@/domain/aps'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -24,6 +28,10 @@ import { AlergiasEventos } from '@/components/paciente/AlergiasEventos'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
+import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
+import { EnviosDoPaciente } from '@/components/encaminhamento/EnviosDoPaciente'
+import { RetornosDoPaciente } from '@/components/encaminhamento/RetornosDoPaciente'
+import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { QuadroProcedimentos } from '@/components/paciente/ProcedimentosRealizados'
@@ -31,6 +39,7 @@ import { SolicitarApac } from '@/components/apac/SolicitarApac'
 
 import { AbaAtendimento, type Classificacao, type RegistroSoap } from './AbaAtendimento'
 import { AbaAtestadoReceita } from './AbaAtestadoReceita'
+import { AbaConduta } from './AbaConduta'
 import { AbaDesfecho } from './AbaDesfecho'
 import { AbaExames } from './AbaExames'
 import { AbaPrescricao } from './AbaPrescricao'
@@ -40,12 +49,13 @@ import {
   type EpFila, type EstadoDocs, type Soap,
 } from './comum'
 
-type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'termo' | 'docs' | 'proc' | 'fim'
+type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'termo' | 'docs' | 'proc' | 'fim' | 'conduta'
 const ESPERA_RASCUNHO_MS = 1500
 
 export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (aviso?: string) => void }) {
   const agora = useAgora(30_000)
   const nome = nomeDe(ep)
+  const ubs = !!ep.tipo_atendimento_aps
   const recarregar = useRecarregarAtendimento(ep.id, ep.paciente_id)
 
   // abrir o atendimento = marcar médico e hora + abrir o prontuário (servidor)
@@ -155,7 +165,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
 
   const cls = dados.data?.classificacoes ?? []
   const registros = dados.data?.registros ?? []
-  const ultimaCor = cls.at(-1)?.cor ?? ep.cor_atual
+  const ultimaCor = ubs ? null : cls.at(-1)?.cor ?? ep.cor_atual
   // a queixa revista pelo enfermeiro na triagem vale mais que a da recepção
   const queixa = [...cls].reverse().find((c) => c.queixa?.trim())?.queixa ?? ep.queixa
   const iniciado = dados.data?.episodio?.atendimento_iniciado_em ?? ep.atendimento_iniciado_em
@@ -170,7 +180,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   const p = painel.data
   const cidAtend = soap.cid.trim() || [...registros].reverse().find((r) => r.cid)?.cid || ''
 
-  const abas: { k: Aba; rotulo: string; n?: React.ReactNode }[] = [
+  const todas: { k: Aba; rotulo: string; n?: React.ReactNode }[] = [
     { k: 'atend', rotulo: 'Atendimento', n: registros.some((r) => r.avaliacao?.trim()) ? <Check className="size-3" aria-label="com hipótese" /> : undefined },
     { k: 'presc', rotulo: 'Prescrição', n: p?.prescricao.filter((i) => !i.suspenso_em).length || undefined },
     { k: 'exames', rotulo: 'Exames', n: p?.exames.filter((x) => x.situacao !== 'cancelado').length || undefined },
@@ -184,7 +194,9 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     // Fase 3, tarefa 3: procedimentos realizados (BPA) e endereço do SUS
     { k: 'proc', rotulo: 'Procedimentos' },
     { k: 'fim', rotulo: 'Desfecho' },
+    { k: 'conduta', rotulo: 'Conduta' },
   ]
+  const abas = todas.filter((a) => (ubs ? !['reav', 'proc', 'fim'].includes(a.k) : a.k !== 'conduta'))
 
   return (
     <div className="flex flex-col overflow-hidden rounded-cartao border border-fio bg-campo">
@@ -192,7 +204,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
       <div className="flex flex-col gap-3 border-b border-fio bg-superficie px-5 pt-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-apoio text-tinta-sussurro">
-            {ep.prioridades_legais.length > 0 ? `Prioridade: ${rotulosPrioridade(ep.prioridades_legais).join(', ')}` : 'Atendimento do Pronto-Socorro'}
+            {ep.prioridades_legais.length > 0 ? `Prioridade: ${rotulosPrioridade(ep.prioridades_legais).join(', ')}` : ubs ? 'Consulta da UBS' : 'Atendimento do Pronto-Socorro'}
           </span>
           <span className="ml-auto flex flex-wrap items-center gap-2">
             {iniciado && (
@@ -213,10 +225,10 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           nome={nome}
           setorId={ep.setor_id}
           desde={ep.chegada_em}
-          rotuloDesde="na porta há"
-          contexto={<>{faixa === 'pediatrico' && 'pediatria · '}{faixa === 'desconhecida' && 'sem data de nascimento · '}chegou {hora(ep.chegada_em)} · Queixa: {queixa}</>}
+          rotuloDesde={ubs ? 'na unidade há' : 'na porta há'}
+          contexto={<>{faixa === 'pediatrico' && 'pediatria · '}{faixa === 'desconhecida' && 'sem data de nascimento · '}{ubs && `${rotuloTipoAps(ep.tipo_atendimento_aps)} · `}chegou {hora(ep.chegada_em)} · Queixa: {queixa}</>}
           corClassificacao={ultimaCor}
-          onClassificacao={() => { setAba('atend'); window.setTimeout(() => document.getElementById(`triagem-${ep.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
+          onClassificacao={ubs ? undefined : () => { setAba('atend'); window.setTimeout(() => document.getElementById(`triagem-${ep.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
           acuidade={aberto}
           episodios={aberto}
           episodioAtualId={ep.id}
@@ -260,7 +272,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {aberto && dados.data && (
           <Tabs value={aba}>
             <TabsContent value="atend">
-              <AbaAtendimento episodioId={ep.id} pacienteId={ep.paciente_id} faixa={faixa} corAtual={ultimaCor}
+              <AbaAtendimento episodioId={ep.id} pacienteId={ep.paciente_id} faixa={faixa} corAtual={ultimaCor ?? ep.cor_atual} ubs={ubs}
                 soap={soap} setSoap={setSoap} salvoEm={salvoEm} classificacoes={cls} registros={registros} aoRegistrar={aoRegistrarSoap} />
             </TabsContent>
             <TabsContent value="presc">
@@ -275,7 +287,19 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             <TabsContent value="alg"><AlergiasEventos pacienteId={ep.paciente_id} /></TabsContent>
             <TabsContent value="par"><AbaParecer pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
             <TabsContent value="aval"><AbaAvaliacaoCrescimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
-            <TabsContent value="enc"><AbaEncaminhamentoInterno pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
+            <TabsContent value="enc">
+              {/* na UBS o encaminhamento para outra unidade (SMS003a) é conduta da ficha */}
+              {ubs ? (
+                <div className="flex flex-col gap-4">
+                  {/* tarefa 5 (H3): o que já foi enviado e a regulação do paciente */}
+                  <EnviosDoPaciente pacienteId={ep.paciente_id} />
+                  <RetornosDoPaciente pacienteId={ep.paciente_id} />
+                  <HistoricoRegulacao pacienteId={ep.paciente_id} />
+                  <AbaEncaminhamento pacienteId={ep.paciente_id} episodioId={ep.id} />
+                </div>
+              )
+                : <AbaEncaminhamentoInterno pacienteId={ep.paciente_id} episodioId={ep.id} />}
+            </TabsContent>
             <TabsContent value="termo"><AbaTermoConsentimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
             <TabsContent value="docs">
               <AbaAtestadoReceita episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} nascimento={ep.paciente?.data_nascimento ?? null}
@@ -290,6 +314,10 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             <TabsContent value="fim">
               {p && <AbaDesfecho episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} chegadaEm={ep.chegada_em} painel={p} registros={registros}
                 soap={soap} agora={agora} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
+            </TabsContent>
+            <TabsContent value="conduta">
+              {ubs && <AbaConduta episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} tipoInicial={ep.tipo_atendimento_aps} registros={registros} soap={soap}
+                onIrPara={(a) => { setAba(a); setErro(null) }} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
           </Tabs>
         )}
@@ -306,8 +334,13 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           {soapVazio(soap) ? 'Rascunho salvo ao digitar' : salvoEm ? `Rascunho salvo às ${hora(salvoEm.toISOString())}` : 'Rascunho salvo ao digitar'}
         </span>
         <Button variant="ghost" onClick={() => void salvarEFechar()}>Salvar e fechar</Button>
-        <Button variant="outline" disabled={!aberto || aguardar.isPending} onClick={clicarAguardar}><Clock /> Aguardar reavaliação</Button>
-        <Button disabled={!aberto} onClick={() => { setErro(null); setAba('fim') }}><Check /> Finalizar atendimento</Button>
+        {ubs
+          // na própria aba Conduta o botão de encerrar é o dela
+          ? aba !== 'conduta' && <Button disabled={!aberto} onClick={() => { setErro(null); setAba('conduta') }}><Check /> Encerrar consulta</Button>
+          : <>
+            <Button variant="outline" disabled={!aberto || aguardar.isPending} onClick={clicarAguardar}><Clock /> Aguardar reavaliação</Button>
+            <Button disabled={!aberto} onClick={() => { setErro(null); setAba('fim') }}><Check /> Finalizar atendimento</Button>
+          </>}
       </div>
     </div>
   )

@@ -32,7 +32,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
-import { dataHora, hora } from '@/lib/formato'
+import { dataHora, dataIso, hora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
@@ -96,8 +96,9 @@ function fmtMesBR(isoDate: string) {
 
 const contagem = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
 
+// o dia de Brasília, não o do relógio do aparelho
 function hojeISO() {
-  return iso(new Date())
+  return dataIso()
 }
 
 function diasPara(dataISO: string) {

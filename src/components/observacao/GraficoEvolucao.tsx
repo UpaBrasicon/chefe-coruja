@@ -19,6 +19,7 @@ import {
 import type { SerieObservacao } from '@/lib/observacao'
 import { cn } from '@/lib/utils'
 import { VazioLinha } from '@/components/monitor/Pagina'
+import { diaDaInternacao } from '@/lib/diaInternacao'
 import { diaMes } from '@/lib/formato'
 
 type Props = {
@@ -38,9 +39,7 @@ const CORES = ['var(--color-acao)', 'var(--color-suprimento)', 'var(--color-obse
 
 function diaInternacao(aferidoEm: string, dataAdmissao?: string): string {
   if (!dataAdmissao) return diaMes(aferidoEm)
-  const inicio = new Date(dataAdmissao).getTime()
-  const d = Math.floor((new Date(aferidoEm).getTime() - inicio) / 86_400_000) + 1
-  return d >= 1 ? `D+${d}` : 'Adm'
+  return diaDaInternacao(aferidoEm, dataAdmissao)
 }
 
 export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
