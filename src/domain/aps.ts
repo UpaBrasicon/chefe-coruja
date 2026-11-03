@@ -46,13 +46,14 @@ export const CONDUTAS_APS: OpcaoAps[] = [
   { valor: 'agendamento_grupos', rotulo: 'Agendamento para grupos', grupo: 'Retorno e agendamento' },
   { valor: 'agendamento_nasf', rotulo: 'Agendamento para Nasf', grupo: 'Retorno e agendamento' },
   { valor: 'alta_episodio', rotulo: 'Alta do episódio', grupo: 'Alta' },
-  { valor: 'encaminhamento_interno', rotulo: 'Encaminhamento interno no dia', grupo: 'Encaminhamento' },
-  { valor: 'encaminhamento_especializado', rotulo: 'Encaminhamento para serviço especializado', grupo: 'Encaminhamento' },
-  { valor: 'encaminhamento_caps', rotulo: 'Encaminhamento para CAPS', grupo: 'Encaminhamento' },
-  { valor: 'encaminhamento_internacao', rotulo: 'Encaminhamento para internação hospitalar', grupo: 'Encaminhamento' },
-  { valor: 'encaminhamento_urgencia', rotulo: 'Encaminhamento para urgência', grupo: 'Encaminhamento' },
-  { valor: 'encaminhamento_atencao_domiciliar', rotulo: 'Encaminhamento para serviço de atenção domiciliar', grupo: 'Encaminhamento' },
-  { valor: 'encaminhamento_intersetorial', rotulo: 'Encaminhamento intersetorial', grupo: 'Encaminhamento' },
+  // `curto`: o rótulo debaixo do grupo "Encaminhamento" (aba Conduta)
+  { valor: 'encaminhamento_interno', rotulo: 'Encaminhamento interno no dia', grupo: 'Encaminhamento', curto: 'Interno no dia' },
+  { valor: 'encaminhamento_especializado', rotulo: 'Encaminhamento para serviço especializado', grupo: 'Encaminhamento', curto: 'Serviço especializado' },
+  { valor: 'encaminhamento_caps', rotulo: 'Encaminhamento para CAPS', grupo: 'Encaminhamento', curto: 'CAPS' },
+  { valor: 'encaminhamento_internacao', rotulo: 'Encaminhamento para internação hospitalar', grupo: 'Encaminhamento', curto: 'Internação hospitalar' },
+  { valor: 'encaminhamento_urgencia', rotulo: 'Encaminhamento para urgência', grupo: 'Encaminhamento', curto: 'Urgência' },
+  { valor: 'encaminhamento_atencao_domiciliar', rotulo: 'Encaminhamento para serviço de atenção domiciliar', grupo: 'Encaminhamento', curto: 'Serviço de atenção domiciliar' },
+  { valor: 'encaminhamento_intersetorial', rotulo: 'Encaminhamento intersetorial', grupo: 'Encaminhamento', curto: 'Intersetorial' },
 ]
 
 const rotuloDe = (lista: OpcaoAps[], v: string | null | undefined) => lista.find((o) => o.valor === v)?.rotulo ?? v ?? ''
