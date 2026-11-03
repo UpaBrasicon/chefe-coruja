@@ -120,3 +120,29 @@ Sem migration. Teste de tela `src/lib/encaminhamentoUbs.test.ts`.
 **Ainda não feito:**
 - `regulacao_contexto` não traz o tipo da unidade. Por isso a lista do "Enviar à UPA" mostra também as outras UBS da rede; o servidor recusa com "Escolha uma UPA ou um hospital da rede.". O conserto pede uma migration (tipo na lista da rede) e fica registrado para depois.
 - As telas com login na homologação, que ficam atrás do login da Vercel.
+
+## Parte 5.3, folha SMS003a com a regulação (03/11/2026)
+
+Sem migration. Decisão H4 (A): a folha continua sendo o papel que vai com o paciente.
+
+- Com uma solicitação de regulação em andamento feita pela unidade (enviada, em análise, com pendência, devolvida, aguardando o destino, autorizada, agendada ou em trânsito), o número e o destino da mais recente entram sozinhos na folha.
+- Rascunho, realizada, falta, negada, cancelada e excluída não contam. Pedido de outra unidade também não.
+- O que se digita vale por cima. A sugestão não entra no rascunho, então abrir a folha não deixa rastro.
+- A lista é a mesma do histórico de regulação (`regulacao_historico_paciente`): só o médico e o gestor a veem. Para os outros papéis, a folha fica como antes.
+
+**Evidência:** `regulacaoDaFolha` em `src/lib/encaminhamentoUbs.test.ts`. Na página de teste, a folha veio com o nº 51 e o destino da regulação autorizada, ignorou a realizada e não criou rascunho.
+
+## Tarefa 5 concluída (03/11/2026)
+
+- 5.1, banco: PR #423, produção em 03/11/2026.
+- 5.2, telas: PR #424.
+- 5.3, folha SMS003a: este PR.
+
+**Evidência:**
+- teste de banco `5a_encaminhamento_upa` rodado na homologação;
+- testes de tela;
+- telas conferidas na página de teste.
+
+**Ainda não feito:**
+- o tipo da unidade na lista da rede, para tirar as outras UBS do "Enviar à UPA" (pede migration);
+- o envio com login na tela da homologação.

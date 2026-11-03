@@ -77,3 +77,15 @@ export function linkRegulacaoDaConsulta(p: { paciente: string; tipo: 'consulta' 
   if (p.hipotese) q.set('hipotese', p.hipotese)
   return `/regulacao?${q}`
 }
+
+// a solicitação ainda corre (nem rascunho, nem encerrada)
+const REGULACAO_EM_ANDAMENTO = ['enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada', 'em_transito']
+
+/** H4: a folha SMS003a leva o número e o destino da solicitação de regulação
+ *  em andamento feita por esta unidade (a mais recente). Lista no formato de
+ *  `regulacao_historico_paciente`. */
+export function regulacaoDaFolha(lista: { numero: number; status: string; outra_unidade: boolean; destino: string | null; criada_em: string }[]) {
+  const r = lista.filter((x) => !x.outra_unidade && REGULACAO_EM_ANDAMENTO.includes(x.status))
+    .sort((a, b) => b.criada_em.localeCompare(a.criada_em))[0]
+  return r ? { numero: String(r.numero), destino: r.destino ?? '', status: r.status } : null
+}
