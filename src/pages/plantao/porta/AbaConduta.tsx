@@ -11,6 +11,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { EnviarUpa } from '@/components/encaminhamento/EnviarUpa'
+import { HiperdiaNaConsulta } from '@/components/hiperdia/HiperdiaNaConsulta'
 import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
 import { Chip } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -195,6 +196,9 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
           onTirar={(p) => setProblemas((x) => x.filter((y) => chave(y) !== chave(p)))} />
         <span className="text-rotulo text-tinta-sussurro">O que foi avaliado e manejado nesta consulta. A busca mostra a lista da ficha, depois a CIAP-2 e depois a CID-10.</span>
       </div>
+
+      {/* 5A, tarefa 7: hiperdia do paciente e avaliação dos pés */}
+      <HiperdiaNaConsulta pacienteId={pacienteId} episodioId={episodioId} />
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-1 text-controle font-semibold text-tinta">Conduta</legend>
