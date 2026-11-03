@@ -1331,6 +1331,13 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
   - os scripts e seeds da rodada em `scripts/e2e/` (de `40_` em diante);
   - as perguntas de produto para o RT.
 - **Fica com o RT:** o link da Vercel, a senha das contas de teste e o segundo fator nas telas.
+- **Parte de banco feita em 03/11/2026.** Relatório em `produto/docs/teste-e2e/RELATORIO_E2E_FASE5_2026-11-03.md`; scripts de `scripts/e2e/40_` a `45_`.
+  - UBS: 75 passos ok, 2 lacunas conhecidas (pré-natal e puericultura) e 4 ajustes.
+  - Faturamento: 15 ok.
+  - Integrações: 10 de 16 testes passam na homologação; os outros 6 dependem do seed local e passam no CI.
+  - Regressão da UPA: T5 com 8 ok; T1 a T7 completos pedem apagar a Rede E2E (pergunta ao RT).
+  - **Defeito F5-01 (P0 de segurança):** o papel vazio liberava a leitura de outra unidade em nove funções. Corrigido com o ok do RT (migration `20270219000001`, PR #432, produção em 03/11/2026).
+  - Pendentes: as telas (o conector da Vercel deu 403; falta o link) e a decisão sobre a regressão completa.
 
 ---
 
