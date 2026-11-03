@@ -13,6 +13,8 @@ export type TipoTerminologia =
   | 'cbo'
   | 'medicamento_cmed'
   | 'loinc'
+  // 5A, tarefa 4: CIAP-2 da tabela do LEDI do e-SUS APS
+  | 'ciap2'
 
 export type ResultadoTerminologia = Database['public']['Functions']['terminologia_buscar']['Returns'][number]
 
