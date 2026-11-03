@@ -89,3 +89,68 @@ export function regulacaoDaFolha(lista: { numero: number; status: string; outra_
     .sort((a, b) => b.criada_em.localeCompare(a.criada_em))[0]
   return r ? { numero: String(r.numero), destino: r.destino ?? '', status: r.status } : null
 }
+
+// ── retorno à UBS (contrarreferência; 5A, tarefa 6, decisões I1 a I5) ──────
+// Formato das RPCs contrarreferencias_* e contrarreferencia_abrir (migration
+// 20270217000001_contrarreferencia_ubs.sql). O resumo só vem ao abrir.
+
+export type SituacaoRetorno = 'a_ver' | 'visto'
+
+export type RetornoResumo = {
+  unidade: string
+  tipo_unidade: string
+  entrada_em: string | null
+  saida_em: string
+  desfecho: string
+  cid: string | null
+  cid_descricao: string | null
+  relato: string | null
+  destino: string | null
+  medico: string | null
+  registro: { avaliacao: string | null; plano: string | null; cid: string | null; em: string } | null
+  documentos: { tipo: string; em: string }[]
+  pacote_alta: {
+    orientacoes: unknown
+    retorno: string | null
+    sinais_retorno: unknown
+    retorno_detalhes: { onde?: string; quando?: string; exame_controle?: string; levar?: string } | null
+  } | null
+}
+
+export type Retorno = {
+  id: string
+  numero: number
+  situacao: SituacaoRetorno
+  desfecho: string
+  saida_em: string
+  criado_em: string
+  unidade_origem: string
+  internacao: boolean
+  unidade_ubs_id: string
+  paciente_ubs_id: string
+  paciente: { nome: string; nome_social: string | null; data_nascimento: string | null }
+  encaminhamento_numero: number | null
+  tem_orientacao: boolean
+  visto_por: string | null
+  visto_em: string | null
+  /** só em contrarreferencia_abrir */
+  resumo?: RetornoResumo
+  orientacao?: string | null
+}
+
+export const SITUACAO_RETORNO: Record<SituacaoRetorno, { rotulo: string; tom: 'ambar' | 'cinza' }> = {
+  a_ver: { rotulo: 'A ver', tom: 'ambar' },
+  visto: { rotulo: 'Visto', tom: 'cinza' },
+}
+
+/** Rótulo do fim do atendimento (desfechos da porta e tipos de alta da internação). */
+export const DESFECHO_RETORNO: Record<string, string> = {
+  alta: 'Alta', alta_apos_medicacao: 'Alta após medicação', alta_a_pedido: 'Alta a pedido', transferencia: 'Transferência',
+  evasao: 'Evasão', obito: 'Óbito', alta_melhorada: 'Alta da internação', alta_pedido: 'Alta a pedido (internação)',
+  alta_evasao: 'Evasão da internação', transferencia_externa: 'Transferência (internação)',
+}
+
+export const nomeDoRetorno = (r: Pick<Retorno, 'paciente'>) => r.paciente.nome_social || r.paciente.nome
+
+/** Evasão e alta a pedido pedem busca ativa da UBS (I5). */
+export const pedeBuscaAtiva = (desfecho: string) => ['evasao', 'alta_a_pedido', 'alta_evasao', 'alta_pedido'].includes(desfecho)

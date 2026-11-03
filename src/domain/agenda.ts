@@ -128,6 +128,7 @@ export function contagem(linhas: LinhaDia[]) {
 
 /** F6: atalho para marcar na agenda a partir da consulta ou da escuta. A agenda
  *  abre com o paciente escolhido e guarda o episódio de origem. */
-export function linkMarcarNaAgenda(pacienteId: string, origemEpisodio: string, tipo: 'consulta_agendada' | 'consulta_programada' = 'consulta_agendada') {
-  return `/agenda-consultas?${new URLSearchParams({ paciente: pacienteId, origem: origemEpisodio, consulta: tipo })}`
+export function linkMarcarNaAgenda(pacienteId: string, origemEpisodio: string | null, tipo: 'consulta_agendada' | 'consulta_programada' = 'consulta_agendada') {
+  // sem episódio de origem: o retorno vindo da UPA (5A, tarefa 6) marca só pelo paciente
+  return `/agenda-consultas?${new URLSearchParams({ paciente: pacienteId, ...(origemEpisodio ? { origem: origemEpisodio } : {}), consulta: tipo })}`
 }

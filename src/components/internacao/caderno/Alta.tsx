@@ -52,6 +52,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
   const [obs, setObs] = React.useState('')
   const [destino, setDestino] = React.useState('')
   const [numeroDo, setNumeroDo] = React.useState('')
+  const [orientacaoUbs, setOrientacaoUbs] = React.useState('') // 5A, tarefa 6 (I3): vai à UBS do paciente
   const [confirmar, setConfirmar] = React.useState(false)
   const [abertoEm] = React.useState(() => Date.now())
   const retroativa = !!quando && doCampo(quando).getTime() < abertoEm - 30 * 60_000
@@ -80,6 +81,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
   const detalhes: Record<string, string> = {}
   if (tipo === 'transferencia_externa') detalhes.destino = destino
   if (tipo === 'obito') detalhes.numero_do = numeroDo
+  if (tipo !== 'obito' && orientacaoUbs.trim()) detalhes.orientacao_ubs = orientacaoUbs.trim()
   return (
     <Secao titulo="Dados da alta">
       <div className="grid gap-2 sm:grid-cols-2">
@@ -132,6 +134,13 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
         <Label htmlFor="alta-obs">Observações{tipo === 'alta_pedido' || tipo === 'alta_evasao' ? ' — descreva o ocorrido *' : ''}</Label>
         <Textarea id="alta-obs" value={obs} onChange={(e) => setObs(e.target.value)} />
       </div>
+      {tipo !== 'obito' && (
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="alta-ubs">Orientação à UBS (opcional)</Label>
+          <Textarea id="alta-ubs" value={orientacaoUbs} placeholder="Ex.: reavaliar a pressão em 7 dias" onChange={(e) => setOrientacaoUbs(e.target.value)} />
+          <span className="text-rotulo text-tinta-sussurro">Vai à UBS do paciente junto com o resumo da alta.</span>
+        </div>
+      )}
       {confirmar ? (
         <div className="flex flex-col gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao p-3">
           <p>Deseja finalizar o atendimento? O paciente sai do censo e vira histórico do gestor. As prescrições são encerradas e checagem, aprazamento e sinais fecham na hora; a equipe do setor ainda consulta e emite documentos por 24 horas. Cancelar a alta é possível por 24 horas, com justificativa.</p>
