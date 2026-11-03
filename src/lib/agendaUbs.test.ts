@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { acoesDaLinha, contagem, horariosLivres, linhasDoDia, MOTIVOS_FECHAMENTO, MOTIVOS_RESERVA, type AgendaDia } from '../domain/agenda.ts'
+import { acoesDaLinha, contagem, horariosLivres, linhasDoDia, linkMarcarNaAgenda, MOTIVOS_FECHAMENTO, MOTIVOS_RESERVA, type AgendaDia } from '../domain/agenda.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
 // 5A, tarefa 3 (decisões F1 a F6 e opção B do RT, 02/11/2026): agenda de
@@ -62,4 +62,15 @@ test('a agenda de consultas só aparece na UBS, para quem marca', () => {
   assert.ok(!itensDeNavegacao('farmaceutico', false, false, 'ubs').some((i) => i.to === '/agenda-consultas'))
   const app = readFileSync('src/App.tsx', 'utf8')
   assert.match(app, /papeis=\{\['recepcao', 'enfermeiro', 'tecnico_enfermagem', 'plantonista', 'gestor'\]\} \/>\}>\s*<Route path="\/agenda-consultas"/)
+})
+
+test('F6: a conduta e a escuta levam à agenda com o paciente e a origem', () => {
+  assert.equal(linkMarcarNaAgenda('p1', 'e1', 'consulta_programada'), '/agenda-consultas?paciente=p1&origem=e1&consulta=consulta_programada')
+  const conduta = readFileSync('src/pages/plantao/porta/AbaConduta.tsx', 'utf8')
+  assert.match(conduta, /condutas\.includes\('retorno_cuidado_continuado'\) \? 'consulta_programada'/)
+  assert.match(conduta, /linkMarcarNaAgenda\(pacienteId, episodioId, retorno\)/)
+  const escuta = readFileSync('src/pages/enfermagem/triagem/EscutaInicial.tsx', 'utf8')
+  assert.match(escuta, /cor === 'azul' && saidaAzul === 'agendamento' && \(/)
+  const agenda = readFileSync('src/pages/agenda/AgendaConsultas.tsx', 'utf8')
+  assert.match(agenda, /p_origem_episodio: origem \?\? undefined/)
 })

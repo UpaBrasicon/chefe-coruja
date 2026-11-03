@@ -6,8 +6,9 @@
 // pré-seleciona. Sinais vitais opcionais (decisão do RT). O servidor
 // (registrar_escuta_aps) confere tudo de novo.
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Check } from 'lucide-react'
+import { CalendarPlus, Check } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { CamposVitais } from '@/components/clinico/CamposVitais'
 import { Chip } from '@/components/monitor/Pagina'
@@ -16,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { linkMarcarNaAgenda } from '@/domain/agenda'
 import { CLASSIFICACAO_CAB28, SAIDAS_AZUL, type CorCab28, type SaidaEscuta } from '@/domain/aps'
 import { ehPediatrico } from '@/domain/idade'
 import { paraNumeros, type Publico } from '@/domain/vitais'
@@ -150,6 +152,12 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
                 <Chip key={s.valor} variante="opcao" radio ativo={saidaAzul === s.valor} onClick={() => setSaidaAzul(s.valor)}>{s.rotulo}</Chip>
               ))}
             </div>
+          )}
+          {/* F6 da tarefa 3: o agendamento pode ser marcado direto na agenda */}
+          {cor === 'azul' && saidaAzul === 'agendamento' && (
+            <Button size="xs" variant="outline" className="self-start" render={<Link to={linkMarcarNaAgenda(ep.paciente_id, ep.id)} target="_blank" rel="noopener" />}>
+              <CalendarPlus /> Marcar na agenda
+            </Button>
           )}
         </Cartao>
       </div>

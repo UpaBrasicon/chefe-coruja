@@ -125,3 +125,9 @@ export function contagem(linhas: LinhaDia[]) {
     faltas: consultas.filter((l) => l.situacao === 'nao_compareceu').length,
   }
 }
+
+/** F6: atalho para marcar na agenda a partir da consulta ou da escuta. A agenda
+ *  abre com o paciente escolhido e guarda o episódio de origem. */
+export function linkMarcarNaAgenda(pacienteId: string, origemEpisodio: string, tipo: 'consulta_agendada' | 'consulta_programada' = 'consulta_agendada') {
+  return `/agenda-consultas?${new URLSearchParams({ paciente: pacienteId, origem: origemEpisodio, consulta: tipo })}`
+}

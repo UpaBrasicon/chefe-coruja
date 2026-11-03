@@ -144,3 +144,30 @@ Sem migration. Opção B do RT.
 - Falta a agenda com login na homologação, que fica atrás do login da Vercel.
 
 **Limite:** marca-se só paciente já cadastrado. O cadastro novo continua na "Nova ficha" da recepção.
+
+## Parte 3.3, atalhos (02/11/2026)
+
+Sem migration (F6).
+
+- **Conduta:** marcar "retorno para consulta agendada" ou "retorno para cuidado continuado" mostra "Marcar na agenda". O botão abre a agenda em outra aba, com o paciente já escolhido, o tipo da consulta e a consulta de origem; a consulta em andamento continua aberta. A conduta vale sem a marcação.
+- **Escuta inicial:** o azul com "Agendamento" mostra o mesmo atalho.
+- **Agenda:** lê `?paciente=`, `?origem=` e `?consulta=`, e envia a origem em `agenda_marcar` (`p_origem_episodio`).
+- **Conferência:**
+  - `src/lib/agendaUbs.test.ts`;
+  - `src/lib` (255), testes clínicos (1105), tipos, lint e padrão passando;
+  - na página de teste, o link da Conduta e a marcação com a origem.
+
+## Fechamento da tarefa 3 (02/11/2026)
+
+| Critério de aceite | Evidência |
+|---|---|
+| UBS agenda consulta e atende paciente | `supabase/tests/5a_agenda.sql`, rodado na homologação: grade, marcação, chegada que abre a ficha ligada, conduta que fecha como realizado, evasão, falta e cancelamento |
+| Agenda por profissional, horários | configuração do gestor (grade e duração) e `agenda_dia` |
+| Marcação, cancelamento, faltas | RPCs e telas; regras do Manual do PEC conferidas no teste |
+
+PRs: #418 (banco), #419 (telas) e o desta parte (atalhos). Migration na produção com o ok do RT: `20270214000001`.
+
+**Fica para depois:**
+- a agenda com login na tela da homologação, que fica atrás do login da Vercel;
+- a agenda online do cidadão;
+- o cadastro de paciente novo direto pela agenda: hoje ele é feito na Nova ficha.
