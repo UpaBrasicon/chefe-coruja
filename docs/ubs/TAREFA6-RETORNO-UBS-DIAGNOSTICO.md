@@ -4,7 +4,7 @@ Fase 5A, UBS Mínima, do `BACKLOG.md`. Prioridade: **P2**. Começada em 03/11/20
 
 O aceite do backlog é: "UBS recebe retorno do paciente". As subtarefas são criar o fluxo de contrarreferência, alertar a UBS e exibir o histórico.
 
-Este documento é o diagnóstico. As decisões do RT (I1 a I5) estão na seção 2, ainda **pendentes**.
+Este documento é o diagnóstico. **Decisões do RT em 03/11/2026: A em I1 a I5** ("Sim, todas A").
 
 ## 1. Diagnóstico do estado atual
 
@@ -34,7 +34,7 @@ Este documento é o diagnóstico. As decisões do RT (I1 a I5) estão na seção
 
 **RNDS:** o sumário de alta e o RAC iriam à RNDS (`interop_outbox`), e a UBS leria por lá. Isso espera a credencial; esta tarefa não depende dela.
 
-## 2. Decisões do RT (I1 a I5): pendentes
+## 2. Decisões do RT (I1 a I5): todas A em 03/11/2026
 
 | # | Pergunta | Opções | Recomendação |
 |---|---|---|---|
