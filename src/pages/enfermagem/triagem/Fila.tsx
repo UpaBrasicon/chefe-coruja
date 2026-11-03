@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Activity, MapPin, Volume2 } from 'lucide-react'
+import { Activity, Ear, MapPin, Volume2 } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -119,8 +119,10 @@ export const QueixaCelula = ({ texto }: { texto: string }) => (
   <TableCell className="max-w-[220px] truncate text-tinta-apoio" title={texto}>{texto}</TableCell>
 )
 
-export function FilaTriagem({ fila, carregando, erro, sala, onTriar }: {
+export function FilaTriagem({ fila, carregando, erro, sala, onTriar, ubs = false }: {
   fila: NaFila[]; carregando: boolean; erro: Error | null; sala: SalaTriagemCtx; onTriar: (ep: NaFila) => void
+  /** escuta inicial da UBS (5A, parte 2.4) */
+  ubs?: boolean
 }) {
   // re-render a cada 30 s para a espera andar
   const [, tique] = React.useState(0)
@@ -136,9 +138,9 @@ export function FilaTriagem({ fila, carregando, erro, sala, onTriar }: {
       <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-sussurro">80+ primeiro, depois as demais prioridades legais, depois a chegada</p>
       {carregando && <p className="px-5 py-5 text-controle text-tinta-sussurro">Carregando a fila…</p>}
       {erro && <p className="px-5 py-5 text-controle text-critico">{erro.message}</p>}
-      {!carregando && !erro && fila.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">Nenhuma ficha aguardando triagem.</p>}
+      {!carregando && !erro && fila.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">{ubs ? 'Nenhuma ficha aguardando a escuta.' : 'Nenhuma ficha aguardando triagem.'}</p>}
       {fila.length > 0 && (
-        <Table aria-label="Aguardando triagem">
+        <Table aria-label={ubs ? 'Aguardando escuta' : 'Aguardando triagem'}>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Paciente</TableHead>
@@ -161,7 +163,7 @@ export function FilaTriagem({ fila, carregando, erro, sala, onTriar }: {
                     <div className="flex flex-nowrap items-start justify-end gap-[7px]">
                       <BotaoChamar ep={e} salaId={sala.salaDoSetor(e.setor_id)} chamadas={ch?.numero ?? 0} />
                       <Button size="sm" onClick={() => onTriar(e)}>
-                        <Activity /> Triar
+                        {ubs ? <><Ear /> Escutar</> : <><Activity /> Triar</>}
                       </Button>
                       <ExcluirDaFila episodioId={e.id} nome={nomeDe(e)} />
                     </div>

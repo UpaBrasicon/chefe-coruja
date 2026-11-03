@@ -18,11 +18,12 @@ test('a recepção da UBS abre a ficha no consultório, com o tipo de atendiment
 test('na UBS a recepção não mostra triagem nem painel e ordena por prioridade e chegada', () => {
   assert.match(recepcao, /const abas = ubs \? ABAS_UBS : ABAS/)
   assert.doesNotMatch(recepcao.match(/const ABAS_UBS[\s\S]*?\n\]/)![0], /ABAS\[1\]|ABAS\[3\]/)
-  assert.match(recepcao, /if \(ubs\) return \[\.\.\.lista\.filter\(\(e\) => !e\.atendimento_iniciado_em\)\.sort\(ordemTriagem\)/)
+  // parte 2.4: entra quem aguarda a escuta, e a cor da escuta ordena
+  assert.match(recepcao, /return \[\.\.\.todos\.filter\(\(e\) => !e\.atendimento_iniciado_em\)\.sort\(ordemFilaUbs\)/)
 })
 
 test('a fila do médico na UBS não tem cor nem alvo e mostra a conduta nas saídas', () => {
-  assert.match(fila, /\.sort\(ubs \? ordemTriagem : ordemMedica\)/)
+  assert.match(fila, /\.sort\(ubs \? ordemFilaUbs : ordemMedica\)/)
   assert.match(fila, /\{!ubs && <Cabeca col="cor"/)
   assert.match(fila, /const acimaDoAlvo = ubs \? 0 :/)
   assert.match(fila, /if \(!ubs\) q = q\.not\('desfecho', 'is', null\)/)

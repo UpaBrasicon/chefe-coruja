@@ -51,3 +51,13 @@ test('a casca e a tela inicial passam o tipo da unidade ao menu', () => {
   assert.match(casca, /abasEstreitasPlantonista\(tipoUnidade\)/)
   assert.match(readFileSync('src/routes/RedirectHome.tsx', 'utf8'), /foraDoTipo\(inicial, tipo\)/)
 })
+
+test('5A, parte 2.4: a escuta inicial só existe na UBS e é o começo do enfermeiro nela', () => {
+  assert.ok(itensDeNavegacao('enfermeiro', false, false, 'ubs').some((i) => i.to === '/escuta'))
+  for (const tipo of ['upa', 'hospital', null] as const) {
+    assert.ok(!itensDeNavegacao('enfermeiro', false, false, tipo).some((i) => i.to === '/escuta'), `${tipo} vê a escuta`)
+  }
+  assert.equal(inicioDoPapel('enfermeiro', 'ubs'), '/escuta')
+  assert.equal(inicioDoPapel('enfermeiro', 'upa'), '/triagem')
+  assert.match(readFileSync('src/App.tsx', 'utf8'), /<Route path="\/escuta" element=\{<Triagem \/>\} \/>/)
+})

@@ -320,6 +320,8 @@ export default function App() {
                       {/* Classificação de risco é do enfermeiro (CONTEXT.md) */}
                       <Route element={<RequireRole papeis={['enfermeiro']} />}>
                         <Route path="/triagem" element={<Triagem />} />
+                        {/* 5A, tarefa 2, parte 2.4: na UBS, a mesma tela é a escuta inicial do CAB 28 */}
+                        <Route path="/escuta" element={<Triagem />} />
                       </Route>
 
                       <Route element={<RequireRole papeis={['admin']} />}>

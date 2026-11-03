@@ -5,6 +5,8 @@
 // 20270211000002_atendimento_ubs.sql); o teste src/lib/apsListas.test.ts
 // confere que são os mesmos.
 
+import { ordemTriagem } from './prioridade.ts'
+
 export type OpcaoAps = { valor: string; rotulo: string; grupo?: string; /** rótulo de tabela */ curto?: string }
 
 export const TIPOS_ATENDIMENTO_APS: OpcaoAps[] = [
@@ -63,3 +65,42 @@ export const rotuloTipoApsCurto = (v: string | null | undefined) =>
   TIPOS_ATENDIMENTO_APS.find((o) => o.valor === v)?.curto ?? rotuloTipoAps(v)
 export const rotuloProblemaAps = (v: string | null | undefined) => rotuloDe(PROBLEMAS_APS, v)
 export const rotuloCondutaAps = (v: string | null | undefined) => rotuloDe(CONDUTAS_APS, v)
+
+// Escuta inicial (5A, tarefa 2, parte 2.4): classificação da demanda
+// espontânea do Caderno de Atenção Básica nº 28 (MS; vol. I, p. 34 e 35; vol.
+// II, p. 18 e 19, onde estão as cores). Sem tempo-alvo: a fonte não dá minutos.
+// Os códigos e as saídas são os do banco (registrar_escuta_aps e os CHECKs de
+// classificacoes_risco, migration 20270213000001_escuta_inicial_ubs.sql).
+export type CorCab28 = 'vermelho' | 'amarelo' | 'verde' | 'azul'
+export type SaidaEscuta = 'orientacao' | 'agendamento' | 'consulta'
+
+export const CLASSIFICACAO_CAB28: { cor: CorCab28; rotulo: string; descricao: string; exemplos: string; aguda: boolean }[] = [
+  { cor: 'vermelho', rotulo: 'Atendimento imediato', aguda: true,
+    descricao: 'Alto risco de vida: intervenção no mesmo momento, com o médico.',
+    exemplos: 'parada cardiorrespiratória, dificuldade respiratória grave, convulsão, rebaixamento do nível de consciência, dor severa' },
+  { cor: 'amarelo', rotulo: 'Atendimento prioritário', aguda: true,
+    descricao: 'Risco moderado: intervenção breve; muda a ordem de atendimento.',
+    exemplos: 'crise asmática leve ou moderada, febre sem complicação, gestante com dor abdominal, suspeita de doença transmissível' },
+  { cor: 'verde', rotulo: 'Atendimento no dia', aguda: true,
+    descricao: 'Risco baixo, ou sem risco com vulnerabilidade importante: manejo no mesmo dia.',
+    exemplos: 'disúria, tosse sem sinais de risco, dor lombar leve, renovação de medicamento de uso contínuo' },
+  { cor: 'azul', rotulo: 'Situação não aguda', aguda: false,
+    descricao: 'Orientação, adiantamento de ação prevista em protocolo ou agendamento.',
+    exemplos: 'orientação sobre as ofertas da unidade, teste de gravidez, imunização' },
+]
+
+export const SAIDAS_AZUL: { valor: Exclude<SaidaEscuta, 'consulta'>; rotulo: string }[] = [
+  { valor: 'orientacao', rotulo: 'Orientação' },
+  { valor: 'agendamento', rotulo: 'Agendamento' },
+]
+
+/** Peso na fila do médico: o imediato e o prioritário (que "influencia na ordem
+ *  de atendimento", CAB 28) passam à frente; o verde e quem não passou pela
+ *  escuta seguem a prioridade legal e a chegada. */
+export const pesoCab28 = (cor: string | null | undefined) => (cor === 'vermelho' ? 0 : cor === 'amarelo' ? 1 : 2)
+
+/** Fila do médico na UBS: imediato → prioritário → (no dia e sem escuta) por
+ *  prioridade legal e chegada. */
+export function ordemFilaUbs<T extends { prioridades_legais: string[]; chegada_em: string; cor_atual?: string | null }>(a: T, b: T): number {
+  return pesoCab28(a.cor_atual) - pesoCab28(b.cor_atual) || ordemTriagem(a, b)
+}
