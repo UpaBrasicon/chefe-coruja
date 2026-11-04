@@ -1337,7 +1337,9 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
   - Integrações: 10 de 16 testes passam na homologação; os outros 6 dependem do seed local e passam no CI.
   - Regressão da UPA, refeita com o ok do RT: apaguei a Rede E2E sem os logins. T2 a T6 sem falha.
     - Quase todas as falhas da coorte, do T1 e do T7 vêm dos scripts antigos, que prescrevem sem o peso do atendimento, regra do Portão 2.
-    - Pergunta ao RT: o gestor deve pedir acesso ao histórico encerrado? Hoje é recusado; a Rodada 1 passava.
+    - O gestor pede acesso ao histórico encerrado: **decisão do RT em 04/11/2026, sim.** Hoje é recusado.
+      - Falta fazer, em branch própria (`fase5/gestor-pede-acesso`): migration que põe `gestor` em `private.papel_pode_pedir_acesso`, o teste `farmaceutico_sem_pedido_prontuario.sql` ajustado (hoje exige que o gestor não peça), homologação e ok de produção.
+      - O pedido do gestor é decidido por outro gestor da unidade ou pelo super admin (`decidir_pedido_acesso` recusa o próprio pedido).
     - A investigar: o aviso de 24 h da regulação ao gestor da origem.
   - **Defeito F5-01 (P0 de segurança):** o papel vazio liberava a leitura de outra unidade em nove funções. Corrigido com o ok do RT (migration `20270219000001`, PR #432, produção em 03/11/2026).
   - Pendentes: as telas (o conector da Vercel deu 403; falta o link) e as perguntas do relatório.
