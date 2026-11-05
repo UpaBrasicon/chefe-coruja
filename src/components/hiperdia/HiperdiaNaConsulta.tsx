@@ -87,9 +87,9 @@ export function HiperdiaNaConsulta({ pacienteId, episodioId }: { pacienteId: str
   )
 }
 
-// Pela porta de sincronização, como os sinais da enfermagem: vão para
+// Também no bloco do pré-natal (nota C3, prática D). Pela porta de sincronização, como os sinais da enfermagem: vão para
 // public.observacao com os conceitos globais 'peso' (kg) e 'estatura' (cm).
-function PesoAltura({ pacienteId, onFeito }: { pacienteId: string; onFeito: () => void }) {
+export function PesoAltura({ pacienteId, onFeito, prefixo = 'hiperdia' }: { pacienteId: string; onFeito: () => void; prefixo?: string }) {
   const { perfil } = useAuth()
   const [v, setV] = React.useState<Record<string, string>>({})
   const [aviso, setAviso] = React.useState<string | null>(null)
@@ -126,12 +126,12 @@ function PesoAltura({ pacienteId, onFeito }: { pacienteId: string; onFeito: () =
       <span className="flex items-center gap-1.5 text-apoio font-medium text-tinta"><Ruler className="size-3.5" aria-hidden /> Peso e altura</span>
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex w-28 flex-col gap-1">
-          <Label htmlFor="hiperdia-peso">Peso (kg)</Label>
-          <Input id="hiperdia-peso" inputMode="decimal" value={v.peso ?? ''} onChange={muda('peso')} />
+          <Label htmlFor={`${prefixo}-peso`}>Peso (kg)</Label>
+          <Input id={`${prefixo}-peso`} inputMode="decimal" value={v.peso ?? ''} onChange={muda('peso')} />
         </div>
         <div className="flex w-28 flex-col gap-1">
-          <Label htmlFor="hiperdia-altura">Altura (cm)</Label>
-          <Input id="hiperdia-altura" inputMode="decimal" value={v.estatura ?? ''} onChange={muda('estatura')} />
+          <Label htmlFor={`${prefixo}-altura`}>Altura (cm)</Label>
+          <Input id={`${prefixo}-altura`} inputMode="decimal" value={v.estatura ?? ''} onChange={muda('estatura')} />
         </div>
         <Button size="xs" variant="outline" disabled={!v.peso?.trim() || !v.estatura?.trim() || !conceitos.data || registrar.isPending}
           onClick={() => registrar.mutate()}>Registrar peso e altura</Button>

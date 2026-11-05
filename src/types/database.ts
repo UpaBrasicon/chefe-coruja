@@ -9914,6 +9914,12 @@ export type Database = {
       contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
       hiperdia_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       hiperdia_painel: { Args: { p_unidade: string }; Returns: Json }
+      pre_natal_definir_dum: { Args: { p_dum: string; p_gestacao: string }; Returns: undefined }
+      pre_natal_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      pre_natal_incluir: { Args: { p_dum?: string; p_episodio?: string; p_paciente: string }; Returns: string }
+      pre_natal_painel: { Args: { p_unidade: string }; Returns: Json }
+      pre_natal_registrar_desfecho: { Args: { p_data: string; p_desfecho: string; p_gestacao: string }; Returns: undefined }
+      pre_natal_retirar: { Args: { p_gestacao: string; p_motivo: string }; Returns: undefined }
       programa_incluir: { Args: { p_paciente: string; p_programa: string }; Returns: string }
       programa_retirar: { Args: { p_motivo: string; p_participante: string }; Returns: undefined }
       registrar_avaliacao_pes: { Args: { p_episodio: string; p_observacao?: string; p_resultado: string }; Returns: string }

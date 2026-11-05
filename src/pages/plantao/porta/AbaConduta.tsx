@@ -12,6 +12,8 @@ import { Link } from 'react-router-dom'
 
 import { EnviarUpa } from '@/components/encaminhamento/EnviarUpa'
 import { HiperdiaNaConsulta } from '@/components/hiperdia/HiperdiaNaConsulta'
+import { PreNatalNaConsulta } from '@/components/preNatal/PreNatalNaConsulta'
+import { consultaIndicaGestacao } from '@/domain/preNatal'
 import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
 import { Chip } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -199,6 +201,10 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
 
       {/* 5A, tarefa 7: hiperdia do paciente e avaliação dos pés */}
       <HiperdiaNaConsulta pacienteId={pacienteId} episodioId={episodioId} />
+      {/* 5A, tarefa 7 (K2, K4): pré-natal da paciente, com a DUM */}
+      <PreNatalNaConsulta pacienteId={pacienteId} episodioId={episodioId} nomePaciente={nome}
+        marcouGestacao={consultaIndicaGestacao(problemas.flatMap((p) => ('lista' in p ? [p.lista] : [])),
+          problemas.flatMap((p) => ('cid' in p ? [p.cid] : [])), problemas.flatMap((p) => ('ciap' in p ? [p.ciap] : [])))} />
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-1 text-controle font-semibold text-tinta">Conduta</legend>
