@@ -154,6 +154,8 @@ DO $$ BEGIN
     RAISE EXCEPTION 'FALHOU: histórico do ajuste';
   END IF;
   IF has_table_privilege('authenticated', 'public.conta_medicamentos_fora', 'INSERT') THEN RAISE EXCEPTION 'FALHOU: gravável por fora'; END IF;
+  -- pendências da 5B, L1 (20270225000001): sem leitura direta, como nas glosas
+  IF has_table_privilege('authenticated', 'public.conta_medicamentos_fora', 'SELECT') THEN RAISE EXCEPTION 'FALHOU: legível por fora'; END IF;
   RAISE NOTICE 'OK  ajustes no histórico; tabela só pelas funções';
 END $$;
 ROLLBACK;
