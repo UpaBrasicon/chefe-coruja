@@ -11,6 +11,13 @@ export const RACAS_COR = [
 ] as const
 export type RacaCor = (typeof RACAS_COR)[number]['valor']
 
+/**
+ * O que o cadastro oferece (F5-T6, decisão do RT em 05/11/2026): sem "Sem
+ * informação", que o BPA-I (leiaute 05.00) não aceita mais. O valor continua
+ * no banco e em RACAS_COR para mostrar os cadastros antigos.
+ */
+export const RACAS_COR_CADASTRO = RACAS_COR.filter((r) => r.valor !== 'sem_informacao')
+
 export const CATEGORIAS = [
   { valor: 'sus', rotulo: 'SUS' },
   { valor: 'convenio', rotulo: 'Convênio' },
