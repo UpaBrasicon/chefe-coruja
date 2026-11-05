@@ -1356,9 +1356,11 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
       - **F5-T4, F5-T5 (P3):** "Chegou" sem ficha não liga o envio à ficha; a busca de fluxograma não acha "Dor na coluna" por "dor nas costas".
       - **F5-T6 (pergunta):** o cadastro oferece raça/cor "Sem informação", que o BPA-I não aceita mais.
   - **Portão da Fase 5 fechado pelo RT em 05/11/2026.** Correções dos achados das telas, nesta ordem, cada uma em branch e PR próprios com homologação antes:
-    1. F5-T2: altura do adulto na consulta da UBS;
-    2. F5-T3: a aba Conduta guarda o estado ao trocar de aba;
-    3. F5-T1: textos da UPA na consulta da UBS.
+    1. F5-T2: altura do adulto na consulta da UBS. **Feito, PR #434, produção em 05/11/2026.** A escuta da UBS pede a altura (cm). O bloco do hiperdia da consulta registra peso e altura quando o item está pendente.
+    2. F5-T3: a aba Conduta guarda o estado ao trocar de aba. **Feito, PR #435, produção em 05/11/2026.** Conduta e Desfecho ficam montadas (`keepMounted`).
+    3. F5-T1: textos da UPA na consulta da UBS. **Feito, PR #436, produção em 05/11/2026.** A prescrição não fala em pronto-socorro, e o encaminhamento interno oferece só consultório e sala de procedimentos.
+       - O aviso "Plantão noturno em andamento" vem do banco (`gerar_notificacoes_turno`) e só aparece com escala da noite na UBS. Ficou como está, porque pede migration.
+    - As três são só de tela, sem migration. Os testes passaram, e cada uma foi conferida na página de teste.
     - F5-T4, F5-T5 e a pergunta F5-T6 ficam para depois.
 
 ---
