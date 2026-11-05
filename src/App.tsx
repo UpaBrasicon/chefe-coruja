@@ -31,6 +31,7 @@ const AgendaConsultas = lazy(() => import('@/pages/agenda/AgendaConsultas'))
 const Encaminhados = lazy(() => import('@/pages/encaminhados/Encaminhados'))
 const Hiperdia = lazy(() => import('@/pages/hiperdia/Hiperdia'))
 const PreNatal = lazy(() => import('@/pages/preNatal/PreNatal'))
+const Puericultura = lazy(() => import('@/pages/puericultura/Puericultura'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
 const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const PacoteAlta = lazy(() => import('@/pages/public/PacoteAlta'))
@@ -341,6 +342,8 @@ export default function App() {
                         <Route path="/hiperdia" element={<Hiperdia />} />
                         {/* 5A, tarefa 7 (K5): pré-natal da UBS */}
                         <Route path="/pre-natal" element={<PreNatal />} />
+                        {/* 5A, tarefa 7 (K6): puericultura da UBS */}
+                        <Route path="/puericultura" element={<Puericultura />} />
                       </Route>
 
                       <Route element={<RequireRole papeis={['admin']} />}>
