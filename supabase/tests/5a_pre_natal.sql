@@ -169,6 +169,10 @@ SELECT pg_temp.como('enf');
 SELECT pg_temp.ok((pg_temp.gest('p1') ->> 'consultas')::int = 2 AND (pg_temp.gest('p1') ->> 'primeira_consulta')::date = pg_temp.hoje()
                   AND (pg_temp.gest('p1') ->> 'pa')::int = 2 AND (pg_temp.gest('p1') ->> 'peso_altura')::int = 1,
   'paciente 1: duas consultas, duas pressões na gestação, um peso com altura');
+-- 20270223000001: as datas das consultas, para a linha do tempo
+SELECT pg_temp.ok(pg_temp.gest('p1') -> 'datas_consultas' = jsonb_build_array(pg_temp.hoje(), pg_temp.hoje())
+                  AND pg_temp.gest('p4') -> 'datas_consultas' = '[]'::jsonb,
+  'paciente 1: as datas das duas consultas; paciente 4, incluída à mão, nenhuma');
 SELECT pg_temp.ok(pg_temp.gest('p1') -> 'testes_1tri' = jsonb_build_object('sifilis', pg_temp.hoje() - 60, 'hiv', pg_temp.hoje() - 58)
                   AND pg_temp.gest('p1') -> 'testes_3tri' = '{}'::jsonb,
   'paciente 1: sífilis e HIV no 1º trimestre; hepatite B só pedida não conta');

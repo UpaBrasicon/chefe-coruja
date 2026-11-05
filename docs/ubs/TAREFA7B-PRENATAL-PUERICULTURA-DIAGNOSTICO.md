@@ -83,7 +83,8 @@ A nota não fixa em dias os limites dos trimestres. Por isso, os cortes de 13s6d
    - a entrada pela consulta, com a DUM da classificação, e o aborto pela consulta;
    - o painel e o bloco da paciente.
    - Em seguida, a homologação com o rollback testado e o ok de produção do RT.
-2. **Telas:**
+   - Na produção em 05/11/2026, com o ok do RT (PR #448).
+2. **Telas** — o RT escolheu em 05/11/2026 a **opção B**, a linha do tempo da gestação (ref. Wrike Gantt), entre três opções do Refero (A: matriz como o hiperdia; C: cartões por trimestre). Migration `20270223000001` (expand): as datas das consultas, para as marcas da linha do tempo.
    - DUM e IG na consulta da UBS com o problema "pré-natal";
    - bloco "Pré-natal" na consulta;
    - painel `/pre-natal`, com a opção que o RT escolher.
