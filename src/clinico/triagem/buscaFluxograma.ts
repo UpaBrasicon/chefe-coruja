@@ -14,6 +14,9 @@ export type FluxogramaBusca = {
 export const SINONIMOS: Record<string, string> = {
   peito: 'toracica',
   barriga: 'abdominal',
+  // F5-T5 (portão da Fase 5): "dor nas costas" não achava "Dor na coluna"
+  costas: 'coluna',
+  lombar: 'coluna',
   ar: 'respirat',
   cansaco: 'respirat',
   chiado: 'respirat',
