@@ -18,6 +18,8 @@ BEGIN
     format('SELECT public.classificar_risco(%L::uuid, %L, %L::jsonb, %L::uuid, %L)::text', e2e.u('ep' || p_n), 'laranja',
            '{"frequencia-cardiaca":118,"frequencia-respiratoria":24,"temperatura":38.6,"saturacao-o2":93,"escala-dor":4,"pressao-arterial-sistolica":92,"pressao-arterial-diastolica":58}',
            v_flux, e2e.disc('e1100000-0000-4000-8000-000000000001', v_flux, 'laranja')));
+  -- peso deste atendimento: exigido para prescrever desde o Portão 2 (migration 20261121000001)
+  PERFORM e2e.passo('T1.peso', p_n, 'enfermeiro', '/triagem', 'Peso aferido (72 kg)', e2e.sql_sinal(e2e.u('pac' || p_n), 'peso', 72));
   PERFORM e2e.passo('T1.iniciar', p_n, 'plantonista', '/plantao/porta', 'Inicia atendimento', format('SELECT public.iniciar_atendimento(%L::uuid)::text', e2e.u('ep' || p_n)));
   PERFORM e2e.passo('T1.soap', p_n, 'plantonista', '/plantao/porta', 'SOAP', format('SELECT public.registrar_soap(%L::uuid, %L, %L, %L, %L, %L)::text', e2e.u('ep' || p_n),
     'Queixa de teste E2E.', 'Exame de teste E2E.', 'Hipótese de teste E2E.', 'Plano de teste E2E.', p_cid));

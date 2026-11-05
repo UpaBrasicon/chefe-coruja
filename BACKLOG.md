@@ -1310,6 +1310,59 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
 
 ---
 
+## Portão da Fase 5 — teste de ponta a ponta com login (pedido do RT em 03/11/2026)
+
+**Pedido do RT em 03/11/2026**, com a 5A concluída ("Portão da Fase 5"). Todas as tarefas da UBS fecharam sem ver as telas com login na homologação; esta rodada cobre isso e o resto da Fase 5. Decisões do RT em 03/11/2026: **A em K1 a K3**.
+
+- **Escopo (K1 = A):** a Fase 5 inteira e a regressão do fluxo da UPA pelos scripts de `scripts/e2e/`.
+  - UBS (5A, tarefas 1 a 7);
+  - faturamento (5B): conta, procedimentos, medicamentos, AIH/APAC, pré-auditoria e glosas;
+  - integrações (5C): API de laboratório, imagem e ERP, e webhooks.
+- **Ambiente (K2 = A):** homologação (Supabase `kswurfyx`).
+  - No banco, cada etapa roda como o papel, por SQL e com RLS ligado, como na Rodada 2.
+  - Nas telas, o master atual é publicado na homologação. O RT libera o link de compartilhamento da Vercel para `homolog.chefecoruja.com.br`, e as telas são percorridas no navegador embutido com as contas de teste, por papel, no computador e no celular.
+- **Cenário (K3 = A):** rede de teste nova na homologação.
+  - UBS, UPA e hospital de teste na mesma organização, com CNES fictícios;
+  - uma conta fictícia por papel, com a senha definida pelo RT e fora do repositório;
+  - coorte de cerca de 12 pacientes de APS: hipertenso, diabético, gestante, criança, escuta vermelha enviada à UPA, envio que não chegou em 12 h, evasão na UPA, internação com alta e retorno, alta desfeita, regulação de consulta pela conduta, cancelamento e paciente com cadastro em duas UBS.
+- **Regra:** nada é corrigido durante a rodada. Primeiro vem o relatório, com os defeitos por severidade; o RT decide a ordem das correções.
+- **Entregáveis:**
+  - `produto/docs/teste-e2e/RELATORIO_E2E_FASE5_AAAA-MM-DD.md`;
+  - os scripts e seeds da rodada em `scripts/e2e/` (de `40_` em diante);
+  - as perguntas de produto para o RT.
+- **Fica com o RT:** o link da Vercel, a senha das contas de teste e o segundo fator nas telas.
+- **Parte de banco feita em 03/11/2026.** Relatório em `produto/docs/teste-e2e/RELATORIO_E2E_FASE5_2026-11-03.md`; scripts de `scripts/e2e/40_` a `45_`.
+  - UBS: 75 passos ok, 2 lacunas conhecidas (pré-natal e puericultura) e 4 ajustes.
+  - Faturamento: 15 ok.
+  - Integrações: 10 de 16 testes passam na homologação; os outros 6 dependem do seed local e passam no CI.
+  - Regressão da UPA, refeita com o ok do RT: apaguei a Rede E2E sem os logins. T2 a T6 sem falha.
+    - Quase todas as falhas da coorte, do T1 e do T7 vêm dos scripts antigos, que prescrevem sem o peso do atendimento, regra do Portão 2.
+    - **Roteiros atualizados com o ok do RT (04/11/2026)** e regressão repetida do zero na homologação, de `01` a `23`, com a carga (`16`): **532 ok, 0 falhas**, 12 lacunas e 12 ajustes conhecidos. Antes eram 440 ok e 60 falhas.
+      - `11`: peso aferido dos pacientes 3 a 14 antes de prescrever; o #15 ganha idade e peso estimados, e a recusa sem eles vira passo próprio.
+      - `17`: peso no `t1_porta`, que o `23` também usa.
+      - O `T7.aviso_enfermeiro` depende dos pacientes sem leito da carga (`16`), que a rodada de 03/11 pulou.
+    - `11.historico_pedido` era erro do roteiro, não do produto. O gestor já lê sem pedido o prontuário de todo paciente da unidade, inclusive o histórico encerrado.
+      - Em 04/11/2026 o RT decidiu "gestor pede". Na homologação, o pedido da gestora caiu em "Você já tem acesso a este paciente pela escala". A migration foi desfeita lá, e o RT cancelou a mudança.
+      - O passo do `15_gestor_transversais.sql` foi corrigido: o pedido do gestor é recusado, e ele lê o resumo e o atendimento encerrado direto. Rodado na homologação: 4 ok.
+    - `6.aviso_gestor_24h`, investigado em 04/11/2026: não é defeito. O aviso de destino sem resposta vai à central e ao destino, como decidiu a tarefa 9 da Fase 4. A gestora da origem vê o atraso no painel da regulação (`destino_atrasado = 1`).
+      - **Decisão do RT em 04/11/2026: fica assim** (fecha a pergunta 3 da Rodada 1). O passo do `14_coorte_regulacao_alta.sql` passa a conferir o selo no painel da origem; rodado na homologação, ok.
+  - **Defeito F5-01 (P0 de segurança):** o papel vazio liberava a leitura de outra unidade em nove funções. Corrigido com o ok do RT (migration `20270219000001`, PR #432, produção em 03/11/2026).
+  - **Telas feitas em 04/11/2026** pelo link de compartilhamento da Vercel, no Chrome do RT (no navegador do app, a verificação da Cloudflare reprova o login automatizado, como deve).
+    - Passou pela tela: recepção, escuta, consulta com CIAP-2 e hiperdia, envio à UPA, chegada, triagem, alta com orientação, retorno na UBS, agenda pelo painel do hiperdia e contas do faturamento.
+    - Achados, nenhum P0 (detalhe no relatório):
+      - **F5-T2 (P1):** o adulto não tem campo de altura na consulta da UBS, e o item "peso e altura" do hiperdia nunca fecha pela tela.
+      - **F5-T3 (P2):** a aba Conduta perde o problema e as condutas ao trocar de aba.
+      - **F5-T1 (P2):** textos da UPA na consulta da UBS ("Prescrição do Pronto-Socorro", aviso de internados, salas de emergência).
+      - **F5-T4, F5-T5 (P3):** "Chegou" sem ficha não liga o envio à ficha; a busca de fluxograma não acha "Dor na coluna" por "dor nas costas".
+      - **F5-T6 (pergunta):** o cadastro oferece raça/cor "Sem informação", que o BPA-I não aceita mais.
+  - **Portão da Fase 5 fechado pelo RT em 05/11/2026.** Correções dos achados das telas, nesta ordem, cada uma em branch e PR próprios com homologação antes:
+    1. F5-T2: altura do adulto na consulta da UBS;
+    2. F5-T3: a aba Conduta guarda o estado ao trocar de aba;
+    3. F5-T1: textos da UPA na consulta da UBS.
+    - F5-T4, F5-T5 e a pergunta F5-T6 ficam para depois.
+
+---
+
 ## Trilha — Padrão do frontend (pedido do RT em 19/10/2026)
 
 **Pedido do RT:** "organizar o frontend e manter o padrão daqui pra frente". Entra agora, com a 5C
