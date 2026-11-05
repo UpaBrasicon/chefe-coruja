@@ -3,8 +3,8 @@
 // Básica nº 28 em grade, como a figura do Caderno — a situação aguda (vai para
 // a consulta) em três cartões e a não aguda (encerra na escuta) à parte, com
 // orientação ou agendamento. A cor é a que o enfermeiro marca; o sistema nunca
-// pré-seleciona. Sinais vitais opcionais (decisão do RT). O servidor
-// (registrar_escuta_aps) confere tudo de novo.
+// pré-seleciona. Sinais vitais opcionais (decisão do RT), com a altura para o
+// hiperdia (achado F5-T2). O servidor (registrar_escuta_aps) confere tudo de novo.
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Ambulance, CalendarPlus, Check } from 'lucide-react'
 import * as React from 'react'
@@ -139,7 +139,7 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
 
       <div className="flex flex-col gap-2">
         <span className="text-controle font-semibold text-tinta">Sinais vitais <span className="font-normal text-tinta-sussurro">(opcionais)</span></span>
-        <CamposVitais publico={publico} opcionais prefixo="escuta" valores={vitais} onChange={(k, v) => setVitais((s) => ({ ...s, [k]: v }))} />
+        <CamposVitais publico={publico} opcionais extras={['estatura']} prefixo="escuta" valores={vitais} onChange={(k, v) => setVitais((s) => ({ ...s, [k]: v }))} />
       </div>
 
       <div role="radiogroup" aria-label="Classificação de risco e vulnerabilidade (CAB 28)" className="flex flex-col gap-2">
