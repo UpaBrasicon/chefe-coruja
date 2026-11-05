@@ -163,8 +163,11 @@ SELECT e2e.ajuste('6.espera_24h', 'Simula 25 h de espera pelo destino no pedido 
 SELECT e2e.ajuste('6.job_avisos', 'Roda o job de avisos de prazo da regulação', 'SELECT private.regulacao_sla_avisar()');
 SELECT e2e.passo('6.aviso_destino_24h', 1, 'medico_uti', '/notificacoes', 'Destino recebe aviso de prazo vencido',
   $q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('sem aviso') END FROM public.notificacoes_plantonista WHERE perfil_id = private.meu_perfil_id() AND tipo LIKE 'reg_prazo_destino_%'$q$);
-SELECT e2e.passo('6.aviso_gestor_24h', 1, 'gestor', '/notificacoes', 'Gestor da unidade de origem recebe alerta da espera > 24 h',
-  $q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('nenhum aviso ao gestor da origem') END FROM public.notificacoes_plantonista WHERE perfil_id = private.meu_perfil_id() AND tipo LIKE 'reg_prazo%'$q$);
+-- Decisão do RT em 04/11/2026 (pergunta 3 da Rodada 1): fica assim. O aviso de destino sem resposta
+-- vai à central e ao destino (tarefa 9 da Fase 4); o gestor da origem vê o atraso no painel da regulação.
+SELECT e2e.passo('6.aviso_gestor_24h', 1, 'gestor', '/regulacao', 'Gestor da origem vê o selo "Destino sem resposta" no painel da regulação',
+  $q$SELECT CASE WHEN (public.regulacao_sla_painel('e1100000-0000-4000-8000-000000000001', '{}'::jsonb) -> 'resumo' ->> 'destino_atrasado')::int > 0
+    THEN 'selo no painel' ELSE e2e.falhar('sem destino atrasado no painel da origem') END$q$);
 
 -- ── 5. óbito (#13) e altas ──────────────────────────────────────────────────
 -- Correção da tarefa 1 (PR #100): o óbito não espera exame; o exame pedido é cancelado no desfecho.

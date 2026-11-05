@@ -1341,7 +1341,7 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
       - Em 04/11/2026 o RT decidiu "gestor pede". Na homologação, o pedido da gestora caiu em "Você já tem acesso a este paciente pela escala". A migration foi desfeita lá, e o RT cancelou a mudança.
       - O passo do `15_gestor_transversais.sql` foi corrigido: o pedido do gestor é recusado, e ele lê o resumo e o atendimento encerrado direto. Rodado na homologação: 4 ok.
     - `6.aviso_gestor_24h`, investigado em 04/11/2026: não é defeito. O aviso de destino sem resposta vai à central e ao destino, como decidiu a tarefa 9 da Fase 4. A gestora da origem vê o atraso no painel da regulação (`destino_atrasado = 1`).
-      - Pergunta ao RT, aberta desde a Rodada 1: fica assim, ou o gestor da origem também recebe o aviso?
+      - **Decisão do RT em 04/11/2026: fica assim** (fecha a pergunta 3 da Rodada 1). O passo do `14_coorte_regulacao_alta.sql` passa a conferir o selo no painel da origem; rodado na homologação, ok.
   - **Defeito F5-01 (P0 de segurança):** o papel vazio liberava a leitura de outra unidade em nove funções. Corrigido com o ok do RT (migration `20270219000001`, PR #432, produção em 03/11/2026).
   - Pendentes: as telas (o conector da Vercel deu 403; falta o link) e as perguntas do relatório.
 
