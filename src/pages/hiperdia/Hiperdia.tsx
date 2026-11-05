@@ -8,6 +8,7 @@ import { CalendarPlus, HeartPulse } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { IncluirNoHiperdia } from '@/components/hiperdia/IncluirNoHiperdia'
 import { SeloPrograma } from '@/components/hiperdia/SeloPrograma'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -31,8 +32,10 @@ const COLUNAS = ITENS.filter((i) => i.item !== 'acs')
 const MESES: Record<ItemHiperdia, string> = { consulta: '6 m', pa: '6 m', peso_altura: '12 m', hba1c: '12 m', pes: '12 m', acs: '12 m' }
 
 export default function Hiperdia() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papeisDaUnidade } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
+  // inclui o médico ou o enfermeiro da UBS (programa_incluir); técnico e gestor só veem
+  const podeIncluir = papeisDaUnidade.includes('plantonista') || papeisDaUnidade.includes('enfermeiro')
   const agora = useAgora(60_000)
   const painel = useQuery({
     queryKey: ['hiperdia', 'painel', unidadeId],
@@ -46,6 +49,7 @@ export default function Hiperdia() {
   const [filtro, setFiltro] = React.useState<Filtro>('todos')
   const linhas = painel.data ?? []
   const r = resumoHiperdia(linhas, agora)
+  const jaNoPrograma = Object.fromEntries(linhas.map((l) => [l.paciente_id, l.programas.map((p) => p.programa)]))
   const visiveis = linhas.filter((l) => filtro === 'todos' ? true
     : filtro === 'pendentes' ? temPendencia(l, agora)
       : filtro === 'sem_consulta' ? !l.proxima_consulta
@@ -53,11 +57,12 @@ export default function Hiperdia() {
 
   return (
     <>
-      <TituloPagina titulo="Hiperdia" descricao="Hipertensão e diabetes da unidade, pelas boas práticas das notas C5 e C4 do Ministério da Saúde." />
+      <TituloPagina titulo="Hiperdia" descricao="Hipertensão e diabetes da unidade, pelas boas práticas das notas C5 e C4 do Ministério da Saúde."
+        acoes={podeIncluir && unidadeId && !painel.error ? <IncluirNoHiperdia unidadeId={unidadeId} jaNoPrograma={jaNoPrograma} /> : undefined} />
       {painel.isLoading ? <Spinner /> : painel.error ? <p className="text-apoio text-critico">{msg(painel.error)}</p>
         : linhas.length === 0 ? (
           <Vazio icone={HeartPulse} titulo="Ninguém no hiperdia ainda"
-            texto="O paciente entra sozinho quando a consulta da UBS registra hipertensão ou diabetes (problema, CID-10 ou CIAP-2), ou pela consulta, à mão." />
+            texto="O paciente entra sozinho quando a consulta da UBS registra hipertensão ou diabetes (problema, CID-10 ou CIAP-2). O médico e o enfermeiro também incluem à mão, aqui ou na consulta." />
         ) : (
           <div className="flex flex-col gap-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
