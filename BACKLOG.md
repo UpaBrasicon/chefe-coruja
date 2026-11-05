@@ -908,6 +908,8 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 
 **Fase 5 aberta pelo RT em 16/10/2026**, depois do Portão 2 encerrado (PR #125). Primeiro passo, pela ordem técnica abaixo: o RT escolhe o foco (UBS, faturamento ou integrações); as três frentes não andam em paralelo. **Ordem decidida pelo RT em 16/10/2026: 5B Faturamento, depois 5C Integrações, depois 5A UBS.** Estado de partida: o tipo de unidade só aceita hospital, UPA e clínica; não há agenda, CIAP-2, conta do atendimento, TUSS nem webhooks; já existem AIH, BPA-I, BPA-C e APAC (Fase 3), a API de leitura e o checklist da RNDS.
 
+**Encerrada em 05/11/2026** por decisão do RT. Resumo e pendências no fim da seção 5C; evidências em `produto/docs/fase5/ENCERRAMENTO-FASE5.md`.
+
 ### Fase 5A — UBS Mínima
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
 |---|---|---|---|---|
@@ -1318,6 +1320,13 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
   `volumes-unidade.sql`.
 - `docs/rnds/CHAMADO-DATASUS.md` traz o texto do chamado.
 - Falta o RT indicar a unidade piloto.
+
+**Fase 5 encerrada pelo RT em 05/11/2026.** 5A (tarefas 1 a 7), 5B (tarefas 1 a 6 e as pendências L1 a L4)
+e 5C (tarefas 1 a 4) estão em produção; o Portão da Fase 5 foi fechado no mesmo dia, com os achados das
+telas corrigidos. Ficam fora, esperando algo de fora: RNDS 5.5b e 5.5c (unidade piloto e credencial do
+DATASUS), importar o retorno do SIA/SIH (L5, arquivo real da secretaria) e TISS/TUSS (cliente de
+convênio). Evidências em `produto/docs/fase5/ENCERRAMENTO-FASE5.md`. A próxima frente só começa quando o
+RT mandar.
 
 ---
 
