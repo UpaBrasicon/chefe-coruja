@@ -311,11 +311,14 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 <SolicitarApac pacienteId={ep.paciente_id} episodioId={ep.id} />
               </div>
             </TabsContent>
-            <TabsContent value="fim">
+            {/* Desfecho e Conduta guardam as escolhas só na memória até confirmar: ficam
+                montadas, escondidas, para não zerar quando o médico vai a outra aba e
+                volta (achado F5-T3 do portão da Fase 5). */}
+            <TabsContent value="fim" keepMounted>
               {p && <AbaDesfecho episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} chegadaEm={ep.chegada_em} painel={p} registros={registros}
                 soap={soap} agora={agora} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
-            <TabsContent value="conduta">
+            <TabsContent value="conduta" keepMounted>
               {ubs && <AbaConduta episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} tipoInicial={ep.tipo_atendimento_aps} registros={registros} soap={soap}
                 onIrPara={(a) => { setAba(a); setErro(null) }} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
