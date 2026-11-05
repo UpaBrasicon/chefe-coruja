@@ -1347,7 +1347,15 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
     - `6.aviso_gestor_24h`, investigado em 04/11/2026: não é defeito. O aviso de destino sem resposta vai à central e ao destino, como decidiu a tarefa 9 da Fase 4. A gestora da origem vê o atraso no painel da regulação (`destino_atrasado = 1`).
       - **Decisão do RT em 04/11/2026: fica assim** (fecha a pergunta 3 da Rodada 1). O passo do `14_coorte_regulacao_alta.sql` passa a conferir o selo no painel da origem; rodado na homologação, ok.
   - **Defeito F5-01 (P0 de segurança):** o papel vazio liberava a leitura de outra unidade em nove funções. Corrigido com o ok do RT (migration `20270219000001`, PR #432, produção em 03/11/2026).
-  - Pendentes: as telas (o conector da Vercel deu 403; falta o link) e as perguntas do relatório.
+  - **Telas feitas em 04/11/2026** pelo link de compartilhamento da Vercel, no Chrome do RT (no navegador do app, a verificação da Cloudflare reprova o login automatizado, como deve).
+    - Passou pela tela: recepção, escuta, consulta com CIAP-2 e hiperdia, envio à UPA, chegada, triagem, alta com orientação, retorno na UBS, agenda pelo painel do hiperdia e contas do faturamento.
+    - Achados, nenhum P0 (detalhe no relatório):
+      - **F5-T2 (P1):** o adulto não tem campo de altura na consulta da UBS, e o item "peso e altura" do hiperdia nunca fecha pela tela.
+      - **F5-T3 (P2):** a aba Conduta perde o problema e as condutas ao trocar de aba.
+      - **F5-T1 (P2):** textos da UPA na consulta da UBS ("Prescrição do Pronto-Socorro", aviso de internados, salas de emergência).
+      - **F5-T4, F5-T5 (P3):** "Chegou" sem ficha não liga o envio à ficha; a busca de fluxograma não acha "Dor na coluna" por "dor nas costas".
+      - **F5-T6 (pergunta):** o cadastro oferece raça/cor "Sem informação", que o BPA-I não aceita mais.
+  - Pendente: a decisão do RT sobre os achados das telas e o fechamento do portão.
 
 ---
 
