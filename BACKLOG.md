@@ -1365,7 +1365,8 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
     5. F5-T5: a busca de fluxograma acha "Dor na coluna" por "costas" e "lombar". **Feito, PR #439, produção em 05/11/2026.**
     - T4 e T5 pedidos pelo RT em 05/11/2026, só de tela, sem migration. Testes passaram, e o T4 foi conferido na página de teste.
     6. F5-T6: raça/cor "Sem informação" sai do cadastro (decisão do RT em 05/11/2026: "tirar"). **Feito, PR #441, produção em 05/11/2026.** O formulário oferece só as cinco categorias do IBGE; cadastro antigo com "Sem informação" mostra aviso para perguntar ao paciente. O banco não muda: tirar o valor do CHECK pediria migration.
-    - Dos achados das telas, fica só o aviso noturno do T1 (migration).
+    7. Aviso de turno na UBS (resto do F5-T1). **Feito, PR #443, produção em 05/11/2026** (ok do RT). Migration `20270220000001_aviso_turno_ubs.sql`: `private.aviso_fixo_turno` devolve os quatro avisos fixos de turno (internados e observação) só fora da UBS; na UPA e no hospital, mesmos textos e horários. Homologação com o teste `f5_aviso_turno_ubs` e o rollback testado; na produção, md5, grants e versão iguais aos da homologação.
+    - **Todos os achados das telas do portão da Fase 5 estão resolvidos.**
 
 ---
 
