@@ -1337,6 +1337,10 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
   - Integrações: 10 de 16 testes passam na homologação; os outros 6 dependem do seed local e passam no CI.
   - Regressão da UPA, refeita com o ok do RT: apaguei a Rede E2E sem os logins. T2 a T6 sem falha.
     - Quase todas as falhas da coorte, do T1 e do T7 vêm dos scripts antigos, que prescrevem sem o peso do atendimento, regra do Portão 2.
+    - **Roteiros atualizados com o ok do RT (04/11/2026)** e regressão repetida do zero na homologação, de `01` a `23`, com a carga (`16`): **532 ok, 0 falhas**, 12 lacunas e 12 ajustes conhecidos. Antes eram 440 ok e 60 falhas.
+      - `11`: peso aferido dos pacientes 3 a 14 antes de prescrever; o #15 ganha idade e peso estimados, e a recusa sem eles vira passo próprio.
+      - `17`: peso no `t1_porta`, que o `23` também usa.
+      - O `T7.aviso_enfermeiro` depende dos pacientes sem leito da carga (`16`), que a rodada de 03/11 pulou.
     - `11.historico_pedido` era erro do roteiro, não do produto. O gestor já lê sem pedido o prontuário de todo paciente da unidade, inclusive o histórico encerrado.
       - Em 04/11/2026 o RT decidiu "gestor pede". Na homologação, o pedido da gestora caiu em "Você já tem acesso a este paciente pela escala". A migration foi desfeita lá, e o RT cancelou a mudança.
       - O passo do `15_gestor_transversais.sql` foi corrigido: o pedido do gestor é recusado, e ele lê o resumo e o atendimento encerrado direto. Rodado na homologação: 4 ok.

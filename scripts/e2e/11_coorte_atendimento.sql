@@ -46,6 +46,19 @@ SELECT e2e.passo('3.peso', 1, 'enfermeiro', '/triagem', 'Peso do lactente (6,4 k
 SELECT e2e.passo('3.peso', 2, 'enfermeiro', '/triagem', 'Peso da criança (21 kg)', e2e.sql_sinal(e2e.u('pac2'), 'peso', 21));
 SELECT e2e.passo('3.glicemia', 15, 'enfermeiro', '/triagem', 'Glicemia capilar do desconhecido (52 mg/dL)', e2e.sql_sinal(e2e.u('pac15'), 'glicemia-capilar', 52));
 
+-- Peso dos adolescentes e adultos: desde o Portão 2 (migration 20261121000001,
+-- RT em 16/10/2026) todo medicamento exige idade e peso deste atendimento.
+-- Peso pela pessoa e idade, aferido pela enfermagem na triagem.
+DO $$
+DECLARE p record;
+BEGIN
+  FOR p IN SELECT * FROM (VALUES (3, 58), (4, 62), (5, 78), (6, 70), (7, 84), (8, 66), (9, 72), (10, 60),
+                                 (11, 55), (12, 80), (13, 76), (14, 82)) v(n, kg) LOOP
+    PERFORM e2e.passo('3.peso', p.n, 'enfermeiro', '/triagem', 'Peso aferido (' || p.kg || ' kg)',
+      e2e.sql_sinal(e2e.u('pac' || p.n), 'peso', p.kg));
+  END LOOP;
+END $$;
+
 -- ── 3.3 prescrições ─────────────────────────────────────────────────────────
 DO $$
 DECLARE p record;
@@ -74,8 +87,7 @@ BEGIN
       (12, 'Prometazina', NULL, '50 mg', 'intramuscular', 'dose única', 'ok'),
       (13, 'Noradrenalina', NULL, 'conforme protocolo', 'endovenosa', 'contínuo', 'ok'),
       (13, 'Piperacilina + tazobactam', NULL, '4,5 g', 'endovenosa', '6/6h', 'ok'),
-      (14, 'Paracetamol', 'comprimido', '750 mg', 'oral', 'dose única', 'ok'),
-      (15, 'Glicose', NULL, '50 mL', 'endovenosa', 'dose única', 'ok')
+      (14, 'Paracetamol', 'comprimido', '750 mg', 'oral', 'dose única', 'ok')
     ) x(n, principio, apres, dose, via, posologia, esperado) LOOP
     PERFORM e2e.passo('3.prescrever', p.n, 'plantonista', '/plantao/porta', 'Prescreve ' || p.principio || ' ' || p.dose,
       format('SELECT public.prescrever(%L::uuid, %L::jsonb)::text', e2e.u('pac' || p.n),
@@ -100,9 +112,15 @@ SELECT e2e.lacuna('3.medicacao_controlada', 12, 'plantonista', 'Prescrição de 
   'O catálogo não marca controlado e a prescrição/farmácia não têm regra de controlados (haloperidol e midazolam entram como qualquer item).');
 SELECT e2e.lacuna('3.reabrir_atendimento', NULL, 'plantonista', 'Reabrir atendimento depois do desfecho', 'Não há RPC de reabertura; depois do desfecho a etapa sai de "atendimento" e tudo fica bloqueado.');
 
--- #15: adulto inconsciente sem idade conhecida — o sistema exige peso antes de qualquer medicamento
+-- #15: adulto inconsciente sem idade conhecida — o sistema exige idade e peso antes de qualquer
+-- medicamento; sem documento, os dois são estimados (Portão 2, RT em 16/10/2026)
+SELECT e2e.passo('3.prescricao_sem_idade', 15, 'plantonista', '/plantao/porta', 'Prescrição no desconhecido sem idade e sem peso deve ser recusada',
+  format('SELECT public.prescrever(%L::uuid, %L::jsonb)::text', e2e.u('pac15'),
+         jsonb_build_object('tipo', 'medicamento', 'medicamento_id', e2e.med('Glicose'), 'dose', '50 mL', 'via', 'endovenosa', 'posologia', 'dose única')), 'erro');
 SELECT e2e.passo('3.peso_estimado', 15, 'enfermeiro', '/triagem', 'Peso estimado do desconhecido (70 kg)', e2e.sql_sinal(e2e.u('pac15'), 'peso', 70));
-SELECT e2e.passo('3.prescrever', 15, 'plantonista', '/plantao/porta', 'Prescreve Glicose 50 mL (depois do peso)',
+SELECT e2e.passo('3.idade_estimada', 15, 'plantonista', '/plantao/porta', 'Idade estimada do desconhecido (40 anos)',
+  format('SELECT public.registrar_idade_estimada(%L::uuid, 40)::text', e2e.u('pac15')));
+SELECT e2e.passo('3.prescrever', 15, 'plantonista', '/plantao/porta', 'Prescreve Glicose 50 mL (depois da idade e do peso)',
   format('SELECT public.prescrever(%L::uuid, %L::jsonb)::text', e2e.u('pac15'),
          jsonb_build_object('tipo', 'medicamento', 'medicamento_id', e2e.med('Glicose'), 'dose', '50 mL', 'via', 'endovenosa', 'posologia', 'dose única')));
 
