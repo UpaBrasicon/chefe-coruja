@@ -276,7 +276,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 soap={soap} setSoap={setSoap} salvoEm={salvoEm} classificacoes={cls} registros={registros} aoRegistrar={aoRegistrarSoap} />
             </TabsContent>
             <TabsContent value="presc">
-              {p && <AbaPrescricao pacienteId={ep.paciente_id} nome={nome} itens={p.prescricao} pediatrico={pediatrico} aoMudar={recarregar} />}
+              {p && <AbaPrescricao pacienteId={ep.paciente_id} nome={nome} itens={p.prescricao} pediatrico={pediatrico} aoMudar={recarregar} ubs={ubs} />}
             </TabsContent>
             <TabsContent value="exames">
               {p && <AbaExames episodioId={ep.id} pacienteId={ep.paciente_id} exames={p.exames} aoMudar={recarregar} />}

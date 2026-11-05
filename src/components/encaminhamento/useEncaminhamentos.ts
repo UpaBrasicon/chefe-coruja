@@ -52,6 +52,9 @@ export const ESPECIALIDADES = [
 /** Serviços do protótipo (SERV); a mesma lista está na CHECK do banco. */
 export const SERVICOS = ['Consultório', 'Sala de emergência', 'Observação', 'Sala de procedimentos', 'Pediatria'] as const
 
+/** Na UBS não há sala de emergência, observação nem pediatria de porta (achado F5-T1). */
+export const SERVICOS_UBS: readonly (typeof SERVICOS)[number][] = ['Consultório', 'Sala de procedimentos']
+
 export const ROTULO_ESTADO: Record<EstadoEncaminhamento, string> = {
   pendente: 'Aguardando aceite',
   aceito: 'Aceito',

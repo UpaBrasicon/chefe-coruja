@@ -20,9 +20,10 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { useUnidade } from '@/contexts/UnidadeContext'
 
 import {
-  ESPECIALIDADES, ROTULO_ESTADO, SERVICOS, msg, normalizar, quando,
+  ESPECIALIDADES, ROTULO_ESTADO, SERVICOS, SERVICOS_UBS, msg, normalizar, quando,
   useEncaminhamentos, useMedicosParaEncaminhar, usePendenciasEncaminhar, useRecarregarEncaminhamentos,
   type Encaminhamento, type EstadoEncaminhamento,
 } from './useEncaminhamentos'
@@ -53,6 +54,8 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
   const [ocupado, setOcupado] = React.useState(false)
   const [cancelando, setCancelando] = React.useState<string | null>(null)
   const [motivo, setMotivo] = React.useState('')
+  const { unidadeAtiva } = useUnidade()
+  const servicos = unidadeAtiva?.unidade.tipo === 'ubs' ? SERVICOS_UBS : SERVICOS
 
   const executar = async (fn: () => PromiseLike<{ error: unknown }>, ok: string) => {
     setOcupado(true)
@@ -136,7 +139,7 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
 
       <span className="text-apoio font-medium text-grafite">Serviço</span>
       <div role="group" aria-label="Serviço" className="flex flex-wrap gap-1.5">
-        {SERVICOS.map((s) => (
+        {servicos.map((s) => (
           <Chip key={s} ativo={f.servico === s} onClick={() => setF({ ...f, servico: f.servico === s ? '' : s })}>{s}</Chip>
         ))}
       </div>
