@@ -46,3 +46,13 @@ Conclusão: para importar, é preciso um arquivo real, com o layout, vindo da se
 4. **L5:** a importação, quando o arquivo da secretaria chegar.
 
 L2 não gera trabalho se for A.
+
+## 5. Andamento
+
+- **L3, feita em 05/11/2026 na homologação:**
+  - O CNES já estava preenchido; o que travava eram os códigos SIGTAP das fontes da unidade e o CBO e o CNS do profissional.
+  - O arquivo `supabase/homolog/faturamento-teste.sql` cadastra os três códigos, escolhidos na tabela SIGTAP carregada: 03.01.06.009-6, 03.01.06.011-8 e 03.01.10.001-2.
+  - O mesmo arquivo grava o CBO 225125 e um CNS de teste na conta "Teste Homologação".
+  - Resultado: 19 contas da UPA Homologação ficaram sem pendência bloqueante.
+  - Evidência numa transação desfeita, como o faturamento: a conta limpa passou de aberta para em conferência e fechou sem a liberação do gestor. A conta com raça/cor e sexo ausentes continuou barrada.
+  - A medicação continua com a pendência "CBO de enfermagem", porque a conta de teste tem um só CBO. Raça/cor e sexo ausentes são pendências reais do cadastro.
