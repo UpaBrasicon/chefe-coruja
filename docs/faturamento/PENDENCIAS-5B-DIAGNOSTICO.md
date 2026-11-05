@@ -2,7 +2,7 @@
 
 A 5B foi encerrada pelo RT em 17/10/2026 (`produto/docs/fase5/ENCERRAMENTO-5B.md`). O RT pediu as pendências em 05/11/2026 ("Pendências da 5B").
 
-Este documento é o diagnóstico. Nada foi implementado. As decisões L1 a L5 são do RT.
+Este documento é o diagnóstico. **Decisões do RT em 05/11/2026: A em L1 a L5** ("Sim, todas A").
 
 ## 1. Estado de cada pendência (conferido no código em 05/11/2026)
 
