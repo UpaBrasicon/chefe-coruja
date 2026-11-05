@@ -1355,7 +1355,11 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
       - **F5-T1 (P2):** textos da UPA na consulta da UBS ("Prescrição do Pronto-Socorro", aviso de internados, salas de emergência).
       - **F5-T4, F5-T5 (P3):** "Chegou" sem ficha não liga o envio à ficha; a busca de fluxograma não acha "Dor na coluna" por "dor nas costas".
       - **F5-T6 (pergunta):** o cadastro oferece raça/cor "Sem informação", que o BPA-I não aceita mais.
-  - Pendente: a decisão do RT sobre os achados das telas e o fechamento do portão.
+  - **Portão da Fase 5 fechado pelo RT em 05/11/2026.** Correções dos achados das telas, nesta ordem, cada uma em branch e PR próprios com homologação antes:
+    1. F5-T2: altura do adulto na consulta da UBS;
+    2. F5-T3: a aba Conduta guarda o estado ao trocar de aba;
+    3. F5-T1: textos da UPA na consulta da UBS.
+    - F5-T4, F5-T5 e a pergunta F5-T6 ficam para depois.
 
 ---
 
