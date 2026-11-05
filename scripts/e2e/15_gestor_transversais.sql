@@ -27,14 +27,18 @@ SELECT e2e.ajuste('11.banco_internados', 'Conferência no banco: internações a
 -- histórico do paciente com alta: exige justificativa e fica na auditoria
 SELECT e2e.passo('11.historico_sem_motivo', 14, 'gestor', '/prontuarios', 'Abrir histórico encerrado sem justificativa (deve recusar)',
   format('SELECT public.abrir_historico_encerrado(%L::uuid, %L)::text', e2e.u('pac14'), 'curto'), 'erro');
--- Regra da Fase 3 (commit 472be01): só quem cuida do paciente agora abre o histórico encerrado com motivo; o gestor faz o pedido de acesso.
-SELECT e2e.passo('11.historico_com_motivo', 14, 'gestor', '/prontuarios', 'Gestor tenta abrir histórico encerrado com justificativa (regra: o gestor faz o pedido)',
+-- Regra da Fase 3 (commit 472be01): só quem cuida do paciente agora abre o histórico encerrado com motivo.
+-- O gestor não precisa de motivo nem de pedido: ele já lê o prontuário de todo paciente da unidade
+-- (pode_atuar_no_paciente e as políticas de leitura). Conferido no portão da Fase 5; o RT cancelou
+-- o "gestor pede acesso" em 04/11/2026.
+SELECT e2e.passo('11.historico_com_motivo', 14, 'gestor', '/prontuarios', 'Gestor tenta abrir histórico encerrado com justificativa (é de quem cuida agora; deve recusar)',
   format('SELECT public.abrir_historico_encerrado(%L::uuid, %L)::text', e2e.u('pac14'), 'Auditoria interna do teste de ponta a ponta'), 'erro:Só quem cuida do paciente agora');
-SELECT e2e.passo('11.historico_pedido', 14, 'gestor', '/prontuarios', 'Gestor pede acesso ao histórico com justificativa',
-  format('SELECT public.pedir_acesso_prontuario(%L::uuid, %L)::text', e2e.u('pac14'), 'Auditoria interna do teste de ponta a ponta (gestor).'), 'ok', 'pedido14g');
-SELECT e2e.passo('11.historico_auditado', 14, 'gestor', '/auditoria', 'O pedido aparece na lista de pedidos de acesso da unidade',
-  format($q$SELECT CASE WHEN count(*) > 0 THEN count(*)::text ELSE e2e.falhar('sem pedido') END FROM public.meus_pedidos_acesso(%L) x$q$,
-         'e1100000-0000-4000-8000-000000000001'));
+SELECT e2e.passo('11.historico_pedido', 14, 'gestor', '/prontuarios', 'Gestor não pede acesso ao prontuário (já lê sem pedido; deve recusar)',
+  format('SELECT public.pedir_acesso_prontuario(%L::uuid, %L)::text', e2e.u('pac14'), 'Auditoria interna do teste de ponta a ponta (gestor).'), 'erro:Acesso negado');
+SELECT e2e.passo('11.historico_gestor_le', 14, 'gestor', '/prontuarios', 'Gestor lê o resumo do histórico encerrado direto, sem pedido',
+  format($q$SELECT CASE WHEN public.historico_encerrado(%L::uuid) IS NOT NULL THEN 'lido' ELSE e2e.falhar('sem resumo do histórico') END$q$, e2e.u('pac14')));
+SELECT e2e.passo('11.historico_gestor_detalhe', 14, 'gestor', '/prontuarios', 'Gestor lê o atendimento encerrado (detalhe) direto, sem pedido',
+  format($q$SELECT CASE WHEN EXISTS (SELECT 1 FROM public.episodios WHERE paciente_id = %L::uuid AND etapa = 'encerrado') THEN 'lido' ELSE e2e.falhar('sem atendimento encerrado') END$q$, e2e.u('pac14')));
 SELECT e2e.passo('11.gestor_prescreve', 5, 'gestor', '/plantao', 'Gestor tenta prescrever (deve ser negado)',
   format('SELECT public.prescrever(%L::uuid, %L::jsonb)::text', e2e.u('pac5'),
          jsonb_build_object('tipo', 'medicamento', 'medicamento_id', e2e.med('Paracetamol'), 'dose', '750 mg', 'via', 'oral', 'posologia', 'dose única')), 'erro');
