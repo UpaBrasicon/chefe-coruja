@@ -26,7 +26,19 @@ export const VITAIS = [
   { k: 'peso', rotulo: 'Peso', un: 'kg', adulto: false, ped: false },
 ] as const
 
-export const obrigatorio = (v: (typeof VITAIS)[number], publico: Publico | null) => (publico === 'pediatrico' ? v.ped : v.adulto)
+/**
+ * Medidas que só algumas telas pedem, nunca obrigatórias. A escuta da UBS pede
+ * a altura para o item "peso e altura" do hiperdia (notas C5 e C4; achado
+ * F5-T2 do portão da Fase 5). O conceito global 'estatura' é em cm.
+ */
+export const MEDIDAS_EXTRAS = [
+  { k: 'estatura', rotulo: 'Altura', un: 'cm', adulto: false, ped: false },
+] as const
+export type MedidaExtra = (typeof MEDIDAS_EXTRAS)[number]['k']
+
+const TODAS = [...VITAIS, ...MEDIDAS_EXTRAS]
+
+export const obrigatorio = (v: { adulto: boolean; ped: boolean }, publico: Publico | null) => (publico === 'pediatrico' ? v.ped : v.adulto)
 
 export function faltandoVitais(valores: Record<string, string>, publico: Publico | null) {
   return VITAIS.filter((v) => obrigatorio(v, publico) && !(valores[v.k] ?? '').trim())
@@ -36,7 +48,7 @@ export function faltandoVitais(valores: Record<string, string>, publico: Publico
 export const VITAL_DOR = 'escala-dor'
 
 /** Rótulo do sinal pela chave (para o histórico e para mensagens). */
-export const rotuloVital = (k: string) => VITAIS.find((v) => v.k === k)?.rotulo ?? k
+export const rotuloVital = (k: string) => TODAS.find((v) => v.k === k)?.rotulo ?? k
 
 /** "PA 120/80 · FC 88 bpm · …" — crus, sem marca de alterado (CLAUDE.md). */
 export function textoVitais(sinais: Record<string, number> | null | undefined): string {
@@ -45,7 +57,7 @@ export function textoVitais(sinais: Record<string, number> | null | undefined): 
   const d = sinais['pressao-arterial-diastolica']
   const partes: string[] = []
   if (s !== undefined || d !== undefined) partes.push(`PA ${s ?? '—'}/${d ?? '—'}`)
-  for (const v of VITAIS) {
+  for (const v of TODAS) {
     if (v.k.startsWith('pressao-arterial') || sinais[v.k] === undefined) continue
     partes.push(`${v.rotulo.replace(' (0–10)', '')} ${String(sinais[v.k]).replace('.', ',')}${v.un ? ' ' + v.un : ''}`)
   }
@@ -59,7 +71,7 @@ export function paraNumeros(valores: Record<string, string>): Record<string, num
       .filter(([, v]) => v.trim() !== '')
       .map(([k, v]) => {
         const n = Number(v.replace(',', '.'))
-        if (Number.isNaN(n)) throw new Error(`Valor inválido em ${VITAIS.find((x) => x.k === k)?.rotulo ?? k}`)
+        if (Number.isNaN(n)) throw new Error(`Valor inválido em ${rotuloVital(k)}`)
         return [k, n]
       })
   )

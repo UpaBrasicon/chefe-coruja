@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { obrigatorio, VITAIS, type Publico } from '@/domain/vitais'
+import { MEDIDAS_EXTRAS, obrigatorio, VITAIS, type MedidaExtra, type Publico } from '@/domain/vitais'
 
 export function CamposVitais({
   publico,
@@ -14,6 +14,7 @@ export function CamposVitais({
   rotulo,
   dica,
   opcionais = false,
+  extras = [],
 }: {
   publico: Publico | null
   valores: Record<string, string>
@@ -29,10 +30,13 @@ export function CamposVitais({
   dica?: (k: string) => string | undefined
   /** todos opcionais, sem o asterisco (escuta inicial da UBS) */
   opcionais?: boolean
+  /** medidas a mais, sempre opcionais (a escuta da UBS pede a altura) */
+  extras?: readonly MedidaExtra[]
 }) {
+  const campos = [...VITAIS, ...MEDIDAS_EXTRAS.filter((m) => extras.includes(m.k))]
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {VITAIS.map((v) => {
+      {campos.map((v) => {
         const leitura = somenteLeitura.includes(v.k)
         return (
           <div key={v.k} className="flex flex-col gap-1">
