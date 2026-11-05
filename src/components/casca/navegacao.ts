@@ -27,7 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
-import { Baby, CalendarDays, Ear, HeartPulse, Send, Sprout } from 'lucide-react'
+import { Baby, CalendarDays, Ear, HeartPulse, Package, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -119,6 +119,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true, grupo: 'Faturamento' },
     // Fase 5C, tarefa 3: envio ao ERP (contas e plantões do mês)
     { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true, grupo: 'Faturamento' },
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true, grupo: 'Faturamento' },
     // ── Unidade
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true, grupo: 'Unidade' },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true, grupo: 'Unidade' },
@@ -192,6 +193,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
     { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true },
+    // pendências da 5B, L4: cadastro de materiais (opção A do RT)
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
     ITEM_ESCALA,
   ],

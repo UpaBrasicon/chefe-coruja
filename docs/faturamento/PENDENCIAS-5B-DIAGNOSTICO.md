@@ -61,3 +61,4 @@ L2 não gera trabalho se for A.
   - a migration `20270226000001` cria o cadastro `materiais_unidade` (faturamento e gestor), o lançamento `conta_materiais` (faturamento, com retirada com motivo) e o congelamento no fechamento;
   - a pré-auditoria ganhou o aviso "material sem código SIGTAP", que nunca bloqueia;
   - teste `supabase/tests/5b_materiais.sql` e rollback testado.
+- **L4, concluída em 05/11/2026:** o banco está na produção com o ok do RT (PR #455). A tela segue a opção A do RT (Dock e Lemon Squeezy): a página `/faturamento/materiais`, com busca, ativos e desativados e um painel lateral para criar e editar, mais a seção Materiais na conta, com "Lançar material" e a retirada com motivo.

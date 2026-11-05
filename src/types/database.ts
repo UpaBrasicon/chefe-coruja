@@ -9914,6 +9914,13 @@ export type Database = {
       contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
       hiperdia_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       hiperdia_painel: { Args: { p_unidade: string }; Returns: Json }
+      conta_lancar_material: { Args: { p_conta: string; p_material: string; p_observacao?: string; p_quantidade: number }; Returns: Json }
+      conta_retirar_material: { Args: { p_lancamento: string; p_motivo: string }; Returns: Json }
+      materiais_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      material_salvar: {
+        Args: { p_ativo?: boolean; p_id: string | null; p_nome: string; p_procedimento?: string; p_unidade: string; p_unidade_consumo: string }
+        Returns: string
+      }
       puericultura_desfazer_saida: { Args: { p_paciente: string }; Returns: undefined }
       puericultura_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       puericultura_painel: { Args: { p_unidade: string }; Returns: Json }
