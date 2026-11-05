@@ -1364,7 +1364,8 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
     4. F5-T4: "Chegou" na recepção da UPA só registra com a ficha escolhida. **Feito, PR #438, produção em 05/11/2026.** Sem ficha aberta no dia, o diálogo orienta abrir em Nova ficha. Ligar a ficha depois pediria migration, e a regra do H1 já manda abrir a ficha antes.
     5. F5-T5: a busca de fluxograma acha "Dor na coluna" por "costas" e "lombar". **Feito, PR #439, produção em 05/11/2026.**
     - T4 e T5 pedidos pelo RT em 05/11/2026, só de tela, sem migration. Testes passaram, e o T4 foi conferido na página de teste.
-    - Fica a pergunta F5-T6 e o aviso noturno do T1.
+    6. F5-T6: raça/cor "Sem informação" sai do cadastro (decisão do RT em 05/11/2026: "tirar"). **Feito, PR #441, produção em 05/11/2026.** O formulário oferece só as cinco categorias do IBGE; cadastro antigo com "Sem informação" mostra aviso para perguntar ao paciente. O banco não muda: tirar o valor do CHECK pediria migration.
+    - Dos achados das telas, fica só o aviso noturno do T1 (migration).
 
 ---
 
