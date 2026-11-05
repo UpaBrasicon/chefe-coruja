@@ -1361,7 +1361,10 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
     3. F5-T1: textos da UPA na consulta da UBS. **Feito, PR #436, produção em 05/11/2026.** A prescrição não fala em pronto-socorro, e o encaminhamento interno oferece só consultório e sala de procedimentos.
        - O aviso "Plantão noturno em andamento" vem do banco (`gerar_notificacoes_turno`) e só aparece com escala da noite na UBS. Ficou como está, porque pede migration.
     - As três são só de tela, sem migration. Os testes passaram, e cada uma foi conferida na página de teste.
-    - F5-T4, F5-T5 e a pergunta F5-T6 ficam para depois.
+    4. F5-T4: "Chegou" na recepção da UPA só registra com a ficha escolhida. **Feito, PR #438, produção em 05/11/2026.** Sem ficha aberta no dia, o diálogo orienta abrir em Nova ficha. Ligar a ficha depois pediria migration, e a regra do H1 já manda abrir a ficha antes.
+    5. F5-T5: a busca de fluxograma acha "Dor na coluna" por "costas" e "lombar". **Feito, PR #439, produção em 05/11/2026.**
+    - T4 e T5 pedidos pelo RT em 05/11/2026, só de tela, sem migration. Testes passaram, e o T4 foi conferido na página de teste.
+    - Fica a pergunta F5-T6 e o aviso noturno do T1.
 
 ---
 
