@@ -46,6 +46,17 @@ export const SITUACAO_ENVIO: Record<SituacaoEnvio, { rotulo: string; tom: 'ambar
 
 export const nomeDoEnvio = (e: Pick<EnvioUpa, 'resumo'>) => e.resumo.paciente.nome_social || e.resumo.paciente.nome
 
+/** Unidade da rede em regulacao_contexto; o tipo vem desde a migration 20270221000001. */
+export type UnidadeRede = { id: string; nome: string; tipo?: string | null }
+
+/**
+ * Destinos do "Enviar à UPA": UPA ou hospital da rede, nunca a própria unidade
+ * (encaminhar_upa recusa o resto). Sem o tipo (banco anterior à migration),
+ * não esconde nada e o servidor continua recusando.
+ */
+export const destinosDoEnvio = (rede: UnidadeRede[], unidadeId: string) =>
+  rede.filter((u) => u.id !== unidadeId && (!u.tipo || u.tipo === 'upa' || u.tipo === 'hospital'))
+
 export type Etapa = { titulo: string; detalhe: string; estado: 'feita' | 'atual' | 'falta' | 'falhou' }
 
 /** As etapas do rastreio (opção C): enviado → aguardando a chegada → chegou
