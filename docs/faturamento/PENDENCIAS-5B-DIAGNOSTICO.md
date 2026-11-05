@@ -56,3 +56,8 @@ L2 não gera trabalho se for A.
   - Resultado: 19 contas da UPA Homologação ficaram sem pendência bloqueante.
   - Evidência numa transação desfeita, como o faturamento: a conta limpa passou de aberta para em conferência e fechou sem a liberação do gestor. A conta com raça/cor e sexo ausentes continuou barrada.
   - A medicação continua com a pendência "CBO de enfermagem", porque a conta de teste tem um só CBO. Raça/cor e sexo ausentes são pendências reais do cadastro.
+- **L1, feita em 05/11/2026:** a migration `20270225000001` está na produção, com o ok do RT. A tabela ficou sem leitura direta e sem política (PR #453).
+- **L4, parte 1 (banco), na homologação em 05/11/2026:**
+  - a migration `20270226000001` cria o cadastro `materiais_unidade` (faturamento e gestor), o lançamento `conta_materiais` (faturamento, com retirada com motivo) e o congelamento no fechamento;
+  - a pré-auditoria ganhou o aviso "material sem código SIGTAP", que nunca bloqueia;
+  - teste `supabase/tests/5b_materiais.sql` e rollback testado.
