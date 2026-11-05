@@ -27,7 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
-import { Baby, CalendarDays, Ear, HeartPulse, Send } from 'lucide-react'
+import { Baby, CalendarDays, Ear, HeartPulse, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -65,6 +65,8 @@ const ITEM_ENCAMINHADOS: ItemNav = { to: '/encaminhados', rotulo: 'Encaminhados'
 const ITEM_HIPERDIA: ItemNav = { to: '/hiperdia', rotulo: 'Hiperdia', icone: HeartPulse, exato: true }
 // 5A, tarefa 7 (K5): pré-natal da UBS, para os mesmos papéis do hiperdia
 const ITEM_PRE_NATAL: ItemNav = { to: '/pre-natal', rotulo: 'Pré-natal', icone: Baby, exato: true }
+// 5A, tarefa 7 (K6): puericultura da UBS, para os mesmos papéis
+const ITEM_PUERICULTURA: ItemNav = { to: '/puericultura', rotulo: 'Puericultura', icone: Sprout, exato: true }
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
@@ -76,6 +78,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
+    ITEM_PUERICULTURA,
     { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: MonitorSmartphone, exato: true, nota: 'tele' },
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
@@ -91,6 +94,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
+    ITEM_PUERICULTURA,
     // ── Porta
     { to: '/gestao/porta', rotulo: 'Porta', icone: DoorOpen, exato: true, grupo: 'Porta' },
     { to: '/gestao/intercorrencias', rotulo: 'Intercorrências', curto: 'Intercorr.', icone: Siren, exato: true, grupo: 'Porta' },
@@ -135,6 +139,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
+    ITEM_PUERICULTURA,
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
@@ -156,6 +161,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_AGENDA_CONSULTAS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
+    ITEM_PUERICULTURA,
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
     ITEM_ESCALA,
@@ -259,7 +265,7 @@ const FORA_DA_UBS = new Set([
   '/recepcao/fila-triagem', '/recepcao/painel',
 ])
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
-const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal'])
+const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {

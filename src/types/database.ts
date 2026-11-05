@@ -9914,6 +9914,10 @@ export type Database = {
       contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
       hiperdia_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       hiperdia_painel: { Args: { p_unidade: string }; Returns: Json }
+      puericultura_desfazer_saida: { Args: { p_paciente: string }; Returns: undefined }
+      puericultura_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      puericultura_painel: { Args: { p_unidade: string }; Returns: Json }
+      puericultura_retirar: { Args: { p_motivo: string; p_paciente: string }; Returns: string }
       pre_natal_definir_dum: { Args: { p_dum: string; p_gestacao: string }; Returns: undefined }
       pre_natal_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       pre_natal_incluir: { Args: { p_dum?: string; p_episodio?: string; p_paciente: string }; Returns: string }

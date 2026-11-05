@@ -89,6 +89,11 @@ A nota não fixa em dias os limites dos trimestres. Por isso, os cortes de 13s6d
    - bloco "Pré-natal" na consulta;
    - painel `/pre-natal`, com a opção que o RT escolher.
 3. **Puericultura (K6):** mesmo caminho, com a idade em dias e as nove consultas.
+   - **Régua C2 conferida na fonte em 05/11/2026:** entra toda criança vinculada com até 2 anos (item 14), sem CID de entrada; sai por mudança de território ou de equipe, por óbito (item 15) e aos 2 anos.
+   - **Contagem:** (A) e (B) contam a consulta de médico ou enfermeiro com o problema "Puericultura" (Quadro 02); (C) conta peso e altura no mesmo dia (Quadro 03).
+   - **Prazo de (A):** "até o 30º dia de vida" foi lido contando o nascimento como o 1º dia, ou seja, nascimento + 29 dias.
+   - **Banco:** migration `20270224000001`, com a tabela `puericultura_saidas` e as RPCs `puericultura_*`; teste `supabase/tests/5a_puericultura.sql`.
+   - **Telas:** painel `/puericultura` e bloco na consulta, com a mesma linha do tempo da opção B.
 
 ## 6. Riscos
 
