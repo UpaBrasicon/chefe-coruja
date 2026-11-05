@@ -11,6 +11,7 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { destinosDoEnvio, type UnidadeRede } from '@/domain/encaminhamento'
 import { supabase } from '@/lib/supabase'
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -24,17 +25,18 @@ export function EnviarUpa({ aberto, onFechar, episodioId, unidadeId, nome, motiv
   const [destino, setDestino] = React.useState('')
   const [motivo, setMotivo] = React.useState(motivoInicial)
   // as unidades da rede (a mesma lista do destino da regulação); o servidor só
-  // aceita UPA ou hospital
+  // aceita UPA ou hospital, então a lista mostra só esses (migration
+  // 20270221000001 pôs o tipo em cada unidade)
   const rede = useQuery({
     queryKey: ['regulacao-contexto', unidadeId],
     enabled: aberto && !!unidadeId,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('regulacao_contexto', { p_unidade: unidadeId })
       if (error) throw error
-      return data as unknown as { unidades_rede: { id: string; nome: string }[] }
+      return data as unknown as { unidades_rede: UnidadeRede[] }
     },
   })
-  const opcoes = (rede.data?.unidades_rede ?? []).filter((u) => u.id !== unidadeId)
+  const opcoes = destinosDoEnvio(rede.data?.unidades_rede ?? [], unidadeId)
   const enviar = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('encaminhar_upa', { p_episodio: episodioId, p_destino: destino, p_motivo: motivo.trim() })
