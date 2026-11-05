@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import * as React from 'react'
 
 import { UFS } from '@/lib/constants'
-import { CATEGORIAS, ESTADOS_CIVIS, RACAS_COR, SEXOS } from '@/lib/cadastro'
+import { CATEGORIAS, ESTADOS_CIVIS, RACAS_COR_CADASTRO, SEXOS } from '@/lib/cadastro'
 import { erroCns, erroCpf, erroNascimento, formatarCns, formatarCpf, soDigitos } from '@/lib/documentos'
 import { cn } from '@/lib/utils'
 import { ehPediatrico, idadeEm } from '@/domain/idade'
@@ -182,7 +182,12 @@ export function CamposCadastro({ prefixo, valores, onChange, identificacao = tru
       {identificacao && (
         <Escolhas rotulo="Sexo" opcoes={SEXOS} valor={valores.sexo} onChange={(v) => onChange('sexo', v)} className="flex-[1_1_200px]" />
       )}
-      <Escolhas rotulo="Raça/cor" opcoes={RACAS_COR} valor={valores.raca_cor} onChange={(v) => onChange('raca_cor', v)} className="basis-full" />
+      <div className="flex basis-full flex-col gap-1">
+        <Escolhas rotulo="Raça/cor" opcoes={RACAS_COR_CADASTRO} valor={valores.raca_cor} onChange={(v) => onChange('raca_cor', v)} />
+        {valores.raca_cor === 'sem_informacao' && (
+          <span className="text-rotulo text-tinta-sussurro">Cadastro antigo com raça/cor "Sem informação", que o faturamento (BPA) não aceita. Pergunte ao paciente e marque a que ele declarar.</span>
+        )}
+      </div>
     </div>
   )
 }

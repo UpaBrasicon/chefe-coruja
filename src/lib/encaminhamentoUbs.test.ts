@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { DESFECHO_RETORNO, etapasDoEnvio, linkRegulacaoDaConsulta, pedeBuscaAtiva, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
+import { DESFECHO_RETORNO, destinosDoEnvio, etapasDoEnvio, linkRegulacaoDaConsulta, pedeBuscaAtiva, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
 import { linkMarcarNaAgenda } from '../domain/agenda.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
@@ -122,4 +122,17 @@ test('I3: a orientação à UBS sai do desfecho da porta e da alta da internaç�
   assert.match(desfecho, /if \(d !== 'obito' && orientacaoUbs\.trim\(\)\) det\.orientacao_ubs = orientacaoUbs\.trim\(\)/)
   const alta = readFileSync('src/components/internacao/caderno/Alta.tsx', 'utf8')
   assert.match(alta, /if \(tipo !== 'obito' && orientacaoUbs\.trim\(\)\) detalhes\.orientacao_ubs = orientacaoUbs\.trim\(\)/)
+})
+
+test('Enviar à UPA: só UPA e hospital da rede, sem a própria unidade (pendência da 5A)', () => {
+  const rede = [
+    { id: 'h', nome: 'Hospital', tipo: 'hospital' },
+    { id: 'eu', nome: 'UBS daqui', tipo: 'ubs' },
+    { id: 'v', nome: 'UBS vizinha', tipo: 'ubs' },
+    { id: 'u', nome: 'UPA', tipo: 'upa' },
+    { id: 'c', nome: 'Clínica', tipo: 'clinica' },
+  ]
+  assert.deepEqual(destinosDoEnvio(rede, 'eu').map((u) => u.id), ['h', 'u'])
+  // banco sem o tipo: não esconde nada (o servidor recusa o que não for UPA ou hospital)
+  assert.deepEqual(destinosDoEnvio([{ id: 'v', nome: 'UBS vizinha' }, { id: 'eu', nome: 'UBS daqui' }], 'eu').map((u) => u.id), ['v'])
 })

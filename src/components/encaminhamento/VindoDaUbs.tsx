@@ -79,7 +79,7 @@ function DialogoChegou({ e, fichas, onFechar }: { e: EnvioUpa; fichas: FichaDoDi
   const [ficha, setFicha] = React.useState(mesmoNome?.episodio_id ?? '')
   const marcar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('encaminhamento_upa_marcar_chegada', { p_id: e.id, p_chegou: true, p_episodio: ficha || undefined })
+      const { error } = await supabase.rpc('encaminhamento_upa_marcar_chegada', { p_id: e.id, p_chegou: true, p_episodio: ficha })
       if (error) throw error
     },
     onSuccess: () => { void qc.invalidateQueries({ queryKey: ['encaminhamentos-upa'] }); onFechar() },
@@ -91,17 +91,24 @@ function DialogoChegou({ e, fichas, onFechar }: { e: EnvioUpa; fichas: FichaDoDi
           <DialogTitle>Chegou: {nome}</DialogTitle>
           <DialogDescription>Abra a ficha como sempre (Nova ficha) e escolha-a aqui; a UBS fica sabendo que o paciente chegou.</DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="chegou-ficha">Ficha aberta hoje</Label>
-          <CampoSelecao id="chegou-ficha" value={ficha} onChange={(ev) => setFicha(ev.target.value)}>
-            <option value="">Ainda sem ficha</option>
-            {fichas.map((f) => <option key={f.episodio_id} value={f.episodio_id}>{f.nome_social || f.nome} · {hora(f.chegada_em)}</option>)}
-          </CampoSelecao>
-        </div>
+        {/* F5-T4: a chegada só se registra com a ficha. Depois de registrada, o
+            envio não volta a esperar a chegada e não há como ligar a ficha. */}
+        {fichas.length === 0 ? (
+          <p className="text-apoio text-tinta-apoio">Nenhuma ficha aberta hoje. Abra a ficha do paciente em Nova ficha e volte aqui.</p>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="chegou-ficha">Ficha aberta hoje</Label>
+            <CampoSelecao id="chegou-ficha" value={ficha} onChange={(ev) => setFicha(ev.target.value)}>
+              <option value="" disabled>Escolha a ficha</option>
+              {fichas.map((f) => <option key={f.episodio_id} value={f.episodio_id}>{f.nome_social || f.nome} · {hora(f.chegada_em)}</option>)}
+            </CampoSelecao>
+            {!ficha && <span className="text-rotulo text-tinta-sussurro">Se a ficha dele ainda não foi aberta, abra em Nova ficha e volte aqui.</span>}
+          </div>
+        )}
         {marcar.error && <p role="alert" className="text-apoio text-critico">{msg(marcar.error)}</p>}
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onFechar}>Voltar</Button>
-          <Button disabled={marcar.isPending} onClick={() => marcar.mutate()}><LogIn /> Registrar a chegada</Button>
+          <Button disabled={!ficha || marcar.isPending} onClick={() => marcar.mutate()}><LogIn /> Registrar a chegada</Button>
         </div>
       </DialogContent>
     </Dialog>

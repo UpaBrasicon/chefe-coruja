@@ -1,7 +1,8 @@
 // Aba "Prescrição" (protótipo, "Prescrição do Pronto-Socorro"): dose única ou
 // para fazer aqui; vai para a checagem da enfermagem. Situação de cada item
 // vem da checagem (quem checa é a enfermagem, não o médico). Nada se apaga:
-// suspender pede motivo. Dose sempre escrita pelo médico.
+// suspender pede motivo. Dose sempre escrita pelo médico. Na consulta da UBS o
+// texto não fala em pronto-socorro (achado F5-T1 do portão da Fase 5).
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, Ban, Pill } from 'lucide-react'
 import * as React from 'react'
@@ -70,8 +71,8 @@ function Linha({ i, n, aoMudar }: { i: ItemPS; n: number; aoMudar: () => void })
   )
 }
 
-export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar }: {
-  pacienteId: string; nome: string; itens: ItemPS[]; pediatrico: boolean; aoMudar: () => void
+export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar, ubs = false }: {
+  pacienteId: string; nome: string; itens: ItemPS[]; pediatrico: boolean; aoMudar: () => void; ubs?: boolean
 }) {
   const [erro, setErro] = React.useState<string | null>(null)
   const peso = useQuery({
@@ -96,11 +97,11 @@ export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar }: 
       <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
         <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-3">
           <Pill className="size-4 text-acao" aria-hidden />
-          <span className="text-controle font-semibold text-tinta">Prescrição do Pronto-Socorro</span>
+          <span className="text-controle font-semibold text-tinta">{ubs ? 'Prescrição para fazer aqui' : 'Prescrição do Pronto-Socorro'}</span>
           <span className="text-apoio text-tinta-sussurro">Dose única ou para fazer aqui. Vai para a checagem da enfermagem.</span>
         </div>
         <div className="px-4 pt-3"><ResumoAlergias pacienteId={pacienteId} nome={nome} /></div>
-        {ativos.length === 0 && <p className="px-4 py-4 text-apoio text-tinta-sussurro">Nada prescrito no PS.</p>}
+        {ativos.length === 0 && <p className="px-4 py-4 text-apoio text-tinta-sussurro">{ubs ? 'Nada prescrito nesta consulta.' : 'Nada prescrito no PS.'}</p>}
         {ativos.map((i, n) => <Linha key={i.id} i={i} n={n + 1} aoMudar={aoMudar} />)}
         {suspensos.length > 0 && (
           <details className="border-t border-trilha px-4 py-2 text-apoio text-tinta-sussurro">

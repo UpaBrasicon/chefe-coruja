@@ -30,6 +30,8 @@ const Triagem = lazy(() => import('@/pages/enfermagem/Triagem'))
 const AgendaConsultas = lazy(() => import('@/pages/agenda/AgendaConsultas'))
 const Encaminhados = lazy(() => import('@/pages/encaminhados/Encaminhados'))
 const Hiperdia = lazy(() => import('@/pages/hiperdia/Hiperdia'))
+const PreNatal = lazy(() => import('@/pages/preNatal/PreNatal'))
+const Puericultura = lazy(() => import('@/pages/puericultura/Puericultura'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
 const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const PacoteAlta = lazy(() => import('@/pages/public/PacoteAlta'))
@@ -83,6 +85,7 @@ const FaturamentoBpa = lazy(() => import('@/pages/faturamento/Bpa'))
 const FaturamentoContas = lazy(() => import('@/pages/faturamento/Contas'))
 const FaturamentoGlosas = lazy(() => import('@/pages/faturamento/Glosas'))
 const FaturamentoEnvioErp = lazy(() => import('@/pages/faturamento/EnvioErp'))
+const FaturamentoMateriais = lazy(() => import('@/pages/faturamento/Materiais'))
 const ApacUnidade = lazy(() => import('@/pages/regulacao/Apac'))
 const Integracoes = lazy(() => import('@/pages/admin/Integracoes'))
 const ExportarDados = lazy(() => import('@/pages/gestor/ExportarDados'))
@@ -277,6 +280,8 @@ export default function App() {
                         <Route path="/faturamento/glosas" element={<FaturamentoGlosas />} />
                         {/* Fase 5C, tarefa 3: envio ao ERP (contas; plantões do mês só o gestor) */}
                         <Route path="/faturamento/erp" element={<FaturamentoEnvioErp />} />
+                        {/* pendências da 5B, L4: materiais da unidade */}
+                        <Route path="/faturamento/materiais" element={<FaturamentoMateriais />} />
                       </Route>
                       {/* APAC: o regulador autoriza; o faturamento registra a execução e gera o arquivo (Fase 3, tarefa 5) */}
                       <Route element={<RequireRole papeis={['regulador', 'faturamento', 'gestor']} />}>
@@ -338,6 +343,10 @@ export default function App() {
                       {/* 5A, tarefa 7 (J5): hiperdia da UBS */}
                       <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem', 'plantonista', 'gestor']} />}>
                         <Route path="/hiperdia" element={<Hiperdia />} />
+                        {/* 5A, tarefa 7 (K5): pré-natal da UBS */}
+                        <Route path="/pre-natal" element={<PreNatal />} />
+                        {/* 5A, tarefa 7 (K6): puericultura da UBS */}
+                        <Route path="/puericultura" element={<Puericultura />} />
                       </Route>
 
                       <Route element={<RequireRole papeis={['admin']} />}>

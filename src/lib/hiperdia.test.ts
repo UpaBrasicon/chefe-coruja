@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 
 import { estadoDoItem, PONTOS, pontosDoPaciente, resumoHiperdia, temPendencia, TETO_NO_APP, type HiperdiaLinha } from '../domain/hiperdia.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
+import { MEDIDAS_EXTRAS, paraNumeros, rotuloVital, textoVitais } from '../domain/vitais.ts'
 
 // 5A, tarefa 7 (decisões J1 a J5 e opção A da tela, RT em 03/11/2026): a régua
 // das notas C5 e C4 da SAPS/MS. Os pontos repetem o Quadro 01 de cada nota.
@@ -61,4 +62,22 @@ test('J4: a avaliação dos pés sai da consulta da UBS para a RPC', () => {
   assert.match(comp, /rpc\('registrar_avaliacao_pes', \{ p_episodio: episodioId, p_resultado: resultado/)
   const conduta = readFileSync('src/pages/plantao/porta/AbaConduta.tsx', 'utf8')
   assert.match(conduta, /<HiperdiaNaConsulta /)
+})
+
+// Achado F5-T2 do portão da Fase 5: sem campo de altura do adulto, o item
+// "peso e altura" (C5 e C4) nunca fechava pela tela.
+test('F5-T2: a altura entra na escuta da UBS e no bloco do hiperdia da consulta', () => {
+  assert.deepEqual(MEDIDAS_EXTRAS.map((m) => [m.k, m.un]), [['estatura', 'cm']])
+  assert.equal(rotuloVital('estatura'), 'Altura')
+  assert.deepEqual(paraNumeros({ peso: '82', estatura: '171,5' }), { peso: 82, estatura: 171.5 })
+  assert.equal(textoVitais({ peso: 82, estatura: 172 }), 'Peso 82 kg · Altura 172 cm')
+  const escuta = readFileSync('src/pages/enfermagem/triagem/EscutaInicial.tsx', 'utf8')
+  assert.match(escuta, /<CamposVitais publico=\{publico\} opcionais extras=\{\['estatura'\]\}/)
+  // a triagem da UPA não muda
+  const triagem = readFileSync('src/pages/enfermagem/triagem/Classificar.tsx', 'utf8')
+  assert.doesNotMatch(triagem, /extras=/)
+  const comp = readFileSync('src/components/hiperdia/HiperdiaNaConsulta.tsx', 'utf8')
+  assert.match(comp, /pendentes\.some\(\(\{ i \}\) => i\.item === 'peso_altura'\) && <PesoAltura /)
+  assert.match(comp, /\.in\('nome', \['peso', 'estatura'\]\)/)
+  assert.match(comp, /gravarRegistros\(perfil\.id, itens\)/)
 })

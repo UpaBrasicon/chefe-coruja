@@ -140,7 +140,12 @@ const FLUXOS = [
   { nome: 'Queixas respiratórias', inclui: null, discriminadores: {} },
   { nome: 'Politraumas', inclui: 'pacientes com um ou mais traumas', discriminadores: {} },
   { nome: 'Diarreia e vômitos', inclui: null, discriminadores: {} },
+  { nome: 'Dor na coluna', inclui: null, discriminadores: {} },
 ]
+test('busca: "dor nas costas" e "lombar" acham "Dor na coluna" (F5-T5)', () => {
+  assert.equal(buscarFluxogramas(FLUXOS, 'dor nas costas')[0].nome, 'Dor na coluna')
+  assert.equal(buscarFluxogramas(FLUXOS, 'Dor lombar')[0].nome, 'Dor na coluna')
+})
 test('busca: palavra leiga vira termo técnico', () => {
   assert.deepEqual(termosDaBusca('Dor no PEITO'), ['dor no peito', 'toracica'])
   assert.equal(buscarFluxogramas(FLUXOS, 'dor no peito')[0].nome, 'Dor torácica')

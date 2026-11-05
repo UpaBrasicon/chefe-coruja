@@ -3,8 +3,10 @@
 // notas C5 e C4; incluir e retirar à mão; e a avaliação dos pés (C4-F), que se
 // registra aqui. O problema "hipertensão" ou "diabetes" marcado na conduta
 // inclui sozinho quando a consulta encerra. Só médico, enfermagem e gestor veem.
+// Peso e altura pendentes também se registram aqui (achado F5-T2): a consulta
+// programada não passa pela escuta, onde a enfermagem os mede.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Footprints, HeartPulse, Plus, X } from 'lucide-react'
+import { Footprints, HeartPulse, Plus, Ruler, X } from 'lucide-react'
 import * as React from 'react'
 
 import { Chip } from '@/components/monitor/Pagina'
@@ -14,9 +16,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/contexts/AuthContext'
 import { ITENS, ROTULO_PROGRAMA, estadoDoItem, type HiperdiaRegistros, type Programa, type ProgramaAtivo } from '@/domain/hiperdia'
+import { paraNumeros } from '@/domain/vitais'
 import { useAgora } from '@/hooks/useAgora'
 import { data } from '@/lib/formato'
+import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { supabase } from '@/lib/supabase'
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -75,9 +80,64 @@ export function HiperdiaNaConsulta({ pacienteId, episodioId }: { pacienteId: str
         </p>
       )}
       {h.programas.length > 0 && pendentes.length === 0 && <p className="text-apoio text-conforme">Em dia no que o app registra.</p>}
+      {h.programas.length > 0 && pendentes.some(({ i }) => i.item === 'peso_altura') && <PesoAltura pacienteId={pacienteId} onFeito={invalidar} />}
       {ativos.includes('diabetes') && <AvaliacaoPes episodioId={episodioId} ultima={h.ultima_avaliacao_pes} onFeito={invalidar} />}
       {retirar && <DialogoRetirar p={retirar} onFechar={() => setRetirar(null)} onFeito={invalidar} />}
     </section>
+  )
+}
+
+// Também no bloco do pré-natal (nota C3, prática D). Pela porta de sincronização, como os sinais da enfermagem: vão para
+// public.observacao com os conceitos globais 'peso' (kg) e 'estatura' (cm).
+export function PesoAltura({ pacienteId, onFeito, prefixo = 'hiperdia' }: { pacienteId: string; onFeito: () => void; prefixo?: string }) {
+  const { perfil } = useAuth()
+  const [v, setV] = React.useState<Record<string, string>>({})
+  const [aviso, setAviso] = React.useState<string | null>(null)
+  const conceitos = useQuery({
+    queryKey: ['conceitos-peso-altura'],
+    staleTime: 3_600_000,
+    queryFn: async () => {
+      const { data: d, error } = await supabase.from('conceito').select('id, nome').is('unidade_id', null).in('nome', ['peso', 'estatura'])
+      if (error) throw error
+      return new Map((d ?? []).map((c) => [c.nome, c.id]))
+    },
+  })
+  const registrar = useMutation({
+    mutationFn: async () => {
+      if (!perfil) throw new Error('Sem sessão.')
+      const itens = Object.entries(paraNumeros(v)).map(([nome, n]) => {
+        const id = conceitos.data?.get(nome)
+        if (!id) throw new Error(`Conceito ${nome} não encontrado.`)
+        return novoItem('observacao', { paciente_id: pacienteId, conceito_id: id, valor_num: n, origem: 'manual' })
+      })
+      const r = await gravarRegistros(perfil.id, itens)
+      if (r.recusados.length > 0) throw new Error(r.recusados[0].replace(/^SYNC_[A-Z_]+: /, ''))
+      return r.naFila
+    },
+    onSuccess: (naFila) => {
+      setAviso(naFila > 0 ? 'Sem conexão: o peso e a altura ficaram na fila e sobem quando a rede voltar.' : 'Peso e altura registrados nesta consulta.')
+      onFeito()
+    },
+  })
+  if (aviso) return <p role="status" className="text-apoio text-conforme">{aviso}</p>
+  const muda = (k: 'peso' | 'estatura') => (e: React.ChangeEvent<HTMLInputElement>) => setV((s) => ({ ...s, [k]: e.target.value }))
+  return (
+    <div className="flex flex-col gap-1.5 border-t border-fio pt-2.5">
+      <span className="flex items-center gap-1.5 text-apoio font-medium text-tinta"><Ruler className="size-3.5" aria-hidden /> Peso e altura</span>
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="flex w-28 flex-col gap-1">
+          <Label htmlFor={`${prefixo}-peso`}>Peso (kg)</Label>
+          <Input id={`${prefixo}-peso`} inputMode="decimal" value={v.peso ?? ''} onChange={muda('peso')} />
+        </div>
+        <div className="flex w-28 flex-col gap-1">
+          <Label htmlFor={`${prefixo}-altura`}>Altura (cm)</Label>
+          <Input id={`${prefixo}-altura`} inputMode="decimal" value={v.estatura ?? ''} onChange={muda('estatura')} />
+        </div>
+        <Button size="xs" variant="outline" disabled={!v.peso?.trim() || !v.estatura?.trim() || !conceitos.data || registrar.isPending}
+          onClick={() => registrar.mutate()}>Registrar peso e altura</Button>
+      </div>
+      {registrar.error && <p role="alert" className="text-apoio text-critico">{msg(registrar.error)}</p>}
+    </div>
   )
 }
 

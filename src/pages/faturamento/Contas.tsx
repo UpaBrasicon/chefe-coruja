@@ -26,9 +26,9 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
-  acoesDaConta, ETAPA, EVENTO, GRUPO_PENDENCIA, ondeCorrigir, ORIGEM_ITEM, PAGADOR, reais, TIPO,
+  acoesDaConta, ETAPA, EVENTO, GRUPO_PENDENCIA, lerQuantidade, ondeCorrigir, ORIGEM_ITEM, PAGADOR, reais, TIPO,
   SITUACAO_DOCUMENTO, TIPO_APAC, type GrupoPendencia,
-  type AcaoConta, type AihConta, type ApacConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type MedicamentoConta,
+  type AcaoConta, type AihConta, type ApacConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type MaterialConta, type MaterialUnidade, type MedicamentoConta,
   type Pagador, type TipoConta,
 } from '@/lib/contas'
 import { competenciaNaTela } from '@/lib/aih'
@@ -207,6 +207,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
             <ItensConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
             <DocumentosSusConta c={c} />
             <MedicamentosConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />
+            {c.materiais && <MateriaisConta c={c} podeMexer={c.pode_conduzir && (c.status === 'aberta' || c.status === 'em_conferencia')} aoMudar={recarregar} />}
 
             {acoes.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -594,6 +595,144 @@ function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMex
         </div>
       )}
     </section>
+  )
+}
+
+// Pendências da 5B, L4 (decisão do RT em 05/11/2026): materiais lançados à mão
+// pelo faturamento, sem valor e sem estoque; o cadastro fica em /faturamento/materiais.
+function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boolean; aoMudar: () => void }) {
+  const [retirar, setRetirar] = React.useState<MaterialConta | null>(null)
+  const [motivo, setMotivo] = React.useState('')
+  const retirada = useMutation({
+    mutationFn: async (m: MaterialConta) => {
+      const { error } = await supabase.rpc('conta_retirar_material', { p_lancamento: m.id, p_motivo: motivo.trim() })
+      if (error) throw error
+    },
+    onSuccess: () => { setRetirar(null); setMotivo(''); aoMudar() },
+  })
+  const mats = c.materiais ?? []
+  return (
+    <section className="flex flex-col gap-2">
+      <TituloSecao className="mb-0" extra={c.congelada_em ? `congelados no fechamento, ${fmtDataHora(c.congelada_em)}` : 'lançados à mão pelo faturamento'}>
+        Materiais
+      </TituloSecao>
+      {mats.length === 0 ? <p className="text-tinta-sussurro">Nenhum material lançado nesta conta.</p> : (
+        <div className="overflow-x-auto rounded-controle border border-fio">
+          <Table variante="referencia" className="w-full min-w-[520px] text-apoio">
+            <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
+              <TableRow><TableHead className="px-2 py-1.5 font-medium">Material</TableHead><TableHead className="px-2 py-1.5 font-medium">Quantidade</TableHead>
+                <TableHead className="px-2 py-1.5 font-medium">Lançado</TableHead><TableHead /></TableRow>
+            </TableHeader>
+            <TableBody>
+              {mats.map((m) => (
+                <TableRow key={m.id} className={`border-b border-trilha align-top last:border-0${m.retirado_em ? ' text-tinta-sussurro' : ''}`}>
+                  <TableCell className="px-2 py-1.5">
+                    <span className={m.retirado_em ? 'line-through' : 'font-medium text-tinta'}>{m.material}</span>
+                    {m.retirado_em && <Badge variant="outline" className="ml-1.5">retirado</Badge>}
+                    <span className="block text-rotulo text-tinta-sussurro">
+                      {m.procedimento ? `${codigoSigtapNaTela(m.procedimento)}${m.procedimento_nome ? ` · ${m.procedimento_nome}` : ''}` : 'sem código SIGTAP'}
+                    </span>
+                    {m.observacao && <span className="block text-rotulo text-tinta-sussurro">{m.observacao}</span>}
+                    {m.retirado_em && m.motivo_retirada && (
+                      <span className="block text-rotulo text-tinta-sussurro">“{m.motivo_retirada}”{m.retirado_por ? ` · ${m.retirado_por}` : ''}</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap px-2 py-1.5">{String(m.quantidade).replace('.', ',')} {m.unidade_consumo}</TableCell>
+                  <TableCell className="whitespace-nowrap px-2 py-1.5 text-tinta-sussurro">{fmtDataHora(m.lancado_em)}{m.lancado_por ? ` · ${m.lancado_por}` : ''}</TableCell>
+                  <TableCell className="px-2 py-1.5 text-right">
+                    {podeMexer && !m.retirado_em && (
+                      <Button size="xs" variant="ghost" onClick={() => { setRetirar(m); setMotivo('') }}>Retirar</Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter className="border-t-0 bg-transparent font-normal">
+              <TableRow className="border-t border-fio">
+                <TableCell colSpan={4} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
+                  Sem valor e sem baixa de estoque: o consumo fica registrado na conta. Material sem código SIGTAP só gera aviso.
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </div>
+      )}
+      {retirar && (
+        <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-3">
+          <Label htmlFor="mat-motivo">Retirar {retirar.material} da conta: motivo</Label>
+          <Textarea id="mat-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+          {retirada.error && <p role="alert" className="text-critico">{(retirada.error as Error).message}</p>}
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setRetirar(null)}>Voltar</Button>
+            <Button size="sm" disabled={motivo.trim().length < MINIMO_MOTIVO || retirada.isPending} onClick={() => retirada.mutate(retirar)}>Retirar</Button>
+          </div>
+        </div>
+      )}
+      {podeMexer && <LancarMaterial c={c} aoMudar={aoMudar} />}
+    </section>
+  )
+}
+
+function LancarMaterial({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void }) {
+  const { unidadeAtiva } = useUnidade()
+  const unidadeId = unidadeAtiva?.unidade_id
+  const [aberto, setAberto] = React.useState(false)
+  const [material, setMaterial] = React.useState('')
+  const [quantidade, setQuantidade] = React.useState('1')
+  const [obs, setObs] = React.useState('')
+  const lista = useQuery({
+    queryKey: ['materiais', unidadeId],
+    enabled: aberto && !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('materiais_da_unidade', { p_unidade: unidadeId! })
+      if (error) throw error
+      return ((data ?? []) as unknown as MaterialUnidade[]).filter((m) => m.ativo)
+    },
+  })
+  const qtd = lerQuantidade(quantidade)
+  const lancar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('conta_lancar_material', {
+        p_conta: c.id, p_material: material, p_quantidade: qtd!, p_observacao: obs.trim() || undefined,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => { setAberto(false); setMaterial(''); setQuantidade('1'); setObs(''); aoMudar() },
+  })
+  if (!aberto) return <Button size="sm" variant="outline" className="self-start" onClick={() => setAberto(true)}>Lançar material</Button>
+  const escolhido = (lista.data ?? []).find((m) => m.id === material)
+  return (
+    <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
+      {lista.isSuccess && lista.data.length === 0 ? (
+        <span className="text-tinta-sussurro">
+          Nenhum material ativo na unidade. Cadastre em <Link to="/faturamento/materiais" className="font-medium text-acao underline">Faturamento → Materiais</Link>.
+        </span>
+      ) : (
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="flex min-w-[220px] flex-1 flex-col gap-1">
+            <Label htmlFor="mat-escolha">Material</Label>
+            <CampoSelecao id="mat-escolha" value={material} onChange={(e) => setMaterial(e.target.value)}>
+              <option value="">Escolha…</option>
+              {(lista.data ?? []).map((m) => <option key={m.id} value={m.id}>{m.nome} · {m.unidade_consumo}</option>)}
+            </CampoSelecao>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="mat-qtd">Quantidade{escolhido ? ` (${escolhido.unidade_consumo})` : ''}</Label>
+            <Input id="mat-qtd" className="h-8 w-28" inputMode="decimal" value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
+          </div>
+        </div>
+      )}
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="mat-obs">Observação (opcional)</Label>
+        <Input id="mat-obs" className="h-8" maxLength={300} value={obs} onChange={(e) => setObs(e.target.value)} />
+      </div>
+      {quantidade.trim() !== '' && qtd === null && <span className="text-rotulo text-critico">Quantidade maior que zero, com até 2 casas decimais.</span>}
+      {lancar.error && <p role="alert" className="text-critico">{(lancar.error as Error).message}</p>}
+      <div className="flex justify-end gap-2">
+        <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
+        <Button size="sm" disabled={!material || qtd === null || lancar.isPending} onClick={() => lancar.mutate()}>Lançar</Button>
+      </div>
+    </div>
   )
 }
 
