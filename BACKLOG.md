@@ -934,6 +934,17 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 
 **5B encerrada pelo RT em 17/10/2026.** Tarefas 1 a 6 em produção (PRs #127 a #136); a 7 adiada. Pendências registradas: materiais (5B-3), importar o retorno do SIA/SIH (5B-6), a pergunta sobre o faturamento ver a tela de AIH (5B-4) e a leitura direta de `conta_medicamentos_fora`. Evidências em `produto/docs/fase5/ENCERRAMENTO-5B.md`. Próxima frente, pela ordem do RT: **5C — Integrações Externas**.
 
+**Pendências da 5B retomadas pelo RT em 05/11/2026** ("Pendências da 5B"). O diagnóstico está em `docs/faturamento/PENDENCIAS-5B-DIAGNOSTICO.md` (PR #452), e as decisões do RT foram A em L1 a L5 ("Sim, todas A").
+- **L1:** `conta_medicamentos_fora` ficou sem leitura direta. Migration `20270225000001` na produção com o ok do RT (PR #453).
+- **L2:** o faturamento não abre a tela de AIH; a conta já mostra as AIHs.
+- **L3:** a homologação tem a configuração de faturamento de teste em `supabase/homolog/faturamento-teste.sql`. O fechamento sem a liberação do gestor foi testado (PR #454).
+- **L4, materiais:**
+  - banco: migration `20270226000001` na produção com o ok do RT, teste `5b_materiais` (PR #455);
+  - telas: na opção A do RT, a página `/faturamento/materiais` com painel lateral e a seção Materiais na conta, sem migration.
+  - **Materiais concluídos em 05/11/2026.**
+- **L5:** a importação do retorno do SIA/SIH espera um arquivo real da secretaria de saúde, porque não há layout público. Até lá, a glosa continua à mão.
+- **TISS/TUSS:** continua adiado.
+
 ### Fase 5C — Integrações Externas
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
 |---|---|---|---|---|

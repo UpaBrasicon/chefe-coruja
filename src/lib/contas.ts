@@ -56,6 +56,28 @@ export const SITUACAO_DOCUMENTO: Record<AihConta['status'] | ApacConta['status']
 }
 export const TIPO_APAC: Record<ApacConta['tipo'], string> = { '1': 'inicial', '2': 'continuidade', '3': 'única' }
 
+/** Pendências da 5B, L4: material lançado à mão na conta, sem valor (migration 20270226000001). */
+export type MaterialConta = {
+  id: string; material_id: string; material: string; unidade_consumo: string
+  procedimento: string | null; procedimento_nome: string | null
+  quantidade: number; observacao: string | null; lancado_por: string | null; lancado_em: string
+  retirado_em: string | null; motivo_retirada: string | null; retirado_por: string | null
+}
+
+/** Material do cadastro da unidade (materiais_da_unidade). */
+export type MaterialUnidade = {
+  id: string; nome: string; unidade_consumo: string; procedimento: string | null; procedimento_nome: string | null
+  ativo: boolean; lancamentos: number
+}
+
+/** Quantidade do material: maior que zero, até 2 casas (aceita vírgula). */
+export function lerQuantidade(texto: string): number | null {
+  const t = texto.trim().replace(',', '.')
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) return null
+  const n = Number(t)
+  return n > 0 && n <= 99_999_999 ? n : null
+}
+
 export type ContaDetalhe = Conta & {
   eventos: { evento: string; de: string | null; para: string | null; motivo: string | null; por: string | null; em: string }[]
   pode_conduzir: boolean
@@ -66,6 +88,8 @@ export type ContaDetalhe = Conta & {
   itens_com_aviso: number
   medicamentos: MedicamentoConta[]
   medicamentos_com_aviso: number
+  /** Pendências da 5B, L4; ausente no banco anterior à 20270226000001. */
+  materiais?: MaterialConta[]
   documentos_sus: DocumentosSus
   pendencias: Pendencia[]
   /** Falso na conta fechada antes da pré-auditoria (nada foi guardado). */
@@ -79,12 +103,12 @@ export type ContaDetalhe = Conta & {
 }
 
 /** Pendência da pré-auditoria (Fase 5B, tarefa 5). */
-export type GrupoPendencia = 'unidade' | 'paciente' | 'profissional' | 'procedimento' | 'documento' | 'medicamento'
+export type GrupoPendencia = 'unidade' | 'paciente' | 'profissional' | 'procedimento' | 'documento' | 'medicamento' | 'material'
 export type Pendencia = { chave: string; grupo: GrupoPendencia; codigo: string; texto: string; bloqueante: boolean; vezes: number }
 
 export const GRUPO_PENDENCIA: Record<GrupoPendencia, string> = {
   unidade: 'Unidade', paciente: 'Paciente', profissional: 'Profissional', procedimento: 'Procedimento',
-  documento: 'AIH e APAC', medicamento: 'Medicamento',
+  documento: 'AIH e APAC', medicamento: 'Medicamento', material: 'Material',
 }
 
 /** Onde se corrige: pelo código quando ele diz mais que o grupo. */
@@ -99,6 +123,7 @@ export function ondeCorrigir(p: Pick<Pendencia, 'grupo' | 'codigo'>, tipo: TipoC
     case 'procedimento': return tipo === 'internacao' ? 'Laudo da AIH ou lançamento na conta' : 'Procedimentos da conta ou do BPA'
     case 'documento': return 'Tela de AIH ou de APAC, na regulação'
     case 'medicamento': return 'Dispensação e checagem da enfermagem'
+    case 'material': return 'Faturamento → Materiais (código SIGTAP do material)'
   }
 }
 
@@ -121,6 +146,7 @@ export const EVENTO: Record<string, string> = {
   faturada: 'Faturada', reaberta: 'Reaberta pelo gestor', pagador: 'Pagador trocado',
   lancamento: 'Procedimento lançado', retirada: 'Procedimento retirado',
   medicamento_fora: 'Medicamento fora da conta', medicamento_volta: 'Medicamento voltou à conta',
+  material_lancado: 'Material lançado', material_retirado: 'Material retirado',
   liberada: 'Fechamento liberado pelo gestor',
   // Fase 5C, tarefa 3: versões da conta para o ERP e o retorno dele
   erp_disponivel: 'Versão para o ERP', erp_substituida: 'Versão do ERP substituída',
