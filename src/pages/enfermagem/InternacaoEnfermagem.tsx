@@ -20,7 +20,8 @@ import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { PassagemEnfermagem } from './PassagemEnfermagem'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
-import { duracao, ehAdulto, idadeDe, msgErro, useAgora, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
+import { duracao, ehAdulto, idadeDe, useAgora, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
+import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
 
 export default function InternacaoEnfermagem() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -75,7 +76,7 @@ export default function InternacaoEnfermagem() {
     <div className="mx-auto w-full max-w-[896px]">
       <TituloPagina icone={Users} titulo="Internação · enfermagem"
         descricao={`Leitos dos setores da sua escala. Em Cuidados ficam SAE, aprazamento, checagem, sinais vitais, balanço hídrico, dispositivos e escalas.${papelAtivo === 'tecnico_enfermagem' ? ' Como técnico, você checa, afere e registra; a SAE é do enfermeiro.' : ''}`} />
-      {erro && <p className="mb-3 text-apoio text-critico">{msgErro(erro)}</p>}
+      {erroDeLeitura(erro, !!leitos.data) && <p className="mb-3 text-apoio text-critico">{erroDeLeitura(erro, !!leitos.data)}</p>}
 
       {!carregando && !erro && meusSetores.length === 0 ? (
         <Vazio icone={Users} titulo="Você não está na escala agora"
