@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { HNF_EV, NOMOGRAMA_TTPA, ajustarHnf, fichaHnfAdulto, inicioHnf, mlHDeUIH } from '@/clinico/adulto/anticoagulacao'
+import { HNF_EV, NOMOGRAMA_TTPA, NOTA_HNF_ANTI_XA, ajustarHnf, fichaHnfAdulto, inicioHnf, mlHDeUIH } from '@/clinico/adulto/anticoagulacao'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -47,6 +47,7 @@ export function HeparinaNaoFracionadaAdulto() {
       </Bloco>
 
       <Bloco titulo="Ajuste pelo TTPA (Tabela 7, adaptada de Raschke et al., 1996)">
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_HNF_ANTI_XA}</p>
         <div className="grid gap-4 md:grid-cols-2">
           <NumberField id="hnf-ttpa" label="TTPA" unit="s" value={ttpa} onChange={setTtpa} min={0} />
           <NumberField id="hnf-atual" label="Infusão atual" unit="UI/kg/h" value={atual} onChange={setAtual} min={0} step={0.5} />

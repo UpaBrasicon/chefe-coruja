@@ -27,17 +27,29 @@ export const ILAS_2026: Fonte = {
   url: 'https://ilas.org.br/wp-content/uploads/2022/02/Protocolo-de-tratamento-da-sepse-adulto-Revisao-julho-2026.pdf',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026): o
+// ARISE FLUIDS, posterior à SSC 2026, entra como nota na linha do vasopressor.
+// O volume da conta (30 mL/kg) não muda.
+export const ARISE_FLUIDS_2026: Fonte = {
+  citacao: 'ARISE FLUIDS Investigators and the ANZICS Clinical Trials Group; Peake SL, Macdonald SPJ, Howe BD, et al. Vasopressors or Fluids in Early Septic Shock. N Engl J Med. 2026;395(14):1387–1398 (PMID 42274006).',
+  url: 'https://doi.org/10.1056/NEJMoa2516225',
+}
+
+export const NOTA_ARISE_FLUIDS =
+  'ARISE FLUIDS (NEJM 2026; 963 adultos com choque séptico no pronto-socorro; posterior à SSC 2026): fluido restrito com vasopressor precoce recebeu mediana de 1.108 mL a menos nas primeiras 24 h, com os mesmos dias vivos e fora do hospital em 90 dias (76 × 76) e menos edema pulmonar (0,6% × 5,0%). As duas estratégias empataram no desfecho principal; o volume da conta (30 mL/kg) não muda.'
+
 const PAGINAS_LIVRO = 'cap. 4 Choque circulatório, p. 67–77; cap. 7 Sepse, p. 118–128'
 
 export const fichaRessuscitacaoAdulto: Ficha = {
   ...fichaAdulto('adulto-ressuscitacao-volemica', 'Ressuscitação volêmica no choque e na sepse — adulto', PAGINAS_LIVRO),
-  versao: '2026-09-28.1',
+  versao: '2026-11-06.1',
   fontes: [
     pagina(PAGINAS_LIVRO),
     { ...SSC_2026, citacao: `${SSC_2026.citacao} Recomendações 4, 10, 13, 14, 16–18, 44, 45, 51, 52, 55–57, 79, 95 e 96 (p. 15–56 do PDF).` },
     { ...ILAS_2026, citacao: `${ILAS_2026.citacao} p. 3–15.` },
+    ARISE_FLUIDS_2026,
   ],
-  revisadoEm: '28/09/2026 (SSC 2026 e ILAS jul/2026 conferidos no texto; manual do HC mantido como base)',
+  revisadoEm: '06/11/2026 (nota do ARISE FLUIDS na linha do vasopressor; revisão PubMed, itens médios); 28/09/2026 (SSC 2026 e ILAS jul/2026 conferidos no texto; manual do HC mantido como base)',
 }
 
 export type Faixa = [number, number]
@@ -307,6 +319,7 @@ export const DIRETRIZES_2026: Diretriz2026[] = [
     ssc: { texto: 'Hipotensão induzida por sepse: bolus inicial de cristaloide e depois vasopressor se a hipotensão persistir (condicional, certeza muito baixa); no choque instável, vasopressor junto com o fluido caso a caso. Começar o vasopressor por veia periférica em vez de esperar o acesso central (condicional, certeza muito baixa). Noradrenalina como 1ª linha em vez de vasopressina ou angiotensina II (condicional)', pagina: 'rec. 11 e 12, p. 19–20; rec. 55, p. 41' },
     ilas: { texto: 'Noradrenalina é a 1ª escolha; não tolerar PAM < 65 por mais de 30–40 min; iniciar o vasopressor dentro da 1ª hora, por acesso periférico enquanto não há central', pagina: 'p. 13' },
     livro: { texto: 'Drogas vasoativas podem começar em acesso periférico; noradrenalina é a preferencial', pagina: 'cap. 7, p. 122' },
+    nota: NOTA_ARISE_FLUIDS,
   },
   {
     tema: 'Vasopressina e adrenalina',

@@ -92,8 +92,9 @@ test('taquiarritmias: verapamil 1 mg/min até 20 mg, diltiazem 2,5 mg/min até 5
 // ── AHA 2025, Part 9 (lacunas da Central, lote 3) ──
 
 test('PCR adulto: ficha nova com o Part 9 da AHA 2025 ao lado do manual', () => {
-  assert.equal(fichaPcrAdulto.versao, '2026-10-25.1')
-  assert.equal(fichaPcrAdulto.fontes.length, 2)
+  // a revisão PubMed (itens médios) subiu a versão e somou os ensaios depois da AHA, em 06/11/2026
+  assert.ok(fichaPcrAdulto.versao >= '2026-10-25.1')
+  assert.ok(fichaPcrAdulto.fontes.length >= 2)
   assert.match(fichaPcrAdulto.fontes[0].citacao, /p\. 48–51/)
   assert.equal(fichaPcrAdulto.fontes[1], AHA_ALS_2025)
   assert.match(AHA_ALS_2025.citacao, /S538–S577/)

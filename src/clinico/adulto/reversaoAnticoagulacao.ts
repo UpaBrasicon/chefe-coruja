@@ -22,13 +22,26 @@ export const ANNEXA_I: Fonte = {
   url: 'https://doi.org/10.1056/NEJMoa2313040',
 }
 
+// Versão .1 de 06/11/2026 (revisão PubMed, itens médios; decisão do RT, H2 =
+// A): o consenso brasileiro SBTH 2026 entra como nota no bloco dos DOAC, e a
+// janela do carvão ativado da lista do livro passa de < 2 h para < 4 h, com a
+// fonte (coerente com a janela do CTRC 2026 já aplicada nas intoxicações). As
+// doses do consenso (Figura 3B) não foram conferidas e não entram.
+export const SBTH_2026: Fonte = {
+  citacao: 'Lopes RD, de Barros e Silva PGM, Furtado RHM, et al. Brazilian consensus on the management of bleeding complications related to the use of oral anticoagulants. Rev Assoc Med Bras. 2026;72(6):e20252032 (PMID 42561189).',
+  url: 'https://doi.org/10.1590/1806-9282.20252032',
+}
+
+export const NOTA_SBTH_2026 =
+  'Consenso brasileiro SBTH 2026 (posterior ao livro): reversor ou agente hemostático só quando há as duas condições: sangramento maior ou com risco de vida e anticoagulante em nível circulante significativo (DOAC dosado ou tomado há menos de 24 h; no antagonista da vitamina K, INR ≥ 2). Carvão ativado se o anticoagulante foi tomado nas últimas 4 h (o livro escreve < 2 h). Idarucizumabe para a dabigatrana; andexanete ou complexo protrombínico para os inibidores do fator Xa, o andexanete com cautela, porque foi retirado do mercado em alguns países. As doses do consenso não foram conferidas; nada aqui muda dose.'
+
 const PAG_REVERSAO = 'cap. 39 Hemorragias intraparenquimatosas, p. 545–549; cap. 79 Distúrbios da hemostasia, p. 1042–1045 (Tabelas 4–6)'
 
 export const fichaReversaoAnticoagulacaoAdulto: Ficha = {
   ...fichaAdulto('adulto-reversao-anticoagulacao', 'Reversão de anticoagulação e sangramento — adulto', PAG_REVERSAO),
-  versao: '2026-10-25.1',
-  fontes: [pagina(PAG_REVERSAO), ANNEXA_I],
-  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: andexanete como divergência pelo ANNEXA-I; manual mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_REVERSAO), ANNEXA_I, SBTH_2026],
+  revisadoEm: '06/11/2026 (nota do consenso SBTH 2026 e carvão ativado em < 4 h nos DOAC; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: andexanete como divergência pelo ANNEXA-I; manual mantido como base)',
 }
 
 /**
@@ -162,10 +175,13 @@ export function protamina(unidadesHeparina: number, tempo: TempoHeparina): Prota
 
 // ── DOAC: Tabela 3 (p. 546) e Tabela 6 (p. 1044–1045) ────────────────────────
 
+// H2 (06/11/2026): janela do carvão em < 4 h pelo SBTH 2026; o livro traz 2 h.
+const CARVAO_DOAC = 'Carvão ativado se < 4 h da ingestão (SBTH 2026; o livro traz 2 h)'
+
 export const REVERSAO_DOAC = [
-  { droga: 'Dabigatrana', maior: ['Idarucizumabe (sem dose no livro)', 'Complexo protrombínico ativado', 'Antifibrinolítico (ácido tranexâmico ou ε-aminocaproico)', 'Descontinuar anticoagulação', 'Carvão ativado se < 2 h da ingestão', 'Plaquetas se plaquetopenia', 'Intervenções endoscópicas e outras, se necessário'],
+  { droga: 'Dabigatrana', maior: ['Idarucizumabe (sem dose no livro)', 'Complexo protrombínico ativado', 'Antifibrinolítico (ácido tranexâmico ou ε-aminocaproico)', 'Descontinuar anticoagulação', CARVAO_DOAC, 'Plaquetas se plaquetopenia', 'Intervenções endoscópicas e outras, se necessário'],
     menor: ['Medidas hemostáticas locais', 'Considerar descontinuar anticoagulação', 'Considerar antifibrinolítico'] },
-  { droga: 'Rivaroxabana, apixabana, edoxabana e betrixabana', maior: ['CCP de 4 fatores (o livro registra que ainda não estava disponível no DE do HCFMUSP)', 'Antifibrinolítico (ácido tranexâmico ou ε-aminocaproico)', 'Considerar descontinuar anticoagulação', 'Carvão ativado se < 2 h da ingestão', 'Plaquetas se plaquetopenia', 'Intervenções endoscópicas e outras, se necessário'],
+  { droga: 'Rivaroxabana, apixabana, edoxabana e betrixabana', maior: ['CCP de 4 fatores (o livro registra que ainda não estava disponível no DE do HCFMUSP)', 'Antifibrinolítico (ácido tranexâmico ou ε-aminocaproico)', 'Considerar descontinuar anticoagulação', CARVAO_DOAC, 'Plaquetas se plaquetopenia', 'Intervenções endoscópicas e outras, se necessário'],
     menor: ['Medidas hemostáticas locais', 'Considerar descontinuar anticoagulação', 'Meia-vida: rivaroxabana 5–9 h, apixabana 8–15 h, edoxabana 6–11 h', 'Considerar antifibrinolítico'] },
 ]
 export const DOAC_PAGINA = 'cap. 39, p. 546 (Tabela 3); cap. 79, p. 1044–1045 (Tabela 6)'
@@ -192,7 +208,24 @@ export function conferirPasHip(pas: number): string | null {
 
 // ── Escore ICH (p. 543–544) ──────────────────────────────────────────────────
 
-export const fichaEscoreIch = fichaAdulto('adulto-escore-ich', 'Escore ICH — hemorragia intraparenquimatosa (adulto)', 'cap. 39 Hemorragias intraparenquimatosas, p. 543–544 (Tabela 2)')
+// Revisão PubMed de 09/10/2026, item 2.5 (decisão do RT em 06/11/2026): a
+// diretriz de neuroprognóstico da NCS entra em cuidados. Pontos e mortalidade
+// da Tabela 2 não mudam.
+export const NCS_ICH_2023: Fonte = {
+  citacao: 'Hwang DY, Kim KS, Muehlschlegel S, et al. Guidelines for Neuroprognostication in Critically Ill Adults with Intracerebral Hemorrhage. Neurocrit Care. 2024;40(2):395–414 (PMID 37923968).',
+  url: 'https://doi.org/10.1007/s12028-023-01854-7',
+}
+
+export const NOTA_ICH_PROGNOSTICO =
+  'NCS 2023: nenhuma variável isolada e nenhum escore, nem o ICH, foi considerado confiável sozinho para aconselhar paciente e família sobre o desfecho funcional em 3 meses ou a mortalidade em 30 dias. Boa prática: adiar o prognóstico por pelo menos 48–72 h de UTI, exceto nos casos mais devastadores. A mortalidade da tabela não decide limitação de suporte.'
+
+const fichaEscoreIchLivro = fichaAdulto('adulto-escore-ich', 'Escore ICH — hemorragia intraparenquimatosa (adulto)', 'cap. 39 Hemorragias intraparenquimatosas, p. 543–544 (Tabela 2)')
+export const fichaEscoreIch: Ficha = {
+  ...fichaEscoreIchLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaEscoreIchLivro.fontes, NCS_ICH_2023],
+  revisadoEm: '06/11/2026 (nota da NCS 2023 sobre neuroprognóstico; revisão PubMed, itens médios); 27/09/2026 (conferido no livro, com errata anotada)',
+}
 
 export const MORTALIDADE_ICH: Record<number, string> = { 1: '13%', 2: '26%', 3: '72%', 4: '97%', 5: '100%' }
 
@@ -234,6 +267,7 @@ export const escoreIch: Escore = {
       cuidados: [
         'Mau prognóstico no texto: Glasgow < 9, hematoma > 60 mL, sangue no ventrículo (p. 543).',
         'Escore prognóstico: não define conduta.',
+        NOTA_ICH_PROGNOSTICO,
         'Sem referência pediátrica declarada.',
       ],
     }
