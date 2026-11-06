@@ -77,7 +77,8 @@ test('escore ICH: pontos e mortalidade da Tabela 2 (p. 543–544); 0 e 6 sem lin
 // ── Andexanete como divergência (ANNEXA-I; lacunas da Central, lote 3) ──
 
 test('reversão: ficha .1 com o ANNEXA-I depois do manual', () => {
-  assert.equal(fichaReversaoAnticoagulacaoAdulto.versao, '2026-10-25.1')
+  // a revisão PubMed (itens médios) subiu a versão em 06/11/2026; o SBTH 2026 vem depois do ANNEXA-I
+  assert.ok(fichaReversaoAnticoagulacaoAdulto.versao >= '2026-10-25.1')
   assert.equal(fichaReversaoAnticoagulacaoAdulto.fontes[1], ANNEXA_I)
   assert.match(ANNEXA_I.citacao, /2024;390\(19\):1745–1755/)
 })

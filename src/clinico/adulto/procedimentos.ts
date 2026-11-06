@@ -18,13 +18,24 @@ export const ESC_PACING_2021: Fonte = {
 
 export const fichaAcessosAdulto = fichaAdulto('adulto-acessos-calibres', 'Acessos: calibres, French e intraósseo (adulto)', 'cap. 105 Acessos na emergência, p. 1396–1414 (Tabelas 1 e 2)')
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026): o
+// estudo de captura no marca-passo transcutâneo entra como nota no bloco do
+// transcutâneo. Os parâmetros do livro não mudam.
+export const MPTC_CAPTURA_2026: Fonte = {
+  citacao: 'Kimbrell JM, Kreinbrook JA, Smida T, et al. Vital sign parameters are not associated with electrical capture during transcutaneous pacing. Am J Emerg Med. 2026;110:74–78 (PMID 42600263).',
+  url: 'https://doi.org/10.1016/j.ajem.2026.07.050',
+}
+
+export const NOTA_MPTC_CAPTURA =
+  'Estudo multicêntrico retrospectivo pré-hospitalar (2026; 253 pacientes em marca-passo transcutâneo): só 11,5% tinham captura elétrica sustentada. A subida da PA, a subida do EtCO2 e a sincronia da onda do oxímetro não identificaram a captura com segurança. Confirmar a captura elétrica no monitor e a mecânica no pulso, como o livro já pede.'
+
 const PAG_MP = 'cap. 107 Marca-passo e dispositivos, p. 1447–1459'
 
 export const fichaMarcaPassoAdulto: Ficha = {
   ...fichaAdulto('adulto-marca-passo-provisorio', 'Marca-passo provisório — transcutâneo e transvenoso (adulto)', PAG_MP),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_MP), ESC_PACING_2021],
-  revisadoEm: '28/09/2026 (ESC 2021 lida no texto; parâmetros do manual mantidos)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_MP), ESC_PACING_2021, MPTC_CAPTURA_2026],
+  revisadoEm: '06/11/2026 (nota da captura no marca-passo transcutâneo; revisão PubMed, itens médios); 28/09/2026 (ESC 2021 lida no texto; parâmetros do manual mantidos)',
 }
 
 export const ESC_2021_MP: { texto: string; classe: string }[] = [

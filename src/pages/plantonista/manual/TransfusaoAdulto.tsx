@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   AFERESE_TABELA4, BOA_PRATICA_AABB_2023, CCP, CH, CH_TABELA4, CRIO, CRIO_TABELA4, DIFERENCAS_TRANSFUSAO_2023, ERRATA_TRANSFUSAO, GATILHOS_HB, GATILHOS_HB_AABB, GATILHOS_PLAQUETAS,
-  INCREMENTO_CH, PAGINA_GATILHOS_HB, PFC, PFC_TABELA4, PLAQUETAS, PLAQUETAS_AABB_2025, REGRA_HB_TEXTO, TRANSFUSAO_MACICA, TRAUMA_TRANSFUSAO, criterioMacica, doseCcp, doseCrio, dosePfc,
+  INCREMENTO_CH, NOTA_TRANSFUSAO_LESAO_CEREBRAL, PAGINA_GATILHOS_HB, PFC, PFC_TABELA4, PLAQUETAS, PLAQUETAS_AABB_2025, REGRA_HB_TEXTO, TRANSFUSAO_MACICA, TRAUMA_TRANSFUSAO, criterioMacica, doseCcp, doseCrio, dosePfc,
   dosePlaquetas, expectativaCh, fichaTransfusaoAdulto, gatilhosAbaixo, gatilhosAbaixoAabb, respostaPlaquetas, velocidadeCh,
 } from '@/clinico/adulto/transfusao'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -70,6 +70,7 @@ export function TransfusaoAdulto() {
           ))}
         </div>
         <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_TRANSFUSAO_2023.slice(0, 3).map((d) => <li key={d}>{d}</li>)}</ul>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_TRANSFUSAO_LESAO_CEREBRAL}</p>
       </Bloco>
 
       <Bloco titulo="Concentrado de hemácias — incremento, volume e velocidade" descricao={`Sem sangramento, cada unidade: Hb +${INCREMENTO_CH.hbGdl} g/dL e Ht +${INCREMENTO_CH.htPct}% (${INCREMENTO_CH.pagina}).`}>
