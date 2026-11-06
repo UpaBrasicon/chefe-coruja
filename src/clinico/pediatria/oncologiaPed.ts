@@ -19,13 +19,26 @@ export const IPFNG_2023: Fonte = {
   pediatrica: true,
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// o ECR dinamarquês de suspensão precoce do antibiótico na neutropenia febril
+// de alto risco, posterior à IPFNG 2023, entra como nota depois das diferenças.
+// Não é diretriz e não muda conduta nem dose.
+export const NF_SUSPENSAO_PRECOCE_2026: Fonte = {
+  citacao: 'Vissing NH, Skajaa T, Grosen D, et al. Early discontinuation of empirical antibiotics versus extended treatment in children with cancer and high-risk febrile neutropenia in Denmark: an open-label, randomised controlled trial. Lancet Child Adolesc Health. 2026;10(6):418–428 (PMID 41990768).',
+  url: 'https://doi.org/10.1016/S2352-4642(26)00039-8',
+  pediatrica: true,
+}
+
+export const NOTA_NF_SUSPENSAO_PRECOCE =
+  'ECR dinamarquês (2026, posterior à IPFNG 2023): 70 crianças em quimioterapia intensiva com neutropenia febril de alto risco, sem infecção documentada (88 episódios). Suspender o antibiótico EV após 48 h sem febre e com estabilidade clínica, sem esperar a recuperação dos neutrófilos, reduziu em 4,0 dias o antibiótico em 28 dias, com eventos graves semelhantes (22% vs 21%) e sem óbitos. O estudo não tem poder para eventos raros e não é diretriz: a IPFNG 2023 continua admitindo a suspensão sem recuperação medular só no baixo risco.'
+
 const baseOncologia = fichaP4('ped-emergencias-oncologicas', 'Emergências oncológicas — criança', 'cap. 66, p. 693–722; Apêndice, p. 898, 907, 909')
 
 export const fichaOncologiaPed: Ficha = {
   ...baseOncologia,
-  versao: '2026-09-28.1',
-  fontes: [...baseOncologia.fontes, IPFNG_2023],
-  revisadoEm: '28/09/2026 (IPFNG 2023 lida no texto; livro do ICr mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [...baseOncologia.fontes, IPFNG_2023, NF_SUSPENSAO_PRECOCE_2026],
+  revisadoEm: '06/11/2026 (nota do ECR de suspensão precoce do antibiótico na neutropenia febril; revisão PubMed, itens médios; IPFNG 2023 lida no texto; livro do ICr mantido como base)',
 }
 
 export const IPFNG_ITENS: { codigo: string; texto: string; forca: string }[] = [

@@ -51,14 +51,37 @@ export const fichaChoquePediatrico: Ficha = {
   revisadoEm: '09/10/2026 (nota do PRoMPT BOLUS no fluido; Phoenix 2024 e SSC pediátrica 2026 conferidas no texto; livro do ICr mantido como base)',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// duas validações externas do Phoenix (SENTINEL, prontos-socorros da Austrália
+// e Nova Zelândia; Hong Kong, prontuário eletrônico) entram como nota abaixo do
+// "não vale". A regra do escore não muda.
+export const PHOENIX_SENTINEL_2025: Fonte = {
+  citacao: 'Long E, Borland ML, George S, et al. External Validation of the Phoenix Sepsis Score in Children With Suspected Community-Acquired Sepsis. JAMA Netw Open. 2025;8(3):e251412 (PMID 40116825).',
+  url: 'https://doi.org/10.1001/jamanetworkopen.2025.1412',
+  pediatrica: true,
+}
+
+export const PHOENIX_HONG_KONG_2026: Fonte = {
+  citacao: 'He S, Zhang JZ, Chan LC, et al. The Phoenix Criteria and Other Severity Scores in Identifying Pediatric Sepsis. JAMA Netw Open. 2026;9(6):e2616305 (PMID 42228369).',
+  url: 'https://doi.org/10.1001/jamanetworkopen.2026.16305',
+  pediatrica: true,
+}
+
+export const NOTA_PHOENIX_VALIDACAO =
+  'Validação externa no pronto-socorro (SENTINEL, 2025): 6.232 crianças internadas por suspeita de sepse em 11 prontos-socorros da Austrália e Nova Zelândia. Só 4,9% preencheram o Phoenix, a sensibilidade para morte hospitalar foi de 55,0%, e a coagulação faltava em mais de 85%. Em Hong Kong (140.633 internações), o Phoenix-8 discriminou bem a mortalidade (AUROC 0,91), mas os dados para calculá-lo existiam em só 43,3%: o Phoenix define sepse, não faz triagem.'
+
 /** Phoenix como ferramenta própria da Central (onda 9): mesma regra de phoenix(), só a fonte do escore. */
 export const fichaPhoenixPed: Ficha = {
   id: 'ped-phoenix',
   titulo: 'Escore de Phoenix — sepse e choque séptico (criança)',
-  versao: '2026-09-30.1',
+  versao: '2026-11-06.1',
   publico: 'pediatrico',
-  fontes: [{ ...PHOENIX_2024, citacao: `${PHOENIX_2024.citacao} Tabela do escore (p. E3 do PDF).` }],
-  revisadoEm: '30/09/2026 (mesma regra conferida no texto em 28/09; aguarda aprovação do RT como ferramenta própria)',
+  fontes: [
+    { ...PHOENIX_2024, citacao: `${PHOENIX_2024.citacao} Tabela do escore (p. E3 do PDF).` },
+    PHOENIX_SENTINEL_2025,
+    PHOENIX_HONG_KONG_2026,
+  ],
+  revisadoEm: '06/11/2026 (nota das validações externas SENTINEL e Hong Kong; revisão PubMed, itens médios; mesma regra conferida no texto em 28/09; aguarda aprovação do RT como ferramenta própria)',
 }
 
 export type Volume = {
