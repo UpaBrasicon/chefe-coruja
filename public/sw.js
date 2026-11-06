@@ -4,7 +4,7 @@
 // `activate` apagar o cache da versão anterior. Com o nome fixo, um
 // navegador que usou a versão antiga guardava para sempre arquivos que não
 // existem mais, e o app abria em branco depois de um deploy.
-const CACHE = 'chefe-coruja-v2'
+const CACHE = 'chefe-coruja-v3'
 
 self.addEventListener('install', () => {
   self.skipWaiting()
@@ -59,6 +59,39 @@ self.addEventListener('fetch', (event) => {
       })
     })
   )
+})
+
+// Recarga sem conexão, parte 2 (N5 = A, RT em 05/11/2026): a página pede, a
+// cada carga, que o login, a casca e as telas da enfermagem fiquem guardados
+// de antemão. A lista vem do build (precache.json); o que já está guardado não
+// é baixado de novo, e um arquivo que falhar não impede os outros.
+async function precachear() {
+  const resposta = await fetch('/precache.json', { cache: 'no-store' })
+  if (!resposta.ok) return
+  const lista = await resposta.json()
+  if (!Array.isArray(lista)) return
+  const cache = await caches.open(CACHE)
+  for (const url of lista) {
+    if (typeof url !== 'string' || !url.startsWith('/assets/')) continue
+    if (await cache.match(url)) continue
+    try {
+      const r = await fetch(url)
+      const tipo = r.headers.get('content-type') || ''
+      if (r.ok && !tipo.includes('text/html')) await cache.put(url, r)
+    } catch {
+      /* sem rede agora: tenta na próxima carga */
+    }
+  }
+  try {
+    const inicio = await fetch('/', { cache: 'no-store' })
+    if (inicio.ok) await cache.put('/', inicio)
+  } catch {
+    /* idem */
+  }
+}
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'precachear') event.waitUntil(precachear().catch(() => {}))
 })
 
 // Web Push: exibe a notificação quando o servidor enviar um push.
