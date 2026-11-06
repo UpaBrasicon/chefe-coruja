@@ -14,6 +14,7 @@ import { AppShell } from '@/components/AppShell'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { ErroForcado } from '@/components/ErroForcado'
 import { Spinner } from '@/components/ui/spinner'
+import { ligarConsultasSemConexao } from '@/lib/offline/ligarConsultas'
 
 // ── Telas fora do shell: carregadas sob demanda ───────────────────────────────
 const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
@@ -130,6 +131,10 @@ const queryClient: QueryClient = new QueryClient({
     },
   },
 })
+
+// recarga sem conexão, parte 3: grava, cifrado na aba, o que as telas da
+// enfermagem leram por último
+ligarConsultasSemConexao(queryClient)
 
 function UnidadeLayout() {
   return (
