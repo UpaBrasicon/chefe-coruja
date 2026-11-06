@@ -226,4 +226,122 @@ O levantamento foi feito em 06/11/2026, com cada referência conferida no PubMed
 ---
 
 ## Área 3: pediatria e escores
-(A preencher com o quarto levantamento.)
+
+### 4.1 Kawasaki
+- **Onde:** `kawasaki.ts` (2026-10-25.1), na linha "Corticoide" de `DIFERENCAS_KAWASAKI_2024`. É preciso criar o campo `nota?`.
+- **Fontes, pediátricas:**
+  - Lin S et al. N Engl J Med 2026;394(15):1480–1490 (PMID 41985133)
+  - Tufail U et al. Eur J Pediatr 2026;185(10) (PMID 42736452)
+- **Nota:** "ECR de prednisolona adjuvante (NEJM 2026, posterior à AHA 2024): 3.208 crianças chinesas com Kawasaki recém-diagnosticado, não selecionadas por risco. Lesão coronariana em 1 mês: 16,0% com prednisolona + tratamento padrão e 13,8% só com o padrão, sem redução. Houve menos terapia de resgate (4,6% vs 10,1%) e febre mais curta, mas aneurisma médio a gigante em 3 meses de 1,9% vs 1,1%. Meta-análise de 8 ECRs (4.106 crianças, certeza muito baixa) também sem benefício coronariano; o ensaio não estudou à parte o alto risco da AHA 2024, e nenhuma dose muda."
+- **Tipo:** só nota.
+
+### 4.2 Phoenix
+- **Onde:** `choque.ts`, ficha `ped-phoenix` (2026-09-30.1), abaixo de `PHOENIX_TEXTO.naoVale`.
+- **Fontes, pediátricas:**
+  - Long E et al. JAMA Netw Open 2025;8(3):e251412 (PMID 40116825)
+  - He S et al. JAMA Netw Open 2026;9(6):e2616305 (PMID 42228369)
+- **Nota:** "Validação externa no pronto-socorro (SENTINEL, 2025): 6.232 crianças internadas por suspeita de sepse em 11 prontos-socorros da Austrália e Nova Zelândia. Só 4,9% preencheram o Phoenix, a sensibilidade para morte hospitalar foi de 55,0%, e a coagulação faltava em mais de 85%. Em Hong Kong (140.633 internações), o Phoenix-8 discriminou bem a mortalidade (AUROC 0,91), mas os dados para calculá-lo existiam em só 43,3%: o Phoenix define sepse, não faz triagem."
+- **Tipo:** só nota.
+
+### 4.3 Neutropenia febril pediátrica
+- **Onde:** `oncologiaPed.ts` (2026-09-28.1), depois de `DIFERENCAS_NF_2023`.
+- **Fonte, pediátrica:** Vissing NH et al. Lancet Child Adolesc Health 2026;10(6):418–428 (PMID 41990768).
+- **Nota:** "ECR dinamarquês (2026, posterior à IPFNG 2023): 70 crianças em quimioterapia intensiva com neutropenia febril de alto risco, sem infecção documentada (88 episódios). Suspender o antibiótico EV após 48 h sem febre e com estabilidade clínica, sem esperar a recuperação dos neutrófilos, reduziu em 4,0 dias o antibiótico em 28 dias, com eventos graves semelhantes (22% vs 21%) e sem óbitos. O estudo não tem poder para eventos raros e não é diretriz: a IPFNG 2023 continua admitindo a suspensão sem recuperação medular só no baixo risco."
+- **Tipo:** só nota.
+
+### 4.4 PRAM
+- **Onde:** `pram.ts` (2026-09-30.1), em `cuidados`. A linha 46 diz "fora dessa faixa o escore não foi estudado", o que ficou desatualizado.
+- **Fontes, pediátricas:**
+  - CASPER: Gray C et al. Arch Dis Child 2026 (PMID 42392843)
+  - Pergo LS et al. J Pediatr (Rio J) 2026;102(5):101583 (PMID 42448296)
+  - Courselle A et al. Arch Pediatr 2026;33(4):105511 (PMID 41996743)
+- **Nota:** "CASPER (2026): em 4 prontos-socorros australianos, 1.238 crianças de 2 a 18 anos, nenhum dos 10 escores de asma (PRAM incluído) atingiu AUC ≥ 0,80 para prever internação após o broncodilatador inicial. Numa coorte brasileira (428 atendimentos), o PRAM previu melhor a internação na 2ª hora (AUC 0,829) do que na triagem (0,791). O escore mede gravidade e serve para reavaliar; não decide sozinho a internação. Abaixo de 2 anos há só um estudo pequeno (92 lactentes)."
+- **Tipo:** nota. **Decisão do RT (H10):** reescrever a linha 46.
+
+### 4.5 SOFA-2
+- **Situação:** o app já tem o SOFA-2 como ferramenta separada (`sofa2.ts`, 2026-10-25.1, à espera da aprovação do RT). A tela de sepse segue no SOFA-1 (`sepseAdulto.ts`, 2026-09-28.3).
+- **Fontes:**
+  - Ranzani OT et al. JAMA 2025;334(23):2090–2103 (PMID 41159833)
+  - Ahn S et al. J Intensive Care 2026;14(1) (PMID 42687193)
+  - Yen CC et al. Int J Infect Dis 2026;171:109030 (PMID 42542312)
+- **Nota (na tela de sepse):** "SOFA-2 (JAMA 2025): mesmos 6 sistemas, com variáveis novas e cortes revistos, desenvolvido em UTI. No pronto-socorro, em choque séptico (duas coortes, 2.669 e 1.443 pacientes), discriminou a mortalidade um pouco melhor que o SOFA-1. Em 173.079 atendimentos por suspeita de infecção em Taiwan, a AUROC foi igual (0,78 vs 0,78), mas o SOFA-2 deu pontuação menor em 62,3% dos pacientes. O Sepsis-3 continua definido pelo SOFA original, que é o desta tela; o SOFA-2 está em ferramenta separada."
+- **Tipo:** nota. **Decisão do RT (H11):** manter o SOFA-1 como critério da sepse. A linha 84 do `sofa2.ts` ("validado só em UTI") passa a citar as validações no PS.
+
+### 4.6 Acesso venoso
+- **Onde:** `acessoVenoso.ts` (2026-09-27.1), com a citação da 8ª edição incompleta.
+- **Fontes:**
+  - 9ª ed.: Nickel B et al. J Infus Nurs 2024;47(1S Suppl 1):S1–S285 (PMID 38211609)
+  - 8ª ed.: Gorski LA et al. J Infus Nurs 2021;44(1S Suppl 1):S1–S224 (PMID 33394637)
+- **Nota:** "Existe a 9ª edição dos Infusion Therapy Standards of Practice (2024), que substitui a 8ª citada aqui. O PubMed não traz resumo de nenhuma das duas, e o que mudou entre as edições não foi conferido: a regra desta tela segue a 8ª edição até o RT ler o texto."
+- **Tipo:** nota. A citação da 8ª é completada. **Decisão do RT (H12):** trocar a fonte depois de ler a 9ª.
+
+### 4.7 Wells TVP e YEARS
+- **Wells TVP** (`wellsTvp.ts`, 2026-09-27.1)
+  - **Fonte:** Le Gal G et al. JAMA 2026;335(5):416–424 (PMID 41490105).
+  - **Nota:** "D-dímero ajustado à idade na TVP (JAMA 2026): estudo prospectivo de manejo em 27 centros, 3.205 pacientes do pronto-socorro. Nos 2.169 com Wells improvável, o corte idade × 10 µg/L (a partir de 50 anos) não teve nenhuma falha em 3 meses entre 500 µg/L e o corte ajustado. Com 75 anos ou mais, o D-dímero negativo passou de 8,7% para 26,1%. Esta tela não calcula o corte."
+  - **Tipo:** só nota.
+- **YEARS** (`years.ts`, 2026-09-28.1)
+  - **Fonte:** Akerboom B et al. JAMA 2026;336(8):655–663 (PMID 42437322).
+  - **Nota:** "Câncer ativo (Hydra, JAMA 2026): ECR com 698 pacientes com câncer ativo e suspeita de TEP. O YEARS foi não inferior à angio-TC: TEV sintomático ou morte possivelmente por TEP em 90 dias, após excluir TEP, em 1,8% vs 5,5%. Dispensou a angio-TC em 22%."
+  - **Tipo:** só nota.
+
+### 4.8 Outros escores
+| Escore | Fonte | Nota | Tipo |
+|---|---|---|---|
+| CIVD (ISTH) | Iba T et al. J Thromb Haemost 2025;23(7):2356–2362 (PMID 40216223) | nova definição ISTH 2025; o D-dímero passa a ser medido em múltiplos do limite superior; a tela segue o escore de 2001 até o RT ler | **Decisão do RT (H13)** |
+| NEWS2 | Oliveira APA et al. Rev Gaúcha Enferm 2020;41:e20190424 (PMID 33111761); Sousa AS et al. 2025 (PMID 40767651) | versão brasileira oficial; validada no PS em sepse | nota. **Decisão do RT (H14):** alinhar os rótulos à versão oficial |
+| GRACE | Wenzl FA et al. Lancet 2022;400(10354):744–756 (PMID 36049493); Lancet Digit Health 2025 (PMID 41107201) | GRACE 3.0 separado por sexo; a limitação foi medida no 2.0 | nota. **Decisão do RT (H15):** pôr link para o GRACE 3.0 |
+| Canadian CT Head | Kimoto K et al. Am J Emerg Med 2026;104:34–39 (PMID 41791185) | coorte japonesa (mediana de 71 anos): sensibilidade de 91,1% e especificidade de 33,8% | só nota |
+| Alvarado | Podda M et al. (WSES 2025). JAMA Surg 2026;161(3):283–295 (PMID 41604201); Andersson RE et al. World J Emerg Surg 2025 (PMID 39923099) | WSES 2025 substitui a 2020; o AIR teve AUC 0,86 e o Alvarado 0,79 | nota. **Decisão do RT (H16):** trocar a WSES 2020 pela 2025 depois de ler |
+| BISAP e Ranson | Capurso G et al. UEG J 2023;11(9):825–836 (PMID 37755341); IAP 2025 (PMID 40651900); iLATAM-AP 2026 (PMID 42216617) | os escores têm desempenho ruim para prever pancreatite grave | só nota |
+| Glasgow-Blatchford | ESGE 2026 (PMID 42127996) | não recomenda EDA emergente nem urgente sem instabilidade | só nota |
+
+### 4.9 Extras da área 3
+| Tema | Fonte | Tipo |
+|---|---|---|
+| CAD pediátrica: Ringer lactato | Agarwal A et al. 2025 (PMID 40194836); Singhal D et al. 2024 (PMID 39302535) | só nota, sem dose |
+| CAD pediátrica: glargina precoce | Shah A et al. 2025 (PMID 41296041); Bansal D et al. 2025 (PMID 40623843) | **Decisão do RT (H17)**: o resumo traz a dose, e ela não entra sem o RT |
+| Manchester: subtriagem no idoso | Ingielewicz A et al. PLoS One 2025 (PMID 40961061) | **Decisão do RT e da enfermagem (H18)** |
+| Braden: faixas | Hillier B 2025 (PMID 39913541); Velozo BC 2026 (PMID 42845173) | **Decisão do RT (H19)** |
+| Glasgow com pupilas (GCS-P) | Vreeburg RJG 2024 (PMID 39686742) | **Decisão do RT (H20)** sobre a redação |
+| ABCD2 | Deris D 2025 (PMID 40944027); Lumia S 2026 (PMID 41718567) | só nota: 17,7% dos de baixo risco tiveram AVC no próprio atendimento |
+| Light | Porcel JM 2026 (PMID 41846683) | **Decisão do RT (H21)** sobre a combinação tripla |
+| Hiperpotassemia: cálcio | Jessen MK 2025 (PMID 39761907) | **Decisão do RT (H22)** |
+| RCP pediátrica (ERC 2025), HDA pediátrica (ESPGHAN), IC pediátrica (AHA 2026), meningite (OMS 2025) | — | só referência ou leitura; o resumo não permite nota |
+| Dengue (OMS 2025) | PMID 40690567 não encontrado pela ferramenta | fica de fora |
+
+---
+
+## Decisões do RT
+
+| # | Item | A (recomendada) | B |
+|---|---|---|---|
+| H1 | HNF: alvo de anti-Xa | mostrar o alvo 0,30–0,70 U/mL só na nota, sem mexer na conta | não mostrar |
+| H2 | Reversão de DOAC: janela do carvão | trocar "< 2 h" por "< 4 h", com a fonte (SBTH 2026), coerente com o CTRC | só nota, sem trocar |
+| H3 | INTERACT4 | nas duas ferramentas (emergência hipertensiva e AVC) | só na do AVC |
+| H4 | Pré-oxigenação (ATS 2026) | nota na sequência rápida de intubação | não entra |
+| H5 | HSA: NCS 2026 sobre fenitoína | mostrar ao lado da AHA, como divergência | não mostrar |
+| H6 | STA: TASC | mostrar como novidade, sem conduta | não mostrar ainda |
+| H7 | Antídotos: conferir dose por dose (AHA 2023/2025, Andrews 2023) | tarefa à parte, depois deste lote | junto deste lote |
+| H8 | Hipernatremia: velocidade de correção | só nota, limite do livro mantido | não mostrar |
+| H9 | Rabdomiólise: corte de CPK do ENMC | nota de divergência, critério do livro mantido | não mostrar |
+| H10 | PRAM, linha 46 | reescrever: "validado de 2 a 17 anos; abaixo de 2 anos, só um estudo pequeno" | manter |
+| H11 | SOFA na sepse | manter o SOFA-1; nota do SOFA-2; corrigir a linha 84 do `sofa2.ts` | trocar pelo SOFA-2 |
+| H12 | Acesso venoso, 9ª edição | nota agora; troca da fonte depois de o RT ler | trocar já |
+| H13 | CIVD ISTH 2025 | nota agora; troca do escore depois de ler | trocar já |
+| H14 | NEWS2: rótulos da versão oficial | tarefa à parte, com a enfermagem | não mexer |
+| H15 | GRACE 3.0 | nota com link externo para a calculadora oficial | só nota |
+| H16 | Alvarado: WSES 2025 | nota agora; troca da fonte depois de ler | trocar já |
+| H17 | CAD pediátrica: glargina precoce | não entra (dose só com o RT) | nota com a dose do estudo |
+| H18 | Manchester no idoso | nota de alerta na triagem, sem sugerir cor | não mostrar |
+| H19–H22 | Braden, GCS-P, Light, cálcio na hiperpotassemia | ficam para tarefa à parte | entram neste lote |
+
+## Plano de entrega (com A em tudo)
+Um PR por área, cada um com testes antes:
+1. Área 1
+2. Área 2a
+3. Área 2b
+4. Pediatria
+5. Escores
+
+Ao fim, uma migration com as versões novas (`scripts/fichas-sql.mjs`), testada na homologação, pede o "ok produção". Depois, as versões entram na fila de aprovação do RT.
