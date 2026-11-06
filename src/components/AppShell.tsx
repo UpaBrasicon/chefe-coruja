@@ -47,6 +47,7 @@ import { useSegundoFator } from '@/hooks/useSegundoFator'
 import { useChaveRascunho } from '@/hooks/useChaveRascunho'
 import type { Papel } from '@/types/database'
 import { diaMes, hora } from '@/lib/formato'
+import { dadosRestauradosEm } from '@/lib/offline/ligarConsultas'
 
 // A casca do Monitor de Cabeceira (P/index.html 882–1366): lateral recolhida
 // em ícones que abre por cima, topbar imóvel com o contexto do papel, pilha de
@@ -464,6 +465,7 @@ function Casca() {
     >
       <span className={cn('size-2 rounded-capsula', fila.online ? 'bg-atencao' : 'bg-critico')} aria-hidden />
       {!fila.online ? 'Sem conexão' : 'Enviando'}
+      {!fila.online && dadosRestauradosEm() !== null && ` · dados das ${hora(dadosRestauradosEm()!)}`}
       {fila.pendentes > 0 && ` · ${fila.pendentes} no aparelho`}
       {fila.recusados > 0 && ` · ${fila.recusados} recusado${fila.recusados > 1 ? 's' : ''}`}
     </span>
