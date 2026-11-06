@@ -2177,6 +2177,90 @@ export type Database = {
           },
         ]
       }
+      classificacoes_dini: {
+        Row: {
+          categoria: string
+          dia: string
+          id: string
+          internacao_id: string
+          motivo: string | null
+          paciente_id: string
+          registrado_em: string
+          registrado_por: string
+          respostas: Json
+          retifica_id: string | null
+          total: number
+          unidade_id: string
+          versao: string
+        }
+        Insert: {
+          categoria: string
+          dia: string
+          id?: string
+          internacao_id: string
+          motivo?: string | null
+          paciente_id: string
+          registrado_em?: string
+          registrado_por: string
+          respostas: Json
+          retifica_id?: string | null
+          total: number
+          unidade_id: string
+          versao: string
+        }
+        Update: {
+          categoria?: string
+          dia?: string
+          id?: string
+          internacao_id?: string
+          motivo?: string | null
+          paciente_id?: string
+          registrado_em?: string
+          registrado_por?: string
+          respostas?: Json
+          retifica_id?: string | null
+          total?: number
+          unidade_id?: string
+          versao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classificacoes_dini_internacao_id_fkey"
+            columns: ["internacao_id"]
+            isOneToOne: false
+            referencedRelation: "internacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_dini_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_dini_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_dini_retifica_id_fkey"
+            columns: ["retifica_id"]
+            isOneToOne: false
+            referencedRelation: "classificacoes_dini"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classificacoes_dini_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classificacoes_risco: {
         Row: {
           autor_id: string
@@ -11642,6 +11726,8 @@ export type Database = {
       }
       fugulin_da_internacao: { Args: { p_internacao: string }; Returns: Json }
       fugulin_de_hoje: { Args: { p_internacoes: string[] }; Returns: Json }
+      dini_da_internacao: { Args: { p_internacao: string }; Returns: Json }
+      dini_de_hoje: { Args: { p_internacoes: string[] }; Returns: Json }
       gaviao_apontamentos: {
         Args: { p_unidade: string }
         Returns: {
@@ -12937,6 +13023,10 @@ export type Database = {
         Returns: Json
       }
       registrar_fugulin: {
+        Args: { p_internacao: string; p_motivo?: string; p_respostas: Json }
+        Returns: string
+      }
+      registrar_dini: {
         Args: { p_internacao: string; p_motivo?: string; p_respostas: Json }
         Returns: string
       }
