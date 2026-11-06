@@ -20,8 +20,14 @@ então:
 - **Landing** (`landing/vercel.json`): publica só `master`.
 
 As demais branches (`fase*/`, `docs/`, `revisao/`, `infra/`, `fix/`, `feat/`,
-`chore/`, `legacy/`, `porte-*`) não geram deploy. Quem cria uma branch com
+`chore/`, `legacy/`, `porte-*`, `depois/`, `frontend/`, `correcoes/`, `escala/`,
+`seguranca/`) não geram deploy. Quem cria uma branch com
 outro prefixo deve acrescentá-lo às duas listas (`git.deploymentEnabled`).
+
+Em 06/11/2026 o limite estourou de novo: as branches `depois/` da frente
+"Achados guardados" não estavam na lista, e cada envio publicava o app e a
+landing. Entraram então `depois/`, `frontend/`, `correcoes/`, `escala/` e
+`seguranca/`, os prefixos em uso que faltavam.
 
 ## B. Reverter
 
