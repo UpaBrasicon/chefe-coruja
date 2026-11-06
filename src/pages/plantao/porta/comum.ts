@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import type { CorRisco } from '@/domain/risco'
 import type { Publico } from '@/domain/vitais'
 import { dataIso, hora as horaFmt } from '@/lib/formato'
+import type { DosePS } from '@/lib/frequenciaPorta'
 
 export type EpFila = {
   id: string
@@ -100,7 +101,11 @@ export type ItemPS = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; dose: string | null; via: string | null
   posologia: string | null; se_necessario: boolean; diluicao_texto: string | null; criado_em: string; autor: string | null
   suspenso_em: string | null; motivo_suspensao: string | null
+  /** A última checagem (o painel continua devolvendo; item sem horário usa esta). */
   checagem: { situacao: 'feito' | 'nao_feito' | 'recusado'; em: string; por: string | null; motivo: string | null } | null
+  /** Frequência na porta (migration 20270301000001): horários aprazados e as doses por horário. */
+  horarios?: string[] | null
+  doses?: DosePS[]
 }
 export type ExamePS = {
   id: string; exame: string; situacao: 'pedido' | 'coletado' | 'em_analise' | 'realizado' | 'resultado' | 'cancelado'; pedido_em: string; resolvido_em: string | null
