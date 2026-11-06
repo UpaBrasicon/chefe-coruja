@@ -20,6 +20,8 @@ As "Minhas preferências de prescrição" (`/preferencias-prescricao`) aparecem 
 
 ## Decisões para o RT
 
+**Decisão do RT em 06/11/2026: A em G1 a G5 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | G1 | Onde aparecem | Chips "Meus favoritos" acima do "Novo item" na prescrição da porta, só na porta por enquanto | Também na prescrição do leito |
