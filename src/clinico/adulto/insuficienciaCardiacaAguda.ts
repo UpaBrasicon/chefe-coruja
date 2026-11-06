@@ -34,13 +34,32 @@ export const DAPA_ACT_2025: Fonte = {
   url: 'https://doi.org/10.1161/CIRCULATIONAHA.125.076575',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// PUSH-AHF e a metanálise do SGLT2 iniciado na internação entram em
+// ENSAIOS_ICA, como nota. Nenhuma dose muda.
+export const PUSH_AHF_2023: Fonte = {
+  citacao: 'Ter Maaten JM, Beldhuis IE, van der Meer P, et al. Natriuresis-guided diuretic therapy in acute heart failure: a pragmatic randomized trial (PUSH-AHF). Nat Med. 2023;29(10):2625–2632 (PMID 37640861).',
+  url: 'https://doi.org/10.1038/s41591-023-02532-z',
+}
+
+export const SGLT2_INTERNACAO_2026: Fonte = {
+  citacao: 'Ahmed HM, Rehman UU, Owais M. In-Hospital Initiation of SGLT-2 Inhibitors in Acute Heart Failure: A Systematic Review and Meta-Analysis of Clinical, Decongestion, and Safety Outcomes. Cardiovasc Drugs Ther. 2026 (PMID 42507311).',
+  url: 'https://doi.org/10.1007/s10557-026-07920-4',
+}
+
+export const NOTA_PUSH_AHF =
+  'Diurético guiado pela natriurese, intensificado quando o Na urinário pontual ficava < 70 mmol/L — mais natriurese em 24 h (409 × 345 mmol), sem diferença em morte ou reinternação por IC em 180 dias (31% × 31%). O corte de 70 coincide com o limite superior do critério de resposta do livro.'
+
+export const NOTA_SGLT2_INTERNACAO =
+  'SGLT2 iniciado na internação (metanálise 2026; 18 ECRs, 15.560 pacientes): menos piora ou internação por IC (RR 0,77), sem aumento de LRA, hipotensão, hipoglicemia ou cetoacidose; a queda de mortalidade (RR 0,74) perdeu força na análise de viés de publicação.'
+
 const PAG_ICA = 'cap. 21 Insuficiência cardíaca aguda, p. 286–303 (Figura 1, p. 302); preparo das infusões: Anexo 1, p. 1486–1489'
 
 export const fichaIcAgudaAdulto: Ficha = {
   ...fichaAdulto('adulto-ic-aguda', 'Insuficiência cardíaca aguda — adulto', PAG_ICA),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_ICA), ESC_IC_2021, ADVOR_2022, CLOROTIC_2023, DAPA_ACT_2025],
-  revisadoEm: '28/09/2026 (ESC 2021 pela página do periódico; ensaios pelos resumos; manual mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_ICA), ESC_IC_2021, ADVOR_2022, CLOROTIC_2023, DAPA_ACT_2025, PUSH_AHF_2023, SGLT2_INTERNACAO_2026],
+  revisadoEm: '06/11/2026 (notas do PUSH-AHF e da metanálise do SGLT2 na internação; revisão PubMed, itens médios); 28/09/2026 (ESC 2021 pela página do periódico; ensaios pelos resumos; manual mantido como base)',
 }
 
 export const DIRETRIZ_ICA_2021: { tema: string; esc: string; livro: string }[] = [
@@ -59,6 +78,8 @@ export const ENSAIOS_ICA: { ensaio: string; texto: string }[] = [
   { ensaio: 'ADVOR (NEJM 2022; n = 519)', texto: 'Acetazolamida 500 mg IV 1×/dia somada ao diurético de alça IV (2× a dose oral de manutenção): descongestão em 3 dias 42,2% × 30,5% (RR 1,46; IC 95% 1,17–1,82); morte ou reinternação em 3 meses 29,7% × 27,8% (HR 1,07); piora renal, hipocalemia e hipotensão semelhantes.' },
   { ensaio: 'CLOROTIC (Eur Heart J 2023; n = 230, mediana 83 anos)', texto: 'Hidroclorotiazida + furosemida IV: perda de peso em 72 h 2,3 × 1,5 kg (p = 0,002); dispneia igual; piora de função renal 46,5% × 17,2% (p < 0,001); mortalidade e reinternação iguais.' },
   { ensaio: 'DAPA ACT HF-TIMI 68 (Circulation 2025; n = 2.401)', texto: 'Dapagliflozina 10 mg iniciada na internação: morte CV ou piora de IC em 2 meses 10,9% × 12,7% (HR 0,86; IC 95% 0,68–1,08; p = 0,20); morte por qualquer causa 3,0% × 4,5% (HR 0,66); hipotensão sintomática 3,6% × 2,2%. Metanálise dos ensaios intra-hospitalares: HR 0,71 para o composto e 0,57 para mortalidade.' },
+  { ensaio: 'PUSH-AHF (Nat Med 2023)', texto: NOTA_PUSH_AHF },
+  { ensaio: 'SGLT2 na internação (metanálise, Cardiovasc Drugs Ther 2026)', texto: NOTA_SGLT2_INTERNACAO },
 ]
 
 export const DIFERENCAS_ICA_2021: string[] = [

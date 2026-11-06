@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, somar, type Escore } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 
@@ -12,11 +13,28 @@ import { fichaAdulto } from './fonte.ts'
 // não são duplicados; onde a versão do livro difere, a diferença fica listada
 // abaixo (DIVERGENCIAS_ESCORES_HDA) para a tela e para o lote.
 
-export const fichaHemorragiaDigestiva = fichaAdulto(
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): a diretriz ESGE
+// 2026 de úlcera péptica sangrante entra como nota no bloco das metas da HDA.
+// Reforça o livro no tempo da EDA; nenhuma dose muda.
+export const ESGE_UGIH_2026: Fonte = {
+  citacao: 'Gralnek IM, Morris J, Laursen SB, et al. Endoscopic diagnosis and management of peptic ulcer bleeding: European Society of Gastrointestinal Endoscopy (ESGE) Guideline – Update 2026. Endoscopy. 2026;58(8):899–924 (PMID 42127996). Errata: Endoscopy. 2026;58(8):C12 (PMID 42173116).',
+  url: 'https://doi.org/10.1055/a-2863-8314',
+}
+
+export const NOTA_ESGE_2026 =
+  'ESGE 2026 (úlcera péptica sangrante, posterior ao livro): não recomenda EDA emergente (≤ 6 h) nem urgente (≤ 12 h), salvo instabilidade hemodinâmica que persiste apesar da ressuscitação adequada — reforça o livro. Sugere considerar IBP EV em dose alta antes da EDA, sem atrasá-la; metoclopramida EV antes da EDA em casos selecionados graves ou com sangramento ativo, se não houver eritromicina; e dieta oral em até 24 h após hemostasia durável. Doses não mudam.'
+
+const fichaHdLivro = fichaAdulto(
   'adulto-hemorragia-digestiva',
   'Hemorragia digestiva alta e baixa — adulto',
   'cap. 50 Hemorragia digestiva alta, p. 694–705; cap. 51 Hemorragia digestiva baixa, p. 707–716; cap. 57, p. 786',
 )
+export const fichaHemorragiaDigestiva: Ficha = {
+  ...fichaHdLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaHdLivro.fontes, ESGE_UGIH_2026],
+  revisadoEm: '06/11/2026 (nota da ESGE 2026 na úlcera péptica; revisão PubMed, itens médios)',
+}
 
 export type Faixa = [number, number]
 export type Referencia = { texto: string; pagina: string; errata?: string }

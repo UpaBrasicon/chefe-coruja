@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, marcadas, numero, somar, type Escore, type Respostas } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 import type { Faixa } from './pcr.ts'
@@ -11,11 +12,52 @@ import type { Faixa } from './pcr.ts'
 // não traz índice de choque, classes do choque hemorrágico nem o RTS
 // completo (com coeficientes). A decisão é do médico (ADR 0007).
 
-export const fichaTraumaAdulto = fichaAdulto(
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): ensaios
+// posteriores ao livro entram como nota — o PATCH-Trauma no bloco do ácido
+// tranexâmico e os ensaios sem benefício no bloco da circulação. Reforçam o
+// protocolo do livro; nenhuma dose ou volume muda.
+export const PATCH_TRAUMA_2023: Fonte = {
+  citacao: 'PATCH-Trauma Investigators and the ANZICS Clinical Trials Group; Gruen RL, Mitra B, et al. Prehospital Tranexamic Acid for Severe Trauma. N Engl J Med. 2023;389(2):127–136 (PMID 37314244).',
+  url: 'https://doi.org/10.1056/NEJMoa2215457',
+}
+export const CRYOSTAT2_2023: Fonte = {
+  citacao: 'Davenport R, Curry N, Fox EE, et al. Early and Empirical High-Dose Cryoprecipitate for Hemorrhage After Traumatic Injury: The CRYOSTAT-2 Randomized Clinical Trial. JAMA. 2023;330(19):1882–1891 (PMID 37824155).',
+  url: 'https://doi.org/10.1001/jama.2023.21019',
+}
+export const UK_REBOA_2023: Fonte = {
+  citacao: 'Jansen JO, Hudson J, Cochran C, et al. Emergency Department Resuscitative Endovascular Balloon Occlusion of the Aorta in Trauma Patients With Exsanguinating Hemorrhage: The UK-REBOA Randomized Clinical Trial. JAMA. 2023;330(19):1862–1871 (PMID 37824132).',
+  url: 'https://doi.org/10.1001/jama.2023.20850',
+}
+export const PROCOAG_2023: Fonte = {
+  citacao: 'Bouzat P, Charbit J, Abback PS, et al. Efficacy and Safety of Early Administration of 4-Factor Prothrombin Complex Concentrate in Patients With Trauma at Risk of Massive Transfusion: The PROCOAG Randomized Clinical Trial. JAMA. 2023;329(16):1367–1375 (PMID 36942533).',
+  url: 'https://doi.org/10.1001/jama.2023.4080',
+}
+export const SANGUE_TOTAL_SMITH_2026: Fonte = {
+  citacao: 'Smith JE, Cardigan R, Sanderson E, et al. Prehospital Whole Blood in Traumatic Hemorrhage — A Randomized Controlled Trial. N Engl J Med. 2026;394(23):2305–2316 (PMID 41841706).',
+  url: 'https://doi.org/10.1056/NEJMoa2516043',
+}
+export const SANGUE_TOTAL_SPERRY_2026: Fonte = {
+  citacao: 'Sperry JL, Guyette FX, Cotton BA, et al. Prehospital Resuscitation with Type O Whole Blood for Trauma and Hemorrhage. N Engl J Med. 2026;394(23):2317–2328 (PMID 42150044).',
+  url: 'https://doi.org/10.1056/NEJMoa2602167',
+}
+
+export const NOTA_PATCH_TRAUMA =
+  'PATCH-Trauma (NEJM 2023): 1.310 adultos com trauma grave e suspeita de coagulopatia; TXA pré-hospitalar no mesmo esquema do livro (1 g + 1 g em 8 h) × placebo. Não aumentou a sobrevida com bom desfecho funcional em 6 meses (53,7% × 53,5%); a morte em 28 dias foi menor (17,3% × 21,8%), como desfecho secundário, sem diferença em eventos oclusivos. Reforça o esquema do livro.'
+
+export const NOTA_ENSAIOS_NEGATIVOS_TRAUMA =
+  'Ensaios posteriores ao livro, todos sem benefício — nada disto como rotina: crioprecipitado empírico precoce em dose alta (CRYOSTAT-2) não reduziu a morte em 28 dias; REBOA na sala de emergência (UK-REBOA) não reduziu e pode ter aumentado a mortalidade; complexo protrombínico sistemático no risco de transfusão maciça (PROCOAG) não reduziu hemocomponentes e teve mais eventos tromboembólicos (35% × 24%); sangue total pré-hospitalar (dois ECRs, NEJM 2026) não foi superior aos componentes. Reforçam o protocolo do livro.'
+
+const fichaTraumaLivro = fichaAdulto(
   'adulto-trauma-inicial',
   'Politraumatizado — tempos e volumes do atendimento inicial (adulto)',
   'cap. 47 Atendimento inicial do politraumatizado, p. 636–657; cap. 48 Atendimento pré-hospitalar, Tabela 3, p. 664',
 )
+export const fichaTraumaAdulto: Ficha = {
+  ...fichaTraumaLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaTraumaLivro.fontes, PATCH_TRAUMA_2023, CRYOSTAT2_2023, UK_REBOA_2023, PROCOAG_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026],
+  revisadoEm: '06/11/2026 (nota do PATCH-Trauma no ácido tranexâmico e dos ensaios sem benefício na circulação; revisão PubMed, itens médios)',
+}
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 const NAO_SIM = [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim', valor: 1 }]

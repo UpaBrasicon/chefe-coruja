@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ATB_CIRROTICO_HDA, DIVERGENCIAS_ESCORES_HDA, ERITROMICINA_EDA, FORA_HDA, FORREST, INDICACAO_ATB_CIRROTICO, METAS_HDA, METAS_HDB, NOTA_CALIBRE_5MM, NOTA_FORRESTER,
+  ATB_CIRROTICO_HDA, DIVERGENCIAS_ESCORES_HDA, ERITROMICINA_EDA, FORA_HDA, FORREST, INDICACAO_ATB_CIRROTICO, METAS_HDA, METAS_HDB, NOTA_CALIBRE_5MM, NOTA_ESGE_2026, NOTA_FORRESTER,
   NOTA_HDB_MACICA, OMEPRAZOL_HDA, PROFILAXIA_VARIZES, VASOATIVOS_VARIZES, eritromicinaMg, fichaHemorragiaDigestiva, hdbMacica, indiceDeChoque,
   omeprazolAltaDose, referenciaForrest, testeOrtostatico, vasoativosTotais24h, type ClasseForrest,
 } from '@/clinico/adulto/hemorragiaDigestiva'
@@ -57,6 +57,7 @@ export function HemorragiaDigestivaAdulto() {
           </p>
         )}
         <ListaRef itens={METAS_HDA} />
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ESGE_2026}</p>
       </Bloco>
 
       <Bloco titulo="Classificação de Forrest e IBP" descricao={NOTA_FORRESTER}>

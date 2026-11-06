@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, somar, type Escore, type Item } from '../escore.ts'
 import { mgMlDoAnexo } from './estadoDeMal.ts'
 import { fichaAdulto } from './fonte.ts'
@@ -10,11 +11,33 @@ import { fichaAdulto } from './fonte.ts'
 // (ADR 0007). O mL/h do midazolam usa o preparo padrão do Anexo 1 do mesmo
 // livro (p. 1482–1485).
 
-export const fichaAbstinenciaAlcoolica = fichaAdulto(
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): a metanálise do
+// fenobarbital no pronto-socorro (2024) e a diretriz da British Association
+// for Psychopharmacology (2026) entram como nota no bloco dos citados sem
+// dose. O livro mantém os benzodiazepínicos como esteio; nenhuma dose muda.
+export const FENOBARBITAL_PS_2024: Fonte = {
+  citacao: 'Lee CM, Dillon DG, Tahir PM, et al. Phenobarbital treatment of alcohol withdrawal in the emergency department: A systematic review and meta-analysis. Acad Emerg Med. 2024;31(5):515–524 (PMID 37923363).',
+  url: 'https://doi.org/10.1111/acem.14825',
+}
+export const BAP_SUBSTANCIAS_2026: Fonte = {
+  citacao: 'Sinclair JMA, Kalk NJ, Kaar SJ, et al. Evidence-based consensus guidelines for the pharmacological management of substance dependence: Recommendations from the British Association for Psychopharmacology. J Psychopharmacol. 2026;40(2):227–272 (PMID 41731947).',
+  url: 'https://doi.org/10.1177/02698811251399593',
+}
+
+export const NOTA_ABSTINENCIA_FENOBARBITAL =
+  'Fenobarbital no pronto-socorro (metanálise, Acad Emerg Med 2024, posterior ao livro; 8 estudos — 2 ECRs e 6 coortes retrospectivas —, 1.507 pacientes): comparado aos benzodiazepínicos, não reduziu internação em UTI (RR 0,92), internação hospitalar (RR 0,98) nem eventos adversos (RR 1,1); a qualidade dos estudos foi baixa a moderada. A diretriz da British Association for Psychopharmacology (2026) revisa o tratamento farmacológico da dependência de álcool e de outras substâncias. O livro mantém os benzodiazepínicos como esteio; nenhuma dose muda.'
+
+const fichaAbstinenciaLivro = fichaAdulto(
   'adulto-abstinencia-alcoolica',
   'Síndrome de abstinência alcoólica — adulto',
   'cap. 78 Síndrome de abstinência alcoólica, p. 1024–1035 (Tabelas 1–5); preparo do midazolam: Anexo 1, p. 1482–1485',
 )
+export const fichaAbstinenciaAlcoolica: Ficha = {
+  ...fichaAbstinenciaLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaAbstinenciaLivro.fontes, FENOBARBITAL_PS_2024, BAP_SUBSTANCIAS_2026],
+  revisadoEm: '06/11/2026 (nota do fenobarbital no PS e da BAP 2026; revisão PubMed, itens médios)',
+}
 
 export type Faixa = [number, number]
 

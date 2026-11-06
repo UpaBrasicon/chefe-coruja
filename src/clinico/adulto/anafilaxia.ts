@@ -22,13 +22,24 @@ export const PP_ANAFILAXIA_2023: Fonte = {
   url: 'https://doi.org/10.1016/j.anai.2023.09.015',
 }
 
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): o consenso GALEN
+// 2024 entra como nota no bloco dos critérios da WAO 2020, só no adulto. A
+// tela mantém os critérios da WAO 2020 e as doses atuais.
+export const GALEN_2024: Fonte = {
+  citacao: 'Dribin TE, Muraro A, Camargo CA, et al. Anaphylaxis definition, overview, and clinical support tool: 2024 consensus report — a GALEN project. J Allergy Clin Immunol. 2025;156(2):406–417.e6 (PMID 39880313).',
+  url: 'https://doi.org/10.1016/j.jaci.2025.01.021',
+}
+
+export const NOTA_GALEN_2024 =
+  'GALEN 2024 (posterior ao livro e às diretrizes desta tela): consenso Delphi (46 especialistas, 31 sociedades) com nova definição — anafilaxia é uma reação alérgica grave, que pode progredir rápido e levar à morte — e uma ferramenta clínica com critérios de probabilidade e indicações de adrenalina IM. Os autores propõem que substituam os critérios NIAID/FAAN 2006 e WAO 2020. A tela mantém os critérios da WAO 2020 e as doses atuais.'
+
 const PAG_ANAF = 'cap. 11 Anafilaxia, p. 175–179'
 
 export const fichaAnafilaxiaAdulto: Ficha = {
   ...fichaAdulto('adulto-anafilaxia', 'Anafilaxia — adulto', PAG_ANAF),
-  versao: '2026-10-25.1',
-  fontes: [pagina(PAG_ANAF), WAO_2020, PP_ANAFILAXIA_2023],
-  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: WAO 2020 e Practice Parameter 2023; manual mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_ANAF), WAO_2020, PP_ANAFILAXIA_2023, GALEN_2024],
+  revisadoEm: '06/11/2026 (nota do consenso GALEN 2024; revisão PubMed, itens médios; WAO 2020 e Practice Parameter 2023 desde 25/10/2026; manual mantido como base)',
 }
 
 export type Faixa = [number, number]

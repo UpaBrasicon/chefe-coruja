@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, numero, somar, type Escore, type Item } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 import { INFUSOES_ADULTO, concentracao } from './infusoes.ts'
@@ -20,11 +21,28 @@ export const fichaDorAnalgesiaAdulto = fichaAdulto(
   'cap. 9 Manejo da dor no departamento de emergência, p. 140–151 (Figuras 1 e 2, Tabela 3)',
 )
 
-export const fichaPaliativoAdulto = fichaAdulto(
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): o marco revisado
+// da EAPC sobre sedação paliativa (2024) entra como nota no bloco do
+// midazolam. As doses continuam as do livro.
+export const EAPC_SEDACAO_2024: Fonte = {
+  citacao: 'Surges SM, Brunsch H, Jaspers B, et al. Revised European Association for Palliative Care (EAPC) recommended framework on palliative sedation: An international Delphi study. Palliat Med. 2024;38(2):213–228 (PMID 38297460).',
+  url: 'https://doi.org/10.1177/02692163231220225',
+}
+
+export const NOTA_EAPC_SEDACAO =
+  'EAPC 2024 (marco revisado sobre sedação paliativa, Delphi internacional; posterior ao livro): 42 enunciados com consenso alto ou muito alto. A sedação paliativa passa a ser definida pelo princípio da proporcionalidade, diante de sofrimento refratário (físico, psicológico ou existencial); o marco não fixa tempo mínimo de expectativa de vida, trata a hidratação como decisão independente, reforça a autonomia do paciente e traz uma abordagem farmacológica escalonada. As doses de midazolam desta tela continuam as do livro.'
+
+const fichaPaliativoLivro = fichaAdulto(
   'adulto-sintomas-paliativos',
   'Dor, dispneia e sedação em cuidados paliativos — adulto',
   'cap. 104 Manejo de sintomas em pacientes em cuidados paliativos, p. 1383–1391 (Tabelas 1–3); quetamina: preparo do Anexo 1, p. 1482–1485',
 )
+export const fichaPaliativoAdulto: Ficha = {
+  ...fichaPaliativoLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaPaliativoLivro.fontes, EAPC_SEDACAO_2024],
+  revisadoEm: '06/11/2026 (nota do marco EAPC 2024 na sedação paliativa; revisão PubMed, itens médios)',
+}
 
 // ── Escalas (escores) ────────────────────────────────────────────────────────
 

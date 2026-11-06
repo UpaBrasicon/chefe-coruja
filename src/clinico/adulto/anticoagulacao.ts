@@ -35,11 +35,28 @@ const valido = (x: number) => Number.isFinite(x) && x > 0
 
 // ── Heparina não fracionada EV (cap. 32, p. 442) ─────────────────────────────
 
-export const fichaHnfAdulto = fichaAdulto(
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026, H1
+// = A): a orientação do SSC da ISTH 2026 entra como nota no ajuste pelo TTPA,
+// com o alvo de anti-Xa só dentro da nota. A conta da tela continua a do livro.
+export const ISTH_HNF_2026: Fonte = {
+  citacao: 'Gouin-Thibault I, Frere C, Castellucci LA, et al. How to monitor and manage unfractionated heparin in practice (Part 1)? Guidance from the SSC of the ISTH. J Thromb Haemost. 2026;24(8):3051–3062 (PMID 42162738).',
+  url: 'https://doi.org/10.1016/j.jtha.2026.05.013',
+}
+
+export const NOTA_HNF_ANTI_XA =
+  'ISTH 2026 (orientação do SSC por consenso Delphi, posterior ao livro): o anti-Xa é preferido ao TTPa para monitorar a HNF; o alvo sugerido é 0,30–0,70 U/mL na maioria das indicações (TEV, eventos arteriais, prótese valvar mecânica). Se o serviço usa TTPa, é essencial uma faixa terapêutica de TTPa estabelecida pelo laboratório local; as faixas em segundos da Tabela 7 (Raschke, 1996) não substituem essa calibração. A conta desta tela continua a do livro.'
+
+const fichaHnfLivro = fichaAdulto(
   'adulto-heparina-nao-fracionada',
   'Heparina não fracionada EV — adulto',
   'cap. 32 Tromboembolismo pulmonar, p. 442 (dose e Tabela 7, adaptada de Raschke et al., 1996)',
 )
+export const fichaHnfAdulto: Ficha = {
+  ...fichaHnfLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaHnfLivro.fontes, ISTH_HNF_2026],
+  revisadoEm: '06/11/2026 (nota da ISTH 2026 sobre anti-Xa e TTPa; revisão PubMed, itens médios); 27/09/2026 (conferido no livro, com errata anotada)',
+}
 
 export const HNF_EV = { bolusUIKg: 80, infusaoUIKgH: 18, pagina: 'p. 442' }
 

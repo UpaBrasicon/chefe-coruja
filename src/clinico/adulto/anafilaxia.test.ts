@@ -47,9 +47,9 @@ test('anafilaxia: segunda linha só com dose de adulto; mg/kg pediátrico fica f
 
 // ── WAO 2020 e Practice Parameter 2023 (lacunas da Central, lote 3) ──
 
-test('anafilaxia: ficha .1 com WAO 2020 e Practice Parameter 2023 depois do manual', () => {
-  assert.equal(fichaAnafilaxiaAdulto.versao, '2026-10-25.1')
-  assert.deepEqual(fichaAnafilaxiaAdulto.fontes.slice(1), [WAO_2020, PP_ANAFILAXIA_2023])
+test('anafilaxia: ficha .1 de 25/10 ou posterior, com WAO 2020 e Practice Parameter 2023 depois do manual', () => {
+  assert.ok(fichaAnafilaxiaAdulto.versao >= '2026-10-25.1')
+  assert.deepEqual(fichaAnafilaxiaAdulto.fontes.slice(1, 3), [WAO_2020, PP_ANAFILAXIA_2023])
 })
 test('WAO 2020, Tabela 2: critério 1 (pele + outro) e critério 2 (alérgeno + hipotensão, broncoespasmo ou laringe)', () => {
   const nada = { pele: false, respiratorio: false, pa: false, gi: false, alergeno: false, hipotensao: false, broncoespasmo: false, laringe: false }

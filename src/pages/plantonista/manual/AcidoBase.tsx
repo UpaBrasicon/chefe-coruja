@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ERRATA_CORTES_FIGURAS, ESQUEMAS_BICARBONATO, NAHCO3_84_MEQ_POR_ML, REFERENCIAS_BICARBONATO, TABELA_ATR, analisarGasometria, anionGap,
+  ERRATA_CORTES_FIGURAS, ESQUEMAS_BICARBONATO, NAHCO3_84_MEQ_POR_ML, NOTA_BICARICU2, REFERENCIAS_BICARBONATO, TABELA_ATR, analisarGasometria, anionGap,
   anionGapCorrigido, anionGapUrinario, calcularEsquemaBic, criterioLaboratorialBicarbonato, deficitBicarbonato, deltaDelta, fichaBicarbonato,
   fichaGasometria, gapOsmolar, lerCloroUrinario, phArterialEstimado, type Tempo,
 } from '@/clinico/adulto/acidobase'
@@ -147,6 +147,7 @@ export function BicarbonatoAdulto() {
           </p>
         )}
         {REFERENCIAS_BICARBONATO.map((r) => <Trecho key={r.texto} {...r} />)}
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_BICARICU2}</p>
       </Bloco>
 
       {ESQUEMAS_BICARBONATO.map((e) => {

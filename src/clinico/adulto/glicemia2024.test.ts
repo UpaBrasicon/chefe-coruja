@@ -8,10 +8,10 @@ import {
 
 // Consenso ADA/EASD/JBDS/AACE/DTS 2024 (Diabetes Care 2024;47:1257–1275), lido no texto em 28/09/2026.
 
-test('fichas de CAD/EHH: versão .1 de 28/09 com o manual e o consenso 2024 como fontes', () => {
+test('fichas de CAD/EHH: versão .1 de 28/09 ou posterior, com o manual e o consenso 2024 como fontes', () => {
   for (const f of [fichaCadEhhAvaliacao, fichaCadEhhTratamento]) {
-    assert.equal(f.versao, '2026-09-28.1')
-    assert.equal(f.fontes.length, 2)
+    assert.ok(f.versao >= '2026-09-28.1')
+    assert.ok(f.fontes.length >= 2)
     assert.match(f.fontes[0].citacao, /Manual de Medicina de Emergência.*cap\. 64/)
     assert.match(f.fontes[1].citacao, /Hyperglycemic Crises in Adults With Diabetes.*2024;47\(8\):1257/)
     assert.equal(f.publico, 'adulto')

@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   ALCOOIS, BCC, BETABLOQUEADOR, BICARBONATO_ERRATA, BICARBONATO_LITIO, BICARBONATO_USOS, CARVAO, CARVAO_CTRC_2026, CARVAO_INDICACAO, CIANETO,
-  DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, ORGANOFOSFORADO, PEDIATRICO_CITADO,
+  DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, NOTA_AHA_INTOXICACOES, NOTA_DIGOXINA_CONSENSO, ORGANOFOSFORADO, PEDIATRICO_CITADO,
   acidoFolicoMg, atropinaDobrando, bccFigura, bicarbonatoBolus, calcioBccManutencao, carvaoMultiplasDoses, carvaoPorMassaIngerida,
   carvaoPorPeso, carvaoTriciclico, etanolEV, fichaIntoxicacoesAdulto, flumazenilBolusMaximos, fomepizol, frascosPorDose,
   frascosPorNivel, gravidadeParacetamol, hidroxocobalaminaProxima, indicacoesNac, insulinaAltaDose, nacEV, nacVO,
@@ -106,6 +106,7 @@ function Paracetamol({ peso }: { peso: number }) {
 function AntidotosFixos() {
   return (
     <Bloco titulo="Antídotos de dose fixa (cap. 98)">
+      <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_AHA_INTOXICACOES}</p>
       <LinhaManual nome="Flumazenil" texto={FLUMAZENIL.texto} pagina={FLUMAZENIL.pagina} conta={<>até <strong>{flumazenilBolusMaximos()} bolus</strong> de 0,2 mg</>} />
       {NALOXONA.cenarios.map((c) => (
         <LinhaManual key={c.id} nome={`Naloxona — ${c.rotulo}`} texto={`${faixa(c.mg, 2)} mg IV; ${NALOXONA.alvo}`} pagina={NALOXONA.pagina} />
@@ -169,6 +170,7 @@ function Digoxina({ peso }: { peso: number }) {
         conta={porDose !== null ? <strong>{br(porDose)} frascos</strong> : 'informe a dose ingerida'} />
       <LinhaManual nome="Quantidade e nível conhecidos" texto="nº de frascos = [digoxinemia (ng/mL) × peso] / 100" pagina="p. 1322"
         conta={porNivel !== null ? <strong>{br(porNivel)} frascos</strong> : 'informe digoxinemia e peso'} nota={DIGOXINA.nota} />
+      <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_DIGOXINA_CONSENSO}</p>
     </Bloco>
   )
 }
