@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { aparelhoId, enfileirar, listar, marcarRecusado, remover, type ItemSync } from './fila'
+import { aparelhoId, contar, enfileirar, listar, marcarRecusado, remover, type ItemSync } from './fila'
 import { ehFalhaDeRede } from './regras'
 import { agoraServidor, situacaoSemConexao, sincronizarRelogio, ultimoContato } from './relogio'
 
@@ -85,7 +85,5 @@ export async function esvaziarFila(perfil: string): Promise<void> {
 }
 
 export async function resumoFila(perfil: string): Promise<{ pendentes: number; recusados: number }> {
-  const itens = await listar(perfil)
-  const recusados = itens.filter((i) => i.recusado).length
-  return { pendentes: itens.length - recusados, recusados }
+  return contar(perfil) // sem precisar da chave: conta o que está no aparelho
 }

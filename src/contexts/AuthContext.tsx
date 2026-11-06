@@ -8,6 +8,7 @@ import { apagarConsultas } from '@/lib/offline/consultasGuardadas'
 import { restaurarConsultas } from '@/lib/offline/ligarConsultas'
 import { limparTodosRascunhos } from '@/lib/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
+import { definirChaveFila } from '@/lib/offline/fila'
 import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
 import type { Perfis } from '@/types/database'
 
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     apagarSessaoLocal()
     apagarConsultas()
     definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
+    void definirChaveFila(null)
     queryClient.clear()
     try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
   }, [queryClient])
@@ -108,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         apagarSessaoLocal()
         apagarConsultas()
         definirChave(null)
+        void definirChaveFila(null)
         setLoading(false)
       }
     })
@@ -158,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         apagarSessaoLocal()
         apagarConsultas()
         definirChave(null)
+        void definirChaveFila(null)
         queryClient.clear()
         // escopo local: revoga no servidor o refresh token DESTA sessão (o
         // celular do médico continua logado); o global derrubaria todos.

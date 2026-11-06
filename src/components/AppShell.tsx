@@ -45,6 +45,7 @@ import { useSinal } from '@/components/casca/useSinal'
 import { PortaoSegundoFator } from '@/components/seguranca/SegundoFator'
 import { useSegundoFator } from '@/hooks/useSegundoFator'
 import { useChaveRascunho } from '@/hooks/useChaveRascunho'
+import { useChaveFila } from '@/hooks/useChaveFila'
 import type { Papel } from '@/types/database'
 import { diaMes, hora } from '@/lib/formato'
 import { dadosRestauradosEm } from '@/lib/offline/ligarConsultas'
@@ -220,7 +221,10 @@ function Casca() {
   const paleta = usePaleta()
   const segundoFator = useSegundoFator()
   // rascunho cifrado (item 13): a chave da sessão chega depois do 2FA e antes das telas
-  const chaveRascunhoPronta = useChaveRascunho(!!segundoFator.data && (!segundoFator.data.exigido || segundoFator.data.valido), segundoFator.isError)
+  const segundoFatorOk = !!segundoFator.data && (!segundoFator.data.exigido || segundoFator.data.valido)
+  const chaveRascunhoPronta = useChaveRascunho(segundoFatorOk, segundoFator.isError)
+  // chave da fila sem conexão: do servidor, depois do segundo fator (A em O1 a O5)
+  useChaveFila(segundoFatorOk, segundoFator.isError, perfil?.id)
   const { sinal, tentar } = useSinal()
   const estreito = useLarguraAte(1023)
   const [saidaAberta, setSaidaAberta] = React.useState(false)

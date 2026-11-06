@@ -10691,6 +10691,7 @@ export type Database = {
         Args: { p_conta: string; p_motivo?: string; p_para: string }
         Returns: Json
       }
+      trocar_chave_fila: { Args: { p_perfil: string }; Returns: undefined }
       trocar_pagador_conta: {
         Args: { p_conta: string; p_motivo: string; p_pagador: string }
         Returns: Json
@@ -10800,6 +10801,7 @@ export type Database = {
         Returns: Json
       }
       chave_rascunho: { Args: never; Returns: string }
+      chave_fila: { Args: never; Returns: string }
       checar: {
         Args: {
           p_horario?: string
