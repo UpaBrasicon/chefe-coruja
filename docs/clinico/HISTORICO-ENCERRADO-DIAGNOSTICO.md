@@ -13,6 +13,8 @@ O Prontuário completo (#477) adotou a linha do tempo com o mais recente primeir
 
 ## Decisões para o RT
 
+**Decisão do RT em 06/11/2026: A em H1 a H5 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | H1 | Quantos aparecem de início | Os 5 mais recentes. Embaixo, "Ver todos os N", que mostra o resto agrupado por ano | Todos, agrupados por ano |
