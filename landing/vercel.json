@@ -11,6 +11,11 @@
       "feat/**": false,
       "chore/**": false,
       "porte-*": false,
+      "depois/**": false,
+      "frontend/**": false,
+      "correcoes/**": false,
+      "escala/**": false,
+      "seguranca/**": false,
       "homolog": false
     }
   }
