@@ -25,8 +25,9 @@ import { Spinner } from '@/components/ui/spinner'
 import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
-import { TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, msgErro, useAgora, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
+import { TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, useAgora, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
 import { Estado } from '@/components/porta/Estado'
+import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
 
 type Triado = {
   id: string; paciente_id: string; setor_id: string; cor_atual: CorRisco; classificado_em: string; queixa: string
@@ -85,7 +86,7 @@ export default function ProntoSocorroEnfermagem() {
     <>
       <TituloPagina icone={Stethoscope} titulo="Pronto-Socorro"
         descricao={`Triados e em observação dos setores da sua escala. Em Cuidados ficam SAE, aprazamento e checagem, sinais vitais e anotação.${papelAtivo === 'tecnico_enfermagem' ? ' Como técnico, você checa, afere e registra; a SAE é do enfermeiro.' : ''}`} />
-      {erro && <p className="mb-3 text-apoio text-critico">{msgErro(erro)}</p>}
+      {erroDeLeitura(erro, !!triados.data || !!observacao.data) && <p className="mb-3 text-apoio text-critico">{erroDeLeitura(erro, !!triados.data || !!observacao.data)}</p>}
       {!carregando && !erro && meusSetores.length === 0 ? (
         <Vazio icone={Stethoscope} titulo="Você não está na escala agora"
           texto="O Pronto-Socorro da enfermagem mostra os pacientes dos setores em que você está de plantão neste momento." />
