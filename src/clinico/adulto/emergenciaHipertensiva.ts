@@ -1,5 +1,6 @@
 import { completo, somar, numero, type Escore } from '../escore.ts'
 import type { Ficha, Fonte } from '../ficha.ts'
+import { ESO_PA_2025, INTERACT4_2024, NOTA_INTERACT4 } from './avcTrombolise.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
 import { INFUSOES_ADULTO, concentracao } from './infusoes.ts'
 import type { Faixa } from './pcr.ts'
@@ -42,9 +43,9 @@ const PAG_EH = 'cap. 19 Emergências hipertensivas, p. 270–276 (Tabelas 3 e 4,
 
 export const fichaEmergenciaHipertensivaAdulto: Ficha = {
   ...fichaAdulto('adulto-emergencia-hipertensiva', 'Emergência hipertensiva — alvos e drogas EV (adulto)', PAG_EH),
-  versao: '2026-10-25.1',
-  fontes: [pagina(PAG_EH), DBHA_2025, OMS_MCPC_2017, OMS_PE_2011],
-  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: sulfato de magnésio pela OMS; DBHA 2025 e manual mantidos)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_EH), DBHA_2025, OMS_MCPC_2017, OMS_PE_2011, INTERACT4_2024, ESO_PA_2025],
+  revisadoEm: '06/11/2026 (nota do INTERACT4 e da ESO 2025 no AVC isquêmico sem trombólise; revisão PubMed, itens médios)',
 }
 
 // ── Sulfato de magnésio na pré-eclâmpsia grave e eclâmpsia (OMS) ─────────────
@@ -94,7 +95,9 @@ export const RECOMENDACAO_MAGNESIO = [
   { fonte: 'OMS 2011, recomendação 15', texto: 'Onde não for possível o esquema completo: dose de ataque e transferência imediata', forca: 'fraca, evidência muito baixa' },
 ]
 
-export const DBHA_2025_ALVOS: { tema: string; dbha: string; forca: string; livro: string }[] = [
+// Revisão PubMed de 09/10/2026, itens médios (H3 = A): a nota do INTERACT4
+// entra na linha do AVC isquêmico sem trombólise; o alvo da DBHA não muda.
+export const DBHA_2025_ALVOS: { tema: string; dbha: string; forca: string; livro: string; nota?: string }[] = [
   { tema: 'Elevação importante da PA sem lesão de órgão-alvo (antiga "urgência")', dbha: 'Reavaliação ambulatorial em 1 a 7 dias com alvo PAS < 160 e PAD < 100; nifedipina sublingual nunca', forca: 'fraca, evidência baixa', livro: 'captopril 6,25–12,5 mg VO se dificuldade de aderência; nifedipina contraindicada (p. 276)' },
   { tema: 'Emergência: onde e como', dbha: 'UTI, anti-hipertensivo IV com monitorização e observação da lesão de órgão-alvo', forca: 'forte, evidência moderada', livro: '—' },
   { tema: 'Regra geral (Figura 11.1)', dbha: 'Reduzir a PA em 25% na 1ª hora; 160/100–110 mmHg em 2–6 h; valores normais em 24–48 h. Errata interna: o texto 11.5 escreve "10 a 15% na 1ª hora e 25% nas 2 horas seguintes"', forca: 'fluxograma', livro: '−20 a 25% em até 1 h; 160/100 em 2–6 h; normal em 24–48 h (rodapé da Tabela 4, p. 275) — coincide' },
@@ -102,7 +105,7 @@ export const DBHA_2025_ALVOS: { tema: string; dbha: string; forca: string; livro
   { tema: 'Dissecção aguda de aorta', dbha: 'PAS < 120 mmHg na 1ª hora; esmolol ou metoprolol (em combinação com nitroprussiato)', forca: 'fluxograma; Quadro 11.4', livro: 'PAS < 120 e FC < 60, FC antes da PA (Tabela 4)' },
   { tema: 'Síndrome coronariana aguda', dbha: 'PAS < 140 (evitar < 120) e PAD 70–80 mmHg com esmolol, metoprolol ou NTG em 24–72 h; hidralazina, nifedipina e nitroprussiato não indicados', forca: 'forte, evidência alta (p. 104)', livro: 'PAS 140 e PAD 90 (Tabela 4)' },
   { tema: 'AVC isquêmico com trombólise', dbha: 'PA < 185/110 antes e < 180/105 nas 24 h; sem trombólise/trombectomia se PA permanecer ≥ 185/110', forca: 'forte, evidência moderada', livro: 'igual (Tabela 4)' },
-  { tema: 'AVC isquêmico sem trombólise', dbha: 'PA ≥ 220/120 sem comorbidade: reduzir 15% nas primeiras 24 h; com comorbidade (dissecção, SCA, eclâmpsia, EAP): redução inicial de 15%', forca: 'fraca, evidência baixa', livro: '< 220/120: redução de PAM de 15% em 1 h (Tabela 4)' },
+  { tema: 'AVC isquêmico sem trombólise', dbha: 'PA ≥ 220/120 sem comorbidade: reduzir 15% nas primeiras 24 h; com comorbidade (dissecção, SCA, eclâmpsia, EAP): redução inicial de 15%', forca: 'fraca, evidência baixa', livro: '< 220/120: redução de PAM de 15% em 1 h (Tabela 4)', nota: NOTA_INTERACT4 },
   { tema: 'AVC hemorrágico', dbha: 'PAS > 220: infusão IV contínua com meta PAS < 180 (forte, moderada); PAS 150–220 leve/moderado: reduzir para < 140 com esmolol, nicardipina ou clevidipina (fraca, moderada) — os dois últimos marcados como indisponíveis no Brasil; HSA com PAS > 180: redução gradual em 24–72 h', forca: 'ver cada linha', livro: 'PAS < 140 se 150–220; < 140–160 se > 220 (Tabela 4)' },
   { tema: 'Encefalopatia hipertensiva', dbha: 'Sem droga de escolha definida; orais para meta 160/100 em até 48 h', forca: 'texto 11.6', livro: 'redução de 20–25% (Tabela 4)' },
   { tema: 'Gestação (pré-eclâmpsia grave/eclâmpsia)', dbha: 'Hidralazina IV 5 mg a cada 20–30 min até 15 mg; sem hidralazina, nifedipina 10 mg VO repetida 10–20 mg a cada 20–30 min; NTG ou nitroprussiato (máx. 4 h, cianeto fetal) só no EAP ou refratária; sulfato de magnésio para prevenção da eclâmpsia', forca: 'capítulo de gestação', livro: 'hidralazina 5 mg, depois 5–10 mg a cada 20 min, máx. 30 mg/24 h (Tabela 3, p. 273)' },

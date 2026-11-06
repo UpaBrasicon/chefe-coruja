@@ -75,7 +75,7 @@ test('Aorta: Tabela 3 por diâmetro (p. 284)', () => {
 // ── Sulfato de magnésio na pré-eclâmpsia grave e eclâmpsia (OMS; lote 3) ──
 
 test('magnésio: ficha .1 com o manual da OMS ao lado do manual do HC e da DBHA', () => {
-  assert.equal(fichaEmergenciaHipertensivaAdulto.versao, '2026-10-25.1')
+  assert.ok(fichaEmergenciaHipertensivaAdulto.versao >= '2026-10-25.1')
   assert.ok(fichaEmergenciaHipertensivaAdulto.fontes.includes(OMS_MCPC_2017))
   assert.match(OMS_MCPC_2017.citacao, /Box S-4.*p\. S-59/)
 })

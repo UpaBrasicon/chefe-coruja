@@ -5,9 +5,10 @@ import { DIRETRIZ_AVC_2026, TENECTEPLASE_2026, fichaTromboliseAvcAdulto, tenecte
 
 // AHA/ASA 2026 (Stroke 2026;57:e316–e436), lida no PDF em 28/09/2026.
 
-test('ficha de trombólise: versão .1 de 28/09 com o manual e a AHA/ASA 2026', () => {
-  assert.equal(fichaTromboliseAvcAdulto.versao, '2026-09-28.1')
-  assert.equal(fichaTromboliseAvcAdulto.fontes.length, 2)
+test('ficha de trombólise: versão .1 de 28/09 ou posterior com o manual e a AHA/ASA 2026', () => {
+  // a .1 de 06/11/2026 acrescentou o INTERACT4 e a ESO 2025 (revisão PubMed, itens médios)
+  assert.ok(fichaTromboliseAvcAdulto.versao >= '2026-09-28.1')
+  assert.ok(fichaTromboliseAvcAdulto.fontes.length >= 2)
   assert.match(fichaTromboliseAvcAdulto.fontes[0].citacao, /cap\. 38/)
   assert.match(fichaTromboliseAvcAdulto.fontes[1].citacao, /2026 Guideline for the Early Management.*Stroke\. 2026;57/)
 })

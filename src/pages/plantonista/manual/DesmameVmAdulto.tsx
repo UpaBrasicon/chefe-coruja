@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
-import { DESMAME, DESMAME_OUTROS, DESMAME_SUBJETIVOS, FALHA_TRE_CLINICA, criteriosObjetivosDesmame, falhaTre, fichaDesmameAdulto } from '@/clinico/adulto/ventilacaoMecanica'
+import {
+  DESMAME, DESMAME_OUTROS, DESMAME_SUBJETIVOS, FALHA_TRE_CLINICA, NOTA_AARC_TRE, NOTA_ATS_POS_EXTUBACAO, criteriosObjetivosDesmame, falhaTre, fichaDesmameAdulto,
+} from '@/clinico/adulto/ventilacaoMecanica'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -47,6 +49,7 @@ export function DesmameVmAdulto() {
       </Bloco>
 
       <Bloco titulo="Teste de respiração espontânea" descricao={`PSV ${faixaBr(DESMAME.tre.psv, 0)} cmH2O por ${faixaBr(DESMAME.tre.minutos, 0)} min (Figura 5).`}>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_AARC_TRE}</p>
         <div className="grid gap-4 sm:grid-cols-4">
           <NumberField id="dm-tfc" label="FC no TRE" unit="bpm" value={treFc} onChange={setTreFc} step={1} />
           <NumberField id="dm-tfr" label="FR no TRE" unit="rpm" value={treFr} onChange={setTreFr} step={1} />
@@ -59,6 +62,7 @@ export function DesmameVmAdulto() {
         <p className="font-medium">Critérios clínicos de falência (Figura 5)</p>
         <ul className="list-disc pl-5">{FALHA_TRE_CLINICA.map((i) => <li key={i}>{i}</li>)}</ul>
         <p className="text-tinta-sussurro">No fluxograma do livro, qualquer critério presente leva ao ramo de não extubar (reiniciar sedação se necessário e reajustar a VM); nenhum, ao ramo de extubação. A decisão é da equipe.</p>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ATS_POS_EXTUBACAO}</p>
       </Bloco>
     </ToolLayout>
   )

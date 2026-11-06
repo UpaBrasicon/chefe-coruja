@@ -37,15 +37,56 @@ export const ESICM_SDRA_2023: Fonte = {
   url: 'https://doi.org/10.1007/s00134-023-07050-7',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// SCCM 2026 na linha do bloqueio neuromuscular da SDRA; AARC 2024, o ECR do
+// JAMA 2024 e a ATS 2026 (pós-extubação) no desmame. A ATS 2026 do suporte
+// não invasivo fica aqui porque também a usam a oxigenação, a VNI, a DPOC e a
+// sequência rápida (este arquivo não importa nenhum deles). Nada muda de alvo
+// ou de parâmetro: só nota.
+export const ATS_IRPA_2026: Fonte = {
+  citacao: 'Goel NN, Ferreyro BL, Pitre T, et al. Noninvasive respiratory support for adult patients with acute respiratory failure: an official American Thoracic Society Clinical Practice Guideline. Am J Respir Crit Care Med. 2026;212(9):2135–2158 (PMID 42371750).',
+  url: 'https://doi.org/10.1093/ajrccm/aamag302',
+}
+
+export const SCCM_BNM_2026: Fonte = {
+  citacao: 'Erstad BL, Cobas MA, Qadir N, et al. Society of Critical Care Medicine Guidelines for the Administration of Neuromuscular Blockade in Adults With Acute Respiratory Distress Syndrome. Crit Care Med. 2026;54(3):634–643 (PMID 41773929).',
+  url: 'https://doi.org/10.1097/CCM.0000000000007002',
+}
+
+export const AARC_TRE_2024: Fonte = {
+  citacao: 'Roberts KJ, Goodfellow LT, Battey-Muse CM, et al. AARC Clinical Practice Guideline: Spontaneous Breathing Trials for Liberation From Adult Mechanical Ventilation. Respir Care. 2024;69(7):891–901 (PMID 38443142).',
+  url: 'https://doi.org/10.4187/respcare.11735',
+}
+
+export const BURNS_TRE_2024: Fonte = {
+  citacao: 'Burns KEA, Wong J, Rizvi L, et al. Frequency of Screening and Spontaneous Breathing Trial Techniques: A Randomized Clinical Trial. JAMA. 2024;332(21):1808–1821 (PMID 39382222).',
+  url: 'https://doi.org/10.1001/jama.2024.20631',
+}
+
+export const NOTA_SCCM_BNM =
+  'SCCM 2026 (posterior ao livro e às diretrizes ATS 2024 e ESICM 2023): recomendação condicional de usar bloqueio neuromuscular no adulto com SDRA e P/F < 150; sem recomendação para dose fixa ou titulada, para monitorar a sedação antes do BNM nem para BNM durante a prona. O corte coincide com o do livro (P/F < 150) e é mais amplo que o da ATS (SDRA grave precoce); a ESICM é contra a infusão contínua de rotina. As três posições ficam lado a lado.'
+
+export const NOTA_AARC_TRE =
+  'AARC 2024 (posterior ao livro; recomendações condicionais): o índice de respiração rápida e superficial (IRRS) não é necessário para decidir se o paciente está pronto para o TRE; o TRE pode ser feito com ou sem pressão de suporte; não aumentar a FiO2 durante o TRE. Num ECR de 797 pacientes (JAMA 2024), o TRE com pressão de suporte e o tubo T não mudaram o tempo até a extubação bem-sucedida. O livro não usa o IRRS, e o TRE em PSV 5–7 cmH2O está dentro do que a AARC aceita.'
+
+export const NOTA_ATS_POS_EXTUBACAO =
+  'ATS 2026: após a extubação, sugere CNAF no paciente de baixo risco e VNI no de alto risco, para reduzir reintubação.'
+
 const PAG_SDRA = 'cap. 37, p. 505–508; VT: p. 127 e 403'
 
 export const fichaSdraAdulto: Ficha = {
   ...fichaAdulto('adulto-vm-sdra', 'SDRA — Berlim, definição global 2024, ventilação protetora e tabelas PEEP × FiO2 (adulto)', PAG_SDRA),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_SDRA), DEFINICAO_GLOBAL_SDRA_2024, ATS_SDRA_2024, ESICM_SDRA_2023],
-  revisadoEm: '28/09/2026 (definição global 2024, ATS 2024 e ESICM 2023 lidas no texto; manual mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_SDRA), DEFINICAO_GLOBAL_SDRA_2024, ATS_SDRA_2024, ESICM_SDRA_2023, SCCM_BNM_2026],
+  revisadoEm: '06/11/2026 (nota da SCCM 2026 no bloqueio neuromuscular; revisão PubMed, itens médios)',
 }
-export const fichaDesmameAdulto = fichaAdulto('adulto-vm-desmame', 'Desmame e teste de respiração espontânea (adulto)', 'cap. 37, Figura 5, p. 510')
+const fichaDesmameLivro = fichaAdulto('adulto-vm-desmame', 'Desmame e teste de respiração espontânea (adulto)', 'cap. 37, Figura 5, p. 510')
+export const fichaDesmameAdulto: Ficha = {
+  ...fichaDesmameLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaDesmameLivro.fontes, AARC_TRE_2024, BURNS_TRE_2024, ATS_IRPA_2026],
+  revisadoEm: '06/11/2026 (nota da AARC 2024 no TRE e da ATS 2026 na pós-extubação; revisão PubMed, itens médios)',
+}
 
 export type Faixa = [number, number]
 
@@ -426,7 +467,7 @@ export function relacaoSF(spo2: number, fio2Pct: number): number | null {
   return spo2 / (fio2Pct / 100)
 }
 
-export type ItemSdra2024 = { tema: string; diretriz: string; forca: string; fonte: string; livro: string }
+export type ItemSdra2024 = { tema: string; diretriz: string; forca: string; fonte: string; livro: string; nota?: string }
 
 export const DIRETRIZ_SDRA_2024: ItemSdra2024[] = [
   { tema: 'Volume corrente e platô', diretriz: 'Vt 4–8 mL/kg de peso predito e Pplatô < 30 cmH2O em toda SDRA', forca: 'forte, evidência moderada', fonte: 'ATS 2024 (mantida de 2017); ESICM 2023 rec. 5.1', livro: 'leve 6; moderada/grave 4–6 mL/kg; Pplatô ≤ 30 (Tabela 5, p. 506)' },
@@ -434,7 +475,7 @@ export const DIRETRIZ_SDRA_2024: ItemSdra2024[] = [
   { tema: 'Manobra de recrutamento prolongada', diretriz: 'Contra (pressão ≥ 35 cmH2O por ≥ 1 min); manobras breves: sugere contra o uso rotineiro', forca: 'forte, evidência moderada (ATS e ESICM 6.3) · fraca (ESICM 6.4)', fonte: 'ATS 2024; ESICM 2023', livro: 'condicional, baixa a moderada confiança; sem protocolo (p. 507–508)' },
   { tema: 'PEEP', diretriz: 'PEEP mais alta sem manobra de recrutamento, em vez de PEEP baixa, na moderada/grave', forca: 'condicional, evidência baixa a moderada', fonte: 'ATS 2024', livro: 'tabela de PEEP alto na grave (Tabela 5)' },
   { tema: 'Corticoide', diretriz: 'Sugere corticoide na SDRA', forca: 'condicional, evidência moderada', fonte: 'ATS 2024', livro: '—' },
-  { tema: 'Bloqueio neuromuscular', diretriz: 'ATS: sugere na SDRA grave precoce. ESICM: contra infusão contínua rotineira na moderada/grave não COVID — divergência declarada', forca: 'condicional, evidência baixa (ATS) · forte, evidência moderada contra (ESICM 8.1)', fonte: 'ATS 2024; ESICM 2023', livro: 'considerar por 48 h se P/F inicial < 150 (p. 506)' },
+  { tema: 'Bloqueio neuromuscular', diretriz: 'ATS: sugere na SDRA grave precoce. ESICM: contra infusão contínua rotineira na moderada/grave não COVID — divergência declarada', forca: 'condicional, evidência baixa (ATS) · forte, evidência moderada contra (ESICM 8.1)', fonte: 'ATS 2024; ESICM 2023', livro: 'considerar por 48 h se P/F inicial < 150 (p. 506)', nota: NOTA_SCCM_BNM },
   { tema: 'ECMO venovenosa', diretriz: 'Selecionados com SDRA grave (ATS); critérios do EOLIA, em centro com padrão organizacional (ESICM 9.1); ECCO2R só em ensaio (ESICM 9.2)', forca: 'condicional, evidência baixa (ATS) · forte, evidência moderada (ESICM)', fonte: 'ATS 2024; ESICM 2023', livro: 'considerar na refratariedade; sobrevida 56% (ELSO) (p. 508)' },
   { tema: 'Ventilação oscilatória de alta frequência', diretriz: 'Contra o uso rotineiro na moderada/grave', forca: 'forte, evidência alta', fonte: 'ATS 2024 (mantida)', livro: '—' },
   { tema: 'Cânula nasal de alto fluxo na IRpA hipoxêmica não intubada', diretriz: 'Recomenda CNAF em vez de O2 convencional para reduzir intubação (não cardiogênica, não DPOC); sem recomendação sobre mortalidade', forca: 'forte, evidência moderada (ESICM 3.1)', fonte: 'ESICM 2023', livro: '—' },

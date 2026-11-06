@@ -146,7 +146,7 @@ export function EmergenciaHipertensivaAdulto() {
         <div className="overflow-x-auto">
           <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
             <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Situação</TableHead><TableHead className="pr-3 pb-2">DBHA 2025</TableHead><TableHead className="pr-3 pb-2">Força</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DBHA_2025_ALVOS.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.dbha}</TableCell><TableCell className="pr-3 py-2">{d.forca}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+            <TableBody>{DBHA_2025_ALVOS.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.dbha}{d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}</TableCell><TableCell className="pr-3 py-2">{d.forca}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
           </Table>
         </div>
         {QUADRO_11_4.map((q) => <LinhaManual key={q.droga} nome={`${q.droga} (Quadro 11.4)`} texto={`${q.dose} — ${q.indicacao}`} pagina="DBHA 2025, p. 101–102" errata={q.errata} />)}
