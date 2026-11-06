@@ -112,7 +112,7 @@ export type GrupoAtendimento = {
   cid: string | null
   situacao: Situacao
   internacoes: InternacaoNomeada[]
-  /** Em ordem cronológica. */
+  /** Do mais recente para o mais antigo, como os sinais vitais (ajuste do polish, 06/11/2026). */
   registros: RegistroLinha[]
   /** A mais recente primeiro. */
   afericoes: LinhaAfericao[]
@@ -195,7 +195,8 @@ export function montarLinhaTempo(d: PaginaProntuario): { grupos: GrupoAtendiment
   const classif = new Map<string, ClassificacaoBruta[]>()
   for (const c of d.classificacoes) if (c.episodio_id) por(classif, c.episodio_id, c)
 
-  const ordenar = (l: RegistroLinha[] | undefined) => (l ?? []).sort((a, b) => antes(a.em, b.em) || crescente(a.id, b.id))
+  // do mais recente para o mais antigo
+  const ordenar = (l: RegistroLinha[] | undefined) => (l ?? []).sort((a, b) => antes(b.em, a.em) || crescente(a.id, b.id))
 
   const grupos: GrupoAtendimento[] = [...d.atendimentos]
     .sort((a, b) => antes(b.chegada_em, a.chegada_em) || crescente(b.id, a.id))
@@ -244,7 +245,8 @@ function situacaoDoAtendimento(a: AtendimentoBruto, ints: InternacaoBruta[]): Si
 /** O CID gravado: o da alta, o do desfecho, o da internação, o do último registro, o da APS. */
 function cidDoAtendimento(a: AtendimentoBruto, ints: InternacaoBruta[], regs: RegistroLinha[]): string | null {
   const ultima = ints[ints.length - 1]
-  const ultimoRegistro = [...regs].reverse().find((r) => r.tipo === 'atendimento' && texto(r.registro.cid))
+  // regs vem do mais recente para o mais antigo
+  const ultimoRegistro = regs.find((r) => r.tipo === 'atendimento' && texto(r.registro.cid))
   return texto(ultima?.cid_alta) ?? texto(a.cid_desfecho) ?? texto(ultima?.cid_principal)
     ?? (ultimoRegistro?.tipo === 'atendimento' ? texto(ultimoRegistro.registro.cid) : null)
     ?? (a.cid_aps?.length ? a.cid_aps.join(', ') : null)
@@ -291,10 +293,8 @@ export function agruparAfericoes(lista: ObservacaoBruta[]): LinhaAfericao[] {
 
 // ── registros principais ────────────────────────────────────────────────────
 
-const DOCUMENTO_PRINCIPAL = new Set(['admissao_anamnese', 'sumario_alta', 'sumario_obito'])
-const ehPrincipal = (r: RegistroLinha) =>
-  r.tipo === 'atendimento' || r.tipo === 'internacao' || r.tipo === 'prescricao'
-  || (r.tipo === 'documento' && DOCUMENTO_PRINCIPAL.has(r.documento.tipo_documento))
+/** Exame com resultado liberado: a versão vigente do resultado ou o texto gravado no pedido. */
+const temResultado = (r: RegistroLinha) => r.tipo === 'exame' && (r.resultado != null || texto(r.exame.resultado) != null)
 
 const TIPO_ESCONDIDO = (r: RegistroLinha) =>
   r.tipo === 'exame' ? 'exames'
@@ -303,17 +303,70 @@ const TIPO_ESCONDIDO = (r: RegistroLinha) =>
         : r.tipo === 'internacao' ? 'internação' : 'registros do atendimento'
 
 /**
- * O que o atendimento aberto mostra antes do "+N registros": o registro do
- * atendimento, a internação, as prescrições e os sumários (até 4). Sem nenhum
- * deles, os três primeiros. Os demais ficam atrás do botão, com os tipos.
+ * O que o atendimento aberto mostra antes do "+N registros" (ajuste do polish,
+ * RT em 06/11/2026, muda o detalhe da P4): o último de cada tipo — o SOAP mais
+ * recente, a última evolução, a prescrição vigente (a mais recente) —, os
+ * exames com resultado liberado e a internação. Sem nenhum deles, os três mais
+ * recentes. O resto fica atrás do botão, com os tipos. `regs` vem do mais
+ * recente para o mais antigo, e a ordem se mantém.
  */
 export function principais(regs: RegistroLinha[]): { mostrados: RegistroLinha[]; escondidos: number; tipos: string[] } {
-  let mostrados = regs.filter(ehPrincipal).slice(0, 4)
-  if (!mostrados.length) mostrados = regs.slice(0, 3)
-  const ficam = new Set(mostrados.map((r) => r.id))
-  const resto = regs.filter((r) => !ficam.has(r.id))
+  const ficam = new Set<string>()
+  const primeiro = (f: (r: RegistroLinha) => boolean) => { const r = regs.find(f); if (r) ficam.add(r.tipo + r.id) }
+  primeiro((r) => r.tipo === 'atendimento')
+  primeiro((r) => r.tipo === 'documento' && r.documento.tipo_documento === 'evolucao')
+  primeiro((r) => r.tipo === 'prescricao')
+  for (const r of regs) if (r.tipo === 'internacao' || temResultado(r)) ficam.add(r.tipo + r.id)
+  if (!ficam.size) for (const r of regs.slice(0, 3)) ficam.add(r.tipo + r.id)
+  const mostrados = regs.filter((r) => ficam.has(r.tipo + r.id))
+  const resto = regs.filter((r) => !ficam.has(r.tipo + r.id))
   return { mostrados, escondidos: resto.length, tipos: [...new Set(resto.map(TIPO_ESCONDIDO))] }
 }
 
+// ── textos do cartão ────────────────────────────────────────────────────────
+
+/** "leito 12A", sem repetir a palavra quando o nome do leito já é "Leito 4". */
+export const rotuloLeito = (nome: string | null | undefined): string | null => {
+  const n = texto(nome)
+  return n ? (/^leito\b/i.test(n) ? n : `leito ${n}`) : null
+}
+
+const compacto = (s: string) => s.toLowerCase().replace(/\s+/g, '')
+
+/** Item da prescrição numa linha; a dose sai rotulada, e não sai quando a descrição já a traz. */
+export function textoItemPrescricao(i: ItemPrescricao): string {
+  const dose = texto(i.dose)
+  const repete = dose != null && compacto(i.descricao).includes(compacto(dose))
+  return [i.descricao, dose && !repete ? `dose ${dose}` : null, texto(i.via), texto(i.posologia)].filter(Boolean).join(' · ')
+}
+
+const DIA_MS = 86_400_000
+
+/**
+ * Resumo da internação do atendimento fechado: "internação · 6 dias" (ou
+ * "observação", quando todas foram observação), da primeira entrada à última
+ * alta, contando o dia pela data de Brasília. Sem alta gravada, só o tipo.
+ */
+export function resumoInternacao(ints: InternacaoBruta[]): string | null {
+  if (!ints.length) return null
+  const tipo = ints.every((i) => i.tipo_internacao === 'observacao') ? 'observação' : 'internação'
+  const entrada = ints.map((i) => i.data_admissao).sort(antes)[0]
+  const altas = ints.map((i) => i.data_alta)
+  if (altas.some((a) => !a)) return tipo
+  const saida = (altas as string[]).sort(antes)[altas.length - 1]
+  const dias = Math.round((Date.parse(dataIso(saida)) - Date.parse(dataIso(entrada))) / DIA_MS)
+  return `${tipo} · ${dias < 1 ? 'menos de 1 dia' : dias === 1 ? '1 dia' : `${dias} dias`}`
+}
+
+/** Id do botão do cabeçalho do atendimento: o foco vai para ele depois de "Ver mais atendimentos". */
+export const idCabecalho = (chave: string) => `atendimento-${chave}`
+
 /** Âncora do ano na linha do tempo. */
 export const ancoraDoAno = (ano: number) => `ano-${ano}`
+
+/**
+ * O ano já veio inteiro: há um atendimento de ano anterior na lista ou não há
+ * mais páginas. A navegação por ano carrega até isso, não só até o primeiro do ano.
+ */
+export const anoCarregado = (chegadas: string[], ano: number, mais: boolean) =>
+  !mais || chegadas.some((c) => Number(dataIso(c).slice(0, 4)) < ano)
