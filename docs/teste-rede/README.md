@@ -22,14 +22,34 @@ Este é o catálogo da tarefa 1: **30 cenários** que percorrem todos os papéis
 
 **Por onde começar:** o A01 é o carro-chefe. Sozinho ele percorre quase todos os papéis da rede de teste.
 
-## O que o RT precisa preparar antes da execução (tarefa 2)
-Os cenários apontam faltas no ambiente de teste (rede F5 da homologação):
-- **Contas que não existem:** telemedicina, técnico de enfermagem da UPA, administrador e papéis de rede. Sem elas, partes de B05, D03, D05, D08, D10 e D12 ficam de fora.
-- **Regulador:** hoje só tem vínculo na Central. `decidir_aih`/`decidir_apac` exigem o papel na unidade da AIH/APAC (C02 e C03).
-- **Hospital F5:** não tem recepção, gestor, faturamento nem NIR. A conta do hospital não fecha (A01, B03).
-- **Perfis:** estão sem CNS/CBO, o que faz as críticas do faturamento caírem em "fora" (C01 a C03).
-- **Unidades:** estão sem coordenadas, então o raio do check-in não barra ninguém (D03).
-- **Escala:** cada conta está nos três turnos, então "fora da janela" só acontece se o gestor abrir uma vaga (D01 e D02).
+## Ambiente preparado (06/11/2026)
+O script `scripts/e2e/46_rede_fase5_ampliacao.sql` ampliou a rede F5 da homologação. Pode rodar de novo sem duplicar nada.
+
+**O que entrou:**
+- **Secretaria de Saúde F5**, com o módulo de rede ligado e a UBS, a UPA e o hospital liberados.
+- **Setores novos:**
+  - na UPA, Observação Pediátrica (3 leitos) e Isolamento (2);
+  - no hospital, UTI Adulto (3) e Obstetrícia (3), que entram como destinos da regulação.
+- **9 contas novas** (24 no total), todas com a mesma senha das contas F5 (o hash foi copiado no banco; nenhuma senha aparece no repositório):
+  - `tecnico.upa.f5`
+  - `telemedicina.f5`
+  - `admin.f5`
+  - `secretaria.f5`
+  - `regulacao.regional.f5`
+  - `faturamento.rede.f5`
+  - `recepcao.hospital.f5`
+  - `gestor.hospital.f5`
+  - `enfermeiro.hospital.f5`
+- **Vínculos a mais:**
+  - o regulador também na UPA e no hospital, para decidir AIH e APAC;
+  - o faturamento e o NIR também no hospital.
+- **CNS e CBO:** CNS fictício com dígito verificador válido (começa com 7) e CBO da tabela `terminologia.cbo` nos 24 perfis.
+- **Escala:** de 05/11 a 13/11/2026, nos três turnos, para todas as contas que dependem de escala. O check-in de cada sessão de teste continua sendo pelo `41_checkin_fase5.sql` ou pela tela.
+
+**Ficou de fora, de propósito:**
+- **Coordenadas das unidades.** Com elas, o check-in na tela exige estar a 500 m e barraria quem testa de longe. O D03 põe a coordenada numa unidade só durante o teste e a retira depois.
+- **Fora da janela e fim do plantão.** Cada conta está nos três turnos, então esses casos (D01 e D02) só acontecem se o gestor abrir uma vaga, como já diz a pré-condição.
+- **Super admin.** `admin.f5` é admin da organização. O super admin (chaves da API e ligar o módulo pela tela) continua sendo a conta do RT.
 
 ## Achados de produto que os cenários já apontam (a confirmar na execução)
 São candidatos a correção. Nada foi corrigido: entram no relatório da tarefa 3, e o RT decide a ordem.
