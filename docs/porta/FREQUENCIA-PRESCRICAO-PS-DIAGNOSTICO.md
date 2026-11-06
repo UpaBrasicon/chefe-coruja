@@ -20,6 +20,8 @@ Este é o achado guardado de 07/10/2026, do ensaio da demo, aberto pelo RT em 06
 
 ## Decisões para o RT
 
+**Decisão do RT em 06/11/2026: A em F1 a F6 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | F1 | Como o médico escolhe a frequência na porta | Chips "Agora", "Se necessário", 4/4h, 6/6h, 8/8h, 12/12h e 24/24h, mais "Outra" com campo livre (o servidor confere se é uma frequência que ele entende) | Só o campo livre, como na observação |
