@@ -89,9 +89,9 @@ export function salvarEnvelope<T>(chave: string, dados: T) {
   if (cifrado) localStorage.setItem(chave, cifrado)
 }
 
-/** Carrega o rascunho; se expirado (TTL de 12h) ou no formato antigo (sem envelope),
- * remove a chave e retorna `null` para o caller decidir o estado inicial. */
-export function carregarEnvelope<T>(chave: string): { dados: T } | null {
+/** Carrega o rascunho; se expirado (TTL de 12h, ou `validadeMs` de quem chama) ou no formato
+ * antigo (sem envelope), remove a chave e retorna `null` para o caller decidir o estado inicial. */
+export function carregarEnvelope<T>(chave: string, validadeMs = TTL_RASCUNHO_MS): { dados: T; salvoEm: number } | null {
   try {
     const guardado = localStorage.getItem(chave)
     if (!guardado) return null
@@ -124,7 +124,7 @@ export function carregarEnvelope<T>(chave: string): { dados: T } | null {
       return null
     }
     const env = parsed as EnvelopeRascunho<T>
-    if (Date.now() - env.salvoEm > TTL_RASCUNHO_MS) {
+    if (Date.now() - env.salvoEm > validadeMs) {
       localStorage.removeItem(chave)
       return null
     }
@@ -133,7 +133,7 @@ export function carregarEnvelope<T>(chave: string): { dados: T } | null {
       const cifrado = cifrar(raw)
       if (cifrado) localStorage.setItem(chave, cifrado)
     }
-    return { dados: env.dados }
+    return { dados: env.dados, salvoEm: env.salvoEm }
   } catch {
     return null
   }
