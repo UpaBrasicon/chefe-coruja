@@ -6,8 +6,8 @@
 //     aqui fica um resumo nosso de cada graduação, com a citação;
 //   • enfermeiro, uma vez por dia, na internação, com histórico.
 // É instrumento do ADULTO (14 anos ou mais). A criança tem instrumento
-// próprio (Dini, Fugulin et al., 2011), que não está no produto: nada se
-// converte do adulto (casco).
+// próprio (Dini, em ./dini.ts, desde 06/11/2026): nada se converte do adulto
+// (casco).
 // Faixas: a Tabela 2 da complementação é imagem no PDF; as faixas 12–17,
 // 18–22, 23–28, 29–34 e acima de 34 vêm de quem aplicou a versão (de Brito e
 // Guirardello, 2012) e da decisão do RT. Os mesmos dados estão no servidor
