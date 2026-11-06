@@ -26,6 +26,8 @@ Mapeei o caminho da carga em 05/11/2026, na ordem em que ele roda:
 
 ## Decisões para o RT
 
+**Decisão do RT em 05/11/2026: A em N1 a N5 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | N1 | Ordem | Em três partes, cada uma com PR próprio: **parte 1** corrige D1 a D3; **parte 2** faz a carga sem conexão (sessão, perfil, vínculos, segundo fator e as telas da enfermagem guardadas de antemão); **parte 3** guarda os dados das telas de enfermagem para mostrar depois da recarga. | Tudo de uma vez. |
