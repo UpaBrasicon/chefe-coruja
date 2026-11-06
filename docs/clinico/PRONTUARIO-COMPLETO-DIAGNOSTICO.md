@@ -74,3 +74,29 @@ O item 7 (08/10/2026) diz que o histórico encerrado fica poluído com muitos at
   - no fim, "Ver mais atendimentos".
 - **No celular:** a coluna esquerda vai para o topo e a linha do tempo fica embaixo.
 
+## Pontos da implementação confirmados pelo RT (06/11/2026, "Confirmo os 4")
+1. **Resultado de exame:** quem lê pelo pedido de acesso vigente vê a versão vigente do resultado.
+2. **Grupo "Registros de outros atendimentos":** guarda os registros que a pessoa pode ler sem ver o atendimento deles.
+3. **CID do cabeçalho:** primeiro o da alta da internação, depois o do desfecho, o principal da internação, o do último SOAP e o da APS.
+4. **Sinais vitais:** aparecem 6 aferições, com um botão para ver todas. As outras medidas vão na coluna "Outras".
+
+
+## Ajustes do polish (06/11/2026)
+O critique de 06/11/2026 apontou que o cartão aberto escondia o mais recente. **Decisão do RT em 06/11/2026**, que muda o detalhe da P4:
+- **O atendimento aberto mostra o último de cada tipo:**
+  - o SOAP (registro do atendimento) mais recente;
+  - a última evolução;
+  - a prescrição vigente (a mais recente);
+  - os exames com resultado liberado;
+  - a internação.
+- O resto vai para o "+N registros", com os tipos. Sem nenhum desses, aparecem os três registros mais recentes.
+- **Dentro do cartão, a ordem é do mais novo ao mais antigo**, igual aos sinais vitais.
+- Os sumários (de alta, de óbito, admissão) deixam de ficar à vista: entram no "+N registros" como "documentos".
+
+Os testes estão em `src/lib/prontuarioLinhaTempo.test.ts`.
+
+**Outros ajustes do mesmo polish** (escopo do RT: os 5 prioritários e os menores):
+- Sem dado do paciente, a tela diz "Sem acesso a este paciente" e a ação principal é "Voltar aos pedidos". Falha de rede ou de servidor tem "Tentar de novo", também ao carregar mais atendimentos.
+- A ficha virou um painel só, com seções rotuladas, e a alergia aparece numa forma só. No celular, a linha do tempo vem logo depois da identificação, e o detalhe da ficha fica recolhível; a alergia ativa continua à vista.
+- O resumo do atendimento fechado diz "internação · N dias". O CID segue só com o código: `prontuario_leitura` não traz a descrição, e buscá-la seria uma segunda leitura na tela.
+- O conteúdo dos atendimentos fechados é encontrável pelo Ctrl+F. A navegação por ano carrega o ano inteiro.

@@ -23,10 +23,41 @@ test('só leitura: nenhuma escrita e nenhuma outra RPC', () => {
 })
 
 test('alergias (três estados) e regulações seguem na ficha', () => {
-  assert.match(tela, /<AlergiasLeitura pacienteId=\{paciente\.id\} \/>/)
-  assert.match(tela, /<HistoricoRegulacao pacienteId=\{paciente\.id\} \/>/)
+  assert.match(tela, /<AlergiasLeitura pacienteId=\{paciente\.id\}/)
+  assert.match(tela, /<HistoricoRegulacao\s+pacienteId=\{paciente\.id\}/)
   assert.match(tela, /estado === 'nega'/)
   assert.match(tela, /estado === 'nao_registrada'/)
+})
+
+// Polish de 06/11/2026 (critique e decisão do RT)
+test('sem dado do paciente: estado próprio, com "Voltar aos pedidos" como ação principal', () => {
+  assert.match(tela, /Sem acesso a este paciente/)
+  assert.match(tela, /O pedido pode ter vencido ou ainda não foi aprovado\./)
+  assert.match(tela, /if \(!pac\.data\) throw new SemAcesso\(\)/)
+  // a ação principal é o botão cheio (sem variant)
+  assert.match(tela, /<Button nativeButton=\{false\} render=\{<Link to="\/prontuarios" \/>\}>Voltar aos pedidos<\/Button>/)
+})
+
+test('falha de rede ou de servidor tem "Tentar de novo", também ao carregar mais', () => {
+  assert.match(tela, /abertura\.refetch\(\)/)
+  assert.match(tela, /linha\.refetch\(\)/)
+  assert.match(tela, /acao="carregar mais atendimentos" tentando=\{isFetchingNextPage\} tentar=\{\(\) => void verMais\(\)\}/)
+  assert.match(tela, /Tentar de novo/)
+})
+
+test('Button com Link leva nativeButton={false} (aviso do Base UI)', () => {
+  const comLink = [...tela.matchAll(/<Button[^>]*render=\{<Link/g)].map((m) => m[0])
+  assert.ok(comLink.length >= 3)
+  for (const b of comLink) assert.match(b, /nativeButton=\{false\}/)
+})
+
+test('atendimento fechado fica encontrável pelo Ctrl+F e o foco não é cortado', () => {
+  assert.match(linha, /setAttribute\('hidden', 'until-found'\)/)
+  assert.match(linha, /addEventListener\('beforematch'/)
+  assert.match(linha, /focus-visible:outline-offset-\[-2px\]/)
+  // data em h2, atendimento em h3
+  assert.match(linha, /<h2\s/)
+  assert.match(linha, /<h3>\s*<BotaoLinha/)
 })
 
 test('o plantonista continua com o botão de imprimir', () => {

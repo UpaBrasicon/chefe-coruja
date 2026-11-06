@@ -4,8 +4,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
-  agruparAfericoes, juntarPaginas, montarLinhaTempo, principais,
-  type ObservacaoBruta, type PaginaProntuario,
+  agruparAfericoes, anoCarregado, juntarPaginas, montarLinhaTempo, principais, resumoInternacao, rotuloLeito, textoItemPrescricao,
+  type InternacaoBruta, type ObservacaoBruta, type PaginaProntuario, type RegistroBruto,
 } from './prontuarioLinhaTempo.ts'
 
 const vazio = (): PaginaProntuario => ({
@@ -67,7 +67,7 @@ test('sem classificação gravada, vale a cor do atendimento; sem nenhuma, fica 
   assert.equal(b.classificacao, null)
 })
 
-test('registros do atendimento em ordem, só a última versão de cada documento, internação pelo episódio', () => {
+test('registros do atendimento do mais novo ao mais antigo (como os sinais vitais), só a última versão de cada documento, internação pelo episódio', () => {
   const p = vazio()
   p.atendimentos = [atendimento('ep1', '2026-11-06T10:00:00Z')]
   p.internacoes = [{ id: 'int1', episodio_id: 'ep1', status: 'em_observacao', tipo_internacao: 'observacao', unidade_id: 'upa',
@@ -86,7 +86,7 @@ test('registros do atendimento em ordem, só a última versão de cada documento
   p.resultados = { x1: { versao: 1, texto: 'Hb 12', liberado_em: '2026-11-06T14:00:00Z', itens: [] } }
   p.nomes = { obs: 'Observação', l4: 'Leito 4', med: 'Médico Teste' }
   const [g] = montarLinhaTempo(p).grupos
-  assert.deepEqual(g.registros.map((r) => r.id), ['r1', 'p1', 'int1', 'x1', 'd1v2'])
+  assert.deepEqual(g.registros.map((r) => r.id), ['d1v2', 'x1', 'int1', 'p1', 'r1'])
   assert.equal(g.internacoes[0].setor, 'Observação')
   assert.equal(g.internacoes[0].leito, 'Leito 4')
   // a porta encerrou, mas a observação segue: o atendimento está em curso
@@ -194,28 +194,116 @@ test('observação da internação entra no atendimento pela internação', () =
   assert.equal(g.afericoes.length, 1)
 })
 
-test('registros principais: atendimento, internação e prescrição; o resto conta no "+N registros"', () => {
-  const p = vazio()
-  p.atendimentos = [atendimento('ep1', '2026-11-06T10:00:00Z')]
-  p.registros = [{ id: 'r1', episodio_id: 'ep1', criado_em: '2026-11-06T11:15:00Z', subjetivo: 's', objetivo: null, avaliacao: null, cid: null, plano: null, autor_id: null }]
-  p.prescricoes = [{ id: 'p1', episodio_id: 'ep1', internacao_id: null, status: 'ativa', created_at: '2026-11-06T11:30:00Z', assinada_em: null, medico_id: null, itens: [] }]
-  p.exames = [{ id: 'x1', episodio_id: 'ep1', internacao_id: null, exame: 'Hemograma', situacao: 'pedido', urgencia: 'rotina', resultado: null,
-    pedido_em: '2026-11-06T11:40:00Z', resolvido_em: null, pedido_por: null }]
-  p.documentos = [{ id: 'd1', documento_raiz_id: 'd1', versao: 1, tipo_documento: 'evolucao', conteudo: 'e', estado: 'assinado',
-    created_at: '2026-11-06T12:00:00Z', episodio_id: 'ep1', internacao_id: null, autor_id: null }]
-  const [g] = montarLinhaTempo(p).grupos
-  const { mostrados, escondidos, tipos } = principais(g.registros)
-  assert.deepEqual(mostrados.map((r) => r.id), ['r1', 'p1'])
-  assert.equal(escondidos, 2)
-  assert.deepEqual(tipos, ['exames', 'evolução'])
+// Ajuste do polish (RT, 06/11/2026): o atendimento aberto mostra o último de cada tipo.
+const soap = (id: string, criado_em: string, extra: Partial<RegistroBruto> = {}): RegistroBruto => ({
+  id, episodio_id: 'ep1', criado_em, subjetivo: 's', objetivo: null, avaliacao: null, cid: null, plano: null, autor_id: null, ...extra,
+})
+const doc = (id: string, tipo_documento: string, created_at: string) => ({
+  id, documento_raiz_id: id, versao: 1, tipo_documento, conteudo: 'texto', estado: 'assinado', created_at, episodio_id: 'ep1', internacao_id: null, autor_id: null,
+})
+const prescricao = (id: string, created_at: string) => ({
+  id, episodio_id: 'ep1', internacao_id: null, status: 'ativa', created_at, assinada_em: null, medico_id: null, itens: [],
+})
+const exame = (id: string, pedido_em: string, extra: Partial<PaginaProntuario['exames'][number]> = {}) => ({
+  id, episodio_id: 'ep1', internacao_id: null, exame: 'Exame ' + id, situacao: 'pedido', urgencia: 'rotina', resultado: null,
+  pedido_em, resolvido_em: null, pedido_por: null, ...extra,
+})
+const internacao = (extra: Partial<InternacaoBruta> = {}): InternacaoBruta => ({
+  id: 'int1', episodio_id: 'ep1', status: 'em_observacao', tipo_internacao: 'observacao', unidade_id: 'upa', setor_id: null, leito_id: null,
+  data_admissao: '2026-11-06T12:00:00Z', internado_em: null, data_alta: null, cid_principal: null, cid_alta: null, motivo_alta: null, ...extra,
 })
 
-test('sem registro principal, mostra os três primeiros', () => {
+test('aberto mostra o último de cada tipo: SOAP, evolução, prescrição vigente, exames com resultado e internação', () => {
   const p = vazio()
   p.atendimentos = [atendimento('ep1', '2026-11-06T10:00:00Z')]
-  p.exames = ['x1', 'x2', 'x3', 'x4'].map((id, i) => ({ id, episodio_id: 'ep1', internacao_id: null, exame: 'Exame ' + i, situacao: 'pedido',
-    urgencia: 'rotina', resultado: null, pedido_em: `2026-11-06T1${i}:00:00Z`, resolvido_em: null, pedido_por: null }))
+  p.registros = [soap('r-velho', '2026-11-06T10:15:00Z'), soap('r-novo', '2026-11-06T16:00:00Z')]
+  p.documentos = [doc('ev-velha', 'evolucao', '2026-11-06T13:00:00Z'), doc('ev-nova', 'evolucao', '2026-11-06T18:00:00Z'),
+    doc('atestado', 'atestado', '2026-11-06T18:30:00Z')]
+  p.prescricoes = [prescricao('p-velha', '2026-11-06T10:30:00Z'), prescricao('p-vigente', '2026-11-06T15:00:00Z')]
+  p.exames = [
+    exame('x-liberado', '2026-11-06T10:40:00Z', { situacao: 'resultado' }),
+    exame('x-texto', '2026-11-06T11:00:00Z', { situacao: 'resultado', resultado: 'Raio X sem consolidação' }),
+    exame('x-pedido', '2026-11-06T11:10:00Z'),
+  ]
+  p.resultados = { 'x-liberado': { versao: 1, texto: 'Hb 12', liberado_em: '2026-11-06T12:00:00Z', itens: [] } }
+  p.internacoes = [internacao()]
+  const [g] = montarLinhaTempo(p).grupos
+  const { mostrados, escondidos, tipos } = principais(g.registros)
+  // do mais novo ao mais antigo, como os sinais vitais
+  assert.deepEqual(mostrados.map((r) => r.id), ['ev-nova', 'r-novo', 'p-vigente', 'int1', 'x-texto', 'x-liberado'])
+  assert.equal(escondidos, 5)
+  assert.deepEqual(tipos, ['documentos', 'evolução', 'exames', 'prescrições', 'registros do atendimento'])
+})
+
+test('exame ainda sem resultado e documento que não é evolução vão para o "+N registros"', () => {
+  const p = vazio()
+  p.atendimentos = [atendimento('ep1', '2026-11-06T10:00:00Z')]
+  p.registros = [soap('r1', '2026-11-06T11:15:00Z')]
+  p.prescricoes = [prescricao('p1', '2026-11-06T11:30:00Z')]
+  p.exames = [exame('x1', '2026-11-06T11:40:00Z')]
+  p.documentos = [doc('d1', 'sumario_alta', '2026-11-06T12:00:00Z')]
+  const [g] = montarLinhaTempo(p).grupos
+  const { mostrados, escondidos, tipos } = principais(g.registros)
+  assert.deepEqual(mostrados.map((r) => r.id), ['p1', 'r1'])
+  assert.equal(escondidos, 2)
+  assert.deepEqual(tipos, ['documentos', 'exames'])
+})
+
+test('sem nenhum dos principais, mostra os três mais recentes', () => {
+  const p = vazio()
+  p.atendimentos = [atendimento('ep1', '2026-11-06T10:00:00Z')]
+  p.exames = ['x1', 'x2', 'x3', 'x4'].map((id, i) => exame(id, `2026-11-06T1${i}:00:00Z`))
   const { mostrados, escondidos } = principais(montarLinhaTempo(p).grupos[0].registros)
-  assert.deepEqual(mostrados.map((r) => r.id), ['x1', 'x2', 'x3'])
+  assert.deepEqual(mostrados.map((r) => r.id), ['x4', 'x3', 'x2'])
   assert.equal(escondidos, 1)
+})
+
+test('CID do último SOAP é o mais recente, com a lista do mais novo ao mais antigo', () => {
+  const p = vazio()
+  p.atendimentos = [atendimento('ep1', '2026-11-06T10:00:00Z')]
+  p.registros = [soap('r1', '2026-11-06T11:00:00Z', { cid: 'R50.9' }), soap('r2', '2026-11-06T15:00:00Z', { cid: 'J18.9' })]
+  assert.equal(montarLinhaTempo(p).grupos[0].cid, 'J18.9')
+})
+
+test('leito: não repete a palavra quando o nome já começa por "Leito"', () => {
+  assert.equal(rotuloLeito('Leito 4'), 'Leito 4')
+  assert.equal(rotuloLeito('leito 12A'), 'leito 12A')
+  assert.equal(rotuloLeito('12A'), 'leito 12A')
+  assert.equal(rotuloLeito(null), null)
+})
+
+test('item da prescrição: a dose não se repete quando a descrição já a traz', () => {
+  const item = { id: 'i1', descricao: 'Ceftriaxona 1 g', dose: '1 g', posologia: '24/24h', via: 'IV', suspenso_em: null }
+  assert.equal(textoItemPrescricao(item), 'Ceftriaxona 1 g · IV · 24/24h')
+  assert.equal(textoItemPrescricao({ ...item, descricao: 'Ceftriaxona  1G' }), 'Ceftriaxona  1G · IV · 24/24h')
+  assert.equal(textoItemPrescricao({ ...item, descricao: 'Oxigênio por cateter nasal', dose: '2 L/min', via: 'inalatória', posologia: 'contínuo' }),
+    'Oxigênio por cateter nasal · dose 2 L/min · inalatória · contínuo')
+  assert.equal(textoItemPrescricao({ ...item, descricao: 'Dipirona', dose: null, via: null, posologia: null }), 'Dipirona')
+})
+
+test('resumo do atendimento fechado: internação e observação com os dias, pela data de Brasília', () => {
+  assert.equal(resumoInternacao([]), null)
+  const int = internacao({ status: 'alta', tipo_internacao: 'clinica', data_admissao: '2025-12-12T21:00:00Z', data_alta: '2025-12-18T14:00:00Z' })
+  assert.equal(resumoInternacao([int]), 'internação · 6 dias')
+  assert.equal(resumoInternacao([{ ...int, data_alta: '2025-12-13T14:00:00Z' }]), 'internação · 1 dia')
+  // 23h de Brasília do dia 12 até 01h do dia 13: mudou o dia
+  assert.equal(resumoInternacao([{ ...int, tipo_internacao: 'observacao', data_admissao: '2025-12-13T02:00:00Z', data_alta: '2025-12-13T04:00:00Z' }]),
+    'observação · 1 dia')
+  assert.equal(resumoInternacao([{ ...int, tipo_internacao: 'observacao', data_admissao: '2025-12-13T12:00:00Z', data_alta: '2025-12-13T18:00:00Z' }]),
+    'observação · menos de 1 dia')
+  // da primeira entrada à última alta
+  assert.equal(resumoInternacao([
+    { ...int, tipo_internacao: 'observacao', data_admissao: '2025-12-10T12:00:00Z', data_alta: '2025-12-11T12:00:00Z' },
+    { ...int, id: 'int2' },
+  ]), 'internação · 8 dias')
+  // sem alta gravada não se contam dias
+  assert.equal(resumoInternacao([{ ...int, data_alta: null }]), 'internação')
+})
+
+test('navegação por ano: o ano está inteiro quando já veio um atendimento de ano anterior ou não há mais', () => {
+  const chegadas = ['2026-11-06T10:00:00Z', '2026-02-20T10:00:00Z']
+  assert.equal(anoCarregado(chegadas, 2026, true), false)
+  assert.equal(anoCarregado([...chegadas, '2025-12-12T10:00:00Z'], 2026, true), true)
+  assert.equal(anoCarregado(chegadas, 2026, false), true)
+  assert.equal(anoCarregado(chegadas, 2025, true), false)
 })
