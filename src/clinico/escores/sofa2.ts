@@ -1,11 +1,15 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
+import { AHN_SOFA2_PS_2026, YEN_SOFA2_PS_2026 } from './sepseAdulto.ts'
 
 // SOFA-2 (Ranzani et al., JAMA 2025), lacunas da Central, lote 3 (25/10/2026).
 // Fica em paralelo ao SOFA original da ferramenta de sepse: a SSC 2026 e o
 // protocolo do ILAS (jul/2026) não citam o SOFA-2, e a definição de sepse
 // (Sepsis-3) usa o SOFA original. Pontos e cortes da Tabela 2 e das notas de
 // rodapé, conferidos no texto completo (PMC12573119). O escore foi desenvolvido
-// só em UTI; a faixa de cor fica neutra porque o artigo não define cortes.
+// em UTI; a faixa de cor fica neutra porque o artigo não define cortes.
+// Versão de 06/11/2026 (revisão PubMed, itens médios; RT, H11 = A): entram as
+// duas validações no pronto-socorro de adultos (Ahn 2026, Yen 2026), pelos
+// resumos. Pontos e cortes não mudam.
 
 const SISTEMAS = ['cerebro', 'resp', 'cv', 'figado', 'rim', 'hemostasia']
 
@@ -13,14 +17,16 @@ export const sofa2: Escore = {
   ficha: {
     id: 'sofa-2',
     titulo: 'SOFA-2 — disfunção orgânica no adulto em UTI (2025)',
-    versao: '2026-10-25.1',
+    versao: '2026-11-06.1',
     publico: 'adulto',
     fontes: [
-      { citacao: 'Ranzani OT, Singer M, Salluh JIF, et al. Development and Validation of the Sequential Organ Failure Assessment (SOFA)-2 Score. JAMA. 2025;334(23):2090–2103. Tabela 2 e notas a–q (texto completo, PMC12573119); AUROC no resumo e em "Predictive Validity".', url: 'https://doi.org/10.1001/jama.2025.20516' },
+      { citacao: 'Ranzani OT, Singer M, Salluh JIF, et al. Development and Validation of the Sequential Organ Failure Assessment (SOFA)-2 Score. JAMA. 2025;334(23):2090–2103 (PMID 41159833). Tabela 2 e notas a–q (texto completo, PMC12573119); AUROC no resumo e em "Predictive Validity".', url: 'https://doi.org/10.1001/jama.2025.20516' },
+      AHN_SOFA2_PS_2026,
+      YEN_SOFA2_PS_2026,
     ],
-    revisadoEm: '25/10/2026 (lacunas da Central, lote 3; aguarda aprovação do RT)',
+    revisadoEm: '06/11/2026 (nota das validações no pronto-socorro, Ahn 2026 e Yen 2026; revisão PubMed, itens médios; lacunas da Central, lote 3, em 25/10/2026; aguarda aprovação do RT)',
   },
-  descricao: 'Seis sistemas de 0 a 4 pontos (0 a 24), com suporte orgânico atual e novos cortes. Desenvolvido e validado em UTI; o critério de sepse continua no SOFA original.',
+  descricao: 'Seis sistemas de 0 a 4 pontos (0 a 24), com suporte orgânico atual e novos cortes. Desenvolvido e validado em UTI, com validações posteriores no pronto-socorro de adultos; o critério de sepse continua no SOFA original.',
   itens: [
     { tipo: 'escolha', id: 'cerebro', rotulo: 'Cérebro · Glasgow', ajuda: 'Sedado: use o último Glasgow antes da sedação; se desconhecido, 0. Sem os 3 domínios, use a melhor resposta motora.', opcoes: [
       { rotulo: '15 (ou faz sinal de positivo, fecha a mão ou faz "paz")', valor: 0 },
@@ -81,7 +87,7 @@ export const sofa2: Escore = {
         ['Discriminação da mortalidade na UTI', 'AUROC 0,79 (SOFA-2) × 0,77 (SOFA original) na metanálise das 10 coortes, 3,34 milhões de internações'],
       ],
       cuidados: [
-        'Desenvolvido e validado só em UTI; o próprio artigo diz que o uso fora dela (pronto-socorro, pediatria) ainda precisa de estudo.',
+        'Desenvolvido e validado em UTI; o próprio artigo dizia que o uso fora dela (pronto-socorro, pediatria) ainda precisava de estudo. Depois dele, duas validações no pronto-socorro de adultos: em choque séptico na Coreia (2026; duas coortes, 2.669 e 1.443 pacientes), AUROC da mortalidade hospitalar um pouco maior que a do SOFA-1 (0,734 × 0,702 e 0,719 × 0,671); em 173.079 atendimentos por suspeita de infecção em Taiwan (2026), AUROC igual (0,78 × 0,78), com o SOFA-2 pontuando menos que o SOFA-1 em 62,3% dos pacientes.',
         'O critério de sepse (Sepsis-3), a SSC 2026 e o protocolo do ILAS usam o SOFA original, que está na ferramenta de sepse do adulto; os cortes de um não valem para o outro.',
         'Some o pior valor de cada sistema nas 24 horas. Dado ausente no 1º dia conta 0; depois, repete-se o último valor.',
         'Sem gasometria: SpO₂/FiO₂ só se a SpO₂ estiver abaixo de 98% — acima de 300 (0), 300 ou menos (1), 250 ou menos (2), 200 ou menos com suporte (3), 120 ou menos com suporte ou ECMO (4).',
