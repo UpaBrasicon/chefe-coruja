@@ -12,7 +12,7 @@ import { DIRETRIZ_PALS_2025, fichaRcpPediatrica, metaPadRcp2025 } from './rcp.ts
 // Lote D (pediatria), 28/09/2026: AHA/AAP 2025 (Destaques), SBP 2024 +
 // IDSA/PIDS 2026, IPFNG 2023, KDIGO 2025 + IPNA 2023, ASH/ISTH 2025.
 
-test('lote D pediatria: fichas na versão .1 de 28/09 (RCP já na .1 de 25/10), fonte pediátrica declarada, livro como primeira fonte', () => {
+test('lote D pediatria: fichas na versão .1 de 28/09 ou posterior (RCP já na .1 de 25/10), fonte pediátrica declarada, livro como primeira fonte', () => {
   const casos: [typeof fichaRcpPediatrica, RegExp][] = [
     [fichaRcpPediatrica, /pediatric advanced life support: 2025/i],
     [fichaPneumoniaPed, /Sociedade Brasileira de Pediatria.*Complicadas: Atualização 2024/],
@@ -21,7 +21,8 @@ test('lote D pediatria: fichas na versão .1 de 28/09 (RCP já na .1 de 25/10), 
     [fichaHemostasiaTromboPed, /2025 updated guidelines for treatment of venous thromboembolism in pediatric patients/],
   ]
   for (const [f, re] of casos) {
-    assert.equal(f.versao, f === fichaRcpPediatrica ? '2026-10-25.1' : '2026-09-28.1', f.id)
+    // revisão PubMed de 06/11/2026 (itens médios) subiu a oncologia
+    assert.ok(f.versao >= (f === fichaRcpPediatrica ? '2026-10-25.1' : '2026-09-28.1'), f.id)
     assert.equal(temReferenciaPediatrica(f), true, f.id)
     assert.match(f.fontes[0].citacao, /Schvartsman|Pronto-Socorro/, f.id)
     assert.ok(f.fontes.some((x) => re.test(x.citacao)), f.id)

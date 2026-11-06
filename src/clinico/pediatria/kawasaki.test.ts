@@ -50,10 +50,11 @@ test('doses (Tabela 1, p. 750–751)', () => {
 
 const aha = (id: string) => DOSES_AHA_2024.find((x) => x.id === id)!
 
-test('Kawasaki: ficha .1 com a AHA 2024 depois do livro do ICr', () => {
-  assert.equal(fichaKawasaki.versao, '2026-10-25.1')
+test('Kawasaki: ficha .1 de 25/10 ou posterior, com a AHA 2024 depois do livro do ICr', () => {
+  // revisão PubMed de 06/11/2026 (itens médios) subiu a versão e somou fontes depois da AHA
+  assert.ok(fichaKawasaki.versao >= '2026-10-25.1')
   assert.match(fichaKawasaki.fontes[0].citacao, /cap\. 70/)
-  assert.equal(fichaKawasaki.fontes.at(-1), AHA_KAWASAKI_2024)
+  assert.equal(fichaKawasaki.fontes[1], AHA_KAWASAKI_2024)
   assert.equal(temReferenciaPediatrica(fichaKawasaki), true)
 })
 test('AHA 2024: alto risco com idade < 6 meses ou Z ≥ 2,5 no diagnóstico (p. e482)', () => {

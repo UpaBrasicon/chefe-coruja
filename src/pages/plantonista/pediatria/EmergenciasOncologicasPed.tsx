@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   ALTO_RISCO_NF, DIFERENCAS_NF_2023, DOSES_COMPRESSIVAS, DOSES_HEMATO_ONCO, DOSES_NEUTROPENIA, DOSES_SLT, ERRATA_HIDRATACAO, ERRATA_PIC_ONCO, INDICACOES_TSR_SLT, IPFNG_ITENS,
-  LIMIARES_PLAQUETAS, MASCC_GRAVIDADE, MASCC_ITENS, REFERENCIAS_ONCO, TABELA7_HB, alopurinolM2, caspofungina, chOncoMl, classificarSlt, crioOncoU, criteriosLabSlt, diureseAlvoSlt,
+  LIMIARES_PLAQUETAS, MASCC_GRAVIDADE, MASCC_ITENS, NOTA_NF_SUSPENSAO_PRECOCE, REFERENCIAS_ONCO, TABELA7_HB, alopurinolM2, caspofungina, chOncoMl, classificarSlt, crioOncoU, criteriosLabSlt, diureseAlvoSlt,
   fichaOncologiaPed, hidratacaoSltMlDia, indicaCitorreducao, leituraNeutrofilos, mascc, oseltamivirMg, pfcOncoMl, plaquetasOncoMl, produtoCaP,
 } from '@/clinico/pediatria/oncologiaPed'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -162,6 +162,7 @@ export function EmergenciasOncologicasPed() {
           </Table>
         </div>
         <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_NF_2023.map((d) => <li key={d}>{d}</li>)}</ul>
+        <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{NOTA_NF_SUSPENSAO_PRECOCE}</p>
       </Bloco>
 
       <Bloco titulo="Do capítulo">
