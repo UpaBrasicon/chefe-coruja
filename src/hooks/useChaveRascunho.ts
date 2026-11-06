@@ -9,10 +9,13 @@ import { chaveDaAba, definirChave, temChave } from '@/lib/cofreLocal'
  * que ficou nesta aba; sem nenhuma, segue sem chave (rascunho só na memória).
  * Devolve `true` quando dá para montar as telas.
  */
-export function useChaveRascunho(ativo: boolean): boolean {
+export function useChaveRascunho(ativo: boolean, semResposta = false): boolean {
   const [pronto, setPronto] = React.useState(() => temChave())
   React.useEffect(() => {
-    if (!ativo || temChave()) return
+    // D2 (recarga sem conexão): sem resposta do segundo fator, vale a cópia que
+    // ficou nesta aba, que só existe se o segundo fator já passou nela
+    if (!ativo) { if (semResposta && !temChave()) chaveDaAba(); return }
+    if (temChave()) return
     let vivo = true
     const desistir = window.setTimeout(() => { if (vivo) { chaveDaAba(); setPronto(true) } }, 4000)
     void Promise.resolve(supabase.rpc('chave_rascunho')).then(
@@ -31,6 +34,6 @@ export function useChaveRascunho(ativo: boolean): boolean {
       },
     )
     return () => { vivo = false; window.clearTimeout(desistir) }
-  }, [ativo])
+  }, [ativo, semResposta])
   return pronto || temChave() || !ativo
 }

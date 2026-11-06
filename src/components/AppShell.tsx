@@ -219,7 +219,7 @@ function Casca() {
   const paleta = usePaleta()
   const segundoFator = useSegundoFator()
   // rascunho cifrado (item 13): a chave da sessão chega depois do 2FA e antes das telas
-  const chaveRascunhoPronta = useChaveRascunho(!!segundoFator.data && (!segundoFator.data.exigido || segundoFator.data.valido))
+  const chaveRascunhoPronta = useChaveRascunho(!!segundoFator.data && (!segundoFator.data.exigido || segundoFator.data.valido), segundoFator.isError)
   const { sinal, tentar } = useSinal()
   const estreito = useLarguraAte(1023)
   const [saidaAberta, setSaidaAberta] = React.useState(false)
