@@ -4,6 +4,8 @@ import { apagarTokenLocal, manterConectadoVencido, supabase } from '@/lib/supaba
 import { ehFalhaDeRede } from '@/lib/offline/sessaoSemRede'
 import { apagarSessaoLocal, perfilSemConexao } from '@/lib/offline/sessaoLocal'
 import { situacaoSemConexao } from '@/lib/offline/relogio'
+import { apagarConsultas } from '@/lib/offline/consultasGuardadas'
+import { restaurarConsultas } from '@/lib/offline/ligarConsultas'
 import { limparTodosRascunhos } from '@/lib/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
 import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // LGPD: computador compartilhado de UPA — dado de paciente não fica.
     limparTodosRascunhos()
     apagarSessaoLocal()
+    apagarConsultas()
     definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
     queryClient.clear()
     try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
@@ -63,11 +66,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const perfilLido = data ?? (error && ehFalhaDeRede(error)
       ? perfilSemConexao<Perfis['Row']>(userId, situacaoSemConexao().pode)
       : null)
+    // parte 3: abriu sem rede com o perfil guardado, as telas da enfermagem
+    // mostram o que leram por último nesta aba (com a hora na pílula)
+    if (!data && perfilLido) restaurarConsultas(queryClient)
     setPerfil(perfilLido)
     if (perfilLido && ehTema(perfilLido.tema)) aplicarTema(perfilLido.tema)
     setLoading(false)
     if (error) console.error('Erro ao carregar perfil:', error)
-  }, [])
+  }, [queryClient])
 
   // "Manter conectado" vale 12 horas; passou, a sessão acaba na carga.
   React.useEffect(() => {
@@ -91,13 +97,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // D3: o token não pôde ser renovado por falta de rede. Não é sessão
         // encerrada: rascunhos cifrados e a chave desta aba ficam, e a casca
         // abre com o perfil guardado nesta aba se a regra deixar (parte 2, N3).
-        setPerfil(perfilSemConexao<Perfis['Row']>(null, situacaoSemConexao().pode))
+        const guardado = perfilSemConexao<Perfis['Row']>(null, situacaoSemConexao().pode)
+        if (guardado) restaurarConsultas(queryClient)
+        setPerfil(guardado)
         setLoading(false)
       } else {
         // Sem sessão (aba fechada sem "Sair", sessão vencida): rascunho clínico
         // que ficou no navegador não tem mais dono — sai agora.
         limparTodosRascunhos()
         apagarSessaoLocal()
+        apagarConsultas()
         definirChave(null)
         setLoading(false)
       }
@@ -117,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [loadPerfil])
+  }, [loadPerfil, queryClient])
 
   const value = React.useMemo<AuthContextValue>(
     () => ({
@@ -147,6 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         limparTodosRascunhos()
         apagarSessaoLocal()
+        apagarConsultas()
         definirChave(null)
         queryClient.clear()
         // escopo local: revoga no servidor o refresh token DESTA sessão (o
