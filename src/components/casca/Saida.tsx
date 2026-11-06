@@ -1,5 +1,5 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
-import { ClipboardList, Clock, FileText, LogOut } from 'lucide-react'
+import { ClipboardList, Clock, FileText, HardDrive, LogOut } from 'lucide-react'
 
 import { Spinner } from '@/components/ui/spinner'
 
@@ -11,7 +11,7 @@ import type { PendenciaSaida } from './usePendenciasSaida'
 // Então a saída pergunta uma vez, mostra o que fica para trás e só depois
 // deixa ir. O verde volta a cobrir a tela no sentido inverso ao da entrada.
 
-const ICONE: Record<PendenciaSaida['chave'], typeof Clock> = { checkout: Clock, rascunhos: FileText, passagens: ClipboardList }
+const ICONE: Record<PendenciaSaida['chave'], typeof Clock> = { checkout: Clock, rascunhos: FileText, passagens: ClipboardList, fila: HardDrive }
 
 export function DialogoSaida({
   aberto,

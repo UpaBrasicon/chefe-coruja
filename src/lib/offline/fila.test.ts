@@ -4,9 +4,12 @@
 import 'fake-indexeddb/auto'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { enfileirar, listar, remover } from './fila.ts'
+import { definirChaveFila, enfileirar, listar, remover } from './fila.ts'
 
 const PERFIL = '10000000-0000-4000-8000-000000000002'
+// a chave da pessoa vem do servidor (chave_fila(); A em O1 a O5, RT em 05/11/2026)
+const CHAVE_DA_PESSOA = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64')
+await definirChaveFila(CHAVE_DA_PESSOA)
 const item = {
   id: 'reg-1',
   tipo: 'observacao' as const,
@@ -43,7 +46,9 @@ test('fila: o que vai para o IndexedDB é cifra, não o registro em claro', asyn
 })
 
 test('fila: a chave não depende da sessão — o registro volta inteiro depois de sair e entrar', async () => {
-  // "fim da sessão" não toca no IndexedDB: a chave é da pessoa, no aparelho
+  // sair apaga a chave da memória e da aba; entrar de novo traz a mesma chave da pessoa
+  await definirChaveFila(null)
+  await definirChaveFila(CHAVE_DA_PESSOA)
   const lidos = await listar(PERFIL)
   assert.equal(lidos.length, 1)
   assert.deepEqual(lidos[0].dados, item.dados)
