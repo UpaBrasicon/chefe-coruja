@@ -1,7 +1,9 @@
 // Aba "Atendimento" (protótipo): SOAP com rascunho contínuo no servidor, os
 // sinais da triagem logo abaixo do Objetivo, os registros já feitos e a
 // reclassificação (no atendimento, só o médico; na espera, também a
-// enfermagem). Nada aqui sugere cor, dose ou conduta.
+// enfermagem). Nada aqui sugere cor, dose ou conduta. CID: o sistema mostra
+// CIDs de referência a partir do texto da Avaliação, e a escolha é do médico
+// (decisão do RT em 06/11/2026, C2); o clique só preenche o campo CID-10.
 import { useMutation } from '@tanstack/react-query'
 import { ClipboardCheck } from 'lucide-react'
 import * as React from 'react'
@@ -17,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { CamposVitais } from '@/components/clinico/CamposVitais'
+import { CidsDeReferencia } from '@/components/clinico/CidsDeReferencia'
 import { SepsePorta } from '@/components/internacao/LeitoAberto'
 
 import { normalizarCid } from '@/domain/cid'
@@ -124,6 +127,9 @@ export function AbaAtendimento({
           <Label htmlFor="soap-cid">CID-10</Label>
           <CampoCid id="soap-cid" valor={soap.cid} onChange={(v) => setSoap({ ...soap, cid: v })} placeholder="Ex.: I20.0" />
         </div>
+        {/* só referência: o clique preenche o CID-10 do rascunho; Registrar continua com o médico */}
+        <CidsDeReferencia className="md:col-span-2" texto={soap.a} valorDoCampo={soap.cid}
+          onEscolher={(c) => setSoap({ ...soap, cid: c.codigo })} />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="soap-p">Plano</Label>
