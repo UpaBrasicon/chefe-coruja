@@ -55,3 +55,15 @@ Este é o achado guardado de 10/10/2026, da conversa sobre a API (Fase 3, tarefa
 ## Riscos
 - **Chave vazada junto com o `.pbix`:** a chave só lê, com escopo mínimo e lista de IPs, e pode ser revogada em Integrações (API).
 - **Painel desatualizado:** o painel mostra a hora da última atualização, e o passo a passo deixa claro que ele não é ao vivo.
+
+## Entrega (06/11/2026)
+- **Consultas M:** em `docs/api/powerbi/`, com os parâmetros em `00-Parametros.txt` e o passo a passo em `PASSO-A-PASSO.md`.
+- **Lógica espelhada e testes:**
+  - `scripts/powerbi/coruja.mjs` faz a mesma divisão em janelas e a mesma paginação das consultas M;
+  - `scripts/powerbi/coruja.test.mjs` tem 7 testes, escritos antes do código, e roda com `npm run test:powerbi`.
+- **Conferência na homologação** (`scripts/powerbi/conferir.mjs`), com uma chave de teste criada em 06/11/2026 (prefixo `cc_test_872aabdc`, válida por 1 mês, para revogar ao fim):
+  - deu os mesmos números com páginas de 100 e de 2 itens: na UPA Fase 5 24h, 12 leitos e 5 atendimentos em 90 dias; no Hospital Fase 5, 4 leitos;
+  - nenhum atendimento se repetiu entre as janelas.
+- **Escolha da implementação para o RT confirmar:** atendimentos, AIH e APAC levam do paciente só o `paciente_id`. Nome e CNS ficam fora do modelo (o painel conta, não identifica).
+- **Não conferido:** o Power BI Desktop e o serviço (não há Power BI nesta máquina). O RT confere ao colar as consultas.
+
