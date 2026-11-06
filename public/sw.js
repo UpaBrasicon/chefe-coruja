@@ -16,6 +16,9 @@ self.addEventListener('activate', (event) => {
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
+      // na primeira carga depois de um deploy a página fala com o worker antigo:
+      // o novo guarda as telas sem conexão logo que assume (sem segurar a ativação)
+      .then(() => { precachear().catch(() => {}) })
   )
 })
 
