@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { manterConectadoVencido, supabase } from '@/lib/supabase'
+import { apagarTokenLocal, manterConectadoVencido, supabase } from '@/lib/supabase'
+import { ehFalhaDeRede } from '@/lib/offline/sessaoSemRede'
 import { limparTodosRascunhos } from '@/lib/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
 import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
@@ -22,6 +23,17 @@ const AuthContext = React.createContext<AuthContextValue | null>(null)
 // Canal entre abas do mesmo navegador: quem sai numa aba sai em todas.
 const CANAL_SESSAO = 'cc-sessao'
 
+// D1 (recarga sem conexão, parte 1): sair apaga o token do navegador mesmo sem
+// rede, e de novo 5 s depois, para o caso de uma renovação que já estava em
+// curso regravar a sessão. Um login novo nesse meio-tempo cancela a segunda.
+let saiuEm = 0
+function sairDoAparelho() {
+  apagarTokenLocal()
+  saiuEm = Date.now()
+  const marca = saiuEm
+  window.setTimeout(() => { if (saiuEm === marca) apagarTokenLocal() }, 5000)
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [perfil, setPerfil] = React.useState<Perfis['Row'] | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -34,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     limparTodosRascunhos()
     definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
     queryClient.clear()
-    await supabase.auth.signOut({ scope: 'local' })
+    try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
   }, [queryClient])
 
   const loadPerfil = React.useCallback(async (userId: string) => {
@@ -65,9 +77,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [encerrarLocal])
 
   React.useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
       if (data.session) void loadPerfil(data.session.user.id)
-      else {
+      else if (ehFalhaDeRede(error)) {
+        // D3: o token não pôde ser renovado por falta de rede. Não é sessão
+        // encerrada: rascunhos cifrados e a chave desta aba ficam.
+        setLoading(false)
+      } else {
         // Sem sessão (aba fechada sem "Sair", sessão vencida): rascunho clínico
         // que ficou no navegador não tem mais dono — sai agora.
         limparTodosRascunhos()
@@ -78,7 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((evento, session) => {
+      if (evento === 'SIGNED_IN') saiuEm = 0
       if (session) void loadPerfil(session.user.id)
       else {
         setPerfil(null)
@@ -120,7 +137,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         queryClient.clear()
         // escopo local: revoga no servidor o refresh token DESTA sessão (o
         // celular do médico continua logado); o global derrubaria todos.
-        await supabase.auth.signOut({ scope: 'local' })
+        // sem rede o supabase-js não apaga o token: apaga aqui (D1, computador compartilhado)
+        try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
       },
       definirTema: async (tema) => {
         aplicarTema(tema)
