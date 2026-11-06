@@ -1,8 +1,11 @@
-// Aba "Prescrição" (protótipo, "Prescrição do Pronto-Socorro"): dose única ou
-// para fazer aqui; vai para a checagem da enfermagem. Situação de cada item
-// vem da checagem (quem checa é a enfermagem, não o médico). Nada se apaga:
-// suspender pede motivo. Dose sempre escrita pelo médico. Na consulta da UBS o
-// texto não fala em pronto-socorro (achado F5-T1 do portão da Fase 5).
+// Aba "Prescrição" (protótipo, "Prescrição do Pronto-Socorro"): agora, se
+// necessário ou com horário (frequência na porta, decisão do RT: A em F1 a F6);
+// vai para a checagem da enfermagem. Situação de cada item vem da checagem
+// (quem checa é a enfermagem, não o médico): item com horário mostra as doses
+// por horário (feitas, pendentes e atrasadas, pelo relógio do servidor); sem
+// horário, a última checagem. Nada se apaga: suspender pede motivo. Dose
+// sempre escrita pelo médico. Na consulta da UBS o texto não fala em
+// pronto-socorro (achado F5-T1 do portão da Fase 5).
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, Ban, Pill } from 'lucide-react'
 import * as React from 'react'
@@ -14,14 +17,22 @@ import { Input } from '@/components/ui/input'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { NovoItem, type PesoAtual } from '@/components/prescricao/PrescricaoEstruturada'
+import { ROTULO_DOSE, aguardaAprazamento, textoResumoDoses, tomDoses, type DosePS, type SituacaoDose } from '@/lib/frequenciaPorta'
 
 import { hora, type ItemPS } from './comum'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
+
+const TOM_DOSE: Record<SituacaoDose, TomEstado> = { feito: 'verde', nao_feito: 'cinza', recusado: 'vermelho', atrasada: 'vermelho', pendente: 'ambar' }
+const textoDose = (d: DosePS) =>
+  `${d.horario} · ${ROTULO_DOSE[d.situacao]}${d.em ? ` ${hora(d.em)}` : ''}${d.por ? ` · ${d.por}` : ''}`
+  + `${d.motivo && d.situacao !== 'feito' ? ` (${d.motivo})` : ''}`
 
 function Situacao({ i }: { i: ItemPS }) {
   let tom: TomEstado = 'ambar'
   let texto = `Prescrito ${hora(i.criado_em)}`
   if (i.suspenso_em) { tom = 'cinza'; texto = `Suspenso ${hora(i.suspenso_em)}` }
+  // item com horário: o resumo das doses, não só a última checagem
+  else if (i.doses?.length) { tom = tomDoses(i.doses); texto = textoResumoDoses(i.doses) }
   else if (i.checagem?.situacao === 'feito') { tom = 'verde'; texto = `Administrado ${hora(i.checagem.em)}${i.checagem.por ? ` · ${i.checagem.por}` : ''}` }
   else if (i.checagem) { tom = 'vermelho'; texto = `${i.checagem.situacao === 'recusado' ? 'Recusado' : 'Não feito'} ${hora(i.checagem.em)}` }
   return <Estado tom={tom}>{texto}</Estado>
@@ -43,14 +54,23 @@ function Linha({ i, n, aoMudar }: { i: ItemPS; n: number; aoMudar: () => void })
               : 'cuidado'}
             {i.autor && ` · ${i.autor}`}
           </span>
-          {i.checagem && i.checagem.situacao !== 'feito' && i.checagem.motivo && <span className="text-rotulo text-critico">Motivo: {i.checagem.motivo}</span>}
+          {!i.doses?.length && i.checagem && i.checagem.situacao !== 'feito' && i.checagem.motivo && <span className="text-rotulo text-critico">Motivo: {i.checagem.motivo}</span>}
           {i.suspenso_em && i.motivo_suspensao && <span className="text-rotulo text-tinta-sussurro">Suspenso: {i.motivo_suspensao}</span>}
+          {!i.suspenso_em && i.tipo === 'medicamento' && aguardaAprazamento(i) && (
+            <span className="text-rotulo text-atencao">Aguardando o aprazamento da enfermagem.</span>
+          )}
         </div>
         <Situacao i={i} />
         {!i.suspenso_em && !suspendendo && (
           <Button size="xs" variant="ghost" onClick={() => setSuspendendo(true)}><Ban /> Suspender</Button>
         )}
       </div>
+      {/* frequência na porta (F2): cada horário aprazado, com a checagem da enfermagem */}
+      {!i.suspenso_em && !!i.doses?.length && (
+        <ul aria-label="Doses por horário" className="flex flex-wrap gap-x-4 gap-y-1 pl-8">
+          {i.doses.map((d) => <li key={d.previsto_em} className="flex"><Estado tom={TOM_DOSE[d.situacao]}>{textoDose(d)}</Estado></li>)}
+        </ul>
+      )}
       {/* Fase 2, tarefa 6: alteração versionada (só medicamento) */}
       {!i.suspenso_em && !suspendendo && i.tipo === 'medicamento' && (
         <div className="pl-8"><AlterarItem itemId={i.id} atual={i} aoMudar={aoMudar} /></div>
@@ -98,7 +118,7 @@ export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar, ub
         <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-3">
           <Pill className="size-4 text-acao" aria-hidden />
           <span className="text-controle font-semibold text-tinta">{ubs ? 'Prescrição para fazer aqui' : 'Prescrição do Pronto-Socorro'}</span>
-          <span className="text-apoio text-tinta-sussurro">Dose única ou para fazer aqui. Vai para a checagem da enfermagem.</span>
+          <span className="text-apoio text-tinta-sussurro">Agora, se necessário ou com horário. Vai para a checagem da enfermagem.</span>
         </div>
         <div className="px-4 pt-3"><ResumoAlergias pacienteId={pacienteId} nome={nome} /></div>
         {ativos.length === 0 && <p className="px-4 py-4 text-apoio text-tinta-sussurro">{ubs ? 'Nada prescrito nesta consulta.' : 'Nada prescrito no PS.'}</p>}
@@ -110,7 +130,7 @@ export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar, ub
           </details>
         )}
         <p className="border-t border-trilha px-4 py-2 text-rotulo text-tinta-sussurro">
-          "Administrado" é a checagem da enfermagem, com o nome de quem checou. A alta após medicação espera a checagem.
+          "Administrado" é a checagem da enfermagem, com o nome de quem checou. A alta após medicação espera a checagem; item com horário, a de cada dose vencida.
         </p>
       </section>
       <NovoItem pacienteId={pacienteId} peso={peso.data} porta pediatrico={pediatrico}

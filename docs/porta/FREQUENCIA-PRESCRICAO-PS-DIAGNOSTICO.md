@@ -52,6 +52,13 @@ Este é o achado guardado de 07/10/2026, do ensaio da demo, aberto pelo RT em 06
    - a alta é barrada com dose vencida;
    - na conversão para observação, o item aparece para o médico do leito.
 
+## Implementação (branch `depois/frequencia-prescricao-ps-impl`)
+- Migration `20270301000001_frequencia_prescricao_ps.sql` (só expande; rollback no cabeçalho). Ainda não aplicada em lugar nenhum.
+- Teste de banco `supabase/tests/depois_frequencia_ps.sql`, rodado na homologação numa transação que nunca grava (migration aplicada duas vezes, para provar que é reaplicável): chegou ao fim (`R: chegou ao fim`). Sem a migration, o teste para em "porta recusa 'de manhã'".
+- Rollback do cabeçalho rodado na homologação, na mesma forma: os quatro corpos voltam ao de antes.
+- Dose por horário: cada horário aprazado vale a partir do minuto da prescrição; a checagem conta de 2 horas antes até 22 horas depois do horário. Enquanto nenhuma dose venceu, a alta após medicação pede uma dose feita, como antes.
+- Falta a homologação no Chrome (prescrever 8/8h, aprazar, checar, painel, alta barrada, conversão para a observação).
+
 ## Riscos
 - **Dose esquecida na passagem para o leito.** A F4 resolve, porque o item fica visível e com ações para o médico do leito.
 - **Frequência digitada que o servidor não entende** (ex.: "de manhã"). O servidor recusa e pede um dos formatos conhecidos (F1). "Contínuo" continua aceito, sem sugestão de horário, como já é hoje.

@@ -11977,6 +11977,7 @@ export type Database = {
       historico_evolucoes: { Args: { p_internacao: string }; Returns: Json }
       hook_segundo_fator_tentativa: { Args: { event: Json }; Returns: Json }
       horario_servidor: { Args: never; Returns: string }
+      horarios_dos_itens: { Args: { p_itens: string[] }; Returns: Json }
       impeditivos_alta: { Args: { p_internacao: string }; Returns: Json }
       impressoes_do_prontuario: { Args: { p_paciente: string }; Returns: Json }
       inativar_alergia: {
@@ -12531,6 +12532,33 @@ export type Database = {
       prescrever: {
         Args: { p_item: Json; p_paciente: string }
         Returns: string
+      }
+      prescricao_porta_ativa: {
+        Args: { p_paciente: string }
+        Returns: {
+          autor: string
+          criado_em: string
+          descricao: string
+          diluicao_divergente: boolean
+          diluicao_texto: string
+          diluicao_versao: number
+          dose: string
+          episodio_id: string
+          horarios: string[]
+          id: string
+          justificativa_divergencia: string
+          medicamento_id: string
+          observacao: string
+          peso_kg: number
+          posologia: string
+          se_necessario: boolean
+          suspenso_em: string
+          tipo: string
+          validacao: string
+          validacao_motivo: string
+          vasoativo: boolean
+          via: string
+        }[]
       }
       prescricao_vigente: {
         Args: { p_em?: string; p_paciente: string }
