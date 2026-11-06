@@ -80,7 +80,7 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.pesar();
 INSERT INTO t SELECT 'mor', public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('morfina'),
-  'dose', '2 mg', 'via', 'EV', 'posologia', 'agora')::jsonb);
+  'dose', '2 mg', 'via', 'EV', 'posologia', '6/6h')::jsonb);
 INSERT INTO t SELECT 'dip', public.prescrever(pg_temp.u('pac'), json_build_object('medicamento_id', pg_temp.u('dipirona'),
   'dose', '1 comprimido', 'via', 'VO', 'posologia', 'agora')::jsonb);
 
