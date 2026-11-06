@@ -2,6 +2,7 @@ import { createClient, type SupportedStorage } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 import { mensagemDe, reportarErro } from '@/lib/reportarErro'
 import { ehDefeitoDoBanco } from '@/lib/defeitoBanco'
+import { apagarTokensDeSessao } from '@/lib/offline/sessaoSemRede'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -114,6 +115,11 @@ export function definirManterConectado(manter: boolean) {
     if (v !== null) gravar(destino, k, v)
     apagar(origem, k)
   }
+}
+
+/** Sair sem rede: o token sai dos dois armazenamentos mesmo se o servidor não respondeu (D1). */
+export function apagarTokenLocal() {
+  apagarTokensDeSessao([local, sessao])
 }
 
 // Lê e grava só no lugar escolhido; apagar limpa os dois (sair nunca deixa

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { manterConectadoVencido, supabase } from '@/lib/supabase'
+import { apagarTokenLocal, manterConectadoVencido, supabase } from '@/lib/supabase'
+import { ehFalhaDeRede } from '@/lib/offline/sessaoSemRede'
 import { limparTodosRascunhos } from '@/lib/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
 import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     limparTodosRascunhos()
     definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
     queryClient.clear()
-    await supabase.auth.signOut({ scope: 'local' })
+    try { await supabase.auth.signOut({ scope: 'local' }) } finally { apagarTokenLocal() }
   }, [queryClient])
 
   const loadPerfil = React.useCallback(async (userId: string) => {
@@ -65,9 +66,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [encerrarLocal])
 
   React.useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
       if (data.session) void loadPerfil(data.session.user.id)
-      else {
+      else if (ehFalhaDeRede(error)) {
+        // D3: o token não pôde ser renovado por falta de rede. Não é sessão
+        // encerrada: rascunhos cifrados e a chave desta aba ficam.
+        setLoading(false)
+      } else {
         // Sem sessão (aba fechada sem "Sair", sessão vencida): rascunho clínico
         // que ficou no navegador não tem mais dono — sai agora.
         limparTodosRascunhos()
@@ -120,7 +125,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         queryClient.clear()
         // escopo local: revoga no servidor o refresh token DESTA sessão (o
         // celular do médico continua logado); o global derrubaria todos.
-        await supabase.auth.signOut({ scope: 'local' })
+        // sem rede o supabase-js não apaga o token: apaga aqui (D1, computador compartilhado)
+        try { await supabase.auth.signOut({ scope: 'local' }) } finally { apagarTokenLocal() }
       },
       definirTema: async (tema) => {
         aplicarTema(tema)
