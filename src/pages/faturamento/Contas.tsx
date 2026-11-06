@@ -26,7 +26,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
-  acoesDaConta, ETAPA, EVENTO, GRUPO_PENDENCIA, lerQuantidade, ondeCorrigir, ORIGEM_ITEM, PAGADOR, reais, TIPO,
+  acoesDaConta, ETAPA, EVENTO, GRUPO_PENDENCIA, lerQuantidade, motivoDoEvento, ondeCorrigir, ORIGEM_ITEM, PAGADOR, quantidadeNaTela, reais, TIPO,
   SITUACAO_DOCUMENTO, TIPO_APAC, type GrupoPendencia,
   type AcaoConta, type AihConta, type ApacConta, type Conta, type ContaDetalhe, type EtapaConta, type ItemConta, type MaterialConta, type MaterialUnidade, type MedicamentoConta,
   type Pagador, type TipoConta,
@@ -267,7 +267,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
                 <li key={i} className="text-tinta-apoio">
                   {fmtDataHora(e.em)} · {EVENTO[e.evento] ?? e.evento}
                   {e.evento === 'pagador' && e.de && e.para ? ` (${PAGADOR[e.de as Pagador]} → ${PAGADOR[e.para as Pagador]})` : ''}
-                  {e.por ? ` · ${e.por}` : ''}{e.motivo ? ` · “${e.motivo}”` : ''}
+                  {e.por ? ` · ${e.por}` : ''}{e.motivo ? ` · “${motivoDoEvento(e.evento, e.motivo)}”` : ''}
                 </li>
               ))}
             </ol>
@@ -637,7 +637,7 @@ function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer:
                       <span className="block text-rotulo text-tinta-sussurro">“{m.motivo_retirada}”{m.retirado_por ? ` · ${m.retirado_por}` : ''}</span>
                     )}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap px-2 py-1.5">{String(m.quantidade).replace('.', ',')} {m.unidade_consumo}</TableCell>
+                  <TableCell className="whitespace-nowrap px-2 py-1.5">{quantidadeNaTela(m.quantidade)} {m.unidade_consumo}</TableCell>
                   <TableCell className="whitespace-nowrap px-2 py-1.5 text-tinta-sussurro">{fmtDataHora(m.lancado_em)}{m.lancado_por ? ` · ${m.lancado_por}` : ''}</TableCell>
                   <TableCell className="px-2 py-1.5 text-right">
                     {podeMexer && !m.retirado_em && (
@@ -678,7 +678,7 @@ function LancarMaterial({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void }
   const unidadeId = unidadeAtiva?.unidade_id
   const [aberto, setAberto] = React.useState(false)
   const [material, setMaterial] = React.useState('')
-  const [quantidade, setQuantidade] = React.useState('1')
+  const [quantidade, setQuantidade] = React.useState('')
   const [obs, setObs] = React.useState('')
   const lista = useQuery({
     queryKey: ['materiais', unidadeId],
@@ -697,7 +697,7 @@ function LancarMaterial({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void }
       })
       if (error) throw error
     },
-    onSuccess: () => { setAberto(false); setMaterial(''); setQuantidade('1'); setObs(''); aoMudar() },
+    onSuccess: () => { setAberto(false); setMaterial(''); setQuantidade(''); setObs(''); aoMudar() },
   })
   if (!aberto) return <Button size="sm" variant="outline" className="self-start" onClick={() => setAberto(true)}>Lançar material</Button>
   const escolhido = (lista.data ?? []).find((m) => m.id === material)
@@ -718,7 +718,7 @@ function LancarMaterial({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void }
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="mat-qtd">Quantidade{escolhido ? ` (${escolhido.unidade_consumo})` : ''}</Label>
-            <Input id="mat-qtd" className="h-8 w-28" inputMode="decimal" value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
+            <Input id="mat-qtd" className="h-8 w-28" inputMode="decimal" placeholder="Ex.: 2,5" value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
           </div>
         </div>
       )}
