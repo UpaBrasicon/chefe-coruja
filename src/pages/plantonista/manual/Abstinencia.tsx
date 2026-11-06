@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_CAINE, DOSES_ABSTINENCIA, ERRATA_CIWA, FATORES_RISCO_SAA, NOTAS_TEMPO_SAA, SEM_DOSE_NO_CAPITULO, TEMPOS_SAA,
+  CRITERIOS_CAINE, DOSES_ABSTINENCIA, ERRATA_CIWA, FATORES_RISCO_SAA, NOTAS_TEMPO_SAA, NOTA_ABSTINENCIA_FENOBARBITAL, SEM_DOSE_NO_CAPITULO, TEMPOS_SAA,
   caine, ciwaAr, doseDiaria, fichaAbstinenciaAlcoolica, midazolamDelirium, type DoseAbstinencia, type Faixa,
 } from '@/clinico/adulto/abstinenciaAlcoolica'
 import type { Respostas } from '@/clinico/escore'
@@ -107,6 +107,7 @@ export function Abstinencia() {
         <ul className="flex flex-col gap-1 text-apoio">
           {SEM_DOSE_NO_CAPITULO.map((x) => <li key={x.nome}><span className="font-medium">{x.nome}:</span> {x.texto} <span className="text-tinta-sussurro">({x.pagina})</span></li>)}
         </ul>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ABSTINENCIA_FENOBARBITAL}</p>
       </Bloco>
 
       <Bloco titulo="Tempo de aparecimento (Tabela 2, p. 1026–1027)" descricao={NOTAS_TEMPO_SAA}>

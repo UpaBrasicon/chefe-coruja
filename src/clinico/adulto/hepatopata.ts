@@ -333,7 +333,24 @@ export function pfcHepatiteMl(pesoKg: number): number | null {
 
 // Maddrey (p. 817)
 
-export const fichaMaddrey = fichaAdulto('adulto-maddrey', 'Função discriminante de Maddrey — hepatite alcoólica (adulto)', 'cap. 60, p. 817')
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): a diretriz ACG
+// 2024 de doença hepática alcoólica entra como nota em cuidados e descrição. A
+// ferramenta mantém o Maddrey e o corte do livro; nenhuma dose muda.
+export const ACG_ALD_2024: Fonte = {
+  citacao: 'Jophlin LL, Singal AK, Bataller R, et al. ACG Clinical Guideline: Alcohol-Associated Liver Disease. Am J Gastroenterol. 2024;119(1):30–54 (PMID 38174913).',
+  url: 'https://doi.org/10.14309/ajg.0000000000002572',
+}
+
+export const NOTA_ACG_HEPATITE_ALCOOLICA =
+  'ACG 2024 (posterior ao livro): o MELD é o escore mais acurado para estratificar a hepatite alcoólica, e MELD > 20 define a forma grave; no STOPAH (1.068 pacientes) o Maddrey discriminou pior a mortalidade em 28 e 90 dias que MELD, GAHS e ABIC. O benefício do corticoide em 28 dias aparece com MELD de 21 a 39, é limitado entre 40 e 50 e não existe acima de 50. O Lille no dia 4 do corticoide é tão acurado quanto no dia 7. A ferramenta mantém o Maddrey e o corte do livro; a escolha é do médico.'
+
+const fichaMaddreyLivro = fichaAdulto('adulto-maddrey', 'Função discriminante de Maddrey — hepatite alcoólica (adulto)', 'cap. 60, p. 817')
+export const fichaMaddrey: Ficha = {
+  ...fichaMaddreyLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaMaddreyLivro.fontes, ACG_ALD_2024],
+  revisadoEm: '06/11/2026 (nota da ACG 2024 sobre MELD e Maddrey; revisão PubMed, itens médios)',
+}
 
 export const MADDREY = { k: 4.6, corte: 32, prednisona: 'prednisona 40 mg ao dia por 4 semanas', pagina: 'cap. 60, p. 817' }
 
@@ -344,7 +361,7 @@ export function funcaoMaddrey(tpPacienteS: number, tpControleS: number, btMgDl: 
 
 export const maddrey: Escore = {
   ficha: fichaMaddrey,
-  descricao: '4,6 × (TP do paciente − TP controle, em segundos) + bilirrubina total (mg/dL), com o corte de 32 do manual do HC (p. 817).',
+  descricao: '4,6 × (TP do paciente − TP controle, em segundos) + bilirrubina total (mg/dL), com o corte de 32 do manual do HC (p. 817). A ACG 2024, posterior ao livro, prefere o MELD (> 20 define a forma grave); ver cuidados.',
   itens: [
     { tipo: 'numero', id: 'tp', rotulo: 'TP do paciente', unidade: 's', min: 1, max: 300, passo: 0.1 },
     { tipo: 'numero', id: 'controle', rotulo: 'TP controle', unidade: 's', min: 1, max: 100, passo: 0.1 },
@@ -366,6 +383,7 @@ export const maddrey: Escore = {
       cuidados: [
         'Usa TP em segundos, não INR.',
         'O livro cita possível benefício de pentoxifilina ou N-acetilcisteína, sem dose.',
+        NOTA_ACG_HEPATITE_ALCOOLICA,
         'Sem referência pediátrica declarada.',
       ],
     }

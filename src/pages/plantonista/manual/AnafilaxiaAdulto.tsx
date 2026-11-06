@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ADRENALINA_BOLUS_EV, ADRENALINA_IM, ADRENALINA_IM_WAO, ADRENALINA_INFUSAO, CUIDADOS_ANAFILAXIA, DIRETRIZES_ANAFILAXIA, SEGUNDA_LINHA_ANAFILAXIA,
+  ADRENALINA_BOLUS_EV, ADRENALINA_IM, ADRENALINA_IM_WAO, ADRENALINA_INFUSAO, CUIDADOS_ANAFILAXIA, DIRETRIZES_ANAFILAXIA, NOTA_GALEN_2024, SEGUNDA_LINHA_ANAFILAXIA,
   adrenalinaImWaoMg, bolusEvMl, criteriosWao2020, fichaAnafilaxiaAdulto, infusaoPorMlH, infusaoPorMlMin, triptaseLimiar, ugMlInfusao, volumeChoqueMl,
   type AchadosWao, type Faixa,
 } from '@/clinico/adulto/anafilaxia'
@@ -67,6 +67,7 @@ export function AnafilaxiaAdulto() {
         ) : (
           <p className="text-tinta-sussurro">Nenhum dos dois critérios da WAO preenchido com o que foi marcado.</p>
         )}
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_GALEN_2024}</p>
       </Bloco>
 
       <Bloco titulo="Adrenalina">

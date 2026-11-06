@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, marcadas, type Escore } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 
@@ -8,7 +9,24 @@ import { fichaAdulto } from './fonte.ts'
 
 const CAP = 'cap. 80 Anemia falciforme'
 
-export const fichaFalciformeAdulto = fichaAdulto('adulto-falciforme', 'Anemia falciforme — crise álgica e síndrome torácica aguda (adulto)', `${CAP}, p. 1055–1061 (Tabela 5)`)
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026, H6 = A): o ECR
+// TASC entra como novidade no bloco da síndrome torácica aguda, sem mudar a
+// conduta do livro e sem dose de anticoagulante.
+export const TASC_2025: Fonte = {
+  citacao: 'Mekontso Dessap A, Habibi A, Arlet JB, et al. Comparison of Prophylactic and Therapeutic Doses of Anticoagulation for Acute Chest Syndrome in Sickle Cell Disease: The TASC Double-Blind Controlled Randomized Clinical Trial. Am J Respir Crit Care Med. 2025;211(5):832–841 (PMID 40209087).',
+  url: 'https://doi.org/10.1164/rccm.202409-1727OC',
+}
+
+export const NOTA_TASC_STA =
+  'TASC (2025, posterior ao livro): ECR duplo-cego, 172 adultos com STA sem trombose na angio-TC, tinzaparina em dose terapêutica × profilática por 7 dias. A dose terapêutica encurtou a STA (HR 0,71; média 4,8 × 6,1 dias) e reduziu o opioide parenteral, sem sangramento maior. É um ECR único: a ferramenta não muda a conduta do livro e não traz dose de anticoagulante.'
+
+const fichaFalciformeLivro = fichaAdulto('adulto-falciforme', 'Anemia falciforme — crise álgica e síndrome torácica aguda (adulto)', `${CAP}, p. 1055–1061 (Tabela 5)`)
+export const fichaFalciformeAdulto: Ficha = {
+  ...fichaFalciformeLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaFalciformeLivro.fontes, TASC_2025],
+  revisadoEm: '06/11/2026 (nota do TASC na síndrome torácica aguda; revisão PubMed, itens médios)',
+}
 
 export type Faixa = [number, number]
 const valido = (x: number) => Number.isFinite(x) && x > 0
