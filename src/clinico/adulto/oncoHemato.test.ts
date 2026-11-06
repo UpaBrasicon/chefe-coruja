@@ -12,7 +12,9 @@ test('onco/hemato: fichas de adulto; MASCC cita o original para a errata', () =>
     assert.match(f.id, /^adulto-[a-z0-9-]+$/)
     assert.equal(temReferenciaPediatrica(f), false)
   }
-  assert.equal(mascc.ficha.fontes.length, 2)
+  // a .1 de 06/11/2026 acrescentou o consenso MASCC 2026 (revisão PubMed, itens médios)
+  assert.ok(mascc.ficha.fontes.length >= 2)
+  assert.ok(mascc.ficha.fontes.some((f) => /Klastersky/.test(f.citacao)))
 })
 
 const masccMax = { sintomas: 0, hipotensao: 1, dpoc: 1, tumor: 1, desidratacao: 1, ambulatorial: 1, idade: 1 }

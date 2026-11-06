@@ -39,13 +39,46 @@ export const AHA_ALS_2025: Fonte = {
   url: 'https://doi.org/10.1161/CIR.0000000000001376',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026): os
+// ensaios por trás de três recomendações da AHA 2025 entram como nota na linha
+// de cada uma. A troca de vetor continua 2b (utilidade não estabelecida) e
+// não aparece como recomendação; nenhuma dose nem carga muda.
+export const IVIO_2025: Fonte = {
+  citacao: 'Vallentin MF, Granfeldt A, Klitgaard TL, et al. Intraosseous or Intravenous Vascular Access for Out-of-Hospital Cardiac Arrest (IVIO). N Engl J Med. 2025;392(4):349–360 (PMID 39480221).',
+  url: 'https://doi.org/10.1056/NEJMoa2407616',
+}
+
+export const PARAMEDIC3_2025: Fonte = {
+  citacao: 'Couper K, Ji C, Deakin CD, et al. A Randomized Trial of Drug Route in Out-of-Hospital Cardiac Arrest (PARAMEDIC-3). N Engl J Med. 2025;392(4):336–348 (PMID 39480216).',
+  url: 'https://doi.org/10.1056/NEJMoa2407780',
+}
+
+export const DOSE_VF_2022: Fonte = {
+  citacao: 'Cheskes S, Verbeek PR, Drennan IR, et al. Defibrillation Strategies for Refractory Ventricular Fibrillation (DOSE VF). N Engl J Med. 2022;387(21):1947–1956 (PMID 36342151).',
+  url: 'https://doi.org/10.1056/NEJMoa2207304',
+}
+
+export const BICARBONATO_PCR_IH_2026: Fonte = {
+  citacao: 'Granfeldt A, Kirkegaard BL, Vallentin MF, et al. Sodium Bicarbonate for In-Hospital Cardiac Arrest: A Randomized Clinical Trial. JAMA. 2026;336(8):647–654 (PMID 42273960).',
+  url: 'https://doi.org/10.1001/jama.2026.10628',
+}
+
+export const NOTA_PCR_ACESSO =
+  "IVIO (NEJM 2025; 1.479 PCR extra-hospitalares) e PARAMEDIC-3 (NEJM 2025; 6.082): começar pelo intraósseo não melhorou o RCE sustentado nem a sobrevida em 30 dias; no PARAMEDIC-3 o RCE em qualquer momento foi menor com IO primeiro (36,0% × 39,1%). São a base do 'IV primeiro' da AHA 2025; a dose não muda."
+
+export const NOTA_PCR_TROCA_VETOR =
+  'DOSE VF (NEJM 2022; 405 FV refratárias extra-hospitalares; interrompido pela covid-19): sobrevida à alta de 30,4% com dupla desfibrilação sequencial e de 21,7% com troca de vetor (pás anteroposteriores), contra 13,3% com a padrão. A AHA 2025 ainda classifica a utilidade como não estabelecida (2b); a carga do choque não muda.'
+
+export const NOTA_PCR_BICARBONATO =
+  'Ensaio dinamarquês (JAMA 2026; 779 PCR intra-hospitalares, duplo-cego): bicarbonato × placebo sem diferença no RCE sustentado (39% × 37%), com mais alcalose e hipernatremia. Reforça o livro: bicarbonato só nas indicações específicas.'
+
 const PAG_PCR = 'cap. 2 PCR no adulto, p. 48–51 (Tabela 2)'
 
 export const fichaPcrAdulto: Ficha = {
   ...fichaAdulto('adulto-pcr', 'Drogas e desfibrilação na PCR — adulto', PAG_PCR),
-  versao: '2026-10-25.1',
-  fontes: [pagina(PAG_PCR), AHA_ALS_2025],
-  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_PCR), AHA_ALS_2025, IVIO_2025, PARAMEDIC3_2025, DOSE_VF_2022, BICARBONATO_PCR_IH_2026],
+  revisadoEm: '06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
 }
 
 export const CHOQUE_PCR = { monofasicoJ: 360, bifasicoJ: 200, pagina: 'p. 48' }
@@ -112,15 +145,16 @@ export function lidocainaSegundaDoseMg(pesoKg: number): Faixa | null {
   return valido(pesoKg) ? vezes(AHA_2025_PCR.lidocainaMgKg.segunda, pesoKg) : null
 }
 
-export type ItemAls2025 = { tema: string; aha: string; onde: string; livro: string }
+/** `nota`: novidade ou divergência posterior à diretriz, com a fonte na ficha (revisão PubMed). */
+export type ItemAls2025 = { tema: string; aha: string; onde: string; livro: string; nota?: string }
 
 export const DIRETRIZ_ALS_2025: ItemAls2025[] = [
   { tema: 'Carga do choque', aha: 'Bifásico: a carga do fabricante (por exemplo, 120–200 J no 1º choque); se desconhecida, a máxima disponível. Choques seguintes equivalentes, e cargas maiores podem ser consideradas (2b). Monofásico: 360 J. Choque único em vez de choques empilhados (2a).', onde: 'seção 5; Figura 2', livro: '200 J no bifásico ou a do fabricante; 360 J no monofásico; choque único (p. 48)' },
   { tema: 'Adrenalina', aha: '1 mg a cada 3–5 min (2a). Ritmo não chocável: o mais cedo possível (2a). Ritmo chocável: depois que as primeiras tentativas de desfibrilação falharem (2a). Vasopressina, sozinha ou com adrenalina, e adrenalina em dose alta não têm benefício (3).', onde: 'seção 10; Figura 2', livro: '1 mg a cada 3–5 min; após o 2º choque em FV/TV; em AESP/assistolia o mais cedo possível (p. 49)' },
   { tema: 'Antiarrítmico', aha: 'Amiodarona ou lidocaína podem ser consideradas na FV/TV sem pulso que não responde ao choque (2b). Amiodarona 300 mg em bolo, depois 150 mg; lidocaína 1–1,5 mg/kg, depois 0,5–0,75 mg/kg. Betabloqueador, procainamida ou sotalol: benefício incerto (2b).', onde: 'seção 11; Figura 2', livro: 'amiodarona 300 mg, depois 150 mg; lidocaína 1–1,5 mg/kg, sem a segunda dose (p. 49)' },
-  { tema: 'Cálcio, bicarbonato e magnésio', aha: 'Uso de rotina na PCR não é recomendado (3: sem benefício).', onde: 'seção 11', livro: 'indicações específicas: hipercalemia, tricíclicos, acidose grave conhecida, torsades, hipomagnesemia (p. 49–50)' },
-  { tema: 'Acesso vascular', aha: 'Tentar primeiro o acesso venoso (1); intraósseo se o venoso falhar ou não for viável (2a); central, por quem tem treino, se os dois falharem (2b).', onde: 'seção 9', livro: 'IV ou IO (p. 49)' },
-  { tema: 'Troca de vetor e dupla desfibrilação sequencial', aha: 'A utilidade não está estabelecida na FV/TV sem pulso que persiste após 3 ou mais choques consecutivos (2b).', onde: 'seção 7', livro: '—' },
+  { tema: 'Cálcio, bicarbonato e magnésio', aha: 'Uso de rotina na PCR não é recomendado (3: sem benefício).', onde: 'seção 11', livro: 'indicações específicas: hipercalemia, tricíclicos, acidose grave conhecida, torsades, hipomagnesemia (p. 49–50)', nota: NOTA_PCR_BICARBONATO },
+  { tema: 'Acesso vascular', aha: 'Tentar primeiro o acesso venoso (1); intraósseo se o venoso falhar ou não for viável (2a); central, por quem tem treino, se os dois falharem (2b).', onde: 'seção 9', livro: 'IV ou IO (p. 49)', nota: NOTA_PCR_ACESSO },
+  { tema: 'Troca de vetor e dupla desfibrilação sequencial', aha: 'A utilidade não está estabelecida na FV/TV sem pulso que persiste após 3 ou mais choques consecutivos (2b).', onde: 'seção 7', livro: '—', nota: NOTA_PCR_TROCA_VETOR },
   { tema: 'EtCO2 e término da reanimação', aha: 'Intubado: EtCO2 que não passa de 10 mmHg após 20 min de suporte avançado pode compor uma decisão multimodal (2b). Não intubado: nenhum valor de EtCO2 deve, sozinho, indicar o fim da reanimação (3: dano). Subida abrupta de EtCO2 pode indicar retorno da circulação (2b).', onde: 'seções 12 e 13', livro: '—' },
   { tema: 'Outros adjuntos', aha: 'Marca-passo na PCR estabelecida não é recomendado de rotina (3: sem benefício). Ultrassom à beira-leito para causas reversíveis: não bem estabelecido, só sem interromper a RCP (2b). Oxigênio na maior concentração possível durante a RCP (2b).', onde: 'seções 8 e 12', livro: '—' },
 ]

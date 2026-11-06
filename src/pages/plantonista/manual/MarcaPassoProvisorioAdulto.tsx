@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ESC_2021_MP, ERRATA_PROCEDIMENTOS, IMA_MARCA_PASSO, MPTC, MPTV_AS_CEGAS, correnteMptc, fichaMarcaPassoAdulto, saidaMptv, sensibilidadeMptv,
+  ESC_2021_MP, ERRATA_PROCEDIMENTOS, IMA_MARCA_PASSO, MPTC, MPTV_AS_CEGAS, NOTA_MPTC_CAPTURA, correnteMptc, fichaMarcaPassoAdulto, saidaMptv, sensibilidadeMptv,
 } from '@/clinico/adulto/procedimentos'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -35,6 +35,7 @@ export function MarcaPassoProvisorioAdulto() {
           pagina="p. 1448–1449"
         />
         <NumberField id="mp-limiar-tc" label="Limiar de captura" unit="mA" value={limiarTc} onChange={setLimiarTc} min={0} />
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_MPTC_CAPTURA}</p>
       </Bloco>
 
       <Bloco titulo="Transvenoso às cegas (p. 1450–1456)">

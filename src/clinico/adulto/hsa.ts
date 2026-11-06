@@ -18,20 +18,40 @@ export const AHA_ASA_HSA_2023: Fonte = {
   url: 'https://doi.org/10.1161/STR.0000000000000436',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026, H5
+// = A): a ESO/EANS/ESMINT 2026 entra como nota na linha do antifibrinolítico, e
+// a NCS 2026 na linha da fenitoína, ao lado da classe "3: dano" da AHA, como
+// divergência. Nenhuma dose muda.
+export const ESO_HSA_2026: Fonte = {
+  citacao: 'Vergouwen MDI, Ramos-Pachon A, Terecoasa EO, et al. European Stroke Organisation (ESO), European Association of Neurosurgical Societies (EANS) and European Society for Minimally Invasive Neurological Therapy (ESMINT) guideline on aneurysmal subarachnoid haemorrhage. Eur Stroke J. 2026;11(5):aakag043 (PMID 42095754).',
+  url: 'https://doi.org/10.1093/esj/aakag043',
+}
+
+export const NCS_HSA_2026: Fonte = {
+  citacao: 'Rowe AS, Zafar SF, Tesoro E, et al. Guidelines for Seizure Prophylaxis in Patients with Aneurysmal Subarachnoid Hemorrhage: A Statement for Healthcare Professionals from the Neurocritical Care Society. Neurocrit Care. 2026;45(2):445–463 (PMID 42552475).',
+  url: 'https://doi.org/10.1007/s12028-026-02614-z',
+}
+
+export const NOTA_ESO_ANTIFIBRINOLITICO =
+  'ESO/EANS/ESMINT 2026: com evidência alta, recomenda nimodipino oral e é contra o antifibrinolítico de rotina antes do tratamento do aneurisma, e contra tirilazade, estatina, sulfato de magnésio e antagonista de endotelina; por consenso, tratar o aneurisma em até 24 h, em centro com volume mínimo. Reforça a AHA 2023 e diverge do livro, que traz o antifibrinolítico como opção nas primeiras 72 h.'
+
+export const NOTA_NCS_FENITOINA =
+  'NCS 2026 (posterior à AHA 2023): a profilaxia anticonvulsivante pode ser feita ou não (condicional, qualidade baixa); se feita, levetiracetam ou fenitoína/fosfenitoína (condicional, qualidade muito baixa), por tempo curto ou longo. Diverge do "associada a dano" da AHA 2023; as duas posições ficam lado a lado.'
+
 const PAG_HSA = `${CAP}, p. 558–561`
 
 export const fichaHsaAdulto: Ficha = {
   ...fichaAdulto('adulto-hsa', 'Hemorragia subaracnóidea — nimodipino e metas (adulto)', PAG_HSA),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_HSA), AHA_ASA_HSA_2023],
-  revisadoEm: '28/09/2026 (AHA/ASA 2023 lida no texto; manual mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_HSA), AHA_ASA_HSA_2023, ESO_HSA_2026, NCS_HSA_2026],
+  revisadoEm: '06/11/2026 (nota da ESO/EANS/ESMINT 2026 no antifibrinolítico e da NCS 2026 na fenitoína; revisão PubMed, itens médios)',
 }
 
-export type ItemHsa2023 = { tema: string; aha: string; classe: string; pagina: string; livro: string }
+export type ItemHsa2023 = { tema: string; aha: string; classe: string; pagina: string; livro: string; nota?: string }
 
 /** AHA/ASA 2023 × manual do HC, tema a tema (COR/LOE como impressos). */
 export const DIRETRIZ_HSA_2023: ItemHsa2023[] = [
-  { tema: 'Antifibrinolítico (ácido tranexâmico)', aha: 'Uso rotineiro não é útil para melhorar o desfecho funcional (ULTRA: mRS 0–3 em 60% × 64%; ressangramento 10% × 14%)', classe: '3: sem benefício, A', pagina: 'e326', livro: 'opção nas primeiras 72 h sem correção do aneurisma, sem dose (p. 561)' },
+  { tema: 'Antifibrinolítico (ácido tranexâmico)', aha: 'Uso rotineiro não é útil para melhorar o desfecho funcional (ULTRA: mRS 0–3 em 60% × 64%; ressangramento 10% × 14%)', classe: '3: sem benefício, A', pagina: 'e326', livro: 'opção nas primeiras 72 h sem correção do aneurisma, sem dose (p. 561)', nota: NOTA_ESO_ANTIFIBRINOLITICO },
   { tema: 'Pressão arterial com aneurisma não tratado', aha: 'Monitorar com frequência e controlar com droga de ação curta, evitando hipotensão grave, hipertensão e variabilidade; não há evidência para um alvo numérico; evitar queda súbita e profunda', classe: '1, C-EO', pagina: 'e326', livro: 'PAS < 160 mmHg, nitroprussiato se necessário (p. 560)' },
   { tema: 'Reversão de anticoagulante', aha: 'Reversão de emergência com o agente apropriado para prevenir ressangramento', classe: '1, C-EO', pagina: 'e326', livro: '—' },
   { tema: 'Tratamento do aneurisma', aha: 'Cirúrgico ou endovascular o mais cedo possível, de preferência em 24 h do início; obliteração completa quando factível', classe: '1, B-NR', pagina: 'e327', livro: '—' },
@@ -39,7 +59,7 @@ export const DIRETRIZ_HSA_2023: ItemHsa2023[] = [
   { tema: 'Volemia', aha: 'Manter euvolemia com tratamento guiado por metas; induzir hipervolemia é potencialmente danoso', classe: '2a, B-R · 3: dano, B-R', pagina: 'e333', livro: '—' },
   { tema: 'Vasoespasmo sintomático', aha: 'Elevar a PAS pode ser razoável para reduzir progressão e gravidade da isquemia tardia; augmentação hemodinâmica PROFILÁTICA não deve ser feita', classe: '2b, B-NR · 3: dano, B-R', pagina: 'e339', livro: 'hipertensão induzida com PAM em torno de 100 mmHg (fenilefrina), evidência pequena (p. 561)' },
   { tema: 'Estatina e magnésio IV', aha: 'Uso rotineiro para melhorar desfecho não é recomendado', classe: '3: sem benefício, A (ambos)', pagina: 'e339', livro: '—' },
-  { tema: 'Fenitoína', aha: 'Para prevenção ou profilaxia de crises: associada a excesso de morbidade e mortalidade', classe: '3: dano, B-NR', pagina: 'e345', livro: '—' },
+  { tema: 'Fenitoína', aha: 'Para prevenção ou profilaxia de crises: associada a excesso de morbidade e mortalidade', classe: '3: dano, B-NR', pagina: 'e345', livro: '—', nota: NOTA_NCS_FENITOINA },
   { tema: 'Crise epiléptica na apresentação', aha: 'Anticrise por ≤ 7 dias é razoável; além de 7 dias não reduz o risco futuro', classe: '2a, B-NR · 3: sem benefício, B-NR', pagina: 'e345', livro: '—' },
   { tema: 'Detecção de vasoespasmo', aha: 'Doppler transcraniano é razoável; angio-TC/TC de perfusão podem ser úteis; EEG contínuo na HSA de alto grau', classe: '2a, B-NR', pagina: 'e338', livro: 'Doppler diário por 7 dias, depois alternado por 14; aumento > 50% da velocidade (p. 559)' },
   { tema: 'Hemoglobina', aha: 'Limiar ótimo de transfusão desconhecido (lacuna de conhecimento; ensaios em andamento)', classe: '—', pagina: 'e350', livro: 'Hb acima de 8 g/dL (p. 560)' },

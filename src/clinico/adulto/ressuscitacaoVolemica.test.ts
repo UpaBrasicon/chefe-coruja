@@ -10,8 +10,9 @@ import {
 test('ressuscitação: ficha adulto dos caps. 4 e 7 + SSC 2026 + ILAS jul/2026, sem referência pediátrica', () => {
   assert.equal(fichaRessuscitacaoAdulto.publico, 'adulto')
   assert.match(fichaRessuscitacaoAdulto.id, /^adulto-[a-z0-9-]+$/)
-  assert.equal(fichaRessuscitacaoAdulto.versao, '2026-09-28.1')
-  assert.equal(fichaRessuscitacaoAdulto.fontes.length, 3)
+  // a revisão PubMed (itens médios) subiu a versão e somou o ARISE FLUIDS depois do ILAS, em 06/11/2026
+  assert.ok(fichaRessuscitacaoAdulto.versao >= '2026-09-28.1')
+  assert.ok(fichaRessuscitacaoAdulto.fontes.length >= 3)
   assert.match(fichaRessuscitacaoAdulto.fontes[1].citacao, /Surviving Sepsis Campaign.*2026.*rec/i)
   assert.match(fichaRessuscitacaoAdulto.fontes[2].citacao, /ILAS.*julho de 2026/)
   assert.equal(temReferenciaPediatrica(fichaRessuscitacaoAdulto), false)

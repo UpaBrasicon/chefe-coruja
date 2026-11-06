@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALTEPLASE_AVC, ALVOS_PA_AVC, ANGIOEDEMA_POS_ALTEPLASE, ASPECTS_LIVRO, CONTRAINDICACOES_ABSOLUTAS, CORRECAO_AHA_2026, CUIDADOS_AVC, DIRETRIZ_AVC_2026, ERRATA_PA_AVC,
+  ALTEPLASE_AVC, ALVOS_PA_AVC, ANGIOEDEMA_POS_ALTEPLASE, ASPECTS_LIVRO, CONTRAINDICACOES_ABSOLUTAS, CORRECAO_AHA_2026, CUIDADOS_AVC, DIRETRIZ_AVC_2026, ERRATA_PA_AVC, NOTA_INTERACT4,
   NITROPRUSSIATO_AVC, SANGRAMENTO_POS_ALTEPLASE, TABELA4_PAGINA, TENECTEPLASE_2026, TENECTEPLASE_AVC, alteplaseAvc, avaliarTrombolise, conferirPa,
   fichaTromboliseAvcAdulto, nitroprussiatoMlH, reducao15, tenecteplase2026, tenecteplaseAvc, tranexamicoPosAlteplase, type Faixa, type SituacaoPa,
 } from '@/clinico/adulto/avcTrombolise'
@@ -154,6 +154,7 @@ export function TromboliseAvcAdulto() {
         <ul className="flex flex-col gap-1 text-apoio">
           {ALVOS_PA_AVC.map((a) => <li key={a.situacao}><span className="font-medium">{a.situacao}:</span> {a.texto} <span className="text-tinta-sussurro">({a.pagina})</span></li>)}
         </ul>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_INTERACT4}</p>
         <div className="flex flex-wrap gap-2">
           {([['pre-trombolise', 'Antes da trombólise'], ['pos-trombolise', 'Após trombólise'], ['sem-trombolise', 'Sem trombólise']] as const).map(([v, r]) => (
             <Chip key={v} variante="opcao" ativo={sitPa === v} onClick={() => setSitPa(v)}>{r}</Chip>

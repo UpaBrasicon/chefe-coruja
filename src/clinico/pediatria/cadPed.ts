@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { faixaVezes, fichaIcr, ok, positivo } from './fonteIcr.ts'
 import { sodioCorrigidoPed, osmEfetiva } from './sodioPed.ts'
 
@@ -6,7 +7,33 @@ import { sodioCorrigidoPed, osmEfetiva } from './sodioPed.ts'
 // Critérios, fórmulas do Quadro 6 e números por peso como o livro traz; a
 // decisão de cada etapa é do profissional (ADR 0007).
 
-export const fichaCadPed = fichaIcr('ped-cad-ehh', 'Cetoacidose diabética e EHH — criança', 'cap. 52, p. 512–526')
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// dois ECRs pediátricos de Ringer lactato × SF 0,9% como fluido inicial entram
+// como nota no bloco dos fluidos, sem dose nem volume. O livro já aceita os
+// dois. A insulina basal precoce não entra (H17: dose só com o RT).
+export const RINGER_CAD_AGARWAL_2025: Fonte = {
+  citacao: "Agarwal A, Jayashree M, Nallasamy K, et al. 0.9% Saline versus Ringer's lactate as initial fluid in children with diabetic ketoacidosis: a double-blind randomized controlled trial. BMJ Open Diabetes Res Care. 2025;13(2):e004623 (PMID 40194836).",
+  url: 'https://doi.org/10.1136/bmjdrc-2024-004623',
+  pediatrica: true,
+}
+
+export const RINGER_CAD_SINGHAL_2024: Fonte = {
+  citacao: "Singhal D, Gupta S, Kumar V. Normal Saline Versus Ringer's Lactate for Intravenous Fluid Therapy in Children with Diabetic Ketoacidosis: A Randomized Controlled Trial. Indian J Pediatr. 2025;92(11):1181–1187 (publicado on-line em 2024; PMID 39302535).",
+  url: 'https://doi.org/10.1007/s12098-024-05240-9',
+  pediatrica: true,
+}
+
+export const NOTA_RINGER_CAD =
+  'Ringer lactato × SF 0,9% como fluido inicial (ECRs pediátricos posteriores ao livro): no de 2025 (67 crianças), a CAD resolveu mais cedo com Ringer (média de 12,9 h × 16,8 h), com menos subida do cloro. No de 2024 (50 crianças), a diferença no tempo até resolver a acidose não foi significativa, e o SF teve mais hipercloremia e internação mais longa na UTI. São ensaios pequenos; o livro já aceita os dois fluidos, e volume e velocidade não mudam.'
+
+const baseCadPed = fichaIcr('ped-cad-ehh', 'Cetoacidose diabética e EHH — criança', 'cap. 52, p. 512–526')
+
+export const fichaCadPed: Ficha = {
+  ...baseCadPed,
+  versao: '2026-11-06.1',
+  fontes: [...baseCadPed.fontes, RINGER_CAD_AGARWAL_2025, RINGER_CAD_SINGHAL_2024],
+  revisadoEm: '06/11/2026 (nota do Ringer lactato × SF 0,9%; revisão PubMed, itens médios; livro conferido em 27/09/2026, com errata anotada)',
+}
 
 // ---------------------------------------------------------------- critérios (Quadro 2, p. 515)
 

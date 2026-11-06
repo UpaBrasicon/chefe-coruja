@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALIQUOTA_TRAUMA_ML, ERRATA_TRAUMA, RMC_ADULTO, TORACOLOMBAR, TORNIQUETE_MAX_MIN, TRAUMA_REFERENCIAS, TXA_TRAUMA,
+  ALIQUOTA_TRAUMA_ML, ERRATA_TRAUMA, NOTA_ENSAIOS_NEGATIVOS_TRAUMA, NOTA_PATCH_TRAUMA, RMC_ADULTO, TORACOLOMBAR, TORNIQUETE_MAX_MIN, TRAUMA_REFERENCIAS, TXA_TRAUMA,
   cristaloideAcumulado, fichaTraumaAdulto, hemotorax, torniqueteRestante, txaTrauma,
 } from '@/clinico/adulto/trauma'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -45,6 +45,7 @@ export function TraumaInicialAdulto() {
           <NumberField id="tr-min" label="Tempo desde o trauma" unit="min" value={minTrauma} onChange={setMinTrauma} step={5} />
           <Resultado rotulo="Janela de menos de 3 h" valor={txa ? (txa.dentroDaJanela ? `dentro — faltam ${br(txa.minutosRestantes, 0)} min` : 'fora (3 h ou mais)') : '—'} />
         </div>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_PATCH_TRAUMA}</p>
       </Bloco>
 
       <Bloco titulo="Hemotórax (p. 644–645)">
@@ -82,6 +83,7 @@ export function TraumaInicialAdulto() {
           O livro: transfusão bem indicada em quem mantém instabilidade após 1–3 L de cristaloide ou com hemorragia moderada/grave persistente (p. 647). ABC score e
           metas de hipotensão permissiva têm telas próprias (transfusão maciça e ressuscitação volêmica).
         </p>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ENSAIOS_NEGATIVOS_TRAUMA}</p>
       </Bloco>
 
       <Bloco titulo="Referências numéricas do capítulo">

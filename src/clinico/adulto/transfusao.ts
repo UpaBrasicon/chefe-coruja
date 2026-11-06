@@ -31,13 +31,36 @@ export const AABB_PLAQUETAS_2025: Fonte = {
   url: 'https://doi.org/10.1001/jama.2025.7529',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// três ECRs de transfusão na lesão cerebral aguda, posteriores ao livro e à
+// AABB 2023, entram como nota. A nota é uma constante própria, fora de
+// DIFERENCAS_TRANSFUSAO_2023 (a tela corta essa lista por índice). O limiar
+// do livro não muda.
+export const TRAIN_2024: Fonte = {
+  citacao: 'Taccone FS, Rynkowski CB, Møller K, et al. Restrictive vs Liberal Transfusion Strategy in Patients With Acute Brain Injury: The TRAIN Randomized Clinical Trial. JAMA. 2024;332(19):1623–1633 (PMID 39382241).',
+  url: 'https://doi.org/10.1001/jama.2024.20424',
+}
+
+export const HEMOTION_2024: Fonte = {
+  citacao: 'Turgeon AF, Fergusson DA, Clayton L, et al. Liberal or Restrictive Transfusion Strategy in Patients with Traumatic Brain Injury (HEMOTION). N Engl J Med. 2024;391(8):722–735 (PMID 38869931).',
+  url: 'https://doi.org/10.1056/NEJMoa2404360',
+}
+
+export const SAHARA_2025: Fonte = {
+  citacao: 'English SW, Delaney A, Fergusson DA, et al. Liberal or Restrictive Transfusion Strategy in Aneurysmal Subarachnoid Hemorrhage (SAHaRA). N Engl J Med. 2025;392(11):1079–1088 (PMID 39655786).',
+  url: 'https://doi.org/10.1056/NEJMoa2410962',
+}
+
+export const NOTA_TRANSFUSAO_LESAO_CEREBRAL =
+  "Lesão cerebral aguda (TCE, HSA ou hemorragia intraparenquimatosa): a evidência posterior ao livro e à AABB 2023 é dividida. No TRAIN (JAMA 2024; 850 pacientes com Hb < 9 g/dL), transfundir com Hb < 9 g/dL em vez de < 7 g/dL reduziu o desfecho neurológico desfavorável em 180 dias (62,6% × 72,6%). No HEMOTION (NEJM 2024; TCE moderado a grave, ≤ 10 × ≤ 7 g/dL) e no SAHaRA (NEJM 2025; HSA aneurismática, ≤ 10 × ≤ 8 g/dL), a estratégia liberal não reduziu o desfecho desfavorável em 6 e 12 meses; no HEMOTION houve mais SDRA (3,3% × 0,8%). Os números são os limiares testados nos ensaios, não recomendação; o 'Hb < 7' do livro continua."
+
 const PAG_TRANSFUSAO = 'cap. 82 Transfusão de hemocomponentes, p. 1075–1082; cap. 47, p. 647'
 
 export const fichaTransfusaoAdulto: Ficha = {
   ...fichaAdulto('adulto-transfusao-hemocomponentes', 'Transfusão de hemocomponentes — adulto', PAG_TRANSFUSAO),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_TRANSFUSAO), AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025],
-  revisadoEm: '28/09/2026 (AABB 2023 lida no texto; AABB 2025 e AABB/ICTMG 2025 pelos resumos; manual mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_TRANSFUSAO), AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025, TRAIN_2024, HEMOTION_2024, SAHARA_2025],
+  revisadoEm: '06/11/2026 (nota da lesão cerebral aguda: TRAIN, HEMOTION e SAHaRA; revisão PubMed, itens médios); 28/09/2026 (AABB 2023 lida no texto; AABB 2025 e AABB/ICTMG 2025 pelos resumos; manual mantido como base)',
 }
 
 /** AABB 2023 (adultos hospitalizados) e AABB 2025 (IAM): limiar de Hb por situação. */

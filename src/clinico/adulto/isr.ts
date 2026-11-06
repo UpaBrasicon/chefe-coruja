@@ -1,4 +1,6 @@
+import type { Ficha } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
+import { ATS_IRPA_2026 } from './ventilacaoMecanica.ts'
 import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Intubação em sequência rápida do adulto — Anexo 1 do Manual de Medicina de
@@ -7,7 +9,19 @@ import { numero as numeroBr } from '../../lib/formato.ts'
 // de 40 a 100 kg e batem com a conta).
 
 // .2: nota da divergência do midazolam (cap. 3 × Anexo 1)
-export const fichaIsrAdulto = { ...fichaAdulto('adulto-isr', 'Intubação em sequência rápida — adulto', 'Anexo 1 — Padrão de diluição de medicações HC – adultos, p. 1480–1482; cap. 3, p. 60 e 64'), versao: '2026-09-27.2' }
+// 2026-11-06.1: revisão PubMed de 09/10/2026, itens médios (decisão do RT em
+// 06/11/2026, H4 = A): a nota da ATS 2026 sobre a pré-oxigenação entra na
+// tela. O livro não tem texto ao lado; doses e volumes não mudam.
+export const NOTA_ATS_PRE_OXIGENACAO =
+  'ATS 2026: recomendação forte de CNAF ou VNI na pré-oxigenação antes da intubação, para prevenir hipoxemia peri-intubação.'
+
+const fichaIsrLivro = fichaAdulto('adulto-isr', 'Intubação em sequência rápida — adulto', 'Anexo 1 — Padrão de diluição de medicações HC – adultos, p. 1480–1482; cap. 3, p. 60 e 64')
+export const fichaIsrAdulto: Ficha = {
+  ...fichaIsrLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaIsrLivro.fontes, ATS_IRPA_2026],
+  revisadoEm: '06/11/2026 (nota da ATS 2026 na pré-oxigenação; revisão PubMed, itens médios)',
+}
 
 export type DrogaIsr = {
   id: string

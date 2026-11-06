@@ -17,13 +17,32 @@ export const AHA_KAWASAKI_2024: Fonte = {
   pediatrica: true,
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// o ECR de prednisolona adjuvante (NEJM 2026) e a meta-análise de 8 ECRs (Eur
+// J Pediatr 2026), posteriores à AHA 2024, entram como nota na linha
+// "Corticoide". Nenhuma dose muda.
+export const PREDNISOLONA_KAWASAKI_2026: Fonte = {
+  citacao: 'Lin S, He Y, He L, et al. Randomized Trial of Adjunctive Prednisolone for Kawasaki Disease. N Engl J Med. 2026;394(15):1480–1490 (PMID 41985133).',
+  url: 'https://doi.org/10.1056/NEJMoa2511478',
+  pediatrica: true,
+}
+
+export const CORTICOIDE_KAWASAKI_META_2026: Fonte = {
+  citacao: 'Tufail U, Rehaam W, Naveed M, et al. Corticosteroids as adjunctive therapy to standard treatment in Kawasaki disease: a GRADE-assessed systematic review and meta-analysis of randomized controlled trials. Eur J Pediatr. 2026;185(10) (PMID 42736452).',
+  url: 'https://doi.org/10.1007/s00431-026-07407-2',
+  pediatrica: true,
+}
+
+export const NOTA_PREDNISOLONA_KAWASAKI =
+  'ECR de prednisolona adjuvante (NEJM 2026, posterior à AHA 2024): 3.208 crianças chinesas com Kawasaki recém-diagnosticado, não selecionadas por risco. Lesão coronariana em 1 mês: 16,0% com prednisolona + tratamento padrão e 13,8% só com o padrão, sem redução. Houve menos terapia de resgate (4,6% vs 10,1%) e febre mais curta, mas aneurisma médio a gigante em 3 meses de 1,9% vs 1,1%. Meta-análise de 8 ECRs (4.106 crianças, certeza muito baixa) também sem benefício coronariano; o ensaio não estudou à parte o alto risco da AHA 2024, e nenhuma dose muda.'
+
 const baseKawasaki = fichaP4('ped-kawasaki', 'Doença de Kawasaki — critérios e doses', 'cap. 70, p. 746–752; Apêndice, p. 897, 904')
 
 export const fichaKawasaki: Ficha = {
   ...baseKawasaki,
-  versao: '2026-10-25.1',
-  fontes: [...baseKawasaki.fontes, AHA_KAWASAKI_2024],
-  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: AHA 2024 lida no PDF; livro do ICr mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [...baseKawasaki.fontes, AHA_KAWASAKI_2024, PREDNISOLONA_KAWASAKI_2026, CORTICOIDE_KAWASAKI_META_2026],
+  revisadoEm: '06/11/2026 (nota do ECR de prednisolona adjuvante; revisão PubMed, itens médios; AHA 2024 lida no PDF em 25/10; livro do ICr mantido como base)',
 }
 
 export const CRITERIOS_CLINICOS: { id: string; texto: string }[] = [
@@ -143,12 +162,12 @@ export const DOSES_AHA_2024: DoseLivro[] = [
   { id: 'aha-infliximabe', nome: 'Infliximabe', unidade: 'mg', porKgDose: [10, 10], doses: [1, 1], via: 'EV em 2 h', pagina: 'Tabela 3, p. e489; KIDCARE, p. e488' },
 ]
 
-export type ItemKawasaki2024 = { tema: string; aha: string; pagina: string; livro: string }
+export type ItemKawasaki2024 = { tema: string; aha: string; pagina: string; livro: string; nota?: string }
 
 export const DIFERENCAS_KAWASAKI_2024: ItemKawasaki2024[] = [
   { tema: 'Alto risco e intensificação', aha: 'Idade < 6 meses ou Z ≥ 2,5 (coronária direita ou descendente anterior) no diagnóstico são de alto risco e devem ser considerados para intensificar a terapia inicial: imunoglobulina com outro anti-inflamatório (corticoide, infliximabe, entre outros). Faltam ensaios randomizados de eficácia', pagina: 'p. e482, e489–e491', livro: 'Escores asiáticos (Kobayashi, Egami, Sano); corticoide na fase inicial a critério de cada avaliador (p. 749)' },
   { tema: 'Infliximabe', aha: '10 mg/kg EV em 2 h', pagina: 'Tabela 3, p. e489', livro: '5 mg/kg EV, dose única (Tabela 1, p. 750)' },
-  { tema: 'Corticoide', aha: 'Prednisolona 2 mg/kg/dia de 8/8 h (RAISE) ou metilprednisolona 2 mg/kg/dia de 12/12 h (norte-americano), 5 dias EV, máximo 60 mg/dia, com retirada oral', pagina: 'Tabela 3, p. e489', livro: 'No refratário: pulso de metilprednisolona 30 mg/kg (máx. 1 g) ou 1–2 mg/kg/dia de 6/6 ou 8/8 h (p. 749; Tabela 1, p. 750)' },
+  { tema: 'Corticoide', aha: 'Prednisolona 2 mg/kg/dia de 8/8 h (RAISE) ou metilprednisolona 2 mg/kg/dia de 12/12 h (norte-americano), 5 dias EV, máximo 60 mg/dia, com retirada oral', pagina: 'Tabela 3, p. e489', livro: 'No refratário: pulso de metilprednisolona 30 mg/kg (máx. 1 g) ou 1–2 mg/kg/dia de 6/6 ou 8/8 h (p. 749; Tabela 1, p. 750)', nota: NOTA_PREDNISOLONA_KAWASAKI },
   { tema: 'Resistência à imunoglobulina', aha: 'Febre persistente ou recrudescente ≥ 36 h após o fim da infusão', pagina: 'p. e485, e488', livro: '36 a 48 h após o fim da imunoglobulina (p. 749)' },
   { tema: 'AAS na fase aguda', aha: 'Doses moderada (30–50) ou alta (80–100 mg/kg/dia) provavelmente não melhoram o desfecho coronariano; a Tabela 3 traz 30–50 mg/kg/dia, com estudo em andamento', pagina: 'p. e487–e488; Tabela 3, p. e489', livro: '30–50 mg/kg/dia; 80–100 têm sido evitados (p. 749)' },
   { tema: 'Antiagregação e anticoagulação', aha: 'Dupla antiagregação pode ser considerada com Z ≥ 5. Aneurisma gigante: AAS em dose baixa e varfarina, HBPM ou anticoagulante oral direto; anticoagulação pode ser considerada no gigante que regrediu a médio (nível 5.2)', pagina: 'p. e488, e491; Tabela 2, p. e486', livro: 'Médio: AAS + clopidogrel; gigante: anticoagulante + antiagregante (p. 750)' },

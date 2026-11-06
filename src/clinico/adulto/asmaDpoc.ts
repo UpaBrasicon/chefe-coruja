@@ -1,6 +1,7 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
 import { MG } from './eletrolitos.ts'
+import { ATS_IRPA_2026 } from './ventilacaoMecanica.ts'
 
 // Exacerbação de asma e de DPOC no adulto — caps. 30 (Asma, p. 406–416) e 31
 // (DPOC, p. 417–428) do Manual de Medicina de Emergência do HCFMUSP (3ª ed.,
@@ -31,7 +32,19 @@ export const fichaAsmaAdulto: Ficha = {
   fontes: [pagina(PAG_ASMA), GINA_2026],
   revisadoEm: '28/09/2026 (GINA 2026 lida no Summary Guide; manual mantido como base)',
 }
-export const fichaDpocAdulto = fichaAdulto('adulto-dpoc-exacerbacao', 'Exacerbação de DPOC — adulto', 'cap. 31 DPOC, p. 417–427')
+// DPOC, revisão PubMed de 09/10/2026, itens médios (decisão do RT em
+// 06/11/2026): a ATS 2026 na IRpA hipercápnica entra como nota no bloco da VNI
+// (e na VNI em cinco passos). Pressões e indicações do livro não mudam.
+export const NOTA_ATS_HIPERCAPNICA =
+  'ATS 2026: na IRpA hipercápnica, recomendação forte de VNI para reduzir mortalidade e intubação. A CNAF entra só como condicional, na hipercapnia menos grave com acidemia leve, com vigilância e escalada rápida para VNI. Concorda com o livro.'
+
+const fichaDpocLivro = fichaAdulto('adulto-dpoc-exacerbacao', 'Exacerbação de DPOC — adulto', 'cap. 31 DPOC, p. 417–427')
+export const fichaDpocAdulto: Ficha = {
+  ...fichaDpocLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaDpocLivro.fontes, ATS_IRPA_2026],
+  revisadoEm: '06/11/2026 (nota da ATS 2026 na VNI da IRpA hipercápnica; revisão PubMed, itens médios)',
+}
 
 export type GravidadeGina = 'leve' | 'moderada' | 'grave' | 'risco de vida'
 

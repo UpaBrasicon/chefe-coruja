@@ -4,6 +4,7 @@ import {
   ALVOS_SAT, CATETER, DISPOSITIVOS, ENTRADA_O2, ERRATA_OXIGENACAO, INDICACOES_IOT, RNC_PACO2, VNI, cortesVni, fichaOxigenacaoAdulto, incrementoCateter,
   instalacaoHipercapnia, lerGradienteAa, lerIrpa, lerPF, lerSat, relacaoPF,
 } from '@/clinico/adulto/oxigenacao'
+import { NOTA_ATS_POS_EXTUBACAO } from '@/clinico/adulto/ventilacaoMecanica'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -92,6 +93,7 @@ export function OxigenacaoIrpaAdulto() {
               {d.cap1 && <p className="text-tinta-sussurro">Cap. 1: {d.cap1}</p>}
               {d.cap27 && <p className="text-tinta-sussurro">Cap. 27: {d.cap27}</p>}
               {d.indicacoes27 && <p className="text-tinta-sussurro">Indicações (Tabela 7): {d.indicacoes27}</p>}
+              {d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}
             </div>
           ))}
         </div>
@@ -109,6 +111,7 @@ export function OxigenacaoIrpaAdulto() {
         <ul className="list-disc pl-5">{[...VNI.clinicas, ...VNI.gasometricas].map((i) => <li key={i}>{i}</li>)}</ul>
         <p className="font-medium">Maior evidência de benefício</p>
         <ul className="list-disc pl-5">{VNI.maiorEvidencia.map((i) => <li key={i}>{i}</li>)}</ul>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ATS_POS_EXTUBACAO}</p>
         <p className="font-medium">Contraindicações</p>
         <ul className="list-disc pl-5">{VNI.contraindicacoes.map((i) => <li key={i}>{i}</li>)}</ul>
         <p className="font-medium">Modos</p>
