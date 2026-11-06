@@ -74,3 +74,9 @@ O item 7 (08/10/2026) diz que o histórico encerrado fica poluído com muitos at
   - no fim, "Ver mais atendimentos".
 - **No celular:** a coluna esquerda vai para o topo e a linha do tempo fica embaixo.
 
+## Pontos da implementação confirmados pelo RT (06/11/2026, "Confirmo os 4")
+1. **Resultado de exame:** quem lê pelo pedido de acesso vigente vê a versão vigente do resultado.
+2. **Grupo "Registros de outros atendimentos":** guarda os registros que a pessoa pode ler sem ver o atendimento deles.
+3. **CID do cabeçalho:** primeiro o da alta da internação, depois o do desfecho, o principal da internação, o do último SOAP e o da APS.
+4. **Sinais vitais:** aparecem 6 aferições, com um botão para ver todas. As outras medidas vão na coluna "Outras".
+
