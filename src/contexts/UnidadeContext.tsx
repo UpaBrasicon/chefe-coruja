@@ -5,6 +5,13 @@ import { ORDEM_PAPEL } from '@/lib/constants'
 import type { Papel, TipoUnidade } from '@/types/database'
 import { useAuth } from '@/contexts/AuthContext'
 import { definirContextoErro } from '@/lib/sentry'
+import { EVENTO_CHAVE } from '@/lib/cofreLocal'
+import { ehFalhaDeRede } from '@/lib/offline/sessaoSemRede'
+import { guardarSessaoLocal, lerSessaoLocal } from '@/lib/offline/sessaoLocal'
+import { situacaoSemConexao } from '@/lib/offline/relogio'
+import type { Perfis } from '@/types/database'
+
+type Perfil = Perfis['Row']
 
 export type VinculoComUnidade = {
   id: string
@@ -59,7 +66,13 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
         .eq('ativo', true)
         .order('created_at', { ascending: true })
 
-      if (error) throw error
+      if (error) {
+        // sem rede (recarga sem conexão, parte 2): os vínculos guardados nesta
+        // aba, da mesma pessoa, enquanto a regra de 2 h e 20 min deixar (N3)
+        const guardado = ehFalhaDeRede(error) && situacaoSemConexao().pode ? lerSessaoLocal<Perfil, VinculoComUnidade>(perfil!.id) : null
+        if (guardado) return guardado.vinculos
+        throw error
+      }
       return (data ?? []).map((v) => ({
         id: v.id,
         papel: v.papel,
@@ -73,14 +86,29 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     queryKey: ['super_admin', perfil?.id],
     enabled: !!perfil,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('super_admins')
         .select('perfil_id')
         .eq('perfil_id', perfil!.id)
         .maybeSingle()
+      if (error && ehFalhaDeRede(error)) return lerSessaoLocal(perfil!.id)?.isSuper ?? false
       return !!data
     },
   })
+
+  // Guarda, cifrado com a chave da sessão e só nesta aba, o que a casca precisa
+  // para abrir numa recarga sem conexão (parte 2). A chave chega depois do
+  // segundo fator: quando ela chega, grava de novo.
+  const [chaveChegou, setChaveChegou] = React.useState(0)
+  React.useEffect(() => {
+    const aoChegar = () => setChaveChegou((n) => n + 1)
+    window.addEventListener(EVENTO_CHAVE, aoChegar)
+    return () => window.removeEventListener(EVENTO_CHAVE, aoChegar)
+  }, [])
+  React.useEffect(() => {
+    if (!perfil || !vinculos || isSuper === undefined) return
+    guardarSessaoLocal<Perfil, VinculoComUnidade>({ perfil, vinculos, isSuper })
+  }, [perfil, vinculos, isSuper, chaveChegou])
 
   const unidades = React.useMemo(
     () =>

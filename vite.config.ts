@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { listaPrecache } from './src/lib/offline/precache'
 
 // Rótulo de versão para o relato de erros do cliente (onda 12): commit curto do
 // deploy, ou a versão do package.json quando não houver git. Tudo protegido —
@@ -31,6 +32,19 @@ function versaoApp(): string {
 // o banco de produção, homologação só com o de homologação.
 // Sentry (Fase 0, item 11): host de ingestão da região UE, o mesmo do DSN em src/lib/sentry.ts.
 const SENTRY_HOST = 'o4512212070301696.ingest.de.sentry.io'
+
+// Recarga sem conexão, parte 2 (N5): lista das telas que o service worker
+// guarda de antemão (src/lib/offline/precache.ts).
+function precacheSemConexao(): Plugin {
+  return {
+    name: 'precache-sem-conexao',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      const lista = listaPrecache(bundle as unknown as Parameters<typeof listaPrecache>[0])
+      this.emitFile({ type: 'asset', fileName: 'precache.json', source: JSON.stringify(lista) })
+    },
+  }
+}
 
 function cspDoAmbiente(mode: string): Plugin {
   return {
@@ -63,7 +77,7 @@ export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSAO__: JSON.stringify(versaoApp()),
   },
-  plugins: [react(), tailwindcss(), cspDoAmbiente(mode)],
+  plugins: [react(), tailwindcss(), cspDoAmbiente(mode), precacheSemConexao()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

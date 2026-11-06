@@ -2,6 +2,8 @@ import * as React from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { apagarTokenLocal, manterConectadoVencido, supabase } from '@/lib/supabase'
 import { ehFalhaDeRede } from '@/lib/offline/sessaoSemRede'
+import { apagarSessaoLocal, perfilSemConexao } from '@/lib/offline/sessaoLocal'
+import { situacaoSemConexao } from '@/lib/offline/relogio'
 import { limparTodosRascunhos } from '@/lib/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
 import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const encerrarLocal = React.useCallback(async () => {
     // LGPD: computador compartilhado de UPA — dado de paciente não fica.
     limparTodosRascunhos()
+    apagarSessaoLocal()
     definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
     queryClient.clear()
     try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
@@ -55,8 +58,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .select('*')
       .eq('id', userId)
       .maybeSingle()
-    setPerfil(data ?? null)
-    if (data && ehTema(data.tema)) aplicarTema(data.tema)
+    // sem rede (parte 2 da recarga sem conexão): o perfil guardado nesta aba,
+    // da mesma pessoa, enquanto a regra de 2 h e 20 min deixar (N3)
+    const perfilLido = data ?? (error && ehFalhaDeRede(error)
+      ? perfilSemConexao<Perfis['Row']>(userId, situacaoSemConexao().pode)
+      : null)
+    setPerfil(perfilLido)
+    if (perfilLido && ehTema(perfilLido.tema)) aplicarTema(perfilLido.tema)
     setLoading(false)
     if (error) console.error('Erro ao carregar perfil:', error)
   }, [])
@@ -81,12 +89,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.session) void loadPerfil(data.session.user.id)
       else if (ehFalhaDeRede(error)) {
         // D3: o token não pôde ser renovado por falta de rede. Não é sessão
-        // encerrada: rascunhos cifrados e a chave desta aba ficam.
+        // encerrada: rascunhos cifrados e a chave desta aba ficam, e a casca
+        // abre com o perfil guardado nesta aba se a regra deixar (parte 2, N3).
+        setPerfil(perfilSemConexao<Perfis['Row']>(null, situacaoSemConexao().pode))
         setLoading(false)
       } else {
         // Sem sessão (aba fechada sem "Sair", sessão vencida): rascunho clínico
         // que ficou no navegador não tem mais dono — sai agora.
         limparTodosRascunhos()
+        apagarSessaoLocal()
         definirChave(null)
         setLoading(false)
       }
@@ -97,7 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((evento, session) => {
       if (evento === 'SIGNED_IN') saiuEm = 0
       if (session) void loadPerfil(session.user.id)
-      else {
+      else if (evento === 'SIGNED_OUT') {
+        // INITIAL_SESSION sem sessão quem decide é o getSession acima (pode
+        // ser só falta de rede, com o perfil guardado nesta aba)
         setPerfil(null)
         setLoading(false)
       }
@@ -133,6 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           /* sem canal: as outras abas saem quando o token vencer */
         }
         limparTodosRascunhos()
+        apagarSessaoLocal()
         definirChave(null)
         queryClient.clear()
         // escopo local: revoga no servidor o refresh token DESTA sessão (o

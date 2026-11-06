@@ -43,7 +43,12 @@ export function definirChave(b64: string | null): void {
   if (bytes.length !== 32) throw new Error('chave de rascunho inválida')
   chave = bytes
   try { sessionStorage.setItem(CACHE_ABA, b64) } catch { /* sem sessionStorage */ }
+  // quem guarda dados cifrados (sessão sem conexão) espera a chave chegar
+  try { globalThis.dispatchEvent?.(new Event(EVENTO_CHAVE)) } catch { /* fora do navegador */ }
 }
+
+/** Disparado quando a chave da sessão chega (ou volta da cópia da aba). */
+export const EVENTO_CHAVE = 'cc-chave-rascunho'
 
 /** Recarga sem conexão: usa a cópia da chave que ficou nesta aba. */
 export function chaveDaAba(): boolean {

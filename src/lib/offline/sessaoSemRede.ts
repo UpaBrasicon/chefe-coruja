@@ -32,5 +32,7 @@ export function ehFalhaDeRede(erro: unknown): boolean {
   if (!erro || typeof erro !== 'object') return false
   const e = erro as { name?: string; message?: string }
   if (e.name === 'AuthRetryableFetchError') return true
-  return e.name === 'TypeError' && /fetch|network|rede/i.test(e.message ?? '')
+  if (e.name === 'TypeError' && /fetch|network|rede/i.test(e.message ?? '')) return true
+  // erro do PostgREST quando o fetch nem saiu: "TypeError: Failed to fetch"
+  return /^TypeError: (Failed to fetch|NetworkError|Load failed)/.test(e.message ?? '')
 }
