@@ -314,6 +314,8 @@ O levantamento foi feito em 06/11/2026, com cada referência conferida no PubMed
 
 ## Decisões do RT
 
+**Decisão do RT em 06/11/2026: A em H1 a H22 ("Sim, todas A").**
+
 | # | Item | A (recomendada) | B |
 |---|---|---|---|
 | H1 | HNF: alvo de anti-Xa | mostrar o alvo 0,30–0,70 U/mL só na nota, sem mexer na conta | não mostrar |
