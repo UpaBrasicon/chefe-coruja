@@ -40,5 +40,7 @@ test('o build gera precache.json e o service worker guarda a lista quando a pág
   const sw = readFileSync('public/sw.js', 'utf8')
   assert.match(sw, /'\/precache\.json'/)
   assert.match(sw, /data === 'precachear'/)
+  const ativar = sw.slice(sw.indexOf("addEventListener('activate'"), sw.indexOf("addEventListener('fetch'"))
+  assert.ok(ativar.includes('.then(() => { precachear().catch(() => {}) })'), 'o worker novo guarda ao assumir')
   assert.match(readFileSync('src/main.tsx', 'utf8'), /postMessage\('precachear'\)/)
 })
