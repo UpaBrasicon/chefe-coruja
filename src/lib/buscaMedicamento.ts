@@ -2,6 +2,7 @@
 // docs/plantonista/PONTO-11-PRESCRICAO.md). A busca é do servidor
 // (buscar_medicamento: sinônimo, várias palavras, apresentação); aqui ficam o
 // destaque do que foi achado e a frase do que falta para prescrever.
+import { frequenciaPortaReconhecida } from './frequenciaPorta.ts'
 import { normalizar } from './search.ts'
 
 export type MedicamentoAchado = {
@@ -40,9 +41,11 @@ export function trechosAchados(texto: string, termo: string): { t: string; achou
 
 /**
  * O que ainda falta para o botão "Prescrever", na ordem da tela. `porta`: a
- * porta não pede frequência (Agora / Se necessário).
+ * posologia é a do chip escolhido (Agora, quando nenhum) ou a escrita em
+ * "Outra", e precisa ser uma frequência que o servidor entende (F1 da
+ * frequência na porta, migration 20270301000001).
  */
-export function faltaNoItem(f: { med: boolean; dose: string; via: string; posologia: string; porta: boolean },
+export function faltaNoItem(f: { med: boolean; dose: string; via: string; posologia: string; porta: boolean; se_necessario?: boolean },
   servidor: FaltaParaPrescrever['falta'] = []): string[] {
   const falta: string[] = []
   if (servidor.includes('idade')) falta.push('idade')
@@ -50,6 +53,7 @@ export function faltaNoItem(f: { med: boolean; dose: string; via: string; posolo
   if (!f.med) falta.push('medicamento')
   if (!f.dose.trim()) falta.push('dose')
   if (!f.via) falta.push('via')
-  if (!f.porta && !f.posologia.trim()) falta.push('frequência')
+  if (!f.posologia.trim()) falta.push('frequência')
+  else if (f.porta && !frequenciaPortaReconhecida(f.posologia, !!f.se_necessario)) falta.push('frequência que o sistema entende (ex.: 8/8h)')
   return falta
 }

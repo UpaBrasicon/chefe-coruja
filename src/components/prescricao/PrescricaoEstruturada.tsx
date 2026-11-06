@@ -11,12 +11,13 @@
 // servidor; aqui só se mostra e se pede.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Ban, Pill, Printer, Plus } from 'lucide-react'
+import { AlertTriangle, Ban, DoorOpen, Pill, Printer, Plus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { dataHora } from '@/lib/formato'
 import { faltaNoItem, trechosAchados, type MedicamentoAchado } from '@/lib/buscaMedicamento'
+import { FREQUENCIAS_PORTA, OUTRA, aprazamentoImpresso } from '@/lib/frequenciaPorta'
 import { abrirImpressao } from '@/lib/prontuario'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -42,6 +43,8 @@ type ItemVigente = {
   diluicao_texto: string | null; diluicao_divergente: boolean; justificativa_divergencia: string | null; vasoativo: boolean
   autor: string | null; criado_em: string; validacao: string | null; validacao_motivo: string | null
 }
+/** Item da prescrição da porta que segue ativo no leito (prescricao_porta_ativa). */
+type ItemDaPorta = ItemVigente & { horarios: string[]; episodio_id: string | null }
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null; alta_vigilancia: boolean }
 type Diluicao = { id: string; versao: number; texto: string; fonte: string; revisor_crf: string | null }
 
@@ -61,7 +64,7 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   const { perfil } = useAuth()
   const [erro, setErro] = React.useState<string | null>(null)
   const recarregar = () => {
-    for (const k of ['prescricao-vigente', 'alergias', 'peso-atual', 'falta-prescrever']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
+    for (const k of ['prescricao-vigente', 'prescricao-porta-ativa', 'alergias', 'peso-atual', 'falta-prescrever']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
     void qc.invalidateQueries({ queryKey: ['alteracoes-itens'] })
   }
 
@@ -71,6 +74,16 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
       const { data, error } = await supabase.rpc('prescricao_vigente', { p_paciente: pacienteId })
       if (error) throw error
       return (data ?? []) as unknown as ItemVigente[]
+    },
+  })
+  // frequência na porta (F4): na observação ou na internação, os itens da porta
+  // que seguem ativos (e na checagem) aparecem para o médico do leito decidir
+  const daPorta = useQuery({
+    queryKey: ['prescricao-porta-ativa', pacienteId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('prescricao_porta_ativa', { p_paciente: pacienteId })
+      if (error) throw error
+      return (data ?? []) as unknown as ItemDaPorta[]
     },
   })
   // alergia em três estados (tem / nega / não registrada): o painel mora em
@@ -89,6 +102,10 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
 
   async function imprimir() {
     const lista = itens.data ?? []
+    // F6: a coluna de aprazamento leva os horários da enfermagem
+    const { data: aprazados, error } = await supabase.rpc('horarios_dos_itens', { p_itens: lista.map((i) => i.id) })
+    if (error) return setErro(error.message)
+    const horarios = new Map(((aprazados ?? []) as unknown as { item_id: string; horarios: string[] }[]).map((h) => [h.item_id, h.horarios]))
     const impressao = await abrirImpressao({
       pacienteId, internacaoId: null, tipo: 'Prescrição',
       documento: {
@@ -106,7 +123,7 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
             med: i.tipo === 'cuidado' ? i.descricao : `${i.descricao} — ${i.dose ?? ''}${i.diluicao_texto ? ` · ${i.diluicao_divergente ? 'DILUIÇÃO FORA DO PADRÃO: ' : ''}${i.diluicao_texto}` : ''}`,
             via: i.via ?? '—',
             pos: `${i.posologia ?? '—'}${i.se_necessario ? ' — se necessário' : ''}`,
-            apr: '',
+            apr: aprazamentoImpresso(horarios.get(i.id)),
           })),
           obs: '',
         }),
@@ -118,22 +135,25 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   }
 
   const lista = itens.data ?? []
+  const porta = daPorta.data ?? []
+  // os ids da prescrição do leito e dos itens vindos da porta
+  const ids = [...lista, ...porta].map((i) => i.id)
   // interações justificadas pelo médico (Fase 2, tarefa 3)
   const justificadas = useQuery({
-    queryKey: ['interacoes-justificadas', pacienteId, lista.map((i) => i.id).join(',')],
-    enabled: lista.length > 0,
+    queryKey: ['interacoes-justificadas', pacienteId, ids.join(',')],
+    enabled: ids.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('interacoes_justificadas', { p_itens: lista.map((i) => i.id) })
+      const { data, error } = await supabase.rpc('interacoes_justificadas', { p_itens: ids })
       if (error) throw error
       return (data ?? []) as unknown as InteracaoJustificada[]
     },
   })
   // item alterado (Fase 2, tarefa 6): versão, o que mudou e o motivo, como na Checagem
   const alteracoes = useQuery({
-    queryKey: ['alteracoes-itens', lista.map((i) => i.id).join(',')],
-    enabled: lista.length > 0,
+    queryKey: ['alteracoes-itens', ids.join(',')],
+    enabled: ids.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('alteracoes_de_itens', { p_itens: lista.map((i) => i.id) })
+      const { data, error } = await supabase.rpc('alteracoes_de_itens', { p_itens: ids })
       if (error) throw error
       return new Map(((data ?? []) as unknown as Alteracao[]).map((e) => [e.item_id, e]))
     },
@@ -158,13 +178,31 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
           </div>
         </CardContent>
       </Card>
+      {/* F4 da frequência na porta: o que a porta prescreveu e segue correndo */}
+      {porta.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-corpo"><DoorOpen className="size-4" /> Vindos da porta</CardTitle>
+            <CardDescription>
+              Itens da prescrição do Pronto-Socorro que continuam ativos e na checagem da enfermagem. Decida se continuam:
+              suspenda, ou altere (a nova versão entra na prescrição do leito).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 text-apoio">
+            {porta.map((i) => <LinhaItem key={i.id} i={i} horarios={i.horarios} justificadas={(justificadas.data ?? []).filter((j) => j.item_id === i.id)}
+              alteracao={alteracoes.data?.get(i.id)} aoMudar={recarregar} aoErro={setErro} />)}
+          </CardContent>
+        </Card>
+      )}
       <NovoItem pacienteId={pacienteId} peso={peso.data} aoMudar={recarregar} aoErro={setErro} />
     </div>
   )
 }
 
-function LinhaItem({ i, justificadas, alteracao, aoMudar, aoErro }: {
+function LinhaItem({ i, horarios, justificadas, alteracao, aoMudar, aoErro }: {
   i: ItemVigente; justificadas: InteracaoJustificada[]; alteracao: Alteracao | undefined; aoMudar: () => void; aoErro: (m: string | null) => void
+  /** Horários aprazados (itens vindos da porta). */
+  horarios?: string[]
 }) {
   const [suspendendo, setSuspendendo] = React.useState(false)
   const [motivo, setMotivo] = React.useState('')
@@ -177,6 +215,7 @@ function LinhaItem({ i, justificadas, alteracao, aoMudar, aoErro }: {
         {i.peso_kg && <span className="text-rotulo text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
         <span className="ml-auto text-rotulo text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
       </div>
+      {!!horarios?.length && <p className="text-rotulo text-tinta-apoio">Aprazado: {aprazamentoImpresso(horarios)}</p>}
       {i.tipo === 'medicamento' && VIAS_COM_DILUICAO.includes(i.via ?? '') && (
         <p className={`text-rotulo ${i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio'}`}>
           {i.diluicao_divergente
@@ -220,14 +259,15 @@ function LinhaItem({ i, justificadas, alteracao, aoMudar, aoErro }: {
   )
 }
 
-// Porta (protótipo, "Prescrição do Pronto Socorro"): via e "quando" em chips —
-// Agora ou Se necessário — no lugar da frequência; na criança, o campo do
-// peso aferido aparece antes do primeiro medicamento.
+// Porta (protótipo, "Prescrição do Pronto Socorro"): via e "quando" em chips;
+// na criança, o campo do peso aferido aparece antes do primeiro medicamento.
+// "Quando" (frequência na porta, F1, decisão do RT de 06/11/2026): Agora, Se
+// necessário, 4/4h a 24/24h ou "Outra" com campo livre — o servidor confere
+// se entende a frequência escrita (FREQUENCIAS_PORTA, @/lib/frequenciaPorta).
 const VIAS_PORTA: { v: string; rotulo: string }[] = [
   { v: 'EV', rotulo: 'EV' }, { v: 'IM', rotulo: 'IM' }, { v: 'VO', rotulo: 'VO' }, { v: 'SC', rotulo: 'SC' },
   { v: 'INAL', rotulo: 'Inalatória' }, { v: 'SL', rotulo: 'Sublingual' },
 ]
-const QUANDO_PORTA = ['Agora', 'Se necessário'] as const
 
 function ChipPorta({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
   return <Chip ativo={ativo} onClick={onClick}>{children}</Chip>
@@ -278,7 +318,7 @@ export function CampoPeso({ pacienteId, motivo, aoGravar, aoErro, id = 'peso-nov
 
 export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false }: {
   pacienteId: string; peso?: PesoAtual | null; aoMudar: () => void; aoErro: (m: string | null) => void
-  /** Modo do Pronto-Socorro: chips de via e de "quando" (Agora / Se necessário). */
+  /** Modo do Pronto-Socorro: chips de via e de "quando" (Agora, Se necessário, intervalo ou Outra). */
   porta?: boolean
   /** Criança: mostra o campo do peso desde o início. */
   pediatrico?: boolean
@@ -288,6 +328,8 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   const [busca, setBusca] = React.useState('')
   const [med, setMed] = React.useState<Medicamento | null>(null)
   const [f, setF] = React.useState({ dose: '', via: '', posologia: '', observacao: '', se_necessario: false, descricao: '' })
+  // porta: "Outra" abre o campo livre da frequência
+  const [outra, setOutra] = React.useState(false)
   const [divergir, setDivergir] = React.useState(false)
   const [dilTexto, setDilTexto] = React.useState('')
   const [justificativa, setJustificativa] = React.useState('')
@@ -322,7 +364,10 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   // peso e idade que o servidor vai exigir, perguntados antes do item
   const faltaServidor = useFaltaParaPrescrever(pacienteId)
   const faltaPaciente = faltaServidor.data?.falta ?? []
-  const faltaItem = faltaNoItem({ med: !!med, dose: f.dose, via: f.via, posologia: f.posologia, porta }, faltaPaciente)
+  // na porta, sem chip escolhido vale "Agora"; no "Outra", o que foi escrito
+  const posologia = porta && !outra ? f.posologia || 'Agora' : f.posologia.trim()
+  const faltaItem = faltaNoItem({ med: !!med, dose: f.dose, via: f.via, posologia, porta, se_necessario: f.se_necessario }, faltaPaciente)
+  const faltaFrequencia = faltaItem.some((x) => x.startsWith('frequência'))
   const textoPeso = faltaServidor.data ? textoDoPeso(faltaServidor.data)
     : peso ? `Último peso: ${peso.valor_num} kg (${hora(peso.aferido_em)})` : null
   function escolher(m: MedicamentoAchado) {
@@ -366,7 +411,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   })
 
   const limpar = () => {
-    setMed(null); setBusca(''); setDivergir(false); setDilTexto(''); setJustificativa('')
+    setMed(null); setBusca(''); setDivergir(false); setDilTexto(''); setJustificativa(''); setOutra(false)
     setF({ dose: '', via: '', posologia: '', observacao: '', se_necessario: false, descricao: '' })
   }
   async function prescrever(item: Record<string, unknown>) {
@@ -500,15 +545,27 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                   <Input id="item-dose" ref={doseRef} value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-apoio font-medium text-tinta-apoio">Via e quando *</span>
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-apoio font-medium text-tinta-apoio">Via *</span>
+                  <div role="group" aria-label="Via" className="flex flex-wrap items-center gap-1.5">
                     {VIAS_PORTA.map((v) => <ChipPorta key={v.v} ativo={f.via === v.v} onClick={() => setF({ ...f, via: v.v })}>{v.rotulo}</ChipPorta>)}
-                    <span className="mx-1 h-5 w-px bg-fio" aria-hidden />
-                    {QUANDO_PORTA.map((q) => (
-                      <ChipPorta key={q} ativo={(f.posologia || 'Agora') === q}
-                        onClick={() => setF({ ...f, posologia: q, se_necessario: q === 'Se necessário' })}>{q}</ChipPorta>
-                    ))}
                   </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-apoio font-medium text-tinta-apoio">Quando *</span>
+                  <div role="group" aria-label="Quando" className="flex flex-wrap items-center gap-1.5">
+                    {FREQUENCIAS_PORTA.map((q) => (
+                      <ChipPorta key={q} ativo={!outra && (f.posologia || 'Agora') === q}
+                        onClick={() => { setOutra(false); setF({ ...f, posologia: q, se_necessario: q === 'Se necessário' }) }}>{q}</ChipPorta>
+                    ))}
+                    <ChipPorta ativo={outra} onClick={() => { setOutra(true); setF({ ...f, posologia: '', se_necessario: false }) }}>{OUTRA}</ChipPorta>
+                  </div>
+                  {outra && (
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor="item-freq-outra">Frequência</Label>
+                      <Input id="item-freq-outra" className="h-8 sm:max-w-72" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })}
+                        placeholder="ex.: a cada 6 horas, 3x ao dia" />
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
@@ -558,9 +615,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               </div>
             )}
             <Input placeholder="Observação (opcional)" value={f.observacao} onChange={(e) => setF({ ...f, observacao: e.target.value })} />
-            <Button size="sm" className="self-start" disabled={!med || !f.dose.trim() || !f.via || (!porta && !f.posologia.trim())}
+            <Button size="sm" className="self-start" disabled={!med || !f.dose.trim() || !f.via || faltaFrequencia}
               onClick={() => void prescrever({
-                tipo: 'medicamento', medicamento_id: med!.id, dose: f.dose, via: f.via, posologia: f.posologia.trim() || (porta ? 'Agora' : ''),
+                tipo: 'medicamento', medicamento_id: med!.id, dose: f.dose, via: f.via, posologia,
                 se_necessario: f.se_necessario, observacao: f.observacao,
                 ...(divergir ? { diluicao_divergente: dilTexto, justificativa_divergencia: justificativa } : {}),
               })}>
