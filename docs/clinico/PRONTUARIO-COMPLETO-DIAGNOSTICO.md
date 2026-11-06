@@ -33,6 +33,8 @@ O item 7 (08/10/2026) diz que o histórico encerrado fica poluído com muitos at
 
 ## Decisões para o RT
 
+**Decisão do RT em 06/11/2026: A em P1 a P7 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | P1 | Organização | **Linha do tempo por atendimento.** O mais recente fica no topo. Cada atendimento é um bloco que abre e fecha e reúne tudo dele: classificação e reclassificação, registro do atendimento, documentos, prescrições, sinais vitais, exames, internação e desfecho. No topo, fixo: identificação, alergias e regulações | Manter os blocos por tipo, com um filtro por atendimento |
