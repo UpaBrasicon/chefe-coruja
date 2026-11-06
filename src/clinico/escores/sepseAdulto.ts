@@ -1,5 +1,6 @@
 import { ILAS_2026 } from '../adulto/ressuscitacaoVolemica.ts'
 import { completo, escolha, numero, somar, type Escore, type Respostas } from '../escore.ts'
+import type { Fonte } from '../ficha.ts'
 
 // Sepse no adulto: qSOFA, SOFA e lactato numa ferramenta só, como no protótipo
 // (infectologia/Sepse — adulto, construído em 30/08/2026): o lactato de 2 mmol/L
@@ -15,6 +16,28 @@ import { completo, escolha, numero, somar, type Escore, type Respostas } from '.
 // (PAM ≤ 65), independentemente do lactato; o Sepsis-3 exige lactato ≥ 2. Os
 // dois critérios aparecem. Volume, vasopressor e corticoide estão na ferramenta
 // de ressuscitação volêmica, fonte a fonte.
+// Versão de 06/11/2026 (revisão PubMed de 09/10/2026, itens médios; decisão do
+// RT, H11 = A): o critério de sepse continua no SOFA original (SOFA-1). Entra
+// só a nota do SOFA-2 e das validações dele no pronto-socorro; o SOFA-2 fica
+// na ferramenta separada (sofa2.ts).
+
+export const RANZANI_SOFA2_2025: Fonte = {
+  citacao: 'Ranzani OT, Singer M, Salluh JIF, et al. Development and Validation of the Sequential Organ Failure Assessment (SOFA)-2 Score. JAMA. 2025;334(23):2090–2103 (PMID 41159833).',
+  url: 'https://doi.org/10.1001/jama.2025.20516',
+}
+
+export const AHN_SOFA2_PS_2026: Fonte = {
+  citacao: 'Ahn S, Kim SM, Park JH, et al. Validation of the updated sequential organ failure assessment (SOFA)-2 score in emergency department septic shock. J Intensive Care. 2026;14(1) (PMID 42687193). Resumo: duas coortes coreanas de choque séptico no pronto-socorro (2.669 e 1.443 pacientes); AUROC da mortalidade hospitalar 0,734 × 0,702 e 0,719 × 0,671 (SOFA-2 × SOFA-1).',
+  url: 'https://doi.org/10.1186/s40560-026-00921-3',
+}
+
+export const YEN_SOFA2_PS_2026: Fonte = {
+  citacao: 'Yen CC, ZhangJian SJ, Ma CY, et al. Predictive validity of SOFA-2 score for in-hospital mortality among patients with suspected infection presenting to the emergency department. Int J Infect Dis. 2026;171:109030 (PMID 42542312). Resumo: 173.079 atendimentos em 6 hospitais de Taiwan; AUROC 0,78 nos dois escores; o SOFA-2 pontuou menos que o SOFA-1 em 62,3%.',
+  url: 'https://doi.org/10.1016/j.ijid.2026.109030',
+}
+
+export const NOTA_SOFA2_SEPSE =
+  'SOFA-2 (JAMA 2025): mesmos 6 sistemas, com variáveis novas e cortes revistos, desenvolvido em UTI. No pronto-socorro, em choque séptico (duas coortes, 2.669 e 1.443 pacientes), discriminou a mortalidade um pouco melhor que o SOFA-1. Em 173.079 atendimentos por suspeita de infecção em Taiwan, a AUROC foi igual (0,78 vs 0,78), mas o SOFA-2 deu pontuação menor em 62,3% dos pacientes. O Sepsis-3 continua definido pelo SOFA original, que é o desta tela; o SOFA-2 está em ferramenta separada.'
 
 const NAO_SIM = [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim', valor: 1 }]
 const SOFA = ['resp', 'coag', 'hep', 'cv', 'snc', 'renal']
@@ -28,7 +51,7 @@ export const sepseAdulto: Escore = {
   ficha: {
     id: 'sepse-adulto',
     titulo: 'Sepse no adulto — SOFA, choque e lactato (Sepsis-3 · SSC 2026 · ILAS 2026)',
-    versao: '2026-09-28.3',
+    versao: '2026-11-06.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Singer M, Deutschman CS, Seymour CW, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801–810.', url: 'https://doi.org/10.1001/jama.2016.0287' },
@@ -36,8 +59,11 @@ export const sepseAdulto: Escore = {
       { ...ILAS_2026, citacao: `${ILAS_2026.citacao} Definições (p. 3 e 5), triagem (p. 5 e 7), lactato (p. 8 e 14).` },
       { citacao: 'Meyer NJ, Prescott HC. Sepsis and septic shock. N Engl J Med. 2024;391(22):2133–2146.', url: 'https://doi.org/10.1056/NEJMra2403213' },
       { citacao: 'ANDROMEDA-SHOCK-2 Investigators. Peripheral perfusion-targeted resuscitation in septic shock. JAMA. 2025.', url: 'https://doi.org/10.1001/jama.2025.0084' },
+      RANZANI_SOFA2_2025,
+      AHN_SOFA2_PS_2026,
+      YEN_SOFA2_PS_2026,
     ],
-    revisadoEm: '28/09/2026 (SSC 2026 e ILAS jul/2026 conferidos no texto)',
+    revisadoEm: '06/11/2026 (nota do SOFA-2 e das validações no pronto-socorro, SOFA-1 mantido; revisão PubMed, itens médios; SSC 2026 e ILAS jul/2026 conferidos no texto em 28/09/2026)',
   },
   descricao: 'Disfunção orgânica pelo SOFA, choque séptico pelo Sepsis-3 e pelo ILAS, clareamento de lactato; o rastreio é pelo NEWS2',
   itens: [
@@ -128,6 +154,7 @@ export const sepseAdulto: Escore = {
         'Surviving Sepsis Campaign 2026: para rastrear sepse no paciente agudo, NEWS, NEWS2, MEWS ou SIRS em vez do qSOFA como ferramenta única (recomendação forte, certeza moderada). O qSOFA aqui é opcional e só sinal de alerta.',
         'SSC 2026 sugere medir o lactato na sepse possível, provável ou confirmada, e usar medidas seriadas e o tempo de enchimento capilar como apoio à ressuscitação (sugestões condicionais, certeza baixa).',
         'ILAS jul/2026: lactato na 1ª hora; 2ª medida em 4 horas da abertura do protocolo quando acima de 2 vezes o normal; TEC acima de 3 segundos manda ressuscitar mesmo com lactato normal (p. 8 e 14). Volume, vasopressor e corticoide, fonte a fonte, estão na ferramenta de ressuscitação volêmica.',
+        NOTA_SOFA2_SEPSE,
         'O SOFA mede DELTA: em paciente com disfunção crônica prévia, o que conta é o aumento em relação ao basal, e esta tela assume basal zero.',
         'Na criança este escore NÃO se aplica: a referência é o Phoenix. O limiar de lactato pediátrico permanece incerto na literatura.',
       ],

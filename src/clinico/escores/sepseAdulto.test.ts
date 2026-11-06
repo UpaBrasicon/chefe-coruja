@@ -75,8 +75,8 @@ test('sepse: SSC 2026 — qSOFA é opcional e o rastreio aponta o NEWS2', () => 
   assert.ok(sepseAdulto.ficha.fontes.some((f) => f.url === 'https://doi.org/10.1097/CCM.0000000000007075'))
 })
 
-test('sepse: versão .3 de 28/09 cita o ILAS jul/2026 e o critério de choque dele', () => {
-  assert.equal(sepseAdulto.ficha.versao, '2026-09-28.3')
+test('sepse: versão .3 de 28/09 ou posterior cita o ILAS jul/2026 e o critério de choque dele', () => {
+  assert.ok(sepseAdulto.ficha.versao >= '2026-09-28.3')
   assert.ok(sepseAdulto.ficha.fontes.some((f) => /ILAS.*julho de 2026/.test(f.citacao)))
   const r = sepseAdulto.calcular(base())!
   assert.equal(r.derivados[4][0], 'Critério de choque séptico · ILAS jul/2026')

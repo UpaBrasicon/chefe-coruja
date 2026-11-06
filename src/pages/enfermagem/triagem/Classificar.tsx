@@ -24,6 +24,7 @@ import { CamposVitais } from '@/components/clinico/CamposVitais'
 import { buscarFluxogramas, normalizar } from '@/clinico/triagem/buscaFluxograma'
 import { ESCALAS_DOR, escalaPelaIdade, notaNumerica, registroDor, totalDor, type EscalaDor, type ItensDor } from '@/clinico/triagem/dor'
 import { erroGestacao, GESTACAO_VAZIA, registroGestacao, type Gestacao } from '@/clinico/triagem/gestacao'
+import { NOTA_SUBTRIAGEM_IDOSO } from '@/clinico/triagem/subtriagemIdoso'
 import { BlocoDor } from './Dor'
 import { BlocoGestacao } from './Gestacao'
 import { HistoricoClassificacoes } from './Historico'
@@ -458,6 +459,8 @@ export function Classificar({ ep, onFim, corAtual = null }: {
         <span className="text-rotulo text-pretty text-tinta-sussurro">
           Protocolo de apoio: {fonteProtocolo ?? 'protocolo de classificação de risco da unidade'}. O sistema não define a cor; a prioridade marcada é a do enfermeiro.
         </span>
+        {/* nota fixa da revisão PubMed (H18): alerta, sem sugerir cor */}
+        <p role="note" className="rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-[9px] text-apoio text-pretty text-atencao">{NOTA_SUBTRIAGEM_IDOSO}</p>
 
         {/* sinais vitais */}
         <div className="flex flex-col gap-2">

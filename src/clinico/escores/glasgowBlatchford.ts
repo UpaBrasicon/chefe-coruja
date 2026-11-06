@@ -1,10 +1,22 @@
 import { completo, escolha, numero, somar, type Escore } from '../escore.ts'
+import type { Fonte } from '../ficha.ts'
 
 // Glasgow-Blatchford. Porte do protótipo (gastro/Glasgow-Blatchford, construído
 // em 29/08/2026). Entrada de ureia em mg/dL, como no laudo brasileiro, com a
 // conversão para mmol/L à vista (÷ 6,006). Saíram (ADR 0007) as notas de
 // alta/internação/endoscopia, a linha "Limiar de alta vigente" e os cuidados de
 // alta e de endoscopia urgente: ficam os pontos e as faixas.
+// Versão de 06/11/2026 (revisão PubMed, itens médios): nota da ESGE 2026 sobre
+// o horário da EDA na úlcera péptica sangrante, pelo resumo. Pontos e faixas
+// não mudam.
+
+export const ESGE_ULCERA_2026: Fonte = {
+  citacao: 'Gralnek IM, Morris J, Laursen SB, et al. Endoscopic diagnosis and management of peptic ulcer bleeding: European Society of Gastrointestinal Endoscopy (ESGE) Guideline – Update 2026. Endoscopy. 2026;58(8):899–924 (PMID 42127996). Errata: Endoscopy. 2026;58(8):C12 (PMID 42173116).',
+  url: 'https://doi.org/10.1055/a-2863-8314',
+}
+
+export const NOTA_ESGE_2026_EDA =
+  'ESGE 2026 (úlcera péptica sangrante, posterior às fontes desta tela): não recomenda EDA emergente (≤ 6 h) nem urgente (≤ 12 h), salvo instabilidade hemodinâmica que persiste apesar da ressuscitação adequada. Pontos e faixas do escore não mudam.'
 
 const UREIA_MGDL_PARA_MMOL = 6.006
 const ns = (pontos: number) => [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim', valor: pontos }]
@@ -19,14 +31,15 @@ export const glasgowBlatchford: Escore = {
   ficha: {
     id: 'glasgow-blatchford',
     titulo: 'Glasgow-Blatchford — hemorragia digestiva alta',
-    versao: '2026-09-27.1',
+    versao: '2026-11-06.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Blatchford O, Murray WR, Blatchford M. A risk score to predict need for treatment for upper-gastrointestinal haemorrhage. Lancet. 2000;356(9238):1318–1321.', url: 'https://doi.org/10.1016/S0140-6736(00)02816-6' },
       { citacao: 'Laine L, Barkun AN, Saltzman JR, Martel M, Leontiadis GI. ACG Clinical Guideline: Upper Gastrointestinal and Ulcer Bleeding. Am J Gastroenterol. 2021;116(5):899–917.', url: 'https://doi.org/10.14309/ajg.0000000000001245' },
       { citacao: 'Stanley AJ, Laine L, Dalton HR, et al. Comparison of risk scoring systems for patients presenting with upper gastrointestinal bleeding. BMJ. 2017;356:i6432.', url: 'https://doi.org/10.1136/bmj.i6432' },
+      ESGE_ULCERA_2026,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '06/11/2026 (nota da ESGE 2026 sobre o horário da EDA; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Risco de necessidade de intervenção na hemorragia digestiva alta, com dados anteriores à endoscopia',
   itens: [
@@ -77,6 +90,7 @@ export const glasgowBlatchford: Escore = {
         'O escore mede necessidade de INTERVENÇÃO, não mortalidade, e não prevê ressangramento.',
         'Ureia elevada na HDA vem da absorção de sangue no intestino, e por isso pesa tanto na conta.',
         'Para prever MORTALIDADE, o AIMS65 e o Rockall vão melhor que o Blatchford (AUROC em torno de 0,77 contra 0,64). Nenhum dos três prevê ressangramento.',
+        NOTA_ESGE_2026_EDA,
       ],
     }
   },
