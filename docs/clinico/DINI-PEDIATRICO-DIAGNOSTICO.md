@@ -99,6 +99,8 @@ Este é o achado guardado de 09/10/2026 (Fase 2, tarefa 5, Fugulin). O RT o abri
 
 ## Resumo das situações (D2 e D3), para revisão do RT
 
+**Revisão do RT em 06/11/2026: resumo aprovado sem correções ("Resumo ok").**
+
 - **Fonte:** Quadro 1 ("Instrumento de classificação de pacientes pediátricos, versão beta") de Dini e Guirardello, Rev Esc Enferm USP 2014;48(5):787-93, [doi:10.1590/s0080-6234201400005000003](https://doi.org/10.1590/s0080-6234201400005000003), CC BY-NC 3.0.
 - **Como foi lido:** a imagem foi baixada da página pública do SciELO em 06/11/2026 e lida inteira.
 - **O que está abaixo:** um resumo nosso, não o texto do instrumento (D2).
