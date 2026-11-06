@@ -83,5 +83,8 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     navigator.serviceWorker.register('/sw.js').catch(() => {
       // offline opcional — não bloqueia o app
     })
+    // recarga sem conexão (parte 2, N5): guarda de antemão login, casca e as
+    // telas da enfermagem desta versão
+    navigator.serviceWorker.ready.then((r) => r.active?.postMessage('precachear')).catch(() => {})
   })
 }
