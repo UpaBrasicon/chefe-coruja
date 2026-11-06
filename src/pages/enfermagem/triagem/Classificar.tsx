@@ -5,6 +5,10 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useAuth } from '@/contexts/AuthContext'
+import {
+  carregarRascunhoTriagem, chaveRascunhoTriagem, RASCUNHO_TRIAGEM_VAZIO, salvarRascunhoTriagem, temConteudo, type RascunhoTriagem,
+} from '@/lib/rascunhoTriagem'
 import { ehPediatrico, idadeEm, rotuloIdade } from '@/domain/idade'
 import { rotulosPrioridade } from '@/domain/prioridade'
 import { CORES_RISCO, FONTE_CORES, gravidade, NIVEL_RISCO, rotuloCor, textoAlvo, type CorRisco } from '@/domain/risco'
@@ -68,6 +72,12 @@ export function Classificar({ ep, onFim, corAtual = null }: {
 }) {
   const reclass = corAtual !== null
   const { unidadeAtiva } = useUnidade()
+  const { perfil } = useAuth()
+  // rascunho cifrado (achado guardado de 07/10/2026, A em M1 a M5): recarregar,
+  // cair a conexão ou acabar a bateria não apaga o que a enfermeira digitou
+  const chaveRascunho = chaveRascunhoTriagem(ep.id, reclass, unidadeAtiva?.unidade_id, perfil?.id)
+  const [recuperado, setRecuperado] = React.useState(() => carregarRascunhoTriagem(chaveRascunho))
+  const r = recuperado?.dados ?? null
   const queryClient = useQueryClient()
   const hoje = dataSP()
   const nasc = ep.paciente?.data_nascimento ?? null
@@ -75,7 +85,7 @@ export function Classificar({ ep, onFim, corAtual = null }: {
   // pediatria até 13a 11m 29d, pela data de chegada (CLAUDE.md)
   const pubIdade: Publico | null = nasc ? (ehPediatrico(nasc, diaChegada) ? 'pediatrico' : 'adulto') : null
   const anos = nasc ? idadeEm(nasc, diaChegada)?.anos ?? null : null
-  const [pubManual, setPubManual] = React.useState<Publico | null>(null)
+  const [pubManual, setPubManual] = React.useState<Publico | null>(r?.pubManual ?? null)
   const publico: Publico | null = pubManual ?? pubIdade
   const grupoTrocado = pubIdade !== null && publico !== pubIdade
 
@@ -98,25 +108,56 @@ export function Classificar({ ep, onFim, corAtual = null }: {
   )
   const protocolos = protocoloUnidade?.protocolo ? [protocoloUnidade.protocolo] : []
 
-  const [queixa, setQueixa] = React.useState(ep.queixa)
-  const [cor, setCor] = React.useState<CorRisco | null>(null)
+  const [queixa, setQueixa] = React.useState(r?.queixa ?? ep.queixa)
+  // a cor nunca vem do sistema; do rascunho, só a que esta enfermeira já escolheu (M1)
+  const [cor, setCor] = React.useState<CorRisco | null>(r?.cor ?? null)
   const [busca, setBusca] = React.useState('')
   const [listaAberta, setListaAberta] = React.useState(false)
-  const [fluxoId, setFluxoId] = React.useState<string | null>(null)
-  const [disc, setDisc] = React.useState('')
+  const [fluxoId, setFluxoId] = React.useState<string | null>(r?.fluxoId ?? null)
+  const [disc, setDisc] = React.useState(r?.disc ?? '')
   const [sugAberta, setSugAberta] = React.useState(false)
-  const [vitais, setVitais] = React.useState<Record<string, string>>({})
-  const [aval, setAval] = React.useState({ avdi: '', glasgow: '', tempo_sintomas: '', comorbidades: '', medicacoes: '' })
+  const [vitais, setVitais] = React.useState<Record<string, string>>(r?.vitais ?? {})
+  const [aval, setAval] = React.useState(r?.aval ?? RASCUNHO_TRIAGEM_VAZIO.aval)
   const pelaIdade = escalaPelaIdade(nasc, hoje)
-  const [escalaEscolhida, setEscalaEscolhida] = React.useState<EscalaDor | null>(null)
+  const [escalaEscolhida, setEscalaEscolhida] = React.useState<EscalaDor | null>(r?.escalaEscolhida ?? null)
   const escala: EscalaDor = publico !== 'pediatrico' ? 'numerica' : escalaEscolhida ?? pelaIdade
-  const [itensDor, setItensDor] = React.useState<ItensDor>({})
-  const [modoO2, setModoO2] = React.useState<ModoO2>('ar_ambiente')
-  const [litros, setLitros] = React.useState('')
-  const [gest, setGest] = React.useState<Gestacao>(GESTACAO_VAZIA)
+  const [itensDor, setItensDor] = React.useState<ItensDor>(r?.itensDor ?? {})
+  const [modoO2, setModoO2] = React.useState<ModoO2>(r?.modoO2 ?? 'ar_ambiente')
+  const [litros, setLitros] = React.useState(r?.litros ?? '')
+  const [gest, setGest] = React.useState<Gestacao>(r?.gest ?? GESTACAO_VAZIA)
   const [tentou, setTentou] = React.useState(false)
-  const [motivo, setMotivo] = React.useState('')
-  const [justificativa, setJustificativa] = React.useState('')
+  const [motivo, setMotivo] = React.useState(r?.motivo ?? '')
+  const [justificativa, setJustificativa] = React.useState(r?.justificativa ?? '')
+
+  const rascunho: RascunhoTriagem = {
+    pubManual, queixa, cor, fluxoId, disc, vitais, aval, escalaEscolhida, itensDor, modoO2, litros, gest, motivo, justificativa,
+  }
+  const rascunhoJson = JSON.stringify(rascunho)
+  const primeiraGravacao = React.useRef(true)
+  React.useEffect(() => {
+    // a primeira passada é o que acabou de ser lido: regravar renovaria um rascunho velho
+    if (primeiraGravacao.current) { primeiraGravacao.current = false; return }
+    const t = setTimeout(() => {
+      try {
+        const atual = JSON.parse(rascunhoJson) as RascunhoTriagem
+        if (temConteudo(atual, ep.queixa)) salvarRascunhoTriagem(chaveRascunho, atual)
+        else localStorage.removeItem(chaveRascunho)
+      } catch { /* armazenamento indisponível: o rascunho fica só na tela */ }
+    }, 500)
+    return () => clearTimeout(t)
+  }, [rascunhoJson, chaveRascunho, ep.queixa])
+
+  function apagarRascunho() {
+    try { localStorage.removeItem(chaveRascunho) } catch { /* sem armazenamento */ }
+    setRecuperado(null)
+  }
+  function descartarRascunho() {
+    apagarRascunho()
+    const v = RASCUNHO_TRIAGEM_VAZIO
+    setPubManual(v.pubManual); setQueixa(ep.queixa); setCor(v.cor); setFluxoId(v.fluxoId); setDisc(v.disc); setVitais(v.vitais)
+    setAval(v.aval); setEscalaEscolhida(v.escalaEscolhida); setItensDor(v.itensDor); setModoO2(v.modoO2); setLitros(v.litros)
+    setGest(v.gest); setMotivo(v.motivo); setJustificativa(v.justificativa); setTentou(false)
+  }
   const baixou = reclass && !!cor && gravidade(cor) > gravidade(corAtual!)
 
   const doGrupo = (fluxos ?? []).filter((f) => f.publico === publico)
@@ -201,6 +242,7 @@ export function Classificar({ ep, onFim, corAtual = null }: {
       if (error) throw error
     },
     onSuccess: () => {
+      apagarRascunho()
       void queryClient.invalidateQueries({ queryKey: ['triagem-fila'] })
       void queryClient.invalidateQueries({ queryKey: ['triagem-espera'] })
       onFim(reclass
@@ -218,6 +260,15 @@ export function Classificar({ ep, onFim, corAtual = null }: {
 
   return (
     <div className="flex flex-col gap-3.5">
+      {recuperado && (
+        <div className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-[9px] text-apoio text-pretty text-atencao" role="status">
+          <AlertTriangle className="size-[15px] shrink-0" aria-hidden />
+          <span className="min-w-0 flex-1">
+            Rascunho das {hora(new Date(recuperado.salvoEm).toISOString())} recuperado. Confira os sinais vitais antes de registrar.
+          </span>
+          <Button size="sm" variant="outline" onClick={descartarRascunho}>Descartar rascunho</Button>
+        </div>
+      )}
       {/* situação */}
       <Secao>
         <div className="flex flex-wrap items-center gap-3.5">
