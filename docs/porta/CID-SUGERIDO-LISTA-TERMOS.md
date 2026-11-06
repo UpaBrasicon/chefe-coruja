@@ -1,5 +1,7 @@
 # CID sugerido: lista inicial de termos para revisão do RT
 
+**Revisão do RT em 06/11/2026: lista aprovada sem correções ("ok").**
+
 Esta lista é o conteúdo da tabela `public.cid_termo`, carregada pela migration `20270302000001_cid_sugerido.sql`.
 
 - **Decisão C4:** o RT revisa a lista antes de qualquer coisa ir para a produção.
