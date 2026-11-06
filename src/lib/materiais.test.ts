@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { GRUPO_PENDENCIA, lerQuantidade, ondeCorrigir, EVENTO, type MaterialUnidade } from './contas.ts'
+import { GRUPO_PENDENCIA, lerQuantidade, motivoDoEvento, ondeCorrigir, quantidadeNaTela, EVENTO, type MaterialUnidade } from './contas.ts'
 import { filtrarMateriais } from './materiais.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
@@ -14,6 +14,24 @@ test('quantidade: maior que zero, até 2 casas, aceita vírgula', () => {
   assert.equal(lerQuantidade('1,5'), 1.5)
   assert.equal(lerQuantidade(' 2.25 '), 2.25)
   for (const t of ['0', '-1', '1,555', 'abc', '', '1e3']) assert.equal(lerQuantidade(t), null, t)
+})
+
+// Achados do teste com login na homologação (05/11/2026): o histórico mostrava
+// "2.5 pacote" e o campo começava em "1" (digitar sem apagar lançava 12,5).
+test('quantidade na tela e no histórico com vírgula', () => {
+  assert.equal(quantidadeNaTela(2.5), '2,5')
+  assert.equal(quantidadeNaTela(3), '3')
+  assert.equal(motivoDoEvento('material_lancado', '2.5 pacote'), '2,5 pacote')
+  assert.equal(motivoDoEvento('material_lancado', '12 unidade'), '12 unidade')
+  assert.equal(motivoDoEvento('material_retirado', 'Lote 1.5 vencido'), 'Lote 1.5 vencido')
+  assert.equal(motivoDoEvento('reaberta', null), null)
+})
+
+test('lançar material: a quantidade começa vazia', () => {
+  const conta = readFileSync('src/pages/faturamento/Contas.tsx', 'utf8')
+  const lancar = conta.slice(conta.indexOf('function LancarMaterial'))
+  assert.doesNotMatch(lancar.slice(0, lancar.indexOf('return (')), /useState\('1'\)/)
+  assert.match(conta, /motivoDoEvento\(e\.evento, e\.motivo\)/)
 })
 
 test('busca do cadastro: nome sem acento, código SIGTAP e situação', () => {

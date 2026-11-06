@@ -78,6 +78,15 @@ export function lerQuantidade(texto: string): number | null {
   return n > 0 && n <= 99_999_999 ? n : null
 }
 
+/** Quantidade do material como se lê no Brasil: 2.5 vira "2,5". */
+export const quantidadeNaTela = (n: number | string) => String(n).replace('.', ',')
+
+/** Motivo do evento no histórico: o "Material lançado" guarda "2.5 pacote" e a tela mostra "2,5 pacote". */
+export function motivoDoEvento(evento: string, motivo: string | null) {
+  if (motivo == null || evento !== 'material_lancado') return motivo
+  return motivo.replace(/^(\d+)\.(\d+)/, '$1,$2')
+}
+
 export type ContaDetalhe = Conta & {
   eventos: { evento: string; de: string | null; para: string | null; motivo: string | null; por: string | null; em: string }[]
   pode_conduzir: boolean
