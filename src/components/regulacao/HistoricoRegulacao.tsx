@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
+import { cn } from '@/lib/utils'
 import {
   CARATER, INTERNACAO_PSIQUIATRICA, MOTIVOS_NEGACAO, PRIORIDADES, STATUS, TIPOS_LEITO, TRANSPORTES, VULNERABILIDADES, resumoPedido,
   type Carater, type MotivoNegacao, type Prioridade, type StatusRegulacao, type TipoSolicitacao, type Vulnerabilidade,
@@ -46,7 +47,15 @@ const TOM: Record<string, 'destructive' | 'warning' | 'info' | 'secondary'> = {
   critico: 'destructive', atencao: 'warning', info: 'info', neutro: 'secondary',
 }
 
-export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
+/**
+ * `secao` (Prontuário completo, polish de 06/11/2026): sem cartão, dentro do
+ * painel da ficha, com o título que a tela manda; vazio numa linha só. Sem
+ * `secao`, o cartão de sempre (Resumo do leito, janela da porta).
+ */
+export function HistoricoRegulacao({ pacienteId, secao }: {
+  pacienteId: string
+  secao?: { titulo: React.ReactNode; className?: string }
+}) {
   const { papeisDaUnidade } = useUnidade()
   const pode = papeisDaUnidade.includes('plantonista') || papeisDaUnidade.includes('gestor')
   const lista = useQuery({
@@ -60,6 +69,44 @@ export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
   })
   const [aberta, setAberta] = React.useState<string | null>(null)
   if (!pode) return null
+  const itens = lista.data ?? []
+  const listaPedidos = (
+    <ul className="flex flex-col divide-y divide-fio">
+      {itens.map((r) => (
+        <li key={r.id} className="py-2">
+          <BotaoLinha variante="linha" aria-expanded={aberta === r.id} className="flex-wrap items-center gap-2 border-0 p-0 hover:bg-transparent" onClick={() => setAberta(aberta === r.id ? null : r.id)}>
+            <span className="text-tinta-sussurro">{fmtDataHora(r.criada_em)}</span>
+            <Badge variant={TOM[PRIORIDADES[r.prioridade].tom]}>{PRIORIDADES[r.prioridade].rotulo}</Badge>
+            <span className="font-medium text-tinta">{resumoPedido(r)}</span>
+            <span className="text-tinta-sussurro">{CARATER[r.carater]} · CID {r.cid}</span>
+            {r.outra_unidade && <span className="text-tinta-apoio">{r.origem}</span>}
+            {r.destino && <span className="text-tinta-apoio">→ {r.destino}</span>}
+            <span className="ml-auto"><Estado tom="teal">{STATUS[r.status]}</Estado></span>
+            <span className="text-tinta-sussurro">nº {r.numero}</span>
+          </BotaoLinha>
+          {aberta === r.id && <Detalhe pacienteId={pacienteId} id={r.id} />}
+        </li>
+      ))}
+    </ul>
+  )
+  if (secao) {
+    const vazio = !lista.isLoading && !lista.error && itens.length === 0
+    return (
+      <div className={cn('text-apoio', secao.className)}>
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          {secao.titulo}
+          {lista.isLoading && <Spinner className="size-3.5" rotulo="Carregando regulações" />}
+          {vazio && <span className="text-tinta-sussurro">nenhum pedido</span>}
+        </div>
+        {lista.error ? <p className="mt-1 text-critico">{(lista.error as Error).message}</p> : itens.length > 0 && (
+          <>
+            {listaPedidos}
+            <p className="mt-1 text-rotulo text-tinta-sussurro">Abrir um pedido fica registrado no acesso ao prontuário.</p>
+          </>
+        )}
+      </div>
+    )
+  }
   return (
     <Card className="shadow-none">
       <CardHeader>
@@ -68,25 +115,7 @@ export function HistoricoRegulacao({ pacienteId }: { pacienteId: string }) {
       </CardHeader>
       <CardContent className="text-apoio">
         {lista.isLoading ? <Spinner /> : lista.error ? <p className="text-critico">{(lista.error as Error).message}</p>
-          : (lista.data ?? []).length === 0 ? <p className="text-tinta-sussurro">Nenhum pedido de regulação para este paciente.</p> : (
-          <ul className="flex flex-col divide-y divide-fio">
-            {lista.data!.map((r) => (
-              <li key={r.id} className="py-2">
-                <BotaoLinha variante="linha" aria-expanded={aberta === r.id} className="flex-wrap items-center gap-2 border-0 p-0 hover:bg-transparent" onClick={() => setAberta(aberta === r.id ? null : r.id)}>
-                  <span className="text-tinta-sussurro">{fmtDataHora(r.criada_em)}</span>
-                  <Badge variant={TOM[PRIORIDADES[r.prioridade].tom]}>{PRIORIDADES[r.prioridade].rotulo}</Badge>
-                  <span className="font-medium text-tinta">{resumoPedido(r)}</span>
-                  <span className="text-tinta-sussurro">{CARATER[r.carater]} · CID {r.cid}</span>
-                  {r.outra_unidade && <span className="text-tinta-apoio">{r.origem}</span>}
-                  {r.destino && <span className="text-tinta-apoio">→ {r.destino}</span>}
-                  <span className="ml-auto"><Estado tom="teal">{STATUS[r.status]}</Estado></span>
-                  <span className="text-tinta-sussurro">nº {r.numero}</span>
-                </BotaoLinha>
-                {aberta === r.id && <Detalhe pacienteId={pacienteId} id={r.id} />}
-              </li>
-            ))}
-          </ul>
-        )}
+          : itens.length === 0 ? <p className="text-tinta-sussurro">Nenhum pedido de regulação para este paciente.</p> : listaPedidos}
       </CardContent>
     </Card>
   )
