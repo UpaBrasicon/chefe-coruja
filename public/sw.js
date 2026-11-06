@@ -4,7 +4,7 @@
 // `activate` apagar o cache da versão anterior. Com o nome fixo, um
 // navegador que usou a versão antiga guardava para sempre arquivos que não
 // existem mais, e o app abria em branco depois de um deploy.
-const CACHE = 'chefe-coruja-v3'
+const CACHE = 'chefe-coruja-v4'
 
 self.addEventListener('install', () => {
   self.skipWaiting()
