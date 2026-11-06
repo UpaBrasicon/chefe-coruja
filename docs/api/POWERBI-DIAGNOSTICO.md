@@ -21,6 +21,8 @@ Este é o achado guardado de 10/10/2026, da conversa sobre a API (Fase 3, tarefa
 
 ## Decisões para o RT
 
+**Decisão do RT em 06/11/2026: A em B1 a B6 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | B1 | O que é entregue | Consultas em Power Query (M), em arquivos de texto no repositório (`docs/api/powerbi/*.pq`), e um passo a passo de 1 página para a secretaria colar no Power BI Desktop. Não há Power BI Desktop aqui para gerar um modelo `.pbit` | Um arquivo `.pbit` pronto, que precisa do Power BI Desktop instalado nesta máquina |
