@@ -176,3 +176,9 @@ Este é o achado guardado de 09/10/2026 (Fase 2, tarefa 5, Fugulin). O RT o abri
 | 24 a 30 | Alta dependência |
 | 31 a 36 | Cuidados semi-intensivos |
 | 37 a 44 | Cuidados intensivos |
+
+## Escolhas da implementação confirmadas pelo RT (06/11/2026, "Confirmo as 4")
+1. **Criança sem data de nascimento:** o Dini recusa e pede a data. Na tela, essa criança continua vendo o Fugulin.
+2. **Nota D6:** o texto é o do PR #476.
+3. **Controles:** a lista do que conta como controle aparece como nota abaixo do indicador.
+4. **Nota antiga:** a frase "Fugulin é instrumento do adulto" saiu da aba da criança.
