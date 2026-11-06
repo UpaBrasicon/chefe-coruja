@@ -2,7 +2,7 @@ import type { Ficha } from '../ficha.ts'
 import { VNI_DPOC } from './asmaDpoc.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
 import { VNI } from './oxigenacao.ts'
-import type { Faixa } from './ventilacaoMecanica.ts'
+import { ATS_IRPA_2026, type Faixa } from './ventilacaoMecanica.ts'
 
 // VNI em cinco passos (formato do protótipo: Quem, Interface, Ajustes,
 // Acompanhar, Retirar) com o que o Manual de Medicina de Emergência do
@@ -18,11 +18,14 @@ import type { Faixa } from './ventilacaoMecanica.ts'
 
 const PAG_VNI = 'cap. 27, p. 378–386; cap. 31, p. 424–426; cap. 21, p. 296; cap. 1, p. 35–36'
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026): a
+// nota da ATS 2026 na IRpA hipercápnica (NOTA_ATS_HIPERCAPNICA, a mesma da
+// DPOC) aparece no passo 1. Nenhuma pressão nova.
 export const fichaVniPassos: Ficha = {
   ...fichaAdulto('adulto-vni-cinco-passos', 'Ventilação não invasiva em cinco passos (adulto)', PAG_VNI),
-  versao: '2026-09-30.1',
-  fontes: [pagina(PAG_VNI)],
-  revisadoEm: '30/09/2026 (conferido no texto dos cap. 1, 19, 27 e 31; aguarda aprovação do RT)',
+  versao: '2026-11-06.1',
+  fontes: [pagina(PAG_VNI), ATS_IRPA_2026],
+  revisadoEm: '06/11/2026 (nota da ATS 2026 na IRpA hipercápnica; revisão PubMed, itens médios)',
 }
 
 export const PASSOS_VNI = ['Quem', 'Interface', 'Ajustes', 'Acompanhar', 'Retirar'] as const

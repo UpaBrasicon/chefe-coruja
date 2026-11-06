@@ -23,7 +23,7 @@ test('lote D adulto: fichas na versão .1 de 28/09 com o manual como primeira fo
     assert.match(f.fontes[0].citacao, /Manual de Medicina de Emergência/, f.id)
     assert.ok(f.fontes.some((x) => re.test(x.citacao)), f.id)
   }
-  assert.equal(fichaDpocAdulto.versao, '2026-09-27.1')
+  assert.ok(fichaDpocAdulto.versao >= '2026-09-27.1')
 })
 
 test('GINA 2026 (Figura 9): grave por SpO2 < 92, FR > 30, PEF < 50 ou incapacidade; risco de vida se sonolento; moderada PEF 50–70; leve', () => {

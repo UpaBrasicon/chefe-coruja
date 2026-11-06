@@ -1,4 +1,4 @@
-import type { Ficha } from '../ficha.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, somar, type Escore, type Item } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 
@@ -16,13 +16,28 @@ const KLASTERSKY: Ficha['fontes'][number] = {
 
 const baseMascc = fichaAdulto('adulto-mascc', 'MASCC — risco na neutropenia febril (adulto)', `${CAP}, p. 1067–1068 (Tabela 2)`)
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026): o
+// consenso MASCC 2026 entra como nota nos cuidados. Corte e pontos não mudam.
+export const MASCC_2026: Fonte = {
+  citacao: 'Cooksley T, Font C, Thursky K, et al. Febrile neutropenia in patients treated with chemotherapy/immune checkpoint inhibition: a MASCC consensus statement. Support Care Cancer. 2026;34(8) (PMID 42525130).',
+  url: 'https://doi.org/10.1007/s00520-026-11045-7',
+}
+
+export const NOTA_MASCC_2026 =
+  'Consenso MASCC 2026: MASCC ≥ 21 continua indicando candidato a manejo ambulatorial, mas o escore não foi validado em quem usa quimioterapia combinada com inibidor de checkpoint imune; MASCC < 21 é alto risco e segue o manejo padrão.'
+
 export const ERRATA_MASCC =
   'p. 1068 (conferido na imagem da página) — a Tabela 2 junta "sintomas moderados ou graves = 3". No escore original (Klastersky et al., 2000) sintomas moderados valem 3 e sintomas graves valem 0. A ferramenta usa 0 para sintomas graves e mostra também o total pela leitura literal do livro.'
 
 const simNao = (id: string, rotulo: string, pontos: number): Item => ({ tipo: 'escolha', id, rotulo, opcoes: [{ rotulo: 'Não — 0', valor: 0 }, { rotulo: `Sim — ${pontos}`, valor: pontos }] })
 
 export const mascc: Escore = {
-  ficha: { ...baseMascc, fontes: [...baseMascc.fontes, KLASTERSKY] },
+  ficha: {
+    ...baseMascc,
+    versao: '2026-11-06.1',
+    fontes: [...baseMascc.fontes, KLASTERSKY, MASCC_2026],
+    revisadoEm: '06/11/2026 (nota do consenso MASCC 2026 nos cuidados; revisão PubMed, itens médios)',
+  },
   descricao: 'Multinational Association for Supportive Care in Cancer: soma de 0 a 26; abaixo de 21 é critério de alto risco no livro.',
   itens: [
     { tipo: 'escolha', id: 'sintomas', rotulo: 'Intensidade dos sintomas', opcoes: [
@@ -57,6 +72,7 @@ export const mascc: Escore = {
       cuidados: [
         'MASCC ≥ 21 não basta para baixo risco: o livro também classifica como alto risco neutropenia < 500 esperada por > 7 dias; comorbidades (instabilidade, mucosite, alteração mental, infecção de cateter, infiltrado novo ou hipóxia, doença pulmonar crônica); transaminases > 5 × LSN ou ClCr < 30 mL/min; neutropenia ≤ 100 por > 7 dias; profilaxia ambulatorial com quinolona; e exige doença oncológica estável (p. 1067).',
         'Baixo risco: nenhum desses critérios e bom performance status (p. 1067).',
+        NOTA_MASCC_2026,
         'Sem referência pediátrica declarada.',
       ],
     }

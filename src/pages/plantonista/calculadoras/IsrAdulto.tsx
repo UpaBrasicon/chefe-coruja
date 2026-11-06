@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { DROGAS_ISR, calcularIsr, fichaIsrAdulto, type DrogaIsr } from '@/clinico/adulto/isr'
+import { DROGAS_ISR, NOTA_ATS_PRE_OXIGENACAO, calcularIsr, fichaIsrAdulto, type DrogaIsr } from '@/clinico/adulto/isr'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,6 +22,7 @@ export function IsrAdulto() {
           <NumberField id="isr-peso" label="Peso" unit="kg" value={peso} onChange={setPeso} min={0} step={0.1} />
         </CardContent>
       </Card>
+      <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ATS_PRE_OXIGENACAO}</p>
       {(Object.keys(PAPEL) as DrogaIsr['papel'][]).map((p) => (
         <Card key={p}>
           <CardHeader>

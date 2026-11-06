@@ -1,5 +1,6 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
-import { relacaoPF } from './ventilacaoMecanica.ts'
+import { ATS_IRPA_2026, relacaoPF } from './ventilacaoMecanica.ts'
 
 // Oxigenação e insuficiência respiratória aguda no adulto — cap. 27 (IRpA,
 // p. 370–386) e cap. 1 (sala de emergência, p. 35–41) do Manual de Medicina
@@ -11,7 +12,25 @@ import { relacaoPF } from './ventilacaoMecanica.ts'
 //
 // S/F (SpO2/FiO2): o livro não traz — fica fora.
 
-export const fichaOxigenacaoAdulto = fichaAdulto('adulto-oxigenacao-irpa', 'Oxigenação e insuficiência respiratória aguda — adulto', 'cap. 27, p. 370–386; cap. 1, p. 35–41; cap. 37, p. 498')
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
+// ATS 2026 e SOHO (NEJM 2026) como nota na linha do CNAF; a nota da ATS sobre
+// a pós-extubação (em ventilacaoMecanica.ts) aparece no bloco da VNI. Alvos de
+// SatO2 e cortes do livro não mudam.
+export const SOHO_2026: Fonte = {
+  citacao: 'Frat JP, Quenot JP, Guitton C, et al. High-Flow or Standard Oxygen in Acute Hypoxemic Respiratory Failure. N Engl J Med. 2026;394(21):2095–2106 (PMID 41841715).',
+  url: 'https://doi.org/10.1056/NEJMoa2516087',
+}
+
+export const NOTA_ATS_HIPOXEMICA =
+  'ATS 2026: na IRpA hipoxêmica, recomendação forte de CNAF e condicional de VNI ou CPAP, com vigilância próxima para escalar o suporte; o benefício é na necessidade de intubação. SOHO (NEJM 2026; 1.110 adultos com P/F ≤ 200): a CNAF não reduziu a mortalidade em 28 dias (14,6% nos dois grupos), reduziu a intubação (42,4% vs 48,4%) e teve mais parada cardíaca ou pneumotórax durante a respiração espontânea (2,3% vs 1,1%). A CNAF não deve atrasar a intubação indicada. Os alvos de SatO2 do livro não mudam.'
+
+const fichaOxigenacaoLivro = fichaAdulto('adulto-oxigenacao-irpa', 'Oxigenação e insuficiência respiratória aguda — adulto', 'cap. 27, p. 370–386; cap. 1, p. 35–41; cap. 37, p. 498')
+export const fichaOxigenacaoAdulto: Ficha = {
+  ...fichaOxigenacaoLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaOxigenacaoLivro.fontes, ATS_IRPA_2026, SOHO_2026],
+  revisadoEm: '06/11/2026 (nota da ATS 2026 e do SOHO no CNAF e da ATS 2026 na pós-extubação; revisão PubMed, itens médios)',
+}
 
 export type Faixa = [number, number]
 
@@ -147,7 +166,7 @@ export const INDICACOES_IOT = [
 
 // ---------------------------------------------------------------- dispositivos de O2
 
-export type Dispositivo = { id: string; nome: string; cap1?: string; cap27?: string; indicacoes27?: string }
+export type Dispositivo = { id: string; nome: string; cap1?: string; cap27?: string; indicacoes27?: string; nota?: string }
 
 /** Tabela 1 do cap. 1 (p. 36–37) e Tabela 7 do cap. 27 (p. 381–382), lado a lado. */
 export const DISPOSITIVOS: Dispositivo[] = [
@@ -156,7 +175,7 @@ export const DISPOSITIVOS: Dispositivo[] = [
   { id: 'aerossol', nome: 'Máscara facial de aerossol', cap27: 'Combinações variáveis de O2 e fluxos moderados', indicacoes27: 'Qualquer IRpA hipoxêmica não refratária a O2' },
   { id: 'nao-reinalante', nome: 'Máscara não reinalante / com reservatório', cap1: '15 L/min → FiO2 70%; 40 L/min ("flush rate") → FiO2 100%', cap27: 'Alta concentração (90–100%) e altos fluxos', indicacoes27: 'IRpA hipoxêmica com predomínio de shunt (SDRA, pneumonia grave)' },
   { id: 'venturi', nome: 'Máscara de Venturi', cap1: '12–15 L/min, FiO2 24–50% conforme a válvula; não umidificar', cap27: 'Mistura ar-oxigênio, FiO2 definida (24–50%), altos fluxos', indicacoes27: 'Precisão de titulação de FiO2; exacerbação de DPOC ou IRpA mista' },
-  { id: 'cnaf', nome: 'Cateter nasal de alto fluxo', cap1: '40–70 L/min → FiO2 titulável, podendo ser próxima de 100%; aquecido e umidificado', cap27: 'Até 60 L/min em adultos (p. 378–379)' },
+  { id: 'cnaf', nome: 'Cateter nasal de alto fluxo', cap1: '40–70 L/min → FiO2 titulável, podendo ser próxima de 100%; aquecido e umidificado', cap27: 'Até 60 L/min em adultos (p. 378–379)', nota: NOTA_ATS_HIPOXEMICA },
   { id: 'bvm', nome: 'Bolsa-valva-máscara', cap1: '40 L/min → FiO2 100% em apneia, 90% em respiração espontânea', cap27: 'Fluxo de O2 a 15 L/min (p. 378)' },
 ]
 

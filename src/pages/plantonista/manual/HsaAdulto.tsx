@@ -32,7 +32,10 @@ export function HsaAdulto() {
               {DIRETRIZ_HSA_2023.map((d) => (
                 <TableRow key={d.tema} className="border-t">
                   <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">{d.aha}</TableCell>
+                  <TableCell className="pr-3 py-2">
+                    {d.aha}
+                    {d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}
+                  </TableCell>
                   <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.classe} · {d.pagina}</TableCell>
                   <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
                 </TableRow>
