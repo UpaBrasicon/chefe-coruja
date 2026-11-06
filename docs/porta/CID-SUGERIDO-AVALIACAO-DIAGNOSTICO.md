@@ -21,6 +21,8 @@ Este é o achado guardado de 07/10/2026, do ensaio da demo, aberto pelo RT em 06
 
 ## Decisões para o RT
 
+**Decisão do RT em 06/11/2026: A em C1 a C7 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | C1 | Como sugerir | Determinístico, dentro do banco: uma tabela curada de termos e siglas (no padrão dos sinônimos de medicamento) mais a busca de texto. Nada sai do banco, a resposta é sempre igual e testável, e todo código sugerido existe na CID-10 | Por IA (LLM), via o gateway do Hermes, com desidentificação; o provedor atual fica fora do Brasil |
