@@ -18,6 +18,33 @@ export const CTRC_CARVAO_2026: Fonte = {
   url: 'https://doi.org/10.1080/15563650.2025.2609807',
 }
 
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026, H7 = A): as
+// diretrizes AHA 2023 e 2025 e os consensos da digoxina (2023 e 2024) entram
+// como nota. As doses continuam as do livro; a conferência dose por dose com o
+// texto completo é tarefa à parte, depois deste lote.
+export const AHA_INTOX_2023: Fonte = {
+  citacao: 'Lavonas EJ, Akpunonu PD, Arens AM, et al. 2023 American Heart Association Focused Update on the Management of Patients With Cardiac Arrest or Life-Threatening Toxicity Due to Poisoning: An Update to the American Heart Association Guidelines for Cardiopulmonary Resuscitation and Emergency Cardiovascular Care. Circulation. 2023;148(16):e149–e184 (PMID 37721023).',
+  url: 'https://doi.org/10.1161/CIR.0000000000001161',
+}
+export const AHA_ESPECIAIS_2025: Fonte = {
+  citacao: 'Cao D, Arens AM, Chow SL, et al. Part 10: Adult and Pediatric Special Circumstances of Resuscitation: 2025 American Heart Association Guidelines for Cardiopulmonary Resuscitation and Emergency Cardiovascular Care. Circulation. 2025;152(16 Suppl 2):S578–S672 (PMID 41122889).',
+  url: 'https://doi.org/10.1161/CIR.0000000000001380',
+}
+export const DIGOXINA_CONSENSO_2024: Fonte = {
+  citacao: 'Hack JB, Wingate S, Zolty R, et al. Expert Consensus on the Diagnosis and Management of Digoxin Toxicity. Am J Med. 2025;138(1):25–33.e14 (PMID 39265879).',
+  url: 'https://doi.org/10.1016/j.amjmed.2024.08.018',
+}
+export const DIGOXINA_CONSENSO_2023: Fonte = {
+  citacao: 'Andrews P, Anseeuw K, Kotecha D, et al. Diagnosis and practical management of digoxin toxicity: a narrative review and consensus. Eur J Emerg Med. 2023;30(6):395–401 (PMID 37650725).',
+  url: 'https://doi.org/10.1097/MEJ.0000000000001065',
+}
+
+export const NOTA_AHA_INTOXICACOES =
+  'AHA 2023 (atualização focada) e AHA 2025 (Parte 10), posteriores ao livro, organizam a ressuscitação e o choque refratário nas intoxicações graves e o uso de ECMO VA. As doses desta tela continuam as do livro; as linhas de antídoto ainda não foram conferidas com o texto completo dessas diretrizes.'
+
+export const NOTA_DIGOXINA_CONSENSO =
+  'Consenso de especialistas de 2024 (Delphi, 33 enunciados): considerar o momento da ingestão e o tipo de exposição (aguda, aguda sobre crônica, crônica) e usar o anticorpo antidigoxina na exposição com risco de vida. O cálculo de frascos segue o livro.'
+
 const fichaIntoxLivro = fichaAdulto(
   'adulto-intoxicacoes-antidotos',
   'Intoxicações e antídotos — adulto',
@@ -25,9 +52,9 @@ const fichaIntoxLivro = fichaAdulto(
 )
 export const fichaIntoxicacoesAdulto: Ficha = {
   ...fichaIntoxLivro,
-  versao: '2026-10-09.1',
-  fontes: [...fichaIntoxLivro.fontes, CTRC_CARVAO_2026],
-  revisadoEm: '09/10/2026 (carvão ativado com o consenso CTRC 2026 ao lado do livro)',
+  versao: '2026-11-06.1',
+  fontes: [...fichaIntoxLivro.fontes, CTRC_CARVAO_2026, AHA_INTOX_2023, AHA_ESPECIAIS_2025, DIGOXINA_CONSENSO_2024, DIGOXINA_CONSENSO_2023],
+  revisadoEm: '06/11/2026 (nota das AHA 2023/2025 e do consenso da digoxina; revisão PubMed, itens médios; carvão ativado com o consenso CTRC 2026 desde 09/10/2026)',
 }
 
 export type Faixa = [number, number]

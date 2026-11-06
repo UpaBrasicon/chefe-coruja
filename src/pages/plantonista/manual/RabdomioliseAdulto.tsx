@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  BICARBONATO_RABDO, FLUIDO_RABDO, FORA_RENAL, MANITOL_RABDO, NOTA_ALVO_DU, OUTROS_RABDO, RABDO_DIAGNOSTICO, alvoDiureseRabdo, cpkVezesLsn, fichaRabdomiolise,
+  BICARBONATO_RABDO, FLUIDO_RABDO, FORA_RENAL, MANITOL_RABDO, NOTA_ALVO_DU, NOTA_ENMC_RABDO, OUTROS_RABDO, RABDO_DIAGNOSTICO, alvoDiureseRabdo, cpkVezesLsn, fichaRabdomiolise,
   manitolRabdo, solucaoBicarbonatoRabdo,
 } from '@/clinico/adulto/renal'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -47,6 +47,7 @@ export function RabdomioliseAdulto() {
           </p>
         )}
         <ListaRef itens={RABDO_DIAGNOSTICO} />
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ENMC_RABDO}</p>
       </Bloco>
 
       <Bloco titulo="Hidratação" descricao={F.nota}>

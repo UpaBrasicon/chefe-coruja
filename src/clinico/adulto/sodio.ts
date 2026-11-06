@@ -22,7 +22,25 @@ export const fichaHiponatremia: Ficha = {
   fontes: [...fichaHiponaLivro.fontes, META_CORRECAO_HIPONATREMIA_2025],
   revisadoEm: '09/10/2026 (alerta contra a subcorreção, JAMA Intern Med 2025)',
 }
-export const fichaHipernatremia = fichaAdulto('adulto-hipernatremia', 'Hipernatremia — água livre e Adrogué-Madias', 'cap. 66, p. 892–899')
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026, H8 = A): a
+// metanálise da velocidade de correção da hipernatremia entra só como nota. O
+// limite do manual (crônica até 8–10 mEq/L em 24 h; aguda 1 mEq/L/h por 6–8 h)
+// continua e segue no alerta da tela.
+export const HIPERNATREMIA_CORRECAO_2025: Fonte = {
+  citacao: 'Kitisin N, Raykateeraroj N, Hikasa Y, et al. Systematic review and meta-analysis of the treatment of hypernatremia in adult hospitalized patients: impact on mortality, morbidity, and treatment-related side effects. J Crit Care. 2025;87:155012 (PMID 39765195).',
+  url: 'https://doi.org/10.1016/j.jcrc.2024.155012',
+}
+
+export const NOTA_HIPERNATREMIA_VELOCIDADE =
+  'Metanálise de 2025 (J Crit Care; 12 estudos em adultos internados), posterior ao livro: no conjunto, corrigir mais rápido que 0,5 mmol/L/h não mudou a mortalidade (heterogeneidade alta). Nos subgrupos, a correção mais rápida se associou a menos mortes na hipernatremia já presente na internação, quando feita nas primeiras 24 h do diagnóstico e na forma grave; não houve complicação neurológica maior relatada com velocidade abaixo de 1 mmol/L/h. O limite do manual (crônica até 8–10 mEq/L em 24 h; aguda 1 mEq/L/h nas primeiras 6–8 h) continua.'
+
+const fichaHipernaLivro = fichaAdulto('adulto-hipernatremia', 'Hipernatremia — água livre e Adrogué-Madias', 'cap. 66, p. 892–899')
+export const fichaHipernatremia: Ficha = {
+  ...fichaHipernaLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaHipernaLivro.fontes, HIPERNATREMIA_CORRECAO_2025],
+  revisadoEm: '06/11/2026 (nota da velocidade de correção, J Crit Care 2025; revisão PubMed, itens médios)',
+}
 
 const ok = (...xs: number[]) => xs.every((x) => Number.isFinite(x))
 const positivo = (...xs: number[]) => ok(...xs) && xs.every((x) => x > 0)

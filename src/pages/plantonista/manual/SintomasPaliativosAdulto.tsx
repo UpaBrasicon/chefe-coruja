@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  DISPNEIA_PALIATIVO, DOR_NAO_VERBAL_PALIATIVO, DOR_PALIATIVO_PAGINA, DOR_PALIATIVO_SEM_OPIOIDE, EXTUBACAO_PALIATIVA,
+  DISPNEIA_PALIATIVO, DOR_NAO_VERBAL_PALIATIVO, DOR_PALIATIVO_PAGINA, DOR_PALIATIVO_SEM_OPIOIDE, EXTUBACAO_PALIATIVA, NOTA_EAPC_SEDACAO,
   QUETAMINA_ANALGESICA, SEDACAO_PALIATIVA, escalonarBolus, fichaPaliativoAdulto, furosemidaDispneia, quetaminaAnalgesica,
   resgateOpioide, sedacaoPaliativa, type Faixa,
 } from '@/clinico/adulto/dorAnalgesia'
@@ -84,6 +84,7 @@ export function SintomasPaliativosAdulto() {
             {sed.acimaDoLimite === 'faixa' && <span className="text-atencao"> · entre 15 e 20 mg/h: faixa em que o livro diz considerar associação</span>}
           </p>
         )}
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_EAPC_SEDACAO}</p>
       </Bloco>
 
       <Bloco titulo={`Extubação paliativa (${EXTUBACAO_PALIATIVA.pagina})`}>

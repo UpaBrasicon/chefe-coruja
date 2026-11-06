@@ -26,11 +26,27 @@ export const fichaCadEhhAvaliacao: Ficha = {
   fontes: [pagina(PAG_AVALIACAO), { ...CONSENSO_2024, citacao: `${CONSENSO_2024.citacao} Critérios (Fig. 2, p. 1262), gravidade (Tabela 2, p. 1263), resolução (Fig. 4, p. 1264).` }],
   revisadoEm: '28/09/2026 (consenso 2024 conferido no texto; manual do HC mantido como base)',
 }
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): a metanálise da
+// insulina basal precoce (só adultos) entra como nota no bloco da transição
+// para SC. Momento e dose da basal seguem o livro e o consenso 2024; nada vai
+// para a CAD pediátrica.
+export const BASAL_PRECOCE_CAD_2026: Fonte = {
+  citacao: 'AbuJlambo A, AbuZarifa M, Sawh RRR, et al. Impact of Early Subcutaneous Basal Insulin With Intravenous Insulin Infusion for Diabetic Ketoacidosis and Glycaemic Outcomes: A Systematic Review and Meta-Analysis. Endocrinol Diabetes Metab. 2026;9(4):e70277 (PMID 42405473).',
+  url: 'https://doi.org/10.1002/edm2.70277',
+}
+
+export const NOTA_BASAL_PRECOCE_CAD =
+  'Insulina basal precoce (posterior ao consenso 2024): metanálise de 8 ECRs em adultos (407 pacientes) — a insulina basal SC iniciada durante a infusão EV encurtou a resolução da CAD (diferença média −4,06 h) e reduziu o fluido total em cerca de 400 mL, sem diferença em hipoglicemia, hipocalemia, hiperglicemia de rebote, recorrência ou mortalidade. Momento e dose da basal seguem o livro e o consenso 2024.'
+
 export const fichaCadEhhTratamento: Ficha = {
   ...fichaAdulto('adulto-cad-ehh-tratamento', 'CAD e EHH — hidratação, insulina, potássio e bicarbonato', PAG_TRATAMENTO),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_TRATAMENTO), { ...CONSENSO_2024, citacao: `${CONSENSO_2024.citacao} Fig. 4 (p. 1264), fluidos e insulina (p. 1265–1266), potássio e bicarbonato (p. 1266), transição (p. 1264–1265).` }],
-  revisadoEm: '28/09/2026 (consenso 2024 conferido no texto; manual do HC mantido como base)',
+  versao: '2026-11-06.1',
+  fontes: [
+    pagina(PAG_TRATAMENTO),
+    { ...CONSENSO_2024, citacao: `${CONSENSO_2024.citacao} Fig. 4 (p. 1264), fluidos e insulina (p. 1265–1266), potássio e bicarbonato (p. 1266), transição (p. 1264–1265).` },
+    BASAL_PRECOCE_CAD_2026,
+  ],
+  revisadoEm: '06/11/2026 (nota da insulina basal precoce na transição; revisão PubMed, itens médios; consenso 2024 conferido no texto; manual do HC mantido como base)',
 }
 export const fichaHipoglicemia = fichaAdulto('adulto-hipoglicemia', 'Hipoglicemia — limiar e doses', 'cap. 65, p. 877–881')
 
