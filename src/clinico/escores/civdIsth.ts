@@ -1,4 +1,5 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
+import type { Fonte } from '../ficha.ts'
 
 // CIVD manifesta pelo escore do ISTH: quatro parâmetros laboratoriais, com a
 // doença de base como pré-requisito. Porte do protótipo (hematologia/CIVD —
@@ -6,22 +7,41 @@ import { completo, escolha, somar, type Escore } from '../escore.ts'
 // "anticoagulação por fenótipo", as linhas e alertas de repetição/transfusão
 // e os cuidados sobre hemocomponente e antifibrinolítico: fica o total, o
 // corte de 5 e a leitura manifesta/não manifesta.
+// Versão de 06/11/2026 (revisão PubMed, itens médios; RT, H13 = A): nota da
+// definição ISTH 2025. A pontuação continua a de 2001 até o RT ler o texto.
 
 const PARAMETROS = ['plaq', 'dd', 'tp', 'fib']
+
+export const ISTH_CIVD_2025: Fonte = {
+  citacao: 'Iba T, Levy JH, Maier CL, et al. Updated definition and scoring of disseminated intravascular coagulation in 2025: communication from the ISTH SSC Subcommittee on Disseminated Intravascular Coagulation. J Thromb Haemost. 2025;23(7):2356–2362 (PMID 40216223).',
+  url: 'https://doi.org/10.1016/j.jtha.2025.03.038',
+}
+
+// O resumo de Iba et al. (Semin Thromb Hemost) traz os novos cortes do D-dímero
+// (> 3 e > 7 vezes o limite superior = 2 e 3 pontos); a frase da nota se apoia nele.
+export const ISTH_CIVD_2025_SEMIN: Fonte = {
+  citacao: 'Iba T, Maier CL, Scarlatescu E, et al. Introducing the New Definition and Diagnostic Criteria of Disseminated Intravascular Coagulation Released by the International Society on Thrombosis and Haemostasis in 2025. Semin Thromb Hemost. 2026;52(1):10–17 (publicado on-line em 2025; PMID 40829630).',
+  url: 'https://doi.org/10.1055/a-2675-6068',
+}
+
+export const NOTA_CIVD_ISTH_2025 =
+  'ISTH 2025 (posterior ao escore desta tela): o subcomitê de CIVD da ISTH atualizou a definição de 2001 — distúrbio intravascular adquirido, com ativação sistêmica da coagulação, fibrinólise desregulada e lesão endotelial, que leva a microtrombose e vai de uma fase inicial, que pode ser assintomática, a uma fase avançada com sangramento ou disfunção orgânica. Propõe critérios para a fase inicial conforme a doença de base e muda os critérios e a pontuação da CIVD manifesta; o D-dímero passa a ser medido em múltiplos do limite superior (acima de 3 vezes vale 2 pontos; acima de 7 vezes, 3 pontos). A pontuação desta tela segue o escore de 2001 até o RT ler o texto.'
 
 export const civdIsth: Escore = {
   ficha: {
     id: 'civd-isth',
     titulo: 'CIVD manifesta — escore do ISTH',
-    versao: '2026-09-27.1',
+    versao: '2026-11-06.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Taylor FB Jr, Toh CH, Hoots WK, et al. Towards definition, clinical and laboratory criteria, and a scoring system for disseminated intravascular coagulation. Thromb Haemost. 2001;86(5):1327–1330.', url: 'https://doi.org/10.1055/s-0037-1616068' },
       { citacao: 'Wada H, Thachil J, Di Nisio M, et al. Guidance for diagnosis and treatment of disseminated intravascular coagulation from harmonization of the recommendations from three guidelines. J Thromb Haemost. 2013;11(4):761–767.', url: 'https://doi.org/10.1111/jth.12155' },
       { citacao: 'Levi M, Scully M. How I treat disseminated intravascular coagulation. Blood. 2018;131(8):845–854.', url: 'https://doi.org/10.1182/blood-2017-10-804096' },
       { citacao: 'UpToDate. Disseminated intravascular coagulation (DIC) in adults: Evaluation and management. (referência de escopo autorizada pelo usuário em 02/09/2026)', url: 'https://www.uptodate.com' },
+      ISTH_CIVD_2025,
+      ISTH_CIVD_2025_SEMIN,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '06/11/2026 (nota da definição ISTH 2025, escore de 2001 mantido; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Quatro parâmetros laboratoriais, 0 a 8 pontos, com a doença de base como pré-requisito',
   itens: [
@@ -76,6 +96,7 @@ export const civdIsth: Escore = {
         'O escore é uma fotografia de um quadro dinâmico: o valor de hoje não vale para amanhã.',
         'Fibrinogênio normal não tranquiliza. Ele é reagente de fase aguda e sobe na sepse — pode estar normal com consumo em curso, e é por isso que vale só 1 ponto no escore.',
         'Na CIVD da leucemia promielocítica aguda e nas complicações obstétricas, a evolução é muito mais rápida.',
+        NOTA_CIVD_ISTH_2025,
       ],
     }
   },

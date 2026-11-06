@@ -39,8 +39,8 @@ test('light .1: NT-proBNP em pg/mL com Porcel 2018 e o BANCA 2025 como nota', ()
   assert.ok(light.ficha.fontes.some((f) => /Porcel JM\. Biomarkers/.test(f.citacao)))
 })
 
-test('grace .1: faixas avisadas como da SCA sem supra', () => {
-  assert.equal(grace.ficha.versao, '2026-09-28.1')
+test('grace .1 ou posterior: faixas avisadas como da SCA sem supra', () => {
+  assert.ok(grace.ficha.versao >= '2026-09-28.1')
   const r = grace.calcular({ idade: 65, fc: 80, pas: 130, cr: 1, killip: 0, parada: 0, st: 0, marcador: 0 })!
   assert.ok(r.cuidados.some((c) => /SEM supra de ST/.test(c)))
 })

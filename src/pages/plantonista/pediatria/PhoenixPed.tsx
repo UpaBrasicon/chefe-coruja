@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { PAM_PHOENIX, PHOENIX_TEXTO, fichaPhoenixPed, phoenix } from '@/clinico/pediatria/choque'
+import { NOTA_PHOENIX_VALIDACAO, PAM_PHOENIX, PHOENIX_TEXTO, fichaPhoenixPed, phoenix } from '@/clinico/pediatria/choque'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -8,8 +8,12 @@ import { Bloco } from './PecasP2'
 
 const opc = (x: number) => (x > 0 ? x : undefined)
 
-/** Cálculo do escore de Phoenix (JAMA 2024): usado aqui e no Choque séptico — criança. */
-export function PhoenixCalculo() {
+/**
+ * Cálculo do escore de Phoenix (JAMA 2024): usado aqui e no Choque séptico — criança.
+ * A `nota` aparece abaixo do "não vale"; só a ferramenta própria a passa, porque
+ * as fontes dela estão na ficha ped-phoenix.
+ */
+export function PhoenixCalculo({ nota }: { nota?: string } = {}) {
   const [idadeMeses, setIdadeMeses] = useState(0)
   const [rn, setRn] = useState(false)
   const [pf, setPf] = useState(0)
@@ -32,6 +36,7 @@ export function PhoenixCalculo() {
   return (
     <Bloco titulo="Critérios de Phoenix 2024 — sepse e choque séptico (JAMA 2024)">
       <p className="text-tinta-sussurro">{PHOENIX_TEXTO.criterios} {PHOENIX_TEXTO.naoVale} ({PHOENIX_TEXTO.pagina})</p>
+      {nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{nota}</p>}
       <div className="grid gap-3 sm:grid-cols-3">
         <NumberField id="phx-idade" label="Idade" unit="meses" value={idadeMeses} onChange={setIdadeMeses} min={0} max={215} />
         <NumberField id="phx-pf" label="PaO₂/FiO₂" value={pf} onChange={setPf} min={0} />
@@ -73,7 +78,7 @@ export function PhoenixPed() {
       description="Critérios internacionais de 2024 para sepse e choque séptico pediátricos: respiratório, cardiovascular, coagulação e neurológico. Não é ferramenta de triagem precoce. Mesmo cálculo do leito e do Choque séptico — criança."
       ficha={fichaPhoenixPed}
     >
-      <PhoenixCalculo />
+      <PhoenixCalculo nota={NOTA_PHOENIX_VALIDACAO} />
     </ToolLayout>
   )
 }

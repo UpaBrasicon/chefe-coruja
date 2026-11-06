@@ -1,21 +1,41 @@
 import { completo, escolha, numero, type Escore } from '../escore.ts'
+import type { Fonte } from '../ficha.ts'
 import { faixaNews2, pontosNews2 } from '../news2.ts'
 
 // NEWS2 da Central. Pela Surviving Sepsis Campaign 2026, é uma das ferramentas
 // recomendadas para rastrear sepse no paciente agudo (no lugar do qSOFA).
 // A resposta clínica de cada faixa é do protocolo da unidade, não desta tela.
+// Versão de 06/11/2026 (revisão PubMed, itens médios; RT, H14 = A): nota da
+// versão brasileira oficial e da validação dela no pronto-socorro, pelos
+// resumos. Os rótulos não mudam aqui: o alinhamento à versão oficial é tarefa à
+// parte, com a enfermagem. Cortes e pontos não mudam.
+
+export const NEWS2_BRASIL_2020: Fonte = {
+  citacao: 'Oliveira APA, Urbanetto JS, Caregnato RCA. National Early Warning Score 2: transcultural adaptation to Brazilian Portuguese. Rev Gaúcha Enferm. 2020;41:e20190424 (PMID 33111761).',
+  url: 'https://doi.org/10.1590/1983-1447.2020.20190424',
+}
+
+export const NEWS2_BRASIL_SEPSE_2025: Fonte = {
+  citacao: 'Sousa AS, Soares GDR, Costa JPD, et al. Predictive performance of the National Early Warning Score 2- Brazilian Version for septic patients. Rev Gaúcha Enferm. 2025;46:e20240233 (PMID 40767651).',
+  url: 'https://doi.org/10.1590/1983-1447.2025.20240233.en',
+}
+
+export const NOTA_NEWS2_BRASIL =
+  'Versão brasileira oficial: o NEWS2 tem adaptação transcultural para o português do Brasil, autorizada pelo Royal College of Physicians (Rev Gaúcha Enferm 2020). Num pronto-socorro do Sul do Brasil (2025; 295 adultos com sepse suspeita ou confirmada), a versão brasileira previu deterioração clínica com AUC de 0,703 na classificação de risco e de 0,871 na última avaliação antes da transferência, e mortalidade hospitalar com AUC de 0,770 nessa última avaliação. Os rótulos desta tela ainda não foram alinhados aos da versão oficial (tarefa à parte, com a enfermagem); cortes e pontos são os do RCP 2017.'
 
 export const news2: Escore = {
   ficha: {
     id: 'news2',
     titulo: 'NEWS2 — escore de alerta precoce',
-    versao: '2026-09-27.1',
+    versao: '2026-11-06.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Royal College of Physicians. National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS. London: RCP; 2017.' },
       { citacao: 'Prescott HC, Antonelli M, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2026. Crit Care Med. 2026.', url: 'https://doi.org/10.1097/CCM.0000000000007075' },
+      NEWS2_BRASIL_2020,
+      NEWS2_BRASIL_SEPSE_2025,
     ],
-    revisadoEm: '27/09/2026 (mesmos cortes da acuidade do prontuário)',
+    revisadoEm: '06/11/2026 (nota da versão brasileira oficial, rótulos sem mudança; revisão PubMed, itens médios; mesmos cortes da acuidade do prontuário desde 27/09/2026)',
   },
   descricao: 'Sete parâmetros à beira do leito; na SSC 2026, ferramenta de rastreio de sepse no lugar do qSOFA',
   itens: [
@@ -67,6 +87,7 @@ export const news2: Escore = {
         'A resposta de cada faixa (frequência de reavaliação, acionamento) é do protocolo da unidade.',
         'Escala de adulto: não se aplica a menores de 14 anos (na pediatria, PEWS) nem à gestante (escore obstétrico próprio).',
         'A acuidade do prontuário calcula o NEWS2 com a escala 1; a escala 2 só está nesta tela.',
+        NOTA_NEWS2_BRASIL,
       ],
     }
   },

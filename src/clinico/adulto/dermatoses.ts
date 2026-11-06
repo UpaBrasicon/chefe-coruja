@@ -1,3 +1,4 @@
+import type { Fonte } from '../ficha.ts'
 import { completo, escolha, somar, type Escore, type Item } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 
@@ -26,8 +27,26 @@ export function faixaRegiscar(total: number): string {
   return 'diagnóstico definitivo'
 }
 
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): o consenso
+// Delphi internacional de DRESS (2024) entra como nota nos cuidados do
+// RegiSCAR. O escore e a dose do livro não mudam.
+export const DRESS_DELPHI_2024: Fonte = {
+  citacao: 'Brüggen MC, Walsh S, Ameri MM, et al. Management of Adult Patients With Drug Reaction With Eosinophilia and Systemic Symptoms: A Delphi-Based International Consensus. JAMA Dermatol. 2024;160(1):37–44 (PMID 37966824).',
+  url: 'https://doi.org/10.1001/jamadermatol.2023.4450',
+}
+
+export const NOTA_DRESS_DELPHI =
+  'Consenso internacional Delphi (JAMA Dermatol 2024, posterior ao livro; 54 especialistas, consenso em 93 de 100 enunciados): propõe graduar a gravidade do DRESS em leve, moderada e grave pela extensão do acometimento hepático, renal e hematológico e pelo dano a outros órgãos, e orienta o manejo por grau, o seguimento após a fase aguda e a investigação alergológica. O livro usa TGO ou TGP 5 vezes acima ou outros órgãos como sinal de gravidade; a ferramenta segue o livro.'
+
+const fichaRegiscarLivro = fichaAdulto('adulto-regiscar', 'RegiSCAR — escore para DRESS (adulto)', `${CAP}, p. 1281–1283 (Tabelas 3 e 4)`)
+
 export const regiscar: Escore = {
-  ficha: fichaAdulto('adulto-regiscar', 'RegiSCAR — escore para DRESS (adulto)', `${CAP}, p. 1281–1283 (Tabelas 3 e 4)`),
+  ficha: {
+    ...fichaRegiscarLivro,
+    versao: '2026-11-06.1',
+    fontes: [...fichaRegiscarLivro.fontes, DRESS_DELPHI_2024],
+    revisadoEm: '06/11/2026 (nota do consenso Delphi de DRESS 2024; revisão PubMed, itens médios)',
+  },
   descricao: 'Escore RegiSCAR da Tabela 4 do manual do HC: < 2 exclui, 2-3 possível, 4-5 provável, > 5 definitivo.',
   itens: [
     it('febre', 'Febre (> 38,5 ºC)', -1, 0),
@@ -61,6 +80,7 @@ export const regiscar: Escore = {
         'DRESS: latência média de 2 a 8 semanas; mortalidade de 10-20% (p. 1281).',
         'Sinais de gravidade (TGO ou TGP 5 × acima ou outros órgãos): prednisona 1 mg/kg/d até normalizar os exames e por 6-8 semanas depois (p. 1282).',
         'A tabela do livro não tem a opção "desconhecido" do escore original; a ferramenta segue o livro.',
+        NOTA_DRESS_DELPHI,
         'Sem referência pediátrica declarada.',
       ],
     }

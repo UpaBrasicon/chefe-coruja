@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, somar, type Escore } from '../escore.ts'
 import { NAHCO3_84_MEQ_POR_ML } from './acidobase.ts'
 import { fichaAdulto } from './fonte.ts'
@@ -11,7 +12,24 @@ import { numero as numeroBr } from '../../lib/formato.ts'
 // (ADR 0007).
 
 export const fichaLesaoRenalAguda = fichaAdulto('adulto-lesao-renal-aguda', 'Lesão renal aguda — adulto', 'cap. 61 Lesão renal aguda, p. 824–841')
-export const fichaRabdomiolise = fichaAdulto('adulto-rabdomiolise', 'Rabdomiólise — adulto', 'cap. 63 Rabdomiólise, p. 852–862')
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026, H9 = A): o corte
+// de CPK do workshop ENMC diverge do livro e entra como nota de divergência no
+// bloco do diagnóstico. A ferramenta mantém o critério do livro.
+export const ENMC_RABDO_2025: Fonte = {
+  citacao: 'Kruijt N, Laforet P, Vissing J, et al. 276th ENMC International Workshop: recommendations on optimal diagnostic pathway and management strategy for patients with acute rhabdomyolysis worldwide. 15th–17th March 2024, Hoofddorp, The Netherlands. Neuromuscul Disord. 2025;50:105344 (PMID 40220353).',
+  url: 'https://doi.org/10.1016/j.nmd.2025.105344',
+}
+
+export const NOTA_ENMC_RABDO =
+  'Divergência — ENMC 2024 (workshop internacional com 21 especialistas, publicado em 2025, posterior ao livro): o diagnóstico exige sintomas musculares (edema muscular intenso, fraqueza e/ou mialgia), CPK > 10.000 UI/L na rabdomiólise por esforço ou > 5.000 UI/L na não relacionada ao esforço, com pico em 1 a 4 dias e normalização em 1 a 2 semanas de repouso; com doença neuromuscular de base, CPK acima de 5 a 10 vezes o basal do paciente. Recomenda tratar só quando o risco de LRA é alto, estimado pelo escore de McMahon. O livro usa CPK > 5–10 × LSN (usualmente > 1.000 UI/L), sem corte rigoroso; a ferramenta mantém o critério do livro.'
+
+const fichaRabdoLivro = fichaAdulto('adulto-rabdomiolise', 'Rabdomiólise — adulto', 'cap. 63 Rabdomiólise, p. 852–862')
+export const fichaRabdomiolise: Ficha = {
+  ...fichaRabdoLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaRabdoLivro.fontes, ENMC_RABDO_2025],
+  revisadoEm: '06/11/2026 (nota de divergência do corte de CPK do ENMC; revisão PubMed, itens médios)',
+}
 
 export type Faixa = [number, number]
 export type Referencia = { texto: string; pagina: string; errata?: string }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ANALGESIA_POR_INTENSIDADE, HIDRATACAO_FALCIFORME, METAS_FALCIFORME, MORFINA_FALCIFORME, NOTA_QUETAMINA_FALCIFORME, QUETAMINA_FALCIFORME, STA_ANTIBIOTICOS,
+  ANALGESIA_POR_INTENSIDADE, HIDRATACAO_FALCIFORME, METAS_FALCIFORME, MORFINA_FALCIFORME, NOTA_QUETAMINA_FALCIFORME, NOTA_TASC_STA, QUETAMINA_FALCIFORME, STA_ANTIBIOTICOS,
   fichaFalciformeAdulto, hidratacaoFalciforme, morfinaFalciforme, quetaminaFalciforme,
 } from '@/clinico/adulto/falciforme'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -59,6 +59,7 @@ export function FalciformeAdulto() {
 
       <Bloco titulo="Síndrome torácica aguda: antibiótico empírico (p. 1057–1058)" descricao="Os critérios diagnósticos (Tabela 3) estão em ferramenta própria.">
         <ListaLivro itens={STA_ANTIBIOTICOS} />
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_TASC_STA}</p>
       </Bloco>
 
       <Bloco titulo="Metas, transfusão e alta (p. 1055–1061)">

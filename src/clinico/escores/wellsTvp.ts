@@ -1,25 +1,37 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
+import type { Fonte } from '../ficha.ts'
 
 // Wells para TVP: nove critérios de 1 ponto e um de −2. Porte do protótipo
 // (hematologia/Wells para TVP, construído em 02/09/2026). Saíram (ADR 0007) o
 // "próximo exame", o bloco "o caminho depois do escore" e a menção a
 // anticoagulação empírica: fica a probabilidade e a prevalência na banda.
+// Versão de 06/11/2026 (revisão PubMed, itens médios): nota do D-dímero
+// ajustado à idade na TVP (JAMA 2026), pelo resumo. A tela não calcula o corte.
 
 const NAO_SIM = [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim', valor: 1 }]
+
+export const LE_GAL_DDIMERO_IDADE_2026: Fonte = {
+  citacao: 'Le Gal G, Robert-Ebadi H, Thiruganasambandamoorthy V, et al. Age-Adjusted D-Dimer Cutoff Levels to Rule Out Deep Vein Thrombosis. JAMA. 2026;335(5):416–424 (PMID 41490105).',
+  url: 'https://doi.org/10.1001/jama.2025.21561',
+}
+
+export const NOTA_D_DIMERO_IDADE_TVP =
+  'D-dímero ajustado à idade na TVP (JAMA 2026): estudo prospectivo de manejo em 27 centros, 3.205 pacientes do pronto-socorro. Nos 2.169 com probabilidade clínica improvável (ou não alta), o corte idade × 10 µg/L (a partir de 50 anos) não teve nenhuma falha em 3 meses entre 500 µg/L e o corte ajustado. Com 75 anos ou mais, o D-dímero negativo passou de 8,7% para 26,1%. Esta tela não calcula o corte.'
 
 export const wellsTvp: Escore = {
   ficha: {
     id: 'wells-tvp',
     titulo: 'Wells para TVP — probabilidade de trombose venosa profunda',
-    versao: '2026-09-27.1',
+    versao: '2026-11-06.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Wells PS, Anderson DR, Rodger M, et al. Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis. N Engl J Med. 2003;349(13):1227–1235.', url: 'https://doi.org/10.1056/NEJMoa023153' },
       { citacao: 'Wells PS, Anderson DR, Bormanis J, et al. Value of assessment of pretest probability of deep-vein thrombosis in clinical management. Lancet. 1997;350(9094):1795–1798.', url: 'https://doi.org/10.1016/S0140-6736(97)08140-3' },
       { citacao: 'Lim W, Le Gal G, Bates SM, et al. American Society of Hematology 2018 guidelines for management of venous thromboembolism: diagnosis of venous thromboembolism. Blood Adv. 2018;2(22):3226–3256.', url: 'https://doi.org/10.1182/bloodadvances.2018024828' },
       { citacao: 'UpToDate. Clinical presentation and diagnosis of the nonpregnant adult with suspected deep vein thrombosis of the lower extremity. (referência de escopo autorizada pelo usuário em 02/09/2026)', url: 'https://www.uptodate.com' },
+      LE_GAL_DDIMERO_IDADE_2026,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '06/11/2026 (nota do D-dímero ajustado à idade; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Probabilidade clínica de TVP: nove itens e um subtrator',
   itens: [
@@ -61,6 +73,7 @@ export const wellsTvp: Escore = {
         'O item de diagnóstico alternativo subtrai 2 pontos e é o único negativo. Ele é o que transforma celulite, ruptura de fibras e insuficiência venosa em probabilidade improvável.',
         'A perimetria é medida 10 cm abaixo da tuberosidade tibial, nos dois membros, no mesmo ponto.',
         'Escore improvável com D-dímero negativo afasta TVP com segurança comparável à do ultrassom seriado.',
+        NOTA_D_DIMERO_IDADE_TVP,
         'Desempenho menor ou não validado: suspeita de recorrência no mesmo membro, gestação e puerpério, paciente internado, TVP de membro superior.',
       ],
     }

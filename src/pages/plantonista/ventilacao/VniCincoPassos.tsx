@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { INDICACOES_VM_DPOC } from '@/clinico/adulto/asmaDpoc'
+import { INDICACOES_VM_DPOC, NOTA_ATS_HIPERCAPNICA } from '@/clinico/adulto/asmaDpoc'
 import { VNI, cortesVni, relacaoPF } from '@/clinico/adulto/oxigenacao'
 import {
   ALVOS_SAT_VNI, CONTRAINDICACOES_VNI, INTERFACES_VNI, MODOS_VNI, PASSOS_VNI, QUADROS_VNI, RETIRADA_VNI, fichaVniPassos, lerAcompanhamentoVni, lerAjustesVni,
@@ -83,6 +83,7 @@ export function VniCincoPassos() {
           <p className="text-tinta-sussurro">O livro diz que não há critério gasométrico específico para indicar VNI (p. 378): a tela lista os cortes, não decide.</p>
           <p><span className="font-medium">Indicações clínicas (p. 382):</span> {VNI.clinicas.join('; ')}.</p>
           <p><span className="font-medium">Maior evidência de benefício (p. 383):</span> {VNI.maiorEvidencia.join('; ')}.</p>
+          <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ATS_HIPERCAPNICA}</p>
           <div className="flex flex-col gap-1.5">
             <p className="font-medium">Contraindicações — marque as presentes</p>
             {CONTRAINDICACOES_VNI.map((c, i) => <Marca key={c.texto} id={`vni-ci-${i}`} rotulo={c.texto} extra={c.pagina} marcado={contra.includes(c.texto)} alternar={() => alternar(c.texto)} />)}

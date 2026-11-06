@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CCP, CRIOPRECIPITADO, DIVERGENCIA_ANDEXANETE, DOAC_PAGINA, ERRATA_DOAC, ERRATA_HIP_CIRURGIA, ERRATA_VITAMINA_K, HIP_METAS, PLASMA, PROTAMINA_REVERSAO,
+  CCP, CRIOPRECIPITADO, DIVERGENCIA_ANDEXANETE, DOAC_PAGINA, ERRATA_DOAC, ERRATA_HIP_CIRURGIA, ERRATA_VITAMINA_K, HIP_METAS, NOTA_SBTH_2026, PLASMA, PROTAMINA_REVERSAO,
   REVERSAO_DOAC, SANGRAMENTO_MAIOR, TABELA_PROTAMINA, VITAMINA_K, ccpUnidades, conferirPasHip, crioUnidades,
   fichaReversaoAnticoagulacaoAdulto, plasmaMl, protamina, reversaoVarfarina, type Faixa, type Sangramento, type TempoHeparina,
 } from '@/clinico/adulto/reversaoAnticoagulacao'
@@ -103,6 +103,7 @@ export function ReversaoAnticoagulacaoAdulto() {
           </div>
         ))}
         <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_DOAC}</p>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_SBTH_2026}</p>
       </Bloco>
 
       <Bloco titulo="Andexanete — divergência (ANNEXA-I, 2024)" descricao="O manual não cita o andexanete. A tela mostra o resultado do estudo, sem dose.">

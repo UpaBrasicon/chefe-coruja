@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ERRATA_ADROGUE, LIMITES_HIPERNATREMIA, SOLUCOES_HIPERNATREMIA, aguaCorporalTotal, deficitAguaLivre, fatorAguaCorporal, fichaHipernatremia,
+  ERRATA_ADROGUE, LIMITES_HIPERNATREMIA, NOTA_HIPERNATREMIA_VELOCIDADE, SOLUCOES_HIPERNATREMIA, aguaCorporalTotal, deficitAguaLivre, fatorAguaCorporal, fichaHipernatremia,
   litrosParaDeficit, litrosParaReducao, sodioCorrigido, variacaoPorLitro, type Sexo,
 } from '@/clinico/adulto/sodio'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -83,6 +83,7 @@ export function HipernatremiaManual() {
         <CardContent className="flex flex-col gap-3 text-apoio">
           <NumberField id="hiperm-red" label={`Redução desejada em ${horas} h`} unit="mEq/L" value={reducao} onChange={setReducao} step={0.5} />
           {reducao > limite && <p className="text-atencao">Acima do limite do manual ({aguda ? '1 mEq/L/h por 6–8 h' : '8–10 mEq/L em 24 h'}).</p>}
+          <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_HIPERNATREMIA_VELOCIDADE}</p>
           {act === null || naRef === null ? <p className="text-tinta-sussurro">Informe peso e sódio.</p> : (
             <div className="flex flex-col gap-2">
               {SOLUCOES_HIPERNATREMIA.map((s) => {

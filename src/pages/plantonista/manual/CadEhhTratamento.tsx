@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 
 import {
-  DIFERENCAS_2024, DIVERGENCIAS_CAD, INSULINA_BOMBA, POTASSIO_MANUAL, TRATAMENTO_2024, ajusteInsulina, bicarbonato, bicarbonato2024, duasBolsas, faixaPotassio,
+  DIFERENCAS_2024, DIVERGENCIAS_CAD, INSULINA_BOMBA, NOTA_BASAL_PRECOCE_CAD, POTASSIO_MANUAL, TRATAMENTO_2024, ajusteInsulina, bicarbonato, bicarbonato2024, duasBolsas, faixaPotassio,
   fichaCadEhhTratamento, fluido2024, hidratacao, insulina2024, insulinaInicial, insulinaReduzida, mlHDeInsulina, potassio2024, solucaoSegundaFase, transicaoSc, type EsquemaInsulina,
 } from '@/clinico/adulto/glicemia'
 import { sodioCorrigido } from '@/clinico/adulto/sodio'
@@ -138,6 +138,7 @@ export function CadEhhTratamento() {
       <Secao titulo="Transição para insulina SC (p. 874)" descricao="O manual traz 2/3 da insulina das últimas 24 h, ou 0,6 U/kg de NPH; desligar a bomba ao menos 1 h após a primeira insulina regular SC.">
         <NumberField id="cadt-24h" label="Insulina EV nas últimas 24 h" unit="U" value={ins24} onChange={setIns24} step={0.1} />
         <p className="tabular-nums">2/3 da dose de 24 h: <strong>{br(sc.doisTercos)} U</strong> · NPH 0,6 U/kg: <strong>{br(sc.nphPorPeso)} U</strong></p>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_BASAL_PRECOCE_CAD}</p>
       </Secao>
 
       <Secao titulo="Consenso ADA/EASD 2024 — o que muda em relação ao manual" descricao="Umpierrez et al., Diabetes Care 2024;47:1257–1275. As contas abaixo usam o peso e a bomba do manual (0,2 U/mL). A conduta é do médico.">

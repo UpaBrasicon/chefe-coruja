@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 import { numero as numeroBr } from '../../lib/formato.ts'
 
@@ -6,7 +7,24 @@ import { numero as numeroBr } from '../../lib/formato.ts'
 // escreve; a leitura clínica do conjunto é do profissional (ADR 0007).
 
 export const fichaGasometria = fichaAdulto('adulto-gasometria', 'Distúrbios acidobásicos — análise da gasometria', 'cap. 69, p. 931–945; gap osmolar, p. 1326 e 1512')
-export const fichaBicarbonato = fichaAdulto('adulto-bicarbonato', 'Bicarbonato de sódio — déficit e esquemas do manual', 'cap. 69, p. 937–938; cap. 67, Tab. 6, p. 916')
+// Revisão PubMed, itens médios (decisão do RT de 06/11/2026): o ECR
+// BICARICU-2 entra como nota no bloco do déficit. O critério e os esquemas do
+// livro não mudam.
+export const BICARICU2_2025: Fonte = {
+  citacao: 'Jung B, Jabaudon M, De Jong A, et al. Sodium Bicarbonate for Severe Metabolic Acidemia and Acute Kidney Injury: The BICARICU-2 Randomized Clinical Trial. JAMA. 2025;334(22):2000–2010 (PMID 41159812).',
+  url: 'https://doi.org/10.1001/jama.2025.20231',
+}
+
+export const NOTA_BICARICU2 =
+  'BICARICU-2 (JAMA 2025, posterior ao livro): ECR aberto em 43 UTIs francesas, 640 adultos com acidemia metabólica grave (pH ≤ 7,20) e LRA moderada a grave; bicarbonato EV com alvo de pH ≥ 7,30 × nenhum bicarbonato. A mortalidade em 90 dias não mudou (62,1% × 61,7%); a terapia renal substitutiva, desfecho secundário, foi menos usada com bicarbonato (35% × 50%). O critério e os esquemas do livro não mudam.'
+
+const fichaBicarbonatoLivro = fichaAdulto('adulto-bicarbonato', 'Bicarbonato de sódio — déficit e esquemas do manual', 'cap. 69, p. 937–938; cap. 67, Tab. 6, p. 916')
+export const fichaBicarbonato: Ficha = {
+  ...fichaBicarbonatoLivro,
+  versao: '2026-11-06.1',
+  fontes: [...fichaBicarbonatoLivro.fontes, BICARICU2_2025],
+  revisadoEm: '06/11/2026 (nota do BICARICU-2; revisão PubMed, itens médios)',
+}
 
 export type Referencia = { texto: string; pagina: string; errata?: string }
 

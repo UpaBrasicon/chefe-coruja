@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ERRATA_EHH_EXPANSAO, ERRATA_QUADRO11, INSULINA_EHH, INSULINA_EV, INSULINA_UI_ML, LIMITES_EHH, NORMAIS_QUADRO6, NOTA_K_CAD, NOTA_MG_EHH, NOTA_OSM_NORMAL, NOTA_SORO_CAD,
+  ERRATA_EHH_EXPANSAO, ERRATA_QUADRO11, INSULINA_EHH, INSULINA_EV, INSULINA_UI_ML, LIMITES_EHH, NORMAIS_QUADRO6, NOTA_K_CAD, NOTA_MG_EHH, NOTA_OSM_NORMAL, NOTA_RINGER_CAD, NOTA_SORO_CAD,
   PH_BICARBONATO_CAD, REPOSICAO_K_CAD, SORO_MANUTENCAO_CAD, anionGapCad, bicarbonatoCad, criteriosCad, criteriosEhh, doseInsulinaPeloLivro, edemaCerebral, expansaoChoqueCad,
   expansaoEhh, fichaCadPed, gravidadeCad, hidratacaoCad, insulinaEhhUiH, insulinaEv, insulinaScIcr, kMaxMeqH, kclOralMeqDia, magnesioEhh, nphIcr, osmEfetivaCad, pushGlicose25,
   sodioRealCad, todosAtendem, type Criterio, type MotivoDose,
@@ -134,6 +134,7 @@ export function CadEhhPed() {
             pagina={SORO_MANUTENCAO_CAD.pagina}
             nota={NOTA_SORO_CAD}
           />
+          <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{NOTA_RINGER_CAD}</p>
         </Bloco>
       )}
 

@@ -38,16 +38,34 @@ export const CORRECAO_AHA_2026 = {
   url: 'https://doi.org/10.1161/STR.0000000000000530',
 }
 
+// Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026, H3
+// = A): o INTERACT4 (NEJM 2024) e a ESO 2025 de PA entram como nota no bloco
+// da pressão arterial, aqui e na emergência hipertensiva. Os alvos não mudam.
+export const INTERACT4_2024: Fonte = {
+  citacao: 'Li G, Lin Y, Yang J, et al. Intensive Ambulance-Delivered Blood-Pressure Reduction in Hyperacute Stroke. N Engl J Med. 2024;390(20):1862–1872 (PMID 38752650).',
+  url: 'https://doi.org/10.1056/NEJMoa2314741',
+}
+
+export const ESO_PA_2025: Fonte = {
+  citacao: 'Sandset EC, Palaiodimou L, Jahr SH, et al. 2025 update to European Stroke Organisation (ESO) guideline on blood pressure management in acute ischaemic stroke and intracerebral haemorrhage. Eur Stroke J. 2026;11(5):aakag004 (PMID 42095756).',
+  url: 'https://doi.org/10.1093/esj/aakag004',
+}
+
+export const NOTA_INTERACT4 =
+  'INTERACT4 (NEJM 2024, posterior ao livro): ECR na China com 2.404 pacientes com suspeita de AVC agudo, déficit motor e PAS ≥ 150 mmHg, avaliados na ambulância em até 2 h do início. Baixar a PAS na hora (alvo 130–140 mmHg), antes da imagem, não mudou o Rankin em 90 dias. Na análise por tipo (subgrupo), piorou o desfecho no isquêmico (OR 1,30) e melhorou no hemorrágico (OR 0,75). Reforça não baixar a PA antes de a imagem separar isquemia de hemorragia. A ESO 2025 desaconselha baixar a PA de rotina no pré-hospitalar. Os alvos do livro e da DBHA não mudam.'
+
 const PAG_AVC_LIVRO = 'cap. 38 Acidente vascular cerebral isquêmico, p. 518–529 e 537 (Tabelas 3–7)'
 
 export const fichaTromboliseAvcAdulto: Ficha = {
   ...fichaAdulto('adulto-trombolise-avc', 'Trombólise no AVC isquêmico — adulto', PAG_AVC_LIVRO),
-  versao: '2026-09-28.1',
+  versao: '2026-11-06.1',
   fontes: [
     pagina(PAG_AVC_LIVRO),
     { ...AHA_ASA_2026, citacao: `${AHA_ASA_2026.citacao} Seções 4.3 (PA, p. 35 do PDF), 4.5 (glicemia, p. 37), 4.6 (trombólise, p. 38–44; Tabela 5, p. 40; Tabela 7, p. 43) e 4.7 (trombectomia, p. 5 e 53).` },
+    INTERACT4_2024,
+    ESO_PA_2025,
   ],
-  revisadoEm: '28/09/2026 (AHA/ASA 2026 conferida no PDF; manual do HC mantido como base)',
+  revisadoEm: '06/11/2026 (nota do INTERACT4 e da ESO 2025 na PA; revisão PubMed, itens médios)',
 }
 
 // ── Alteplase e tenecteplase ─────────────────────────────────────────────────

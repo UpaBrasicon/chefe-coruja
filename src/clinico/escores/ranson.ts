@@ -1,9 +1,12 @@
 import { completo, somar, type Escore } from '../escore.ts'
+import { FONTES_ESCORES_PANCREATITE, NOTA_ESCORES_PANCREATITE } from './bisap.ts'
 
 // Ranson para pancreatite NÃO biliar: cinco critérios na admissão (obrigatórios)
 // e seis nas primeiras 48 horas (marcas, porque podem ainda não existir). Porte
 // do protótipo (gastro/Ranson, construído em 29/08/2026). Saiu (ADR 0007) a
 // linha "Nível de cuidado": ficam os critérios e o limiar de gravidade.
+// Versão de 06/11/2026 (revisão PubMed, itens médios): a mesma nota do BISAP
+// sobre o desempenho dos escores na pancreatite grave. Os critérios não mudam.
 
 const NAO_SIM = [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim', valor: 1 }]
 const ADMISSAO = ['idade', 'leuco', 'glicemia', 'ldh', 'ast']
@@ -13,13 +16,14 @@ export const ranson: Escore = {
   ficha: {
     id: 'ranson',
     titulo: 'Ranson — gravidade da pancreatite não biliar',
-    versao: '2026-09-27.1',
+    versao: '2026-11-06.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Ranson JHC, Rifkind KM, Roses DF, et al. Prognostic signs and the role of operative management in acute pancreatitis. Surg Gynecol Obstet. 1974;139(1):69–81.', url: 'https://pubmed.ncbi.nlm.nih.gov/4834279/' },
       { citacao: 'Banks PA, Bollen TL, Dervenis C, et al. Classification of acute pancreatitis — 2012: revision of the Atlanta classification. Gut. 2013;62(1):102–111.', url: 'https://doi.org/10.1136/gutjnl-2012-302779' },
+      ...FONTES_ESCORES_PANCREATITE,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '06/11/2026 (nota do desempenho dos escores na pancreatite grave; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Gravidade da pancreatite aguda não biliar: cinco critérios na admissão e seis nas primeiras 48 horas',
   itens: [
@@ -60,6 +64,7 @@ export const ranson: Escore = {
         'Versão para pancreatite não biliar. A biliar usa outros pontos de corte, que esta tela não implementa.',
         'O escore só está completo depois de 48 horas.',
         'Derivado em 1974: a mortalidade absoluta por faixa não corresponde à prática atual; o que se mantém é a separação entre leve e grave.',
+        NOTA_ESCORES_PANCREATITE,
       ],
     }
   },

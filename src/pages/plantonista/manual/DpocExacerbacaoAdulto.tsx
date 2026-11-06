@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  DROGAS_DPOC, ERRATA_DPOC, INDICACOES_UTI_DPOC, INDICACOES_VM_DPOC, INDICACOES_VNI_DPOC, SINTOMAS_CARDINAIS, VM_DPOC, VNI_DPOC,
+  DROGAS_DPOC, ERRATA_DPOC, INDICACOES_UTI_DPOC, INDICACOES_VM_DPOC, INDICACOES_VNI_DPOC, NOTA_ATS_HIPERCAPNICA, SINTOMAS_CARDINAIS, VM_DPOC, VNI_DPOC,
   cicloVentilatorio, classificarDpoc, fichaDpocAdulto, lerGasometriaDpoc, mgBeta2, suporteVni, vcDpoc,
 } from '@/clinico/adulto/asmaDpoc'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -77,6 +77,7 @@ export function DpocExacerbacaoAdulto() {
         <Resultado rotulo="Pressão de suporte (IPAP − EPAP) nas pontas da faixa" valor={`${faixaBr(ps, 0)} cmH2O`} />
         <p className="font-medium">Indicações (Tabela 6, p. 424)</p>
         <ul className="list-disc pl-5">{INDICACOES_VNI_DPOC.map((i) => <li key={i}>{i}</li>)}</ul>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ATS_HIPERCAPNICA}</p>
       </Bloco>
 
       <Bloco titulo="Ventilação mecânica invasiva — parâmetros iniciais" descricao={`p. 425. VC ${faixaBr(VM_DPOC.vcMlKg, 0)} mL/kg; o livro não diz se é peso real ou predito — a conta usa o peso informado.`}>

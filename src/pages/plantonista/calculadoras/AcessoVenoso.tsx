@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { fichaAcessoVenoso, recomendarAcesso, type EntradaAcesso } from '@/clinico/acessoVenoso'
+import { fichaAcessoVenoso, NOTA_ACESSO_9A_EDICAO, recomendarAcesso, type EntradaAcesso } from '@/clinico/acessoVenoso'
 import { Chip } from '@/components/monitor/Pagina'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -105,6 +105,8 @@ export function AcessoVenoso() {
             </CardContent>
           </Card>
         )}
+
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ACESSO_9A_EDICAO}</p>
       </div>
     </ToolLayout>
   )
