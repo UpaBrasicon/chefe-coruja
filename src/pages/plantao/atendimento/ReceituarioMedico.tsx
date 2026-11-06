@@ -40,6 +40,7 @@ import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { TituloCartao, TituloSecao } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { CaixaMarcar } from '@/components/ui/caixa-marcar'
+import { useTravas } from '@/components/paciente/useTravas'
 
 type ItemRx = {
   id: string
@@ -117,24 +118,6 @@ const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 function alergiaNoTexto(nome: string, alergias: string[]): string | null {
   const n = norm(nome)
   return alergias.find((a) => norm(a).length >= 3 && n.includes(norm(a))) ?? null
-}
-
-/** A regra do banco: a substância registrada que trava cada medicamento do cadastro. */
-function useTravas(pacienteId: string | null | undefined, ids: (string | null | undefined)[]) {
-  const unicos = [...new Set(ids.filter((x): x is string => !!x))].sort()
-  return useQuery({
-    queryKey: ['trava-receita', pacienteId, unicos.join(',')],
-    enabled: !!pacienteId && unicos.length > 0,
-    staleTime: 30_000,
-    queryFn: async () => {
-      const pares = await Promise.all(unicos.map(async (id) => {
-        const { data, error } = await supabase.rpc('alergia_trava_medicamento', { p_paciente: pacienteId!, p_medicamento: id })
-        if (error) throw error
-        return [id, (data as string | null) ?? null] as const
-      }))
-      return Object.fromEntries(pares) as Record<string, string | null>
-    },
-  })
 }
 
 type Favorito = {

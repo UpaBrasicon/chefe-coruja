@@ -11,21 +11,24 @@
 // servidor; aqui só se mostra e se pede.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Ban, DoorOpen, Pill, Printer, Plus } from 'lucide-react'
+import { AlertTriangle, Ban, DoorOpen, Pill, Printer, Plus, Star } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { dataHora } from '@/lib/formato'
 import { faltaNoItem, trechosAchados, type MedicamentoAchado } from '@/lib/buscaMedicamento'
 import { FREQUENCIAS_PORTA, OUTRA, aprazamentoImpresso } from '@/lib/frequenciaPorta'
+import { deFavoritoParaPorta } from '@/lib/favoritoPorta'
 import { abrirImpressao } from '@/lib/prontuario'
+import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
-import { Chip } from '@/components/monitor/Pagina'
+import { Chip, TituloCartao } from '@/components/monitor/Pagina'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,6 +37,7 @@ import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { METODOS_PESO, gravarPeso, textoDoPeso, useFaltaParaPrescrever, type MetodoPeso } from '@/components/prescricao/pesoAtendimento'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
+import { useTravas } from '@/components/paciente/useTravas'
 import { frase, interacoesDoErro, semPontoFinal, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
 import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 
@@ -47,6 +51,11 @@ type ItemVigente = {
 type ItemDaPorta = ItemVigente & { horarios: string[]; episodio_id: string | null }
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null; alta_vigilancia: boolean }
 type Diluicao = { id: string; versao: number; texto: string; fonte: string; revisor_crf: string | null }
+/** Favorito do médico (preferencias_prescricao; RLS: só o dono lê). */
+type Favorito = {
+  id: string; receita_padrao: string | null; dose: string | null; via: string | null; posologia: string; quantidade: string | null
+  medicamento_id: string; medicamento: Omit<Medicamento, 'id'> | null
+}
 
 export type PacientePrescricao = { nome: string; dataAtual?: string; leito?: string; diagnostico?: string }
 export type PesoAtual = { valor_num: number; aferido_em: string; metodo: string | null }
@@ -273,6 +282,48 @@ function ChipPorta({ ativo, onClick, children }: { ativo: boolean; onClick: () =
   return <Chip ativo={ativo} onClick={onClick}>{children}</Chip>
 }
 
+/**
+ * "Meus favoritos" na porta (favoritos de prescrição, A em G1 a G5): o chip só
+ * preenche o "Novo item" (G2); quem prescreve é o médico, no botão Prescrever.
+ * Alergia ao medicamento trava o chip, como no Receituário.
+ */
+function FavoritosPorta({ favs, carregado, travas, aoEscolher }: {
+  favs: Favorito[]; carregado: boolean; travas: Record<string, string | null>; aoEscolher: (f: Favorito) => void
+}) {
+  return (
+    <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha bg-campo px-5 py-[13px]">
+        <Star className="size-[15px] text-atencao" aria-hidden />
+        <TituloCartao className="mb-0">Meus favoritos</TituloCartao>
+        <span className="text-rotulo text-tinta-sussurro">O favorito preenche o novo item: confira antes de prescrever.</span>
+        <Link to="/preferencias-prescricao" className="ml-auto text-apoio text-acao hover:underline">Editar</Link>
+      </div>
+      <div className="flex flex-wrap gap-2 px-5 py-3.5">
+        {favs.map((f) => {
+          const nome = f.medicamento?.principio_ativo ?? 'Favorito'
+          const trava = travas[f.medicamento_id]
+          return (
+            // padrao-ok: chip de favorito com estado travado por alergia, como no Receituário; o Chip não tem esse tom
+            <button key={f.id} type="button" disabled={!!trava || !f.medicamento} onClick={() => aoEscolher(f)}
+              title={trava ? `Bloqueado pela alergia a ${trava}` : [f.dose, f.via, f.posologia].filter(Boolean).join(' · ')}
+              className={cn('flex items-center gap-[7px] rounded-capsula border px-[13px] py-1.5 text-apoio whitespace-nowrap',
+                trava ? 'cursor-not-allowed border-critico/25 bg-alerta-critico text-critico'
+                  : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao')}>
+              {trava && <AlertTriangle className="size-[13px]" aria-hidden />}
+              {nome}{f.receita_padrao ? <span className="text-tinta-sussurro"> · {f.receita_padrao}</span> : null}
+            </button>
+          )
+        })}
+        {carregado && !favs.length && (
+          <span className="text-apoio text-tinta-sussurro">
+            Nenhum favorito ainda. <Link to="/preferencias-prescricao" className="text-acao hover:underline">Preferências de prescrição</Link>
+          </span>
+        )}
+      </div>
+    </section>
+  )
+}
+
 /** Texto do resultado com as letras achadas em destaque. */
 function Achado({ texto, termo }: { texto: string; termo: string }) {
   return <>{trechosAchados(texto, termo).map((p, i) => (p.achou ? <b key={i} className="font-semibold text-tinta">{p.t}</b> : p.t))}</>
@@ -330,6 +381,11 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   const [f, setF] = React.useState({ dose: '', via: '', posologia: '', observacao: '', se_necessario: false, descricao: '' })
   // porta: "Outra" abre o campo livre da frequência
   const [outra, setOutra] = React.useState(false)
+  // favorito com frequência que a porta não entende (G3): "Quando" em branco,
+  // nenhum chip marcado (não vale "Agora") até o médico escolher
+  const [semQuando, setSemQuando] = React.useState(false)
+  // via do favorito fora das vias da porta (G4): só lembrete
+  const [viaLembrete, setViaLembrete] = React.useState<string | null>(null)
   const [divergir, setDivergir] = React.useState(false)
   const [dilTexto, setDilTexto] = React.useState('')
   const [justificativa, setJustificativa] = React.useState('')
@@ -365,7 +421,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   const faltaServidor = useFaltaParaPrescrever(pacienteId)
   const faltaPaciente = faltaServidor.data?.falta ?? []
   // na porta, sem chip escolhido vale "Agora"; no "Outra", o que foi escrito
-  const posologia = porta && !outra ? f.posologia || 'Agora' : f.posologia.trim()
+  const posologia = semQuando ? '' : porta && !outra ? f.posologia || 'Agora' : f.posologia.trim()
   const faltaItem = faltaNoItem({ med: !!med, dose: f.dose, via: f.via, posologia, porta, se_necessario: f.se_necessario }, faltaPaciente)
   const faltaFrequencia = faltaItem.some((x) => x.startsWith('frequência'))
   const textoPeso = faltaServidor.data ? textoDoPeso(faltaServidor.data)
@@ -410,9 +466,42 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
     },
   })
 
+  // favoritos de prescrição na porta (A em G1 a G5): a mesma leitura do
+  // Receituário, com a via; paciente pediátrico não recebe favoritos (G5)
+  const favoritos = useQuery({
+    queryKey: ['preferencias-prescricao', 'porta'],
+    enabled: porta && !pediatrico,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('preferencias_prescricao')
+        .select('id, receita_padrao, dose, via, posologia, quantidade, medicamento_id, medicamento:medicamento(principio_ativo, apresentacao, concentracao, alta_vigilancia)')
+        .order('created_at')
+      if (error) throw error
+      return (data ?? []) as unknown as Favorito[]
+    },
+  })
+  // o cache pode ter os favoritos de outra tela: fora da porta, nenhum
+  const favs = pediatrico ? [] : porta ? favoritos.data ?? [] : []
+  const travas = useTravas(pacienteId, favs.map((x) => x.medicamento_id)).data ?? {}
+
   const limpar = () => {
     setMed(null); setBusca(''); setDivergir(false); setDilTexto(''); setJustificativa(''); setOutra(false)
+    setSemQuando(false); setViaLembrete(null)
     setF({ dose: '', via: '', posologia: '', observacao: '', se_necessario: false, descricao: '' })
+  }
+  /** G2: o favorito só preenche o "Novo item"; o médico confere e clica em Prescrever. */
+  function usarFavorito(fav: Favorito) {
+    if (!fav.medicamento) return
+    const novo = deFavoritoParaPorta(fav, VIAS_PORTA)
+    setTipo('medicamento')
+    setMed({ id: novo.medicamentoId, ...fav.medicamento }); setBusca(''); setFaltaAvisada(false)
+    setDivergir(false); setDilTexto(''); setJustificativa('')
+    setF({
+      ...f, dose: novo.dose, via: novo.via ?? '',
+      posologia: novo.quando === OUTRA ? novo.outraTexto : novo.quando ?? '', se_necessario: novo.quando === 'Se necessário',
+    })
+    setOutra(novo.quando === OUTRA); setSemQuando(novo.quando === null); setViaLembrete(novo.viaLembrete)
+    setInteracao(null); setJustInteracao(''); avisar(null)
+    requestAnimationFrame(() => doseRef.current?.focus())
   }
   async function prescrever(item: Record<string, unknown>) {
     const { error } = await supabase.rpc('prescrever', { p_paciente: pacienteId, p_item: item as never })
@@ -436,6 +525,10 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   }
 
   return (
+    <>
+    {porta && !pediatrico && (
+      <FavoritosPorta favs={favs} carregado={favoritos.isSuccess} travas={travas} aoEscolher={usarFavorito} />
+    )}
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-corpo"><Plus className="size-4" /> Novo item</CardTitle>
@@ -549,16 +642,18 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                   <div role="group" aria-label="Via" className="flex flex-wrap items-center gap-1.5">
                     {VIAS_PORTA.map((v) => <ChipPorta key={v.v} ativo={f.via === v.v} onClick={() => setF({ ...f, via: v.v })}>{v.rotulo}</ChipPorta>)}
                   </div>
+                  {viaLembrete && <span className="text-rotulo text-atencao">Via do favorito: {viaLembrete}. Escolha uma das vias acima.</span>}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <span className="text-apoio font-medium text-tinta-apoio">Quando *</span>
                   <div role="group" aria-label="Quando" className="flex flex-wrap items-center gap-1.5">
                     {FREQUENCIAS_PORTA.map((q) => (
-                      <ChipPorta key={q} ativo={!outra && (f.posologia || 'Agora') === q}
-                        onClick={() => { setOutra(false); setF({ ...f, posologia: q, se_necessario: q === 'Se necessário' }) }}>{q}</ChipPorta>
+                      <ChipPorta key={q} ativo={!outra && !semQuando && (f.posologia || 'Agora') === q}
+                        onClick={() => { setOutra(false); setSemQuando(false); setF({ ...f, posologia: q, se_necessario: q === 'Se necessário' }) }}>{q}</ChipPorta>
                     ))}
-                    <ChipPorta ativo={outra} onClick={() => { setOutra(true); setF({ ...f, posologia: '', se_necessario: false }) }}>{OUTRA}</ChipPorta>
+                    <ChipPorta ativo={outra} onClick={() => { setOutra(true); setSemQuando(false); setF({ ...f, posologia: '', se_necessario: false }) }}>{OUTRA}</ChipPorta>
                   </div>
+                  {semQuando && <span className="text-rotulo text-atencao">A frequência do favorito não é uma que a porta entende: escolha quando.</span>}
                   {outra && (
                     <div className="flex flex-col gap-1">
                       <Label htmlFor="item-freq-outra">Frequência</Label>
@@ -649,5 +744,6 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
         )}
       </CardContent>
     </Card>
+    </>
   )
 }
