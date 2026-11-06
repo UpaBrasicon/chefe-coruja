@@ -57,3 +57,20 @@ O item 7 (08/10/2026) diz que o histórico encerrado fica poluído com muitos at
 ## Riscos
 - **Vazar dado por uma leitura nova:** quem lê pelo pedido de acesso só pode ver o que o pedido cobre. O teste de banco do passo 2 é obrigatório.
 - **Tela lenta com muitos atendimentos:** a P4 limita a carga inicial.
+
+## Direção visual escolhida (P6)
+**Escolha do RT em 06/11/2026: direção A, "Ficha fixa e linha do tempo".** A referência é a tela de perfil do Visitors (Refero c43c04b2). As três maquetes estão em `docs/clinico/prontuario-completo/maquetes.html`, e a escolhida também como imagem em `direcao-A.png`.
+
+- **Coluna esquerda fixa:**
+  - identificação;
+  - contagem de atendimentos e internações e a data do último;
+  - alergias e eventos adversos;
+  - regulações;
+  - navegação por ano.
+- **Coluna direita, linha do tempo:**
+  - os atendimentos ficam separados por data, com o mais recente no topo;
+  - o primeiro vem aberto: cabeçalho (unidade, setor, cor e reclassificação, médico, CID, situação), os registros principais, "+N registros" para o resto e a tabela de sinais vitais;
+  - os outros vêm fechados, numa linha cada;
+  - no fim, "Ver mais atendimentos".
+- **No celular:** a coluna esquerda vai para o topo e a linha do tempo fica embaixo.
+
