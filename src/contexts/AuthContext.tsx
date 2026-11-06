@@ -23,6 +23,17 @@ const AuthContext = React.createContext<AuthContextValue | null>(null)
 // Canal entre abas do mesmo navegador: quem sai numa aba sai em todas.
 const CANAL_SESSAO = 'cc-sessao'
 
+// D1 (recarga sem conexão, parte 1): sair apaga o token do navegador mesmo sem
+// rede, e de novo 5 s depois, para o caso de uma renovação que já estava em
+// curso regravar a sessão. Um login novo nesse meio-tempo cancela a segunda.
+let saiuEm = 0
+function sairDoAparelho() {
+  apagarTokenLocal()
+  saiuEm = Date.now()
+  const marca = saiuEm
+  window.setTimeout(() => { if (saiuEm === marca) apagarTokenLocal() }, 5000)
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [perfil, setPerfil] = React.useState<Perfis['Row'] | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -35,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     limparTodosRascunhos()
     definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
     queryClient.clear()
-    try { await supabase.auth.signOut({ scope: 'local' }) } finally { apagarTokenLocal() }
+    try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
   }, [queryClient])
 
   const loadPerfil = React.useCallback(async (userId: string) => {
@@ -83,7 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((evento, session) => {
+      if (evento === 'SIGNED_IN') saiuEm = 0
       if (session) void loadPerfil(session.user.id)
       else {
         setPerfil(null)
@@ -126,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // escopo local: revoga no servidor o refresh token DESTA sessão (o
         // celular do médico continua logado); o global derrubaria todos.
         // sem rede o supabase-js não apaga o token: apaga aqui (D1, computador compartilhado)
-        try { await supabase.auth.signOut({ scope: 'local' }) } finally { apagarTokenLocal() }
+        try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
       },
       definirTema: async (tema) => {
         aplicarTema(tema)

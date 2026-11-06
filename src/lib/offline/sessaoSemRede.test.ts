@@ -36,7 +36,10 @@ test('D3: renovação que não alcançou o servidor é falha de rede, não sess�
 
 test('D1: o AuthContext apaga o token mesmo se o pedido de saída falhar', () => {
   const ctx = readFileSync('src/contexts/AuthContext.tsx', 'utf8')
-  assert.equal((ctx.match(/finally \{ apagarTokenLocal\(\) \}/g) ?? []).length, 2, 'encerrarLocal e signOut')
+  assert.equal((ctx.match(/finally \{ sairDoAparelho\(\) \}/g) ?? []).length, 2, 'encerrarLocal e signOut')
+  // segunda limpeza 5 s depois (renovação em curso regravando), cancelada por login novo
+  assert.match(ctx, /setTimeout\(\(\) => \{ if \(saiuEm === marca\) apagarTokenLocal\(\) \}, 5000\)/)
+  assert.match(ctx, /if \(evento === 'SIGNED_IN'\) saiuEm = 0/)
 })
 
 test('D3: sem sessão por falha de rede, rascunhos e chave ficam', () => {
