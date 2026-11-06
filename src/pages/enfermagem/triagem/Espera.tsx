@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { esperaMin, hora, type NaEspera } from './comum'
 import { CelulaPaciente, QueixaCelula } from './Fila'
+import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
 
 // Classificados que ainda esperam o médico (correções do portão, tarefa 2):
 // a enfermagem reclassifica aqui se o quadro mudou na espera. Quando o médico
@@ -26,7 +27,7 @@ export function EsperaMedico({ lista, carregando, erro, onReclassificar, ubs = f
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
       <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-sussurro">{ubs ? 'Na ordem da fila do médico: imediato, prioritário, depois prioridade legal e chegada' : 'Na ordem da fila médica · reclassifique se o quadro mudou na espera'}</p>
       {carregando && <p className="px-5 py-5 text-controle text-tinta-sussurro">Carregando…</p>}
-      {erro && <p className="px-5 py-5 text-controle text-critico">{erro.message}</p>}
+      {erroDeLeitura(erro, lista.length > 0) && <p className="px-5 py-5 text-controle text-critico">{erroDeLeitura(erro, lista.length > 0)}</p>}
       {!carregando && !erro && lista.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">{ubs ? 'Ninguém escutado aguardando o médico.' : 'Ninguém classificado aguardando o médico.'}</p>}
       {lista.length > 0 && (
         <Table aria-label="Classificados aguardando o médico">
