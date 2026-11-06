@@ -33,6 +33,8 @@ import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
 import { dataHora, dataIso, hora } from '@/lib/formato'
+import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
+import { csvEscala } from '@/lib/exportacoesAntigas'
 import { cn } from '@/lib/utils'
 import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
@@ -380,22 +382,11 @@ export default function Escala({
 
   function exportarEscalaCSV() {
     if (!setores || !escalaMes) return
-    const linhas = ['Setor;Data;Turno;Plantonista;Quinzenal']
-    for (const s of setores) {
-      const plantoes = (escalaMes ?? []).filter((e) => e.setor_id === s.id)
-      for (const e of plantoes) {
-        linhas.push(
-          `${s.nome};${e.data};${TURNO_LABEL[e.turno]};${e.perfis?.nome_completo ?? ''};${e.quinzenal ? 'sim' : 'nao'}`
-        )
-      }
-    }
-    const blob = new Blob(['\uFEFF' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `escala_${fmtMesBR(mesInicio).replace('/', '-')}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    // pela csv.ts: ";" no nome do setor n\u00E3o desalinha e "=" n\u00E3o vira f\u00F3rmula (achado de 07/10/2026)
+    const linhas = setores.flatMap((s) => escalaMes
+      .filter((e) => e.setor_id === s.id)
+      .map((e) => ({ setor: s.nome, data: e.data, turno: TURNO_LABEL[e.turno], plantonista: e.perfis?.nome_completo ?? null, quinzenal: !!e.quinzenal })))
+    baixarCsv(nomeArquivoCsv('escala', mesInicio.slice(0, 7)), csvEscala(unidadeAtiva?.unidade.nome ?? '', fmtMesBR(mesInicio), linhas))
   }
 
   const adicionarFixa = useMutation({

@@ -3,7 +3,9 @@ import { ArrowRightLeft, BedDouble, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
-import { data as dataDoInstante, dataIso } from '@/lib/formato'
+import { data as dataDoInstante, dataHora, dataIso } from '@/lib/formato'
+import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
+import { csvTransferencias } from '@/lib/exportacoesAntigas'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useLimitesUnidade } from '@/lib/limitesUnidade'
 import { Button } from '@/components/ui/button'
@@ -51,6 +53,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
   const [motivo, setMotivo] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
   const [sucesso, setSucesso] = React.useState<string | null>(null)
+  const [erroExportar, setErroExportar] = React.useState<string | null>(null)
 
   const ehGestor = papelAtivo === 'gestor'
   const ehAdmin = papelAtivo === 'admin'
@@ -131,19 +134,19 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
       void queryClient.invalidateQueries({ queryKey: [k] })
   }
 
-  function exportarAuditoriaCSV() {
-    if (!transferencias || transferencias.length === 0) return
-    const linhas = ['Paciente;Data;Motivo']
-    for (const t of transferencias) {
-      linhas.push(`${t.pacientes?.nome ?? ''};${fmtDia(t.created_at)};${t.motivo || ''}`)
-    }
-    const blob = new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `auditoria_transferencias_${dataIso()}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+  // A lista leva nome de paciente: a exportação fica na auditoria e, sem o
+  // registro, não há arquivo (achado guardado de 07/10/2026).
+  async function exportarAuditoriaCSV() {
+    if (!transferencias || transferencias.length === 0 || !unidadeId) return
+    setErroExportar(null)
+    const arquivo = nomeArquivoCsv('auditoria_transferencias', dataIso())
+    const { error } = await supabase.rpc('registrar_auditoria', {
+      p_acao: 'exportacao_csv', p_entidade: 'transferencias_paciente', p_unidade_id: unidadeId,
+      p_payload: { arquivo, linhas: transferencias.length },
+    })
+    if (error) { setErroExportar('Não foi possível registrar a exportação na auditoria; o arquivo não foi gerado.'); return }
+    baixarCsv(arquivo, csvTransferencias(unidadeAtiva?.unidade.nome ?? '', dataHora(Date.now()),
+      transferencias.map((t) => ({ paciente: t.pacientes?.nome ?? null, data: fmtDia(t.created_at), motivo: t.motivo || null }))))
   }
 
   const transferirMutation = useMutation({
@@ -229,11 +232,12 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
               </CardTitle>
               <CardDescription>Registro de auditoria das transferências entre setores.</CardDescription>
             </div>
-            <Button size="xs" variant="outline" onClick={exportarAuditoriaCSV} disabled={(transferencias ?? []).length === 0}>
+            <Button size="xs" variant="outline" onClick={() => void exportarAuditoriaCSV()} disabled={(transferencias ?? []).length === 0}>
               Exportar CSV
             </Button>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
+            {erroExportar && <p className="text-apoio text-critico">{erroExportar}</p>}
             {carregandoTransf ? (
               <div className="flex h-16 items-center justify-center">
                 <Spinner />
