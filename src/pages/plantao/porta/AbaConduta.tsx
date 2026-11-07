@@ -4,7 +4,9 @@
 // conduta em caixas de marcar, tudo da Ficha de Atendimento Individual do
 // e-SUS APS (src/domain/aps.ts). Toma o lugar do Desfecho da porta. As regras
 // aparecem antes de enviar; o servidor (registrar_conduta_aps) confere de novo.
-// Nada aqui sugere problema, CID ou conduta.
+// Nada aqui sugere problema ou conduta. CID: só referência, a escolha é do
+// médico (decisão do RT em 06/11/2026, C2): a CID-10 relacionada da CIAP-2,
+// pelo botão, e os CIDs de referência da Avaliação, na aba Atendimento.
 import { useMutation } from '@tanstack/react-query'
 import { Ambulance, CalendarPlus, Check, CircleAlert, ClipboardCheck, UserX, Waypoints, X } from 'lucide-react'
 import * as React from 'react'

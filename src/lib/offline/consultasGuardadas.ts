@@ -16,7 +16,7 @@ const PERMITIDAS = new Set([
   'setores-na-escala', 'setores-tipos', 'setores-nomes', 'enfermagem-pendencias',
   // internação, PS e observação
   'enfermagem-leitos', 'enfermagem-ps-triados', 'enfermagem-pacientes-do-setor', 'painel-observacao', 'situacao-leitos',
-  'fugulin', 'fugulin-hoje', 'passagens-enfermagem',
+  'fugulin', 'fugulin-hoje', 'dini', 'dini-hoje', 'passagens-enfermagem',
   // painel de cuidados do paciente
   'cuidados-enfermagem', 'avaliacoes', 'conceitos-vitais-enfermagem',
   // triagem
