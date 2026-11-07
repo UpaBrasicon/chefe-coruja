@@ -413,7 +413,7 @@ As duas falhas:
   - A enfermeira registrou os sinais, a SAE e o balanço.
   - O box OA-02 foi para higienização.
   - A **contrarreferência** chegou à UBS (`a_ver`), a enfermeira da UBS abriu e ela virou `visto`. A recepção continua sem ver o resumo.
-- **Pergunta de produto registrada (`A01R.24.porta_finaliza`):** o `medico.upa.f5`, que pôs a paciente em observação e não está escalado nela, tentou encerrar a observação. Foi **RECUSADO** ("Acesso negado: você não está de plantão no setor deste paciente."). Só fica registrado. Se a porta deve poder encerrar, é decisão do RT.
+- **Pergunta de produto registrada (`A01R.24.porta_finaliza`):** o `medico.upa.f5`, que pôs a paciente em observação e não está escalado nela, tentou encerrar a observação. Foi **RECUSADO** ("Acesso negado: você não está de plantão no setor deste paciente."). **Decisão do RT em 06/11/2026: "Sim, deve poder".** Com isso, o comportamento atual vira achado de produto (P2-3): o médico que pôs o paciente em observação deve poder encerrá-la, mesmo sem estar escalado no setor da observação. A correção entra na tarefa 3 da frente, numa branch própria, na ordem que o RT decidir.
 
 ### Achados novos
 - **P3-7 — Hospital F5 sem SIGTAP associado (ambiente).** A conta da porta do hospital (`A-2026.000001`, hospital) tem os itens de classificação e de consulta "fora" do BPA, sem valor. Há 2 pendências **bloqueantes** ("A unidade não associou o código SIGTAP desta fonte"). Se for fechar essa conta, é preciso `associar_procedimento_bpa` no hospital, como foi feito na UPA.

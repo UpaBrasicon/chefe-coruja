@@ -2338,7 +2338,7 @@ Pedido do RT: "criar n número de possibilidades para testar todo o fluxo de tod
 |---|---|---|---|
 | 1 | P0 | Catálogo de cenários (20 ou mais) cobrindo todos os papéis e a rede: UBS, UPA, hospital, regulação, farmácia, faturamento e custos. Os custos são fictícios e marcados como exemplo. Nada é gravado no banco. Fica em `docs/teste-rede/` | Em andamento (06/11/2026) |
 | 2 | P1 | Carga dos cenários na homologação (pacientes, atendimentos e custos fictícios) e execução com login, papel por papel | Aval do RT em 06/11/2026. Ambiente F5 ampliado pelo `scripts/e2e/46_rede_fase5_ampliacao.sql`: Secretaria e módulo de rede, setores pediátrico, isolamento, UTI e obstetrícia, 9 contas novas, CNS e CBO, escala até 13/11. A execução vem em seguida |
-| 3 | P2 | Relatório de achados da execução, com a correção de cada um na sua própria branch | Depois da 2 |
+| 3 | P2 | Relatório de achados da execução, com a correção de cada um na sua própria branch | A01 executado em 06/11/2026 (`docs/teste-rede/EXECUCAO-A01.md`). Decisão do RT no mesmo dia: o médico da porta que pôs o paciente em observação deve poder encerrá-la (hoje é recusado). Fica na lista de correções |
 
 Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de memória; o cenário remete à ferramenta do sistema que tem a fonte. A cor da classificação é decisão da enfermagem, também dentro do cenário.
 
