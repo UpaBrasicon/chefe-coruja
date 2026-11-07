@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import type { CorRisco } from '@/domain/risco'
 import { data as dataFmt, hora } from '@/lib/formato'
-import { motivoValido, rotuloDesfechoFinal, type HistoricoEncerrado as Dados } from '@/lib/historico'
+import { INICIAIS_HISTORICO, agruparPorAno, motivoValido, resumoHistorico, rotuloDesfechoFinal, type AtendimentoEncerrado, type HistoricoEncerrado as Dados } from '@/lib/historico'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +19,9 @@ import { cn } from '@/lib/utils'
 // (data, setor, cor, CID, desfecho, médico), sem pedido ao gestor. O detalhe
 // abre com motivo escrito, só leitura, por 12 horas; quem, quando e o motivo
 // ficam no registro de acesso (migration 20261030000002).
+// Item 7 dos achados guardados (A em H1 a H5, 06/11/2026): resumo por
+// desfecho no topo, os 5 mais recentes e "Ver todos", agrupados por ano, sem
+// rolagem dentro do cartão.
 
 const dataCurta = (iso: string | null) => (iso ? dataFmt(iso) : '—')
 
@@ -26,6 +29,7 @@ export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: stri
   const [pedindo, setPedindo] = React.useState(false)
   const [motivo, setMotivo] = React.useState('')
   const [tentou, setTentou] = React.useState(false)
+  const [todos, setTodos] = React.useState(false)
 
   const historico = useQuery({
     queryKey: ['historico-encerrado', pacienteId],
@@ -62,6 +66,7 @@ export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: stri
   if (historico.error || !historico.data) return null
   const d = historico.data
   const liberado = d.liberado
+  const resumo = resumoHistorico(d.atendimentos)
 
   return (
     <section aria-label="Histórico na unidade" className={cn('overflow-hidden rounded-cartao border border-fio bg-superficie', className)}>
@@ -83,17 +88,31 @@ export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: stri
       {d.atendimentos.length === 0 ? (
         <p className="px-5 py-3.5 text-apoio text-tinta-sussurro">Nenhum atendimento encerrado nesta unidade.</p>
       ) : (
-        <ul className="max-h-[320px] overflow-y-auto">
-          {d.atendimentos.map((a) => (
-            <li key={a.id} className="flex flex-wrap items-center gap-x-3.5 gap-y-1 border-b border-trilha px-5 py-2.5 last:border-0">
-              <span className="w-[86px] flex-none text-apoio font-medium tabular-nums text-tinta">{dataCurta(a.chegada_em)}</span>
-              <span className="min-w-[120px] flex-1 text-apoio text-tinta-apoio">{a.setor}{a.medico ? ` · ${a.medico}` : ''}</span>
-              <PilulaRisco cor={(a.cor as CorRisco | null) ?? null} />
-              <span className="w-[72px] text-apoio font-medium tabular-nums text-tinta">{a.cid ?? 'sem CID'}</span>
-              <span className="w-[140px] text-apoio text-tinta-apoio">{rotuloDesfechoFinal(a.desfecho)}</span>
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-apoio">
+            {resumo.porDesfecho.map((x) => `${x.quantidade} ${x.rotulo.toLowerCase()}`).join(' · ')}
+            {resumo.ultimo && <span className="text-tinta-sussurro"> · último em {dataCurta(resumo.ultimo)}</span>}
+          </p>
+          {todos ? (
+            agruparPorAno(d.atendimentos).map((g) => (
+              <div key={g.ano}>
+                <p className="bg-trilha px-5 py-1.5 text-rotulo font-semibold tabular-nums text-tinta-sussurro">
+                  {g.ano} · {g.itens.length} atendimento{g.itens.length === 1 ? '' : 's'}
+                </p>
+                <ul>{g.itens.map((a) => <LinhaHistorico key={a.id} a={a} />)}</ul>
+              </div>
+            ))
+          ) : (
+            <ul>{d.atendimentos.slice(0, INICIAIS_HISTORICO).map((a) => <LinhaHistorico key={a.id} a={a} />)}</ul>
+          )}
+          {d.atendimentos.length > INICIAIS_HISTORICO && (
+            <div className="border-t border-trilha px-5 py-2">
+              <Button size="sm" variant="ghost" aria-expanded={todos} onClick={() => setTodos((v) => !v)}>
+                {todos ? 'Mostrar só os 5 mais recentes' : `Ver todos os ${d.atendimentos.length}`}
+              </Button>
+            </div>
+          )}
+        </>
       )}
       <p className="border-t border-trilha px-5 py-2 text-rotulo text-tinta-sussurro">
         Resumo sem texto clínico. Evoluções, prescrições e documentos abrem com motivo, só leitura, e ficam no registro de acesso.
@@ -123,5 +142,17 @@ export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: stri
         </DialogContent>
       </Dialog>
     </section>
+  )
+}
+
+function LinhaHistorico({ a }: { a: AtendimentoEncerrado }) {
+  return (
+    <li className="flex flex-wrap items-center gap-x-3.5 gap-y-1 border-b border-trilha px-5 py-2.5 last:border-0">
+      <span className="w-[86px] flex-none text-apoio font-medium tabular-nums text-tinta">{dataCurta(a.chegada_em)}</span>
+      <span className="min-w-[120px] flex-1 text-apoio text-tinta-apoio">{a.setor}{a.medico ? ` · ${a.medico}` : ''}</span>
+      <PilulaRisco cor={(a.cor as CorRisco | null) ?? null} />
+      <span className="w-[72px] text-apoio font-medium tabular-nums text-tinta">{a.cid ?? 'sem CID'}</span>
+      <span className="w-[140px] text-apoio text-tinta-apoio">{rotuloDesfechoFinal(a.desfecho)}</span>
+    </li>
   )
 }
