@@ -1,6 +1,6 @@
 # Observação que vira internação não abre a conta: diagnóstico (B P1-1)
 
-Achado P1-1 do teste da rede (B01, `EXECUCAO-B01-B06.md`), diagnosticado em 07/11/2026. Nada foi corrigido: as decisões P1 a P3 estão no fim, à espera do RT.
+Achado P1-1 do teste da rede (B01, `EXECUCAO-B01-B06.md`), diagnosticado em 07/11/2026. **Decisão do RT (07/11/2026): A em P1 a P3.** O que foi feito está na seção 5.
 
 ## 1. O que acontece
 No B01, a paciente foi da porta para a observação e da observação para a internação na UPA (`finalizar_observacao(..., 'internacao', ...)`).
@@ -60,3 +60,21 @@ Dois gatilhos em `public.internacoes` (lidos no banco da homologação):
 **Riscos:**
 - **Conta duplicada:** a função só abre se não existir conta de internação para a internação, e o teste cobre isso.
 - **Conta antiga aberta para trás:** na homologação, a conta recebe a data de `internado_em`. Se a competência dela já estiver fechada, ela aparece como pendente para o faturamento, e é exatamente o que precisa ser visto.
+
+## 5. Feito (07/11/2026)
+- **Teste:** `supabase/tests/fix_conta_internacao_observacao.sql`, com cenário próprio. Antes da migration, falhou em "a conversão da observação não abriu a conta de internação"; depois, passou inteiro na homologação (transação desfeita).
+- **Migration:** `20270307000001_conta_na_conversao.sql`.
+  - O gatilho passa a `AFTER INSERT OR UPDATE OF internado_em, status`.
+  - `private.abrir_contas_de_internacao_que_faltam()` abre as contas que faltam e devolve quantas abriu. Ela fica fechada para usuários e roda uma vez na migration.
+  - O rollback está no cabeçalho.
+- **Homologação:** migration aplicada, com a versão registrada.
+  - O gatilho ficou com as colunas `internado_em,status`.
+  - Internações com `internado_em` e sem conta: **5 → 0**.
+- **Reconferência do B01** (`scripts/e2e/94_reconferencia_conta_b01.sql`, mesmo paciente):
+  - `B01.15.conta_internacao` **ok**: I-2026.000007, ligada à conta da porta.
+  - `B01.29.conta_int` **ok**.
+  - `B01.29.internacao_conferencia` **ok**.
+  - `B01.29.internacao_custos` **ok**: total R$ 865,91, AIH 0303010037.
+  - `B01.29.internacao_fechar` **ok**.
+  - `B01.29.congelados` **ok**: a AIH está congelada na conta de internação.
+- **Produção:** depende do CI do banco verde no PR e do "ok produção" do RT.
