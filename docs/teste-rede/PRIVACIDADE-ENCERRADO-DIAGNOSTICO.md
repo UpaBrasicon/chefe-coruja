@@ -95,3 +95,16 @@ SELECT 1 FROM public.pacientes pa
   - **D10.08:** o pedido de acesso do técnico da UBS é **aceito**;
   - **D10.11:** o farmacêutico que tenta abrir o prontuário encerrado recebe "Acesso negado: paciente fora dos setores do seu plantão".
 - **Falta:** o "ok produção" da migration e a conferência na tela (pedido do técnico da UBS e "sem acesso" no Prontuário completo).
+
+## 6. Ajuste depois do CI (07/11/2026): `20270306000002`
+- **O que o CI pegou:** a `0001` foi à produção com o "ok" do RT, mas o CI do #484 reprovou em 5 testes de banco, depois em mais 1.
+  - **Regressão real (`porte_evolucao`):** quando a porta vira observação ou internação, o atendimento da porta continua aberto no PS. Com a `0001`, a equipe do PS, inclusive a recepção, passou a "cuidar" do paciente que já estava na observação.
+  - **Regra B do RT (`evolucao_motivo`, ponto 9, 28/10/2026):** o médico de plantão no setor do **cadastro** lê e evolui a internação. A primeira versão da `0002` quebrava essa regra.
+  - **Dados de teste antigos** (`fase4_aih_sigtap`, `fase7_teleinterconsulta`, `porte_telemedicina`): gravavam só o setor no cadastro, sem atendimento nem internação. Esse estado não existe no fluxo real. Passaram a ter atendimento ou internação.
+- **Correção final (`20270306000002_cuidado_onde_esta.sql`):** volta a definição de antes (setor do cadastro **ou** internação aberta no setor da escala), com uma condição a mais. O setor do cadastro só vale **enquanto há atendimento ou internação aberta**. O encerrado não dá acesso pela escala, e a regra B fica como estava.
+- **Evidência:**
+  - teste com a seção 4 (porta que virou observação): falha com a `0001` e passa com a `0002`;
+  - CI do #484 todo verde;
+  - D10 repetido na homologação: 0 acessos aos encerrados, pedido da UBS aceito, farmacêutico recusado;
+  - **produção:** "ok produção" do RT para a `0002`, aplicada, md5 `6aad5230…` igual ao da homologação, mesmas permissões, as duas versões registradas.
+- **Lição:** rodar o CI do banco **antes** de levar uma migration de acesso à produção, e não só o teste novo na homologação.
