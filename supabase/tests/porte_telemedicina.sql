@@ -26,6 +26,10 @@ UPDATE public.teleinterconsultas SET status = 'cancelada', cancelada_em = now(),
 INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, setor_id) VALUES
   ('23000000-0000-4000-8000-000000000096', '21000000-0000-4000-8000-000000000001', 'Paciente Tele Um', '1950-01-01', 'T-096', '22000000-0000-4000-8000-000000000001'),
   ('23000000-0000-4000-8000-000000000095', '21000000-0000-4000-8000-000000000001', 'Paciente Tele Dois', '1951-01-01', 'T-095', '22000000-0000-4000-8000-000000000001');
+-- em cuidado = internação aberta no setor (20270306000001), não só o setor do cadastro
+INSERT INTO public.internacoes (organizacao_id, unidade_id, paciente_id, setor_atual_id, status)
+SELECT (SELECT organizacao_id FROM public.unidades WHERE id = '21000000-0000-4000-8000-000000000001'), '21000000-0000-4000-8000-000000000001', p, '22000000-0000-4000-8000-000000000001', 'internado'
+  FROM unnest(ARRAY['23000000-0000-4000-8000-000000000096', '23000000-0000-4000-8000-000000000095']::uuid[]) p;
 DELETE FROM public.escala_plantao WHERE perfil_id IN ('10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000006',
   '10000000-0000-4000-8000-000000000097');
 ALTER TABLE public.escala_plantao DISABLE TRIGGER trg_escala_janela;

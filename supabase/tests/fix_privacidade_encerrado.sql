@@ -133,4 +133,28 @@ SELECT pg_temp.ok(NOT pg_temp.cuida('med', 'recente'), 'encerrado há 2 horas: a
 SELECT pg_temp.ok(pg_temp.atua('gestor', 'velho'), 'o gestor da unidade lê o encerrado');
 SELECT pg_temp.ok(NOT pg_temp.atua('tec', 'velho'), 'quem é de outra unidade não atua');
 
+-- ── 4. a porta virou observação: vale onde o paciente está (20270306000002) ─
+-- o atendimento da porta continua aberto no PS, mas o paciente está na observação
+INSERT INTO ids VALUES ('obs', '00000000-0000-4000-8000-0000000b0e13'), ('enfobs', '00000000-0000-4000-8000-0000000b0e26'),
+                       ('rec', '00000000-0000-4000-8000-0000000b0e27');
+INSERT INTO auth.users (id, email) SELECT id, nome || '@fixpriv.local' FROM ids WHERE nome IN ('enfobs', 'rec');
+INSERT INTO public.perfis (id, nome_completo) SELECT id, 'Pessoa ' || nome FROM ids WHERE nome IN ('enfobs', 'rec')
+ON CONFLICT (id) DO UPDATE SET nome_completo = EXCLUDED.nome_completo;
+INSERT INTO public.setores (id, unidade_id, nome, tipo) VALUES (pg_temp.id('obs'), pg_temp.id('upa'), 'Observação Adulto', 'observacao');
+INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
+  (pg_temp.id('enfobs'), pg_temp.id('upa'), 'enfermeiro'), (pg_temp.id('rec'), pg_temp.id('upa'), 'recepcao');
+INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min)
+SELECT pg_temp.id('upa'), pg_temp.id(s), pg_temp.id(p), private.data_atual(), 'manha', now() - interval '1 hour', 360
+  FROM (VALUES ('obs', 'enfobs'), ('porta', 'rec')) x(s, p);
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
+ WHERE e.unidade_id = pg_temp.id('upa') ON CONFLICT DO NOTHING;
+INSERT INTO public.internacoes (organizacao_id, unidade_id, paciente_id, episodio_id, setor_atual_id, status)
+SELECT pg_temp.id('org'), pg_temp.id('upa'), pg_temp.id('aberto'), e.id, pg_temp.id('obs'), 'em_observacao'
+  FROM public.episodios e WHERE e.paciente_id = pg_temp.id('aberto') AND e.encerrado_em IS NULL;
+SELECT pg_temp.ok(pg_temp.cuida('enfobs', 'aberto'), 'na observação: a enfermeira escalada na observação cuida');
+SELECT pg_temp.ok(NOT pg_temp.cuida('rec', 'aberto'), 'na observação: a recepção do PS não cuida mais');
+SELECT pg_temp.ok(NOT pg_temp.atua('rec', 'aberto'), 'na observação: a recepção do PS não atua');
+SELECT pg_temp.ok(NOT pg_temp.cuida('med', 'aberto'), 'na observação: o médico do PS não cuida (o encerramento pela porta tem regra própria)');
+
 ROLLBACK;
