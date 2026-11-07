@@ -12736,6 +12736,10 @@ export type Database = {
           sexo: string
         }[]
       }
+      prontuario_leitura: {
+        Args: { p_antes?: string; p_limite?: number; p_paciente: string }
+        Returns: Json
+      }
       protocolo_classificacao_da_unidade: {
         Args: { p_unidade: string }
         Returns: Json
