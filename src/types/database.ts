@@ -12309,6 +12309,20 @@ export type Database = {
         Args: { p_internacao: string; p_quando: string }
         Returns: string
       }
+      observacoes_que_abri: {
+        Args: { p_unidade: string }
+        Returns: {
+          box: string
+          data_nascimento: string
+          entrada: string
+          internacao_id: string
+          nome: string
+          nome_social: string
+          paciente_id: string
+          prazo: string
+          setor_nome: string
+        }[]
+      }
       ocupacao_setores: {
         Args: { p_unidade: string }
         Returns: {

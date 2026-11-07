@@ -72,8 +72,9 @@ export function PainelReavaliar({ linha, acao, fechar, erro }: { linha: LinhaObs
 }
 
 // ── desfecho da observação ──────────────────────────────────────────────────
+// Só usa a internação e o paciente: abre também em "Observações que você abriu".
 export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
-  linha: LinhaObservacao; unidadeId: string; acao: Acao; fechar: () => void; erro: string | null
+  linha: Pick<LinhaObservacao, 'internacao_id' | 'paciente_id'>; unidadeId: string; acao: Acao; fechar: () => void; erro: string | null
 }) {
   const [desfecho, setDesfecho] = React.useState<Desfecho | ''>('')
   const [cid, setCid] = React.useState('')
