@@ -64,6 +64,17 @@ export default function InternacaoEnfermagem() {
       return (data ?? {}) as unknown as Record<string, { total: number; categoria: string } | null>
     },
   })
+  // Dini de hoje (classificação pediátrica, A em D1 a D7): só das crianças
+  const idsCriancas = (leitos.data ?? []).filter((l) => ehAdulto(l.data_nascimento) === false).map((l) => l.internacao_id)
+  const dini = useQuery({
+    queryKey: ['dini-hoje', idsCriancas.join(',')],
+    enabled: idsCriancas.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('dini_de_hoje', { p_internacoes: idsCriancas })
+      if (error) throw error
+      return (data ?? {}) as unknown as Record<string, { total: number; categoria: string } | null>
+    },
+  })
 
   // por setor, na ordem que vem do servidor (setor, leito)
   const porSetor = new Map<string, LeitoEnfermagem[]>()
@@ -105,6 +116,11 @@ export default function InternacaoEnfermagem() {
                         fugulin.data[l.internacao_id]
                           ? <span className="rounded-capsula bg-trilha px-2 py-0.5 text-rotulo text-tinta-apoio" title={fugulin.data[l.internacao_id]!.categoria}>Fugulin {fugulin.data[l.internacao_id]!.total}</span>
                           : <span className="rounded-capsula bg-atencao/10 px-2 py-0.5 text-rotulo text-atencao">Fugulin de hoje pendente</span>
+                      )}
+                      {dini.data && ehAdulto(l.data_nascimento) === false && (
+                        dini.data[l.internacao_id]
+                          ? <span className="rounded-capsula bg-trilha px-2 py-0.5 text-rotulo text-tinta-apoio" title={dini.data[l.internacao_id]!.categoria}>Dini {dini.data[l.internacao_id]!.total}</span>
+                          : <span className="rounded-capsula bg-atencao/10 px-2 py-0.5 text-rotulo text-atencao">Dini de hoje pendente</span>
                       )}
                     </div>
                     <BotaoCuidados onClick={() => setCuidando({
