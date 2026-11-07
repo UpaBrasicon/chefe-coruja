@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prontuário completo — direções</title>
+<style>
+  :root{--acao:#155E75;--atencao:#92400E;--critico:#B91C1C;--conforme:#147638;--tinta:#1E293B;--apoio:#475569;--sussurro:#58677C;--sup:#fff;--trilha:#F1F5F9;--fio:#E2E8F0;--fio2:#CBD5E1;--amarelo:#FACC15;--amarelo-t:#422006;--laranja:#C2410C;--verde:#15803D}
+  *{box-sizing:border-box}
+  body{margin:0;background:#E9EEF3;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--tinta)}
+  .opcao{max-width:1180px;margin:28px auto;padding:0 16px}
+  .rotulo{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+  .rotulo h2{margin:0;font-size:18px}
+  .rotulo span{color:var(--apoio);font-size:13px}
+  .tela{background:var(--trilha);border:1px solid var(--fio2);border-radius:12px;overflow:hidden}
+  .barra{background:var(--sup);border-bottom:1px solid var(--fio);padding:10px 20px;font-size:12px;color:var(--sussurro)}
+  .card{background:var(--sup);border:1px solid var(--fio);border-radius:10px}
+  .pad{padding:14px 16px}
+  .mini{font-size:12px;color:var(--sussurro)}
+  .chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px;font-size:12px;border:1px solid var(--fio2);color:var(--apoio);background:var(--sup)}
+  .cor{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
+  .amarela{background:var(--amarelo);color:var(--amarelo-t)}
+  .verde{background:var(--verde);color:#fff}
+  .laranja{background:var(--laranja);color:#fff}
+  .alergia{background:#B91C1C14;color:var(--critico);border:1px solid #B91C1C40;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600}
+  .linha{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:var(--trilha);border-radius:6px;margin-top:6px}
+  .linha b{font-weight:600}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+  th{text-align:left;font-weight:600;color:var(--sussurro);font-size:11.5px;padding:4px 8px;border-bottom:1px solid var(--fio)}
+  td{padding:4px 8px;border-bottom:1px solid var(--fio)}
+  .mais{display:block;margin:8px auto 0;width:max-content;font-size:12px;border:1px solid var(--fio2);border-radius:999px;padding:2px 10px;background:var(--sup);color:var(--apoio)}
+  .sec{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--sussurro);font-weight:600;margin:12px 0 2px}
+  .fechado{opacity:.95}
+  .cab{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .cab .data{font-weight:600}
+  a{color:var(--acao);text-decoration:none}
+  /* A */
+  .a-grid{display:grid;grid-template-columns:300px 1fr;min-height:640px}
+  .a-esq{background:var(--sup);border-right:1px solid var(--fio);padding:20px}
+  .a-dir{padding:20px 28px;position:relative}
+  .a-dir:before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--fio2);z-index:0}
+  .a-dia{position:relative;z-index:1;margin:6px auto 10px;width:max-content;background:var(--fio);color:var(--apoio);border-radius:999px;padding:1px 12px;font-size:12px}
+  .a-dir .card{position:relative;z-index:1;max-width:620px;margin:0 auto 6px}
+  .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+  .stat div{font-size:12px;color:var(--sussurro)} .stat b{display:block;color:var(--tinta);font-size:14px}
+  /* B */
+  .b-cab{background:var(--sup);border-bottom:1px solid var(--fio);padding:16px 28px}
+  .b-corpo{padding:20px 28px}
+  .b-item{display:grid;grid-template-columns:150px 18px 1fr;gap:12px}
+  .b-data b{display:block} .b-data span{font-size:12px;color:var(--sussurro)}
+  .b-trilho{position:relative} .b-trilho:before{content:"";position:absolute;left:8px;top:10px;bottom:-14px;border-left:1px solid var(--fio2)}
+  .b-trilho i{position:absolute;left:3px;top:6px;width:11px;height:11px;border-radius:50%;border:2px solid var(--acao);background:var(--sup)}
+  .b-item .card{margin-bottom:14px}
+  /* C */
+  .c-grid{display:grid;grid-template-columns:1fr 320px;min-height:640px}
+  .c-main{padding:18px 24px}
+  .c-dir{background:var(--sup);border-left:1px solid var(--fio);padding:18px}
+  .abas{display:flex;gap:4px;border-bottom:1px solid var(--fio);margin:10px 0 12px}
+  .abas span{padding:6px 10px;font-size:13px;color:var(--apoio);border-bottom:2px solid transparent}
+  .abas .on{color:var(--acao);border-color:var(--acao);font-weight:600}
+  .c-ev{display:grid;grid-template-columns:20px 1fr;gap:8px;padding:6px 0}
+  .c-ev i{width:9px;height:9px;border-radius:50%;background:var(--fio2);margin-top:6px}
+  .notas{max-width:1180px;margin:0 auto 40px;padding:0 16px;color:var(--apoio);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- ================= A ================= -->
+<section class="opcao">
+  <div class="rotulo"><h2>Direção A · Ficha fixa e linha do tempo</h2><span>Referência: Visitors, perfil de visitante (Refero c43c04b2)</span></div>
+  <div class="tela">
+    <div class="barra">Prontuários › Ana Paciente Teste · somente leitura · este acesso fica registrado</div>
+    <div class="a-grid">
+      <aside class="a-esq">
+        <div style="font-size:18px;font-weight:600">Ana Paciente Teste</div>
+        <div class="mini">nasc. 12/03/1958 · 68 anos · prontuário 004512</div>
+        <div class="stat"><div>Atendimentos<b>7</b></div><div>Internações<b>2</b></div><div>Último<b>06/11</b></div></div>
+        <div class="sec">Alergias</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><span class="alergia">Dipirona · grave</span><span class="alergia">Látex</span></div>
+        <div class="sec">Regulações</div>
+        <div class="linha"><span>Leito de UTI · SISREG</span><b>aguardando</b></div>
+        <div class="sec">Navegar</div>
+        <div class="mini" style="line-height:1.9">2026 (4) · 2025 (3)</div>
+      </aside>
+      <div class="a-dir">
+        <div class="a-dia">06/11/2026 · em curso</div>
+        <div class="card pad">
+          <div class="cab"><span class="data">UPA Centro · Pronto Socorro</span><span class="cor amarela">Amarela</span><span class="chip">reclassificada: laranja 08:40</span></div>
+          <div class="mini">Chegada 07:52 · Dr. Médico Teste · CID J18.9 · em observação, leito 4</div>
+          <div class="linha"><span>Atendimento (SOAP) · dispneia há 3 dias</span><span class="mini">08:15</span></div>
+          <div class="linha"><span>Prescrição · 4 itens</span><span class="mini">08:30</span></div>
+          <span class="mais">+ 9 registros (sinais vitais, exames, evolução)</span>
+          <div class="sec">Sinais vitais</div>
+          <table><tr><th>Hora</th><th>PA</th><th>FC</th><th>FR</th><th>Temp</th><th>SpO2</th><th>Dor</th></tr>
+            <tr><td>10:00</td><td>128/82</td><td>96</td><td>22</td><td>37,8</td><td>93</td><td>3</td></tr>
+            <tr><td>07:58</td><td>142/90</td><td>112</td><td>26</td><td>38,6</td><td>89</td><td>5</td></tr></table>
+        </div>
+        <div class="a-dia">14/08/2026</div>
+        <div class="card pad fechado">
+          <div class="cab"><span class="data">UPA Centro · Pronto Socorro</span><span class="cor verde">Verde</span><span class="chip">alta</span></div>
+          <div class="mini">Chegada 19:10 · Encerrado 21:02 · CID R51 · 5 registros ›</div>
+        </div>
+        <div class="a-dia">02/05/2026</div>
+        <div class="card pad fechado">
+          <div class="cab"><span class="data">UBS Vila Nova · Consulta</span><span class="chip">consulta</span></div>
+          <div class="mini">Consulta 09:30 · CID I10 · 3 registros ›</div>
+        </div>
+        <span class="mais">Ver mais atendimentos</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= B ================= -->
+<section class="opcao">
+  <div class="rotulo"><h2>Direção B · Trilho de datas</h2><span>Referência: Luma, lista de eventos por data (Refero b4c3d2ad)</span></div>
+  <div class="tela">
+    <div class="barra">Prontuários › Ana Paciente Teste</div>
+    <div class="b-cab">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div><div style="font-size:20px;font-weight:600">Ana Paciente Teste</div><div class="mini">nasc. 12/03/1958 · 68 anos · prontuário 004512 · somente leitura · este acesso fica registrado</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="alergia">Alergia: Dipirona · grave</span><span class="alergia">Látex</span><span class="chip">Regulação: UTI aguardando</span></div>
+      </div>
+    </div>
+    <div class="b-corpo">
+      <div class="b-item">
+        <div class="b-data"><b>Hoje, 06/11</b><span>em curso</span></div>
+        <div class="b-trilho"><i></i></div>
+        <div class="card pad">
+          <div class="cab"><span class="data">Pronto Socorro · UPA Centro</span><span class="cor amarela">Amarela</span><span class="cor laranja">Laranja 08:40</span></div>
+          <div class="mini">07:52 · Dr. Médico Teste · CID J18.9 · observação, leito 4</div>
+          <div class="sec">Atendimento</div><div>Dispneia há 3 dias, febre. Hipótese: pneumonia.</div>
+          <div class="sec">Prescrição 08:30</div><div class="mini">Ceftriaxona · Azitromicina · Paracetamol · O2 cateter</div>
+          <div class="sec">Sinais vitais</div>
+          <table><tr><th>Hora</th><th>PA</th><th>FC</th><th>FR</th><th>Temp</th><th>SpO2</th></tr>
+            <tr><td>10:00</td><td>128/82</td><td>96</td><td>22</td><td>37,8</td><td>93</td></tr>
+            <tr><td>07:58</td><td>142/90</td><td>112</td><td>26</td><td>38,6</td><td>89</td></tr></table>
+          <div class="sec">Exames</div><div class="mini">Hemograma (resultado 09:40) · RX tórax (pedido)</div>
+        </div>
+      </div>
+      <div class="b-item">
+        <div class="b-data"><b>14/08/2026</b><span>quinta</span></div>
+        <div class="b-trilho"><i style="border-color:var(--fio2)"></i></div>
+        <div class="card pad"><div class="cab"><span class="data">Pronto Socorro · UPA Centro</span><span class="cor verde">Verde</span><span class="chip">alta 21:02</span></div><div class="mini">CID R51 · cefaleia · <a href="#">abrir</a></div></div>
+      </div>
+      <div class="b-item">
+        <div class="b-data"><b>02/05/2026</b><span>sábado</span></div>
+        <div class="b-trilho"><i style="border-color:var(--fio2)"></i></div>
+        <div class="card pad"><div class="cab"><span class="data">Consulta · UBS Vila Nova</span></div><div class="mini">CID I10 · <a href="#">abrir</a></div></div>
+      </div>
+      <span class="mais">Ver mais atendimentos</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= C ================= -->
+<section class="opcao">
+  <div class="rotulo"><h2>Direção C · Abas e painel do paciente</h2><span>Referências: Attio, registro com atividade (Refero cbbee303); Shopify, cliente com linha do tempo (Refero 44011ede)</span></div>
+  <div class="tela">
+    <div class="barra">Prontuários › Ana Paciente Teste · somente leitura · este acesso fica registrado</div>
+    <div class="c-grid">
+      <div class="c-main">
+        <div style="font-size:20px;font-weight:600">Ana Paciente Teste</div>
+        <div class="abas"><span class="on">Linha do tempo</span><span>Documentos 12</span><span>Sinais vitais</span><span>Prescrições 6</span><span>Exames 4</span></div>
+        <div class="sec">2026</div>
+        <div class="card pad" style="margin-top:6px">
+          <div class="cab"><span class="data">06/11 · Pronto Socorro · UPA Centro</span><span class="cor amarela">Amarela</span><span class="chip">em curso</span></div>
+          <div class="c-ev"><i></i><div><b>Reclassificação: laranja</b> <span class="mini">08:40 · Enf. Teste</span></div></div>
+          <div class="c-ev"><i></i><div><b>Prescrição</b> com 4 itens <span class="mini">08:30 · Dr. Médico Teste</span></div></div>
+          <div class="c-ev"><i></i><div><b>Atendimento</b>: dispneia há 3 dias, CID J18.9 <span class="mini">08:15</span></div></div>
+          <div class="c-ev"><i></i><div><b>Sinais vitais</b>: PA 142/90 · FC 112 · SpO2 89 <span class="mini">07:58</span></div></div>
+        </div>
+        <div class="card pad" style="margin-top:8px"><div class="cab"><span class="data">14/08 · Pronto Socorro · UPA Centro</span><span class="cor verde">Verde</span><span class="chip">alta</span></div><div class="mini">5 registros ›</div></div>
+        <div class="sec">2025</div>
+        <div class="card pad" style="margin-top:6px"><div class="cab"><span class="data">12/12 · Internação · Clínica médica</span><span class="chip">alta 18/12</span></div><div class="mini">leito 12 · CID N39.0 · 23 registros ›</div></div>
+      </div>
+      <aside class="c-dir">
+        <div class="sec" style="margin-top:0">Paciente</div>
+        <div class="mini" style="line-height:1.8">nasc. 12/03/1958 · 68 anos<br>prontuário 004512<br>CNS 7000 0000 0000 000</div>
+        <div class="sec">Alergias</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="alergia">Dipirona · grave</span><span class="alergia">Látex</span></div>
+        <div class="sec">Regulações</div>
+        <div class="linha"><span>UTI · SISREG</span><b>aguardando</b></div>
+        <div class="sec">Agora</div>
+        <div class="mini">Em observação, leito 4 · Pronto Socorro</div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<div class="notas">
+  <p><b>Em comum nas três direções:</b> a ordem é a das decisões P1 a P7. Atendimento mais recente no topo, tudo o que foi feito nele junto, reclassificação visível, sinais vitais em tabela crua (sem marca de alterado), 5 atendimentos e "ver mais". A cor da classificação é a da enfermagem. O paciente da maquete é fictício.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+Parâmetros do modelo (Power Query > Gerenciar parâmetros > Novo parâmetro)
+
+CorujaBase      Texto   https://api.chefecoruja.com.br
+                        (homologação: https://api-homolog.chefecoruja.com.br)
+
+CorujaChave     Texto   a chave criada em Integrações (API), que começa por cc_live_
+                        (homologação: cc_test_)
+                        A chave fica dentro do arquivo: não compartilhe o .pbix.
+
+DiasParaTras    Número  90
+                        (período dos atendimentos, contado a partir de agora)

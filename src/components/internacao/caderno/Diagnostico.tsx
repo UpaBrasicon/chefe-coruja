@@ -2,14 +2,20 @@
 // manual PEP 3.5): CID-10 em português, um primário obrigatório com status
 // hipótese/confirmado e tempo da doença, secundários só com primário. Cada
 // troca grava uma linha nova e encerra a anterior: o histórico fica.
+// CIDs de referência (decisão do RT em 06/11/2026, A em C1 a C7): a hipótese
+// escrita no campo auxiliar mostra códigos de referência; o clique só preenche
+// o campo do primário. O texto auxiliar não é gravado; registrar continua com
+// o médico.
 import { AlertTriangle, ClipboardList, History, Shield } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useTerminologia } from '@/hooks/useTerminologia'
+import { CidsDeReferencia } from '@/components/clinico/CidsDeReferencia'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 
 import { Chip } from './caixas'
@@ -160,6 +166,8 @@ function FormPrimario({ internacaoId, primario, acao }: { internacaoId: string; 
   const [status, setStatus] = React.useState<'hipotese' | 'confirmado'>(primario?.status ?? 'hipotese')
   const [tempo, setTempo] = React.useState(primario?.tempo_doenca != null ? String(primario.tempo_doenca) : '')
   const [unidade, setUnidade] = React.useState(primario?.tempo_unidade ?? 'dias')
+  // só alimenta os CIDs de referência; não vai para registrar_diagnostico
+  const [hipotese, setHipotese] = React.useState('')
   const cod = codigo(texto)
   const mudou = !daInternacao || !primario || cod !== primario.cid || status !== primario.status
     || (tempo ? Number(tempo) : null) !== primario.tempo_doenca || (tempo ? unidade : null) !== primario.tempo_unidade
@@ -184,6 +192,14 @@ function FormPrimario({ internacaoId, primario, acao }: { internacaoId: string; 
             <Chip key={k} forte role="radio" aria-checked={status === k} ativo={status === k} onClick={() => setStatus(k)}>{r}</Chip>
           ))}
         </div>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="diag-hipotese" className="text-apoio font-medium text-grafite">
+          Hipótese em texto <span className="font-normal text-tinta-sussurro">· só para mostrar CIDs de referência; não é gravada</span>
+        </label>
+        <Input id="diag-hipotese" value={hipotese} onChange={(e) => setHipotese(e.target.value)} autoComplete="off"
+          placeholder="Ex.: PAC, DPOC exacerbada" />
+        <CidsDeReferencia texto={hipotese} valorDoCampo={texto} onEscolher={(c) => setTexto(`${c.codigo} — ${c.descricao}`)} />
       </div>
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex min-w-0 flex-[3_1_280px] flex-col gap-1.5">

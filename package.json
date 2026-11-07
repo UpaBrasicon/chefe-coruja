@@ -27,6 +27,7 @@
     "guarda:baixar": "node scripts/arquivo/baixar-guarda.mjs",
     "test:banco": "node scripts/testes-banco.mjs",
     "test:gateway": "node --test scripts/gateway/*.test.ts",
+    "test:powerbi": "node --test scripts/powerbi/coruja.test.mjs",
     "test:dominio": "node --experimental-strip-types --test src/domain/dominio.test.ts",
     "test:terminologia": "node --test \"scripts/terminologia/tests/*.test.ts\"",
     "test:observacao": "node --test \"scripts/observacao/tests/*.test.ts\"",
