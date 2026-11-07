@@ -51,6 +51,37 @@ O script `scripts/e2e/46_rede_fase5_ampliacao.sql` ampliou a rede F5 da homologa
 - **Fora da janela e fim do plantão.** Cada conta está nos três turnos, então esses casos (D01 e D02) só acontecem se o gestor abrir uma vaga, como já diz a pré-condição.
 - **Super admin.** `admin.f5` é admin da organização. O super admin (chaves da API e ligar o módulo pela tela) continua sendo a conta do RT.
 
+## Resultado da execução (06 e 07/11/2026, homologação)
+
+Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de teste. A produção não foi tocada. Nada foi corrigido durante a execução, exceto o achado do A01 que o RT mandou corrigir (PR #482). As telas ficam para a conferência no Chrome.
+
+| Bloco | Relatório | P0 | P1 | P2 de produto |
+|---|---|---|---|---|
+| A01 | `EXECUCAO-A01.md` | 0 | 2 (resolvidos pelo ambiente) | 3; um corrigido no #482 |
+| A02–A06 | `EXECUCAO-A02-A06.md` | 0 | 0 | 3 |
+| B01–B06 | `EXECUCAO-B01-B06.md` | 0 | 1 | 2 |
+| C01–C06 | `EXECUCAO-C01-C06.md` | 0 | 0 | 2 |
+| D01–D12 | `EXECUCAO-D01-D12.md` | 0 | 1 | 2 |
+
+### Achados para o RT decidir a ordem (do mais grave)
+1. **D P1-1, privacidade, provável também na produção.** Quem está escalado no último setor do paciente lê o prontuário encerrado sem pedido de acesso, sem prazo e em qualquer papel. No teste, o farmacêutico leu um prontuário encerrado 3 dias antes. Causa: `pacientes.setor_id` continua preenchido depois do encerramento, e `paciente_em_cuidado_no_plantao` aceita esse vínculo. Na UBS, todo profissional escalado lê qualquer cadastro.
+2. **B P1-1, faturamento.** Quando a observação vira internação na UPA, a conta de internação não abre. O gatilho da conta só olha a mudança direta em `internado_em`, e nessa conversão o campo é preenchido por outro gatilho. No B01, a AIH aprovada (0303010037) ficou fora de qualquer conta.
+3. **Segunda dose "Agora" recusada (A01 P2-1 e A P2-1).** A regra "um item por medicamento e via" recusa a repetição da epinefrina na anafilaxia pediátrica e o ataque mais manutenção do magnésio. Pergunta ao RT.
+4. **B P2-1.** `alertas_sepse` só vale para menores de 14 anos; o adulto séptico não aparece para o gestor.
+5. **B P2-2.** O médico da porta encerra a observação que abriu (#482), mas não pede parecer nem marca reavaliação. Pergunta ao RT.
+6. **A P2-2.** Prescrição, dispensação e checagem aceitas com o paciente ainda na triagem. Pergunta ao RT.
+7. **A P2-3.** A enfermagem dispensa com justificativa mesmo com o farmacêutico de plantão.
+8. **D P2-1.** O check-out não fecha a porta; ela segue aberta até 20 min depois do fim do plantão.
+9. **D P2-2.** Uma troca cancelada ou recusada não pode ser pedida de novo: o erro de unicidade chega cru à tela.
+10. **C P2-C1.** A remuneração de plantão não guarda autor nem auditoria.
+11. **C P2-C2.** A execução de APAC aceita competência e data no futuro.
+12. **Já previstos e confirmados:** o óbito não cancela a regulação em curso (D07); o prazo da regulação só gera aviso (B06); `rascunho`, `agendada` e `excluida` não têm função que grave (B06).
+
+As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
+
+### O que ficou gravado na homologação
+Estoque negativo de alguns medicamentos na UPA F5; leitos em higienização (OA-03, INT-01 a INT-03); CM-03 ocupado pela internação do B03; o recém-nascido do A06 internado; a internação do B01 sem conta; uma teleinterconsulta do B05 aberta; valores fictícios de remuneração na UPA F5; a rede "UPA Bloco D" com 11 contas `*.d.f5`. Cada relatório lista o seu.
+
 ## Achados de produto que os cenários já apontam (a confirmar na execução)
 São candidatos a correção. Nada foi corrigido: entram no relatório da tarefa 3, e o RT decide a ordem.
 1. **Obstetrícia:** não há ferramenta própria de pré-eclâmpsia/eclâmpsia nem fluxograma obstétrico na triagem. O sulfato de magnésio fica dentro de `adulto-emergencia-hipertensiva` (A01, A02).
