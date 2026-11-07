@@ -63,6 +63,8 @@ SELECT 1 FROM public.pacientes pa
 - **A (recomendada):** fica como está. Aberto é "em cuidado", e o gestor já vê os atendimentos sem desfecho. Isso fica registrado no documento da correção.
 - **B:** limitar o acesso pela escala a atendimentos abertos há menos de N horas.
 
+**Decisão do RT (07/11/2026): A em P1, P2, P3 e P4.**
+
 ## 4. Plano com A em P1 a P4
 1. **Teste primeiro** (`supabase/tests/fix_privacidade_encerrado.sql`), em transação desfeita na homologação. Ele cobre:
    - o farmacêutico do PS **não** abre o prontuário de quem foi encerrado há 3 dias;
@@ -80,3 +82,16 @@ SELECT 1 FROM public.pacientes pa
 **Critério de aceite:** o D10 sem falhas, o teste novo verde, e o CI verde (`banco` inclui os testes antigos de acesso).
 
 **Riscos:** um fluxo que dependa de ler o paciente depois do encerramento sem pedido para de funcionar. Os candidatos são documentos tardios depois das 24 h e a AIH de alta antiga. Esses casos já deveriam passar pelo pedido, pela regra de 11/10, e o teste da rede (bloco C) entra como regressão.
+
+## 5. Feito (07/11/2026)
+- **Teste** `supabase/tests/fix_privacidade_encerrado.sql`, com 13 conferências.
+  - Antes da migration, falhou na primeira: "médico da porta não atua no paciente encerrado há 3 dias".
+  - Com a migration, passou inteiro, em transação desfeita na homologação.
+- **Migration** `20270306000001_encerrado_sem_escala.sql`, um `CREATE OR REPLACE` de `private.paciente_em_cuidado_no_plantao`, com as mesmas permissões e o rollback no cabeçalho.
+  - Aplicada na homologação com a versão registrada.
+  - md5 da função: `fe799c2a8a753743ad4ac5f097d32d84`.
+- **D10 repetido na homologação**, com as contas F5, em transação desfeita:
+  - dos 26 cadastros encerrados há mais de 24 h (18 da UPA e 8 da UBS), o farmacêutico, o médico e o enfermeiro da UPA e o técnico, o médico e o enfermeiro da UBS atuam em **0**. Antes eram todos;
+  - **D10.08:** o pedido de acesso do técnico da UBS é **aceito**;
+  - **D10.11:** o farmacêutico que tenta abrir o prontuário encerrado recebe "Acesso negado: paciente fora dos setores do seu plantão".
+- **Falta:** o "ok produção" da migration e a conferência na tela (pedido do técnico da UBS e "sem acesso" no Prontuário completo).
