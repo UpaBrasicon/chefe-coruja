@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 
+import { CartaoDini } from './CartaoDini'
 import { CartaoFugulin } from './CartaoFugulin'
 import { msg, quando, useExecutar, useRecarregarCuidados, type Contexto, type Cuidados } from './dadosCuidados'
 import { Aviso, Cartao, Nota, Registro } from './pecas'
@@ -187,9 +188,8 @@ export function AbaEscalas({ ctx, dados, publico }: { ctx: Contexto; dados: Cuid
       {q.error && <p className="text-apoio text-critico">{msg(q.error)}</p>}
       {/* Fase 2, tarefa 5: Fugulin (12 áreas), enfermeiro, uma vez por dia, na internação; só adulto */}
       {dados.internacao_id && publico !== 'pediatrico' && <CartaoFugulin internacaoId={dados.internacao_id} />}
-      {publico === 'pediatrico' && (
-        <Nota>Fugulin é instrumento do adulto: na criança não se usa. O instrumento pediátrico (Dini, Fugulin et al., 2011) ainda não está no produto.</Nota>
-      )}
+      {/* Dini (A em D1 a D7, 06/11/2026): instrumento da criança; o servidor confere a idade no dia (D5) */}
+      {dados.internacao_id && publico === 'pediatrico' && <CartaoDini internacaoId={dados.internacao_id} pacienteId={ctx.pacienteId} />}
       <Nota>O histórico completo e o cancelamento das outras escalas ficam na aba Avaliação e crescimento.</Nota>
     </div>
   )
