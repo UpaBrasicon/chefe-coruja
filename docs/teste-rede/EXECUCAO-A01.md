@@ -10,6 +10,8 @@ Cenário A01 do catálogo (`CENARIOS-A-materno-infantil.md`): pré-natal na UBS 
 - **Rodada 1 (descartada):** às 18h16, paciente "Gestante A01 Teste". Teve três erros **do script**, não do produto: os três agendamentos caíram no mesmo horário, `prescricao_porta_ativa` foi usada na porta e o BPA foi procurado pelo CNS. O script foi corrigido e rodou de novo. Os resultados da rodada 1 continuam em `e2e.resultados` (`em < e2e.v('a01_inicio')`), e os dados dela estão listados no fim deste relatório.
 - **Correção depois da rodada 2:** o passo `A01.11.cor` rodou como a enfermeira. O RLS escondeu a linha de `classificacoes_risco`, a consulta voltou vazia e o passo deu "ok" sem conferir nada. Por isso a conferência foi refeita no banco (`A01.11.cor_banco`), e o script agora faz essa conferência como `banco`.
 
+> **Rodada 3 (ambiente ajustado), no fim deste relatório:** com o 48, os P1-1 e P1-2 foram resolvidos pelo ambiente e o A01 foi até o fim (AIH aprovada, conta da UPA faturada).
+
 ## Resumo
 
 | Situação | Quantidade |
@@ -321,6 +323,138 @@ Nada foi corrigido no produto: nenhuma migration, nenhuma função de produto al
 - `confere`, `falhar`, `guardar`, `conferir` e `cns`, com o mesmo corpo de antes;
 - `conta`, ampliada pelo `47`.
 
+## Rodada 3 (ambiente ajustado)
+
+- **Quando:** 06/11/2026, às 21h24 (horário de Brasília), no plantão da noite. O RT autorizou ajustar o **ambiente**. O produto não foi corrigido: nenhuma migration, nenhuma função de produto alterada, nenhuma dose.
+- **Ambiente:** homologação `kswurfyxxvfydpjfrivy`.
+- **Ordem:** `48_rede_fase5_ajuste_a01.sql`, depois `47_framework_ampliacao.sql` (com as contas novas) e `41_checkin_fase5.sql`. Por fim, `51_cenario_a01_final.sql`, que continua da "Gestante A01 Teste B" da rodada 2 pelos ids em `e2e.vars`. Os ids `A01R.*` não sobrescrevem os da rodada 2.
+
+### O ajuste do ambiente (`48`)
+- **Para o P1-2:**
+  - `medico.observacao.f5` (…025, plantonista, CRM fictício 950025, CBO 225125);
+  - `enfermeiro.observacao.f5` (…026, enfermeiro, CBO 223505);
+  - os dois na UPA, escalados na Observação Adulto (…012), de 05/11 a 13/11, nos três turnos.
+- **Para o P1-1:**
+  - setor **"Porta do Hospital"** (…024, `emergencia`) com os leitos EST-01 e EST-02 (estabilização);
+  - a escala da `recepcao.hospital.f5` (…022) e a da `enfermeiro.hospital.f5` (…024) passaram do setor 21 para a porta, de 06/11 em diante. A enfermeira teve de ir junto: a ficha da porta entra em `triagem`, e `iniciar_atendimento` só aceita o episódio já classificado.
+  - O hospital já tinha protocolo de classificação (o mesmo da UPA, definido pelo 40).
+- **Além do pedido:** `medico.porta.hospital.f5` (…027, plantonista, CRM 950027, CBO 225125), escalado na porta.
+  - **Por quê:** a escala recusa a mesma pessoa em dois setores no mesmo horário (`trg_escala_sem_sobreposicao`). O `medico.hospital.f5` precisa seguir na Clínica Médica para admitir e laudar a AIH. Sem um médico na porta, ninguém assumiria a ficha aberta lá.
+  - Está no cabeçalho do 48 e no `e2e.conta` como `f5_med_porta_hosp`. As outras duas entraram como `f5_med_obs` e `f5_enf_obs`.
+- **Comum às três contas novas:** o hash de senha é o mesmo de `medico.upa.f5`, copiado no banco. Os CNS fictícios têm dígito verificador válido: 709950000000272, …280 e …299.
+- **Internação na Clínica Médica, não na Obstetrícia:** a reserva da regulação é do leito **CM-02**, e o único médico do hospital fora da porta está escalado na Clínica Médica. Na Obstetrícia ninguém poderia admitir nem laudar.
+
+### Resultado
+
+| Situação | Quantidade |
+|---|---|
+| ok | 42 (inclui a pergunta de produto, registrada, e 2 passos refeitos) |
+| falha | 2 (as duas da primeira tentativa, depois resolvidas; ver abaixo) |
+| lacuna | 1 (a liberação do gestor não foi preciso) |
+
+As duas falhas:
+- **`A01R.27.admissao`:** erro **do script**. Mandou a ficha de admissão vazia, e o servidor cobra Subjetivo, Objetivo, Hipótese e Plano. O 51 foi corrigido, e o passo foi refeito na mesma noite como `A01R.27.admissao_ficha_completa` (ok).
+- **`A01R.28.conferir`:** o regulador recebe "Acesso negado" em `conferir_aih`. A RPC é a conferência do laudo pelo médico que atua com a paciente (`pode_atuar_no_paciente`). Pelo médico da internação passou (`A01R.28.conferir_medico`). Achado de catálogo (P3-9).
+
+| Passo | Papel | O que faz | Esperado | Obtido | Situação |
+|---|---|---|---|---|---|
+| A01R.24.porta_finaliza | f5_med_upa | Pergunta de produto (P1-2): o médico da porta, que pôs a paciente em observação e não está escalado nela, tenta encerrar a observação | registrar (decisão do RT) | RECUSADO: Acesso negado: você não está de plantão no setor deste paciente. | ok |
+| A01R.18.painel | f5_med_obs | Médico da observação vê a gestante no painel, com prazo | ok | ok: box OA-02, prazo 2026-11-07 03:19:23.610775+00, estado nao | ok |
+| A01R.18.atender | f5_med_obs | Médico da observação registra o primeiro atendimento no box | ok | (sem retorno: void) | ok |
+| A01R.19.sinais | f5_enf_obs | Enfermeira da observação registra sinais seriados crus no box | ok | 3 sinais gravados | ok |
+| A01R.19.sae | f5_enf_obs | SAE da gestante em observação | ok | a9872e0b-0961-4df6-83b9-8396b789019f | ok |
+| A01R.19.balanco | f5_enf_obs | Balanço: diurese (valor cru) | ok | 92f06543-b498-4658-b626-7f4793014c01 | ok |
+| A01R.19.porta_ativa | f5_med_obs | A prescrição da porta aparece para quem cuida da observação | ok | ok: 2 itens: Sulfato de magnésio solução injetável, ampola 10 mL [Contínuo, validação nenhuma]; Hidralazina solução injetável, ampola 1 mL [Se necessário, validação confe… | ok |
+| A01R.24.finalizar | f5_med_obs | Médico da observação encerra: transferência, CID O15.0 e relato | ok | (sem retorno: void) | ok |
+| A01R.24.encerrado | banco | Episódio da UPA encerrado, internação de observação com alta e box liberado | ok | ok: episódio encerrado, internação transferencia_externa, box OA-02 higienizacao | ok |
+| A01R.24.contrarreferencia | f5_med_ubs | A contrarreferência chega à UBS como a_ver | ok | 782d5ac2-dfab-4f23-ab89-15d3fceffe8c | ok |
+| A01R.24.a_ver | banco | Contrarreferência a_ver, ligada ao envio e à UBS | ok | ok: situação a_ver, desfecho transferencia_externa, envio fdcb8100-0a6e-4776-b8dc-0f415253b597 | ok |
+| A01R.29.recepcao_sem_resumo | f5_rec_ubs | Recepção não abre o resumo (deve ser recusado) | erro | recusado: O resumo do retorno é visto pelo médico, pelo enfermeiro e pelo gestor da UBS. | ok |
+| A01R.29.abrir | f5_enf_ubs | Enfermeira da UBS abre a contrarreferência | ok | {"id": "782d5ac2-dfab-4f23-ab89-15d3fceffe8c", "numero": 21, "resumo": {"cid": null, "medico": null, "relato":… | ok |
+| A01R.29.visto | banco | a_ver → visto, com autor = login | ok | ok: situação visto, visto por 02 | ok |
+| A01R.29.pre_natal_segue | f5_med_ubs | O pré-natal continua até o desfecho da gestação | ok | ok: gestação ativa | ok |
+| A01R.26.ficha | f5_rec_hosp | Recepção do hospital abre a ficha da gestante regulada na porta | ok | 38852839-dc3e-41bc-820a-ebb4fa4ee6c2 | ok |
+| A01R.26.paciente | banco | Paciente do hospital | ok | 3440468e-af0c-49fa-8146-3f3816d8354e | ok |
+| A01R.26.classificar | f5_enf_hosp | Enfermeira do hospital classifica vermelho (escolha da enfermeira de teste), sinais crus, bloco de gestação | ok | 5e2e1da9-1196-44ae-98ec-547d79a6327f | ok |
+| A01R.26.iniciar | f5_med_porta_hosp | Médico da porta assume | ok | (sem retorno: void) | ok |
+| A01R.26.soap | f5_med_porta_hosp | SOAP de chegada (O15.0) | ok | 6d66bbf7-003f-4ce6-b521-a8ea65f98ffa | ok |
+| A01R.26.leitos | f5_med_porta_hosp | leitos_para_ocupar oferece o leito CM reservado pela regulação | ok | ok: CM-01 (reservado), CM-02 (reservado), CM-03, CM-04 | ok |
+| A01R.26.internar | f5_med_porta_hosp | Interna no leito CM reservado pela regulação | ok | (sem retorno: void) | ok |
+| A01R.26.internacao | banco | Internação no hospital | ok | 97f4501b-a300-43f5-90bd-f55b7ba056c5 | ok |
+| A01R.26.leito_e_reserva | banco | Leito ocupado e o que acontece com a reserva da regulação | ok | ok: leito CM-02 ocupado; reserva ocupada (Ocupado pela internação); internação da reserva 97f4501b-a300-43f5-90bd-f55b7ba056c5 | ok |
+| A01R.27.admissao | f5_med_hosp | Médico da Clínica Médica registra a admissão | ok | Falta para registrar a admissão: Subjetivo, Objetivo, Hipótese diagnóstica, Avaliação inicial e plano de tratamento. | **falha** |
+| A01R.27.diagnostico | f5_med_hosp | Diagnóstico primário confirmado O15.0 | ok | 14f2169a-aaff-4b6a-bcbd-7b0c0ab18874 | ok |
+| A01R.27.laudo_aih | f5_med_hosp | Emite o laudo de AIH com o procedimento principal 0303100028 | ok | ef6f69b7-5d1c-4062-980b-8ec14b3a99df | ok |
+| A01R.27.aih | banco | AIH solicitada pelo gatilho do laudo | ok | 96642d0b-ad55-47df-808c-9736837bc6a1 | ok |
+| A01R.28.conferir | f5_regulador | Regulador confere o procedimento com o CID (sigtap_procedimento_cid) | ok | Acesso negado. | **falha** |
+| A01R.28.fat_nao_decide | f5_fat | Faturamento tenta decidir a AIH (deve ser recusado) | erro | recusado: A decisão da AIH é do médico regulador da unidade. | ok |
+| A01R.28.decidir | f5_regulador | Regulador aprova a AIH | ok | (sem retorno: void) | ok |
+| A01R.28.aprovada | banco | AIH aprovada com número e competência, evento gravado | ok | ok: status aprovada, número 3526100094001, competência 202611, eventos 2 | ok |
+| A01R.27.conta_internacao | f5_fat | Conta de internação aberta no hospital | ok | 9a332607-3eb9-42f8-8290-9675ee41bc67 | ok |
+| A01R.27.conta_aih | f5_fat | O procedimento principal da AIH (SH + SP) entra na conta da internação | ok | ok: total 123.99; [{"em": "2026-11-07T00:24:28.156547+00:00", "aih": {"numero": "3526100094001", "status": "aprovada", "competencia": "202611"}, "cbo": null, "nome": "TRA… | ok |
+| A01R.26.conta_porta_hospital | f5_fat | Conta da porta do hospital (classificação e consulta) | ok | e2f1b4cc-21da-41c6-ac67-4041748a68d6 — total 0 | ok |
+| A01R.30.detalhe | f5_fat | Pré-auditoria da conta da UPA depois do desfecho | ok | status em_conferencia; total 12.26; itens 3; pendências 5; bloqueantes sem liberação 0 | ok |
+| A01R.31.fechar | f5_fat | Faturamento fecha a conta da UPA | ok | {"id": "ba82a5e6-3dc3-46fe-a1e3-8d94252e7aba", "tipo": "ambulatorial", "itens": [{"em": "2026-11-06T21:19:23.6… | ok |
+| A01R.31.liberar | f5_ges_upa | Gestor libera o fechamento | existir | não precisou: a conta fechou sem pendência bloqueante | lacuna |
+| A01R.31.total_congelado | banco | O total congelado no fechamento é o calculado antes | ok | ok: congelados 3, total 12.26 | ok |
+| A01R.31.faturar | f5_fat | fechada → faturada | ok | {"id": "ba82a5e6-3dc3-46fe-a1e3-8d94252e7aba", "tipo": "ambulatorial", "itens": [{"em": "2026-11-06T21:19:23.6… | ok |
+| A01R.31.erp | banco | Versão da conta para o ERP | ok | ok: versão 1, total 12.26, vigente, conciliação pendente | ok |
+| A01R.31.fat_nao_reabre | f5_fat | Faturamento não reabre conta faturada (deve ser recusado) | erro:Reabrir conta fechada é do gestor | recusado: Reabrir conta fechada é do gestor da unidade. | ok |
+| A01R.32.bpa_upa | f5_fat | Três linhas BPA-I da gestante na UPA, sem crítica | ok | ok: classificacao 0301060118 qt 1 críticas []; atendimento 0301060096 qt 1 críticas []; medicacao 0301100012 qt 2 críticas [] | ok |
+| A01R.27.admissao_ficha_completa | f5_med_hosp | Admissão de novo, com a ficha completa (a 1ª tentativa do script mandou a ficha vazia; o 51 já foi corrigido) | ok | 516c93bc-e11c-4c28-85fc-57b49744b909 | ok |
+| A01R.28.conferir_medico | f5_med_hosp | O médico da internação confere o procedimento com o CID | ok | {"nota": "Críticas da AIH: as bloqueantes impedem emitir o laudo; os avisos vão para o regulador. O gestor def… | ok |
+
+### Situação dos P1
+- **P1-1 (hospital sem porta): resolvido pelo ambiente.** A recepção abriu a ficha na porta nova e a enfermeira classificou. O médico da porta assumiu e internou no **leito reservado CM-02**. A reserva da regulação passou a "ocupada", ligada à internação. Isso também prova o item 8 do README: `leitos_para_ocupar` oferece o leito reservado.
+
+  Fica o achado de produto: unidade sem porta não tem caminho de admissão direta, e a chegada regulada não cria a internação (lacuna do MAPA). É decisão do RT, para o backlog.
+- **P1-2 (ninguém da escala na Observação): resolvido pelo ambiente.**
+  - O médico da observação viu o painel, atendeu e **encerrou com transferência**.
+  - A enfermeira registrou os sinais, a SAE e o balanço.
+  - O box OA-02 foi para higienização.
+  - A **contrarreferência** chegou à UBS (`a_ver`), a enfermeira da UBS abriu e ela virou `visto`. A recepção continua sem ver o resumo.
+- **Pergunta de produto registrada (`A01R.24.porta_finaliza`):** o `medico.upa.f5`, que pôs a paciente em observação e não está escalado nela, tentou encerrar a observação. Foi **RECUSADO** ("Acesso negado: você não está de plantão no setor deste paciente."). Só fica registrado. Se a porta deve poder encerrar, é decisão do RT.
+
+### Achados novos
+- **P3-7 — Hospital F5 sem SIGTAP associado (ambiente).** A conta da porta do hospital (`A-2026.000001`, hospital) tem os itens de classificação e de consulta "fora" do BPA, sem valor. Há 2 pendências **bloqueantes** ("A unidade não associou o código SIGTAP desta fonte"). Se for fechar essa conta, é preciso `associar_procedimento_bpa` no hospital, como foi feito na UPA.
+- **P3-8 — Crítica da AIH pela tabela SIGTAP (dados).** A conferência da AIH aponta a crítica do campo 28: a tabela SIGTAP carregada é da competência 09/2026, e a AIH é de 11/2026. Não bloqueou a aprovação.
+- **P3-9 — Catálogo, passo 28.** `conferir_aih` não é do regulador: é do médico que emite o laudo. O regulador vê as críticas na AIH e decide (`decidir_aih` ok; o faturamento é recusado: "A decisão da AIH é do médico regulador da unidade").
+- **Confirmado, sem achado:**
+  - a reserva da regulação é consumida pela internação no leito reservado;
+  - `prescricao_porta_ativa` lista os itens "Vindos da porta" para quem cuida da observação;
+  - a conta da UPA fechou **sem pendência bloqueante**, então a liberação do gestor não foi preciso;
+  - o total congelado é igual ao calculado (R$ 12,26);
+  - o faturamento não reabre conta faturada.
+- **Continuam valendo:** o P2-2 (a regulação chegou a `realizada` antes de a origem encerrar a observação; aqui a ordem foi a da rodada 2) e os P3 anteriores.
+
+### Custos finais que o sistema registrou
+Os valores vêm do SIGTAP carregado (competência 202609). Nenhum valor foi digitado.
+
+| Conta | Status | Itens com valor | Total de referência |
+|---|---|---|---|
+| UPA, ambulatorial `A-2026.000007` | **faturada**. ERP: versão 1, total R$ 12,26, conciliação pendente | consulta 0301060096: R$ 11,00; acolhimento 0301060118: nulo; medicação 0301100012: 2 × R$ 0,63 = R$ 1,26. Medicamentos e gaze sem valor | **R$ 12,26** (congelado igual ao calculado) |
+| Hospital, internação `I-2026.000001` | aberta (internação ativa no CM-02) | procedimento principal da AIH 0303100028, Tratamento de eclâmpsia: SH R$ 97,01 + SP R$ 26,98 | **R$ 123,99** |
+| Hospital, porta `A-2026.000001` | aberta | classificação e consulta "fora", sem SIGTAP associado (P3-7) | R$ 0,00 |
+
+- **AIH:** nº `3526100094001`, competência 202611, **aprovada** pelo regulador, 2 eventos (`aih_eventos`). A AIH não guarda valor: o valor está na conta da internação.
+- **BPA da UPA (202611):** as mesmas 3 linhas BPA-I da gestante, sem crítica.
+
+### O que ficou gravado na rodada 3
+- **Ambiente (permanente, pelo 48):**
+  - 3 contas novas (…025, …026 e …027), com vínculos, CNS, CBO e escala até 13/11;
+  - o setor "Porta do Hospital" com 2 leitos;
+  - a escala da recepção e da enfermeira do hospital na porta, de 06/11 em diante. As linhas de antes das 21h de 06/11 também foram movidas, porque o filtro é por data.
+- **Cenário:**
+  - na UPA: observação da "Gestante A01 Teste B" encerrada (transferência externa), OA-02 em **higienização**, conta da UPA **faturada**, com uma versão para o ERP;
+  - na UBS: contrarreferência `visto`;
+  - no hospital: paciente "Gestante A01 Teste B", episódio da porta em `internacao`, **internação ativa no CM-02** (ocupado), admissão, diagnóstico primário O15.0, laudo de AIH, **AIH aprovada** e duas contas abertas.
+- **Continua da rodada 1, sem mexer:**
+  - a "Gestante A01 Teste" segue em observação no **OA-01**;
+  - o **CM-01** segue reservado pela regulação nº 91, que expira em 07/11;
+  - o estoque de magnésio e hidralazina da UPA em −2.
+
 ## Arquivos
-- `scripts/e2e/47_framework_ampliacao.sql`: `e2e.conta` com os papéis do 42 e as contas 16 a 24 (`f5_tec_upa`, `f5_tele`, `f5_admin`, `f5_secretaria`, `f5_reg_regional`, `f5_fat_rede`, `f5_rec_hosp`, `f5_ges_hosp`, `f5_enf_hosp`).
+- `scripts/e2e/47_framework_ampliacao.sql`: `e2e.conta` com os papéis do 42, as contas 16 a 24 e as 25 a 27 do 48 (`f5_med_obs`, `f5_enf_obs`, `f5_med_porta_hosp`) (`f5_tec_upa`, `f5_tele`, `f5_admin`, `f5_secretaria`, `f5_reg_regional`, `f5_fat_rede`, `f5_rec_hosp`, `f5_ges_hosp`, `f5_enf_hosp`).
+- `scripts/e2e/48_rede_fase5_ajuste_a01.sql`: ajuste do ambiente para os P1-1 e P1-2 (contas de observação e da porta do hospital, setor Porta do Hospital, escala movida).
 - `scripts/e2e/50_cenario_a01.sql`: os passos do A01. Repetível: cada rodada cria uma gestante nova ("… B", "… C").
+- `scripts/e2e/51_cenario_a01_final.sql`: rodada 3, fim do A01 sobre a gestante da última rodada do 50 (ids `A01R.*`). Não se repete sobre a mesma paciente.

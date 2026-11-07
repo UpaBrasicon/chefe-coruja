@@ -2,7 +2,9 @@
 -- Teste ponta a ponta da rede (docs/teste-rede/, tarefa 2): o framework E2E passa
 -- a conhecer as 9 contas novas da rede F5 (46_rede_fase5_ampliacao.sql).
 -- Mesma função e2e.conta do 42, com TODOS os papéis antigos intactos e as contas
--- f5 16 a 24 acrescentadas. Rodar depois do 04, do 42 e do 46. Repetível.
+-- f5 16 a 24 acrescentadas; depois do A01, também as 25 a 27 do 48
+-- (f5_med_obs, f5_enf_obs, f5_med_porta_hosp). Rodar depois do 04, do 42, do 46
+-- e do 48. Repetível.
 -- ════════════════════════════════════════════════════════════════════════════
 \set ON_ERROR_STOP on
 CREATE OR REPLACE FUNCTION e2e.conta(p_papel text) RETURNS uuid LANGUAGE sql IMMUTABLE AS $$
@@ -35,6 +37,9 @@ CREATE OR REPLACE FUNCTION e2e.conta(p_papel text) RETURNS uuid LANGUAGE sql IMM
     WHEN 'f5_reg_regional' THEN 'f5200000-0000-4000-8000-000000000020' WHEN 'f5_fat_rede' THEN 'f5200000-0000-4000-8000-000000000021'
     WHEN 'f5_rec_hosp' THEN 'f5200000-0000-4000-8000-000000000022' WHEN 'f5_ges_hosp' THEN 'f5200000-0000-4000-8000-000000000023'
     WHEN 'f5_enf_hosp' THEN 'f5200000-0000-4000-8000-000000000024'
+    -- ajuste do ambiente depois do A01 (scripts/e2e/48_rede_fase5_ajuste_a01.sql)
+    WHEN 'f5_med_obs' THEN 'f5200000-0000-4000-8000-000000000025' WHEN 'f5_enf_obs' THEN 'f5200000-0000-4000-8000-000000000026'
+    WHEN 'f5_med_porta_hosp' THEN 'f5200000-0000-4000-8000-000000000027'
   END::uuid
 $$;
 
