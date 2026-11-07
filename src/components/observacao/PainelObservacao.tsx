@@ -12,6 +12,7 @@ import { AlertTriangle, Eye, Shield } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { mostraSecao } from '@/lib/observacoesQueAbri'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { LeitoAberto } from '@/components/internacao/LeitoAberto'
@@ -22,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Spinner } from '@/components/ui/spinner'
 
 import { CartaoObservacao } from './CartaoObservacao'
+import { ObservacoesQueAbri } from './ObservacoesQueAbri'
 import { duracao, msgErro, relogioPermanencia, type LinhaObservacao } from './modelo'
 
 type Aba = 'ativas' | 'finalizadas'
@@ -107,6 +109,10 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
     <p className="rounded-container border border-critico/30 bg-alerta-critico px-4 py-3 text-apoio text-critico">{msgErro(painel.error)}</p>
   ) : (
     <div className="flex flex-col gap-3">
+      {/* médico da porta: as observações que ele abriu, só para encerrar (RT, 06/11/2026) */}
+      {mostraSecao(papelAtivo) && (
+        <ObservacoesQueAbri unidadeId={unidadeId} agora={agora} noPainel={linhas.map((l) => l.internacao_id)} />
+      )}
       {acima.length > 0 && (
         <div role="alert" className="flex items-center gap-[9px] rounded-container border border-nota bg-nota/50 px-4 py-3">
           <AlertTriangle className="size-4 shrink-0 text-observacao" aria-hidden />
