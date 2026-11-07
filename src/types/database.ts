@@ -2039,6 +2039,39 @@ export type Database = {
         }
         Relationships: []
       }
+      cid_termo: {
+        Row: {
+          cid: string
+          criado_em: string
+          fonte: string
+          id: string
+          peso: number
+          termo: string
+          termo_norm: string
+          tipo: string
+        }
+        Insert: {
+          cid: string
+          criado_em?: string
+          fonte: string
+          id?: string
+          peso?: number
+          termo: string
+          termo_norm: string
+          tipo: string
+        }
+        Update: {
+          cid?: string
+          criado_em?: string
+          fonte?: string
+          id?: string
+          peso?: number
+          termo?: string
+          termo_norm?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
       classe_alergenica: {
         Row: {
           atc: string
@@ -10802,6 +10835,7 @@ export type Database = {
       }
       chave_rascunho: { Args: never; Returns: string }
       chave_fila: { Args: never; Returns: string }
+      cid_sugerir_do_texto: { Args: { p_texto: string }; Returns: Json }
       checar: {
         Args: {
           p_horario?: string
