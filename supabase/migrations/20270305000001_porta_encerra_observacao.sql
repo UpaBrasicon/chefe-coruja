@@ -75,7 +75,7 @@
 --     FOR f IN SELECT p.oid FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
 --               WHERE n.nspname = 'public' AND p.proname IN ('finalizar_observacao', 'dar_alta', 'registrar_evento_adt')
 --     LOOP
---       v := pg_get_functiondef(f.oid);
+--       v := replace(pg_get_functiondef(f.oid), chr(13), '');  -- aplicada de checkout CRLF
 --       v := replace(v, 'i := private.observacao_para_encerrar(p_internacao);',
 --                       'i := private.observacao_para_mim(p_internacao, true);');
 --       v := replace(v, E'    PERFORM set_config(''cc.encerra_observacao'', '''', true);\n', '');
