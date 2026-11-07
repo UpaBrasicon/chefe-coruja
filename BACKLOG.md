@@ -2330,6 +2330,18 @@ Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia pa
 
 **Pergunta de desenho, não verificada:** o BI põe o turno `noite` pelo dia da chegada (`filtros_bi`), então o plantão de 19h às 7h aparece partido em duas datas.
 
+## Teste ponta a ponta da rede — pedido do RT em 06/11/2026
+
+Pedido do RT: "criar n número de possibilidades para testar todo o fluxo de todos os acessos, de um pré-natal a uma eclâmpsia chegando na UPA por encaminhamento, toda a rede, incluindo regulação e custos (custos imaginários, só de exemplo)". O RT decidiu registrar a frente e começar no mesmo dia, com 20 cenários ou mais.
+
+| # | Prioridade | Tarefa | Estado |
+|---|---|---|---|
+| 1 | P0 | Catálogo de cenários (20 ou mais) cobrindo todos os papéis e a rede: UBS, UPA, hospital, regulação, farmácia, faturamento e custos. Os custos são fictícios e marcados como exemplo. Nada é gravado no banco. Fica em `docs/teste-rede/` | Em andamento (06/11/2026) |
+| 2 | P1 | Carga dos cenários na homologação (pacientes, atendimentos e custos fictícios) e execução com login, papel por papel | Aval do RT em 06/11/2026. Ambiente F5 ampliado pelo `scripts/e2e/46_rede_fase5_ampliacao.sql`: Secretaria e módulo de rede, setores pediátrico, isolamento, UTI e obstetrícia, 9 contas novas, CNS e CBO, escala até 13/11. A execução vem em seguida |
+| 3 | P2 | Relatório de achados da execução, com a correção de cada um na sua própria branch | A01 executado em 06/11/2026 (`docs/teste-rede/EXECUCAO-A01.md`). Decisão do RT no mesmo dia: o médico da porta que pôs o paciente em observação deve poder encerrá-la (hoje é recusado). Fica na lista de correções |
+
+Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de memória; o cenário remete à ferramenta do sistema que tem a fonte. A cor da classificação é decisão da enfermagem, também dentro do cenário.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
