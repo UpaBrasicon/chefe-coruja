@@ -42,7 +42,11 @@ test('M1: guarda tudo o que foi digitado, inclusive a cor, e só cifrado', () =>
   salvarRascunhoTriagem(k, digitado)
   const bruto = guardado.get(k)!
   assert.ok(bruto.startsWith('ccr1:'))
-  assert.ok(!bruto.includes('torácica') && !bruto.includes('112'))
+  // depois do prefixo só há base64 (nonce|cifra|tag): nenhum texto digitado nem JSON aberto.
+  // Não procurar dígitos soltos ("112") no base64: o cifrado é aleatório e às vezes os contém
+  // (derrubou o CI do #477 em 07/11/2026).
+  assert.match(bruto.slice('ccr1:'.length), /^[A-Za-z0-9+/]+=*$/)
+  assert.ok(!bruto.includes('torácica') && !bruto.includes('"frequencia-cardiaca"'))
   const lido = carregarRascunhoTriagem(k)!
   assert.deepEqual(lido.dados, digitado)
   assert.equal(typeof lido.salvoEm, 'number')
