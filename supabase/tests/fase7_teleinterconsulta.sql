@@ -24,6 +24,9 @@ WHERE NOT EXISTS (SELECT 1 FROM public.vinculos WHERE perfil_id = '10000000-0000
 INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, prontuario, setor_id)
 VALUES ('23000000-0000-4000-8000-000000000098', '21000000-0000-4000-8000-000000000001', 'Paciente do Teste de Tele',
         '1960-02-02', 'T-098', '22000000-0000-4000-8000-000000000001');
+-- em cuidado = internação aberta no setor (20270306000001), não só o setor do cadastro
+INSERT INTO public.internacoes (organizacao_id, unidade_id, paciente_id, setor_atual_id, status)
+VALUES ((SELECT organizacao_id FROM public.unidades WHERE id = '21000000-0000-4000-8000-000000000001'), '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-000000000098', '22000000-0000-4000-8000-000000000001', 'internado');
 INSERT INTO public.observacao (unidade_id, paciente_id, conceito_id, aferido_em, valor_num, origem)
 SELECT '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-000000000098', c.id, now(), 38.2, 'manual'
 FROM public.conceito c WHERE c.nome = 'temperatura' AND c.unidade_id IS NULL LIMIT 1;
