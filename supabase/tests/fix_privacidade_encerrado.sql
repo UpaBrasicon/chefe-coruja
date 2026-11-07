@@ -133,7 +133,7 @@ SELECT pg_temp.ok(NOT pg_temp.cuida('med', 'recente'), 'encerrado há 2 horas: a
 SELECT pg_temp.ok(pg_temp.atua('gestor', 'velho'), 'o gestor da unidade lê o encerrado');
 SELECT pg_temp.ok(NOT pg_temp.atua('tec', 'velho'), 'quem é de outra unidade não atua');
 
--- ── 4. a porta virou observação: vale onde o paciente está (20270306000002) ─
+-- ── 4. a porta virou observação: o atendimento da porta aberto não dá cuidado ao PS ─
 -- o atendimento da porta continua aberto no PS, mas o paciente está na observação
 INSERT INTO ids VALUES ('obs', '00000000-0000-4000-8000-0000000b0e13'), ('enfobs', '00000000-0000-4000-8000-0000000b0e26'),
                        ('rec', '00000000-0000-4000-8000-0000000b0e27');
@@ -152,6 +152,8 @@ SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.es
 INSERT INTO public.internacoes (organizacao_id, unidade_id, paciente_id, episodio_id, setor_atual_id, status)
 SELECT pg_temp.id('org'), pg_temp.id('upa'), pg_temp.id('aberto'), e.id, pg_temp.id('obs'), 'em_observacao'
   FROM public.episodios e WHERE e.paciente_id = pg_temp.id('aberto') AND e.encerrado_em IS NULL;
+-- como na conversão real (observacao), o cadastro acompanha o paciente para a observação
+UPDATE public.pacientes SET setor_id = pg_temp.id('obs') WHERE id = pg_temp.id('aberto');
 SELECT pg_temp.ok(pg_temp.cuida('enfobs', 'aberto'), 'na observação: a enfermeira escalada na observação cuida');
 SELECT pg_temp.ok(NOT pg_temp.cuida('rec', 'aberto'), 'na observação: a recepção do PS não cuida mais');
 SELECT pg_temp.ok(NOT pg_temp.atua('rec', 'aberto'), 'na observação: a recepção do PS não atua');

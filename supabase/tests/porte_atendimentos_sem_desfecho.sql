@@ -25,10 +25,6 @@ VALUES ('25000000-0000-4000-8000-000000000091', '21000000-0000-4000-8000-0000000
 INSERT INTO public.atendimento_registros (episodio_id, unidade_id, paciente_id, subjetivo, plano, autor_id)
 VALUES ('25000000-0000-4000-8000-000000000091', '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-000000000091',
         'Dor em fossa ilíaca direita', 'Aguardar ultrassom', '10000000-0000-4000-8000-000000000002');
--- o paciente está internado na Clínica Médica (o atendimento da porta segue sem desfecho):
--- em cuidado = onde o paciente está (20270306000002), não só o setor do cadastro
-INSERT INTO public.internacoes (organizacao_id, unidade_id, paciente_id, setor_atual_id, status)
-VALUES ((SELECT organizacao_id FROM public.unidades WHERE id = '21000000-0000-4000-8000-000000000001'), '21000000-0000-4000-8000-000000000001', '23000000-0000-4000-8000-000000000091', '22000000-0000-4000-8000-000000000001', 'internado');
 
 -- plantonista escalado agora na Clínica Médica (não no Pronto Socorro)
 DELETE FROM public.escala_plantao WHERE perfil_id = '10000000-0000-4000-8000-000000000002';
