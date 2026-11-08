@@ -112,6 +112,16 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
     - **Regra:** com farmacêutico em check-in na unidade, `dispensar_item` recusa a retirada pela enfermagem com "Há farmacêutico de plantão na unidade: peça a dispensação a ele." (`20270307000004`). "Em check-in" quer dizer check-in sem check-out, num plantão do farmacêutico em curso (`private.farmaceutico_de_plantao`). Escalado sem check-in, ou depois do check-out, conta como farmácia fechada.
     - **Teste:** `fix_dispensa_enfermagem_farmaceutico.sql`. Antes da migration falhou; depois passou na homologação.
     - **Reconferência (`scripts/e2e/97_reconferencia_retirada_enfermagem.sql`):** com o farmacêutico F5 em check-in, a enfermeira foi recusada; o farmacêutico dispensou; checagem, SOAP e alta ok.
+  - **Item 3:** na produção e mesclado (#488), migration `20270307000004`.
+  - **Item 4 (B P2-2), branch `correcoes/observacao-quem-abriu-parecer`:**
+    - **Regra:** enquanto a observação está aberta, quem a abriu pede parecer, lê a lista de pareceres e marca a reavaliação, pela mesma regra do encerramento (`private.abriu_a_observacao`, #482). A migration é a `20270307000005`, com troca de texto em `solicitar_parecer`, `pareceres_do_paciente` e `observacao_reavaliar`. Para marcar a reavaliação, continua sendo preciso que o primeiro atendimento da observação já tenha sido registrado por quem está escalado nela. Atender, evoluir e prescrever na observação não mudam.
+    - **Tela:** "Observações que você abriu" ganha "Reavaliar" e "Pedir parecer", com os mesmos painéis do box, ao lado de "Encerrar observação".
+    - **Teste:** `fix_observacao_quem_abriu_parecer.sql`. Antes da migration falhou; depois passou na homologação, e o `fix_porta_encerra_observacao.sql` continua verde.
+    - **Reconferência (`scripts/e2e/98_reconferencia_parecer_quem_abriu.sql`):**
+      - o médico do PS pôs Rosa em observação, leu a lista de pareceres e pediu parecer;
+      - antes do atendimento da observação, recebeu a regra de sempre;
+      - depois de o médico da observação registrar o atendimento, marcou a reavaliação (autor = login);
+      - cancelou o próprio pedido e encerrou com alta.
 
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
 

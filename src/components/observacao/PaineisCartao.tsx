@@ -52,7 +52,7 @@ function horaDoDia(hm: string, sentido: 'futuro' | 'passado') {
 }
 
 // ── reavaliar às ────────────────────────────────────────────────────────────
-export function PainelReavaliar({ linha, acao, fechar, erro }: { linha: LinhaObservacao; acao: Acao; fechar: () => void; erro: string | null }) {
+export function PainelReavaliar({ linha, acao, fechar, erro }: { linha: Pick<LinhaObservacao, 'internacao_id'>; acao: Acao; fechar: () => void; erro: string | null }) {
   const [hora, setHora] = React.useState('')
   return (
     <Painel erro={erro}>
