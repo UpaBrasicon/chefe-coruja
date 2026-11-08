@@ -19,6 +19,8 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { CampoCid, type RegistroSoap } from './AbaAtendimento'
 import { Chip } from '@/components/monitor/Pagina'
+import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { detalhesDaTransferencia, type RegulacaoDoHistorico } from '@/lib/regulacaoAlta'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import {
@@ -85,6 +87,8 @@ export function AbaDesfecho({
   const [relato, setRelato] = React.useState('')
   const [motivoEvasao, setMotivoEvasao] = React.useState<MotivoEvasao | null>(null) // Fase 1, tarefa 6
   const [destino, setDestino] = React.useState('')
+  // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
+  const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
   const [horaObito, setHoraObito] = React.useState('')
   const [numeroDo, setNumeroDo] = React.useState('')
   const [setorObito, setSetorObito] = React.useState('')
@@ -156,7 +160,7 @@ export function AbaDesfecho({
     if (EXIGE_CID.includes(d)) regras.push({ ok: CID_OK.test(cid), texto: 'Diagnóstico de alta (CID)' })
     if (d === 'evasao') regras.push({ ok: !!motivoEvasao, texto: 'Motivo da evasão' })
     if (RELATO[d]) regras.push({ ok: relato.trim().length >= 15, texto: `${RELATO[d]} (mínimo de 15 letras)` })
-    if (d === 'transferencia') regras.push({ ok: destino.trim().length >= 3, texto: 'Serviço de destino' })
+    if (d === 'transferencia') regras.push({ ok: !!regulacao || destino.trim().length >= 3, texto: 'Serviço de destino' })
     if (d === 'obito') {
       regras.push({ ok: !!horaObito && Date.parse(horaObito) <= agora + 60_000, texto: 'Hora do óbito (não no futuro)' })
       regras.push({ ok: CID_OK.test(cidObito.trim().toUpperCase()), texto: 'CID do óbito' })
@@ -180,7 +184,7 @@ export function AbaDesfecho({
         if (r.error) throw r.error
       }
       const det: Record<string, string> = {}
-      if (d === 'transferencia') det.destino = destino.trim()
+      if (d === 'transferencia') Object.assign(det, detalhesDaTransferencia(regulacao ?? null, destino))
       if (d === 'evasao' && motivoEvasao) det.motivo_evasao = motivoEvasao
       if (d === 'obito') {
         det.hora_obito = new Date(horaObito).toISOString()
@@ -219,9 +223,14 @@ export function AbaDesfecho({
       </div>
 
       {d === 'transferencia' && (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="d-destino">Serviço de destino</Label>
-          <Input id="d-destino" value={destino} onChange={(e) => setDestino(e.target.value)} />
+        <div className="flex flex-col gap-3">
+          <RegulacaoDaAlta pacienteId={pacienteId} valor={regulacao} aoEscolher={setRegulacao} />
+          {!regulacao && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="d-destino">Serviço de destino</Label>
+              <Input id="d-destino" value={destino} onChange={(e) => setDestino(e.target.value)} />
+            </div>
+          )}
         </div>
       )}
       {d === 'obito' && (

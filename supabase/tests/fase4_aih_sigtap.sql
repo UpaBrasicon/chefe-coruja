@@ -31,6 +31,10 @@ ON CONFLICT DO NOTHING;
 INSERT INTO public.pacientes (unidade_id, nome, data_nascimento, sexo)
 VALUES ('21000000-0000-4000-8000-000000000001', 'Aih Teste Mulher', '1990-01-01', 'F');
 UPDATE public.pacientes SET setor_id = '22000000-0000-4000-8000-000000000003' WHERE nome = 'Aih Teste Mulher';
+-- em cuidado = atendimento aberto no setor (20270306000001), não só o setor do cadastro
+INSERT INTO public.episodios (unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por)
+SELECT '21000000-0000-4000-8000-000000000001', id, '22000000-0000-4000-8000-000000000003', 'atendimento', 'Tosse e febre', '10000000-0000-4000-8000-000000000002'
+  FROM public.pacientes WHERE nome = 'Aih Teste Mulher';
 
 CREATE TEMP TABLE t (nome text PRIMARY KEY, valor text) ON COMMIT DROP;
 GRANT ALL ON t TO authenticated;

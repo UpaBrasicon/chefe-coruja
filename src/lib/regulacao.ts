@@ -395,6 +395,23 @@ export const MEIOS_CONFIRMACAO: Record<MeioConfirmacao, string> = {
   telefone: 'Telefone', sistema_externo: 'Sistema externo', presencial: 'Presencial', outro: 'Outro',
 }
 /** O pedido está com o destino: esperando aceite ou esperando a chegada. */
-export function esperandoChegada(status: StatusRegulacao): boolean {
-  return status === 'autorizada' || status === 'agendada' || status === 'em_transito'
+export function esperandoChegada(status: StatusRegulacao, chegadaEm?: string | null): boolean {
+  // S2 (A01 P2-2): em trânsito com a chegada já registrada espera a origem, não a chegada
+  return !chegadaEm && (status === 'autorizada' || status === 'agendada' || status === 'em_transito')
+}
+
+// ── chegada regulada interna (A01 P1-1; decisão do RT em 07/11/2026: A em R1
+// a R6; migration 20270308000001) ──────────────────────────────────────────
+/** Leito ou transferência da rede: a chegada interna o paciente no destino (R1). */
+export function chegadaInterna(s: { tipo: TipoSolicitacao; destino_tipo: string }): boolean {
+  return s.destino_tipo === 'rede' && (s.tipo === 'leito' || s.tipo === 'transferencia')
+}
+/** A reserva da regulação ainda vale: a chegada vai para esse leito (R3). */
+export function reservaValida(r: { situacao: string; expira_em: string } | null | undefined, agora: number): boolean {
+  return !!r && r.situacao === 'ativa' && Date.parse(r.expira_em) > agora
+}
+/** "CHEGADA_DUPLICATA_PROVAVEL:<id> texto": o servidor parou e pede a escolha do cadastro (R2). */
+export function duplicataDaChegada(mensagem: string | null | undefined): { id: string; texto: string } | null {
+  const m = /CHEGADA_DUPLICATA_PROVAVEL:([0-9a-f-]{36})\s*(.*)$/i.exec(mensagem ?? '')
+  return m ? { id: m[1], texto: m[2].trim() } : null
 }

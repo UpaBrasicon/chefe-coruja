@@ -101,7 +101,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
       setor_id: novoSetor || null,
       turno: novoTurno || null,
       valor: Number(novoValor),
-      criado_por: null,
+      // o autor (criado_por) é o login, gravado pelo servidor (C P2-C1, migration 20270308000004)
     })
     if (error) {
       setErro(error.message)

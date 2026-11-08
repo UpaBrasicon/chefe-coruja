@@ -17,6 +17,8 @@ Não exportável quer dizer que ninguém lê os bytes da chave. Mas qualquer scr
 
 ## Decisões para o RT
 
+**Decisão do RT em 05/11/2026: A em O1 a O5 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | O1 | Que chave | **Por pessoa, fixa**, criada e guardada no servidor (`private`), entregue por `chave_fila()` só depois do login com segundo fator. A mesma pessoa, em qualquer login, lê a sua fila pendente; outra pessoa nunca lê. | Por sessão, como o cofre dos rascunhos. A fila pendente de um login anterior fica ilegível e o registro se perde. |

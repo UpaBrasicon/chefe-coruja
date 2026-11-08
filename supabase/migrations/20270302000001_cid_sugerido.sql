@@ -69,6 +69,8 @@ COMMENT ON TABLE public.cid_termo IS
 -- (CID-10 do DATASUS): existe e a descrição oficial corresponde ao termo.
 -- Com a CID-10 carregada, código ausente para a migration (nunca inventar).
 -- Sem a tabela carregada (ambiente vazio, como o banco do CI), nada entra.
+-- tabela temporária de carga: some no fim da sessão (sem DROP explícito, que a
+-- trava expand/contract confundiria com DROP de tabela do app)
 CREATE TEMP TABLE cid_termo_carga (termo text, cid text, tipo text);
 INSERT INTO pg_temp.cid_termo_carga (termo, cid, tipo) VALUES
   -- respiratório
@@ -168,7 +170,6 @@ SELECT s.termo, private.norm_cid_termo(s.termo), s.cid, s.tipo,
   JOIN terminologia.cid10 c ON c.codigo = s.cid
 ON CONFLICT ON CONSTRAINT cid_termo_unico DO NOTHING;
 
-DROP TABLE pg_temp.cid_termo_carga;
 
 -- ── a sugestão ──────────────────────────────────────────────────────────────
 -- 1. Quebra o texto em trechos: + , ; / . quebra de linha e a palavra "e".

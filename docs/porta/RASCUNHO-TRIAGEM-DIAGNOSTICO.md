@@ -29,6 +29,8 @@ A tela de classificação (`src/pages/enfermagem/triagem/Classificar.tsx`) mant�
 
 ## Decisões para o RT
 
+**Decisão do RT em 05/11/2026: A em M1 a M5 ("Sim, todas A").**
+
 | # | Decisão | A (recomendada) | B |
 |---|---|---|---|
 | M1 | O que o rascunho guarda | Tudo o que a enfermeira digitou, inclusive a cor escolhida. A cor continua sendo dela: só ela, com o mesmo login, recupera. | Tudo, menos a cor: ela escolhe de novo ao voltar. |

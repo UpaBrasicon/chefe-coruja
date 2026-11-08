@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { AlertTriangle, ChevronDown, Eye, FileClock, Printer, RotateCw, ShieldCheck, ShieldQuestion } from 'lucide-react'
-import { useEffect, useId, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
@@ -105,12 +105,14 @@ export default function ProntuarioLeitura() {
 
   // foco e rolagem depois que a lista nova está na tela (efeito, não requestAnimationFrame:
   // aba em segundo plano não roda quadro)
+  // cada pedido é um objeto novo; o ref marca o que já foi atendido (sem setState no efeito)
   const [alvo, setAlvo] = useState<{ id: string; rolar: boolean } | null>(null)
+  const alvoAtendido = useRef<{ id: string; rolar: boolean } | null>(null)
   useEffect(() => {
-    if (!alvo) return
+    if (!alvo || alvoAtendido.current === alvo) return
     const el = document.getElementById(alvo.id)
     if (!el) return
-    setAlvo(null)
+    alvoAtendido.current = alvo
     el.focus({ preventScroll: alvo.rolar })
     if (alvo.rolar) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   }, [alvo, grupos])

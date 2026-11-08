@@ -70,6 +70,10 @@ INSERT INTO t SELECT 'ep2', public.registrar_ficha('22000000-0000-4000-8000-0000
 RESET ROLE;
 INSERT INTO t SELECT 'pac', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep');
 INSERT INTO t SELECT 'pac2', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep2');
+-- item 2 da fila do teste da rede (A P2-2, 07/11/2026): prescrever exige o
+-- atendimento aberto pelo médico; o atalho põe o episódio em atendimento
+UPDATE public.episodios SET etapa = 'atendimento', atendimento_medico_id = '10000000-0000-4000-8000-000000000002',
+       atendimento_iniciado_em = now() WHERE id IN (pg_temp.u('ep'), pg_temp.u('ep2'));
 
 -- ── classe: "Penicilinas" trava amoxicilina e penicilina benzatina ────────
 SET LOCAL ROLE authenticated;

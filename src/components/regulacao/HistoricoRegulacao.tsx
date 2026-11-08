@@ -32,6 +32,8 @@ type ItemHistorico = {
   especialidade: string | null; procedimento: string | null; procedimento_nome: string | null
   tipo_leito: string | null; transporte: string | null; prioridade: Prioridade; carater: Carater; cid: string
   origem: string | null; outra_unidade: boolean; destino: string | null
+  /** S2: chegou ao destino e a origem ainda não deu alta por transferência */
+  chegou_origem_aberta?: boolean
 }
 type DetalheHistorico = {
   numero: number; quadro_clinico: string; tempo_evolucao: string | null; sinais_vitais: string | null; exames: string | null
@@ -81,7 +83,9 @@ export function HistoricoRegulacao({ pacienteId, secao }: {
             <span className="text-tinta-sussurro">{CARATER[r.carater]} · CID {r.cid}</span>
             {r.outra_unidade && <span className="text-tinta-apoio">{r.origem}</span>}
             {r.destino && <span className="text-tinta-apoio">→ {r.destino}</span>}
-            <span className="ml-auto"><Estado tom="teal">{STATUS[r.status]}</Estado></span>
+            <span className="ml-auto">{r.chegou_origem_aberta
+              ? <Estado tom="ambar">Chegou ao destino · origem sem alta</Estado>
+              : <Estado tom="teal">{STATUS[r.status]}</Estado>}</span>
             <span className="text-tinta-sussurro">nº {r.numero}</span>
           </BotaoLinha>
           {aberta === r.id && <Detalhe pacienteId={pacienteId} id={r.id} />}

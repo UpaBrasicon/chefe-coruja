@@ -58,5 +58,8 @@ graphify-out/
 tools/rnds/.cache/
 
 # senha local das contas de teste do portão da Fase 5 (nunca no git)
-scripts/e2e/.senha-e2e
+scripts/e2e/.senha-e2e*
 scripts/e2e/.hash-e2e
+
+# Item 8 (Power BI): chave de teste da homologação, nunca no git
+scripts/powerbi/.chave-homolog
