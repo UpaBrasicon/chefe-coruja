@@ -133,6 +133,15 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
     - **Teste:** `fix_troca_pedida_de_novo.sql`. Antes da migration falhou; depois passou na homologação.
     - **Teste antigo ajustado:** `escala_troca_forcada`. A troca forjada sai de "pendente" antes do pedido verdadeiro do par invertido.
     - **Reconferência do D04.07** (`scripts/e2e/101_reconferencia_troca_de_novo.sql`): o pedido feito de novo depois de cancelar passou, e a repetição com o pedido ainda pendente foi recusada com a mensagem.
+  - **Item 7:** na produção e mesclado (#492), migration `20270308000002`.
+  - **Item 8 (D P2-1), branch `correcoes/checkout-fecha-porta`:** decidido com a opção A em C1 e C2 (recomendação aplicada; em 08/11/2026 o RT delegou as próximas ações, ficando com o "ok produção" e o merge).
+    - **Causa:** `private.plantoes_agora` e `checkin_do_plantao` olhavam só `checkin_em`, então o check-out não fechava nada.
+    - **C1:** o check-out feito pela pessoa fecha a porta na hora, tanto no plantão quanto nos 20 minutos de tolerância. O check-out automático do fim (`fechar_presencas_vencidas`) não fecha a tolerância.
+    - **C2:** um check-out feito por engano se desfaz com um novo check-in, que reabre a porta (`registrar_checkin` já apagava o check-out). Depois do fim do plantão, a liberação do gestor continua valendo.
+    - **Migration:** `20270308000003`.
+    - **Teste:** `fix_checkout_fecha_porta.sql`. Antes da migration falhou; depois passou na homologação.
+    - **Testes antigos:** `checkin_tolerancia`, `pos_plantao_tolerancia`, `vd13_checkin_reabre` e os de plantões do ERP seguem passando.
+    - **Reconferência do D02.B1** (`scripts/e2e/102_reconferencia_checkout.sql`): o médico da porta fez o check-out e a porta fechou; fez o check-in de novo e ela reabriu.
 - **Incluído na fila pelo RT em 08/11/2026:** depois do item 12 e antes da sepse no adulto, entra a tela para o enfermeiro confirmar a chegada regulada. A permissão R5 já vale no banco.
 
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
