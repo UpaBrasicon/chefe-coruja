@@ -8,14 +8,17 @@
 // de plantão da enfermagem do setor.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
-import { Users } from 'lucide-react'
+import { Ambulance, Users } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { sairamAgora } from '@/lib/chegadaEnfermagem'
+import { useAvisosFlutuantes } from '@/contexts/AvisosFlutuantesContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
 
+import { ChegadaReservada, type ChegadaEnfermagem } from './ChegadaReservada'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { PassagemEnfermagem } from './PassagemEnfermagem'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
@@ -76,9 +79,41 @@ export default function InternacaoEnfermagem() {
     },
   })
 
-  // por setor, na ordem que vem do servidor (setor, leito)
-  const porSetor = new Map<string, LeitoEnfermagem[]>()
-  for (const l of leitos.data ?? []) porSetor.set(l.setor_nome, [...(porSetor.get(l.setor_nome) ?? []), l])
+  // Chegada regulada (item 16 do teste da rede, opção B): o leito reservado
+  // aparece na lista do setor, com quem chega e "Paciente chegou".
+  const chegadas = useQuery({
+    queryKey: ['enfermagem-chegadas', unidadeId],
+    enabled: !!unidadeId && meusSetores.length > 0,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('enfermagem_chegadas', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (data ?? []) as ChegadaEnfermagem[]
+    },
+  })
+  // o aviso de saída: quem passou a "em trânsito" desde a leitura anterior
+  const { avisar } = useAvisosFlutuantes()
+  const leituraAnterior = React.useRef<ChegadaEnfermagem[] | undefined>(undefined)
+  React.useEffect(() => {
+    if (!chegadas.data) return
+    const sairam = sairamAgora(leituraAnterior.current, chegadas.data)
+    leituraAnterior.current = chegadas.data
+    if (sairam.length > 0) {
+      avisar(sairam.map((c) => ({
+        tag: 'Chegada regulada', icone: Ambulance, quando: 'agora',
+        titulo: `${c.nome} saiu da ${c.origem}`,
+        texto: `Vem para o leito ${c.leito} (regulação nº ${c.numero}).`,
+      })))
+    }
+  }, [chegadas.data, avisar])
+  const atualizarTudo = () => { void chegadas.refetch(); void leitos.refetch() }
+
+  // por setor, na ordem que vem do servidor (setor, leito); o setor com só uma
+  // chegada esperada também aparece
+  const porSetor = new Map<string, { leitos: LeitoEnfermagem[]; chegadas: ChegadaEnfermagem[] }>()
+  const doSetor = (nome: string) => porSetor.get(nome) ?? porSetor.set(nome, { leitos: [], chegadas: [] }).get(nome)!
+  for (const l of leitos.data ?? []) doSetor(l.setor_nome).leitos.push(l)
+  for (const c of chegadas.data ?? []) doSetor(c.setor_nome).chegadas.push(c)
 
   const carregando = setores.isLoading || leitos.isLoading
   const erro = setores.error ?? leitos.error
@@ -99,8 +134,9 @@ export default function InternacaoEnfermagem() {
             <Vazio icone={Users} titulo="Nenhum paciente internado nos setores da sua escala"
               texto="Quem está na observação aparece no Pronto-Socorro da enfermagem." />
           )}
-          {[...porSetor.entries()].map(([nomeSetor, lista]) => (
+          {[...porSetor.entries()].map(([nomeSetor, { leitos: lista, chegadas: esperadas }]) => (
             <Bloco key={nomeSetor} titulo={nomeSetor}>
+              {esperadas.map((c) => <ChegadaReservada key={c.regulacao_id} c={c} agora={agora} aoFim={atualizarTudo} />)}
               {lista.map((l) => {
                 const linha = [l.cid_principal ? `CID ${l.cid_principal}` : l.queixa, `internado há ${duracao(l.data_admissao, agora)}`].filter(Boolean).join(' · ')
                 return (
