@@ -48,6 +48,10 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 INSERT INTO t SELECT 'ep', public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Febre', NULL, '{"nome":"Farmacia Teste","data_nascimento":"1960-10-10"}'::jsonb) ->> 'episodio_id';
 RESET ROLE;
 INSERT INTO t SELECT 'pac', paciente_id::text FROM public.episodios WHERE id = pg_temp.u('ep');
+-- item 2 da fila do teste da rede (A P2-2, 07/11/2026): prescrever exige o
+-- atendimento aberto pelo médico; o atalho põe o episódio em atendimento
+UPDATE public.episodios SET etapa = 'atendimento', atendimento_medico_id = '10000000-0000-4000-8000-000000000002',
+       atendimento_iniciado_em = now() WHERE id IN (pg_temp.u('ep'));
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.pesar();

@@ -99,6 +99,14 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
   12. P3 das telas (Central, Finalizados, avisos);
   13. B P2-1 (sepse no adulto), parado até o RT indicar a fonte do critério.
 - **Fora da fila:** a gestante do A01 em observação é sobra de teste e entra na limpeza da homologação.
+- **Andamento:**
+  - **Item 1 (M):** na produção e mesclado (#486), migration `20270307000002`.
+  - **Item 2 (A P2-2), branch `correcoes/prescrever-atendimento-aberto`:**
+    - **Regra:** na porta, `prescrever` exige o atendimento aberto pelo médico (`20270307000003`). A mensagem é "Abra o atendimento antes de prescrever."
+    - **Testes:** `fix_prescrever_atendimento_aberto.sql` cobre triagem, atendimento não aberto, atendimento aberto, alteração do item e observação. Antes da migration falhou; depois passou na homologação.
+    - **Testes antigos:** quatro deles prescreviam com a ficha recém-aberta (`fase4_farmacia`, `fase4_prescricao_diluicao`, `porte_alergias` e `porte_alergia_classe`). Eles ganharam o atalho que põe o episódio em atendimento.
+    - **Tela:** não muda, porque a janela da porta já abre o atendimento antes de mostrar a prescrição.
+    - **Reconferência (`scripts/e2e/96_reconferencia_prescricao_triagem.sql`):** na triagem, recusado e nada gravado; depois da classificação e do atendimento aberto, aceito; SOAP e alta ok.
 
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
 
