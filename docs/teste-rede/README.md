@@ -107,6 +107,11 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
     - **Testes antigos:** quatro deles prescreviam com a ficha recém-aberta (`fase4_farmacia`, `fase4_prescricao_diluicao`, `porte_alergias` e `porte_alergia_classe`). Eles ganharam o atalho que põe o episódio em atendimento.
     - **Tela:** não muda, porque a janela da porta já abre o atendimento antes de mostrar a prescrição.
     - **Reconferência (`scripts/e2e/96_reconferencia_prescricao_triagem.sql`):** na triagem, recusado e nada gravado; depois da classificação e do atendimento aberto, aceito; SOAP e alta ok.
+  - **Item 2:** na produção e mesclado (#487), migration `20270307000003`.
+  - **Item 3 (A P2-3), branch `correcoes/dispensa-enfermagem-farmaceutico`:**
+    - **Regra:** com farmacêutico em check-in na unidade, `dispensar_item` recusa a retirada pela enfermagem com "Há farmacêutico de plantão na unidade: peça a dispensação a ele." (`20270307000004`). "Em check-in" quer dizer check-in sem check-out, num plantão do farmacêutico em curso (`private.farmaceutico_de_plantao`). Escalado sem check-in, ou depois do check-out, conta como farmácia fechada.
+    - **Teste:** `fix_dispensa_enfermagem_farmaceutico.sql`. Antes da migration falhou; depois passou na homologação.
+    - **Reconferência (`scripts/e2e/97_reconferencia_retirada_enfermagem.sql`):** com o farmacêutico F5 em check-in, a enfermeira foi recusada; o farmacêutico dispensou; checagem, SOAP e alta ok.
 
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
 
