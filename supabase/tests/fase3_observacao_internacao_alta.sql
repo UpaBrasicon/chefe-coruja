@@ -292,13 +292,17 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format('SELECT public.dar_alta(%L, %L, %L, %L)', pg_temp.v('ia'), 'alta_melhorada', 'R60', now() - interval '2 hours'),
   'Alta retroativa', 'alta retroativa exige justificativa');
-SELECT public.registrar_checkout((SELECT id FROM public.presenca_plantonista WHERE perfil_id = '10000000-0000-4000-8000-000000000002' LIMIT 1));
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
--- (a escala segue em curso: o médico continua cuidando do setor)
+-- a alta antes do check-out: desde a 20270308000003 (D P2-1, C1), o check-out
+-- fecha a porta na hora e o médico deixa de cuidar do setor
 SELECT public.dar_alta(pg_temp.u('ia'), 'alta_melhorada', 'R60', now() - interval '2 hours', 'Alta dada às 10h, registro atrasado', 'Retorno em 7 dias');
 -- pacote de alta
 INSERT INTO t SELECT 'pac', public.gerar_pacote_alta(pg_temp.u('ia'), '["Voltar se febre","Beber água"]', 'UBS em 7 dias')::text;
+SELECT public.registrar_checkout((SELECT id FROM public.presenca_plantonista WHERE perfil_id = '10000000-0000-4000-8000-000000000002' LIMIT 1));
 RESET ROLE;
+-- o médico volta ao plantão (C2: o check-in de novo apaga o check-out) para os passos seguintes
+UPDATE public.presenca_plantonista SET checkout_em = NULL, checkout_automatico = false
+ WHERE perfil_id = '10000000-0000-4000-8000-000000000002';
 DO $$
 DECLARE a public.internacoes;
 BEGIN
