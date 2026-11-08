@@ -34,7 +34,17 @@ export function useNotificacoesTurno(unidadeId: string | undefined, habilitado: 
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['notificacoes-turno'] }),
   })
 
+  // "Fechar todas": a mesma RPC, uma por notificação (não há RPC em lote).
+  const marcarTodas = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const resultados = await Promise.all(ids.map((id) => supabase.rpc('marcar_notificacao_lida', { p_id: id })))
+      const erro = resultados.find((r) => r.error)?.error
+      if (erro) throw erro
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: ['notificacoes-turno'] }),
+  })
+
   const pendentes = notificacoes ?? []
 
-  return { notificacoes: pendentes, marcarLida }
+  return { notificacoes: pendentes, marcarLida, marcarTodas }
 }
