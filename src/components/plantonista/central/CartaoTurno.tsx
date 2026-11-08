@@ -108,6 +108,21 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
   const posPlantao = dentroDoPlantao && !emCurso
   const espera = d && agora ? esperaPorCor(d.fila, agora) : []
   const obsMin = faixa.data?.maiorObservacaoMin ?? null
+  // P3 da conferência das telas (07/11/2026): quem abriu observações pela
+  // porta (sem escala na observação) não lê "ninguém em observação"
+  const queAbri = useQuery({
+    queryKey: ['observacoes-que-abri', unidadeId],
+    enabled: !!unidadeId,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('observacoes_que_abri', { p_unidade: unidadeId! })
+      // a mesma chave e o mesmo formato da seção "Observações que você abriu"
+      if (error?.code === 'PGRST202') return []
+      if (error) throw error
+      return (data ?? []) as unknown[]
+    },
+  })
+  const abertasPorMim = queAbri.data?.length ?? 0
   const nivelObs = obsMin === null ? null : nivelDaObservacao(obsMin)
 
   const titulo = emCurso
@@ -187,7 +202,9 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
       {emCurso && faixa.data && obsMin === null && espera.length > 0 && espera.every((e) => e.aguardando === 0) && (
         <div className="flex items-center gap-[9px] border-b border-fio bg-alerta-conforme px-5 py-3 text-apoio text-conforme">
           <ShieldCheck className="size-4 shrink-0" aria-hidden />
-          Ninguém aguardando o médico na porta e ninguém em observação no seu acesso.
+          {abertasPorMim > 0
+            ? `Ninguém aguardando o médico na porta. ${abertasPorMim === 1 ? '1 observação que você abriu segue aberta' : `${abertasPorMim} observações que você abriu seguem abertas`}.`
+            : 'Ninguém aguardando o médico na porta e ninguém em observação no seu acesso.'}
         </div>
       )}
 
@@ -228,7 +245,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
               'inline-flex items-center gap-1.5 rounded-controle border px-3.5 py-[7px] text-apoio whitespace-nowrap',
               nivelObs === 'critico' ? 'border-critico bg-critico font-medium text-sobre-acao hover:text-sobre-acao' : nivelObs === 'atencao' ? 'border-atencao/40 bg-alerta-atencao font-medium text-atencao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
             )}
-            title={obsMin === null ? 'Ninguém em observação no seu acesso' : `Maior permanência em observação: ${formatarDuracao(obsMin)} (janela de ${JANELA_OBSERVACAO_MIN / 60} h)`}
+            title={obsMin === null ? (abertasPorMim > 0 ? 'Observações que você abriu pela porta' : 'Ninguém em observação no seu acesso') : `Maior permanência em observação: ${formatarDuracao(obsMin)} (janela de ${JANELA_OBSERVACAO_MIN / 60} h)`}
           >
             {obsMin === null ? 'Ver observação' : `Observação · maior ${formatarDuracao(obsMin)}`}
             <ArrowRight className="size-[15px]" aria-hidden />
