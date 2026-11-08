@@ -77,6 +77,29 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
 11. **C P2-C2.** A execução de APAC aceita competência e data no futuro.
 12. **Já previstos e confirmados:** o óbito não cancela a regulação em curso (D07); o prazo da regulação só gera aviso (B06); `rascunho`, `agendada` e `excluida` não têm função que grave (B06).
 
+### Decisões do RT e fila de correções (07/11/2026)
+- **Feitos:** D P1-1 (privacidade do encerrado, #484) e B P1-1 (conta na conversão da observação, #485), os dois já na produção.
+- **Correções do A01:** A em R1 a R6, M1 a M5 e S1 a S6 (`CORRECOES-A01-DIAGNOSTICO.md`).
+- **Perguntas de regra, todas com A:**
+  - **B P2-2:** quem abriu a observação também pede parecer e marca reavaliação, enquanto ela estiver aberta.
+  - **A P2-2:** prescrever exige o atendimento aberto pelo médico.
+  - **A P2-3:** com farmacêutico em check-in na unidade, a enfermagem não dispensa.
+- **Fila, na ordem aprovada:**
+  1. M (ataque e manutenção);
+  2. A P2-2 (prescrição só com atendimento aberto);
+  3. A P2-3 (dispensa pela enfermagem);
+  4. B P2-2 (parecer e reavaliação de quem abriu a observação);
+  5. S (regulação só "realizada" com a origem encerrada);
+  6. R (chegada regulada interna no destino);
+  7. D P2-2 (troca pedida de novo);
+  8. D P2-1 (check-out fecha a porta);
+  9. C P2-C1 (autor da remuneração);
+  10. C P2-C2 (APAC no futuro);
+  11. P3 do CID sugerido fora da idade;
+  12. P3 das telas (Central, Finalizados, avisos);
+  13. B P2-1 (sepse no adulto), parado até o RT indicar a fonte do critério.
+- **Fora da fila:** a gestante do A01 em observação é sobra de teste e entra na limpeza da homologação.
+
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
 
 ### O que ficou gravado na homologação
