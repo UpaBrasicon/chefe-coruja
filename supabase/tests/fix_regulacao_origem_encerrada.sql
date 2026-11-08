@@ -80,6 +80,11 @@ INSERT INTO public.setores (id, unidade_id, nome, tipo) VALUES
   (pg_temp.id('cm'), pg_temp.id('hosp'), 'Clínica Médica', 'internacao');
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   (pg_temp.id('med'), pg_temp.id('upa'), 'plantonista'), (pg_temp.id('medh'), pg_temp.id('hosp'), 'plantonista');
+-- leitos do hospital: desde a 20270308000001 (R1/R3), a chegada sem reserva escolhe um leito livre
+INSERT INTO public.leitos (setor_id, identificador) SELECT pg_temp.id('cm'), 'CM-0' || n FROM generate_series(1, 3) n;
+CREATE FUNCTION pg_temp.leito_cm(n int) RETURNS uuid LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT id FROM public.leitos WHERE setor_id = pg_temp.id('cm') AND identificador = 'CM-0' || n $$;
+GRANT EXECUTE ON FUNCTION pg_temp.leito_cm(int) TO authenticated;
 INSERT INTO public.escala_plantao (unidade_id, setor_id, perfil_id, data, turno, inicio, duracao_min)
 SELECT x.u, x.s, x.p, private.data_atual(), 'manha', now() - interval '1 hour', 360
   FROM (VALUES (pg_temp.id('upa'), pg_temp.id('porta'), pg_temp.id('med')), (pg_temp.id('upa'), pg_temp.id('obs'), pg_temp.id('med')),
@@ -130,7 +135,7 @@ SELECT pg_temp.como('med');
 SELECT pg_temp.falha(format('SELECT public.regulacao_marcar_saida(%L)', pg_temp.id('rA')),
   'O paciente segue em atendimento na origem', 'S3: saída manual recusada com o paciente em atendimento na origem');
 SELECT pg_temp.como('medh');
-SELECT public.regulacao_marcar_chegada(pg_temp.id('rA'), true);
+SELECT public.regulacao_marcar_chegada(pg_temp.id('rA'), true, NULL, pg_temp.leito_cm(1));
 RESET ROLE;
 SELECT pg_temp.ok((SELECT status = 'em_transito' AND chegada_em IS NOT NULL AND realizada_em IS NULL AND saida_em IS NULL
                      AND chegada_por = pg_temp.id('medh') FROM pg_temp.reg('rA')),
@@ -143,7 +148,7 @@ SELECT pg_temp.ok(EXISTS (SELECT 1 FROM private.nir_itens(pg_temp.id('upa')) n W
 SELECT pg_temp.ok(NOT EXISTS (SELECT 1 FROM private.nir_itens(pg_temp.id('hosp')) n WHERE n.tipo = 'reg_chegada' AND n.ref_id = pg_temp.id('rA')),
   'no NIR do destino não aparece "a caminho sem chegada"');
 SET LOCAL ROLE authenticated;
-SELECT pg_temp.falha(format('SELECT public.regulacao_marcar_chegada(%L, true)', pg_temp.id('rA')),
+SELECT pg_temp.falha(format('SELECT public.regulacao_marcar_chegada(%L, true, NULL, %L)', pg_temp.id('rA'), pg_temp.leito_cm(2)),
   'A chegada deste paciente já foi registrada', 'a chegada não é registrada duas vezes');
 SELECT pg_temp.como('med');
 SELECT pg_temp.ok((SELECT (x ->> 'chegou_origem_aberta')::boolean FROM jsonb_array_elements(public.regulacao_historico_paciente(pg_temp.id('pA'))) x
@@ -168,14 +173,14 @@ SELECT pg_temp.ok((SELECT status = 'em_transito' AND saida_em IS NOT NULL AND or
   'S3: a alta por transferência marca a saída');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('medh');
-SELECT public.regulacao_marcar_chegada(pg_temp.id('rB'), true);
+SELECT public.regulacao_marcar_chegada(pg_temp.id('rB'), true, NULL, pg_temp.leito_cm(2));
 RESET ROLE;
 SELECT pg_temp.ok((SELECT status = 'realizada' AND realizada_em = chegada_em FROM pg_temp.reg('rB')), 'S1: origem já encerrada: a chegada grava realizada');
 SET LOCAL ROLE authenticated;
 
 -- ── C. observação ───────────────────────────────────────────────────────────
 SELECT pg_temp.como('medh');
-SELECT public.regulacao_marcar_chegada(pg_temp.id('rC'), true);
+SELECT public.regulacao_marcar_chegada(pg_temp.id('rC'), true, NULL, pg_temp.leito_cm(3));
 SELECT pg_temp.como('med');
 SELECT public.finalizar_observacao(pg_temp.id('iC'), 'transferencia', 'I21.9', 'Transferido pela regulação',
   jsonb_build_object('destino', 'Hospital Destino do teste S', 'regulacao_id', pg_temp.id('rC')));

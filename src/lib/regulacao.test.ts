@@ -153,3 +153,19 @@ test('aceite pelo destino: selo do prazo e espera da chegada', async () => {
   assert.equal(esperandoChegada('em_transito', '2026-11-07T10:00:00Z'), false)
   assert.equal(STATUS.aguardando_destino, 'Aguardando o destino')
 })
+
+test('chegada regulada interna: quando interna, reserva válida e duplicata (R1 a R3)', async () => {
+  const { chegadaInterna, reservaValida, duplicataDaChegada } = await import('./regulacao.ts')
+  assert.equal(chegadaInterna({ tipo: 'leito', destino_tipo: 'rede' }), true)
+  assert.equal(chegadaInterna({ tipo: 'transferencia', destino_tipo: 'rede' }), true)
+  assert.equal(chegadaInterna({ tipo: 'transferencia', destino_tipo: 'externo' }), false)
+  assert.equal(chegadaInterna({ tipo: 'consulta', destino_tipo: 'rede' }), false)
+  const agora = Date.parse('2026-11-08T12:00:00Z')
+  assert.equal(reservaValida({ situacao: 'ativa', expira_em: '2026-11-08T20:00:00Z' }, agora), true)
+  assert.equal(reservaValida({ situacao: 'ativa', expira_em: '2026-11-08T10:00:00Z' }, agora), false)
+  assert.equal(reservaValida({ situacao: 'ocupada', expira_em: '2026-11-08T20:00:00Z' }, agora), false)
+  assert.equal(reservaValida(null, agora), false)
+  assert.deepEqual(duplicataDaChegada('CHEGADA_DUPLICATA_PROVAVEL:0d479e47-0ab9-4f08-ab9c-f15b77f69d81 Já existe cadastro com o mesmo nome e nascimento nesta unidade.'),
+    { id: '0d479e47-0ab9-4f08-ab9c-f15b77f69d81', texto: 'Já existe cadastro com o mesmo nome e nascimento nesta unidade.' })
+  assert.equal(duplicataDaChegada('Leito não encontrado nesta unidade.'), null)
+})

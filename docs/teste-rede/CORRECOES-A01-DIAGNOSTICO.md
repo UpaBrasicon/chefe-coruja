@@ -78,6 +78,42 @@ Os três achados abaixo vêm da execução do cenário A01 na homologação em 0
 - **Paciente não identificado** (`regulacao_solicitacoes.paciente_nao_identificado`): sem CNS nem CPF, a busca da R2 não acha nada. O cadastro nasce novo, sem tentativa de juntar com outro, e a unificação fica para a tela de cadastros duplicados. Como a porta trata esse paciente não foi conferido neste diagnóstico. O teste cobre esse caso.
 - **Ligação com o P2-2:** com a R1 em A, o destino interna mesmo que a origem ainda não tenha dado alta. Durante um tempo, o paciente fica com internação ativa nas duas unidades. A regra S1 trata disso.
 
+
+### Feito (08/11/2026, branch `correcoes/chegada-regulada-interna`)
+- **Migration `20270308000001_chegada_regulada_interna.sql`:**
+  - **Colunas novas:**
+    - em `regulacao_solicitacoes`: `destino_paciente_id`, `destino_episodio_id` e `destino_internacao_id`;
+    - `reservas_leito.regulacao_id`, `episodios.regulacao_id` e `alergias_paciente.fonte`.
+  - **Funções novas:** `private.regulacao_cadastro_destino` (R2) e `private.regulacao_internar_chegada` (R1/R3).
+  - **`regulacao_marcar_chegada`:** ganha `p_leito`, `p_paciente_destino` e `p_cadastro_novo`, todos com valor padrão, e passa a aceitar a enfermeira escalada no setor do leito (R5).
+  - **R4, trocas de texto:**
+    - o aceite marca a reserva com a regulação;
+    - `reserva_na_ocupacao` recusa outro paciente;
+    - `leitos_para_ocupar` esconde o leito reservado dos outros.
+  - **Outras trocas:**
+    - `regulacao_leitos_destino` passa a valer também para o NIR do destino;
+    - o gatilho da conta do episódio pula o episódio da chegada, então não há conta de porta.
+- **Tela (`DestinoRegulacao`):** "Paciente chegou", numa regulação de leito ou transferência da rede:
+  - mostra o leito reservado ou, sem reserva, a lista de leitos livres;
+  - na provável duplicata, pergunta "É a mesma pessoa?", com as opções de usar o cadastro existente ou criar um novo.
+  - As funções novas de `src/lib/regulacao.ts` têm teste.
+- **Teste `supabase/tests/fix_chegada_regulada_interna.sql`:** falhou antes da migration e passou depois na homologação. Cobre:
+  - R4: o leito reservado não aparece para outro paciente, e o gatilho recusa ocupá-lo;
+  - R5: o técnico é recusado, e a enfermeira do setor confirma;
+  - R2: o cadastro é criado com a identificação e a alergia da origem, ou é usado o cadastro com o mesmo Cartão SUS;
+  - R2: a provável duplicata para a chegada e pede a escolha;
+  - R1/R3: o paciente é internado no leito, com a origem "outra_unidade" e só a conta de internação;
+  - o leito ocupado é recusado;
+  - a consulta não interna.
+- **Testes ajustados:** `fix_regulacao_origem_encerrada` (a chegada sem reserva passa a pedir o leito) e `fase4_aceite_destino` (depois da chegada, o leito reservado fica ocupado pela internação).
+- **Reconferência do passo 26** (`scripts/e2e/100_reconferencia_chegada_regulada.sql`):
+  - Rosa saiu da UPA F5 por regulação de leito clínico, com o leito reservado no aceite;
+  - a alta por transferência foi dada na origem;
+  - o médico do hospital marcou a chegada, e ela foi internada no leito reservado sem passar pela porta;
+  - a regulação ficou "realizada";
+  - só a conta de internação foi aberta.
+- **Para o RT:** o enfermeiro ainda não tem tela de regulação. A permissão R5 já vale no banco, mas o botão "Paciente chegou" só aparece para médico, gestor e NIR do destino.
+
 ---
 
 ## P2-1 — Ataque e manutenção do mesmo medicamento não convivem na porta

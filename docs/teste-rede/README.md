@@ -124,6 +124,8 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
       - cancelou o próprio pedido e encerrou com alta.
   - **Item 4:** na produção e mesclado (#489), migration `20270307000005`.
   - **Item 5 (A01 P2-2, S1 a S6), branch `correcoes/regulacao-origem-encerrada`:** migration `20270307000006`. O detalhe está em `CORRECOES-A01-DIAGNOSTICO.md`, na seção "Feito" do P2-2.
+  - **Item 5:** na produção e mesclado (#490), migration `20270307000006`.
+  - **Item 6 (A01 P1-1, R1 a R6), branch `correcoes/chegada-regulada-interna`:** migration `20270308000001`. O detalhe está em `CORRECOES-A01-DIAGNOSTICO.md`, na seção "Feito" do P1-1. Fica pendente a tela do enfermeiro para confirmar a chegada.
 
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
 
