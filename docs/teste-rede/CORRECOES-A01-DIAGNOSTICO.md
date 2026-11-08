@@ -2,6 +2,9 @@
 
 Os três achados abaixo vêm da execução do cenário A01 na homologação em 06/11/2026, na frente "Teste ponta a ponta da rede" (`EXECUCAO-A01.md`, rodadas 2 e 3). São três correções de produto: o **P1-1** (hospital sem porta não recebe o paciente regulado), o **P2-1** (ataque e manutenção do mesmo medicamento não convivem na prescrição da porta) e o **P2-2** (a regulação chega a "realizada" com o paciente ainda internado na origem). Na rodada 3, o P1-1 foi contornado pelo ambiente: o hospital de teste ganhou uma porta. O defeito de produto continua. Nada foi corrigido no produto até aqui. Os ids de decisão são próprios de cada achado: R para o P1-1, M para o P2-1 e S para o P2-2. As funções foram conferidas na homologação (`kswurfyxxvfydpjfrivy`), só com leitura, em 06/11/2026.
 
+
+**Decisão do RT (07/11/2026): A em todas (R1 a R6, M1 a M5, S1 a S6).** A ordem de execução é P2-1 (M), depois P2-2 (S), depois P1-1 (R), cada uma em branch e PR próprios.
+
 ---
 
 ## P1-1 — Unidade sem porta não recebe o paciente regulado
@@ -132,6 +135,26 @@ Este diagnóstico trata só da estrutura do item. Nenhum valor de dose é propos
 - **Dose dobrada sem querer:** um "Agora" ao lado de uma manutenção do mesmo medicamento é intencional no ataque, mas pode ser engano em outro caso. O aviso da M4 e a M3 (duas manutenções continuam recusadas) limitam esse risco.
 - **"Agora" no leito escrito de outro jeito** ("agora", "já", "imediato"): só "Agora" exato fica fora da trava. Os outros textos continuam travando. É o lado seguro.
 - **Histórico antigo:** os itens alterados pelo contorno (como na rodada 2) ficam como estão. Nada é reescrito.
+
+
+### Feito (07/11/2026, branch `correcoes/a01-ataque-manutencao`)
+- **Teste:** `supabase/tests/fix_ataque_manutencao.sql`, com cenário próprio. Antes da migration, falhou no M1 ("Este medicamento já está prescrito por esta via"). Depois dela, passou inteiro na homologação.
+  - **M1:** o "Agora" e o "Contínuo" ficam ativos juntos.
+  - **M3:** o "Contínuo" mais o "8/8h" é recusado, mesmo com a via em minúsculas.
+  - **M2:** o segundo "Agora" é recusado antes da dose feita, e o "não feito" não conta como dose feita. Depois da dose feita, o novo "Agora" entra.
+  - **Alteração:** a manutenção pode ser alterada com o ataque ao lado.
+  - **Alta vigilância:** cada item pede a sua própria justificativa quando a farmácia ainda não liberou.
+  - **M5:** no leito, "imediato" continua travando.
+  - O teste `depois_frequencia_ps.sql` seguiu verde com a migration.
+- **Migration:** `20270307000002_ataque_manutencao.sql`, só uma troca de texto reaplicável em `public.prescrever`. O rollback está no cabeçalho. Na homologação ela foi aplicada com a versão registrada; md5 de `prescrever`: `e7dbd900578bdd9a5b2f25bdbf3e13ac`.
+- **Tela (M4):** em `PrescricaoEstruturada.tsx` (porta e leito), aparece o aviso "Já prescrito: … EV, Agora" quando o medicamento e a via escolhidos já têm item ativo. A função `src/lib/jaPrescrito.ts` tem teste.
+- **Reconferência do A01** (`scripts/e2e/95_reconferencia_ataque_a01.sql`, Rosa Teste Arquivo, UPA F5), sem o contorno:
+  - ataque e manutenção ok, como dois itens, sem nenhum suspenso por alteração;
+  - o segundo "Agora" foi recusado;
+  - a farmácia validou e dispensou cada item;
+  - a enfermagem checou os dois: 2 administrações em 2 itens;
+  - SOAP e alta ok.
+  - Na primeira execução, a classificação falhou por erro do script (fluxograma sem nome válido), e mesmo assim a prescrição entrou com a paciente na triagem. Isso reproduz o A P2-2, que é o próximo item da fila.
 
 ---
 

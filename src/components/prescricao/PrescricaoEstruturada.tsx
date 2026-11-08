@@ -40,6 +40,7 @@ import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { useTravas } from '@/components/paciente/useTravas'
 import { frase, interacoesDoErro, semPontoFinal, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
 import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
+import { jaPrescritos, textoJaPrescrito } from '@/lib/jaPrescrito'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
@@ -446,6 +447,19 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
       return data as unknown as { situacao: string; sinalizada_em: string; retorno: { texto: string; por: string | null; em: string } | null } | null
     },
   })
+  // M4 (A01 P2-1): o item ativo do mesmo medicamento e via aparece antes de
+  // gravar; quem decide se o novo entra é o servidor (Agora convive com a
+  // manutenção; duas manutenções, não)
+  const vigentes = useQuery({
+    queryKey: ['prescricao-vigente', pacienteId],
+    enabled: !!med,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('prescricao_vigente', { p_paciente: pacienteId })
+      if (error) throw error
+      return (data ?? []) as unknown as ItemVigente[]
+    },
+  })
+  const avisoJaPrescrito = textoJaPrescrito(jaPrescritos(vigentes.data ?? [], med?.id, f.via))
   // sem data de nascimento, o campo da idade estimada aparece antes do medicamento
   const idade = useQuery({
     queryKey: ['idade-paciente', pacienteId],
@@ -513,7 +527,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
       if (lista) { setInteracao({ item, lista }); return avisar(null) }
       return avisar(error.message)
     }
-    avisar(null); limpar(); setInteracao(null); setJustInteracao(''); aoMudar()
+    avisar(null); limpar(); setInteracao(null); setJustInteracao('')
+    void qc.invalidateQueries({ queryKey: ['prescricao-vigente', pacienteId] })
+    aoMudar()
   }
   async function registrarIdade() {
     const n = Number(anos.replace(',', '.'))
@@ -682,6 +698,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 <Input id="item-freq" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })} placeholder="ex.: 8/8h" />
               </div>
             </div>
+            )}
+            {avisoJaPrescrito && (
+              <p role="status" className="flex items-center gap-1.5 text-atencao"><AlertTriangle className="size-3.5 shrink-0" /> {avisoJaPrescrito}</p>
             )}
             {!porta && (
               <label className="flex items-center gap-2">
