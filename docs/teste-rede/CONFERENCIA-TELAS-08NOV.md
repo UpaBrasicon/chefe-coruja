@@ -24,8 +24,8 @@ Esta conferência foi feita pelo Chrome do RT, em homolog.chefecoruja.com.br, co
    - Quem está com o app aberto pode ficar com a tela velha.
    - **Sugestão:** conferir o aviso de versão nova do service worker, com o botão "Atualizar".
 3. **P3: avisos empilhados (achado 4 da conferência de 07/11).**
-   - **Origem localizada:** são os avisos flutuantes (`AvisosFlutuantesContext`). Ao entrar, cada aviso não lido vira um balão, e o tempo de cada um cresce com a posição na fila. Com dezenas de avisos, eles se empilham no topo até sumirem sozinhos.
-   - **Sugestão:** mostrar até 3 e um balão "e mais N avisos", com link para a página de avisos.
+   - ~~Origem localizada: os avisos flutuantes (`AvisosFlutuantesContext`).~~ **Corrigido em 08/11/2026:** a pilha flutuante da entrada já mostra no máximo 3 avisos. A origem real é a faixa de notificações do turno (`NotificacoesTurnoBanner`), que listava todas as notificações não lidas do dia no topo da casca. Ver `fila/ITEM-14-faixa-notificacoes.md`.
+   - **Sugestão:** mostrar até 3, com "e mais N" e um botão "Fechar todas".
 
 ## O que ficou gravado na homologação
 - "Tela Chegada Teste":

@@ -2,6 +2,7 @@ import { Bell, X } from 'lucide-react'
 
 import { useNotificacoesTurno } from '@/hooks/useNotificacoesTurno'
 import { Button } from '@/components/ui/button'
+import { faixaDeNotificacoes, rotuloDasOutras } from '@/lib/faixaNotificacoes'
 
 export function NotificacoesTurnoBanner({
   unidadeId,
@@ -10,13 +11,15 @@ export function NotificacoesTurnoBanner({
   unidadeId?: string
   habilitado: boolean
 }) {
-  const { notificacoes, marcarLida } = useNotificacoesTurno(unidadeId, habilitado)
+  const { notificacoes, marcarLida, marcarTodas } = useNotificacoesTurno(unidadeId, habilitado)
 
   if (!habilitado || notificacoes.length === 0) return null
 
+  const { visiveis, outras } = faixaDeNotificacoes(notificacoes)
+
   return (
     <div className="sticky top-0 z-40 flex flex-col gap-2 border-b border-atencao/30 bg-alerta-atencao px-4 py-3 backdrop-blur">
-      {notificacoes.map((n) => (
+      {visiveis.map((n) => (
         <div key={n.id} className="mx-auto flex w-full max-w-6xl items-start gap-3">
           <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-capsula bg-observacao text-sobre-acao">
             <Bell className="size-4" />
@@ -27,6 +30,19 @@ export function NotificacoesTurnoBanner({
           </Button>
         </div>
       ))}
+      {notificacoes.length > 1 && (
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 pl-10">
+          {outras > 0 && <p className="flex-1 text-apoio text-atencao">{rotuloDasOutras(outras)}</p>}
+          <Button
+            size="xs"
+            variant="ghost"
+            disabled={marcarTodas.isPending}
+            onClick={() => marcarTodas.mutate(notificacoes.map((n) => n.id))}
+          >
+            <X /> Fechar todas
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
