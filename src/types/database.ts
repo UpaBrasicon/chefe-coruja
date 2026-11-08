@@ -11479,6 +11479,26 @@ export type Database = {
           status: string
         }[]
       }
+      enfermagem_chegadas: {
+        Args: { p_unidade: string }
+        Returns: {
+          alergias: string[]
+          data_nascimento: string
+          leito: string
+          leito_id: string
+          nome: string
+          numero: number
+          origem: string
+          pode_confirmar: boolean
+          regulacao_id: string
+          reserva_expira_em: string
+          saida_em: string
+          setor_id: string
+          setor_nome: string
+          sexo: string
+          status: string
+        }[]
+      }
       enfermagem_pacientes_do_setor: {
         Args: { p_setor: string }
         Returns: {
