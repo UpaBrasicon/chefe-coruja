@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import { AvisoVersaoNova } from '@/components/AvisoVersaoNova'
 import { iniciarTema } from '@/lib/tema'
 import { deveRecarregar } from '@/lib/recargaDeploy'
 
@@ -28,6 +29,7 @@ iniciarSentry(higienizar, versaoApp())
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
+    <AvisoVersaoNova />
   </StrictMode>
 )
 
