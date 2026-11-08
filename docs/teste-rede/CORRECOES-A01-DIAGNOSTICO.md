@@ -235,6 +235,38 @@ Este diagnóstico trata só da estrutura do item. Nenhum valor de dose é propos
 - **Indicadores:** `realizada_em` = hora da chegada mantém o "tempo até a chegada" igual ao de hoje. O SLA não muda.
 - **Dado antigo na produção:** antes de publicar, uma consulta só de leitura, feita pelo responsável, conta as regulações `realizada` com a origem aberta. Nada é corrigido por migration (S6).
 
+
+### Feito (07/11/2026, branch `correcoes/regulacao-origem-encerrada`)
+- **Migration `20270307000006_regulacao_origem_encerrada.sql`:**
+  - **Colunas novas:** `chegada_em` e `origem_encerrada_em`.
+  - **Funções novas:** `private.regulacao_leva_paciente` (só os tipos leito e transferência), `private.regulacao_origem_encerrada`, `private.regulacao_concluir_origem` e `private.regulacao_origem_fechou`.
+  - **Gatilhos:** `AFTER UPDATE ... WHEN` em `episodios`, quando o encerramento acontece, e em `internacoes`, na transferência externa. Eles não usam `UPDATE OF`, pela lição do B P1-1.
+  - **Trocas de texto:**
+    - `regulacao_marcar_saida`: S3.
+    - `regulacao_marcar_chegada`: S1 e S2, e a chegada só pode ser registrada uma vez.
+    - `private.nir_itens`: S5, e o "a caminho" do destino deixa de contar quem já chegou.
+    - `private.regulacao_json` e `regulacao_historico_paciente`: a marca "chegou, origem sem alta".
+  - Nenhum status antigo muda (S6).
+- **Telas:**
+  - **Altas por transferência (S4):** a porta (`AbaDesfecho`), a observação (`PainelDesfecho`) e a internação (`BlocoAlta`) oferecem a regulação em curso (`RegulacaoDaAlta`, `src/lib/regulacaoAlta.ts`). Escolhida a regulação, o destino vem dela e a alta grava `regulacao_id`.
+  - **Marca "chegou ao destino · origem sem alta":** aparece no histórico de regulação e no detalhe do destino.
+  - **"Paciente chegou":** some depois de registrada a chegada.
+- **Teste `supabase/tests/fix_regulacao_origem_encerrada.sql`:** falhou antes da migration e passou depois na homologação. Cobre:
+  - porta com chegada antes da alta;
+  - porta com alta antes da chegada;
+  - observação;
+  - regulação de outro paciente recusada;
+  - consulta sem mudança.
+- **Testes que seguem verdes com a migration:** `fix_porta_encerra_observacao`, `fix_observacao_quem_abriu_parecer` e `fix_privacidade_encerrado`.
+- **Reconferência (`scripts/e2e/99_reconferencia_regulacao_origem.sql`), todos os passos ok:**
+  - **R1 (ordem da rodada 2):**
+    - a saída marcada pelo NIR foi recusada;
+    - a chegada ficou "em trânsito" com a marca;
+    - o item apareceu no NIR da origem, conferido por `nir_pendencias`;
+    - a alta por transferência concluiu, com realizada na hora da chegada.
+  - **R2 (ordem certa):** a alta marcou a saída e a chegada gravou realizada.
+- **S6 na homologação** (`scripts/regulacao/conferir_realizada_origem_aberta.sql`): a única regulação listada é a nº 91, como previsto.
+
 ---
 
 ## Relação entre os três e ordem sugerida

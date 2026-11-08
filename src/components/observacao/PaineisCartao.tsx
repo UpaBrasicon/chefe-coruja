@@ -21,6 +21,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { DESFECHOS, RELATO_DESFECHO, hhmm, rpc, type Acao, type Desfecho, type LinhaObservacao } from './modelo'
 import { Chip } from '@/components/monitor/Pagina'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
+import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { detalhesDaTransferencia, type RegulacaoDoHistorico } from '@/lib/regulacaoAlta'
 
 export function Painel({ titulo, children, erro }: { titulo?: React.ReactNode; children: React.ReactNode; erro?: string | null }) {
   return (
@@ -79,6 +81,8 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
   const [desfecho, setDesfecho] = React.useState<Desfecho | ''>('')
   const [cid, setCid] = React.useState('')
   const [destino, setDestino] = React.useState('')
+  // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
+  const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
   const [horaObito, setHoraObito] = React.useState('')
   const [numeroDo, setNumeroDo] = React.useState('')
   const [relato, setRelato] = React.useState('')
@@ -109,7 +113,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
   function confirmar() {
     if (!desfecho) return setFalta('Escolha o desfecho.')
     if (ehAlta && desfecho !== 'evasao' && cid.trim().length < 3) return setFalta('Informe o CID de alta.')
-    if (desfecho === 'transferencia' && destino.trim().length < 3) return setFalta('Informe o serviço de destino.')
+    if (desfecho === 'transferencia' && !regulacao && destino.trim().length < 3) return setFalta('Informe o serviço de destino.')
     if (desfecho === 'evasao' && !motivoEvasao) return setFalta('Escolha o motivo da evasão.')
     if (desfecho === 'obito' && !horaObito) return setFalta('Informe a hora do óbito.')
     if (desfecho === 'obito' && numeroDo.trim().length < 3) return setFalta('Informe o número da Declaração de Óbito.')
@@ -117,7 +121,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
     if (pedeRelato && relato.trim().length < 15) return setFalta(`${pedeRelato}: escreva ao menos 15 caracteres.`)
     setFalta(null)
     const detalhes: Record<string, string> = {}
-    if (desfecho === 'transferencia') detalhes.destino = destino.trim()
+    if (desfecho === 'transferencia') Object.assign(detalhes, detalhesDaTransferencia(regulacao ?? null, destino))
     if (desfecho === 'evasao' && motivoEvasao) detalhes.motivo_evasao = motivoEvasao
     if (desfecho === 'obito') { detalhes.hora_obito = horaDoDia(horaObito, 'passado'); detalhes.numero_do = numeroDo.trim() }
     if (desfecho === 'internacao') { detalhes.setor_id = setor; if (leito) detalhes.leito_id = leito }
@@ -159,6 +163,9 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
         </div>
       )}
       {desfecho === 'transferencia' && (
+        <RegulacaoDaAlta pacienteId={linha.paciente_id} valor={regulacao} aoEscolher={setRegulacao} />
+      )}
+      {desfecho === 'transferencia' && !regulacao && (
         <div className="flex max-w-[420px] flex-col gap-1.5">
           <Label htmlFor={`dest-${linha.internacao_id}`}>Serviço de destino</Label>
           <Input id={`dest-${linha.internacao_id}`} value={destino} onChange={(e) => setDestino(e.target.value)} />

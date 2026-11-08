@@ -122,6 +122,8 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
       - antes do atendimento da observação, recebeu a regra de sempre;
       - depois de o médico da observação registrar o atendimento, marcou a reavaliação (autor = login);
       - cancelou o próprio pedido e encerrou com alta.
+  - **Item 4:** na produção e mesclado (#489), migration `20270307000005`.
+  - **Item 5 (A01 P2-2, S1 a S6), branch `correcoes/regulacao-origem-encerrada`:** migration `20270307000006`. O detalhe está em `CORRECOES-A01-DIAGNOSTICO.md`, na seção "Feito" do P2-2.
 
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
 

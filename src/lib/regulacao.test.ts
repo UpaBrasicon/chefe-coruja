@@ -150,5 +150,6 @@ test('aceite pelo destino: selo do prazo e espera da chegada', async () => {
   assert.equal(alertasSla({ ...base, destino: { desde: '2026-10-11T10:00:00Z', prazo_h: 24, vence_em: '2026-10-12T10:00:00Z', atrasado: false } }, agora)[0].tom, 'neutro')
   assert.equal(esperandoChegada('em_transito'), true)
   assert.equal(esperandoChegada('aguardando_destino'), false)
+  assert.equal(esperandoChegada('em_transito', '2026-11-07T10:00:00Z'), false)
   assert.equal(STATUS.aguardando_destino, 'Aguardando o destino')
 })

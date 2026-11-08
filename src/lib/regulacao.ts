@@ -395,6 +395,7 @@ export const MEIOS_CONFIRMACAO: Record<MeioConfirmacao, string> = {
   telefone: 'Telefone', sistema_externo: 'Sistema externo', presencial: 'Presencial', outro: 'Outro',
 }
 /** O pedido está com o destino: esperando aceite ou esperando a chegada. */
-export function esperandoChegada(status: StatusRegulacao): boolean {
-  return status === 'autorizada' || status === 'agendada' || status === 'em_transito'
+export function esperandoChegada(status: StatusRegulacao, chegadaEm?: string | null): boolean {
+  // S2 (A01 P2-2): em trânsito com a chegada já registrada espera a origem, não a chegada
+  return !chegadaEm && (status === 'autorizada' || status === 'agendada' || status === 'em_transito')
 }

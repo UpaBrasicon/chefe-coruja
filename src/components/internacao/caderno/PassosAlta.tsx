@@ -143,7 +143,7 @@ export function PassosAlta({ i, pacienteId, pacienteNome, ativa, altaRecente, eh
           </p>
         )}
         {ativa && impeditivos.length === 0 && !ehGestor && <p className="text-apoio text-tinta-sussurro">Sem impeditivos: a alta pode ser dada.</p>}
-        {ativa && !ehGestor && <BlocoAlta i={i} impeditivos={impeditivos} acao={acao} cidSugerido={cidSugerido} />}
+        {ativa && !ehGestor && <BlocoAlta i={i} pacienteId={pacienteId} impeditivos={impeditivos} acao={acao} cidSugerido={cidSugerido} />}
         {!ativa && altaRecente && (i.alta_por === eu || ehGestor) && <CancelarAlta i={i} acao={acao} />}
         {!ativa && !altaRecente && !ehGestor && <p className="text-apoio text-tinta-sussurro">Alta há mais de 24 horas: o cancelamento é com o gestor.</p>}
       </Passo>

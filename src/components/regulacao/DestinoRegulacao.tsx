@@ -39,6 +39,8 @@ export type PedidoDestino = {
   reserva?: { leito: string; setor: string; situacao: string; expira_em: string } | null
   saida_em?: string | null; saida_por?: string | null; realizada_em?: string | null; falta_em?: string | null
   chegada_observacao?: string | null; chegada_por?: string | null
+  /** S2: o destino registrou a chegada e a origem ainda não deu alta por transferência */
+  chegada_em?: string | null; chegou_origem_aberta?: boolean
   ultima_recusa?: { em: string; motivo: MotivoRecusaDestino | null; texto: string | null; registro: string | null; por: string | null
     destino: string | null; externo_quem: string | null; externo_meio: MeioConfirmacao | null } | null
   ultimo_aceite?: { em: string; texto: string | null; registro: string | null; por: string | null
@@ -78,10 +80,11 @@ export function BlocoDestino({ s }: { s: PedidoDestino }) {
           <span className="block text-tinta-apoio">O pedido voltou à central para escolher outro destino.</span>
         </div>
       )}
-      {(s.saida_em || s.realizada_em || s.falta_em) && (
+      {(s.saida_em || s.realizada_em || s.falta_em || s.chegou_origem_aberta) && (
         <p className="text-tinta-apoio">
           {s.saida_em && <>Saiu da origem em {fmtDataHora(s.saida_em)} ({s.saida_por ?? '—'}). </>}
           {s.status === 'realizada' && s.realizada_em && <>Chegou ao destino em {fmtDataHora(s.realizada_em)} ({s.chegada_por ?? '—'}). </>}
+          {s.chegou_origem_aberta && s.chegada_em && <>Chegou ao destino em {fmtDataHora(s.chegada_em)} ({s.chegada_por ?? '—'}); a origem ainda não deu alta por transferência. </>}
           {s.status === 'falta' && s.falta_em && <>Não chegou — registrado em {fmtDataHora(s.falta_em)} ({s.chegada_por ?? '—'}). </>}
           {s.chegada_observacao}
         </p>
@@ -119,7 +122,7 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
     },
     onSuccess: () => { setAcao(null); setTexto(''); setMotivo(''); setLeito(''); aoFim() },
   })
-  if (!(s.sou_destino || nir) || !(aguardando || (s.destino_tipo === 'rede' && esperandoChegada(s.status)))) return null
+  if (!(s.sou_destino || nir) || !(aguardando || (s.destino_tipo === 'rede' && esperandoChegada(s.status, s.chegada_em)))) return null
   const exigeLeito = s.tipo === 'leito'
   return (
     <div className="flex flex-col gap-2 rounded-controle border border-acao/30 p-3">
@@ -272,7 +275,7 @@ export function DestinoExterno({ s, aoFim }: { s: PedidoDestino; aoFim: () => vo
       </div>
     )
   }
-  if (!esperandoChegada(s.status)) return null
+  if (!esperandoChegada(s.status, s.chegada_em)) return null
   return (
     <div className="flex flex-wrap items-end gap-2 rounded-controle border border-acao/30 p-3">
       <span className="w-full font-medium text-tinta">Chegada ao serviço de fora da rede</span>

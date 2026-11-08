@@ -15,6 +15,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Secao } from './caixas'
 import { type Acao, diaHora, type Internacao, type Pacote, ROTULO_ALTA, rpc, TIPO_ALTA } from './comum'
 import { Estado } from '@/components/porta/Estado'
+import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { detalhesDaTransferencia, type RegulacaoDoHistorico } from '@/lib/regulacaoAlta'
 
 // Frases-modelo do protótipo (ESTADO.md, pacote de alta). Nenhuma vem marcada:
 // quem marca é o médico, conforme o caso.
@@ -39,8 +41,10 @@ const impedeSaida = (tipo: string, x: { tipo: string }) =>
 // o campo datetime-local mostra e devolve a hora de Brasília, não a do aparelho
 const doCampo = (v: string) => new Date(`${v}:00-03:00`)
 
-export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
+export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
   i: Internacao; impeditivos: { tipo: string; descricao: string }[]; acao: Acao
+  /** paciente da internação: a regulação da transferência externa (S4) */
+  pacienteId?: string
   /** o diagnóstico primário vigente: vem preenchido, o médico confirma ou troca */
   cidSugerido?: string | null
 }) {
@@ -51,6 +55,8 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
   const [justificativa, setJustificativa] = React.useState('')
   const [obs, setObs] = React.useState('')
   const [destino, setDestino] = React.useState('')
+  // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
+  const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
   const [numeroDo, setNumeroDo] = React.useState('')
   const [orientacaoUbs, setOrientacaoUbs] = React.useState('') // 5A, tarefa 6 (I3): vai à UBS do paciente
   const [confirmar, setConfirmar] = React.useState(false)
@@ -79,7 +85,7 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
     )
   }
   const detalhes: Record<string, string> = {}
-  if (tipo === 'transferencia_externa') detalhes.destino = destino
+  if (tipo === 'transferencia_externa') Object.assign(detalhes, detalhesDaTransferencia(regulacao ?? null, destino))
   if (tipo === 'obito') detalhes.numero_do = numeroDo
   if (tipo !== 'obito' && orientacaoUbs.trim()) detalhes.orientacao_ubs = orientacaoUbs.trim()
   return (
@@ -100,7 +106,10 @@ export function BlocoAlta({ i, impeditivos, acao, cidSugerido }: {
           <Label htmlFor="alta-quando">Data e hora</Label>
           <Input id="alta-quando" type="datetime-local" value={quando} onChange={(e) => setQuando(e.target.value)} />
         </div>
-        {tipo === 'transferencia_externa' && (
+        {tipo === 'transferencia_externa' && pacienteId && (
+          <div className="sm:col-span-2"><RegulacaoDaAlta pacienteId={pacienteId} valor={regulacao} aoEscolher={setRegulacao} /></div>
+        )}
+        {tipo === 'transferencia_externa' && !regulacao && (
           <div className="flex flex-col gap-1">
             <Label htmlFor="alta-destino">Destino *</Label>
             <Input id="alta-destino" value={destino} onChange={(e) => setDestino(e.target.value)} />
