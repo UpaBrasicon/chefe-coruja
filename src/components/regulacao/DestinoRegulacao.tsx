@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { fmtDataHora } from '@/lib/datas'
 import {
-  MEIOS_CONFIRMACAO, MOTIVOS_RECUSA_DESTINO, PRIORIDADES, STATUS, esperandoChegada, resumoPedido,
+  MEIOS_CONFIRMACAO, MOTIVOS_RECUSA_DESTINO, PRIORIDADES, STATUS, chegadaInterna, duplicataDaChegada, esperandoChegada, reservaValida, resumoPedido,
   type MeioConfirmacao, type MotivoRecusaDestino, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
@@ -97,15 +97,21 @@ type LeitoLivre = { id: string; leito: string; setor: string; tipo_regulacao: st
 
 /** O destino da rede responde (aceita ou recusa) e, depois, marca a chegada. */
 export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFim: () => void; nir?: boolean }) {
-  const [acao, setAcao] = React.useState<'aceitar' | 'recusar' | 'nao_chegou' | null>(null)
+  const [acao, setAcao] = React.useState<'aceitar' | 'recusar' | 'chegou' | 'nao_chegou' | null>(null)
   const [leito, setLeito] = React.useState('')
+  // R1 a R3 (A01 P1-1): a chegada da rede interna no leito reservado ou escolhido
+  const interna = chegadaInterna(s)
+  const [agoraAbertura] = React.useState(() => Date.now())
+  const reservada = reservaValida(s.reserva, agoraAbertura)
+  // a escolha do cadastro na provável duplicata vai junto do clique (ref: o estado só muda no próximo render)
+  const cadastro = React.useRef<{ paciente?: string; novo?: boolean }>({})
   const [texto, setTexto] = React.useState('')
   const [motivo, setMotivo] = React.useState<MotivoRecusaDestino | ''>('')
   // o NIR do destino marca a chegada, mas não aceita nem recusa (Fase 4, tarefa 11)
   const aguardando = s.status === 'aguardando_destino' && s.destino_tipo === 'rede' && !!s.sou_destino
   const leitos = useQuery({
     queryKey: ['regulacao-leitos-destino', s.id],
-    enabled: aguardando && acao === 'aceitar',
+    enabled: (aguardando && acao === 'aceitar') || (acao === 'chegou' && interna && !reservada),
     queryFn: async () => {
       const { data, error } = await supabase.rpc('regulacao_leitos_destino', { p_id: s.id })
       if (error) throw error
@@ -117,11 +123,18 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
       const r = qual === 'aceitar'
         ? await supabase.rpc('regulacao_destino_aceitar', { p_id: s.id, p_leito: leito || null, p_observacao: texto.trim() || null })
         : qual === 'recusar' ? await supabase.rpc('regulacao_destino_recusar', { p_id: s.id, p_motivo: motivo, p_texto: texto.trim() })
-        : await supabase.rpc('regulacao_marcar_chegada', { p_id: s.id, p_chegou: qual === 'chegou', p_observacao: texto.trim() || null })
+        : await supabase.rpc('regulacao_marcar_chegada', {
+            p_id: s.id, p_chegou: qual === 'chegou', p_observacao: texto.trim() || null,
+            ...(qual === 'chegou' && interna ? {
+              p_leito: reservada ? undefined : leito || undefined,
+              p_paciente_destino: cadastro.current.paciente, p_cadastro_novo: cadastro.current.novo ?? false,
+            } : {}),
+          })
       if (r.error) throw r.error
     },
-    onSuccess: () => { setAcao(null); setTexto(''); setMotivo(''); setLeito(''); aoFim() },
+    onSuccess: () => { setAcao(null); setTexto(''); setMotivo(''); setLeito(''); cadastro.current = {}; aoFim() },
   })
+  const duplicata = duplicataDaChegada(fazer.error ? (fazer.error as Error).message : null)
   if (!(s.sou_destino || nir) || !(aguardando || (s.destino_tipo === 'rede' && esperandoChegada(s.status, s.chegada_em)))) return null
   const exigeLeito = s.tipo === 'leito'
   return (
@@ -135,7 +148,8 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
           </>
         ) : (
           <>
-            <Button size="xs" onClick={() => fazer.mutate('chegou')} disabled={fazer.isPending}>Paciente chegou</Button>
+            <Button size="xs" variant={interna && acao === 'chegou' ? 'default' : undefined}
+              onClick={() => (interna ? setAcao(acao === 'chegou' ? null : 'chegou') : fazer.mutate('chegou'))} disabled={fazer.isPending}>Paciente chegou</Button>
             <Button size="xs" variant="outline" onClick={() => setAcao(acao === 'nao_chegou' ? null : 'nao_chegou')}>Não chegou</Button>
           </>
         )}
@@ -174,6 +188,35 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
           <div><Button size="sm" variant="destructive" onClick={() => fazer.mutate('recusar')} disabled={fazer.isPending || !motivo || texto.trim().length < 10}>Confirmar recusa</Button></div>
         </div>
       )}
+      {acao === 'chegou' && interna && (
+        <div className="flex flex-col gap-2">
+          {reservada ? (
+            <p className="text-apoio text-tinta-apoio">O paciente é internado no leito reservado: <span className="font-medium text-tinta">{s.reserva!.leito} · {s.reserva!.setor}</span>.</p>
+          ) : (
+            <div className="flex flex-col gap-1 sm:max-w-md">
+              <Label htmlFor={`ch-leito-${s.id}`} className="text-rotulo">Sem leito reservado: escolha o leito livre onde o paciente fica</Label>
+              {leitos.isLoading ? <Spinner /> : (
+                <CampoSelecao id={`ch-leito-${s.id}`} tamanho="compacto" value={leito} onChange={(e) => setLeito(e.target.value)}>
+                  <option value="">{(leitos.data ?? []).length === 0 ? 'Nenhum leito livre' : 'Escolha…'}</option>
+                  {(leitos.data ?? []).map((l) => <option key={l.id} value={l.id}>{l.leito} · {l.setor}{l.do_tipo ? ' (do tipo pedido)' : ''}</option>)}
+                </CampoSelecao>
+              )}
+            </div>
+          )}
+          <span className="text-rotulo text-tinta-sussurro">A chegada cria o cadastro (ou usa o desta unidade, pelo Cartão SUS ou CPF), com as alergias informadas pela origem, e interna o paciente sem passar pela porta.</span>
+          {duplicata ? (
+            <div role="alert" className="flex flex-col gap-2 rounded-controle border border-atencao/40 bg-alerta-atencao p-2.5">
+              <span className="text-apoio text-atencao">{duplicata.texto || 'Já existe cadastro parecido nesta unidade.'} É a mesma pessoa?</span>
+              <div className="flex flex-wrap gap-2">
+                <Button size="xs" onClick={() => { cadastro.current = { paciente: duplicata.id }; fazer.mutate('chegou') }} disabled={fazer.isPending}>Sim, usar esse cadastro</Button>
+                <Button size="xs" variant="outline" onClick={() => { cadastro.current = { novo: true }; fazer.mutate('chegou') }} disabled={fazer.isPending}>Não, criar cadastro novo</Button>
+              </div>
+            </div>
+          ) : (
+            <div><Button size="sm" onClick={() => fazer.mutate('chegou')} disabled={fazer.isPending || (!reservada && !leito)}>Confirmar chegada e internar</Button></div>
+          )}
+        </div>
+      )}
       {acao === 'nao_chegou' && (
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex min-w-60 flex-1 flex-col gap-1">
@@ -183,7 +226,7 @@ export function AcoesDestino({ s, aoFim, nir = false }: { s: PedidoDestino; aoFi
           <Button size="sm" variant="destructive" onClick={() => fazer.mutate('nao_chegou')} disabled={fazer.isPending || texto.trim().length < 10}>Registrar falta</Button>
         </div>
       )}
-      {fazer.error && <p role="alert" className="text-rotulo text-critico">{(fazer.error as Error).message}</p>}
+      {fazer.error && !duplicata && <p role="alert" className="text-rotulo text-critico">{(fazer.error as Error).message}</p>}
     </div>
   )
 }

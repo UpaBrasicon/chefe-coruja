@@ -153,9 +153,11 @@ SELECT pg_temp.falha(format('SELECT public.regulacao_marcar_chegada(%L, true)', 
   'Marca a chegada a unidade destino', 'origem não marca a chegada');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT public.regulacao_marcar_chegada(pg_temp.id(1), true);
+-- A01 P1-1 (R1, 20270308000001): a chegada interna o paciente no leito reservado
 SELECT pg_temp.ok(pg_temp.campo(1, 'status') = 'realizada' AND pg_temp.campo(1, 'realizada_em') IS NOT NULL
-              AND pg_temp.leito('24000000-0000-4000-8000-0000000009c1') = 'reservado',
-  'chegou: realizada, e a reserva fica para ocupar o leito');
+              AND pg_temp.campo(1, 'destino_internacao_id') IS NOT NULL
+              AND pg_temp.leito('24000000-0000-4000-8000-0000000009c1') = 'ocupado',
+  'chegou: realizada, e o paciente é internado no leito reservado');
 
 -- ── 6. recusa volta à central ───────────────────────────────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000006');
