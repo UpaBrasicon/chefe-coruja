@@ -1,6 +1,7 @@
 // A chegada regulada vista pela enfermagem (item 16 do teste da rede; decisão
 // do RT em 08/11/2026: opção B e aviso de saída). O leito reservado aparece na
 // lista do setor com quem chega; a tela avisa quando o paciente sai da origem.
+import { hora } from './formato.ts'
 
 export type ChegadaResumo = {
   regulacao_id: string
@@ -21,15 +22,11 @@ function idadeEmAnos(nascimento: string | null, agora: number): number | null {
   return anos
 }
 
-function horaBrasilia(iso: string): string {
-  return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }).format(new Date(iso))
-}
-
 /** A linha do leito reservado: quem chega, de onde, o número e a saída. */
 export function linhaDaChegada(c: ChegadaResumo, agora: number): string {
   const idade = idadeEmAnos(c.data_nascimento, agora)
   const quem = idade === null ? c.nome : `${c.nome}, ${idade}a`
-  const saida = c.status === 'em_transito' && c.saida_em ? `saiu às ${horaBrasilia(c.saida_em)}` : 'ainda não saiu da origem'
+  const saida = c.status === 'em_transito' && c.saida_em ? `saiu às ${hora(c.saida_em)}` : 'ainda não saiu da origem'
   return `Reservado · chega ${quem}, da ${c.origem} (regulação nº ${c.numero}) · ${saida}`
 }
 
