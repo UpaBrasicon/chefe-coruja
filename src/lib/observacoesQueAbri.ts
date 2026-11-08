@@ -1,6 +1,7 @@
 // "Observações que você abriu" (decisão do RT em 06/11/2026: "Sim, mostrar";
 // migration 20270305000002). O médico da porta vê as observações que ele pôs
-// em observação, só para encerrá-las. Regras puras da seção, para teste.
+// em observação, para pedir parecer, marcar a reavaliação e encerrá-las
+// (decisão do RT em 07/11/2026). Regras puras da seção, para teste.
 
 export type ObservacaoQueAbri = {
   internacao_id: string

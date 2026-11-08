@@ -2,9 +2,10 @@
 // Observações que você abriu (decisão do RT em 06/11/2026: "Sim, mostrar";
 // migrations 20270305000001 e 20270305000002). O médico da porta que pôs o
 // paciente em observação, sem escala no setor da observação, vê o paciente
-// aqui só para ENCERRAR a observação: a única ação é "Encerrar observação", que
-// abre o mesmo painel de desfecho do box. Sem atender, prescrever, evoluir,
-// protocolo, passagem ou prancheta: o cuidado segue com a equipe escalada.
+// aqui para pedir parecer, marcar a reavaliação (decisão do RT em 07/11/2026,
+// migration 20270307000005) e ENCERRAR a observação, com os mesmos painéis do
+// box. Sem atender, prescrever, evoluir, protocolo, passagem ou prancheta: o
+// cuidado segue com a equipe escalada.
 // O servidor decide quem vê (observacoes_que_abri); quem já vê o paciente no
 // painel normal não ganha um cartão repetido.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,7 +23,8 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { TOM_TEXTO, hhmm, msgErro, relogioPermanencia, type Acao } from './modelo'
-import { PainelDesfecho } from './PaineisCartao'
+import { Painel, PainelDesfecho, PainelReavaliar } from './PaineisCartao'
+import { AbaParecer } from '@/components/parecer/AbaParecer'
 
 export function ObservacoesQueAbri({ unidadeId, agora, noPainel }: {
   unidadeId: string
@@ -52,7 +54,7 @@ export function ObservacoesQueAbri({ unidadeId, agora, noPainel }: {
     <section aria-label="Observações que você abriu" className="flex flex-col">
       <TituloSecao className="mb-1" extra={minhas.length === 1 ? '1 paciente' : `${minhas.length} pacientes`}>Observações que você abriu</TituloSecao>
       <p className="mb-2.5 text-apoio text-tinta-sussurro">
-        Você pôs estes pacientes em observação pela porta. Aqui você só encerra a observação; o cuidado segue com a equipe escalada no setor.
+        Você pôs estes pacientes em observação pela porta. Aqui você pede parecer, marca a reavaliação e encerra a observação; o cuidado segue com a equipe escalada no setor.
       </p>
       <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
         <Table aria-label="Observações que você abriu">
@@ -74,11 +76,15 @@ export function ObservacoesQueAbri({ unidadeId, agora, noPainel }: {
   )
 }
 
+type PainelQueAbri = 'desfecho' | 'reavaliar' | 'parecer'
+
 function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: number; unidadeId: string }) {
   const qc = useQueryClient()
-  const [aberto, setAberto] = React.useState(false)
+  const [painel, setPainel] = React.useState<PainelQueAbri | null>(null)
+  const aberto = painel !== null
   const [erro, setErro] = React.useState<string | null>(null)
-  const fechar = () => { setErro(null); setAberto(false) }
+  const fechar = () => { setErro(null); setPainel(null) }
+  const alternar = (p: PainelQueAbri) => { setErro(null); setPainel((atual) => (atual === p ? null : p)) }
 
   const acao: Acao = async (fn) => {
     try {
@@ -121,15 +127,23 @@ function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: nu
           </div>
         </TableCell>
         <TableCell className="pr-5">
-          <div className="flex justify-end">
-            <Button size="sm" variant="outline" aria-expanded={aberto} onClick={() => { setErro(null); setAberto((a) => !a) }}>Encerrar observação</Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button size="sm" variant="outline" aria-expanded={painel === 'reavaliar'} onClick={() => alternar('reavaliar')}>Reavaliar</Button>
+            <Button size="sm" variant="outline" aria-expanded={painel === 'parecer'} onClick={() => alternar('parecer')}>Pedir parecer</Button>
+            <Button size="sm" variant="outline" aria-expanded={painel === 'desfecho'} onClick={() => alternar('desfecho')}>Encerrar observação</Button>
           </div>
         </TableCell>
       </TableRow>
       {aberto && (
         <TableRow className="hover:bg-transparent">
           <TableCell colSpan={5} className="px-0 pt-0 pb-0 whitespace-normal">
-            <PainelDesfecho linha={o} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />
+            {painel === 'desfecho' && <PainelDesfecho linha={o} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
+            {painel === 'reavaliar' && <PainelReavaliar linha={o} acao={acao} fechar={fechar} erro={erro} />}
+            {painel === 'parecer' && (
+              <Painel titulo="Parecer">
+                <AbaParecer pacienteId={o.paciente_id} internacaoId={o.internacao_id} />
+              </Painel>
+            )}
           </TableCell>
         </TableRow>
       )}
