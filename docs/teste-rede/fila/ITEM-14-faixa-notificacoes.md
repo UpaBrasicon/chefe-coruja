@@ -26,3 +26,7 @@
 ## Conferência na homologação
 - Foram criadas 8 notificações de teste (`teste_faixa_1` a `teste_faixa_8`) para `medico.hospital.f5`, no Hospital F5.
 - **Antes da publicação:** a faixa mostrou as 8, e a Central desceu para o meio da tela.
+- **Depois da publicação** (branch `homolog` em e027038a, com o service worker desregistrado):
+  - a faixa mostrou só as nºs 8, 7 e 6, com "e mais 5 notificações" e "Fechar todas";
+  - a Central ficou logo abaixo da faixa;
+  - "Fechar todas" fez a faixa sumir. No banco, as 8 notificações de teste ficaram com `lida_em` preenchido.
