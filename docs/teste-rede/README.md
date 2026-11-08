@@ -125,7 +125,15 @@ Os 30 cenários rodaram pelo banco, na homologação, como cada usuário de test
   - **Item 4:** na produção e mesclado (#489), migration `20270307000005`.
   - **Item 5 (A01 P2-2, S1 a S6), branch `correcoes/regulacao-origem-encerrada`:** migration `20270307000006`. O detalhe está em `CORRECOES-A01-DIAGNOSTICO.md`, na seção "Feito" do P2-2.
   - **Item 5:** na produção e mesclado (#490), migration `20270307000006`.
-  - **Item 6 (A01 P1-1, R1 a R6), branch `correcoes/chegada-regulada-interna`:** migration `20270308000001`. O detalhe está em `CORRECOES-A01-DIAGNOSTICO.md`, na seção "Feito" do P1-1. Fica pendente a tela do enfermeiro para confirmar a chegada.
+  - **Item 6:** na produção e mesclado (#491), migration `20270308000001`.
+  - **Item 7 (D P2-2), branch `correcoes/troca-pedida-de-novo`:** decisão do RT em 08/11/2026, A em T1 e T2.
+    - **T1:** a unicidade do par de plantões vale só para o pedido pendente. Depois de um cancelamento, de uma recusa ou de uma aprovação, a troca pode ser pedida de novo, e cada tentativa fica guardada.
+    - **T2:** com um pedido pendente do par, em qualquer sentido, um pedido novo é recusado com a mensagem "Já há um pedido de troca pendente para estes plantões."
+    - **Migration:** `20270308000002`.
+    - **Teste:** `fix_troca_pedida_de_novo.sql`. Antes da migration falhou; depois passou na homologação.
+    - **Teste antigo ajustado:** `escala_troca_forcada`. A troca forjada sai de "pendente" antes do pedido verdadeiro do par invertido.
+    - **Reconferência do D04.07** (`scripts/e2e/101_reconferencia_troca_de_novo.sql`): o pedido feito de novo depois de cancelar passou, e a repetição com o pedido ainda pendente foi recusada com a mensagem.
+- **Incluído na fila pelo RT em 08/11/2026:** depois do item 12 e antes da sepse no adulto, entra a tela para o enfermeiro confirmar a chegada regulada. A permissão R5 já vale no banco.
 
 As correções do A01 (P1-1, P2-1, P2-2) têm diagnóstico próprio em `CORRECOES-A01-DIAGNOSTICO.md`, à espera da decisão do RT. Os P3 (catálogo, MAPA, ambiente e pontos menores) estão em cada relatório.
 

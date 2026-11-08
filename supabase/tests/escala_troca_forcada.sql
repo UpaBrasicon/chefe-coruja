@@ -111,6 +111,11 @@ SELECT pg_temp.falha(format('SELECT public.aprovar_troca(%L)', pg_temp.id('forja
   'A troca não confere com a escala', 'C1: nem o gestor aplica a troca com dono falso');
 SELECT pg_temp.ok(pg_temp.dono('pMed2') = pg_temp.id('med2') AND pg_temp.dono('pMed') = pg_temp.id('med'),
   'C1: os plantões continuam com os donos de antes');
+-- a forjada sai de "pendente": desde a 20270308000002 (D P2-2, T2), um pedido
+-- pendente do par, em qualquer sentido, impede outro
+RESET ROLE;
+UPDATE public.trocas_plantao SET status = 'erro' WHERE id = pg_temp.id('forjada');
+SET LOCAL ROLE authenticated;
 
 -- ── 3. o fluxo certo continua ──────────────────────────────────────────────
 SELECT pg_temp.como('med');
