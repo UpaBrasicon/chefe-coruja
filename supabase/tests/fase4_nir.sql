@@ -134,11 +134,15 @@ SELECT pg_temp.falha(format('SELECT public.regulacao_destino_aceitar(%L)', pg_te
   'Responde pelo destino o médico plantonista ou o gestor', 'NIR do destino não aceita');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 SELECT public.regulacao_destino_aceitar(pg_temp.v('p1')::uuid, '24000000-0000-4000-8000-0000000009e6', NULL);
+-- A01 P2-2 (S1 a S3, 20270307000006): o paciente segue internado na origem,
+-- então o NIR não marca a saída; a chegada fica em trânsito, com a marca
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
-SELECT public.regulacao_marcar_saida(pg_temp.v('p1')::uuid);
+SELECT pg_temp.falha(format('SELECT public.regulacao_marcar_saida(%L)', pg_temp.v('p1')),
+  'O paciente segue em atendimento na origem', 'NIR não marca a saída de quem segue internado na origem');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT public.regulacao_marcar_chegada(pg_temp.v('p1')::uuid, true);
-SELECT pg_temp.ok(pg_temp.campo(pg_temp.v('p1'), 'status') = 'realizada', 'NIR marca saída na origem e chegada no destino');
+SELECT pg_temp.ok(pg_temp.campo(pg_temp.v('p1'), 'status') = 'em_transito' AND pg_temp.campo(pg_temp.v('p1'), 'chegada_em') IS NOT NULL,
+  'NIR do destino marca a chegada; com a origem aberta, fica em trânsito com a marca');
 
 -- ── 3. painel de pendências ─────────────────────────────────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
@@ -146,6 +150,8 @@ INSERT INTO t SELECT 'painel', public.nir_pendencias('21000000-0000-4000-8000-00
 SELECT pg_temp.ok((pg_temp.item(pg_temp.v('painel')::jsonb, 'aih_sem_aih')->>'ref_id') = '25000000-0000-4000-8000-0000000009e1'
               AND (SELECT count(*) FROM jsonb_array_elements(pg_temp.v('painel')::jsonb->'itens') i WHERE i->>'tipo' = 'aih_sem_aih') = 1,
   'internação sem AIH aparece; a observação e a que já tem AIH não');
+SELECT pg_temp.ok((pg_temp.item(pg_temp.v('painel')::jsonb, 'reg_origem_aberta')->>'ref_id') = pg_temp.v('p1'),
+  'A01 P2-2 (S5): chegou ao destino com a origem sem alta aparece no NIR da origem');
 SELECT pg_temp.ok((pg_temp.item(pg_temp.v('painel')::jsonb, 'aih_sem_decisao')->>'responsavel') = 'Médico regulador da unidade'
               AND (pg_temp.item(pg_temp.v('painel')::jsonb, 'aih_rejeitada')->>'titulo') LIKE '%CID incompatível%'
               AND pg_temp.item(pg_temp.v('painel')::jsonb, 'apac_sem_decisao') IS NOT NULL
