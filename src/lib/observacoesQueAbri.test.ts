@@ -40,18 +40,23 @@ test('a seção lê só observacoes_que_abri e tira os repetidos', () => {
   assert.match(secao, /Observações que você abriu/)
 })
 
-test('cada cartão tem só "Encerrar observação", que abre o painel de desfecho do box', () => {
-  assert.equal((secao.match(/<Button\b/g) ?? []).length, 1)
+// Decisão do RT em 07/11/2026 (B P2-2, migration 20270307000005): além de
+// encerrar, quem abriu a observação pede parecer e marca a reavaliação.
+test('cada cartão tem "Reavaliar", "Pedir parecer" e "Encerrar observação", com os painéis do box', () => {
+  assert.equal((secao.match(/<Button\b/g) ?? []).length, 3)
   const botoes = [...secao.matchAll(/>([^<>]+)<\/Button>/g)].map((m) => m[1].trim())
-  assert.deepEqual(botoes, ['Encerrar observação'])
+  assert.deepEqual(botoes, ['Reavaliar', 'Pedir parecer', 'Encerrar observação'])
   assert.match(secao, /<PainelDesfecho linha=\{o\} unidadeId=\{unidadeId\} acao=\{acao\} fechar=\{fechar\} erro=\{erro\} \/>/)
-  // nada de atender, reavaliar, protocolo, passagem, prancheta, prescrever, evoluir, alergia ou acuidade
-  for (const proibido of ['observacao_atender', 'observacao_reavaliar', 'observacao_reavaliado', 'Protocolo', 'PainelPassar',
+  assert.match(secao, /<PainelReavaliar linha=\{o\} acao=\{acao\} fechar=\{fechar\} erro=\{erro\} \/>/)
+  assert.match(secao, /<AbaParecer pacienteId=\{o\.paciente_id\} internacaoId=\{o\.internacao_id\} \/>/)
+  // nada de atender, reavaliado, protocolo, passagem, prancheta, prescrever, evoluir, alergia ou acuidade
+  for (const proibido of ['observacao_atender', 'observacao_reavaliado', 'Protocolo', 'PainelPassar',
     'Prancheta', 'LeitoAberto', 'prescrever', 'registrar_evolucao', 'SeloAlergia', 'Acuidade', 'CartaoObservacao']) {
     assert.ok(!codigo.includes(proibido), `a seção não deve ter ${proibido}`)
   }
-  // o desfecho só precisa da internação e do paciente
+  // o desfecho só precisa da internação e do paciente; a reavaliação, só da internação
   assert.match(paineis, /linha: Pick<LinhaObservacao, 'internacao_id' \| 'paciente_id'>; unidadeId: string/)
+  assert.match(paineis, /export function PainelReavaliar\(\{ linha, acao, fechar, erro \}: \{ linha: Pick<LinhaObservacao, 'internacao_id'>;/)
 })
 
 test('a RPC devolve só os campos do cartão, com segundo fator e pela regra do autor', () => {
