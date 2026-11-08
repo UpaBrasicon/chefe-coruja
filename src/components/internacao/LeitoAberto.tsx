@@ -411,7 +411,7 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
   const { i, ativa, altaRecente, ehGestor } = p
   return (
     <>
-      {ativa && !ehGestor && <BlocoAlta i={i} impeditivos={p.impeditivos} acao={p.acao} cidSugerido={p.cidSugerido} />}
+      {ativa && !ehGestor && <BlocoAlta i={i} pacienteId={p.pacienteId} impeditivos={p.impeditivos} acao={p.acao} cidSugerido={p.cidSugerido} />}
       {!ativa && altaRecente && (i.alta_por === p.eu || ehGestor) && <CancelarAlta i={i} acao={p.acao} />}
       {(ativa || altaRecente || ehGestor) && (
         <BlocoPacote i={i} pacienteId={p.pacienteId} pacienteNome={p.pacienteNome} lista={p.pacotes} podeGerar={!ehGestor && (ativa || altaRecente)} acao={p.acao} />
