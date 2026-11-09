@@ -2367,7 +2367,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 12 | Tempo-limite em serviço externo | Falta parte: Resend sem limite; navegador sem limite | Decisão A/B do RT |
 | 16 | Chamadas independentes em paralelo | Já tem: nenhuma sequência independente | — |
 | 21 | Scripts de terceiros depois da página | Falta parte: Sentry no pacote inicial | Pendente |
-| 22 | JavaScript por tela | Falta parte: dependências do jsPDF e do Recharts no `vendor-other` inicial | Pendente |
+| 22 | JavaScript por tela | Falta parte: dependências do jsPDF e do Recharts no `vendor-other` inicial | Corrigido na branch `desempenho/22-pacote-inicial` (só build): sem o `vendor-other` único; JavaScript inicial de 504 KB para 371 KB em gzip (−26%). Teste `src/lib/pacoteInicial.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-22-PACOTE-INICIAL.md`. Falta: CI e merge |
 | 29 | Fontes no próprio domínio | Já tem: `@fontsource-variable` | — |
 | 14 | Interface otimista | Já tem onde cabe; ação clínica não | — |
 | 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | Confirmado pelo RT em 08/11/2026 |
