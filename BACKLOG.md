@@ -2372,7 +2372,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 14 | Interface otimista | Já tem onde cabe; ação clínica não | — |
 | 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | Condicionado ao 30 (decisão do RT em 09/11/2026): rever com o INP das telas reais |
 | 30 | Medir usuários reais | Falta, decisão do RT em 09/11/2026 (antes "não se aplica por ora"); entrou antes do 08 | Corrigido na branch `desempenho/30-usuarios-reais` (só frontend): `web-vitals` 5.1.0 (LCP, INP, CLS, FCP, TTFB) ao Sentry depois da pintura, só com métrica, valor, nota, rota sem identificador e papel. Testes `src/lib/rotaSemIdentificador.test.ts` e `src/lib/metricaReal.test.ts`. Evidência em `docs/desempenho/ITEM-30-USUARIOS-REAIS.md`. Falta: CI e merge |
-| 11 | Tirar dependências sem uso | Falta (pequeno): `framer-motion`, `mammoth` | Pendente |
+| 11 | Tirar dependências sem uso | Falta (pequeno): `framer-motion`, `mammoth` | Corrigido na branch `desempenho/11-dependencias`: `framer-motion` e `mammoth` fora do `package.json` e do `vite.config.ts`; o lockfile perde 28 pacotes que só eles usavam (o `pako` do jsPDF fica, aninhado no `fast-png`). Guarda `src/lib/dependenciasEmUso.test.ts` falha no master. Falta: CI e merge |
 | 06 | CDN | Já tem: Vercel `gru1` + Cloudflare | — |
 | 09 | Compressão | Já tem: Brotli | — |
 | 27 | Cache de arquivos com hash | Falta parte: service worker guarda; cabeçalho HTTP de 4 h, não `immutable` | Corrigido na branch `desempenho/27-cache-assets`: `/assets/(.*)` com `public, max-age=31536000, immutable` no `vercel.json`; HTML e `sw.js` seguem `no-cache`. Teste `src/lib/cacheAssets.test.ts` falha no master. Falta: CI, merge e conferir o cabeçalho na produção |
