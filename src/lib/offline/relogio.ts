@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { criarCompartilhada } from '@/lib/chamadaCompartilhada'
 
 import { avaliarSemConexao, horaServidor, type ContextoRelogio } from './regras'
 
@@ -23,8 +24,20 @@ function ler(): Contexto | null {
   }
 }
 
+// Item 03 do kit de desempenho: a fila sem conexão e a sincronização pediam o
+// relógio em seguida, na mesma recarga. Uma sincronização feita há menos de
+// 10 s vale para quem pedir de novo; erro não fica guardado.
+const sincronia = criarCompartilhada(async () => {
+  await lerRelogioDoServidor()
+  return { error: null }
+}, { validadeMs: 10_000 })
+
 /** Atualiza hora do servidor e fim do plantão. Chamar sempre que houver conexão. */
 export async function sincronizarRelogio(): Promise<void> {
+  await sincronia.ler()
+}
+
+async function lerRelogioDoServidor(): Promise<void> {
   const antes = performance.now()
   const { data, error } = await supabase.rpc('contexto_sem_conexao')
   if (error || !data) throw error ?? new Error('Sem resposta do servidor.')

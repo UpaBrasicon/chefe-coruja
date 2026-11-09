@@ -9,6 +9,7 @@ import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { homonimos } from '@/domain/homonimos'
@@ -139,7 +140,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
     enabled: !!unidadeAtiva,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('setores_na_escala_agora')
+      const { data, error } = await setoresNaEscalaAgora()
       if (error) throw error
       return (Array.isArray(data) ? data : []) as string[]
     },
