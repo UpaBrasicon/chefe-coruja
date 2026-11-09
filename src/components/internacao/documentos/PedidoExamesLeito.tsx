@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Chip } from '@/components/monitor/Pagina'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Item = { rotulo: string; procedimento: string | null }
 type Pedido = { exame: string; procedimento: string | null; situacao: string }
@@ -68,7 +69,7 @@ function SecaoGrupo({ grupo, rotulo, internacaoId, unidadeId, botoes, pedidos }:
   const [observacao, setObservacao] = React.useState('')
   const [pedindo, setPedindo] = React.useState(false)
   const [aviso, setAviso] = React.useState<{ erro: boolean; texto: string } | null>(null)
-  const t = termo.trim()
+  const t = useValorAdiado(termo.trim())
   const busca = useQuery({
     queryKey: ['buscar-exames', unidadeId, t],
     enabled: !!unidadeId && t.length >= 3,

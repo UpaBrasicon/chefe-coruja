@@ -42,6 +42,7 @@ import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
 import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 import { EnviarArquivo } from './EnviarArquivo'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Diluicao = {
   id: string; medicamento_id: string | null; principio_ativo: string; apresentacao: string; via: string; status: string; versao: number
@@ -286,10 +287,11 @@ function NovaDiluicao({ unidade, aoCriar, aoPublicar, aoErro }: {
   const [f, setF] = React.useState<Record<string, string>>({})
   const [ocupado, setOcupado] = React.useState(false)
   const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
+  const buscaAdiada = useValorAdiado(busca)
   const r = useQuery({
-    queryKey: ['med-farmacia', busca, unidadeBusca],
-    enabled: busca.trim().length >= 3 && !med,
-    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).limit(15)).data ?? [],
+    queryKey: ['med-farmacia', buscaAdiada, unidadeBusca],
+    enabled: buscaAdiada.trim().length >= 3 && !med,
+    queryFn: async () => (await supabase.from('medicamento').select('id, principio_ativo, apresentacao').or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(buscaAdiada.trim())}%`).limit(15)).data ?? [],
   })
   // um passo só: cria o rascunho já com os campos; publicar cria e publica
   async function criar(publicar: boolean) {
