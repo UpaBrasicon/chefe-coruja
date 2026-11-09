@@ -48,11 +48,13 @@ export function Footer() {
                 {BUSINESS.email}
               </a>
             </li>
-            <li>
-              <a href={`tel:${BUSINESS.telephone.replace(/\D/g, '')}`} className="hover:text-primary">
-                {BUSINESS.telephone}
-              </a>
-            </li>
+            {BUSINESS.telephone && (
+              <li>
+                <a href={`tel:${BUSINESS.telephone.replace(/\D/g, '')}`} className="hover:text-primary">
+                  {BUSINESS.telephone}
+                </a>
+              </li>
+            )}
             <li>
               {BUSINESS.address.city} · {BUSINESS.address.region}
             </li>
@@ -62,7 +64,6 @@ export function Footer() {
         <div>
           <h3 className="text-sm font-semibold text-slate-900">Horário</h3>
           <p className="mt-3 text-sm text-slate-600">Segunda a sexta, 08h às 18h</p>
-          <p className="mt-1 text-sm text-slate-600">Respondemos em até 4 horas úteis.</p>
         </div>
       </div>
 

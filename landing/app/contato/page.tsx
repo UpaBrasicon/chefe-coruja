@@ -7,7 +7,7 @@ import { BUSINESS } from '@/lib/site'
 export const metadata: Metadata = {
   title: 'Contato',
   description:
-    'Fale com o Chefe Coruja. Agende uma demonstração gratuita para sua UPA, hospital ou clínica. Respondemos em até 4 horas úteis.',
+    'Fale com o Chefe Coruja. Agende uma demonstração gratuita para sua UPA, hospital ou clínica.',
   alternates: { canonical: '/contato' },
   openGraph: {
     title: 'Contato | Chefe Coruja',
@@ -24,7 +24,7 @@ export default function ContatoPage() {
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Fale com a gente</h1>
           <p className="section-subtitle">
-            Preencha o formulário e nossa equipe entra em contato. Respondemos em até 4 horas úteis.
+            Preencha o formulário e nossa equipe entra em contato.
           </p>
           <div className="mt-8 flex flex-col gap-4">
             <div className="rounded-2xl border border-slate-200 p-5">
@@ -33,17 +33,19 @@ export default function ContatoPage() {
                 {BUSINESS.email}
               </a>
             </div>
-            <div className="rounded-2xl border border-slate-200 p-5">
-              <h2 className="font-semibold text-slate-900">WhatsApp</h2>
-              <a
-                href={`https://wa.me/${BUSINESS.whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 block text-sm text-primary hover:underline"
-              >
-                {BUSINESS.telephone}
-              </a>
-            </div>
+            {BUSINESS.whatsapp && (
+              <div className="rounded-2xl border border-slate-200 p-5">
+                <h2 className="font-semibold text-slate-900">WhatsApp</h2>
+                <a
+                  href={`https://wa.me/${BUSINESS.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 block text-sm text-primary hover:underline"
+                >
+                  {BUSINESS.telephone ?? 'Conversar pelo WhatsApp'}
+                </a>
+              </div>
+            )}
             <div className="rounded-2xl border border-slate-200 p-5">
               <h2 className="font-semibold text-slate-900">Sede</h2>
               <p className="mt-1 text-sm text-slate-600">

@@ -1,6 +1,4 @@
 import { Hero } from '@/components/Hero'
-import { CaseStudy } from '@/components/CaseStudy'
-import { Testimonials } from '@/components/Testimonials'
 import { Team } from '@/components/Team'
 import { FAQ } from '@/components/FAQ'
 import { Location } from '@/components/Location'
@@ -27,8 +25,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <CaseStudy />
-      <Testimonials />
       <Team />
       <FAQ />
       <Location />
