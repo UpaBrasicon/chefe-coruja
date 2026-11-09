@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 // Reserva de leito (Fase 0, item 12; decisões do responsável em 07/10/2026):
 // para um paciente da unidade OU por motivo livre; validade de 1, 2, 4 ou 8 h.
@@ -41,7 +42,7 @@ export function ReservarLeito({ aberto, onFechar, leitoId, identificador, unidad
   const [erro, setErro] = React.useState<string | null>(null)
   const [ocupado, setOcupado] = React.useState(false)
 
-  const termo = busca.trim()
+  const termo = useValorAdiado(busca.trim())
   const achados = useQuery({
     queryKey: ['reserva-busca-paciente', unidadeId, termo],
     enabled: aberto && modo === 'paciente' && termo.length >= 3 && !paciente,

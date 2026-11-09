@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { supabase } from '@/lib/supabase'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Cbo = { codigo: string; titulo: string }
 
@@ -24,11 +25,12 @@ export function CampoCbo({ inicial }: { inicial: string | null }) {
       return ((data ?? []) as unknown as Cbo[]).find((c) => c.codigo === atual)?.titulo ?? null
     },
   })
+  const termoBusca = useValorAdiado(termo.trim())
   const busca = useQuery({
-    queryKey: ['buscar-cbo', termo.trim()],
-    enabled: termo.trim().length >= 2,
+    queryKey: ['buscar-cbo', termoBusca],
+    enabled: termoBusca.length >= 2,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_cbo', { p_termo: termo.trim() })
+      const { data, error } = await supabase.rpc('buscar_cbo', { p_termo: termoBusca })
       if (error) throw error
       return (data ?? []) as unknown as Cbo[]
     },

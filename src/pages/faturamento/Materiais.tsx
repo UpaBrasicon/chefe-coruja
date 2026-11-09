@@ -28,6 +28,7 @@ import { codigoSigtapNaTela } from '@/lib/bpa'
 import { type MaterialUnidade } from '@/lib/contas'
 import { filtrarMateriais } from '@/lib/materiais'
 import { supabase } from '@/lib/supabase'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Editando = { id: string | null; nome: string; unidade_consumo: string; procedimento: string | null; procedimento_nome: string | null; ativo: boolean }
 const NOVO: Editando = { id: null, nome: '', unidade_consumo: '', procedimento: null, procedimento_nome: null, ativo: true }
@@ -112,7 +113,7 @@ function PainelMaterial({ unidadeId, inicial, onFechar }: { unidadeId: string; i
   const qc = useQueryClient()
   const [m, setM] = React.useState<Editando>(inicial)
   const [termo, setTermo] = React.useState('')
-  const t = termo.trim()
+  const t = useValorAdiado(termo.trim())
   const busca = useQuery({
     queryKey: ['buscar-sigtap-material', t],
     enabled: t.length >= 3,

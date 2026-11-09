@@ -611,7 +611,7 @@ com bloco `dark` via `@custom-variant dark (&:is(.dark *))`.
 
 ### Assets (`public/`)
 
-`logo.png` · `logo-login.png` · `favicon.svg` · `icons.svg` · `fundo-login.png` ·
+`logo.png` (512 px) · `logo-192.png` · `favicon.svg` · `icons.svg` ·
 `login-img-1..4.svg` · `manifest.webmanifest` · `sw.js` · `plantao/background.png` ·
 `plantao/MODELO_EXAMES.png`
 

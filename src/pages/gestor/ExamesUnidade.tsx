@@ -24,6 +24,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { codigoExameNaTela, loincValido, tipoDoCodigo, type ExameBuscado, type ExameUnidade, type ListaExamesUnidade } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Rascunho = { procedimento: string; nome_sigtap: string | null; nome_curto: string; loinc: string; botao: boolean; ordem: string }
 
@@ -45,11 +46,12 @@ export default function ExamesUnidade() {
       return data as unknown as ListaExamesUnidade
     },
   })
+  const termoBusca = useValorAdiado(termo.trim())
   const busca = useQuery({
-    queryKey: ['buscar-exames-todos', unidadeId, termo.trim()],
-    enabled: !!unidadeId && termo.trim().length >= 3,
+    queryKey: ['buscar-exames-todos', unidadeId, termoBusca],
+    enabled: !!unidadeId && termoBusca.length >= 3,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_exames', { p_unidade: unidadeId!, p_termo: termo.trim(), p_todos: true })
+      const { data, error } = await supabase.rpc('buscar_exames', { p_unidade: unidadeId!, p_termo: termoBusca, p_todos: true })
       if (error) throw error
       return (data ?? []) as unknown as ExameBuscado[]
     },

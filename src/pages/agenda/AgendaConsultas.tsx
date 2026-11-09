@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils'
 
 import { ConfiguracaoAgenda } from './ConfiguracaoAgenda'
 import { useAgendaDia, useAgora, useConfiguracaoAgenda } from './useAgenda'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Filtro = 'todos' | 'agendados' | 'presentes' | 'faltas'
 type Achado = { id: string; nome: string; nome_social: string | null; data_nascimento: string | null }
@@ -345,7 +346,7 @@ function MarcarConsulta({ unidadeId, diaInicial, hoje, pacienteUrl, origemUrl, t
   const slot = livres.find((h) => h.inicio === inicio)
   const fechado = doDia.data?.profissionais.find((p) => p.perfil_id === prof?.perfil_id)?.fechamento
 
-  const t = termo.trim()
+  const t = useValorAdiado(termo.trim())
   const achados = useQuery({
     queryKey: ['agenda-busca-paciente', unidadeId, t],
     enabled: modo === 'consulta' && t.length >= 3 && !paciente,

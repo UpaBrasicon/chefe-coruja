@@ -23,6 +23,7 @@ import { OpcaoLista } from '@/components/ui/botao-linha'
 import { ofereceConteudoAdulto, type FaixaEtaria } from '@/domain/idade'
 import { hora as horaFmt } from '@/lib/formato'
 import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO, nomeMed, type EstadoDocs, type ItemReceita, type Med } from '@/lib/documentosAlta'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 const hora = (iso: string | null | undefined) => (iso ? horaFmt(iso) : '—')
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -99,12 +100,13 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
     },
   })
   const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
+  const buscaAdiada = useValorAdiado(busca)
   const resultados = useQuery({
-    queryKey: ['busca-medicamento-receita', busca, unidadeBusca],
-    enabled: busca.trim().length >= 3 && !med,
+    queryKey: ['busca-medicamento-receita', buscaAdiada, unidadeBusca],
+    enabled: buscaAdiada.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo, apresentacao, concentracao')
-        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(8)
+        .eq('ativo', true).or(filtroDaUnidade(unidadeBusca)).ilike('principio_ativo_norm', `%${normalizarMedicamento(buscaAdiada.trim())}%`).order('principio_ativo').limit(8)
       if (error) throw error
       return (data ?? []) as Med[]
     },
