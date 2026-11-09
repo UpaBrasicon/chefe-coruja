@@ -178,7 +178,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
           {(banners ?? []).map((b, index) => (
             <div key={b.id} className="flex items-center gap-3 rounded-cartao border bg-superficie p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-controle border bg-trilha">
-                <img src={b.imagem_url} alt={b.titulo ?? ''} className="h-full w-full object-cover" />
+                <img src={b.imagem_url} alt={b.titulo ?? ''} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 {!b.ativo && (
                   <div className="absolute inset-0 flex items-center justify-center bg-veu-dialogo text-rotulo font-semibold text-sobre-veu">
                     Oculto
