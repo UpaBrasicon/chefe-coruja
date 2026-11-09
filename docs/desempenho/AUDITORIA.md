@@ -40,9 +40,29 @@ JavaScript que todo usuário baixa ao abrir o app (build local de `c4f2cb41`): *
 
 Login da homologação, segunda visita (service worker ativo): primeira pintura em 268 ms, 35 requisições, 3 KB transferidos (o resto veio do cache do service worker). O `logo.png` de 5.745 KB também aparece na homologação.
 
-### 1.3 Telas logadas — pendente
+### 1.3 Telas logadas, homologação, médico (08/11/2026)
 
-As telas principais (fila do PS, mapa de leitos, Central do Plantonista, Escala, enfermagem) só abrem com login. As regras desta trilha não deixam ler nem digitar senha de teste. A medição delas fica para quando o RT entrar na homologação no próprio Chrome com uma conta de teste: a sessão mede pelo navegador (Performance API e rede, sem limitação) e conta chamadas repetidas (item 03). Cada correção de tela mede antes e depois do mesmo jeito.
+O RT entrou na homologação no próprio Chrome com `medico.upa.f5` (a sessão não leu nem digitou a senha). Cada tela foi recarregada inteira e medida pela Performance API depois de 8 s. Rede do RT, sem limitação, service worker ativo (os arquivos vêm do cache). "Dados prontos" é o fim da última chamada ao banco da carga. A homologação tem pouco dado, então o tamanho das listas não pesa aqui.
+
+| Tela | 1ª pintura | LCP | Dados prontos | Chamadas ao banco | Distintas | Repetidas |
+|---|---|---|---|---|---|---|
+| `/plantonista` (Central) | 364 ms | — | 2.113 ms | 33 | 26 | `meu_plantao_agora` 3×, `turno_atual` 2×, `contexto_sem_conexao` 2×, `setores_na_escala_agora` 2× |
+| `/plantao` | 2.404 ms | 2.404 ms | 2.433 ms | 30 | 24 | `perfis` 4×, `turno_atual` 2×, `meu_plantao_agora` 2×, `contexto_sem_conexao` 2× |
+| `/atendimento` | 224 ms | 2.320 ms | 2.378 ms | 30 | 25 | `perfis` 4×, `episodios` 2×, `contexto_sem_conexao` 2× |
+| `/plantao/observacao` | 224 ms | 2.432 ms | 2.457 ms | 25 | 21 | `perfis` 4×, `contexto_sem_conexao` 2× |
+| `/plantao/internacao/pacientes` | 240 ms | 2.372 ms | 2.439 ms | 28 | 24 | `perfis` 4×, `contexto_sem_conexao` 2× |
+| `/regulacao` | 220 ms | 2.472 ms | 2.471 ms | 26 | 22 | `perfis` 4×, `contexto_sem_conexao` 2× |
+| `/agenda` | 220 ms | 2.444 ms | 2.514 ms (1.446 ms na 2ª vez) | 28 | 23 | `perfis` 4×, `contexto_sem_conexao` 2×, `escala_da_unidade` 2× |
+
+O que a medição mostra:
+
+- **Nenhuma chamada passou de 500 ms.** O banco responde rápido; o tempo vai na cascata.
+- **A casca faz cerca de 20 chamadas em toda recarga**, antes dos dados da tela: `perfis` (3 vezes seguidas, `src/contexts/AuthContext.tsx:62`), `user`, `segundo_fator_status`, `listar_conversas`, `meu_papel_tecnico`, `contexto_sem_conexao` (2×, `src/lib/offline/relogio.ts:29`), `vinculos`, `super_admins`, `chave_rascunho`, `chave_fila`, `minhas_notificacoes`, `teleinterconsultas_da_unidade`, `situacao_checkin`, `turno_atual`, `meu_plantao_agora`, `banners`, `gerar_notificacoes_turno`, `contatos_chat`.
+- **Cascata de arquivos da tela:** em `/agenda`, o arquivo `AgendaGrupo` só é pedido depois da casca (627 ms), e o `Escala` só depois dele (979 ms). Os dados da tela começam em 1.358 a 1.974 ms.
+- **Mesma RPC por vários caminhos:** `meu_plantao_agora` é chamada por cinco lugares com chaves de cache diferentes (`src/components/AppShell.tsx:283`, `src/components/casca/FaixaDoPapel.tsx:176`, `src/components/plantonista/central/CartaoTurno.tsx:43`, `src/hooks/useChat.ts:236`, `src/hooks/useFaixaPlantonista.ts:32`); `turno_atual` por dois (`useFaixaPlantonista.ts:30`, `usePlantao.ts:56`).
+- Navegar de uma tela para outra dentro do app (sem recarregar) não teve nenhum quadro longo (Long Animation Frames, mais de 80 ms).
+
+Falta medir enfermagem e gestor; ficam para a medição de antes e depois de cada item que mexer nessas telas.
 
 ## 2. Os 31 itens
 
@@ -50,7 +70,7 @@ Na ordem do kit (as 10 primeiras), depois o resto.
 
 | Item | Situação | Evidência | O que fazer |
 |---|---|---|---|
-| **31** Medir no celular e em rede lenta | **falta (parte)** | Seção 1: login medido; telas logadas dependem do login do RT. | Medir as telas logadas; repetir o Lighthouse do login depois de cada item. |
+| **31** Medir no celular e em rede lenta | **feito (linha de base)** | Seção 1: login da produção no Lighthouse (celular, 4G lento) e 7 telas logadas do médico na homologação. | Repetir antes e depois de cada item. |
 | **19** Servidor perto do banco | **não se aplica** | Não há funções na Vercel (o projeto não tem pasta `api/`): o navegador fala direto com o Supabase. Supabase da produção e da homologação em `sa-east-1` (São Paulo). A borda da Vercel que respondeu foi `gru1` (São Paulo), cabeçalho `x-vercel-id`. O kit diz para pular quando o front fala direto com o Supabase. | Nada. |
 | **24** Só as colunas usadas | **falta** | 13 `select('*')`: `src/components/documentos/identificacao.ts:144` (pacientes), `src/components/documentos/SeletorPaciente.tsx:82` (pacientes), `src/components/internacao/caderno/Trilha.tsx:99`, `src/components/internacao/LeitoAberto.tsx:164` (pendências), `src/components/termo/termo.ts:214`, `src/contexts/AuthContext.tsx:63` (perfis, em toda abertura), `src/hooks/useBanners.ts:14`, `src/hooks/useDadosUnidade.ts:21` (`vw_censo_unidade`), `src/hooks/useDocumentos.ts:60` e `:158`, `src/lib/observacao.ts:62`, `src/pages/farmacia/Diluicoes.tsx:113`, `src/pages/gestor/Banners.tsx:57`. O resto do app lê por RPC (760 chamadas `.rpc(` contra 218 `.from(`). | Trocar cada `*` pelas colunas que a tela usa. Frontend puro. |
 | **08** Consultas N+1 | **falta** | Quatro casos que pesam (seção 3.1): painel de observação, 2 RPCs por cartão (`CartaoObservacao.tsx:131-132`); checagem da enfermagem, 1 RPC de alergia por paciente (`Checagem.tsx:120`); trava de alergia, 1 RPC por medicamento (`useTravas.ts:15`); série de sinais vitais, 3 chamadas por conceito (`EvolucaoClinica.tsx:96-100`). | RPC em lote ou o dado dentro da RPC da lista (migration nos três primeiros). |
@@ -61,7 +81,7 @@ Na ordem do kit (as 10 primeiras), depois o resto.
 | **05** Paginação | **falta** | 22 leituras sem limite em listas que crescem (seção 3.2). As que mais pesam: sinais vitais da internação lidos inteiros, duas vezes (`src/lib/observacao.ts:108` e `:126`); série de um sinal com padrão "tudo" (`observacao.ts:60`); avaliações, intercorrências, pareceres, procedimentos e trilha do paciente da vida inteira; AIH e APAC da unidade; painéis do Hiperdia e da puericultura. Dez listas têm teto (200 a 1.000) e cortam sem avisar. | Por tela: janela de tempo (internação atual, 48 h) onde a tela é clínica; páginas de 20 a 50 onde é lista administrativa. |
 | **13** Texto da IA aparecendo aos poucos | **já tem** | `src/lib/useClinicalAsk.ts:6` e `:115`: a resposta do "Pergunte à IA" chega em stream NDJSON e é mostrada enquanto chega (status `streaming`). | Nada. |
 | **04** Esperar parar de digitar | **falta** | Só `src/hooks/useTerminologia.ts:38` (`termoDebounced`) espera. Consultam a cada tecla (a partir de 2 ou 3 letras): `SeletorPaciente.tsx:66`, `ReservarLeito.tsx:46`, `IncluirNoHiperdia.tsx:46`, `PedidoExamesLeito.tsx:73`, `CadastroRn.tsx:39`, `CampoCbo.tsx:28`, `preNatal/Dialogos.tsx:59`, `SolicitarApac.tsx:39`, `AgendaConsultas.tsx:350`, `farmacia/Diluicoes.tsx:283`, `faturamento/Bpa.tsx:272` e `:514`, `faturamento/Contas.tsx:747`, `faturamento/Materiais.tsx:117`, `gestor/ExamesUnidade.tsx:49`. A conferir: `AlergiasEventos.tsx:431`, `PrescricaoEstruturada.tsx:412`, `AltaVigilancia.tsx:76`, `Dispensacao.tsx:74`, `UnidadeConsumo.tsx:50` (têm `setTimeout` no arquivo, não necessariamente na busca). | Um gancho só (`useValorAdiado`, ~300 ms) aplicado a cada busca. Frontend puro. |
-| **03** Chamada repetida | **já tem (a conferir com login)** | TanStack Query em 226 arquivos, `staleTime` de 30 s (`src/App.tsx:124-133`): a mesma chave em duas telas vira uma chamada só. 27 arquivos ainda buscam dentro de `useEffect`, fora do cache (por exemplo `src/pages/public/PainelChamada.tsx`, `src/contexts/AuthContext.tsx`). | Contar as chamadas por tela na medição com login (1.3). |
+| **03** Chamada repetida | **falta (parte)** | TanStack Query em 226 arquivos, `staleTime` de 30 s (`src/App.tsx:124-133`). Mas a medição com login (1.3) achou repetição em toda tela: `perfis` 3× ao abrir (`src/contexts/AuthContext.tsx:62`), `contexto_sem_conexao` 2× (`src/lib/offline/relogio.ts:29`), `meu_plantao_agora` por cinco caminhos com chaves diferentes, `turno_atual` por dois. 27 arquivos ainda buscam dentro de `useEffect`, fora do cache. | Uma chave de cache por RPC da casca; perfil lido uma vez por sessão. Frontend puro. |
 | **12** Tempo-limite em serviço externo | **falta (parte)** | Têm: `supabase/functions/clinical-search/index.ts:131` (120 s para pergunta, 45 s para busca) e `supabase/functions/webhooks/index.ts:36`. Não tem: `supabase/functions/enviar-codigo-2fa/index.ts:67` (envio do código pela Resend). No navegador, as chamadas ao banco não têm limite (`src/lib/supabase.ts:174`): em 4G ruim a tela espera até o navegador desistir. | Limite na Resend; decisão do RT sobre o limite no navegador (A/B, seção 4). |
 | **16** Chamadas independentes em paralelo | **já tem** | Varredura de pares `await supabase…` a até 6 linhas: 23 candidatos, todos são escolha de ação por ternário (só uma das chamadas roda) ou dependem do resultado anterior (`Configuracao.tsx:409`). As leituras de cada tela são `useQuery` separados, que já rodam juntos. | Nada. |
 | **21** Scripts de terceiros depois da página | **falta (parte)** | Turnstile só é baixado no login, sob demanda (`src/components/seguranca/TurnstileWidget.tsx:24`). O Sentry entra no pacote inicial (`src/main.tsx:24`, `src/lib/sentry.ts:1`): `@sentry/core`, `@sentry/browser` e `@sentry/conventions` somam ~590 KB de fonte em `vendor-other`. | Carregar o Sentry depois da primeira pintura, guardando os erros de antes numa fila. |
@@ -134,7 +154,7 @@ Perguntadas uma de cada vez, na ordem em que a correção chega.
 
 | Item | Pergunta | A | B |
 |---|---|---|---|
-| 31 | Medir as telas logadas | O RT entra na homologação no próprio Chrome com uma conta de teste e a sessão mede | Medir só o login e o pacote, sem telas logadas |
+| 31 | Medir as telas logadas | **Escolhida em 08/11/2026:** o RT entrou na homologação no próprio Chrome e a sessão mediu (seção 1.3) | — |
 | 17 | Índices | Agora: trigram no nome do paciente, corrigir as 8 políticas RLS do advisor e indexar as chaves das tabelas que crescem com o uso, com `EXPLAIN ANALYZE` na homologação | Esperar volume real na produção e decidir pelo `pg_stat_statements` |
 | 12 | Tempo-limite das chamadas ao banco no navegador | 20 s em toda chamada, com aviso "a rede está lenta, tente de novo" | Só nos serviços externos (Resend), como o kit pede |
 | 05 | Paginação clínica | Janela de tempo (internação atual, últimas 48 h, com "ver mais") | Páginas de 20 a 50 com "ver mais" |
@@ -142,17 +162,18 @@ Perguntadas uma de cada vez, na ordem em que a correção chega.
 
 ## 5. O que falta, na ordem do kit
 
-1. **31** — medir as telas logadas (decisão do RT, seção 4).
-2. **24** — 13 `select('*')`.
-3. **08** — N+1: painel de observação, checagem, trava de alergia, série de sinais (migrations nos três primeiros).
-4. **17** — índices (decisão do RT).
-5. **02/15** — `logo.png` de 5,7 MB no manifest, dois PNG órfãos de 5 MB, imagens enviadas sem reduzir, `loading="lazy"`.
-6. **01** — esqueletos nas telas principais.
-7. **05** — paginação ou janela nas 19 listas (seção 3.2), uma tela por vez.
-8. **04** — esperar parar de digitar em ~15 buscas.
-9. Depois, na ordem do kit: **12** (tempo-limite), **21** (Sentry depois da pintura), **22** (pacote inicial), **27** (cabeçalho de cache), **11** (dependências).
+1. **31** — feito: linha de base na seção 1.
+2. **03** — chamadas repetidas da casca (`perfis` 3×, `meu_plantao_agora` por cinco caminhos), achadas na medição com login. Entra aqui porque pesa em toda tela.
+3. **24** — 13 `select('*')`.
+4. **08** — N+1: painel de observação, checagem, trava de alergia, série de sinais (migrations nos três primeiros).
+5. **17** — índices (decisão do RT).
+6. **02/15** — `logo.png` de 5,7 MB no manifest, dois PNG órfãos de 5 MB, imagens enviadas sem reduzir, `loading="lazy"`.
+7. **01** — esqueletos nas telas principais.
+8. **05** — paginação ou janela nas 19 listas (seção 3.2), uma tela por vez.
+9. **04** — esperar parar de digitar em ~15 buscas.
+10. Depois, na ordem do kit: **12** (tempo-limite), **21** (Sentry depois da pintura), **22** (pacote inicial), **27** (cabeçalho de cache), **11** (dependências).
 
-Não se aplicam (motivo na tabela da seção 2): 19, 25, 10, 18, 20, 28, 23 (se o 05 paginar), 26 e 30 por ora. Já têm: 06, 09, 13, 16, 29, 14, 07, 03 (a conferir com login).
+Não se aplicam (motivo na tabela da seção 2): 19, 25, 10, 18, 20, 28, 23 (se o 05 paginar), 26 e 30 por ora. Já têm: 06, 09, 13, 16, 29, 14, 07.
 
 ## Como medir de novo
 

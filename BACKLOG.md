@@ -2348,11 +2348,11 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 
 **Como anda:** primeiro a auditoria só de leitura (`docs/desempenho/AUDITORIA.md`), com cada item em "já tem", "não se aplica" (com o motivo) ou "falta", e a linha de base medida. Depois, um item por vez, na ordem do kit (31, 19, 24, 08, 17, 02/15, 01, 05, 13, 04 e o resto). Cada item tem branch `desempenho/<item>` e PR próprio com base master, teste primeiro quando der e medição antes e depois. Migration passa pela homologação, com CI do banco verde e "ok produção" do RT. Frontend puro pode ser mesclado com CI verde. Item "não se aplica" fica registrado com o motivo e é confirmado com o RT; não é implementado.
 
-**Linha de base (08/11/2026):** login da produção no Lighthouse, celular e 4G lento, mediana de 3: nota 68, FCP 3,1 s, LCP 5,2 s, 8.229 KB transferidos; 5.747 KB são o `logo.png` do manifest. JavaScript inicial: 504 KB em gzip.
+**Linha de base (08/11/2026):** login da produção no Lighthouse, celular e 4G lento, mediana de 3: nota 68, FCP 3,1 s, LCP 5,2 s, 8.229 KB transferidos; 5.747 KB são o `logo.png` do manifest. JavaScript inicial: 504 KB em gzip. Telas logadas do médico na homologação (sem limitar a rede): 25 a 33 chamadas ao banco por recarga, cerca de 20 delas da casca; dados prontos em 1,4 a 2,5 s; nenhuma chamada passou de 500 ms.
 
 | Item | O que o kit pede | Situação na auditoria (08/11/2026) | Estado |
 |---|---|---|---|
-| 31 | Medir no celular e em 4G lento, antes e depois | Falta parte: login medido; telas logadas dependem do login do RT na homologação | Em andamento |
+| 31 | Medir no celular e em 4G lento, antes e depois | Linha de base feita em 08/11/2026: login da produção (Lighthouse) e 7 telas logadas do médico na homologação (`docs/desempenho/AUDITORIA.md`, seção 1) | Linha de base registrada; repetir a cada item |
 | 19 | Servidor na mesma região do banco | Não se aplica: sem funções na Vercel; navegador fala direto com o Supabase `sa-east-1`; borda `gru1` | A confirmar com o RT |
 | 24 | Só as colunas usadas | Falta: 13 `select('*')` | Pendente |
 | 08 | Corrigir N+1 | Falta: painel de observação, checagem, trava de alergia, série de sinais | Pendente |
@@ -2363,7 +2363,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 05 | Paginar listas que crescem | Falta: 19 leituras sem limite; 10 com teto sem página | Decisão A/B do RT |
 | 13 | Texto da IA aos poucos | Já tem: stream NDJSON em `useClinicalAsk.ts` | — |
 | 04 | Esperar parar de digitar na busca | Falta: ~15 buscas consultam a cada tecla | Pendente |
-| 03 | Sem chamada repetida | Já tem (TanStack Query); conferir com login | A conferir |
+| 03 | Sem chamada repetida | Falta parte: a casca repete `perfis` 3×, `contexto_sem_conexao` 2×, `meu_plantao_agora` por cinco caminhos, em toda recarga | Pendente |
 | 12 | Tempo-limite em serviço externo | Falta parte: Resend sem limite; navegador sem limite | Decisão A/B do RT |
 | 16 | Chamadas independentes em paralelo | Já tem: nenhuma sequência independente | — |
 | 21 | Scripts de terceiros depois da página | Falta parte: Sentry no pacote inicial | Pendente |
