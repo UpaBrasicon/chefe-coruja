@@ -2353,7 +2353,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | Item | O que o kit pede | Situação na auditoria (08/11/2026) | Estado |
 |---|---|---|---|
 | 31 | Medir no celular e em 4G lento, antes e depois | Linha de base feita em 08/11/2026: login da produção (Lighthouse) e 7 telas logadas do médico na homologação (`docs/desempenho/AUDITORIA.md`, seção 1) | Linha de base registrada; repetir a cada item |
-| 19 | Servidor na mesma região do banco | Não se aplica: sem funções na Vercel; navegador fala direto com o Supabase `sa-east-1`; borda `gru1` | A confirmar com o RT |
+| 19 | Servidor na mesma região do banco | Não se aplica: sem funções na Vercel; navegador fala direto com o Supabase `sa-east-1`; borda `gru1` | Confirmado pelo RT em 08/11/2026 |
 | 24 | Só as colunas usadas | Falta: 13 `select('*')` | Pendente |
 | 08 | Corrigir N+1 | Falta: painel de observação, checagem, trava de alergia, série de sinais | Pendente |
 | 17 | Índices nos filtros, com EXPLAIN | Falta parte: trigram no nome do paciente, 8 políticas RLS do advisor, chaves das tabelas que crescem | Decisão A/B do RT |
@@ -2370,19 +2370,19 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 22 | JavaScript por tela | Falta parte: dependências do jsPDF e do Recharts no `vendor-other` inicial | Pendente |
 | 29 | Fontes no próprio domínio | Já tem: `@fontsource-variable` | — |
 | 14 | Interface otimista | Já tem onde cabe; ação clínica não | — |
-| 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | A confirmar com o RT |
-| 30 | Medir usuários reais | Não se aplica por ora: produção sem equipe | Decisão do RT |
+| 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | Confirmado pelo RT em 08/11/2026 |
+| 30 | Medir usuários reais | Não se aplica por ora: produção sem equipe | Confirmado pelo RT em 08/11/2026; ligar quando a primeira unidade entrar em uso |
 | 11 | Tirar dependências sem uso | Falta (pequeno): `framer-motion`, `mammoth` | Pendente |
 | 06 | CDN | Já tem: Vercel `gru1` + Cloudflare | — |
 | 09 | Compressão | Já tem: Brotli | — |
 | 27 | Cache de arquivos com hash | Falta parte: service worker guarda; cabeçalho HTTP de 4 h, não `immutable` | Pendente |
-| 25 | Pool de conexões | Não se aplica: app só usa `supabase-js` (HTTP); Hermes já tem pool | A confirmar com o RT |
+| 25 | Pool de conexões | Não se aplica: app só usa `supabase-js` (HTTP); Hermes já tem pool | Confirmado pelo RT em 08/11/2026 |
 | 07 | Tarefa lenta em fila | Já tem onde precisa: RNDS e webhooks por fila | — |
-| 10 | Cache com Redis | Não se aplica: volume de uma unidade | A confirmar com o RT |
-| 18 | OpenTelemetry | Não se aplica: regras em RPC, sem backend em etapas | A confirmar com o RT |
-| 20 | HTML pronto no servidor | Não se aplica: app atrás do login; landing já é Next.js | A confirmar com o RT |
-| 23 | Virtualizar listas longas | Não se aplica se o 05 paginar | A confirmar com o RT |
-| 28 | Várias instâncias | Não se aplica: Vercel e Supabase gerenciados | A confirmar com o RT |
+| 10 | Cache com Redis | Não se aplica: volume de uma unidade | Confirmado pelo RT em 08/11/2026 |
+| 18 | OpenTelemetry | Não se aplica: regras em RPC, sem backend em etapas | Confirmado pelo RT em 08/11/2026 |
+| 20 | HTML pronto no servidor | Não se aplica: app atrás do login; landing já é Next.js | Confirmado pelo RT em 08/11/2026 |
+| 23 | Virtualizar listas longas | Não se aplica se o 05 paginar | Confirmado pelo RT em 08/11/2026 |
+| 28 | Várias instâncias | Não se aplica: Vercel e Supabase gerenciados | Confirmado pelo RT em 08/11/2026 |
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.

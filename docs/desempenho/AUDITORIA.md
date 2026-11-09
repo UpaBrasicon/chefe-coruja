@@ -158,7 +158,7 @@ Perguntadas uma de cada vez, na ordem em que a correção chega.
 | 17 | Índices | Agora: trigram no nome do paciente, corrigir as 8 políticas RLS do advisor e indexar as chaves das tabelas que crescem com o uso, com `EXPLAIN ANALYZE` na homologação | Esperar volume real na produção e decidir pelo `pg_stat_statements` |
 | 12 | Tempo-limite das chamadas ao banco no navegador | 20 s em toda chamada, com aviso "a rede está lenta, tente de novo" | Só nos serviços externos (Resend), como o kit pede |
 | 05 | Paginação clínica | Janela de tempo (internação atual, últimas 48 h, com "ver mais") | Páginas de 20 a 50 com "ver mais" |
-| 30 | Medir usuários reais | Ligar quando a primeira unidade entrar em uso | Ligar já |
+| 30 | Medir usuários reais | **Escolhida em 08/11/2026** (junto com a confirmação dos "não se aplica"): ligar quando a primeira unidade entrar em uso | — |
 
 ## 5. O que falta, na ordem do kit
 
@@ -173,7 +173,7 @@ Perguntadas uma de cada vez, na ordem em que a correção chega.
 9. **04** — esperar parar de digitar em ~15 buscas.
 10. Depois, na ordem do kit: **12** (tempo-limite), **21** (Sentry depois da pintura), **22** (pacote inicial), **27** (cabeçalho de cache), **11** (dependências).
 
-Não se aplicam (motivo na tabela da seção 2): 19, 25, 10, 18, 20, 28, 23 (se o 05 paginar), 26 e 30 por ora. Já têm: 06, 09, 13, 16, 29, 14, 07.
+Não se aplicam (motivo na tabela da seção 2), **confirmados pelo RT em 08/11/2026**: 19, 25, 10, 18, 20, 28, 23 (se o 05 paginar), 26 e 30 por ora. Já têm: 06, 09, 13, 16, 29, 14, 07.
 
 ## Como medir de novo
 
