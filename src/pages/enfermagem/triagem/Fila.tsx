@@ -15,6 +15,7 @@ import { Estado } from '@/components/porta/Estado'
 import { dataSP, esperaMin, hora, nomeDe, type NaFila } from './comum'
 import type { SalaTriagem, SalaTriagemCtx, UltimaChamada } from './useSalaTriagem'
 import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 // Fila da triagem: sala escolhida uma vez no topo (guardada no aparelho),
 // tabela com paciente, queixa, espera, situação da chamada e Chamar · Triar ·
@@ -137,7 +138,7 @@ export function FilaTriagem({ fila, carregando, erro, sala, onTriar, ubs = false
   return (
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
       <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-sussurro">80+ primeiro, depois as demais prioridades legais, depois a chegada</p>
-      {carregando && <p className="px-5 py-5 text-controle text-tinta-sussurro">Carregando a fila…</p>}
+      {carregando && <EsqueletoLinhas linhas={3} rotulo="Carregando a fila…" />}
       {erroDeLeitura(erro, fila.length > 0) && <p className="px-5 py-5 text-controle text-critico">{erroDeLeitura(erro, fila.length > 0)}</p>}
       {!carregando && !erro && fila.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">{ubs ? 'Nenhuma ficha aguardando a escuta.' : 'Nenhuma ficha aguardando triagem.'}</p>}
       {fila.length > 0 && (

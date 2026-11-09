@@ -20,11 +20,11 @@ import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Spinner } from '@/components/ui/spinner'
 
 import { CartaoObservacao } from './CartaoObservacao'
 import { ObservacoesQueAbri } from './ObservacoesQueAbri'
 import { duracao, msgErro, relogioPermanencia, type LinhaObservacao } from './modelo'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 type Aba = 'ativas' | 'finalizadas'
 
@@ -104,7 +104,7 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
   const corpo = !unidadeId ? (
     <p className="text-apoio text-tinta-sussurro">Escolha a unidade.</p>
   ) : painel.isLoading ? (
-    <div className="flex h-40 items-center justify-center"><Spinner /></div>
+    <EsqueletoLinhas linhas={4} rotulo="Carregando a observação…" />
   ) : painel.error ? (
     <p className="rounded-container border border-critico/30 bg-alerta-critico px-4 py-3 text-apoio text-critico">{msgErro(painel.error)}</p>
   ) : (

@@ -60,6 +60,7 @@ import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 type Ref = { id: string; nome: string }
 type Contexto = {
@@ -687,7 +688,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
         {central && <CardDescription>As 200 mais recentes. A fila com filtros e a decisão chegam nas próximas tarefas.</CardDescription>}
       </CardHeader>
       <CardContent className="text-apoio">
-        {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+        {lista.isLoading ? <EsqueletoLinhas linhas={5} rotulo="Carregando os pedidos…" /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
           <Vazio icone={Waypoints} titulo="Nenhuma solicitação" texto={central ? 'As solicitações das unidades da rede aparecem aqui.' : 'As solicitações enviadas pela unidade aparecem aqui.'} />
         ) : (
           <ul className="flex flex-col divide-y divide-fio">
