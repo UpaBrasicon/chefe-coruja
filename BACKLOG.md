@@ -2357,8 +2357,8 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 24 | Só as colunas usadas | Falta: 13 `select('*')` | Corrigido na branch `desempenho/24-colunas` (só frontend): 12 leituras com as colunas da tela (pacientes 19 de 39, observacao 7 de 21, internacoes 5 de 24 etc.); exceção do perfil de quem entrou. Teste `src/lib/semSelectEstrela.test.ts` falha no master. Na homologação em 08/11/2026 (`4dcd5c7f`), sem erro nas leituras. Evidência em `docs/desempenho/ITEM-24-COLUNAS.md`. Falta: PR, CI verde e merge |
 | 08 | Corrigir N+1 | Falta: painel de observação, checagem, trava de alergia, série de sinais | Pendente |
 | 17 | Índices nos filtros, com EXPLAIN | Falta parte: trigram no nome do paciente, 8 políticas RLS do advisor, chaves das tabelas que crescem | Decisão A/B do RT |
-| 02 | Imagens WebP/AVIF no tamanho exibido | Falta: `logo.png` 5,7 MB no manifest; dois PNG órfãos de 5 MB; envio sem reduzir | Pendente |
-| 15 | Imagem fora da tela só ao chegar perto | Falta: nenhuma `<img>` com `loading="lazy"` | Pendente |
+| 02 | Imagens WebP/AVIF no tamanho exibido | Falta: `logo.png` 5,7 MB no manifest; dois PNG órfãos de 5 MB; envio sem reduzir | Corrigido na branch `desempenho/02-15-imagens` (só frontend): ícone de 512 px (437 KB) e de 192 px (67 KB), PNG órfãos apagados, banner, foto e arte reduzidos a WebP no envio. Teste `src/lib/reduzirImagem.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-02-15-IMAGENS.md`. Falta: CI, merge e Lighthouse depois |
+| 15 | Imagem fora da tela só ao chegar perto | Falta: nenhuma `<img>` com `loading="lazy"` | Corrigido junto com o 02: `loading="lazy"` nas listas de banners e de artes do painel |
 | 01 | Esqueleto ao carregar | Falta parte: só uma tela usa o `Skeleton` | Pendente |
 | 05 | Paginar listas que crescem | Falta: 19 leituras sem limite; 10 com teto sem página | Decisão A/B do RT |
 | 13 | Texto da IA aos poucos | Já tem: stream NDJSON em `useClinicalAsk.ts` | — |

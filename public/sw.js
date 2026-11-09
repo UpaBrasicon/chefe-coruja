@@ -108,7 +108,8 @@ self.addEventListener('push', (event) => {
   const title = payload.title || 'Chefe Coruja'
   const options = {
     body: payload.body || 'Você tem uma nova notificação.',
-    icon: '/logo.png',
+    // item 02 do kit de desempenho: o ícone pequeno basta para o aviso
+    icon: '/logo-192.png',
     badge: '/favicon.svg',
     data: { url: payload.url || '/' },
   }
