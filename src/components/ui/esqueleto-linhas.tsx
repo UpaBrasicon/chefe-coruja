@@ -19,7 +19,7 @@ export function EsqueletoLinhas({
       <span className="sr-only">{rotulo}</span>
       {Array.from({ length: linhas }, (_, i) => (
         <div key={i} className="flex items-center gap-3">
-          <Skeleton className="size-8 shrink-0 rounded-full" />
+          <Skeleton className="size-8 shrink-0 rounded-capsula" />
           <div className="flex flex-1 flex-col gap-1.5">
             <Skeleton className={cn('h-3.5', i % 3 === 0 ? 'w-2/3' : i % 3 === 1 ? 'w-1/2' : 'w-3/5')} />
             <Skeleton className="h-3 w-1/3" />
