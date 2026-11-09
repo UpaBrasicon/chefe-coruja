@@ -1,5 +1,6 @@
 // Trilha do episódio (eventos ADT e transferências) e checklist de admissão,
 // que antes ficavam no diálogo "Abrir leito" do painel de internação.
+import * as React from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { History } from 'lucide-react'
 
@@ -28,38 +29,59 @@ const TIPO_EVENTO: Record<string, string> = {
   retificacao: 'Retificação',
 }
 
+// Item 05 do kit de desempenho (decisão do RT em 09/11/2026, A): a trilha lia
+// todos os eventos da vida do paciente. Agora vêm os mais recentes, com "ver
+// mais"; a ordem na tela continua do mais antigo para o mais novo.
+const PASSO_EVENTOS = 50
+const PASSO_TRANSF = 20
+
 export function TrilhaEpisodio({ pacienteId }: { pacienteId: string }) {
+  const [limiteEventos, setLimiteEventos] = React.useState(PASSO_EVENTOS)
+  const [limiteTransf, setLimiteTransf] = React.useState(PASSO_TRANSF)
   const eventos = useQuery({
-    queryKey: ['eventos-adt-paciente', pacienteId],
+    queryKey: ['eventos-adt-paciente', pacienteId, limiteEventos],
+    placeholderData: (anterior) => anterior,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('eventos_adt')
         .select('id, seq, tipo_evento, motivo, created_at, perfis!eventos_adt_autor_id_fkey(nome_completo)')
         .eq('paciente_id', pacienteId)
-        .order('seq', { ascending: true })
+        .order('seq', { ascending: false })
+        .limit(limiteEventos + 1)
       if (error) throw error
-      return (data ?? []) as unknown as { id: string; seq: number; tipo_evento: string; motivo: string | null; created_at: string; perfis: { nome_completo: string } | null }[]
+      const linhas = (data ?? []) as unknown as { id: string; seq: number; tipo_evento: string; motivo: string | null; created_at: string; perfis: { nome_completo: string } | null }[]
+      return { temMais: linhas.length > limiteEventos, linhas: linhas.slice(0, limiteEventos).reverse() }
     },
   })
   const transferencias = useQuery({
-    queryKey: ['historico-paciente', pacienteId],
+    queryKey: ['historico-paciente', pacienteId, limiteTransf],
+    placeholderData: (anterior) => anterior,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transferencias_paciente')
         .select('id, motivo, created_at, perfis!transferencias_paciente_transferido_por_fkey(nome_completo)')
         .eq('paciente_id', pacienteId)
         .order('created_at', { ascending: false })
+        .limit(limiteTransf + 1)
       if (error) throw error
-      return (data ?? []) as unknown as { id: string; motivo: string | null; created_at: string; perfis: { nome_completo: string } | null }[]
+      const linhas = (data ?? []) as unknown as { id: string; motivo: string | null; created_at: string; perfis: { nome_completo: string } | null }[]
+      return { temMais: linhas.length > limiteTransf, linhas: linhas.slice(0, limiteTransf) }
     },
   })
-  const lista = eventos.data ?? []
+  const lista = eventos.data?.linhas ?? []
+  const listaTransf = transferencias.data?.linhas ?? []
   return (
     <details className="rounded-container border border-fio bg-superficie px-4 py-3">
       <summary className="flex cursor-pointer items-center gap-2 text-apoio font-semibold text-tinta-sussurro">
-        <History className="size-3.5" aria-hidden /> Trilha do episódio · {lista.length} {lista.length === 1 ? 'evento' : 'eventos'}
+        <History className="size-3.5" aria-hidden /> Trilha do episódio · {eventos.data?.temMais ? `últimos ${lista.length} eventos` : `${lista.length} ${lista.length === 1 ? 'evento' : 'eventos'}`}
       </summary>
       <div className="mt-2.5 flex flex-col gap-1.5">
+        {eventos.data?.temMais && (
+          <Button variant="ghost" size="sm" className="self-start" disabled={eventos.isFetching}
+            onClick={() => setLimiteEventos((n) => n + PASSO_EVENTOS)}>
+            Ver eventos mais antigos
+          </Button>
+        )}
         {lista.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum evento ADT registrado.</p>}
         {lista.map((e) => (
           <div key={e.id} className="flex items-center gap-2 text-apoio">
@@ -68,14 +90,20 @@ export function TrilhaEpisodio({ pacienteId }: { pacienteId: string }) {
             <span className="text-tinta-sussurro">{diaHora(e.created_at)} · {e.perfis?.nome_completo ?? '—'}{e.motivo ? ` · ${e.motivo}` : ''}</span>
           </div>
         ))}
-        {(transferencias.data ?? []).length > 0 && (
+        {listaTransf.length > 0 && (
           <>
             <span className="mt-1.5 text-rotulo font-semibold text-tinta-sussurro">Transferências entre setores</span>
-            {(transferencias.data ?? []).map((t) => (
+            {listaTransf.map((t) => (
               <span key={t.id} className="text-apoio text-tinta-apoio">
                 {diaHora(t.created_at)} · {t.perfis?.nome_completo ?? '—'} · {t.motivo || 'sem motivo'}
               </span>
             ))}
+            {transferencias.data?.temMais && (
+              <Button variant="ghost" size="sm" className="self-start" disabled={transferencias.isFetching}
+                onClick={() => setLimiteTransf((n) => n + PASSO_TRANSF)}>
+                Ver transferências mais antigas
+              </Button>
+            )}
           </>
         )}
       </div>

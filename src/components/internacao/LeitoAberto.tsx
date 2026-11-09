@@ -174,6 +174,8 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
     enabled: !!i,
     queryFn: async () => {
       const { data, error } = await supabase.from('passagens_plantao').select('id, de_perfil, para_perfil, resumo, situacao, enviada_em, motivo_recusa').eq('internacao_id', i!.id).order('enviada_em', { ascending: false })
+        // item 05 do kit de desempenho: o bloco usa só a pendente e a última
+        .limit(20)
       if (error) throw error
       return (data ?? []) as Passagem[]
     },
