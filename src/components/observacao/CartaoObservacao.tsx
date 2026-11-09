@@ -10,7 +10,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardList, Clock } from 'lucide-react'
 import * as React from 'react'
 
-import { supabase } from '@/lib/supabase'
 import { loteAcuidade } from '@/lib/lotesPaciente'
 import { cn } from '@/lib/utils'
 import { faixaEtaria, rotuloIdade } from '@/domain/idade'

@@ -9,7 +9,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { supabase } from '@/lib/supabase'
 import { loteAlergias } from '@/lib/lotesPaciente'
 
 // 4 estados (decisão do RT 03/10/2026): "tem" (alergia ativa), "nega" (registro
