@@ -2342,6 +2342,48 @@ Pedido do RT: "criar n número de possibilidades para testar todo o fluxo de tod
 
 Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de memória; o cenário remete à ferramenta do sistema que tem a fonte. A cor da classificação é decisão da enfermagem, também dentro do cenário.
 
+## Trilha — Desempenho (kit de 31 passos), pedido do RT em 08/11/2026
+
+**Origem:** o RT pediu em 08/11/2026: "quero fazer as 31 melhorias agora", do kit de desempenho para apps (goat-entregas.vercel.app/kit-performance-app, de @gustagoat.ai). **Prioridade P1.**
+
+**Como anda:** primeiro a auditoria só de leitura (`docs/desempenho/AUDITORIA.md`), com cada item em "já tem", "não se aplica" (com o motivo) ou "falta", e a linha de base medida. Depois, um item por vez, na ordem do kit (31, 19, 24, 08, 17, 02/15, 01, 05, 13, 04 e o resto). Cada item tem branch `desempenho/<item>` e PR próprio com base master, teste primeiro quando der e medição antes e depois. Migration passa pela homologação, com CI do banco verde e "ok produção" do RT. Frontend puro pode ser mesclado com CI verde. Item "não se aplica" fica registrado com o motivo e é confirmado com o RT; não é implementado.
+
+**Linha de base (08/11/2026):** login da produção no Lighthouse, celular e 4G lento, mediana de 3: nota 68, FCP 3,1 s, LCP 5,2 s, 8.229 KB transferidos; 5.747 KB são o `logo.png` do manifest. JavaScript inicial: 504 KB em gzip. Telas logadas do médico na homologação (sem limitar a rede): 25 a 33 chamadas ao banco por recarga, cerca de 20 delas da casca; dados prontos em 1,4 a 2,5 s; nenhuma chamada passou de 500 ms.
+
+| Item | O que o kit pede | Situação na auditoria (08/11/2026) | Estado |
+|---|---|---|---|
+| 31 | Medir no celular e em 4G lento, antes e depois | Linha de base feita em 08/11/2026: login da produção (Lighthouse) e 7 telas logadas do médico na homologação (`docs/desempenho/AUDITORIA.md`, seção 1) | Linha de base registrada; repetir a cada item |
+| 19 | Servidor na mesma região do banco | Não se aplica: sem funções na Vercel; navegador fala direto com o Supabase `sa-east-1`; borda `gru1` | Confirmado pelo RT em 08/11/2026 |
+| 24 | Só as colunas usadas | Falta: 13 `select('*')` | Pendente |
+| 08 | Corrigir N+1 | Falta: painel de observação, checagem, trava de alergia, série de sinais | Pendente |
+| 17 | Índices nos filtros, com EXPLAIN | Falta parte: trigram no nome do paciente, 8 políticas RLS do advisor, chaves das tabelas que crescem | Decisão A/B do RT |
+| 02 | Imagens WebP/AVIF no tamanho exibido | Falta: `logo.png` 5,7 MB no manifest; dois PNG órfãos de 5 MB; envio sem reduzir | Pendente |
+| 15 | Imagem fora da tela só ao chegar perto | Falta: nenhuma `<img>` com `loading="lazy"` | Pendente |
+| 01 | Esqueleto ao carregar | Falta parte: só uma tela usa o `Skeleton` | Pendente |
+| 05 | Paginar listas que crescem | Falta: 19 leituras sem limite; 10 com teto sem página | Decisão A/B do RT |
+| 13 | Texto da IA aos poucos | Já tem: stream NDJSON em `useClinicalAsk.ts` | — |
+| 04 | Esperar parar de digitar na busca | Falta: ~15 buscas consultam a cada tecla | Pendente |
+| 03 | Sem chamada repetida | Falta parte: a casca repete `perfis` 3×, `contexto_sem_conexao` 2×, `meu_plantao_agora` por cinco caminhos, em toda recarga | Corrigido na branch `desempenho/03-chamadas-repetidas` (só frontend): teste `src/lib/chamadaCompartilhada.test.ts` (9 casos, falha sem a correção); na homologação em 08/11/2026 (`0d1a0f19`): 4 a 7 chamadas a menos por recarga nas 7 telas do médico, nenhuma repetição da casca. Evidência em `docs/desempenho/ITEM-03-CHAMADAS-REPETIDAS.md`. Falta: PR, CI verde e merge |
+| 12 | Tempo-limite em serviço externo | Falta parte: Resend sem limite; navegador sem limite | Decisão A/B do RT |
+| 16 | Chamadas independentes em paralelo | Já tem: nenhuma sequência independente | — |
+| 21 | Scripts de terceiros depois da página | Falta parte: Sentry no pacote inicial | Pendente |
+| 22 | JavaScript por tela | Falta parte: dependências do jsPDF e do Recharts no `vendor-other` inicial | Pendente |
+| 29 | Fontes no próprio domínio | Já tem: `@fontsource-variable` | — |
+| 14 | Interface otimista | Já tem onde cabe; ação clínica não | — |
+| 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | Confirmado pelo RT em 08/11/2026 |
+| 30 | Medir usuários reais | Não se aplica por ora: produção sem equipe | Confirmado pelo RT em 08/11/2026; ligar quando a primeira unidade entrar em uso |
+| 11 | Tirar dependências sem uso | Falta (pequeno): `framer-motion`, `mammoth` | Pendente |
+| 06 | CDN | Já tem: Vercel `gru1` + Cloudflare | — |
+| 09 | Compressão | Já tem: Brotli | — |
+| 27 | Cache de arquivos com hash | Falta parte: service worker guarda; cabeçalho HTTP de 4 h, não `immutable` | Pendente |
+| 25 | Pool de conexões | Não se aplica: app só usa `supabase-js` (HTTP); Hermes já tem pool | Confirmado pelo RT em 08/11/2026 |
+| 07 | Tarefa lenta em fila | Já tem onde precisa: RNDS e webhooks por fila | — |
+| 10 | Cache com Redis | Não se aplica: volume de uma unidade | Confirmado pelo RT em 08/11/2026 |
+| 18 | OpenTelemetry | Não se aplica: regras em RPC, sem backend em etapas | Confirmado pelo RT em 08/11/2026 |
+| 20 | HTML pronto no servidor | Não se aplica: app atrás do login; landing já é Next.js | Confirmado pelo RT em 08/11/2026 |
+| 23 | Virtualizar listas longas | Não se aplica se o 05 paginar | Confirmado pelo RT em 08/11/2026 |
+| 28 | Várias instâncias | Não se aplica: Vercel e Supabase gerenciados | Confirmado pelo RT em 08/11/2026 |
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
