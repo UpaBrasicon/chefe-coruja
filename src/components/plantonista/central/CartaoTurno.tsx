@@ -11,6 +11,7 @@ import { useFaixaPlantonista } from '@/hooks/useFaixaPlantonista'
 import { esperaPorCor } from '@/domain/esperaPorta'
 import { formatarDuracao, JANELA_OBSERVACAO_MIN, nivelDaObservacao, tempoDaJanela } from '@/domain/plantao'
 import { ALVO_MIN, NIVEL_RISCO, rotuloCor, type CorRisco } from '@/domain/risco'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Cartão de turno da Central (P/index.html 1419–1486): substitui a faixa de
 // parâmetros do plantonista (decisão de 19–20/09 no protótipo). Setor e turno
@@ -140,7 +141,9 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-fio px-5 py-3.5">
         <span className="flex items-center gap-[7px] text-corpo font-semibold tracking-[-0.012em] text-tinta">
           <Stethoscope className="size-4 text-acao" aria-hidden />
-          {cartao.isLoading ? 'Carregando o turno…' : titulo}
+          {cartao.isLoading ? (
+            <span role="status"><Skeleton className="inline-block h-4 w-56 align-middle" /><span className="sr-only">Carregando o turno…</span></span>
+          ) : titulo}
         </span>
         {emCurso && (
           <>
