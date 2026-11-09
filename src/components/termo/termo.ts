@@ -201,7 +201,11 @@ export function useCancelarTermo(pacienteId: string) {
 }
 
 // ── gestor: modelos da unidade ──────────────────────────────────────────────
-export type ModeloTermoLinha = Tables<'termos_modelos'>
+// Item 24 do kit de desempenho: as colunas que a tela dos modelos usa.
+export type ModeloTermoLinha = Pick<
+  Tables<'termos_modelos'>,
+  'id' | 'raiz_id' | 'titulo' | 'procedimento' | 'texto' | 'declaracao' | 'categoria' | 'ativo' | 'versao' | 'vigente' | 'criado_em'
+>
 
 /** Todas as versões dos modelos da unidade (o RLS dá o histórico só ao gestor). */
 export function useModelosTermoUnidade(unidadeId: string | undefined) {
@@ -211,7 +215,8 @@ export function useModelosTermoUnidade(unidadeId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('termos_modelos')
-        .select('*')
+        // item 24 do kit de desempenho: só o que a tela dos modelos mostra
+        .select('id, raiz_id, titulo, procedimento, texto, declaracao, categoria, ativo, versao, vigente, criado_em')
         .eq('unidade_id', unidadeId!)
         .order('titulo')
         .order('versao', { ascending: false })

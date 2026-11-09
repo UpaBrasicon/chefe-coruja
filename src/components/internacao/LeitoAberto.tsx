@@ -161,7 +161,10 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
     queryKey: ['pendencias', i?.id],
     enabled: !!i,
     queryFn: async () => {
-      const { data, error } = await supabase.from('pendencias').select('*').eq('internacao_id', i!.id).order('criada_em')
+      // item 24 do kit de desempenho: só os campos de Pendencia (caderno/comum.ts)
+      const { data, error } = await supabase.from('pendencias')
+        .select('id, tipo, descricao, prazo, impeditiva, situacao, criada_em, autor_id, resolvida_por, resolvida_em')
+        .eq('internacao_id', i!.id).order('criada_em')
       if (error) throw error
       return (data ?? []) as Pendencia[]
     },
