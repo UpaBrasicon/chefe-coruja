@@ -16,6 +16,7 @@ import { CARATER_APAC, STATUS_APAC, TIPO_APAC, numeroApac, type Apac, type Criti
 import { codigoSigtapNaTela } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 const VAZIO = { procedimento: '', procNome: '', cid: '', cidSec: '', cidCausa: '', carater: '01', tipo: '3' as TipoApac,
   anterior: '', sinais: '', exames: '', justificativa: '' }
@@ -35,11 +36,12 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
       return (data ?? []) as unknown as Apac[]
     },
   })
+  const termoBusca = useValorAdiado(termo.trim())
   const busca = useQuery({
-    queryKey: ['buscar-sigtap-apac', termo.trim()],
-    enabled: abrindo && termo.trim().length >= 3,
+    queryKey: ['buscar-sigtap-apac', termoBusca],
+    enabled: abrindo && termoBusca.length >= 3,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_sigtap_apac', { p_termo: termo.trim() })
+      const { data, error } = await supabase.rpc('buscar_sigtap_apac', { p_termo: termoBusca })
       if (error) throw error
       return (data ?? []) as unknown as { codigo: string; nome: string }[]
     },

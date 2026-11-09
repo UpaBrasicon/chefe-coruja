@@ -38,6 +38,7 @@ import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { CartaoGlosa, RegistrarGlosa } from '@/pages/faturamento/Glosas'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 const MINIMO_MOTIVO = 10
 const VARIANTE: Record<EtapaConta, 'info' | 'warning' | 'secondary' | 'outline'> = {
@@ -743,11 +744,12 @@ function LancarProcedimento({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => vo
   const [codigo, setCodigo] = React.useState<{ codigo: string; nome: string } | null>(null)
   const [quantidade, setQuantidade] = React.useState('1')
   const [profissional, setProfissional] = React.useState('')
+  const termoBusca = useValorAdiado(termo.trim())
   const busca = useQuery({
-    queryKey: ['buscar-sigtap', termo.trim()],
-    enabled: aberto && !codigo && termo.trim().length >= 3,
+    queryKey: ['buscar-sigtap', termoBusca],
+    enabled: aberto && !codigo && termoBusca.length >= 3,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_sigtap', { p_termo: termo.trim() })
+      const { data, error } = await supabase.rpc('buscar_sigtap', { p_termo: termoBusca })
       if (error) throw error
       return (data ?? []) as unknown as { codigo: string; nome: string }[]
     },

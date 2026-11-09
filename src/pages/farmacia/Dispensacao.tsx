@@ -36,6 +36,7 @@ import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Estado } from '@/components/porta/Estado'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Aba = 'prescricoes' | 'avulsa' | 'registro'
 const MINIMO = 10
@@ -189,12 +190,13 @@ function Avulsa({ unidade }: { unidade: string }) {
   const [destino, setDestino] = React.useState('')
   const [motivo, setMotivo] = React.useState('')
   const [aviso, setAviso] = React.useState<string | null>(null)
+  const buscaAdiada = useValorAdiado(busca)
   const resultados = useQuery({
-    queryKey: ['busca-medicamento-avulsa', busca, unidade],
-    enabled: busca.trim().length >= 3 && !med,
+    queryKey: ['busca-medicamento-avulsa', buscaAdiada, unidade],
+    enabled: buscaAdiada.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo, apresentacao, unidade_consumo, unidade_consumo_outra')
-        .eq('ativo', true).or(filtroDaUnidade(unidade)).ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`).order('principio_ativo').limit(15)
+        .eq('ativo', true).or(filtroDaUnidade(unidade)).ilike('principio_ativo_norm', `%${normalizarMedicamento(buscaAdiada.trim())}%`).order('principio_ativo').limit(15)
       if (error) throw error
       return data ?? []
     },

@@ -40,6 +40,7 @@ import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Aba = 'competencia' | 'lancar' | 'configuracao' | 'historico'
 const ABAS: readonly (readonly [Aba, string])[] = [
@@ -268,10 +269,11 @@ function AbaLancar({ unidade, competencia }: { unidade: string; competencia: str
   const [busca, setBusca] = React.useState('')
   const [escolhido, setEscolhido] = React.useState<AtendimentoParaFaturar | null>(null)
   const [profissional, setProfissional] = React.useState('')
+  const buscaAdiada = useValorAdiado(busca.trim())
   const atendimentos = useQuery({
-    queryKey: ['atendimentos-para-faturar', unidade, competencia, busca.trim()],
+    queryKey: ['atendimentos-para-faturar', unidade, competencia, buscaAdiada],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('atendimentos_para_faturar', { p_unidade: unidade, p_competencia: competencia, p_busca: busca.trim() || undefined })
+      const { data, error } = await supabase.rpc('atendimentos_para_faturar', { p_unidade: unidade, p_competencia: competencia, p_busca: buscaAdiada || undefined })
       if (error) throw error
       return (data ?? []) as unknown as AtendimentoParaFaturar[]
     },
@@ -510,11 +512,12 @@ function BuscaSigtap({ rotulo, onEscolher, invalidar }: { rotulo: string; onEsco
   const qc = useQueryClient()
   const [termo, setTermo] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
+  const termoBusca = useValorAdiado(termo.trim())
   const busca = useQuery({
-    queryKey: ['buscar-sigtap', termo.trim()],
-    enabled: termo.trim().length >= 3,
+    queryKey: ['buscar-sigtap', termoBusca],
+    enabled: termoBusca.length >= 3,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_sigtap', { p_termo: termo.trim() })
+      const { data, error } = await supabase.rpc('buscar_sigtap', { p_termo: termoBusca })
       if (error) throw error
       return (data ?? []) as unknown as { codigo: string; nome: string }[]
     },

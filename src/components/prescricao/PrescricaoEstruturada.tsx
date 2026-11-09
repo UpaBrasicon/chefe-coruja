@@ -41,6 +41,7 @@ import { useTravas } from '@/components/paciente/useTravas'
 import { frase, interacoesDoErro, semPontoFinal, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
 import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 import { jaPrescritos, textoJaPrescrito } from '@/lib/jaPrescrito'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
@@ -407,7 +408,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
 
   // ponto 11: busca do servidor — sinônimo (AAS, SF 0,9%), várias palavras em
   // qualquer ordem, apresentação; o filtro da unidade fica dentro da RPC
-  const termo = busca.trim()
+  const termo = useValorAdiado(busca.trim())
   const resultados = useQuery({
     queryKey: ['busca-medicamento', termo, unidadeAtiva?.unidade_id],
     enabled: termo.length >= 2 && !med,
