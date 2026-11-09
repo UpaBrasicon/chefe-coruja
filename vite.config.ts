@@ -107,7 +107,12 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/react-hook-form')) return 'vendor-forms'
           if (id.includes('node_modules/zod')) return 'vendor-zod'
           if (id.includes('node_modules/@hookform')) return 'vendor-forms'
-          return 'vendor-other'
+          // Item 22 do kit de desempenho: o resto não vai mais para um
+          // "vendor-other" único, que é baixado no início. Ali caíam as
+          // dependências das libs sob demanda (pako, canvg, core-js, dompurify
+          // do jsPDF; redux, immer, decimal.js do Recharts): agora o Vite as
+          // põe junto de quem as usa e elas só descem quando a tela abre.
+          return undefined
         },
       },
     },
