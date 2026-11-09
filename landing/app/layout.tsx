@@ -46,17 +46,14 @@ const businessJsonLd = {
   name: BUSINESS.name,
   description: BUSINESS.description,
   url: SITE_URL,
-  telephone: BUSINESS.telephone,
+  ...(BUSINESS.telephone ? { telephone: BUSINESS.telephone } : {}),
   email: BUSINESS.email,
   address: {
     '@type': 'PostalAddress',
-    streetAddress: BUSINESS.address.street,
     addressLocality: BUSINESS.address.city,
     addressRegion: BUSINESS.address.region,
-    postalCode: BUSINESS.address.postalCode,
     addressCountry: BUSINESS.address.country,
   },
-  geo: { '@type': 'GeoCoordinates', latitude: BUSINESS.geo.lat, longitude: BUSINESS.geo.lng },
   openingHours: BUSINESS.openingHours,
   priceRange: '$$',
 }

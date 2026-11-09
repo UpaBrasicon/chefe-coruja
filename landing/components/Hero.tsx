@@ -31,7 +31,7 @@ export function Hero() {
             </CtaButton>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            Respondemos em até 4 horas úteis. Sem compromisso.
+            Demonstração gratuita, sem compromisso.
           </p>
         </div>
 

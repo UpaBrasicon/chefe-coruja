@@ -22,8 +22,7 @@ export default function ObrigadoPage() {
         </div>
         <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-slate-900">Mensagem recebida!</h1>
         <p className="mt-4 text-lg text-slate-600">
-          Obrigado pelo contato. Nossa equipe analisará sua solicitação e retornará em até{' '}
-          <strong>4 horas úteis</strong>.
+          Obrigado pelo contato. Nossa equipe vai analisar sua solicitação e responder.
         </p>
         <div className="mt-8 flex flex-col items-center gap-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -32,7 +31,6 @@ export default function ObrigadoPage() {
           <ul className="flex flex-col gap-2 text-sm text-slate-600">
             <li>Conhecer as funcionalidades da plataforma.</li>
             <li>Conferir nossas perguntas frequentes.</li>
-            <li>Chamar no WhatsApp para agilizar.</li>
           </ul>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <CtaButton href="/funcionalidades" variant="outline">
