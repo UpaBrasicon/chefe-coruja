@@ -42,10 +42,13 @@ test('a seção lê só observacoes_que_abri e tira os repetidos', () => {
 
 // Decisão do RT em 07/11/2026 (B P2-2, migration 20270307000005): além de
 // encerrar, quem abriu a observação pede parecer e marca a reavaliação.
-test('cada cartão tem "Reavaliar", "Pedir parecer" e "Encerrar observação", com os painéis do box', () => {
-  assert.equal((secao.match(/<Button\b/g) ?? []).length, 3)
+// Decisão do RT em 08/11/2026 (migration 20270308000008): quem abriu também
+// registra alergia enquanto a observação está aberta.
+test('cada cartão tem "Reavaliar", "Pedir parecer", "Alergias" e "Encerrar observação", com os painéis do box', () => {
+  assert.equal((secao.match(/<Button\b/g) ?? []).length, 4)
   const botoes = [...secao.matchAll(/>([^<>]+)<\/Button>/g)].map((m) => m[1].trim())
-  assert.deepEqual(botoes, ['Reavaliar', 'Pedir parecer', 'Encerrar observação'])
+  assert.deepEqual(botoes, ['Reavaliar', 'Pedir parecer', 'Alergias', 'Encerrar observação'])
+  assert.match(secao, /<AlergiasEventos pacienteId=\{o\.paciente_id\} \/>/)
   assert.match(secao, /<PainelDesfecho linha=\{o\} unidadeId=\{unidadeId\} acao=\{acao\} fechar=\{fechar\} erro=\{erro\} \/>/)
   assert.match(secao, /<PainelReavaliar linha=\{o\} acao=\{acao\} fechar=\{fechar\} erro=\{erro\} \/>/)
   assert.match(secao, /<AbaParecer pacienteId=\{o\.paciente_id\} internacaoId=\{o\.internacao_id\} \/>/)
