@@ -10,7 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardList, Clock } from 'lucide-react'
 import * as React from 'react'
 
-import { supabase } from '@/lib/supabase'
+import { loteAcuidade } from '@/lib/lotesPaciente'
 import { cn } from '@/lib/utils'
 import { faixaEtaria, rotuloIdade } from '@/domain/idade'
 import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
@@ -37,9 +37,9 @@ function Acuidade({ pacienteId }: { pacienteId: string }) {
     queryKey: ['acuidade', pacienteId],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('acuidade', { p_paciente: pacienteId })
-      if (error) throw error
-      return data as unknown as { escala: string | null; motivo?: string; total?: number; banda?: number; parcial?: boolean; aferido_em?: string | null }
+      // item 08 do kit de desempenho: um cartão por paciente, uma chamada para todos
+      const data = await loteAcuidade.carregar(pacienteId)
+      return data as { escala: string | null; motivo?: string; total?: number; banda?: number; parcial?: boolean; aferido_em?: string | null }
     },
   })
   const a = q.data
