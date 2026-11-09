@@ -19,7 +19,7 @@ import { criarFilaAteCarregar } from '@/lib/filaAteCarregar'
  * banco (registrar_erro_cliente, em reportarErro) continua na hora.
  */
 
-type Sentry = typeof SentryTipos
+type Sentry = typeof import('@/lib/sentryCarga')
 
 export type ContextoErro = { unidadeId?: string | null; papel?: string | null }
 
@@ -98,7 +98,7 @@ export function iniciarSentry(higienizar: (t: string) => string, versao: string)
   if (!dsn || ligado) return
   ligado = true
   depoisDaPintura(() => {
-    import('@sentry/react').then(
+    import('@/lib/sentryCarga').then(
       (Sentry) => {
         try {
           Sentry.init({

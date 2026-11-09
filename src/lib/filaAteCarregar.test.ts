@@ -50,5 +50,8 @@ test('falha ao enviar um item não impede os outros', () => {
 test('o sentry.ts não importa a biblioteca no início (só tipos e import dinâmico)', () => {
   const fonte = readFileSync('src/lib/sentry.ts', 'utf8')
   assert.doesNotMatch(fonte, /^import (?!type)[^\n]*from '@sentry\/react'/m)
-  assert.match(fonte, /import\('@sentry\/react'\)/)
+  assert.match(fonte, /import\('@\/lib\/sentryCarga'\)/)
+  // o módulo de carga nomeia o que usa (import dinâmico da biblioteca inteira
+  // levaria tudo: 154 KB em gzip contra cerca de 30 KB)
+  assert.match(readFileSync('src/lib/sentryCarga.ts', 'utf8'), /export \{ captureMessage, init, withScope \} from '@sentry\/react'/)
 })
