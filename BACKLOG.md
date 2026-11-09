@@ -2375,7 +2375,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 11 | Tirar dependências sem uso | Falta (pequeno): `framer-motion`, `mammoth` | Pendente |
 | 06 | CDN | Já tem: Vercel `gru1` + Cloudflare | — |
 | 09 | Compressão | Já tem: Brotli | — |
-| 27 | Cache de arquivos com hash | Falta parte: service worker guarda; cabeçalho HTTP de 4 h, não `immutable` | Pendente |
+| 27 | Cache de arquivos com hash | Falta parte: service worker guarda; cabeçalho HTTP de 4 h, não `immutable` | Corrigido na branch `desempenho/27-cache-assets`: `/assets/(.*)` com `public, max-age=31536000, immutable` no `vercel.json`; HTML e `sw.js` seguem `no-cache`. Teste `src/lib/cacheAssets.test.ts` falha no master. Falta: CI, merge e conferir o cabeçalho na produção |
 | 25 | Pool de conexões | Não se aplica: app só usa `supabase-js` (HTTP); Hermes já tem pool | Confirmado pelo RT em 08/11/2026 |
 | 07 | Tarefa lenta em fila | Já tem onde precisa: RNDS e webhooks por fila | — |
 | 10 | Cache com Redis | Não se aplica: volume de uma unidade | Confirmado pelo RT em 08/11/2026 |
