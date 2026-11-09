@@ -96,9 +96,10 @@ export function ChecklistAdmissao({ pacienteId, unidadeId, prontuarioAberto }: {
     queryKey: ['checklist-admissao', pacienteId],
     enabled: prontuarioAberto,
     queryFn: async () => {
-      const { data, error } = await supabase.from('checklist_admissao').select('*').eq('paciente_id', pacienteId).maybeSingle()
+      // item 24 do kit de desempenho: só os quatro itens do checklist
+      const { data, error } = await supabase.from('checklist_admissao').select('prescricao, dieta, leito, responsavel').eq('paciente_id', pacienteId).maybeSingle()
       if (error) throw error
-      return data as Checklist | null
+      return data as Pick<Checklist, (typeof ITENS)[number][0]> | null
     },
   })
   async function alternar(campo: (typeof ITENS)[number][0]) {

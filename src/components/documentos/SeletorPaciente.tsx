@@ -79,7 +79,8 @@ export function SeletorPaciente({ pacienteId, onEscolher, pac, unidadeId, perfil
     setDuplicata(null)
     if (tipo === 'editar') {
       void (async () => {
-        const { data } = await supabase.from('pacientes').select('*').eq('id', pacienteId!).maybeSingle()
+        // item 24 do kit de desempenho: só os campos do formulário de cadastro
+        const { data } = await supabase.from('pacientes').select(Object.keys(CADASTRO_VAZIO).join(', ')).eq('id', pacienteId!).maybeSingle()
         const f = { ...CADASTRO_VAZIO }
         for (const k of Object.keys(CADASTRO_VAZIO) as CampoCadastro[]) f[k] = ((data as Record<string, string | null> | null)?.[k] ?? '') as string
         setForm(f)

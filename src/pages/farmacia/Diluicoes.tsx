@@ -53,6 +53,12 @@ type Diluicao = {
   motivo_alteracao: string | null; origem_id: string | null
   alta_vigilancia: boolean | null; risco_flebite: boolean | null; unidade_id: string | null
 }
+const COLUNAS_DILUICAO =
+  'id, medicamento_id, principio_ativo, apresentacao, via, status, versao, ' +
+  'reconstituicao_diluente, reconstituicao_volume_ml, reconstituicao_concentracao, ' +
+  'diluicao_solucao, diluicao_volume_min_ml, concentracao_maxima, tempo_infusao_min, velocidade_max, bolus_permitido, ' +
+  'estabilidade_ta_h, estabilidade_refrig_h, fotossensivel, acesso, observacoes, fonte, revisor_crf, vigente_desde, vigente_ate, ' +
+  'motivo_alteracao, origem_id, alta_vigilancia, risco_flebite, unidade_id'
 /** Linha que vale para a unidade (padrao_diluicao_unidade): o modelo da rede ou o ajuste dela. */
 type Campos = Record<string, unknown>
 type LinhaPadrao = {
@@ -110,7 +116,8 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
   const tabela = useQuery({
     queryKey: ['diluicoes-farmacia'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('diluicao').select('*').order('principio_ativo').order('via').order('versao')
+      // item 24 do kit de desempenho: as colunas do tipo Diluicao, por nome
+      const { data, error } = await supabase.from('diluicao').select(COLUNAS_DILUICAO).order('principio_ativo').order('via').order('versao')
       if (error) throw error
       return (data ?? []) as unknown as Diluicao[]
     },

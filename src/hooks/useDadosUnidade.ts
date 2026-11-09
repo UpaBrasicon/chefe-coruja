@@ -18,7 +18,10 @@ export function useCenso() {
   return useQuery({
     queryKey: ['censo'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('vw_censo_unidade').select('*')
+      // item 24 do kit de desempenho: as colunas de CensoUnidade, por nome
+      const { data, error } = await supabase.from('vw_censo_unidade').select(
+        'unidade_id, unidade_nome, unidade_tipo, total_setores, total_leitos, leitos_livres, leitos_ocupados, leitos_bloqueados, leitos_higienizacao',
+      )
       if (error) throw error
       return (data ?? []) as CensoUnidade[]
     },
