@@ -2370,8 +2370,8 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 22 | JavaScript por tela | Falta parte: dependências do jsPDF e do Recharts no `vendor-other` inicial | Corrigido na branch `desempenho/22-pacote-inicial` (só build): sem o `vendor-other` único; JavaScript inicial de 504 KB para 371 KB em gzip (−26%). Teste `src/lib/pacoteInicial.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-22-PACOTE-INICIAL.md`. Falta: CI e merge |
 | 29 | Fontes no próprio domínio | Já tem: `@fontsource-variable` | — |
 | 14 | Interface otimista | Já tem onde cabe; ação clínica não | — |
-| 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | Confirmado pelo RT em 08/11/2026 |
-| 30 | Medir usuários reais | Não se aplica por ora: produção sem equipe | Confirmado pelo RT em 08/11/2026; ligar quando a primeira unidade entrar em uso |
+| 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | Condicionado ao 30 (decisão do RT em 09/11/2026): rever com o INP das telas reais |
+| 30 | Medir usuários reais | Falta, decisão do RT em 09/11/2026 (antes "não se aplica por ora"); entrou antes do 08 | Corrigido na branch `desempenho/30-usuarios-reais` (só frontend): `web-vitals` 5.1.0 (LCP, INP, CLS, FCP, TTFB) ao Sentry depois da pintura, só com métrica, valor, nota, rota sem identificador e papel. Testes `src/lib/rotaSemIdentificador.test.ts` e `src/lib/metricaReal.test.ts`. Evidência em `docs/desempenho/ITEM-30-USUARIOS-REAIS.md`. Falta: CI e merge |
 | 11 | Tirar dependências sem uso | Falta (pequeno): `framer-motion`, `mammoth` | Pendente |
 | 06 | CDN | Já tem: Vercel `gru1` + Cloudflare | — |
 | 09 | Compressão | Já tem: Brotli | — |
