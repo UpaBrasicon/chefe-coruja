@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { meuPlantaoAgora } from '@/lib/rpcCasca'
 import { PAPEIS_POR_ESCALA, PAPEL_LABEL } from '@/lib/constants'
 import { ehTema } from '@/lib/tema'
 import { useAuth } from '@/contexts/AuthContext'
@@ -280,7 +281,7 @@ function Casca() {
     enabled: entraPorEscala && !!perfil,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('meu_plantao_agora')
+      const { data, error } = await meuPlantaoAgora()
       if (error) throw error
       const lista = (data ?? []) as MeuPlantao[]
       return lista.find((p) => p) ?? null

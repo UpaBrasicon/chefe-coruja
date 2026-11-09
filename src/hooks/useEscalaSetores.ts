@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 
 /**
  * Setores da escala ATUAL do plantonista (relógio do servidor).
@@ -16,7 +17,7 @@ export function useEscalaSetores(unidadeId?: string, perfilId?: string) {
     queryKey: ['escala-setores-atual', unidadeId, perfilId],
     enabled: !!unidadeId && !!perfilId,
     queryFn: async () => {
-      const { data: bruto, error } = await supabase.rpc('setores_na_escala_agora')
+      const { data: bruto, error } = await setoresNaEscalaAgora()
       if (error) throw error
       // O RPC retorna uuid[] — valida o formato vindo do banco.
       const setorIds = Array.isArray(bruto)

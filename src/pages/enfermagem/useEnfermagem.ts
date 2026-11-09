@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
 import type { Database } from '@/types/database'
@@ -65,7 +66,7 @@ export function useSetoresDaEscala() {
     enabled: !!unidadeAtiva,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('setores_na_escala_agora')
+      const { data, error } = await setoresNaEscalaAgora()
       if (error) throw error
       return (Array.isArray(data) ? data : []) as string[]
     },
