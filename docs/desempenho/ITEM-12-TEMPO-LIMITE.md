@@ -24,7 +24,7 @@ Sem limite, uma Resend lenta deixava a pessoa esperando o código até a funçã
 
 ## Produção
 
-O merge do PR não publica a função. Na produção: `supabase functions deploy enviar-codigo-2fa --project-ref saqjrjtrkzkswsxxvdxn` depois do merge, com o ok do RT.
+O merge do PR (#518) não publica a função. Com o ok do RT (09/11/2026, "Ok produção nas duas"), a sessão principal publicou só a `enviar-codigo-2fa` na produção: versão 15, `verify_jwt` ligado, versão do commit gravada. **Concluído.**
 
 ## Como reverter
 
