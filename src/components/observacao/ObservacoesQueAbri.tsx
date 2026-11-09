@@ -25,6 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TOM_TEXTO, hhmm, msgErro, relogioPermanencia, type Acao } from './modelo'
 import { Painel, PainelDesfecho, PainelReavaliar } from './PaineisCartao'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
+import { AlergiasEventos } from '@/components/paciente/AlergiasEventos'
 
 export function ObservacoesQueAbri({ unidadeId, agora, noPainel }: {
   unidadeId: string
@@ -76,7 +77,7 @@ export function ObservacoesQueAbri({ unidadeId, agora, noPainel }: {
   )
 }
 
-type PainelQueAbri = 'desfecho' | 'reavaliar' | 'parecer'
+type PainelQueAbri = 'desfecho' | 'reavaliar' | 'parecer' | 'alergias'
 
 function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: number; unidadeId: string }) {
   const qc = useQueryClient()
@@ -130,6 +131,7 @@ function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: nu
           <div className="flex flex-wrap justify-end gap-2">
             <Button size="sm" variant="outline" aria-expanded={painel === 'reavaliar'} onClick={() => alternar('reavaliar')}>Reavaliar</Button>
             <Button size="sm" variant="outline" aria-expanded={painel === 'parecer'} onClick={() => alternar('parecer')}>Pedir parecer</Button>
+            <Button size="sm" variant="outline" aria-expanded={painel === 'alergias'} onClick={() => alternar('alergias')}>Alergias</Button>
             <Button size="sm" variant="outline" aria-expanded={painel === 'desfecho'} onClick={() => alternar('desfecho')}>Encerrar observação</Button>
           </div>
         </TableCell>
@@ -142,6 +144,12 @@ function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: nu
             {painel === 'parecer' && (
               <Painel titulo="Parecer">
                 <AbaParecer pacienteId={o.paciente_id} internacaoId={o.internacao_id} />
+              </Painel>
+            )}
+            {/* quem abriu registra alergia enquanto a observação está aberta (RT, 08/11/2026) */}
+            {painel === 'alergias' && (
+              <Painel titulo="Alergias e eventos adversos">
+                <AlergiasEventos pacienteId={o.paciente_id} />
               </Painel>
             )}
           </TableCell>
