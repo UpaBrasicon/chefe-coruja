@@ -10,6 +10,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { loteAlergias } from '@/lib/lotesPaciente'
 
 // 4 estados (decisão do RT 03/10/2026): "tem" (alergia ativa), "nega" (registro
 // explícito de ausência), "desconhece" (perguntou e não soube informar) e
@@ -137,9 +138,9 @@ export function useAlergias(pacienteId: string | null | undefined) {
     enabled: !!pacienteId,
     staleTime: 15_000,
     queryFn: async (): Promise<PainelAlergias> => {
-      const { data, error } = await supabase.rpc('alergias_do_paciente', { p_paciente: pacienteId! })
-      if (error) throw error
-      const p = data as unknown as PainelAlergias
+      // item 08 do kit de desempenho: as listas (painel de observação,
+      // checagem) pedem um paciente por cartão; o lote junta numa chamada
+      const p = (await loteAlergias.carregar(pacienteId!)) as PainelAlergias
       return { estado: p.estado, alergias: p.alergias ?? [], negacoes: p.negacoes ?? [], eventos: p.eventos ?? [] }
     },
   })

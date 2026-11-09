@@ -10175,6 +10175,7 @@ export type Database = {
         }[]
       }
       acuidade: { Args: { p_paciente: string }; Returns: Json }
+      acuidade_dos_pacientes: { Args: { p_pacientes: string[] }; Returns: Json }
       adicionar_plantao_escala: {
         Args: {
           p_data: string
@@ -10229,7 +10230,12 @@ export type Database = {
         Args: { p_medicamento: string; p_paciente: string }
         Returns: string
       }
+      alergia_trava_medicamentos: {
+        Args: { p_medicamentos: string[]; p_paciente: string }
+        Returns: Json
+      }
       alergias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      alergias_dos_pacientes: { Args: { p_pacientes: string[] }; Returns: Json }
       alertas_sepse: {
         Args: { p_unidade: string }
         Returns: {
