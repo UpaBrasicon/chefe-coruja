@@ -184,3 +184,17 @@ npx lighthouse@12.8.2 https://www.chefecoruja.com.br/login --form-factor=mobile 
 ```
 
 Rodar três vezes e usar a mediana. Pacote inicial: `npx vite build` e somar os arquivos `.js` citados no `dist/index.html` (com e sem gzip).
+
+## 6. Estado em 09/11/2026
+
+**Na produção:** 03 (#507), 24 (#508), 08 (#509, migration 20270320000001), 02 e 15 (#510), 04 (#511), 27 (#512), 22 (#513), 21 (#514), 30 (#515), 17 (#517, migration 20270320000002), 12 (#518 e função publicada), 01 (#519), 11 (#520), 05 em três partes (#521; #522, migration 20270320000003; #525, migration 20270320000004).
+
+**Resultado medido:** login da produção de 8.229 KB para 2.551 KB; JavaScript inicial de 504 KB para 342 KB em gzip; 4 a 7 chamadas a menos por recarga nas telas do médico; busca de paciente com 50 mil cadastros de ~600 ms para 1,6 ms (nome) e 10 ms (CPF); painel de observação de 2N chamadas para 2.
+
+**Ainda abertos:**
+
+- **05, listas restantes:** conversas do chat, chamados técnicos, pessoas da organização e diluições ficam inteiras: a tela calcula contagens ou resumos sobre a lista toda. Paginar exige levar essas contas ao servidor; decidir com os números do item 30. Pré-natal (lista limitada às gestações ativas) e a impressão do prontuário (precisa do registro completo) ficam inteiras.
+- **23, virtualizar listas longas:** condicionado ao 05. Continuam com teto de 200 a 1.000 e sem página: `contas_da_unidade`, `glosas_da_unidade`, `regulacao_fila`, `regulacao_sla_painel`, `dispensacoes_da_unidade` e outras (seção 3.2). Se o item 30 mostrar INP ruim nessas telas, paginar ou virtualizar.
+- **26, redesenho à toa:** condicionado ao 30. Esperar o INP das telas reais no Sentry (`tipo:metrica`, `metrica:INP`).
+- **Medição nas telas logadas com o Chrome do RT:** pendente desde 09/11 (RT só pelo celular); o item 30 já mede em uso real.
+- **LCP do login:** o parágrafo final do formulário pinta tarde no Lighthouse simulado, acompanhando a verificação da Cloudflare (Turnstile, 1,4 MB). Investigar à parte.

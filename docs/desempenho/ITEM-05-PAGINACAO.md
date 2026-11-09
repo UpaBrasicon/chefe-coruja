@@ -32,7 +32,7 @@ Teste: `src/lib/janelasClinicas.test.ts` (as três leituras com limite e os bot�
 - **Procedimentos** (`ProcedimentosRealizados.tsx`, no atendimento, nos cuidados do leito e no BPA): migration `20270320000004_procedimentos_pagina.sql` (só cria) com `procedimentos_do_paciente_pagina`, irmã como as do 05b, página padrão de 20; a tela mostra "Ver mais".
 - Homologação (09/11/2026, transação desfeita, 34 pacientes da UPA Fase 5): a irmã igual à original em todos. Depois, aplicada com a versão registrada; rollback testado.
 - Testes: `src/lib/paginasPaciente.test.ts` e `supabase/tests/desempenho_05c_procedimentos.sql`.
-- **Produção:** migration `20270320000004` sem "ok produção" ainda; aplicar antes do merge.
+- **Produção:** migration `20270320000004` aplicada na produção em 09/11/2026 com o ok do RT (md5 e permissões iguais à homologação, pela sessão principal); PR #525 mesclado. **Concluído.**
 
 ## Listas restantes (conferidas em 09/11/2026)
 
