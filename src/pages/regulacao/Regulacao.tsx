@@ -685,7 +685,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
       <CardHeader>
         <CardTitle className="text-corpo">{central ? 'Recebidas' : 'Solicitações da unidade'}</CardTitle>
         <CardDescription>Clique num pedido para ver o detalhe, os anexos e o histórico.</CardDescription>
-        {central && <CardDescription>As 200 mais recentes. A fila com filtros e a decisão chegam nas próximas tarefas.</CardDescription>}
+        {central && <CardDescription>As 200 mais recentes.</CardDescription>}
       </CardHeader>
       <CardContent className="text-apoio">
         {lista.isLoading ? <EsqueletoLinhas linhas={5} rotulo="Carregando os pedidos…" /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (

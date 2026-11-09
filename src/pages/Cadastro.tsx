@@ -117,7 +117,7 @@ function CartaoVinculo({ vinculo }: { vinculo: Vinculo }) {
       ['Responsável', 'Administração da rede'],
     ]
     nota =
-      'A conta nasce agora; o vínculo com as unidades é liberado pela administração da rede. Gestão não vê nome de paciente fora da própria unidade, e a administração da rede não vê em nenhuma.'
+      'A conta é criada agora; o vínculo com as unidades é liberado pela administração da rede. Gestão não vê nome de paciente fora da própria unidade, e a administração da rede não vê em nenhuma.'
   }
   return (
     <div className="mt-[18px] rounded-container border border-acao/30 bg-alerta-marca px-[17px] py-4">
@@ -322,7 +322,7 @@ export function Cadastro() {
       setRecado({
         tipo: 'prazo',
         titulo: `Convite expirado em ${formatarDiaHora(r.expira_em)}`,
-        texto: `Pedir outro avisa ${r.convidou ?? 'a coordenação da unidade'} na lista de convites — não é preciso ligar.`,
+        texto: `Pedir outro avisa ${r.convidou ?? 'a coordenação da unidade'} na lista de convites. Não é preciso ligar.`,
         pedirNovo: true,
       })
       return
@@ -560,7 +560,7 @@ export function Cadastro() {
       {/* ── coluna verde: onde a pessoa está ── */}
       <FolhaMarca
         className="flex px-5 pt-7 pb-8 sm:px-7 lg:px-12 lg:pt-9 lg:pb-10"
-        titulo="O vínculo vem antes do primeiro leito."
+        titulo="Primeiro a unidade confirma o seu vínculo."
         texto="Enquanto a unidade não confirma quem você é e em que papel entra, a plataforma não mostra paciente."
         rodape="Sem convite ou contrato não há conta."
       >
@@ -584,7 +584,7 @@ export function Cadastro() {
               <p className="mb-[22px] text-corpo text-tinta-apoio">
                 {logado
                   ? `Você já tem conta, ${perfil?.nome_completo.split(' ')[0]}. O convite acrescenta um vínculo a ela.`
-                  : 'O acesso é de uma pessoa, numa unidade, num papel. É isso que este passo estabelece.'}
+                  : 'Este passo liga o acesso a você, a uma unidade e a um papel.'}
               </p>
 
               {!logado && (
@@ -777,7 +777,7 @@ export function Cadastro() {
                 {logado
                   ? `Vínculo concluído às ${concluidoEm}. `
                   : 'Dados conferidos. O acesso é criado quando você concluir este passo. '}
-                Escolha o que te interrompe durante o plantão — dá para mudar depois em Avisos.
+                Escolha o que te interrompe durante o plantão. Dá para mudar depois em Avisos.
               </p>
 
               <div className="mb-[18px] flex flex-col gap-2">

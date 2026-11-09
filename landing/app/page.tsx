@@ -20,8 +20,8 @@ export default function HomePage() {
             <p className="text-sm text-slate-600">Dados de saúde tratados como sensíveis</p>
           </div>
           <div>
-            <p className="text-2xl font-extrabold text-primary">3 níveis</p>
-            <p className="text-sm text-slate-600">Admin, gestor e plantonista</p>
+            <p className="text-2xl font-extrabold text-primary">Por papel</p>
+            <p className="text-sm text-slate-600">Cada perfil vê só a sua tela</p>
           </div>
         </div>
       </section>
@@ -31,7 +31,7 @@ export default function HomePage() {
       <section className="container-site py-16 text-center">
         <h2 className="section-title">Pronto para organizar sua unidade?</h2>
         <p className="section-subtitle mx-auto max-w-2xl">
-          Agende uma demonstração gratuita e veja como o Chefe Coruja se adapta à sua realidade.
+          Agende uma demonstração gratuita.
         </p>
         <div className="mt-8">
           <CtaButton>Agendar demonstração</CtaButton>

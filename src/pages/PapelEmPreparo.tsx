@@ -10,7 +10,7 @@ import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 // entra, vê o que está por vir e não recebe tela com dado de demonstração.
 
 const QUANDO: Partial<Record<Papel, string>> = {
-  telemedicina: 'Fase 7 — teleinterconsulta de apoio ao plantonista.',
+  telemedicina: 'Chegam com a teleinterconsulta de apoio ao plantonista.',
 }
 
 export default function PapelEmPreparo() {
@@ -26,7 +26,7 @@ export default function PapelEmPreparo() {
       <Vazio
         icone={Hourglass}
         titulo="As telas deste papel ainda estão sendo construídas"
-        texto={papel && QUANDO[papel] ? `Chegam na ${QUANDO[papel]}` : 'Chegam nas próximas fases do plano.'}
+        texto={(papel && QUANDO[papel]) || 'Ainda não estão disponíveis.'}
       />
     </>
   )
