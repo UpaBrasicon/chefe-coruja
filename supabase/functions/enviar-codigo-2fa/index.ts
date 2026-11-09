@@ -22,6 +22,8 @@ const resposta = (status: number, corpo: Record<string, unknown>) =>
   new Response(JSON.stringify(corpo), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
 const EMAIL_FROM = Deno.env.get('EMAIL_FROM') ?? 'Chefe Coruja <nao-responda@chefecoruja.com.br>'
+// item 12 do kit de desempenho: tempo máximo de espera pela Resend
+const LIMITE_RESEND_MS = 10_000
 
 function corpoEmail(codigo: string): string {
   return `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f5f6f8;font-family:Arial,Helvetica,sans-serif">
@@ -64,16 +66,27 @@ async function tratar(req: Request): Promise<Response> {
     return resposta(500, { erro: 'envio de email não configurado' })
   }
 
-  const r = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: EMAIL_FROM,
-      to: user.email,
-      subject: 'Seu código de acesso — Chefe Coruja',
-      html: corpoEmail(String(codigo)),
-    }),
-  })
+  // Item 12 do kit de desempenho (decisão do RT em 09/11/2026): a Resend tem
+  // 10 s para responder. Passou disso, a tela recebe "tente de novo" na hora,
+  // em vez de esperar a função cair.
+  let r: Response
+  try {
+    r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: EMAIL_FROM,
+        to: user.email,
+        subject: 'Seu código de acesso — Chefe Coruja',
+        html: corpoEmail(String(codigo)),
+      }),
+      signal: AbortSignal.timeout(LIMITE_RESEND_MS),
+    })
+  } catch (e) {
+    const demorou = e instanceof DOMException && (e.name === 'TimeoutError' || e.name === 'AbortError')
+    relatarErro('enviar-codigo-2fa', demorou ? 'resend_demorou' : 'resend_sem_rede', demorou ? `sem resposta em ${LIMITE_RESEND_MS} ms` : String(e))
+    return resposta(504, { erro: 'o envio do código demorou; tente de novo em instantes' })
+  }
   if (!r.ok) {
     console.error('resend falhou', r.status, await r.text().catch(() => ''))
     relatarErro('enviar-codigo-2fa', 'resend_falhou', `HTTP ${r.status}`)
