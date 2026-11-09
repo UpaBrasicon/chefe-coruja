@@ -1,4 +1,6 @@
-import * as Sentry from '@sentry/react'
+import type * as SentryTipos from '@sentry/react'
+
+import { criarFilaAteCarregar } from '@/lib/filaAteCarregar'
 
 /**
  * Sentry (Fase 0, item 11 do BACKLOG.md — observabilidade mínima).
@@ -10,12 +12,55 @@ import * as Sentry from '@sentry/react'
  * filtros de regra/ruído de lá. O `beforeSend` ainda limpa de novo, por garantia.
  *
  * No ambiente local (banco local) fica inerte, a não ser com VITE_SENTRY_DSN.
+ *
+ * Item 21 do kit de desempenho: a biblioteca (cerca de 31 KB em gzip) não vai
+ * mais no pacote inicial. Desce depois que a página carregou e ficou ociosa;
+ * o que for reportado antes espera numa fila de até 20 erros. O registro no
+ * banco (registrar_erro_cliente, em reportarErro) continua na hora.
  */
+
+type Sentry = typeof SentryTipos
 
 export type ContextoErro = { unidadeId?: string | null; papel?: string | null }
 
+type EventoErro = {
+  tipo: string
+  mensagem: string
+  detalhe: string
+  origem: string
+  assinatura: string
+  requestId?: string
+}
+
 let ligado = false
 let contexto: ContextoErro = {}
+
+const fila = criarFilaAteCarregar<Sentry, EventoErro>({ maximo: 20 }, (Sentry, e) => {
+  Sentry.withScope((escopo) => {
+    escopo.setTags({
+      tipo: e.tipo,
+      origem: e.origem || '/',
+      area: areaDe(e.origem, e.mensagem),
+      unidade: contexto.unidadeId ?? '—',
+      papel: contexto.papel ?? '—',
+      ...(e.requestId ? { request_id: e.requestId } : {}),
+    })
+    escopo.setFingerprint([e.assinatura])
+    if (e.detalhe) escopo.setExtra('detalhe', e.detalhe)
+    Sentry.captureMessage(e.mensagem, 'error')
+  })
+})
+
+/** Roda depois que a página carregou e o navegador ficou ocioso. */
+function depoisDaPintura(fn: () => void): void {
+  const ocioso = () => {
+    const ric = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+    if (ric) ric(fn, { timeout: 5000 })
+    else setTimeout(fn, 1500)
+  }
+  if (document.readyState === 'complete') ocioso()
+  else window.addEventListener('load', ocioso, { once: true })
+}
 
 /** Ambiente pelo projeto Supabase do build (o mesmo que separa produção e homologação). */
 export function ambienteDoBuild(url = import.meta.env.VITE_SUPABASE_URL ?? ''): 'producao' | 'homolog' | 'local' {
@@ -25,7 +70,7 @@ export function ambienteDoBuild(url = import.meta.env.VITE_SUPABASE_URL ?? ''): 
 }
 
 /** Limpeza final de qualquer evento (defesa em profundidade). */
-export function limparEvento<E extends Sentry.ErrorEvent>(evento: E, higienizar: (t: string) => string): E {
+export function limparEvento<E extends SentryTipos.ErrorEvent>(evento: E, higienizar: (t: string) => string): E {
   delete evento.request
   delete evento.user
   delete evento.breadcrumbs
@@ -51,21 +96,31 @@ export function iniciarSentry(higienizar: (t: string) => string, versao: string)
   // no computador de desenvolvimento só liga com VITE_SENTRY_DSN explícito
   const dsn = import.meta.env.VITE_SENTRY_DSN || (ambienteDoBuild() === 'local' ? '' : DSN_PADRAO)
   if (!dsn || ligado) return
-  try {
-    Sentry.init({
-      dsn,
-      environment: ambienteDoBuild(),
-      release: versao || undefined,
-      defaultIntegrations: false,
-      integrations: [],
-      sendDefaultPii: false,
-      maxBreadcrumbs: 0,
-      beforeSend: (evento) => limparEvento(evento, higienizar),
-    })
-    ligado = true
-  } catch {
-    /* observabilidade nunca derruba o app */
-  }
+  ligado = true
+  depoisDaPintura(() => {
+    import('@sentry/react').then(
+      (Sentry) => {
+        try {
+          Sentry.init({
+            dsn,
+            environment: ambienteDoBuild(),
+            release: versao || undefined,
+            defaultIntegrations: false,
+            integrations: [],
+            sendDefaultPii: false,
+            maxBreadcrumbs: 0,
+            beforeSend: (evento) => limparEvento(evento, higienizar),
+          })
+          fila.pronto(Sentry)
+        } catch {
+          /* observabilidade nunca derruba o app */
+        }
+      },
+      () => {
+        /* sem rede para baixar a biblioteca: o erro já foi ao banco */
+      },
+    )
+  })
 }
 
 /** Unidade e papel ativos (nunca nome de paciente ou de profissional). */
@@ -82,30 +137,7 @@ export function areaDe(origem: string, mensagem: string): string {
   return 'app'
 }
 
-export function enviarAoSentry(e: {
-  tipo: string
-  mensagem: string
-  detalhe: string
-  origem: string
-  assinatura: string
-  requestId?: string
-}): void {
+export function enviarAoSentry(e: EventoErro): void {
   if (!ligado) return
-  try {
-    Sentry.withScope((escopo) => {
-      escopo.setTags({
-        tipo: e.tipo,
-        origem: e.origem || '/',
-        area: areaDe(e.origem, e.mensagem),
-        unidade: contexto.unidadeId ?? '—',
-        papel: contexto.papel ?? '—',
-        ...(e.requestId ? { request_id: e.requestId } : {}),
-      })
-      escopo.setFingerprint([e.assinatura])
-      if (e.detalhe) escopo.setExtra('detalhe', e.detalhe)
-      Sentry.captureMessage(e.mensagem, 'error')
-    })
-  } catch {
-    /* idem */
-  }
+  fila.enviar(e)
 }
