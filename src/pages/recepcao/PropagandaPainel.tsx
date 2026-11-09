@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Eye, EyeOff, ImagePlus, Megaphone, Trash2 } from 'l
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { reduzirImagem } from '@/lib/reduzirImagem'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,9 +60,11 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
     mutationFn: async () => {
       if (!arquivo) throw new Error('Escolha a imagem da arte (PNG, JPG ou WebP, até 5 MB).')
       if (titulo.trim().length < 2) throw new Error('Descreva a arte (texto para quem não enxerga a tela).')
-      const ext = (arquivo.name.split('.').pop() ?? 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png'
+      // item 02 do kit de desempenho: a arte vai à TV em até 1920 px; sobe reduzida
+      const imagem = await reduzirImagem(arquivo, 1920)
+      const ext = (imagem.name.split('.').pop() ?? 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png'
       const caminho = `${unidadeId}/${crypto.randomUUID()}.${ext}`
-      const up = await supabase.storage.from('painel').upload(caminho, arquivo, { contentType: arquivo.type, upsert: false })
+      const up = await supabase.storage.from('painel').upload(caminho, imagem, { contentType: imagem.type, upsert: false })
       if (up.error) throw up.error
       const { error } = await supabase.rpc('adicionar_propaganda', { p_unidade: unidadeId, p_caminho: caminho, p_titulo: titulo.trim() })
       if (error) {
@@ -160,7 +163,7 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
               {data.itens.map((i, k) => (
                 <li key={i.id} className="flex flex-wrap items-center gap-3 px-3 py-2.5">
                   <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-controle border border-fio bg-trilha">
-                    <img src={urlArte(i.caminho)} alt={i.titulo} className="size-full object-cover" />
+                    <img src={urlArte(i.caminho)} alt={i.titulo} loading="lazy" decoding="async" className="size-full object-cover" />
                   </div>
                   <div className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">
                     <span className="text-controle font-medium text-tinta">{i.titulo}</span>

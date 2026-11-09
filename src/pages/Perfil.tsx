@@ -14,6 +14,7 @@ import {
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { reduzirImagem } from '@/lib/reduzirImagem'
 import { useAuth } from '@/contexts/AuthContext'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { SecaoSegundoFator } from '@/components/seguranca/SegundoFator'
@@ -151,11 +152,14 @@ export default function Perfil() {
   const mudar = <K extends keyof DadosPessoaisEstendidos>(k: K, v: DadosPessoaisEstendidos[K]) =>
     setDados((d) => ({ ...d, [k]: v }))
 
-  async function fazerUpload(file: File) {
+  async function fazerUpload(original: File) {
     if (!perfil) return
     setErro(null)
+    // item 02 do kit de desempenho: a foto aparece pequena; sobe reduzida
+    const file = await reduzirImagem(original, 512)
     const nomeSeguro = `${perfil.id}-${Date.now()}.${file.name.split('.').pop() ?? 'png'}`
     const { error } = await supabase.storage.from('fotos').upload(nomeSeguro, file, {
+      contentType: file.type,
       cacheControl: '3600',
       upsert: true,
     })

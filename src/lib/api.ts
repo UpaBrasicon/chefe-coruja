@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { reduzirImagem } from '@/lib/reduzirImagem'
 import type { Json, Papel, TipoLeito, TipoSetor } from '@/types/database'
 
 // ── Auditoria ────────────────────────────────────────────────────────────────
@@ -252,10 +253,13 @@ export async function reordenarBanners(unidadeId: string, idsEmOrdem: string[]) 
   })
 }
 
-export async function uploadBannerImagem(unidadeId: string, file: File) {
+export async function uploadBannerImagem(unidadeId: string, original: File) {
+  // item 02 do kit de desempenho: o banner aparece em toda tela; sobe reduzido
+  const file = await reduzirImagem(original, 1600)
   const nomeSeguro = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
   const caminho = `${unidadeId}/${crypto.randomUUID()}-${nomeSeguro}`
   const { error } = await supabase.storage.from('banners').upload(caminho, file, {
+    contentType: file.type,
     cacheControl: '3600',
     upsert: false,
   })
