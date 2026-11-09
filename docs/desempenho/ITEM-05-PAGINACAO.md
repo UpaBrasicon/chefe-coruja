@@ -26,7 +26,22 @@ Teste: `src/lib/janelasClinicas.test.ts` (as três leituras com limite e os bot�
 
 **Ficam inteiras, de propósito:** avaliações e intercorrências do paciente (a tela calcula a última de cada escala, a curva de crescimento, a versão vigente e as retificações a partir da lista toda) e os painéis do Hiperdia e da puericultura (indicadores e filtros do programa inteiro calculados na tela). Paginar mudaria o que a tela mostra; o certo é levar esses cálculos ao servidor, num passo próprio.
 
-**Ainda sem limite (próximos):** pareceres, procedimentos e documentos do paciente; pré-natal; conversas do chat; chamados técnicos; pessoas da organização; versões de diluição.
+## Listas restantes (conferidas em 09/11/2026)
+
+Cada leitura foi conferida no código da tela: se ela só mostra as linhas ou se calcula algo sobre a lista inteira.
+
+| Lista | Situação | Por quê |
+|---|---|---|
+| Pareceres do paciente (`AbaParecer.tsx`) | dá para paginar | só mostra os cartões. Cuidado: um parecer antigo ainda aberto sairia da tela com o botão "Cancelar pedido"; paginar só os concluídos |
+| Procedimentos do paciente (`ProcedimentosRealizados.tsx`) | dá para paginar | só mostra as linhas; a RPC devolve um jsonb e precisa de `p_limite` |
+| Pré-natal (`PreNatal.tsx`) | fica inteira | só gestações ativas (lista limitada); cartões de resumo e filtros calculados na tela |
+| Conversas do chat (`useChat.ts`) | fica inteira por ora | o total de não lidas do botão do chat soma todas as conversas; antes, levar esse total ao servidor |
+| Chamados técnicos (gestor e admin) | fica inteira por ora | contadores de abertos e de alta gravidade e filtro por categoria na tela; antes, contar no servidor |
+| Pessoas da organização (`Pessoas.tsx`) | fica inteira por ora | "pessoas sem vínculo" e o seletor de pessoa usam todos os perfis; antes, consulta própria no servidor |
+| Diluições (`Diluicoes.tsx`) | fica inteira por ora | contadores das abas e busca na tela; a leitura traz também as versões publicadas, que a tela não usa (filtrar por status e unidade na consulta) |
+| Documentos para imprimir o prontuário | fica inteira | a impressão precisa do prontuário completo (busca no texto, "marcar todos", agrupar por dia). Se pesar: listar sem o conteúdo e buscar o conteúdo só dos marcados |
+
+As "fica inteira por ora" dependem de levar contagens e resumos ao servidor antes de paginar: trabalho próprio, a decidir com os números do item 30. Pareceres e procedimentos, de pouco volume por paciente, entram num próximo PR se o RT quiser.
 
 **Produção:** migration `20270320000003` sem "ok produção" ainda; aplicar antes do merge.
 
