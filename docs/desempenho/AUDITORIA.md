@@ -155,10 +155,12 @@ Perguntadas uma de cada vez, na ordem em que a correção chega.
 | Item | Pergunta | A | B |
 |---|---|---|---|
 | 31 | Medir as telas logadas | **Escolhida em 08/11/2026:** o RT entrou na homologação no próprio Chrome e a sessão mediu (seção 1.3) | — |
-| 17 | Índices | Agora: trigram no nome do paciente, corrigir as 8 políticas RLS do advisor e indexar as chaves das tabelas que crescem com o uso, com `EXPLAIN ANALYZE` na homologação | Esperar volume real na produção e decidir pelo `pg_stat_statements` |
-| 12 | Tempo-limite das chamadas ao banco no navegador | 20 s em toda chamada, com aviso "a rede está lenta, tente de novo" | Só nos serviços externos (Resend), como o kit pede |
-| 05 | Paginação clínica | Janela de tempo (internação atual, últimas 48 h, com "ver mais") | Páginas de 20 a 50 com "ver mais" |
+| 17 | Índices | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): A, agora: trigram no nome do paciente, corrigir as 8 políticas RLS do advisor e indexar as chaves das tabelas que crescem com o uso, com `EXPLAIN ANALYZE` na homologação | — |
+| 12 | Tempo-limite das chamadas ao banco no navegador | 20 s em toda chamada, com aviso | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): B, só na Resend (`enviar-codigo-2fa`), sem limite global no navegador; rever com os dados do item 30 |
+| 05 | Paginação | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): A nas telas clínicas (janela de tempo: internação atual ou últimas 48 h, com "ver mais"); páginas de 20 a 50 com "ver mais" nas listas administrativas | — |
 | 30 | Medir usuários reais | Escolhida em 08/11/2026: ligar quando a primeira unidade entrar em uso. **Trocada pelo RT em 09/11/2026: fazer agora, antes do 08.** | — |
+| 01 | Quais telas ganham esqueleto ao carregar | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): Central do Plantonista, Observação, Internação da enfermagem, fila da Triagem e Regulação, nesta ordem | — |
+| 08 | "Ok produção" da migration `20270320000001` | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): ok. Vale só para esta migration; cada migration nova do 17 e do 05 pede ok próprio, com o número e o CI do banco verde | — |
 
 ## 5. O que falta, na ordem do kit
 

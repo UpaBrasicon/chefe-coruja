@@ -13,7 +13,7 @@ import { useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { getSerieObservacao, type SerieObservacao } from '@/lib/observacao'
+import { getSeriesObservacao, type SerieObservacao } from '@/lib/observacao'
 import { gravarRegistros, novoItem } from '@/lib/offline/sincronizar'
 import { useInternacaoAtiva } from '@/hooks/useDocumentos'
 import { Button } from '@/components/ui/button'
@@ -93,14 +93,11 @@ export default function EvolucaoClinica({ embutido = false }: { embutido?: boole
     queryKey: ['evolucao-series', internacao?.id, conceitosSel],
     enabled: !!internacao?.id && conceitosSel.length > 0,
     queryFn: async (): Promise<SerieObservacao[]> => {
-      const resultados = await Promise.all(
-        conceitosSel.map((nome) => {
-          const c = conceitos?.find((x) => x.nome === nome)
-          if (!c) return null
-          return getSerieObservacao(internacao!.id, c.id)
-        })
-      )
-      return resultados.filter((r): r is SerieObservacao => r !== null)
+      // item 08 do kit de desempenho: todos os conceitos numa leitura só
+      const ids = conceitosSel
+        .map((nome) => conceitos?.find((x) => x.nome === nome)?.id)
+        .filter((id): id is string => !!id)
+      return getSeriesObservacao(internacao!.id, ids)
     },
   })
 

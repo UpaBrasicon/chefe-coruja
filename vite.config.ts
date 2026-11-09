@@ -93,7 +93,7 @@ export default defineConfig(({ mode }) => ({
           if (!id.includes('node_modules')) return
           // Libs pesadas carregadas sob demanda (jspdf, pdfjs, recharts...)
           // já viram chunks próprios pelos imports dinâmicos — não mapear.
-          const lazy = ['jspdf', 'pdfjs-dist', 'tesseract.js', 'html2canvas', 'mammoth', 'recharts']
+          const lazy = ['jspdf', 'pdfjs-dist', 'tesseract.js', 'html2canvas', 'recharts']
           if (lazy.some((l) => id.includes(`node_modules/${l}`))) return
 
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) return 'vendor-react'

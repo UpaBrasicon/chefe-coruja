@@ -16,7 +16,6 @@ import { sairamAgora } from '@/lib/chegadaEnfermagem'
 import { useAvisosFlutuantes } from '@/contexts/AvisosFlutuantesContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
-import { Spinner } from '@/components/ui/spinner'
 
 import { ChegadaReservada, type ChegadaEnfermagem } from './ChegadaReservada'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
@@ -25,6 +24,7 @@ import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
 import { duracao, ehAdulto, idadeDe, useAgora, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
 import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 export default function InternacaoEnfermagem() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -129,7 +129,7 @@ export default function InternacaoEnfermagem() {
           texto="A internação da enfermagem mostra os leitos dos setores em que você está de plantão neste momento." />
       ) : (
         <div className="flex flex-col gap-[18px]">
-          {carregando && <div className="flex justify-center py-6"><Spinner /></div>}
+          {carregando && <EsqueletoLinhas linhas={4} rotulo="Carregando os leitos…" />}
           {!carregando && porSetor.size === 0 && (
             <Vazio icone={Users} titulo="Nenhum paciente internado nos setores da sua escala"
               texto="Quem está na observação aparece no Pronto-Socorro da enfermagem." />

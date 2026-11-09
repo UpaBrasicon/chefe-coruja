@@ -54,49 +54,69 @@ export async function getSerieObservacao(
   conceitoId: string,
   periodo: '24h' | '48h' | '7d' | 'tudo' = 'tudo'
 ): Promise<SerieObservacao | null> {
+  return (await getSeriesObservacao(internacaoId, [conceitoId], periodo))[0] ?? null
+}
+
+/**
+ * Séries de vários conceitos numa internação, na ordem pedida. Item 08 do kit
+ * de desempenho: antes eram 3 chamadas por conceito (abrir o prontuário, as
+ * observações e o conceito); agora são 3 no total, com `.in()`.
+ */
+export async function getSeriesObservacao(
+  internacaoId: string,
+  conceitoIds: string[],
+  periodo: '24h' | '48h' | '7d' | 'tudo' = 'tudo'
+): Promise<SerieObservacao[]> {
+  const ids = [...new Set(conceitoIds)]
+  if (ids.length === 0) return []
   await abrirProntuarioDaInternacao(internacaoId)
   const desde = periodo === 'tudo' ? null : new Date(Date.now() - parseInt(periodo) * 3600_000).toISOString()
 
   let query = supabase
     .from('observacao')
     // item 24 do kit de desempenho: só o que vira ponto da série
-    .select('id, aferido_em, valor_num, valor_texto, flag, unidade, origem')
+    .select('id, conceito_id, aferido_em, valor_num, valor_texto, flag, unidade, origem')
     .eq('internacao_id', internacaoId)
-    .eq('conceito_id', conceitoId)
+    .in('conceito_id', ids)
     .order('aferido_em', { ascending: true })
   if (desde) query = query.gte('aferido_em', desde)
 
-  const { data: obs, error } = await query
-  if (error) throw new Error(`getSerieObservacao: ${error.message}`)
+  const [{ data: obs, error }, { data: conceitos, error: errC }] = await Promise.all([
+    query,
+    supabase.from('conceito').select('id, nome, unidade_padrao, ref_min, ref_max, categoria').in('id', ids),
+  ])
+  if (error) throw new Error(`getSeriesObservacao: ${error.message}`)
+  if (errC) throw new Error(`getSeriesObservacao: ${errC.message}`)
 
-  const { data: conceito, error: errC } = await supabase
-    .from('conceito')
-    .select('id, nome, unidade_padrao, ref_min, ref_max, categoria')
-    .eq('id', conceitoId)
-    .single()
-  if (errC) throw new Error(`getSerieObservacao: ${errC.message}`)
-
-  const pontos: PontoSerie[] = (obs ?? []).map((o) => ({
-    observacao_id: o.id,
-    aferido_em: o.aferido_em,
-    valor_num: o.valor_num,
-    valor_texto: o.valor_texto,
-    flag: (o.flag as FlagObs) ?? 'N',
-    unidade: o.unidade ?? conceito.unidade_padrao,
-    origem: o.origem,
-  }))
-
-  return {
-    conceito: {
-      id: conceito.id,
-      nome: conceito.nome,
-      unidade_padrao: conceito.unidade_padrao,
-      ref_min: conceito.ref_min,
-      ref_max: conceito.ref_max,
-      categoria: conceito.categoria,
-    },
-    pontos,
+  const porConceito = new Map((conceitos ?? []).map((c) => [c.id, c]))
+  const series: SerieObservacao[] = []
+  for (const id of ids) {
+    const conceito = porConceito.get(id)
+    if (!conceito) continue
+    const pontos: PontoSerie[] = (obs ?? [])
+      .filter((o) => o.conceito_id === id)
+      .map((o) => ({
+        observacao_id: o.id,
+        aferido_em: o.aferido_em,
+        valor_num: o.valor_num,
+        valor_texto: o.valor_texto,
+        flag: (o.flag as FlagObs) ?? 'N',
+        unidade: o.unidade ?? conceito.unidade_padrao,
+        origem: o.origem,
+      }))
+    series.push({
+      conceito: {
+        id: conceito.id,
+        nome: conceito.nome,
+        unidade_padrao: conceito.unidade_padrao,
+        ref_min: conceito.ref_min,
+        ref_max: conceito.ref_max,
+        categoria: conceito.categoria,
+      },
+      pontos,
+    })
   }
+  return series
 }
 
 /**
