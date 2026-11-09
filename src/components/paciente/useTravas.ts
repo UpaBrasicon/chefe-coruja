@@ -12,12 +12,12 @@ export function useTravas(pacienteId: string | null | undefined, ids: (string | 
     enabled: !!pacienteId && unicos.length > 0,
     staleTime: 30_000,
     queryFn: async () => {
-      const pares = await Promise.all(unicos.map(async (id) => {
-        const { data, error } = await supabase.rpc('alergia_trava_medicamento', { p_paciente: pacienteId!, p_medicamento: id })
-        if (error) throw error
-        return [id, (data as string | null) ?? null] as const
-      }))
-      return Object.fromEntries(pares) as Record<string, string | null>
+      // item 08 do kit de desempenho: uma chamada para todos os remédios (antes,
+      // uma por remédio da receita e dos favoritos); mesma regra do banco
+      const { data, error } = await supabase.rpc('alergia_trava_medicamentos', { p_paciente: pacienteId!, p_medicamentos: unicos })
+      if (error) throw error
+      const travas = (data ?? {}) as Record<string, string | null>
+      return Object.fromEntries(unicos.map((id) => [id, travas[id] ?? null])) as Record<string, string | null>
     },
   })
 }
