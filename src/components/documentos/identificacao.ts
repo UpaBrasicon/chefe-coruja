@@ -63,6 +63,11 @@ type LinhaPaciente = {
   endereco: string | null; municipio: string | null; uf: string | null; unidade_id: string; setor_id: string | null
 }
 
+// Item 24 do kit de desempenho: só as colunas de LinhaPaciente (19 das 39).
+const COLUNAS_PACIENTE =
+  'id, nome, nome_social, prontuario, cns, cpf, data_nascimento, sexo, raca_cor, nome_mae, telefone, ' +
+  'responsavel_nome, responsavel_telefone, responsavel_parentesco, endereco, municipio, uf, unidade_id, setor_id'
+
 const t = (s: string | null | undefined) => (s ?? '').trim()
 
 function paraPac(p: LinhaPaciente): PacProto {
@@ -141,7 +146,7 @@ export function useIdentificacao(pacienteId: string | null | undefined, leito = 
     queryKey: ['paciente-cadastro', pacienteId],
     enabled: !!pacienteId,
     queryFn: async () => {
-      const { data, error } = await supabase.from('pacientes').select('*').eq('id', pacienteId!).maybeSingle()
+      const { data, error } = await supabase.from('pacientes').select(COLUNAS_PACIENTE).eq('id', pacienteId!).maybeSingle()
       if (error) throw error
       return (data ?? null) as unknown as LinhaPaciente | null
     },
