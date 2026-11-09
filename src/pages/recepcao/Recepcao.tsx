@@ -5,6 +5,7 @@ import * as React from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { soDigitos } from '@/lib/documentos'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -170,7 +171,7 @@ export default function Recepcao() {
       let q = supabase.from('setores').select('id, nome, publico').eq('unidade_id', unidadeId!)
         .eq('tipo', ubs ? 'consultorio' : 'emergencia').eq('ativo', true)
       if (!ehGestor) {
-        const { data: ids, error } = await supabase.rpc('setores_na_escala_agora')
+        const { data: ids, error } = await setoresNaEscalaAgora()
         if (error) throw error
         const lista = (Array.isArray(ids) ? ids : []) as string[]
         if (lista.length === 0) return []

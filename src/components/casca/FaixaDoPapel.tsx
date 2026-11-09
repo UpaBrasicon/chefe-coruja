@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BedDouble, Building2, ClipboardList, Clock, DoorOpen, FlaskConical, Hourglass, MonitorSmartphone, PackageX, ShieldAlert, Users } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
+import { meuPlantaoAgora } from '@/lib/rpcCasca'
 import { formatarDuracao, nivelDoTurno } from '@/domain/plantao'
 import { FaixaParametros, Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { LIMITES_PADRAO } from '@/lib/limitesUnidade'
@@ -173,7 +174,7 @@ function FaixaTelemedicina({ unidadeId }: { unidadeId: string }) {
       const [agora, teles, plantao] = await Promise.all([
         horaServidor(),
         supabase.rpc('teleinterconsultas_da_unidade', { p_unidade: unidadeId, p_dias: 1 }),
-        supabase.rpc('meu_plantao_agora'),
+        meuPlantaoAgora(),
       ])
       if (teles.error) throw teles.error
       const meu = ((plantao.data ?? []) as { unidade_id: string; inicio: string; fim: string }[]).find((p) => p.unidade_id === unidadeId) ?? null

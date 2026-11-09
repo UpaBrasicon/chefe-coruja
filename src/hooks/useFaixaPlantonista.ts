@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { meuPlantaoAgora, setoresNaEscalaAgora, turnoAtual } from '@/lib/rpcCasca'
 import type { Turno } from '@/domain/plantao'
 
 // Dados da faixa do plantonista. Tudo lido pela RLS do próprio usuário: o que
@@ -27,9 +28,9 @@ export function useFaixaPlantonista(unidadeId?: string) {
     queryFn: async (): Promise<DadosFaixa> => {
       const [hora, turno, setoresRpc, plantao] = await Promise.all([
         supabase.rpc('horario_servidor'),
-        supabase.rpc('turno_atual'),
-        supabase.rpc('setores_na_escala_agora'),
-        supabase.rpc('meu_plantao_agora'),
+        turnoAtual(),
+        setoresNaEscalaAgora(),
+        meuPlantaoAgora(),
       ])
       if (hora.error) throw hora.error
       const agoraServidor = new Date(hora.data as string)

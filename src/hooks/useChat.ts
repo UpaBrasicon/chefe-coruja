@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { useEffect, useMemo } from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { meuPlantaoAgora } from '@/lib/rpcCasca'
 import { useAuth } from '@/contexts/AuthContext'
 import { dataIso } from '@/lib/formato'
 
@@ -233,7 +234,7 @@ export function useCortePlantao() {
     queryKey: ['chat-corte-plantao'],
     refetchInterval: 60_000,
     queryFn: async (): Promise<CortePlantao> => {
-      const { data, error } = await supabase.rpc('meu_plantao_agora')
+      const { data, error } = await meuPlantaoAgora()
       // falha de leitura não esconde mensagens: cai no início do dia
       const primeiro = !error ? data?.[0] : undefined
       if (primeiro?.inicio) return { inicio: new Date(primeiro.inicio), daEscala: true }

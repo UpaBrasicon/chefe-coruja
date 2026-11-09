@@ -5,6 +5,7 @@ import { ArrowRight, Clock, LogOut, MapPin, ShieldCheck, Stethoscope, TriangleAl
 
 import { diaMes, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import { meuPlantaoAgora, setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { cn } from '@/lib/utils'
 import { useFaixaPlantonista } from '@/hooks/useFaixaPlantonista'
 import { esperaPorCor } from '@/domain/esperaPorta'
@@ -40,7 +41,7 @@ function useCartaoTurno(unidadeId: string | undefined, perfilId: string | undefi
     refetchInterval: 30_000,
     queryFn: async () => {
       const [plantao, presenca, setores] = await Promise.all([
-        supabase.rpc('meu_plantao_agora'),
+        meuPlantaoAgora(),
         supabase
           .from('presenca_plantonista')
           .select('id, checkin_em, checkout_em, checkin_dentro, checkin_justificativa')
@@ -49,7 +50,7 @@ function useCartaoTurno(unidadeId: string | undefined, perfilId: string | undefi
           .order('checkin_em', { ascending: false, nullsFirst: false })
           .limit(1)
           .maybeSingle(),
-        supabase.rpc('setores_na_escala_agora'),
+        setoresNaEscalaAgora(),
       ])
       if (plantao.error) throw plantao.error
       if (presenca.error) throw presenca.error

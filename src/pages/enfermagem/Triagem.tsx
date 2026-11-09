@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -61,7 +62,7 @@ export default function Triagem() {
     enabled: !!unidadeAtiva,
     refetchInterval: 20_000,
     queryFn: async () => {
-      const { data: ids, error: e1 } = await supabase.rpc('setores_na_escala_agora')
+      const { data: ids, error: e1 } = await setoresNaEscalaAgora()
       if (e1) throw e1
       const setores = (Array.isArray(ids) ? ids : []) as string[]
       if (setores.length === 0) return []
@@ -80,7 +81,7 @@ export default function Triagem() {
     enabled: !!unidadeAtiva,
     refetchInterval: 20_000,
     queryFn: async () => {
-      const { data: ids, error: e1 } = await supabase.rpc('setores_na_escala_agora')
+      const { data: ids, error: e1 } = await setoresNaEscalaAgora()
       if (e1) throw e1
       const setores = (Array.isArray(ids) ? ids : []) as string[]
       if (setores.length === 0) return []

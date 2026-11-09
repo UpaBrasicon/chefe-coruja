@@ -10,6 +10,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 
 export type AtendimentoSemDesfecho = {
   episodio_id: string
@@ -36,7 +37,7 @@ export function useEpisodiosAnteriores(pacienteId: string, episodioAtualId?: str
     queryFn: async (): Promise<AtendimentoSemDesfecho[]> => {
       const [lista, escala] = await Promise.all([
         supabase.rpc('atendimentos_sem_desfecho', { p_paciente: pacienteId, ...(episodioAtualId ? { p_exceto: episodioAtualId } : {}) }),
-        supabase.rpc('setores_na_escala_agora'),
+        setoresNaEscalaAgora(),
       ])
       if (lista.error) throw lista.error
       const meus = new Set((Array.isArray(escala.data) ? escala.data : []) as string[])

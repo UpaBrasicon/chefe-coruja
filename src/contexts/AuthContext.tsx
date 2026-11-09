@@ -10,6 +10,7 @@ import { limparTodosRascunhos } from '@/lib/rascunho'
 import { definirChave } from '@/lib/cofreLocal'
 import { definirChaveFila } from '@/lib/offline/fila'
 import { aplicarTema, ehTema, type Tema } from '@/lib/tema'
+import { limparCompartilhadas, precisaCarregarPerfil } from '@/lib/chamadaCompartilhada'
 import type { Perfis } from '@/types/database'
 
 interface AuthContextValue {
@@ -44,6 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true)
   const queryClient = useQueryClient()
 
+  // Item 03 do kit de desempenho: getSession e os eventos INITIAL_SESSION,
+  // SIGNED_IN e TOKEN_REFRESHED chegam quase juntos na recarga, e cada um lia
+  // o perfil (3 leituras). Lê de novo só se a pessoa mudou, na primeira vez ou
+  // quando o próprio usuário foi alterado (precisaCarregarPerfil).
+  const cargaPerfil = React.useRef<{ carregado: string | null; emCarga: string | null }>({ carregado: null, emCarga: null })
+
   // Encerramento local: rascunhos clínicos do navegador e todo dado lido do
   // banco que ficou na memória (cache do react-query) saem junto com o token.
   const encerrarLocal = React.useCallback(async () => {
@@ -54,15 +61,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     definirChave(null) // a chave do servidor morre junto com a sessão (gatilho em auth.sessions)
     void definirChaveFila(null)
     queryClient.clear()
+    limparCompartilhadas()
+    cargaPerfil.current = { carregado: null, emCarga: null }
     try { await supabase.auth.signOut({ scope: 'local' }) } finally { sairDoAparelho() }
   }, [queryClient])
 
-  const loadPerfil = React.useCallback(async (userId: string) => {
+  const loadPerfil = React.useCallback(async (userId: string, evento: string) => {
+    const antes = cargaPerfil.current
+    if (!precisaCarregarPerfil(evento, userId, antes)) return
+    // outra pessoa no aparelho: nada lido para a anterior vale para esta
+    if (antes.carregado && antes.carregado !== userId) limparCompartilhadas()
+    cargaPerfil.current = { carregado: antes.carregado, emCarga: userId }
     const { data, error } = await supabase
       .from('perfis')
       .select('*')
       .eq('id', userId)
       .maybeSingle()
+    // uma carga de outra pessoa começou enquanto esta esperava: ela decide
+    if (cargaPerfil.current.emCarga !== userId) return
+    // só o perfil lido do servidor conta como carregado; o guardado na aba
+    // (sem rede) deixa o próximo evento tentar de novo
+    cargaPerfil.current = { carregado: data ? userId : null, emCarga: null }
     // sem rede (parte 2 da recarga sem conexão): o perfil guardado nesta aba,
     // da mesma pessoa, enquanto a regra de 2 h e 20 min deixar (N3)
     const perfilLido = data ?? (error && ehFalhaDeRede(error)
@@ -94,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data, error }) => {
-      if (data.session) void loadPerfil(data.session.user.id)
+      if (data.session) void loadPerfil(data.session.user.id, 'getSession')
       else if (ehFalhaDeRede(error)) {
         // D3: o token não pôde ser renovado por falta de rede. Não é sessão
         // encerrada: rascunhos cifrados e a chave desta aba ficam, e a casca
@@ -119,10 +138,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((evento, session) => {
       if (evento === 'SIGNED_IN') saiuEm = 0
-      if (session) void loadPerfil(session.user.id)
+      if (session) void loadPerfil(session.user.id, evento)
       else if (evento === 'SIGNED_OUT') {
         // INITIAL_SESSION sem sessão quem decide é o getSession acima (pode
         // ser só falta de rede, com o perfil guardado nesta aba)
+        cargaPerfil.current = { carregado: null, emCarga: null }
+        limparCompartilhadas()
         setPerfil(null)
         setLoading(false)
       }

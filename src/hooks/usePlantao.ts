@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { turnoAtual } from '@/lib/rpcCasca'
 import { situacaoSemConexao } from '@/lib/offline/relogio'
 
 // 'acesso' era o acesso pago fora da escala, desligado em 26/09 (migration
@@ -53,7 +54,7 @@ export function usePlantao(unidadeId: string | undefined) {
     async function checar() {
       const [situacao, t] = await Promise.all([
         supabase.rpc('situacao_checkin', { p_unidade: uid }),
-        supabase.rpc('turno_atual'),
+        turnoAtual(),
       ])
       if (!ativo) return
       if (situacao.error && (!navigator.onLine || /fetch|network/i.test(situacao.error.message))) {
