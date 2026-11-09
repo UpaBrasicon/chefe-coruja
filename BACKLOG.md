@@ -2363,7 +2363,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 05 | Paginar listas que crescem | Falta: 19 leituras sem limite; 10 com teto sem página | Decisão A/B do RT |
 | 13 | Texto da IA aos poucos | Já tem: stream NDJSON em `useClinicalAsk.ts` | — |
 | 04 | Esperar parar de digitar na busca | Falta: ~15 buscas consultam a cada tecla | Pendente |
-| 03 | Sem chamada repetida | Falta parte: a casca repete `perfis` 3×, `contexto_sem_conexao` 2×, `meu_plantao_agora` por cinco caminhos, em toda recarga | Pendente |
+| 03 | Sem chamada repetida | Falta parte: a casca repete `perfis` 3×, `contexto_sem_conexao` 2×, `meu_plantao_agora` por cinco caminhos, em toda recarga | Corrigido na branch `desempenho/03-chamadas-repetidas` (só frontend): teste `src/lib/chamadaCompartilhada.test.ts` (9 casos, falha sem a correção); na homologação em 08/11/2026 (`0d1a0f19`): 4 a 7 chamadas a menos por recarga nas 7 telas do médico, nenhuma repetição da casca. Evidência em `docs/desempenho/ITEM-03-CHAMADAS-REPETIDAS.md`. Falta: PR, CI verde e merge |
 | 12 | Tempo-limite em serviço externo | Falta parte: Resend sem limite; navegador sem limite | Decisão A/B do RT |
 | 16 | Chamadas independentes em paralelo | Já tem: nenhuma sequência independente | — |
 | 21 | Scripts de terceiros depois da página | Falta parte: Sentry no pacote inicial | Pendente |
