@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { VerMais } from '@/components/ui/ver-mais'
 import { fmtDataHora } from '@/lib/datas'
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
@@ -25,6 +26,10 @@ import { tomDaVariante } from '@/components/porta/tomEstado'
 // Realizado, ver a resposta e cancelar o pedido com motivo. Quem responde é o
 // especialista, na tela Pareceres (/pareceres).
 export type AbaParecerProps = { pacienteId: string; episodioId?: string | null; internacaoId?: string | null }
+
+// item 05 do kit de desempenho: situações que contam como pedido em aberto
+const ABERTOS = ['solicitado', 'em_analise'] as const
+const PASSO_ENCERRADOS = 20
 
 type ParecerPaciente = {
   id: string
@@ -99,13 +104,28 @@ export function AbaParecer({ pacienteId, episodioId, internacaoId }: AbaParecerP
   const [cancelando, setCancelando] = React.useState<string | null>(null)
   const idLista = React.useId()
 
+  // Item 05 do kit de desempenho (decisão do RT em 09/11/2026, A): os abertos
+  // vêm todos (um pedido antigo ainda aberto não pode sumir, com o "Cancelar
+  // pedido"); os encerrados, os mais recentes primeiro, em páginas de 20.
+  const [limite, setLimite] = React.useState(PASSO_ENCERRADOS)
   const lista = useQuery({
-    queryKey: ['pareceres', 'paciente', pacienteId],
+    queryKey: ['pareceres', 'paciente', pacienteId, limite],
     refetchInterval: 30_000,
+    placeholderData: (anterior) => anterior,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('pareceres_do_paciente', { p_paciente: pacienteId })
-      if (error) throw error
-      return (data ?? []) as unknown as ParecerPaciente[]
+      const [abertos, encerrados] = await Promise.all([
+        supabase.rpc('pareceres_do_paciente', { p_paciente: pacienteId }).in('status', [...ABERTOS]),
+        supabase.rpc('pareceres_do_paciente', { p_paciente: pacienteId }, { count: 'exact' })
+          .not('status', 'in', `(${ABERTOS.join(',')})`)
+          .order('solicitado_em', { ascending: false })
+          .range(0, limite - 1),
+      ])
+      if (abertos.error) throw abertos.error
+      if (encerrados.error) throw encerrados.error
+      const fechados = (encerrados.data ?? []) as unknown as ParecerPaciente[]
+      const itens = [...((abertos.data ?? []) as unknown as ParecerPaciente[]), ...fechados]
+        .sort((a, b) => (a.solicitado_em < b.solicitado_em ? 1 : -1))
+      return { itens, encerradosMostrados: fechados.length, encerradosTotal: encerrados.count ?? fechados.length }
     },
   })
 
@@ -133,7 +153,7 @@ export function AbaParecer({ pacienteId, episodioId, internacaoId }: AbaParecerP
     },
   })
 
-  const pareceres = lista.data ?? []
+  const pareceres = lista.data?.itens ?? []
 
   return (
     <section className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie p-4">
@@ -204,6 +224,9 @@ export function AbaParecer({ pacienteId, episodioId, internacaoId }: AbaParecerP
           </div>
         )
       })}
+
+      <VerMais mostrados={lista.data?.encerradosMostrados ?? 0} total={lista.data?.encerradosTotal ?? 0} ocupado={lista.isFetching}
+        onClick={() => setLimite((n) => n + PASSO_ENCERRADOS)} />
 
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" render={<Link to="/pareceres" />}>Responder pareceres (tela Pareceres)</Button>
