@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { track } from '@/lib/analytics'
-import { TEMPO_RESPOSTA } from '@/lib/site'
 
 /**
  * Formulário de contato — validação client-side + honeypot anti-spam.
@@ -129,7 +128,7 @@ export function ContactForm() {
           value={telefone}
           onChange={(e) => setTelefone(e.target.value)}
           className={inputClass}
-          placeholder="(62) 99999-9999"
+          placeholder="Com DDD"
           aria-invalid={!!erros.telefone}
         />
         {erros.telefone && <p className="mt-1 text-xs text-red-600">{erros.telefone}</p>}
@@ -168,7 +167,6 @@ export function ContactForm() {
       <button type="submit" disabled={enviando} className="btn-primary disabled:opacity-60">
         {enviando ? 'Enviando…' : 'Enviar mensagem'}
       </button>
-      <p className="text-center text-xs text-slate-500">{TEMPO_RESPOSTA}</p>
     </form>
   )
 }
