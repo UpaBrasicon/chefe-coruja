@@ -16,6 +16,9 @@ import { Spinner } from '@/components/ui/spinner'
 import { codigoSigtapNaTela, type ProcedimentoRealizado, type Registravel } from '@/lib/bpa'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { VerMais } from '@/components/ui/ver-mais'
+
+const PASSO_FEITOS = 20
 
 const localDe = (iso: string) => {
   const d = new Date(iso)
@@ -37,12 +40,15 @@ export function ProcedimentosRealizados({ pacienteId, unidadeId, episodioId, pro
       return (data ?? []) as unknown as Registravel[]
     },
   })
+  // item 05 do kit de desempenho: os mais recentes, em páginas de 20
+  const [limite, setLimite] = React.useState(PASSO_FEITOS)
   const feitos = useQuery({
-    queryKey: ['procedimentos-do-paciente', pacienteId],
+    queryKey: ['procedimentos-do-paciente', pacienteId, limite],
+    placeholderData: (anterior) => anterior,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('procedimentos_do_paciente', { p_paciente: pacienteId })
+      const { data, error } = await supabase.rpc('procedimentos_do_paciente_pagina', { p_paciente: pacienteId, p_limite: limite })
       if (error) throw error
-      return (data ?? []) as unknown as ProcedimentoRealizado[]
+      return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: ProcedimentoRealizado[] }
     },
   })
   const [proc, setProc] = React.useState('')
@@ -92,10 +98,13 @@ export function ProcedimentosRealizados({ pacienteId, unidadeId, episodioId, pro
       {registrar.error && <p role="alert" className="text-rotulo text-critico">{(registrar.error as Error).message}</p>}
       {feitos.isLoading ? null : feitos.error ? (
         <p role="alert" className="text-rotulo text-critico">{(feitos.error as Error).message}</p>
-      ) : (feitos.data ?? []).length > 0 && (
-        <ul className="flex flex-col gap-1">
-          {(feitos.data ?? []).map((r) => <LinhaFeito key={r.id} r={r} pacienteId={pacienteId} podeCancelar={r.meu || faturamento} />)}
-        </ul>
+      ) : (feitos.data?.itens ?? []).length > 0 && (
+        <>
+          <ul className="flex flex-col gap-1">
+            {(feitos.data?.itens ?? []).map((r) => <LinhaFeito key={r.id} r={r} pacienteId={pacienteId} podeCancelar={r.meu || faturamento} />)}
+          </ul>
+          <VerMais mostrados={feitos.data?.itens.length ?? 0} total={feitos.data?.total ?? 0} ocupado={feitos.isFetching} onClick={() => setLimite((n) => n + PASSO_FEITOS)} />
+        </>
       )}
     </div>
   )

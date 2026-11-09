@@ -10407,6 +10407,7 @@ export type Database = {
       endereco_sus: { Args: { p_paciente: string }; Returns: Json }
       fechar_competencia_bpa: { Args: { p_competencia: string; p_processamento?: string; p_unidade: string }; Returns: string }
       procedimentos_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      procedimentos_do_paciente_pagina: { Args: { p_deslocamento?: number; p_limite?: number; p_paciente: string }; Returns: Json }
       procedimentos_registraveis: { Args: { p_unidade: string }; Returns: Json }
       profissionais_da_unidade: {
         Args: { p_unidade: string }
