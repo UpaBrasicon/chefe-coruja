@@ -42,7 +42,18 @@ Ficaram de fora, por serem pequenos ou raros (auditoria, 3.1): reordenar setores
 - Rollback testado numa transação desfeita: os três `DROP FUNCTION` tiram as funções em lote e `alergias_do_paciente` fica intacta.
 - Frontend na homolog `0fbefeb0` (homolog anterior `4dcd5c7f` + os 11 arquivos deste item).
 
-**Medição na tela, antes e depois:** pendente. O Chrome do RT ficou desconectado depois da reinicialização do computador, e a homologação tem poucos pacientes em observação. A conta esperada, pelo código: painel com N pacientes passa de 2N chamadas para 2; checagem de N pacientes, de N para 1; receita com M remédios, de M para 1; série com K sinais, de 3K para 3.
+**Medição no banco (homologação, 09/11/2026):** transação desfeita, como gestor da UPA Fase 5 (JWT simulado), 34 pacientes, três rodadas:
+
+| Leitura | 34 chamadas de um paciente | 1 chamada em lote |
+|---|---|---|
+| Alergias | 23,5 a 24,3 ms | 24,7 a 25,3 ms (4.983 bytes) |
+| Acuidade | 43,2 a 45,4 ms | 42,6 a 43,3 ms |
+
+O tempo no servidor é o mesmo, como esperado: o lote chama a mesma função para cada paciente. O ganho está na rede: um painel com 34 pacientes passa de 68 chamadas HTTP (2 por cartão) para 2. Na medição com login de 08/11, cada chamada ao banco levou de 50 a 100 ms do navegador da homologação, e o navegador limita as chamadas simultâneas; em 4G cada uma custa mais.
+
+A conta, pelo código: painel com N pacientes passa de 2N chamadas para 2; checagem de N pacientes, de N para 1; receita com M remédios, de M para 1; série com K sinais, de 3K para 3.
+
+**Medição na tela logada:** pendente para quando o RT voltar ao computador (em 09/11 ele está só pelo celular, e o Chrome está desconectado). O item 30 (métricas de usuários reais) passa a medir as telas logadas.
 
 ## Produção
 
