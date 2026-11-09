@@ -2354,7 +2354,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 |---|---|---|---|
 | 31 | Medir no celular e em 4G lento, antes e depois | Linha de base feita em 08/11/2026: login da produção (Lighthouse) e 7 telas logadas do médico na homologação (`docs/desempenho/AUDITORIA.md`, seção 1) | Linha de base registrada; repetir a cada item |
 | 19 | Servidor na mesma região do banco | Não se aplica: sem funções na Vercel; navegador fala direto com o Supabase `sa-east-1`; borda `gru1` | Confirmado pelo RT em 08/11/2026 |
-| 24 | Só as colunas usadas | Falta: 13 `select('*')` | Pendente |
+| 24 | Só as colunas usadas | Falta: 13 `select('*')` | Corrigido na branch `desempenho/24-colunas` (só frontend): 12 leituras com as colunas da tela (pacientes 19 de 39, observacao 7 de 21, internacoes 5 de 24 etc.); exceção do perfil de quem entrou. Teste `src/lib/semSelectEstrela.test.ts` falha no master. Na homologação em 08/11/2026 (`4dcd5c7f`), sem erro nas leituras. Evidência em `docs/desempenho/ITEM-24-COLUNAS.md`. Falta: PR, CI verde e merge |
 | 08 | Corrigir N+1 | Falta: painel de observação, checagem, trava de alergia, série de sinais | Pendente |
 | 17 | Índices nos filtros, com EXPLAIN | Falta parte: trigram no nome do paciente, 8 políticas RLS do advisor, chaves das tabelas que crescem | Decisão A/B do RT |
 | 02 | Imagens WebP/AVIF no tamanho exibido | Falta: `logo.png` 5,7 MB no manifest; dois PNG órfãos de 5 MB; envio sem reduzir | Pendente |
@@ -2363,7 +2363,7 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 05 | Paginar listas que crescem | Falta: 19 leituras sem limite; 10 com teto sem página | Decisão A/B do RT |
 | 13 | Texto da IA aos poucos | Já tem: stream NDJSON em `useClinicalAsk.ts` | — |
 | 04 | Esperar parar de digitar na busca | Falta: ~15 buscas consultam a cada tecla | Pendente |
-| 03 | Sem chamada repetida | Falta parte: a casca repete `perfis` 3×, `contexto_sem_conexao` 2×, `meu_plantao_agora` por cinco caminhos, em toda recarga | Corrigido na branch `desempenho/03-chamadas-repetidas` (só frontend): teste `src/lib/chamadaCompartilhada.test.ts` (9 casos, falha sem a correção); na homologação em 08/11/2026 (`0d1a0f19`): 4 a 7 chamadas a menos por recarga nas 7 telas do médico, nenhuma repetição da casca. Evidência em `docs/desempenho/ITEM-03-CHAMADAS-REPETIDAS.md`. Falta: PR, CI verde e merge |
+| 03 | Sem chamada repetida | Falta parte: a casca repete `perfis` 3×, `contexto_sem_conexao` 2×, `meu_plantao_agora` por cinco caminhos, em toda recarga | Corrigido na branch `desempenho/03-chamadas-repetidas` (só frontend): teste `src/lib/chamadaCompartilhada.test.ts` (9 casos, falha sem a correção); na homologação em 08/11/2026 (`0d1a0f19`): 4 a 7 chamadas a menos por recarga nas 7 telas do médico, nenhuma repetição da casca. Evidência em `docs/desempenho/ITEM-03-CHAMADAS-REPETIDAS.md`. PR #507 mesclado em 08/11/2026 com CI verde; na produção. **Concluído.** |
 | 12 | Tempo-limite em serviço externo | Falta parte: Resend sem limite; navegador sem limite | Decisão A/B do RT |
 | 16 | Chamadas independentes em paralelo | Já tem: nenhuma sequência independente | — |
 | 21 | Scripts de terceiros depois da página | Falta parte: Sentry no pacote inicial | Pendente |
