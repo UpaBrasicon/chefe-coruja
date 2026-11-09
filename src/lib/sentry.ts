@@ -1,6 +1,7 @@
 import type * as SentryTipos from '@sentry/react'
 
 import { criarFilaAteCarregar } from '@/lib/filaAteCarregar'
+import { montarMetrica, type MetricaEnviada } from '@/lib/metricaReal'
 
 /**
  * Sentry (Fase 0, item 11 do BACKLOG.md — observabilidade mínima).
@@ -112,6 +113,8 @@ export function iniciarSentry(higienizar: (t: string) => string, versao: string)
             beforeSend: (evento) => limparEvento(evento, higienizar),
           })
           fila.pronto(Sentry)
+          filaMetricas.pronto(Sentry)
+          iniciarMetricasReais()
         } catch {
           /* observabilidade nunca derruba o app */
         }
@@ -140,4 +143,49 @@ export function areaDe(origem: string, mensagem: string): string {
 export function enviarAoSentry(e: EventoErro): void {
   if (!ligado) return
   fila.enviar(e)
+}
+
+// ── Item 30 do kit de desempenho: métricas de usuários reais ────────────────
+// Decisão do RT em 09/11/2026. LCP, INP, CLS, FCP e TTFB (web-vitals) de cada
+// abertura de tela vão ao Sentry como mensagem de nível "info". Só cinco
+// marcadores: métrica, valor, nota, rota sem identificador e papel ativo
+// (montarMetrica). Unidade, nome, CPF, CNS e texto de tela não vão.
+// TAXA_METRICAS: fração das aberturas medidas; com pouco uso, todas. Baixar
+// quando o volume crescer (cota do Sentry).
+const TAXA_METRICAS = 1
+
+const filaMetricas = criarFilaAteCarregar<Sentry, MetricaEnviada>({ maximo: 20 }, (Sentry, m) => {
+  Sentry.withScope((escopo) => {
+    escopo.setTags({ tipo: 'metrica', metrica: m.metrica, valor: m.valor, nota: m.nota, rota: m.rota, papel: m.papel })
+    escopo.setFingerprint(['metrica', m.metrica, m.rota])
+    Sentry.captureMessage(`metrica ${m.metrica}`, 'info')
+  })
+})
+
+export function enviarMetricaAoSentry(m: { name: string; value: number; rating: string }, caminho: string): void {
+  if (!ligado) return
+  filaMetricas.enviar(montarMetrica(m, caminho, contexto.papel))
+}
+
+function iniciarMetricasReais(): void {
+  if (Math.random() >= TAXA_METRICAS) return
+  import('web-vitals').then(
+    ({ onCLS, onFCP, onINP, onLCP, onTTFB }) => {
+      const enviar = (m: { name: string; value: number; rating: string }) => {
+        try {
+          enviarMetricaAoSentry(m, window.location.pathname)
+        } catch {
+          /* medição nunca derruba o app */
+        }
+      }
+      onLCP(enviar)
+      onINP(enviar)
+      onCLS(enviar)
+      onFCP(enviar)
+      onTTFB(enviar)
+    },
+    () => {
+      /* sem rede para baixar a biblioteca: fica sem a medição desta abertura */
+    },
+  )
 }

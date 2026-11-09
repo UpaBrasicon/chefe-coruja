@@ -88,8 +88,8 @@ Na ordem do kit (as 10 primeiras), depois o resto.
 | **22** JavaScript por tela | **falta (parte)** | 103 telas já vêm sob demanda (`lazy(`). Mas o `manualChunks` do `vite.config.ts:93-111` manda **toda** dependência não listada para `vendor-other`, que é baixado no início. Com isso, dependências das bibliotecas sob demanda vão para o pacote inicial: `pako` (230 KB de fonte), `canvg` (180 KB), `core-js` (142 KB), `fflate` (91 KB), `dompurify` (86 KB) vêm do jsPDF; `@reduxjs/toolkit` (80 KB), `es-toolkit`, `decimal.js-light`, `immer` vêm do Recharts. `vendor-other`: 539 KB, 178 KB em gzip. | Deixar o Vite decidir para o que não for núcleo (sem o "resto vai para vendor-other") e conferir o pacote inicial. Frontend puro. |
 | **29** Fontes no próprio domínio, poucos pesos | **já tem** | `@fontsource-variable/geist` (`src/index.css:4`), Newsreader e Geist Mono só no login e na landing (`src/components/entrada/LadoMarca.tsx:4`). Fonte variável: um arquivo por alfabeto; o login baixou 30 KB. | Nada. |
 | **14** Interface otimista | **já tem onde cabe** | `onMutate` em `src/hooks/useChat.ts`, `src/lib/useFavoritos.ts`, `src/pages/gestor/OlhoDeGaviao.tsx`, `src/pages/gestor/panorama.ts`. Ação clínica (prescrição, checagem, classificação, alta) não deve aparecer feita antes do banco confirmar. | Nada. Ampliar só a pedido. |
-| **26** Redesenho à toa | **não se aplica por ora** | O kit manda agir só quando a tela trava ao digitar ou rolar. Não há relato de travamento; o TBT do login é 65 ms. | Rever se a medição com login mostrar travamento. |
-| **30** Medir usuários reais | **não se aplica por ora** | A produção ainda não tem equipe usando (memória producao-sem-equipe, 31/10/2026). O kit diz para pular antes de haver tráfego. O Sentry já recebe os erros. | Decisão do RT: ligar quando a primeira unidade entrar em uso. |
+| **26** Redesenho à toa | **condicionado ao 30** (decisão do RT em 09/11/2026) | O kit manda agir só quando a tela trava ao digitar ou rolar. Não há relato de travamento; o TBT do login é 65 ms. As métricas de usuários reais (INP, item 30) dizem se alguma tela trava. | Rever com os números do 30. |
+| **30** Medir usuários reais | **falta, decisão do RT em 09/11/2026** (antes "não se aplica por ora") | Sem medição de usuários reais; as telas logadas só foram medidas uma vez, com o Chrome do RT. | `web-vitals` (LCP, INP, CLS, FCP, TTFB) ao Sentry, com a rota sem identificador e o papel ativo. Feito na branch `desempenho/30-usuarios-reais` (`docs/desempenho/ITEM-30-USUARIOS-REAIS.md`). |
 | **11** Dependências sem uso | **falta (pequeno)** | Sem nenhum import: `framer-motion`, `mammoth` (ainda citados no `vite.config.ts:96` e `:106`). `html2canvas` só chega pelo jsPDF. `shadcn` só pelo CSS (`src/index.css:3`). Como não são importados, não entram no pacote: o ganho é na instalação e no CI. | Tirar `framer-motion` e `mammoth` do `package.json` e do `vite.config.ts`. |
 | **06** CDN | **já tem** | Vercel com borda em São Paulo (`x-vercel-id: gru1`), Cloudflare na frente (`server: cloudflare`). | Nada. |
 | **09** Compressão | **já tem** | `content-encoding: br` no JavaScript da produção. | Nada. |
@@ -158,7 +158,7 @@ Perguntadas uma de cada vez, na ordem em que a correção chega.
 | 17 | Índices | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): A, agora: trigram no nome do paciente, corrigir as 8 políticas RLS do advisor e indexar as chaves das tabelas que crescem com o uso, com `EXPLAIN ANALYZE` na homologação | — |
 | 12 | Tempo-limite das chamadas ao banco no navegador | 20 s em toda chamada, com aviso | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): B, só na Resend (`enviar-codigo-2fa`), sem limite global no navegador; rever com os dados do item 30 |
 | 05 | Paginação | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): A nas telas clínicas (janela de tempo: internação atual ou últimas 48 h, com "ver mais"); páginas de 20 a 50 com "ver mais" nas listas administrativas | — |
-| 30 | Medir usuários reais | **Escolhida em 08/11/2026** (junto com a confirmação dos "não se aplica"): ligar quando a primeira unidade entrar em uso | — |
+| 30 | Medir usuários reais | Escolhida em 08/11/2026: ligar quando a primeira unidade entrar em uso. **Trocada pelo RT em 09/11/2026: fazer agora, antes do 08.** | — |
 | 01 | Quais telas ganham esqueleto ao carregar | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): Central do Plantonista, Observação, Internação da enfermagem, fila da Triagem e Regulação, nesta ordem | — |
 | 08 | "Ok produção" da migration `20270320000001` | **Escolhida pelo RT em 09/11/2026** ("Todas como recomendado", pelo Remote Control): ok. Vale só para esta migration; cada migration nova do 17 e do 05 pede ok próprio, com o número e o CI do banco verde | — |
 
@@ -175,7 +175,7 @@ Perguntadas uma de cada vez, na ordem em que a correção chega.
 9. **04** — esperar parar de digitar em ~15 buscas.
 10. Depois, na ordem do kit: **12** (tempo-limite), **21** (Sentry depois da pintura), **22** (pacote inicial), **27** (cabeçalho de cache), **11** (dependências).
 
-Não se aplicam (motivo na tabela da seção 2), **confirmados pelo RT em 08/11/2026**: 19, 25, 10, 18, 20, 28, 23 (se o 05 paginar), 26 e 30 por ora. Já têm: 06, 09, 13, 16, 29, 14, 07.
+Não se aplicam (motivo na tabela da seção 2), **confirmados pelo RT em 08/11/2026**: 19, 25, 10, 18, 20, 28, 23 (se o 05 paginar), 26 (condicionado ao 30, decisão do RT em 09/11/2026). O 30 saiu da lista em 09/11/2026 e foi feito. Já têm: 06, 09, 13, 16, 29, 14, 07.
 
 ## Como medir de novo
 
