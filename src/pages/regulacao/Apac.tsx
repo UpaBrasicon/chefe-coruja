@@ -33,6 +33,7 @@ import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { PAGINA, VerMais } from '@/components/ui/ver-mais'
 
 type Aba = StatusApac | 'todas' | 'arquivo'
 
@@ -45,14 +46,18 @@ export default function Apac() {
     ['solicitada', 'Solicitadas'], ['autorizada', 'Autorizadas'], ['rejeitada', 'Rejeitadas'], ['cancelada', 'Canceladas'], ['todas', 'Todas'],
     ...(faturamento ? [['arquivo', 'Arquivo do APAC Magnético'] as const] : []),
   ]
-  const [aba, setAba] = React.useState<Aba>(regulador ? 'solicitada' : 'autorizada')
+  const [aba, setAbaBase] = React.useState<Aba>(regulador ? 'solicitada' : 'autorizada')
+  // item 05 do kit de desempenho: páginas de 50, com "Ver mais"
+  const [limite, setLimite] = React.useState(PAGINA)
+  const setAba = (a: Aba) => { setAbaBase(a); setLimite(PAGINA) }
   const lista = useQuery({
-    queryKey: ['apacs-da-unidade', unidade, aba],
+    queryKey: ['apacs-da-unidade', unidade, aba, limite],
+    placeholderData: (anterior) => anterior,
     enabled: !!unidade && aba !== 'arquivo',
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('apacs_da_unidade', { p_unidade: unidade!, p_status: aba === 'todas' ? undefined : aba })
+      const { data, error } = await supabase.rpc('apacs_da_unidade_pagina', { p_unidade: unidade!, p_status: aba === 'todas' ? undefined : aba, p_limite: limite })
       if (error) throw error
-      return (data ?? []) as unknown as Apac[]
+      return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: Apac[] }
     },
   })
   return (
@@ -62,11 +67,12 @@ export default function Apac() {
           : 'Registre a execução de cada competência e gere o arquivo do APAC Magnético. Quem autoriza é o médico regulador.'} />
       <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />
       {!unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
-        : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+        : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data?.itens ?? []).length === 0 ? (
           <Vazio icone={FileCheck} titulo="Nenhuma APAC aqui" texto="Quando o médico solicitar uma APAC, ela aparece em Solicitadas." />
         ) : (
           <div className="flex flex-col gap-3">
-            {(lista.data ?? []).map((a) => <CartaoApac key={a.id} a={a} unidade={unidade} regulador={regulador} faturamento={faturamento} />)}
+            {(lista.data?.itens ?? []).map((a) => <CartaoApac key={a.id} a={a} unidade={unidade} regulador={regulador} faturamento={faturamento} />)}
+            <VerMais mostrados={lista.data?.itens.length ?? 0} total={lista.data?.total ?? 0} ocupado={lista.isFetching} onClick={() => setLimite((n) => n + PAGINA)} />
           </div>
         )}
     </div>
