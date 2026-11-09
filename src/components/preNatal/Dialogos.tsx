@@ -16,6 +16,7 @@ import { rotuloIdade } from '@/domain/idade'
 import { JANELA, diasEntre, rotuloIG, somarDias, type Gestacao } from '@/domain/preNatal'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Achado = { id: string; nome: string; nome_social: string | null; data_nascimento: string | null }
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -54,7 +55,7 @@ function DialogoIncluir({ unidadeId, onFechar }: { unidadeId: string; onFechar: 
   const [paciente, setPaciente] = React.useState<Achado | null>(null)
   const [dum, setDum] = React.useState('')
   const [feito, setFeito] = React.useState<string | null>(null)
-  const t = termo.trim()
+  const t = useValorAdiado(termo.trim())
   const achados = useQuery({
     queryKey: ['pre-natal-busca-paciente', unidadeId, t],
     enabled: t.length >= 3 && !paciente,

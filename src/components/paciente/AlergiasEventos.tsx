@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 import {
   ALERGENOS, EVENTOS_COMUNS, GRAUS_EVENTO, GRAVIDADES, TIPOS_ALERGIA,
@@ -427,9 +428,10 @@ function NovaAlergia({ pacienteId, ocupado, executar, fechar }: { pacienteId: st
     ? ALERGENOS.filter((a) => (!f.tipo || a.tipo === f.tipo) && normalizar(a.nome + ' ' + a.sub).includes(termo) && normalizar(a.nome) !== termo).slice(0, 8)
     : []
   const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
+  const termoBusca = useValorAdiado(termo)
   const doCadastro = useQuery({
-    queryKey: ['alergia-busca-medicamento', termo, unidadeBusca],
-    enabled: focado && termo.length >= 3 && (!f.tipo || f.tipo === 'medicamento') && !f.medicamentoId,
+    queryKey: ['alergia-busca-medicamento', termoBusca, unidadeBusca],
+    enabled: focado && termoBusca.length >= 3 && (!f.tipo || f.tipo === 'medicamento') && !f.medicamentoId,
     staleTime: 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.from('medicamento').select('id, principio_ativo')

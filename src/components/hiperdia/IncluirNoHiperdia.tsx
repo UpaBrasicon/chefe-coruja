@@ -16,6 +16,7 @@ import { ROTULO_PROGRAMA, type Programa } from '@/domain/hiperdia'
 import { rotuloIdade } from '@/domain/idade'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Achado = { id: string; nome: string; nome_social: string | null; data_nascimento: string | null }
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -41,7 +42,7 @@ function Dialogo({ unidadeId, jaNoPrograma, onFechar }: {
   const [termo, setTermo] = React.useState('')
   const [paciente, setPaciente] = React.useState<Achado | null>(null)
   const [feito, setFeito] = React.useState<string | null>(null)
-  const t = termo.trim()
+  const t = useValorAdiado(termo.trim())
   const achados = useQuery({
     queryKey: ['hiperdia-busca-paciente', unidadeId, t],
     enabled: t.length >= 3 && !paciente,

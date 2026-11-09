@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 export type RnCriado = { paciente_id: string; nome: string; prontuario: string | null; data_nascimento: string; nome_mae: string; mae_tem_documento: boolean }
 const AVISO_MAE_SEM_DOCUMENTO = 'A mãe está sem CNS e sem CPF válidos: na regulação, o RN sai como não identificado até o documento dela ser completado.'
@@ -35,11 +36,12 @@ export function FormRn({ mae: maeFixa, onCriado }: { mae?: Mae; onCriado: (rn: R
   const [erro, setErro] = React.useState<string | null>(null)
   const [enviando, setEnviando] = React.useState(false)
 
+  const termoBusca = useValorAdiado(termo.trim())
   const busca = useQuery({
-    queryKey: ['rn-busca-mae', unidadeAtiva?.unidade_id, termo.trim()],
-    enabled: !maeFixa && !mae && !!unidadeAtiva && termo.trim().length >= 3,
+    queryKey: ['rn-busca-mae', unidadeAtiva?.unidade_id, termoBusca],
+    enabled: !maeFixa && !mae && !!unidadeAtiva && termoBusca.length >= 3,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_pacientes', { p_unidade: unidadeAtiva!.unidade_id, p_termo: termo.trim() })
+      const { data, error } = await supabase.rpc('buscar_pacientes', { p_unidade: unidadeAtiva!.unidade_id, p_termo: termoBusca })
       if (error) throw error
       return (data ?? []) as Mae[]
     },
