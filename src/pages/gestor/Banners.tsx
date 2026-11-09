@@ -54,7 +54,8 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('banners')
-        .select('*')
+        // item 24 do kit de desempenho: só o que a lista e a edição usam
+        .select('id, titulo, descricao, imagem_url, link_url, ativo')
         .eq('unidade_id', unidadeId!)
         .order('ordem', { ascending: true })
       if (error) throw error

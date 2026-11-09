@@ -59,7 +59,8 @@ export async function getSerieObservacao(
 
   let query = supabase
     .from('observacao')
-    .select('*')
+    // item 24 do kit de desempenho: só o que vira ponto da série
+    .select('id, aferido_em, valor_num, valor_texto, flag, unidade, origem')
     .eq('internacao_id', internacaoId)
     .eq('conceito_id', conceitoId)
     .order('aferido_em', { ascending: true })

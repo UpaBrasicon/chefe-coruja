@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/lib/supabase'
-import { abrirProntuario } from '@/lib/prontuario'
 
 /**
  * Persistência de documentos clínicos (documentos_clinicos) com versionamento.
@@ -44,27 +43,6 @@ export type DocumentoInput = {
   internacao_id?: string | null
   tipo_documento: TipoDocumento
   conteudo: string
-}
-
-/**
- * Carrega os documentos de um paciente (por raiz, todas as versões).
- */
-export function useDocumentos(pacienteId?: string) {
-  return useQuery({
-    queryKey: ['documentos-clinicos', pacienteId],
-    enabled: !!pacienteId,
-    queryFn: async () => {
-      await abrirProntuario(pacienteId!)
-      const { data, error } = await supabase
-        .from('documentos_clinicos')
-        .select('*')
-        .eq('paciente_id', pacienteId!)
-        .order('documento_raiz_id', { ascending: true })
-        .order('versao', { ascending: true })
-      if (error) throw error
-      return (data ?? []) as DocumentoClinico[]
-    },
-  })
 }
 
 /**
@@ -155,7 +133,8 @@ export function useInternacaoAtiva(pacienteId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('internacoes')
-        .select('*')
+        // item 24 do kit de desempenho: só os campos devolvidos abaixo
+        .select('id, status, setor_atual_id, leito_atual_id, data_admissao')
         .eq('paciente_id', pacienteId!)
         .in('status', ['admitido', 'em_observacao', 'internado'])
         .order('data_admissao', { ascending: false })
