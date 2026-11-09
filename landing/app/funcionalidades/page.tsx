@@ -39,7 +39,7 @@ const MODULOS = [
   },
   {
     titulo: 'Controle de Acesso',
-    desc: 'Três níveis de acesso e liberação conforme a escala do dia.',
+    desc: 'Acesso por papel, liberado conforme a escala do dia.',
   },
 ]
 
@@ -50,7 +50,7 @@ export default function FuncionalidadesPage() {
       <section className="py-8 md:py-12">
         <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Funcionalidades</h1>
         <p className="section-subtitle">
-          Tudo o que sua unidade precisa para operar com mais segurança e eficiência.
+          Prontuário, leitos, prescrição, escala, indicadores e controle de acesso da unidade.
         </p>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {MODULOS.map((m) => (

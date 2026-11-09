@@ -1391,7 +1391,7 @@ export default function Escala({
                 </CardTitle>
                 <CardDescription>
                   {diaGeral
-                    ? 'Plantões do dia por setor e turno — candidat-se aos livres.'
+                    ? 'Plantões do dia por setor e turno. Candidate-se aos livres.'
                     : 'Clique em um dia para ver os plantões do mês inteiro.'}
                 </CardDescription>
               </div>

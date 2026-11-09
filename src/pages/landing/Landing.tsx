@@ -195,7 +195,7 @@ export default function Landing() {
 
   useEffect(() => {
     const anterior = document.title
-    document.title = 'Chefe Coruja — a escala é a porta'
+    document.title = 'Chefe Coruja: prontuário eletrônico do plantão'
     return () => {
       document.title = anterior
     }
@@ -226,7 +226,7 @@ export default function Landing() {
           <div className="env">
             <div className="porta">
               {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
-              <h1>A escala é a porta de entrada.</h1>
+              <h1>Só entra quem está na escala.</h1>
               <div>
                 <p className="porta-texto">
                   Quem trabalha na unidade só entra se estiver na escala naquele momento, pelo relógio do servidor. O
@@ -243,7 +243,7 @@ export default function Landing() {
           <section className="painel">
             <div className="painel-texto">
               {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
-              <h2>O plantão, como a tela mostra.</h2>
+              <h2>O que a tela do plantão mostra primeiro.</h2>
               <p>
                 Primeiro o que pede ação: o que passou do limite aparece em cima, com o número na cor do estado e o
                 caminho para resolver. O que está em ordem fica numa linha só, embaixo.
@@ -262,15 +262,15 @@ export default function Landing() {
           </section>
 
           <div id="registro">
-            <Registro rotulo="O plantão" titulo="Três fatos que a tela obedece.">
+            <Registro rotulo="O plantão" titulo="A tela segue as regras do plantão.">
               <Item termo="A janela de observação" dado="6h">
-                O prazo tem consequência clínica. O número que conta as observações vencidas é também o caminho até elas.
+                Passar de 6 horas na observação tem consequência clínica. O número de observações vencidas abre a lista delas.
               </Item>
               <Item termo="O turno" dado="12h">
-                Turnos de 12 h (07–19, 19–07) ou de 6 h, pela escala de cada setor. Fora do turno, a porta fecha.
+                Turnos de 12 h (07–19, 19–07) ou de 6 h, pela escala de cada setor. Fora do turno, o sistema não abre.
               </Item>
               <Item termo="Leito antes do nome" dado="12A">
-                É assim que o plantonista fala, e é o quanto a tela precisa mostrar. As listas quebram em duas linhas em
+                O plantonista chama o paciente pelo leito, e a tela mostra o leito antes do nome. As listas quebram em duas linhas em
                 vez de rolar para o lado, porque rolar esconderia a pendência.
               </Item>
             </Registro>
@@ -288,7 +288,7 @@ export default function Landing() {
               </Item>
             </Registro>
 
-            <Registro id="seguranca" rotulo="Segurança" titulo="O sistema sabe quem entrou, de onde e quando." abertura="Não é auditoria feita depois. É a mesma regra que abre a porta: se a escala não autoriza, a tela não abre.">
+            <Registro id="seguranca" rotulo="Segurança" titulo="O sistema sabe quem entrou, de onde e quando." abertura="O controle usa a mesma regra que libera a entrada: se a escala não autoriza, a tela não abre.">
               <Item termo="O acesso vem da escala">
                 Quem não está escalado naquele momento não entra, e o momento é o do relógio do servidor, não o do aparelho.
               </Item>
@@ -302,7 +302,7 @@ export default function Landing() {
               </Item>
             </Registro>
 
-            <Registro rotulo="Dados pessoais" titulo="Menos dado em tela é menos risco." abertura="A LGPD pede finalidade e o mínimo necessário. No plantão isso já era hábito: o paciente é o leito.">
+            <Registro rotulo="Dados pessoais" titulo="Cada tela mostra só o dado necessário." abertura="A LGPD pede finalidade e o mínimo necessário. No plantão, o paciente já é chamado pelo leito.">
               <Item termo="Administrador não vê paciente">
                 As telas de rede mostram ocupação, unidades e pendências técnicas, nunca identidade.
               </Item>
@@ -312,7 +312,7 @@ export default function Landing() {
               </Item>
             </Registro>
 
-            <Registro rotulo="Verificação" titulo="Contado no código, não estimado." abertura="Números do próprio app, contados em 29/09/2026: as ferramentas, no registro clínico; as verificações, nos testes do banco.">
+            <Registro rotulo="Verificação" titulo="Números do próprio app." abertura="Contados em 29/09/2026: as ferramentas, no registro clínico; as verificações, nos testes do banco.">
               <Item termo="Ferramentas clínicas" dado="200">Em 8 seções do registro, todas na busca.</Item>
               <Item termo="Arquivos de teste do banco" dado="34">Cada um roda numa transação desfeita.</Item>
               <Item termo="Verificações de banco" dado="240">Regras de acesso, escala e registro clínico.</Item>
@@ -323,8 +323,8 @@ export default function Landing() {
           <Registro
             id="papeis"
             rotulo="Papéis"
-            titulo="Cada papel, o seu produto."
-            abertura="Os papéis têm o mesmo peso. Um mesmo usuário pode ter papéis diferentes em unidades diferentes; vale o da unidade selecionada."
+            titulo="Uma tela para cada papel."
+            abertura="Um mesmo usuário pode ter papéis diferentes em unidades diferentes; vale o da unidade selecionada."
             aparte={
               <img
                 className="coruja"

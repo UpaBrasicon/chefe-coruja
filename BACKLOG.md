@@ -2384,6 +2384,25 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 23 | Virtualizar listas longas | Não se aplica se o 05 paginar | Confirmado pelo RT em 08/11/2026 |
 | 28 | Várias instâncias | Não se aplica: Vercel e Supabase gerenciados | Confirmado pelo RT em 08/11/2026 |
 
+Trilha fechada pelo RT em 09/11/2026 ("vamos fechar desempenho e começar o humanizer"). O resto do 05 (chat, chamados, pessoas, diluições), o 23 e o 26 esperam os números reais do item 30.
+
+## Trilha — Humanizer (textos sem cara de IA), pedido do RT em 09/11/2026
+
+Origem: o RT pediu em 09/11/2026 para deixar os textos "mais humanos, com menos AI slop", com a skill humanizer (github.com/blader/humanizer, MIT, instalada no usuário). Prioridade P1, logo depois da trilha de desempenho. O RT descartou o laya (classificador de texto) na mesma conversa.
+
+Escopo: textos das telas (títulos, descrições, avisos, erros, ajudas, estados vazios), o site de marketing (`landing/`), documentos do projeto e descrições de PR. Ficam de fora o conteúdo clínico (doses, protocolos, escores, critérios, sinais vitais, cor da classificação), o código, os comentários e os textos legais.
+
+Base: o levantamento só de leitura de 09/11/2026 (`docs/humanizer/LEVANTAMENTO.md`), com 114 achados, 35 deles fortes. O conteúdo provisório do site de marketing (depoimentos, "-35%", telefone, endereço e prazo de resposta) já saiu no PR #524.
+
+| Lote | O que entra | Estado |
+|---|---|---|
+| 1 | Página pública do app (`Landing.tsx`), lateral da entrada, cadastro, login e "papel em preparo"; textos que restaram do site de marketing; o erro "candidat-se" da Escala e a promessa vencida da Regulação | Em andamento (branch `humanizer/lote1-entrada`) |
+| 2 | Os outros achados fortes: gestor, farmácia, regulação, componentes comuns, admin e rede | Pendente |
+| 3 | Achados fracos: travessão como conectivo, "com sucesso", estados vazios que repetem o título, "nasce" | Pendente |
+| 4 | Documentos: negrito decorativo, títulos com travessão, `README.md` desatualizado | Pendente |
+
+As duas mensagens do banco do levantamento são fracas e dependem de migration; ficam para quando outra mudança tocar as mesmas funções.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.

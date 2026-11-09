@@ -8,13 +8,10 @@ export function Team() {
       <div className="mx-auto max-w-3xl">
         <h2 className="section-title">Quem somos</h2>
         <p className="mt-4 text-slate-600">
-          O Chefe Coruja nasceu dentro de uma UPA, liderado por um médico coordenador que viveu os desafios
-          do dia a dia: escalas no papel, leitos sem visibilidade e prescrição sem rastreio.
+          O Chefe Coruja foi criado numa UPA por um médico coordenador, a partir de problemas do plantão:
+          escala no papel, leitos sem visão e prescrição sem rastreio.
         </p>
-        <p className="mt-3 text-slate-600">
-          Unimos prática assistencial e tecnologia para entregar uma plataforma que organiza a operação e
-          respeita as normas brasileiras, da Resolução CFM à LGPD.
-        </p>
+        <p className="mt-3 text-slate-600">O sistema segue as resoluções do CFM e a LGPD.</p>
       </div>
     </section>
   )
