@@ -25,6 +25,7 @@ import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
+import { PAGINA, VerMais } from '@/components/ui/ver-mais'
 
 type Filtro = StatusAih | 'todas'
 const ABAS: readonly (readonly [Filtro, string])[] = [
@@ -35,15 +36,20 @@ export default function Aih() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
   const regulador = papelAtivo === 'regulador'
-  const [filtro, setFiltro] = React.useState<Filtro>('solicitada')
+  const [filtro, setFiltroBase] = React.useState<Filtro>('solicitada')
+  // item 05 do kit de desempenho: páginas de 50, com "Ver mais"
+  const [limite, setLimite] = React.useState(PAGINA)
+  const setFiltro = (f: Filtro) => { setFiltroBase(f); setLimite(PAGINA) }
   const lista = useQuery({
-    queryKey: ['aihs-da-unidade', unidade, filtro],
+    queryKey: ['aihs-da-unidade', unidade, filtro, limite],
+    placeholderData: (anterior) => anterior,
     enabled: !!unidade,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('aihs_da_unidade', { p_unidade: unidade!, p_status: filtro === 'todas' ? undefined : filtro })
+      const { data, error } = await supabase.rpc('aihs_da_unidade_pagina', { p_unidade: unidade!, p_status: filtro === 'todas' ? undefined : filtro, p_limite: limite })
       if (error) throw error
-      return (data ?? []) as unknown as AihFila[]
+      const pagina = (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: AihFila[] }
+      return pagina
     },
   })
 
@@ -54,11 +60,12 @@ export default function Aih() {
           ? 'Laudos de AIH emitidos na unidade. Aprove com o número da AIH e a competência, ou rejeite com o motivo.'
           : 'Acompanhamento das AIHs da unidade. Quem decide é o médico regulador.'} />
       <Abas abas={ABAS} valor={filtro} onChange={setFiltro} rotulo="Situação da AIH" />
-      {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
+      {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data?.itens ?? []).length === 0 ? (
         <Vazio icone={FileText} titulo="Nenhuma AIH aqui" texto="Quando o médico emitir o laudo de AIH, ele aparece em Solicitadas." />
       ) : (
         <div className="flex flex-col gap-3">
-          {(lista.data ?? []).map((a) => <CartaoAih key={a.id} a={a} regulador={regulador} />)}
+          {(lista.data?.itens ?? []).map((a) => <CartaoAih key={a.id} a={a} regulador={regulador} />)}
+          <VerMais mostrados={lista.data?.itens.length ?? 0} total={lista.data?.total ?? 0} ocupado={lista.isFetching} onClick={() => setLimite((n) => n + PAGINA)} />
         </div>
       )}
     </div>

@@ -10246,6 +10246,7 @@ export type Database = {
       }
       administracoes_sem_liberacao: { Args: { p_unidade: string }; Returns: Json }
       aihs_da_unidade: { Args: { p_status?: string; p_unidade: string }; Returns: Json }
+      aihs_da_unidade_pagina: { Args: { p_deslocamento?: number; p_limite?: number; p_status?: string; p_unidade: string }; Returns: Json }
       buscar_cbo: { Args: { p_termo: string }; Returns: Json }
       criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
@@ -10290,6 +10291,7 @@ export type Database = {
       apac_conferencia: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
       apac_fechamentos_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       apacs_da_unidade: { Args: { p_status?: string; p_unidade: string }; Returns: Json }
+      apacs_da_unidade_pagina: { Args: { p_deslocamento?: number; p_limite?: number; p_status?: string; p_unidade: string }; Returns: Json }
       apacs_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       arquivo_apac: { Args: { p_fechamento: string }; Returns: Json }
       buscar_sigtap_apac: { Args: { p_termo: string }; Returns: Json }
