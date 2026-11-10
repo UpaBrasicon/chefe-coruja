@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { fmtDataHora } from '@/lib/datas'
 import { caminhoLaudo, erroLaudo, PENDENTE, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
+import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 
 const MINIMO_MOTIVO = 10
@@ -155,14 +156,18 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
 
 function Versao({ v }: { v: VersaoResultado }) {
   const [erro, setErro] = React.useState<string | null>(null)
-  const abrirLaudo = async () => {
+  // a aba abre no clique (abrirEmJanela): o bloqueador de pop-up barra a que
+  // abre depois das chamadas ao servidor
+  const abrirLaudo = () => {
     setErro(null)
-    const { data, error } = await supabase.rpc('exame_laudo_abrir', { p_resultado: v.id })
-    if (error) return setErro(error.message)
-    const r = data as unknown as { caminho: string }
-    const url = await supabase.storage.from('exames').createSignedUrl(r.caminho, 60)
-    if (url.error) return setErro(url.error.message)
-    window.open(url.data.signedUrl, '_blank', 'noopener')
+    void abrirEmJanela(async () => {
+      const { data, error } = await supabase.rpc('exame_laudo_abrir', { p_resultado: v.id })
+      if (error) throw error
+      const r = data as unknown as { caminho: string }
+      const url = await supabase.storage.from('exames').createSignedUrl(r.caminho, 60)
+      if (url.error) throw url.error
+      return url.data.signedUrl
+    }).catch((e: Error) => setErro(e.message))
   }
   return (
     <div className={`flex flex-col gap-1.5 rounded-controle border px-2.5 py-2 ${v.critico ? 'border-critico/50 bg-alerta-critico' : 'border-trilha'}${v.vigente ? '' : ' opacity-75'}`}>
