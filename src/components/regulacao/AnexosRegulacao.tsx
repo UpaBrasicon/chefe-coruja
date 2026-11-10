@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { fmtDataHora } from '@/lib/datas'
 import { ANEXO_TIPOS, caminhoAnexo, erroArquivo } from '@/lib/regulacao'
+import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 
 type Anexo = { id: string; tipo: 'arquivo' | 'documento'; nome: string; tamanho: number | null; enviado_em: string; enviado_por: string | null }
@@ -67,15 +68,28 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
     }
   }
 
-  async function abrir(a: Anexo) {
-    setErro(null)
+  // o documento abre na própria tela; o arquivo, numa aba aberta no clique
+  // (abrirEmJanela): o bloqueador de pop-up barra a que abre depois do await
+  async function abrirDocumento(a: Anexo) {
     const { data, error } = await supabase.rpc('regulacao_anexo_abrir', { p_anexo: a.id })
     if (error) return setErro(error.message)
-    const r = data as unknown as { tipo: 'arquivo'; caminho: string; nome: string } | Aberto
-    if (r.tipo === 'documento') return setAberto(r)
-    const url = await supabase.storage.from('regulacao').createSignedUrl(r.caminho, 60)
-    if (url.error) return setErro(url.error.message)
-    window.open(url.data.signedUrl, '_blank', 'noopener')
+    setAberto(data as unknown as Aberto)
+  }
+  function abrir(a: Anexo) {
+    setErro(null)
+    if (a.tipo === 'documento') return void abrirDocumento(a)
+    void abrirEmJanela(async () => {
+      const { data, error } = await supabase.rpc('regulacao_anexo_abrir', { p_anexo: a.id })
+      if (error) throw error
+      const r = data as unknown as { tipo: 'arquivo'; caminho: string; nome: string } | Aberto
+      if (r.tipo === 'documento') {
+        setAberto(r)
+        return null
+      }
+      const url = await supabase.storage.from('regulacao').createSignedUrl(r.caminho, 60)
+      if (url.error) throw url.error
+      return url.data.signedUrl
+    }).catch((e: Error) => setErro(e.message))
   }
 
   const retirar = useMutation({
