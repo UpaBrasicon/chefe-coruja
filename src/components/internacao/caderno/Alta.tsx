@@ -16,6 +16,7 @@ import { Secao } from './caixas'
 import { type Acao, diaHora, type Internacao, type Pacote, ROTULO_ALTA, rpc, TIPO_ALTA } from './comum'
 import { Estado } from '@/components/porta/Estado'
 import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { PainelTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { DadosObito } from '@/components/obito/DadosObito'
 import { useAgora } from '@/hooks/useAgora'
 import { detalhesObito, obitoVazio, regrasObito } from '@/lib/obito'
@@ -60,6 +61,8 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
   const [destino, setDestino] = React.useState('')
   // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
   const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
+  // lacuna 7 (T5): a transferência externa só sai com o documento de transferência emitido
+  const [docTransferencia, setDocTransferencia] = React.useState(false)
   // lacuna 5 (O1): os mesmos dados do óbito da porta e da observação
   const [obito, setObito] = React.useState(() => obitoVazio())
   const agora = useAgora()
@@ -122,7 +125,11 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
           </div>
         )}
       </div>
+      {tipo === 'transferencia_externa' && pacienteId && <PainelTransferencia pacienteId={pacienteId} aoMudar={setDocTransferencia} />}
       {tipo === 'obito' && <DadosObito id={`alta-obito-${i.id}`} valor={obito} onChange={setObito} agora={agora} />}
+      {tipo === 'transferencia_externa' && !docTransferencia && (
+        <p className="flex gap-1.5 text-atencao"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />Emita o documento de transferência antes de transferir.</p>
+      )}
       {faltaObito.length > 0 && (
         <ul className="flex flex-col gap-1 text-atencao">
           {faltaObito.map((x) => <li key={x.texto} className="flex gap-1.5"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{x.texto}</li>)}
@@ -173,7 +180,10 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
         </div>
       ) : (
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => setConfirmar(true)} disabled={impedem.length > 0 || faltaObito.length > 0 || (tipo !== 'alta_evasao' && cid.trim().length < 3)}>Confirmar</Button>
+          <Button size="sm" onClick={() => setConfirmar(true)}
+            disabled={impedem.length > 0 || faltaObito.length > 0 || (tipo !== 'alta_evasao' && cid.trim().length < 3) || (tipo === 'transferencia_externa' && !docTransferencia)}>
+            Confirmar
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
         </div>
       )}

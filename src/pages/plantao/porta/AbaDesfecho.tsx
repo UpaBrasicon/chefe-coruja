@@ -24,6 +24,7 @@ import { detalhesObito, obitoVazio, regrasObito } from '@/lib/obito'
 import { CampoCid, type RegistroSoap } from './AbaAtendimento'
 import { Chip } from '@/components/monitor/Pagina'
 import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { PainelTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { detalhesDaTransferencia, type RegulacaoDoHistorico } from '@/lib/regulacaoAlta'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -93,6 +94,8 @@ export function AbaDesfecho({
   const [destino, setDestino] = React.useState('')
   // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
   const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
+  // lacuna 7 (T5): a transferência só sai com o documento de transferência emitido
+  const [docTransferencia, setDocTransferencia] = React.useState(false)
   // lacuna 5 (O1): os mesmos dados do óbito da observação e da internação
   const [obito, setObito] = React.useState(() => obitoVazio())
   const [setorObito, setSetorObito] = React.useState('')
@@ -165,6 +168,7 @@ export function AbaDesfecho({
     if (d === 'evasao') regras.push({ ok: !!motivoEvasao, texto: 'Motivo da evasão' })
     if (RELATO[d]) regras.push({ ok: relato.trim().length >= 15, texto: `${RELATO[d]} (mínimo de 15 letras)` })
     if (d === 'transferencia') regras.push({ ok: !!regulacao || destino.trim().length >= 3, texto: 'Serviço de destino' })
+    if (d === 'transferencia') regras.push({ ok: docTransferencia, texto: 'Documento de transferência emitido (Portaria GM/MS 2.048/2002, Cap. VI, 3.1 f)' })
     if (d === 'obito') {
       regras.push(...regrasObito(obito, { agora, desde: chegadaEm }))
       regras.push({ ok: CID_OK.test(cidObito.trim().toUpperCase()), texto: 'CID do óbito (interno)' })
@@ -233,6 +237,7 @@ export function AbaDesfecho({
               <Input id="d-destino" value={destino} onChange={(e) => setDestino(e.target.value)} />
             </div>
           )}
+          <PainelTransferencia pacienteId={pacienteId} aoMudar={setDocTransferencia} />
         </div>
       )}
       {d === 'obito' && <DadosObito id="d-obito" valor={obito} onChange={setObito} agora={agora} />}

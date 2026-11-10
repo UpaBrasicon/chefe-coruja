@@ -22,6 +22,7 @@ import { DESFECHOS, RELATO_DESFECHO, hhmm, rpc, type Acao, type Desfecho, type L
 import { Chip } from '@/components/monitor/Pagina'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
 import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { PainelTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { DadosObito } from '@/components/obito/DadosObito'
 import { useAgora } from '@/hooks/useAgora'
 import { detalhesObito, obitoVazio, regrasObito } from '@/lib/obito'
@@ -86,6 +87,8 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
   const [destino, setDestino] = React.useState('')
   // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
   const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
+  // lacuna 7 (T5): a transferência só sai com o documento de transferência emitido
+  const [docTransferencia, setDocTransferencia] = React.useState(false)
   // lacuna 5 (O1): os mesmos dados do óbito da porta e da internação
   const [obito, setObito] = React.useState(() => obitoVazio())
   const agora = useAgora()
@@ -118,6 +121,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
     if (!desfecho) return setFalta('Escolha o desfecho.')
     if (ehAlta && desfecho !== 'evasao' && cid.trim().length < 3) return setFalta('Informe o CID de alta.')
     if (desfecho === 'transferencia' && !regulacao && destino.trim().length < 3) return setFalta('Informe o serviço de destino.')
+    if (desfecho === 'transferencia' && !docTransferencia) return setFalta('Emita o documento de transferência antes de transferir.')
     if (desfecho === 'evasao' && !motivoEvasao) return setFalta('Escolha o motivo da evasão.')
     if (desfecho === 'obito') {
       const falta = regrasObito(obito, { agora: Date.now() }).find((r) => !r.ok)
@@ -177,6 +181,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
           <Input id={`dest-${linha.internacao_id}`} value={destino} onChange={(e) => setDestino(e.target.value)} />
         </div>
       )}
+      {desfecho === 'transferencia' && <PainelTransferencia pacienteId={linha.paciente_id} aoMudar={setDocTransferencia} />}
       {desfecho === 'obito' && (
         <DadosObito id={`ob-${linha.internacao_id}`} valor={obito} onChange={(v) => { setObito(v); setFalta(null) }} agora={agora} />
       )}
@@ -192,7 +197,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
         </div>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={confirmar}>Confirmar desfecho</Button>
+        <Button size="sm" onClick={confirmar} disabled={desfecho === 'transferencia' && !docTransferencia}>Confirmar desfecho</Button>
         <Button size="sm" variant="outline" onClick={fechar}>Cancelar</Button>
       </div>
     </Painel>

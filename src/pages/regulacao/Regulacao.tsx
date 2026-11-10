@@ -32,6 +32,7 @@ import { useSearchParams } from 'react-router-dom'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
@@ -819,6 +820,8 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       <PrazosDoPedido id={s.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
         podeEvoluir={!central && !!s.pode_evoluir} aoFim={recarregar} />
       <AnexosRegulacao solicitacaoId={s.id} />
+      {/* lacuna 7 (T9): o documento de transferência da origem (origem, central, NIR e destino na rede) */}
+      {(s.tipo === 'transferencia' || s.tipo === 'leito') && <LeituraTransferencia solicitacaoId={s.id} />}
       {!central && (s.origem_pode_responder || (souNir && s.origem.id === unidadeId)) && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
       {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
       {central && podeRegistrarExterno && emDecisao(s.status) && <PainelDecisao s={s} centralId={unidadeId} aoFim={recarregar} />}
