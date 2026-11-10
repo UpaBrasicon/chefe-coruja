@@ -24,9 +24,11 @@ import { Input } from '@/components/ui/input'
 import { Campo, Escolhas } from '@/components/paciente/CamposCadastro'
 
 /** Na UBS não há pulseira (P7). */
+// a pulseira não é obrigatória: só aparece na unidade em que o gestor ligou
+// (Configuração; RT, 10/11/2026). Na UBS, nunca.
 function useSemPulseira() {
   const { unidadeAtiva } = useUnidade()
-  return unidadeAtiva?.unidade.tipo === 'ubs'
+  return unidadeAtiva?.unidade.tipo === 'ubs' || unidadeAtiva?.unidade.usa_pulseira !== true
 }
 
 export function BotaoPulseira({ pacienteId, nome, reimpressao = false, motivo, compacto = false, variant = 'outline', className }: {

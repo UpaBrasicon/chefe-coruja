@@ -5,7 +5,8 @@
 --  P2. não identificado: sexo aparente, raça/cor, idade estimada em meses
 --      (nunca a data estimada) e sinais;
 --  P3. recém-nascido: mãe atual, ordem do gêmeo, nascimento e sexo;
---  P7. a UBS não imprime;
+--  P7. a UBS não imprime; a unidade só imprime com usa_pulseira ligada
+--      pelo gestor (opcional por unidade, RT 10/11/2026);
 --  P8. impressão e reimpressão gravadas em log_acesso_prontuario com o
 --      protocolo IMP-; a reimpressão exige o motivo, "outro" exige o texto;
 --      quem não atua no paciente não imprime; anon não executa.
@@ -90,6 +91,24 @@ SELECT public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Dor abdom
 SELECT public.registrar_ficha('22000000-0000-4000-8000-000000000003', 'Sangramento', pg_temp.u('mae'), '{}'::jsonb);
 INSERT INTO t SELECT 'rn2', public.cadastrar_rn(pg_temp.u('mae'), private.data_atual() - 1, 'F', 2::smallint) ->> 'paciente_id';
 RESET ROLE;
+
+-- ── a pulseira é opcional por unidade (RT, 10/11/2026): desligada por padrão ──
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
+SELECT pg_temp.falha(format('SELECT public.registrar_impressao_pulseira(%L)', pg_temp.u('a')),
+  'Esta unidade não usa pulseira de identificação', 'unidade sem pulseira não imprime');
+SELECT pg_temp.falha($$SELECT public.definir_pulseira_unidade('21000000-0000-4000-8000-000000000001', true)$$,
+  'Quem liga a pulseira da unidade é o gestor', 'só o gestor liga a pulseira');
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');
+SELECT public.definir_pulseira_unidade('21000000-0000-4000-8000-000000000001', true);
+RESET ROLE;
+DO $$ BEGIN
+  IF NOT (SELECT usa_pulseira FROM public.unidades WHERE id = '21000000-0000-4000-8000-000000000001')
+     OR NOT EXISTS (SELECT 1 FROM public.log_auditoria WHERE acao = 'pulseira_unidade_definida') THEN
+    RAISE EXCEPTION 'FALHOU: gestor liga a pulseira, com auditoria';
+  END IF;
+  RAISE NOTICE 'OK  gestor liga a pulseira da unidade, com auditoria';
+END $$;
 
 -- ── P1. adulto ──────────────────────────────────────────────────────────────
 SET LOCAL ROLE authenticated;

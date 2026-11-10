@@ -247,3 +247,7 @@ As linhas de `log_acesso_prontuario` ficam.
   é a das outras telas.
 - A etiqueta não foi conferida em papel. Falta imprimir uma na unidade e
   medir antes de liberar.
+
+## 7. Pulseira opcional por unidade (RT, 10/11/2026)
+
+O RT lembrou que a pulseira não é obrigatória em toda unidade, só nas que escolherem. A coluna `unidades.usa_pulseira` começa desligada. O gestor liga em Configuração ("Pulseira de identificação: Usa / Não usa"), pela `definir_pulseira_unidade`, com auditoria. Com ela desligada, os botões não aparecem e `registrar_impressao_pulseira` recusa a impressão. A UBS nunca usa.
