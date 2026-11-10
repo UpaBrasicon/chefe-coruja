@@ -581,7 +581,7 @@ function LinhaFaltaAberta({ f, agora, avancar }: { f: FaltaPriorizada; agora: nu
           {f.alta_vigilancia && <SeloAltaVigilancia />}
         </span>
         <span className="text-rotulo text-tinta-sussurro">{f.observacao ? `${f.observacao} · ` : ''}sinalizada por {f.sinalizada_por ?? '—'}</span>
-        {f.retorno && <span className="text-rotulo text-conforme">Retorno ao plantão: “{f.retorno.texto}”</span>}
+        {f.retorno && <span className="text-rotulo text-conforme">Retorno ao plantão: "{f.retorno.texto}"</span>}
       </div>
       <span className="w-24 text-apoio text-tinta-apoio tabular-nums">há {haQuanto(f.sinalizada_em, agora)}</span>
       <span className="w-36 text-rotulo text-tinta-apoio">

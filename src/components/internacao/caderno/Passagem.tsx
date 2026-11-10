@@ -32,7 +32,7 @@ export function BlocoPassagem({ i, lista, eu, acao, semBotao = false }: { i: Int
       ) : (
         <>
           {ultima?.situacao === 'recusada' && (
-            <p className="text-atencao">Recusada: “{ultima.motivo_recusa}”. Reenvie quando puder.</p>
+            <p className="text-atencao">Recusada: "{ultima.motivo_recusa}". Reenvie quando puder.</p>
           )}
           {ultima?.situacao === 'aceita' && <p className="text-conforme">Última passagem aceita.</p>}
           {semBotao ? null : !aberto ? (

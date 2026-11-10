@@ -260,7 +260,7 @@ export function PedidoExames({ unidadeId, perfilId }: { unidadeId?: string; perf
               )
             })}
 
-            <Bloco titulo="Fora da lista" nota="Exame que não está no cardápio da unidade: sai em “Outros” na última folha.">
+            <Bloco titulo="Fora da lista" nota='Exame que não está no cardápio da unidade: sai em "Outros" na última folha.'>
               <Campo id="ped-outro" rotulo="Outro exame" largura="medio">
                 <div className="flex gap-2">
                   <Input id="ped-outro" value={outro} placeholder="Ex.: Vitamina B12" onChange={(e) => setOutro(e.target.value)}
@@ -284,7 +284,7 @@ export function PedidoExames({ unidadeId, perfilId }: { unidadeId?: string; perf
 
             <div className="flex flex-wrap gap-3">
               <Texto id="ped-indicacao" rotulo="Indicação clínica / hipótese diagnóstica" longo linhas={3} valor={dados.indicacao}
-                onChange={(v) => atualizar({ indicacao: v })} dica="O que motiva o pedido — o serviço precisa disso para priorizar" />
+                onChange={(v) => atualizar({ indicacao: v })} dica="O que motiva o pedido. O serviço usa isso para priorizar." />
               <BuscaCid id="ped-cid" rotulo="CID-10 (opcional)" largura="medio" valor={dados.cid} confirmado={dados.cidOk}
                 onDigitar={(v) => atualizar({ cid: v, cidOk: false })} onEscolher={(c, nome) => atualizar({ cid: `${c} — ${nome}`, cidOk: true })}
                 ajuda={hipotese ? `Hipótese na folha: ${hipotese}` : undefined} />

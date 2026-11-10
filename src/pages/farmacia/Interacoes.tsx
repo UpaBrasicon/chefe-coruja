@@ -34,8 +34,8 @@ type Situacao = ParInteracao['situacao']
 type Aba = Situacao | 'grupos'
 
 const SITUACAO: Record<Situacao, { rotulo: string; variante: 'success' | 'outline' | 'warning' }> = {
-  ativa: { rotulo: 'ativa — alerta na prescrição', variante: 'success' },
-  proposta: { rotulo: 'proposta — não alerta', variante: 'warning' },
+  ativa: { rotulo: 'ativa: alerta na prescrição', variante: 'success' },
+  proposta: { rotulo: 'proposta: não alerta', variante: 'warning' },
   inativa: { rotulo: 'inativa', variante: 'outline' },
 }
 const DICA: Record<Aba, string> = {
@@ -159,7 +159,7 @@ export default function Interacoes() {
         )}
         <p className="text-rotulo text-tinta-sussurro">
           Base: lista ONC de alta prioridade (Phansalkar S. et al. J Am Med Inform Assoc 2012;19(5):735-43), resumida com as nossas palavras, e
-          bulas ANVISA. O par “prolongam o QT” é montado pela farmácia a partir das bulas. A base comercial licenciada fica para depois.
+          bulas ANVISA. O par "prolongam o QT" é montado pela farmácia a partir das bulas. A base comercial licenciada fica para depois.
         </p>
       </div>
     </div>
@@ -215,7 +215,7 @@ function FichaPar({ p, grupos, unidadeId, podeEditar, irAoGrupo, aoSalvar }: {
         <Campo rotulo={p.grupo_a_id === p.grupo_b_id ? p.grupo_a : `Grupo A · ${p.grupo_a}`}>{membros(p.grupo_a_id)}</Campo>
         {p.grupo_a_id !== p.grupo_b_id && <Campo rotulo={`Grupo B · ${p.grupo_b}`}>{membros(p.grupo_b_id)}</Campo>}
         <Campo rotulo="Fonte">{p.fonte}</Campo>
-        {p.atualizado_por && <Campo rotulo="Última mudança">{p.atualizado_por}, {fmtDataHora(p.atualizado_em)}{p.motivo ? ` — “${p.motivo}”` : ''}</Campo>}
+        {p.atualizado_por && <Campo rotulo="Última mudança">{p.atualizado_por}, {fmtDataHora(p.atualizado_em)}{p.motivo ? ` — "${p.motivo}"` : ''}</Campo>}
       </dl>
       {podeEditar && (
         <div className="flex flex-col gap-1.5">

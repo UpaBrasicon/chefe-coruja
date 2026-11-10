@@ -177,7 +177,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
           </Button>
         </>}>
           {falta.length > 0 && (
-            <Aviso>O cadastro deste paciente está incompleto para o laudo: {falta.join(', ')}. Use “Completar ou corrigir cadastro” acima.</Aviso>
+            <Aviso>O cadastro deste paciente está incompleto para o laudo: {falta.join(', ')}. Use "Completar ou corrigir cadastro" acima.</Aviso>
           )}
 
           <Bloco num="1" titulo="Identificação do estabelecimento de saúde"

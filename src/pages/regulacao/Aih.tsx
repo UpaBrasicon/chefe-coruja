@@ -206,7 +206,7 @@ function HistoricoAih({ aih }: { aih: string }) {
           <span className="font-medium text-tinta">{EVENTO_AIH[e.evento]}</span> · {e.por ?? '—'}, {fmtDataHora(e.em)}
           {e.evento === 'aprovada' && <> · nº {e.numero} · competência {competenciaNaTela(e.competencia)}</>}
           {e.evento === 'competencia_ajustada' && <> · nova competência {competenciaNaTela(e.competencia)}</>}
-          {e.motivo && <span className="text-tinta-apoio"> — “{e.motivo}”</span>}
+          {e.motivo && <span className="text-tinta-apoio"> — "{e.motivo}"</span>}
         </li>
       ))}
     </ol>

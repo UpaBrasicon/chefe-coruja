@@ -126,7 +126,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
         p_lng: lng ?? undefined,
       })
       if (error) throw error
-      setSucesso('Check-out realizado com sucesso.')
+      setSucesso('Check-out registrado.')
       void refetch()
     } catch (e) {
       setErro((e as Error).message)
@@ -163,7 +163,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
           <CardDescription>
             {unidade?.latitude != null
               ? `Geolocalização configurada (raio de ${unidade.raio_metros}m).`
-              : 'Esta unidade ainda não configurou geolocalização — o registro será feito sem validação de local.'}
+              : 'Esta unidade ainda não configurou a geolocalização: o registro é feito sem conferir o local.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

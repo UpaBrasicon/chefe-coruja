@@ -110,7 +110,7 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
 
         {ind.isLoading ? <Spinner /> : ind.error ? <p role="alert" className="text-critico">{(ind.error as Error).message}</p> : !d ? null
           : d.total === 0 && Object.keys(d.fila_atual.por_tipo).length === 0 ? (
-            <Vazio icone={LineChart} titulo="Sem pedidos" texto="Nenhum pedido de regulação com esses filtros." />
+            <Vazio icone={LineChart} titulo="Nenhum pedido com esses filtros" />
           ) : (
             <>
               <Secao titulo="Tempos">

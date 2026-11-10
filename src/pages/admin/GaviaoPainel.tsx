@@ -97,7 +97,7 @@ export function GaviaoPainel() {
     <div className="space-y-6">
       <TituloPagina
         icone={ShieldCheck}
-        titulo="Gavião — Sentinela"
+        titulo="Gavião"
         descricao="Fiscal de segurança e integridade da plataforma. Dados que o Gavião considera pertinentes."
         className="mb-0"
       />

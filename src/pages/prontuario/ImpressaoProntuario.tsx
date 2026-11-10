@@ -357,7 +357,7 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
     <div className="flex w-full max-w-4xl flex-col gap-4">
       <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: 'Internação', to: '/plantao/internacao' }, { rotulo: 'Impressão de prontuário' }]} />
       <TituloPagina icone={Printer} titulo="Impressão de prontuário"
-        descricao="Cópia do prontuário com autorização e declaração de recebimento. Tudo fica registrado." />
+        descricao="Cópia do prontuário com autorização e declaração de recebimento; cada cópia fica registrada." />
 
       <div className={cabecalhoCaixa}>
         <h3 className="text-corpo font-semibold text-tinta">Paciente</h3>
@@ -439,7 +439,7 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
                     <Button size="sm" variant="destructive" onClick={() => { setCancelando({ tipo: 'anexo', id: a.id }); setCancTxt('') }}><X /> Cancelar</Button>
                   )}
                 </div>
-                {a.cancelado_em && <span className="text-rotulo text-critico">Cancelado em {diaHora(a.cancelado_em)} · “{a.motivo_cancelamento}”. O arquivo não é apagado.</span>}
+                {a.cancelado_em && <span className="text-rotulo text-critico">Cancelado em {diaHora(a.cancelado_em)} · "{a.motivo_cancelamento}". O arquivo não é apagado.</span>}
                 {cancelando?.tipo === 'anexo' && cancelando.id === a.id && (
                   <Cancelamento txt={cancTxt} setTxt={setCancTxt} onDesistir={() => setCancelando(null)} onConfirmar={() => void confirmarCancelamento()} />
                 )}
@@ -510,7 +510,7 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
             <DialogTitle className="flex items-center gap-2"><FileText className="size-4" aria-hidden />{vendo ? nomeItem(vendo) : ''}</DialogTitle>
             <DialogDescription>
               {vendo ? `Emitido em ${diaHora(vendo.emitido_em ?? vendo.criado_em)} por ${vendo.autor ?? '—'} · ${NOME_ESTADO[estadoDoDocumento(vendo)]}` : ''}
-              {vendo?.cancelado_em ? ` · cancelado: “${vendo.motivo_cancelamento}”` : ''}
+              {vendo?.cancelado_em ? ` · cancelado: "${vendo.motivo_cancelamento}"` : ''}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-1 text-apoio text-tinta">

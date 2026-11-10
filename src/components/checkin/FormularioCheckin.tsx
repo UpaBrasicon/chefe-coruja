@@ -70,7 +70,7 @@ export function FormularioCheckin({
       setRecusas(0)
       setJustificativa('')
       window.dispatchEvent(new Event(EVENTO_CHECKIN))
-      onFeito?.(comJustificativa ? 'Check-in registrado com a justificativa. O gestor verá o motivo.' : 'Check-in realizado com sucesso.')
+      onFeito?.(comJustificativa ? 'Check-in registrado com a justificativa. O gestor verá o motivo.' : 'Check-in registrado.')
     } catch (e) {
       setErro((e as Error).message)
     } finally {
@@ -99,7 +99,7 @@ export function FormularioCheckin({
         <div className="flex flex-col gap-2 rounded-controle border border-fio bg-campo p-3">
           <p className="text-apoio font-medium text-tinta">O GPS está com problema?</p>
           <p className="text-apoio text-tinta-sussurro">
-            Duas tentativas deram “{recusa}”. Se o GPS está errado ou desligado, registre o check-in com uma justificativa. Ela fica visível para o gestor.
+            Duas tentativas deram "{recusa}". Se o GPS está errado ou desligado, registre o check-in com uma justificativa. Ela fica visível para o gestor.
           </p>
           <Textarea
             placeholder="Ex.: o GPS do celular está marcando outro bairro"

@@ -235,7 +235,7 @@ function MinhaFila({ unidadeId }: { unidadeId: string }) {
       {teles.error && <p className="text-apoio text-critico">{(teles.error as Error).message}</p>}
       {emAtendimento > 0 && (
         <Link to="/telemedicina/salas" className="flex items-center gap-2 rounded-cartao border border-critico/30 bg-alerta-critico px-5 py-3 text-apoio font-medium text-critico hover:opacity-90">
-          <Video className="size-4" aria-hidden /> {emAtendimento === 1 ? 'Você tem 1 teleinterconsulta em atendimento' : `Você tem ${emAtendimento} teleinterconsultas em atendimento`} — responder em Salas em andamento
+          <Video className="size-4" aria-hidden /> {emAtendimento === 1 ? 'Você tem 1 teleinterconsulta em atendimento' : `Você tem ${emAtendimento} teleinterconsultas em atendimento`}. Responda em Salas em andamento.
         </Link>
       )}
       <Secao titulo={`Fila da unidade (${abertas.length})`} extra="urgente primeiro, depois a mais antiga">

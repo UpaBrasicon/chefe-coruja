@@ -669,7 +669,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
             <DialogTitle className="text-dialogo">Recém-nascido de paciente cadastrada</DialogTitle>
-            <DialogDescription className="text-controle">Escolha o cadastro da mãe. O RN fica como “RN de (nome da mãe)” e segue para a ficha.</DialogDescription>
+            <DialogDescription className="text-controle">Escolha o cadastro da mãe. O RN fica como "RN de (nome da mãe)" e segue para a ficha.</DialogDescription>
           </DialogHeader>
           {rnAberto && <FormRn onCriado={rnCadastrado} />}
         </DialogContent>

@@ -46,7 +46,7 @@ export function NumerosOrganizacao() {
       <CardHeader className="flex-row flex-wrap items-start justify-between gap-3 space-y-0">
         <div>
           <CardTitle className="text-corpo">Movimento por unidade</CardTitle>
-          <CardDescription>Só agregado. Contagens de 1 a 4 aparecem como “&lt; 5” para não identificar ninguém, e a taxa some junto.</CardDescription>
+          <CardDescription>Só agregado. Contagens de 1 a 4 aparecem como "&lt; 5" para não identificar ninguém, e a taxa some junto.</CardDescription>
         </div>
         <div className="flex gap-1 text-apoio">
           {[7, 30, 90].map((d) => (

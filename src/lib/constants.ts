@@ -19,7 +19,7 @@ export const PAPEL_LABEL: Record<Papel, string> = {
 
 export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   admin: 'Todas as unidades da organização (sem identidade de paciente)',
-  gestor: 'Gestão da unidade — setores, leitos e equipe',
+  gestor: 'Gestão da unidade: setores, leitos e equipe',
   plantonista: 'Acesso aos pacientes sob seu cuidado',
   enfermeiro: 'Triagem, classificação de risco e cuidados de enfermagem',
   tecnico_enfermagem: 'Cuidados de enfermagem e sinais vitais',

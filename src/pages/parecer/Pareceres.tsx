@@ -90,7 +90,7 @@ function MinhasEspecialidades({ perfilId }: { perfilId: string }) {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-apoio font-medium text-tinta">Especialidades que respondo:</span>
         {minhas.isLoading && <Spinner />}
-        {!minhas.isLoading && lista.length === 0 && <span className="text-apoio text-atencao">nenhuma declarada — a fila fica vazia até você declarar.</span>}
+        {!minhas.isLoading && lista.length === 0 && <span className="text-apoio text-atencao">nenhuma declarada: a fila fica vazia até você declarar.</span>}
         {lista.map((e) => <Badge key={e} variant="default">{e}</Badge>)}
         {!editando && (
           <Button size="sm" variant="outline" className="ml-auto" onClick={() => { setMarcadas(lista); setEditando(true) }}>Alterar</Button>

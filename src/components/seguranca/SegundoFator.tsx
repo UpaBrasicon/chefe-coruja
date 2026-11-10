@@ -535,7 +535,7 @@ function DispositivosConfiaveis() {
         <TituloSecao className="mb-0">Dispositivos confiáveis</TituloSecao>
       </div>
       <p className="mb-3 text-apoio text-tinta-apoio">
-        Aparelhos onde você marcou “confiar neste dispositivo” não pedem o código por 30 dias. Perdeu um aparelho? Remova-o aqui para cortar o acesso na hora.
+        Aparelhos onde você marcou "confiar neste dispositivo" não pedem o código por 30 dias. Perdeu um aparelho? Remova-o aqui para cortar o acesso na hora.
       </p>
       {isLoading ? (
         <Spinner />

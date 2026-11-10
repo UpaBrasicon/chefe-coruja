@@ -53,7 +53,7 @@ export default function Nir() {
   const itens = filtrarPendencias(r?.itens ?? [], grupo)
   return (
     <div className="flex w-full max-w-5xl flex-col gap-4">
-      <TituloPagina icone={ClipboardList} titulo="NIR — pendências da unidade"
+      <TituloPagina icone={ClipboardList} titulo="Pendências do NIR"
         descricao="AIH, APAC e regulações paradas, com o responsável e o tempo parado. Cobrar avisa o responsável e fica registrado." />
       <Card>
         <CardHeader>
@@ -72,7 +72,7 @@ export default function Nir() {
             ))}
           </div>
           {painel.isLoading ? <Spinner /> : painel.error ? <p role="alert" className="text-critico">{(painel.error as Error).message}</p>
-            : itens.length === 0 ? <Vazio icone={ClipboardList} titulo="Nada parado" texto="Nenhuma pendência neste assunto." /> : (
+            : itens.length === 0 ? <Vazio icone={ClipboardList} titulo="Nada parado neste assunto" /> : (
               <ul className="flex flex-col divide-y divide-fio">
                 {itens.map((p) => (
                   <li key={`${p.tipo}-${p.ref_id}`} className="flex flex-wrap items-center gap-2 py-2">
@@ -82,7 +82,7 @@ export default function Nir() {
                     <span className="font-semibold tabular-nums text-atencao">parado há {formatarEspera(p.parado_seg)}</span>
                     <span className="w-full text-rotulo text-tinta-sussurro">
                       Responsável: {p.responsavel ?? '—'}
-                      {p.ultima_cobranca && <> · cobrado {p.ultima_cobranca.vezes}× — última por {p.ultima_cobranca.por ?? '—'} em {fmtDataHora(p.ultima_cobranca.em)}</>}
+                      {p.ultima_cobranca && <> · cobrado {p.ultima_cobranca.vezes}×, a última por {p.ultima_cobranca.por ?? '—'} em {fmtDataHora(p.ultima_cobranca.em)}</>}
                     </span>
                     {p.pode_cobrar && (
                       <Button size="xs" variant="outline" className="ml-auto" onClick={() => cobrar.mutate(p)} disabled={cobrar.isPending}>Cobrar</Button>

@@ -209,7 +209,7 @@ export default function Perfil() {
 
       {salvo && (
         <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">
-          ✓ Perfil salvo com sucesso.
+          Perfil salvo.
         </div>
       )}
       {erro && <div className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</div>}
@@ -325,7 +325,7 @@ export default function Perfil() {
           <CardTitle className="flex items-center gap-2 text-corpo">
             <Stethoscope className="size-4 text-tinta-sussurro" /> Dados profissionais
           </CardTitle>
-          <CardDescription>Formação, especialidades e certificações — ajudam o gestor a alocar o setor certo.</CardDescription>
+          <CardDescription>Formação, especialidades e certificações. O gestor usa esses dados para escolher o setor.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -409,7 +409,7 @@ export default function Perfil() {
             <HeartPulse className="size-4 text-tinta-sussurro" /> Segurança assistencial
           </CardTitle>
           <CardDescription>
-            Informações que protegem você e a equipe durante o atendimento. Dado sensível — tratado conforme a LGPD.
+            Dado sensível, tratado conforme a LGPD.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

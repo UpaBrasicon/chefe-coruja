@@ -221,7 +221,7 @@ export default function Convites() {
         <div className="max-w-xl">
           <TituloSecao className="mb-1">Convites</TituloSecao>
           <p className="text-apoio text-tinta-sussurro">
-            O primeiro acesso de plantonista, enfermagem, farmácia, recepção e telemedicina nasce de um convite desta unidade.
+            O primeiro acesso de plantonista, enfermagem, farmácia, recepção e telemedicina começa por um convite desta unidade.
             Cada código abre um acesso só, no papel escolhido. Gestão entra pelo contrato da rede.
           </p>
         </div>

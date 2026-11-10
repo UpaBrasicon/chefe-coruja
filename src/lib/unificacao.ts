@@ -23,7 +23,7 @@ export const ROTULO_REGRA: Record<Candidato['regras'][number], string> = {
   nome_nascimento: 'mesmo nome e nascimento',
   mae_nascimento: 'mesma mãe e nascimento',
   documento: 'mesmo CPF ou CNS',
-  nome_conferir: 'mesmo nome, nascimento diferente ou em branco — conferir',
+  nome_conferir: 'mesmo nome, nascimento diferente ou em branco: conferir',
 }
 
 /**

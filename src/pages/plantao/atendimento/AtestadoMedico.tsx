@@ -279,7 +279,7 @@ export function AtestadoMedico({ unidadeId, perfilId }: { unidadeId?: string; pe
           <div className="flex flex-col gap-[9px]">
             <CaixaMarcar marcado={f.comCid} onChange={(comCid) => mudar({ comCid })}>
               <span className="text-controle text-pretty text-tinta-apoio leading-normal">
-                Incluir o CID no documento. Só marque a pedido do paciente — o diagnóstico no atestado depende de autorização expressa dele (Res. CFM 1.658/2002, art. 3º).
+                Incluir o CID no documento. Só marque a pedido do paciente: o diagnóstico no atestado depende de autorização expressa dele (Res. CFM 1.658/2002, art. 3º).
               </span>
             </CaixaMarcar>
             {f.comCid && (

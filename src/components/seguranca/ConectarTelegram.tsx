@@ -50,7 +50,7 @@ export function ConectarTelegram() {
           <MessageCircle className="size-4" /> Assistente no Telegram
         </CardTitle>
         <CardDescription>
-          A Corujinha responde sobre os seus plantões, a escala e a operação da unidade — só depois de você ligar o
+          A Corujinha responde sobre os seus plantões, a escala e a operação da unidade depois que você liga o
           Telegram à sua conta. Ela nunca recebe dado de paciente.
         </CardDescription>
       </CardHeader>

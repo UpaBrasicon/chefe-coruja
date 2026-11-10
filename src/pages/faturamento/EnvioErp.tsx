@@ -94,7 +94,7 @@ function AbaContas({ unidadeId, unidadeNome }: { unidadeId: string; unidadeNome:
       <MensagemErro texto={((lista.error ?? baixar.error) as Error | null)?.message ?? null} />
       {lista.isLoading ? <Spinner /> : linhas.length === 0 ? (
         <Vazio icone={ArrowLeftRight} titulo={filtro ? 'Nenhuma versão nesta situação' : 'Nenhuma conta foi para o ERP ainda'}
-          texto="A versão para o ERP nasce quando o faturamento marca a conta como faturada." />
+          texto="A versão para o ERP é criada quando o faturamento marca a conta como faturada." />
       ) : (
         <div className={caixa}>
           <Table variante="referencia" className="w-full min-w-[820px] text-apoio">

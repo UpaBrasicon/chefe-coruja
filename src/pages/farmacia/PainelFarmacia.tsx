@@ -132,7 +132,7 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
       <MensagemErro texto={erro ?? (falha ? (falha as Error).message : null)} />
       {total === 0 ? (
         <Vazio icone={CheckCircle2} titulo={podeAgir ? 'Nada pede você agora' : 'Nada pede a farmácia agora'}
-          texto="Sem administração sem liberação, sem validação de alta vigilância pendente, sem falta sem retorno e sem estoque crítico sem falta registrada." />
+          texto="Nenhuma administração sem liberação, nenhuma validação de alta vigilância pendente, nenhuma falta sem retorno e nenhum estoque crítico sem falta registrada." />
       ) : (
         <>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -145,7 +145,7 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
             {listaSemLib.map((s) => (
               <Linha key={`l${s.id}`} tipo="Sem liberação" tom="vermelho" av desde={s.administrado_em} agora={agora}
                 titulo={nome(s.descricao, s.dose, s.via)}
-                contexto={juntar(s.paciente, s.local, s.administrado_por && `administrado por ${s.administrado_por}`, s.justificativa && `“${s.justificativa}”`)}
+                contexto={juntar(s.paciente, s.local, s.administrado_por && `administrado por ${s.administrado_por}`, s.justificativa && `"${s.justificativa}"`)}
                 acao={<Button size="xs" variant="outline" onClick={() => navegar('/alta-vigilancia')}>Ver</Button>} />
             ))}
             {listaValidacao.map((v) => (

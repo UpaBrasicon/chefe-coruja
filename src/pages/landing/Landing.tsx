@@ -69,7 +69,7 @@ function Escala() {
       </div>
       <p className="escala-nota">
         Às {AGORA.hora}, {dentro} das {ESCALA.length} pessoas estão na escala e veem os pacientes do setor. As outras
-        veem o aviso “Você não está na escala agora”. Valores ilustrativos.
+        veem o aviso "Você não está na escala agora". Valores ilustrativos.
       </p>
     </figure>
   )

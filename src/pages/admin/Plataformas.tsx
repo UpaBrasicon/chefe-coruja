@@ -135,7 +135,7 @@ export default function Plataformas() {
         <Info className="mt-0.5 size-4 shrink-0 text-tinta-sussurro" aria-hidden />
         <span>
           <strong className="font-semibold text-tinta">Sem fonte no app:</strong> versão por unidade, uptime, espaço de backup e latência de cada
-          unidade. O Chefe Coruja é uma só publicação para toda a rede, e uptime e backup ficam no painel do Supabase — trazê-los para cá
+          unidade. O Chefe Coruja é uma só publicação para toda a rede, e uptime e backup ficam no painel do Supabase. Trazê-los para cá
           exige a chave de gestão do projeto, que não pode ir ao navegador. A latência acima é a deste navegador.
         </span>
       </div>
