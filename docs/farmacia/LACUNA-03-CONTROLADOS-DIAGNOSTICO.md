@@ -125,3 +125,7 @@ Na leitura, `validar_item` chama o aviso de item devolvido duas vezes
 (`supabase/migrations/20261119000007_avisos_farmacia_leito.sql:99` e `:101`),
 e `concluir_higienizacao` chama o aviso de leito liberado duas vezes. Pode
 gerar aviso duplicado. Não conferi, e o caso não está no BACKLOG.
+
+## 6. Decisão do RT (10/11/2026)
+
+"A em todos": A em C1 a C6.
