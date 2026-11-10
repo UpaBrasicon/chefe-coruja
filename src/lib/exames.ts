@@ -62,6 +62,14 @@ export function botoesDoGrupo(lista: ExameUnidade[] | undefined, grupo: GrupoExa
     .map((e) => ({ rotulo: e.nome_curto, procedimento: e.procedimento }))
 }
 
+/** Item do pedido rápido da porta (ponto 12, pergunta 3; RT, 10/11/2026): com código, o grupo sai do código
+ * no banco; no texto livre, vai o grupo escolhido ou, nos botões de antes, o do próprio botão. */
+export function itemDoPedidoPorta(b: BotaoExame, grupoEscolhido?: GrupoExame): { procedimento: string } | { nome: string; grupo: GrupoExame } {
+  if (b.procedimento) return { procedimento: b.procedimento }
+  const doBotao = GRUPOS_EXAME.find((g) => g.livres.includes(b.rotulo))?.id
+  return { nome: b.rotulo, grupo: grupoEscolhido ?? doBotao ?? 'laboratorio' }
+}
+
 /** O exame do botão já está pedido (e não cancelado) neste atendimento? Pelo código, senão pelo nome. */
 export function jaPedido(b: BotaoExame, pedidos: { exame: string; procedimento?: string | null; situacao: string }[]): boolean {
   return pedidos.some((x) => x.situacao !== 'cancelado'
