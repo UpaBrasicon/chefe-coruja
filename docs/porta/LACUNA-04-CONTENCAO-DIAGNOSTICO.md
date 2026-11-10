@@ -134,3 +134,7 @@ passo `8.contencao` (paciente #12, enfermeiro).
 - Grades de cama.
 - Notificação ao Notivisa.
 - Treinamento da equipe.
+
+## 5. Decisão do RT (10/11/2026)
+
+"A em todos": A em K1 a K10.
