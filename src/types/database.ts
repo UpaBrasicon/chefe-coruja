@@ -10745,6 +10745,17 @@ export type Database = {
       obito_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       obitos_pendentes: { Args: { p_unidade: string }; Returns: Json }
       registrar_via_do: { Args: { p_obito: string; p_via: string }; Returns: undefined }
+      // lacuna 7: documento e checklist de transferência (migration 20270329000001)
+      dados_transferencia: { Args: { p_paciente: string }; Returns: Json }
+      emitir_documento_transferencia: {
+        Args: { p_motivo?: string; p_paciente: string; p_retifica?: string; p_textos: Json }
+        Returns: Json
+      }
+      marcar_item_transferencia: {
+        Args: { p_detalhe?: string; p_item: string; p_motivo?: string; p_paciente: string; p_situacao: string }
+        Returns: Json
+      }
+      transferencia_da_regulacao: { Args: { p_solicitacao: string }; Returns: Json }
       controle_dos_itens: { Args: { p_itens: string[] }; Returns: Json }
       contencao_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       contencoes_ativas: { Args: { p_unidade: string }; Returns: Json }
