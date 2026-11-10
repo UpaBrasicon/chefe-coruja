@@ -35,6 +35,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
+import { NovoItemContencao } from '@/components/prescricao/ItemContencao'
 import { METODOS_PESO, gravarPeso, textoDoPeso, useFaltaParaPrescrever, type MetodoPeso } from '@/components/prescricao/pesoAtendimento'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { useTravas } from '@/components/paciente/useTravas'
@@ -45,7 +46,7 @@ import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { SeloDoMedicamento } from '@/components/farmacia/SeloControlado'
 
 type ItemVigente = {
-  id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
+  id: string; tipo: 'medicamento' | 'cuidado' | 'contencao'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
   posologia: string | null; se_necessario: boolean; observacao: string | null; peso_kg: number | null; diluicao_versao: number | null
   diluicao_texto: string | null; diluicao_divergente: boolean; justificativa_divergencia: string | null; vasoativo: boolean
   autor: string | null; criado_em: string; validacao: string | null; validacao_motivo: string | null
@@ -132,7 +133,10 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
             peso: peso.data?.valor_num ?? '',
           },
           itens: lista.map((i) => ({
-            med: i.tipo === 'cuidado' ? i.descricao : `${i.descricao} — ${i.dose ?? ''}${i.diluicao_texto ? ` · ${i.diluicao_divergente ? 'DILUIÇÃO FORA DO PADRÃO: ' : ''}${i.diluicao_texto}` : ''}`,
+            med: i.tipo === 'medicamento'
+              ? `${i.descricao} — ${i.dose ?? ''}${i.diluicao_texto ? ` · ${i.diluicao_divergente ? 'DILUIÇÃO FORA DO PADRÃO: ' : ''}${i.diluicao_texto}` : ''}`
+              // lacuna 4: a ordem de contenção sai com motivo, período e critérios
+              : i.tipo === 'contencao' ? [i.descricao, i.observacao].filter(Boolean).join('. ') : i.descricao,
             via: i.via ?? '—',
             pos: `${i.posologia ?? '—'}${i.se_necessario ? ' — se necessário' : ''}`,
             apr: aprazamentoImpresso(horarios.get(i.id)),
@@ -380,7 +384,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   pediatrico?: boolean
 }) {
   const qc = useQueryClient()
-  const [tipo, setTipo] = React.useState<'medicamento' | 'cuidado'>('medicamento')
+  const [tipo, setTipo] = React.useState<'medicamento' | 'cuidado' | 'contencao'>('medicamento')
+  // lacuna 4: o formulário da contenção volta limpo depois de prescrever
+  const [novaContencao, setNovaContencao] = React.useState(0)
   const [busca, setBusca] = React.useState('')
   const [med, setMed] = React.useState<Medicamento | null>(null)
   const [f, setF] = React.useState({ dose: '', via: '', posologia: '', observacao: '', se_necessario: false, descricao: '' })
@@ -505,6 +511,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
     setMed(null); setBusca(''); setDivergir(false); setDilTexto(''); setJustificativa(''); setOutra(false)
     setSemQuando(false); setViaLembrete(null)
     setF({ dose: '', via: '', posologia: '', observacao: '', se_necessario: false, descricao: '' })
+    setNovaContencao((n) => n + 1)
   }
   /** G2: o favorito só preenche o "Novo item"; o médico confere e clica em Prescrever. */
   function usarFavorito(fav: Favorito) {
@@ -555,10 +562,10 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
         <CardDescription>Dose, via e frequência são escritas por você: o sistema não sugere dose.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
-        <div className="flex gap-2">
-          {(['medicamento', 'cuidado'] as const).map((t) => (
+        <div className="flex flex-wrap gap-2">
+          {(['medicamento', 'cuidado', 'contencao'] as const).map((t) => (
             <Button key={t} size="sm" variant={tipo === t ? 'default' : 'outline'} onClick={() => setTipo(t)}>
-              {t === 'medicamento' ? 'Medicamento' : 'Cuidado'}
+              {t === 'medicamento' ? 'Medicamento' : t === 'cuidado' ? 'Cuidado' : 'Contenção mecânica'}
             </Button>
           ))}
           {/* ponto 11: o peso que o servidor aceita (deste atendimento); o "último peso" de qualquer época confundia */}
@@ -585,7 +592,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
           </div>
         )}
 
-        {tipo === 'cuidado' ? (
+        {tipo === 'contencao' ? (
+          <NovoItemContencao key={novaContencao} aoPrescrever={prescrever} />
+        ) : tipo === 'cuidado' ? (
           <>
             <div className="flex flex-wrap gap-1.5">
               {CUIDADOS.map((c) => (

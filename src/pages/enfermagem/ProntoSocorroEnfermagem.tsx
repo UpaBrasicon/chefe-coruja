@@ -22,10 +22,10 @@ import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import type { LinhaObservacao } from '@/components/observacao/modelo'
 import { Spinner } from '@/components/ui/spinner'
 
-import { Bloco, BotaoCuidados, PilulaAtraso } from './Pecas'
+import { Bloco, BotaoCuidados, PilulaAtraso, PilulaContencao } from './Pecas'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
-import { TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, useAgora, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
+import { TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, useAgora, useContencoesAtivas, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
 import { Estado } from '@/components/porta/Estado'
 import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
 
@@ -75,6 +75,7 @@ export default function ProntoSocorroEnfermagem() {
 
   const pendencias = usePendenciasEnfermagem()
   const atrasados = atrasadosPorPaciente(pendencias.data)
+  const contencoes = useContencoesAtivas()
   // a escala também tem setor de internação: os internados ficam na outra tela
   const temInternacao = useTiposDaEscala().tipos.some((t) => TIPOS_INTERNACAO.includes(t))
 
@@ -121,6 +122,7 @@ export default function ProntoSocorroEnfermagem() {
                           ? <Estado tom="ambar">Em reavaliação</Estado>
                           : <Estado tom="teal">Em atendimento</Estado>}
                       <PilulaAtraso n={atrasados.get(e.paciente_id) ?? 0} />
+                      <PilulaContencao c={contencoes.get(e.paciente_id)} />
                     </div>
                   </div>
                   <span className={cn('text-apoio whitespace-nowrap tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>
@@ -147,6 +149,7 @@ export default function ProntoSocorroEnfermagem() {
                   <div className="flex flex-wrap gap-1.5">
                     <Estado tom="ambar">Em observação</Estado>
                     <PilulaAtraso n={atrasados.get(o.paciente_id) ?? 0} />
+                    <PilulaContencao c={contencoes.get(o.paciente_id)} />
                   </div>
                 </div>
                 <span className="text-apoio whitespace-nowrap tabular-nums text-tinta-apoio">há {duracao(o.entrada, agora)}</span>

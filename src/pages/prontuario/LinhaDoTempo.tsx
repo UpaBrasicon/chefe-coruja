@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { CORES_RISCO, type CorRisco } from '@/domain/risco'
 import { SITUACAO_EXAME, type SituacaoExame } from '@/lib/exames'
 import { data, dataIso, diaMesHora, hora } from '@/lib/formato'
+import { rotuloLocais, rotuloPontos } from '@/lib/contencao'
 import { rotuloDesfechoFinal } from '@/lib/historico'
 import {
   ancoraDoAno, idCabecalho, principais, resumoInternacao, rotuloLeito, textoItemPrescricao,
@@ -317,6 +318,53 @@ function LinhaRegistro({ r, dia, oculto, revelar }: { r: RegistroLinha; dia: str
               </ul>
             )}
             {!res && x.resultado && <TextoClinico>{x.resultado}</TextoClinico>}
+          </div>
+        </Recolhivel>
+      )
+      break
+    }
+    case 'contencao': {
+      // lacuna 4 (K8): a contenção no atendimento; o registro inteiro sai na folha
+      const c = r.contencao
+      titulo = (
+        <>
+          Contenção mecânica · {rotuloPontos(c.pontos)}
+          {c.pediatrico && <Badge variant="info">paciente pediátrico</Badge>}
+          {!c.retirada_em && <Badge variant="destructive">em curso</Badge>}
+        </>
+      )
+      corpo = (
+        <Recolhivel>
+          <div className="flex flex-col gap-1 text-apoio text-tinta">
+            <Campo rotulo="Locais" texto={rotuloLocais(c.locais)} />
+            <Campo rotulo="Motivo" texto={c.motivo} />
+            <Campo rotulo="Alternativas tentadas" texto={c.alternativas} />
+            <p className="text-tinta-apoio">
+              {[
+                `${c.revisoes} ${c.revisoes === 1 ? 'revisão' : 'revisões'}`,
+                c.prescrita_em ? `prescrita ${quando(c.prescrita_em, dia)}` : 'sem prescrição',
+                c.retirada_em ? `retirada ${quando(c.retirada_em, dia)}${c.motivo_retirada ? `: ${c.motivo_retirada}` : ''}` : null,
+              ].filter(Boolean).join(' · ')}
+            </p>
+          </div>
+        </Recolhivel>
+      )
+      break
+    }
+    case 'intercorrencia': {
+      const x = r.intercorrencia
+      titulo = (
+        <>
+          Intercorrência · {x.tipo_rotulo}
+          <Badge variant={x.gravidade === 'grave' ? 'destructive' : x.gravidade === 'moderada' ? 'warning' : 'outline'}>{x.gravidade}</Badge>
+          {x.retifica_id && <Badge variant="secondary">retificação</Badge>}
+        </>
+      )
+      corpo = (
+        <Recolhivel>
+          <div className="flex flex-col gap-1 text-apoio text-tinta">
+            <p className="max-w-prose whitespace-pre-wrap">{x.descricao}</p>
+            <Campo rotulo="Conduta" texto={x.conduta} />
           </div>
         </Recolhivel>
       )

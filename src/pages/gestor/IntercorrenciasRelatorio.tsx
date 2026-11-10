@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Siren } from 'lucide-react'
 import * as React from 'react'
 
+import { IndicadoresContencao } from './IndicadoresContencao'
 import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -93,6 +94,8 @@ export default function IntercorrenciasRelatorio() {
           </section>
         </>
       )}
+      {/* lacuna 4 (K8): indicadores de contenção mecânica do mesmo período */}
+      <IndicadoresContencao unidadeId={unidadeId} de={de} ate={ate} />
     </div>
   )
 }

@@ -13,6 +13,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { Contencao } from '@/components/prontuario/Contencao'
 import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -237,6 +238,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {verHistorico && <HistoricoEncerrado pacienteId={ep.paciente_id} />}
         {/* Fase 1, tarefa 12: marca de reentrada de contingência (papel) */}
         {unidadeJanela && <ReentradaContingencia unidadeId={unidadeJanela} episodioId={ep.id} chegadaEm={ep.chegada_em} />}
+        {/* lacuna 4: contenção mecânica (o médico também inicia e retira; a prescrição é o item da prescrição) */}
+        <Contencao pacienteId={ep.paciente_id} />
         {/* Fase 2, tarefa 4: intercorrência estruturada */}
         <Intercorrencias pacienteId={ep.paciente_id} episodioId={ep.id} />
         {faixa === 'pediatrico' && (

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { ativasPorPaciente, type ContencaoAtiva } from '@/lib/contencao'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
@@ -110,6 +111,23 @@ export function usePendenciasEnfermagem() {
       return (data ?? []) as PendenciaEnfermagem[]
     },
   })
+}
+
+/** Contenções ativas dos pacientes que eu acompanho (lacuna 4), por paciente. */
+export function useContencoesAtivas() {
+  const { unidadeAtiva } = useUnidade()
+  const unidadeId = unidadeAtiva?.unidade_id
+  const q = useQuery({
+    queryKey: ['contencoes-ativas', unidadeId],
+    enabled: !!unidadeId,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('contencoes_ativas', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (data ?? []) as unknown as ContencaoAtiva[]
+    },
+  })
+  return ativasPorPaciente(q.data)
 }
 
 /** Contagem de atrasados por paciente. */

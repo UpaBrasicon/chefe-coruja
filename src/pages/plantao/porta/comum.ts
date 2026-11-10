@@ -100,7 +100,7 @@ export { DOCS_INICIAL, type EstadoDocs, type ItemReceita } from '@/lib/documento
 
 // ── painel do atendimento (servidor) ────────────────────────────────────────
 export type ItemPS = {
-  id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; dose: string | null; via: string | null
+  id: string; tipo: 'medicamento' | 'cuidado' | 'contencao'; descricao: string; dose: string | null; via: string | null
   posologia: string | null; se_necessario: boolean; diluicao_texto: string | null; criado_em: string; autor: string | null
   suspenso_em: string | null; motivo_suspensao: string | null
   /** A última checagem (o painel continua devolvendo; item sem horário usa esta). */
