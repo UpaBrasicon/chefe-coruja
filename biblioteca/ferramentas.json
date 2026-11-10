@@ -3729,21 +3729,6 @@
   "publico": "adulto"
  },
  {
-  "id": "manual-dengue",
-  "nome": "Dengue — criança",
-  "tipo": "protocolo",
-  "secao": "Dengue",
-  "categoria": "Dengue",
-  "sinonimos": [
-   "dengue",
-   "manual",
-   "ministério da saúde"
-  ],
-  "descricao": "Grupos e hidratação por peso (PS Pediatria ICr).",
-  "rota": "/plantonista/dengue/manual-dengue",
-  "publico": "pediatrico"
- },
- {
   "id": "vm-cinco-passos",
   "nome": "Ventilação mecânica em cinco passos",
   "tipo": "calculadora",
@@ -3779,22 +3764,6 @@
   ],
   "descricao": "Indicação, interface, ajustes, acompanhamento e retirada com o que o manual HC traz.",
   "rota": "/plantonista/ventilacao-mecanica/vni-cinco-passos",
-  "publico": "adulto"
- },
- {
-  "id": "manobra-recrutamento",
-  "nome": "SDRA — ventilação protetora",
-  "tipo": "calculadora",
-  "secao": "Ventilação Mecânica",
-  "categoria": "Ventilação Mecânica",
-  "sinonimos": [
-   "recrutamento",
-   "PEEP",
-   "SARA",
-   "manobra"
-  ],
-  "descricao": "Berlim, PEEP × FiO₂ e prona (manual HC, cap. 37).",
-  "rota": "/plantonista/ventilacao-mecanica/manobra-recrutamento",
   "publico": "adulto"
  },
  {
