@@ -17,6 +17,15 @@ const LIMITE_MS = 10_000
 
 const texto = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max)
 
+/**
+ * JSON só com ASCII: cada caractere fora do ASCII vai como \uXXXX. Em 09/11/2026
+ * os acentos chegavam à Resend já trocados por "�" (U+FFFD no corpo do e-mail);
+ * com o JSON em ASCII, nenhuma leitura no meio do caminho troca a codificação.
+ */
+function jsonAscii(valor: unknown): string {
+  return JSON.stringify(valor).replace(/[\u007f-￿]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'))
+}
+
 export async function POST(request: Request) {
   let body: Record<string, unknown>
   try {
@@ -59,8 +68,8 @@ export async function POST(request: Request) {
   try {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json; charset=utf-8' },
+      body: jsonAscii({
         from: REMETENTE,
         to: [DESTINO],
         reply_to: email,
