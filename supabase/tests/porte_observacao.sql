@@ -255,9 +255,11 @@ SELECT pg_temp.falha(format('SELECT public.finalizar_observacao(%L, %L, %L, %L, 
 SELECT pg_temp.falha(format('SELECT public.finalizar_observacao(%L, %L, %L, %L, %L)', pg_temp.v('ia'), 'obito', 'A90', 'Parada cardiorrespiratória sem resposta à RCP',
   json_build_object('numero_do', '1234567', 'hora_obito', now() + interval '1 hour')), 'Hora do óbito no futuro', 'hora do óbito no futuro é recusada');
 SELECT pg_temp.falha(format('SELECT public.finalizar_observacao(%L, %L, %L, %L, %L)', pg_temp.v('ia'), 'obito', 'A90', 'Parada cardiorrespiratória sem resposta à RCP',
-  json_build_object('hora_obito', now() - interval '10 minutes')), 'Informe o número da Declaração de Óbito', 'óbito pede a DO (regra do dar_alta)');
+  json_build_object('hora_obito', now() - interval '10 minutes', 'obito', json_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Dengue grave'))),
+  'Óbito: o número da Declaração de Óbito tem 9 dígitos', 'óbito pede a DO de 9 dígitos (lacuna 5, regra única do dar_alta)');
 SELECT public.finalizar_observacao(pg_temp.u('ia'), 'obito', 'A90', 'Parada cardiorrespiratória sem resposta à RCP',
-  json_build_object('numero_do', '1234567', 'hora_obito', now() - interval '10 minutes')::jsonb);
+  json_build_object('numero_do', '123456789', 'hora_obito', now() - interval '10 minutes',
+    'obito', json_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Dengue grave'))::jsonb);
 SELECT pg_temp.falha(format('SELECT public.finalizar_observacao(%L, %L, %L)', pg_temp.v('ic'), 'transferencia', 'R60'), 'Informe o serviço de destino', 'transferência pede o destino');
 SELECT pg_temp.falha(format('SELECT public.finalizar_observacao(%L, %L)', pg_temp.v('ib'), 'internacao'), 'Escolha o setor de internação', 'internação pede o setor');
 SELECT public.finalizar_observacao(pg_temp.u('ib'), 'internacao', NULL, NULL, '{"setor_id":"22000000-0000-4000-8000-000000000001"}');

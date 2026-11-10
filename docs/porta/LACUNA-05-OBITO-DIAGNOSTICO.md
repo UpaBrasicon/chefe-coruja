@@ -152,3 +152,105 @@ da observação e da internação ficam de fora. Isso é a lacuna 10.
 ## 5. Decisão do RT (10/11/2026)
 
 "A em todos": A em O1 a O8. O RT lembrou que o registro no app é **só para o prontuário**: a D.O. que vale é o formulário do Ministério da Saúde, nas vias branca, amarela e rosa. O app não imprime nada com cara de D.O. O "Sumário de óbito" é documento do prontuário e diz isso no próprio texto.
+
+## 6. Implementação (10/11/2026, branch `lacunas/obito`)
+
+### Banco: `supabase/migrations/20270326000001_obito.sql`
+- **O1.** Tabela `public.obitos`, um registro por óbito (um vigente por
+  paciente; o número da D.O. não se repete entre os vigentes). Guarda hora,
+  tipo de morte, caminho (`unidade`, `svo`, `causa_desconhecida`, `iml`),
+  número da D.O. (9 dígitos, só quando a unidade emite), atestante (o login) e
+  condição (assistente ou substituto), causas em texto (Parte I, a a d, e
+  Parte II), CID interno, avisos, polícia, vias (branca, amarela, rosa, com
+  quem e quando), identificação e liberação do corpo, o sumário e a anulação.
+  - Um validador só, `private.obito_validado`, e um registro só,
+    `private.registrar_obito`. `registrar_desfecho` (porta) e `dar_alta`
+    (internação, e observação pela `finalizar_observacao`) chamam os dois. Os
+    dados novos vão no jsonb que já existia, na chave `obito`; `hora_obito` e
+    `numero_do` continuam no primeiro nível.
+  - `desfecho_detalhes` e `alta_detalhes` continuam com hora e número, como
+    antes, e ganham `obito_id`, `tipo_morte` e `encaminhamento`.
+  - A porta continua pedindo o CID do óbito: vira o CID interno.
+  - Termos vagos (só os citados no MS/CFM 2009: parada cardíaca, parada
+    respiratória, parada cardiorrespiratória, falência de múltiplos órgãos)
+    geram aviso gravado no registro. Não bloqueiam.
+  - `public.conferir_obito` devolve o erro e os avisos para a tela, sem gravar.
+  - D.O. anulada ou rasurada: `public.anular_do` (médico) guarda o número
+    velho e o motivo em `public.obito_do_anuladas`; as vias recomeçam.
+- **O2.** O "Sumário de óbito" (`sumario_obito`) sai sozinho no registro, com
+  a frase "Registro para o prontuário. A Declaração de Óbito é o formulário
+  oficial do Ministério da Saúde." A folha (`src/lib/folhas.ts`) tem modelo
+  próprio para ele e nunca mostra vias nem título de D.O.
+- **O3.** Natural com assistência: a unidade atesta e o número é obrigatório.
+  Sem assistência ou a esclarecer: SVO (sem número da unidade) ou, sem SVO,
+  número da unidade e Parte I "Causa da morte desconhecida". Violenta ou
+  suspeita: IML, sem número da unidade; a polícia pode ser registrada no ato
+  ou depois (`public.comunicar_obito_policia`), e fica pendente até lá.
+- **O4.** `public.obito_comunicacoes` (nome, parentesco, quando, como,
+  testemunha), pela `public.comunicar_obito_familia`. A auditoria leva só ids e
+  códigos.
+- **O5.** `public.conferir_identificacao_corpo` e `public.liberar_corpo`
+  (destino conforme o caminho; liberação só depois da identificação; a via
+  amarela pode ser marcada junto). `public.registrar_via_do` marca cada via.
+- **O5, o leito.** O leito do óbito **fica "ocupado"** com a marca
+  `leitos.obito_aguardando_id` ("aguardando liberação do corpo") e só vai para
+  a higienização na liberação. Não é um valor novo do enum `status_leito`:
+  o Postgres não deixa usar um valor de enum na mesma transação em que nasce
+  (a migration e o teste rodam numa transação só) e todas as contas e telas
+  que leem `ocupado` já tratam o leito como indisponível (censo, mapa,
+  NIR, box livre, leitos para ocupar). Mudou:
+  - `registrar_evento_adt` não manda para a higienização o leito marcado;
+  - `situacao_leitos` devolve `motivo = 'aguardando_corpo'`;
+  - `mapa_leitos_gestor` devolve `aguardando_corpo` no leito;
+  - `liberar_leito_sem_paciente` recusa o leito marcado;
+  - `eventos_leito.tipo_evento` aceita `aguardando_corpo` (CHECK maior).
+  - A taxa de ocupação conta o leito com o corpo como ocupado.
+- **O6.** Médico atesta e escolhe o tipo de morte; médico ou enfermeiro
+  comunicam à família e à polícia (o técnico e a recepção não); enfermagem
+  (enfermeiro ou técnico) ou recepção conferem e liberam o corpo; vias:
+  médico, enfermagem ou recepção; D.O. anulada: médico. Quem age tem de estar
+  de plantão na unidade.
+- **O7.** `prontuario_leitura` ganha a chave `obitos` (sem nome de
+  familiar); `public.obito_do_paciente` traz o óbito inteiro para a tela;
+  `public.obitos_pendentes` lista os óbitos com algo por fazer.
+- **O8.** `cancelar_alta` anula o óbito, as comunicações e o sumário (estado
+  `cancelado`, nada é apagado) e devolve o paciente ao leito que esperava o
+  corpo.
+- Funções trocadas trecho a trecho (mesma assinatura): `registrar_desfecho`,
+  `dar_alta`, `registrar_evento_adt`, `cancelar_alta`, `situacao_leitos`,
+  `liberar_leito_sem_paciente`, `mapa_leitos_gestor`, `prontuario_leitura`.
+  O rollback (bloco no fim da migration) volta o md5 de todas.
+
+### Telas
+- `src/components/obito/DadosObito.tsx`: o mesmo formulário na porta
+  (`AbaDesfecho`), na observação (`PaineisCartao`) e na internação (`Alta`),
+  com a orientação e a fonte de cada tipo de morte.
+- `src/components/obito/PainelObito.tsx` (o óbito e as ações) e
+  `ObitosPendentes.tsx` (a lista com as pendências): na fila da porta, na
+  recepção, nas telas da enfermagem e no caderno da internação depois do óbito.
+- "Leitos para liberar" da enfermagem mostra o leito "Aguardando liberação do
+  corpo"; Setores e Mapa de leitos do gestor também.
+- Linha do tempo do prontuário: entrada "Óbito", sempre à vista, com as
+  pendências ou "desfeito".
+- Regras puras em `src/lib/obito.ts` (teste `src/lib/obito.test.ts`).
+
+### Testes e evidência
+- `supabase/tests/obito.sql` na homologação, em transação desfeita: as três
+  portas de entrada gravam o mesmo registro; validação por tipo de morte;
+  D.O. de 9 dígitos; aviso de termo vago; sumário com a frase; polícia;
+  família pelo médico e pelo enfermeiro, recusada à recepção e ao técnico;
+  identificação e liberação; leito aguardando até a liberação e depois na
+  higienização; `cancelar_alta` anula e devolve o leito; linha do tempo;
+  privilégios; auditoria sem dado de pessoa.
+- Testes antigos ajustados (regra nova, não defeito): `fase2_atendimento`,
+  `porte_atendimento_ps` e `porte_observacao` passam a mandar o tipo de morte
+  e as causas, a D.O. com 9 dígitos e a hora do óbito não antes da chegada.
+- E2E: os óbitos de `14`, `17`, `19`, `33` e `86` mandam os dados novos; o
+  passo `5.declaracao_obito` do #13 vira conferência; `99_limpar_rede_e2e`
+  limpa a marca do leito e as D.O. anuladas antes do laço.
+
+### Antes de publicar
+- A edge function `folha` precisa de deploy (o `_shared/folhas.ts` foi
+  copiado com `npm run folhas:copiar`).
+- A migration vai antes do frontend: com o banco novo e a tela antiga, o
+  óbito é recusado ("escolha o tipo de morte") até a tela nova subir.

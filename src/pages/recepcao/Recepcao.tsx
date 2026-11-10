@@ -26,6 +26,7 @@ import { BotaoPulseira } from '@/components/paciente/Pulseira'
 import { FormNaoIdentificado, NaoIdentificadosDaUnidade, type NaoIdentificadoCriado } from '@/components/paciente/NaoIdentificado'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
+import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
 
 import { Campo, CamposCadastro } from '@/components/paciente/CamposCadastro'
 import { PropagandaPainel } from './PropagandaPainel'
@@ -233,6 +234,8 @@ export default function Recepcao() {
   return (
     <div className="flex w-full max-w-5xl flex-col">
       <TituloPagina icone={atual.icone} titulo={atual.titulo} descricao={atual.descricao} />
+      {/* lacuna 5 (O5, O7): a recepção confere e libera o corpo */}
+      {!ubs && <div className="mb-3"><ObitosPendentes unidadeId={unidadeId} /></div>}
 
       {mostrarAbas && (
         <Chips rotulo="Telas da Recepção">

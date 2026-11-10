@@ -95,21 +95,22 @@ SELECT e2e.d_dep('d07_reg', 'D07.05.regulacao', 'D07.15.nir_antes', 7, 'f5_nir',
     'f5100000-0000-4000-8000-000000000002', e2e.d_v('d07_reg')));
 
 -- ── 10, 13 e 11. óbito ──────────────────────────────────────────────────────
+-- lacuna 5 (20270326000001): D.O. de 9 dígitos, hora não antes da chegada, tipo de morte e causas em 'obito'
 SELECT e2e.d_dep('d07_ep', 'D07.01.ficha', 'D07.10.sem_do', 7, 'f5_med_upa', '/atendimento → AbaDesfecho', 'Óbito sem o número da DO (deve ser recusado)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'obito', 'Parada cardiorrespiratória sem resposta às manobras', %L::jsonb)::text$q$, e2e.d_v('d07_ep'),
-    jsonb_build_object('hora_obito', now() - interval '10 minutes', 'cid_obito', 'G03.9')), 'erro:Informe o número da Declaração de Óbito');
+    jsonb_build_object('hora_obito', now(), 'cid_obito', 'G03.9', 'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Meningite bacteriana'))), 'erro:Óbito: o número da Declaração de Óbito tem 9 dígitos');
 SELECT e2e.d_dep('d07_ep', 'D07.01.ficha', 'D07.13.hora_futura', 7, 'f5_med_upa', 'AbaDesfecho', 'Óbito com hora no futuro (+5 min) (deve ser recusado)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'obito', 'Parada cardiorrespiratória sem resposta às manobras', %L::jsonb)::text$q$, e2e.d_v('d07_ep'),
-    jsonb_build_object('hora_obito', now() + interval '5 minutes', 'cid_obito', 'G03.9', 'numero_do', '123456789')), 'erro:Hora do óbito no futuro');
+    jsonb_build_object('hora_obito', now() + interval '5 minutes', 'cid_obito', 'G03.9', 'numero_do', '700000007', 'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Meningite bacteriana'))), 'erro:Hora do óbito no futuro');
 SELECT e2e.d_dep('d07_ep', 'D07.01.ficha', 'D07.13.do_4_digitos', 7, 'f5_med_upa', 'AbaDesfecho', 'Óbito com DO de 4 dígitos (deve ser recusado)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'obito', 'Parada cardiorrespiratória sem resposta às manobras', %L::jsonb)::text$q$, e2e.d_v('d07_ep'),
-    jsonb_build_object('hora_obito', now() - interval '10 minutes', 'cid_obito', 'G03.9', 'numero_do', '1234')), 'erro:Óbito: o número da Declaração de Óbito tem de 6 a 12');
-SELECT e2e.d_dep('d07_ep', 'D07.01.ficha', 'D07.11.obito', 7, 'f5_med_upa', 'AbaDesfecho', 'Óbito: relato ≥ 15, hora −10 min, CID G03.9, DO 123456789, sem setor (vem da ficha)',
+    jsonb_build_object('hora_obito', now(), 'cid_obito', 'G03.9', 'numero_do', '1234', 'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Meningite bacteriana'))), 'erro:Óbito: o número da Declaração de Óbito tem 9 dígitos');
+SELECT e2e.d_dep('d07_ep', 'D07.01.ficha', 'D07.11.obito', 7, 'f5_med_upa', 'AbaDesfecho', 'Óbito: relato ≥ 15, hora agora, CID G03.9, DO 700000007, sem setor (vem da ficha)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'obito', 'Parada cardiorrespiratória sem resposta às manobras de reanimação', %L::jsonb)::text$q$, e2e.d_v('d07_ep'),
-    jsonb_build_object('hora_obito', now() - interval '10 minutes', 'cid_obito', 'g03.9', 'numero_do', '123.456.789')));
+    jsonb_build_object('hora_obito', now(), 'cid_obito', 'g03.9', 'numero_do', '700.000.007', 'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Meningite bacteriana'))));
 SELECT e2e.d_dep('d07_ep', 'D07.01.ficha', 'D07.11.registro', 7, 'banco', NULL, 'Episódio encerrado; CID normalizado, DO só dígitos, setor do óbito da ficha; exame cancelado com o motivo; prescrição encerrada',
   format($q$SELECT e2e.d_confere(e.desfecho = 'obito' AND e.encerrado_em IS NOT NULL AND e.desfecho_detalhes ->> 'cid_obito' = 'G03.9'
-        AND e.desfecho_detalhes ->> 'numero_do' = '123456789' AND e.desfecho_detalhes ->> 'setor_obito' = 'Pronto Socorro'
+        AND e.desfecho_detalhes ->> 'numero_do' = '700000007' AND e.desfecho_detalhes ->> 'setor_obito' = 'Pronto Socorro'
         AND NOT EXISTS (SELECT 1 FROM public.exames_pedidos x WHERE x.episodio_id = e.id AND x.situacao IN ('pedido', 'coletado', 'em_analise')),
       'cid ' || coalesce(e.desfecho_detalhes ->> 'cid_obito', '?') || ', DO ' || coalesce(e.desfecho_detalhes ->> 'numero_do', '?') || ', setor ' || coalesce(e.desfecho_detalhes ->> 'setor_obito', '?')
       || ', exames: ' || coalesce((SELECT string_agg(x.situacao || ' (' || coalesce(x.motivo_cancelamento, '') || ')', '; ') FROM public.exames_pedidos x WHERE x.episodio_id = e.id), 'nenhum'))

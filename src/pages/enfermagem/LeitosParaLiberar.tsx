@@ -10,8 +10,10 @@ import { msgErro } from './useEnfermagem'
 import { dataHora, hora } from '@/lib/formato'
 import { Estado } from '@/components/porta/Estado'
 
-const ROTULO: Record<string, string> = { livre: 'Livre', reservado: 'Reservado', higienizacao: 'Em higienização', bloqueado: 'Bloqueado' }
-const TOM: Record<string, 'verde' | 'teal' | 'ambar' | 'vermelho'> = { livre: 'verde', reservado: 'teal', higienizacao: 'ambar', bloqueado: 'vermelho' }
+// lacuna 5 (O5): o leito do óbito segue ocupado, com o corpo, até a liberação
+const ROTULO: Record<string, string> = { livre: 'Livre', reservado: 'Reservado', higienizacao: 'Em higienização', bloqueado: 'Bloqueado', aguardando_corpo: 'Aguardando liberação do corpo' }
+const TOM: Record<string, 'verde' | 'teal' | 'ambar' | 'vermelho'> = { livre: 'verde', reservado: 'teal', higienizacao: 'ambar', bloqueado: 'vermelho', aguardando_corpo: 'vermelho' }
+const situacao = (l: { status: string; motivo: string | null }) => (l.status === 'ocupado' && l.motivo === 'aguardando_corpo' ? 'aguardando_corpo' : l.status)
 
 /**
  * Leitos livres, reservados, em higienização e bloqueados dos setores da escala (Fase 0, tarefas 6
@@ -31,7 +33,7 @@ export function LeitosParaLiberar({ unidadeId, setores }: { unidadeId: string | 
     },
   })
 
-  const lista = (data ?? []).filter((l) => setores.includes(l.setor_id) && l.status !== 'ocupado')
+  const lista = (data ?? []).filter((l) => setores.includes(l.setor_id) && (l.status !== 'ocupado' || situacao(l) === 'aguardando_corpo'))
   if (error) return <p className="text-apoio text-critico">{msgErro(error)}</p>
   if (lista.length === 0) return null
 
@@ -43,7 +45,7 @@ export function LeitosParaLiberar({ unidadeId, setores }: { unidadeId: string | 
           <span className="w-11 shrink-0 text-apoio font-semibold text-acao">{l.identificador}</span>
           <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
             <span className="text-apoio text-tinta">
-              <Estado tom={TOM[l.status] ?? 'teal'}>{ROTULO[l.status] ?? l.status}</Estado>{' '}
+              <Estado tom={TOM[situacao(l)] ?? 'teal'}>{ROTULO[situacao(l)] ?? l.status}</Estado>{' '}
               <span className="text-tinta-sussurro">{l.setor_nome}</span>
             </span>
             {l.status === 'reservado' ? (
@@ -54,7 +56,7 @@ export function LeitosParaLiberar({ unidadeId, setores }: { unidadeId: string | 
               </span>
             ) : (l.motivo || l.desde) && l.status !== 'livre' && (
               <span className="text-apoio text-tinta-sussurro">
-                {[rotuloMotivoBloqueio(l.motivo), l.desde && `desde ${dataHora(l.desde)}`]
+                {[situacao(l) === 'aguardando_corpo' ? 'a liberação do corpo fica em "Óbitos com pendência"' : rotuloMotivoBloqueio(l.motivo), l.desde && `desde ${dataHora(l.desde)}`]
                   .filter(Boolean).join(' · ')}
               </span>
             )}

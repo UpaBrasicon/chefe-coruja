@@ -31,6 +31,13 @@ BEGIN
   DELETE FROM public.regulacao_eventos WHERE solicitacao_id = ANY (v_sol);
   DELETE FROM public.regulacao_solicitacoes WHERE id = ANY (v_sol);
 
+  -- lacuna 5 (20270326000001): o leito que espera o corpo aponta para o óbito,
+  -- e a D.O. anulada só tem o obito_id; saem antes do laço
+  IF to_regclass('public.obito_do_anuladas') IS NOT NULL THEN
+    EXECUTE 'UPDATE public.leitos SET obito_aguardando_id = NULL WHERE obito_aguardando_id IN (SELECT id FROM public.obitos WHERE paciente_id = ANY ($1))' USING v_pac;
+    EXECUTE 'DELETE FROM public.obito_do_anuladas WHERE obito_id IN (SELECT id FROM public.obitos WHERE paciente_id = ANY ($1))' USING v_pac;
+  END IF;
+
   -- toda tabela pública com unidade_id ou paciente_id da rede E2E (ordem: as que
   -- apontam para paciente primeiro); repete até não sobrar nada
   FOR i IN 1..6 LOOP
