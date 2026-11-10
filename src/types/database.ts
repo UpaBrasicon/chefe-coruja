@@ -13131,6 +13131,15 @@ export type Database = {
         }
         Returns: Json
       }
+      registrar_impressao_pulseira: {
+        Args: {
+          p_detalhe?: string
+          p_motivo?: string
+          p_paciente: string
+          p_reimpressao?: boolean
+        }
+        Returns: Json
+      }
       registrar_intercorrencia: {
         Args: {
           p_conduta: string

@@ -21,6 +21,7 @@ import type { PacProto } from './identificacao'
 import { Aviso } from '@/components/ui/aviso'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { IdentificarPaciente } from '@/components/paciente/NaoIdentificado'
+import { AvisoTrocarPulseira } from '@/components/paciente/Pulseira'
 import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 
 /**
@@ -65,6 +66,8 @@ export function SeletorPaciente({ pacienteId, onEscolher, pac, unidadeId, perfil
   const { data: setores } = useEscalaSetores(unidadeId, perfilId)
   // lacuna 1 (RT 10/11/2026): paciente não identificado ganha a ação Identificar
   const [identificando, setIdentificando] = React.useState(false)
+  // lacuna 2: identificado, pede a troca da pulseira provisória
+  const [identificado, setIdentificado] = React.useState<{ paciente_id: string; nome: string; prontuario: string | null } | null>(null)
   const identidade = useQuery({
     queryKey: ['paciente-identidade', pacienteId],
     enabled: !!pacienteId,
@@ -192,9 +195,10 @@ export function SeletorPaciente({ pacienteId, onEscolher, pac, unidadeId, perfil
           <section aria-label="Identificar paciente" className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
             <h3 className="text-corpo font-semibold text-tinta">Identificar paciente</h3>
             <IdentificarPaciente paciente={provisorio} onCancelar={() => setIdentificando(false)}
-              onIdentificado={() => setIdentificando(false)} />
+              onIdentificado={(r) => { setIdentificando(false); setIdentificado(r) }} />
           </section>
         )}
+        {identificado?.paciente_id === pacienteId && <AvisoTrocarPulseira paciente={identificado} />}
         {formCadastro}
       </div>
     )

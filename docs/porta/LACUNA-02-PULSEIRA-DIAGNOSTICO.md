@@ -132,3 +132,118 @@ O que o protocolo diz, resumido:
 ## 5. Decisão do RT (10/11/2026)
 
 "A em todos": A em P1 a P8.
+
+## 6. Implementação (10/11/2026, branch `lacunas/pulseira`)
+
+### Banco: `supabase/migrations/20270323000001_pulseira.sql`
+Só aditiva e idempotente: uma tabela, um índice, um gatilho e três funções
+novas. Nenhuma função existente muda.
+
+- **`registrar_impressao` não aceita motivo.** Por isso a função nova
+  `public.registrar_impressao_pulseira(p_paciente, p_reimpressao, p_motivo,
+  p_detalhe)`, que devolve `{protocolo, emitido_em, reimpressao, pulseira}`:
+  - registra e entrega os dados na mesma chamada, então não sai papel sem
+    protocolo;
+  - grava em `log_acesso_prontuario` a mesma linha que `registrar_impressao`
+    grava: tipo `impressao`, o login, a hora, o IP, o navegador e o
+    protocolo `IMP-` no mesmo formato;
+  - o `documento_tipo` leva só o código fixo, `Pulseira` ou
+    `Pulseira (reimpressão: caiu)`, sem nome nem prontuário.
+- **`public.impressoes_pulseira`** guarda o motivo (caiu, ilegível,
+  paciente identificado, dados corrigidos ou outro) e o texto do "outro"
+  (até 200 letras), ligados à linha do registro de acesso.
+  - Só a função grava; ninguém altera nem apaga (gatilho só-inserção).
+  - Lê o gestor da unidade, o super admin e quem imprimiu.
+  - A tela pede o texto do "outro" sem dados do paciente.
+- **`private.dados_pulseira`** monta os dados, numa função só, para toda tela
+  imprimir a mesma coisa:
+  - nome, nome social, nascimento só quando é real, idade estimada em
+    meses quando é estimado, prontuário e mãe;
+  - sexo, raça/cor e sinais (estes só do não identificado);
+  - marca de RN (até 27 dias e ligado à mãe), com o nome atual da mãe e a
+    ordem do gêmeo;
+  - sem leito, setor, diagnóstico, alergia ou risco.
+- A UBS é recusada no servidor também (P7).
+
+### Quem imprime (`private.pode_imprimir_pulseira`)
+- **Quem atua no paciente** (`pode_atuar_no_paciente`): super admin, gestor e
+  plantão agora no setor do paciente com a ficha ou a internação abertas. A
+  recepção e a enfermagem da porta entram por aqui depois de abrir a ficha.
+- **A recepção da unidade de plantão agora.**
+  - `gravar_acesso` (o caminho de `registrar_impressao`) exige
+    `pode_atuar_no_paciente`, e a recepção não passava em dois casos:
+    - o RN, que `cadastrar_rn` cria sem setor;
+    - a reimpressão da pulseira que caiu na enfermaria.
+  - A regra segue `identificar_paciente`, que aceita a recepção da unidade,
+    mas aqui exige o plantão.
+  - Não abre dado novo: `buscar_pacientes` já entrega nome, nascimento, mãe
+    e prontuário a quem está de plantão na unidade, e
+    `pacientes_nao_identificados` já mostra os sinais à recepção.
+- **RN de até 27 dias ligado à mãe:** quem atua na mãe (a enfermagem do leito
+  dela imprime a do RN, que nasce sem setor).
+- Passa por `exigir_segundo_fator`, como `registrar_impressao`.
+
+### Tela
+- **Regra pura em `src/domain/pulseira.ts`:**
+  - as linhas na ordem fixa e o "RN N de <mãe>";
+  - "Idade estimada: N anos" no lugar da data;
+  - sinais resumidos em 80 letras, cortados no fim de uma palavra;
+  - os motivos da reimpressão e a conferência deles.
+- **A folha (`src/lib/folhaPulseira.ts`):**
+  - etiqueta de 100 × 25 mm (RN, 80 × 20 mm);
+  - letra de 12 pt (nome em 13 pt, negrito), sem itálico, em A4 para
+    recortar;
+  - orientação de punho ou tornozelo e o protocolo embaixo;
+  - não usa o cabeçalho das folhas, que traz o leito.
+- **A impressão (`src/lib/pulseira.ts`):** abre a janela no clique e chama a
+  função; se ela falhar, a janela diz que nada foi impresso.
+- **Os botões (`src/components/paciente/Pulseira.tsx`)** somem na UBS.
+  - "Imprimir pulseira":
+    - na recepção, no aviso depois da ficha, do não identificado e do RN
+      (`Recepcao.tsx`);
+    - no cadastro do RN pelo leito da mãe (`CadastroRn.tsx`).
+  - "Reimprimir pulseira", que pede o motivo:
+    - no diálogo da triagem (`Triagem.tsx`);
+    - na fila do PS, aguardando e em atendimento (`FilaPS.tsx`);
+    - na lista de internados (`ListaInternados.tsx`).
+  - Depois de "Identificar paciente" (lista da recepção e seletor de
+    paciente dos documentos), o aviso pede a troca da pulseira e imprime a
+    nova com o motivo "paciente identificado".
+- `src/types/database.ts`: entrada da função nova escrita à mão. O
+  `npm run gen:tipos` a regenera junto com a tabela.
+
+### Testes
+- `src/domain/pulseira.test.ts` (15) e `src/lib/folhaPulseira.test.ts` (3):
+  - adulto, nome social, mãe e nascimento ausente;
+  - não identificado com e sem idade, sexo, raça/cor e sinais, e o corte
+    dos sinais;
+  - RN com gêmeo e com o nome atual da mãe;
+  - motivos, escape do HTML, tamanho e letra da etiqueta.
+- `supabase/tests/pulseira.sql` (23 conferências, 11 recusas e o bloco de
+  privilégios):
+  - os campos exatos da pulseira, sem leito;
+  - não identificado antes e depois de identificar, e RN;
+  - impressão e reimpressão com protocolo, login e motivo;
+  - recusas: sem motivo, motivo fora da lista, "outro" sem texto ou longo;
+  - quem não atua no paciente e a UBS são recusados;
+  - RLS da tabela; anon sem EXECUTE.
+- Homologação, em transação desfeita (seed 15–81 junto):
+  - o teste inteiro passou;
+  - a migration aplicada duas vezes seguidas passou.
+- Na homologação, `paciente_em_cuidado_no_plantao` exige a ficha ou a
+  internação abertas (20270306000002); o teste abre a ficha antes.
+
+### Rollback
+Está no cabeçalho da migration:
+1. `DROP FUNCTION` das três funções;
+2. `DROP TABLE public.impressoes_pulseira`, exportando antes se já houver
+   uso real.
+
+As linhas de `log_acesso_prontuario` ficam.
+
+### Em aberto
+- A primeira impressão não confere se já houve outra. Dois cliques em
+  "Imprimir pulseira" geram duas linhas sem motivo. A reimpressão com motivo
+  é a das outras telas.
+- A etiqueta não foi conferida em papel. Falta imprimir uma na unidade e
+  medir antes de liberar.

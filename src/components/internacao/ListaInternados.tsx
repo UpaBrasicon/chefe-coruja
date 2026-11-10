@@ -25,6 +25,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 import { LeitoAberto } from './LeitoAberto'
 import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
+import { BotaoPulseira } from '@/components/paciente/Pulseira'
 import { ATIVO, diaHora, hora, msg, ROTULO_ALTA, rpc, tempoDesde } from './caderno/comum'
 import { useSearchParams } from 'react-router-dom'
 
@@ -232,6 +233,8 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                     </span>
                   </div>
                   <div className="flex shrink-0 gap-[7px]">
+                    {/* lacuna 2: reimprimir a pulseira (pede o motivo) */}
+                    <BotaoPulseira pacienteId={p.id} nome={p.nome} reimpressao compacto />
                     <Button variant="outline" size="sm" onClick={() => setAberto(eAberto ? null : p.id)} aria-expanded={eAberto}
                       className={cn('font-medium', eAberto && 'border-acao/35 bg-acao/10 text-acao')}>
                       <ChevronRight className={cn('size-3.5 transition-transform duration-200', eAberto ? '-rotate-90' : 'rotate-90')} aria-hidden />

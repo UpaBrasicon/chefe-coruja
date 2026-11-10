@@ -19,6 +19,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
+import { BotaoPulseira } from '@/components/paciente/Pulseira'
 
 export type RnCriado = { paciente_id: string; nome: string; prontuario: string | null; data_nascimento: string; nome_mae: string; mae_tem_documento: boolean }
 const AVISO_MAE_SEM_DOCUMENTO = 'A mãe está sem CNS e sem CPF válidos: na regulação, o RN sai como não identificado até o documento dela ser completado.'
@@ -131,6 +132,7 @@ export function BotaoRnDaMae({ maeId, maeNome }: { maeId: string; maeNome: strin
     <>
       <Button size="xs" variant="outline" onClick={() => { setFeito(null); setAberto(true) }}><Baby /> Recém-nascido</Button>
       {feito && <span role="status" className="text-rotulo text-conforme">{feito.nome} cadastrado (pront. {feito.prontuario ?? '—'}).</span>}
+      {feito && <BotaoPulseira pacienteId={feito.paciente_id} nome={feito.nome} />}
       {feito && !feito.mae_tem_documento && <span className="text-rotulo text-atencao">{AVISO_MAE_SEM_DOCUMENTO}</span>}
       <Dialog open={aberto} onOpenChange={setAberto}>
         <DialogContent className="sm:max-w-[520px]">

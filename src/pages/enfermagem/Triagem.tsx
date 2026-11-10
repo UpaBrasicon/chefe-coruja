@@ -17,6 +17,7 @@ import { ordemMedica, rotuloCor, type CorRisco } from '@/domain/risco'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
+import { BotaoPulseira } from '@/components/paciente/Pulseira'
 import { AlergiaNaTela } from './AlergiaNaTela'
 import { Classificar } from './triagem/Classificar'
 import { EscutaInicial } from './triagem/EscutaInicial'
@@ -183,6 +184,8 @@ export default function Triagem() {
                   </span>
                 </DialogTitle>
                 <SeloNaoIdentificado paciente={atual.paciente} />
+                {/* lacuna 2: a pulseira que caiu ou ficou ilegível sai de novo aqui (some na UBS) */}
+                <BotaoPulseira pacienteId={atual.paciente_id} nome={nomeDe(atual)} reimpressao className="self-start" />
                 {/* alergia à vista enquanto classifica (R4); a cor continua sendo do enfermeiro */}
                 <AlergiaNaTela pacienteId={atual.paciente_id} className="py-1" />
                 <DialogDescription>

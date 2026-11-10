@@ -22,6 +22,7 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { EnderecoSus } from '@/components/paciente/EnderecoSus'
 import { FormRn, type RnCriado } from '@/components/paciente/CadastroRn'
+import { BotaoPulseira } from '@/components/paciente/Pulseira'
 import { FormNaoIdentificado, NaoIdentificadosDaUnidade, type NaoIdentificadoCriado } from '@/components/paciente/NaoIdentificado'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
@@ -329,6 +330,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
   const [tipoAps, setTipoAps] = React.useState('')
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
+  // lacuna 2 (RT 10/11/2026): pulseira logo depois da ficha, do não identificado e do RN
+  const [pulseira, setPulseira] = React.useState<{ id: string; nome: string } | null>(null)
   const [rnAberto, setRnAberto] = React.useState(false)
   // lacuna 1 (RT 10/11/2026): paciente sem identificação, nome provisório do servidor
   const [niAberto, setNiAberto] = React.useState(false)
@@ -390,6 +393,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     setExistente(a)
     setModo('existente')
     setAviso(null)
+    setPulseira(null)
     if (a.episodio_etapa) setAlvoAberto(a.id)
   }
 
@@ -398,13 +402,15 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     setRnAberto(false)
     usarExistente({ id: rn.paciente_id, nome: rn.nome, nome_social: null, data_nascimento: rn.data_nascimento, nome_mae: rn.nome_mae,
       cpf_final: null, cns_final: null, prontuario: rn.prontuario, episodio_etapa: null })
-    if (!rn.mae_tem_documento) setAviso('Recém-nascido cadastrado. A mãe está sem CNS e sem CPF válidos: na regulação, o RN sai como não identificado até o documento dela ser completado.')
+    setAviso(`${rn.nome} cadastrado · prontuário ${rn.prontuario ?? 'sem número'}.${rn.mae_tem_documento ? '' : ' A mãe está sem CNS e sem CPF válidos: na regulação, o RN sai como não identificado até o documento dela ser completado.'}`)
+    setPulseira({ id: rn.paciente_id, nome: rn.nome })
   }
 
   function naoIdentificadoCriado(r: NaoIdentificadoCriado) {
     setNiAberto(false)
     limpar()
     setAviso(`${r.nome} entrou na fila da triagem · prontuário ${r.prontuario}. Quando souber quem é, use Identificar na lista abaixo.`)
+    setPulseira({ id: r.paciente_id, nome: r.nome })
     aoAbrir()
     void queryClient.invalidateQueries({ queryKey: ['nao-identificados'] })
   }
@@ -421,6 +427,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     })
     setModo('novo')
     setAviso(null)
+    setPulseira(null)
   }
 
   const registrar = useMutation({
@@ -441,11 +448,12 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
         p_outra_pessoa: outraPessoa ?? false,
       })
       if (error) throw error
-      return data as { prontuario: string }
+      return data as { prontuario: string; paciente_id: string }
     },
     onSuccess: (r) => {
       const nome = modo === 'existente' ? existente?.nome : dados.nome.trim()
       setAviso(`${nome || 'Paciente'} entrou na fila ${ubs ? (tipoAps === 'escuta_inicial' ? 'da escuta inicial' : 'do consultório') : 'da triagem'} · prontuário ${r.prontuario}.`)
+      setPulseira(ubs || !r.paciente_id ? null : { id: r.paciente_id, nome: nome || 'Paciente' })
       limpar()
       setTermo('')
       setBuscado('')
@@ -678,9 +686,10 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
       )}
 
       {aviso && (
-        <div role="status" className="mt-3.5 flex items-center gap-2.5 rounded-container border border-acao/20 bg-alerta-marca px-[15px] py-3">
-          <Check className="size-4 text-acao" aria-hidden />
-          <span className="text-controle text-acao">{aviso}</span>
+        <div role="status" className="mt-3.5 flex flex-wrap items-center gap-2.5 rounded-container border border-acao/20 bg-alerta-marca px-[15px] py-3">
+          <Check className="size-4 shrink-0 text-acao" aria-hidden />
+          <span className="min-w-0 flex-1 text-controle text-acao">{aviso}</span>
+          {pulseira && !ubs && <BotaoPulseira pacienteId={pulseira.id} nome={pulseira.nome} className="shrink-0" />}
         </div>
       )}
       <Dialog open={rnAberto} onOpenChange={setRnAberto}>
