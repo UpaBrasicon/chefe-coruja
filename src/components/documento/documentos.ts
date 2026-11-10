@@ -51,13 +51,14 @@ export const ROTULO_DOCUMENTO: Record<string, string> = {
   receita: 'Receita', encaminhamento: 'Encaminhamento', pedido_exames: 'Pedido de exames', laudo_aih: 'Laudo de AIH',
   parecer: 'Parecer', evolucao_enfermagem: 'Evolução de enfermagem', anotacao_enfermagem: 'Anotação de enfermagem',
   evolucao_fisioterapia: 'Evolução de fisioterapia', evolucao_nutricao: 'Evolução de nutrição', evolucao_outros: 'Evolução multiprofissional',
-  reavaliacao_quadro: 'Reavaliação do quadro',
+  reavaliacao_quadro: 'Reavaliação do quadro', documento_transferencia: 'Documento de transferência',
 }
 
 export const rotuloDocumento = (tipo: string) => ROTULO_DOCUMENTO[tipo] ?? tipo.replace(/_/g, ' ')
 
 /** Tipos que o servidor cancela por esta porta (os outros têm fluxo próprio). */
-export const TIPOS_CANCELAVEIS = new Set(['atestado', 'receita', 'encaminhamento', 'pedido_exames', 'laudo_aih', 'boletim_emergencia', 'admissao_anamnese'])
+export const TIPOS_CANCELAVEIS = new Set(['atestado', 'receita', 'encaminhamento', 'pedido_exames', 'laudo_aih', 'boletim_emergencia', 'admissao_anamnese',
+  'documento_transferencia'])
 /** Tipos que viram rascunho ao copiar (os de public.salvar_rascunho). */
 export const TIPOS_COPIAVEIS = new Set(['atestado', 'receita', 'encaminhamento', 'pedido_exames', 'laudo_aih', 'prescricao', 'sumario_alta', 'termo_consentimento', 'boletim_emergencia'])
 /** Tipos com folha A4 no servidor (edge function `folha`): todos os de lib/folhas. */

@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { GRUPOS_NIR, filtrarPendencias, type GrupoNir, type PendenciaNir } from '@/lib/nir'
@@ -87,6 +88,8 @@ export default function Nir() {
                     {p.pode_cobrar && (
                       <Button size="xs" variant="outline" className="ml-auto" onClick={() => cobrar.mutate(p)} disabled={cobrar.isPending}>Cobrar</Button>
                     )}
+                    {/* lacuna 7 (T9): o documento de transferência da regulação */}
+                    {p.grupo === 'regulacao' && <div className="w-full"><LeituraTransferencia solicitacaoId={p.ref_id} /></div>}
                   </li>
                 ))}
               </ul>

@@ -128,6 +128,7 @@ SELECT pg_temp.observar(x, 'med', 'rec', 'porta') FROM unnest(ARRAY['a', 'b', 'c
 SELECT pg_temp.observar('f', 'medfora', 'rec', 'porta');
 SELECT pg_temp.observar('g', 'medenf', 'rec', 'porta');
 SELECT pg_temp.observar('x', 'medab', 'rec2', 'porta2');
+INSERT INTO v SELECT 'pb', paciente_id FROM public.internacoes WHERE id = pg_temp.v('ib');
 SELECT pg_temp.ok((SELECT count(*) = 7 FROM public.internacoes i
                     WHERE i.id IN (SELECT id FROM v WHERE nome LIKE 'i%') AND i.status = 'em_observacao'
                       AND i.setor_atual_id IN (pg_temp.id('obs'), pg_temp.id('obs2'))),
@@ -180,6 +181,9 @@ SELECT set_config('cc.encerra_observacao', '', true);
 -- ── 1. o autor encerra: alta, transferência e internação ───────────────────
 SELECT public.finalizar_observacao(pg_temp.v('ia'), 'alta_medica', 'R60', 'Dor controlada, sem sinais de alarme.');
 SELECT pg_temp.ok(coalesce(current_setting('cc.encerra_observacao', true), '') = '', 'a marca de encerramento sai ao fim do encerramento');
+-- lacuna 7 (20270329000001): a transferência externa pede o documento de
+-- transferência emitido; o autor da observação o emite enquanto ela está aberta
+SELECT public.emitir_documento_transferencia(pg_temp.v('pb'), '{"resumo_clinico":"Dor que não cede com a analgesia, precisa de avaliação especializada.","condutas":"Analgesia, hidratação e monitorização.","motivo":"Avaliação e tratamento no hospital de referência."}');
 SELECT public.finalizar_observacao(pg_temp.v('ib'), 'transferencia', 'R60', NULL, '{"destino":"Hospital de Referência"}');
 SELECT public.finalizar_observacao(pg_temp.v('ic'), 'internacao', NULL, NULL,
   json_build_object('setor_id', pg_temp.id('cm'))::jsonb);

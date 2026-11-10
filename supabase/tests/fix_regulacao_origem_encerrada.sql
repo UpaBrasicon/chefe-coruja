@@ -153,6 +153,8 @@ SELECT pg_temp.falha(format('SELECT public.regulacao_marcar_chegada(%L, true, NU
 SELECT pg_temp.como('med');
 SELECT pg_temp.ok((SELECT (x ->> 'chegou_origem_aberta')::boolean FROM jsonb_array_elements(public.regulacao_historico_paciente(pg_temp.id('pA'))) x
                     WHERE x ->> 'id' = pg_temp.id('rA')::text), 'o histórico do paciente mostra a marca');
+-- lacuna 7 (20270329000001): a transferência externa pede o documento de transferência emitido
+SELECT public.emitir_documento_transferencia(pg_temp.id('pA'), '{"resumo_clinico":"Dor que não cede com a analgesia, precisa de avaliação especializada.","condutas":"Analgesia, hidratação e monitorização.","motivo":"Avaliação e tratamento no hospital de referência."}');
 SELECT public.registrar_desfecho(pg_temp.id('eA'), 'transferencia', 'Transferido pela regulação',
   jsonb_build_object('destino', 'Hospital Destino do teste S', 'regulacao_id', pg_temp.id('rA')));
 RESET ROLE;
@@ -166,6 +168,7 @@ SET LOCAL ROLE authenticated;
 
 -- ── B. alta antes da chegada ────────────────────────────────────────────────
 SELECT pg_temp.como('med');
+SELECT public.emitir_documento_transferencia(pg_temp.id('pB'), '{"resumo_clinico":"Dor que não cede com a analgesia, precisa de avaliação especializada.","condutas":"Analgesia, hidratação e monitorização.","motivo":"Avaliação e tratamento no hospital de referência."}');
 SELECT public.registrar_desfecho(pg_temp.id('eB'), 'transferencia', 'Transferido pela regulação',
   jsonb_build_object('destino', 'Hospital Destino do teste S', 'regulacao_id', pg_temp.id('rB')));
 RESET ROLE;
@@ -182,6 +185,7 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('medh');
 SELECT public.regulacao_marcar_chegada(pg_temp.id('rC'), true, NULL, pg_temp.leito_cm(3));
 SELECT pg_temp.como('med');
+SELECT public.emitir_documento_transferencia(pg_temp.id('pC'), '{"resumo_clinico":"Dor que não cede com a analgesia, precisa de avaliação especializada.","condutas":"Analgesia, hidratação e monitorização.","motivo":"Avaliação e tratamento no hospital de referência."}');
 SELECT public.finalizar_observacao(pg_temp.id('iC'), 'transferencia', 'I21.9', 'Transferido pela regulação',
   jsonb_build_object('destino', 'Hospital Destino do teste S', 'regulacao_id', pg_temp.id('rC')));
 RESET ROLE;
@@ -191,6 +195,8 @@ SET LOCAL ROLE authenticated;
 
 -- ── D. regulação de outro paciente ──────────────────────────────────────────
 SELECT pg_temp.como('med');
+-- com o documento emitido, a recusa que sobra é a da regulação de outro paciente
+SELECT public.emitir_documento_transferencia(pg_temp.id('pD'), '{"resumo_clinico":"Dor que não cede com a analgesia, precisa de avaliação especializada.","condutas":"Analgesia, hidratação e monitorização.","motivo":"Avaliação e tratamento no hospital de referência."}');
 SELECT pg_temp.falha(format('SELECT public.registrar_desfecho(%L, %L, %L, %L)', pg_temp.id('eD'), 'transferencia', 'Transferido',
     jsonb_build_object('destino', 'Hospital Destino do teste S', 'regulacao_id', pg_temp.id('rE'))),
   'A regulação escolhida não é deste paciente', 'S4: a regulação de outro paciente é recusada');

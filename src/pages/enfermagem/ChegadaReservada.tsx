@@ -9,6 +9,7 @@
 import { useMutation } from '@tanstack/react-query'
 import * as React from 'react'
 
+import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { Button } from '@/components/ui/button'
 import { linhaDaChegada } from '@/lib/chegadaEnfermagem'
 import { duplicataDaChegada } from '@/lib/regulacao'
@@ -53,6 +54,8 @@ export function ChegadaReservada({ c, agora, aoFim }: { c: ChegadaEnfermagem; ag
             {c.alergias.length > 0 ? `Alergias informadas pela origem: ${c.alergias.join(', ')}.` : 'A origem não informou alergias.'}{' '}
             A chegada cria o cadastro (ou usa o desta unidade, pelo Cartão SUS ou CPF) e interna o paciente no leito reservado.
           </p>
+          {/* lacuna 7 (T9): o documento de transferência que a origem emitiu */}
+          <LeituraTransferencia solicitacaoId={c.regulacao_id} />
           {duplicata ? (
             <div role="alert" className="flex flex-col gap-2 rounded-controle border border-atencao/40 bg-superficie p-2.5">
               <span className="text-apoio text-atencao">{duplicata.texto || 'Já existe cadastro parecido nesta unidade.'} É a mesma pessoa?</span>

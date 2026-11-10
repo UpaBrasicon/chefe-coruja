@@ -31,12 +31,14 @@ export type TipoFolha =
   | 'termo_consentimento' | 'admissao_anamnese' | 'sumario_alta' | 'sumario_obito' | 'parecer'
   | 'evolucao' | 'evolucao_enfermagem' | 'anotacao_enfermagem' | 'evolucao_fisioterapia'
   | 'evolucao_nutricao' | 'evolucao_outros' | 'boletim_emergencia' | 'teleinterconsulta' | 'reavaliacao_quadro'
+  | 'documento_transferencia'
 
 export const TIPOS_FOLHA: TipoFolha[] = [
   'atestado', 'receita', 'encaminhamento', 'pedido_exames', 'prescricao', 'laudo_aih',
   'termo_consentimento', 'admissao_anamnese', 'sumario_alta', 'sumario_obito', 'parecer',
   'evolucao', 'evolucao_enfermagem', 'anotacao_enfermagem', 'evolucao_fisioterapia',
   'evolucao_nutricao', 'evolucao_outros', 'boletim_emergencia', 'teleinterconsulta', 'reavaliacao_quadro',
+  'documento_transferencia',
 ]
 
 /** Relatórios de várias linhas (RPC folha_relatorio), não documentos. */
@@ -799,6 +801,119 @@ function sumarioObito(d: Json, ctx: ContextoFolha): string {
   return pagina({ titulo: 'Sumário de óbito', ctx, pac, fichas: [{ doc: 'Sumário de óbito (prontuário)', corpo }] })
 }
 
+// ── documento de transferência (lacuna 7, T8) ────────────────────────────────
+// Conteúdo gravado por public.emitir_documento_transferencia: {formato:
+// 'transferencia', medico, dados (a fotografia do servidor), textos
+// (resumo_clinico, condutas, motivo), checklist_na_emissao}; a folha do banco
+// junta checklist_atual (o checklist na hora da impressão). Duas vias: uma
+// segue com o paciente e entra no prontuário de quem recebe; a outra fica no
+// prontuário da origem (Portaria GM/MS 2.048/2002, Anexo, Cap. VI, item 3.1 f).
+// Espaço para as intercorrências do transporte (item 3.3 e) e para a
+// assinatura do médico que recebe (Res. CFM 1.672/2003, Art. 1º, VI).
+// Sinais vitais crus.
+
+export const ITENS_TRANSFERENCIA: { item: string; rotulo: string; quem: 'medico' | 'enfermagem'; fonte: string }[] = [
+  { item: 'contato_destino', rotulo: 'Contato prévio e aceite do destino', quem: 'medico', fonte: 'Portaria 2.048/2002, 3.1 a; Res. CFM 1.672/2003, Art. 1º, IV' },
+  { item: 'regulacao', rotulo: 'Número da regulação', quem: 'medico', fonte: 'Portaria 2.048/2002, 3.1 a e l' },
+  { item: 'autorizacao', rotulo: 'Autorização escrita do paciente ou do responsável', quem: 'medico', fonte: 'Portaria 2.048/2002, 3.1 g; Res. CFM 1.672/2003, Art. 1º, VII' },
+  { item: 'estabilizado', rotulo: 'Paciente estabilizado para o transporte', quem: 'medico', fonte: 'Portaria 2.048/2002, 3.1 b; Res. CFM 1.672/2003, Art. 1º, II' },
+  { item: 'transporte', rotulo: 'Tipo de transporte', quem: 'medico', fonte: 'Portaria 2.048/2002, Cap. VI, 3.3 a' },
+  { item: 'acompanhante_equipe', rotulo: 'Quem da equipe acompanha', quem: 'enfermagem', fonte: 'Res. CFM 1.672/2003, Art. 1º, III' },
+  { item: 'isolamento_informado', rotulo: 'Isolamento informado ao destino', quem: 'enfermagem', fonte: 'Portaria 2.048/2002, 3.1 e' },
+  { item: 'incubadora', rotulo: 'Incubadora de transporte (recém-nascido)', quem: 'enfermagem', fonte: 'Res. CFM 1.672/2003, Art. 1º, IX; Portaria 2.048/2002, 3.3 d' },
+]
+export const ROTULO_TRANSPORTE: Record<string, string> = {
+  transporte_sanitario: 'Transporte sanitário (tipo A)', ambulancia_basica: 'Ambulância de suporte básico (tipo B)',
+  ambulancia_avancada: 'Ambulância de suporte avançado (tipo D)', aereo: 'Aeronave (tipo E)', embarcacao: 'Embarcação (tipo F)',
+  meios_proprios: 'Meios próprios',
+}
+export const ROTULO_ACOMPANHANTE: Record<string, string> = { medico: 'Médico', enfermagem: 'Enfermagem', medico_e_enfermagem: 'Médico e enfermagem' }
+export const ROTULO_AUTORIZACAO: Record<string, string> = { paciente: 'Assinada pelo paciente', responsavel: 'Assinada pelo responsável' }
+export const ROTULO_ATENDIMENTO: Record<string, string> = { porta: 'Pronto atendimento (porta)', observacao: 'Observação', internacao: 'Internação' }
+/** Sinais vitais: o nome do conceito (como está gravado) para a folha e a tela. */
+export const ROTULO_SINAL: Record<string, string> = {
+  'pressao-arterial-sistolica': 'PA sistólica', 'pressao-arterial-diastolica': 'PA diastólica', 'pressao-arterial-media': 'PA média',
+  'frequencia-cardiaca': 'FC', 'frequencia-respiratoria': 'FR', temperatura: 'Temperatura', 'saturacao-o2': 'SpO₂',
+  'glicemia-capilar': 'Glicemia capilar', glasgow: 'Glasgow', 'escala-dor': 'Dor', peso: 'Peso', estatura: 'Estatura',
+  'perimetro-cefalico': 'Perímetro cefálico', fio2: 'FiO₂', diurese: 'Diurese', 'nivel-consciencia': 'Consciência',
+  'oxigenio-suplementar': 'O₂ suplementar', 'suporte-respiratorio': 'Suporte respiratório', 'esforco-respiratorio': 'Esforço respiratório',
+  'enchimento-capilar': 'Enchimento capilar', pupilas: 'Pupilas', 'drogas-vasoativas': 'Drogas vasoativas',
+}
+export const rotuloSinal = (c: unknown) => ROTULO_SINAL[String(c ?? '')] ?? String(c ?? '').replace(/-/g, ' ')
+
+/** Texto do item do checklist: o que foi marcado, com o detalhe ou o motivo. */
+export function textoItemTransferencia(c: Json): string {
+  if (!c || c.situacao == null) return 'Pendente'
+  if (c.situacao === 'nao_se_aplica') return junta(': ', 'Não se aplica', c.motivo)
+  const det = c.item === 'transporte' ? ROTULO_TRANSPORTE[c.detalhe] ?? c.detalhe
+    : c.item === 'acompanhante_equipe' ? ROTULO_ACOMPANHANTE[c.detalhe] ?? c.detalhe
+    : c.item === 'autorizacao' ? ROTULO_AUTORIZACAO[c.detalhe] ?? c.detalhe
+    : c.item === 'contato_destino' && !vz(c.detalhe) ? `aceito por ${c.detalhe}` : c.detalhe
+  return junta(': ', 'Feito', det)
+}
+
+function documentoTransferencia(d: Json, ctx: ContextoFolha): string {
+  const pac = pacienteDe(ctx, { paciente: { nome: d?.dados?.identificacao?.nome, nascimento: d?.dados?.identificacao?.nascimento, cns: d?.dados?.identificacao?.cns } })
+  const x = d.dados ?? {}
+  const o = x.origem ?? {}
+  const r = x.regulacao ?? null
+  const tx = d.textos ?? {}
+  const diag = x.diagnostico_entrada ?? {}
+  const ck: Json[] = lista(d.checklist_atual).length ? lista(d.checklist_atual) : lista(d.checklist_na_emissao)
+  const doCheck = new Map(ck.map((c) => [c.item, c]))
+  const al = x.alergias ?? {}
+  const alergias = al.estado === 'tem'
+    ? lista(al.itens).map((a) => junta(' ', a.substancia, vz(a.gravidade) ? '' : `(${a.gravidade})`, vz(a.reacao) ? '' : `: ${a.reacao}`)).join('; ')
+    : al.estado === 'nega' ? 'Nega alergias' : al.estado === 'desconhece' ? 'Não soube informar' : 'Não registrado'
+  const presc = lista(x.prescricao).map((i) => `<tr${i.vencido ? ' class="in"' : ''}><td><b>${esc(i.descricao)}</b>${i.controlado ? ` <i>(controlado, lista ${esc(i.controlado)})</i>` : ''}</td>` +
+    `<td>${esc(junta(' · ', i.dose, i.via, i.posologia, i.se_necessario ? 'se necessário' : ''))}</td>` +
+    `<td>${esc(i.valida_ate ? `${i.vencido ? 'vencido em' : 'válido até'} ${dataHoraBr(i.valida_ate)}` : 'dose única')}</td></tr>`).join('')
+  const exames = lista(x.exames).map((e) => `<tr><td><b>${esc(e.exame)}</b><br>${esc(dataHoraBr(e.pedido_em))}</td><td>${esc(e.situacao)}</td>` +
+    `<td>${esc(junta(' · ', e.resultado, ...lista(e.itens).map((it) => junta(' ', it.analito, it.valor, it.unidade, vz(it.referencia) ? '' : `(ref. ${it.referencia})`))))}` +
+    `${e.liberado_em ? `<br><i>${esc(dataHoraBr(e.liberado_em))}</i>` : ''}</td></tr>`).join('')
+  const sv = lista(x.sinais_vitais).map((s) => [rotuloSinal(s.conceito), s.valor, junta(' · ', s.unidade, s.aferido_em ? dataHoraBr(s.aferido_em) : '')] as [string, unknown, string])
+  const linhasCk = ITENS_TRANSFERENCIA.map((k) => {
+    const c = doCheck.get(k.item)
+    return `<tr><td><b>${esc(k.rotulo)}</b><br><i>${esc(k.quem === 'medico' ? 'médico' : 'enfermagem')}</i></td><td>${esc(textoItemTransferencia(c ?? { item: k.item }))}</td>` +
+      `<td>${esc(junta(' · ', c?.por, c?.em ? dataHoraBr(c.em) : ''))}</td></tr>`
+  }).join('')
+  const lin = (k: string, v: unknown, n = 6) => cel(n, k, V(v))
+  const corpo = faixaAlergia(ctx, d) +
+    secao('1. Origem e destino', grade(
+      lin('Unidade de origem', junta(' · ', o.unidade, o.cnes ? `CNES ${o.cnes}` : '')) + lin('Atendimento', junta(' · ', ROTULO_ATENDIMENTO[o.atendimento] ?? o.atendimento, o.setor, o.leito ? `leito ${o.leito}` : ''), 4) +
+      lin('Entrada', dataHoraBr(o.entrada_em), 2) +
+      lin('Destino', r?.destino) + lin('Regulação', r ? junta(' · ', r.numero != null ? `nº ${r.numero}` : '', junta(' ', r.sistema_externo, r.protocolo_externo)) : '', 6) +
+      lin('Aceite do destino', r?.aceite ? junta(' · ', r.aceite.por, r.aceite.registro, dataHoraBr(r.aceite.em)) : '', 8) +
+      lin('Transporte (regulação)', r?.transporte ? ROTULO_TRANSPORTE[r.transporte] ?? r.transporte : '', 4))) +
+    secao('2. Diagnóstico e motivo', grade(
+      lin('Diagnóstico de entrada', junta(' · ', diag.hipotese, junta(' ', diag.cid, vz(diag.cid_descricao) ? '' : `(${diag.cid_descricao})`)), 8) +
+      lin('CID da internação', x.cid_internacao, 4) + cel(12, 'Motivo da transferência', V(tx.motivo), 't'))) +
+    bloco('Resumo clínico', texto(pri(tx.resumo_clinico, '—')), true) +
+    bloco('Condutas adotadas na origem', texto(pri(tx.condutas, '—')), true) +
+    (sv.length ? `<div class="linha"><span class="rot">Últimos sinais vitais (como registrados)</span></div>${sinaisCrus(sv)}` : '') +
+    grade(lin('Alergias registradas na emissão', alergias, 12)) +
+    bloco('Prescrição em uso na saída', presc
+      ? `<table class="tab"><colgroup><col style="width:40%"><col><col style="width:24%"></colgroup><thead><tr><th>Item</th><th>Dose · via · posologia</th><th>Validade</th></tr></thead><tbody>${presc}</tbody></table>`
+      : '<p class="meta">Sem prescrição ativa.</p>') +
+    bloco('Exames', exames
+      ? `<table class="tab"><colgroup><col style="width:26%"><col style="width:14%"><col></colgroup><thead><tr><th>Exame</th><th>Situação</th><th>Resultado</th></tr></thead><tbody>${exames}</tbody></table>`
+      : '<p class="meta">Nenhum exame pedido.</p>') +
+    grade(
+      lin('Dispositivos', lista(x.dispositivos).map((v) => junta(' · ', v.tipo, v.local, v.calibre, v.inserido_em ? `desde ${dataBr(v.inserido_em)}` : '')).join('; ') || 'Nenhum') +
+      lin('Isolamento', lista(x.isolamento).map((s) => s.tipo).join(', ') || 'Nenhum', 3) +
+      lin('Contenção mecânica', lista(x.contencao).length ? lista(x.contencao).map((k) => `desde ${dataHoraBr(k.desde)}`).join('; ') : 'Nenhuma', 3) +
+      lin('Controlados em uso', lista(x.controlados).map((c) => `${c.descricao} (lista ${c.lista})`).join('; ') || 'Nenhum', 12)) +
+    bloco(`Checklist da transferência (${lista(d.checklist_atual).length ? 'situação na impressão' : 'situação na emissão'})`,
+      `<table class="tab"><colgroup><col style="width:36%"><col><col style="width:26%"></colgroup><thead><tr><th>Item</th><th>Situação</th><th>Quem · quando</th></tr></thead><tbody>${linhasCk}</tbody></table>`) +
+    `<p class="meta"><b>${esc(pri(d.aviso, 'O médico que transfere responde pelo paciente até ele ser recebido.'))}</b></p>` +
+    grade(branco(12, 'Intercorrências do transporte (registradas pela equipe do transporte)', 'alta') +
+      branco(3, 'Recebido em (data e hora)') + branco(5, 'Médico que recebe (nome)') + branco(4, 'CRM')) +
+    assinaturas([assMedico(ctx, 'Médico que transfere'), { nome: '', linha: 'CRM ________', papel: 'Médico que recebe' }]) +
+    `<p class="meta">${esc(lista(d.fontes).join(' · ') || 'Portaria GM/MS nº 2.048/2002, Anexo, Cap. VI; Resolução CFM nº 1.672/2003, Art. 1º')}</p>`
+  const fichas: Ficha[] = ['Via do destino (segue com o paciente)', 'Via do prontuário da origem'].map((via) => ({ doc: 'Documento de transferência', sub: via, corpo }))
+  return pagina({ titulo: 'Documento de transferência', ctx, pac, fichas })
+}
+
 function alta(tipo: TipoFolha, d: Json, ctx: ContextoFolha): string {
   if (tipo === 'sumario_obito' && d.formato === 'obito') return sumarioObito(d, ctx)
   if (typeof d.texto === 'string' && !d.motivo) return documentoTexto(tipo, d, ctx)
@@ -823,6 +938,7 @@ const TITULO_DOC: Record<string, string> = {
   boletim_emergencia: 'Boletim de emergência', teleinterconsulta: 'Teleinterconsulta', termo_consentimento: 'Termo de consentimento',
   atestado: 'Atestado', receita: 'Receituário', encaminhamento: 'Encaminhamento', pedido_exames: 'Solicitação de exames',
   prescricao: 'Prescrição médica', laudo_aih: 'Laudo para solicitação de AIH', reavaliacao_quadro: 'Reavaliação do quadro',
+  documento_transferencia: 'Documento de transferência',
 }
 const ENFERMAGEM = new Set(['evolucao_enfermagem', 'anotacao_enfermagem'])
 
@@ -859,6 +975,7 @@ export function montarFolha(tipo: TipoFolha | string, dados: Json, contexto: Con
     case 'termo_consentimento': return termo(d, ctx)
     case 'admissao_anamnese': return admissao(d, ctx)
     case 'sumario_alta': case 'sumario_obito': return alta(tipo, d, ctx)
+    case 'documento_transferencia': return d.formato === 'transferencia' ? documentoTransferencia(d, ctx) : documentoTexto(tipo, d, ctx)
     default: return documentoTexto(tipo, d, ctx)
   }
 }
