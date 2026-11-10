@@ -10,11 +10,9 @@ import { readFileSync } from 'node:fs'
 const registro = readFileSync('src/content/registry.tsx', 'utf8')
 const telas = [...registro.matchAll(/import\('([^']+)'\),\s*'([^']+)'\)/g)].map((m) => `${m[1]}#${m[2]}`)
 
-// repetições que já existiam, a conferir com o RT (não fazem parte do ponto 2)
-const CONHECIDAS = new Set([
-  '@/pages/plantonista/pediatria/DenguePed#DenguePed',
-  '@/pages/plantonista/manual/SdraVentilacaoAdulto#SdraVentilacaoAdulto',
-])
+// As duas repetições que já existiam (DenguePed e SdraVentilacaoAdulto) saíram
+// por decisão do RT em 10/11/2026 (bloco rápido, item 1): nenhuma tela repete.
+const CONHECIDAS = new Set<string>([])
 
 test('nenhuma tela nova aparece em duas entradas da Central', () => {
   const vezes = new Map<string, number>()
@@ -30,4 +28,17 @@ test('ajuste inicial da VM: uma entrada só, e o endereço antigo redireciona', 
   assert.ok(app.includes('path="/plantonista/ventilacao-mecanica/suporte-ventilatorio" element={<Redirecionar para="/plantonista/emergencias/vm-ajuste-inicial-adulto" />}'))
   const catalogo = readFileSync('biblioteca/ferramentas.json', 'utf8')
   assert.ok(!catalogo.includes('"id": "suporte-ventilatorio"'), 'a IA não sugere a rota que saiu')
+})
+
+test('Dengue e SDRA: uma entrada só, e os endereços antigos redirecionam (RT, 10/11/2026)', () => {
+  assert.equal(telas.filter((t) => t.endsWith('#DenguePed')).length, 1)
+  assert.equal(telas.filter((t) => t.endsWith('#SdraVentilacaoAdulto')).length, 1)
+  assert.ok(!registro.includes("t('manual-dengue'"))
+  assert.ok(!registro.includes("t('manobra-recrutamento'"))
+  const app = readFileSync('src/App.tsx', 'utf8')
+  assert.ok(app.includes('path="/plantonista/dengue/manual-dengue" element={<Redirecionar para="/plantonista/pediatria/dengue-ped" />}'))
+  assert.ok(app.includes('path="/plantonista/ventilacao-mecanica/manobra-recrutamento" element={<Redirecionar para="/plantonista/emergencias/sdra-ventilacao-adulto" />}'))
+  const catalogo = readFileSync('biblioteca/ferramentas.json', 'utf8')
+  assert.ok(!catalogo.includes('"id": "manual-dengue"'), 'a IA não sugere a rota que saiu')
+  assert.ok(!catalogo.includes('"id": "manobra-recrutamento"'), 'a IA não sugere a rota que saiu')
 })

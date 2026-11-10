@@ -13,9 +13,9 @@ test('público: o padrão é adulto, com o selo sem referência pediátrica', ()
   assert.equal(valeEmCrianca('adulto'), false)
 })
 
-test('público: seção Pediatria e Dengue — criança só valem em criança', () => {
+test('público: seção Pediatria (Dengue — criança incluída) só vale em criança', () => {
   assert.equal(publicoDaFerramenta('pediatria', 'bolus'), 'pediatrico')
-  assert.equal(publicoDaFerramenta('dengue', 'manual-dengue'), 'pediatrico')
+  assert.equal(publicoDaFerramenta('pediatria', 'dengue-ped'), 'pediatrico')
   assert.equal(valeEmAdulto('pediatrico'), false)
   assert.equal(semReferenciaPediatrica('pediatrico'), false)
 })
