@@ -12290,6 +12290,15 @@ export type Database = {
         }
         Returns: Json
       }
+      indicador_obitos: {
+        Args: {
+          p_ate: string
+          p_de: string
+          p_setor?: string
+          p_unidade: string
+        }
+        Returns: Json
+      }
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
       iniciar_contencao: { Args: { p_dados: Json; p_paciente: string }; Returns: string }

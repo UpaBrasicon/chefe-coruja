@@ -109,3 +109,79 @@ https://bvsms.saude.gov.br/bvs/publicacoes/padronizacao_censo.pdf.
 ## 5. Decisão do RT (10/11/2026)
 
 "A em todos": A em P1 a P8.
+
+## 6. Implementação (10/11/2026, branch `lacunas/obitos-painel`)
+
+### Arquivos
+- `supabase/migrations/20270328000001_obitos_painel.sql`
+- `supabase/tests/obitos_painel.sql`
+- `src/lib/obitosPainel.ts` e `src/lib/obitosPainel.test.ts`
+- `src/pages/gestor/ObitosIndicador.tsx` (cartão) e `src/pages/gestor/Indicadores.tsx`
+- `src/types/database.ts` (só a RPC nova)
+
+### Banco
+- `private.obitos_no_periodo(unidade, desde, até, setor)`: uma linha por óbito.
+  - Óbito novo: `public.obitos` com `anulado_em` nulo, pela `hora_obito`.
+  - Registro anterior (P6): `episodios.desfecho = 'obito'` ou
+    `internacoes.status = 'obito'` sem registro vigente em `obitos` para o
+    episódio, a internação ou o paciente. Hora: a `hora_obito` do jsonb do
+    desfecho ou da alta; se faltar ou for inválida, o encerramento do episódio
+    ou a `data_alta`. Sem tipo de morte nem encaminhamento: entra no grupo
+    "registro anterior".
+  - Origem do registro anterior da internação: `internado_em` nulo quer dizer
+    que o paciente só esteve em observação (migration 20261119000004).
+  - Chegada à unidade (para menos de 24 h ou 24 h ou mais): a chegada do
+    episódio do óbito; na observação e na internação, a do episódio da
+    internação; sem episódio, a admissão.
+- `private.saidas_no_periodo(unidade, desde, até, setor)`: o denominador.
+  - Porta: `episodios.desfecho` em alta, alta após medicação, alta a pedido,
+    transferência, evasão ou óbito, pelo encerramento. `observacao`,
+    `internacao` e `cancelado` não são saída: o paciente sai depois pela
+    observação ou pela internação, uma vez só.
+  - Observação e internação: `internacoes.status` em alta melhorada, alta a
+    pedido, evasão, transferência externa ou óbito, pela `data_alta`.
+  - Com setor escolhido, numerador e denominador são do mesmo setor (setor do
+    episódio na porta, setor atual da internação).
+- `public.indicador_obitos(unidade, de, até, setor)`: segundo fator, gestor da
+  unidade ou super admin; período de até um ano, das 7h de `de` às 7h do dia
+  seguinte a `até` (dia do plantão, P4). Devolve total, registros anteriores,
+  por origem, por tipo de morte, por encaminhamento, adulto ou pediátrico (na
+  data do óbito, `private.pediatrico_em`), por tempo desde a chegada, por
+  setor, por dia do plantão, saídas por origem, "óbitos sobre saídas"
+  (numerador, denominador e percentual com uma casa), os setores ativos da
+  unidade (para o seletor) e a lista com nome (até 300, P3). A consulta com
+  nome grava `ver_obitos` na trilha no máximo uma vez a cada 15 min, só com a
+  quantidade.
+- `public.painel_organizacao` (P5): a linha dos óbitos passa a contar
+  `private.obitos_no_periodo` (porta, observação, internação e registros
+  anteriores, pela hora do óbito), com a mesma supressão de 1 a 4 e sem
+  quebra ao lado. Trocada trecho a trecho pelo texto atual, como em
+  20270326000001. md5 na homologação (bruto e sem CR são iguais, porque o
+  corpo está em LF): antes `21ae4578a5dbddfa887c8243929673aa`, depois
+  `3d3c6859c056c96b9b6d957bb59d579a`; o rollback volta ao de antes.
+
+### Tela
+- Cartão "Óbitos" na seção do gestor de Indicadores, depois da evasão. Usa o
+  período da barra de filtros. O setor do óbito é escolhido no próprio cartão,
+  porque a barra lista só os setores de entrada (sem os de internação). Cor,
+  turno, grupo e médico da barra não se aplicam, e o cartão diz isso.
+- Três números (óbitos, óbitos sobre saídas com "N óbitos de M saídas", saídas
+  por origem), seis quebras em barras e o texto da referência: Portaria
+  SAS/MS nº 312/2002, e a UPA não é hospital.
+- Lista com nome fechada por padrão ("Ver os casos"), com o aviso de que o
+  acesso fica na auditoria.
+- CSV (P8): só números (total, numerador, denominador, percentual, saídas e
+  cada quebra), com unidade, período, setor e referência no cabeçalho.
+
+### Evidência
+- Homologação, em transação desfeita (`BEGIN` + seed + migration duas vezes +
+  teste + `RAISE EXCEPTION 'FIM ok'`): as 33 asserções de
+  `supabase/tests/obitos_painel.sql` passaram; a segunda aplicação não mudou o
+  md5 (reaplicável).
+- Rollback em transação desfeita: md5 de `painel_organizacao` igual ao de
+  antes e as quatro funções novas removidas. Depois das duas rodadas, a
+  homologação segue sem as funções e com o md5 de antes.
+- `node --test src/domain/*.test.ts src/lib/*.test.ts`: 559 testes, 0 falhas
+  (5 novos em `obitosPainel.test.ts`). `tsc`, `eslint` nos arquivos tocados,
+  `padrao-frontend --ci` e `migrations-destrutivas` sem erro.
+- Não conferido: a tela no navegador com login de gestor.
