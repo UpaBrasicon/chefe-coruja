@@ -2430,8 +2430,8 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 | # | Prioridade | Lacuna | Hoje | Estado |
 |---|---|---|---|---|
-| 1 | P1 | Cadastro provisório de paciente não identificado na recepção | A ficha exige nome com 3 letras; o paciente inconsciente do SAMU não entra pela recepção. O marcador "não identificado" só existe na regulação; a reidentificação posterior funciona | Diagnóstico |
-| 2 | P1 | Pulseira de identificação | Não há rota, RPC nem folha | A fazer |
+| 1 | P1 | Cadastro provisório de paciente não identificado na recepção | A ficha exige nome com 3 letras; o paciente inconsciente do SAMU não entra pela recepção. O marcador "não identificado" só existe na regulação; a reidentificação posterior funciona | Feito: o RT escolheu A em N1 a N4 (10/11/2026). Nome "Não identificado <prontuário>", sexo aparente, idade estimada e sinais; selo nas filas; "Identificar paciente" com busca de duplicata e unificação; histórico em `pacientes_identidade_provisoria`. Migration `20270322000001`, PR #542; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-01-NAO-IDENTIFICADO-DIAGNOSTICO.md` |
+| 2 | P1 | Pulseira de identificação | Não há rota, RPC nem folha | Diagnóstico |
 | 3 | P1 | Medicação controlada (Portaria 344): marca no catálogo, receita especial, aprovação, dispensação e lote na farmácia | O catálogo não marca controlado; haloperidol e midazolam entram como qualquer item. Fonte: listas da ANVISA | A fazer |
 | 4 | P1 | Registro de contenção mecânica (indicação, horário, revisão, retirada) | Só a intercorrência de agitação. Fonte: norma do COFEN | A fazer |
 | 5 | P1 | Declaração de óbito e registro da comunicação do óbito | Só o número da D.O. dentro do desfecho | A fazer |
