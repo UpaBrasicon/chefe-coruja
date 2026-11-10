@@ -22,6 +22,8 @@ export type VinculoComUnidade = {
     nome: string
     tipo: TipoUnidade
     organizacao_id: string
+    /** a unidade imprime pulseira de identificação (opcional, o gestor liga; RT 10/11/2026) */
+    usa_pulseira?: boolean
   }
 }
 
@@ -61,7 +63,7 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('vinculos')
-        .select('id, papel, unidade_id, unidades(id, nome, tipo, organizacao_id)')
+        .select('id, papel, unidade_id, unidades(id, nome, tipo, organizacao_id, usa_pulseira)')
         .eq('perfil_id', perfil!.id)
         .eq('ativo', true)
         .order('created_at', { ascending: true })

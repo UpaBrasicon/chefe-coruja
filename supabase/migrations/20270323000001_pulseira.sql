@@ -35,20 +35,51 @@
 --   - para o recém-nascido ligado à mãe (até 27 dias), quem pode atuar na
 --     mãe (o RN nasce sem setor; a enfermagem do leito da mãe imprime).
 --   Na UBS não há pulseira (P7): a função recusa.
+--   A pulseira não é obrigatória em toda unidade (RT, 10/11/2026): só imprime
+--   na unidade em que o gestor ligou unidades.usa_pulseira (desligada por
+--   padrão), em Configuração (public.definir_pulseira_unidade).
 --   Como registrar_impressao, passa por exigir_segundo_fator.
 --
--- Só aditiva: uma tabela, um índice, um gatilho e três funções novas.
+-- Só aditiva: uma coluna em unidades, uma tabela, um índice, um gatilho e
+-- quatro funções novas.
 -- Nenhuma função existente muda. Idempotente.
 -- Teste: supabase/tests/pulseira.sql
 --
 -- Rollback (na ordem):
 --   1. DROP FUNCTION IF EXISTS public.registrar_impressao_pulseira(uuid, boolean, text, text),
 --        private.dados_pulseira(uuid), private.pode_imprimir_pulseira(uuid);
+--      DROP FUNCTION IF EXISTS public.definir_pulseira_unidade(uuid, boolean);
 --   2. DROP TABLE IF EXISTS public.impressoes_pulseira;
 --      (apaga os motivos de reimpressão: exportar antes se já houver linhas
 --      de uso real; as linhas de log_acesso_prontuario ficam, com o
 --      documento_tipo 'Pulseira ...').
+--   3. ALTER TABLE public.unidades DROP COLUMN IF EXISTS usa_pulseira;
 -- ════════════════════════════════════════════════════════════════════════════
+
+-- ── a unidade usa pulseira? (decisão do gestor; desligada por padrão) ───────
+ALTER TABLE public.unidades ADD COLUMN IF NOT EXISTS usa_pulseira boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.unidades.usa_pulseira IS
+  'A unidade imprime pulseira de identificação (lacuna 2). Não é obrigatória: o gestor liga em Configuração (RT, 10/11/2026).';
+
+CREATE OR REPLACE FUNCTION public.definir_pulseira_unidade(p_unidade uuid, p_usa boolean)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE v_antes boolean; v_tipo text;
+BEGIN
+  PERFORM private.exigir_segundo_fator();
+  IF NOT (private.tenho_papel(p_unidade, 'gestor') OR private.eh_super_admin()) THEN
+    RAISE EXCEPTION 'Quem liga a pulseira da unidade é o gestor.' USING ERRCODE = 'insufficient_privilege';
+  END IF;
+  IF p_usa IS NULL THEN RAISE EXCEPTION 'Diga se a unidade usa pulseira.'; END IF;
+  SELECT usa_pulseira, tipo INTO v_antes, v_tipo FROM public.unidades WHERE id = p_unidade FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Unidade não encontrada.'; END IF;
+  IF p_usa AND v_tipo = 'ubs' THEN RAISE EXCEPTION 'A UBS não usa pulseira de identificação.'; END IF;
+  UPDATE public.unidades SET usa_pulseira = p_usa, updated_at = now() WHERE id = p_unidade;
+  PERFORM private.registrar_auditoria('pulseira_unidade_definida', 'unidades', p_unidade, p_unidade,
+    jsonb_build_object('antes', v_antes, 'depois', p_usa));
+  RETURN p_usa;
+END $$;
+REVOKE ALL ON FUNCTION public.definir_pulseira_unidade(uuid, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.definir_pulseira_unidade(uuid, boolean) TO authenticated;
 
 -- ── motivo da reimpressão ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.impressoes_pulseira (
@@ -166,6 +197,9 @@ BEGIN
   END IF;
   IF (SELECT u.tipo FROM public.unidades u WHERE u.id = v_pac.unidade_id) = 'ubs' THEN
     RAISE EXCEPTION 'A UBS não usa pulseira de identificação.';
+  END IF;
+  IF (SELECT u.usa_pulseira FROM public.unidades u WHERE u.id = v_pac.unidade_id) IS NOT TRUE THEN
+    RAISE EXCEPTION 'Esta unidade não usa pulseira de identificação. O gestor liga em Configuração.';
   END IF;
 
   IF v_reimp THEN
