@@ -16,6 +16,7 @@ import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
 import { ordemMedica, rotuloCor, type CorRisco } from '@/domain/risco'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { TituloPagina } from '@/components/monitor/Pagina'
+import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 import { AlergiaNaTela } from './AlergiaNaTela'
 import { Classificar } from './triagem/Classificar'
 import { EscutaInicial } from './triagem/EscutaInicial'
@@ -68,7 +69,7 @@ export default function Triagem() {
       if (setores.length === 0) return []
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, sexo)')
+        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, sexo, identidade_desconhecida, sinais_identificacao)')
         .in('setor_id', setores)
         .eq('etapa', 'triagem')
       if (error) throw error
@@ -87,7 +88,7 @@ export default function Triagem() {
       if (setores.length === 0) return []
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, cor_atual, classificado_em, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, sexo)')
+        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, cor_atual, classificado_em, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, sexo, identidade_desconhecida, sinais_identificacao)')
         .in('setor_id', setores)
         .eq('etapa', 'atendimento')
         .is('atendimento_iniciado_em', null)
@@ -181,6 +182,7 @@ export default function Triagem() {
                     {atual.paciente?.data_nascimento ? rotuloIdade(atual.paciente.data_nascimento, dataSP()) : 'idade não informada'}
                   </span>
                 </DialogTitle>
+                <SeloNaoIdentificado paciente={atual.paciente} />
                 {/* alergia à vista enquanto classifica (R4); a cor continua sendo do enfermeiro */}
                 <AlergiaNaTela pacienteId={atual.paciente_id} className="py-1" />
                 <DialogDescription>

@@ -28,6 +28,8 @@ export type EpFila = {
     nome: string; nome_social: string | null; data_nascimento: string | null
     /** para separar gêmeos e homônimos na fila (correções do portão, tarefa 8) */
     prontuario?: string | null; nome_mae?: string | null; responsavel_nome?: string | null
+    /** paciente não identificado (lacuna 1, RT 10/11/2026): marca e sinais da recepção */
+    identidade_desconhecida?: boolean; sinais_identificacao?: string | null
   } | null
 }
 

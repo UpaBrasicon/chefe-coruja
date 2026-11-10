@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Baby, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, X } from 'lucide-react'
+import { ArrowRight, Baby, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, UserRoundSearch, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -22,6 +22,7 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { EnderecoSus } from '@/components/paciente/EnderecoSus'
 import { FormRn, type RnCriado } from '@/components/paciente/CadastroRn'
+import { FormNaoIdentificado, NaoIdentificadosDaUnidade, type NaoIdentificadoCriado } from '@/components/paciente/NaoIdentificado'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
 
@@ -273,6 +274,8 @@ export default function Recepcao() {
               void queryClient.invalidateQueries({ queryKey: ['nota-fila-triagem'] })
             }}
           />
+          {/* lacuna 1 (RT 10/11/2026): quem ainda não foi identificado, com a ação Identificar */}
+          {!ubs && <NaoIdentificadosDaUnidade unidadeId={unidadeId!} />}
         </div>
       )}
 
@@ -327,6 +330,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
   const [rnAberto, setRnAberto] = React.useState(false)
+  // lacuna 1 (RT 10/11/2026): paciente sem identificação, nome provisório do servidor
+  const [niAberto, setNiAberto] = React.useState(false)
   const [erroLocal, setErroLocal] = React.useState<string | null>(null)
   // paciente com episódio aberto: avisa na seleção (busca) ou quando a RPC recusa
   const [alvoAberto, setAlvoAberto] = React.useState<string | null>(null)
@@ -394,6 +399,14 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     usarExistente({ id: rn.paciente_id, nome: rn.nome, nome_social: null, data_nascimento: rn.data_nascimento, nome_mae: rn.nome_mae,
       cpf_final: null, cns_final: null, prontuario: rn.prontuario, episodio_etapa: null })
     if (!rn.mae_tem_documento) setAviso('Recém-nascido cadastrado. A mãe está sem CNS e sem CPF válidos: na regulação, o RN sai como não identificado até o documento dela ser completado.')
+  }
+
+  function naoIdentificadoCriado(r: NaoIdentificadoCriado) {
+    setNiAberto(false)
+    limpar()
+    setAviso(`${r.nome} entrou na fila da triagem · prontuário ${r.prontuario}. Quando souber quem é, use Identificar na lista abaixo.`)
+    aoAbrir()
+    void queryClient.invalidateQueries({ queryKey: ['nao-identificados'] })
   }
 
   function novoCadastro() {
@@ -508,6 +521,11 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
         <Button variant="outline" className="min-h-[42px] px-[15px]" onClick={() => setRnAberto(true)}>
           <Baby /> Recém-nascido
         </Button>
+        {!ubs && (
+          <Button variant="outline" className="min-h-[42px] px-[15px]" onClick={() => { setAviso(null); setNiAberto(true) }}>
+            <UserRoundSearch /> Não identificado
+          </Button>
+        )}
       </div>
 
       {busca.error && modo === 'nenhum' && <p className="mb-3 text-apoio text-critico">{(busca.error as Error).message}</p>}
@@ -568,7 +586,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
           )}
           {modo === 'novo' && (
             <p className="-mt-2 text-apoio text-tinta-sussurro">
-              Nome e queixa são obrigatórios. Paciente sem identificação pode ser cadastrado com o que se sabe.
+              Nome e queixa são obrigatórios. Para paciente sem identificação, use Não identificado.
             </p>
           )}
 
@@ -672,6 +690,17 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
             <DialogDescription className="text-controle">Escolha o cadastro da mãe. O RN fica como “RN de (nome da mãe)” e segue para a ficha.</DialogDescription>
           </DialogHeader>
           {rnAberto && <FormRn onCriado={rnCadastrado} />}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={niAberto} onOpenChange={setNiAberto}>
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-[620px]">
+          <DialogHeader>
+            <DialogTitle className="text-dialogo">Paciente não identificado</DialogTitle>
+            <DialogDescription className="text-controle">
+              O cadastro fica como "Não identificado" e o número do prontuário. Registre o que se sabe; só a queixa é obrigatória.
+            </DialogDescription>
+          </DialogHeader>
+          {niAberto && <FormNaoIdentificado setorId={porta.id} publico={porta.publico} onCriado={naoIdentificadoCriado} onCancelar={() => setNiAberto(false)} />}
         </DialogContent>
       </Dialog>
     </div>

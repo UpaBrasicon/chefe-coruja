@@ -24,6 +24,7 @@ import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
 import { Spinner } from '@/components/ui/spinner'
 
 import { LeitoAberto } from './LeitoAberto'
+import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 import { ATIVO, diaHora, hora, msg, ROTULO_ALTA, rpc, tempoDesde } from './caderno/comum'
 import { useSearchParams } from 'react-router-dom'
 
@@ -34,6 +35,9 @@ export type PacienteDaLista = {
   sexo: string | null
   setor_id: string | null
   setores: { id: string; nome: string } | null
+  /** paciente não identificado (lacuna 1, RT 10/11/2026) */
+  identidade_desconhecida?: boolean
+  sinais_identificacao?: string | null
 }
 type Alerta = { nivel: string; total: number }
 type LinhaInternacao = {
@@ -205,6 +209,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                       {p.nome}{' '}
                       <span className="text-apoio font-normal text-tinta-sussurro">{p.data_nascimento ? rotuloIdade(p.data_nascimento, hojeSP()) : ''}</span>
                     </span>
+                    <SeloNaoIdentificado paciente={p} />
                     {alg.length > 0 && (
                       <span className="flex items-center gap-[5px] text-apoio font-semibold text-critico">
                         <AlertTriangle className="size-[13px] shrink-0" aria-hidden /> Alergia · {alg.join(', ')}
