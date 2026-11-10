@@ -2424,7 +2424,7 @@ Origem: levantamento das decisões ainda abertas no BACKLOG e nos documentos, fe
 
 ## Trilha — Lacunas do Portão de 11/10/2026, RT em 10/11/2026
 
-Origem: seção 3 do relatório do teste de ponta a ponta de 11/10/2026 (`produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`), com as funções que o roteiro esperava e o produto não tinha. Estavam "aguardando a decisão do RT sobre a entrada no backlog". Em 10/11/2026 conferi cada uma contra o código: 10 continuam abertas, a 10 está parcial (só o painel do administrador mostra óbitos) e a 11 existe, mas não foi testada. O RT escolheu "A, todas nessa ordem".
+Origem: seção 3 do relatório do teste de ponta a ponta de 11/10/2026 (`produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`), com as funções que o roteiro esperava e o produto não tinha. Estavam "aguardando a decisão do RT sobre a entrada no backlog". Em 10/11/2026 conferi cada uma contra o código: as nove primeiras continuam abertas, a 10 está parcial (só o painel do administrador mostra óbitos) e a 11 existe, mas não foi testada. O RT escolheu "A, todas nessa ordem".
 
 Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as opções para o RT decidir antes de qualquer código; depois, branch e PR próprios (`lacunas/<nome>`), homologação e, com migration, o "ok produção". Conteúdo clínico ou legal só com fonte citada.
 
