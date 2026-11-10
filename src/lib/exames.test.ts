@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/exames.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { botoesDeExame, botoesDoGrupo, caminhoLaudo, grupoDoCodigo, tipoDoCodigo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
+import { botoesDeExame, botoesDoGrupo, caminhoLaudo, grupoDoCodigo, itemDoPedidoPorta, tipoDoCodigo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
 
 const ex = (p: Partial<ExameUnidade>): ExameUnidade => ({
   id: 'x', procedimento: '0202990001', nome_curto: 'Hemograma', nome_sigtap: null, loinc: null, botao: true, ordem: 0,
@@ -68,4 +68,13 @@ test('botões por grupo: os da lista da unidade; sem lista no grupo, texto livre
   assert.deepEqual(botoesDoGrupo(lista, 'grafico'), [{ rotulo: 'ECG', procedimento: '0211020036' }])
   assert.deepEqual(botoesDoGrupo(lista, 'imagem'), [{ rotulo: 'Radiografia de tórax', procedimento: null }])
   assert.equal(botoesDoGrupo(undefined, 'laboratorio').length, EXAMES_LIVRES_LAB.length)
+})
+
+// ponto 12, pergunta 3 (RT, 10/11/2026): na porta, cada item leva o grupo
+test('porta: o item do pedido leva o grupo; com código, o banco tira do código', () => {
+  assert.deepEqual(itemDoPedidoPorta({ rotulo: 'Hemograma', procedimento: '0202990001' }), { procedimento: '0202990001' })
+  assert.deepEqual(itemDoPedidoPorta({ rotulo: 'Radiografia de tórax', procedimento: null }), { nome: 'Radiografia de tórax', grupo: 'imagem' })
+  assert.deepEqual(itemDoPedidoPorta({ rotulo: 'ECG', procedimento: null }), { nome: 'ECG', grupo: 'grafico' })
+  assert.deepEqual(itemDoPedidoPorta({ rotulo: 'Lactato', procedimento: null }), { nome: 'Lactato', grupo: 'laboratorio' })
+  assert.deepEqual(itemDoPedidoPorta({ rotulo: 'Tomografia de crânio', procedimento: null }, 'imagem'), { nome: 'Tomografia de crânio', grupo: 'imagem' })
 })

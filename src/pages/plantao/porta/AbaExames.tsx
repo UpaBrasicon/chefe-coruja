@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 
 import { ResultadoExame } from '@/components/clinico/ResultadoExame'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { botoesDeExame, codigoExameNaTela, jaPedido, type ExameBuscado, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
+import { botoesDeExame, codigoExameNaTela, GRUPOS_EXAME, itemDoPedidoPorta, jaPedido, type ExameBuscado, type GrupoExame, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -81,10 +81,13 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
 // grupo 02.02 do SIGTAP). Os botões vêm da lista; sem lista, ficam os de antes.
 // A busca acha no catálogo; o texto livre continua, sem código (não vai ao
 // laboratório integrado). Urgência e observação valem para o que for pedido.
+// Ponto 12, pergunta 3 (RT, 10/11/2026): laboratório, imagem e ECG vão em pedidos
+// separados; o texto livre leva o grupo escolhido.
 export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodioId: string; pacienteId: string; exames: ExamePS[]; aoMudar: () => void }) {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const [outro, setOutro] = React.useState('')
+  const [grupoLivre, setGrupoLivre] = React.useState<GrupoExame>('laboratorio')
   const [urgencia, setUrgencia] = React.useState<Urgencia>('rotina')
   const [observacao, setObservacao] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
@@ -108,7 +111,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
       return (data ?? []) as unknown as ExameBuscado[]
     },
   })
-  const pedir = async (itens: ({ procedimento: string } | { nome: string })[]) => {
+  const pedir = async (itens: ReturnType<typeof itemDoPedidoPorta>[]) => {
     setPedindo(true)
     const { error } = await supabase.rpc('pedir_exames', {
       p_episodio: episodioId, p_itens: itens, p_urgencia: urgencia, p_observacao: observacao.trim() || undefined,
@@ -143,7 +146,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
             const on = jaPedido(b, exames)
             return (
               <Chip key={b.rotulo + (b.procedimento ?? '')} ativo={on} desabilitado={on || pedindo}
-                onClick={() => void pedir([b.procedimento ? { procedimento: b.procedimento } : { nome: b.rotulo }])}
+                onClick={() => void pedir([itemDoPedidoPorta(b)])}
                 titulo={on ? 'Já pedido neste atendimento' : `Pedir ${b.rotulo}${b.procedimento ? '' : ' (sem código)'}`}>
                 {b.rotulo}
               </Chip>
@@ -154,7 +157,13 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
           <div className="flex flex-wrap gap-2">
             <Input className="h-8 min-w-48 flex-1" aria-label="Buscar exame" placeholder={comLista ? 'Buscar na lista da unidade' : 'Buscar no SIGTAP (laboratório)'}
               value={outro} onChange={(e) => setOutro(e.target.value)} />
-            <Button size="sm" variant="outline" disabled={termo.length < 2 || pedindo} onClick={() => void pedir([{ nome: termo }])}
+            <div className="flex items-center gap-1" role="radiogroup" aria-label="Grupo do exame em texto livre">
+              {GRUPOS_EXAME.map((g) => (
+                <Chip key={g.id} radio ativo={grupoLivre === g.id} onClick={() => setGrupoLivre(g.id)}>{g.rotulo}</Chip>
+              ))}
+            </div>
+            <Button size="sm" variant="outline" disabled={termo.length < 2 || pedindo}
+              onClick={() => void pedir([itemDoPedidoPorta({ rotulo: termo, procedimento: null }, grupoLivre)])}
               title="Sem código: não vai ao laboratório integrado">Pedir como texto livre</Button>
             <Button size="sm" variant="ghost" render={<Link to={`/plantao/atendimento-porta/pedido-exames?paciente=${pacienteId}`} />}>
               <Printer /> Pedido impresso
