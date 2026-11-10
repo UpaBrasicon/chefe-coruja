@@ -7,7 +7,8 @@
 // novo, e vale o último registro. Medicamento de alta vigilância (Fase 2,
 // tarefa 1, revista em 09/10/2026): o controle é a liberação da farmácia
 // (validação do item); sem ela, o "feito" pede justificativa e o farmacêutico
-// confere depois.
+// confere depois. O controlado da Portaria 344 (lacuna 3) segue o mesmo fluxo:
+// selo "Controlado · B1" e liberação da farmácia antes de administrar.
 // Aprazamento assistido (Fase 2, tarefa 2): a posologia vira sugestão de
 // horários pela grade da unidade; o enfermeiro aceita ou ajusta, e o ajuste
 // fica registrado.
@@ -33,6 +34,8 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { dataHora } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 import { Estado } from '@/components/porta/Estado'
+import { SeloControlado } from '@/components/farmacia/SeloControlado'
+import { controleDoCatalogo } from '@/domain/controlados'
 
 type Linha = {
   paciente_id: string; paciente_nome: string; local: string | null; item_id: string; tipo: string; descricao: string
@@ -152,6 +155,8 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
   const lib = estadoLiberacao(liberacao)
   // sem liberação da farmácia, o "feito" pede justificativa (o servidor também exige)
   const feitoPedeJustificativa = lib === 'aguardando' || lib === 'devolvido'
+  const controle = controleDoCatalogo({ lista: liberacao?.controlado, receita: liberacao?.controlado_receita })
+  const altaVigilancia = !!liberacao && liberacao.alta_vigilancia !== false
 
   async function checar(situacao: 'feito' | 'nao_feito' | 'recusado', m?: string) {
     if (faltaHorario) return aoErro(`${l.descricao}: escolha o horário aprazado que está sendo checado.`)
@@ -166,7 +171,8 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
         <span className="font-medium text-tinta">{l.descricao}</span>
         {l.tipo === 'medicamento' && <span>{l.dose} · {l.via} · {l.posologia}{l.se_necessario ? ' · se necessário' : ''}</span>}
         {l.vasoativo && <Badge variant="warning">vasoativo</Badge>}
-        {liberacao && <Badge variant="destructive" title={liberacao.regra}><ShieldAlert className="size-3" /> alta vigilância · liberação da farmácia</Badge>}
+        {altaVigilancia && <Badge variant="destructive" title={liberacao?.regra}><ShieldAlert className="size-3" /> alta vigilância · liberação da farmácia</Badge>}
+        {controle && <SeloControlado controle={controle} />}
         {st && <span className="ml-auto"><Estado tom={st.tom}>{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Estado></span>}
       </div>
       {alteracao && (
@@ -243,7 +249,7 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
             {l.horarios.map((h) => <option key={h}>{h}</option>)}
           </CampoSelecao>
         ) : null}
-        <Button size="xs" title={feitoPedeJustificativa ? 'Alta vigilância sem liberação da farmácia: pede justificativa' : undefined}
+        <Button size="xs" title={feitoPedeJustificativa ? 'Sem liberação da farmácia: pede justificativa' : undefined}
           onClick={() => (feitoPedeJustificativa ? setPedindo('feito') : void checar('feito'))}>Feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('nao_feito')}>Não feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('recusado')}>Recusado</Button>

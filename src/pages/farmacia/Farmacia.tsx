@@ -8,6 +8,8 @@
 // Revisão visual 3.7 (opção C do RT, 26/10/2026): abas sublinhadas, com a
 // contagem da validação; validação como caixa de entrada por paciente; situação
 // em ponto + texto e blocos sem sombra; alta vigilância e falta seguem em selo.
+// Lacuna 3 (Portaria 344): o controlado leva o selo "Controlado · B1" na
+// disponibilidade, nas faltas e na validação, onde vem na frente da fila.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle2, ClipboardPlus, FlaskConical, Plus, Search, ShieldCheck, SlidersHorizontal } from 'lucide-react'
@@ -29,6 +31,9 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
 import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
+import { SeloControlado, SeloDoMedicamento } from '@/components/farmacia/SeloControlado'
+import { useControleDosItens } from '@/hooks/useControlados'
+import type { Controle } from '@/domain/controlados'
 import { comSinal, rotuloMovimento, type Movimento } from '@/lib/movimentosEstoque'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -163,7 +168,7 @@ function Disponibilidade({ unidade }: { unidade: string }) {
                     onClick={() => setEscolhido(d.medicamento_id)}>
                     <TableCell className="pl-4 whitespace-normal">
                       <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => setEscolhido(d.medicamento_id)}>
-                        <span className="flex flex-wrap items-center gap-2 font-medium text-tinta">{d.principio_ativo}{d.alta_vigilancia && <SeloAltaVigilancia curto />}</span>
+                        <span className="flex flex-wrap items-center gap-2 font-medium text-tinta">{d.principio_ativo}{d.alta_vigilancia && <SeloAltaVigilancia curto />}<SeloDoMedicamento id={d.medicamento_id} /></span>
                         <span className="text-rotulo text-tinta-sussurro">{d.apresentacao ?? '—'}</span>
                       </BotaoLinha>
                     </TableCell>
@@ -266,7 +271,7 @@ function FichaEstoque({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: st
   return (
     <section aria-label={`Ficha de ${d.principio_ativo}`} className="flex flex-col gap-4 px-5 py-4">
       <div>
-        <h3 className="flex flex-wrap items-center gap-2 text-corpo font-semibold text-tinta">{d.principio_ativo}{d.alta_vigilancia && <SeloAltaVigilancia />}</h3>
+        <h3 className="flex flex-wrap items-center gap-2 text-corpo font-semibold text-tinta">{d.principio_ativo}{d.alta_vigilancia && <SeloAltaVigilancia />}<SeloDoMedicamento id={d.medicamento_id} /></h3>
         <p className="text-apoio text-tinta-sussurro">{d.apresentacao ?? '—'}</p>
       </div>
 
@@ -579,6 +584,7 @@ function LinhaFaltaAberta({ f, agora, avancar }: { f: FaltaPriorizada; agora: nu
           <span className="font-medium text-tinta">{f.principio_ativo}</span>
           <span className="text-tinta-apoio">{f.apresentacao}</span>
           {f.alta_vigilancia && <SeloAltaVigilancia />}
+          <SeloDoMedicamento id={f.medicamento_id} />
         </span>
         <span className="text-rotulo text-tinta-sussurro">{f.observacao ? `${f.observacao} · ` : ''}sinalizada por {f.sinalizada_por ?? '—'}</span>
         {f.retorno && <span className="text-rotulo text-conforme">Retorno ao plantão: "{f.retorno.texto}"</span>}
@@ -655,6 +661,8 @@ function Validacao({ unidade }: { unidade: string }) {
     return () => window.clearInterval(t)
   }, [])
   const fila = useFilaValidacao(unidade)
+  // lacuna 3: a lista de cada item controlado (o selo e o sinal do paciente)
+  const controles = useControleDosItens((fila.data ?? []).map((i) => i.item_id)).data
   if (fila.data?.length === 0) return <Vazio icone={CheckCircle2} titulo="Nada para validar" texto="Itens novos de prescrição aparecem aqui até serem conferidos." />
   const itens = fila.data ?? []
   const grupos = agrupar(itens)
@@ -686,6 +694,7 @@ function Validacao({ unidade }: { unidade: string }) {
                     </span>
                     <span className="flex flex-wrap gap-x-2 text-rotulo font-semibold empty:hidden">
                       {g.itens.some((i) => i.alta_vigilancia) && <span className="text-atencao">alta vigilância</span>}
+                      {g.itens.some((i) => controles?.has(i.item_id)) && <span className="text-acao">controlado</span>}
                       {g.itens.some((i) => i.diluicao_divergente) && <span className="text-atencao">fora do padrão</span>}
                       {g.itens.some((i) => i.ultima_situacao === 'devolvido') && <span className="text-critico">devolvido</span>}
                     </span>
@@ -703,7 +712,7 @@ function Validacao({ unidade }: { unidade: string }) {
               </p>
             </div>
             {sel.itens.map((i) => (
-              <LinhaValidacao key={i.item_id} i={i} aoErro={setErro} aoMudar={() => {
+              <LinhaValidacao key={i.item_id} i={i} controle={controles?.get(i.item_id) ?? null} aoErro={setErro} aoMudar={() => {
                 void qc.invalidateQueries({ queryKey: ['fila-validacao'] })
                 void qc.invalidateQueries({ queryKey: ['nota-fila-validacao'] })
               }} />
@@ -715,7 +724,9 @@ function Validacao({ unidade }: { unidade: string }) {
   )
 }
 
-function LinhaValidacao({ i, aoErro, aoMudar }: { i: ItemFila; aoErro: (m: string | null) => void; aoMudar: () => void }) {
+function LinhaValidacao({ i, controle, aoErro, aoMudar }: {
+  i: ItemFila; controle: Controle | null; aoErro: (m: string | null) => void; aoMudar: () => void
+}) {
   const [motivo, setMotivo] = React.useState('')
   const [devolvendo, setDevolvendo] = React.useState(false)
   const validar = async (confere: boolean) => {
@@ -730,6 +741,7 @@ function LinhaValidacao({ i, aoErro, aoMudar }: { i: ItemFila; aoErro: (m: strin
           <span className="flex flex-wrap items-baseline gap-2">
             <span className="text-corpo font-semibold text-tinta">{i.descricao}</span>
             {i.alta_vigilancia && <SeloAltaVigilancia />}
+            {controle && <SeloControlado controle={controle} />}
           </span>
           <span className="text-apoio text-tinta">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
           {i.diluicao_texto && (

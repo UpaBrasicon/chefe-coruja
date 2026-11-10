@@ -12,6 +12,9 @@ import { numero, tempoDecorrido } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { Estado } from '@/components/porta/Estado'
 import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
+import { SeloControlado } from '@/components/farmacia/SeloControlado'
+import { useControladosDoCatalogo, useControleDosItens } from '@/hooks/useControlados'
+import type { Controle } from '@/domain/controlados'
 
 // Painel da farmácia (Fase 2, tarefa 9; migration 20261031000008). Junta o
 // que é crítico: faltas abertas priorizadas (alta vigilância, pacientes
@@ -24,6 +27,11 @@ import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 // vigilância, faltas sem retorno ao plantão e estoque crítico sem falta
 // registrada. Cada linha diz o tipo, o quê, de quem, há quanto e a ação; o que
 // já está encaminhado fica numa linha embaixo. O gestor vê a mesma fila sem as ações.
+//
+// Lacuna 3 (Portaria 344, decisão do RT de 10/11/2026, C5 e C6): o controlado
+// entra na fila como a alta vigilância (sem liberação e validação), com o
+// selo "Controlado · B1"; o saldo pode ficar negativo, e o controlado com saldo
+// negativo abre a parte do estoque, em vermelho, para a farmácia conferir.
 
 export type FaltaPriorizada = {
   id: string; medicamento_id: string; principio_ativo: string; apresentacao: string | null; situacao: string
@@ -84,8 +92,6 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
       if (error) throw error
       return (data ?? []) as ItemValidacao[]
     },
-    select: (lista) => lista.filter((i) => i.alta_vigilancia && !i.ultima_situacao)
-      .sort((a, b) => a.prescrito_em.localeCompare(b.prescrito_em)),
   })
   // alta vigilância administrada sem a liberação da farmácia (decisão do RT de 09/10/2026)
   const semLiberacao = useQuery({
@@ -106,18 +112,27 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
     return true
   }
 
+  // controlado: a lista de cada item (fila e sem liberação) e os itens do catálogo
+  const idsItens = [...(validacao.data ?? []).filter((i) => !i.ultima_situacao).map((i) => i.item_id), ...(semLiberacao.data ?? []).map((s) => s.item_id)]
+  const controles = useControleDosItens(idsItens).data
+  const controladosCatalogo = useControladosDoCatalogo().data
+
   const listaFaltas = faltas.data ?? []
   const semRetorno = listaFaltas.filter((f) => !f.retorno)
   const comRetorno = listaFaltas.filter((f) => f.retorno)
   const listaEstoque = estoque.data ?? []
   const comFalta = new Set(listaFaltas.map((f) => f.medicamento_id))
+  // C6: controlado com saldo negativo, sempre na fila (mesmo com falta registrada)
+  const controladoNegativo = listaEstoque.filter((e) => e.quantidade != null && e.quantidade < 0 && controladosCatalogo?.has(e.medicamento_id))
+  const negativos = new Set(controladoNegativo.map((e) => e.medicamento_id))
   const estoqueSemFalta = listaEstoque
-    .filter((e) => (e.situacao === 'falta' || e.situacao === 'critico') && !e.falta_id && !comFalta.has(e.medicamento_id))
+    .filter((e) => (e.situacao === 'falta' || e.situacao === 'critico') && !e.falta_id && !comFalta.has(e.medicamento_id) && !negativos.has(e.medicamento_id))
     .sort((a, b) => Number(b.situacao === 'falta') - Number(a.situacao === 'falta') || Number(b.alta_vigilancia) - Number(a.alta_vigilancia))
   const semContagem = listaEstoque.filter((e) => e.situacao === 'nao_informado').length
   const listaSemLib = semLiberacao.data ?? []
-  const listaValidacao = validacao.data ?? []
-  const total = listaSemLib.length + listaValidacao.length + semRetorno.length + estoqueSemFalta.length
+  const listaValidacao = (validacao.data ?? []).filter((i) => (i.alta_vigilancia || controles?.has(i.item_id)) && !i.ultima_situacao)
+    .sort((a, b) => a.prescrito_em.localeCompare(b.prescrito_em))
+  const total = listaSemLib.length + listaValidacao.length + semRetorno.length + controladoNegativo.length + estoqueSemFalta.length
   const falha = faltas.error ?? estoque.error ?? validacao.error ?? semLiberacao.error
 
   if (faltas.isLoading || estoque.isLoading) return <Spinner />
@@ -132,29 +147,37 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
       <MensagemErro texto={erro ?? (falha ? (falha as Error).message : null)} />
       {total === 0 ? (
         <Vazio icone={CheckCircle2} titulo={podeAgir ? 'Nada pede você agora' : 'Nada pede a farmácia agora'}
-          texto="Nenhuma administração sem liberação, nenhuma validação de alta vigilância pendente, nenhuma falta sem retorno e nenhum estoque crítico sem falta registrada." />
+          texto="Nenhuma administração sem liberação, nenhuma validação de alta vigilância ou de controlado pendente, nenhuma falta sem retorno, nenhum controlado com saldo negativo e nenhum estoque crítico sem falta registrada." />
       ) : (
         <>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h3 className="text-corpo font-semibold text-tinta">
               {podeAgir ? 'Pede você agora' : 'Pede a farmácia agora'} <span className="text-critico tabular-nums">{total}</span>
             </h3>
-            <span className="text-rotulo text-tinta-sussurro">sem liberação, depois validação de alta vigilância, depois faltas sem retorno, depois estoque</span>
+            <span className="text-rotulo text-tinta-sussurro">sem liberação, depois validação de alta vigilância e controlado, depois faltas sem retorno, depois estoque</span>
           </div>
           <ul className="overflow-hidden rounded-cartao border border-fio bg-superficie">
             {listaSemLib.map((s) => (
-              <Linha key={`l${s.id}`} tipo="Sem liberação" tom="vermelho" av desde={s.administrado_em} agora={agora}
+              <Linha key={`l${s.id}`} tipo="Sem liberação" tom="vermelho" av={!controles?.has(s.item_id)} controle={controles?.get(s.item_id)}
+                desde={s.administrado_em} agora={agora}
                 titulo={nome(s.descricao, s.dose, s.via)}
                 contexto={juntar(s.paciente, s.local, s.administrado_por && `administrado por ${s.administrado_por}`, s.justificativa && `"${s.justificativa}"`)}
                 acao={<Button size="xs" variant="outline" onClick={() => navegar('/alta-vigilancia')}>Ver</Button>} />
             ))}
             {listaValidacao.map((v) => (
-              <Linha key={`v${v.item_id}`} tipo="Validação" tom="vermelho" av desde={v.prescrito_em} agora={agora}
+              <Linha key={`v${v.item_id}`} tipo="Validação" tom="vermelho" av={v.alta_vigilancia} controle={controles?.get(v.item_id)}
+                desde={v.prescrito_em} agora={agora}
                 titulo={nome(v.descricao, v.dose, v.via)}
                 contexto={juntar(v.paciente_nome, v.local, v.prescrito_por)}
                 acao={irPara && <Button size="xs" onClick={() => irPara('validacao')}>Validar</Button>} />
             ))}
             {semRetorno.map((f) => <LinhaFalta key={`f${f.id}`} f={f} agora={agora} podeAgir={podeAgir} chamar={chamar} />)}
+            {controladoNegativo.map((e) => (
+              <Linha key={`n${e.medicamento_id}`} tipo="Saldo negativo" tom="vermelho" av={e.alta_vigilancia} controle={controladosCatalogo?.get(e.medicamento_id)}
+                desde={e.atualizado_em} agora={agora} titulo={nome(e.principio_ativo, e.apresentacao)}
+                contexto={juntar(`Saldo ${numero(e.quantidade ?? 0)} na unidade`, 'medicamento controlado: confira o estoque e a dispensação')}
+                acao={irPara && <Button size="xs" variant="outline" onClick={() => irPara('disponibilidade')}>Conferir</Button>} />
+            ))}
             {estoqueSemFalta.map((e) => (
               <Linha key={`e${e.medicamento_id}`} tipo="Estoque" tom={e.situacao === 'falta' ? 'vermelho' : 'ambar'} av={e.alta_vigilancia}
                 desde={e.atualizado_em} agora={agora} titulo={nome(e.principio_ativo, e.apresentacao)}
@@ -175,15 +198,15 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
 }
 
 /** Uma linha da fila: tipo, o quê, de quem, há quanto e a ação (só para quem age). */
-function Linha({ tipo, tom, av, titulo, contexto, desde, agora, acao, children }: {
-  tipo: string; tom: 'vermelho' | 'ambar'; av?: boolean; titulo: string; contexto: string
+function Linha({ tipo, tom, av, controle, titulo, contexto, desde, agora, acao, children }: {
+  tipo: string; tom: 'vermelho' | 'ambar'; av?: boolean; controle?: Controle; titulo: string; contexto: string
   desde: string | null; agora: number; acao?: React.ReactNode; children?: React.ReactNode
 }) {
   return (
     <li className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-trilha px-5 py-2.5 text-apoio last:border-b-0">
       <span className="w-28"><Estado tom={tom}>{tipo}</Estado></span>
       <span className="flex min-w-0 flex-[1_1_300px] flex-col gap-0.5">
-        <span className="flex flex-wrap items-center gap-2 font-medium text-tinta">{titulo}{av && <SeloAltaVigilancia curto />}</span>
+        <span className="flex flex-wrap items-center gap-2 font-medium text-tinta">{titulo}{av && <SeloAltaVigilancia curto />}{controle && <SeloControlado controle={controle} />}</span>
         <span className="text-rotulo text-tinta-sussurro">{contexto}</span>
       </span>
       <span className="w-20 text-tinta-apoio tabular-nums">{desde ? tempoDecorrido(desde, agora) : '—'}</span>

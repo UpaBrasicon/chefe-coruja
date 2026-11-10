@@ -11,6 +11,7 @@
 // Revisão visual 3.7b (opção A do RT, 26/10/2026): Prescrições como caixa de
 // entrada, igual à validação — à esquerda um paciente por linha, à direita os
 // itens do escolhido, com a quantidade e Dispensar na própria linha.
+// Lacuna 3 (Portaria 344): o controlado leva o selo "Controlado · B1".
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PackageOpen } from 'lucide-react'
@@ -37,6 +38,7 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Estado } from '@/components/porta/Estado'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
+import { SeloDoMedicamento } from '@/components/farmacia/SeloControlado'
 
 type Aba = 'prescricoes' | 'avulsa' | 'registro'
 const MINIMO = 10
@@ -153,6 +155,7 @@ function LinhaItem({ i, farmaceutico }: { i: ItemParaDispensar; farmaceutico: bo
         <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-1">
           <span className="flex flex-wrap items-baseline gap-2">
             <span className="font-semibold text-tinta">{i.medicamento}</span>
+            <SeloDoMedicamento id={i.medicamento_id} />
             {i.validacao === 'confere' && <Estado tom="verde">validado</Estado>}
             {i.validacao === 'devolvido' && <Estado tom="vermelho">devolvido para correção</Estado>}
           </span>

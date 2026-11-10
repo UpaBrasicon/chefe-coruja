@@ -42,6 +42,7 @@ import { frase, interacoesDoErro, semPontoFinal, type InteracaoJustificada, type
 import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 import { jaPrescritos, textoJaPrescrito } from '@/lib/jaPrescrito'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
+import { SeloDoMedicamento } from '@/components/farmacia/SeloControlado'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
@@ -223,6 +224,8 @@ function LinhaItem({ i, horarios, justificadas, alteracao, aoMudar, aoErro }: {
         <span className="font-medium text-tinta">{i.descricao}</span>
         {i.tipo === 'medicamento' && <span>{i.dose} · {i.via} · {i.posologia}{i.se_necessario ? ' · se necessário' : ''}</span>}
         {i.vasoativo && <Badge variant="warning">vasoativo</Badge>}
+        {/* lacuna 3: controlado da Portaria 344 (a farmácia libera antes de administrar) */}
+        <SeloDoMedicamento id={i.medicamento_id} />
         {i.peso_kg && <span className="text-rotulo text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
         <span className="ml-auto text-rotulo text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
       </div>
@@ -600,6 +603,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 <span className="font-medium">{med.principio_ativo}</span>
                 <span className="text-tinta-apoio">{[med.apresentacao, med.concentracao].filter(Boolean).join(' · ')}</span>
                 {med.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
+                <SeloDoMedicamento id={med.id} />
                 <Button size="xs" variant="ghost" className="ml-auto" onClick={async () => {
                   if (!unidadeAtiva) return
                   const { error } = await supabase.rpc('sinalizar_falta', { p_unidade: unidadeAtiva.unidade_id, p_medicamento: med.id })
@@ -635,6 +639,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                           {m.casou_por && <span className="text-tinta-apoio">{m.casou_por} = </span>}
                           <Achado texto={m.principio_ativo} termo={termo} />
                           {m.alta_vigilancia && <Badge variant="warning" className="ml-2">alta vigilância</Badge>}
+                          <SeloDoMedicamento id={m.id} className="ml-2" />
                         </span>
                         <span className="text-rotulo text-tinta-apoio">
                           <Achado texto={[m.apresentacao, m.concentracao].filter(Boolean).join(' · ')} termo={termo} />

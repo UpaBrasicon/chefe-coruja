@@ -43,11 +43,16 @@ export type TipoRelatorio = 'classificacao' | 'evolucao' | 'alergias' | 'avaliac
 
 export const TIPOS_RELATORIO: TipoRelatorio[] = ['classificacao', 'evolucao', 'alergias', 'avaliacao', 'pareceres', 'encaminhamento_interno', 'notificaveis']
 
-export const TIPO_RECEITUARIO: { value: 'branca' | 'verde' | 'azul' | 'amarela'; label: string; cor: string }[] = [
-  { value: 'branca', label: 'Branca (comum)', cor: '#ffffff' },
-  { value: 'verde', label: 'Verde (antibióticos — B1)', cor: '#dcfce7' },
-  { value: 'azul', label: 'Azul (controle especial — B2)', cor: '#dbeafe' },
-  { value: 'amarela', label: 'Amarela (entorpecentes/psicotrópicos — A)', cor: '#fef3c7' },
+// Receitas da Portaria SVS/MS 344/98 (lacuna 3; rótulos corrigidos em
+// 10/11/2026): Notificação A amarela (listas A1, A2 e A3; Art. 40);
+// Notificação B azul (B1 e B2; Art. 45); Receita de Controle Especial branca
+// em 2 vias (C1 e C5; Arts. 52 e 56). As Notificações são talões numerados da
+// vigilância sanitária: o app não as imprime, só a comum e a de controle especial.
+export const TIPO_RECEITUARIO: { value: 'branca' | 'controle_especial' | 'azul' | 'amarela'; label: string; cor: string }[] = [
+  { value: 'branca', label: 'Receita comum (branca)', cor: '#ffffff' },
+  { value: 'controle_especial', label: 'Receita de Controle Especial (branca, 2 vias): listas C1 e C5', cor: '#ffffff' },
+  { value: 'azul', label: 'Notificação de Receita B (azul): listas B1 e B2', cor: '#dbeafe' },
+  { value: 'amarela', label: 'Notificação de Receita A (amarela): listas A1, A2 e A3', cor: '#fef3c7' },
 ]
 
 // deno-lint-ignore no-explicit-any
@@ -359,10 +364,13 @@ const assMedico = (ctx: ContextoFolha, papel = 'Assinatura e carimbo'): Assinant
 
 // ── receituário ──────────────────────────────────────────────────────────────
 // Conteúdo: {paciente, receita:{tipo, obs, controle_especial?, itens:[{medicamento|nome,
-// dose|apresentacao, quantidade|qtd, posologia|uso, controle_especial?}]}}.
+// dose|apresentacao, quantidade|qtd, posologia|uso, controle_especial?, notificacao?}]}}.
 // Item de controle especial (ou receita inteira com tipo 'controle_especial')
 // sai na Receita de Controle Especial (Portaria SVS/MS 344/98) em 2 vias:
 // 1ª via retida na farmácia, 2ª via do paciente, com comprador e fornecedor.
+// Item que exige Notificação de Receita (listas A e B) ou que é de uso só no
+// estabelecimento vem marcado com `notificacao` e NÃO sai em nenhuma das duas
+// (lacuna 3); a tela já barra a emissão, isto é a segunda trava.
 
 function itemReceita(i: Json, idx: number, controle: boolean): string {
   const nome = pri(i.medicamento, i.nome, i.med)
@@ -376,7 +384,7 @@ function itemReceita(i: Json, idx: number, controle: boolean): string {
 
 function receita(d: Json, ctx: ContextoFolha): string {
   const r = d.receita ?? {}
-  const todos = lista(r.itens).filter((i) => !vz(pri(i.medicamento, i.nome, i.med)))
+  const todos = lista(r.itens).filter((i) => !vz(pri(i.medicamento, i.nome, i.med)) && vz(i.notificacao))
   const tudoControle = r.controle_especial === true || r.tipo === 'controle_especial'
   const ctrl = todos.filter((i) => tudoControle || i.controle_especial === true)
   const comuns = todos.filter((i) => !ctrl.includes(i))
@@ -386,7 +394,7 @@ function receita(d: Json, ctx: ContextoFolha): string {
   const fichas: Ficha[] = []
   if (comuns.length || !ctrl.length) {
     fichas.push({
-      doc: 'Receituário', sub: tipo && tipo.value !== 'branca' ? esc(tipo.label) : dataDoc,
+      doc: 'Receituário', sub: tipo && tipo.value !== 'branca' && tipo.value !== 'controle_especial' ? esc(tipo.label) : dataDoc,
       corpo: faixaAlergia(ctx, d) +
         (comuns.length ? `<ol class="itens">${comuns.map((i, k) => itemReceita(i, k, false)).join('')}</ol>` : '<p class="meta">Nenhum item preenchido.</p>') +
         blocoSe('Observações', r.obs) + `<p class="meta">Data: ${esc(dataDoc || '____/____/______')}</p>` +

@@ -16,6 +16,8 @@ import { origemAltaVigilancia, type ItemAltaVigilancia, type SemLiberacao } from
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Estado } from '@/components/porta/Estado'
+import { SeloControlado } from '@/components/farmacia/SeloControlado'
+import { useControleDosItens } from '@/hooks/useControlados'
 
 // Alta vigilância (Fase 2, tarefa 1, revista pelo RT em 09/10/2026). Três abas:
 //  • sem liberação — a enfermagem administrou com justificativa, sem a
@@ -29,6 +31,9 @@ import { Estado } from '@/components/porta/Estado'
 // Ponto 1 das telas do farmacêutico (RT, 27/10/2026): "Adicionar medicamento" no topo,
 // em todas as abas, para o farmacêutico e o gestor: busca no cadastro e marca na unidade
 // com motivo (a mesma definir_alta_vigilancia de hoje). Sem migration.
+// Lacuna 3 (Portaria 344): o controlado também exige a liberação, então a aba
+// "sem liberação" traz o controlado administrado com justificativa, com o selo
+// "Controlado · B1". A lista de controlados é da RDC e não se ajusta aqui.
 
 type Aba = 'sem' | 'exige' | 'ajustes'
 
@@ -42,7 +47,7 @@ export default function AltaVigilancia() {
       <TituloPagina
         icone={ShieldAlert}
         titulo="Alta vigilância"
-        descricao="Medicamentos que a farmácia libera antes da administração. Sem liberação, a enfermagem administra com justificativa e o farmacêutico confere depois."
+        descricao="Medicamentos que a farmácia libera antes da administração, com os controlados da Portaria 344. Sem liberação, a enfermagem administra com justificativa e o farmacêutico confere depois."
       />
       {unidadeId && <Telas key={unidadeId} unidadeId={unidadeId} veSemLiberacao={daFarmacia} podeLiberar={papelAtivo === 'farmaceutico'} podeAjustar={daFarmacia} />}
     </div>
@@ -76,6 +81,7 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
   const achados = useQuery({ queryKey: ['alta-vigilancia', unidadeId, termo], queryFn: lerLista(termo), enabled: !!termo })
 
   const semLib = sem.data ?? []
+  const controles = useControleDosItens(semLib.map((a) => a.item_id)).data
   const exige = (lista.data ?? []).filter((i) => i.exige)
   const ajustes = (lista.data ?? []).filter((i) => i.ajuste)
   const abaAtual: Aba = aba ?? (veSemLiberacao && semLib.length > 0 ? 'sem' : 'exige')
@@ -149,7 +155,10 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                           <span className="text-rotulo text-tinta-sussurro">{a.local ?? '—'}</span>
                         </BotaoLinha>
                       </TableCell>
-                      <TableCell className="whitespace-normal text-tinta">{a.descricao} · {a.dose ?? '—'} · {a.via ?? '—'}</TableCell>
+                      <TableCell className="whitespace-normal text-tinta">
+                        {a.descricao} · {a.dose ?? '—'} · {a.via ?? '—'}
+                        {controles?.get(a.item_id) && <SeloControlado controle={controles.get(a.item_id)!} className="ml-2" />}
+                      </TableCell>
                       <TableCell className="pr-4 text-tinta-apoio">{fmtDataHora(a.administrado_em)}</TableCell>
                     </TableRow>
                   ))}

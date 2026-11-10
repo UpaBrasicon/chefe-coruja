@@ -3,6 +3,9 @@
 // plantonista, aprovados pelo RT em 28/10/2026). A receita padrão e os
 // favoritos têm dose de adulto: só para adulto PELA IDADE (decisão do RT de
 // 02/10/2026). Dose e "como tomar" são escritos pelo médico: nada é sugerido.
+// Lacuna 3 (Portaria 344, C4): cada item mostra a lista; o das listas C1 e C5
+// sai na Receita de Controle Especial em 2 vias, e o que exige Notificação de
+// Receita (listas A e B) fica marcado e barra a emissão.
 import { useQuery } from '@tanstack/react-query'
 import { ClipboardList, Pill, Printer, X } from 'lucide-react'
 import * as React from 'react'
@@ -24,6 +27,8 @@ import { ofereceConteudoAdulto, type FaixaEtaria } from '@/domain/idade'
 import { hora as horaFmt } from '@/lib/formato'
 import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO, nomeMed, type EstadoDocs, type ItemReceita, type Med } from '@/lib/documentosAlta'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
+import { useDestinoNaReceita } from '@/hooks/useControlados'
+import { SeloControlado } from '@/components/farmacia/SeloControlado'
 
 const hora = (iso: string | null | undefined) => (iso ? horaFmt(iso) : '—')
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -87,6 +92,7 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
   const [nomePadrao, setNomePadrao] = React.useState('')
   const [erro, setErro] = React.useState<string | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
+  const controlados = useDestinoNaReceita()
 
   const prefs = useQuery({
     queryKey: ['preferencias-prescricao'],
@@ -204,17 +210,30 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
           ))}
         </div>
       )}
-      {estado.receita.map((r, i) => (
-        <div key={r.id} className="flex items-center gap-3 border-b border-trilha px-4 py-2.5">
+      {estado.receita.map((r, i) => {
+        const destino = controlados.destino(r.medicamento, r.medicamento_id)
+        const controle = destino.tipo === 'comum' ? null : destino.controle
+        return (
+        <div key={r.id} className={cn('flex items-center gap-3 border-b border-trilha px-4 py-2.5', destino.tipo === 'fora' && 'bg-alerta-critico/60')}>
           <span className="w-5 text-apoio tabular-nums text-tinta-sussurro">{i + 1}.</span>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="text-controle font-medium text-tinta">{r.medicamento}{r.quantidade && <span className="font-normal text-tinta-sussurro"> · {r.quantidade}</span>}</span>
             <span className="text-apoio text-tinta-sussurro">{r.posologia}</span>
+            {controle && (
+              <span className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <SeloControlado controle={controle} />
+                {destino.tipo === 'controle_especial' && (
+                  <span className="text-apoio text-acao">Receita de Controle Especial, 2 vias{r.quantidade ? '' : ': informe a quantidade'}</span>
+                )}
+                {destino.tipo === 'fora' && <span className="text-apoio font-semibold text-critico">{destino.aviso}</span>}
+              </span>
+            )}
           </div>
           <Button size="icon-sm" variant="ghost" aria-label="Remover item"
             onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null, receita: s.receita.filter((x) => x.id !== r.id) }))}><X /></Button>
         </div>
-      ))}
+        )
+      })}
       <div className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_110px_auto_auto] sm:items-end">
         <div className="relative flex flex-col gap-1">
           <Label htmlFor="rx-med">Medicamento</Label>
