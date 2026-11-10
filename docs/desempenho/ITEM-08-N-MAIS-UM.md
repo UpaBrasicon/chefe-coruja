@@ -1,4 +1,4 @@
-# Item 08 — Consultas N+1
+# Item 08: consultas N+1
 
 Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria em `docs/desempenho/AUDITORIA.md`, seção 3.1.
 
@@ -15,13 +15,13 @@ Ficaram de fora, por serem pequenos ou raros (auditoria, 3.1): reordenar setores
 
 ## Correção
 
-**Banco** — migration `20270320000001_lotes_alergia_acuidade_trava.sql`, só cria funções (expand):
+No banco, a migration `20270320000001_lotes_alergia_acuidade_trava.sql`, que só cria funções (expand):
 
 - `alergias_dos_pacientes(uuid[])`, `acuidade_dos_pacientes(uuid[])`: para cada paciente, chamam a função de um paciente que já existe. As regras de acesso e a resposta são as mesmas, por construção. O paciente que daria erro (sem acesso, não encontrado) volta como `{"erro": "..."}` no lugar dele, sem derrubar o lote. Segundo fator vencido derruba a chamada inteira, como antes.
 - `alergia_trava_medicamentos(uuid, uuid[])`: chama `alergia_trava_medicamento` para cada remédio. Quem não pode atuar no paciente não recebe nada, como antes.
 - Máximo de 200 itens por chamada. `REVOKE` de `PUBLIC` e `anon`; `GRANT` a `authenticated`.
 
-**Tela:**
+Na tela:
 
 - `src/lib/loteador.ts`: junta os pedidos feitos no mesmo instante numa chamada só. Erro de um item rejeita só aquele; falha da chamada inteira (rede, segundo fator) rejeita todos com o mesmo erro.
 - `useAlergias` passa pelo lote: o painel de observação, a checagem e qualquer outra lista com selo de alergia fazem uma chamada para todos os pacientes, sem mudar os componentes.
@@ -42,7 +42,7 @@ Ficaram de fora, por serem pequenos ou raros (auditoria, 3.1): reordenar setores
 - Rollback testado numa transação desfeita: os três `DROP FUNCTION` tiram as funções em lote e `alergias_do_paciente` fica intacta.
 - Frontend na homolog `0fbefeb0` (homolog anterior `4dcd5c7f` + os 11 arquivos deste item).
 
-**Medição no banco (homologação, 09/11/2026):** transação desfeita, como gestor da UPA Fase 5 (JWT simulado), 34 pacientes, três rodadas:
+Medição no banco (homologação, 09/11/2026): transação desfeita, como gestor da UPA Fase 5 (JWT simulado), 34 pacientes, três rodadas:
 
 | Leitura | 34 chamadas de um paciente | 1 chamada em lote |
 |---|---|---|
@@ -53,11 +53,11 @@ O tempo no servidor é o mesmo, como esperado: o lote chama a mesma função par
 
 A conta, pelo código: painel com N pacientes passa de 2N chamadas para 2; checagem de N pacientes, de N para 1; receita com M remédios, de M para 1; série com K sinais, de 3K para 3.
 
-**Medição na tela logada:** pendente para quando o RT voltar ao computador (em 09/11 ele está só pelo celular, e o Chrome está desconectado). O item 30 (métricas de usuários reais) passa a medir as telas logadas.
+Medição na tela logada: pendente para quando o RT voltar ao computador (em 09/11 ele está só pelo celular, e o Chrome está desconectado). O item 30 (métricas de usuários reais) passa a medir as telas logadas.
 
 ## Produção
 
-Migration `20270320000001` ainda **sem "ok produção"**. Ordem: aplicar a migration na produção, depois mesclar o PR (o merge publica a tela, que já chama as funções novas).
+Migration `20270320000001` ainda sem "ok produção". Ordem: aplicar a migration na produção, depois mesclar o PR (o merge publica a tela, que já chama as funções novas).
 
 ## Como reverter
 

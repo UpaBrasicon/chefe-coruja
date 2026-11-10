@@ -1,4 +1,4 @@
-# Item 03 — Chamadas repetidas da casca
+# Item 03: chamadas repetidas da casca
 
 Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria em `docs/desempenho/AUDITORIA.md` (PR da branch `docs/desempenho-auditoria`).
 
@@ -39,19 +39,19 @@ Mesma conta (`medico.upa.f5`), mesmo Chrome do RT, recarga completa de cada tela
 
 | Tela | Chamadas antes | Chamadas depois | Repetidas antes | Repetidas depois | Dados prontos antes | Dados prontos depois |
 |---|---|---|---|---|---|---|
-| `/plantonista` | 33 | **27** | 4 leituras | nenhuma | 2.113 ms | 952 ms |
-| `/plantao` | 30 | **23** | 4 leituras | nenhuma | 2.433 ms | 1.587 ms |
-| `/atendimento` | 30 | **26** | 3 leituras | `episodios` 2× (da tela) | 2.378 ms | 2.736 ms |
-| `/plantao/observacao` | 25 | **20** | 2 leituras | nenhuma | 2.457 ms | 1.259 ms |
-| `/plantao/internacao/pacientes` | 28 | **24** | 2 leituras | nenhuma | 2.439 ms | 1.372 ms |
-| `/regulacao` | 26 | **22** | 2 leituras | nenhuma | 2.471 ms | 1.646 ms |
-| `/agenda` | 28 | **23** | 3 leituras | `escala_da_unidade` 2× (da tela) | 2.514 ms | 1.290 ms |
+| `/plantonista` | 33 | 27 | 4 leituras | nenhuma | 2.113 ms | 952 ms |
+| `/plantao` | 30 | 23 | 4 leituras | nenhuma | 2.433 ms | 1.587 ms |
+| `/atendimento` | 30 | 26 | 3 leituras | `episodios` 2× (da tela) | 2.378 ms | 2.736 ms |
+| `/plantao/observacao` | 25 | 20 | 2 leituras | nenhuma | 2.457 ms | 1.259 ms |
+| `/plantao/internacao/pacientes` | 28 | 24 | 2 leituras | nenhuma | 2.439 ms | 1.372 ms |
+| `/regulacao` | 26 | 22 | 2 leituras | nenhuma | 2.471 ms | 1.646 ms |
+| `/agenda` | 28 | 23 | 3 leituras | `escala_da_unidade` 2× (da tela) | 2.514 ms | 1.290 ms |
 
-Resultado: **4 a 7 chamadas a menos por recarga (15 a 23%)**, e nenhuma repetição da casca. "Dados prontos" varia de uma recarga para outra na rede do RT (a 2ª medição de `/agenda` antes da correção deu 1.446 ms); a contagem de chamadas é a medida firme.
+Resultado: 4 a 7 chamadas a menos por recarga (15 a 23%), e nenhuma repetição da casca. "Dados prontos" varia de uma recarga para outra na rede do RT (a 2ª medição de `/agenda` antes da correção deu 1.446 ms); a contagem de chamadas é a medida firme.
 
 Ficam de fora deste item, porque são da própria tela e não da casca: `episodios` 2× em `/atendimento` e `escala_da_unidade` 2× em `/agenda`.
 
-**LCP sem mudança:** ficou em cerca de 2,4 s em todas as telas, antes e depois, mesmo com os dados prontos em 1,3 s. O elemento do LCP em `/agenda` é o subtítulo da página (texto, sem animação nem transparência). A aba medida estava no Chrome do RT possivelmente em segundo plano, o que atrasa a pintura. Precisa de medição com a aba à frente antes de concluir; fica anotado, sem correção neste item.
+LCP sem mudança: ficou em cerca de 2,4 s em todas as telas, antes e depois, mesmo com os dados prontos em 1,3 s. O elemento do LCP em `/agenda` é o subtítulo da página (texto, sem animação nem transparência). A aba medida estava no Chrome do RT possivelmente em segundo plano, o que atrasa a pintura. Precisa de medição com a aba à frente antes de concluir; fica anotado, sem correção neste item.
 
 ## Como reverter
 

@@ -1,14 +1,18 @@
-# Chefe Coruja — Plataforma de Gestão Hospitalar (Fase 1)
+# Chefe Coruja: plataforma de gestão hospitalar
 
 Plataforma multi-tenant de gestão para hospitais, UPAs e clínicas.
-**Fase 1** entrega a fundação: organizações, unidades, perfis/vínculos por papel,
-setores e leitos — com RLS no banco e auditoria. A aba do **plantonista** é uma
-**Central Clínica** com ferramentas de apoio à decisão (inspirada no
+A fundação tem organizações, unidades, perfis/vínculos por papel, setores e
+leitos, com RLS no banco e auditoria. A aba do plantonista é uma Central
+Clínica com ferramentas de apoio à decisão (inspirada no
 [hosppital.com](https://hosppital.com/)): calculadoras, escores, protocolos,
 dengue, games e ventilação mecânica.
 
+O plano do projeto, com o estado de cada fase e de cada trilha, está em
+`BACKLOG.md`. As Fases 0 a 5 estão fechadas; a Fase 5 foi encerrada pelo RT
+em 05/11/2026.
+
 > O módulo de escala do projeto anterior (`chefe-coruja`) foi preservado na
-> branch `legacy/escala`. A Fase 2+ importará o banco antigo.
+> branch `legacy/escala`.
 
 ## Stack
 
@@ -22,17 +26,17 @@ dengue, games e ventilação mecânica.
 
 ## Modelo de acesso
 
-Três papéis atribuídos **por unidade** (a mesma pessoa pode ser gestor na unidade A
+Três papéis atribuídos por unidade (a mesma pessoa pode ser gestor na unidade A
 e plantonista na unidade B), mais o `super_admin` (dono da plataforma):
 
 | Papel | Escopo | Vê identidade de paciente? |
 |---|---|---|
-| `admin` | Todas as unidades da organização | Nunca — só agregados via view |
+| `admin` | Todas as unidades da organização | Nunca, só agregados via view |
 | `gestor` | Uma unidade | Sim |
 | `plantonista` | Uma unidade | Só pacientes sob seu cuidado (Fase 2) |
 
-**Regra inviolável:** o admin não lê `leitos`/`setores` diretamente (RLS nega
-`SELECT`); ele recebe apenas agregados de `vw_censo_unidade`, com supressão de
+O admin não lê `leitos`/`setores` diretamente (RLS nega `SELECT`); ele
+recebe apenas agregados de `vw_censo_unidade`, com supressão de
 contagens < 5 (anti-dedução LGPD).
 
 ## Setup local
@@ -40,7 +44,7 @@ contagens < 5 (anti-dedução LGPD).
 ### Pré-requisitos
 - Node.js 20.19+ (testado com 24)
 - [Supabase CLI](https://supabase.com/docs/guides/cli) (`supabase --version`)
-- Um projeto Supabase novo (a Fase 1 **não** roda no banco do app de escala)
+- Um projeto Supabase novo (a Fase 1 não roda no banco do app de escala)
 
 ### Passo a passo
 
@@ -68,7 +72,7 @@ No painel do Supabase: **Authentication → Providers → Email → “Confirm e
 
 ### Usuários de teste
 1. Crie as contas pelo app (Cadastro) ou pelo dashboard em
-   **Authentication → Users → Add user** — **nunca insira direto em `auth.users`**
+   **Authentication → Users → Add user**. Nunca insira direto em `auth.users`
    via SQL: o GoTrue exige uma linha correspondente em `auth.identities`, sem a
    qual o login falha com "Database error querying schema".
 2. Vincule papéis via SQL (no dashboard do Supabase → SQL Editor), trocando os e-mails:
@@ -98,11 +102,10 @@ FROM public.perfis p WHERE p.email = 'plantonista@teste.com';
 O seed cria: 1 organização, 2 unidades (UPA Centro + Hospital Regional), 4 setores
 e 30 leitos.
 
-> **Ambiente já provisionado (projeto `saqjrjtrkzkswsxxvdxn`)**: os usuários
-> `super@teste.com`, `admin@teste.com`, `gestor@teste.com` e
-> `plantonista@teste.com` (senha `Teste@1234`) já existem com vínculos e podem
-> ser usados para testar o app. A conta `super@teste.com` é o dono da plataforma.
-> (Criados via API de admin do GoTrue, com `auth.identities` corretas.)
+> As contas de teste do início do projeto (`super@teste.com`, `admin@teste.com`,
+> `gestor@teste.com` e `plantonista@teste.com`) estão bloqueadas na produção e sem
+> vínculo ativo (conferido em 09/11/2026). Para testar, use a homologação e as
+> contas de teste dela, cuja senha não fica no repositório.
 
 ## Comandos
 
@@ -132,7 +135,7 @@ src/
 ## Central Clínica do plantonista
 
 Conteúdo adaptado do site de referência (removendo Nutrição, Enfermagem e
-Cirurgia; renomeando **Fisioterapia → Ventilação Mecânica**):
+Cirurgia; renomeando Fisioterapia para Ventilação Mecânica):
 
 | Seção | Ferramentas |
 |---|---|
@@ -145,14 +148,14 @@ Cirurgia; renomeando **Fisioterapia → Ventilação Mecânica**):
 
 ## Critérios de aceite (Fase 1)
 
-- [x] `plantonista` chamando `setores` de outra unidade recebe **zero linhas** (bloqueio no banco).
-- [x] `admin` com `select * from leitos` retorna **vazio**; só a `vw_censo_unidade` entrega agregados.
+- [x] `plantonista` chamando `setores` de outra unidade recebe zero linhas (bloqueio no banco).
+- [x] `admin` com `select * from leitos` retorna vazio; só a `vw_censo_unidade` entrega agregados.
 - [ ] Criar 12 leitos em um setor leva menos de 3 cliques (diálogo com prefixo + quantidade).
 - [x] Revogar um vínculo derruba o acesso na sessão seguinte e fica no `log_auditoria`.
 
 > Nota de segurança: a policy de `SELECT` de `leitos`/`setores` usa
-> `unidades_gestor_plantonista()` — unidades onde o usuário é gestor ou
-> plantonista. Isso impede o `admin` de ler dados diretos (migration
+> `unidades_gestor_plantonista()` (unidades onde o usuário é gestor ou
+> plantonista). Isso impede o `admin` de ler dados diretos (migration
 > `20260815000007_fase1_fix_admin_leitos.sql`).
 
 ## Auditoria de RLS (checklist de segurança)

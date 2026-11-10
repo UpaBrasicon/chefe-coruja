@@ -1,4 +1,4 @@
-# Itens 02 e 15 — Imagens leves e carregadas só quando aparecem
+# Itens 02 e 15: imagens leves e carregadas só quando aparecem
 
 Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria em `docs/desempenho/AUDITORIA.md`.
 

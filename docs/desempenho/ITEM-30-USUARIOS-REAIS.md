@@ -1,6 +1,6 @@
-# Item 30 — Medir usuários reais
+# Item 30: medir usuários reais
 
-Trilha de desempenho (kit de 31 passos). Na auditoria de 08/11/2026 o item ficou como "não se aplica por ora" (produção sem equipe). **Decisão do RT em 09/11/2026:** fazer agora, antes do 08; o item 26 (redesenho à toa) fica condicionado ao que o 30 mostrar.
+Trilha de desempenho (kit de 31 passos). Na auditoria de 08/11/2026 o item ficou como "não se aplica por ora" (produção sem equipe). Decisão do RT em 09/11/2026: fazer agora, antes do 08; o item 26 (redesenho à toa) fica condicionado ao que o 30 mostrar.
 
 ## O que mede
 

@@ -1,6 +1,6 @@
-# Item 01 — Esqueleto ao carregar
+# Item 01: esqueleto ao carregar
 
-Trilha de desempenho (kit de 31 passos). **Decisão do RT em 09/11/2026:** começar por Central do Plantonista, Observação, Internação da enfermagem, fila da Triagem e Regulação.
+Trilha de desempenho (kit de 31 passos). Decisão do RT em 09/11/2026: começar por Central do Plantonista, Observação, Internação da enfermagem, fila da Triagem e Regulação.
 
 ## Antes
 
