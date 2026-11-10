@@ -17,14 +17,15 @@ SELECT ('00000000-0000-4000-8000-0000000c90' || lpad(n::text, 2, '0'))::uuid, '0
 --   1: 08h, PS Adulto, amarelo → reclassificado laranja (subiu)        [manhã]
 --   2: 14h, PS Adulto, verde                                         [tarde]
 --   3: 20h, PS Infantil, pediátrico, laranja → reclassificado verde (baixou) [noite]
---   4: 03h, PS Adulto, sem classificação (evadiu)                     [noite]
+--   4: 03h do dia seguinte, PS Adulto, sem classificação (evadiu)     [noite do dia d:
+--      o BI conta a noite pela data em que o plantão começou; RT, 10/11/2026]
 --   5: 10h, PS Adulto, vermelho                                       [manhã]
 CREATE TEMP TABLE base AS SELECT (private.data_atual() - 1) AS d;
 INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em)
 SELECT ('00000000-0000-4000-8000-0000000c9e0' || x.n)::uuid, '00000000-0000-4000-8000-00000000c9a1',
        ('00000000-0000-4000-8000-0000000c90' || lpad(x.n::text, 2, '0'))::uuid, x.setor::uuid,
        'atendimento', 'Queixa', '10000000-0000-4000-8000-000000000004',
-       ((SELECT d FROM base)::timestamp + x.h) AT TIME ZONE 'America/Sao_Paulo'
+       ((SELECT d FROM base)::timestamp + x.h + CASE WHEN x.h < time '07:00' THEN interval '1 day' ELSE interval '0' END) AT TIME ZONE 'America/Sao_Paulo'
   FROM (VALUES (1, '00000000-0000-4000-8000-00000000c9a2', time '08:00'), (2, '00000000-0000-4000-8000-00000000c9a2', time '14:00'),
                (3, '00000000-0000-4000-8000-00000000c9a3', time '20:00'), (4, '00000000-0000-4000-8000-00000000c9a2', time '03:00'),
                (5, '00000000-0000-4000-8000-00000000c9a2', time '10:00')) x(n, setor, h);
