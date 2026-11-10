@@ -99,7 +99,7 @@ export const bars: Escore = {
 export const CONTENCAO_MECANICA = [
   { texto: '4 ou 5 pontos de restrição de movimento (errado: apenas dois pontos)', pagina: 'p. 1008' },
   { texto: 'Cabeceira elevada em 30º, posição supina; nunca prona', pagina: 'p. 1009' },
-  { texto: 'Monitorização de consciência, sinais vitais, pele e circulação com regularidade nunca superior a 1 hora (Resolução Cofen n. 427/2012)', pagina: 'p. 1009' },
+  { texto: 'Monitorização de consciência, sinais vitais, pele e circulação com regularidade nunca superior a 1 hora (Resolução Cofen n. 746/2024, que revogou a 427/2012 citada no artigo; o intervalo de até 1 hora é o da Nota Técnica ANVISA GVIMS/GGTES/DIRE5 n. 07/2026)', pagina: 'p. 1009' },
   { texto: 'Contenção física (imobilização pela equipe): cinco profissionais treinados', pagina: 'p. 1010' },
 ]
 

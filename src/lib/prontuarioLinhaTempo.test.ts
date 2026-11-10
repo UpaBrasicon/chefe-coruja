@@ -307,3 +307,33 @@ test('navegação por ano: o ano está inteiro quando já veio um atendimento de
   assert.equal(anoCarregado(chegadas, 2026, false), true)
   assert.equal(anoCarregado(chegadas, 2025, true), false)
 })
+
+// lacuna 4 (K8): contenções e intercorrências entram no atendimento delas
+test('contenção e intercorrência no atendimento; a contenção e a intercorrência grave ficam à vista', () => {
+  const p = vazio()
+  p.atendimentos = [atendimento('ep1', '2026-11-10T10:00:00Z')]
+  p.contencoes = [{
+    id: 'ct1', paciente_id: 'pac', episodio_id: 'ep1', internacao_id: null, setor: 'PS', pediatrico: false,
+    motivo: 'Agitação com risco de agressão', alternativas: 'Abordagem verbal', locais: ['msd', 'mse'], pontos: 2,
+    iniciada_em: '2026-11-10T10:30:00Z', registrada_em: '2026-11-10T10:30:00Z', papel_inicio: 'enfermeiro', iniciada_por: 'Enfermeira',
+    prescrita_em: null, prescricao: null, familia_informada: null, familia_detalhe: null, familia_em: null, familia_registrado_por: null,
+    retirada_em: '2026-11-10T12:00:00Z', motivo_retirada: 'Calmo', retirada_automatica: false, retirada_por: 'Técnico',
+    ativa: false, revisoes: 2, ultima_revisao_em: null, proxima_revisao_em: null, revisao_atrasada: false, sem_prescricao: false,
+    prescricao_vence_em: null, renovacao: null,
+  }]
+  const inter = (id: string, gravidade: 'leve' | 'grave', em: string) => ({
+    id, episodio_id: 'ep1', internacao_id: null, tipo: 'queda', tipo_rotulo: 'Queda', gravidade, ocorrida_em: em, descricao: 'x',
+    conduta: 'y', setor: null, registrado_por: 'Técnico', papel: 'tecnico_enfermagem', registrado_em: em, retifica_id: null, retificada: false,
+  })
+  p.intercorrencias = [inter('ic1', 'leve', '2026-11-10T11:00:00Z'), inter('ic2', 'grave', '2026-11-10T11:10:00Z')]
+  const [g] = montarLinhaTempo(p).grupos
+  assert.deepEqual(g.registros.map((r) => r.tipo + ':' + r.id), ['intercorrencia:ic2', 'intercorrencia:ic1', 'contencao:ct1'])
+  assert.equal(g.registros[2].autor, 'Enfermeira')
+  const { mostrados, tipos } = principais(g.registros)
+  assert.deepEqual(mostrados.map((r) => r.id), ['ic2', 'ct1'])
+  assert.deepEqual(tipos, ['intercorrências'])
+  // servidor antigo (sem as chaves) e páginas juntas
+  const antigo = vazio()
+  assert.deepEqual(montarLinhaTempo(antigo).grupos, [])
+  assert.equal(juntarPaginas([p, { ...p, contencoes: undefined }]).contencoes?.length, 1)
+})

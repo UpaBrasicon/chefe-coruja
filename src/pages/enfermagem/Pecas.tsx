@@ -4,6 +4,7 @@
 import { ClipboardList } from 'lucide-react'
 import type * as React from 'react'
 
+import { selosDaContencao, type ContencaoAtiva } from '@/lib/contencao'
 import { cn } from '@/lib/utils'
 
 import { PILULA } from './useEnfermagem'
@@ -23,6 +24,17 @@ export function BotaoCuidados({ onClick }: { onClick: () => void }) {
     <Button variant="outline" onClick={onClick}>
       <ClipboardList className="size-3.5" aria-hidden /> Cuidados
     </Button>
+  )
+}
+
+/** Contenção mecânica ativa (lacuna 4): o selo mais urgente do servidor; sem selo, "Em contenção mecânica". */
+export function PilulaContencao({ c }: { c: ContencaoAtiva | undefined }) {
+  if (!c) return null
+  const selo = selosDaContencao(c)[0]
+  return (
+    <span className={cn(PILULA, selo?.tom === 'critico' ? 'bg-alerta-critico text-critico' : 'bg-alerta-atencao text-atencao')}>
+      {selo ? selo.texto : 'Em contenção mecânica'}
+    </span>
   )
 }
 

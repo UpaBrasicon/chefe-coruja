@@ -8037,6 +8037,7 @@ export type Database = {
       prescricao_itens: {
         Row: {
           autor_id: string | null
+          contencao: Json | null
           created_at: string
           descricao: string
           diluicao_divergente: boolean
@@ -8066,6 +8067,7 @@ export type Database = {
         }
         Insert: {
           autor_id?: string | null
+          contencao?: Json | null
           created_at?: string
           descricao: string
           diluicao_divergente?: boolean
@@ -8095,6 +8097,7 @@ export type Database = {
         }
         Update: {
           autor_id?: string | null
+          contencao?: Json | null
           created_at?: string
           descricao?: string
           diluicao_divergente?: boolean
@@ -10720,6 +10723,8 @@ export type Database = {
       rnds_chave_publica: { Args: never; Returns: Json }
       conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
       controle_dos_itens: { Args: { p_itens: string[] }; Returns: Json }
+      contencao_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      contencoes_ativas: { Args: { p_unidade: string }; Returns: Json }
       devolver_dispensacao: {
         Args: { p_dispensacao: string; p_motivo: string; p_quantidade: number }
         Returns: Json
@@ -12276,6 +12281,11 @@ export type Database = {
       }
       iniciar_analise_parecer: { Args: { p_id: string }; Returns: undefined }
       iniciar_atendimento: { Args: { p_episodio: string }; Returns: undefined }
+      iniciar_contencao: { Args: { p_dados: Json; p_paciente: string }; Returns: string }
+      informar_familia_contencao: {
+        Args: { p_contencao: string; p_detalhe: string; p_em?: string; p_informada: boolean }
+        Returns: undefined
+      }
       isolamento_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       integridade_trilha: { Args: { p_unidade: string }; Returns: Json }
       interacoes_justificadas: { Args: { p_itens: string[] }; Returns: Json }
@@ -13313,6 +13323,7 @@ export type Database = {
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
       relatorio_intercorrencias: { Args: { p_ate: string; p_de: string; p_unidade: string }; Returns: Json }
+      relatorio_contencoes: { Args: { p_ate: string; p_de: string; p_unidade: string }; Returns: Json }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
       remover_propaganda: { Args: { p_id: string }; Returns: string }
       reordenar_propagandas: {
@@ -13395,6 +13406,14 @@ export type Database = {
       retirar_isolamento: {
         Args: { p_isolamento: string; p_motivo: string }
         Returns: undefined
+      }
+      retirar_contencao: {
+        Args: { p_contencao: string; p_motivo: string; p_retirada_em?: string }
+        Returns: undefined
+      }
+      revisar_contencao: {
+        Args: { p_contencao: string; p_dados: Json; p_retifica?: string }
+        Returns: string
       }
       retirar_medida: {
         Args: { p_id: string; p_retirar?: boolean }
