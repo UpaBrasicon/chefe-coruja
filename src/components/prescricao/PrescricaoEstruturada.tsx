@@ -44,12 +44,16 @@ import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 import { jaPrescritos, textoJaPrescrito } from '@/lib/jaPrescrito'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { SeloDoMedicamento } from '@/components/farmacia/SeloControlado'
+import { PedidoDeRenovacao, RenovarPrescricao, SeloValidadeItem } from '@/components/prescricao/ValidadeItem'
+import { ehRenovacao, textoValidoAte } from '@/lib/validadePrescricao'
 
 type ItemVigente = {
   id: string; tipo: 'medicamento' | 'cuidado' | 'contencao'; descricao: string; medicamento_id: string | null; dose: string | null; via: string | null
   posologia: string | null; se_necessario: boolean; observacao: string | null; peso_kg: number | null; diluicao_versao: number | null
   diluicao_texto: string | null; diluicao_divergente: boolean; justificativa_divergencia: string | null; vasoativo: boolean
   autor: string | null; criado_em: string; validacao: string | null; validacao_motivo: string | null
+  /** Lacuna 6: validade do item (24 h, COFEN 689/2022), estado do servidor e pedido de renovação da enfermagem. */
+  valida_ate?: string | null; validade?: string | null; renovacao_pedida_em?: string | null
 }
 /** Item da prescrição da porta que segue ativo no leito (prescricao_porta_ativa). */
 type ItemDaPorta = ItemVigente & { horarios: string[]; episodio_id: string | null }
@@ -140,6 +144,8 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
             via: i.via ?? '—',
             pos: `${i.posologia ?? '—'}${i.se_necessario ? ' — se necessário' : ''}`,
             apr: aprazamentoImpresso(horarios.get(i.id)),
+            // lacuna 6 (V9): cada item sai com a validade; "Agora" não vence
+            val: textoValidoAte(i.valida_ate),
           })),
           obs: '',
         }),
@@ -177,6 +183,9 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
   return (
     <div className="flex flex-col gap-4">
       {erro && <p className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
+      {/* lacuna 6 (V4, V8): itens do leito e da porta vencendo ou vencidos, cada um com a marca do médico */}
+      <RenovarPrescricao pacienteId={pacienteId} aoMudar={recarregar}
+        itens={[...lista, ...porta.map((i) => ({ ...i, daPorta: true }))]} />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-corpo"><Pill className="size-4" /> Prescrição vigente</CardTitle>
@@ -231,8 +240,11 @@ function LinhaItem({ i, horarios, justificadas, alteracao, aoMudar, aoErro }: {
         {/* lacuna 3: controlado da Portaria 344 (a farmácia libera antes de administrar) */}
         <SeloDoMedicamento id={i.medicamento_id} />
         {i.peso_kg && <span className="text-rotulo text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
+        {/* lacuna 6 (V6): vence em / vencido */}
+        <SeloValidadeItem item={i} />
         <span className="ml-auto text-rotulo text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
       </div>
+      <PedidoDeRenovacao em={i.renovacao_pedida_em} />
       {!!horarios?.length && <p className="text-rotulo text-tinta-apoio">Aprazado: {aprazamentoImpresso(horarios)}</p>}
       {i.tipo === 'medicamento' && VIAS_COM_DILUICAO.includes(i.via ?? '') && (
         <p className={`text-rotulo ${i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio'}`}>
@@ -241,7 +253,10 @@ function LinhaItem({ i, horarios, justificadas, alteracao, aoMudar, aoErro }: {
             : i.diluicao_texto ? <>Diluição padrão v{i.diluicao_versao}: {i.diluicao_texto}</> : 'Sem diluição padrão publicada para esta via.'}
         </p>
       )}
-      {alteracao && (
+      {alteracao && ehRenovacao(alteracao.motivo) && (
+        <p className="text-rotulo text-tinta-apoio">Renovada sem mudança por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}.</p>
+      )}
+      {alteracao && !ehRenovacao(alteracao.motivo) && (
         <p className="text-rotulo text-atencao">
           Versão {alteracao.versao}, alterada por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
           {resumoMudanca(alteracao.anterior, { dose: i.dose, via: i.via, posologia: i.posologia, se_necessario: i.se_necessario }) || 'observação'}

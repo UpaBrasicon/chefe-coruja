@@ -6,6 +6,7 @@ import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { ativasPorPaciente, type ContencaoAtiva } from '@/lib/contencao'
+import { resumoValidade } from '@/lib/validadePrescricao'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
@@ -128,6 +129,27 @@ export function useContencoesAtivas() {
     },
   })
   return ativasPorPaciente(q.data)
+}
+
+/**
+ * Validade da prescrição por paciente (lacuna 6): itens vencidos e vencendo,
+ * da fila da Checagem (a mesma leitura e o mesmo cache).
+ */
+export function useValidadePorPaciente(agora: number) {
+  const q = useQuery({
+    queryKey: ['fila-checagem'],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('fila_checagem')
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  const porPaciente = new Map<string, { tipo: string; valida_ate: string | null; validade: string | null }[]>()
+  for (const l of (q.data ?? []) as { paciente_id: string; tipo: string; valida_ate: string | null; validade: string | null }[]) {
+    porPaciente.set(l.paciente_id, [...(porPaciente.get(l.paciente_id) ?? []), l])
+  }
+  return new Map([...porPaciente].map(([id, itens]) => [id, resumoValidade(itens, agora)]))
 }
 
 /** Contagem de atrasados por paciente. */

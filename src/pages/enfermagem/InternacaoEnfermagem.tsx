@@ -22,8 +22,8 @@ import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { PassagemEnfermagem } from './PassagemEnfermagem'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
 import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
-import { Bloco, BotaoCuidados, PilulaAtraso, PilulaContencao } from './Pecas'
-import { duracao, ehAdulto, idadeDe, useAgora, useContencoesAtivas, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
+import { Bloco, BotaoCuidados, PilulaAtraso, PilulaContencao, PilulaValidade } from './Pecas'
+import { duracao, ehAdulto, idadeDe, useAgora, useContencoesAtivas, useSetoresDaEscala, useValidadePorPaciente, type LeitoEnfermagem } from './useEnfermagem'
 import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
@@ -36,6 +36,8 @@ export default function InternacaoEnfermagem() {
   const setores = useSetoresDaEscala()
   const meusSetores = setores.data ?? []
   const contencoes = useContencoesAtivas()
+  // lacuna 6: prescrição vencida ou vencendo, por paciente
+  const validade = useValidadePorPaciente(agora)
   const nomesSetores = useQuery({
     queryKey: ['setores-nomes', meusSetores],
     enabled: meusSetores.length > 0,
@@ -151,6 +153,7 @@ export default function InternacaoEnfermagem() {
                     <div className="flex flex-wrap gap-1.5">
                       <PilulaAtraso n={l.aprazamentos_atrasados} />
                       <PilulaContencao c={contencoes.get(l.paciente_id)} />
+                      <PilulaValidade r={validade.get(l.paciente_id)} agora={agora} />
                       {fugulin.data && ehAdulto(l.data_nascimento) !== false && (
                         fugulin.data[l.internacao_id]
                           ? <span className="rounded-capsula bg-trilha px-2 py-0.5 text-rotulo text-tinta-apoio" title={fugulin.data[l.internacao_id]!.categoria}>Fugulin {fugulin.data[l.internacao_id]!.total}</span>
