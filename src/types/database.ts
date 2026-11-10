@@ -8058,11 +8058,14 @@ export type Database = {
           peso_kg: number | null
           posologia: string | null
           prescricao_id: string
+          renovacao_pedida_em: string | null
+          renovacao_pedida_por: string | null
           se_necessario: boolean
           suspenso_em: string | null
           substitui_item_id: string | null
           suspenso_por: string | null
           tipo: string
+          valida_ate: string | null
           versao: number
           via: string | null
         }
@@ -8088,11 +8091,14 @@ export type Database = {
           peso_kg?: number | null
           posologia?: string | null
           prescricao_id: string
+          renovacao_pedida_em?: string | null
+          renovacao_pedida_por?: string | null
           se_necessario?: boolean
           suspenso_em?: string | null
           substitui_item_id?: string | null
           suspenso_por?: string | null
           tipo?: string
+          valida_ate?: string | null
           versao?: number
           via?: string | null
         }
@@ -8118,11 +8124,14 @@ export type Database = {
           peso_kg?: number | null
           posologia?: string | null
           prescricao_id?: string
+          renovacao_pedida_em?: string | null
+          renovacao_pedida_por?: string | null
           se_necessario?: boolean
           suspenso_em?: string | null
           substitui_item_id?: string | null
           suspenso_por?: string | null
           tipo?: string
+          valida_ate?: string | null
           versao?: number
           via?: string | null
         }
@@ -9966,6 +9975,7 @@ export type Database = {
         Row: {
           em: string
           farmaceutico_id: string
+          herdada_de: string | null
           id: string
           item_id: string
           motivo: string | null
@@ -9975,6 +9985,7 @@ export type Database = {
         Insert: {
           em?: string
           farmaceutico_id: string
+          herdada_de?: string | null
           id?: string
           item_id: string
           motivo?: string | null
@@ -9984,6 +9995,7 @@ export type Database = {
         Update: {
           em?: string
           farmaceutico_id?: string
+          herdada_de?: string | null
           id?: string
           item_id?: string
           motivo?: string | null
@@ -11770,12 +11782,15 @@ export type Database = {
           por_horario: Json
           posologia: string
           prescrito_em: string
+          renovacao_pedida_em: string
           se_necessario: boolean
           tipo: string
           ultima_em: string
           ultima_horario: string
           ultima_por: string
           ultima_situacao: string
+          valida_ate: string
+          validade: string
           vasoativo: boolean
           via: string
         }[]
@@ -11822,6 +11837,8 @@ export type Database = {
           se_necessario: boolean
           ultima_situacao: string
           ultimo_motivo: string
+          valida_ate: string
+          validade: string
           via: string
         }[]
       }
@@ -12799,6 +12816,7 @@ export type Database = {
         Args: { p_absorvido: string; p_confirmo?: boolean; p_motivo: string; p_principal: string }
         Returns: string
       }
+      pedir_renovacao: { Args: { p_item: string }; Returns: Json }
       pendencias_para_encaminhar: {
         Args: { p_episodio?: string; p_internacao?: string; p_paciente: string }
         Returns: string[]
@@ -12843,11 +12861,14 @@ export type Database = {
           observacao: string
           peso_kg: number
           posologia: string
+          renovacao_pedida_em: string
           se_necessario: boolean
           suspenso_em: string
           tipo: string
           validacao: string
           validacao_motivo: string
+          valida_ate: string
+          validade: string
           vasoativo: boolean
           via: string
         }[]
@@ -12868,11 +12889,14 @@ export type Database = {
           observacao: string
           peso_kg: number
           posologia: string
+          renovacao_pedida_em: string
           se_necessario: boolean
           suspenso_em: string
           tipo: string
           validacao: string
           validacao_motivo: string
+          valida_ate: string
+          validade: string
           vasoativo: boolean
           via: string
         }[]
@@ -13346,6 +13370,7 @@ export type Database = {
       relatorio_contencoes: { Args: { p_ate: string; p_de: string; p_unidade: string }; Returns: Json }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
       remover_propaganda: { Args: { p_id: string }; Returns: string }
+      renovar_prescricao: { Args: { p_decisoes: Json; p_paciente: string }; Returns: Json }
       reordenar_propagandas: {
         Args: { p_ids: string[]; p_unidade: string }
         Returns: undefined

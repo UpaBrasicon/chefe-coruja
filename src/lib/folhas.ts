@@ -618,12 +618,13 @@ function pedidoExames(d: Json, ctx: ContextoFolha): string {
 }
 
 // ── prescrição ───────────────────────────────────────────────────────────────
-// {paciente:{…, peso, leito, diagnostico, dieta}, itens:[{med, via, pos, apr}], obs}
+// {paciente:{…, peso, leito, diagnostico, dieta}, itens:[{med, via, pos, apr, val}], obs}
+// val: "válido até DD/MM HH:MM" (lacuna 6, V9; COFEN 689/2022: 24 h); "Agora" vem sem.
 
 function prescricao(d: Json, ctx: ContextoFolha): string {
   const pac = pacienteDe(ctx, d)
   const itens = lista(d.itens)
-  const linhas = itens.map((i, k) => `<tr><td>${p2(k + 1)}</td><td><strong>${esc(pri(i.med, i.descricao))}</strong></td><td>${V(i.via)}</td><td>${V(pri(i.pos, i.posologia))}</td><td>${esc(pri(i.apr))}</td></tr>`).join('')
+  const linhas = itens.map((i, k) => `<tr><td>${p2(k + 1)}</td><td><strong>${esc(pri(i.med, i.descricao))}</strong>${vz(i.val) ? '' : `<br><span class="val">${esc(pri(i.val))}</span>`}</td><td>${V(i.via)}</td><td>${V(pri(i.pos, i.posologia))}</td><td>${esc(pri(i.apr))}</td></tr>`).join('')
   const extra: [string, string][] = [['Peso', pac.peso ? `${pac.peso} kg` : ''], ['Data', dataBr(dataRef(ctx, d))]]
   const corpo = faixaAlergia(ctx, d) +
     (vz(pac.diagnostico) && vz(pac.dieta) ? '' : `<div class="faixa">${pac.diagnostico ? `<span><span class="rot i">Diagnóstico</span> ${esc(pac.diagnostico)}</span>` : ''}${pac.dieta ? `<span><span class="rot i">Dieta</span> ${esc(pac.dieta)}</span>` : ''}</div>`) +
@@ -631,7 +632,7 @@ function prescricao(d: Json, ctx: ContextoFolha): string {
       ? `<table class="tab"><colgroup><col style="width:7%"><col style="width:43%"><col style="width:9%"><col style="width:22%"><col style="width:19%"></colgroup><thead><tr><th>Item</th><th>Nome</th><th>Via</th><th>Posologia</th><th>Aprazamento</th></tr></thead><tbody>${linhas}</tbody></table>`
       : '<p class="meta">Nenhum item.</p>') +
     blocoSe('Observações', d.obs) + assinaturas([assMedico(ctx)])
-  return pagina({ titulo: 'Prescrição médica', ctx, pac, fichas: [{ doc: 'Prescrição médica', corpo, extraPac: extra }] })
+  return pagina({ titulo: 'Prescrição médica', ctx, pac, estilo: '.val{font-size:8pt;font-weight:400;color:#333}', fichas: [{ doc: 'Prescrição médica', corpo, extraPac: extra }] })
 }
 
 // ── laudo para solicitação de AIH ────────────────────────────────────────────
