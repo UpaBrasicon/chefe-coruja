@@ -105,3 +105,7 @@ https://bvsms.saude.gov.br/bvs/publicacoes/padronizacao_censo.pdf.
 - Rede, API e Power BI.
 - Quem chega morto.
 - Indicadores clínicos de qualidade além da contagem.
+
+## 5. Decisão do RT (10/11/2026)
+
+"A em todos": A em P1 a P8.
