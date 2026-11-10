@@ -110,3 +110,7 @@ passo `5.prescricao_vencida`.
 - Prescrição verbal.
 - Horário fixo da prescrição do dia (ex.: tudo vence às 12h). Pode entrar
   depois como configuração da unidade.
+
+## 5. Decisão do RT (10/11/2026)
+
+"Sim": A em V1 a V9.
