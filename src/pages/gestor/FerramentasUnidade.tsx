@@ -49,7 +49,7 @@ export default function FerramentasUnidade() {
     <div className="flex flex-col gap-3">
       <p className="max-w-2xl text-apoio text-tinta-sussurro">
         A regra de cada ferramenta vem da camada base, aprovada pelo responsável técnico. Aqui a unidade acrescenta uma nota
-        local ou suspende o uso — sem apagar a regra.
+        local ou suspende o uso. A regra continua registrada.
       </p>
       {lista?.map((f) => (
         <div key={f.ferramenta_id} className="rounded-container border border-fio bg-superficie px-4 py-3">

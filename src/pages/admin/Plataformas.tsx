@@ -45,7 +45,7 @@ export default function Plataformas() {
       <TituloPagina
         icone={LayoutDashboard}
         titulo="Plataformas"
-        descricao="O software em cada unidade da rede: quem está conectado, último uso, chamados e envios à RNDS. Nenhum dado de paciente atravessa esta tela."
+        descricao="O software em cada unidade da rede: quem está conectado, último uso, chamados e envios à RNDS. Esta tela não traz dado de paciente."
       />
 
       <Metricas

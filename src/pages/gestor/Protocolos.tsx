@@ -43,7 +43,7 @@ export default function Protocolos() {
   return (
     <div className="mx-auto w-full max-w-[896px]">
       <TituloPagina icone={ClipboardPlus} titulo="Protocolos"
-        descricao="O que a instituição oferece com um clique. Publicar um protocolo aqui muda o que o plantonista vê no Receituário — ele escolhe item a item, e nunca recebe o pacote sem ver." />
+        descricao="Os protocolos de prescrição publicados aqui aparecem no Receituário do plantonista. Ele escolhe item a item e nunca recebe o pacote sem ver." />
       <div className="flex flex-col gap-[22px]">
         <Classificacao />
         <TituloSecao className="mt-2 mb-0">Protocolos de prescrição</TituloSecao>
@@ -255,7 +255,7 @@ function Prescricao() {
       {lista.error && <p className="text-apoio text-critico">{msg(lista.error)}</p>}
       {!lista.isLoading && (lista.data ?? []).length === 0 && editando !== 'novo' && (
         <p className="rounded-cartao border border-dashed border-fio px-5 py-4 text-apoio text-tinta-sussurro">
-          Nenhum protocolo de prescrição. Nada vem pronto: protocolo genérico seria lido como o da unidade. Escreva o da instituição, com a fonte.
+          Nenhum protocolo de prescrição. O sistema não traz protocolo pronto, porque um genérico seria lido como o da unidade. Escreva o da instituição, com a fonte.
         </p>
       )}
       {(lista.data ?? []).map((p) => editando === p.id

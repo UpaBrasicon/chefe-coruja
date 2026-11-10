@@ -2396,8 +2396,8 @@ Base: o levantamento só de leitura de 09/11/2026 (`docs/humanizer/LEVANTAMENTO.
 
 | Lote | O que entra | Estado |
 |---|---|---|
-| 1 | Página pública do app (`Landing.tsx`), lateral da entrada, cadastro, login e "papel em preparo"; textos que restaram do site de marketing; o erro "candidat-se" da Escala e a promessa vencida da Regulação | Em andamento (branch `humanizer/lote1-entrada`) |
-| 2 | Os outros achados fortes: gestor, farmácia, regulação, componentes comuns, admin e rede | Pendente |
+| 1 | Página pública do app (`Landing.tsx`), lateral da entrada, cadastro, login e "papel em preparo"; textos que restaram do site de marketing; o erro "candidat-se" da Escala e a promessa vencida da Regulação | Feito: 36 textos em 13 arquivos, aprovado pelo RT; PR #527 mesclado em 09/11/2026 |
+| 2 | Os outros achados fortes: gestor, farmácia, regulação, componentes comuns, admin e rede | Branch `humanizer/lote2-fortes`: 13 textos em 11 arquivos |
 | 3 | Achados fracos: travessão como conectivo, "com sucesso", estados vazios que repetem o título, "nasce" | Pendente |
 | 4 | Documentos: negrito decorativo, títulos com travessão, `README.md` desatualizado | Pendente |
 
