@@ -19,3 +19,15 @@ test('virada do ano e antes da admissão', () => {
   assert.equal(diaDaInternacao('2027-01-01T00:30:00-03:00', '2026-12-31T23:50:00-03:00'), 'D+2')
   assert.equal(diaDaInternacao('2026-10-31T23:00:00-03:00', '2026-11-01T08:00:00-03:00'), 'Adm')
 })
+
+// Decisão do RT em 10/11/2026 (bloco rápido, item 4): a aferição do dia da
+// admissão feita antes da hora dela é "Adm", não "D+1".
+test('no dia da admissão, antes da hora dela: Adm', () => {
+  assert.equal(diaDaInternacao('2026-11-01T10:00:00-03:00', '2026-11-01T14:00:00-03:00'), 'Adm')
+  assert.equal(diaDaInternacao('2026-11-01T13:59:00-03:00', '2026-11-01T14:00:00-03:00'), 'Adm')
+})
+
+test('na hora da admissão e depois, no mesmo dia: D+1', () => {
+  assert.equal(diaDaInternacao('2026-11-01T14:00:00-03:00', '2026-11-01T14:00:00-03:00'), 'D+1')
+  assert.equal(diaDaInternacao('2026-11-01T14:01:00-03:00', '2026-11-01T14:00:00-03:00'), 'D+1')
+})
