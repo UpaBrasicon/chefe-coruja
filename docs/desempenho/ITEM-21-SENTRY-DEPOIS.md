@@ -1,4 +1,4 @@
-# Item 21 — Scripts de terceiros depois da página
+# Item 21: scripts de terceiros depois da página
 
 Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria em `docs/desempenho/AUDITORIA.md`.
 

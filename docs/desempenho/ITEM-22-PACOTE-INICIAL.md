@@ -1,4 +1,4 @@
-# Item 22 — JavaScript por tela (pacote inicial)
+# Item 22: JavaScript por tela (pacote inicial)
 
 Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria em `docs/desempenho/AUDITORIA.md`.
 
@@ -14,9 +14,9 @@ Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria e
 
 | | Antes | Depois |
 |---|---|---|
-| JavaScript inicial (entrada + pré-carga do `index.html`) | 18 arquivos, 1.625.847 bytes, **504.237 em gzip** | 18 arquivos, 1.218.483 bytes, **370.611 em gzip** |
+| JavaScript inicial (entrada + pré-carga do `index.html`) | 18 arquivos, 1.625.847 bytes, 504.237 em gzip | 18 arquivos, 1.218.483 bytes, 370.611 em gzip |
 
-**−26% em gzip.** O Sentry (cerca de 31 KB em gzip) ainda vai no inicial, dentro do pedaço do `supabase`; sai no item 21.
+−26% em gzip. O Sentry (cerca de 31 KB em gzip) ainda vai no inicial, dentro do pedaço do `supabase`; sai no item 21.
 
 ## Conferência
 

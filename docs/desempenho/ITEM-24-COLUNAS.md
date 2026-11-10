@@ -1,4 +1,4 @@
-# Item 24 — Só as colunas usadas
+# Item 24: só as colunas usadas
 
 Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria em `docs/desempenho/AUDITORIA.md`.
 
@@ -24,7 +24,7 @@ A auditoria achou 13 leituras com `select('*')`. O resto do app lê por RPC.
 
 `useDocumentos` (lista de documentos do paciente com o conteúdo inteiro) não tinha nenhum uso e saiu.
 
-**Exceção, de propósito:** o perfil de quem entrou (`src/contexts/AuthContext.tsx`) continua com `select('*')`. É uma linha só por sessão, e o tipo `Perfis['Row']` circula pelo app inteiro e pelo perfil guardado para o modo sem conexão. Trocar ali traz pouco ganho e risco alto.
+Exceção, de propósito: o perfil de quem entrou (`src/contexts/AuthContext.tsx`) continua com `select('*')`. É uma linha só por sessão, e o tipo `Perfis['Row']` circula pelo app inteiro e pelo perfil guardado para o modo sem conexão. Trocar ali traz pouco ganho e risco alto.
 
 Além do ganho de tamanho, a tela deixa de receber dados de paciente que não mostra (no cadastro, por exemplo, bairro, CEP e situação de rua não vão à tela de documentos).
 
@@ -39,7 +39,7 @@ Além do ganho de tamanho, a tela deixa de receber dados de paciente que não mo
 
 Publicado na homolog `4dcd5c7f` (homolog anterior `0d1a0f19` + os 12 arquivos deste item). Conferido no Chrome do RT, conta do médico: `/plantonista` e `/plantao/internacao/pacientes` sem nenhuma chamada com erro (nada ≥ 400); a leitura de banners respondeu 200.
 
-**Tamanho antes e depois:** não deu para medir com os dados da homologação. Não havia internado aberto (pendências e sinais vitais não carregam) nem banner cadastrado. O ganho está na tabela acima, em colunas por leitura; o tamanho real aparece com dado de verdade.
+Tamanho antes e depois: não deu para medir com os dados da homologação. Não havia internado aberto (pendências e sinais vitais não carregam) nem banner cadastrado. O ganho está na tabela acima, em colunas por leitura; o tamanho real aparece com dado de verdade.
 
 Não conferido na tela: gestor (banners e termos), farmácia (diluição) e documentos impressos, porque pedem outras contas ou um internado aberto.
 

@@ -1,4 +1,4 @@
-# Item 04 — Busca espera a pessoa parar de digitar
+# Item 04: busca espera a pessoa parar de digitar
 
 Trilha de desempenho (kit de 31 passos), pedido do RT em 08/11/2026. Auditoria em `docs/desempenho/AUDITORIA.md`.
 

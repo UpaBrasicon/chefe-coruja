@@ -1,12 +1,12 @@
-# Item 17 — Índices nas consultas comuns
+# Item 17: índices nas consultas comuns
 
-Trilha de desempenho (kit de 31 passos). **Decisão do RT em 09/11/2026: A, agora** ("Todas como recomendado"): trigram no nome do paciente, as 8 políticas RLS do advisor, índices nas chaves das tabelas que crescem, `EXPLAIN ANALYZE` antes e depois na homologação.
+Trilha de desempenho (kit de 31 passos). Decisão do RT em 09/11/2026: A, agora ("Todas como recomendado"): trigram no nome do paciente, as 8 políticas RLS do advisor, índices nas chaves das tabelas que crescem, `EXPLAIN ANALYZE` antes e depois na homologação.
 
 ## Diagnóstico
 
-- **Busca de paciente** (`buscar_pacientes`, usada pela recepção, porta, Hiperdia, pré-natal, agenda, reserva de leito, recém-nascido). Filtra a unidade e depois aplica `LIKE '%termo%'` sobre `private.nome_comparavel(...)` em nome, nome social e nome da mãe, e compara CPF, CNS e os dígitos do prontuário, tudo num `OR` só. Com parâmetros, o plano não usa índice nenhum: lê todos os pacientes da unidade a cada busca.
-- **8 políticas RLS** (advisor `auth_rls_initplan`): `auth.uid()` reavaliado em cada linha (`aceites_termo`, `adesoes_contrato`, `clinical_search_feedback`, `preferencias_aviso` ×3, `dispositivos_confiaveis` ×2).
-- **Chaves estrangeiras sem índice**: 129 fora das colunas de autoria. Escolhidas 52, nas tabelas que crescem com o uso (AIH, APAC, contas, classificações, intercorrências, isolamentos, regulação, reservas, episódios, checagens, procedimentos, agendamentos, contrarreferências, encaminhamentos, dispensações, estoque, aprazamentos, pré-natal, programas, eventos de AIH/APAC, faltas, contingência, webhooks). Colunas de autoria (`por`) e catálogos ficam sem índice de propósito.
+- Busca de paciente (`buscar_pacientes`, usada pela recepção, porta, Hiperdia, pré-natal, agenda, reserva de leito, recém-nascido). Filtra a unidade e depois aplica `LIKE '%termo%'` sobre `private.nome_comparavel(...)` em nome, nome social e nome da mãe, e compara CPF, CNS e os dígitos do prontuário, tudo num `OR` só. Com parâmetros, o plano não usa índice nenhum: lê todos os pacientes da unidade a cada busca.
+- 8 políticas RLS (advisor `auth_rls_initplan`): `auth.uid()` reavaliado em cada linha (`aceites_termo`, `adesoes_contrato`, `clinical_search_feedback`, `preferencias_aviso` ×3, `dispositivos_confiaveis` ×2).
+- Chaves estrangeiras sem índice: 129 fora das colunas de autoria. Escolhidas 52, nas tabelas que crescem com o uso (AIH, APAC, contas, classificações, intercorrências, isolamentos, regulação, reservas, episódios, checagens, procedimentos, agendamentos, contrarreferências, encaminhamentos, dispensações, estoque, aprazamentos, pré-natal, programas, eventos de AIH/APAC, faltas, contingência, webhooks). Colunas de autoria (`por`) e catálogos ficam sem índice de propósito.
 
 ## Correção
 
@@ -25,9 +25,9 @@ Transação desfeita, 50 mil pacientes sintéticos na UPA Fase 5, gestor de test
 
 | Busca | Antes | Depois |
 |---|---|---|
-| Nome raro ("zuleica", 3 achados) | 628 ms | **1,6 ms** |
-| Sobrenome comum ("oliveira", 7 mil achados, devolve 20) | 592 ms | **81 ms** |
-| CPF (11 dígitos, nenhum achado) | 651 ms | **10 ms** |
+| Nome raro ("zuleica", 3 achados) | 628 ms | 1,6 ms |
+| Sobrenome comum ("oliveira", 7 mil achados, devolve 20) | 592 ms | 81 ms |
+| CPF (11 dígitos, nenhum achado) | 651 ms | 10 ms |
 
 Consulta isolada, por ramo: nome 610 → 0,3 ms; documento 108 → 0,1 ms. O `EXPLAIN ANALYZE` do ramo do nome passou de leitura da unidade inteira para `Bitmap Index Scan` no trigram. Índices da busca: cerca de 5 MB para 50 mil pacientes.
 
