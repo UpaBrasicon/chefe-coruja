@@ -10,10 +10,16 @@ export type ItemAltaVigilancia = {
   ajuste: { exige: boolean; motivo: string; por: string | null; em: string } | null
 }
 
-/** liberacao_farmacia: só vem para os itens que exigem liberação. */
+/**
+ * liberacao_farmacia: só vem para os itens que exigem liberação. Desde a
+ * lacuna 3 (migration 20270324000001) o controlado da Portaria 344 também
+ * exige: `alta_vigilancia` diz se é alta vigilância; `controlado`, a lista; e
+ * `controlado_receita`, a receita para casa.
+ */
 export type Liberacao = {
   item_id: string; regra: string; situacao: 'confere' | 'devolvido' | null
   motivo: string | null; por: string | null; em: string | null
+  alta_vigilancia?: boolean; controlado?: string | null; controlado_receita?: string | null
 }
 
 /** administracoes_sem_liberacao: administradas com justificativa, para a farmácia conferir. */

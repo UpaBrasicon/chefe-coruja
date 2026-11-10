@@ -3,6 +3,8 @@
 -- como "feito" depois de duas conferências por profissionais diferentes.
 -- Desde a migration 20261101000002 a regra é a liberação da farmácia; a dupla
 -- continua aceita na transição (ver fase2_liberacao_farmacia.sql).
+-- Desde 20270324000001 (lacuna 3) o controlado da Portaria 344 também exige a
+-- liberação, e a unidade não o desmarca (ver controlados.sql).
 BEGIN;
 -- Portão 2, tarefa 2: medicamento exige peso deste atendimento; pesa (70 kg)
 -- todo paciente que ainda não tem peso no atendimento atual
@@ -132,7 +134,12 @@ SELECT public.definir_alta_vigilancia('21000000-0000-4000-8000-000000000001', pg
 SELECT public.definir_alta_vigilancia('21000000-0000-4000-8000-000000000001', pg_temp.u('morfina'), false, 'Decisão da comissão de farmácia, teste');
 INSERT INTO t SELECT 'lista', public.alta_vigilancia_da_unidade('21000000-0000-4000-8000-000000000001')::text;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
-SELECT public.checar(pg_temp.u('mor'), 'feito');
+-- lacuna 3 (20270324000001): a morfina é controlada (Portaria 344, lista A1).
+-- A unidade tira a alta vigilância, mas não o controle: sem liberação, o
+-- "feito" ainda pede justificativa.
+SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('mor'), 'feito'),
+  'Medicamento controlado sem liberação da farmácia', 'desmarcar a alta vigilância não tira o controle da morfina');
+SELECT public.checar(pg_temp.u('mor'), 'feito', NULL, 'Sem farmacêutico de plantão, teste');
 SELECT pg_temp.falha(format('SELECT public.checar(%L, %L)', pg_temp.u('dip'), 'feito'),
   'Alta vigilância sem liberação da farmácia', 'item marcado pela farmácia passa a exigir a liberação');
 RESET ROLE;
