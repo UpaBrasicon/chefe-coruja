@@ -26,6 +26,7 @@ import { BarraConsultorio } from '@/components/porta/BarraConsultorio'
 import { BotaoChamar } from '@/components/porta/Chamada'
 import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
 import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
+import { BotaoPulseira } from '@/components/paciente/Pulseira'
 import { EncaminhamentosRecebidos } from '@/components/encaminhamento/EncaminhamentosRecebidos'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 import { useConsultorioDoPlantao } from '@/hooks/useConsultorioDoPlantao'
@@ -284,6 +285,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                           {/* chamar e abrir numa linha só (o consultório vem da barra do topo) */}
                           <div className="flex items-center justify-end gap-2 [&>div]:flex-nowrap">
                             <BotaoChamar episodioId={e.id} setorId={e.setor_id} etapa="atendimento" chamadas={n} semContagem salaFixa={consultorio.salas[e.setor_id] ?? null} />
+                            <BotaoPulseira pacienteId={e.paciente_id} nome={nomeDe(e)} reimpressao compacto variant="ghost" />
                             <Button size="sm" onClick={() => onAbrir(e)} aria-label={`Abrir atendimento de ${nomeDe(e)}`}><Stethoscope /> Abrir</Button>
                           </div>
                         </TableCell>
@@ -327,7 +329,10 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                             : <Estado tom="teal">Em atendimento</Estado>}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => onAbrir(e)}>{reav ? 'Reavaliar' : 'Abrir atendimento'}</Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <BotaoPulseira pacienteId={e.paciente_id} nome={nomeDe(e)} reimpressao compacto variant="ghost" />
+                            <Button size="sm" variant="outline" onClick={() => onAbrir(e)}>{reav ? 'Reavaliar' : 'Abrir atendimento'}</Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )

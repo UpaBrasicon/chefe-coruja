@@ -9833,6 +9833,7 @@ export type Database = {
           raio_metros: number
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf: string | null
+          usa_pulseira: boolean
           updated_at: string
           whatsapp_numero: string | null
         }
@@ -9851,6 +9852,7 @@ export type Database = {
           raio_metros?: number
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
+          usa_pulseira?: boolean
           updated_at?: string
           whatsapp_numero?: string | null
         }
@@ -9869,6 +9871,7 @@ export type Database = {
           raio_metros?: number
           tipo?: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
+          usa_pulseira?: boolean
           updated_at?: string
           whatsapp_numero?: string | null
         }
@@ -10271,6 +10274,7 @@ export type Database = {
       definir_bpa_config: { Args: { p_dados: Json; p_unidade: string }; Returns: undefined }
       definir_meu_cns: { Args: { p_cns: string }; Returns: string }
       definir_cnes_unidade: { Args: { p_cnes: string; p_unidade: string }; Returns: string }
+      definir_pulseira_unidade: { Args: { p_unidade: string; p_usa: boolean }; Returns: boolean }
       admin_criar_unidade: {
         Args: {
           p_cnes?: string
@@ -13128,6 +13132,15 @@ export type Database = {
           p_paciente: string
           p_recebedor_documento: string
           p_recebedor_nome: string
+        }
+        Returns: Json
+      }
+      registrar_impressao_pulseira: {
+        Args: {
+          p_detalhe?: string
+          p_motivo?: string
+          p_paciente: string
+          p_reimpressao?: boolean
         }
         Returns: Json
       }

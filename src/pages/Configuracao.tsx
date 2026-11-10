@@ -15,6 +15,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { DetalhesAdmissao } from '@/pages/gestor/DetalhesAdmissao'
 import { GradeAprazamento } from '@/pages/gestor/GradeAprazamento'
 import { CnesUnidade } from '@/pages/gestor/CnesUnidade'
+import { PulseiraUnidade } from '@/pages/gestor/PulseiraUnidade'
 import { CriticasAih } from '@/pages/gestor/CriticasAih'
 import { chaveLimites, useLimitesUnidade, type LimitesUnidade } from '@/lib/limitesUnidade'
 
@@ -30,6 +31,7 @@ type UnidadeConfig = {
   tipo: string
   municipio: string | null
   uf: string | null
+  usa_pulseira: boolean
 }
 
 const TIPO_UNIDADE: Record<string, string> = { hospital: 'Hospital', upa: 'UPA', pronto_socorro: 'Pronto-socorro', ubs: 'UBS', clinica: 'Clínica' }
@@ -54,7 +56,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
     queryKey: ['unidade-config', unidadeId],
     enabled: !!unidadeId,
     queryFn: async () => {
-      const { data, error } = await supabase.from('unidades').select('id, latitude, longitude, raio_metros, canal_comunicacao, whatsapp_numero, nome, cnes, tipo, municipio, uf').eq('id', unidadeId!).single()
+      const { data, error } = await supabase.from('unidades').select('id, latitude, longitude, raio_metros, canal_comunicacao, whatsapp_numero, nome, cnes, tipo, municipio, uf, usa_pulseira').eq('id', unidadeId!).single()
       if (error) throw error
       return data as UnidadeConfig
     },
@@ -154,6 +156,9 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
       {/* Identificação (protótipo: nome, CNES e tipo); o cadastro é da rede, mas o CNES é do gestor (RT, 10/10/2026) */}
       <div className="grid gap-4 rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso sm:grid-cols-3">
         {ehGestor && unidadeId && <CnesUnidade key={`cnes-${unidadeId}`} unidadeId={unidadeId} atual={unidade.cnes} />}
+        {ehGestor && unidadeId && unidade.tipo !== 'ubs' && (
+          <PulseiraUnidade key={`pulseira-${unidadeId}`} unidadeId={unidadeId} atual={unidade.usa_pulseira} />
+        )}
         {[
           ['Nome da unidade', unidade.nome],
           ...(ehGestor ? [] : [['CNES', unidade.cnes ?? 'não informado']]),

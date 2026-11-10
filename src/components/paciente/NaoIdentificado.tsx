@@ -34,6 +34,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { Chip, TituloCartao } from '@/components/monitor/Pagina'
 import { Campo, Escolhas } from '@/components/paciente/CamposCadastro'
+import { AvisoTrocarPulseira } from '@/components/paciente/Pulseira'
 
 export type NaoIdentificadoCriado = { paciente_id: string; episodio_id: string; prontuario: string; nome: string }
 
@@ -287,7 +288,8 @@ const ETAPA: Record<string, string> = { triagem: 'aguardando triagem', atendimen
 export function NaoIdentificadosDaUnidade({ unidadeId }: { unidadeId: string }) {
   const hoje = hojeSP()
   const [alvo, setAlvo] = React.useState<PacienteProvisorio | null>(null)
-  const [feito, setFeito] = React.useState<string | null>(null)
+  // lacuna 2 (RT 10/11/2026): identificado, a pulseira provisória é trocada
+  const [feito, setFeito] = React.useState<{ paciente_id: string; nome: string; prontuario: string | null } | null>(null)
   const lista = useQuery({
     queryKey: ['nao-identificados', unidadeId],
     refetchInterval: 60_000,
@@ -297,13 +299,13 @@ export function NaoIdentificadosDaUnidade({ unidadeId }: { unidadeId: string }) 
       return (data ?? []) as unknown as NaoIdentificado[]
     },
   })
-  if (!lista.data?.length) return feito ? <Aviso tom="conforme" className="mt-5">{feito}</Aviso> : null
+  if (!lista.data?.length) return feito ? <AvisoTrocarPulseira paciente={feito} className="mt-5" /> : null
 
   return (
     <section aria-label="Pacientes não identificados" className="mt-5 flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px]">
       <TituloCartao className="mb-0">Não identificados na unidade ({lista.data.length})</TituloCartao>
       <p className="-mt-1 text-apoio text-tinta-sussurro">Quando souber quem é, use Identificar. O nome provisório e os sinais ficam no histórico.</p>
-      {feito && <Aviso tom="conforme">{feito}</Aviso>}
+      {feito && <AvisoTrocarPulseira paciente={feito} />}
       <ul className="flex flex-col">
         {lista.data.map((p) => (
           <li key={p.id} className="flex flex-wrap items-center gap-3 border-b border-trilha py-2.5 last:border-0">
@@ -324,7 +326,7 @@ export function NaoIdentificadosDaUnidade({ unidadeId }: { unidadeId: string }) 
         ))}
       </ul>
       <DialogoIdentificar paciente={alvo} onFechar={() => setAlvo(null)}
-        onIdentificado={(r) => setFeito(`Paciente identificado: ${r.nome}${r.prontuario ? ` · prontuário ${r.prontuario}` : ''}.`)} />
+        onIdentificado={setFeito} />
     </section>
   )
 }
