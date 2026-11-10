@@ -2405,6 +2405,23 @@ As duas mensagens do banco do levantamento são fracas e dependem de migration; 
 
 Trilha fechada em 09/11/2026: os quatro lotes estão na produção.
 
+## Decisões pendentes — bloco rápido, RT em 10/11/2026
+
+Origem: levantamento das decisões ainda abertas no BACKLOG e nos documentos, feito em 10/11/2026 só por leitura. O RT escolheu começar pelo bloco rápido (7 itens) e respondeu "Todas como recomendado".
+
+| # | Item | Decisão do RT | Estado |
+|---|---|---|---|
+| 1 | Telas repetidas na Central: `DenguePed` e `SdraVentilacaoAdulto` têm duas entradas cada (`src/content/duplicadas.test.ts`) | A: fica uma entrada de cada; a do Manual sai e o endereço antigo redireciona, como a VM do ponto 2 | A fazer |
+| 2 | Reindexar as ferramentas da IA (`biblioteca/ferramentas.json`; a coleção `ferramentas` é a mesma da homologação e da produção) | A: gerar o catálogo de novo, sem as repetidas do item 1, e reindexar. Pede o "ok produção" na hora | A fazer, depois do item 1 |
+| 3a | Ponto 12, pergunta 3: separar laboratório de imagem e ECG também no pedido rápido da porta (`docs/plantonista/PONTO-12-EXAMES.md`) | A: sim, a mesma regra do leito | A fazer |
+| 3b | Ponto 12, pergunta 4: folha impressa por pedido no leito | A: não; o pedido fica no sistema, como na porta | Decidido, sem código |
+| 4 | Gráfico da evolução: aferição do dia da admissão, antes da hora dela, sai "D+1" (`src/lib/diaInternacao.ts`) | A: tudo antes do instante da admissão sai "Adm" | A fazer |
+| 5 | BI: o turno `noite` entra pelo dia da chegada (`filtros_bi`), e o plantão de 19h às 7h aparece em duas datas | A: o turno da noite conta pela data em que o plantão começou | A fazer (migration) |
+| 6 | Remuneração, P3-C10: fracionado de 12 h que começa de manhã vale 1.200 (base 360 min), o dobro do de 6 h | A: está certo; 12 h de dia = manhã + tarde, valor proporcional às horas | Decidido, sem código |
+| 7 | Quinzenal: na 1ª geração depois do VD6 pode pular ou repetir uma semana (`docs/virada-de-data/CORRECAO-VD15-MENORES-REVISAO.md`) | A: sem ação; a produção não tem equipe escalada, não há gestor a avisar | Decidido, sem código |
+
+Cada item com código vai em branch e PR próprios, pela homologação. Os outros blocos do levantamento (lacunas do Portão de 11/10, escores e itens do PubMed deixados para depois, unidade piloto da RNDS, M12 e a aprovação das versões das fichas) esperam o RT.
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
