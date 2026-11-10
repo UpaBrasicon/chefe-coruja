@@ -148,3 +148,7 @@ da observação e da internação ficam de fora. Isso é a lacuna 10.
 - Controle do estoque de formulários de D.O. da unidade.
 - Óbito fetal e Declaração de Nascido Vivo.
 - SVO e IML como unidades dentro do sistema.
+
+## 5. Decisão do RT (10/11/2026)
+
+"A em todos": A em O1 a O8. O RT lembrou que o registro no app é **só para o prontuário**: a D.O. que vale é o formulário do Ministério da Saúde, nas vias branca, amarela e rosa. O app não imprime nada com cara de D.O. O "Sumário de óbito" é documento do prontuário e diz isso no próprio texto.
