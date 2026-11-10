@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { ResumoAlergias } from '@/components/paciente/AlergiasEventos'
 import { AlterarItem } from '@/components/prescricao/AlterarItem'
 import { NovoItem, type PesoAtual } from '@/components/prescricao/PrescricaoEstruturada'
+import { PedidoDeRenovacao, RenovarPrescricao, SeloValidadeItem } from '@/components/prescricao/ValidadeItem'
 import { ROTULO_DOSE, aguardaAprazamento, textoResumoDoses, tomDoses, type DosePS, type SituacaoDose } from '@/lib/frequenciaPorta'
 
 import { hora, type ItemPS } from './comum'
@@ -56,10 +57,13 @@ function Linha({ i, n, aoMudar }: { i: ItemPS; n: number; aoMudar: () => void })
           </span>
           {!i.doses?.length && i.checagem && i.checagem.situacao !== 'feito' && i.checagem.motivo && <span className="text-rotulo text-critico">Motivo: {i.checagem.motivo}</span>}
           {i.suspenso_em && i.motivo_suspensao && <span className="text-rotulo text-tinta-sussurro">Suspenso: {i.motivo_suspensao}</span>}
+          {!i.suspenso_em && <PedidoDeRenovacao em={i.renovacao_pedida_em} />}
           {!i.suspenso_em && i.tipo === 'medicamento' && aguardaAprazamento(i) && (
             <span className="text-rotulo text-atencao">Aguardando o aprazamento da enfermagem.</span>
           )}
         </div>
+        {/* lacuna 6 (V6): vence em / vencido */}
+        {!i.suspenso_em && <SeloValidadeItem item={i} />}
         <Situacao i={i} />
         {!i.suspenso_em && !suspendendo && (
           <Button size="xs" variant="ghost" onClick={() => setSuspendendo(true)}><Ban /> Suspender</Button>
@@ -109,6 +113,8 @@ export function AbaPrescricao({ pacienteId, nome, itens, pediatrico, aoMudar, ub
   const suspensos = itens.filter((i) => i.suspenso_em)
   return (
     <div className="flex flex-col gap-4">
+      {/* lacuna 6 (V4): itens vencendo ou vencidos, cada um com a marca do médico */}
+      <RenovarPrescricao pacienteId={pacienteId} itens={ativos} aoMudar={aoMudar} />
       {erro && (
         <p role="alert" className="flex items-start gap-2 rounded-container border border-critico/30 bg-alerta-critico px-3.5 py-2.5 text-apoio text-critico">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden /> {erro}

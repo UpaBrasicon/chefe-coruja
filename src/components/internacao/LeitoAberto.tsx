@@ -28,6 +28,7 @@ import { Link } from 'react-router-dom'
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { Contencao } from '@/components/prontuario/Contencao'
+import { AvisoValidadePrescricao } from '@/components/prescricao/ValidadeItem'
 import { DialogoIntercorrencia, Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { supabase } from '@/lib/supabase'
@@ -334,6 +335,8 @@ function Resumo({ p }: { p: PartesLeito }) {
       <BlocoPendencias internacaoId={i.id} ativa={ativa} lista={p.pendencias} eu={p.eu} acao={p.acao} />
       {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} />}
       {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
+      {/* lacuna 6 (V6): prescrição vencida ou vencendo */}
+      {ativa && <AvisoValidadePrescricao pacienteId={p.pacienteId} />}
       {/* Fase 1, tarefa 8: atendimentos encerrados do paciente, para quem cuida */}
       {ativa && <HistoricoEncerrado pacienteId={p.pacienteId} />}
       {/* Fase 4, tarefa 5: regulações do paciente na rede (médico e gestor) */}
@@ -392,6 +395,8 @@ function ResumoEmAbas({ p }: { p: PartesLeito }) {
             )}
             {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} semBotao />}
             {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
+            {/* lacuna 6 (V6): prescrição vencida ou vencendo */}
+            {ativa && <AvisoValidadePrescricao pacienteId={p.pacienteId} />}
             {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
             {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
             {/* lacuna 4: contenção mecânica, com os selos de revisão e de prescrição */}

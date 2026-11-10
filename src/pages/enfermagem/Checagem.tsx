@@ -9,6 +9,9 @@
 // (validação do item); sem ela, o "feito" pede justificativa e o farmacêutico
 // confere depois. O controlado da Portaria 344 (lacuna 3) segue o mesmo fluxo:
 // selo "Controlado · B1" e liberação da farmácia antes de administrar.
+// Validade (lacuna 6): o item vale 24 h desde a prescrição ou a renovação
+// (Resolução COFEN 689/2022, art. 4º). Vencido, o "feito" fica fechado (o
+// servidor também recusa) e a enfermagem pede a renovação ao médico de plantão.
 // Aprazamento assistido (Fase 2, tarefa 2): a posologia vira sugestão de
 // horários pela grade da unidade; o enfermeiro aceita ou ajusta, e o ajuste
 // fica registrado.
@@ -36,6 +39,9 @@ import { cn } from '@/lib/utils'
 import { Estado } from '@/components/porta/Estado'
 import { SeloControlado } from '@/components/farmacia/SeloControlado'
 import { controleDoCatalogo } from '@/domain/controlados'
+import { SeloValidadeItem } from '@/components/prescricao/ValidadeItem'
+import { diaHora, ehRenovacao, FONTE_VALIDADE, validadeDoItem } from '@/lib/validadePrescricao'
+import { useAgora } from '@/hooks/useAgora'
 
 type Linha = {
   paciente_id: string; paciente_nome: string; local: string | null; item_id: string; tipo: string; descricao: string
@@ -44,6 +50,8 @@ type Linha = {
   ultima_por: string | null; ultima_horario: string | null
   /** Última checagem de cada horário aprazado nas últimas 24 h (fila_checagem). */
   por_horario: Record<string, { situacao: string; em: string }> | null
+  /** Lacuna 6: validade do item, estado do servidor e o pedido de renovação. */
+  valida_ate: string | null; validade: string | null; renovacao_pedida_em: string | null
 }
 const SITUACAO: Record<string, { rotulo: string; tom: 'verde' | 'ambar' | 'vermelho' }> = {
   feito: { rotulo: 'feito', tom: 'verde' },
@@ -55,6 +63,7 @@ const hora = (iso: string) => dataHora(iso)
 export default function Checagem() {
   const { papelAtivo } = useUnidade()
   const qc = useQueryClient()
+  const agora = useAgora()
   const [erro, setErro] = React.useState<string | null>(null)
   const fila = useQuery({
     queryKey: ['fila-checagem'],
@@ -123,7 +132,7 @@ export default function Checagem() {
               <AlergiaNaTela pacienteId={id} />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-apoio">
-              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} liberacao={liberacao.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} alteracao={alteracoes.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} aoMudar={recarregar} aoErro={setErro} />)}
+              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} liberacao={liberacao.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} alteracao={alteracoes.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} agora={agora} aoMudar={recarregar} aoErro={setErro} />)}
             </CardContent>
           </Card>
         ))}
@@ -132,9 +141,9 @@ export default function Checagem() {
   )
 }
 
-function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, aoErro }: {
+function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, agora, aoMudar, aoErro }: {
   l: Linha; liberacao: Liberacao | undefined; apraz: SugestaoItem | undefined; alteracao: Alteracao | undefined; souEnfermeiro: boolean
-  aoMudar: () => void; aoErro: (m: string | null) => void
+  agora: number; aoMudar: () => void; aoErro: (m: string | null) => void
 }) {
   const podeAprazar = souEnfermeiro
   const [horarios, setHorarios] = React.useState((l.horarios ?? []).join(', '))
@@ -157,6 +166,20 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
   const feitoPedeJustificativa = lib === 'aguardando' || lib === 'devolvido'
   const controle = controleDoCatalogo({ lista: liberacao?.controlado, receita: liberacao?.controlado_receita })
   const altaVigilancia = !!liberacao && liberacao.alta_vigilancia !== false
+  // lacuna 6: vencido não se administra (COFEN 689/2022); a 2 h do fim já dá para pedir a renovação
+  const validade = validadeDoItem(l, agora)
+  const vencido = validade === 'vencido'
+  const podePedir = l.tipo !== 'contencao' && (vencido || validade === 'vence_logo')
+  const [pedido, setPedido] = React.useState<string | null>(null)
+  async function pedirRenovacao() {
+    const { data, error } = await supabase.rpc('pedir_renovacao', { p_item: l.item_id })
+    if (error) return aoErro(error.message)
+    const r = data as unknown as { avisados: number; pedida_em: string }
+    aoErro(null)
+    setPedido(r.avisados > 0 ? `Pedido enviado ao médico de plantão (${r.avisados === 1 ? '1 aviso' : `${r.avisados} avisos`}).`
+      : 'Pedido registrado. O médico de plantão já tinha o aviso, ou não há médico escalado no setor agora: avise pessoalmente.')
+    aoMudar()
+  }
 
   async function checar(situacao: 'feito' | 'nao_feito' | 'recusado', m?: string) {
     if (faltaHorario) return aoErro(`${l.descricao}: escolha o horário aprazado que está sendo checado.`)
@@ -173,9 +196,27 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
         {l.vasoativo && <Badge variant="warning">vasoativo</Badge>}
         {altaVigilancia && <Badge variant="destructive" title={liberacao?.regra}><ShieldAlert className="size-3" /> alta vigilância · liberação da farmácia</Badge>}
         {controle && <SeloControlado controle={controle} />}
+        <SeloValidadeItem item={l} agora={agora} />
         {st && <span className="ml-auto"><Estado tom={st.tom}>{st.rotulo}{l.ultima_horario ? ` ${l.ultima_horario}` : ''}</Estado></span>}
       </div>
-      {alteracao && (
+      {alteracao && ehRenovacao(alteracao.motivo) && (
+        <p className="text-rotulo text-tinta-apoio">Prescrição renovada sem mudança por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}.</p>
+      )}
+      {podePedir && l.valida_ate && (
+        <div role="note" title={FONTE_VALIDADE}
+          className={cn('flex flex-wrap items-center gap-2 rounded-controle border px-2.5 py-1.5 text-rotulo',
+            vencido ? 'border-critico/30 bg-alerta-critico text-critico' : 'border-atencao/40 bg-alerta-atencao text-atencao')}>
+          <span>
+            {vencido
+              ? <><strong>Prescrição vencida às {diaHora(l.valida_ate)}.</strong> Não administre: peça a renovação ao médico.</>
+              : <>Prescrição vence às {diaHora(l.valida_ate)}.</>}
+            {l.renovacao_pedida_em ? ` Renovação pedida às ${diaHora(l.renovacao_pedida_em)}.` : ''}
+          </span>
+          <Button size="xs" variant="outline" onClick={() => void pedirRenovacao()}>{l.renovacao_pedida_em ? 'Pedir de novo' : 'Pedir renovação'}</Button>
+          {pedido && <span className="w-full">{pedido}</span>}
+        </div>
+      )}
+      {alteracao && !ehRenovacao(alteracao.motivo) && (
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-2.5 py-1.5 text-rotulo text-atencao">
           <strong>Prescrição alterada</strong> (versão {alteracao.versao}) por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
           {resumoMudanca(alteracao.anterior, { dose: l.dose, via: l.via, posologia: l.posologia, se_necessario: l.se_necessario }) || 'observação'}
@@ -249,7 +290,8 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, aoMudar, 
             {l.horarios.map((h) => <option key={h}>{h}</option>)}
           </CampoSelecao>
         ) : null}
-        <Button size="xs" title={feitoPedeJustificativa ? 'Sem liberação da farmácia: pede justificativa' : undefined}
+        <Button size="xs" disabled={vencido}
+          title={vencido ? 'Prescrição vencida: peça a renovação ao médico' : feitoPedeJustificativa ? 'Sem liberação da farmácia: pede justificativa' : undefined}
           onClick={() => (feitoPedeJustificativa ? setPedindo('feito') : void checar('feito'))}>Feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('nao_feito')}>Não feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('recusado')}>Recusado</Button>

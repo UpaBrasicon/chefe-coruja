@@ -108,6 +108,10 @@ export type ItemPS = {
   /** Frequência na porta (migration 20270301000001): horários aprazados e as doses por horário. */
   horarios?: string[] | null
   doses?: DosePS[]
+  /** Lacuna 6 (migration 20270327000001): validade do item (24 h, COFEN 689/2022) e o pedido de renovação da enfermagem. */
+  valida_ate?: string | null
+  validade?: string | null
+  renovacao_pedida_em?: string | null
 }
 export type ExamePS = {
   id: string; exame: string; situacao: 'pedido' | 'coletado' | 'em_analise' | 'realizado' | 'resultado' | 'cancelado'; pedido_em: string; resolvido_em: string | null

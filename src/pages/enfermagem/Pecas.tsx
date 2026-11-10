@@ -5,6 +5,7 @@ import { ClipboardList } from 'lucide-react'
 import type * as React from 'react'
 
 import { selosDaContencao, type ContencaoAtiva } from '@/lib/contencao'
+import { textoResumoValidade, type resumoValidade } from '@/lib/validadePrescricao'
 import { cn } from '@/lib/utils'
 
 import { PILULA } from './useEnfermagem'
@@ -34,6 +35,17 @@ export function PilulaContencao({ c }: { c: ContencaoAtiva | undefined }) {
   return (
     <span className={cn(PILULA, selo?.tom === 'critico' ? 'bg-alerta-critico text-critico' : 'bg-alerta-atencao text-atencao')}>
       {selo ? selo.texto : 'Em contenção mecânica'}
+    </span>
+  )
+}
+
+/** Prescrição vencida ou vencendo (lacuna 6, COFEN 689/2022): o item vencido não se administra. */
+export function PilulaValidade({ r, agora }: { r: ReturnType<typeof resumoValidade> | undefined; agora: number }) {
+  const t = r ? textoResumoValidade(r, agora) : null
+  if (!t) return null
+  return (
+    <span title={t.titulo} className={cn(PILULA, t.tom === 'critico' ? 'bg-alerta-critico text-critico' : 'bg-alerta-atencao text-atencao')}>
+      {t.texto}
     </span>
   )
 }
