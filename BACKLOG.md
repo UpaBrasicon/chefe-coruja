@@ -2422,6 +2422,26 @@ Origem: levantamento das decisões ainda abertas no BACKLOG e nos documentos, fe
 
 **Bloco fechado em 10/11/2026:** os sete itens estão feitos ou decididos. Cada item com código foi em branch e PR próprios, pela homologação. Os outros blocos do levantamento (lacunas do Portão de 11/10, escores e itens do PubMed deixados para depois, unidade piloto da RNDS, M12 e a aprovação das versões das fichas) esperam o RT.
 
+## Trilha — Lacunas do Portão de 11/10/2026, RT em 10/11/2026
+
+Origem: seção 3 do relatório do teste de ponta a ponta de 11/10/2026 (`produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`), com as funções que o roteiro esperava e o produto não tinha. Estavam "aguardando a decisão do RT sobre a entrada no backlog". Em 10/11/2026 conferi cada uma contra o código: 10 continuam abertas, a 10 está parcial (só o painel do administrador mostra óbitos) e a 11 existe, mas não foi testada. O RT escolheu "A, todas nessa ordem".
+
+Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as opções para o RT decidir antes de qualquer código; depois, branch e PR próprios (`lacunas/<nome>`), homologação e, com migration, o "ok produção". Conteúdo clínico ou legal só com fonte citada.
+
+| # | Prioridade | Lacuna | Hoje | Estado |
+|---|---|---|---|---|
+| 1 | P1 | Cadastro provisório de paciente não identificado na recepção | A ficha exige nome com 3 letras; o paciente inconsciente do SAMU não entra pela recepção. O marcador "não identificado" só existe na regulação; a reidentificação posterior funciona | Diagnóstico |
+| 2 | P1 | Pulseira de identificação | Não há rota, RPC nem folha | A fazer |
+| 3 | P1 | Medicação controlada (Portaria 344): marca no catálogo, receita especial, aprovação, dispensação e lote na farmácia | O catálogo não marca controlado; haloperidol e midazolam entram como qualquer item. Fonte: listas da ANVISA | A fazer |
+| 4 | P1 | Registro de contenção mecânica (indicação, horário, revisão, retirada) | Só a intercorrência de agitação. Fonte: norma do COFEN | A fazer |
+| 5 | P1 | Declaração de óbito e registro da comunicação do óbito | Só o número da D.O. dentro do desfecho | A fazer |
+| 6 | P1 | Prescrição vencida e renovação | A prescrição tem `valida_ate`, sem aviso, renovação nem bloqueio | A fazer |
+| 7 | P2 | Resumo e checklist de transferência | O laudo e o encaminhamento são o mais próximo | A fazer |
+| 8 | P2 | Reabrir atendimento depois do desfecho, com motivo e registro | Não há RPC; depois do desfecho o atendimento fica bloqueado | A fazer |
+| 9 | P2 | Situação "atrasado" registrada na checagem | O atraso só é calculado na fila | A fazer |
+| 10 | P2 | Óbitos no painel do gestor e em Indicadores | Só o painel do administrador (`NumerosOrganizacao`) mostra | A fazer |
+| 11 | P2 | Anexar exame, imagem ou ECG como arquivo: testar na homologação | Existe; o teste local falhou por causa do storage local | A fazer (teste) |
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
