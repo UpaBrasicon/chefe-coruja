@@ -69,7 +69,10 @@ GRANT EXECUTE ON FUNCTION pg_temp.ex(text) TO authenticated;
 
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0202990031"},{"procedimento":"0204990031"},{"procedimento":"0211990031"},{"nome":"RX livre sem código"}]');
+-- um pedido por grupo (laboratório, imagem e ECG separados; RT, 10/11/2026)
+SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0202990031"},{"nome":"RX livre sem código"}]');
+SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0204990031"}]');
+SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0211990031"}]');
 
 -- 4a. domínios do visualizador: só o gestor cadastra; o endereço colado vira só o servidor
 SELECT pg_temp.falha($$SELECT public.definir_dominio_imagem('21000000-0000-4000-8000-000000000001', 'pacs.hospital.com.br')$$,

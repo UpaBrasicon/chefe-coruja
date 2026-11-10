@@ -82,7 +82,10 @@ BEGIN
 END $$;
 
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0202990021"},{"procedimento":"0204990021"},{"procedimento":"0211990021"}]');
+-- um pedido por grupo (laboratório, imagem e ECG separados; RT, 10/11/2026)
+SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0202990021"}]');
+SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0204990021"}]');
+SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0211990021"}]');
 
 -- 5a. realizado pela enfermagem, só para imagem; coleta só para laboratório
 SELECT pg_temp.falha(format('SELECT public.marcar_exame_realizado(%L)', pg_temp.ex('RX de tórax')),

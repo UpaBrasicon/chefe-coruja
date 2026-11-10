@@ -208,7 +208,9 @@ SELECT e2e.bpasso('b03_ep', 'B03.03.soap', 'f5_med_upa', '/atendimento', 'SOAP c
   format($q$SELECT public.registrar_soap(%L::uuid, 'Dor torácica em aperto há 40 min, sudorese, tabagista (teste B03)', 'FC 96, PA 150x92, SatO2 95%%', 'Síndrome coronariana aguda', 'Transferir pela regulação (decisão do médico de teste pelas fichas)', 'I21.9')::text$q$,
     e2e.u('b03_ep')));
 SELECT e2e.bpasso('b03_ep', 'B03.04.exames', 'f5_med_upa', '/atendimento (Exames)', 'Pede ECG e troponina (urgente)',
-  format($q$SELECT public.pedir_exames(%L::uuid, '[{"procedimento":"0211020036"},{"procedimento":"0202031209"}]'::jsonb, 'urgente', 'SCA (teste B03)')::text$q$, e2e.u('b03_ep')), 'ok', 'b03_exames');
+  -- ECG e laboratório em pedidos separados (RT, 10/11/2026)
+  format($q$SELECT (public.pedir_exames(%1$L::uuid, '[{"procedimento":"0211020036"}]'::jsonb, 'urgente', 'SCA (teste B03)')
+                 + public.pedir_exames(%1$L::uuid, '[{"procedimento":"0202031209"}]'::jsonb, 'urgente', 'SCA (teste B03)'))::text$q$, e2e.u('b03_ep')), 'ok', 'b03_exames');
 SELECT e2e.bpasso('b03_exames', 'B03.04.resultados', 'f5_med_upa', '/atendimento (Exames)', 'Resultados em texto (ECG com supra de ST — dado fictício)',
   format($q$SELECT string_agg(public.resolver_exame(id, 'Resultado de teste em texto (dado fictício)', NULL)::text || 'ok', ',') FROM unnest(%L::uuid[]) id$q$,
     (SELECT array_agg(id) FROM public.exames_pedidos WHERE episodio_id = e2e.u('b03_ep'))));

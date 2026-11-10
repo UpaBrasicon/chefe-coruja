@@ -187,7 +187,9 @@ SELECT e2e.bpasso('b04_ep', 'B04.03.soap', 'f5_med_upa', '/atendimento', 'SOAP c
   format($q$SELECT public.registrar_soap(%L::uuid, 'Queda de moto, sem documento (teste B04)', 'FC 128, PA 92x60, Glasgow 13 (O3 V4 M6)', 'TCE e politrauma', 'Conduta pelas fichas adulto-trauma-inicial e escores; transferência (teste de fluxo)', 'S06.9')::text$q$,
     e2e.u('b04_ep')));
 SELECT e2e.bpasso('b04_ep', 'B04.05.exames', 'f5_med_upa', '/atendimento (Exames)', 'Pede hemograma, RX de tórax (SIGTAP) e tipagem sanguínea (nome livre)',
-  format($q$SELECT public.pedir_exames(%L::uuid, '[{"procedimento":"0202020380"},{"procedimento":"0204030153"},{"nome":"Tipagem sanguínea ABO/Rh"}]'::jsonb, 'urgente', 'Trauma (teste B04)')::text$q$,
+  -- laboratório e imagem em pedidos separados (RT, 10/11/2026)
+  format($q$SELECT (public.pedir_exames(%1$L::uuid, '[{"procedimento":"0202020380"},{"nome":"Tipagem sanguínea ABO/Rh","grupo":"laboratorio"}]'::jsonb, 'urgente', 'Trauma (teste B04)')
+                 + public.pedir_exames(%1$L::uuid, '[{"procedimento":"0204030153"}]'::jsonb, 'urgente', 'Trauma (teste B04)'))::text$q$,
     e2e.u('b04_ep')), 'ok', 'b04_exames');
 SELECT e2e.bpasso('b04_exames', 'B04.05.resultados', 'f5_med_upa', '/atendimento (Exames)', 'Resultados em texto',
   format($q$SELECT string_agg(public.resolver_exame(id, 'Resultado de teste em texto (dado fictício)', NULL)::text || 'ok', ',') FROM unnest(%L::uuid[]) id$q$,
