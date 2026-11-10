@@ -51,7 +51,7 @@ function Linha({ i, n, aoMudar }: { i: ItemPS; n: number; aoMudar: () => void })
           <span className="text-apoio text-tinta-sussurro">
             {i.tipo === 'medicamento'
               ? [i.dose, i.via, i.se_necessario ? 'Se necessário' : i.posologia].filter(Boolean).join(' · ')
-              : 'cuidado'}
+              : i.tipo === 'contencao' ? 'contenção mecânica' : 'cuidado'}
             {i.autor && ` · ${i.autor}`}
           </span>
           {!i.doses?.length && i.checagem && i.checagem.situacao !== 'feito' && i.checagem.motivo && <span className="text-rotulo text-critico">Motivo: {i.checagem.motivo}</span>}

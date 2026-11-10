@@ -27,6 +27,7 @@ import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
+import { Contencao } from '@/components/prontuario/Contencao'
 import { DialogoIntercorrencia, Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { supabase } from '@/lib/supabase'
@@ -338,6 +339,8 @@ function Resumo({ p }: { p: PartesLeito }) {
       <HistoricoRegulacao pacienteId={p.pacienteId} />
       {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
       {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
+      {/* lacuna 4: contenção mecânica, com os selos de revisão e de prescrição */}
+      <Contencao pacienteId={p.pacienteId} />
       {/* Fase 2, tarefa 4: intercorrência estruturada, ligada à internação */}
       <Intercorrencias pacienteId={p.pacienteId} internacaoId={ativa ? i.id : null} episodioId={ativa ? i.episodio_id : null} />
     </>
@@ -390,6 +393,8 @@ function ResumoEmAbas({ p }: { p: PartesLeito }) {
             {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
             {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
             {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
+            {/* lacuna 4: contenção mecânica, com os selos de revisão e de prescrição */}
+            <Contencao pacienteId={p.pacienteId} />
             {/* registrar é pelo cabeçalho (ponto 7); aqui a lista e o Retificar */}
             <Intercorrencias pacienteId={p.pacienteId} internacaoId={ativa ? i.id : null} episodioId={ativa ? i.episodio_id : null} semBotao />
           </>

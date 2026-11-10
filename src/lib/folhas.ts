@@ -39,9 +39,9 @@ export const TIPOS_FOLHA: TipoFolha[] = [
 ]
 
 /** Relatórios de várias linhas (RPC folha_relatorio), não documentos. */
-export type TipoRelatorio = 'classificacao' | 'evolucao' | 'alergias' | 'avaliacao' | 'pareceres' | 'encaminhamento_interno' | 'notificaveis'
+export type TipoRelatorio = 'classificacao' | 'evolucao' | 'alergias' | 'avaliacao' | 'pareceres' | 'encaminhamento_interno' | 'notificaveis' | 'contencao'
 
-export const TIPOS_RELATORIO: TipoRelatorio[] = ['classificacao', 'evolucao', 'alergias', 'avaliacao', 'pareceres', 'encaminhamento_interno', 'notificaveis']
+export const TIPOS_RELATORIO: TipoRelatorio[] = ['classificacao', 'evolucao', 'alergias', 'avaliacao', 'pareceres', 'encaminhamento_interno', 'notificaveis', 'contencao']
 
 // Receitas da Portaria SVS/MS 344/98 (lacuna 3; rótulos corrigidos em
 // 10/11/2026): Notificação A amarela (listas A1, A2 e A3; Art. 40);
@@ -1018,6 +1018,62 @@ function relNotificaveis(d: Json, ctx: ContextoFolha): string {
     fichas: [{ doc: 'Atendimentos com CID de notificação compulsória', corpo, semPaciente: true }] })
 }
 
+// ── registro de contenção mecânica (lacuna 4, K10; paisagem) ────────────────
+// O "formulário de Registro e Monitoramento da Contenção Mecânica" da Nota
+// Técnica ANVISA GVIMS/GGTES/DIRE5 nº 07/2026; a regra é a Resolução COFEN
+// 746/2024. Uma folha por contenção: início, prescrições, família, revisões
+// (sinais vitais como foram escritos) e retirada.
+// {contencoes:[{pediatrico, motivo, alternativas, locais[], pontos, iniciada_em, iniciada_por, iniciada_por_registro,
+//   papel_inicio, prescricoes:[{descricao, observacao, prescrita_em, medico, medico_registro, suspenso_em, motivo_suspensao}],
+//   familia_informada, familia_detalhe, familia_em, familia_registrado_por, lista_revisoes:[{revisada_em, consciencia, rass,
+//   sinais_vitais, pele, perfusao, necessidades, intercorrencia, observacao, registrado_por, papel, retificada, retifica_id}],
+//   retirada_em, retirada_por, motivo_retirada, retirada_automatica}]}
+const LOCAL_CONTENCAO: Record<string, string> = {
+  msd: 'membro superior direito', mse: 'membro superior esquerdo', mid: 'membro inferior direito', mie: 'membro inferior esquerdo', tronco: 'tronco',
+}
+const PAPEL_CONTENCAO: Record<string, string> = { plantonista: 'médico', enfermeiro: 'enfermeiro', tecnico_enfermagem: 'técnico de enfermagem' }
+const rassTexto = (n: unknown) => (typeof n === 'number' ? (n > 0 ? `+${n}` : String(n)) : '')
+function relContencao(d: Json, ctx: ContextoFolha): string {
+  const pac = pacienteDe(ctx, {})
+  const fichas: Ficha[] = lista(d.contencoes).map((c) => {
+    const revs = lista(c.lista_revisoes).slice().sort((a, b) => String(a.revisada_em).localeCompare(String(b.revisada_em)))
+    const linhasRev = revs.map((r) => `<tr${r.retificada ? ' class="in"' : ''}>` +
+      `<td>${esc(dataHoraBr(r.revisada_em))}${r.retificada ? '<br><i>retificada</i>' : r.retifica_id ? '<br><i>retificação</i>' : ''}</td>` +
+      `<td>${esc(junta(' · ', r.consciencia, r.rass != null ? `RASS ${rassTexto(r.rass)}` : ''))}</td><td>${esc(r.sinais_vitais)}</td>` +
+      `<td>${esc(r.pele)}</td><td>${esc(r.perfusao)}</td>` +
+      `<td>${esc(junta(' · ', r.necessidades, r.intercorrencia ? `Intercorrência: ${r.intercorrencia}` : '', r.observacao))}</td>` +
+      `<td>${esc(junta(' · ', r.registrado_por, PAPEL_CONTENCAO[r.papel] ?? r.papel))}</td></tr>`).join('')
+    const linhasPresc = lista(c.prescricoes).map((p) => `<tr${p.suspenso_em ? ' class="in"' : ''}><td>${esc(dataHoraBr(p.prescrita_em))}</td>` +
+      `<td><b>${esc(p.descricao)}</b>${vz(p.observacao) ? '' : `<br>${esc(p.observacao)}`}</td><td>${esc(junta(' · ', p.medico, p.medico_registro))}</td>` +
+      `<td>${esc(p.suspenso_em ? junta(' · ', dataHoraBr(p.suspenso_em), p.motivo_suspensao) : 'Vigente')}</td></tr>`).join('')
+    const locais = lista(c.locais).map((l) => LOCAL_CONTENCAO[l] ?? l).join(', ')
+    const familia = c.familia_informada == null ? 'Não registrado'
+      : junta(' · ', c.familia_informada ? 'Informada' : 'Não informada', c.familia_detalhe, dataHoraBr(c.familia_em),
+        vz(c.familia_registrado_por) ? '' : `registrado por ${c.familia_registrado_por}`)
+    const corpo = faixaAlergia(ctx, {}) +
+      grade(cel(3, 'Início', `<b>${V(dataHoraBr(c.iniciada_em))}</b>`) +
+        cel(5, 'Iniciada por', V(junta(' · ', c.iniciada_por, PAPEL_CONTENCAO[c.papel_inicio] ?? c.papel_inicio, c.iniciada_por_registro))) +
+        cel(4, 'Pontos e locais', V(junta(' · ', c.pontos != null ? `${c.pontos} ${c.pontos === 1 ? 'ponto' : 'pontos'}` : '', locais))) +
+        (c.pediatrico ? cel(12, 'Paciente', '<b>Pediátrico</b> (mesmas regras da contenção; sem conteúdo clínico próprio)') : '')) +
+      bloco('Motivo', texto(c.motivo), true) + bloco('Alternativas tentadas', texto(c.alternativas)) +
+      bloco('Prescrição médica (vale 24 h)', linhasPresc
+        ? `<table class="tab"><colgroup><col style="width:14%"><col><col style="width:22%"><col style="width:22%"></colgroup><thead><tr><th>Prescrita em</th><th>Ordem</th><th>Médico</th><th>Situação</th></tr></thead><tbody>${linhasPresc}</tbody></table>`
+        : '<p class="meta"><b>Sem prescrição médica registrada.</b></p>') +
+      bloco('Família', texto(familia)) +
+      bloco('Monitoramento da enfermagem (intervalo de até 1 h)', linhasRev
+        ? `<table class="tab"><colgroup><col style="width:11%"><col style="width:15%"><col style="width:17%"><col style="width:12%"><col style="width:12%"><col><col style="width:14%"></colgroup><thead><tr><th>Hora</th><th>Consciência</th><th>Sinais vitais</th><th>Pele</th><th>Perfusão</th><th>Necessidades e intercorrência</th><th>Quem</th></tr></thead><tbody>${linhasRev}</tbody></table>`
+        : '<p class="meta">Nenhuma revisão registrada.</p>') +
+      bloco('Retirada', c.retirada_em
+        ? texto(junta(' · ', dataHoraBr(c.retirada_em), c.motivo_retirada, c.retirada_por, c.retirada_automatica ? 'encerrada pelo sistema' : ''))
+        : '<p class="meta"><b>Contenção em curso.</b></p>') +
+      '<p class="meta">Resolução COFEN 746/2024; Nota Técnica ANVISA GVIMS/GGTES/DIRE5 nº 07/2026 (revisão em até 1 h; prescrição renovada a cada 24 h).</p>' +
+      assinaturas([{ nome: pri(ctx.autor?.nome), linha: registroOuBranco(ctx.autor, 'Registro'), papel: 'Emitido por' }])
+    return { doc: 'Registro de contenção mecânica', sub: junta(' · ', dataHoraBr(c.iniciada_em), c.retirada_em ? 'encerrada' : 'em curso'), corpo }
+  })
+  if (!fichas.length) fichas.push({ doc: 'Registro de contenção mecânica', corpo: '<p class="meta">Nenhuma contenção selecionada.</p>' })
+  return pagina({ titulo: 'Registro de contenção mecânica', ctx, pac, paisagem: true, docRodape: 'Registro de contenção mecânica', fichas })
+}
+
 /** Monta um relatório de várias linhas (dados da RPC folha_relatorio). */
 export function montarRelatorio(tipo: TipoRelatorio, dados: Json, ctx: ContextoFolha): string {
   const d = dados ?? {}
@@ -1029,6 +1085,7 @@ export function montarRelatorio(tipo: TipoRelatorio, dados: Json, ctx: ContextoF
     case 'pareceres': return relPareceres(d, ctx)
     case 'encaminhamento_interno': return relEncaminhamentoInterno(d, ctx)
     case 'notificaveis': return relNotificaveis(d, ctx)
+    case 'contencao': return relContencao(d, ctx)
   }
 }
 

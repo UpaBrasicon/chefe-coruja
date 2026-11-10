@@ -138,3 +138,89 @@ passo `8.contencao` (paciente #12, enfermeiro).
 ## 5. Decisão do RT (10/11/2026)
 
 "A em todos": A em K1 a K10.
+
+## 6. Implementação (10/11/2026, branch `lacunas/contencao`)
+
+### Banco: `supabase/migrations/20270325000001_contencao.sql`
+- **K4.** `prescricao_itens.tipo` passa a aceitar `contencao`. A CHECK é
+  trocada por uma maior, no padrão do repositório (DROP CONSTRAINT IF EXISTS,
+  ADD ... NOT VALID, VALIDATE). A guarda `migrations-destrutivas` não marca
+  troca de CHECK, e nenhum valor que valia deixa de valer.
+  - Coluna nova `prescricao_itens.contencao` (jsonb): pontos, período
+    previsto em horas (1 a 24), motivo e critérios de retirada. Só no item de
+    contenção (CHECK).
+  - `prescrever` aceita o tipo; a descrição ("Contenção mecânica em 4
+    pontos") e a observação (motivo, período, critérios, validade de 24 h)
+    saem montadas, e as telas que já mostram o item mostram a ordem inteira.
+  - A ordem nova é a renovação: suspende a anterior do paciente e liga na
+    contenção ativa.
+- **K5 e K7.** Tabelas `contencoes` e `contencao_revisoes`, sem leitura
+  direta (como as intercorrências); leitura e escrita só pelas RPCs.
+  - Uma contenção ativa por paciente (índice único).
+  - A revisão é só de inserção; corrigir é retificar.
+  - Evento adverso: a revisão aponta a intercorrência registrada.
+  - A alta da internação e o desfecho da porta encerram a contenção sozinhos,
+    como o isolamento; a porta que vira internação mantém.
+- **K2.** `iniciar_contencao`: enfermeiro ou médico. `revisar_contencao`:
+  enfermeiro ou técnico. `retirar_contencao` e `informar_familia_contencao`:
+  enfermagem ou médico. Todos exigem o paciente no plantão de quem registra.
+- **K3.** Sem ordem de contenção vigente, a contenção fica com "sem
+  prescrição", e o médico de plantão do setor do paciente é avisado na hora
+  (sem ninguém no setor, os médicos escalados na unidade).
+- **K6.** `private.contencao_estado` calcula a próxima revisão (1 h depois da
+  última ou do início), o atraso e a validade da ordem (24 h, aviso a 2 h do
+  fim).
+  - O job `contencao-avisos` roda a cada 15 min e avisa:
+    - o enfermeiro do setor, uma vez por janela atrasada;
+    - o médico, uma vez por dia enquanto faltar prescrição;
+    - o médico, uma vez perto do vencimento e uma vez no vencimento.
+- **K8.** `contencao_do_paciente` (tela), `contencoes_ativas` (listas da
+  enfermagem) e `relatorio_contencoes` (gestor): taxa de uso, tempo médio,
+  revisões no prazo, eventos adversos, iniciadas antes da prescrição e por
+  setor.
+  - `prontuario_leitura` ganha as chaves `contencoes` e `intercorrencias`.
+- **K9.** O registro guarda `pediatrico` (até 13a 11m 29d, pelo
+  `private.pediatrico_em`). As regras são as mesmas; o RASS é recusado na
+  criança porque a escala do app é de adulto.
+- **K10.** `folha_relatorio` aceita o tipo `contencao`, com o protocolo da
+  impressão.
+- **Trocadas trecho a trecho** (pelo texto da homologação; trecho que sumiu
+  para com erro; reaplicável): `prescrever`, `folha_relatorio`,
+  `prontuario_leitura`. O rollback está comentado no fim da migration.
+
+### Telas
+- **Bloco "Contenção mecânica"** (`src/components/prontuario/Contencao.tsx`),
+  ao lado das intercorrências: gaveta de cuidados da enfermagem, caderno do
+  leito (Resumo e "Agora") e janela do atendimento da porta.
+  - Mostra os selos, a ordem médica, as revisões, a família, as anteriores e
+    a impressão.
+  - Ações: iniciar, revisar, retificar, família e retirar, conforme o que o
+    servidor diz que a pessoa pode.
+- **Selo nas listas** da enfermagem: PS (triados e observação) e internação.
+- **Prescrição:** botão "Contenção mecânica" no novo item
+  (`src/components/prescricao/ItemContencao.tsx`).
+- **Linha do tempo do prontuário:** contenções e intercorrências.
+- **Gestor:** indicadores na página de intercorrências.
+- **Folha** "Registro de contenção mecânica" em `src/lib/folhas.ts`, copiada
+  para `supabase/functions/_shared/folhas.ts`. A edge function `folha`
+  precisa de deploy; até lá, o app monta a folha pela RPC (a impressão fica
+  registrada).
+- **K1:** `src/clinico/adulto/agitacao.ts` cita a Resolução COFEN 746/2024
+  (que revogou a 427/2012) e a Nota Técnica ANVISA 07/2026 como origem do
+  intervalo de 1 h.
+
+### Evidência
+- **Testes de banco:** `supabase/tests/contencao.sql`, 74 verificações,
+  passou na homologação em transação desfeita.
+- **Migration aplicada duas vezes:** as três funções trocadas ficam com o
+  mesmo md5.
+- **Rollback:** o md5 volta ao de antes (`prescrever` 6c2f0ae2,
+  `folha_relatorio` 87e57fe6, `prontuario_leitura` 3c3c35eb), o job e as
+  RPCs saem, e as tabelas ficam.
+- **Testes existentes na homologação com a migration:**
+  - passaram `depois_prontuario_leitura`, `fix_prescrever_atendimento_aberto`,
+    `portao2_isolamento` e `fase4_prescricao_diluicao`;
+  - `fase2_intercorrencia`, `fase4_checagem` e
+    `fase2_alteracao_item_prescricao` falham igual sem a migration, porque a
+    homologação exige fluxograma na classificação.
+- **Testes de node:** `contencao`, `folhaContencao` e linha do tempo.

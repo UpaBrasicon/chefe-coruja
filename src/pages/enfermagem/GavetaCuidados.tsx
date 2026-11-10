@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { CorRisco } from '@/domain/risco'
 import { PainelCuidados } from '@/components/enfermagem/PainelCuidados'
+import { Contencao } from '@/components/prontuario/Contencao'
 import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { QuadroProcedimentos } from '@/components/paciente/ProcedimentosRealizados'
@@ -41,6 +42,8 @@ export function GavetaCuidados({ paciente, onFechar }: { paciente: PacienteEmCui
               contexto={paciente.contexto} desde={paciente.desde} rotuloDesde={paciente.rotuloDesde} corClassificacao={paciente.cor}
               acuidade className="shadow-none" />
             {/* Fase 2, tarefa 4: enfermeiro e técnico também registram intercorrência (decisão do RT) */}
+            {/* lacuna 4: contenção mecânica (início, revisões de até 1 h, retirada) */}
+            <Contencao pacienteId={paciente.pacienteId} />
             <Intercorrencias pacienteId={paciente.pacienteId} episodioId={paciente.episodioId} internacaoId={paciente.internacaoId} />
             <PainelCuidados pacienteId={paciente.pacienteId} episodioId={paciente.episodioId} internacaoId={paciente.internacaoId} />
             {/* Fase 3, tarefa 3: no Pronto Socorro, o que a enfermagem faz vai para o BPA (internação vai na AIH) */}
