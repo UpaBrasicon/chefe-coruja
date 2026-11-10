@@ -131,3 +131,7 @@ passo `7.resumo_transferencia` (paciente #7, transferência externa).
   pode ser usado.
 - Envio à RNDS.
 - Acompanhante e pertences.
+
+## 5. Decisão do RT (10/11/2026)
+
+"Sim": A em T1 a T9.
