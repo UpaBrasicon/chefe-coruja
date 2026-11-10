@@ -91,7 +91,7 @@ export default function Contingencia() {
           <div key={c.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-controle border border-fio bg-superficie px-4 py-2.5 text-apoio">
             <span className="font-medium text-tinta">{fmtDataHora(c.inicio)} a {fmtDataHora(c.fim)}</span>
             <span className="text-tinta-apoio">{duracaoContingencia(c.inicio, c.fim)}</span>
-            <span className="text-tinta-apoio">“{c.motivo}”</span>
+            <span className="text-tinta-apoio">"{c.motivo}"</span>
             <span className={c.reentradas < c.atendimentos_no_periodo ? 'text-atencao' : 'text-conforme'}>
               {c.reentradas} de {c.atendimentos_no_periodo} atendimentos com reentrada
             </span>

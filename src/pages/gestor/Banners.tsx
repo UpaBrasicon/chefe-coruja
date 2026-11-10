@@ -163,7 +163,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
         <TituloPagina
           icone={Images}
           titulo="Imagens da unidade"
-          descricao={<>{unidadeAtiva?.unidade.nome} — o quadro exibido na Central do Plantonista. As imagens trocam sozinhas e podem ter links.</>}
+          descricao={<>Quadro de imagens da Central do Plantonista em {unidadeAtiva?.unidade.nome}. As imagens trocam sozinhas e podem ter links.</>}
           acoes={botaoNovo}
           className="mb-0"
         />

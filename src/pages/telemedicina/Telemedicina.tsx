@@ -29,7 +29,7 @@ const TELAS = {
   telemonitoramento: { icone: Activity, titulo: 'Telemonitoramento', descricao: 'Setores da unidade cobertos pela telemedicina: quem cobre e quando' },
   assinaturas: { icone: FileText, titulo: 'Assinaturas pendentes', descricao: 'Pareceres por escrever e pareceres emitidos que esperam a assinatura digital' },
   historico: { icone: History, titulo: 'Histórico e auditoria', descricao: 'Suas teleinterconsultas e a trilha de quem abriu o quê, com data e hora' },
-  credenciais: { icone: ShieldCheck, titulo: 'Unidades e credenciais', descricao: 'Onde você pode atender e com que inscrição — a CFM 2.314 exige identificação do médico em toda teleconsulta' },
+  credenciais: { icone: ShieldCheck, titulo: 'Unidades e credenciais', descricao: 'Onde você pode atender e com que inscrição. A Res. CFM 2.314 exige identificação do médico em toda teleconsulta.' },
 } as const
 type Tela = keyof typeof TELAS
 
@@ -351,7 +351,7 @@ function Assinaturas() {
             </ul>
           </Secao>
           <Nota icone={<ShieldCheck />}>
-            A assinatura com certificado ICP-Brasil (Res. CFM 2.314/2022, art. 13) entra com a etapa 4.8, que ainda não tem provedor escolhido. Até lá o parecer vale pela emissão numerada no prontuário, com o seu CRM, e já chegou ao médico que pediu. Nada aqui é assinado.
+            A assinatura com certificado ICP-Brasil (Res. CFM 2.314/2022, art. 13) ainda não está disponível: falta escolher o provedor. Até lá o parecer vale pela emissão numerada no prontuário, com o seu CRM, e já chegou ao médico que pediu. Nada aqui é assinado.
           </Nota>
         </>
       )}
@@ -467,7 +467,7 @@ function Credenciais() {
             {[
               ['Inscrição', crm ?? 'CRM não cadastrado', crm ? 'do seu cadastro; vai em todo parecer' : 'peça ao gestor para completar o cadastro'],
               ['Especialidade', d.especialidades.length ? d.especialidades.join(', ') : 'nenhuma declarada', 'declarada por você; o RQE não é conferido pelo app'],
-              ['Assinatura digital', 'Não configurada', 'ICP-Brasil entra com a etapa 4.8 (provedor a escolher)'],
+              ['Assinatura digital', 'Não configurada', 'ICP-Brasil ainda sem provedor'],
             ].map(([rot, v, sub]) => (
               <div key={rot} className="flex flex-col gap-1 rounded-cartao border border-fio bg-superficie px-4 py-3.5 shadow-repouso">
                 <span className="text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">{rot}</span>

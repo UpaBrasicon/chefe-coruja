@@ -135,7 +135,7 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
             if (ev.nao_encontrou) { setFontes([]); setFerramentas([]) }
             // R2-17: "não encontrei" mostra só a frase, sem alerta de cálculo
             if (ev.calculo_suspeito && !ev.nao_encontrou) setAlerta('A resposta pode trazer um número calculado para o paciente. A IA não deve calcular: use a ferramenta indicada e confira a dose de referência na fonte.')
-            else if (ev.sem_citacao || ev.citacoes_invalidas?.length) setAlerta('Resposta com citação incompleta — confira as fontes.')
+            else if (ev.sem_citacao || ev.citacoes_invalidas?.length) setAlerta('Resposta com citação incompleta: confira as fontes.')
             if (!bloqueado) setStatus('done')
           }
         }

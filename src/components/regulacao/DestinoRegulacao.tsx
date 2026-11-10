@@ -85,7 +85,7 @@ export function BlocoDestino({ s }: { s: PedidoDestino }) {
           {s.saida_em && <>Saiu da origem em {fmtDataHora(s.saida_em)} ({s.saida_por ?? '—'}). </>}
           {s.status === 'realizada' && s.realizada_em && <>Chegou ao destino em {fmtDataHora(s.realizada_em)} ({s.chegada_por ?? '—'}). </>}
           {s.chegou_origem_aberta && s.chegada_em && <>Chegou ao destino em {fmtDataHora(s.chegada_em)} ({s.chegada_por ?? '—'}); a origem ainda não deu alta por transferência. </>}
-          {s.status === 'falta' && s.falta_em && <>Não chegou — registrado em {fmtDataHora(s.falta_em)} ({s.chegada_por ?? '—'}). </>}
+          {s.status === 'falta' && s.falta_em && <>Não chegou: registrado em {fmtDataHora(s.falta_em)} ({s.chegada_por ?? '—'}). </>}
           {s.chegada_observacao}
         </p>
       )}

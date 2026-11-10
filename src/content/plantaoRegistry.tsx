@@ -129,7 +129,7 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
       f(
         'pacientes',
         'Pacientes internados',
-        'Enfermarias e sala vermelha — dos setores onde você está na escala.',
+        'Enfermarias e sala vermelha dos setores da sua escala.',
         sobDemanda(() => import('@/pages/plantao/secoes/PacientesInternados'), 'PacientesInternados')
       ),
     ],
@@ -137,7 +137,7 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
   {
     slug: 'observacao',
     label: 'Observação',
-    description: 'Pacientes em observação — no máximo 6 horas.',
+    description: 'Pacientes em observação, por no máximo 6 horas.',
     icon: Eye,
     tools: [
       f(

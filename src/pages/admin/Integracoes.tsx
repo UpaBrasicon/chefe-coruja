@@ -36,9 +36,9 @@ type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laborator
 const RECURSOS: Record<Recurso, string> = {
   pacientes: 'Pacientes', atendimentos: 'Atendimentos', leitos: 'Leitos', producao: 'Produção SUS (AIH, APAC, fechamentos)',
   // Fase 5C, etapa 1.3: chave do LIS (lê pedidos de exame, grava coleta e laudo pela porta FHIR)
-  laboratorio: 'Laboratório (LIS): pedidos de exame, coleta e laudo — FHIR',
+  laboratorio: 'Laboratório (LIS, em FHIR): pedidos de exame, coleta e laudo',
   // Fase 5C, etapa 2.2: chave do RIS (lê pedidos de imagem e ECG, grava exame feito, link do PACS e laudo)
-  imagem: 'Imagem (RIS/PACS): pedidos de imagem e ECG, exame feito, link e laudo — FHIR',
+  imagem: 'Imagem (RIS/PACS, em FHIR): pedidos de imagem e ECG, exame feito, link e laudo',
   // Fase 5C, etapa 3.3: chave do ERP (lê contas faturadas e plantões fechados, devolve o lançamento)
   financeiro: 'Financeiro (ERP): contas faturadas e plantões do mês, com o retorno do lançamento',
   // Fase 5C, etapa 4.2: leitura por id do que o webhook avisa
@@ -250,7 +250,7 @@ function CartaoChave({ c }: { c: Chave }) {
           {c.ultimo_uso_em && <> · último uso {fmtDataHora(c.ultimo_uso_em)}</>}
           {' '}· criada por {c.criada_por ?? '—'} em {fmtDataHora(c.criada_em)}
         </span>
-        {c.revogada_em && <span className="text-rotulo text-critico">Revogada por {c.revogada_por ?? '—'} em {fmtDataHora(c.revogada_em)}: “{c.motivo_revogacao}”</span>}
+        {c.revogada_em && <span className="text-rotulo text-critico">Revogada por {c.revogada_por ?? '—'} em {fmtDataHora(c.revogada_em)}: "{c.motivo_revogacao}"</span>}
         <div className="flex flex-wrap gap-2">
           <Button size="xs" variant="ghost" onClick={() => setAcao(acao === 'acessos' ? null : 'acessos')}>{acao === 'acessos' ? 'Esconder acessos' : 'Ver acessos'}</Button>
           {ativa && c.pode_editar && <Button size="xs" variant="outline" onClick={() => setAcao('ajustar')}>Ajustar limite e IPs</Button>}

@@ -62,7 +62,7 @@ export function BuscaTerminologia({ tipo, onSelecionar, placeholder, className, 
           {isError && (
             <CommandEmpty>Erro ao buscar. Tente novamente.</CommandEmpty>
           )}
-          {semResultado && <CommandEmpty>Nenhum resultado para “{termo.trim()}”.</CommandEmpty>}
+          {semResultado && <CommandEmpty>Nenhum resultado para "{termo.trim()}".</CommandEmpty>}
           {(resultados ?? []).length > 0 && (
             <CommandGroup heading={ROTULO_TIPO[tipo]}>
               {resultados!.map((r) => (

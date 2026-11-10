@@ -198,7 +198,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
     if (!rx.itens.length) pendencias.push('ao menos um medicamento')
     for (const i of rx.itens) {
       const t = i.medicamento_id ? travas[i.medicamento_id] : null
-      if (t) pendencias.push(`${i.medicamento}: bloqueado pela alergia a ${t} — remova o item`)
+      if (t) pendencias.push(`${i.medicamento}: bloqueado pela alergia a ${t}: remova o item`)
       if (!i.posologia.trim()) pendencias.push(`como tomar ${i.medicamento}`)
       if (ehControle(i) && !i.quantidade.trim()) pendencias.push(`quantidade de ${i.medicamento} (controle especial)`)
     }

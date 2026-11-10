@@ -115,7 +115,7 @@ export function TelaBloqueada({
         </button>
         <button type="button" onClick={onSair} className="inline-flex items-center justify-center gap-2 py-1 text-apoio text-tinta-sussurro hover:text-critico">
           <LogOut className="size-4" aria-hidden />
-          Não sou {nome?.split(' ')[0] ?? 'eu'} — sair
+          Não sou {nome?.split(' ')[0] ?? 'eu'}. Sair
         </button>
         <p className="m-0 text-rotulo leading-[1.45] text-pretty text-tinta-sussurro">
           A tela bloqueia depois de 10 minutos sem uso, e a sessão acaba em 30. O que já foi registrado não se perde.

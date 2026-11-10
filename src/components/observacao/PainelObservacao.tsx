@@ -156,7 +156,7 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
       {!embutido && (
         <>
           <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Observação' }]} />
-          <TituloPagina icone={Eye} titulo="Pacientes em Observação" descricao="Permanência máxima de 6 horas: aviso de quem passou do prazo." />
+          <TituloPagina icone={Eye} titulo="Pacientes em observação" descricao="Permanência máxima de 6 horas: aviso de quem passou do prazo." />
         </>
       )}
       {corpo}

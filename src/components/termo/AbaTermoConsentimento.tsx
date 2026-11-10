@@ -511,7 +511,7 @@ function ItemTermo({ t, painel, emEdicao, onRetificar, onCancelar }: {
                 {t.versoes.map((v) => (
                   <li key={v.id}>
                     v{v.versao} · nº {v.numero ?? '—'} · {quando(v.emitido_em)} · {v.autor ?? '—'}
-                    {v.motivo_retificacao && <> · “{v.motivo_retificacao}”</>}
+                    {v.motivo_retificacao && <> · "{v.motivo_retificacao}"</>}
                     {v.estado === 'retificado' && <> · substituída</>}
                   </li>
                 ))}

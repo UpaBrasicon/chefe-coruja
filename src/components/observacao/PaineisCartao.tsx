@@ -291,7 +291,7 @@ export function BlocoPassagemBox({ linha }: { linha: LinhaObservacao }) {
   const ps = linha.passagem!
   const rotulo = ps.situacao === 'aceita'
     ? `Aceita às ${hhmm(ps.respondida_em)}${ps.para_nome ? ` · ${ps.para_nome}` : ''}`
-    : ps.situacao === 'recusada' ? `Recusada · “${ps.motivo_recusa ?? ''}”` : `Aguardando aceite${ps.para_nome ? ` de ${ps.para_nome}` : ''}`
+    : ps.situacao === 'recusada' ? `Recusada · "${ps.motivo_recusa ?? ''}"` : `Aguardando aceite${ps.para_nome ? ` de ${ps.para_nome}` : ''}`
   return (
     <Painel>
       <div className="flex flex-wrap items-center gap-2">

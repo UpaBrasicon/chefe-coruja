@@ -105,7 +105,7 @@ export function FormRn({ mae: maeFixa, onCriado }: { mae?: Mae; onCriado: (rn: R
         </div>
       </div>
       <p className="text-rotulo text-tinta-sussurro">
-        Fica como “RN {gemelar ? `${gemelar} ` : ''}de {mae?.nome ?? '<mãe>'}”, ligado ao cadastro da mãe (até 27 dias de vida).
+        Fica como "RN {gemelar ? `${gemelar} ` : ''}de {mae?.nome ?? '<mãe>'}", ligado ao cadastro da mãe (até 27 dias de vida).
         Quando tiver nome e Cartão SUS, edite o cadastro normal: o vínculo com a mãe continua.
       </p>
       {erro && <p role="alert" className="text-critico">{erro}</p>}

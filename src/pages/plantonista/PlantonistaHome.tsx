@@ -262,7 +262,7 @@ export default function PlantonistaHome() {
                 className="gap-1.5 rounded-container px-3 py-1.5 text-left font-medium whitespace-normal text-tinta hover:text-tinta"
               >
                 <Sparkles className="size-4 text-acao" aria-hidden />
-                Perguntar à IA: “{consulta.trim()}”
+                Perguntar à IA: "{consulta.trim()}"
               </Button>
               <span className="text-apoio text-tinta-sussurro">Não digite nome, CPF ou dados identificáveis do paciente. Enter pergunta; ↑↓ escolhem uma ferramenta.</span>
             </div>
@@ -284,7 +284,7 @@ export default function PlantonistaHome() {
         {consulta.trim() ? (
           <section aria-live="polite">
             <TituloSecao extra={`${resultados.length} ${resultados.length === 1 ? 'ferramenta' : 'ferramentas'}`}>
-              Resultados para “{consulta.trim()}”
+              Resultados para "{consulta.trim()}"
             </TituloSecao>
             {resultados.length ? (
               <div className="grid gap-3 sm:grid-cols-2">
@@ -294,7 +294,7 @@ export default function PlantonistaHome() {
               </div>
             ) : (
               <div className="py-6 text-center text-apoio text-tinta-sussurro">
-                <p>Nenhuma ferramenta com esse nome para “{consulta.trim()}”.</p>
+                <p>Nenhuma ferramenta com esse nome para "{consulta.trim()}".</p>
                 {sugestoes && sugestoes.length > 0 && (
                   <div className="mt-4 text-left">
                     <TituloSecao>Sugestões por significado</TituloSecao>

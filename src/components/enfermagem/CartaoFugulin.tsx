@@ -101,7 +101,7 @@ export function CartaoFugulin({ internacaoId }: { internacaoId: string }) {
           <span className="text-rotulo font-medium text-tinta-sussurro">Histórico</span>
           {(hist.data ?? []).slice(0, 14).map((r) => (
             <span key={r.id} className={cn('text-tinta-apoio', r.retificada && 'line-through opacity-60')}>
-              {dataBr(r.dia)} · {r.total} · {r.categoria} · {r.por ?? '—'}{r.motivo ? ` — retificação: “${r.motivo}”` : ''}
+              {dataBr(r.dia)} · {r.total} · {r.categoria} · {r.por ?? '—'}{r.motivo ? ` — retificação: "${r.motivo}"` : ''}
             </span>
           ))}
         </div>

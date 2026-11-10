@@ -54,7 +54,7 @@ function metaDe(d: DocumentoEpisodio): string {
     case 'emitido': return `Emitido às ${hora(d.emitido_em ?? d.criado_em)} · ${autor}`
     case 'assinado': return `Assinado às ${hora(d.assinado_em)} · ${autor}`
     case 'retificado': return `Emitido às ${hora(d.emitido_em ?? d.criado_em)} · ${autor} · substituído por versão nova`
-    case 'cancelado': return `Cancelado às ${hora(d.cancelado_em)} por ${d.cancelado_por ?? '—'} · “${d.motivo_cancelamento ?? ''}”`
+    case 'cancelado': return `Cancelado às ${hora(d.cancelado_em)} por ${d.cancelado_por ?? '—'} · "${d.motivo_cancelamento ?? ''}"`
   }
 }
 
@@ -102,7 +102,7 @@ export function BarraDocumento({
           ? `Emitido nº ${atual.numero} às ${hora(atual.emitido_em)} por ${atual.autor ?? '—'} · só leitura. Para corrigir, cancele e copie como novo.`
           : estado === 'assinado'
             ? `Assinado às ${hora(atual.assinado_em)} por ${atual.autor ?? '—'} · só leitura. Para corrigir, cancele e copie como novo.`
-            : `Cancelado às ${hora(atual.cancelado_em)} · “${atual.motivo_cancelamento ?? ''}” · riscado no histórico.`
+            : `Cancelado às ${hora(atual.cancelado_em)} · "${atual.motivo_cancelamento ?? ''}" · riscado no histórico.`
 
   async function executar(fn: () => Promise<void>) {
     setOcupado(true)

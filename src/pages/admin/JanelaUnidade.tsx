@@ -105,7 +105,7 @@ function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; o
         <DialogTitle>{nova ? 'Nova unidade' : 'Editar unidade'}</DialogTitle>
         <DialogDescription>
           {nova
-            ? 'A unidade nasce ativa, sem setores e sem equipe. O tipo define o menu de quem trabalha nela.'
+            ? 'A unidade é criada ativa, sem setores e sem equipe. O tipo define o menu de quem trabalha nela.'
             : 'O tipo só muda sem atendimento aberto e sem leito ocupado.'}
         </DialogDescription>
       </DialogHeader>

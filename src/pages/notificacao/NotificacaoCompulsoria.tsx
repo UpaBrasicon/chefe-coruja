@@ -98,7 +98,7 @@ export default function NotificacaoCompulsoria() {
         <div className="mb-4 flex items-start gap-2.5 rounded-controle border border-nota bg-alerta-atencao px-3.5 py-3">
           <ShieldAlert className="mt-0.5 size-4 shrink-0 text-atencao" aria-hidden />
           <span className="text-apoio leading-[1.5] text-pretty text-atencao">
-            O catálogo aguarda a conferência da vigilância: a portaria não traz CID, e o mapeamento CID → agravo veio do protótipo
+            O catálogo aguarda a conferência da vigilância: a portaria não traz CID, e o mapeamento CID → agravo foi montado pela equipe do sistema
             ({conferencia.data!.itens} de 70 agravos e {conferencia.data!.regras} faixas de CID sem conferência). Por isso a lista só
             sugere: nada é notificado sozinho. Confira na lista do Ministério da Saúde antes de descartar um caso.
           </span>

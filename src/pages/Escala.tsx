@@ -739,7 +739,7 @@ export default function Escala({
       if (error) throw error
       invalidar()
       // passar_plantao devolve o id do plantão quando passa na hora e o do pedido quando espera o gestor
-      setMensagem(data === escalaId ? 'Plantão passado com sucesso.' : 'Passagem pedida. O colega precisa aceitar e a coordenação aprovar; até lá o plantão continua com você.')
+      setMensagem(data === escalaId ? 'Plantão passado.' : 'Passagem pedida. O colega precisa aceitar e a coordenação aprovar; até lá o plantão continua com você.')
       setJustificativa('')
       setDestinoId('')
     } catch (e) {
@@ -833,7 +833,7 @@ export default function Escala({
         {!embutido && (
           <p className="text-apoio text-tinta-sussurro">
             {unidadeAtiva?.unidade.nome ?? 'Unidade'} ·{' '}
-            {ehGestor ? 'Gestor — monte a escala' : ehAdmin ? 'Admin — todas as unidades' : 'Sua escala'}
+            {ehGestor ? 'Gestor: monte a escala' : ehAdmin ? 'Admin: todas as unidades' : 'Sua escala'}
           </p>
         )}
       </div>}
