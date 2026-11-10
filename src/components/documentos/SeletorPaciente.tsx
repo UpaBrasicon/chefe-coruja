@@ -3,7 +3,7 @@
 // campo de nome, nascimento ou CNS para digitar à mão. Abrir o paciente é
 // consulta registrada no servidor (abrir_prontuario).
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, PencilLine, Plus, Search, TriangleAlert, UserRound, X } from 'lucide-react'
+import { Check, PencilLine, Plus, Search, TriangleAlert, UserRound, UserRoundCheck, X } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -20,6 +20,8 @@ import { usePacienteDaUrl } from '@/hooks/usePacienteDaUrl'
 import type { PacProto } from './identificacao'
 import { Aviso } from '@/components/ui/aviso'
 import { BotaoLinha } from '@/components/ui/botao-linha'
+import { IdentificarPaciente } from '@/components/paciente/NaoIdentificado'
+import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 
 /**
  * O paciente escolhido na ferramenta (guardado no aparelho, 12 h, como os
@@ -61,6 +63,19 @@ export function SeletorPaciente({ pacienteId, onEscolher, pac, unidadeId, perfil
   const [salvando, setSalvando] = React.useState(false)
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const { data: setores } = useEscalaSetores(unidadeId, perfilId)
+  // lacuna 1 (RT 10/11/2026): paciente não identificado ganha a ação Identificar
+  const [identificando, setIdentificando] = React.useState(false)
+  const identidade = useQuery({
+    queryKey: ['paciente-identidade', pacienteId],
+    enabled: !!pacienteId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes')
+        .select('id, nome, prontuario, identidade_desconhecida, sinais_identificacao').eq('id', pacienteId!).maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+  const provisorio = identidade.data?.identidade_desconhecida ? identidade.data : null
 
   const achados = useQuery({
     queryKey: ['documento-busca-paciente', termo],
@@ -165,10 +180,21 @@ export function SeletorPaciente({ pacienteId, onEscolher, pac, unidadeId, perfil
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => abrirCadastro('editar')}><PencilLine /> Completar ou corrigir cadastro</Button>
+            {provisorio && (
+              <Button size="sm" onClick={() => { setCadastro('fechado'); setIdentificando(true) }}><UserRoundCheck /> Identificar paciente</Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => { setIdentificando(false); abrirCadastro('editar') }}><PencilLine /> Completar ou corrigir cadastro</Button>
             {!fixo && <Button variant="ghost" size="sm" onClick={() => onEscolher(null)}><X /> Trocar paciente</Button>}
           </div>
+          {provisorio && <SeloNaoIdentificado paciente={provisorio} />}
         </div>
+        {provisorio && identificando && (
+          <section aria-label="Identificar paciente" className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px] shadow-repouso">
+            <h3 className="text-corpo font-semibold text-tinta">Identificar paciente</h3>
+            <IdentificarPaciente paciente={provisorio} onCancelar={() => setIdentificando(false)}
+              onIdentificado={() => setIdentificando(false)} />
+          </section>
+        )}
         {formCadastro}
       </div>
     )

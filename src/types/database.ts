@@ -6974,6 +6974,8 @@ export type Database = {
           created_at: string
           data_nascimento: string | null
           data_nascimento_estimada: boolean
+          identidade_desconhecida: boolean
+          sinais_identificacao: string | null
           mae_id: string | null
           rn_ordem: number | null
           endereco: string | null
@@ -7015,6 +7017,8 @@ export type Database = {
           created_at?: string
           data_nascimento?: string | null
           data_nascimento_estimada?: boolean
+          identidade_desconhecida?: boolean
+          sinais_identificacao?: string | null
           mae_id?: string | null
           rn_ordem?: number | null
           endereco?: string | null
@@ -7056,6 +7060,8 @@ export type Database = {
           created_at?: string
           data_nascimento?: string | null
           data_nascimento_estimada?: boolean
+          identidade_desconhecida?: boolean
+          sinais_identificacao?: string | null
           mae_id?: string | null
           rn_ordem?: number | null
           endereco?: string | null
@@ -12123,6 +12129,11 @@ export type Database = {
         }[]
       }
       historico_encerrado: { Args: { p_paciente: string }; Returns: Json }
+      // lacuna 1 (RT 10/11/2026): paciente não identificado
+      identificar_paciente: {
+        Args: { p_dados: Json; p_outra_pessoa?: boolean; p_paciente: string }
+        Returns: Json
+      }
       historico_evolucoes: { Args: { p_internacao: string }; Returns: Json }
       hook_segundo_fator_tentativa: { Args: { event: Json }; Returns: Json }
       horario_servidor: { Args: never; Returns: string }
@@ -12486,6 +12497,7 @@ export type Database = {
         Args: { p_ate: string; p_de: string; p_unidade: string }
         Returns: Json
       }
+      pacientes_nao_identificados: { Args: { p_unidade: string }; Returns: Json }
       pacientes_por_cor: {
         Args: {
           p_ate: string
@@ -13066,6 +13078,17 @@ export type Database = {
           p_prioridades?: string[]
           p_queixa: string
           p_setor: string
+        }
+        Returns: Json
+      }
+      registrar_nao_identificado: {
+        Args: {
+          p_idade_estimada?: number
+          p_prioridades?: string[]
+          p_queixa: string
+          p_setor: string
+          p_sexo?: string
+          p_sinais?: string
         }
         Returns: Json
       }

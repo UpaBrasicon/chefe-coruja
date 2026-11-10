@@ -104,3 +104,74 @@ documento).
 - **Chegada regulada:** a chegada de paciente sem documento continua criando
   cadastro novo no destino, como hoje.
 - **Regra de prescrição:** a trava de idade e peso não muda.
+
+## 4. Decisão do RT (10/11/2026)
+
+A em N1, N2, N3 e N4:
+- **N1:** o servidor gera o nome "Não identificado <prontuário>".
+- **N2:** a recepção registra sexo aparente, idade estimada em anos e
+  "sinais e quem trouxe" (até 500 letras), tudo opcional. A idade estimada
+  usa `data_nascimento_estimada`; sem ela, as travas de hoje continuam.
+- **N3:** marca própria `identidade_desconhecida`, separada do "sem
+  documento" da regulação, com selo nas filas da triagem, do PS e da
+  internação.
+- **N4:** ação "Identificar paciente" na recepção e no cadastro, com busca
+  de duplicata antes de gravar e pedido de unificação pelo fluxo que já
+  existe.
+
+## 5. Implementação
+
+**Migration** `supabase/migrations/20270322000001_paciente_nao_identificado.sql`
+(só aditiva, idempotente):
+- `pacientes.identidade_desconhecida` (boolean, padrão falso) e
+  `pacientes.sinais_identificacao` (texto, até 500 letras), mais um índice
+  parcial dos marcados ativos.
+- Tabela `public.pacientes_identidade_provisoria`, o histórico da identidade
+  provisória, com uma linha por cadastro:
+  - guarda o prontuário, o nome provisório, os sinais, o sexo aparente e a
+    idade estimada, além de quem cadastrou e quando;
+  - na identificação, ganha quem identificou, quando e se a pessoa confirmou
+    "é outra pessoa";
+  - com RLS: lê quem lê o paciente (as mesmas políticas de `pacientes`);
+    ninguém grava direto, só as funções; anon não tem acesso.
+- `public.registrar_nao_identificado(p_setor, p_queixa, p_sexo,
+  p_idade_estimada, p_sinais, p_prioridades)`: cria o cadastro com o nome
+  provisório, a marca, os sinais e a idade estimada, e abre a ficha por
+  `registrar_ficha` (mesmas regras de porta e plantão). Grava a linha do
+  histórico.
+- `public.identificar_paciente(p_paciente, p_dados, p_outra_pessoa)`:
+  - mesmo CPF ou CNS em outro cadastro sempre bloqueia;
+  - mesmo nome e nascimento bloqueia até confirmar que é outra pessoa;
+  - com candidato, não grava e devolve a lista;
+  - sem candidato, completa a linha do histórico, grava, tira a marca e os
+    sinais do cadastro e apaga a marca de idade estimada quando vem a data
+    real.
+- Auditoria por `private.registrar_auditoria`, sem dado de pessoa:
+  - `cadastrar_nao_identificado` leva o id do paciente e o setor;
+  - `identificar_paciente` leva o id do paciente e os nomes dos campos
+    alterados.
+- `public.pacientes_nao_identificados(p_unidade)`: a lista da recepção
+  (recepção ou gestor da unidade).
+- `salvar_cadastro_paciente`: recusa trocar o nome de quem está marcado
+  ("use Identificar paciente"). Troca de trecho no texto atual da função.
+
+**Telas**
+- Recepção: botão "Não identificado" (só na UPA) e a lista "Não
+  identificados na unidade", com Identificar e o pedido de unificação.
+- Cadastro do paciente nos documentos (`SeletorPaciente`): selo e botão
+  "Identificar paciente".
+- Selo "Não identificado" com os sinais na fila da triagem, na espera do
+  médico, no cabeçalho da classificação, na fila do PS e na lista de
+  internados.
+
+**Testes**
+- `supabase/tests/paciente_nao_identificado.sql`: 43 conferências, mais os
+  privilégios e a RLS do histórico.
+- `src/domain/naoIdentificado.test.ts`: 6 testes das regras da tela.
+
+**Rollback** (no cabeçalho da migration):
+1. Reaplicar `salvar_cadastro_paciente` de `20261003000003`.
+2. DROP das três funções novas e do índice.
+3. DROP da tabela `pacientes_identidade_provisoria`. Isso apaga o
+   histórico: exportar antes, se já houver uso real.
+4. As colunas ficam; tirá-las só numa janela declarada.
