@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Chip } from '@/components/monitor/Pagina'
 import { ExcluirDaFila } from '@/components/porta/Chamada'
 import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
+import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 import { Estado } from '@/components/porta/Estado'
 import { dataSP, esperaMin, hora, nomeDe, type NaFila } from './comum'
 import type { SalaTriagem, SalaTriagemCtx, UltimaChamada } from './useSalaTriagem'
@@ -102,7 +103,7 @@ function BotaoChamar({ ep, salaId, chamadas }: { ep: NaFila; salaId: string | un
   )
 }
 
-/** Nome e idade; embaixo, a prioridade legal e o aviso de homônimo, quando há. */
+/** Nome e idade; embaixo, a prioridade legal, o selo de não identificado e o aviso de homônimo, quando há. */
 export function CelulaPaciente({ e, iguais }: { e: NaFila; iguais: Set<string> }) {
   const prios = rotulosPrioridade(e.prioridades_legais)
   return (
@@ -112,6 +113,7 @@ export function CelulaPaciente({ e, iguais }: { e: NaFila; iguais: Set<string> }
         <span className="text-tinta-sussurro">{e.paciente?.data_nascimento ? rotuloIdade(e.paciente.data_nascimento, dataSP()) : 'idade não informada'}</span>
       </span>
       {prios.length > 0 && <span className="text-rotulo text-tinta-sussurro">Prioridade: {prios.join(', ')}</span>}
+      <SeloNaoIdentificado paciente={e.paciente} />
       {iguais.has(e.id) && <SeloHomonimo paciente={e.paciente} />}
     </div>
   )

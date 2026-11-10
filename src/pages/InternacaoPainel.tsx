@@ -78,7 +78,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     queryFn: async () => {
       const { data, error } = await supabase
         .from('pacientes')
-        .select('id, nome, cpf, data_nascimento, sexo, setor_id, created_at, setores!pacientes_setor_id_fkey(id, nome)')
+        .select('id, nome, cpf, data_nascimento, sexo, setor_id, created_at, identidade_desconhecida, sinais_identificacao, setores!pacientes_setor_id_fkey(id, nome)')
         .eq('unidade_id', unidadeId!)
         .eq('ativo', true)
         .not('setor_id', 'is', null)

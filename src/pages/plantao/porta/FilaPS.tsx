@@ -25,6 +25,7 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { BarraConsultorio } from '@/components/porta/BarraConsultorio'
 import { BotaoChamar } from '@/components/porta/Chamada'
 import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
+import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 import { EncaminhamentosRecebidos } from '@/components/encaminhamento/EncaminhamentosRecebidos'
 import { useChamadasPorEpisodio } from '@/hooks/useChamadas'
 import { useConsultorioDoPlantao } from '@/hooks/useConsultorioDoPlantao'
@@ -108,6 +109,7 @@ function Paciente({ e, iguais }: {
           {faixa && rotuloFaixa(faixa) && <span className={faixa === 'pediatrico' ? 'text-pediatria' : 'text-atencao'}>{rotuloFaixa(faixa)}</span>}
         </span>
       )}
+      <SeloNaoIdentificado paciente={e.paciente as EpFila['paciente']} />
       {iguais?.has(e.id) && <SeloHomonimo paciente={e.paciente as EpFila['paciente']} />}
     </div>
   )
@@ -159,7 +161,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
     queryFn: async () => {
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, tipo_atendimento_aps, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome)')
+        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, tipo_atendimento_aps, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, identidade_desconhecida, sinais_identificacao)')
         .in('setor_id', meusSetores)
         .eq('etapa', 'atendimento')
       if (error) throw error
