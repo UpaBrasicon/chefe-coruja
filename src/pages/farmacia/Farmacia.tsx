@@ -432,7 +432,7 @@ function Faltas({ unidade }: { unidade: string }) {
     return (
       <div className="flex flex-col gap-3">
         {registrar}
-        <Vazio icone={AlertTriangle} titulo="Nenhuma falta sinalizada" texto="O plantão sinaliza pela prescrição; você registra aqui ou pela Disponibilidade. Tudo aparece aqui." />
+        <Vazio icone={AlertTriangle} titulo="Nenhuma falta sinalizada" texto="O plantão sinaliza pela prescrição; você registra aqui ou pela Disponibilidade." />
       </div>
     )
   }

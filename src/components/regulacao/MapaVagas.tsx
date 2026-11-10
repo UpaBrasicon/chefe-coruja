@@ -71,7 +71,7 @@ export function MapaVagas({ unidadeId, compacto = false }: { unidadeId: string; 
         </div>
       )}
       {m.unidades.map((u) => <UnidadeDoMapa key={u.id} u={u} unidadeConsulta={unidadeId} compacto={compacto} />)}
-      <span className="text-rotulo text-tinta-sussurro">Leitos em tempo real; atualiza a cada minuto. Só números, sem paciente.</span>
+      <span className="text-rotulo text-tinta-sussurro">Leitos atualizados a cada minuto, sem dado de paciente.</span>
     </div>
   )
   if (compacto) return <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3 text-apoio">{conteudo}</div>

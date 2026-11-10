@@ -100,7 +100,7 @@ export function GavetaAlergias({ pacienteId, nome, aberta, onAbertaChange }: {
         <AlergiasEventos pacienteId={pacienteId} />
       </div>
       <GavetaPe className="[text-wrap:pretty]">
-        Alergia ativa trava na prescrição o medicamento de mesmo nome — nada a contorna. "Nega alergias" é registro com autor e hora, não campo em branco.
+        Alergia ativa trava na prescrição o medicamento de mesmo nome, sem exceção. "Nega alergias" fica registrado com autor e hora; é diferente de deixar o campo em branco.
       </GavetaPe>
     </Gaveta>
   )
@@ -114,7 +114,7 @@ export function ResumoAlergias({ pacienteId, nome }: { pacienteId: string; nome:
       <span className="text-rotulo font-semibold text-tinta-sussurro">Alergias</span>
       <SeloAlergia pacienteId={pacienteId} onClick={() => setAberta(true)} />
       <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setAberta(true)}>Alergias e eventos adversos</Button>
-      <p className="w-full text-rotulo text-tinta-sussurro">Alergia registrada trava o item do medicamento correspondente. Nada a contorna.</p>
+      <p className="w-full text-rotulo text-tinta-sussurro">Alergia registrada trava o item do medicamento correspondente, sem exceção.</p>
       <GavetaAlergias pacienteId={pacienteId} nome={nome} aberta={aberta} onAbertaChange={setAberta} />
     </div>
   )

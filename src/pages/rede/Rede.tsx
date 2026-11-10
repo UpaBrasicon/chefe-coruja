@@ -185,7 +185,7 @@ function ResumoRegulacao({ unidadeId }: { unidadeId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="text-corpo">Regulação por unidade</CardTitle>
-        <CardDescription>Pedidos em aberto, atrasados e concluídos nos últimos 30 dias. Só números.</CardDescription>
+        <CardDescription>Pedidos em aberto, atrasados e concluídos nos últimos 30 dias.</CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">
         {resumo.isLoading ? <Spinner /> : resumo.error ? <p role="alert" className="text-critico">{(resumo.error as Error).message}</p> : (

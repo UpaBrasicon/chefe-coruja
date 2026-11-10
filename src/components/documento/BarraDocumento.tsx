@@ -200,7 +200,7 @@ export function BarraDocumento({
             placeholder="Ex.: receita lançada no paciente errado" />
           <div className="flex flex-wrap items-center gap-2">
             <span className="flex-[1_1_220px] text-apoio text-tinta-sussurro">
-              O documento continua no prontuário, riscado, com a justificativa. Nada é apagado.
+              O documento continua no prontuário, riscado, com a justificativa.
             </span>
             <Button size="sm" variant="ghost" onClick={() => { setPedindo(false); setJust('') }}>Desistir</Button>
             <Button size="sm" disabled={!justOk || ocupado} className="bg-critico hover:bg-critico/90" onClick={() => void cancelar()}>

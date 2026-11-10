@@ -71,7 +71,7 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
           {d && <Button size="xs" variant="outline" className="ml-auto" onClick={exportar}><Download className="size-3.5" /> Exportar CSV</Button>}
         </CardTitle>
         <CardDescription>
-          Tempos em mediana e percentil 90 (os 10% mais demorados). Pedidos criados no período; a fila atual não depende do período. Só números.
+          Tempos em mediana e percentil 90 (os 10% mais demorados). Pedidos criados no período; a fila atual não depende do período.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 text-apoio">
