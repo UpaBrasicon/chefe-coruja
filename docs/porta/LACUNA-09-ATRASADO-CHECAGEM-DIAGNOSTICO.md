@@ -116,3 +116,7 @@ feito e recusado, e que o atraso só é calculado na fila, sem ficar registrado.
 ## 4. Fora do escopo
 - Dose adiantada além das 2 h antes do horário: a checagem já não aceita.
 - Classificar o que é medicamento tempo-crítico (ver A1, opção B).
+
+## 5. Decisão do RT (10/11/2026)
+
+"Sim": A em A1 a A9.
