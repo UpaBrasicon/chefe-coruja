@@ -14,6 +14,7 @@ import { Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { EsperaMedico } from '@/pages/gestor/EsperaMedico'
 import { EsperaTriagem } from '@/pages/gestor/EsperaTriagem'
 import { EvasaoIndicador } from '@/pages/gestor/EvasaoIndicador'
+import { ObitosIndicador } from '@/pages/gestor/ObitosIndicador'
 import { PacientesPorCor } from '@/pages/gestor/PacientesPorCor'
 import { BarraFiltrosBI } from '@/pages/gestor/FiltrosBI'
 import { PanoramaConfig } from '@/pages/gestor/PanoramaConfig'
@@ -329,6 +330,8 @@ export default function Indicadores() {
           <EsperaMedico unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
           <PacientesPorCor unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
           <EvasaoIndicador unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
+          {/* lacuna 10: óbitos do período, pela hora do óbito no dia do plantão */}
+          <ObitosIndicador unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
         </section>
       )}
 
