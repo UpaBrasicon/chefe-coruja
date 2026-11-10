@@ -189,17 +189,23 @@ BEGIN
   END;
 END $$;
 
--- ── óbito: setor (padrão), CID do óbito e DO de 6 a 12 dígitos ──────────────
+-- ── óbito: setor (padrão), CID do óbito e DO de 9 dígitos ───────────────────
+-- (lacuna 5, 20270326000001: a D.O. tem 9 dígitos, a hora não vem antes da
+-- chegada e o tipo de morte e as causas vão em "obito"; ver tests/obito.sql)
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT public.registrar_soap(pg_temp.u('b'), 'Rebaixamento súbito', 'PCR em AESP', 'Parada cardiorrespiratória', 'RCP', 'I46.9');
 SELECT pg_temp.falha(format('SELECT public.registrar_desfecho(%L, %L, %L, %L)', pg_temp.u('b'), 'obito', 'PCR refratária após 40 minutos de RCP',
-  json_build_object('hora_obito', now() - interval '5 minutes', 'numero_do', '12345678')), 'Óbito: informe o CID do óbito', 'óbito exige CID do óbito');
+  json_build_object('hora_obito', now(), 'numero_do', '123456789',
+    'obito', json_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Infarto agudo do miocárdio'))),
+  'Óbito: informe o CID do óbito', 'óbito exige CID do óbito');
 SELECT pg_temp.falha(format('SELECT public.registrar_desfecho(%L, %L, %L, %L)', pg_temp.u('b'), 'obito', 'PCR refratária após 40 minutos de RCP',
-  json_build_object('hora_obito', now() - interval '5 minutes', 'numero_do', '12-34', 'cid_obito', 'I46.9')),
-  'Óbito: o número da Declaração de Óbito tem de 6 a 12 dígitos', 'número da DO com 6 a 12 dígitos');
+  json_build_object('hora_obito', now(), 'numero_do', '12-34', 'cid_obito', 'I46.9',
+    'obito', json_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Infarto agudo do miocárdio'))),
+  'Óbito: o número da Declaração de Óbito tem 9 dígitos', 'número da DO com 9 dígitos');
 SELECT public.registrar_desfecho(pg_temp.u('b'), 'obito', 'PCR refratária após 40 minutos de RCP',
-  json_build_object('hora_obito', now() - interval '5 minutes', 'numero_do', '12.345.678', 'cid_obito', 'i469')::jsonb);
+  json_build_object('hora_obito', now(), 'numero_do', '123.456.789', 'cid_obito', 'i469',
+    'obito', json_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Infarto agudo do miocárdio'))::jsonb);
 
 -- ── alta retroativa ─────────────────────────────────────────────────────────
 SELECT public.registrar_soap(pg_temp.u('c'), 'Prurido', 'Placas urticariformes', 'Urticária aguda', 'Anti-histamínico', 'L50.0');
@@ -232,7 +238,7 @@ BEGIN
   SELECT * INTO b FROM public.episodios WHERE id = pg_temp.u('b');
   SELECT * INTO c FROM public.episodios WHERE id = pg_temp.u('c');
   IF b.desfecho_detalhes ->> 'setor_obito' IS NULL OR b.desfecho_detalhes ->> 'cid_obito' <> 'I46.9'
-     OR b.desfecho_detalhes ->> 'numero_do' <> '12345678' THEN
+     OR b.desfecho_detalhes ->> 'numero_do' <> '123456789' THEN
     RAISE EXCEPTION 'FALHOU: óbito (%)', b.desfecho_detalhes;
   END IF;
   RAISE NOTICE 'OK  óbito guarda setor (o da porta, sem outro informado), CID normalizado e DO só com dígitos';

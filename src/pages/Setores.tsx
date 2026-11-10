@@ -300,7 +300,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <span className="text-apoio font-semibold">{leito.identificador}</span>
                       <Badge variant={STATUS_LEITO_VARIANT[leito.status]}>
-                        {STATUS_LEITO_LABEL[leito.status]}
+                        {leito.obito_aguardando_id ? 'Aguardando liberação do corpo' : STATUS_LEITO_LABEL[leito.status]}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
@@ -315,7 +315,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                           status={leito.status}
                           podeHigienizar
                           podeBloquear
-                          podeLiberarSemPaciente
+                          podeLiberarSemPaciente={!leito.obito_aguardando_id}
                           podeReservar
                           podeCancelarReserva
                           unidadeId={unidadeId}

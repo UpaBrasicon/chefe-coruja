@@ -40,7 +40,8 @@ SELECT e2e.passo('T3.alta_porta_oms', 27, 'plantonista', '/plantao/porta', 'Alta
   format('SELECT public.registrar_desfecho(%L::uuid, %L, NULL, %L::jsonb)::text', e2e.u('ep27'), 'alta', '{"cid_alta":"N18.5"}'), 'erro:Informe um CID-10 válido');
 SELECT e2e.passo('T3.obito_porta_oms', 27, 'plantonista', '/plantao/porta', 'Óbito na porta com CID do óbito fora da tabela é recusado',
   format('SELECT public.registrar_desfecho(%L::uuid, %L, %L, %L::jsonb)::text', e2e.u('ep27'), 'obito', 'Parada cardiorrespiratória na sala vermelha (teste E2E).',
-         jsonb_build_object('hora_obito', now(), 'numero_do', '623456789', 'cid_obito', 'N18.5', 'cid_alta', 'K35.9')), 'erro:Informe um CID-10 válido');
+         jsonb_build_object('hora_obito', now(), 'numero_do', '623456789', 'cid_obito', 'N18.5', 'cid_alta', 'K35.9',
+           'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Doença renal crônica'))), 'erro:Informe um CID-10 válido');
 SELECT e2e.passo('T3.alta_porta', 27, 'plantonista', '/plantao/porta', 'Alta na porta com K35.9',
   format('SELECT public.registrar_desfecho(%L::uuid, %L, NULL, %L::jsonb)::text', e2e.u('ep27'), 'alta', '{"cid_alta":"K35.9"}'));
 

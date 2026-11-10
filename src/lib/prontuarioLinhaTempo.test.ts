@@ -337,3 +337,23 @@ test('contenção e intercorrência no atendimento; a contenção e a intercorr�
   assert.deepEqual(montarLinhaTempo(antigo).grupos, [])
   assert.equal(juntarPaginas([p, { ...p, contencoes: undefined }]).contencoes?.length, 1)
 })
+
+test('óbito no atendimento (pela internação também) e sempre à vista', () => {
+  const p = vazio()
+  p.atendimentos = [atendimento('ep1', '2026-11-10T10:00:00Z')]
+  p.internacoes = [{ id: 'int1', episodio_id: 'ep1', status: 'obito', tipo_internacao: 'observacao', data_admissao: '2026-11-10T10:10:00Z',
+    data_alta: '2026-11-10T12:00:00Z', setor_id: null, leito_id: null } as unknown as InternacaoBruta]
+  p.obitos = [{
+    id: 'ob1', paciente_id: 'pac', episodio_id: null, internacao_id: 'int1', origem: 'observacao', setor: 'Observação', leito_id: null,
+    leito: null, leito_aguardando: true, hora_obito: '2026-11-10T11:55:00Z', tipo_morte: 'natural_assistida', encaminhamento: 'unidade',
+    numero_do: '123456789', atestado_condicao: 'substituto', atestado_por: 'Médico', causas: { a: 'Infarto', b: null, c: null, d: null, parte2: null },
+    cid_interno: 'I21.9', avisos: [], policia: null, vias: { branca: null, amarela: null, rosa: null }, identificacao: null, liberacao: null,
+    comunicada_familia: false, documento_id: 'doc1', registrado_em: '2026-11-10T12:00:00Z', registrado_por: 'Médico', anulado_em: null,
+    motivo_anulacao: null, pendencias: ['comunicacao_familia', 'liberacao'],
+  }]
+  const [g] = montarLinhaTempo(p).grupos
+  assert.deepEqual(g.registros.map((r) => r.tipo + ':' + r.id), ['obito:ob1', 'internacao:int1'])
+  assert.equal(g.registros[0].autor, 'Médico')
+  assert.deepEqual(principais(g.registros).mostrados.map((r) => r.id), ['ob1', 'int1'])
+  assert.equal(juntarPaginas([p, { ...p, obitos: undefined }]).obitos?.length, 1)
+})

@@ -24,6 +24,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 import { Bloco, BotaoCuidados, PilulaAtraso, PilulaContencao } from './Pecas'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
+import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { TIPOS_INTERNACAO, atrasadosPorPaciente, duracao, idadeDe, useAgora, useContencoesAtivas, usePendenciasEnfermagem, useSetoresDaEscala, useTiposDaEscala } from './useEnfermagem'
 import { Estado } from '@/components/porta/Estado'
@@ -161,6 +162,8 @@ export default function ProntoSocorroEnfermagem() {
               </div>
             ))}
           </Bloco>
+          {/* lacuna 5 (O7): óbitos com comunicação, corpo ou vias por fazer */}
+          <ObitosPendentes unidadeId={unidadeId} />
           <LeitosParaLiberar unidadeId={unidadeId} setores={meusSetores} />
         </div>
       )}

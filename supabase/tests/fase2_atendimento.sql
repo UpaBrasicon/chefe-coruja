@@ -90,15 +90,18 @@ DO $$ BEGIN
     RAISE NOTICE 'OK  transferência exige destino';
   END;
   BEGIN
-    PERFORM public.registrar_desfecho(pg_temp.v('b'), 'obito', 'PCR refratária após 40 minutos de RCP', jsonb_build_object('hora_obito', now() - interval '5 minutes'));
+    -- lacuna 5 (20270326000001): hora não antes da chegada; tipo de morte e causas obrigatórios
+    PERFORM public.registrar_desfecho(pg_temp.v('b'), 'obito', 'PCR refratária após 40 minutos de RCP', jsonb_build_object('hora_obito', now(),
+      'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Infarto agudo do miocárdio')));
     RAISE EXCEPTION 'FALHOU: óbito sem número da DO';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM NOT LIKE '%Declaração de Óbito%' THEN RAISE; END IF;
     RAISE NOTICE 'OK  óbito exige hora e número da Declaração de Óbito';
   END;
   PERFORM public.registrar_desfecho(pg_temp.v('b'), 'obito', 'PCR refratária após 40 minutos de RCP',
-    jsonb_build_object('hora_obito', now() - interval '5 minutes', 'numero_do', '123456789',
-                       'cid_alta', 'I46.9', 'cid_obito', 'I46.9'));  -- CIDs exigidos desde 20261004000001
+    jsonb_build_object('hora_obito', now(), 'numero_do', '123456789',
+                       'cid_alta', 'I46.9', 'cid_obito', 'I46.9',  -- CIDs exigidos desde 20261004000001
+                       'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Infarto agudo do miocárdio')));
 END $$;
 
 -- depois de o médico abrir, a recepção não "retira da fila"

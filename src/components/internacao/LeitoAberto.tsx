@@ -54,6 +54,7 @@ import { Spinner } from '@/components/ui/spinner'
 
 import { BlocoAcuidade } from './caderno/Acuidade'
 import { BlocoAlta, BlocoPacote, CancelarAlta } from './caderno/Alta'
+import { PainelObito } from '@/components/obito/PainelObito'
 import { Secao } from './caderno/caixas'
 import { DialogoClassificacao } from './caderno/Classificacao'
 import {
@@ -423,6 +424,8 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
     <>
       {ativa && !ehGestor && <BlocoAlta i={i} pacienteId={p.pacienteId} impeditivos={p.impeditivos} acao={p.acao} cidSugerido={p.cidSugerido} />}
       {!ativa && altaRecente && (i.alta_por === p.eu || ehGestor) && <CancelarAlta i={i} acao={p.acao} />}
+      {/* lacuna 5 (O7): o óbito e o que falta depois dele */}
+      {i.status === 'obito' && <PainelObito pacienteId={p.pacienteId} />}
       {(ativa || altaRecente || ehGestor) && (
         <BlocoPacote i={i} pacienteId={p.pacienteId} pacienteNome={p.pacienteNome} lista={p.pacotes} podeGerar={!ehGestor && (ativa || altaRecente)} acao={p.acao} />
       )}

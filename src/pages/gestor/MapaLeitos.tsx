@@ -18,6 +18,8 @@ import { Spinner } from '@/components/ui/spinner'
 
 type Leito = {
   id: string; identificador: string; status: string; ocupado: boolean; internacao_id: string | null
+  /** lacuna 5 (O5): ocupado com o corpo, aguardando a liberação */
+  aguardando_corpo?: boolean
   paciente_id: string | null; desde: string | null; vencidas: number; banda: number | null
 }
 type Setor = { id: string; nome: string; tipo: string; leitos_total: number; leitos_ocupados: number; pacientes: number; sem_leito: number; leitos: Leito[] }
@@ -159,7 +161,7 @@ export function MapaLeitos() {
                   : l.status === 'reservado' ? 'border-atencao/30 bg-alerta-atencao text-atencao'
                   : 'border-fio bg-trilha text-tinta-sussurro')
               const marca = (l.vencidas > 0 || (l.banda ?? 0) >= 1) && <span className="sr-only"> com alerta</span>
-              const titulo = [l.status === 'higienizacao' ? 'em higienização' : l.status, l.vencidas ? `${l.vencidas} vencida(s)` : '', (l.banda ?? 0) >= 1 ? 'escore em alerta' : ''].filter(Boolean).join(' · ')
+              const titulo = [l.aguardando_corpo ? 'aguardando liberação do corpo' : l.status === 'higienizacao' ? 'em higienização' : l.status, l.vencidas ? `${l.vencidas} vencida(s)` : '', (l.banda ?? 0) >= 1 ? 'escore em alerta' : ''].filter(Boolean).join(' · ')
               return l.paciente_id ? (
                 <Link key={l.id} to={`/prontuarios/${l.paciente_id}`} title={titulo} className={cn(cls, 'relative hover:ring-2 hover:ring-critico/30')}>
                   {l.identificador}{marca}

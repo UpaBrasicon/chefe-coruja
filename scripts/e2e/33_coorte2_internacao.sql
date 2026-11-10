@@ -190,7 +190,8 @@ SELECT e2e.passo('R2.5.termo_familia', 30, 'plantonista2', '/internacao', 'Termo
          '{"procedimento":"Cuidados paliativos exclusivos, sem intubação nem reanimação","texto":"A família foi orientada e concorda com os cuidados de conforto (teste E2E).","assinante":"responsavel","sem_condicoes_motivo":"Paciente sonolento, em cuidados de conforto, sem condições de assinar (teste E2E).","responsavel":{"nome":"E2E Filha do Trinta","documento":"RG 90.000.030-X","vinculo":"filha"}}', e2e.u('r2int30')));
 SELECT e2e.passo('R2.5.obito_esperado', 30, 'plantonista2', '/internacao', 'Óbito esperado (sem exame pendente, morfina devolvida pela farmácia fica aberta)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('r2int30'), 'obito', 'C34.9',
-         'Óbito esperado em cuidados paliativos, família presente (teste E2E).', jsonb_build_object('numero_do', '300000030', 'hora_obito', to_char(now(), 'HH24:MI'))));
+         'Óbito esperado em cuidados paliativos, família presente (teste E2E).', jsonb_build_object('numero_do', '300000030', 'hora_obito', now(),  -- lacuna 5: hora completa, tipo de morte e causas
+           'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Neoplasia maligna do pulmão'))));
 SELECT e2e.passo('R2.5.sumario_obito', 30, 'plantonista2', '/internacao', 'Sumário de óbito',
   format('SELECT (public.emitir_documento(%L::uuid, %L, %L) ->> ''id'')', e2e.u('r2pac30'), 'sumario_obito', 'Sumário de óbito de teste E2E: neoplasia pulmonar terminal, cuidados paliativos.'));
 SELECT e2e.conferir('R2.5.obito_encerra', 30, 'Prescrições do paliativo encerradas no óbito',

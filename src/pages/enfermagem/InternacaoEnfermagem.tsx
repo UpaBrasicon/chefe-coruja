@@ -21,6 +21,7 @@ import { ChegadaReservada, type ChegadaEnfermagem } from './ChegadaReservada'
 import { GavetaCuidados, type PacienteEmCuidado } from './GavetaCuidados'
 import { PassagemEnfermagem } from './PassagemEnfermagem'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
+import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
 import { Bloco, BotaoCuidados, PilulaAtraso, PilulaContencao } from './Pecas'
 import { duracao, ehAdulto, idadeDe, useAgora, useContencoesAtivas, useSetoresDaEscala, type LeitoEnfermagem } from './useEnfermagem'
 import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
@@ -171,6 +172,8 @@ export default function InternacaoEnfermagem() {
               })}
             </Bloco>
           ))}
+          {/* lacuna 5 (O7): óbitos com comunicação, corpo ou vias por fazer */}
+          <ObitosPendentes unidadeId={unidadeId} />
           <LeitosParaLiberar unidadeId={unidadeId} setores={meusSetores} />
           <PassagemEnfermagem setores={nomesSetores.data ?? []} />
         </div>

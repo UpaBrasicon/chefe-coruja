@@ -9,6 +9,7 @@ import * as React from 'react'
 import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
 import type { MotivoEvasao } from '@/lib/evasao'
 import { supabase } from '@/lib/supabase'
+import type { Json } from '@/types/database'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { cn } from '@/lib/utils'
@@ -16,6 +17,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+
+import { DadosObito } from '@/components/obito/DadosObito'
+import { detalhesObito, obitoVazio, regrasObito } from '@/lib/obito'
 
 import { CampoCid, type RegistroSoap } from './AbaAtendimento'
 import { Chip } from '@/components/monitor/Pagina'
@@ -89,8 +93,8 @@ export function AbaDesfecho({
   const [destino, setDestino] = React.useState('')
   // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
   const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
-  const [horaObito, setHoraObito] = React.useState('')
-  const [numeroDo, setNumeroDo] = React.useState('')
+  // lacuna 5 (O1): os mesmos dados do óbito da observação e da internação
+  const [obito, setObito] = React.useState(() => obitoVazio())
   const [setorObito, setSetorObito] = React.useState('')
   const [cidObito, setCidObito] = React.useState('')
   const [altaEm, setAltaEm] = React.useState('')   // vazio = agora
@@ -162,9 +166,8 @@ export function AbaDesfecho({
     if (RELATO[d]) regras.push({ ok: relato.trim().length >= 15, texto: `${RELATO[d]} (mínimo de 15 letras)` })
     if (d === 'transferencia') regras.push({ ok: !!regulacao || destino.trim().length >= 3, texto: 'Serviço de destino' })
     if (d === 'obito') {
-      regras.push({ ok: !!horaObito && Date.parse(horaObito) <= agora + 60_000, texto: 'Hora do óbito (não no futuro)' })
-      regras.push({ ok: CID_OK.test(cidObito.trim().toUpperCase()), texto: 'CID do óbito' })
-      regras.push({ ok: /^\d{6,12}$/.test(soDigitos(numeroDo)), texto: 'Nº da Declaração de Óbito (6 a 12 dígitos)' })
+      regras.push(...regrasObito(obito, { agora, desde: chegadaEm }))
+      regras.push({ ok: CID_OK.test(cidObito.trim().toUpperCase()), texto: 'CID do óbito (interno)' })
     }
     if (COM_DADOS_ALTA.includes(d) && altaEm) {
       regras.push({ ok: altaMs <= agora + 60_000 && altaMs >= Date.parse(chegadaEm), texto: 'Data e hora da alta entre a chegada e agora' })
@@ -183,12 +186,11 @@ export function AbaDesfecho({
         })
         if (r.error) throw r.error
       }
-      const det: Record<string, string> = {}
+      const det: Record<string, unknown> = {}
       if (d === 'transferencia') Object.assign(det, detalhesDaTransferencia(regulacao ?? null, destino))
       if (d === 'evasao' && motivoEvasao) det.motivo_evasao = motivoEvasao
       if (d === 'obito') {
-        det.hora_obito = new Date(horaObito).toISOString()
-        det.numero_do = numeroDo
+        Object.assign(det, detalhesObito(obito))
         det.cid_obito = cidObito.trim().toUpperCase()
         if (setorObito.trim()) det.setor_obito = setorObito.trim()
       }
@@ -205,7 +207,7 @@ export function AbaDesfecho({
         if (d !== 'obito' && orientacaoUbs.trim()) det.orientacao_ubs = orientacaoUbs.trim()
       }
       const { error } = await supabase.rpc('registrar_desfecho', {
-        p_episodio: episodioId, p_desfecho: d!, p_relato: RELATO[d!] ? relato.trim() : undefined, p_detalhes: det,
+        p_episodio: episodioId, p_desfecho: d!, p_relato: RELATO[d!] ? relato.trim() : undefined, p_detalhes: det as Json,
       })
       if (error) throw error
     },
@@ -233,12 +235,7 @@ export function AbaDesfecho({
           )}
         </div>
       )}
-      {d === 'obito' && (
-        <div className="flex flex-col gap-1.5 sm:max-w-64">
-          <Label htmlFor="d-hora">Hora do óbito</Label>
-          <Input id="d-hora" type="datetime-local" value={horaObito} max={localAgora(agora)} onChange={(e) => setHoraObito(e.target.value)} />
-        </div>
-      )}
+      {d === 'obito' && <DadosObito id="d-obito" valor={obito} onChange={setObito} agora={agora} />}
       {d === 'evasao' && <SeletorMotivoEvasao valor={motivoEvasao} onChange={setMotivoEvasao} />}
       {d && RELATO[d] && (
         <div className="flex flex-col gap-1.5">
@@ -316,18 +313,15 @@ export function AbaDesfecho({
             </div>
           )}
           {d === 'obito' && (
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="ob-setor">Setor do óbito</Label>
                 <Input id="ob-setor" value={setorObito} placeholder={painel.setor ?? ''} onChange={(e) => setSetorObito(e.target.value)} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="ob-cid">CID do óbito</Label>
+                <Label htmlFor="ob-cid">CID do óbito (interno)</Label>
                 <CampoCid id="ob-cid" valor={cidObito} onChange={setCidObito} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="ob-do">Nº da Declaração de Óbito</Label>
-                <Input id="ob-do" inputMode="numeric" value={numeroDo} onChange={(e) => setNumeroDo(e.target.value)} />
+                <span className="text-rotulo text-tinta-sussurro">Para faturamento e indicadores. Na D.O., as causas vão em texto.</span>
               </div>
             </div>
           )}

@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 
 import { type Acao, diaHora, type Internacao, type Pacote } from './comum'
 import { BlocoAlta, BlocoPacote, CancelarAlta } from './Alta'
+import { PainelObito } from '@/components/obito/PainelObito'
 
 const hora = (iso: string) => horaFmt(iso)
 
@@ -145,6 +146,8 @@ export function PassosAlta({ i, pacienteId, pacienteNome, ativa, altaRecente, eh
         {ativa && impeditivos.length === 0 && !ehGestor && <p className="text-apoio text-tinta-sussurro">Sem impeditivos: a alta pode ser dada.</p>}
         {ativa && !ehGestor && <BlocoAlta i={i} pacienteId={pacienteId} impeditivos={impeditivos} acao={acao} cidSugerido={cidSugerido} />}
         {!ativa && altaRecente && (i.alta_por === eu || ehGestor) && <CancelarAlta i={i} acao={acao} />}
+        {/* lacuna 5 (O7): o óbito e o que falta depois dele */}
+        {i.status === 'obito' && <PainelObito pacienteId={pacienteId} />}
         {!ativa && !altaRecente && !ehGestor && <p className="text-apoio text-tinta-sussurro">Alta há mais de 24 horas: o cancelamento é com o gestor.</p>}
       </Passo>
     </div>

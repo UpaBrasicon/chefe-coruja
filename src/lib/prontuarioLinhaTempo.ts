@@ -11,6 +11,7 @@ import type { Contencao } from './contencao.ts'
 import { dataIso } from './formato.ts'
 import { rotuloDesfechoFinal } from './historico.ts'
 import type { Intercorrencia } from './intercorrencia.ts'
+import type { ObitoRegistro } from './obito.ts'
 
 // ── formato da RPC ──────────────────────────────────────────────────────────
 
@@ -72,6 +73,8 @@ export type PaginaProntuario = {
   prescricoes: PrescricaoBruta[]; observacoes: ObservacaoBruta[]
   /** Lacuna 4 (K8): contenções e intercorrências (a vigente de cada uma). Servidor antigo: não vem. */
   contencoes?: Contencao[]; intercorrencias?: Intercorrencia[]
+  /** Lacuna 5 (O7): o óbito (os anulados vêm marcados). Servidor antigo: não vem. */
+  obitos?: ObitoRegistro[]
   /** Nome de unidade, setor, leito e profissional, pelo id. */
   nomes: Record<string, string>
   /** Resultado vigente, pelo id do exame. */
@@ -89,6 +92,7 @@ export type RegistroLinha =
   | (Base & { tipo: 'internacao'; internacao: InternacaoNomeada })
   | (Base & { tipo: 'contencao'; contencao: Contencao })
   | (Base & { tipo: 'intercorrencia'; intercorrencia: Intercorrencia })
+  | (Base & { tipo: 'obito'; obito: ObitoRegistro })
 
 export type InternacaoNomeada = InternacaoBruta & { setor: string | null; leito: string | null }
 
@@ -142,6 +146,7 @@ export function juntarPaginas(paginas: PaginaProntuario[]): PaginaProntuario {
     classificacoes: unir((p) => p.classificacoes), registros: unir((p) => p.registros), exames: unir((p) => p.exames),
     documentos: unir((p) => p.documentos), prescricoes: unir((p) => p.prescricoes), observacoes: unir((p) => p.observacoes),
     contencoes: unir((p) => p.contencoes), intercorrencias: unir((p) => p.intercorrencias),
+    obitos: unir((p) => p.obitos),
     nomes: Object.assign({}, ...paginas.map((p) => p.nomes)),
     resultados: Object.assign({}, ...paginas.map((p) => p.resultados)),
   }
@@ -202,6 +207,9 @@ export function montarLinhaTempo(d: PaginaProntuario): { grupos: GrupoAtendiment
   }
   for (const x of d.intercorrencias ?? []) {
     por(registros, lugar(x.episodio_id, x.internacao_id), { tipo: 'intercorrencia', id: x.id, em: x.ocorrida_em, autor: x.registrado_por, intercorrencia: x })
+  }
+  for (const o of d.obitos ?? []) {
+    por(registros, lugar(o.episodio_id, o.internacao_id), { tipo: 'obito', id: o.id, em: o.hora_obito, autor: o.registrado_por, obito: o })
   }
   for (const o of d.observacoes) por(obs, lugar(o.episodio_id, o.internacao_id), o)
 
@@ -315,7 +323,8 @@ const TIPO_ESCONDIDO = (r: RegistroLinha) =>
       : r.tipo === 'prescricao' ? 'prescrições'
         : r.tipo === 'internacao' ? 'internação'
           : r.tipo === 'intercorrencia' ? 'intercorrências'
-            : r.tipo === 'contencao' ? 'contenções' : 'registros do atendimento'
+            : r.tipo === 'contencao' ? 'contenções'
+              : r.tipo === 'obito' ? 'óbito' : 'registros do atendimento'
 
 /**
  * O que o atendimento aberto mostra antes do "+N registros" (ajuste do polish,
@@ -333,7 +342,8 @@ export function principais(regs: RegistroLinha[]): { mostrados: RegistroLinha[];
   primeiro((r) => r.tipo === 'prescricao')
   // lacuna 4: contenção e intercorrência grave ficam à vista
   for (const r of regs) {
-    if (r.tipo === 'internacao' || r.tipo === 'contencao' || temResultado(r)
+    // lacuna 5: o óbito fica à vista
+    if (r.tipo === 'internacao' || r.tipo === 'contencao' || r.tipo === 'obito' || temResultado(r)
         || (r.tipo === 'intercorrencia' && r.intercorrencia.gravidade === 'grave')) ficam.add(r.tipo + r.id)
   }
   if (!ficam.size) for (const r of regs.slice(0, 3)) ficam.add(r.tipo + r.id)

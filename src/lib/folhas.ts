@@ -763,7 +763,42 @@ function admissao(d: Json, ctx: ContextoFolha): string {
 // Texto livre hoje; do protótipo (JSON): motivo, data (ISO), retroativa,
 // retroJust, cid, proc, obs, obito:{setor, cid, do}, desfecho.
 
+// ── sumário de óbito (lacuna 5, O2) ──────────────────────────────────────────
+// Documento do prontuário, gerado no registro do óbito (private.obito_sumario).
+// Não é a Declaração de Óbito: a D.O. é o formulário do Ministério da Saúde,
+// em 3 vias, e nunca sai daqui. A folha diz isso no próprio texto.
+
+const AVISO_SUMARIO_OBITO = 'Registro para o prontuário. A Declaração de Óbito é o formulário oficial do Ministério da Saúde.'
+const TIPO_MORTE: Record<string, string> = {
+  natural_assistida: 'Natural, com assistência',
+  natural_sem_assistencia_ou_a_esclarecer: 'Natural sem assistência ou a esclarecer',
+  violenta_ou_suspeita: 'Violenta ou suspeita',
+}
+const CAMINHO_OBITO: Record<string, string> = {
+  unidade: 'A unidade atesta', svo: 'Encaminhado ao SVO', iml: 'Encaminhado ao IML',
+  causa_desconhecida: 'A unidade atesta: causa da morte desconhecida (sem SVO)',
+}
+
+function sumarioObito(d: Json, ctx: ContextoFolha): string {
+  const pac = pacienteDe(ctx, d)
+  const lin = (k: string, v: unknown) => (vz(v) ? '' : cel(6, k, esc(v)))
+  const c = d.causas ?? {}
+  const causas = ([['Parte I, a', c.a], ['Parte I, b', c.b], ['Parte I, c', c.c], ['Parte I, d', c.d], ['Parte II', c.parte2]] as [string, unknown][])
+    .filter(([, v]) => !vz(v)).map(([k, v]) => `<div class="linha"><span class="rot">${esc(k)}</span>${esc(v)}</div>`).join('')
+  const corpo = `<div class="linha"><b>${esc(pri(d.aviso, AVISO_SUMARIO_OBITO))}</b></div>` + grade(
+    lin('Data e hora do óbito', dataHoraBr(d.hora_obito)) + lin('Setor', junta(' · ', d.setor, d.leito)) +
+    lin('Tipo de morte', TIPO_MORTE[d.tipo_morte] ?? d.tipo_morte) + lin('Caminho', CAMINHO_OBITO[d.encaminhamento] ?? d.encaminhamento) +
+    lin('Nº da D.O. (formulário do Ministério da Saúde)', d.numero_do) + lin('Médico atesta como', d.atestado_condicao) +
+    lin('CID interno (faturamento e indicadores)', d.cid_interno) +
+    lin('Polícia comunicada', junta(' · ', dataHoraBr(d.policia_comunicada_em), d.policia_ocorrencia ? `ocorrência ${d.policia_ocorrencia}` : ''))) +
+    (causas ? bloco('Causas da morte, como escritas pelo médico', causas, true) : '') +
+    blocoSe('Circunstâncias do óbito e medidas realizadas', d.relato, true) +
+    assinaturas([assMedico(ctx)])
+  return pagina({ titulo: 'Sumário de óbito', ctx, pac, fichas: [{ doc: 'Sumário de óbito (prontuário)', corpo }] })
+}
+
 function alta(tipo: TipoFolha, d: Json, ctx: ContextoFolha): string {
+  if (tipo === 'sumario_obito' && d.formato === 'obito') return sumarioObito(d, ctx)
   if (typeof d.texto === 'string' && !d.motivo) return documentoTexto(tipo, d, ctx)
   const pac = pacienteDe(ctx, d)
   const lin = (k: string, v: unknown) => (vz(v) ? '' : cel(6, k, esc(v)))

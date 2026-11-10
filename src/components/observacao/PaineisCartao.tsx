@@ -22,6 +22,9 @@ import { DESFECHOS, RELATO_DESFECHO, hhmm, rpc, type Acao, type Desfecho, type L
 import { Chip } from '@/components/monitor/Pagina'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
 import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { DadosObito } from '@/components/obito/DadosObito'
+import { useAgora } from '@/hooks/useAgora'
+import { detalhesObito, obitoVazio, regrasObito } from '@/lib/obito'
 import { detalhesDaTransferencia, type RegulacaoDoHistorico } from '@/lib/regulacaoAlta'
 
 export function Painel({ titulo, children, erro }: { titulo?: React.ReactNode; children: React.ReactNode; erro?: string | null }) {
@@ -83,8 +86,9 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
   const [destino, setDestino] = React.useState('')
   // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
   const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
-  const [horaObito, setHoraObito] = React.useState('')
-  const [numeroDo, setNumeroDo] = React.useState('')
+  // lacuna 5 (O1): os mesmos dados do óbito da porta e da internação
+  const [obito, setObito] = React.useState(() => obitoVazio())
+  const agora = useAgora()
   const [relato, setRelato] = React.useState('')
   const [motivoEvasao, setMotivoEvasao] = React.useState<MotivoEvasao | null>(null) // Fase 1, tarefa 6
   const [setor, setSetor] = React.useState('')
@@ -115,15 +119,17 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
     if (ehAlta && desfecho !== 'evasao' && cid.trim().length < 3) return setFalta('Informe o CID de alta.')
     if (desfecho === 'transferencia' && !regulacao && destino.trim().length < 3) return setFalta('Informe o serviço de destino.')
     if (desfecho === 'evasao' && !motivoEvasao) return setFalta('Escolha o motivo da evasão.')
-    if (desfecho === 'obito' && !horaObito) return setFalta('Informe a hora do óbito.')
-    if (desfecho === 'obito' && numeroDo.trim().length < 3) return setFalta('Informe o número da Declaração de Óbito.')
+    if (desfecho === 'obito') {
+      const falta = regrasObito(obito, { agora: Date.now() }).find((r) => !r.ok)
+      if (falta) return setFalta(`Óbito: ${falta.texto}.`)
+    }
     if (desfecho === 'internacao' && !setor) return setFalta('Escolha o setor de internação.')
     if (pedeRelato && relato.trim().length < 15) return setFalta(`${pedeRelato}: escreva ao menos 15 caracteres.`)
     setFalta(null)
-    const detalhes: Record<string, string> = {}
+    const detalhes: Record<string, unknown> = {}
     if (desfecho === 'transferencia') Object.assign(detalhes, detalhesDaTransferencia(regulacao ?? null, destino))
     if (desfecho === 'evasao' && motivoEvasao) detalhes.motivo_evasao = motivoEvasao
-    if (desfecho === 'obito') { detalhes.hora_obito = horaDoDia(horaObito, 'passado'); detalhes.numero_do = numeroDo.trim() }
+    if (desfecho === 'obito') Object.assign(detalhes, detalhesObito(obito))
     if (desfecho === 'internacao') { detalhes.setor_id = setor; if (leito) detalhes.leito_id = leito }
     void acao(() => rpc('finalizar_observacao', {
       p_internacao: linha.internacao_id, p_desfecho: desfecho, p_cid: ehAlta ? cid.trim() || null : null,
@@ -172,16 +178,7 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
         </div>
       )}
       {desfecho === 'obito' && (
-        <div className="flex flex-wrap gap-2.5">
-          <div className="flex w-[170px] flex-col gap-1.5">
-            <Label htmlFor={`hob-${linha.internacao_id}`}>Hora do óbito</Label>
-            <Input id={`hob-${linha.internacao_id}`} type="time" value={horaObito} onChange={(e) => setHoraObito(e.target.value)} />
-          </div>
-          <div className="flex w-[220px] flex-col gap-1.5">
-            <Label htmlFor={`do-${linha.internacao_id}`}>Nº da Declaração de Óbito</Label>
-            <Input id={`do-${linha.internacao_id}`} value={numeroDo} onChange={(e) => setNumeroDo(e.target.value)} />
-          </div>
-        </div>
+        <DadosObito id={`ob-${linha.internacao_id}`} valor={obito} onChange={(v) => { setObito(v); setFalta(null) }} agora={agora} />
       )}
       {(desfecho === 'obito' || desfecho === 'transferencia') && (
         <span className="text-apoio text-tinta-apoio">
