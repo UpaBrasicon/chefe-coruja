@@ -1007,6 +1007,34 @@ webhooks:
       responses:
         '200': { description: Recebido. Qualquer 2xx vale. }
       security: []
+  atendimento.reaberto:
+    post:
+      tags: [Webhooks]
+      operationId: evento_atendimento_reaberto
+      summary: Atendimento da porta reaberto depois do desfecho
+      description: >-
+        O médico que registrou o desfecho, ou o gestor da unidade, reabriu o
+        atendimento em até 24 h. O atendimento volta a "em atendimento" e um
+        novo atendimento.encerrado chega quando fechar de novo. Desconsidere o
+        encerramento anterior do mesmo atendimento_id.
+      parameters:
+        - $ref: '#/components/parameters/WebhookId'
+        - $ref: '#/components/parameters/WebhookTimestamp'
+        - $ref: '#/components/parameters/WebhookSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EventoWebhook'
+                - type: object
+                  properties:
+                    type: { const: atendimento.reaberto }
+                    data: { $ref: '#/components/schemas/DadosAtendimento' }
+      responses:
+        '200': { description: Recebido. Qualquer 2xx vale. }
+      security: []
   internacao.iniciada:
     post:
       tags: [Webhooks]
