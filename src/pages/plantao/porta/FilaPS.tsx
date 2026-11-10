@@ -3,14 +3,15 @@
 // atendimento" (com o estado "em reavaliação"); "Saídas do plantão" com os
 // finalizados e excluídos do dia. A cor manda; 80+ e prioridade legal só
 // desempatam dentro da mesma cor.
-import { useQuery } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, Stethoscope } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, RotateCcw, Stethoscope } from 'lucide-react'
 import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { homonimos } from '@/domain/homonimos'
 import { rotulosPrioridade } from '@/domain/prioridade'
@@ -35,13 +36,20 @@ import { useLimitesUnidade } from '@/lib/limitesUnidade'
 import { hoje, hora, minutos, nomeDe, rotuloDesfecho, useAgora, type EpFila } from './comum'
 import { Estado } from '@/components/porta/Estado'
 import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
+import { ReabrirAtendimento } from '@/components/porta/ReabrirAtendimento'
+import { podeVerReabrir, rotuloReaberto, ultimaReabertura, type ReaberturaResumo } from '@/lib/reabrirAtendimento'
 
 type Saida = {
   id: string; cor_atual: CorRisco | null; queixa: string; desfecho: string | null; desfecho_motivo: string | null
   desfecho_detalhes: Record<string, unknown> | null; desfecho_em: string | null; encerrado_em: string | null; desfecho_por: string | null
   conduta_aps: string[] | null; cid_aps: string[] | null; ciap_aps?: string[] | null
   paciente: { nome: string; nome_social: string | null; data_nascimento: string | null } | null
+  /** lacuna 8 (R8): reaberturas do atendimento (public.episodio_eventos) */
+  reaberturas?: ReaberturaResumo[] | null
 }
+
+// colunas da fila médica; a mesma leitura abre o atendimento reaberto (lacuna 8, R9)
+const COLUNAS_FILA = 'id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, tipo_atendimento_aps, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, identidade_desconhecida, sinais_identificacao), reaberturas:episodio_eventos(desfecho_anterior, criado_em)'
 
 const MOTIVO_EXCLUSAO: Record<string, string> = { evasao: 'evasão', duplicada: 'ficha duplicada', engano: 'engano' }
 
@@ -122,7 +130,12 @@ const Queixa = ({ texto }: { texto: string }) => (
 )
 
 export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: EpFila) => void }) {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, ehGestor, ehPlantonista } = useUnidade()
+  const { perfil } = useAuth()
+  const qc = useQueryClient()
+  // lacuna 8 (R9): a saída que está sendo reaberta e o aviso depois
+  const [reabrindo, setReabrindo] = React.useState<Saida | null>(null)
+  const [avisoReabertura, setAvisoReabertura] = React.useState<string | null>(null)
   // 5A, tarefa 2 (D7 do RT em 02/11/2026): na UBS a fila é do consultório, sem
   // cor nem alvo; prioridade legal e ordem de chegada; a saída é a conduta.
   const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
@@ -163,7 +176,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
     queryFn: async () => {
       const { data, error } = await supabase
         .from('episodios')
-        .select('id, paciente_id, setor_id, cor_atual, classificado_em, chegada_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, tipo_atendimento_aps, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, identidade_desconhecida, sinais_identificacao)')
+        .select(COLUNAS_FILA)
         .in('setor_id', meusSetores)
         .eq('etapa', 'atendimento')
       if (error) throw error
@@ -180,7 +193,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
       const desde = new Date(`${hoje()}T00:00:00-03:00`).toISOString()
       let q = supabase
         .from('episodios')
-        .select('id, cor_atual, queixa, desfecho, desfecho_motivo, desfecho_detalhes, desfecho_em, encerrado_em, desfecho_por, conduta_aps, cid_aps, ciap_aps, paciente:pacientes(nome, nome_social, data_nascimento)')
+        .select('id, cor_atual, queixa, desfecho, desfecho_motivo, desfecho_detalhes, desfecho_em, encerrado_em, desfecho_por, conduta_aps, cid_aps, ciap_aps, paciente:pacientes(nome, nome_social, data_nascimento), reaberturas:episodio_eventos(desfecho_anterior, criado_em)')
         .in('setor_id', meusSetores)
         .not('etapa', 'in', '(triagem,atendimento)')
       // a consulta da UBS encerra pela conduta, sem desfecho da porta
@@ -208,11 +221,29 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   // "cor": mais grave primeiro na ordem decrescente
   const porCor = (e: { cor_atual: CorRisco | null }) => (e.cor_atual ? -gravidade(e.cor_atual) : -99)
 
+  // lacuna 8 (R9): reaberto, o atendimento abre de novo na janela para quem está
+  // de plantão na porta; o gestor fora da escala só vê o aviso
+  async function aoReabrir(id: string, nome: string) {
+    setReabrindo(null)
+    setAvisoReabertura(null)
+    for (const k of ['fila-medica', 'saidas-plantao']) void qc.invalidateQueries({ queryKey: [k] })
+    const { data } = ehPlantonista
+      ? await supabase.from('episodios').select(COLUNAS_FILA).eq('id', id).maybeSingle()
+      : { data: null }
+    if (data) onAbrir(data as unknown as EpFila)
+    else setAvisoReabertura(`Atendimento de ${nome} reaberto: ele voltou para "Em atendimento".`)
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {aviso && (
         <div role="status" className="flex items-center gap-2 rounded-container border border-acao/20 bg-alerta-marca px-4 py-3 text-controle text-acao">
           <Check className="size-4 shrink-0" aria-hidden /> {aviso}
+        </div>
+      )}
+      {avisoReabertura && (
+        <div role="status" className="flex items-center gap-2 rounded-container border border-acao/20 bg-alerta-marca px-4 py-3 text-controle text-acao">
+          <RotateCcw className="size-4 shrink-0" aria-hidden /> {avisoReabertura}
         </div>
       )}
       {/* encaminhamentos internos para mim: antes ninguém podia aceitar (o componente não estava em tela nenhuma) */}
@@ -320,6 +351,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                   {ordenar(emAtendimento, ordemAt, { cor: porCor, ha: (e) => minDesde(e.atendimento_iniciado_em, agora) }).map((e) => {
                     const reav = !!e.reavaliar_em
                     const atrasada = reav && Date.parse(e.reavaliar_em!) < agora
+                    // lacuna 8 (R8): reaberto depois do desfecho
+                    const reaberto = rotuloReaberto(ultimaReabertura(e.reaberturas))
                     return (
                       <TableRow key={e.id}>
                         {!ubs && <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>}
@@ -329,7 +362,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                         <TableCell>
                           {reav
                             ? <Estado tom={atrasada ? 'vermelho' : 'ambar'}>Em reavaliação · às {hora(e.reavaliar_em)}{atrasada ? ' · atrasada' : ''}</Estado>
-                            : <Estado tom="teal">Em atendimento</Estado>}
+                            : reaberto ? <Estado tom="ambar">{reaberto}</Estado> : <Estado tom="teal">Em atendimento</Estado>}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -359,6 +392,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     <Cabeca>CID</Cabeca>
                     <Cabeca>{ubs ? 'Observação ou motivo' : 'Destino ou motivo'}</Cabeca>
                     <Cabeca col="hora" ordem={ordemSa} alternar={alternarSa}>Hora</Cabeca>
+                    {!ubs && <Cabeca className="text-right"><span className="sr-only">Ações</span></Cabeca>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -371,22 +405,37 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     const destino = excluido ? resto.join(': ') || s.desfecho_motivo
                       : conduta ? s.desfecho_motivo ?? '' : d.destino ? String(d.destino) : ''
                     const cid = conduta ? [...(s.ciap_aps ?? []), ...(s.cid_aps ?? [])].join(', ') : d.cid_alta ? String(d.cid_alta) : ''
+                    // lacuna 8 (R8/R9): fechado de novo depois de reaberto; o botão para o autor e o gestor, até 24 h
+                    const reaberto = rotuloReaberto(ultimaReabertura(s.reaberturas))
+                    const podeReabrir = !ubs && !excluido && podeVerReabrir(s, { perfilId: perfil?.id, ehGestor }, agora)
                     return (
                       <TableRow key={s.id}>
                         {!ubs && <TableCell><PilulaRisco cor={s.cor_atual} /></TableCell>}
                         <TableCell><Paciente e={s} /></TableCell>
                         <TableCell>
-                          {excluido
-                            ? <Estado tom="vermelho">Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Estado>
-                            : conduta
-                              ? <Estado tom="verde">{rotuloCondutaAps(conduta[0])}{conduta.length > 1 ? ` +${conduta.length - 1}` : ''}</Estado>
-                              : ubs && !s.desfecho
-                                ? <Estado tom="cinza">Encerrada na escuta</Estado>
-                                : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
+                          <div className="flex flex-col items-start gap-0.5">
+                            {excluido
+                              ? <Estado tom="vermelho">Excluído · {MOTIVO_EXCLUSAO[codigo] ?? codigo}</Estado>
+                              : conduta
+                                ? <Estado tom="verde">{rotuloCondutaAps(conduta[0])}{conduta.length > 1 ? ` +${conduta.length - 1}` : ''}</Estado>
+                                : ubs && !s.desfecho
+                                  ? <Estado tom="cinza">Encerrada na escuta</Estado>
+                                  : <Estado tom="verde">{rotuloDesfecho(s.desfecho)}</Estado>}
+                            {reaberto && <span className="text-rotulo text-atencao">{reaberto}</span>}
+                          </div>
                         </TableCell>
                         <TableCell className="tabular-nums text-tinta-apoio">{cid || <Nada />}</TableCell>
                         <TableCell className="max-w-[280px] truncate text-tinta-apoio" title={destino || undefined}>{destino || <Nada />}</TableCell>
                         <TableCell className="tabular-nums text-tinta-apoio">{hora(s.desfecho_em ?? s.encerrado_em)}</TableCell>
+                        {!ubs && (
+                          <TableCell className="text-right">
+                            {podeReabrir && (
+                              <Button size="sm" variant="outline" onClick={() => setReabrindo(s)} aria-label={`Reabrir o atendimento de ${nomeDe(s)}`}>
+                                <RotateCcw /> Reabrir
+                              </Button>
+                            )}
+                          </TableCell>
+                        )}
                       </TableRow>
                     )
                   })}
@@ -396,6 +445,11 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
           </section>
         </TabsContent>
       </Tabs>
+
+      {reabrindo && (
+        <ReabrirAtendimento episodioId={reabrindo.id} nome={nomeDe(reabrindo)} aberto onFechar={() => setReabrindo(null)}
+          onReaberto={(r) => void aoReabrir(r.episodio_id, nomeDe(reabrindo))} />
+      )}
     </div>
   )
 }

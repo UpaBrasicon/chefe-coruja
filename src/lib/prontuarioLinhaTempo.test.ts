@@ -357,3 +357,25 @@ test('óbito no atendimento (pela internação também) e sempre à vista', () =
   assert.deepEqual(principais(g.registros).mostrados.map((r) => r.id), ['ob1', 'int1'])
   assert.equal(juntarPaginas([p, { ...p, obitos: undefined }]).obitos?.length, 1)
 })
+
+test('reabertura no atendimento: o desfecho desfeito, quem reabriu e o selo; sempre à vista', () => {
+  const p = vazio()
+  p.atendimentos = [atendimento('ep1', '2026-11-10T10:00:00Z', { etapa: 'atendimento', encerrado_em: null, desfecho: null })]
+  p.registros = [{ id: 'r1', episodio_id: 'ep1', criado_em: '2026-11-10T10:20:00Z', subjetivo: 'dor', objetivo: null, avaliacao: 'Dispepsia', cid: 'R10', plano: null, autor_id: 'med' }]
+  p.reaberturas = [{
+    id: 're1', episodio_id: 'ep1', criado_em: '2026-11-10T12:00:00Z', autor_id: 'gestor', motivo: 'paciente_voltou', detalhe: null,
+    desfecho_anterior: 'alta', desfecho_anterior_em: '2026-11-10T11:00:00Z', medico_id: 'med', cid_anterior: 'R10',
+  }]
+  p.nomes = { med: 'Médico Teste', gestor: 'Gestora Teste' }
+  const [g] = montarLinhaTempo(p).grupos
+  assert.equal(g.reaberturas, 1)
+  assert.equal(g.situacao.emCurso, true)
+  assert.deepEqual(g.registros.map((r) => r.tipo + ':' + r.id), ['reabertura:re1', 'atendimento:r1'])
+  const r = g.registros[0]
+  assert.equal(r.autor, 'Gestora Teste')
+  assert.equal(r.tipo === 'reabertura' ? r.anteriorPor : null, 'Médico Teste')
+  assert.deepEqual(principais(g.registros).mostrados.map((x) => x.id), ['re1', 'r1'])
+  assert.equal(juntarPaginas([p, { ...p, reaberturas: undefined }]).reaberturas?.length, 1)
+  // servidor antigo (sem a chave): nenhum selo
+  assert.equal(montarLinhaTempo({ ...p, reaberturas: undefined }).grupos[0].reaberturas, 0)
+})

@@ -4,13 +4,14 @@
 
 export type EventoWebhook =
   | 'paciente.criado' | 'atendimento.aberto' | 'atendimento.encerrado' | 'internacao.iniciada'
-  | 'internacao.alta' | 'prescricao.assinada' | 'regulacao.status_alterado'
+  | 'internacao.alta' | 'prescricao.assinada' | 'regulacao.status_alterado' | 'atendimento.reaberto'
 
 /** Na ordem em que aparecem no cadastro. */
 export const EVENTOS: { valor: EventoWebhook; rotulo: string }[] = [
   { valor: 'paciente.criado', rotulo: 'Paciente cadastrado' },
   { valor: 'atendimento.aberto', rotulo: 'Atendimento aberto' },
   { valor: 'atendimento.encerrado', rotulo: 'Atendimento encerrado' },
+  { valor: 'atendimento.reaberto', rotulo: 'Atendimento reaberto' },
   { valor: 'internacao.iniciada', rotulo: 'Internação' },
   { valor: 'internacao.alta', rotulo: 'Alta da internação' },
   { valor: 'prescricao.assinada', rotulo: 'Prescrição assinada' },
