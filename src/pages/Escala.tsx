@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import * as React from 'react'
 
+import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -509,13 +510,16 @@ export default function Escala({
 
   // atestado da justificativa: bucket privado, abre com URL assinada (A5)
   const [erroAnexo, setErroAnexo] = React.useState<string | null>(null)
-  async function abrirAnexo(anexo: string) {
+  function abrirAnexo(anexo: string) {
     setErroAnexo(null)
     const caminho = caminhoDoAnexo(anexo)
     if (!caminho) return setErroAnexo('Não foi possível achar o arquivo do anexo.')
-    const { data, error } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).createSignedUrl(caminho, 120)
-    if (error) return setErroAnexo('Não foi possível abrir o anexo: ' + error.message)
-    window.open(data.signedUrl, '_blank', 'noopener')
+    // a aba abre no clique (abrirEmJanela): o bloqueador de pop-up barra a que abre depois do await
+    void abrirEmJanela(async () => {
+      const { data, error } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).createSignedUrl(caminho, 120)
+      if (error) throw error
+      return data.signedUrl
+    }).catch((e: Error) => setErroAnexo('Não foi possível abrir o anexo: ' + e.message))
   }
 
   const [dialogAberto, setDialogAberto] = React.useState(false)

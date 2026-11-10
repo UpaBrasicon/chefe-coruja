@@ -10,6 +10,7 @@ import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { dataHora } from '@/lib/formato'
+import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 
 type Arquivo = { id: string; nome: string; tamanho: number; caminho: string; enviado_em: string; enviado_por: { nome_completo: string } | null }
@@ -54,10 +55,13 @@ export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone, comp
     }
   }
 
-  async function baixar(a: Arquivo) {
-    const { data, error } = await supabase.storage.from('farmacia').createSignedUrl(a.caminho, 60, { download: a.nome })
-    if (error) return setErro(error.message)
-    window.open(data.signedUrl, '_blank', 'noopener')
+  // a aba abre no clique (abrirEmJanela): o bloqueador de pop-up barra a que abre depois do await
+  function baixar(a: Arquivo) {
+    void abrirEmJanela(async () => {
+      const { data, error } = await supabase.storage.from('farmacia').createSignedUrl(a.caminho, 60, { download: a.nome })
+      if (error) throw error
+      return data.signedUrl
+    }).catch((e: Error) => setErro(e.message))
   }
 
   const ultimo = recentes.data?.[0]
