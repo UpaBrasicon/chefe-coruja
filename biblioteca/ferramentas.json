@@ -28,86 +28,45 @@
    "infusão",
    "bomba",
    "mL/h",
-   "noradrenalina",
-   "sedação",
-   "fentanil",
-   "midazolam",
-   "rocurônio",
+   "diluição",
    "vasoativa",
    "DVA",
-   "diluição"
+   "vasopressor",
+   "noradrenalina",
+   "adrenalina",
+   "sedação",
+   "analgesia",
+   "fentanil",
+   "midazolam",
+   "propofol",
+   "dexmedetomidina",
+   "cetamina",
+   "bloqueio neuromuscular",
+   "rocurônio",
+   "atracúrio",
+   "curarizante",
+   "paralisia"
   ],
   "descricao": "Porta única: vasoativas, sedação, bloqueio neuromuscular e atalhos da heparina, com barra de dose até o teto do manual HC.",
   "rota": "/plantonista/calculadoras/infusoes-adulto",
   "publico": "adulto"
  },
  {
-  "id": "drogas-vasoativas",
-  "nome": "Drogas Vasoativas",
-  "tipo": "calculadora",
-  "secao": "Calculadoras",
-  "categoria": "Calculadoras",
-  "sinonimos": [
-   "noradrenalina",
-   "vasopressor",
-   "infusão",
-   "diluição",
-   "dopamina",
-   "adrenalina",
-   "DVA"
-  ],
-  "descricao": "Preparo padrão HC, mL/h pela dose e dose pela bomba.",
-  "rota": "/plantonista/calculadoras/drogas-vasoativas",
-  "publico": "adulto"
- },
- {
-  "id": "sedacao-continua",
-  "nome": "Sedação Contínua",
-  "tipo": "calculadora",
-  "secao": "Calculadoras",
-  "categoria": "Calculadoras",
-  "sinonimos": [
-   "fentanil",
-   "midazolam",
-   "propofol",
-   "dexmedetomidina",
-   "cetamina",
-   "analgesia"
-  ],
-  "descricao": "Propofol, midazolam, dexmedetomidina, quetamina e fentanil.",
-  "rota": "/plantonista/calculadoras/sedacao-continua",
-  "publico": "adulto"
- },
- {
-  "id": "bloqueio-neuromuscular",
-  "nome": "Bloqueio Neuromuscular Contínuo",
-  "tipo": "calculadora",
-  "secao": "Calculadoras",
-  "categoria": "Calculadoras",
-  "sinonimos": [
-   "atracúrio",
-   "rocurônio",
-   "curarizante",
-   "paralisia"
-  ],
-  "descricao": "Rocurônio e cisatracúrio (padrão HC).",
-  "rota": "/plantonista/calculadoras/bloqueio-neuromuscular",
-  "publico": "adulto"
- },
- {
   "id": "heparinizacao-venosa",
-  "nome": "Heparina não fracionada EV",
+  "nome": "Heparina não fracionada EV — dose e ajuste pelo TTPa",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
   "sinonimos": [
    "heparina",
    "TTPa",
+   "ajuste",
+   "nomograma",
    "anticoagulação",
    "TVP",
    "TEP"
   ],
-  "descricao": "80 UI/kg + 18 UI/kg/h e ajuste pelo TTPa (manual HC).",
+  "descricao": "80 UI/kg + 18 UI/kg/h e o nomograma da Tabela 7 (manual HC).",
   "rota": "/plantonista/calculadoras/heparinizacao-venosa",
   "publico": "adulto"
  },
@@ -153,9 +112,11 @@
    "fenitoína",
    "hidantal",
    "crise convulsiva",
-   "epilepsia"
+   "epilepsia",
+   "levetiracetam",
+   "ESETT"
   ],
-  "descricao": "1ª, 2ª e 3ª linha por peso (manual HC).",
+  "descricao": "1ª, 2ª e 3ª linha por peso (manual HC) e levetiracetam pelo ESETT.",
   "rota": "/plantonista/calculadoras/hidantalizacao",
   "publico": "adulto"
  },
@@ -196,19 +157,24 @@
   "publico": "adulto"
  },
  {
-  "id": "heparinizacao-ajuste",
-  "nome": "Heparina — ajuste pelo TTPa",
+  "id": "qtc",
+  "nome": "QTc — Bazett, Fridericia, Framingham e Hodges",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
   "sinonimos": [
-   "heparina",
-   "TTPa",
-   "ajuste",
-   "anticoagulação"
+   "QT",
+   "QTc",
+   "QT longo",
+   "torsades",
+   "Bazett",
+   "Fridericia",
+   "ECG",
+   "haloperidol",
+   "ondansetrona"
   ],
-  "descricao": "Nomograma da Tabela 7 do manual HC.",
-  "rota": "/plantonista/calculadoras/heparinizacao-ajuste",
+  "descricao": "QT corrigido pela frequência nas quatro fórmulas, com os limiares da AHA/ACCF 2010.",
+  "rota": "/plantonista/calculadoras/qtc",
   "publico": "adulto"
  },
  {
@@ -454,6 +420,43 @@
   "publico": "pediatrico"
  },
  {
+  "id": "pecarn-coluna-cervical",
+  "nome": "Coluna cervical no trauma contuso (PECARN 2024)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Trauma, toxicologia e acidentes",
+  "sinonimos": [
+   "pediatria",
+   "coluna cervical",
+   "colar cervical",
+   "PECARN",
+   "trauma",
+   "radiografia",
+   "tomografia"
+  ],
+  "descricao": "Alto risco, risco não desprezível ou sem fator, de 0 a 17 anos.",
+  "rota": "/plantonista/pediatria/pecarn-coluna-cervical",
+  "publico": "pediatrico"
+ },
+ {
+  "id": "pecarn-abdome",
+  "nome": "Lesão intra-abdominal no trauma contuso (PECARN)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Trauma, toxicologia e acidentes",
+  "sinonimos": [
+   "pediatria",
+   "abdome",
+   "trauma abdominal",
+   "PECARN",
+   "tomografia",
+   "sinal do cinto"
+  ],
+  "descricao": "Sete achados; risco muito baixo só com os sete ausentes.",
+  "rota": "/plantonista/pediatria/pecarn-abdome",
+  "publico": "pediatrico"
+ },
+ {
   "id": "glasgow-pediatrico",
   "nome": "Escala de Coma de Glasgow — criança",
   "tipo": "conduta",
@@ -651,6 +654,49 @@
   ],
   "descricao": "Leitura em 3 etapas, compensação (Tabela 3), ânion-gap, ΔAG/ΔHCO3, bicarbonato 1,4%, HCl.",
   "rota": "/plantonista/pediatria/acidobase-ped",
+  "publico": "pediatrico"
+ },
+ {
+  "id": "reanimacao-neonatal",
+  "nome": "Reanimação do RN ≥ 34 semanas em sala de parto (SBP 2026)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Neonato",
+  "sinonimos": [
+   "reanimação neonatal",
+   "sala de parto",
+   "recém-nascido",
+   "RN",
+   "VPP",
+   "adrenalina",
+   "massagem cardíaca",
+   "Minuto de Ouro",
+   "SBP",
+   "PRN"
+  ],
+  "descricao": "Sequência, SpO2 alvo, cânula e doses de adrenalina diluída e de SF por peso.",
+  "rota": "/plantonista/pediatria/reanimacao-neonatal",
+  "publico": "pediatrico"
+ },
+ {
+  "id": "ictericia-neonatal",
+  "nome": "Icterícia neonatal ≥ 35 semanas — fototerapia (AAP 2022)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Neonato",
+  "sinonimos": [
+   "icterícia",
+   "neonatal",
+   "recém-nascido",
+   "bilirrubina",
+   "hiperbilirrubinemia",
+   "fototerapia",
+   "exsanguineotransfusão",
+   "kernicterus",
+   "AAP"
+  ],
+  "descricao": "Limiares hora a hora de fototerapia, escalonamento de cuidado e exsanguineotransfusão por IG e fator de risco de neurotoxicidade.",
+  "rota": "/plantonista/pediatria/ictericia-neonatal",
   "publico": "pediatrico"
  },
  {
@@ -1186,7 +1232,7 @@
   "id": "hipocalemia-reposicao-potassio",
   "nome": "Hipocalemia — potássio",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "potássio",
@@ -1202,7 +1248,7 @@
   "id": "hipomagnesemia-reposicao-magnesio",
   "nome": "Hipomagnesemia — magnésio",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "magnésio",
@@ -1217,7 +1263,7 @@
   "id": "hipocalcemia-reposicao-calcio",
   "nome": "Hipocalcemia — cálcio",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "cálcio",
@@ -1232,7 +1278,7 @@
   "id": "hipercalcemia",
   "nome": "Hipercalcemia",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "cálcio",
@@ -1248,7 +1294,7 @@
   "id": "hipofosfatemia-reposicao-fosforo",
   "nome": "Hipofosfatemia — fósforo",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "fósforo",
@@ -1263,7 +1309,7 @@
   "id": "gasometria-acidobase",
   "nome": "Gasometria e distúrbios acidobásicos",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "gasometria",
@@ -1280,7 +1326,7 @@
   "id": "bicarbonato-de-sodio",
   "nome": "Bicarbonato de sódio",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "bicarbonato",
@@ -1295,7 +1341,7 @@
   "id": "cad-ehh-criterios",
   "nome": "CAD e EHH — critérios e fórmulas",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "cetoacidose",
@@ -1311,7 +1357,7 @@
   "id": "cad-ehh-tratamento",
   "nome": "CAD e EHH — tratamento",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "cetoacidose",
@@ -1328,7 +1374,7 @@
   "id": "hipoglicemia-adulto",
   "nome": "Hipoglicemia",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "hipoglicemia",
@@ -1343,7 +1389,7 @@
   "id": "pcr-adulto",
   "nome": "PCR — drogas e desfibrilação",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "PCR",
@@ -1352,7 +1398,7 @@
    "amiodarona",
    "desfibrilação"
   ],
-  "descricao": "Doses da Tabela 2 do HC e carga do choque.",
+  "descricao": "Doses da Tabela 2 do HC e carga do choque, com a AHA 2025 ao lado.",
   "rota": "/plantonista/emergencias/pcr-adulto",
   "publico": "adulto"
  },
@@ -1360,7 +1406,7 @@
   "id": "bradicardia-adulto",
   "nome": "Bradicardia sintomática",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "bradicardia",
@@ -1376,7 +1422,7 @@
   "id": "taquiarritmias-adulto",
   "nome": "Taquiarritmias — drogas EV",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "taquicardia",
@@ -1392,7 +1438,7 @@
   "id": "anafilaxia-adulto",
   "nome": "Anafilaxia",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "anafilaxia",
@@ -1407,7 +1453,7 @@
   "id": "anticoagulacao-plena-adulto",
   "nome": "Anticoagulação plena por peso",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Anticoagulação e hemoterapia",
   "sinonimos": [
    "enoxaparina",
@@ -1424,10 +1470,191 @@
   "publico": "adulto"
  },
  {
+  "id": "sca-inicial-adulto",
+  "nome": "SCA — conduta inicial",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Cardiovascular",
+  "sinonimos": [
+   "SCA",
+   "síndrome coronariana aguda",
+   "IAM",
+   "infarto",
+   "IAMCSST",
+   "IAMSSST",
+   "supra de ST",
+   "AAS",
+   "ticagrelor",
+   "prasugrel",
+   "clopidogrel",
+   "angioplastia",
+   "dor torácica"
+  ],
+  "descricao": "IAM com e sem supra: AAS, segundo antiagregante, anticoagulante e reperfusão, com as páginas do manual HC.",
+  "rota": "/plantonista/emergencias/sca-inicial-adulto",
+  "publico": "adulto"
+ },
+ {
+  "id": "itu-adulto",
+  "nome": "ITU — cistite, pielonefrite e sonda vesical",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Infecções",
+  "sinonimos": [
+   "ITU",
+   "infecção urinária",
+   "cistite",
+   "pielonefrite",
+   "sonda vesical",
+   "nitrofurantoína",
+   "fosfomicina",
+   "ceftriaxona",
+   "ciprofloxacina",
+   "amicacina",
+   "urocultura",
+   "bacteriúria"
+  ],
+  "descricao": "Esquemas e doses do manual HC, aminoglicosídeo por peso, duração e troca para via oral pela IDSA 2025.",
+  "rota": "/plantonista/emergencias/itu-adulto",
+  "publico": "adulto"
+ },
+ {
+  "id": "pep-hiv-adulto",
+  "nome": "PEP de HIV, IST e hepatite B",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Toxicologia e profilaxias",
+  "sinonimos": [
+   "PEP",
+   "profilaxia pós-exposição",
+   "HIV",
+   "acidente biológico",
+   "perfurocortante",
+   "violência sexual",
+   "estupro",
+   "dolutegravir",
+   "tenofovir",
+   "IST",
+   "levonorgestrel",
+   "IGHAHB"
+  ],
+  "descricao": "Quatro passos do PCDT, esquema por 28 dias com as trocas, IGHAHB por peso e profilaxias da violência sexual.",
+  "rota": "/plantonista/emergencias/pep-hiv-adulto",
+  "publico": "adulto"
+ },
+ {
+  "id": "cefaleia-adulto",
+  "nome": "Cefaleia aguda — sinais de alarme e tratamento",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "cefaleia",
+   "dor de cabeça",
+   "enxaqueca",
+   "migrânea",
+   "SNNOOP10",
+   "sinais de alarme",
+   "thunderclap",
+   "salvas",
+   "tensional",
+   "triptano",
+   "dexametasona"
+  ],
+  "descricao": "SNNOOP10 com o diferencial e a investigação da Tabela 2 do manual HC, thunderclap e crise de enxaqueca, tensional e salvas.",
+  "rota": "/plantonista/emergencias/cefaleia-adulto",
+  "publico": "adulto"
+ },
+ {
+  "id": "meningite-adulto",
+  "nome": "Meningite e encefalite — adulto",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Neurológico",
+  "sinonimos": [
+   "meningite",
+   "encefalite",
+   "meningoencefalite",
+   "LCR",
+   "liquor",
+   "ceftriaxona",
+   "ampicilina",
+   "Listeria",
+   "dexametasona",
+   "aciclovir",
+   "herpes"
+  ],
+  "descricao": "Primeira hora, ceftriaxona com ampicilina no risco de Listeria, dexametasona e aciclovir por peso, e padrões do LCR (manual HC).",
+  "rota": "/plantonista/emergencias/meningite-adulto",
+  "publico": "adulto"
+ },
+ {
+  "id": "colica-renal-adulto",
+  "nome": "Cólica nefrética",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Digestivo, fígado e rim",
+  "sinonimos": [
+   "cólica renal",
+   "cólica nefrética",
+   "litíase",
+   "cálculo renal",
+   "ureterolitíase",
+   "cetorolaco",
+   "tansulosina",
+   "nefrolitíase"
+  ],
+  "descricao": "Analgesia em degraus (cetorolaco, morfina, quetamina por peso), conduta pelo tamanho do cálculo, tansulosina com divergência e internação (manual HC).",
+  "rota": "/plantonista/emergencias/colica-renal-adulto",
+  "publico": "adulto"
+ },
+ {
+  "id": "intermacao-adulto",
+  "nome": "Intermação — resfriamento e meta",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "intermação",
+   "insolação",
+   "heat stroke",
+   "golpe de calor",
+   "hipertermia",
+   "imersão em água fria",
+   "resfriamento",
+   "calor"
+  ],
+  "descricao": "Alvo abaixo de 39 °C em 30 min, taxa de resfriamento calculada e recomendações da SCCM 2025 (sem antitérmico, sem dantroleno).",
+  "rota": "/plantonista/emergencias/intermacao-adulto",
+  "publico": "adulto"
+ },
+ {
+  "id": "queimadura-adulto",
+  "nome": "Queimadura — superfície queimada e reposição (adulto)",
+  "tipo": "conduta",
+  "secao": "Condutas e cálculos — adulto",
+  "categoria": "Trauma e ambientais",
+  "sinonimos": [
+   "queimadura",
+   "queimado",
+   "SCQ",
+   "superfície corporal queimada",
+   "Lund-Browder",
+   "Parkland",
+   "Brooke",
+   "reposição volêmica",
+   "choque do queimado",
+   "albumina"
+  ],
+  "descricao": "Boneco de frente e costas (Lund e Browder, coluna Adulto do ICr) e início a 2 mL/kg/%SCQ pela ABA 2024, com os limites que pedem vigilância.",
+  "rota": "/plantonista/emergencias/queimadura-adulto",
+  "publico": "adulto"
+ },
+ {
   "id": "fibrinoliticos-adulto",
   "nome": "Fibrinolíticos",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Anticoagulação e hemoterapia",
   "sinonimos": [
    "trombólise",
@@ -1444,7 +1671,7 @@
   "id": "intoxicacoes-antidotos-adulto",
   "nome": "Intoxicações e antídotos — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Toxicologia e profilaxias",
   "sinonimos": [
    "intoxicação",
@@ -1464,7 +1691,7 @@
   "id": "animais-peconhentos-adulto",
   "nome": "Acidentes por animais peçonhentos — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Toxicologia e profilaxias",
   "sinonimos": [
    "peçonhento",
@@ -1484,7 +1711,7 @@
   "id": "tetano-profilaxia-adulto",
   "nome": "Tétano — profilaxia e tratamento (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Toxicologia e profilaxias",
   "sinonimos": [
    "tétano",
@@ -1504,7 +1731,7 @@
   "id": "raiva-pos-exposicao-adulto",
   "nome": "Raiva — profilaxia pós-exposição (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Toxicologia e profilaxias",
   "sinonimos": [
    "raiva",
@@ -1524,7 +1751,7 @@
   "id": "hepatite-b-pos-exposicao-adulto",
   "nome": "Hepatite B — profilaxia pós-exposição ocupacional (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Toxicologia e profilaxias",
   "sinonimos": [
    "hepatite B",
@@ -1544,7 +1771,7 @@
   "id": "sedacao-procedimento-adulto",
   "nome": "Sedação e analgesia para procedimentos — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Dor, sedação e procedimentos",
   "sinonimos": [
    "sedação",
@@ -1564,7 +1791,7 @@
   "id": "dor-analgesia-adulto",
   "nome": "Dor e analgesia — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Dor, sedação e procedimentos",
   "sinonimos": [
    "dor",
@@ -1584,7 +1811,7 @@
   "id": "sintomas-paliativos-adulto",
   "nome": "Dor, dispneia e sedação em cuidados paliativos — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Dor, sedação e procedimentos",
   "sinonimos": [
    "cuidados paliativos",
@@ -1604,7 +1831,7 @@
   "id": "trombolise-avc-adulto",
   "nome": "Trombólise no AVC isquêmico — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "AVC",
@@ -1624,7 +1851,7 @@
   "id": "reversao-anticoagulacao-adulto",
   "nome": "Reversão de anticoagulação e sangramento — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Anticoagulação e hemoterapia",
   "sinonimos": [
    "reversão",
@@ -1646,7 +1873,7 @@
   "id": "escala-numerica-dor",
   "nome": "Escala numérica de dor (0–10) — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Dor, sedação e procedimentos",
   "sinonimos": [
    "dor",
@@ -1663,7 +1890,7 @@
   "id": "painad",
   "nome": "PAINAD — dor na demência avançada (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Dor, sedação e procedimentos",
   "sinonimos": [
    "PAINAD",
@@ -1680,7 +1907,7 @@
   "id": "bps-dor",
   "nome": "BPS — Escala Comportamental de Dor (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Dor, sedação e procedimentos",
   "sinonimos": [
    "BPS",
@@ -1698,7 +1925,7 @@
   "id": "rankin-modificada",
   "nome": "Escala de Rankin modificada (manual do HC)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "Rankin",
@@ -1715,7 +1942,7 @@
   "id": "escore-ich",
   "nome": "Escore ICH — hemorragia intraparenquimatosa (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "ICH",
@@ -1733,7 +1960,7 @@
   "id": "transfusao-hemocomponentes-adulto",
   "nome": "Transfusão de hemocomponentes — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Anticoagulação e hemoterapia",
   "sinonimos": [
    "transfusão",
@@ -1753,7 +1980,7 @@
   "id": "abc-score-transfusao-macica",
   "nome": "ABC score — previsão de transfusão maciça (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Anticoagulação e hemoterapia",
   "sinonimos": [
    "ABC score",
@@ -1772,7 +1999,7 @@
   "id": "ressuscitacao-volemica-adulto",
   "nome": "Ressuscitação volêmica no choque e na sepse — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "choque",
@@ -1792,7 +2019,7 @@
   "id": "asma-exacerbacao-adulto",
   "nome": "Exacerbação de asma — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "asma",
@@ -1812,7 +2039,7 @@
   "id": "dpoc-exacerbacao-adulto",
   "nome": "Exacerbação de DPOC — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "DPOC",
@@ -1832,7 +2059,7 @@
   "id": "vm-ajuste-inicial-adulto",
   "nome": "Ventilação mecânica — ajuste inicial (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "ventilação mecânica",
@@ -1842,7 +2069,10 @@
    "IOT",
    "PCV",
    "VCV",
-   "PSV"
+   "PSV",
+   "volume corrente",
+   "P/F",
+   "proteção pulmonar"
   ],
   "descricao": "Indicações (PO2 < 60, PCO2 > 55), Tabela 2 por modo, Vt 6–8 mL/kg pelo peso informado, I:E, pós-intubação, DOPE e assincronias.",
   "rota": "/plantonista/emergencias/vm-ajuste-inicial-adulto",
@@ -1852,7 +2082,7 @@
   "id": "vm-obstruido-grave-adulto",
   "nome": "Ventilação mecânica no obstruído grave (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "ventilação mecânica",
@@ -1872,7 +2102,7 @@
   "id": "mecanica-ventilatoria-adulto",
   "nome": "Mecânica ventilatória (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "mecânica ventilatória",
@@ -1892,7 +2122,7 @@
   "id": "sdra-ventilacao-adulto",
   "nome": "SDRA — ventilação protetora (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "SDRA",
@@ -1912,7 +2142,7 @@
   "id": "desmame-vm-adulto",
   "nome": "Desmame da ventilação mecânica (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "desmame",
@@ -1931,7 +2161,7 @@
   "id": "oxigenacao-irpa-adulto",
   "nome": "Oxigenação e insuficiência respiratória — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "insuficiência respiratória",
@@ -1951,7 +2181,7 @@
   "id": "dispneia-abordagem-adulto",
   "nome": "Dispneia — abordagem inicial (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "dispneia",
@@ -1971,7 +2201,7 @@
   "id": "fibrilacao-atrial-adulto",
   "nome": "Fibrilação atrial — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "fibrilação atrial",
@@ -1991,7 +2221,7 @@
   "id": "emergencia-hipertensiva-adulto",
   "nome": "Emergência hipertensiva — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Cardiovascular",
   "sinonimos": [
    "emergência hipertensiva",
@@ -2011,7 +2241,7 @@
   "id": "sindrome-aortica-adulto",
   "nome": "Síndrome aórtica aguda — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Cardiovascular",
   "sinonimos": [
    "síndrome aórtica",
@@ -2030,7 +2260,7 @@
   "id": "add-rs-disseccao-aorta",
   "nome": "ADD-RS — risco de dissecção de aorta (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Cardiovascular",
   "sinonimos": [
    "ADD-RS",
@@ -2048,7 +2278,7 @@
   "id": "insuficiencia-cardiaca-aguda-adulto",
   "nome": "Insuficiência cardíaca aguda — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Cardiovascular",
   "sinonimos": [
    "insuficiência cardíaca",
@@ -2068,7 +2298,7 @@
   "id": "pos-pcr-adulto",
   "nome": "Cuidados pós-PCR — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "pós-PCR",
@@ -2088,7 +2318,7 @@
   "id": "trauma-inicial-adulto",
   "nome": "Politraumatizado — tempos e volumes (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
   "sinonimos": [
    "trauma",
@@ -2108,7 +2338,7 @@
   "id": "nexus-coluna-cervical",
   "nome": "NEXUS — retirada do colar cervical (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
   "sinonimos": [
    "NEXUS",
@@ -2125,7 +2355,7 @@
   "id": "regra-canadense-coluna-cervical",
   "nome": "Regra canadense da coluna cervical (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
   "sinonimos": [
    "regra canadense",
@@ -2143,7 +2373,7 @@
   "id": "mgap-trauma",
   "nome": "MGAP — gravidade do trauma no pré-hospitalar (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
   "sinonimos": [
    "MGAP",
@@ -2162,7 +2392,7 @@
   "id": "triage-rts-trauma",
   "nome": "Triage-RTS — escore de trauma revisado de triagem (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
   "sinonimos": [
    "RTS",
@@ -2181,7 +2411,7 @@
   "id": "hemorragia-digestiva-adulto",
   "nome": "Hemorragia digestiva alta e baixa — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "HDA",
@@ -2201,7 +2431,7 @@
   "id": "oakland-hdb",
   "nome": "Escore de Oakland — hemorragia digestiva baixa",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "Oakland",
@@ -2219,7 +2449,7 @@
   "id": "ascite-pbe-hepatorrenal-adulto",
   "nome": "Ascite, PBE e síndrome hepatorrenal — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "ascite",
@@ -2239,7 +2469,7 @@
   "id": "encefalopatia-hepatites-graves-adulto",
   "nome": "Encefalopatia hepática e hepatites graves — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "encefalopatia hepática",
@@ -2259,7 +2489,7 @@
   "id": "maddrey",
   "nome": "Função discriminante de Maddrey — hepatite alcoólica",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "Maddrey",
@@ -2276,7 +2506,7 @@
   "id": "lesao-renal-aguda-adulto",
   "nome": "Lesão renal aguda — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "LRA",
@@ -2296,7 +2526,7 @@
   "id": "rabdomiolise-adulto",
   "nome": "Rabdomiólise — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "rabdomiólise",
@@ -2316,7 +2546,7 @@
   "id": "mcmahon-rabdomiolise",
   "nome": "Escore de McMahon — rabdomiólise",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Digestivo, fígado e rim",
   "sinonimos": [
    "McMahon",
@@ -2333,7 +2563,7 @@
   "id": "crise-tireotoxica-adulto",
   "nome": "Crise tireotóxica — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "crise tireotóxica",
@@ -2353,7 +2583,7 @@
   "id": "burch-wartofsky",
   "nome": "Burch-Wartofsky — crise tireotóxica",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "Burch-Wartofsky",
@@ -2369,7 +2599,7 @@
   "id": "estado-mixedematoso-adulto",
   "nome": "Estado mixedematoso — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "mixedema",
@@ -2389,7 +2619,7 @@
   "id": "escore-mixedema",
   "nome": "Escore diagnóstico do estado mixedematoso",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "mixedema",
@@ -2405,7 +2635,7 @@
   "id": "insuficiencia-adrenal-adulto",
   "nome": "Insuficiência adrenal e crise adrenal — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
   "sinonimos": [
    "insuficiência adrenal",
@@ -2425,7 +2655,7 @@
   "id": "agitacao-delirium-adulto",
   "nome": "Paciente agitado e delirium — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "agitação",
@@ -2445,7 +2675,7 @@
   "id": "bars-agitacao",
   "nome": "BARS — escala de atividade comportamental (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "BARS",
@@ -2462,7 +2692,7 @@
   "id": "hsa-adulto",
   "nome": "Hemorragia subaracnóidea — nimodipino e metas (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "HSA",
@@ -2482,7 +2712,7 @@
   "id": "ottawa-hsa",
   "nome": "Regra de Ottawa para HSA (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "Ottawa",
@@ -2499,7 +2729,7 @@
   "id": "hunt-hess",
   "nome": "Classificação de Hunt-Hess — HSA (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "Hunt-Hess",
@@ -2515,7 +2745,7 @@
   "id": "wfns-hsa",
   "nome": "Escala WFNS (\"CFIN\" no livro) — HSA (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "WFNS",
@@ -2532,7 +2762,7 @@
   "id": "fisher-hsa",
   "nome": "Classificação de Fisher — HSA na TC (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "Fisher",
@@ -2548,7 +2778,7 @@
   "id": "hints-plus",
   "nome": "HINTS e HINTS plus — síndrome vestibular aguda (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "HINTS",
@@ -2568,7 +2798,7 @@
   "id": "guillain-barre-adulto",
   "nome": "Síndrome de Guillain-Barré — imunoterapia e LCR (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "Guillain-Barré",
@@ -2588,7 +2818,7 @@
   "id": "criterios-vm-sgb",
   "nome": "Critérios de ventilação mecânica na SGB (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "Guillain-Barré",
@@ -2607,7 +2837,7 @@
   "id": "gbs-incapacidade",
   "nome": "Escore GBS de incapacidade (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "Guillain-Barré",
@@ -2623,7 +2853,7 @@
   "id": "egos",
   "nome": "Erasmus GBS Outcome Score — EGOS (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
   "sinonimos": [
    "EGOS",
@@ -2640,7 +2870,7 @@
   "id": "perc",
   "nome": "PERC — critérios para descartar TEP (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "PERC",
@@ -2657,7 +2887,7 @@
   "id": "hestia",
   "nome": "Critérios HESTIA — tratamento ambulatorial do TEP (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "HESTIA",
@@ -2674,7 +2904,7 @@
   "id": "smart-cop",
   "nome": "SMART-COP — necessidade de suporte intensivo na PAC (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "SMART-COP",
@@ -2692,7 +2922,7 @@
   "id": "ats-idsa-pac",
   "nome": "Critérios ATS/IDSA de PAC grave (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "ATS",
@@ -2709,7 +2939,7 @@
   "id": "pac-antibiotico-adulto",
   "nome": "PAC — antibiótico por grupo de risco (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Respiratório e ventilação",
   "sinonimos": [
    "pneumonia",
@@ -2729,7 +2959,7 @@
   "id": "mascc",
   "nome": "MASCC — risco na neutropenia febril (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "MASCC",
@@ -2746,7 +2976,7 @@
   "id": "neutropenia-febril-adulto",
   "nome": "Neutropenia febril — definições e doses (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "neutropenia febril",
@@ -2766,7 +2996,7 @@
   "id": "cairo-bishop",
   "nome": "Critérios de Cairo-Bishop — síndrome de lise tumoral (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "Cairo-Bishop",
@@ -2785,7 +3015,7 @@
   "id": "lise-tumoral-adulto",
   "nome": "Síndrome de lise tumoral — adulto",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "lise tumoral",
@@ -2805,7 +3035,7 @@
   "id": "falciforme-adulto",
   "nome": "Anemia falciforme — crise álgica e STA (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "falciforme",
@@ -2825,7 +3055,7 @@
   "id": "sindrome-toracica-aguda-adulto",
   "nome": "Síndrome torácica aguda — critérios diagnósticos (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "síndrome torácica aguda",
@@ -2840,7 +3070,7 @@
   "id": "szpilman-afogamento",
   "nome": "Afogamento — graus de Szpilman e prognóstico (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
   "sinonimos": [
    "afogamento",
@@ -2857,7 +3087,7 @@
   "id": "hipotermia-adulto",
   "nome": "Hipotermia acidental — estágio, RCP e reaquecimento (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
   "sinonimos": [
    "hipotermia",
@@ -2876,7 +3106,7 @@
   "id": "regiscar",
   "nome": "RegiSCAR — escore para DRESS (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "RegiSCAR",
@@ -2893,7 +3123,7 @@
   "id": "scorten-uti",
   "nome": "SSJ/NET — itens do SCORTEN para vaga de UTI (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "SCORTEN",
@@ -2911,7 +3141,7 @@
   "id": "dermatoses-graves-adulto",
   "nome": "Dermatoses graves — doses (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Hemato-oncologia e pele",
   "sinonimos": [
    "dermatose",
@@ -2931,7 +3161,7 @@
   "id": "acessos-calibres-adulto",
   "nome": "Acessos: calibres, French e intraósseo (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Dor, sedação e procedimentos",
   "sinonimos": [
    "French",
@@ -2951,7 +3181,7 @@
   "id": "marca-passo-provisorio-adulto",
   "nome": "Marca-passo provisório — parâmetros (adulto)",
   "tipo": "conduta",
-  "secao": "Emergências — manual HC",
+  "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
   "sinonimos": [
    "marca-passo",
@@ -2972,7 +3202,7 @@
   "nome": "Escala de Coma de Glasgow (GCS-P)",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Neurologia",
   "sinonimos": [
    "Escala",
    "Coma",
@@ -2988,7 +3218,7 @@
   "nome": "CURB-65",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "CURB-65",
    "gravidade",
@@ -3000,11 +3230,29 @@
   "publico": "adulto"
  },
  {
+  "id": "crb-65",
+  "nome": "CRB-65",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
+  "sinonimos": [
+   "CRB-65",
+   "CRB65",
+   "gravidade",
+   "pneumonia",
+   "comunitária",
+   "sem ureia"
+  ],
+  "descricao": "CURB-65 sem a ureia: faixa de risco e mortalidade observada em 30 dias no hospital e na comunidade (McNally 2010).",
+  "rota": "/plantonista/escores/crb-65",
+  "publico": "adulto"
+ },
+ {
   "id": "cha2ds2-va",
   "nome": "CHA₂DS₂-VA",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "CHA₂DS₂-VA",
    "risco",
@@ -3020,7 +3268,7 @@
   "nome": "HAS-BLED",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "HAS-BLED",
    "risco",
@@ -3036,7 +3284,7 @@
   "nome": "Child-Pugh",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "Child-Pugh",
    "gravidade",
@@ -3051,7 +3299,7 @@
   "nome": "HEART",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "HEART",
    "torácica",
@@ -3066,7 +3314,7 @@
   "nome": "Wells para TVP",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "Wells",
    "para",
@@ -3084,7 +3332,7 @@
   "nome": "Alvarado",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "Alvarado",
    "probabilidade",
@@ -3100,7 +3348,7 @@
   "nome": "ABCD2",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Neurologia",
   "sinonimos": [
    "ABCD2",
    "risco",
@@ -3115,7 +3363,7 @@
   "nome": "4T",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Hematologia",
   "sinonimos": [
    "probabilidade",
    "trombocitopenia",
@@ -3131,7 +3379,7 @@
   "nome": "AIMS65",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "AIMS65",
    "mortalidade",
@@ -3148,7 +3396,7 @@
   "nome": "BISAP",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "BISAP",
    "gravidade",
@@ -3164,7 +3412,7 @@
   "nome": "CAM-ICU",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Terapia intensiva e sepse",
   "sinonimos": [
    "CAM-ICU",
    "delirium",
@@ -3180,7 +3428,7 @@
   "nome": "CIVD manifesta",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Hematologia",
   "sinonimos": [
    "CIVD",
    "manifesta",
@@ -3196,7 +3444,7 @@
   "nome": "Canadian CT Head Rule",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Trauma",
   "sinonimos": [
    "Canadian",
    "Head",
@@ -3213,7 +3461,7 @@
   "nome": "Critérios de Light",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "Critérios",
    "Light",
@@ -3229,7 +3477,7 @@
   "nome": "FOUR Score",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Neurologia",
   "sinonimos": [
    "FOUR",
    "Score",
@@ -3246,7 +3494,7 @@
   "nome": "GRACE",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "GRACE",
    "risco",
@@ -3263,7 +3511,7 @@
   "nome": "Genebra revisado",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "Genebra",
    "revisado",
@@ -3280,7 +3528,7 @@
   "nome": "Glasgow-Blatchford",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "Glasgow-Blatchford",
    "hemorragia",
@@ -3296,7 +3544,7 @@
   "nome": "Killip",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "Killip",
    "classe",
@@ -3312,7 +3560,7 @@
   "nome": "MELD 3.0",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "MELD",
    "mortalidade",
@@ -3328,7 +3576,7 @@
   "nome": "PSI / PORT",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "PORT",
    "gravidade",
@@ -3345,7 +3593,7 @@
   "nome": "RASS",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Terapia intensiva e sepse",
   "sinonimos": [
    "RASS",
    "escala",
@@ -3362,7 +3610,7 @@
   "nome": "Ranson",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "Ranson",
    "gravidade",
@@ -3378,7 +3626,7 @@
   "nome": "Rockall",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Gastroenterologia e hepatologia",
   "sinonimos": [
    "Rockall",
    "ressangramento",
@@ -3393,7 +3641,7 @@
   "nome": "Sepse no adulto",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Terapia intensiva e sepse",
   "sinonimos": [
    "Sepse",
    "adulto",
@@ -3406,11 +3654,28 @@
   "publico": "adulto"
  },
  {
+  "id": "sofa-2",
+  "nome": "SOFA-2 (2025)",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Terapia intensiva e sepse",
+  "sinonimos": [
+   "SOFA-2",
+   "SOFA 2",
+   "disfunção orgânica",
+   "UTI",
+   "terapia intensiva"
+  ],
+  "descricao": "Disfunção orgânica no adulto em UTI pelos cortes de 2025, em paralelo ao SOFA original da sepse (Ranzani 2025).",
+  "rota": "/plantonista/escores/sofa-2",
+  "publico": "adulto"
+ },
+ {
   "id": "wells-tep",
   "nome": "Wells para TEP",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "Wells",
    "para",
@@ -3427,7 +3692,7 @@
   "nome": "YEARS",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "YEARS",
    "embolia",
@@ -3444,7 +3709,7 @@
   "nome": "Severidade do TEP (PESI)",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
   "sinonimos": [
    "TEP",
    "embolia",
@@ -3456,11 +3721,29 @@
   "publico": "adulto"
  },
  {
+  "id": "spesi",
+  "nome": "PESI simplificado (sPESI)",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Pneumologia e tromboembolismo",
+  "sinonimos": [
+   "sPESI",
+   "PESI simplificado",
+   "TEP",
+   "embolia",
+   "pulmonar",
+   "prognóstico"
+  ],
+  "descricao": "Seis variáveis de 1 ponto no TEP confirmado; 0 é baixo risco (Jiménez 2010).",
+  "rota": "/plantonista/escores/spesi",
+  "publico": "adulto"
+ },
+ {
   "id": "nih-avc",
   "nome": "NIHSS — AVC",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Neurologia",
   "sinonimos": [
    "AVC",
    "NIHSS",
@@ -3477,7 +3760,7 @@
   "nome": "NEWS2",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Terapia intensiva e sepse",
   "sinonimos": [
    "deterioração",
    "escore",
@@ -3496,7 +3779,7 @@
   "nome": "TIMI — Risco",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "TIMI",
    "angina",
@@ -3513,7 +3796,7 @@
   "nome": "TIMI IAMCSST",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "TIMI",
    "IAMCSST",
@@ -3530,7 +3813,7 @@
   "nome": "Síncope — regra de San Francisco",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "síncope",
    "San Francisco",
@@ -3545,7 +3828,7 @@
   "nome": "Síncope — Canadian Syncope Risk Score",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "síncope",
    "canadense",
@@ -3561,7 +3844,7 @@
   "nome": "Critérios de Duke modificados",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Cardiologia",
   "sinonimos": [
    "Duke",
    "endocardite",
@@ -3577,7 +3860,7 @@
   "nome": "ISS — Injury Severity Score",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Trauma",
   "sinonimos": [
    "ISS",
    "trauma",
@@ -3594,7 +3877,7 @@
   "nome": "TFG estimada — CKD-EPI 2021",
   "tipo": "escore",
   "secao": "Escores",
-  "categoria": "Escores",
+  "categoria": "Nefrologia",
   "sinonimos": [
    "CKD-EPI",
    "TFG",
@@ -3605,6 +3888,115 @@
   ],
   "descricao": "Creatinina, idade e sexo, sem coeficiente de raça, com a categoria G da KDIGO.",
   "rota": "/plantonista/escores/ckd-epi",
+  "publico": "adulto"
+ },
+ {
+  "id": "sgarbossa-modificado",
+  "nome": "Sgarbossa modificado (Smith) — BRE ou marca-passo",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Cardiologia",
+  "sinonimos": [
+   "Sgarbossa",
+   "Smith",
+   "BRE",
+   "bloqueio de ramo esquerdo",
+   "marca-passo",
+   "IAM",
+   "oclusão coronariana",
+   "ECG",
+   "ST/S"
+  ],
+  "descricao": "Três critérios de ECG com a razão ST/S; basta um para sugerir oclusão coronariana.",
+  "rota": "/plantonista/escores/sgarbossa-modificado",
+  "publico": "adulto"
+ },
+ {
+  "id": "cockcroft-gault",
+  "nome": "Clearance de creatinina — Cockcroft-Gault",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Nefrologia",
+  "sinonimos": [
+   "Cockcroft-Gault",
+   "clearance",
+   "ClCr",
+   "creatinina",
+   "ajuste de dose",
+   "função renal"
+  ],
+  "descricao": "ClCr em mL/min pelo peso real, o usado nas bulas para ajustar dose.",
+  "rota": "/plantonista/escores/cockcroft-gault",
+  "publico": "adulto"
+ },
+ {
+  "id": "ottawa-tornozelo",
+  "nome": "Regras de Ottawa — tornozelo e pé",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Trauma",
+  "sinonimos": [
+   "Ottawa",
+   "tornozelo",
+   "pé",
+   "entorse",
+   "fratura",
+   "radiografia"
+  ],
+  "descricao": "Trauma agudo: regra do tornozelo e do mediopé para descartar fratura.",
+  "rota": "/plantonista/escores/ottawa-tornozelo",
+  "publico": "adulto"
+ },
+ {
+  "id": "ottawa-joelho",
+  "nome": "Regra de Ottawa — joelho",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Trauma",
+  "sinonimos": [
+   "Ottawa",
+   "joelho",
+   "fratura",
+   "radiografia",
+   "patela"
+  ],
+  "descricao": "Trauma agudo: cinco critérios para descartar fratura.",
+  "rota": "/plantonista/escores/ottawa-joelho",
+  "publico": "adulto"
+ },
+ {
+  "id": "mcisaac",
+  "nome": "McIsaac (Centor modificado)",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Infectologia",
+  "sinonimos": [
+   "Centor",
+   "McIsaac",
+   "faringite",
+   "amigdalite",
+   "estreptococo",
+   "dor de garganta"
+  ],
+  "descricao": "Faringite a partir de 3 anos: quatro achados e a idade orientam o teste para estreptococo.",
+  "rota": "/plantonista/escores/mcisaac",
+  "publico": "ambos"
+ },
+ {
+  "id": "4at",
+  "nome": "4AT — delirium no idoso",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Geriatria e fragilidade",
+  "sinonimos": [
+   "4AT",
+   "delirium",
+   "confusão",
+   "idoso",
+   "rastreio"
+  ],
+  "descricao": "Rastreio rápido: alerta, AMT4, meses de trás para frente e mudança aguda.",
+  "rota": "/plantonista/escores/4at",
   "publico": "adulto"
  },
  {
@@ -3676,7 +4068,7 @@
  },
  {
   "id": "consulta-medicamentos",
-  "nome": "Consulta de Medicamentos",
+  "nome": "Consulta de medicamentos",
   "tipo": "farmacia",
   "secao": "Farmácia",
   "categoria": "Farmácia",
@@ -3695,7 +4087,7 @@
  },
  {
   "id": "referencia-diluicao",
-  "nome": "Referência de Diluição",
+  "nome": "Referência de diluição",
   "tipo": "farmacia",
   "secao": "Farmácia",
   "categoria": "Farmácia",
