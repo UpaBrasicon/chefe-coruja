@@ -4,11 +4,16 @@
 //
 // - Identificação SEMPRE do cadastro (paciente), do login (médico) e da
 //   unidade (CNES): nada de nome, CNS ou CNES digitado aqui.
-// - Tipo de receita: Simples ou Controle especial. Na simples, um item pode ser
-//   marcado como de controle especial. Item de controle especial sai na
-//   Receita de Controle Especial (Portaria SVS/MS 344/98) em 2 vias — 1ª retida
-//   na farmácia, 2ª do paciente — com a identificação do comprador e do
-//   fornecedor em branco, para a farmácia preencher (lib/folhas.ts).
+// - Controle especial pela lista da Portaria 344 (lacuna 3, decisão do RT de
+//   10/11/2026, C4): o item das listas C1 e C5 (e dos adendos que mandam para
+//   ela, como tramadol e fenobarbital) sai sozinho na Receita de Controle
+//   Especial em 2 vias (1ª retida na farmácia, 2ª do paciente), com a
+//   identificação do comprador e do fornecedor em branco, para a farmácia
+//   preencher (lib/folhas.ts). A lista vem do cadastro (item do catálogo) ou da
+//   tabela da RDC (nome escrito). O item das listas A e B exige a Notificação
+//   de Receita (talão numerado da vigilância sanitária): o app avisa e não o
+//   imprime. A marca à mão ficou só para o item que nem o cadastro nem a
+//   tabela conhecem (a tabela só tem as substâncias do catálogo da rede).
 // - Protocolos da instituição (escritos pelo gestor) e favoritos do médico
 //   (Preferências de prescrição). Paciente pediátrico não recebe nenhum dos
 //   dois: são de adulto. A trava de alergia é a regra do banco
@@ -35,12 +40,15 @@ import { BarraDocumento } from '@/components/documento/BarraDocumento'
 import { invalidarDocumentos, useDocumentosEpisodio } from '@/components/documento/documentos'
 import { useIdentificacao } from '@/components/documentos/identificacao'
 import { SeletorPaciente, usePacienteDoDocumento } from '@/components/documentos/SeletorPaciente'
-import { Aviso, Bloco, Chip, Leitura, Pilulas, Rodape, Sugestoes, Texto } from '@/components/documentos/ui'
+import { Aviso, Bloco, Chip, Leitura, Rodape, Sugestoes, Texto } from '@/components/documentos/ui'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { TituloCartao, TituloSecao } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { CaixaMarcar } from '@/components/ui/caixa-marcar'
 import { useTravas } from '@/components/paciente/useTravas'
+import { SeloControlado } from '@/components/farmacia/SeloControlado'
+import { useDestinoNaReceita } from '@/hooks/useControlados'
+import { destinoDoItem, type Controle, type Destino } from '@/domain/controlados'
 
 type ItemRx = {
   id: string
@@ -49,10 +57,12 @@ type ItemRx = {
   dose: string
   posologia: string
   quantidade: string
+  /** marca à mão: só vale para o item que o cadastro e a tabela da RDC não conhecem */
   controle_especial: boolean
   /** do cadastro de medicamentos: a trava de alergia do banco vale para ele */
   medicamento_id: string | null
 }
+/** `controle` (receita inteira de controle especial) é do rascunho antigo: a leitura o passa para cada item. */
 type Rx = { controle: boolean; itens: ItemRx[]; obs: string }
 export type RascunhoReceita = { receita: Rx }
 
@@ -66,6 +76,7 @@ export { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO }
 function normalizar(r: unknown): Rx {
   const o = (r && typeof r === 'object' ? r : {}) as Record<string, unknown>
   const controle = o.controle === true || o.controle_especial === true || o.tipo === 'controle_especial'
+  const porLista = o.marca_por_lista === true
   const itens = (Array.isArray(o.itens) ? o.itens : []).map((x): ItemRx => {
     const i = (x && typeof x === 'object' ? x : {}) as Record<string, unknown>
     const s = (...ks: string[]) => {
@@ -78,11 +89,12 @@ function normalizar(r: unknown): Rx {
       dose: s('dose', 'apresentacao'),
       posologia: s('posologia', 'uso'),
       quantidade: s('quantidade', 'qtd'),
-      controle_especial: i.controle_especial === true,
+      // desde a lacuna 3 o controle_especial gravado vem da lista; a marca à mão vai em marcado_a_mao
+      controle_especial: porLista ? i.marcado_a_mao === true : controle || i.controle_especial === true,
       medicamento_id: s('medicamento_id') || null,
     }
   }).filter((i) => i.medicamento.trim())
-  return { controle, itens, obs: typeof o.obs === 'string' ? o.obs : '' }
+  return { controle: false, itens, obs: typeof o.obs === 'string' ? o.obs : '' }
 }
 
 function carregarReceita(chave: string): RascunhoReceita {
@@ -93,21 +105,31 @@ function carregarReceita(chave: string): RascunhoReceita {
 /**
  * O conteúdo gravado no documento. `receita` é o que lib/folhas.ts lê
  * ({tipo, obs, controle_especial, itens:[{medicamento, dose, posologia,
- * quantidade, controle_especial}]}); `paciente` é o bloco antigo, para quem já
- * lê documentos emitidos; pac/cab/unidade/usuario é o retrato do protótipo.
+ * quantidade, controle_especial, notificacao?}]}); `paciente` é o bloco antigo,
+ * para quem já lê documentos emitidos; pac/cab/unidade/usuario é o retrato do
+ * protótipo. O controle especial de cada item vem do destino (lista da
+ * Portaria 344); o item que exige Notificação vai marcado e a folha não o
+ * imprime (a tela barra a emissão antes).
  */
-function montarConteudo(rx: Rx, ident: Identificacao) {
+function montarConteudo(rx: Rx, ident: Identificacao, destino: (i: ItemRx) => Destino) {
   return {
     ...ident.retrato,
     paciente: ident.pacienteAntigo(),
     receita: {
-      tipo: rx.controle ? 'controle_especial' : 'branca',
-      controle_especial: rx.controle,
+      tipo: 'branca',
+      controle_especial: false,
+      marca_por_lista: true,
       obs: rx.obs.trim(),
-      itens: rx.itens.map((i) => ({
-        id: i.id, medicamento: i.medicamento.trim(), dose: i.dose.trim(), posologia: i.posologia.trim(), quantidade: i.quantidade.trim(),
-        controle_especial: rx.controle || i.controle_especial, medicamento_id: i.medicamento_id,
-      })),
+      itens: rx.itens.map((i) => {
+        const d = destino(i)
+        return {
+          id: i.id, medicamento: i.medicamento.trim(), dose: i.dose.trim(), posologia: i.posologia.trim(), quantidade: i.quantidade.trim(),
+          controle_especial: d.tipo === 'controle_especial', medicamento_id: i.medicamento_id,
+          // o rascunho guarda a marca à mão do item que ninguém conhece
+          ...(i.controle_especial ? { marcado_a_mao: true } : {}),
+          ...(d.tipo === 'fora' ? { notificacao: d.controle.receita, lista: d.controle.lista } : {}),
+        }
+      }),
     },
   }
 }
@@ -135,9 +157,13 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
     `receituario-doc:${pacienteId ?? 'sem-paciente'}`, unidadeId, perfilId, carregarReceita,
   )
   const rx = dados.receita
+  // lacuna 3: a lista de cada item (catálogo ou nome escrito) decide a receita
+  const controlados = useDestinoNaReceita()
+  const controleDe = controlados.controle
+  const destino = (i: ItemRx) => destinoDoItem(controleDe(i.medicamento, i.medicamento_id), i.controle_especial)
   const temAlgo = rx.itens.length > 0 || rx.obs.trim() !== ''
   // sem nada escrito, nada vai ao servidor (abrir e fechar não deixa rascunho)
-  const conteudo = temAlgo ? JSON.stringify(montarConteudo(rx, ident)) : ''
+  const conteudo = temAlgo ? JSON.stringify(montarConteudo(rx, ident, destino)) : ''
   const servidor = useRascunhoServidor(pacienteId, 'receita', conteudo)
   const docs = useDocumentosEpisodio(pacienteId, servidor.salvoEm)
   const rascunhoNoBanco = (docs.data ?? []).find((d) => d.tipo === 'receita' && d.estado === 'rascunho' && d.meu)?.id ?? null
@@ -177,7 +203,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
   const favs = pediatrico ? [] : favoritos.data ?? []
   const travas = useTravas(pacienteId, [...rx.itens.map((i) => i.medicamento_id), ...favs.map((f) => f.medicamento_id)]).data ?? {}
 
-  const ehControle = (i: ItemRx) => rx.controle || i.controle_especial
+  const ehControle = (i: ItemRx) => destino(i).tipo === 'controle_especial'
   const itensControle = rx.itens.filter(ehControle)
   const temControle = itensControle.length > 0
 
@@ -196,9 +222,16 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
   else {
     if (ident.alergiasCarregadas && !ident.cab.temAlergia && !ident.cab.semAlergia && !ident.cab.desconheceAlergia) pendencias.push('registrar a alergia do paciente (tem ou nega)')
     if (!rx.itens.length) pendencias.push('ao menos um medicamento')
+    else if (!controlados.pronto) pendencias.push('aguardar a lista de medicamentos controlados (carregando)')
     for (const i of rx.itens) {
       const t = i.medicamento_id ? travas[i.medicamento_id] : null
+<<<<<<< origin/homolog
       if (t) pendencias.push(`${i.medicamento}: bloqueado pela alergia a ${t} — remova o item`)
+=======
+      if (t) pendencias.push(`${i.medicamento}: bloqueado pela alergia a ${t}: remova o item`)
+      const d = destino(i)
+      if (d.tipo === 'fora') pendencias.push(d.aviso)
+>>>>>>> HEAD
       if (!i.posologia.trim()) pendencias.push(`como tomar ${i.medicamento}`)
       if (ehControle(i) && !i.quantidade.trim()) pendencias.push(`quantidade de ${i.medicamento} (controle especial)`)
     }
@@ -209,7 +242,7 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
   async function emitir() {
     if (!pacienteId || pendencias.length) return
     setErro(null)
-    const texto = JSON.stringify(montarConteudo(rx, ident))
+    const texto = JSON.stringify(montarConteudo(rx, ident, destino))
     const impressao = await abrirImpressao({
       pacienteId, internacaoId: null, tipo: 'Receituário', documento: { tipo: 'receita', conteudo: texto },
       rascunhoId: servidor.rascunhoId() ?? copia.current ?? rascunhoNoBanco,
@@ -270,11 +303,6 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
         <>
           <section className="flex flex-col gap-4 rounded-cartao border border-fio bg-superficie px-5 py-[18px]">
             <div className="flex flex-wrap items-start gap-4">
-              <div className="flex flex-col gap-[5px]">
-                <span className="text-apoio font-medium text-grafite">Tipo de receita</span>
-                <Pilulas rotuloAria="Tipo de receita" opcoes={['simples', 'controle'] as const} valor={rx.controle ? 'controle' : 'simples'}
-                  rotulos={{ simples: 'Simples', controle: 'Controle especial' }} onChange={(v) => mudar({ controle: v === 'controle' })} />
-              </div>
               <div className="flex min-w-60 flex-1 flex-col gap-[5px]">
                 <span className="text-apoio font-medium text-grafite">Alergias</span>
                 {ident.cab.temAlergia ? (
@@ -291,9 +319,8 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
               </div>
             </div>
             <p className="text-apoio text-pretty text-tinta-sussurro">
-              {rx.controle
-                ? 'Todos os itens saem na Receita de Controle Especial (Portaria SVS/MS 344/98), em 2 vias: 1ª retida na farmácia, 2ª do paciente.'
-                : 'Na receita simples, marque um a um o item de controle especial: ele sai numa folha própria, em 2 vias, e os outros no receituário comum.'}
+              O item das listas C1 e C5 da Portaria 344 sai sozinho na Receita de Controle Especial, em 2 vias; os outros, no receituário comum.
+              O item das listas A e B exige a Notificação de Receita, o talão da vigilância sanitária, e não sai aqui.
             </p>
           </section>
 
@@ -358,19 +385,19 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
             </div>
             {rx.itens.map((i, idx) => editando === i.id ? (
               <div key={i.id} className="border-b border-trilha px-5 py-3.5">
-                <EditorItem pacienteId={pacienteId} inicial={i} modoControle={rx.controle} alergias={alergias}
+                <EditorItem pacienteId={pacienteId} inicial={i} controleDe={controleDe} alergias={alergias}
                   onSalvar={(n) => { mudar({ itens: rx.itens.map((x) => (x.id === i.id ? { ...n, id: i.id } : x)) }); setEditando(null) }}
                   onCancelar={() => setEditando(null)} />
               </div>
             ) : (
-              <LinhaItem key={i.id} ordem={idx + 1} item={i} controle={ehControle(i)}
+              <LinhaItem key={i.id} ordem={idx + 1} item={i} destino={destino(i)}
                 trava={i.medicamento_id ? travas[i.medicamento_id] ?? null : null}
                 alergiaTexto={i.medicamento_id ? null : alergiaNoTexto(i.medicamento, alergias)}
                 onEditar={() => setEditando(i.id)} onRemover={() => mudar({ itens: rx.itens.filter((x) => x.id !== i.id) })} />
             ))}
             <div className="px-5 py-3.5">
               {editando === 'novo' ? (
-                <EditorItem pacienteId={pacienteId} modoControle={rx.controle} alergias={alergias}
+                <EditorItem pacienteId={pacienteId} controleDe={controleDe} alergias={alergias}
                   onSalvar={(n) => { mudar({ itens: [...rx.itens, { ...n, id: crypto.randomUUID() }] }); setEditando(null) }}
                   onCancelar={() => setEditando(null)} />
               ) : (
@@ -407,11 +434,13 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
   )
 }
 
-function LinhaItem({ ordem, item, controle, trava, alergiaTexto, onEditar, onRemover }: {
-  ordem: number; item: ItemRx; controle: boolean; trava: string | null; alergiaTexto: string | null; onEditar: () => void; onRemover: () => void
+function LinhaItem({ ordem, item, destino, trava, alergiaTexto, onEditar, onRemover }: {
+  ordem: number; item: ItemRx; destino: Destino; trava: string | null; alergiaTexto: string | null; onEditar: () => void; onRemover: () => void
 }) {
+  const controle = destino.tipo === 'comum' ? null : destino.controle
+  const fora = destino.tipo === 'fora'
   return (
-    <div className={cn('flex flex-wrap items-start gap-3 border-b border-trilha px-5 py-3.5', trava && 'bg-alerta-critico/60')}>
+    <div className={cn('flex flex-wrap items-start gap-3 border-b border-trilha px-5 py-3.5', (trava || fora) && 'bg-alerta-critico/60')}>
       <span className="pt-0.5 text-apoio tabular-nums text-tinta-sussurro">{ordem}</span>
       <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-[3px]">
         <span className="text-corpo font-medium text-tinta">
@@ -419,8 +448,19 @@ function LinhaItem({ ordem, item, controle, trava, alergiaTexto, onEditar, onRem
         </span>
         <span className={cn('text-apoio text-pretty', item.posologia ? 'text-tinta-sussurro' : 'text-atencao')}>{item.posologia || 'Falta: como tomar'}</span>
         <div className="flex flex-wrap gap-1.5">
-          {controle && (
-            <span className="rounded-capsula bg-alerta-marca px-2.5 py-[3px] text-rotulo font-semibold text-acao">Controle especial · 2 vias</span>
+          {controle && <SeloControlado controle={controle} />}
+          {destino.tipo === 'controle_especial' && (
+            <span className="rounded-capsula bg-alerta-marca px-2.5 py-[3px] text-rotulo font-semibold text-acao">
+              Controle especial · 2 vias{!controle && ' · marcado à mão'}
+            </span>
+          )}
+          {destino.tipo === 'fora' && (
+            <span className="flex items-center gap-[5px] text-apoio font-semibold text-critico">
+              <TriangleAlert className="size-[13px]" aria-hidden /> {destino.aviso}
+            </span>
+          )}
+          {controle?.adendo && destino.tipo === 'controle_especial' && (
+            <span className="text-apoio text-pretty text-tinta-sussurro">{controle.adendo}</span>
           )}
           {trava && (
             <span className="flex items-center gap-[5px] text-apoio font-semibold text-critico">
@@ -443,8 +483,8 @@ function LinhaItem({ ordem, item, controle, trava, alergiaTexto, onEditar, onRem
   )
 }
 
-function EditorItem({ pacienteId, inicial, modoControle, alergias, onSalvar, onCancelar }: {
-  pacienteId: string; inicial?: ItemRx; modoControle: boolean; alergias: string[]
+function EditorItem({ pacienteId, inicial, controleDe, alergias, onSalvar, onCancelar }: {
+  pacienteId: string; inicial?: ItemRx; controleDe: (nome: string, medId: string | null) => Controle | null; alergias: string[]
   onSalvar: (i: Omit<ItemRx, 'id'>) => void; onCancelar: () => void
 }) {
   const [medicamento, setMedicamento] = React.useState(inicial?.medicamento ?? '')
@@ -471,6 +511,9 @@ function EditorItem({ pacienteId, inicial, modoControle, alergias, onSalvar, onC
   const trava = useTravas(pacienteId, [medId]).data?.[medId ?? ''] ?? null
   const alergiaTexto = medId ? null : alergiaNoTexto(medicamento, alergias)
   const pode = !!termo && !!posologia.trim() && !trava
+  // lacuna 3: a lista do item decide; a marca à mão só vale para o item que ninguém conhece
+  const conhecido = termo ? controleDe(termo, medId) : null
+  const destinoItem = destinoDoItem(conhecido, controle)
 
   return (
     <div className="flex flex-col gap-3.5 rounded-container border border-fio bg-campo p-3.5">
@@ -489,21 +532,27 @@ function EditorItem({ pacienteId, inicial, modoControle, alergias, onSalvar, onC
         </Texto>
         <Texto id="rx-dose" rotulo="Apresentação" largura="medio" valor={dose} onChange={setDose} dica="Ex.: comprimido, frasco" />
         <Texto id="rx-qtd" rotulo="Quantidade" largura="curto" valor={quantidade} onChange={setQuantidade}
-          ajuda={modoControle || controle ? 'Obrigatória no controle especial; sai também por extenso.' : undefined} />
+          ajuda={destinoItem.tipo === 'controle_especial' ? 'Obrigatória no controle especial; sai também por extenso.' : undefined} />
         <Texto id="rx-pos" rotulo="Como tomar" largura="cheio" valor={posologia} onChange={setPosologia} dica="Escrito pelo médico" />
       </div>
       {trava && <Aviso tom="critico">Bloqueado pela alergia registrada a {trava}. Escolha outro medicamento.</Aviso>}
       {!trava && alergiaTexto && <Aviso>Confira: alergia registrada a {alergiaTexto}. O item foi escrito fora do cadastro, então o banco não confere.</Aviso>}
       <div className="flex flex-wrap items-center gap-2">
-        {!modoControle && (
-          <Chip ativo={controle} onClick={() => setControle((c) => !c)} titulo="Sai na Receita de Controle Especial, em 2 vias">
+        {conhecido ? (
+          <span className="flex flex-wrap items-center gap-2 text-apoio text-tinta-apoio">
+            <SeloControlado controle={conhecido} />
+            {destinoItem.tipo === 'fora' ? <span className="text-critico">{destinoItem.aviso}</span> : 'Sai na Receita de Controle Especial, em 2 vias.'}
+          </span>
+        ) : (
+          <Chip ativo={controle} onClick={() => setControle((c) => !c)}
+            titulo="Item fora do cadastro e da tabela da RDC: marque se for das listas C1 ou C5. Sai na Receita de Controle Especial, em 2 vias">
             {controle && <Check className="size-[13px]" aria-hidden />} Controle especial (Portaria 344/98)
           </Chip>
         )}
         <div className="ml-auto flex gap-2">
           <Button variant="outline" onClick={onCancelar}>Cancelar</Button>
           <Button disabled={!pode} title={pode ? undefined : 'Informe o medicamento e como tomar'}
-            onClick={() => onSalvar({ medicamento: termo, dose: dose.trim(), posologia: posologia.trim(), quantidade: quantidade.trim(), controle_especial: controle, medicamento_id: medId })}>
+            onClick={() => onSalvar({ medicamento: termo, dose: dose.trim(), posologia: posologia.trim(), quantidade: quantidade.trim(), controle_especial: conhecido ? false : controle, medicamento_id: medId })}>
             {inicial ? <Check /> : <Plus />} {inicial ? 'Salvar item' : 'Adicionar à receita'}
           </Button>
         </div>

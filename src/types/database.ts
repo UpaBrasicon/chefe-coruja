@@ -6228,6 +6228,9 @@ export type Database = {
           forma_farmaceutica_outra: string | null
           unidades_locais: string[] | null
           concentracao: string | null
+          controlado_lista: string | null
+          controlado_receita: string | null
+          controlado_substancia: string | null
           created_at: string
           fonte: string
           id: string
@@ -6261,6 +6264,9 @@ export type Database = {
           forma_farmaceutica_outra?: string | null
           unidades_locais?: string[] | null
           concentracao?: string | null
+          controlado_lista?: string | null
+          controlado_receita?: string | null
+          controlado_substancia?: string | null
           created_at?: string
           fonte?: string
           id?: string
@@ -6294,6 +6300,9 @@ export type Database = {
           forma_farmaceutica_outra?: string | null
           unidades_locais?: string[] | null
           concentracao?: string | null
+          controlado_lista?: string | null
+          controlado_receita?: string | null
+          controlado_substancia?: string | null
           created_at?: string
           fonte?: string
           id?: string
@@ -9285,6 +9294,63 @@ export type Database = {
           },
         ]
       }
+      substancias_controladas: {
+        Row: {
+          adendo: string | null
+          chave: string
+          definida_em: string
+          definida_por: string | null
+          grafias: string[]
+          id: string
+          item: number
+          lista: string
+          rdc: string
+          receita: string
+          retirada_em: string | null
+          retirada_motivo: string | null
+          retirada_por: string | null
+          retirada_rdc: string | null
+          substancia: string
+          vigente: boolean
+        }
+        Insert: {
+          adendo?: string | null
+          chave: string
+          definida_em?: string
+          definida_por?: string | null
+          grafias?: string[]
+          id?: string
+          item: number
+          lista: string
+          rdc: string
+          receita: string
+          retirada_em?: string | null
+          retirada_motivo?: string | null
+          retirada_por?: string | null
+          retirada_rdc?: string | null
+          substancia: string
+          vigente?: boolean
+        }
+        Update: {
+          adendo?: string | null
+          chave?: string
+          definida_em?: string
+          definida_por?: string | null
+          grafias?: string[]
+          id?: string
+          item?: number
+          lista?: string
+          rdc?: string
+          receita?: string
+          retirada_em?: string | null
+          retirada_motivo?: string | null
+          retirada_por?: string | null
+          retirada_rdc?: string | null
+          substancia?: string
+          vigente?: boolean
+        }
+        Relationships: []
+      }
       sugestoes_prescricao: {
         Row: {
           created_at: string
@@ -10653,6 +10719,7 @@ export type Database = {
       rnds_desbloquear: { Args: { p_bloqueio: string }; Returns: number }
       rnds_chave_publica: { Args: never; Returns: Json }
       conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
+      controle_dos_itens: { Args: { p_itens: string[] }; Returns: Json }
       devolver_dispensacao: {
         Args: { p_dispensacao: string; p_motivo: string; p_quantidade: number }
         Returns: Json
@@ -10785,6 +10852,10 @@ export type Database = {
       }
       retirar_exame_unidade: {
         Args: { p_motivo: string; p_procedimento: string; p_unidade: string }
+        Returns: Json
+      }
+      retirar_substancia_controlada: {
+        Args: { p_motivo: string; p_rdc: string; p_substancia: string }
         Returns: Json
       }
       pedir_exames_internacao: {
@@ -11224,6 +11295,18 @@ export type Database = {
       definir_alta_vigilancia: {
         Args: { p_exige: boolean; p_medicamento: string; p_motivo: string; p_unidade: string }
         Returns: undefined
+      }
+      definir_substancia_controlada: {
+        Args: {
+          p_adendo?: string
+          p_grafias?: string[]
+          p_item: number
+          p_lista: string
+          p_rdc: string
+          p_receita?: string
+          p_substancia: string
+        }
+        Returns: Json
       }
       definir_ferramenta_unidade: {
         Args: {

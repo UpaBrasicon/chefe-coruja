@@ -3,6 +3,10 @@
 // A folha tem os mesmos campos das telas avulsas; o documento é emitido pelo
 // rascunho do banco (abrirImpressao → salvar_rascunho → emitir_rascunho), que
 // liga à internação ativa do paciente quando ela existe.
+// Lacuna 3 (Portaria 344, C4): o item das listas C1 e C5 sai na Receita de
+// Controle Especial em 2 vias, pela lista do cadastro ou da tabela da RDC; o
+// item que exige Notificação de Receita (listas A e B) ou que é de uso só no
+// estabelecimento barra a emissão com o aviso.
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
@@ -12,6 +16,8 @@ import { idadeLegivel } from '@/lib/cadastroPaciente'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { dataIso } from '@/lib/formato'
 import type { EstadoDocs } from '@/lib/documentosAlta'
+import { useDestinoNaReceita } from '@/hooks/useControlados'
+import { separarReceita } from '@/domain/controlados'
 
 type Opcoes = {
   pacienteId: string; nome: string; nascimento: string | null
@@ -26,6 +32,7 @@ type Opcoes = {
 export function useEmissaoAtestadoReceita({ pacienteId, nome, nascimento, leito = '', diagnostico = '', ondePreencherCid, estado, setEstado, aoEmitir }: Opcoes) {
   const [erro, setErro] = React.useState<string | null>(null)
   const alergias = useAlergias(pacienteId)
+  const controlados = useDestinoNaReceita()
   // mesma chave e forma de AbaPrescricao / PrescricaoEstruturada (cache comum)
   const peso = useQuery({
     queryKey: ['peso-atual', pacienteId],
@@ -70,10 +77,24 @@ export function useEmissaoAtestadoReceita({ pacienteId, nome, nascimento, leito 
   }
   async function emitirReceita() {
     if (!estado.receita.length) return setErro('A receita não tem itens.')
+    if (!controlados.pronto) return setErro('Carregando a lista de medicamentos controlados. Tente de novo em instantes.')
+    const destino = (i: EstadoDocs['receita'][number]) => controlados.destino(i.medicamento, i.medicamento_id)
+    const r = separarReceita(estado.receita, destino)
+    if (r.fora.length) return setErro(r.fora.map((f) => f.aviso).join(' '))
+    const semQuantidade = r.controleEspecial.filter((i) => !i.quantidade.trim())
+    if (semQuantidade.length) {
+      return setErro(`Informe a quantidade de ${semQuantidade.map((i) => i.medicamento).join(', ')}: é obrigatória na Receita de Controle Especial e sai também por extenso.`)
+    }
     setErro(null)
     const ok = await emitir('receita', {
       paciente: pacienteFolha(),
-      receita: { tipo: 'branca', obs: '', itens: estado.receita.map((i) => ({ id: i.id, medicamento: i.medicamento, dose: '', posologia: i.posologia, quantidade: i.quantidade })) },
+      receita: {
+        tipo: 'branca', obs: '',
+        itens: estado.receita.map((i) => ({
+          id: i.id, medicamento: i.medicamento, dose: '', posologia: i.posologia, quantidade: i.quantidade,
+          controle_especial: destino(i).tipo === 'controle_especial', medicamento_id: i.medicamento_id,
+        })),
+      },
     })
     if (ok) setEstado((s) => ({ ...s, rxEmitidaEm: new Date().toISOString() }))
   }
