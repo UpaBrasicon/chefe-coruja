@@ -130,3 +130,7 @@ desfecho, o atendimento fica bloqueado").
 - Anulação do óbito da porta.
 - Reabrir depois de 24 h.
 - Desfazer a chegada no destino de uma transferência.
+
+## 5. Decisão do RT (10/11/2026)
+
+"Sim": A em R1 a R10.
