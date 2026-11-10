@@ -24,6 +24,6 @@ test('jsonAscii troca todo caractere fora do ASCII por \\uXXXX e volta igual', (
   const jsonAscii = new Function('valor', corpoFn[1]) as (v: unknown) => string
   const original = { subject: 'Seu código de acesso — Chefe Coruja', html: 'expira em 10 minutos; ignore este email — sua conta segue protegida' }
   const s = jsonAscii(original)
-  assert.ok(/^[\x00-\x7f]*$/.test(s), 'só ASCII')
+  assert.ok([...s].every((c) => c.charCodeAt(0) < 128), 'só ASCII')
   assert.deepEqual(JSON.parse(s), original)
 })
