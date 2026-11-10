@@ -173,7 +173,8 @@ SELECT e2e.passo('6.aviso_gestor_24h', 1, 'gestor', '/regulacao', 'Gestor da ori
 -- Correção da tarefa 1 (PR #100): o óbito não espera exame; o exame pedido é cancelado no desfecho.
 SELECT e2e.passo('5.obito', 13, 'plantonista2', '/internacao', 'Óbito na unidade com exame ainda sem resultado (com número da D.O.)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int13'), 'obito', 'A41.9',
-         'Óbito às 03h10 após choque refratário (teste E2E).', jsonb_build_object('numero_do', '123456789', 'hora_obito', to_char(now(), 'HH24:MI'))));
+         'Óbito às 03h10 após choque refratário (teste E2E).', jsonb_build_object('numero_do', '123456789', 'hora_obito', now(),  -- lacuna 5: hora completa, tipo de morte e causas
+           'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Choque séptico refratário'))));
 DO $$
 DECLARE x record;
 BEGIN
@@ -187,7 +188,12 @@ SELECT e2e.conferir('5.obito_cancela_exames', 13, 'Os exames do #13 sem resultad
   (SELECT string_agg(exame || ':' || situacao, ', ') FROM public.exames_pedidos WHERE paciente_id = e2e.u('pac13')));
 SELECT e2e.passo('5.sumario_obito', 13, 'plantonista2', '/internacao', 'Sumário de óbito',
   format('SELECT (public.emitir_documento(%L::uuid, %L, %L) ->> ''id'')', e2e.u('pac13'), 'sumario_obito', 'Sumário de óbito de teste E2E: choque séptico refratário.'));
-SELECT e2e.lacuna('5.declaracao_obito', 13, 'plantonista', 'Declaração de óbito (D.O.) e comunicação à família/serviços', 'Não há documento de D.O. (só o número dentro do desfecho) nem registro de comunicação do óbito.');
+-- lacuna 5 (20270326000001): o registro do óbito para o prontuário, com o Sumário de óbito automático
+-- (a D.O. continua sendo o formulário do Ministério da Saúde; comunicação e corpo ficam como pendência)
+SELECT e2e.conferir('5.declaracao_obito', 13, 'Registro do óbito (número da D.O., tipo de morte, causas) com o Sumário de óbito e as pendências',
+  EXISTS (SELECT 1 FROM public.obitos o WHERE o.paciente_id = e2e.u('pac13') AND o.anulado_em IS NULL AND o.numero_do = '123456789'
+            AND o.documento_id IS NOT NULL AND 'comunicacao_familia' = ANY (private.obito_pendencias(o))),
+  (SELECT string_agg(o.tipo_morte || ' ' || coalesce(o.numero_do, '-'), ', ') FROM public.obitos o WHERE o.paciente_id = e2e.u('pac13')));
 SELECT e2e.passo('5.alta_internacao', 11, 'plantonista2', '/internacao', 'Alta melhorada da idosa (ITU + delirium)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L)::text', e2e.u('int11'), 'alta_melhorada', 'N39.0'));
 SELECT e2e.passo('5.pacote_alta', 11, 'plantonista2', '/internacao', 'Pacote de alta com orientações',

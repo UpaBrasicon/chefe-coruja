@@ -61,6 +61,8 @@ export type Leito = {
   tipo: TipoLeito
   status: StatusLeito
   ativo: boolean
+  /** lacuna 5 (O5): o leito ocupado com o corpo, aguardando a liberação */
+  obito_aguardando_id?: string | null
 }
 
 export function useLeitos(setorId: string | undefined) {
@@ -70,7 +72,7 @@ export function useLeitos(setorId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leitos')
-        .select('id, setor_id, identificador, tipo, status, ativo')
+        .select('id, setor_id, identificador, tipo, status, ativo, obito_aguardando_id')
         .eq('setor_id', setorId!)
         .order('identificador', { ascending: true })
       if (error) throw error

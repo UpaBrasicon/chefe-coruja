@@ -70,7 +70,8 @@ SELECT e2e.passo('T1.passagem', 18, 'plantonista2', '/internacao', 'Envia passag
   format('SELECT public.enviar_passagem(%L::uuid, %L::uuid, %L)::text', e2e.u('int18'), e2e.conta('plantonista'), 'Choque séptico, em vasopressor (teste E2E).'));
 SELECT e2e.passo('T1.obito', 18, 'plantonista2', '/internacao', 'Óbito com exame, parecer, pendência e passagem abertos (não trava)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int18'), 'obito', 'A41.9',
-         'Óbito após choque refratário (teste E2E).', jsonb_build_object('numero_do', '223456789', 'hora_obito', to_char(now(), 'HH24:MI'))));
+         'Óbito após choque refratário (teste E2E).', jsonb_build_object('numero_do', '223456789', 'hora_obito', now(),  -- lacuna 5: hora completa, tipo de morte e causas
+           'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Choque séptico refratário'))));
 SELECT e2e.conferir('T1.obito_exames_cancelados', 18, 'Exames sem resultado cancelados com o motivo "Óbito"',
   NOT EXISTS (SELECT 1 FROM public.exames_pedidos WHERE paciente_id = e2e.u('pac18') AND (situacao <> 'cancelado' OR motivo_cancelamento NOT LIKE 'Óbito:%')),
   (SELECT string_agg(exame || '=' || situacao || ' (' || coalesce(motivo_cancelamento, '') || ')', '; ') FROM public.exames_pedidos WHERE paciente_id = e2e.u('pac18')));
@@ -126,12 +127,12 @@ SELECT e2e.passo('T1.agravo', 19, 'plantonista2', '/internacao', 'Marca suspeita
   format('SELECT public.marcar_agravo(%L::uuid, %L, %L)::text', e2e.u('pac19'), 'Doença meningocócica', 'A39.0'), 'ok', 'agravo19');
 SELECT e2e.passo('T1.obito_com_agravo', 19, 'plantonista2', '/internacao', 'Óbito com agravo suspeito sem notificação (deve travar)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int19'), 'obito', 'A39.0',
-         'Óbito por choque meningocócico (teste E2E).', jsonb_build_object('numero_do', '323456789', 'hora_obito', to_char(now(), 'HH24:MI'))), 'erro:Existe(m) pendência(s) em aberto: Agravo');
+         'Óbito por choque meningocócico (teste E2E).', jsonb_build_object('numero_do', '323456789', 'hora_obito', now(), 'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Doença meningocócica'))), 'erro:Existe(m) pendência(s) em aberto: Agravo');
 SELECT e2e.passo('T1.notificar', 19, 'plantonista2', '/internacao', 'Registra a notificação',
   format('SELECT public.resolver_agravo(%L::uuid, true, %L, NULL)::text', e2e.u('agravo19'), '1234567'));
 SELECT e2e.passo('T1.obito_notificado', 19, 'plantonista2', '/internacao', 'Óbito depois da notificação',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int19'), 'obito', 'A39.0',
-         'Óbito por choque meningocócico (teste E2E).', jsonb_build_object('numero_do', '323456789', 'hora_obito', to_char(now(), 'HH24:MI'))));
+         'Óbito por choque meningocócico (teste E2E).', jsonb_build_object('numero_do', '323456789', 'hora_obito', now(), 'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Doença meningocócica'))));
 
 -- ── #20: transferência externa com exame pendente ───────────────────────────
 SELECT e2e.t1_porta(20, 'E2E T1 Transferido', 'I21.9', ARRAY['Troponina']);
@@ -173,7 +174,7 @@ SELECT e2e.conferir('T1.alta_porta_prescricao', 22, 'Prescrição da porta encer
 SELECT e2e.t1_porta(23, 'E2E T1 Obito Porta', 'I46.9', ARRAY['Gasometria arterial']);
 SELECT e2e.passo('T1.obito_porta', 23, 'plantonista', '/plantao/porta', 'Óbito na porta com gasometria sem resultado',
   format('SELECT public.registrar_desfecho(%L::uuid, %L, %L, %L::jsonb)::text', e2e.u('ep23'), 'obito', 'Parada cardiorrespiratória na sala vermelha (teste E2E).',
-         jsonb_build_object('hora_obito', now(), 'numero_do', '423456789', 'cid_obito', 'I46.9', 'cid_alta', 'I46.9')));
+         jsonb_build_object('hora_obito', now(), 'numero_do', '423456789', 'cid_obito', 'I46.9', 'cid_alta', 'I46.9', 'obito', jsonb_build_object('tipo_morte', 'natural_assistida', 'atestado_condicao', 'substituto', 'causa_a', 'Infarto agudo do miocárdio'))));
 SELECT e2e.conferir('T1.obito_porta_exame', 23, 'Exame da porta cancelado com o motivo "Óbito"',
   EXISTS (SELECT 1 FROM public.exames_pedidos WHERE paciente_id = e2e.u('pac23') AND situacao = 'cancelado' AND motivo_cancelamento LIKE 'Óbito:%'),
   (SELECT string_agg(situacao, ',') FROM public.exames_pedidos WHERE paciente_id = e2e.u('pac23')));

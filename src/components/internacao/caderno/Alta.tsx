@@ -16,6 +16,9 @@ import { Secao } from './caixas'
 import { type Acao, diaHora, type Internacao, type Pacote, ROTULO_ALTA, rpc, TIPO_ALTA } from './comum'
 import { Estado } from '@/components/porta/Estado'
 import { RegulacaoDaAlta } from '@/components/regulacao/RegulacaoDaAlta'
+import { DadosObito } from '@/components/obito/DadosObito'
+import { useAgora } from '@/hooks/useAgora'
+import { detalhesObito, obitoVazio, regrasObito } from '@/lib/obito'
 import { detalhesDaTransferencia, type RegulacaoDoHistorico } from '@/lib/regulacaoAlta'
 
 // Frases-modelo do protótipo (ESTADO.md, pacote de alta). Nenhuma vem marcada:
@@ -57,7 +60,9 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
   const [destino, setDestino] = React.useState('')
   // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
   const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
-  const [numeroDo, setNumeroDo] = React.useState('')
+  // lacuna 5 (O1): os mesmos dados do óbito da porta e da observação
+  const [obito, setObito] = React.useState(() => obitoVazio())
+  const agora = useAgora()
   const [orientacaoUbs, setOrientacaoUbs] = React.useState('') // 5A, tarefa 6 (I3): vai à UBS do paciente
   const [confirmar, setConfirmar] = React.useState(false)
   const [abertoEm] = React.useState(() => Date.now())
@@ -78,15 +83,16 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
         )}
         <Button size="xs" variant="outline" className="self-start"
           disabled={impeditivos.some((x) => x.tipo === 'agravo')}
-          onClick={() => { setQuando(dataHoraInput()); if (!cid && cidSugerido) setCid(cidSugerido); setAberto(true) }}>
+          onClick={() => { setQuando(dataHoraInput()); setObito(obitoVazio(dataHoraInput())); if (!cid && cidSugerido) setCid(cidSugerido); setAberto(true) }}>
           <DoorOpen /> Dar alta
         </Button>
       </Secao>
     )
   }
-  const detalhes: Record<string, string> = {}
+  const detalhes: Record<string, unknown> = {}
   if (tipo === 'transferencia_externa') Object.assign(detalhes, detalhesDaTransferencia(regulacao ?? null, destino))
-  if (tipo === 'obito') detalhes.numero_do = numeroDo
+  if (tipo === 'obito') Object.assign(detalhes, detalhesObito(obito))
+  const faltaObito = tipo === 'obito' ? regrasObito(obito, { agora, desde: i.data_admissao }).filter((r) => !r.ok) : []
   if (tipo !== 'obito' && orientacaoUbs.trim()) detalhes.orientacao_ubs = orientacaoUbs.trim()
   return (
     <Secao titulo="Dados da alta">
@@ -115,13 +121,13 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
             <Input id="alta-destino" value={destino} onChange={(e) => setDestino(e.target.value)} />
           </div>
         )}
-        {tipo === 'obito' && (
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="alta-do">Nº da Declaração de Óbito *</Label>
-            <Input id="alta-do" value={numeroDo} onChange={(e) => setNumeroDo(e.target.value)} />
-          </div>
-        )}
       </div>
+      {tipo === 'obito' && <DadosObito id={`alta-obito-${i.id}`} valor={obito} onChange={setObito} agora={agora} />}
+      {faltaObito.length > 0 && (
+        <ul className="flex flex-col gap-1 text-atencao">
+          {faltaObito.map((x) => <li key={x.texto} className="flex gap-1.5"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{x.texto}</li>)}
+        </ul>
+      )}
       {impedem.length > 0 && (
         <ul className="flex flex-col gap-1 text-atencao">
           {impedem.map((x, k) => <li key={k} className="flex gap-1.5"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{x.descricao}</li>)}
@@ -167,7 +173,7 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
         </div>
       ) : (
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => setConfirmar(true)} disabled={impedem.length > 0 || (tipo !== 'alta_evasao' && cid.trim().length < 3)}>Confirmar</Button>
+          <Button size="sm" onClick={() => setConfirmar(true)} disabled={impedem.length > 0 || faltaObito.length > 0 || (tipo !== 'alta_evasao' && cid.trim().length < 3)}>Confirmar</Button>
           <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
         </div>
       )}
@@ -180,6 +186,7 @@ export function CancelarAlta({ i, acao }: { i: Internacao; acao: Acao }) {
   return (
     <Secao titulo="Cancelar alta">
       <p className="text-tinta-sussurro">Alta de {diaHora(i.data_alta)} · {i.cid_alta ? `CID ${i.cid_alta}` : 'sem CID (evasão)'}. Cancelar devolve o paciente ao censo e revoga o link do pacote.</p>
+      {i.status === 'obito' && <p className="text-tinta-sussurro">No óbito, o registro do óbito, as comunicações e o Sumário de óbito ficam anulados, e o paciente volta ao leito que esperava o corpo.</p>}
       <Textarea placeholder="Justificativa (mínimo de 10 letras)" value={texto} onChange={(e) => setTexto(e.target.value)} />
       <Button size="sm" variant="outline" className="self-start" disabled={texto.trim().length < 10}
         onClick={() => acao(() => rpc('cancelar_alta', { p_internacao: i.id, p_justificativa: texto }), 'Alta cancelada: o paciente voltou ao censo.')}>

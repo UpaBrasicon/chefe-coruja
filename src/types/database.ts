@@ -5854,6 +5854,7 @@ export type Database = {
           created_at: string
           id: string
           identificador: string
+          obito_aguardando_id: string | null
           setor_id: string
           status: Database["public"]["Enums"]["status_leito"]
           tipo: Database["public"]["Enums"]["tipo_leito"]
@@ -10722,6 +10723,16 @@ export type Database = {
       rnds_desbloquear: { Args: { p_bloqueio: string }; Returns: number }
       rnds_chave_publica: { Args: never; Returns: Json }
       conferir_dispensacao: { Args: { p_dispensacao: string }; Returns: undefined }
+      // lacuna 5: óbito (migration 20270326000001)
+      anular_do: { Args: { p_motivo: string; p_numero_novo: string; p_obito: string }; Returns: undefined }
+      comunicar_obito_familia: { Args: { p_dados: Json; p_obito: string }; Returns: string }
+      comunicar_obito_policia: { Args: { p_dados: Json; p_obito: string }; Returns: undefined }
+      conferir_identificacao_corpo: { Args: { p_dados: Json; p_obito: string }; Returns: undefined }
+      conferir_obito: { Args: { p_dados: Json; p_desde?: string }; Returns: Json }
+      liberar_corpo: { Args: { p_dados: Json; p_obito: string }; Returns: undefined }
+      obito_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      obitos_pendentes: { Args: { p_unidade: string }; Returns: Json }
+      registrar_via_do: { Args: { p_obito: string; p_via: string }; Returns: undefined }
       controle_dos_itens: { Args: { p_itens: string[] }; Returns: Json }
       contencao_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       contencoes_ativas: { Args: { p_unidade: string }; Returns: Json }

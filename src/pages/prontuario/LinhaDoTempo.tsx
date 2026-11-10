@@ -11,6 +11,7 @@ import { CORES_RISCO, type CorRisco } from '@/domain/risco'
 import { SITUACAO_EXAME, type SituacaoExame } from '@/lib/exames'
 import { data, dataIso, diaMesHora, hora } from '@/lib/formato'
 import { rotuloLocais, rotuloPontos } from '@/lib/contencao'
+import { linhasCausas, ROTULO_DESTINO, ROTULO_ENCAMINHAMENTO, ROTULO_TIPO_MORTE, rotuloPendencias } from '@/lib/obito'
 import { rotuloDesfechoFinal } from '@/lib/historico'
 import {
   ancoraDoAno, idCabecalho, principais, resumoInternacao, rotuloLeito, textoItemPrescricao,
@@ -344,6 +345,34 @@ function LinhaRegistro({ r, dia, oculto, revelar }: { r: RegistroLinha; dia: str
                 `${c.revisoes} ${c.revisoes === 1 ? 'revisão' : 'revisões'}`,
                 c.prescrita_em ? `prescrita ${quando(c.prescrita_em, dia)}` : 'sem prescrição',
                 c.retirada_em ? `retirada ${quando(c.retirada_em, dia)}${c.motivo_retirada ? `: ${c.motivo_retirada}` : ''}` : null,
+              ].filter(Boolean).join(' · ')}
+            </p>
+          </div>
+        </Recolhivel>
+      )
+      break
+    }
+    case 'obito': {
+      // lacuna 5 (O7): o óbito no atendimento; o Sumário de óbito fica nos documentos
+      const o = r.obito
+      titulo = (
+        <>
+          Óbito · {ROTULO_TIPO_MORTE[o.tipo_morte] ?? o.tipo_morte}
+          {o.anulado_em ? <Badge variant="outline">desfeito</Badge>
+            : o.pendencias.length > 0 && <Badge variant="warning">{rotuloPendencias(o.pendencias)}</Badge>}
+        </>
+      )
+      corpo = (
+        <Recolhivel>
+          <div className="flex flex-col gap-1 text-apoio text-tinta">
+            <Campo rotulo="Caminho" texto={ROTULO_ENCAMINHAMENTO[o.encaminhamento] ?? o.encaminhamento} />
+            <Campo rotulo="Nº da D.O." texto={o.numero_do} />
+            {linhasCausas(o.causas).map((c) => <Campo key={c.rotulo} rotulo={c.rotulo} texto={c.texto} />)}
+            <p className="text-tinta-apoio">
+              {[
+                o.comunicada_familia ? 'família comunicada' : 'família não comunicada',
+                o.liberacao ? `corpo liberado (${ROTULO_DESTINO[o.liberacao.destino]}) ${quando(o.liberacao.em, dia)}` : 'corpo não liberado',
+                o.anulado_em ? `desfeito ${quando(o.anulado_em, dia)}${o.motivo_anulacao ? `: ${o.motivo_anulacao}` : ''}` : null,
               ].filter(Boolean).join(' · ')}
             </p>
           </div>

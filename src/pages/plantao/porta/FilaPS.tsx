@@ -34,6 +34,7 @@ import { useLimitesUnidade } from '@/lib/limitesUnidade'
 
 import { hoje, hora, minutos, nomeDe, rotuloDesfecho, useAgora, type EpFila } from './comum'
 import { Estado } from '@/components/porta/Estado'
+import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
 
 type Saida = {
   id: string; cor_atual: CorRisco | null; queixa: string; desfecho: string | null; desfecho_motivo: string | null
@@ -216,6 +217,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
       )}
       {/* encaminhamentos internos para mim: antes ninguém podia aceitar (o componente não estava em tela nenhuma) */}
       <EncaminhamentosRecebidos vazio={null} />
+      {/* lacuna 5 (O7): óbito da porta com comunicação à família ou corpo por fazer */}
+      {!ubs && <ObitosPendentes unidadeId={unidadeAtiva?.unidade_id} />}
       {erro && <p className="text-apoio text-critico">{(erro as Error).message}</p>}
       {!carregando && !erro && meusSetores.length === 0 && (
         <p className="rounded-container border border-fio bg-superficie px-5 py-4 text-apoio text-tinta-sussurro">
