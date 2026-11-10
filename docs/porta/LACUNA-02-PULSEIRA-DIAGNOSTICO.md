@@ -128,3 +128,7 @@ O que o protocolo diz, resumido:
   coletar continua como prática da equipe. Um lembrete no app pode entrar
   depois, na checagem.
 - **Pulseira de alerta colorida:** ver P5.
+
+## 5. Decisão do RT (10/11/2026)
+
+"A em todos": A em P1 a P8.
