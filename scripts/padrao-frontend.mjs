@@ -452,7 +452,17 @@ function main(args) {
     if (anterior) {
       const antes = totais(lerBase(anterior))
       const agora = totais(lerBase(readFileSync(BASE, 'utf8')))
+      // Regra que o ramo de destino ainda não tem entra com a base do dia (ela nasce
+      // contando o que já existe); dali em diante, só desce.
+      let scriptAnterior = ''
+      try {
+        scriptAnterior = execFileSync('git', ['show', `${args[i + 1]}:scripts/padrao-frontend.mjs`], { cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      } catch { /* sem o script no destino: todas as regras são novas */ }
       for (const regra of Object.keys(agora)) {
+        if (!scriptAnterior.includes(`'${regra}'`)) {
+          console.log(`Regra nova em relação a ${args[i + 1]}: ${regra} entra com ${agora[regra]} na base.`)
+          continue
+        }
         if ((agora[regra] ?? 0) > (antes[regra] ?? 0)) {
           falhou = true
           console.error(`A base subiu em ${regra}: ${antes[regra] ?? 0} → ${agora[regra]} em relação a ${args[i + 1]}. A base só desce.`)
