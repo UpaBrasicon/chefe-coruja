@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   ALCOOIS, BCC, BETABLOQUEADOR, BICARBONATO_ERRATA, BICARBONATO_LITIO, BICARBONATO_USOS, CARVAO, CARVAO_CTRC_2026, CARVAO_INDICACAO, CIANETO,
-  DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, NOTA_AHA_INTOXICACOES, NOTA_DIGOXINA_ANDREWS, NOTA_DIGOXINA_CONSENSO, ORGANOFOSFORADO, PEDIATRICO_CITADO,
+  DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, NOTA_AHA_INTOXICACOES, NOTA_DIGOXINA_ANDREWS, NOTA_DIGOXINA_CONSENSO, NOTAS_AHA, ORGANOFOSFORADO, PEDIATRICO_CITADO,
   acidoFolicoMg, atropinaDobrando, bccFigura, bicarbonatoBolus, calcioBccManutencao, carvaoMultiplasDoses, carvaoPorMassaIngerida,
   carvaoPorPeso, carvaoTriciclico, etanolEV, fichaIntoxicacoesAdulto, flumazenilBolusMaximos, fomepizol, frascosPorDose,
   frascosPorNivel, gravidadeParacetamol, hidroxocobalaminaProxima, indicacoesNac, insulinaAltaDose, nacEV, nacVO,
@@ -107,9 +107,10 @@ function AntidotosFixos() {
   return (
     <Bloco titulo="Antídotos de dose fixa (cap. 98)">
       <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_AHA_INTOXICACOES}</p>
-      <LinhaManual nome="Flumazenil" texto={FLUMAZENIL.texto} pagina={FLUMAZENIL.pagina} conta={<>até <strong>{flumazenilBolusMaximos()} bolus</strong> de 0,2 mg</>} />
+      <LinhaManual nome="Flumazenil" texto={FLUMAZENIL.texto} pagina={FLUMAZENIL.pagina} conta={<>até <strong>{flumazenilBolusMaximos()} bolus</strong> de 0,2 mg</>} nota={NOTAS_AHA.flumazenil} />
       {NALOXONA.cenarios.map((c) => (
-        <LinhaManual key={c.id} nome={`Naloxona — ${c.rotulo}`} texto={`${faixa(c.mg, 2)} mg IV; ${NALOXONA.alvo}`} pagina={NALOXONA.pagina} />
+        <LinhaManual key={c.id} nome={`Naloxona — ${c.rotulo}`} texto={`${faixa(c.mg, 2)} mg IV; ${NALOXONA.alvo}`} pagina={NALOXONA.pagina}
+          nota={c.id === 'pcr' ? NOTAS_AHA.naloxonaPcr : undefined} />
       ))}
       <p className="text-apoio text-tinta-sussurro">Naloxona: {NALOXONA.reconsiderar}; {NALOXONA.alta} ({NALOXONA.pagina}).</p>
       <LinhaManual nome={FISOSTIGMINA.nome} texto={FISOSTIGMINA.texto} pagina={FISOSTIGMINA.pagina} nota={FISOSTIGMINA.nota} />
@@ -128,23 +129,23 @@ function Cardiotoxicos({ peso }: { peso: number }) {
         <LinhaManual nome="Atropina" texto={`${b.atropina.mg} mg IV, até ${b.atropina.dosesMax} doses (com cristaloide)`} pagina={b.atropina.pagina}
           conta={<>até <strong>{b.atropina.mg * b.atropina.dosesMax} mg</strong></>} />
         <LinhaManual nome="1. Glucagon" texto={b.glucagon.texto} pagina={b.glucagon.pagina} />
-        <LinhaManual nome="2. Gluconato de cálcio 10%" texto={b.calcio.texto} pagina={b.calcio.pagina} />
+        <LinhaManual nome="2. Gluconato de cálcio 10%" texto={b.calcio.texto} pagina={b.calcio.pagina} nota={NOTAS_AHA.bbCalcio} />
         <LinhaManual nome="3. Adrenalina" texto={b.adrenalina.texto} pagina={b.adrenalina.pagina} />
         <LinhaManual nome="4. Insulina em alta dose" texto={b.insulina.texto} pagina={b.insulina.pagina} errata={b.insulina.errata}
-          conta={ins ? <>bolus <strong>{br(ins.bolusUi, 0)} UI</strong> · <strong>{br(ins.infusaoUiH, 0)} UI/h</strong> · teto impresso {br(ins.tetoUi, 0)} UI</> : PESO} />
+          conta={ins ? <>bolus <strong>{br(ins.bolusUi, 0)} UI</strong> · <strong>{br(ins.infusaoUiH, 0)} UI/h</strong> · teto impresso {br(ins.tetoUi, 0)} UI</> : PESO} nota={NOTAS_AHA.bbInsulina} />
         <LinhaManual nome="5. Emulsão lipídica" texto={b.emulsao.texto} pagina={b.emulsao.pagina} />
       </Bloco>
       <Bloco titulo="Bloqueador de canal de cálcio (p. 1318 e Figura 2, p. 1321)" descricao={BCC.gravidade}>
         <LinhaManual nome="Cálcio (texto)" texto={BCC.calcio.texto} pagina={BCC.calcio.pagina} errata={BCC.calcio.errata}
-          conta={ca ? <>manutenção <strong>{faixa(ca)} mL/h</strong> de gluconato 10%</> : PESO} />
-        <LinhaManual nome="Cálcio (figura)" texto={BCC.figura.calcio} pagina={BCC.figura.pagina} />
+          conta={ca ? <>manutenção <strong>{faixa(ca)} mL/h</strong> de gluconato 10%</> : PESO} nota={NOTAS_AHA.bccCalcio} />
+        <LinhaManual nome="Cálcio (figura)" texto={BCC.figura.calcio} pagina={BCC.figura.pagina} nota={NOTAS_AHA.bccCalcioFigura} />
         <LinhaManual nome="Vasopressor (figura)" texto={BCC.figura.vasopressor} pagina={BCC.figura.pagina} />
         <LinhaManual nome="Glucagon (figura)" texto="3–10 mg (0,03–0,05 mg/kg); repetir a cada 10 min ou infusão EV 1–5 mg/h" pagina={BCC.figura.pagina}
           conta={fig ? <>0,03–0,05 mg/kg = <strong>{faixa(fig.glucagonPorPesoMg)} mg</strong></> : PESO} />
         <LinhaManual nome="Insulina (figura)" texto={`${BCC.figura.glicose}; insulina 0,5–1 U/kg + 0,5–1 U/kg/h`} pagina={BCC.figura.pagina}
-          conta={fig ? <>bolus <strong>{faixa(fig.insulinaBolusUi, 0)} UI</strong> · <strong>{faixa(fig.insulinaInfusaoUiH, 0)} UI/h</strong></> : PESO} />
+          conta={fig ? <>bolus <strong>{faixa(fig.insulinaBolusUi, 0)} UI</strong> · <strong>{faixa(fig.insulinaInfusaoUiH, 0)} UI/h</strong></> : PESO} nota={NOTAS_AHA.bccInsulinaFigura} />
         <LinhaManual nome="Emulsão lipídica 20% (figura)" texto="1,5 mL/kg em bolus de 2–3 min, seguido de 0,5 mL/kg/min" pagina={BCC.figura.pagina}
-          conta={fig ? <>bolus <strong>{br(fig.emulsaoBolusMl, 0)} mL</strong> · <strong>{br(fig.emulsaoMlMin)} mL/min</strong> ({br(fig.emulsaoMlH, 0)} mL/h)</> : PESO} />
+          conta={fig ? <>bolus <strong>{br(fig.emulsaoBolusMl, 0)} mL</strong> · <strong>{br(fig.emulsaoMlMin)} mL/min</strong> ({br(fig.emulsaoMlH, 0)} mL/h)</> : PESO} nota={NOTAS_AHA.bccEmulsaoFigura} />
         <p className="text-apoio text-tinta-sussurro">{BCC.figura.depois} ({BCC.figura.pagina}).</p>
         <ul className="list-disc pl-5 text-apoio text-atencao">
           {BCC.divergencias.map((d) => <li key={d}>{d}</li>)}
@@ -172,6 +173,7 @@ function Digoxina({ peso }: { peso: number }) {
         conta={porNivel !== null ? <strong>{br(porNivel)} frascos</strong> : 'informe digoxinemia e peso'} nota={DIGOXINA.nota} />
       <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_DIGOXINA_CONSENSO}</p>
       <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_DIGOXINA_ANDREWS}</p>
+      <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTAS_AHA.digoxina}</p>
     </Bloco>
   )
 }
@@ -183,7 +185,7 @@ function Bicarbonato({ peso }: { peso: number }) {
         const r = bicarbonatoBolus(u, peso)
         return (
           <LinhaManual key={u.id} nome={u.nome} texto={`${faixa(u.mEqKg, 0)} mEq/kg; ${u.texto}`} pagina={u.pagina}
-            conta={r ? <>bolus <strong>{faixa(r.mEq, 0)} mEq</strong> = {faixa(r.ml, 0)} mL</> : PESO} />
+            conta={r ? <>bolus <strong>{faixa(r.mEq, 0)} mEq</strong> = {faixa(r.ml, 0)} mL</> : PESO} nota={u.nota} />
         )
       })}
       <LinhaManual nome="Lítio" texto={BICARBONATO_LITIO.texto} pagina={BICARBONATO_LITIO.pagina} errata={BICARBONATO_ERRATA} />
@@ -218,9 +220,10 @@ function Organofosforado({ peso }: { peso: number }) {
     <Bloco titulo="Organofosforados e carbamatos (p. 1333–1334)" descricao={`Prova terapêutica: atropina ${o.provaAtropinaMg} mg IV.`}>
       <Escolha label="Atropina: dose inicial" value={inicial} onChange={setInicial} opcoes={[{ value: '2', label: '2 mg' }, { value: '5', label: '5 mg' }]} />
       <LinhaManual nome="Atropina" texto={`2–5 mg IV; ${o.alvo}`} pagina="p. 1333"
-        conta={<>{seq.map((s, i) => <span key={i}>{i > 0 && ' → '}{br(s.dose)} mg</span>)} (acumulado {br(seq[seq.length - 1].acumulado)} mg)</>} />
+        conta={<>{seq.map((s, i) => <span key={i}>{i > 0 && ' → '}{br(s.dose)} mg</span>)} (acumulado {br(seq[seq.length - 1].acumulado)} mg)</>} nota={NOTAS_AHA.atropinaOrganofosforado} />
       <LinhaManual nome="Pralidoxima" texto={o.pralidoxima.texto} pagina="p. 1334"
-        conta={pr ? <>bolus <strong>{br(pr.bolusMg, 0)} mg</strong> em 30 min · <strong>{br(pr.infusaoMgH, 0)} mg/h</strong></> : PESO} />
+        conta={pr ? <>bolus <strong>{br(pr.bolusMg, 0)} mg</strong> em 30 min · <strong>{br(pr.infusaoMgH, 0)} mg/h</strong></> : PESO} nota={NOTAS_AHA.pralidoxima} />
+      <p className="text-apoio text-atencao">{NOTAS_AHA.organofosforadoIot}</p>
     </Bloco>
   )
 }
@@ -238,7 +241,7 @@ function Cianeto() {
       <LinhaManual nome="Tiossulfato de sódio 25%" texto="adulto 12,5 g EV" pagina={CIANETO.tiossulfato.pagina} errata={CIANETO.tiossulfato.errata}
         conta={<><strong>12,5 g</strong> = {br(tiossulfatoAdultoMl(), 0)} mL a 25%</>} />
       <LinhaManual nome="Nitritos (sem hidroxocobalamina)" texto={`${CIANETO.nitritoAmila}; ${CIANETO.nitritoSodio.texto}; depois tiossulfato 12,5 g EV`} pagina={CIANETO.pagina}
-        conta={<>nitrito de sódio <strong>{br(nitritoSodioMg(), 0)} mg</strong> (10 mL a 3%)</>} />
+        conta={<>nitrito de sódio <strong>{br(nitritoSodioMg(), 0)} mg</strong> (10 mL a 3%)</>} nota={NOTAS_AHA.cianetoComCo} />
       <p className="text-apoio text-tinta-sussurro">{CIANETO.sequencia}</p>
       <LinhaManual nome={MONOXIDO.nome} texto={MONOXIDO.texto} pagina={MONOXIDO.pagina} />
       <p className="text-apoio text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
