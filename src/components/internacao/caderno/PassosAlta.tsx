@@ -148,7 +148,7 @@ export function PassosAlta({ i, pacienteId, pacienteNome, ativa, altaRecente, eh
         {!ativa && altaRecente && (i.alta_por === eu || ehGestor) && <CancelarAlta i={i} acao={acao} />}
         {/* lacuna 5 (O7): o óbito e o que falta depois dele */}
         {i.status === 'obito' && <PainelObito pacienteId={pacienteId} />}
-        {!ativa && !altaRecente && !ehGestor && <p className="text-apoio text-tinta-sussurro">Alta há mais de 24 horas: o cancelamento é com o gestor.</p>}
+        {!ativa && !altaRecente && <p className="text-apoio text-tinta-sussurro">Alta há mais de 24 horas: não pode mais ser cancelada. Se o paciente voltar, faça uma nova admissão.</p>}
       </Passo>
     </div>
   )
