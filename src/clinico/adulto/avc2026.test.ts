@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { DIRETRIZ_AVC_2026, TENECTEPLASE_2026, fichaTromboliseAvcAdulto, tenecteplase2026 } from './avcTrombolise.ts'
+import { ANGIOEDEMA_POS_ALTEPLASE, CORRECAO_AHA_2026, DIRETRIZ_AVC_2026, TENECTEPLASE_2026, fichaTromboliseAvcAdulto, tenecteplase2026 } from './avcTrombolise.ts'
 
 // AHA/ASA 2026 (Stroke 2026;57:e316–e436), lida no PDF em 28/09/2026.
 
@@ -36,4 +36,27 @@ test('AHA/ASA 2026: cada item tem classe e página; os pontos-chave estão prese
   assert.match(DIRETRIZ_AVC_2026.find((d) => d.tema === 'Redução intensiva da PAS após trombólise')!.classe, /COR 3/)
   assert.match(DIRETRIZ_AVC_2026.find((d) => d.tema === 'Glicemia')!.texto, /< 60.*140–180.*80–130/)
   assert.match(DIRETRIZ_AVC_2026.find((d) => d.tema.startsWith('Sangramento'))!.texto, /1\.000 mg IV em 10 min/)
+})
+
+// Correção oficial da AHA/ASA 2026 (Stroke 2026;57(8):e461–e467), lida em 11/11/2026; decisão do RT D1–D3 = A.
+test('correção AHA 2026: janela estendida só sem indicação de trombectomia e "pode ser benéfica"', () => {
+  const j = DIRETRIZ_AVC_2026.find((d) => d.tema === 'Janela estendida com imagem')
+  assert.ok(j)
+  assert.match(j.texto, /Sem indicação de trombectomia/)
+  assert.match(j.texto, /pode ser benéfica/)
+  assert.match(j.pagina, /e463/)
+  assert.match(j.classe, /não informa/)
+})
+test('correção AHA 2026: adrenalina do angioedema IM, com o SC do livro como errata', () => {
+  const adr = ANGIOEDEMA_POS_ALTEPLASE.itens.find((i) => /epinefrina/.test(i))
+  assert.ok(adr)
+  assert.match(adr, /0,3 mL IM/)
+  assert.doesNotMatch(adr, /SC/)
+  assert.match(ANGIOEDEMA_POS_ALTEPLASE.errata, /SC.*IM/)
+})
+test('correção AHA 2026: aviso lido em 11/11 e ficha com a correção nas fontes', () => {
+  assert.match(CORRECAO_AHA_2026.texto, /lida em 11\/11\/2026/)
+  assert.doesNotMatch(CORRECAO_AHA_2026.texto, /confira na versão corrigida/)
+  assert.equal(fichaTromboliseAvcAdulto.versao, '2026-11-11.1')
+  assert.ok(fichaTromboliseAvcAdulto.fontes.some((f) => /Correction to: 2026 Guideline/.test(f.citacao)))
 })

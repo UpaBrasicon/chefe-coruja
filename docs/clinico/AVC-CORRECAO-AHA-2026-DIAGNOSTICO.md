@@ -126,18 +126,18 @@ Para cada mudança:
 
 | # | Mudança | Efeito na tela | Opção recomendada | Decisão do RT |
 |---|---|---|---|---|
-| D1 | Janela estendida: "não elegível para trombectomia" e "pode ser benéfica" | Muda | A (classe mantida até conferir) | |
-| D2 | Angioedema: adrenalina 0,3 mL IM | Muda | A (SC do livro como errata) | |
-| D3 | Aviso da correção | Muda | A | |
-| D4 | Alteplase máx. 90 mg | Não muda | C | |
-| D5 | Hipodensidade extensa | Não muda | C | |
-| D6 | ABCD2 ≥ 4 | Não muda | C | |
-| D7 | Tabela 8 (título e trauma) | Não se aplica | C | |
-| D8 | Legenda do asterisco | Não se aplica | C | |
-| D9 | Alteplase na criança | Não se aplica | C | |
-| D10 | Imagem na janela estendida | Não muda | C | |
-| D11 | TRUTH na PA | Não muda | C | |
-| D12 | Disfagia | Não se aplica | C | |
+| D1 | Janela estendida: "não elegível para trombectomia" e "pode ser benéfica" | Muda | A (classe mantida até conferir) | A (RT, 11/11/2026) |
+| D2 | Angioedema: adrenalina 0,3 mL IM | Muda | A (SC do livro como errata) | A (RT, 11/11/2026) |
+| D3 | Aviso da correção | Muda | A | A (RT, 11/11/2026) |
+| D4 | Alteplase máx. 90 mg | Não muda | C | C (RT, 11/11/2026) |
+| D5 | Hipodensidade extensa | Não muda | C | C (RT, 11/11/2026) |
+| D6 | ABCD2 ≥ 4 | Não muda | C | C (RT, 11/11/2026) |
+| D7 | Tabela 8 (título e trauma) | Não se aplica | C | C (RT, 11/11/2026) |
+| D8 | Legenda do asterisco | Não se aplica | C | C (RT, 11/11/2026) |
+| D9 | Alteplase na criança | Não se aplica | C | C (RT, 11/11/2026) |
+| D10 | Imagem na janela estendida | Não muda | C | C (RT, 11/11/2026) |
+| D11 | TRUTH na PA | Não muda | C | C (RT, 11/11/2026) |
+| D12 | Disfagia | Não se aplica | C | C (RT, 11/11/2026) |
 
 ---
 
