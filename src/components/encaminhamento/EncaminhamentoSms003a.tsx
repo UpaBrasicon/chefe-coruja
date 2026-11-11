@@ -278,7 +278,7 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '', 
         icone={<ArrowUpRight />}
         titulo={<>Encaminhamento de usuários <span className="ml-1.5 text-apoio font-normal text-tinta-sussurro">Referência e contra-referência</span></>}
         acoes={temAlgo && (
-          <Button variant="ghost" size="sm" onClick={limparTudo} className="hover:text-critico">Limpar</Button>
+          <Button variant="outline" size="sm" onClick={limparTudo} className="hover:text-critico">Limpar</Button>
         )}
       >
         <Bloco

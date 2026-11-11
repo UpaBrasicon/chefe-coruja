@@ -175,7 +175,7 @@ export default function Notificacoes() {
                     )}
                     {!n.lida && (
                       <Button variant="link" disabled={marcar.isPending} onClick={() => marcar.mutate([n.id])}
-                        className="min-h-0 px-0 py-0 text-tinta-sussurro hover:text-tinta-apoio hover:no-underline">
+                        className="min-h-0 px-0 py-0 underline underline-offset-4">
                         Marcar como lido
                       </Button>
                     )}

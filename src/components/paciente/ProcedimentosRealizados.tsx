@@ -133,7 +133,7 @@ function LinhaFeito({ r, pacienteId, podeCancelar }: { r: ProcedimentoRealizado;
         {r.cancelado_em && <Badge variant="secondary">cancelado: {r.motivo_cancelamento}</Badge>}
         {r.fechada && !r.cancelado_em && <Badge variant="info">competência fechada</Badge>}
         {podeCancelar && !r.cancelado_em && !r.fechada && !abrindo && (
-          <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setAbrindo(true)}>Cancelar</Button>
+          <Button size="xs" variant="outline" className="ml-auto" onClick={() => setAbrindo(true)}>Cancelar</Button>
         )}
       </div>
       {abrindo && (

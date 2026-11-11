@@ -279,7 +279,7 @@ function Execucao({ a, unidade, fechar, aoMudar }: { a: Apac; unidade: string; f
               onChange={(e) => setProcs((v) => v.map((x, j) => (j === i ? { ...x, procedimento: e.target.value } : x)))} />
             <Input className="h-8 w-24" inputMode="numeric" placeholder="Qtd." value={p.quantidade}
               onChange={(e) => setProcs((v) => v.map((x, j) => (j === i ? { ...x, quantidade: e.target.value } : x)))} />
-            {i > 0 && <Button size="xs" variant="ghost" onClick={() => setProcs((v) => v.filter((_, j) => j !== i))}>Tirar</Button>}
+            {i > 0 && <Button size="xs" variant="outline" onClick={() => setProcs((v) => v.filter((_, j) => j !== i))}>Tirar</Button>}
           </div>
         ))}
         <Button size="xs" variant="outline" className="self-start" onClick={() => setProcs((v) => [...v, { procedimento: '', quantidade: '1' }])}>+ Secundário</Button>
@@ -311,7 +311,7 @@ function LinhaExecucao({ e, podeCancelar, aoMudar }: { e: Apac['execucoes'][numb
           {e.procedimentos.map((p) => `${codigoSigtapNaTela(p.procedimento)} × ${p.quantidade}`).join(', ')} · executante {e.executante ?? '—'}
           {' '}· tipo {e.tipo_atendimento} · motivo de saída {e.motivo_saida}
         </span>
-        {podeCancelar && !abrindo && <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setAbrindo(true)}>Cancelar</Button>}
+        {podeCancelar && !abrindo && <Button size="xs" variant="outline" className="ml-auto" onClick={() => setAbrindo(true)}>Cancelar</Button>}
       </div>
       {abrindo && (
         <div className="flex flex-wrap gap-2">

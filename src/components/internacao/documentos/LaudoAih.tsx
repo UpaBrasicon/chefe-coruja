@@ -169,7 +169,7 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
 
       {pacienteId && (
         <Cartao icone={<ClipboardPlus />} titulo="Laudo para solicitação de AIH" acoes={<>
-          {temAlgo && <Button size="sm" variant="ghost" onClick={limpar}>Limpar</Button>}
+          {temAlgo && <Button size="sm" variant="outline" onClick={limpar}>Limpar</Button>}
           <Button size="sm" variant="outline" className="rounded-capsula text-acao"
             title="Preenche o laudo com um exemplo: 32 anos, dengue grupo D. Use só como referência dos pontos principais."
             onClick={() => trocar({ ...AIH_EXEMPLO, cidOk: true, anexos: form.anexos ?? [] })}>

@@ -99,7 +99,7 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
                 </Button>
               ))}
             </div>
-            <Button variant="ghost" onClick={() => onPedir(false)} className="self-start px-0">Cancelar</Button>
+            <Button variant="link" onClick={() => onPedir(false)} className="self-start px-0">Cancelar</Button>
           </div>
         ) : (
           <div className="mt-[3px] flex flex-wrap items-center gap-2">

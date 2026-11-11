@@ -224,7 +224,7 @@ function Avulsa({ unidade }: { unidade: string }) {
       {med ? (
         <div className="flex items-center justify-between rounded-controle border border-fio px-3 py-2">
           <span><span className="font-medium text-tinta">{med.principio_ativo}</span> {med.apresentacao ?? ''} · {rotuloUnidade(med.unidade_consumo, med.unidade_consumo_outra)}</span>
-          <Button size="xs" variant="ghost" onClick={() => setMed(null)}>Trocar</Button>
+          <Button size="xs" variant="outline" onClick={() => setMed(null)}>Trocar</Button>
         </div>
       ) : (
         <div className="flex flex-col gap-1">

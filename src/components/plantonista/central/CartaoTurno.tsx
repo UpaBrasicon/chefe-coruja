@@ -214,7 +214,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
 
       <div className="flex flex-wrap items-center justify-between gap-3 bg-campo px-5 py-[11px]">
         <div className="flex flex-wrap items-center gap-4">
-          <Link to="/plantao/internacao/pacientes" className="flex items-center gap-1.5 text-apoio text-tinta-apoio hover:text-acao">
+          <Link to="/plantao/internacao/pacientes" className="flex items-center gap-1.5 text-apoio text-acao underline-offset-4 hover:underline">
             <Users className="size-[15px] text-tinta-sussurro" aria-hidden />
             Ver pacientes internados
           </Link>

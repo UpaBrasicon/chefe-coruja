@@ -149,7 +149,7 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
             {minhas.map((t) => (
               <Cartao key={t.id} t={t}>
                 {t.status === 'aberta' && (
-                  <Button className="mt-2" size="sm" variant="ghost" onClick={() => cancelar.mutate(t.id)} disabled={cancelar.isPending}>Cancelar</Button>
+                  <Button className="mt-2" size="sm" variant="outline" onClick={() => cancelar.mutate(t.id)} disabled={cancelar.isPending}>Cancelar</Button>
                 )}
               </Cartao>
             ))}

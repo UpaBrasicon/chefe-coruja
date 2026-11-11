@@ -136,7 +136,7 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
               </Button>
               <span className="text-rotulo text-tinta-sussurro">{kb(a.tamanho)} · {a.enviado_por ?? '—'} · {fmtDataHora(a.enviado_em)}</span>
               {l.pode_anexar && retirando !== a.id && (
-                <Button size="xs" variant="ghost" className="ml-auto" onClick={() => { setRetirando(a.id); setMotivo('') }}>Retirar</Button>
+                <Button size="xs" variant="outline" className="ml-auto" onClick={() => { setRetirando(a.id); setMotivo('') }}>Retirar</Button>
               )}
               {retirando === a.id && (
                 <span className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -154,7 +154,7 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
           <div className="mb-1 flex items-center gap-2">
             <span className="font-medium text-tinta">{aberto.nome}</span>
             <span className="text-rotulo text-tinta-sussurro">{aberto.autor ?? '—'} · {fmtDataHora(aberto.emitido_em)}</span>
-            <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setAberto(null)}>Fechar</Button>
+            <Button size="xs" variant="outline" className="ml-auto" onClick={() => setAberto(null)}>Fechar</Button>
           </div>
           <pre className="whitespace-pre-wrap font-sans text-apoio text-tinta">{aberto.conteudo}</pre>
         </div>

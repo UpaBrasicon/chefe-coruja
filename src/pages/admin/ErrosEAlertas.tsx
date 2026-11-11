@@ -285,7 +285,7 @@ function LinhaChecagem({ checagem }: { checagem: Checagem }) {
         ) : (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="xs"
             onClick={() => setAberto((a) => !a)}
             aria-expanded={aberto}

@@ -99,7 +99,7 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
             {f.procedimento ? (
               <div className="flex flex-wrap items-center gap-2 text-apoio">
                 <span className="text-tinta">{codigoSigtapNaTela(f.procedimento)} · {f.procNome}</span>
-                <Button size="xs" variant="ghost" onClick={() => set({ procedimento: '', procNome: '' })}>Trocar</Button>
+                <Button size="xs" variant="outline" onClick={() => set({ procedimento: '', procNome: '' })}>Trocar</Button>
               </div>
             ) : (
               <>
@@ -107,6 +107,7 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
                 {(busca.data ?? []).length > 0 && (
                   <div className="flex max-h-48 flex-col overflow-y-auto rounded-controle border border-fio">
                     {(busca.data ?? []).map((p) => (
+                      // padrao-ok: linha da lista de resultados da busca, que aparece logo depois de digitar
                       <Button key={p.codigo} type="button" variant="ghost" size="sm" className="justify-start"
                         onClick={() => { set({ procedimento: p.codigo, procNome: p.nome }); setTermo('') }}>
                         {codigoSigtapNaTela(p.codigo)} · {p.nome}

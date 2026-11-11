@@ -239,7 +239,7 @@ export default function Perfil() {
               <Camera /> {foto ? 'Trocar foto' : 'Enviar foto'}
             </label>
             {foto && (
-              <Button variant="ghost" size="sm" onClick={() => setFoto(null)}>
+              <Button variant="outline" size="sm" onClick={() => setFoto(null)}>
                 Remover
               </Button>
             )}

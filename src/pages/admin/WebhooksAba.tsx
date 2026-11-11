@@ -91,7 +91,7 @@ export function WebhooksAba() {
                 return (
                   <TableRow key={d.id} className="cursor-pointer border-b border-trilha last:border-0 hover:bg-trilha/60" onClick={() => setAbertoId(d.id)}>
                     <TableCell className={td}>
-                      <Button variant="link" className="h-auto p-0 font-medium text-tinta" onClick={(e) => { e.stopPropagation(); setAbertoId(d.id) }}>{d.nome}</Button>
+                      <Button variant="link" className="h-auto p-0 font-medium underline underline-offset-4" onClick={(e) => { e.stopPropagation(); setAbertoId(d.id) }}>{d.nome}</Button>
                       <div className="max-w-[340px] truncate text-tinta-sussurro">{d.url}</div>
                     </TableCell>
                     <TableCell className={cn(td, 'tabular')}>{d.eventos.length} {d.eventos.length === 1 ? 'evento' : 'eventos'}</TableCell>

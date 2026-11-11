@@ -99,7 +99,7 @@ export function PreNatalNaConsulta({ pacienteId, episodioId, nomePaciente, marco
         <div className="flex flex-wrap gap-2">
           <Button size="xs" variant="outline" onClick={() => setAcao('dum')}>{g.dum ? 'Corrigir a DUM' : 'Registrar a DUM'}</Button>
           {fase !== 'puerperio' && <Button size="xs" variant="outline" onClick={() => setAcao('desfecho')}>Fim da gestação</Button>}
-          <Button size="xs" variant="ghost" onClick={() => setAcao('retirar')}>Retirar do pré-natal</Button>
+          <Button size="xs" variant="outline" onClick={() => setAcao('retirar')}>Retirar do pré-natal</Button>
         </div>
       )}
       {podeEditar && pendePesoAltura && (

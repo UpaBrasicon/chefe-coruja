@@ -123,7 +123,7 @@ function DialogoIncluir({ unidadeId, onFechar }: { unidadeId: string; onFechar: 
             </div>
           </div>
         )}
-        <div className="flex justify-end"><Button variant="ghost" onClick={onFechar}>Fechar</Button></div>
+        <div className="flex justify-end"><Button variant="outline" onClick={onFechar}>Fechar</Button></div>
       </DialogContent>
     </Dialog>
   )

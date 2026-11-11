@@ -155,8 +155,8 @@ function LinhaServico({ s, unidadeId, unidadeConsulta, editavel }: { s: Servico;
       {editavel && (
         <span className="ml-auto flex gap-1">
           <Button size="xs" variant="outline" onClick={() => acao.mutate('confirmar')} disabled={acao.isPending}>Confirmar</Button>
-          <Button size="xs" variant="ghost" onClick={() => setEditando(true)}>Editar</Button>
-          <Button size="xs" variant="ghost" onClick={() => acao.mutate('desativar')} disabled={acao.isPending}>Tirar do mapa</Button>
+          <Button size="xs" variant="outline" onClick={() => setEditando(true)}>Editar</Button>
+          <Button size="xs" variant="outline" onClick={() => acao.mutate('desativar')} disabled={acao.isPending}>Tirar do mapa</Button>
         </span>
       )}
       {acao.error && <span role="alert" className="w-full text-rotulo text-critico">{(acao.error as Error).message}</span>}

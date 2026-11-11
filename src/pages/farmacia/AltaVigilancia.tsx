@@ -135,7 +135,7 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                     <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
                     <Input aria-label="Buscar medicamento no cadastro" className="h-8 w-56 pl-8" placeholder="Buscar no cadastro" value={busca} onChange={(e) => setBusca(e.target.value)} />
                   </label>
-                  {termo && <Button type="button" size="xs" variant="ghost" onClick={() => { setBusca(''); setTermo(''); setEscolhido(null) }}>Ver a lista</Button>}
+                  {termo && <Button type="button" size="xs" variant="outline" onClick={() => { setBusca(''); setTermo(''); setEscolhido(null) }}>Ver a lista</Button>}
                 </form>
               )}
             </div>
@@ -354,14 +354,14 @@ function FichaAdicionar({ unidadeId, aoMarcar, fechar }: { unidadeId: string; ao
           <h3 className="text-corpo font-semibold text-tinta">Adicionar medicamento</h3>
           <p className="text-apoio text-tinta-sussurro">Passa a exigir a liberação da farmácia nesta unidade.</p>
         </div>
-        <Button size="xs" variant="ghost" onClick={fechar}>Fechar</Button>
+        <Button size="xs" variant="outline" onClick={fechar}>Fechar</Button>
       </div>
       {escolhido ? (
         <div className="flex flex-col gap-2">
           <p className="text-apoio">
             <span className="font-medium text-tinta">{escolhido.principio_ativo}</span>{' '}
             <span className="text-tinta-sussurro">{apresentacao(escolhido)}</span>{' '}
-            <Button size="xs" variant="ghost" onClick={() => { setEscolhido(null); setMotivo('') }}>Trocar</Button>
+            <Button size="xs" variant="outline" onClick={() => { setEscolhido(null); setMotivo('') }}>Trocar</Button>
           </p>
           {escolhido.exige ? (
             <p className="text-apoio text-tinta-apoio">Já exige liberação nesta unidade: {origemAltaVigilancia(escolhido)}.</p>

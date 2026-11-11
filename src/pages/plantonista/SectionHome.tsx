@@ -92,7 +92,7 @@ export default function SectionHome() {
                   <span>Ir para:</span>
                   {grupos.map((g, i) => (
                     <span key={g.rotulo}>
-                      <a href={`#${idGrupo(g.rotulo)}`} className="text-tinta-apoio hover:text-acao">{g.rotulo}</a>
+                      <a href={`#${idGrupo(g.rotulo)}`} className="text-acao underline-offset-4 hover:underline">{g.rotulo}</a>
                       {i < grupos.length - 1 && ' ·'}
                     </span>
                   ))}

@@ -180,6 +180,7 @@ function Abas<T extends string>({ valor, opcoes, onChange, rotulo }: { valor: T;
   return (
     <div role="tablist" aria-label={rotulo} className="grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
       {opcoes.map(([v, texto]) => (
+        // padrao-ok: aba do controle segmentado; a selecionada tem fundo próprio
         <Button
           key={v}
           variant="ghost"

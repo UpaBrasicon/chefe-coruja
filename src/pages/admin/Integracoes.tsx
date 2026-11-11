@@ -146,7 +146,7 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
             <code className="break-all text-rotulo">{criada}</code>
             <div className="flex gap-2">
               <Button size="xs" variant="outline" onClick={() => void navigator.clipboard?.writeText(criada)}><Copy className="size-3.5" /> Copiar</Button>
-              <Button size="xs" variant="ghost" onClick={() => setCriada(null)}>Já copiei</Button>
+              <Button size="xs" variant="outline" onClick={() => setCriada(null)}>Já copiei</Button>
             </div>
           </div>
         )}
@@ -252,7 +252,7 @@ function CartaoChave({ c }: { c: Chave }) {
         </span>
         {c.revogada_em && <span className="text-rotulo text-critico">Revogada por {c.revogada_por ?? '—'} em {fmtDataHora(c.revogada_em)}: "{c.motivo_revogacao}"</span>}
         <div className="flex flex-wrap gap-2">
-          <Button size="xs" variant="ghost" onClick={() => setAcao(acao === 'acessos' ? null : 'acessos')}>{acao === 'acessos' ? 'Esconder acessos' : 'Ver acessos'}</Button>
+          <Button size="xs" variant="outline" onClick={() => setAcao(acao === 'acessos' ? null : 'acessos')}>{acao === 'acessos' ? 'Esconder acessos' : 'Ver acessos'}</Button>
           {ativa && c.pode_editar && <Button size="xs" variant="outline" onClick={() => setAcao('ajustar')}>Ajustar limite e IPs</Button>}
           {!c.revogada_em && <Button size="xs" variant="outline" onClick={() => setAcao('revogar')}>Revogar</Button>}
         </div>
