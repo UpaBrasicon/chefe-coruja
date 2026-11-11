@@ -34,4 +34,4 @@ O RT pediu em 11/11/2026 que a fila andasse no que não depende do Vercel. Este 
 
 | Pergunta | Recomendação | Decisão |
 |---|---|---|
-| Critério do alerta de sepse do adulto | A | |
+| Critério do alerta de sepse do adulto | A | A (11/11/2026): gatilho de infecção e NEWS2 de 5 ou mais |
