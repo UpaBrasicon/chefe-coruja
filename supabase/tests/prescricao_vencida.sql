@@ -176,7 +176,7 @@ INSERT INTO t SELECT 'adm_nf', public.checar(pg_temp.u('i_sn'), 'nao_feito', NUL
 RESET ROLE;
 SELECT pg_temp.ok((SELECT situacao = 'nao_feito' FROM public.administracoes WHERE id = pg_temp.u('adm_nf')),
   '"não feito" segue registrável no item vencido');
-SELECT pg_temp.ok(EXISTS (SELECT 1 FROM pg_proc p WHERE p.oid = 'public.checar(uuid, text, text, text)'::regprocedure
+SELECT pg_temp.ok(EXISTS (SELECT 1 FROM pg_proc p WHERE p.oid = 'public.checar(uuid, text, text, text, text, text)'::regprocedure
                             AND pg_get_functiondef(p.oid) LIKE '%COFEN 689/2022%'), 'a mensagem cita a Resolução COFEN 689/2022');
 
 -- ── V2: dispensação ────────────────────────────────────────────────────────
@@ -385,7 +385,7 @@ SELECT pg_temp.ok((SELECT pr.internacao_id IS NOT NULL FROM public.prescricoes p
 SELECT pg_temp.ok(NOT has_function_privilege('anon', f, 'EXECUTE') AND has_function_privilege('authenticated', f, 'EXECUTE'), 'anon não executa ' || f)
   FROM unnest(ARRAY['public.renovar_prescricao(uuid, jsonb)', 'public.pedir_renovacao(uuid)', 'public.fila_checagem()',
                     'public.fila_validacao(uuid)', 'public.prescricao_vigente(uuid, timestamptz)', 'public.prescricao_porta_ativa(uuid)',
-                    'public.checar(uuid, text, text, text)', 'public.dispensar_item(uuid, integer, text)']) f;
+                    'public.checar(uuid, text, text, text, text, text)', 'public.dispensar_item(uuid, integer, text)']) f;
 SELECT pg_temp.ok(NOT has_function_privilege('authenticated', f, 'EXECUTE'), 'authenticated não executa ' || f)
   FROM unnest(ARRAY['private.prescricao_validade_avisar()', 'private.prescricao_validade_transicao()',
                     'private.avisar_validade_item(uuid, text, text)', 'private.validade_item(timestamptz)',

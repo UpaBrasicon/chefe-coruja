@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Spinner } from '@/components/ui/spinner'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Parametro, type Nivel } from '@/components/monitor/Parametros'
+import { AtrasoChecagemIndicador } from '@/pages/gestor/AtrasoChecagemIndicador'
 import { EsperaMedico } from '@/pages/gestor/EsperaMedico'
 import { EsperaTriagem } from '@/pages/gestor/EsperaTriagem'
 import { EvasaoIndicador } from '@/pages/gestor/EvasaoIndicador'
@@ -332,6 +333,8 @@ export default function Indicadores() {
           <EvasaoIndicador unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
           {/* lacuna 10: óbitos do período, pela hora do óbito no dia do plantão */}
           <ObitosIndicador unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
+          {/* lacuna 9: doses atrasadas e omissão de dose (Anexo 03 da Portaria MS 2.095/2013, item 7.3.1) */}
+          <AtrasoChecagemIndicador unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
         </section>
       )}
 
