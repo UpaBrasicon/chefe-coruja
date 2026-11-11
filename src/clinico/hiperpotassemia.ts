@@ -23,15 +23,17 @@ import { numero as numeroBr } from '../lib/formato.ts'
 export const fichaHiperpotassemia: Ficha = {
   id: 'hiperpotassemia',
   titulo: 'Hiperpotassemia — conduta por nível e por ECG',
-  versao: '2026-10-09.1',
+  versao: '2026-11-11.1',
   publico: 'ambos',
   fontes: [
     { citacao: 'Adulto: Geldermann N, et al. Acute hyperkalaemia in emergency care: evidence-based approaches. Emerg Med J. 2026.' },
     { citacao: 'Adulto: Arzayus-Patiño L, Hinojosa-Angulo AY, Rodríguez-Angulo KA, et al. Utility of inhaled β2-agonists in reducing serum potassium levels in adult patients with hyperkalemia: A scoping review. PLoS One. 2026;21(2):e0342309 (PMID 41632760). Revisão de escopo (5 estudos).', url: 'https://doi.org/10.1371/journal.pone.0342309' },
+    // Decisão H22 do RT (11/11/2026): só nota, no adulto; indicação e dose não mudam.
+    { citacao: 'Adulto, nota sobre o cálcio: Jessen MK, Andersen LW, Djakow J, et al. Pharmacological interventions for the acute treatment of hyperkalaemia: a systematic review and meta-analysis. Resuscitation. 2025;208:110489 (PMID 39761907).', url: 'https://doi.org/10.1016/j.resuscitation.2025.110489' },
     { citacao: 'Adulto, divergência mostrada na tela: Brandão Neto RA, et al. (eds.). Manual de Medicina de Emergência — HCFMUSP. 3ª ed. Manole; 2022. cap. 67, p. 907–917.' },
     { citacao: `Criança: ${LIVRO_ICR.citacao} cap. 54, p. 546–549 (Tabela 7); divergências do mesmo livro: apêndice (p. 894–897), IRA (p. 583), emergências oncológicas (p. 701–702).`, pediatrica: true },
   ],
-  revisadoEm: '09/10/2026 (citação de Arzayus-Patiño corrigida pelo PubMed); 03/10/2026 — adulto: decisão do RT de 27/09/2026 (referência de 2026; manual do HCFMUSP como divergência). Criança: só o livro do ICr-HCFMUSP (auditoria R2); o período neonatal fica fora',
+  revisadoEm: '11/11/2026 (nota do Jessen 2025 sobre o cálcio no adulto, decisão H22 do RT); 09/10/2026 (citação de Arzayus-Patiño corrigida pelo PubMed); 03/10/2026 — adulto: decisão do RT de 27/09/2026 (referência de 2026; manual do HCFMUSP como divergência). Criança: só o livro do ICr-HCFMUSP (auditoria R2); o período neonatal fica fora',
 }
 
 export type Ecg = 'sem_alteracao' | 'alterado' | 'nao_feito'
@@ -86,6 +88,7 @@ export function avaliarHiperpotassemia(e: EntradaHiperK): ResultadoHiperK | null
       linhas: [
         { item: 'Gluconato ou cloreto de cálcio EV', texto: 'início em minutos, duração de 30 a 60 minutos. NÃO reduz o potássio sérico: protege o miocárdio.', quando: calcio === 'indicado' ? 'agora' : 'se ECG alterado' },
         { item: 'Dose no adulto', texto: 'a referência não quantifica a dose de cálcio no adulto — siga o protocolo da unidade.', quando: '' },
+        { item: 'Evidência do cálcio', texto: 'uma revisão sistemática de 2025 (Jessen, Resuscitation, 101 estudos, só 2 com parada) não achou evidência de benefício clínico do cálcio. A indicação acima continua a da referência: ECG alterado ou potássio de 6,5 mEq/L ou mais.', quando: '' },
       ],
     },
     {

@@ -190,3 +190,15 @@ test('hiperpotassemia: mantém a referência de 2026 e mostra o manual HC como d
   assert.ok(DIVERGENCIA_MANUAL_HC.itens.every((i) => /^p\. \d/.test(i.pagina)))
   assert.ok(fichaHiperpotassemia.fontes.some((f) => /HCFMUSP/.test(f.citacao)))
 })
+
+// H22 (RT, 11/11/2026): nota do Jessen 2025 só no adulto; indicação e dose iguais.
+test('hiperpotassemia: nota do Jessen 2025 sobre o cálcio só no adulto', () => {
+  const adulto = avaliarHiperpotassemia({ ...hk, potassio: 6.8 })!
+  assert.equal(adulto.calcio, 'indicado')
+  assert.match(JSON.stringify(adulto), /Jessen/)
+  assert.match(JSON.stringify(adulto), /benefício clínico/)
+  const crianca = avaliarHiperpotassemiaPed({ ...hkPed, potassio: 7.2, pesoKg: 20 })!
+  assert.doesNotMatch(JSON.stringify(crianca), /Jessen/)
+  assert.ok(fichaHiperpotassemia.fontes.some((f) => /39761907/.test(f.citacao) && /^Adulto/.test(f.citacao) && !f.pediatrica))
+  assert.equal(fichaHiperpotassemia.versao, '2026-11-11.1')
+})
