@@ -62,4 +62,4 @@ Não conferi se os CNES cadastrados são de estabelecimentos reais. Para isso eu
 
 | Pergunta | Recomendação | Decisão |
 |---|---|---|
-| Unidade piloto da RNDS | A | |
+| Unidade piloto da RNDS | A | A (11/11/2026): a RNDS espera a primeira unidade real em implantação |
