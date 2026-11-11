@@ -35,7 +35,8 @@ function conferirFicha(ficha: Ficha, ...fontes: Fonte[]) {
   assert.equal(ficha.publico, 'adulto', ficha.id)
   assert.match(ficha.fontes[0].citacao, /Manual de Medicina de Emergência/, ficha.id)
   for (const f of fontes) assert.ok(ficha.fontes.includes(f), `${ficha.id}: ${f.citacao}`)
-  assert.match(ficha.revisadoEm, /^06\/11\/2026 \(nota .*revisão PubMed, itens médios\)$/, ficha.id)
+  // revisões posteriores entram antes ("11/11/2026 (...); 06/11/2026 (...)")
+  assert.match(ficha.revisadoEm, /(^|; )06\/11\/2026 \(nota .*revisão PubMed, itens médios\)$/, ficha.id)
 }
 
 test('2.1 INTERACT4: nota nas duas ferramentas (H3 = A), com a ESO 2025 de PA', () => {
