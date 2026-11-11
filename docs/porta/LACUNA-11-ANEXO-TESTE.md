@@ -52,9 +52,10 @@ esquema são atualizados juntos, e já há 4 PDFs enviados no bucket, em
 **Limite do teste:** a inserção foi feita direto em `storage.objects`. Isso
 testa as regras de acesso, não o envio real pelo serviço de storage.
 
-## Falta
+## Envio real com login (11/11/2026)
 
-O envio real com usuário logado, que o RT faz pelo roteiro abaixo.
+O RT fez o envio real com usuário logado, pelo roteiro abaixo, e todos os
+passos passaram. A lacuna 11 está concluída.
 
 1. Com médico ou enfermagem em plantão, de check-in feito, abra um atendimento
    de paciente fictício e peça um hemograma e um ECG.
