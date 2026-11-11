@@ -221,6 +221,9 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                       {alerta?.nivel === 'choque' && <span className="font-semibold text-critico">· Phoenix {alerta.total} · choque séptico?</span>}
                       {alerta?.nivel === 'sepse' && <span className="font-semibold text-critico">· Phoenix {alerta.total} · sepse?</span>}
                       {alerta?.nivel === 'rastreio' && <span>· Phoenix {alerta.total}</span>}
+                      {/* adulto (B P2-1, RT 11/11/2026): gatilho de infecção e NEWS2 de 5 ou mais */}
+                      {alerta?.nivel === 'news2_alto' && <span className="font-semibold text-critico">· NEWS2 {alerta.total} com infecção · sepse?</span>}
+                      {alerta?.nivel === 'news2_rastreio' && <span className="font-semibold text-atencao">· NEWS2 {alerta.total} com infecção</span>}
                     </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-0.5">
