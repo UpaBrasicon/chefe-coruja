@@ -26,6 +26,7 @@ import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
 import { Input } from '@/components/ui/input'
+import { SeloAcao, type TomSelo } from '@/components/ui/selo-acao'
 import { Spinner } from '@/components/ui/spinner'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 
@@ -50,42 +51,48 @@ export function SeloAlergia({ pacienteId, onClick, className }: { pacienteId: st
   const base = 'inline-flex items-center gap-1.5 text-apoio whitespace-normal text-left'
   let conteudo: React.ReactNode
   let estilo: string
+  let tom: TomSelo
   let dica: string
   if (q.isLoading) {
     conteudo = <><Spinner className="size-3.5" /> Alergia…</>
     estilo = 'text-tinta-sussurro'
+    tom = 'neutro'
     dica = 'Carregando alergias'
   } else if (q.error || !q.data) {
     // sem leitura não se afirma nada: nem "nega", nem "não registrada"
     conteudo = <><AlertTriangle className="size-3.5 shrink-0" aria-hidden /> Alergia não verificada</>
     estilo = 'font-medium text-atencao'
+    tom = 'atencao'
     dica = q.error ? msg(q.error) : 'Alergia não verificada'
   } else if (q.data.estado === 'tem') {
     conteudo = <><AlertTriangle className="size-3.5 shrink-0" aria-hidden /> Alergia · {lista.map((a) => a.substancia).join(', ')}</>
     estilo = 'rounded-capsula bg-critico px-[11px] py-1 font-semibold text-sobre-acao'
+    tom = 'critico'
     dica = 'Alergias ativas: ' + lista.map((a) => `${a.substancia} (${rotuloGravidade(a.gravidade).toLowerCase()})`).join('; ')
   } else if (q.data.estado === 'nega') {
     const n = negaVigente(q.data)
     conteudo = <><ShieldCheck className="size-3.5 shrink-0" aria-hidden /> Nenhuma alergia conhecida</>
     estilo = 'text-tinta-sussurro'
+    tom = 'neutro'
     dica = `Nega alergias · ${quando(n?.registrado_em)}${n?.autor ? ` · ${n.autor}` : ''}`
   } else if (q.data.estado === 'desconhece') {
     const n = declaracaoVigente(q.data)
     conteudo = <><ShieldQuestion className="size-3.5 shrink-0" aria-hidden /> Alergia não informada</>
     estilo = 'font-medium text-atencao'
+    tom = 'atencao'
     dica = `Perguntou e não soube informar · ${quando(n?.registrado_em)}${n?.autor ? ` · ${n.autor}` : ''}`
   } else {
     conteudo = <><ShieldQuestion className="size-3.5 shrink-0" aria-hidden /> Alergia não registrada</>
     estilo = 'font-medium text-atencao'
+    tom = 'atencao'
     dica = 'Ninguém registrou ainda se o paciente tem ou nega alergias'
   }
   if (!onClick) return <span className={cn(base, estilo, className)} title={dica}>{conteudo}</span>
+  // clicável: fundo, borda e seta em todos os estados (pedido do RT de 11/11/2026, opção B)
   return (
-    // padrao-ok: o selo de alergia clicável tem a forma do selo em cada estado (vermelho cheio, cinza, âmbar); nenhuma peça tem esses tons
-    <button type="button" onClick={onClick} title={`${dica}. Abrir alergias e eventos adversos.`}
-      className={cn(base, estilo, 'cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-acao', className)}>
+    <SeloAcao tom={tom} onClick={onClick} title={`${dica}. Abrir alergias e eventos adversos.`} className={className}>
       {conteudo}
-    </button>
+    </SeloAcao>
   )
 }
 
