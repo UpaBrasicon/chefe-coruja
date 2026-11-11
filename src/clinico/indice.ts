@@ -4,6 +4,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   '4at-delirium': '/plantonista/escores/4at',
   '4t-hit': '/plantonista/escores/4t-hit',
   'abcd2': '/plantonista/escores/abcd2',
+  'fast-ed': '/plantonista/escores/fast-ed',
   'acesso-venoso': '/plantonista/calculadoras/acesso-venoso',
   'adulto-abc-score': '/plantonista/emergencias/abc-score-transfusao-macica',
   'adulto-abstinencia-alcoolica': '/plantonista/protocolos/abstinencia',

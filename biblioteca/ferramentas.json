@@ -3397,6 +3397,26 @@
   "publico": "adulto"
  },
  {
+  "id": "fast-ed",
+  "nome": "FAST-ED — suspeita de oclusão de grande vaso",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Neurologia",
+  "sinonimos": [
+   "FAST-ED",
+   "AVC",
+   "oclusão de grande vaso",
+   "LVO",
+   "trombectomia",
+   "NIHSS",
+   "neurologia",
+   "stroke"
+  ],
+  "descricao": "Cinco itens do NIHSS, de 0 a 9; 4 ou mais no estudo: cerca de 60% com oclusão. Não substitui a angiotomografia.",
+  "rota": "/plantonista/escores/fast-ed",
+  "publico": "adulto"
+ },
+ {
   "id": "4t-hit",
   "nome": "4T",
   "tipo": "escore",
