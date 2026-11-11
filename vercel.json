@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {"**": false, "master": true, "homolog": true}
   },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)docs' ':(exclude)produto' ':(exclude)infra' ':(exclude)*.md'",
   "rewrites": [{ "source": "/((?!assets/).*)", "destination": "/index.html" }],
   "headers": [
     {
