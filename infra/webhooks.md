@@ -20,6 +20,7 @@ de prescrição e regulação na API, 4.3 tela. Este documento cresce a cada eta
 | `paciente.criado` | paciente cadastrado | `paciente_id` | `/pacientes/{id}` |
 | `atendimento.aberto` | atendimento (episódio) aberto | `atendimento_id`, `paciente_id` | `/atendimentos/{id}` |
 | `atendimento.encerrado` | atendimento encerrado (inclui a observação que teve alta) | `atendimento_id`, `paciente_id` | `/atendimentos/{id}` |
+| `atendimento.reaberto` | atendimento da porta reaberto depois do desfecho, em até 24 h (lacuna 8, `public.reabrir_atendimento`; um novo `atendimento.encerrado` vem quando fechar de novo) | `atendimento_id`, `paciente_id` | `/atendimentos/{id}` |
 | `internacao.iniciada` | paciente passou a internado | `internacao_id`, `paciente_id`, `atendimento_id` | `/atendimentos/{id}` |
 | `internacao.alta` | alta, óbito ou transferência de quem chegou a internar | `internacao_id`, `paciente_id`, `atendimento_id` | `/atendimentos/{id}` |
 | `prescricao.assinada` | prescrição assinada | `prescricao_id`, `paciente_id`, `atendimento_id`, `internacao_id` | `/prescricoes/{id}` |

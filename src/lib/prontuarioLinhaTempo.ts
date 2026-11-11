@@ -58,6 +58,12 @@ export type ResultadoExame = {
   versao: number; texto: string | null; liberado_em: string
   itens: { analito: string; valor: string | null; valor_num: number | null; unidade: string | null; referencia: string | null }[]
 }
+/** Lacuna 8 (R8): reabertura do atendimento; medico_id é quem registrou o desfecho desfeito. */
+export type ReaberturaBruta = {
+  id: string; episodio_id: string; criado_em: string; autor_id: string | null
+  motivo: string; detalhe: string | null; desfecho_anterior: string | null; desfecho_anterior_em: string | null
+  medico_id: string | null; cid_anterior: string | null
+}
 export type ResumoProntuario = {
   atendimentos: number; internacoes: number; ultimo_em: string | null
   anos: { ano: number; atendimentos: number }[]
@@ -75,6 +81,8 @@ export type PaginaProntuario = {
   contencoes?: Contencao[]; intercorrencias?: Intercorrencia[]
   /** Lacuna 5 (O7): o óbito (os anulados vêm marcados). Servidor antigo: não vem. */
   obitos?: ObitoRegistro[]
+  /** Lacuna 8 (R8): reaberturas do atendimento, com o desfecho desfeito. Servidor antigo: não vem. */
+  reaberturas?: ReaberturaBruta[]
   /** Nome de unidade, setor, leito e profissional, pelo id. */
   nomes: Record<string, string>
   /** Resultado vigente, pelo id do exame. */
@@ -93,6 +101,7 @@ export type RegistroLinha =
   | (Base & { tipo: 'contencao'; contencao: Contencao })
   | (Base & { tipo: 'intercorrencia'; intercorrencia: Intercorrencia })
   | (Base & { tipo: 'obito'; obito: ObitoRegistro })
+  | (Base & { tipo: 'reabertura'; reabertura: ReaberturaBruta; anteriorPor: string | null })
 
 export type InternacaoNomeada = InternacaoBruta & { setor: string | null; leito: string | null }
 
@@ -121,6 +130,8 @@ export type GrupoAtendimento = {
   reclassificacoes: ClassificacaoBruta[]
   cid: string | null
   situacao: Situacao
+  /** Lacuna 8 (R8): quantas vezes o atendimento foi reaberto depois do desfecho. */
+  reaberturas: number
   internacoes: InternacaoNomeada[]
   /** Do mais recente para o mais antigo, como os sinais vitais (ajuste do polish, 06/11/2026). */
   registros: RegistroLinha[]
@@ -146,7 +157,7 @@ export function juntarPaginas(paginas: PaginaProntuario[]): PaginaProntuario {
     classificacoes: unir((p) => p.classificacoes), registros: unir((p) => p.registros), exames: unir((p) => p.exames),
     documentos: unir((p) => p.documentos), prescricoes: unir((p) => p.prescricoes), observacoes: unir((p) => p.observacoes),
     contencoes: unir((p) => p.contencoes), intercorrencias: unir((p) => p.intercorrencias),
-    obitos: unir((p) => p.obitos),
+    obitos: unir((p) => p.obitos), reaberturas: unir((p) => p.reaberturas),
     nomes: Object.assign({}, ...paginas.map((p) => p.nomes)),
     resultados: Object.assign({}, ...paginas.map((p) => p.resultados)),
   }
@@ -211,6 +222,9 @@ export function montarLinhaTempo(d: PaginaProntuario): { grupos: GrupoAtendiment
   for (const o of d.obitos ?? []) {
     por(registros, lugar(o.episodio_id, o.internacao_id), { tipo: 'obito', id: o.id, em: o.hora_obito, autor: o.registrado_por, obito: o })
   }
+  for (const r of d.reaberturas ?? []) {
+    por(registros, lugar(r.episodio_id, null), { tipo: 'reabertura', id: r.id, em: r.criado_em, autor: nome(r.autor_id), reabertura: r, anteriorPor: nome(r.medico_id) })
+  }
   for (const o of d.observacoes) por(obs, lugar(o.episodio_id, o.internacao_id), o)
 
   const classif = new Map<string, ClassificacaoBruta[]>()
@@ -234,6 +248,7 @@ export function montarLinhaTempo(d: PaginaProntuario): { grupos: GrupoAtendiment
         unidade: nome(a.unidade_id), setor: nome(a.setor_id), medico: nome(a.medico_id),
         classificacao: primeira, reclassificacoes: cls.slice(1),
         cid: cidDoAtendimento(a, ints, regs), situacao: situacaoDoAtendimento(a, ints),
+        reaberturas: regs.filter((r) => r.tipo === 'reabertura').length,
         internacoes: ints, registros: regs, afericoes: agruparAfericoes(obs.get(a.id) ?? []),
       }
     })
@@ -244,7 +259,7 @@ export function montarLinhaTempo(d: PaginaProntuario): { grupos: GrupoAtendiment
     if (!regs.length && !af.length) return null
     return {
       chave: tipo, tipo, titulo, atendimento: null, dia: null, ano: null, unidade: null, setor: null, medico: null,
-      classificacao: null, reclassificacoes: [], cid: null, situacao: { emCurso: false, rotulo: '' },
+      classificacao: null, reclassificacoes: [], cid: null, situacao: { emCurso: false, rotulo: '' }, reaberturas: 0,
       internacoes: [], registros: regs, afericoes: af,
     }
   }
@@ -324,7 +339,8 @@ const TIPO_ESCONDIDO = (r: RegistroLinha) =>
         : r.tipo === 'internacao' ? 'internação'
           : r.tipo === 'intercorrencia' ? 'intercorrências'
             : r.tipo === 'contencao' ? 'contenções'
-              : r.tipo === 'obito' ? 'óbito' : 'registros do atendimento'
+              : r.tipo === 'obito' ? 'óbito'
+                : r.tipo === 'reabertura' ? 'reaberturas' : 'registros do atendimento'
 
 /**
  * O que o atendimento aberto mostra antes do "+N registros" (ajuste do polish,
@@ -342,8 +358,8 @@ export function principais(regs: RegistroLinha[]): { mostrados: RegistroLinha[];
   primeiro((r) => r.tipo === 'prescricao')
   // lacuna 4: contenção e intercorrência grave ficam à vista
   for (const r of regs) {
-    // lacuna 5: o óbito fica à vista
-    if (r.tipo === 'internacao' || r.tipo === 'contencao' || r.tipo === 'obito' || temResultado(r)
+    // lacuna 5: o óbito fica à vista; lacuna 8: a reabertura também
+    if (r.tipo === 'internacao' || r.tipo === 'contencao' || r.tipo === 'obito' || r.tipo === 'reabertura' || temResultado(r)
         || (r.tipo === 'intercorrencia' && r.intercorrencia.gravidade === 'grave')) ficam.add(r.tipo + r.id)
   }
   if (!ficam.size) for (const r of regs.slice(0, 3)) ficam.add(r.tipo + r.id)

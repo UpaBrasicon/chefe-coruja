@@ -3845,6 +3845,74 @@ export type Database = {
           },
         ]
       }
+      episodio_eventos: {
+        Row: {
+          autor_id: string
+          criado_em: string
+          desfecho_anterior: string | null
+          desfecho_anterior_detalhes: Json | null
+          desfecho_anterior_em: string | null
+          desfecho_anterior_motivo: string | null
+          desfecho_anterior_por: string | null
+          detalhe: string | null
+          efeitos: Json
+          encerrado_anterior_em: string | null
+          encerrado_anterior_por: string | null
+          episodio_id: string
+          id: string
+          motivo: string | null
+          paciente_id: string
+          tipo: string
+          unidade_id: string
+        }
+        Insert: {
+          autor_id: string
+          criado_em?: string
+          desfecho_anterior?: string | null
+          desfecho_anterior_detalhes?: Json | null
+          desfecho_anterior_em?: string | null
+          desfecho_anterior_motivo?: string | null
+          desfecho_anterior_por?: string | null
+          detalhe?: string | null
+          efeitos?: Json
+          encerrado_anterior_em?: string | null
+          encerrado_anterior_por?: string | null
+          episodio_id: string
+          id?: string
+          motivo?: string | null
+          paciente_id: string
+          tipo: string
+          unidade_id: string
+        }
+        Update: {
+          autor_id?: string
+          criado_em?: string
+          desfecho_anterior?: string | null
+          desfecho_anterior_detalhes?: Json | null
+          desfecho_anterior_em?: string | null
+          desfecho_anterior_motivo?: string | null
+          desfecho_anterior_por?: string | null
+          detalhe?: string | null
+          efeitos?: Json
+          encerrado_anterior_em?: string | null
+          encerrado_anterior_por?: string | null
+          episodio_id?: string
+          id?: string
+          motivo?: string | null
+          paciente_id?: string
+          tipo?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodio_eventos_episodio_id_fkey"
+            columns: ["episodio_id"]
+            isOneToOne: false
+            referencedRelation: "episodios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       episodios: {
         Row: {
           aberto_por: string
@@ -10669,6 +10737,11 @@ export type Database = {
         }[]
       }
       profissionais_para_faturar: { Args: { p_unidade: string }; Returns: Json }
+      reabrir_atendimento: {
+        Args: { p_detalhe?: string; p_episodio: string; p_motivo: string }
+        Returns: Json
+      }
+      reabrir_atendimento_previa: { Args: { p_episodio: string }; Returns: Json }
       reabrir_competencia_bpa: { Args: { p_fechamento: string; p_motivo: string }; Returns: undefined }
       registrar_procedimento: {
         Args: {
