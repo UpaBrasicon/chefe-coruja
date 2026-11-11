@@ -50,7 +50,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     { rotulo: 'Cardiovascular e renal', slugs: ['insuficiencia-cardiaca-ped', 'crise-hipertensiva-ped', 'kawasaki-ped', 'injuria-renal-ped', 'tfg-schwartz-ped', 'glomerulopatias-shu-ped', 'infeccao-urinaria-ped'] },
     { rotulo: 'Infecções', slugs: ['dengue-ped', 'febre-sem-sinais-ped', 'febre-imunodeprimido-ped', 'choque-toxico-partes-moles-ped', 'artrite-osteomielite-ped'] },
     { rotulo: 'Hemato-oncologia e digestivo', slugs: ['hemocomponentes-ped', 'falciforme-ped', 'hemostasia-trombose-ped', 'emergencias-oncologicas-ped', 'hemorragia-digestiva-hepatica-ped'] },
-    { rotulo: 'Trauma, toxicologia e acidentes', slugs: ['pecarn-coluna-cervical', 'pecarn-abdome', 'queimadura-ped', 'intoxicacoes-ped', 'escorpiao-aranhas-ped'] },
+    { rotulo: 'Trauma, toxicologia e acidentes', slugs: ['pecarn-coluna-cervical', 'pecarn-abdome', 'ten-4-facesp', 'queimadura-ped', 'intoxicacoes-ped', 'escorpiao-aranhas-ped'] },
   ],
 }
 
