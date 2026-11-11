@@ -147,7 +147,8 @@ SELECT pg_temp.falha(format('UPDATE public.passagens_enfermagem SET texto = %L W
   'permission denied', 'o cliente não altera a passagem');
 -- checar o horário resolve o atraso
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
-SELECT public.checar(pg_temp.u('it'), 'feito', pg_temp.v('h_passou'));
+-- lacuna 9: 3 h depois do horário passa da tolerância de 2 h, e o "feito" pede o motivo do atraso
+SELECT public.checar(pg_temp.u('it'), 'feito', pg_temp.v('h_passou'), NULL, 'intercorrencia');
 INSERT INTO t SELECT 'depois', (SELECT x.aprazamentos_atrasados FROM public.enfermagem_leitos('21000000-0000-4000-8000-000000000001') x
   WHERE x.paciente_id = '23000000-0000-4000-8000-000000000001')::text;
 RESET ROLE;

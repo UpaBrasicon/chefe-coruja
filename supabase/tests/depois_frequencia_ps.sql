@@ -187,7 +187,8 @@ SELECT pg_temp.falha(format('UPDATE public.episodios SET desfecho = %L, desfecho
   'Alta após medicação: falta a enfermagem checar', 'alta barrada com horário vencido sem checagem');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('enf');
-SELECT public.checar(pg_temp.v('cefa8'), 'feito', pg_temp.h(-3));
+-- lacuna 9: 3 h depois do horário passa da tolerância de 2 h, e o "feito" pede o motivo do atraso
+SELECT public.checar(pg_temp.v('cefa8'), 'feito', pg_temp.h(-3), NULL, 'intercorrencia');
 SELECT pg_temp.como('med');
 SELECT pg_temp.ok((SELECT count(*) FILTER (WHERE d ->> 'situacao' = 'feito' AND d ->> 'por' = 'Pessoa enf') = 1
                       AND count(*) FILTER (WHERE d ->> 'situacao' = 'atrasada') = 0
