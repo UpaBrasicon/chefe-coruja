@@ -610,20 +610,22 @@ Cada um em branch e PR próprios, com os testes antes. Fichas novas vão para o 
 
 ## Decisões do RT
 
+O RT respondeu em 11/11/2026: seguir a recomendação nos 15 itens. O TWIST entra na pediatria e no adulto (até 18 anos, a faixa validada).
+
 | # | Item | Opção recomendada | Decisão do RT |
 |---|---|---|---|
-| E7 | AIR | C agora; A quando houver a tabela de pontos | |
-| E8 | FAST-ED | A, como única escala de oclusão de grande vaso, com a tabela conferida antes; RACE sai do backlog | |
-| E9 | Pádua | C | |
-| E10 | EDACS | C | |
-| E11 | LRINEC | C | |
-| E12 | Roma | C | |
-| P6 | Westley | C | |
-| P7 | BRUE | C | |
-| P8 | TEN-4-FACESp | A | |
-| P9 | TWIST | A, com o público decidido pelo RT | |
-| P10 | Peso de emergência | B (nota em "Doses por peso"; divergência na dengue sem trocar a fórmula do MS) | |
-| P11 | Tétano e raiva na criança | A, depois de reler os PDFs do MS | |
-| A11 | Risco de suicídio | C | |
-| A12 | Epistaxe | B (nota na reversão de anticoagulação e referência sem dose) | |
-| A13 | Pneumotórax espontâneo | C | |
+| E7 | AIR | C agora; A quando houver a tabela de pontos | C (11/11/2026) |
+| E8 | FAST-ED | A, como única escala de oclusão de grande vaso, com a tabela conferida antes; RACE sai do backlog | A; RACE sai (11/11/2026) |
+| E9 | Pádua | C | C |
+| E10 | EDACS | C | C |
+| E11 | LRINEC | C | C |
+| E12 | Roma | C | C |
+| P6 | Westley | C | C |
+| P7 | BRUE | C | C |
+| P8 | TEN-4-FACESp | A | A |
+| P9 | TWIST | A, com o público decidido pelo RT | A, na pediatria e no adulto até 18 anos |
+| P10 | Peso de emergência | B (nota em "Doses por peso"; divergência na dengue sem trocar a fórmula do MS) | B |
+| P11 | Tétano e raiva na criança | A, depois de reler os PDFs do MS | A |
+| A11 | Risco de suicídio | C | C |
+| A12 | Epistaxe | B (nota na reversão de anticoagulação e referência sem dose) | B |
+| A13 | Pneumotórax espontâneo | C | C |
