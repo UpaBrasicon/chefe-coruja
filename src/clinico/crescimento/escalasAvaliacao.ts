@@ -36,7 +36,6 @@ export type DefinicaoAvaliacao = {
   ficha: Ficha
 }
 
-const REVISADO = '29/09/2026 (porte do protótipo)'
 
 export const fichaBraden: Ficha = {
   id: 'avaliacao-braden',
