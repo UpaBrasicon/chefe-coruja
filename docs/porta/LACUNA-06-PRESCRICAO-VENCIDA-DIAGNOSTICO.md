@@ -296,3 +296,5 @@ Depois do rollback, o md5 e o ACL voltam aos de antes.
 - A tela "Renovar prescrição" mostra só o que vence em até 2 h. Renovar
   antes, por exemplo na visita da manhã, pede uma opção "mostrar todos" (o
   servidor já aceita qualquer item ativo com validade).
+
+**Decisão posterior do RT (10/11/2026): "Sim, até 2 h".** O "feito" de horário aprazado anterior ao vencimento é aceito se registrado em até 2 h depois dele (migration `20270402000001`).
