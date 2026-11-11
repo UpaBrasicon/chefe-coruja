@@ -1,6 +1,7 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 import { positivoP5, type ItemLivro } from './fonteP5.ts'
+import { AAP_ITU_2026, FATORES_FIGURA2, FIGURA2_ENTRADA, NOTA_FIGURA1 } from './ituPed.ts'
 
 // Febre sem sinais localizatórios — livro do ICr, cap. 45 (p. 461–470).
 // Faixas etárias dos fluxogramas (0–21 dias, 22–90 dias, 3–24 meses), leitura
@@ -31,9 +32,10 @@ const baseFssl = fichaP4('ped-febre-sem-sinais', 'Febre sem sinais localizatóri
 
 export const fichaFebreSemSinais: Ficha = {
   ...baseFssl,
-  versao: '2026-10-25.1',
-  fontes: [...baseFssl.fontes, AAP_FEBRIL_2021, PECARN_FEBRIL_2019],
-  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: AAP 2021 e PECARN 2019 ao lado do livro; doses só do ICr)',
+  versao: '2026-11-11.1',
+  fontes: [...baseFssl.fontes, AAP_FEBRIL_2021, PECARN_FEBRIL_2019,
+    { ...AAP_ITU_2026, citacao: `${AAP_ITU_2026.citacao} Raça fora da avaliação de risco (p. 5); quem testar de 2 a 24 meses (Figura 2, p. 28); 8 a 60 dias (Figura 1, p. 27).`, pediatrica: true }],
+  revisadoEm: '11/11/2026 (coleta de urina pela Figura 2 da AAP 2026, sem etnia e sem número mínimo, a mesma lista da ITU; pedido 7 do RT, opção A); 25/10/2026 (AAP 2021 e PECARN 2019 ao lado do livro; doses só do ICr)',
 }
 
 export type FaixaFssl = '0-21d' | '22-60d' | '61-90d' | '3-24m' | 'fora'
@@ -82,37 +84,38 @@ export const NOTA_LEUCOGRAMA =
 /** PCR > 20 mg/L: marcador mais acurado que o leucograma em < 2 meses (p. 464); corte da Figura 2. */
 export const pcrAlterada = (pcrMgL: number) => (positivoP5(pcrMgL) ? pcrMgL > 20 : null)
 
-/** Meninas (p. 462): coletar urina com 2 ou mais fatores. */
-export const FATORES_MENINA: { id: string; texto: string }[] = [
-  { id: 'menor12m', texto: 'Menor de 12 meses' },
-  { id: 't39', texto: 'Temperatura > 39 °C' },
-  { id: 'branca', texto: 'Etnia branca' },
-  { id: 'semFoco', texto: 'Ausência de outro foco de febre' },
-  { id: 'febre48', texto: 'Febre por mais de 48 horas' },
-]
+// ── Coleta de urina: AAP 2026, Figura 2 (pedido 7 do RT, opção A, 11/11/2026) ──
+// A mesma lista da ferramenta de ITU (docs/clinico/FEBRE-SEM-SINAIS-ETNIA-DIAGNOSTICO.md):
+// sem raça e sem número mínimo de fatores. O critério do livro (p. 462) contava
+// a etnia ("etnia branca" na menina, "raça não branca" no menino) e somava os
+// fatores; a contagem foi feita com a etnia dentro, então saiu junto.
 
-/** Meninos (p. 462): critérios para quem tem mais de 6 meses. */
-export const CRITERIOS_MENINO: { id: string; texto: string }[] = [
-  { id: 't39', texto: 'Temperatura > 39 °C' },
-  { id: 'febre1d', texto: 'Febre por mais de 1 dia' },
-  { id: 'semFoco', texto: 'Ausência de outro foco de febre' },
-  { id: 'naoBranca', texto: 'Raça não branca' },
-]
+/** Fatores da Figura 2 (CPG p. 28), os mesmos da ITU. */
+export const FATORES_URINA: { id: string; texto: string }[] = FATORES_FIGURA2.map((texto, i) => ({ id: `f${i + 1}`, texto }))
 
-export type ColetaUrina = 'coletar' | 'nao-indicada' | 'indefinido'
+export type FaixaColetaUrina = 'menor-2m' | '2-24m' | 'maior-24m' | 'indefinido'
 
-/**
- * Coleta de urina (p. 462). Menina: ≥ 2 fatores. Menino < 6 meses: se T > 39 °C.
- * Menino > 6 meses: circuncidado com 3 dos 4 critérios; não circuncidado com 2 ou mais.
- * Aos 6 meses exatos o texto não define ("abaixo" x "mais que 6 meses").
- */
-export function coletaUrina(sexo: 'menina' | 'menino', marcados: Set<string>, idadeMeses: number, circuncidado: boolean): ColetaUrina {
-  if (sexo === 'menina') return FATORES_MENINA.filter((f) => marcados.has(f.id)).length >= 2 ? 'coletar' : 'nao-indicada'
-  if (!Number.isFinite(idadeMeses)) return 'indefinido'
-  if (idadeMeses < 6) return marcados.has('t39') ? 'coletar' : 'nao-indicada'
-  if (idadeMeses === 6) return 'indefinido'
-  const n = CRITERIOS_MENINO.filter((c) => marcados.has(c.id)).length
-  return n >= (circuncidado ? 3 : 2) ? 'coletar' : 'nao-indicada'
+/** Faixa da Figura 2 (2 a 24 meses). Idade em meses (dias / 30,4375 abaixo de 3 meses). */
+export function faixaColetaUrina(idadeMeses: number): FaixaColetaUrina {
+  if (!Number.isFinite(idadeMeses) || idadeMeses <= 0) return 'indefinido'
+  if (idadeMeses < 2) return 'menor-2m'
+  return idadeMeses <= 24 ? '2-24m' : 'maior-24m'
+}
+
+export const NOTA_COLETA_URINA =
+  'A Figura 2 não dá número mínimo de fatores: pesar os fatores ou usar o UTICalc, citado na própria figura (p. 28); a decisão de testar é do médico. A raça saiu da avaliação de risco (CPG p. 5).'
+
+export const LIVRO_COLETA_URINA =
+  'O livro do ICr (p. 462) usava os critérios da AAP de 2011, com a etnia entre os fatores e uma contagem (menina com 2 ou mais; menino acima de 6 meses com 3 de 4 se circuncidado ou 2 se não). De 2 a 24 meses a ferramenta segue a AAP 2026; a contagem do livro saiu junto com a etnia, porque os cortes foram feitos com ela dentro.'
+
+/** Leitura da coleta de urina pela idade e pelos fatores marcados. Não decide: mostra os fatores e a regra da figura. */
+export function leituraColetaUrina(idadeMeses: number, marcados: number): string {
+  switch (faixaColetaUrina(idadeMeses)) {
+    case 'indefinido': return 'Informe a idade.'
+    case 'menor-2m': return `Abaixo de 2 meses a decisão não é por fatores. ${NOTA_FIGURA1} De 8 a 60 dias, ver também a AAP 2021 e o PECARN nesta tela.`
+    case 'maior-24m': return 'Acima de 24 meses a Figura 2 não se aplica e os fluxogramas do livro também não; ver a ferramenta de infecção urinária.'
+    case '2-24m': return `${FIGURA2_ENTRADA} ${marcados === 0 ? 'Nenhum fator marcado.' : marcados === 1 ? '1 fator marcado.' : `${marcados} fatores marcados.`} ${NOTA_COLETA_URINA}`
+  }
 }
 
 // ── AAP 2021 e PECARN 2019 (lactente de 8 a 60 dias) ───────────────────────

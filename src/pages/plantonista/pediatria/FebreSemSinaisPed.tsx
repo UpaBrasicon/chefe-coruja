@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_MENINO, DIFERENCAS_ICR_AAP, DOSES_FSSL, ELEGIBILIDADE_AAP, ERRATA_AAP_LIQUOR, EXCLUSOES, FATORES_MENINA, KAS_AAP_2021, NOTA_LEUCOGRAMA, PECARN_DESEMPENHO,
-  REFERENCIAS_FSSL, TEXTO_FAIXA, coletaUrina, faixaAap2021, faixaFssl, fichaFebreSemSinais, leucogramaAlterado, marcadoresAap2021, pcrAlterada, pecarn2019,
+  DIFERENCAS_ICR_AAP, DOSES_FSSL, ELEGIBILIDADE_AAP, ERRATA_AAP_LIQUOR, EXCLUSOES, FATORES_URINA, KAS_AAP_2021, LIVRO_COLETA_URINA, NOTA_LEUCOGRAMA, PECARN_DESEMPENHO,
+  REFERENCIAS_FSSL, TEXTO_FAIXA, faixaAap2021, faixaFssl, fichaFebreSemSinais, leituraColetaUrina, leucogramaAlterado, marcadoresAap2021, pcrAlterada, pecarn2019,
 } from '@/clinico/pediatria/febreSemSinaisPed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -11,19 +11,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pergunta } from '../manual/PecasLoteC'
 
 import { PACIENTE_VAZIO, idadePediatrica } from './formatoIcr'
-import { Bloco, CampoPaciente, Nota, Opcoes } from './PecasIcr'
+import { Bloco, CampoPaciente, Nota } from './PecasIcr'
 import { Aviso, LinhaDoseLivro, Marcadores } from './PecasP4'
 import { ListaLivro, ListaQuadro } from './PecasP5'
-
-const TEXTO_URINA = { coletar: 'O texto do livro indica coletar urina.', 'nao-indicada': 'Pelo texto do livro, a coleta não está indicada por estes critérios.', indefinido: 'Informe a idade. Aos 6 meses exatos o texto não define a regra do menino ("abaixo" x "mais que 6 meses").' } as const
 
 /** Febre sem sinais localizatórios — cap. 45 do livro do ICr. */
 export function FebreSemSinaisPed() {
   const [p, setP] = useState(PACIENTE_VAZIO)
   const [dias, setDias] = useState(0)
   const [lab, setLab] = useState({ leucocitos: 0, neutrofilos: 0, bastoesSobreNeutrofilos: 0, pcr: 0 })
-  const [sexo, setSexo] = useState<'menina' | 'menino'>('menina')
-  const [circ, setCirc] = useState(false)
   const [fatores, setFatores] = useState<Set<string>>(new Set())
   const [temp, setTemp] = useState(0)
   const [pct, setPct] = useState(0)
@@ -36,7 +32,7 @@ export function FebreSemSinaisPed() {
   const faixaAap = faixaAap2021(dias)
   const aap = faixaAap ? marcadoresAap2021(faixaAap, { temperatura: temp, procalcitonina: pct, pcrMgL: lab.pcr, neutrofilos: lab.neutrofilos }) : null
   const pecarn = faixaAap && pct > 0 && lab.neutrofilos > 0 ? pecarn2019({ urinaNegativa: urinaNeg, neutrofilos: lab.neutrofilos, procalcitonina: pct }) : null
-  const urina = coletaUrina(sexo, fatores, dias > 0 ? dias / 30.4375 : meses > 0 ? meses : NaN, circ)
+  const urina = leituraColetaUrina(dias > 0 ? dias / 30.4375 : meses > 0 ? meses : NaN, fatores.size)
   const calc = p.peso > 0 && idadePediatrica(p.anos, p.meses)
   const campo = (k: keyof typeof lab, label: string, unit: string, step = 1) => (
     <NumberField id={`fssl-${k}`} label={label} unit={unit} value={lab[k]} onChange={(x) => setLab({ ...lab, [k]: x })} min={0} step={step} />
@@ -45,7 +41,7 @@ export function FebreSemSinaisPed() {
   return (
     <ToolLayout
       title="Febre sem sinais localizatórios — criança"
-      description="Faixa etária dos fluxogramas, leucograma e PCR de risco, coleta de urina por fatores e antibióticos orais por peso — livro do ICr-HCFMUSP. A decisão é do médico."
+      description="Faixa etária dos fluxogramas, leucograma e PCR de risco e antibióticos orais por peso — livro do ICr-HCFMUSP; coleta de urina pelos fatores da AAP 2026 (Figura 2), sem etnia. A decisão é do médico."
       ficha={fichaFebreSemSinais}
     >
       <CampoPaciente id="fssl" p={p} onChange={setP}>
@@ -108,16 +104,10 @@ export function FebreSemSinaisPed() {
         </Bloco>
       )}
 
-      <Bloco titulo="Coleta de urina (p. 462)">
-        <div className="flex flex-wrap gap-4">
-          <Opcoes label="Sexo" valor={sexo} opcoes={[['menina', 'Menina'], ['menino', 'Menino']]} onChange={(s) => { setSexo(s); setFatores(new Set()) }} />
-          {sexo === 'menino' && <Opcoes label="Circuncidado?" valor={circ} opcoes={[[false, 'Não'], [true, 'Sim']]} onChange={setCirc} />}
-        </div>
-        <Marcadores itens={sexo === 'menina' ? FATORES_MENINA : CRITERIOS_MENINO} marcados={fatores} onChange={setFatores} />
-        <p>
-          <strong>{TEXTO_URINA[urina]}</strong>
-        </p>
-        <Nota>Menina: 2 ou mais fatores. Menino &lt; 6 meses: temperatura &gt; 39 °C. Menino &gt; 6 meses: 3 dos 4 critérios (circuncidado) ou 2 ou mais (não circuncidado).</Nota>
+      <Bloco titulo="Coleta de urina (AAP 2026, Figura 2, a mesma da ITU)">
+        <Marcadores itens={FATORES_URINA} marcados={fatores} onChange={setFatores} />
+        <p>{urina}</p>
+        <Nota>{LIVRO_COLETA_URINA}</Nota>
       </Bloco>
 
       {!calc ? (
