@@ -14,7 +14,9 @@ import { cn } from '@/lib/utils'
  * - **Clique e teclado**: a área é um botão (Enter ou Espaço abre o seletor do
  *   sistema). O `<input type="file">` fica escondido e é zerado depois de cada
  *   escolha, para a mesma pessoa poder escolher o mesmo arquivo de novo. No
- *   celular só o toque vale; o texto muda para "Toque para escolher".
+ *   celular só o toque vale; o "ou arraste" some. O "Escolher arquivo" aparece
+ *   em destaque (cor de ação, com borda), porque o botão do navegador parecia
+ *   texto comum (RT, 10/11/2026).
  * - **Colar**: vale quando o foco está na área (clicar nela ou chegar pelo Tab)
  *   ou, se a área está dentro de uma janela (role="dialog"), em qualquer ponto
  *   da janela que não seja campo de texto (no campo de texto, Ctrl+V continua
@@ -171,11 +173,9 @@ export function AreaDeAnexo({
   const idErro = `${id}-erro`
   const descrito = [descricao ? idDescricao : null, erro ? idErro : null].filter(Boolean).join(' ') || undefined
   const nomeado = [rotulo ? idRotulo : null, idTexto].filter(Boolean).join(' ')
-  const instrucao = compacto
-    ? { mouse: 'arraste, cole com Ctrl+V ou clique', toque: 'toque para escolher' }
-    : multiple
-      ? { mouse: 'Arraste os arquivos aqui, cole com Ctrl+V ou clique para escolher', toque: 'Toque para escolher os arquivos' }
-      : { mouse: 'Arraste o arquivo aqui, cole com Ctrl+V ou clique para escolher', toque: 'Toque para escolher o arquivo' }
+  // no celular só o toque vale: o "ou arraste" some (pointer-coarse)
+  const alternativa = compacto ? 'ou arraste ou cole' : `ou arraste ${multiple ? 'os arquivos' : 'o arquivo'} aqui, ou cole com Ctrl+V`
+  const acaoEscolher = multiple ? 'Escolher arquivos' : 'Escolher arquivo'
   const Icone = ocupado ? Loader2 : (icone ?? Upload)
 
   return (
@@ -239,7 +239,7 @@ export function AreaDeAnexo({
           aria-busy={ocupado || undefined}
           onClick={abrirSeletor}
           className={cn(
-            'flex items-center rounded-container border border-dashed border-fio-forte bg-campo text-left transition-colors',
+            'group/anexo flex items-center rounded-container border border-dashed border-fio-forte bg-campo text-left transition-colors',
             'hover:border-acao hover:bg-alerta-marca disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-fio-forte disabled:hover:bg-campo',
             'aria-disabled:cursor-progress aria-disabled:hover:border-fio-forte aria-disabled:hover:bg-campo',
             compacto ? 'gap-justo px-2.5 py-1.5' : 'w-full gap-proximo px-base py-proximo',
@@ -255,10 +255,19 @@ export function AreaDeAnexo({
               ) : arrastando ? (
                 <span className="text-acao">{multiple ? 'Solte os arquivos para anexar' : 'Solte o arquivo para anexar'}</span>
               ) : (
-                <>
-                  <span className={cn('pointer-coarse:hidden', titulo && 'text-tinta-apoio')}>{instrucao.mouse}</span>
-                  <span className={cn('hidden pointer-coarse:inline', titulo && 'text-tinta-apoio')}>{instrucao.toque}</span>
-                </>
+                <span className={cn('flex flex-wrap items-baseline gap-x-1.5', titulo && 'text-tinta-apoio')}>
+                  <span
+                    className={cn(
+                      'text-acao transition-colors',
+                      compacto
+                        ? 'underline underline-offset-2'
+                        : 'rounded-controle border border-acao bg-superficie px-2 py-0.5 group-hover/anexo:bg-acao group-hover/anexo:text-sobre-acao',
+                    )}
+                  >
+                    {acaoEscolher}
+                  </span>
+                  <span className="pointer-coarse:hidden">{alternativa}</span>
+                </span>
               )}
             </span>
             {descricao && (
