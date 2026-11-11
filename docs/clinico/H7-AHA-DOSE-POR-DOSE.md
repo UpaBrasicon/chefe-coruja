@@ -148,21 +148,23 @@ Padrão das opções:
 
 ## Decisões do RT
 
+O RT respondeu em 11/11/2026: seguir a recomendação (D1 sem mudança; D2 a D11 como nota de divergência) e, das recomendações que faltam, L1, L3, L6, L7, L9 e L11. Entrega na branch `pubmed/h7-aha-notas`, ficha 2026-11-11.2.
+
 | Item | Recomendação | Decisão |
 |---|---|---|
-| D1. Naloxona 0,04 mg com drive presente | C | |
-| D2. Cálcio no betabloqueador (AHA 2025: 60 mL de gluconato 10% + 0,6–1,2 mL/kg/h) | B | |
-| D3. Insulina no betabloqueador (AHA: 1–10 U/kg/h; teto por hora) | B | |
-| D4. Cálcio no BCC, ataque (AHA: gluconato 6 g ou cloreto 2 g, 28 mEq) | B | |
-| D5. Cálcio na Figura 2 (AHA: cloreto 20 mL ou gluconato 60 mL) | B (junto com D4) | |
-| D6. Insulina na Figura 2 (AHA: 1 U/kg + 1–10 U/kg/h) | B (junto com D3) | |
-| D7. Emulsão lipídica na Figura 2 (AHA: 0,25 mL/kg/min; não é rotina no BCC) | B | |
-| D8. Digoxina, dose conhecida (AHA: 1 frasco por 0,5 mg, sem × 0,8) | B (na nota da digoxina) | |
-| D9. Bicarbonato no tricíclico (AHA: 50–150 mEq; 150 mEq/L a 1–3 mL/kg/h; sódio até 155, pH até 7,55) | B | |
-| D10. Atropina no organofosforado (AHA: 1–2 mg, dobrar a cada 5 min; manutenção 10–20%/h até 2 mg/h) | B | |
-| D11. Pralidoxima (AHA 2025: 2 g em 15–30 min + 1 g/h) | B | |
-| L1–L14. Recomendações que faltam (sobretudo L3, L6, L7, L9 e L11) | B (notas curtas, só as que o RT escolher) | |
-| Nota `NOTA_AHA_INTOXICACOES` (`ts:42–43`): hoje diz que as linhas "ainda não foram conferidas" | Trocar o texto depois das decisões acima, citando este documento | |
+| D1. Naloxona 0,04 mg com drive presente | C | C |
+| D2. Cálcio no betabloqueador (AHA 2025: 60 mL de gluconato 10% + 0,6–1,2 mL/kg/h) | B | B |
+| D3. Insulina no betabloqueador (AHA: 1–10 U/kg/h; teto por hora) | B | B |
+| D4. Cálcio no BCC, ataque (AHA: gluconato 6 g ou cloreto 2 g, 28 mEq) | B | B |
+| D5. Cálcio na Figura 2 (AHA: cloreto 20 mL ou gluconato 60 mL) | B (junto com D4) | B |
+| D6. Insulina na Figura 2 (AHA: 1 U/kg + 1–10 U/kg/h) | B (junto com D3) | B |
+| D7. Emulsão lipídica na Figura 2 (AHA: 0,25 mL/kg/min; não é rotina no BCC) | B | B |
+| D8. Digoxina, dose conhecida (AHA: 1 frasco por 0,5 mg, sem × 0,8) | B (na nota da digoxina) | B |
+| D9. Bicarbonato no tricíclico (AHA: 50–150 mEq; 150 mEq/L a 1–3 mL/kg/h; sódio até 155, pH até 7,55) | B | B |
+| D10. Atropina no organofosforado (AHA: 1–2 mg, dobrar a cada 5 min; manutenção 10–20%/h até 2 mg/h) | B | B |
+| D11. Pralidoxima (AHA 2025: 2 g em 15–30 min + 1 g/h) | B | B |
+| L1–L14. Recomendações que faltam (sobretudo L3, L6, L7, L9 e L11) | B (notas curtas, só as que o RT escolher) | L1, L3, L6, L7, L9 e L11 como nota |
+| Nota `NOTA_AHA_INTOXICACOES` (`ts:42–43`): hoje diz que as linhas "ainda não foram conferidas" | Trocar o texto depois das decisões acima, citando este documento | Texto trocado |
 
 ## Resumo
 

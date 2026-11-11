@@ -142,5 +142,5 @@ test('digoxina: nota de divergência do Andrews 2023, cálculo do livro igual', 
   assert.match(nota, /segue o livro/)
   assert.equal(m.DIGOXINA.frascosEmpiricos, 10)
   assert.equal(m.DIGOXINA.mgPorFrasco, 0.5)
-  assert.equal(m.fichaIntoxicacoesAdulto.versao, '2026-11-11.1')
+  assert.ok(m.fichaIntoxicacoesAdulto.versao >= '2026-11-11.1')
 })

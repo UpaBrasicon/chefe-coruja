@@ -93,7 +93,7 @@ test('3.5 antídotos: nota AHA 2023/2025 e consenso da digoxina, sem conferir do
   confere(AHA_ESPECIAIS_2025, '41122889', fichaIntoxicacoesAdulto)
   confere(DIGOXINA_CONSENSO_2024, '39265879', fichaIntoxicacoesAdulto)
   confere(DIGOXINA_CONSENSO_2023, '37650725', fichaIntoxicacoesAdulto)
-  assert.match(NOTA_AHA_INTOXICACOES, /ainda não foram conferidas/)
+  assert.match(NOTA_AHA_INTOXICACOES, /conferidas dose por dose/)
   assert.match(NOTA_DIGOXINA_CONSENSO, /33 enunciados/)
   assert.match(NOTA_DIGOXINA_CONSENSO, /O cálculo de frascos segue o livro/)
   semDose(NOTA_AHA_INTOXICACOES)
