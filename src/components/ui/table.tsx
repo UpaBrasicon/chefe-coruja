@@ -54,12 +54,16 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   )
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+// A linha só muda no hover quando clica (pedido 6 do RT, 11/11/2026): antes,
+// toda linha pintava o fundo, e a que abre alguma coisa ficava igual à que não abre.
+function TableRow({ className, onClick, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
+      onClick={onClick}
       className={useReferencia() ? className : cn(
-        "cc-lista-linha border-b border-trilha transition-colors hover:bg-campo data-[state=selected]:bg-alerta-marca",
+        "cc-lista-linha border-b border-trilha transition-colors data-[state=selected]:bg-alerta-marca",
+        onClick && "cursor-pointer hover:bg-campo",
         className
       )}
       {...props}

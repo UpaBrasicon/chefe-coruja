@@ -39,6 +39,21 @@ test('elementos nativos fora da base', () => {
   assert.deepEqual(regras('src/components/monitor/Pagina.tsx', tela), [])
 })
 
+test('botão fantasma só com texto: solto acusa, em par com o principal passa', () => {
+  const solto = 'export const T = () => <div><span>x</span><Button variant="ghost" onClick={f}>Retificar</Button></div>'
+  assert.deepEqual(regras('src/pages/x/T.tsx', solto), ['fantasma-so-texto'])
+  const par = 'export const T = () => <div><Button variant="ghost">Cancelar</Button><Button onClick={f}>Salvar</Button></div>'
+  assert.deepEqual(regras('src/pages/x/T.tsx', par), [])
+  const parCondicional = 'export const T = () => <div>{a && <Button variant="ghost">Voltar</Button>}{b && <Button>Ok</Button>}</div>'
+  assert.deepEqual(regras('src/pages/x/T.tsx', parCondicional), [])
+  const comIcone = 'export const T = () => <div><Button variant="ghost"><Printer /> Imprimir</Button></div>'
+  assert.deepEqual(regras('src/pages/x/T.tsx', comIcone), [])
+  const icone = 'export const T = () => <div><Button variant="ghost" size="icon-xs" aria-label="x">{t}</Button></div>'
+  assert.deepEqual(regras('src/pages/x/T.tsx', icone), [])
+  const contorno = 'export const T = () => <div><Button variant="outline">Retificar</Button></div>'
+  assert.deepEqual(regras('src/pages/x/T.tsx', contorno), [])
+})
+
 test('classes em className, template e constante', () => {
   const t = 'const SELECT = "rounded-lg text-sm"\nexport const T = ({ a }) => <p className={`bg-white ${a ? "text-xs" : ""}`} />'
   assert.deepEqual(regras('src/pages/x/T.tsx', t), ['canto', 'cor-crua', 'texto-escala', 'texto-escala'])
