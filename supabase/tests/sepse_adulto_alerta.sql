@@ -57,11 +57,11 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 -- FR 30 (3), FC 120 (2), T 39,0 (1), SpO2 97 (0), PAS 120 (0): NEWS2 6 sem O2 e consciência registrados
 SELECT public.classificar_risco(pg_temp.u(x), 'amarelo',
   '{"frequencia-cardiaca":120,"frequencia-respiratoria":30,"temperatura":39.0,"saturacao-o2":97,"escala-dor":2,"pressao-arterial-sistolica":120,"pressao-arterial-diastolica":80}',
-  (SELECT id FROM public.protocolo_fluxogramas WHERE nome = 'Alterações cutâneas' AND publico = 'adulto'), 'Febre')
+  (SELECT id FROM public.protocolo_fluxogramas WHERE nome = 'Alterações cutâneas' AND publico = 'adulto'), 'Edema de face')
 FROM unnest(ARRAY['e_inf', 'e_sem']) x;
 SELECT public.classificar_risco(pg_temp.u('e_bem'), 'verde',
   '{"frequencia-cardiaca":80,"frequencia-respiratoria":16,"temperatura":36.8,"saturacao-o2":98,"escala-dor":2,"pressao-arterial-sistolica":120,"pressao-arterial-diastolica":80}',
-  (SELECT id FROM public.protocolo_fluxogramas WHERE nome = 'Alterações cutâneas' AND publico = 'adulto'), 'Disúria');
+  (SELECT id FROM public.protocolo_fluxogramas WHERE nome = 'Alterações cutâneas' AND publico = 'adulto'), 'Edema de face');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT public.iniciar_atendimento(pg_temp.u(x)) FROM unnest(ARRAY['e_inf', 'e_sem', 'e_bem']) x;
 SELECT public.registrar_soap(pg_temp.u('e_inf'), 'febre, tosse', 'crepitações', 'pneumonia', 'ATB', 'J18.9');
