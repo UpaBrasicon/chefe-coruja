@@ -40,7 +40,7 @@ export const DIGOXINA_CONSENSO_2023: Fonte = {
 }
 
 export const NOTA_AHA_INTOXICACOES =
-  'AHA 2023 (atualização focada) e AHA 2025 (Parte 10), posteriores ao livro, organizam a ressuscitação e o choque refratário nas intoxicações graves e o uso de ECMO VA. As doses desta tela continuam as do livro; as linhas de antídoto ainda não foram conferidas com o texto completo dessas diretrizes.'
+  'AHA 2023 (atualização focada) e AHA 2025 (Parte 10), posteriores ao livro, organizam a ressuscitação e o choque refratário nas intoxicações graves e o uso de ECMO VA. As doses desta tela continuam as do livro. As linhas de antídoto foram conferidas dose por dose com o texto completo das duas em 11/11/2026: onde a AHA diverge, a nota "Divergência AHA" aparece na própria linha.'
 
 export const NOTA_DIGOXINA_CONSENSO =
   'Consenso de especialistas de 2024 (Delphi, 33 enunciados): considerar o momento da ingestão e o tipo de exposição (aguda, aguda sobre crônica, crônica) e usar o anticorpo antidigoxina na exposição com risco de vida. O cálculo de frascos segue o livro.'
@@ -50,6 +50,28 @@ export const NOTA_DIGOXINA_CONSENSO =
 export const NOTA_DIGOXINA_ANDREWS =
   'Divergência — consenso europeu de 2023 para adultos (Andrews, Delphi): na parada cardíaca, 5 frascos de imediato e mais 5 se não houver resposta em 30 min; com risco de vida sem parada, 1 a 2 frascos, repetidos conforme a resposta; sem risco de vida, metade da dose de neutralização total pelo nível, arredondada para o frasco inteiro acima. O consenso põe potássio acima de 6,5 mmol/L entre os sinais de risco de vida e considera o anticorpo apropriado com digoxinemia acima de 12 ng/mL; o nível é colhido com pelo menos 6 h, de preferência 8 a 12 h, da última dose. O artigo diz que 5 frascos neutralizam 3 mg; pela razão desta tela (≈ 0,5 mg por frasco), seriam 2,5 mg: confira a bula do produto disponível. O consenso teve redator médico pago pelo fabricante. O cálculo desta tela segue o livro.'
 
+// Decisão do RT (11/11/2026) na conferência dose por dose com a AHA 2023 e a
+// AHA 2025 Parte 10 (texto completo; docs/clinico/H7-AHA-DOSE-POR-DOSE.md):
+// D1 sem mudança; D2–D11 como nota de divergência ao lado do livro (opção B);
+// das recomendações que faltavam, L1, L3, L6, L7, L9 e L11. Nenhuma dose do
+// livro muda. COR: 1 forte, 2a moderada, 2b fraca, 3 sem benefício.
+export const NOTAS_AHA = {
+  flumazenil: 'AHA 2023 e 2025: o flumazenil não tem papel na PCR por benzodiazepínico (3: sem benefício).',
+  naloxonaPcr: 'AHA: na PCR, a RCP de qualidade vem antes; a AHA 2025 diz que a naloxona pode ser razoável só se não atrapalhar a RCP (2b).',
+  bbCalcio: 'Divergência AHA 2025 (2b, opinião de especialistas; recomendação nova): gluconato de cálcio 10% 60 mL (6 g, 28 mEq de cálcio), com manutenção de 0,6–1,2 mL/kg/h, titulando pela PA. Esta tela segue o livro.',
+  bbInsulina: 'Divergência AHA 2023 e 2025: insulina 1 U/kg em bolus e infusão de 1 a 10 U/kg/h; o teto de 10 é por hora, o que confirma a errata acima. Esta tela segue o livro (infusão de 0,5 UI/kg/h).',
+  bccCalcio: 'AHA 2023 e 2025: ataque de gluconato de cálcio 6 g (60 mL a 10%) ou cloreto de cálcio 2 g (20 mL a 10%), os dois com 28 mEq de cálcio. A manutenção de 0,6–1,2 mL/kg/h de gluconato 10% equivale a 0,28–0,56 mEq/kg/h, e o 0,5 mEq/kg/h do livro cabe nessa faixa. Esta tela segue o livro.',
+  bccCalcioFigura: 'Divergência AHA 2023 e 2025: o ataque é cloreto de cálcio 20 mL ou gluconato de cálcio 60 mL a 10%, os dois com 28 mEq; a figura usa 10 mL para os dois sais. Esta tela segue o livro.',
+  bccInsulinaFigura: 'Divergência AHA 2023 e 2025: insulina 1 U/kg em bolus e infusão de 1 a 10 U/kg/h; a figura começa em 0,5 e vai até 1 U/kg/h. Esta tela segue o livro.',
+  bccEmulsaoFigura: 'Divergência AHA: a dose de emulsão da AHA é a do anestésico local (até 70 kg, 1,5 mL/kg em bolus e 0,25 mL/kg/min por até 30 min; acima de 70 kg, 100 mL em 2–3 min e 200–250 mL em 15–20 min), metade da infusão da figura. No bloqueador de canal de cálcio a emulsão não é passo de rotina: a AHA 2023 não recomenda o uso rotineiro, e a AHA 2025 dá utilidade incerta no choque refratário (2b). Esta tela segue o livro.',
+  digoxina: 'AHA 2023 e 2025: com a quantidade conhecida, 1 frasco para cada 0,5 mg ingeridos, sem o fator 0,8 (25% mais frascos que a conta do livro; por exemplo, 5 mg ingeridos dão 10 frascos); a fórmula pelo nível e pelo peso é a da intoxicação crônica. Hemodiálise, hemofiltração, hemoperfusão e plasmaférese não servem para retirar a digoxina (3: sem benefício). O cálculo desta tela segue o livro.',
+  bicarbonatoTriciclico: 'Divergência AHA 2023 e 2025 (bloqueadores de canal de sódio): bolus de 50–150 mEq e infusão de solução a 150 mEq/L a 1–3 mL/kg/h; parar com sódio acima de 155 mEq/L ou pH acima de 7,55 (o livro aceita até 7,6). Acima de 75 kg, 2 mEq/kg passam de 150 mEq. Esta tela segue o livro.',
+  atropinaOrganofosforado: 'Divergência AHA 2023 e 2025 (1, nível A): atropina 1–2 mg, dobrando a cada 5 min; manutenção de 10–20% da dose total de ataque por hora, até 2 mg/h; alvo tórax limpo, FC > 80 e PAS > 80. Esta tela segue o livro (2–5 mg, dobrando a cada 3–5 min).',
+  pralidoxima: 'Divergência AHA 2025: pralidoxima 2 g EV em 15–30 min, sem bolus rápido, e manutenção de 1 g/h (a AHA 2023 dava 1–2 g e 400–600 mg/h). Em 70 kg, a conta do livro dá cerca de 2,1 g e 560 mg/h. Esta tela segue o livro.',
+  organofosforadoIot: 'AHA 2023 e 2025: na intubação do intoxicado por organofosforado, não usar succinilcolina nem mivacúrio (3: sem benefício).',
+  cianetoComCo: 'AHA 2025 (2a): com monóxido de carbono junto (incêndio) e sem hidroxocobalamina, é razoável o tiossulfato sozinho; o nitrito forma metemoglobina e piora o transporte de oxigênio.',
+}
+
 const fichaIntoxLivro = fichaAdulto(
   'adulto-intoxicacoes-antidotos',
   'Intoxicações e antídotos — adulto',
@@ -57,9 +79,9 @@ const fichaIntoxLivro = fichaAdulto(
 )
 export const fichaIntoxicacoesAdulto: Ficha = {
   ...fichaIntoxLivro,
-  versao: '2026-11-11.1',
+  versao: '2026-11-11.2',
   fontes: [...fichaIntoxLivro.fontes, CTRC_CARVAO_2026, AHA_INTOX_2023, AHA_ESPECIAIS_2025, DIGOXINA_CONSENSO_2024, DIGOXINA_CONSENSO_2023],
-  revisadoEm: '11/11/2026 (divergência do Andrews 2023 na digoxina, decisão H7 do RT); 06/11/2026 (nota das AHA 2023/2025 e do consenso da digoxina; revisão PubMed, itens médios; carvão ativado com o consenso CTRC 2026 desde 09/10/2026)',
+  revisadoEm: '11/11/2026 (conferência dose por dose com a AHA 2023 e 2025: notas de divergência e recomendações que faltavam, decisão do RT; divergência do Andrews 2023 na digoxina, decisão H7 do RT); 06/11/2026 (nota das AHA 2023/2025 e do consenso da digoxina; revisão PubMed, itens médios; carvão ativado com o consenso CTRC 2026 desde 09/10/2026)',
 }
 
 export type Faixa = [number, number]
@@ -336,13 +358,13 @@ export function frascosPorNivel(digoxinemiaNgMl: number, pesoKg: number): number
 
 export const BICARBONATO_MEQ_ML = 1
 
-export type UsoBicarbonato = { id: string; nome: string; mEqKg: Faixa; texto: string; pagina: string }
+export type UsoBicarbonato = { id: string; nome: string; mEqKg: Faixa; texto: string; pagina: string; nota?: string }
 
 export const BICARBONATO_USOS: UsoBicarbonato[] = [
   { id: 'alcalinizacao', nome: 'Alcalinização urinária (salicilato, fenobarbital, metotrexato, sulfonamidas)', mEqKg: [1, 2],
     texto: 'bolus + 150 mEq de NaHCO3 8,4% em SG 5% 1.000 mL a 200–250 mL/h; alvo pH urinário > 7,5 e sérico 7,55–7,6', pagina: 'p. 1302–1303' },
   { id: 'triciclico', nome: 'Tricíclicos (QRS > 100 ms ou arritmia ventricular)', mEqKg: [1, 2],
-    texto: 'bolus + 150 mL em SG 5% 1.000 mL a 200–250 mL/h; alvo pH sérico 7,45–7,55 (não passar de 7,6), gasometria 6/6 h', pagina: 'p. 1308' },
+    texto: 'bolus + 150 mL em SG 5% 1.000 mL a 200–250 mL/h; alvo pH sérico 7,45–7,55 (não passar de 7,6), gasometria 6/6 h', pagina: 'p. 1308', nota: NOTAS_AHA.bicarbonatoTriciclico },
   { id: 'isrs', nome: 'ISRS (QTc prolongado)', mEqKg: [1, 2], texto: 'considerar bolus; torsades, QTc > 560 ms ou bradicardia: sulfato de magnésio 2 g em 2 min, repetível após 10 min', pagina: 'p. 1309' },
   { id: 'salicilato', nome: 'Salicilatos', mEqKg: [1, 2], texto: 'bolus + 150 mEq em SG 5% 1.000 mL; alvo pH urinário 7,5–8; repor potássio', pagina: 'p. 1323' },
   { id: 'cocaina', nome: 'Cocaína (QRS alargado)', mEqKg: [1, 1], texto: '1 mEq/kg EV', pagina: 'p. 1332' },

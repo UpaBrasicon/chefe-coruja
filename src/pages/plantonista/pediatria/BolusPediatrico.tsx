@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { BOLUS, GRUPOS, NEONATO_FORA, calcularBolus, fichaBolusPediatrico, type Bolus, type Grupo } from '@/clinico/pediatria/bolus'
+import { BOLUS, GRUPOS, NEONATO_FORA, NOTA_PESO_EMERGENCIA, calcularBolus, fichaBolusPediatrico, type Bolus, type Grupo } from '@/clinico/pediatria/bolus'
 import { IDADE_ADULTO_ANOS } from '@/clinico/ficha'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -88,6 +88,7 @@ export function BolusPediatrico() {
             {NEONATO_FORA} A idade é opcional: só muda o que o livro separa por idade (ex.: midazolam, diazepam, naloxona).
             A dose mostrada é a faixa do livro para o peso; a escolha dentro dela é do profissional.
           </p>
+          <p role="note" className="text-apoio text-tinta-sussurro md:col-span-4">{NOTA_PESO_EMERGENCIA}</p>
         </CardContent>
       </Card>
 
