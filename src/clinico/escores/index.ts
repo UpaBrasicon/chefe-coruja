@@ -10,6 +10,7 @@ import { childPugh } from './childPugh.ts'
 import { civdIsth } from './civdIsth.ts'
 import { crb65 } from './crb65.ts'
 import { curb65 } from './curb65.ts'
+import { fastEd } from './fastEd.ts'
 import { four } from './four.ts'
 import { genebraRevisado } from './genebraRevisado.ts'
 import { glasgow } from './glasgow.ts'
@@ -90,5 +91,6 @@ export const ESCORES: Escore[] = [
   spesi,
   crb65,
   sofa2,
+  fastEd,
   twist,
 ]

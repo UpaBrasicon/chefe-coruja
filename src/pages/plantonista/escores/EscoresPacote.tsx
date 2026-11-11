@@ -9,6 +9,7 @@ import { childPugh } from '@/clinico/escores/childPugh'
 import { civdIsth } from '@/clinico/escores/civdIsth'
 import { crb65 } from '@/clinico/escores/crb65'
 import { curb65 } from '@/clinico/escores/curb65'
+import { fastEd } from '@/clinico/escores/fastEd'
 import { four } from '@/clinico/escores/four'
 import { genebraRevisado } from '@/clinico/escores/genebraRevisado'
 import { glasgow } from '@/clinico/escores/glasgow'
@@ -84,4 +85,5 @@ export const SgarbossaModificado = () => <EscoreTela escore={sgarbossaModificado
 export const Spesi = () => <EscoreTela escore={spesi} />
 export const Crb65 = () => <EscoreTela escore={crb65} />
 export const Sofa2 = () => <EscoreTela escore={sofa2} />
+export const FastEd = () => <EscoreTela escore={fastEd} />
 export const Twist = () => <EscoreTela escore={twist} />

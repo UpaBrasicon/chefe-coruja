@@ -11,7 +11,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
   escores: [
     { rotulo: 'Cardiologia', slugs: ['heart', 'timi', 'timi-iamcsst', 'grace', 'killip', 'cha2ds2-va', 'has-bled', 'sincope-san-francisco', 'sincope-canadense', 'duke-endocardite', 'sgarbossa-modificado'] },
     { rotulo: 'Pneumologia e tromboembolismo', slugs: ['curb-65', 'crb-65', 'psi-port', 'wells-tep', 'genebra-revisado', 'years', 'pesi', 'spesi', 'wells-tvp', 'light'] },
-    { rotulo: 'Neurologia', slugs: ['glasgow', 'four', 'nih-avc', 'abcd2'] },
+    { rotulo: 'Neurologia', slugs: ['glasgow', 'four', 'nih-avc', 'abcd2', 'fast-ed'] },
     { rotulo: 'Gastroenterologia e hepatologia', slugs: ['glasgow-blatchford', 'aims65', 'rockall', 'child-pugh', 'meld-3', 'bisap', 'ranson', 'alvarado'] },
     { rotulo: 'Terapia intensiva e sepse', slugs: ['sepse-adulto', 'sofa-2', 'news2', 'cam-icu', 'rass'] },
     { rotulo: 'Hematologia', slugs: ['4t-hit', 'civd-isth'] },
