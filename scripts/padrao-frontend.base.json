@@ -14,14 +14,14 @@
     "importacao-cruzada": 0,
     "emoji": 0,
     "pronto-socorro": 0,
-    "fantasma-so-texto": 87
+    "fantasma-so-texto": 76
   },
   "arquivos": {
     "src/components/apac/SolicitarApac.tsx": {
       "fantasma-so-texto": 2
     },
     "src/components/clinico/ResultadoExame.tsx": {
-      "fantasma-so-texto": 2
+      "fantasma-so-texto": 1
     },
     "src/components/documentos/AtestadoReceita.tsx": {
       "fantasma-so-texto": 3
@@ -35,9 +35,6 @@
     "src/components/internacao/ListaInternados.tsx": {
       "fantasma-so-texto": 1
     },
-    "src/components/internacao/caderno/Alta.tsx": {
-      "fantasma-so-texto": 1
-    },
     "src/components/internacao/caderno/Trilha.tsx": {
       "fantasma-so-texto": 2
     },
@@ -48,9 +45,6 @@
       "fantasma-so-texto": 1
     },
     "src/components/leito/ReservarLeito.tsx": {
-      "fantasma-so-texto": 1
-    },
-    "src/components/obito/ObitosPendentes.tsx": {
       "fantasma-so-texto": 1
     },
     "src/components/paciente/CadastroRn.tsx": {
@@ -72,15 +66,9 @@
       "fantasma-so-texto": 1
     },
     "src/components/prescricao/PrescricaoEstruturada.tsx": {
-      "fantasma-so-texto": 2
-    },
-    "src/components/prontuario/Contencao.tsx": {
       "fantasma-so-texto": 1
     },
     "src/components/prontuario/HistoricoEncerrado.tsx": {
-      "fantasma-so-texto": 1
-    },
-    "src/components/prontuario/Intercorrencias.tsx": {
       "fantasma-so-texto": 1
     },
     "src/components/puericultura/PuericulturaNaConsulta.tsx": {
@@ -91,9 +79,6 @@
     },
     "src/components/regulacao/MapaVagas.tsx": {
       "fantasma-so-texto": 2
-    },
-    "src/components/seguranca/SegundoFator.tsx": {
-      "fantasma-so-texto": 3
     },
     "src/pages/Cadastro.tsx": {
       "fantasma-so-texto": 1
@@ -120,9 +105,6 @@
       "fantasma-so-texto": 2
     },
     "src/pages/agenda/AgendaConsultas.tsx": {
-      "fantasma-so-texto": 1
-    },
-    "src/pages/enfermagem/Checagem.tsx": {
       "fantasma-so-texto": 1
     },
     "src/pages/farmacia/AltaVigilancia.tsx": {
@@ -174,7 +156,7 @@
       "fantasma-so-texto": 2
     },
     "src/pages/regulacao/Regulacao.tsx": {
-      "fantasma-so-texto": 4
+      "fantasma-so-texto": 3
     },
     "src/pages/telemedicina/Teleinterconsulta.tsx": {
       "fantasma-so-texto": 1
