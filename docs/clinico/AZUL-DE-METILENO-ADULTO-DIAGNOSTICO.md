@@ -44,4 +44,4 @@ Este documento é só diagnóstico, sem código. As doses vêm do texto completo
 
 | Pergunta | Recomendação | Decisão |
 |---|---|---|
-| Azul de metileno no adulto | A | |
+| Azul de metileno no adulto | A | A (11/11/2026): linha nova só para a metemoglobinemia |
