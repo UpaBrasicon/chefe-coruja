@@ -457,6 +457,44 @@
   "publico": "pediatrico"
  },
  {
+  "id": "twist-ped",
+  "nome": "TWIST — torção testicular (criança)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "pediatria",
+   "TWIST",
+   "torção testicular",
+   "escroto agudo",
+   "testículo",
+   "dor testicular"
+  ],
+  "descricao": "Escroto agudo: cinco achados, de 0 a 7; baixo risco não dispensa avaliação.",
+  "rota": "/plantonista/pediatria/twist-ped",
+  "publico": "pediatrico"
+ },
+ {
+  "id": "ten-4-facesp",
+  "nome": "Hematomas suspeitos de maus-tratos (TEN-4-FACESp)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Trauma, toxicologia e acidentes",
+  "sinonimos": [
+   "pediatria",
+   "maus-tratos",
+   "violência",
+   "hematoma",
+   "equimose",
+   "abuso",
+   "TEN-4-FACESp",
+   "notificação"
+  ],
+  "descricao": "Criança abaixo de 4 anos com hematoma: tronco, orelha, pescoço, face, lactente de até 4,99 meses ou padrão.",
+  "rota": "/plantonista/pediatria/ten-4-facesp",
+  "publico": "pediatrico"
+ },
+ {
   "id": "glasgow-pediatrico",
   "nome": "Escala de Coma de Glasgow — criança",
   "tipo": "conduta",
@@ -3380,6 +3418,26 @@
   "publico": "adulto"
  },
  {
+  "id": "fast-ed",
+  "nome": "FAST-ED — suspeita de oclusão de grande vaso",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Neurologia",
+  "sinonimos": [
+   "FAST-ED",
+   "AVC",
+   "oclusão de grande vaso",
+   "LVO",
+   "trombectomia",
+   "NIHSS",
+   "neurologia",
+   "stroke"
+  ],
+  "descricao": "Cinco itens do NIHSS, de 0 a 9; 4 ou mais no estudo: cerca de 60% com oclusão. Não substitui a angiotomografia.",
+  "rota": "/plantonista/escores/fast-ed",
+  "publico": "adulto"
+ },
+ {
   "id": "4t-hit",
   "nome": "4T",
   "tipo": "escore",
@@ -4018,6 +4076,24 @@
   ],
   "descricao": "Rastreio rápido: alerta, AMT4, meses de trás para frente e mudança aguda.",
   "rota": "/plantonista/escores/4at",
+  "publico": "adulto"
+ },
+ {
+  "id": "twist",
+  "nome": "TWIST — torção testicular (14 a 18 anos)",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Urologia",
+  "sinonimos": [
+   "TWIST",
+   "torção testicular",
+   "escroto agudo",
+   "testículo",
+   "dor testicular",
+   "urologia"
+  ],
+  "descricao": "Escroto agudo: cinco achados, de 0 a 7; baixo risco não dispensa avaliação.",
+  "rota": "/plantonista/escores/twist",
   "publico": "adulto"
  },
  {

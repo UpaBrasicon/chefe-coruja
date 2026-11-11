@@ -35,13 +35,44 @@ export const SBTH_2026: Fonte = {
 export const NOTA_SBTH_2026 =
   'Consenso brasileiro SBTH 2026 (posterior ao livro): reversor ou agente hemostático só quando há as duas condições: sangramento maior ou com risco de vida e anticoagulante em nível circulante significativo (DOAC dosado ou tomado há menos de 24 h; no antagonista da vitamina K, INR ≥ 2). Carvão ativado se o anticoagulante foi tomado nas últimas 4 h (o livro escreve < 2 h). Idarucizumabe para a dabigatrana; andexanete ou complexo protrombínico para os inibidores do fator Xa, o andexanete com cautela, porque foi retirado do mercado em alguns países. As doses do consenso não foram conferidas; nada aqui muda dose.'
 
+// Epistaxe (escores P2/P3, item A12; decisão B do RT em 11/11/2026): a AAO-HNS
+// 2020 pede tratamento local antes de reverter ou suspender o anticoagulante,
+// fora do sangramento com risco de vida. Passos e tranexâmico tópico pelos
+// resumos conferidos no PubMed; nenhuma dose de tranexâmico foi lida e nenhuma
+// entra.
+export const AAO_HNS_EPISTAXE_2020: Fonte = {
+  citacao: 'Tunkel DE, Anne S, Payne SC, et al. Clinical Practice Guideline: Nosebleed (Epistaxis). Otolaryngol Head Neck Surg. 2020;162(1_suppl):S1–S38 (PMID 31910111, resumo estendido): enunciados 2, 3a, 3b, 6, 8 e 11.',
+  url: 'https://doi.org/10.1177/0194599819890327',
+}
+export const NOPAC_2021: Fonte = {
+  citacao: 'Reuben A, Appelboam A, Stevens KN, et al. The Use of Tranexamic Acid to Reduce the Need for Nasal Packing in Epistaxis (NoPAC): Randomized Controlled Trial. Ann Emerg Med. 2021;77(6):631–640 (PMID 33612282, resumo).',
+  url: 'https://doi.org/10.1016/j.annemergmed.2020.12.013',
+}
+export const TRANEXAMICO_EPISTAXE_2026: Fonte = {
+  citacao: 'Fatahi M, Aghajani S, Samadi Y, Sadaqat A. A meta-analysis on the efficacy of topical tranexamic acid for epistaxis: Does the method of administration affect the success rate? Australas Emerg Care. 2026;29(4):343–353 (PMID 42297643, resumo).',
+  url: 'https://doi.org/10.1016/j.auec.2026.06.001',
+}
+
+export const EPISTAXE_AAO_HNS = {
+  principio: 'Sem sangramento com risco de vida, comece pelo tratamento local, antes de transfundir, reverter ou suspender o anticoagulante ou o antiagregante (AAO-HNS 2020).',
+  passos: [
+    'Compressão firme e contínua do terço inferior do nariz por 5 minutos ou mais.',
+    'Sem ver o ponto de sangramento apesar da compressão: tamponamento. Em quem usa anticoagulante ou antiagregante, ou tem suspeita de distúrbio de coagulação, tampão reabsorvível.',
+    'Rinoscopia anterior depois de retirar o coágulo, para achar o ponto.',
+    'Com o ponto visto: vasoconstritor tópico, cauterização (com anestesia e só no ponto) ou umidificação.',
+    'Registrar os fatores de risco: distúrbio de coagulação pessoal ou familiar, anticoagulante, antiagregante, droga intranasal.',
+  ],
+  tranexamico: 'Ácido tranexâmico tópico: resultados conflitantes. No NoPAC (2021, 496 adultos), o tranexâmico em rolete de algodão não reduziu o tamponamento (43,7% × 41,3%). Uma metanálise de 2026 (18 estudos) achou mais parada do sangramento em 10 min com gaze embebida, não com spray. Nenhuma dose foi conferida; a tela não traz dose.',
+  publico: 'A diretriz vale a partir de 3 anos; esta tela é do adulto.',
+}
+
 const PAG_REVERSAO = 'cap. 39 Hemorragias intraparenquimatosas, p. 545–549; cap. 79 Distúrbios da hemostasia, p. 1042–1045 (Tabelas 4–6)'
 
 export const fichaReversaoAnticoagulacaoAdulto: Ficha = {
   ...fichaAdulto('adulto-reversao-anticoagulacao', 'Reversão de anticoagulação e sangramento — adulto', PAG_REVERSAO),
-  versao: '2026-11-06.1',
-  fontes: [pagina(PAG_REVERSAO), ANNEXA_I, SBTH_2026],
-  revisadoEm: '06/11/2026 (nota do consenso SBTH 2026 e carvão ativado em < 4 h nos DOAC; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: andexanete como divergência pelo ANNEXA-I; manual mantido como base)',
+  versao: '2026-11-11.1',
+  fontes: [pagina(PAG_REVERSAO), ANNEXA_I, SBTH_2026, AAO_HNS_EPISTAXE_2020, NOPAC_2021, TRANEXAMICO_EPISTAXE_2026],
+  revisadoEm: '11/11/2026 (epistaxe pela AAO-HNS 2020, tratamento local antes de reverter; escores P2/P3, item A12); 06/11/2026 (nota do consenso SBTH 2026 e carvão ativado em < 4 h nos DOAC; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: andexanete como divergência pelo ANNEXA-I; manual mantido como base)',
 }
 
 /**

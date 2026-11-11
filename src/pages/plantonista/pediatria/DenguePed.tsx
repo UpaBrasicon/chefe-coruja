@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   ACHADOS_GRUPO_B, ALTA, ERRATA_HT, ERRATA_LACO, INTERNACAO, LACO_CRIANCA, NOTA_ALBUMINA, NOTA_MANUTENCAO_CRIANCA, REFERENCIAS_DENGUE, SINAIS_ALARME, SINAIS_GRAVIDADE,
-  DIFERENCAS_MS_2024_PED, MS_CRIANCA_TEXTO, SINAIS_VITAIS_MS, albumina5, analgesicosMs2024, expansaoGrupoC, expansaoGrupoD, fichaDenguePed, grupoBParaC, grupoCMs2024, grupoDenguePed, hidratacaoOral, manutencaoAdolescente, pasP5Ms, pesoAproximadoMs, pressaoMediaLaco, type Perfil,
+  DIFERENCAS_MS_2024_PED, MS_CRIANCA_TEXTO, NOTA_PESO_DENGUE_WELLS, SINAIS_VITAIS_MS, albumina5, analgesicosMs2024, expansaoGrupoC, expansaoGrupoD, fichaDenguePed, grupoBParaC, grupoCMs2024, grupoDenguePed, hidratacaoOral, manutencaoAdolescente, pasP5Ms, pesoAproximadoMs, pressaoMediaLaco, type Perfil
 } from '@/clinico/pediatria/denguePed'
 import { manutencao } from '@/clinico/pediatria/manutencao'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -138,6 +138,7 @@ export function DenguePed() {
         )}
         {analg && <p>Analgesia (MS, Apêndice H): dipirona <strong>{br(analg.dipironaMg, 0)} mg</strong> e paracetamol <strong>{br(analg.paracetamolMg, 0)} mg</strong> por dose (10 mg/kg), até de 6/6 h, respeitando a dose máxima por peso e idade.</p>}
         {pesoEst !== null && <p>Peso aproximado pela idade (MS, Apêndice B): <strong>{br(pesoEst, 1)} kg</strong> — só quando não for possível pesar.</p>}
+        {pesoEst !== null && <p role="note" className="text-atencao">{NOTA_PESO_DENGUE_WELLS}</p>}
         {pasP5 !== null && <p>5º percentil da PAS para a idade (MS, p. 16): <strong>{pasP5} mmHg</strong> — abaixo disso é hipotensão.</p>}
         {MS_CRIANCA_TEXTO.map((t) => <p key={t} className="text-tinta-sussurro">{t}</p>)}
         {SINAIS_VITAIS_MS.map((t) => <p key={t.tabela} className="text-tinta-sussurro"><span className="font-medium text-tinta">{t.tabela}:</span> {t.linhas.join('; ')}.</p>)}
