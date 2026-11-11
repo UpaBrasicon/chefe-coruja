@@ -26,7 +26,7 @@ Quando a ferramenta tem mais de uma versão na fila, a ordem importa:
 - Aprovar só a mais nova funciona, mas a mais antiga continua na fila como "aguardando aprovação".
 - Se depois você aprovar a mais antiga, ela vira a aprovada e a mais nova vira "substituída". A ferramenta volta para a versão antiga.
 - Por isso: aprove da mais antiga para a mais nova. Ou aprove só a mais nova e não aprove mais as antigas dessa ferramenta.
-- Está em construção, na mesma tela, a aprovação em lote: ela aprova as versões marcadas em ordem crescente, ferramenta por ferramenta.
+- A mesma tela tem a aprovação em lote (#604): marque as versões (ou "Marcar todas") e use "Aprovar marcadas". Ela aprova uma por uma, da mais antiga para a mais nova em cada ferramenta, com o seu nome e registro em cada versão. Reprovar continua uma por uma.
 
 Ferramentas com mais de uma versão na fila: `adulto-anafilaxia` (2), `adulto-cefaleia` (2), `adulto-emergencia-hipertensiva` (2), `adulto-intoxicacoes-antidotos` (5), `adulto-meningite` (2), `adulto-pcr` (2), `adulto-reversao-anticoagulacao` (3), `avaliacao-braden` (2), `hiperpotassemia` (2), `ped-kawasaki` (2), `sofa-2` (2), `triagem-dor-flacc` (2), `triagem-dor-numerica` (2).
 
