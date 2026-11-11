@@ -43,4 +43,4 @@ Ligando hoje, as 5 contas de faturamento da homologação, inclusive as de teste
 
 | Pergunta | Recomendação | Decisão |
 |---|---|---|
-| Farmacêutico e faturamento pela escala | A | |
+| Farmacêutico e faturamento pela escala | A | A (11/11/2026): ligado na branch `escala/m12-farmaceutico-faturamento`; contas de teste escaladas na homologação |
