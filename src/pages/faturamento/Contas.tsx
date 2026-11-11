@@ -322,7 +322,7 @@ function ItensConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boo
                   <TableCell className="whitespace-nowrap px-2 py-1.5 text-right">{reais(i.valor_total)}</TableCell>
                   <TableCell className="px-2 py-1.5 text-right">
                     {podeMexer && i.retiravel && (
-                      <Button size="xs" variant="ghost" onClick={() => { setRetirando(i); setMotivo('') }}>Retirar</Button>
+                      <Button size="xs" variant="outline" onClick={() => { setRetirando(i); setMotivo('') }}>Retirar</Button>
                     )}
                   </TableCell>
                 </TableRow>
@@ -563,7 +563,7 @@ function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMex
                   <TableCell className="whitespace-nowrap px-2 py-1.5">{m.administrado === 0 ? 'nenhuma vez' : m.administrado === 1 ? '1 vez' : `${m.administrado} vezes`}</TableCell>
                   <TableCell className="px-2 py-1.5 text-right">
                     {podeMexer && (
-                      <Button size="xs" variant="ghost" onClick={() => { setAjuste({ m, fora: !m.fora_da_conta }); setMotivo('') }}>
+                      <Button size="xs" variant="outline" onClick={() => { setAjuste({ m, fora: !m.fora_da_conta }); setMotivo('') }}>
                         {m.fora_da_conta ? 'Voltar à conta' : 'Fora da conta'}
                       </Button>
                     )}
@@ -642,7 +642,7 @@ function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer:
                   <TableCell className="whitespace-nowrap px-2 py-1.5 text-tinta-sussurro">{fmtDataHora(m.lancado_em)}{m.lancado_por ? ` · ${m.lancado_por}` : ''}</TableCell>
                   <TableCell className="px-2 py-1.5 text-right">
                     {podeMexer && !m.retirado_em && (
-                      <Button size="xs" variant="ghost" onClick={() => { setRetirar(m); setMotivo('') }}>Retirar</Button>
+                      <Button size="xs" variant="outline" onClick={() => { setRetirar(m); setMotivo('') }}>Retirar</Button>
                     )}
                   </TableCell>
                 </TableRow>
@@ -783,7 +783,7 @@ function LancarProcedimento({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => vo
       {codigo ? (
         <div className="flex items-center justify-between rounded-controle border border-fio px-2 py-1">
           <span><span className="font-medium">{codigoSigtapNaTela(codigo.codigo)}</span> · {codigo.nome}</span>
-          <Button size="xs" variant="ghost" onClick={() => setCodigo(null)}>Trocar</Button>
+          <Button size="xs" variant="outline" onClick={() => setCodigo(null)}>Trocar</Button>
         </div>
       ) : (
         <div className="flex flex-col gap-1">
@@ -791,6 +791,7 @@ function LancarProcedimento({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => vo
           {(busca.data ?? []).length > 0 && (
             <div className="flex max-h-40 flex-col overflow-y-auto rounded-controle border border-fio">
               {(busca.data ?? []).map((p) => (
+                // padrao-ok: linha da lista de resultados da busca, que aparece logo depois de digitar
                 <Button key={p.codigo} type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setCodigo(p)}>
                   {codigoSigtapNaTela(p.codigo)} · {p.nome}
                 </Button>

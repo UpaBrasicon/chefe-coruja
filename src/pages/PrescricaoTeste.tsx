@@ -307,7 +307,7 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
 
           {itens.length > 0 && (
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setItens([])}>
+              <Button variant="outline" onClick={() => setItens([])}>
                 Limpar
               </Button>
             </div>

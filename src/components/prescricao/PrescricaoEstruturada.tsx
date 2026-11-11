@@ -634,7 +634,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                   avisar(error ? error.message : null)
                   if (!error) setFaltaAvisada(true)
                 }}>{faltaAvisada ? 'Falta sinalizada' : 'Sinalizar falta'}</Button>
-                <Button size="xs" variant="ghost" onClick={() => { setMed(null); setFaltaAvisada(false) }}>Trocar</Button>
+                <Button size="xs" variant="outline" onClick={() => { setMed(null); setFaltaAvisada(false) }}>Trocar</Button>
                 {falta.data && (
                   <span role="note" className="w-full text-rotulo text-atencao">
                     Em falta na farmácia ({falta.data.situacao === 'em_cotacao' ? 'em cotação' : 'sinalizada'}).

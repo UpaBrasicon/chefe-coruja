@@ -79,7 +79,7 @@ export function DetalhesAdmissao() {
               <span className={e.ativo ? 'text-corpo font-medium text-tinta' : 'text-corpo font-medium text-tinta-sussurro line-through'}>{e.nome}</span>
               <span className="text-apoio text-tinta-sussurro">{e.itens.join(', ')}</span>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => void salvar({ ...e, ativo: !e.ativo })}>{e.ativo ? 'Remover' : 'Reativar'}</Button>
+            <Button size="sm" variant="outline" onClick={() => void salvar({ ...e, ativo: !e.ativo })}>{e.ativo ? 'Remover' : 'Reativar'}</Button>
           </div>
         ))}
       </div>

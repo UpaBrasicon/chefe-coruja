@@ -9,7 +9,7 @@
 // quem assume o setor RECEBE, dando ciência. Nada se apaga nem se reescreve.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Inbox } from 'lucide-react'
+import { Check, ChevronDown, Inbox } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -156,11 +156,14 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
       </div>
 
       {historico.map((p) => (
-        <details key={p.id} className="border-t border-trilha py-2.5">
-          <summary className="flex cursor-pointer flex-col gap-1">
-            <span className="text-rotulo text-tinta-sussurro">
-              {p.entregue_por_nome} · {quando(p.entregue_em)}{p.turno ? ` · ${TURNO[p.turno] ?? p.turno}` : ''}
-              {p.leitos.length > 0 ? ` · ${p.leitos.length} ${p.leitos.length === 1 ? 'leito' : 'leitos'}` : ''}
+        <details key={p.id} className="group border-t border-trilha py-2.5">
+          <summary className="flex cursor-pointer list-none flex-col gap-1">
+            <span className="flex items-center gap-1 text-rotulo text-tinta-sussurro">
+              <span>
+                {p.entregue_por_nome} · {quando(p.entregue_em)}{p.turno ? ` · ${TURNO[p.turno] ?? p.turno}` : ''}
+                {p.leitos.length > 0 ? ` · ${p.leitos.length} ${p.leitos.length === 1 ? 'leito' : 'leitos'}` : ''}
+              </span>
+              <ChevronDown className="ml-auto size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
             </span>
             <div className="flex flex-wrap gap-1.5">
               {p.recebida_em

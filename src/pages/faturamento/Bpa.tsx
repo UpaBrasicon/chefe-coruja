@@ -292,7 +292,7 @@ function AbaLancar({ unidade, competencia }: { unidade: string; competencia: str
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setEscolhido(null)}>← Atendimentos</Button>
+          <Button size="sm" variant="outline" onClick={() => setEscolhido(null)}>← Atendimentos</Button>
           <span className="font-medium text-tinta">{escolhido.paciente}</span>
           <span className="text-rotulo text-tinta-sussurro">chegada {fmtDataHora(escolhido.chegada_em)} · médico {escolhido.medico ?? '—'}</span>
         </div>
@@ -502,7 +502,7 @@ function ItemLista({ unidade, p }: { unidade: string; p: ConfigBpa['procedimento
     <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-3 py-1.5 text-apoio">
       <span className="text-tinta">{codigoSigtapNaTela(p.procedimento)} · {p.nome ?? 'fora do SIGTAP carregado'}</span>
       <InstrumentoBpa unidade={unidade} p={p} />
-      <Button size="xs" variant="ghost" className="ml-auto" disabled={retirar.isPending} onClick={() => retirar.mutate()}>Retirar</Button>
+      <Button size="xs" variant="outline" className="ml-auto" disabled={retirar.isPending} onClick={() => retirar.mutate()}>Retirar</Button>
       {retirar.error && <span role="alert" className="basis-full text-rotulo text-critico">{(retirar.error as Error).message}</span>}
     </div>
   )
@@ -532,6 +532,7 @@ function BuscaSigtap({ rotulo, onEscolher, invalidar }: { rotulo: string; onEsco
       {(busca.data ?? []).length > 0 && (
         <div className="flex max-h-48 flex-col overflow-y-auto rounded-controle border border-fio">
           {(busca.data ?? []).map((p) => (
+            // padrao-ok: linha da lista de resultados da busca, que aparece logo depois de digitar
             <Button key={p.codigo} type="button" variant="ghost" size="sm" className="justify-start" onClick={() => void escolher(p.codigo)}>
               {codigoSigtapNaTela(p.codigo)} · {p.nome}
             </Button>

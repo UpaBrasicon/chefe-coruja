@@ -174,6 +174,7 @@ export function Login() {
 
           <div role="tablist" aria-label="Entrar ou ativar convite" className="mb-[26px] grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
             {(['entrar', 'primeira-vez'] as const).map((p) => (
+              // padrao-ok: aba do controle segmentado (Entrar / Primeira vez); a selecionada tem fundo próprio
               <Button
                 key={p}
                 variant="ghost"

@@ -1,4 +1,4 @@
-import { Activity, ChevronRight, Droplet, Moon, Search, X, Zap, type LucideIcon } from 'lucide-react'
+import { Activity, ChevronDown, ChevronRight, Droplet, Moon, Search, X, Zap, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -196,6 +196,7 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
                   <Icone className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />
                   <span className="text-corpo font-semibold tracking-[-0.01em] text-tinta">{c.rotulo}</span>
                   <span className={cn('flex-1 text-corpo tabular-nums', c.id === 'anticoag' ? 'text-atencao' : 'text-tinta-sussurro')}>{c.n}</span>
+                  {!c.abertaAgora && <ChevronDown className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />}
                 </BotaoLinha>
                 {c.abertaAgora && (
                   <Button variant="outline" onClick={() => { setAberta(null); setDroga(null); setBusca('') }} className="min-h-10 gap-1.5 px-3">

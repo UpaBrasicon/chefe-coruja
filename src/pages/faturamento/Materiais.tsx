@@ -91,7 +91,7 @@ export default function Materiais() {
                       </TableCell>
                       <TableCell className="text-apoio text-tinta-apoio">{m.lancamentos === 1 ? '1 lançamento' : `${m.lancamentos} lançamentos`}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="xs" variant="ghost" onClick={() => setEditando({ ...m })}>Editar</Button>
+                        <Button size="xs" variant="outline" onClick={() => setEditando({ ...m })}>Editar</Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -153,7 +153,7 @@ function PainelMaterial({ unidadeId, inicial, onFechar }: { unidadeId: string; i
           {m.procedimento ? (
             <div className="flex items-center justify-between gap-2 rounded-controle border border-fio px-3 py-2 text-apoio">
               <span><strong>{codigoSigtapNaTela(m.procedimento)}</strong>{m.procedimento_nome ? ` · ${m.procedimento_nome}` : ''}</span>
-              <Button size="xs" variant="ghost" onClick={() => setM({ ...m, procedimento: null, procedimento_nome: null })}>Tirar</Button>
+              <Button size="xs" variant="outline" onClick={() => setM({ ...m, procedimento: null, procedimento_nome: null })}>Tirar</Button>
             </div>
           ) : (
             <>

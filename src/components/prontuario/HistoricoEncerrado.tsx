@@ -107,7 +107,7 @@ export function HistoricoEncerrado({ pacienteId, className }: { pacienteId: stri
           )}
           {d.atendimentos.length > INICIAIS_HISTORICO && (
             <div className="border-t border-trilha px-5 py-2">
-              <Button size="sm" variant="ghost" aria-expanded={todos} onClick={() => setTodos((v) => !v)}>
+              <Button size="sm" variant="outline" aria-expanded={todos} onClick={() => setTodos((v) => !v)}>
                 {todos ? 'Mostrar só os 5 mais recentes' : `Ver todos os ${d.atendimentos.length}`}
               </Button>
             </div>

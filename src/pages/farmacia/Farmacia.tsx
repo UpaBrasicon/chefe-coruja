@@ -214,7 +214,7 @@ function LimitesPadrao({ unidade, aoMudar }: { unidade: string; aoMudar: () => v
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-apoio">
         <SlidersHorizontal className="size-3.5 text-acao" aria-hidden />
         <span className="text-tinta-sussurro"><span className="font-medium text-tinta">Padrão da unidade:</span> {resumo}</span>
-        <Button size="xs" variant="ghost" className="text-acao" onClick={() => {
+        <Button size="xs" variant="outline" className="text-acao" onClick={() => {
           setC(p?.limite_critico?.toString() ?? ''); setF(p?.limite_falta?.toString() ?? ''); setAbrir(!abrir)
         }}>{abrir ? 'Fechar' : 'Definir padrão'}</Button>
       </div>
@@ -524,14 +524,14 @@ function RegistrarFalta({ unidade, fechar, aoRegistrar }: { unidade: string; fec
           <h3 className="text-corpo font-semibold text-tinta">Registrar falta</h3>
           <p className="text-tinta-sussurro">Avisa o plantão na prescrição e entra em Registradas.</p>
         </div>
-        <Button size="xs" variant="ghost" onClick={fechar}>Fechar</Button>
+        <Button size="xs" variant="outline" onClick={fechar}>Fechar</Button>
       </div>
       {escolhido ? (
         <>
           <p>
             <span className="font-medium text-tinta">{escolhido.principio_ativo}</span>{' '}
             <span className="text-tinta-sussurro">{escolhido.apresentacao ?? ''} · saldo {fmt(escolhido.quantidade)}</span>{' '}
-            <Button size="xs" variant="ghost" onClick={() => { setEscolhido(null); setErro(null) }}>Trocar</Button>
+            <Button size="xs" variant="outline" onClick={() => { setEscolhido(null); setErro(null) }}>Trocar</Button>
           </p>
           {escolhido.falta_id ? (
             <p className="text-tinta-apoio">Já tem falta aberta ({escolhido.falta_situacao === 'em_cotacao' ? 'em cotação' : 'registrada'}).</p>

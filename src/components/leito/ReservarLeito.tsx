@@ -87,7 +87,7 @@ export function ReservarLeito({ aberto, onFechar, leitoId, identificador, unidad
           paciente ? (
             <div className="flex items-center justify-between rounded-controle border border-fio px-3 py-2 text-apoio">
               <span className="font-medium text-tinta">{paciente.nome_social || paciente.nome}</span>
-              <Button size="xs" variant="ghost" onClick={() => setPaciente(null)}>Trocar</Button>
+              <Button size="xs" variant="outline" onClick={() => setPaciente(null)}>Trocar</Button>
             </div>
           ) : (
             <div className="flex flex-col gap-1.5">

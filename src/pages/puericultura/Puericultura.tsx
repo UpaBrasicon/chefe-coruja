@@ -103,7 +103,7 @@ export default function Puericultura() {
                           <Button size="xs" variant="outline" render={<Link to={linkMarcarNaAgenda(l.paciente_id, null, 'consulta_programada')} />} nativeButton={false}>
                             <CalendarPlus /> Agendar
                           </Button>
-                          {podeEditar && <Button size="xs" variant="ghost" onClick={() => setRetirar(l)}>Retirar</Button>}
+                          {podeEditar && <Button size="xs" variant="outline" onClick={() => setRetirar(l)}>Retirar</Button>}
                         </div>
                       </div>
                     </li>

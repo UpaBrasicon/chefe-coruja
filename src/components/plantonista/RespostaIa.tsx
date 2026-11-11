@@ -46,7 +46,7 @@ function Texto({ texto, fontes }: { texto: string; fontes: Fonte[] }) {
     return (
       <Button
         key={k}
-        variant="ghost"
+        variant="link"
         size="xs"
         disabled={!existe}
         onClick={() => document.getElementById(`fonte-ia-${n}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}

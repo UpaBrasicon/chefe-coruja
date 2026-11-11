@@ -259,7 +259,7 @@ function FichaValendo({ l, unidade, aoErro, aoMudar, abrirRascunho }: {
           if (error) return aoErro(error.message)
           aoErro(null); abrirRascunho(data)
         }}><FlaskConical className="size-3.5" aria-hidden />{l.rascunho_id ? 'Continuar o ajuste' : 'Ajustar esta linha'}</Button>
-        {l.da_unidade && l.modelo && !voltando && <Button size="sm" variant="ghost" onClick={() => setVoltando(true)}>Voltar ao modelo</Button>}
+        {l.da_unidade && l.modelo && !voltando && <Button size="sm" variant="outline" onClick={() => setVoltando(true)}>Voltar ao modelo</Button>}
       </div>
       {voltando && (
         <div className="flex flex-wrap items-end gap-2.5 border-l-2 border-acao/40 pl-3">
@@ -315,7 +315,7 @@ function NovaDiluicao({ unidade, aoCriar, aoPublicar, aoErro }: {
         <h3 className="text-corpo font-semibold text-tinta">Nova diluição</h3>
         <p className="text-tinta-sussurro">Para um medicamento do cadastro. Depois de publicada, vale só nesta unidade. Para mudar uma linha que já vale, use "Ajustar esta linha".</p>
       </div>
-        {med ? <p><strong>{med.principio_ativo}</strong> · {med.apresentacao} <Button size="xs" variant="ghost" onClick={() => setMed(null)}>Trocar</Button></p> : (
+        {med ? <p><strong>{med.principio_ativo}</strong> · {med.apresentacao} <Button size="xs" variant="outline" onClick={() => setMed(null)}>Trocar</Button></p> : (
           <>
             <Input placeholder="Medicamento do cadastro (3 letras ou mais)" value={busca} onChange={(e) => setBusca(e.target.value)} />
             {(r.data ?? []).map((m) => (

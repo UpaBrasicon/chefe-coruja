@@ -180,7 +180,7 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
       {!adulto && (
         <div className="border-b border-trilha px-4 py-3">
           <Aviso>{faixa === 'pediatrico' ? TEXTO_PEDIATRICO : TEXTO_SEM_NASCIMENTO}</Aviso>
-          {estado.rxEmitidaEm && <Button size="sm" variant="ghost" className="mt-2" onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null }))}>Reabrir</Button>}
+          {estado.rxEmitidaEm && <Button size="sm" variant="outline" className="mt-2" onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null }))}>Reabrir</Button>}
         </div>
       )}
       {adulto && <div className="flex flex-wrap items-center gap-1.5 border-b border-trilha px-4 py-3">
@@ -199,7 +199,7 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
           <Button size="sm" variant="outline" disabled={nomePadrao.trim().length < 2 || !estado.receita.some((r) => r.medicamento_id)} onClick={() => void salvarPadrao()}>
             Salvar como padrão
           </Button>
-          {estado.rxEmitidaEm && <Button size="sm" variant="ghost" onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null }))}>Reabrir</Button>}
+          {estado.rxEmitidaEm && <Button size="sm" variant="outline" onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null }))}>Reabrir</Button>}
         </span>
       </div>}
       {sugestoes.length > 0 && (
@@ -240,7 +240,7 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
           {med ? (
             <div className="flex h-8 items-center gap-2 rounded-controle border border-fio px-2 text-apoio">
               <span className="truncate">{nomeMed(med)}</span>
-              <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setMed(null)}>Trocar</Button>
+              <Button size="xs" variant="outline" className="ml-auto" onClick={() => setMed(null)}>Trocar</Button>
             </div>
           ) : (
             <Input id="rx-med" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Do cadastro (3 letras) ou livre" autoComplete="off" />

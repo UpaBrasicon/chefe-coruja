@@ -53,6 +53,7 @@ export function CampoCbo({ inicial }: { inicial: string | null }) {
       {(busca.data ?? []).length > 0 && (
         <div className="flex max-h-48 flex-col overflow-y-auto rounded-controle border border-fio">
           {(busca.data ?? []).map((c) => (
+            // padrao-ok: linha da lista de resultados da busca, que aparece logo depois de digitar
             <Button key={c.codigo} type="button" variant="ghost" size="sm" className="justify-start" onClick={() => void escolher(c.codigo)}>
               {c.codigo} · {c.titulo}
             </Button>

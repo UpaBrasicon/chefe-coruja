@@ -111,11 +111,11 @@ function Dialogo({ unidadeId, jaNoPrograma, onFechar }: {
                 : <Button key={p} size="sm" variant="outline" disabled={incluir.isPending} onClick={() => incluir.mutate(p)}><Plus /> {ROTULO_PROGRAMA[p]}</Button>)}
             </div>
             {incluir.error && <p role="alert" className="text-apoio text-critico">{msg(incluir.error)}</p>}
-            <Button size="sm" variant="ghost" className="self-start" onClick={() => { setPaciente(null); incluir.reset() }}>Escolher outro paciente</Button>
+            <Button size="sm" variant="outline" className="self-start" onClick={() => { setPaciente(null); incluir.reset() }}>Escolher outro paciente</Button>
           </div>
         )}
         <div className="flex justify-end">
-          <Button variant="ghost" onClick={onFechar}>Fechar</Button>
+          <Button variant="outline" onClick={onFechar}>Fechar</Button>
         </div>
       </DialogContent>
     </Dialog>

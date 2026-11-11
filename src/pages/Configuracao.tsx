@@ -250,7 +250,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-semibold">{brl(r.valor)}</span>
-                    <Button variant="ghost" size="sm" onClick={() => removerValor(r.id)}>
+                    <Button variant="outline" size="sm" onClick={() => removerValor(r.id)}>
                       Remover
                     </Button>
                   </div>

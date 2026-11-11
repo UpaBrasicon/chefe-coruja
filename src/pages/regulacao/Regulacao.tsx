@@ -264,7 +264,7 @@ function CampoTerminologia({ rotulo, tipo, escolhido, onEscolher, onLimpar }: {
       {escolhido ? (
         <div className="flex items-center gap-2 rounded-controle border border-fio bg-campo px-2 py-1.5">
           <span className="min-w-0 flex-1 truncate text-tinta">{escolhido}</span>
-          <Button size="xs" variant="ghost" onClick={onLimpar}>Trocar</Button>
+          <Button size="xs" variant="outline" onClick={onLimpar}>Trocar</Button>
         </div>
       ) : (
         <BuscaTerminologia tipo={tipo} onSelecionar={(r) => onEscolher(r.codigo, `${r.codigo} ${r.descricao}`)} />
@@ -408,7 +408,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
             {paciente.data_nascimento && <span className="text-tinta-sussurro">nasc. {fmtData(paciente.data_nascimento)}</span>}
             {paciente.prontuario && <span className="text-tinta-sussurro">pront. {paciente.prontuario}</span>}
             {neonato && <Badge variant="info">recém-nascido</Badge>}
-            <Button size="xs" variant="ghost" className="ml-auto" onClick={() => { setPaciente(null); setTermo('') }}>Trocar</Button>
+            <Button size="xs" variant="outline" className="ml-auto" onClick={() => { setPaciente(null); setTermo('') }}>Trocar</Button>
           </div>
         ) : (
           <Campo id="reg-paciente" rotulo="Paciente (nome, CPF, CNS ou prontuário)">
@@ -1249,7 +1249,7 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
             <Input id={`aut-obs-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
           </Campo>
           <div className="sm:col-span-3">
-            <Button size="xs" variant="ghost" onClick={() => setVerMapa(!verMapa)}>{verMapa ? 'Esconder o mapa de vagas' : 'Ver o mapa de vagas'}</Button>
+            <Button size="xs" variant="outline" onClick={() => setVerMapa(!verMapa)}>{verMapa ? 'Esconder o mapa de vagas' : 'Ver o mapa de vagas'}</Button>
             {verMapa && <MapaVagas unidadeId={centralId} compacto />}
           </div>
         </div>
