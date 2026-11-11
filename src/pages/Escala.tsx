@@ -20,6 +20,7 @@ import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -1175,16 +1176,17 @@ export default function Escala({
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="mt-3 flex flex-col gap-1.5">
-                        <Label htmlFor="falta-anexo">Anexar documento (PDF ou imagem)</Label>
-                        <Input
-                          id="falta-anexo"
-                          type="file"
-                          accept=".pdf,image/png,image/jpeg,image/jpg"
-                          onChange={(e) => setAnexo(e.target.files?.[0] ?? null)}
-                        />
-                        {anexo && <span className="text-rotulo text-tinta-sussurro">{anexo.name}</span>}
-                      </div>
+                      <AreaDeAnexo
+                        id="falta-anexo"
+                        className="mt-3"
+                        rotulo="Anexar documento"
+                        descricao="PDF, JPG ou PNG"
+                        accept=".pdf,image/png,image/jpeg,image/jpg"
+                        disabled={anexando}
+                        valor={anexo}
+                        onArquivos={(fs) => setAnexo(fs[0] ?? null)}
+                        onRemover={() => setAnexo(null)}
+                      />
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label htmlFor="falta-just">Justificativa</Label>
                         <Textarea

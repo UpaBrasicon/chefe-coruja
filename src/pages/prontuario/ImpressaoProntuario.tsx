@@ -23,6 +23,7 @@ import {
   type DocumentoEpisodio, diaHora, estadoDoDocumento, NOME_ESTADO, COR_ESTADO, rotuloDocumento, TIPOS_COM_FOLHA,
 } from '@/components/documento/documentos'
 import { Chip, TituloPagina, Trilha } from '@/components/monitor/Pagina'
+import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CaixaMarcar } from '@/components/ui/caixa-marcar'
@@ -37,6 +38,9 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
 const MAX_ANEXO = 10 * 1024 * 1024
+/** PDF ou imagem até 10 MB; a frase vai depois do nome do arquivo. */
+const erroAnexo = (f: File) => (!(f.type === 'application/pdf' || f.type.startsWith('image/')) ? 'só PDF ou imagem.'
+  : f.size > MAX_ANEXO ? 'acima de 10 MB. Reduza o arquivo.' : null)
 const MIN_CANCELAR = 10
 
 type Anexo = {
@@ -205,17 +209,15 @@ export default function ImpressaoProntuario() {
     return n
   })
 
-  async function anexar(ev: React.ChangeEvent<HTMLInputElement>) {
-    const arquivos = Array.from(ev.target.files ?? [])
-    ev.target.value = ''
+  async function anexar(arquivos: File[]) {
     if (!pacienteId || !prontuario.data) return
     const unidadeDoPaciente = unidadeId
     setAviso(null)
     setEnviando(true)
     try {
       for (const f of arquivos) {
-        if (!(f.type === 'application/pdf' || f.type.startsWith('image/'))) { setAviso(`${f.name}: só PDF ou imagem.`); continue }
-        if (f.size > MAX_ANEXO) { setAviso(`${f.name}: acima de 10 MB. Reduza o arquivo.`); continue }
+        const problema = erroAnexo(f)
+        if (problema) { setAviso(`${f.name}: ${problema}`); continue }
         const caminho = `${unidadeDoPaciente}/${pacienteId}/prontuario/${crypto.randomUUID()}-${f.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
         const up = await supabase.storage.from('atendimento').upload(caminho, f, { upsert: false, contentType: f.type })
         if (up.error) { setAviso(`${f.name}: ${up.error.message}`); continue }
@@ -419,12 +421,17 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
           <div className={cabecalhoCaixa}>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="flex items-center gap-2 text-corpo font-semibold text-tinta"><Paperclip className="size-4 text-acao" aria-hidden />Anexos do prontuário</h3>
-              <label className={cn('ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio bg-superficie px-2.5 py-1.5 text-apoio text-tinta-apoio hover:border-acao hover:text-acao',
-                enviando && 'pointer-events-none opacity-50')}>
-                {enviando ? <Spinner /> : <Paperclip className="size-3.5" aria-hidden />} Anexar PDF ou imagem
-                <input type="file" multiple accept="application/pdf,image/*" onChange={(e) => void anexar(e)} className="hidden" />
-              </label>
             </div>
+            <AreaDeAnexo
+              id="prontuario-anexos"
+              multiple
+              descricao="PDF ou imagem, até 10 MB cada"
+              accept="application/pdf,image/*"
+              maxBytes={MAX_ANEXO}
+              validar={erroAnexo}
+              ocupado={enviando}
+              onArquivos={(fs) => void anexar(fs)}
+            />
             {anexos.map((a) => (
               <div key={a.id} className="flex flex-col gap-1 border-b border-trilha py-1.5">
                 <div className="flex flex-wrap items-center gap-2.5">
