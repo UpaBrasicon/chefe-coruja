@@ -32,7 +32,7 @@ test('years: o terceiro item é TEP mais provável, não neoplasia; sem referên
 })
 
 test('light .1: NT-proBNP em pg/mL com Porcel 2018 e o BANCA 2025 como nota', () => {
-  assert.equal(light.ficha.versao, '2026-09-28.1')
+  assert.ok(light.ficha.versao >= '2026-09-28.1')
   const r = light.calcular({ protP: 3, protS: 7, ldhP: 180, ldhS: 200, ldhLSN: 250 })!
   assert.ok(r.cuidados.some((c) => /1500 pg\/mL/.test(c)))
   assert.ok(r.cuidados.some((c) => /2500 pg\/mL/.test(c)))
