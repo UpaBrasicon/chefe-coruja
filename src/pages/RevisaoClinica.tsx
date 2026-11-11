@@ -217,7 +217,7 @@ function LinhaRevisao({ l, grupo }: { l: LinhaPanorama; grupo: Grupo }) {
     <div className="flex flex-col gap-1.5 border-b border-trilha px-5 py-3 last:border-0">
       <div className="flex flex-wrap items-center gap-2.5">
         <div className="flex min-w-0 flex-[1_1_220px] flex-wrap items-baseline gap-x-2">
-          {rota ? <Link to={rota} className="text-corpo font-medium text-tinta hover:text-acao">{l.titulo}</Link>
+          {rota ? <Link to={rota} className="text-corpo font-medium text-acao underline underline-offset-4 hover:text-acao-pressionada">{l.titulo}</Link>
             : <span className="text-corpo font-medium text-tinta">{l.titulo}</span>}
           <span className="text-apoio text-tinta-sussurro">
             {[l.versao_ultima && `versão ${l.versao_ultima}`, l.publico && (PUBLICO[l.publico] ?? l.publico)].filter(Boolean).join(' · ')}

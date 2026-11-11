@@ -9,7 +9,7 @@
 // Migration 20261111000001_historico_regulacao.sql.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
-import { Waypoints } from 'lucide-react'
+import { ChevronDown, Waypoints } from 'lucide-react'
 import * as React from 'react'
 
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
@@ -76,7 +76,7 @@ export function HistoricoRegulacao({ pacienteId, secao }: {
     <ul className="flex flex-col divide-y divide-fio">
       {itens.map((r) => (
         <li key={r.id} className="py-2">
-          <BotaoLinha variante="linha" aria-expanded={aberta === r.id} className="flex-wrap items-center gap-2 border-0 p-0 hover:bg-transparent" onClick={() => setAberta(aberta === r.id ? null : r.id)}>
+          <BotaoLinha variante="linha" aria-expanded={aberta === r.id} className="flex-wrap items-center gap-2 rounded-controle border-0 px-2 py-1.5" onClick={() => setAberta(aberta === r.id ? null : r.id)}>
             <span className="text-tinta-sussurro">{fmtDataHora(r.criada_em)}</span>
             <Badge variant={TOM[PRIORIDADES[r.prioridade].tom]}>{PRIORIDADES[r.prioridade].rotulo}</Badge>
             <span className="font-medium text-tinta">{resumoPedido(r)}</span>
@@ -87,6 +87,7 @@ export function HistoricoRegulacao({ pacienteId, secao }: {
               ? <Estado tom="ambar">Chegou ao destino · origem sem alta</Estado>
               : <Estado tom="teal">{STATUS[r.status]}</Estado>}</span>
             <span className="text-tinta-sussurro">nº {r.numero}</span>
+            <ChevronDown className={cn('size-4 shrink-0 text-tinta-sussurro', aberta === r.id && 'rotate-180')} aria-hidden />
           </BotaoLinha>
           {aberta === r.id && <Detalhe pacienteId={pacienteId} id={r.id} />}
         </li>

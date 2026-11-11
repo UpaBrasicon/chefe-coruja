@@ -59,6 +59,7 @@ import {
   type MotivoNegacao, type Sla, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import type { Json } from '@/types/database'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -1034,7 +1035,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
             {r!.dados.map((s) => (
               <li key={s.id} className={`py-2 ${novos.has(s.id) ? 'rounded-controle bg-alerta-atencao/40 px-2' : ''}`}>
                 <div className="flex flex-wrap items-center gap-2">
-                  <BotaoLinha variante="linha" aria-expanded={aberta === s.id} className="w-auto min-w-0 flex-1 flex-wrap items-center gap-2 border-0 p-0 hover:bg-transparent" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
+                  <BotaoLinha variante="linha" aria-expanded={aberta === s.id} className="w-auto min-w-0 flex-1 flex-wrap items-center gap-2 rounded-controle border-0 px-2 py-1.5" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                     <SeloPrioridade s={s} />
                     {novos.has(s.id) && <Badge variant="warning">novo</Badge>}
                     <span className="font-semibold tabular-nums text-tinta">{formatarEspera(s.espera_segundos + decorrido)}</span>
@@ -1044,6 +1045,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
                     <SeloSla sla={s.sla} />
                     {(s.vulnerabilidades ?? []).map((v) => <Badge key={v} variant="secondary">{VULNERABILIDADES[v]}</Badge>)}
                     <span className="text-tinta-sussurro">{CARATER[s.carater]} · de {s.origem.nome} · nº {s.numero}</span>
+                    <ChevronDown className={cn('ml-auto size-4 shrink-0 text-tinta-sussurro', aberta === s.id && 'rotate-180')} aria-hidden />
                   </BotaoLinha>
                   <Badge variant="info">{STATUS[s.status]}</Badge>
                   {s.assumida_por && !s.assumida_por_mim && <span className="text-tinta-sussurro">com {s.assumida_por}</span>}
@@ -1053,7 +1055,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
                   {s.assumida_por_mim && (
                     <>
                       <span className="text-sucesso">com você</span>
-                      <Button size="xs" variant="ghost" onClick={() => soltar.mutate(s.id)} disabled={soltar.isPending}>Devolver à fila</Button>
+                      <Button size="xs" variant="outline" onClick={() => soltar.mutate(s.id)} disabled={soltar.isPending}>Devolver à fila</Button>
                     </>
                   )}
                 </div>

@@ -103,7 +103,7 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
     <div className="flex items-center gap-0.5">
       {status === 'higienizacao' && podeHigienizar && (
         <Button
-          variant={compacto ? 'ghost' : 'outline'}
+          variant="outline"
           size={compacto ? 'icon-xs' : 'xs'}
           aria-label={`Higienização do leito ${identificador} concluída`}
           title="Higienização concluída"
@@ -115,7 +115,7 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
       )}
       {(status === 'livre' || status === 'higienizacao') && podeBloquear && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon-xs"
           aria-label={`Bloquear leito ${identificador}`}
           title="Bloquear leito"
@@ -127,7 +127,7 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
       )}
       {status === 'bloqueado' && podeBloquear && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon-xs"
           aria-label={`Desbloquear leito ${identificador}`}
           title="Desbloquear leito"
@@ -144,7 +144,7 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
 
       {status === 'livre' && podeReservar && unidadeId && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon-xs"
           aria-label={`Reservar leito ${identificador}`}
           title="Reservar leito"
@@ -156,7 +156,7 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
       )}
       {status === 'reservado' && podeCancelarReserva && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon-xs"
           aria-label={`Cancelar a reserva do leito ${identificador}`}
           title="Cancelar reserva"
@@ -187,7 +187,7 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
       </Dialog>
       {status === 'ocupado' && podeLiberarSemPaciente && (
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon-xs"
           aria-label={`Liberar leito ${identificador} sem paciente`}
           title="Leito sem paciente? Liberar"

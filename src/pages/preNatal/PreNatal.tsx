@@ -144,7 +144,7 @@ function Linha({ l, hoje, podeEditar, onAcao }: { l: PreNatalLinha; hoje: string
           {podeEditar && (
             <>
               <Button size="xs" variant={l.dum ? 'ghost' : 'outline'} onClick={() => onAcao('dum')}>{l.dum ? 'Corrigir DUM' : 'Registrar DUM'}</Button>
-              {fase !== 'puerperio' && <Button size="xs" variant="ghost" onClick={() => onAcao('desfecho')}>Fim da gestação</Button>}
+              {fase !== 'puerperio' && <Button size="xs" variant="outline" onClick={() => onAcao('desfecho')}>Registrar fim da gestação</Button>}
               <Button size="xs" variant="ghost" onClick={() => onAcao('retirar')}>Retirar</Button>
             </>
           )}

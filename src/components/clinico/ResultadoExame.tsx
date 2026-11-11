@@ -132,7 +132,7 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
         )}
         {d.pode_registrar && pendente && !registrando && <Button size="sm" variant="outline" onClick={() => setRegistrando('novo')}>Registrar resultado</Button>}
         {d.pode_registrar && d.situacao === 'resultado' && !registrando && (
-          <Button size="sm" variant="ghost" onClick={() => setRegistrando('retificar')}>Retificar</Button>
+          <Button size="sm" variant="outline" onClick={() => setRegistrando('retificar')}>Retificar</Button>
         )}
       </div>
       {editandoLink && (

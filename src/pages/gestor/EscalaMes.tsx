@@ -308,7 +308,7 @@ export function EscalaMes() {
                               {e.duracao_min === 720 ? '12 h' : '6 h'}{e.quinzenal ? ' · 15/15' : ''}{e.rotulo ? ` · ${e.rotulo}` : ''}
                             </span>
                             <Button variant="link" onClick={() => void remover(e)} aria-label={`Remover ${e.nome} de ${s.nome}, ${FAIXA[f.turno][0].toLowerCase()}`}
-                              className="ml-auto h-auto min-h-0 shrink-0 p-0 text-rotulo text-tinta-sussurro hover:text-critico">Remover</Button>
+                              className="ml-auto h-auto min-h-0 shrink-0 p-0 text-rotulo underline hover:text-critico">Remover</Button>
                           </span>
                         ))}
                         {f.abertas.map((a, k) => (
@@ -318,7 +318,7 @@ export function EscalaMes() {
                               {categoriaMinuscula(a.papel)} · {a.vaga_id ? `marcada${a.obs ? `: ${a.obs}` : ''}` : 'prevista pela fixa'}
                             </span>
                             {a.vaga_id && (
-                              <Button variant="link" onClick={() => void retirarVaga(a.vaga_id!)} className="ml-auto h-auto min-h-0 p-0 text-rotulo text-tinta-sussurro hover:text-critico">Retirar vaga</Button>
+                              <Button variant="link" onClick={() => void retirarVaga(a.vaga_id!)} className="ml-auto h-auto min-h-0 p-0 text-rotulo underline hover:text-critico">Retirar vaga</Button>
                             )}
                           </span>
                         ))}

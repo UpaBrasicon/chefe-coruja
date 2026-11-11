@@ -9,7 +9,7 @@
 // têm papel no sistema: aparecem aqui quando houver registro. A enfermagem
 // registra pela frente dela (onda 7).
 // ─────────────────────────────────────────────────────────────────────────────
-import { ArrowRight, History, Printer } from 'lucide-react'
+import { ArrowRight, ChevronDown, History, Printer } from 'lucide-react'
 import * as React from 'react'
 
 import { cn } from '@/lib/utils'
@@ -152,10 +152,11 @@ export function HistoricoLateral({ internacaoId, aoVerTudo }: { internacaoId: st
           const expandido = aberto === r.id
           return (
             <BotaoLinha key={r.id} variante="linha" aria-expanded={expandido} onClick={() => setAberto(expandido ? null : r.id)}
-              className="flex-col gap-[3px] px-0 py-[9px] hover:bg-campo/60">
+              className="flex-col gap-[3px] rounded-controle border-0 px-2 py-[9px] hover:bg-campo">
               <span className="flex flex-wrap items-baseline gap-[7px]">
                 <span className="tabular text-rotulo font-semibold text-tinta">{diaHora(r.registrado_em)}</span>
                 <span className={cn('text-rotulo font-semibold', corTipo(r.tipo))}>{rotuloTipo(r.tipo)}{r.papel === 'complemento' ? ' · complemento' : ''}</span>
+                <ChevronDown className={cn('ml-auto size-4 shrink-0 self-center text-tinta-sussurro', expandido && 'rotate-180')} aria-hidden />
               </span>
               <span className="text-rotulo text-tinta-sussurro">{r.autor ?? '—'}</span>
               <span className={cn('text-apoio leading-[1.45] whitespace-pre-wrap text-grafite', !expandido && 'line-clamp-3')}>{r.texto}</span>
