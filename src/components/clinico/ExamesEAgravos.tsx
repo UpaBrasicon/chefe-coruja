@@ -3,7 +3,7 @@
 // suspeito, com a notificação registrada ou descartado com motivo. Os dois
 // impedem a alta enquanto abertos.
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FlaskConical, Megaphone } from 'lucide-react'
+import { ChevronDown, FlaskConical, Megaphone } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -124,7 +124,12 @@ function LinhaResolvido({ e, aoMudar }: { e: Exame; aoMudar: () => void }) {
         <span className={novo ? 'font-medium text-tinta' : ''}>{e.exame}: {e.situacao === 'resultado' ? e.resultado : `cancelado — ${e.motivo_cancelamento}`} · pedido {hora(e.pedido_em)}</span>
         {novo && (e.critico ? <Badge variant="destructive">crítico · novo</Badge> : <span className="text-rotulo font-semibold text-acao">novo</span>)}
         {!novo && e.critico && <Badge variant="destructive">crítico</Badge>}
-        {e.situacao === 'resultado' && <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : 'Ver resultado'}</Button>}
+        {e.situacao === 'resultado' && (
+          <Button size="xs" variant="outline" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+            {aberto ? 'Fechar' : 'Ver resultado'}
+            <ChevronDown className={aberto ? 'rotate-180' : undefined} aria-hidden />
+          </Button>
+        )}
       </div>
       {aberto && <ResultadoExame exameId={e.id} aoMudar={aoMudar} />}
     </div>

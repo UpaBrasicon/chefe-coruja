@@ -111,12 +111,12 @@ export function PainelObito({ pacienteId }: { pacienteId: string }) {
           {pode.corpo && !o.identificacao && <Button size="sm" variant="outline" onClick={() => setAberto('identificacao')}>Conferir identificação do corpo</Button>}
           {pode.corpo && o.identificacao && !o.liberacao && <Button size="sm" variant="outline" onClick={() => setAberto('liberacao')}>Liberar o corpo</Button>}
           {pode.vias && (['branca', 'amarela', 'rosa'] as const).filter((k) => !o.vias[k]).map((k) => (
-            <Button key={k} size="sm" variant="ghost" disabled={agir.isPending}
+            <Button key={k} size="sm" variant="outline" disabled={agir.isPending}
               onClick={() => agir.mutate(() => supabase.rpc('registrar_via_do', { p_obito: o.id, p_via: k }))}>
-              {k === 'branca' ? 'Via branca guardada' : k === 'amarela' ? 'Via amarela entregue' : 'Via rosa no prontuário'}
+              {k === 'branca' ? 'Registrar via branca guardada' : k === 'amarela' ? 'Registrar via amarela entregue' : 'Registrar via rosa no prontuário'}
             </Button>
           ))}
-          {pode.anular_do && <Button size="sm" variant="ghost" onClick={() => setAberto('anular')}>D.O. anulada ou rasurada</Button>}
+          {pode.anular_do && <Button size="sm" variant="outline" onClick={() => setAberto('anular')}>Registrar D.O. anulada ou rasurada</Button>}
         </div>
       )}
       {aberto === 'familia' && <FormFamilia obitoId={o.id} enviar={(d) => agir.mutate(() => supabase.rpc('comunicar_obito_familia', { p_obito: o.id, p_dados: d as Json }))} fechar={() => setAberto(null)} />}
