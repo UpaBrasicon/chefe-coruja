@@ -20,6 +20,8 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     // grupos novos por decisão do RT (23/10/2026, lacunas da Central)
     { rotulo: 'Infectologia', slugs: ['mcisaac'] },
     { rotulo: 'Geriatria e fragilidade', slugs: ['4at'] },
+    // grupo novo com o TWIST (escores P2/P3, item P9, 11/11/2026)
+    { rotulo: 'Urologia', slugs: ['twist'] },
   ],
   // Condutas e cálculos — adulto: as ferramentas de emergências e, desde 23/10/2026, as das
   // Calculadoras (SECOES_JUNTAS no registry; os slugs das duas seções não se repetem).
@@ -42,7 +44,7 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
   pediatria: [
     { rotulo: 'Doses e infusões', slugs: ['bolus', 'infusoes', 'sedacao-procedimento-ped'] },
     { rotulo: 'Reanimação, via aérea e choque', slugs: ['rcp-pediatrica', 'via-aerea', 'choque-pediatrico', 'anafilaxia-pediatrica', 'sinais-vitais-pediatricos'] },
-    { rotulo: 'Triagem e escores', slugs: ['pops', 'pews', 'glasgow-pediatrico', 'pecarn-menor-2-anos', 'pecarn-2-anos-ou-mais', 'phoenix'] },
+    { rotulo: 'Triagem e escores', slugs: ['pops', 'pews', 'glasgow-pediatrico', 'pecarn-menor-2-anos', 'pecarn-2-anos-ou-mais', 'phoenix', 'twist-ped'] },
     { rotulo: 'Respiratório', slugs: ['asma-pediatrica', 'vias-aereas-superiores-ped', 'bronquiolite-ped', 'pneumonia-ped', 'pram'] },
     { rotulo: 'Neurológico', slugs: ['crise-epileptica-pediatrica', 'tce-grave-pediatrico', 'coma-hic-ped', 'meningite-ped'] },
     { rotulo: 'Neonato', slugs: ['reanimacao-neonatal', 'ictericia-neonatal'] },
