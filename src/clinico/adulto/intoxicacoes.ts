@@ -79,9 +79,9 @@ const fichaIntoxLivro = fichaAdulto(
 )
 export const fichaIntoxicacoesAdulto: Ficha = {
   ...fichaIntoxLivro,
-  versao: '2026-11-11.2',
+  versao: '2026-11-11.3',
   fontes: [...fichaIntoxLivro.fontes, CTRC_CARVAO_2026, AHA_INTOX_2023, AHA_ESPECIAIS_2025, DIGOXINA_CONSENSO_2024, DIGOXINA_CONSENSO_2023],
-  revisadoEm: '11/11/2026 (conferência dose por dose com a AHA 2023 e 2025: notas de divergência e recomendações que faltavam, decisão do RT; divergência do Andrews 2023 na digoxina, decisão H7 do RT); 06/11/2026 (nota das AHA 2023/2025 e do consenso da digoxina; revisão PubMed, itens médios; carvão ativado com o consenso CTRC 2026 desde 09/10/2026)',
+  revisadoEm: '11/11/2026 (azul de metileno na metemoglobinemia pela AHA 2025 e 2023, pedido do RT, opção A; conferência dose por dose com a AHA 2023 e 2025: notas de divergência e recomendações que faltavam, decisão do RT; divergência do Andrews 2023 na digoxina, decisão H7 do RT); 06/11/2026 (nota das AHA 2023/2025 e do consenso da digoxina; revisão PubMed, itens médios; carvão ativado com o consenso CTRC 2026 desde 09/10/2026)',
 }
 
 export type Faixa = [number, number]
@@ -444,6 +444,32 @@ export function pralidoxima(pesoKg: number) {
   if (!valido(pesoKg)) return null
   const p = ORGANOFOSFORADO.pralidoxima
   return { bolusMg: p.bolusMgKg * pesoKg, infusaoMgH: p.infusaoMgKgH * pesoKg }
+}
+
+// ── Metemoglobinemia: azul de metileno (AHA 2025 e 2023) ────────────────────
+// Pedido do RT incluído no backlog em 11/11/2026, opção A
+// (docs/clinico/AZUL-DE-METILENO-ADULTO-DIAGNOSTICO.md). O manual do HC não
+// traz esta linha na ferramenta; a dose é da tabela de antídotos da AHA (texto
+// completo): 1–2 mg/kg IV, repetível a cada hora se necessário, máximo de
+// 7 mg/kg (AHA 2025; 5–7 mg/kg na AHA 2023). Sem volume: nenhuma fonte de
+// adulto lida dá a apresentação.
+export const AZUL_METILENO = {
+  mgKg: [1, 2] as Faixa,
+  maxMgKg: 7,
+  texto: 'Metemoglobinemia com risco de vida: azul de metileno 1–2 mg/kg IV; repetir a cada hora se necessário; dose máxima de 7 mg/kg (AHA 2025; a AHA 2023 dava 5–7 mg/kg). Recomendação classe 1 (B-NR) nas duas diretrizes.',
+  pagina: 'AHA 2025, Tabela 4 (p. S633) e p. S649; AHA 2023, Tabela 2 (p. e155) e p. e167',
+  cuidados: [
+    'Deficiência de G6PD: o azul pode não funcionar ou causar hemólise (AHA 2023).',
+    'Sem resposta ao azul: exsanguineotransfusão ou oxigênio hiperbárico podem ser razoáveis (2b).',
+    'Ácido ascórbico só quando o azul for contraindicado ou não houver (2b, AHA 2025); o efeito é lento.',
+    'N-acetilcisteína não é recomendada na metemoglobinemia (3: sem benefício).',
+  ],
+  volume: 'O volume depende da apresentação: confira a concentração na bula do produto disponível.',
+}
+
+/** Azul de metileno pelo peso: dose de 1–2 mg/kg e o teto de 7 mg/kg (AHA 2025). */
+export function azulMetileno(pesoKg: number): { doseMg: Faixa; maxMg: number } | null {
+  return valido(pesoKg) ? { doseMg: vezes(AZUL_METILENO.mgKg, pesoKg), maxMg: AZUL_METILENO.maxMgKg * pesoKg } : null
 }
 
 // ── Monóxido de carbono e cianeto (p. 1334–1337) ────────────────────────────

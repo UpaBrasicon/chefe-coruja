@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import {
-  ALCOOIS, BCC, BETABLOQUEADOR, BICARBONATO_ERRATA, BICARBONATO_LITIO, BICARBONATO_USOS, CARVAO, CARVAO_CTRC_2026, CARVAO_INDICACAO, CIANETO,
+  ALCOOIS, AZUL_METILENO, BCC, BETABLOQUEADOR, BICARBONATO_ERRATA, BICARBONATO_LITIO, BICARBONATO_USOS, CARVAO, CARVAO_CTRC_2026, CARVAO_INDICACAO, CIANETO,
   DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, NOTA_AHA_INTOXICACOES, NOTA_DIGOXINA_ANDREWS, NOTA_DIGOXINA_CONSENSO, NOTAS_AHA, ORGANOFOSFORADO, PEDIATRICO_CITADO,
-  acidoFolicoMg, atropinaDobrando, bccFigura, bicarbonatoBolus, calcioBccManutencao, carvaoMultiplasDoses, carvaoPorMassaIngerida,
+  acidoFolicoMg, atropinaDobrando, azulMetileno, bccFigura, bicarbonatoBolus, calcioBccManutencao, carvaoMultiplasDoses, carvaoPorMassaIngerida,
   carvaoPorPeso, carvaoTriciclico, etanolEV, fichaIntoxicacoesAdulto, flumazenilBolusMaximos, fomepizol, frascosPorDose,
   frascosPorNivel, gravidadeParacetamol, hidroxocobalaminaProxima, indicacoesNac, insulinaAltaDose, nacEV, nacVO,
   nitritoSodioMg, pralidoxima, tiossulfatoAdultoMl, type Faixa,
@@ -228,6 +228,17 @@ function Organofosforado({ peso }: { peso: number }) {
   )
 }
 
+function Metemoglobinemia({ peso }: { peso: number }) {
+  const a = azulMetileno(peso)
+  return (
+    <Bloco titulo="Metemoglobinemia: azul de metileno (AHA 2025 e 2023)" descricao="O manual do HC não traz esta linha nesta ferramenta; dose da tabela de antídotos da AHA.">
+      <LinhaManual nome="Azul de metileno" texto={AZUL_METILENO.texto} pagina={AZUL_METILENO.pagina} origem="A AHA traz" nota={AZUL_METILENO.volume}
+        conta={a ? <><strong>{faixa(a.doseMg, 0)} mg</strong> por dose · máximo <strong>{br(a.maxMg, 0)} mg</strong></> : PESO} />
+      <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{AZUL_METILENO.cuidados.map((c) => <li key={c}>{c}</li>)}</ul>
+    </Bloco>
+  )
+}
+
 function Cianeto() {
   const [feito, setFeito] = useState(0)
   const h = hidroxocobalaminaProxima(feito)
@@ -267,6 +278,7 @@ export function IntoxicacoesAntidotosAdulto() {
       <Bicarbonato peso={peso} />
       <Alcoois peso={peso} />
       <Organofosforado peso={peso} />
+      <Metemoglobinemia peso={peso} />
       <Cianeto />
     </ToolLayout>
   )

@@ -11,7 +11,7 @@ import * as m from './intoxicacoes.ts'
 const tela = readFileSync('src/pages/plantonista/manual/IntoxicacoesAntidotosAdulto.tsx', 'utf8')
 
 test('AHA: ficha em versão nova, com as duas diretrizes nas fontes', () => {
-  assert.equal(m.fichaIntoxicacoesAdulto.versao, '2026-11-11.2')
+  assert.ok(m.fichaIntoxicacoesAdulto.versao >= '2026-11-11.2')
   assert.ok(m.fichaIntoxicacoesAdulto.fontes.includes(m.AHA_INTOX_2023))
   assert.ok(m.fichaIntoxicacoesAdulto.fontes.includes(m.AHA_ESPECIAIS_2025))
 })
