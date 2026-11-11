@@ -796,6 +796,27 @@
   "publico": "pediatrico"
  },
  {
+  "id": "tetano-raiva-ped",
+  "nome": "Tétano e raiva — criança",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Infecções",
+  "sinonimos": [
+   "pediatria",
+   "tétano",
+   "raiva",
+   "mordedura",
+   "soro antitetânico",
+   "IGHAT",
+   "soro antirrábico",
+   "vacina",
+   "profilaxia"
+  ],
+  "descricao": "Profilaxia no ferimento, vacina pela idade, penicilina por peso e soro antirrábico por UI/kg, só pelo Ministério da Saúde.",
+  "rota": "/plantonista/pediatria/tetano-raiva-ped",
+  "publico": "pediatrico"
+ },
+ {
   "id": "sedacao-procedimento-ped",
   "nome": "Sedação para procedimento — criança",
   "tipo": "conduta",

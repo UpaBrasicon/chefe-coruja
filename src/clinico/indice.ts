@@ -202,6 +202,7 @@ export const ROTA_DA_FICHA: Record<string, string> = {
   'ped-phoenix': '/plantonista/pediatria/phoenix',
   'ped-ten-4-facesp': '/plantonista/pediatria/ten-4-facesp',
   'ped-twist': '/plantonista/pediatria/twist-ped',
+  'ped-tetano-raiva': '/plantonista/pediatria/tetano-raiva-ped',
   'ped-pneumonia': '/plantonista/pediatria/pneumonia-ped',
   'ped-pops-icr': '/plantonista/pediatria/pops',
   'ped-pram': '/plantonista/pediatria/pram',
