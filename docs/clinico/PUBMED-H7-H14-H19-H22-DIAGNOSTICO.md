@@ -39,6 +39,8 @@ Paracetamol, álcoois tóxicos, salicilato e anticolinérgicos **não** estão n
 
 ### Tabela dose por dose
 
+**Atualização de 11/11/2026:** a conferência com o texto completo da AHA 2023 e da AHA 2025 está em `H7-AHA-DOSE-POR-DOSE.md`, com os números de linha atuais. Os números de linha abaixo são da versão `2026-11-06.1` e ficaram antigos.
+
 | Antídoto | Dose no app (arquivo:linha) | Dose na fonte | Confere? |
 |---|---|---|---|
 | N-acetilcisteína VO | 140 mg/kg + 70 mg/kg de 4/4 h por 72 h (`intoxicacoes.ts:171–172`) | Paracetamol fora do escopo da AHA 2023/2025 (pelo resumo) | Sem fonte nova. Não conferido |
