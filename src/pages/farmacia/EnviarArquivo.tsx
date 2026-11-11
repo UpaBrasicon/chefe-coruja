@@ -5,9 +5,10 @@
 // compacto (revisão visual 3.7b): uma linha só, o último arquivo e o botão de
 // enviar à direita, para ficar no topo da Disponibilidade sem cartão.
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Download, Loader2, ShieldCheck, type LucideIcon } from 'lucide-react'
+import { Download, ShieldCheck, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 
+import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { Button } from '@/components/ui/button'
 import { dataHora } from '@/lib/formato'
 import { abrirEmJanela } from '@/lib/abrirEmJanela'
@@ -16,6 +17,9 @@ import { supabase } from '@/lib/supabase'
 type Arquivo = { id: string; nome: string; tamanho: number; caminho: string; enviado_em: string; enviado_por: { nome_completo: string } | null }
 
 const ACEITOS = '.xlsx,.xls,.csv,.doc,.docx,.pdf'
+// o mesmo limite do bucket "farmacia" (migration 20261009000001): o erro aparece antes de enviar
+const LIMITE_BYTES = 20 * 1024 * 1024
+const DESCRICAO = 'Planilha, documento ou PDF, até 20 MB'
 const tamanho = (b: number) => (b < 1024 * 1024 ? `${Math.max(1, Math.round(b / 1024))} KB` : `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} MB`)
 const quando = (iso: string) => dataHora(iso)
 
@@ -65,9 +69,20 @@ export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone, comp
   }
 
   const ultimo = recentes.data?.[0]
-  const campo = (
-    <input type="file" accept={ACEITOS} className="sr-only" disabled={enviando}
-      onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void enviar(f) }} />
+  const area = (
+    <AreaDeAnexo
+      id={`farmacia-${tipo}`}
+      compacto={compacto}
+      className={compacto ? 'ml-auto' : 'min-w-[240px] flex-1'}
+      icone={Icone}
+      titulo={rotulo}
+      dica={compacto ? ajuda : undefined}
+      descricao={compacto ? DESCRICAO : `${ajuda} ${DESCRICAO}.`}
+      accept={ACEITOS}
+      maxBytes={LIMITE_BYTES}
+      ocupado={enviando}
+      onArquivos={(fs) => { if (fs[0]) void enviar(fs[0]) }}
+    />
   )
   if (compacto) {
     return (
@@ -80,25 +95,14 @@ export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone, comp
             </Button>
           </>
         ) : <span className="text-tinta-sussurro">{tipo === 'lista_medicacoes' ? 'Nenhuma lista enviada ainda.' : 'Nenhum padrão enviado ainda.'}</span>}
-        <label title={ajuda} className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio bg-superficie px-2.5 py-1 text-rotulo font-medium text-tinta-apoio transition-colors hover:border-acao hover:text-acao has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
-          {campo}
-          {enviando ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Icone className="size-3.5" aria-hidden />}
-          <span>{enviando ? 'Enviando…' : rotulo}</span>
-        </label>
+        {area}
         {erro && <p role="alert" className="basis-full text-apoio text-critico">{erro}</p>}
       </div>
     )
   }
   return (
     <div className="flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-5 py-3.5">
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-controle bg-acao px-3.5 py-2 text-apoio font-medium text-sobre-acao transition-opacity hover:opacity-90 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
-          {campo}
-          {enviando ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Icone className="size-4" aria-hidden />}
-          <span>{enviando ? 'Enviando…' : rotulo}</span>
-        </label>
-        <span className="min-w-[240px] flex-1 text-apoio text-pretty text-tinta-sussurro">{ajuda}</span>
-      </div>
+      {area}
       {ultimo && (
         <div className="flex flex-wrap items-center gap-2 text-apoio text-conforme">
           <ShieldCheck className="size-4 shrink-0" aria-hidden />

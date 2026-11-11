@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileText } from 'lucide-react'
 import * as React from 'react'
 
+import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -15,7 +16,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { fmtDataHora } from '@/lib/datas'
-import { caminhoLaudo, erroLaudo, PENDENTE, rotuloVersaoResultado, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
+import { caminhoLaudo, erroLaudo, LAUDO_MAX_BYTES, PENDENTE, rotuloVersaoResultado, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
 import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 
@@ -245,10 +246,18 @@ function RegistrarResultado({ exameId, retificar, aceitaFoto, aoFechar, aoGravar
     <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-2.5">
       <Label htmlFor={`res-texto-${exameId}`}>{retificar ? 'Retificar o resultado (fica como versão nova)' : 'Resultado (manual)'}</Label>
       <Textarea id={`res-texto-${exameId}`} rows={3} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Como veio do laboratório" />
-      <label className="flex flex-wrap items-center gap-2 text-rotulo text-tinta-apoio">
-        {aceitaFoto ? 'Laudo ou traçado em PDF, JPG ou PNG (opcional, até 10 MB)' : 'Laudo em PDF (opcional, até 10 MB)'}
-        <input type="file" accept={aceitaFoto ? 'application/pdf,image/jpeg,image/png' : 'application/pdf'} onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} />
-      </label>
+      <AreaDeAnexo
+        id={`res-laudo-${exameId}`}
+        rotulo={aceitaFoto ? 'Laudo ou traçado (opcional)' : 'Laudo (opcional)'}
+        descricao={aceitaFoto ? 'PDF, JPG ou PNG, até 10 MB' : 'PDF até 10 MB'}
+        accept={aceitaFoto ? 'application/pdf,image/jpeg,image/png' : 'application/pdf'}
+        maxBytes={LAUDO_MAX_BYTES}
+        validar={(f) => erroLaudo(f, aceitaFoto)}
+        disabled={gravando}
+        valor={arquivo}
+        onArquivos={(fs) => setArquivo(fs[0] ?? null)}
+        onRemover={() => setArquivo(null)}
+      />
       {retificar && (
         <>
           <Label htmlFor={`res-motivo-${exameId}`}>Motivo da retificação</Label>

@@ -16,9 +16,9 @@ import { BUCKET_JUSTIFICATIVA, caminhoNovoAnexo } from '@/lib/anexoJustificativa
 import { dataPorExtenso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
+import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -234,10 +234,16 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="falta-anexo">Anexo (opcional)</Label>
-                <Input id="falta-anexo" type="file" accept="image/*,application/pdf" onChange={(e) => setAnexo(e.target.files?.[0] ?? null)} />
-              </div>
+              <AreaDeAnexo
+                id="falta-anexo"
+                rotulo="Anexo (opcional)"
+                descricao="PDF ou imagem"
+                accept="image/*,application/pdf"
+                disabled={salvando}
+                valor={anexo}
+                onArquivos={(fs) => setAnexo(fs[0] ?? null)}
+                onRemover={() => setAnexo(null)}
+              />
             </>
           )}
           <div className="flex flex-col gap-1.5">

@@ -26,7 +26,7 @@
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, FileText, Paperclip, Send, Waypoints, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, FileText, Paperclip, Send, Waypoints } from 'lucide-react'
 import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -39,6 +39,7 @@ import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
 import { PainelSla, PrazosCentral, PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
+import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -51,7 +52,7 @@ import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso } from '@/lib/formato'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
-  ANEXO_TIPOS, MOTIVOS_NEGACAO, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
+  ANEXO_LIMITE_BYTES, ANEXO_TIPOS, MOTIVOS_NEGACAO, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
   filtrosParaEnvio, formatarEspera, marcadoresPelaIdade,
   erroArquivo, novosDesde, prioridadeEfetiva, resumoPedido,
   type Carater, type DestinoTipo, type FiltrosFila, type Formulario, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
@@ -305,7 +306,6 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
   // anexos escolhidos antes do envio; sobem logo depois que o pedido é criado
   const [arquivos, setArquivos] = React.useState<File[]>([])
   const [docsEscolhidos, setDocsEscolhidos] = React.useState<string[]>([])
-  const [erroAnexo, setErroAnexo] = React.useState<string | null>(null)
   const set = <K extends keyof Formulario>(k: K, v: Formulario[K]) => setF((x) => ({ ...x, [k]: v }))
 
   const busca = useQuery({
@@ -341,16 +341,6 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
     },
   })
   const totalAnexos = arquivos.length + docsEscolhidos.length
-  function incluirArquivos(lista: FileList | null) {
-    setErroAnexo(null)
-    const novos: File[] = []
-    for (const f of Array.from(lista ?? [])) {
-      const problema = erroArquivo(f)
-      if (problema) { setErroAnexo(`${f.name}: ${problema}`); break }
-      novos.push(f)
-    }
-    setArquivos((x) => [...x, ...novos])
-  }
   const enviar = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.rpc('regulacao_solicitar', {
@@ -384,7 +374,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
     onSuccess: (r) => {
       setEnviada({ numero: r.numero, duplicidade: r.aviso_duplicidade, anexos: r.anexos, falhas: r.falhas })
       setF(FORMULARIO_VAZIO); setCidRotulo(''); setProcRotulo(''); setCboRotulo(''); setPaciente(null); setTermo(''); setMedico('')
-      setNaoIdentificado(false); setVulnerabilidades([]); setArquivos([]); setDocsEscolhidos([]); setErroAnexo(null)
+      setNaoIdentificado(false); setVulnerabilidades([]); setArquivos([]); setDocsEscolhidos([])
       void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
       aoEnviar(r.id)
     },
@@ -609,23 +599,26 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
             <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
+<<<<<<< origin/homolog
                 <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
                   <input type="file" multiple accept={ANEXO_TIPOS.join(',')} className="sr-only"
                     onChange={(e) => { incluirArquivos(e.target.files); e.target.value = '' }} />
                   <Paperclip className="size-3.5" aria-hidden /> Anexar arquivo (PDF, JPG, PNG — até 10 MB cada)
                 </label>
+=======
+>>>>>>> HEAD
               </div>
-              {arquivos.length > 0 && (
-                <ul className="flex flex-col gap-1">
-                  {arquivos.map((a, i) => (
-                    <li key={`${a.name}-${i}`} className="flex items-center gap-2">
-                      <span className="text-tinta">{a.name}</span>
-                      <span className="text-rotulo text-tinta-sussurro">{Math.max(1, Math.round(a.size / 1024))} KB</span>
-                      <Button size="xs" variant="ghost" aria-label={`Tirar ${a.name}`} onClick={() => setArquivos((x) => x.filter((_, j) => j !== i))}><X className="size-3.5" /></Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <AreaDeAnexo
+                id="reg-anexos"
+                multiple
+                descricao="PDF, JPG ou PNG, até 10 MB cada"
+                accept={ANEXO_TIPOS.join(',')}
+                maxBytes={ANEXO_LIMITE_BYTES}
+                validar={erroArquivo}
+                valor={arquivos}
+                onArquivos={(novos) => setArquivos((x) => [...x, ...novos])}
+                onRemover={(i) => setArquivos((x) => x.filter((_, j) => j !== i))}
+              />
               {(documentos.data ?? []).length > 0 && (
                 <fieldset className="flex flex-col gap-1">
                   <legend className="flex items-center gap-1.5 text-rotulo text-tinta-apoio"><FileText className="size-3.5" aria-hidden /> Documentos do prontuário deste paciente</legend>
@@ -639,7 +632,6 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
                   ))}
                 </fieldset>
               )}
-              {erroAnexo && <span role="alert" className="text-rotulo text-critico">{erroAnexo}</span>}
             </div>
 
             {(souGestor || souNir) && (

@@ -13,11 +13,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileText, Loader2, Paperclip } from 'lucide-react'
 import * as React from 'react'
 
+import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { fmtDataHora } from '@/lib/datas'
-import { ANEXO_TIPOS, caminhoAnexo, erroArquivo } from '@/lib/regulacao'
+import { ANEXO_LIMITE_BYTES, ANEXO_TIPOS, caminhoAnexo, erroArquivo } from '@/lib/regulacao'
 import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 
@@ -109,19 +110,22 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
         <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos ({total})</span>
         {l.retirados > 0 && <span className="text-rotulo text-tinta-sussurro">{l.retirados} retirado(s), guardado(s)</span>}
         {l.pode_anexar && (
-          <>
-            <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
-              <input type="file" accept={ANEXO_TIPOS.join(',')} className="sr-only" disabled={enviando}
-                onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void enviar(f) }} />
-              {enviando ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Paperclip className="size-3.5" aria-hidden />}
-              {enviando ? 'Enviando…' : 'Anexar arquivo (PDF, JPG, PNG)'}
-            </label>
-            <Button size="xs" variant="outline" onClick={() => setEscolherDoc(!escolherDoc)}>
-              <FileText className="size-3.5" /> Do prontuário
-            </Button>
-          </>
+          <Button size="xs" variant="outline" className="ml-auto" onClick={() => setEscolherDoc(!escolherDoc)}>
+            <FileText className="size-3.5" /> Do prontuário
+          </Button>
         )}
       </div>
+      {l.pode_anexar && (
+        <AreaDeAnexo
+          id={`reg-anexo-${solicitacaoId}`}
+          descricao="PDF, JPG ou PNG, até 10 MB"
+          accept={ANEXO_TIPOS.join(',')}
+          maxBytes={ANEXO_LIMITE_BYTES}
+          validar={erroArquivo}
+          ocupado={enviando}
+          onArquivos={(fs) => { if (fs[0]) void enviar(fs[0]) }}
+        />
+      )}
       {escolherDoc && <EscolherDocumento solicitacaoId={solicitacaoId} aoFim={() => { setEscolherDoc(false); recarregar() }} />}
       {l.anexos.length === 0 ? <span className="text-rotulo text-tinta-sussurro">Nenhum anexo.</span> : (
         <ul className="flex flex-col gap-1">
