@@ -208,7 +208,9 @@ SELECT e2e.bpasso('b03_ep', 'B03.03.soap', 'f5_med_upa', '/atendimento', 'SOAP c
   format($q$SELECT public.registrar_soap(%L::uuid, 'Dor torácica em aperto há 40 min, sudorese, tabagista (teste B03)', 'FC 96, PA 150x92, SatO2 95%%', 'Síndrome coronariana aguda', 'Transferir pela regulação (decisão do médico de teste pelas fichas)', 'I21.9')::text$q$,
     e2e.u('b03_ep')));
 SELECT e2e.bpasso('b03_ep', 'B03.04.exames', 'f5_med_upa', '/atendimento (Exames)', 'Pede ECG e troponina (urgente)',
-  format($q$SELECT public.pedir_exames(%L::uuid, '[{"procedimento":"0211020036"},{"procedimento":"0202031209"}]'::jsonb, 'urgente', 'SCA (teste B03)')::text$q$, e2e.u('b03_ep')), 'ok', 'b03_exames');
+  -- ECG e laboratório em pedidos separados (RT, 10/11/2026)
+  format($q$SELECT (public.pedir_exames(%1$L::uuid, '[{"procedimento":"0211020036"}]'::jsonb, 'urgente', 'SCA (teste B03)')
+                 + public.pedir_exames(%1$L::uuid, '[{"procedimento":"0202031209"}]'::jsonb, 'urgente', 'SCA (teste B03)'))::text$q$, e2e.u('b03_ep')), 'ok', 'b03_exames');
 SELECT e2e.bpasso('b03_exames', 'B03.04.resultados', 'f5_med_upa', '/atendimento (Exames)', 'Resultados em texto (ECG com supra de ST — dado fictício)',
   format($q$SELECT string_agg(public.resolver_exame(id, 'Resultado de teste em texto (dado fictício)', NULL)::text || 'ok', ',') FROM unnest(%L::uuid[]) id$q$,
     (SELECT array_agg(id) FROM public.exames_pedidos WHERE episodio_id = e2e.u('b03_ep'))));
@@ -283,6 +285,8 @@ SELECT e2e.bpasso('b03_aceita', 'B03.16.nir', 'f5_nir', '/nir', 'NIR: nada parad
     'f5100000-0000-4000-8000-000000000002', e2e.v('b03_reg')));
 
 -- ── 17 a 19. desfecho, saída e chegada ──────────────────────────────────────
+SELECT e2e.bpasso('b03_ep,b03_pac', 'B03.17.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (B03, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (B03, dado fictício).', 'motivo', 'Leito clínico no Hospital F5 pela regulação (teste B03).'))::text, 120)$q$, e2e.u('b03_pac')));
 SELECT e2e.bpasso('b03_ep', 'B03.17.desfecho', 'f5_med_upa', '/atendimento (Desfecho)', 'Desfecho transferência (Hospital F5)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', 'Transferido ao Hospital F5 pela regulação (teste B03)', '{"destino":"Hospital Fase 5"}'::jsonb)::text$q$, e2e.u('b03_ep')), 'ok', 'b03_desfecho');
 SELECT e2e.bpasso('b03_aceita', 'B03.18.enfermeira_nao_marca', 'f5_enf_upa', '/regulacao (Detalhe)', 'Enfermeira tenta marcar a saída (deve ser recusado)',

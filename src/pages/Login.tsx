@@ -243,7 +243,7 @@ export function Login() {
             <section id="painel-primeira-vez" role="tabpanel" aria-labelledby="aba-primeira-vez">
               <TituloEntrada>Não existe cadastro próprio</TituloEntrada>
               <p className="mb-[22px] text-corpo text-pretty text-tinta-apoio">
-                A conta nasce de um convite da unidade ou do contrato da rede. Ninguém se cadastra sozinho: a plataforma lê escala e leito, e só a coordenação sabe quem está nelas.
+                A conta é criada a partir de um convite da unidade ou do contrato da rede, porque só a coordenação sabe quem está na escala e em cada leito.
               </p>
               <ul className="cc-linhas mb-6">
                 <LinhaEntrada titulo="Equipe da unidade">

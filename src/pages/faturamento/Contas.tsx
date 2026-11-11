@@ -268,7 +268,7 @@ function DetalheConta({ id, onTrocar, onFechar }: { id: string; onTrocar: (id: s
                 <li key={i} className="text-tinta-apoio">
                   {fmtDataHora(e.em)} · {EVENTO[e.evento] ?? e.evento}
                   {e.evento === 'pagador' && e.de && e.para ? ` (${PAGADOR[e.de as Pagador]} → ${PAGADOR[e.para as Pagador]})` : ''}
-                  {e.por ? ` · ${e.por}` : ''}{e.motivo ? ` · “${motivoDoEvento(e.evento, e.motivo)}”` : ''}
+                  {e.por ? ` · ${e.por}` : ''}{e.motivo ? ` · "${motivoDoEvento(e.evento, e.motivo)}"` : ''}
                 </li>
               ))}
             </ol>
@@ -414,7 +414,7 @@ function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void 
       )}
       {c.liberacao && (
         <p className="text-rotulo text-tinta-apoio">
-          Fechamento liberado por {c.liberacao.por ?? '—'} em {fmtDataHora(c.liberacao.em)}: “{c.liberacao.motivo}”
+          Fechamento liberado por {c.liberacao.por ?? '—'} em {fmtDataHora(c.liberacao.em)}: "{c.liberacao.motivo}"
         </p>
       )}
       {c.pode_liberar && c.status === 'em_conferencia' && c.bloqueantes_sem_liberacao > 0 && (
@@ -474,7 +474,7 @@ function DocumentosSusConta({ c }: { c: ContaDetalhe }) {
               {a.procedimento && <span className="text-rotulo">{codigoSigtapNaTela(a.procedimento)} {a.nome ?? ''}</span>}
               <span className="text-rotulo text-tinta-sussurro">
                 pedida {fmtDataHora(a.solicitada_em)}{a.decidida_em ? ` · decidida ${fmtDataHora(a.decidida_em)}` : ''}
-                {a.motivo && (a.status === 'rejeitada' || a.status === 'cancelada') ? ` · “${a.motivo}”` : ''}
+                {a.motivo && (a.status === 'rejeitada' || a.status === 'cancelada') ? ` · "${a.motivo}"` : ''}
               </span>
             </li>
           ))}
@@ -499,7 +499,7 @@ function DocumentosSusConta({ c }: { c: ContaDetalhe }) {
                 </span>
               )}
               {a.motivo && (a.status === 'rejeitada' || a.status === 'cancelada') && (
-                <span className="text-rotulo text-tinta-sussurro">“{a.motivo}”</span>
+                <span className="text-rotulo text-tinta-sussurro">"{a.motivo}"</span>
               )}
             </li>
           ))}
@@ -551,7 +551,7 @@ function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMex
                     {m.fora_da_conta && <Badge variant="outline" className="ml-1.5">fora da conta</Badge>}
                     <span className="block text-rotulo text-tinta-sussurro">{m.prescricao}</span>
                     {m.fora_da_conta && m.fora_motivo && (
-                      <span className="block text-rotulo text-tinta-sussurro">“{m.fora_motivo}”{m.fora_por ? ` · ${m.fora_por}` : ''}</span>
+                      <span className="block text-rotulo text-tinta-sussurro">"{m.fora_motivo}"{m.fora_por ? ` · ${m.fora_por}` : ''}</span>
                     )}
                     {m.aviso && !m.fora_da_conta && <span className="block text-rotulo text-atencao">{m.aviso}</span>}
                   </TableCell>
@@ -635,7 +635,7 @@ function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer:
                     </span>
                     {m.observacao && <span className="block text-rotulo text-tinta-sussurro">{m.observacao}</span>}
                     {m.retirado_em && m.motivo_retirada && (
-                      <span className="block text-rotulo text-tinta-sussurro">“{m.motivo_retirada}”{m.retirado_por ? ` · ${m.retirado_por}` : ''}</span>
+                      <span className="block text-rotulo text-tinta-sussurro">"{m.motivo_retirada}"{m.retirado_por ? ` · ${m.retirado_por}` : ''}</span>
                     )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap px-2 py-1.5">{quantidadeNaTela(m.quantidade)} {m.unidade_consumo}</TableCell>

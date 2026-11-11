@@ -11,7 +11,7 @@ const FAQS = [
   {
     pergunta: 'A plataforma é compatível com a LGPD e as normas do CFM?',
     resposta:
-      'Sim. O Chefe Coruja foi construído com conformidade nativa à LGPD (tratamento de dados de saúde como dado sensível) e às diretrizes do CFM para prontuário eletrônico, incluindo trilha de auditoria e controle de acesso por papel.',
+      'Sim. O Chefe Coruja segue a LGPD, com dado de saúde tratado como dado sensível, e as diretrizes do CFM para prontuário eletrônico, com trilha de auditoria e controle de acesso por papel.',
   },
   {
     pergunta: 'Como funciona a escala médica na plataforma?',

@@ -50,16 +50,18 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <a
-            href={`https://wa.me/${BUSINESS.whatsapp}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-event="click_whatsapp"
-            onClick={() => trackWhatsapp()}
-            className="btn-whatsapp"
-          >
-            WhatsApp
-          </a>
+          {BUSINESS.whatsapp && (
+            <a
+              href={`https://wa.me/${BUSINESS.whatsapp}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-event="click_whatsapp"
+              onClick={() => trackWhatsapp()}
+              className="btn-whatsapp"
+            >
+              WhatsApp
+            </a>
+          )}
           <Link href="/contato" data-event="click_demo" onClick={() => trackDemo('header')} className="btn-primary">
             Agendar demonstração
           </Link>
@@ -102,15 +104,17 @@ export function Header() {
               </Link>
             ))}
             <div className="mt-2 flex flex-col gap-2">
-              <a
-                href={`https://wa.me/${BUSINESS.whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackWhatsapp()}
-                className="btn-whatsapp"
-              >
-                WhatsApp
-              </a>
+              {BUSINESS.whatsapp && (
+                <a
+                  href={`https://wa.me/${BUSINESS.whatsapp}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackWhatsapp()}
+                  className="btn-whatsapp"
+                >
+                  WhatsApp
+                </a>
+              )}
               <Link href="/contato" onClick={() => trackDemo('menu-mobile')} className="btn-primary">
                 Agendar demonstração
               </Link>

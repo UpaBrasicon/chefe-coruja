@@ -171,7 +171,7 @@ export default function CadastrosDuplicados() {
               <LinhaCadastro c={p.absorvido} destaque="é absorvido" />
             </div>
             <span className="text-rotulo text-tinta-apoio">
-              Pedido por {p.pedido_por ?? '—'} em {fmtDataHora(p.pedido_em)} · “{p.motivo}”
+              Pedido por {p.pedido_por ?? '—'} em {fmtDataHora(p.pedido_em)} · "{p.motivo}"
               {p.confirmado_no_pedido ? ' · quem pediu confirmou que é a mesma pessoa' : ''}
             </span>
             <AlertaDocumentos divergencias={p.divergencias ?? []} />
@@ -233,7 +233,7 @@ export default function CadastrosDuplicados() {
               {(p.divergencias ?? []).length > 0 && <Badge variant="outline">documentos diferentes ({p.divergencias.join(' e ')}), confirmado</Badge>}
               <span className="text-rotulo text-tinta-sussurro">
                 {p.decidido_por ? `por ${p.decidido_por}` : ''}{p.decidido_em ? ` em ${fmtDataHora(p.decidido_em)}` : ''}
-                {p.motivo_decisao ? ` · “${p.motivo_decisao}”` : ''}{p.motivo_desfazer ? ` · desfeito: “${p.motivo_desfazer}”` : ''}
+                {p.motivo_decisao ? ` · "${p.motivo_decisao}"` : ''}{p.motivo_desfazer ? ` · desfeito: "${p.motivo_desfazer}"` : ''}
               </span>
               {ehGestor && p.status === 'aprovado' && (
                 <Button size="sm" variant="ghost" className="ml-auto" onClick={() => { setDecidindo({ p, acao: 'desfazer' }); setMotivoDecisao('') }}>

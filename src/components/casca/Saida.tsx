@@ -33,7 +33,7 @@ export function DialogoSaida({
 }) {
   const titulo = emPlantao ? 'Sair com o plantão aberto?' : 'Sair do sistema?'
   const texto = emPlantao
-    ? `${fimTurno ? `Seu turno vai até ${fimTurno}. ` : ''}Sair do sistema não encerra o plantão nem faz o check-out — a escala continua no seu nome.`
+    ? `${fimTurno ? `Seu turno vai até ${fimTurno}. ` : ''}Sair do sistema não encerra o plantão nem faz o check-out: a escala continua no seu nome.`
     : 'Você volta para a tela de entrada. Nada do que você já registrou se perde.'
 
   return (

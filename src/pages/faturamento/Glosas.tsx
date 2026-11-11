@@ -173,7 +173,7 @@ export function CartaoGlosa({ g, quem, aoMudar, mostrarConta = false }: {
       </span>
       <span className="text-rotulo text-tinta-apoio">
         {mostrarConta ? `Conta ${g.conta_numero}${g.paciente ? ` · ${g.paciente}` : ''} · ` : ''}
-        competência {competenciaNaTela(g.competencia)} · {MOTIVO_GLOSA[g.motivo_codigo]}{g.motivo_texto ? `: “${g.motivo_texto}”` : ''}
+        competência {competenciaNaTela(g.competencia)} · {MOTIVO_GLOSA[g.motivo_codigo]}{g.motivo_texto ? `: "${g.motivo_texto}"` : ''}
         {g.competencia_recurso ? ` · recurso em ${competenciaNaTela(g.competencia_recurso)}` : ''}
       </span>
       <Button type="button" variant="link" size="xs" className="min-h-0 self-start px-0 underline" onClick={() => setHistorico(!historico)}>
@@ -185,7 +185,7 @@ export function CartaoGlosa({ g, quem, aoMudar, mostrarConta = false }: {
             <li key={i}>
               {fmtDataHora(e.em)} · {EVENTO_GLOSA[e.evento] ?? e.evento}
               {e.competencia ? ` · ${competenciaNaTela(e.competencia)}` : ''}{e.valor != null ? ` · ${reais(e.valor)}` : ''}
-              {e.por ? ` · ${e.por}` : ''}{e.motivo ? ` · “${e.motivo}”` : ''}
+              {e.por ? ` · ${e.por}` : ''}{e.motivo ? ` · "${e.motivo}"` : ''}
             </li>
           ))}
         </ol>

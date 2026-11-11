@@ -103,7 +103,7 @@ export default function FarmaciaGestor() {
               </div>
             ))}
             <div className="bg-campo px-5 py-3 text-apoio text-pretty text-tinta-sussurro">
-              Padrão de diluição e auditoria de prescrição são da farmácia. O gestor vê a consequência: o que falta e o que já foi cotado.
+              Padrão de diluição e auditoria de prescrição são da farmácia. O gestor vê o que falta e o que já foi cotado.
             </div>
           </section>
 

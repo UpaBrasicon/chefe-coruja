@@ -315,7 +315,7 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
               {d!.dispensacoes.map((x) => (
                 <TableRow key={x.id} className="align-top hover:bg-transparent">
                   <TableCell className="px-3 py-2 align-top whitespace-normal">{x.medicamento}</TableCell>
-                  <TableCell className="px-3 py-2 align-top whitespace-normal">{x.paciente ?? `Avulsa: ${x.destino}`}{x.motivo ? <span className="block text-rotulo text-tinta-sussurro">“{x.motivo}”</span> : null}</TableCell>
+                  <TableCell className="px-3 py-2 align-top whitespace-normal">{x.paciente ?? `Avulsa: ${x.destino}`}{x.motivo ? <span className="block text-rotulo text-tinta-sussurro">"{x.motivo}"</span> : null}</TableCell>
                   <TableCell className="px-3 py-2 align-top whitespace-normal">{x.quantidade}{x.devolvido > 0 ? ` (voltou ${x.devolvido})` : ''} {rotuloUnidade(x.unidade_consumo).toLowerCase()}</TableCell>
                   <TableCell className="px-3 py-2 align-top whitespace-normal">
                     {x.dispensada_por ?? '—'}, {fmtDataHora(x.dispensada_em)}

@@ -187,7 +187,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
         <TituloPagina
           icone={BedDouble}
           titulo="Setores e leitos"
-          descricao={<>{unidadeAtiva?.unidade.nome} — gerencie setores e crie leitos em lote.</>}
+          descricao={<>Setores e leitos de {unidadeAtiva?.unidade.nome}. Os leitos podem ser criados em lote.</>}
           acoes={botaoNovoSetor}
           className="mb-0"
         />

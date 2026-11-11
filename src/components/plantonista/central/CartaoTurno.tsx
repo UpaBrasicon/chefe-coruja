@@ -158,7 +158,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
             ) : (
               <Link to="/plantao/check-in" className="flex items-center gap-[5px] text-apoio font-medium text-atencao hover:text-acao">
                 <MapPin className="size-[13px]" aria-hidden />
-                Check-in pendente — fazer agora
+                Check-in pendente: fazer agora
               </Link>
             )}
           </>

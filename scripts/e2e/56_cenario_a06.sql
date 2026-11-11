@@ -336,6 +336,8 @@ SELECT e2e.ba_passo('A06.15.sla', 6, 'f5_ges_upa', '/regulacao (SLA)', 'Painel d
   format($q$SELECT left(public.regulacao_sla_painel(%L::uuid, '{}'::jsonb)::text, 300)$q$, 'f5100000-0000-4000-8000-000000000002'));
 
 -- ── 16 e 17. desfecho do RN e saída ─────────────────────────────────────────
+SELECT e2e.ba(6, 'a06_epRN,a06_rn', 'A06.04.ficha_rn', 'A06.16.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (A06, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (A06, dado fictício).', 'motivo', 'Leito no Hospital F5 pela regulação, com incubadora (teste A06).'))::text, 120)$q$, e2e.u('a06_rn')));
 SELECT e2e.ba(6, 'a06_epRN', 'A06.04.ficha_rn', 'A06.16.desfecho_rn', 'f5_med_upa', '/atendimento (Desfecho)', 'Desfecho transferência do RN, com relato',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', 'Transferido ao Hospital F5 pela regulação, com incubadora (teste A06)', '{"destino":"Hospital Fase 5"}'::jsonb)::text$q$, e2e.u('a06_epRN')), 'ok', 'a06_rn_encerrado');
 SELECT e2e.ba(6, 'a06_rn_encerrado', 'A06.16.desfecho_rn', 'A06.16.sem_contrarreferencia', 'banco', NULL, 'Episódio do RN encerrado, sem contrarreferência (não veio de UBS)',

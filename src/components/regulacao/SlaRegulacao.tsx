@@ -106,7 +106,7 @@ export function PainelSla({ unidadeId, central, detalhe }: {
         </div>
         {painel.error && <p role="alert" className="text-critico">{(painel.error as Error).message}</p>}
         {painel.isLoading ? <Spinner /> : (r?.dados ?? []).length === 0 ? (
-          <Vazio icone={Timer} titulo="Nada esperando decisão" texto="Nenhum pedido com esses filtros." />
+          <Vazio icone={Timer} titulo="Nada esperando decisão com esses filtros" />
         ) : (
           <ul className="flex flex-col divide-y divide-fio">
             {r!.dados.map((s) => {

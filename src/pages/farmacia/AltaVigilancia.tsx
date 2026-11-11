@@ -127,7 +127,7 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
               <span className="text-apoio text-tinta-sussurro">
                 {abaAtual === 'sem' ? 'A enfermagem administrou com justificativa: confira e libere o item'
                   : abaAtual === 'ajustes' ? 'Marcados e desmarcados pela unidade, com motivo'
-                    : termo ? `Cadastro: “${termo}”` : 'ISMP 2019 e ajustes da unidade'}
+                    : termo ? `Cadastro: "${termo}"` : 'ISMP 2019 e ajustes da unidade'}
               </span>
               {abaAtual === 'exige' && (
                 <form className="ml-auto flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); setTermo(busca.trim()); setEscolhido(null) }}>
@@ -250,7 +250,7 @@ function FichaSemLiberacao({ a, unidadeId, podeLiberar }: { a: SemLiberacao; uni
       <dl className="flex flex-col">
         <Campo rotulo="Item">{a.descricao} · {a.dose ?? '—'} · {a.via ?? '—'} · {a.posologia ?? '—'}</Campo>
         <Campo rotulo="Administrado por">{a.administrado_por ?? '—'}, {fmtDataHora(a.administrado_em)}</Campo>
-        <Campo rotulo="Justificativa">“{a.justificativa ?? '—'}”</Campo>
+        <Campo rotulo="Justificativa">"{a.justificativa ?? '—'}"</Campo>
       </dl>
       <MensagemErro texto={liberar.error ? (liberar.error as Error).message : null} />
       {podeLiberar && (
@@ -286,7 +286,7 @@ function FichaItem({ i, unidadeId, podeAjustar, aoMudar }: { i: ItemAltaVigilanc
       <dl className="flex flex-col">
         <Campo rotulo="Por que">{origemAltaVigilancia(i)}</Campo>
         {i.ajuste && i.regra && <Campo rotulo="Na lista do ISMP">{i.regra}</Campo>}
-        {i.ajuste && <Campo rotulo="Motivo">“{i.ajuste.motivo}”</Campo>}
+        {i.ajuste && <Campo rotulo="Motivo">"{i.ajuste.motivo}"</Campo>}
         {i.ajuste && <Campo rotulo="Quem e quando">{i.ajuste.por ?? '—'}, {fmtDataHora(i.ajuste.em)}</Campo>}
       </dl>
       {podeAjustar && !abrindo && (

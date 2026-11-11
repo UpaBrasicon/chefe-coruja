@@ -260,13 +260,13 @@ function LinhaItem({ i, horarios, justificadas, alteracao, aoMudar, aoErro }: {
         <p className="text-rotulo text-atencao">
           Versão {alteracao.versao}, alterada por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
           {resumoMudanca(alteracao.anterior, { dose: i.dose, via: i.via, posologia: i.posologia, se_necessario: i.se_necessario }) || 'observação'}
-          {alteracao.motivo ? ` — “${alteracao.motivo}”` : ''}
+          {alteracao.motivo ? ` — "${alteracao.motivo}"` : ''}
         </p>
       )}
       {i.observacao && <p className="text-rotulo text-tinta-sussurro">{i.observacao}</p>}
       {justificadas.map((j) => (
         <p key={j.outro + j.em} className="text-rotulo text-critico">
-          Interação {j.gravidade} com {j.outro} ({semPontoFinal(j.efeito)}) — justificada por {j.por ?? '—'}: “{j.justificativa}”
+          Interação {j.gravidade} com {j.outro} ({semPontoFinal(j.efeito)}) — justificada por {j.por ?? '—'}: "{j.justificativa}"
         </p>
       ))}
       {i.validacao === 'devolvido' && <p className="text-rotulo text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
@@ -595,7 +595,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               <Input id="idade-estimada" className="h-8 w-28" inputMode="decimal" value={anos} onChange={(e) => setAnos(e.target.value)} />
             </div>
             <Button size="sm" onClick={() => void registrarIdade()}>Registrar idade estimada</Button>
-            <span className="w-full text-rotulo text-tinta-sussurro">Fica no cadastro com a marca “estimada”. A data real, quando chegar, substitui.</span>
+            <span className="w-full text-rotulo text-tinta-sussurro">Fica no cadastro com a marca "estimada". A data real, quando chegar, substitui.</span>
           </div>
         )}
 
@@ -638,7 +638,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 {falta.data && (
                   <span role="note" className="w-full text-rotulo text-atencao">
                     Em falta na farmácia ({falta.data.situacao === 'em_cotacao' ? 'em cotação' : 'sinalizada'}).
-                    {falta.data.retorno ? ` Retorno da farmácia: “${falta.data.retorno.texto}”.` : ' Sem retorno da farmácia ainda.'}
+                    {falta.data.retorno ? ` Retorno da farmácia: "${falta.data.retorno.texto}".` : ' Sem retorno da farmácia ainda.'}
                   </span>
                 )}
               </div>

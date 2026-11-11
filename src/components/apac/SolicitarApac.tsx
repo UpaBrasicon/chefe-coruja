@@ -176,7 +176,7 @@ export function SolicitarApac({ pacienteId, episodioId, internacaoId }: { pacien
               <span className="text-rotulo text-tinta-sussurro">
                 {TIPO_APAC[a.tipo]} · CID {a.cid_principal} · {fmtDataHora(a.solicitada_em)}
                 {a.numero && <> · nº {a.numero} · validade {fmtData(a.validade_inicio!)} a {fmtData(a.validade_fim!)}</>}
-                {a.motivo && <> · “{a.motivo}”</>}
+                {a.motivo && <> · "{a.motivo}"</>}
               </span>
             </li>
           ))}

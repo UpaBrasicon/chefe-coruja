@@ -145,7 +145,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
         </div>
         {pedir.error && <p className="text-apoio text-critico">{(pedir.error as Error).message}</p>}
         <span className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">
-          Escreva com as suas palavras. O pedido fica registrado na unidade e a medida entra no painel quando houver a consulta no banco — até lá ela fica em preparo, sem número.
+          Escreva com as suas palavras. O pedido fica registrado na unidade e a medida entra no painel quando houver a consulta no banco. Até lá, ela fica em preparo, sem número.
         </span>
       </div>
 
@@ -168,7 +168,7 @@ export function PanoramaConfig({ unidadeId }: { unidadeId: string }) {
         </div>
       )}
       <div className="bg-campo px-5 py-3 text-apoio text-tinta-sussurro">
-        A escolha dos painéis vale para você nesta unidade, em qualquer aparelho. Tirar uma medida do Painel do Gestor não apaga o dado — ele continua nesta página.
+        A escolha dos painéis vale para você nesta unidade, em qualquer aparelho. Tirar uma medida do Painel do Gestor não apaga o dado: ele continua nesta página.
       </div>
     </section>
   )

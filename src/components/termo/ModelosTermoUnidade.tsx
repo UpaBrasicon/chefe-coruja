@@ -83,8 +83,8 @@ export default function ModelosTermoUnidade() {
       // a versão nova herda a categoria; no modelo novo, a escolhida no formulário
       if (!r.modeloId && r.categoria !== 'consentimento') await categoria.mutateAsync({ modeloId: id, categoria: r.categoria })
       setAviso(r.modeloId
-        ? id === r.modeloId ? 'Nada mudou no modelo: nenhuma versão nova.' : `“${r.titulo.trim()}” salvo como versão nova. A anterior fica no histórico.`
-        : `Modelo “${r.titulo.trim()}” cadastrado.`)
+        ? id === r.modeloId ? 'Nada mudou no modelo: nenhuma versão nova.' : `"${r.titulo.trim()}" salvo como versão nova. A anterior fica no histórico.`
+        : `Modelo "${r.titulo.trim()}" cadastrado.`)
       setR(VAZIO)
     } catch (e) {
       setErro(mensagemErro(e))
@@ -97,7 +97,7 @@ export default function ModelosTermoUnidade() {
     const nova: CategoriaTermo = ehPaliativo(m) ? 'consentimento' : 'cuidados_paliativos'
     try {
       await categoria.mutateAsync({ modeloId: m.id, categoria: nova })
-      setAviso(`“${m.titulo}” agora é ${nova === 'cuidados_paliativos' ? 'de cuidados paliativos' : 'de consentimento'}.`)
+      setAviso(`"${m.titulo}" agora é ${nova === 'cuidados_paliativos' ? 'de cuidados paliativos' : 'de consentimento'}.`)
     } catch (e) {
       setErro(mensagemErro(e))
     }
@@ -108,7 +108,7 @@ export default function ModelosTermoUnidade() {
     setAviso(null)
     try {
       await ativar.mutateAsync({ modeloId: m.id, ativo: !m.ativo })
-      setAviso(m.ativo ? `“${m.titulo}” desativado: sai da escolha do médico. Os termos já gerados não mudam.` : `“${m.titulo}” reativado.`)
+      setAviso(m.ativo ? `"${m.titulo}" desativado: sai da escolha do médico. Os termos já gerados não mudam.` : `"${m.titulo}" reativado.`)
       if (r.modeloId === m.id && m.ativo) setR(VAZIO)
     } catch (e) {
       setErro(mensagemErro(e))
@@ -191,7 +191,7 @@ export default function ModelosTermoUnidade() {
 
       <div ref={formulario} className="flex flex-col gap-2.5 rounded-container border border-fio bg-superficie p-4">
         <p className="text-corpo font-semibold text-tinta">
-          {editando ? `Editar “${editando.titulo}” (salva como versão ${editando.versao + 1})` : 'Novo modelo'}
+          {editando ? `Editar "${editando.titulo}" (salva como versão ${editando.versao + 1})` : 'Novo modelo'}
         </p>
         {!editando && (
           <Chips rotulo="Categoria do modelo">
@@ -213,7 +213,7 @@ export default function ModelosTermoUnidade() {
         <label className="flex flex-col gap-1 text-apoio font-medium text-grafite">
           Declaração do termo (texto jurídico da unidade)
           <Textarea value={r.declaracao} onChange={(e) => setR((x) => ({ ...x, declaracao: e.target.value }))} rows={3}
-            placeholder="Continua depois de “Eu, [nome], ”. Em branco, sai a frase padrão." />
+            placeholder='Continua depois de "Eu, [nome], ". Em branco, sai a frase padrão.' />
         </label>
         <div className="flex flex-wrap justify-end gap-2">
           {(r.modeloId || r.titulo || r.texto) && (

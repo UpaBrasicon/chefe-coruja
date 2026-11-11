@@ -218,7 +218,7 @@ function AcessosProntuario() {
                         : a.motivo ? <Badge variant="outline">motivo de quem cuida</Badge>
                         : <span className="text-rotulo text-tinta-sussurro">{a.papel === 'gestor' ? 'gestor (sem pedido)' : 'escala'}</span>}
                       {/* Fase 1, tarefa 8: histórico encerrado aberto com motivo */}
-                      {a.motivo && <span className="mt-0.5 block text-rotulo text-pretty text-tinta-apoio">“{a.motivo}”</span>}
+                      {a.motivo && <span className="mt-0.5 block text-rotulo text-pretty text-tinta-apoio">"{a.motivo}"</span>}
                     </TableCell>
                   </TableRow>
                 ))}

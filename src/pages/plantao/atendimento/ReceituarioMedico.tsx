@@ -225,13 +225,9 @@ export function ReceituarioMedico({ unidadeId, perfilId }: { unidadeId?: string;
     else if (!controlados.pronto) pendencias.push('aguardar a lista de medicamentos controlados (carregando)')
     for (const i of rx.itens) {
       const t = i.medicamento_id ? travas[i.medicamento_id] : null
-<<<<<<< origin/homolog
-      if (t) pendencias.push(`${i.medicamento}: bloqueado pela alergia a ${t} — remova o item`)
-=======
       if (t) pendencias.push(`${i.medicamento}: bloqueado pela alergia a ${t}: remova o item`)
       const d = destino(i)
       if (d.tipo === 'fora') pendencias.push(d.aviso)
->>>>>>> HEAD
       if (!i.posologia.trim()) pendencias.push(`como tomar ${i.medicamento}`)
       if (ehControle(i) && !i.quantidade.trim()) pendencias.push(`quantidade de ${i.medicamento} (controle especial)`)
     }

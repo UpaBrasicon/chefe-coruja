@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { track } from '@/lib/analytics'
-import { TEMPO_RESPOSTA } from '@/lib/site'
 
 /**
  * Formulário de contato — validação client-side + honeypot anti-spam.
@@ -20,6 +19,7 @@ export function ContactForm() {
   const [honeypot, setHoneypot] = useState('') // campo escondido — bot não preenche
   const [erros, setErros] = useState<Record<string, string>>({})
   const [enviando, setEnviando] = useState(false)
+  const [falha, setFalha] = useState(false)
 
   function validar() {
     const e: Record<string, string> = {}
@@ -35,33 +35,29 @@ export function ContactForm() {
     if (honeypot) return // bot detectado — ignora silenciosamente
     if (!validar()) return
     setEnviando(true)
+    setFalha(false)
 
-    // Dispara evento de conversão (submit_form) — item 20
-    track('submit_form', { form_id: 'contato', has_telefone: !!telefone })
-
-    const endpoint = process.env.NEXT_PUBLIC_FORM_ENDPOINT
-
-    if (endpoint) {
-      try {
-        await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome, email, telefone, unidade, mensagem }),
-        })
-      } catch {
-        // TODO: registrar falha de envio (ex.: console/erro monitorado)
-        console.error('Falha ao enviar formulário')
-      }
-    } else {
-      // Modo demo: usa a API local /api/contato
-      await fetch('/api/contato', {
+    // Evento de conversão (submit_form, item 20): disparado só depois do envio certo
+    // envia pela rota /api/contato (Resend → contato@chefecoruja.com.br); só vai
+    // para "Mensagem recebida" se o envio deu certo
+    let enviado = false
+    try {
+      const r = await fetch('/api/contato', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, telefone, unidade, mensagem }),
-      }).catch(() => undefined)
+        body: JSON.stringify({ nome, email, telefone, unidade, mensagem, website: honeypot }),
+      })
+      enviado = r.ok
+    } catch {
+      enviado = false
     }
 
     setEnviando(false)
+    if (!enviado) {
+      setFalha(true)
+      return
+    }
+    track('submit_form', { form_id: 'contato', has_telefone: !!telefone })
     router.push('/obrigado')
   }
 
@@ -129,7 +125,7 @@ export function ContactForm() {
           value={telefone}
           onChange={(e) => setTelefone(e.target.value)}
           className={inputClass}
-          placeholder="(62) 99999-9999"
+          placeholder="Com DDD"
           aria-invalid={!!erros.telefone}
         />
         {erros.telefone && <p className="mt-1 text-xs text-red-600">{erros.telefone}</p>}
@@ -168,7 +164,15 @@ export function ContactForm() {
       <button type="submit" disabled={enviando} className="btn-primary disabled:opacity-60">
         {enviando ? 'Enviando…' : 'Enviar mensagem'}
       </button>
-      <p className="text-center text-xs text-slate-500">{TEMPO_RESPOSTA}</p>
+      {falha && (
+        <p role="alert" className="text-center text-sm text-red-700">
+          Não foi possível enviar agora. Tente de novo em instantes ou escreva para{' '}
+          <a href="mailto:contato@chefecoruja.com.br" className="underline">
+            contato@chefecoruja.com.br
+          </a>
+          .
+        </p>
+      )}
     </form>
   )
 }

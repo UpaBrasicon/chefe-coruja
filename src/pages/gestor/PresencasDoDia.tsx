@@ -164,7 +164,7 @@ export function PresencasDoDia() {
                 </div>
                 {p.checkin_justificativa && (
                   <p className="w-full text-rotulo text-tinta-apoio">
-                    Justificativa do check-in: “{p.checkin_justificativa}”
+                    Justificativa do check-in: "{p.checkin_justificativa}"
                   </p>
                 )}
                 {p.liberado_pos_ate && (

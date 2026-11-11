@@ -130,7 +130,7 @@ export default function InternacaoEnfermagem() {
 
       {!carregando && !erro && meusSetores.length === 0 ? (
         <Vazio icone={Users} titulo="Você não está na escala agora"
-          texto="A internação da enfermagem mostra os leitos dos setores em que você está de plantão neste momento." />
+          texto="Aparecem aqui os leitos dos setores em que você está de plantão agora." />
       ) : (
         <div className="flex flex-col gap-[18px]">
           {carregando && <EsqueletoLinhas linhas={4} rotulo="Carregando os leitos…" />}

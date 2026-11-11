@@ -150,7 +150,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
       <header className="flex items-start justify-between gap-3 border-b border-fio px-4 py-3">
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-1.5 text-tinta-sussurro"><Sparkles className="size-3.5 text-acao" aria-hidden /> Perguntar à IA</p>
-          <p className="truncate text-corpo font-semibold text-tinta">“{pergunta}”</p>
+          <p className="truncate text-corpo font-semibold text-tinta">"{pergunta}"</p>
           {publico === 'pediatrico' && <p className="text-apoio text-tinta-sussurro">Pergunta de criança: só fontes pediátricas.</p>}
         </div>
         <Button variant="ghost" size="icon-xs" onClick={onFechar} aria-label="Fechar resposta">

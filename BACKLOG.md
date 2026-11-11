@@ -158,6 +158,10 @@ ECR público ou do ghcr.io (mesmo digest nos três) com o nome que o CLI procura
 `postgres-meta`; os antigos eram ignorados e baixavam três imagens à toa). Tentado no próprio PR e sem
 resolver sozinho: login no ghcr.io, só as novas tentativas e só o ECR ("Data limit exceeded").
 Registro, limites e reversão em `infra/release.md`. Evidência: o job do banco verde no próprio PR da correção.
+Em 27/10/2026 (PR #270, branch `fix/ci-banco-servicos-cache`) o ghcr.io barrou `realtime` e `storage-api`:
+as imagens do gotrue e do storage-api (jobs de migração dos schemas `auth` e `storage`) entram no cache, o
+realtime sai pela config (`SUPABASE_REALTIME_ENABLED=false`) e os contêineres de auth, storage, kong e
+postgrest saem no `-x`, porque os testes só usam o banco.
 
 ---
 
@@ -904,6 +908,8 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 
 **Fase 5 aberta pelo RT em 16/10/2026**, depois do Portão 2 encerrado (PR #125). Primeiro passo, pela ordem técnica abaixo: o RT escolhe o foco (UBS, faturamento ou integrações); as três frentes não andam em paralelo. **Ordem decidida pelo RT em 16/10/2026: 5B Faturamento, depois 5C Integrações, depois 5A UBS.** Estado de partida: o tipo de unidade só aceita hospital, UPA e clínica; não há agenda, CIAP-2, conta do atendimento, TUSS nem webhooks; já existem AIH, BPA-I, BPA-C e APAC (Fase 3), a API de leitura e o checklist da RNDS.
 
+**Encerrada em 05/11/2026** por decisão do RT. Resumo e pendências no fim da seção 5C; evidências em `produto/docs/fase5/ENCERRAMENTO-FASE5.md`.
+
 ### Fase 5A — UBS Mínima
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
 |---|---|---|---|---|
@@ -914,6 +920,11 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 | 5 | P1 | Encaminhamento UBS → UPA/regulação | Criar documento/solicitação; vincular ao paciente; rastrear status | UBS encaminha e acompanha |
 | 6 | P2 | Retorno pós-UPA/hospital | Criar fluxo de contrarreferência; alertar UBS; exibir histórico | UBS recebe retorno do paciente |
 | 7 | P2 | Programas básicos | Hiperdia, pré-natal, puericultura por prioridade comercial | Pelo menos um programa básico funcional |
+
+**5A começada pelo RT em 02/11/2026** ("Começar a 5A"), com a 5C parada só pela credencial da RNDS (5.5b e 5.5c voltam quando ela chegar). Tarefa 1: diagnóstico em `docs/ubs/TAREFA1-TIPO-UBS-DIAGNOSTICO.md`, decisões do RT em 02/11/2026: opção A em D1 a D5 ("Sim, todas A"): tipo `ubs` no enum, cadastro pela tela "Unidades" do Admin, menu sem porta/leito/AIH/APAC numa UBS, gestor sem escrita direta em tipo/nome/ativo/organização, implantação de UBS depois da tarefa 2. Banco (migrations `20270210000001` e `20270210000002`) e menu por tipo na homologação em 02/11/2026, com o rollback testado; migrations na produção em 02/11/2026 (ok do RT; versões, grants e md5 iguais aos da homologação); PR #409 mesclado. Tela de cadastro e edição na aba Unidades da Rede (opção A do RT, 02/11/2026), sem migration. **Tarefa 1 concluída.** Tarefa 2 (atendimento UBS): diagnóstico em `docs/ubs/TAREFA2-ATENDIMENTO-UBS-DIAGNOSTICO.md`, pela Ficha de Atendimento Individual do e-SUS APS (Manual CDS 2.1, MS 2016). Decisões do RT em 02/11/2026: opção A em D1 a D7 ("Sim, todas A"): consulta no mesmo `episodios`, equipe da UBS pela escala com check-in, escuta inicial opcional (CAB 28 conferido na fonte antes), SOAP mais tipo de atendimento, problema/condição e conduta da ficha, setor `consultorio`, sem linha de BPA, mesma tela Atendimento com fila da UBS e aba Conduta. Implementação em quatro partes (2.1 banco, 2.2 recepção e fila, 2.3 janela, 2.4 escuta), cada uma com PR próprio. Parte 2.1 (banco, migrations `20270211000001` e `20270211000002`) na homologação em 02/11/2026, com o rollback testado; na produção em 02/11/2026 (ok do RT; versões, grants e md5 iguais aos da homologação), PR #412. Telas: o RT escolheu em 02/11/2026 a opção C da aba Conduta (busca única com etiquetas), entre três montadas pelo Refero. Parte 2.2 (recepção e fila, migration `20270212000001`) na homologação em 02/11/2026, com o rollback testado, e na produção no mesmo dia com o ok do RT (PR #413). Parte 2.3 (janela da consulta e aba Conduta, sem migration) mesclada em 02/11/2026 (PR #414). Teste de ponta a ponta da consulta na homologação em 02/11/2026. Parte 2.4 (escuta inicial): CAB 28 conferido na fonte (vol. I, p. 34 e 35; vol. II, p. 18 e 19); decisões E1 a E4 do RT na recomendação; banco (migration `20270213000001`) na homologação com o rollback testado e na produção no mesmo dia com o ok do RT (PR #415); tela: o RT escolheu a opção C (grade aguda × não aguda); telas da escuta e fila do médico pela cor mescladas em 02/11/2026 (PR #416), sem migration. **Tarefa 2 concluída em 02/11/2026**, com evidência: testes de banco `5a_atendimento_ubs`, `5a_consultorio_fila`, `5a_consulta_ubs_ponta_a_ponta` (a consulta inteira, com as chamadas das telas e o papel de cada um, rodada na homologação) e `5a_escuta_inicial`; testes de tela; telas conferidas na página de teste. CIAP-2 fica para a tarefa 4. Ainda não feito: a consulta com login na tela da homologação, que fica atrás do login da Vercel; é a primeira coisa a ver quando houver uma UBS de teste com equipe. Tarefa 3 (agenda): diagnóstico em `docs/ubs/TAREFA3-AGENDA-UBS-DIAGNOSTICO.md`, pelo Manual do PEC do e-SUS APS (MS, 2026); decisões do RT em 02/11/2026: A em F1 a F6 (agenda própria por profissional com a escala valendo para atender, gestor configura e todos marcam, chegada abre a ficha ligada ao agendamento, cancelamento e falta como no PEC, reserva e fechamento, atalho da conduta). Partes 3.1 (banco), 3.2 (telas) e 3.3 (atalhos). Parte 3.1 (banco, migration `20270214000001`) na homologação em 02/11/2026, com o rollback testado, e na produção no mesmo dia com o ok do RT (PR #418). Tela: o RT escolheu a opção B (lista do dia e marcação por horários livres). Parte 3.2 (telas da agenda e configuração do gestor, sem migration) mesclada em 02/11/2026 (PR #419). Parte 3.3 (atalhos da conduta e da escuta, sem migration) em 02/11/2026. **Tarefa 3 concluída em 02/11/2026**, com evidência: teste de banco `5a_agenda` rodado na homologação (grade, marcação, chegada ligada, realizado, evasão, falta, cancelamento) e telas conferidas na página de teste. Ainda não feito: a agenda com login na tela da homologação. Tarefa 4 (CIAP-2): diagnóstico em `docs/ubs/TAREFA4-CIAP2-DIAGNOSTICO.md`, pela tabela do LEDI do e-SUS APS (MS, 8.7.0, 686 códigos); decisões do RT em 03/11/2026: A em G1 a G4. Parte 4.1 (banco, migration `20270215000001`) na homologação em 03/11/2026, com o rollback testado, e na produção no mesmo dia com o ok do RT (PR #421). Parte 4.2 (tela da Conduta com a CIAP-2 e a CID relacionada como referência, sem migration) em 03/11/2026. **Tarefa 4 concluída em 03/11/2026**, com evidência: teste de banco `5a_ciap2` rodado na homologação e tela conferida na página de teste. Tarefa 5 (encaminhamento UBS → UPA/regulação): diagnóstico em `docs/ubs/TAREFA5-ENCAMINHAMENTO-UBS-DIAGNOSTICO.md`; decisões do RT em 03/11/2026: A em H1 a H5 (envio à UPA da rede com aviso e prazo de 12 h, regulação aberta da consulta, tela Encaminhados, folha SMS003a com o número, médico e enfermeiro enviam). Parte 5.1 (banco, migration `20270216000001`) na homologação em 03/11/2026, com o rollback testado, e na produção no mesmo dia com o ok do RT (PR #423). Tela Encaminhados: o RT escolheu a opção C (lista e rastreio em etapas). Parte 5.2 (telas: Enviar à UPA na conduta e na escuta vermelha, regulação aberta da consulta, Encaminhados, Vindo da UBS na recepção da UPA e aviso nas Notificações, sem migration) em 03/11/2026 (PR #424). Parte 5.3 (folha SMS003a com o número e o destino da regulação em andamento, sem migration) em 03/11/2026. **Tarefa 5 concluída em 03/11/2026**, com evidência: teste de banco `5a_encaminhamento_upa` rodado na homologação (envio, avisos, chegada, prazo de 12 h, correção, cancelamento e listas), testes de tela e telas conferidas na página de teste. Ainda não feito: o envio com login na tela da homologação. O tipo da unidade na lista da rede foi feito em 05/11/2026 (pedido do RT): migration `20270221000001_unidades_rede_tipo.sql` (expand, `tipo` em `unidades_rede`), homologação com o teste `5a_unidades_rede_tipo` e o rollback testado, produção com o ok do RT, PR #445; o "Enviar à UPA" lista só UPA e hospital. Tarefa 6 (retorno pós-UPA/hospital): diagnóstico em `docs/ubs/TAREFA6-RETORNO-UBS-DIAGNOSTICO.md` em 03/11/2026; decisões do RT em 03/11/2026: A em I1 a I5 (retorno de quem a UBS enviou e de quem tem cadastro nela pelo CNS ou CPF, resumo automático com orientação opcional do médico à UBS, Retornos na tela Encaminhados com aviso e "Agendar retorno", todos os fins de atendimento que encerram o cuidado). Parte 6.1 (banco, migration `20270217000001`) na homologação em 03/11/2026, com o rollback testado, e na produção no mesmo dia com o ok do RT (PR #426). Parte 6.2 (telas: orientação à UBS no desfecho e na alta, aba Retornos na tela Encaminhados com o resumo e "Agendar retorno", retornos na janela da consulta e aviso nas Notificações, sem migration) em 03/11/2026 (PR #427). **Tarefa 6 concluída em 03/11/2026**, com evidência: testes de banco `5a_contrarreferencia` e `5a_retorno_ponta_a_ponta` (a UBS envia, a UPA recebe e dá alta com a orientação, a UBS recebe o aviso, abre o resumo e agenda o retorno) rodados na homologação, testes de tela e telas conferidas na página de teste. Ainda não feito: as telas com login na homologação e o envio à RNDS (espera a credencial). Tarefa 7 (programas básicos): diagnóstico em `docs/ubs/TAREFA7-PROGRAMAS-DIAGNOSTICO.md` em 03/11/2026, pelas notas metodológicas C2 a C5 da SAPS/MS (junho de 2026); decisões do RT em 03/11/2026: A em J1 a J5 (hiperdia primeiro, pelas notas C5 e C4; entrada automática pela consulta, com problema ou CID/CIAP elegível; painel com as boas práticas, a pontuação e "Agendar"; avaliação dos pés na consulta, sem a visita do ACS; painel só para médico, enfermeiro, técnico e gestor). Parte 7.1 (banco, migration `20270218000001`) na homologação em 03/11/2026, com o rollback testado, e na produção no mesmo dia com o ok do RT (PR #429). Tela: o RT escolheu a opção A (cartões e matriz de boas práticas). Parte 7.2 (painel `/hiperdia` e bloco Hiperdia na consulta, com a avaliação dos pés, sem migration) em 03/11/2026 (PR #430). **Tarefa 7 concluída em 03/11/2026**, com evidência: testes de banco `5a_hiperdia` e `5a_hiperdia_ponta_a_ponta` (da escuta com sinais à consulta, com HbA1c e pés, ao painel e à agenda) rodados na homologação, testes de tela e telas conferidas na página de teste. Pré-natal (pedido do RT em 05/11/2026, "Pendências da 5A"): diagnóstico em `docs/ubs/TAREFA7B-PRENATAL-PUERICULTURA-DIAGNOSTICO.md` (PR #447); decisões do RT em 05/11/2026: A em K1 a K6 (pré-natal primeiro; entrada pela consulta com a DUM ou à mão, saída 42 dias depois do fim; ACS, vacina e saúde bucal como "não registrado no app"; painel e bloco na consulta; mesmos papéis do hiperdia; puericultura logo depois). Régua da nota C3 conferida na fonte, com os trimestres do CAB 32. Parte 1 (banco, migration `20270222000001`) na homologação em 05/11/2026, com o teste `5a_pre_natal` e o rollback testado, e na produção no mesmo dia com o ok do RT (PR #448). Tela: o RT escolheu a opção B (linha do tempo da gestação, ref. Wrike Gantt). Parte 2 (painel `/pre-natal`, bloco Pré-natal na consulta com a DUM, o fim da gestação e a saída; migration `20270223000001`, expand, com as datas das consultas para a linha do tempo) em 05/11/2026: migration na homologação com o teste `5a_pre_natal` e o rollback testado, na produção no mesmo dia com o ok do RT (md5 das 16 funções igual ao da homologação), PR #449 mesclado. **Pré-natal concluído em 05/11/2026**, com evidência: teste de banco `5a_pre_natal` (entrada pela consulta com a DUM, à mão, aborto, puerpério, janelas dos trimestres, painel e permissões) rodado na homologação, testes de tela (`src/lib/preNatal.test.ts`) e telas conferidas na página de teste. Puericultura (K6 = A; "Sim, puericultura" do RT em 05/11/2026): régua da nota C2 conferida na fonte (entra toda criança vinculada com até 2 anos, sem CID; consultas com o problema "Puericultura"; peso e altura no mesmo dia; ACS e vacinas fora do app, teto de 60). Migration `20270224000001` (tabela `puericultura_saidas` e RPCs `puericultura_*`) na homologação em 05/11/2026, com o teste `5a_puericultura` e o rollback testado; painel `/puericultura` e bloco Puericultura na consulta, na mesma linha do tempo da opção B. Migration na produção no mesmo dia com o ok do RT (md5 das 7 funções igual ao da homologação), PR #451. **Puericultura concluída em 05/11/2026**, com evidência: teste de banco `5a_puericultura` (entrada pela idade, consultas com o problema "Puericultura", peso e altura no mesmo dia, saída e desfazer, permissões) rodado na homologação, testes de tela (`src/lib/puericultura.test.ts`) e telas conferidas na página de teste. **Tarefa 7 completa (hiperdia, pré-natal e puericultura).** Teste com login na homologação em 05/11/2026, pelo Chrome do RT, como `medico.ubs.f5` na UBS Fase 5:
+- **Pré-natal:** "Ana F5 Gestante" incluída pela busca, com a DUM de 18/06/2026. O painel mostrou 20s0d e a DPP de 25/03/2027, a 1ª consulta com 19 semanas em vermelho, os testes do 1º trimestre pendentes e a pontuação de 0 de 64.
+- **Puericultura:** "Davi F5 Criança", com 2 anos e 1 mês, ficou fora do painel, como manda a régua. A lactente de teste "Lia F5 Lactente", com 3 meses, foi criada na homologação e entrou sozinha no painel. O painel mostrou "sem consulta até o 30º dia" e a pontuação de 0 de 60. "Agendar" abriu a agenda com a criança escolhida e o cuidado continuado.
+Ainda não feito: ACS, vacinas e saúde bucal, que são módulos próprios e ficam fora do app. Incluir pelo painel feito em 05/11/2026 (pedido do RT, sem migration): "Incluir paciente" no painel `/hiperdia`, só para médico e enfermeiro, pela busca do cadastro e por `programa_incluir`. **Fase 5A: as tarefas 1 a 7 estão concluídas em 03/11/2026.** Achado do diagnóstico: o gestor consegue mudar pela API direta o tipo, o nome, o `ativo` e a organização da própria unidade (proposta D4: fechar nesta tarefa).
 
 ### Fase 5B — Faturamento Inicial
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
@@ -928,12 +939,32 @@ com homologação antes de produção. **Todas concluídas e em produção em 16
 
 **5B encerrada pelo RT em 17/10/2026.** Tarefas 1 a 6 em produção (PRs #127 a #136); a 7 adiada. Pendências registradas: materiais (5B-3), importar o retorno do SIA/SIH (5B-6), a pergunta sobre o faturamento ver a tela de AIH (5B-4) e a leitura direta de `conta_medicamentos_fora`. Evidências em `produto/docs/fase5/ENCERRAMENTO-5B.md`. Próxima frente, pela ordem do RT: **5C — Integrações Externas**.
 
+**Pendências da 5B retomadas pelo RT em 05/11/2026** ("Pendências da 5B"). O diagnóstico está em `docs/faturamento/PENDENCIAS-5B-DIAGNOSTICO.md` (PR #452), e as decisões do RT foram A em L1 a L5 ("Sim, todas A").
+- **L1:** `conta_medicamentos_fora` ficou sem leitura direta. Migration `20270225000001` na produção com o ok do RT (PR #453).
+- **L2:** o faturamento não abre a tela de AIH; a conta já mostra as AIHs.
+- **L3:** a homologação tem a configuração de faturamento de teste em `supabase/homolog/faturamento-teste.sql`. O fechamento sem a liberação do gestor foi testado (PR #454).
+- **L4, materiais:**
+  - banco: migration `20270226000001` na produção com o ok do RT, teste `5b_materiais` (PR #455);
+  - telas: na opção A do RT, a página `/faturamento/materiais` com painel lateral e a seção Materiais na conta, sem migration.
+  - **Materiais concluídos em 05/11/2026.**
+  - **Teste com login na homologação em 05/11/2026,** pelo Chrome do RT, como `faturamento.f5`:
+    - o material novo "Gaze estéril teste F5" foi salvo pelo painel lateral;
+    - lançado na conta A-2026.000003, ele gerou o aviso "sem código SIGTAP", com o caminho "onde corrigir";
+    - a retirada com motivo deixou a linha riscada;
+    - o relançamento com 2,5 pacotes ficou certo;
+    - o histórico registrou os três eventos.
+  - **Dois achados pequenos, ainda sem correção:**
+    - o histórico mostra a quantidade com ponto ("2.5 pacote"), enquanto a tabela mostra vírgula;
+    - a quantidade começa em "1", e quem digita sem apagar o campo lança 12,5 em vez de 2,5.
+- **L5:** a importação do retorno do SIA/SIH espera um arquivo real da secretaria de saúde, porque não há layout público. Até lá, a glosa continua à mão.
+- **TISS/TUSS:** continua adiado.
+
 ### Fase 5C — Integrações Externas
 | Ordem | Prioridade | Tarefa | Subtarefas | Critérios de aceite |
 |---|---|---|---|---|
 | 1 | P1 | Integração laboratório/LIS | **Decisões do RT em 18/10/2026 ("1a 2a 3a 4a 5a 6a"):** sem LIS de cliente definido, porta genérica FHIR R4 pela API, com chave por unidade e escopo de exames (adaptador por LIS real depois); catálogo com código (grupo 02.02 do SIGTAP, LOINC quando houver); resultado estruturado como o laboratório mandar (analito, valor, unidade, faixa e marca do laboratório) mais o laudo em PDF, sem interpretação do sistema; situação vinda do LIS (pedido, coletado, em análise, liberado, cancelado com motivo); o registro à mão continua, marcado "manual"; resultado liberado avisa a equipe, crítico só quando o laboratório marcar, retificação vira versão nova com a anterior no histórico. **Etapas, cada uma em PR próprio ("0a"):** 1.1 catálogo de exames; 1.2 resultado e situação; 1.3 porta FHIR na API. **1.1 feita em 19/10/2026 (PR #137, produção no mesmo dia):** lista de exames da unidade pelo gestor sobre o grupo 02.02 (nome curto, LOINC preenchido pela implantação, marca de botão); sem lista, busca no grupo inteiro; botões do pedido rápido vêm da lista; texto livre continua "sem código"; pedido com urgência (rotina ou urgente) e observação; kits ficam para depois. Subtarefas originais: Definir padrão (preferir HL7 v2 ou FHIR, conforme o LIS do cliente); pedido; resultado; status; anexos; auditoria | Exame solicitado retorna resultado no prontuário |
 | 2 | P1 | Integração imagem/RIS/PACS | Pedido; laudo; link/imagem; status | Médico acessa laudo/imagem pelo PEP |
-| 3 | P2 | ERP/financeiro | Exportar conta/produção; conciliar retorno; logs | Dados financeiros enviados a ERP |
+| 3 | P2 | ERP/financeiro | **Decisões do RT em 27/10/2026 ("1a 2a 3a 4a 5a"):** o ERP busca pela API v1, com o recurso novo `financeiro` na chave da unidade, e a tela do faturamento baixa o mesmo conteúdo; vai a conta faturada (cabeçalho, itens guardados no fechamento, total e glosas), do paciente só o prontuário; JSON no contrato da API v1 e CSV com os mesmos campos; o ERP responde por versão ("lancada" com id, data e valor → conciliada ou divergente; nada muda a conta); cada faturamento gera uma versão, reabrir a conta a substitui, o ERP estorna e o faturamento seguinte gera a próxima. **Ajuste do RT no mesmo dia: "o ERP entra tudo: remédio, procedimento, plantões"** — a versão leva também o consumo de medicamentos (sem valor, como na 5B-3); os plantões entram em etapa própria. Telas a partir de referências do Refero. **Etapas, cada uma em PR próprio:** 3.1 banco da conta para o ERP; 3.2 porta na API (Edge Function, OpenAPI, chave com `financeiro`, simulador, `infra/erp-financeiro.md`); 3.3 plantões para o ERP; 3.4 tela do faturamento (versões, conciliação, baixar CSV/JSON). **3.1 na homologação em 27/10/2026:** migration `20270120000001_erp_contas.sql` (tabela `conta_versoes_erp`, gatilhos na conta e na glosa, porta `api_v1_financeiro` só para a Edge Function); teste `supabase/tests/fase5c_erp_contas.sql` e rollback passaram na homologação. O total da versão soma só o que vai ao SUS (a linha do BPA com destino "fora" fica de fora do total e aparece marcada). Subtarefas originais: Exportar conta/produção; conciliar retorno; logs | Dados financeiros enviados a ERP |
 | 4 | P2 | Webhooks | Eventos: paciente criado, atendimento aberto, alta, internação, prescrição, regulação; assinatura HMAC; retry com backoff; idempotência no receptor | Terceiro recebe eventos com segurança |
 | 5 | P2 | e-SUS/RNDS | Implementar conforme credenciais e escopo | Integração validada em ambiente oficial |
 | 5a | P2 | Envio da regulação à RNDS (MIRA) | Exigido pela Portaria GM/MS 9.262/2025 para sistema próprio. Montar o registro MIRA a partir das solicitações de regulação (os campos já são guardados desde a Fase 4, tarefa 1), enviar à RNDS e reenviar ao mudar o status. Decisão do RT de 11/10/2026 | Solicitações de regulação aceitas no ambiente de homologação da RNDS |
@@ -958,9 +989,416 @@ pelo DiagnosticReport; o link do PACS só vale em https e de domínio cadastrado
 tela); a enfermagem segue marcando realizado onde não há RIS; o simulador ganhou `--modo imagem`. A
 função antiga da porta do laboratório saiu (contração). Próxima: **tarefa 3, ERP/financeiro**.
 
+**Tarefa 3, plantões para o ERP (decisões do RT em 27/10/2026, "1a 2a 3a"):** vai o plantão realizado
+com o valor da tabela de remuneração da unidade (setor e turno antes do genérico; parte de plantão
+fracionado proporcional às horas do turno, como na tela de vagas); falta justificada e plantão sem
+presença vão na lista com valor zero; do profissional, nome, CPF, conselho, registro com UF e CBO; o
+gestor fecha o mês depois de acabar, e a correção reabre com motivo e gera a versão seguinte. Ordem
+das etapas ajustada: plantões no banco antes da porta da API, para a porta sair de uma vez com contas
+e plantões (3.1 contas, 3.2 plantões, 3.3 porta, 3.4 telas). **Banco dos plantões na homologação em
+27/10/2026:** migration `20270120000002_erp_plantoes.sql` (`plantao_versoes_erp`,
+`plantoes_erp_previa`, `fechar_plantoes_erp`, `reabrir_plantoes_erp`, só o gestor, com segundo
+fator); teste `supabase/tests/fase5c_erp_plantoes.sql` e rollback passaram na homologação.
+**3.1 e 3.2 no master em 27/10/2026 (PRs #270 e #271).** **3.3, porta da API, na homologação em
+27/10/2026:** rotas `/financeiro/contas` e `/financeiro/plantoes` na Edge Function `api`, com o retorno
+por versão (POST; 409 "conflito" para lançar versão substituída ou estornar a vigente); migration
+`20270120000003_api_financeiro_plantoes.sql` (ações `plantoes` e `plantoes_retorno`); teste
+`supabase/tests/fase5c_api_financeiro_plantoes.sql` e rollback passaram na homologação; regras em
+`supabase/functions/api/financeiro.ts` (teste no CI); OpenAPI e página do integrador; recurso
+"Financeiro (ERP)" na tela de chaves; simulador `scripts/erp-simulador.mjs`; `infra/erp-financeiro.md`.
+Ponta a ponta na homologação com chave temporária (200, 400, 401, 403, 404, 405). **3.1 a 3.3 em produção
+desde 27/10/2026 (PR #279 no master):** o RT aplicou o banco pelo `producao:push` a partir de uma pasta
+limpa do master (`--dry-run` antes, só as três migrations do ERP) e publicou as funções do commit
+`ba78202`; conferido de fora (rotas `/financeiro` respondem 401 sem chave) e pela lista de migrations da
+produção. A 3.4 (telas) está abaixo.
+
 **Pausa da 5C em 20/10/2026 (pedido do RT):** a tarefa 3 (ERP/financeiro) para antes do código, para a
 trilha "Revisão visual", abaixo. As cinco perguntas da tarefa 3 (como chega ao ERP, o que vai, formato,
 conciliação, conta reaberta) ficam feitas e sem resposta; voltam na retomada.
+
+**Retomada em 27/10/2026:** a trilha "Revisão visual" acabou com a grade de ações do gestor; a 5C volta
+pela tarefa 3. Diagnóstico e decisões na linha da tarefa 3, acima.
+
+**Tarefa 3, etapa 3.4 (telas), na homologação em 27/10/2026.** Pedido do RT: "criar o ERP usando o
+Refero". Três opções a partir do Refero (Kitchen.co, Mercury, ShareWillow, Aboard, Stripe); **escolha
+do RT: A, lista com filtro e gaveta.**
+- Tela "Envio ao ERP" (`/faturamento/erp`), no menu do faturamento e no grupo Faturamento do gestor.
+- **Aba Contas** (faturamento e gestor): filtro pela situação no ERP, com contagem; tabela das versões;
+  gaveta da conta com o aviso, as versões, os itens, os medicamentos e as glosas.
+- **Aba Plantões do mês** (só o gestor): o mês com setas, a situação, a tabela por profissional com o
+  total, fechar com confirmação, reabrir com motivo e o histórico das versões.
+- As duas abas baixam CSV e JSON com o mesmo conteúdo que o ERP recebe.
+- **Banco:** migration `20270120000004_erp_telas.sql` (`erp_contas_da_unidade` e `erp_baixar`; cada
+  baixa vai para a auditoria). Teste `supabase/tests/fase5c_erp_telas.sql` e rollback passaram na
+  homologação.
+- **Regras da tela** em `src/lib/erp.ts`, com teste.
+- **Conferida na página de teste** nos dois temas e em 390 px: imagens `erp-A-aplicada-*` em
+  `docs/frontend/revisao-visual/app/`.
+
+**3.4 em produção desde 27/10/2026 (PR #287 no master, `be0ec81`).** O RT conferiu na homologação e
+deu o "ok produção". Banco aplicado pelo RT da pasta limpa do master: `--dry-run` antes, só a
+`20270120000004_erp_telas.sql`. Foi com `npx supabase db push --linked --include-all`, porque a
+produção já tem migrations de número maior (`20270131000001` e `20270131000002`). A tela saiu com o
+merge (Vercel): o pacote publicado em www.chefecoruja.com.br tem a rota `/faturamento/erp` e o trecho
+`EnvioErp`. Sem mudança nas Edge Functions.
+
+**Tarefa 3 (ERP/financeiro) concluída em 27/10/2026.** Aceite "Dados financeiros enviados a ERP":
+contas faturadas e plantões fechados saem pela API v1 (recurso `financeiro`) e pela tela, em JSON e
+CSV, com retorno e conciliação por versão. Detalhes, chaves e reversão em `infra/erp-financeiro.md`.
+Fica para depois: envio ativo (tarefa 4, Webhooks), leiaute de ERP específico, valor de medicamento e
+material, convênio/TISS.
+
+**Tarefa 4, Webhooks (decisões do RT em 27/10/2026, "1a 2a 3a 4a 5a"):**
+- quem entrega é uma Edge Function chamada pelo `pg_cron`, sem IP fixo;
+- o evento é enxuto: tipo, ids, unidade e data. Nenhum dado de paciente sai pelo webhook; o receptor
+  busca o detalhe pela API v1, com a chave dele;
+- os seis eventos do backlog: paciente criado, atendimento aberto, alta (fim do atendimento e alta da
+  internação), internação, prescrição assinada e mudança de status da regulação;
+- o super admin cadastra o destino (endereço https, eventos e unidades), ligado a uma chave da API; o
+  gestor da unidade vê e desliga;
+- assinatura no padrão Standard Webhooks (HMAC-SHA256); novas tentativas com espera crescente por até
+  24 h, depois a entrega fica "falhou", com reenvio manual; o destino que falha há 3 dias seguidos é
+  desligado e o gestor recebe aviso.
+
+Etapas, cada uma em PR próprio: 4.1 banco; 4.2 motor de entrega (assinatura, novas tentativas,
+simulador de receptor); 4.3 tela (a partir do Refero), OpenAPI e `infra/webhooks.md` completo.
+
+**4.1 na homologação em 27/10/2026:** migration `20270201000001_webhooks.sql`.
+- Tabelas `webhook_destinos` (o segredo fica no Vault), `webhook_eventos` e `webhook_entregas` (uma
+  por destino). As três ficam fechadas para o REST; o acesso é só pelas funções.
+- Gatilhos nas cinco tabelas de origem. Eles nunca derrubam o fluxo clínico: sem destino ativo não
+  gravam nada, e qualquer erro vira aviso no log.
+- Funções: `webhook_criar_destino` e `webhook_girar_segredo` (super admin; o segredo aparece uma vez
+  só), `webhook_desligar_destino` (gestor, com motivo), `webhook_religar_destino` (super admin),
+  `webhook_reenviar`, `webhook_destinos_lista` e `webhook_entregas_do_destino`. Todas exigem o segundo
+  fator, e as que mudam algo vão para a auditoria.
+- O endereço só aceita https com nome público (sem IP, localhost ou rede interna).
+- Teste `supabase/tests/fase5c_webhooks.sql` e rollback passaram na homologação, numa transação
+  desfeita.
+
+**4.2 na homologação em 27/10/2026.** Pergunta ao RT: a API v1 não tinha rota para ler prescrição nem
+regulação. Resposta: "Sim: inclua na 4.2 as rotas de leitura de prescrição e regulação na API v1".
+- **Motor:** Edge Function `webhooks`, chamada pelo `pg_cron` a cada minuto pelo `pg_net`. Só é chamada
+  quando há entrega na hora e quando o Vault tem o par `webhooks_motor_url`/`webhooks_motor_segredo`.
+  A função confere o segredo no Vault.
+- **Envio:** assinatura Standard Webhooks, conferida com o vetor oficial no teste. 10 s de limite e
+  sem seguir redirecionamento.
+- **Tentativas:** 5 s, 5 min, 30 min, 2 h, 5 h e 10 h, até 24 h do evento ou do reenvio. Depois disso
+  a entrega fica "falhou".
+- **Manutenção:** o destino sem sucesso há 3 dias é desligado sozinho, e o gestor recebe aviso. Os
+  eventos com mais de 90 dias saem.
+- **API:** `GET /prescricoes/{id}` e `GET /regulacao/{id}`, com os recursos novos "Prescrições" e
+  "Regulação" na chave. Só campos estruturados, sem texto livre clínico. OpenAPI com as duas rotas e
+  a seção `webhooks`; página do integrador atualizada.
+- **Migrations:** `20270201000002_webhooks_motor.sql` e `20270201000003_api_prescricao_regulacao.sql`.
+  O teste `supabase/tests/fase5c_webhooks_motor.sql` e os rollbacks passaram na homologação, numa
+  transação desfeita. O teste da assinatura (`supabase/functions/webhooks/assinatura.test.ts`) e o das
+  rotas rodam no CI.
+- **Ponta a ponta na homologação**, com um receptor de teste (`scripts/webhooks/receptor-teste.ts`,
+  só homologação):
+  - o destino certo recebeu os dois eventos, com a assinatura conferida (204);
+  - o destino com o segredo errado levou 401 e teve nova tentativa com o mesmo `webhook-id`;
+  - o motor chamado sem segredo dá 401;
+  - as rotas novas dão 404 para id inexistente.
+
+  Os dados temporários foram apagados depois. Evidência em `infra/webhooks.md`.
+
+**4.1 e 4.2 no master em 27/10/2026 (PRs #295 e #297).** **4.3, tela, na homologação em 27/10/2026.**
+Três opções a partir do Refero (Lemon Squeezy, fal, Cal.com, Stripe, Zendesk, Enode); **escolha do RT:
+A, lista com gaveta.**
+- Integrações (`/integracoes`) ganhou as abas "Chaves da API" e "Webhooks".
+- **Lista:** os destinos, com os eventos, as unidades, as últimas 24 h e a situação.
+- **Gaveta:** o aviso da situação, os dados do destino, as entregas com "Reenviar", "Desligar" com
+  motivo, e "Religar" e "Trocar segredo" só para o super admin.
+- **Novo destino:** o diálogo é só do super admin, e o segredo aparece uma vez.
+- Sem banco novo: a tela usa as funções da 4.1.
+- **Regras** em `src/lib/webhooks.ts`, com teste. Conferida na página de teste nos dois temas, em
+  390 px e com o papel de gestor (`wh-A-aplicada-*` em `docs/frontend/revisao-visual/app/`).
+
+**4.3 no master em 28/10/2026 (PR #304, `0bc4b5c`). Tarefa 4 em produção desde 28/10/2026.** O RT
+conferiu na homologação e seguiu os comandos da produção.
+- **Banco:** o RT aplicou da pasta limpa do master (`7cc28bc`) as três migrations
+  `20270201000001..03`, com `--dry-run` antes, que listou só as três. A
+  `20270202000001_escala_da_unidade.sql` (#302, de outra tarefa) foi tirada da pasta para o push. Ela
+  entrou na produção à parte, pela sessão da escala, com o "ok produção" dela (PR #306).
+- **Funções:** todas as Edge Functions foram publicadas pela trava de alvo, com a versão `7cc28bc`. A
+  `webhooks` e a `api` são as que mudaram.
+- **Vault:** o par `webhooks_motor_url` e `webhooks_motor_segredo` foi criado. O segredo foi gerado
+  dentro do banco, e ninguém o viu.
+- **Conferido na produção:** as três versões estão registradas e os dois cron estão agendados, com o
+  motor já rodando com sucesso. Os cinco gatilhos `trg_webhook` existem. Ainda não há destino nem
+  entrega. O motor sem segredo ou com segredo errado dá 401, e `/prescricoes/{id}` sem chave dá 401.
+- A tela saiu com o merge (Vercel).
+
+**Tarefa 4 (Webhooks) concluída em 28/10/2026.** Aceite "Terceiro recebe eventos com segurança": os
+seis eventos saem assinados (Standard Webhooks), com novas tentativas por até 24 h, desligamento
+automático com aviso e reenvio manual. O receptor busca o detalhe pela API v1. Detalhes, chaves e
+reversão em `infra/webhooks.md`. Fica para depois: período com dois segredos na troca, IP fixo de
+saída e resolução de DNS antes do envio.
+
+**Tarefa 5, e-SUS/RNDS com a 5a, MIRA (decisões do RT em 28/10/2026, "1a 2a 3a 4a 5a 6a 7a"):**
+- tudo é construído até a porta (documentos, MIRA, serviço de envio contra um simulador), enquanto o
+  gestor de uma unidade-piloto pede a credencial de homologação; a etapa oficial fica por último;
+- ordem: o MIRA primeiro (obrigação da Portaria GM/MS 6.656/2025, envio diário), depois as correções
+  do RAC e do Sumário de Alta;
+- a tarefa fica só com a RNDS; o e-SUS APS vai para a 5A (UBS);
+- o envio sai do VPS, num serviço próprio, separado do Hermes;
+- o validador oficial roda num contêiner local sem rede, só com documentos de teste;
+- cada mudança de status entra na fila na hora, com uma conferência noturna do dia anterior;
+- "em trânsito" vai como agendado, e "realizada" vai como atendido, com a data.
+
+Depois da leitura dos perfis ("8a 9a"): a modalidade é convertida só no documento (leito e
+transferência, 04; consulta e exame, 09), e "aguardando destino" vai como pendente. O modelo oficial
+do MIRA (RIRA) não está na parte pública do Portal de Serviços; por decisão do RT, a base é o
+projeto da RNDS no Simplifier (`BRRegulacaoAssistencial` 1.0), conferido contra o oficial antes da
+homologação.
+
+Etapas, cada uma em PR próprio: 5.1 MIRA (fila e documento); 5.2 correções do RAC e do Sumário de
+Alta, com o validador; 5.3 serviço de envio no VPS, contra o simulador; 5.4 cofre de certificados,
+aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, quando houver credencial.
+
+**5.1 na homologação em 28/10/2026:** migration `20270204000001_rnds_regulacao.sql`.
+- Cada mudança do status MIRA de uma solicitação grava um item `regulacao` na `interop_outbox`, com o
+  retrato dos dados naquele momento. Mudança que não troca o status MIRA não grava nada; o item ainda
+  pendente é descartado quando chega um status mais novo.
+- Paciente não identificado, ou sem CPF e sem CNS, fica fora da fila até ser identificado.
+- O documento (`src/interop/fhir/regulacao.ts`) sai do retrato: Composition, agendamento,
+  requisição e CID. A hora do envio, o identificador na RNDS e a substituição do documento anterior
+  ficam para o envio (5.3). Nada sai da fila.
+- Teste `supabase/tests/fase5c_rnds_regulacao.sql` e rollback passaram na homologação, numa transação
+  desfeita; o teste do documento (`scripts/interop/tests/regulacao.test.ts`) roda no CI. Conversões
+  e pontos a conferir em `docs/rnds/MIRA.md`.
+- No master em 28/10/2026 (#313). **A migration não está na produção:** o RT decidiu esperar
+  (28/10/2026) e só a E2 da escala foi aplicada nesse dia. Ela pede um "ok produção" próprio, depois
+  que o RT conferir a 5.1 e a 5.2 na homologação. Quando for, o push usa `db push --include-all`,
+  porque a `20270202000003` (E2) entrou na produção fora da ordem dos números.
+
+**5.2, correções do RAC e do Sumário de Alta (decisões do RT em 28/10/2026, "todas a"):**
+- o validador oficial, que só tem tela, roda sem ela: uma classe Java pequena chama o motor dele
+  direto, num contêiner sem rede (`eclipse-temurin:17-jre`, fixada por digest);
+- a 5.2 corrige só o documento, com fixtures; a carga do RAC a partir do episódio entra no serviço
+  de envio (5.3), junto da carga do SA;
+- o procedimento obrigatório vem do SIGTAP registrado no atendimento; sem ele, o documento fica
+  retido com o motivo, sem código inventado;
+- a prescrição fica fora do SA, se o perfil permitir; o documento de prescrição (RPM) vai ao backlog;
+- frequência cardíaca e temperatura, fora da lista `BRTipoObservacao-1.0`, ficam fora do documento.
+
+**5.2 no master em 28/10/2026 (#316, branch `fase5/rnds-rac-sa`):**
+- os quatro documentos de teste (RAC com alta e com evasão; SA com alta e com transferência) passam
+  no validador oficial sem erro; antes eram 37 a 46 erros por documento. Relatório em
+  `docs/rnds/evidencia/5.2-validador.txt`;
+- o validador roda pelo `npm run fhir:validar`, sem rede, conferindo o SHA-256 dos arquivos oficiais;
+- o que falta para um documento válido o deixa retido com o motivo, sem nada inventado: procedimento
+  SIGTAP, CBO, CPF/CNS, diagnóstico (RAC), data de fim ou resumo da evolução (SA);
+- as seções vão sem título, porque o validador recusa os títulos fixos do perfil SA (a base os
+  proíbe), como nos exemplos oficiais;
+- sem banco e sem tela. RAC e SA continuam fora do processador até a carga do serviço de envio (5.3).
+  Regras e números em `docs/rnds/VALIDADOR.md`.
+
+**5.3, serviço de envio (decisões do RT em 28/10/2026, "todas a"):**
+- três PRs: 5.3a banco; 5.3b serviço e simulador; 5.3c no VPS;
+- a carga fica em funções no banco, testadas na homologação; o serviço só as chama, com a chave de
+  serviço, sem ler tabela;
+- o financiamento é um padrão por unidade, numa configuração da RNDS que o gestor define (a tela
+  é a 5.4);
+- procedência: "informação ausente" (99, código oficial) na porta; internação vinda de outra
+  unidade é demanda referenciada (12). O campo de procedência na recepção vai ao backlog;
+- o MIRA é assinado por quem mudou o status (regra I5);
+- medidas do RAC: a última PAS, PAD, peso e estatura do episódio, com o LOINC da lista oficial
+  ligado no banco;
+- serviço no VPS em contêiner e usuário próprios, segredos à parte, atualizado do master com o
+  mesmo teste de saúde e volta do Hermes, apontando só para a homologação e o simulador.
+
+**5.3a na homologação em 28/10/2026:** migration `20270205000001_rnds_envio_banco.sql`.
+- Fila: status novo `retido` (falta dado; o motivo fica no item, que volta a ser tentado de hora em
+  hora), quem assina, próxima tentativa, trava do lote, o Bundle enviado e a resposta da RNDS.
+- `rnds_config_unidade`: ambiente, identificador do solicitante, financiamento e envio ligado.
+  Nasce desligada; sem ela ligada, nada da unidade sai.
+- As três funções do serviço: `rnds_pegar_lote`, `rnds_dados_documento` (a carga do RAC, do SA e
+  do MIRA) e `rnds_registrar_resultado` (enviado, retido, nova tentativa até 30 vezes, erro
+  definitivo, credencial recusada, que pausa a unidade).
+- Conferência noturna às 01:00 de Brasília: o que mudou no dia anterior e não entrou na fila entra.
+- Teste `supabase/tests/fase5c_rnds_envio.sql`, o da 5.1 e o rollback passaram na homologação. RAC
+  e SA montados da carga da homologação passam no validador oficial sem erro
+  (`docs/rnds/evidencia/5.3a-carga-homolog.txt`). Regras em `docs/rnds/ENVIO.md`.
+- No master em 28/10/2026 (#325). A migration vai à produção junto com a da 5.1, só com o "ok produção".
+
+**5.3b pronta em 28/10/2026 (branch `fase5/rnds-envio-servico`):** o serviço de envio
+(`services/rnds-envio/`) e o simulador da RNDS.
+- O token sai com TLS mútuo (GET, ou POST se a RNDS responder 405) e é reaproveitado por 30 min.
+  Um 401 no envio pede token novo uma vez. A resposta vira o resultado da fila: 201 enviado; 422
+  erro com a mensagem da RNDS; 5xx, 429 e falta de resposta, nova tentativa; credencial recusada
+  pausa a unidade.
+- Antes de sair, fica retido: produção desligada nesta etapa, unidade sem identificador do
+  solicitante, profissional sem CNS, documento retido pelo mapper e unidade sem certificado.
+- O simulador gera a própria CA de teste e confere token, CNS, tipo, hora, identificador e
+  substituição. Os 18 testes rodam contra ele no CI, com TLS mútuo de verdade.
+- Sem banco e sem tela. O teste ponta a ponta (fila da homologação → simulador) entra na 5.3c, no
+  VPS. Regras em `docs/rnds/ENVIO.md`.
+- No master em 28/10/2026 (#328).
+
+**5.3c pronta em 28/10/2026 (branch `fase5/rnds-envio-vps`):** a subida no VPS, separada do Hermes.
+- Imagem `services/rnds-envio/Dockerfile` (Node 24, só a dependência de execução) e compose com o
+  envio e o simulador: nenhuma porta publicada, sistema de arquivos só leitura, usuário `node`,
+  ligados à homologação e ao simulador.
+- `instalar-rnds.sh` (usuário `rnds`, pastas, `.env.rnds` em branco, cron às 04:10) e
+  `atualizar-rnds.sh` (sobe só quando muda o serviço ou os documentos; teste de saúde pelo ciclo
+  com a fila; volta à imagem anterior se falhar), sem mexer no clone do Hermes.
+- `e2e-homolog.sql` cria a "Rede RNDS E2E (teste)" na homologação e põe RAC, SA e MIRA na fila;
+  conferido numa transação desfeita. O teste ponta a ponta roda no VPS depois do merge, com a chave
+  da homologação posta pelo RT. Passo a passo, chaves e reversão em `infra/rnds-envio.md`.
+- No master em 28/10/2026 (#331). **Instalada no VPS no mesmo dia** (por SSH, com a chave da
+  homologação posta pelo RT): os dois contêineres saudáveis, sem porta no host, cron às 04:10.
+
+**5.3 concluída em 28/10/2026.** Teste ponta a ponta no VPS: RAC, SA e MIRA da "Rede RNDS E2E
+(teste)" saíram da fila da homologação, passaram pelo serviço e voltaram do simulador com 201 e o
+`id_rnds` gravado, com o Bundle e a resposta no item. Antes do certificado de teste, os três ficaram
+retidos com o motivo, como esperado. As outras unidades da homologação, sem configuração, não
+enviaram nada. Evidência em `docs/rnds/evidencia/5.3c-e2e-vps.txt`. Próxima: 5.4 (cofre de
+certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refero).
+
+**5.4, cofre, vencimento, CBO e painel (decisões do RT em 28/10/2026, "todas a"):**
+- o certificado chega pela tela, cifrado no navegador com a chave pública do serviço no VPS; o banco
+  guarda só o cifrado, e a chave privada existe só no VPS;
+- uma credencial (certificado, identificador e ambiente) cobre a unidade principal e as filhas da
+  mesma UF, como no DATASUS;
+- aviso no sino aos gestores a 30, 15, 7 e 1 dia do vencimento; vencido, o envio pausa sozinho;
+- ERR906/ERR879 bloqueia o profissional; os documentos dele ficam retidos até o gestor desbloquear;
+- painel numa aba "RNDS" em Integrações;
+- o gestor configura, envia o certificado e cuida da fila; passar para a produção, só o super admin;
+- três PRs: 5.4a banco; 5.4b serviço; 5.4c tela (opções do Refero antes).
+
+**5.4a na homologação em 28/10/2026:** migration `20270206000001_rnds_cofre_banco.sql`.
+- `rnds_credenciais` (cofre cifrado; titular, documento e validade lidos pelo serviço),
+  `rnds_chaves_publicas` (a chave do serviço; só uma ativa) e `rnds_bloqueios`.
+- A carga leva a credencial e retém o profissional bloqueado; o resultado ERR906/ERR879 bloqueia
+  (ERR906 em todas as unidades da credencial) e a recusa da credencial avisa os gestores.
+- Avisos de vencimento às 08:00; vencido pausa as unidades da credencial.
+- Funções do painel, com 2FA e auditoria: painel, fila, reenviar, configuração, retomar,
+  credencial, ambiente (só super admin), enviar certificado e desbloquear. Funções do serviço:
+  publicar a chave, buscar o cifrado e gravar o que leu.
+- Teste `supabase/tests/fase5c_rnds_cofre.sql`, os da 5.3a e da 5.1 e o rollback passaram na
+  homologação. O serviço no VPS seguiu saudável com a migration aplicada.
+
+**5.4b no VPS e na homologação em 29/10/2026:** o serviço abre o cofre.
+- Chave RSA 3072 gerada no VPS, montada só para leitura e incluída no backup; a pública é publicada
+  ao subir. O formato do cofre (`src/interop/rnds/cofre.ts`, WebCrypto) é o mesmo para a tela da 5.4c.
+- O serviço lê o .pfx com o openssl (com `-legacy` para os A1 com RC2), grava titular, CNPJ/CPF,
+  validade e impressão, e retém o documento quando o certificado não presta ou venceu.
+- Migration `20270207000001_rnds_cofre_leitura.sql`: o certificado que acabou de chegar é lido no
+  ciclo seguinte, mesmo com o envio desligado.
+- Ponta a ponta no VPS: senha errada retida com o motivo; senha certa lida como válida e o RAC
+  enviado com o certificado do cofre. Evidência em `docs/rnds/evidencia/5.4b-cofre-vps.txt`.
+  Próxima: 5.4c, a tela (opções do Refero antes).
+
+**5.4c, a aba RNDS em Integrações (escolhas do RT em 29/10/2026, "todas a"):**
+- Desenho A (estado no topo), com o certificado num diálogo que cifra no navegador.
+- A fila mostra os últimos 50, com filtro.
+- A produção é confirmada digitando o nome da credencial.
+- O sino ganha a categoria "RNDS".
+- Sem migration: usa as funções da 5.4a. Tela em `src/pages/admin/RndsAba.tsx`, regras em `src/lib/rnds.ts`.
+- Conferida na página de teste (dois temas, cinco cenários, diálogos, 390 px). A cifra feita no navegador abriu
+  no Node com a chave privada.
+- Pendente: os nomes de 02 a 06 e 08 da tabela `BRFinanciamento`, que aparecem só pelo código.
+
+**Banco da RNDS na produção em 29/10/2026** ("ok produção" do RT): as migrations `20270204000001`, `20270205000001`,
+`20270206000001` e `20270207000001`, em ordem, cada uma numa transação, com a versão registrada.
+- Conferido: 17 funções públicas e 15 privadas, as quatro tabelas com RLS e os crons `rnds-conferencia-noturna` e
+  `rnds-avisos-certificado`, iguais aos da homologação.
+- Nenhuma credencial e nenhuma unidade com o envio ligado.
+- O serviço no VPS segue ligado só à homologação; até a 5.5, os itens da produção ficam pendentes na fila.
+
+**5.4 concluída em 29/10/2026:** banco, serviço e aba RNDS em produção (#335, #336, #338).
+
+**5.5, homologação oficial (decisões do RT em 29/10/2026, "todas a"):**
+- uma unidade piloto real, indicada pelo RT;
+- primeira leva com RAC e Sumário de Alta; o MIRA espera a resposta do chamado;
+- os testes na homologação oficial usam pacientes fictícios da nossa homologação;
+- a evidência é montada pelo sistema a partir do item enviado;
+- os campos técnicos do formulário são preparados por nós, e o gestor só copia;
+- o chamado ao DATASUS é redigido por nós e aberto pelo RT;
+- a produção da RNDS, depois da aprovação, faz parte da 5.5 (5.5c);
+- o simulador fica só para a unidade de teste.
+
+Partes: 5.5a, o que fica pronto antes da credencial; 5.5b, os testes na homologação oficial, a evidência e o
+pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
+
+**5.5a em 29/10/2026:**
+- O simulador recebe só a unidade de teste (`RNDS_SIMULADOR_UNIDADES`).
+- A resposta da RNDS guarda os headers.
+- `npm run rnds:evidencia` monta o PDF da evidência (validador, resposta 201 e Bundle). Testado com o RAC da
+  unidade de teste: 5 páginas, 54 KB.
+- `docs/rnds/FORMULARIO-CREDENCIAL.md` traz os campos do formulário; os números da unidade saem de
+  `volumes-unidade.sql`.
+- `docs/rnds/CHAMADO-DATASUS.md` traz o texto do chamado.
+- Falta o RT indicar a unidade piloto.
+
+**Fase 5 encerrada pelo RT em 05/11/2026.** 5A (tarefas 1 a 7), 5B (tarefas 1 a 6 e as pendências L1 a L4)
+e 5C (tarefas 1 a 4) estão em produção; o Portão da Fase 5 foi fechado no mesmo dia, com os achados das
+telas corrigidos. Ficam fora, esperando algo de fora: RNDS 5.5b e 5.5c (unidade piloto e credencial do
+DATASUS), importar o retorno do SIA/SIH (L5, arquivo real da secretaria) e TISS/TUSS (cliente de
+convênio). Evidências em `produto/docs/fase5/ENCERRAMENTO-FASE5.md`. A próxima frente só começa quando o
+RT mandar.
+
+---
+
+## Portão da Fase 5 — teste de ponta a ponta com login (pedido do RT em 03/11/2026)
+
+**Pedido do RT em 03/11/2026**, com a 5A concluída ("Portão da Fase 5"). Todas as tarefas da UBS fecharam sem ver as telas com login na homologação; esta rodada cobre isso e o resto da Fase 5. Decisões do RT em 03/11/2026: **A em K1 a K3**.
+
+- **Escopo (K1 = A):** a Fase 5 inteira e a regressão do fluxo da UPA pelos scripts de `scripts/e2e/`.
+  - UBS (5A, tarefas 1 a 7);
+  - faturamento (5B): conta, procedimentos, medicamentos, AIH/APAC, pré-auditoria e glosas;
+  - integrações (5C): API de laboratório, imagem e ERP, e webhooks.
+- **Ambiente (K2 = A):** homologação (Supabase `kswurfyx`).
+  - No banco, cada etapa roda como o papel, por SQL e com RLS ligado, como na Rodada 2.
+  - Nas telas, o master atual é publicado na homologação. O RT libera o link de compartilhamento da Vercel para `homolog.chefecoruja.com.br`, e as telas são percorridas no navegador embutido com as contas de teste, por papel, no computador e no celular.
+- **Cenário (K3 = A):** rede de teste nova na homologação.
+  - UBS, UPA e hospital de teste na mesma organização, com CNES fictícios;
+  - uma conta fictícia por papel, com a senha definida pelo RT e fora do repositório;
+  - coorte de cerca de 12 pacientes de APS: hipertenso, diabético, gestante, criança, escuta vermelha enviada à UPA, envio que não chegou em 12 h, evasão na UPA, internação com alta e retorno, alta desfeita, regulação de consulta pela conduta, cancelamento e paciente com cadastro em duas UBS.
+- **Regra:** nada é corrigido durante a rodada. Primeiro vem o relatório, com os defeitos por severidade; o RT decide a ordem das correções.
+- **Entregáveis:**
+  - `produto/docs/teste-e2e/RELATORIO_E2E_FASE5_AAAA-MM-DD.md`;
+  - os scripts e seeds da rodada em `scripts/e2e/` (de `40_` em diante);
+  - as perguntas de produto para o RT.
+- **Fica com o RT:** o link da Vercel, a senha das contas de teste e o segundo fator nas telas.
+- **Parte de banco feita em 03/11/2026.** Relatório em `produto/docs/teste-e2e/RELATORIO_E2E_FASE5_2026-11-03.md`; scripts de `scripts/e2e/40_` a `45_`.
+  - UBS: 75 passos ok, 2 lacunas conhecidas (pré-natal e puericultura) e 4 ajustes.
+  - Faturamento: 15 ok.
+  - Integrações: 10 de 16 testes passam na homologação; os outros 6 dependem do seed local e passam no CI.
+  - Regressão da UPA, refeita com o ok do RT: apaguei a Rede E2E sem os logins. T2 a T6 sem falha.
+    - Quase todas as falhas da coorte, do T1 e do T7 vêm dos scripts antigos, que prescrevem sem o peso do atendimento, regra do Portão 2.
+    - **Roteiros atualizados com o ok do RT (04/11/2026)** e regressão repetida do zero na homologação, de `01` a `23`, com a carga (`16`): **532 ok, 0 falhas**, 12 lacunas e 12 ajustes conhecidos. Antes eram 440 ok e 60 falhas.
+      - `11`: peso aferido dos pacientes 3 a 14 antes de prescrever; o #15 ganha idade e peso estimados, e a recusa sem eles vira passo próprio.
+      - `17`: peso no `t1_porta`, que o `23` também usa.
+      - O `T7.aviso_enfermeiro` depende dos pacientes sem leito da carga (`16`), que a rodada de 03/11 pulou.
+    - `11.historico_pedido` era erro do roteiro, não do produto. O gestor já lê sem pedido o prontuário de todo paciente da unidade, inclusive o histórico encerrado.
+      - Em 04/11/2026 o RT decidiu "gestor pede". Na homologação, o pedido da gestora caiu em "Você já tem acesso a este paciente pela escala". A migration foi desfeita lá, e o RT cancelou a mudança.
+      - O passo do `15_gestor_transversais.sql` foi corrigido: o pedido do gestor é recusado, e ele lê o resumo e o atendimento encerrado direto. Rodado na homologação: 4 ok.
+    - `6.aviso_gestor_24h`, investigado em 04/11/2026: não é defeito. O aviso de destino sem resposta vai à central e ao destino, como decidiu a tarefa 9 da Fase 4. A gestora da origem vê o atraso no painel da regulação (`destino_atrasado = 1`).
+      - **Decisão do RT em 04/11/2026: fica assim** (fecha a pergunta 3 da Rodada 1). O passo do `14_coorte_regulacao_alta.sql` passa a conferir o selo no painel da origem; rodado na homologação, ok.
+  - **Defeito F5-01 (P0 de segurança):** o papel vazio liberava a leitura de outra unidade em nove funções. Corrigido com o ok do RT (migration `20270219000001`, PR #432, produção em 03/11/2026).
+  - **Telas feitas em 04/11/2026** pelo link de compartilhamento da Vercel, no Chrome do RT (no navegador do app, a verificação da Cloudflare reprova o login automatizado, como deve).
+    - Passou pela tela: recepção, escuta, consulta com CIAP-2 e hiperdia, envio à UPA, chegada, triagem, alta com orientação, retorno na UBS, agenda pelo painel do hiperdia e contas do faturamento.
+    - Achados, nenhum P0 (detalhe no relatório):
+      - **F5-T2 (P1):** o adulto não tem campo de altura na consulta da UBS, e o item "peso e altura" do hiperdia nunca fecha pela tela.
+      - **F5-T3 (P2):** a aba Conduta perde o problema e as condutas ao trocar de aba.
+      - **F5-T1 (P2):** textos da UPA na consulta da UBS ("Prescrição do Pronto-Socorro", aviso de internados, salas de emergência).
+      - **F5-T4, F5-T5 (P3):** "Chegou" sem ficha não liga o envio à ficha; a busca de fluxograma não acha "Dor na coluna" por "dor nas costas".
+      - **F5-T6 (pergunta):** o cadastro oferece raça/cor "Sem informação", que o BPA-I não aceita mais.
+  - **Portão da Fase 5 fechado pelo RT em 05/11/2026.** Correções dos achados das telas, nesta ordem, cada uma em branch e PR próprios com homologação antes:
+    1. F5-T2: altura do adulto na consulta da UBS. **Feito, PR #434, produção em 05/11/2026.** A escuta da UBS pede a altura (cm). O bloco do hiperdia da consulta registra peso e altura quando o item está pendente.
+    2. F5-T3: a aba Conduta guarda o estado ao trocar de aba. **Feito, PR #435, produção em 05/11/2026.** Conduta e Desfecho ficam montadas (`keepMounted`).
+    3. F5-T1: textos da UPA na consulta da UBS. **Feito, PR #436, produção em 05/11/2026.** A prescrição não fala em pronto-socorro, e o encaminhamento interno oferece só consultório e sala de procedimentos.
+       - O aviso "Plantão noturno em andamento" vem do banco (`gerar_notificacoes_turno`) e só aparece com escala da noite na UBS. Ficou como está, porque pede migration.
+    - As três são só de tela, sem migration. Os testes passaram, e cada uma foi conferida na página de teste.
+    4. F5-T4: "Chegou" na recepção da UPA só registra com a ficha escolhida. **Feito, PR #438, produção em 05/11/2026.** Sem ficha aberta no dia, o diálogo orienta abrir em Nova ficha. Ligar a ficha depois pediria migration, e a regra do H1 já manda abrir a ficha antes.
+    5. F5-T5: a busca de fluxograma acha "Dor na coluna" por "costas" e "lombar". **Feito, PR #439, produção em 05/11/2026.**
+    - T4 e T5 pedidos pelo RT em 05/11/2026, só de tela, sem migration. Testes passaram, e o T4 foi conferido na página de teste.
+    6. F5-T6: raça/cor "Sem informação" sai do cadastro (decisão do RT em 05/11/2026: "tirar"). **Feito, PR #441, produção em 05/11/2026.** O formulário oferece só as cinco categorias do IBGE; cadastro antigo com "Sem informação" mostra aviso para perguntar ao paciente. O banco não muda: tirar o valor do CHECK pediria migration.
+    7. Aviso de turno na UBS (resto do F5-T1). **Feito, PR #443, produção em 05/11/2026** (ok do RT). Migration `20270220000001_aviso_turno_ubs.sql`: `private.aviso_fixo_turno` devolve os quatro avisos fixos de turno (internados e observação) só fora da UBS; na UPA e no hospital, mesmos textos e horários. Homologação com o teste `f5_aviso_turno_ubs` e o rollback testado; na produção, md5, grants e versão iguais aos da homologação.
+    - **Todos os achados das telas do portão da Fase 5 estão resolvidos.**
 
 ---
 
@@ -1100,8 +1538,8 @@ hora, com ordenação pelo título da coluna. Registro e imagens em `docs/fronte
 
 | Prioridade | Item | Onde entra | O que é |
 |---|---|---|---|
-| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco). **Em andamento:** diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`; decisões D1–D5 aceitas pelo RT em 27/10/2026 (aba em Porta; só triagem e atendimento; "No PS" vermelho pelo alvo da cor antes do médico e pelo alvo de permanência da unidade depois; alvos de classificação, exame, medicação e permanência por unidade, sem valor padrão; chamada repetida com a hora da última e quantas vezes). Banco: `porta_grade` aplicada na homologação em 27/10/2026, teste `supabase/tests/porta_grade.sql` passou lá, 80 pacientes em ~10 ms, rollback (`DROP FUNCTION`) testado. Falta: tela onde a unidade define os alvos novos, desenho da grade (Refero) e frontend | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
-| P2 | Fila do PS com dados novos na tabela | A decidir pelo RT | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
+| P1 | Grade de ações no gestor | **Depois da 3.9, como item próprio** (decisão do RT em 27/10/2026: pede consulta nova no banco). **Em produção desde 27/10/2026** (diagnóstico #260, banco #261, tela #264, desenho #265). Diagnóstico em `docs/gestor/GRADE-ACOES-DIAGNOSTICO.md`; decisões D1–D5 aceitas pelo RT (aba em Porta; só triagem e atendimento; "No PS" vermelho pelo alvo da cor antes do médico e pelo alvo de permanência da unidade depois; alvos de classificação, exame, medicação e permanência por unidade, sem valor padrão; chamada repetida com a hora da última e quantas vezes). Banco: `porta_grade`, testada na homologação (`supabase/tests/porta_grade.sql`; 80 pacientes em ~10 ms; rollback testado) e aplicada na produção pelo RT com `producao:push` (conferida de fora: a chamada sem login é recusada por permissão, e não por "função não encontrada"). Tela: aba "Grade de ações" na Porta, desenho B (tabela com faixa, Zendesk Status + Symphony), conferida pelo RT na homologação; produção conferida pelo pacote publicado. **Alvos da grade em produção desde 27/10/2026 (PR #267):** em Unidade › Configurações › Limites da unidade, o gestor define exame, medicação e permanência (em branco = sem alvo; `salvar_alvos_grade`, só o gestor, com segundo fator, auditado); a coluna Classificação usa o alvo chegada → triagem que a unidade já tinha (padrão 10 min; decisão do RT, um alvo só para a mesma coisa). Teste `supabase/tests/alvos_grade.sql` passou na homologação; RT conferiu lá; banco aplicado na produção pelo RT e conferido de fora; tela conferida pelo pacote publicado. **Grade de ações concluída** | Modelo do Symphony (Reino Unido): uma linha por paciente e uma coluna por etapa do atendimento (classificação, chamada, atendimento, exames, medicação, reavaliação, desfecho), com a hora de cada uma; preto feito, verde pedido, vermelho atrasado; tempo no PS em vermelho acima do alvo da cor. Desenho com referência do Refero quando a 3.9 chegar (maquete `ps-modelo-4-*.jpg`). |
+| P2 | Fila do PS com dados novos na tabela | **Decisão do RT em 27/10/2026, depois do diagnóstico (`docs/porta/FILA-PS-DADOS-NOVOS-DIAGNOSTICO.md`, PR #276) e de ver as opções A, B e C:** a fila fica como está, sem as colunas novas (a RPC `fila_ps_detalhes`, PR #278, foi fechada sem merge e removida da homologação). Entram só: o **consultório do plantão**, escolhido uma vez numa barra no topo da fila e guardado no banco (`salas_do_plantao`, vale até o fim do plantão, não depende do aparelho; as linhas ficam só com "Chamar" e "Abrir"), e o **alvo da cor da unidade** na fila do médico, no lugar do alvo fixo de Manchester (achado do diagnóstico). **Em produção desde 27/10/2026 (PR #281):** teste `supabase/tests/salas_do_plantao.sql` passou na homologação; banco aplicado na produção com o "ok produção" do RT e conferido de fora (as duas RPCs respondem "sem permissão" sem login, e não "não encontrada"); tela conferida pelo pacote publicado. **Item concluído** | Colunas de alergia, sala, médico responsável, exames (prontos de pedidos) e medicação (pedida, feita), como nos quadros de rastreamento dos rivais. Pede consultas novas: diagnóstico de banco e RPC antes do frontend. |
 
 **3.8 antecipada (Central do Plantonista, calculadoras, escores e condutas) em produção desde
 23/10/2026 (PR #179 e #180).** A pedido do RT, veio antes da 3.4. Levantamento das 212 ferramentas e
@@ -1313,12 +1751,13 @@ Ficaram pendentes do lote 1, à espera do RT:
 - **Dor na criança:** as fontes divergem de `src/clinico/triagem/dor.ts`. Escala numérica a partir de 6 anos (o app usa 4), FPS-R a partir de 4–5 anos, FLACC validada de 2 meses a 7 anos (o app usa até 3). O RT decide a faixa de cada escala.
 
 **Decisões do RT sobre as pendências dos lotes 1 e 2 (27/10/2026):**
-- **Dor na criança — resolvida, em homologação** (branch `feat/lacunas-dor-crianca`). FLACC de 2 meses
+- **Dor na criança — em produção desde 27/10/2026** (PR #289; homologação conferida pelo RT). FLACC de 2 meses
   a 5 anos e autorrelato 0–10 a partir de 6 anos, sem escala nova. Fontes: Merkel 1997 (PMID 9220806),
   FLACC validada de 2 meses a 7 anos; Birnie 2019 (PMID 30180088), nenhuma escala de autorrelato
   recomendada antes dos 6 anos. Vale na triagem e nas escalas do leito, que usam a mesma faixa.
-  Versões 2026-10-27.1 da FLACC e da numérica na fila de aprovação (migration
-  `20270131000003_lacunas_dor_crianca`).
+  Migration `20270131000003_lacunas_dor_crianca` aplicada na homologação e, com o "ok produção" do
+  RT, na produção. Falta aprovar as versões 2026-10-27.1 da FLACC e da numérica na tela de revisão
+  clínica.
 - **Escala Clínica de Fragilidade — fora por ora.** Os nomes dos nove níveis foram confirmados
   (Rockwood e Theou 2020, PMID 32904824, nível 2 "Fit" e nível 8 "Living with Very Severe Frailty").
   A Dalhousie exige licença para uso comercial, possivelmente paga (página "Permission for Use" do
@@ -1328,7 +1767,9 @@ Ficaram pendentes do lote 1, à espera do RT:
   abertos trazem só os máximos de cada item (face 0–2, braço 0–2, perna 0–2, olhar 0–1, afasia ou
   agnosia 0–2), sem a definição de cada ponto. Volta quando houver o PDF do artigo.
 - **Escore STONE — fora** (item de raça), como o escore de Son no lote 3.
-- **ITU do adulto — grupo novo "Infecções"** nas condutas do adulto (próximo item).
+- **ITU do adulto — grupo novo "Infecções", em produção desde 27/10/2026** (PR #290; homologação
+  conferida pelo RT). Só organiza a página: endereço, favoritos e ficha não mudaram. Meningite e PEP
+  de HIV seguem nos grupos de antes.
 
 **Lote 2 — SCA e Sgarbossa em produção em 23/10/2026 (PR #186).** Primeiro item do lote 2.
 - **SCA — conduta inicial** (Condutas e cálculos — adulto, Cardiovascular): AAS, segundo
@@ -1392,6 +1833,16 @@ Evidência: 992 de 992 testes clínicos; homologação conferida pelo RT; migrat
 - Dose só onde o capítulo dá: dexametasona 10 mg EV, difenidramina 12,5 mg EV, oxigênio 10 L/min e
   sumatriptano 6 mg SC. Triptano na migrânea, dipirona, AINE, metoclopramida e clorpromazina ficam
   sem dose até haver fonte com página.
+- **Doses da migrânea — em produção desde 27/10/2026** (PR #296; decisão do RT; homologação
+  conferida pelo RT). As diretrizes novas (AHS 2025, IHS 2025) pararam na
+  verificação anti-robô das editoras; a fonte aberta com dose e página é o consenso da Sociedade
+  Brasileira de Cefaleia (Arq Neuropsiquiatr 2000;58(2-A):371–389, PDF do SciELO): Tabelas 1 a 3 da
+  crise fraca, moderada e forte (p. 377–378) e o esquema da emergência (p. 376), como o consenso traz,
+  com o ano em destaque na tela. Clorpromazina 0,1–0,7 mg/kg pelo peso. Ao lado, os níveis de
+  recomendação da AHS 2025 para o PS (PMID 41321235), só pelo resumo e sem dose. Ficam sem dose:
+  metoclopramida parenteral (o consenso só traz 20 mg VO) e cetoprofeno (não aparece). Migration
+  `20270131000005_lacunas_cefaleia_doses` aplicada na homologação e, com o "ok produção" do RT, na
+  produção. Falta aprovar a versão 2026-10-27.1 da ficha na revisão clínica.
 - Diferença anotada: idade de início após 65 anos na SNNOOP10 e após 50 no manual.
 - Fora: ACEP 2019 (o resumo traz as perguntas, não as recomendações).
 
@@ -1407,12 +1858,13 @@ o PR #194 corrigiu o plural "sinais de alarme" da cefaleia, apontado pelo RT na 
   corticoide, gestação); dexametasona 0,15 mg/kg/dose e aciclovir 10 mg/kg/dose pelo peso; Tabela 2
   por agente e Tabela 1 do LCR.
 - Fora: ESCMID 2016 (não lida no texto) e a Figura 2 do manual (imagem, só citada).
-- **Quimioprofilaxia de contatos — resolvida em 27/10/2026, em homologação** (branch
-  `feat/lacunas-quimioprofilaxia-meningite`). Fonte: Guia de Vigilância em Saúde do MS, v. 1, 6ª ed.
+- **Quimioprofilaxia de contatos — em produção desde 27/10/2026** (PR #293; homologação conferida
+  pelo RT). Fonte: Guia de Vigilância em Saúde do MS, v. 1, 6ª ed.
   revisada (2024), lido no PDF: quem recebe (p. 116–118 e 142), Quadro 3 do meningococo (p. 117) e
   Quadro 11 do Hib (p. 143), como o Guia traz, com as linhas da criança para os contatos; rifampicina
-  do próprio paciente na alta pelo peso (10 mg/kg/dose, máximo 600 mg). Versão 2026-10-27.1 da ficha
-  na fila de aprovação (migration `20270131000004_lacunas_quimioprofilaxia_meningite`).
+  do próprio paciente na alta pelo peso (10 mg/kg/dose, máximo 600 mg). Migration
+  `20270131000004_lacunas_quimioprofilaxia_meningite` aplicada na homologação e, com o "ok produção"
+  do RT, na produção. Falta aprovar a versão 2026-10-27.1 da ficha na revisão clínica.
 
 Evidência: 1002 de 1002 testes clínicos; homologação conferida pelo RT; migration
 `20261218000001_lacunas_lote2_meningite` aplicada na homologação e, com o "ok produção" do RT, na
@@ -1503,11 +1955,9 @@ ITU do adulto, PEP de HIV, cefaleia, meningite e encefalite do adulto, cólica n
 queimadura do adulto (com o boneco) e, no neonato, icterícia e reanimação. Pendências abertas, à
 espera do RT:
 - Fichas novas dos lotes 1 e 2 (19) na fila de aprovação da tela de revisão clínica.
-- Lote 1: RACE (tabela original), Escala Clínica de Fragilidade (níveis 2 e 8), dor na criança
-  (faixas de idade).
-- Lote 2: escore STONE (item de raça); grupo da ITU ("Digestivo, fígado e rim" ou um grupo novo
-  "Infecções"); doses de triptano, dipirona, AINE, metoclopramida e clorpromazina na cefaleia (sem
-  fonte com página); quimioprofilaxia de contatos na meningite (precisa do Guia de Vigilância do MS).
+- Lote 1: RACE (tabela original). Fragilidade e dor na criança decididas em 27/10/2026 (ver
+  "Decisões do RT sobre as pendências dos lotes 1 e 2", acima).
+- Lote 2: STONE e grupo da ITU decididos em 27/10/2026 (mesmo bloco); doses da cefaleia pelo consenso da SBCe 2000 em produção (PR #296). Quimioprofilaxia de contatos na meningite em produção (PR #293).
 
 Próximo: lote 3 (atualizações de diretriz).
 
@@ -1673,10 +2123,19 @@ divergência, crise hipertensiva pediátrica com percentil e lactente febril. Pe
 espera do RT:
 - Fichas novas do lote 3 (14 versões 2026-10-25.1) na fila de aprovação da tela de revisão clínica,
   somadas às 19 dos lotes 1 e 2.
-- Pendências dos lotes 1 e 2 já listadas acima (RACE, Escala Clínica de Fragilidade, dor na criança,
-  STONE, grupo da ITU, doses da cefaleia, quimioprofilaxia na meningite).
-- Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
-  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.
+- Pendências dos lotes 1 e 2 que ainda restam: RACE (sem o artigo original). Doses da cefaleia em
+  produção (consenso da SBCe 2000, PR #296).
+  Dor na criança, grupo da ITU e quimioprofilaxia na meningite em produção; fragilidade e STONE fora
+  (decisões do RT de 27/10/2026).
+- ~~Achado do lote 3: a Figura 8 do Part 9 da AHA 2025 traz atropina 1 mg a cada 3–5 min, máximo 3 mg,
+  na bradicardia do adulto; resolve a nota "não confirmada" da ferramenta de bradicardia.~~ **Resolvido
+  em 27/10/2026 (branch `feat/lacunas-atropina-aha2025`):** conferido de novo no texto integral em
+  cpr.heart.org — Figura 8, quadro "Doses/Details": 1ª dose de 1 mg em bolo, repetir a cada 3–5 min, dose
+  total máxima de 3 mg; seção 19, recomendação 2: atropina razoável na bradicardia com comprometimento
+  hemodinâmico (2a, B-NR); o mesmo quadro confere dopamina 5–20 µg/kg/min e adrenalina 2–10 µg/min. A
+  ficha da bradicardia do adulto ganhou a AHA 2025 como terceira fonte, a linha "Atropina (AHA 2025)" ao
+  lado da ERC/RCUK (0,5 mg) e do manual, e perdeu a nota "não confirmado"; versão 2026-10-27.1 na fila de
+  aprovação (migration `20270131000002_lacunas_atropina_aha2025`). **Em produção desde 27/10/2026 (PR #286):** homologação conferida pelo RT; migration aplicada na produção com o "ok produção" do RT; tela conferida pelo pacote publicado (`BradicardiaAdulto-6D-7mxjt.js`). Falta só a aprovação da versão 2026-10-27.1 na tela de revisão clínica.
 - Fontes enviadas pelo RT em PDF quando o site da revista bloqueou: Kawasaki (AHA 2024), Practice
   Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
 
@@ -1702,12 +2161,14 @@ pelo ETL, e o banco só deixa o super admin inserir (65 medicamentos ativos na h
 
 | Ordem | Prioridade | Ponto do RT | Diagnóstico | Proposta | Situação |
 |---|---|---|---|---|---|
-| 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Feito: PR #263 (master), migration `20270105000001`; testado pelo RT na homologação em 27/10; falta o "ok produção" da migration (o menu já saiu em produção) |
-| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Feito: PR #268, migration `20270106000001` (decisões: item novo só na unidade; forma em campo próprio); testado pelo RT na homologação em 27/10; falta o merge e o "ok produção" |
-| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Feito: PR #269 (master), migration `20270109000001` (decisão: modelo da rede só do super admin; Nova diluição em um passo, com diluente, volume e tempo); falta o reteste do formulário e o "ok produção" |
-| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Feito: PR #272, migration `20270110000001` (decisão: lote e validade depois); testado pelo RT na homologação em 27/10; falta o merge e o "ok produção" |
-| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Feito: PR #274, sem migration; testado pelo RT na homologação em 27/10; falta o merge |
-| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Feito: "Registrar falta" na aba Faltas, só para a farmácia (decisão do RT), sem migration; falta o teste do RT na homologação e o merge |
+| 1 | P1 | 6 — O farmacêutico não precisa da aba Prontuários | O farmacêutico tem o item no menu, as rotas `/prontuarios` e `/prontuarios/:pacienteId`, a tela na paleta de busca e, no banco, `papel_pode_pedir_acesso` com `farmaceutico`. Enfermagem e telemedicina também têm; o gestor decide os pedidos em Auditoria | Tirar o farmacêutico do menu, das duas rotas e de `papel_pode_pedir_acesso`; pedido aprovado antes deixa de abrir leitura; pendentes cancelados com auditoria | Feito: PR #263 (master), migration `20270105000001`; testado pelo RT na homologação em 27/10; em produção (migration conferida em 27/10) |
+| 2 | P1 | 4 — Unidade de consumo não adiciona item novo com apresentação e forma | Não há cadastro de medicamento na tela nem RPC; não há coluna de forma farmacêutica | `cadastrar_medicamento`, `editar_medicamento` e `inativar_medicamento` (farmacêutico ou gestor, com histórico); coluna `forma_farmaceutica`; "Novo medicamento" na tela, com os parecidos antes de gravar | Feito: PR #268, migration `20270106000001` (decisões: item novo só na unidade; forma em campo próprio); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); em produção (merge em 27/10) |
+| 3 | P1 | 2 — Diluição não adiciona medicação nem diluição | "Nova diluição" só no topo da aba Rascunhos e só para medicamento do catálogo. **Achado:** a diluição nova nasce como modelo da rede, e qualquer farmacêutico a publica para todas as unidades | Botão visível em todas as abas; diluição nova da unidade por padrão; modelo da rede só para quem o RT decidir; vias IN e VO | Feito: PR #269 (master), migration `20270109000001` (decisão: modelo da rede só do super admin; Nova diluição em um passo, com diluente, volume e tempo); em produção (migration aplicada em 27/10, ok do RT); reteste do formulário ok em 27/10 |
+| 4 | P1 | 5 — Dispensação avulsa: controle do que sai e do que entra | A saída avulsa baixa o estoque com destino, motivo e auditoria; a devolução volta. A entrada não existe: o saldo é sobrescrito sem motivo, sem histórico e sem auditoria | Tabela `movimentos_estoque` (só inserção); entrada com documento; ajuste de inventário com motivo; extrato por item; filtro por período no Registro | Feito: PR #272, migration `20270110000001` (decisão: lote e validade depois); testado pelo RT na homologação em 27/10; migration em produção em 27/10 (ok do RT); em produção (merge em 27/10) |
+| 5 | P2 | 1 — Alta vigilância não adiciona medicação | Adiciona pela busca "Buscar no cadastro", só na aba "Exige liberação"; medicamento fora do catálogo não entra | Botão "Adicionar medicamento" em todas as abas; sem migration | Feito: PR #274, sem migration; testado pelo RT na homologação em 27/10; em produção (merge em 27/10) |
+| 6 | P2 | 3 — Quem cadastra o que está em falta? | O médico pela prescrição; o farmacêutico pela Disponibilidade e pelo Painel, só com saldo em falta ou crítico; a aba Faltas não registra | Botão "Registrar falta" na aba Faltas; sem migration | Feito: "Registrar falta" na aba Faltas, só para a farmácia (decisão do RT), sem migration; testado pelo RT na homologação em 27/10; em produção (merge em 27/10) |
+
+**Concluída em 27/10/2026:** os seis pontos estão em produção (frontend no master e as migrations `20270105000001`, `20270106000001`, `20270109000001` e `20270110000001` aplicadas com o ok do RT). O reteste do RT do formulário de um passo da Nova diluição (ponto 2) também ficou ok em 27/10. Nada pendente.
 
 Respostas do RT em 27/10/2026, item a item: ponto 6, só o farmacêutico sai (enfermagem e telemedicina
 seguem); ponto 4, o item novo vale só na unidade de quem cadastrou e a forma farmacêutica é campo
@@ -1717,6 +2178,271 @@ evidência de cada ponto em `docs/farmacia/PONTO<n>-*.md`.
 
 Para depois (decisão do RT em 27/10/2026): **lote e validade no estoque** (entrada com lote e
 validade, saldo por lote, aviso do que vence e escolha do lote na dispensação), como item próprio.
+
+## Telas do plantonista — pedidos do RT em 27/10/2026
+
+**Pedido do RT:** ao rever as telas do plantonista (Central, Plantão e Internação), o RT apontou 16
+pontos. Diagnóstico de cada um (onde está, o que acontece, causa, proposta para banco, RPC e tela,
+risco, tipo) em `docs/plantonista/REVISAO-PLANTONISTA-2026-10.md`.
+
+**Ponto 1 medido em 27/10/2026 (ok do RT para ler só os tempos da produção e do VPS).** O modelo de
+busca do VPS (Ollama, bge-m3) sai da memória depois de 24 h sem pergunta, e a recarga leva de 41 a 60 s
+ou mais com 2 processadores. Acima de 60 s a busca estoura e a pergunta dá erro 500: 6 vezes na produção
+(28/09 a 08/10) e 1 na homologação em 27/10. Depois vêm cerca de 10 s da reescrita pela IA. Proposta:
+deixar o modelo sempre carregado (só configuração do VPS, vale para homologação e produção juntas).
+
+**Ponto 1 aplicado em 27/10/2026, com "ok produção" do RT (PR #301).** O modelo de busca fica sempre
+carregado, e um aviso no cron a cada 10 min o recarrega depois de um restart. Medido direto no VPS,
+depois da mudança: pergunta completa em 4,3–6,0 s na homologação e 6,6 s na produção (antes: 22,9 s, e
+erros 500 em ~61 s). Como reverter: `infra/biblioteca-ollama-quente.md`. Falta conferir pela tela do app
+e pelo `clinical_search_logs` nos próximos dias; só se ainda passar de 10 s mexer na reescrita.
+
+**Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
+entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
+pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
+prescrição do leito não grava peso (ponto 11); a "Evolução médica" esconde o formulário sem dizer o
+motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT pediu para tirar (ponto 5).
+
+| Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
+|---|---|---|---|
+| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); falta conferir pelo app** | bug |
+| 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
+| 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (regra B e sub-aba). PR #319 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000003 (motivo de não poder evoluir; a evolução médica vale também para o plantão no setor do cadastro do paciente) foi aplicada na produção. O campo de CID saiu da evolução (resposta do RT em 28/10/2026, PR #323, só tela, em produção): a evolução mostra o diagnóstico vigente e grava o retrato dele. **Ponto 9 concluído.** Plano em `docs/plantonista/PONTO-09-EVOLUCAO.md` | bug + ajuste |
+| 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (três pedidos, tela A). PR #330 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000004 foi aplicada na produção e conferida (função, coluna, gatilho, permissões). No leito, laboratório, imagem e ECG saem em pedidos separados, pelo catálogo, ligados à internação. Em aberto (sem resposta do RT): a mesma regra no pedido rápido da porta e a folha impressa por pedido no leito. Plano em `docs/plantonista/PONTO-12-EXAMES.md` | nova (regra) |
+| 5 | P1 | 14 + 16 — atestado, receita para casa e orientações dentro de Alta e documentos. **Aprovado pelo RT em 28/10/2026 (opção A; "Trazer da prescrição" sem dose; a alta não exige documento; sumário de alta em tarefa própria). Em produção desde 29/10/2026 (PR #341, só tela, sem migration), conferido pelo RT na homologação.** Alta e documentos em quatro passos (receita para casa, atestado, orientações, alta); a aba Atestado saiu do leito. Plano em `docs/plantonista/PONTO-14-16-ALTA.md` | nova |
+| 6 | P2 | 2, 3, 4, 5 — navegação do plantão (VM duplicada, check-in duplicado, Atendimento, Internação direto na lista). **Aprovado pelo RT em 29/10/2026 (recomendações). Em produção desde 29/10/2026 (PR #344, só tela), conferido pelo RT na homologação.** Pendente: reindexar as ferramentas da IA (coleção comum à produção) e decidir as duas telas repetidas achadas (DenguePed, SdraVentilacaoAdulto). Plano em `docs/plantonista/PONTOS-02-05-NAVEGACAO.md` | ajuste |
+| 7 | P2 | 6, 7, 8 — Resumo do leito em abas, botões juntos, sem aba Classificação. **Plano em `docs/plantonista/PONTOS-06-08-LEITO.md`, aprovado pelo RT em 29/10/2026 como recomendado; implementado no PR #346, publicado na homologação e juntado ao master em 29/10/2026 (em produção, só tela, sem migration); conferido pelo RT em 30/10/2026.** Só tela, sem banco. Achado: "Transferir de setor" aparece também para o gestor e para internação encerrada | ajuste |
+| 8 | P2 | 13 — encaminhamento para outra unidade. **Decidido pelo RT em 31/10/2026 (destino da lista da rede, ou digitado). Tela no PR do branch `fase-plantonista/encaminhamento-outra-unidade`, publicada na homologação (só tela, sem migration: salvar_rascunho já liga à internação aberta).** A aba Encaminhamento do leito tem "Dentro da unidade" e "Para outra unidade" (folha SMS003a, paciente fixo, aviso de que transferir é regulação). Plano em `docs/plantonista/PONTO-13-ENCAMINHAMENTO.md` | nova |
+| 9 | P2 | 15 — Parecer, Termo de consentimento e Cuidados paliativos. **Decidido pelo RT em 31/10/2026 (escalas da enfermagem numa aba própria; paliativo só com fonte completa, por ora só a Pergunta surpresa). Em produção desde 01/11/2026: PR #387 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000006 (termo_paliativo_pergunta_surpresa) foi aplicada na produção, com a versão registrada e as permissões conferidas; a função `folha` foi publicada com os títulos novos. Ponto 15 concluído.** Quatro abas (Parecer, Termo de consentimento, Cuidados paliativos, Escalas); categoria do modelo de termo; Pergunta surpresa só no adulto (Downar 2017, PMID 28385893). PPS, PPI e PaP esperam a fonte completa. Plano em `docs/plantonista/PONTO-15-PARECER-TERMOS-ESCALAS.md` | ajuste + nova |
+| 10 | P2 | 10 — modelo da admissão. **Modelo B decidido pelo RT em 31/10/2026 (uma admissão + reavaliação do quadro). Em produção desde 01/11/2026: PR #383 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000005 (admissao_unica_reavaliacao) foi aplicada na produção, com a versão registrada e as permissões conferidas; a função `folha` foi publicada com o título novo. Ponto 10 concluído.** Trava de uma admissão no banco, "Corrigir" que leva a ficha (a anterior fica guardada) e documento "Reavaliação do quadro" ligado à admissão. Plano em `docs/plantonista/PONTO-10-ADMISSAO.md` | nova |
+
+## Aba Escala para todos os papéis — pedido do RT em 27/10/2026
+
+**Pedido do RT:** uma aba "Escala" para todos os papéis da unidade, menos gestor e administrador.
+Diagnóstico, proposta e respostas do RT em `docs/escala/ABA-ESCALA-PAPEIS-DIAGNOSTICO.md` (PR #300).
+
+**Decisão do RT em 27/10/2026:** entra agora, na ordem E0 → E4. Cada um vê a própria escala e a da
+equipe inteira da sua categoria; a aba abre fora do plantão; trocas, passagens, faltas, vagas e
+candidatura valem para todas as categorias, menos gestor e administrador, sempre dentro da mesma
+categoria; cada plantão passa a ter categoria; farmacêutico e faturamento passam a entrar pela
+escala; a "Minha agenda" da telemedicina vira a aba Escala comum. Cada entrega em branch e PR
+próprios, homologação antes; opções visuais da E2 e da E3 nascem do Refero e passam pelo RT.
+
+| Ordem | Entrega | O quê | Situação |
+|---|---|---|---|
+| 1 | E0 | Corrigir a "Escala da unidade" e a troca do plantonista: hoje leem a tabela direto e a RLS só devolve os próprios plantões (colegas aparecem como "livre"). Leitura passa por RPC | Feito: PR #302 (master), migration `20270202000001`; na homologação em 27/10 (10 de 10 testes; plantonista passa de 0 a 24 plantões de colegas no mês); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge |
+| 2 | E1 | Categoria do plantão (`papel` em `escala_plantao`, `escala_fixa`, `escala_vagas`), preenchimento, gatilho e trava de categoria em troca e passagem | Feito: PR #310 (master), migration `20270202000002`; na homologação em 28/10 (16 de 16 testes; 387 plantões com categoria e 71 sem, de uma pessoa com dois papéis); migration aplicada na produção em 28/10 (ok do RT), versão registrada (lá os 701 plantões ficam sem categoria: 700 de pessoa sem vínculo e 1 do super admin de teste) |
+| 3 | E2 | Gestor escala todas as categorias (seletor, cobertura por categoria); ERP leva só o plantão médico | Feito: PR #315 (master), opção B escolhida pelo RT em 28/10 (todas juntas, sigla da categoria ao lado do nome; ERP só plantonista); migration `20270202000003`; na homologação em 28/10 (14 de 14 testes, CI verde); migration aplicada na produção em 28/10 (ok do RT), versão registrada uma vez; frontend em produção pelo merge |
+| 4 | E3 | Aba Escala de leitura para os outros papéis, também fora do plantão; farmacêutico e faturamento entram pela escala; agenda da telemedicina vira a aba comum | Feito: PR #320 (master), opção A escolhida pelo RT em 28/10 (o mês com o dia ao lado, só leitura); sem migration; na homologação em 28/10 (CI verde); em produção pelo merge do RT em 28/10. Pendente, em passo próprio: farmacêutico e faturamento entrarem pela escala, depois que o gestor escalar os dois |
+| 5 | E4 | Trocas, passagens, faltas, vagas e candidatura para os outros papéis | Feito: PR #327 (master), opção A escolhida pelo RT em 28/10 (ações no painel do dia; passagem, troca e falta em janela); migration `20270202000004`; na homologação em 28/10 (11 de 11 testes, CI verde); migration aplicada na produção em 28/10 (ok do RT), versão registrada; frontend em produção pelo merge; sair do fixo e fracionar ficam de fora |
+
+Achado do diagnóstico, corrigido à parte (pedido do RT em 28/10/2026): Agenda > **Todas as unidades** pedia a escala até o dia 31 de qualquer mês e dava erro nos meses de 30 dias e em fevereiro (o banco recusa 2026-11-31). PR #305, sem migration; na homologação em 28/10; mesclado no master pelo RT em 28/10 (produção pelo merge).
+
+Achado da E4, corrigido à parte (pedido do RT em 28/10/2026): depois de um deploy, o app recarregava sozinho só uma vez por sessão; com duas publicações seguidas a aba ficava quebrada (na homologação, as telas do enfermeiro, menos a Triagem, até recarregar à mão). Agora recarrega a cada versão nova, com trava de 30 s contra laço (`src/lib/recargaDeploy.ts`). PR #329, sem migration; na homologação em 28/10; em produção pelo merge do RT em 28/10.
+
+**Correção do bug médio M8 (teste ponta a ponta de 29/10/2026; médios na ordem da seção 7): candidatura da Escala geral pela RPC.** O "Candidatar-se" da faixa livre gravava direto na tabela: falhava calado para quem também é gestor e pulava as conferências de data passada, conflito e faixa ocupada (existia também na produção, conferido só pelo esquema). Agora passa pela RPC `candidatar_faixa`, com as conferências de `candidatar_vaga`; a regra (faixa livre aceita candidatura do plantonista) não muda. Migration `20270208000010`, branch `fix/escala-m8-candidatura-faixa`; teste `escala_candidatura_faixa.sql` falha sem a migration e passa com ela (7 de 7); rollback testado; na homologação em 30/10 (contas E2E). Evidência em `docs/escala/CORRECAO-M8-CANDIDATURA-FAIXA.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #362 mesclado em 30/10/2026. **Concluído.**
+
+**Correção de bug crítico C1 (teste ponta a ponta de 29/10/2026, ordem do RT): troca forçada.** Qualquer escalado gravava a troca direto em `trocas_plantao`, com o plantão do colega, e aprovava ele mesmo, sem o colega e sem o gestor (existia também na produção, conferido só pelo esquema). Agora a troca só se escreve pelas RPCs (sem INSERT/UPDATE/DELETE direto) e `aplicar_troca` confere que os donos gravados são os donos de agora. Migration `20270208000001`, branch `fix/escala-c1-troca-forcada`; teste `escala_troca_forcada.sql` falha sem a migration e passa com ela (11 de 11); rollback testado; na homologação em 29/10 (fluxo repetido como 004, 005 e a gestora E2E). Evidência em `docs/escala/CORRECAO-C1-TROCA-FORCADA.md`. Produção: migration aplicada em 29/10/2026 (ok do RT), versão registrada; PR #348 mesclado pelo RT em 29/10. **Concluído.**
+
+**Correção do bug médio M11 (teste ponta a ponta de 29/10/2026; médios na ordem da seção 7): plantões da telemedicina em todas as unidades.** A antiga "Minha agenda" da telemedicina listava os plantões de todas as unidades; a aba Escala comum (decisão 10 do RT) mostrava só a unidade ativa. Agora a aba Escala da telemedicina traz também "Seus plantões em todas as unidades" (próximos 60 dias), pela RPC que já existia (`tele_minha_escala`). Só tela, sem migration, branch `fix/escala-m11-tele-todas-unidades`. Sem conta E2E de telemedicina na homologação: conferido pelo código e pelos tipos.
+
+**Correção do bug baixo B10 (teste ponta a ponta de 29/10/2026): troca de plantão que já passou.** A troca listava e aceitava plantões encerrados (existia também na produção, conferido só pelo esquema). Agora um gatilho na inserção recusa a troca com plantão já terminado e a tela do plantonista lista só os que não terminaram. Migration `20270208000013`, branch `fix/escala-b10-troca-plantao-passado`; teste `escala_troca_plantao_passado.sql` falha sem a migration e passa com ela (3 de 3); rollback testado; na homologação em 30/10 (004 e 005 E2E). Evidência em `docs/escala/CORRECAO-B10-TROCA-PLANTAO-PASSADO.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #368 mesclado em 30/10/2026. **Concluído.**
+
+**Correção do bug baixo B12 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Passa sim, troca não"): troca de plantão já iniciado.** O plantão em curso podia ser trocado. Agora o gatilho do B10 recusa também o plantão que já começou, no pedido, no aceite do colega e na aprovação; recusar e cancelar seguem livres, e a passagem do plantão em curso continua. Na tela, o plantão em curso mostra Passar e Justificar falta, sem Trocar, e as listas da troca só trazem plantões que não começaram. Migration `20270208000014`, branch `fix/escala-b12-troca-plantao-iniciado`; teste `escala_troca_plantao_iniciado.sql` falha sem a migration e passa com ela (10 de 10); rollback testado; na homologação em 31/10 (004 e 005 E2E). Evidência em `docs/escala/CORRECAO-B12-TROCA-PLANTAO-INICIADO.md`. Produção: migration aplicada em 01/11/2026 (ok do RT, pela sessão principal), versão registrada; PR #377 mesclado. **Concluído.**
+
+**Correção do bug baixo B8 (teste ponta a ponta de 29/10/2026): aba Pedidos do gestor.** A aba contava o tipo "falta", que nenhuma tela cria (sempre 0), chamava todo mundo de "Plantonista" e não mostrava a categoria de quem pediu. Agora "faltas" são as justificativas que não são atestado, o nome cai para "Profissional" e a categoria do plantão aparece ao lado do nome. Só tela, sem migration, branch `fix/escala-b8-pedidos-categoria`.
+
+**Correção do bug baixo B4 (teste ponta a ponta de 29/10/2026): justificativa curta no check-in.** A justificativa curta era recusada mesmo onde não é pedida (unidade sem coordenadas, dentro do raio), enquanto a vazia passava (existia também na produção, conferido só pelo esquema). Agora as 10 letras só são conferidas quando a justificativa libera o check-in (sem localização ou fora do raio), como a regra do RT. Migration `20270208000012`, branch `fix/escala-b4-justificativa-checkin`, sem tela; teste `checkin_justificativa_curta.sql` falha sem a migration e passa com ela (4 de 4); rollback testado; na homologação em 30/10 (enfermeira E2E). Evidência em `docs/escala/CORRECAO-B4-JUSTIFICATIVA-CHECKIN.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #367 mesclado em 30/10/2026. **Concluído.**
+
+**Correção do bug baixo B3 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Aceita como retroativo"): escalar em dia que já passou.** `adicionar_plantao_escala` aceitava dia passado sem marcar nada. Agora continua aceitando, só pelo gestor (e super admin), e o plantão que já começou ganha no histórico da escala a ação `retroativo` com o gestor como autor; as duas janelas de escalar avisam antes ("Este plantão já começou: fica como acerto retroativo…"). Migration `20270208000015`, branch `fix/escala-b3-dia-passado-retroativo`; teste `escala_dia_passado_retroativo.sql` falha sem a migration e passa com ela (5 de 5), mais `src/lib/retroativo.test.ts` (2 de 2); rollback testado; na homologação em 31/10 (009 e 004 E2E). Evidência em `docs/escala/CORRECAO-B3-DIA-PASSADO-RETROATIVO.md`. Produção: migration aplicada em 01/11/2026 (ok do RT, pela sessão principal), versão registrada; PR #378 mesclado. **Concluído.**
+
+**Correção do bug baixo B5 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Completar a lista"): ordem do papel mais forte.** `private.papel_na_unidade` (usada em quase toda a RLS) deixava regulador, NIR, faturamento e os papéis de rede fora da ordem, e entre dois deles o resultado era indefinido. Agora eles entram depois da recepção, nessa ordem (papel novo sem lista fica por último, o nome desempata); a ordem antiga não muda, e só muda quem tem dois papéis novos. Migration `20270208000019`, branch `fix/escala-b5-papel-mais-forte`; teste `papel_mais_forte.sql` com cada par afetado (68 verificações: os 15 pares novos falham sem a migration e passam com ela; os 48 pares antigo × novo e a lista antiga continuam iguais); rollback testado; na homologação em 31/10 (001 E2E). Evidência em `docs/escala/CORRECAO-B5-PAPEL-MAIS-FORTE.md`. Produção: migration aplicada em 01/11/2026 (ok do RT, pela sessão principal), versão registrada; PR #386 mesclado. **Concluído.**
+
+**Correção de bug alto A1 (teste ponta a ponta de 29/10/2026, "Sim, A1 a A5" do RT): vaga de duas categorias na mesma faixa.** O gestor não abria vaga de médico e de enfermeiro no PS de manhã: o índice único `escala_vagas_aberta` não tinha a categoria e a 2ª dava "duplicate key" cru (existia também na produção, conferido só pelo esquema). Agora o índice é por setor, dia, faixa e categoria (`NULLS NOT DISTINCT`: uma vaga sem categoria por faixa). Migration `20270208000003`, branch `fix/escala-a1-vaga-por-categoria`, sem tela; teste `escala_vaga_por_categoria.sql` falha sem a migration e passa com ela (11 de 11); rollback testado; na homologação em 29/10 (gestora E2E abre 5 categorias na mesma faixa). Evidência em `docs/escala/CORRECAO-A1-VAGA-POR-CATEGORIA.md`. Produção: migration aplicada em 29/10/2026 (ok do RT, pela sessão principal), versão registrada, índice novo conferido e o antigo fora; PR #352 mesclado. **Concluído.**
+
+**Correção dos bugs médios M5 e M6 (teste ponta a ponta de 29/10/2026; médios na ordem da seção 7): avisos e auditoria das decisões.** As decisões do gestor sobre candidatura, falta e saída do fixo não avisavam ninguém (as telas prometem o aviso) e não iam para o histórico nem para a auditoria (existia também na produção, conferido só pelo esquema). Agora gatilhos avisam quem pediu no sino e gravam `historico_escala` e `log_auditoria`, pela RPC e pelo update da tela. Migration `20270208000008`, branch `fix/escala-m5-m6-avisos-decisoes`, sem tela; teste `escala_avisos_decisoes.sql` falha sem a migration e passa com ela (9 de 9); rollback testado; na homologação em 30/10 (enfermeira e gestora E2E). Evidência em `docs/escala/CORRECAO-M5-M6-AVISOS-DECISOES.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #359 mesclado em 30/10/2026. **Concluído.**
+
+Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia passado só cabe justificar falta, e Trocar, Passar e Candidatar-me ficavam escondidos em dias futuros. Opção A: as ações do próximo plantão no cartão do alto, as vagas abertas da categoria ao lado e, no dia passado, a explicação com o atalho para o próximo (`docs/escala/E4-AJUSTE-ACOES-A-VISTA.md`). Sem migration; na homologação e em produção em 28/10/2026 (#333).
+
+**Correção do bug médio M3 (teste ponta a ponta de 29/10/2026; médios na ordem da seção 7): conferência do pedido de passagem.** O pedido aceitava destino escalado no mesmo horário em outro setor, pedido repetido do mesmo plantão e plantão já terminado (existia também na produção, conferido só pelo esquema). Agora um gatilho na inserção barra os três (o plantão em curso continua podendo ser passado). Migration `20270208000009`, branch `fix/escala-m3-passagem-conferencia`, sem tela; teste `escala_passagem_conferencia.sql` falha sem a migration e passa com ela (4 de 4); rollback testado; na homologação em 30/10 (004 e 005 E2E). Evidência em `docs/escala/CORRECAO-M3-PASSAGEM-CONFERENCIA.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #360 mesclado em 30/10/2026. **Concluído.**
+
+**Correção dos bugs altos A2 e A3 (teste ponta a ponta de 29/10/2026, "Sim, A1 a A5" do RT): troca com o gestor.** A3 (quem recebe reescrevia a troca por update direto) já estava fechado pelo C1 (`20270208000001`). A2: o colega que recebe aprovava e a troca entrava na escala sem o gestor, e a aba Pedidos do gestor não listava trocas (existia também na produção, conferido só pelo esquema). Agora `aprovar_troca` só aplica com o gestor (o colega recusa); a aba Pedidos e o aviso do mês mostram as trocas com Aprovar/Recusar; quem pediu lê "Aguardando a coordenação". Migration `20270208000005`, branch `fix/escala-a2-troca-gestor`; teste `escala_troca_gestor.sql` falha sem a migration e passa com ela (6 de 6); rollback testado; na homologação em 29/10 (004, 005 e a gestora E2E). O aceite do colega antes do gestor (proposta A do A4) espera a decisão do RT. Evidência em `docs/escala/CORRECAO-A2-A3-TROCA-GESTOR.md`. Produção: PR #353 mesclado em 29/10/2026 (tela); migration `20270208000005` aplicada na produção em 30/10/2026 (ok do RT, pela sessão principal), versão registrada e `aprovar_troca` conferida. **Concluído.**
+
+**Correção do bug médio M13 (teste ponta a ponta de 29/10/2026; médios na ordem da seção 7): carga horária do gestor.** A carga contava 12 h por diurno (a manhã de 6 h virava 12 h) e mostrava todas as categorias como "Plantonista" (existia também na produção, conferido só pelo esquema). Agora as horas são as dos plantões (soma da duração) e cada linha diz a categoria. Migration `20270208000011`, branch `fix/escala-m13-carga-horaria`; teste `escala_carga_horaria.sql` falha sem a migration e passa com ela (4 de 4); rollback testado; na homologação em 30/10 (gestora E2E). Evidência em `docs/escala/CORRECAO-M13-CARGA-HORARIA.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #364 mesclado em 30/10/2026. **Concluído.**
+
+**Correção do médio M2, saída do fixo (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Encerra a fixa").** Aprovar a saída do fixo só mudava o status, e a fixa continuava gerando o mês; o banco aceitava o pedido de plantão que não veio da fixa. Agora o pedido só vale para plantão de uma linha ativa da fixa (mesma pessoa, setor, dia da semana e turno) e, aprovado, encerra essa linha para os meses ainda não gerados, com `fixa_encerrada` no histórico; os plantões já gerados ficam com a pessoa. A falta justificada aprovada só registra (opção B, sem código). Migration `20270208000016`, branch `fix/escala-m2-saida-fixo`; teste `escala_saida_fixo.sql` falha sem a migration e passa com ela (8 de 8); `escala_avisos_decisoes.sql` ajustado; rollback testado; na homologação em 31/10 (004 e 009 E2E). Evidência em `docs/escala/CORRECAO-M2-SAIDA-FIXO.md`. Produção: migration aplicada em 01/11/2026 (ok do RT, pela sessão principal), versão registrada; PR #380 mesclado. **Concluído.**
+
+**Correção do bug alto A4 (teste ponta a ponta de 29/10/2026; proposta A do RT em 30/10/2026): assumir o plantão e aceite do colega.** Quem recebia a passagem não via o pedido, não aceitava nem era avisado, e o plantão era empurrado sem ele. Agora, na passagem e na troca: o pedido nasce esperando o colega, que é avisado no sino e aceita ou recusa em "Pedidos para você"; aceito, o gestor aprova ou recusa (antes do aceite, não); os dois são avisados da decisão; quem pediu cancela enquanto pendente; na unidade sem aprovação do gestor, o aceite já aplica. Migration `20270208000006`, branch `fix/escala-a4-aceite-colega`; teste `escala_aceite_colega.sql` falha sem a migration e passa com ela (21 de 21); testes de C1, C2, A2 e V4 ajustados ao aceite; rollback testado; na homologação em 30/10 (004, 005 e a gestora E2E, com os avisos). Evidência em `docs/escala/CORRECAO-A4-ACEITE-COLEGA.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #357 mesclado em 30/10/2026. **Concluído.**
+
+**Correção de bug crítico C2 (teste ponta a ponta de 29/10/2026, ordem do RT): passagem aprovada não mudava o plantão de dono.** O gestor aprovava, o pedido ficava "aprovado" e o plantão continuava com quem passou, que lia "Plantão passado com sucesso" (existia também na produção, conferido só pelo esquema). Agora um gatilho em `solicitacoes_escala` aplica a passagem ao aprovar (confere plantão ativo e de quem pediu, vínculo e horário do destino; histórico `passagem_aplicada`); a tela diz "Passagem pedida…" enquanto espera e mostra ao gestor o erro da aprovação. Migration `20270208000002`, branch `fix/escala-c2-passagem-aprovada`; teste `escala_passagem_aprovada.sql` falha sem a migration e passa com ela (8 de 8); rollback testado; na homologação em 29/10 (fluxo repetido como 004, 005 e a gestora E2E). Evidência em `docs/escala/CORRECAO-C2-PASSAGEM-APROVADA.md`. Produção: migration aplicada em 29/10/2026 (ok do RT), versão registrada; tela em produção pelo merge do PR #349 (RT, 29/10). **Concluído.**
+
+**Correção do bug médio M10 (teste ponta a ponta de 29/10/2026; médios na ordem da seção 7): erros visíveis na escala.** Erros de aprovar e recusar candidatura, de escalar (plantão e fixa) e da candidatura do plantonista não apareciam na tela: o clique não fazia nada. Agora aparecem em vermelho ao lado da ação (o erro de decidir pedido já aparecia desde a C2). Só tela, sem migration, branch `fix/escala-m10-erros-visiveis`. Mensagens vêm do banco, já conferidas na homologação (ex.: "Esta vaga é de …", "Conflito: este profissional já está escalado em outro setor nesta data/turno.").
+
+**Correção do médio M7 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Categoria em comum"): plantão sem categoria.** O plantão sem categoria pulava a trava de troca e passagem dentro da categoria. Agora, enquanto não tem categoria, troca e passagem só valem com quem tem categoria em comum com o dono; o gestor define a categoria de um ou de vários plantões de uma vez (`definir_categoria_plantoes`), e o mês do gestor mostra o aviso "N plantões sem categoria" com o atalho por pessoa ou um por um. Migration `20270208000017`, branch `fix/escala-m7-sem-categoria`; teste `escala_sem_categoria.sql` falha sem a migration e passa com ela (9 de 9), mais `src/lib/semCategoria.test.ts` (2 de 2); rollback testado; na homologação em 31/10 (004, 005, 002 e 009 E2E). Evidência em `docs/escala/CORRECAO-M7-SEM-CATEGORIA.md`. Produção: migration aplicada em 01/11/2026 (ok do RT, pela sessão principal), versão registrada; PR #382 mesclado. **Concluído.**
+
+**Médios do teste ponta a ponta de 29/10/2026 que dependem de decisão do RT (M2, M7, M9) e registros (M4, M12).** Propostas em `docs/escala/PROPOSTAS-MEDIOS-M2-M7-M9.md`, com a recomendação de cada uma: M2 (o que aprovar falta e saída do fixo faz: abrir vaga / encerrar a linha da fixa), M7 (plantão sem categoria: trocar só com quem tem categoria em comum + aviso ao gestor), M9 (gestor aprova o próprio pedido: com 2º fator e registro). Aguardam o RT; nada codificado. M4 (quem pede a troca não cancelava) fica resolvido pelo A4 (#357) quando ele for à produção. M12 (farmacêutico e faturamento pela escala) foi adiado de propósito na E3, não é bug.
+
+**Correção do bug baixo do teste em produção de 31/10/2026, achado 3: "sua categoria" com todos os papéis.** Em `/minha-escala`, o subtítulo e o dia diziam "Plantonista e Telemedicina e Enfermeiro e…" para quem tem vários papéis na unidade. Agora a categoria da tela é o papel ativo (`categoriaDaTela`, `src/lib/categoriaEscala.ts`): o subtítulo e o dia mostram só ela, a equipe do dia lista os plantões dessa categoria (plantão sem categoria conta como plantonista, como no M1) mais os meus, e "Seus plantões em todas as unidades" (M11) aparece com o papel ativo de Telemedicina. As vagas abertas continuam as de `vagas_abertas` (todas as minhas categorias; a RPC não devolve a categoria da vaga). Só tela, sem migration; teste `src/lib/categoriaEscala.test.ts` (3 de 3). Branch `fix/escala-minha-categoria-papel-ativo`. Produção: sem migration; PR #376 mesclado em 31/10/2026 (publica a tela). **Concluído.**
+
+**Baixos do teste ponta a ponta de 29/10/2026 — situação, propostas e registro.** Em `docs/escala/BAIXOS-PROPOSTAS-E-REGISTRO.md`. Corrigidos: B2 (no #358, com o M1), B4 (#367), B8 (#366, em produção), B10 (#368). Resolvidos por outros itens: B1 (A1), B6, B7 e B9 (A4, #357), parte do B12 (M3 e B10). Propostas para o RT, nada codificado: B3 (escalar em dia passado: aceitar só como acerto retroativo do gestor), B5 (completar a ordem do papel mais forte), B11 (o portão do check-in deixa abrir a aba Escala para justificar a falta), B12 (bloquear a troca de plantão já iniciado; a passagem continua).
+
+**Decisões do RT em 31/10/2026 sobre as propostas da escala (M2, M7, M9, B3, B5, B11, B12).** M2, falta justificada aprovada: "Só registra" (opção B) — nada muda no código; o gestor abre a vaga à mão se quiser cobrir. M2, saída do fixo aprovada: "Encerra a fixa" (opção A). M7: "Categoria em comum" (opção A), com o aviso "N plantões sem categoria" e o atalho no mês do gestor. M9: "Pode, com 2º fator" (opção A). B3: "Aceita como retroativo" (opção A). B5: "Completar a lista" (opção A), com teste de cada par afetado. B11: "Libera só a aba Escala" (opção A). B12: "Passa sim, troca não" (opção A). Cada uma em PR próprio (teste primeiro, migration expand/contract com rollback testado, homologação, "ok produção" do RT antes do merge). Registro em `docs/escala/PROPOSTAS-MEDIOS-M2-M7-M9.md` e `docs/escala/BAIXOS-PROPOSTAS-E-REGISTRO.md`.
+
+**Registro do RT em 31/10/2026: a UPA Centro ainda não entra em uso real.** Na produção, só o RT tem vínculo ativo na unidade. A escala fixa (126 linhas) é de uma conta sem vínculo, e os 701 plantões de agosto e setembro sem categoria são sobra de teste. A limpeza desses dados fica para quando a unidade começar a operar; até lá, os números da escala da produção (vagas previstas pela fixa, plantões sem categoria) não refletem uso real.
+
+**Correção do bug baixo do teste em produção de 31/10/2026, achado 2: grade de montagem fora do papel.** Com o papel ativo de Telemedicina (ou outro que não é plantonista, gestor nem admin), `/agenda?aba=escala` aberto pelo endereço mostrava a grade semanal do gestor com "+ adicionar", porque `Escala.tsx` trata como gestor todo papel que não é `plantonista`. Agora as abas "Minha escala" e "Escala da unidade" da Agenda (o menu só leva o plantonista até lá) mandam os outros papéis para a escala deles: `/minha-escala`, ou `/escala` para gestor e admin (`destinoAgendaEscala`, `src/lib/rotaEscala.ts`). Só tela, sem migration; teste `src/lib/rotaEscala.test.ts` (4 de 4). Branch `fix/escala-agenda-papel-ativo`. Produção: sem migration; PR #375 mesclado em 31/10/2026 (publica a tela). **Concluído.**
+
+**Correção de bug alto A5 (teste ponta a ponta de 29/10/2026, "Sim, A1 a A5" do RT): atestado na justificativa de falta.** Fora do médico, o upload do atestado era barrado pela política do bucket `atendimento` (só gestor e plantonista), e o "ver anexo" do gestor usava URL pública num bucket privado (existia também na produção, conferido só pelo esquema). Agora quem tem vínculo na unidade grava em `<unidade>/justificativas/`; só quem enviou e o gestor leem (política restritiva de sigilo: antes o plantonista da unidade lia o atestado do colega); a tela grava o caminho e o gestor abre com URL assinada (os pedidos antigos continuam abrindo). Migration `20270208000004`, branch `fix/escala-a5-atestado-falta`; teste `escala_atestado_falta.sql` falha sem a migration e passa com ela (8 de 8); rollback testado; na homologação em 29/10 (enfermeira, técnico, plantonista e gestora E2E). Evidência em `docs/escala/CORRECAO-A5-ATESTADO-FALTA.md`. Produção: migration aplicada em 29/10/2026 (ok do RT, pela sessão principal), versão registrada, as três políticas conferidas; tela em produção pelo merge do PR #351. **Concluído.**
+
+**Correção do bug médio M1 (teste ponta a ponta de 29/10/2026; médios na ordem da seção 7): vaga sem categoria só do plantonista.** A vaga sem categoria aparecia para todos os papéis e a candidatura recusava quem não é plantonista (existia também na produção, conferido só pelo esquema). Agora `vagas_abertas` segue a regra da candidatura (sem categoria = plantonista). Junto, o B2 (baixo, mesma função): a vaga numa faixa em que a pessoa já está escalada não aparece mais. Migration `20270208000007`, branch `fix/escala-m1-vaga-sem-categoria`, sem tela; teste `escala_vaga_sem_categoria.sql` falha sem a migration e passa com ela (5 de 5); rollback testado; na homologação em 30/10 (contas E2E). Evidência em `docs/escala/CORRECAO-M1-VAGA-SEM-CATEGORIA.md`. Produção: migration aplicada em 30/10/2026 (ok do RT, pela sessão principal), versão registrada; PR #358 mesclado em 30/10/2026. **Concluído.**
+
+**Correção do bug baixo B11 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Libera só a aba Escala"): portão do check-in.** Quem passava da tolerância via só o portão e não justificava a falta. Agora o portão fechado ganha "Ver minha escala (justificar falta)", que abre só a escala (a mesma do "Fora do seu horário"), com "Voltar ao check-in"; o resto segue fechado. Só tela, sem migration; guarda de banco `escala_portao_checkin.sql` (4 de 4: com o portão fechado, a escala abre, a falta é justificada e o paciente segue fora). Branch `fix/escala-b11-portao-aba-escala`; na homologação em 31/10 (002 E2E). Evidência em `docs/escala/CORRECAO-B11-PORTAO-ABA-ESCALA.md`. Produção: sem migration; PR #379 mesclado em 31/10/2026 (publica a tela). **Concluído.**
+
+**Correção do médio M9 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Pode, com 2º fator"): gestor aprova o próprio pedido.** O gestor que também está escalado aprovava a própria passagem ou troca sem 2º fator. Agora, quando quem aprova é parte do pedido, a aprovação exige o 2º fator (como `aprovar_candidatura`) e grava `aprovou_proprio_pedido` no histórico e na auditoria; a aba Pedidos avisa "pedido seu: aprovar pede o 2º fator e fica registrado". O 2º fator segue a chave da plataforma `exigir_segundo_fator` (desligada, não barra; o registro vale sempre). Migration `20270208000018`, branch `fix/escala-m9-proprio-pedido`; teste `escala_aprovacao_propria.sql` falha sem a migration e passa com ela (7 de 7); rollback testado; na homologação em 31/10 (009 e 005 E2E). Evidência em `docs/escala/CORRECAO-M9-APROVACAO-PROPRIA.md`. Produção: migration aplicada em 01/11/2026 (ok do RT, pela sessão principal), versão registrada; PR #384 mesclado. **Concluído.**
+
+## Virada de data (meia-noite, fim de mês, fim de ano) — pedido do RT em 01/11/2026
+
+**Origem:** em 31/10/2026, às 22h de Brasília, o CI do banco falhou em três testes do ERP de plantões porque calculavam o mês em UTC (correção no PR #388). O RT pediu para procurar bugs da mesma família. Varredura só de leitura em `supabase/migrations`, `supabase/tests`, `src/`, `supabase/functions/` e `hermes/`; os itens marcados "conferido" foram checados na produção (esquema e cálculo, sem dado de paciente).
+
+**Causa comum:** o banco da produção roda em **UTC** (`SHOW TimeZone` = UTC, conferido em 01/11/2026). Das 21h às 24h de Brasília, `current_date` já é o dia seguinte. `private.data_atual()` já devolve o dia de Brasília e é a troca padrão. No frontend, `new Date().toISOString().slice(0, 10)` e `new Date('AAAA-MM-DD')` têm o mesmo efeito; `dataIso`/`hojeLocal` de `src/lib/formato.ts` já fazem certo.
+
+**Decisão do RT em 01/11/2026:** registrar como lote; os clínicos são **P0**. Cada item em branch e PR próprios, teste que falha antes e passa depois (com relógio simulado na janela de falha), homologação antes da produção.
+
+| Item | Prioridade | O que acontece | Onde |
+|---|---|---|---|
+| VD1 — Corte de 14 anos na véspera do aniversário | **P0** (clínico, conferido) | `age(dia, nascimento) < interval '14 years'` dá falso no dia anterior aos 14 anos para quem nasceu do dia 2 em diante de mês de 31 dias: `age` devolve `13 years 11 mons 30 days`, que o Postgres compara como igual a 14 anos. A criança entra como adulto: protocolo de classificação adulto, NIPS/FLACC recusadas, Fugulin aceito. Correção: `nascimento > dia - interval '14 years'`, como `prescrever` já faz. | `classificar_risco`, `registrar_avaliacao`, `registrar_fugulin`. Corrigido: migration `20270209000001` (`private.pediatrico_em`), branch `fix/vd1-corte-14-anos`, PR #392; teste `vd1_corte_14_anos.sql` falha sem a migration e passa com ela; rollback testado; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD1-CORTE-14-ANOS.md`. Produção: migration aplicada em 01/11/2026 (ok do RT), versão registrada e grants conferidos; PR #392 mesclado. **Concluído.** |
+| VD2 — Idade do atendimento pela data UTC da chegada | **P0** (clínico, conferido no código) | A tela do médico e a fila do PS calculam a faixa etária com `chegada_em.slice(0, 10)` (data UTC). Chegada das 21h às 24h na véspera dos 14 anos: atendimento como adulto, sem as salvaguardas pediátricas, enquanto a classificação (que usa `dataSP`) diz pediátrico. Correção: `dataIso(chegada_em)`. | `src/pages/plantao/porta/JanelaAtendimento.tsx:168`, `src/pages/plantao/porta/FilaPS.tsx:96`. **Corrigido na causa:** `comoData` de `src/domain/idade.ts` converte o instante para o dia de Brasília (`dataIso`), branch `fix/vd2-idade-chegada-brasilia`; teste do domínio falha sem e passa com; só tela, sem migration; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD2-IDADE-NA-CHEGADA.md`. PR #393 mesclado em 01/11/2026. **Concluído.** |
+| VD3 — Escores pediátricos com `current_date` | **P0** (clínico) | NEWS2 × PEWS, faixa de idade do Phoenix/PELOD-2 e alerta de sepse viram 3 horas antes (21h) na véspera do aniversário de 14 anos ou do aniversário mensal. `pelod2_rotina` não é afetada (cron às 10h UTC). | `calcular_acuidade`, `acuidade`, `observacao_dispara_pelod2`, `alertas_sepse`. Corrigido: migration `20270209000002` (`current_date` → `private.data_atual()`, também em `pelod2_rotina`), branch `fix/vd3-escores-pediatricos-data`; teste `vd3_escores_pediatricos_data.sql` falha sem a migration e passa com ela; rollback testado; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD3-ESCORES-PEDIATRICOS.md`. Produção: migration aplicada em 01/11/2026 (ok do RT), versão registrada e grants conferidos; PR #394 mesclado. **Concluído.** |
+| VD4 — Neonato no pedido de regulação | **P0** (clínico) | `current_date - 28` em UTC: das 21h às 24h, um recém-nascido de 27 dias passa por não-neonato e a exigência de incubadora não é pedida. | `regulacao_solicitar`. Corrigido: migration `20270209000003` (troca do trecho na definição atual, como em `20261124000001`), branch `fix/vd4-neonato-regulacao`, PR #395; seção 5 de `fase4_regulacao_solicitacao.sql` falha sem a migration e passa com ela; rollback testado; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD4-NEONATO-REGULACAO.md`. Produção: migration aplicada em 01/11/2026 (ok do RT), versão registrada e ACL conferido; PR #395 mesclado. **Concluído.** |
+| VD5 — Check-in sem escala de madrugada | P1 | Entre 00h e 06h59, sem escala, o check-in grava (hoje, `noite`), mas a noite começou ontem. O check-in real das 19h faz upsert na mesma linha e a presença da madrugada se perde. | `registrar_checkin`. Corrigido: migration `20270209000004` (`private.data_do_turno`), branch `fix/vd5-checkin-madrugada`; teste `vd5_checkin_madrugada.sql` falha sem a migration e passa com ela; rollback testado; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD5-CHECKIN-MADRUGADA.md`. Produção: migration aplicada em 01/11/2026 (ok do RT), versão registrada e ACL conferido; PR #396 mesclado. **Concluído.** |
+| VD6 — Fixo quinzenal reinicia a cada mês | P1 | A paridade da semana é `(dia - 1) / 7` do mês: quem cai na semana dos dias 29–31 pega também a semana 0 do mês seguinte (duas semanas seguidas). | `gerar_escala_mensal_detalhada`. Corrigido (RT escolheu calendário único): migration `20270209000005` (`private.semana_quinzenal`, semanas de segunda a domingo contadas de 03/01/2000), branch `fix/vd6-quinzenal-continuo`, PR #397; teste `vd6_quinzenal_continuo.sql` falha sem a correção. Doc `docs/virada-de-data/CORRECAO-VD6-QUINZENAL-CONTINUO.md`. Na produção em 01/11/2026. **Concluído.** |
+| VD7 — Início da validade da APAC | P1 | O formulário já vem com a data UTC: depois das 21h é amanhã; no dia 31, mês seguinte (perde a competência atual); em 31/12, ano seguinte. | `src/pages/regulacao/Apac.tsx:148`. Corrigido: o campo vem com `dataIso()` (data de Brasília), branch `fix/vd7-apac-validade`; teste `src/lib/viradaDeData.test.ts` falha sem a correção. Só de tela. Doc `docs/virada-de-data/CORRECAO-VD7-APAC-VALIDADE.md`. **Concluído.** |
+| VD8 — Idade no caderno do leito | P1 | `new Date('AAAA-MM-DD')` é meia-noite UTC (21h da véspera em Brasília): a idade mostrada fica um dia atrás **o dia todo**; no aniversário aparece a idade anterior. A folha impressa recalcula certo. | `src/lib/rascunho.ts:46`. Corrigido: a data de hoje é lida como dia local, branch `fix/vd8-idade-caderno`; teste `src/lib/rascunhoIdade.test.ts` falha sem a correção. Só de tela. Doc `docs/virada-de-data/CORRECAO-VD8-IDADE-CADERNO.md`. **Concluído.** |
+| VD9 — Avisos com `current_date` | P2 | `notificacoes_plantonista.data` é a chave de um aviso por dia: os avisos de prazo da regulação e do NIR repetem às 21h e saem com a data de amanhã. Também no chat, webhooks e RNDS. | `regulacao_sla_avisar`, `regulacao_avisar*`, `nir_cobrar`, `enviar_mensagem`, `webhook_manutencao`, `rnds_avisar`. Corrigido: migration `20270209000006` (troca na definição atual das dez funções, também `regulacao_atualizar_evolucao` e `regulacao_responder_pendencia`), branch `fix/vd9-avisos-data`; teste `vd9_avisos_data.sql` falha sem a correção. Doc `docs/virada-de-data/CORRECAO-VD9-AVISOS-DATA.md`. Na produção em 01/11/2026. **Concluído.** |
+| VD10 — Faturamento e críticas | P2 | APAC pedida das 21h às 24h do último dia cai na competência seguinte quando não tem `validade_inicio` (`rede_faturamento`); críticas da AIH e responsável adulto da APAC usam a idade de hoje, não a da internação ou do procedimento. | `rede_faturamento`, `criticas_aih`, `criticas_lancamento_aih`, `apac_arquivo`. Corrigido: migration `20270209000007` (competência pelo dia de Brasília; idade da conta na data do procedimento; responsável da APAC pela idade no início da validade), branch `fix/vd10-faturamento-datas`; teste `vd10_faturamento_datas.sql` falha sem a correção. Doc `docs/virada-de-data/CORRECAO-VD10-FATURAMENTO-DATAS.md`. Na produção em 01/11/2026. **Concluído.** |
+| VD11 — Menores | P3 | `implantacao_treinar` aceita amanhã; idade mínima de 16 anos no primeiro acesso; idade na alta (`pacote_alta_paciente`); baldes diários de logs da busca e janelas de relatório; censo diário perde a alta do último segundo (`23:59:59-03`); "último atendimento" em cadastros duplicados; nome do CSV de auditoria; cancelamento tardio do Hermes (`sentinela.ts:128`, sem fuso); "D+N" da evolução por blocos de 24 h. | vários. Corrigido: migration `20270209000008` (sete funções pelo dia de Brasília; censo até a meia-noite exclusiva), tela (`dataIso`, `src/lib/diaInternacao.ts`) e Hermes (`fimDoDiaDoPlantao`, com o espelho em Python), branch `fix/vd11-menores`. Doc `docs/virada-de-data/CORRECAO-VD11-MENORES.md`. Na produção em 01/11/2026. **Concluído.** |
+| VD12 — Testes frágeis | P2 | `fase5_conta_documentos_sus.sql` e `fase5_conta_glosas.sql` montam a competência em UTC: passam hoje, quebram se vier uma guarda de competência futura. Os três testes do ERP de plantões estão no PR #388. | `supabase/tests`. Corrigido: os dois testes usam `private.data_atual()`, branch `fix/vd12-testes-competencia`. Doc `docs/virada-de-data/CORRECAO-VD12-TESTES-COMPETENCIA.md`. **Concluído.** |
+| VD13 — Check-in que reabre a noite sem limpar o check-out | P1 | Achado na revisão do lote (RT, 01/11/2026). Problema que veio com o VD5: sem escala, quem faz check-in às 19h, check-out às 23h e novo check-in à 1h cai na mesma linha (ontem, `noite`). O `ON CONFLICT ... DO UPDATE` de `registrar_checkin` troca o check-in e deixa o check-out antigo, e o novo check-out é recusado ("Check-out já realizado"). Antes do VD5 isso já acontecia com um segundo check-in no mesmo turno antes da meia-noite. Correção: limpar `checkout_em`, `checkout_lat`, `checkout_lng`, `checkout_dentro` e `checkout_automatico` quando o check-in reabre a linha; teste chamando `registrar_checkin` duas vezes. **Corrigido:** migration `20270209000009_checkin_reabre.sql` limpa o check-out no `DO UPDATE`. O caminho sem escala está desligado desde 26/09/2026 (`tem_acesso_atendimento` = false); o defeito chegava pelo segundo check-in no mesmo plantão com escala. `supabase/tests/vd13_checkin_reabre.sql` falha sem a migration e passa com ela; rollback testado; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD13-CHECKIN-REABRE.md`. Produção: migration aplicada em 01/11/2026 (ok do RT), versão registrada, md5 igual ao da homologação e ACL conferido; PR #405 mesclado. **Concluído.** | `registrar_checkin` (`20270209000004`) |
+| VD14 — Diluição e exportação pelo dia UTC | P2 | Achados na revisão do lote (RT, 01/11/2026). A tabela de diluição publicada das 21h às 24h fica com `data_revisao = current_date`, ou seja, revisada amanhã (em 31/12, no ano seguinte); a versão antiga `publicar_diluicao` tem `DEFAULT CURRENT_DATE`. A exportação de dados (LGPD/estruturada) monta o período com `desde::timestamptz` e `(ate + 1)::timestamptz` em UTC: de 21h da véspera a 21h do último dia. **Corrigido:** migration `20270209000010_diluicao_exportacao_datas.sql`: revisão pelo dia de Brasília (`private.data_atual()`), `publicar_diluicao` com default `NULL` e o dia de Brasília no corpo, e o período da exportação de 00h a 24h de Brasília. `supabase/tests/vd14_diluicao_exportacao.sql` falha sem a migration e passa com ela; rollback testado; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD14-DILUICAO-EXPORTACAO.md`. Produção: migration aplicada em 01/11/2026 (ok do RT), versão registrada, md5 igual ao da homologação e ACL conferido; PR #406 mesclado. **Concluído.** | `publicar_diluicao_versao` (`20270109000001`), `publicar_diluicao`, `private.exp_linhas` (`20261119000004`) |
+| VD15 — Menores da revisão | P3 | Achados na revisão do lote (RT, 01/11/2026): `implantacao_verificar` conta as chegadas depois do D0 com `d0::timestamptz` (pega a noite anterior); janelas de `painel_organizacao` e `hermes_minhas_notificacoes` com `(now() - intervalo)::date`; o aviso de 6 h de observação (`gerar_notificacoes_turno`) pode duplicar quando a janela passa da meia-noite; nome do arquivo exportado com a data UTC (`src/lib/exportacao.ts:169`); telas que dependem do relógio do aparelho (`Extrato.tsx`, `Escala.tsx` `hojeISO`, `MinhaAgenda.tsx`, `EnvioErp.tsx`, `curvas.ts`, `Alta.tsx`, `rascunho.ts` `hojeLocal`, `EncaminhamentosRecebidos.tsx`); a crítica de idade da AIH conta a idade de hoje, não a da internação ou do laudo. Observações sem correção: na primeira geração depois do VD6 o quinzenal pode pular ou repetir uma semana entre um mês gerado antes e outro depois (avisar o gestor); no gráfico da evolução, a aferição do dia da admissão anterior à hora da admissão passa a sair como "D+1", não "Adm" (confirmar); `hermes/dist` no VPS tem de ser um build novo. **Corrigido:** migration `20270209000011_menores_revisao.sql` (implantação, painel, notificações do Hermes e aviso de 6 h sem repetir na virada do dia) e telas pelo dia de Brasília (`dataIso()`, `dataHoraInput()`). A crítica de idade da AIH foi verificada sem correção: todos os caminhos rodam no dia do laudo. As observações seguem para o RT. `supabase/tests/vd15_menores_revisao.sql` e `src/lib/vd15Datas.test.ts` falham sem a correção e passam com ela; rollback testado; na homologação em 01/11/2026. Evidência em `docs/virada-de-data/CORRECAO-VD15-MENORES-REVISAO.md`. Produção: migration aplicada em 01/11/2026 (ok do RT), versão registrada, md5 igual ao da homologação e ACL conferido; PR #407 mesclado. **Concluído.** | vários |
+
+**Conferido sem bug:** calendários da escala, contas de competência no frontend (`somarMeses`, `competenciasDaValidade`, `competenciaDaData`), datas das folhas impressas, 29 de fevereiro em `idadeEm`, cron do censo, `data_atual`, `competencia_limites`/`competencia_de`/`competencia_sugerida`.
+
+**Pergunta de desenho, não verificada:** o BI põe o turno `noite` pelo dia da chegada (`filtros_bi`), então o plantão de 19h às 7h aparece partido em duas datas.
+
+## Teste ponta a ponta da rede — pedido do RT em 06/11/2026
+
+Pedido do RT: "criar n número de possibilidades para testar todo o fluxo de todos os acessos, de um pré-natal a uma eclâmpsia chegando na UPA por encaminhamento, toda a rede, incluindo regulação e custos (custos imaginários, só de exemplo)". O RT decidiu registrar a frente e começar no mesmo dia, com 20 cenários ou mais.
+
+| # | Prioridade | Tarefa | Estado |
+|---|---|---|---|
+| 1 | P0 | Catálogo de cenários (20 ou mais) cobrindo todos os papéis e a rede: UBS, UPA, hospital, regulação, farmácia, faturamento e custos. Os custos são fictícios e marcados como exemplo. Nada é gravado no banco. Fica em `docs/teste-rede/` | Em andamento (06/11/2026) |
+| 2 | P1 | Carga dos cenários na homologação (pacientes, atendimentos e custos fictícios) e execução com login, papel por papel | Aval do RT em 06/11/2026. Ambiente F5 ampliado pelo `scripts/e2e/46_rede_fase5_ampliacao.sql`: Secretaria e módulo de rede, setores pediátrico, isolamento, UTI e obstetrícia, 9 contas novas, CNS e CBO, escala até 13/11. A execução vem em seguida |
+| 3 | P2 | Relatório de achados da execução, com a correção de cada um na sua própria branch | A01 executado em 06/11/2026 (`docs/teste-rede/EXECUCAO-A01.md`). Decisão do RT no mesmo dia: o médico da porta que pôs o paciente em observação deve poder encerrá-la (hoje é recusado). Fica na lista de correções |
+
+Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de memória; o cenário remete à ferramenta do sistema que tem a fonte. A cor da classificação é decisão da enfermagem, também dentro do cenário.
+
+## Trilha — Desempenho (kit de 31 passos), pedido do RT em 08/11/2026
+
+**Origem:** o RT pediu em 08/11/2026: "quero fazer as 31 melhorias agora", do kit de desempenho para apps (goat-entregas.vercel.app/kit-performance-app, de @gustagoat.ai). **Prioridade P1.**
+
+**Como anda:** primeiro a auditoria só de leitura (`docs/desempenho/AUDITORIA.md`), com cada item em "já tem", "não se aplica" (com o motivo) ou "falta", e a linha de base medida. Depois, um item por vez, na ordem do kit (31, 19, 24, 08, 17, 02/15, 01, 05, 13, 04 e o resto). Cada item tem branch `desempenho/<item>` e PR próprio com base master, teste primeiro quando der e medição antes e depois. Migration passa pela homologação, com CI do banco verde e "ok produção" do RT. Frontend puro pode ser mesclado com CI verde. Item "não se aplica" fica registrado com o motivo e é confirmado com o RT; não é implementado.
+
+**Linha de base (08/11/2026):** login da produção no Lighthouse, celular e 4G lento, mediana de 3: nota 68, FCP 3,1 s, LCP 5,2 s, 8.229 KB transferidos; 5.747 KB são o `logo.png` do manifest. JavaScript inicial: 504 KB em gzip. Telas logadas do médico na homologação (sem limitar a rede): 25 a 33 chamadas ao banco por recarga, cerca de 20 delas da casca; dados prontos em 1,4 a 2,5 s; nenhuma chamada passou de 500 ms.
+
+| Item | O que o kit pede | Situação na auditoria (08/11/2026) | Estado |
+|---|---|---|---|
+| 31 | Medir no celular e em 4G lento, antes e depois | Linha de base feita em 08/11/2026: login da produção (Lighthouse) e 7 telas logadas do médico na homologação (`docs/desempenho/AUDITORIA.md`, seção 1) | Linha de base registrada; repetir a cada item |
+| 19 | Servidor na mesma região do banco | Não se aplica: sem funções na Vercel; navegador fala direto com o Supabase `sa-east-1`; borda `gru1` | Confirmado pelo RT em 08/11/2026 |
+| 24 | Só as colunas usadas | Falta: 13 `select('*')` | Corrigido na branch `desempenho/24-colunas` (só frontend): 12 leituras com as colunas da tela (pacientes 19 de 39, observacao 7 de 21, internacoes 5 de 24 etc.); exceção do perfil de quem entrou. Teste `src/lib/semSelectEstrela.test.ts` falha no master. Na homologação em 08/11/2026 (`4dcd5c7f`), sem erro nas leituras. Evidência em `docs/desempenho/ITEM-24-COLUNAS.md`. PR #508 mesclado em 09/11/2026 com CI verde; na produção. **Concluído.** |
+| 08 | Corrigir N+1 | Falta: painel de observação, checagem, trava de alergia, série de sinais | Corrigido na branch `desempenho/08-n-mais-um`: migration `20270320000001` (alergias, acuidade e trava em lote, só funções novas) e loteador na tela; testes `src/lib/loteador.test.ts` e `supabase/tests/desempenho_08_lotes.sql`; na homologação em 09/11/2026 (migration com versão registrada, rollback testado; tela `0fbefeb0`). Evidência em `docs/desempenho/ITEM-08-N-MAIS-UM.md`. Migration na produção em 09/11/2026 (ok do RT: "Todas como recomendado"; md5 das 3 funções igual à homologação), aplicada pela sessão principal. PR #509 mesclado. Falta só a medição na tela. **Concluído.** |
+| 17 | Índices nos filtros, com EXPLAIN | Falta parte: trigram no nome do paciente, 8 políticas RLS do advisor, chaves das tabelas que crescem | A (decisão do RT em 09/11/2026). Branch `desempenho/17-indices`: migration `20270320000002` (busca de paciente por ramo + pg_trgm, 8 políticas RLS, 52 índices de chave); busca com 50 mil pacientes 628 → 1,6 ms (nome) e 651 → 10 ms (CPF); teste `supabase/tests/desempenho_17_busca_rls.sql`; na homologação em 09/11/2026 com versão registrada e rollback testado. Evidência em `docs/desempenho/ITEM-17-INDICES.md`. Migration na produção em 09/11/2026 (ok do RT: "Ok produção nas duas"; função `buscar_pacientes`, 56 índices e 8 políticas iguais à homologação), aplicada pela sessão principal. PR #517 mesclado. **Concluído.** |
+| 02 | Imagens WebP/AVIF no tamanho exibido | Falta: `logo.png` 5,7 MB no manifest; dois PNG órfãos de 5 MB; envio sem reduzir | Corrigido na branch `desempenho/02-15-imagens` (só frontend): ícone de 512 px (437 KB) e de 192 px (67 KB), PNG órfãos apagados, banner, foto e arte reduzidos a WebP no envio. Teste `src/lib/reduzirImagem.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-02-15-IMAGENS.md`. PR #510 mesclado em 09/11/2026; na produção. Login da produção no Lighthouse (celular, 4G lento, mediana de 3): 8.229 KB → 2.551 KB (−69%); o ícone baixado passou a ser o de 192 px (67 KB). **Concluído.** |
+| 15 | Imagem fora da tela só ao chegar perto | Falta: nenhuma `<img>` com `loading="lazy"` | Corrigido junto com o 02: `loading="lazy"` nas listas de banners e de artes do painel. PR #510; na produção. **Concluído.** |
+| 01 | Esqueleto ao carregar | Falta parte: só uma tela usa o `Skeleton` | Decisão do RT em 09/11/2026 (Central, Observação, Internação da enfermagem, Triagem, Regulação). Branch `desempenho/01-esqueletos`: `EsqueletoLinhas` nas cinco telas. Teste `src/lib/esqueletos.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-01-ESQUELETOS.md`. PR #519 mesclado em 09/11/2026; na produção. **Concluído.** |
+| 05 | Paginar listas que crescem | Falta: 19 leituras sem limite; 10 com teto sem página | A, decisão do RT em 09/11/2026: telas clínicas por janela de tempo (internação atual ou 48 h, "ver mais"); listas administrativas em páginas de 20 a 50 ("ver mais"). Migration pede ok produção próprio . **05a** (branch `desempenho/05a-janelas-clinicas`, sem migration): passagens de plantão nas 20 mais recentes; trilha do episódio com os 50 eventos e as 20 transferências mais recentes e "ver mais"; teste `src/lib/janelasClinicas.test.ts`. **05b** (branch `desempenho/05b-paginas`): AIH e APAC da unidade em páginas de 50 com "ver mais", migration `20270320000003` (irmãs `_pagina`, só cria), na homologação em 09/11/2026 com versão registrada e rollback testado; avaliações, intercorrências, Hiperdia e puericultura ficam inteiras de propósito (cálculos na tela). Na produção em 09/11/2026 (ok do RT; #522). **05c** (branch `desempenho/05c-pareceres-procedimentos`): pareceres com os abertos inteiros e os encerrados em páginas de 20; procedimentos em páginas de 20, migration `20270320000004` na homologação com versão registrada e rollback testado. Migration 20270320000004 aplicada na produção em 09/11/2026 (ok do RT, md5 e permissões iguais à homologação); PR #525 mesclado. 05a (#521), 05b (#522) e 05c (#525) concluídos. As demais listas ficam inteiras por ora (a tela calcula sobre a lista toda; ver o ITEM-05). Evidência em `docs/desempenho/ITEM-05-PAGINACAO.md` |
+| 13 | Texto da IA aos poucos | Já tem: stream NDJSON em `useClinicalAsk.ts` | — |
+| 04 | Esperar parar de digitar na busca | Falta: ~15 buscas consultam a cada tecla | Corrigido na branch `desempenho/04-busca-espera` (só frontend): `useValorAdiado` (300 ms) em 18 buscas. Teste `src/lib/buscaComEspera.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-04-BUSCA-ESPERA.md`. PR #511 mesclado em 09/11/2026; na produção. **Concluído.** |
+| 03 | Sem chamada repetida | Falta parte: a casca repete `perfis` 3×, `contexto_sem_conexao` 2×, `meu_plantao_agora` por cinco caminhos, em toda recarga | Corrigido na branch `desempenho/03-chamadas-repetidas` (só frontend): teste `src/lib/chamadaCompartilhada.test.ts` (9 casos, falha sem a correção); na homologação em 08/11/2026 (`0d1a0f19`): 4 a 7 chamadas a menos por recarga nas 7 telas do médico, nenhuma repetição da casca. Evidência em `docs/desempenho/ITEM-03-CHAMADAS-REPETIDAS.md`. PR #507 mesclado em 08/11/2026 com CI verde; na produção. **Concluído.** |
+| 12 | Tempo-limite em serviço externo | Falta parte: Resend sem limite; navegador sem limite | B (decisão do RT em 09/11/2026). Branch `desempenho/12-tempo-limite-resend`: Resend com 10 s no `enviar-codigo-2fa`, estouro responde 504 e relata ao Sentry. Teste `src/lib/tempoLimiteResend.test.ts` falha no master. Função publicada na homologação em 09/11/2026. Evidência em `docs/desempenho/ITEM-12-TEMPO-LIMITE.md`. PR #518 mesclado; função publicada na produção em 09/11/2026 (versão 15, ok do RT). **Concluído.** |
+| 16 | Chamadas independentes em paralelo | Já tem: nenhuma sequência independente | — |
+| 21 | Scripts de terceiros depois da página | Falta parte: Sentry no pacote inicial | Corrigido na branch `desempenho/21-sentry-depois`: Sentry por import dinâmico depois da pintura (28,8 KB em gzip fora do inicial), fila de até 20 erros; JS inicial 371 → 342 KB em gzip. Teste `src/lib/filaAteCarregar.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-21-SENTRY-DEPOIS.md`. PR #514 mesclado em 09/11/2026; na produção. **Concluído.** |
+| 22 | JavaScript por tela | Falta parte: dependências do jsPDF e do Recharts no `vendor-other` inicial | Corrigido na branch `desempenho/22-pacote-inicial` (só build): sem o `vendor-other` único; JavaScript inicial de 504 KB para 371 KB em gzip (−26%). Teste `src/lib/pacoteInicial.test.ts` falha no master. Evidência em `docs/desempenho/ITEM-22-PACOTE-INICIAL.md`. PR #513 mesclado em 09/11/2026; na produção. **Concluído.** |
+| 29 | Fontes no próprio domínio | Já tem: `@fontsource-variable` | — |
+| 14 | Interface otimista | Já tem onde cabe; ação clínica não | — |
+| 26 | Evitar redesenho à toa | Não se aplica por ora: sem travamento relatado | Condicionado ao 30 (decisão do RT em 09/11/2026): rever com o INP das telas reais |
+| 30 | Medir usuários reais | Falta, decisão do RT em 09/11/2026 (antes "não se aplica por ora"); entrou antes do 08 | Corrigido na branch `desempenho/30-usuarios-reais` (só frontend): `web-vitals` 5.1.0 (LCP, INP, CLS, FCP, TTFB) ao Sentry depois da pintura, só com métrica, valor, nota, rota sem identificador e papel. Testes `src/lib/rotaSemIdentificador.test.ts` e `src/lib/metricaReal.test.ts`. Evidência em `docs/desempenho/ITEM-30-USUARIOS-REAIS.md`. PR #515 mesclado em 09/11/2026; na homologação e na produção. **Concluído.** |
+| 11 | Tirar dependências sem uso | Falta (pequeno): `framer-motion`, `mammoth` | Corrigido na branch `desempenho/11-dependencias`: `framer-motion` e `mammoth` fora do `package.json` e do `vite.config.ts`; o lockfile perde 28 pacotes que só eles usavam (o `pako` do jsPDF fica, aninhado no `fast-png`). Guarda `src/lib/dependenciasEmUso.test.ts` falha no master. PR #520 mesclado em 09/11/2026. **Concluído.** |
+| 06 | CDN | Já tem: Vercel `gru1` + Cloudflare | — |
+| 09 | Compressão | Já tem: Brotli | — |
+| 27 | Cache de arquivos com hash | Falta parte: service worker guarda; cabeçalho HTTP de 4 h, não `immutable` | Corrigido na branch `desempenho/27-cache-assets`: `/assets/(.*)` com `public, max-age=31536000, immutable` no `vercel.json`; HTML e `sw.js` seguem `no-cache`. Teste `src/lib/cacheAssets.test.ts` falha no master. PR #512 mesclado em 09/11/2026; conferido na produção: `cache-control: public, max-age=31536000, immutable` em `/assets/*`. **Concluído.** |
+| 25 | Pool de conexões | Não se aplica: app só usa `supabase-js` (HTTP); Hermes já tem pool | Confirmado pelo RT em 08/11/2026 |
+| 07 | Tarefa lenta em fila | Já tem onde precisa: RNDS e webhooks por fila | — |
+| 10 | Cache com Redis | Não se aplica: volume de uma unidade | Confirmado pelo RT em 08/11/2026 |
+| 18 | OpenTelemetry | Não se aplica: regras em RPC, sem backend em etapas | Confirmado pelo RT em 08/11/2026 |
+| 20 | HTML pronto no servidor | Não se aplica: app atrás do login; landing já é Next.js | Confirmado pelo RT em 08/11/2026 |
+| 23 | Virtualizar listas longas | Não se aplica se o 05 paginar | Confirmado pelo RT em 08/11/2026 |
+| 28 | Várias instâncias | Não se aplica: Vercel e Supabase gerenciados | Confirmado pelo RT em 08/11/2026 |
+
+Trilha fechada pelo RT em 09/11/2026 ("vamos fechar desempenho e começar o humanizer"). O resto do 05 (chat, chamados, pessoas, diluições), o 23 e o 26 esperam os números reais do item 30.
+
+## Trilha — Humanizer (textos sem cara de IA), pedido do RT em 09/11/2026
+
+Origem: o RT pediu em 09/11/2026 para deixar os textos "mais humanos, com menos AI slop", com a skill humanizer (github.com/blader/humanizer, MIT, instalada no usuário). Prioridade P1, logo depois da trilha de desempenho. O RT descartou o laya (classificador de texto) na mesma conversa.
+
+Escopo: textos das telas (títulos, descrições, avisos, erros, ajudas, estados vazios), o site de marketing (`landing/`), documentos do projeto e descrições de PR. Ficam de fora o conteúdo clínico (doses, protocolos, escores, critérios, sinais vitais, cor da classificação), o código, os comentários e os textos legais.
+
+Base: o levantamento só de leitura de 09/11/2026 (`docs/humanizer/LEVANTAMENTO.md`), com 114 achados, 35 deles fortes. O conteúdo provisório do site de marketing (depoimentos, "-35%", telefone, endereço e prazo de resposta) já saiu no PR #524.
+
+| Lote | O que entra | Estado |
+|---|---|---|
+| 1 | Página pública do app (`Landing.tsx`), lateral da entrada, cadastro, login e "papel em preparo"; textos que restaram do site de marketing; o erro "candidat-se" da Escala e a promessa vencida da Regulação | Feito: 36 textos em 13 arquivos, aprovado pelo RT; PR #527 mesclado em 09/11/2026 |
+| 2 | Os outros achados fortes: gestor, farmácia, regulação, componentes comuns, admin e rede | Feito: 13 textos em 11 arquivos; PR #531 mesclado em 09/11/2026 |
+| 3 | Achados fracos: travessão como conectivo, "com sucesso", estados vazios que repetem o título, "nasce" | Feito: 65 textos em 48 arquivos e 69 linhas de aspas curvas; PR #532 mesclado em 09/11/2026 |
+| 4 | Documentos: negrito decorativo, títulos com travessão, `README.md` desatualizado | Feito: `README.md`, `docs/desempenho/` e `docs/teste-rede/fila/` (24 arquivos), sem mudar fato, número, tabela nem bloco de código. O README perdeu a senha das contas de teste antigas, que estão bloqueadas na produção (conferido em 09/11/2026) |
+
+As duas mensagens do banco do levantamento são fracas e dependem de migration; ficam para quando outra mudança tocar as mesmas funções.
+
+Trilha fechada em 09/11/2026: os quatro lotes estão na produção.
+
+## Decisões pendentes — bloco rápido, RT em 10/11/2026
+
+Origem: levantamento das decisões ainda abertas no BACKLOG e nos documentos, feito em 10/11/2026 só por leitura. O RT escolheu começar pelo bloco rápido (7 itens) e respondeu "Todas como recomendado".
+
+| # | Item | Decisão do RT | Estado |
+|---|---|---|---|
+| 1 | Telas repetidas na Central: `DenguePed` e `SdraVentilacaoAdulto` têm duas entradas cada (`src/content/duplicadas.test.ts`) | A: fica uma entrada de cada; a do Manual sai e o endereço antigo redireciona, como a VM do ponto 2 | Feito: saíram "Dengue — criança" (seção Dengue) e "SDRA — ventilação protetora" (seção VM); os endereços redirecionam. PR #535, só tela; na produção em 10/11/2026 |
+| 2 | Reindexar as ferramentas da IA (`biblioteca/ferramentas.json`; a coleção `ferramentas` é a mesma da homologação e da produção) | A: gerar o catálogo de novo, sem as repetidas do item 1, e reindexar. Pede o "ok produção" na hora | Feito: catálogo gerado de novo (227 ferramentas; entraram 22, saíram 4 redirecionadas desde 23/10), PR #539; com o ok produção do RT, reindexado no VPS em 10/11/2026 (227 pontos; cópia do arquivo anterior em `/srv/biblioteca/ferramentas.json.bak-20261110`) |
+| 3a | Ponto 12, pergunta 3: separar laboratório de imagem e ECG também no pedido rápido da porta (`docs/plantonista/PONTO-12-EXAMES.md`) | A: sim, a mesma regra do leito | Feito: `pedir_exames` recusa a mistura de grupos e o texto livre leva o grupo; tela com a escolha do grupo. Migration `20270321000001`, PR #537; teste falha sem e passa com (CI); rollback testado na homologação; na produção em 10/11/2026 com o ok do RT (md5 igual ao da homologação) |
+| 3b | Ponto 12, pergunta 4: folha impressa por pedido no leito | A: não; o pedido fica no sistema, como na porta | Decidido, sem código |
+| 4 | Gráfico da evolução: aferição do dia da admissão, antes da hora dela, sai "D+1" (`src/lib/diaInternacao.ts`) | A: tudo antes do instante da admissão sai "Adm" | Feito: PR #536, só tela; na produção em 10/11/2026 |
+| 5 | BI: o turno `noite` entra pelo dia da chegada (`filtros_bi`), e o plantão de 19h às 7h aparece em duas datas | A: o turno da noite conta pela data em que o plantão começou | Feito: o dia do BI vai das 7h às 7h (`private.dia_do_plantao`), no recorte e nas séries dos quatro indicadores. Migration `20270321000002`, PR #538; teste falha sem e passa com (homologação); rollback testado; na produção em 10/11/2026 com o ok do RT (md5 iguais aos da homologação) |
+| 6 | Remuneração, P3-C10: fracionado de 12 h que começa de manhã vale 1.200 (base 360 min), o dobro do de 6 h | A: está certo; 12 h de dia = manhã + tarde, valor proporcional às horas | Decidido, sem código |
+| 7 | Quinzenal: na 1ª geração depois do VD6 pode pular ou repetir uma semana (`docs/virada-de-data/CORRECAO-VD15-MENORES-REVISAO.md`) | A: sem ação; a produção não tem equipe escalada, não há gestor a avisar | Decidido, sem código |
+
+**Bloco fechado em 10/11/2026:** os sete itens estão feitos ou decididos. Cada item com código foi em branch e PR próprios, pela homologação. Os outros blocos do levantamento (lacunas do Portão de 11/10, escores e itens do PubMed deixados para depois, unidade piloto da RNDS, M12 e a aprovação das versões das fichas) esperam o RT.
+
+## Trilha — Lacunas do Portão de 11/10/2026, RT em 10/11/2026
+
+Origem: seção 3 do relatório do teste de ponta a ponta de 11/10/2026 (`produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`), com as funções que o roteiro esperava e o produto não tinha. Estavam "aguardando a decisão do RT sobre a entrada no backlog". Em 10/11/2026 conferi cada uma contra o código: as nove primeiras continuam abertas, a 10 está parcial (só o painel do administrador mostra óbitos) e a 11 existe, mas não foi testada. O RT escolheu "A, todas nessa ordem".
+
+**Trilha concluída em 10/11/2026:** as lacunas 1 a 10 estão na produção; a 11 teve as regras testadas e falta o envio real com login, pelo roteiro.
+
+Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as opções para o RT decidir antes de qualquer código; depois, branch e PR próprios (`lacunas/<nome>`), homologação e, com migration, o "ok produção". Conteúdo clínico ou legal só com fonte citada.
+
+| # | Prioridade | Lacuna | Hoje | Estado |
+|---|---|---|---|---|
+| 1 | P1 | Cadastro provisório de paciente não identificado na recepção | A ficha exige nome com 3 letras; o paciente inconsciente do SAMU não entra pela recepção. O marcador "não identificado" só existe na regulação; a reidentificação posterior funciona | Feito: o RT escolheu A em N1 a N4 (10/11/2026). Nome "Não identificado <prontuário>", sexo aparente, idade estimada e sinais; selo nas filas; "Identificar paciente" com busca de duplicata e unificação; histórico em `pacientes_identidade_provisoria`. Migration `20270322000001`, PR #542; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-01-NAO-IDENTIFICADO-DIAGNOSTICO.md` |
+| 2 | P1 | Pulseira de identificação | Não há rota, RPC nem folha | Feito: o RT escolheu A em P1 a P8 (10/11/2026), pelo Protocolo de Identificação do Paciente (Anexo 02, Portaria MS 2.095/2013), e a pulseira é opcional por unidade (`unidades.usa_pulseira`, o gestor liga em Configuração). Etiqueta sem leito, setor, diagnóstico ou alergia; não identificado e RN com campos próprios; impressão com protocolo IMP- e reimpressão com motivo. Migration `20270323000001`, PR #544; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-02-PULSEIRA-DIAGNOSTICO.md` |
+| 3 | P1 | Medicação controlada (Portaria 344): marca no catálogo, receita especial, aprovação, dispensação e lote na farmácia | O catálogo não marca controlado; haloperidol e midazolam entram como qualquer item. Fonte: listas da ANVISA | Feito: o RT escolheu A em C1 a C6 (10/11/2026). `substancias_controladas` com 25 substâncias da RDC ANVISA 1.036/2026, conferidas no texto; catálogo marcado por gatilho (28 itens na produção); liberação da farmácia obrigatória, como na alta vigilância; selo na prescrição, checagem e farmácia; receita para casa pela lista (C1/C5 em Controle Especial; A/B param com aviso de Notificação); rótulos corrigidos; codeína em Notificação A (ampola a 3%). Migration `20270324000001` e função `folha`, PR #547; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Fora: livro de registro, balanço, lote/validade, intervenção farmacêutica, limites dos Arts. 57 e 59. Diagnóstico em `docs/farmacia/LACUNA-03-CONTROLADOS-DIAGNOSTICO.md`. À parte: aviso em dobro da farmácia e do leito corrigido (migration `20270323000002`, PR #546, na produção) |
+| 4 | P1 | Registro de contenção mecânica (indicação, horário, revisão, retirada) | Só a intercorrência de agitação. Fonte: norma do COFEN | Feito: o RT escolheu A em K1 a K10 (10/11/2026), pela Resolução COFEN 746/2024 e a Nota Técnica ANVISA 07/2026. Registro próprio (`contencoes`, `contencao_revisoes`): enfermeiro ou médico inicia, técnico revisa e retira; item "Contenção mecânica" na prescrição (24 h); aviso de contenção sem prescrição, revisão atrasada (1 h) e renovação (job `contencao-avisos`); Linha do tempo com contenções e intercorrências; relatório do gestor; folha de registro; citação da COFEN 427/2012 (revogada) corrigida. Migration `20270325000001` e função `folha`, PR #549; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-04-CONTENCAO-DIAGNOSTICO.md` |
+| 5 | P1 | Declaração de óbito e registro da comunicação do óbito | Só o número da D.O. dentro do desfecho | Feito: o RT escolheu A em O1 a O8 (10/11/2026); o registro é só para o prontuário (a D.O. que vale é o formulário do MS, vias branca, amarela e rosa). Fontes: Portaria SVS/MS 116/2009, manual da D.O. (MS, 2022), MS/CFM 2009, Res. CFM 1.779/2005. Mesmos dados nas três telas (`obitos`), tipo de morte (unidade, SVO ou IML), comunicação à família e à polícia, conferência e liberação do corpo, leito "aguardando liberação do corpo", sumário de óbito emitido. Migration `20270326000001` e função `folha`, PR #551; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-05-OBITO-DIAGNOSTICO.md` |
+| 6 | P1 | Prescrição vencida e renovação | A prescrição tem `valida_ate`, sem aviso, renovação nem bloqueio | Feito: o RT escolheu A em V1 a V9 (10/11/2026), pela Resolução COFEN 689/2022 (art. 4º, 24 h no serviço hospitalar). Validade de 24 h por item ("Agora" sem prazo; na publicação, 24 h para os ativos); vencido não é checado como feito, não é dispensado e sai do aprazamento; pedido de renovação da enfermagem; renovação item a item (manter, alterar, suspender); avisos 2 h antes e no vencimento; "válido até" na folha. Migration `20270327000001` e função `folha`, PR #554; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-06-PRESCRICAO-VENCIDA-DIAGNOSTICO.md`. Ponto aberto: aceitar o "feito" de horário aprazado antes do vencimento registrado depois |
+| 7 | P2 | Resumo e checklist de transferência | O laudo e o encaminhamento são o mais próximo | Feito: o RT escolheu A em T1 a T9 (10/11/2026), pela Portaria GM/MS 2.048/2002 (Cap. VI, 3.1 e 3.3) e Res. CFM 1.672/2003, 2.079/2014 e 2.110/2014. Documento de transferência com retrato do servidor e texto do médico; checklist registrado; trava única: transferência externa só com o documento emitido; folha em duas vias; destino na rede e NIR leem pela regulação. Migration `20270329000001` e função `folha`, PR #558; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Pendentes: roteiros e2e antigos sem a emissão do documento; cancelamento do documento depois da transferência ainda permitido (auditado). Diagnóstico em `docs/porta/LACUNA-07-TRANSFERENCIA-DIAGNOSTICO.md` |
+| 8 | P2 | Reabrir atendimento depois do desfecho, com motivo e registro | Não há RPC; depois do desfecho o atendimento fica bloqueado | Feito: o RT escolheu A em R1 a R10 (10/11/2026). `reabrir_atendimento` (autor ou gestor, 24 h, motivo de lista; alta, alta após medicação, alta a pedido, evasão; transferência sem saída); `episodio_eventos` guarda o desfecho desfeito; volta só a prescrição dentro da validade; RAC pendente descartado, contrarreferência cancelada, webhook `atendimento.reaberto`; selo "Reaberto"; `cancelar_alta` com `tenho_papel`. Migration `20270330000001`, PR #560; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-08-REABRIR-ATENDIMENTO-DIAGNOSTICO.md` |
+| 9 | P2 | Situação "atrasado" registrada na checagem | O atraso só é calculado na fila | Feito: o RT escolheu A em A1 a A9 (10/11/2026), pelo Anexo 03 da Portaria MS 2.095/2013 e COFEN 514/2016, com a janela da unidade de 2 h. Atraso gravado em `administracoes` com motivo de lista no "feito" atrasado; `doses_atrasadas` com ciência do enfermeiro; `omissoes_dose` (12 h); job `checagem-atraso`; selo na Checagem e indicador do gestor (taxas de atraso e omissão). `checar` ganhou dois parâmetros opcionais. Migration `20270331000001`, PR #561; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/porta/LACUNA-09-ATRASADO-CHECAGEM-DIAGNOSTICO.md` |
+| 10 | P2 | Óbitos no painel do gestor e em Indicadores | Só o painel do administrador (`NumerosOrganizacao`) mostra | Feito em paralelo com a 6 (liberado pelo RT): A em P1 a P8 (10/11/2026), com referência na Portaria SAS/MS 312/2002. Cartão "Óbitos" em Indicadores (`indicador_obitos`: origem, setor, tipo de morte, encaminhamento, adulto ou pediátrico, menos ou mais de 24 h, óbitos sobre saídas, lista auditada, CSV sem nome, dia do plantão); painel do admin conta todos os óbitos, com os anteriores à lacuna 5, mantendo a supressão. Migration `20270328000001`, PR #553; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/gestor/LACUNA-10-OBITOS-PAINEL-DIAGNOSTICO.md` |
+| 11 | P2 | Anexar exame, imagem ou ECG como arquivo: testar na homologação | Existe; o teste local falhou por causa do storage local | Regras testadas na homologação em 10/11/2026 (22 casos, transação desfeita): envio, leitura, recusas e RPC conferem; o erro 42P10 era só do storage local. Falta o envio real com login, pelo roteiro em `docs/porta/LACUNA-11-ANEXO-TESTE.md`. Risco achado: o laudo abre com `window.open` depois de chamadas ao servidor e pode ser barrado pelo bloqueador de pop-up no Safari e no celular |
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
@@ -1820,18 +2546,20 @@ Observação: a ordem de execução segue a ordem técnica da Fase 0 (homolog an
 
 Pedidos e achados que o responsável decidiu deixar para **depois de terminar este backlog**. Não entram em nenhuma fase até lá.
 
+**Frente aberta pelo RT em 05/11/2026** ("Achados guardados"), depois do encerramento da Fase 5. Começa pelo lote de segurança, nesta ordem: exportações em CSV, rascunho cifrado da triagem, recarga sem conexão e chave da fila vinda do servidor ("Sim, nessa ordem"). Cada achado tem branch e PR próprios.
+
 | Data | Achado | Origem | Decisão |
 |---|---|---|---|
-| 07/10/2026 | **Rascunho cifrado na triagem.** A tela de classificação (`src/pages/enfermagem/triagem/Classificar.tsx`) não guarda rascunho: recarregar a página, cair a conexão ou acabar a bateria apaga sinais vitais, Glasgow e avaliação já digitados. Usar o mesmo mecanismo do item 13 (AES-GCM, chave por sessão). | Ensaio da demo (item 17) na homologação | RT: guardar para depois do backlog |
-| 07/10/2026 | **Frequência / horários na prescrição do PS.** Na porta só há "Agora" e "Se necessário" (desenho do protótipo); a frequência com horário (8/8h, 12/12h) existe só na observação e na internação. | Ensaio da demo (item 17) | RT: guardar para depois do backlog |
-| 07/10/2026 | **Favoritos de prescrição na porta.** As "Minhas preferências de prescrição" (favoritos do próprio médico, posologia escrita por ele) aparecem no Receituário, não na prescrição do PS. O sistema continua sem sugerir dose. | Ensaio da demo (item 17) | RT: guardar para depois do backlog |
-| 07/10/2026 | **Sugerir CID a partir da Avaliação.** Hoje a busca de CID só funciona no campo CID-10; a ideia é sugerir o código a partir do texto da hipótese diagnóstica (ex.: "pneumonia" → J18.9), com a escolha sempre do médico. | Ensaio da demo (item 17) | RT: guardar para depois do backlog |
-| 07/10/2026 | **Exportações antigas sem proteção.** A escala (`Escala.tsx`) e a auditoria de transferências (`InternacaoPainel.tsx`) montam o CSV à mão: texto com ";" ou quebra de linha desalinha a planilha, texto começando com "=" vira fórmula, e a de transferências leva nome de paciente sem registro na auditoria. Passar as duas para `src/lib/csv.ts` e auditar a de transferências. | Item 18 | RT: fora desta entrega (só Indicadores) |
-| 07/10/2026 | **Chave da fila sem conexão vinda do servidor.** Hoje a chave da fila fica no navegador (não exportável, mas usável por qualquer script da origem): num computador compartilhado, alguém com as ferramentas de desenvolvedor poderia decifrar a fila **ainda não sincronizada** de outra pessoa daquele navegador. Alternativa: chave por pessoa entregue pelo servidor só depois de login + 2FA — com o cuidado de não impedir o registro quando a aba recarrega sem internet. | Item 20 | RT: guardar para depois do backlog |
+| 07/10/2026 | **Rascunho cifrado na triagem.** A tela de classificação (`src/pages/enfermagem/triagem/Classificar.tsx`) não guarda rascunho: recarregar a página, cair a conexão ou acabar a bateria apaga sinais vitais, Glasgow e avaliação já digitados. Usar o mesmo mecanismo do item 13 (AES-GCM, chave por sessão). | Ensaio da demo (item 17) na homologação | RT: guardar para depois do backlog. **Feito em 05/11/2026**, com A em M1 a M5 (diagnóstico em `docs/porta/RASCUNHO-TRIAGEM-DIAGNOSTICO.md`): `src/lib/rascunhoTriagem.ts` usa o cofre do item 13 (AES-256-GCM com a chave da sessão). O rascunho tem validade de 2 h. A tela mostra a faixa "Rascunho das HH:MM recuperado. Confira os sinais vitais antes de registrar." e o botão "Descartar rascunho". O rascunho é apagado ao registrar, no logout e ao vencer. Sem migration. Conferido na homologação como `enfermeiro.upa.f5`: só texto cifrado no navegador, recarga com a cor e os sinais recuperados, e o descarte limpa tudo. |
+| 07/10/2026 | **Frequência / horários na prescrição do PS.** Na porta só há "Agora" e "Se necessário" (desenho do protótipo); a frequência com horário (8/8h, 12/12h) existe só na observação e na internação. | Ensaio da demo (item 17) | RT: guardar para depois do backlog **Feito em 06/11/2026**, frente "Achados guardados", com A em F1 a F6. Diagnóstico em `docs/porta/FREQUENCIA-PRESCRICAO-PS-DIAGNOSTICO.md`. Mudanças: botões de frequência na porta (servidor recusa frequência que não entende); painel da porta com as doses por horário; alta só com as doses vencidas feitas ou não feitas com motivo; lista "Vindos da porta" na prescrição do leito; "Agora" como dose única também no servidor; horários na folha impressa do leito. Migration `20270301000001`, com teste `depois_frequencia_ps` e rollback testados na homologação. Falta o "ok produção". |
+| 07/10/2026 | **Favoritos de prescrição na porta.** As "Minhas preferências de prescrição" (favoritos do próprio médico, posologia escrita por ele) aparecem no Receituário, não na prescrição do PS. O sistema continua sem sugerir dose. | Ensaio da demo (item 17) | RT: guardar para depois do backlog **Feito em 06/11/2026**, frente "Achados guardados", com A em G1 a G5. Diagnóstico em `docs/porta/FAVORITOS-PRESCRICAO-PORTA-DIAGNOSTICO.md`. Os chips "Meus favoritos" ficam acima do "Novo item" da porta. O clique só preenche o formulário; o médico confere e prescreve. A frequência é marcada só quando o sistema a entende; a via que não é da porta vira lembrete. Não há favoritos na pediatria, e a trava de alergia do Receituário vale aqui. Sem migration. Conferido no Chrome na homologação como `medico.upa.f5`: o favorito com 8/8h preencheu dose, VO e 8/8h; o favorito com via IV e texto de receita deixou a via como lembrete, o "Quando" em branco e o Prescrever travado. |
+| 07/10/2026 | **Sugerir CID a partir da Avaliação.** Hoje a busca de CID só funciona no campo CID-10; a ideia é sugerir o código a partir do texto da hipótese diagnóstica (ex.: "pneumonia" → J18.9), com a escolha sempre do médico. | Ensaio da demo (item 17) | RT: guardar para depois do backlog. **Em andamento em 06/11/2026**, frente "Achados guardados", com A em C1 a C7. Diagnóstico em `docs/porta/CID-SUGERIDO-AVALIACAO-DIAGNOSTICO.md`. A sugestão é determinística: a tabela `cid_termo`, com 69 termos curados, e a busca de texto do banco. Os chips "CIDs de referência" aparecem na porta, na consulta da UBS e na subaba Diagnóstico da internação; o clique só preenche o campo CID. Termo negado não gera sugestão. A RPC já foi conferida na homologação. O RT aprovou a lista de termos (`docs/porta/CID-SUGERIDO-LISTA-TERMOS.md`) sem correções em 06/11/2026. Falta conferir a tela no Chrome e dar o ok produção da migration `20270302000001`. |
+| 07/10/2026 | **Exportações antigas sem proteção.** A escala (`Escala.tsx`) e a auditoria de transferências (`InternacaoPainel.tsx`) montam o CSV à mão: texto com ";" ou quebra de linha desalinha a planilha, texto começando com "=" vira fórmula, e a de transferências leva nome de paciente sem registro na auditoria. Passar as duas para `src/lib/csv.ts` e auditar a de transferências. | Item 18 | RT: fora desta entrega (só Indicadores). **Feito em 05/11/2026** (lote de segurança dos achados): as duas telas usam a `csv.ts` por `src/lib/exportacoesAntigas.ts`, e a exportação de transferências registra `exportacao_csv` na auditoria antes de gerar o arquivo. Sem o registro, o arquivo não é gerado. Sem migration. Conferido na homologação como `gestor.upa.f5`: motivo com "=" e ";" protegido, contexto da unidade e registro em `log_auditoria`. |
+| 07/10/2026 | **Chave da fila sem conexão vinda do servidor.** Hoje a chave da fila fica no navegador (não exportável, mas usável por qualquer script da origem): num computador compartilhado, alguém com as ferramentas de desenvolvedor poderia decifrar a fila **ainda não sincronizada** de outra pessoa daquele navegador. Alternativa: chave por pessoa entregue pelo servidor só depois de login + 2FA — com o cuidado de não impedir o registro quando a aba recarrega sem internet. | Item 20 | RT: guardar para depois do backlog  **Feito em 05/11/2026** com A em O1 a O5. O diagnóstico está em `docs/porta/CHAVE-FILA-SERVIDOR-DIAGNOSTICO.md`. A migration `20270227000001` cria a chave por pessoa em `private.chave_fila`. A `chave_fila()` só a entrega depois do segundo fator. A `trocar_chave_fila()` é só do administrador e fica na auditoria. O teste `depois_chave_fila` foi rodado na homologação, e o rollback foi testado. O `fila.ts` agora guarda a chave do servidor só na memória e numa cópia da aba. Sair apaga as duas. A fila antiga passa para a chave nova, e a chave do aparelho é apagada. O aviso de saída mostra quantos registros ainda estão no aparelho. Conferido na homologação como `enfermeiro.upa.f5`: a chave chegou à aba, não ficou nenhuma chave no aparelho, e sair apagou a cópia, a sessão guardada e as consultas. Falta o "ok produção" da migration. |
 | 08/10/2026 | **Histórico encerrado com muitos atendimentos fica poluído.** Hoje a lista mostra todos (até 200), um por linha, com rolagem dentro do cartão. Repensar a apresentação: agrupar (por ano, por desfecho ou só os mais recentes com "ver mais"), destacar internações e retornos, resumo no topo. | Teste da tarefa 8 (Fase 1) | RT: guardar para depois do backlog |
-| 09/10/2026 | **Revisão das 211 ferramentas e da biblioteca com o PubMed.** Pedido do RT, com a Fase 2 pausada. Resultado em `produto/docs/pesquisa/revisao-pubmed-2026-10/RESUMO.md`: 11 itens de prioridade alta, como pós-PCR com prevenção de febre e PAM ≥ 60–65, correção da AHA 2026 no AVC, REMAP-CAP contra o corticoide na PAC, Duke-ISCVID 2023, aviso no HINTS, carvão ativado até 6 h, SHR ADQI 2024, ITU AAP 2026 e PRoMPT BOLUS. Também citações erradas (Morse, ATS 2025) e 10 fontes CC BY para a biblioteca. Nada aplicado no código. | Revisão PubMed (6 frentes) | RT decide o que vira tarefa |
-| 09/10/2026 | **Classificação de pacientes pediátricos.** O Fugulin é instrumento do adulto e não se usa na criança. Existe um instrumento pediátrico validado, de Dini AP, Fugulin FMT, Veríssimo MLÓR, Guirardello EB (Rev Esc Enferm USP 2011;45(3):575-80, [doi:10.1590/s0080-62342011000300004](https://doi.org/10.1590/s0080-62342011000300004)), com as mesmas cinco categorias. Avaliar a fonte e a licença antes de entrar. | Fase 2, tarefa 5 (Fugulin), pesquisa no PubMed | Guardado (o RT decide) |
-| 09/10/2026 | **Recarregar a página sem conexão leva ao login.** A fila não se perde, mas a enfermagem fica sem o sistema até a rede voltar, porque o perfil é lido do servidor a cada carga (`AuthContext.loadPerfil`). Alternativa: guardar no aparelho, cifrado, o perfil do último login e manter o modo sem conexão depois da recarga, com as mesmas regras de 2 h e 20 min. Até lá, o plano de contingência diz para não recarregar durante a queda. | Fase 2, tarefa 7 (teste do offline) | Guardado (achado do teste; o RT decide) |
+| 09/10/2026 | **Revisão das 211 ferramentas e da biblioteca com o PubMed.** Pedido do RT, com a Fase 2 pausada. Resultado em `produto/docs/pesquisa/revisao-pubmed-2026-10/RESUMO.md`: 11 itens de prioridade alta, como pós-PCR com prevenção de febre e PAM ≥ 60–65, correção da AHA 2026 no AVC, REMAP-CAP contra o corticoide na PAC, Duke-ISCVID 2023, aviso no HINTS, carvão ativado até 6 h, SHR ADQI 2024, ITU AAP 2026 e PRoMPT BOLUS. Também citações erradas (Morse, ATS 2025) e 10 fontes CC BY para a biblioteca. Nada aplicado no código. | Revisão PubMed (6 frentes) | RT decide o que vira tarefa **06/11/2026, frente "Achados guardados":** os 11 itens altos já estavam no master desde outubro. O RT pediu "Todos os médios" e decidiu A em H1 a H22 (diagnóstico em `docs/clinico/REVISAO-PUBMED-MEDIOS-DIAGNOSTICO.md`). Entraram cerca de 40 notas de novidade ou divergência, com fonte conferida no PubMed, em 50 fichas, nos PRs #467 a #471. Nenhuma dose mudou, exceto a janela do carvão na reversão de DOAC (< 4 h, SBTH 2026, H2). A migration `20270228000001` registra as 50 versões, que ficam aguardando aprovação do RT. Ficaram para depois: H7 (conferir dose por dose dos antídotos), H14 (rótulos do NEWS2) e H19 a H22. |
+| 09/10/2026 | **Classificação de pacientes pediátricos.** O Fugulin é instrumento do adulto e não se usa na criança. Existe um instrumento pediátrico validado, de Dini AP, Fugulin FMT, Veríssimo MLÓR, Guirardello EB (Rev Esc Enferm USP 2011;45(3):575-80, [doi:10.1590/s0080-62342011000300004](https://doi.org/10.1590/s0080-62342011000300004)), com as mesmas cinco categorias. Avaliar a fonte e a licença antes de entrar. | Fase 2, tarefa 5 (Fugulin), pesquisa no PubMed | Guardado (o RT decide). **Em andamento em 06/11/2026**, frente "Achados guardados", com A em D1 a D7. Diagnóstico e resumo aprovado das 44 situações em `docs/clinico/DINI-PEDIATRICO-DIAGNOSTICO.md`. Versão aperfeiçoada de 2014 (11 indicadores, 11 a 44 pontos, 5 categorias) para menores de 14 anos, com resumo nosso no lugar do texto CC BY-NC. Migrations `20270303000001` e `20270303000002` na homologação, com o teste de banco passando. Falta conferir a tela no Chrome e dar o ok produção. |
+| 09/10/2026 | **Recarregar a página sem conexão leva ao login.** A fila não se perde, mas a enfermagem fica sem o sistema até a rede voltar, porque o perfil é lido do servidor a cada carga (`AuthContext.loadPerfil`). Alternativa: guardar no aparelho, cifrado, o perfil do último login e manter o modo sem conexão depois da recarga, com as mesmas regras de 2 h e 20 min. Até lá, o plano de contingência diz para não recarregar durante a queda. | Fase 2, tarefa 7 (teste do offline) | Guardado (achado do teste; o RT decide). **Aberto em 05/11/2026** (lote de segurança), com A em N1 a N5. O diagnóstico está em `docs/porta/RECARGA-SEM-CONEXAO-DIAGNOSTICO.md`, e o trabalho vai em três partes. **Parte 1 feita em 05/11/2026**, sem migration: D1: "Sair" sem rede deixava o token `sb-*` no navegador. Agora ele é apagado, e de novo 5 s depois. D2: sem conexão, a chave do cofre não voltava da cópia da aba. Agora volta. D3: uma falha de rede na renovação do token apagava os rascunhos e a chave. Agora não apaga. Na homologação, a saída com o servidor bloqueado foi feita 3 vezes. A 1ª deixou o token (causa não reproduzida), as outras 2 apagaram e nada foi regravado; a segunda limpeza veio depois disso. **Parte 2 feita em 05/11/2026**, sem migration. O perfil reduzido (sem CPF, CNS, telefone nem dados pessoais), os vínculos e a marca de administrador geral ficam cifrados com a chave da sessão, só na aba. Sem rede, a casca abre com esses dados guardados da mesma pessoa enquanto valerem as regras de 2 h e 20 min. O service worker guarda de antemão o login, a casca e as telas da enfermagem, a partir da lista que o build gera em `precache.json`. Conferido na homologação: a sessão fica cifrada na aba, sem texto claro, e as 66 telas da lista foram guardadas. O RT conferiu a recarga com o Chrome em modo sem rede em 05/11/2026: a Triagem abriu sem rede, sem ir para o login. **Parte 3 feita em 05/11/2026**, sem migration. As consultas das telas da enfermagem (leitos, PS, observação, triagem, cuidados, checagem) ficam cifradas com a chave da sessão, só na aba, e voltam quando a casca abre sem rede. A pílula mostra "Sem conexão · dados das HH:MM". O RT conferiu em 05/11/2026 a recarga com o Chrome em modo sem rede: a Triagem abriu com a ficha de teste e "dados das 23:09", e todos os pedidos falharam. **Item concluído.** Achado pequeno, corrigido em 05/11/2026 (`src/lib/offline/erroDeLeitura.ts`): com os dados restaurados, a lista também mostrava o erro cru "TypeError: Failed to fetch". Agora falta de rede com dados na tela não mostra erro, e sem dados aparece um aviso claro; isso vale na Triagem (fila e espera), na Internação e no Pronto-Socorro da enfermagem. O RT conferiu a recarga sem rede, que abriu sem o erro vermelho. |
 | 08/10/2026 | **Tela "Prontuário completo" (leitura) ruim de layout e de lógica.** `src/pages/prontuario/ProntuarioLeitura.tsx` lista episódios, documentos, observação, prescrições e classificações de forma solta. Redesenhar a leitura do prontuário (linha do tempo por atendimento, o que é de cada episódio junto, navegação) e revisar a lógica de quais blocos aparecem. | Teste da tarefa 8 (Fase 1) | RT: guardar para depois do backlog |
 | 10/10/2026 | **Modelo pronto do Power BI sobre a API.** Consultas em Power Query (M) com a paginação por cursor resolvida, para leitos, atendimentos e produção SUS, e um passo a passo de 1 página para a secretaria. Cuidados: a atualização não é ao vivo (até 8 vezes por dia no Pro); a regra "fora do Brasil" do Cloudflare bloqueia o Power BI hospedado fora do país, então usar o gateway local num computador no Brasil ou abrir exceção para os IPs da Microsoft; usar uma chave só com os recursos do painel. | Conversa sobre a API (Fase 3, tarefa 7) | RT: guardar para depois do backlog |
 | 11/10/2026 | **Limite de deploys da Vercel.** O plano gratuito permite 100 deploys por dia, e o limite estourou em 10/10 com os envios de branch (cada envio publica o app e a landing). Por 24 horas, nem a homologação nem a produção recebem deploy. Correção: `git.deploymentEnabled` no `vercel.json` e no `landing/vercel.json`; o app publica só `master` e `homolog`, a landing só `master`. Registrado em `infra/release.md`. | PR da Fase 4, tarefa 1 | RT: fazer agora (feito em 11/10) |

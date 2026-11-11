@@ -535,7 +535,7 @@ function DispositivosConfiaveis() {
         <TituloSecao className="mb-0">Dispositivos confiáveis</TituloSecao>
       </div>
       <p className="mb-3 text-apoio text-tinta-apoio">
-        Aparelhos onde você marcou “confiar neste dispositivo” não pedem o código por 30 dias. Perdeu um aparelho? Remova-o aqui para cortar o acesso na hora.
+        Aparelhos onde você marcou "confiar neste dispositivo" não pedem o código por 30 dias. Perdeu um aparelho? Remova-o aqui para cortar o acesso na hora.
       </p>
       {isLoading ? (
         <Spinner />
@@ -592,7 +592,7 @@ export function SecaoSegundoFator() {
         <div className="flex items-start gap-2 text-apoio text-tinta-apoio">
           <Mail className="mt-0.5 size-4 shrink-0 text-tinta-apoio" aria-hidden />
           <p>
-            Por padrão, em um login de dispositivo novo enviamos um código ao seu email. Nada a configurar — você pode marcar “confiar neste dispositivo” para não repetir por 30 dias.
+            Por padrão, em um login de dispositivo novo enviamos um código ao seu email, sem nada a configurar. Você pode marcar "confiar neste dispositivo" para não repetir por 30 dias.
           </p>
         </div>
       </section>

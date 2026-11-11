@@ -80,12 +80,16 @@ SELECT e2e.passo('10.farmaceutico_alta', 5, 'farmaceutico', '/internacao', 'Farm
 SELECT e2e.lacuna('10.controlados', 12, 'farmaceutico', 'Aprovação/rejeição de controlados, intervenção farmacêutica, dispensação e lote',
   'A farmácia valida/libera item (validar_item) e cuida de faltas e estoque; não há aprovação de controlados, registro de intervenção, dispensação nem rastreio de lote.');
 -- checagem (técnico)
+-- Itens prescritos no 11: rodar no mesmo dia do roteiro 11 (o item vence 24 h depois
+-- da prescrição, lacuna 6); se passar de 24 h, renove a prescrição com renovar_prescricao.
+-- O "feito" mais de 2 h depois do horário (ou da prescrição) pede o motivo do atraso
+-- (lacuna 9): os "feito" levam p_motivo_atraso, que o servidor ignora sem atraso.
 SELECT e2e.passo('9.checar_feito', 4, 'tecnico', '/checagem', 'Técnico checa ceftriaxona das 22h como feita',
-  format('SELECT public.checar(%L::uuid, %L, %L)::text', e2e.item(4, 'Ceftriaxona'), 'feito', '22:00'));
+  format('SELECT public.checar(%L::uuid, %L, %L, p_motivo_atraso => %L)::text', e2e.item(4, 'Ceftriaxona'), 'feito', '22:00', 'intercorrencia'));
 SELECT e2e.passo('9.checar_nao_feito', 5, 'tecnico', '/checagem', 'Técnico registra dipirona não feita, com motivo',
   format('SELECT public.checar(%L::uuid, %L, %L, %L)::text', e2e.item(5, 'Dipirona sódica'), 'nao_feito', '06:00', 'Paciente em jejum para cirurgia, sem dor'));
 SELECT e2e.passo('9.checar_alta_vigilancia_liberada', 7, 'tecnico', '/checagem', 'Técnico checa heparina liberada pela farmácia',
-  format('SELECT public.checar(%L::uuid, %L, %L)::text', e2e.item(7, 'Heparina sódica'), 'feito', '14:00'));
+  format('SELECT public.checar(%L::uuid, %L, %L, p_motivo_atraso => %L)::text', e2e.item(7, 'Heparina sódica'), 'feito', '14:00', 'intercorrencia'));
 SELECT e2e.passo('9.checar_sem_horario', 4, 'tecnico', '/checagem', 'Checagem fora dos horários aprazados deve ser recusada',
   format('SELECT public.checar(%L::uuid, %L, %L)::text', e2e.item(4, 'Ceftriaxona'), 'feito', '03:00'), 'erro');
 SELECT e2e.lacuna('9.atrasado', NULL, 'tecnico', 'Situação "atrasado" na checagem', 'A checagem aceita feito, não feito e recusado; o atraso só aparece calculado na fila (fila_checagem), não é registrado.');

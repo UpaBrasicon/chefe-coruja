@@ -59,6 +59,8 @@ SELECT e2e.bpasso('rgo_r1_chegou', 'RGO.R1.09.em_transito', 'banco', NULL, 'Em t
 SELECT e2e.bpasso('rgo_r1_chegou', 'RGO.R1.10.nir_origem', 'f5_nir', '/nir', 'Item no NIR da origem: chegou ao destino, origem sem alta',
   format($q$SELECT e2e.b_confere(public.nir_pendencias(%L)::text LIKE '%%reg_origem_aberta%%' AND public.nir_pendencias(%L)::text LIKE '%%' || %L || '%%', 'item reg_origem_aberta')$q$,
     'f5100000-0000-4000-8000-000000000002', 'f5100000-0000-4000-8000-000000000002', e2e.v('rgo_r1_reg')));
+SELECT e2e.bpasso('rgo_r1_chegou', 'RGO.R1.11.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (R1, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (R1, dado fictício).', 'motivo', 'Leito clínico no Hospital F5 pela regulação (teste R1).'))::text, 120)$q$, e2e.u('rgo_pac')));
 SELECT e2e.bpasso('rgo_r1_chegou', 'RGO.R1.11.alta', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico dá a alta por transferência escolhendo a regulação',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', 'Transferido pela regulação (teste R1)', jsonb_build_object('destino', 'Hospital Fase 5', 'regulacao_id', %L))::text$q$,
     e2e.u('rgo_r1_ep'), e2e.v('rgo_r1_reg')));
@@ -95,6 +97,8 @@ SELECT e2e.bpasso('rgo_r2_reg', 'RGO.R2.07.aceitar', 'f5_med_hosp', '/regulacao 
   format($q$SELECT left(public.regulacao_destino_aceitar(%L::uuid, NULL, 'aceito no teste da origem aberta')::text, 80)$q$, e2e.u('rgo_r2_reg')), 'ok', 'rgo_r2_aceita');
 
 -- R2: a ordem certa (alta antes da chegada)
+SELECT e2e.bpasso('rgo_r2_aceita', 'RGO.R2.08.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (R2, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (R2, dado fictício).', 'motivo', 'Leito clínico no Hospital F5 pela regulação (teste R2).'))::text, 120)$q$, e2e.u('rgo_pac')));
 SELECT e2e.bpasso('rgo_r2_aceita', 'RGO.R2.08.alta', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico dá a alta por transferência escolhendo a regulação',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', 'Transferido pela regulação (teste R2)', jsonb_build_object('destino', 'Hospital Fase 5', 'regulacao_id', %L))::text$q$,
     e2e.u('rgo_r2_ep'), e2e.v('rgo_r2_reg')));

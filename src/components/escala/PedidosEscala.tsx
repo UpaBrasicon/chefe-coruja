@@ -61,7 +61,7 @@ export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor
           </span>
           <Button size="sm" variant="outline" className="w-fit" onClick={() => abrir('falta')}><FileText /> Justificar falta</Button>
           {irParaProximo && (
-            <Button variant="link" className="h-auto min-h-0 w-fit p-0 text-rotulo" onClick={irParaProximo.ir}>{irParaProximo.rotulo} →</Button>
+            <Button variant="link" className="h-auto min-h-0 w-fit p-0 text-rotulo" onClick={irParaProximo.ir}>{irParaProximo.rotulo}</Button>
           )}
         </>
       ) : comecou ? (

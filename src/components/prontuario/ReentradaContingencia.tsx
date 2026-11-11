@@ -85,7 +85,7 @@ export function ReentradaContingencia({ unidadeId, episodioId, chegadaEm }: { un
             {cabem.map((c) => (
               <BotaoLinha key={c.id} variante="cartao" role="radio" aria-checked={contingencia === c.id} onClick={() => setContingencia(c.id)}
                 className={cn('text-apoio', contingencia === c.id && 'border-acao ring-1 ring-acao')}>
-                {fmtDataHora(c.inicio)} a {fmtDataHora(c.fim)} · “{c.motivo}”
+                {fmtDataHora(c.inicio)} a {fmtDataHora(c.fim)} · "{c.motivo}"
               </BotaoLinha>
             ))}
           </div>

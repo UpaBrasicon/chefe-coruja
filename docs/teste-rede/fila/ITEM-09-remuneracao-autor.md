@@ -1,10 +1,10 @@
 # Item 9: a remuneração de plantão grava o autor e vai à auditoria
 
-**Achado:** C P2-C1 do teste da rede (`EXECUCAO-C01-C06.md`, C05.01).
+Achado: C P2-C1 do teste da rede (`EXECUCAO-C01-C06.md`, C05.01).
 
-**Decisão:** opção A em M1 e M2, recomendação aplicada. Em 08/11/2026 o RT delegou as próximas ações e ficou com o "ok produção" e o merge.
+Decisão: opção A em M1 e M2, recomendação aplicada. Em 08/11/2026 o RT delegou as próximas ações e ficou com o "ok produção" e o merge.
 
-**Branch:** `correcoes/remuneracao-autor`.
+Branch: `correcoes/remuneracao-autor`.
 
 ## O que acontecia
 - A tela cadastrava o valor da remuneração com um `insert` direto em `remuneracoes_plantao`, mandando `criado_por: null`.
@@ -21,18 +21,18 @@
 As linhas antigas continuam com `criado_por` nulo, porque não se inventa autor.
 
 ## Feito
-- **Migration `20270308000004_remuneracao_autor_auditoria.sql`:**
+- Migration `20270308000004_remuneracao_autor_auditoria.sql`:
   - gatilho BEFORE `trg_remuneracao_autor`, que grava o autor;
   - gatilho AFTER `trg_remuneracao_auditoria`, que registra na auditoria;
   - coluna nova `atualizado_por`;
   - o rollback está no cabeçalho.
-- **Tela (`src/pages/Configuracao.tsx`):** deixa de mandar `criado_por: null`, porque quem grava o autor é o servidor.
-- **Teste novo `supabase/tests/fix_remuneracao_autor_auditoria.sql`:**
+- Tela (`src/pages/Configuracao.tsx`): deixa de mandar `criado_por: null`, porque quem grava o autor é o servidor.
+- Teste novo `supabase/tests/fix_remuneracao_autor_auditoria.sql`:
   - antes da migration, falhou no autor;
   - depois, passou na homologação;
   - cobre o autor, a mudança feita por outro gestor, a desativação, o autor forjado pela tela e o plantonista sem gravar.
-- **Testes de plantão do ERP:** seguem passando com a migration.
-- **Reconferência na homologação (`scripts/e2e/103_reconferencia_remuneracao.sql`):**
+- Testes de plantão do ERP: seguem passando com a migration.
+- Reconferência na homologação (`scripts/e2e/103_reconferencia_remuneracao.sql`):
   - o gestor da UPA F5 incluiu um valor como a tela faz;
   - o autor gravado foi o login dele;
   - ele desativou o valor;

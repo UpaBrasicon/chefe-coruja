@@ -185,7 +185,7 @@ function ResumoRegulacao({ unidadeId }: { unidadeId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="text-corpo">Regulação por unidade</CardTitle>
-        <CardDescription>Pedidos em aberto, atrasados e concluídos nos últimos 30 dias. Só números.</CardDescription>
+        <CardDescription>Pedidos em aberto, atrasados e concluídos nos últimos 30 dias.</CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">
         {resumo.isLoading ? <Spinner /> : resumo.error ? <p role="alert" className="text-critico">{(resumo.error as Error).message}</p> : (
@@ -255,7 +255,7 @@ function PedidosDaRede({ unidadeId, unidades }: { unidadeId: string; unidades: R
           </label>
         </div>
         {lista.isLoading ? <Spinner /> : lista.error ? <p role="alert" className="text-critico">{(lista.error as Error).message}</p>
-          : (lista.data ?? []).length === 0 ? <Vazio icone={Network} titulo="Nenhum pedido" texto="Nenhum pedido com esses filtros." /> : (
+          : (lista.data ?? []).length === 0 ? <Vazio icone={Network} titulo="Nenhum pedido com esses filtros" /> : (
             <ul className="flex flex-col divide-y divide-fio">
               {lista.data!.map((s) => {
                 const ef = s.prioridade_regulador ?? s.prioridade

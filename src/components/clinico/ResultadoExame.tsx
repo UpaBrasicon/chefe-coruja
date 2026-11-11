@@ -204,7 +204,7 @@ function Versao({ v }: { v: VersaoResultado }) {
         </Button>
       )}
       {v.cientes.length > 0 && <span className="text-rotulo text-tinta-sussurro">Ciente: {v.cientes.map((c) => `${c.por} (${fmtDataHora(c.em)})`).join(', ')}</span>}
-      {!v.vigente && v.motivo_retificacao && <span className="text-rotulo text-tinta-sussurro">Retificada em {fmtDataHora(v.retificado_em!)}: “{v.motivo_retificacao}”</span>}
+      {!v.vigente && v.motivo_retificacao && <span className="text-rotulo text-tinta-sussurro">Retificada em {fmtDataHora(v.retificado_em!)}: "{v.motivo_retificacao}"</span>}
       {erro && <p role="alert" className="text-critico">{erro}</p>}
     </div>
   )

@@ -104,8 +104,8 @@ CREATE TABLE IF NOT EXISTS public.substancias_controladas (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS substancias_controladas_vigente ON public.substancias_controladas (chave) WHERE vigente;
 ALTER TABLE public.substancias_controladas ENABLE ROW LEVEL SECURITY;
-REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.substancias_controladas FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON public.substancias_controladas FROM anon;
+-- só leitura para quem está logado; a escrita é das funções do super admin
+REVOKE ALL ON public.substancias_controladas FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.substancias_controladas TO authenticated;
 DROP POLICY IF EXISTS substancias_controladas_select ON public.substancias_controladas;
 CREATE POLICY substancias_controladas_select ON public.substancias_controladas FOR SELECT TO authenticated USING (true);

@@ -156,13 +156,13 @@ export function AbaDesfecho({
     }
     if (d === 'alta' || d === 'alta_apos_medicacao') {
       const falta = painel.exames.filter((x) => x.situacao === 'pedido').map((x) => x.exame)
-      regras.push({ ok: falta.length === 0, texto: falta.length ? `Exames com resultado — sem resultado: ${falta.join(', ')}` : 'Exames pedidos com resultado' })
+      regras.push({ ok: falta.length === 0, texto: falta.length ? `Exames sem resultado: ${falta.join(', ')}` : 'Exames pedidos com resultado' })
     }
     if (d === 'alta_apos_medicacao') {
       const meds = painel.prescricao.filter((i) => i.tipo === 'medicamento' && !i.suspenso_em)
       const falta = meds.filter((i) => !i.se_necessario && i.checagem?.situacao !== 'feito').map((i) => i.descricao)
       regras.push({ ok: meds.length > 0, texto: 'Medicação prescrita no PS' })
-      regras.push({ ok: meds.length > 0 && falta.length === 0, texto: falta.length ? `Medicação administrada — falta checar: ${falta.join(', ')}` : 'Medicação administrada (checada pela enfermagem)' })
+      regras.push({ ok: meds.length > 0 && falta.length === 0, texto: falta.length ? `Medicação ainda sem checagem: ${falta.join(', ')}` : 'Medicação administrada (checada pela enfermagem)' })
     }
     if (EXIGE_CID.includes(d)) regras.push({ ok: CID_OK.test(cid), texto: 'Diagnóstico de alta (CID)' })
     if (d === 'evasao') regras.push({ ok: !!motivoEvasao, texto: 'Motivo da evasão' })

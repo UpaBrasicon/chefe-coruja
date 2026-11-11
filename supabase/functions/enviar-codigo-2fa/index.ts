@@ -25,6 +25,15 @@ const EMAIL_FROM = Deno.env.get('EMAIL_FROM') ?? 'Chefe Coruja <nao-responda@che
 // item 12 do kit de desempenho: tempo máximo de espera pela Resend
 const LIMITE_RESEND_MS = 10_000
 
+/**
+ * JSON só com ASCII: cada caractere fora do ASCII vai como \uXXXX. Em 09/11/2026
+ * os acentos do formulário do site chegavam à Resend trocados por "�"; esta
+ * função envia do mesmo jeito ("Seu código de acesso") e leva a mesma correção.
+ */
+function jsonAscii(valor: unknown): string {
+  return JSON.stringify(valor).replace(/[\u007f-￿]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'))
+}
+
 function corpoEmail(codigo: string): string {
   return `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f5f6f8;font-family:Arial,Helvetica,sans-serif">
   <div style="max-width:460px;margin:24px auto;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:28px">
@@ -73,8 +82,8 @@ async function tratar(req: Request): Promise<Response> {
   try {
     r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json; charset=utf-8' },
+      body: jsonAscii({
         from: EMAIL_FROM,
         to: user.email,
         subject: 'Seu código de acesso — Chefe Coruja',

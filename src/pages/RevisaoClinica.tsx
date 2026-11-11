@@ -111,9 +111,9 @@ function FilaRT() {
               <Textarea placeholder="Correção apontada (obrigatória para reprovar)" value={nota}
                 onChange={(e) => setNotas((n) => ({ ...n, [chave]: e.target.value }))} />
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => decidirItem(v.ferramenta_id, v.versao, true)} disabled={decidir.isPending}>Confere — aprovar</Button>
+                <Button onClick={() => decidirItem(v.ferramenta_id, v.versao, true)} disabled={decidir.isPending}>Aprovar</Button>
                 <Button variant="outline" onClick={() => decidirItem(v.ferramenta_id, v.versao, false)}
-                  disabled={decidir.isPending || nota.trim().length < 10}>Aponta correção — reprovar</Button>
+                  disabled={decidir.isPending || nota.trim().length < 10}>Reprovar com correção</Button>
               </div>
             </CardContent>
           </Card>

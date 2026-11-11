@@ -260,7 +260,7 @@ function AuditoriaCheckin({ unidadeId }: { unidadeId: string }) {
                   <TableCell className="pr-4 whitespace-normal">
                     <Estado tom={s.tom}>{s.rotulo}</Estado>
                     {onde && <span className={cn('block text-rotulo', l.dentro === false ? 'text-atencao' : 'text-tinta-sussurro')}>{onde}</span>}
-                    {l.justificativa && <span className="block text-rotulo text-pretty text-tinta-sussurro">“{l.justificativa}”</span>}
+                    {l.justificativa && <span className="block text-rotulo text-pretty text-tinta-sussurro">"{l.justificativa}"</span>}
                   </TableCell>
                 </TableRow>
               )

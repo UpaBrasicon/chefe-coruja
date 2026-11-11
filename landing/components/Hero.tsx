@@ -15,14 +15,14 @@ export function Hero() {
       <div className="container-site grid items-center gap-10 py-16 md:grid-cols-2 md:py-24">
         <div>
           <p className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            <span aria-hidden="true">✓</span> Conformidade CFM e LGPD nativa
+            Segue as normas do CFM e a LGPD
           </p>
           <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-            Gestão hospitalar simples, segura e em conformidade, feita por quem entende de UPA
+            Prontuário e gestão de plantão feitos por um médico coordenador de UPA
           </h1>
           <p className="mt-4 text-lg text-slate-600">
-            Prontuário eletrônico, gestão de leitos, prescrição e escala médica em uma única plataforma —
-            pensada por um médico coordenador de UPA e pronta para hospitais, UPAs e clínicas.
+            Prontuário eletrônico, gestão de leitos, prescrição e escala médica no mesmo sistema, para hospitais,
+            UPAs e clínicas.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <CtaButton>Agendar demonstração</CtaButton>
@@ -31,7 +31,7 @@ export function Hero() {
             </CtaButton>
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            Respondemos em até 4 horas úteis. Sem compromisso.
+            Demonstração gratuita, sem compromisso.
           </p>
         </div>
 

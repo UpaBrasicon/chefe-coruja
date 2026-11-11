@@ -93,7 +93,7 @@ export default function ProntoSocorroEnfermagem() {
       {erroDeLeitura(erro, !!triados.data || !!observacao.data) && <p className="mb-3 text-apoio text-critico">{erroDeLeitura(erro, !!triados.data || !!observacao.data)}</p>}
       {!carregando && !erro && meusSetores.length === 0 ? (
         <Vazio icone={Stethoscope} titulo="Você não está na escala agora"
-          texto="O Pronto-Socorro da enfermagem mostra os pacientes dos setores em que você está de plantão neste momento." />
+          texto="Aparecem aqui os pacientes dos setores em que você está de plantão agora." />
       ) : (
         <div className="flex flex-col gap-3">
           {temInternacao && (

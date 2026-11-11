@@ -141,7 +141,7 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
         {hist && (eventos.isLoading ? <Spinner /> : (
           <ul className="flex flex-col gap-0.5 text-rotulo text-tinta-apoio">
             {(eventos.data ?? []).map((ev, i) => (
-              <li key={i}>{EVENTO_APAC[ev.evento] ?? ev.evento} · {ev.por ?? '—'}, {fmtDataHora(ev.em)}{ev.motivo ? ` — “${ev.motivo}”` : ''}</li>
+              <li key={i}>{EVENTO_APAC[ev.evento] ?? ev.evento} · {ev.por ?? '—'}, {fmtDataHora(ev.em)}{ev.motivo ? ` — "${ev.motivo}"` : ''}</li>
             ))}
           </ul>
         ))}
@@ -419,7 +419,7 @@ function AbaArquivo({ unidade }: { unidade: string }) {
             {c.fechamento && (
               <span className="text-tinta-apoio">
                 {fechada ? 'Fechada' : 'Reaberta'} · {c.fechamento.apacs} APAC · controle {c.fechamento.controle} · por {c.fechamento.fechado_por ?? '—'} em {fmtDataHora(c.fechamento.fechado_em)}
-                {c.fechamento.reaberto_em && <> · reaberta em {fmtDataHora(c.fechamento.reaberto_em)}: “{c.fechamento.motivo_reabertura}”</>}
+                {c.fechamento.reaberto_em && <> · reaberta em {fmtDataHora(c.fechamento.reaberto_em)}: "{c.fechamento.motivo_reabertura}"</>}
               </span>
             )}
             {fechada ? (
@@ -449,7 +449,7 @@ function AbaArquivo({ unidade }: { unidade: string }) {
               <Badge variant={f.situacao === 'fechada' ? 'success' : 'secondary'}>{f.situacao}</Badge>
               <span className="text-rotulo text-tinta-sussurro">
                 {f.apacs} APAC · controle {f.controle} · {f.excluidas} fora por crítica · fechada por {f.fechado_por ?? '—'} em {fmtDataHora(f.fechado_em)}
-                {f.reaberto_em && <> · reaberta: “{f.motivo_reabertura}”</>}
+                {f.reaberto_em && <> · reaberta: "{f.motivo_reabertura}"</>}
               </span>
               <Button size="xs" variant="outline" className="ml-auto" disabled={download.isPending} onClick={() => download.mutate(f.id)}>
                 <Download className="size-3.5" /> Arquivo

@@ -329,7 +329,7 @@ function BlocoVerificacoes() {
               <span className="text-corpo text-tinta">Cadeia de auditoria</span>
               <span className="text-apoio text-tinta-sussurro">
                 {v.data.seguranca.cadeia_auditoria === null
-                  ? 'Íntegra — nenhuma linha adulterada.'
+                  ? 'Íntegra: nenhuma linha adulterada.'
                   : `Rompida a partir da linha #${v.data.seguranca.cadeia_auditoria}.`}
               </span>
             </div>

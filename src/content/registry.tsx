@@ -334,7 +334,7 @@ export const SECOES: SectionDef[] = [
     icon: Wind,
     tools: [
       t('classificacao-conduta-hidratacao', 'Classificação, Conduta e Hidratação', 'Grupos A–D e hidratação conforme o MS.', sobDemanda(() => import('@/pages/plantonista/dengue/ClassificacaoDengue'), 'ClassificacaoDengue'), ['dengue', 'arbovirose', 'hidratação', 'sinais de alarme', 'choque']),
-      t('manual-dengue', 'Dengue — criança', 'Grupos e hidratação por peso (PS Pediatria ICr).', sobDemanda(() => import('@/pages/plantonista/pediatria/DenguePed'), 'DenguePed'), ['dengue', 'manual', 'ministério da saúde']),
+      // "Dengue — criança" saiu daqui (RT, 10/11/2026): abria a mesma tela de pediatria/dengue-ped.
     ],
   },
   // Games (Infection, Minigame de Emergência) fora do menu e da busca até o RT
@@ -348,7 +348,8 @@ export const SECOES: SectionDef[] = [
     tools: [
       t('vm-cinco-passos', 'Ventilação mecânica em cinco passos', 'Quem, modo, ajustes, acompanhamento e desmame com as tabelas do cap. 37 do manual HC.', sobDemanda(() => import('@/pages/plantonista/ventilacao/VmCincoPassos'), 'VmCincoPassos'), ['ventilação mecânica', 'VM', 'PEEP', 'volume corrente', 'platô', 'driving pressure', 'desmame', 'alarmes']),
       t('vni-cinco-passos', 'VNI em cinco passos', 'Indicação, interface, ajustes, acompanhamento e retirada com o que o manual HC traz.', sobDemanda(() => import('@/pages/plantonista/ventilacao/VniCincoPassos'), 'VniCincoPassos'), ['VNI', 'ventilação não invasiva', 'BiPAP', 'CPAP', 'IPAP', 'EPAP']),
-      t('manobra-recrutamento', 'SDRA — ventilação protetora', 'Berlim, PEEP × FiO₂ e prona (manual HC, cap. 37).', sobDemanda(() => import('@/pages/plantonista/manual/SdraVentilacaoAdulto'), 'SdraVentilacaoAdulto'), ['recrutamento', 'PEEP', 'SARA', 'manobra']),
+      // "SDRA — ventilação protetora" saiu daqui (RT, 10/11/2026): abria a mesma tela de
+      // emergencias/sdra-ventilacao-adulto. Os endereços antigos redirecionam (App.tsx).
       // ponto 2 do plantonista (RT, 29/10/2026): saiu "Ventilação mecânica — ajuste inicial" daqui;
       // abria a mesma tela de emergencias/vm-ajuste-inicial-adulto. O endereço antigo redireciona (App.tsx).
       t('mobilidade-funcional', 'Mobilidade Funcional', 'Níveis e critérios de mobilização.', sobDemanda(() => import('@/pages/plantonista/ventilacao/MobilidadeFuncional'), 'MobilidadeFuncional'), ['mobilização', 'fisioterapia', 'ambulação', 'UTI']),

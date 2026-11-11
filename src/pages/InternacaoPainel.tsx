@@ -162,7 +162,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     },
     onSuccess: () => {
       invalidar()
-      setSucesso('Paciente transferido com sucesso (evento ADT registrado).')
+      setSucesso('Paciente transferido. Evento ADT registrado.')
       setTransferir(null)
       setDestinoId('')
       setMotivo('')
@@ -264,7 +264,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
           <DialogHeader>
             <DialogTitle>Transferir paciente</DialogTitle>
             <DialogDescription>
-              {transferir?.nome} — para qual setor? Apenas quem está na escala do setor de origem pode
+              Transferir {transferir?.nome} para qual setor? Apenas quem está na escala do setor de origem pode
               transferir.
             </DialogDescription>
           </DialogHeader>

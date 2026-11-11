@@ -72,7 +72,7 @@ export default function Bpa() {
 
   return (
     <div className="flex w-full max-w-5xl flex-col">
-      <TituloPagina icone={Receipt} titulo="Faturamento — BPA"
+      <TituloPagina icone={Receipt} titulo="BPA"
         descricao="BPA individualizado da unidade: confira a competência, corrija o que tem crítica, feche e baixe o arquivo para importar no BPA Magnético." />
       <Abas abas={ABAS} valor={aba} onChange={setAba} rotulo="Faturamento" />
       {!unidade ? <Spinner /> : (
@@ -181,7 +181,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
             <p className="text-tinta-apoio">
               {fechada ? 'Fechada' : 'Reaberta'} · {c.fechamento.linhas} linhas{c.fechamento.linhas_bpa_c ? ` (${c.fechamento.linhas_bpa_c} de BPA-C)` : ''} em {c.fechamento.folhas} folhas · controle {c.fechamento.controle}
               {' '}· processamento {competenciaNaTela(c.fechamento.processamento)} · por {c.fechamento.fechado_por ?? '—'} em {fmtDataHora(c.fechamento.fechado_em)}
-              {c.fechamento.reaberto_em && <> · reaberta por {c.fechamento.reaberto_por ?? '—'} em {fmtDataHora(c.fechamento.reaberto_em)}: “{c.fechamento.motivo_reabertura}”</>}
+              {c.fechamento.reaberto_em && <> · reaberta por {c.fechamento.reaberto_por ?? '—'} em {fmtDataHora(c.fechamento.reaberto_em)}: "{c.fechamento.motivo_reabertura}"</>}
             </p>
           )}
           {fechada ? (
@@ -568,7 +568,7 @@ function AbaHistorico({ unidade }: { unidade: string }) {
           <span className="text-rotulo text-tinta-sussurro">
             {f.linhas} linhas{f.linhas_bpa_c ? ` (${f.linhas_bpa_c} de BPA-C)` : ''} · {f.folhas} folhas · controle {f.controle} · {f.excluidas} fora por crítica · processamento {competenciaNaTela(f.processamento)}
             {' '}· fechada por {f.fechado_por ?? '—'} em {fmtDataHora(f.fechado_em)}
-            {f.reaberto_em && <> · reaberta por {f.reaberto_por ?? '—'} em {fmtDataHora(f.reaberto_em)}: “{f.motivo_reabertura}”</>}
+            {f.reaberto_em && <> · reaberta por {f.reaberto_por ?? '—'} em {fmtDataHora(f.reaberto_em)}: "{f.motivo_reabertura}"</>}
           </span>
           <Button size="xs" variant="outline" className="ml-auto" disabled={download.isPending} onClick={() => download.mutate(f.id)}>
             <Download className="size-3.5" /> Arquivo

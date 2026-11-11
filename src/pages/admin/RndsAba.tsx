@@ -324,7 +324,7 @@ function SecaoFila({ unidade }: { unidade: string }) {
         {FILTROS.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => setFiltro(f)}>{f === 'todos' ? 'Todos' : ROTULO_STATUS[f]}</Chip>)}
       </Chips>
       {itens.isLoading ? <Spinner /> : itens.error ? <MensagemErro texto={(itens.error as Error).message} /> : lista.length === 0 ? (
-        <Vazio icone={Send} titulo="Nada aqui" texto="Nenhum documento nesta situação." />
+        <Vazio icone={Send} titulo="Nenhum documento nesta situação" />
       ) : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
           <Table variante="referencia" className="w-full min-w-[760px] text-apoio">
@@ -468,7 +468,7 @@ function MontarCredencial({ p, unidade, onFechar }: { p: PainelRnds; unidade: st
         <DialogHeader>
           <DialogTitle>{k ? 'Editar a credencial' : 'Montar a credencial'}</DialogTitle>
           <DialogDescription>
-            A credencial nasce na homologação da RNDS. As unidades filhas usam o mesmo certificado e precisam ser da mesma UF da principal.
+            A credencial é criada na homologação da RNDS. As unidades filhas usam o mesmo certificado e precisam ser da mesma UF da principal.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 text-apoio">

@@ -158,7 +158,7 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
           </section>
         )}
       </div>
-      <GavetaPe>Médico ou enfermeiro marca e retira, sempre com motivo. Tudo fica na auditoria.</GavetaPe>
+      <GavetaPe>Médico ou enfermeiro marca e retira, sempre com motivo, e cada mudança fica na auditoria.</GavetaPe>
     </Gaveta>
   )
 }

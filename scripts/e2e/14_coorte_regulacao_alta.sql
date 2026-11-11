@@ -132,6 +132,8 @@ SELECT e2e.passo('7.destino_aceita', 7, 'medico_hospital', '/regulacao', 'Hospit
   format('SELECT public.regulacao_destino_aceitar(%L::uuid, %L::uuid, %L)::text', e2e.u('reg7'), e2e.leito_em('e1100000-0000-4000-8000-000000000002', 'UCO-01'), 'Equipe de hemodinâmica avisada'));
 SELECT e2e.lacuna('7.resumo_transferencia', 7, 'plantonista', 'Resumo de transferência e checklist de transferência', 'Não há documento de resumo de transferência nem checklist (o laudo e o encaminhamento são os mais próximos).');
 SELECT e2e.passo('7.saida', 7, 'nir', '/regulacao', 'NIR marca a saída do paciente', format('SELECT public.regulacao_marcar_saida(%L::uuid)::text', e2e.u('reg7')));
+SELECT e2e.passo('7.doc_transferencia', 7, 'plantonista2', '/internacao', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (E2E #7, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (E2E #7, dado fictício).', 'motivo', 'Hemodinâmica no Hospital Terciário E2E pela regulação (teste).'))::text, 120)$q$, e2e.u('pac7')));
 SELECT e2e.passo('7.alta_transferencia', 7, 'plantonista2', '/internacao', 'Alta por transferência externa na origem (libera o leito)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int7'), 'transferencia_externa', 'I21.9',
          'Transferido para o Hospital Terciário E2E pela regulação.', '{"destino":"Hospital Terciário E2E"}'));

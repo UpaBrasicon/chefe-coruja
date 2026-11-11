@@ -29,7 +29,7 @@ export function CriticasAih({ unidadeId, podeEditar }: { unidadeId: string; pode
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-corpo"><FileWarning className="size-4 text-tinta-sussurro" /> Críticas da AIH</CardTitle>
         <CardDescription>
-          Bloqueante impede o médico de emitir o laudo de AIH até corrigir; aviso pede o “ciente” e segue para o médico regulador.
+          Bloqueante impede o médico de emitir o laudo de AIH até corrigir; aviso pede o "ciente" e segue para o médico regulador.
           Sem ajuste da unidade, vale o padrão do produto.
         </CardDescription>
       </CardHeader>
@@ -66,7 +66,7 @@ function LinhaCritica({ c, unidadeId, podeEditar }: { c: ConfigCritica; unidadeI
       </div>
       <span className="text-rotulo text-tinta-sussurro">
         Padrão do produto: {c.padrao ? 'bloqueante' : 'aviso'}
-        {c.ajuste && <> · ajustado por {c.ajuste.por ?? '—'}, {fmtDataHora(c.ajuste.em)}: “{c.ajuste.motivo}”</>}
+        {c.ajuste && <> · ajustado por {c.ajuste.por ?? '—'}, {fmtDataHora(c.ajuste.em)}: "{c.ajuste.motivo}"</>}
       </span>
       {abrindo && (
         <div className="flex flex-wrap gap-2">

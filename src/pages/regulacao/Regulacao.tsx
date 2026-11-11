@@ -599,14 +599,6 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
             <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
-<<<<<<< origin/homolog
-                <label className="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-controle border border-fio px-2.5 py-1 text-apoio hover:bg-campo has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-acao">
-                  <input type="file" multiple accept={ANEXO_TIPOS.join(',')} className="sr-only"
-                    onChange={(e) => { incluirArquivos(e.target.files); e.target.value = '' }} />
-                  <Paperclip className="size-3.5" aria-hidden /> Anexar arquivo (PDF, JPG, PNG — até 10 MB cada)
-                </label>
-=======
->>>>>>> HEAD
               </div>
               <AreaDeAnexo
                 id="reg-anexos"
@@ -678,7 +670,7 @@ function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId:
       <CardHeader>
         <CardTitle className="text-corpo">{central ? 'Recebidas' : 'Solicitações da unidade'}</CardTitle>
         <CardDescription>Clique num pedido para ver o detalhe, os anexos e o histórico.</CardDescription>
-        {central && <CardDescription>As 200 mais recentes. A fila com filtros e a decisão chegam nas próximas tarefas.</CardDescription>}
+        {central && <CardDescription>As 200 mais recentes.</CardDescription>}
       </CardHeader>
       <CardContent className="text-apoio">
         {lista.isLoading ? <EsqueletoLinhas linhas={5} rotulo="Carregando os pedidos…" /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (

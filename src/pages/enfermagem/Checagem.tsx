@@ -268,7 +268,7 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, atrasos, souEnfermeiro, 
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-2.5 py-1.5 text-rotulo text-atencao">
           <strong>Prescrição alterada</strong> (versão {alteracao.versao}) por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
           {resumoMudanca(alteracao.anterior, { dose: l.dose, via: l.via, posologia: l.posologia, se_necessario: l.se_necessario }) || 'observação'}
-          {alteracao.motivo ? ` — “${alteracao.motivo}”` : ''}
+          {alteracao.motivo ? ` — "${alteracao.motivo}"` : ''}
         </p>
       )}
       {l.diluicao_texto && <p className="text-rotulo text-tinta-apoio">Diluição: {l.diluicao_texto}</p>}
@@ -331,14 +331,14 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, atrasos, souEnfermeiro, 
         <p className="text-rotulo text-tinta-sussurro">
           Aprazado por {apraz.ultimo.por ?? '—'}, {hora(apraz.ultimo.em)}
           {apraz.ultimo.ajustado && apraz.ultimo.sugeridos ? ` · ajustado da sugestão (${apraz.ultimo.sugeridos.join(', ')})` : ''}
-          {apraz.ultimo.motivo ? `: “${apraz.ultimo.motivo}”` : ''}
+          {apraz.ultimo.motivo ? `: "${apraz.ultimo.motivo}"` : ''}
         </p>
       )}
       {liberacao && !unicaFeita && (
         <p className={`rounded-controle border px-2.5 py-1.5 text-rotulo ${lib === 'liberado' ? 'border-conforme/30 bg-alerta-conforme text-conforme'
           : lib === 'devolvido' ? 'border-critico/30 bg-alerta-critico text-critico' : 'border-atencao/40 bg-alerta-atencao text-atencao'}`}>
           {lib === 'liberado' && <>Liberado pela farmácia: {liberacao.por ?? '—'}, {liberacao.em ? hora(liberacao.em) : '—'}.</>}
-          {lib === 'devolvido' && <>Devolvido pela farmácia: {liberacao.motivo ?? 'sem motivo'}. Sem liberação, o “feito” pede justificativa.</>}
+          {lib === 'devolvido' && <>Devolvido pela farmácia: {liberacao.motivo ?? 'sem motivo'}. Sem liberação, o "feito" pede justificativa.</>}
           {lib === 'aguardando' && <>Aguardando a liberação da farmácia. Sem farmacêutico de plantão, registre como feito com justificativa: o farmacêutico confere depois.</>}
         </p>
       )}

@@ -52,7 +52,7 @@ export function LadoMarca() {
   return (
     <FolhaMarca
       className="hidden lg:flex"
-      titulo="O turno começa quando a escala diz."
+      titulo="O acesso abre no horário da escala."
       texto="A entrada é conferida contra a escala e o relógio do servidor. Fora do seu horário, a plataforma não abre."
       rodape="Cada registro tem autor: quem escreve é quem está no login."
     >
