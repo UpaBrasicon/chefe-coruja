@@ -102,7 +102,7 @@
 
 | # | Pergunta | Recomendação | Decisão do RT |
 |---|---|---|---|
-| F1–F4 | Coleta de urina de 2 a 24 meses na febre sem sinais | A | |
+| F1–F4 | Coleta de urina de 2 a 24 meses na febre sem sinais | A | A (RT, 11/11/2026) |
 
 ---
 
