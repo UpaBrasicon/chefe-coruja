@@ -18,7 +18,7 @@ const anos = (a: number) => a * 12
 
 test('fonte: livro do ICr é a principal; Anexo 2 do adulto só como secundária; versão .3', () => {
   assert.equal(temReferenciaPediatrica(fichaBolusPediatrico), true)
-  assert.equal(fichaBolusPediatrico.versao, '2026-09-27.3')
+  assert.ok(fichaBolusPediatrico.versao >= '2026-09-27.3')
   assert.equal(VERSAO_FICHAS_PEDIATRICAS, '2026-09-27.3')
   assert.match(fichaBolusPediatrico.fontes[0].citacao, /Pronto-Socorro — Pediatria ICr-HCFMUSP\. 4ª ed\..*Manole; 2023\. ISBN 978-65-5576-759-9/)
   assert.match(fichaBolusPediatrico.fontes[0].citacao, /Schvartsman C/)

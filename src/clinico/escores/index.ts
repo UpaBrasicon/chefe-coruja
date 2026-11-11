@@ -28,6 +28,7 @@ import { ranson } from './ranson.ts'
 import { rass } from './rass.ts'
 import { rockall } from './rockall.ts'
 import { sepseAdulto } from './sepseAdulto.ts'
+import { twist } from './twist.ts'
 import { wellsTep } from './wellsTep.ts'
 import { wellsTvp } from './wellsTvp.ts'
 import { years } from './years.ts'
@@ -91,4 +92,5 @@ export const ESCORES: Escore[] = [
   crb65,
   sofa2,
   fastEd,
+  twist,
 ]

@@ -1762,7 +1762,7 @@ Ficaram pendentes do lote 1, à espera do RT:
   (Rockwood e Theou 2020, PMID 32904824, nível 2 "Fit" e nível 8 "Living with Very Severe Frailty").
   A Dalhousie exige licença para uso comercial, possivelmente paga (página "Permission for Use" do
   Geriatric Medicine Research). Só volta se o RT pedir a licença no portal da Dalhousie.
-- **RACE — continua bloqueada.** O artigo original (Pérez de la Ossa 2014, DOI
+- **RACE — saiu do backlog em 11/11/2026** (decisão do RT: o FAST-ED fica como a única escala de oclusão de grande vaso, item E8 dos escores P2/P3). Histórico: O artigo original (Pérez de la Ossa 2014, DOI
   10.1161/STROKEAHA.113.003071) não abriu: o site da AHA parou na verificação anti-robô. Os artigos
   abertos trazem só os máximos de cada item (face 0–2, braço 0–2, perna 0–2, olhar 0–1, afasia ou
   agnosia 0–2), sem a definição de cada ponto. Volta quando houver o PDF do artigo.
@@ -2140,6 +2140,8 @@ espera do RT:
   Parameter de anafilaxia (2023) e AAP 2017 de hipertensão pediátrica.
 
 A parte 3.4 da Revisão visual veio em seguida (PR #228, 25/10/2026).
+
+**11/11/2026:** diagnóstico dos 15 itens em `docs/clinico/ESCORES-P2-P3-DIAGNOSTICO.md` (#581). O RT seguiu a recomendação: A em P8 (TEN-4-FACESp), P9 (TWIST, na pediatria e no adulto até 18 anos), E8 (FAST-ED, única escala de oclusão de grande vaso; o RACE sai do backlog) e P11 (tétano e raiva na criança, pelos PDFs do MS); B em P10 (peso de emergência) e A12 (epistaxe); C nos outros 9. Ordem: P8, P9, P10 e A12, E8, P11. P8 feito na branch `escores/p8-ten4-facesp`.
 
 Fora dos lotes, para decisão depois: P2/P3 de escores e pediatria do levantamento (AIR, FAST-ED,
 Pádua, EDACS, LRINEC, Roma, Westley, BRUE, TEN-4-FACESp, TWIST, peso de emergência, tétano e raiva

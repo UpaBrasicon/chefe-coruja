@@ -1,4 +1,5 @@
 import type { Ficha, Fonte } from '../ficha.ts'
+import { WELLS_PESO_2017 } from './bolus.ts'
 import { fichaP4 } from './fonteP4.ts'
 import type { Faixa } from './fonteP2.ts'
 import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
@@ -26,10 +27,15 @@ const baseDenguePed = fichaP4('ped-dengue', 'Dengue — criança (grupos e hidra
 
 export const fichaDenguePed: Ficha = {
   ...baseDenguePed,
-  versao: '2026-09-28.1',
-  fontes: [...baseDenguePed.fontes, MS_DENGUE_2024_PED],
-  revisadoEm: '28/09/2026 (manual do MS 6ª ed. 2024 lido; livro do ICr mantido como base)',
+  versao: '2026-11-11.1',
+  fontes: [...baseDenguePed.fontes, MS_DENGUE_2024_PED, WELLS_PESO_2017],
+  revisadoEm: '11/11/2026 (nota de divergência do Wells 2017 ao lado do peso aproximado do MS; escores P2/P3, item P10); 28/09/2026 (manual do MS 6ª ed. 2024 lido; livro do ICr mantido como base)',
 }
+
+// Escores P2/P3, item P10 (decisão B do RT em 11/11/2026): a fórmula do MS fica
+// como fonte; a metanálise só aparece como divergência.
+export const NOTA_PESO_DENGUE_WELLS =
+  'Divergência: numa metanálise de 2017 (Wells), as fórmulas de peso por idade tiveram exatidão muito baixa, e a estimativa dos pais acertou mais. A conta acima segue o manual do MS.'
 
 /** MS 2024, grupo C (p. 33; "adulto e criança"): 10 mL/kg na 1ª hora e 10 mL/kg/h na 2ª até o Ht; máximo 20 mL/kg por fase; até 3 fases. Manutenção com SF: 25 mL/kg em 6 h e 25 mL/kg em 8 h. */
 export function grupoCMs2024(pesoKg: number): { hora1Ml: number; hora2Ml: number; maxFaseMl: number; manut6hMl: number; manut6hMlH: number; manut8hMl: number; manut8hMlH: number } | null {
