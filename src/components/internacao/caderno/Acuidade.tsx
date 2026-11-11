@@ -7,7 +7,7 @@
 // agora — a linha não termina num número diferente do numeral ao lado; a cor
 // é a da banda de agora; menos de dois pontos não é tendência.
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { Activity, AlertTriangle, Check, Thermometer } from 'lucide-react'
+import { Activity, AlertTriangle, Check, ChevronDown, Thermometer } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -122,14 +122,15 @@ export function BlocoAcuidade({ a, carregando, pacienteId, internacaoId, podeLan
         </div>
 
         {geo ? (
-          <BotaoLinha onClick={() => setMotivoAberto((x) => !x)}
+          <BotaoLinha onClick={() => setMotivoAberto((x) => !x)} aria-expanded={motivoAberto}
             aria-label={`Tendência do ${a.escala} em ${janela}: ${rumo}. Abre o motivo do alerta.`}
-            className="-ml-1 shrink-0 rounded-controle border-0 bg-transparent px-1.5 py-1">
+            className="shrink-0 flex-row items-center gap-1.5 px-2 py-1">
             <svg viewBox="0 0 104 30" width="104" height="30" aria-hidden className="block">
               <polyline points={geo.pontos} fill="none" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={BANDA_TRACO[banda]} />
               <circle cx={geo.fimX.toFixed(1)} cy={geo.fimY.toFixed(1)} r="2.7" className={BANDA_PONTO[banda]} />
             </svg>
             <span className="text-rotulo whitespace-nowrap text-tinta-sussurro">{janela} · {rumo}</span>
+            <ChevronDown className={cn('size-3.5 shrink-0 text-tinta-sussurro', motivoAberto && 'rotate-180')} aria-hidden />
           </BotaoLinha>
         ) : !semAfericao && !serie.isLoading ? (
           <span className="shrink-0 text-rotulo whitespace-nowrap text-tinta-sussurro">Aferição única · sem tendência ainda</span>
