@@ -64,3 +64,18 @@ test('light: ficha de adulto, sem fonte pediátrica', () => {
   assert.equal(light.ficha.publico, 'adulto')
   assert.equal(temReferenciaPediatrica(light.ficha), false)
 })
+
+// H21 (RT, 11/11/2026): sem soro, a tela recomenda a combinação tripla do
+// Porcel 2026, e não mais a dupla (LDH ou colesterol), que perdeu exsudatos.
+test('light: regra sem soro é a combinação tripla do Porcel 2026, com fonte', () => {
+  const r = light.calcular(base)!
+  const semSoro = r.cuidados?.find((c) => /Sem amostra sérica/.test(c)) ?? ''
+  assert.match(semSoro, /proteína .*acima de 3 g\/dL/)
+  assert.match(semSoro, /colesterol .*acima de 55 mg\/dL/)
+  assert.match(semSoro, /Porcel 2026/)
+  assert.match(semSoro, /dupla/)
+  assert.doesNotMatch(semSoro, /capacidade discriminativa equivalente/)
+  assert.match(r.derivados.find((d) => d[0] === 'Desempenho')![1], /Porcel 2026/)
+  assert.ok(light.ficha.fontes.some((f) => /41846683/.test(f.citacao)))
+  assert.equal(light.ficha.versao, '2026-11-11.1')
+})

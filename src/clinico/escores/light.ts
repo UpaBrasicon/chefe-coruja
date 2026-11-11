@@ -11,15 +11,16 @@ export const light: Escore = {
   ficha: {
     id: 'light',
     titulo: 'Critérios de Light — exsudato ou transudato',
-    versao: '2026-09-28.1',
+    versao: '2026-11-11.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Light RW, Macgregor MI, Luchsinger PC, Ball WC. Pleural effusions: the diagnostic separation of transudates and exudates. Ann Intern Med. 1972;77(4):507–513.', url: 'https://doi.org/10.7326/0003-4819-77-4-507' },
       { citacao: 'Sundaralingam A, Grabczak EM, Burra P, et al. ERS statement on benign pleural effusions in adults. Eur Respir J. 2024.', url: 'https://doi.org/10.1183/13993003.02307-2023' },
       { citacao: 'Porcel JM. Biomarkers in the diagnosis of pleural diseases: a 2018 update. Ther Adv Respir Dis. 2018;12:1753466618808660. NT-proBNP no líquido pleural acima de 1500 pg/mL.', url: 'https://doi.org/10.1177/1753466618808660' },
+      { citacao: 'Porcel JM, Porcel L, Palma R, Bielsa S. Revisiting Light’s criteria: a validated blood-free triple combination matches diagnostic accuracy in over 7000 patients. ERJ Open Res. 2026;12(2):00821-2025 (PMID 41846683). 7.280 toracocenteses: desempenho de Light e combinação tripla sem soro.', url: 'https://doi.org/10.1183/23120541.00821-2025' },
       { citacao: 'Porcel JM, Trujillano J, Porcel L, et al. Development and validation of a diagnostic prediction model for heart failure-related pleural effusions: the BANCA score. ERJ Open Res. 2025;11:01030-2024. Corte ótimo de NT-proBNP 2500 pg/mL.', url: 'https://doi.org/10.1183/23120541.01030-2024' },
     ],
-    revisadoEm: '28/09/2026 (unidade do NT-proBNP)',
+    revisadoEm: '11/11/2026 (regra sem soro e desempenho pelo Porcel 2026, decisão H21 do RT)',
   },
   descricao: 'Exsudato ou transudato no derrame pleural, com o gradiente de albumina',
   itens: [
@@ -62,7 +63,7 @@ export const light: Escore = {
         ['3 · LDH pleural acima de 2/3 do LSN', f2(n('ldhP')) + ' contra ' + f2(corte3) + ' U/L · ' + pos(c3)],
         ['Gradiente de albumina soro − pleural', f2(grad) + ' g/dL · corte 1,2'],
         ['Relação albumina pleural ÷ sérica', f2(rAlb) + ' · abaixo de 0,60 confirma transudato na cirrose'],
-        ['Desempenho', 'sensibilidade 98% · especificidade 72% · cerca de 25% dos transudatos vira exsudato'],
+        ['Desempenho', 'sensibilidade 98% · especificidade 69 a 71% (Porcel 2026, 7.280 toracocenteses) · parte dos transudatos vira exsudato'],
       ],
       alerta: exsudato && gradTransuda
         ? 'Os critérios de Light dizem EXSUDATO, mas o gradiente de albumina é ' + f2(grad) + ' g/dL, acima de 1,2. Se a clínica é de insuficiência cardíaca ou cirrose, este é provavelmente um FALSO EXSUDATO — o gradiente reclassifica corretamente cerca de 80% deles. Diurético em uso é a causa mais comum dessa discordância.'
@@ -72,7 +73,7 @@ export const light: Escore = {
       cuidados: [
         'Qualquer UM dos três critérios positivo classifica como exsudato. Não é preciso ter os três.',
         'O terceiro critério usa o limite superior da normalidade do LDH do seu laboratório. O antigo corte fixo de 200 U/L era o LSN de um laboratório específico, não uma constante.',
-        'Sem amostra sérica, a regra alternativa é LDH pleural acima de 67% do LSN sérico OU colesterol pleural acima de 55 mg/dL, com capacidade discriminativa equivalente.',
+        'Sem amostra sérica, use a combinação tripla só do líquido pleural (Porcel 2026, 7.280 toracocenteses): proteína pleural acima de 3 g/dL OU LDH pleural acima de 2/3 do LSN do laboratório OU colesterol pleural acima de 55 mg/dL. A acurácia foi igual à de Light. A regra dupla (só LDH ou colesterol) deixou de achar exsudatos e não deve ser usada.',
         'NT-proBNP no líquido pleural acima de 1500 pg/mL (o mesmo que ng/L) é marca de insuficiência cardíaca descompensada (Porcel 2018).',
         'O escore BANCA (Porcel 2025) achou 2500 pg/mL como corte ótimo, e o NT-proBNP pleural tendeu a ser mais acurado que o sérico. É outro corte, de outro estudo.',
         'A ERS 2024 mantém os critérios de Light: nenhuma alternativa testada em cinco décadas os superou.',
