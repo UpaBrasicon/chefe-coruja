@@ -11110,6 +11110,15 @@ export type Database = {
         Args: { p_exame: string; p_motivo_retificacao?: string; p_pdf_caminho?: string; p_pdf_nome?: string; p_texto?: string }
         Returns: Json
       }
+      // laudo por grupo (11/11/2026, migration 20270405000001)
+      exames_aguardando_laudo: {
+        Args: { p_episodio?: string; p_paciente: string }
+        Returns: Json
+      }
+      registrar_laudo_grupo: {
+        Args: { p_exames: string[]; p_pdf_caminho: string; p_pdf_nome: string }
+        Returns: Json
+      }
       exames_da_unidade: {
         Args: { p_unidade: string }
         Returns: Json
