@@ -1,4 +1,5 @@
 import { MANUAL_HC } from '../adulto/fonte.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
 import { LIVRO_PS_PED, fichaPediatrica } from './fonte.ts'
 
 // Doses pediátricas em bolus por peso — Apêndice do PS Pediatria ICr-HCFMUSP
@@ -12,13 +13,34 @@ import { LIVRO_PS_PED, fichaPediatrica } from './fonte.ts'
 // adulto HC aparece só como nota de divergência (`anexo2Adulto`).
 // O apêndice NÃO cobre o período neonatal (p. 894).
 
-export const fichaBolusPediatrico = fichaPediatrica(
+const baseBolusPediatrico = fichaPediatrica(
   'ped-bolus',
   'Doses pediátricas por peso',
   'Apêndice, tabelas 1 e 2 (p. 894–910); RCP (p. 31–32); arritmias (p. 50); SRI (p. 69–73); choque séptico (p. 88); anafilaxia (p. 99–102); asma (p. 118–119); crise epiléptica (p. 127); intoxicações (p. 206–208); miocardite (p. 253); emergência hipertensiva (p. 276); crupe (p. 294); hemorragia digestiva (p. 349); distúrbios do potássio (p. 549); emergências oncológicas (p. 701–702, 720); sedação (p. 849)',
   LIVRO_PS_PED,
   [{ fonte: MANUAL_HC, paginas: 'Anexo 2, p. 1490–1494 (só como nota de divergência)' }],
 )
+
+// Peso de emergência (escores P2/P3, item P10; decisão B do RT em 11/11/2026):
+// o campo de peso ganha uma nota sobre como estimar quando não dá para pesar.
+// Fonte: Wells 2017, metanálise (resumo conferido no PubMed). Sem cálculo de
+// peso: as fórmulas que caberiam numa conta são as por idade, que a fonte manda
+// abandonar.
+export const WELLS_PESO_2017: Fonte = {
+  citacao: 'Wells M, Goldstein LN, Bentley A. The accuracy of emergency weight estimation systems in children: a systematic review and meta-analysis. Int J Emerg Med. 2017;10(1):29 (PMID 28936627, resumo): estimativa dos pais com 69,8% dentro de 10% do peso real, contra 55,6% da fita de Broselow; fórmulas por idade com exatidão muito baixa.',
+  url: 'https://doi.org/10.1186/s12245-017-0156-5',
+  pediatrica: true,
+}
+
+export const NOTA_PESO_EMERGENCIA =
+  'Pese sempre que der. Se não der para pesar, numa metanálise de 2017 (Wells) a estimativa dos pais acertou mais (69,8% dentro de 10% do peso real) que a fita de Broselow (55,6%), e as fórmulas por idade tiveram exatidão muito baixa. Os métodos mais exatos (Mercy, fita PAWPER) pedem medidas ou fita que a unidade pode não ter.'
+
+export const fichaBolusPediatrico: Ficha = {
+  ...baseBolusPediatrico,
+  versao: '2026-11-11.1',
+  fontes: [...baseBolusPediatrico.fontes, WELLS_PESO_2017],
+  revisadoEm: '11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
+}
 
 export const NEONATO_FORA =
   'O apêndice do livro não contempla doses do período neonatal (p. 894). Para recém-nascido, esta ferramenta não tem referência.'
