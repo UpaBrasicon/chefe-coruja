@@ -52,6 +52,10 @@ Este documento é só diagnóstico, sem código.
 | G4 | Onde aparece | **A:** porta e internação, nas duas listas que já existem |
 | G5 | Visto e ciência do médico | **A:** continuam por exame. O laudo do grupo marca cada exame como tendo resultado, e o médico dá ciência em cada um, como hoje |
 
+## Decisão do RT
+
+11/11/2026: **A em G1 a G5.** A implementação vai em branch própria, com homologação antes.
+
 ## Riscos
 
 - **Arquivo errado anexado a vários exames de uma vez:** a correção é a retificação de cada um, com motivo. Por isso a lista mostra o nome de cada exame antes de registrar.
