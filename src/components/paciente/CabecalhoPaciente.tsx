@@ -15,6 +15,7 @@
 // Leito, situação, classificação e acuidade vão para o painel Paciente ao lado.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
+import { ChevronDown } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -87,10 +88,11 @@ export type CabecalhoPacienteProps = {
 /** Selo da cor da classificação da porta (Manchester): a cor é da enfermagem. */
 export function SeloClassificacao({ cor, onClick }: { cor: CorRisco; onClick?: () => void }) {
   return onClick ? (
-    // padrao-ok: a pílula da classificação clicável usa as cores do protocolo; nenhuma peça tem esses tons
+    // padrao-ok: a pílula da classificação clicável usa as cores do protocolo; a seta mostra que abre (pedido 6 do RT, 11/11/2026)
     <button type="button" onClick={onClick} title="Classificação de risco da porta (Manchester). Abrir a classificação."
-      className={cn('rounded-capsula px-2.5 py-[3px] text-rotulo font-semibold whitespace-nowrap capitalize hover:opacity-90', MTS[cor])}>
+      className={cn('inline-flex items-center gap-1 rounded-capsula py-[3px] pr-1.5 pl-2.5 text-rotulo font-semibold whitespace-nowrap capitalize ring-1 ring-tinta/20 ring-inset hover:opacity-90', MTS[cor])}>
       {cor} · {NIVEL_RISCO[cor]}
+      <ChevronDown className="size-3 shrink-0" aria-hidden />
     </button>
   ) : (
     <span title="Classificação de risco da porta (Manchester)"

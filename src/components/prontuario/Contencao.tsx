@@ -109,7 +109,7 @@ export function Contencao({ pacienteId }: { pacienteId: string }) {
       ) : null}
       {t.anteriores.length > 0 && (
         <div className="flex flex-col gap-1">
-          <Button variant="link" size="xs" className="min-h-0 self-start px-0 text-tinta-sussurro underline hover:text-acao"
+          <Button variant="link" size="xs" className="min-h-0 self-start px-0 underline"
             aria-expanded={verAnteriores} onClick={() => setVerAnteriores(!verAnteriores)}>
             {t.anteriores.length === 1 ? '1 contenção anterior' : `${t.anteriores.length} contenções anteriores`}
           </Button>
@@ -179,7 +179,7 @@ function CartaoContencao({ c, tela, aoDialogo }: { c: RegistroContencao; tela: T
           <span className="text-rotulo font-semibold uppercase tracking-[0.04em] text-tinta-sussurro">Revisões ({vig.length})</span>
           {mostradas.map((r) => <LinhaRevisao key={r.id} r={r} podeRetificar={tela.pode_revisar && !r.retificada} aoRetificar={() => aoDialogo({ tipo: 'revisar', retifica: r })} />)}
           {(vig.length > 3 || revisoes.length > vig.length) && (
-            <Button variant="link" size="xs" className="min-h-0 self-start px-0 text-tinta-sussurro underline hover:text-acao" onClick={() => setVerTodas(!verTodas)}>
+            <Button variant="link" size="xs" className="min-h-0 self-start px-0 underline" onClick={() => setVerTodas(!verTodas)}>
               {verTodas ? 'Mostrar só as últimas' : 'Ver todas, com as retificadas'}
             </Button>
           )}
@@ -197,7 +197,7 @@ function LinhaRevisao({ r, podeRetificar, aoRetificar }: { r: RevisaoContencao; 
         <strong className="font-medium">{hora(r.revisada_em)}</strong>
         <span>{r.consciencia}{r.rass != null ? ` · RASS ${rotuloRass(r.rass)}` : ''}</span>
         {r.retifica_id && !r.retificada && <Badge variant="secondary">retificação</Badge>}
-        {podeRetificar && <Button size="xs" variant="ghost" className="ml-auto" onClick={aoRetificar}>Retificar</Button>}
+        {podeRetificar && <Button size="xs" variant="outline" className="ml-auto" onClick={aoRetificar}>Retificar</Button>}
       </span>
       <span>Sinais vitais: {r.sinais_vitais}</span>
       <span>Pele: {r.pele} · Perfusão: {r.perfusao}</span>

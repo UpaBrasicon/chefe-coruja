@@ -472,17 +472,17 @@ export function PortaoSegundoFator({ fatorId, onSair }: { fatorId: string | null
             : <UsarCodigoRecuperacao onPronto={pronto} />}
         <div className="mt-4 flex flex-col items-start gap-2">
           {fatorId && metodo !== 'totp' && (
-            <Button type="button" variant="ghost" onClick={() => setMetodo('totp')} className="min-h-0 p-0">
+            <Button type="button" variant="link" onClick={() => setMetodo('totp')} className="min-h-0 p-0 underline">
               Estou sem e-mail: quero ir pelo autenticador
             </Button>
           )}
           {metodo !== 'recuperacao' && (
-            <Button type="button" variant="ghost" onClick={() => setMetodo('recuperacao')} className="min-h-0 p-0">
+            <Button type="button" variant="link" onClick={() => setMetodo('recuperacao')} className="min-h-0 p-0 underline">
               Usar um código de recuperação
             </Button>
           )}
           {metodo !== 'email' && (
-            <Button type="button" variant="ghost" onClick={() => setMetodo('email')} className="min-h-0 p-0">
+            <Button type="button" variant="link" onClick={() => setMetodo('email')} className="min-h-0 p-0 underline">
               Voltar ao código por e-mail
             </Button>
           )}
