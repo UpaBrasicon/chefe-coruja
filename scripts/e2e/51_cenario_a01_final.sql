@@ -56,8 +56,10 @@ DELETE FROM e2e.vars WHERE nome LIKE 'a01r\_%' AND nome <> 'a01r_inicio';
 -- ── 24 (pergunta de produto): o médico da porta encerra a observação? ───────
 SELECT e2e.a01r_registra('A01R.24.porta_finaliza', 'f5_med_upa', '/plantao/observacao',
   'Pergunta de produto (P1-2): o médico da porta, que pôs a paciente em observação e não está escalado nela, tenta encerrar a observação',
-  format($q$SELECT public.finalizar_observacao(%L::uuid, 'transferencia', 'O15.0', 'Transferida ao Hospital F5 pela regulação (teste A01)', '{"destino":"Hospital Fase 5"}'::jsonb)$q$,
-    e2e.u('a01_int')));
+  format($q$SELECT CASE WHEN jsonb_typeof(public.dados_transferencia(%L::uuid) -> 'documento') = 'object' THEN ''
+      ELSE public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (A01R, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (A01R, dado fictício).', 'motivo', 'Leito no Hospital F5 pela regulação (teste A01).'))::text END
+    || public.finalizar_observacao(%L::uuid, 'transferencia', 'O15.0', 'Transferida ao Hospital F5 pela regulação (teste A01)', '{"destino":"Hospital Fase 5"}'::jsonb)::text$q$,
+    e2e.u('a01_pacu'), e2e.u('a01_pacu'), e2e.u('a01_int')));
 
 -- ── 18 e 19. observação com a equipe escalada ───────────────────────────────
 SELECT e2e.passo('A01R.18.painel', 1, 'f5_med_obs', '/plantao/observacao', 'Médico da observação vê a gestante no painel, com prazo',
@@ -79,6 +81,11 @@ SELECT e2e.passo('A01R.19.porta_ativa', 1, 'f5_med_obs', '/plantao/observacao (V
     FROM public.prescricao_porta_ativa(%L::uuid)$q$, e2e.u('a01_pacu')));
 
 -- ── 24. encerramento da observação e contrarreferência ──────────────────────
+-- lacuna 7: o documento de transferência antes de encerrar (pode já existir, do 50)
+SELECT e2e.passo('A01R.24.doc_transferencia', 1, 'f5_med_obs', '/plantao/observacao', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT CASE WHEN jsonb_typeof(public.dados_transferencia(%L::uuid) -> 'documento') = 'object' THEN 'documento de transferência já emitido'
+      ELSE left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (A01R, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (A01R, dado fictício).', 'motivo', 'Leito no Hospital F5 pela regulação (teste A01).'))::text, 120) END$q$,
+    e2e.u('a01_pacu'), e2e.u('a01_pacu')));
 SELECT e2e.passo('A01R.24.finalizar', 1, 'f5_med_obs', '/plantao/observacao', 'Médico da observação encerra: transferência, CID O15.0 e relato',
   format($q$SELECT public.finalizar_observacao(%L::uuid, 'transferencia', 'O15.0', 'Transferida ao Hospital F5 pela regulação nº 94 (teste A01)', '{"destino":"Hospital Fase 5"}'::jsonb)::text$q$,
     e2e.u('a01_int')), 'ok', 'a01r_finalizada');
