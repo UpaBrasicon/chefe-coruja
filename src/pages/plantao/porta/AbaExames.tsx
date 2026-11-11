@@ -187,7 +187,10 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
         {erro && <p className="border-t border-trilha px-4 py-2 text-apoio text-critico">{erro}</p>}
         {exames.length === 0 && <p className="border-t border-trilha px-4 py-3 text-apoio text-tinta-sussurro">Nenhum exame pedido neste atendimento.</p>}
         {exames.length > 0 && <div className="border-t border-trilha">{exames.map((e) => <LinhaExame key={e.id} e={e} aoMudar={aoMudar} />)}</div>}
-        {exames.length > 1 && <LaudoDoGrupo pacienteId={pacienteId} episodioId={episodioId} aoMudar={aoMudar} />}
+        {exames.length > 1 && (
+          <LaudoDoGrupo pacienteId={pacienteId} episodioId={episodioId} aoMudar={aoMudar}
+            pendentes={exames.filter((e) => ['pedido', 'coletado', 'em_analise', 'realizado'].includes(e.situacao)).map((e) => e.id).join(',')} />
+        )}
       </section>
       <Agravos pacienteId={pacienteId} episodioId={episodioId} />
     </div>

@@ -23,9 +23,14 @@ async function enviarLaudoDoGrupo(ids: string[], arquivo: File): Promise<void> {
   if (error) throw error
 }
 
-export function LaudoDoGrupo({ pacienteId, episodioId, aoMudar }: { pacienteId: string; episodioId?: string; aoMudar: () => void }) {
+/**
+ * `pendentes`: os ids dos exames que aguardam resultado na lista que monta o componente. Entra na chave da
+ * consulta para a lista do laudo se atualizar quando um exame novo é pedido ou recebe resultado (achado na
+ * conferência com login de 11/11/2026: o botão só aparecia depois de recarregar a página).
+ */
+export function LaudoDoGrupo({ pacienteId, episodioId, pendentes, aoMudar }: { pacienteId: string; episodioId?: string; pendentes: string; aoMudar: () => void }) {
   const qc = useQueryClient()
-  const chave = ['laudo-grupo', pacienteId, episodioId ?? null]
+  const chave = ['laudo-grupo', pacienteId, episodioId ?? null, pendentes]
   const lista = useQuery({
     queryKey: chave,
     queryFn: async () => {

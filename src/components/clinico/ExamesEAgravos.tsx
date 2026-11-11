@@ -68,7 +68,7 @@ export function ExamesEAgravos({ pacienteId, medico }: { pacienteId: string; med
         </div>
         {pendentes.length === 0 && <p className="text-tinta-sussurro">Nenhum exame aguardando resultado. (Os exames entram quando o pedido é impresso.)</p>}
         {pendentes.map((e) => <LinhaExame key={e.id} e={e} aoMudar={recarregar} aoResolver={(r, m) => rpc('resolver_exame', { p_exame: e.id, p_resultado: r, p_motivo_cancelamento: m })} />)}
-        {pendentes.length > 1 && <LaudoDoGrupo pacienteId={pacienteId} aoMudar={recarregar} />}
+        {pendentes.length > 1 && <LaudoDoGrupo pacienteId={pacienteId} aoMudar={recarregar} pendentes={pendentes.map((e) => e.id).join(',')} />}
         {/* resultado novo (ainda não aberto) fica fora do recolhido */}
         {resolvidos.filter((e) => e.situacao === 'resultado' && !e.resultado_visto_em).map((e) => <LinhaResolvido key={e.id} e={e} aoMudar={recarregar} />)}
         {resolvidos.some((e) => e.situacao !== 'resultado' || e.resultado_visto_em) && (
