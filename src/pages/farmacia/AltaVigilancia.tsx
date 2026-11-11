@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, ShieldAlert } from 'lucide-react'
+import { ChevronRight, Plus, Search, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -150,9 +150,12 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                     <TableRow key={a.id} aria-selected={a.id === selSem?.id} onClick={() => escolher(a.id)}
                       className={cn('cursor-pointer', a.id === selSem?.id && 'bg-alerta-marca hover:bg-alerta-marca')}>
                       <TableCell className="pl-4 whitespace-normal">
-                        <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => escolher(a.id)}>
-                          <span className="font-medium text-tinta">{a.paciente}</span>
-                          <span className="text-rotulo text-tinta-sussurro">{a.local ?? '—'}</span>
+                        <BotaoLinha variante="linha" className="items-center border-0 p-0 hover:bg-transparent" onClick={() => escolher(a.id)}>
+                          <span className="flex min-w-0 flex-col gap-0.5">
+                            <span className="font-medium text-tinta">{a.paciente}</span>
+                            <span className="text-rotulo text-tinta-sussurro">{a.local ?? '—'}</span>
+                          </span>
+                          <ChevronRight className="ml-auto size-4 shrink-0 text-tinta-sussurro" aria-hidden />
                         </BotaoLinha>
                       </TableCell>
                       <TableCell className="whitespace-normal text-tinta">
@@ -180,9 +183,12 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                     <TableRow key={i.id} aria-selected={i.id === selItem?.id} onClick={() => escolher(i.id)}
                       className={cn('cursor-pointer', i.id === selItem?.id && 'bg-alerta-marca hover:bg-alerta-marca')}>
                       <TableCell className="pl-4 whitespace-normal">
-                        <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => escolher(i.id)}>
-                          <span className="font-medium text-tinta">{i.principio_ativo}</span>
-                          <span className="text-rotulo text-tinta-sussurro">{apresentacao(i)}</span>
+                        <BotaoLinha variante="linha" className="items-center border-0 p-0 hover:bg-transparent" onClick={() => escolher(i.id)}>
+                          <span className="flex min-w-0 flex-col gap-0.5">
+                            <span className="font-medium text-tinta">{i.principio_ativo}</span>
+                            <span className="text-rotulo text-tinta-sussurro">{apresentacao(i)}</span>
+                          </span>
+                          <ChevronRight className="ml-auto size-4 shrink-0 text-tinta-sussurro" aria-hidden />
                         </BotaoLinha>
                       </TableCell>
                       <TableCell className="pr-4 whitespace-normal text-tinta-apoio"><PorQue i={i} /></TableCell>

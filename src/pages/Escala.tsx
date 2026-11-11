@@ -1847,9 +1847,9 @@ export default function Escala({
                                 <button
                                   type="button"
                                   onClick={() => abrirCelulaFixa(s.id, i)}
-                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle p-1 text-left transition-colors hover:bg-acao/5"
+                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
                                 >
-                                  {fixas.length === 0 && <span className="text-rotulo text-tinta-sussurro">+ adicionar</span>}
+                                  {fixas.length === 0 && <span className="text-rotulo text-acao">+ adicionar</span>}
                                   {fixas.map((f) => (
                                     <span key={f.id} className="group flex items-center gap-1">
                                       <span className="block flex-1 rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
@@ -1863,7 +1863,7 @@ export default function Escala({
                                           e.stopPropagation()
                                           removerFixa.mutate(f.id)
                                         }}
-                                        className="hidden min-h-0 px-0 text-rotulo text-critico hover:text-critico group-hover:block"
+                                        className="min-h-0 px-0 text-rotulo text-critico underline hover:text-critico"
                                       >
                                         remover
                                       </Button>
@@ -1946,10 +1946,10 @@ export default function Escala({
                               <button
                                 type="button"
                                 onClick={() => abrirCelula(s.id, d)}
-                                className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle p-1 text-left transition-colors hover:bg-acao/5"
+                                className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
                               >
                                 {plantoes.length === 0 && (
-                                  <span className="text-rotulo text-tinta-sussurro">+ adicionar</span>
+                                  <span className="text-rotulo text-acao">+ adicionar</span>
                                 )}
                                 {plantoes.map((p) => (
                                   <span key={p.id} className="block">

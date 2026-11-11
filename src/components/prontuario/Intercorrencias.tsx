@@ -66,7 +66,7 @@ export function Intercorrencias({ pacienteId, episodioId, internacaoId, semBotao
                 : <Estado tom={x.gravidade === 'moderada' ? 'ambar' : 'cinza'}>{x.gravidade}</Estado>}
               <span className="text-tinta-apoio">{fmtDataHora(x.ocorrida_em)}{x.setor ? ` · ${x.setor}` : ''}</span>
               {podeRegistrar && (
-                <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setForm({ retifica: x })}>Retificar</Button>
+                <Button size="xs" variant="outline" className="ml-auto" onClick={() => setForm({ retifica: x })}>Retificar</Button>
               )}
             </div>
             <span className="text-tinta">{x.descricao}</span>

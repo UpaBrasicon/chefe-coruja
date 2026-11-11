@@ -280,7 +280,7 @@ export function BlocoPacote({ i, pacienteId, pacienteNome, lista, podeGerar, aca
         <div className="flex flex-wrap items-center gap-2">
           <Estado tom="verde">link ativo</Estado>
           <span className="text-tinta-sussurro">gerado {diaHora(ativo.criado_em)} · vale até {diaHora(ativo.expira_em)}</span>
-          <Button size="xs" variant="ghost" onClick={() => acao(() => rpc('revogar_pacote_alta', { p_pacote: ativo.id }), 'Link revogado.')}>Revogar</Button>
+          <Button size="xs" variant="outline" onClick={() => acao(() => rpc('revogar_pacote_alta', { p_pacote: ativo.id }), 'Link revogado.')}>Revogar</Button>
         </div>
       ) : (
         <p className="text-tinta-sussurro">

@@ -319,7 +319,7 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, atrasos, souEnfermeiro, 
             {sugestao.primeira && <> · prescrito às {sugestao.prescrito_as}, 1ª dose da grade às {sugestao.primeira}</>}
           </span>
           {!mesmaLista(l.horarios, sugestao.horarios) && (
-            <Button size="xs" variant="ghost" onClick={() => setHorarios(sugestao.horarios.join(', '))}>Usar sugestão</Button>
+            <Button size="xs" variant="outline" onClick={() => setHorarios(sugestao.horarios.join(', '))}>Usar sugestão</Button>
           )}
         </div>
       )}
