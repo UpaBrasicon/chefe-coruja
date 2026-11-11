@@ -434,7 +434,7 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
       {(ativa || altaRecente || ehGestor) && (
         <BlocoPacote i={i} pacienteId={p.pacienteId} pacienteNome={p.pacienteNome} lista={p.pacotes} podeGerar={!ehGestor && (ativa || altaRecente)} acao={p.acao} />
       )}
-      {!ativa && !altaRecente && !ehGestor && <p className="text-apoio text-tinta-sussurro">Alta há mais de 24 horas: o cancelamento é com o gestor.</p>}
+      {!ativa && !altaRecente && <p className="text-apoio text-tinta-sussurro">Alta há mais de 24 horas: não pode mais ser cancelada. Se o paciente voltar, faça uma nova admissão.</p>}
     </>
   )
 }
