@@ -91,6 +91,6 @@ export const ESCORES: Escore[] = [
   spesi,
   crb65,
   sofa2,
-  twist,
   fastEd,
+  twist,
 ]

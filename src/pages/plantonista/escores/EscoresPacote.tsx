@@ -85,5 +85,5 @@ export const SgarbossaModificado = () => <EscoreTela escore={sgarbossaModificado
 export const Spesi = () => <EscoreTela escore={spesi} />
 export const Crb65 = () => <EscoreTela escore={crb65} />
 export const Sofa2 = () => <EscoreTela escore={sofa2} />
-export const Twist = () => <EscoreTela escore={twist} />
 export const FastEd = () => <EscoreTela escore={fastEd} />
+export const Twist = () => <EscoreTela escore={twist} />
