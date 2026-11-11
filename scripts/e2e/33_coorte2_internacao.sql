@@ -102,10 +102,14 @@ SELECT e2e.passo('R2.10.devolver', 30, 'farmaceutico', '/farmacia', 'Farmácia d
   format('SELECT public.validar_item(%L::uuid, false, %L)::text', e2e.r2_item(30, 'Morfina'), 'Confirmar via subcutânea e intervalo de resgate (teste E2E)'));
 SELECT e2e.conferir('R2.10.aviso_devolucao', 30, 'Prescritor avisado da devolução (correção da tarefa 7)',
   EXISTS (SELECT 1 FROM public.notificacoes_plantonista WHERE tipo = 'farm_devolvido_' || e2e.r2_item(30, 'Morfina')), NULL);
+-- Itens prescritos no 32: rodar no mesmo dia do roteiro 32 (o item vence 24 h depois
+-- da prescrição, lacuna 6); se passar de 24 h, renove a prescrição com renovar_prescricao.
+-- O "feito" mais de 2 h depois do horário (ou da prescrição) pede o motivo do atraso
+-- (lacuna 9): os "feito" levam p_motivo_atraso, que o servidor ignora sem atraso.
 SELECT e2e.passo('R2.9.checar', 23, 'tecnico', '/checagem', 'Técnico checa o soro antibotrópico como feito',
-  format('SELECT public.checar(%L::uuid, %L, %L)::text', e2e.r2_item(23, 'Soro antibotrópico'), 'feito', '10:00'));
+  format('SELECT public.checar(%L::uuid, %L, %L, p_motivo_atraso => %L)::text', e2e.r2_item(23, 'Soro antibotrópico'), 'feito', '10:00', 'intercorrencia'));
 SELECT e2e.passo('R2.9.checar', 18, 'tecnico', '/checagem', 'Técnico checa a insulina das 08:00',
-  format('SELECT public.checar(%L::uuid, %L, %L)::text', e2e.r2_item(18, 'Insulina humana regular'), 'feito', '08:00'));
+  format('SELECT public.checar(%L::uuid, %L, %L, p_motivo_atraso => %L)::text', e2e.r2_item(18, 'Insulina humana regular'), 'feito', '08:00', 'intercorrencia'));
 SELECT e2e.passo('R2.9.checar_devolvido', 30, 'tecnico', '/checagem', 'Técnico tenta checar item devolvido pela farmácia (pede justificativa)',
   format('SELECT public.checar(%L::uuid, %L, %L)::text', e2e.r2_item(30, 'Morfina'), 'feito', '10:00'), 'erro');
 -- técnico: glicemia horária e balanço horário do #18, Glasgow seriado do #24
@@ -268,6 +272,8 @@ BEGIN
   FOREACH v_n IN ARRAY ARRAY[24, 20] LOOP
     SELECT c.cid INTO v_cid FROM e2e.coorte2 c WHERE c.n = v_n;
     PERFORM e2e.passo('R2.7.saida', v_n, 'nir', '/regulacao', 'NIR marca a saída', format('SELECT public.regulacao_marcar_saida(%L::uuid)::text', e2e.u('r2reg' || v_n)));
+    PERFORM e2e.passo('R2.7.doc_transferencia', v_n, 'plantonista2', '/internacao', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+      format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (E2E coorte 2, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (E2E coorte 2, dado fictício).', 'motivo', 'Leito na unidade de referência pela regulação (teste).'))::text, 120)$q$, e2e.u('r2pac' || v_n)));
     PERFORM e2e.passo('R2.7.alta_transferencia', v_n, 'plantonista2', '/internacao', 'Alta por transferência externa na origem',
       format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('r2int' || v_n), 'transferencia_externa', v_cid,
              'Transferido pela regulação (teste E2E).', jsonb_build_object('destino', (SELECT u.nome FROM public.regulacao_solicitacoes s JOIN public.unidades u ON u.id = s.destino_unidade_id WHERE s.id = e2e.u('r2reg' || v_n)))));

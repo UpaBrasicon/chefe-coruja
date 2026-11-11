@@ -524,6 +524,8 @@ SELECT e2e.a01('a01_reg', 'A01.20.solicitar', 'A01.23.reserva', 'banco', NULL, '
     FROM public.regulacao_solicitacoes s JOIN public.reservas_leito r ON r.id = s.reserva_id WHERE s.id = %L$q$, e2e.u('a01_reg')));
 
 -- ── 24. médico da UPA encerra a observação com transferência ────────────────
+SELECT e2e.a01('a01_int', 'A01.18.internacao', 'A01.24.doc_transferencia', 'f5_med_upa', '/plantao/observacao', 'Quem abriu a observação emite o documento de transferência (lacuna 7)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (A01, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (A01, dado fictício).', 'motivo', 'Leito no Hospital F5 pela regulação (teste A01).'))::text, 120)$q$, e2e.u('a01_pacu')));
 SELECT e2e.a01('a01_int', 'A01.18.internacao', 'A01.24.finalizar', 'f5_med_upa', '/plantao/observacao', 'Encerra a observação: transferência, CID O15.0 e relato',
   format($q$SELECT public.finalizar_observacao(%L::uuid, 'transferencia', 'O15.0', 'Transferida ao Hospital F5 pela regulação (teste A01)', '{"destino":"Hospital Fase 5"}'::jsonb)::text$q$,
     e2e.u('a01_int')), 'ok', 'a01_finalizada');

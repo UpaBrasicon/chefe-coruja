@@ -244,6 +244,8 @@ SELECT e2e.bpasso('b04_pac', 'B04.12.cns', 'f5_rec_upa', '/recepcao (cadastro)',
 SELECT e2e.bpasso('b04_cns', 'B04.12.marca_mantida', 'banco', NULL, 'Paciente com CNS; o pedido guarda paciente_nao_identificado = true (histórico)',
   format($q$SELECT e2e.b_confere(p.cns IS NOT NULL AND s.paciente_nao_identificado, 'CNS ' || p.cns || ', pedido não identificado ' || s.paciente_nao_identificado)
     FROM public.regulacao_solicitacoes s JOIN public.pacientes p ON p.id = s.paciente_id WHERE s.id = %L$q$, e2e.u('b04_reg')));
+SELECT e2e.bpasso('b04_ep,b04_pac', 'B04.13.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (B04, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (B04, dado fictício).', 'motivo', 'Leito clínico no Hospital F5 pela regulação (teste B04).'))::text, 120)$q$, e2e.u('b04_pac')));
 SELECT e2e.bpasso('b04_ep', 'B04.13.desfecho', 'f5_med_upa', '/atendimento (Desfecho)', 'Desfecho transferência SEM relato (o relato só é exigido em evasão, alta a pedido e óbito)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', NULL, '{"destino":"Hospital Fase 5"}'::jsonb)::text$q$, e2e.u('b04_ep')), 'ok', 'b04_desfecho');
 SELECT e2e.bpasso('b04_aceita', 'B04.14.saida', 'f5_nir', '/regulacao (Detalhe)', 'NIR marca a saída (em trânsito)',

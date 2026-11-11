@@ -137,6 +137,8 @@ SELECT e2e.passo('T1.obito_notificado', 19, 'plantonista2', '/internacao', 'Óbi
 -- ── #20: transferência externa com exame pendente ───────────────────────────
 SELECT e2e.t1_porta(20, 'E2E T1 Transferido', 'I21.9', ARRAY['Troponina']);
 SELECT e2e.t1_internar(20);
+SELECT e2e.passo('T1.doc_transferencia', 20, 'plantonista2', '/internacao', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (E2E T1 #20, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (E2E T1 #20, dado fictício).', 'motivo', 'Hemodinâmica no Hospital Terciário E2E (teste).'))::text, 120)$q$, e2e.u('pac20')));
 SELECT e2e.passo('T1.transferencia', 20, 'plantonista2', '/internacao', 'Transferência externa com troponina sem resultado (não trava)',
   format('SELECT public.dar_alta(%L::uuid, %L, %L, NULL, NULL, %L, %L::jsonb)::text', e2e.u('int20'), 'transferencia_externa', 'I21.9',
          'Transferido para hemodinâmica (teste E2E).', '{"destino":"Hospital Terciário E2E"}'));

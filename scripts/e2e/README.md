@@ -72,3 +72,14 @@ SELECT * FROM e2e.resultados WHERE situacao <> 'ok' ORDER BY id;
 - `falha`: o resultado não bateu. A mensagem do banco fica em `detalhe`.
 - `lacuna`: a função esperada não existe no produto.
 - `ajuste`: preparo do cenário feito como `postgres` (por exemplo, envelhecer uma espera).
+
+## Regras do servidor que os roteiros seguem (10/11/2026)
+
+- Transferência externa (lacuna 7): antes de `registrar_desfecho` 'transferencia',
+  `finalizar_observacao` 'transferencia' ou `dar_alta` 'transferencia_externa', o médico
+  emite `emitir_documento_transferencia` (passos `*.doc_transferencia`).
+- Checagem atrasada (lacuna 9): o "feito" de item prescrito em roteiro anterior leva
+  `p_motivo_atraso` (o servidor ignora o motivo quando a dose não está atrasada).
+- Prescrição vencida (lacuna 6): o item vence 24 h depois da prescrição. O `13` e o `33`
+  checam itens do `11` e do `32`: rode no mesmo dia; se passar de 24 h, renove com
+  `renovar_prescricao`.
