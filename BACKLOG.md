@@ -2444,6 +2444,12 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 | 10 | P2 | Óbitos no painel do gestor e em Indicadores | Só o painel do administrador (`NumerosOrganizacao`) mostra | Feito em paralelo com a 6 (liberado pelo RT): A em P1 a P8 (10/11/2026), com referência na Portaria SAS/MS 312/2002. Cartão "Óbitos" em Indicadores (`indicador_obitos`: origem, setor, tipo de morte, encaminhamento, adulto ou pediátrico, menos ou mais de 24 h, óbitos sobre saídas, lista auditada, CSV sem nome, dia do plantão); painel do admin conta todos os óbitos, com os anteriores à lacuna 5, mantendo a supressão. Migration `20270328000001`, PR #553; CI verde; na homologação e na produção em 10/11/2026 com o ok do RT (md5 iguais). Diagnóstico em `docs/gestor/LACUNA-10-OBITOS-PAINEL-DIAGNOSTICO.md` |
 | 11 | P2 | Anexar exame, imagem ou ECG como arquivo: testar na homologação | Existe; o teste local falhou por causa do storage local | Regras testadas na homologação em 10/11/2026 (22 casos, transação desfeita): envio, leitura, recusas e RPC conferem; o erro 42P10 era só do storage local. Falta o envio real com login, pelo roteiro em `docs/porta/LACUNA-11-ANEXO-TESTE.md`. Risco achado: o laudo abre com `window.open` depois de chamadas ao servidor e pode ser barrado pelo bloqueador de pop-up no Safari e no celular (corrigido no #557). **11/11/2026: o RT fez o envio real com login, pelo roteiro, e todos os passos passaram. Concluído.** |
 
+## Pedidos do RT em 11/11/2026
+
+| # | Prior. | Pedido | Hoje | Decisão do RT | Estado |
+|---|---|---|---|---|---|
+| 1 | P2 | Laudo por grupo: anexar um único arquivo do laboratório a todos os exames de laboratório do pedido, de uma vez; o mesmo para ECG e para imagem | Cada exame recebe o próprio anexo, um de cada vez (`src/components/clinico/ResultadoExame.tsx`); o grupo de cada exame já existe (`GrupoExame` em `src/lib/exames.ts`: laboratório, imagem e gráfico) | Um anexo para o grupo. Entra depois da fila atual (escores P2/P3, conferência do H7 com a AHA, RNDS e M12). Sem código até chegar a vez | Aguardando a vez; começa pelo diagnóstico |
+
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
 **Objetivo:** assistente de evidências para o plantonista, com corpus próprio no Supabase (pgvector) e fallback PubMed. Decisão já tomada: pgvector, não Pinecone.
