@@ -404,6 +404,8 @@ SELECT e2e.bpasso('b01_reg', 'B01.24.nir', 'f5_nir', '/nir', 'NIR: nenhum item d
     'f5100000-0000-4000-8000-000000000002', e2e.v('b01_reg')));
 SELECT e2e.bpasso('b01_int', 'B01.25.impeditivos', 'f5_med_int', '/plantao/internacao (alta)', 'impeditivos_alta antes da alta',
   format('SELECT left(public.impeditivos_alta(%L::uuid)::text, 300)', e2e.u('b01_int')));
+SELECT e2e.bpasso('b01_int,b01_pac', 'B01.25.doc_transferencia', 'f5_med_int', '/plantao/internacao (alta)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (B01, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (B01, dado fictício).', 'motivo', 'UTI fora da rede pela regulação (teste B01).'))::text, 120)$q$, e2e.u('b01_pac')));
 SELECT e2e.bpasso('b01_int', 'B01.25.alta', 'f5_med_int', '/plantao/internacao (alta)', 'Alta por transferência externa (UTI fora da rede), CID A41.9',
   format($q$SELECT public.dar_alta(%L::uuid, 'transferencia_externa', 'A41.9', now(), NULL, 'Transferido para UTI fora da rede pela regulação (teste B01)', '{"destino":"UTI Hospital Regional (fora da rede)"}'::jsonb)::text$q$,
     e2e.u('b01_int')), 'ok', 'b01_alta');

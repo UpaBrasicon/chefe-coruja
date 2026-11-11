@@ -285,6 +285,8 @@ SELECT e2e.bpasso('b03_aceita', 'B03.16.nir', 'f5_nir', '/nir', 'NIR: nada parad
     'f5100000-0000-4000-8000-000000000002', e2e.v('b03_reg')));
 
 -- ── 17 a 19. desfecho, saída e chegada ──────────────────────────────────────
+SELECT e2e.bpasso('b03_ep,b03_pac', 'B03.17.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (B03, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (B03, dado fictício).', 'motivo', 'Leito clínico no Hospital F5 pela regulação (teste B03).'))::text, 120)$q$, e2e.u('b03_pac')));
 SELECT e2e.bpasso('b03_ep', 'B03.17.desfecho', 'f5_med_upa', '/atendimento (Desfecho)', 'Desfecho transferência (Hospital F5)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', 'Transferido ao Hospital F5 pela regulação (teste B03)', '{"destino":"Hospital Fase 5"}'::jsonb)::text$q$, e2e.u('b03_ep')), 'ok', 'b03_desfecho');
 SELECT e2e.bpasso('b03_aceita', 'B03.18.enfermeira_nao_marca', 'f5_enf_upa', '/regulacao (Detalhe)', 'Enfermeira tenta marcar a saída (deve ser recusado)',

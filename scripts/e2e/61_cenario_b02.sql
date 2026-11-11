@@ -309,6 +309,8 @@ SELECT e2e.bpasso('b02_reenviada', 'B02.18.autorizar', 'f5_regulador', '/regulac
 SELECT e2e.bpasso('b02_aut2', 'B02.19.resposta_externa', 'f5_regulador', '/regulacao (Detalhe)', 'Aceite do serviço de fora (neurologista de plantão, telefone)',
   format($q$SELECT left(public.regulacao_registrar_resposta_externa(%L::uuid, true, 'neurologista de plantão', 'telefone')::text, 120)$q$, e2e.u('b02_n2')), 'ok', 'b02_aceita');
 SELECT e2e.bpasso('b02_aceita', 'B02.19.autorizada', 'banco', NULL, 'autorizada (destino externo)', e2e.b_status_sql(e2e.u('b02_n2'), 'autorizada'));
+SELECT e2e.bpasso('b02_ep,b02_pac', 'B02.20.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (B02, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (B02, dado fictício).', 'motivo', 'Trombólise em hospital com unidade de AVC pela regulação (teste B02).'))::text, 120)$q$, e2e.u('b02_pac')));
 SELECT e2e.bpasso('b02_ep', 'B02.20.desfecho', 'f5_med_upa', '/atendimento (Desfecho)', 'Desfecho transferência na porta (sem esperar a chegada)',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', 'Transferida ao hospital com unidade de AVC pela regulação (teste B02)', '{"destino":"Hospital com unidade de AVC (fora da rede)"}'::jsonb)::text$q$,
     e2e.u('b02_ep')), 'ok', 'b02_desfecho');

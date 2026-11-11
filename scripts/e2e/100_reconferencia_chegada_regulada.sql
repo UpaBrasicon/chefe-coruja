@@ -45,6 +45,8 @@ SELECT e2e.bpasso('chr_reg', 'CHR.07.leito', 'f5_med_hosp', '/regulacao (destino
   format($q$SELECT (public.regulacao_leitos_destino(%L::uuid) -> 0 ->> 'id')$q$, e2e.u('chr_reg')), 'ok', 'chr_leito');
 SELECT e2e.bpasso('chr_leito', 'CHR.07.aceitar', 'f5_med_hosp', '/regulacao (destino)', 'Hospital aceita e reserva o leito',
   format($q$SELECT left(public.regulacao_destino_aceitar(%L::uuid, %L::uuid, 'aceito no teste da chegada regulada')::text, 60)$q$, e2e.u('chr_reg'), e2e.u('chr_leito')), 'ok', 'chr_aceita');
+SELECT e2e.bpasso('chr_aceita', 'CHR.08.doc_transferencia', 'f5_med_upa', '/atendimento (Desfecho)', 'Médico emite o documento de transferência (lacuna 7: sem ele a transferência externa é recusada)',
+  format($q$SELECT left(public.emitir_documento_transferencia(%L::uuid, jsonb_build_object('resumo_clinico', 'Resumo clínico de teste (chegada regulada, dado fictício).', 'condutas', 'Condutas de teste conforme o roteiro (chegada regulada, dado fictício).', 'motivo', 'Leito clínico no Hospital F5 pela regulação (teste).'))::text, 120)$q$, e2e.u('chr_pac')));
 SELECT e2e.bpasso('chr_aceita', 'CHR.08.alta_origem', 'f5_med_upa', '/atendimento (Desfecho)', 'Alta por transferência na UPA, com a regulação',
   format($q$SELECT public.registrar_desfecho(%L::uuid, 'transferencia', 'Transferida pela regulação (teste)', jsonb_build_object('destino', 'Hospital Fase 5', 'regulacao_id', %L))::text$q$,
     e2e.u('chr_ep'), e2e.v('chr_reg')));
