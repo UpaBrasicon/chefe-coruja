@@ -40,6 +40,7 @@ export const REGRAS = {
   'importacao-cruzada': 'Tela importando peça de outra área, ou componente importando tela (guia 4.5)',
   'emoji': 'Emoji na tela ou na folha impressa (guia 5.4)',
   'pronto-socorro': '"Pronto Socorro" sem hífen no texto (guia 5.3)',
+  'fantasma-so-texto': 'Button variant="ghost" só com texto, sem um botão principal ao lado: parece texto (guia 3.1, pedido 6 do RT)',
 }
 
 // Onde a peça de base pode usar o elemento nativo (guia 3.1, 3.2, 3.3 e 4.1).
@@ -198,8 +199,55 @@ export function analisar(arquivo, texto) {
     for (const m of semArbitrarios.matchAll(RE_HEX)) anotar('cor-hex', inicio + m.index, m[0])
   }
 
+  // Botão fantasma só com texto (guia 3.1): é texto cinza, sem borda nem fundo.
+  // Ao lado do botão principal ("Cancelar", "Voltar") ele é o par e passa; solto
+  // no conteúdo, ninguém percebe que clica (pedido 6 do RT, 11/11/2026).
+  const atributo = (abertura, nome) => abertura.attributes.properties.find((a) => ts.isJsxAttribute(a) && a.name.getText(sf) === nome)
+  const valor = (attr) => (!attr ? null : attr.initializer && ts.isStringLiteral(attr.initializer) ? attr.initializer.text : '?')
+  const temJsx = (no) => {
+    let achou = false
+    const ver = (n) => { if (achou) return; if (ts.isJsxElement(n) || ts.isJsxSelfClosingElement(n) || ts.isJsxFragment(n)) achou = true; else ts.forEachChild(n, ver) }
+    ver(no)
+    return achou
+  }
+  // Principal: o botão cheio (ou o destrutivo de confirmação). "Cancelar",
+  // "Voltar" e afins também fazem par com um botão de contorno.
+  const SAIDA = /^(Cancelar|Voltar|Fechar|Não|Desistir|Agora não)$/
+  const ehPrincipal = (abertura, saida) => {
+    if (abertura.tagName.getText(sf) !== 'Button') return false
+    const v = valor(atributo(abertura, 'variant'))
+    return ['default', 'destructive', '?', null].includes(v) || (saida && v === 'outline')
+  }
+  const temPar = (elemento) => {
+    const saida = SAIDA.test(elemento.children.map((f) => f.getText(sf)).join('').trim())
+    let c = elemento.parent
+    while (c && !ts.isJsxElement(c) && !ts.isJsxFragment(c)) c = c.parent
+    if (!c) return false
+    let par = false
+    const ver = (n) => {
+      if (par || n === elemento) return
+      if (ts.isJsxElement(n)) { if (ehPrincipal(n.openingElement, saida)) par = true; return }
+      if (ts.isJsxSelfClosingElement(n)) { if (ehPrincipal(n, saida)) par = true; return }
+      ts.forEachChild(n, ver)
+    }
+    c.children.forEach(ver)
+    return par
+  }
+  const fantasmaSoTexto = (elemento) => {
+    const ab = elemento.openingElement
+    if (ab.tagName.getText(sf) !== 'Button' || valor(atributo(ab, 'variant')) !== 'ghost') return false
+    if (String(valor(atributo(ab, 'size')) ?? '').startsWith('icon')) return false
+    const filhos = elemento.children.filter((f) => !(ts.isJsxText(f) && !f.getText(sf).trim()))
+    if (!filhos.length || filhos.some((f) => !ts.isJsxText(f) && !ts.isJsxExpression(f))) return false
+    if (filhos.some((f) => ts.isJsxExpression(f) && f.expression && temJsx(f.expression))) return false
+    return !temPar(elemento)
+  }
+
   const visitar = (no) => {
     switch (no.kind) {
+      case ts.SyntaxKind.JsxElement:
+        if (fantasmaSoTexto(no)) anotar('fantasma-so-texto', no.getStart(sf), 'Button ghost só texto')
+        break
       case ts.SyntaxKind.StringLiteral:
       case ts.SyntaxKind.NoSubstitutionTemplateLiteral:
       case ts.SyntaxKind.TemplateHead:
@@ -404,7 +452,17 @@ function main(args) {
     if (anterior) {
       const antes = totais(lerBase(anterior))
       const agora = totais(lerBase(readFileSync(BASE, 'utf8')))
+      // Regra que o ramo de destino ainda não tem entra com a base do dia (ela nasce
+      // contando o que já existe); dali em diante, só desce.
+      let scriptAnterior = ''
+      try {
+        scriptAnterior = execFileSync('git', ['show', `${args[i + 1]}:scripts/padrao-frontend.mjs`], { cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      } catch { /* sem o script no destino: todas as regras são novas */ }
       for (const regra of Object.keys(agora)) {
+        if (!scriptAnterior.includes(`'${regra}'`)) {
+          console.log(`Regra nova em relação a ${args[i + 1]}: ${regra} entra com ${agora[regra]} na base.`)
+          continue
+        }
         if ((agora[regra] ?? 0) > (antes[regra] ?? 0)) {
           falhou = true
           console.error(`A base subiu em ${regra}: ${antes[regra] ?? 0} → ${agora[regra]} em relação a ${args[i + 1]}. A base só desce.`)

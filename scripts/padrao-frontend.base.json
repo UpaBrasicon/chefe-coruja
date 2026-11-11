@@ -13,7 +13,153 @@
     "data-local": 0,
     "importacao-cruzada": 0,
     "emoji": 0,
-    "pronto-socorro": 0
+    "pronto-socorro": 0,
+    "fantasma-so-texto": 76
   },
-  "arquivos": {}
+  "arquivos": {
+    "src/components/apac/SolicitarApac.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/components/clinico/ResultadoExame.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/documentos/AtestadoReceita.tsx": {
+      "fantasma-so-texto": 3
+    },
+    "src/components/encaminhamento/EncaminhamentoSms003a.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/hiperdia/IncluirNoHiperdia.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/components/internacao/ListaInternados.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/internacao/caderno/Trilha.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/components/internacao/documentos/FichaAdmissao.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/internacao/documentos/LaudoAih.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/leito/ReservarLeito.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/paciente/CadastroRn.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/paciente/ProcedimentosRealizados.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/perfil/CampoCbo.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/plantonista/RespostaIa.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/preNatal/Dialogos.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/preNatal/PreNatalNaConsulta.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/prescricao/PrescricaoEstruturada.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/prontuario/HistoricoEncerrado.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/puericultura/PuericulturaNaConsulta.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/components/regulacao/AnexosRegulacao.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/components/regulacao/MapaVagas.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/pages/Cadastro.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/Configuracao.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/Login.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/Perfil.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/PreferenciasPrescricao.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/PrescricaoTeste.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/admin/ErrosEAlertas.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/admin/Integracoes.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/pages/agenda/AgendaConsultas.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/farmacia/AltaVigilancia.tsx": {
+      "fantasma-so-texto": 3
+    },
+    "src/pages/farmacia/Diluicoes.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/pages/farmacia/Dispensacao.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/farmacia/Farmacia.tsx": {
+      "fantasma-so-texto": 3
+    },
+    "src/pages/farmacia/Interacoes.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/farmacia/UnidadeConsumo.tsx": {
+      "fantasma-so-texto": 3
+    },
+    "src/pages/faturamento/Bpa.tsx": {
+      "fantasma-so-texto": 3
+    },
+    "src/pages/faturamento/Contas.tsx": {
+      "fantasma-so-texto": 5
+    },
+    "src/pages/faturamento/Materiais.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/pages/gestor/DetalhesAdmissao.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/gestor/ExamesUnidade.tsx": {
+      "fantasma-so-texto": 3
+    },
+    "src/pages/gestor/Implantacao.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/pages/gestor/OlhoDeGaviao.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/puericultura/Puericultura.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/regulacao/Aih.tsx": {
+      "fantasma-so-texto": 1
+    },
+    "src/pages/regulacao/Apac.tsx": {
+      "fantasma-so-texto": 2
+    },
+    "src/pages/regulacao/Regulacao.tsx": {
+      "fantasma-so-texto": 3
+    },
+    "src/pages/telemedicina/Teleinterconsulta.tsx": {
+      "fantasma-so-texto": 1
+    }
+  }
 }
