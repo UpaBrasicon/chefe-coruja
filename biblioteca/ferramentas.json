@@ -457,6 +457,24 @@
   "publico": "pediatrico"
  },
  {
+  "id": "twist-ped",
+  "nome": "TWIST — torção testicular (criança)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Triagem e escores",
+  "sinonimos": [
+   "pediatria",
+   "TWIST",
+   "torção testicular",
+   "escroto agudo",
+   "testículo",
+   "dor testicular"
+  ],
+  "descricao": "Escroto agudo: cinco achados, de 0 a 7; baixo risco não dispensa avaliação.",
+  "rota": "/plantonista/pediatria/twist-ped",
+  "publico": "pediatrico"
+ },
+ {
   "id": "glasgow-pediatrico",
   "nome": "Escala de Coma de Glasgow — criança",
   "tipo": "conduta",
@@ -3997,6 +4015,24 @@
   ],
   "descricao": "Rastreio rápido: alerta, AMT4, meses de trás para frente e mudança aguda.",
   "rota": "/plantonista/escores/4at",
+  "publico": "adulto"
+ },
+ {
+  "id": "twist",
+  "nome": "TWIST — torção testicular (14 a 18 anos)",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Urologia",
+  "sinonimos": [
+   "TWIST",
+   "torção testicular",
+   "escroto agudo",
+   "testículo",
+   "dor testicular",
+   "urologia"
+  ],
+  "descricao": "Escroto agudo: cinco achados, de 0 a 7; baixo risco não dispensa avaliação.",
+  "rota": "/plantonista/escores/twist",
   "publico": "adulto"
  },
  {
