@@ -13,6 +13,7 @@ import { data, dataIso, diaMesHora, hora } from '@/lib/formato'
 import { rotuloLocais, rotuloPontos } from '@/lib/contencao'
 import { linhasCausas, ROTULO_DESTINO, ROTULO_ENCAMINHAMENTO, ROTULO_TIPO_MORTE, rotuloPendencias } from '@/lib/obito'
 import { rotuloDesfechoFinal } from '@/lib/historico'
+import { rotuloMotivoReabertura } from '@/lib/reabrirAtendimento'
 import {
   ancoraDoAno, idCabecalho, principais, resumoInternacao, rotuloLeito, textoItemPrescricao,
   type ClassificacaoBruta, type GrupoAtendimento, type LinhaAfericao, type RegistroLinha,
@@ -169,6 +170,8 @@ export function CartaoAtendimento({ grupo: g, inicialAberto }: { grupo: GrupoAte
               {!avulso && (
                 <Badge variant={g.situacao.emCurso ? 'default' : 'secondary'}>{g.situacao.emCurso ? 'Em curso' : g.situacao.rotulo}</Badge>
               )}
+              {/* lacuna 8 (R8): reaberto depois do desfecho; o desfecho anterior fica no registro abaixo */}
+              {g.reaberturas > 0 && <Badge variant="warning">{g.reaberturas === 1 ? 'reaberto' : `reaberto ${g.reaberturas} vezes`}</Badge>}
             </span>
             <ChevronDown aria-hidden className={cn('mt-1 size-4 shrink-0 text-tinta-sussurro transition-transform duration-200', aberto && 'rotate-180')} />
           </span>
@@ -349,6 +352,23 @@ function LinhaRegistro({ r, dia, oculto, revelar }: { r: RegistroLinha; dia: str
             </p>
           </div>
         </Recolhivel>
+      )
+      break
+    }
+    case 'reabertura': {
+      // lacuna 8 (R8): o desfecho desfeito fica visível, com quem reabriu (autor) e o motivo
+      const x = r.reabertura
+      titulo = <>Atendimento reaberto <Badge variant="warning">reaberto</Badge></>
+      corpo = (
+        <div className="flex flex-col gap-1 text-apoio text-tinta">
+          <Campo rotulo="Desfecho anterior" texto={[
+            rotuloDesfechoFinal(x.desfecho_anterior),
+            x.desfecho_anterior_em ? quando(x.desfecho_anterior_em, dia) : null,
+            r.anteriorPor,
+            x.cid_anterior ? `CID ${x.cid_anterior}` : null,
+          ].filter(Boolean).join(' · ')} />
+          <Campo rotulo="Motivo" texto={[rotuloMotivoReabertura(x.motivo), x.detalhe].filter(Boolean).join(': ')} />
+        </div>
       )
       break
     }

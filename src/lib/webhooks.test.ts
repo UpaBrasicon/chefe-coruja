@@ -42,6 +42,8 @@ test('reenvio e rótulos', () => {
   assert.equal(podeReenviar(entrega({ situacao: 'pendente' }), true), false)
   assert.equal(podeReenviar(entrega({ situacao: 'entregue' }), false), false)
   assert.equal(rotuloEvento('internacao.alta'), 'Alta da internação')
+  // lacuna 8 (R7): o evento novo do atendimento reaberto
+  assert.equal(rotuloEvento('atendimento.reaberto'), 'Atendimento reaberto')
   assert.equal(rotuloEvento('desconhecido'), 'desconhecido')
 })
 
