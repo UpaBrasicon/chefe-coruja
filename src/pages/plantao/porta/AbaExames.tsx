@@ -3,7 +3,7 @@
 // "Resultado chegou" a resolve. Exame com resultado fica no registro. Os
 // agravos de notificação moram aqui também: os dois impedem a alta.
 import { useQuery } from '@tanstack/react-query'
-import { FlaskConical, Megaphone, Printer } from 'lucide-react'
+import { ChevronDown, FlaskConical, Megaphone, Printer } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -50,7 +50,10 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
         <Estado tom={tom}>{sit}</Estado>
         {e.novo && <Badge variant={e.critico ? 'destructive' : 'info'}>{e.critico ? 'crítico · novo' : 'novo'}</Badge>}
         {!e.novo && e.critico && <Badge variant="destructive">crítico</Badge>}
-        <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : e.situacao === 'resultado' ? 'Ver resultado' : 'Detalhe'}</Button>
+        <Button size="xs" variant="outline" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+          {aberto ? 'Fechar' : e.situacao === 'resultado' ? 'Ver resultado' : 'Detalhe'}
+          <ChevronDown className={aberto ? 'rotate-180' : undefined} aria-hidden />
+        </Button>
         {pendente && (
           <>
             <Input className="h-8 w-56" aria-label={`Resultado de ${e.exame} (opcional)`} placeholder={cancelando ? 'Motivo do cancelamento (10 letras)' : 'Resultado (opcional)'}

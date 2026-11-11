@@ -44,7 +44,7 @@ export function BlocoSepse({ a, pacienteId, podeMarcar, acao }: { a: Acuidade; p
     <>
       <Secao titulo="Rastreio de sepse · Phoenix"
         acao={podeMarcar && (!ph || ph.gatilho.motivo === 'suspeita') ? (
-          <Button size="xs" variant="ghost" onClick={() => void marcar(!ph)}>
+          <Button size="xs" variant="outline" onClick={() => void marcar(!ph)}>
             {ph ? 'Retirar suspeita de infecção' : 'Marcar suspeita de infecção'}
           </Button>
         ) : undefined}>

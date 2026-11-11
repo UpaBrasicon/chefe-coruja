@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { diaMesHora } from '@/lib/formato'
 import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
+import { SeloAcao } from '@/components/ui/selo-acao'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -50,18 +51,16 @@ export function SeloIsolamento({ pacienteId, onClick }: { pacienteId: string; on
   if (q.isLoading || q.error) return null
   if (!lista.length) {
     return (
-      <Button variant="ghost" onClick={onClick} title="Sem isolamento. Marcar isolamento." className="min-h-0 gap-1 p-0">
-        <ShieldAlert className="size-3.5" aria-hidden /> Isolamento
-      </Button>
+      <SeloAcao tom="neutro" onClick={onClick} title="Sem isolamento. Marcar isolamento.">
+        <ShieldAlert className="size-3.5 shrink-0" aria-hidden /> Sem isolamento
+      </SeloAcao>
     )
   }
   const tipos = lista.map((i) => ROTULO_ISOLAMENTO[i.tipo].toLowerCase()).join(' e ')
   return (
-    // padrao-ok: selo de isolamento ativo, cápsula vermelha cheia como o selo de alergia; nenhuma peça tem esse tom
-    <button type="button" onClick={onClick} title={`Isolamento por ${tipos}: só leito de isolamento. Abrir isolamento.`}
-      className="inline-flex items-center gap-1.5 rounded-capsula bg-critico px-[11px] py-1 text-apoio font-semibold text-sobre-acao hover:opacity-90">
+    <SeloAcao tom="critico" onClick={onClick} title={`Isolamento por ${tipos}: só leito de isolamento. Abrir isolamento.`}>
       <ShieldAlert className="size-3.5 shrink-0" aria-hidden /> Isolamento · {tipos}
-    </button>
+    </SeloAcao>
   )
 }
 
