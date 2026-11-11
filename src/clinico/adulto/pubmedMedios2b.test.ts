@@ -38,7 +38,8 @@ function confere(fonte: Fonte, pmid: string, ficha: Ficha) {
   assert.match(fonte.url ?? '', /^https:\/\/doi\.org\/10\./, pmid)
   assert.ok(ficha.versao >= VERSAO, `${ficha.id} ${ficha.versao}`)
   assert.ok(ficha.fontes.includes(fonte), `${ficha.id} sem ${pmid}`)
-  assert.match(ficha.revisadoEm, /^06\/11\/2026 .*revisão PubMed, itens médios/, ficha.id)
+  // revisão posterior entra antes, no começo do texto (H7, 11/11/2026)
+  assert.match(ficha.revisadoEm, /06\/11\/2026 .*revisão PubMed, itens médios/, ficha.id)
 }
 
 function naTela(arquivo: string, nota: string) {
