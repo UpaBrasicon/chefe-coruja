@@ -228,9 +228,20 @@ INSERT INTO t SELECT 'adm_ome', public.checar(pg_temp.u('i_ome'), 'nao_feito', p
 INSERT INTO t SELECT 'adm_agora', public.checar(pg_temp.u('i_agora'), 'feito', pg_temp.hm(-180))::text;
 INSERT INTO t SELECT 'adm_sn', public.checar(pg_temp.u('i_sn'), 'feito', pg_temp.hm(-180))::text;
 INSERT INTO t SELECT 'adm_soro', public.checar(pg_temp.u('i_soro'), 'feito', pg_temp.hm(-180))::text;
--- A8: vencido segue só com "não feito", mesmo com o motivo do atraso
+-- A8: vencido segue só com "não feito", mesmo com o motivo do atraso. Desde
+-- 20270402000001 (RT, 10/11/2026) o "feito" de horário anterior ao vencimento
+-- é aceito até 2 h depois dele: aqui o vencimento passa para 3 h atrás, fora
+-- da exceção, e volta ao valor do teste em seguida.
+RESET ROLE;
+UPDATE public.prescricao_itens SET valida_ate = now() - interval '3 hours' WHERE id = pg_temp.u('i_venc');
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT pg_temp.falha(format('SELECT public.checar(%L, %L, %L, NULL, %L)', pg_temp.u('i_venc'), 'feito', pg_temp.hm(-180), 'falta_medicamento'),
   'Prescrição vencida às', 'A8: item vencido não aceita "feito" atrasado');
+RESET ROLE;
+UPDATE public.prescricao_itens SET valida_ate = now() - interval '1 minute' WHERE id = pg_temp.u('i_venc');
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 INSERT INTO t SELECT 'adm_venc', public.checar(pg_temp.u('i_venc'), 'nao_feito', pg_temp.hm(-180), 'Prescrição vencida, renovação pedida')::text;
 INSERT INTO t SELECT 'fila', (SELECT por_horario::text FROM public.fila_checagem() WHERE item_id = pg_temp.u('i_dip'));
 -- o técnico checa, mas não dá ciência
