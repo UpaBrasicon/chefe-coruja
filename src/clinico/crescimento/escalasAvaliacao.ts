@@ -36,18 +36,21 @@ export type DefinicaoAvaliacao = {
   ficha: Ficha
 }
 
-const REVISADO = '29/09/2026 (porte do protótipo)'
 
 export const fichaBraden: Ficha = {
   id: 'avaliacao-braden',
   titulo: 'Braden — risco de lesão por pressão',
-  versao: '2026-09-29.1',
+  // a mesma versão vai em private.escala_avaliacao (migration 20270403000001)
+  versao: '2026-11-11.1',
   publico: 'adulto',
   fontes: [
     { citacao: 'Bergstrom N, Braden BJ, Laguzza A, Holman V. The Braden Scale for predicting pressure sore risk. Nurs Res. 1987;36(4):205–210.' },
     { citacao: 'Versão brasileira: Paranhos WY, Santos VLCG. Avaliação de risco para úlceras de pressão por meio da Escala de Braden, na língua portuguesa. Rev Esc Enferm USP. 1999;33(nº esp.):191–206.' },
+    // Decisão H19 do RT (11/11/2026): faixas mantidas, agora com fonte, e nota de limitação.
+    { citacao: 'As cinco faixas (9 ou menos, 10 a 12, 13 a 14, 15 a 18, 19 a 23): Velozo BC, Budri AMV, Bernardo LC, et al. Comparison of the Validity and Reliability of Five Pressure Injury Risk Scales in Intensive Care. Nurs Crit Care. 2026;31(6):e70734 (PMID 42845173), Tabela 1, versão em português. Na UTI, a Braden teve AUC de 0,61.', url: 'https://doi.org/10.1111/nicc.70734' },
+    { citacao: 'Valor preditivo modesto: Hillier B, Scandrett K, Coombe A, et al. Accuracy and clinical effectiveness of risk prediction tools for pressure injury occurrence: an umbrella review. PLoS Med. 2025;22(2):e1004518 (PMID 39913541). Sensibilidade de 0,78 e especificidade de 0,72, com cortes de 10 a 20 entre os estudos; os dois ensaios que testaram o uso de escala não mostraram queda de lesão por pressão.', url: 'https://doi.org/10.1371/journal.pmed.1004518' },
   ],
-  revisadoEm: REVISADO,
+  revisadoEm: '11/11/2026 (fonte das faixas e nota de limitação, decisão H19 do RT)',
 }
 
 export const fichaMorse: Ficha = {
