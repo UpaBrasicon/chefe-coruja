@@ -399,7 +399,7 @@ Regras:
 | # | Item | Situação |
 |---|---|---|
 | 1 | Pós-PCR pela ERC-ESICM 2025 | Feito, branch `revisao/pos-pcr-erc-2025` |
-| 2 | Trombólise no AVC: correção oficial da AHA/ASA 2026 | **Feito em 11/11/2026:** PDF da correção lido (diagnóstico em `docs/clinico/AVC-CORRECAO-AHA-2026-DIAGNOSTICO.md`, #605): não mexe nas Tabelas 5 e 7 nem em dose. Decisão do RT D1–D3 = A, D4–D12 = C: janela estendida só sem indicação de trombectomia e "pode ser benéfica", adrenalina IM no angioedema, aviso atualizado (#612). Ficha 2026-11-11.1 pela migration `20270405000004`, na homologação e na produção (ok do RT), aguardando aprovação |
+| 2 | Trombólise no AVC: correção oficial da AHA/ASA 2026 | Aviso feito, branch `revisao/avc-correcao-aha`. Pendente: o RT trazer o PDF da correção para conferir as Tabelas 5 e 7 |
 | 3 | PAC: REMAP-CAP 2025 e citação da ATS 2025 | Feito, branch `revisao/pac-remap-cap` |
 | 4 | Endocardite: Duke-ISCVID 2023 | Feito, branch `revisao/endocardite-duke-iscvid` |
 | 5 | HINTS: aviso de uso (GRACE-3 2023) | Feito, branch `revisao/hints-grace3` |
@@ -407,7 +407,7 @@ Regras:
 | 7 | Síndrome hepatorrenal: ADQI-ICA 2024 | Feito, branch `revisao/shr-adqi-2024` |
 | 8 | Hiponatremia: alerta contra a subcorreção | Feito, branch `revisao/hiponatremia-subcorrecao` |
 | 9 | CKD-EPI: equação de 2009 no Brasil | Feito, branch `revisao/ckd-epi-2009` (2009 e 2021 lado a lado, sem campo de raça) |
-| 10 | ITU pediátrica: AAP 2026 | **Feito em 11/11/2026:** PDFs da AAP 2026 lidos (diagnóstico em `docs/clinico/ITU-AAP-2026-DIAGNOSTICO.md`, #605). Decisão do RT I1–I6 = A, I7–I10 = B, I11–I13 = C: de 8 dias a 5 anos, sonda ou punção ≥ 10.000 UFC/mL, jato médio só a partir de 2 meses, piúria obrigatória pela Tabela 1, quem testar sem etnia (Figura 2), notas sem dose; fora da faixa continua o livro (#613). Ficha 2026-11-11.1 pela migration `20270405000005`, na homologação e na produção (ok do RT), aguardando aprovação. Achado: a febre sem sinais localizatórios (`febreSemSinaisPed.ts`) ainda conta etnia pela tabela de 2011 |
+| 10 | ITU pediátrica: AAP 2026 | Aviso feito, branch `revisao/itu-aap-2026`. Pendente: limiares novos de piúria e urocultura (texto integral bloqueado; a ferramenta segue com os do livro) |
 | 11 | Choque séptico pediátrico: PRoMPT BOLUS | Feito, branch `revisao/prompt-bolus` |
 | 12 | Citações erradas (Morse, ATS 2025, Bai & Loeb, Arzayus-Patiño) | Feito, branch `revisao/citacoes` (ATS no item 3) |
 | 13 | Biblioteca: fontes novas (CC BY, CC BY-NC e fichas de referência) | Feito, branch `revisao/biblioteca-referencias`: 12 fichas de referência e o texto integral de 19 artigos abertos (14 CC BY, 5 CC BY-NC), baixado do Europe PMC com autorização do RT e convertido para Markdown. Guia em `produto/docs/pesquisa/revisao-pubmed-2026-10/item13-biblioteca.md`. Pendente com o RT: registrar as 3 pastas em `fontes.yaml` e ingerir no VPS |
@@ -2458,7 +2458,6 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 | 4 | P2 | Resumo para aprovar as fichas: as versões aguardando aprovação agrupadas por área, com o que mudou, as fontes novas e se muda dose | Na produção, 127 versões aguardam aprovação do RT em 110 ferramentas (11/11/2026) | Incluído pelo RT em 11/11/2026 ("seguimos 1, 2 e 3") | Feito: `docs/clinico/REVISAO-FICHAS-AGUARDANDO.md` (#606) |
 | 5 | P2 | Aprovar em lote na Revisão Clínica | A fila só aprova uma versão por vez | Incluído pelo RT em 11/11/2026 | Feito: caixa de marcar em cada versão, "Marcar todas" e "Aprovar marcadas" com confirmação; cada versão passa por `decidir_versao_ferramenta`, uma por vez, da mais antiga para a mais nova na mesma ferramenta, com o nome e o registro do RT; reprovar continua uma por uma. Sem migration |
 | 6 | P2 | Destacar tudo que é clicável: botão que parece texto (ex.: os selos de alergia e isolamento no cabeçalho do paciente, que o RT só descobriu clicando sem querer) | Levantamento em `docs/frontend/CLICAVEIS-SEM-DESTAQUE.md`: 158 itens (10 alta, 34 média, 114 baixa). A causa principal é o `Button variant="ghost"`, que é texto cinza sem borda nem fundo | Incluído pelo RT em 11/11/2026 ("adicione como um 4"). Visual: opção B (selo com fundo, borda e seta), escolhida entre três telas reais do Refero | Em andamento: peça `SeloAcao` e os selos de alergia e isolamento em `fix/clicaveis-destaque`; depois as outras altas |
-| 7 | P2 | Febre sem sinais localizatórios: tirar a etnia da coleta de urina, como na ITU | A ferramenta (`src/clinico/pediatria/febreSemSinaisPed.ts`) decide a coleta de urina pelos critérios do livro do ICr (p. 462, os da AAP de 2011): "etnia branca" na menina e "raça não branca" no menino, com contagem de fatores. A ITU já usa a Figura 2 da AAP 2026, sem raça e sem número mínimo (#613) | Incluído pelo RT em 11/11/2026 ("Sim, registrar") | Diagnóstico em `docs/clinico/FEBRE-SEM-SINAIS-ETNIA-DIAGNOSTICO.md`; recomendação A (mesma lista da ITU de 2 a 24 meses). Aguarda a decisão do RT |
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.

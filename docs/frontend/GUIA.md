@@ -123,6 +123,20 @@ como `Chip` e abas) e na casca (`src/components/casca` e `AppShell`), onde os
 botões são a própria navegação (parte 4.3, "2a"). No resto: `Button`, `Chip`, ou `Button size="icon"` com
 `aria-label`. A cor de ação é o petróleo (seção 1.1).
 
+**O que clica não parece texto** (pedido 6 do RT, 11/11/2026; levantamento em
+`CLICAVEIS-SEM-DESTAQUE.md`). Todo clicável tem contorno, fundo, seta ou cor de
+link:
+- `Button variant="ghost"` só com texto vale só como par do botão principal
+  ("Cancelar", "Voltar"). Solto no conteúdo, use `outline`. A verificação acusa
+  (`fantasma-so-texto`).
+- Selo que abre alguma coisa é `SeloAcao` (`ui/selo-acao.tsx`): fundo, borda e
+  seta, na opção B escolhida pelo RT.
+- Linha ou bloco que abre embaixo tem seta (`ChevronDown`, que gira aberta) e
+  `aria-expanded`; linha que leva a outro lugar tem `ChevronRight`.
+- Link fica na cor de link; não se recolore para cinza ou cor de texto.
+- Ação não aparece só no hover: no tablet não há hover.
+- `TableRow` só pinta o fundo no hover quando tem `onClick`.
+
 ### 3.2 Seleção — "5a"
 
 Select nativo com uma classe única, num componente `CampoSelecao` em
