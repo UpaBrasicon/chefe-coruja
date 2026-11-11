@@ -106,7 +106,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     },
   })
 
-  // Pediatria com infecção: Phoenix calculado no servidor (Fase 3.7)
+  // Infecção: Phoenix na criança (Fase 3.7) e NEWS2 de 5 ou mais no adulto (B P2-1, 11/11/2026), no servidor
   const { data: alertasSepse } = useQuery({
     queryKey: ['alertas-sepse', unidadeId],
     enabled: !!unidadeId,
