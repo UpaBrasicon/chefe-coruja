@@ -8,14 +8,15 @@ export const glasgow: Escore = {
   ficha: {
     id: 'glasgow',
     titulo: 'Escala de Coma de Glasgow (GCS-P)',
-    versao: '2026-09-27.1',
+    versao: '2026-11-11.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Teasdale G, Jennett B. Assessment of coma and impaired consciousness. A practical scale. Lancet. 1974;2(7872):81–84.', url: 'https://doi.org/10.1016/S0140-6736(74)91639-0' },
       { citacao: 'Brennan PM, Murray GD, Teasdale GM. Simplifying the use of prognostic information in traumatic brain injury. Part 1: the GCS-Pupils score. J Neurosurg. 2018;128(6):1612–1620.', url: 'https://doi.org/10.3171/2017.12.JNS172780' },
+      { citacao: 'Vreeburg RJG, van Leeuwen FD, Manley GT, et al. Validation of the GCS-Pupil Scale in Traumatic Brain Injury: Incremental Prognostic Value of Pupillary Reactivity with GCS in the Prospective Observational Cohorts CENTER-TBI and TRACK-TBI. J Neurotrauma. 2025;42(9-10):798–813 (PMID 39686742). O GCS-P captou cerca de metade do valor prognóstico das pupilas registradas à parte.', url: 'https://doi.org/10.1089/neu.2024.0458' },
       { citacao: 'Manley GT, et al. Best Practices in the Management of Traumatic Brain Injury. American College of Surgeons. 2024.' },
     ],
-    revisadoEm: '27/09/2026 (porte da versão de 29/08/2026 do protótipo)',
+    revisadoEm: '11/11/2026 (pupilas no registro, Vreeburg 2024, decisão H20 do RT)',
   },
   descricao: 'Abertura ocular, resposta verbal e resposta motora, com o GCS-P pelas pupilas.',
   itens: [
@@ -46,6 +47,8 @@ export const glasgow: Escore = {
     const banda = total <= 8 ? 2 : total <= 12 ? 1 : 0
     const comp = `${o.naoTestavel ? 'O-NT' : 'O' + o.valor} ${v.naoTestavel ? 'V-NT' : 'V' + v.valor} M${m.valor}`
     const nt = o.naoTestavel || v.naoTestavel
+    const pupilas = pup === 0 ? 'as duas pupilas reagem' : `${pup} ${pup === 1 ? 'pupila não reativa' : 'pupilas não reativas'}`
+    const registro = `${comp} · ${pupilas}`
     return {
       rotulo: 'Glasgow',
       valor: String(total) + (v.naoTestavel ? 'T' : ''),
@@ -53,17 +56,18 @@ export const glasgow: Escore = {
       nota: ['trauma leve', 'trauma moderado', 'trauma grave'][banda] + (pup ? ` · GCS-P ${gcsP}` : ''),
       estado: banda as 0 | 1 | 2,
       derivados: [
-        ['Componentes — registre assim', comp],
+        ['Componentes — registre assim', registro],
         ['GCS-P', pup ? `${gcsP} · ${total} menos ${pup} ${pup === 1 ? 'pupila não reativa' : 'pupilas não reativas'}` : `${total} · as duas pupilas reagem, sem subtração`],
         ['Faixa', ['13 a 15 pontos', '9 a 12 pontos', '3 a 8 pontos'][banda]],
       ],
       alerta: nt
-        ? `Componente marcado como não testável. Ele entra na soma com o valor mínimo por convenção, mas o registro correto é "${comp}" — um total com componente não testável não é comparável a um total completo.`
+        ? `Componente marcado como não testável. Ele entra na soma com o valor mínimo por convenção, mas o registro correto é "${registro}" — um total com componente não testável não é comparável a um total completo.`
         : pup === 2 && total === 3
           ? 'Glasgow 3 com as duas pupilas arreativas dá GCS-P 1, o extremo da escala — é para distinguir essa faixa que o GCS-P existe.'
           : undefined,
       cuidados: [
         'Registre os três componentes na evolução, não só o total — recomendação atual do American College of Surgeons.',
+        'Registre também as pupilas à parte. O GCS-P resume, mas Glasgow e pupilas separados guardam mais informação sobre o prognóstico (Vreeburg 2024, CENTER-TBI e TRACK-TBI).',
         'Escala de adulto. Para a criança pré-verbal existe o Glasgow pediátrico, que é outra escala — não é conversão, e esta tela não a faz.',
         'Em trauma, o escore vale depois de corrigir hipoxemia e hipotensão: as duas rebaixam o Glasgow sozinhas.',
         'O que importa é a tendência entre medidas, não o valor isolado.',
