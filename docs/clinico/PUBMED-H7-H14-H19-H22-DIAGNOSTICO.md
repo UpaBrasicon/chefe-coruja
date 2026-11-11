@@ -295,6 +295,8 @@ Na criança, os dados pediátricos do resumo são do salbutamol, não do cálcio
 
 ## Decisões do RT
 
+**Decisão do RT em 11/11/2026: A em todos.** Feitos e na produção: H21 (#571), H20 (#572), H19 (#573), H22 (#574) e H7 (#575), com as versões registradas em #576. O H14 espera a enfermagem e a escolha da conduta do laudo de AIH.
+
 | # | Item | A (recomendada) | B | C |
 |---|---|---|---|---|
 | H7 | Antídotos | nota de divergência na digoxina com o Andrews 2023, sem trocar o cálculo do livro; AHA dose por dose numa segunda rodada, com o PDF | esperar o PDF da AHA e fazer tudo junto | trocar os 10 frascos pelo esquema do Andrews |
