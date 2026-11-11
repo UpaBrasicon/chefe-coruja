@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/exames.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { botoesDeExame, botoesDoGrupo, caminhoLaudo, grupoDoCodigo, itemDoPedidoPorta, tipoDoCodigo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, type ExameUnidade } from './exames.ts'
+import { botoesDeExame, botoesDoGrupo, caminhoLaudo, grupoDoCodigo, itemDoPedidoPorta, tipoDoCodigo, codigoExameNaTela, erroLaudo, EXAMES_LIVRES_LAB, jaPedido, LAUDO_MAX_BYTES, loincValido, rotuloVersaoResultado, type ExameUnidade } from './exames.ts'
 
 const ex = (p: Partial<ExameUnidade>): ExameUnidade => ({
   id: 'x', procedimento: '0202990001', nome_curto: 'Hemograma', nome_sigtap: null, loinc: null, botao: true, ordem: 0,
@@ -77,4 +77,14 @@ test('porta: o item do pedido leva o grupo; com código, o banco tira do código
   assert.deepEqual(itemDoPedidoPorta({ rotulo: 'ECG', procedimento: null }), { nome: 'ECG', grupo: 'grafico' })
   assert.deepEqual(itemDoPedidoPorta({ rotulo: 'Lactato', procedimento: null }), { nome: 'Lactato', grupo: 'laboratorio' })
   assert.deepEqual(itemDoPedidoPorta({ rotulo: 'Tomografia de crânio', procedimento: null }, 'imagem'), { nome: 'Tomografia de crânio', grupo: 'imagem' })
+})
+
+// resultado digitado à mão é transcrição, não "liberado" (RT, 10/11/2026)
+test('rótulo da versão: manual é transcrição; laboratório e imagem liberam', () => {
+  assert.equal(rotuloVersaoResultado('manual', '10/11/2026, 23:01', 'Médico UPA F5'),
+    'registrado à mão 10/11/2026, 23:01 · Médico UPA F5 (transcrição)')
+  assert.equal(rotuloVersaoResultado('manual', '10/11/2026, 23:01', null), 'registrado à mão 10/11/2026, 23:01 (transcrição)')
+  assert.equal(rotuloVersaoResultado('laboratorio', '10/11/2026, 23:01', null), 'liberado pelo laboratório 10/11/2026, 23:01')
+  assert.equal(rotuloVersaoResultado('imagem', '10/11/2026, 23:01', 'Ana'), 'liberado pelo serviço de imagem 10/11/2026, 23:01 · registrado por Ana')
+  assert.doesNotMatch(rotuloVersaoResultado('manual', 'x', 'y'), /liberado/)
 })

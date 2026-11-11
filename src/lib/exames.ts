@@ -5,6 +5,17 @@
 export type TipoExame = 'laboratorio' | 'imagem'
 /** De onde veio o resultado: à mão, do LIS ou do RIS (porta FHIR, 5C-1 e 5C-2). */
 export type OrigemResultado = 'manual' | 'laboratorio' | 'imagem'
+
+/**
+ * Como a versão do resultado aparece (RT, 10/11/2026): liberar o laudo é ato do
+ * laboratório ou do serviço de imagem. O resultado digitado à mão por quem está
+ * de plantão é transcrição, e a tela diz isso, sem a palavra "liberado".
+ */
+export function rotuloVersaoResultado(origem: OrigemResultado, quando: string, quem: string | null): string {
+  if (origem === 'manual') return `registrado à mão ${quando}${quem ? ` · ${quem} (transcrição)` : ' (transcrição)'}`
+  const servico = origem === 'imagem' ? 'serviço de imagem' : 'laboratório'
+  return `liberado pelo ${servico} ${quando}${quem ? ` · registrado por ${quem}` : ''}`
+}
 export type ExameUnidade = {
   id: string; procedimento: string; nome_curto: string; nome_sigtap: string | null; tipo?: TipoExame
   loinc: string | null; botao: boolean; ordem: number; definido_por: string | null; definido_em: string

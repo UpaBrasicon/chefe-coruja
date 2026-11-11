@@ -15,7 +15,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { fmtDataHora } from '@/lib/datas'
-import { caminhoLaudo, erroLaudo, PENDENTE, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
+import { caminhoLaudo, erroLaudo, PENDENTE, rotuloVersaoResultado, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
 import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 
@@ -176,7 +176,7 @@ function Versao({ v }: { v: VersaoResultado }) {
         <Badge variant={v.origem === 'manual' ? 'secondary' : 'info'}>{ORIGEM[v.origem]}</Badge>
         {v.critico && <Badge variant="destructive">crítico ({ORIGEM[v.origem]})</Badge>}
         {!v.vigente && <Badge variant="outline">retificada</Badge>}
-        <span>liberado {fmtDataHora(v.liberado_em)}{v.registrado_por ? ` · ${v.registrado_por}` : ''}</span>
+        <span>{rotuloVersaoResultado(v.origem, fmtDataHora(v.liberado_em), v.registrado_por)}</span>
       </span>
       {v.itens.length > 0 && (
         <Table variante="referencia" className="w-full min-w-[420px] text-apoio">
