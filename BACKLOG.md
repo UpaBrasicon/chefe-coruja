@@ -1331,7 +1331,7 @@ pedido de produção; 5.5c, o serviço na produção, ligado por unidade.
 - `docs/rnds/FORMULARIO-CREDENCIAL.md` traz os campos do formulário; os números da unidade saem de
   `volumes-unidade.sql`.
 - `docs/rnds/CHAMADO-DATASUS.md` traz o texto do chamado.
-- Falta o RT indicar a unidade piloto.
+- Falta o RT indicar a unidade piloto. **Decisão do RT em 11/11/2026 (opção A, `docs/rnds/PILOTO-DIAGNOSTICO.md`, #592):** a RNDS espera a primeira unidade real em implantação, junto com a pulseira. Até lá, a 5.5b e a 5.5c ficam paradas, sem código.
 
 **Fase 5 encerrada pelo RT em 05/11/2026.** 5A (tarefas 1 a 7), 5B (tarefas 1 a 6 e as pendências L1 a L4)
 e 5C (tarefas 1 a 4) estão em produção; o Portão da Fase 5 foi fechado no mesmo dia, com os achados das
