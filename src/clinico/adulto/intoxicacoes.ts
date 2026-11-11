@@ -45,6 +45,11 @@ export const NOTA_AHA_INTOXICACOES =
 export const NOTA_DIGOXINA_CONSENSO =
   'Consenso de especialistas de 2024 (Delphi, 33 enunciados): considerar o momento da ingestão e o tipo de exposição (aguda, aguda sobre crônica, crônica) e usar o anticorpo antidigoxina na exposição com risco de vida. O cálculo de frascos segue o livro.'
 
+// Decisão H7 do RT (11/11/2026): divergência do Andrews 2023 (texto completo lido,
+// PMC10599802) mostrada ao lado do livro. O cálculo de frascos continua o do livro.
+export const NOTA_DIGOXINA_ANDREWS =
+  'Divergência — consenso europeu de 2023 para adultos (Andrews, Delphi): na parada cardíaca, 5 frascos de imediato e mais 5 se não houver resposta em 30 min; com risco de vida sem parada, 1 a 2 frascos, repetidos conforme a resposta; sem risco de vida, metade da dose de neutralização total pelo nível, arredondada para o frasco inteiro acima. O consenso põe potássio acima de 6,5 mmol/L entre os sinais de risco de vida e considera o anticorpo apropriado com digoxinemia acima de 12 ng/mL; o nível é colhido com pelo menos 6 h, de preferência 8 a 12 h, da última dose. O artigo diz que 5 frascos neutralizam 3 mg; pela razão desta tela (≈ 0,5 mg por frasco), seriam 2,5 mg: confira a bula do produto disponível. O consenso teve redator médico pago pelo fabricante. O cálculo desta tela segue o livro.'
+
 const fichaIntoxLivro = fichaAdulto(
   'adulto-intoxicacoes-antidotos',
   'Intoxicações e antídotos — adulto',
@@ -52,9 +57,9 @@ const fichaIntoxLivro = fichaAdulto(
 )
 export const fichaIntoxicacoesAdulto: Ficha = {
   ...fichaIntoxLivro,
-  versao: '2026-11-06.1',
+  versao: '2026-11-11.1',
   fontes: [...fichaIntoxLivro.fontes, CTRC_CARVAO_2026, AHA_INTOX_2023, AHA_ESPECIAIS_2025, DIGOXINA_CONSENSO_2024, DIGOXINA_CONSENSO_2023],
-  revisadoEm: '06/11/2026 (nota das AHA 2023/2025 e do consenso da digoxina; revisão PubMed, itens médios; carvão ativado com o consenso CTRC 2026 desde 09/10/2026)',
+  revisadoEm: '11/11/2026 (divergência do Andrews 2023 na digoxina, decisão H7 do RT); 06/11/2026 (nota das AHA 2023/2025 e do consenso da digoxina; revisão PubMed, itens médios; carvão ativado com o consenso CTRC 2026 desde 09/10/2026)',
 }
 
 export type Faixa = [number, number]

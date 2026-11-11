@@ -43,3 +43,14 @@ test('máximos: NIPS 7, FLACC 10', () => {
   assert.equal(max('nips'), 7)
   assert.equal(max('flacc'), 10)
 })
+
+// H19 (RT, 11/11/2026): as faixas não mudam; ganham fonte (Velozo 2026) e uma
+// nota de limitação (Hillier 2025, Velozo 2026). A versão sobe junto no banco.
+test('braden: faixas com fonte e nota de limitação, versão nova', () => {
+  const f = ESCALAS_AVALIACAO.braden.ficha
+  assert.equal(f.versao, '2026-11-11.1')
+  assert.ok(f.fontes.some((x) => /42845173/.test(x.citacao) && /faixas/.test(x.citacao)))
+  assert.ok(f.fontes.some((x) => /39913541/.test(x.citacao) && /modesto/.test(x.citacao)))
+  assert.equal(faixaDe('braden', 9).rotulo, 'Risco muito alto (9 ou menos)')
+  assert.equal(faixaDe('braden', 13).rotulo, 'Risco moderado (13 a 14)')
+})

@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   ALCOOIS, BCC, BETABLOQUEADOR, BICARBONATO_ERRATA, BICARBONATO_LITIO, BICARBONATO_USOS, CARVAO, CARVAO_CTRC_2026, CARVAO_INDICACAO, CIANETO,
-  DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, NOTA_AHA_INTOXICACOES, NOTA_DIGOXINA_CONSENSO, ORGANOFOSFORADO, PEDIATRICO_CITADO,
+  DIGOXINA, FISOSTIGMINA, FLUMAZENIL, KINGS_COLLEGE, MONOXIDO, NAC, NALOXONA, NOTA_AHA_INTOXICACOES, NOTA_DIGOXINA_ANDREWS, NOTA_DIGOXINA_CONSENSO, ORGANOFOSFORADO, PEDIATRICO_CITADO,
   acidoFolicoMg, atropinaDobrando, bccFigura, bicarbonatoBolus, calcioBccManutencao, carvaoMultiplasDoses, carvaoPorMassaIngerida,
   carvaoPorPeso, carvaoTriciclico, etanolEV, fichaIntoxicacoesAdulto, flumazenilBolusMaximos, fomepizol, frascosPorDose,
   frascosPorNivel, gravidadeParacetamol, hidroxocobalaminaProxima, indicacoesNac, insulinaAltaDose, nacEV, nacVO,
@@ -171,6 +171,7 @@ function Digoxina({ peso }: { peso: number }) {
       <LinhaManual nome="Quantidade e nível conhecidos" texto="nº de frascos = [digoxinemia (ng/mL) × peso] / 100" pagina="p. 1322"
         conta={porNivel !== null ? <strong>{br(porNivel)} frascos</strong> : 'informe digoxinemia e peso'} nota={DIGOXINA.nota} />
       <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_DIGOXINA_CONSENSO}</p>
+      <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_DIGOXINA_ANDREWS}</p>
     </Bloco>
   )
 }

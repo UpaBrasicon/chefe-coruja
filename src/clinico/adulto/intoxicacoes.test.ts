@@ -127,3 +127,20 @@ test('cianeto: hidroxocobalamina 5 g até 10 g no total; tiossulfato 12,5 g = 50
   assert.equal(nitritoSodioMg(), 300)
   assert.match(CIANETO.tiossulfato.errata, /1,65 mL\/kg/)
 })
+
+// H7 (RT, 11/11/2026): divergência do Andrews 2023 ao lado do livro; o cálculo
+// do livro não muda (10 frascos empíricos, 0,5 mg por frasco).
+test('digoxina: nota de divergência do Andrews 2023, cálculo do livro igual', async () => {
+  const m = await import('./intoxicacoes.ts')
+  const nota = m.NOTA_DIGOXINA_ANDREWS
+  assert.match(nota, /Andrews/)
+  assert.match(nota, /5 frascos de imediato/)
+  assert.match(nota, /30 min/)
+  assert.match(nota, /1 a 2 frascos/)
+  assert.match(nota, /arredondada para o frasco inteiro acima/)
+  assert.match(nota, /bula/)
+  assert.match(nota, /segue o livro/)
+  assert.equal(m.DIGOXINA.frascosEmpiricos, 10)
+  assert.equal(m.DIGOXINA.mgPorFrasco, 0.5)
+  assert.equal(m.fichaIntoxicacoesAdulto.versao, '2026-11-11.1')
+})
