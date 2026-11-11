@@ -7,6 +7,7 @@ import { FlaskConical, Megaphone, Printer } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
+import { LaudoDoGrupo } from '@/components/clinico/LaudoDoGrupo'
 import { ResultadoExame } from '@/components/clinico/ResultadoExame'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { botoesDeExame, codigoExameNaTela, GRUPOS_EXAME, itemDoPedidoPorta, jaPedido, type ExameBuscado, type GrupoExame, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
@@ -186,6 +187,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
         {erro && <p className="border-t border-trilha px-4 py-2 text-apoio text-critico">{erro}</p>}
         {exames.length === 0 && <p className="border-t border-trilha px-4 py-3 text-apoio text-tinta-sussurro">Nenhum exame pedido neste atendimento.</p>}
         {exames.length > 0 && <div className="border-t border-trilha">{exames.map((e) => <LinhaExame key={e.id} e={e} aoMudar={aoMudar} />)}</div>}
+        {exames.length > 1 && <LaudoDoGrupo pacienteId={pacienteId} episodioId={episodioId} aoMudar={aoMudar} />}
       </section>
       <Agravos pacienteId={pacienteId} episodioId={episodioId} />
     </div>
