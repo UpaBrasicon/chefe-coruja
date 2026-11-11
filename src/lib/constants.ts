@@ -125,6 +125,8 @@ export const PAPEIS_POR_ESCALA: readonly Papel[] = ['plantonista', 'enfermeiro',
   // Fase 4, tarefa 12: papéis de rede, escalados na unidade Secretaria
   'secretaria', 'regulacao_regional', 'faturamento_rede',
   // Fase 4, tarefa 11: NIR
-  'nir']
+  'nir',
+  // M12 (decisão 7 do RT de 27/10/2026, ligada em 11/11/2026): farmacêutico e faturamento
+  'farmaceutico', 'faturamento']
 /** Papéis de rede (Fase 4, tarefa 12): só na unidade Secretaria. */
 export const PAPEIS_REDE: readonly Papel[] = ['secretaria', 'regulacao_regional', 'faturamento_rede']
