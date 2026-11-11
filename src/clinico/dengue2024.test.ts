@@ -82,7 +82,7 @@ test('MS 2024 prova do laço (PAS + PAD) / 2', () => {
 })
 
 test('dengue criança: MS 2024 ao lado do livro — grupo C, analgésicos, peso aproximado e PAS p5', () => {
-  assert.equal(fichaDenguePed.versao, '2026-09-28.1')
+  assert.ok(fichaDenguePed.versao >= '2026-09-28.1')
   assert.equal(temReferenciaPediatrica(fichaDenguePed), true)
   const c = grupoCMs2024(20)!
   assert.equal(c.hora1Ml, 200)

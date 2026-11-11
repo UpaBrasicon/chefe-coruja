@@ -475,6 +475,26 @@
   "publico": "pediatrico"
  },
  {
+  "id": "ten-4-facesp",
+  "nome": "Hematomas suspeitos de maus-tratos (TEN-4-FACESp)",
+  "tipo": "conduta",
+  "secao": "Pediatria",
+  "categoria": "Trauma, toxicologia e acidentes",
+  "sinonimos": [
+   "pediatria",
+   "maus-tratos",
+   "violência",
+   "hematoma",
+   "equimose",
+   "abuso",
+   "TEN-4-FACESp",
+   "notificação"
+  ],
+  "descricao": "Criança abaixo de 4 anos com hematoma: tronco, orelha, pescoço, face, lactente de até 4,99 meses ou padrão.",
+  "rota": "/plantonista/pediatria/ten-4-facesp",
+  "publico": "pediatrico"
+ },
+ {
   "id": "glasgow-pediatrico",
   "nome": "Escala de Coma de Glasgow — criança",
   "tipo": "conduta",
