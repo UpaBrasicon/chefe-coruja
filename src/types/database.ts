@@ -184,38 +184,56 @@ export type Database = {
       }
       administracoes: {
         Row: {
+          atrasada: boolean
+          atraso_min: number | null
           horario_previsto: string | null
           id: string
           item_id: string
           motivo: string | null
+          motivo_atraso: string | null
+          motivo_atraso_texto: string | null
           paciente_id: string
+          previsto_em: string | null
           registrado_em: string
           registrado_por: string
           sem_liberacao: boolean
+          setor_id: string | null
           situacao: string
           unidade_id: string
         }
         Insert: {
+          atrasada?: boolean
+          atraso_min?: number | null
           horario_previsto?: string | null
           id?: string
           item_id: string
           motivo?: string | null
+          motivo_atraso?: string | null
+          motivo_atraso_texto?: string | null
           paciente_id: string
+          previsto_em?: string | null
           registrado_em?: string
           registrado_por: string
           sem_liberacao?: boolean
+          setor_id?: string | null
           situacao: string
           unidade_id: string
         }
         Update: {
+          atrasada?: boolean
+          atraso_min?: number | null
           horario_previsto?: string | null
           id?: string
           item_id?: string
           motivo?: string | null
+          motivo_atraso?: string | null
+          motivo_atraso_texto?: string | null
           paciente_id?: string
+          previsto_em?: string | null
           registrado_em?: string
           registrado_por?: string
           sem_liberacao?: boolean
+          setor_id?: string | null
           situacao?: string
           unidade_id?: string
         }
@@ -3626,6 +3644,84 @@ export type Database = {
           },
         ]
       }
+      doses_atrasadas: {
+        Row: {
+          ciente_em: string | null
+          ciente_por: string | null
+          detectada_em: string
+          horario: string
+          id: string
+          item_id: string
+          origem: string
+          paciente_id: string
+          previsto_em: string
+          setor_id: string | null
+          unidade_id: string
+        }
+        Insert: {
+          ciente_em?: string | null
+          ciente_por?: string | null
+          detectada_em?: string
+          horario: string
+          id?: string
+          item_id: string
+          origem: string
+          paciente_id: string
+          previsto_em: string
+          setor_id?: string | null
+          unidade_id: string
+        }
+        Update: {
+          ciente_em?: string | null
+          ciente_por?: string | null
+          detectada_em?: string
+          horario?: string
+          id?: string
+          item_id?: string
+          origem?: string
+          paciente_id?: string
+          previsto_em?: string
+          setor_id?: string | null
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doses_atrasadas_ciente_por_fkey"
+            columns: ["ciente_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doses_atrasadas_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "prescricao_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doses_atrasadas_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doses_atrasadas_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doses_atrasadas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       encaminhamentos_internos: {
         Row: {
           atendido_em: string | null
@@ -6930,6 +7026,68 @@ export type Database = {
           },
           {
             foreignKeyName: "observacao_protocolos_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omissoes_dose: {
+        Row: {
+          detectada_em: string
+          horario: string
+          id: string
+          item_id: string
+          paciente_id: string
+          previsto_em: string
+          setor_id: string | null
+          unidade_id: string
+        }
+        Insert: {
+          detectada_em?: string
+          horario: string
+          id?: string
+          item_id: string
+          paciente_id: string
+          previsto_em: string
+          setor_id?: string | null
+          unidade_id: string
+        }
+        Update: {
+          detectada_em?: string
+          horario?: string
+          id?: string
+          item_id?: string
+          paciente_id?: string
+          previsto_em?: string
+          setor_id?: string | null
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omissoes_dose_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "prescricao_itens"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "omissoes_dose_paciente_id_fkey"
+            columns: ["paciente_id"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "omissoes_dose_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "omissoes_dose_unidade_id_fkey"
             columns: ["unidade_id"]
             isOneToOne: false
             referencedRelation: "unidades"
@@ -10613,6 +10771,7 @@ export type Database = {
           ultimo_registro_em: string
         }[]
       }
+      atrasos_de_dose: { Args: { p_itens: string[] }; Returns: Json }
       ativar_modelo_termo: {
         Args: { p_ativo: boolean; p_modelo: string }
         Returns: undefined
@@ -10865,6 +11024,7 @@ export type Database = {
         Args: { p_exame: string }
         Returns: undefined
       }
+      dar_ciencia_atraso: { Args: { p_dose_atrasada: string }; Returns: Json }
       dar_ciencia_resultado: {
         Args: { p_exame: string }
         Returns: Json
@@ -11054,6 +11214,8 @@ export type Database = {
           p_horario?: string
           p_item: string
           p_motivo?: string
+          p_motivo_atraso?: string
+          p_motivo_atraso_texto?: string
           p_situacao: string
         }
         Returns: string
@@ -12278,6 +12440,10 @@ export type Database = {
       inativar_registros_alergia: {
         Args: { p_alergias: string[]; p_eventos: string[]; p_motivo: string }
         Returns: number
+      }
+      indicador_atraso_checagem: {
+        Args: { p_ate: string; p_de: string; p_unidade: string }
+        Returns: Json
       }
       indicador_espera_medico: {
         Args: {

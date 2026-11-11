@@ -15,12 +15,20 @@
 // Aprazamento assistido (Fase 2, tarefa 2): a posologia vira sugestão de
 // horários pela grade da unidade; o enfermeiro aceita ou ajusta, e o ajuste
 // fica registrado.
+// Atraso (lacuna 9): o horário que passou da tolerância (2 h, ou o intervalo
+// do item se menor) aparece "atrasado há X"; o "feito" atrasado pede o motivo
+// da lista (o servidor também exige) e o enfermeiro dá ciência da dose
+// atrasada (Portaria MS 2.095/2013, Anexo 03, item IV).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardCheck, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 
 import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
+import {
+  atrasoDoFeito, duracaoTexto, estadoDoHorario, FONTE_ATRASO, janelaAtrasoMin, MINIMO_OUTRO, MOTIVOS_ATRASO, motivoAtrasoValido,
+  rotuloMotivoAtraso, type ChecagemHorario,
+} from '@/lib/atraso'
 import { lerHorarios, mesmaLista, type SugestaoItem } from '@/lib/aprazamento'
 import { doseUnicaFeita, estadoLiberacao, MINIMO_JUSTIFICATIVA, type Liberacao } from '@/lib/duplaChecagem'
 import { supabase } from '@/lib/supabase'
@@ -48,8 +56,9 @@ type Linha = {
   dose: string | null; via: string | null; posologia: string | null; se_necessario: boolean; horarios: string[] | null
   diluicao_texto: string | null; vasoativo: boolean; ultima_situacao: string | null; ultima_em: string | null
   ultima_por: string | null; ultima_horario: string | null
-  /** Última checagem de cada horário aprazado nas últimas 24 h (fila_checagem). */
-  por_horario: Record<string, { situacao: string; em: string }> | null
+  /** Última checagem de cada horário aprazado nas últimas 24 h (fila_checagem), com o atraso gravado (lacuna 9). */
+  por_horario: Record<string, ChecagemHorario> | null
+  prescrito_em: string | null
   /** Lacuna 6: validade do item, estado do servidor e o pedido de renovação. */
   valida_ate: string | null; validade: string | null; renovacao_pedida_em: string | null
 }
@@ -59,6 +68,12 @@ const SITUACAO: Record<string, { rotulo: string; tom: 'verde' | 'ambar' | 'verme
   recusado: { rotulo: 'recusado', tom: 'vermelho' },
 }
 const hora = (iso: string) => dataHora(iso)
+/** Dose atrasada de um item (atrasos_de_dose, últimas 24 h). */
+type DoseAtrasada = {
+  id: string; item_id: string; horario: string; previsto_em: string; origem: 'janela' | 'checagem'
+  ciente_em: string | null; ciente_por: string | null; feito_em: string | null; atraso_min: number | null
+  motivo_atraso: string | null; motivo_atraso_texto: string | null; omitida: boolean
+}
 
 export default function Checagem() {
   const { papelAtivo } = useUnidade()
@@ -106,8 +121,22 @@ export default function Checagem() {
       return new Map(((data ?? []) as unknown as Alteracao[]).map((e) => [e.item_id, e]))
     },
   })
+  // lacuna 9: doses atrasadas das últimas 24 h, com a ciência do enfermeiro
+  const atrasos = useQuery({
+    queryKey: ['atrasos-de-dose', ids.join(',')],
+    enabled: ids.length > 0,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('atrasos_de_dose', { p_itens: ids })
+      if (error) throw error
+      const m = new Map<string, DoseAtrasada[]>()
+      for (const d of (data ?? []) as unknown as DoseAtrasada[]) m.set(d.item_id, [...(m.get(d.item_id) ?? []), d])
+      return m
+    },
+  })
   const recarregar = () => {
     void qc.invalidateQueries({ queryKey: ['fila-checagem'] })
+    void qc.invalidateQueries({ queryKey: ['atrasos-de-dose'] })
     void qc.invalidateQueries({ queryKey: ['liberacao-farmacia'] })
     void qc.invalidateQueries({ queryKey: ['sugestoes-aprazamento'] })
     void qc.invalidateQueries({ queryKey: ['alteracoes-itens'] })
@@ -132,7 +161,7 @@ export default function Checagem() {
               <AlergiaNaTela pacienteId={id} />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-apoio">
-              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} liberacao={liberacao.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} alteracao={alteracoes.data?.get(l.item_id)} souEnfermeiro={papelAtivo === 'enfermeiro'} agora={agora} aoMudar={recarregar} aoErro={setErro} />)}
+              {itens.map((l) => <ItemChecagem key={l.item_id} l={l} liberacao={liberacao.data?.get(l.item_id)} apraz={apraz.data?.get(l.item_id)} alteracao={alteracoes.data?.get(l.item_id)} atrasos={atrasos.data?.get(l.item_id) ?? []} souEnfermeiro={papelAtivo === 'enfermeiro'} agora={agora} aoMudar={recarregar} aoErro={setErro} />)}
             </CardContent>
           </Card>
         ))}
@@ -141,9 +170,9 @@ export default function Checagem() {
   )
 }
 
-function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, agora, aoMudar, aoErro }: {
-  l: Linha; liberacao: Liberacao | undefined; apraz: SugestaoItem | undefined; alteracao: Alteracao | undefined; souEnfermeiro: boolean
-  agora: number; aoMudar: () => void; aoErro: (m: string | null) => void
+function ItemChecagem({ l, liberacao, apraz, alteracao, atrasos, souEnfermeiro, agora, aoMudar, aoErro }: {
+  l: Linha; liberacao: Liberacao | undefined; apraz: SugestaoItem | undefined; alteracao: Alteracao | undefined; atrasos: DoseAtrasada[]
+  souEnfermeiro: boolean; agora: number; aoMudar: () => void; aoErro: (m: string | null) => void
 }) {
   const podeAprazar = souEnfermeiro
   const [horarios, setHorarios] = React.useState((l.horarios ?? []).join(', '))
@@ -154,6 +183,10 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, agora, ao
   const ajustando = !!sugestao && digitados.horarios.length > 0 && !mesmaLista(digitados.horarios, sugestao.horarios)
   const [pedindo, setPedindo] = React.useState<'feito' | 'nao_feito' | 'recusado' | null>(null)
   const [motivo, setMotivo] = React.useState('')
+  // lacuna 9: o "feito" depois da tolerância pede o motivo do atraso
+  const [motivoAtraso, setMotivoAtraso] = React.useState('')
+  const [textoAtraso, setTextoAtraso] = React.useState('')
+  const [atrasoDoServidor, setAtrasoDoServidor] = React.useState(false)
   const st = l.ultima_situacao ? SITUACAO[l.ultima_situacao] : null
 
   // item aprazado: a checagem é de um horário (o servidor também exige)
@@ -164,6 +197,8 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, agora, ao
   const lib = estadoLiberacao(liberacao)
   // sem liberação da farmácia, o "feito" pede justificativa (o servidor também exige)
   const feitoPedeJustificativa = lib === 'aguardando' || lib === 'devolvido'
+  const atrasoFeito = horario ? atrasoDoFeito(l, horario, agora) : null
+  const feitoPedeMotivoAtraso = atrasoFeito !== null || atrasoDoServidor
   const controle = controleDoCatalogo({ lista: liberacao?.controlado, receita: liberacao?.controlado_receita })
   const altaVigilancia = !!liberacao && liberacao.alta_vigilancia !== false
   // lacuna 6: vencido não se administra (COFEN 689/2022); a 2 h do fim já dá para pedir a renovação
@@ -183,9 +218,22 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, agora, ao
 
   async function checar(situacao: 'feito' | 'nao_feito' | 'recusado', m?: string) {
     if (faltaHorario) return aoErro(`${l.descricao}: escolha o horário aprazado que está sendo checado.`)
-    const { error } = await supabase.rpc('checar', { p_item: l.item_id, p_situacao: situacao, p_horario: horario || undefined, p_motivo: m || undefined })
+    const comAtraso = situacao === 'feito' && feitoPedeMotivoAtraso && !!motivoAtraso
+    const { error } = await supabase.rpc('checar', {
+      p_item: l.item_id, p_situacao: situacao, p_horario: horario || undefined, p_motivo: m || undefined,
+      p_motivo_atraso: comAtraso ? motivoAtraso : undefined, p_motivo_atraso_texto: comAtraso && textoAtraso.trim() ? textoAtraso.trim() : undefined,
+    })
+    if (error) {
+      // o relógio da tela pode estar atrás do servidor: abre o motivo do atraso
+      if (situacao === 'feito' && error.message.startsWith('Dose atrasada')) { setAtrasoDoServidor(true); setPedindo('feito') }
+      return aoErro(error.message)
+    }
+    aoErro(null); setPedindo(null); setMotivo(''); setMotivoAtraso(''); setTextoAtraso(''); setAtrasoDoServidor(false); aoMudar()
+  }
+  async function darCiencia(id: string) {
+    const { error } = await supabase.rpc('dar_ciencia_atraso', { p_dose_atrasada: id })
     if (error) return aoErro(error.message)
-    aoErro(null); setPedindo(null); setMotivo(''); aoMudar()
+    aoErro(null); aoMudar()
   }
 
   return (
@@ -229,14 +277,41 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, agora, ao
           {l.horarios!.map((h) => {
             const s = l.por_horario?.[h]
             const sit = s ? SITUACAO[s.situacao] : null
+            // lacuna 9: atraso do horário pela regra do servidor (tolerância e 12 h)
+            const e = estadoDoHorario(l, h, s, agora)
+            if (e.tipo === 'atrasado' || e.tipo === 'omitido') {
+              return (
+                <span key={h} title={`${e.tipo === 'omitido' ? 'Passou de 12 h sem checagem: registrada como omissão.' : `Tolerância de ${duracaoTexto(janelaAtrasoMin(l.horarios))}.`} ${FONTE_ATRASO}`}>
+                  <Estado tom="vermelho">{h} · {e.tipo === 'omitido' ? `omitido, sem checagem há ${duracaoTexto(e.minutos)}` : `atrasado há ${duracaoTexto(e.minutos)}`}</Estado>
+                </span>
+              )
+            }
+            const comAtraso = s?.situacao === 'feito' && !!s.atrasada
+            const motivoDoAtraso = comAtraso ? [rotuloMotivoAtraso(s.motivo_atraso), s.motivo_atraso_texto].filter(Boolean).join(': ') : ''
             return (
-              <span key={h} title={s ? `Checado ${hora(s.em)}` : 'Sem checagem nas últimas 24 horas'}>
-                <Estado tom={sit?.tom ?? 'cinza'}>{h} · {sit?.rotulo ?? 'a checar'}</Estado>
+              <span key={h} title={s ? `Checado ${hora(s.em)}${comAtraso ? `, com atraso de ${duracaoTexto(s.atraso_min ?? 0)}${motivoDoAtraso ? ` (${motivoDoAtraso})` : ''}` : ''}` : 'Sem checagem nas últimas 24 horas'}>
+                <Estado tom={comAtraso ? 'ambar' : sit?.tom ?? 'cinza'}>
+                  {h} · {sit?.rotulo ?? 'a checar'}{comAtraso ? ` com atraso de ${duracaoTexto(s.atraso_min ?? 0)}` : ''}
+                </Estado>
               </span>
             )
           })}
         </div>
       )}
+      {atrasos.map((d) => (
+        <div key={d.id} role="note" title={FONTE_ATRASO}
+          className={cn('flex flex-wrap items-center gap-2 rounded-controle border px-2.5 py-1.5 text-rotulo',
+            d.ciente_em ? 'border-fio text-tinta-apoio' : 'border-critico/30 bg-alerta-critico text-critico')}>
+          <span>
+            <strong>Dose das {d.horario} {d.omitida ? 'omitida' : 'atrasada'}</strong>
+            {d.feito_em
+              ? <>: feita às {hora(d.feito_em)}, {duracaoTexto(d.atraso_min ?? 0)} depois{d.motivo_atraso ? ` (${[rotuloMotivoAtraso(d.motivo_atraso), d.motivo_atraso_texto].filter(Boolean).join(': ')})` : ''}.</>
+              : d.omitida ? <>: passou de 12 h sem checagem.</> : <>: sem checagem depois da tolerância.</>}
+            {d.ciente_em ? ` Ciência de ${d.ciente_por ?? '—'}, ${hora(d.ciente_em)}.` : ' Falta a ciência do enfermeiro.'}
+          </span>
+          {!d.ciente_em && souEnfermeiro && <Button size="xs" variant="outline" onClick={() => void darCiencia(d.id)}>Dar ciência</Button>}
+        </div>
+      ))}
       {podeAprazar && sugestao && (
         <div className="flex flex-wrap items-center gap-2 text-rotulo text-tinta-apoio">
           <span>
@@ -292,15 +367,37 @@ function ItemChecagem({ l, liberacao, apraz, alteracao, souEnfermeiro, agora, ao
         ) : null}
         <Button size="xs" disabled={vencido}
           title={vencido ? 'Prescrição vencida: peça a renovação ao médico' : feitoPedeJustificativa ? 'Sem liberação da farmácia: pede justificativa' : undefined}
-          onClick={() => (feitoPedeJustificativa ? setPedindo('feito') : void checar('feito'))}>Feito</Button>
+          onClick={() => (feitoPedeJustificativa || feitoPedeMotivoAtraso ? setPedindo('feito') : void checar('feito'))}>Feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('nao_feito')}>Não feito</Button>
         <Button size="xs" variant="outline" onClick={() => setPedindo('recusado')}>Recusado</Button>
       </div>}
       {pedindo && (
-        <div className="flex gap-2">
-          <Input className="h-8" value={motivo} onChange={(e) => setMotivo(e.target.value)}
-            placeholder={pedindo === 'feito' ? 'Justificativa: por que administra sem a liberação da farmácia' : pedindo === 'recusado' ? 'Motivo da recusa' : 'Por que não foi feito'} />
-          <Button size="xs" disabled={motivo.trim().length < (pedindo === 'feito' ? MINIMO_JUSTIFICATIVA : 5)} onClick={() => void checar(pedindo, motivo)}>
+        <div className="flex flex-wrap gap-2">
+          {pedindo === 'feito' && feitoPedeMotivoAtraso && (
+            <>
+              <span className="w-full text-rotulo text-critico" title={FONTE_ATRASO}>
+                Dose atrasada{atrasoFeito !== null ? `: ${duracaoTexto(atrasoFeito)} depois do horário das ${horario}` : ''} (tolerância
+                de {duracaoTexto(janelaAtrasoMin(l.horarios))}). Escolha o motivo do atraso.
+              </span>
+              <CampoSelecao tamanho="compacto" className="text-rotulo" value={motivoAtraso} onChange={(e) => setMotivoAtraso(e.target.value)}
+                aria-label="Motivo do atraso">
+                <option value="">motivo do atraso *</option>
+                {MOTIVOS_ATRASO.map((m) => <option key={m.valor} value={m.valor}>{m.rotulo}</option>)}
+              </CampoSelecao>
+              {motivoAtraso && (
+                <Input className="h-8 max-w-md" value={textoAtraso} onChange={(e) => setTextoAtraso(e.target.value)}
+                  placeholder={motivoAtraso === 'outro' ? `Descreva o motivo (mínimo de ${MINIMO_OUTRO} letras)` : 'Complemento (opcional)'} />
+              )}
+            </>
+          )}
+          {(pedindo !== 'feito' || feitoPedeJustificativa) && (
+            <Input className="h-8" value={motivo} onChange={(e) => setMotivo(e.target.value)}
+              placeholder={pedindo === 'feito' ? 'Justificativa: por que administra sem a liberação da farmácia' : pedindo === 'recusado' ? 'Motivo da recusa' : 'Por que não foi feito'} />
+          )}
+          <Button size="xs"
+            disabled={((pedindo !== 'feito' || feitoPedeJustificativa) && motivo.trim().length < (pedindo === 'feito' ? MINIMO_JUSTIFICATIVA : 5))
+              || (pedindo === 'feito' && feitoPedeMotivoAtraso && !motivoAtrasoValido(motivoAtraso, textoAtraso))}
+            onClick={() => void checar(pedindo, pedindo === 'feito' && !feitoPedeJustificativa ? undefined : motivo)}>
             {pedindo === 'feito' ? 'Registrar como feito' : 'Registrar'}
           </Button>
           <Button size="xs" variant="ghost" onClick={() => setPedindo(null)}>Voltar</Button>
