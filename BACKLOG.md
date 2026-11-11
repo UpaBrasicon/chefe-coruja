@@ -399,7 +399,7 @@ Regras:
 | # | Item | Situação |
 |---|---|---|
 | 1 | Pós-PCR pela ERC-ESICM 2025 | Feito, branch `revisao/pos-pcr-erc-2025` |
-| 2 | Trombólise no AVC: correção oficial da AHA/ASA 2026 | Aviso feito, branch `revisao/avc-correcao-aha`. Pendente: o RT trazer o PDF da correção para conferir as Tabelas 5 e 7 |
+| 2 | Trombólise no AVC: correção oficial da AHA/ASA 2026 | **Feito em 11/11/2026:** PDF da correção lido (diagnóstico em `docs/clinico/AVC-CORRECAO-AHA-2026-DIAGNOSTICO.md`, #605): não mexe nas Tabelas 5 e 7 nem em dose. Decisão do RT D1–D3 = A, D4–D12 = C: janela estendida só sem indicação de trombectomia e "pode ser benéfica", adrenalina IM no angioedema, aviso atualizado (#612). Ficha 2026-11-11.1 pela migration `20270405000004`, na homologação e na produção (ok do RT), aguardando aprovação |
 | 3 | PAC: REMAP-CAP 2025 e citação da ATS 2025 | Feito, branch `revisao/pac-remap-cap` |
 | 4 | Endocardite: Duke-ISCVID 2023 | Feito, branch `revisao/endocardite-duke-iscvid` |
 | 5 | HINTS: aviso de uso (GRACE-3 2023) | Feito, branch `revisao/hints-grace3` |
@@ -407,7 +407,7 @@ Regras:
 | 7 | Síndrome hepatorrenal: ADQI-ICA 2024 | Feito, branch `revisao/shr-adqi-2024` |
 | 8 | Hiponatremia: alerta contra a subcorreção | Feito, branch `revisao/hiponatremia-subcorrecao` |
 | 9 | CKD-EPI: equação de 2009 no Brasil | Feito, branch `revisao/ckd-epi-2009` (2009 e 2021 lado a lado, sem campo de raça) |
-| 10 | ITU pediátrica: AAP 2026 | Aviso feito, branch `revisao/itu-aap-2026`. Pendente: limiares novos de piúria e urocultura (texto integral bloqueado; a ferramenta segue com os do livro) |
+| 10 | ITU pediátrica: AAP 2026 | **Feito em 11/11/2026:** PDFs da AAP 2026 lidos (diagnóstico em `docs/clinico/ITU-AAP-2026-DIAGNOSTICO.md`, #605). Decisão do RT I1–I6 = A, I7–I10 = B, I11–I13 = C: de 8 dias a 5 anos, sonda ou punção ≥ 10.000 UFC/mL, jato médio só a partir de 2 meses, piúria obrigatória pela Tabela 1, quem testar sem etnia (Figura 2), notas sem dose; fora da faixa continua o livro (#613). Ficha 2026-11-11.1 pela migration `20270405000005`, na homologação e na produção (ok do RT), aguardando aprovação. Achado: a febre sem sinais localizatórios (`febreSemSinaisPed.ts`) ainda conta etnia pela tabela de 2011 |
 | 11 | Choque séptico pediátrico: PRoMPT BOLUS | Feito, branch `revisao/prompt-bolus` |
 | 12 | Citações erradas (Morse, ATS 2025, Bai & Loeb, Arzayus-Patiño) | Feito, branch `revisao/citacoes` (ATS no item 3) |
 | 13 | Biblioteca: fontes novas (CC BY, CC BY-NC e fichas de referência) | Feito, branch `revisao/biblioteca-referencias`: 12 fichas de referência e o texto integral de 19 artigos abertos (14 CC BY, 5 CC BY-NC), baixado do Europe PMC com autorização do RT e convertido para Markdown. Guia em `produto/docs/pesquisa/revisao-pubmed-2026-10/item13-biblioteca.md`. Pendente com o RT: registrar as 3 pastas em `fontes.yaml` e ingerir no VPS |
