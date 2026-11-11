@@ -161,19 +161,19 @@ Em todas as opções A, a criança acima de 5 anos (até 13a 11m 29d) e o recém
 
 | # | Divergência | Efeito na tela | Opção recomendada | Decisão do RT |
 |---|---|---|---|---|
-| I1 | Sonda ≥ 10.000 (8 dias a 5 anos) | Muda | A | |
-| I2 | Punção suprapúbica ≥ 10.000 | Muda | A | |
-| I3 | Jato médio não aceito abaixo de 2 meses | Muda | A | |
-| I4 | Piúria obrigatória pela Tabela 1 | Muda | A | |
-| I5 | Quem testar: sem etnia, lista da Figura 2 | Muda | A | |
-| I6 | Aviso da AAP | Muda | A | |
-| I7 | Duração (KAS 2) | Nota | B | |
-| I8 | Via oral a partir de 29 dias (KAS 3) | Nota | B | |
-| I9 | Escolha empírica, sem dose | Nota | B | |
-| I10 | Saco coletor | Nota | B | |
-| I11 | Doses | Não muda | C | |
-| I12 | Imagem e profilaxia | Não se aplica | C | |
-| I13 | Avaliar em até 72 h | Não muda | C | |
+| I1 | Sonda ≥ 10.000 (8 dias a 5 anos) | Muda | A | A (RT, 11/11/2026) |
+| I2 | Punção suprapúbica ≥ 10.000 | Muda | A | A (RT, 11/11/2026) |
+| I3 | Jato médio não aceito abaixo de 2 meses | Muda | A | A (RT, 11/11/2026) |
+| I4 | Piúria obrigatória pela Tabela 1 | Muda | A | A (RT, 11/11/2026) |
+| I5 | Quem testar: sem etnia, lista da Figura 2 | Muda | A | A (RT, 11/11/2026) |
+| I6 | Aviso da AAP | Muda | A | A (RT, 11/11/2026) |
+| I7 | Duração (KAS 2) | Nota | B | B (RT, 11/11/2026) |
+| I8 | Via oral a partir de 29 dias (KAS 3) | Nota | B | B (RT, 11/11/2026) |
+| I9 | Escolha empírica, sem dose | Nota | B | B (RT, 11/11/2026) |
+| I10 | Saco coletor | Nota | B | B (RT, 11/11/2026) |
+| I11 | Doses | Não muda | C | C (RT, 11/11/2026) |
+| I12 | Imagem e profilaxia | Não se aplica | C | C (RT, 11/11/2026) |
+| I13 | Avaliar em até 72 h | Não muda | C | C (RT, 11/11/2026) |
 
 ---
 

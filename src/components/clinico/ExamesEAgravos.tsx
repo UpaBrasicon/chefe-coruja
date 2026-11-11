@@ -107,7 +107,10 @@ function LinhaExame({ e, aoResolver, aoMudar }: { e: Exame; aoResolver: (resulta
       <Input className="h-8 min-w-48 flex-1" placeholder="Resultado, ou motivo do cancelamento" value={texto} onChange={(ev) => setTexto(ev.target.value)} />
       <Button size="xs" disabled={!texto.trim()} onClick={() => void aoResolver(texto).then((ok) => ok && setTexto(''))}>Registrar resultado</Button>
       <Button size="xs" variant="outline" disabled={texto.trim().length < 10} onClick={() => void aoResolver(undefined, texto).then((ok) => ok && setTexto(''))}>Cancelar</Button>
-      <Button size="xs" variant="ghost" onClick={() => setAberto(!aberto)}>{aberto ? 'Fechar' : 'Detalhe'}</Button>
+      <Button size="xs" variant="outline" aria-expanded={aberto} onClick={() => setAberto(!aberto)}>
+        {aberto ? 'Fechar' : 'Detalhe'}
+        <ChevronDown className={aberto ? 'rotate-180' : undefined} aria-hidden />
+      </Button>
     </div>
     {aberto && <ResultadoExame exameId={e.id} aoMudar={aoMudar} />}
     </div>

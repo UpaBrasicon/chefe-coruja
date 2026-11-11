@@ -82,7 +82,7 @@ const limitar = (n: number) => Math.max(0, Math.min(1, n))
 
 export function Parametro({
   grandeza, rotulo, valor, unidade, estado, nivel,
-  pct, limite, limiteTexto, tend, velho, onClick,
+  pct, limite, limiteTexto, tend, velho, onClick, acao,
 }: ParametroProps) {
   const TendIcone = tend ? TEND_ICONE[tend.dir] : null
   const conteudo = (
@@ -122,6 +122,12 @@ export function Parametro({
             <span className="sr-only">, {TEND_LEITURA[tend.sentido]}</span>
           </span>
         ) : null}
+        {/* clicável: o caminho escrito com a seta (pedido 6 do RT, 11/11/2026) */}
+        {onClick && (
+          <span className="inline-flex items-center gap-1 text-rotulo font-medium whitespace-nowrap text-acao">
+            {acao ?? 'Abrir'}<ArrowRight className="size-3" aria-hidden />
+          </span>
+        )}
       </span>
     </span>
   )

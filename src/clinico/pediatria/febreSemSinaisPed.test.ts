@@ -5,8 +5,9 @@ import assert from 'node:assert/strict'
 import { temReferenciaPediatrica } from '../ficha.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
 import {
-  AAP_FEBRIL_2021, DOSES_FSSL, KAS_AAP_2021, PECARN_FEBRIL_2019, coletaUrina, faixaAap2021, faixaFssl, fichaFebreSemSinais, leucogramaAlterado, marcadoresAap2021, pcrAlterada, pecarn2019,
+  AAP_FEBRIL_2021, DOSES_FSSL, FATORES_URINA, KAS_AAP_2021, LIVRO_COLETA_URINA, PECARN_FEBRIL_2019, faixaAap2021, faixaColetaUrina, faixaFssl, fichaFebreSemSinais, leituraColetaUrina, leucogramaAlterado, marcadoresAap2021, pcrAlterada, pecarn2019,
 } from './febreSemSinaisPed.ts'
+import { FATORES_FIGURA2 } from './ituPed.ts'
 
 const d = (id: string) => DOSES_FSSL.find((x) => x.id === id)!
 
@@ -31,13 +32,25 @@ test('leucograma e PCR (p. 463–467)', () => {
   assert.equal(pcrAlterada(21), true)
 })
 
-test('coleta de urina (p. 462)', () => {
-  assert.equal(coletaUrina('menina', new Set(['t39', 'branca']), 10, false), 'coletar')
-  assert.equal(coletaUrina('menina', new Set(['t39']), 10, false), 'nao-indicada')
-  assert.equal(coletaUrina('menino', new Set(['t39']), 4, true), 'coletar')
-  assert.equal(coletaUrina('menino', new Set(['t39']), 6, true), 'indefinido')
-  assert.equal(coletaUrina('menino', new Set(['t39', 'semFoco']), 12, true), 'nao-indicada')
-  assert.equal(coletaUrina('menino', new Set(['t39', 'semFoco']), 12, false), 'coletar')
+// Pedido 7 do RT (11/11/2026, opção A): a coleta de urina segue a Figura 2 da AAP 2026, a mesma lista da ITU.
+test('coleta de urina: a lista da Figura 2, igual à da ITU, sem etnia', () => {
+  assert.deepEqual(FATORES_URINA.map((f) => f.texto), FATORES_FIGURA2)
+  assert.equal(new Set(FATORES_URINA.map((f) => f.id)).size, FATORES_URINA.length)
+  for (const f of FATORES_URINA) assert.doesNotMatch(f.texto, /etnia|raça|branc/i)
+  assert.match(LIVRO_COLETA_URINA, /etnia/)
+})
+test('coleta de urina: faixas e leitura sem número mínimo', () => {
+  assert.equal(faixaColetaUrina(NaN), 'indefinido')
+  assert.equal(faixaColetaUrina(1), 'menor-2m')
+  assert.equal(faixaColetaUrina(2), '2-24m')
+  assert.equal(faixaColetaUrina(24), '2-24m')
+  assert.equal(faixaColetaUrina(25), 'maior-24m')
+  const l = leituraColetaUrina(10, 2)
+  assert.match(l, /2 fatores marcados/)
+  assert.match(l, /não dá número mínimo/)
+  assert.doesNotMatch(l, /coletar urina\.|indicada/)
+  assert.match(leituraColetaUrina(1, 3), /Abaixo de 2 meses/)
+  assert.match(leituraColetaUrina(30, 0), /não se aplica/)
 })
 
 test('doses (cap. 45 e Apêndice)', () => {
@@ -49,9 +62,10 @@ test('doses (cap. 45 e Apêndice)', () => {
 
 // ── AAP 2021 e PECARN 2019 (lacunas da Central, lote 3) ──
 
-test('febre: ficha .1 com AAP 2021 e PECARN 2019 depois do livro', () => {
-  assert.equal(fichaFebreSemSinais.versao, '2026-10-25.1')
-  assert.deepEqual(fichaFebreSemSinais.fontes.slice(-2), [AAP_FEBRIL_2021, PECARN_FEBRIL_2019])
+test('febre: ficha com AAP 2021, PECARN 2019 e AAP 2026 da ITU depois do livro', () => {
+  assert.equal(fichaFebreSemSinais.versao, '2026-11-11.1')
+  assert.deepEqual(fichaFebreSemSinais.fontes.slice(-3, -1), [AAP_FEBRIL_2021, PECARN_FEBRIL_2019])
+  assert.match(fichaFebreSemSinais.fontes.at(-1)!.citacao, /Urinary Tract Infection in Children.*Figura 2, p\. 28/)
   assert.equal(temReferenciaPediatrica(fichaFebreSemSinais), true)
 })
 test('AAP 2021: faixas 8–21, 22–28 e 29–60 dias; fora delas não se aplica', () => {

@@ -2,6 +2,7 @@
 // ou à polícia, conferência e liberação do corpo, vias da D.O. A lista vem do
 // servidor (obitos_pendentes); cada linha abre o óbito com as ações.
 import { useQuery } from '@tanstack/react-query'
+import { ChevronDown } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -38,7 +39,10 @@ export function ObitosPendentes({ unidadeId }: { unidadeId: string | undefined }
                 .filter(Boolean).join(' · ')}
             </span>
             <SelosObito pendencias={o.pendencias} />
-            <Button size="xs" variant="ghost" onClick={() => setAberto(aberto === o.id ? null : o.id)}>{aberto === o.id ? 'Fechar' : 'Abrir'}</Button>
+            <Button size="xs" variant="outline" aria-expanded={aberto === o.id} onClick={() => setAberto(aberto === o.id ? null : o.id)}>
+              {aberto === o.id ? 'Fechar' : 'Abrir'}
+              <ChevronDown className={aberto === o.id ? 'rotate-180' : undefined} aria-hidden />
+            </Button>
           </div>
           {aberto === o.id && <PainelObito pacienteId={o.paciente_id} />}
         </div>

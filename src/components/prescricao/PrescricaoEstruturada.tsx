@@ -628,7 +628,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 <span className="text-tinta-apoio">{[med.apresentacao, med.concentracao].filter(Boolean).join(' · ')}</span>
                 {med.alta_vigilancia && <Badge variant="warning">alta vigilância</Badge>}
                 <SeloDoMedicamento id={med.id} />
-                <Button size="xs" variant="ghost" className="ml-auto" onClick={async () => {
+                <Button size="xs" variant="outline" className="ml-auto" onClick={async () => {
                   if (!unidadeAtiva) return
                   const { error } = await supabase.rpc('sinalizar_falta', { p_unidade: unidadeAtiva.unidade_id, p_medicamento: med.id })
                   avisar(error ? error.message : null)

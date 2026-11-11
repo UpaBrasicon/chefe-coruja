@@ -27,14 +27,14 @@ export const AHA_ASA_2026: Fonte = {
 }
 
 /**
- * Revisão PubMed de 09/10/2026: a AHA/ASA publicou correção oficial da
- * diretriz em 07/2026 (Stroke 2026;57(8):e461–e467, PMID 42507797). O texto da
- * correção não estava acessível na revisão; os trechos desta ferramenta são da
- * versão original (PDF lido em 28/09/2026). Até o RT conferir a versão
- * corrigida, a tela avisa.
+ * Correção oficial da AHA/ASA 2026 (Stroke 2026;57(8):e461–e467, PMID 42507797),
+ * lida inteira em 11/11/2026 (docs/clinico/AVC-CORRECAO-AHA-2026-DIAGNOSTICO.md).
+ * Ela não toca nas Tabelas 5 e 7 nem em dose. Decisões do RT de 11/11/2026:
+ * D1 (janela estendida), D2 (adrenalina IM no angioedema) e D3 (este aviso) = A;
+ * o resto (D4 a D12) não muda a tela.
  */
 export const CORRECAO_AHA_2026 = {
-  texto: 'A AHA/ASA publicou correção oficial desta diretriz em julho de 2026 (Stroke 2026;57(8):e461–e467, PMID 42507797). Os trechos abaixo vêm da versão original, lida em 28/09/2026: confira na versão corrigida antes de usar, em especial as Tabelas 5 e 7.',
+  texto: 'A AHA/ASA publicou correção oficial desta diretriz em julho de 2026 (Stroke 2026;57(8):e461–e467, PMID 42507797), lida em 11/11/2026. Ela não muda as Tabelas 5 e 7 nem nenhuma dose. Na tela mudaram a janela estendida (só sem indicação de trombectomia; "pode ser benéfica") e a adrenalina do angioedema (IM, não SC).',
   url: 'https://doi.org/10.1161/STR.0000000000000530',
 }
 
@@ -58,14 +58,15 @@ const PAG_AVC_LIVRO = 'cap. 38 Acidente vascular cerebral isquêmico, p. 518–5
 
 export const fichaTromboliseAvcAdulto: Ficha = {
   ...fichaAdulto('adulto-trombolise-avc', 'Trombólise no AVC isquêmico — adulto', PAG_AVC_LIVRO),
-  versao: '2026-11-06.1',
+  versao: '2026-11-11.1',
   fontes: [
     pagina(PAG_AVC_LIVRO),
     { ...AHA_ASA_2026, citacao: `${AHA_ASA_2026.citacao} Seções 4.3 (PA, p. 35 do PDF), 4.5 (glicemia, p. 37), 4.6 (trombólise, p. 38–44; Tabela 5, p. 40; Tabela 7, p. 43) e 4.7 (trombectomia, p. 5 e 53).` },
     INTERACT4_2024,
     ESO_PA_2025,
+    { citacao: 'Correction to: 2026 Guideline for the Early Management of Patients With Acute Ischemic Stroke. Stroke. 2026;57(8):e461–e467 (PMID 42507797). Item 10 (Tabela 6, angioedema, p. e462) e item 13 (seção 4.6.3, recomendação 2, p. e463).', url: CORRECAO_AHA_2026.url },
   ],
-  revisadoEm: '06/11/2026 (nota do INTERACT4 e da ESO 2025 na PA; revisão PubMed, itens médios)',
+  revisadoEm: '11/11/2026 (correção oficial da AHA/ASA 2026: janela estendida e adrenalina IM no angioedema, decisão do RT D1–D3 = A); 06/11/2026 (nota do INTERACT4 e da ESO 2025 na PA; revisão PubMed, itens médios)',
 }
 
 // ── Alteplase e tenecteplase ─────────────────────────────────────────────────
@@ -133,7 +134,7 @@ export const DIRETRIZ_AVC_2026: ItemDiretriz[] = [
   { tema: 'Trombolítico até 4,5 h', texto: 'Tenecteplase 0,25 mg/kg (máx. 25 mg) ou alteplase 0,9 mg/kg (máx. 90 mg) para melhorar o desfecho funcional', classe: 'COR 1', pagina: 'p. 5 e 42', livro: 'alteplase 0,9 mg/kg; tenecteplase 0,4 mg/kg só em déficit leve sem oclusão de grande artéria (p. 521)' },
   { tema: 'Tenecteplase 0,4 mg/kg', texto: 'Não recomendada: mais sangramento intracraniano sintomático sem melhora funcional (NOR-TEST 2)', classe: 'COR 3: sem benefício, LOE A', pagina: 'p. 42–43', livro: '0,4 mg/kg (p. 521) — superado' },
   { tema: 'Déficit leve não incapacitante (até 4,5 h)', texto: 'Trombólise não recomendada: não foi superior à dupla antiagregação (p. ex., síndrome sensitiva isolada)', classe: 'COR 3: sem benefício, LOE B-R', pagina: 'p. 38', livro: 'NIHSS ≤ 5 não incapacitante: considerar risco-benefício (p. 523)' },
-  { tema: 'Janela estendida com imagem', texto: 'Penumbra salvável em perfusão automatizada e (a) despertar com sintomas até 9 h do meio do sono ou (b) 4,5–9 h da última vez bem: trombólise pode ser razoável', classe: 'COR 2b, LOE B-R', pagina: 'p. 5 e 44', livro: 'janela < 4,5 h (p. 521)' },
+  { tema: 'Janela estendida com imagem', texto: 'Sem indicação de trombectomia, penumbra salvável em perfusão automatizada e (a) despertar com sintomas até 9 h do meio do sono ou (b) 4,5–9 h da última vez bem: trombólise pode ser benéfica (texto da correção de 2026; a versão original dizia "pode ser razoável" e não falava da trombectomia)', classe: 'COR 2b, LOE B-R na versão original; a correção não informa se a classe mudou', pagina: 'p. 5 e 44; correção, item 13, p. e463', livro: 'janela < 4,5 h (p. 521)' },
   { tema: 'PA antes da trombólise', texto: 'PA elevada em candidato a trombólise: baixar a PAS para < 185 e a PAD para < 110 mmHg antes de iniciar, para reduzir complicações hemorrágicas', classe: 'rec. 5 da seção 4.3', pagina: 'p. 35', livro: '≥ 185 × 110 é contraindicação redutível (Tabela 4, p. 522)' },
   { tema: 'PA após a trombólise', texto: 'Manter PA < 180/105 mmHg por pelo menos 24 h', classe: 'COR 1, LOE B-R', pagina: 'p. 35', livro: '< 180 × 105 por 24 h (Tabela 5, p. 526)' },
   { tema: 'Redução intensiva da PAS após trombólise', texto: 'Alvo de PAS < 140 mmHg (em vez de < 180) não recomendado em AVC leve a moderado: não melhora o desfecho', classe: 'COR 3: sem benefício, LOE B-R', pagina: 'p. 35' },
@@ -307,9 +308,9 @@ export const ANGIOEDEMA_POS_ALTEPLASE = {
     'Proteção de via aérea: considerar IOT se insuficiência respiratória ou edema de laringe, palato, assoalho da boca ou orofaringe e/ou progressão em menos de 30 min.',
     'Suspender alteplase e inibidores da ECA.',
     'Metilprednisolona 125 mg EV + difenidramina 50 mg EV + ranitidina 50 mg EV.',
-    'Se progressão: epinefrina 0,1% 0,3 mL SC (0,3 mg) ou 0,5 mL por nebulização (0,5 mg).',
+    'Se progressão: epinefrina 0,1% 0,3 mL IM (0,3 mg) ou 0,5 mL por nebulização (0,5 mg).',
   ],
-  errata: 'O livro escreve "difeniframina" (difenidramina).',
+  errata: 'O livro escreve "difeniframina" (difenidramina) e a epinefrina 0,3 mL por via SC. A Tabela 6 da AHA/ASA 2026, na correção oficial (item 10, p. e462), passou a via para IM.',
   pagina: 'p. 528 (Tabela 7)',
 }
 
