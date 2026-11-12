@@ -123,6 +123,9 @@
 
 .lp .rodape { border-top: 1px solid var(--cc-fio); padding: 24px 0 40px; font-size: 13px; color: var(--cc-tinta-sussurro); }
 .lp .rodape .env { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.lp .rodape-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.lp .rodape-links a { color: var(--cc-tinta-apoio); }
+.lp .rodape-links a:hover { color: var(--cc-acao); }
 
 @media (max-width: 1023px) {
   .lp h1 { font-size: 64px; }
