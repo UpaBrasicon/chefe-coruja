@@ -6,6 +6,7 @@ import { Parametro, ResumoParametros } from '@/components/monitor/Parametros'
 import '@fontsource-variable/newsreader'
 import '@fontsource-variable/geist-mono'
 
+import { AgendarDemonstracao } from './AgendarDemonstracao'
 import { UmPlantao } from './UmPlantao'
 import './landing.css'
 
@@ -179,7 +180,7 @@ function useOndaAteLogin() {
   )
 }
 
-function Acoes({ onda }: { onda: (ev: MouseEvent<HTMLAnchorElement>) => void }) {
+function Acoes({ onda, demonstracao = false }: { onda: (ev: MouseEvent<HTMLAnchorElement>) => void; demonstracao?: boolean }) {
   return (
     <div className="acoes">
       <Link className="btn btn-primario" to="/login" onClick={onda}>
@@ -187,6 +188,7 @@ function Acoes({ onda }: { onda: (ev: MouseEvent<HTMLAnchorElement>) => void }) 
         <ArrowRight size={16} aria-hidden="true" />
       </Link>
       <Link className="btn btn-secundario" to="/cadastro">Primeiro acesso</Link>
+      {demonstracao && <AgendarDemonstracao className="btn btn-secundario" />}
     </div>
   )
 }
@@ -217,6 +219,7 @@ export default function Landing() {
             <a href="#papeis">Papéis</a>
           </nav>
           <div className="topo-acoes">
+            <AgendarDemonstracao className="topo-link topo-demo" />
             <Link className="topo-link" to="/cadastro">Primeiro acesso</Link>
             <Link className="btn btn-primario" to="/login" onClick={onda}>Entrar</Link>
           </div>
@@ -353,7 +356,7 @@ export default function Landing() {
                 O acesso abre no papel que a sua unidade liberou para você. Primeiro acesso? Ative a conta e aguarde a
                 liberação do gestor da unidade.
               </p>
-              <Acoes onda={onda} />
+              <Acoes onda={onda} demonstracao />
             </div>
           </section>
         </div>
