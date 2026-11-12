@@ -69,7 +69,7 @@ function Escala() {
       </div>
       <p className="escala-nota">
         Às {AGORA.hora}, {dentro} das {ESCALA.length} pessoas estão na escala e veem os pacientes do setor. As outras
-        veem o aviso "Você não está na escala agora". Valores ilustrativos.
+        veem o aviso “Você não está na escala agora”. Valores ilustrativos.
       </p>
     </figure>
   )
@@ -312,10 +312,10 @@ export default function Landing() {
               </Item>
             </Registro>
 
-            <Registro rotulo="Verificação" titulo="Números do próprio app." abertura="Contados em 29/09/2026: as ferramentas, no registro clínico; as verificações, nos testes do banco.">
-              <Item termo="Ferramentas clínicas" dado="200">Em 8 seções do registro, todas na busca.</Item>
-              <Item termo="Arquivos de teste do banco" dado="34">Cada um roda numa transação desfeita.</Item>
-              <Item termo="Verificações de banco" dado="240">Regras de acesso, escala e registro clínico.</Item>
+            <Registro rotulo="Verificação" titulo="Números do próprio app." abertura="Contados em 11/11/2026: as ferramentas, no registro clínico; as verificações, nos testes do banco.">
+              <Item termo="Ferramentas clínicas" dado="232">Em 8 seções do registro, todas na busca.</Item>
+              <Item termo="Arquivos de teste do banco" dado="265">Cada um roda numa transação desfeita.</Item>
+              <Item termo="Verificações de banco" dado="1.351">Regras de acesso, escala e registro clínico.</Item>
               <Item termo="Segundo fator" dado="24h">Dado de paciente só aparece com o segundo fator confirmado nas últimas 24 horas, conferido no servidor.</Item>
             </Registro>
           </div>

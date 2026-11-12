@@ -93,6 +93,6 @@ O RT escolheu juntar as duas. A página do app continua sendo a porta da marca e
 
 | # | Pergunta | Opções | Recomendação | Decisão do RT |
 |---|---|---|---|---|
-| D1 | Para onde vai "Agendar demonstração" | a) e-mail `contato@chefecoruja.com.br`, que já funciona; b) o formulário da `landing/` trazido para o app, que precisa de uma função no servidor e passa pela homologação; c) a `landing/` num subdomínio, como `site.chefecoruja.com.br` (DNS no Cloudflare, feito pelo RT) | c, ou a) enquanto o subdomínio não existe | |
-| D2 | Telas da seção J4 | a) as capturas de teste de hoje, com nomes "F5"; b) uma unidade de demonstração na homologação, com nomes realistas e números coerentes, capturada de novo | b | |
-| D3 | Futuro da `landing/` | a) fica só com Preços, Contato e Privacidade, no subdomínio de D1 c; b) desativada, com Preços e Contato levados para o app | a | |
+| D1 | Para onde vai "Agendar demonstração" | a) e-mail `contato@chefecoruja.com.br`, que já funciona; b) o formulário da `landing/` trazido para o app, que precisa de uma função no servidor e passa pela homologação; c) a `landing/` num subdomínio, como `site.chefecoruja.com.br` (DNS no Cloudflare, feito pelo RT) | c, ou a) enquanto o subdomínio não existe | b) formulário no app (RT, 11/11/2026) |
+| D2 | Telas da seção J4 | a) as capturas de teste de hoje, com nomes "F5"; b) uma unidade de demonstração na homologação, com nomes realistas e números coerentes, capturada de novo | b | b) unidade de demonstração (RT, 11/11/2026) |
+| D3 | Futuro da `landing/` | a) fica só com Preços, Contato e Privacidade, no subdomínio de D1 c; b) desativada, com Preços e Contato levados para o app | a | a) Preços, Contato e Privacidade num subdomínio (RT, 11/11/2026) |
