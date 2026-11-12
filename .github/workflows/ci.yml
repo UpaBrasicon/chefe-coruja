@@ -67,6 +67,9 @@ jobs:
           npm run test:interop
       - name: src/lib (cópias das Edge Functions)
         run: node --experimental-strip-types --test src/lib/*.test.ts src/lib/offline/*.test.ts
+      # Pedido 8, J4: telas da página de entrada (tamanho, peso, texto alternativo)
+      - name: Página de entrada (telas)
+        run: node --experimental-strip-types --test src/pages/landing/*.test.ts
       - name: Cofre da guarda
         run: node --test scripts/arquivo/cofre.test.mjs
       - name: Trava de alvo do Supabase (homologação antes de produção)

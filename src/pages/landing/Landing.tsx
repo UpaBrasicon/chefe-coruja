@@ -6,6 +6,7 @@ import { Parametro, ResumoParametros } from '@/components/monitor/Parametros'
 import '@fontsource-variable/newsreader'
 import '@fontsource-variable/geist-mono'
 
+import { UmPlantao } from './UmPlantao'
 import './landing.css'
 
 // Porta pública do produto: quem chega em "/" sem sessão vê esta página; quem
@@ -210,6 +211,7 @@ export default function Landing() {
             <span className="marca-nome">Chefe Coruja</span>
           </Link>
           <nav className="menu" aria-label="Seções">
+            <a href="#telas">Telas</a>
             <a href="#registro">Como funciona</a>
             <a href="#seguranca">Segurança</a>
             <a href="#papeis">Papéis</a>
@@ -240,6 +242,8 @@ export default function Landing() {
         </div>
 
         <div className="env">
+          <UmPlantao />
+
           <section className="painel">
             <div className="painel-texto">
               {/* padrao-ok: título da página pública (desenho de marca, landing.css) */}
