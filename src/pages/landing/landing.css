@@ -79,6 +79,25 @@
 .lp .escala-agora span { position: absolute; top: 6px; left: 6px; padding: 1px 6px; border-radius: 4px; font-size: 12px; background: var(--cc-tinta); color: var(--cc-campo); }
 .lp .escala-nota { margin: 0; padding: 12px 20px; font-size: 13px; color: var(--cc-tinta-sussurro); }
 
+/* um plantão: telas reais. No computador a tela fica parada durante a rolagem
+   (300vh), e as marcas, entre o meio da primeira e o da última tela, dizem
+   qual tela está no centro da janela. */
+.lp .plantao { position: relative; height: 300vh; }
+.lp .plantao-marcas { position: absolute; left: 0; right: 0; top: 50vh; bottom: 50vh; display: flex; flex-direction: column; pointer-events: none; }
+.lp .plantao-marcas > div { flex: 1; }
+.lp .plantao-fixo { position: sticky; top: 0; min-height: 100vh; min-height: 100svh; display: grid; grid-template-columns: 200px minmax(0, 1fr); column-gap: 40px; align-content: center; padding: 28px 0 40px; }
+.lp .plantao .registro-margem { justify-content: flex-start; }
+.lp .plantao-botoes { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-top: 20px; }
+.lp .plantao-botoes button { font: inherit; font-size: 15px; padding: 8px 12px; margin-left: -12px; border: 0; border-radius: 8px; background: none; color: var(--cc-tinta-apoio); cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }
+.lp .plantao-botoes button:hover { color: var(--cc-acao); }
+.lp .plantao-botoes button[aria-pressed="true"] { background: var(--lp-dentro); color: var(--cc-acao-pressionada); box-shadow: inset 0 0 0 1px var(--lp-dentro-fio); }
+.lp .plantao-legenda { min-height: 3.1em; }
+.lp .plantao-quadro { position: relative; margin-top: 24px; width: min(100%, calc((100svh - 280px) * 1424 / 749)); aspect-ratio: 1424 / 749; background: var(--cc-superficie); border: 1px solid var(--cc-fio); border-radius: 12px; overflow: hidden; }
+.lp .plantao-quadro img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; opacity: 0; transform: scale(1.02); transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+.lp .plantao-quadro img.atual { opacity: 1; transform: none; }
+.lp .plantao-lista { display: none; }
+.lp .plantao-nota { margin: 12px 0 0; font-size: 13px; color: var(--cc-tinta-sussurro); }
+
 /* faixa de parâmetros do produto */
 .lp .painel { display: grid; grid-template-columns: 200px minmax(0, 1fr); column-gap: 40px; padding: 72px 0; }
 .lp .painel-texto { grid-column: 2; margin-bottom: 28px; }
@@ -127,6 +146,13 @@
   .lp .coruja { width: 88px; order: 2; }
   .lp .registro, .lp .painel { padding-bottom: 56px; }
   .lp .fecho { gap: 20px; }
+  /* no celular as três telas vêm em sequência, sem rolagem presa */
+  .lp .plantao { height: auto; padding-bottom: 56px; }
+  .lp .plantao-marcas, .lp .plantao-botoes, .lp .plantao-legenda, .lp .plantao-quadro { display: none; }
+  .lp .plantao-fixo { position: static; min-height: 0; grid-template-columns: minmax(0, 1fr); padding: 28px 0 0; }
+  .lp .plantao-lista { display: grid; gap: 28px; list-style: none; margin: 24px 0 0; padding: 0; }
+  .lp .plantao-lista p { margin: 0 0 10px; color: var(--cc-tinta-apoio); text-wrap: pretty; }
+  .lp .plantao-lista img { display: block; width: 100%; height: auto; border: 1px solid var(--cc-fio); border-radius: 10px; }
 }
 @media (max-width: 599px) {
   .lp .env { padding-left: 16px; padding-right: 16px; }
