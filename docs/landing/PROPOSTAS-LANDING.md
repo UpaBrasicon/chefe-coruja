@@ -67,3 +67,32 @@
 | C2 | Seção com 3 telas reais | |
 | C3 | Quem somos com nome e foto (opcional) | |
 | C4 | Prova, só com material real | |
+
+---
+
+## Caminho C: juntar as duas páginas (decisão do RT, 11/11/2026)
+
+O que está no ar em www.chefecoruja.com.br é a página de entrada do app (`src/pages/landing/`), e não a `landing/`. A `landing/` só existe em chefe-coruja-landing.vercel.app, sem domínio próprio.
+
+O audit da Hallmark de 11/11/2026 deu este resultado para a página do app:
+- nenhuma falha do piso;
+- números reais, mas desatualizados: "200 ferramentas" e "34 arquivos de teste", contados em 29/09/2026. Hoje são 232 e 265;
+- nenhum caminho para quem quer comprar.
+
+O RT escolheu juntar as duas. A página do app continua sendo a porta da marca e recebe o que só a `landing/` tem.
+
+| # | O que | Detalhe | Precisa de |
+|---|---|---|---|
+| J1 | Números atualizados | "Números do próprio app" com a contagem e a data do dia | nada |
+| J2 | Acabamento do audit | estado de clique, aspas tipográficas, `overflow-x: clip` | nada |
+| J3 | "Agendar demonstração" | ao lado de "Entrar", no topo e no fim da página | decisão D1 |
+| J4 | Seção com as telas do app | a seção "Um plantão" da demo, com a tela parada que troca pela rolagem | decisão D2 |
+| J5 | Preços e contato | link no topo e no rodapé | decisão D3 |
+
+### Decisões do RT
+
+| # | Pergunta | Opções | Recomendação | Decisão do RT |
+|---|---|---|---|---|
+| D1 | Para onde vai "Agendar demonstração" | a) e-mail `contato@chefecoruja.com.br`, que já funciona; b) o formulário da `landing/` trazido para o app, que precisa de uma função no servidor e passa pela homologação; c) a `landing/` num subdomínio, como `site.chefecoruja.com.br` (DNS no Cloudflare, feito pelo RT) | c, ou a) enquanto o subdomínio não existe | |
+| D2 | Telas da seção J4 | a) as capturas de teste de hoje, com nomes "F5"; b) uma unidade de demonstração na homologação, com nomes realistas e números coerentes, capturada de novo | b | |
+| D3 | Futuro da `landing/` | a) fica só com Preços, Contato e Privacidade, no subdomínio de D1 c; b) desativada, com Preços e Contato levados para o app | a | |
