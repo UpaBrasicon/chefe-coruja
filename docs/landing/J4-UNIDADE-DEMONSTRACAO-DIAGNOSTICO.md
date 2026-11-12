@@ -67,7 +67,7 @@ Com as telas novas, a página de entrada do app ganha a seção "Um plantão". �
   - sem animação para quem pede menos movimento;
   - nada passa da largura em 375 px;
   - o título e o botão de entrar aparecem no primeiro olhar em 1280 × 800.
-- A evidência fica em `produto/docs/landing/`, com as capturas e o resultado dos roteiros.
+- A evidência fica em `docs/landing/j4-evidencia/`, com as capturas e o resultado das conferências.
 
 ## Riscos
 
