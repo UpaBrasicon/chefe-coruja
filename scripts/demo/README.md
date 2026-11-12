@@ -11,6 +11,7 @@ Roteiros da "Rede de Demonstração": a UPA 24h Jardim Primavera, com equipe e p
 | `01_rede_demonstracao.sql` | Organização, unidade, setores, leitos, 24 pessoas fictícias sem senha, vínculos e a escala 12x36 do mês corrente e do seguinte, publicada pela coordenadora | Uma vez, e de novo quando virar o mês |
 | `02_plantao_agora.sql` | Apaga os pacientes da unidade, faz o check-in dos plantões já começados e cria o plantão de agora pelas funções do banco, como cada pessoa de plantão | Antes de cada captura ou apresentação |
 | `03_acesso_conta.sql` | Dá à conta indicada os papéis gestor e plantonista na unidade e a escala de hoje no Pronto Socorro | Uma vez por conta (troque o e-mail antes) |
+| `capturar-telas.mjs` | Entra como a coordenadora fictícia por um link de acesso único e tira a porta, o painel do gestor e a escala em 1424 × 749, em JPG | Logo depois do `02`, para as telas da página de entrada |
 | `99_limpar_rede_demonstracao.sql` | Apaga a rede inteira, inclusive os acessos dados pelo 03 | Só quando a unidade não for mais usada |
 
 ## Como rodar
@@ -25,12 +26,27 @@ Roteiros da "Rede de Demonstração": a UPA 24h Jardim Primavera, com equipe e p
 
 3. No `03`, troque `TROQUE-PELO-SEU-EMAIL@exemplo.com` pelo e-mail da conta numa cópia local (não suba o e-mail no git) e rode a cópia do mesmo jeito.
 
+4. Para as telas da página de entrada, rode logo depois do `02`:
+
+   ```bash
+   HOMOLOG_SHARE="<link de compartilhamento do Vercel>" node scripts/demo/capturar-telas.mjs tmp/telas-demo
+   ```
+
+   - O roteiro lê a chave de serviço da homologação pelo CLI do Supabase, sem imprimir.
+   - Ele tira o bloqueio da coordenadora só durante a captura. A senha dela continua vazia, então só entra quem tem o link gerado ali.
+   - No fim, bloqueia a conta de novo, mesmo se algo falhar.
+   - Usa o Edge instalado; para outro navegador, defina `NAVEGADOR`.
+   - O link do Vercel vem do conector do Vercel ou do painel e não vai para o git.
+
+   A captura não usa conta real: com ela aparecem o nome da conta, o menu de administrador e as unidades de outras redes (revisão do G2, 12/11/2026).
+
 Os arquivos não usam comandos do psql (`\set`) nem senha. Por isso não passam pelo `scripts/e2e/homolog/preparar.mjs`.
 
 ## O que fica na unidade
 
 - **Equipe:** coordenadora (gestor), farmacêutica e quatro equipes 12x36 (dia e noite, dias pares e ímpares). Cada equipe tem recepção, enfermagem da classificação, técnico da Observação Adulto, médico do Pronto Socorro e médico da Sala Vermelha. Dois pediatras cobrem o diurno da Observação Pediátrica.
-- **Contas da equipe:** e-mail `@demo.local`, senha vazia e conta bloqueada até 2999. Ninguém entra com elas.
+- **Contas da equipe:** e-mail `@demo.local`, senha vazia e conta bloqueada até 2999. Ninguém entra com elas, exceto a coordenadora durante o `capturar-telas.mjs`.
+- **Cerca do check-in:** um ponto genérico no interior de SP com raio de 200 m. O `02` faz o check-in da equipe dentro dela, e a auditoria mostra "confere".
 - **Plantão do `02`:** 17 pacientes (13 adultos e 4 crianças) e 4 altas de mais cedo.
   - Porta: 2 aguardando triagem, 5 aguardando médico, 1 em atendimento e 1 em reavaliação.
   - Leitos: Observação Adulto 4 de 6, Observação Pediátrica 2 de 3, Sala Vermelha 2 de 2. São 8 de 11 leitos ocupados (73%).

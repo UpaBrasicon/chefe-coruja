@@ -6,8 +6,9 @@
 --
 -- Cria (decisões do RT em 12/11/2026, G1–G4):
 --   • organização "Rede de Demonstração" e a "UPA 24h Jardim Primavera"
---     (CNES fictício 9998012, município genérico "Santa Aurora"/SP, sem
---     coordenadas: o check-in não usa cerca geográfica);
+--     (CNES fictício 9998012, município genérico "Santa Aurora"/SP). A cerca
+--     do check-in usa um ponto genérico no interior de SP com raio de 200 m,
+--     que não aparece em tela; serve para a auditoria mostrar "confere";
 --   • o protocolo de classificação já carregado no ambiente (o mesmo dos
 --     roteiros e2e; prefere sms-aparecida-2025);
 --   • setores: Pronto Socorro (porta, sem leito), Observação Adulto (6 leitos),
@@ -55,6 +56,10 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.unidades (id, organizacao_id, nome, tipo, cnes, municipio, uf) VALUES
   ('d0100000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-000000000001', 'UPA 24h Jardim Primavera', 'upa', '9998012', 'Santa Aurora', 'SP')
 ON CONFLICT (id) DO NOTHING;
+
+-- cerca do check-in (o 02 faz o check-in da equipe dentro dela)
+UPDATE public.unidades SET latitude = -22.7412, longitude = -47.3318, raio_metros = 200
+ WHERE id = 'd0100000-0000-4000-8000-000000000001' AND latitude IS NULL;
 
 -- protocolo de classificação já carregado no ambiente (como os e2e)
 UPDATE public.unidades

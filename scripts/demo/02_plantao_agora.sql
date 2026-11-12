@@ -157,11 +157,23 @@ END $$;
 SET LOCAL session_replication_role = origin;
 
 -- ── 2. check-in dos plantões que já começaram ───────────────────────────────
--- chegou entre 0 e 7 min depois do início (dentro da tolerância de 30 min)
-INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em)
+-- chegou entre 0 e 7 min depois do início (dentro da tolerância de 30 min),
+-- a até 63 m do ponto da unidade (raio de 200 m, do 01). Check-in antigo,
+-- de antes da cerca, ganha o local também.
+UPDATE public.presenca_plantonista p
+   SET checkin_lat = u.latitude, checkin_lng = u.longitude, checkin_dentro = true,
+       checkin_distancia_m = (hashtext(p.escala_plantao_id::text) >> 3) & 63
+  FROM public.unidades u
+ WHERE u.id = p.unidade_id AND p.unidade_id = 'd0100000-0000-4000-8000-000000000001'
+   AND p.perfil_id::text LIKE 'd0300000%' AND p.checkin_dentro IS NULL AND u.latitude IS NOT NULL;
+
+INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_id, data, turno, checkin_em,
+                                         checkin_lat, checkin_lng, checkin_dentro, checkin_distancia_m)
 SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno,
-       least(e.inicio + make_interval(mins => hashtext(e.id::text) & 7), now())
+       least(e.inicio + make_interval(mins => hashtext(e.id::text) & 7), now()),
+       u.latitude, u.longitude, true, (hashtext(e.id::text) >> 3) & 63
   FROM public.escala_plantao e
+  JOIN public.unidades u ON u.id = e.unidade_id
  WHERE e.ativo AND e.unidade_id = 'd0100000-0000-4000-8000-000000000001' AND e.perfil_id::text LIKE 'd0300000%'
    AND e.inicio <= now() AND e.inicio > now() - interval '24 hours'
 ON CONFLICT DO NOTHING;
