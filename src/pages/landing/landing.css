@@ -47,6 +47,26 @@
 @media (prefers-reduced-motion: reduce) { .lp .btn:active { transform: none; } }
 .lp .acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
 
+/* agendar demonstração: botão (no topo, com cara de link) e a janela */
+.lp button.btn, .lp .topo-demo { font: inherit; cursor: pointer; }
+.lp button.btn { font-size: 15px; font-weight: 500; }
+.lp .topo-demo { background: none; border: 0; padding: 0; font-size: 15px; }
+.lp .demo-janela { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--cc-fio); border-radius: 12px; background: var(--cc-superficie); color: var(--cc-tinta); overflow: auto; }
+.lp .demo-janela::backdrop { background: color-mix(in oklab, var(--cc-tinta) 45%, transparent); }
+.lp .demo-corpo { display: grid; gap: 14px; padding: 28px; }
+.lp .demo-corpo h2 { font-size: 32px; }
+.lp .demo-texto { margin: 0 0 4px; color: var(--cc-tinta-apoio); text-wrap: pretty; }
+.lp .demo-campo { display: grid; gap: 6px; }
+.lp .demo-campo label { font-size: 14px; font-weight: 500; }
+.lp .demo-campo input, .lp .demo-campo textarea { font: inherit; font-size: 16px; color: var(--cc-tinta); background: var(--cc-campo); border: 1px solid var(--cc-fio-forte); border-radius: 8px; padding: 10px 12px; width: 100%; min-width: 0; }
+.lp .demo-campo textarea { resize: vertical; }
+.lp .demo-campo input:focus-visible, .lp .demo-campo textarea:focus-visible { outline: 2px solid var(--cc-acao); outline-offset: 1px; border-color: var(--cc-acao); }
+.lp .demo-campo input[aria-invalid="true"] { border-color: var(--cc-critico); }
+.lp .demo-erro, .lp .demo-aviso { font-size: 14px; color: var(--cc-critico); margin: 0; }
+.lp .demo-isca { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.lp .demo-acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+.lp button.btn:disabled { opacity: 0.6; cursor: progress; }
+
 /* folha: as colunas de 2 h da escala sobem por trás do herói, alinhadas à régua */
 .lp .folha { border-bottom: 1px solid var(--cc-fio); }
 .lp .folha > .env { position: relative; }

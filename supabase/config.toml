@@ -453,3 +453,8 @@ verify_jwt = false
 # segredo próprio (x-motor-segredo), não um login.
 [functions.webhooks]
 verify_jwt = false
+
+# Pedido 8, J3: formulário "Agendar demonstração" da página de entrada — quem
+# pede ainda não tem conta; a proteção é o Turnstile, o campo-isca e o limite.
+[functions.pedir-demonstracao]
+verify_jwt = false
