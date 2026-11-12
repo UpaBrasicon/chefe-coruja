@@ -180,7 +180,7 @@ function NovoMedicamento({ unidade, fechar }: { unidade: string; fechar: () => v
           <h3 className="text-corpo font-semibold text-tinta">Novo medicamento</h3>
           <p className="text-tinta-sussurro">Vale só nesta unidade. Confira os parecidos antes de cadastrar: o mesmo item não entra duas vezes.</p>
         </div>
-        <Button size="sm" variant="ghost" onClick={fechar}>Fechar</Button>
+        <Button size="sm" variant="outline" onClick={fechar}>Fechar</Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
@@ -290,8 +290,8 @@ function Linha({ m, unidade }: { m: MedicamentoUnidade; unidade: string | undefi
               {m.cadastrado_por && <>cadastrado por {m.cadastrado_por}{m.cadastrado_em ? `, ${fmtDataHora(m.cadastrado_em)}` : ''}</>}
               {minha && !ficha && (
                 <>
-                  <Button size="xs" variant="ghost" onClick={() => setFicha('corrigir')}>Corrigir</Button>
-                  <Button size="xs" variant="ghost" onClick={() => setFicha('inativar')}>Inativar</Button>
+                  <Button size="xs" variant="outline" onClick={() => setFicha('corrigir')}>Corrigir</Button>
+                  <Button size="xs" variant="outline" onClick={() => setFicha('inativar')}>Inativar</Button>
                 </>
               )}
             </span>

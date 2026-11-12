@@ -6,6 +6,7 @@ import {
   ArrowDown,
   ArrowUp,
   BedDouble,
+  ChevronRight,
   Plus,
   Trash2,
 } from 'lucide-react'
@@ -221,6 +222,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                     {TIPO_SETOR_LABEL[s.tipo]} · {s.leitos[0]?.count ?? 0} leitos
                   </span>
                 </BotaoLinha>
+                <ChevronRight className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />
                 <div className="flex shrink-0 items-center gap-0.5">
                   <Button
                     variant="ghost"

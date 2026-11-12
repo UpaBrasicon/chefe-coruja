@@ -181,7 +181,7 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
       )}
 
       <div>
-        <Button size="xs" variant="ghost" onClick={() => setHistorico(!historico)}>{historico ? 'Esconder histórico' : 'Ver histórico'}</Button>
+        <Button size="xs" variant="outline" onClick={() => setHistorico(!historico)}>{historico ? 'Esconder histórico' : 'Ver histórico'}</Button>
       </div>
       {historico && <HistoricoAih aih={a.id} />}
     </div>

@@ -66,7 +66,7 @@ export function FormRn({ mae: maeFixa, onCriado }: { mae?: Mae; onCriado: (rn: R
         mae ? (
           <div className="flex items-center justify-between rounded-controle border border-fio px-3 py-2">
             <span>Mãe: <span className="font-medium text-tinta">{mae.nome}</span>{mae.prontuario ? ` · pront. ${mae.prontuario}` : ''}</span>
-            <Button size="xs" variant="ghost" onClick={() => setMae(null)}>Trocar</Button>
+            <Button size="xs" variant="outline" onClick={() => setMae(null)}>Trocar</Button>
           </div>
         ) : (
           <div className="flex flex-col gap-1">

@@ -2,7 +2,7 @@
 // que antes ficavam no diálogo "Abrir leito" do painel de internação.
 import * as React from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { History } from 'lucide-react'
+import { ChevronDown, History } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -71,13 +71,14 @@ export function TrilhaEpisodio({ pacienteId }: { pacienteId: string }) {
   const lista = eventos.data?.linhas ?? []
   const listaTransf = transferencias.data?.linhas ?? []
   return (
-    <details className="rounded-container border border-fio bg-superficie px-4 py-3">
-      <summary className="flex cursor-pointer items-center gap-2 text-apoio font-semibold text-tinta-sussurro">
+    <details className="group rounded-container border border-fio bg-superficie px-4 py-3">
+      <summary className="flex cursor-pointer list-none items-center gap-2 text-apoio font-semibold text-tinta-sussurro">
         <History className="size-3.5" aria-hidden /> Trilha do episódio · {eventos.data?.temMais ? `últimos ${lista.length} eventos` : `${lista.length} ${lista.length === 1 ? 'evento' : 'eventos'}`}
+        <ChevronDown className="ml-auto size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
       </summary>
       <div className="mt-2.5 flex flex-col gap-1.5">
         {eventos.data?.temMais && (
-          <Button variant="ghost" size="sm" className="self-start" disabled={eventos.isFetching}
+          <Button variant="outline" size="sm" className="self-start" disabled={eventos.isFetching}
             onClick={() => setLimiteEventos((n) => n + PASSO_EVENTOS)}>
             Ver eventos mais antigos
           </Button>
@@ -99,7 +100,7 @@ export function TrilhaEpisodio({ pacienteId }: { pacienteId: string }) {
               </span>
             ))}
             {transferencias.data?.temMais && (
-              <Button variant="ghost" size="sm" className="self-start" disabled={transferencias.isFetching}
+              <Button variant="outline" size="sm" className="self-start" disabled={transferencias.isFetching}
                 onClick={() => setLimiteTransf((n) => n + PASSO_TRANSF)}>
                 Ver transferências mais antigas
               </Button>

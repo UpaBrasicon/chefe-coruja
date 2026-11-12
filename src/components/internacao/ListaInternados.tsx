@@ -397,7 +397,7 @@ function Prancheta({ paciente, leito, unidadeId, perfilId, aoFechar }: {
             onClick={() => void navigator.clipboard?.writeText(dados.texto).then(() => setCopiado(true))}>
             <Copy /> {copiado ? 'Copiado' : 'Copiar'}
           </Button>
-          <Button size="sm" variant="ghost" disabled={!dados.texto.trim()} onClick={limpar}>Apagar</Button>
+          <Button size="sm" variant="outline" disabled={!dados.texto.trim()} onClick={limpar}>Apagar</Button>
         </div>
       </div>
       <GavetaPe>

@@ -160,8 +160,8 @@ export default function ExamesUnidade() {
                   <TableCell className="whitespace-nowrap px-3 py-2 text-right">
                     {pode && (
                       <>
-                        <Button size="xs" variant="ghost" onClick={() => abrir(e)}>Editar</Button>
-                        <Button size="xs" variant="ghost" onClick={() => { setRetirando(e); setMotivo('') }}>Retirar</Button>
+                        <Button size="xs" variant="outline" onClick={() => abrir(e)}>Editar</Button>
+                        <Button size="xs" variant="outline" onClick={() => { setRetirando(e); setMotivo('') }}>Retirar</Button>
                       </>
                     )}
                   </TableCell>
@@ -236,7 +236,7 @@ function DominiosImagem({ unidadeId, pode }: { unidadeId: string; pode: boolean 
           {dominios.map((d) => (
             <li key={d.dominio} className="flex items-center justify-between gap-2 px-3 py-1.5 text-apoio">
               <span className="font-medium text-tinta">{d.dominio}</span>
-              {pode && <Button size="xs" variant="ghost" disabled={retirar.isPending} onClick={() => retirar.mutate(d.dominio)}>Retirar</Button>}
+              {pode && <Button size="xs" variant="outline" disabled={retirar.isPending} onClick={() => retirar.mutate(d.dominio)}>Retirar</Button>}
             </li>
           ))}
         </ul>

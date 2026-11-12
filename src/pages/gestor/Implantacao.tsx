@@ -252,7 +252,7 @@ function LinhaItem({ it, d0, encerrada, unidadeId }: { it: Item; d0: string; enc
         </div>
         {!it.automatico && !encerrada && (
           it.ok
-            ? <Button size="xs" variant="ghost" onClick={() => marcar.mutate(false)} disabled={marcar.isPending}>Reabrir</Button>
+            ? <Button size="xs" variant="outline" onClick={() => marcar.mutate(false)} disabled={marcar.isPending}>Reabrir</Button>
             : <Button size="xs" variant="outline" onClick={() => setAberto(!aberto)}>Marcar feito</Button>
         )}
       </div>
@@ -318,7 +318,7 @@ function Treinamento({ p, unidadeId }: { p: Required<Painel>; unidadeId: string 
                     <span className="text-sucesso">treinado em {fmtData(x.treinado_em)}</span>
                     <span className="text-rotulo text-tinta-sussurro">registrado por {x.registrado_por ?? '—'}</span>
                     {imp.situacao !== 'encerrada' && (
-                      <Button size="xs" variant="ghost" className="ml-auto" onClick={() => x.treinamento_id && desfazer.mutate(x.treinamento_id)}
+                      <Button size="xs" variant="outline" className="ml-auto" onClick={() => x.treinamento_id && desfazer.mutate(x.treinamento_id)}
                         disabled={desfazer.isPending}>Desfazer</Button>
                     )}
                   </>

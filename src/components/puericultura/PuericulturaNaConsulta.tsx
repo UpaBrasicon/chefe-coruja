@@ -69,7 +69,7 @@ export function PuericulturaNaConsulta({ pacienteId, nomePaciente, marcouPuericu
       {podeEditar && estadoDoItem(c, 'peso_altura', hoje) === 'no_prazo' && (
         <PesoAltura pacienteId={pacienteId} prefixo="puericultura" onFeito={() => void qc.invalidateQueries({ queryKey: ['puericultura'] })} />
       )}
-      {podeEditar && <div><Button size="xs" variant="ghost" onClick={() => setRetirar(true)}>Retirar da puericultura</Button></div>}
+      {podeEditar && <div><Button size="xs" variant="outline" onClick={() => setRetirar(true)}>Retirar da puericultura</Button></div>}
       {retirar && <DialogoRetirarCrianca pacienteId={pacienteId} nome={nomePaciente} onFechar={() => setRetirar(false)} />}
     </section>
   )

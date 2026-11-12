@@ -302,7 +302,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
         <Cartao icone={corrigindo ? <PencilLine /> : <BookOpen />} titulo={corrigindo
           ? <>Corrigir a admissão <span className="ml-1.5 text-apoio font-normal text-tinta-sussurro">A versão anterior fica guardada no prontuário</span></>
           : <>Ficha de admissão médica <span className="ml-1.5 text-apoio font-normal text-tinta-sussurro">Anamnese, exame físico e plano inicial</span></>}
-          acoes={!corrigindo && admTemAlgo(form) ? <Button size="sm" variant="ghost" onClick={limpar}>Limpar</Button> : undefined}>
+          acoes={!corrigindo && admTemAlgo(form) ? <Button size="sm" variant="outline" onClick={limpar}>Limpar</Button> : undefined}>
           <Bloco titulo="Identificação" nota="Nome, nascimento, prontuário e CNS vêm do cadastro. O setor é o da internação.">
             <Leitura rotulo="Paciente" valor={ident.cab.nome} largura="cheio" />
             <Leitura rotulo="Nascimento / idade" valor={nasc} />

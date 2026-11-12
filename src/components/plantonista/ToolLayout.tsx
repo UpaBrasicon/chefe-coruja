@@ -64,7 +64,7 @@ export function ToolLayout({
             <nav aria-label="Nesta página" className="sticky top-4 hidden flex-col gap-1.5 border-l border-fio pl-4 xl:flex">
               <span className="text-rotulo font-semibold text-tinta-apoio">Nesta página</span>
               {indice.map((s) => (
-                <a key={s.id} href={`#${s.id}`} className="text-apoio text-tinta-sussurro hover:text-acao">{s.texto}</a>
+                <a key={s.id} href={`#${s.id}`} className="text-apoio text-acao underline-offset-4 hover:underline">{s.texto}</a>
               ))}
             </nav>
           )}

@@ -74,7 +74,7 @@ export function Intercorrencias({ pacienteId, episodioId, internacaoId, semBotao
             <span className="text-rotulo text-tinta-sussurro">
               {x.registrado_por ?? '—'} ({PAPEL_REGISTRO[x.papel] ?? x.papel}), {fmtDataHora(x.registrado_em)}
               {anteriores.length > 0 && (
-                <> · <Button variant="link" size="xs" className="min-h-0 px-0 text-tinta-sussurro underline hover:text-acao" onClick={() => setVerAnteriores(verAnteriores === x.id ? null : x.id)}>
+                <> · <Button variant="link" size="xs" className="min-h-0 px-0 underline" onClick={() => setVerAnteriores(verAnteriores === x.id ? null : x.id)}>
                   {anteriores.length} versão(ões) anterior(es)
                 </Button></>
               )}

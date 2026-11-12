@@ -199,7 +199,7 @@ function FichaPar({ p, grupos, unidadeId, podeEditar, irAoGrupo, aoSalvar }: {
     if (g?.membros.length) return g.membros.join(', ')
     return (
       <span className="flex flex-wrap items-center gap-x-2 text-atencao">sem fármaco
-        {podeEditar && <Button size="xs" variant="ghost" onClick={() => irAoGrupo(id)}>Preencher o grupo</Button>}
+        {podeEditar && <Button size="xs" variant="outline" onClick={() => irAoGrupo(id)}>Preencher o grupo</Button>}
       </span>
     )
   }

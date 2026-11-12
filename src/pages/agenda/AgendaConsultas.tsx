@@ -394,7 +394,7 @@ function MarcarConsulta({ unidadeId, diaInicial, hoje, pacienteUrl, origemUrl, t
         <div className="flex items-center justify-between rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
           <span className="font-medium text-tinta">{paciente.nome_social || paciente.nome}
             {paciente.data_nascimento && <span className="font-normal text-tinta-sussurro"> · {rotuloIdade(paciente.data_nascimento, hoje)}</span>}</span>
-          <Button size="xs" variant="ghost" onClick={() => { setPaciente(null); setUsarUrl(false) }}>Trocar</Button>
+          <Button size="xs" variant="outline" onClick={() => { setPaciente(null); setUsarUrl(false) }}>Trocar</Button>
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">

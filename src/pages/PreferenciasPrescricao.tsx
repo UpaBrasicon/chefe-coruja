@@ -198,7 +198,7 @@ function NovoFavorito({ aoSalvar }: { aoSalvar: () => void }) {
         <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio px-3 py-2">
           <span className="text-corpo font-medium text-tinta">{med.principio_ativo}</span>
           <span className="text-apoio text-tinta-apoio">{[med.concentracao, med.apresentacao].filter(Boolean).join(' · ')}</span>
-          <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setMed(null)}>Trocar</Button>
+          <Button size="xs" variant="outline" className="ml-auto" onClick={() => setMed(null)}>Trocar</Button>
         </div>
       ) : (
         <div className="flex flex-col gap-1">

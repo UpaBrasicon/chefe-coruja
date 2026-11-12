@@ -128,7 +128,7 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
         {d.pode_coletar && <Button size="sm" variant="outline" disabled={coletar.isPending} onClick={() => coletar.mutate()}>Coletado</Button>}
         {d.pode_realizar && !editandoLink && <Button size="sm" variant="outline" onClick={() => { setEditandoLink(true); setLink('') }}>Realizado</Button>}
         {d.tipo === 'imagem' && d.pode_registrar && d.situacao !== 'pedido' && d.situacao !== 'cancelado' && !editandoLink && (
-          <Button size="sm" variant="ghost" onClick={() => { setEditandoLink(true); setLink(d.imagem_url ?? '') }}>{d.imagem_url ? 'Trocar link da imagem' : 'Link da imagem'}</Button>
+          <Button size="sm" variant="outline" onClick={() => { setEditandoLink(true); setLink(d.imagem_url ?? '') }}>{d.imagem_url ? 'Trocar link da imagem' : 'Link da imagem'}</Button>
         )}
         {d.pode_registrar && pendente && !registrando && <Button size="sm" variant="outline" onClick={() => setRegistrando('novo')}>Registrar resultado</Button>}
         {d.pode_registrar && d.situacao === 'resultado' && !registrando && (
