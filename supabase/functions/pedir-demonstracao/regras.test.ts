@@ -51,7 +51,7 @@ test('corpo do e-mail em texto puro, com "não informado" quando falta a unidade
 
 test('JSON só com ASCII', () => {
   const j = jsonAscii({ assunto: 'Pedido de demonstração' })
-  assert.ok(/^[\x00-\x7f]*$/.test(j))
+  assert.ok([...j].every((c) => c.charCodeAt(0) < 128))
   assert.deepEqual(JSON.parse(j), { assunto: 'Pedido de demonstração' })
 })
 
