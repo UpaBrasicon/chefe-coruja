@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 
 import { track } from '@/lib/analytics'
 import { CtaButton } from '@/components/CtaButton'
+import { APP_URL } from '@/lib/site'
 
 export default function ObrigadoPage() {
   // Evento de conversão (item 3) — reforço no servidor de conversão
@@ -33,10 +34,10 @@ export default function ObrigadoPage() {
             <li>Conferir nossas perguntas frequentes.</li>
           </ul>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-            <CtaButton href="/funcionalidades" variant="outline">
+            <CtaButton href={`${APP_URL}/#registro`} variant="outline">
               Ver funcionalidades
             </CtaButton>
-            <CtaButton href="/">Voltar ao início</CtaButton>
+            <CtaButton href={APP_URL}>Voltar ao início</CtaButton>
           </div>
         </div>
       </section>

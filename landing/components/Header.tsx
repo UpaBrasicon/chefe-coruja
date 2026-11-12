@@ -5,11 +5,11 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 import { trackDemo, trackWhatsapp } from '@/lib/analytics'
-import { BUSINESS } from '@/lib/site'
+import { APP_URL, BUSINESS } from '@/lib/site'
 
 const NAV = [
-  { href: '/', label: 'Início' },
-  { href: '/funcionalidades', label: 'Funcionalidades' },
+  { href: APP_URL, label: 'Início' },
+  { href: `${APP_URL}/#registro`, label: 'Funcionalidades' },
   { href: '/precos', label: 'Preços' },
   { href: '/contato', label: 'Contato' },
 ]
@@ -21,7 +21,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="container-site flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2" aria-label="Chefe Coruja — página inicial">
+        <Link href={APP_URL} className="flex items-center gap-2" aria-label="Chefe Coruja — página inicial">
           {/* a mesma marca do app (public/favicon.svg) */}
           <span
             className="flex size-9 items-center justify-center rounded-lg bg-primary text-white"

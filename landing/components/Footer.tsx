@@ -1,9 +1,9 @@
 import Link from 'next/link'
 
-import { BUSINESS } from '@/lib/site'
+import { APP_URL, BUSINESS } from '@/lib/site'
 
 const LINKS = [
-  { href: '/funcionalidades', label: 'Funcionalidades' },
+  { href: `${APP_URL}/#registro`, label: 'Funcionalidades' },
   { href: '/precos', label: 'Preços' },
   { href: '/contato', label: 'Contato' },
   { href: '/privacidade', label: 'Privacidade' },
