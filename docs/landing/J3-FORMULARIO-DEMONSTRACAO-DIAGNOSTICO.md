@@ -46,9 +46,9 @@ Um formulário aberto a qualquer pessoa, sem login, no endereço principal da ma
 
 | # | Pergunta | Recomendação | Decisão do RT |
 |---|---|---|---|
-| F1 | Caminho do formulário | A | |
-| F2 | Gravar o pedido no banco, além do e-mail | Não. O e-mail basta e evita guardar dado pessoal de quem ainda não é cliente | |
-| F3 | Limite de envios | 3 por endereço de rede por hora | |
+| F1 | Caminho do formulário | A | A (12/11/2026) |
+| F2 | Gravar o pedido no banco, além do e-mail | Não. O e-mail basta e evita guardar dado pessoal de quem ainda não é cliente | Não gravar (12/11/2026) |
+| F3 | Limite de envios | 3 por endereço de rede por hora | 3 por hora (12/11/2026) |
 
 ## Impacto se o RT escolher A
 
