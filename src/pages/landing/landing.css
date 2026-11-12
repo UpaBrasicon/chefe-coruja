@@ -51,7 +51,7 @@
 .lp button.btn, .lp .topo-demo { font: inherit; cursor: pointer; }
 .lp button.btn { font-size: 15px; font-weight: 500; }
 .lp .topo-demo { background: none; border: 0; padding: 0; font-size: 15px; }
-.lp .demo-janela { width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--cc-fio); border-radius: 12px; background: var(--cc-superficie); color: var(--cc-tinta); overflow: auto; }
+.lp .demo-janela { margin: auto; width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--cc-fio); border-radius: 12px; background: var(--cc-superficie); color: var(--cc-tinta); overflow: auto; }
 .lp .demo-janela::backdrop { background: color-mix(in oklab, var(--cc-tinta) 45%, transparent); }
 .lp .demo-corpo { display: grid; gap: 14px; padding: 28px; }
 .lp .demo-corpo h2 { font-size: 32px; }
