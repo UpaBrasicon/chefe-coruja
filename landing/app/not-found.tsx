@@ -3,6 +3,7 @@
 import Link from 'next/link'
 
 import { trackDemo } from '@/lib/analytics'
+import { APP_URL } from '@/lib/site'
 
 /**
  * Página 404 personalizada — busca/links úteis + CTA de volta à home.
@@ -25,12 +26,12 @@ export default function NotFound() {
         <nav className="mt-8" aria-label="Páginas úteis">
           <ul className="flex flex-wrap items-center justify-center gap-3">
             <li>
-              <Link href="/" onClick={() => trackDemo('404-home')} className="btn-primary">
+              <Link href={APP_URL} onClick={() => trackDemo('404-home')} className="btn-primary">
                 Voltar ao início
               </Link>
             </li>
             <li>
-              <Link href="/funcionalidades" onClick={() => trackDemo('404-funcionalidades')} className="btn-outline">
+              <Link href={`${APP_URL}/#registro`} onClick={() => trackDemo('404-funcionalidades')} className="btn-outline">
                 Funcionalidades
               </Link>
             </li>
