@@ -953,7 +953,7 @@ Ainda não feito: ACS, vacinas e saúde bucal, que são módulos próprios e fic
     - a retirada com motivo deixou a linha riscada;
     - o relançamento com 2,5 pacotes ficou certo;
     - o histórico registrou os três eventos.
-  - **Dois achados pequenos, ainda sem correção:**
+  - **Dois achados pequenos, corrigidos em 06/11/2026 (#458):**
     - o histórico mostra a quantidade com ponto ("2.5 pacote"), enquanto a tabela mostra vírgula;
     - a quantidade começa em "1", e quem digita sem apagar o campo lança 12,5 em vez de 2,5.
 - **L5:** a importação do retorno do SIA/SIH espera um arquivo real da secretaria de saúde, porque não há layout público. Até lá, a glosa continua à mão.
