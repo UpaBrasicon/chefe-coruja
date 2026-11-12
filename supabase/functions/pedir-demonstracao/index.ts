@@ -102,7 +102,12 @@ async function tratar(req: Request): Promise<Response> {
       signal: AbortSignal.timeout(LIMITE_MS),
     })
     if (!r.ok) {
-      relatarErro(FUNCAO, 'resend_falhou', `HTTP ${r.status}`)
+      // só o nome e o texto do erro da Resend (ex.: domínio não verificado),
+      // nunca o corpo do pedido
+      const falha = (await r.json().catch(() => null)) as { name?: string; message?: string } | null
+      const motivo = `HTTP ${r.status} ${falha?.name ?? ''} ${falha?.message ?? ''}`.trim().slice(0, 300)
+      console.error('[pedir-demonstracao] resend recusou:', motivo)
+      relatarErro(FUNCAO, 'resend_falhou', motivo)
       return resposta(502, { erro: 'não foi possível enviar agora' })
     }
   } catch (e) {
