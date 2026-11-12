@@ -56,7 +56,7 @@ export function FAQ() {
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-slate-900">
                 {f.pergunta}
-                <span className="text-primary transition-transform group-open:rotate-45" aria-hidden="true">
+                <span className="text-primary transition-transform group-open:rotate-45 motion-reduce:transition-none" aria-hidden="true">
                   +
                 </span>
               </summary>

@@ -25,7 +25,7 @@ export default function ObrigadoPage() {
           Obrigado pelo contato. Nossa equipe vai analisar sua solicitação e responder.
         </p>
         <div className="mt-8 flex flex-col items-center gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-sm font-semibold text-slate-600">
             Enquanto isso, você pode:
           </h2>
           <ul className="flex flex-col gap-2 text-sm text-slate-600">

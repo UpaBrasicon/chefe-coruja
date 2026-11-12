@@ -5,9 +5,23 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
   body {
     @apply bg-white text-slate-800 antialiased;
+    overflow-x: clip;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  /* Título longo quebra a palavra em vez de estourar a tela (celular) */
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: break-word;
+    min-width: 0;
   }
   /* Acessibilidade: foco visível */
   :focus-visible {
@@ -21,6 +35,14 @@
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition-colors;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn:active {
+      transform: none;
+    }
   }
   .btn-primary {
     @apply btn bg-primary text-white hover:bg-primary-dark;
