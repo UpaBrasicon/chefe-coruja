@@ -15,7 +15,7 @@
 //
 // Secrets (Edge Functions → Secrets): TURNSTILE_SECRET, RESEND_API_KEY,
 // APP_ORIGIN (CORS). Opcionais: DEMONSTRACAO_DESTINO (padrão
-// contato@chefecoruja.com.br) e EMAIL_FROM.
+// contato@chefecoruja.com.br) e DEMONSTRACAO_REMETENTE.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 import { chaveSecreta } from '../_shared/chaves.ts'
@@ -25,7 +25,12 @@ import { corpoEmail, enderecoDaRede, jsonAscii, lerPedido, resumoDoEndereco } fr
 
 const FUNCAO = 'pedir-demonstracao'
 const DESTINO = Deno.env.get('DEMONSTRACAO_DESTINO') ?? 'contato@chefecoruja.com.br'
-const REMETENTE = Deno.env.get('EMAIL_FROM') ?? 'Chefe Coruja <nao-responda@chefecoruja.com.br>'
+// Remetente próprio, o mesmo do formulário da landing/ (testado em 09/11/2026).
+// Não usa EMAIL_FROM: na homologação esse segredo estava vazio ou fora do
+// formato, e a Resend recusava o envio com 422 (12/11/2026).
+const REMETENTE_PADRAO = 'Site Chefe Coruja <nao-responda@chefecoruja.com.br>'
+const remetenteConfigurado = Deno.env.get('DEMONSTRACAO_REMETENTE')?.trim() ?? ''
+const REMETENTE = /^([^<>]+<)?[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>?$/.test(remetenteConfigurado) ? remetenteConfigurado : REMETENTE_PADRAO
 const LIMITE_MS = 10_000
 
 const cabecalhos = {
