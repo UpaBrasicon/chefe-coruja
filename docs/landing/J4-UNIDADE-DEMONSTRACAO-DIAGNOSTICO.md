@@ -80,10 +80,10 @@ Com as telas novas, a página de entrada do app ganha a seção "Um plantão". �
 
 | # | Pergunta | Opções | Recomendação | Decisão do RT |
 |---|---|---|---|---|
-| G1 | Nome da unidade | a) nome fictício realista, conferido numa busca, por exemplo "UPA 24h Jardim Primavera"; b) o RT escolhe o nome | a | |
-| G2 | Conta para capturar | a) a conta do próprio RT recebe gestor e médico na unidade de demonstração, sem conta nova nem senha nova; b) uma conta nova de demonstração, com senha de teste, que precisa do ok do RT para o hash | a | |
-| G3 | Quais telas | a) as três da demo local: porta, painel do gestor e escala; b) as três e mais o leito, com prescrição e evolução | a, e o leito depois | |
-| G4 | A unidade fica na homologação | a) fica, com o roteiro de renovação, e serve para demonstração ao vivo; b) apagada depois das capturas | a | |
+| G1 | Nome da unidade | a) nome fictício realista, conferido numa busca, por exemplo "UPA 24h Jardim Primavera"; b) o RT escolhe o nome | a | a: "UPA 24h Jardim Primavera", organização "Rede de Demonstração" (12/11/2026) |
+| G2 | Conta para capturar | a) a conta do próprio RT recebe gestor e médico na unidade de demonstração, sem conta nova nem senha nova; b) uma conta nova de demonstração, com senha de teste, que precisa do ok do RT para o hash | a | a: a conta do próprio RT, sem conta nova nem senha (12/11/2026) |
+| G3 | Quais telas | a) as três da demo local: porta, painel do gestor e escala; b) as três e mais o leito, com prescrição e evolução | a, e o leito depois | a: porta, painel do gestor e escala (12/11/2026) |
+| G4 | A unidade fica na homologação | a) fica, com o roteiro de renovação, e serve para demonstração ao vivo; b) apagada depois das capturas | a | a: fica, com o roteiro de renovação (12/11/2026) |
 
 ## Ordem
 
