@@ -11,7 +11,7 @@
   --lp-dentro-fio: color-mix(in oklab, var(--cc-acao) 40%, var(--cc-superficie));
   --lp-listra: var(--cc-trilha);
   background: var(--cc-campo); color: var(--cc-tinta);
-  font-size: 16px; line-height: 1.55; overflow-x: hidden; min-height: 100vh;
+  font-size: 16px; line-height: 1.55; overflow-x: clip; min-height: 100vh;
   font-variant-numeric: tabular-nums;
 }
 /* No escuro o título fica na tinta: o petróleo misturado vira ciano demais. */
@@ -43,6 +43,8 @@
 .lp .btn-primario:hover { background: var(--cc-acao-pressionada); color: var(--cc-sobre-acao); }
 .lp .btn-secundario { background: var(--cc-superficie); color: var(--cc-tinta); border-color: var(--cc-fio-forte); }
 .lp .btn-secundario:hover { border-color: var(--cc-acao); color: var(--cc-acao); }
+.lp .btn:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) { .lp .btn:active { transform: none; } }
 .lp .acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
 
 /* folha: as colunas de 2 h da escala sobem por trás do herói, alinhadas à régua */
