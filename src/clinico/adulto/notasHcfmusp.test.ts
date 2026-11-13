@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, textoNota } from './notasHcfmusp.ts'
-import { GINA_ITENS } from './asmaDpoc.ts'
+import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
 import { DIFERENCAS_BRADI_2025 } from './pcr.ts'
@@ -43,13 +43,13 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
   assert.equal(avc.itens.length, DIRETRIZ_AVC_2026.length)
 })
 
-test('lote 2: sete notas (cap. 15, 17, 19, 20, 21, 30 e 67), itens das listas das fichas, só adulto', () => {
-  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 7)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 7)
+test('lote 2: oito notas (cap. 15, 17, 19, 20, 21, 30, 31 e 67), itens das listas das fichas, só adulto', () => {
+  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 8)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 8)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
-  for (const c of [15, 17, 19, 20, 21, 30, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
+  for (const c of [15, 17, 19, 20, 21, 30, 31, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
   const porId = (id: string) => NOTAS_HCFMUSP_LOTE2.find((n) => n.ficha.id === id)!
   assert.equal(porId('nota-hcfmusp-cap15-bradiarritmias').itens.length, DIFERENCAS_BRADI_2025.length)
   assert.equal(porId('nota-hcfmusp-cap17-fa').itens.length, DIFERENCAS_FA_2024.length + DOSES_FA_2024.length)
@@ -57,6 +57,7 @@ test('lote 2: sete notas (cap. 15, 17, 19, 20, 21, 30 e 67), itens das listas da
   assert.equal(porId('nota-hcfmusp-cap30-asma').itens.length, GINA_ITENS.length)
   assert.equal(porId('nota-hcfmusp-cap21-ic-aguda').itens.length, DIRETRIZ_ICA_2026.length)
   assert.equal(porId('nota-hcfmusp-cap20-sindrome-aortica').itens.length, DIRETRIZ_AORTA_2024.length)
+  assert.equal(porId('nota-hcfmusp-cap31-dpoc').itens.length, DIRETRIZ_DPOC_GOLD_2026.length)
   const hiperK = porId('nota-hcfmusp-cap67-hiperpotassemia')
   assert.equal(hiperK.itens.length, DIVERGENCIA_MANUAL_HC.diferencas.length)
   for (const n of NOTAS_HCFMUSP_LOTE2) {
@@ -77,4 +78,17 @@ test('o texto da nota diz que o manual é de 2022 e que vale a diretriz mais rec
   assert.match(t, /Diretriz atual: /)
   assert.match(t, /Manual de 2022: /)
   assert.doesNotMatch(t, /\.\./)
+})
+
+test('DPOC: GOLD 2026 ao lado do manual; doses e conta da gasometria seguem o manual', async () => {
+  const m = await import('./asmaDpoc.ts')
+  assert.equal(m.fichaDpocAdulto.versao, '2026-11-13.1')
+  assert.ok(m.fichaDpocAdulto.fontes.includes(m.GOLD_2026))
+  assert.ok(m.fichaDpocAdulto.fontes.some((f) => /Manual de Medicina de Emergência/.test(f.citacao)))
+  for (const d of m.DIRETRIZ_DPOC_GOLD_2026) assert.match(d.onde, /^p\. \d+/, d.tema)
+  const vni = m.DIRETRIZ_DPOC_GOLD_2026.find((d) => d.tema === 'Indicação de VNI')!
+  assert.match(vni.gold, /PaCO2 ≥ 45 mmHg e pH ≤ 7,35/)
+  // a conta continua a do livro: PaCO2 50 com pH 7,30 não indica VNI pela Tabela 6
+  assert.deepEqual(m.lerGasometriaDpoc({ paco2: 50, ph: 7.3 }).vni, [])
+  assert.ok(m.DROGAS_DPOC.some((d) => d.id === 'prednisona' && /40 mg VO por 5 dias/.test(d.texto)))
 })
