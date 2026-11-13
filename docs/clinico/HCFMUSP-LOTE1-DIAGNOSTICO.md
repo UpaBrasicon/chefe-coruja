@@ -64,7 +64,9 @@ Sem regra, a resposta pode citar o dado antigo do livro.
 | L2 | CoSTR 2026 do ILCOR (PCR) e corrigenda do ERC/ESICM 2025 (pós-PCR) | **A.** Ler os dois agora, antes das notas, e, se mudarem conduta, atualizar as fichas, com versão nova e sua aprovação. **B.** Deixar para depois do lote 1 | **A.** É a fonte mais nova do tema de maior risco |
 | L3 | Aprovação | **A.** Uma aprovação por nota, na Revisão Clínica, como as fichas. **B.** Uma aprovação para o lote inteiro | **A.** É o mesmo caminho das fichas, e cada nota cita a sua fonte |
 
-## Se o RT escolher as recomendações, a ordem é
+**Decisão do RT em 13/11/2026:** L1 a L3 = A, as recomendações ("Aceito L1–L3").
+
+## Ordem de execução
 
 1. **L2:** ler o CoSTR 2026 e a corrigenda; se mudarem conduta, atualizar as fichas de PCR e pós-PCR, pela homologação e com o seu ok.
 2. **L1:** escrever as 12 notas do lote 1 (8 temas) a partir das fichas, cada uma com a diretriz e a página, e acrescentar a regra de resposta na biblioteca.
