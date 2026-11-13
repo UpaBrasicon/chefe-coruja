@@ -59,7 +59,9 @@ Os dois livros são obras comerciais da Manole, sem licença de uso (`licenca: "
 | E6 | Operação | **A.** O relatório semanal fica no Hermes, como está, e o BACKLOG registra isso. A busca clínica passa a guardar modelo e tokens em `clinical_search_logs` (migration expand), e o painel do admin mostra o custo do mês. **B.** Mover o relatório para o pg_cron | **A.** O relatório já roda; o que falta é saber o custo |
 | E7 | Livros sem licença, antes de vender a outra rede | **A.** Os trechos dos livros ficam só para a rede atual (`tenant_id` da rede em vez de `global`) até haver licença. **B.** Pedir licença à Manole. **C.** Manter como está | Decisão do RT. O código de A é pequeno: muda o `tenant_id` no `fontes.yaml` e reingere |
 
-## Ordem sugerida, se o RT escolher as recomendações
+**Decisão do RT em 12/11/2026:** E1 a E6 = A, as recomendações ("Aceito E1–E6"). A E7 fica em aberto, com o RT.
+
+## Ordem de implementação
 
 1. **E2**, segurança. Mudança na biblioteca (VPS) e na Edge `clinical-search`, com teste. Sem migration, exceto se a contagem for para uma tabela nova.
 2. **E3**, só conferência e documento.
