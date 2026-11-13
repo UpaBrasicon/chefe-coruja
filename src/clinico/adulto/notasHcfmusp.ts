@@ -13,6 +13,7 @@ import { DIRETRIZ_AVC_2026, fichaTromboliseAvcAdulto } from './avcTrombolise.ts'
 import { GINA_ITENS, fichaAsmaAdulto } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, fichaEmergenciaHipertensivaAdulto } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024, fichaFibrilacaoAtrialAdulto } from './fibrilacaoAtrial.ts'
+import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
 import { CARVAO_CTRC_2026, CARVAO_INDICACAO, fichaIntoxicacoesAdulto } from './intoxicacoes.ts'
@@ -61,6 +62,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap19-emergencia-hipertensiva': 'emergência hipertensiva e elevação da pressão arterial no adulto',
   'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
   'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
+  'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) no adulto',
 }
 
 const sem = (s?: string) => (s && s.trim() && s.trim() !== '—' ? s : 'não trata do ponto')
@@ -164,7 +166,11 @@ export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 
   }),
   semManual(fichaHiperpotassemia.fontes).filter((f) => !f.pediatrica))
 
-export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap30, notaHcfmuspCap67]
+/** cap. 21 (M2): ESC 2026, recomendações da IC descompensada pelos slides oficiais da ESC; a ficha foi atualizada antes. */
+export const notaHcfmuspCap21 = notaLote2('nota-hcfmusp-cap21-ic-aguda', 'Nota de atualização — manual HC, cap. 21: insuficiência cardíaca aguda', 'cap. 21, p. 286–303', fichaIcAgudaAdulto,
+  DIRETRIZ_ICA_2026.map((d) => ({ tema: d.tema, diretriz: `ESC 2026 (${d.classe}; ${d.slide}): ${d.esc2026}`, manual: sem(d.livro) })))
+
+export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap67]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -181,6 +187,7 @@ export const fichaNotaHcfmuspCap17 = notaHcfmuspCap17.ficha
 export const fichaNotaHcfmuspCap19 = notaHcfmuspCap19.ficha
 export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha
 export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
+export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */
 export function textoNota(n: NotaHcfmusp, rotaCentral?: string): string {
