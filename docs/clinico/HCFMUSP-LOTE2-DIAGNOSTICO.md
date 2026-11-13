@@ -140,17 +140,17 @@ A primeira rodada não achou a nota com "edema agudo de pulmão". O assunto da n
 
 ## M2, demais capítulos: situação em 13/11/2026
 
-Pela decisão M2, quando o texto da diretriz está fechado, a ficha fica como está e o RT é avisado. Nenhuma ficha abaixo mudou.
+Pela decisão M2, quando o texto da diretriz está fechado, a ficha fica como está e o RT é avisado. Mais tarde no mesmo dia, o RT autorizou baixar os PDFs. Com isso, a aorta e a DPOC andaram, cada uma em PR próprio.
 
-| Cap. | Diretriz | O que impede a leitura |
+| Cap. | Diretriz | Situação |
 |---|---|---|
-| 32, TEP | AHA/ACC 2026 (PMID 41712677) | Texto fechado: Circulation e JACC respondem 403 com verificação anti-robô, e o texto não está no PMC. O resumo no PubMed não traz recomendações |
-| 20, taquiarritmias | AHA 2025, parte de arritmias | O site da AHA (cpr.heart.org) responde 403 |
-| 3, via aérea | DAS 2025 | É de acesso aberto, mas o site do BJA responde 403 à leitura automática |
-| 18, aorta | ESC 2024 | O texto integral para na seção 4. O slideset oficial passa de 10 MB, e baixar o arquivo pede o ok do RT |
-| 31, DPOC | GOLD 2026 | O resumo das mudanças (lido) diz que o capítulo 4, de exacerbação, foi todo reescrito. O relatório e o guia de bolso passam de 10 MB, e baixar pede o ok do RT |
-| 67, hipopotassemia | nenhuma | No PubMed não há diretriz de sociedade para a hipopotassemia aguda no adulto. Há só revisões, e escolher uma delas como fonte é decisão do RT |
+| 32, TEP | AHA/ACC 2026 (PMID 41712677) | **Parado.** O texto é pago, não está no PMC, e o download pelo site da editora foi negado pela regra de permissão. O resumo no PubMed não traz recomendações |
+| 18, taquiarritmias | AHA 2025, parte de arritmias | **Parado.** O site da AHA responde 403 e o texto não está no PMC |
+| 20, aorta | ESC 2024 (PMID 39210722) | **Feito no #656.** Lido pelo slideset oficial da ESC, baixado com o ok do RT. Detalhes em `HCFMUSP-LOTE2-M2-AORTA.md` |
+| 3, via aérea | DAS 2025 (PMID 41203471) | **Parado.** É de acesso aberto, mas o download do PDF no site do BJA foi negado pela regra de permissão, e o texto não está no PMC |
+| 31, DPOC | GOLD 2026 | **Feito no #657.** Capítulo 4 lido no PDF do relatório, baixado com o ok do RT. Detalhes em `HCFMUSP-LOTE2-M2-DPOC.md` |
+| 67, hipopotassemia | nenhuma | **Espera decisão do RT.** No PubMed não há diretriz de sociedade para a hipopotassemia aguda no adulto, só revisões, e escolher uma delas como fonte é decisão do RT |
 
-Não houve tentativa de passar por verificação anti-robô. Há dois caminhos para destravar: o RT conecta o Chrome, para a leitura com o login dele, ou autoriza baixar os PDFs da ESC e da GOLD.
+Não houve tentativa de passar por verificação anti-robô. Para TEP, taquiarritmias e via aérea, o caminho que sobra é ler com o login do RT, pelo Chrome conectado.
 
 **Achado no cap. 32:** a ficha `wells-tep` citava a AHA/ACC 2026 com o DOI errado (`…0001300`; o certo é `…0001415`). Ela também dizia que a diretriz não tem preferência entre Wells, Genebra e PERC, frase que não pôde ser conferida. A correção vai em PR próprio (#655).
