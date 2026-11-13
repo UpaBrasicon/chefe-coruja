@@ -62,7 +62,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap19-emergencia-hipertensiva': 'emergência hipertensiva e elevação da pressão arterial no adulto',
   'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
   'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
-  'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) no adulto',
+  'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
 }
 
 const sem = (s?: string) => (s && s.trim() && s.trim() !== '—' ? s : 'não trata do ponto')

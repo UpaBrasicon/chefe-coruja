@@ -122,3 +122,18 @@ Ficam iguais: oxigênio só com SpO2 < 90% (I, C), opioide de rotina não (III, 
 **Nota `nota-hcfmusp-cap21-ic-aguda`:** 12 itens tirados de `DIRETRIZ_ICA_2026`. A ficha e a nota vão na migration `20270413000007` e aguardam a aprovação do RT.
 
 **Não entra:** profilaxia de TEV (não aparece nas tabelas da seção 7 dos slides) e suporte circulatório mecânico (fora da emergência da UPA).
+
+**Antes e depois (13/11/2026).** Perguntas direto à API da biblioteca. A coluna "antes" é a produção, ainda com a ficha da ESC 2021 e sem a nota do cap. 21. A coluna "depois" é a homologação, com a ficha nova e a nota:
+
+| Pergunta | Produção, antes | Homologação, depois |
+|---|---|---|
+| morfina no edema agudo de pulmão | "os trechos não trazem a conduta" | opioide de rotina não recomendado (ESC 2026, III, C), com a "morfina se dispneia" do manual como diferença |
+| alvo de saturação na IC aguda | O2 só com SpO2 < 90% (ferramenta), manual > 95% | igual, citando a ESC 2026 (I, C) |
+| acetazolamida na IC descompensada | só o ensaio ADVOR | ESC 2026, IIa: acetazolamida IV ou hidroclorotiazida VO em quem já usava diurético de alça |
+| dapagliflozina na internação | "sim", pela metanálise de 2026 | "sim", pela recomendação nova da ESC 2026 (I) |
+| dobutamina na IC aguda | só com hipoperfusão (ESC 2021) | PAS < 90 com hipoperfusão sem resposta, inclusive prova volêmica (ESC 2026, IIb) |
+| dose de furosemida | 0,5–1 mg/kg (manual) e 20–40 mg (ESC 2021) | igual; os slides da ESC 2026 não trazem dose |
+
+A primeira rodada não achou a nota com "edema agudo de pulmão". O assunto da nota passou a incluir "edema agudo de pulmão (EAP)" e a busca achou.
+
+**Achado:** durante a ingestão na homologação, uma pergunta à produção deu erro 500 ("Server disconnected" do Qdrant), e a repetição funcionou. As duas coleções usam o mesmo Qdrant, então ingestão pesada na homologação pode afetar a produção.
