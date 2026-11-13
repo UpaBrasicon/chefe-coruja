@@ -72,13 +72,34 @@ export const NOTA_PCR_TROCA_VETOR =
 export const NOTA_PCR_BICARBONATO =
   'Ensaio dinamarquês (JAMA 2026; 779 PCR intra-hospitalares, duplo-cego): bicarbonato × placebo sem diferença no RCE sustentado (39% × 37%), com mais alcalose e hipernatremia. Reforça o livro: bicarbonato só nas indicações específicas.'
 
+// Lote 1 da revisão do HCFMUSP, L2 (decisão do RT de 13/11/2026): o CoSTR 2026 do
+// ILCOR saiu depois da AHA 2025. Lido no texto da pré-publicação aberta do ILCOR
+// (maio de 2026; o texto final na Resuscitation está fechado). Só o adulto.
+export const ILCOR_COSTR_2026: Fonte = {
+  citacao: 'Bray JE, Djarv T, Drennan IR, et al. 2026 International Liaison Committee on Resuscitation Consensus on Science With Treatment Recommendations: Summary from the Basic Life Support; Advanced Life Support; Pediatric Life Support; Neonatal Life Support; Education, Implementation, and Teams; and First Aid Task Forces. Resuscitation. 2026:111328 (PMID 42988037). Lido na pré-publicação aberta do ILCOR (maio de 2026): ALS 3203, 3212, 3207/3518, 3305; BLS 2401, 2404, 2501, 2605.',
+  url: 'https://doi.org/10.1016/j.resuscitation.2026.111328',
+}
+
+/** Recomendações do CoSTR 2026 (ILCOR) para o adulto, com a força e a certeza da evidência. */
+export type ItemCostr2026 = { tema: string; recomendacao: string; forca: string; codigo: string; muda: string }
+
+export const COSTR_2026_PCR: ItemCostr2026[] = [
+  { tema: 'Trombolítico de rotina', recomendacao: 'Não fazer trombolítico de rotina durante a RCP. A recomendação própria para a PCR por TEP suspeito continua a mesma.', forca: 'forte, certeza moderada', codigo: 'ALS 3203', muda: 'confirma a de 2010 com revisão nova; aumento de hemorragia intracraniana em 1 ECR' },
+  { tema: 'Volume durante a RCP', recomendacao: 'Não fazer volume de rotina durante a RCP na PCR não traumática sem causa definida; se havia hipovolemia antes da parada, volume pode ser razoável. Não usar amido (hidroxietilamido) durante a RCP nem depois do RCE.', forca: 'fraca, certeza muito baixa (volume); forte, certeza muito baixa (amido); boa prática (hipovolemia)', codigo: 'ALS 3207 e 3518', muda: 'nova: antes "evidência insuficiente" (2010)' },
+  { tema: 'Adrenalina intramuscular', recomendacao: 'Evidência insuficiente para acrescentar adrenalina IM ao suporte avançado; não vale onde não há acesso IV ou IO.', forca: 'fraca, certeza muito baixa', codigo: 'ALS 3212', muda: 'nova' },
+  { tema: 'Carregar o desfibrilador', recomendacao: 'Carregar o desfibrilador manual durante as compressões, antes ou depois da análise do ritmo, com equipe treinada.', forca: 'fraca, certeza muito baixa', codigo: 'BLS 2605 e ALS 3105', muda: 'nova' },
+  { tema: 'Ventilação', recomendacao: '2 ventilações a cada 30 compressões, ou 10 por minuto (1 a cada 6 s) com compressão contínua, com ou sem via aérea avançada; volume que faça o tórax subir, sem hiper nem hipoventilar; bolsa de adulto padrão (1.500–1.600 mL).', forca: 'fraca, certeza muito baixa; boa prática (volume)', codigo: 'BLS 2401 e 2404', muda: 'nova revisão' },
+  { tema: 'Oxigênio durante a RCP', recomendacao: 'A maior concentração de oxigênio possível.', forca: 'fraca, certeza muito baixa', codigo: 'ALS 3305', muda: 'igual à de 2020' },
+  { tema: 'Compressões', recomendacao: '100–120 por minuto, cerca de 5 cm sem passar de 6 cm, sem apoiar no tórax entre as compressões.', forca: 'forte (frequência e profundidade); fraca (retorno do tórax)', codigo: 'BLS 2501', muda: 'igual à de 2015' },
+]
+
 const PAG_PCR = 'cap. 2 PCR no adulto, p. 48–51 (Tabela 2)'
 
 export const fichaPcrAdulto: Ficha = {
   ...fichaAdulto('adulto-pcr', 'Drogas e desfibrilação na PCR — adulto', PAG_PCR),
-  versao: '2026-11-06.1',
-  fontes: [pagina(PAG_PCR), AHA_ALS_2025, IVIO_2025, PARAMEDIC3_2025, DOSE_VF_2022, BICARBONATO_PCR_IH_2026],
-  revisadoEm: '06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
+  versao: '2026-11-13.1',
+  fontes: [pagina(PAG_PCR), AHA_ALS_2025, IVIO_2025, PARAMEDIC3_2025, DOSE_VF_2022, BICARBONATO_PCR_IH_2026, ILCOR_COSTR_2026],
+  revisadoEm: '13/11/2026 (CoSTR 2026 do ILCOR: trombolítico e volume de rotina, adrenalina IM, carga do desfibrilador, ventilação; lote 1 da revisão do HCFMUSP, sem mudança de dose); 06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
 }
 
 export const CHOQUE_PCR = { monofasicoJ: 360, bifasicoJ: 200, pagina: 'p. 48' }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import {
-  AHA_2025_PCR, AHA_ALS_2025, DIRETRIZ_ALS_2025, lidocainaSegundaDoseMg,
+  AHA_2025_PCR, AHA_ALS_2025, COSTR_2026_PCR, DIRETRIZ_ALS_2025, ILCOR_COSTR_2026, lidocainaSegundaDoseMg,
   ADRENALINA_BRADI, BCC_EV, CHOQUE_PCR, DROGAS_PCR, KCL_ATAQUE_MEQ, LIDOCAINA_TV, MAGNESIO_TORSADES,
   adenosina, adrenalinaBradiMlH, adrenalinaUnidadeImpressaUgMin, calcularPcr, dopaminaUgMin, esquemaAmiodarona, esquemaAtropina,
   fichaBradicardiaAdulto, fichaPcrAdulto, fichaTaquiarritmiaAdulto, lidocainaTv,
@@ -114,4 +114,17 @@ test('PCR adulto: comparação com a AHA 2025 cita a seção em cada tema', () =
   assert.ok(DIRETRIZ_ALS_2025.length >= 6)
   for (const d of DIRETRIZ_ALS_2025) assert.match(d.onde, /seç(ão|ões) \d+/)
   assert.match(DIRETRIZ_ALS_2025.find((d) => /dupla desfibrilação/.test(d.tema))!.aha, /não está estabelecida/)
+})
+
+test('CoSTR 2026 do ILCOR (lote 1, L2): fonte na ficha, sem dose nova, cada item com força e código', () => {
+  assert.ok(fichaPcrAdulto.fontes.includes(ILCOR_COSTR_2026))
+  assert.match(ILCOR_COSTR_2026.citacao, /PMID 42988037/)
+  assert.ok(fichaPcrAdulto.versao >= '2026-11-13.1')
+  for (const c of COSTR_2026_PCR) {
+    assert.match(c.codigo, /(ALS|BLS) \d{4}/, c.tema)
+    assert.match(c.forca, /forte|fraca|boa prática/, c.tema)
+    assert.doesNotMatch(c.recomendacao, /\d+ ?mg\b/, c.tema) // nenhuma dose
+  }
+  assert.match(COSTR_2026_PCR.find((c) => c.tema === 'Trombolítico de rotina')!.recomendacao, /Não fazer/)
+  assert.match(COSTR_2026_PCR.find((c) => c.tema === 'Volume durante a RCP')!.recomendacao, /amido/)
 })
