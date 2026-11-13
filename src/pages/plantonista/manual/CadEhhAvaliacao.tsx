@@ -35,7 +35,12 @@ function Errata({ children }: { children: string }) {
   )
 }
 
-/** CAD e EHH: critérios, gravidade e fórmulas — cap. 64 do manual do HCFMUSP. */
+/**
+ * CAD e EHH no adulto: critérios, gravidade e resolução pelo consenso ADA/EASD 2024
+ * (Umpierrez et al., Diabetes Care 2024;47:1257–1275). Decisão do RT de 13/11/2026:
+ * o consenso manda, para ninguém pegar o critério antigo por engano; o que o manual
+ * do HCFMUSP (2022, cap. 64) trazia fica num bloco fechado, só para consulta.
+ */
 export function CadEhhAvaliacao() {
   const [glic, setGlic] = useState(0)
   const [na, setNa] = useState(0)
@@ -69,7 +74,7 @@ export function CadEhhAvaliacao() {
   return (
     <ToolLayout
       title="Cetoacidose e estado hiperosmolar — critérios e fórmulas"
-      description="Sódio corrigido, osmolaridade efetiva, ânion-gap, critérios de CAD/EHH, gravidade e critérios de resolução: manual do HCFMUSP e consenso ADA/EASD 2024, lado a lado. Adulto (14 anos ou mais)."
+      description="Critérios de CAD e EHH, gravidade e resolução pelo consenso ADA/EASD/JBDS 2024. Adulto (14 anos ou mais). O que o manual do HC (2022) trazia fica no fim, fechado, só para consulta."
       ficha={fichaCadEhhAvaliacao}
     >
       <Card>
@@ -78,24 +83,24 @@ export function CadEhhAvaliacao() {
           <NumberField id="cad-na" label="Sódio medido" unit="mEq/L" value={na} onChange={setNa} />
           <NumberField id="cad-cl" label="Cloro" unit="mEq/L" value={cl} onChange={setCl} />
           <NumberField id="cad-hco3" label="Bicarbonato" unit="mEq/L" value={hco3} onChange={setHco3} step={0.1} />
-          <NumberField id="cad-ph" label="pH arterial" value={ph} onChange={setPh} step={0.01} />
+          <NumberField id="cad-ph" label="pH (venoso ou arterial)" value={ph} onChange={setPh} step={0.01} />
           <div className="flex flex-col gap-1.5">
-            <Label>Cetonemia (ou cetonúria fortemente positiva)</Label>
+            <Label>Cetonúria 2+ ou mais (se não tiver o β-hidroxibutirato)</Label>
             <div className="flex flex-wrap gap-2">
               {([[true, 'Positiva'], [false, 'Negativa'], [null, 'Não informada']] as const).map(([v, t]) => (
                 <Button key={t} type="button" size="sm" variant={cetose === v ? 'default' : 'outline'} onClick={() => setCetose(v)}>{t}</Button>
               ))}
             </div>
           </div>
-          <NumberField id="cad-bhb" label="β-hidroxibutirato (consenso 2024)" unit="mmol/L" value={bhb} onChange={setBhb} step={0.1} />
-          <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={dmPrevio} onChange={(e) => setDmPrevio(e.target.checked)} /> Diabetes prévio (consenso 2024)</label>
+          <NumberField id="cad-bhb" label="β-hidroxibutirato (preferido)" unit="mmol/L" value={bhb} onChange={setBhb} step={0.1} />
+          <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={dmPrevio} onChange={(e) => setDmPrevio(e.target.checked)} /> Diabetes prévio</label>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-corpo">Consenso ADA/EASD 2024 — critérios, gravidade e resolução</CardTitle>
-          <CardDescription>Umpierrez et al., Diabetes Care 2024;47:1257–1275 (Fig. 2, p. 1262; Tabela 2, p. 1263; Fig. 4, p. 1264). Mudanças em relação ao manual: glicose ≥ 200 OU diabetes prévio; BHB ≥ 3,0; pH &lt; 7,3 e/ou HCO₃ &lt; 18; o ânion-gap sai; EHH com osmolalidade efetiva &gt; 300 pelo sódio MEDIDO e sem exigir alteração do sensório.</CardDescription>
+          <CardTitle className="text-corpo">Critérios, gravidade e resolução — consenso ADA/EASD 2024</CardTitle>
+          <CardDescription>Umpierrez et al., Diabetes Care 2024;47:1257–1275 (Fig. 2, p. 1262; Tabela 2, p. 1263; Fig. 4, p. 1264). CAD: glicose ≥ 200 OU diabetes prévio; BHB ≥ 3,0; pH &lt; 7,3 e/ou HCO₃ &lt; 18; o ânion-gap não entra. EHH: osmolalidade efetiva &gt; 300 pelo sódio MEDIDO, sem exigir alteração do sensório.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-apoio">
           <div className="grid gap-2 sm:grid-cols-2">
@@ -141,18 +146,17 @@ export function CadEhhAvaliacao() {
             Resolução do EHH (Fig. 4): osmolalidade &lt; 300, diurese &gt; 0,5 mL/kg/h e glicose &lt; 250 —{' '}
             {resEhh2024 ? <strong>{resEhh2024.resolvido ? 'atinge' : 'não atinge'}</strong> : <span className="text-tinta-sussurro">informe sódio, glicemia e diurese</span>}
           </p>
-          <details className="text-tinta-sussurro">
-            <summary className="cursor-pointer text-tinta">Manual do HC × consenso 2024 — todas as diferenças</summary>
-            <ul className="mt-2 flex flex-col gap-1">
-              {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
-            </ul>
-          </details>
         </CardContent>
       </Card>
 
+      <details className="rounded-container border border-fio bg-superficie px-4 py-3 text-apoio">
+        <summary className="cursor-pointer font-medium text-tinta">O que o manual do HC (2022) trazia — só para consulta, não é a conduta desta tela</summary>
+        <div className="mt-3 flex flex-col gap-4">
+      <p className="text-tinta-sussurro">Manual de Medicina de Emergência do HCFMUSP, 3ª ed., 2022, cap. 64. Onde ele difere do consenso 2024, vale o consenso (lista no fim).</p>
+
       <Card>
         <CardHeader>
-          <CardTitle className="text-corpo">Fórmulas</CardTitle>
+          <CardTitle className="text-corpo">Fórmulas do manual</CardTitle>
           <CardDescription>Sódio corrigido e osmolaridade efetiva (p. 869; regra de 1,6 mEq/L nas p. 883/886/896); ânion-gap = Na − (HCO3 + Cl) (cap. 69, p. 935).</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-apoio">
@@ -168,7 +172,7 @@ export function CadEhhAvaliacao() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-corpo">Critérios diagnósticos (p. 864)</CardTitle>
+          <CardTitle className="text-corpo">Critérios diagnósticos do manual (p. 864)</CardTitle>
           <CardDescription>O manual traz: CAD = glicemia &gt; 250, pH &lt; 7,3 e cetonemia; EHH = glicemia &gt; 600, osmolaridade &gt; 320 e pH &gt; 7,3. Podem coexistir (CAD com hiperosmolaridade).</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-apoio sm:grid-cols-2">
@@ -199,7 +203,7 @@ export function CadEhhAvaliacao() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-corpo">Gravidade da CAD — Tabela 1 (p. 864–865)</CardTitle>
+          <CardTitle className="text-corpo">Gravidade da CAD no manual — Tabela 1 (p. 864–865)</CardTitle>
           <CardDescription>Cada parâmetro é mostrado separado; o manual não diz como combinar quando discordam. Leve: pH 7,25–7,30, HCO3 15–18; moderada: pH 7,00–7,24, HCO3 10–14,9; grave: pH &lt; 7,00, HCO3 &lt; 10.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-2 text-apoio sm:grid-cols-2">
@@ -210,7 +214,7 @@ export function CadEhhAvaliacao() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-corpo">Critérios para desligar a bomba (p. 871–873)</CardTitle>
+          <CardTitle className="text-corpo">Critérios do manual para desligar a bomba (p. 871–873)</CardTitle>
           <CardDescription>O manual traz: pelo menos 2 de 3 — pH &gt; 7,3; ânion-gap ≤ 12; bicarbonato ≥ 15. Desligar ≥ 1 h após a primeira insulina regular SC (p. 874).</CardDescription>
         </CardHeader>
         <CardContent className="text-apoio">
@@ -222,6 +226,20 @@ export function CadEhhAvaliacao() {
           ) : <p className="text-tinta-sussurro">Informe pH, sódio, cloro e bicarbonato.</p>}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-corpo">Manual do HC × consenso 2024 — todas as diferenças</CardTitle>
+          <CardDescription>Onde diferem, esta tela segue o consenso.</CardDescription>
+        </CardHeader>
+        <CardContent className="text-apoio">
+          <ul className="flex flex-col gap-1">
+            {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
+          </ul>
+        </CardContent>
+      </Card>
+        </div>
+      </details>
     </ToolLayout>
   )
 }
