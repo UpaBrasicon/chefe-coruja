@@ -137,3 +137,20 @@ Ficam iguais: oxigênio só com SpO2 < 90% (I, C), opioide de rotina não (III, 
 A primeira rodada não achou a nota com "edema agudo de pulmão". O assunto da nota passou a incluir "edema agudo de pulmão (EAP)" e a busca achou.
 
 **Achado:** durante a ingestão na homologação, uma pergunta à produção deu erro 500 ("Server disconnected" do Qdrant), e a repetição funcionou. As duas coleções usam o mesmo Qdrant, então ingestão pesada na homologação pode afetar a produção.
+
+## M2, demais capítulos: situação em 13/11/2026
+
+Pela decisão M2, quando o texto da diretriz está fechado, a ficha fica como está e o RT é avisado. Nenhuma ficha abaixo mudou.
+
+| Cap. | Diretriz | O que impede a leitura |
+|---|---|---|
+| 32, TEP | AHA/ACC 2026 (PMID 41712677) | Texto fechado: Circulation e JACC respondem 403 com verificação anti-robô, e o texto não está no PMC. O resumo no PubMed não traz recomendações |
+| 20, taquiarritmias | AHA 2025, parte de arritmias | O site da AHA (cpr.heart.org) responde 403 |
+| 3, via aérea | DAS 2025 | É de acesso aberto, mas o site do BJA responde 403 à leitura automática |
+| 18, aorta | ESC 2024 | O texto integral para na seção 4. O slideset oficial passa de 10 MB, e baixar o arquivo pede o ok do RT |
+| 31, DPOC | GOLD 2026 | O resumo das mudanças (lido) diz que o capítulo 4, de exacerbação, foi todo reescrito. O relatório e o guia de bolso passam de 10 MB, e baixar pede o ok do RT |
+| 67, hipopotassemia | nenhuma | No PubMed não há diretriz de sociedade para a hipopotassemia aguda no adulto. Há só revisões, e escolher uma delas como fonte é decisão do RT |
+
+Não houve tentativa de passar por verificação anti-robô. Há dois caminhos para destravar: o RT conecta o Chrome, para a leitura com o login dele, ou autoriza baixar os PDFs da ESC e da GOLD.
+
+**Achado no cap. 32:** a ficha `wells-tep` citava a AHA/ACC 2026 com o DOI errado (`…0001300`; o certo é `…0001415`). Ela também dizia que a diretriz não tem preferência entre Wells, Genebra e PERC, frase que não pôde ser conferida. A correção vai em PR próprio (#655).
