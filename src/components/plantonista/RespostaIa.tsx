@@ -5,7 +5,7 @@ import { BookOpen, ExternalLink, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucid
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
-import { fontesCitadas, SEM_PEDIATRIA, semResposta, textoConfianca } from '@/lib/respostaIa'
+import { confiancaDasCitadas, fontesCitadas, SEM_PEDIATRIA, semResposta, textoConfianca } from '@/lib/respostaIa'
 import type { ConfiancaIa, Fonte, StatusIa, ToolHit } from '@/lib/useClinicalAsk'
 import { cn } from '@/lib/utils'
 
@@ -147,6 +147,8 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
     identificacao: 'A pergunta parece ter identificação de paciente (nome, CPF, CNS, data ou prontuário) e não foi enviada. Pergunte sem o dado: a IA não recebe identificação.',
   }
   const aviso = mensagem[status] ?? null
+  // E4: o nível vale pelas fontes citadas na resposta (fontes já filtradas acima)
+  const nivel = confiancaDasCitadas(fontes, confianca)
   return (
     <section aria-live="polite" aria-label="Resposta da IA" className="mb-[22px] rounded-container border border-fio bg-superficie">
       <header className="flex items-start justify-between gap-3 border-b border-fio px-4 py-3">
@@ -165,9 +167,9 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
         {aviso && <p className={cn('text-corpo', status === 'loading' ? 'animate-pulse text-tinta-sussurro' : 'text-tinta')}>{aviso}</p>}
         {(status === 'streaming' || status === 'done') && (curto ? <p className="text-corpo text-tinta">{curto}</p> : <Texto texto={texto} fontes={fontes} />)}
         {status === 'streaming' && <span className="inline-block h-4 w-1.5 animate-pulse bg-acao align-middle" aria-hidden />}
-        {status === 'done' && !curto && textoConfianca(confianca) && (
-          <p className={cn('text-apoio', confianca === 'alta' ? 'text-tinta-sussurro' : 'text-tinta')} data-confianca={confianca}>
-            {textoConfianca(confianca)}
+        {status === 'done' && !curto && textoConfianca(nivel) && (
+          <p className={cn('text-apoio', nivel === 'alta' ? 'text-tinta-sussurro' : 'text-tinta')} data-confianca={nivel}>
+            {textoConfianca(nivel)}
           </p>
         )}
 
