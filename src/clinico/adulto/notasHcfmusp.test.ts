@@ -4,7 +4,7 @@ import { test } from 'node:test'
 
 import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, textoNota } from './notasHcfmusp.ts'
 import { GINA_ITENS } from './asmaDpoc.ts'
-import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025 } from './emergenciaHipertensiva.ts'
+import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
 import { DIFERENCAS_BRADI_2025 } from './pcr.ts'
 import { DIRETRIZ_ICA_2026 } from './insuficienciaCardiacaAguda.ts'
@@ -43,19 +43,20 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
   assert.equal(avc.itens.length, DIRETRIZ_AVC_2026.length)
 })
 
-test('lote 2: seis notas (cap. 15, 17, 19, 21, 30 e 67), itens das listas das fichas, só adulto', () => {
-  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 6)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 6)
+test('lote 2: sete notas (cap. 15, 17, 19, 20, 21, 30 e 67), itens das listas das fichas, só adulto', () => {
+  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 7)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 7)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
-  for (const c of [15, 17, 19, 21, 30, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
+  for (const c of [15, 17, 19, 20, 21, 30, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
   const porId = (id: string) => NOTAS_HCFMUSP_LOTE2.find((n) => n.ficha.id === id)!
   assert.equal(porId('nota-hcfmusp-cap15-bradiarritmias').itens.length, DIFERENCAS_BRADI_2025.length)
   assert.equal(porId('nota-hcfmusp-cap17-fa').itens.length, DIFERENCAS_FA_2024.length + DOSES_FA_2024.length)
   assert.equal(porId('nota-hcfmusp-cap19-emergencia-hipertensiva').itens.length, DBHA_2025_ALVOS.length + DIFERENCAS_EH_2025.length)
   assert.equal(porId('nota-hcfmusp-cap30-asma').itens.length, GINA_ITENS.length)
   assert.equal(porId('nota-hcfmusp-cap21-ic-aguda').itens.length, DIRETRIZ_ICA_2026.length)
+  assert.equal(porId('nota-hcfmusp-cap20-sindrome-aortica').itens.length, DIRETRIZ_AORTA_2024.length)
   const hiperK = porId('nota-hcfmusp-cap67-hiperpotassemia')
   assert.equal(hiperK.itens.length, DIVERGENCIA_MANUAL_HC.diferencas.length)
   for (const n of NOTAS_HCFMUSP_LOTE2) {
