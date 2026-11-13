@@ -21,7 +21,8 @@ TIMEOUT_S = float(E.get("PUBMED_TIMEOUT_S", 6))
 MAXIMO = int(E.get("PUBMED_MAX", 5))
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 FERRAMENTA = "chefe-coruja-biblioteca"
-TIPOS = ('("practice guideline"[pt] OR guideline[pt] OR "systematic review"[pt] OR "meta-analysis"[pt] OR review[pt])')
+TIPOS = ('("practice guideline"[pt] OR guideline[pt] OR "consensus statement"[pt] OR "consensus development conference"[pt] '
+         'OR "systematic review"[pt] OR "meta-analysis"[pt] OR review[pt])')
 CRIANCA = '(child[mh] OR infant[mh] OR adolescent[mh])'
 
 SYSTEM_PUBMED = """Reescreva a pergunta clínica de um médico de pronto-socorro como uma busca do PubMed em inglês: só os termos (de preferência MeSH), ligados por AND e OR, sem aspas desnecessárias, sem filtro de data ou de tipo de estudo e sem explicação. Uma linha só. Se não for uma pergunta clínica, responda exatamente FORA."""
@@ -56,6 +57,8 @@ def _tipo(pubtypes: list) -> str:
     t = [p.lower() for p in pubtypes or []]
     if any("guideline" in p for p in t):
         return "diretriz"
+    if any("consensus" in p for p in t):
+        return "consenso"
     if "meta-analysis" in t:
         return "metanálise"
     if "systematic review" in t:

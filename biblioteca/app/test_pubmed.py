@@ -53,6 +53,7 @@ class TestPubmed(unittest.TestCase):
         self.assertEqual(a[0]["ano"], 2024)
         self.assertEqual(a[0]["url"], "https://pubmed.ncbi.nlm.nih.gov/111/")
         self.assertEqual(a[1]["tipo"], "revisão sistemática")
+        self.assertEqual(pubmed._tipo(["Journal Article", "Review", "Consensus Statement"]), "consenso")
         termo = c.chamadas[0][1]["term"]
         self.assertIn("guideline[pt]", termo)
         self.assertNotIn("child[mh]", termo)
