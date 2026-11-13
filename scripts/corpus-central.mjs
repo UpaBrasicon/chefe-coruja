@@ -21,7 +21,8 @@ rmSync(destino, { recursive: true, force: true })
 mkdirSync(destino, { recursive: true })
 const { ROTA_DA_FICHA } = await import(pathToFileURL(join(raiz, 'src/clinico/indice.ts')).href)
 
-const IGNORAR = /\.test\.ts$|^fonte.*\.ts$|^ficha\.ts$|^escore\.ts$|^indice\.ts$|^index\.ts$/
+// notasHcfmusp.ts tem gerador próprio no fim (uma nota por capítulo do manual)
+const IGNORAR = /\.test\.ts$|^fonte.*\.ts$|^ficha\.ts$|^escore\.ts$|^indice\.ts$|^index\.ts$|^notasHcfmusp\.ts$/
 const arquivos = []
 for (const pasta of ['', 'adulto', 'pediatria', 'escores']) {
   const dir = join(raiz, 'src/clinico', pasta)
@@ -168,5 +169,25 @@ for (const arq of arquivos) {
       gerados++
     }
   }
+}
+// Notas de atualização do manual do HC (lote 1 da revisão, decisão do RT de
+// 13/11/2026): uma por capítulo, com os itens que as fichas já conferiram.
+const { NOTAS_HCFMUSP_LOTE1, textoNota } = await import(pathToFileURL(join(raiz, 'src/clinico/adulto/notasHcfmusp.ts')).href)
+for (const n of NOTAS_HCFMUSP_LOTE1) {
+  const rota = ROTA_DA_FICHA[n.fichaCentral]
+  const fontes = n.ficha.fontes.map((f) => f.citacao).join(' · ')
+  const md = [
+    '---',
+    `titulo: ${JSON.stringify(n.ficha.titulo)}`,
+    `ficha: ${n.ficha.id}`,
+    `versao: ${n.ficha.versao}`,
+    'publico: "adulto (14 anos ou mais)"',
+    `fontes: ${JSON.stringify(fontes)}`,
+    `rota: ${JSON.stringify(rota ?? '')}`,
+    '---',
+    textoNota(n, rota),
+  ].join('\n')
+  writeFileSync(join(destino, `${n.ficha.id}.md`), md)
+  gerados++
 }
 console.log(`${gerados} arquivos em biblioteca/corpus`)
