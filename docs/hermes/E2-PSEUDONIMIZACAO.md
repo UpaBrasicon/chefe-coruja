@@ -71,6 +71,22 @@ Sem migration: `ia_gateway_log` (migrations `20260926000002` e `20261022000009`)
 - Os logs do VPS mostram as chamadas (`/v1/deid` duas vezes, `/v1/ask` e `/v1/search`) no container da homologação, e nenhuma na API da produção. A Edge da homologação usa a biblioteca da homologação.
 - O NER da produção está ativo (`NER_DESLIGADO` vazio, modelo carregado): a mudança não recusa as perguntas da produção.
 
+## 5b. Produção (13/11/2026, com o "ok produção" do RT)
+
+- Antes de publicar:
+  - a imagem da API da produção ganhou a etiqueta `biblioteca-api:antes-e2-20261113`;
+  - os arquivos foram guardados em `/root/biblioteca-antes-e2-20261113.tgz`, com `app/*.py`, `fontes.yaml`, `ferramentas.json`, o vocabulário, o corpus e as evals.
+- `npm run biblioteca:sync`: imagem refeita e 232 ferramentas indexadas. Depois, `docker compose up -d api`.
+- Conferido no VPS, dentro do container da produção, com a chave lida do próprio container e sem imprimi-la:
+  - saúde 200, com 8.052 trechos;
+  - `nomes_proprios_estrito` presente e NER ativo;
+  - `/v1/deid` achou "Joana Pereira", com `ner_ativo: true`;
+  - `/v1/ask` "conduta na crise de asma grave no adulto": 200, com 6 fontes.
+- Edge `clinical-search` publicada na produção. Ela sobe sem erro e recusa quem não está logado (401 "não autenticado").
+- A pergunta pela tela da produção fica para o RT, porque não há conta de teste na produção.
+
+**Rollback da biblioteca:** `docker tag biblioteca-api:antes-e2-20261113 biblioteca-api:latest && docker compose up -d api`, e restaurar o `.tgz` se o corpus ou as ferramentas precisarem voltar.
+
 ## 6. Publicação
 
 1. Edge `clinical-search` na homologação.
