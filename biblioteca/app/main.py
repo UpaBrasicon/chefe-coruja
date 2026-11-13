@@ -23,6 +23,7 @@ from armadilhas import RESPOSTA as RESPOSTA_ARMADILHA, armadilha
 from pii import pseudonimizar, nomes_proprios, ner_disponivel
 from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_serve, publico_com_termos, publico_da_pergunta
 from siglas import expandir_siglas
+import pubmed
 
 E = os.environ
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -128,6 +129,18 @@ _reescritas: "OrderedDict[str, str | None]" = OrderedDict()
 _reescritas_trava = threading.Lock()
 # E6: uso de tokens da última reescrita nesta thread (lido logo depois pelo /v1/ask)
 _uso_reescrita = threading.local()
+
+
+def pubmed_ao_vivo(q: str, publico: str):
+    """E5: (linha do stream ou None, uso da tradução). A pergunta já chega
+    pseudonimizada (E2). Lista de artigos só; o modelo não responde a partir deles."""
+    if not pubmed.PUBMED:
+        return None, None
+    termos, uso = pubmed.termos_pubmed(q, llm, MODELO, EXTRA_LLM)
+    if not termos:
+        return None, uso
+    artigos = pubmed.buscar(termos, publico == PED)
+    return (pubmed.evento(artigos, termos) if artigos else None), uso
 
 
 def uso_da_reescrita():
@@ -480,9 +493,13 @@ def ask(r: Req, authorization: str | None = Header(None)):
         yield meta
         if not gate_ok:
             yield json.dumps({"type": "delta", "text": sem_resposta}, ensure_ascii=False) + "\n"
+            # E5: sem material, a lista do PubMed ao vivo (antes do "done", que encerra a tela)
+            linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
+            if linha_pubmed:
+                yield linha_pubmed
             yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "nao_encontrou": True}) + "\n"
             # E6: a reescrita gastou tokens mesmo sem resposta; o uso não entra na memória
-            uso = somar_uso(uso_reescrita)
+            uso = somar_uso(uso_reescrita, uso_pubmed)
             if uso:
                 yield json.dumps(uso) + "\n"
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": False, "top": round(melhor, 3),
@@ -548,6 +565,12 @@ def ask(r: Req, authorization: str | None = Header(None)):
                 if re.sub(r"\s+", "", qtd).lower() not in base:
                     calculo_suspeito = True
                     break
+        # E5: o modelo disse que o material não traz: a lista do PubMed ao vivo
+        uso_pubmed = None
+        if nao_encontrou:
+            linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
+            if linha_pubmed:
+                yield linha_pubmed
         fim = json.dumps({"type": "done", "citacoes_invalidas": invalidas,
                           "sem_citacao": (not citadas) and (not nao_encontrou),
                           "calculo_suspeito": calculo_suspeito, "nao_encontrou": nao_encontrou}) + "\n"
@@ -555,7 +578,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
         yield fim
         # E6: o uso vai depois do fim e fora de `linhas`: a resposta guardada na
         # memória não repete o custo quando é servida de novo
-        uso = somar_uso(uso_reescrita, uso_resposta)
+        uso = somar_uso(uso_reescrita, uso_resposta, uso_pubmed)
         if uso:
             yield json.dumps(uso) + "\n"
         if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:

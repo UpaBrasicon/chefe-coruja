@@ -23,6 +23,9 @@ export type Fonte = {
   url?: string | null
 }
 
+/** E5: artigo do PubMed ao vivo, mostrado quando o material não responde. Nada é guardado. */
+export type ArtigoPubmed = { pmid: string; titulo: string; revista: string; ano: number | null; tipo: string; url: string }
+
 export type ToolHit = { id: string; nome: string; tipo: string; categoria: string; rota: string; score: number }
 
 /** E4: alta = duas ou mais fontes acima do corte; moderada = uma fonte só; baixa = sem resposta. */
@@ -35,6 +38,7 @@ type Evento =
   | { type: 'delta'; text: string }
   | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean; nao_encontrou?: boolean; recusa?: boolean }
   | { type: 'error'; text: string }
+  | { type: 'pubmed'; origem: string; busca: string; artigos: ArtigoPubmed[] }
 
 const URL_FUNCAO = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clinical-search`
 
@@ -78,13 +82,14 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
   const [requestId, setRequestId] = useState<string | null>(null)
   const [publico, setPublico] = useState<'adulto' | 'pediatrico' | null>(null)
   const [confianca, setConfianca] = useState<ConfiancaIa | null>(null)
+  const [pubmed, setPubmed] = useState<ArtigoPubmed[]>([])
   const controle = useRef<AbortController | null>(null)
 
   useEffect(() => () => controle.current?.abort(), [])
 
   const limpar = useCallback(() => {
     controle.current?.abort()
-    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null)
+    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([])
     setStatus('idle')
   }, [])
 
@@ -93,7 +98,7 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     controle.current?.abort()
     const ac = new AbortController()
     controle.current = ac
-    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null)
+    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([])
     setStatus('loading')
     let res: Response
     try {
@@ -138,6 +143,8 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
             setStatus(ev.gate ? 'streaming' : 'blocked')
           } else if (ev.type === 'delta') {
             if (!bloqueado) setTexto((t) => t + ev.text)
+          } else if (ev.type === 'pubmed') {
+            setPubmed(Array.isArray(ev.artigos) ? ev.artigos : [])
           } else if (ev.type === 'error') {
             setStatus('indisponivel')
           } else if (ev.type === 'done') {
@@ -155,5 +162,5 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     }
   }, [unidadeId, modo])
 
-  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca }
+  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed }
 }

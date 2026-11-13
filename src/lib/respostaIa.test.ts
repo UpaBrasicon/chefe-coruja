@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/respostaIa.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { citacoes, fontesCitadas, NAO_ENCONTREI, SEM_PEDIATRIA, semResposta, textoConfianca, confiancaDasCitadas } from './respostaIa.ts'
+import { citacoes, fontesCitadas, NAO_ENCONTREI, SEM_PEDIATRIA, semResposta, textoConfianca, confiancaDasCitadas, mostrarPubmed } from './respostaIa.ts'
 
 test('sem resposta: fica só a frase, sem a lista de assuntos que o modelo acrescenta', () => {
   const t = 'Não encontrei isso no material de referência.\n\nOs trechos disponíveis tratam de Maddrey [1]; Child-Pugh [2].'
@@ -42,4 +42,13 @@ test('confiança pelas fontes citadas (E4)', () => {
   // resposta antiga, sem os campos: fica o nível da biblioteca
   assert.equal(confiancaDasCitadas([{}], 'alta'), 'alta')
   assert.equal(confiancaDasCitadas([], 'moderada'), 'moderada')
+})
+
+test('PubMed ao vivo (E5) só quando o material não respondeu', () => {
+  const a = [{ pmid: '1' }]
+  assert.equal(mostrarPubmed('blocked', null, a), true)
+  assert.equal(mostrarPubmed('done', NAO_ENCONTREI, a), true)
+  assert.equal(mostrarPubmed('done', null, a), false)
+  assert.equal(mostrarPubmed('streaming', NAO_ENCONTREI, a), false)
+  assert.equal(mostrarPubmed('blocked', null, []), false)
 })
