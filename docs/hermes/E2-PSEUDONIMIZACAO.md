@@ -115,4 +115,6 @@ A pergunta ao modelo não muda.
 
 **Testes:** 12 casos em `liberar.test.ts` (3 novos para a busca simples e 1 para `mascararNomes`).
 
+**Homologação (13/11/2026):** Edge publicada e testada com a conta `medico.observacao.f5`, por link mágico. A busca "a Maria Souza está com asma" respondeu 200, e o histórico gravou "a [PESSOA] está com asma". A busca "broncoespasmo" respondeu 200 e foi gravada como está. A linha do teste do RT, de antes da correção, continua com o nome fictício.
+
 **Fora desta correção:** as 67 linhas antigas de `clinical_search_logs` na produção (até 13/10/2026) não foram lidas, porque podem conter nome de paciente. Limpar ou não esse histórico é decisão do RT.
