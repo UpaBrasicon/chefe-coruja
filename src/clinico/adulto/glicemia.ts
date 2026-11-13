@@ -22,9 +22,9 @@ const PAG_TRATAMENTO = 'cap. 64, p. 869–876; bicarbonato também no cap. 69, p
 
 export const fichaCadEhhAvaliacao: Ficha = {
   ...fichaAdulto('adulto-cad-ehh-avaliacao', 'CAD e EHH — critérios e fórmulas', PAG_AVALIACAO),
-  versao: '2026-09-28.1',
+  versao: '2026-11-13.1',
   fontes: [pagina(PAG_AVALIACAO), { ...CONSENSO_2024, citacao: `${CONSENSO_2024.citacao} Critérios (Fig. 2, p. 1262), gravidade (Tabela 2, p. 1263), resolução (Fig. 4, p. 1264).` }],
-  revisadoEm: '28/09/2026 (consenso 2024 conferido no texto; manual do HC mantido como base)',
+  revisadoEm: '13/11/2026 (o consenso 2024 passa a ser a base dos critérios, da gravidade e da resolução, por decisão do RT; o manual do HC fica num bloco fechado, só para consulta); 28/09/2026 (consenso 2024 conferido no texto)',
 }
 // Revisão PubMed, itens médios (decisão do RT de 06/11/2026): a metanálise da
 // insulina basal precoce (só adultos) entra como nota no bloco da transição
@@ -40,14 +40,14 @@ export const NOTA_BASAL_PRECOCE_CAD =
 
 export const fichaCadEhhTratamento: Ficha = {
   ...fichaAdulto('adulto-cad-ehh-tratamento', 'CAD e EHH — hidratação, insulina, potássio e bicarbonato', PAG_TRATAMENTO),
-  versao: '2026-11-13.1',
+  versao: '2026-11-13.2',
   fontes: [
     pagina(PAG_TRATAMENTO),
     { ...CONSENSO_2024, citacao: `${CONSENSO_2024.citacao} Fig. 4 (p. 1264), fluidos e insulina (p. 1265–1266), potássio e bicarbonato (p. 1266), transição (p. 1264–1265).` },
     BASAL_PRECOCE_CAD_2026,
     { citacao: 'Preparo da unidade para a insulina regular EV: 100 U (1 mL de insulina U-100) em 99 mL de SF 0,9% = 100 mL a 1 U/mL, então U/h = mL/h. Decisão do responsável técnico em 13/11/2026; muda só a diluição, não a dose (as doses seguem o manual e o consenso 2024). O preparo do manual (50 U em 250 mL, 0,2 U/mL; p. 871) continua como opção.' },
   ],
-  revisadoEm: '13/11/2026 (preparo de 1 U/mL da unidade como padrão das contas de mL/h, com o do manual como opção); 06/11/2026 (nota da insulina basal precoce na transição; revisão PubMed, itens médios; consenso 2024 conferido no texto; manual do HC mantido como base)',
+  revisadoEm: '13/11/2026 (o consenso 2024 passa a ser a base das contas, por decisão do RT, e o manual do HC fica num bloco fechado, só para consulta; preparo de 1 U/mL da unidade como padrão das contas de mL/h, com o do manual como opção); 06/11/2026 (nota da insulina basal precoce na transição; revisão PubMed, itens médios; consenso 2024 conferido no texto; manual do HC mantido como base)',
 }
 export const fichaHipoglicemia = fichaAdulto('adulto-hipoglicemia', 'Hipoglicemia — limiar e doses', 'cap. 65, p. 877–881')
 
