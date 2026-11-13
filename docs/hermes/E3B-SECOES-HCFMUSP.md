@@ -53,3 +53,11 @@ Só com o "ok produção":
 Durante a reingestão, a busca da produção fica sem os trechos do HCFMUSP: a fonte é apagada antes de ser regravada. Por isso, fazer de madrugada.
 
 **Rollback:** reingerir com o leitor antigo. Basta tirar `secoes` do `fontes.yaml` e rodar o mesmo comando.
+
+**Feito em 13/11/2026, com o "ok produção" do RT:**
+- versão anterior guardada: imagem `biblioteca-api:antes-e3b-20261113` e `/root/biblioteca-antes-e3b-20261113.tgz`;
+- `biblioteca:sync` com 232 ferramentas indexadas; API reiniciada e saúde 200;
+- reingestão das 03:14 às 04:08 UTC: `manual_hcfmusp_3ed_2022.pdf: 1947 chunks`, 8.532 trechos na coleção;
+- conferido na coleção `biblioteca`: 1.947 trechos do HCFMUSP, 1 sem seção, 834 seções;
+- `/v1/ask` na produção: "conduta na FA com instabilidade hemodinâmica" passou no corte, com a fonte "17 Fibrilação atrial — COMO EU TRATO A FA? p.245".
+
