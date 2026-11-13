@@ -2478,6 +2478,24 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 **Diagnóstico de 12/11/2026** (`docs/hermes/HERMES-EVIDENCIAS-DIAGNOSTICO.md`): o "Pergunte à IA" do plantonista (`clinical-search`, Portão 2) já é este assistente, mas o corpus fica no Qdrant do VPS (`biblioteca/`, embeddings bge-m3 locais, DeepSeek), não em pgvector. Estado: 1 parcial, 2 existe com 5 lacunas, 3 feita (a conferir no VPS), 4 parcial, 5 não existe, 6 parcial. Decisão do RT no mesmo dia: E1–E6 = A. Fica o Qdrant (a tabela acima vale pelo que pede, não pela tecnologia); fechar as lacunas da pseudonimização primeiro; conferir a ingestão; identificador do trecho e confiança em três níveis; PubMed ao vivo só como lista de artigos, sem texto do modelo; modelo e tokens em `clinical_search_logs` para o custo do mês. Em aberto com o RT: E7, os livros sem licença antes de vender a outra rede. Ordem: E2 → E3 → E1 → E4 → E6 → E5. **E2 feito em 13/11/2026 (#638), na homologação e na produção com o ok do RT:** a pergunta ao modelo só sai liberada (`clinical-search/liberar.ts`), passa pelo NER da biblioteca e não sai se ele estiver fora; cada pergunta deixa linha em `ia_gateway_log`, sem texto. Evidência em `docs/hermes/E2-PSEUDONIMIZACAO.md`; falta uma pergunta do RT pela tela da produção. E2b (#640, na produção): a busca simples também tira os nomes do texto e do histórico. **E3 feito em 13/11/2026:** os dois livros estão ingeridos e cobrem o livro inteiro (HCFMUSP 1.467 trechos, ICr 1.786; `docs/hermes/E3-INGESTAO-EVIDENCIA.md`). Achado: 92% dos trechos do HCFMUSP estão sem seção, e o leitor de hoje só acha o número do capítulo nesse PDF; **E3b feito em 13/11/2026 (#642), na homologação e na produção com o ok do RT:** leitor `capitulo-numero` só para o HCFMUSP; 1.947 trechos, 1 sem seção; evals nas metas. Achado à parte: "tratamento da cetoacidose diabética no adulto" responde "Não encontrei", antes e depois (busca não acha o capítulo 64). A biblioteca tem homologação própria (`biblioteca-api-homolog`, `npm run biblioteca:homolog`); a produção só muda com `npm run biblioteca:sync` depois do "ok produção".
 
+
+### Revisão do Manual HCFMUSP e guia da cetoacidose — pedido do RT em 13/11/2026
+
+**Origem.** No E3b, a pergunta "tratamento da cetoacidose diabética no adulto" respondeu "Não encontrei", antes e depois da reingestão, embora o HCFMUSP tenha o capítulo 64 (Emergências hiperglicêmicas). O RT pediu:
+- um guia da cetoacidose montado pelo PubMed, na atualização mais recente, simples a ponto de qualquer um seguir;
+- a revisão de tudo o que subiu do HCFMUSP contra as diretrizes mais recentes, sem deixar nada desatualizado.
+
+**Decisões do RT, 13/11/2026:**
+- entra **depois da trilha Hermes / Evidências** (E1, E4, E6 e E5);
+- o guia da CAD é para o plantonista, adulto e criança. Adulto pela diretriz de consenso mais recente das sociedades de diabetes, criança pela ISPAD mais recente. É passo a passo e bem simples, na biblioteca da IA e na Central. A dose vem só da fonte citada, e nunca se passa dado de adulto para criança;
+- a revisão do livro é **por lotes, riscos primeiro**. O livro não é editado: cada ponto desatualizado vira uma nota de atualização, com a fonte nova, que entra na biblioteca da IA e passa pela aprovação do RT. É um PR e uma aprovação por lote.
+
+| # | Prior. | Tarefa | Critério de aceite |
+|---|---|---|---|
+| 1 | P1 | Guia da cetoacidose, adulto e criança: diretrizes mais recentes pelo PubMed, com a data e a versão de cada uma; ficha da biblioteca e da Central; e a busca passa a achar a CAD do adulto | A pergunta "tratamento da cetoacidose diabética no adulto" responde com fonte, na homologação e na produção; doses conferidas contra a fonte citada; aprovação do RT |
+| 2 | P1 | Lote 1 da revisão: emergências com dose e conduta de alto risco (PCR, sepse, SCA, AVC, CAD e EHH, anafilaxia, intoxicações) | Mapa capítulo → diretriz mais recente, com o que mudou; notas de atualização ingeridas; aprovação do RT |
+| 3 | P2 | Lotes seguintes até cobrir os cerca de 90 capítulos | Mapa completo do livro, sem capítulo sem conferência |
+
 ---
 
 ## Backlog Comercial Paralelo
