@@ -41,3 +41,13 @@ O aviso de fontes que divergem ficou para depois, porque pede uma segunda leitur
 
 - Todos os trechos devolvidos passaram do corte. Na prática, o nível mostra quantas fontes diferentes a resposta usa.
 - **A tela não foi vista com login.** As contas de teste estão fora do plantão ou sem check-in, e a Central fica fechada para elas. A lógica que decide o texto tem teste.
+
+## Produção (13/11/2026, com o "ok produção" do RT)
+
+- Versão anterior guardada: imagem `biblioteca-api:antes-e4-20261113` e `/root/biblioteca-antes-e4-20261113.tgz`.
+- `biblioteca:sync` com 232 ferramentas; API reiniciada; saúde 200, com 8.532 trechos.
+- Conferido dentro do container da produção: "conduta na FA com instabilidade hemodinâmica" passou no corte, com `confianca: alta`. A primeira fonte veio com `trecho_id`, `fonte_id` do HCFMUSP e `acima_do_corte: true`.
+- A tela sobe com o merge deste PR.
+
+**Rollback:** `docker tag biblioteca-api:antes-e4-20261113 biblioteca-api:latest && docker compose up -d api`. A tela antiga ignora os campos novos, e a nova funciona sem eles.
+
