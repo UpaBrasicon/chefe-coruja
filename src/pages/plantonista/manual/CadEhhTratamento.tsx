@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 
 import {
-  DIFERENCAS_2024, DIVERGENCIAS_CAD, INSULINA_BOMBA, NOTA_BASAL_PRECOCE_CAD, POTASSIO_MANUAL, TRATAMENTO_2024, ajusteInsulina, bicarbonato, bicarbonato2024, duasBolsas, faixaPotassio,
-  fichaCadEhhTratamento, fluido2024, hidratacao, insulina2024, insulinaInicial, insulinaReduzida, mlHDeInsulina, potassio2024, solucaoSegundaFase, transicaoSc, type EsquemaInsulina,
+  DIFERENCAS_2024, DIVERGENCIAS_CAD, NOTA_BASAL_PRECOCE_CAD, POTASSIO_MANUAL, TRATAMENTO_2024, ajusteInsulina, bicarbonato, bicarbonato2024, duasBolsas, faixaPotassio,
+  fichaCadEhhTratamento, fluido2024, hidratacao, insulina2024, insulinaInicial, insulinaReduzida, mlHDeInsulina, potassio2024, solucaoSegundaFase, transicaoSc, PREPAROS_INSULINA, type EsquemaInsulina, type PreparoInsulina,
 } from '@/clinico/adulto/glicemia'
 import { sodioCorrigido } from '@/clinico/adulto/sodio'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -36,6 +36,8 @@ export function CadEhhTratamento() {
   const [k, setK] = useState(0)
   const [ph, setPh] = useState(0)
   const [esquema, setEsquema] = useState<EsquemaInsulina>('com-bolus')
+  // preparo da unidade (1 U/mL, decisão do RT de 13/11/2026) como padrão; o do manual fica como opção
+  const [preparo, setPreparo] = useState<PreparoInsulina>('unidade')
   const [glicAnt, setGlicAnt] = useState(0)
   const [glicAtual, setGlicAtual] = useState(0)
   const [taxa, setTaxa] = useState(0)
@@ -46,14 +48,14 @@ export function CadEhhTratamento() {
   const h = hidratacao(peso)
   const naRef = glic > 0 ? sodioCorrigido(na, glic) : na > 0 ? na : null
   const sol = naRef === null ? null : solucaoSegundaFase(naRef)
-  const ins = insulinaInicial(peso, esquema)
-  const red = insulinaReduzida(peso)
+  const ins = insulinaInicial(peso, esquema, preparo)
+  const red = insulinaReduzida(peso, preparo)
   const aj = ajusteInsulina(glicAnt, glicAtual, taxa)
   const fk = faixaPotassio(k)
   const bic = bicarbonato(ph)
   const bolsas = duasBolsas(total, dextrose)
   const sc = transicaoSc(ins24, peso)
-  const i24 = insulina2024(peso)
+  const i24 = insulina2024(peso, preparo)
   const k24 = potassio2024(k)
   const bic24 = bicarbonato2024(ph)
   const f24 = fluido2024()
@@ -94,7 +96,17 @@ export function CadEhhTratamento() {
         <p className="tabular-nums">{bolsas ? <>Bolsa 1 (SF): <strong>{br(bolsas.bolsa1)} mL/h</strong> · Bolsa 2 (SG 10%): <strong>{br(bolsas.bolsa2)} mL/h</strong></> : 'Glicose final entre 0 e 10%.'}</p>
       </Secao>
 
-      <Secao titulo="Insulina regular EV (p. 871)" descricao={`O manual traz bolus de 0,1 U/kg e bomba a 0,1 U/kg/h, ou 0,14 U/kg/h sem bolus. Preparo: ${INSULINA_BOMBA.unidades} U em ${INSULINA_BOMBA.volumeMl} mL de SF (0,2 U/mL; 5 mL = 1 U). Iniciar junto com a hidratação, exceto se K < 3,3.`}>
+      <Secao titulo="Insulina regular EV (p. 871)" descricao="O manual traz bolus de 0,1 U/kg e bomba a 0,1 U/kg/h, ou 0,14 U/kg/h sem bolus. Iniciar junto com a hidratação, exceto se K < 3,3.">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Preparo da insulina">
+          {(['unidade', 'manual'] as const).map((p) => (
+            <Button key={p} type="button" size="sm" variant={preparo === p ? 'default' : 'outline'} aria-pressed={preparo === p} onClick={() => setPreparo(p)}>
+              {PREPAROS_INSULINA[p].rotulo}
+            </Button>
+          ))}
+        </div>
+        <p className="text-apoio text-tinta-sussurro">
+          Preparo: {PREPAROS_INSULINA[preparo].texto}.{preparo === 'unidade' && ' Preparo da unidade; o do manual é 50 U em 250 mL (0,2 U/mL).'}
+        </p>
         <div className="flex flex-wrap gap-2">
           <Button type="button" size="sm" variant={esquema === 'com-bolus' ? 'default' : 'outline'} onClick={() => setEsquema('com-bolus')}>Com bolus (0,1 U/kg/h)</Button>
           <Button type="button" size="sm" variant={esquema === 'sem-bolus' ? 'default' : 'outline'} onClick={() => setEsquema('sem-bolus')}>Sem bolus (0,14 U/kg/h)</Button>
@@ -117,7 +129,7 @@ export function CadEhhTratamento() {
         </div>
         {aj ? (
           <p className="tabular-nums">
-            Queda: {br(aj.queda, 0)} mg/dL/h — {ACAO[aj.acao]} → <strong>{br(aj.novaUH)} U/h = {br(mlHDeInsulina(aj.novaUH))} mL/h</strong>
+            Queda: {br(aj.queda, 0)} mg/dL/h — {ACAO[aj.acao]} → <strong>{br(aj.novaUH)} U/h = {br(mlHDeInsulina(aj.novaUH, preparo))} mL/h</strong>
           </p>
         ) : <p className="text-tinta-sussurro">Informe as duas glicemias e a taxa atual.</p>}
       </Secao>
@@ -141,7 +153,7 @@ export function CadEhhTratamento() {
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_BASAL_PRECOCE_CAD}</p>
       </Secao>
 
-      <Secao titulo="Consenso ADA/EASD 2024 — o que muda em relação ao manual" descricao="Umpierrez et al., Diabetes Care 2024;47:1257–1275. As contas abaixo usam o peso e a bomba do manual (0,2 U/mL). A conduta é do médico.">
+      <Secao titulo="Consenso ADA/EASD 2024 — o que muda em relação ao manual" descricao={`Umpierrez et al., Diabetes Care 2024;47:1257–1275. As contas abaixo usam o peso e o preparo escolhido acima (${PREPAROS_INSULINA[preparo].rotulo}). A conduta é do médico.`}>
         <p><strong>Fluido</strong> ({T.fluido.pagina}): {T.fluido.texto} → <span className="tabular-nums">{faixa(f24.mlH)} mL/h; {faixa(f24.totalEm2a4h)} mL em 2–4 h</span>. {T.fluido.fragil}.</p>
         <p><strong>Glicose</strong> ({T.glicose.pagina}): {T.glicose.texto}.</p>
         <p>
