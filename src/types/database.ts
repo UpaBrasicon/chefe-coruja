@@ -2443,9 +2443,13 @@ export type Database = {
           id: string
           latency_ms: number | null
           mode: string
+          modelo: string | null
           query_redacted: string
           request_id: string
           status: number | null
+          tokens_entrada: number | null
+          tokens_entrada_cache: number | null
+          tokens_saida: number | null
           unidade_id: string
           user_id: string
         }
@@ -2454,9 +2458,13 @@ export type Database = {
           id?: string
           latency_ms?: number | null
           mode: string
+          modelo?: string | null
           query_redacted: string
           request_id: string
           status?: number | null
+          tokens_entrada?: number | null
+          tokens_entrada_cache?: number | null
+          tokens_saida?: number | null
           unidade_id: string
           user_id: string
         }
@@ -2465,9 +2473,13 @@ export type Database = {
           id?: string
           latency_ms?: number | null
           mode?: string
+          modelo?: string | null
           query_redacted?: string
           request_id?: string
           status?: number | null
+          tokens_entrada?: number | null
+          tokens_entrada_cache?: number | null
+          tokens_saida?: number | null
           unidade_id?: string
           user_id?: string
         }
@@ -12505,6 +12517,19 @@ export type Database = {
       }
       historico_encerrado: { Args: { p_paciente: string }; Returns: Json }
       // lacuna 1 (RT 10/11/2026): paciente não identificado
+      ia_custo_busca_mes: {
+        Args: { p_mes?: string }
+        Returns: {
+          mes: string
+          modelos: string[]
+          perguntas: number
+          perguntas_sem_tokens: number
+          tokens_entrada: number
+          tokens_entrada_cache: number
+          tokens_saida: number
+          usd_estimado: number
+        }[]
+      }
       identificar_paciente: {
         Args: { p_dados: Json; p_outra_pessoa?: boolean; p_paciente: string }
         Returns: Json

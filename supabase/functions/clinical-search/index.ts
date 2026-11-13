@@ -7,14 +7,21 @@
 //   e-mail, CEP, data e prontuário viram pseudônimos. Sobrou resíduo com cara
 //   de identificador: a pergunta não sai (falha fechada). O log guarda só a
 //   versão limpa.
+// - E2 da trilha Hermes / Evidências (12/11/2026): a liberação fica em
+//   liberar.ts, e a chamada à biblioteca só aceita a pergunta liberada. No modo
+//   "ask", o NER da biblioteca (/v1/deid) também confere nomes; NER fora do ar
+//   ou sem o modelo carregado: a pergunta não sai (503). Cada pergunta ao modelo
+//   deixa uma linha em ia_gateway_log (contagens, tipos e hash, nunca o texto).
 // - Limite: 30 perguntas "ask" por usuário por hora.
 // - Repassa o stream NDJSON da biblioteca sem armazenar a resposta.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-import { criarCofre, desidentificar, residuos, type Conhecido } from '../_shared/desidentificacao.ts'
+import { type Conhecido, type Contagem } from '../_shared/desidentificacao.ts'
 import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 import { comRelato, relatarErro } from '../_shared/sentry.ts'
+import { hashEntrada, liberarPergunta, TIPO_NOME_NER, type PerguntaLiberada } from './liberar.ts'
+import { semLinhaDeUso } from './uso.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -109,41 +116,70 @@ async function tratar(req: Request): Promise<Response> {
   }
 
   const request_id = crypto.randomUUID()
-  // Gateway (ADR 0006): desidentifica, confere resíduo, e só então envia.
-  const limpo = desidentificar(q, criarCofre(), await nomesConhecidos(admin, unidadeId, user.id))
-  const sobras = residuos(limpo.texto)
-  const qRed = redact(limpo.texto)
-  if (sobras.length) {
-    await admin.from('clinical_search_logs').insert({
-      request_id, user_id: user.id, unidade_id: unidadeId, mode, query_redacted: qRed, status: 422, latency_ms: Date.now() - t0,
-    })
-    return erro(422, 'A pergunta parece ter identificação de paciente (' + sobras.map((r) => r.tipo).join(', ') +
-      '). Tire o dado e pergunte de novo: a busca não envia identificação para a IA.')
-  }
   const base = Deno.env.get('BIBLIOTECA_URL')
   const chave = Deno.env.get('BIBLIOTECA_API_KEY')
-  let upstream: Response | null = null
-  if (base && chave) {
-    upstream = await fetch(`${base}/v1/${mode}`, {
+  if (!base || !chave) return erro(503, 'biblioteca indisponível')
+
+  // Gateway (ADR 0006; E2 da trilha Hermes / Evidências): a pergunta só sai
+  // liberada. Ver liberar.ts.
+  const hash = await hashEntrada(q)
+  const liberacao = await liberarPergunta(q, await nomesConhecidos(admin, unidadeId, user.id), mode, (texto) =>
+    fetch(`${base}/v1/deid`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: qRed, tenant_id: unidadeId, request_id, publico }),
-      signal: AbortSignal.timeout(mode === 'ask' ? 120_000 : 45_000),
-    }).catch((e: unknown) => {
-      console.error('biblioteca indisponível', request_id, e instanceof Error ? e.message : String(e))
-      relatarErro('clinical-search', 'biblioteca_indisponivel', e)
-      return null
+      body: JSON.stringify({ texto }),
+      // a busca simples espera menos: sem o NER ela segue, só sem registro do texto
+      signal: AbortSignal.timeout(mode === 'ask' ? 8_000 : 3_000),
+    }).then((r) => (r.ok ? r.json() : null)))
+
+  if (liberacao.tipo !== 'ok') {
+    const status = liberacao.tipo === 'bloqueada' ? 422 : 503
+    await admin.from('clinical_search_logs').insert({
+      request_id, user_id: user.id, unidade_id: unidadeId, mode, query_redacted: '[não enviada]', status, latency_ms: Date.now() - t0,
     })
+    if (mode === 'ask') {
+      await registrarGateway(admin, {
+        perfilId: user.id, bloqueado: true, contagem: liberacao.contagem, hash,
+        residuos: liberacao.tipo === 'bloqueada' ? Object.values(liberacao.tipos).reduce((a, b) => a + b, 0) : 0,
+        tipos: liberacao.tipo === 'bloqueada' ? liberacao.tipos : undefined,
+        erro: liberacao.tipo === 'indisponivel' ? `desidentificação indisponível: ${liberacao.motivo}` : undefined,
+      })
+    }
+    if (liberacao.tipo === 'indisponivel') {
+      relatarErro('clinical-search', 'deid_indisponivel', liberacao.motivo)
+      return erro(503, 'A conferência de identificação está fora do ar, e a pergunta não foi enviada. Tente de novo em instantes.')
+    }
+    if (liberacao.tipos[TIPO_NOME_NER]) {
+      return erro(422, 'A pergunta parece ter o nome de uma pessoa. Tire o nome e pergunte de novo: a busca não envia identificação para a IA.')
+    }
+    return erro(422, 'A pergunta parece ter identificação de paciente (' + Object.keys(liberacao.tipos).join(', ') +
+      '). Tire o dado e pergunte de novo: a busca não envia identificação para a IA.')
   }
+
+  const qRed = liberacao.registro === null ? '[não registrada]' : redact(liberacao.registro)
+  const upstream = await chamarBiblioteca(base, chave, mode, liberacao.texto, { tenant_id: unidadeId, request_id, publico })
 
   await admin.from('clinical_search_logs').insert({
     request_id, user_id: user.id, unidade_id: unidadeId, mode, query_redacted: qRed,
     status: upstream?.status ?? 503, latency_ms: Date.now() - t0,
   })
+  if (mode === 'ask') {
+    await registrarGateway(admin, {
+      perfilId: user.id, bloqueado: false, contagem: liberacao.contagem, hash, residuos: 0,
+      latenciaMs: Date.now() - t0, erro: upstream?.ok ? undefined : `biblioteca: ${upstream?.status ?? 'sem resposta'}`,
+    })
+  }
 
   if (!upstream) return erro(503, 'biblioteca indisponível')
   if (!upstream.ok) return erro(upstream.status === 401 ? 502 : upstream.status, 'biblioteca recusou o pedido')
-  return new Response(upstream.body, {
+  // E6: modelo e tokens da pergunta ao modelo vão para o registro; a linha sai do stream
+  const corpo = mode === 'ask' && upstream.body
+    ? upstream.body.pipeThrough(semLinhaDeUso(async (uso) => {
+      const { error } = await admin.from('clinical_search_logs').update(uso).eq('request_id', request_id)
+      if (error) relatarErro('clinical-search', 'uso_tokens', error.message)
+    }))
+    : upstream.body
+  return new Response(corpo, {
     status: 200,
     headers: {
       ...cors,
@@ -152,4 +188,45 @@ async function tratar(req: Request): Promise<Response> {
       'X-Request-Id': request_id,
     },
   })
+}
+
+/** A única chamada à biblioteca: só aceita a pergunta liberada (liberar.ts). */
+function chamarBiblioteca(
+  base: string, chave: string, mode: 'ask' | 'search', pergunta: PerguntaLiberada,
+  extra: { tenant_id: string; request_id: string; publico?: string },
+): Promise<Response | null> {
+  return fetch(`${base}/v1/${mode}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ q: redact(pergunta), ...extra }),
+    signal: AbortSignal.timeout(mode === 'ask' ? 120_000 : 45_000),
+  }).catch((e: unknown) => {
+    console.error('biblioteca indisponível', extra.request_id, e instanceof Error ? e.message : String(e))
+    relatarErro('clinical-search', 'biblioteca_indisponivel', e)
+    return null
+  })
+}
+
+/** Registro do gateway de IA (ia_gateway_log): só contagens, tipos e hash, nunca o texto. */
+async function registrarGateway(
+  admin: ReturnType<typeof createClient>,
+  d: {
+    perfilId: string; bloqueado: boolean; contagem: Contagem; hash: string; residuos: number
+    tipos?: Record<string, number>; latenciaMs?: number; erro?: string
+  },
+) {
+  const { error } = await admin.from('ia_gateway_log').insert({
+    origem: 'edge:clinical_search',
+    perfil_id: d.perfilId,
+    bloqueado: d.bloqueado,
+    substituicoes: d.contagem,
+    residuos: d.residuos,
+    hash_entrada: d.hash,
+    provedor: 'biblioteca',
+    latencia_ms: d.latenciaMs ?? null,
+    erro: d.erro ? d.erro.slice(0, 200) : null,
+    tipos_bloqueio: d.tipos && Object.keys(d.tipos).length ? d.tipos : null,
+  })
+  // o registro nunca derruba a busca, mas a falha fica no rastreamento
+  if (error) relatarErro('clinical-search', 'ia_gateway_log', error.message)
 }

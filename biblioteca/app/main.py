@@ -126,6 +126,31 @@ Escreva só os termos, separados por vírgula, em até 25 palavras. Se a pergunt
 
 _reescritas: "OrderedDict[str, str | None]" = OrderedDict()
 _reescritas_trava = threading.Lock()
+# E6: uso de tokens da última reescrita nesta thread (lido logo depois pelo /v1/ask)
+_uso_reescrita = threading.local()
+
+
+def uso_da_reescrita():
+    """(modelo, usage) da reescrita feita nesta thread, e limpa. None quando veio do cache."""
+    u = getattr(_uso_reescrita, "valor", None)
+    _uso_reescrita.valor = None
+    return u
+
+
+def somar_uso(*itens) -> dict | None:
+    """E6: soma (modelo, usage) da reescrita e da resposta no formato que a Edge grava.
+    entrada_cache = tokens que a DeepSeek achou no cache dela; entrada = o resto."""
+    itens = [i for i in itens if i and i[1] is not None]
+    if not itens:
+        return None
+    cache = entrada = saida = 0
+    for _modelo, u in itens:
+        hit = getattr(u, "prompt_cache_hit_tokens", None) or 0
+        total = getattr(u, "prompt_tokens", None) or 0
+        cache += hit
+        entrada += max(total - hit, 0)
+        saida += getattr(u, "completion_tokens", None) or 0
+    return {"type": "uso", "modelo": itens[-1][0], "entrada_cache": cache, "entrada": entrada, "saida": saida}
 
 
 def reescrever(q: str) -> str | None:
@@ -143,6 +168,7 @@ def reescrever(q: str) -> str | None:
             model=MODELO, temperature=0, max_tokens=REESCRITA_MAX_TOKENS, extra_body=EXTRA_LLM,
             messages=[{"role": "system", "content": SYSTEM_REESCRITA}, {"role": "user", "content": q}])
         t = re.sub(r"\s+", " ", (r.choices[0].message.content or "")).strip()
+        _uso_reescrita.valor = (getattr(r, "model", None) or MODELO, getattr(r, "usage", None))
     except Exception as e:  # noqa: BLE001 — sem reescrita a busca continua
         log.warning(json.dumps({"reescrita": type(e).__name__}))
         return None
@@ -412,7 +438,9 @@ def ask(r: Req, authorization: str | None = Header(None)):
     tipo = armadilha(q)
     if tipo:
         return resposta_fixa(r, publico_da_pergunta(q, r.publico), tipo, t0)
+    _uso_reescrita.valor = None
     termos = reescrever(q)
+    uso_reescrita = uso_da_reescrita()
     t_reescrita = int((time.time() - t0) * 1000)
     # pergunta sem idade sobre doença da criança ("bronquiolite precisa de
     # corticoide"): os termos da reescrita levam à pediatria (avaliação de 14/10)
@@ -425,6 +453,9 @@ def ask(r: Req, authorization: str | None = Header(None)):
             primeira = json.loads(guardada[0]); primeira["request_id"] = r.request_id; primeira["cache"] = True
             yield json.dumps(primeira, ensure_ascii=False) + "\n"
             yield from guardada[1:]
+            uso = somar_uso(uso_reescrita)  # E6: só a reescrita gastou tokens
+            if uso:
+                yield json.dumps(uso) + "\n"
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
         return StreamingResponse(repetir(), media_type="application/x-ndjson")
     tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
@@ -450,6 +481,10 @@ def ask(r: Req, authorization: str | None = Header(None)):
         if not gate_ok:
             yield json.dumps({"type": "delta", "text": sem_resposta}, ensure_ascii=False) + "\n"
             yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "nao_encontrou": True}) + "\n"
+            # E6: a reescrita gastou tokens mesmo sem resposta; o uso não entra na memória
+            uso = somar_uso(uso_reescrita)
+            if uso:
+                yield json.dumps(uso) + "\n"
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": False, "top": round(melhor, 3),
                                  "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms": int((time.time() - t0) * 1000)}))
             return
@@ -472,14 +507,18 @@ def ask(r: Req, authorization: str | None = Header(None)):
                          " em trecho de adulto e criança, só a parte pediátrica. Se nenhum trecho para criança tratar do assunto, diga exatamente:"
                          f' "{MSG_SEM_PEDIATRIA}" e pare; se tratarem de parte, responda essa parte.')
         texto = ""
+        uso_resposta = None
         try:
             # max_tokens alto: em modelo com "raciocínio" os tokens de pensamento
             # contam no limite e um limite curto devolvia resposta vazia (evals 28/09).
             stream = llm.chat.completions.create(
                 model=MODELO, temperature=0.1, stream=True, max_tokens=MAX_TOKENS, extra_body=EXTRA_LLM,
+                stream_options={"include_usage": True},
                 messages=[{"role": "system", "content": SYSTEM + (REGRA_PED if publico == PED else "")},
                           {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}{lembrete}"}])
             for ch in stream:
+                if getattr(ch, "usage", None):  # E6: o último pedaço traz o uso
+                    uso_resposta = (getattr(ch, "model", None) or MODELO, ch.usage)
                 d = (ch.choices[0].delta.content or "") if ch.choices else ""
                 if d:
                     if t_primeiro is None:
@@ -514,6 +553,11 @@ def ask(r: Req, authorization: str | None = Header(None)):
                           "calculo_suspeito": calculo_suspeito, "nao_encontrou": nao_encontrou}) + "\n"
         linhas.append(fim)
         yield fim
+        # E6: o uso vai depois do fim e fora de `linhas`: a resposta guardada na
+        # memória não repete o custo quando é servida de novo
+        uso = somar_uso(uso_reescrita, uso_resposta)
+        if uso:
+            yield json.dumps(uso) + "\n"
         if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
             cache_gravar(chave, linhas)
         log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": True, "top": round(melhor, 3),

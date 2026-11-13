@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Clock, Gauge, RefreshCw } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -9,6 +9,8 @@ import { hora } from '@/lib/formato'
 
 import { bytes, haQuanto, LATENCIA_ALVO_MS, selo, SELO_ESTADO, useLatencia, useServidores, type Estado } from '@/lib/dadosAdmin'
 import { cartao } from '@/components/admin/ui'
+import { supabase } from '@/lib/supabase'
+import { linhaCustoIa, type CustoIaMes } from '@/lib/custoIa'
 
 // Servidores (P/index.html 10070–10097). No protótipo, sete serviços com
 // medidas fixas (p95 da API, entrega de push, 4 TB contratados, janela de
@@ -27,6 +29,16 @@ export default function Servidores() {
   const queryClient = useQueryClient()
   const s = useServidores()
   const lat = useLatencia()
+  // E6: custo do mês da busca clínica; só o super admin recebe (os outros, 42501, e a linha some)
+  const custo = useQuery({
+    queryKey: ['admin-custo-ia'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('ia_custo_busca_mes')
+      if (error) return null
+      return ((data ?? []) as CustoIaMes[])[0] ?? null
+    },
+    staleTime: 5 * 60 * 1000,
+  })
   const d = s.data
   const agora = s.dataUpdatedAt
 
@@ -81,10 +93,15 @@ export default function Servidores() {
       },
     )
   }
+  if (custo.data) {
+    const l = linhaCustoIa(custo.data)
+    servicos.push({ servico: 'IA da busca clínica', medida: l.medida, nota: l.nota, estado: 0 })
+  }
 
   function medirDeNovo() {
     void queryClient.invalidateQueries({ queryKey: ['admin-servidores'] })
     void queryClient.invalidateQueries({ queryKey: ['admin-latencia'] })
+    void queryClient.invalidateQueries({ queryKey: ['admin-custo-ia'] })
   }
 
   return (
