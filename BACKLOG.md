@@ -2476,6 +2476,8 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 **Ordem técnica:** schema/RLS → pseudonimização → ingestão → busca/citações → PubMed → operação. Nada de dado real de paciente antes do item 2 fechado.
 
+**Diagnóstico de 12/11/2026** (`docs/hermes/HERMES-EVIDENCIAS-DIAGNOSTICO.md`): o "Pergunte à IA" do plantonista (`clinical-search`, Portão 2) já é este assistente, mas o corpus fica no Qdrant do VPS (`biblioteca/`, embeddings bge-m3 locais, DeepSeek), não em pgvector. Estado: 1 parcial, 2 existe com 5 lacunas, 3 feita (a conferir no VPS), 4 parcial, 5 não existe, 6 parcial. Decisão do RT no mesmo dia: E1–E6 = A. Fica o Qdrant (a tabela acima vale pelo que pede, não pela tecnologia); fechar as lacunas da pseudonimização primeiro; conferir a ingestão; identificador do trecho e confiança em três níveis; PubMed ao vivo só como lista de artigos, sem texto do modelo; modelo e tokens em `clinical_search_logs` para o custo do mês. Em aberto com o RT: E7, os livros sem licença antes de vender a outra rede. Ordem: E2 → E3 → E1 → E4 → E6 → E5. A biblioteca serve homologação e produção juntas: toda publicação no VPS pede o "ok produção".
+
 ---
 
 ## Backlog Comercial Paralelo
