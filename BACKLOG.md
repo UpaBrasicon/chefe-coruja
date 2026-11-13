@@ -2496,6 +2496,8 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 | 2 | P1 | Lote 1 da revisão: emergências com dose e conduta de alto risco (PCR, sepse, SCA, AVC, CAD e EHH, anafilaxia, intoxicações) | Mapa capítulo → diretriz mais recente, com o que mudou; notas de atualização ingeridas; aprovação do RT |
 | 3 | P2 | Lotes seguintes até cobrir os cerca de 90 capítulos | Mapa completo do livro, sem capítulo sem conferência |
 
+**Ajuste do RT em 13/11/2026, feito antes do E5 por decisão dele ("Agora, antes do E5"):** na ferramenta "CAD e EHH — tratamento" do adulto, o preparo da insulina regular EV passou a ter duas opções. O padrão é o preparo da unidade, 100 U (1 mL de U-100) em 99 mL de SF = 100 mL a 1 U/mL, em que mL/h é igual a U/h. O do manual (50 U em 250 mL, 0,2 U/mL; p. 871) fica como opção. Muda só a diluição: as doses seguem o manual e o consenso 2024. A bomba, a dose reduzida, o ajuste horário e as contas do consenso usam o preparo escolhido. Ficha 2026-11-13.1, pela migration `20270413000002`, na homologação e na produção com o ok do RT (#648); a versão aguarda a aprovação do RT na Revisão Clínica.
+
 ---
 
 ## Backlog Comercial Paralelo
