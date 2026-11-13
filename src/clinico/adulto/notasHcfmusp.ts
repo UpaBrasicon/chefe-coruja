@@ -10,9 +10,13 @@ import type { Fonte, Ficha } from '../ficha.ts'
 import { DIRETRIZES_ANAFILAXIA, fichaAnafilaxiaAdulto } from './anafilaxia.ts'
 import { DIFERENCAS_ANTICOAG_2025, DIRETRIZ_SCA_2025, fichaAnticoagulacaoPlenaAdulto, fichaFibrinoliticosAdulto } from './anticoagulacao.ts'
 import { DIRETRIZ_AVC_2026, fichaTromboliseAvcAdulto } from './avcTrombolise.ts'
+import { GINA_ITENS, fichaAsmaAdulto } from './asmaDpoc.ts'
+import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, fichaEmergenciaHipertensivaAdulto } from './emergenciaHipertensiva.ts'
+import { DIFERENCAS_FA_2024, DOSES_FA_2024, fichaFibrilacaoAtrialAdulto } from './fibrilacaoAtrial.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
+import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
 import { CARVAO_CTRC_2026, CARVAO_INDICACAO, fichaIntoxicacoesAdulto } from './intoxicacoes.ts'
-import { COSTR_2026_PCR, DIRETRIZ_ALS_2025, fichaPcrAdulto } from './pcr.ts'
+import { COSTR_2026_PCR, DIFERENCAS_BRADI_2025, DIRETRIZ_ALS_2025, fichaBradicardiaAdulto, fichaPcrAdulto } from './pcr.ts'
 import { METAS_ERC_2025, METAS_POS_PCR, fichaPosPcrAdulto } from './posPcr.ts'
 import { DIRETRIZES_2026, fichaRessuscitacaoAdulto } from './ressuscitacaoVolemica.ts'
 
@@ -52,6 +56,11 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap38-avc': 'AVC isquêmico',
   'nota-hcfmusp-cap64-cad-ehh': 'cetoacidose diabética (CAD) e estado hiperosmolar (EHH) no adulto',
   'nota-hcfmusp-cap97-99-intoxicacoes': 'intoxicações exógenas (carvão ativado)',
+  'nota-hcfmusp-cap15-bradiarritmias': 'bradicardia e bradiarritmias no adulto',
+  'nota-hcfmusp-cap17-fa': 'fibrilação atrial (FA) no adulto',
+  'nota-hcfmusp-cap19-emergencia-hipertensiva': 'emergência hipertensiva e elevação da pressão arterial no adulto',
+  'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
+  'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
 }
 
 const sem = (s?: string) => (s && s.trim() && s.trim() !== '—' ? s : 'não trata do ponto')
@@ -111,6 +120,53 @@ export const NOTAS_HCFMUSP_LOTE1: NotaHcfmusp[] = [
   notaHcfmuspCap2, notaHcfmuspCap6, notaHcfmuspCap7, notaHcfmuspCap11, notaHcfmuspCap13, notaHcfmuspCap38, notaHcfmuspCap64, notaHcfmuspCap97,
 ]
 
+// ── Lote 2 (decisão do RT de 13/11/2026, M1–M3 = A; docs/clinico/HCFMUSP-LOTE2-DIAGNOSTICO.md).
+// Só os capítulos cuja ficha já tem a lista manual × diretriz e nenhuma diretriz mais nova.
+const REVISADO_LOTE2 = '13/11/2026 (lote 2 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a diretriz; aguarda aprovação do RT)'
+function notaLote2(...a: Parameters<typeof nota>): NotaHcfmusp {
+  const n = nota(...a)
+  n.ficha.revisadoEm = REVISADO_LOTE2
+  return n
+}
+/** Item de uma lista `string[]` em que a frase já traz o manual e a diretriz, com a página. */
+/** O tema é o começo da própria frase (até o primeiro ':' ou ';'), cortado em 60 caracteres. */
+function temaDaFrase(t: string): string {
+  const s = t.split(/[:;]/)[0].trim().replace(/\.$/, '')
+  return s.length <= 60 ? s : `${s.slice(0, s.lastIndexOf(' ', 60))}…`
+}
+const frase = (t: string) => ({ tema: temaDaFrase(t), diretriz: t, manual: 'no próprio item, com a página' })
+
+/** cap. 15: AHA 2025 (Part 9, seção 19) e ERC/RCUK 2025. */
+export const notaHcfmuspCap15 = notaLote2('nota-hcfmusp-cap15-bradiarritmias', 'Nota de atualização — manual HC, cap. 15: bradiarritmias', 'cap. 15, p. 223–232', fichaBradicardiaAdulto,
+  DIFERENCAS_BRADI_2025.map(frase))
+
+/** cap. 17: ESC 2024 e SBC/SOBRAC 2025 (M3: a base fica nessas duas). */
+export const notaHcfmuspCap17 = notaLote2('nota-hcfmusp-cap17-fa', 'Nota de atualização — manual HC, cap. 17: fibrilação atrial', 'cap. 17, p. 243–256', fichaFibrilacaoAtrialAdulto, [
+  ...DIFERENCAS_FA_2024.map(frase),
+  ...DOSES_FA_2024.map((d) => ({ tema: `Dose IV na FA — ${d.droga}`, diretriz: `ESC 2024: ${d.esc}. SBC 2025: ${d.sbc}`, manual: d.livro })),
+])
+
+/** cap. 19: DBHA 2025 (M3: a base fica nela). */
+export const notaHcfmuspCap19 = notaLote2('nota-hcfmusp-cap19-emergencia-hipertensiva', 'Nota de atualização — manual HC, cap. 19: emergências hipertensivas', 'cap. 19, p. 270–276', fichaEmergenciaHipertensivaAdulto, [
+  ...DBHA_2025_ALVOS.map((d) => ({ tema: d.tema, diretriz: `DBHA 2025 (${d.forca}): ${d.dbha}${d.nota ? `. Nota: ${d.nota}` : ''}`, manual: sem(d.livro) })),
+  ...DIFERENCAS_EH_2025.map(frase),
+])
+
+/** cap. 30: GINA 2026. */
+export const notaHcfmuspCap30 = notaLote2('nota-hcfmusp-cap30-asma', 'Nota de atualização — manual HC, cap. 30: asma', 'cap. 30, p. 406–416', fichaAsmaAdulto,
+  GINA_ITENS.map((g) => ({ tema: g.tema, diretriz: `GINA 2026, ${g.pagina}: ${g.gina}`, manual: sem(g.livro) })))
+
+/** cap. 67, só a hiperpotassemia do adulto (a hipocalemia espera a leitura, M2). */
+export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 'Nota de atualização — manual HC, cap. 67: hiperpotassemia', 'cap. 67, p. 900–917', fichaHiperpotassemia,
+  DIVERGENCIA_MANUAL_HC.diferencas.map((t) => {
+    const item = frase(t.replace(/desta tela/g, 'da ferramenta da Central').replace(/nesta tela/g, 'na ferramenta da Central').replace(/esta tela/g, 'a ferramenta da Central'))
+    return { ...item, diretriz: `Ferramenta da Central (Geldermann, Emerg Med J 2026): ${item.diretriz}` }
+  }),
+  semManual(fichaHiperpotassemia.fontes).filter((f) => !f.pediatrica))
+
+export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap30, notaHcfmuspCap67]
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
+
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha
 export const fichaNotaHcfmuspCap6 = notaHcfmuspCap6.ficha
@@ -120,6 +176,11 @@ export const fichaNotaHcfmuspCap13 = notaHcfmuspCap13.ficha
 export const fichaNotaHcfmuspCap38 = notaHcfmuspCap38.ficha
 export const fichaNotaHcfmuspCap64 = notaHcfmuspCap64.ficha
 export const fichaNotaHcfmuspCap97 = notaHcfmuspCap97.ficha
+export const fichaNotaHcfmuspCap15 = notaHcfmuspCap15.ficha
+export const fichaNotaHcfmuspCap17 = notaHcfmuspCap17.ficha
+export const fichaNotaHcfmuspCap19 = notaHcfmuspCap19.ficha
+export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha
+export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */
 export function textoNota(n: NotaHcfmusp, rotaCentral?: string): string {
