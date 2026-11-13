@@ -100,6 +100,8 @@
 
 - arquivo: manual_hcfmusp_3ed_2022.pdf
   publico: adulto
+  # E3b (13/11/2026): capítulo "# 13" + nome na linha seguinte; subtítulos em maiúsculas
+  secoes: capitulo-numero
   titulo: "Manual de Medicina de Emergência — HCFMUSP, 3ª ed."
   editor: "Manole (Brandão Neto RA et al., eds.)"
   ano: 2022
