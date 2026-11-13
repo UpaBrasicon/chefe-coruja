@@ -56,6 +56,19 @@ Na rodada 2 veio uma diretriz pediátrica numa pergunta de adulto. A pergunta de
 
 A causa da SDRA está na reescrita da pergunta, que o E5 não muda. Na produção, a reescrita foi "SDRA, ventilação mecânica protetora, volume corrente" e a ferramenta veio em 1º. Na homologação, depois de limpar a memória, ela escreveu o nome por extenso, e a ferramenta não entrou nas 3 primeiras. É a variação da reescrita feita pelo modelo, não desta mudança. Fica registrada.
 
+## Produção (13/11/2026, com o "ok produção" do RT)
+
+- Antes de publicar: imagem guardada como `biblioteca-api:antes-e5-20261113` e arquivos em `/root/biblioteca-antes-e5-20261113.tgz`.
+- A branch recebeu o master antes da publicação, para levar também as fichas de CAD de #648 e #649. Depois rodou o `biblioteca:sync` (232 ferramentas) e a API foi reiniciada; a saúde respondeu 200.
+- "Tratamento da cetoacidose diabética no adulto", perguntado direto no container da produção, devolveu `meta`, `delta`, `pubmed`, `done` e `uso`. Os 5 artigos:
+  - diretriz da CAD no adulto (2022);
+  - diretriz do EHH no adulto (2023);
+  - os dois consensos de 2024 sobre crises hiperglicêmicas no adulto;
+  - consenso de diabetes tipo 1 no adulto (2021).
+- A tela sobe com o merge deste PR.
+
+**Rollback:** `docker tag biblioteca-api:antes-e5-20261113 biblioteca-api:latest && docker compose up -d api`. A tela nova não mostra nada se a linha `pubmed` não vier.
+
 ## Fica de fora
 
 - O resumo dos artigos pelo modelo (opção B), que o RT não escolheu.
