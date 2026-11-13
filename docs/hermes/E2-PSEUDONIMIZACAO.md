@@ -101,3 +101,18 @@ Sem migration: `ia_gateway_log` (migrations `20260926000002` e `20261022000009`)
 - **O NER da produção pode estar desligado.** Se `NER_DESLIGADO=1` ou o modelo spaCy não estiver na imagem, toda pergunta ao modelo passa a ser recusada com 503. Conferir pelo `/v1/deid` da produção (`ner_ativo`) antes de publicar.
 - **Mais um passo no caminho.** Cada pergunta ao modelo ganha uma chamada ao `/v1/deid`, de 1 s ou menos, com limite de 8 s.
 - **Falso positivo do NER.** Palavra que o NER toma por nome bloqueia a pergunta. O filtro de vocabulário clínico (decisão do RT de 15/10/2026) já reduz isso, e o 422 diz o que fazer.
+
+## E2b: o histórico da busca simples guardava nomes (13/11/2026)
+
+**Achado.** No teste do RT na homologação (conta `medico.upa.f5`), a pergunta à IA com "a Maria Souza está com asma" foi bloqueada, como deveria. Mas a busca simples da mesma tela gravou o texto inteiro em `clinical_search_logs`, com o nome. A busca simples não passava pelo NER, e a máscara do histórico só tira documentos, contatos, datas e os nomes cadastrados na unidade. Isso vinha de antes do E2. O texto não ia ao modelo, mas o nome ficava no banco.
+
+**Correção, com o ok do RT:**
+- a busca simples também consulta o `/v1/deid`, com limite de 3 s;
+- o nome achado vira `[PESSOA]` antes de sair para a biblioteca e no histórico;
+- sem o NER, a busca segue (não vai ao modelo), mas o histórico guarda "[não registrada]" no lugar do texto.
+
+A pergunta ao modelo não muda.
+
+**Testes:** 12 casos em `liberar.test.ts` (3 novos para a busca simples e 1 para `mascararNomes`).
+
+**Fora desta correção:** as 67 linhas antigas de `clinical_search_logs` na produção (até 13/10/2026) não foram lidas, porque podem conter nome de paciente. Limpar ou não esse histórico é decisão do RT.
