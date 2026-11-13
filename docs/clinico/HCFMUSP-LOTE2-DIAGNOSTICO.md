@@ -84,3 +84,18 @@ Todos os 12 capítulos têm ficha. Uma nota do lote 1 só pode ser montada quand
 - Nos itens que já são uma frase com o manual e a diretriz, o título do item é o começo da própria frase.
 - A nota da hiperpotassemia fica só no adulto, sem a fonte pediátrica da ficha. "Esta tela" vira "a ferramenta da Central".
 - Cada nota é uma ficha nova e aguarda a aprovação do RT na Revisão Clínica.
+
+### Antes e depois (13/11/2026)
+
+As mesmas 6 perguntas foram feitas direto à API da biblioteca: primeiro na produção, que já tinha as notas do lote 1 e a regra 8, mas não as do lote 2; depois na homologação, com as 5 notas novas.
+
+| Pergunta | Produção, antes | Homologação, com o lote 2 |
+|---|---|---|
+| dose de atropina na bradicardia sintomática | 1 mg até 3 mg (AHA 2025), com a ERC | 0,5 mg até 3 mg (ERC 2025, igual ao manual), com os 1 mg da AHA 2025 ao lado: as duas são diretrizes atuais |
+| dose de ataque de amiodarona na FA | **150 mg em 10 min (manual)** | 300 mg em 30–60 min e 900–1.200 mg/24 h (ESC 2024 e SBC 2025) |
+| até quantas horas cardioverter a FA sem anticoagular | estratégia por duração (< 24 h), sem o 48 h do manual | igual |
+| quanto reduzir a PA no AVC isquêmico sem trombólise | 15% em 24 h só com PA ≥ 220/120 | igual, citando a DBHA 2025 |
+| fenoterol na crise de asma | **"Sim" (manual)** | "Não": a GINA 2026 não recomenda |
+| a partir de qual potássio é hipercalemia | **≥ 5,5 (manual)** | a partir de 5,0 (ferramenta da Central), com os 5,5 do manual como diferença |
+
+Na produção, 3 das 6 respostas seguiam o manual; na homologação, nenhuma.
