@@ -6,8 +6,9 @@
 # unidades; um uuid de unidade restringe a ela.
 #
 # Os dois livros-fonte das ferramentas (Manual HCFMUSP 2022 e PS Pediatria ICr
-# 2023) já estão em raw/ no VPS; a entrada deles aqui fica a cargo do usuário
-# (modelo em README.md, seção "Entrada dos livros").
+# 2023) estão em raw/ no VPS e registrados no fim deste arquivo, sem licença de
+# uso (decisão do RT de 28/09/2026); ingestão conferida em 13/11/2026
+# (docs/hermes/E3-INGESTAO-EVIDENCIA.md).
 #
 # `publico` (R2-13, decisão do RT em 13/10/2026): pediatrico, adulto ou ambos.
 # Pergunta de criança só busca em fonte pediatrico/ambos; pergunta de adulto não
