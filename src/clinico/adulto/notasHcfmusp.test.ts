@@ -13,7 +13,7 @@ test('oito notas cobrem os 12 capítulos do lote 1, com ids únicos e versão', 
   const caps = NOTAS_HCFMUSP_LOTE1.map((n) => n.capitulos).join(' ')
   for (const c of [2, 4, 6, 7, 11, 13, 14, 38, 64, 97, 98, 99]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
   for (const n of NOTAS_HCFMUSP_LOTE1) {
-    assert.equal(n.ficha.versao, '2026-11-13.1')
+    assert.match(n.ficha.versao, /^2026-11-13\.[12]$/)
     assert.equal(n.ficha.publico, 'adulto')
     assert.ok(n.itens.length > 0, n.ficha.id)
   }

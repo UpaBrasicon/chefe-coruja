@@ -8,7 +8,7 @@
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
 import { DIRETRIZES_ANAFILAXIA, fichaAnafilaxiaAdulto } from './anafilaxia.ts'
-import { DIFERENCAS_ANTICOAG_2025, fichaAnticoagulacaoPlenaAdulto } from './anticoagulacao.ts'
+import { DIFERENCAS_ANTICOAG_2025, DIRETRIZ_SCA_2025, fichaAnticoagulacaoPlenaAdulto, fichaFibrinoliticosAdulto } from './anticoagulacao.ts'
 import { DIRETRIZ_AVC_2026, fichaTromboliseAvcAdulto } from './avcTrombolise.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { CARVAO_CTRC_2026, CARVAO_INDICACAO, fichaIntoxicacoesAdulto } from './intoxicacoes.ts'
@@ -66,9 +66,15 @@ export const notaHcfmuspCap7 = nota('nota-hcfmusp-cap4-7-sepse', 'Nota de atuali
 export const notaHcfmuspCap11 = nota('nota-hcfmusp-cap11-anafilaxia', 'Nota de atualização — manual HC, cap. 11: anafilaxia', 'cap. 11, p. 168–181', fichaAnafilaxiaAdulto,
   DIRETRIZES_ANAFILAXIA.map((d) => ({ tema: d.tema, diretriz: `${d.onde}: ${d.texto}`, manual: sem(d.livro) })))
 
-/** cap. 13 e 14: anticoagulação na SCA pela AHA/ACC 2025 e ESC 2023. */
-export const notaHcfmuspCap13 = nota('nota-hcfmusp-cap13-14-sca', 'Nota de atualização — manual HC, cap. 13 e 14: síndrome coronariana aguda', 'cap. 13, p. 199–211; cap. 14, p. 212–222', fichaAnticoagulacaoPlenaAdulto,
-  DIFERENCAS_ANTICOAG_2025.map((t) => ({ tema: t.split(':')[0], diretriz: t, manual: 'no próprio item, com a página' })))
+/** cap. 13 e 14: reperfusão, fibrinolíticos e anticoagulação pela AHA/ACC 2025 e ESC 2023
+ *  (listas das fichas de fibrinolíticos e de anticoagulação plena). Antiagregação (AAS e
+ *  inibidor de P2Y12) não entra: nenhuma ficha da Central compara essa parte. */
+export const notaHcfmuspCap13 = nota('nota-hcfmusp-cap13-14-sca', 'Nota de atualização — manual HC, cap. 13 e 14: síndrome coronariana aguda', 'cap. 13, p. 199–211; cap. 14, p. 212–222', fichaFibrinoliticosAdulto, [
+  ...DIRETRIZ_SCA_2025.map((d) => ({ tema: d.tema, diretriz: `${d.fonte}: ${d.diretriz}`, manual: sem(d.livro) })),
+  ...DIFERENCAS_ANTICOAG_2025.map((t) => ({ tema: `Anticoagulação — ${t.split(':')[0]}`, diretriz: t, manual: 'no próprio item, com a página' })),
+], semManual([...fichaFibrinoliticosAdulto.fontes, ...fichaAnticoagulacaoPlenaAdulto.fontes]).filter((f, i, a) => a.findIndex((x) => x.citacao === f.citacao) === i))
+// versão .2: a .1 (já na homologação) tinha só os 3 itens de anticoagulação
+notaHcfmuspCap13.ficha.versao = '2026-11-13.2'
 
 /** cap. 38: AHA/ASA 2026. */
 export const notaHcfmuspCap38 = nota('nota-hcfmusp-cap38-avc', 'Nota de atualização — manual HC, cap. 38: AVC isquêmico', 'cap. 38, p. 513–541', fichaTromboliseAvcAdulto,
