@@ -170,10 +170,10 @@ for (const arq of arquivos) {
     }
   }
 }
-// Notas de atualização do manual do HC (lote 1 da revisão, decisão do RT de
+// Notas de atualização do manual do HC (lotes 1 e 2 da revisão, decisões do RT de
 // 13/11/2026): uma por capítulo, com os itens que as fichas já conferiram.
-const { NOTAS_HCFMUSP_LOTE1, textoNota } = await import(pathToFileURL(join(raiz, 'src/clinico/adulto/notasHcfmusp.ts')).href)
-for (const n of NOTAS_HCFMUSP_LOTE1) {
+const { NOTAS_HCFMUSP, textoNota } = await import(pathToFileURL(join(raiz, 'src/clinico/adulto/notasHcfmusp.ts')).href)
+for (const n of NOTAS_HCFMUSP) {
   const rota = ROTA_DA_FICHA[n.fichaCentral]
   const fontes = n.ficha.fontes.map((f) => f.citacao).join(' · ')
   const md = [
