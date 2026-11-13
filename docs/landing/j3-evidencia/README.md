@@ -37,7 +37,10 @@ Conferido em www.chefecoruja.com.br, num Edge sem janela, logo depois da publica
 
 ![Janela em 375 px](janela-375.png)
 
+## Envio real na produção
+
+O RT fez um envio pelo www.chefecoruja.com.br em 12/11/2026, com o Turnstile, e confirmou que o e-mail "Pedido de demonstração" chegou ao Gmail do contato.
+
 ## Fica para o RT
 
-- Um envio real pelo site da produção, para confirmar o e-mail de ponta a ponta.
 - O `EMAIL_FROM` da homologação está fora do formato. O envio do código de 2FA usa esse segredo; na homologação ele provavelmente falha. A produção não foi conferida.
