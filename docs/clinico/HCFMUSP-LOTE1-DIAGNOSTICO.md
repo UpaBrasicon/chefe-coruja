@@ -77,3 +77,22 @@ Sem regra, a resposta pode citar o dado antigo do livro.
 
 - **Nota mal resumida vira erro com cara de oficial.** Por isso cada nota cita a página da diretriz, só repete o que a ficha já conferiu e passa pela aprovação do RT.
 - **O conflito pode continuar** se a busca trouxer só o trecho do manual, sem a nota. As evals com perguntas de conflito medem isso.
+
+## L2: resultado (13/11/2026)
+
+**CoSTR 2026 do ILCOR** (Resuscitation 2026, PMID 42988037). O texto final está fechado na editora; foi lido na pré-publicação aberta do ILCOR (maio de 2026). No adulto:
+
+| Tema | Recomendação 2026 | Força e certeza | O que muda |
+|---|---|---|---|
+| Trombolítico de rotina na RCP (ALS 3203) | Não fazer; a do TEP suspeito continua | forte, moderada | confirma a de 2010 com revisão nova |
+| Volume durante a RCP (ALS 3207/3518) | Não fazer de rotina na PCR não traumática sem causa definida; volume se havia hipovolemia; nunca amido | fraca, muito baixa; forte (amido) | nova |
+| Adrenalina IM (ALS 3212) | Evidência insuficiente para acrescentar | fraca, muito baixa | nova |
+| Carregar o desfibrilador (BLS 2605/ALS 3105) | Durante as compressões | fraca, muito baixa | nova |
+| Ventilação (BLS 2401/2404) | 30:2 ou 10/min com compressão contínua; bolsa de adulto padrão | fraca, muito baixa | revisão nova |
+| Oxigênio (ALS 3305), compressões (BLS 2501) | Iguais | — | sem mudança |
+| Neuroprognóstico (ALS 3513/3510) | Atualizações de evidência confirmam as recomendações anteriores | — | sem mudança |
+
+**Nenhuma dose muda.** A ficha `adulto-pcr` ganhou a fonte e o bloco "CoSTR 2026 do ILCOR — o que veio depois da AHA 2025" (versão 2026-11-13.1, migration `20270413000004`). A versão aguarda a aprovação do RT.
+
+**Corrigenda do ERC/ESICM 2025 (pós-PCR)** (PMID 42766977): o texto está fechado na editora e não foi lido. A ficha `adulto-pos-pcr` segue como está; a corrigenda fica anotada para conferir quando houver acesso.
+

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 
-import { AHA_2025_PCR, CHOQUE_PCR, DIRETRIZ_ALS_2025, DROGAS_PCR, KCL_ATAQUE_MEQ, calcularPcr, fichaPcrAdulto, lidocainaSegundaDoseMg, type Faixa } from '@/clinico/adulto/pcr'
+import { AHA_2025_PCR, CHOQUE_PCR, COSTR_2026_PCR, DIRETRIZ_ALS_2025, DROGAS_PCR, KCL_ATAQUE_MEQ, calcularPcr, fichaPcrAdulto, lidocainaSegundaDoseMg, type Faixa } from '@/clinico/adulto/pcr'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -73,6 +73,16 @@ export function PcrAdulto() {
             </TableBody>
           </Table>
         </div>
+      </Bloco>
+
+      <Bloco titulo="CoSTR 2026 do ILCOR — o que veio depois da AHA 2025" descricao="Revisão anual do ILCOR (Resuscitation 2026), lida na pré-publicação aberta; só o adulto. Nenhuma dose muda; entre parênteses, a força da recomendação e a certeza da evidência.">
+        <ul className="flex flex-col gap-2 text-apoio">
+          {COSTR_2026_PCR.map((c) => (
+            <li key={c.tema}>
+              <strong>{c.tema}:</strong> {c.recomendacao} <span className="text-tinta-sussurro">({c.forca}; {c.codigo}; {c.muda})</span>
+            </li>
+          ))}
+        </ul>
       </Bloco>
     </ToolLayout>
   )
