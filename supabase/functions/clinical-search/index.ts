@@ -127,7 +127,8 @@ async function tratar(req: Request): Promise<Response> {
       method: 'POST',
       headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ texto }),
-      signal: AbortSignal.timeout(8_000),
+      // a busca simples espera menos: sem o NER ela segue, só sem registro do texto
+      signal: AbortSignal.timeout(mode === 'ask' ? 8_000 : 3_000),
     }).then((r) => (r.ok ? r.json() : null)))
 
   if (liberacao.tipo !== 'ok') {
@@ -154,7 +155,7 @@ async function tratar(req: Request): Promise<Response> {
       '). Tire o dado e pergunte de novo: a busca não envia identificação para a IA.')
   }
 
-  const qRed = redact(liberacao.texto)
+  const qRed = liberacao.registro === null ? '[não registrada]' : redact(liberacao.registro)
   const upstream = await chamarBiblioteca(base, chave, mode, liberacao.texto, { tenant_id: unidadeId, request_id, publico })
 
   await admin.from('clinical_search_logs').insert({

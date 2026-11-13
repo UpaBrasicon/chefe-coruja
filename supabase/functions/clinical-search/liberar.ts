@@ -10,6 +10,10 @@
 //      (/v1/deid) confere nomes de pessoa em texto corrido. NER fora do ar,
 //      sem o modelo carregado ou com resposta estranha: não sai (falha fechada).
 //      Nome encontrado: bloqueia.
+//   4. na busca simples (E2b, 13/11/2026), o NER também roda: o nome achado
+//      vira [PESSOA] antes de sair, e o histórico de buscas só guarda o texto
+//      que passou pelo NER (sem o NER, guarda "[não registrada]"). A busca
+//      segue mesmo sem o NER, porque não vai ao modelo.
 // Nada aqui guarda ou devolve o texto original; o registro leva só contagens,
 // tipos e o hash da entrada.
 import { criarCofre, desidentificar, residuos, type Conhecido, type Contagem } from '../_shared/desidentificacao.ts'
@@ -23,7 +27,8 @@ export type RespostaDeid = { found: string[]; ner_ativo: boolean }
 export type ConsultarDeid = (texto: string) => Promise<unknown>
 
 export type Liberacao =
-  | { tipo: 'ok'; texto: PerguntaLiberada; contagem: Contagem }
+  /** registro: o que pode ir para o histórico de buscas; null = não registrar o texto */
+  | { tipo: 'ok'; texto: PerguntaLiberada; registro: string | null; contagem: Contagem }
   | { tipo: 'bloqueada'; tipos: Record<string, number>; contagem: Contagem }
   | { tipo: 'indisponivel'; motivo: string; contagem: Contagem }
 
@@ -65,24 +70,45 @@ export async function liberarPergunta(
     return { tipo: 'bloqueada', tipos, contagem }
   }
 
-  // A busca simples não vai ao modelo de linguagem: só a pergunta ao modelo
-  // passa pelo NER (cada tecla da busca não espera o NER).
-  if (modo === 'ask') {
-    let resposta: unknown
-    try {
-      resposta = await consultarDeid(limpo.texto)
-    } catch (e) {
-      const nome = e instanceof Error ? e.name : ''
-      return { tipo: 'indisponivel', motivo: nome === 'TimeoutError' || nome === 'AbortError' ? 'timeout' : 'rede', contagem }
-    }
+  // O NER confere nomes de pessoa em texto corrido nos dois modos.
+  let motivoSemNer: string | null = null
+  let nomes: string[] = []
+  let resposta: unknown
+  try {
+    resposta = await consultarDeid(limpo.texto)
+  } catch (e) {
+    const nome = e instanceof Error ? e.name : ''
+    motivoSemNer = nome === 'TimeoutError' || nome === 'AbortError' ? 'timeout' : 'rede'
+  }
+  if (!motivoSemNer) {
     const deid = lerDeid(resposta)
-    if (!deid) return { tipo: 'indisponivel', motivo: 'resposta_invalida', contagem }
-    if (!deid.ner_ativo) return { tipo: 'indisponivel', motivo: 'ner_inativo', contagem }
-    const nomes = deid.found.filter(nomeAlemDoPseudonimo)
-    if (nomes.length) return { tipo: 'bloqueada', tipos: { [TIPO_NOME_NER]: nomes.length }, contagem }
+    if (!deid) motivoSemNer = 'resposta_invalida'
+    else if (!deid.ner_ativo) motivoSemNer = 'ner_inativo'
+    else nomes = deid.found.filter(nomeAlemDoPseudonimo)
   }
 
-  return { tipo: 'ok', texto: limpo.texto as PerguntaLiberada, contagem }
+  if (modo === 'ask') {
+    // Pergunta ao modelo: NER fora não sai; nome encontrado bloqueia.
+    if (motivoSemNer) return { tipo: 'indisponivel', motivo: motivoSemNer, contagem }
+    if (nomes.length) return { tipo: 'bloqueada', tipos: { [TIPO_NOME_NER]: nomes.length }, contagem }
+    return { tipo: 'ok', texto: limpo.texto as PerguntaLiberada, registro: limpo.texto, contagem }
+  }
+
+  // Busca simples (E2b, 13/11/2026): não vai ao modelo e segue mesmo sem o NER,
+  // mas o nome achado sai do texto, e o histórico só guarda o que passou pelo
+  // NER. Sem o NER, o histórico fica sem o texto.
+  const texto = mascararNomes(limpo.texto, nomes)
+  return { tipo: 'ok', texto: texto as PerguntaLiberada, registro: motivoSemNer ? null : texto, contagem }
+}
+
+/** Troca cada nome achado pelo NER por [PESSOA], do mais longo para o mais curto. */
+export function mascararNomes(texto: string, nomes: string[]): string {
+  let t = texto
+  for (const n of [...nomes].sort((a, b) => b.length - a.length)) {
+    const re = new RegExp(`(?<![\\p{L}])${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')}(?![\\p{L}])`, 'gu')
+    t = t.replace(re, '[PESSOA]')
+  }
+  return t
 }
 
 /** sha256 em hexadecimal, para o registro sem texto. */

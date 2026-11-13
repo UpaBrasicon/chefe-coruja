@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { hashEntrada, liberarPergunta, nomeAlemDoPseudonimo, TIPO_NOME_NER } from './liberar.ts'
+import { hashEntrada, liberarPergunta, mascararNomes, nomeAlemDoPseudonimo, TIPO_NOME_NER } from './liberar.ts'
 
 const nerLimpo = async () => ({ found: [], ner_ativo: true })
 const naoChamar = async () => { throw new Error('não devia consultar o NER') }
@@ -54,9 +54,31 @@ test('NER fora do ar ou resposta estranha: não sai', async () => {
   assert.equal(estranha.tipo === 'indisponivel' && estranha.motivo, 'resposta_invalida')
 })
 
-test('a busca simples não vai ao modelo e não espera o NER', async () => {
-  const r = await liberarPergunta('amoxicilina', [], 'search', naoChamar)
+test('busca simples sem o NER segue, mas sem registrar o texto', async () => {
+  const r = await liberarPergunta('a Maria Souza está com asma', [], 'search', naoChamar)
   assert.equal(r.tipo, 'ok')
+  if (r.tipo === 'ok') assert.equal(r.registro, null)
+  const inativo = await liberarPergunta('amoxicilina', [], 'search', async () => ({ found: [], ner_ativo: false }))
+  assert.equal(inativo.tipo === 'ok' && inativo.registro, null)
+})
+
+test('busca simples: nome achado pelo NER sai do texto e do registro (E2b)', async () => {
+  const r = await liberarPergunta('a Maria Souza está com asma', [], 'search', async () => ({ found: ['Maria Souza'], ner_ativo: true }))
+  assert.equal(r.tipo, 'ok')
+  if (r.tipo === 'ok') {
+    assert.equal(r.texto, 'a [PESSOA] está com asma')
+    assert.equal(r.registro, 'a [PESSOA] está com asma')
+  }
+})
+
+test('busca simples limpa registra o texto', async () => {
+  const r = await liberarPergunta('salbutamol', [], 'search', nerLimpo)
+  assert.equal(r.tipo === 'ok' && r.registro, 'salbutamol')
+})
+
+test('mascararNomes troca o nome inteiro, sem pegar pedaço de palavra', () => {
+  assert.equal(mascararNomes('Ana e Anaflávia', ['Ana']), '[PESSOA] e Anaflávia')
+  assert.equal(mascararNomes('Maria  Souza com febre', ['Maria Souza', 'Maria']), '[PESSOA] com febre')
 })
 
 test('pseudônimo e nome do sistema não contam como nome', () => {
