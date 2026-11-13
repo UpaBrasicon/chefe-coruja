@@ -8,6 +8,11 @@ import { supabase } from '@/lib/supabase'
 
 export type Fonte = {
   n: number
+  /** identificador do trecho na biblioteca (E4), para rastrear a citação */
+  trecho_id?: string
+  /** E4: fonte de origem do trecho e se ele passou do corte da busca */
+  fonte_id?: string
+  acima_do_corte?: boolean
   titulo: string
   editor: string
   ano: number
@@ -20,10 +25,13 @@ export type Fonte = {
 
 export type ToolHit = { id: string; nome: string; tipo: string; categoria: string; rota: string; score: number }
 
+/** E4: alta = duas ou mais fontes acima do corte; moderada = uma fonte só; baixa = sem resposta. */
+export type ConfiancaIa = 'alta' | 'moderada' | 'baixa'
+
 export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | 'error' | 'limite' | 'indisponivel' | 'identificacao'
 
 type Evento =
-  | { type: 'meta'; request_id: string; gate: boolean; publico?: 'adulto' | 'pediatrico'; ferramentas: ToolHit[]; fontes: Fonte[] }
+  | { type: 'meta'; request_id: string; gate: boolean; publico?: 'adulto' | 'pediatrico'; ferramentas: ToolHit[]; fontes: Fonte[]; confianca?: ConfiancaIa }
   | { type: 'delta'; text: string }
   | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean; nao_encontrou?: boolean; recusa?: boolean }
   | { type: 'error'; text: string }
@@ -69,13 +77,14 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
   const [alerta, setAlerta] = useState<string | null>(null)
   const [requestId, setRequestId] = useState<string | null>(null)
   const [publico, setPublico] = useState<'adulto' | 'pediatrico' | null>(null)
+  const [confianca, setConfianca] = useState<ConfiancaIa | null>(null)
   const controle = useRef<AbortController | null>(null)
 
   useEffect(() => () => controle.current?.abort(), [])
 
   const limpar = useCallback(() => {
     controle.current?.abort()
-    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null)
+    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null)
     setStatus('idle')
   }, [])
 
@@ -84,7 +93,7 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     controle.current?.abort()
     const ac = new AbortController()
     controle.current = ac
-    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null)
+    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null)
     setStatus('loading')
     let res: Response
     try {
@@ -124,6 +133,7 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
             setFontes(ev.fontes ?? [])
             setFerramentas(ev.ferramentas ?? [])
             setPublico(ev.publico ?? null)
+            setConfianca(ev.confianca ?? null)
             bloqueado = !ev.gate
             setStatus(ev.gate ? 'streaming' : 'blocked')
           } else if (ev.type === 'delta') {
@@ -145,5 +155,5 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     }
   }, [unidadeId, modo])
 
-  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico }
+  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca }
 }
