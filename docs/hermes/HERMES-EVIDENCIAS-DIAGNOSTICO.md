@@ -16,7 +16,7 @@ A busca clínica com citação ("Pergunte à IA" do plantonista) já existe e es
 | Separação por cliente | RLS com `tenant_id` | filtro no código: trechos `global` ou da unidade (`main.py:104-107`) |
 | Registro das fontes | coluna de licenciamento | `biblioteca/fontes.yaml` (título, editor, ano, licença, público, `tenant_id`) |
 
-No banco da homologação não há a extensão `vector` nem coluna de embedding. Existem só `clinical_search_logs`, `clinical_search_feedback` e as tabelas do Hermes (`hermes_almanaque`, `hermes_resumo_unidade` e outras). A homologação usa a biblioteca da produção (`BACKLOG.md`, Portão 2).
+No banco da homologação não há a extensão `vector` nem coluna de embedding. Existem só `clinical_search_logs`, `clinical_search_feedback` e as tabelas do Hermes (`hermes_almanaque`, `hermes_resumo_unidade` e outras). A biblioteca tem homologação própria desde 13/10/2026 (R2-13): o container `biblioteca-api-homolog` (porta 8711, `https://biblioteca.chefecoruja.com.br/homolog/`), com o código da branch, sobre a cópia `biblioteca_homolog` da coleção e o mesmo Qdrant e Ollama da produção (`biblioteca/docker-compose.homolog.yml`, `npm run biblioteca:homolog`). Falta conferir se a Edge da homologação aponta para esse endereço (`BIBLIOTECA_URL`, segredo que não foi lido).
 
 O caminho de uma pergunta é:
 1. A Edge `clinical-search` confere login, vínculo com a unidade e o limite de 30 perguntas por hora.
@@ -47,6 +47,8 @@ O caminho de uma pergunta é:
 
 Os dois livros são obras comerciais da Manole, sem licença de uso (`licenca: "sem-licenca"` em `fontes.yaml`). Eles foram registrados pela decisão do RT de 28/09/2026, que retirou a regra R4 da biblioteca. Para o uso de hoje, numa rede só, a decisão é do RT. **Antes de vender o produto a outra rede, isso precisa de decisão**, porque trechos dos livros aparecem na tela de usuários de outro cliente. Ver a decisão E7.
 
+**Correção em 12/11/2026:** a primeira versão deste documento dizia que a biblioteca não tinha homologação. Tem, desde 13/10/2026; os trechos acima foram corrigidos.
+
 ## Decisões para o RT
 
 | # | Pergunta | Opções | Recomendação |
@@ -70,11 +72,11 @@ Os dois livros são obras comerciais da Manole, sem licença de uso (`licenca: "
 5. **E6**, migration expand em `clinical_search_logs`, a biblioteca devolvendo os tokens e o cartão de custo no painel do admin.
 6. **E5**, rota nova na biblioteca e bloco novo na tela.
 
-Cada item vai em branch e PR próprios, pela homologação. A biblioteca roda no VPS e serve a homologação e a produção juntas. **Toda mudança na biblioteca chega às duas ao mesmo tempo**, então pede o "ok produção" antes de ser publicada no VPS, com o rollback escrito (voltar a imagem anterior do Docker Compose).
+Cada item vai em branch e PR próprios, pela homologação. Na biblioteca, o código da branch vai primeiro para o container da homologação (`npm run biblioteca:homolog`, com as evals por `-- --avaliar`). A produção só muda com `npm run biblioteca:sync` depois do "ok produção", com o rollback escrito (voltar a imagem anterior do Docker Compose).
 
 ## Riscos
 
-- **Biblioteca única para os dois ambientes.** Não há biblioteca de homologação. Um erro publicado no VPS chega ao plantonista na hora. Mitigação: subir a versão nova numa porta separada do VPS, testar pela homologação apontando para ela e só então trocar.
+- **Homologação e produção da biblioteca dividem o Qdrant e o Ollama.** O código e a coleção são separados, mas uma carga pesada na homologação (reingestão, evals) pesa também na busca da produção. Fazer essas cargas fora do horário de pico.
 - **Fechar o NER sem cuidado bloqueia o plantão.** Se o modelo spaCy cair, toda pergunta passa a ser recusada. A mensagem tem de dizer que a busca está indisponível, e o aviso tem de chegar ao admin.
 - **PubMed (E5).** A NCBI limita as chamadas sem chave a 3 por segundo, e a resposta vem em inglês.
 
