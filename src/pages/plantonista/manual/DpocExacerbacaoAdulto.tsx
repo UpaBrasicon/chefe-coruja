@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
 import {
-  DROGAS_DPOC, ERRATA_DPOC, INDICACOES_UTI_DPOC, INDICACOES_VM_DPOC, INDICACOES_VNI_DPOC, NOTA_ATS_HIPERCAPNICA, SINTOMAS_CARDINAIS, VM_DPOC, VNI_DPOC,
+  DIFERENCAS_DPOC_GOLD_2026, DIRETRIZ_DPOC_GOLD_2026, DROGAS_DPOC, ERRATA_DPOC, INDICACOES_UTI_DPOC, INDICACOES_VM_DPOC, INDICACOES_VNI_DPOC, NOTA_ATS_HIPERCAPNICA, SINTOMAS_CARDINAIS, VM_DPOC, VNI_DPOC,
   cicloVentilatorio, classificarDpoc, fichaDpocAdulto, lerGasometriaDpoc, mgBeta2, suporteVni, vcDpoc,
 } from '@/clinico/adulto/asmaDpoc'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Button } from '@/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -34,7 +35,7 @@ export function DpocExacerbacaoAdulto() {
   return (
     <ToolLayout
       title="Exacerbação de DPOC — adulto"
-      description="Classificação pelos sintomas cardinais, cortes gasométricos, broncodilatador e corticoide, VNI e parâmetros iniciais da VM invasiva, como o manual do HCFMUSP traz. Adulto (14 anos ou mais)."
+      description="Classificação pelos sintomas cardinais, cortes gasométricos, broncodilatador e corticoide, VNI e parâmetros iniciais da VM invasiva, pelo manual do HCFMUSP, com o GOLD 2026 ao lado. Adulto (14 anos ou mais)."
       ficha={fichaDpocAdulto}
     >
       <CampoPeso id="dp-peso" peso={peso} onChange={setPeso} />
@@ -99,6 +100,16 @@ export function DpocExacerbacaoAdulto() {
         <ul className="list-disc pl-5">{INDICACOES_VM_DPOC.map((i) => <li key={i}>{i}</li>)}</ul>
         <p className="font-medium">Indicações de UTI (Tabela 9, p. 426)</p>
         <ul className="list-disc pl-5">{INDICACOES_UTI_DPOC.map((i) => <li key={i}>{i}</li>)}</ul>
+      </Bloco>
+
+      <Bloco titulo="GOLD 2026 — ao lado do manual" descricao="Capítulo 4 do relatório GOLD 2026 (exacerbações), PDF lido. O GOLD não dá classe de recomendação; o nível de evidência aparece quando a Figura 4.6 o traz.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">GOLD 2026</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_DPOC_GOLD_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.gold} <span className="text-tinta-sussurro">({d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DPOC_GOLD_2026.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Errata e divergências do livro">

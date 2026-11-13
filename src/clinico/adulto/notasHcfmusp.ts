@@ -10,7 +10,7 @@ import type { Fonte, Ficha } from '../ficha.ts'
 import { DIRETRIZES_ANAFILAXIA, fichaAnafilaxiaAdulto } from './anafilaxia.ts'
 import { DIFERENCAS_ANTICOAG_2025, DIRETRIZ_SCA_2025, fichaAnticoagulacaoPlenaAdulto, fichaFibrinoliticosAdulto } from './anticoagulacao.ts'
 import { DIRETRIZ_AVC_2026, fichaTromboliseAvcAdulto } from './avcTrombolise.ts'
-import { GINA_ITENS, fichaAsmaAdulto } from './asmaDpoc.ts'
+import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS, fichaAsmaAdulto, fichaDpocAdulto } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, fichaEmergenciaHipertensivaAdulto } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024, fichaFibrilacaoAtrialAdulto } from './fibrilacaoAtrial.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
@@ -60,6 +60,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap17-fa': 'fibrilação atrial (FA) no adulto',
   'nota-hcfmusp-cap19-emergencia-hipertensiva': 'emergência hipertensiva e elevação da pressão arterial no adulto',
   'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
+  'nota-hcfmusp-cap31-dpoc': 'exacerbação de DPOC (doença pulmonar obstrutiva crônica) no adulto',
   'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
 }
 
@@ -156,6 +157,10 @@ export const notaHcfmuspCap19 = notaLote2('nota-hcfmusp-cap19-emergencia-hiperte
 export const notaHcfmuspCap30 = notaLote2('nota-hcfmusp-cap30-asma', 'Nota de atualização — manual HC, cap. 30: asma', 'cap. 30, p. 406–416', fichaAsmaAdulto,
   GINA_ITENS.map((g) => ({ tema: g.tema, diretriz: `GINA 2026, ${g.pagina}: ${g.gina}`, manual: sem(g.livro) })))
 
+/** cap. 31: GOLD 2026, capítulo 4 (M2), pelo PDF do relatório. */
+export const notaHcfmuspCap31 = notaLote2('nota-hcfmusp-cap31-dpoc', 'Nota de atualização — manual HC, cap. 31: exacerbação de DPOC', 'cap. 31, p. 417–428', fichaDpocAdulto,
+  DIRETRIZ_DPOC_GOLD_2026.map((d) => ({ tema: d.tema, diretriz: `GOLD 2026 (${d.onde}): ${d.gold}`, manual: sem(d.livro) })))
+
 /** cap. 67, só a hiperpotassemia do adulto (a hipocalemia espera a leitura, M2). */
 export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 'Nota de atualização — manual HC, cap. 67: hiperpotassemia', 'cap. 67, p. 900–917', fichaHiperpotassemia,
   DIVERGENCIA_MANUAL_HC.diferencas.map((t) => {
@@ -164,7 +169,7 @@ export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 
   }),
   semManual(fichaHiperpotassemia.fontes).filter((f) => !f.pediatrica))
 
-export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap30, notaHcfmuspCap67]
+export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap30, notaHcfmuspCap31, notaHcfmuspCap67]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -180,6 +185,7 @@ export const fichaNotaHcfmuspCap15 = notaHcfmuspCap15.ficha
 export const fichaNotaHcfmuspCap17 = notaHcfmuspCap17.ficha
 export const fichaNotaHcfmuspCap19 = notaHcfmuspCap19.ficha
 export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha
+export const fichaNotaHcfmuspCap31 = notaHcfmuspCap31.ficha
 export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */

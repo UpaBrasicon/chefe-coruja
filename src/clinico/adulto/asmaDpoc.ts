@@ -39,12 +39,53 @@ export const NOTA_ATS_HIPERCAPNICA =
   'ATS 2026: na IRpA hipercápnica, recomendação forte de VNI para reduzir mortalidade e intubação. A CNAF entra só como condicional, na hipercapnia menos grave com acidemia leve, com vigilância e escalada rápida para VNI. Concorda com o livro.'
 
 const fichaDpocLivro = fichaAdulto('adulto-dpoc-exacerbacao', 'Exacerbação de DPOC — adulto', 'cap. 31 DPOC, p. 417–427')
+// Lote 2 da revisão do HCFMUSP, M2 (decisão do RT de 13/11/2026): GOLD 2026,
+// capítulo 4 (exacerbações), lido no PDF do relatório, com as figuras 4.2 a 4.9.
+// O GOLD não usa classe de recomendação; onde ele dá nível de evidência
+// (Figura 4.6), o nível vai junto. Doses e contas do manual não mudam.
+export const GOLD_2026: Fonte = {
+  citacao: 'Global Initiative for Chronic Obstructive Lung Disease (GOLD). Global Strategy for the Diagnosis, Management, and Prevention of Chronic Obstructive Pulmonary Disease: 2026 Report (v1.3, 8 dez. 2025). Capítulo 4, Management of Exacerbations, p. 92–108, com as figuras 4.2, 4.4, 4.5, 4.6, 4.8 e 4.9 (PDF lido).',
+  url: 'https://goldcopd.org/2026-gold-report/',
+}
+
 export const fichaDpocAdulto: Ficha = {
   ...fichaDpocLivro,
-  versao: '2026-11-06.1',
-  fontes: [...fichaDpocLivro.fontes, ATS_IRPA_2026],
-  revisadoEm: '06/11/2026 (nota da ATS 2026 na VNI da IRpA hipercápnica; revisão PubMed, itens médios)',
+  versao: '2026-11-13.1',
+  fontes: [...fichaDpocLivro.fontes, GOLD_2026, ATS_IRPA_2026],
+  revisadoEm: '13/11/2026 (GOLD 2026 ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota da ATS 2026 na VNI da IRpA hipercápnica; revisão PubMed, itens médios)',
 }
+
+const SEM_ITEM_DPOC = 'sem item do manual na ferramenta'
+
+/** GOLD 2026 × manual, um tema por linha, com a página do relatório. */
+export const DIRETRIZ_DPOC_GOLD_2026: { tema: string; gold: string; onde: string; livro: string }[] = [
+  { tema: 'Gravidade', gold: 'Classificação de Roma. Leve: dispneia (EVA) < 5, FR < 24, FC < 95, SaO2 ≥ 92% em ar ambiente com queda ≤ 3% e PCR < 10 mg/L. Moderada: pelo menos 3 de 5 entre EVA ≥ 5, FR ≥ 24, FC ≥ 95, SaO2 < 92% ou queda > 3% e PCR ≥ 10. Grave: como a moderada, com hipercapnia e acidose na gasometria (PaCO2 > 45 mmHg e pH < 7,35)', onde: 'p. 94, Figura 4.2', livro: '1, 2 ou 3 manifestações cardinais (Tabela 1, p. 418)' },
+  { tema: 'Diagnósticos que imitam ou pioram', gold: 'Pneumonia, TEP, IC descompensada, IAM, arritmias e pneumotórax', onde: 'p. 92 e 97', livro: SEM_ITEM_DPOC },
+  { tema: 'Broncodilatador', gold: 'β2 de curta, com ou sem anticolinérgico de curta, é o inicial (evidência C). Nebulizar com ar comprimido, não com oxigênio, para não subir a PaCO2. Uma nebulização por hora por 2–3 doses (ou 1–2 jatos do spray por hora por 2–3 doses), depois a cada 2–4 h; evitar doses altas', onde: 'p. 103; Figura 4.6', livro: '10–20 gotas em 3–5 mL de SF, três inalações a cada 15–20 min ou contínuas, depois de 1/1 h (p. 423)' },
+  { tema: 'Metilxantinas', gold: 'Teofilina e aminofilina IV não são recomendadas, pelos efeitos adversos', onde: 'p. 92 e 103', livro: SEM_ITEM_DPOC },
+  { tema: 'Corticoide sistêmico', gold: '40 mg/dia de prednisona ou equivalente por 5 dias (evidência A); VO tão eficaz quanto IV', onde: 'p. 103; Figura 4.6', livro: 'prednisona 40 mg VO por 5 dias (p. 423–424); metilprednisolona EV 20–60 mg 6/6 h nos graves (p. 424)' },
+  { tema: 'Quando dar antibiótico', gold: 'Pelo menos 2 entre piora da dispneia, febre, aumento do volume e da purulência do escarro, desde que a purulência seja um deles; cultura de escarro positiva em exacerbação anterior; ou ventilação mecânica, invasiva ou não (evidência A)', onde: 'p. 104; Figura 4.6', livro: 'exacerbações moderadas e graves (p. 424)' },
+  { tema: 'Qual antibiótico e por quanto tempo', gold: 'Pela resistência local: aminopenicilina com clavulanato, macrolídeo, tetraciclina ou, em selecionados, quinolona. 5–7 dias; no ambulatório, até 5 dias (evidência B para 5 dias)', onde: 'p. 104–105; Figura 4.6', livro: '5 a 7 dias; sem fatores de risco, só amoxicilina (p. 424)' },
+  { tema: 'Procalcitonina', gold: 'Não recomendada para decidir o antibiótico', onde: 'p. 104', livro: SEM_ITEM_DPOC },
+  { tema: 'Oxigênio', gold: 'Oxigenoterapia controlada no hipoxêmico. O capítulo de exacerbação não traz alvo numérico de saturação', onde: 'p. 101', livro: 'SaO2 88–92% (p. 423)' },
+  { tema: 'Cateter nasal de alto fluxo (CNAF)', gold: 'Primeiro modo de suporte na insuficiência respiratória hipoxêmica; na hipercápnica, ou sem resposta ao CNAF, VNI, salvo contraindicação absoluta (evidência A)', onde: 'p. 102 e 105–107; Figura 4.6', livro: SEM_ITEM_DPOC },
+  { tema: 'Indicação de VNI', gold: 'Pelo menos um: acidose respiratória (PaCO2 ≥ 45 mmHg e pH ≤ 7,35); dispneia grave com sinais de fadiga (musculatura acessória, respiração paradoxal, tiragem intercostal); hipoxemia persistente apesar do oxigênio', onde: 'p. 107, Figura 4.8', livro: 'pH < 7,35 e PaCO2 > 60 mmHg; dispneia moderada a grave com musculatura acessória; hipoxemia refratária (Tabela 6, p. 424)' },
+  { tema: 'Retirada da VNI', gold: 'Pode ser suspensa sem desmame quando o paciente tolera pelo menos 4 h sem suporte', onde: 'p. 107', livro: SEM_ITEM_DPOC },
+  { tema: 'Indicação de ventilação invasiva', gold: 'Hipoxemia grave persistente apesar de CNAF ou VNI; intolerância a CNAF ou VNI; pós-PCR; rebaixamento ou agitação não controlada com sedação; aspiração maciça ou vômitos persistentes; incapacidade de remover secreções; instabilidade grave sem resposta a volume e vasoativos; arritmias graves', onde: 'p. 108, Figura 4.9', livro: 'falência ou contraindicação da VNI, pós-PCR, rebaixamento, pausas respiratórias, secreções, instabilidade grave e arritmias ventriculares graves (Tabela 7, p. 425–426)' },
+  { tema: 'Indicação de UTI', gold: 'Hipoxemia ou hipercapnia persistente ou piorando apesar do suporte ventilatório; piora do estado mental; necessidade de ventilação invasiva; instabilidade hemodinâmica', onde: 'p. 98, Figura 4.4', livro: 'dispneia grave sem resposta, estado mental, PaO2 < 40 ou pH < 7,25, ventilação invasiva, instabilidade (Tabela 9, p. 426)' },
+  { tema: 'Estimulante respiratório', gold: 'Não recomendado na insuficiência respiratória aguda', onde: 'p. 107', livro: SEM_ITEM_DPOC },
+  { tema: 'Medidas gerais na internação', gold: 'Balanço hídrico; profilaxia de TEV com heparina SC ou HBPM; tratar IC, arritmias e TEP associados', onde: 'p. 102, Figura 4.5; p. 105', livro: SEM_ITEM_DPOC },
+  { tema: 'Na alta', gold: 'Broncodilatador de longa duração o quanto antes; com 1 ou mais exacerbações moderadas ou graves e eosinófilos altos, considerar corticoide inalatório somado ao duplo broncodilatador', onde: 'p. 92 e 108–109', livro: SEM_ITEM_DPOC },
+]
+
+export const DIFERENCAS_DPOC_GOLD_2026: string[] = [
+  'VNI: o GOLD 2026 indica já com PaCO2 ≥ 45 mmHg e pH ≤ 7,35; o manual pede PaCO2 > 60 mmHg com pH < 7,35. A conta da gasometria desta tela segue o manual.',
+  'Gravidade: o GOLD 2026 usa a classificação de Roma (dispneia, FR, FC, SaO2, PCR e gasometria); o manual conta as manifestações cardinais.',
+  'Antibiótico: o GOLD 2026 pede escarro purulento com mais um sintoma, cultura positiva anterior ou ventilação mecânica; o manual indica nas exacerbações moderadas e graves.',
+  'CNAF: o GOLD 2026 a coloca como primeiro suporte na insuficiência hipoxêmica e mantém a VNI na hipercápnica; a ATS 2026 (nota da VNI) vai no mesmo sentido.',
+  'Nebulização com ar comprimido, não com oxigênio; metilxantinas e estimulantes respiratórios não recomendados.',
+  'Corticoide: 40 mg de prednisona por 5 dias nas duas fontes.',
+]
 
 export type GravidadeGina = 'leve' | 'moderada' | 'grave' | 'risco de vida'
 
