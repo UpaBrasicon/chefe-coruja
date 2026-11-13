@@ -1,12 +1,12 @@
 import { Fragment, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, ExternalLink, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react'
+import { BookOpen, ExternalLink, Globe, Sparkles, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
-import { confiancaDasCitadas, fontesCitadas, SEM_PEDIATRIA, semResposta, textoConfianca } from '@/lib/respostaIa'
-import type { ConfiancaIa, Fonte, StatusIa, ToolHit } from '@/lib/useClinicalAsk'
+import { confiancaDasCitadas, fontesCitadas, mostrarPubmed, SEM_PEDIATRIA, semResposta, textoConfianca } from '@/lib/respostaIa'
+import type { ArtigoPubmed, ConfiancaIa, Fonte, StatusIa, ToolHit } from '@/lib/useClinicalAsk'
 import { cn } from '@/lib/utils'
 
 // Painel da resposta da IA (guia §9.4): texto em streaming com [n] clicável,
@@ -27,7 +27,29 @@ type Props = {
   publico?: 'adulto' | 'pediatrico' | null
   /** E4: nível de confiança que a biblioteca calculou (null em resposta antiga ou fixa). */
   confianca?: ConfiancaIa | null
+  /** E5: artigos do PubMed ao vivo quando o material não respondeu. */
+  pubmed?: ArtigoPubmed[]
   onFechar: () => void
+}
+
+/** E5: lista do PubMed ao vivo, sem texto da IA. */
+function ListaPubmed({ artigos }: { artigos: ArtigoPubmed[] }) {
+  return (
+    <div data-pubmed>
+      <p className="rotulo mb-1 flex items-center gap-1.5 text-tinta-sussurro"><Globe className="size-3.5" aria-hidden /> PubMed ao vivo, fora do material de referência</p>
+      <p className="mb-1.5 text-apoio text-tinta-sussurro">Artigos para ler na fonte. A IA não resumiu nem conferiu o conteúdo.</p>
+      <ol className="space-y-1.5">
+        {artigos.map((a) => (
+          <li key={a.pmid} className="rounded-controle px-2 py-1 text-apoio text-tinta">
+            <a href={a.url} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 font-medium text-acao hover:underline">
+              {a.titulo} <ExternalLink className="mt-0.5 size-3 shrink-0" aria-hidden />
+            </a>
+            <span className="block text-tinta-sussurro">{[a.revista, a.ano, a.tipo].filter(Boolean).join(' · ')}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
 }
 
 /** Renderiza a linha com **negrito** e [n] como chip que rola até a fonte. */
@@ -134,7 +156,7 @@ function CartoesFerramentas({ ferramentas }: { ferramentas: ToolHit[] }) {
   )
 }
 
-export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, onFechar }: Props) {
+export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed = [], onFechar }: Props) {
   if (status === 'idle') return null
   const curto = status === 'streaming' || status === 'done' ? semResposta(texto) : null
   if (curto) { fontes = []; ferramentas = [] } else if (status === 'done') fontes = fontesCitadas(texto, fontes)
@@ -197,6 +219,8 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
             </ol>
           </div>
         )}
+
+        {mostrarPubmed(status, curto, pubmed) && <ListaPubmed artigos={pubmed} />}
 
         {(status === 'done' || status === 'blocked') && requestId && <Feedback requestId={requestId} />}
       </div>

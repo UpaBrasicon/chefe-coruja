@@ -41,6 +41,13 @@ export function confiancaDasCitadas(
   return fontes.size >= 2 ? 'alta' : fontes.size === 1 ? 'moderada' : null
 }
 
+/** E5: a lista do PubMed ao vivo só aparece quando o material não respondeu
+ *  (sem resposta pelo corte, ou a resposta é "não encontrei"). */
+export function mostrarPubmed(status: string, curto: string | null, artigos: unknown[]): boolean {
+  if (!artigos.length) return false
+  return status === 'blocked' || (status === 'done' && curto !== null)
+}
+
 /** E4 (decisão do RT de 12/11/2026): texto do nível de confiança da resposta.
  *  Baixa e ausente não aparecem: com baixa, a IA não responde. */
 export function textoConfianca(confianca: string | null | undefined): string | null {

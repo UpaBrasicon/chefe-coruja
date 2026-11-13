@@ -279,6 +279,7 @@ export default function PlantonistaHome() {
           requestId={ia.requestId}
           publico={ia.publico}
           confianca={ia.confianca}
+          pubmed={ia.pubmed}
           onFechar={ia.limpar}
         />
 
