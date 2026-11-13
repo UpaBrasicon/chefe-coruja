@@ -17,10 +17,11 @@ Guia completo: `produto/docs/pesquisa/busca-ia-guia-implementacao.md`.
 - ~~R4~~ retirada pelo responsável técnico em 28/09/2026: toda fonte continua
   registrada em `fontes.yaml` (título, editor, ano, `licenca`), mas a licença
   não bloqueia mais a ingestão. Os dois livros (Manual HCFMUSP 2022 e PS
-  Pediatria ICr 2023) já estão em `raw/` no VPS, mas **a linha deles em
-  `fontes.yaml` e a ingestão ficaram para o usuário** (a IA foi impedida de
-  registrá-los): obras comerciais da Manole sem licença de uso; a
-  responsabilidade é do RT. Modelo da entrada no fim deste arquivo.
+  Pediatria ICr 2023) estão em `raw/` no VPS, registrados em `fontes.yaml` com
+  `licenca: "sem-licenca"` (obras comerciais da Manole sem licença de uso; a
+  responsabilidade é do RT) e ingeridos: em 13/11/2026, 1.467 trechos do
+  HCFMUSP e 1.786 do ICr na coleção da produção
+  (`docs/hermes/E3-INGESTAO-EVIDENCIA.md`).
 - R5 pseudonimização (CPF, CNS, telefone, data, prontuário) na Edge Function e
   na API; o log guarda só a pergunta mascarada. Desde 12/11/2026 (E2 da trilha
   Hermes / Evidências), a pergunta ao modelo (`/v1/ask`) exige o NER: sem o
@@ -110,7 +111,7 @@ produção só muda com `npm run biblioteca:sync -- --ingerir` depois do "ok pro
 * **Corpus:** cada seção leva o comentário do código (texto com unidade e
   página) e o bloco da ficha; CAD e EHH pediátricos são arquivos separados.
 
-## Entrada dos livros em `fontes.yaml` (para o usuário acrescentar)
+## Entrada dos livros em `fontes.yaml` (já registrada; modelo para referência)
 
 ```yaml
 - arquivo: manual_hcfmusp_3ed_2022.pdf
