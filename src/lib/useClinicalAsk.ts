@@ -10,6 +10,9 @@ export type Fonte = {
   n: number
   /** identificador do trecho na biblioteca (E4), para rastrear a citação */
   trecho_id?: string
+  /** E4: fonte de origem do trecho e se ele passou do corte da busca */
+  fonte_id?: string
+  acima_do_corte?: boolean
   titulo: string
   editor: string
   ano: number

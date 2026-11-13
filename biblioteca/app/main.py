@@ -439,7 +439,10 @@ def ask(r: Req, authorization: str | None = Header(None)):
         return StreamingResponse(repetir(), media_type="application/x-ndjson")
     tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
     t_busca = int((time.time() - t0) * 1000)
-    fontes = [fmt_src(i, p) for i, p in enumerate(trechos)]
+    # E4: a tela recalcula a confiança só com as fontes que a resposta cita
+    corte = GATE_MIN if com_lexico else GATE_SEM_LEXICO
+    fontes = [fmt_src(i, p) | {"fonte_id": p.payload.get("fonte_id"), "acima_do_corte": (p.score or 0) >= corte}
+              for i, p in enumerate(trechos)]
     gate_ok = passa_gate(melhor, com_lexico, trechos)
     # R2-11: sem resposta, nenhuma ferramenta ou fonte sem relação na tela
     ferramentas = [fmt_tool(t) for t in tools if t.score > FERRAMENTA_MIN] if gate_ok else []

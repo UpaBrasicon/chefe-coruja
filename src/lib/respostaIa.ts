@@ -29,6 +29,18 @@ export function fontesCitadas<T extends { n: number }>(texto: string, fontes: T[
   return c.size ? fontes.filter((f) => c.has(f.n)) : fontes
 }
 
+/** E4: confiança pelas fontes que a resposta de fato cita. Alta com duas ou mais
+ *  fontes diferentes acima do corte; moderada com uma; sem os campos (resposta
+ *  antiga em cache), fica o nível que a biblioteca mandou. */
+export function confiancaDasCitadas(
+  citadas: { fonte_id?: string; acima_do_corte?: boolean }[],
+  daBiblioteca: string | null | undefined,
+): string | null {
+  if (!citadas.length || citadas.some((f) => f.acima_do_corte === undefined)) return daBiblioteca ?? null
+  const fontes = new Set(citadas.filter((f) => f.acima_do_corte).map((f) => f.fonte_id))
+  return fontes.size >= 2 ? 'alta' : fontes.size === 1 ? 'moderada' : null
+}
+
 /** E4 (decisão do RT de 12/11/2026): texto do nível de confiança da resposta.
  *  Baixa e ausente não aparecem: com baixa, a IA não responde. */
 export function textoConfianca(confianca: string | null | undefined): string | null {
