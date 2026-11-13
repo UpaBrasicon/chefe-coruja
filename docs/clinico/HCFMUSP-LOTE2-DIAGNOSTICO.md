@@ -99,3 +99,41 @@ As mesmas 6 perguntas foram feitas direto à API da biblioteca: primeiro na prod
 | a partir de qual potássio é hipercalemia | **≥ 5,5 (manual)** | a partir de 5,0 (ferramenta da Central), com os 5,5 do manual como diferença |
 
 Na produção, 3 das 6 respostas seguiam o manual; na homologação, nenhuma.
+
+**Produção (13/11/2026, com o ok do RT, #653):** migration `20270413000006` aplicada; as 5 notas foram copiadas para o corpus e ingeridas (54 trechos), sem reingerir o resto; API reiniciada. As mesmas 6 perguntas na produção: amiodarona 300 mg, fenoterol "não", hipercalemia a partir de 5,0, e a janela da FA agora responde 24 h, com as 48 h do manual como diferença.
+
+## M2, capítulo 21: insuficiência cardíaca aguda (ESC 2026)
+
+**Acesso.** O texto integral da ESC 2026 (Eur Heart J 2026;47(38):5346–5457, PMID 42661420) está fechado na editora: a página do periódico mostra até a seção 5. As recomendações da seção 7 ("IC descompensada", nome que substitui "IC aguda") foram lidas no slideset oficial da ESC, aberto no site da ESC, com classe e nível (slides 8, 12, 22, 65, 67 e 68). Os slides não trazem dose.
+
+**Ficha `adulto-ic-aguda` 2026-11-13.1:**
+- fonte nova `ESC_IC_2026`, que diz que o texto integral não foi lido e que as doses não foram conferidas;
+- lista `DIRETRIZ_ICA_2026` (12 temas): recomendação da ESC 2026 com classe, nível e slide, ao lado da ESC 2021 e do manual;
+- lista `DIFERENCAS_ICA_2026` (7 frases);
+- a tela troca o bloco "ESC 2021" por "ESC 2026 … ao lado da ESC 2021 e do manual". As doses e as contas da tela não mudam.
+
+O que muda em relação à ESC 2021, pelos slides:
+- acetazolamida IV ou hidroclorotiazida VO passam a IIa para quem já usava diurético de alça (em 2021, só o tiazídico no edema resistente);
+- novas: diurético guiado pelo Na urinário nos primeiros dias (IIb) e iSGLT2 iniciado na internação depois da estabilização (I);
+- inotrópico com corte de PAS < 90 mmHg e hipoperfusão sem resposta ao tratamento padrão, inclusive prova volêmica (IIb).
+
+Ficam iguais: oxigênio só com SpO2 < 90% (I, C), opioide de rotina não (III, C) e vasodilatador com PAS > 110 mmHg (IIb, C).
+
+**Nota `nota-hcfmusp-cap21-ic-aguda`:** 12 itens tirados de `DIRETRIZ_ICA_2026`. A ficha e a nota vão na migration `20270413000007` e aguardam a aprovação do RT.
+
+**Não entra:** profilaxia de TEV (não aparece nas tabelas da seção 7 dos slides) e suporte circulatório mecânico (fora da emergência da UPA).
+
+**Antes e depois (13/11/2026).** Perguntas direto à API da biblioteca. A coluna "antes" é a produção, ainda com a ficha da ESC 2021 e sem a nota do cap. 21. A coluna "depois" é a homologação, com a ficha nova e a nota:
+
+| Pergunta | Produção, antes | Homologação, depois |
+|---|---|---|
+| morfina no edema agudo de pulmão | "os trechos não trazem a conduta" | opioide de rotina não recomendado (ESC 2026, III, C), com a "morfina se dispneia" do manual como diferença |
+| alvo de saturação na IC aguda | O2 só com SpO2 < 90% (ferramenta), manual > 95% | igual, citando a ESC 2026 (I, C) |
+| acetazolamida na IC descompensada | só o ensaio ADVOR | ESC 2026, IIa: acetazolamida IV ou hidroclorotiazida VO em quem já usava diurético de alça |
+| dapagliflozina na internação | "sim", pela metanálise de 2026 | "sim", pela recomendação nova da ESC 2026 (I) |
+| dobutamina na IC aguda | só com hipoperfusão (ESC 2021) | PAS < 90 com hipoperfusão sem resposta, inclusive prova volêmica (ESC 2026, IIb) |
+| dose de furosemida | 0,5–1 mg/kg (manual) e 20–40 mg (ESC 2021) | igual; os slides da ESC 2026 não trazem dose |
+
+A primeira rodada não achou a nota com "edema agudo de pulmão". O assunto da nota passou a incluir "edema agudo de pulmão (EAP)" e a busca achou.
+
+**Achado:** durante a ingestão na homologação, uma pergunta à produção deu erro 500 ("Server disconnected" do Qdrant), e a repetição funcionou. As duas coleções usam o mesmo Qdrant, então ingestão pesada na homologação pode afetar a produção.
