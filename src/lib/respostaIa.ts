@@ -28,3 +28,11 @@ export function fontesCitadas<T extends { n: number }>(texto: string, fontes: T[
   const c = citacoes(texto)
   return c.size ? fontes.filter((f) => c.has(f.n)) : fontes
 }
+
+/** E4 (decisão do RT de 12/11/2026): texto do nível de confiança da resposta.
+ *  Baixa e ausente não aparecem: com baixa, a IA não responde. */
+export function textoConfianca(confianca: string | null | undefined): string | null {
+  if (confianca === 'alta') return 'Confiança alta: mais de uma fonte do material trata do assunto.'
+  if (confianca === 'moderada') return 'Confiança moderada: só uma fonte do material trata do assunto. Confira na fonte antes de seguir.'
+  return null
+}

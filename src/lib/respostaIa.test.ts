@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/respostaIa.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { citacoes, fontesCitadas, NAO_ENCONTREI, SEM_PEDIATRIA, semResposta } from './respostaIa.ts'
+import { citacoes, fontesCitadas, NAO_ENCONTREI, SEM_PEDIATRIA, semResposta, textoConfianca } from './respostaIa.ts'
 
 test('sem resposta: fica só a frase, sem a lista de assuntos que o modelo acrescenta', () => {
   const t = 'Não encontrei isso no material de referência.\n\nOs trechos disponíveis tratam de Maddrey [1]; Child-Pugh [2].'
@@ -21,4 +21,12 @@ test('resposta pronta lista só as fontes citadas no texto', () => {
   assert.deepEqual(fontesCitadas(t, fontes).map((f) => f.n), [1, 2])
   assert.deepEqual([...citacoes('sem citação')], [])
   assert.equal(fontesCitadas('sem citação', fontes).length, 6)
+})
+
+test('confiança (E4): alta e moderada têm texto; baixa e ausente não aparecem', () => {
+  assert.match(textoConfianca('alta') ?? '', /^Confiança alta/)
+  assert.match(textoConfianca('moderada') ?? '', /Confira na fonte/)
+  assert.equal(textoConfianca('baixa'), null)
+  assert.equal(textoConfianca(null), null)
+  assert.equal(textoConfianca(undefined), null)
 })

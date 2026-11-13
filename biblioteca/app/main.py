@@ -255,9 +255,23 @@ def fmt_tool(p):
     return {k: p.payload.get(k) for k in ("id", "nome", "tipo", "categoria", "rota")} | {"score": round(p.score, 3)}
 
 
+def confianca(trechos: list, com_lexico: bool, gate_ok: bool) -> str:
+    """E4 da trilha Hermes / Evidências (decisão do RT de 12/11/2026):
+    alta = dois ou mais trechos de fontes diferentes acima do corte;
+    moderada = acima do corte, mas de uma fonte só;
+    baixa = abaixo do corte (a API não responde, como antes).
+    O corte é o mesmo do gate: GATE_MIN com palavra em comum, GATE_SEM_LEXICO sem."""
+    if not gate_ok:
+        return "baixa"
+    corte = GATE_MIN if com_lexico else GATE_SEM_LEXICO
+    fontes = {p.payload.get("fonte_id") for p in trechos if (p.score or 0) >= corte}
+    return "alta" if len(fontes) >= 2 else "moderada"
+
+
 def fmt_src(i, p):
     pl = p.payload
-    return {"n": i + 1, "titulo": pl["titulo"], "editor": pl["editor"], "ano": pl["ano"], "secao": pl.get("secao") or "",
+    # trecho_id (E4): identificador do trecho no Qdrant, para rastrear a citação
+    return {"n": i + 1, "trecho_id": str(p.id), "titulo": pl["titulo"], "editor": pl["editor"], "ano": pl["ano"], "secao": pl.get("secao") or "",
             "pagina": pl.get("pagina"), "ref": pl.get("ref") or None, "url": pl.get("url"), "licenca": pl.get("licenca")}
 
 
@@ -351,6 +365,7 @@ def search(r: Req, authorization: str | None = Header(None)):
     # R2-15: "Sugestões por significado" só quando a busca acha material
     gate_ok = passa_gate(melhor, com_lexico, trechos)
     return {"request_id": r.request_id, "melhor_score": round(melhor, 3), "publico": publico,
+            "confianca": confianca(trechos, com_lexico, gate_ok),
             "ferramentas": [fmt_tool(t) for t in tools if t.score > FERRAMENTA_MIN] if gate_ok else [],
             "trechos": [fmt_src(i, p) | {"preview": p.payload["texto"][:240]} for i, p in enumerate(trechos)] if gate_ok else []}
 
@@ -424,6 +439,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
         linhas: list[str] = []
         t_primeiro = None
         meta = json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
+                           "confianca": confianca(trechos, com_lexico, gate_ok),
                            "publico": publico, "termos": termos, "ferramentas": ferramentas, "fontes": fontes if gate_ok else []},
                           ensure_ascii=False) + "\n"
         linhas.append(meta)

@@ -278,6 +278,7 @@ export default function PlantonistaHome() {
           alerta={ia.alerta}
           requestId={ia.requestId}
           publico={ia.publico}
+          confianca={ia.confianca}
           onFechar={ia.limpar}
         />
 
