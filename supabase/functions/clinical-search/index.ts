@@ -173,13 +173,13 @@ async function tratar(req: Request): Promise<Response> {
   if (!upstream) return erro(503, 'biblioteca indisponível')
   if (!upstream.ok) return erro(upstream.status === 401 ? 502 : upstream.status, 'biblioteca recusou o pedido')
   // E6: modelo e tokens da pergunta ao modelo vão para o registro; a linha sai do stream
-  const corpo = mode === 'ask' && upstream.body
+  const resposta = mode === 'ask' && upstream.body
     ? upstream.body.pipeThrough(semLinhaDeUso(async (uso) => {
       const { error } = await admin.from('clinical_search_logs').update(uso).eq('request_id', request_id)
       if (error) relatarErro('clinical-search', 'uso_tokens', error.message)
     }))
     : upstream.body
-  return new Response(corpo, {
+  return new Response(resposta, {
     status: 200,
     headers: {
       ...cors,
