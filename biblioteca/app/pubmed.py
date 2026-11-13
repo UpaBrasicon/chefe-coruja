@@ -19,6 +19,9 @@ E = os.environ
 PUBMED = E.get("PUBMED", "1") != "0"
 TIMEOUT_S = float(E.get("PUBMED_TIMEOUT_S", 6))
 MAXIMO = int(E.get("PUBMED_MAX", 5))
+# busca os 15 mais relevantes e mostra os 5 de melhor tipo (diretriz e consenso primeiro)
+CANDIDATOS = 15
+ORDEM_TIPO = {"diretriz": 0, "consenso": 1, "revisão sistemática": 2, "metanálise": 2, "revisão": 3, "artigo": 4}
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 FERRAMENTA = "chefe-coruja-biblioteca"
 TIPOS = ('("practice guideline"[pt] OR guideline[pt] OR "consensus statement"[pt] OR "consensus development conference"[pt] '
@@ -72,10 +75,10 @@ def buscar(termos: str, pediatrico: bool, cliente=httpx) -> list[dict]:
     """Até MAXIMO artigos; lista vazia se a NCBI não responder."""
     try:
         r = cliente.get(f"{EUTILS}/esearch.fcgi", timeout=TIMEOUT_S, params={
-            "db": "pubmed", "term": consulta_completa(termos, pediatrico), "retmax": MAXIMO, "sort": "relevance",
+            "db": "pubmed", "term": consulta_completa(termos, pediatrico), "retmax": CANDIDATOS, "sort": "relevance",
             "datetype": "pdat", "reldate": 3650, "retmode": "json", "tool": FERRAMENTA})
         r.raise_for_status()
-        ids = r.json().get("esearchresult", {}).get("idlist", [])[:MAXIMO]
+        ids = r.json().get("esearchresult", {}).get("idlist", [])[:CANDIDATOS]
         if not ids:
             return []
         s = cliente.get(f"{EUTILS}/esummary.fcgi", timeout=TIMEOUT_S, params={
@@ -93,7 +96,9 @@ def buscar(termos: str, pediatrico: bool, cliente=httpx) -> list[dict]:
         artigos.append({"pmid": pmid, "titulo": titulo[:300], "revista": (a.get("fulljournalname") or a.get("source") or "")[:200],
                         "ano": _ano(a.get("pubdate", "")), "tipo": _tipo(a.get("pubtype", [])),
                         "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"})
-    return artigos
+    # ordem estável: dentro do mesmo tipo, fica a relevância do PubMed
+    artigos.sort(key=lambda a: ORDEM_TIPO.get(a["tipo"], 9))
+    return artigos[:MAXIMO]
 
 
 def evento(artigos: list[dict], termos: str) -> str:

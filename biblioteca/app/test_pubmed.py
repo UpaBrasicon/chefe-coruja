@@ -59,6 +59,13 @@ class TestPubmed(unittest.TestCase):
         self.assertNotIn("child[mh]", termo)
         self.assertEqual(c.chamadas[0][1]["reldate"], 3650)
 
+    def test_diretriz_e_consenso_primeiro_e_no_maximo_cinco(self):
+        ids = [str(i) for i in range(1, 9)]
+        tipos = [["Review"]] * 6 + [["Consensus Statement"], ["Practice Guideline"]]
+        resumo = {i: {"title": f"t{i}", "source": "j", "pubdate": "2024", "pubtype": t} for i, t in zip(ids, tipos)}
+        a = pubmed.buscar("x", False, cliente=ClienteFalso(ids, resumo))
+        self.assertEqual([x["pmid"] for x in a], ["8", "7", "1", "2", "3"])
+
     def test_crianca_acrescenta_o_filtro_pediatrico(self):
         c = ClienteFalso([], {})
         self.assertEqual(pubmed.buscar("bronchiolitis", True, cliente=c), [])
