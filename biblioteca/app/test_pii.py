@@ -50,5 +50,30 @@ class TestPseudonimizar(unittest.TestCase):
         self.assertEqual(pii.pseudonimizar("paciente Maria Wells com TEP"), "paciente [PESSOA] com TEP")
 
 
+class TestNerEstrito(unittest.TestCase):
+    """E2 da trilha Hermes / Evidências (12/11/2026): no caminho do modelo, NER fora = não sai."""
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def test_sem_modelo_estrito_lanca_e_simples_segue(self):
+        mock.patch.object(pii, "_nlp", return_value=None).start()
+        with self.assertRaises(pii.NerIndisponivel):
+            pii.pseudonimizar("a Maria do leito com dengue", estrito=True)
+        self.assertEqual(pii.pseudonimizar("CPF 123.456.789-09 com dengue"), "CPF [CPF] com dengue")
+
+    def test_ner_que_falha_estrito_lanca(self):
+        def quebra(_t):
+            raise RuntimeError("falhou")
+        mock.patch.object(pii, "_nlp", return_value=quebra).start()
+        with self.assertRaises(pii.NerIndisponivel):
+            pii.nomes_proprios_estrito("a Maria do leito")
+        self.assertEqual(pii.nomes_proprios("a Maria do leito"), [])
+
+    def test_estrito_com_modelo_mascara(self):
+        mock.patch.object(pii, "_nlp", return_value=nlp_falso("Maria da Silva")).start()
+        self.assertEqual(pii.pseudonimizar("a Maria da Silva com dengue", estrito=True), "a [PESSOA] com dengue")
+
+
 if __name__ == "__main__":
     unittest.main()
