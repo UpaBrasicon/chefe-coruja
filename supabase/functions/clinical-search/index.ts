@@ -21,6 +21,7 @@ import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 import { comRelato, relatarErro } from '../_shared/sentry.ts'
 import { hashEntrada, liberarPergunta, TIPO_NOME_NER, type PerguntaLiberada } from './liberar.ts'
+import { semLinhaDeUso } from './uso.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -171,7 +172,14 @@ async function tratar(req: Request): Promise<Response> {
 
   if (!upstream) return erro(503, 'biblioteca indisponível')
   if (!upstream.ok) return erro(upstream.status === 401 ? 502 : upstream.status, 'biblioteca recusou o pedido')
-  return new Response(upstream.body, {
+  // E6: modelo e tokens da pergunta ao modelo vão para o registro; a linha sai do stream
+  const resposta = mode === 'ask' && upstream.body
+    ? upstream.body.pipeThrough(semLinhaDeUso(async (uso) => {
+      const { error } = await admin.from('clinical_search_logs').update(uso).eq('request_id', request_id)
+      if (error) relatarErro('clinical-search', 'uso_tokens', error.message)
+    }))
+    : upstream.body
+  return new Response(resposta, {
     status: 200,
     headers: {
       ...cors,
