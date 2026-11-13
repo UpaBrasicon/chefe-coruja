@@ -172,22 +172,39 @@ def entidade_clinica(texto: str) -> bool:
     return bool(ws) and all(palavra_clinica(w) for w in ws)
 
 
-def nomes_proprios(t: str) -> list[str]:
-    """Nomes de pessoa detectados pelo NER (vazio se o modelo não estiver presente),
-    sem as entidades que são só vocabulário clínico."""
+class NerIndisponivel(Exception):
+    """O NER não pôde rodar: no caminho que vai ao modelo, a pergunta não sai
+    (E2 da trilha Hermes / Evidências, decisão do RT de 12/11/2026)."""
+
+
+def nomes_proprios_estrito(t: str) -> list[str]:
+    """Como nomes_proprios, mas lança NerIndisponivel quando o modelo não está
+    carregado ou o NER falha. Usado antes de qualquer envio ao modelo."""
     nlp = _nlp()
-    if not nlp or not t:
+    if not nlp:
+        raise NerIndisponivel("modelo spaCy não carregado")
+    if not t:
         return []
     try:
         doc = nlp(t)
-        achados = {
-            e.text.strip()
-            for e in doc.ents
-            if e.label_ in ("PER", "PESSOA", "PERSON") and len(e.text.strip()) >= 3
-            and not entidade_clinica(e.text)
-        }
-        return sorted(achados)
-    except Exception:
+    except Exception as e:  # noqa: BLE001
+        raise NerIndisponivel(type(e).__name__) from e
+    achados = {
+        e.text.strip()
+        for e in doc.ents
+        if e.label_ in ("PER", "PESSOA", "PERSON") and len(e.text.strip()) >= 3
+        and not entidade_clinica(e.text)
+    }
+    return sorted(achados)
+
+
+def nomes_proprios(t: str) -> list[str]:
+    """Nomes de pessoa detectados pelo NER (vazio se o modelo não estiver presente),
+    sem as entidades que são só vocabulário clínico. Fail-safe: serve à busca
+    simples, que não vai ao modelo."""
+    try:
+        return nomes_proprios_estrito(t)
+    except NerIndisponivel:
         return []
 
 
@@ -197,11 +214,12 @@ def _mascarar_nomes(t: str, nomes: list[str]) -> str:
     return t
 
 
-def pseudonimizar(t: str) -> str:
-    """Regex (documentos/contatos) + NER (nomes próprios). Fail-safe no NER."""
+def pseudonimizar(t: str, estrito: bool = False) -> str:
+    """Regex (documentos/contatos) + NER (nomes próprios). Fail-safe no NER,
+    salvo com estrito=True (caminho que vai ao modelo): aí lança NerIndisponivel."""
     for p, s in PADROES:
         t = re.sub(p, s, t, flags=re.IGNORECASE)
-    nomes = nomes_proprios(t)
+    nomes = nomes_proprios_estrito(t) if estrito else nomes_proprios(t)
     if nomes:
         t = _mascarar_nomes(t, nomes)
     return t

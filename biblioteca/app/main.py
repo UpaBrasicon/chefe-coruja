@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 
 from armadilhas import RESPOSTA as RESPOSTA_ARMADILHA, armadilha
-from pii import pseudonimizar, nomes_proprios, ner_disponivel
+from pii import NerIndisponivel, nomes_proprios_estrito, pseudonimizar
 from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_serve, publico_com_termos, publico_da_pergunta
 from siglas import expandir_siglas
 
@@ -334,10 +334,15 @@ def deid(r: DeidReq, authorization: str | None = Header(None)):
     """Desidentificação NER (red-team V5): os gateways (clinical-search, Hermes)
     chamam antes do egress. Retorna o texto mascarado e os nomes encontrados —
     `found` não-vazio = o chamador deve falhar fechado (não enviar à IA).
-    Fail-safe: sem o modelo spaCy, `found` vem vazio e `texto` só com a regex."""
+    Sem o modelo spaCy, ou com o NER falhando nesta chamada, `ner_ativo` vem
+    false e o chamador não envia (E2, 12/11/2026: antes uma falha do NER
+    devolvia `found` vazio com `ner_ativo` true)."""
     auth(authorization)
-    found = nomes_proprios(r.texto)
-    return {"texto": pseudonimizar(r.texto), "found": found, "ner_ativo": ner_disponivel()}
+    try:
+        found = nomes_proprios_estrito(r.texto)
+    except NerIndisponivel:
+        return {"texto": pseudonimizar(r.texto), "found": [], "ner_ativo": False}
+    return {"texto": pseudonimizar(r.texto), "found": found, "ner_ativo": True}
 
 
 @app.post("/v1/search")
@@ -391,7 +396,12 @@ def ask(r: Req, authorization: str | None = Header(None)):
     # sem isso a similaridade da pergunta curta com os trechos fica abaixo do gate
     # chave da memória pela pergunta já sem dado pessoal, antes de expandir siglas
     # ("icc" e "ICC?" expandem diferente e são a mesma pergunta)
-    pq = pseudonimizar(r.q)
+    # E2 (12/11/2026): a pergunta ao modelo exige o NER. Sem ele, não sai.
+    try:
+        pq = pseudonimizar(r.q, estrito=True)
+    except NerIndisponivel as e:
+        log.warning(json.dumps({"rid": r.request_id, "ner_indisponivel": str(e)}))
+        raise HTTPException(503, "verificação de identificação indisponível")
     q = expandir_siglas(pq)
     tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
     tipo = armadilha(q)

@@ -22,7 +22,11 @@ Guia completo: `produto/docs/pesquisa/busca-ia-guia-implementacao.md`.
   registrá-los): obras comerciais da Manole sem licença de uso; a
   responsabilidade é do RT. Modelo da entrada no fim deste arquivo.
 - R5 pseudonimização (CPF, CNS, telefone, data, prontuário) na Edge Function e
-  na API; o log guarda só a pergunta mascarada.
+  na API; o log guarda só a pergunta mascarada. Desde 12/11/2026 (E2 da trilha
+  Hermes / Evidências), a pergunta ao modelo (`/v1/ask`) exige o NER: sem o
+  modelo spaCy, ou com o NER falhando, a API responde 503 e o `/v1/deid`
+  devolve `ner_ativo: false`. A busca simples (`/v1/search`) não vai ao modelo
+  e segue só com a regex quando o NER cai.
 - R6 a busca local (Fuse.js) funciona com o VPS desligado.
 
 ## Conteúdo indexado
