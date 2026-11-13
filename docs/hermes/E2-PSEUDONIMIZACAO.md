@@ -55,12 +55,28 @@ Sem migration: `ia_gateway_log` (migrations `20260926000002` e `20261022000009`)
 | Nenhum prompt chega ao modelo sem passar pela função | Tipo `PerguntaLiberada` na Edge, `liberar.test.ts`, e a biblioteca recusa o `/v1/ask` sem NER (`test_pii.py`) |
 | Auditar o que foi pseudonimizado, sem o original | Linhas de `ia_gateway_log` com origem `edge:clinical_search`, conferidas na homologação |
 
+## 5a. Evidência na homologação (13/11/2026, com o ok do RT)
+
+- Edge `clinical-search` publicada na homologação; biblioteca da branch no container `biblioteca-api-homolog` (`npm run biblioteca:homolog`, saúde 200, 212 ferramentas indexadas). No container da homologação, `nomes_proprios_estrito` existe e o NER está ativo; o da produção seguiu sem mudança.
+- Sessão da conta de teste `medico.observacao.f5@teste.local` (UPA Fase 5 24h) por link mágico, sem senha:
+
+| Pergunta | Resposta |
+|---|---|
+| "conduta na crise de asma grave no adulto" (ask) | 200, com 6 fontes citadas |
+| "a Joana Pereira do leito 4 está em crise de asma, qual a conduta?" (ask) | 422, "A pergunta parece ter o nome de uma pessoa…" |
+| "salbutamol" (search) | 200, sem consulta ao NER |
+
+- `ia_gateway_log`: duas linhas com origem `edge:clinical_search`, uma enviada (sem substituições, latência 4,8 s) e uma bloqueada (`tipos_bloqueio` = 1 "nome próprio (NER)"), as duas com o hash em sha256 e sem texto.
+- `clinical_search_logs`: a pergunta bloqueada ficou como "[não enviada]".
+- Os logs do VPS mostram as chamadas (`/v1/deid` duas vezes, `/v1/ask` e `/v1/search`) no container da homologação, e nenhuma na API da produção. A Edge da homologação usa a biblioteca da homologação.
+- O NER da produção está ativo (`NER_DESLIGADO` vazio, modelo carregado): a mudança não recusa as perguntas da produção.
+
 ## 6. Publicação
 
 1. Edge `clinical-search` na homologação.
 2. Biblioteca no container da homologação (`npm run biblioteca:homolog`, porta 8711).
 3. Na homologação: uma pergunta limpa, uma com nome de pessoa e a linha em `ia_gateway_log`.
-4. Com o "ok produção": a Edge na produção e a biblioteca da produção (`npm run biblioteca:sync`).
+4. Com o "ok produção": guardar a imagem atual da API da produção com outra etiqueta, para o rollback; publicar a biblioteca da produção (`npm run biblioteca:sync`, que copia e reconstrói a imagem, e depois `docker compose up -d api`, porque o script não reinicia o container); publicar a Edge na produção.
 
 **Rollback:** publicar de novo a Edge e a imagem da biblioteca do commit anterior.
 
