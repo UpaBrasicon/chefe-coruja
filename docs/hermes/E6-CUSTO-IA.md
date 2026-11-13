@@ -57,6 +57,21 @@ Trilha Hermes / Evidências, tarefa 6. A decisão do RT de 12/11/2026 foi E6 = A
   - 16 perguntas ao modelo em novembro, 13 delas sem tokens, porque são de antes do E6 ou bloqueadas;
   - US$ 0,0008 estimados.
 
+## Produção (13/11/2026, com o "ok produção" do RT)
+
+- **Migration:** o conector do Supabase estava fora do ar, então ela foi aplicada pelo CLI, numa pasta ligada à produção, em uma transação, com a versão registrada em `schema_migrations`. Conferido:
+  - as 4 colunas novas;
+  - os 3 preços;
+  - `anon` não executa a função;
+  - `authenticated` não lê a tabela de preço;
+  - `search_path` vazio.
+- **Edge `clinical-search`:** publicada; sobe e recusa quem não está logado (401).
+- **Biblioteca:**
+  - versão anterior guardada (`biblioteca-api:antes-e6-20261113` e `/root/biblioteca-antes-e6-20261113.tgz`);
+  - `biblioteca:sync` com 232 ferramentas e API reiniciada;
+  - uma pergunta direto no container terminou com `delta`, `done` e `uso` (`deepseek-flash`, 512, 3.609 e 431 tokens).
+- **Tela:** sobe com o merge deste PR.
+
 ## Fica de fora
 
 - O custo do Hermes e dos agentes Nous (Corujinha, Clínica, Gestora). Eles usam o mesmo modelo, mas pelo gateway do Hermes, e o E6 cobre só a busca clínica.
