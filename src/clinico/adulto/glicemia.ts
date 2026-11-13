@@ -40,13 +40,14 @@ export const NOTA_BASAL_PRECOCE_CAD =
 
 export const fichaCadEhhTratamento: Ficha = {
   ...fichaAdulto('adulto-cad-ehh-tratamento', 'CAD e EHH — hidratação, insulina, potássio e bicarbonato', PAG_TRATAMENTO),
-  versao: '2026-11-06.1',
+  versao: '2026-11-13.1',
   fontes: [
     pagina(PAG_TRATAMENTO),
     { ...CONSENSO_2024, citacao: `${CONSENSO_2024.citacao} Fig. 4 (p. 1264), fluidos e insulina (p. 1265–1266), potássio e bicarbonato (p. 1266), transição (p. 1264–1265).` },
     BASAL_PRECOCE_CAD_2026,
+    { citacao: 'Preparo da unidade para a insulina regular EV: 100 U (1 mL de insulina U-100) em 99 mL de SF 0,9% = 100 mL a 1 U/mL, então U/h = mL/h. Decisão do responsável técnico em 13/11/2026; muda só a diluição, não a dose (as doses seguem o manual e o consenso 2024). O preparo do manual (50 U em 250 mL, 0,2 U/mL; p. 871) continua como opção.' },
   ],
-  revisadoEm: '06/11/2026 (nota da insulina basal precoce na transição; revisão PubMed, itens médios; consenso 2024 conferido no texto; manual do HC mantido como base)',
+  revisadoEm: '13/11/2026 (preparo de 1 U/mL da unidade como padrão das contas de mL/h, com o do manual como opção); 06/11/2026 (nota da insulina basal precoce na transição; revisão PubMed, itens médios; consenso 2024 conferido no texto; manual do HC mantido como base)',
 }
 export const fichaHipoglicemia = fichaAdulto('adulto-hipoglicemia', 'Hipoglicemia — limiar e doses', 'cap. 65, p. 877–881')
 
@@ -147,24 +148,36 @@ export const solucaoSegundaFase = (na: number): '0,9%' | '0,45%' | null => (posi
 
 /** Seringa/bolsa do manual: 50 U de insulina regular em 250 mL de SF → 0,2 U/mL; 5 mL = 1 U (p. 871). */
 export const INSULINA_BOMBA = { unidades: 50, volumeMl: 250, pagina: 'p. 871' }
-export const concentracaoInsulina = () => INSULINA_BOMBA.unidades / INSULINA_BOMBA.volumeMl
-export const mlHDeInsulina = (uH: number) => (ok(uH) && uH >= 0 ? uH / concentracaoInsulina() : null)
+
+/**
+ * Preparos da insulina regular EV. 'unidade' (padrão das contas): 100 U (1 mL de
+ * U-100) em 99 mL de SF = 100 mL a 1 U/mL, decisão do RT de 13/11/2026 — muda só
+ * a diluição. 'manual': 50 U em 250 mL, 0,2 U/mL (p. 871).
+ */
+export type PreparoInsulina = 'unidade' | 'manual'
+export const PREPAROS_INSULINA: Record<PreparoInsulina, { unidades: number; volumeMl: number; diluenteMl: number; rotulo: string; texto: string }> = {
+  unidade: { unidades: 100, volumeMl: 100, diluenteMl: 99, rotulo: '100 U em 99 mL (1 U/mL)', texto: '100 U de insulina regular (1 mL de U-100) em 99 mL de SF = 100 mL a 1 U/mL: a velocidade em mL/h é igual à dose em U/h' },
+  manual: { unidades: INSULINA_BOMBA.unidades, volumeMl: INSULINA_BOMBA.volumeMl, diluenteMl: INSULINA_BOMBA.volumeMl, rotulo: '50 U em 250 mL (0,2 U/mL, manual)', texto: '50 U de insulina regular em 250 mL de SF = 0,2 U/mL; 5 mL = 1 U (p. 871)' },
+}
+export const concentracaoInsulina = (preparo: PreparoInsulina = 'manual') => PREPAROS_INSULINA[preparo].unidades / PREPAROS_INSULINA[preparo].volumeMl
+export const mlHDeInsulina = (uH: number, preparo: PreparoInsulina = 'manual') =>
+  (ok(uH) && uH >= 0 ? uH / concentracaoInsulina(preparo) : null)
 
 export type EsquemaInsulina = 'com-bolus' | 'sem-bolus'
 
 /** Bolus 0,1 U/kg + 0,1 U/kg/h, ou 0,14 U/kg/h sem bolus (p. 871). */
-export function insulinaInicial(pesoKg: number, esquema: EsquemaInsulina) {
+export function insulinaInicial(pesoKg: number, esquema: EsquemaInsulina, preparo: PreparoInsulina = 'manual') {
   if (!positivo(pesoKg)) return null
   const uKgH = esquema === 'com-bolus' ? 0.1 : 0.14
   const uH = uKgH * pesoKg
-  return { bolusU: esquema === 'com-bolus' ? 0.1 * pesoKg : 0, uKgH, uH, mlH: mlHDeInsulina(uH)! }
+  return { bolusU: esquema === 'com-bolus' ? 0.1 * pesoKg : 0, uKgH, uH, mlH: mlHDeInsulina(uH, preparo)! }
 }
 
 /** Dose reduzida que as Figuras 2 e 3 citam ao chegar à glicemia-alvo: 0,05 U/kg/h (p. 872–873). */
-export function insulinaReduzida(pesoKg: number) {
+export function insulinaReduzida(pesoKg: number, preparo: PreparoInsulina = 'manual') {
   if (!positivo(pesoKg)) return null
   const uH = 0.05 * pesoKg
-  return { uH, mlH: mlHDeInsulina(uH)! }
+  return { uH, mlH: mlHDeInsulina(uH, preparo)! }
 }
 
 export type AjusteInsulina = { queda: number; acao: 'dobrar' | 'metade' | 'manter'; novaUH: number }
@@ -340,12 +353,12 @@ export const TRATAMENTO_2024 = {
   transicao: { ivAposScH: [1, 2] as [number, number], basalUKg: [0.15, 0.3] as [number, number], texto: 'Manter a infusão IV por 1–2 h após a insulina SC; nos recém-diagnosticados, basal SC 0,15–0,3 U/kg (1 ou 2 doses) com rápida às refeições', pagina: 'p. 1264–1265' },
 }
 
-/** Insulina pelo consenso: taxa fixa 0,1 U/kg/h, dose reduzida 0,05, EHH 0,05, na bomba do manual (0,2 U/mL). */
-export function insulina2024(pesoKg: number) {
+/** Insulina pelo consenso: taxa fixa 0,1 U/kg/h, dose reduzida 0,05, EHH 0,05, no preparo escolhido. */
+export function insulina2024(pesoKg: number, preparo: PreparoInsulina = 'manual') {
   if (!positivo(pesoKg)) return null
   const uH = TRATAMENTO_2024.insulina.uKgH * pesoKg
   const reduzidaUH = TRATAMENTO_2024.insulina.reduzidaUKgH * pesoKg
-  return { uH, mlH: mlHDeInsulina(uH)!, bolusSeAtrasoU: TRATAMENTO_2024.insulina.bolusSoSeAtraso * pesoKg, reduzidaUH, reduzidaMlH: mlHDeInsulina(reduzidaUH)!, ehhUH: reduzidaUH }
+  return { uH, mlH: mlHDeInsulina(uH, preparo)!, bolusSeAtrasoU: TRATAMENTO_2024.insulina.bolusSoSeAtraso * pesoKg, reduzidaUH, reduzidaMlH: mlHDeInsulina(reduzidaUH, preparo)!, ehhUH: reduzidaUH }
 }
 
 export type FaixaPotassio2024 = 'baixo' | 'medio' | 'alto'

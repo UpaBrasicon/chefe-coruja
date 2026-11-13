@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
 import {
-  DIVERGENCIAS_CAD, ERRATA_OSMOLARIDADE, HIPOGLICEMIA_DOSES, INSULINA_BOMBA, POTASSIO_MANUAL, TABELA_GRAVIDADE, abaixoDoLimiar, ajusteInsulina, anionGap,
+  DIVERGENCIAS_CAD, ERRATA_OSMOLARIDADE, HIPOGLICEMIA_DOSES, INSULINA_BOMBA, PREPAROS_INSULINA, insulina2024, mlHDeInsulina, POTASSIO_MANUAL, TABELA_GRAVIDADE, abaixoDoLimiar, ajusteInsulina, anionGap,
   bicarbonato, concentracaoInsulina, criteriosCad, criteriosEhh, criteriosResolucao, duasBolsas, faixaPotassio, fichaCadEhhAvaliacao,
   fichaCadEhhTratamento, fichaHipoglicemia, gramasGlicose50, gravidadePorBicarbonato, gravidadePorPh, hidratacao, insulinaInicial, insulinaReduzida,
   osmolaridadeEfetiva, solucaoSegundaFase, transicaoSc,
@@ -149,4 +149,25 @@ test('hipoglicemia: limiares e doses (p. 877, 880–881)', () => {
   assert.equal(HIPOGLICEMIA_DOSES.tiaminaMg, 100)
   assert.equal(gramasGlicose50(60), 30)
   assert.equal(gramasGlicose50(100), 50)
+})
+
+test('preparo da unidade (RT, 13/11/2026): 100 U em 99 mL de SF = 100 mL a 1 U/mL, então mL/h = U/h; a dose não muda', () => {
+  const u = PREPAROS_INSULINA.unidade
+  assert.equal(u.unidades, 100)
+  assert.equal(u.diluenteMl + 1, u.volumeMl) // 1 mL de U-100 + 99 mL de SF
+  assert.equal(concentracaoInsulina('unidade'), 1)
+  const c = insulinaInicial(70, 'com-bolus', 'unidade')!
+  assert.equal(r1(c.bolusU), 7)
+  assert.equal(r1(c.uH), 7)
+  assert.equal(r1(c.mlH), 7)
+  const s = insulinaInicial(70, 'sem-bolus', 'unidade')!
+  assert.equal(r1(s.mlH), 9.8)
+  assert.equal(r1(insulinaReduzida(70, 'unidade')!.mlH), 3.5)
+  assert.equal(mlHDeInsulina(14, 'unidade'), 14)
+  const i = insulina2024(70, 'unidade')!
+  assert.equal(r1(i.mlH), 7)
+  assert.equal(r1(i.reduzidaMlH), 3.5)
+  // o preparo do manual continua o mesmo quando escolhido
+  assert.equal(r1(insulinaInicial(70, 'com-bolus', 'manual')!.mlH), 35)
+  assert.equal(PREPAROS_INSULINA.manual.unidades, 50)
 })
