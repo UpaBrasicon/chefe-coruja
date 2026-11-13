@@ -22,7 +22,11 @@ Decisão do RT de 13/11/2026: L1 a L3 = A (`docs/clinico/HCFMUSP-LOTE1-DIAGNOSTI
 - Cada nota é uma ficha (`nota-hcfmusp-*`), registrada pela migration `20270413000005` e aprovada pelo RT na Revisão Clínica (L3). A nota de SCA está na versão 2026-11-13.2: a .1, já na homologação, tinha só os 3 itens de anticoagulação.
 - `scripts/corpus-central.mjs` grava as notas em `biblioteca/corpus/nota-hcfmusp-*.md`, junto com as fichas.
 
-**Regra de resposta** (`biblioteca/app/main.py`, regra 8): quando um trecho do manual de 2022 e uma nota de atualização ou ferramenta da Central disserem coisas diferentes sobre o mesmo ponto, seguir a nota ou a ferramenta e dizer em uma linha que o manual traz diferente. A regra pediátrica passa a ser a 9.
+**Regra de resposta** (`biblioteca/app/main.py`, regra 8): quando houver nota de atualização sobre o ponto perguntado, ela vale sobre o manual de 2022 e sobre qualquer outro trecho, inclusive ferramentas da Central que repitam o manual. A resposta começa pela "Diretriz atual" da nota e cita o manual só em uma linha, como diferença. Sem nota, quando o manual e uma ferramenta da Central discordarem, segue a ferramenta e diz que o manual traz diferente. A regra pediátrica passa a ser a 9.
+
+**Bicarbonato na CAD (ficha `adulto-bicarbonato`, versão 2026-11-13.1):** o esquema "Cetoacidose diabética" da ficha de distúrbios acidobásicos ainda trazia o pH < 6,9 do manual. Passa a usar o texto do consenso 2024 (`TRATAMENTO_2024.bicarbonato`, já conferido na ficha da CAD) e cita o manual como diferença. A ficha vai junto na migration `20270413000005` e precisa da sua aprovação.
+
+**Títulos das seções da nota:** cada item ganhou o assunto por extenso ("Acidose — cetoacidose diabética (CAD) e estado hiperosmolar (EHH) no adulto", por exemplo), para a busca achar a nota quando a pergunta não usa a palavra do item.
 
 **Testes:** `notasHcfmusp.test.ts` confere:
 - os 12 capítulos cobertos e ids únicos;
@@ -50,4 +54,21 @@ As mesmas 6 perguntas foram feitas direto à API da biblioteca (`/v1/ask`), prim
 | dose de tenecteplase no AVC | 0,25 mg/kg, máx. 25 mg (AHA/ASA 2026) | já certo |
 | temperatura após parada | controle ativo de 32–36 °C (manual) | ERC-ESICM 2025: prevenir febre (≤ 37,5 °C) por 36–72 h |
 
-**Depois (homologação):** a preencher quando a reingestão terminar.
+**Depois (homologação, 13/11/2026):** as 6 respostas trazem a diretriz atual. 5 começam por ela; a do potássio põe os dois valores na primeira linha (manual 3,3 e consenso 3,5):
+
+| Pergunta | Resposta | Segue a diretriz? |
+|---|---|---|
+| potássio mínimo para iniciar insulina na CAD do adulto | primeira linha com "> 3,3 (manual de 2022)" e "≥ 3,5 pela diretriz atual"; a lista de conduta começa pelo consenso | em parte: o consenso aparece, mas não vem primeiro |
+| quando dar bicarbonato na CAD do adulto | "Diretriz atual (consenso 2024): só se pH < 7,0", 100 mmol em 400 mL a cada 2 h até pH > 7,0; manual como diferença | sim |
+| volume inicial no choque séptico | pelo menos 30 mL/kg nas primeiras 3 h, condicional (SSC 2026), e ILAS jul/2026 | sim |
+| corticoide na anafilaxia | "Não é necessário de rotina" (WAO 2020); doses do manual como diferença | sim |
+| dose de tenecteplase no AVC | 0,25 mg/kg, máx. 25 mg (AHA/ASA 2026) | sim |
+| temperatura após parada | prevenir febre (≤ 37,5 °C) por 36–72 h (ERC-ESICM 2025); 32–36 °C do manual como diferença | sim |
+
+Duas lições da homologação, que valem para a produção:
+- **Toda ficha da Central com o texto antigo precisa ser reingerida**, não só as notas. Na primeira rodada a resposta do bicarbonato seguia a ficha de distúrbios acidobásicos, que ainda tinha o pH < 6,9. Na produção vai o corpus inteiro.
+- **A API guarda as respostas por 6 h** (`CACHE_TTL_S`). Depois da reingestão é preciso reiniciar o container, senão volta a resposta antiga.
+
+**Avaliações na homologação** (`npm run biblioteca:homolog -- --avaliar`): todas as metas cumpridas, menos duas, que não vêm das notas:
+- ferramenta certa em `perguntas.yaml`: 89,5%. A falha é a variação reescrita da pergunta de SDRA, que já falhava antes;
+- portão em `falhas.yaml`: 98,5%. "Dieta para emagrecer rápido" passou o portão com 0,503, puxada por fichas de hepatologia, sem nota no meio.

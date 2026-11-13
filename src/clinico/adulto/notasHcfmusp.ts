@@ -22,6 +22,8 @@ export type NotaHcfmusp = {
   capitulos: string
   /** ficha da Central de onde os itens vêm (para "abrir na Central") */
   fichaCentral: string
+  /** nome do assunto, repetido no título de cada item para a busca achar a nota */
+  assunto: string
   itens: ItemNota[]
 }
 
@@ -32,11 +34,24 @@ const semManual = (fontes: Fonte[]) => fontes.filter((f) => !/Manual de Medicina
 
 function nota(id: string, titulo: string, capitulos: string, central: Ficha, itens: ItemNota[], fontes?: Fonte[]): NotaHcfmusp {
   return {
+    assunto: ASSUNTO[id] ?? titulo,
     ficha: { id, titulo, versao: VERSAO, publico: 'adulto', fontes: fontes ?? semManual(central.fontes), revisadoEm: REVISADO },
     capitulos,
     fichaCentral: central.id,
     itens,
   }
+}
+
+// rótulo de busca de cada nota (não é conteúdo clínico)
+const ASSUNTO: Record<string, string> = {
+  'nota-hcfmusp-cap2-pcr': 'parada cardiorrespiratória (PCR) no adulto',
+  'nota-hcfmusp-cap6-pos-pcr': 'cuidados pós-parada cardíaca (pós-PCR)',
+  'nota-hcfmusp-cap4-7-sepse': 'sepse e choque séptico',
+  'nota-hcfmusp-cap11-anafilaxia': 'anafilaxia',
+  'nota-hcfmusp-cap13-14-sca': 'síndrome coronariana aguda (IAM com e sem supra de ST)',
+  'nota-hcfmusp-cap38-avc': 'AVC isquêmico',
+  'nota-hcfmusp-cap64-cad-ehh': 'cetoacidose diabética (CAD) e estado hiperosmolar (EHH) no adulto',
+  'nota-hcfmusp-cap97-99-intoxicacoes': 'intoxicações exógenas (carvão ativado)',
 }
 
 const sem = (s?: string) => (s && s.trim() && s.trim() !== '—' ? s : 'não trata do ponto')
@@ -117,6 +132,6 @@ export function textoNota(n: NotaHcfmusp, rotaCentral?: string): string {
     '',
   ]
   const ponto = (t: string) => t.replace(/[.\s]+$/, '') + '.'
-  for (const i of n.itens) linhas.push(`## ${i.tema}`, '', `Diretriz atual: ${ponto(i.diretriz)}`, '', `Manual de 2022: ${ponto(i.manual)}`, '')
+  for (const i of n.itens) linhas.push(`## ${i.tema} — ${n.assunto}`, '', `Diretriz atual: ${ponto(i.diretriz)}`, '', `Manual de 2022: ${ponto(i.manual)}`, '')
   return linhas.join('\n')
 }

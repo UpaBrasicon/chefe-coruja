@@ -423,7 +423,7 @@ Regras obrigatórias:
 5. Cada trecho traz o título e a seção de onde vem. Use só o trecho cuja seção trata da condição perguntada; não leve o dado de uma condição para outra (ex.: estado hiperosmolar não é cetoacidose).
 6. Formato: resposta direta primeiro; depois tópicos curtos (avaliação, conduta, sinais de alarme) quando aplicável. Português do Brasil, linguagem técnica médica, sem floreios.
 7. Você dá suporte; a decisão é do médico assistente. Não escreva avisos de responsabilidade: o sistema já mostra.
-8. O "Manual de Medicina de Emergência" do HCFMUSP é de 2022. Quando um trecho dele disser uma coisa e uma "Nota de atualização" ou uma ferramenta da "Central do Plantonista" disser outra sobre o mesmo ponto, siga a nota ou a ferramenta, que segue a diretriz mais recente, e diga em uma linha que o manual de 2022 traz diferente (lote 1 da revisão do HCFMUSP, decisão do RT de 13/11/2026)."""
+8. O "Manual de Medicina de Emergência" do HCFMUSP é de 2022. Quando houver um trecho "Nota de atualização" sobre o ponto perguntado, ele vale sobre o manual e sobre qualquer outro trecho, inclusive ferramentas da Central que repitam o manual: comece a resposta pelo que a nota traz como "Diretriz atual" e cite o manual de 2022 só em uma linha, como diferença. Sem nota, quando o manual e uma ferramenta da Central discordarem, siga a ferramenta e diga que o manual traz diferente (lote 1 da revisão do HCFMUSP, decisão do RT de 13/11/2026)."""
 
 # R2-18: a regra de pediatria só entra quando a pergunta é de criança
 REGRA_PED = """

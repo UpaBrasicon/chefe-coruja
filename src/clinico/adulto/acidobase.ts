@@ -1,5 +1,6 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
+import { CONSENSO_2024, TRATAMENTO_2024 } from './glicemia.ts'
 import { numero as numeroBr } from '../../lib/formato.ts'
 
 // Distúrbios acidobásicos — cap. 69 do Manual de Medicina de Emergência do
@@ -21,9 +22,9 @@ export const NOTA_BICARICU2 =
 const fichaBicarbonatoLivro = fichaAdulto('adulto-bicarbonato', 'Bicarbonato de sódio — déficit e esquemas do manual', 'cap. 69, p. 937–938; cap. 67, Tab. 6, p. 916')
 export const fichaBicarbonato: Ficha = {
   ...fichaBicarbonatoLivro,
-  versao: '2026-11-06.1',
-  fontes: [...fichaBicarbonatoLivro.fontes, BICARICU2_2025],
-  revisadoEm: '06/11/2026 (nota do BICARICU-2; revisão PubMed, itens médios)',
+  versao: '2026-11-13.1',
+  fontes: [...fichaBicarbonatoLivro.fontes, BICARICU2_2025, { ...CONSENSO_2024, citacao: `${CONSENSO_2024.citacao} Bicarbonato na CAD (${TRATAMENTO_2024.bicarbonato.pagina}).` }],
+  revisadoEm: '13/11/2026 (esquema da CAD pelo consenso ADA/EASD/JBDS 2024, com o do manual de 2022 como diferença; lote 1 da revisão do HCFMUSP); 06/11/2026 (nota do BICARICU-2; revisão PubMed, itens médios)',
 }
 
 export type Referencia = { texto: string; pagina: string; errata?: string }
@@ -229,7 +230,8 @@ export function criterioLaboratorialBicarbonato(ph: number, hco3: number): boole
 export type EsquemaBic = Referencia & { id: string; mlNaHCO3: number; diluenteMl: number; horas: [number, number] | null }
 
 export const ESQUEMAS_BICARBONATO: EsquemaBic[] = [
-  { id: 'cad', mlNaHCO3: 100, diluenteMl: 400, horas: [2, 2], texto: 'Cetoacidose diabética: bicarbonato de sódio somente se pH < 6,9 — 100 mL de NaHCO3 8,4% em 400 mL de água destilada, EV em 2 horas.', pagina: 'cap. 69, p. 938' },
+  // CAD: o consenso 2024 manda (decisão do RT de 13/11/2026); o texto vem de TRATAMENTO_2024
+  { id: 'cad', mlNaHCO3: 100, diluenteMl: 400, horas: [2, 2], texto: `Cetoacidose diabética, consenso ADA/EASD/JBDS 2024: ${TRATAMENTO_2024.bicarbonato.texto}. O manual de 2022 usava pH < 6,9 (100 mL de NaHCO3 8,4% em 400 mL de água destilada, EV em 2 horas).`, pagina: `Diabetes Care 2024, ${TRATAMENTO_2024.bicarbonato.pagina}; manual: cap. 69, p. 938` },
   { id: 'hipercalemia', mlNaHCO3: 150, diluenteMl: 1000, horas: [2, 4], texto: 'Hipercalemia (Tab. 6): NaHCO3 8,4% 150 mL + SG 5% 1.000 mL, IV em 2–4 horas; eficácia limitada, atentar para sobrecarga volêmica.', pagina: 'cap. 67, p. 916' },
 ]
 
