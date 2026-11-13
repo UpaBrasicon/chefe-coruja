@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { COMPLICACOES_DIAMETRO, CORTES_AORTA, METAS_EH, fichaSindromeAorticaAdulto, linhaDiametro } from '@/clinico/adulto/emergenciaHipertensiva'
+import { COMPLICACOES_DIAMETRO, CORTES_AORTA, DIFERENCAS_AORTA_2024, DIRETRIZ_AORTA_2024, METAS_EH, fichaSindromeAorticaAdulto, linhaDiametro } from '@/clinico/adulto/emergenciaHipertensiva'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -18,7 +18,7 @@ export function SindromeAorticaAdulto() {
   return (
     <ToolLayout
       title="Síndrome aórtica aguda — adulto"
-      description="Alvo de PAS e FC na dissecção, cortes de diâmetro e complicações anuais por tamanho da aorta, como o manual do HCFMUSP traz. Adulto (14 anos ou mais)."
+      description="Alvo de PAS e FC na dissecção, cortes de diâmetro e complicações anuais por tamanho da aorta, pelo manual do HCFMUSP, com a ESC 2024 ao lado. Adulto (14 anos ou mais)."
       ficha={fichaSindromeAorticaAdulto}
     >
       <Bloco titulo="Alvo na dissecção de aorta (cap. 19, Tabela 4, p. 274)">
@@ -26,7 +26,17 @@ export function SindromeAorticaAdulto() {
         <p className="text-apoio text-tinta-sussurro">Esmolol e nitroprussiato com mL/h: tela de emergência hipertensiva. Risco pelo ADD-RS: tela própria.</p>
       </Bloco>
 
-      <Bloco titulo="Cortes e prognóstico">
+      <Bloco titulo="ESC 2024 — ao lado do manual" descricao="Recomendações de síndrome aórtica aguda e de aneurisma pelo slideset oficial da ESC, com classe e nível; o texto integral está fechado e os slides não trazem dose.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESC 2024</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_AORTA_2024.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.esc2024} <span className="text-tinta-sussurro">({d.classe}; {d.slide})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_AORTA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+      </Bloco>
+
+      <Bloco titulo="Cortes e prognóstico (manual)">
         {CORTES_AORTA.map((c) => <Trecho key={c.texto} texto={c.texto} pagina={c.pagina} />)}
       </Bloco>
 

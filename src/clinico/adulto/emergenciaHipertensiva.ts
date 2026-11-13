@@ -141,11 +141,62 @@ export const DIFERENCAS_EH_2025: string[] = [
   'Labetalol, nicardipina, clevidipina e enalaprilato: a DBHA 2025 os marca como não disponíveis no Brasil; nenhum entra na ferramenta.',
 ]
 
-export const fichaSindromeAorticaAdulto = fichaAdulto(
-  'adulto-sindrome-aortica',
-  'Síndrome aórtica aguda — adulto',
-  'cap. 20 Síndrome aórtica aguda, p. 277–285; alvos: cap. 19, Tabela 4, p. 274',
-)
+// Lote 2 da revisão do HCFMUSP, M2 (decisão do RT de 13/11/2026): ESC 2024 de
+// doenças arteriais periféricas e da aorta lida pelo slideset oficial da ESC
+// (194 slides em imagem, convertidos e lidos nas partes de aorta). O texto
+// integral está fechado na editora e os slides não trazem dose. O manual
+// continua na tela; a ESC 2024 entra ao lado, com classe e nível.
+const PAG_AORTA = 'cap. 20 Síndrome aórtica aguda, p. 277–285; alvos: cap. 19, Tabela 4, p. 274'
+
+export const ESC_AORTA_2024: Fonte = {
+  citacao: 'Mazzolai L, Teixido-Tura G, Lanzi S, et al. 2024 ESC Guidelines for the management of peripheral arterial and aortic diseases. Eur Heart J. 2024;45(36):3538–3700 (PMID 39210722). Lida pelo slideset oficial da ESC: recomendações com classe e nível (slides 105, 110, 112, 116, 117, 118, 121, 124, 125 e 137) e figuras 30 e 31 (slides 178 e 179). O texto integral está fechado na editora; os slides não trazem dose.',
+  url: 'https://doi.org/10.1093/eurheartj/ehae179',
+}
+
+const REVISADO_AORTA = '13/11/2026 (ESC 2024 pelo slideset oficial, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT)'
+
+export const fichaSindromeAorticaAdulto: Ficha = {
+  ...fichaAdulto('adulto-sindrome-aortica', 'Síndrome aórtica aguda — adulto', PAG_AORTA),
+  versao: '2026-11-13.1',
+  fontes: [pagina(PAG_AORTA), ESC_AORTA_2024],
+  revisadoEm: `${REVISADO_AORTA}; 27/09/2026 (conferido no livro, com errata anotada)`,
+}
+
+const SEM_ITEM = 'sem item do manual na ferramenta'
+
+/** ESC 2024 × manual, um tema por linha. Classe e nível como estão nos slides; "figura" quando vem só do fluxograma. */
+export const DIRETRIZ_AORTA_2024: { tema: string; esc2024: string; classe: string; slide: string; livro: string }[] = [
+  { tema: 'Suspeita de síndrome aórtica aguda', esc2024: 'Algoritmo multiparamétrico com o ADD-RS para confirmar ou afastar a síndrome aórtica aguda', classe: 'I, B', slide: 'slide 116', livro: 'ADD-RS da Tabela 2 (p. 281–282)' },
+  { tema: 'ADD-RS de 2 ou 3', esc2024: 'Angiotomografia do pescoço à pelve sem demora, com ecocardiograma transtorácico focado e ECG', classe: 'figura 30', slide: 'slide 178', livro: 'angiotomografia de aorta torácica direto (p. 282)' },
+  { tema: 'ADD-RS de 0 ou 1', esc2024: 'ECG para afastar IAM com supra; radiografia de tórax, exames e POCUS, se disponível. POCUS, radiografia ou D-dímero positivos levam à angiotomografia; D-dímero e radiografia negativos levam a pensar em outro diagnóstico. O fluxograma não mostra corte de D-dímero', classe: 'figura 30', slide: 'slide 178', livro: 'D-dímero < 500 ng/mL FEU encerra a investigação; ≥ 500, angiotomografia (p. 282)' },
+  { tema: 'Exame de imagem', esc2024: 'Angiotomografia sincronizada ao ECG, do pescoço à pelve, é a primeira linha (I, C); ecocardiograma transtorácico focado na avaliação inicial (I, C); angiorressonância se não houver tomografia (IIa, C)', classe: 'I e IIa, C', slide: 'slide 116', livro: 'angiotomografia de aorta torácica; transesofágico e angiorressonância aceitáveis (p. 282)' },
+  { tema: 'Instável, sem condição de ir à tomografia', esc2024: 'Ecocardiograma transesofágico para o diagnóstico e para ver o tronco celíaco e a mesentérica', classe: 'I, B', slide: 'slide 116', livro: SEM_ITEM },
+  { tema: 'Alvo de PA e FC', esc2024: 'Tratamento anti-impulso imediato com PAS < 120 mmHg e FC ≤ 60 bpm; PAM mais alta se houver isquemia medular ou lesão cerebral', classe: 'I, B', slide: 'slide 117', livro: 'PAS < 120 e FC < 60, controlando a FC antes da PA (Tabela 4, p. 274)' },
+  { tema: 'Droga de primeira linha', esc2024: 'Betabloqueador IV (labetalol ou esmolol, por exemplo); se preciso, somar vasodilatador IV (bloqueador de canal de cálcio di-hidropiridínico ou nitrato). O fluxograma passa ao vasodilatador se a PAS seguir ≥ 120 mmHg', classe: 'I, B', slide: 'slides 117 e 179', livro: 'nitroprussiato e esmolol, por exemplo (p. 284)' },
+  { tema: 'Contraindicação ao betabloqueador', esc2024: 'Bloqueador de canal de cálcio não di-hidropiridínico (diltiazem ou verapamil)', classe: 'IIa, B', slide: 'slides 117 e 179', livro: SEM_ITEM },
+  { tema: 'Dor', esc2024: 'Analgesia adequada para chegar aos alvos hemodinâmicos; opioide IV titulado pela dor', classe: 'I, C', slide: 'slides 117 e 179', livro: SEM_ITEM },
+  { tema: 'Monitorização', esc2024: 'Pressão arterial invasiva, ECG contínuo de três derivações e internação em UTI', classe: 'I, B', slide: 'slide 117', livro: SEM_ITEM },
+  { tema: 'Passagem para via oral', esc2024: 'No tratamento conservador com alvo atingido, trocar para betabloqueador oral depois de 24 h, se o trânsito intestinal estiver preservado', classe: 'I, B', slide: 'slide 117', livro: SEM_ITEM },
+  { tema: 'Dissecção tipo A', esc2024: 'Avaliação cirúrgica de emergência e cirurgia imediata (I, B); transferir de centro de baixo para alto volume, se não atrasar a cirurgia (IIa, B)', classe: 'I e IIa, B', slide: 'slide 118', livro: 'cirurgia de emergência; mortalidade de 1–2% por hora (p. 283)' },
+  { tema: 'Dissecção tipo B aguda', esc2024: 'Tratamento clínico com analgesia e controle da PA em todos (I, B); betabloqueador como primeira linha clínica (IIa, B)', classe: 'I e IIa, B', slide: 'slide 121', livro: 'sem cirurgia de emergência, salvo complicação (p. 284)' },
+  { tema: 'Dissecção tipo B complicada', esc2024: 'Intervenção de emergência, com TEVAR como primeira linha', classe: 'I, B', slide: 'slide 121', livro: 'cirurgia se isquemia de órgãos ou membros, progressão, ruptura iminente, dor ou hipertensão refratárias (p. 284)' },
+  { tema: 'Hematoma intramural e úlcera penetrante', esc2024: 'Tipo A: cirurgia, urgente no hematoma. Tipo B: tratamento clínico com imagem seriada', classe: 'I, C', slide: 'slides 124 e 125', livro: 'úlcera assintomática: nova imagem em 3 meses (p. 278)' },
+  { tema: 'Aneurisma da aorta ascendente (valva tricúspide)', esc2024: 'Cirurgia com diâmetro ≥ 55 mm (I, B); considerar acima de 52 mm com baixo risco cirúrgico (IIa, B)', classe: 'I e IIa, B', slide: 'slide 105', livro: 'cirurgia eletiva acima de 5 cm (p. 278)' },
+  { tema: 'Aneurisma da aorta torácica descendente', esc2024: 'Reparo eletivo com ≥ 55 mm, TEVAR preferido se a anatomia permitir (I, B); toracoabdominal degenerativo com ≥ 60 mm (I, B)', classe: 'I, B', slide: 'slide 110', livro: 'cirurgia eletiva acima de 5,5 cm (p. 278)' },
+  { tema: 'Síndrome de Marfan', esc2024: 'Cirurgia com seio aórtico ≥ 50 mm (I, B); considerar com ≥ 45 mm e fatores de risco (IIa, C)', classe: 'I e IIa, B e C', slide: 'slide 137', livro: 'diâmetro de 4,5 cm indica cirurgia (p. 278)' },
+  { tema: 'Aneurisma de aorta abdominal', esc2024: 'Reparo eletivo com ≥ 55 mm no homem ou ≥ 50 mm na mulher', classe: 'I, A', slide: 'slide 112', livro: SEM_ITEM },
+]
+
+export const DIFERENCAS_AORTA_2024: string[] = [
+  'Aorta ascendente: a ESC 2024 recomenda cirurgia a partir de 55 mm (I, B) e a considera acima de 52 mm com baixo risco (IIa, B); o manual indica acima de 5 cm.',
+  'Marfan: a ESC 2024 indica cirurgia com 50 mm no seio aórtico (I, B) e só considera 45 mm com fatores de risco (IIa, C); o manual diz que 4,5 cm indica cirurgia.',
+  'ADD-RS de 0 ou 1: a ESC 2024 soma ECG, radiografia, exames e POCUS ao D-dímero, e o fluxograma não mostra corte; o manual encerra com D-dímero < 500 ng/mL FEU.',
+  'FC: a ESC 2024 escreve FC ≤ 60 bpm; o manual, FC < 60.',
+  'Betabloqueador IV é a primeira linha (I, B), com labetalol ou esmolol de exemplo; a DBHA 2025 marca o labetalol como não disponível no Brasil.',
+  'Contraindicação ao betabloqueador: diltiazem ou verapamil (IIa, B). A ferramenta não traz dose deles.',
+  'Opioide IV, pressão invasiva, ECG contínuo e UTI (I) e a troca para betabloqueador oral depois de 24 h (I, B) não estão no manual dentro da ferramenta.',
+  'Dissecção tipo B complicada: TEVAR como primeira linha (I, B).',
+]
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 
@@ -241,7 +292,12 @@ const EXAME = ['pulso', 'neuro', 'sopro', 'hipotensao', 'choque']
 
 /** ADD-RS (Tabela 2, p. 281–282): 1 ponto por coluna com qualquer item; 0 a 3. D-dímero opcional. */
 export const addRs: Escore = {
-  ficha: fichaAdulto('adulto-add-rs', 'ADD-RS — risco de dissecção de aorta (adulto)', 'cap. 20 Síndrome aórtica aguda, Tabela 2, p. 281–282'),
+  ficha: {
+    ...fichaAdulto('adulto-add-rs', 'ADD-RS — risco de dissecção de aorta (adulto)', 'cap. 20 Síndrome aórtica aguda, Tabela 2, p. 281–282'),
+    versao: '2026-11-13.1',
+    fontes: [pagina('cap. 20 Síndrome aórtica aguda, Tabela 2, p. 281–282'), ESC_AORTA_2024],
+    revisadoEm: `${REVISADO_AORTA}; 27/09/2026 (conferido no livro, com errata anotada)`,
+  },
   descricao: 'Um ponto para cada coluna (antecedentes, história, exame físico) com qualquer item presente; com o D-dímero para 0 ou 1 ponto',
   itens: [
     col('Antecedentes', 'marfan', 'Síndrome de Marfan'),
@@ -284,6 +340,7 @@ export const addRs: Escore = {
         'Cada coluna vale no máximo 1 ponto, mesmo com vários itens marcados (p. 282).',
         'Exames aceitáveis no lugar da angiotomografia: ecocardiografia transesofágica e angiorressonância (p. 282).',
         'Com suspeita de síndrome aórtica o livro diz para não prescrever antiagregantes nem anticoagulantes (p. 283).',
+        'ESC 2024 (I, B; slide 116 e Figura 30): ADD-RS de 2 ou 3 vai à angiotomografia do pescoço à pelve sem demora, com ecocardiograma focado e ECG. Com 0 ou 1, ECG, radiografia, exames e POCUS; D-dímero e radiografia negativos levam a pensar em outro diagnóstico. O fluxograma não mostra corte de D-dímero.',
       ],
     }
   },
