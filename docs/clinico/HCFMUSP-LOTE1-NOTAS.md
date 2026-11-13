@@ -69,6 +69,8 @@ Duas lições da homologação, que valem para a produção:
 - **Toda ficha da Central com o texto antigo precisa ser reingerida**, não só as notas. Na primeira rodada a resposta do bicarbonato seguia a ficha de distúrbios acidobásicos, que ainda tinha o pH < 6,9. Na produção vai o corpus inteiro.
 - **A API guarda as respostas por 6 h** (`CACHE_TTL_S`). Depois da reingestão é preciso reiniciar o container, senão volta a resposta antiga.
 
+**Produção (13/11/2026, com o ok do RT):** migration `20270413000005` aplicada; API da biblioteca com a regra 8; corpus inteiro reingerido (237 arquivos, todos com trechos; a primeira tentativa caiu com a conexão no arquivo 100 e foi retomada dali); API reiniciada. As 6 perguntas de conflito começam pela diretriz atual, inclusive a do potássio ("K > 3,5 pela diretriz atual"). Backup da API anterior: imagem `biblioteca-api:antes-hcfmusp1-20261113`.
+
 **Avaliações na homologação** (`npm run biblioteca:homolog -- --avaliar`): todas as metas cumpridas, menos duas, que não vêm das notas:
 - ferramenta certa em `perguntas.yaml`: 89,5%. A falha é a variação reescrita da pergunta de SDRA, que já falhava antes;
 - portão em `falhas.yaml`: 98,5%. "Dieta para emagrecer rápido" passou o portão com 0,503, puxada por fichas de hepatologia, sem nota no meio.
