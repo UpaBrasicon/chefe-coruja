@@ -537,3 +537,17 @@ test('lote 6, Q2: nota do cap. 60 com a ACG 2023 de insuficiência hepática agu
   assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
   assert.match(textoNota(nota), /MELD > 25/)
 })
+
+test('lote 6, Q3: notas dos cap. 88, 95 e 5 sem ficha da Central', () => {
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE6.find((n) => n.ficha.id === id)!
+  for (const [id, n] of [['nota-hcfmusp-cap88-hiv', 6], ['nota-hcfmusp-cap95-febre-amarela', 8], ['nota-hcfmusp-cap5-rebaixamento', 3]] as const) {
+    const nota = por(id)
+    assert.equal(nota.fichaCentral, '')
+    assert.equal(nota.itens.length, n, id)
+    assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
+    assert.equal(nota.ficha.fontes.length, 1)
+    assert.equal(new Set(nota.itens.map((i) => i.tema)).size, n)
+  }
+  assert.doesNotMatch(textoNota(por('nota-hcfmusp-cap88-hiv')), /1\.?200 mg/)
+  assert.match(textoNota(por('nota-hcfmusp-cap95-febre-amarela')), /força não conferida/)
+})

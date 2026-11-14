@@ -137,6 +137,9 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap16-sincope': 'síncope e perda transitória da consciência no adulto no pronto-socorro: ECG em 10 minutos, exames, glicemia, hemoglobina, troponina, estratificação de risco, risco intermediário, monitorização, alta ou internação',
   'nota-hcfmusp-cap96-dermatoses': 'síndrome de Stevens-Johnson e necrólise epidérmica tóxica (SSJ/NET) no adulto: suspender a droga, ALDEN, SCORTEN, UTI, corticoide, imunoglobulina, ciclosporina, líquidos, via aérea, curativo, olhos, antibiótico, tromboprofilaxia',
   'nota-hcfmusp-cap60-hepatites-graves': 'hepatites graves e insuficiência hepática aguda (hepatite fulminante) no adulto: transplante, King\'s College, MELD, coagulopatia, plasma, antibiótico profilático, noradrenalina, vasopressina, amônia, diálise, acetilcisteína, paracetamol, hepatite B, cogumelo (Amanita), hepatite alcoólica',
+  'nota-hcfmusp-cap88-hiv': 'complicações agudas do HIV no adulto (Aids): neurotoxoplasmose, meningite criptocócica, tuberculose do sistema nervoso central, síndrome inflamatória de reconstituição imune (IRIS), início da terapia antirretroviral (TARV)',
+  'nota-hcfmusp-cap95-febre-amarela': 'febre amarela grave no adulto: hidratação, sobrecarga de volume, noradrenalina, plasma, plaquetas, coagulopatia, antiviral, sofosbuvir, diálise, troca plasmática, intubação, encefalopatia, transplante hepático, corticoide',
+  'nota-hcfmusp-cap5-rebaixamento': 'rebaixamento do nível de consciência e coma no adulto: escala FOUR, escala de coma de Glasgow, eletroencefalograma (EEG), exame neurológico',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -724,7 +727,65 @@ export const notaHcfmuspCap60 = notaLote6('nota-hcfmusp-cap60-hepatites-graves',
   ], [ACG_IHA_2023, ACG_ALD_2024])
 notaHcfmuspCap60.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens da ACG 2023 de insuficiência hepática aguda, lida no texto integral, e da ACG 2024 da hepatite alcoólica, já na ficha do Maddrey; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44, notaHcfmuspCap60, notaHcfmuspCap96]
+// Q3 = A: cap. 88, 95 e 5 não têm ficha de adulto na Central. A nota liga só ao
+// capítulo do manual (conferido no PDF).
+export const DGN_HIV_2026: Fonte = {
+  citacao: 'Hahn K, Arendt G, Eggers C, et al. Guideline of the German Society of Neurology (DGN): diagnosis and therapy of HIV-1-associated neurological disorders. Neurol Res Pract. 2026;8 (PMID 42596004; PMC13474671). Texto integral lido; sem graduação das recomendações; doses baseadas na EACS.',
+  url: 'https://doi.org/10.1186/s42466-026-00519-y',
+}
+export const COLOMBIA_FEBRE_AMARELA_2025: Fonte = {
+  citacao: 'Forero-Delgadillo AJ, Morales-Olivera JA, Celis-Guzmán JF, et al. Colombian consensus on the care of critically ill patients with suspected or confirmed severe yellow fever. Lancet Reg Health Am. 2025;48:101144 (PMID 40585555; PMC12197880). Texto integral lido; Delphi com GRADE, voltado à UTI; o rótulo de força de cada recomendação não veio no texto do PMC.',
+  url: 'https://doi.org/10.1016/j.lana.2025.101144',
+}
+export const EAN_COMA_2020: Fonte = {
+  citacao: 'Kondziella D, Bender A, Diserens K, et al. European Academy of Neurology guideline on the diagnosis of coma and other disorders of consciousness. Eur J Neurol. 2020;27(5):741–756 (PMID 32090418). Resumo lido; GRADE (sugestões).',
+  url: 'https://doi.org/10.1111/ene.14151',
+}
+
+function notaSoManualLote6(...a: Parameters<typeof notaSoManual>): NotaHcfmusp {
+  const n = notaSoManual(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP, Q3: nota sem ficha de adulto na Central; aguarda aprovação do RT)'
+  return n
+}
+
+const SEM_DGN = 'DGN 2026 (sem grau)'
+
+/** cap. 88: DGN 2026 (complicações neurológicas do HIV). O resumo da EACS 2025 aberto no PMC não traz as tabelas de infecção oportunista. */
+export const notaHcfmuspCap88 = notaSoManualLote6('nota-hcfmusp-cap88-hiv', 'Nota de atualização — manual HC, cap. 88: complicações agudas do paciente com HIV', 'cap. 88, p. 1188–1208', [
+    { tema: 'Início da terapia antirretroviral', diretriz: `${SEM_DGN}: diagnosticado o HIV, a terapia antirretroviral está indicada qualquer que seja o CD4 e a apresentação clínica`, manual: 'o cap. 88 não trata do ponto' },
+    { tema: 'Neurotoxoplasmose: diagnóstico', diretriz: `${SEM_DGN}: lesão focal com realce e IgG positiva bastam para a suspeita e para começar o tratamento; IgM não ajuda; sorologia negativa não exclui. Biópsia cerebral se o tratamento de prova falha em 2–3 semanas`, manual: 'diagnóstico presuntivo com CD4 < 100, quadro compatível, IgG positiva e realce anelar; biópsia raramente necessária (cap. 88, p. 1197)' },
+    { tema: 'Neurotoxoplasmose: tratamento', diretriz: `${SEM_DGN}: pirimetamina VO 200 mg no 1º dia e depois 75 mg/dia (≥ 60 kg) ou 50 mg/dia (< 60 kg), com sulfadiazina 3.000 mg 2 vezes ao dia (≥ 60 kg) ou 2.000 mg 2 vezes ao dia (< 60 kg). Adjuvante: o texto da DGN escreve "folic acid" 15 mg/dia, e o manual traz ácido folínico 10–25 mg/dia; os dois não são a mesma droga. Intolerância a sulfa: clindamicina 600 mg 4 vezes ao dia com pirimetamina. Segunda linha: sulfametoxazol-trimetoprima, 5 mg/kg de trimetoprima 2 vezes ao dia`, manual: 'sulfadiazina 1.000 mg 4 vezes ao dia (< 60 kg) ou 1.500 mg 4 vezes ao dia (> 60 kg), pirimetamina 100–200 mg no 1º dia e 50–75 mg/dia, e ácido folínico 10–25 mg/dia, por 3–6 semanas; sulfametoxazol-trimetoprima como alternativa (Tabela 5, p. 1198)' },
+    { tema: 'Meningite criptocócica', diretriz: `${SEM_DGN}: indução por 2 semanas com anfotericina B lipossomal 3 mg/kg e flucitosina 100 mg/kg/dia em 4 doses; consolidação com fluconazol 400 mg/dia por 8 semanas; manutenção com 200 mg/dia por pelo menos 1 ano, que pode parar com CD4 > 100 e carga viral baixa ou indetectável por 3 meses ou mais`, manual: 'indução por pelo menos 2 semanas com anfotericina B desoxicolato 0,7–1 mg/kg/dia, com ou sem flucitosina 100 mg/kg/dia; consolidação com fluconazol 400–800 mg/dia por 8 semanas; manutenção com 200 mg/dia até CD4 > 200 por 6 meses; medir a pressão de abertura do liquor (p. 1200–1201)' },
+    { tema: 'Tuberculose do sistema nervoso central', diretriz: `${SEM_DGN}: não começar a terapia antirretroviral junto com o tratamento da tuberculose, só depois de pelo menos 2 semanas. Com CD4 < 100, considerar prednisona preventiva ao iniciar a terapia antirretroviral: 40 mg VO por 2 semanas e depois 20 mg por 2 semanas`, manual: 'o cap. 88 não trata do ponto' },
+    { tema: 'Síndrome inflamatória de reconstituição imune (IRIS)', diretriz: `${SEM_DGN}: pensar em IRIS na infecção oportunista que surge nos primeiros meses de terapia antirretroviral eficaz (em geral < 4 meses). Conduta: manter a terapia antirretroviral e tratar as complicações; o corticoide é controverso`, manual: 'o cap. 88 não trata do ponto' },
+  ], [DGN_HIV_2026])
+notaHcfmuspCap88.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP, Q3: itens da DGN 2026, lida no texto integral, sem graduação; o resumo aberto da EACS 2025 não traz as tabelas de infecção oportunista; aguarda aprovação do RT)'
+
+const FA = 'Consenso colombiano 2025 (Delphi com GRADE, para UTI; força não conferida no texto)'
+
+/** cap. 95: consenso colombiano 2025 de febre amarela grave. */
+export const notaHcfmuspCap95 = notaSoManualLote6('nota-hcfmusp-cap95-febre-amarela', 'Nota de atualização — manual HC, cap. 95: febre amarela', 'cap. 95, p. 1267–1275', [
+    { tema: 'Volume', diretriz: `${FA}: evitar sobrecarga de volume na ressuscitação com cristaloide isotônico, guiando por avaliação à beira do leito com ultrassom`, manual: 'tratamento de suporte do choque, sem detalhar (cap. 95, p. 1274)' },
+    { tema: 'Choque', diretriz: `${FA}: não atrasar a noradrenalina, primeiro vasopressor no choque`, manual: 'tratamento de suporte do choque, sem detalhar (cap. 95, p. 1274)' },
+    { tema: 'Plasma e plaquetas', diretriz: `${FA}: não usar plasma, outros fatores ou plaquetas de rotina ou como profilaxia para corrigir exames de coagulação. Plasma ou fatores no sangramento ativo ou antes de procedimento. Plaquetas com limiar de 30.000/µL se houver disfunção orgânica e de 50.000/µL com sangramento ativo ou terapia extracorpórea`, manual: 'tratamento de suporte da coagulopatia, sem detalhar (cap. 95, p. 1274)' },
+    { tema: 'Antiviral', diretriz: `${FA}: nenhuma recomendação a favor ou contra antiviral específico; nenhum ensaio clínico mostrou eficácia`, manual: 'não há tratamento específico; sofosbuvir com bons resultados experimentais (cap. 95, p. 1274)' },
+    { tema: 'Diálise e troca plasmática', diretriz: `${FA}: terapia renal substitutiva precoce, de preferência contínua, com encefalopatia grau 2, amônia > 70 µmol/L ou lesão renal aguda grave. Troca plasmática na insuficiência hepática aguda ou com amônia > 70 µmol/L, como ponte para a recuperação`, manual: 'tratamento de suporte da insuficiência renal, sem detalhar (cap. 95, p. 1274)' },
+    { tema: 'Via aérea', diretriz: `${FA}: intubação precoce para proteger a via aérea na encefalopatia de West Haven > 2`, manual: 'o cap. 95 não trata do ponto' },
+    { tema: 'Linfo-histiocitose hemofagocítica', diretriz: `${FA}: com HScore > 160, iniciar metilprednisolona em dose alta, ou equivalente`, manual: 'o cap. 95 não trata do ponto' },
+    { tema: 'Transplante hepático', diretriz: `${FA}: nenhuma recomendação a favor ou contra encaminhar para transplante`, manual: 'transplante hepático considerado nos casos graves (cap. 95, p. 1274)' },
+  ], [COLOMBIA_FEBRE_AMARELA_2025])
+notaHcfmuspCap95.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP, Q3: itens do consenso colombiano 2025, lido no texto integral; o rótulo de força não veio no texto do PMC; aguarda aprovação do RT)'
+
+/** cap. 5: EAN 2020, pelo resumo; diretriz de diagnóstico de distúrbio de consciência. */
+export const notaHcfmuspCap5 = notaSoManualLote6('nota-hcfmusp-cap5-rebaixamento', 'Nota de atualização — manual HC, cap. 5: rebaixamento do nível de consciência', 'cap. 5, p. 80–97', [
+    { tema: 'Escala na fase aguda', diretriz: 'EAN 2020 (sugestão, GRADE; resumo lido): usar a escala FOUR em vez da escala de coma de Glasgow na fase aguda', manual: 'escala de coma de Glasgow (Tabela 3, cap. 5, p. 88)' },
+    { tema: 'Eletroencefalograma', diretriz: 'EAN 2020 (sugestão, GRADE; resumo lido): obter EEG clínico padrão', manual: 'o cap. 5 não trata do ponto' },
+    { tema: 'Exame neurológico', diretriz: 'EAN 2020 (sugestão, GRADE; resumo lido): além do exame neurológico completo, procurar movimentos oculares voluntários com um espelho', manual: 'avaliação sistemática: Glasgow, pares cranianos, reflexos de tronco, resposta motora e fundo de olho (cap. 5, p. 88)' },
+  ], [EAN_COMA_2020])
+notaHcfmuspCap5.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP, Q3: itens da EAN 2020, pelo resumo; diretriz voltada ao diagnóstico dos distúrbios de consciência; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap5, notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44, notaHcfmuspCap60, notaHcfmuspCap88, notaHcfmuspCap95, notaHcfmuspCap96]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
 
