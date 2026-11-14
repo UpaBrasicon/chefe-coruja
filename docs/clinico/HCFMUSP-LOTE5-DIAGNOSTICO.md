@@ -92,3 +92,7 @@ Ficam para os próximos lotes, entre outros:
 3. Cap. 83, 24 e 34: nota ligada ao capítulo do manual, nesta ordem de risco.
 
 Cada passo passa pela homologação e pelo CI verde antes da produção, que pede o ok do RT.
+
+## Decisão do RT
+
+14/11/2026: P1 a P4 = A ("Sim, todas A"). A produção de cada passo pede o ok do RT.
