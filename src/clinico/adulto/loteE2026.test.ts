@@ -6,7 +6,7 @@ import { hasBled } from '../escores/hasBled.ts'
 import { DIRETRIZ_SCA_2025, alteplaseIam2025, enoxaparinaLitico2025, fichaAnticoagulacaoPlenaAdulto, fichaFibrinoliticosAdulto, hnfLitico2025, tenecteplase2025 } from './anticoagulacao.ts'
 import { DBHA_2025_ALVOS, INDISPONIVEIS_BRASIL_DBHA, QUADRO_11_4, esmololDbha2025, fichaEmergenciaHipertensivaAdulto } from './emergenciaHipertensiva.ts'
 import { DOSES_FA_2024, TEXTO_JANELA_2024, fichaFibrilacaoAtrialAdulto, janelaFa2024 } from './fibrilacaoAtrial.ts'
-import { DIRETRIZ_ICA_2021, ENSAIOS_ICA, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
+import { DIFERENCAS_ICA_2026, DIRETRIZ_ICA_2021, DIRETRIZ_ICA_2026, ENSAIOS_ICA, ESC_IC_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
 import { BRADI_2025, DIFERENCAS_BRADI_2025, fichaBradicardiaAdulto } from './pcr.ts'
 import { ESC_2021_MP, fichaMarcaPassoAdulto } from './procedimentos.ts'
 
@@ -84,6 +84,22 @@ test('ICA: ESC 2021 O2 só < 90% e sem opioide de rotina; ensaios com números d
   assert.match(DIRETRIZ_ICA_2021.find((d) => d.tema === 'Opioide')!.esc, /não recomendado/)
   assert.ok(ENSAIOS_ICA.some((e) => /42,2% × 30,5%/.test(e.texto)))
   assert.ok(ENSAIOS_ICA.some((e) => /46,5% × 17,2%/.test(e.texto)))
+})
+
+test('ICA: ESC 2026 pelos slides oficiais, com classe; doses ficam na ESC 2021 e no manual', () => {
+  assert.equal(fichaIcAgudaAdulto.versao, '2026-11-13.1')
+  assert.ok(fichaIcAgudaAdulto.fontes.includes(ESC_IC_2026))
+  assert.match(ESC_IC_2026.citacao, /PMID 42661420/)
+  assert.match(ESC_IC_2026.citacao, /doses não conferidas/)
+  const por = (tema: string) => DIRETRIZ_ICA_2026.find((d) => d.tema === tema)!
+  assert.match(por('Oxigênio').esc2026, /SpO2 < 90%/)
+  assert.equal(por('Opioide').classe, 'III, C')
+  assert.equal(por('Diurético de alça IV').classe, 'I, A')
+  assert.match(por('Diurético de alça IV').esc2026, /não trazem dose/)
+  assert.equal(por('iSGLT2 na internação').classe, 'I, B')
+  assert.match(por('Inotrópico').esc2026, /PAS < 90 mmHg/)
+  for (const d of DIRETRIZ_ICA_2026) assert.match(d.slide, /^slides? \d/, d.tema)
+  assert.ok(DIFERENCAS_ICA_2026.some((d) => /IC descompensada/.test(d)))
 })
 
 test('DBHA 2025: SCA PAD 70–80; eclâmpsia até 15 mg; nitroprussiato com errata; esmolol até 300 µg/kg/min; drogas indisponíveis', () => {

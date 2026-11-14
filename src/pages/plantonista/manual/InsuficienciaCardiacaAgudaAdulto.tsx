@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  DIFERENCAS_ICA_2021, DIRETRIZ_ICA_2021, ENSAIOS_ICA, BETABLOQUEADOR_ICA, CORTES_IC, DIGOXINA_ICA, FIGURA1_COLUNAS, FUROSEMIDA_ICA, INFUSOES_IC, MR_PROANP_CORTE, PERFIS,
+  DIFERENCAS_ICA_2026, DIRETRIZ_ICA_2026, ENSAIOS_ICA, BETABLOQUEADOR_ICA, CORTES_IC, DIGOXINA_ICA, FIGURA1_COLUNAS, FUROSEMIDA_ICA, INFUSOES_IC, MR_PROANP_CORTE, PERFIS,
   classificarFe, criteriosUti, faixaPasFigura, fichaIcAgudaAdulto, furosemidaIca, leituraBnp, leituraNtProBnp, levosimendana, mlHFaixaCap, perfilHemodinamico,
   prognosticoIc, respostaDiuretico,
 } from '@/clinico/adulto/insuficienciaCardiacaAguda'
@@ -135,16 +135,16 @@ export function InsuficienciaCardiacaAgudaAdulto() {
         {uti.length > 0 ? <ul className="list-disc pl-5 text-atencao">{uti.map((u) => <li key={u}>{u}</li>)}</ul> : <p className="text-tinta-sussurro">Nenhum critério numérico atingido com os valores informados.</p>}
         <p className="text-apoio text-tinta-sussurro">O livro também lista necessidade de intubação, uso de musculatura acessória, hipoperfusão/baixo débito e arritmias graves.</p>
       </Bloco>
-      <Bloco titulo="ESC 2021 e ensaios recentes — ao lado do manual" descricao="ESC 2021 lida pela página do periódico (classes não conferidas); ADVOR, CLOROTIC e DAPA ACT pelos resumos.">
-        {sao2 > 0 && <p className="text-apoio">{sao2 < 90 ? 'SpO2 informada abaixo de 90%: a ESC 2021 indica oxigênio.' : 'SpO2 informada ≥ 90%: a ESC 2021 não indica oxigênio de rotina (o manual mira > 95%).'}</p>}
+      <Bloco titulo="ESC 2026 e ensaios recentes — ao lado da ESC 2021 e do manual" descricao="ESC 2026: recomendações da seção 7 (IC descompensada) pelo slideset oficial da ESC, com classe e nível; o texto integral está fechado e os slides não trazem dose. ADVOR, CLOROTIC e DAPA ACT pelos resumos.">
+        {sao2 > 0 && <p className="text-apoio">{sao2 < 90 ? 'SpO2 informada abaixo de 90%: a ESC 2026 recomenda oxigênio (I, C).' : 'SpO2 informada ≥ 90%: a ESC 2026 não indica oxigênio de rotina (o manual mira > 95%).'}</p>}
         <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESC 2021</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_ICA_2021.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.esc}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          <Table variante="referencia" className="w-full min-w-[760px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESC 2026</TableHead><TableHead className="pr-3 pb-2">ESC 2021</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_ICA_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.esc2026} <span className="text-tinta-sussurro">({d.classe}; {d.slide})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.esc2021}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
           </Table>
         </div>
         {ENSAIOS_ICA.map((e) => <LinhaManual key={e.ensaio} nome={e.ensaio} texto={e.texto} pagina="resumo" />)}
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ICA_2021.map((d) => <li key={d}>{d}</li>)}</ul>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ICA_2026.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
