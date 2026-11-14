@@ -21,7 +21,7 @@ import { DIRETRIZ_PAC_2026, NOTA_IDSA_PAC_2026, fichaPacAntibioticoAdulto } from
 import { AAO_HNS_EPISTAXE_2020, ANNEXA_I, DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, SBTH_2026, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
 import { SOHO_2026, fichaOxigenacaoAdulto } from './oxigenacao.ts'
 import { AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025, HEMOTION_2024, SAHARA_2025, TRAIN_2024, fichaTransfusaoAdulto } from './transfusao.ts'
-import { DIRETRIZ_HIPOTERMIA_2025, ERC_2025_HIPOTERMIA, fichaHipotermiaAdulto } from './ambientais.ts'
+import { DIRETRIZ_AFOGAMENTO, DIRETRIZ_HIPOTERMIA_2025, ERC_2025_HIPOTERMIA, WMS_AFOGAMENTO_2024, fichaHipotermiaAdulto, szpilman } from './ambientais.ts'
 import { BAVENO_VIII_2026, DIRETRIZ_HDA, ESGE_UGIH_2026, fichaHemorragiaDigestiva } from './hemorragiaDigestiva.ts'
 import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_2014, fichaHiponatremia } from './sodio.ts'
 import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
@@ -121,6 +121,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap80-falciforme': 'doença falciforme (anemia falciforme) no adulto: crise vaso-oclusiva (crise álgica), síndrome torácica aguda, analgesia, hidratação, transfusão, exsanguineotransfusão, antibiótico',
   'nota-hcfmusp-cap10-sedacao': 'sedação e analgesia para procedimentos no adulto (sedação procedural): jejum, GLP-1, ASA, capnografia, oxigênio, propofol, cetamina, midazolam, fentanil, flumazenil, naloxona, alta',
   'nota-hcfmusp-cap91-dengue': 'dengue no adulto: hidratação oral e venosa, cristaloide, paracetamol, dipirona, anti-inflamatório (AINE), corticoide, transfusão de plaquetas, enchimento capilar, lactato',
+  'nota-hcfmusp-cap100-afogamento': 'afogamento no adulto: via aérea, oxigênio, desfibrilador, Heimlich, coluna cervical, hipotermia, ventilação, exames, antibiótico, corticoide, alta em 4–6 h, Szpilman',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -559,7 +560,13 @@ export const notaHcfmuspCap91 = notaLote5('nota-hcfmusp-cap91-dengue', 'Nota de 
   ], [OMS_ARBOVIROSES_2025, MS_DENGUE_2024])
 notaHcfmuspCap91.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens da OMS 2025, resumo oficial das recomendações lido; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap91, notaHcfmuspCap102]
+/** cap. 100: WMS 2024 de afogamento, lida no texto integral. */
+export const notaHcfmuspCap100 = notaLote5('nota-hcfmusp-cap100-afogamento', 'Nota de atualização — manual HC, cap. 100: afogamento', 'cap. 100, p. 1338–1348', szpilman.ficha,
+  DIRETRIZ_AFOGAMENTO.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [WMS_AFOGAMENTO_2024])
+notaHcfmuspCap100.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados da WMS 2024, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap91, notaHcfmuspCap100, notaHcfmuspCap102]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5]
 
