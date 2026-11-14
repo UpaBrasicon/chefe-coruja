@@ -242,5 +242,5 @@ test('San Francisco (cap. 16): EUSEM 2024 ao lado do manual, lote 6 do HCFMUSP',
   assert.ok(s.sincopeSanFrancisco.ficha.fontes.includes(s.EUSEM_SINCOPE_2024))
   assert.match(s.EUSEM_SINCOPE_2024.citacao, /PMID 38874507/)
   assert.ok(s.DIRETRIZ_SINCOPE_2024.every((d) => /sem graduação/.test(d.grau)))
-  assert.ok(s.DIRETRIZ_SINCOPE_2024.some((d) => d.tema === 'Risco intermediário'))
+  assert.ok(s.DIRETRIZ_SINCOPE_2024.some((d) => d.tema === 'Risco intermediário pelos critérios da ESC 2018'))
 })
