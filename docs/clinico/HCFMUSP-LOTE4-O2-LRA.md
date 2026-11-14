@@ -70,3 +70,5 @@ Seis respostas passam a abrir pela diretriz. A pergunta de controle ficou igual.
 | já vale a KDIGO 2026? | não; "ainda era rascunho" | não; rascunho que a KDIGO pede para não usar fora da consulta; entra com a versão final |
 | furosemida para tratar (controle) | KDIGO 2012 | igual |
 | quando iniciar diálise (controle) | KDIGO 2012 | igual |
+
+Produção do #700 (14/11/2026): a migration `20270414000025` entrou antes do merge, o merge foi com CI verde, os 3 arquivos foram ingeridos, a API reiniciada e o Vercel publicou. As três respostas saíram como na homologação.
