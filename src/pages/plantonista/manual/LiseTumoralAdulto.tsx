@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
 import {
-  ALOPURINOL_SLT, HIDRATACAO_SLT, OUTRAS_SLT, RASBURICASE_SLT, RISCO_SLT, alopurinolSlt, fichaLiseTumoralAdulto, hidratacaoSlt, produtoCalcioFosforo,
+  ALOPURINOL_SLT, DIFERENCAS_SLT, DIRETRIZ_SLT, HIDRATACAO_SLT, OUTRAS_SLT, RASBURICASE_SLT, RISCO_SLT, alopurinolSlt, fichaLiseTumoralAdulto, hidratacaoSlt, produtoCalcioFosforo,
   rasburicaseSlt, type FuncaoRenalAlopurinol,
 } from '@/clinico/adulto/liseTumoral'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Escolhas, ListaLivro } from './PecasLoteE7'
@@ -98,6 +99,15 @@ export function LiseTumoralAdulto() {
             {cap ? <><strong>{br(cap.produto)} mg²/dL²</strong>{cap.acimaDoCorte ? ' — ≥ 70, entre as indicações de hemodiálise do livro' : ' — abaixo de 70'}</> : 'informe cálcio e fósforo'}
           </p>
         </div>
+      </Bloco>
+      <Bloco titulo="BSH 2025 — ao lado do manual" descricao="Diretriz da British Society for Haematology de 2025 sobre lise tumoral em neoplasias hematológicas (GRADE), lida no texto integral; só o adulto. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_SLT.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SLT.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
