@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { DIRETRIZ_SGB_2023, EAN_PNS_SGB_2023, fichaSgbAdulto } from './guillainBarre.ts'
 import { AHS_2025, AHS_2025_NIVEIS, fichaCefaleiaAdulto } from './cefaleia.ts'
 import { DIRETRIZES_ANAFILAXIA, fichaAnafilaxiaAdulto } from './anafilaxia.ts'
 import { DIFERENCAS_ANTICOAG_2025, DIRETRIZ_SCA_2025, fichaAnticoagulacaoPlenaAdulto, fichaFibrinoliticosAdulto } from './anticoagulacao.ts'
@@ -127,6 +128,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap24-oclusao-arterial': 'oclusão arterial aguda, isquemia aguda de membro no adulto: heparina, revascularização, trombólise, fasciotomia, síndrome compartimental, amputação',
   'nota-hcfmusp-cap34-pneumotorax': 'pneumotórax espontâneo no adulto: tratamento conservador, aspiração por agulha, dreno torácico, ambulatorial, cirurgia, viagem de avião',
   'nota-hcfmusp-cap41-cefaleia': 'cefaleia e crise de migrânea no adulto no pronto-socorro: proclorperazina, metoclopramida, clorpromazina, dexametasona, cetorolaco, sumatriptano, valproato, bloqueio do nervo occipital, opioide (hidromorfona), paracetamol EV',
+  'nota-hcfmusp-cap44-paralisias-flacidas': 'paralisia flácida aguda no adulto: síndrome de Guillain-Barré (imunoglobulina, plasmaférese, corticoide, segundo curso, dor, mEGRIS, mEGOS) e botulismo (antitoxina botulínica, vigilância respiratória, antibiótico, aminoglicosídeo)',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -660,7 +662,36 @@ export const notaHcfmuspCap41 = notaLote6('nota-hcfmusp-cap41-cefaleia', 'Nota d
   AHS_2025_NIVEIS.map((n) => ({ tema: `Crise de migrânea no PS: nível ${n.nivel}`, diretriz: `AHS 2025 (nível ${n.nivel}; resumo lido, sem dose): ${n.drogas.join(', ')}`, manual: sem(MANUAL_AHS_2025[n.nivel]) })),
   [AHS_2025])
 
-export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap41]
+// Q2: cap. 44. A lista da SGB vem da ficha (EAN/PNS 2023); a do botulismo, do guia
+// do CDC de 2021 (texto integral) e do Guia de Vigilância do MS 2024 (p. 371), porque não há
+// ficha de botulismo na Central.
+export const CDC_BOTULISMO_2021: Fonte = {
+  citacao: 'Rao AK, Sobel J, Chatham-Stephens K, Luquez C. Clinical guidelines for diagnosis and treatment of botulism, 2021. MMWR Recomm Rep. 2021;70(2):1–30 (PMID 33956777; PMC8112830). Texto integral lido; sem graduação das recomendações (revisões sistemáticas e especialistas).',
+  url: 'https://doi.org/10.15585/mmwr.rr7002a1',
+}
+export const MS_BOTULISMO_2024: Fonte = {
+  citacao: 'Brasil. Ministério da Saúde. Guia de vigilância em saúde: volume 1. 6. ed. rev. Brasília: Ministério da Saúde, 2024. Botulismo, tratamento específico (p. 371). Lido no PDF.',
+  url: 'https://bvsms.saude.gov.br/bvs/publicacoes/guia_vigilancia_saude_6edrev_v1.pdf',
+}
+const BOTULISMO_NO_MANUAL = 'o cap. 44 só cita o botulismo entre as causas de paralisia flácida aguda, na junção neuromuscular (Tabela 2, p. 599–600)'
+const DIRETRIZ_BOTULISMO_2021: ItemNota[] = [
+  { tema: 'Botulismo no Brasil: soro antibotulínico', diretriz: 'Ministério da Saúde 2024: colher todas as amostras clínicas antes do tratamento específico. Soro antibotulínico (SAB), equino, bi ou trivalente, o mais cedo possível, até 7 dias do início dos sintomas neurológicos; depois pode não ser mais eficaz. Dose: uma ampola EV, diluída em SF 0,9% na proporção 1:10, em cerca de 1 hora. No botulismo de ferida, desbridar, de preferência depois do SAB', manual: BOTULISMO_NO_MANUAL },
+  { tema: 'Botulismo: quando dar antitoxina', diretriz: 'CDC 2021: tratar com antitoxina botulínica o paciente sintomático com suspeita clínica, sem esperar a confirmação laboratorial. O maior benefício é nos 2 primeiros dias; com os sinais ainda progredindo, tratar qualquer que seja o tempo desde o início', manual: BOTULISMO_NO_MANUAL },
+  { tema: 'Botulismo: dose da antitoxina', diretriz: 'CDC 2021: antitoxina heptavalente equina (BAT, o produto dos EUA), dose padrão do adulto de um frasco EV. Segunda dose só se a paralisia claramente progride depois do tempo de efeito e a suspeita é alta; progressão por mais de 1 dia depois do frasco: pensar em outro diagnóstico', manual: BOTULISMO_NO_MANUAL },
+  { tema: 'Botulismo: vigilância respiratória', diretriz: 'CDC 2021: medir de forma seriada a função respiratória e bulbar (espirometria, CO2 expirado ou gasometria). O guia usa os cortes da SGB: CVF < 20 mL/kg, PImáx < 30 cmH2O e PEmáx < 40 cmH2O se associam a ventilação mecânica; pCO2 ou CO2 expirado subindo prediz ventilação; a oximetria pode não avisar cedo. Monitor cardíaco contínuo', manual: 'critérios de ventilação só da SGB: 1 maior (pCO2 > 48, pO2 < 56, CVF < 15 mL/kg, PImáx < 30) ou 2 menores (Tabela 4, p. 602)' },
+  { tema: 'Botulismo: antibiótico', diretriz: 'CDC 2021: antimicrobiano não trata o botulismo; no botulismo de ferida, o centro é o desbridamento. Aminoglicosídeo, magnésio, clindamicina, tetraciclina ou cálcio só depois de pesar o risco e com monitorização (o risco comprovado é o do aminoglicosídeo); bloqueador neuromuscular, evitar ou usar com cautela', manual: BOTULISMO_NO_MANUAL },
+  { tema: 'Botulismo, SGB ou miastenia', diretriz: 'CDC 2021: pensar em botulismo quando se suspeita de miastenia ou de SGB. Na SGB a proteína do liquor costuma subir, sobretudo na 2ª semana; o teste do edrofônio costuma ser negativo no botulismo', manual: 'Tabela 2 (p. 599–600) separa as causas pela topografia; liquor da SGB com proteína > 50 mg/dL e até 4 células (p. 603)' },
+]
+
+/** cap. 44: EAN/PNS 2023 (SGB, na ficha) e CDC 2021 (botulismo). */
+export const notaHcfmuspCap44 = notaLote6('nota-hcfmusp-cap44-paralisias-flacidas', 'Nota de atualização — manual HC, cap. 44: paralisias flácidas agudas', 'cap. 44, p. 598–608', fichaSgbAdulto, [
+    ...DIRETRIZ_SGB_2023.map((d) => ({ tema: `SGB: ${d.tema.charAt(0).toLowerCase()}${d.tema.slice(1)}`, diretriz: `${d.fonte} (${d.grau}; resumo lido): ${d.diretriz}`, manual: sem(d.livro) })),
+    ...DIRETRIZ_BOTULISMO_2021,
+  ], [EAN_PNS_SGB_2023, CDC_BOTULISMO_2021, MS_BOTULISMO_2024])
+notaHcfmuspCap44.ficha.versao = '2026-11-14.2'
+notaHcfmuspCap44.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: SGB pela EAN/PNS 2023, pelo resumo; botulismo pelo CDC 2021, no texto integral, e pelo Guia de Vigilância do MS 2024; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap41, notaHcfmuspCap44]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
 
