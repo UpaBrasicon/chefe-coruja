@@ -114,6 +114,8 @@ test('TEP: AHA/ACC 2026 nas fichas de PERC, HESTIA, PESI e fibrinolíticos, sem 
   const tep = NOTAS_HCFMUSP.find((n) => n.ficha.id === 'nota-hcfmusp-cap32-tep')!
   assert.equal(tep.ficha.versao, '2026-11-14.1')
   assert.deepEqual(tep.ficha.fontes, [AHA_TEP_2026])
+})
+
 test('taquiarritmias: AHA 2025 ao lado do manual; doses do manual não mudam', async () => {
   const m = await import('./pcr.ts')
   assert.equal(m.fichaTaquiarritmiaAdulto.versao, '2026-11-14.1')
