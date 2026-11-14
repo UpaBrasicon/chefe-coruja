@@ -18,7 +18,10 @@ import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAg
 import { ACEP_2024_RECOMENDACOES, DIFERENCAS_AGITACAO_2024, fichaAgitacaoAdulto } from './agitacao.ts'
 import { DIRETRIZ_HSA_2023, NOTA_ESO_ANTIFIBRINOLITICO, NOTA_NCS_FENITOINA, fichaHsaAdulto } from './hsa.ts'
 import { DIRETRIZ_PAC_2026, NOTA_IDSA_PAC_2026, fichaPacAntibioticoAdulto } from './tepPac.ts'
-import { DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
+import { AAO_HNS_EPISTAXE_2020, ANNEXA_I, DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, SBTH_2026, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
+import { SOHO_2026, fichaOxigenacaoAdulto } from './oxigenacao.ts'
+import { AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025, HEMOTION_2024, SAHARA_2025, TRAIN_2024, fichaTransfusaoAdulto } from './transfusao.ts'
+import { DIRETRIZ_HIPOTERMIA_2025, ERC_2025_HIPOTERMIA, fichaHipotermiaAdulto } from './ambientais.ts'
 import { BAVENO_VIII_2026, DIRETRIZ_HDA, ESGE_UGIH_2026, fichaHemorragiaDigestiva } from './hemorragiaDigestiva.ts'
 import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_2014, fichaHiponatremia } from './sodio.ts'
 import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
@@ -107,6 +110,10 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap61-lra': 'lesão renal aguda (LRA, insuficiência renal aguda) no adulto: KDIGO, estádio, diurético, fluido, contraste, aminoglicosídeo, nutrição, quando iniciar diálise',
   'nota-hcfmusp-cap22-pericardite-miocardite': 'pericardite aguda e miocardite aguda no adulto: internação, AAS, AINE, colchicina, corticoide, pericardiocentese, tamponamento, imunossupressão',
   'nota-hcfmusp-cap45-primeira-crise': 'primeira crise epiléptica (convulsão) não provocada no adulto: risco de recorrência, EEG, imagem, quando iniciar antiepiléptico',
+  'nota-hcfmusp-cap27-irpa': 'insuficiência respiratória aguda (IRpA) hipoxêmica e hipercápnica no adulto: oxigênio, cateter nasal de alto fluxo, VNI, CPAP, pré-oxigenação, pós-extubação',
+  'nota-hcfmusp-cap79-hemostasia': 'sangramento em uso de anticoagulante (varfarina, DOAC, dabigatrana, rivaroxabana, apixabana): reversão, complexo protrombínico, idarucizumabe, andexanete, carvão ativado, epistaxe',
+  'nota-hcfmusp-cap82-transfusao': 'transfusão de hemácias e plaquetas no adulto: limiar de hemoglobina, IAM, lesão cerebral, plaquetopenia, cateter central, dengue',
+  'nota-hcfmusp-cap102-hipotermia': 'hipotermia acidental no adulto: estágios, RCP, desfibrilação, adrenalina, amiodarona, ECMO, reaquecimento, afogamento',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -475,7 +482,54 @@ notaHcfmuspCap45.ficha.revisadoEm = '14/11/2026, .2: ACEP 2024 lida no texto int
 
 export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap22, notaHcfmuspCap23, notaHcfmuspCap37, notaHcfmuspCap45, notaHcfmuspCap57, notaHcfmuspCap59, notaHcfmuspCap61, notaHcfmuspCap68, notaHcfmuspCap70, notaHcfmuspCap72, notaHcfmuspCap84]
 
-export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4]
+// ── Lote 5 (decisão do RT de 14/11/2026, P1–P4 = A; docs/clinico/HCFMUSP-LOTE5-DIAGNOSTICO.md).
+// P1: capítulos cuja ficha já cita diretriz recente; os itens vêm da ficha, já conferidos.
+const REVISADO_LOTE5 = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a diretriz; aguarda aprovação do RT)'
+function notaLote5(...a: Parameters<typeof nota>): NotaHcfmusp {
+  const n = nota(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = REVISADO_LOTE5
+  return n
+}
+
+/** cap. 27: ATS 2026 e SOHO, já nas fichas de oxigenação e VNI. */
+export const notaHcfmuspCap27 = notaLote5('nota-hcfmusp-cap27-irpa', 'Nota de atualização — manual HC, cap. 27: insuficiência respiratória', 'cap. 27, p. 370–386', fichaOxigenacaoAdulto, [
+    { tema: 'IRpA hipoxêmica', diretriz: 'ATS 2026 (forte; condicional): cateter nasal de alto fluxo como primeira escolha (forte); VNI ou CPAP como alternativa (condicional); vigiar de perto e escalar o suporte sem atraso. O benefício é na necessidade de intubação', manual: 'cateter nasal de alto fluxo até 60 L/min em adultos (cap. 27, p. 378–379)' },
+    { tema: 'Alto fluxo e mortalidade', diretriz: 'SOHO, NEJM 2026 (ECR; 1.110 adultos com P/F ≤ 200): o alto fluxo não reduziu a mortalidade em 28 dias (14,6% nos dois grupos), reduziu a intubação (42,4% × 48,4%) e teve mais parada cardíaca ou pneumotórax durante a respiração espontânea (2,3% × 1,1%). O alto fluxo não deve atrasar a intubação indicada', manual: 'não comparado nesta nota' },
+    { tema: 'IRpA hipercápnica', diretriz: 'ATS 2026 (forte; condicional): VNI para reduzir mortalidade e intubação (forte). Alto fluxo só na hipercapnia menos grave, com acidemia leve (por exemplo, pH > 7,25), vigilância e escalada rápida para VNI (condicional)', manual: 'VNI na IRpA hipercápnica (cap. 27, p. 378–386), como a ATS' },
+    { tema: 'Pré-oxigenação para intubar', diretriz: 'ATS 2026 (forte): alto fluxo ou VNI para pré-oxigenar antes da intubação, para evitar hipoxemia', manual: 'não comparado nesta nota' },
+    { tema: 'Depois da extubação', diretriz: 'ATS 2026 (condicional): alto fluxo no paciente de baixo risco e VNI no de alto risco, para reduzir reintubação', manual: 'não comparado nesta nota' },
+  ], [ATS_IRPA_2026, SOHO_2026])
+
+/** cap. 79: consenso SBTH 2026, ANNEXA-I e AAO-HNS 2020, já na ficha de reversão; a ESO 2025 de HIC está na nota do cap. 39. */
+export const notaHcfmuspCap79 = notaLote5('nota-hcfmusp-cap79-hemostasia', 'Nota de atualização — manual HC, cap. 79: distúrbios da hemostasia', 'cap. 79, p. 1037–1050', fichaReversaoAnticoagulacaoAdulto, [
+    { tema: 'Quando reverter', diretriz: 'Consenso brasileiro SBTH 2026: reversor ou agente hemostático só com as duas condições: sangramento maior ou com risco de vida e anticoagulante em nível circulante significativo (DOAC dosado ou tomado há menos de 24 h; antagonista da vitamina K com INR ≥ 2)', manual: 'conduta da varfarina pelo INR × sangramento (Tabela 4, p. 1043) e dos DOAC pelo sangramento maior × menor (Tabela 6, p. 1044–1045)' },
+    { tema: 'Carvão ativado', diretriz: 'Consenso brasileiro SBTH 2026: carvão ativado se o anticoagulante foi tomado nas últimas 4 h', manual: '< 2 h (Tabela 6, p. 1044–1045)' },
+    { tema: 'Inibidor do fator Xa', diretriz: 'Consenso brasileiro SBTH 2026: andexanete ou complexo protrombínico; o andexanete com cautela, porque foi retirado do mercado em alguns países. ANNEXA-I (NEJM 2024, hemorragia intracerebral): mais controle do hematoma com andexanete (67,0% × 53,1%) e mais trombose (10,3% × 5,6%)', manual: 'complexo protrombínico de 4 fatores (o manual registra que não estava disponível no DE do HC) e antifibrinolítico (Tabela 6, p. 1044–1045)' },
+    { tema: 'Epistaxe em quem usa anticoagulante', diretriz: 'AAO-HNS 2020: sem sangramento com risco de vida, começar pelo tratamento local (compressão, tamponamento, cauterização) antes de reverter ou suspender o anticoagulante', manual: 'medidas hemostáticas locais no sangramento menor (Tabela 6, p. 1044–1045)' },
+    ...DIRETRIZ_HIC_ESO_2025.filter((d) => ['Antagonista da vitamina K', 'Dabigatrana', 'Antiagregante'].includes(d.tema)).map((d) => ({ tema: `${d.tema} (hemorragia intracerebral)`, diretriz: `ESO/EANS 2025 (${d.forca}; ${d.onde}): ${d.eso}`, manual: sem(d.livro) })),
+  ], [SBTH_2026, ANNEXA_I, AAO_HNS_EPISTAXE_2020, ESO_HIC_2025])
+
+/** cap. 82: AABB 2023, AABB 2025 (IAM), AABB/ICTMG 2025 e os ECR da lesão cerebral, já na ficha de transfusão. */
+export const notaHcfmuspCap82 = notaLote5('nota-hcfmusp-cap82-transfusao', 'Nota de atualização — manual HC, cap. 82: transfusão de hemocomponentes', 'cap. 82, p. 1075–1085', fichaTransfusaoAdulto, [
+    { tema: 'Paciente estável', diretriz: 'AABB 2023 (forte, evidência moderada): transfundir hemácias com Hb < 7 g/dL no adulto hospitalizado estável, inclusive crítico. Boa prática: decidir também por sintomas, sinais e preferências; o limiar não vale no sangramento maciço, na hipoxemia grave nem na instabilidade', manual: 'considerar Hb < 10 g/dL na anemia sintomática (Tabela 1, p. 1076)' },
+    { tema: 'Cirurgia cardíaca, ortopédica ou doença cardiovascular', diretriz: 'AABB 2023 (observação da recomendação 1): 7,5 g/dL na cirurgia cardíaca; 8 g/dL na cirurgia ortopédica ou na doença cardiovascular preexistente', manual: 'considerar Hb ≤ 8 g/dL (p. 1076)' },
+    { tema: 'Infarto agudo do miocárdio', diretriz: 'AABB 2025 (condicional, evidência baixa; resumo lido): estratégia liberal, com Hb < 10 g/dL, no IAM hospitalizado; 7–8 g/dL pode aumentar a mortalidade', manual: 'Hb < 8 g/dL na síndrome coronariana aguda (Tabela 1, p. 1076)' },
+    { tema: 'Lesão cerebral aguda', diretriz: 'TRAIN (JAMA 2024): Hb < 9 g/dL em vez de < 7 reduziu o desfecho neurológico desfavorável em 180 dias (62,6% × 72,6%). HEMOTION (NEJM 2024, TCE) e SAHaRA (NEJM 2025, HSA aneurismática) não mostraram diferença significativa. A evidência é dividida', manual: 'não comparado nesta nota' },
+    { tema: 'Plaquetas sem sangramento', diretriz: 'AABB/ICTMG 2025 (forte; resumo lido): transfundir com < 10.000/µL na plaquetopenia hipoproliferativa sem sangramento', manual: '< 20.000/µL com febre ou infecção (Tabela 3, p. 1078)' },
+    { tema: 'Plaquetas para cateter central', diretriz: 'AABB/ICTMG 2025 (condicional): < 10.000/µL em sítio compressível', manual: '< 20.000/µL (Tabela 3, p. 1078)' },
+    { tema: 'Dengue', diretriz: 'AABB/ICTMG 2025 (forte): não transfundir plaquetas na dengue com plaquetopenia, sem sangramento maior', manual: 'o cap. 82 não trata do tema' },
+    { tema: 'Hemorragia intracraniana com antiagregante', diretriz: 'AABB/ICTMG 2025 (condicional): não transfundir plaquetas na hemorragia intracraniana sem cirurgia, com plaquetas > 100.000/µL, mesmo em uso de antiagregante', manual: 'sangramento do sistema nervoso central com < 100.000/µL (Tabela 3, p. 1078)' },
+  ], [AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025, TRAIN_2024, HEMOTION_2024, SAHARA_2025])
+
+/** cap. 102: ERC 2025, já com a lista na ficha de hipotermia. */
+export const notaHcfmuspCap102 = notaLote5('nota-hcfmusp-cap102-hipotermia', 'Nota de atualização — manual HC, cap. 102: hipotermia acidental', 'cap. 102, p. 1360–1373', fichaHipotermiaAdulto,
+  DIRETRIZ_HIPOTERMIA_2025.map((d) => ({ tema: d.tema, diretriz: `ERC 2025: ${d.erc}`, manual: sem(d.livro) })),
+  [ERC_2025_HIPOTERMIA])
+
+export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap27, notaHcfmuspCap79, notaHcfmuspCap82, notaHcfmuspCap102]
+
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha
