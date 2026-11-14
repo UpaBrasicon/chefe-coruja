@@ -1,6 +1,7 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
 import { AHA_TEP_2026 } from './tep2026.ts'
+import { ASH_TEV_2020 } from './tvp2026.ts'
 
 // Anticoagulação e fibrinólise do adulto — Manual de Medicina de Emergência do
 // HCFMUSP (3ª ed., 2022): cap. 13 IAM sem supra (p. 207), cap. 14 IAM com
@@ -120,9 +121,9 @@ const PAG_ANTICOAG = 'cap. 13 IAM sem supra, p. 207; cap. 14 IAM com supra, p. 2
 
 export const fichaAnticoagulacaoPlenaAdulto: Ficha = {
   ...fichaAdulto('adulto-anticoagulacao-plena', 'Anticoagulação plena por peso — adulto', PAG_ANTICOAG),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_ANTICOAG), AHA_SCA_2025, ESC_SCA_2023],
-  revisadoEm: '28/09/2026 (AHA/ACC 2025 e ESC 2023 lidas no texto; manual mantido como base)',
+  versao: '2026-11-14.1',
+  fontes: [pagina(PAG_ANTICOAG), AHA_SCA_2025, ESC_SCA_2023, ASH_TEV_2020],
+  revisadoEm: '14/11/2026 (ASH 2020 de tratamento do TEV lida no texto integral, ao lado do manual, para a TVP; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 28/09/2026 (AHA/ACC 2025 e ESC 2023 lidas no texto; manual mantido como base)',
 }
 
 /** AHA/ACC 2025 (tabela de anticoagulantes, e795): enoxaparina com fibrinolítico — tetos e regra renal única. */

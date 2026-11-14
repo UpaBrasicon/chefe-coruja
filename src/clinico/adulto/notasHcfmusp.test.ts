@@ -264,3 +264,15 @@ test('abstinência alcoólica (cap. 78): BAP 2026 ao lado do manual; doses do ma
   assert.equal(nota.itens.length, a.DIRETRIZ_SAA.length)
   assert.deepEqual(nota.ficha.fontes, [a.BAP_SUBSTANCIAS_2026])
 })
+
+test('TVP (cap. 25): ASH 2020 ao lado do manual; a nota da SCA não herda a fonte nova', async () => {
+  const v = await import('./tvp2026.ts')
+  const ac = await import('./anticoagulacao.ts')
+  assert.equal(ac.fichaAnticoagulacaoPlenaAdulto.versao, '2026-11-14.1')
+  assert.ok(ac.fichaAnticoagulacaoPlenaAdulto.fontes.includes(v.ASH_TEV_2020))
+  assert.match(v.ASH_TEV_2020.citacao, /PMID 33007077\)/)
+  const nota = NOTAS_HCFMUSP_LOTE3.find((x) => x.ficha.id === 'nota-hcfmusp-cap25-tvp')!
+  assert.equal(nota.itens.length, v.DIRETRIZ_TVP.length)
+  assert.deepEqual(nota.ficha.fontes, [v.ASH_TEV_2020])
+  for (const n of NOTAS_HCFMUSP) if (n !== nota) assert.ok(!n.ficha.fontes.includes(v.ASH_TEV_2020), n.ficha.id)
+})
