@@ -1,15 +1,31 @@
 import { useState } from 'react'
 
 import {
-  BOLUS_CALCIO, CALCIO, INFUSAO_CALCIO, TABELA7_HIPERCALCEMIA, calcioCorrigido, calcioElementar, comprimidosCarbonato, fichaHipercalcemia,
+  BOLUS_CALCIO, CALCIO, DIFERENCAS_CALCIO, DIRETRIZ_CALCIO, INFUSAO_CALCIO, TABELA7_HIPERCALCEMIA, calcioCorrigido, calcioElementar, comprimidosCarbonato, fichaHipercalcemia,
   fichaReposicaoCalcio, fracaoExcrecaoCalcio, infusaoCalcioDose, infusaoCalcioMlH, lerCalcioTotal, tratamentoHipercalcemia, velocidadeBolus,
   type SalCalcio,
 } from '@/clinico/adulto/eletrolitos'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Alertas, Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
+
+function DiretrizCalcio({ parte, titulo }: { parte: 'hipo' | 'hiper'; titulo: string }) {
+  const linhas = DIRETRIZ_CALCIO.filter((d) => d.parte === parte)
+  return (
+    <Bloco titulo={titulo} descricao="Endocrine Society 2023 (hipercalcemia da malignidade; GRADE) e Society for Endocrinology 2016 (orientações de emergência), lidas no texto integral. Os cortes em mmol/L são das diretrizes; os em mg/dL, a conversão aproximada. As doses e contas do manual acima continuam valendo.">
+      <div className="overflow-x-auto">
+        <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+          <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+          <TableBody>{linhas.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+        </Table>
+      </div>
+      {parte === 'hiper' && <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_CALCIO.map((d) => <li key={d}>{d}</li>)}</ul>}
+    </Bloco>
+  )
+}
 
 function CalcioSerico({ prefixo }: { prefixo: string }) {
   const [ca, setCa] = useState(0)
@@ -91,6 +107,7 @@ export function ReposicaoCalcio() {
         {comp !== null && <Resultado rotulo="Carbonato de cálcio 1.250 mg" valor={`${br(comp)} comprimidos/dia`} />}
         <Trecho texto="Na DRC com hipocalcemia assintomática não se justifica cálcio EV como reposição inicial; atentar para vitamina D na hipovitaminose ou no hipoparatireoidismo. Calcitriol 0,25–0,5 µg 2 vezes ao dia." pagina="p. 922 e 1503" />
       </Bloco>
+      <DiretrizCalcio parte="hipo" titulo="SfE 2016 (hipocalcemia) — ao lado do manual" />
     </ToolLayout>
   )
 }
@@ -133,6 +150,7 @@ export function HipercalcemiaAdulto() {
         </div>
         {feca !== null && <Resultado rotulo="FECa" valor={`${br(feca, 4)} — ${feca < 0.01 ? 'abaixo de 0,01' : 'igual ou acima de 0,01'}`} />}
       </Bloco>
+      <DiretrizCalcio parte="hiper" titulo="Endocrine Society 2023 e SfE 2016 (hipercalcemia) — ao lado do manual" />
     </ToolLayout>
   )
 }
