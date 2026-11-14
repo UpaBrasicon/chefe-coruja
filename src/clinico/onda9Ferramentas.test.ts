@@ -234,3 +234,13 @@ test('PRAM: pesos por item e limites 0–3 / 4–7 / 8–12', () => {
   assert.equal(pram.calcular({ ...zero, sibilos: 3, entrada: 2, spo2: 2 })!.estado, 1)
   assert.equal(pram.calcular({ ...zero, sibilos: 3, entrada: 3, spo2: 2 })!.estado, 2)
 })
+
+test('San Francisco (cap. 16): EUSEM 2024 ao lado do manual, lote 6 do HCFMUSP', async () => {
+  const s = await import('./adulto/sincopeSanFrancisco.ts')
+  assert.equal(s.sincopeSanFrancisco.ficha.versao, '2026-11-14.1')
+  assert.match(s.sincopeSanFrancisco.ficha.fontes[0].citacao, /Manual de Medicina de Emergência/)
+  assert.ok(s.sincopeSanFrancisco.ficha.fontes.includes(s.EUSEM_SINCOPE_2024))
+  assert.match(s.EUSEM_SINCOPE_2024.citacao, /PMID 38874507/)
+  assert.ok(s.DIRETRIZ_SINCOPE_2024.every((d) => /sem graduação/.test(d.grau)))
+  assert.ok(s.DIRETRIZ_SINCOPE_2024.some((d) => d.tema === 'Risco intermediário'))
+})
