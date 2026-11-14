@@ -1,5 +1,6 @@
 import { completo, numero, somar, type Escore, type Item } from '../escore.ts'
-import { fichaAdulto } from './fonte.ts'
+import { fichaAdulto, pagina } from './fonte.ts'
+import { AHA_TEP_2026 } from './tep2026.ts'
 
 // PESI (Pulmonary Embolism Severity Index) como o Manual de Medicina de
 // Emergência do HCFMUSP (3ª ed., 2022) traz: Tabela 10 (p. 445–446) e
@@ -41,7 +42,12 @@ const LIVRO: Record<'I-II' | 'III-IV' | 'V', [string, string][]> = {
 }
 
 export const pesi: Escore = {
-  ficha: fichaAdulto('adulto-pesi', 'PESI — gravidade do TEP (adulto)', `${TEP}, p. 445–447 (Tabela 10 e Figura 4)`),
+  ficha: {
+    ...fichaAdulto('adulto-pesi', 'PESI — gravidade do TEP (adulto)', `${TEP}, p. 445–447 (Tabela 10 e Figura 4)`),
+    versao: '2026-11-14.1',
+    fontes: [pagina(`${TEP}, p. 445–447 (Tabela 10 e Figura 4)`), AHA_TEP_2026],
+    revisadoEm: `14/11/2026 (AHA/ACC 2026 de TEP lida no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)`,
+  },
   descricao: 'Pulmonary Embolism Severity Index para o paciente com TEP confirmado: idade em anos mais os pontos de cada variável da Tabela 10 do manual do HC.',
   itens: [
     { tipo: 'numero', id: 'idade', rotulo: 'Idade', unidade: 'anos', min: 14, max: 120, passo: 1, ajuda: 'Soma a idade em anos.' },
@@ -76,6 +82,7 @@ export const pesi: Escore = {
         'Frequência respiratória pontua acima de 30 ("> 30", Tabela 10). No artigo original (Aujesky 2005) o corte é ≥ 30; aqui vale o livro.',
         'O livro usa "DPOC" e "Neoplasia"; o artigo original fala em doença pulmonar crônica e câncer.',
         'Critérios HESTIA estão em ferramenta própria.',
+        'AHA/ACC 2026 (seções 3.2.1 e 4.1.1; Figura 2): PESI ≤ 85 entra no escore baixo da categoria B. Hestia, PESI ou sPESI acham o baixo risco nas categorias A e B (1, B-R), e o tratamento em casa é opção razoável nelas (2a, B-R), com anticoagulante na mão e seguimento garantido.',
         'Sem referência pediátrica declarada.',
       ],
     }

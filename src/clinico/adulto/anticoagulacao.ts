@@ -1,5 +1,6 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
+import { AHA_TEP_2026 } from './tep2026.ts'
 
 // Anticoagulação e fibrinólise do adulto — Manual de Medicina de Emergência do
 // HCFMUSP (3ª ed., 2022): cap. 13 IAM sem supra (p. 207), cap. 14 IAM com
@@ -275,9 +276,9 @@ const PAG_FIBRINO = 'cap. 14 IAM com supra, p. 218–219; cap. 32 TEP, p. 443 (T
 
 export const fichaFibrinoliticosAdulto: Ficha = {
   ...fichaAdulto('adulto-fibrinoliticos', 'Fibrinolíticos — adulto (IAM com supra e TEP)', PAG_FIBRINO),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_FIBRINO), AHA_SCA_2025, ESC_SCA_2023, SBC_DOR_TORACICA_2025],
-  revisadoEm: '28/09/2026 (AHA/ACC 2025, ESC 2023 e SBC 2025 lidas no texto; manual mantido como base)',
+  versao: '2026-11-14.1',
+  fontes: [pagina(PAG_FIBRINO), AHA_SCA_2025, ESC_SCA_2023, SBC_DOR_TORACICA_2025, AHA_TEP_2026],
+  revisadoEm: '14/11/2026 (AHA/ACC 2026 de TEP lida no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 28/09/2026 (AHA/ACC 2025, ESC 2023 e SBC 2025 lidas no texto; manual mantido como base)',
 }
 
 /** Tenecteplase pela AHA/ACC 2025 (Tabela 13, e806): faixas fechadas — < 60 kg 30; 60–69 35; 70–79 40; 80–89 45; ≥ 90 kg 50 mg. Meia dose > 75 anos: ESC 2023, IIa B (p. 3762). */
