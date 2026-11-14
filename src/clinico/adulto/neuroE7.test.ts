@@ -88,3 +88,15 @@ test('SGB: LCR (p. 603–604)', () => {
   assert.match(lerLcrSgb(80, 60)!.achados.join(' '), /red flag/)
   assert.equal(lerLcrSgb(-1, 2), null)
 })
+
+test('SGB (cap. 44): EAN/PNS 2023 ao lado do manual; doses do manual iguais', async () => {
+  const g = await import('./guillainBarre.ts')
+  assert.equal(g.fichaSgbAdulto.versao, '2026-11-14.1')
+  assert.ok(g.fichaSgbAdulto.fontes.includes(g.EAN_PNS_SGB_2023))
+  assert.match(g.fichaSgbAdulto.fontes[0].citacao, /Manual de Medicina de Emergência/)
+  assert.match(g.EAN_PNS_SGB_2023.citacao, /PMID 37814552/)
+  assert.equal(g.IGIV_SGB.gKgDia, 0.4)
+  assert.equal(g.PLASMAFERESE_SGB.mlKgTotal, 250)
+  assert.ok(g.DIRETRIZ_SGB_2023.some((d) => d.tema === 'Corticoide' && /fraco contra/.test(d.grau)))
+  assert.equal(new Set(g.DIRETRIZ_SGB_2023.map((d) => d.tema)).size, g.DIRETRIZ_SGB_2023.length)
+})

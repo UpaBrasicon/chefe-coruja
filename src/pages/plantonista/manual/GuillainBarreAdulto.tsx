@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
-import { AAN_SGB, IGIV_SGB, PLASMAFERESE_SGB, RED_FLAGS_SGB, contaImunoterapiaSgb, fichaSgbAdulto, lerLcrSgb } from '@/clinico/adulto/guillainBarre'
+import { AAN_SGB, DIRETRIZ_SGB_2023, IGIV_SGB, PLASMAFERESE_SGB, RED_FLAGS_SGB, contaImunoterapiaSgb, fichaSgbAdulto, lerLcrSgb } from '@/clinico/adulto/guillainBarre'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -51,6 +52,15 @@ export function GuillainBarreAdulto() {
         {lcr ? <ul className="list-disc pl-5 text-apoio">{lcr.achados.map((a) => <li key={a}>{a}</li>)}</ul> : <p className="text-apoio text-tinta-sussurro">Informe proteína e células.</p>}
         <p className="text-apoio font-medium">Red flags para diagnóstico alternativo (p. 603–604)</p>
         <ul className="list-disc pl-5 text-apoio">{RED_FLAGS_SGB.map((r) => <li key={r}>{r}</li>)}</ul>
+      </Bloco>
+
+      <Bloco titulo="EAN/PNS 2023 — ao lado do manual" descricao="Diretriz europeia de 2023 (GRADE), lida no resumo. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_SGB_2023.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
       </Bloco>
     </ToolLayout>
   )
