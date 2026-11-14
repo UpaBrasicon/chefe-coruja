@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_CAINE, DOSES_ABSTINENCIA, ERRATA_CIWA, FATORES_RISCO_SAA, NOTAS_TEMPO_SAA, NOTA_ABSTINENCIA_FENOBARBITAL, SEM_DOSE_NO_CAPITULO, TEMPOS_SAA,
+  CRITERIOS_CAINE, DIFERENCAS_SAA, DIRETRIZ_SAA, DOSES_ABSTINENCIA, ERRATA_CIWA, FATORES_RISCO_SAA, NOTAS_TEMPO_SAA, NOTA_ABSTINENCIA_FENOBARBITAL, SEM_DOSE_NO_CAPITULO, TEMPOS_SAA,
   caine, ciwaAr, doseDiaria, fichaAbstinenciaAlcoolica, midazolamDelirium, type DoseAbstinencia, type Faixa,
 } from '@/clinico/adulto/abstinenciaAlcoolica'
 import type { Respostas } from '@/clinico/escore'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
 import { Bloco, LinhaManual } from './PecasLoteC'
@@ -122,6 +123,15 @@ export function Abstinencia() {
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">
           {FATORES_RISCO_SAA.itens.map((f) => <li key={f}>{f}</li>)}
         </ul>
+      </Bloco>
+      <Bloco titulo="BAP 2026 — ao lado do manual" descricao="Parte de álcool da diretriz da British Association for Psychopharmacology de 2026 (níveis A–D; S = padrão de cuidado), lida no texto integral. As doses do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_SAA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SAA.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
