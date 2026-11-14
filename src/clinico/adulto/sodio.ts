@@ -15,12 +15,58 @@ export const META_CORRECAO_HIPONATREMIA_2025: Fonte = {
 
 export const ALERTA_SUBCORRECAO = 'Corrigir devagar demais também faz mal. Na metanálise do JAMA Intern Med 2025 (16 coortes, 11.811 pacientes com sódio < 120, ou < 125 com sintomas graves), a correção lenta (< 8 mEq/L/24 h) e muito lenta (< 4–6 mEq/L/24 h) se associou a mais mortes e internação mais longa que a correção rápida (≥ 8–10 mEq/L/24 h), sem aumento significativo de desmielinização osmótica. São estudos observacionais (certeza moderada a baixa). O teto do manual (8 mEq/L em 24 h na crônica) continua; o alerta é para não ficar muito abaixo dele.'
 
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 66: a
+// diretriz europeia de 2014 (ESICM, ESE e ERA-EDTA) foi lida no texto integral,
+// com os graus GRADE (1 = recomenda, 2 = sugere; A–D = qualidade). O "treatment
+// standard" da ERA de 2024 também foi lido: é uma revisão de um autor, sem
+// graduação, e entra como complemento. As contas e doses do manual não mudam.
+export const EUROPEIA_HIPONATREMIA_2014: Fonte = {
+  citacao: 'Spasovski G, Vanholder R, Allolio B, et al. Clinical practice guideline on diagnosis and treatment of hyponatraemia (ESICM, ESE e ERA-EDTA/ERBP). Eur J Endocrinol. 2014;170(3):G1–G47 (PMID 24569125). Texto integral lido, com os graus de cada recomendação.',
+  url: 'https://doi.org/10.1530/EJE-13-1020',
+}
+
+export const ERA_HIPONATREMIA_2024: Fonte = {
+  citacao: 'Spasovski G. Hyponatraemia—treatment standard 2024. Nephrol Dial Transplant. 2024;39(10):1583–1592 (PMID 39009016). Revisão de um autor, sem graduação das recomendações. Texto integral lido.',
+  url: 'https://doi.org/10.1093/ndt/gfae162',
+}
+
+const SEM_ITEM_SODIO = 'sem item do manual na ferramenta'
+
+/** Europeia 2014 (graduada) e ERA 2024 (revisão) × manual, na hiponatremia; um tema por linha. */
+export const DIRETRIZ_HIPONATREMIA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Sódio corrigido pela glicemia', diretriz: 'Excluir a hiponatremia por hiperglicemia: medir a glicemia e corrigir o sódio medido se ela estiver alta', grau: '1D', fonte: 'Europeia 2014', livro: '+1,6 mEq/L a cada 100 mg/dL acima de 100 (p. 883, 886, 896)' },
+  { tema: 'Sintomas graves: primeira hora', diretriz: 'Aguda ou crônica: 150 mL de NaCl 3% EV em 20 min (1D); dosar o sódio em 20 min e repetir 150 mL (2D); repetir até duas vezes ou até subir 5 mmol/L (2D)', grau: '1D e 2D', fonte: 'Europeia 2014', livro: 'bolus de 100 mL de NaCl 3% até os sintomas resolverem, máximo de 300 mL; sódio de 1/1 h; alvo de 4–6 mEq/L nas primeiras horas (Tabelas 4 e 5, p. 889–890)' },
+  { tema: 'Sintomas graves que melhoram com +5', diretriz: 'Parar a salina hipertônica; manter a veia com o menor volume possível de SF 0,9%; tratar a causa (1D). Limite: +10 mmol/L nas primeiras 24 h e +8 a cada 24 h depois, até 130 (1D). Sódio em 6 h, 12 h e depois diário (2D)', grau: '1D e 2D', fonte: 'Europeia 2014', livro: 'crônica: não passar de 8 mEq/L nas primeiras 24 h (Tabela 5, p. 890)' },
+  { tema: 'Sintomas graves sem melhora com +5', diretriz: 'Manter NaCl 3% para subir mais 1 mmol/L por hora; parar quando os sintomas melhorarem, o sódio subir 10 no total ou chegar a 130, o que vier antes; procurar outra causa (1D). Sódio de 4/4 h durante a infusão (2D)', grau: '1D e 2D', fonte: 'Europeia 2014', livro: 'repetir o bolus se nova queda; máximo de 300 mL (Tabelas 4 e 5, p. 890)' },
+  { tema: 'Sintomas moderadamente graves', diretriz: '150 mL de NaCl 3% EV em 20 min, dose única; alvo de +5 mmol/L em 24 h; limite de +10 nas primeiras 24 h e +8 depois; sódio em 1, 6 e 12 h', grau: '2D', fonte: 'Europeia 2014', livro: 'crônica com Na < 120 e sintomas: NaCl 3% 15–30 mL/h, sódio de 4/4 h, alvo de 4–6 mEq/L em 24 h, parar em 125 (Tabela 5, p. 890–891)' },
+  { tema: 'Aguda sem sintomas graves', diretriz: 'Se a queda aguda passar de 10 mmol/L: 150 mL de NaCl 3% EV em 20 min, dose única; sódio em 4 h', grau: '2D', fonte: 'Europeia 2014', livro: 'autocorrigindo por diurese osmótica: sódio de 1/1 h; se não, bolus de 50 mL de NaCl 3% (Tabela 4, p. 890)' },
+  { tema: 'Crônica sem sintomas graves', diretriz: 'Leve: não tratar só para subir o sódio (2C). Moderada ou profunda: não passar de +10 mmol/L nas primeiras 24 h e +8 depois (1D); sódio de 6/6 h até estabilizar (2D)', grau: '2C, 1D e 2D', fonte: 'Europeia 2014', livro: 'Na < 120 sem sintomas: internar, sódio de 12/12 h, medidas gerais (Tabela 5, p. 891)' },
+  { tema: 'Edemaciado (volume extracelular aumentado)', diretriz: 'Leve ou moderada: não tratar só para subir o sódio (1C); restringir líquidos (2D); não usar antagonista do receptor de vasopressina (1C)', grau: '1C e 2D', fonte: 'Europeia 2014', livro: 'Na < 120 no edemaciado: NaCl 3% 15–30 mL/h e furosemida 40 mg EV 2 vezes ao dia; parar em 125 (Tabela 5, p. 890)' },
+  { tema: 'SIADH', diretriz: 'Moderada ou profunda: restrição hídrica como primeira linha; na segunda linha, equivalentes: ureia 0,25–0,50 g/kg/dia ou diurético de alça em dose baixa com NaCl VO (2D). Antagonista de vasopressina: não recomendado na moderada e contraindicado na profunda (1C)', grau: '2D e 1C', fonte: 'Europeia 2014', livro: SEM_ITEM_SODIO },
+  { tema: 'Volume circulante reduzido', diretriz: 'Repor o volume com SF 0,9% ou cristaloide balanceado a 0,5–1,0 mL/kg/h', grau: '1B', fonte: 'Europeia 2014', livro: SEM_ITEM_SODIO },
+  { tema: 'Correção rápida demais', diretriz: 'Baixar de novo o sódio se subir > 10 mmol/L nas primeiras 24 h ou > 8 em 24 h depois; suspender o tratamento ativo (1D). Com especialista: água livre 10 mL/kg (p. ex., glicose) em 1 h, com controle de diurese, e desmopressina 2 µg EV, no mínimo a cada 8 h (1D)', grau: '1D', fonte: 'Europeia 2014', livro: SEM_ITEM_SODIO },
+  { tema: 'Bolus ou infusão contínua', diretriz: 'NaCl 3% 100–150 mL (2–4 mL/kg) em 20–40 min, repetido até o alvo, ou infusão contínua de 0,5–1 mL/kg/h. O bolus intermitente é o preferido no sintomático; a comparação ainda é discutida', grau: 'revisão, sem graduação', fonte: 'ERA 2024', livro: 'bolus de 100 mL; máximo de 300 mL (Tabelas 4 e 5, p. 890)' },
+  { tema: 'Alvo das primeiras horas', diretriz: 'Na aguda ou grave com sintomas: subir 4–6 mmol/L nas primeiras 6 h ou menos e manter esse ganho nas 24 h; nunca passar de 8 mmol/L em 24 h', grau: 'revisão, sem graduação', fonte: 'ERA 2024', livro: '4–6 mEq/L nas primeiras horas; crônica até 8 mEq/L em 24 h (Tabelas 4 e 5, p. 889–890)' },
+  { tema: 'Hipocalemia junto', diretriz: 'Preferir a infusão contínua de NaCl 3%, que permite somar KCl; o potássio também sobe o sódio, então dosar o sódio de 2/2 h', grau: 'revisão, sem graduação', fonte: 'ERA 2024', livro: SEM_ITEM_SODIO },
+  { tema: 'Resgate da hipercorreção', diretriz: 'Parar o que corrige; glicose 5% 2–4 mL/kg/h por 4 h e/ou desmopressina 1–3 µg EV ou SC a cada 8–12 h, com sódio seriado', grau: 'revisão, sem graduação', fonte: 'ERA 2024', livro: SEM_ITEM_SODIO },
+  { tema: 'Segunda linha no SIADH', diretriz: 'Ureia e tolvaptana são as mais eficazes; ureia 0,25–0,5 g/kg/dia (15–30 g/dia). Tolvaptana começa com 7,5 mg, com vigilância de hipercorreção', grau: 'revisão, sem graduação', fonte: 'ERA 2024', livro: SEM_ITEM_SODIO },
+]
+
+export const DIFERENCAS_HIPONATREMIA: string[] = [
+  'Bolus nos sintomas graves: a europeia de 2014 dá 150 mL de NaCl 3% em 20 min, até duas repetições ou +5 mmol/L; a ERA 2024, 100–150 mL (2–4 mL/kg); o manual, 100 mL até 300 mL.',
+  'Limite em 24 h: a europeia de 2014 aceita até +10 mmol/L nas primeiras 24 h e +8 depois; o manual e a ERA 2024 usam 8 em 24 h na crônica. A ferramenta segue alertando contra corrigir devagar demais (JAMA Intern Med 2025).',
+  'Quando parar: a europeia para a salina hipertônica quando os sintomas melhoram, o sódio sobe 10 ou chega a 130; o manual para a infusão da crônica em 125.',
+  'Edemaciado: a europeia de 2014 não trata só para subir o sódio na leve ou moderada, restringe líquidos e não usa vaptana; o manual usa NaCl 3% 15–30 mL/h com furosemida no Na < 120.',
+  'Hipercorreção: as duas diretrizes trazem o resgate (água livre ou glicose 5% e desmopressina); o manual não traz.',
+  'Vaptana no SIADH: a europeia de 2014 não a recomenda (1C); a ERA 2024 põe tolvaptana e ureia como a segunda linha mais eficaz.',
+]
+
 const fichaHiponaLivro = fichaAdulto('adulto-hiponatremia', 'Hiponatremia — NaCl 3% pelo manual', 'cap. 66, p. 882–891')
 export const fichaHiponatremia: Ficha = {
   ...fichaHiponaLivro,
-  versao: '2026-10-09.1',
-  fontes: [...fichaHiponaLivro.fontes, META_CORRECAO_HIPONATREMIA_2025],
-  revisadoEm: '09/10/2026 (alerta contra a subcorreção, JAMA Intern Med 2025)',
+  versao: '2026-11-14.1',
+  fontes: [...fichaHiponaLivro.fontes, META_CORRECAO_HIPONATREMIA_2025, EUROPEIA_HIPONATREMIA_2014, ERA_HIPONATREMIA_2024],
+  revisadoEm: '14/11/2026 (europeia 2014 e ERA 2024 lidas no texto integral, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 09/10/2026 (alerta contra a subcorreção, JAMA Intern Med 2025)',
 }
 // Revisão PubMed, itens médios (decisão do RT de 06/11/2026, H8 = A): a
 // metanálise da velocidade de correção da hipernatremia entra só como nota. O

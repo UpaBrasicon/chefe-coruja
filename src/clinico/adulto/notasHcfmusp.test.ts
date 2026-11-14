@@ -204,3 +204,16 @@ test('HDA (cap. 50): ESGE 2026 e Baveno VIII ao lado do manual; doses do manual 
   assert.equal(nota.itens.length, h.DIRETRIZ_HDA.length)
   assert.deepEqual(nota.ficha.fontes, [h.ESGE_UGIH_2026, h.BAVENO_VIII_2026])
 })
+
+test('sódio (cap. 66): europeia 2014 e ERA 2024 ao lado do manual; contas do manual iguais', async () => {
+  const s = await import('./sodio.ts')
+  assert.equal(s.fichaHiponatremia.versao, '2026-11-14.1')
+  for (const f of [s.EUROPEIA_HIPONATREMIA_2014, s.ERA_HIPONATREMIA_2024, s.META_CORRECAO_HIPONATREMIA_2025]) assert.ok(s.fichaHiponatremia.fontes.includes(f))
+  assert.match(s.EUROPEIA_HIPONATREMIA_2014.citacao, /PMID 24569125/)
+  assert.match(s.ERA_HIPONATREMIA_2024.citacao, /sem graduação/)
+  assert.equal(s.LIMITES_HIPONATREMIA.cronicaMax24h, 8)
+  assert.equal(s.LIMITES_HIPONATREMIA.bolusMl, 100)
+  const nota = NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === 'nota-hcfmusp-cap66-sodio')!
+  assert.equal(nota.itens.length, s.DIRETRIZ_HIPONATREMIA.length)
+  assert.deepEqual(nota.ficha.fontes, [s.EUROPEIA_HIPONATREMIA_2014, s.ERA_HIPONATREMIA_2024])
+})
