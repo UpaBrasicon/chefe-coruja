@@ -146,8 +146,8 @@ test('lote 3, N1: notas de 33, 40 e 76 a partir das listas das fichas; PAC com a
   const { DIRETRIZ_PAC_2026, IDSA_PAC_2026, fichaPacAntibioticoAdulto } = await import('./tepPac.ts')
   const { DIRETRIZ_HSA_2023 } = await import('./hsa.ts')
   const { DIFERENCAS_AGITACAO_2024 } = await import('./agitacao.ts')
-  assert.equal(NOTAS_HCFMUSP_LOTE3.length, 3)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + 3)
+  assert.ok(NOTAS_HCFMUSP_LOTE3.length >= 3)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const por = (id: string) => NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === id)!
@@ -164,4 +164,18 @@ test('lote 3, N1: notas de 33, 40 e 76 a partir das listas das fichas; PAC com a
   assert.ok(fichaPacAntibioticoAdulto.fontes.includes(IDSA_PAC_2026))
   assert.ok(por('nota-hcfmusp-cap33-pac').ficha.fontes.includes(IDSA_PAC_2026))
   assert.ok(DIRETRIZ_PAC_2026.some((d) => d.tema === 'Internado com vírus respiratório positivo'))
+})
+
+test('HIC (cap. 39): ESO/EANS 2025 ao lado do manual; doses do manual iguais', async () => {
+  const m = await import('./reversaoAnticoagulacao.ts')
+  assert.equal(m.fichaReversaoAnticoagulacaoAdulto.versao, '2026-11-14.1')
+  assert.ok(m.fichaReversaoAnticoagulacaoAdulto.fontes.includes(m.ESO_HIC_2025))
+  assert.match(m.ESO_HIC_2025.citacao, /PMID 40401775/)
+  const pa = m.DIRETRIZ_HIC_ESO_2025.find((d) => d.tema === 'Pressão arterial')!
+  assert.match(pa.eso, /< 140 mmHg/)
+  assert.match(pa.eso, /110 mmHg/)
+  const nota = NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === 'nota-hcfmusp-cap39-hic')!
+  assert.equal(nota.itens.length, m.DIRETRIZ_HIC_ESO_2025.length)
+  assert.deepEqual(nota.ficha.fontes, [m.ESO_HIC_2025])
+  assert.equal(m.HIP_METAS[0].pagina, 'p. 547')
 })

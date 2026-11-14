@@ -10,7 +10,7 @@ test('epistaxe: fontes com o PMID certo, na ficha da reversão em versão nova',
   assert.match(AAO_HNS_EPISTAXE_2020.citacao, /PMID 31910111/)
   assert.match(NOPAC_2021.citacao, /PMID 33612282/)
   assert.match(TRANEXAMICO_EPISTAXE_2026.citacao, /PMID 42297643/)
-  assert.equal(fichaReversaoAnticoagulacaoAdulto.versao, '2026-11-11.1')
+  assert.equal(fichaReversaoAnticoagulacaoAdulto.versao, '2026-11-14.1')
   for (const f of [AAO_HNS_EPISTAXE_2020, NOPAC_2021, TRANEXAMICO_EPISTAXE_2026]) assert.ok(fichaReversaoAnticoagulacaoAdulto.fontes.includes(f))
 })
 test('epistaxe: tratamento local antes de reverter, fora do risco de vida', () => {
