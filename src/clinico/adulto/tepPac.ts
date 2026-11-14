@@ -1,6 +1,7 @@
 import { completo, escolha, marcadas, numero, somar, type Escore, type Item } from '../escore.ts'
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
+import { AHA_TEP_2026 } from './tep2026.ts'
 
 // Tromboembolismo pulmonar (cap. 32, p. 429–449) e pneumonia adquirida na
 // comunidade (cap. 33, p. 450–467) do Manual de Medicina de Emergência do
@@ -22,7 +23,12 @@ export const ERRATA_WELLS_SIMPLIFICADO =
 // PERC (Tabela 4, p. 434)
 
 export const perc: Escore = {
-  ficha: fichaAdulto('adulto-perc', 'PERC — critérios para descartar TEP (adulto)', `${TEP}, p. 433–434 (Tabela 4)`),
+  ficha: {
+    ...fichaAdulto('adulto-perc', 'PERC — critérios para descartar TEP (adulto)', `${TEP}, p. 433–434 (Tabela 4)`),
+    versao: '2026-11-14.1',
+    fontes: [pagina(`${TEP}, p. 433–434 (Tabela 4)`), AHA_TEP_2026],
+    revisadoEm: `14/11/2026 (AHA/ACC 2026 de TEP lida no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)`,
+  },
   descricao: 'Pulmonary Embolism Rule-Out Criteria: oito perguntas; todas negativas descartam a suspeita quando a probabilidade pré-teste é improvável.',
   itens: [
     { tipo: 'numero', id: 'idade', rotulo: 'Idade', unidade: 'anos', min: 14, max: 120, passo: 1 },
@@ -52,6 +58,7 @@ export const perc: Escore = {
       alerta: 'O PERC só se aplica quando a probabilidade pré-teste é improvável (p. 433). Atenção à errata do Wells simplificado da Tabela 3 (p. 433), que inverte as faixas.',
       cuidados: [
         ERRATA_WELLS_SIMPLIFICADO,
+        'AHA/ACC 2026 (Figura 1): o PERC entra só na probabilidade clínica baixa (< 15%). Todo negativo: probabilidade muito baixa, sem mais exames. Algum positivo: D-dímero com os critérios do YEARS. O manual fala em probabilidade improvável.',
         'Sem referência pediátrica declarada.',
       ],
     }
@@ -76,7 +83,12 @@ const ITENS_HESTIA: Item[] = [
 ]
 
 export const hestia: Escore = {
-  ficha: fichaAdulto('adulto-hestia', 'Critérios HESTIA — tratamento ambulatorial do TEP (adulto)', `${TEP}, p. 447–448 (Tabela 11)`),
+  ficha: {
+    ...fichaAdulto('adulto-hestia', 'Critérios HESTIA — tratamento ambulatorial do TEP (adulto)', `${TEP}, p. 447–448 (Tabela 11)`),
+    versao: '2026-11-14.1',
+    fontes: [pagina(`${TEP}, p. 447–448 (Tabela 11)`), AHA_TEP_2026],
+    revisadoEm: `14/11/2026 (AHA/ACC 2026 de TEP lida no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)`,
+  },
   descricao: 'Onze critérios de exclusão para tratamento ambulatorial do TEP confirmado; o livro combina com PESI classe I ou II.',
   itens: ITENS_HESTIA,
   calcular(r) {

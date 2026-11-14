@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   DIRETRIZ_SCA_2025, alteplaseIam2025, tenecteplase2025, ALTEPLASE_TEP, ESTREPTOQUINASE, alteplaseIam, alteplaseTepAlternativo, fichaFibrinoliticosAdulto, mgHDaFase, tenecteplase, uiPorHora,
 } from '@/clinico/adulto/anticoagulacao'
+import { DIFERENCAS_TEP_2026, DIRETRIZ_TEP_2026 } from '@/clinico/adulto/tep2026'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -98,6 +99,15 @@ export function FibrinoliticosAdulto() {
         <p className="text-apoio text-tinta-sussurro">
           O manual traz que a HNF não deve ser infundida durante estreptoquinase e uroquinase, mas pode ser mantida com alteplase (p. 443).
         </p>
+      </Bloco>
+      <Bloco titulo="AHA/ACC 2026 — TEP, ao lado do manual" descricao="Diretriz de TEP agudo lida no texto integral, com classe (COR) e nível (LOE). Ela não traz dose de trombolítico: as doses do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA/ACC 2026</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_TEP_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.aha} <span className="text-tinta-sussurro">({d.classe}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TEP_2026.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
       <Bloco titulo="AHA/ACC 2025, ESC 2023 e SBC 2025 — IAM com supra, ao lado do manual" descricao="Diretrizes lidas no texto integral. As doses do manual acima continuam valendo; aqui ficam as da AHA 2025 para comparação.">
         <LinhaManual nome="Tenecteplase — faixas fechadas (AHA 2025, Tabela 13)" texto="< 60 kg 30 mg; 60–69 kg 35; 70–79 kg 40; 80–89 kg 45; ≥ 90 kg 50 mg; meia dose > 75 anos (ESC 2023, IIa B)" pagina="AHA 2025 e806; ESC 2023 p. 3762"
