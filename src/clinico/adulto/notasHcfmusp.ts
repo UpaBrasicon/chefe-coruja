@@ -17,7 +17,7 @@ import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAg
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
 import { CARVAO_CTRC_2026, CARVAO_INDICACAO, fichaIntoxicacoesAdulto } from './intoxicacoes.ts'
-import { COSTR_2026_PCR, DIFERENCAS_BRADI_2025, DIRETRIZ_ALS_2025, fichaBradicardiaAdulto, fichaPcrAdulto } from './pcr.ts'
+import { COSTR_2026_PCR, DIFERENCAS_BRADI_2025, DIRETRIZ_ALS_2025, DIRETRIZ_TAQUI_2025, fichaBradicardiaAdulto, fichaPcrAdulto, fichaTaquiarritmiaAdulto } from './pcr.ts'
 import { METAS_ERC_2025, METAS_POS_PCR, fichaPosPcrAdulto } from './posPcr.ts'
 import { DIRETRIZES_2026, fichaRessuscitacaoAdulto } from './ressuscitacaoVolemica.ts'
 
@@ -59,6 +59,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap97-99-intoxicacoes': 'intoxicações exógenas (carvão ativado)',
   'nota-hcfmusp-cap15-bradiarritmias': 'bradicardia e bradiarritmias no adulto',
   'nota-hcfmusp-cap17-fa': 'fibrilação atrial (FA) no adulto',
+  'nota-hcfmusp-cap18-taquiarritmias': 'taquicardia e taquiarritmias com pulso no adulto (QRS largo, QRS estreito, TV polimórfica e torsades)',
   'nota-hcfmusp-cap19-emergencia-hipertensiva': 'emergência hipertensiva e elevação da pressão arterial no adulto',
   'nota-hcfmusp-cap20-sindrome-aortica': 'síndrome aórtica aguda (dissecção de aorta), hematoma intramural, úlcera penetrante e aneurisma de aorta no adulto',
   'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
@@ -150,6 +151,12 @@ export const notaHcfmuspCap17 = notaLote2('nota-hcfmusp-cap17-fa', 'Nota de atua
   ...DOSES_FA_2024.map((d) => ({ tema: `Dose IV na FA — ${d.droga}`, diretriz: `ESC 2024: ${d.esc}. SBC 2025: ${d.sbc}`, manual: d.livro })),
 ])
 
+/** cap. 18: AHA 2025 (Part 9), seções de taquicardia com pulso (M2), lidas em 14/11/2026. */
+export const notaHcfmuspCap18 = notaLote2('nota-hcfmusp-cap18-taquiarritmias', 'Nota de atualização — manual HC, cap. 18: outras taquiarritmias', 'cap. 18, p. 257–269', fichaTaquiarritmiaAdulto,
+  DIRETRIZ_TAQUI_2025.map((d) => ({ tema: d.tema, diretriz: `AHA 2025 (${d.classe}; ${d.onde}): ${d.aha}`, manual: sem(d.livro) })))
+notaHcfmuspCap18.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap18.ficha.revisadoEm = '14/11/2026 (lote 2 da revisão do HCFMUSP: itens tirados da lista da AHA 2025, lida no texto integral; aguarda aprovação do RT)'
+
 /** cap. 19: DBHA 2025 (M3: a base fica nela). */
 export const notaHcfmuspCap19 = notaLote2('nota-hcfmusp-cap19-emergencia-hipertensiva', 'Nota de atualização — manual HC, cap. 19: emergências hipertensivas', 'cap. 19, p. 270–276', fichaEmergenciaHipertensivaAdulto, [
   ...DBHA_2025_ALVOS.map((d) => ({ tema: d.tema, diretriz: `DBHA 2025 (${d.forca}): ${d.dbha}${d.nota ? `. Nota: ${d.nota}` : ''}`, manual: sem(d.livro) })),
@@ -180,7 +187,7 @@ export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 
 export const notaHcfmuspCap21 = notaLote2('nota-hcfmusp-cap21-ic-aguda', 'Nota de atualização — manual HC, cap. 21: insuficiência cardíaca aguda', 'cap. 21, p. 286–303', fichaIcAgudaAdulto,
   DIRETRIZ_ICA_2026.map((d) => ({ tema: d.tema, diretriz: `ESC 2026 (${d.classe}; ${d.slide}): ${d.esc2026}`, manual: sem(d.livro) })))
 
-export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap20, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap31, notaHcfmuspCap67]
+export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap18, notaHcfmuspCap19, notaHcfmuspCap20, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap31, notaHcfmuspCap67]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -194,6 +201,7 @@ export const fichaNotaHcfmuspCap64 = notaHcfmuspCap64.ficha
 export const fichaNotaHcfmuspCap97 = notaHcfmuspCap97.ficha
 export const fichaNotaHcfmuspCap15 = notaHcfmuspCap15.ficha
 export const fichaNotaHcfmuspCap17 = notaHcfmuspCap17.ficha
+export const fichaNotaHcfmuspCap18 = notaHcfmuspCap18.ficha
 export const fichaNotaHcfmuspCap19 = notaHcfmuspCap19.ficha
 export const fichaNotaHcfmuspCap20 = notaHcfmuspCap20.ficha
 export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha

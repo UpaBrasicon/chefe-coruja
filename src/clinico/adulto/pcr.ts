@@ -274,7 +274,54 @@ export const OUTRAS_BRADI: ItemManual[] = [
 
 // ── Outras taquiarritmias (cap. 18) ──────────────────────────────────────────
 
-export const fichaTaquiarritmiaAdulto = fichaAdulto('adulto-taquiarritmias', 'Taquiarritmias — drogas EV do adulto', 'cap. 18 Outras taquiarritmias, p. 265–266')
+// Lote 2 da revisão do HCFMUSP, M2 (decisão do RT de 13/11/2026), cap. 18: as
+// recomendações de taquicardia da AHA 2025 (Part 9) foram lidas em 14/11/2026 no
+// texto integral da Circulation, pelo Chrome do RT. As tabelas de recomendação
+// e a Figura 6 são imagens e foram lidas uma a uma. O manual (cap. 18,
+// p. 262–266) foi conferido no PDF. Doses e contas do manual não mudam.
+const PAG_TAQUI = 'cap. 18 Outras taquiarritmias, p. 265–266'
+
+export const AHA_ALS_2025_TAQUI: Fonte = {
+  citacao: 'Wigginton JG, et al. Part 9: Adult Advanced Life Support: 2025 American Heart Association Guidelines for Cardiopulmonary Resuscitation and Emergency Cardiovascular Care. Circulation. 2025;152(suppl 2):S538–S577 (PMID 41122884). Seções de taquicardia de QRS largo, TV polimórfica e taquicardia regular de QRS estreito, com classe (COR) e nível (LOE), e a Figura 6 (algoritmo de taquiarritmia com pulso e quadro de doses), lidas no texto integral da Circulation.',
+  url: 'https://doi.org/10.1161/CIR.0000000000001376',
+}
+
+export const fichaTaquiarritmiaAdulto: Ficha = {
+  ...fichaAdulto('adulto-taquiarritmias', 'Taquiarritmias — drogas EV do adulto', PAG_TAQUI),
+  versao: '2026-11-14.1',
+  fontes: [pagina(PAG_TAQUI), AHA_ALS_2025_TAQUI],
+  revisadoEm: '14/11/2026 (AHA 2025, Part 9, seções de taquicardia lidas no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
+}
+
+const SEM_ITEM_TAQUI = 'sem item do manual na ferramenta'
+
+/** AHA 2025 × manual nas taquicardias com pulso, um tema por linha. */
+export const DIRETRIZ_TAQUI_2025: { tema: string; aha: string; classe: string; onde: string; livro: string }[] = [
+  { tema: 'Instabilidade', aha: 'Taquiarritmia persistente com hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou IC aguda: cardioversão sincronizada, com sedação sempre que possível', classe: 'figura', onde: 'Figura 6', livro: 'dor torácica, alteração do nível de consciência, edema pulmonar ou PAS < 90 mmHg: cardioversão sincronizada com sedação (p. 262)' },
+  { tema: 'QRS largo instável', aha: 'Cardioversão sincronizada', classe: '1, B-NR', onde: 'QRS largo, rec. 1', livro: 'cardioversão sincronizada (p. 262)' },
+  { tema: 'QRS largo estável', aha: 'Cardioversão sincronizada quando manobra vagal e drogas falham ou são contraindicadas (1, B-NR). Amiodarona, procainamida ou sotalol IV podem ser considerados (2b, B-R)', classe: '1 e 2b', onde: 'QRS largo, rec. 2 e 3', livro: 'na TV monomórfica estável, cardioversão é a primeira linha; drogas se o paciente recusa ou não tolera a sedação; procainamida indisponível no Brasil (p. 264)' },
+  { tema: 'Adenosina no QRS largo', aha: 'Pode ser considerada no QRS largo estável, regular e monomórfico, para tratar ou ajudar no diagnóstico (2b, B-NR). Não usar no instável, irregular ou polimórfico (3: dano, C-LD)', classe: '2b e 3: dano', onde: 'QRS largo, rec. 4 e 6', livro: SEM_ITEM_TAQUI },
+  { tema: 'Verapamil e diltiazem no QRS largo', aha: 'Não usar', classe: '3: dano, B-NR', onde: 'QRS largo, rec. 5', livro: 'não usar na disfunção de VE nem na FA com Wolff-Parkinson-White (p. 266)' },
+  { tema: 'Amiodarona IV', aha: '150 mg em 10 min, repetida se a TV voltar; depois 1 mg/min nas primeiras 6 h', classe: 'figura', onde: 'Figura 6, quadro de doses', livro: '150 mg em 10 min, 1 mg/min por 6 h e 0,5 mg/min por 18 h (p. 265)' },
+  { tema: 'Procainamida IV', aha: '20–50 mg/min até suprimir a arritmia, hipotensão, alargar o QRS > 50% ou chegar a 17 mg/kg; manutenção de 1–4 mg/min; evitar com QT longo ou IC', classe: 'figura', onde: 'Figura 6, quadro de doses', livro: 'indisponível no Brasil (p. 264)' },
+  { tema: 'TV polimórfica sustentada', aha: 'Choque não sincronizado imediato', classe: '1, B-NR', onde: 'TV polimórfica, rec. 1', livro: 'no torsades instável, desfibrilar (p. 262)' },
+  { tema: 'Magnésio', aha: 'Pode ser considerado nas recorrências de TV polimórfica com QT longo, o torsades (2b, C-LD). Não usar de rotina na TV polimórfica com QT normal (3: sem benefício, C-LD)', classe: '2b e 3: sem benefício', onde: 'TV polimórfica, rec. 2 e 4', livro: 'sulfato de magnésio 2 g EV em 15 min no torsades estável, mesmo sem hipomagnesemia (p. 266)' },
+  { tema: 'TV polimórfica com QT normal', aha: 'Lidocaína ou amiodarona IV e tratar a isquemia podem ser considerados nas recorrências', classe: '2b, C-LD', onde: 'TV polimórfica, rec. 3', livro: SEM_ITEM_TAQUI },
+  { tema: 'QRS estreito regular: manobra vagal', aha: 'Recomendada como tratamento agudo', classe: '1, B-R', onde: 'QRS estreito, rec. 1', livro: 'manobra vagal modificada é a primeira tentativa (p. 265)' },
+  { tema: 'QRS estreito regular: adenosina', aha: 'Recomendada (1, B-R). Dose da Figura 6: 6 mg em bolus rápido com flush de SF; 12 mg se necessário', classe: '1, B-R', onde: 'QRS estreito, rec. 2; Figura 6', livro: '6 mg; se não resolver em 2 min, 12 mg, que pode ser repetida uma vez; metade em acesso central (p. 265)' },
+  { tema: 'QRS estreito regular: bloqueador de canal de cálcio ou betabloqueador', aha: 'Diltiazem ou verapamil IV (2a, B-R) e betabloqueador IV (2a, C-LD) no paciente estável', classe: '2a', onde: 'QRS estreito, rec. 5 e 6', livro: 'terceira linha: diltiazem e esmolol; verapamil 1 mg/min até 20 mg e diltiazem 2,5 mg/min até 50 mg (p. 265–266)' },
+  { tema: 'QRS estreito: cardioversão', aha: 'No instável (1, B-NR) e no estável quando manobra vagal e drogas falham ou são contraindicadas (1, B-NR)', classe: '1, B-NR', onde: 'QRS estreito, rec. 3 e 4', livro: 'na falha do tratamento medicamentoso, cardioversão sincronizada (p. 266)' },
+  { tema: 'Energia da cardioversão', aha: 'Seguir a carga recomendada pelo fabricante do aparelho; se não souber, usar a carga máxima', classe: 'figura', onde: 'Figura 6, quadro de doses', livro: SEM_ITEM_TAQUI },
+]
+
+export const DIFERENCAS_TAQUI_2025: string[] = [
+  'TV monomórfica estável: o manual põe a cardioversão como primeira linha; a AHA 2025 a recomenda quando manobra vagal e drogas falham ou são contraindicadas (1, B-NR), e as drogas são 2b.',
+  'Adenosina no QRS largo: a AHA 2025 aceita no estável, regular e monomórfico (2b) e contraindica no instável, irregular ou polimórfico (3: dano).',
+  'Verapamil e diltiazem no QRS largo: contraindicados pela AHA 2025 (3: dano). O manual os proíbe na disfunção de VE e na FA com WPW.',
+  'Magnésio: a AHA 2025 o reserva ao torsades (2b) e diz que não ajuda na TV polimórfica com QT normal (3: sem benefício). O manual dá 2 g no torsades estável.',
+  'Adenosina: a AHA 2025 traz 6 mg e depois 12 mg; o manual permite repetir os 12 mg uma vez e reduz à metade no acesso central.',
+  'Amiodarona: o ataque e a primeira infusão são iguais; o manual acrescenta 0,5 mg/min por 18 h.',
+]
 
 /** Adenosina: 6 mg; se não resolver em 2 min, 12 mg, que pode ser repetida uma vez. Metade em acesso central de cava superior (p. 265). */
 export function adenosina(acessoCentral: boolean): number[] {
