@@ -1,4 +1,5 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 
 // Crise tireotóxica (cap. 70, p. 947–957), estado mixedematoso (cap. 71,
@@ -10,7 +11,57 @@ import { fichaAdulto } from './fonte.ts'
 
 export const fichaCriseTireotoxica = fichaAdulto('adulto-crise-tireotoxica', 'Crise tireotóxica — adulto', 'cap. 70 Crise tireotóxica, p. 947–956')
 export const fichaMixedema = fichaAdulto('adulto-estado-mixedematoso', 'Estado mixedematoso — adulto', 'cap. 71 Estado mixedematoso, p. 958–963')
-export const fichaInsuficienciaAdrenal = fichaAdulto('adulto-insuficiencia-adrenal', 'Insuficiência adrenal e crise adrenal — adulto', 'cap. 72 Insuficiência adrenal, p. 964–971')
+// Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 72: a
+// diretriz da Endocrine Society de 2016 (insuficiência adrenal primária; GRADE),
+// a orientação de emergência da Society for Endocrinology de 2016 (crise adrenal)
+// e a diretriz conjunta ESE/Endocrine Society de 2024 (insuficiência adrenal
+// induzida por glicocorticoide) foram lidas no texto integral no PMC. Só as partes
+// do adulto. As doses e contas do manual não mudam.
+export const ES_IA_PRIMARIA_2016: Fonte = {
+  citacao: 'Bornstein SR, Allolio B, Arlt W, et al. Diagnosis and Treatment of Primary Adrenal Insufficiency: An Endocrine Society Clinical Practice Guideline. J Clin Endocrinol Metab. 2016;101(2):364–389 (PMID 26760044). PMC4880116: texto integral lido, com os graus.',
+  url: 'https://doi.org/10.1210/jc.2015-1710',
+}
+
+export const SFE_CRISE_ADRENAL_2016: Fonte = {
+  citacao: 'Arlt W; Society for Endocrinology Clinical Committee. Society for Endocrinology Endocrine Emergency Guidance: Emergency management of acute adrenal insufficiency (adrenal crisis) in adult patients. Endocr Connect. 2016;5(5):G1–G3 (PMID 27935813). PMC5314805: texto integral lido.',
+  url: 'https://doi.org/10.1530/EC-16-0054',
+}
+
+export const ESE_ES_IA_GLICOCORTICOIDE_2024: Fonte = {
+  citacao: 'Beuschlein F, Else T, Bancos I, et al. European Society of Endocrinology and Endocrine Society Joint Clinical Guideline: Diagnosis and Therapy of Glucocorticoid-induced Adrenal Insufficiency. J Clin Endocrinol Metab. 2024;109(7):1657–1683 (PMID 38724043). PMC11180513: texto integral lido.',
+  url: 'https://doi.org/10.1210/clinem/dgae250',
+}
+
+const SEM_ITEM_IA = 'sem item do manual na ferramenta'
+
+/** Endocrine Society 2016, SfE 2016 e ESE/ES 2024 × manual, na insuficiência adrenal do adulto; um tema por linha. */
+export const DIRETRIZ_IA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Suspeita de crise adrenal', diretriz: 'Tratar já com hidrocortisona EV em dose de estresse, antes do resultado dos exames (1, ⊕⊕⊕○). O diagnóstico nunca atrasa o tratamento; colher cortisol e ACTH pareados e confirmar depois da recuperação', grau: '1, ⊕⊕⊕○', fonte: 'Endocrine Society 2016; SfE 2016', livro: 'cortisol basal das 8 h e teste com ACTH 250 µg (p. 969)' },
+  { tema: 'Hidrocortisona na crise', diretriz: '100 mg EV ou IM imediatamente; depois 200 mg em 24 h em infusão contínua, ou 50 mg EV ou IM de 6/6 h, até a recuperação. No dia seguinte, 100 mg/dia (Tabela 3 da Endocrine Society). Peso muito alto: considerar dose maior (ESE/ES)', grau: '1, ⊕⊕⊕○', fonte: 'Endocrine Society 2016; SfE 2016; ESE/ES 2024', livro: 'hidrocortisona 100 mg e depois 50–100 mg 6/6 h; desmame após 48–72 h (p. 969)' },
+  { tema: 'Volume na crise', diretriz: 'SF 0,9% 1.000 mL rápido na primeira hora; depois conforme a necessidade, em geral 4–6 L em 24 h, com cuidado na insuficiência renal e no idoso', grau: 'Tabela 3; orientação de emergência', fonte: 'Endocrine Society 2016; SfE 2016', livro: 'até 1 L/h no texto (p. 969); 20–30 mL/kg no instável na Figura 1 (p. 971)' },
+  { tema: 'Teste com ACTH', diretriz: 'ACTH 250 µg EV, cortisol em 30 ou 60 min; pico abaixo de 18 µg/dL (500 nmol/L, depende do ensaio) indica insuficiência adrenal (2, ⊕⊕○○). Sem o teste: cortisol matinal < 5 µg/dL (140 nmol/L) com ACTH como triagem (2, ⊕○○○). ACTH > 2 vezes o limite superior com cortisol baixo: primária (1, ⊕⊕⊕○)', grau: '2 e 1', fonte: 'Endocrine Society 2016', livro: 'basal ≤ 3 confirma e > 19 praticamente exclui; após ACTH (30 min) > 18 exclui e < 18 confirma (p. 969); a Figura 1 usa < 3 e > 5 (p. 971)' },
+  { tema: 'Outros exames na suspeita', diretriz: 'Sódio, potássio, ureia, creatinina, hemograma, TSH e T4 livre: o hipertireoidismo pode precipitar a crise, e a crise pode subir o TSH; não repor tiroxina com TSH ≤ 10 mU/L. Teste com ACTH só se estável', grau: 'orientação de emergência', fonte: 'SfE 2016', livro: SEM_ITEM_IA },
+  { tema: 'Fludrocortisona', diretriz: 'Primária com deficiência de aldosterona: 50–100 µg/dia, sem restringir sal (1, ⊕⊕⊕⊕). Na crise, iniciar 100 µg/dia quando a hidrocortisona cair abaixo de 50 mg/dia (SfE). Na insuficiência adrenal induzida por glicocorticoide: não usar (ESE/ES, recomenda contra)', grau: '1, ⊕⊕⊕⊕; recomenda contra', fonte: 'Endocrine Society 2016; SfE 2016; ESE/ES 2024', livro: 'na manutenção, flúor-hidrocortisona 50 µg 8/8 h (p. 969)' },
+  { tema: 'Glicocorticoide em uso ou recente', diretriz: 'Suspeitar de crise em quem usa ou usou qualquer glicocorticoide (oral, inalado, tópico ou intra-articular) e chega com instabilidade, vômito ou diarreia, seja qual for o tipo, a via e a dose. Tratar com glicocorticoide parenteral e volume; é seguro tratar mesmo se o diagnóstico for afastado depois', grau: 'boa prática', fonte: 'ESE/ES 2024', livro: SEM_ITEM_IA },
+  { tema: 'Dose de estresse', diretriz: 'Quem usa ou usou glicocorticoide sem teste do eixo recebe dose de estresse: estresse menor sem instabilidade, oral (hidrocortisona 40 mg/dia, o dobro da reposição); estresse moderado a maior, instabilidade, vômito ou diarreia, parenteral', grau: 'boa prática', fonte: 'ESE/ES 2024', livro: SEM_ITEM_IA },
+  { tema: 'Regras do dia de doença', diretriz: 'Dobrar a dose oral com febre que exige repouso ou antibiótico; usar a via IM ou EV com vômito ou diarreia prolongados, preparo de colonoscopia, trauma ou cirurgia. Kit de hidrocortisona 100 mg IM e cartão de emergência', grau: 'orientação de emergência', fonte: 'SfE 2016', livro: SEM_ITEM_IA },
+]
+
+export const DIFERENCAS_IA: string[] = [
+  'Manutenção na crise: as diretrizes dão 200 mg de hidrocortisona em 24 h (infusão contínua ou 50 mg de 6/6 h), caindo para 100 mg/dia no dia seguinte; o manual dá 50–100 mg de 6/6 h (200–400 mg/dia) e desmame em 48–72 h.',
+  'Volume: as diretrizes dão 1.000 mL de SF na primeira hora e, em geral, 4–6 L em 24 h; o manual fala em até 1 L/h no texto e em 20–30 mL/kg na Figura 1.',
+  'Diagnóstico: a Endocrine Society usa pico de cortisol < 18 µg/dL em 30 ou 60 min após ACTH e cortisol matinal < 5 µg/dL como triagem; o manual usa ≤ 3 e > 19 µg/dL no basal.',
+  'Fludrocortisona: a Endocrine Society dá 50–100 µg/dia na primária; a SfE começa com 100 µg/dia quando a hidrocortisona cai abaixo de 50 mg/dia; a ESE/ES 2024 é contra na insuficiência induzida por glicocorticoide; o manual dá 50 µg de 8/8 h.',
+  'Glicocorticoide não oral: a ESE/ES 2024 lembra que o inalado, o tópico e o intra-articular também podem causar crise; o manual não traz.',
+]
+
+const fichaIaLivro = fichaAdulto('adulto-insuficiencia-adrenal', 'Insuficiência adrenal e crise adrenal — adulto', 'cap. 72 Insuficiência adrenal, p. 964–971')
+export const fichaInsuficienciaAdrenal: Ficha = {
+  ...fichaIaLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaIaLivro.fontes, ES_IA_PRIMARIA_2016, SFE_CRISE_ADRENAL_2016, ESE_ES_IA_GLICOCORTICOIDE_2024],
+  revisadoEm: '14/11/2026 (Endocrine Society 2016, SfE 2016 e ESE/ES 2024 lidas no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 export const fichaBurchWartofsky = fichaAdulto('adulto-burch-wartofsky', 'Burch-Wartofsky — crise tireotóxica (adulto)', 'cap. 70, Tabela 4, p. 951–952')
 export const fichaEscoreMixedema = fichaAdulto('adulto-escore-mixedema', 'Escore diagnóstico do estado mixedematoso (adulto)', 'cap. 71, Tabela 3, p. 960–961')
 

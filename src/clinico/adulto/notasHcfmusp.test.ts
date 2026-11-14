@@ -287,3 +287,14 @@ test('lote 4, O1: nota do cap. 37 (VM) a partir da lista da ficha da SDRA, sem f
   assert.ok(nota.ficha.fontes.every((f) => !/Manual de Medicina de Emergência/.test(f.citacao)))
   assert.ok(nota.ficha.fontes.includes(vm.SCCM_BNM_2026))
 })
+
+test('insuficiência adrenal (cap. 72): três fontes ao lado do manual; doses do manual iguais', async () => {
+  const e = await import('./endocrino.ts')
+  assert.equal(e.fichaInsuficienciaAdrenal.versao, '2026-11-14.1')
+  for (const f of [e.ES_IA_PRIMARIA_2016, e.SFE_CRISE_ADRENAL_2016, e.ESE_ES_IA_GLICOCORTICOIDE_2024]) assert.ok(e.fichaInsuficienciaAdrenal.fontes.includes(f))
+  assert.equal(e.CRISE_ADRENAL.hidrocortisonaAtaqueMg, 100)
+  assert.deepEqual(e.CRISE_ADRENAL.hidrocortisonaManutencaoMg, [50, 100])
+  const nota = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap72-adrenal')!
+  assert.equal(nota.itens.length, e.DIRETRIZ_IA.length)
+  assert.deepEqual(nota.ficha.fontes, [e.ES_IA_PRIMARIA_2016, e.SFE_CRISE_ADRENAL_2016, e.ESE_ES_IA_GLICOCORTICOIDE_2024])
+})
