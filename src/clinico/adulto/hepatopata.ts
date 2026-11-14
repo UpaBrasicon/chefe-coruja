@@ -114,6 +114,28 @@ export const DIFERENCAS_EH: string[] = [
   'Enema: a ACG usa 300 mL em 700 mL, retidos por 30–60 min e repetidos a cada 4–6 h; o manual, 200–300 mL em 700–800 mL, retidos por pelo menos 30 min.',
 ]
 
+// Lote 6 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): a ACG 2023
+// de insuficiência hepática aguda, lida no texto integral pelo Chrome do RT, ao
+// lado do cap. 60 do manual (p. 817–819, conferido no PDF).
+export const ACG_IHA_2023: Fonte = {
+  citacao: 'Shingina A, Mukhtar N, Wakim-Fleming J, et al. Acute Liver Failure Guidelines. Am J Gastroenterol. 2023;118(7):1128–1153 (PMID 37377263). Texto integral lido; GRADE (10 recomendações).',
+  url: 'https://doi.org/10.14309/ajg.0000000000002340',
+}
+
+/** ACG 2023 × manual, na insuficiência hepática aguda (hepatite fulminante) do adulto. */
+export const DIRETRIZ_IHA_2023: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Encaminhamento', diretriz: 'Chamar a hepatologia ou a gastroenterologia assim que a insuficiência hepática aguda for identificada; decidir cedo o prognóstico e a transferência. Quem dificilmente sobrevive só com o tratamento clínico: encaminhar cedo a um centro de transplante, porque a transferência demora e a piora é rápida', grau: 'texto, sem grau', fonte: 'ACG 2023', livro: 'transplante indicado na insuficiência hepática grave; critérios do King\'s College (Tabela 5, cap. 60, p. 818–819)' },
+  { tema: 'Prognóstico', diretriz: 'Usar os critérios do King\'s College ou o MELD. Quem preenche o King\'s College ou tem MELD > 25 tem alto risco de evolução ruim', grau: 'condicional, baixa', fonte: 'ACG 2023', livro: 'critérios do King\'s College (Tabela 5, cap. 60, p. 818–819)' },
+  { tema: 'Coagulopatia', diretriz: 'Sem sangramento ativo nem procedimento de alto risco iminente: não corrigir a coagulopatia de rotina', grau: 'condicional, muito baixa', fonte: 'ACG 2023', livro: 'plasma fresco 15 mL/kg no sangramento; INR alterado sem sangramento não indica plasma (cap. 60, p. 817)' },
+  { tema: 'Antibiótico profilático', diretriz: 'Não usar antimicrobiano profilático de rotina: não reduziu a bacteremia nem a mortalidade em 21 dias', grau: 'condicional, baixa', fonte: 'ACG 2023', livro: 'limiar baixo para suspeitar e tratar infecção bacteriana (cap. 60, p. 817)' },
+  { tema: 'Hipotensão', diretriz: 'Noradrenalina como primeiro vasopressor na hipotensão que não responde a volume (forte, moderada). Sem resposta à noradrenalina: somar vasopressina (condicional, baixa)', grau: 'forte, moderada; condicional, baixa', fonte: 'ACG 2023', livro: 'reposição volêmica cuidadosa, em geral com albumina (cap. 60, p. 818)' },
+  { tema: 'Hiperamonemia', diretriz: 'Encefalopatia grau 2 ou mais: terapia renal substitutiva contínua precoce para a hiperamonemia, mesmo sem indicação dialítica clássica', grau: 'condicional, muito baixa', fonte: 'ACG 2023', livro: 'lactulose na encefalopatia; cabeceira elevada na hipertensão intracraniana; monitorizar a pressão intracraniana na encefalopatia grave (cap. 60, p. 817–818)' },
+  { tema: 'Acetilcisteína no paracetamol', diretriz: 'Suspeita de toxicidade por paracetamol: acetilcisteína cedo', grau: 'forte, baixa', fonte: 'ACG 2023', livro: 'acetilcisteína EV ou VO, com as doses do manual (cap. 60, p. 817–818)' },
+  { tema: 'Acetilcisteína sem paracetamol', diretriz: 'Insuficiência hepática aguda não causada por paracetamol: iniciar acetilcisteína EV', grau: 'forte, moderada', fonte: 'ACG 2023', livro: 'acetilcisteína só na intoxicação por paracetamol; na hepatite alcoólica grave, cita possível benefício (cap. 60, p. 817)' },
+  { tema: 'Reativação da hepatite B', diretriz: 'Insuficiência hepática aguda por reativação do vírus B: antiviral com entecavir ou tenofovir', grau: 'forte, baixa', fonte: 'ACG 2023', livro: 'na hepatite B aguda, não há evidência suficiente para antiviral, e o tratamento não se aplica ao departamento de emergência; o manual não fala da reativação (cap. 60, p. 818)' },
+  { tema: 'Intoxicação por cogumelo', diretriz: 'Silibinina EV o quanto antes; penicilina G EV se não houver silibinina (condicional, muito baixa). Contatar o centro de toxicologia; lavagem gástrica até 1 hora da ingestão, quando possível', grau: 'condicional, muito baixa', fonte: 'ACG 2023', livro: 'diurese forçada e carvão ativado na intoxicação por Amanita phalloides (cap. 60, p. 817)' },
+]
+
 const fichaInsuficienciaHepaticaLivro = fichaAdulto(
   'adulto-encefalopatia-hepatites-graves',
   'Encefalopatia hepática e hepatites graves — adulto',
@@ -121,9 +143,9 @@ const fichaInsuficienciaHepaticaLivro = fichaAdulto(
 )
 export const fichaInsuficienciaHepatica: Ficha = {
   ...fichaInsuficienciaHepaticaLivro,
-  versao: '2026-11-14.1',
-  fontes: [...fichaInsuficienciaHepaticaLivro.fontes, ACG_EH_2026],
-  revisadoEm: '14/11/2026 (ACG 2026 da encefalopatia hepática lida no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+  versao: '2026-11-14.2',
+  fontes: [...fichaInsuficienciaHepaticaLivro.fontes, ACG_EH_2026, ACG_IHA_2023],
+  revisadoEm: '14/11/2026 (ACG 2023 de insuficiência hepática aguda ao lado do manual, no texto integral; lote 6 da revisão do HCFMUSP); 14/11/2026 (ACG 2026 da encefalopatia hepática, lote 4); aguarda aprovação do RT',
 }
 
 export type Faixa = [number, number]
