@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { DIRETRIZ_DOR_TORACICA_2025, SBC_DOR_TORACICA_2025, heart } from '../escores/heart.ts'
 import { DIRETRIZ_SGB_2023, EAN_PNS_SGB_2023, fichaSgbAdulto } from './guillainBarre.ts'
 import { AHS_2025, AHS_2025_NIVEIS, fichaCefaleiaAdulto } from './cefaleia.ts'
 import { DIRETRIZES_ANAFILAXIA, fichaAnafilaxiaAdulto } from './anafilaxia.ts'
@@ -129,6 +130,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap34-pneumotorax': 'pneumotórax espontâneo no adulto: tratamento conservador, aspiração por agulha, dreno torácico, ambulatorial, cirurgia, viagem de avião',
   'nota-hcfmusp-cap41-cefaleia': 'cefaleia e crise de migrânea no adulto no pronto-socorro: proclorperazina, metoclopramida, clorpromazina, dexametasona, cetorolaco, sumatriptano, valproato, bloqueio do nervo occipital, opioide (hidromorfona), paracetamol EV',
   'nota-hcfmusp-cap44-paralisias-flacidas': 'paralisia flácida aguda no adulto: síndrome de Guillain-Barré (imunoglobulina, plasmaférese, corticoide, segundo curso, dor, mEGRIS, mEGOS) e botulismo (antitoxina botulínica, vigilância respiratória, antibiótico, aminoglicosídeo)',
+  'nota-hcfmusp-cap12-dor-toracica': 'dor torácica no adulto na emergência: ECG em 10 minutos, oxigênio, troponina de alta sensibilidade (0/1 h, 0/2 h, dosagem única), CK-MB, escore HEART, alta, angiotomografia de coronárias, AAS, dissecção de aorta (ADD-RS), embolia pulmonar (Wells, Genebra, PERC)',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -691,7 +693,13 @@ export const notaHcfmuspCap44 = notaLote6('nota-hcfmusp-cap44-paralisias-flacida
 notaHcfmuspCap44.ficha.versao = '2026-11-14.2'
 notaHcfmuspCap44.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: SGB pela EAN/PNS 2023, pelo resumo; botulismo pelo CDC 2021, no texto integral, e pelo Guia de Vigilância do MS 2024; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap41, notaHcfmuspCap44]
+/** cap. 12: SBC 2025 de dor torácica, já na ficha do HEART. */
+export const notaHcfmuspCap12 = notaLote6('nota-hcfmusp-cap12-dor-toracica', 'Nota de atualização — manual HC, cap. 12: abordagem inicial da dor torácica', 'cap. 12, p. 183–198', heart.ficha,
+  DIRETRIZ_DOR_TORACICA_2025.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [SBC_DOR_TORACICA_2025])
+notaHcfmuspCap12.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens tirados da SBC 2025, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap41, notaHcfmuspCap44]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
 
