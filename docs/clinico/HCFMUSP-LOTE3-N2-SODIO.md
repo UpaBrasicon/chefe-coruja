@@ -69,3 +69,11 @@ Na homologação, a pergunta do edemaciado deu timeout na API na primeira rodada
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000008` foi aplicada antes do merge. A ficha da hiponatremia e a nota do cap. 66 estão na versão 2026-11-14.1.
+- O #672 foi mesclado com o CI verde. A Vercel publicou o master com sucesso.
+- O corpus foi gerado do master e os 3 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção. Cinco de seis abrem pela diretriz.
+- A do paciente com edema abre pelo manual (NaCl 3% com furosemida no Na < 120), com a europeia de 2014 logo depois. Não há contradição: a europeia trata da hiponatremia leve ou moderada, e o manual, do Na < 120.
