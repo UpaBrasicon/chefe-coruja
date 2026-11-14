@@ -80,3 +80,7 @@ Ficam para os próximos lotes os de risco menor: abordagem na sala de emergênci
 4. Cap. 69 e 101: registro no BACKLOG.
 
 Cada passo passa pela homologação e pelo CI verde antes da produção, que pede o ok do RT.
+
+## Decisão do RT (14/11/2026)
+
+Q1 a Q4 = A, e a produção do lote 7 inteiro está liberada. Cada passo segue pela homologação e pelo CI verde antes da produção.
