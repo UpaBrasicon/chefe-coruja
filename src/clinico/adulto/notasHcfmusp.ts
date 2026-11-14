@@ -105,6 +105,8 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap59-encefalopatia': 'encefalopatia hepática no cirrótico: lactulose, enema, rifaximina, polietilenoglicol, amônia, fator precipitante, West Haven, prevenção da recorrência, proteína',
   'nota-hcfmusp-cap23-endocardite': 'endocardite infecciosa no adulto: hemocultura, ecocardiograma transtorácico e transesofágico, antibiótico empírico, indicação e prazo de cirurgia, anticoagulação, antibiótico oral',
   'nota-hcfmusp-cap61-lra': 'lesão renal aguda (LRA, insuficiência renal aguda) no adulto: KDIGO, estádio, diurético, fluido, contraste, aminoglicosídeo, nutrição, quando iniciar diálise',
+  'nota-hcfmusp-cap22-pericardite-miocardite': 'pericardite aguda e miocardite aguda no adulto: internação, AAS, AINE, colchicina, corticoide, pericardiocentese, tamponamento, imunossupressão',
+  'nota-hcfmusp-cap45-primeira-crise': 'primeira crise epiléptica (convulsão) não provocada no adulto: risco de recorrência, EEG, imagem, quando iniciar antiepiléptico',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -417,7 +419,54 @@ export const notaHcfmuspCap61 = nota('nota-hcfmusp-cap61-lra', 'Nota de atualiza
 notaHcfmuspCap61.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap61.ficha.revisadoEm = '14/11/2026 (lote 4 da revisão do HCFMUSP: itens tirados da KDIGO 2012, porque a KDIGO 2026 ainda era rascunho; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap23, notaHcfmuspCap37, notaHcfmuspCap57, notaHcfmuspCap59, notaHcfmuspCap61, notaHcfmuspCap68, notaHcfmuspCap70, notaHcfmuspCap72, notaHcfmuspCap84]
+// Lote 4, O3 = A (decisão do RT de 14/11/2026): cap. 22 e 45 não têm ficha de adulto
+// na Central. A nota liga só ao capítulo do manual e não cria ferramenta nova.
+export const ESC_MIOPERICARDITE_2025: Fonte = {
+  citacao: 'Schulz-Menger J, Collini V, Gröschel J, et al. 2025 ESC Guidelines for the management of myocarditis and pericarditis. Eur Heart J. 2025;46(40):3952–4041 (PMID 40878297). Lida no site da revista: tabela 19 (recomendações de classe I e III) e tabela 16 (alto risco na pericardite).',
+  url: 'https://doi.org/10.1093/eurheartj/ehaf192',
+}
+export const AAN_AES_PRIMEIRA_CRISE_2015: Fonte = {
+  citacao: 'Krumholz A, Wiebe S, Gronseth GS, et al. Evidence-based guideline: Management of an unprovoked first seizure in adults: Report of the Guideline Development Subcommittee of the American Academy of Neurology and the American Epilepsy Society. Neurology. 2015;84(16):1705–1713 (PMID 25901057). Recomendações lidas no resumo do PMC (PMC4409581); níveis A a C da AAN.',
+  url: 'https://doi.org/10.1212/WNL.0000000000001487',
+}
+
+/** Nota sem ficha de adulto na Central (O3 do lote 4): liga só ao capítulo do manual. */
+function notaSoManual(id: string, titulo: string, capitulos: string, itens: ItemNota[], fontes: Fonte[]): NotaHcfmusp {
+  return {
+    assunto: ASSUNTO[id] ?? titulo,
+    ficha: { id, titulo, versao: '2026-11-14.1', publico: 'adulto', fontes, revisadoEm: '14/11/2026 (lote 4 da revisão do HCFMUSP, O3: nota sem ficha de adulto na Central; aguarda aprovação do RT)' },
+    capitulos,
+    fichaCentral: '',
+    itens,
+  }
+}
+
+/** cap. 22: ESC 2025 de miocardite e pericardite. */
+export const notaHcfmuspCap22 = notaSoManual('nota-hcfmusp-cap22-pericardite-miocardite', 'Nota de atualização — manual HC, cap. 22: pericardites e miocardites agudas', 'cap. 22, p. 304–320', [
+    { tema: 'Avaliação inicial', diretriz: 'ESC 2025 (I, C; I, B): História, exame físico, radiografia de tórax, biomarcadores, ECG e ecocardiograma em toda suspeita de miocardite ou pericardite (I, C). Ressonância cardíaca para confirmar a inflamação de forma não invasiva (I, B)', manual: 'não comparado nesta nota' },
+    { tema: 'Internação', diretriz: 'ESC 2025 (I, B; I, C): Internar a pericardite de alto risco (I, B) e a miocardite de risco moderado a alto (I, C). Na pericardite, os marcadores maiores de alto risco são febre > 38 °C, início subagudo, derrame pericárdico grande (> 20 mm no eco), tamponamento e falta de resposta a AAS ou AINE depois de pelo menos 1 semana', manual: 'internar com febre, troponina elevada, pericardite recorrente, trauma, anticoagulante, imunocomprometido, "derrame pleural significativo" (como impresso), tamponamento, disfunção de VE ou falha do tratamento ambulatorial em 7 dias (cap. 22, p. 309)' },
+    { tema: 'AAS, AINE e colchicina', diretriz: 'ESC 2025 (I, B; I, A): AAS em dose alta ou AINE, com inibidor de bomba de prótons, como primeira linha na pericardite (I, B). Colchicina como primeira linha, junto com AAS, AINE ou corticoide, para reduzir recorrência (I, A)', manual: 'ibuprofeno 600–800 mg VO 3 vezes ao dia ou AAS 2–4 g/dia, com colchicina 0,5 mg 2 vezes ao dia por 3 meses (peso > 70 kg) ou 0,5 mg/dia (< 70 kg) (cap. 22, p. 309)' },
+    { tema: 'Corticoide', diretriz: 'ESC 2025 (III, C): Corticoide não é a primeira opção na pericardite sem indicação específica', manual: 'prednisona 0,25–0,5 mg/kg/dia nos refratários; corticoide em dose baixa se houver contraindicação a AINE (cap. 22, p. 309)' },
+    { tema: 'Pericardite recorrente', diretriz: 'ESC 2025 (I, A): Anti-IL-1 (anakinra ou rilonacepte) na pericardite recorrente depois de falha da primeira linha, com dependência de corticoide e PCR elevada, para reduzir recorrência e permitir retirar o corticoide', manual: 'não comparado nesta nota' },
+    { tema: 'Pericardiocentese e drenagem', diretriz: 'ESC 2025 (I, C): Pericardiocentese guiada por eco, TC ou fluoroscopia no tamponamento, na suspeita de pericardite bacteriana ou neoplásica, ou no derrame moderado a grande sintomático apesar do tratamento. Drenagem cirúrgica quando a punção não é possível ou o derrame é purulento', manual: 'tamponamento: volume para hipotensão, pericardiocentese guiada por ultrassom e UTI para todos (cap. 22, p. 310)' },
+    { tema: 'Suspeita de síndrome coronariana', diretriz: 'ESC 2025 (I, C): Coronariografia invasiva ou angiotomografia de coronárias, conforme a probabilidade clínica, quando houver suspeita de síndrome coronariana aguda', manual: 'não comparado nesta nota' },
+    { tema: 'Sorologia viral', diretriz: 'ESC 2025 (III, C): Não pedir sorologia viral de rotina na miocardite ou pericardite, exceto hepatite C, HIV e doença de Lyme', manual: 'não comparado nesta nota' },
+    { tema: 'Miocardite com insuficiência cardíaca ou choque', diretriz: 'ESC 2025 (I, C): Tratar pela diretriz de insuficiência cardíaca da ESC quando houver disfunção sistólica ou insuficiência cardíaca. Com instabilidade hemodinâmica, discutir logo com o time de choque o suporte circulatório. Biópsia endomiocárdica na miocardite de alto risco ou com instabilidade', manual: 'não comparado nesta nota' },
+    { tema: 'Imunossupressão', diretriz: 'ESC 2025 (III, C): Não usar imunossupressor de rotina na miocardite aguda com função do VE preservada', manual: 'imunossupressão só com etiologia responsiva comprovada por biópsia endomiocárdica (cap. 22, p. 320)' },
+    { tema: 'Seguimento da miocardite', diretriz: 'ESC 2025 (I, C): Clínica, biomarcadores, ECG, teste de esforço, Holter, ecocardiograma e ressonância em até 6 meses depois da internação', manual: 'não comparado nesta nota' },
+  ], [ESC_MIOPERICARDITE_2025])
+
+/** cap. 45: AAN/AES 2015 da primeira crise não provocada. */
+export const notaHcfmuspCap45 = notaSoManual('nota-hcfmusp-cap45-primeira-crise', 'Nota de atualização — manual HC, cap. 45: primeira crise epiléptica', 'cap. 45, p. 609–622', [
+    { tema: 'Fontes desta nota', diretriz: 'AAN/AES 2015 (sem nível): A clinical policy da ACEP de 2024 sobre crise convulsiva no pronto-socorro não foi lida: o site da revista pediu CAPTCHA. A nota usa a diretriz da AAN e da AES de 2015, que o próprio manual cita', manual: 'Tabela 7 adaptada da Academia Americana de Neurologia de 2015 (cap. 45, p. 619)' },
+    { tema: 'Risco de recorrência', diretriz: 'AAN/AES 2015 (nível A): Informar que o risco de nova crise é maior nos 2 primeiros anos, de 21% a 45%', manual: 'preditores de recorrência e risco por fator na Tabela 7 (cap. 45, p. 619)' },
+    { tema: 'Fatores de risco', diretriz: 'AAN/AES 2015 (níveis A e B): Aumentam o risco: lesão cerebral prévia (A), EEG com atividade epileptiforme (A), alteração significativa na imagem do encéfalo (B) e crise noturna (B)', manual: 'Tabela 7: crise sintomática remota; EEG normal 30%, com alteração não epileptiforme 45% e epileptiforme 60%; neuroimagem alterada (cap. 45, p. 619)' },
+    { tema: 'Antiepiléptico logo após a primeira crise', diretriz: 'AAN/AES 2015 (níveis B e C): Começar o antiepiléptico logo, em vez de esperar a segunda crise, provavelmente reduz a recorrência nos 2 primeiros anos (B), mas pode não melhorar a qualidade de vida (C). Depois de 3 anos, não muda a chance de remissão (B)', manual: 'previne uma segunda crise nos 2 anos seguintes (reduz em 35% o risco absoluto) e não previne refratariedade futura (cap. 45, p. 620)' },
+    { tema: 'Efeitos adversos', diretriz: 'AAN/AES 2015 (nível B): Risco de efeito adverso do antiepiléptico de 7% a 31%, em geral leve e reversível', manual: 'efeitos colaterais estimados em 7–31% (cap. 45, p. 620)' },
+    { tema: 'Decisão de tratar', diretriz: 'AAN/AES 2015 (sem nível): Decidir caso a caso: pesar o risco de recorrência contra os efeitos adversos, ouvir a preferência informada do paciente e explicar que o tratamento imediato reduz o risco nos 2 anos seguintes, mas não muda o prognóstico de longo prazo', manual: 'decidir pelo risco de recorrência, pelas consequências sociais e profissionais de nova crise e pela tolerabilidade do fármaco (cap. 45, p. 618–620)' },
+  ], [AAN_AES_PRIMEIRA_CRISE_2015])
+
+export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap22, notaHcfmuspCap23, notaHcfmuspCap37, notaHcfmuspCap45, notaHcfmuspCap57, notaHcfmuspCap59, notaHcfmuspCap61, notaHcfmuspCap68, notaHcfmuspCap70, notaHcfmuspCap72, notaHcfmuspCap84]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4]
 
@@ -451,6 +500,8 @@ export const fichaNotaHcfmuspCap47 = notaHcfmuspCap47.ficha
 export const fichaNotaHcfmuspCap37 = notaHcfmuspCap37.ficha
 export const fichaNotaHcfmuspCap72 = notaHcfmuspCap72.ficha
 export const fichaNotaHcfmuspCap70 = notaHcfmuspCap70.ficha
+export const fichaNotaHcfmuspCap22 = notaHcfmuspCap22.ficha
+export const fichaNotaHcfmuspCap45 = notaHcfmuspCap45.ficha
 export const fichaNotaHcfmuspCap61 = notaHcfmuspCap61.ficha
 export const fichaNotaHcfmuspCap23 = notaHcfmuspCap23.ficha
 export const fichaNotaHcfmuspCap59 = notaHcfmuspCap59.ficha
