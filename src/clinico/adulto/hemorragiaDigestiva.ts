@@ -17,12 +17,62 @@ import { fichaAdulto } from './fonte.ts'
 // 2026 de úlcera péptica sangrante entra como nota no bloco das metas da HDA.
 // Reforça o livro no tempo da EDA; nenhuma dose muda.
 export const ESGE_UGIH_2026: Fonte = {
-  citacao: 'Gralnek IM, Morris J, Laursen SB, et al. Endoscopic diagnosis and management of peptic ulcer bleeding: European Society of Gastrointestinal Endoscopy (ESGE) Guideline – Update 2026. Endoscopy. 2026;58(8):899–924 (PMID 42127996). Errata: Endoscopy. 2026;58(8):C12 (PMID 42173116).',
+  citacao: 'Gralnek IM, Morris J, Laursen SB, et al. Endoscopic diagnosis and management of peptic ulcer bleeding: European Society of Gastrointestinal Endoscopy (ESGE) Guideline – Update 2026. Endoscopy. 2026;58(8):899–924 (PMID 42127996). Errata: Endoscopy. 2026;58(8):C12 (PMID 42173116). Texto integral lido (40 recomendações, com força e qualidade da evidência).',
   url: 'https://doi.org/10.1055/a-2863-8314',
 }
 
 export const NOTA_ESGE_2026 =
   'ESGE 2026 (úlcera péptica sangrante, posterior ao livro): não recomenda EDA emergente (≤ 6 h) nem urgente (≤ 12 h), salvo instabilidade hemodinâmica que persiste apesar da ressuscitação adequada — reforça o livro. Sugere considerar IBP EV em dose alta antes da EDA, sem atrasá-la; metoclopramida EV antes da EDA em casos selecionados graves ou com sangramento ativo, se não houver eritromicina; e dieta oral em até 24 h após hemostasia durável. Doses não mudam.'
+
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 50: a ESGE
+// 2026 foi lida no texto integral no site da Thieme (40 recomendações, com força e
+// qualidade da evidência) e o Baveno VIII no site do J Hepatol, Painéis 3, 4 e 5
+// (com nível de evidência, NE). As duas entram ao lado do manual; doses e contas
+// do manual não mudam.
+export const BAVENO_VIII_2026: Fonte = {
+  citacao: 'Baveno VIII – Advancing consensus in portal hypertension (Baveno Cooperation e VALDIG). J Hepatol. 2026;85(5):993–1018 (PMID 42624290). Texto integral lido: Painel 3 (prevenção da descompensação), Painel 4 (prevenção de nova descompensação) e Painel 5 (sangramento por hipertensão portal).',
+  url: 'https://doi.org/10.1016/j.jhep.2026.07.030',
+}
+
+const SEM_ITEM_HDA = 'sem item do manual na ferramenta'
+
+/** ESGE 2026 (úlcera péptica) e Baveno VIII (varizes) × manual, um tema por linha. */
+export const DIRETRIZ_HDA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Transfusão (úlcera)', diretriz: 'Estável sem doença cardiovascular: transfundir com Hb < 7 g/dL, alvo de 7–9. Com doença cardiovascular: transfundir com Hb ≤ 8, alvo ≥ 10', grau: 'forte; qualidade moderada (sem DCV) e baixa (com DCV)', fonte: 'ESGE 2026', livro: 'Hb entre 7–9 g/dL; > 9 em alto risco, como insuficiência coronariana instável (p. 697, 702)' },
+  { tema: 'Glasgow-Blatchford', diretriz: 'Usar antes da EDA. Com escore ≤ 1, o paciente pode seguir ambulatorial, com EDA ambulatorial', grau: 'forte; qualidade moderada', fonte: 'ESGE 2026', livro: 'o texto aceita até 1 ponto (p. 698), mas também diz que um único fator já indica EDA precoce e que só o escore 0 vai ao ambulatório (p. 699)' },
+  { tema: 'Eritromicina antes da EDA (úlcera)', diretriz: 'Eritromicina EV antes da EDA em casos graves ou com sangramento ativo; sem eritromicina, metoclopramida EV em casos selecionados', grau: 'forte, qualidade alta; metoclopramida condicional, qualidade baixa', fonte: 'ESGE 2026', livro: 'eritromicina 3 mg/kg de 20 a 120 min antes, se a visibilidade puder ser prejudicada (p. 697)' },
+  { tema: 'IBP antes da EDA', diretriz: 'Considerar IBP EV em dose alta na chegada, sem atrasar a EDA', grau: 'condicional; qualidade baixa', fonte: 'ESGE 2026', livro: SEM_ITEM_HDA },
+  { tema: 'Intubação antes da EDA (úlcera)', diretriz: 'Não intubar de rotina. Intubar só com hematêmese ativa, agitação ou encefalopatia sem proteção da via aérea', grau: 'forte; qualidade alta (rotina) e baixa (selecionados)', fonte: 'ESGE 2026', livro: SEM_ITEM_HDA },
+  { tema: 'Tempo da EDA (úlcera)', diretriz: 'Depois da ressuscitação, EDA em até 24 h. Não fazer em até 6 h nem em até 12 h, salvo instabilidade que persiste apesar da ressuscitação', grau: 'forte; qualidade baixa (24 h) e moderada (6–12 h)', fonte: 'ESGE 2026', livro: 'em menos de 24 h, estabilizado; a EDA emergencial (< 12 h) teve piores desfechos (p. 697)' },
+  { tema: 'Coágulo aderido (Forrest IIb)', diretriz: 'Remover o coágulo e fazer hemostasia se indicado, quando o endoscopista tem competência para isso', grau: 'condicional; qualidade muito baixa', fonte: 'ESGE 2026', livro: 'tentar deslocar o coágulo; com vaso visível ou sem deslocar, tratar como vaso visível (p. 701–702)' },
+  { tema: 'IBP depois da hemostasia', diretriz: 'Dose alta: 80 mg EV em bolus e 8 mg/h por 72 h; bolus EV 2 vezes ao dia ou dose alta VO 2 vezes ao dia são alternativas', grau: 'forte; qualidade alta', fonte: 'ESGE 2026', livro: 'omeprazol 80 mg em bolus e 8 mg/h por 72 h nas classes I a IIa (p. 701)' },
+  { tema: 'Anticoagulante (úlcera)', diretriz: 'Retomar assim que indicado pelo risco tromboembólico', grau: 'forte; qualidade baixa', fonte: 'ESGE 2026', livro: SEM_ITEM_HDA },
+  { tema: 'Dieta e ferro (úlcera)', diretriz: 'Dieta oral em até 24 h depois de hemostasia durável; ferro antes da alta se houver anemia ou ferropenia', grau: 'condicional; qualidade baixa', fonte: 'ESGE 2026', livro: SEM_ITEM_HDA },
+  { tema: 'Transfusão (varizes)', diretriz: 'Restritiva, com Hb alvo de 7–8 g/dL; individualizar por doença cardiovascular, idade, hemodinâmica e sangramento ativo', grau: 'forte; NE 2', fonte: 'Baveno VIII', livro: 'Hb entre 7–9 g/dL (p. 697, 702)' },
+  { tema: 'Vasoativo (varizes)', diretriz: 'Terlipressina, somatostatina ou octreotídeo o quanto antes na suspeita, por 2–5 dias ou até o TIPS. Depois de hemostasia endoscópica, curso menor (até 24 h) se o betabloqueador não seletivo for iniciado. Na terlipressina, monitorar o sódio', grau: 'forte; NE 1 (2–5 dias) e NE 2 (curso curto, sódio)', fonte: 'Baveno VIII', livro: 'doses de terlipressina, somatostatina e octreotídeo; duração só da somatostatina, até 5 dias (p. 703)' },
+  { tema: 'Antibiótico (varizes)', diretriz: 'Na chegada, em todo sangramento varicoso; cefalosporina de 3ª geração preferida, conforme a resistência local. No Child A, curso menor ou nenhum pode bastar', grau: 'forte; NE 1 e 2 (Child A: fraca)', fonte: 'Baveno VIII', livro: 'cirrótico com ascite e HDA: norfloxacino, ciprofloxacino ou ceftriaxona por 7 dias (p. 704)' },
+  { tema: 'Tempo da EDA (varizes)', diretriz: 'Depois da ressuscitação, EDA em até 12 h da chegada; se instável, o quanto antes', grau: 'forte; NE 2 e 5', fonte: 'Baveno VIII', livro: 'em menos de 24 h, estabilizado (p. 697)' },
+  { tema: 'Eritromicina (varizes)', diretriz: 'Sem QT longo: eritromicina 250 mg EV dose única, 30–90 min antes da EDA', grau: 'fraca; NE 2; nova', fonte: 'Baveno VIII', livro: 'eritromicina 3 mg/kg de 20 a 120 min antes (p. 697)' },
+  { tema: 'Plasma, plaquetas e fibrinogênio (varizes)', diretriz: 'Plasma não é recomendado de rotina (não corrige a coagulopatia e piora a hipertensão portal). Plaquetas e fibrinogênio também não; considerar só na falha de controle do sangramento', grau: 'forte (plasma); fraca (plaquetas e fibrinogênio)', fonte: 'Baveno VIII', livro: 'plasma com INR > 1,5 e plaquetas abaixo de 50.000/mm³ no sangramento ativo (p. 697, 703)' },
+  { tema: 'Fator VIIa e ácido tranexâmico (varizes)', diretriz: 'Não recomendados', grau: 'forte; NE 2', fonte: 'Baveno VIII', livro: 'fator VII sem benefício, "mas usualmente é indicada se INR > 2" (p. 697); ácido tranexâmico não recomendado de rotina (p. 702)' },
+  { tema: 'Intubação (varizes)', diretriz: 'Intubar antes da EDA com rebaixamento de consciência ou hematêmese ativa; extubar o quanto antes depois', grau: 'forte; NE 5', fonte: 'Baveno VIII', livro: SEM_ITEM_HDA },
+  { tema: 'IBP no sangramento varicoso', diretriz: 'IBP iniciado antes da EDA deve ser suspenso quando o sangramento por hipertensão portal é confirmado, salvo indicação forte', grau: 'forte; NE 5', fonte: 'Baveno VIII', livro: SEM_ITEM_HDA },
+  { tema: 'Lactulose (varizes)', diretriz: 'Lactulose VO ou por enema para prevenir ou tratar a encefalopatia', grau: 'forte; NE 2', fonte: 'Baveno VIII', livro: SEM_ITEM_HDA },
+  { tema: 'TIPS precoce', diretriz: 'TIPS com prótese recoberta em até 72 h (ideal < 24 h), em varizes de esôfago ou GOV1, se Child C 10–13, Child B > 7 com sangramento ativo na EDA ou GPVH ≥ 20 mmHg', grau: 'forte; NE 1', fonte: 'Baveno VIII', livro: 'TIPS só depois de falha do segundo procedimento endoscópico (p. 703)' },
+  { tema: 'Sangramento refratário', diretriz: 'Prótese metálica autoexpansível preferida ao balão como ponte; falha de droga e endoscopia: TIPS de resgate', grau: 'forte; NE 4 (prótese) e 2 (TIPS)', fonte: 'Baveno VIII', livro: 'balão de Sengstaken-Blakemore ou Minnesota como ponte; TIPS depois da falha (p. 703)' },
+  { tema: 'Profilaxia primária', diretriz: 'Cirrose compensada com hipertensão portal clinicamente significativa: betabloqueador não seletivo, de preferência carvedilol. Sem ela, não usar. Intolerância: EDA e ligadura se varizes grandes', grau: 'forte; NE 1–2', fonte: 'Baveno VIII', livro: 'por calibre e Child: betabloqueador opcional, recomendado, ou ligadura (p. 704)' },
+  { tema: 'Profilaxia secundária', diretriz: 'Betabloqueador não seletivo e ligadura, com carvedilol preferido; reduzir ou suspender se PAS < 90 ou PAM < 65 mmHg ou na LRA-SHR', grau: 'forte; NE 1–2', fonte: 'Baveno VIII', livro: 'betabloqueador e nitrato, ou ligadura e betabloqueador (p. 704)' },
+]
+
+export const DIFERENCAS_HDA: string[] = [
+  'Hb: na úlcera, a ESGE usa alvo de 7–9 sem doença cardiovascular e ≥ 10 com ela (gatilho ≤ 8); nas varizes, o Baveno VIII usa 7–8. O manual dá 7–9 para todos.',
+  'Tempo da EDA: na suspeita de varizes, o Baveno VIII pede até 12 h; na úlcera, a ESGE pede até 24 h e não antes de 12 h, salvo instabilidade. O manual dá < 24 h para todos.',
+  'Coagulopatia nas varizes: o Baveno VIII não recomenda plasma, plaquetas, fibrinogênio nem fator VIIa de rotina; o manual indica plasma com INR > 1,5, plaquetas abaixo de 50.000 e cita fator VII com INR > 2.',
+  'Eritromicina: o Baveno VIII dá 250 mg EV dose única, 30–90 min antes (fraca); o manual dá 3 mg/kg, 20–120 min antes. A ESGE recomenda eritromicina nos casos graves ou com sangramento ativo.',
+  'Antibiótico: o Baveno VIII dá a todo sangramento varicoso na chegada, com cefalosporina de 3ª geração preferida; o manual fala do cirrótico com ascite, com três opções.',
+  'TIPS: o Baveno VIII indica TIPS precoce (até 72 h) nos de alto risco; o manual usa TIPS depois da falha da endoscopia.',
+  'Profilaxia: o Baveno VIII prefere carvedilol e, na secundária, betabloqueador com ligadura; o manual cita também betabloqueador com nitrato.',
+]
 
 const fichaHdLivro = fichaAdulto(
   'adulto-hemorragia-digestiva',
@@ -31,9 +81,9 @@ const fichaHdLivro = fichaAdulto(
 )
 export const fichaHemorragiaDigestiva: Ficha = {
   ...fichaHdLivro,
-  versao: '2026-11-06.1',
-  fontes: [...fichaHdLivro.fontes, ESGE_UGIH_2026],
-  revisadoEm: '06/11/2026 (nota da ESGE 2026 na úlcera péptica; revisão PubMed, itens médios)',
+  versao: '2026-11-14.1',
+  fontes: [...fichaHdLivro.fontes, ESGE_UGIH_2026, BAVENO_VIII_2026],
+  revisadoEm: '14/11/2026 (ESGE 2026 e Baveno VIII lidos no texto integral, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota da ESGE 2026 na úlcera péptica; revisão PubMed, itens médios)',
 }
 
 export type Faixa = [number, number]

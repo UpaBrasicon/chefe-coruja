@@ -191,3 +191,16 @@ test('neuroinfecção (cap. 43): ESCMID 2016 e EAN–ESCMID 2026 ao lado do manu
   assert.equal(nota.itens.length, m.DIRETRIZ_MENINGITE.length)
   assert.deepEqual(nota.ficha.fontes, [m.ESCMID_MENINGITE_2016, m.EAN_ESCMID_ENCEFALITE_2026])
 })
+
+test('HDA (cap. 50): ESGE 2026 e Baveno VIII ao lado do manual; doses do manual iguais', async () => {
+  const h = await import('./hemorragiaDigestiva.ts')
+  assert.equal(h.fichaHemorragiaDigestiva.versao, '2026-11-14.1')
+  for (const f of [h.ESGE_UGIH_2026, h.BAVENO_VIII_2026]) assert.ok(h.fichaHemorragiaDigestiva.fontes.includes(f))
+  assert.match(h.BAVENO_VIII_2026.citacao, /PMID 42624290/)
+  assert.equal(h.ERITROMICINA_EDA.mgKg, 3)
+  assert.equal(h.OMEPRAZOL_HDA.infusaoMgH, 8)
+  assert.ok(h.DIRETRIZ_HDA.some((d) => d.fonte === 'Baveno VIII' && /TIPS/.test(d.tema)))
+  const nota = NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === 'nota-hcfmusp-cap50-hda')!
+  assert.equal(nota.itens.length, h.DIRETRIZ_HDA.length)
+  assert.deepEqual(nota.ficha.fontes, [h.ESGE_UGIH_2026, h.BAVENO_VIII_2026])
+})
