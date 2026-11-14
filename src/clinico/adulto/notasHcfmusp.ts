@@ -59,7 +59,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap97-99-intoxicacoes': 'intoxicações exógenas (carvão ativado)',
   'nota-hcfmusp-cap15-bradiarritmias': 'bradicardia e bradiarritmias no adulto',
   'nota-hcfmusp-cap17-fa': 'fibrilação atrial (FA) no adulto',
-  'nota-hcfmusp-cap18-taquiarritmias': 'taquicardia e taquiarritmias com pulso no adulto (QRS largo, QRS estreito, TV polimórfica e torsades)',
+  'nota-hcfmusp-cap18-taquiarritmias': 'taquicardia e taquiarritmias com pulso no adulto (QRS largo, QRS estreito ou taquicardia supraventricular (TSV), TV polimórfica e torsades)',
   'nota-hcfmusp-cap19-emergencia-hipertensiva': 'emergência hipertensiva e elevação da pressão arterial no adulto',
   'nota-hcfmusp-cap20-sindrome-aortica': 'síndrome aórtica aguda (dissecção de aorta), hematoma intramural, úlcera penetrante e aneurisma de aorta no adulto',
   'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
