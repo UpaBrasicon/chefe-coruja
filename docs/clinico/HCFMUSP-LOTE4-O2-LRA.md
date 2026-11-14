@@ -57,3 +57,16 @@ Seis respostas passam a abrir pela diretriz. A pergunta de controle ficou igual.
 - O corpus foi gerado do master e os 3 arquivos foram ingeridos. A API foi reiniciada.
 - Refiz as perguntas na produção: as seis respostas abrem pela KDIGO 2012, e a de controle (rabdomiólise) ficou igual.
 - O Vercel publicou o master.
+
+## Atualização: aviso da KDIGO 2026 (14/11/2026)
+
+- O RT pediu para usar a KDIGO 2026. Achei o rascunho no site da KDIGO: https://kdigo.org/wp-content/uploads/2026/03/KDIGO-2026-AKI-AKD-Guideline-Public-Review-Draft-March-2026.pdf (433 páginas, março de 2026).
+- A capa diz que é rascunho para consulta pública, que o conteúdo vai mudar e que não deve ser usado para outro fim.
+- O RT decidiu pela opção A: a nota segue com a KDIGO 2012 e ganha só o aviso, com o link. A 2026 entra quando sair a versão final.
+- Ficha `adulto-lesao-renal-aguda` e nota `nota-hcfmusp-cap61-lra` passam para 2026-11-14.2. Migration `20270414000025`.
+
+| Pergunta | Produção, antes | Homologação, depois |
+|---|---|---|
+| já vale a KDIGO 2026? | não; "ainda era rascunho" | não; rascunho que a KDIGO pede para não usar fora da consulta; entra com a versão final |
+| furosemida para tratar (controle) | KDIGO 2012 | igual |
+| quando iniciar diálise (controle) | KDIGO 2012 | igual |

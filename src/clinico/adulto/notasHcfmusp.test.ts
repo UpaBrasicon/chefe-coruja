@@ -367,7 +367,8 @@ test('endocardite (cap. 23): ESC 2023 ao lado do manual; Duke-ISCVID igual', asy
 
 test('LRA (cap. 61): KDIGO 2012 ao lado do manual; contas do manual iguais', async () => {
   const r = await import('./renal.ts')
-  assert.equal(r.fichaLesaoRenalAguda.versao, '2026-11-14.1')
+  assert.equal(r.fichaLesaoRenalAguda.versao, '2026-11-14.2')
+  assert.match(r.DIRETRIZ_LRA[0].diretriz, /rascunho de consulta pública/)
   assert.ok(r.fichaLesaoRenalAguda.fontes.includes(r.KDIGO_LRA_2012))
   assert.equal(r.kdigo({ crBasal: 1, crAtual: 2 }).estadio, 2)
   assert.equal(r.furosemidaEstresse(70, false), 70)
