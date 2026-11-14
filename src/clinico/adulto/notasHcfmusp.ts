@@ -122,6 +122,9 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap10-sedacao': 'sedação e analgesia para procedimentos no adulto (sedação procedural): jejum, GLP-1, ASA, capnografia, oxigênio, propofol, cetamina, midazolam, fentanil, flumazenil, naloxona, alta',
   'nota-hcfmusp-cap91-dengue': 'dengue no adulto: hidratação oral e venosa, cristaloide, paracetamol, dipirona, anti-inflamatório (AINE), corticoide, transfusão de plaquetas, enchimento capilar, lactato',
   'nota-hcfmusp-cap100-afogamento': 'afogamento no adulto: via aérea, oxigênio, desfibrilador, Heimlich, coluna cervical, hipotermia, ventilação, exames, antibiótico, corticoide, alta em 4–6 h, Szpilman',
+  'nota-hcfmusp-cap83-plaquetopenia': 'plaquetopenia no adulto: PTI (púrpura trombocitopênica imune) com sangramento, PTT (púrpura trombocitopênica trombótica), trombocitopenia induzida por heparina (TIH, escore 4Ts), corticoide, imunoglobulina, rituximabe, agonista de trombopoetina',
+  'nota-hcfmusp-cap24-oclusao-arterial': 'oclusão arterial aguda, isquemia aguda de membro no adulto: heparina, revascularização, trombólise, fasciotomia, síndrome compartimental, amputação',
+  'nota-hcfmusp-cap34-pneumotorax': 'pneumotórax espontâneo no adulto: tratamento conservador, aspiração por agulha, dreno torácico, ambulatorial, cirurgia, viagem de avião',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -564,10 +567,72 @@ notaHcfmuspCap91.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: 
 export const notaHcfmuspCap100 = notaLote5('nota-hcfmusp-cap100-afogamento', 'Nota de atualização — manual HC, cap. 100: afogamento', 'cap. 100, p. 1338–1348', szpilman.ficha,
   DIRETRIZ_AFOGAMENTO.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
   [WMS_AFOGAMENTO_2024])
-notaHcfmuspCap100.ficha.versao = '2026-11-14.2'
+notaHcfmuspCap100.ficha.versao = '2026-11-14.3'
 notaHcfmuspCap100.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados da WMS 2024, lida no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap91, notaHcfmuspCap100, notaHcfmuspCap102]
+// Lote 5, P3 = A (decisão do RT de 14/11/2026): cap. 83, 24 e 34 não têm ficha de
+// adulto na Central. A nota liga só ao capítulo do manual (conferido no PDF).
+export const MCMASTER_PTI_2026: Fonte = {
+  citacao: 'Chowdhury SR, Sirotich E, Guyatt G, et al. Guideline on the emergency management of critical bleeding in patients with immune thrombocytopenia. Blood Adv. 2026;10(16):5558–5575 (PMID 41637560; PMC13487680). Resumo lido; GRADE.',
+  url: 'https://doi.org/10.1182/bloodadvances.2025018818',
+}
+export const ASH_PTI_2026: Fonte = {
+  citacao: 'Cuker A, Terrell DR, Sowdagar H, et al. American Society of Hematology 2026 guidelines for immune thrombocytopenia: initial and second-line therapy for adults with primary ITP. Blood Adv. 2026;10(20):7076–7097 (PMID 42617047; PMC13696133). Resumo lido; GRADE.',
+  url: 'https://doi.org/10.1182/bloodadvances.2026021269',
+}
+export const ISTH_PTT_2025: Fonte = {
+  citacao: 'Zheng XL, Al-Housni Z, Cataland SR, et al. 2025 focused update of the 2020 ISTH guidelines for management of thrombotic thrombocytopenic purpura. J Thromb Haemost. 2025;23(11):3711–3732 (PMID 40533296; PMC13470878). Resumo lido; GRADE.',
+  url: 'https://doi.org/10.1016/j.jtha.2025.06.002',
+}
+export const ASH_TIH_2018: Fonte = {
+  citacao: 'Cuker A, Arepally GM, Chong BH, et al. American Society of Hematology 2018 guidelines for management of venous thromboembolism: heparin-induced thrombocytopenia. Blood Adv. 2018;2(22):3360–3392 (PMID 30482768; PMC6258919). Resumo lido; GRADE.',
+  url: 'https://doi.org/10.1182/bloodadvances.2018024489',
+}
+export const ACC_AHA_DAP_2024: Fonte = {
+  citacao: 'ACC/AHA e sociedades associadas. 2024 ACC/AHA/AACVPR/APMA/ABC/SCAI/SVM/SVN/SVS/SIR/VESS Guideline for the Management of Lower Extremity Peripheral Artery Disease. Circulation. 2024;149(24):e1313–e1410 (PMID 38743805; PMC12782132). Seção de isquemia aguda de membro lida no texto integral; classe de recomendação.',
+  url: 'https://doi.org/10.1161/CIR.0000000000001251',
+}
+export const ERS_PNEUMOTORAX_2024: Fonte = {
+  citacao: 'Walker S, Hallifax R, Ricciardi S, et al. Joint ERS/EACTS/ESTS clinical practice guidelines on adults with spontaneous pneumothorax. Eur Respir J. 2024;63(5):2300797 (PMID 38806203). Texto integral lido no site da revista; GRADE.',
+  url: 'https://doi.org/10.1183/13993003.00797-2023',
+}
+
+function notaSoManualLote5(...a: Parameters<typeof notaSoManual>): NotaHcfmusp {
+  const n = notaSoManual(...a)
+  n.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP, P3: nota sem ficha de adulto na Central; aguarda aprovação do RT)'
+  return n
+}
+
+/** cap. 83: McMaster 2026, ASH 2026, ISTH 2025 e ASH 2018. */
+export const notaHcfmuspCap83 = notaSoManualLote5('nota-hcfmusp-cap83-plaquetopenia', 'Nota de atualização — manual HC, cap. 83: plaquetopenia', 'cap. 83, p. 1086–1096', [
+    { tema: 'PTI com sangramento crítico', diretriz: 'McMaster 2026 (forte; certeza baixa a muito baixa): Sangramento crítico na PTI (intracraniano ou com instabilidade): usar juntos corticoide em dose alta, imunoglobulina EV em dose alta, transfusão de plaquetas, ácido tranexâmico e agonista do receptor de trombopoetina. Esplenectomia de urgência se o resto falhar (condicional). Não usar fator VIIa recombinante, pelo risco de trombose (condicional)', manual: 'sangramento com risco à vida e plaquetas < 10.000/µL: transfundir plaquetas (aférese); grave: metilprednisolona 1 g EV por 3 dias ou imunoglobulina 0,4 g/kg por 5 dias ou 1 g/kg por 2 dias, com preferência pela metilprednisolona (cap. 83, p. 1093)' },
+    { tema: 'PTI: tratamento inicial', diretriz: 'ASH 2026 (condicional): No adulto com PTI primária, corticoide junto com rituximabe ou com agonista de trombopoetina, em vez de corticoide sozinho', manual: 'sangramento leve: prednisona 1 mg/kg; alternativa, dexametasona 40 mg/dia por 4 dias (p. 1092–1093)' },
+    { tema: 'PTI: depois do corticoide', diretriz: 'ASH 2026 (forte; condicional): Se o corticoide falhar: agonista de trombopoetina (forte) ou rituximabe (condicional)', manual: 'sem resposta, considerar esplenectomia no ambulatório (p. 1092)' },
+    { tema: 'PTT imune', diretriz: 'ISTH 2025 (atualização focada): Sem mudança das recomendações de 2020 para a PTT imune; a revisão considerou os dados novos de caplacizumabe somado à troca plasmática, ao corticoide e ao rituximabe', manual: 'o cap. 83 cita a PTT entre as causas de plaquetopenia e não detalha o tratamento (Tabelas 1 e 2, p. 1087–1090)' },
+    { tema: 'Trombocitopenia induzida por heparina', diretriz: 'ASH 2018 (forte; condicional): Escore 4Ts em vez de impressão clínica para a probabilidade pré-teste (forte). Com 4Ts de baixa probabilidade, não pedir exame de TIH nem tratar empiricamente (forte). Na TIH aguda, anticoagulante não heparínico: argatrobana, bivalirudina, danaparoide, fondaparinux ou DOAC; a escolha é condicional', manual: 'TIH citada entre as causas de plaquetopenia com trombose (p. 1090)' },
+  ], [MCMASTER_PTI_2026, ASH_PTI_2026, ISTH_PTT_2025, ASH_TIH_2018])
+
+/** cap. 24: ACC/AHA 2024, seção de isquemia aguda de membro. */
+export const notaHcfmuspCap24 = notaSoManualLote5('nota-hcfmusp-cap24-oclusao-arterial', 'Nota de atualização — manual HC, cap. 24: oclusão arterial aguda', 'cap. 24, p. 332–344', [
+    { tema: 'Avaliação inicial', diretriz: 'ACC/AHA 2024 (classe 1; 2b): Avaliar em caráter de emergência, por profissional experiente em julgar a viabilidade do membro (1). A avaliação clínica inicial da viabilidade e da chance de salvamento não precisa esperar imagem não invasiva (1). Com história complicada de revascularizações, pode ser razoável a imagem antes de revascularizar (2b)', manual: 'classificação de Rutherford para a viabilidade; angiotomografia ou angiografia a critério da cirurgia vascular (cap. 24, p. 332–344)' },
+    { tema: 'Anticoagulação', diretriz: 'ACC/AHA 2024 (classe 1): Heparina não fracionada sistêmica no diagnóstico, qualquer que seja a causa ou o nível da oclusão, salvo contraindicação', manual: 'anticoagular no diagnóstico, antes da imagem, com heparina de baixo peso molecular ou heparina não fracionada em bomba (p. 340)' },
+    { tema: 'Revascularização', diretriz: 'ACC/AHA 2024 (classe 1; 2a; 2b; 3: dano): Membro salvável: revascularizar, por via endovascular ou cirúrgica, incluindo trombólise por cateter (1); procedimento adjuvante depois da trombólise (2a). Em estado pró-trombótico (quimioterapia, infecção viral), planejar com mais calma (2b). Membro inviável: não revascularizar tecido não viável (3: dano)', manual: 'o cirurgião vascular define a revascularização se o membro é viável, ou a amputação primária se inviável; trombólise intra-arterial é opção (p. 341–343)' },
+    { tema: 'Síndrome compartimental', diretriz: 'ACC/AHA 2024 (classe 1; 2a): Vigiar e tratar a síndrome compartimental com fasciotomia depois da revascularização (1); fasciotomia profilática no membro ameaçado mas salvável, categorias IIa ou IIb (2a); amputação precoce junto com a revascularização na isquemia prolongada (2a)', manual: 'fasciotomia para a síndrome compartimental depois da revascularização na isquemia avançada (p. 343)' },
+    { tema: 'Causa', diretriz: 'ACC/AHA 2024 (classe 1; 2a): História e exame físico completos para a causa da trombose ou embolia (1); investigar causa cardiovascular de tromboembolismo (2a)', manual: 'causas e mecanismos na Tabela 1 (p. 333)' },
+  ], [ACC_AHA_DAP_2024])
+
+/** cap. 34: ERS/EACTS/ESTS 2024 de pneumotórax espontâneo. */
+export const notaHcfmuspCap34 = notaSoManualLote5('nota-hcfmusp-cap34-pneumotorax', 'Nota de atualização — manual HC, cap. 34: pneumotórax', 'cap. 34, p. 468–472', [
+    { tema: 'Tratamento conservador', diretriz: 'ERS/EACTS/ESTS 2024 (condicional; certeza muito baixa): Pneumotórax espontâneo primário pouco sintomático e estável: tratamento conservador, qualquer que seja o tamanho', manual: 'pequeno (< 2 cm, sem desvio): O2 em alto fluxo, observar 4–6 h e dar alta se estável e sem aumento (cap. 34, p. 468–472)' },
+    { tema: 'Aspiração ou dreno', diretriz: 'ERS/EACTS/ESTS 2024 (forte; certeza baixa): No primário, aspiração por agulha antes de dreno torácico', manual: 'moderado (> 2 cm, sem gravidade): punção e aspiração, dreno fino (Seldinger, pigtail) ou dreno tubular; aspirado > 2–3 L sugere fístula (p. 468–472)' },
+    { tema: 'Manejo ambulatorial', diretriz: 'ERS/EACTS/ESTS 2024 (condicional): Primário: manejo ambulatorial em centro com estrutura e fluxo para isso (certeza baixa). Secundário: não usar dispositivo ambulatorial fino de 8 Fr no tratamento inicial (certeza muito baixa)', manual: 'dreno fino com válvula de Heimlich dá mais liberdade ao paciente (p. 468–472)' },
+    { tema: 'Cirurgia precoce', diretriz: 'ERS/EACTS/ESTS 2024 (condicional; certeza baixa): Considerar cirurgia precoce no primário quando o paciente prioriza evitar a recidiva', manual: 'não comparado nesta nota' },
+    { tema: 'Fuga aérea persistente', diretriz: 'ERS/EACTS/ESTS 2024 (condicional; certeza muito baixa): Secundário com fuga aérea persistente e sem condição cirúrgica: considerar pleurodese com sangue autólogo (blood patch)', manual: 'não comparado nesta nota' },
+    { tema: 'Viagem de avião', diretriz: 'ERS/EACTS/ESTS 2024 (condicional; revisão narrativa): Não voar com pneumotórax não tratado; esperar pelo menos 7 dias depois da resolução radiológica', manual: 'drenar se o paciente for viajar de avião em cabine pressurizada (p. 468–472)' },
+    { tema: 'Tabagismo', diretriz: 'ERS/EACTS/ESTS 2024 (condicional; revisão narrativa): Quem fuma tem mais recidiva: usar o episódio para orientar a parada do cigarro', manual: 'não comparado nesta nota' },
+  ], [ERS_PNEUMOTORAX_2024])
+
+export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap24, notaHcfmuspCap27, notaHcfmuspCap34, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap83, notaHcfmuspCap91, notaHcfmuspCap100, notaHcfmuspCap102]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5]
 
