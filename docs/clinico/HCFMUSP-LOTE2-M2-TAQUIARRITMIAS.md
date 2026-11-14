@@ -59,3 +59,9 @@ Na primeira rodada, a pergunta do betabloqueador não achou a nota. Separei o be
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000002` foi aplicada antes do merge. A ficha `adulto-taquiarritmias` e a nota do cap. 18 estão na versão 2026-11-14.1.
+- O corpus foi gerado do master e ingerido. A API foi reiniciada.
+- Refiz as perguntas na produção. As seis abrem pela AHA 2025, inclusive a do betabloqueador na TSV. A pergunta do diltiazem abre pela dose do manual, sem contradizer a diretriz.
