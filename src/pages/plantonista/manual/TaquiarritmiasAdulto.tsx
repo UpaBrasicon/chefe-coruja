@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
 import {
-  BCC_EV, LIDOCAINA_TV, MAGNESIO_TORSADES, adenosina, esquemaAmiodarona, fichaTaquiarritmiaAdulto, lidocainaTv, type Faixa,
+  BCC_EV, DIFERENCAS_TAQUI_2025, DIRETRIZ_TAQUI_2025, LIDOCAINA_TV, MAGNESIO_TORSADES, adenosina, esquemaAmiodarona, fichaTaquiarritmiaAdulto, lidocainaTv, type Faixa,
 } from '@/clinico/adulto/pcr'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
@@ -71,6 +72,16 @@ export function TaquiarritmiasAdulto() {
 
       <Bloco titulo="Torsades de pointes (paciente estável)">
         <LinhaManual nome="Sulfato de magnésio" texto={`${MAGNESIO_TORSADES.g} g EV durante ${MAGNESIO_TORSADES.minutos} min, mesmo sem hipomagnesemia`} pagina={MAGNESIO_TORSADES.pagina} />
+      </Bloco>
+
+      <Bloco titulo="AHA 2025 — ao lado do manual" descricao="Recomendações de taquicardia com pulso da AHA 2025 (Part 9), lidas no texto integral, com classe (COR) e nível (LOE). As doses do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_TAQUI_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.aha} <span className="text-tinta-sussurro">({d.classe}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TAQUI_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
