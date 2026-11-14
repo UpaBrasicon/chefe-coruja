@@ -50,3 +50,10 @@ Seis respostas passam a abrir pela diretriz. A pergunta de controle ficou igual.
 - 3 arquivos ingeridos e API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.245, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000022` foi aplicada antes do merge. O #695 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 3 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis respostas abrem pela KDIGO 2012, e a de controle (rabdomiólise) ficou igual.
+- O Vercel publicou o master.

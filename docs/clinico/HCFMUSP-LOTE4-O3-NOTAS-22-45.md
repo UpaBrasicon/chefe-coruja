@@ -49,3 +49,10 @@ As sete respostas passam a abrir pela diretriz.
 - 2 arquivos ingeridos e API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.246, sem falha) e typecheck limpos.
 - Não há tela nova.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000023` foi aplicada antes do merge. O #696 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as sete respostas abrem pela diretriz, como na homologação; a da primeira crise ainda abre com "Sim" e simplifica a decisão caso a caso, que está logo abaixo.
+- O Vercel publicou o master.

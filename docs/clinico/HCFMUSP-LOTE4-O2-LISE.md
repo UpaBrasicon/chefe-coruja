@@ -50,3 +50,10 @@ As seis respostas passam a abrir pela diretriz.
 - 2 arquivos ingeridos e API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.241, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000018` foi aplicada antes do merge. O #691 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis respostas abrem pela BSH 2025, como na homologação.
+- O Vercel publicou o master.
