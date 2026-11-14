@@ -53,3 +53,10 @@ A WMS 2024 e o manual concordam em antibiótico, corticoide, Heimlich, coluna e 
 - Os 2 arquivos foram ingeridos e a API foi reiniciada.
 - As 6 respostas saíram como na homologação.
 - O Vercel publicou o master.
+
+## Produção do #708 e ajuste de prognóstico (14/11/2026)
+
+- O #708 foi para a produção: migration `20270414000031`, merge com CI verde, 3 arquivos ingeridos, API reiniciada, Vercel ok.
+- Cinco respostas saíram pela WMS 2024. A pergunta de controle piorou: o grau III de Szpilman perdeu a sobrevida, porque a ficha do escore não traz a sobrevida por grau e a nota nova tirou da busca o trecho do PDF.
+- Ajuste (este PR): a lista ganhou a linha "Prognóstico". A WMS diz que o tempo de submersão é o principal preditor e que acima de 30 min o prognóstico é ruim; o lado do manual traz a sobrevida de cada grau de Szpilman. O escore e a nota passam para 2026-11-14.2. Migration `20270414000032`.
+- Na homologação, a pergunta do grau III volta a trazer 95–96%, e a da sobrevida por grau traz a tabela inteira.

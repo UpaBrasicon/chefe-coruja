@@ -564,6 +564,7 @@ notaHcfmuspCap91.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: 
 export const notaHcfmuspCap100 = notaLote5('nota-hcfmusp-cap100-afogamento', 'Nota de atualização — manual HC, cap. 100: afogamento', 'cap. 100, p. 1338–1348', szpilman.ficha,
   DIRETRIZ_AFOGAMENTO.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
   [WMS_AFOGAMENTO_2024])
+notaHcfmuspCap100.ficha.versao = '2026-11-14.2'
 notaHcfmuspCap100.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados da WMS 2024, lida no texto integral; aguarda aprovação do RT)'
 
 export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap91, notaHcfmuspCap100, notaHcfmuspCap102]
