@@ -35,6 +35,7 @@ import { DIRETRIZ_EI, ESC_EI_2023, duke } from './duke.ts'
 import { DIRETRIZ_LRA, KDIGO_LRA_2012, fichaLesaoRenalAguda } from './renal.ts'
 import { DIRETRIZ_FALCIFORME, SRLF_FALCIFORME_2025, TASC_2025, fichaFalciformeAdulto } from './falciforme.ts'
 import { ACEP_SEDACAO_2026, DIRETRIZ_SAP, fichaSedacaoProcedimentoAdulto } from './sedacaoProcedimento.ts'
+import { DIRETRIZ_DENGUE_OMS, MS_DENGUE_2024, OMS_ARBOVIROSES_2025, fichaDengue } from '../dengue.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { AARC_TRE_2024, ATS_IRPA_2026, ATS_SDRA_2024, DEFINICAO_GLOBAL_SDRA_2024, DIRETRIZ_SDRA_2024, ESICM_SDRA_2023, NOTA_AARC_TRE, NOTA_ATS_POS_EXTUBACAO, NOTA_SCCM_BNM, SCCM_BNM_2026, fichaSdraAdulto } from './ventilacaoMecanica.ts'
@@ -119,6 +120,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap71-mixedema': 'coma mixedematoso, estado mixedematoso, hipotireoidismo grave no adulto: levotiroxina EV, liotironina, hidrocortisona, aquecimento, escore',
   'nota-hcfmusp-cap80-falciforme': 'doença falciforme (anemia falciforme) no adulto: crise vaso-oclusiva (crise álgica), síndrome torácica aguda, analgesia, hidratação, transfusão, exsanguineotransfusão, antibiótico',
   'nota-hcfmusp-cap10-sedacao': 'sedação e analgesia para procedimentos no adulto (sedação procedural): jejum, GLP-1, ASA, capnografia, oxigênio, propofol, cetamina, midazolam, fentanil, flumazenil, naloxona, alta',
+  'nota-hcfmusp-cap91-dengue': 'dengue no adulto: hidratação oral e venosa, cristaloide, paracetamol, dipirona, anti-inflamatório (AINE), corticoide, transfusão de plaquetas, enchimento capilar, lactato',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -550,7 +552,14 @@ export const notaHcfmuspCap10 = notaLote5('nota-hcfmusp-cap10-sedacao', 'Nota de
   [ACEP_SEDACAO_2026])
 notaHcfmuspCap10.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados do consenso da ACEP 2026, lido no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap102]
+/** cap. 91: OMS 2025 de arboviroses; a ferramenta segue o Ministério da Saúde 2024. */
+export const notaHcfmuspCap91 = notaLote5('nota-hcfmusp-cap91-dengue', 'Nota de atualização — manual HC, cap. 91: dengue', 'cap. 91, p. 1227–1240', fichaDengue, [
+    { tema: 'Fonte da ferramenta', diretriz: 'Ministério da Saúde 2024, 6ª ed.: a ferramenta de classificação e hidratação da Central segue esse manual, mais novo que o do HC', manual: 'manual do HC de 2022, cap. 91' },
+    ...DIRETRIZ_DENGUE_OMS.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  ], [OMS_ARBOVIROSES_2025, MS_DENGUE_2024])
+notaHcfmuspCap91.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens da OMS 2025, resumo oficial das recomendações lido; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap91, notaHcfmuspCap102]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5]
 
