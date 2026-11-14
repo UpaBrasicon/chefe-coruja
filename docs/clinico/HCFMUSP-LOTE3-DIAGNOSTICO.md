@@ -65,6 +65,8 @@ Os 12 de maior risco entre os que faltam (droga de urgência, decisão de minuto
 | N2 | Capítulos sem lista ou com diretriz nova (39, 43, 50, 66, 47, 65, 81, 78, 25) | **A.** Ler a diretriz, atualizar a ficha (versão nova, lista manual × diretriz, sua aprovação) e só depois fazer a nota, um por vez, nesta ordem de risco: HIC (ESO 2025), meningite (ESCMID 2016 + EAN–ESCMID 2026), HDA (ESGE 2026 + Baveno VIII), sódio (ERA 2024), trauma (europeia 2023), hipoglicemia (ADA 2026), neutropenia (ABHH 2024 + MASCC 2026), abstinência (BAP 2026), TVP (AHA/ACC 2026 + ASH 2020). **B.** Só a nota com aviso "manual de 2022, sem diretriz conferida". **C.** Deixar para depois | **A.** Como no lote 2. As abertas leio direto, e as fechadas pelo seu Chrome. Se alguma não abrir, a ficha fica como está e eu aviso |
 | N3 | Na PAC (33), a IDSA não endossa a ATS 2025 | **A.** Ler o comunicado da IDSA e pôr uma nota curta na ficha e na nota do cap. 33, dizendo onde as duas divergem. **B.** Deixar só a ATS | **A.** Evita apresentar a ATS como consenso |
 
+**Decisão do RT em 14/11/2026:** N1 a N3 = A ("pode seguir como recomendou").
+
 ## Ordem de execução, se N1 a N3 = A
 
 1. Notas de 33 (com a nota da IDSA, N3), 40 e 76; homologação, perguntas, ok produção.
