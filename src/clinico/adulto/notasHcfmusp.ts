@@ -14,6 +14,7 @@ import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS, fichaAsmaAdulto, fichaDpocAdulto }
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024, fichaEmergenciaHipertensivaAdulto, fichaSindromeAorticaAdulto } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024, fichaFibrilacaoAtrialAdulto } from './fibrilacaoAtrial.ts'
 import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
+import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
 import { CARVAO_CTRC_2026, CARVAO_INDICACAO, fichaIntoxicacoesAdulto } from './intoxicacoes.ts'
@@ -63,6 +64,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap20-sindrome-aortica': 'síndrome aórtica aguda (dissecção de aorta), hematoma intramural, úlcera penetrante e aneurisma de aorta no adulto',
   'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
   'nota-hcfmusp-cap31-dpoc': 'exacerbação de DPOC (doença pulmonar obstrutiva crônica) no adulto',
+  'nota-hcfmusp-cap32-tep': 'tromboembolismo pulmonar (TEP, embolia pulmonar) agudo no adulto',
   'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
   'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
 }
@@ -100,7 +102,7 @@ export const notaHcfmuspCap11 = nota('nota-hcfmusp-cap11-anafilaxia', 'Nota de a
 export const notaHcfmuspCap13 = nota('nota-hcfmusp-cap13-14-sca', 'Nota de atualização — manual HC, cap. 13 e 14: síndrome coronariana aguda', 'cap. 13, p. 199–211; cap. 14, p. 212–222', fichaFibrinoliticosAdulto, [
   ...DIRETRIZ_SCA_2025.map((d) => ({ tema: d.tema, diretriz: `${d.fonte}: ${d.diretriz}`, manual: sem(d.livro) })),
   ...DIFERENCAS_ANTICOAG_2025.map((t) => ({ tema: `Anticoagulação — ${t.split(':')[0]}`, diretriz: t, manual: 'no próprio item, com a página' })),
-], semManual([...fichaFibrinoliticosAdulto.fontes, ...fichaAnticoagulacaoPlenaAdulto.fontes]).filter((f, i, a) => a.findIndex((x) => x.citacao === f.citacao) === i))
+], semManual([...fichaFibrinoliticosAdulto.fontes, ...fichaAnticoagulacaoPlenaAdulto.fontes]).filter((f, i, a) => f !== AHA_TEP_2026 && a.findIndex((x) => x.citacao === f.citacao) === i))
 // versão .2: a .1 (já na homologação) tinha só os 3 itens de anticoagulação
 notaHcfmuspCap13.ficha.versao = '2026-11-13.2'
 
@@ -168,6 +170,13 @@ export const notaHcfmuspCap30 = notaLote2('nota-hcfmusp-cap30-asma', 'Nota de at
 export const notaHcfmuspCap31 = notaLote2('nota-hcfmusp-cap31-dpoc', 'Nota de atualização — manual HC, cap. 31: exacerbação de DPOC', 'cap. 31, p. 417–428', fichaDpocAdulto,
   DIRETRIZ_DPOC_GOLD_2026.map((d) => ({ tema: d.tema, diretriz: `GOLD 2026 (${d.onde}): ${d.gold}`, manual: sem(d.livro) })))
 
+/** cap. 32: AHA/ACC 2026 de TEP (M2), lida no texto integral em 14/11/2026. */
+export const notaHcfmuspCap32 = notaLote2('nota-hcfmusp-cap32-tep', 'Nota de atualização — manual HC, cap. 32: tromboembolismo pulmonar', 'cap. 32, p. 429–449', fichaFibrinoliticosAdulto,
+  DIRETRIZ_TEP_2026.map((d) => ({ tema: d.tema, diretriz: `AHA/ACC 2026 (${d.classe}; ${d.onde}): ${d.aha}`, manual: sem(d.livro) })),
+  [AHA_TEP_2026])
+notaHcfmuspCap32.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap32.ficha.revisadoEm = '14/11/2026 (lote 2 da revisão do HCFMUSP: itens tirados da lista da AHA/ACC 2026, lida no texto integral; aguarda aprovação do RT)'
+
 /** cap. 67, só a hiperpotassemia do adulto (a hipocalemia espera a leitura, M2). */
 export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 'Nota de atualização — manual HC, cap. 67: hiperpotassemia', 'cap. 67, p. 900–917', fichaHiperpotassemia,
   DIVERGENCIA_MANUAL_HC.diferencas.map((t) => {
@@ -180,7 +189,7 @@ export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 
 export const notaHcfmuspCap21 = notaLote2('nota-hcfmusp-cap21-ic-aguda', 'Nota de atualização — manual HC, cap. 21: insuficiência cardíaca aguda', 'cap. 21, p. 286–303', fichaIcAgudaAdulto,
   DIRETRIZ_ICA_2026.map((d) => ({ tema: d.tema, diretriz: `ESC 2026 (${d.classe}; ${d.slide}): ${d.esc2026}`, manual: sem(d.livro) })))
 
-export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap20, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap31, notaHcfmuspCap67]
+export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap20, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap31, notaHcfmuspCap32, notaHcfmuspCap67]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -198,6 +207,7 @@ export const fichaNotaHcfmuspCap19 = notaHcfmuspCap19.ficha
 export const fichaNotaHcfmuspCap20 = notaHcfmuspCap20.ficha
 export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha
 export const fichaNotaHcfmuspCap31 = notaHcfmuspCap31.ficha
+export const fichaNotaHcfmuspCap32 = notaHcfmuspCap32.ficha
 export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
