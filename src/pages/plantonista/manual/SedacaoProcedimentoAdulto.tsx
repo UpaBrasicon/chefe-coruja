@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
-import {
-  ADJUVANTES_SAP, ALTA_SAP, ASA_SAP, DROGAS_SAP, FLUMAZENIL, JEJUM_SAP, KETOFOL, NALOXONA, NIVEIS_SEDACAO, RISCO_AUMENTADO_SAP,
-  calcularAdjuvante, calcularSap, fichaSedacaoProcedimentoAdulto, type DrogaSap, type Faixa,
-} from '@/clinico/adulto/sedacaoProcedimento'
+import { ADJUVANTES_SAP, ALTA_SAP, ASA_SAP, DIFERENCAS_SAP, DIRETRIZ_SAP, DROGAS_SAP, FLUMAZENIL, JEJUM_SAP, KETOFOL, NALOXONA, NIVEIS_SEDACAO, RISCO_AUMENTADO_SAP, calcularAdjuvante, calcularSap, fichaSedacaoProcedimentoAdulto, type DrogaSap, type Faixa } from '@/clinico/adulto/sedacaoProcedimento'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -79,6 +77,15 @@ export function SedacaoProcedimentoAdulto() {
         <ul className="list-disc pl-5 text-apoio">
           {ALTA_SAP.criterios.map((c) => <li key={c}>{c}</li>)}
         </ul>
+      </Bloco>
+      <Bloco titulo="ACEP 2026 — ao lado do manual" descricao="Sedação para procedimentos pelo consenso Delphi da ACEP de 2026 (parte 2), lido no texto integral; consenso forte em todas as seções, sem doses. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_SAP.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SAP.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
