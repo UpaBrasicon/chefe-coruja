@@ -134,3 +134,14 @@ test('encefalopatia: lactulose 60–240 mL/dia; dieta por kg; PFC 15 mL/kg (p. 8
   assert.deepEqual(d.proteinaTabela, [72, 90])
   assert.equal(pfcHepatiteMl(70), 1050)
 })
+
+test('hepatites graves (cap. 60): ACG 2023 de insuficiência hepática aguda ao lado do manual; doses do manual iguais', async () => {
+  const h = await import('./hepatopata.ts')
+  assert.equal(h.fichaInsuficienciaHepatica.versao, '2026-11-14.2')
+  assert.ok(h.fichaInsuficienciaHepatica.fontes.includes(h.ACG_IHA_2023))
+  assert.ok(h.fichaInsuficienciaHepatica.fontes.includes(h.ACG_EH_2026))
+  assert.match(h.ACG_IHA_2023.citacao, /PMID 37377263/)
+  assert.equal(h.DIRETRIZ_IHA_2023.length, 10)
+  assert.equal(new Set(h.DIRETRIZ_IHA_2023.map((d) => d.tema)).size, 10)
+  assert.match(h.DIRETRIZ_IHA_2023.find((d) => d.tema === 'Coagulopatia')!.diretriz, /não corrigir/)
+})

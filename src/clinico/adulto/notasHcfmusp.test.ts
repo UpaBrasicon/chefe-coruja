@@ -345,7 +345,7 @@ test('PBE e SHR (cap. 57 e 58): AASLD 2021 e ADQI-ICA 2024 ao lado do manual; do
 
 test('encefalopatia hepática (cap. 59): ACG 2026 ao lado do manual; doses do manual iguais', async () => {
   const h = await import('./hepatopata.ts')
-  assert.equal(h.fichaInsuficienciaHepatica.versao, '2026-11-14.1')
+  assert.equal(h.fichaInsuficienciaHepatica.versao, '2026-11-14.2')
   assert.ok(h.fichaInsuficienciaHepatica.fontes.includes(h.ACG_EH_2026))
   assert.deepEqual(h.lactuloseMlDia(), [60, 240])
   assert.deepEqual(h.DIETA_EH.proteinaTabelaGKg, [1.2, 1.5])
