@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 
 // Sedação e analgesia para procedimentos (SAP) do adulto — cap. 10 do Manual
@@ -5,11 +6,52 @@ import { fichaAdulto } from './fonte.ts'
 // 2). A ferramenta calcula dose e volume por peso a partir do que o livro traz;
 // a escolha da droga, da profundidade e do momento é do médico (ADR 0007).
 
-export const fichaSedacaoProcedimentoAdulto = fichaAdulto(
+// Lote 5 da revisão do HCFMUSP, P2 (decisão do RT de 14/11/2026), cap. 10: o
+// consenso Delphi da ACEP de 2026 (parte 2, prática clínica) foi lido no texto
+// integral no site da revista. Todas as seções tiveram consenso forte; a
+// certeza da evidência vem nos símbolos ⊕ do texto. A diretriz não traz dose:
+// as doses e contas do manual não mudam.
+export const ACEP_SEDACAO_2026: Fonte = {
+  citacao: 'Green SM, Roback MG, et al. Unscheduled Procedural Sedation Multidisciplinary Delphi Consensus Guidelines, Part 2: Clinical Practice. Ann Emerg Med. 2026;88(3):346–361 (PMID 42618174). Política oficial da ACEP; texto integral lido; consenso forte em todas as seções.',
+  url: 'https://doi.org/10.1016/j.annemergmed.2026.06.039',
+}
+
+const SEM_ITEM_SAP = 'sem item do manual na ferramenta'
+
+/** ACEP 2026 × manual, na sedação para procedimentos do adulto; um tema por linha. */
+export const DIRETRIZ_SAP: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Jejum', diretriz: 'Perguntar quando e o que o paciente comeu. Procedimento urgente ou de emergência não deve ser adiado só pelo tempo de jejum: o risco real de aspiração é muito menor que o temido. Com fator de risco moderado para aspiração, encaminhar à anestesia se houver; se não houver, considerar sedação dissociativa com cetamina, que preserva os reflexos da via aérea', grau: 'consenso forte; evidência ⊕⊕⊕ a ⊕⊕⊕⊕', fonte: 'ACEP 2026', livro: 'na emergência o paciente em geral não está em jejum; em procedimento não emergencial, aguardar 2 h para líquido sem resíduo e 6 h para sólido (cap. 10, p. 154 e 160)' },
+  { tema: 'Agonista de GLP-1', diretriz: 'Semaglutida, liraglutida e tirzepatida atrasam o esvaziamento gástrico, mas não há caso de aspiração descrito em sedação. Na maioria dos adultos, seguir a sedação habitual; se o risco parecer maior, anestesia ou cetamina isolada', grau: 'consenso forte; evidência ⊕', fonte: 'ACEP 2026', livro: SEM_ITEM_SAP },
+  { tema: 'Risco pela ASA', diretriz: 'A classificação ASA não prevê o risco de cada paciente. Estratificar pelo julgamento clínico, pelos fatores de risco do exame e da história e pela fragilidade; ASA III, sozinho, não justifica mudar o plano nem adiar a sedação', grau: 'consenso forte; evidência ⊕⊕⊕', fonte: 'ACEP 2026', livro: 'ASA I e II toleram bem; ASA III ou mais tem mais risco e pede droga com menos hipotensão; ASA IV e V, evitar a sedação (p. 156–159)' },
+  { tema: 'Monitorização', diretriz: 'Monitor cardíaco, pressão arterial, capnografia e oximetria com som, de rotina sempre que possível. A capnografia dá o aviso mais precoce de depressão respiratória e apneia', grau: 'consenso forte; evidência ⊕⊕⊕⊕', fonte: 'ACEP 2026', livro: 'sinais vitais em intervalos, glicemia capilar, cardioscopia, oximetria e capnografia (p. 160)' },
+  { tema: 'Oxigênio suplementar', diretriz: 'Opcional, não obrigatório: reduz a hipoxemia transitória, mas não os eventos que pedem resgate. O O2 tem de estar sempre disponível para o resgate. Com O2, a oximetria atrasa o alarme e só a capnografia mostra a hipoventilação a tempo', grau: 'consenso forte; evidência ⊕⊕', fonte: 'ACEP 2026', livro: 'recomenda O2 por máscara facial de alto fluxo durante a sedação, atento à hipoventilação (p. 160)' },
+  { tema: 'Procedimento doloroso', diretriz: 'Na dor moderada a intensa (por exemplo, redução ortopédica), fentanil com propofol, ou cetamina, é melhor que fentanil com midazolam. Propofol com cetamina subdissociativa ("cetofol") é igualmente seguro e eficaz', grau: 'consenso forte; evidência ⊕⊕⊕ e ⊕⊕⊕⊕', fonte: 'ACEP 2026', livro: 'com propofol ou etomidato, fentanil limitado a 0,5 µg/kg; cetamina subdissociativa 0,3 mg/kg como opção (p. 162 e 164)' },
+  { tema: 'Opioide junto com sedativo', diretriz: 'Aumenta um pouco o risco de evento adverso; atenção à depressão cardiorrespiratória nos 30 min depois do opioide', grau: 'consenso forte; evidência ⊕⊕⊕', fonte: 'ACEP 2026', livro: 'midazolam com opioide tem mais risco de evento adverso (p. 163)' },
+  { tema: 'Midazolam com cetamina', diretriz: 'No adulto, midazolam junto com a cetamina reduz um pouco a agitação na recuperação', grau: 'consenso forte; evidência ⊕⊕⊕⊕', fonte: 'ACEP 2026', livro: SEM_ITEM_SAP },
+  { tema: 'Anticolinérgico', diretriz: 'Não é mais recomendado associar anticolinérgico: está ligado a mais eventos adversos', grau: 'consenso forte; evidência ⊕⊕⊕', fonte: 'ACEP 2026', livro: SEM_ITEM_SAP },
+  { tema: 'Obeso', diretriz: 'Na maioria das drogas, dose pelo peso ideal, não pelo peso real', grau: 'consenso forte', fonte: 'ACEP 2026', livro: 'propofol no obeso pelo peso ideal, sem fórmula no manual (p. 164)' },
+  { tema: 'Reversão', diretriz: 'Naloxona para a depressão respiratória por opioide e flumazenil para a sedação excessiva por benzodiazepínico, como parte do resgate, junto com estímulo, reposicionamento da via aérea e ventilação', grau: 'consenso forte', fonte: 'ACEP 2026', livro: 'flumazenil 0,2 mg EV em 30 s, repetir 0,2 mg a cada minuto até 1 mg; nova dose a cada 20 min (p. 163)' },
+  { tema: 'Recuperação e alta', diretriz: 'Monitorar até não haver risco de obstrução ou depressão respiratória, com o paciente alerta no basal e sinais vitais normais. Não é preciso tolerar líquido oral. Alta com adulto responsável e orientação oral e escrita', grau: 'consenso forte', fonte: 'ACEP 2026', livro: 'procedimento de baixo risco, sintomas controlados, sinais vitais estáveis e autocuidado sem ajuda (p. 161)' },
+]
+
+export const DIFERENCAS_SAP: string[] = [
+  'Jejum: a ACEP 2026 não adia procedimento urgente pelo tempo de jejum; o manual sugere esperar 2 h para líquido e 6 h para sólido no procedimento não emergencial.',
+  'Oxigênio: a ACEP 2026 deixa o O2 suplementar opcional e lembra que ele atrasa o alarme da oximetria; o manual recomenda O2 por máscara de alto fluxo.',
+  'Risco: a ACEP 2026 não usa a ASA para decidir o plano de cada paciente; o manual usa a ASA para escolher a droga e evitar a sedação em ASA IV e V.',
+  'Doses: a ACEP 2026 não traz dose; as doses e contas da ferramenta continuam as do manual.',
+]
+
+const fichaSapLivro = fichaAdulto(
   'adulto-sedacao-procedimento',
   'Sedação e analgesia para procedimentos — adulto',
   'cap. 10 Sedação e analgesia em procedimentos, p. 153–166 (Tabelas 1 e 2)',
 )
+export const fichaSedacaoProcedimentoAdulto: Ficha = {
+  ...fichaSapLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaSapLivro.fontes, ACEP_SEDACAO_2026],
+  revisadoEm: '14/11/2026 (consenso Delphi da ACEP 2026 lido no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 
 export type Faixa = [number, number]
 
