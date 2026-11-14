@@ -36,3 +36,9 @@ Na homologação, as cinco perguntas de tratamento passam a abrir pela diretriz.
 - A migration foi aplicada, e a nota está aguardando aprovação.
 - O arquivo foi ingerido em 6 trechos, e a API foi reiniciada.
 - Os testes da nota (37) passam.
+
+## Produção do #713, 14/11/2026
+
+- A migration `20270414000034` foi aplicada antes do merge. O #713 foi mesclado com o CI verde.
+- Foram ingeridos 1 arquivo, e a API foi reiniciada. O Vercel publicou o master.
+- As seis respostas saíram como na homologação.

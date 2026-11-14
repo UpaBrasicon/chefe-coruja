@@ -81,3 +81,28 @@ Cada passo passa pela homologação e pelo CI verde antes da produção, que ped
 ## Decisão do RT (14/11/2026)
 
 Q1 a Q4 = A, e a produção do lote 6 inteiro está liberada. Cada passo segue pela homologação e pelo CI verde antes da produção.
+
+## Q4: capítulos sem diretriz nova (registro)
+
+Pela Q4 = A, os cap. 93 (tétano acidental), 94 (leptospirose) e 28 (hemoptise) foram revistos e ficam sem nota. O manual continua valendo.
+
+| Cap. | O que a busca no PubMed achou (14/11/2026) | Na Central |
+|---|---|---|
+| 93 | nenhuma diretriz de sociedade sobre o tratamento do tétano | `adulto-tetano-profilaxia`, pelo Guia de Vigilância do MS 2024 |
+| 94 | nenhuma diretriz de sociedade sobre leptospirose | sem ficha de adulto |
+| 28 | só uma recomendação chinesa de 2019, anterior ao manual; nenhuma de BTS, CHEST ou sociedade europeia | sem ficha de adulto |
+
+## Lote 6 concluído (14/11/2026)
+
+| Passo | PR | Doc |
+|---|---|---|
+| Q1: nota do cap. 41 | #713 | `HCFMUSP-LOTE6-Q1-CEFALEIA.md` |
+| Q2: cap. 44 | #714 | `HCFMUSP-LOTE6-Q2-PARALISIAS.md` |
+| Q2: cap. 12 | #715 | `HCFMUSP-LOTE6-Q2-DOR-TORACICA.md` |
+| Q2: cap. 16 | #716 | `HCFMUSP-LOTE6-Q2-SINCOPE.md` |
+| Q2: cap. 96 | #717 | `HCFMUSP-LOTE6-Q2-DERMATOSES.md` |
+| Q2: cap. 60 | #718 | `HCFMUSP-LOTE6-Q2-HEPATITES.md` |
+| Q3: notas dos cap. 88, 95 e 5 | #719 | `HCFMUSP-LOTE6-Q3-NOTAS-88-95-5.md` |
+| Q4: cap. 93, 94 e 28 | este registro | — |
+
+Com o lote 6, 72 dos 108 capítulos foram revistos. Faltam 36.

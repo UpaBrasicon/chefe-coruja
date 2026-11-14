@@ -57,3 +57,9 @@ Em 14/11/2026 o RT decidiu Q1 a Q4 = A e liberou a produção do lote 6 inteiro.
 - A migration foi aplicada, e as duas fichas estão aguardando aprovação.
 - A ficha foi ingerida em 6 trechos e a nota em 17. A API foi reiniciada.
 - Os testes da nota e da SGB passam, e o typecheck está limpo.
+
+## Produção do #714, 14/11/2026
+
+- A migration `20270414000035` foi aplicada antes do merge. O #714 foi mesclado com o CI verde.
+- Foram ingeridos 2 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As sete respostas saíram como na homologação, com o MS 2024 e o CDC 2021 lado a lado no botulismo.
