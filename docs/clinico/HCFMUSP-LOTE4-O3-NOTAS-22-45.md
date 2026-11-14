@@ -77,3 +77,7 @@ O RT escolheu a opção A: abriu a página da ACEP no Chrome e passou o CAPTCHA 
 | primeira crise: recorrência | AAN | AAN, igual |
 | primeira crise: iniciar antiepiléptico | abria com "Sim" | abre com "Sim, pode-se... a decisão é individualizada" |
 | dose de levetiracetam no estado de mal (controle) | ESETT, 60 mg/kg, máx. 4.500 mg | igual, com a ACEP ao lado |
+
+Produção do #698 (14/11/2026): a migration `20270414000024` entrou antes do merge, o merge foi com CI verde, a nota foi ingerida, a API reiniciada e o Vercel publicou. As quatro respostas saíram como na homologação.
+
+A KDIGO 2026 de LRA (decisão 5 do RT) não entrou: o rascunho saiu do site da KDIGO depois da consulta pública e a versão final ainda não foi publicada (site e PubMed conferidos em 14/11/2026). O cap. 61 segue com a KDIGO 2012.
