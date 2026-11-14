@@ -27,7 +27,7 @@ import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_201
 import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
 import { ABHH_NF_2024, DIRETRIZ_NF, MASCC_2026, fichaNeutropeniaFebrilAdulto } from './neutropeniaFebril.ts'
 import { BAP_SUBSTANCIAS_2026, DIRETRIZ_SAA, fichaAbstinenciaAlcoolica } from './abstinenciaAlcoolica.ts'
-import { DIRETRIZ_IA, DIRETRIZ_TT, ESE_ES_IA_GLICOCORTICOIDE_2024, ES_IA_PRIMARIA_2016, ETA_TEMPESTADE_2026, SFE_CRISE_ADRENAL_2016, fichaCriseTireotoxica, fichaInsuficienciaAdrenal } from './endocrino.ts'
+import { CONSENSO_MIXEDEMA_2026, DIRETRIZ_IA, DIRETRIZ_MIXEDEMA, DIRETRIZ_TT, ESE_ES_IA_GLICOCORTICOIDE_2024, ES_IA_PRIMARIA_2016, ETA_TEMPESTADE_2026, SFE_CRISE_ADRENAL_2016, fichaCriseTireotoxica, fichaInsuficienciaAdrenal, fichaMixedema } from './endocrino.ts'
 import { DIRETRIZ_CALCIO, ES_HIPERCALCEMIA_MALIGNIDADE_2023, SFE_HIPERCALCEMIA_2016, SFE_HIPOCALCEMIA_2016, fichaHipercalcemia } from './eletrolitos.ts'
 import { BSH_SLT_2025, DIRETRIZ_SLT, fichaLiseTumoralAdulto } from './liseTumoral.ts'
 import { AASLD_ASCITE_2021, ACG_EH_2026, ADQI_ICA_2024, DIRETRIZ_EH, DIRETRIZ_PBE_SHR, fichaAsciteShr, fichaInsuficienciaHepatica } from './hepatopata.ts'
@@ -114,6 +114,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap79-hemostasia': 'sangramento em uso de anticoagulante (varfarina, DOAC, dabigatrana, rivaroxabana, apixabana): reversão, complexo protrombínico, idarucizumabe, andexanete, carvão ativado, epistaxe',
   'nota-hcfmusp-cap82-transfusao': 'transfusão de hemácias e plaquetas no adulto: limiar de hemoglobina, IAM, lesão cerebral, plaquetopenia, cateter central, dengue',
   'nota-hcfmusp-cap102-hipotermia': 'hipotermia acidental no adulto: estágios, RCP, desfibrilação, adrenalina, amiodarona, ECMO, reaquecimento, afogamento',
+  'nota-hcfmusp-cap71-mixedema': 'coma mixedematoso, estado mixedematoso, hipotireoidismo grave no adulto: levotiroxina EV, liotironina, hidrocortisona, aquecimento, escore',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -527,7 +528,13 @@ export const notaHcfmuspCap102 = notaLote5('nota-hcfmusp-cap102-hipotermia', 'No
   DIRETRIZ_HIPOTERMIA_2025.map((d) => ({ tema: d.tema, diretriz: `ERC 2025: ${d.erc}`, manual: sem(d.livro) })),
   [ERC_2025_HIPOTERMIA])
 
-export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap27, notaHcfmuspCap79, notaHcfmuspCap82, notaHcfmuspCap102]
+/** cap. 71: consenso BTA/ETA/SfE/WEDS 2026, lido no texto integral. */
+export const notaHcfmuspCap71 = notaLote5('nota-hcfmusp-cap71-mixedema', 'Nota de atualização — manual HC, cap. 71: estado mixedematoso', 'cap. 71, p. 958–963', fichaMixedema,
+  DIRETRIZ_MIXEDEMA.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [CONSENSO_MIXEDEMA_2026])
+notaHcfmuspCap71.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados do consenso 2026, lido no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap82, notaHcfmuspCap102]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5]
 
