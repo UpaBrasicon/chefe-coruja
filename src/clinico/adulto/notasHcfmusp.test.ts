@@ -418,3 +418,14 @@ test('estado mixedematoso (cap. 71): consenso 2026 ao lado do manual; doses e es
   assert.equal(nota.itens.length, e.DIRETRIZ_MIXEDEMA.length)
   assert.deepEqual(nota.ficha.fontes, [e.CONSENSO_MIXEDEMA_2026])
 })
+
+test('falciforme (cap. 80): SRLF/SFMU 2025 ao lado do manual; doses do manual iguais', async () => {
+  const f = await import('./falciforme.ts')
+  assert.equal(f.fichaFalciformeAdulto.versao, '2026-11-14.1')
+  assert.ok(f.fichaFalciformeAdulto.fontes.includes(f.SRLF_FALCIFORME_2025))
+  assert.equal(f.HIDRATACAO_FALCIFORME.mlKg24h, 50)
+  assert.equal(f.MORFINA_FALCIFORME.ataqueMgKg, 0.15)
+  const nota = NOTAS_HCFMUSP_LOTE5.find((x) => x.ficha.id === 'nota-hcfmusp-cap80-falciforme')!
+  assert.equal(nota.itens.length, f.DIRETRIZ_FALCIFORME.length)
+  assert.deepEqual(nota.ficha.fontes, [f.SRLF_FALCIFORME_2025, f.TASC_2025])
+})

@@ -20,12 +20,50 @@ export const TASC_2025: Fonte = {
 export const NOTA_TASC_STA =
   'TASC (2025, posterior ao livro): ECR duplo-cego, 172 adultos com STA sem trombose na angio-TC, tinzaparina em dose terapêutica × profilática por 7 dias. A dose terapêutica encurtou a STA (HR 0,71; média 4,8 × 6,1 dias) e reduziu o opioide parenteral, sem sangramento maior. É um ECR único: a ferramenta não muda a conduta do livro e não traz dose de anticoagulante.'
 
+// Lote 5 da revisão do HCFMUSP, P2 (decisão do RT de 14/11/2026), cap. 80: a
+// diretriz francesa de 2025 (SRLF, GFRUP e SFMU) de urgência e doença crítica na
+// falciforme foi lida no texto integral do PMC. Entra só a parte do adulto. A
+// força vem da redação da diretriz: "provavelmente" é GRADE 2; "os especialistas
+// sugerem" é opinião de especialistas. As doses e contas do manual não mudam.
+export const SRLF_FALCIFORME_2025: Fonte = {
+  citacao: 'Société de Réanimation de Langue Française (SRLF), Groupe Francophone de Réanimation et d\'Urgences Pédiatriques (GFRUP) e Société Française de Médecine d\'Urgence (SFMU). Guidelines for the management of emergencies and critical illness in pediatric and adult patients with sickle cell disease. Ann Intensive Care. 2025;15:74 (PMID 40439782; PMC12123041). Texto integral lido; GRADE e opinião de especialistas.',
+  url: 'https://doi.org/10.1186/s13613-025-01479-3',
+}
+
+const SEM_ITEM_FALC = 'sem item do manual na ferramenta'
+
+/** SRLF/SFMU 2025 × manual, na falciforme do adulto; um tema por linha. */
+export const DIRETRIZ_FALCIFORME: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Onde tratar', diretriz: 'Considerar UTI no adulto que precisa de exsanguineotransfusão ou tem risco de evolução ruim: taquipneia, lesão renal aguda ou hipotensão. Em qualquer complicação aguda grave, discutir com um centro de referência em doença falciforme', grau: 'fraca a favor ("provavelmente")', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'Analgesia', diretriz: 'Começar logo um protocolo de analgesia escalonado na crise dolorosa do adulto, ajustado à resposta de cada paciente', grau: 'opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: 'dor grave: morfina 0,15 mg/kg EV e 0,05 mg/kg a cada 20 min; porta-opioide ≤ 30 min (cap. 80, p. 1056–1058)' },
+  { tema: 'Alvo de saturação', diretriz: 'SatO2 de 95% durante a crise vaso-oclusiva', grau: 'opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: 'na crise álgica, O2 se SatO2 < 90% ou PaO2 < 60 mmHg; na síndrome torácica aguda, SatO2 ≥ 95% (p. 1056 e 1058)' },
+  { tema: 'Espirometria de incentivo', diretriz: 'Usar na crise vaso-oclusiva para prevenir a síndrome torácica aguda, sobretudo com dor torácica ou dorsal', grau: 'fraca a favor ("provavelmente")', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'Hidratação', diretriz: 'Não fazer hiper-hidratação sistemática na crise vaso-oclusiva: não mostrou benefício e tem risco. Ajustar o volume, oral ou EV, à clínica, às outras entradas (como transfusão) e à necessidade diária', grau: 'fraca contra ("provavelmente não"); opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: '50 mL/kg em 24 h, SF 0,9% + SG 5% (SF se hipovolêmico) (p. 1056)' },
+  { tema: 'Diagnóstico da síndrome torácica aguda', diretriz: 'Ultrassom pulmonar para melhorar o diagnóstico no adulto com sinais sugestivos', grau: 'fraca a favor ("provavelmente")', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'Trombose de artéria pulmonar', diretriz: 'Na síndrome torácica aguda do adulto, angiotomografia conforme a probabilidade clínica, para procurar trombose de artéria pulmonar', grau: 'opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'Corticoide', diretriz: 'Não usar corticoide sistêmico de rotina na síndrome torácica aguda', grau: 'fraca contra ("provavelmente não")', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'VNI', diretriz: 'Não usar VNI de rotina na síndrome torácica aguda do adulto', grau: 'fraca contra ("provavelmente não")', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'Anticoagulação', diretriz: 'Dose terapêutica sem trombose documentada: os dados não permitem recomendar. Profilaxia de TEV indicada no doente clínico agudo, inclusive com síndrome torácica aguda', grau: 'sem recomendação; boa prática', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'Antibiótico na síndrome torácica aguda', diretriz: 'Na forma grave do adulto, antibiótico empírico contra bactérias intracelulares junto com um contra piogênicos', grau: 'opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: 'ceftriaxona 2 g EV 1×/dia + claritromicina 500 mg EV 12/12 h ou azitromicina 500 mg EV 1×/dia (p. 1057)' },
+  { tema: 'Betalactâmico na infecção grave', diretriz: 'Sem insuficiência renal, dose de ataque e depois infusão contínua, ou mais doses por dia, para melhorar a farmacocinética', grau: 'fraca a favor ("provavelmente")', fonte: 'SRLF/SFMU 2025', livro: SEM_ITEM_FALC },
+  { tema: 'Transfusão na crise vaso-oclusiva', diretriz: 'Não transfundir de rotina na crise vaso-oclusiva sem complicação', grau: 'opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: 'não há indicação de transfusão para a crise álgica (p. 1056)' },
+  { tema: 'Transfusão na síndrome torácica aguda', diretriz: 'Transfundir o adulto com critério de gravidade: hipoxemia (precisa de O2 para manter SatO2 de 95%), hipertensão pulmonar grave (velocidade de regurgitação tricúspide > 3 m/s ou cor pulmonale agudo) ou qualquer falência orgânica', grau: 'opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: 'STA leve: transfusão com alvo de Hb ≥ 10 g/dL; moderada a grave: eritrocitoaférese com HbS < 30% e Hb ≥ 10 g/dL (p. 1058)' },
+  { tema: 'Tipo de transfusão', diretriz: 'Transfusão simples se a anemia é grave (Hb total < 7 g/dL); nos demais casos, exsanguineotransfusão imediata, de preferência automatizada se houver tempo', grau: 'opinião de especialistas', fonte: 'SRLF/SFMU 2025', livro: 'eritrocitoaférese na STA moderada a grave (p. 1058)' },
+]
+
+export const DIFERENCAS_FALCIFORME: string[] = [
+  'Hidratação: a diretriz francesa é contra a hiper-hidratação sistemática e ajusta o volume à clínica; o manual dá 50 mL/kg em 24 h.',
+  'Alvo de saturação na crise vaso-oclusiva: 95% na diretriz; o manual dá O2 só abaixo de 90%.',
+  'Transfusão na síndrome torácica aguda: a diretriz decide pela gravidade (hipoxemia, hipertensão pulmonar, falência orgânica) e prefere exsanguineotransfusão, salvo Hb < 7 g/dL; o manual transfunde a forma leve com alvo de Hb ≥ 10 g/dL.',
+  'Espirometria de incentivo, ultrassom pulmonar, corticoide e VNI: a diretriz trata; a ferramenta do manual não traz.',
+]
+
 const fichaFalciformeLivro = fichaAdulto('adulto-falciforme', 'Anemia falciforme — crise álgica e síndrome torácica aguda (adulto)', `${CAP}, p. 1055–1061 (Tabela 5)`)
 export const fichaFalciformeAdulto: Ficha = {
   ...fichaFalciformeLivro,
-  versao: '2026-11-06.1',
-  fontes: [...fichaFalciformeLivro.fontes, TASC_2025],
-  revisadoEm: '06/11/2026 (nota do TASC na síndrome torácica aguda; revisão PubMed, itens médios)',
+  versao: '2026-11-14.1',
+  fontes: [...fichaFalciformeLivro.fontes, TASC_2025, SRLF_FALCIFORME_2025],
+  revisadoEm: '14/11/2026 (diretriz SRLF/GFRUP/SFMU 2025 lida no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota do TASC na síndrome torácica aguda; revisão PubMed, itens médios)',
 }
 
 export type Faixa = [number, number]
