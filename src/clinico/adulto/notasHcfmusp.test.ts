@@ -375,3 +375,14 @@ test('LRA (cap. 61): KDIGO 2012 ao lado do manual; contas do manual iguais', asy
   assert.equal(nota.itens.length, r.DIRETRIZ_LRA.length)
   assert.deepEqual(nota.ficha.fontes, [r.KDIGO_LRA_2012])
 })
+
+test('cap. 22 e 45 (O3): nota só com o capítulo do manual, sem ficha da Central', () => {
+  for (const id of ['nota-hcfmusp-cap22-pericardite-miocardite', 'nota-hcfmusp-cap45-primeira-crise']) {
+    const n = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === id)!
+    assert.equal(n.fichaCentral, '')
+    assert.equal(n.ficha.versao, '2026-11-14.1')
+    assert.equal(n.ficha.fontes.length, 1)
+    for (const i of n.itens) assert.ok(i.diretriz.length > 0 && i.manual.length > 0, i.tema)
+  }
+  assert.match(textoNota(NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap45-primeira-crise')!), /CAPTCHA/)
+})
