@@ -24,7 +24,7 @@ import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_201
 import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
-import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
+import { ADA_HIPOGLICEMIA_2026, DIFERENCAS_2024, DIRETRIZ_HIPOGLICEMIA, ENDOCRINE_HIPOGLICEMIA_2023, fichaCadEhhTratamento, fichaHipoglicemia } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
 import { CARVAO_CTRC_2026, CARVAO_INDICACAO, fichaIntoxicacoesAdulto } from './intoxicacoes.ts'
 import { COSTR_2026_PCR, DIFERENCAS_BRADI_2025, DIRETRIZ_ALS_2025, DIRETRIZ_TAQUI_2025, fichaBradicardiaAdulto, fichaPcrAdulto, fichaTaquiarritmiaAdulto } from './pcr.ts'
@@ -82,6 +82,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap76-agitacao': 'paciente agitado e agitação grave no adulto (sedação: droperidol, antipsicótico, midazolam, cetamina)',
   'nota-hcfmusp-cap66-sodio': 'hiponatremia no adulto: NaCl 3%, bolus, limite de correção, hipercorreção, SIADH, restrição hídrica, ureia e vaptana (distúrbios do sódio)',
   'nota-hcfmusp-cap47-trauma': 'politraumatizado e sangramento no trauma (ácido tranexâmico, hipotensão permissiva, Ringer lactato no TCE, transfusão maciça, fibrinogênio, cálcio, pelve, reversão de anticoagulante)',
+  'nota-hcfmusp-cap65-hipoglicemia': 'hipoglicemia no adulto (níveis 1, 2 e 3, glicose oral 15 g, glucagon, recorrência, sulfonilureia, acarbose)',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -289,7 +290,14 @@ export const notaHcfmuspCap47 = nota('nota-hcfmusp-cap47-trauma', 'Nota de atual
 notaHcfmuspCap47.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap47.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da diretriz europeia de 2023, lida no texto integral, e da EAST 2025, lida no resumo; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap47, notaHcfmuspCap50, notaHcfmuspCap66, notaHcfmuspCap76]
+/** cap. 65: ADA 2026, seção 6 (texto integral), e Endocrine Society 2023 (resumo). */
+export const notaHcfmuspCap65 = nota('nota-hcfmusp-cap65-hipoglicemia', 'Nota de atualização — manual HC, cap. 65: hipoglicemia', 'cap. 65, p. 877–881', fichaHipoglicemia,
+  DIRETRIZ_HIPOGLICEMIA.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [ADA_HIPOGLICEMIA_2026, ENDOCRINE_HIPOGLICEMIA_2023])
+notaHcfmuspCap65.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap65.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da ADA 2026, lida no texto integral, e da Endocrine Society 2023, lida no resumo; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap47, notaHcfmuspCap50, notaHcfmuspCap65, notaHcfmuspCap66, notaHcfmuspCap76]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -319,6 +327,7 @@ export const fichaNotaHcfmuspCap43 = notaHcfmuspCap43.ficha
 export const fichaNotaHcfmuspCap50 = notaHcfmuspCap50.ficha
 export const fichaNotaHcfmuspCap66 = notaHcfmuspCap66.ficha
 export const fichaNotaHcfmuspCap47 = notaHcfmuspCap47.ficha
+export const fichaNotaHcfmuspCap65 = notaHcfmuspCap65.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */

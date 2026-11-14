@@ -49,7 +49,50 @@ export const fichaCadEhhTratamento: Ficha = {
   ],
   revisadoEm: '13/11/2026 (o consenso 2024 passa a ser a base das contas, por decisão do RT, e o manual do HC fica num bloco fechado, só para consulta; preparo de 1 U/mL da unidade como padrão das contas de mL/h, com o do manual como opção); 06/11/2026 (nota da insulina basal precoce na transição; revisão PubMed, itens médios; consenso 2024 conferido no texto; manual do HC mantido como base)',
 }
-export const fichaHipoglicemia = fichaAdulto('adulto-hipoglicemia', 'Hipoglicemia — limiar e doses', 'cap. 65, p. 877–881')
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 65: a seção 6
+// do Standards of Care da ADA 2026 foi lida no texto integral no PMC (graus A, B,
+// C e E). A diretriz da Endocrine Society de 2023 trata de prevenção, quase toda
+// ambulatorial; entra só pelo resumo do PubMed. As doses do manual (glicose 50%,
+// glucagon IM, tiamina) não mudam: a ADA não dá dose EV de glicose nesta seção.
+export const ADA_HIPOGLICEMIA_2026: Fonte = {
+  citacao: 'American Diabetes Association Professional Practice Committee. 6. Glycemic Goals, Hypoglycemia, and Hyperglycemic Crises: Standards of Care in Diabetes—2026. Diabetes Care. 2026;49(Suppl 1):S132–S149 (PMID 41358894; PMC12690178). Texto integral lido: recomendações 6.10 a 6.20 e Tabela 6.4.',
+  url: 'https://doi.org/10.2337/dc26-S006',
+}
+
+export const ENDOCRINE_HIPOGLICEMIA_2023: Fonte = {
+  citacao: 'McCall AL, Lieb DC, Gianchandani R, et al. Management of Individuals With Diabetes at High Risk for Hypoglycemia: An Endocrine Society Clinical Practice Guideline. J Clin Endocrinol Metab. 2023;108(3):529–562 (PMID 36477488). Recomendações lidas no resumo do PubMed.',
+  url: 'https://doi.org/10.1210/clinem/dgac596',
+}
+
+const SEM_ITEM_HIPO = 'sem item do manual na ferramenta'
+
+/** ADA 2026 (seção 6) e Endocrine 2023 × manual, na hipoglicemia do adulto; um tema por linha. */
+export const DIRETRIZ_HIPOGLICEMIA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Classificação', diretriz: 'Nível 1: glicose < 70 e ≥ 54 mg/dL. Nível 2: < 54 mg/dL. Nível 3: evento grave, com alteração mental ou física, que precisa de ajuda de outra pessoa, qualquer que seja a glicose', grau: 'Tabela 6.4', fonte: 'ADA 2026', livro: 'limiar < 70 mg/dL com DM; sem DM, < 45 no texto (p. 877) e < 50 na Figura 1 (p. 881)' },
+  { tema: 'Consciente com glicose < 70', diretriz: 'Glicose é o tratamento preferido (qualquer carboidrato com glicose serve); 15 g na maioria, 5–10 g em quem usa sistema automatizado de insulina. Evitar alimento rico em gordura ou proteína. Repetir em 15 min se persistir', grau: 'B (6.15)', fonte: 'ADA 2026', livro: SEM_ITEM_HIPO },
+  { tema: 'Acarbose', diretriz: 'Quem usa acarbose deve tratar só com glicose pura: a acarbose atrasa a quebra da sacarose', grau: 'texto, sem grau', fonte: 'ADA 2026', livro: SEM_ITEM_HIPO },
+  { tema: 'Glucagon', diretriz: 'Indicado a quem não pode ou não quer ingerir carboidrato. Prescrever glucagon a todos os que usam insulina ou têm alto risco (A); preferir as preparações que não precisam de reconstituição, como a nasal (3 mg) e a pronta para injeção (B)', grau: 'A e B (6.16)', fonte: 'ADA 2026', livro: 'glucagon 1–2 mg IM sem acesso venoso; efeito fugaz, não repetir (p. 880)' },
+  { tema: 'Glucagon (Endocrine)', diretriz: 'Na hipoglicemia grave fora do hospital, preferir glucagon que não precisa de reconstituição', grau: 'forte; lido no resumo', fonte: 'Endocrine 2023', livro: 'glucagon 1–2 mg IM sem acesso venoso (p. 880)' },
+  { tema: 'Recorrência', diretriz: 'Insulina ainda ativa ou secretagogo podem causar nova hipoglicemia se não houver mais ingestão depois da recuperação', grau: 'texto, sem grau', fonte: 'ADA 2026', livro: 'diabético com alto risco de novo episódio (p. ex., doença renal crônica): observar 12–24 h com glicemia capilar de 1/1 h (p. 880)' },
+  { tema: 'Depois de nível 2 ou 3', diretriz: 'Um ou mais episódios de nível 2 ou 3 pedem reavaliar o tratamento, inclusive reduzir ou trocar as medicações que causam hipoglicemia', grau: 'B (6.19)', fonte: 'ADA 2026', livro: SEM_ITEM_HIPO },
+  { tema: 'Alto risco de hipoglicemia', diretriz: 'Rever a história de hipoglicemia em toda consulta (C); rastrear hipoglicemia sem percepção (E); usar monitorização contínua da glicose (A); educação estruturada para quem usa insulina (A)', grau: 'A a E (6.10–6.18)', fonte: 'ADA 2026', livro: SEM_ITEM_HIPO },
+  { tema: 'Hospital', diretriz: 'Programas de manejo glicêmico com dados do prontuário eletrônico para reduzir a hipoglicemia na internação', grau: 'forte; lido no resumo', fonte: 'Endocrine 2023', livro: SEM_ITEM_HIPO },
+]
+
+export const DIFERENCAS_HIPOGLICEMIA: string[] = [
+  'Limiar: a ADA classifica em três níveis (< 70, < 54 e evento grave); o manual usa < 70 com DM e < 45 ou < 50 sem DM.',
+  'Paciente consciente: a ADA trata com 15 g de glicose oral e repete em 15 min; o manual só traz a glicose a 50% EV e o glucagon IM.',
+  'Glucagon: a ADA e a Endocrine preferem as preparações sem reconstituição (nasal 3 mg ou pronta para injeção); o manual dá 1–2 mg IM.',
+  'Depois do episódio: a ADA pede reavaliar e reduzir as medicações após nível 2 ou 3; o manual pede observação de 12–24 h no diabético de alto risco.',
+]
+
+const fichaHipoLivro = fichaAdulto('adulto-hipoglicemia', 'Hipoglicemia — limiar e doses', 'cap. 65, p. 877–881')
+export const fichaHipoglicemia: Ficha = {
+  ...fichaHipoLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaHipoLivro.fontes, ADA_HIPOGLICEMIA_2026, ENDOCRINE_HIPOGLICEMIA_2023],
+  revisadoEm: '14/11/2026 (ADA 2026, seção 6, lida no texto integral e Endocrine Society 2023 pelo resumo, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 
 const ok = (...xs: number[]) => xs.every((x) => Number.isFinite(x))
 const positivo = (...xs: number[]) => ok(...xs) && xs.every((x) => x > 0)

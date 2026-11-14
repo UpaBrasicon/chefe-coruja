@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
-import { HIPOGLICEMIA_DOSES, LIMIAR_HIPOGLICEMIA, abaixoDoLimiar, fichaHipoglicemia, gramasGlicose50 } from '@/clinico/adulto/glicemia'
+import { DIFERENCAS_HIPOGLICEMIA, DIRETRIZ_HIPOGLICEMIA, HIPOGLICEMIA_DOSES, LIMIAR_HIPOGLICEMIA, abaixoDoLimiar, fichaHipoglicemia, gramasGlicose50 } from '@/clinico/adulto/glicemia'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Hipoglicemia no adulto: limiar e doses — cap. 65 do manual do HCFMUSP. */
 export function HipoglicemiaAdulto() {
@@ -62,6 +63,21 @@ export function HipoglicemiaAdulto() {
           <p>Desnutridos, hepatopatas ou etilistas: tiamina <strong>{HIPOGLICEMIA_DOSES.tiaminaMg} mg IV ou IM</strong> junto com a glicose (Wernicke-Korsakoff).</p>
           <p>DM com alto risco de recorrência (p. ex. insuficiência renal crônica): observação por {HIPOGLICEMIA_DOSES.observacaoHoras[0]}–{HIPOGLICEMIA_DOSES.observacaoHoras[1]} h com glicemia capilar 1/1 h.</p>
           <p className="text-rotulo text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>Limiar sem DM: 45 mg/dL no texto (p. 877) e 50 mg/dL na Figura 1 (p. 881). A ferramenta usa o texto e mostra o corte da figura.</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-corpo">ADA 2026 e Endocrine 2023 — ao lado do manual</CardTitle>
+          <CardDescription>Seção 6 do Standards of Care da ADA 2026 (graus A, B, C e E), lida no texto integral, e Endocrine Society 2023, lida no resumo. As doses do manual acima continuam valendo.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 text-apoio">
+          <div className="overflow-x-auto">
+            <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+              <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+              <TableBody>{DIRETRIZ_HIPOGLICEMIA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+            </Table>
+          </div>
+          <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_HIPOGLICEMIA.map((d) => <li key={d}>{d}</li>)}</ul>
         </CardContent>
       </Card>
     </ToolLayout>
