@@ -11,7 +11,7 @@ import { DIRETRIZES_ANAFILAXIA, fichaAnafilaxiaAdulto } from './anafilaxia.ts'
 import { DIFERENCAS_ANTICOAG_2025, DIRETRIZ_SCA_2025, fichaAnticoagulacaoPlenaAdulto, fichaFibrinoliticosAdulto } from './anticoagulacao.ts'
 import { DIRETRIZ_AVC_2026, fichaTromboliseAvcAdulto } from './avcTrombolise.ts'
 import { GINA_ITENS, fichaAsmaAdulto } from './asmaDpoc.ts'
-import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, fichaEmergenciaHipertensivaAdulto } from './emergenciaHipertensiva.ts'
+import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024, fichaEmergenciaHipertensivaAdulto, fichaSindromeAorticaAdulto } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024, fichaFibrilacaoAtrialAdulto } from './fibrilacaoAtrial.ts'
 import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
@@ -60,6 +60,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap15-bradiarritmias': 'bradicardia e bradiarritmias no adulto',
   'nota-hcfmusp-cap17-fa': 'fibrilação atrial (FA) no adulto',
   'nota-hcfmusp-cap19-emergencia-hipertensiva': 'emergência hipertensiva e elevação da pressão arterial no adulto',
+  'nota-hcfmusp-cap20-sindrome-aortica': 'síndrome aórtica aguda (dissecção de aorta), hematoma intramural, úlcera penetrante e aneurisma de aorta no adulto',
   'nota-hcfmusp-cap30-asma': 'crise de asma no adulto',
   'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
   'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
@@ -154,6 +155,10 @@ export const notaHcfmuspCap19 = notaLote2('nota-hcfmusp-cap19-emergencia-hiperte
   ...DIFERENCAS_EH_2025.map(frase),
 ])
 
+/** cap. 20: ESC 2024 de aorta (M2), pelo slideset oficial. */
+export const notaHcfmuspCap20 = notaLote2('nota-hcfmusp-cap20-sindrome-aortica', 'Nota de atualização — manual HC, cap. 20: síndrome aórtica aguda', 'cap. 20, p. 277–285', fichaSindromeAorticaAdulto,
+  DIRETRIZ_AORTA_2024.map((d) => ({ tema: d.tema, diretriz: `ESC 2024 (${d.classe}; ${d.slide}): ${d.esc2024}`, manual: sem(d.livro) })))
+
 /** cap. 30: GINA 2026. */
 export const notaHcfmuspCap30 = notaLote2('nota-hcfmusp-cap30-asma', 'Nota de atualização — manual HC, cap. 30: asma', 'cap. 30, p. 406–416', fichaAsmaAdulto,
   GINA_ITENS.map((g) => ({ tema: g.tema, diretriz: `GINA 2026, ${g.pagina}: ${g.gina}`, manual: sem(g.livro) })))
@@ -170,7 +175,7 @@ export const notaHcfmuspCap67 = notaLote2('nota-hcfmusp-cap67-hiperpotassemia', 
 export const notaHcfmuspCap21 = notaLote2('nota-hcfmusp-cap21-ic-aguda', 'Nota de atualização — manual HC, cap. 21: insuficiência cardíaca aguda', 'cap. 21, p. 286–303', fichaIcAgudaAdulto,
   DIRETRIZ_ICA_2026.map((d) => ({ tema: d.tema, diretriz: `ESC 2026 (${d.classe}; ${d.slide}): ${d.esc2026}`, manual: sem(d.livro) })))
 
-export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap67]
+export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap19, notaHcfmuspCap20, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap67]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -185,6 +190,7 @@ export const fichaNotaHcfmuspCap97 = notaHcfmuspCap97.ficha
 export const fichaNotaHcfmuspCap15 = notaHcfmuspCap15.ficha
 export const fichaNotaHcfmuspCap17 = notaHcfmuspCap17.ficha
 export const fichaNotaHcfmuspCap19 = notaHcfmuspCap19.ficha
+export const fichaNotaHcfmuspCap20 = notaHcfmuspCap20.ficha
 export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha
 export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
