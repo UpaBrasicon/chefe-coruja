@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
 import {
-  CHOQUE_SEPTICO_REFRATARIO, CRISE_ADRENAL, DIVERGENCIA_FIGURA_IA, FORA_ENDOCRINO, fichaInsuficienciaAdrenal, leituraCortisolActh, leituraCortisolBasal,
+  CHOQUE_SEPTICO_REFRATARIO, CRISE_ADRENAL, DIFERENCAS_IA, DIRETRIZ_IA, DIVERGENCIA_FIGURA_IA, FORA_ENDOCRINO, fichaInsuficienciaAdrenal, leituraCortisolActh, leituraCortisolBasal,
   totaisCriseAdrenal, volumeCriseAdrenal,
 } from '@/clinico/adulto/endocrino'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, Resultado, Trecho } from './LoteAPecas'
 import { faixaBr } from './loteAFormato'
@@ -62,6 +63,15 @@ export function InsuficienciaAdrenalAdulto() {
 
       <Bloco titulo="O que o manual não traz">
         <Fora itens={FORA_ENDOCRINO} />
+      </Bloco>
+      <Bloco titulo="Endocrine Society 2016, SfE 2016 e ESE/ES 2024 — ao lado do manual" descricao="Insuficiência adrenal primária (Endocrine Society 2016; GRADE), crise adrenal (Society for Endocrinology 2016) e insuficiência induzida por glicocorticoide (ESE/ES 2024), lidas no texto integral; só o adulto. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_IA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_IA.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
