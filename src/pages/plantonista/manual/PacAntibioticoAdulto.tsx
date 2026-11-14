@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CRITERIOS_ALTA_PAC, DESTINO_POR_PORT, DIRETRIZ_PAC_2026, EVIDENCIA_CORTICOIDE_PAC, DURACAO_PAC, FATORES_PSEUDOMONAS, METILPREDNISOLONA_PAC, NOTA_CLARITROMICINA, PAC_ANTIBIOTICOS,
+  CRITERIOS_ALTA_PAC, DESTINO_POR_PORT, DIRETRIZ_PAC_2026, EVIDENCIA_CORTICOIDE_PAC, NOTA_IDSA_PAC_2026, DURACAO_PAC, FATORES_PSEUDOMONAS, METILPREDNISOLONA_PAC, NOTA_CLARITROMICINA, PAC_ANTIBIOTICOS,
   PROCALCITONINA_PAC, fichaPacAntibioticoAdulto, metilprednisolonaPac, type GrupoPac,
 } from '@/clinico/adulto/tepPac'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -49,7 +49,7 @@ export function PacAntibioticoAdulto() {
         />
       </Bloco>
 
-      <Bloco titulo="ATS 2026 × manual do HC" descricao="Diretriz da PAC (Am J Respir Crit Care Med 2026;212:24–44; on-line em nov/2025), lida pela página do periódico e pelo comunicado da ATS. Esquemas antimicrobianos não foram revisados por ela.">
+      <Bloco titulo="ATS 2026 × manual do HC" descricao="Diretriz da PAC (Am J Respir Crit Care Med 2026;212:24–44; on-line em nov/2025), lida no texto integral em 14/11/2026, com o comunicado da IDSA de 2026. Esquemas antimicrobianos não foram revisados por ela.">
         <div className="overflow-x-auto">
           <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
             <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ATS 2026</TableHead><TableHead className="pr-3 pb-2">Força</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
@@ -66,6 +66,7 @@ export function PacAntibioticoAdulto() {
           </Table>
         </div>
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{EVIDENCIA_CORTICOIDE_PAC}</p>
+        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_IDSA_PAC_2026}</p>
       </Bloco>
 
       <Bloco titulo="Procalcitonina e alta (p. 452, 464–465)">

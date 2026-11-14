@@ -199,7 +199,7 @@ export const atsIdsaPac: Escore = {
 // não foram revisados por ela (segue a ATS/IDSA 2019); o manual fica como base.
 
 export const ATS_PAC_2026: Fonte = {
-  citacao: 'Jones BE, Ramirez JA, Oren E, et al. Diagnosis and Management of Community-acquired Pneumonia: An Official American Thoracic Society Clinical Practice Guideline. Am J Respir Crit Care Med. 2026;212(1):24–44 (on-line 11/11/2025; PMID 40679934). Diretriz só da ATS, sem endosso da IDSA. Recomendações lidas na página do periódico e no comunicado da ATS; texto integral não aberto.',
+  citacao: 'Jones BE, Ramirez JA, Oren E, et al. Diagnosis and Management of Community-acquired Pneumonia: An Official American Thoracic Society Clinical Practice Guideline. Am J Respir Crit Care Med. 2026;212(1):24–44 (on-line 11/11/2025; PMID 40679934). Diretriz só da ATS, sem endosso da IDSA. Texto integral lido em 14/11/2026 (Oxford Academic, pelo Chrome do RT): 10 recomendações, com força e votação.',
   url: 'https://doi.org/10.1164/rccm.202507-1692ST',
 }
 
@@ -210,15 +210,25 @@ export const REMAP_CAP_CORTICOIDE_2025: Fonte = {
   url: 'https://doi.org/10.1007/s00134-025-07861-w',
 }
 
+// Lote 3 da revisão do HCFMUSP, N3 (decisão do RT de 14/11/2026): o comunicado
+// em que a IDSA explica por que não endossou a ATS 2025, lido no texto integral.
+export const IDSA_PAC_2026: Fonte = {
+  citacao: 'Klompas M, Al-Hasan M, Al Mohajer M, et al. Infectious Diseases Society of America (IDSA) position statement: why IDSA did not endorse the community-acquired pneumonia guidelines 2025 update. Am J Respir Crit Care Med. 2026;212(5):1064–1066 (PMID 41738241). Texto integral lido.',
+  url: 'https://doi.org/10.1093/ajrccm/aamag065',
+}
+
+export const NOTA_IDSA_PAC_2026 =
+  'IDSA 2026: a sociedade americana de infectologia não endossou a ATS 2025. Concorda com 8 das 10 recomendações, mas não com o antibiótico empírico para quem tem vírus respiratório positivo no ambulatório com comorbidade e no internado com PAC não grave. Nesses dois casos, sugere antibiótico só quando os dados do paciente indicarem coinfecção bacteriana (vírus encontrado, tempo de sintomas, gravidade, curso bifásico, marcadores inflamatórios, imagem, testes rápidos e evolução, como na Tabela 1 da ATS). Concorda em não dar antibiótico no ambulatório sem comorbidade e em dar na PAC grave.'
+
 export const EVIDENCIA_CORTICOIDE_PAC = 'Ensaio posterior (REMAP-CAP 2025, PMID 40261382): na PAC grave em UTI, hidrocortisona 50 mg EV de 6/6 h por 7 dias fixos foi interrompida por futilidade; mortalidade em 90 dias de 15% com hidrocortisona e 9,8% no controle, sem diferença estatística. Benefício pequeno e dano possível não foram excluídos. O peso dessa evidência contra a sugestão condicional da ATS é decisão clínica.'
 
 const PAG_PAC_ATB = `${PAC}, p. 452–465 (Tabelas 5, 8 e 10)`
 
 export const fichaPacAntibioticoAdulto: Ficha = {
   ...fichaAdulto('adulto-pac-antibiotico', 'PAC — antibiótico por grupo de risco (adulto)', PAG_PAC_ATB),
-  versao: '2026-10-09.1',
-  fontes: [pagina(PAG_PAC_ATB), ATS_PAC_2026, REMAP_CAP_CORTICOIDE_2025],
-  revisadoEm: '09/10/2026 (citação da ATS corrigida; REMAP-CAP 2025 ao lado do corticoide)',
+  versao: '2026-11-14.1',
+  fontes: [pagina(PAG_PAC_ATB), ATS_PAC_2026, IDSA_PAC_2026, REMAP_CAP_CORTICOIDE_2025],
+  revisadoEm: '14/11/2026 (ATS lida no texto integral; comunicado da IDSA de 2026; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 09/10/2026 (citação da ATS corrigida; REMAP-CAP 2025 ao lado do corticoide)',
 }
 
 export type ItemPac2026 = { tema: string; ats: string; forca: string; livro: string }
@@ -228,7 +238,8 @@ export const DIRETRIZ_PAC_2026: ItemPac2026[] = [
   { tema: 'Corticoide na PAC não grave (internado)', ats: 'Recomenda NÃO administrar corticoide sistêmico', forca: 'forte, evidência de baixa qualidade', livro: 'sem indicação (p. 461)' },
   { tema: 'Duração — não grave (ambulatorial e internado) com estabilidade clínica', ats: 'Menos de 5 dias de antibiótico, mínimo de 3 dias', forca: 'condicional, evidência de baixa qualidade', livro: 'baixo risco 5 dias; intermediário e alto 7 a 10 dias (p. 460)' },
   { tema: 'Duração — grave com estabilidade clínica', ats: '5 dias ou mais', forca: 'a página do periódico rotula "forte, baixa qualidade"; o enunciado usa "sugerimos"', livro: '7 a 10 dias (p. 460)' },
-  { tema: 'Ambulatorial sem comorbidade com vírus respiratório positivo', ats: 'Sugere não prescrever antibiótico empírico (com comorbidade: prescrever)', forca: 'condicional, evidência de muito baixa qualidade', livro: '—' },
+  { tema: 'Ambulatorial com vírus respiratório positivo', ats: 'Sem comorbidade: sugere não prescrever antibiótico empírico (93% dos votos). Com comorbidade: sugere prescrever, pela chance de coinfecção bacteriana (73% dos votos; a IDSA discorda)', forca: 'condicional, evidência de muito baixa qualidade', livro: '—' },
+  { tema: 'Internado com vírus respiratório positivo', ats: 'PAC não grave: sugere antibiótico empírico (80% dos votos; a IDSA discorda). PAC grave: antibiótico empírico (unânime). Reavaliar todo dia a estabilidade e a microbiologia para descalonar ou suspender cedo', forca: 'condicional, evidência de muito baixa qualidade', livro: '—' },
   { tema: 'Ultrassom pulmonar', ats: 'Alternativa aceitável à radiografia no diagnóstico, onde há experiência', forca: 'condicional, evidência de baixa qualidade', livro: '—' },
   { tema: 'Esquemas antimicrobianos e procalcitonina', ats: 'Não revisados nesta diretriz (mantém ATS/IDSA 2019)', forca: '—', livro: 'Tabela 10 (p. 463–464); procalcitonina p. 452 e 464' },
 ]

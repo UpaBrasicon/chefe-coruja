@@ -15,6 +15,9 @@ import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024, fichaEmergenc
 import { DIFERENCAS_FA_2024, DOSES_FA_2024, fichaFibrilacaoAtrialAdulto } from './fibrilacaoAtrial.ts'
 import { DAS_2025, DIRETRIZ_DAS_2025, fichaIsrAdulto } from './isr.ts'
 import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
+import { ACEP_2024_RECOMENDACOES, DIFERENCAS_AGITACAO_2024, fichaAgitacaoAdulto } from './agitacao.ts'
+import { DIRETRIZ_HSA_2023, NOTA_ESO_ANTIFIBRINOLITICO, NOTA_NCS_FENITOINA, fichaHsaAdulto } from './hsa.ts'
+import { DIRETRIZ_PAC_2026, NOTA_IDSA_PAC_2026, fichaPacAntibioticoAdulto } from './tepPac.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
@@ -69,6 +72,9 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap31-dpoc': 'exacerbação de DPOC (doença pulmonar obstrutiva crônica) no adulto',
   'nota-hcfmusp-cap32-tep': 'tromboembolismo pulmonar (TEP, embolia pulmonar) agudo no adulto',
   'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
+  'nota-hcfmusp-cap33-pac': 'pneumonia adquirida na comunidade (PAC) no adulto: antibiótico, duração, corticoide e vírus respiratório',
+  'nota-hcfmusp-cap40-hsa': 'hemorragia subaracnóidea (HSA) aneurismática no adulto',
+  'nota-hcfmusp-cap76-agitacao': 'paciente agitado e agitação grave no adulto (sedação: droperidol, antipsicótico, midazolam, cetamina)',
   'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
 }
 
@@ -206,7 +212,41 @@ export const notaHcfmuspCap21 = notaLote2('nota-hcfmusp-cap21-ic-aguda', 'Nota d
   DIRETRIZ_ICA_2026.map((d) => ({ tema: d.tema, diretriz: `ESC 2026 (${d.classe}; ${d.slide}): ${d.esc2026}`, manual: sem(d.livro) })))
 
 export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap3, notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap18, notaHcfmuspCap19, notaHcfmuspCap20, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap31, notaHcfmuspCap32, notaHcfmuspCap67]
-export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
+// ── Lote 3 (decisão do RT de 14/11/2026, N1–N3 = A; docs/clinico/HCFMUSP-LOTE3-DIAGNOSTICO.md).
+// N1: capítulos cuja ficha já tem a lista manual × diretriz e nenhuma diretriz mais nova.
+const REVISADO_LOTE3 = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a diretriz; aguarda aprovação do RT)'
+function notaLote3(...a: Parameters<typeof nota>): NotaHcfmusp {
+  const n = nota(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = REVISADO_LOTE3
+  return n
+}
+
+/** cap. 33: ATS 2025 (lida no texto integral) e o comunicado da IDSA de 2026 (N3). */
+export const notaHcfmuspCap33 = notaLote3('nota-hcfmusp-cap33-pac', 'Nota de atualização — manual HC, cap. 33: pneumonia adquirida na comunidade', 'cap. 33, p. 450–467', fichaPacAntibioticoAdulto, [
+  ...DIRETRIZ_PAC_2026.map((d) => ({ tema: d.tema, diretriz: `ATS 2026 (${d.forca}): ${d.ats}`, manual: sem(d.livro) })),
+  { tema: 'A IDSA não endossa a ATS 2025', diretriz: NOTA_IDSA_PAC_2026, manual: 'não trata do ponto' },
+])
+
+/** cap. 40: AHA/ASA 2023, com as notas da ESO/EANS/ESMINT 2026 e da NCS 2026. */
+export const notaHcfmuspCap40 = notaLote3('nota-hcfmusp-cap40-hsa', 'Nota de atualização — manual HC, cap. 40: hemorragia subaracnóidea não traumática', 'cap. 40, p. 550–563', fichaHsaAdulto, [
+  ...DIRETRIZ_HSA_2023.map((d) => ({ tema: d.tema, diretriz: `AHA/ASA 2023 (${d.classe}; ${d.pagina}): ${d.aha}${d.nota ? `. Nota: ${d.nota}` : ''}`, manual: sem(d.livro) })),
+  frase(NOTA_ESO_ANTIFIBRINOLITICO),
+  frase(NOTA_NCS_FENITOINA),
+])
+
+/** cap. 76: ACEP 2024 (agitação grave). */
+const LIVRO_ACEP: Record<string, string> = {
+  B: 'haloperidol + prometazina e midazolam + haloperidol; midazolam isolado na agitação moderada (p. 1011)',
+  'C (consenso)': 'quetamina 5 mg/kg IM como 1ª escolha na agitação grave (Tabela 4, p. 1011)',
+}
+export const notaHcfmuspCap76 = notaLote3('nota-hcfmusp-cap76-agitacao', 'Nota de atualização — manual HC, cap. 76: o paciente agitado', 'cap. 76, p. 1005–1017', fichaAgitacaoAdulto, [
+  ...ACEP_2024_RECOMENDACOES.filter((r) => r.nivel !== 'A').map((r) => ({ tema: `ACEP 2024, nível ${r.nivel}`, diretriz: `ACEP 2024 (nível ${r.nivel}): ${r.texto}`, manual: sem(LIVRO_ACEP[r.nivel]) })),
+  ...DIFERENCAS_AGITACAO_2024.map(frase),
+])
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap40, notaHcfmuspCap76]
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha
@@ -227,6 +267,9 @@ export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha
 export const fichaNotaHcfmuspCap31 = notaHcfmuspCap31.ficha
 export const fichaNotaHcfmuspCap32 = notaHcfmuspCap32.ficha
 export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
+export const fichaNotaHcfmuspCap33 = notaHcfmuspCap33.ficha
+export const fichaNotaHcfmuspCap40 = notaHcfmuspCap40.ficha
+export const fichaNotaHcfmuspCap76 = notaHcfmuspCap76.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */
