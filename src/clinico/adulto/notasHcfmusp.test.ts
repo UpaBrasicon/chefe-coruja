@@ -380,9 +380,13 @@ test('cap. 22 e 45 (O3): nota só com o capítulo do manual, sem ficha da Centra
   for (const id of ['nota-hcfmusp-cap22-pericardite-miocardite', 'nota-hcfmusp-cap45-primeira-crise']) {
     const n = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === id)!
     assert.equal(n.fichaCentral, '')
-    assert.equal(n.ficha.versao, '2026-11-14.1')
-    assert.equal(n.ficha.fontes.length, 1)
+    assert.match(n.ficha.versao, /^2026-11-14\.[12]$/)
+    assert.ok(n.ficha.fontes.length >= 1)
     for (const i of n.itens) assert.ok(i.diretriz.length > 0 && i.manual.length > 0, i.tema)
   }
-  assert.match(textoNota(NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap45-primeira-crise')!), /CAPTCHA/)
+  const n45 = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap45-primeira-crise')!
+  assert.equal(n45.ficha.fontes.length, 2)
+  assert.equal(n45.ficha.versao, '2026-11-14.2')
+  assert.match(textoNota(n45), /ACEP 2024 \(nível A\)/)
+  assert.doesNotMatch(textoNota(n45), /CAPTCHA/)
 })
