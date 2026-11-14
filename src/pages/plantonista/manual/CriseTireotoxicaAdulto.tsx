@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
-import { DROGAS_CRISE_TIREOTOXICA, ERRATA_ORDEM_IODO, FORA_ENDOCRINO, esmololMgMin, fichaCriseTireotoxica, totaisTireotoxica } from '@/clinico/adulto/endocrino'
+import { DIFERENCAS_TT, DIRETRIZ_TT, DROGAS_CRISE_TIREOTOXICA, ERRATA_ORDEM_IODO, FORA_ENDOCRINO, esmololMgMin, fichaCriseTireotoxica, totaisTireotoxica } from '@/clinico/adulto/endocrino'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco } from './LoteAPecas'
 import { faixaBr } from './loteAFormato'
@@ -42,6 +43,15 @@ export function CriseTireotoxicaAdulto() {
 
       <Bloco titulo="O que o manual não traz">
         <Fora itens={FORA_ENDOCRINO} />
+      </Bloco>
+      <Bloco titulo="ETA/BTA/SfE 2026 — ao lado do manual" descricao="Consenso europeu de 2026 sobre tempestade tireoidiana (sem graduação), lido no texto integral. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Consenso</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_TT.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TT.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

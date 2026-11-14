@@ -9,7 +9,49 @@ import { fichaAdulto } from './fonte.ts'
 // as doses aparecem como estão, com as contas diárias e por peso quando o livro
 // dá mg/kg. A decisão é do médico (ADR 0007).
 
-export const fichaCriseTireotoxica = fichaAdulto('adulto-crise-tireotoxica', 'Crise tireotóxica — adulto', 'cap. 70 Crise tireotóxica, p. 947–956')
+// Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 70: o
+// consenso conjunto ETA/BTA/SfE de 2026 sobre tempestade tireoidiana foi lido no
+// texto integral no PMC. É consenso de especialistas, sem graduação (o painel
+// não fez GRADE). As doses e contas do manual não mudam.
+export const ETA_TEMPESTADE_2026: Fonte = {
+  citacao: 'Taylor P, Okosieme O, Effraimidis G, et al. Management of thyroid emergencies: joint consensus statement on management of thyroid storm (European Thyroid Association, British Thyroid Association e Society for Endocrinology). Eur Thyroid J. 2026;15(4) (PMID 42554462). PMC13506520: texto integral lido; consenso sem graduação.',
+  url: 'https://doi.org/10.1530/ETJ-26-0043',
+}
+
+const SEM_ITEM_TT = 'sem item do manual na ferramenta'
+
+/** ETA/BTA/SfE 2026 × manual, na crise tireotóxica do adulto; um tema por linha. */
+export const DIRETRIZ_TT: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Diagnóstico', diretriz: 'Clínico, com o Burch-Wartofsky e os critérios JTA/JES como apoio: Burch-Wartofsky < 25 improvável, 25–44 crise iminente, ≥ 45 muito sugestivo. Com 25–44, a decisão de tratar como tempestade é do intensivista com o endocrinologista. No idoso, o quadro pode ser apático', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: 'Burch-Wartofsky na Tabela 4: < 25 improvável, 25–44 iminente, > 45 crise (p. 951–952)' },
+  { tema: 'Faixas do Burch-Wartofsky', diretriz: 'Temperatura: 37,2–37,7 (5), 37,8–38,2 (10), 38,3–38,8 (15), 38,9–39,4 (20), 39,5–39,9 (25), ≥ 40,0 °C (30). FC: ≥ 140 = 25. Total ≥ 45 muito sugestivo', grau: 'Tabela 1 do consenso', fonte: 'ETA/BTA/SfE 2026', livro: 'faixas impressas de 37,0–37,7 até "> 39,3" e FC "> 140"; corte "> 45" (Tabela 4, p. 951–952)' },
+  { tema: 'Onde tratar', diretriz: 'UTI ou semi-intensiva se houver vasopressor, rebaixamento, suporte ventilatório, insuficiência cardíaca, choque cardiogênico ou arritmia, disfunção de múltiplos órgãos ou piora apesar do tratamento', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: SEM_ITEM_TT },
+  { tema: 'Medidas gerais', diretriz: 'Resfriar; paracetamol (evitar AAS, que aumenta o hormônio livre); fluidos EV; tratar o precipitante; teste de gravidez; glicemia de perto; tiamina; clorpromazina 50–100 mg IM se precisar sedar', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: SEM_ITEM_TT },
+  { tema: 'Betabloqueador', diretriz: 'Propranolol 60–80 mg VO de 4/4 h. Se instável ou sem via oral: propranolol 1–3 mg EV (até 1 mg/min), repetir uma vez em 2 min, infusão de 2–3 mg/h; ou esmolol 500 µg/kg em 1 min e 0–200 µg/kg/min. Na insuficiência cardíaca ou cardiomiopatia, cautela e esmolol preferido; ecocardiograma cedo. Betabloqueador contraindicado: diltiazem 60–90 mg VO de 6/6 h', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: 'propranolol VO 20–40 mg inicial e 60–120 mg 6/6 h; EV 0,5–1 mg 15/15 min; esmolol 0,05–1,0 mg/kg/min; metoprolol 5 mg 10–15 min (p. 954)' },
+  { tema: 'Antitireoidiano', diretriz: 'Metimazol 60–80 mg/dia ou carbimazol 80–100 mg/dia, com eficácia equivalente ao PTU; preferir metimazol se bilirrubina ou transaminases > 3 vezes o limite. Ou PTU 500–1.000 mg de ataque (VO, SNG ou retal) e 250 mg de 4/4 h. Reduzir assim que possível para PTU 400 mg/dia ou metimazol 30 mg/dia', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: 'PTU 600–1.000 mg e 200–300 mg de 6/6 a 4/4 h; metimazol 20 mg de 4/4 a 6/6 h, 80–120 mg/dia (p. 953)' },
+  { tema: 'Corticoide', diretriz: 'Hidrocortisona 100 mg EV de ataque e depois 50 mg de 6/6 h; monitorar o potássio (paralisia periódica tireotóxica)', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: 'hidrocortisona 100 mg EV 6/6 h; dexametasona 2–4 mg EV 6/6 h (p. 954)' },
+  { tema: 'Iodo', diretriz: 'Só 1 h depois do antitireoidiano. Lugol 8 gotas 6/6 h ou solução saturada de iodeto de potássio 5 gotas 6/6 h, diluídas; suspender ao estabilizar. Não ajuda na tireoidite destrutiva nem na tireotoxicose factícia; adia o radioiodo por 2–3 meses', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: 'iodeto de potássio 4–8 gotas 6/6 ou 8/8 h (p. 954); iodo 2 h após PTU ou metimazol (Figura 1, p. 956)' },
+  { tema: 'Adjuvantes', diretriz: 'Colestiramina 4 g 3 vezes ao dia. Lítio 300 mg 12/12 h, com especialista, pelo risco de toxicidade', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: 'lítio 300 mg 6/6 h na alergia ao iodo (p. 954)' },
+  { tema: 'Refratário', diretriz: 'Plasmaférese, tireoidectomia de urgência em centro especializado e ECMO venoarterial no choque cardiogênico. Ácido iopanoico e perclorato só em centro especializado: pouco disponíveis e sem dados robustos', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: 'ácido iopanoico como agente iodado de escolha: 1 g 8/8 h no 1º dia e 500 mg 12/12 h (p. 953)' },
+  { tema: 'Fibrilação atrial', diretriz: 'Anticoagular pelo CHA2DS2-VASc, pesando o sangramento; muitos voltam ao sinusal com o eutireoidismo', grau: 'consenso, sem graduação', fonte: 'ETA/BTA/SfE 2026', livro: SEM_ITEM_TT },
+]
+
+export const DIFERENCAS_TT: string[] = [
+  'Metimazol: o consenso dá 60–80 mg/dia, com eficácia igual à do PTU, e o prefere com o fígado alterado; o manual dá 80–120 mg/dia.',
+  'PTU: o consenso dá 500–1.000 mg de ataque e 250 mg de 4/4 h; o manual, 600–1.000 mg e 200–300 mg de 6/6 a 4/4 h.',
+  'Iodo: o consenso espera 1 h depois do antitireoidiano e usa Lugol 8 gotas ou iodeto de potássio saturado 5 gotas de 6/6 h; o manual espera 2 h e dá 4–8 gotas de 6/6 ou 8/8 h.',
+  'Hidrocortisona: o consenso dá 100 mg e depois 50 mg de 6/6 h; o manual, 100 mg de 6/6 h.',
+  'Esmolol: o consenso vai até 200 µg/kg/min (0,2 mg/kg/min); o manual imprime até 1,0 mg/kg/min.',
+  'Ácido iopanoico: o consenso o deixa para centro especializado, por ser pouco disponível; o manual o chama de agente iodado de escolha.',
+  'Burch-Wartofsky: as faixas de temperatura do consenso (37,2 a ≥ 40,0 °C) diferem das impressas no manual, e o corte é ≥ 45.',
+]
+
+const fichaTtLivro = fichaAdulto('adulto-crise-tireotoxica', 'Crise tireotóxica — adulto', 'cap. 70 Crise tireotóxica, p. 947–956')
+export const fichaCriseTireotoxica: Ficha = {
+  ...fichaTtLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaTtLivro.fontes, ETA_TEMPESTADE_2026],
+  revisadoEm: '14/11/2026 (consenso ETA/BTA/SfE 2026 lido no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 export const fichaMixedema = fichaAdulto('adulto-estado-mixedematoso', 'Estado mixedematoso — adulto', 'cap. 71 Estado mixedematoso, p. 958–963')
 // Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 72: a
 // diretriz da Endocrine Society de 2016 (insuficiência adrenal primária; GRADE),
