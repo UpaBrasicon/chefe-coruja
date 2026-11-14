@@ -345,7 +345,7 @@ test('PBE e SHR (cap. 57 e 58): AASLD 2021 e ADQI-ICA 2024 ao lado do manual; do
 
 test('encefalopatia hepática (cap. 59): ACG 2026 ao lado do manual; doses do manual iguais', async () => {
   const h = await import('./hepatopata.ts')
-  assert.equal(h.fichaInsuficienciaHepatica.versao, '2026-11-14.1')
+  assert.equal(h.fichaInsuficienciaHepatica.versao, '2026-11-14.2')
   assert.ok(h.fichaInsuficienciaHepatica.fontes.includes(h.ACG_EH_2026))
   assert.deepEqual(h.lactuloseMlDia(), [60, 240])
   assert.deepEqual(h.DIETA_EH.proteinaTabelaGKg, [1.2, 1.5])
@@ -526,4 +526,14 @@ test('lote 6, Q2: nota do cap. 96 a partir da diretriz latino-americana de SSJ/N
   assert.deepEqual(nota.ficha.fontes, [d.LATAM_SSJ_NET_2025])
   assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
   assert.match(textoNota(nota), /imunoglobulina EV/)
+})
+
+test('lote 6, Q2: nota do cap. 60 com a ACG 2023 de insuficiência hepática aguda e a ACG 2024 da hepatite alcoólica', async () => {
+  const h = await import('./hepatopata.ts')
+  const nota = NOTAS_HCFMUSP_LOTE6.find((n) => n.ficha.id === 'nota-hcfmusp-cap60-hepatites-graves')!
+  assert.equal(nota.fichaCentral, h.fichaInsuficienciaHepatica.id)
+  assert.equal(nota.itens.length, h.DIRETRIZ_IHA_2023.length + 1)
+  assert.deepEqual(nota.ficha.fontes, [h.ACG_IHA_2023, h.ACG_ALD_2024])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
+  assert.match(textoNota(nota), /MELD > 25/)
 })
