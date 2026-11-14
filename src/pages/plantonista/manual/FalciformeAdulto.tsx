@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 import {
-  ANALGESIA_POR_INTENSIDADE, HIDRATACAO_FALCIFORME, METAS_FALCIFORME, MORFINA_FALCIFORME, NOTA_QUETAMINA_FALCIFORME, NOTA_TASC_STA, QUETAMINA_FALCIFORME, STA_ANTIBIOTICOS,
-  fichaFalciformeAdulto, hidratacaoFalciforme, morfinaFalciforme, quetaminaFalciforme,
+  ANALGESIA_POR_INTENSIDADE, DIFERENCAS_FALCIFORME, DIRETRIZ_FALCIFORME, HIDRATACAO_FALCIFORME, METAS_FALCIFORME, MORFINA_FALCIFORME, NOTA_QUETAMINA_FALCIFORME, NOTA_TASC_STA, QUETAMINA_FALCIFORME, STA_ANTIBIOTICOS, fichaFalciformeAdulto, hidratacaoFalciforme, morfinaFalciforme, quetaminaFalciforme,
 } from '@/clinico/adulto/falciforme'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -64,6 +64,15 @@ export function FalciformeAdulto() {
 
       <Bloco titulo="Metas, transfusão e alta (p. 1055–1061)">
         <ListaLivro itens={METAS_FALCIFORME} />
+      </Bloco>
+      <Bloco titulo="SRLF/SFMU 2025 — ao lado do manual" descricao="Crise vaso-oclusiva e síndrome torácica aguda do adulto pela diretriz francesa de 2025 (GRADE e opinião de especialistas), lida no texto integral. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_FALCIFORME.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_FALCIFORME.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
