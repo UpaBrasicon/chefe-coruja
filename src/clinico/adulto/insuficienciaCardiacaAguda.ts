@@ -19,6 +19,15 @@ export const ESC_IC_2021: Fonte = {
   url: 'https://doi.org/10.1093/eurheartj/ehab368',
 }
 
+// Versão de 13/11/2026 (lote 2 da revisão do HCFMUSP, M2; decisão do RT): ESC 2026.
+// O texto integral está fechado na editora; as recomendações da seção 7 (IC
+// descompensada) foram lidas no slideset oficial da ESC, com classe e nível.
+// Os slides não trazem dose: as doses da tela seguem a ESC 2021 e o manual.
+export const ESC_IC_2026: Fonte = {
+  citacao: 'Køber L, Adamo M, Ruwald AC, et al. 2026 ESC Guidelines for the management of heart failure. Eur Heart J. 2026;47(38):5346–5457 (PMID 42661420). Recomendações da seção 7 (IC descompensada) lidas no slideset oficial da ESC (slides 8, 12, 22, 65, 67 e 68); texto integral fechado na editora, não lido; doses não conferidas. Nos slides, parte dos níveis B vem com índice (B1, B2), sem explicação; aqui aparece só "B".',
+  url: 'https://doi.org/10.1093/eurheartj/ehag100',
+}
+
 export const ADVOR_2022: Fonte = {
   citacao: 'Mullens W, Dauw J, Martens P, et al. Acetazolamide in Acute Decompensated Heart Failure with Volume Overload (ADVOR). N Engl J Med. 2022;387(13):1185–1195 (resumo lido).',
   url: 'https://doi.org/10.1056/NEJMoa2203094',
@@ -57,9 +66,9 @@ const PAG_ICA = 'cap. 21 Insuficiência cardíaca aguda, p. 286–303 (Figura 1,
 
 export const fichaIcAgudaAdulto: Ficha = {
   ...fichaAdulto('adulto-ic-aguda', 'Insuficiência cardíaca aguda — adulto', PAG_ICA),
-  versao: '2026-11-06.1',
-  fontes: [pagina(PAG_ICA), ESC_IC_2021, ADVOR_2022, CLOROTIC_2023, DAPA_ACT_2025, PUSH_AHF_2023, SGLT2_INTERNACAO_2026],
-  revisadoEm: '06/11/2026 (notas do PUSH-AHF e da metanálise do SGLT2 na internação; revisão PubMed, itens médios); 28/09/2026 (ESC 2021 pela página do periódico; ensaios pelos resumos; manual mantido como base)',
+  versao: '2026-11-13.1',
+  fontes: [pagina(PAG_ICA), ESC_IC_2026, ESC_IC_2021, ADVOR_2022, CLOROTIC_2023, DAPA_ACT_2025, PUSH_AHF_2023, SGLT2_INTERNACAO_2026],
+  revisadoEm: '13/11/2026 (ESC 2026: recomendações da IC descompensada pelo slideset oficial da ESC, com classe e nível; texto integral fechado; doses seguem a ESC 2021 e o manual; lote 2 da revisão do HCFMUSP, M2); 06/11/2026 (notas do PUSH-AHF e da metanálise do SGLT2 na internação; revisão PubMed, itens médios); 28/09/2026 (ESC 2021 pela página do periódico; ensaios pelos resumos; manual mantido como base)',
 }
 
 export const DIRETRIZ_ICA_2021: { tema: string; esc: string; livro: string }[] = [
@@ -72,6 +81,33 @@ export const DIRETRIZ_ICA_2021: { tema: string; esc: string; livro: string }[] =
   { tema: 'Opioide', esc: 'Uso rotineiro de opiáceo não recomendado', livro: '"morfina se dispneia" na coluna PAS ≥ 140 da Figura 1 (p. 302)' },
   { tema: 'Profilaxia de TEV', esc: 'Indicada', livro: '—' },
   { tema: 'Antes da alta', esc: 'Otimizar a terapia orientada por diretriz antes da alta; retorno em 1–2 semanas', livro: '—' },
+]
+
+/** ESC 2026, seção 7 (IC descompensada), pelo slideset oficial da ESC: recomendação, classe e nível,
+ *  ao lado da ESC 2021 e do manual. '—' = a fonte não trata do ponto. */
+export const DIRETRIZ_ICA_2026: { tema: string; esc2026: string; classe: string; slide: string; esc2021: string; livro: string }[] = [
+  { tema: 'Oxigênio', esc2026: 'Recomendado com SpO2 < 90% ou PaO2 < 60 mmHg, para corrigir a hipoxemia', classe: 'I, C', slide: 'slide 67', esc2021: 'Só com SpO2 < 90% ou PaO2 < 60 mmHg', livro: 'alvo de SpO2 > 95% (p. 296)' },
+  { tema: 'Ventilação não invasiva', esc2026: 'Deve ser considerada no desconforto respiratório (FR > 25/min, SpO2 < 90%), começando o quanto antes, para reduzir o desconforto e o risco de intubação', classe: 'IIa, B', slide: 'slide 67', esc2021: 'No desconforto respiratório (FR > 25 ou SpO2 < 90%)', livro: 'VNI (CPAP ou EPAP/IPAP) nos perfis congestos (p. 296)' },
+  { tema: 'Intubação', esc2026: 'Recomendada na insuficiência respiratória persistente e progressiva apesar do oxigênio ou da VNI', classe: 'I, C', slide: 'slide 67', esc2021: 'Intubação se insuficiência respiratória', livro: '—' },
+  { tema: 'Diurético de alça IV', esc2026: 'Recomendado para todo paciente com IC descompensada internado com hipervolemia, para melhorar os sintomas. Os slides não trazem dose', classe: 'I, A', slide: 'slide 67', esc2021: 'Furosemida IV 20–40 mg (ou 1–2× a dose oral de casa); resposta pelo Na urinário > 50–70 mmol/L em 2 h e diurese > 100–150 mL/h em 6 h; se não, dobrar a dose', livro: '0,5–1 mg/kg/dose e dobrar sem resposta; mesmos critérios de resposta (p. 296, 298)' },
+  { tema: 'Acetazolamida IV ou hidroclorotiazida VO', esc2026: 'Acetazolamida IV por curto prazo ou hidroclorotiazida VO devem ser consideradas na hipervolemia de quem já usava diurético de alça, para reduzir a congestão (recomendação revista)', classe: 'IIa, B', slide: 'slides 22 e 67', esc2021: 'Tiazídico associado só no edema resistente ao aumento da dose do diurético de alça (IIa, B)', livro: '—' },
+  { tema: 'Diurético guiado pelo Na urinário', esc2026: 'Pode ser considerado nos primeiros dias, para aumentar a natriurese e a diurese (recomendação nova)', classe: 'IIb, B', slide: 'slides 12 e 67', esc2021: '— (o Na urinário era critério de resposta ao diurético)', livro: 'Na urinário como critério de resposta (p. 298)' },
+  { tema: 'iSGLT2 na internação', esc2026: 'Iniciar na internação, depois da estabilização inicial, é recomendado para melhorar a qualidade de vida e os sintomas de congestão e reduzir a reinternação por IC (recomendação nova)', classe: 'I, B', slide: 'slides 12 e 67', esc2021: '—', livro: '—' },
+  { tema: 'Vasodilatador IV', esc2026: 'Pode ser considerado como terapia inicial com PAS > 110 mmHg, para melhorar os sintomas e reduzir a congestão', classe: 'IIb, C', slide: 'slide 68', esc2021: 'Com PAS > 110 mmHg', livro: 'NTG/nitroprussiato conforme a PA (Figura 1, p. 302)' },
+  { tema: 'Inotrópico', esc2026: 'Pode ser considerado com PAS < 90 mmHg e sinais de hipoperfusão sem resposta ao tratamento padrão, inclusive prova volêmica, para melhorar a perfusão', classe: 'IIb, C', slide: 'slide 68', esc2021: 'Só com sinais de hipoperfusão; inotrópico de rotina não', livro: 'dobutamina/levosimendana na má perfusão (Figura 1)' },
+  { tema: 'Vasopressor', esc2026: 'Pode ser considerado no choque cardiogênico, de preferência noradrenalina, para subir a PA e a perfusão dos órgãos', classe: 'IIb, C', slide: 'slide 68', esc2021: 'Vasopressor para suporte hemodinâmico', livro: 'noradrenalina se PAS < 75 (Figura 1)' },
+  { tema: 'Opioide', esc2026: 'Uso de rotina não recomendado, salvo dor ou ansiedade grave ou intratável, pelo risco de dano', classe: 'III, C', slide: 'slide 68', esc2021: 'Uso rotineiro de opiáceo não recomendado', livro: '"morfina se dispneia" na coluna PAS ≥ 140 da Figura 1 (p. 302)' },
+  { tema: 'Antes da alta', esc2026: 'Avaliar com cuidado antes da alta para excluir congestão persistente (I, C); iniciar e titular rápido a terapia fundamental antes da alta e com retornos frequentes nas primeiras 6 semanas (I, B)', classe: 'I', slide: 'slide 65', esc2021: 'Otimizar a terapia orientada por diretriz antes da alta; retorno em 1–2 semanas', livro: '—' },
+]
+
+export const DIFERENCAS_ICA_2026: string[] = [
+  'Nome: a ESC 2026 troca "IC aguda" por "IC descompensada" (slide 8).',
+  'Oxigênio: igual à ESC 2021 (SpO2 < 90% ou PaO2 < 60 mmHg; I, C); o manual mira SpO2 > 95% (p. 296).',
+  'Morfina: a ESC 2026 mantém o opioide de rotina como não recomendado (III, C), salvo dor ou ansiedade grave; a Figura 1 do manual traz "morfina se dispneia" com PAS ≥ 140 (p. 302).',
+  'Acetazolamida IV ou hidroclorotiazida VO: passam a ser IIa para quem já usava diurético de alça (em 2021, só o tiazídico no edema resistente) — são os ensaios ADVOR e CLOROTIC desta tela.',
+  'Novas na ESC 2026: diurético guiado pelo Na urinário nos primeiros dias (IIb) e iSGLT2 iniciado na internação depois da estabilização (I).',
+  'Inotrópico: a ESC 2026 põe o corte de PAS < 90 mmHg, com hipoperfusão sem resposta ao tratamento padrão, inclusive prova volêmica (IIb, C).',
+  'Doses: os slides da ESC 2026 não trazem dose de furosemida; a tela segue a ESC 2021 (20–40 mg ou 1–2× a dose oral) e o manual (0,5–1 mg/kg).',
 ]
 
 export const ENSAIOS_ICA: { ensaio: string; texto: string }[] = [

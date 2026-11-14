@@ -97,3 +97,26 @@ test('magnésio: sinais para suspender e gluconato de cálcio 1 g (Box S-5)', ()
   assert.equal(TOXICIDADE_MAGNESIO.suspender.length, 3)
   assert.equal(TOXICIDADE_MAGNESIO.antidoto.ml, 10)
 })
+
+test('aorta: ESC 2024 pelos slides, com classe; cortes da ESC ao lado dos do manual, sem dose nova', async () => {
+  const m = await import('./emergenciaHipertensiva.ts')
+  assert.equal(m.fichaSindromeAorticaAdulto.versao, '2026-11-13.1')
+  assert.equal(m.addRs.ficha.versao, '2026-11-13.1')
+  for (const f of [m.fichaSindromeAorticaAdulto, m.addRs.ficha]) {
+    assert.ok(f.fontes.some((x) => x === m.ESC_AORTA_2024))
+    assert.ok(f.fontes.some((x) => /Manual de Medicina de Emergência/.test(x.citacao)))
+  }
+  assert.match(m.ESC_AORTA_2024.citacao, /PMID 39210722/)
+  assert.match(m.ESC_AORTA_2024.citacao, /não trazem dose/)
+  for (const d of m.DIRETRIZ_AORTA_2024) {
+    assert.match(d.classe, /^(I|IIa|IIb|III)\b|^figura \d+$/, d.tema)
+    assert.match(d.slide, /^slides? \d+/, d.tema)
+    assert.doesNotMatch(d.esc2024, /\bmg\b|mcg|µg/, `${d.tema}: dose não vem dos slides`)
+  }
+  const tema = (t: string) => m.DIRETRIZ_AORTA_2024.find((d) => d.tema === t)!
+  assert.match(tema('Aneurisma da aorta ascendente (valva tricúspide)').esc2024, /≥ 55 mm/)
+  assert.match(tema('Síndrome de Marfan').esc2024, /≥ 50 mm/)
+  assert.match(tema('Alvo de PA e FC').esc2024, /PAS < 120 mmHg e FC ≤ 60 bpm/)
+  // o manual continua como estava
+  assert.ok(m.CORTES_AORTA.some((c) => /ascendente > 5 cm/.test(c.texto)))
+})
