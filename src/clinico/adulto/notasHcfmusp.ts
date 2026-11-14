@@ -416,7 +416,7 @@ notaHcfmuspCap23.ficha.revisadoEm = '14/11/2026 (lote 4 da revisão do HCFMUSP: 
 export const notaHcfmuspCap61 = nota('nota-hcfmusp-cap61-lra', 'Nota de atualização — manual HC, cap. 61: lesão renal aguda', 'cap. 61, p. 824–841', fichaLesaoRenalAguda,
   DIRETRIZ_LRA.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
   [KDIGO_LRA_2012])
-notaHcfmuspCap61.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap61.ficha.versao = '2026-11-14.2'
 notaHcfmuspCap61.ficha.revisadoEm = '14/11/2026 (lote 4 da revisão do HCFMUSP: itens tirados da KDIGO 2012, porque a KDIGO 2026 ainda era rascunho; aguarda aprovação do RT)'
 
 // Lote 4, O3 = A (decisão do RT de 14/11/2026): cap. 22 e 45 não têm ficha de adulto

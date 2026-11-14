@@ -24,7 +24,7 @@ const SEM_ITEM_LRA = 'sem item do manual na ferramenta'
 
 /** KDIGO 2012 × manual, na LRA do adulto; um tema por linha. */
 export const DIRETRIZ_LRA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
-  { tema: 'Versão da diretriz', diretriz: 'A KDIGO 2026 de lesão renal aguda e doença renal aguda ainda era rascunho em consulta pública em 14/11/2026, sem texto final. Vale a KDIGO 2012', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'o manual estadia pela KDIGO (cap. 61, Tabela 1, p. 825)' },
+  { tema: 'Versão da diretriz', diretriz: 'A KDIGO 2026 de lesão renal aguda e doença renal aguda existe só como rascunho de consulta pública (março de 2026; https://kdigo.org/wp-content/uploads/2026/03/KDIGO-2026-AKI-AKD-Guideline-Public-Review-Draft-March-2026.pdf). A própria KDIGO diz que o conteúdo vai mudar e que o rascunho não deve ser usado fora da consulta. Vale a KDIGO 2012; a 2026 entra quando sair a versão final', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'o manual estadia pela KDIGO (cap. 61, Tabela 1, p. 825)' },
   { tema: 'Definição e estádio', diretriz: 'LRA: creatinina sobe 0,3 mg/dL ou mais em 48 h, ou chega a 1,5 vez o basal conhecido ou presumido dos 7 dias anteriores, ou diurese < 0,5 mL/kg/h por 6 h. Estádio 1: 1,5–1,9 × ou + 0,3 mg/dL, ou diurese < 0,5 por 6–12 h; 2: 2,0–2,9 ×, ou < 0,5 por 12 h ou mais; 3: 3 ×, creatinina ≥ 4 mg/dL, início de TSR, diurese < 0,3 por 24 h ou mais, ou anúria por 12 h ou mais', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'os mesmos cortes da Tabela 1 (cap. 61, p. 825), que a ferramenta calcula' },
   { tema: 'Causa e seguimento', diretriz: 'Procurar a causa sempre, com atenção às reversíveis; reavaliar 3 meses depois da LRA para ver recuperação, doença renal crônica nova ou piora da prévia', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'FENa, FEUr, ureia/creatinina e índices urinários para separar pré-renal de NTA (cap. 61, Tabelas 2 e 3, p. 826–832)' },
   { tema: 'Medidas por estádio', diretriz: 'Todo paciente de risco: suspender nefrotóxicos quando possível, garantir volemia e pressão de perfusão, monitorar creatinina e diurese, evitar hiperglicemia, considerar alternativa ao contraste. A partir do estádio 2: ajustar a dose dos medicamentos e considerar TSR e UTI. Estádio 3: evitar cateter subclávio se possível', grau: 'Figura 4, sem grau', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
@@ -40,7 +40,7 @@ export const DIRETRIZ_LRA: { tema: string; diretriz: string; grau: string; fonte
 ]
 
 export const DIFERENCAS_LRA: string[] = [
-  'Versão: a KDIGO 2026 ainda era rascunho em 14/11/2026; a nota usa a KDIGO 2012, que o manual também segue no estadiamento.',
+  'Versão: a KDIGO 2026 é só rascunho de consulta pública, que a KDIGO pede para não usar fora da consulta; a nota usa a KDIGO 2012, que o manual também segue no estadiamento, até sair a versão final de 2026.',
   'Diurético: a KDIGO 2012 não usa diurético para tratar LRA fora da sobrecarga de volume (2C); o manual traz o teste de estresse com furosemida, que serve para prever a evolução.',
   'Início da diálise: a KDIGO 2012 decide pelo contexto e pela tendência dos exames; o manual lista as indicações e dá pH < 7,1 para a acidose refratária.',
   'Fluido, nutrição, aminoglicosídeo, contraste e anticoagulação da diálise: a KDIGO 2012 traz; a ferramenta do manual não.',
@@ -49,9 +49,9 @@ export const DIFERENCAS_LRA: string[] = [
 const fichaLraLivro = fichaAdulto('adulto-lesao-renal-aguda', 'Lesão renal aguda — adulto', 'cap. 61 Lesão renal aguda, p. 824–841')
 export const fichaLesaoRenalAguda: Ficha = {
   ...fichaLraLivro,
-  versao: '2026-11-14.1',
+  versao: '2026-11-14.2',
   fontes: [...fichaLraLivro.fontes, KDIGO_LRA_2012],
-  revisadoEm: '14/11/2026 (KDIGO 2012 ao lado do manual, porque a KDIGO 2026 ainda era rascunho; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+  revisadoEm: '14/11/2026, .2: aviso de que a KDIGO 2026 é só rascunho, por decisão do RT; 14/11/2026 (KDIGO 2012 ao lado do manual, porque a KDIGO 2026 ainda era rascunho; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
 }
 // Revisão PubMed, itens médios (decisão do RT de 06/11/2026, H9 = A): o corte
 // de CPK do workshop ENMC diverge do livro e entra como nota de divergência no
