@@ -56,3 +56,24 @@ As sete respostas passam a abrir pela diretriz.
 - O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
 - Refiz as perguntas na produção: as sete respostas abrem pela diretriz, como na homologação; a da primeira crise ainda abre com "Sim" e simplifica a decisão caso a caso, que está logo abaixo.
 - O Vercel publicou o master.
+
+## Atualização: ACEP 2024 no cap. 45 (14/11/2026)
+
+O RT escolheu a opção A: abriu a página da ACEP no Chrome e passou o CAPTCHA ele mesmo.
+
+- **Fonte:** ACEP Clinical Policy, Ann Emerg Med 2024;84(1):e1–e12 (PMID 38906639). Li o texto integral.
+- **O que ela cobre:** uma pergunta só. No estado de mal convulsivo que continua depois de benzodiazepínico em dose adequada, usar droga de segunda linha: fosfenitoína, levetiracetam ou valproato, com eficácia parecida (nível A). As doses de ataque são as do ESETT, as mesmas da ferramenta de estado de mal da Central (cap. 46).
+- **O que ela não mudou:** a ACEP manteve as perguntas da primeira crise (tratar, internar) da policy anterior. Para a primeira crise, a nota segue com a AAN/AES 2015.
+- **Nota `nota-hcfmusp-cap45-primeira-crise` 2026-11-14.2:**
+  - o primeiro item deixa de falar do CAPTCHA;
+  - entra o item da crise que não para com benzodiazepínico;
+  - a ACEP entra nas fontes.
+- **Migration:** `20270414000024`.
+- **A resposta sobre iniciar antiepiléptico:** o RT decidiu deixar como está (4 = B).
+
+| Pergunta | Produção, antes | Homologação, depois |
+|---|---|---|
+| segunda droga depois do benzodiazepínico | ferramenta de estado de mal, sem a ACEP | ACEP 2024 (nível A): fosfenitoína, levetiracetam ou valproato |
+| primeira crise: recorrência | AAN | AAN, igual |
+| primeira crise: iniciar antiepiléptico | abria com "Sim" | abre com "Sim, pode-se... a decisão é individualizada" |
+| dose de levetiracetam no estado de mal (controle) | ESETT, 60 mg/kg, máx. 4.500 mg | igual, com a ACEP ao lado |

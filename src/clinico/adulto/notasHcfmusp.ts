@@ -425,6 +425,10 @@ export const ESC_MIOPERICARDITE_2025: Fonte = {
   citacao: 'Schulz-Menger J, Collini V, Gröschel J, et al. 2025 ESC Guidelines for the management of myocarditis and pericarditis. Eur Heart J. 2025;46(40):3952–4041 (PMID 40878297). Lida no site da revista: tabela 19 (recomendações de classe I e III) e tabela 16 (alto risco na pericardite).',
   url: 'https://doi.org/10.1093/eurheartj/ehaf192',
 }
+export const ACEP_CRISE_2024: Fonte = {
+  citacao: 'American College of Emergency Physicians Clinical Policies Subcommittee on Seizures. Clinical Policy: Critical Issues in the Management of Adult Patients Presenting to the Emergency Department With Seizures. Ann Emerg Med. 2024;84(1):e1–e12 (PMID 38906639). Texto integral lido no site da revista; uma pergunta crítica, nível A.',
+  url: 'https://doi.org/10.1016/j.annemergmed.2024.02.018',
+}
 export const AAN_AES_PRIMEIRA_CRISE_2015: Fonte = {
   citacao: 'Krumholz A, Wiebe S, Gronseth GS, et al. Evidence-based guideline: Management of an unprovoked first seizure in adults: Report of the Guideline Development Subcommittee of the American Academy of Neurology and the American Epilepsy Society. Neurology. 2015;84(16):1705–1713 (PMID 25901057). Recomendações lidas no resumo do PMC (PMC4409581); níveis A a C da AAN.',
   url: 'https://doi.org/10.1212/WNL.0000000000001487',
@@ -458,13 +462,16 @@ export const notaHcfmuspCap22 = notaSoManual('nota-hcfmusp-cap22-pericardite-mio
 
 /** cap. 45: AAN/AES 2015 da primeira crise não provocada. */
 export const notaHcfmuspCap45 = notaSoManual('nota-hcfmusp-cap45-primeira-crise', 'Nota de atualização — manual HC, cap. 45: primeira crise epiléptica', 'cap. 45, p. 609–622', [
-    { tema: 'Fontes desta nota', diretriz: 'AAN/AES 2015 (sem nível): A clinical policy da ACEP de 2024 sobre crise convulsiva no pronto-socorro não foi lida: o site da revista pediu CAPTCHA. A nota usa a diretriz da AAN e da AES de 2015, que o próprio manual cita', manual: 'Tabela 7 adaptada da Academia Americana de Neurologia de 2015 (cap. 45, p. 619)' },
+    { tema: 'Fontes desta nota', diretriz: 'ACEP 2024 e AAN/AES 2015 (sem nível): A clinical policy da ACEP de 2024 só atualizou o estado de mal refratário ao benzodiazepínico; as perguntas da primeira crise (tratar, internar) ficaram com a policy anterior da ACEP. Para a primeira crise, a nota usa a AAN/AES 2015, que o próprio manual cita', manual: 'Tabela 7 adaptada da Academia Americana de Neurologia de 2015 (cap. 45, p. 619)' },
+    { tema: 'Crise que não para com benzodiazepínico', diretriz: 'ACEP 2024 (nível A): Estado de mal convulsivo que segue apesar de benzodiazepínico em dose adequada: tratar com droga de segunda linha. Fosfenitoína, levetiracetam ou valproato têm eficácia parecida. As doses de ataque da ACEP são as do ESETT, as mesmas da ferramenta de estado de mal da Central (cap. 46)', manual: 'o estado de mal fica no cap. 46; não comparado nesta nota' },
     { tema: 'Risco de recorrência', diretriz: 'AAN/AES 2015 (nível A): Informar que o risco de nova crise é maior nos 2 primeiros anos, de 21% a 45%', manual: 'preditores de recorrência e risco por fator na Tabela 7 (cap. 45, p. 619)' },
     { tema: 'Fatores de risco', diretriz: 'AAN/AES 2015 (níveis A e B): Aumentam o risco: lesão cerebral prévia (A), EEG com atividade epileptiforme (A), alteração significativa na imagem do encéfalo (B) e crise noturna (B)', manual: 'Tabela 7: crise sintomática remota; EEG normal 30%, com alteração não epileptiforme 45% e epileptiforme 60%; neuroimagem alterada (cap. 45, p. 619)' },
     { tema: 'Antiepiléptico logo após a primeira crise', diretriz: 'AAN/AES 2015 (níveis B e C): Começar o antiepiléptico logo, em vez de esperar a segunda crise, provavelmente reduz a recorrência nos 2 primeiros anos (B), mas pode não melhorar a qualidade de vida (C). Depois de 3 anos, não muda a chance de remissão (B)', manual: 'previne uma segunda crise nos 2 anos seguintes (reduz em 35% o risco absoluto) e não previne refratariedade futura (cap. 45, p. 620)' },
     { tema: 'Efeitos adversos', diretriz: 'AAN/AES 2015 (nível B): Risco de efeito adverso do antiepiléptico de 7% a 31%, em geral leve e reversível', manual: 'efeitos colaterais estimados em 7–31% (cap. 45, p. 620)' },
     { tema: 'Decisão de tratar', diretriz: 'AAN/AES 2015 (sem nível): Decidir caso a caso: pesar o risco de recorrência contra os efeitos adversos, ouvir a preferência informada do paciente e explicar que o tratamento imediato reduz o risco nos 2 anos seguintes, mas não muda o prognóstico de longo prazo', manual: 'decidir pelo risco de recorrência, pelas consequências sociais e profissionais de nova crise e pela tolerabilidade do fármaco (cap. 45, p. 618–620)' },
-  ], [AAN_AES_PRIMEIRA_CRISE_2015])
+  ], [ACEP_CRISE_2024, AAN_AES_PRIMEIRA_CRISE_2015])
+notaHcfmuspCap45.ficha.versao = '2026-11-14.2'
+notaHcfmuspCap45.ficha.revisadoEm = '14/11/2026, .2: ACEP 2024 lida no texto integral (o RT abriu a página); só atualizou o estado de mal refratário. Lote 4 da revisão do HCFMUSP, O3; aguarda aprovação do RT'
 
 export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap22, notaHcfmuspCap23, notaHcfmuspCap37, notaHcfmuspCap45, notaHcfmuspCap57, notaHcfmuspCap59, notaHcfmuspCap61, notaHcfmuspCap68, notaHcfmuspCap70, notaHcfmuspCap72, notaHcfmuspCap84]
 
