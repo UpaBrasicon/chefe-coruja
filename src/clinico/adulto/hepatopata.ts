@@ -24,6 +24,46 @@ export const CONTESTACAO_SHR_2025: Fonte = {
 
 export const DIVERGENCIA_SHR_2024 = 'ADQI-ICA 2024 (posterior ao livro): a LRA na cirrose segue o KDIGO, incluindo a diurese ≤ 0,5 mL/kg/h por ≥ 6 h; HRS-AKI é a falta de melhora da creatinina e/ou da diurese em 24 h após ressuscitação volêmica adequada, quando indicada; o consenso é contra exigir 48 h de albumina para o diagnóstico (risco de sobrecarga e de atrasar a terlipressina); os nomes passam a HRS-AKI, HRS-AKD e HRS-CKD. Divergência: estudo de 2025 mostrou resposta à albumina só entre 24 e 48 h em 18–28% dos pacientes, e a EASL recomenda manter as 48 h até haver mais dados. A ferramenta mostra o esquema do livro; a escolha é do médico.'
 
+// Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 57 e 58: a
+// guidance da AASLD de 2021 (ascite, PBE e SHR; sem graduação) foi lida no texto
+// integral no site da revista, e o consenso ADQI-ICA de 2024 (graduado), no PMC.
+// As doses e contas do manual não mudam.
+export const AASLD_ASCITE_2021: Fonte = {
+  citacao: 'Biggins SW, Angeli P, Garcia-Tsao G, et al. Diagnosis, Evaluation, and Management of Ascites, Spontaneous Bacterial Peritonitis and Hepatorenal Syndrome: 2021 Practice Guidance by the American Association for the Study of Liver Diseases. Hepatology. 2021;74(2):1014–1048 (PMID 33942342). Texto integral lido; guidance sem graduação.',
+  url: 'https://doi.org/10.1002/hep.31884',
+}
+
+const SEM_ITEM_PBE = 'sem item do manual na ferramenta'
+
+/** AASLD 2021 e ADQI-ICA 2024 × manual, na PBE e na SHR do adulto; um tema por linha. */
+export const DIRETRIZ_PBE_SHR: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Paracentese diagnóstica', diretriz: 'Todo cirrótico com ascite internado de urgência faz paracentese diagnóstica, mesmo sem sinais de infecção; com sinais de infecção também, junto com a investigação. Cultura à beira do leito em frascos de hemocultura (aeróbio e anaeróbio), antes do antibiótico', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: SEM_ITEM_PBE },
+  { tema: 'Diagnóstico de PBE', diretriz: 'PMN > 250/mm³ no líquido ascítico (ou pleural, no empiema espontâneo); começar antibiótico EV empírico antes da cultura. PMN > 250 com foco abdominal (diverticulite, colecistite): tratar o foco, não como PBE', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: 'PMN ≥ 250/mm³ (p. 782)' },
+  { tema: 'Antibiótico na PBE', diretriz: 'PBE comunitária: cefalosporina de 3ª geração EV (por exemplo, cefotaxima 2 g 12/12 h). Infecção hospitalar ou associada a serviço de saúde, antibiótico de largo espectro recente, sepse ou choque: largo espectro desde o início', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: 'ceftriaxona 2 g EV/dia por 5 dias; cefotaxima 2 g EV 6/6 h (texto) ou 8/8 h (tabela) (p. 784–785)' },
+  { tema: 'Resposta ao antibiótico', diretriz: 'Repetir a paracentese em 2 dias; queda dos PMN menor que 25% é falha: ampliar o antibiótico e investigar peritonite secundária', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: 'queda de pelo menos 25% dos PMN indica sucesso (p. 785)' },
+  { tema: 'Albumina na PBE', diretriz: 'Albumina EV com o antibiótico: 1,5 g/kg no D1 e 1 g/kg no D3; maior benefício com LRA ou icterícia (AASLD). Albumina 20–25% para prevenir LRA na PBE e após paracentese grande (ADQI-ICA, forte, B); não usar de rotina em outras infecções nem só para manter albumina > 3 g/dL (forte, A)', grau: 'guidance; forte, A e B', fonte: 'AASLD 2021; ADQI-ICA 2024', livro: '1,5 g/kg nas primeiras 6 h e 1 g/kg no D3 (p. 785, 795)' },
+  { tema: 'Betabloqueador na PBE', diretriz: 'Suspender temporariamente o betabloqueador não seletivo se houver hipotensão (PAM < 65 mmHg) ou LRA', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: SEM_ITEM_PBE },
+  { tema: 'Profilaxia da PBE', diretriz: 'Depois de um episódio de PBE: norfloxacino diário por tempo prolongado (ciprofloxacino se não houver). HDA no cirrótico: ceftriaxona 1 g/24 h por até 7 dias. Proteína do líquido < 1,5 g/dL: profilaxia primária só em selecionados, com disfunção renal ou hepática', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: 'norfloxacina 400 mg/dia na PBE prévia; após HDA, ceftriaxona 1–2 g/dia por 7 dias (p. 786)' },
+  { tema: 'Paracentese de grande volume', diretriz: 'Acima de 5 L, repor albumina 6–8 g por litro retirado; o risco de disfunção circulatória pós-paracentese sobe acima de 8 L em uma sessão', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: 'repor albumina quando retirar mais de 5 L, 8 g/L (p. 766)' },
+  { tema: 'Nefrotóxicos no cirrótico com ascite', diretriz: 'Evitar AINE, IECA e BRA; evitar aminoglicosídeo sempre que possível', grau: 'guidance, sem graduação', fonte: 'AASLD 2021', livro: SEM_ITEM_PBE },
+  { tema: 'Definição de LRA na cirrose', diretriz: 'Critérios do KDIGO, incluindo diurese ≤ 0,5 mL/kg/h por ≥ 6 h (forte, A); creatinina basal = menor valor estável dos últimos 3 meses (forte, D); sem basal, a menor entre a da admissão e a estimada por TFG de 75 (fraca, B)', grau: 'forte, A e D; fraca, B', fonte: 'ADQI-ICA 2024', livro: 'aumento ≥ 0,3 mg/dL em 48 h ou > 50% da basal (Tabela 2 e critérios, p. 791–793)' },
+  { tema: 'Critérios de SHR-LRA', diretriz: 'Cirrose com ascite; LRA pelo KDIGO; sem melhora da creatinina e/ou da diurese em 24 h após volume adequado (quando indicado); sem outra causa forte. Não exigir 48 h de albumina para o diagnóstico (forte, D). Os termos SHR tipo 1 e 2 dão lugar a SHR-LRA, SHR-DRA e SHR-DRC', grau: 'forte, D; sem grau', fonte: 'ADQI-ICA 2024', livro: 'sem melhora com albumina 1 g/kg (máx. 100 g/dia) por 48 h; sem choque, sem nefrotóxico, sem doença parenquimatosa (p. 791–793)' },
+  { tema: 'Fluido na LRA', diretriz: 'Cristaloide, de preferência balanceado, como primeira escolha na LRA que precisa de volume (forte, B). Na sobrecarga, suspender fluidos e usar diurético ou diálise', grau: 'forte, B; boa prática', fonte: 'ADQI-ICA 2024', livro: 'suspeita de SHR: suspender diuréticos e expandir com albumina 1 g/kg/dia por 2 dias (p. 791)' },
+  { tema: 'Vasoconstritor na SHR-LRA', diretriz: 'Terlipressina como primeira escolha, com albumina 20–25%, logo que se diagnostica a SHR-LRA (forte, A). Subir a terlipressina a cada 24 h se a creatinina não cair 25% (forte, D); subir a norepinefrina a cada 4 h se a PAM não subir 10 mmHg (forte, B). Sem terlipressina nem norepinefrina: midodrina 5–15 mg VO 8/8 h com octreotídeo 100–200 µg 8/8 h, com eficácia baixa (AASLD)', grau: 'forte, A, B e D; guidance', fonte: 'ADQI-ICA 2024; AASLD 2021', livro: 'terlipressina em degraus a cada 2 dias sem resposta, até 12 mg/dia em bolus (p. 795–797)' },
+  { tema: 'Albumina com o vasoconstritor', diretriz: 'Albumina 20–25%, 20–40 g/dia, ajustada todo dia pelo volume; suspender se houver sobrecarga ou edema pulmonar', grau: 'boa prática', fonte: 'ADQI-ICA 2024', livro: 'albumina 1 g/kg no D1 e 20–40 g/dia nos demais (p. 794)' },
+  { tema: 'Quando parar o vasoconstritor', diretriz: 'Creatinina volta a até 0,3 mg/dL do basal; efeito adverso grave; sem melhora em 48 h na dose máxima tolerada; indicação de diálise; ou 14 dias (forte, B). A AASLD fala em parar se a creatinina não cair após 4 dias na dose máxima', grau: 'forte, B; guidance', fonte: 'ADQI-ICA 2024; AASLD 2021', livro: 'resposta = queda de 25% da creatinina; até 14 dias (p. 797)' },
+  { tema: 'Transplante', diretriz: 'Avaliar transplante depois de qualquer LRA na cirrose descompensada (boa prática); o transplante é o tratamento definitivo da SHR-LRA, respondendo ou não ao vasoconstritor (forte, A)', grau: 'boa prática; forte, A', fonte: 'ADQI-ICA 2024', livro: SEM_ITEM_PBE },
+]
+
+export const DIFERENCAS_PBE_SHR: string[] = [
+  'Diagnóstico da SHR: o ADQI-ICA 2024 usa 24 h sem melhora após volume e não exige 48 h de albumina; o manual exige 48 h de albumina 1 g/kg.',
+  'Terlipressina: o ADQI-ICA sobe a dose a cada 24 h sem queda de 25% da creatinina; o manual sobe a cada 2 dias.',
+  'Quando parar: o ADQI-ICA para sem melhora em 48 h na dose máxima, e a AASLD em 4 dias; o manual avalia até 14 dias.',
+  'Volume na LRA: o ADQI-ICA prefere cristaloide balanceado quando é preciso volume; o manual expande com albumina.',
+  'Cefotaxima: a AASLD dá 2 g de 12/12 h; o manual, 2 g de 6/6 h ou 8/8 h.',
+  'Paracentese grande: a AASLD repõe 6–8 g de albumina por litro; o manual, 8 g/L.',
+]
+
 const fichaAsciteLivro = fichaAdulto(
   'adulto-ascite-pbe-hepatorrenal',
   'Ascite, PBE e síndrome hepatorrenal — adulto',
@@ -31,9 +71,9 @@ const fichaAsciteLivro = fichaAdulto(
 )
 export const fichaAsciteShr: Ficha = {
   ...fichaAsciteLivro,
-  versao: '2026-10-09.1',
-  fontes: [...fichaAsciteLivro.fontes, ADQI_ICA_2024, CONTESTACAO_SHR_2025],
-  revisadoEm: '09/10/2026 (ADQI-ICA 2024 e a divergência EASL ao lado do livro)',
+  versao: '2026-11-14.1',
+  fontes: [...fichaAsciteLivro.fontes, ADQI_ICA_2024, CONTESTACAO_SHR_2025, AASLD_ASCITE_2021],
+  revisadoEm: '14/11/2026 (AASLD 2021 e ADQI-ICA 2024 lidas no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT); 09/10/2026 (ADQI-ICA 2024 e a divergência EASL ao lado do livro)',
 }
 
 export const fichaInsuficienciaHepatica = fichaAdulto(
