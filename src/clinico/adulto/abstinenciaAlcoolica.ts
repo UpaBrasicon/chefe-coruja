@@ -20,12 +20,41 @@ export const FENOBARBITAL_PS_2024: Fonte = {
   url: 'https://doi.org/10.1111/acem.14825',
 }
 export const BAP_SUBSTANCIAS_2026: Fonte = {
-  citacao: 'Sinclair JMA, Kalk NJ, Kaar SJ, et al. Evidence-based consensus guidelines for the pharmacological management of substance dependence: Recommendations from the British Association for Psychopharmacology. J Psychopharmacol. 2026;40(2):227–272 (PMID 41731947).',
+  citacao: 'Sinclair JMA, Kalk NJ, Kaar SJ, et al. Evidence-based consensus guidelines for the pharmacological management of substance dependence: Recommendations from the British Association for Psychopharmacology. J Psychopharmacol. 2026;40(2):227–272 (PMID 41731947). PMC13222391: parte de álcool lida no texto integral, com os níveis de recomendação.',
   url: 'https://doi.org/10.1177/02698811251399593',
 }
 
 export const NOTA_ABSTINENCIA_FENOBARBITAL =
   'Fenobarbital no pronto-socorro (metanálise, Acad Emerg Med 2024, posterior ao livro; 8 estudos — 2 ECRs e 6 coortes retrospectivas —, 1.507 pacientes): comparado aos benzodiazepínicos, não reduziu internação em UTI (RR 0,92), internação hospitalar (RR 0,98) nem eventos adversos (RR 1,1); a qualidade dos estudos foi baixa a moderada. A diretriz da British Association for Psychopharmacology (2026) revisa o tratamento farmacológico da dependência de álcool e de outras substâncias. O livro mantém os benzodiazepínicos como esteio; nenhuma dose muda.'
+
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 78: a parte
+// de álcool da BAP 2026 foi lida no texto integral no PMC (PMC13222391), com os
+// níveis de recomendação (A–D; S = padrão de cuidado). Entra ao lado do manual;
+// as doses do manual não mudam. Não há diretriz de abstinência mais nova.
+const SEM_ITEM_SAA = 'sem item do manual na ferramenta'
+
+/** BAP 2026 × manual, na abstinência alcoólica; um tema por linha. */
+export const DIRETRIZ_SAA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Escalas e local', diretriz: 'Usar escala validada para identificar risco de abstinência grave ou complicada e para monitorar os sintomas; quem tem alto risco de complicação fica internado', grau: 'Level D', fonte: 'BAP 2026', livro: 'CIWA-Ar com faixas leve < 15, moderada 16–20 e grave > 20 (Tabela 3, p. 1028–1030); fatores de risco (Tabela 1, p. 1026)' },
+  { tema: 'Benzodiazepínico', diretriz: 'Primeira linha, muitas vezes em dose alta, para tratar os sintomas e prevenir convulsão e delirium (A). Preferir os de meia-vida longa (diazepam, clordiazepóxido); no hepatopata e no idoso, os de meia-vida curta (lorazepam, oxazepam). Suspender ao fim do tratamento (D)', grau: 'A, Ib e D', fonte: 'BAP 2026', livro: 'diazepam 5–10 mg VO 6/6 ou 8/8 h; diazepam 5–10 mg EV ou lorazepam 2–4 mg EV na grave (p. 1032)' },
+  { tema: 'Esquema de dose', diretriz: 'Dose fixa com redução de pelo menos 25% ao dia por 5–10 dias, com doses extras guiadas por sintomas nas primeiras 48–72 h, é o esquema de rotina (A). Guiado por sintomas: CIWA-Ar < 10 só suporte; 10–18 e ≥ 19, benzodiazepínico até CIWA-Ar < 10 (A). Dose de ataque de 1/1 a 2/2 h só em internação monitorada (D)', grau: 'A e D', fonte: 'BAP 2026', livro: 'doses ajustadas após as primeiras e reduzidas 5 mg ao dia (p. 1032); esquemas guiados por sintomas usam doses menores (p. 1033)' },
+  { tema: 'Abstinência resistente', diretriz: 'Sem definição de consenso; o limiar sugerido é precisar de mais de 40 mg de diazepam ou equivalente por hora', grau: 'texto', fonte: 'BAP 2026', livro: 'midazolam EV contínuo no delirium tremens sem controle: 5 mg e depois 2 mg/h (p. 1033)' },
+  { tema: 'Carbamazepina e gabapentina', diretriz: 'Carbamazepina como adjuvante ou alternativa, útil quando o benzodiazepínico é contraindicado (B). Gabapentina pode ter papel adjuvante, sem evidência para monoterapia (A)', grau: 'B e A', fonte: 'BAP 2026', livro: 'carbamazepina 200–400 mg 12/12 h, até 1.200–1.600 mg/dia (Tabela 5, p. 1034)' },
+  { tema: 'Fenobarbital', diretriz: 'Papel no manejo especializado no hospital, como adjuvante ao benzodiazepínico ou em monoterapia quando ele é contraindicado (D); evidência de eficácia ainda limitada (A)', grau: 'D e A', fonte: 'BAP 2026', livro: 'fenobarbital ou propofol no delirium tremens refratário, com intubação; sem dose (p. 1033)' },
+  { tema: 'Dexmedetomidina', diretriz: 'Já recomendada como adjuvante no hospital ou na UTI, mas revisões recentes não a acharam melhor que o tratamento padrão', grau: 'A', fonte: 'BAP 2026', livro: SEM_ITEM_SAA },
+  { tema: 'Antipsicótico', diretriz: 'Não usar em monoterapia (aumenta a mortalidade). No delirium tremens refratário ao benzodiazepínico, haloperidol ou olanzapina como acréscimo, nunca no lugar da dose adequada de benzodiazepínico', grau: 'D', fonte: 'BAP 2026', livro: 'olanzapina 10 mg ou haloperidol 5 mg IM na agitação extrema com alucinações; neurolépticos baixam o limiar convulsivo (p. 1033)' },
+  { tema: 'Etanol', diretriz: 'Não prescrever etanol VO ou EV onde há tratamento baseado em evidência', grau: 'A', fonte: 'BAP 2026', livro: 'etanol parenteral pouco seguro (Tabela 5, p. 1034)' },
+  { tema: 'Tiamina', diretriz: 'Para todos com abstinência. Baixo risco de Wernicke: 100–300 mg/dia VO por 3–5 dias (D). Com fator de risco (desnutrição, neuropatia, alteração de memória, hepatopatia descompensada, estado hipermetabólico): 300–1.500 mg/dia parenteral por 3–5 dias e depois VO (A). Wernicke é emergência: tiamina parenteral imediata (D)', grau: 'A e D', fonte: 'BAP 2026', livro: 'tiamina VO 100–300 mg/dia na profilaxia; 100–200 mg IM 1–2 vezes ao dia na Wernicke estabelecida (p. 1032)' },
+  { tema: 'Magnésio e eletrólitos', diretriz: 'Monitorar e corrigir sódio, potássio, fósforo, magnésio e cálcio. Magnésio profilático sem evidência suficiente; repor na hipomagnesemia, na arritmia ou com convulsão de abstinência prévia', grau: 'texto', fonte: 'BAP 2026', livro: 'sulfato de magnésio 1–2 g em 100 mL de SF para manter o magnésio normal (p. 1032)' },
+  { tema: 'Gestante', diretriz: 'Internar para tratar a abstinência; benzodiazepínico na menor dose e pelo menor tempo; oxazepam pode ser o preferido', grau: 'S', fonte: 'BAP 2026', livro: SEM_ITEM_SAA },
+]
+
+export const DIFERENCAS_SAA: string[] = [
+  'Tiamina: a BAP dá 300–1.500 mg/dia parenteral por 3–5 dias a quem tem fator de risco para Wernicke; o manual dá 100–200 mg IM 1–2 vezes ao dia na Wernicke estabelecida e 100–300 mg VO na profilaxia.',
+  'Esquema: a BAP põe a dose fixa com redução de 25% ao dia, mais doses extras por sintomas nas primeiras 48–72 h, como rotina; o manual ajusta após as primeiras doses e reduz 5 mg ao dia.',
+  'Fenobarbital: a BAP aceita como adjuvante ou monoterapia no hospital quando o benzodiazepínico é contraindicado; o manual só o cita no delirium tremens refratário, com intubação.',
+  'Antipsicótico: a BAP só o usa como acréscimo no delirium tremens refratário, nunca sozinho; o manual o cita na agitação extrema com alucinações.',
+]
 
 const fichaAbstinenciaLivro = fichaAdulto(
   'adulto-abstinencia-alcoolica',
@@ -34,9 +63,9 @@ const fichaAbstinenciaLivro = fichaAdulto(
 )
 export const fichaAbstinenciaAlcoolica: Ficha = {
   ...fichaAbstinenciaLivro,
-  versao: '2026-11-06.1',
+  versao: '2026-11-14.1',
   fontes: [...fichaAbstinenciaLivro.fontes, FENOBARBITAL_PS_2024, BAP_SUBSTANCIAS_2026],
-  revisadoEm: '06/11/2026 (nota do fenobarbital no PS e da BAP 2026; revisão PubMed, itens médios)',
+  revisadoEm: '14/11/2026 (BAP 2026 lida no texto integral, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota do fenobarbital no PS e da BAP 2026; revisão PubMed, itens médios)',
 }
 
 export type Faixa = [number, number]

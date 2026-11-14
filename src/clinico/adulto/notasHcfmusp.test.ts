@@ -254,3 +254,13 @@ test('neutropenia febril (cap. 81): ABHH 2024 e MASCC 2026 ao lado do manual; do
   assert.equal(nota.itens.length, n.DIRETRIZ_NF.length)
   assert.deepEqual(nota.ficha.fontes, [n.ABHH_NF_2024, n.MASCC_2026])
 })
+
+test('abstinência alcoólica (cap. 78): BAP 2026 ao lado do manual; doses do manual iguais', async () => {
+  const a = await import('./abstinenciaAlcoolica.ts')
+  assert.equal(a.fichaAbstinenciaAlcoolica.versao, '2026-11-14.1')
+  assert.match(a.BAP_SUBSTANCIAS_2026.citacao, /PMC13222391/)
+  assert.ok(a.DOSES_ABSTINENCIA.some((d) => d.id === 'tiamina-im'))
+  const nota = NOTAS_HCFMUSP_LOTE3.find((x) => x.ficha.id === 'nota-hcfmusp-cap78-abstinencia')!
+  assert.equal(nota.itens.length, a.DIRETRIZ_SAA.length)
+  assert.deepEqual(nota.ficha.fontes, [a.BAP_SUBSTANCIAS_2026])
+})
