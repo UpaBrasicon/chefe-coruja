@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { DIRETRIZ_SINCOPE_2024, EUSEM_SINCOPE_2024, sincopeSanFrancisco } from './sincopeSanFrancisco.ts'
 import { DIRETRIZ_DOR_TORACICA_2025, SBC_DOR_TORACICA_2025, heart } from '../escores/heart.ts'
 import { DIRETRIZ_SGB_2023, EAN_PNS_SGB_2023, fichaSgbAdulto } from './guillainBarre.ts'
 import { AHS_2025, AHS_2025_NIVEIS, fichaCefaleiaAdulto } from './cefaleia.ts'
@@ -131,6 +132,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap41-cefaleia': 'cefaleia e crise de migrânea no adulto no pronto-socorro: proclorperazina, metoclopramida, clorpromazina, dexametasona, cetorolaco, sumatriptano, valproato, bloqueio do nervo occipital, opioide (hidromorfona), paracetamol EV',
   'nota-hcfmusp-cap44-paralisias-flacidas': 'paralisia flácida aguda no adulto: síndrome de Guillain-Barré (imunoglobulina, plasmaférese, corticoide, segundo curso, dor, mEGRIS, mEGOS) e botulismo (antitoxina botulínica, vigilância respiratória, antibiótico, aminoglicosídeo)',
   'nota-hcfmusp-cap12-dor-toracica': 'dor torácica no adulto na emergência: ECG em 10 minutos, oxigênio, troponina de alta sensibilidade (0/1 h, 0/2 h, dosagem única), CK-MB, escore HEART, alta, angiotomografia de coronárias, AAS, dissecção de aorta (ADD-RS), embolia pulmonar (Wells, Genebra, PERC)',
+  'nota-hcfmusp-cap16-sincope': 'síncope e perda transitória da consciência no adulto no pronto-socorro: ECG em 10 minutos, exames, glicemia, hemoglobina, troponina, estratificação de risco, risco intermediário, monitorização, alta ou internação',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -699,7 +701,13 @@ export const notaHcfmuspCap12 = notaLote6('nota-hcfmusp-cap12-dor-toracica', 'No
   [SBC_DOR_TORACICA_2025])
 notaHcfmuspCap12.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens tirados da SBC 2025, lida no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap41, notaHcfmuspCap44]
+/** cap. 16: consenso da EUSEM 2024, já na ficha da regra de San Francisco. */
+export const notaHcfmuspCap16 = notaLote6('nota-hcfmusp-cap16-sincope', 'Nota de atualização — manual HC, cap. 16: perda transitória da consciência', 'cap. 16, p. 233–242', sincopeSanFrancisco.ficha,
+  DIRETRIZ_SINCOPE_2024.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [EUSEM_SINCOPE_2024])
+notaHcfmuspCap16.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens tirados do consenso da EUSEM 2024, lido no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
 

@@ -507,3 +507,13 @@ test('lote 6, Q2: nota do cap. 12 a partir da lista da SBC 2025 na ficha do HEAR
   assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
   assert.match(textoNota(nota), /HEART ≤ 3/)
 })
+
+test('lote 6, Q2: nota do cap. 16 a partir do consenso da EUSEM 2024 na ficha de San Francisco', async () => {
+  const s = await import('./sincopeSanFrancisco.ts')
+  const nota = NOTAS_HCFMUSP_LOTE6.find((n) => n.ficha.id === 'nota-hcfmusp-cap16-sincope')!
+  assert.equal(nota.fichaCentral, s.sincopeSanFrancisco.ficha.id)
+  assert.equal(nota.itens.length, s.DIRETRIZ_SINCOPE_2024.length)
+  assert.deepEqual(nota.ficha.fontes, [s.EUSEM_SINCOPE_2024])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
+  assert.match(textoNota(nota), /o manual não usa a categoria de risco intermediário/)
+})
