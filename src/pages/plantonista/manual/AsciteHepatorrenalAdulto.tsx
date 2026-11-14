@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALBUMINA_COM_TERLIPRESSINA, ALBUMINA_FRASCO, ALBUMINA_PARACENTESE, ALBUMINA_PBE, ALBUMINA_SHR, ATB_PBE, CRITERIOS_SHR, DIFERENCIAL_LRA_CIRROSE, DIVERGENCIA_SHR_2024, ERRATA_DISPENSA_ALBUMINA_PBE,
+  ALBUMINA_COM_TERLIPRESSINA, ALBUMINA_FRASCO, DIFERENCAS_PBE_SHR, DIRETRIZ_PBE_SHR, ALBUMINA_PARACENTESE, ALBUMINA_PBE, ALBUMINA_SHR, ATB_PBE, CRITERIOS_SHR, DIFERENCIAL_LRA_CIRROSE, DIVERGENCIA_SHR_2024, ERRATA_DISPENSA_ALBUMINA_PBE,
   ERRATA_GASA, ERRATA_NEJM_TERLIPRESSINA, ERRATA_RESPOSTA_PBE, FORA_HEPATOPATA, LIQUIDO_ASCITICO, NOTA_ALBUMINA_D1_TERLIPRESSINA, NOTA_ICA_AKI, NOTA_PARACENTESE,
   NOTA_PMN_250, NOTA_PROTEINURIA_INDICE, NOTA_RESPOSTA_25, NOTA_TERLIPRESSINA_CONTINUA, PROFILAXIA_PBE, TERLIPRESSINA_SHR, albuminaComTerlipressina,
   albuminaParacentese, albuminaPbe, albuminaShr, classificarLiquidoAscitico, criteriosDispensaAlbuminaPbe, criteriosPeritoniteSecundaria, degrausContinua,
@@ -167,6 +167,15 @@ export function AsciteHepatorrenalAdulto() {
 
       <Bloco titulo="O que o manual não traz">
         <Fora itens={FORA_HEPATOPATA} />
+      </Bloco>
+      <Bloco titulo="AASLD 2021 e ADQI-ICA 2024 — ao lado do manual" descricao="PBE, paracentese e SHR pela guidance da AASLD de 2021 (sem graduação) e pelo consenso ADQI-ICA de 2024 (graduado), lidos no texto integral. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_PBE_SHR.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_PBE_SHR.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
