@@ -1,11 +1,12 @@
 import { useState } from 'react'
 
 import {
-  ALIQUOTA_TRAUMA_ML, ERRATA_TRAUMA, NOTA_ENSAIOS_NEGATIVOS_TRAUMA, NOTA_PATCH_TRAUMA, RMC_ADULTO, TORACOLOMBAR, TORNIQUETE_MAX_MIN, TRAUMA_REFERENCIAS, TXA_TRAUMA,
+  ALIQUOTA_TRAUMA_ML, DIFERENCAS_TRAUMA, DIRETRIZ_TRAUMA, ERRATA_TRAUMA, NOTA_ENSAIOS_NEGATIVOS_TRAUMA, NOTA_PATCH_TRAUMA, RMC_ADULTO, TORACOLOMBAR, TORNIQUETE_MAX_MIN, TRAUMA_REFERENCIAS, TXA_TRAUMA,
   cristaloideAcumulado, fichaTraumaAdulto, hemotorax, torniqueteRestante, txaTrauma,
 } from '@/clinico/adulto/trauma'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -103,6 +104,15 @@ export function TraumaInicialAdulto() {
 
       <Bloco titulo="Errata">
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{ERRATA_TRAUMA.map((e) => <li key={e}>{e}</li>)}</ul>
+      </Bloco>
+      <Bloco titulo="Europeia 2023 e EAST 2025 — ao lado do manual" descricao="Sangramento e coagulopatia no trauma pela diretriz europeia de 2023 (1 = recomenda, 2 = sugere; A–C = qualidade), lida no texto integral, e ácido tranexâmico pela EAST 2025, lida no resumo. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_TRAUMA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TRAUMA.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
