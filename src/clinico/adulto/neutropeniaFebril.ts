@@ -82,7 +82,50 @@ export const mascc: Escore = {
 // ---------------------------------------------------------------------------
 // Definições e doses (p. 1062, 1069–1072)
 
-export const fichaNeutropeniaFebrilAdulto = fichaAdulto('adulto-neutropenia-febril', 'Neutropenia febril — definições e doses empíricas (adulto)', `${CAP}, p. 1062–1072`)
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 81: o
+// consenso da ABHH de 2024 (Delphi, sem graduação; pacientes hematológicos) foi
+// lido no texto integral no PMC. Os pontos do consenso MASCC 2026 entram pelo
+// resumo. As doses e contas do manual não mudam.
+export const ABHH_NF_2024: Fonte = {
+  citacao: 'Nucci M, Arrais-Rodrigues C, Bergamasco MD, et al. Management of febrile neutropenia: consensus of the Brazilian Association of Hematology, Blood Transfusion and Cell Therapy - ABHH. Hematol Transfus Cell Ther. 2024;46(Suppl 6):S346–S361 (PMID 39694764; PMC11726106). Consenso Delphi em pacientes hematológicos, sem graduação. Texto integral lido.',
+  url: 'https://doi.org/10.1016/j.htct.2024.11.119',
+}
+
+const SEM_ITEM_NF = 'sem item do manual na ferramenta'
+
+/** ABHH 2024 e MASCC 2026 × manual, na neutropenia febril; um tema por linha. */
+export const DIRETRIZ_NF: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Definições', diretriz: 'Neutropenia: neutrófilos < 500/µL. Febre: axilar > 38 °C. Febre persistente: depois de 3 dias de antibiótico. Febre recorrente: novo episódio depois de 48 h afebril', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'febre axilar ≥ 37,8 °C sustentada por 1 h; neutropenia < 500 ou 500–1.000 com queda esperada em 48 h (p. 1062)' },
+  { tema: 'Exames antes do antibiótico', diretriz: 'Dois pares de hemocultura (veia periférica e cateter), com frascos aeróbio, anaeróbio e para fungos. Radiografia de tórax e urocultura não são de rotina. TC de tórax se houver sintoma respiratório; TC de abdome se houver sintoma abdominal', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'dois pares de hemocultura periférica (p. 1064); urina 1 e urocultura (p. 1065); radiografia de tórax com sintoma respiratório e TC se ela for normal (p. 1066)' },
+  { tema: 'Antibiótico empírico', diretriz: 'Cefepima ou piperacilina-tazobactam, pela epidemiologia local e pela toxicidade. Carbapenêmico não é de rotina; usar se houver hipotensão ou piora e colonização ou bacteremia prévia por enterobactéria ESBL. Voltar para cefepima ou piperacilina-tazobactam se a hemocultura não crescer Gram-negativo resistente', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'monoterapia antipseudomonas: piperacilina-tazobactam 4,5 g 6/6 h, cefepima 2 g 8/8 h ou meropenem 1 g 8/8 h (p. 1069)' },
+  { tema: 'Vancomicina', diretriz: 'Não usar de rotina, nem por colonização por MRSA, pneumonia, mucosite ou febre persistente ou recorrente. Quando houver indicação de cobertura para MRSA, a vancomicina é a escolha', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'associar com instabilidade, mucosite, infecção de cateter, pele ou partes moles, profilaxia com quinolona, colonização ou cultura com Gram-positivo (p. 1070)' },
+  { tema: 'Troca do betalactâmico', diretriz: 'Ampliar para Gram-negativo na piora clínica ou com sinal novo de infecção, mesmo afebril. Voltar ao esquema inicial em 48–72 h se não houver Gram-negativo resistente documentado', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'modificar o esquema se o paciente ficar instável (p. 1070)' },
+  { tema: 'Anaeróbio', diretriz: 'Cobrir anaeróbio se houver suspeita de tiflite ou dor perianal', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: SEM_ITEM_NF },
+  { tema: 'Febre persistente ou recorrente', diretriz: 'Repetir hemoculturas e fazer TC de tórax; PCR sérica seriada durante o episódio', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: SEM_ITEM_NF },
+  { tema: 'Antifúngico', diretriz: 'Não iniciar antifúngico empírico só pela febre persistente ou recorrente após 4–7 dias de antibiótico. Usar a estratégia preemptiva, guiada por galactomanana sérica e TC de tórax, com anfotericina B lipossomal, caspofungina ou voriconazol', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'antifúngico empírico na febre persistente após 4–7 dias, com neutropenia esperada > 7 dias (p. 1071–1072)' },
+  { tema: 'Quando parar o antibiótico', diretriz: 'Parar o empírico quando a neutropenia se resolve sem infecção documentada, mesmo com febre. No neutropênico persistente, sem infecção documentada e com sinais vitais normais, parar depois de 4 dias. Manter se continuar neutropênico e febril', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'sem foco e com culturas negativas: afebril por pelo menos 48 h e neutrófilos > 500 em ascensão (p. 1072)' },
+  { tema: 'Profilaxia antibacteriana', diretriz: 'Não usar de rotina. Quinolona só onde a resistência a Gram-negativo é baixa e só na indução de LMA ou depois de TCTH autólogo', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: 'profilaxia ambulatorial com quinolona é critério de alto risco (p. 1067)' },
+  { tema: 'Swab anal', diretriz: 'Na admissão, swab anal para colonização por Gram-negativo multirresistente; semanal onde essa colonização é frequente', grau: 'consenso Delphi, sem graduação', fonte: 'ABHH 2024', livro: SEM_ITEM_NF },
+  { tema: 'MASCC e imunoterapia', diretriz: 'MASCC ≥ 21 indica candidato a manejo ambulatorial, mas o escore não foi validado em quimioterapia combinada com inibidor de checkpoint imune; MASCC < 21 é alto risco e segue o manejo padrão', grau: 'consenso; lido no resumo', fonte: 'MASCC 2026', livro: 'MASCC < 21 é critério de alto risco (p. 1067)' },
+  { tema: 'Quimioterapia com inibidor de checkpoint', diretriz: 'Com diarreia grau ≥ 3 ou transaminite, não usar corticoide em dose alta empírico. Suspeitar de neutropenia pelo inibidor se a apresentação não for a esperada ou se não houver recuperação 10 dias depois; nesse caso, corticoide em dose alta e considerar G-CSF de ação curta', grau: 'consenso; lido no resumo', fonte: 'MASCC 2026', livro: SEM_ITEM_NF },
+]
+
+export const DIFERENCAS_NF: string[] = [
+  'Febre: a ABHH usa axilar > 38 °C; o manual, ≥ 37,8 °C sustentada por 1 h.',
+  'Empírico: a ABHH prefere cefepima ou piperacilina-tazobactam e reserva o carbapenêmico para choque ou piora com ESBL; o manual põe o meropenem entre as opções iniciais.',
+  'Vancomicina: a ABHH não a usa por mucosite, pneumonia, colonização por MRSA nem febre persistente; o manual a associa com mucosite e profilaxia com quinolona.',
+  'Antifúngico: a ABHH é contra o empírico só por febre persistente após 4–7 dias e prefere a estratégia preemptiva (galactomanana e TC); o manual indica o empírico nessa situação.',
+  'Suspensão: a ABHH para o antibiótico com a recuperação dos neutrófilos sem infecção documentada, mesmo com febre, ou após 4 dias com sinais vitais normais; o manual pede 48 h afebril e neutrófilos > 500 em ascensão.',
+  'Exames: a ABHH não faz radiografia de tórax nem urocultura de rotina; o manual pede urina 1 e urocultura.',
+]
+
+const fichaNfLivro = fichaAdulto('adulto-neutropenia-febril', 'Neutropenia febril — definições e doses empíricas (adulto)', `${CAP}, p. 1062–1072`)
+export const fichaNeutropeniaFebrilAdulto: Ficha = {
+  ...fichaNfLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaNfLivro.fontes, ABHH_NF_2024, MASCC_2026],
+  revisadoEm: '14/11/2026 (consenso da ABHH 2024 lido no texto integral e pontos do MASCC 2026 pelo resumo, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 
 export const DEFINICOES_NF = [
   { texto: 'Febre: temperatura axilar ≥ 37,8 °C sustentada por uma hora; não medir temperatura retal', pagina: 'p. 1062' },
