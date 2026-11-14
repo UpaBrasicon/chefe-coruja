@@ -179,3 +179,15 @@ test('HIC (cap. 39): ESO/EANS 2025 ao lado do manual; doses do manual iguais', a
   assert.deepEqual(nota.ficha.fontes, [m.ESO_HIC_2025])
   assert.equal(m.HIP_METAS[0].pagina, 'p. 547')
 })
+
+test('neuroinfecção (cap. 43): ESCMID 2016 e EAN–ESCMID 2026 ao lado do manual; doses do manual iguais', async () => {
+  const m = await import('./meningite.ts')
+  assert.equal(m.fichaMeningiteAdulto.versao, '2026-11-14.1')
+  for (const f of [m.ESCMID_MENINGITE_2016, m.EAN_ESCMID_ENCEFALITE_2026, m.GUIA_VIGILANCIA_2024]) assert.ok(m.fichaMeningiteAdulto.fontes.includes(f))
+  assert.match(m.ESCMID_MENINGITE_2016.citacao, /PMID 27062097/)
+  assert.match(m.EAN_ESCMID_ENCEFALITE_2026.citacao, /PMID 42851210/)
+  assert.ok(m.TABELA2_MENINGITE.some((e) => /dexametasona 0,15 mg\/kg/.test(e.corticoide)))
+  const nota = NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === 'nota-hcfmusp-cap43-neuroinfeccao')!
+  assert.equal(nota.itens.length, m.DIRETRIZ_MENINGITE.length)
+  assert.deepEqual(nota.ficha.fontes, [m.ESCMID_MENINGITE_2016, m.EAN_ESCMID_ENCEFALITE_2026])
+})
