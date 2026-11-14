@@ -142,6 +142,30 @@ test('via aérea: DAS 2025 ao lado do manual; doses do Anexo 1 não mudam', asyn
   assert.deepEqual(nota.ficha.fontes, [DAS_2025])
 })
 
+test('lote 3, N1: notas de 33, 40 e 76 a partir das listas das fichas; PAC com a ATS lida e a nota da IDSA', async () => {
+  const { DIRETRIZ_PAC_2026, IDSA_PAC_2026, fichaPacAntibioticoAdulto } = await import('./tepPac.ts')
+  const { DIRETRIZ_HSA_2023 } = await import('./hsa.ts')
+  const { DIFERENCAS_AGITACAO_2024 } = await import('./agitacao.ts')
+  assert.ok(NOTAS_HCFMUSP_LOTE3.length >= 3)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length)
+  const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
+  assert.equal(new Set(ids).size, ids.length)
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === id)!
+  assert.equal(por('nota-hcfmusp-cap33-pac').itens.length, DIRETRIZ_PAC_2026.length + 1)
+  assert.equal(por('nota-hcfmusp-cap40-hsa').itens.length, DIRETRIZ_HSA_2023.length + 2)
+  assert.equal(por('nota-hcfmusp-cap76-agitacao').itens.length, 2 + DIFERENCAS_AGITACAO_2024.length)
+  for (const n of NOTAS_HCFMUSP_LOTE3) {
+    assert.equal(n.ficha.versao, '2026-11-14.1')
+    assert.equal(n.ficha.publico, 'adulto')
+    assert.match(n.ficha.revisadoEm ?? '', /lote 3/)
+    for (const f of n.ficha.fontes) assert.doesNotMatch(f.citacao, /Manual de Medicina de Emergência/, n.ficha.id)
+  }
+  assert.equal(fichaPacAntibioticoAdulto.versao, '2026-11-14.1')
+  assert.ok(fichaPacAntibioticoAdulto.fontes.includes(IDSA_PAC_2026))
+  assert.ok(por('nota-hcfmusp-cap33-pac').ficha.fontes.includes(IDSA_PAC_2026))
+  assert.ok(DIRETRIZ_PAC_2026.some((d) => d.tema === 'Internado com vírus respiratório positivo'))
+})
+
 test('HIC (cap. 39): ESO/EANS 2025 ao lado do manual; doses do manual iguais', async () => {
   const m = await import('./reversaoAnticoagulacao.ts')
   assert.equal(m.fichaReversaoAnticoagulacaoAdulto.versao, '2026-11-14.1')
