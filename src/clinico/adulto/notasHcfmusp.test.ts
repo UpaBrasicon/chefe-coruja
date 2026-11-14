@@ -298,3 +298,14 @@ test('insuficiência adrenal (cap. 72): três fontes ao lado do manual; doses do
   assert.equal(nota.itens.length, e.DIRETRIZ_IA.length)
   assert.deepEqual(nota.ficha.fontes, [e.ES_IA_PRIMARIA_2016, e.SFE_CRISE_ADRENAL_2016, e.ESE_ES_IA_GLICOCORTICOIDE_2024])
 })
+
+test('crise tireotóxica (cap. 70): consenso ETA/BTA/SfE 2026 ao lado do manual; doses do manual iguais', async () => {
+  const e = await import('./endocrino.ts')
+  assert.equal(e.fichaCriseTireotoxica.versao, '2026-11-14.1')
+  assert.ok(e.fichaCriseTireotoxica.fontes.includes(e.ETA_TEMPESTADE_2026))
+  assert.match(e.ETA_TEMPESTADE_2026.citacao, /sem graduação/)
+  assert.ok(e.DROGAS_CRISE_TIREOTOXICA.some((d) => d.droga === 'Metimazol' && /20 mg/.test(d.texto)))
+  const nota = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap70-tireotoxica')!
+  assert.equal(nota.itens.length, e.DIRETRIZ_TT.length)
+  assert.deepEqual(nota.ficha.fontes, [e.ETA_TEMPESTADE_2026])
+})
