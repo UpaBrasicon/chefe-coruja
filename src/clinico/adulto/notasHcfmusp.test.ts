@@ -331,3 +331,14 @@ test('lise tumoral (cap. 84): BSH 2025 ao lado do manual; doses do manual iguais
   assert.equal(nota.itens.length, s.DIRETRIZ_SLT.length)
   assert.deepEqual(nota.ficha.fontes, [s.BSH_SLT_2025])
 })
+
+test('PBE e SHR (cap. 57 e 58): AASLD 2021 e ADQI-ICA 2024 ao lado do manual; doses do manual iguais', async () => {
+  const h = await import('./hepatopata.ts')
+  assert.equal(h.fichaAsciteShr.versao, '2026-11-14.1')
+  assert.ok(h.fichaAsciteShr.fontes.includes(h.AASLD_ASCITE_2021))
+  assert.equal(h.ALBUMINA_PBE.d1GKg, 1.5)
+  assert.equal(h.TERLIPRESSINA_SHR.maxMgDia, 12)
+  const nota = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap57-58-pbe-shr')!
+  assert.equal(nota.itens.length, h.DIRETRIZ_PBE_SHR.length)
+  assert.deepEqual(nota.ficha.fontes, [h.AASLD_ASCITE_2021, h.ADQI_ICA_2024])
+})
