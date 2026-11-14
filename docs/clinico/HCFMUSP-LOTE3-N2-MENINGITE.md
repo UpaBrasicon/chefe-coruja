@@ -63,3 +63,10 @@ As seis respostas passam a abrir pela diretriz. Na pergunta da profilaxia, o tex
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000006` foi aplicada antes do merge. A ficha da meningite e a nota do cap. 43 estão na versão 2026-11-14.1.
+- O #668 foi mesclado com o CI verde. A Vercel publicou o master com sucesso.
+- O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis abrem pela diretriz, como na homologação.
