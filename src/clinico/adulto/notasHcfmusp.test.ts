@@ -230,3 +230,15 @@ test('trauma (cap. 47): europeia 2023 e EAST 2025 ao lado do manual; contas do m
   assert.equal(nota.itens.length, tr.DIRETRIZ_TRAUMA.length)
   assert.deepEqual(nota.ficha.fontes, [tr.EUROPEIA_SANGRAMENTO_TRAUMA_2023, tr.EAST_TXA_2025])
 })
+
+test('hipoglicemia (cap. 65): ADA 2026 e Endocrine 2023 ao lado do manual; doses do manual iguais', async () => {
+  const g = await import('./glicemia.ts')
+  assert.equal(g.fichaHipoglicemia.versao, '2026-11-14.1')
+  for (const f of [g.ADA_HIPOGLICEMIA_2026, g.ENDOCRINE_HIPOGLICEMIA_2023]) assert.ok(g.fichaHipoglicemia.fontes.includes(f))
+  assert.match(g.ADA_HIPOGLICEMIA_2026.citacao, /PMID 41358894/)
+  assert.deepEqual(g.HIPOGLICEMIA_DOSES.glicose50Ml, [60, 100])
+  assert.deepEqual(g.HIPOGLICEMIA_DOSES.glucagonMg, [1, 2])
+  const nota = NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === 'nota-hcfmusp-cap65-hipoglicemia')!
+  assert.equal(nota.itens.length, g.DIRETRIZ_HIPOGLICEMIA.length)
+  assert.deepEqual(nota.ficha.fontes, [g.ADA_HIPOGLICEMIA_2026, g.ENDOCRINE_HIPOGLICEMIA_2023])
+})
