@@ -1,3 +1,4 @@
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 
 // Distúrbios eletrolíticos e reposições do adulto — Manual de Medicina de
@@ -9,8 +10,69 @@ import { fichaAdulto } from './fonte.ts'
 
 export const fichaReposicaoPotassio = fichaAdulto('adulto-reposicao-potassio', 'Hipocalemia — reposição de potássio', 'cap. 67, p. 900–907, e Anexo 5 — Reposições, p. 1498–1499')
 export const fichaReposicaoMagnesio = fichaAdulto('adulto-reposicao-magnesio', 'Hipomagnesemia — reposição de magnésio', 'Anexo 5 — Reposições, p. 1501–1502; cap. 67, p. 907; cap. 68, p. 922')
-export const fichaReposicaoCalcio = fichaAdulto('adulto-reposicao-calcio', 'Hipocalcemia — cálcio corrigido e reposição', 'cap. 68, p. 919–924, e Anexo 5 — Reposições, p. 1500 e 1503')
-export const fichaHipercalcemia = fichaAdulto('adulto-hipercalcemia', 'Hipercalcemia — cálcio corrigido, FECa e tratamento agudo', 'cap. 68, p. 919 e 924–928')
+// Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 68: a
+// diretriz da Endocrine Society de 2023 (hipercalcemia da malignidade; GRADE) foi
+// lida no texto integral no site da revista, e as orientações de emergência da
+// Society for Endocrinology de 2016 (hipercalcemia e hipocalcemia), no PMC. Os
+// cortes em mmol/L são da SfE; os valores em mg/dL são a conversão aproximada
+// (× 4). As doses e contas do manual não mudam.
+export const ES_HIPERCALCEMIA_MALIGNIDADE_2023: Fonte = {
+  citacao: 'El-Hajj Fuleihan G, Clines GA, Hu MI, et al. Treatment of Hypercalcemia of Malignancy in Adults: An Endocrine Society Clinical Practice Guideline. J Clin Endocrinol Metab. 2023;108(3):507–528 (PMID 36545746). Texto integral lido, com as 8 recomendações graduadas.',
+  url: 'https://doi.org/10.1210/clinem/dgac621',
+}
+
+export const SFE_HIPERCALCEMIA_2016: Fonte = {
+  citacao: 'Walsh J, Gittoes N, Selby P; Society for Endocrinology Clinical Committee. Society for Endocrinology Endocrine Emergency Guidance: Emergency management of acute hypercalcaemia in adult patients. Endocr Connect. 2016;5(5):G9–G11 (PMID 27935816). PMC5314807: texto integral lido.',
+  url: 'https://doi.org/10.1530/EC-16-0055',
+}
+
+export const SFE_HIPOCALCEMIA_2016: Fonte = {
+  citacao: 'Turner J, Gittoes N, Selby P; Society for Endocrinology Clinical Committee. Society for Endocrinology Endocrine Emergency Guidance: Emergency management of acute hypocalcaemia in adult patients. Endocr Connect. 2016;5(5):G7–G8 (PMID 27935815). PMC5314808: texto integral lido.',
+  url: 'https://doi.org/10.1530/EC-16-0056',
+}
+
+const SEM_ITEM_CA = 'sem item do manual na ferramenta'
+
+/** Endocrine Society 2023 e SfE 2016 × manual, nos distúrbios do cálcio do adulto; um tema por linha. */
+export const DIRETRIZ_CALCIO: { parte: 'hipo' | 'hiper'; tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { parte: 'hiper', tema: 'Bisfosfonato ou denosumabe', diretriz: 'Na hipercalcemia da malignidade, tratar com bisfosfonato EV ou denosumabe', grau: '1⊕OOO', fonte: 'Endocrine Society 2023', livro: 'pamidronato 90 mg em SF 250 mL em 2–4 h; ácido zoledrônico 4 mg EV em 15 min (Tabela 7, p. 927)' },
+  { parte: 'hiper', tema: 'Denosumabe ou bisfosfonato', diretriz: 'Preferir denosumabe ao bisfosfonato EV na hipercalcemia da malignidade', grau: '2⊕OOO', fonte: 'Endocrine Society 2023', livro: SEM_ITEM_CA },
+  { parte: 'hiper', tema: 'Hipercalcemia grave e calcitonina', diretriz: 'Grave (Ca > 14 mg/dL, 3,5 mmol/L): calcitonina junto com bisfosfonato EV ou denosumabe no início; calcitonina só por 48–72 h (taquifilaxia)', grau: '2⊕OOO', fonte: 'Endocrine Society 2023', livro: 'calcitonina 4–8 UI/kg IM ou SC 12/12 h por 48 h, só com CaT > 14 mg/dL e nunca isolada (Tabela 7, p. 928)' },
+  { parte: 'hiper', tema: 'Refratária ou recorrente', diretriz: 'Refratária ou recorrente apesar do bisfosfonato EV: denosumabe', grau: '2⊕OOO', fonte: 'Endocrine Society 2023', livro: SEM_ITEM_CA },
+  { parte: 'hiper', tema: 'Linfoma e calcitriol alto', diretriz: 'Tumor com calcitriol alto (por exemplo, linfoma) já em corticoide e ainda grave ou sintomático: somar bisfosfonato EV ou denosumabe', grau: '2⊕OOO', fonte: 'Endocrine Society 2023', livro: 'prednisona 1 mg/kg no linfoma, mieloma, doenças granulomatosas e intoxicação por vitamina D (Tabela 7, p. 928)' },
+  { parte: 'hiper', tema: 'Carcinoma de paratireoide', diretriz: 'Calcimimético ou bisfosfonato EV ou denosumabe; na forma moderada a grave, começar pelo bisfosfonato ou denosumabe', grau: '2⊕OOO', fonte: 'Endocrine Society 2023', livro: SEM_ITEM_CA },
+  { parte: 'hiper', tema: 'Gravidade da hipercalcemia', diretriz: '< 3,0 mmol/L (cerca de 12 mg/dL): em geral sem urgência. 3,0–3,5 mmol/L: tratar logo, se sintomas ou subida rápida. > 3,5 mmol/L (cerca de 14 mg/dL): correção urgente, pelo risco de arritmia e coma', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipercalcemia)', livro: 'CaT > 12 mg/dL moderada, tratar se houver sintomas; > 14 mg/dL grave (p. 926–927)' },
+  { parte: 'hiper', tema: 'Hidratação e diurético', diretriz: 'SF 0,9% 4–6 L em 24 h, vigiando sobrecarga no renal e no idoso. Diurético de alça raramente, só na sobrecarga: não baixa o cálcio. Diálise na insuficiência renal grave', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipercalcemia)', livro: 'SF 4–6 L/dia (200–300 mL/h); furosemida individualizada, só depois de reidratar (Tabela 7, p. 927)' },
+  { parte: 'hiper', tema: 'Bisfosfonato: doses', diretriz: 'Ácido zoledrônico 4 mg em 15 min, ou pamidronato 30–90 mg (conforme a gravidade) a 20 mg/h, ou ibandronato 2–4 mg; mais lento e com dose menor na insuficiência renal. Nadir do cálcio em 2–4 dias', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipercalcemia)', livro: 'pamidronato 90 mg em 2–4 h, não repetir antes de 7 dias; zoledrônico 4 mg em 15 min (Tabela 7, p. 927)' },
+  { parte: 'hiper', tema: 'Corticoide', diretriz: 'Prednisolona 40 mg/dia no linfoma, nas doenças granulomatosas e na intoxicação por vitamina D; efeito em 2–4 dias', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipercalcemia)', livro: 'prednisona 1 mg/kg (Tabela 7, p. 928)' },
+  { parte: 'hipo', tema: 'Hipocalcemia grave', diretriz: 'Ca < 1,9 mmol/L (cerca de 7,6 mg/dL) ou com sintomas: gluconato de cálcio 10% 10–20 mL em 50–100 mL de SG 5% EV em 10 min, com ECG, repetindo até ficar assintomático; depois 100 mL de gluconato 10% em 1 L de SF ou SG 5% a 50–100 mL/h, titulado. Cloreto de cálcio só em acesso central', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipocalcemia)', livro: 'bolus de 10–20 mL em 50–100 mL de SG 5% em 10–20 min; infusão de 110 mL em 890 mL, 0,5–1,5 mg/kg/h, começando a 50 mL/h (Anexo 5, p. 1500; Tabela 4, p. 922)' },
+  { parte: 'hipo', tema: 'Magnésio', diretriz: 'Na hipomagnesemia, suspender a droga causadora e repor sulfato de magnésio EV, 24 mmol em 24 h (6 g em 500 mL de SF ou SG 5%)', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipocalcemia)', livro: 'reposição de magnésio no Anexo 5 (p. 1501–1502)' },
+  { parte: 'hipo', tema: 'Hipocalcemia leve', diretriz: 'Ca > 1,9 mmol/L e sem sintomas: cálcio VO; vitamina D se houver deficiência; depois de tireoidectomia, alfacalcidol 0,25 µg/dia se persistir além de 72 h', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipocalcemia)', livro: 'cálcio elementar 1.500–2.000 mg/dia VO; carbonato de cálcio 1.250 mg = 500 mg de cálcio elementar (p. 923, 1500)' },
+  { parte: 'hipo', tema: 'Insuficiência renal terminal', diretriz: 'Não usar infusões de cálcio de grande volume na insuficiência renal terminal ou na diálise', grau: 'orientação de emergência, sem graduação', fonte: 'SfE 2016 (hipocalcemia)', livro: SEM_ITEM_CA },
+]
+
+export const DIFERENCAS_CALCIO: string[] = [
+  'Denosumabe: a Endocrine Society 2023 o prefere ao bisfosfonato e o usa na forma refratária; o manual não traz.',
+  'Pamidronato: a SfE dá 30–90 mg, conforme a gravidade, a 20 mg/h, mais lento na insuficiência renal; o manual dá 90 mg em 2–4 h.',
+  'Corticoide: a SfE dá prednisolona 40 mg/dia; o manual, prednisona 1 mg/kg.',
+  'Diurético: a SfE só o usa na sobrecarga de volume, porque não baixa o cálcio; o manual fala em furosemida individualizada depois de reidratar.',
+  'Infusão de cálcio: a SfE dilui 100 mL de gluconato 10% em 1 L a 50–100 mL/h; o manual, 110 mL em 890 mL a 0,5–1,5 mg/kg/h.',
+]
+
+const fichaCaLivro = fichaAdulto('adulto-reposicao-calcio', 'Hipocalcemia — cálcio corrigido e reposição', 'cap. 68, p. 919–924, e Anexo 5 — Reposições, p. 1500 e 1503')
+export const fichaReposicaoCalcio: Ficha = {
+  ...fichaCaLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaCaLivro.fontes, SFE_HIPOCALCEMIA_2016],
+  revisadoEm: '14/11/2026 (SfE 2016 de hipocalcemia lida no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
+const fichaHiperCaLivro = fichaAdulto('adulto-hipercalcemia', 'Hipercalcemia — cálcio corrigido, FECa e tratamento agudo', 'cap. 68, p. 919 e 924–928')
+export const fichaHipercalcemia: Ficha = {
+  ...fichaHiperCaLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaHiperCaLivro.fontes, ES_HIPERCALCEMIA_MALIGNIDADE_2023, SFE_HIPERCALCEMIA_2016],
+  revisadoEm: '14/11/2026 (Endocrine Society 2023 e SfE 2016 de hipercalcemia lidas no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 export const fichaReposicaoFosforo = fichaAdulto('adulto-reposicao-fosforo', 'Hipofosfatemia — reposição de fósforo', 'Anexo 5 — Reposições, p. 1501')
 
 /** Trecho do livro mostrado na tela, sempre com página. */

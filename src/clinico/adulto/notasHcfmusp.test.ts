@@ -309,3 +309,15 @@ test('crise tireotóxica (cap. 70): consenso ETA/BTA/SfE 2026 ao lado do manual;
   assert.equal(nota.itens.length, e.DIRETRIZ_TT.length)
   assert.deepEqual(nota.ficha.fontes, [e.ETA_TEMPESTADE_2026])
 })
+
+test('cálcio (cap. 68): Endocrine Society 2023 e SfE 2016 ao lado do manual; doses do manual iguais', async () => {
+  const e = await import('./eletrolitos.ts')
+  assert.equal(e.fichaHipercalcemia.versao, '2026-11-14.1')
+  assert.equal(e.fichaReposicaoCalcio.versao, '2026-11-14.1')
+  assert.ok(e.fichaHipercalcemia.fontes.includes(e.ES_HIPERCALCEMIA_MALIGNIDADE_2023))
+  assert.ok(e.fichaReposicaoCalcio.fontes.includes(e.SFE_HIPOCALCEMIA_2016))
+  assert.equal(e.INFUSAO_CALCIO.gluconatoMl, 110)
+  const nota = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap68-calcio')!
+  assert.equal(nota.itens.length, e.DIRETRIZ_CALCIO.length)
+  assert.ok(nota.itens.some((i) => i.tema.startsWith('Hipocalcemia')))
+})
