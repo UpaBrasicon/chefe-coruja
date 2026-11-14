@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
 import {
-  ATB_CIRROTICO_HDA, DIVERGENCIAS_ESCORES_HDA, ERITROMICINA_EDA, FORA_HDA, FORREST, INDICACAO_ATB_CIRROTICO, METAS_HDA, METAS_HDB, NOTA_CALIBRE_5MM, NOTA_ESGE_2026, NOTA_FORRESTER,
+  ATB_CIRROTICO_HDA, DIFERENCAS_HDA, DIRETRIZ_HDA, DIVERGENCIAS_ESCORES_HDA, ERITROMICINA_EDA, FORA_HDA, FORREST, INDICACAO_ATB_CIRROTICO, METAS_HDA, METAS_HDB, NOTA_CALIBRE_5MM, NOTA_ESGE_2026, NOTA_FORRESTER,
   NOTA_HDB_MACICA, OMEPRAZOL_HDA, PROFILAXIA_VARIZES, VASOATIVOS_VARIZES, eritromicinaMg, fichaHemorragiaDigestiva, hdbMacica, indiceDeChoque,
   omeprazolAltaDose, referenciaForrest, testeOrtostatico, vasoativosTotais24h, type ClasseForrest,
 } from '@/clinico/adulto/hemorragiaDigestiva'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -109,6 +110,15 @@ export function HemorragiaDigestivaAdulto() {
 
       <Bloco titulo="O que o manual não traz">
         <Fora itens={FORA_HDA} />
+      </Bloco>
+      <Bloco titulo="ESGE 2026 e Baveno VIII — ao lado do manual" descricao="Úlcera péptica pela ESGE 2026 (força e qualidade da evidência) e sangramento varicoso pelo Baveno VIII (nível de evidência, NE), lidos no texto integral. As doses do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_HDA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_HDA.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
