@@ -1,9 +1,10 @@
 import { useState } from 'react'
 
-import { DROGAS_ISR, NOTA_ATS_PRE_OXIGENACAO, calcularIsr, fichaIsrAdulto, type DrogaIsr } from '@/clinico/adulto/isr'
+import { DIFERENCAS_DAS_2025, DIRETRIZ_DAS_2025, DROGAS_ISR, NOTA_ATS_PRE_OXIGENACAO, calcularIsr, fichaIsrAdulto, type DrogaIsr } from '@/clinico/adulto/isr'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { numero } from '@/lib/formato'
 
 const PAPEL: Record<DrogaIsr['papel'], string> = { inducao: 'Indução', analgesia: 'Analgesia', bloqueio: 'Bloqueio neuromuscular' }
@@ -49,6 +50,21 @@ export function IsrAdulto() {
           </CardContent>
         </Card>
       ))}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-corpo">DAS 2025 — ao lado do manual</CardTitle>
+          <p className="text-apoio text-tinta-sussurro">Difficult Airway Society 2025, lida no texto integral: recomendações de consenso, sem classe. As doses do Anexo 1 acima continuam valendo.</p>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <div className="overflow-x-auto">
+            <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+              <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">DAS 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+              <TableBody>{DIRETRIZ_DAS_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.das} <span className="text-tinta-sussurro">({d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+            </Table>
+          </div>
+          <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DAS_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+        </CardContent>
+      </Card>
     </ToolLayout>
   )
 }
