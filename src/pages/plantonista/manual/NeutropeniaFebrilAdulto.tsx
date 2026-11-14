@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import {
-  ANTIFUNGICOS_NF, ATB_ALTO_RISCO, DEFINICOES_NF, DURACAO_NF, ERRATA_ANFO_DEOXICOLATO, ERRATA_MASCC, INDICACOES_VANCO_NF, antifungicosPorPeso,
+  ANTIFUNGICOS_NF, ATB_ALTO_RISCO, DEFINICOES_NF, DIFERENCAS_NF, DIRETRIZ_NF, DURACAO_NF, ERRATA_ANFO_DEOXICOLATO, ERRATA_MASCC, INDICACOES_VANCO_NF, antifungicosPorPeso,
   fichaNeutropeniaFebrilAdulto,
 } from '@/clinico/adulto/neutropeniaFebril'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Erratas, ListaLivro } from './PecasLoteE7'
@@ -56,6 +57,15 @@ export function NeutropeniaFebrilAdulto() {
 
       <Bloco titulo="Errata do MASCC">
         <Erratas itens={[ERRATA_MASCC, 'p. 1067–1068 — CISNE citado (3 níveis, usa monócitos) sem tabela de pontos: não implementado.']} />
+      </Bloco>
+      <Bloco titulo="ABHH 2024 e MASCC 2026 — ao lado do manual" descricao="Consenso da ABHH de 2024 (Delphi, sem graduação, em pacientes hematológicos), lido no texto integral, e pontos do consenso MASCC de 2026, lidos no resumo. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_NF.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_NF.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

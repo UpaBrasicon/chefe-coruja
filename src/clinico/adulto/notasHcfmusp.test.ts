@@ -242,3 +242,15 @@ test('hipoglicemia (cap. 65): ADA 2026 e Endocrine 2023 ao lado do manual; doses
   assert.equal(nota.itens.length, g.DIRETRIZ_HIPOGLICEMIA.length)
   assert.deepEqual(nota.ficha.fontes, [g.ADA_HIPOGLICEMIA_2026, g.ENDOCRINE_HIPOGLICEMIA_2023])
 })
+
+test('neutropenia febril (cap. 81): ABHH 2024 e MASCC 2026 ao lado do manual; doses do manual iguais', async () => {
+  const n = await import('./neutropeniaFebril.ts')
+  assert.equal(n.fichaNeutropeniaFebrilAdulto.versao, '2026-11-14.1')
+  for (const f of [n.ABHH_NF_2024, n.MASCC_2026]) assert.ok(n.fichaNeutropeniaFebrilAdulto.fontes.includes(f))
+  assert.match(n.ABHH_NF_2024.citacao, /PMID 39694764/)
+  assert.equal(n.ANTIFUNGICOS_NF.caspofungina.ataqueMg, 70)
+  assert.ok(n.ATB_ALTO_RISCO.some((a) => a.nome === 'Cefepime' && a.dose.startsWith('2 g')))
+  const nota = NOTAS_HCFMUSP_LOTE3.find((x) => x.ficha.id === 'nota-hcfmusp-cap81-neutropenia')!
+  assert.equal(nota.itens.length, n.DIRETRIZ_NF.length)
+  assert.deepEqual(nota.ficha.fontes, [n.ABHH_NF_2024, n.MASCC_2026])
+})
