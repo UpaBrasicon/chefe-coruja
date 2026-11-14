@@ -149,7 +149,7 @@ Pela decisão M2, quando o texto da diretriz está fechado, a ficha fica como es
 | 20, aorta | ESC 2024 (PMID 39210722) | **Feito no #656.** Lido pelo slideset oficial da ESC, baixado com o ok do RT. Detalhes em `HCFMUSP-LOTE2-M2-AORTA.md` |
 | 3, via aérea | DAS 2025 (PMID 41203471) | **Parado.** É de acesso aberto, mas o download do PDF no site do BJA foi negado pela regra de permissão, e o texto não está no PMC |
 | 31, DPOC | GOLD 2026 | **Feito no #657.** Capítulo 4 lido no PDF do relatório, baixado com o ok do RT. Detalhes em `HCFMUSP-LOTE2-M2-DPOC.md` |
-| 67, hipopotassemia | nenhuma | **Espera decisão do RT.** No PubMed não há diretriz de sociedade para a hipopotassemia aguda no adulto, só revisões, e escolher uma delas como fonte é decisão do RT |
+| 67, hipopotassemia | nenhuma | **Fechado pelo RT em 14/11/2026: fica o manual.** No PubMed não há diretriz de sociedade para a hipopotassemia aguda no adulto, só revisões. A revisão aberta mais usada (Kardalas, Endocr Connect 2018, PMID 29540487) é mais antiga que o manual de 2022. A ficha `adulto-reposicao-potassio` não muda e não ganha nota de atualização |
 
 Não houve tentativa de passar por verificação anti-robô. Para TEP, taquiarritmias e via aérea, o caminho que sobra é ler com o login do RT, pelo Chrome conectado.
 
