@@ -483,3 +483,17 @@ test('lote 6, Q1: nota do cap. 41 a partir da lista da AHS 2025 na ficha de cefa
   for (const i of nota.itens) assert.notEqual(i.manual, 'não trata do ponto', i.tema)
   assert.match(textoNota(nota), /hidromorfona/)
 })
+
+test('lote 6, Q2: nota do cap. 44 com a SGB da ficha e o botulismo do CDC 2021', async () => {
+  const g = await import('./guillainBarre.ts')
+  const nota = NOTAS_HCFMUSP_LOTE6.find((n) => n.ficha.id === 'nota-hcfmusp-cap44-paralisias-flacidas')!
+  assert.equal(nota.fichaCentral, g.fichaSgbAdulto.id)
+  assert.equal(nota.itens.length, g.DIRETRIZ_SGB_2023.length + 6)
+  assert.match(nota.ficha.fontes[2].citacao, /p\. 371/)
+  assert.match(textoNota(nota), /até 7 dias/)
+  assert.equal(nota.ficha.fontes[0], g.EAN_PNS_SGB_2023)
+  assert.match(nota.ficha.fontes[1].citacao, /PMID 33956777/)
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
+  assert.equal(new Set(nota.itens.map((i) => i.tema)).size, nota.itens.length)
+  assert.match(textoNota(nota), /sem esperar a confirmação laboratorial/)
+})

@@ -1,4 +1,5 @@
 import { completo, escolha, numero, somar, type Escore } from '../escore.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
 import { numero as numeroBr } from '../../lib/formato.ts'
 
@@ -9,7 +10,37 @@ import { numero as numeroBr } from '../../lib/formato.ts'
 
 const CAP = 'cap. 44 Paralisias flácidas agudas'
 
-export const fichaSgbAdulto = fichaAdulto('adulto-guillain-barre', 'Síndrome de Guillain-Barré — imunoterapia, LCR e AAN (adulto)', `${CAP}, p. 602–606`)
+const fichaSgbLivro = fichaAdulto('adulto-guillain-barre', 'Síndrome de Guillain-Barré — imunoterapia, LCR e AAN (adulto)', `${CAP}, p. 602–606`)
+
+// Lote 6 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): diretriz
+// EAN/PNS 2023 ao lado do manual, pelo resumo (o texto integral não está no PMC).
+export const EAN_PNS_SGB_2023: Fonte = {
+  citacao: 'van Doorn PA, Van den Bergh PYK, Hadden RDM, et al. European Academy of Neurology/Peripheral Nerve Society Guideline on diagnosis and treatment of Guillain-Barré syndrome. Eur J Neurol. 2023;30(12):3646–3674 (PMID 37814552). Resumo lido; GRADE.',
+  url: 'https://doi.org/10.1111/ene.16073',
+}
+
+const SEM_ITEM_SGB = 'o cap. 44 não trata do ponto'
+
+/** EAN/PNS 2023, pelo resumo; o grau é como o resumo diz (recomenda, recomenda fraco, ponto de boa prática). */
+export const DIRETRIZ_SGB_2023: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Imunoglobulina', diretriz: 'Imunoglobulina EV 0,4 g/kg por 5 dias no paciente que não anda sem ajuda, até 2 semanas do início da fraqueza; entre 2 e 4 semanas, ponto de boa prática', grau: 'recomenda; 2–4 semanas: ponto de boa prática', fonte: 'EAN/PNS 2023', livro: '0,4 g/kg/dia por 5 dias; trata sem discussão o escore de incapacidade ≥ 3 e tende a tratar o 2; benefício até 4 semanas (p. 604)' },
+  { tema: 'Plasmaférese', diretriz: 'Um curso de plasmaférese, 12–15 L em 4 a 5 trocas em 1–2 semanas, no paciente que não anda sem ajuda, até 4 semanas do início da fraqueza', grau: 'recomenda', fonte: 'EAN/PNS 2023', livro: '250 mL/kg divididos em 5 sessões em dias alternados (p. 604)' },
+  { tema: 'Plasmaférese seguida de imunoglobulina', diretriz: 'Não recomenda plasmaférese seguida logo de imunoglobulina', grau: 'não recomenda', fonte: 'EAN/PNS 2023', livro: 'não há evidência do uso concomitante das duas terapias (p. 604)' },
+  { tema: 'Segundo curso de imunoglobulina', diretriz: 'Não dar segundo curso de imunoglobulina no paciente com prognóstico ruim', grau: 'recomenda contra', fonte: 'EAN/PNS 2023', livro: SEM_ITEM_SGB },
+  { tema: 'Corticoide', diretriz: 'Não usar corticoide oral; corticoide EV, recomendação fraca contra', grau: 'oral: recomenda contra; EV: recomenda fraco contra', fonte: 'EAN/PNS 2023', livro: 'AAN 2003: não há recomendação para corticoide na SGB (Tabela 6, p. 605–606)' },
+  { tema: 'Dor', diretriz: 'Gabapentinoide, antidepressivo tricíclico ou carbamazepina para a dor', grau: 'recomenda fraco', fonte: 'EAN/PNS 2023', livro: 'dor radicular ou neuropática em até 2/3 dos casos, sem tratamento indicado (p. 600)' },
+  { tema: 'Risco de ventilação mecânica', diretriz: 'Usar o mEGRIS (modified Erasmus GBS Respiratory Insufficiency Score) para estimar o risco de precisar de ventilação', grau: 'orientação da força-tarefa', fonte: 'EAN/PNS 2023', livro: 'critérios da Tabela 4: 1 maior (pCO2 > 48, pO2 < 56, CVF < 15 mL/kg, PImáx < 30) ou 2 menores (p. 602)' },
+  { tema: 'Prognóstico', diretriz: 'Usar o mEGOS (EGOS modificado) para estimar a evolução', grau: 'orientação da força-tarefa', fonte: 'EAN/PNS 2023', livro: 'EGOS com o escore de incapacidade de 2 semanas da admissão (Tabela 7, p. 606)' },
+  { tema: 'Diagnóstico', diretriz: 'Liquor valioso sobretudo no diagnóstico menos certo; eletroneuromiografia para apoiar o diagnóstico; anti-GQ1b se houver suspeita de Miller Fisher; ressonância ou ultrassom no caso atípico', grau: 'ponto de boa prática', fonte: 'EAN/PNS 2023', livro: 'liquor (dissociação proteinocitológica) e eletroneuromiografia são os dois exames principais (p. 603)' },
+  { tema: 'Progressão depois de 8 semanas', diretriz: 'Considerar CIDP de início agudo se a piora continua 8 semanas depois do início, o que ocorre em cerca de 5% dos diagnosticados com SGB', grau: 'ponto de boa prática', fonte: 'EAN/PNS 2023', livro: SEM_ITEM_SGB },
+]
+
+export const fichaSgbAdulto: Ficha = {
+  ...fichaSgbLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaSgbLivro.fontes, EAN_PNS_SGB_2023],
+  revisadoEm: '14/11/2026 (diretriz EAN/PNS 2023 ao lado do manual, pelo resumo; lote 6 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
+}
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 
