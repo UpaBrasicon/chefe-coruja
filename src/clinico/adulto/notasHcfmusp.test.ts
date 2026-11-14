@@ -353,3 +353,14 @@ test('encefalopatia hepática (cap. 59): ACG 2026 ao lado do manual; doses do ma
   assert.equal(nota.itens.length, h.DIRETRIZ_EH.length)
   assert.deepEqual(nota.ficha.fontes, [h.ACG_EH_2026])
 })
+
+test('endocardite (cap. 23): ESC 2023 ao lado do manual; Duke-ISCVID igual', async () => {
+  const d = await import('./duke.ts')
+  assert.equal(d.duke.ficha.versao, '2026-11-14.1')
+  assert.ok(d.duke.ficha.fontes.includes(d.ESC_EI_2023))
+  assert.equal(d.preencheDuke(1, 3), true)
+  assert.equal(d.possivelDuke(1, 1), true)
+  const nota = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap23-endocardite')!
+  assert.equal(nota.itens.length, d.DIRETRIZ_EI.length)
+  assert.deepEqual(nota.ficha.fontes, [d.ESC_EI_2023])
+})
