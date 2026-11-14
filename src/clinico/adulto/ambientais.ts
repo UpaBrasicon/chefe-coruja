@@ -46,6 +46,7 @@ export const DIRETRIZ_AFOGAMENTO: { tema: string; diretriz: string; grau: string
   { tema: 'Antibiótico', diretriz: 'Não usar antibiótico empírico; na pneumonia, guiar por cultura, hemocultura ou antígeno urinário, ou pela clínica', grau: 'forte; evidência alta', fonte: 'WMS 2024', livro: 'não usar de rotina; só na pneumonia, em geral depois de 48–72 h (p. 1344)' },
   { tema: 'Corticoide', diretriz: 'Não usar corticoide de rotina no afogamento', grau: 'forte; evidência baixa', fonte: 'WMS 2024', livro: 'não usar de rotina; só no broncoespasmo (p. 1344)' },
   { tema: 'Controle de temperatura depois da PCR', diretriz: 'Evidência insuficiente para indicar ou contraindicar o controle direcionado de temperatura no afogado', grau: 'fraca; evidência muito baixa', fonte: 'WMS 2024', livro: 'hipotermia terapêutica de 32–34 °C por 12–72 h é controversa (p. 1343)' },
+  { tema: 'Prognóstico', diretriz: 'O tempo de submersão é o principal preditor do desfecho; com submersão acima de 30 min, o prognóstico é ruim, qualquer que seja a temperatura da água', grau: 'texto da diretriz, sem grau', fonte: 'WMS 2024', livro: 'graus de Szpilman com sobrevida: 0 e I 100%; II 99%; III 95–96%; IV 78–82%; V 56–69%; VI 7–12%; pior prognóstico com submersão > 5 min, entre outros (Tabela 1 e p. 1340–1341)' },
   { tema: 'Alta', diretriz: 'Depois de 4–6 h de observação, é razoável a alta com estado mental normal e função respiratória normal, sem piora', grau: 'fraca; evidência baixa', fonte: 'WMS 2024', livro: 'assintomático com SpO2 > 95% ou tosse leve com exame normal: alta depois de 4–6 h (p. 1344)' },
 ]
 
@@ -60,9 +61,9 @@ const fichaSzpilmanLivro = fichaAdulto('adulto-szpilman', 'Afogamento — graus 
 export const szpilman: Escore = {
   ficha: {
     ...fichaSzpilmanLivro,
-    versao: '2026-11-14.1',
+    versao: '2026-11-14.2',
     fontes: [...fichaSzpilmanLivro.fontes, WMS_AFOGAMENTO_2024],
-    revisadoEm: '14/11/2026 (WMS 2024 de afogamento lida no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
+    revisadoEm: '14/11/2026, .2: linha de prognóstico com a sobrevida de Szpilman; 14/11/2026 (WMS 2024 de afogamento lida no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
   },
   descricao: 'Grau 0 a VI pelos achados cardiopulmonares, com a sobrevida da Tabela 1, e os indicadores de pior prognóstico do texto.',
   itens: [
