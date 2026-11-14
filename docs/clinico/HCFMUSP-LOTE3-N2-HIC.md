@@ -65,3 +65,10 @@ Cinco de seis respostas passam a abrir pela ESO 2025. A da varfarina abre pela t
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000005` foi aplicada antes do merge. A ficha de reversão e a nota do cap. 39 estão na versão 2026-11-14.1.
+- O #666 recebeu o master antes do merge, e as notas do lote 3 ficaram juntas: 33, 39, 40 e 76. O CI ficou verde.
+- O corpus foi gerado do master e ingerido. A API foi reiniciada.
+- Refiz as perguntas na produção. Cinco de seis abrem pela ESO 2025. A da varfarina abre pela tabela geral de reversão, como na homologação.

@@ -40,3 +40,10 @@ Perguntas direto à API da biblioteca (`conflito_l3n1.py`). "Antes" é a produç
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000004` foi aplicada antes do merge. A ficha da PAC e as três notas estão na versão 2026-11-14.1.
+- O corpus foi gerado do master e ingerido. A API foi reiniciada.
+- A Vercel publicou o master com sucesso.
+- Refiz as perguntas na produção: as seis abrem pela diretriz.
