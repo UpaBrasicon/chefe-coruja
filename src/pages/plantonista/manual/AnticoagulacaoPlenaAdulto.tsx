@@ -4,9 +4,11 @@ import {
   DIFERENCAS_ANTICOAG_2025, HNF_LITICO_2025, enoxaparinaLitico2025, hnfLitico2025, BIVALIRUDINA, CONTEXTOS_ENOXAPARINA, ORAIS, OUTRAS_HBPM, bivalirudinaMgH, edoxabanaMg, enoxaparina, fichaAnticoagulacaoPlenaAdulto, fondaparinuxMg, hnfSc,
   type ContextoEnoxaparina, type Faixa,
 } from '@/clinico/adulto/anticoagulacao'
+import { DIFERENCAS_TVP, DIRETRIZ_TVP } from '@/clinico/adulto/tvp2026'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Label } from '@/components/ui/label'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -119,6 +121,15 @@ export function AnticoagulacaoPlenaAdulto() {
         <LinhaManual nome="HNF com fibrinolítico" texto={`${HNF_LITICO_2025.bolusUiKg} UI/kg (máx. ${numero(HNF_LITICO_2025.bolusMaxUi)}) + ${HNF_LITICO_2025.infusaoUiKgH} UI/kg/h (máx. ${numero(HNF_LITICO_2025.infusaoMaxUiH)} UI/h), TTPa 60–80 s`} pagina={HNF_LITICO_2025.pagina}
           conta={hnf25 ? <>bolus <strong>{fmtE(hnf25.bolusUi, 0)} UI</strong>{hnf25.bolusNoTeto ? ' (teto)' : ''} · <strong>{fmtE(hnf25.infusaoUiH, 0)} UI/h</strong>{hnf25.infusaoNoTeto ? ' (teto)' : ''}</> : 'informe o peso'} />
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ANTICOAG_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+      </Bloco>
+      <Bloco titulo="TVP: ASH 2020 — ao lado do manual" descricao="Tratamento da TVP pela diretriz da ASH de 2020 (GRADE: forte ou condicional, com a certeza), lida no texto integral. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_TVP.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TVP.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
