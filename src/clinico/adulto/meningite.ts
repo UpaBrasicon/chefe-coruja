@@ -9,8 +9,8 @@ import { fichaAdulto } from './fonte.ts'
 // capítulo não traz quimioprofilaxia de contatos: ela vem do Guia de Vigilância em
 // Saúde do MS (6ª ed. revisada, 2024, v. 1), lido no PDF (página impressa = página do
 // PDF − 1): doença meningocócica, p. 116–118 e Quadro 3 (p. 117); Hib, p. 142–143 e
-// Quadro 11 (p. 143). A ESCMID 2016 do levantamento não foi lida no texto e fica de
-// fora. A conduta é do médico (ADR 0007).
+// Quadro 11 (p. 143). A ESCMID 2016 e a EAN–ESCMID 2026 entram ao lado do manual
+// (lote 3 da revisão do HCFMUSP, abaixo). A conduta é do médico (ADR 0007).
 
 const PAG_MENINGITE = 'cap. 43 Neuroinfecção no departamento de emergência, p. 589–597 (Tabelas 1 e 2, p. 590–592)'
 
@@ -22,11 +22,55 @@ export const GUIA_VIGILANCIA_2024: Fonte = {
   pediatrica: true,
 }
 
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 43: a
+// ESCMID 2016 de meningite bacteriana foi lida no texto integral (site da CMI,
+// pelo Chrome do RT), com as Tabelas 4.1 a 4.3; a EAN–ESCMID 2026 de encefalite
+// infecciosa foi lida no PMC. A ESCMID gradua de A (apoio forte) a D (contra);
+// a EAN–ESCMID usa GRADE e "boa prática". Doses e contas do manual não mudam.
+export const ESCMID_MENINGITE_2016: Fonte = {
+  citacao: 'van de Beek D, Cabellos C, Dzupova O, et al. ESCMID guideline: diagnosis and treatment of acute bacterial meningitis. Clin Microbiol Infect. 2016;22(Suppl 3):S37–S62 (PMID 27062097). Texto integral lido, com as Tabelas 4.1 (empírico por idade), 4.2 (por agente) e 4.3 (profilaxia de contatos).',
+  url: 'https://doi.org/10.1016/j.cmi.2016.01.007',
+}
+
+export const EAN_ESCMID_ENCEFALITE_2026: Fonte = {
+  citacao: 'Granerod J, Sellner J, Stahl JP, et al. Diagnosis and Management of Infectious Encephalitis in Adults: Guidelines From the European Academy of Neurology and European Society of Clinical Microbiology and Infectious Diseases. Eur J Neurol. 2026;33(10):e70647 (PMID 42851210; PMC13650609). Texto integral lido.',
+  url: 'https://doi.org/10.1111/ene.70647',
+}
+
+const SEM_ITEM_MEN = 'sem item do manual na ferramenta'
+
+/** ESCMID 2016 (bacteriana) e EAN–ESCMID 2026 (encefalite) × manual e Guia do MS, um tema por linha. */
+export const DIRETRIZ_MENINGITE: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Hemocultura e LCR', diretriz: 'Hemocultura antes da primeira dose do antibiótico; no LCR, celularidade, proteína, glicose, cultura e Gram', grau: 'A', fonte: 'ESCMID 2016', livro: 'antibiótico antes da hemocultura e do LCR se houver demora (p. 590); Tabela 1 (p. 590)' },
+  { tema: 'Tomografia antes da punção', diretriz: 'Só com déficit neurológico focal (exceto paralisia de nervo craniano), crise convulsiva nova, Glasgow < 10 ou imunossupressão grave. Sem esses achados, a TC antes da punção não é recomendada', grau: 'A', fonte: 'ESCMID 2016', livro: 'verificar a segurança; a Figura 2 mostra duas abordagens de TC antes da punção (p. 592)' },
+  { tema: 'Tempo até o antibiótico', diretriz: 'O quanto antes, sem passar de 1 h da chegada. Se a punção atrasar (por exemplo, pela TC), começar o empírico já na suspeita', grau: 'A', fonte: 'ESCMID 2016', livro: 'prioridade máxima; mortalidade sobe até 15% por hora de atraso (p. 590)' },
+  { tema: 'Empírico de 18 a 50 anos', diretriz: 'Ceftriaxona 2 g 12/12 h (ou 4 g/dia) ou cefotaxima; somar vancomicina ou rifampicina onde há pneumococo com sensibilidade reduzida à penicilina', grau: 'A (Tabela 4.1)', fonte: 'ESCMID 2016', livro: 'ceftriaxona 2 g 12/12 h; vancomicina de rotina não se justifica no Brasil (p. 591–593)' },
+  { tema: 'Acima de 50 anos ou risco de Listeria', diretriz: 'Somar amoxicilina ou ampicilina 2 g 4/4 h ao esquema acima', grau: 'A (Tabela 4.1)', fonte: 'ESCMID 2016', livro: 'ampicilina 2 g 4/4 h acima de 50 anos, na imunossupressão, com corticoide ou na gestação (p. 592–593)' },
+  { tema: 'Duração', diretriz: 'Pneumococo 10–14 dias; meningococo 7; H. influenzae 7–10; Listeria 21 ou mais; sem agente isolado, no mínimo 2 semanas. Curso curto não é recomendado', grau: 'A; curso curto D', fonte: 'ESCMID 2016', livro: '10–14 dias (pneumococo e empírico), 7 (meningococo e Hib), 21 (Listeria) (Tabela 2, p. 591–592)' },
+  { tema: 'Dexametasona: dose e início', diretriz: 'Adulto: 10 mg 6/6 h por 4 dias (A), começando com a primeira dose do antibiótico (A); se o antibiótico já foi dado, ainda até 4 h depois (C)', grau: 'A e C', fonte: 'ESCMID 2016', livro: '0,15 mg/kg/dose 6/6 h por 4 dias, de preferência com a primeira dose (Tabela 2, p. 591; p. 593–594)' },
+  { tema: 'Dexametasona: quando suspender', diretriz: 'Suspender se não for meningite bacteriana ou se o agente não for H. influenzae nem pneumococo', grau: 'B', fonte: 'ESCMID 2016', livro: 'meningococo e Hib: sem benefício, mas seguro; Listeria: não usar (Tabela 2, p. 591–592)' },
+  { tema: 'Adjuvantes de rotina', diretriz: 'Manitol, paracetamol, antiepiléptico, salina hipertônica, imunoglobulina e heparina de rotina não são recomendados; hipotermia também não', grau: 'D', fonte: 'ESCMID 2016', livro: SEM_ITEM_MEN },
+  { tema: 'Profilaxia dos contatos (meningococo)', diretriz: 'Contatos domiciliares e próximos: ceftriaxona 250 mg IM dose única, ciprofloxacino 500 mg VO dose única ou rifampicina 600 mg 12/12 h por 2 dias (adulto), começando em até 24 h da identificação', grau: 'A (Tabela 4.3)', fonte: 'ESCMID 2016', livro: 'Guia do MS 2024: rifampicina 10 mg/kg (máx. 600 mg) 12/12 h por 2 dias, ceftriaxona 250 mg IM ou ciprofloxacino 500 mg, de preferência até 48 h (Quadro 3, p. 117)' },
+  { tema: 'Depois da internação', diretriz: 'Audiometria durante a internação (A); vacina pneumocócica depois de meningite pneumocócica (B)', grau: 'A e B', fonte: 'ESCMID 2016', livro: SEM_ITEM_MEN },
+  { tema: 'Encefalite: aciclovir', diretriz: 'Aciclovir EV o quanto antes na suspeita, idealmente em até 6 h da chegada, sem esperar imagem nem punção', grau: 'forte; certeza baixa', fonte: 'EAN–ESCMID 2026', livro: 'aciclovir desde a suspeita, sem esperar a PCR (p. 592, 594)' },
+  { tema: 'Encefalite herpética: duração e suspensão', diretriz: 'HSV comprovado: no mínimo 14 dias de aciclovir EV. Suspender na baixa suspeita só se a PCR para HSV no LCR for negativa (punção > 72 h do início), a celularidade for normal e a RM não mostrar lesão temporal', grau: 'boa prática', fonte: 'EAN–ESCMID 2026', livro: 'aciclovir 10 mg/kg/dose 8/8 h por 14–21 dias (Tabela 2, p. 591)' },
+  { tema: 'Encefalite: imagem e corticoide', diretriz: 'RM é a preferida, em até 24 h (no máximo 48 h). No HSV comprovado, não há recomendação a favor nem contra o corticoide', grau: 'boa prática; sem recomendação', fonte: 'EAN–ESCMID 2026', livro: 'corticoide: não usar na encefalite herpética (Tabela 2, p. 591)' },
+]
+
+export const DIFERENCAS_MENINGITE: string[] = [
+  'Dexametasona: a ESCMID dá 10 mg fixos 6/6 h no adulto; o manual, 0,15 mg/kg/dose. A ESCMID aceita começar até 4 h depois do antibiótico (C).',
+  'A ESCMID suspende a dexametasona se o agente não for pneumococo nem H. influenzae (B); o manual a mantém no meningococo como "segura".',
+  'TC antes da punção: a ESCMID só a indica com déficit focal, crise nova, Glasgow < 10 ou imunossupressão grave (A); o manual remete à Figura 2.',
+  'Profilaxia: a ESCMID começa em até 24 h e dá rifampicina 600 mg fixos; o Guia do MS fala em até 48 h e 10 mg/kg (máx. 600 mg).',
+  'Vancomicina: a ESCMID soma vancomicina ou rifampicina onde há resistência do pneumococo; o manual não a usa de rotina no Brasil. As duas dependem da resistência local.',
+  'Encefalite: a EAN–ESCMID 2026 fixa o aciclovir em até 6 h (forte) e diz que não há recomendação para corticoide no HSV; o manual diz "não usar".',
+]
+
 export const fichaMeningiteAdulto: Ficha = {
   ...base,
-  versao: '2026-10-27.1',
-  fontes: [...base.fontes, GUIA_VIGILANCIA_2024],
-  revisadoEm: '27/10/2026 (quimioprofilaxia de contatos pelo Guia de Vigilância em Saúde 2024, com página)',
+  versao: '2026-11-14.1',
+  fontes: [...base.fontes, GUIA_VIGILANCIA_2024, ESCMID_MENINGITE_2016, EAN_ESCMID_ENCEFALITE_2026],
+  revisadoEm: '14/11/2026 (ESCMID 2016 e EAN–ESCMID 2026 lidas no texto integral, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 27/10/2026 (quimioprofilaxia de contatos pelo Guia de Vigilância em Saúde 2024, com página)',
 }
 
 export type Esquema = { quem: string; antibiotico: string; corticoide: string }
