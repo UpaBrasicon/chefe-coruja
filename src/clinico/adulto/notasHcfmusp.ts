@@ -81,7 +81,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap40-hsa': 'hemorragia subaracnóidea (HSA) aneurismática no adulto',
   'nota-hcfmusp-cap76-agitacao': 'paciente agitado e agitação grave no adulto (sedação: droperidol, antipsicótico, midazolam, cetamina)',
   'nota-hcfmusp-cap66-sodio': 'hiponatremia no adulto: NaCl 3%, bolus, limite de correção, hipercorreção, SIADH, restrição hídrica, ureia e vaptana (distúrbios do sódio)',
-  'nota-hcfmusp-cap47-trauma': 'politraumatizado e sangramento no trauma (ácido tranexâmico, hipotensão permissiva, transfusão maciça, fibrinogênio, cálcio, pelve, reversão de anticoagulante)',
+  'nota-hcfmusp-cap47-trauma': 'politraumatizado e sangramento no trauma (ácido tranexâmico, hipotensão permissiva, Ringer lactato no TCE, transfusão maciça, fibrinogênio, cálcio, pelve, reversão de anticoagulante)',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
