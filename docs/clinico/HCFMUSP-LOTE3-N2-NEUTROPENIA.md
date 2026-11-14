@@ -55,3 +55,9 @@ As seis respostas abrem pela diretriz.
 - `adulto-neutropenia-febril.md` e `nota-hcfmusp-cap81-neutropenia.md` ingeridos. API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.234, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT para os capítulos restantes)
+
+- A migration `20270414000011` foi aplicada antes do merge. O #678 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção. As seis abrem pela diretriz, e as da ABHH dizem "pacientes hematológicos".
