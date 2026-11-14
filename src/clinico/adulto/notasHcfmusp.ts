@@ -38,7 +38,9 @@ import { DIRETRIZ_CALCIO, ES_HIPERCALCEMIA_MALIGNIDADE_2023, SFE_HIPERCALCEMIA_2
 import { BSH_SLT_2025, DIRETRIZ_SLT, fichaLiseTumoralAdulto } from './liseTumoral.ts'
 import { AASLD_ASCITE_2021, ACG_EH_2026, ADQI_ICA_2024, DIRETRIZ_EH, DIRETRIZ_PBE_SHR, fichaAsciteShr, fichaInsuficienciaHepatica } from './hepatopata.ts'
 import { DIRETRIZ_EI, ESC_EI_2023, duke } from './duke.ts'
-import { DIRETRIZ_LRA, KDIGO_LRA_2012, fichaLesaoRenalAguda } from './renal.ts'
+import { DIRETRIZ_LRA, ENMC_RABDO_2025, KDIGO_LRA_2012, fichaLesaoRenalAguda, fichaRabdomiolise } from './renal.ts'
+import { GRACE3_TONTURA, hintsPlus } from './vertigem.ts'
+import { IDSA_ITU_DURACAO_2025, IDSA_ITU_EMPIRICO_2025, IDSA_ITU_EV_VO_2025, fichaItuAdulto } from './itu.ts'
 import { DIRETRIZ_FALCIFORME, SRLF_FALCIFORME_2025, TASC_2025, fichaFalciformeAdulto } from './falciforme.ts'
 import { ACEP_SEDACAO_2026, DIRETRIZ_SAP, fichaSedacaoProcedimentoAdulto } from './sedacaoProcedimento.ts'
 import { DIRETRIZ_DENGUE_OMS, MS_DENGUE_2024, OMS_ARBOVIROSES_2025, fichaDengue } from '../dengue.ts'
@@ -140,6 +142,9 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap88-hiv': 'complicações agudas do HIV no adulto (Aids): neurotoxoplasmose, meningite criptocócica, tuberculose do sistema nervoso central, síndrome inflamatória de reconstituição imune (IRIS), início da terapia antirretroviral (TARV)',
   'nota-hcfmusp-cap95-febre-amarela': 'febre amarela grave no adulto: hidratação, sobrecarga de volume, noradrenalina, plasma, plaquetas, coagulopatia, antiviral, sofosbuvir, diálise, troca plasmática, intubação, encefalopatia, transplante hepático, corticoide',
   'nota-hcfmusp-cap5-rebaixamento': 'rebaixamento do nível de consciência e coma no adulto: escala FOUR, escala de coma de Glasgow, eletroencefalograma (EEG), exame neurológico',
+  'nota-hcfmusp-cap42-vertigem': 'vertigem e tontura aguda no adulto: HINTS, nistagmo, síndrome vestibular aguda, marcha, tomografia, ressonância, AVC de fossa posterior',
+  'nota-hcfmusp-cap63-rabdomiolise': 'rabdomiólise no adulto: CPK, diagnóstico, escore de McMahon, lesão renal aguda, hidratação, bicarbonato',
+  'nota-hcfmusp-cap89-itu': 'infecção do trato urinário (ITU) complicada e pielonefrite no adulto: antibiótico empírico, duração, troca de via venosa para oral, bacteremia, prostatite',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -787,7 +792,39 @@ notaHcfmuspCap5.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP, Q
 
 export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap5, notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44, notaHcfmuspCap60, notaHcfmuspCap88, notaHcfmuspCap95, notaHcfmuspCap96]
 
-export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
+// ── Lote 7 (decisão do RT de 14/11/2026, Q1–Q4 = A; docs/clinico/HCFMUSP-LOTE7-DIAGNOSTICO.md).
+// Q1: cap. 42, 63 e 89, cuja ficha já cita a diretriz recente; os itens vêm da ficha.
+const REVISADO_LOTE7 = '14/11/2026 (lote 7 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a diretriz; aguarda aprovação do RT)'
+function notaLote7(...a: Parameters<typeof nota>): NotaHcfmusp {
+  const n = nota(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = REVISADO_LOTE7
+  return n
+}
+
+/** cap. 42: GRACE-3 (SAEM 2023), já no aviso da ficha do HINTS. */
+export const notaHcfmuspCap42 = notaLote7('nota-hcfmusp-cap42-vertigem', 'Nota de atualização — manual HC, cap. 42: vertigem', 'cap. 42, p. 577–588', hintsPlus.ficha, [
+    { tema: 'Quem pode usar o HINTS', diretriz: 'GRACE-3 2023: usar o HINTS só se o examinador tiver treino no exame e só na síndrome vestibular aguda com nistagmo; sem treino, o HINTS é impreciso', manual: 'HINTS e HINTS plus na síndrome vestibular aguda; os três itens juntos têm mais sensibilidade e especificidade que a ressonância para AVC isquêmico (cap. 42, p. 580–583)' },
+    { tema: 'Tontura sem nistagmo', diretriz: 'GRACE-3 2023: sem nistagmo, avaliar a gravidade do desequilíbrio da marcha', manual: 'não comparado nesta nota' },
+    { tema: 'Imagem', diretriz: 'GRACE-3 2023: a TC de crânio não exclui AVC; a ressonância serve para confirmar quando o HINTS é central ou duvidoso', manual: 'TC com baixa sensibilidade para isquemia de fossa posterior; ressonância falso-negativa em 12 a 13,3% nas primeiras 48 h (cap. 42, p. 579)' },
+  ], [GRACE3_TONTURA])
+
+/** cap. 63: workshop ENMC 2024 (publicado em 2025), já na nota da ficha de rabdomiólise. */
+export const notaHcfmuspCap63 = notaLote7('nota-hcfmusp-cap63-rabdomiolise', 'Nota de atualização — manual HC, cap. 63: rabdomiólise', 'cap. 63, p. 852–861', fichaRabdomiolise, [
+    { tema: 'Diagnóstico', diretriz: 'ENMC 2025 (consenso de especialistas): sintomas musculares (edema intenso, fraqueza ou mialgia) com CPK > 10.000 UI/L na rabdomiólise por esforço ou > 5.000 UI/L na não relacionada ao esforço; pico em 1 a 4 dias e normalização em 1 a 2 semanas de repouso; com doença neuromuscular de base, CPK acima de 5 a 10 vezes o basal', manual: 'estímulo miotóxico ou urina escura com CPK > 5–10 × o limite superior, usualmente > 1.000 UI/L, sem corte rigoroso (cap. 63, p. 854)' },
+    { tema: 'Quem tratar', diretriz: 'ENMC 2025 (consenso de especialistas): tratar só quando o risco de lesão renal aguda é alto, estimado pelo escore de McMahon', manual: 'medidas para prevenir a lesão renal com CPK > 5.000 UI/L ou lesão muscular grave (Tabela 3, cap. 63, p. 858); escore de McMahon (p. 856–857)' },
+  ], [ENMC_RABDO_2025])
+
+/** cap. 89: IDSA 2025 de ITU complicada, já na ficha de ITU. */
+export const notaHcfmuspCap89 = notaLote7('nota-hcfmusp-cap89-itu', 'Nota de atualização — manual HC, cap. 89: infecção do trato urinário', 'cap. 89, p. 1209–1216', fichaItuAdulto, [
+    { tema: 'Antibiótico empírico', diretriz: 'IDSA 2025 (resumo lido): escolher o antibiótico empírico da ITU complicada em 4 passos: gravidade, risco de resistência, fatores do paciente e, na sepse, o antibiograma local', manual: 'esquemas por quadro: cistite, pielonefrite e ITU associada à sonda (cap. 89, p. 1212–1215)' },
+    { tema: 'Duração', diretriz: 'IDSA 2025 (resumo lido): em quem melhora, 5–7 dias de fluoroquinolona ou 7 dias de outra classe, com ou sem bacteremia por Gram-negativo; 10–14 dias no homem febril com suspeita de prostatite', manual: 'pielonefrite: 7 a 14 dias (cap. 89, p. 1213)' },
+    { tema: 'Troca da via venosa para oral', diretriz: 'IDSA 2025 (resumo lido): passar para via oral quando o paciente melhora, aceita medicação oral e há opção oral eficaz', manual: 'não comparado nesta nota' },
+  ], [IDSA_ITU_EMPIRICO_2025, IDSA_ITU_DURACAO_2025, IDSA_ITU_EV_VO_2025])
+
+export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap42, notaHcfmuspCap63, notaHcfmuspCap89]
+
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha
