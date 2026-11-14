@@ -94,3 +94,14 @@ test('marca-passo: MPTC limiar + 5-10 mA; MPTV sensibilidade 50% e saída 2× + 
   assert.equal(saidaMptv(1.5), 4)
   assert.equal(saidaMptv(0), null)
 })
+
+test('dermatoses (cap. 96): diretriz latino-americana de SSJ/NET 2025 ao lado do manual; doses do manual iguais', async () => {
+  const d = await import('./dermatoses.ts')
+  assert.equal(d.fichaDermatosesAdulto.versao, '2026-11-14.1')
+  assert.match(d.fichaDermatosesAdulto.fontes[0].citacao, /Manual de Medicina de Emergência/)
+  assert.ok(d.fichaDermatosesAdulto.fontes.includes(d.LATAM_SSJ_NET_2025))
+  assert.match(d.LATAM_SSJ_NET_2025.citacao, /PMID 40226820/)
+  assert.deepEqual(d.DOSES_DERMATOSES.ssjNetPrednisona.mgKgDia, [1, 2])
+  assert.match(d.DIRETRIZ_SSJ_NET_2025.find((x) => x.tema === 'Tratamento sistêmico')!.grau, /certeza muito baixa/)
+  assert.equal(new Set(d.DIRETRIZ_SSJ_NET_2025.map((x) => x.tema)).size, d.DIRETRIZ_SSJ_NET_2025.length)
+})
