@@ -173,3 +173,17 @@ Das 20 perguntas refeitas na produção, 18 abrem pela diretriz nova. Duas traze
 - **VNI na DPOC:** abre pelo corte de outra ficha.
 
 Na homologação, as duas abriam pela diretriz. A diferença vem da ordem dos trechos na busca.
+
+## M2 concluído (14/11/2026)
+
+Com o Chrome do RT conectado, os três capítulos que faltavam foram lidos no texto integral e foram à produção com o "ok produção" do RT:
+
+| PR | Capítulo | Diretriz | Migration |
+|---|---|---|---|
+| #660 | 32, TEP | AHA/ACC 2026 | `20270414000001` |
+| #661 | 18, taquiarritmias | AHA 2025, Part 9 | `20270414000002` |
+| #662 | 3, via aérea | DAS 2025 | `20270414000003` |
+
+A hipopotassemia (cap. 67) ficou com o manual, por decisão do RT (#659).
+
+O lote 2 tem 11 notas de atualização. Os detalhes de cada capítulo, com antes e depois, estão em `HCFMUSP-LOTE2-M2-*.md`. As versões novas aguardam a aprovação do RT na Revisão Clínica.

@@ -58,3 +58,10 @@ Cinco de seis respostas passam a abrir pela AHA/ACC 2026. A da alta abre pelo ma
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000001` foi aplicada antes do merge. PERC, HESTIA, PESI, fibrinolíticos e a nota do cap. 32 estão na versão 2026-11-14.1.
+- O corpus foi gerado do master e ingerido. A API foi reiniciada.
+- A Vercel publicou o master com sucesso.
+- Refiz as perguntas na produção. Cinco de seis abrem pela AHA/ACC 2026. A da alta do pronto-socorro abre pelo PESI/HESTIA do manual, como na homologação.
