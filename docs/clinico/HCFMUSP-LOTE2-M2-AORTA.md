@@ -64,3 +64,12 @@ A resposta do ADD-RS ainda abre pelo manual. As duas fontes não se contradizem:
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (13/11/2026, com o "ok produção" do RT)
+
+- A migration `20270413000009` está aplicada. As fichas `adulto-sindrome-aortica`, `adulto-add-rs` e `nota-hcfmusp-cap20-sindrome-aortica` estão na versão 2026-11-13.1.
+- O corpus foi gerado do master depois do merge e ingerido na coleção da produção. A API foi reiniciada.
+- A Vercel publicou o master (`733fb002`) com sucesso.
+- As seis perguntas foram refeitas na produção:
+  - cinco abrem pela ESC 2024 (ascendente ≥ 55 mm, Marfan ≥ 50 mm, FC ≤ 60, diltiazem ou verapamil, TEVAR);
+  - a do ADD-RS abre pelo manual, com a ESC logo abaixo, como na homologação.

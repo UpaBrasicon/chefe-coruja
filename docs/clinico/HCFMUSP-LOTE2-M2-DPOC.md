@@ -58,3 +58,12 @@ Seis de seis respostas passam a abrir pelo GOLD 2026.
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (13/11/2026, com o "ok produção" do RT)
+
+- A migration `20270413000010` está aplicada. As fichas `adulto-dpoc-exacerbacao` e `nota-hcfmusp-cap31-dpoc` estão na versão 2026-11-13.1.
+- O corpus foi gerado do master e ingerido. A API foi reiniciada.
+- A Vercel publicou o master com sucesso.
+- As seis perguntas foram refeitas na produção:
+  - cinco abrem pelo GOLD 2026 (antibiótico, aminofilina, CNAF, corticoide, Roma);
+  - a da VNI com pH 7,32 e PaCO2 52 responde "sim", mas abre pelo corte de outra ficha da Central ("PaCO2 > 45 ou pH < 7,3"), e não pelo GOLD. Na homologação, a mesma pergunta abria pelo GOLD. A resposta não contradiz o GOLD. Fica como achado de ordenação da busca.

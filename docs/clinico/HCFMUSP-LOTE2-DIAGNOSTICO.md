@@ -154,3 +154,22 @@ Pela decisão M2, quando o texto da diretriz está fechado, a ficha fica como es
 Não houve tentativa de passar por verificação anti-robô. Para TEP, taquiarritmias e via aérea, o caminho que sobra é ler com o login do RT, pelo Chrome conectado.
 
 **Achado no cap. 32:** a ficha `wells-tep` citava a AHA/ACC 2026 com o DOI errado (`…0001300`; o certo é `…0001415`). Ela também dizia que a diretriz não tem preferência entre Wells, Genebra e PERC, frase que não pôde ser conferida. A correção vai em PR próprio (#655).
+
+## M2 na produção (13/11/2026, com o "ok produção" do RT para os quatro PRs)
+
+| PR | O quê | Migration |
+|---|---|---|
+| #654 | IC aguda pela ESC 2026 e nota do cap. 21 | `20270413000007` |
+| #655 | DOI da AHA/ACC 2026 na ficha do Wells | `20270413000008` |
+| #656 | Síndrome aórtica pela ESC 2024 e nota do cap. 20 | `20270413000009` |
+| #657 | DPOC pelo GOLD 2026 e nota do cap. 31 | `20270413000010` |
+
+As quatro migrations foram aplicadas antes dos merges, e as oito fichas novas estão em `ferramenta_versoes`. Os três PRs com nota mexiam em `NOTAS_HCFMUSP_LOTE2`. O #656 e o #657 receberam o master antes do merge, com as notas somadas, e o CI ficou verde. O lote 2 tem agora oito notas.
+
+Dez arquivos do corpus foram gerados do master e ingeridos na produção, e a API foi reiniciada.
+
+Das 20 perguntas refeitas na produção, 18 abrem pela diretriz nova. Duas trazem outro texto antes, e nenhuma contradiz a diretriz:
+- **alvo de SpO2 na IC aguda:** cita o "> 95%" do manual junto com a indicação da ESC (SpO2 < 90%);
+- **VNI na DPOC:** abre pelo corte de outra ficha.
+
+Na homologação, as duas abriam pela diretriz. A diferença vem da ordem dos trechos na busca.
