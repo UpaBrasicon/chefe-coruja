@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, NOTAS_HCFMUSP_LOTE4, textoNota } from './notasHcfmusp.ts'
+import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, NOTAS_HCFMUSP_LOTE4, NOTAS_HCFMUSP_LOTE5, textoNota } from './notasHcfmusp.ts'
 import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
@@ -47,7 +47,7 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
 
 test('lote 2: onze notas (cap. 3, 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
   assert.equal(NOTAS_HCFMUSP_LOTE2.length, 11)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
@@ -147,7 +147,7 @@ test('lote 3, N1: notas de 33, 40 e 76 a partir das listas das fichas; PAC com a
   const { DIRETRIZ_HSA_2023 } = await import('./hsa.ts')
   const { DIFERENCAS_AGITACAO_2024 } = await import('./agitacao.ts')
   assert.ok(NOTAS_HCFMUSP_LOTE3.length >= 3)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const por = (id: string) => NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === id)!
@@ -390,4 +390,19 @@ test('cap. 22 e 45 (O3): nota só com o capítulo do manual, sem ficha da Centra
   assert.equal(n45.ficha.versao, '2026-11-14.2')
   assert.match(textoNota(n45), /ACEP 2024 \(nível A\)/)
   assert.doesNotMatch(textoNota(n45), /CAPTCHA/)
+})
+
+test('lote 5, P1: notas dos cap. 27, 79, 82 e 102 a partir das fichas', async () => {
+  const { DIRETRIZ_HIPOTERMIA_2025 } = await import('./ambientais.ts')
+  const ids = NOTAS_HCFMUSP_LOTE5.map((n) => n.ficha.id)
+  assert.deepEqual(ids, ['nota-hcfmusp-cap27-irpa', 'nota-hcfmusp-cap79-hemostasia', 'nota-hcfmusp-cap82-transfusao', 'nota-hcfmusp-cap102-hipotermia'])
+  for (const n of NOTAS_HCFMUSP_LOTE5) {
+    assert.equal(n.ficha.versao, '2026-11-14.1')
+    assert.match(n.ficha.revisadoEm ?? '', /lote 5/)
+    assert.ok(n.fichaCentral.length > 0, n.ficha.id)
+    for (const f of n.ficha.fontes) assert.doesNotMatch(f.citacao, /Manual de Medicina de Emergência/, n.ficha.id)
+  }
+  assert.equal(NOTAS_HCFMUSP_LOTE5[3].itens.length, DIRETRIZ_HIPOTERMIA_2025.length)
+  assert.equal(NOTAS_HCFMUSP_LOTE5[1].itens.length, 7)
+  assert.match(textoNota(NOTAS_HCFMUSP_LOTE5[1]), /Dabigatrana \(hemorragia intracerebral\)/)
 })
