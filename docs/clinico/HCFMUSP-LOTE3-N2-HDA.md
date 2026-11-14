@@ -73,3 +73,11 @@ As seis respostas passam a abrir pela diretriz.
 - O #670 foi mesclado com o CI verde. A Vercel publicou o master com sucesso.
 - O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
 - Refiz as perguntas na produção: as seis abrem pela diretriz, como na homologação. A do plasma já não abre pelos 15 mL/kg dos outros materiais.
+
+## Decisão do RT sobre o plasma (14/11/2026)
+
+O RT decidiu: "dê a orientação e o plantonista segue com a que achar melhor e com mais evidências".
+
+- Os outros materiais da biblioteca, com plasma 15 mL/kg no hepatopata que sangra, ficam como estão.
+- A resposta mostra o Baveno VIII (sem plasma de rotina no sangramento varicoso) e a orientação do manual e dos outros materiais, cada uma com a fonte.
+- A escolha é do plantonista. Na produção, a resposta já faz isso: abre pelo Baveno VIII e traz o manual como diferença.

@@ -61,3 +61,11 @@ As seis respostas abrem pela diretriz.
 - A migration `20270414000011` foi aplicada antes do merge. O #678 foi mesclado com o CI verde.
 - O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
 - Refiz as perguntas na produção. As seis abrem pela diretriz, e as da ABHH dizem "pacientes hematológicos".
+
+## Decisão do RT sobre a população da ABHH (14/11/2026)
+
+O RT decidiu: "dê a orientação e o plantonista segue com a que achar melhor e com mais evidências".
+
+- A ABHH não fica restrita à hematologia.
+- A resposta mostra a ABHH, com "em pacientes hematológicos", e o manual como diferença, cada um com a fonte.
+- O plantonista escolhe. Nada muda no código.
