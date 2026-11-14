@@ -52,7 +52,47 @@ export const fichaCriseTireotoxica: Ficha = {
   fontes: [...fichaTtLivro.fontes, ETA_TEMPESTADE_2026],
   revisadoEm: '14/11/2026 (consenso ETA/BTA/SfE 2026 lido no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
 }
-export const fichaMixedema = fichaAdulto('adulto-estado-mixedematoso', 'Estado mixedematoso — adulto', 'cap. 71 Estado mixedematoso, p. 958–963')
+// Lote 5 da revisão do HCFMUSP, P2 (decisão do RT de 14/11/2026), cap. 71: o
+// consenso conjunto de 2026 sobre coma mixedematoso (BTA, ETA, SfE e WEDS) foi
+// lido no texto integral do PMC. É consenso de especialistas, sem graduação. As
+// doses e o escore do manual não mudam: o consenso aparece ao lado.
+export const CONSENSO_MIXEDEMA_2026: Fonte = {
+  citacao: 'Taylor P, Gibb F, Medici M, et al. Management of endocrine emergencies: joint consensus statement for management of myxoedema coma. Eur Thyroid J. 2026;15(4) (PMID 42466568; PMC13452032). Texto integral lido; consenso de especialistas, sem graduação.',
+  url: 'https://doi.org/10.1530/ETJ-26-0044',
+}
+
+const SEM_ITEM_MIX = 'sem item do manual na ferramenta'
+
+/** Consenso 2026 × manual, no estado mixedematoso do adulto; um tema por linha. */
+export const DIRETRIZ_MIXEDEMA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Quando tratar', diretriz: 'Tratar pela suspeita clínica, sem esperar o resultado dos exames. No hipotireoidismo central, o TSH pode vir baixo ou normal', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: 'os níveis de hormônio tireoidiano não têm ponto de corte diagnóstico (cap. 71, p. 960)' },
+  { tema: 'Escore diagnóstico', diretriz: 'Escore adaptado de Popoveniuc: ≥ 60 é muito sugestivo, 45–59 indica risco e < 45 torna o diagnóstico improvável; FC < 40 vale 30 pontos. Sepse e eventos cardiovasculares graves podem dar pontuação parecida: interpretar com a clínica e os exames', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: '≥ 60 extremamente sugestivo, 25–59 sugestivo e < 25 improvável; sem linha para FC < 40 (Tabela 3, p. 960–961)' },
+  { tema: 'Levotiroxina: ataque', diretriz: 'Levotiroxina EV no início, porque a absorção intestinal está comprometida: ataque de 200–400 µg EV; 100–200 µg em paciente menor, idoso, com doença isquêmica do coração ou arritmia importante', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: 'ataque de 200–500 µg EV ou 500 µg VO, sem ajuste por peso, idade ou cardiopatia (cap. 71, p. 962)' },
+  { tema: 'Levotiroxina: manutenção', diretriz: '1,6 µg/kg/dia, reduzida a 75% enquanto for EV', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: '50–150 µg/dia VO (p. 962) ou 100–150 µg/dia (Tabela 5, p. 963)' },
+  { tema: 'Liotironina (T3)', diretriz: 'Uso controverso; dose alta pode causar complicação cardíaca fatal. Abordagem pragmática: só levotiroxina nas primeiras 24 h e T3 apenas se não houver melhora, 2,5–10 µg a cada 8 h, com extrema cautela no idoso ou com doença isquêmica. Alternativa usada por alguns: levotiroxina 200–300 µg EV com T3 10–25 µg EV, depois T3 2,5–10 µg EV a cada 8 h', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: 'T3 10 µg a cada 8 h até o paciente ficar consciente, de uso controverso; ou T3 10 µg com T4 200–300 µg EV (p. 962; Tabela 5)' },
+  { tema: 'Hidrocortisona', diretriz: 'Em todos: hidrocortisona 100 mg EV em bolus e depois 50 mg a cada 6 h (ou 200 mg em 24 h em bomba, na semi-intensiva ou UTI). Suspender quando o eixo adrenal for avaliado e normal (cortisol pré-tratamento, cortisol das 9 h ou teste da cortrosina antes da dose da manhã)', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: '100 mg EV a cada 8 h até excluir insuficiência adrenal associada (p. 962; Tabela 5)' },
+  { tema: 'Fator precipitante e antibiótico', diretriz: 'Procurar o precipitante. Febre, taquicardia e leucocitose podem faltar: antibiótico de largo espectro até excluir infecção. Não atribuir a alteração da consciência ou a instabilidade só à tireoide', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: SEM_ITEM_MIX },
+  { tema: 'Aquecimento', diretriz: 'Aquecimento passivo com cobertores. O paciente costuma estar em vasoconstrição máxima: aquecimento periférico ativo pode causar colapso circulatório', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: 'aquecimento com cobertores; evitar aquecimento periférico (Tabela 5, p. 962)' },
+  { tema: 'Hipotensão', diretriz: 'Expansão cautelosa com cristaloide ou sangue; vigiar o sódio se houver hiponatremia', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: 'corrigir a hipovolemia e considerar vasopressor, com dopamina na Figura 1 (Tabela 5, p. 962)' },
+  { tema: 'Hipoventilação e hipoglicemia', diretriz: 'Risco aumentado de ventilação mecânica: vigiar de perto. Hipoglicemia é comum: vigiar e usar glicose EV se preciso', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: SEM_ITEM_MIX },
+  { tema: 'Onde tratar', diretriz: 'Semi-intensiva ou UTI, se apropriado; a mortalidade pode chegar a 50%', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: SEM_ITEM_MIX },
+  { tema: 'Seguimento', diretriz: 'Passar para via oral quando o paciente estiver consciente. Função tireoidiana em dias alternados, com T4 livre no meio da faixa de referência sem excesso de T3; o TSH demora a normalizar e não guia a resposta. Vigiar lesão renal aguda, sangramento digestivo e hemorragia pulmonar depois da estabilização', grau: 'consenso, sem graduação', fonte: 'Consenso 2026', livro: SEM_ITEM_MIX },
+]
+
+export const DIFERENCAS_MIXEDEMA: string[] = [
+  'Ataque de levotiroxina: o consenso dá 200–400 µg EV e menos (100–200 µg) no idoso, no paciente menor ou no cardiopata; o manual, 200–500 µg EV ou 500 µg VO, sem ajuste.',
+  'Manutenção: o consenso usa 1,6 µg/kg/dia (75% disso enquanto EV); o manual, 50–150 ou 100–150 µg/dia.',
+  'Hidrocortisona: o consenso dá 100 mg e depois 50 mg a cada 6 h; o manual, 100 mg a cada 8 h.',
+  'Antibiótico: o consenso indica largo espectro até excluir infecção, porque febre e leucocitose podem faltar; a ferramenta do manual não traz.',
+  'Escore: o consenso usa 45 como corte de risco e dá 30 pontos para FC < 40; o manual corta em 25 e não tem linha para FC < 40.',
+]
+const fichaMixedemaLivro = fichaAdulto('adulto-estado-mixedematoso', 'Estado mixedematoso — adulto', 'cap. 71 Estado mixedematoso, p. 958–963')
+export const fichaMixedema: Ficha = {
+  ...fichaMixedemaLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaMixedemaLivro.fontes, CONSENSO_MIXEDEMA_2026],
+  revisadoEm: '14/11/2026 (consenso BTA/ETA/SfE/WEDS 2026 lido no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 // Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 72: a
 // diretriz da Endocrine Society de 2016 (insuficiência adrenal primária; GRADE),
 // a orientação de emergência da Society for Endocrinology de 2016 (crise adrenal)
