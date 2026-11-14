@@ -6,6 +6,7 @@ import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, textoNota } fr
 import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
+import { DAS_2025, DIRETRIZ_DAS_2025 } from './isr.ts'
 import { DIFERENCAS_BRADI_2025, DIRETRIZ_TAQUI_2025 } from './pcr.ts'
 import { DIRETRIZ_ICA_2026 } from './insuficienciaCardiacaAguda.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
@@ -44,14 +45,15 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
   assert.equal(avc.itens.length, DIRETRIZ_AVC_2026.length)
 })
 
-test('lote 2: dez notas (cap. 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
-  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 10)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 10)
+test('lote 2: onze notas (cap. 3, 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
+  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 11)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
-  for (const c of [15, 17, 18, 19, 20, 21, 30, 31, 32, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
+  for (const c of [3, 15, 17, 18, 19, 20, 21, 30, 31, 32, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
   const porId = (id: string) => NOTAS_HCFMUSP_LOTE2.find((n) => n.ficha.id === id)!
+  assert.equal(porId('nota-hcfmusp-cap3-via-aerea').itens.length, DIRETRIZ_DAS_2025.length)
   assert.equal(porId('nota-hcfmusp-cap15-bradiarritmias').itens.length, DIFERENCAS_BRADI_2025.length)
   assert.equal(porId('nota-hcfmusp-cap17-fa').itens.length, DIFERENCAS_FA_2024.length + DOSES_FA_2024.length)
   assert.equal(porId('nota-hcfmusp-cap18-taquiarritmias').itens.length, DIRETRIZ_TAQUI_2025.length)
@@ -126,4 +128,16 @@ test('taquiarritmias: AHA 2025 ao lado do manual; doses do manual não mudam', a
   assert.equal(m.esquemaAmiodarona().fases[0].mg, 150)
   const vc = m.DIRETRIZ_TAQUI_2025.find((d) => d.tema === 'Verapamil e diltiazem no QRS largo')!
   assert.match(vc.classe, /3: dano/)
+})
+
+test('via aérea: DAS 2025 ao lado do manual; doses do Anexo 1 não mudam', async () => {
+  const m = await import('./isr.ts')
+  assert.equal(m.fichaIsrAdulto.versao, '2026-11-14.1')
+  assert.ok(m.fichaIsrAdulto.fontes.includes(DAS_2025))
+  assert.match(DAS_2025.citacao, /PMID 41203471/)
+  const dose = (id: string) => m.DROGAS_ISR.find((d) => d.id === id)!.mgKg
+  assert.equal(dose('rocuronio'), 1.2)
+  assert.equal(dose('succinilcolina'), 1.5)
+  const nota = NOTAS_HCFMUSP.find((n) => n.ficha.id === 'nota-hcfmusp-cap3-via-aerea')!
+  assert.deepEqual(nota.ficha.fontes, [DAS_2025])
 })
