@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  FORA_RENAL, FUROSEMIDA_ESTRESSE, INDICACOES_TSR, NOTAS_FRACOES, OUTROS_LRA, fena, feur, fichaLesaoRenalAguda, furosemidaEstresse, indicesUrinarios, kdigo,
+  DIFERENCAS_LRA, DIRETRIZ_LRA, FORA_RENAL, FUROSEMIDA_ESTRESSE, INDICACOES_TSR, NOTAS_FRACOES, OUTROS_LRA, fena, feur, fichaLesaoRenalAguda, furosemidaEstresse, indicesUrinarios, kdigo,
 } from '@/clinico/adulto/renal'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -10,6 +10,7 @@ import { Alertas, Bloco, Resultado } from './LoteAPecas'
 import { br, informado } from './loteAFormato'
 import { CampoPeso, LinhaManual } from './PecasLoteC'
 import { Fora, ListaRef, Marca } from './PecasLoteE6'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const est = (e: number | null) => (e === null ? '—' : e === 0 ? 'sem estágio' : `estágio ${['', 'I', 'II', 'III'][e]}`)
 
@@ -95,6 +96,15 @@ export function LesaoRenalAgudaAdulto() {
         <ListaRef itens={OUTROS_LRA} />
       </Bloco>
 
+      <Bloco titulo="KDIGO 2012 — ao lado do manual" descricao="Lesão renal aguda pela KDIGO 2012 (GRADE); a KDIGO 2026 ainda era rascunho em consulta pública em 14/11/2026. As contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_LRA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_LRA.map((d) => <li key={d}>{d}</li>)}</ul>
+      </Bloco>
       <Bloco titulo="O que o manual não traz">
         <Fora itens={FORA_RENAL} />
       </Bloco>

@@ -29,6 +29,7 @@ import { DIRETRIZ_CALCIO, ES_HIPERCALCEMIA_MALIGNIDADE_2023, SFE_HIPERCALCEMIA_2
 import { BSH_SLT_2025, DIRETRIZ_SLT, fichaLiseTumoralAdulto } from './liseTumoral.ts'
 import { AASLD_ASCITE_2021, ACG_EH_2026, ADQI_ICA_2024, DIRETRIZ_EH, DIRETRIZ_PBE_SHR, fichaAsciteShr, fichaInsuficienciaHepatica } from './hepatopata.ts'
 import { DIRETRIZ_EI, ESC_EI_2023, duke } from './duke.ts'
+import { DIRETRIZ_LRA, KDIGO_LRA_2012, fichaLesaoRenalAguda } from './renal.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { AARC_TRE_2024, ATS_IRPA_2026, ATS_SDRA_2024, DEFINICAO_GLOBAL_SDRA_2024, DIRETRIZ_SDRA_2024, ESICM_SDRA_2023, NOTA_AARC_TRE, NOTA_ATS_POS_EXTUBACAO, NOTA_SCCM_BNM, SCCM_BNM_2026, fichaSdraAdulto } from './ventilacaoMecanica.ts'
@@ -103,6 +104,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap57-58-pbe-shr': 'peritonite bacteriana espontânea (PBE), paracentese, albumina e síndrome hepatorrenal (SHR, HRS-AKI) no cirrótico: antibiótico, terlipressina, norepinefrina, profilaxia',
   'nota-hcfmusp-cap59-encefalopatia': 'encefalopatia hepática no cirrótico: lactulose, enema, rifaximina, polietilenoglicol, amônia, fator precipitante, West Haven, prevenção da recorrência, proteína',
   'nota-hcfmusp-cap23-endocardite': 'endocardite infecciosa no adulto: hemocultura, ecocardiograma transtorácico e transesofágico, antibiótico empírico, indicação e prazo de cirurgia, anticoagulação, antibiótico oral',
+  'nota-hcfmusp-cap61-lra': 'lesão renal aguda (LRA, insuficiência renal aguda) no adulto: KDIGO, estádio, diurético, fluido, contraste, aminoglicosídeo, nutrição, quando iniciar diálise',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -408,7 +410,14 @@ export const notaHcfmuspCap23 = nota('nota-hcfmusp-cap23-endocardite', 'Nota de 
 notaHcfmuspCap23.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap23.ficha.revisadoEm = '14/11/2026 (lote 4 da revisão do HCFMUSP: itens tirados da ESC 2023, lida no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap23, notaHcfmuspCap37, notaHcfmuspCap57, notaHcfmuspCap59, notaHcfmuspCap68, notaHcfmuspCap70, notaHcfmuspCap72, notaHcfmuspCap84]
+/** cap. 61: KDIGO 2012 (a KDIGO 2026 ainda era rascunho). */
+export const notaHcfmuspCap61 = nota('nota-hcfmusp-cap61-lra', 'Nota de atualização — manual HC, cap. 61: lesão renal aguda', 'cap. 61, p. 824–841', fichaLesaoRenalAguda,
+  DIRETRIZ_LRA.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [KDIGO_LRA_2012])
+notaHcfmuspCap61.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap61.ficha.revisadoEm = '14/11/2026 (lote 4 da revisão do HCFMUSP: itens tirados da KDIGO 2012, porque a KDIGO 2026 ainda era rascunho; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap23, notaHcfmuspCap37, notaHcfmuspCap57, notaHcfmuspCap59, notaHcfmuspCap61, notaHcfmuspCap68, notaHcfmuspCap70, notaHcfmuspCap72, notaHcfmuspCap84]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4]
 
@@ -442,6 +451,7 @@ export const fichaNotaHcfmuspCap47 = notaHcfmuspCap47.ficha
 export const fichaNotaHcfmuspCap37 = notaHcfmuspCap37.ficha
 export const fichaNotaHcfmuspCap72 = notaHcfmuspCap72.ficha
 export const fichaNotaHcfmuspCap70 = notaHcfmuspCap70.ficha
+export const fichaNotaHcfmuspCap61 = notaHcfmuspCap61.ficha
 export const fichaNotaHcfmuspCap23 = notaHcfmuspCap23.ficha
 export const fichaNotaHcfmuspCap59 = notaHcfmuspCap59.ficha
 export const fichaNotaHcfmuspCap57 = notaHcfmuspCap57.ficha
