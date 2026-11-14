@@ -381,7 +381,7 @@ test('cap. 22 e 45 (O3): nota só com o capítulo do manual, sem ficha da Centra
   for (const id of ['nota-hcfmusp-cap22-pericardite-miocardite', 'nota-hcfmusp-cap45-primeira-crise']) {
     const n = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === id)!
     assert.equal(n.fichaCentral, '')
-    assert.match(n.ficha.versao, /^2026-11-14\.[12]$/)
+    assert.match(n.ficha.versao, /^2026-11-14\.[123]$/)
     assert.ok(n.ficha.fontes.length >= 1)
     for (const i of n.itens) assert.ok(i.diretriz.length > 0 && i.manual.length > 0, i.tema)
   }
@@ -397,9 +397,9 @@ test('lote 5, P1: notas dos cap. 27, 79, 82 e 102 a partir das fichas', async ()
   const ids = NOTAS_HCFMUSP_LOTE5.map((n) => n.ficha.id)
   for (const id of ['nota-hcfmusp-cap27-irpa', 'nota-hcfmusp-cap79-hemostasia', 'nota-hcfmusp-cap82-transfusao', 'nota-hcfmusp-cap102-hipotermia']) assert.ok(ids.includes(id), id)
   for (const n of NOTAS_HCFMUSP_LOTE5) {
-    assert.match(n.ficha.versao, /^2026-11-14\.[12]$/)
+    assert.match(n.ficha.versao, /^2026-11-14\.[123]$/)
     assert.match(n.ficha.revisadoEm ?? '', /lote 5/)
-    assert.ok(n.fichaCentral.length > 0, n.ficha.id)
+    if (!/cap(83|24|34)-/.test(n.ficha.id)) assert.ok(n.fichaCentral.length > 0, n.ficha.id)
     for (const f of n.ficha.fontes) assert.doesNotMatch(f.citacao, /Manual de Medicina de Emergência/, n.ficha.id)
   }
   const por5 = (id: string) => NOTAS_HCFMUSP_LOTE5.find((n) => n.ficha.id === id)!
@@ -452,11 +452,22 @@ test('dengue (cap. 91): OMS 2025 ao lado do manual do HC; a ferramenta segue o M
 
 test('afogamento (cap. 100): WMS 2024 ao lado do manual; Szpilman igual', async () => {
   const a = await import('./ambientais.ts')
-  assert.equal(a.szpilman.ficha.versao, '2026-11-14.2')
+  assert.equal(a.szpilman.ficha.versao, '2026-11-14.3')
   assert.match(a.DIRETRIZ_AFOGAMENTO.find((d) => d.tema === 'Prognóstico')!.livro, /III 95–96%/)
   assert.ok(a.szpilman.ficha.fontes.includes(a.WMS_AFOGAMENTO_2024))
   assert.match(a.szpilman.ficha.fontes[0].citacao, /Manual de Medicina de Emergência/)
   const nota = NOTAS_HCFMUSP_LOTE5.find((x) => x.ficha.id === 'nota-hcfmusp-cap100-afogamento')!
   assert.equal(nota.itens.length, a.DIRETRIZ_AFOGAMENTO.length)
   assert.deepEqual(nota.ficha.fontes, [a.WMS_AFOGAMENTO_2024])
+})
+
+test('lote 5, P3: notas dos cap. 83, 24 e 34 sem ficha da Central', () => {
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE5.find((n) => n.ficha.id === id)!
+  for (const [id, n] of [['nota-hcfmusp-cap83-plaquetopenia', 5], ['nota-hcfmusp-cap24-oclusao-arterial', 5], ['nota-hcfmusp-cap34-pneumotorax', 7]] as const) {
+    const nota = por(id)
+    assert.equal(nota.fichaCentral, '')
+    assert.equal(nota.itens.length, n, id)
+    assert.match(nota.ficha.revisadoEm ?? '', /lote 5/)
+  }
+  assert.equal(por('nota-hcfmusp-cap83-plaquetopenia').ficha.fontes.length, 4)
 })
