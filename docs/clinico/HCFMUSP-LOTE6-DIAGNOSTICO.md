@@ -77,3 +77,7 @@ Os 12 de maior risco entre os que faltam.
 4. Cap. 93, 94 e 28: registro no BACKLOG.
 
 Cada passo passa pela homologação e pelo CI verde antes da produção, que pede o ok do RT.
+
+## Decisão do RT (14/11/2026)
+
+Q1 a Q4 = A, e a produção do lote 6 inteiro está liberada. Cada passo segue pela homologação e pelo CI verde antes da produção.
