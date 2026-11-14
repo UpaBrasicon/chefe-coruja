@@ -11,7 +11,8 @@ import { analgesicosMs2024, fichaDenguePed, grupoCMs2024, pasP5Ms, pesoAproximad
 // Dengue pelo manual do MS 6ª ed. 2024 (28/09/2026).
 
 test('dengue adulto: ficha .1 com o MS 2024 citado com páginas; continua de adulto', () => {
-  assert.equal(fichaDengue.versao, '2026-09-28.1')
+  // lote 5 da revisão do HCFMUSP (14/11/2026): a OMS 2025 entrou ao lado; o MS 2024 continua a primeira fonte
+  assert.equal(fichaDengue.versao, '2026-11-14.1')
   assert.match(fichaDengue.fontes[0].citacao, /6ª ed.*2024.*p\. 27/)
   assert.equal(temReferenciaPediatrica(fichaDengue), false)
 })

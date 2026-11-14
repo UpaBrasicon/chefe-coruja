@@ -1,11 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALTA, AMINAS_CARDIOPATA, ANALGESICOS_ADULTO, ANTITROMBOTICOS, BICARBONATO_SEM_GASOMETRIA, CARDIOPATA_PARAMETROS, CASO_SUSPEITO, CONDICOES_ESPECIAIS, CONSIDERACOES_C_D,
-  DIAGNOSTICO_LAB, DIFERENCAS_2024, DIFERENCIAL, ERRATA_PARACETAMOL, EXAMES, GESTANTE, HIPERIDRATACAO, HIPERTENSOS, HIPOTENSAO, IDOSOS_ALERTA, INOTROPICOS, INTERNACAO,
-  INTERROMPER_INFUSAO, PLAQUETAS_GRUPO_D, PROVA_LACO, QUADRO2_PRIORIDADE, REAVALIACAO, SANGRAMENTO_ANTITROMBOTICO, SINAIS_ALARME, SINAIS_GRAVIDADE, TABELA_HEMODINAMICA,
-  antitromboticoDengue, bicarbonatoDengue, cardiopataDengue, fichaDengue, grupoDPorPeso, grupoDengue, hidratacaoAdulto, hipocalemiaDengue, hiponatremiaDengue, provaDoLaco,
-  type Antitrombotico, type ClasseNyha,
+  ALTA, AMINAS_CARDIOPATA, ANALGESICOS_ADULTO, ANTITROMBOTICOS, BICARBONATO_SEM_GASOMETRIA, CARDIOPATA_PARAMETROS, CASO_SUSPEITO, CONDICOES_ESPECIAIS, CONSIDERACOES_C_D, DIAGNOSTICO_LAB, DIFERENCAS_2024, DIFERENCAS_DENGUE_OMS, DIFERENCIAL, DIRETRIZ_DENGUE_OMS, ERRATA_PARACETAMOL, EXAMES, GESTANTE, HIPERIDRATACAO, HIPERTENSOS, HIPOTENSAO, IDOSOS_ALERTA, INOTROPICOS, INTERNACAO, INTERROMPER_INFUSAO, PLAQUETAS_GRUPO_D, PROVA_LACO, QUADRO2_PRIORIDADE, REAVALIACAO, SANGRAMENTO_ANTITROMBOTICO, SINAIS_ALARME, SINAIS_GRAVIDADE, TABELA_HEMODINAMICA, antitromboticoDengue, bicarbonatoDengue, cardiopataDengue, fichaDengue, grupoDPorPeso, grupoDengue, hidratacaoAdulto, hipocalemiaDengue, hiponatremiaDengue, provaDoLaco, type Antitrombotico, type ClasseNyha,
 } from '@/clinico/dengue'
 import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -247,6 +243,17 @@ export function ClassificacaoDengue() {
       <Bloco titulo="O que mudou nesta versão">
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_2024.map((x) => <li key={x}>{x}</li>)}</ul>
       </Bloco>
+      <section className="space-y-2 rounded-cartao border border-fio bg-superficie p-4">
+        <h2 className="text-corpo font-semibold">OMS 2025 — ao lado do manual do HC</h2>
+        <p className="text-apoio text-tinta-sussurro">Recomendações da OMS de 2025 para arboviroses (GRADE), lidas no resumo oficial. A classificação e a hidratação acima seguem o Ministério da Saúde 2024 e não mudam.</p>
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">OMS 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_DENGUE_OMS.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DENGUE_OMS.map((d) => <li key={d}>{d}</li>)}</ul>
+      </section>
     </ToolLayout>
   )
 }
