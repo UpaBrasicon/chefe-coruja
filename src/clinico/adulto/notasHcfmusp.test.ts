@@ -527,3 +527,13 @@ test('lote 6, Q2: nota do cap. 96 a partir da diretriz latino-americana de SSJ/N
   assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
   assert.match(textoNota(nota), /imunoglobulina EV/)
 })
+
+test('lote 6, Q2: nota do cap. 60 com a ACG 2023 de insuficiência hepática aguda e a ACG 2024 da hepatite alcoólica', async () => {
+  const h = await import('./hepatopata.ts')
+  const nota = NOTAS_HCFMUSP_LOTE6.find((n) => n.ficha.id === 'nota-hcfmusp-cap60-hepatites-graves')!
+  assert.equal(nota.fichaCentral, h.fichaInsuficienciaHepatica.id)
+  assert.equal(nota.itens.length, h.DIRETRIZ_IHA_2023.length + 1)
+  assert.deepEqual(nota.ficha.fontes, [h.ACG_IHA_2023, h.ACG_ALD_2024])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
+  assert.match(textoNota(nota), /MELD > 25/)
+})

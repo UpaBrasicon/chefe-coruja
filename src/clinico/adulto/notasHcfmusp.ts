@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { ACG_ALD_2024, ACG_IHA_2023, DIRETRIZ_IHA_2023 } from './hepatopata.ts'
 import { DIRETRIZ_SSJ_NET_2025, LATAM_SSJ_NET_2025, fichaDermatosesAdulto } from './dermatoses.ts'
 import { DIRETRIZ_SINCOPE_2024, EUSEM_SINCOPE_2024, sincopeSanFrancisco } from './sincopeSanFrancisco.ts'
 import { DIRETRIZ_DOR_TORACICA_2025, SBC_DOR_TORACICA_2025, heart } from '../escores/heart.ts'
@@ -135,6 +136,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap12-dor-toracica': 'dor torácica no adulto na emergência: ECG em 10 minutos, oxigênio, troponina de alta sensibilidade (0/1 h, 0/2 h, dosagem única), CK-MB, escore HEART, alta, angiotomografia de coronárias, AAS, dissecção de aorta (ADD-RS), embolia pulmonar (Wells, Genebra, PERC)',
   'nota-hcfmusp-cap16-sincope': 'síncope e perda transitória da consciência no adulto no pronto-socorro: ECG em 10 minutos, exames, glicemia, hemoglobina, troponina, estratificação de risco, risco intermediário, monitorização, alta ou internação',
   'nota-hcfmusp-cap96-dermatoses': 'síndrome de Stevens-Johnson e necrólise epidérmica tóxica (SSJ/NET) no adulto: suspender a droga, ALDEN, SCORTEN, UTI, corticoide, imunoglobulina, ciclosporina, líquidos, via aérea, curativo, olhos, antibiótico, tromboprofilaxia',
+  'nota-hcfmusp-cap60-hepatites-graves': 'hepatites graves e insuficiência hepática aguda (hepatite fulminante) no adulto: transplante, King\'s College, MELD, coagulopatia, plasma, antibiótico profilático, noradrenalina, vasopressina, amônia, diálise, acetilcisteína, paracetamol, hepatite B, cogumelo (Amanita), hepatite alcoólica',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -715,7 +717,14 @@ export const notaHcfmuspCap96 = notaLote6('nota-hcfmusp-cap96-dermatoses', 'Nota
   [LATAM_SSJ_NET_2025])
 notaHcfmuspCap96.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens tirados da diretriz latino-americana de SSJ/NET 2025, lida no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44, notaHcfmuspCap96]
+/** cap. 60: ACG 2023 de insuficiência hepática aguda (na ficha) e ACG 2024 da hepatite alcoólica (na ficha do Maddrey). */
+export const notaHcfmuspCap60 = notaLote6('nota-hcfmusp-cap60-hepatites-graves', 'Nota de atualização — manual HC, cap. 60: hepatites graves', 'cap. 60, p. 808–823', fichaInsuficienciaHepatica, [
+    ...DIRETRIZ_IHA_2023.map((d) => ({ tema: `Insuficiência hepática aguda: ${d.tema.charAt(0).toLowerCase()}${d.tema.slice(1)}`, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+    { tema: 'Hepatite alcoólica grave', diretriz: 'ACG 2024: o MELD é o escore mais acurado para estratificar, e MELD > 20 define a forma grave. O benefício do corticoide em 28 dias aparece com MELD de 21 a 39, é limitado entre 40 e 50 e não existe acima de 50. O Lille no dia 4 do corticoide é tão acurado quanto no dia 7', manual: 'Maddrey > 32: prednisona 40 mg ao dia por 4 semanas; pentoxifilina ou acetilcisteína podem ter benefício (cap. 60, p. 817)' },
+  ], [ACG_IHA_2023, ACG_ALD_2024])
+notaHcfmuspCap60.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens da ACG 2023 de insuficiência hepática aguda, lida no texto integral, e da ACG 2024 da hepatite alcoólica, já na ficha do Maddrey; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44, notaHcfmuspCap60, notaHcfmuspCap96]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
 
