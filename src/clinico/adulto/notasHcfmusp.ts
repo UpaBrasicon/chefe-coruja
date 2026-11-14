@@ -23,6 +23,7 @@ import { BAVENO_VIII_2026, DIRETRIZ_HDA, ESGE_UGIH_2026, fichaHemorragiaDigestiv
 import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_2014, fichaHiponatremia } from './sodio.ts'
 import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
 import { ABHH_NF_2024, DIRETRIZ_NF, MASCC_2026, fichaNeutropeniaFebrilAdulto } from './neutropeniaFebril.ts'
+import { BAP_SUBSTANCIAS_2026, DIRETRIZ_SAA, fichaAbstinenciaAlcoolica } from './abstinenciaAlcoolica.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { ADA_HIPOGLICEMIA_2026, DIFERENCAS_2024, DIRETRIZ_HIPOGLICEMIA, ENDOCRINE_HIPOGLICEMIA_2023, fichaCadEhhTratamento, fichaHipoglicemia } from './glicemia.ts'
@@ -85,6 +86,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap47-trauma': 'politraumatizado e sangramento no trauma (ácido tranexâmico, hipotensão permissiva, Ringer lactato no TCE, transfusão maciça, fibrinogênio, cálcio, pelve, reversão de anticoagulante)',
   'nota-hcfmusp-cap65-hipoglicemia': 'hipoglicemia no adulto (níveis 1, 2 e 3, glicose oral 15 g, glucagon, recorrência, sulfonilureia, acarbose)',
   'nota-hcfmusp-cap81-neutropenia': 'neutropenia febril no adulto (antibiótico empírico, cefepima, piperacilina-tazobactam, carbapenêmico, vancomicina, antifúngico, quando parar, MASCC)',
+  'nota-hcfmusp-cap78-abstinencia': 'síndrome de abstinência alcoólica e delirium tremens (benzodiazepínico, esquema de dose, fenobarbital, antipsicótico, tiamina e Wernicke, magnésio)',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -306,7 +308,14 @@ export const notaHcfmuspCap81 = nota('nota-hcfmusp-cap81-neutropenia', 'Nota de 
 notaHcfmuspCap81.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap81.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados do consenso da ABHH 2024, lido no texto integral, e do MASCC 2026, lido no resumo; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap47, notaHcfmuspCap50, notaHcfmuspCap65, notaHcfmuspCap66, notaHcfmuspCap76, notaHcfmuspCap81]
+/** cap. 78: BAP 2026 (parte de álcool), lida no texto integral. */
+export const notaHcfmuspCap78 = nota('nota-hcfmusp-cap78-abstinencia', 'Nota de atualização — manual HC, cap. 78: síndrome de abstinência alcoólica', 'cap. 78, p. 1024–1035', fichaAbstinenciaAlcoolica,
+  DIRETRIZ_SAA.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [BAP_SUBSTANCIAS_2026])
+notaHcfmuspCap78.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap78.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da BAP 2026, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap47, notaHcfmuspCap50, notaHcfmuspCap65, notaHcfmuspCap66, notaHcfmuspCap76, notaHcfmuspCap78, notaHcfmuspCap81]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -336,6 +345,7 @@ export const fichaNotaHcfmuspCap43 = notaHcfmuspCap43.ficha
 export const fichaNotaHcfmuspCap50 = notaHcfmuspCap50.ficha
 export const fichaNotaHcfmuspCap66 = notaHcfmuspCap66.ficha
 export const fichaNotaHcfmuspCap47 = notaHcfmuspCap47.ficha
+export const fichaNotaHcfmuspCap78 = notaHcfmuspCap78.ficha
 export const fichaNotaHcfmuspCap81 = notaHcfmuspCap81.ficha
 export const fichaNotaHcfmuspCap65 = notaHcfmuspCap65.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
