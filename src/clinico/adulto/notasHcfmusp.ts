@@ -33,6 +33,7 @@ import { BSH_SLT_2025, DIRETRIZ_SLT, fichaLiseTumoralAdulto } from './liseTumora
 import { AASLD_ASCITE_2021, ACG_EH_2026, ADQI_ICA_2024, DIRETRIZ_EH, DIRETRIZ_PBE_SHR, fichaAsciteShr, fichaInsuficienciaHepatica } from './hepatopata.ts'
 import { DIRETRIZ_EI, ESC_EI_2023, duke } from './duke.ts'
 import { DIRETRIZ_LRA, KDIGO_LRA_2012, fichaLesaoRenalAguda } from './renal.ts'
+import { DIRETRIZ_FALCIFORME, SRLF_FALCIFORME_2025, TASC_2025, fichaFalciformeAdulto } from './falciforme.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { AARC_TRE_2024, ATS_IRPA_2026, ATS_SDRA_2024, DEFINICAO_GLOBAL_SDRA_2024, DIRETRIZ_SDRA_2024, ESICM_SDRA_2023, NOTA_AARC_TRE, NOTA_ATS_POS_EXTUBACAO, NOTA_SCCM_BNM, SCCM_BNM_2026, fichaSdraAdulto } from './ventilacaoMecanica.ts'
@@ -115,6 +116,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap82-transfusao': 'transfusão de hemácias e plaquetas no adulto: limiar de hemoglobina, IAM, lesão cerebral, plaquetopenia, cateter central, dengue',
   'nota-hcfmusp-cap102-hipotermia': 'hipotermia acidental no adulto: estágios, RCP, desfibrilação, adrenalina, amiodarona, ECMO, reaquecimento, afogamento',
   'nota-hcfmusp-cap71-mixedema': 'coma mixedematoso, estado mixedematoso, hipotireoidismo grave no adulto: levotiroxina EV, liotironina, hidrocortisona, aquecimento, escore',
+  'nota-hcfmusp-cap80-falciforme': 'doença falciforme (anemia falciforme) no adulto: crise vaso-oclusiva (crise álgica), síndrome torácica aguda, analgesia, hidratação, transfusão, exsanguineotransfusão, antibiótico',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -534,7 +536,13 @@ export const notaHcfmuspCap71 = notaLote5('nota-hcfmusp-cap71-mixedema', 'Nota d
   [CONSENSO_MIXEDEMA_2026])
 notaHcfmuspCap71.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados do consenso 2026, lido no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap82, notaHcfmuspCap102]
+/** cap. 80: diretriz SRLF/GFRUP/SFMU 2025, lida no texto integral. */
+export const notaHcfmuspCap80 = notaLote5('nota-hcfmusp-cap80-falciforme', 'Nota de atualização — manual HC, cap. 80: anemia falciforme', 'cap. 80, p. 1051–1061', fichaFalciformeAdulto,
+  DIRETRIZ_FALCIFORME.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [SRLF_FALCIFORME_2025, TASC_2025])
+notaHcfmuspCap80.ficha.revisadoEm = '14/11/2026 (lote 5 da revisão do HCFMUSP: itens tirados da diretriz SRLF/GFRUP/SFMU 2025, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap27, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap102]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5]
 
