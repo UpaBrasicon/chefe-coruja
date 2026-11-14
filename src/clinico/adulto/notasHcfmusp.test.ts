@@ -395,14 +395,26 @@ test('cap. 22 e 45 (O3): nota só com o capítulo do manual, sem ficha da Centra
 test('lote 5, P1: notas dos cap. 27, 79, 82 e 102 a partir das fichas', async () => {
   const { DIRETRIZ_HIPOTERMIA_2025 } = await import('./ambientais.ts')
   const ids = NOTAS_HCFMUSP_LOTE5.map((n) => n.ficha.id)
-  assert.deepEqual(ids, ['nota-hcfmusp-cap27-irpa', 'nota-hcfmusp-cap79-hemostasia', 'nota-hcfmusp-cap82-transfusao', 'nota-hcfmusp-cap102-hipotermia'])
+  for (const id of ['nota-hcfmusp-cap27-irpa', 'nota-hcfmusp-cap79-hemostasia', 'nota-hcfmusp-cap82-transfusao', 'nota-hcfmusp-cap102-hipotermia']) assert.ok(ids.includes(id), id)
   for (const n of NOTAS_HCFMUSP_LOTE5) {
     assert.equal(n.ficha.versao, '2026-11-14.1')
     assert.match(n.ficha.revisadoEm ?? '', /lote 5/)
     assert.ok(n.fichaCentral.length > 0, n.ficha.id)
     for (const f of n.ficha.fontes) assert.doesNotMatch(f.citacao, /Manual de Medicina de Emergência/, n.ficha.id)
   }
-  assert.equal(NOTAS_HCFMUSP_LOTE5[3].itens.length, DIRETRIZ_HIPOTERMIA_2025.length)
-  assert.equal(NOTAS_HCFMUSP_LOTE5[1].itens.length, 7)
-  assert.match(textoNota(NOTAS_HCFMUSP_LOTE5[1]), /Dabigatrana \(hemorragia intracerebral\)/)
+  const por5 = (id: string) => NOTAS_HCFMUSP_LOTE5.find((n) => n.ficha.id === id)!
+  assert.equal(por5('nota-hcfmusp-cap102-hipotermia').itens.length, DIRETRIZ_HIPOTERMIA_2025.length)
+  assert.equal(por5('nota-hcfmusp-cap79-hemostasia').itens.length, 7)
+  assert.match(textoNota(por5('nota-hcfmusp-cap79-hemostasia')), /Dabigatrana \(hemorragia intracerebral\)/)
+})
+
+test('estado mixedematoso (cap. 71): consenso 2026 ao lado do manual; doses e escore do manual iguais', async () => {
+  const e = await import('./endocrino.ts')
+  assert.equal(e.fichaMixedema.versao, '2026-11-14.1')
+  assert.ok(e.fichaMixedema.fontes.includes(e.CONSENSO_MIXEDEMA_2026))
+  assert.match(e.REPOSICAO_MIXEDEMA[0].texto, /200–500 µg EV/)
+  assert.match(e.REPOSICAO_MIXEDEMA[4].texto, /100 mg EV 8\/8 horas/)
+  const nota = NOTAS_HCFMUSP_LOTE5.find((x) => x.ficha.id === 'nota-hcfmusp-cap71-mixedema')!
+  assert.equal(nota.itens.length, e.DIRETRIZ_MIXEDEMA.length)
+  assert.deepEqual(nota.ficha.fontes, [e.CONSENSO_MIXEDEMA_2026])
 })
