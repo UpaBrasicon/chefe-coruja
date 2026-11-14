@@ -26,6 +26,7 @@ import { ABHH_NF_2024, DIRETRIZ_NF, MASCC_2026, fichaNeutropeniaFebrilAdulto } f
 import { BAP_SUBSTANCIAS_2026, DIRETRIZ_SAA, fichaAbstinenciaAlcoolica } from './abstinenciaAlcoolica.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
+import { ASH_TEV_2020, DIRETRIZ_TVP } from './tvp2026.ts'
 import { ADA_HIPOGLICEMIA_2026, DIFERENCAS_2024, DIRETRIZ_HIPOGLICEMIA, ENDOCRINE_HIPOGLICEMIA_2023, fichaCadEhhTratamento, fichaHipoglicemia } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
 import { CARVAO_CTRC_2026, CARVAO_INDICACAO, fichaIntoxicacoesAdulto } from './intoxicacoes.ts'
@@ -87,6 +88,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap65-hipoglicemia': 'hipoglicemia no adulto (níveis 1, 2 e 3, glicose oral 15 g, glucagon, recorrência, sulfonilureia, acarbose)',
   'nota-hcfmusp-cap81-neutropenia': 'neutropenia febril no adulto (antibiótico empírico, cefepima, piperacilina-tazobactam, carbapenêmico, vancomicina, antifúngico, quando parar, MASCC)',
   'nota-hcfmusp-cap78-abstinencia': 'síndrome de abstinência alcoólica e delirium tremens (benzodiazepínico, esquema de dose, fenobarbital, antipsicótico, tiamina e Wernicke, magnésio)',
+  'nota-hcfmusp-cap25-tvp': 'trombose venosa profunda (TVP): tratamento em casa, DOAC ou varfarina, duração da anticoagulação, filtro de veia cava, trombólise, aspirina na prevenção secundária',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -126,7 +128,7 @@ export const notaHcfmuspCap11 = nota('nota-hcfmusp-cap11-anafilaxia', 'Nota de a
 export const notaHcfmuspCap13 = nota('nota-hcfmusp-cap13-14-sca', 'Nota de atualização — manual HC, cap. 13 e 14: síndrome coronariana aguda', 'cap. 13, p. 199–211; cap. 14, p. 212–222', fichaFibrinoliticosAdulto, [
   ...DIRETRIZ_SCA_2025.map((d) => ({ tema: d.tema, diretriz: `${d.fonte}: ${d.diretriz}`, manual: sem(d.livro) })),
   ...DIFERENCAS_ANTICOAG_2025.map((t) => ({ tema: `Anticoagulação — ${t.split(':')[0]}`, diretriz: t, manual: 'no próprio item, com a página' })),
-], semManual([...fichaFibrinoliticosAdulto.fontes, ...fichaAnticoagulacaoPlenaAdulto.fontes]).filter((f, i, a) => f !== AHA_TEP_2026 && a.findIndex((x) => x.citacao === f.citacao) === i))
+], semManual([...fichaFibrinoliticosAdulto.fontes, ...fichaAnticoagulacaoPlenaAdulto.fontes]).filter((f, i, a) => f !== AHA_TEP_2026 && f !== ASH_TEV_2020 && a.findIndex((x) => x.citacao === f.citacao) === i))
 // versão .2: a .1 (já na homologação) tinha só os 3 itens de anticoagulação
 notaHcfmuspCap13.ficha.versao = '2026-11-13.2'
 
@@ -315,7 +317,14 @@ export const notaHcfmuspCap78 = nota('nota-hcfmusp-cap78-abstinencia', 'Nota de 
 notaHcfmuspCap78.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap78.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da BAP 2026, lida no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap47, notaHcfmuspCap50, notaHcfmuspCap65, notaHcfmuspCap66, notaHcfmuspCap76, notaHcfmuspCap78, notaHcfmuspCap81]
+/** cap. 25: ASH 2020 de tratamento do TEV, lida no texto integral (só a TVP). */
+export const notaHcfmuspCap25 = nota('nota-hcfmusp-cap25-tvp', 'Nota de atualização — manual HC, cap. 25: trombose venosa profunda', 'cap. 25, p. 345–357', fichaAnticoagulacaoPlenaAdulto,
+  DIRETRIZ_TVP.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [ASH_TEV_2020])
+notaHcfmuspCap25.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap25.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da ASH 2020, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap25, notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap47, notaHcfmuspCap50, notaHcfmuspCap65, notaHcfmuspCap66, notaHcfmuspCap76, notaHcfmuspCap78, notaHcfmuspCap81]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -345,6 +354,7 @@ export const fichaNotaHcfmuspCap43 = notaHcfmuspCap43.ficha
 export const fichaNotaHcfmuspCap50 = notaHcfmuspCap50.ficha
 export const fichaNotaHcfmuspCap66 = notaHcfmuspCap66.ficha
 export const fichaNotaHcfmuspCap47 = notaHcfmuspCap47.ficha
+export const fichaNotaHcfmuspCap25 = notaHcfmuspCap25.ficha
 export const fichaNotaHcfmuspCap78 = notaHcfmuspCap78.ficha
 export const fichaNotaHcfmuspCap81 = notaHcfmuspCap81.ficha
 export const fichaNotaHcfmuspCap65 = notaHcfmuspCap65.ficha
