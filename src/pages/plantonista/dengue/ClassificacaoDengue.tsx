@@ -243,9 +243,7 @@ export function ClassificacaoDengue() {
       <Bloco titulo="O que mudou nesta versão">
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_2024.map((x) => <li key={x}>{x}</li>)}</ul>
       </Bloco>
-      <section className="space-y-2 rounded-cartao border border-fio bg-superficie p-4">
-        <h2 className="text-corpo font-semibold">OMS 2025 — ao lado do manual do HC</h2>
-        <p className="text-apoio text-tinta-sussurro">Recomendações da OMS de 2025 para arboviroses (GRADE), lidas no resumo oficial. A classificação e a hidratação acima seguem o Ministério da Saúde 2024 e não mudam.</p>
+      <Bloco titulo="OMS 2025 — ao lado do manual do HC" descricao="Recomendações da OMS de 2025 para arboviroses (GRADE), lidas no resumo oficial. A classificação e a hidratação acima seguem o Ministério da Saúde 2024 e não mudam.">
         <div className="overflow-x-auto">
           <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
             <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">OMS 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
@@ -253,7 +251,7 @@ export function ClassificacaoDengue() {
           </Table>
         </div>
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DENGUE_OMS.map((d) => <li key={d}>{d}</li>)}</ul>
-      </section>
+      </Bloco>
     </ToolLayout>
   )
 }
