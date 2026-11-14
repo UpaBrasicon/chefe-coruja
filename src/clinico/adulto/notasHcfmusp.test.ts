@@ -517,3 +517,13 @@ test('lote 6, Q2: nota do cap. 16 a partir do consenso da EUSEM 2024 na ficha de
   assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
   assert.match(textoNota(nota), /o manual não usa a categoria de risco intermediário/)
 })
+
+test('lote 6, Q2: nota do cap. 96 a partir da diretriz latino-americana de SSJ/NET na ficha de dermatoses', async () => {
+  const d = await import('./dermatoses.ts')
+  const nota = NOTAS_HCFMUSP_LOTE6.find((n) => n.ficha.id === 'nota-hcfmusp-cap96-dermatoses')!
+  assert.equal(nota.fichaCentral, d.fichaDermatosesAdulto.id)
+  assert.equal(nota.itens.length, d.DIRETRIZ_SSJ_NET_2025.length)
+  assert.deepEqual(nota.ficha.fontes, [d.LATAM_SSJ_NET_2025])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
+  assert.match(textoNota(nota), /imunoglobulina EV/)
+})

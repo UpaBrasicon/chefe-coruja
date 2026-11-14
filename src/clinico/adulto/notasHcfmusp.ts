@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { DIRETRIZ_SSJ_NET_2025, LATAM_SSJ_NET_2025, fichaDermatosesAdulto } from './dermatoses.ts'
 import { DIRETRIZ_SINCOPE_2024, EUSEM_SINCOPE_2024, sincopeSanFrancisco } from './sincopeSanFrancisco.ts'
 import { DIRETRIZ_DOR_TORACICA_2025, SBC_DOR_TORACICA_2025, heart } from '../escores/heart.ts'
 import { DIRETRIZ_SGB_2023, EAN_PNS_SGB_2023, fichaSgbAdulto } from './guillainBarre.ts'
@@ -133,6 +134,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap44-paralisias-flacidas': 'paralisia flácida aguda no adulto: síndrome de Guillain-Barré (imunoglobulina, plasmaférese, corticoide, segundo curso, dor, mEGRIS, mEGOS) e botulismo (antitoxina botulínica, vigilância respiratória, antibiótico, aminoglicosídeo)',
   'nota-hcfmusp-cap12-dor-toracica': 'dor torácica no adulto na emergência: ECG em 10 minutos, oxigênio, troponina de alta sensibilidade (0/1 h, 0/2 h, dosagem única), CK-MB, escore HEART, alta, angiotomografia de coronárias, AAS, dissecção de aorta (ADD-RS), embolia pulmonar (Wells, Genebra, PERC)',
   'nota-hcfmusp-cap16-sincope': 'síncope e perda transitória da consciência no adulto no pronto-socorro: ECG em 10 minutos, exames, glicemia, hemoglobina, troponina, estratificação de risco, risco intermediário, monitorização, alta ou internação',
+  'nota-hcfmusp-cap96-dermatoses': 'síndrome de Stevens-Johnson e necrólise epidérmica tóxica (SSJ/NET) no adulto: suspender a droga, ALDEN, SCORTEN, UTI, corticoide, imunoglobulina, ciclosporina, líquidos, via aérea, curativo, olhos, antibiótico, tromboprofilaxia',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -707,7 +709,13 @@ export const notaHcfmuspCap16 = notaLote6('nota-hcfmusp-cap16-sincope', 'Nota de
   [EUSEM_SINCOPE_2024])
 notaHcfmuspCap16.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens tirados do consenso da EUSEM 2024, lido no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44]
+/** cap. 96: diretriz latino-americana de SSJ/NET 2025, já na ficha de dermatoses graves. */
+export const notaHcfmuspCap96 = notaLote6('nota-hcfmusp-cap96-dermatoses', 'Nota de atualização — manual HC, cap. 96: dermatoses graves (SSJ/NET)', 'cap. 96, p. 1277–1296', fichaDermatosesAdulto,
+  DIRETRIZ_SSJ_NET_2025.map((d) => ({ tema: `SSJ/NET: ${d.tema.charAt(0).toLowerCase()}${d.tema.slice(1)}`, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [LATAM_SSJ_NET_2025])
+notaHcfmuspCap96.ficha.revisadoEm = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens tirados da diretriz latino-americana de SSJ/NET 2025, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap12, notaHcfmuspCap16, notaHcfmuspCap41, notaHcfmuspCap44, notaHcfmuspCap96]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
 
