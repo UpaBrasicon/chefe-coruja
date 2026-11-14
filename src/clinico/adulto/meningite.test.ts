@@ -48,6 +48,6 @@ test('quimioprofilaxia: rifampicina no meningococo do adulto, 10 mg/kg/dose até
   assert.equal(rifampicinaMeningococoMg(0), null)
 })
 test('quimioprofilaxia: ficha nova cita o Guia de Vigilância em Saúde 2024', () => {
-  assert.equal(fichaMeningiteAdulto.versao, '2026-10-27.1')
+  assert.equal(fichaMeningiteAdulto.versao, '2026-11-14.1')
   assert.ok(fichaMeningiteAdulto.fontes.some((f) => /Guia de vigilância em saúde.*2024/i.test(f.citacao)))
 })

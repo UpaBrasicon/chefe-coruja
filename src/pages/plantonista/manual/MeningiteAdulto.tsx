@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   INDICACOES_QUIMIO, PRIMEIRA_HORA, QUIMIO_HIB, QUIMIO_MENINGOCOCO, SINAIS_CLASSICOS, TABELA1_LCR, TABELA2_MENINGITE, dosesPorPeso,
   fichaMeningiteAdulto, rifampicinaMeningococoMg, riscoListeria, suspeitaMeningite, type LinhaQuimio,
+  DIFERENCAS_MENINGITE, DIRETRIZ_MENINGITE,
 } from '@/clinico/adulto/meningite'
 import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -124,6 +125,15 @@ export function MeningiteAdulto() {
 
       <Bloco titulo="Haemophilus influenzae (Quadro 11, p. 143)">
         <TabelaQuimio linhas={QUIMIO_HIB} />
+      </Bloco>
+      <Bloco titulo="ESCMID 2016 e EAN–ESCMID 2026 — ao lado do manual" descricao="Meningite bacteriana pela ESCMID 2016 (grau A = apoio forte a D = contra) e encefalite infecciosa pela EAN–ESCMID 2026 (GRADE), lidas no texto integral. As doses do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_MENINGITE.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_MENINGITE.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )

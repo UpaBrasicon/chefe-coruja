@@ -19,6 +19,7 @@ import { ACEP_2024_RECOMENDACOES, DIFERENCAS_AGITACAO_2024, fichaAgitacaoAdulto 
 import { DIRETRIZ_HSA_2023, NOTA_ESO_ANTIFIBRINOLITICO, NOTA_NCS_FENITOINA, fichaHsaAdulto } from './hsa.ts'
 import { DIRETRIZ_PAC_2026, NOTA_IDSA_PAC_2026, fichaPacAntibioticoAdulto } from './tepPac.ts'
 import { DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
+import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
@@ -76,6 +77,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap33-pac': 'pneumonia adquirida na comunidade (PAC) no adulto: antibiótico, duração, corticoide e vírus respiratório',
   'nota-hcfmusp-cap40-hsa': 'hemorragia subaracnóidea (HSA) aneurismática no adulto',
   'nota-hcfmusp-cap76-agitacao': 'paciente agitado e agitação grave no adulto (sedação: droperidol, antipsicótico, midazolam, cetamina)',
+  'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
   'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
 }
@@ -253,7 +255,14 @@ export const notaHcfmuspCap39 = nota('nota-hcfmusp-cap39-hic', 'Nota de atualiza
 notaHcfmuspCap39.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap39.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da lista da ESO/EANS 2025, lida no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap76]
+/** cap. 43: ESCMID 2016 (meningite bacteriana) e EAN–ESCMID 2026 (encefalite), lidas no texto integral. */
+export const notaHcfmuspCap43 = nota('nota-hcfmusp-cap43-neuroinfeccao', 'Nota de atualização — manual HC, cap. 43: neuroinfecção', 'cap. 43, p. 589–597', fichaMeningiteAdulto,
+  DIRETRIZ_MENINGITE.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [ESCMID_MENINGITE_2016, EAN_ESCMID_ENCEFALITE_2026])
+notaHcfmuspCap43.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap43.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da lista da ESCMID 2016 e da EAN–ESCMID 2026, lidas no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap76]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -279,6 +288,7 @@ export const fichaNotaHcfmuspCap33 = notaHcfmuspCap33.ficha
 export const fichaNotaHcfmuspCap40 = notaHcfmuspCap40.ficha
 export const fichaNotaHcfmuspCap76 = notaHcfmuspCap76.ficha
 export const fichaNotaHcfmuspCap39 = notaHcfmuspCap39.ficha
+export const fichaNotaHcfmuspCap43 = notaHcfmuspCap43.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */
