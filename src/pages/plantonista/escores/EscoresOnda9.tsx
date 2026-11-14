@@ -1,5 +1,5 @@
 import { DIFERENCAS_EI, DIRETRIZ_EI, duke } from '@/clinico/adulto/duke'
-import { sincopeSanFrancisco } from '@/clinico/adulto/sincopeSanFrancisco'
+import { DIRETRIZ_SINCOPE_2024, sincopeSanFrancisco } from '@/clinico/adulto/sincopeSanFrancisco'
 import { ckdEpi } from '@/clinico/escores/ckdEpi'
 import { iss } from '@/clinico/escores/iss'
 import { pram } from '@/clinico/escores/pram'
@@ -14,7 +14,18 @@ import { Bloco } from '../manual/LoteAPecas'
 // sua fonte na ficha (manual do HC, livro do ICr ou referência primária).
 
 export const TimiIamcsst = () => <EscoreTela escore={timiIamcsst} />
-export const SincopeSanFrancisco = () => <EscoreTela escore={sincopeSanFrancisco} />
+export const SincopeSanFrancisco = () => (
+  <EscoreTela escore={sincopeSanFrancisco}>
+    <Bloco titulo="EUSEM 2024 — ao lado do manual" descricao="Síncope no pronto-socorro pelo consenso da EUSEM de 2024 (Delphi sobre a ESC 2018, sem graduação), lido no texto integral, ao lado do cap. 16 do manual do HC.">
+      <div className="overflow-x-auto">
+        <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+          <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Consenso</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+          <TableBody>{DIRETRIZ_SINCOPE_2024.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+        </Table>
+      </div>
+    </Bloco>
+  </EscoreTela>
+)
 export const SincopeCanadense = () => <EscoreTela escore={sincopeCanadense} />
 export const Duke = () => (
   <EscoreTela escore={duke}>
