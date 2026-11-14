@@ -49,3 +49,9 @@ As oito respostas passam a abrir pela diretriz.
 - A migration `20270414000032` foi aplicada antes do merge. O #709 foi mesclado com o CI verde.
 - Os arquivos foram ingeridos e a API foi reiniciada. O Vercel publicou o master.
 - O grau III e a tabela de Szpilman voltaram a trazer a sobrevida. A pergunta da alta caiu na dengue da criança e é corrigida neste PR.
+
+## Produção do #710, 14/11/2026
+
+- A migration `20270414000033` foi aplicada antes do merge. O #710 foi mesclado com o CI verde.
+- Os 6 arquivos foram ingeridos e a API foi reiniciada. O Vercel publicou o master.
+- Sete das oito respostas saíram como na homologação. A da alta do afogamento, perguntada sem a palavra "adulto", ainda cai na dengue da criança na produção e responde "não há referência pediátrica"; com "adulto afogado", responde 4–6 h pela WMS 2024. Na homologação as duas formas acertam. Fica registrado como limitação da busca, não do conteúdo.
