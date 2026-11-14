@@ -8,6 +8,7 @@ import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emer
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
 import { DIFERENCAS_BRADI_2025, DIRETRIZ_TAQUI_2025 } from './pcr.ts'
 import { DIRETRIZ_ICA_2026 } from './insuficienciaCardiacaAguda.ts'
+import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIVERGENCIA_MANUAL_HC } from '../hiperpotassemia.ts'
 import { DIFERENCAS_2024 } from './glicemia.ts'
 import { DIRETRIZ_AVC_2026 } from './avcTrombolise.ts'
@@ -43,13 +44,13 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
   assert.equal(avc.itens.length, DIRETRIZ_AVC_2026.length)
 })
 
-test('lote 2: nove notas (cap. 15, 17, 18, 19, 20, 21, 30, 31 e 67), itens das listas das fichas, só adulto', () => {
-  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 9)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 9)
+test('lote 2: dez notas (cap. 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
+  assert.equal(NOTAS_HCFMUSP_LOTE2.length, 10)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 10)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
-  for (const c of [15, 17, 18, 19, 20, 21, 30, 31, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
+  for (const c of [15, 17, 18, 19, 20, 21, 30, 31, 32, 67]) assert.match(caps, new RegExp(`cap\\. ${c}\\b`), `cap. ${c}`)
   const porId = (id: string) => NOTAS_HCFMUSP_LOTE2.find((n) => n.ficha.id === id)!
   assert.equal(porId('nota-hcfmusp-cap15-bradiarritmias').itens.length, DIFERENCAS_BRADI_2025.length)
   assert.equal(porId('nota-hcfmusp-cap17-fa').itens.length, DIFERENCAS_FA_2024.length + DOSES_FA_2024.length)
@@ -59,6 +60,7 @@ test('lote 2: nove notas (cap. 15, 17, 18, 19, 20, 21, 30, 31 e 67), itens das l
   assert.equal(porId('nota-hcfmusp-cap21-ic-aguda').itens.length, DIRETRIZ_ICA_2026.length)
   assert.equal(porId('nota-hcfmusp-cap20-sindrome-aortica').itens.length, DIRETRIZ_AORTA_2024.length)
   assert.equal(porId('nota-hcfmusp-cap31-dpoc').itens.length, DIRETRIZ_DPOC_GOLD_2026.length)
+  assert.equal(porId('nota-hcfmusp-cap32-tep').itens.length, DIRETRIZ_TEP_2026.length)
   const hiperK = porId('nota-hcfmusp-cap67-hiperpotassemia')
   assert.equal(hiperK.itens.length, DIVERGENCIA_MANUAL_HC.diferencas.length)
   for (const n of NOTAS_HCFMUSP_LOTE2) {
@@ -92,6 +94,26 @@ test('DPOC: GOLD 2026 ao lado do manual; doses e conta da gasometria seguem o ma
   // a conta continua a do livro: PaCO2 50 com pH 7,30 não indica VNI pela Tabela 6
   assert.deepEqual(m.lerGasometriaDpoc({ paco2: 50, ph: 7.3 }).vni, [])
   assert.ok(m.DROGAS_DPOC.some((d) => d.id === 'prednisona' && /40 mg VO por 5 dias/.test(d.texto)))
+})
+
+test('TEP: AHA/ACC 2026 nas fichas de PERC, HESTIA, PESI e fibrinolíticos, sem dose nova e sem entrar na nota da SCA', async () => {
+  const { perc, hestia } = await import('./tepPac.ts')
+  const { pesi } = await import('./pesi.ts')
+  const { fichaFibrinoliticosAdulto, ALTEPLASE_TEP } = await import('./anticoagulacao.ts')
+  for (const f of [perc.ficha, hestia.ficha, pesi.ficha, fichaFibrinoliticosAdulto]) {
+    assert.equal(f.versao, '2026-11-14.1', f.id)
+    assert.ok(f.fontes.includes(AHA_TEP_2026), f.id)
+    assert.ok(f.fontes.some((x) => /Manual de Medicina de Emergência/.test(x.citacao)), f.id)
+  }
+  assert.match(AHA_TEP_2026.citacao, /PMID 41712677/)
+  assert.equal(AHA_TEP_2026.url, 'https://doi.org/10.1161/CIR.0000000000001415')
+  for (const d of DIRETRIZ_TEP_2026) assert.doesNotMatch(d.aha, /\d+ ?mg\b/, `${d.tema}: dose não vem da diretriz`)
+  assert.equal(ALTEPLASE_TEP.preferivel.mg, 100)
+  const sca = NOTAS_HCFMUSP_LOTE1.find((n) => n.ficha.id === 'nota-hcfmusp-cap13-14-sca')!
+  assert.ok(!sca.ficha.fontes.includes(AHA_TEP_2026))
+  const tep = NOTAS_HCFMUSP.find((n) => n.ficha.id === 'nota-hcfmusp-cap32-tep')!
+  assert.equal(tep.ficha.versao, '2026-11-14.1')
+  assert.deepEqual(tep.ficha.fontes, [AHA_TEP_2026])
 })
 
 test('taquiarritmias: AHA 2025 ao lado do manual; doses do manual não mudam', async () => {
