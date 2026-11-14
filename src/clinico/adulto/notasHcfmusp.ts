@@ -15,6 +15,7 @@ import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024, fichaEmergenc
 import { DIFERENCAS_FA_2024, DOSES_FA_2024, fichaFibrilacaoAtrialAdulto } from './fibrilacaoAtrial.ts'
 import { DAS_2025, DIRETRIZ_DAS_2025, fichaIsrAdulto } from './isr.ts'
 import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAguda.ts'
+import { DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
@@ -69,6 +70,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap31-dpoc': 'exacerbação de DPOC (doença pulmonar obstrutiva crônica) no adulto',
   'nota-hcfmusp-cap32-tep': 'tromboembolismo pulmonar (TEP, embolia pulmonar) agudo no adulto',
   'nota-hcfmusp-cap67-hiperpotassemia': 'hiperpotassemia (potássio alto) no adulto',
+  'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
   'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
 }
 
@@ -206,7 +208,15 @@ export const notaHcfmuspCap21 = notaLote2('nota-hcfmusp-cap21-ic-aguda', 'Nota d
   DIRETRIZ_ICA_2026.map((d) => ({ tema: d.tema, diretriz: `ESC 2026 (${d.classe}; ${d.slide}): ${d.esc2026}`, manual: sem(d.livro) })))
 
 export const NOTAS_HCFMUSP_LOTE2: NotaHcfmusp[] = [notaHcfmuspCap3, notaHcfmuspCap15, notaHcfmuspCap17, notaHcfmuspCap18, notaHcfmuspCap19, notaHcfmuspCap20, notaHcfmuspCap21, notaHcfmuspCap30, notaHcfmuspCap31, notaHcfmuspCap32, notaHcfmuspCap67]
-export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2]
+// ── Lote 3, N2 (decisão do RT de 14/11/2026): cap. 39, ESO/EANS 2025 lida no texto integral.
+export const notaHcfmuspCap39 = nota('nota-hcfmusp-cap39-hic', 'Nota de atualização — manual HC, cap. 39: hemorragias intraparenquimatosas', 'cap. 39, p. 542–549', fichaReversaoAnticoagulacaoAdulto,
+  DIRETRIZ_HIC_ESO_2025.map((d) => ({ tema: d.tema, diretriz: `ESO/EANS 2025 (${d.forca}; ${d.onde}): ${d.eso}`, manual: sem(d.livro) })),
+  [ESO_HIC_2025])
+notaHcfmuspCap39.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap39.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da lista da ESO/EANS 2025, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap39]
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha
@@ -227,6 +237,7 @@ export const fichaNotaHcfmuspCap30 = notaHcfmuspCap30.ficha
 export const fichaNotaHcfmuspCap31 = notaHcfmuspCap31.ficha
 export const fichaNotaHcfmuspCap32 = notaHcfmuspCap32.ficha
 export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
+export const fichaNotaHcfmuspCap39 = notaHcfmuspCap39.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, textoNota } from './notasHcfmusp.ts'
+import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, textoNota } from './notasHcfmusp.ts'
 import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
@@ -47,7 +47,7 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
 
 test('lote 2: onze notas (cap. 3, 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
   assert.equal(NOTAS_HCFMUSP_LOTE2.length, 11)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
@@ -140,4 +140,18 @@ test('via aérea: DAS 2025 ao lado do manual; doses do Anexo 1 não mudam', asyn
   assert.equal(dose('succinilcolina'), 1.5)
   const nota = NOTAS_HCFMUSP.find((n) => n.ficha.id === 'nota-hcfmusp-cap3-via-aerea')!
   assert.deepEqual(nota.ficha.fontes, [DAS_2025])
+})
+
+test('HIC (cap. 39): ESO/EANS 2025 ao lado do manual; doses do manual iguais', async () => {
+  const m = await import('./reversaoAnticoagulacao.ts')
+  assert.equal(m.fichaReversaoAnticoagulacaoAdulto.versao, '2026-11-14.1')
+  assert.ok(m.fichaReversaoAnticoagulacaoAdulto.fontes.includes(m.ESO_HIC_2025))
+  assert.match(m.ESO_HIC_2025.citacao, /PMID 40401775/)
+  const pa = m.DIRETRIZ_HIC_ESO_2025.find((d) => d.tema === 'Pressão arterial')!
+  assert.match(pa.eso, /< 140 mmHg/)
+  assert.match(pa.eso, /110 mmHg/)
+  const nota = NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === 'nota-hcfmusp-cap39-hic')!
+  assert.equal(nota.itens.length, m.DIRETRIZ_HIC_ESO_2025.length)
+  assert.deepEqual(nota.ficha.fontes, [m.ESO_HIC_2025])
+  assert.equal(m.HIP_METAS[0].pagina, 'p. 547')
 })
