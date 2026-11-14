@@ -16,7 +16,7 @@ import { glasgow } from '@/clinico/escores/glasgow'
 import { glasgowBlatchford } from '@/clinico/escores/glasgowBlatchford'
 import { grace } from '@/clinico/escores/grace'
 import { hasBled } from '@/clinico/escores/hasBled'
-import { heart } from '@/clinico/escores/heart'
+import { DIRETRIZ_DOR_TORACICA_2025, heart } from '@/clinico/escores/heart'
 import { killip } from '@/clinico/escores/killip'
 import { light } from '@/clinico/escores/light'
 import { meld3 } from '@/clinico/escores/meld3'
@@ -40,6 +40,8 @@ import { sofa2 } from '@/clinico/escores/sofa2'
 import { spesi } from '@/clinico/escores/spesi'
 import { twist } from '@/clinico/escores/twist'
 import { EscoreTela } from '@/components/plantonista/EscoreTela'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Bloco } from '../manual/LoteAPecas'
 
 // Escores do pacote src/clinico (Fase 5.3): a regra e o teste ficam lá; aqui só
 // o nome que o registry da Central usa.
@@ -48,7 +50,18 @@ export const Curb65 = () => <EscoreTela escore={curb65} />
 export const Cha2ds2va = () => <EscoreTela escore={cha2ds2va} />
 export const HasBled = () => <EscoreTela escore={hasBled} />
 export const ChildPugh = () => <EscoreTela escore={childPugh} />
-export const Heart = () => <EscoreTela escore={heart} />
+export const Heart = () => (
+  <EscoreTela escore={heart}>
+    <Bloco titulo="SBC 2025 — ao lado do manual" descricao="Dor torácica na emergência pela diretriz brasileira de 2025 (classe de recomendação e nível de evidência), lida no texto integral, ao lado do cap. 12 do manual do HC.">
+      <div className="overflow-x-auto">
+        <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+          <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+          <TableBody>{DIRETRIZ_DOR_TORACICA_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+        </Table>
+      </div>
+    </Bloco>
+  </EscoreTela>
+)
 export const WellsTvp = () => <EscoreTela escore={wellsTvp} />
 export const Alvarado = () => <EscoreTela escore={alvarado} />
 export const Abcd2 = () => <EscoreTela escore={abcd2} />

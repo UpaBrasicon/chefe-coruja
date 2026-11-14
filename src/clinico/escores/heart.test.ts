@@ -31,3 +31,12 @@ test('heart: ficha de adulto, sem fonte pediátrica', () => {
   assert.ok(heart.ficha.fontes.every((f) => !f.pediatrica))
   assert.equal(temReferenciaPediatrica(heart.ficha), false)
 })
+
+test('heart: SBC 2025 ao lado do manual (cap. 12, lote 6 do HCFMUSP)', async () => {
+  const h = await import('./heart.ts')
+  assert.equal(h.heart.ficha.versao, '2026-11-14.1')
+  assert.ok(h.heart.ficha.fontes.includes(h.SBC_DOR_TORACICA_2025))
+  assert.match(h.SBC_DOR_TORACICA_2025.citacao, /PMID 41379176/)
+  assert.equal(new Set(h.DIRETRIZ_DOR_TORACICA_2025.map((d) => d.tema)).size, h.DIRETRIZ_DOR_TORACICA_2025.length)
+  assert.ok(h.DIRETRIZ_DOR_TORACICA_2025.some((d) => d.tema === 'Escore de risco' && d.grau === 'I, B'))
+})

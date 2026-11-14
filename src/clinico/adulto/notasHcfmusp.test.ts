@@ -497,3 +497,13 @@ test('lote 6, Q2: nota do cap. 44 com a SGB da ficha e o botulismo do CDC 2021',
   assert.equal(new Set(nota.itens.map((i) => i.tema)).size, nota.itens.length)
   assert.match(textoNota(nota), /sem esperar a confirmação laboratorial/)
 })
+
+test('lote 6, Q2: nota do cap. 12 a partir da lista da SBC 2025 na ficha do HEART', async () => {
+  const h = await import('../escores/heart.ts')
+  const nota = NOTAS_HCFMUSP_LOTE6.find((n) => n.ficha.id === 'nota-hcfmusp-cap12-dor-toracica')!
+  assert.equal(nota.fichaCentral, 'heart')
+  assert.equal(nota.itens.length, h.DIRETRIZ_DOR_TORACICA_2025.length)
+  assert.deepEqual(nota.ficha.fontes, [h.SBC_DOR_TORACICA_2025])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 6/)
+  assert.match(textoNota(nota), /HEART ≤ 3/)
+})
