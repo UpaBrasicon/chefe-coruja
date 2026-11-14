@@ -342,3 +342,14 @@ test('PBE e SHR (cap. 57 e 58): AASLD 2021 e ADQI-ICA 2024 ao lado do manual; do
   assert.equal(nota.itens.length, h.DIRETRIZ_PBE_SHR.length)
   assert.deepEqual(nota.ficha.fontes, [h.AASLD_ASCITE_2021, h.ADQI_ICA_2024])
 })
+
+test('encefalopatia hepática (cap. 59): ACG 2026 ao lado do manual; doses do manual iguais', async () => {
+  const h = await import('./hepatopata.ts')
+  assert.equal(h.fichaInsuficienciaHepatica.versao, '2026-11-14.1')
+  assert.ok(h.fichaInsuficienciaHepatica.fontes.includes(h.ACG_EH_2026))
+  assert.deepEqual(h.lactuloseMlDia(), [60, 240])
+  assert.deepEqual(h.DIETA_EH.proteinaTabelaGKg, [1.2, 1.5])
+  const nota = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap59-encefalopatia')!
+  assert.equal(nota.itens.length, h.DIRETRIZ_EH.length)
+  assert.deepEqual(nota.ficha.fontes, [h.ACG_EH_2026])
+})

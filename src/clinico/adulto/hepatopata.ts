@@ -76,11 +76,55 @@ export const fichaAsciteShr: Ficha = {
   revisadoEm: '14/11/2026 (AASLD 2021 e ADQI-ICA 2024 lidas no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT); 09/10/2026 (ADQI-ICA 2024 e a divergência EASL ao lado do livro)',
 }
 
-export const fichaInsuficienciaHepatica = fichaAdulto(
+// Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 59: a diretriz
+// da ACG de 2026 (GRADE) foi lida no texto integral no site da revista. As doses e
+// contas do manual não mudam.
+export const ACG_EH_2026: Fonte = {
+  citacao: 'Bajaj JS, Jakab SS, Jesudian AB, et al. ACG Clinical Guideline: Hepatic Encephalopathy. Am J Gastroenterol. 2026;121(3):588–618 (PMID 41773757). Texto integral lido; GRADE.',
+  url: 'https://doi.org/10.14309/ajg.0000000000003899',
+}
+
+const SEM_ITEM_EH = 'sem item do manual na ferramenta'
+
+/** ACG 2026 × manual, na encefalopatia hepática do adulto; um tema por linha. */
+export const DIRETRIZ_EH: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Amônia sérica', diretriz: 'Não usar a amônia sérica sozinha para diagnosticar a encefalopatia mínima ou encoberta, nem dosar amônia de rotina para guiar o tratamento. Amônia normal em paciente em estupor ou coma põe o diagnóstico em dúvida', grau: 'condicional, muito baixa', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Imagem do crânio', diretriz: 'Cirrótico confuso sem déficit focal novo: não fazer imagem do crânio de rotina', grau: 'condicional, muito baixa', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Gravidade e destino', diretriz: 'West Haven e Glasgow na chegada e durante a internação; encefalopatia de grau alto vai para semi-intensiva ou UTI, com proteção de via aérea quando preciso, para evitar aspiração', grau: 'conceito-chave, sem grau', fonte: 'ACG 2026', livro: 'West Haven, graus I a IV (cap. 59, Tabela 3, p. 803–804)' },
+  { tema: 'Fator precipitante', diretriz: 'Procurar sangramento, infecção, sedativos e distúrbios tóxicos e metabólicos. Culturas de sangue, ascite e urina em todos. Os mais comuns: constipação, HDA, infecção, hiponatremia e desidratação ou excesso de diurético', grau: 'conceito-chave, sem grau', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Lactulose na crise', diretriz: 'Lactulose na encefalopatia manifesta (forte, moderada). Grau 2: 10–20 g (15–30 mL) VO a cada 2 h até 2 evacuações pastosas; depois 2 a 4 vezes ao dia, para manter 2–3 evacuações por dia. Grau 3–4 sem deglutição segura: sonda nasogástrica com a mesma dose', grau: 'forte, moderada; dose do texto', fonte: 'ACG 2026', livro: '20 a 40 mL de 8/8 a 4/4 h, com aumento progressivo; 2 a 4 evacuações pastosas ao dia (cap. 59, p. 805–806)' },
+  { tema: 'Enema de lactulose', diretriz: 'Com o tônus do esfíncter anal preservado: 300 mL de solução de lactulose em 700 mL de água ou soro fisiológico, reter 30–60 min, repetir a cada 4–6 h até melhorar. Enema acidificante é melhor que enema de água', grau: 'texto, sem grau', fonte: 'ACG 2026', livro: '200 a 300 mL de lactulose em 700 a 800 mL de solução retal; reter pelo menos 30 min (cap. 59, Tabela 4, p. 806)' },
+  { tema: 'Polietilenoglicol', diretriz: 'Polietilenoglicol em volume alto (por exemplo, 4 L) como alternativa à lactulose; pensar nele quando a lactulose dá distensão, desconforto ou íleo', grau: 'condicional, baixa', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Rifaximina na crise', diretriz: 'Somar rifaximina à lactulose na encefalopatia manifesta aguda. Na UTI, com antibiótico de largo espectro, a rifaximina acrescenta pouco', grau: 'condicional, baixa', fonte: 'ACG 2026', livro: '550 mg VO 12/12 h; o manual diz que não está disponível no Brasil (cap. 59, p. 805–806)' },
+  { tema: 'Sem resposta em 48–72 h', diretriz: 'A melhora é esperada em 24–48 h. Sem melhora após 48–72 h de tratamento adequado, com evacuações na meta e o precipitante tratado: procurar outra causa de alteração mental, precipitante não tratado ou shunt', grau: 'conceito-chave, sem grau', fonte: 'ACG 2026', livro: 'neomicina 1 a 1,5 g de 6/6 h sem resposta à lactulose em 48 h; metronidazol 250 a 500 mg de 8/8 h (cap. 59, p. 805)' },
+  { tema: 'Medicamentos', diretriz: 'Revisar a prescrição e reduzir o que piora a consciência ou a encefalopatia: opioides, benzodiazepínicos, gabapentina e pregabalina, hipnóticos (zolpidem) e inibidor de bomba de prótons', grau: 'conceito-chave, sem grau', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Prevenção da recorrência', diretriz: 'Depois do primeiro episódio, lactulose titulada para 2–3 evacuações pastosas por dia (forte, alta). Recorrência apesar da lactulose: somar rifaximina 550 mg 2 vezes ao dia (forte, alta). Escala de Bristol junto com o número de evacuações para titular em casa (condicional, muito baixa)', grau: 'forte, alta; condicional, muito baixa', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Proteína e dieta', diretriz: 'Meta de proteína de 1,2–1,5 g/kg/dia no ambulatório (forte, moderada); não restringir proteína (condicional, muito baixa); aminoácidos de cadeia ramificada se a comida não atinge a meta (forte, moderada); lanche noturno (condicional, muito baixa)', grau: 'forte, moderada; condicional, muito baixa', fonte: 'ACG 2026', livro: '35–40 kcal/kg; proteína 1,25–1,5 g/kg (texto) ou 1,2–1,5 g/kg/dia (Tabela 4) (cap. 59, p. 805–806)' },
+  { tema: 'Zinco', diretriz: 'Sintomas persistentes apesar de lactulose e rifaximina: zinco se o zinco sérico estiver baixo', grau: 'condicional, muito baixa', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Paciente intubado', diretriz: 'Ajustar a lactulose pelas evacuações; suspender laxativos se a sonda retal passar de 300 mL de fezes por dia; vigiar hipernatremia e prevenir aspiração', grau: 'texto, sem grau', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+  { tema: 'Encefalopatia refratária', diretriz: 'Embolização de shunt na encefalopatia refratária com tratamento otimizado e boa função hepática (condicional, muito baixa). Vários episódios com MELD < 15: avaliar transplante intervivos (condicional, baixa)', grau: 'condicional, muito baixa e baixa', fonte: 'ACG 2026', livro: SEM_ITEM_EH },
+]
+
+export const DIFERENCAS_EH: string[] = [
+  'Lactulose na crise: a ACG dá 15–30 mL a cada 2 h até 2 evacuações pastosas e depois 2 a 4 vezes ao dia; o manual, 20–40 mL de 8/8 a 4/4 h.',
+  'Meta de evacuações: a ACG fala em 2–3 pastosas por dia; o manual, em 2 a 4.',
+  'Sem resposta: a ACG procura outra causa depois de 48–72 h; o manual passa à neomicina depois de 48 h. A ACG 2026 não cita neomicina nem metronidazol.',
+  'Rifaximina: a ACG a soma na crise (condicional) e na recorrência (forte); o manual diz que não está disponível no Brasil.',
+  'Polietilenoglicol 4 L: alternativa à lactulose na ACG; o manual não traz.',
+  'Enema: a ACG usa 300 mL em 700 mL, retidos por 30–60 min e repetidos a cada 4–6 h; o manual, 200–300 mL em 700–800 mL, retidos por pelo menos 30 min.',
+]
+
+const fichaInsuficienciaHepaticaLivro = fichaAdulto(
   'adulto-encefalopatia-hepatites-graves',
   'Encefalopatia hepática e hepatites graves — adulto',
   'cap. 59 Encefalopatia hepática, p. 799–806; cap. 60 Hepatites graves, p. 808–819',
 )
+export const fichaInsuficienciaHepatica: Ficha = {
+  ...fichaInsuficienciaHepaticaLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaInsuficienciaHepaticaLivro.fontes, ACG_EH_2026],
+  revisadoEm: '14/11/2026 (ACG 2026 da encefalopatia hepática lida no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 
 export type Faixa = [number, number]
 export type Referencia = { texto: string; pagina: string; errata?: string }

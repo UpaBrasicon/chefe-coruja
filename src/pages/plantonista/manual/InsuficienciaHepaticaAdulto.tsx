@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   DIETA_EH, FORA_HEPATOPATA, HEPATITES_GRAVES, MADDREY, NAC_CAP60, NOTAS_KINGS, PAGINA_WEST_HAVEN, PFC_HEPATITE, TRATAMENTO_EH, WEST_HAVEN, dietaEh,
-  fichaInsuficienciaHepatica, kingsCollege, lactuloseMlDia, nacCap60, pfcHepatiteMl,
+  DIFERENCAS_EH, DIRETRIZ_EH, fichaInsuficienciaHepatica, kingsCollege, lactuloseMlDia, nacCap60, pfcHepatiteMl,
 } from '@/clinico/adulto/hepatopata'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +11,7 @@ import { Bloco, Escolha, Resultado } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
 import { CampoPeso, LinhaManual } from './PecasLoteC'
 import { Errata, Fora, ListaRef, Marca } from './PecasLoteE6'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 type Etiologia = 'paracetamol' | 'outras'
 
@@ -59,6 +60,15 @@ export function InsuficienciaHepaticaAdulto() {
         <Errata texto={DIETA_EH.errata} />
       </Bloco>
 
+      <Bloco titulo="ACG 2026 — ao lado do manual" descricao="Encefalopatia hepática pela diretriz da ACG de 2026 (GRADE), lida no texto integral. As doses e contas do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_EH.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_EH.map((d) => <li key={d}>{d}</li>)}</ul>
+      </Bloco>
       <Bloco titulo="Hepatites graves">
         <ListaRef itens={HEPATITES_GRAVES} />
         <LinhaManual nome="Hepatite alcoólica grave (Maddrey)" texto={`4,6 × (TP − TP controle, em s) + bilirrubina total; > ${MADDREY.corte}: ${MADDREY.prednisona}`} pagina={MADDREY.pagina} nota="A conta está na ferramenta de Maddrey." />
