@@ -66,13 +66,50 @@ export const EPISTAXE_AAO_HNS = {
   publico: 'A diretriz vale a partir de 3 anos; esta tela é do adulto.',
 }
 
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 39: a
+// ESO/EANS 2025 de HIC espontânea foi lida no texto integral do PMC
+// (PMC12098356), pelo Chrome do RT. Os itens abaixo foram conferidos na Tabela 2
+// (sinopse das recomendações e consensos). Doses do manual não mudam; as doses
+// que a ESO dá (CCP, vitamina K, idarucizumabe) aparecem ao lado, com a fonte.
+export const ESO_HIC_2025: Fonte = {
+  citacao: 'Steiner T, Purrucker JC, Aguiar de Sousa D, et al. European Stroke Organisation (ESO) and European Association of Neurosurgical Societies (EANS) guideline on stroke due to spontaneous intracerebral haemorrhage. Eur Stroke J. 2025;10(4):1007–1086 (PMID 40401775; PMC12098356). Texto integral lido; recomendações e consensos da Tabela 2.',
+  url: 'https://doi.org/10.1177/23969873251340815',
+}
+
+const SEM_ITEM_HIC = 'sem item do manual na ferramenta'
+
+/** ESO/EANS 2025 × manual (cap. 39), um tema por linha. "Consenso" = declaração de especialistas, sem GRADE. */
+export const DIRETRIZ_HIC_ESO_2025: { tema: string; eso: string; forca: string; onde: string; livro: string }[] = [
+  { tema: 'Onde internar', eso: 'Unidade de AVC organizada para quem não precisa de terapia intensiva', forca: 'forte a favor; qualidade moderada', onde: 'PICO 1.1', livro: 'transferir para UTI assim que possível (p. 547)' },
+  { tema: 'Pressão arterial', eso: 'PAS 150–220 mmHg: balanço incerto. Consenso: PAS < 140 mmHg em até 6 h na HIC pequena ou moderada (< 30 mL), começando o quanto antes, idealmente nas 2 primeiras horas, com pouca variação; não baixar mais de 70 mmHg em relação à basal nem ativamente abaixo de 110 mmHg; cautela com PAS > 220, hematoma > 30 mL ou cirurgia programada', forca: 'recomendação sem força (qualidade baixa); consenso', onde: 'PICO 2', livro: 'PAS 150–220: reduzir para 140 mmHg é seguro e desejável (p. 547)' },
+  { tema: 'Antagonista da vitamina K', eso: 'CCP de 4 fatores 30–50 UI/kg se INR ≥ 2,0 e 10 UI/kg se INR 1,3–1,9, com vitamina K 10 mg EV. CCP × plasma: benefício clínico ainda incerto', forca: 'consenso (15/15); qualidade muito baixa', onde: 'PICO 3.3.1.1', livro: 'plasma 15–20 mL/kg com vitamina K 5–10 mg EV, ou CCP (p. 548–549); vitamina K 10 mg (p. 545)' },
+  { tema: 'Inibidor do fator Xa: andexanete', eso: 'Benefício clínico incerto. Consenso: considerar até 15 h da última dose de apixabana ou rivaroxabana', forca: 'qualidade baixa; consenso', onde: 'PICO 3.3.2.2', livro: 'CCP de 4 fatores (não disponível no DE do HCFMUSP) e antifibrinolítico (Tabela 3, p. 546)' },
+  { tema: 'Dabigatrana', eso: 'Idarucizumabe imediato, 2 × 2,5 g EV', forca: 'consenso (15/15); qualidade muito baixa', onde: 'PICO 3.3.2.4', livro: 'idarucizumabe, sem dose (Tabela 3, p. 546)' },
+  { tema: 'Antiagregante', eso: 'Sugere não transfundir plaquetas. Desmopressina: incerta, só em ensaio', forca: 'fraca contra; qualidade moderada', onde: 'PICO 3.2.1 e 3.2.2', livro: 'plaquetas na trombocitopenia grave (p. 545)' },
+  { tema: 'Ácido tranexâmico (sem antitrombótico)', eso: 'Balanço incerto, recrutar para ensaio. Consenso: pode ser considerado para reduzir a expansão se não houver ensaio', forca: 'qualidade baixa; consenso (13/15)', onde: 'PICO 3.1.2', livro: SEM_ITEM_HIC },
+  { tema: 'Pacote de cuidados', eso: 'Implantar um pacote: no ensaio que o sustenta, PAS < 140 mmHg, glicemia 110–141 mg/dL sem diabetes ou 141–180 mg/dL com diabetes, temperatura ≤ 37,5 °C e reversão do antagonista da vitamina K', forca: 'ver o texto da ESO', onde: 'PICO 5.2', livro: 'PAS 140, glicemia 70–180 mg/dL (p. 547)' },
+  { tema: 'Glicemia isolada', eso: 'Não controlar a glicemia de forma intensiva como medida isolada, fora do pacote', forca: 'fraca contra; qualidade muito baixa', onde: 'PICO 5.1.4', livro: 'glicemia entre 70 e 180 mg/dL (p. 547)' },
+  { tema: 'Anticonvulsivante', eso: 'Sugere não fazer profilaxia primária', forca: 'fraca contra; qualidade moderada', onde: 'PICO 5.1.7', livro: 'iniciar se crise clínica ou EEG compatível (p. 547)' },
+  { tema: 'Prevenção de TEV', eso: 'No imóvel, compressão pneumática intermitente por 30 dias, ou até a alta ou a deambulação', forca: 'fraca a favor; qualidade muito baixa', onde: 'PICO 5.1.1', livro: 'compressão pneumática intermitente (p. 545)' },
+  { tema: 'Hemorragia cerebelar', eso: 'Evacuar hematomas maiores que 15 mL', forca: 'fraca a favor; qualidade muito baixa', onde: 'PICO 4.3', livro: 'cerebelar > 3 cm, sobretudo com compressão do tronco (p. 549); cirurgia se deterioração, compressão do tronco ou hidrocefalia (p. 547)' },
+]
+
+export const DIFERENCAS_HIC_2025: string[] = [
+  'PA: a ESO 2025 limita o alvo de PAS < 140 mmHg à HIC pequena ou moderada (< 30 mL), em até 6 h, e proíbe queda > 70 mmHg ou PAS ativamente < 110 mmHg; o manual dá 140 mmHg para toda PAS entre 150 e 220.',
+  'Varfarina: a ESO 2025 prefere CCP por faixa de INR (30–50 UI/kg ou 10 UI/kg) com vitamina K 10 mg; o manual põe o plasma primeiro e o CCP como opção mais rápida.',
+  'Dabigatrana: idarucizumabe 2 × 2,5 g EV (consenso ESO); o manual não dá dose.',
+  'Antiagregante: a ESO 2025 sugere não transfundir plaquetas; o manual só fala de plaquetas na trombocitopenia grave.',
+  'Anticonvulsivante: a ESO 2025 sugere não fazer profilaxia primária; o manual trata só a crise.',
+  'Cerebelar: a ESO 2025 usa volume > 15 mL; o manual, diâmetro > 3 cm.',
+]
+
 const PAG_REVERSAO = 'cap. 39 Hemorragias intraparenquimatosas, p. 545–549; cap. 79 Distúrbios da hemostasia, p. 1042–1045 (Tabelas 4–6)'
 
 export const fichaReversaoAnticoagulacaoAdulto: Ficha = {
   ...fichaAdulto('adulto-reversao-anticoagulacao', 'Reversão de anticoagulação e sangramento — adulto', PAG_REVERSAO),
-  versao: '2026-11-11.1',
-  fontes: [pagina(PAG_REVERSAO), ANNEXA_I, SBTH_2026, AAO_HNS_EPISTAXE_2020, NOPAC_2021, TRANEXAMICO_EPISTAXE_2026],
-  revisadoEm: '11/11/2026 (epistaxe pela AAO-HNS 2020, tratamento local antes de reverter; escores P2/P3, item A12); 06/11/2026 (nota do consenso SBTH 2026 e carvão ativado em < 4 h nos DOAC; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: andexanete como divergência pelo ANNEXA-I; manual mantido como base)',
+  versao: '2026-11-14.1',
+  fontes: [pagina(PAG_REVERSAO), ANNEXA_I, SBTH_2026, AAO_HNS_EPISTAXE_2020, NOPAC_2021, TRANEXAMICO_EPISTAXE_2026, ESO_HIC_2025],
+  revisadoEm: '14/11/2026 (ESO/EANS 2025 de HIC lida no texto integral, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 11/11/2026 (epistaxe pela AAO-HNS 2020, tratamento local antes de reverter; escores P2/P3, item A12); 06/11/2026 (nota do consenso SBTH 2026 e carvão ativado em < 4 h nos DOAC; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: andexanete como divergência pelo ANNEXA-I; manual mantido como base)',
 }
 
 /**

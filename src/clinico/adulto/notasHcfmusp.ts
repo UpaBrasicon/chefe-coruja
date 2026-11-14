@@ -18,6 +18,7 @@ import { DIRETRIZ_ICA_2026, fichaIcAgudaAdulto } from './insuficienciaCardiacaAg
 import { ACEP_2024_RECOMENDACOES, DIFERENCAS_AGITACAO_2024, fichaAgitacaoAdulto } from './agitacao.ts'
 import { DIRETRIZ_HSA_2023, NOTA_ESO_ANTIFIBRINOLITICO, NOTA_NCS_FENITOINA, fichaHsaAdulto } from './hsa.ts'
 import { DIRETRIZ_PAC_2026, NOTA_IDSA_PAC_2026, fichaPacAntibioticoAdulto } from './tepPac.ts'
+import { DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
 import { DIVERGENCIA_MANUAL_HC, fichaHiperpotassemia } from '../hiperpotassemia.ts'
@@ -75,6 +76,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap33-pac': 'pneumonia adquirida na comunidade (PAC) no adulto: antibiótico, duração, corticoide e vírus respiratório',
   'nota-hcfmusp-cap40-hsa': 'hemorragia subaracnóidea (HSA) aneurismática no adulto',
   'nota-hcfmusp-cap76-agitacao': 'paciente agitado e agitação grave no adulto (sedação: droperidol, antipsicótico, midazolam, cetamina)',
+  'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
   'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
 }
 
@@ -245,7 +247,13 @@ export const notaHcfmuspCap76 = notaLote3('nota-hcfmusp-cap76-agitacao', 'Nota d
   ...DIFERENCAS_AGITACAO_2024.map(frase),
 ])
 
-export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap40, notaHcfmuspCap76]
+export const notaHcfmuspCap39 = nota('nota-hcfmusp-cap39-hic', 'Nota de atualização — manual HC, cap. 39: hemorragias intraparenquimatosas', 'cap. 39, p. 542–549', fichaReversaoAnticoagulacaoAdulto,
+  DIRETRIZ_HIC_ESO_2025.map((d) => ({ tema: d.tema, diretriz: `ESO/EANS 2025 (${d.forca}; ${d.onde}): ${d.eso}`, manual: sem(d.livro) })),
+  [ESO_HIC_2025])
+notaHcfmuspCap39.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap39.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da lista da ESO/EANS 2025, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap76]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -270,6 +278,7 @@ export const fichaNotaHcfmuspCap67 = notaHcfmuspCap67.ficha
 export const fichaNotaHcfmuspCap33 = notaHcfmuspCap33.ficha
 export const fichaNotaHcfmuspCap40 = notaHcfmuspCap40.ficha
 export const fichaNotaHcfmuspCap76 = notaHcfmuspCap76.ficha
+export const fichaNotaHcfmuspCap39 = notaHcfmuspCap39.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */

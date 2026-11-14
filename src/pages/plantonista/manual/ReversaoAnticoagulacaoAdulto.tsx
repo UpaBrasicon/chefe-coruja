@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
 import {
-  CCP, CRIOPRECIPITADO, DIVERGENCIA_ANDEXANETE, DOAC_PAGINA, EPISTAXE_AAO_HNS, ERRATA_DOAC, ERRATA_HIP_CIRURGIA, ERRATA_VITAMINA_K, HIP_METAS, NOTA_SBTH_2026, PLASMA, PROTAMINA_REVERSAO,
+  CCP, CRIOPRECIPITADO, DIFERENCAS_HIC_2025, DIRETRIZ_HIC_ESO_2025, DIVERGENCIA_ANDEXANETE, DOAC_PAGINA, EPISTAXE_AAO_HNS, ERRATA_DOAC, ERRATA_HIP_CIRURGIA, ERRATA_VITAMINA_K, HIP_METAS, NOTA_SBTH_2026, PLASMA, PROTAMINA_REVERSAO,
   REVERSAO_DOAC, SANGRAMENTO_MAIOR, TABELA_PROTAMINA, VITAMINA_K, ccpUnidades, conferirPasHip, crioUnidades,
   fichaReversaoAnticoagulacaoAdulto, plasmaMl, protamina, reversaoVarfarina, type Faixa, type Sangramento, type TempoHeparina,
 } from '@/clinico/adulto/reversaoAnticoagulacao'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -133,6 +134,16 @@ export function ReversaoAnticoagulacaoAdulto() {
           {HIP_METAS.map((m) => <li key={m.texto}>{m.texto} <span className="text-tinta-sussurro">({m.pagina})</span></li>)}
         </ul>
         <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_HIP_CIRURGIA}</p>
+      </Bloco>
+
+      <Bloco titulo="ESO/EANS 2025 — HIC, ao lado do manual" descricao="Diretriz europeia de hemorragia intracerebral espontânea, lida no texto integral. Consenso é declaração de especialistas, sem graduação de evidência. As doses do manual nos blocos acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESO 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_HIC_ESO_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.eso} <span className="text-tinta-sussurro">({d.forca}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
+        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_HIC_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
     </ToolLayout>
   )
