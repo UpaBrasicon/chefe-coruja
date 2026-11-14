@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  ALERTA_SUBCORRECAO, CONDUTA_HIPONATREMIA, ERRATA_HIPONATREMIA, ERRATA_SODIO_CORRIGIDO, LIMITES_HIPONATREMIA, SALINA_3, TONICIDADE_TEXTO, elevacaoEstimadaSalina3,
+  ALERTA_SUBCORRECAO, CONDUTA_HIPONATREMIA, DIFERENCAS_HIPONATREMIA, DIRETRIZ_HIPONATREMIA, ERRATA_HIPONATREMIA, ERRATA_SODIO_CORRIGIDO, LIMITES_HIPONATREMIA, SALINA_3, TONICIDADE_TEXTO, elevacaoEstimadaSalina3,
   fichaHiponatremia, gravidadeHiponatremia, mlSalina3ParaElevar, sodioCorrigido, tonicidade, type CenarioHipo,
 } from '@/clinico/adulto/sodio'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -9,6 +9,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { numero } from '@/lib/formato'
 
 const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
@@ -104,6 +105,21 @@ export function HiponatremiaManual() {
           </div>
           <ul className="list-disc pl-5">{linha.manual.map((t) => <li key={t}>{t}</li>)}</ul>
           <p className="text-tinta-sussurro">{linha.pagina}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-corpo">Europeia 2014 e ERA 2024 — ao lado do manual</CardTitle>
+          <CardDescription>Diretriz europeia de 2014 (ESICM, ESE e ERA-EDTA; 1 = recomenda, 2 = sugere; A–D = qualidade) e revisão da ERA de 2024 (sem graduação), lidas no texto integral. As contas do manual acima continuam valendo.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 text-apoio">
+          <div className="overflow-x-auto">
+            <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+              <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+              <TableBody>{DIRETRIZ_HIPONATREMIA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+            </Table>
+          </div>
+          <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_HIPONATREMIA.map((d) => <li key={d}>{d}</li>)}</ul>
         </CardContent>
       </Card>
     </ToolLayout>
