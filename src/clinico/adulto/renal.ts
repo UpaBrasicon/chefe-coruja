@@ -11,7 +11,48 @@ import { numero as numeroBr } from '../../lib/formato.ts'
 // mostra as indicações de terapia de substituição renal. A decisão é do médico
 // (ADR 0007).
 
-export const fichaLesaoRenalAguda = fichaAdulto('adulto-lesao-renal-aguda', 'Lesão renal aguda — adulto', 'cap. 61 Lesão renal aguda, p. 824–841')
+// Lote 4 da revisão do HCFMUSP, O4 = A (decisão do RT de 14/11/2026), cap. 61: a
+// KDIGO 2026 de LRA e DRA estava em consulta pública, sem texto final, no site da
+// KDIGO em 14/11/2026. Vale a KDIGO 2012, lida no PDF do site (resumo das
+// recomendações, p. 8–12). As contas do manual não mudam.
+export const KDIGO_LRA_2012: Fonte = {
+  citacao: 'Kidney Disease: Improving Global Outcomes (KDIGO) Acute Kidney Injury Work Group. KDIGO Clinical Practice Guideline for Acute Kidney Injury. Kidney Int Suppl. 2012;2(1):1–138. Resumo das recomendações lido no PDF do site da KDIGO; GRADE. A KDIGO 2026 ainda era rascunho em consulta pública em 14/11/2026.',
+  url: 'https://kdigo.org/wp-content/uploads/2016/10/KDIGO-2012-AKI-Guideline-English.pdf',
+}
+
+const SEM_ITEM_LRA = 'sem item do manual na ferramenta'
+
+/** KDIGO 2012 × manual, na LRA do adulto; um tema por linha. */
+export const DIRETRIZ_LRA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Versão da diretriz', diretriz: 'A KDIGO 2026 de lesão renal aguda e doença renal aguda ainda era rascunho em consulta pública em 14/11/2026, sem texto final. Vale a KDIGO 2012', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'o manual estadia pela KDIGO (cap. 61, Tabela 1, p. 825)' },
+  { tema: 'Definição e estádio', diretriz: 'LRA: creatinina sobe 0,3 mg/dL ou mais em 48 h, ou chega a 1,5 vez o basal conhecido ou presumido dos 7 dias anteriores, ou diurese < 0,5 mL/kg/h por 6 h. Estádio 1: 1,5–1,9 × ou + 0,3 mg/dL, ou diurese < 0,5 por 6–12 h; 2: 2,0–2,9 ×, ou < 0,5 por 12 h ou mais; 3: 3 ×, creatinina ≥ 4 mg/dL, início de TSR, diurese < 0,3 por 24 h ou mais, ou anúria por 12 h ou mais', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'os mesmos cortes da Tabela 1 (cap. 61, p. 825), que a ferramenta calcula' },
+  { tema: 'Causa e seguimento', diretriz: 'Procurar a causa sempre, com atenção às reversíveis; reavaliar 3 meses depois da LRA para ver recuperação, doença renal crônica nova ou piora da prévia', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'FENa, FEUr, ureia/creatinina e índices urinários para separar pré-renal de NTA (cap. 61, Tabelas 2 e 3, p. 826–832)' },
+  { tema: 'Medidas por estádio', diretriz: 'Todo paciente de risco: suspender nefrotóxicos quando possível, garantir volemia e pressão de perfusão, monitorar creatinina e diurese, evitar hiperglicemia, considerar alternativa ao contraste. A partir do estádio 2: ajustar a dose dos medicamentos e considerar TSR e UTI. Estádio 3: evitar cateter subclávio se possível', grau: 'Figura 4, sem grau', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
+  { tema: 'Fluido e vasopressor', diretriz: 'Sem choque hemorrágico, cristaloide isotônico em vez de coloide (albumina ou amido) para expandir volume na LRA ou no risco de LRA (2B). Vasopressor junto com fluido no choque vasoplégico (1C). Protocolo de metas hemodinâmicas no perioperatório de alto risco e no choque séptico (2C)', grau: '2B; 1C; 2C', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
+  { tema: 'Diurético', diretriz: 'Não usar diurético para prevenir LRA (1B) nem para tratá-la, exceto na sobrecarga de volume (2C); não usar diurético para apressar a recuperação ou reduzir a diálise (2B)', grau: '1B; 2C; 2B', fonte: 'KDIGO 2012', livro: 'teste de estresse com furosemida 1 mg/kg (1,5 mg/kg com uso prévio): diurese < 200 mL em 2 h prediz estádio 3 (cap. 61, p. 836)' },
+  { tema: 'Dopamina e outros', diretriz: 'Não usar dopamina em dose baixa para prevenir ou tratar LRA (1A); nem fenoldopam (2C), peptídeo natriurético atrial (2C para prevenir, 2B para tratar) ou IGF-1 (1B)', grau: '1A; 2C; 2B; 1B', fonte: 'KDIGO 2012', livro: 'dopamina em dose renal (0,5–3 µg/kg/min): sem benefício (cap. 61, p. 836)' },
+  { tema: 'Glicemia e nutrição', diretriz: 'Doente crítico: insulina com alvo de glicemia 110–149 mg/dL (2C). Energia de 20–30 kcal/kg/dia (2C). Não restringir proteína para evitar ou adiar a diálise (2D); proteína 0,8–1,0 g/kg/dia sem diálise, 1,0–1,5 com diálise e até 1,7 na TSR contínua ou no hipercatabolismo (2D). Via enteral de preferência (2C)', grau: '2C; 2D', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
+  { tema: 'Aminoglicosídeo e anfotericina', diretriz: 'Não usar aminoglicosídeo se houver alternativa menos nefrotóxica (2A); com função renal normal e estável, dose única diária (2B); dosar nível com várias doses por dia por mais de 24 h (1A) ou dose única por mais de 48 h (2C). Anfotericina lipídica em vez da convencional (2A)', grau: '2A; 2B; 1A; 2C', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
+  { tema: 'N-acetilcisteína', diretriz: 'Não usar NAC para prevenir LRA no doente crítico com hipotensão (2D) nem para prevenir LRA pós-cirúrgica (1A)', grau: '2D; 1A', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
+  { tema: 'Contraste iodado', diretriz: 'Avaliar o risco e a função renal antes do contraste; menor dose possível; contraste iso ou hipo-osmolar no paciente de risco (1B). Expansão EV com soro fisiológico ou bicarbonato isotônico no paciente de risco (1A), não só fluido oral (1C); NAC oral com cristaloide EV (2D). Não usar hemodiálise ou hemofiltração profilática (2C)', grau: '1B; 1A; 1C; 2D; 2C', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
+  { tema: 'Quando iniciar a diálise', diretriz: 'Iniciar a TSR com urgência quando houver alteração de volume, eletrólitos ou ácido-base que ameace a vida. Decidir pelo contexto clínico, pelas condições que a TSR corrige e pela tendência dos exames, não por um corte isolado de ureia ou creatinina', grau: 'sem grau', fonte: 'KDIGO 2012', livro: 'hipervolemia refratária, acidose refratária (pH < 7,1), hipercalemia refratária, síndrome urêmica, intoxicação dialisável, azotemia progressiva ou oligúria sem resposta a fluido (cap. 61, Tabela 5, p. 837–838)' },
+  { tema: 'Anticoagulação na diálise', diretriz: 'Anticoagular a TSR se não houver risco de sangramento, coagulopatia ou anticoagulação sistêmica (1B). Intermitente: heparina não fracionada ou de baixo peso (1C). Contínua: citrato regional (2B); heparina se houver contraindicação ao citrato (2C)', grau: '1B; 1C; 2B; 2C', fonte: 'KDIGO 2012', livro: SEM_ITEM_LRA },
+]
+
+export const DIFERENCAS_LRA: string[] = [
+  'Versão: a KDIGO 2026 ainda era rascunho em 14/11/2026; a nota usa a KDIGO 2012, que o manual também segue no estadiamento.',
+  'Diurético: a KDIGO 2012 não usa diurético para tratar LRA fora da sobrecarga de volume (2C); o manual traz o teste de estresse com furosemida, que serve para prever a evolução.',
+  'Início da diálise: a KDIGO 2012 decide pelo contexto e pela tendência dos exames; o manual lista as indicações e dá pH < 7,1 para a acidose refratária.',
+  'Fluido, nutrição, aminoglicosídeo, contraste e anticoagulação da diálise: a KDIGO 2012 traz; a ferramenta do manual não.',
+]
+
+const fichaLraLivro = fichaAdulto('adulto-lesao-renal-aguda', 'Lesão renal aguda — adulto', 'cap. 61 Lesão renal aguda, p. 824–841')
+export const fichaLesaoRenalAguda: Ficha = {
+  ...fichaLraLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaLraLivro.fontes, KDIGO_LRA_2012],
+  revisadoEm: '14/11/2026 (KDIGO 2012 ao lado do manual, porque a KDIGO 2026 ainda era rascunho; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+}
 // Revisão PubMed, itens médios (decisão do RT de 06/11/2026, H9 = A): o corte
 // de CPK do workshop ENMC diverge do livro e entra como nota de divergência no
 // bloco do diagnóstico. A ferramenta mantém o critério do livro.
