@@ -21,6 +21,7 @@ import { DIRETRIZ_PAC_2026, NOTA_IDSA_PAC_2026, fichaPacAntibioticoAdulto } from
 import { DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
 import { BAVENO_VIII_2026, DIRETRIZ_HDA, ESGE_UGIH_2026, fichaHemorragiaDigestiva } from './hemorragiaDigestiva.ts'
 import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_2014, fichaHiponatremia } from './sodio.ts'
+import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
@@ -80,6 +81,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap40-hsa': 'hemorragia subaracnóidea (HSA) aneurismática no adulto',
   'nota-hcfmusp-cap76-agitacao': 'paciente agitado e agitação grave no adulto (sedação: droperidol, antipsicótico, midazolam, cetamina)',
   'nota-hcfmusp-cap66-sodio': 'hiponatremia no adulto: NaCl 3%, bolus, limite de correção, hipercorreção, SIADH, restrição hídrica, ureia e vaptana (distúrbios do sódio)',
+  'nota-hcfmusp-cap47-trauma': 'politraumatizado e sangramento no trauma (ácido tranexâmico, hipotensão permissiva, Ringer lactato no TCE, transfusão maciça, fibrinogênio, cálcio, pelve, reversão de anticoagulante)',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -280,7 +282,14 @@ export const notaHcfmuspCap66 = nota('nota-hcfmusp-cap66-sodio', 'Nota de atuali
 notaHcfmuspCap66.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap66.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da diretriz europeia de 2014 e da revisão da ERA de 2024, lidas no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap50, notaHcfmuspCap66, notaHcfmuspCap76]
+/** cap. 47: europeia 2023 de sangramento no trauma (texto integral) e EAST 2025 de ácido tranexâmico (resumo). */
+export const notaHcfmuspCap47 = nota('nota-hcfmusp-cap47-trauma', 'Nota de atualização — manual HC, cap. 47: atendimento inicial do politraumatizado', 'cap. 47, p. 636–657', fichaTraumaAdulto,
+  DIRETRIZ_TRAUMA.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [EUROPEIA_SANGRAMENTO_TRAUMA_2023, EAST_TXA_2025])
+notaHcfmuspCap47.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap47.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da diretriz europeia de 2023, lida no texto integral, e da EAST 2025, lida no resumo; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap47, notaHcfmuspCap50, notaHcfmuspCap66, notaHcfmuspCap76]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -309,6 +318,7 @@ export const fichaNotaHcfmuspCap39 = notaHcfmuspCap39.ficha
 export const fichaNotaHcfmuspCap43 = notaHcfmuspCap43.ficha
 export const fichaNotaHcfmuspCap50 = notaHcfmuspCap50.ficha
 export const fichaNotaHcfmuspCap66 = notaHcfmuspCap66.ficha
+export const fichaNotaHcfmuspCap47 = notaHcfmuspCap47.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */

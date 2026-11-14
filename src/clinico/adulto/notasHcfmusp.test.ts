@@ -217,3 +217,16 @@ test('sódio (cap. 66): europeia 2014 e ERA 2024 ao lado do manual; contas do ma
   assert.equal(nota.itens.length, s.DIRETRIZ_HIPONATREMIA.length)
   assert.deepEqual(nota.ficha.fontes, [s.EUROPEIA_HIPONATREMIA_2014, s.ERA_HIPONATREMIA_2024])
 })
+
+test('trauma (cap. 47): europeia 2023 e EAST 2025 ao lado do manual; contas do manual iguais', async () => {
+  const tr = await import('./trauma.ts')
+  assert.equal(tr.fichaTraumaAdulto.versao, '2026-11-14.1')
+  for (const f of [tr.EUROPEIA_SANGRAMENTO_TRAUMA_2023, tr.EAST_TXA_2025, tr.UK_REBOA_2023]) assert.ok(tr.fichaTraumaAdulto.fontes.includes(f))
+  assert.match(tr.EUROPEIA_SANGRAMENTO_TRAUMA_2023.citacao, /PMID 36859355/)
+  assert.match(tr.EAST_TXA_2025.citacao, /resumo/)
+  assert.equal(tr.TXA_TRAUMA.bolusG, 1)
+  assert.equal(tr.TXA_TRAUMA.janelaH, 3)
+  const nota = NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === 'nota-hcfmusp-cap47-trauma')!
+  assert.equal(nota.itens.length, tr.DIRETRIZ_TRAUMA.length)
+  assert.deepEqual(nota.ficha.fontes, [tr.EUROPEIA_SANGRAMENTO_TRAUMA_2023, tr.EAST_TXA_2025])
+})

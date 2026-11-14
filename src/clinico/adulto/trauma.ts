@@ -47,6 +47,59 @@ export const NOTA_PATCH_TRAUMA =
 export const NOTA_ENSAIOS_NEGATIVOS_TRAUMA =
   'Ensaios posteriores ao livro, todos sem benefício — nada disto como rotina: crioprecipitado empírico precoce em dose alta (CRYOSTAT-2) não reduziu a morte em 28 dias; REBOA na sala de emergência (UK-REBOA) não reduziu e pode ter aumentado a mortalidade; complexo protrombínico sistemático no risco de transfusão maciça (PROCOAG) não reduziu hemocomponentes e teve mais eventos tromboembólicos (35% × 24%); sangue total pré-hospitalar (dois ECRs, NEJM 2026) não foi superior aos componentes. Reforçam o protocolo do livro.'
 
+// Lote 3 da revisão do HCFMUSP, N2 (decisão do RT de 14/11/2026), cap. 47: a
+// diretriz europeia de sangramento no trauma (6ª ed., 2023) foi lida no texto
+// integral no PMC, com as 39 recomendações graduadas (1 = recomenda, 2 = sugere;
+// A–C = qualidade). A EAST 2025 de ácido tranexâmico tem texto pago: entra só
+// pelo resumo do PubMed. Doses e contas do manual não mudam.
+export const EUROPEIA_SANGRAMENTO_TRAUMA_2023: Fonte = {
+  citacao: 'Rossaint R, Afshari A, Bouillon B, et al. The European guideline on management of major bleeding and coagulopathy following trauma: sixth edition. Crit Care. 2023;27(1):80 (PMID 36859355; PMC9977110). Texto integral lido, com as 39 recomendações graduadas.',
+  url: 'https://doi.org/10.1186/s13054-023-04327-7',
+}
+
+export const EAST_TXA_2025: Fonte = {
+  citacao: 'Dumas RP, Succar BE, Vella MA, et al. The use of tranexamic acid in the management of injured patients at risk of hemorrhage: a systematic review and meta-analysis and an Eastern Association for the Surgery of Trauma Practice Management Guideline. J Trauma Acute Care Surg. 2025;99(5):785–794 (PMID 40956301). Texto pago: recomendações lidas no resumo do PubMed.',
+  url: 'https://doi.org/10.1097/TA.0000000000004773',
+}
+
+const SEM_ITEM_TRAUMA = 'sem item do manual na ferramenta'
+
+/** Europeia 2023 (sangramento no trauma) e EAST 2025 (ácido tranexâmico) × manual; um tema por linha. */
+export const DIRETRIZ_TRAUMA: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Via aérea e ventilação', diretriz: 'Intubar sem demora com obstrução, Glasgow ≤ 8, hipoventilação ou hipoxemia (1B). Evitar hipoxemia (1A) e hiperóxia, salvo exsanguinação iminente (2B). Normoventilação (1B); hiperventilar só na herniação (2C)', grau: '1A a 2C', fonte: 'Europeia 2023', livro: 'IOT com Glasgow < 8 (p. 640) e via aérea definitiva com ≤ 8 (p. 649); saturação adequada ≥ 95% (p. 639)' },
+  { tema: 'Compressão e torniquete', diretriz: 'Compressão local da ferida aberta; torniquete como adjunto no sangramento de extremidade com risco de vida, antes da cirurgia', grau: '1B', fonte: 'Europeia 2023', livro: 'torniquete por no máximo 2 h (p. 646)' },
+  { tema: 'Gravidade do choque', diretriz: 'Avaliar fisiologia, padrão de lesão, mecanismo e resposta à reposição (1C). Usar índice de choque e/ou pressão de pulso para estimar o choque e a necessidade de transfusão (1C)', grau: '1C', fonte: 'Europeia 2023', livro: 'escore ABC > 2 para transfusão maciça (p. 647)' },
+  { tema: 'Imagem', diretriz: 'POCUS com FAST no trauma toracoabdominal (1C); TC de corpo inteiro com contraste, precoce (1B)', grau: '1C e 1B', fonte: 'Europeia 2023', livro: 'FAST; sem ultrassom, lavado peritoneal diagnóstico (p. 648)' },
+  { tema: 'Laboratório', diretriz: 'Hb ou Ht seriados (1B); lactato, ou déficit de bases na falta dele, para estimar o sangramento (1B); PT/INR, fibrinogênio de Clauss e plaquetas cedo e repetidos, ou método viscoelástico (1C)', grau: '1B e 1C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Alvo de pressão', diretriz: 'Reposição restrita com PAS 80–90 mmHg (PAM 50–60) até parar o sangramento, sem TCE (1B). TCE grave (Glasgow ≤ 8): PAM ≥ 80 (1C)', grau: '1B e 1C', fonte: 'Europeia 2023', livro: 'PAS 80–90 e PAM 50–60; TCE grave com PAM > 80 (p. 646)' },
+  { tema: 'Vasopressor', diretriz: 'Se a reposição restrita não atingir o alvo, noradrenalina junto com fluidos (1C); dobutamina na disfunção miocárdica (1C)', grau: '1C', fonte: 'Europeia 2023', livro: 'vasopressor na hipotensão grave e inotrópico na disfunção miocárdica (p. 646)' },
+  { tema: 'Tipo de fluido', diretriz: 'SF 0,9% ou cristaloide balanceado no hipotenso que sangra (1B); restringir coloides pelo efeito na hemostasia (1C)', grau: '1B e 1C', fonte: 'Europeia 2023', livro: 'alíquotas de 250–500 mL; transfusão bem indicada se instável após 1–3 L de cristaloide (p. 646–647)' },
+  { tema: 'Ringer lactato no TCE grave', diretriz: 'No trauma cranioencefálico grave, evitar soluções hipotônicas como o Ringer lactato', grau: '1B', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Alvo de Hb', diretriz: 'Se transfundir hemácias, alvo de Hb 7–9 g/dL', grau: '1C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Hipotermia', diretriz: 'Medidas precoces contra a perda de calor e aquecimento até a normotermia', grau: '1C', fonte: 'Europeia 2023', livro: 'cristaloide aquecido a 38 °C (p. 644)' },
+  { tema: 'Pelve', diretriz: 'Cinta pélvica no pré-hospitalar na suspeita de fratura (1C); fechar e estabilizar o anel pélvico no choque o quanto antes (1B)', grau: '1C e 1B', fonte: 'Europeia 2023', livro: 'dispositivo pélvico ou, sem ele, lençol na altura dos trocânteres (p. 648)' },
+  { tema: 'REBOA', diretriz: 'Considerar no sangramento não compressível com risco de vida, como ponte até o controle (2C). O UK-REBOA (2023), posterior à busca da diretriz, não teve benefício: ver a nota da ficha', grau: '2C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Ácido tranexâmico', diretriz: 'O quanto antes, se possível no caminho, em até 3 h do trauma: 1 g em 10 min e 1 g EV em 8 h (1A). Não esperar o viscoelástico (1B)', grau: '1A e 1B', fonte: 'Europeia 2023', livro: '1 g EV em 10 min e 1 g em 8 h, com menos de 3 h do trauma (p. 649)' },
+  { tema: 'Hemorragia maciça esperada', diretriz: 'Concentrado de fibrinogênio ou crioprecipitado com hemácias, ou plasma:hemácias de pelo menos 1:2 (1C); proporção alta de plaquetas (2B). Depois, guiar por exames ou viscoelástico (1B)', grau: '1C, 2B e 1B', fonte: 'Europeia 2023', livro: 'transfusão maciça na proporção 1:1:1 de plasma, plaquetas e hemácias (p. 647)' },
+  { tema: 'Fibrinogênio', diretriz: 'Repor com fibrinogênio ≤ 1,5 g/L ou déficit no viscoelástico (1C); dose inicial de 3–4 g, ou 15–20 unidades de crioprecipitado (2C)', grau: '1C e 2C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Plaquetas e cálcio', diretriz: 'Plaquetas acima de 50.000/µL no sangramento e de 100.000/µL no TCE (2C). Cálcio iônico no normal, com cloreto de cálcio na hipocalcemia (1C)', grau: '2C e 1C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Fator VIIa', diretriz: 'Não usar como primeira linha (1B); só se o sangramento persistir apesar de todo o resto (2C)', grau: '1B e 2C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Varfarina', diretriz: 'Reverter na urgência com complexo protrombínico precoce e vitamina K 5–10 mg EV', grau: '1A', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'DOAC', diretriz: 'Apixabana ou rivaroxabana com sangramento grave: andexanete (2C); sem ele, ou na edoxabana, CCP 25–50 UI/kg (2C). Dabigatrana: idarucizumabe 5 g EV (1C)', grau: '2C e 1C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Antiagregante', diretriz: 'Não transfundir plaquetas de rotina no sangramento de quem usa antiagregante', grau: '1C', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Hemocomponentes no pré-hospitalar', diretriz: 'Sem recomendação a favor nem contra', grau: 'sem recomendação', fonte: 'Europeia 2023', livro: SEM_ITEM_TRAUMA },
+  { tema: 'Ácido tranexâmico (EAST)', diretriz: 'Em risco de hemorragia (PAS ≤ 90, FC ≥ 110 ou suspeita de sangramento ativo): uso de rotina no pré-hospitalar e no hospital, inclusive na hipotensão grave. Sem recomendação sobre bolus inicial maior', grau: 'condicional (GRADE); lido no resumo', fonte: 'EAST 2025', livro: '1 g EV em 10 min e 1 g em 8 h, com menos de 3 h do trauma (p. 649)' },
+]
+
+export const DIFERENCAS_TRAUMA: string[] = [
+  'Transfusão maciça: o manual dá 1:1:1 de plasma, plaquetas e hemácias; a europeia de 2023 aceita fibrinogênio ou crioprecipitado com hemácias, ou plasma:hemácias de pelo menos 1:2, com plaquetas em proporção alta.',
+  'A europeia de 2023 traz metas que o manual não traz: Hb 7–9 g/dL, fibrinogênio > 1,5 g/L (dose inicial de 3–4 g), plaquetas > 50.000 (> 100.000 no TCE) e cálcio iônico normal.',
+  'Fluido: a europeia evita Ringer lactato no TCE grave e restringe coloides; o manual fala em alíquotas de cristaloide, sem separar o tipo.',
+  'Gravidade: a europeia usa índice de choque e pressão de pulso; o manual usa o escore ABC para a transfusão maciça.',
+  'Ácido tranexâmico, PAS/PAM alvo e vasopressor: a europeia e a EAST concordam com o manual.',
+  'Anticoagulados: a europeia dá a reversão no trauma (CCP e vitamina K na varfarina; andexanete ou CCP nos anti-Xa; idarucizumabe 5 g); o cap. 47 não traz.',
+]
+
 const fichaTraumaLivro = fichaAdulto(
   'adulto-trauma-inicial',
   'Politraumatizado — tempos e volumes do atendimento inicial (adulto)',
@@ -54,9 +107,9 @@ const fichaTraumaLivro = fichaAdulto(
 )
 export const fichaTraumaAdulto: Ficha = {
   ...fichaTraumaLivro,
-  versao: '2026-11-06.1',
-  fontes: [...fichaTraumaLivro.fontes, PATCH_TRAUMA_2023, CRYOSTAT2_2023, UK_REBOA_2023, PROCOAG_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026],
-  revisadoEm: '06/11/2026 (nota do PATCH-Trauma no ácido tranexâmico e dos ensaios sem benefício na circulação; revisão PubMed, itens médios)',
+  versao: '2026-11-14.1',
+  fontes: [...fichaTraumaLivro.fontes, PATCH_TRAUMA_2023, CRYOSTAT2_2023, UK_REBOA_2023, PROCOAG_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026, EUROPEIA_SANGRAMENTO_TRAUMA_2023, EAST_TXA_2025],
+  revisadoEm: '14/11/2026 (europeia 2023 de sangramento no trauma lida no texto integral e EAST 2025 pelo resumo, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota do PATCH-Trauma no ácido tranexâmico e dos ensaios sem benefício na circulação; revisão PubMed, itens médios)',
 }
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
