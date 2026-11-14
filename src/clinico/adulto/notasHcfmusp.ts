@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { AHS_2025, AHS_2025_NIVEIS, fichaCefaleiaAdulto } from './cefaleia.ts'
 import { DIRETRIZES_ANAFILAXIA, fichaAnafilaxiaAdulto } from './anafilaxia.ts'
 import { DIFERENCAS_ANTICOAG_2025, DIRETRIZ_SCA_2025, fichaAnticoagulacaoPlenaAdulto, fichaFibrinoliticosAdulto } from './anticoagulacao.ts'
 import { DIRETRIZ_AVC_2026, fichaTromboliseAvcAdulto } from './avcTrombolise.ts'
@@ -125,6 +126,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap83-plaquetopenia': 'plaquetopenia no adulto: PTI (púrpura trombocitopênica imune) com sangramento, PTT (púrpura trombocitopênica trombótica), trombocitopenia induzida por heparina (TIH, escore 4Ts), corticoide, imunoglobulina, rituximabe, agonista de trombopoetina',
   'nota-hcfmusp-cap24-oclusao-arterial': 'oclusão arterial aguda, isquemia aguda de membro no adulto: heparina, revascularização, trombólise, fasciotomia, síndrome compartimental, amputação',
   'nota-hcfmusp-cap34-pneumotorax': 'pneumotórax espontâneo no adulto: tratamento conservador, aspiração por agulha, dreno torácico, ambulatorial, cirurgia, viagem de avião',
+  'nota-hcfmusp-cap41-cefaleia': 'cefaleia e crise de migrânea no adulto no pronto-socorro: proclorperazina, metoclopramida, clorpromazina, dexametasona, cetorolaco, sumatriptano, valproato, bloqueio do nervo occipital, opioide (hidromorfona), paracetamol EV',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -634,7 +636,33 @@ export const notaHcfmuspCap34 = notaSoManualLote5('nota-hcfmusp-cap34-pneumotora
 
 export const NOTAS_HCFMUSP_LOTE5: NotaHcfmusp[] = [notaHcfmuspCap10, notaHcfmuspCap24, notaHcfmuspCap27, notaHcfmuspCap34, notaHcfmuspCap71, notaHcfmuspCap79, notaHcfmuspCap80, notaHcfmuspCap82, notaHcfmuspCap83, notaHcfmuspCap91, notaHcfmuspCap100, notaHcfmuspCap102]
 
-export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5]
+// ── Lote 6 (decisão do RT de 14/11/2026, Q1–Q4 = A; docs/clinico/HCFMUSP-LOTE6-DIAGNOSTICO.md).
+// Q1: o cap. 41 tem ficha que já cita a AHS 2025; os itens vêm da lista da ficha.
+const REVISADO_LOTE6 = '14/11/2026 (lote 6 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a diretriz; aguarda aprovação do RT)'
+function notaLote6(...a: Parameters<typeof nota>): NotaHcfmusp {
+  const n = nota(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = REVISADO_LOTE6
+  return n
+}
+
+/** O que o cap. 41 diz de cada nível da AHS 2025 (conferido no PDF, p. 573). */
+const MANUAL_AHS_2025: Record<string, string> = {
+  'A — deve oferecer': 'não cita proclorperazina nem bloqueio de nervo; os bloqueadores dopaminérgicos do capítulo são clorpromazina e metoclopramida, como adjuvantes (p. 573)',
+  'B — deveria oferecer': 'triptano é a primeira escolha na migrânea sem aura, SC ou intranasal se há náusea; AINE (naproxeno, ibuprofeno, cetoprofeno, nimesulida); metoclopramida parenteral na náusea, diluída e lenta (p. 573)',
+  'C — pode oferecer': 'clorpromazina parenteral com monitorização cardíaca; dexametasona 10 mg EV no maior risco de recidiva; não cita valproato (p. 573)',
+  'C — não deveria oferecer': 'dipirona e paracetamol entre os analgésicos comuns da crise, sem dizer a via (p. 573)',
+  'A — não deve oferecer': 'não cita opioide no tratamento da crise (p. 573)',
+}
+
+/** cap. 41: AHS 2025 da crise de migrânea no PS, já na ficha de cefaleia. */
+export const notaHcfmuspCap41 = notaLote6('nota-hcfmusp-cap41-cefaleia', 'Nota de atualização — manual HC, cap. 41: cefaleia', 'cap. 41, p. 564–576', fichaCefaleiaAdulto,
+  AHS_2025_NIVEIS.map((n) => ({ tema: `Crise de migrânea no PS: nível ${n.nivel}`, diretriz: `AHS 2025 (nível ${n.nivel}; resumo lido, sem dose): ${n.drogas.join(', ')}`, manual: sem(MANUAL_AHS_2025[n.nivel]) })),
+  [AHS_2025])
+
+export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap41]
+
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha
