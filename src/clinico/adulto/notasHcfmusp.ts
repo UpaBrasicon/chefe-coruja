@@ -19,6 +19,7 @@ import { ACEP_2024_RECOMENDACOES, DIFERENCAS_AGITACAO_2024, fichaAgitacaoAdulto 
 import { DIRETRIZ_HSA_2023, NOTA_ESO_ANTIFIBRINOLITICO, NOTA_NCS_FENITOINA, fichaHsaAdulto } from './hsa.ts'
 import { DIRETRIZ_PAC_2026, NOTA_IDSA_PAC_2026, fichaPacAntibioticoAdulto } from './tepPac.ts'
 import { DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, fichaReversaoAnticoagulacaoAdulto } from './reversaoAnticoagulacao.ts'
+import { BAVENO_VIII_2026, DIRETRIZ_HDA, ESGE_UGIH_2026, fichaHemorragiaDigestiva } from './hemorragiaDigestiva.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { DIFERENCAS_2024, fichaCadEhhTratamento } from './glicemia.ts'
@@ -77,6 +78,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap33-pac': 'pneumonia adquirida na comunidade (PAC) no adulto: antibiótico, duração, corticoide e vírus respiratório',
   'nota-hcfmusp-cap40-hsa': 'hemorragia subaracnóidea (HSA) aneurismática no adulto',
   'nota-hcfmusp-cap76-agitacao': 'paciente agitado e agitação grave no adulto (sedação: droperidol, antipsicótico, midazolam, cetamina)',
+  'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
   'nota-hcfmusp-cap21-ic-aguda': 'insuficiência cardíaca aguda (IC descompensada) e edema agudo de pulmão (EAP) no adulto',
@@ -262,7 +264,14 @@ export const notaHcfmuspCap43 = nota('nota-hcfmusp-cap43-neuroinfeccao', 'Nota d
 notaHcfmuspCap43.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap43.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da lista da ESCMID 2016 e da EAN–ESCMID 2026, lidas no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap76]
+/** cap. 50: ESGE 2026 (úlcera péptica) e Baveno VIII (varizes), lidos no texto integral. */
+export const notaHcfmuspCap50 = nota('nota-hcfmusp-cap50-hda', 'Nota de atualização — manual HC, cap. 50: hemorragia digestiva alta', 'cap. 50, p. 694–706', fichaHemorragiaDigestiva,
+  DIRETRIZ_HDA.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [ESGE_UGIH_2026, BAVENO_VIII_2026])
+notaHcfmuspCap50.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap50.ficha.revisadoEm = '14/11/2026 (lote 3 da revisão do HCFMUSP: itens tirados da lista da ESGE 2026 e do Baveno VIII, lidos no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE3: NotaHcfmusp[] = [notaHcfmuspCap33, notaHcfmuspCap39, notaHcfmuspCap40, notaHcfmuspCap43, notaHcfmuspCap50, notaHcfmuspCap76]
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
@@ -289,6 +298,7 @@ export const fichaNotaHcfmuspCap40 = notaHcfmuspCap40.ficha
 export const fichaNotaHcfmuspCap76 = notaHcfmuspCap76.ficha
 export const fichaNotaHcfmuspCap39 = notaHcfmuspCap39.ficha
 export const fichaNotaHcfmuspCap43 = notaHcfmuspCap43.ficha
+export const fichaNotaHcfmuspCap50 = notaHcfmuspCap50.ficha
 export const fichaNotaHcfmuspCap21 = notaHcfmuspCap21.ficha
 
 /** Texto da nota para a biblioteca (Markdown), sem nada além dos itens e das fontes. */
