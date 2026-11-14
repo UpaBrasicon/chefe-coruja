@@ -23,8 +23,47 @@ const GRAUS = [
   { grau: 'VI', texto: 'Parada cardiorrespiratória', sobrevida: '7-12%' },
 ]
 
+// Lote 5 da revisão do HCFMUSP, P2 (decisão do RT de 14/11/2026), cap. 100: a
+// diretriz de afogamento da Wilderness Medical Society de 2024 foi lida no texto
+// integral no site da revista. Grau pelo sistema do ACCP. Os graus de Szpilman e
+// os cortes do manual não mudam.
+export const WMS_AFOGAMENTO_2024: Fonte = {
+  citacao: 'Davis CA, Schmidt AC, Sempsrott JR, et al. Wilderness Medical Society Clinical Practice Guidelines for the Treatment and Prevention of Drowning: 2024 Update. Wilderness Environ Med. 2024;35(1 Suppl):94S–111S (PMID 38379489). Texto integral lido; grau pelo sistema do ACCP.',
+  url: 'https://doi.org/10.1177/10806032241227460',
+}
+
+const SEM_ITEM_AFOG = 'sem item do manual na ferramenta'
+
+/** WMS 2024 × manual, no afogamento do adulto; um tema por linha. */
+export const DIRETRIZ_AFOGAMENTO: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Via aérea e oxigênio', diretriz: 'Prioridade é via aérea e O2 na maior concentração disponível; no desconforto ou na parada respiratória, ventilação com pressão positiva. Na PCR, ventilação com compressões, na sequência tradicional A-B-C', grau: 'forte; evidência baixa', fonte: 'WMS 2024', livro: 'o resgate segue o suporte básico e avançado de vida; alvo de SpO2 de 90–95% (cap. 100, p. 1340 e 1342)' },
+  { tema: 'Desfibrilador', diretriz: 'Ritmo chocável é raro: não usar o DEA nos primeiros minutos se isso atrapalhar a oxigenação e a ventilação; depois, usar. Ambiente molhado não contraindica o DEA', grau: 'forte; evidência alta', fonte: 'WMS 2024', livro: SEM_ITEM_AFOG },
+  { tema: 'Manobra de Heimlich', diretriz: 'Não fazer: atrasa a ventilação, não tira o líquido da via aérea e piora o vômito', grau: 'forte; evidência moderada', fonte: 'WMS 2024', livro: 'a manobra de Heimlich não é recomendada (p. 1340)' },
+  { tema: 'Coluna cervical', diretriz: 'Tratar como risco de lesão de coluna só com déficit focal, atividade de alto risco ou alteração mental sem testemunho de que não houve trauma', grau: 'forte; evidência baixa', fonte: 'WMS 2024', livro: 'proteger a coluna só com história sugestiva, como mergulho em água rasa ou veículo aquático (p. 1340)' },
+  { tema: 'Hipotermia', diretriz: 'Procurar e tratar hipotermia', grau: 'forte; evidência baixa', fonte: 'WMS 2024', livro: 'aquecimento ativo se < 34 °C; evitar temperatura > 37 °C (p. 1342–1343)' },
+  { tema: 'Ventilação', diretriz: 'Ventilação mecânica protetora. VNI só no paciente alerta com sintomas respiratórios leves a moderados; cuidado com rebaixamento da consciência e vômito', grau: 'forte; fraca; evidência baixa', fonte: 'WMS 2024', livro: 'volume corrente 6–8 mL/kg, platô < 30 cmH2O, PEEP inicial 5, FiO2 inicial 100%; PaO2 > 60 mmHg no adulto (p. 1342–1343)' },
+  { tema: 'Exames', diretriz: 'Não pedir radiografia de tórax nem TC de crânio de rotina na chegada; não pedir hemograma e eletrólitos de rotina. Gasometria se houver hipoxemia ou desconforto respiratório', grau: 'forte; evidência baixa', fonte: 'WMS 2024', livro: 'exames não são necessários de rotina; pedir se houver diagnóstico diferencial ou piora (p. 1344)' },
+  { tema: 'Antibiótico', diretriz: 'Não usar antibiótico empírico; na pneumonia, guiar por cultura, hemocultura ou antígeno urinário, ou pela clínica', grau: 'forte; evidência alta', fonte: 'WMS 2024', livro: 'não usar de rotina; só na pneumonia, em geral depois de 48–72 h (p. 1344)' },
+  { tema: 'Corticoide', diretriz: 'Não usar corticoide de rotina no afogamento', grau: 'forte; evidência baixa', fonte: 'WMS 2024', livro: 'não usar de rotina; só no broncoespasmo (p. 1344)' },
+  { tema: 'Controle de temperatura depois da PCR', diretriz: 'Evidência insuficiente para indicar ou contraindicar o controle direcionado de temperatura no afogado', grau: 'fraca; evidência muito baixa', fonte: 'WMS 2024', livro: 'hipotermia terapêutica de 32–34 °C por 12–72 h é controversa (p. 1343)' },
+  { tema: 'Alta', diretriz: 'Depois de 4–6 h de observação, é razoável a alta com estado mental normal e função respiratória normal, sem piora', grau: 'fraca; evidência baixa', fonte: 'WMS 2024', livro: 'assintomático com SpO2 > 95% ou tosse leve com exame normal: alta depois de 4–6 h (p. 1344)' },
+]
+
+export const DIFERENCAS_AFOGAMENTO: string[] = [
+  'Desfibrilador: a WMS 2024 adia o DEA nos primeiros minutos para não atrapalhar a ventilação; a ferramenta do manual não trata.',
+  'Exames: a WMS 2024 não pede radiografia, TC de crânio, hemograma nem eletrólitos de rotina; o manual também não, mas libera se houver piora.',
+  'Antibiótico, corticoide, Heimlich e alta em 4–6 h: a WMS 2024 e o manual concordam.',
+]
+
+const fichaSzpilmanLivro = fichaAdulto('adulto-szpilman', 'Afogamento — graus de Szpilman e prognóstico (adulto)', `${AFOG}, p. 1340–1345 (Tabela 1 e Figura 1)`)
+
 export const szpilman: Escore = {
-  ficha: fichaAdulto('adulto-szpilman', 'Afogamento — graus de Szpilman e prognóstico (adulto)', `${AFOG}, p. 1340–1345 (Tabela 1 e Figura 1)`),
+  ficha: {
+    ...fichaSzpilmanLivro,
+    versao: '2026-11-14.1',
+    fontes: [...fichaSzpilmanLivro.fontes, WMS_AFOGAMENTO_2024],
+    revisadoEm: '14/11/2026 (WMS 2024 de afogamento lida no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
+  },
   descricao: 'Grau 0 a VI pelos achados cardiopulmonares, com a sobrevida da Tabela 1, e os indicadores de pior prognóstico do texto.',
   itens: [
     { tipo: 'escolha', id: 'grau', rotulo: 'Achado no departamento de emergência', opcoes: GRAUS.map((g, i) => ({ rotulo: `${g.grau} — ${g.texto}`, valor: i })) },

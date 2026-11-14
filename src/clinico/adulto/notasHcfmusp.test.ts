@@ -449,3 +449,13 @@ test('dengue (cap. 91): OMS 2025 ao lado do manual do HC; a ferramenta segue o M
   assert.equal(nota.itens.length, d.DIRETRIZ_DENGUE_OMS.length + 1)
   assert.deepEqual(nota.ficha.fontes, [d.OMS_ARBOVIROSES_2025, d.MS_DENGUE_2024])
 })
+
+test('afogamento (cap. 100): WMS 2024 ao lado do manual; Szpilman igual', async () => {
+  const a = await import('./ambientais.ts')
+  assert.equal(a.szpilman.ficha.versao, '2026-11-14.1')
+  assert.ok(a.szpilman.ficha.fontes.includes(a.WMS_AFOGAMENTO_2024))
+  assert.match(a.szpilman.ficha.fontes[0].citacao, /Manual de Medicina de Emergência/)
+  const nota = NOTAS_HCFMUSP_LOTE5.find((x) => x.ficha.id === 'nota-hcfmusp-cap100-afogamento')!
+  assert.equal(nota.itens.length, a.DIRETRIZ_AFOGAMENTO.length)
+  assert.deepEqual(nota.ficha.fontes, [a.WMS_AFOGAMENTO_2024])
+})
