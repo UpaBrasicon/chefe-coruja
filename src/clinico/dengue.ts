@@ -17,16 +17,47 @@ export const MS_DENGUE_2024: Fonte = {
   url: 'https://www.gov.br/saude/pt-br/centrais-de-conteudo/publicacoes/svsa/dengue/dengue-diagnostico-e-manejo-clinico-adulto-e-crianca',
 }
 
+// Lote 5 da revisão do HCFMUSP, P2 e P4 (decisão do RT de 14/11/2026), cap. 91: as
+// diretrizes da OMS de 2025 de manejo clínico das arboviroses foram lidas no
+// resumo das recomendações (NCBI Bookshelf NBK616301, texto aberto). A ferramenta
+// continua seguindo o Ministério da Saúde 2024; a OMS aparece ao lado do manual do
+// HC (cap. 91, conferido no PDF). Nada muda nas contas de hidratação.
+export const OMS_ARBOVIROSES_2025: Fonte = {
+  citacao: 'World Health Organization. WHO guidelines for clinical management of arboviral diseases: dengue, chikungunya, Zika and yellow fever. Geneva: WHO; 2025 (PMID 40690567; NCBI Bookshelf NBK616307). Resumo das recomendações lido (NBK616301); GRADE.',
+  url: 'https://www.ncbi.nlm.nih.gov/books/NBK616307/',
+}
+
+/** OMS 2025 × manual do HC, na dengue do adulto; um tema por linha. */
+export const DIRETRIZ_DENGUE_OMS: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Hidratação oral (forma não grave)', diretriz: 'Hidratação oral com protocolo, em vez de sem protocolo', grau: 'condicional; certeza baixa', fonte: 'OMS 2025', livro: 'com diarreia e vômitos, orientar hidratação oral; com sinal de alarme, em geral internar (cap. 91, p. 1233)' },
+  { tema: 'Dor e febre', diretriz: 'Paracetamol ou dipirona (metamizol) para dor e febre na forma não grave', grau: 'condicional; certeza baixa', fonte: 'OMS 2025', livro: 'analgésicos, antieméticos e anti-histamínicos; evitar salicilatos pelo risco de sangramento (p. 1233)' },
+  { tema: 'Anti-inflamatório', diretriz: 'Não usar AINE na arbovirose aguda, qualquer que seja a gravidade', grau: 'forte; certeza baixa', fonte: 'OMS 2025', livro: 'evitar salicilatos (p. 1233); o capítulo não fala dos outros AINE' },
+  { tema: 'Corticoide', diretriz: 'Não usar corticoide na forma não grave (condicional, certeza baixa) nem na grave (condicional, certeza muito baixa)', grau: 'condicional; certeza baixa e muito baixa', fonte: 'OMS 2025', livro: 'o cap. 91 não fala de corticoide (busca no PDF)' },
+  { tema: 'Fluido na forma grave', diretriz: 'Cristaloide em vez de coloide quando precisa de fluido EV', grau: 'condicional; certeza baixa', fonte: 'OMS 2025', livro: 'Ringer lactato, 20 mL/kg em 20–30 min, repetido pelo menos 3 vezes conforme a reavaliação; coloide se a hemoconcentração não melhorar com cristaloide (p. 1233)' },
+  { tema: 'Como guiar o volume', diretriz: 'Usar o tempo de enchimento capilar (forte; certeza baixa) e o lactato (forte; certeza moderada) para guiar o fluido EV. No choque, elevação passiva das pernas quando houver dúvida sobre mais volume (condicional; certeza baixa)', grau: 'forte; condicional', fonte: 'OMS 2025', livro: 'hematócrito a cada 2 h e depois a cada 4–6 h (p. 1233)' },
+  { tema: 'Plaquetas', diretriz: 'Não transfundir plaquetas de forma profilática na forma grave com < 50.000/µL sem sangramento ativo', grau: 'condicional; certeza baixa', fonte: 'OMS 2025', livro: 'internar com plaquetas < 50.000/mm³; concentrado de hemácias no quadro hemorrágico (p. 1233)' },
+  { tema: 'Imunoglobulina', diretriz: 'Não usar imunoglobulina na forma grave', grau: 'condicional; certeza muito baixa', fonte: 'OMS 2025', livro: 'o cap. 91 não fala de imunoglobulina' },
+]
+
+export const DIFERENCAS_DENGUE_OMS: string[] = [
+  'Anti-inflamatório: a OMS 2025 é contra todo AINE (forte); o manual do HC cita só os salicilatos.',
+  'Corticoide e imunoglobulina: a OMS 2025 é contra; o manual do HC não fala deles.',
+  'Plaquetas: a OMS 2025 é contra a transfusão profilática com < 50.000/µL sem sangramento; o manual do HC usa esse corte só para internar.',
+  'Guia do volume: a OMS 2025 usa enchimento capilar e lactato (fortes); o manual do HC, o hematócrito seriado.',
+  'A ferramenta de classificação e hidratação continua pelo Ministério da Saúde 2024.',
+]
+
 export const fichaDengue: Ficha = {
   id: 'dengue-classificacao',
   titulo: 'Dengue — classificação e hidratação',
-  versao: '2026-09-28.1',
+  versao: '2026-11-14.1',
   publico: 'adulto',
   fontes: [
     MS_DENGUE_2024,
+    OMS_ARBOVIROSES_2025,
     { citacao: 'World Health Organization. Dengue: guidelines for diagnosis, treatment, prevention and control. Geneva: WHO; 2009 (base dos sinais de alarme, Quadro 1 do manual do MS).' },
   ],
-  revisadoEm: '28/09/2026 (manual do MS 6ª ed. 2024 lido no PDF)',
+  revisadoEm: '14/11/2026 (OMS 2025 de arboviroses ao lado do manual do HC; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT); 28/09/2026 (manual do MS 6ª ed. 2024 lido no PDF)',
 }
 
 const ok = (x: number) => Number.isFinite(x) && x > 0

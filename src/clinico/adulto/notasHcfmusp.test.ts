@@ -439,3 +439,13 @@ test('sedação (cap. 10): ACEP 2026 ao lado do manual; doses do manual iguais',
   assert.equal(nota.itens.length, s.DIRETRIZ_SAP.length)
   assert.deepEqual(nota.ficha.fontes, [s.ACEP_SEDACAO_2026])
 })
+
+test('dengue (cap. 91): OMS 2025 ao lado do manual do HC; a ferramenta segue o MS 2024', async () => {
+  const d = await import('../dengue.ts')
+  assert.equal(d.fichaDengue.versao, '2026-11-14.1')
+  assert.ok(d.fichaDengue.fontes.includes(d.OMS_ARBOVIROSES_2025))
+  assert.equal(d.fichaDengue.fontes[0], d.MS_DENGUE_2024)
+  const nota = NOTAS_HCFMUSP_LOTE5.find((x) => x.ficha.id === 'nota-hcfmusp-cap91-dengue')!
+  assert.equal(nota.itens.length, d.DIRETRIZ_DENGUE_OMS.length + 1)
+  assert.deepEqual(nota.ficha.fontes, [d.OMS_ARBOVIROSES_2025, d.MS_DENGUE_2024])
+})
