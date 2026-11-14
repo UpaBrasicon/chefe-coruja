@@ -54,3 +54,12 @@ Cinco de seis respostas passam a abrir pela diretriz. A da glicose 50% continua 
 - `adulto-hipoglicemia.md`, `adulto-cad-ehh-avaliacao.md`, `adulto-cad-ehh-tratamento.md` e `nota-hcfmusp-cap65-hipoglicemia.md` ingeridos. API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.233, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT para os capítulos restantes)
+
+- A migration `20270414000010` foi aplicada antes do merge. O #676 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 4 arquivos foram ingeridos. A API foi reiniciada.
+- Na primeira rodada da produção, a pergunta "dose de glicose 50%" passou a dar "não encontrei". Antes ela respondia pelo manual.
+  - Causa: os trechos de CAD/EHH, que o gerador põe junto porque estão no mesmo módulo, tomaram as vagas da busca.
+  - Correção no #677: a nota ganhou a linha "Glicose 50% EV" com a dose do manual. Passou pela homologação e pelo CI e foi para a produção.
+- Depois da correção, as seis respostas respondem. Cinco abrem pela ADA 2026; a da glicose 50%, pelo manual.
