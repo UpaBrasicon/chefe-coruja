@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import { temReferenciaPediatrica } from '@/clinico/ficha'
 import { numero, type Escore, type Respostas } from '@/clinico/escore'
@@ -30,7 +30,7 @@ function Linha({ rotulo, ajuda, rotuloId, opcoesEmLinha, children }: {
 }
 
 /** Tela única dos escores do pacote src/clinico. */
-export function EscoreTela({ escore }: { escore: Escore }) {
+export function EscoreTela({ escore, children }: { escore: Escore; children?: ReactNode }) {
   const [r, setR] = useState<Respostas>({})
   const [paciente, setPaciente] = useState<'adulto' | 'crianca'>(escore.ficha.publico === 'pediatrico' ? 'crianca' : 'adulto')
   const semRefPedi = paciente === 'crianca' && !temReferenciaPediatrica(escore.ficha)
@@ -142,6 +142,7 @@ export function EscoreTela({ escore }: { escore: Escore }) {
           )}
         </section>
       )}
+      {children}
     </ToolLayout>
   )
 }
