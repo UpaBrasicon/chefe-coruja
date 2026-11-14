@@ -1,4 +1,4 @@
-import type { Fonte } from '../ficha.ts'
+import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, somar, type Escore, type Item } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
 
@@ -125,7 +125,38 @@ export const scortenUti: Escore = {
 
 // Doses do capítulo (p. 1279–1292)
 
-export const fichaDermatosesAdulto = fichaAdulto('adulto-dermatoses-graves', 'Dermatoses graves — doses por peso (adulto)', `${CAP}, p. 1279–1292`)
+const fichaDermatosesLivro = fichaAdulto('adulto-dermatoses-graves', 'Dermatoses graves — doses por peso (adulto)', `${CAP}, p. 1279–1292`)
+
+// Lote 6 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): diretriz
+// latino-americana de SSJ/NET de 2025, lida no texto integral (PMC), ao lado do
+// manual. Os graus são como a diretriz escreve (nível de evidência B, grau C ou D;
+// a recomendação do tratamento sistêmico vem com força e certeza).
+export const LATAM_SSJ_NET_2025: Fonte = {
+  citacao: 'Murillo-Casas AD, Zwiener R, Giavina-Bianchi P, et al. Latin American guidelines for the diagnosis and treatment of Stevens-Johnson syndrome and toxic epidermal necrolysis. World Allergy Organ J. 2025;18(4):101046 (PMID 40226820; PMC11986972). Texto integral e tabela do tratamento sistêmico lidos no PMC.',
+  url: 'https://doi.org/10.1016/j.waojou.2025.101046',
+}
+
+const SEM_ITEM_DERM = 'o cap. 96 não trata do ponto'
+
+/** Diretriz latino-americana de SSJ/NET (2025) ao lado do cap. 96 do manual (Tabela 5, p. 1284–1285). */
+export const DIRETRIZ_SSJ_NET_2025: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Droga suspeita', diretriz: 'Suspender já a droga responsável, o que melhora o prognóstico. Não suspender, na fase aguda, os medicamentos de uso crônico que não estão sob suspeita. ALDEN para identificar a droga', grau: 'nível de evidência B; ALDEN sem grau', fonte: 'Latino-americana 2025', livro: 'suspender a droga suspeita pelo ALDEN (Tabela 6); com anticonvulsivante, pedir à neurologia a troca (Tabela 5, p. 1284–1285)' },
+  { tema: 'Gravidade e local de tratamento', diretriz: 'SCORTEN na admissão e de novo nos dias 1 e 3 (pode superestimar a mortalidade). Encaminhar a tempo a centro especializado, em UTI com experiência em queimados', grau: 'sem grau', fonte: 'Latino-americana 2025', livro: 'vaga de UTI com dois dos sete itens do SCORTEN (Tabela 5, p. 1284–1285)' },
+  { tema: 'Tratamento sistêmico', diretriz: 'Corticoide sistêmico junto com imunoglobulina EV é sugerido. A diretriz diz que não há tratamento imunomodulador padronizado; biológico (etanercepte) sem base para uso de rotina. Não traz recomendação sobre ciclosporina', grau: 'condicional a favor; certeza muito baixa (consenso de especialistas)', fonte: 'Latino-americana 2025', livro: 'prednisona 1–2 mg/kg/dia por 3–5 dias, nas primeiras 48–72 horas; ciclosporina 3–5 mg/kg/dia (Tabela 5, p. 1285)' },
+  { tema: 'Líquidos', diretriz: 'Titular para diurese de 0,5–1 mL/kg/h; considerar sonda vesical. O protocolo francês citado usa a fórmula de Brooke modificada nas primeiras 24 h: 1,5 mL × % da superfície acometida × peso em kg. Choque: tratar antes de calcular a manutenção', grau: 'grau D', fonte: 'Latino-americana 2025', livro: SEM_ITEM_DERM },
+  { tema: 'Via aérea', diretriz: 'VNI contraindicada. Suspeitar de acometimento traqueobrônquico com tosse mucopurulenta, hemoptise, dispneia, hipoxemia ou alteração radiológica; a intubação pode ser difícil pelo acometimento da laringe', grau: 'grau D', fonte: 'Latino-americana 2025', livro: 'radiografia ou TC de tórax se houver sintoma respiratório (Tabela 5, p. 1284–1285)' },
+  { tema: 'Pele', diretriz: 'Não remover a epiderme descolada, que serve de cobertura biológica. Desbridamento cirúrgico só se o tratamento conservador falhar, nunca de início. Sulfadiazina de prata e antibiótico tópico de rotina não são recomendados; antisséptico diário (por exemplo, clorexidina no banho)', grau: 'grau D', fonte: 'Latino-americana 2025', livro: 'curativos vaselinados e limpeza local (Tabela 5, p. 1284–1285)' },
+  { tema: 'Olhos', diretriz: 'Avaliação oftalmológica nas primeiras 24 horas da fase aguda', grau: 'grau D', fonte: 'Latino-americana 2025', livro: 'avaliação multidisciplinar: oftalmologia, otorrino, gineco ou uro (Tabela 5, p. 1284–1285)' },
+  { tema: 'Antibiótico', diretriz: 'Antibiótico profilático não é recomendado; antimicrobiano só com sinais de infecção', grau: 'grau D', fonte: 'Latino-americana 2025', livro: SEM_ITEM_DERM },
+  { tema: 'Tromboprofilaxia', diretriz: 'Sugerida, salvo contraindicação', grau: 'grau D', fonte: 'Latino-americana 2025', livro: SEM_ITEM_DERM },
+]
+
+export const fichaDermatosesAdulto: Ficha = {
+  ...fichaDermatosesLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaDermatosesLivro.fontes, LATAM_SSJ_NET_2025],
+  revisadoEm: '14/11/2026 (diretriz latino-americana de SSJ/NET 2025 ao lado do manual, no texto integral; lote 6 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
+}
 
 export const DOSES_DERMATOSES = {
   ssjNetPrednisona: { mgKgDia: [1, 2] as Faixa, texto: 'Prednisona 1-2 mg/kg/d por 3-5 dias, iniciada nas primeiras 48-72 h', pagina: 'p. 1285' },
