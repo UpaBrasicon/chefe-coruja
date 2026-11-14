@@ -24,7 +24,7 @@ import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_201
 import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
 import { ABHH_NF_2024, DIRETRIZ_NF, MASCC_2026, fichaNeutropeniaFebrilAdulto } from './neutropeniaFebril.ts'
 import { BAP_SUBSTANCIAS_2026, DIRETRIZ_SAA, fichaAbstinenciaAlcoolica } from './abstinenciaAlcoolica.ts'
-import { DIRETRIZ_IA, ESE_ES_IA_GLICOCORTICOIDE_2024, ES_IA_PRIMARIA_2016, SFE_CRISE_ADRENAL_2016, fichaInsuficienciaAdrenal } from './endocrino.ts'
+import { DIRETRIZ_IA, DIRETRIZ_TT, ESE_ES_IA_GLICOCORTICOIDE_2024, ES_IA_PRIMARIA_2016, ETA_TEMPESTADE_2026, SFE_CRISE_ADRENAL_2016, fichaCriseTireotoxica, fichaInsuficienciaAdrenal } from './endocrino.ts'
 import { DIRETRIZ_MENINGITE, EAN_ESCMID_ENCEFALITE_2026, ESCMID_MENINGITE_2016, fichaMeningiteAdulto } from './meningite.ts'
 import { AHA_TEP_2026, DIRETRIZ_TEP_2026 } from './tep2026.ts'
 import { AARC_TRE_2024, ATS_IRPA_2026, ATS_SDRA_2024, DEFINICAO_GLOBAL_SDRA_2024, DIRETRIZ_SDRA_2024, ESICM_SDRA_2023, NOTA_AARC_TRE, NOTA_ATS_POS_EXTUBACAO, NOTA_SCCM_BNM, SCCM_BNM_2026, fichaSdraAdulto } from './ventilacaoMecanica.ts'
@@ -93,6 +93,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap25-tvp': 'trombose venosa profunda (TVP): tratamento em casa, DOAC ou varfarina, duração da anticoagulação, filtro de veia cava, trombólise, aspirina na prevenção secundária',
   'nota-hcfmusp-cap37-vm': 'ventilação mecânica e SDRA no adulto (volume corrente, PEEP, prona, recrutamento, bloqueio neuromuscular, corticoide, ECMO, cânula nasal de alto fluxo, desmame e pós-extubação)',
   'nota-hcfmusp-cap72-adrenal': 'insuficiência adrenal e crise adrenal (addisoniana) no adulto: hidrocortisona, volume, teste com ACTH, fludrocortisona, glicocorticoide em uso, dose de estresse',
+  'nota-hcfmusp-cap70-tireotoxica': 'crise tireotóxica (tempestade tireoidiana) no adulto: Burch-Wartofsky, betabloqueador, propranolol, esmolol, metimazol, propiltiouracil (PTU), iodo, Lugol, hidrocortisona, plasmaférese',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -356,7 +357,14 @@ export const notaHcfmuspCap72 = nota('nota-hcfmusp-cap72-adrenal', 'Nota de atua
 notaHcfmuspCap72.ficha.versao = '2026-11-14.1'
 notaHcfmuspCap72.ficha.revisadoEm = '14/11/2026 (lote 4 da revisão do HCFMUSP: itens tirados da Endocrine Society 2016, da SfE 2016 e da ESE/ES 2024, lidas no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap37, notaHcfmuspCap72]
+/** cap. 70: consenso ETA/BTA/SfE 2026 de tempestade tireoidiana, lido no texto integral. */
+export const notaHcfmuspCap70 = nota('nota-hcfmusp-cap70-tireotoxica', 'Nota de atualização — manual HC, cap. 70: crise tireotóxica', 'cap. 70, p. 947–957', fichaCriseTireotoxica,
+  DIRETRIZ_TT.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [ETA_TEMPESTADE_2026])
+notaHcfmuspCap70.ficha.versao = '2026-11-14.1'
+notaHcfmuspCap70.ficha.revisadoEm = '14/11/2026 (lote 4 da revisão do HCFMUSP: itens tirados do consenso ETA/BTA/SfE 2026, lido no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE4: NotaHcfmusp[] = [notaHcfmuspCap37, notaHcfmuspCap70, notaHcfmuspCap72]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4]
 
@@ -389,6 +397,7 @@ export const fichaNotaHcfmuspCap66 = notaHcfmuspCap66.ficha
 export const fichaNotaHcfmuspCap47 = notaHcfmuspCap47.ficha
 export const fichaNotaHcfmuspCap37 = notaHcfmuspCap37.ficha
 export const fichaNotaHcfmuspCap72 = notaHcfmuspCap72.ficha
+export const fichaNotaHcfmuspCap70 = notaHcfmuspCap70.ficha
 export const fichaNotaHcfmuspCap25 = notaHcfmuspCap25.ficha
 export const fichaNotaHcfmuspCap78 = notaHcfmuspCap78.ficha
 export const fichaNotaHcfmuspCap81 = notaHcfmuspCap81.ficha
