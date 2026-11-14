@@ -321,3 +321,13 @@ test('cálcio (cap. 68): Endocrine Society 2023 e SfE 2016 ao lado do manual; do
   assert.equal(nota.itens.length, e.DIRETRIZ_CALCIO.length)
   assert.ok(nota.itens.some((i) => i.tema.startsWith('Hipocalcemia')))
 })
+
+test('lise tumoral (cap. 84): BSH 2025 ao lado do manual; doses do manual iguais', async () => {
+  const s = await import('./liseTumoral.ts')
+  assert.equal(s.fichaLiseTumoralAdulto.versao, '2026-11-14.1')
+  assert.ok(s.fichaLiseTumoralAdulto.fontes.includes(s.BSH_SLT_2025))
+  assert.deepEqual(s.RASBURICASE_SLT.mgKg, [0.15, 0.2])
+  const nota = NOTAS_HCFMUSP_LOTE4.find((x) => x.ficha.id === 'nota-hcfmusp-cap84-lise-tumoral')!
+  assert.equal(nota.itens.length, s.DIRETRIZ_SLT.length)
+  assert.deepEqual(nota.ficha.fontes, [s.BSH_SLT_2025])
+})
