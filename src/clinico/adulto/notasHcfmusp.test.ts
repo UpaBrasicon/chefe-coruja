@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, textoNota } from './notasHcfmusp.ts'
+import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, NOTAS_HCFMUSP_LOTE4, textoNota } from './notasHcfmusp.ts'
 import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
@@ -47,7 +47,7 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
 
 test('lote 2: onze notas (cap. 3, 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
   assert.equal(NOTAS_HCFMUSP_LOTE2.length, 11)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
@@ -147,7 +147,7 @@ test('lote 3, N1: notas de 33, 40 e 76 a partir das listas das fichas; PAC com a
   const { DIRETRIZ_HSA_2023 } = await import('./hsa.ts')
   const { DIFERENCAS_AGITACAO_2024 } = await import('./agitacao.ts')
   assert.ok(NOTAS_HCFMUSP_LOTE3.length >= 3)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const por = (id: string) => NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === id)!
@@ -275,4 +275,15 @@ test('TVP (cap. 25): ASH 2020 ao lado do manual; a nota da SCA não herda a font
   assert.equal(nota.itens.length, v.DIRETRIZ_TVP.length)
   assert.deepEqual(nota.ficha.fontes, [v.ASH_TEV_2020])
   for (const n of NOTAS_HCFMUSP) if (n !== nota) assert.ok(!n.ficha.fontes.includes(v.ASH_TEV_2020), n.ficha.id)
+})
+
+test('lote 4, O1: nota do cap. 37 (VM) a partir da lista da ficha da SDRA, sem fonte do manual', async () => {
+  const vm = await import('./ventilacaoMecanica.ts')
+  const nota = NOTAS_HCFMUSP_LOTE4.find((n) => n.ficha.id === 'nota-hcfmusp-cap37-vm')!
+  assert.equal(nota.ficha.versao, '2026-11-14.1')
+  assert.equal(nota.ficha.publico, 'adulto')
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 4/)
+  assert.equal(nota.itens.length, vm.DIRETRIZ_SDRA_2024.length + 3)
+  assert.ok(nota.ficha.fontes.every((f) => !/Manual de Medicina de Emergência/.test(f.citacao)))
+  assert.ok(nota.ficha.fontes.includes(vm.SCCM_BNM_2026))
 })
