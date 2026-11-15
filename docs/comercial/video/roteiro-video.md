@@ -91,5 +91,5 @@ Pedido do RT depois da primeira versão: mais polida, com música e narração (
 - **Narração:** reescrita pelo Fable, mais curta (cerca de 450 palavras), em `narracao.json`. Corrigi três frases que diziam mais do que o sistema faz: a cor da triagem (o médico pode reclassificar), a alta vigilância (a tela é a lista da unidade) e o responsável técnico (é o do produto, não o da unidade).
 - **Voz:** pt-BR-FranciscaNeural, ritmo +6%. O texto vai ao serviço de voz da Microsoft; não tem dado de paciente.
 - **Música:** `scripts/demo/trilha.py`, instrumental sintetizado (Lá menor, 104 bpm), sem amostra de terceiros. Abaixa sozinha quando a voz fala.
-- **Imagem:** cada cena dura o tempo da fala, com zoom lento no ponto que importa, legenda curta com a palavra-chave e transições entre as cenas.
+- **Imagem:** cada cena dura o tempo da fala, com legenda curta com a palavra-chave e transições entre as cenas. O zoom lento da primeira versão narrada saiu: o filtro de zoom tremia a imagem, e o RT reprovou.
 - **Montagem:** `scripts/demo/montar-narrado.mjs`. Resultado: 2:50.

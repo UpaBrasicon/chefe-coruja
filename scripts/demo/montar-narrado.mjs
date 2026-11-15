@@ -4,7 +4,7 @@
 // (cenas.json) e a narração (narracao.json). Para cada cena:
 //   • gera a fala com voz neural (edge-tts, decisão N1 = A do RT);
 //   • ajusta o trecho gravado à duração da fala (acelera até 1,7× ou segura o
-//     último quadro), com um zoom lento no ponto que importa;
+//     último quadro), sem zoom: o zoompan tremia a imagem (reclamação do RT, 15/11/2026);
 //   • põe a legenda curta com a palavra-chave e o selo de dados fictícios.
 // Depois junta as cenas com transições, põe a trilha gerada por código
 // (trilha.py, M1 = B) e abaixa a música quando a voz fala.
@@ -74,14 +74,11 @@ for (const cena of narr.cenas) {
     const real = Math.max(0.5, mFim.fim - m.ini)
     const fator = Math.min(Math.max(real / D, 1), 1.7)
     const sobra = Math.max(0, D - real / fator)
-    const [fx, fy] = cena.foco ?? [0.5, 0.4]
-    const N = Math.round(D * 30)
     const leg = texto(`l${id}.txt`, cena.legenda)
     const vf = [
       `setpts=(PTS-STARTPTS)/${fator.toFixed(4)}`,
       'fps=30,scale=1920:1080:flags=lanczos',
       ...(sobra > 0 ? [`tpad=stop_mode=clone:stop_duration=${sobra.toFixed(2)}`] : []),
-      `zoompan=z='1+0.085*on/${N}':x='(iw-iw/zoom)*${fx}':y='(ih-ih/zoom)*${fy}':d=1:s=1920x1080:fps=30`,
       `drawtext=fontfile='${FONTE_TITULO.replace(/:/g, '\\:')}':textfile='${leg}':fontcolor=white:fontsize=54:box=1:boxcolor=0x0e7490@0.93:boxborderw=26:x=96:y=h-190:alpha='if(lt(t,0.25),0,min(1,(t-0.25)/0.3))'`,
       `drawtext=fontfile='${FONTE.replace(/:/g, '\\:')}':textfile='${selo}':fontcolor=white@0.9:fontsize=24:box=1:boxcolor=0x0b1220@0.7:boxborderw=12:x=w-tw-36:y=h-th-26`,
       `trim=duration=${D.toFixed(3)}`,
