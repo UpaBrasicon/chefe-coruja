@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { apagarTokenLocal, manterConectadoVencido, supabase } from '@/lib/supabase'
+import { apagarTokenLocal, inicioManterConectado, manterConectado, manterConectadoVencido, supabase } from '@/lib/supabase'
+import { fimPeloServidor, marcarFimDeSessao, prazoDaSessao, tokenDispositivoAoSair } from '@/lib/fimDeSessao'
 import { ehFalhaDeRede } from '@/lib/offline/sessaoSemRede'
 import { apagarSessaoLocal, perfilSemConexao } from '@/lib/offline/sessaoLocal'
 import { situacaoSemConexao } from '@/lib/offline/relogio'
@@ -20,6 +21,8 @@ interface AuthContextValue {
   signIn: (email: string, password: string, captchaToken?: string) => Promise<{ error: string | null }>
   signUp: (email: string, password: string, nomeCompleto: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
+  /** S7 (C2): hora do fim das 12 h do "Manter conectado", nos 15 min antes; senão null. */
+  fimSessaoEm: number | null
   /** Grava o tema da pessoa no perfil e aplica na tela (guia do padrão, 1.4). */
   definirTema: (tema: Tema) => Promise<{ error: string | null }>
 }
@@ -28,6 +31,10 @@ const AuthContext = React.createContext<AuthContextValue | null>(null)
 
 // Canal entre abas do mesmo navegador: quem sai numa aba sai em todas.
 const CANAL_SESSAO = 'cc-sessao'
+
+function armazenamento(qual: 'localStorage' | 'sessionStorage'): Storage | undefined {
+  try { return window[qual] } catch { return undefined }
+}
 
 // D1 (recarga sem conexão, parte 1): sair apaga o token do navegador mesmo sem
 // rede, e de novo 5 s depois, para o caso de uma renovação que já estava em
@@ -43,7 +50,11 @@ function sairDoAparelho() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [perfil, setPerfil] = React.useState<Perfis['Row'] | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [fimSessaoEm, setFimSessaoEm] = React.useState<number | null>(null)
   const queryClient = useQueryClient()
+  // S7 (C1): o SIGNED_OUT que esta aba provocou ("Sair", outra aba, prazo) não é
+  // fim pelo servidor; volta a falso no próximo login.
+  const saindo = React.useRef(false)
 
   // Item 03 do kit de desempenho: getSession e os eventos INITIAL_SESSION,
   // SIGNED_IN e TOKEN_REFRESHED chegam quase juntos na recarga, e cada um lia
@@ -54,6 +65,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Encerramento local: rascunhos clínicos do navegador e todo dado lido do
   // banco que ficou na memória (cache do react-query) saem junto com o token.
   const encerrarLocal = React.useCallback(async () => {
+    saindo.current = true
+    // S7 (C3): no computador compartilhado o token de dispositivo confiável sai junto
+    tokenDispositivoAoSair(armazenamento('localStorage'), manterConectado())
     // LGPD: computador compartilhado de UPA — dado de paciente não fica.
     limparTodosRascunhos()
     apagarSessaoLocal()
@@ -101,6 +115,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (manterConectadoVencido()) void encerrarLocal()
   }, [encerrarLocal])
 
+  // S7 (C2): com a aba aberta, o prazo é conferido a cada minuto e na volta ao
+  // primeiro plano; aviso 15 min antes, fim no prazo com a limpeza do "Sair".
+  const logado = perfil?.id ?? null
+  React.useEffect(() => {
+    if (!logado) return
+    const conferir = () => {
+      const p = prazoDaSessao(manterConectado(), inicioManterConectado(), Date.now())
+      if (p.tipo === 'vencido') {
+        marcarFimDeSessao(armazenamento('sessionStorage'), 'prazo')
+        void encerrarLocal()
+        return
+      }
+      setFimSessaoEm(p.tipo === 'aviso' ? p.fim : null)
+    }
+    conferir()
+    const id = window.setInterval(conferir, 60_000)
+    const aoVoltar = () => { if (document.visibilityState === 'visible') conferir() }
+    document.addEventListener('visibilitychange', aoVoltar)
+    window.addEventListener('focus', conferir)
+    return () => {
+      window.clearInterval(id)
+      document.removeEventListener('visibilitychange', aoVoltar)
+      window.removeEventListener('focus', conferir)
+    }
+  }, [logado, encerrarLocal])
+
   // Saiu em outra aba: sai aqui também.
   React.useEffect(() => {
     if (typeof BroadcastChannel === 'undefined') return
@@ -138,8 +178,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((evento, session) => {
       if (evento === 'SIGNED_IN') saiuEm = 0
+      if (evento === 'SIGNED_IN') saindo.current = false
       if (session) void loadPerfil(session.user.id, evento)
       else if (evento === 'SIGNED_OUT') {
+        // S7 (C1): o servidor encerrou a sessão (senha trocada, vínculo revogado,
+        // sessão derrubada): a mesma limpeza do "Sair", e a entrada explica
+        if (fimPeloServidor(evento, saindo.current)) {
+          marcarFimDeSessao(armazenamento('sessionStorage'), 'servidor')
+          saindo.current = true
+          // fora do callback: chamar o supabase.auth aqui dentro pode travar o lock do Auth
+          window.setTimeout(() => void encerrarLocal(), 0)
+        }
         // INITIAL_SESSION sem sessão quem decide é o getSession acima (pode
         // ser só falta de rede, com o perfil guardado nesta aba)
         cargaPerfil.current = { carregado: null, emCarga: null }
@@ -150,12 +199,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [loadPerfil, queryClient])
+  }, [loadPerfil, queryClient, encerrarLocal])
 
   const value = React.useMemo<AuthContextValue>(
     () => ({
       perfil,
       loading,
+      // o aviso só vale com alguém logado (some junto com o perfil ao sair)
+      fimSessaoEm: perfil ? fimSessaoEm : null,
       signIn: async (email, password, captchaToken) => {
         const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } })
         return { error: error?.message ?? null }
@@ -169,6 +220,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: error?.message ?? null }
       },
       signOut: async () => {
+        saindo.current = true
+        // S7 (C3): sem "Manter conectado" (computador do posto), o token de dispositivo sai
+        tokenDispositivoAoSair(armazenamento('localStorage'), manterConectado())
         try {
           if (typeof BroadcastChannel !== 'undefined') {
             const canal = new BroadcastChannel(CANAL_SESSAO)
@@ -198,7 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: null }
       },
     }),
-    [perfil, loading, queryClient]
+    [perfil, loading, queryClient, fimSessaoEm]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
