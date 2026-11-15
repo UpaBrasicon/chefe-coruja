@@ -16,6 +16,8 @@ import { dadosReavaliacao, type FormReavaliacao, pendenciasReavaliacao, REAVALIA
 import { folhaDoDocumentoEmitido, imprimirDocumento } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
+import { janelaEmBranco } from '@/lib/abrirEmJanela'
+import { escapeHtml } from '@/lib/utils'
 
 type Reavaliacao = FormReavaliacao & { documento_id: string; criado_em: string; numero: string | null; estado: string; autor: string | null }
 
@@ -47,10 +49,10 @@ export function ReavaliacoesQuadro({ internacaoId, pacienteId, prontuarioAberto,
   async function registrar() {
     if (pendencias.length) return
     setErro(null)
-    const janela = window.open('', '_blank')
+    const janela = janelaEmBranco()
     if (!janela) return setErro('O navegador bloqueou a janela de impressão. Libere pop-ups e tente de novo.')
     const escrever = (html: string) => { janela.document.open(); janela.document.write(html); janela.document.close() }
-    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${m}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
+    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${escapeHtml(m)}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a reavaliação…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     setGravando(true)
     try {

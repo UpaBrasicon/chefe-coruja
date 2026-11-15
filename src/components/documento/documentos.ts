@@ -60,7 +60,7 @@ export const rotuloDocumento = (tipo: string) => ROTULO_DOCUMENTO[tipo] ?? tipo.
 export const TIPOS_CANCELAVEIS = new Set(['atestado', 'receita', 'encaminhamento', 'pedido_exames', 'laudo_aih', 'boletim_emergencia', 'admissao_anamnese',
   'documento_transferencia'])
 /** Tipos que viram rascunho ao copiar (os de public.salvar_rascunho). */
-export const TIPOS_COPIAVEIS = new Set(['atestado', 'receita', 'encaminhamento', 'pedido_exames', 'laudo_aih', 'prescricao', 'sumario_alta', 'termo_consentimento', 'boletim_emergencia'])
+export const TIPOS_COPIAVEIS = new Set(['atestado', 'receita', 'encaminhamento', 'pedido_exames', 'laudo_aih', 'prescricao', 'sumario_alta', 'boletim_emergencia'])
 /** Tipos com folha A4 no servidor (edge function `folha`): todos os de lib/folhas. */
 export const TIPOS_COM_FOLHA = new Set<string>(TIPOS_FOLHA)
 
