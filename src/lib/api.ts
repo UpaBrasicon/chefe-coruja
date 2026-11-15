@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { reduzirImagem } from '@/lib/reduzirImagem'
-import type { Json, Papel, TipoLeito, TipoSetor } from '@/types/database'
+import type { Json, TipoLeito, TipoSetor } from '@/types/database'
 
 // ── Auditoria ────────────────────────────────────────────────────────────────
 export async function registrarAuditoria(input: {
@@ -21,55 +21,23 @@ export async function registrarAuditoria(input: {
 }
 
 // ── Vínculos (admin) ─────────────────────────────────────────────────────────
-export async function criarOuReativarVinculo(input: {
-  perfil_id: string
-  unidade_id: string
-  papel: Papel
-  criado_por: string
-}) {
-  const { data, error } = await supabase
-    .from('vinculos')
-    .upsert(
-      {
-        perfil_id: input.perfil_id,
-        unidade_id: input.unidade_id,
-        papel: input.papel,
-        ativo: true,
-        criado_por: input.criado_por,
-      },
-      { onConflict: 'perfil_id,unidade_id,papel' }
-    )
-    .select('id, papel')
-    .single()
-
+// S1 da trilha de segurança: o admin não grava direto em `vinculos`. Revoga e
+// reativa só vínculo que já existe na própria organização, e conclui a entrada
+// de quem aderiu ao contrato. Pessoa nova ou papel novo: convite. O banco
+// confere o segundo fator e grava a auditoria.
+export async function revogarVinculo(vinculoId: string) {
+  const { error } = await supabase.rpc('revogar_vinculo', { p_vinculo: vinculoId })
   if (error) throw error
-
-  await registrarAuditoria({
-    acao: 'vinculo_criado',
-    entidade: 'vinculos',
-    entidade_id: data.id,
-    unidade_id: input.unidade_id,
-    payload: { perfil_id: input.perfil_id, papel: input.papel },
-  })
 }
 
-export async function revogarVinculo(vinculoId: string, unidadeId: string) {
-  const { data, error } = await supabase
-    .from('vinculos')
-    .update({ ativo: false })
-    .eq('id', vinculoId)
-    .select('id, perfil_id, papel')
-    .single()
-
+export async function reativarVinculo(vinculoId: string) {
+  const { error } = await supabase.rpc('reativar_vinculo', { p_vinculo: vinculoId })
   if (error) throw error
+}
 
-  await registrarAuditoria({
-    acao: 'vinculo_revogado',
-    entidade: 'vinculos',
-    entidade_id: vinculoId,
-    unidade_id: unidadeId,
-    payload: { perfil_id: data.perfil_id, papel: data.papel },
-  })
+export async function concluirAdesao(adesaoId: string, unidadeId: string) {
+  const { error } = await supabase.rpc('concluir_adesao', { p_adesao: adesaoId, p_unidade: unidadeId })
+  if (error) throw error
 }
 
 // ── Setores (gestor) ─────────────────────────────────────────────────────────
