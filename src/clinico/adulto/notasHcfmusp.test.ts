@@ -570,3 +570,13 @@ test('lote 7, Q1: notas dos cap. 42, 63 e 89 a partir das fichas', async () => {
   }
   assert.match(textoNota(por('nota-hcfmusp-cap89-itu')), /prostatite/)
 })
+
+test('lote 7, Q2: nota do cap. 51 a partir da ACG 2023 na ficha do Oakland', async () => {
+  const h = await import('./hemorragiaDigestiva.ts')
+  const nota = NOTAS_HCFMUSP_LOTE7.find((n) => n.ficha.id === 'nota-hcfmusp-cap51-hdb')!
+  assert.equal(nota.fichaCentral, h.fichaOakland.id)
+  assert.equal(nota.itens.length, h.DIRETRIZ_HDB_2023.length)
+  assert.deepEqual(nota.ficha.fontes, [h.ACG_HDB_2023])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 7/)
+  assert.match(textoNota(nota), /tranexâmico/)
+})
