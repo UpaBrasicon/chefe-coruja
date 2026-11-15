@@ -62,6 +62,8 @@
 - **A (recomendada):** citar que houve pentest externo (Strix, outubro) e revisão contínua, sem detalhar achados. Os itens abertos da trilha S0–S10 ficam fora da fala. Se alguém perguntar diretamente se há algo pendente, a resposta é: "há melhorias em andamento, registradas e priorizadas".
 - **B:** não citar auditorias.
 
+**Decisão do RT, 15/11/2026:** OB1 a OB6 = A ("Todas A"). Para a OB4, com essa autorização, li só a configuração na produção, sem dado de paciente: `exigir_segundo_fator` = `true` desde 02/10/2026. O slide 8 do deck está certo e fica como está.
+
 ## Regras do conteúdo
 
 - Nenhuma métrica inventada, depoimento ou cliente fictício.
