@@ -50,7 +50,10 @@ for (const cena of narr.cenas) {
     execFileSync(PY, ['-m', 'edge_tts', '--voice', narr.voz, `--rate=${narr.ritmo}`, '--text', cena.fala, '--write-media', audio], { stdio: ['ignore', 'ignore', 'inherit'] })
   }
   const dFala = duracao(audio)
-  const D = Math.max(2.8, dFala + (cena.cartela ? 0.9 : 0.55))
+  let D = Math.max(2.8, dFala + (cena.cartela ? 0.9 : 0.55))
+  // a cena pode passar da fala (até 3 s) para a ação gravada caber sem correr demais
+  const gravada = !cena.cartela && marcas.get(cena.n) && marcas.get(cena.ate ?? cena.n)
+  if (gravada) D = Math.min(Math.max(D, (marcas.get(cena.ate ?? cena.n).fim - marcas.get(cena.n).ini) / 1.25), D + 3)
   const video = join(trab, `cena-${id}.mp4`)
   if (cena.cartela) {
     const c = narr[cena.cartela]

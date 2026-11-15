@@ -145,6 +145,8 @@ async function executar(p, a) {
       const loc = await alvo(p, a)
       await moverAte(p, loc)
       await loc.click()
+      // limpa antes: o rascunho do médico guarda o texto entre sessões
+      if (a.limpar) await loc.fill('')
       await loc.pressSequentially(a.valor, { delay: a.atraso ?? 45 })
       return espera(p, a.ms ?? 600)
     }

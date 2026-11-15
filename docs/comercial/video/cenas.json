@@ -96,7 +96,8 @@
      "marcador": "Nome, CPF, Cartão SUS ou nome da mãe",
      "valor": "Sebas",
      "atraso": 160,
-     "ms": 3500
+     "ms": 3500,
+     "limpar": true
     },
     {
      "acao": "esperar",
@@ -167,29 +168,36 @@
     {
      "acao": "ir",
      "rota": "/atendimento?fila=atendimento",
-     "ms": 2500
+     "ms": 1500
     },
     {
      "acao": "clicar",
      "papel": "button",
      "nome": "Abrir atendimento",
-     "ms": 2500
+     "ms": 1500
     },
     {
      "acao": "pairar",
      "texto": "NEWS2",
-     "ms": 1500
+     "ms": 900
     },
     {
      "acao": "digitar",
      "rotulo": "Avaliação · hipótese diagnóstica",
      "valor": "Cefaleia",
-     "atraso": 110,
-     "ms": 2500
+     "atraso": 70,
+     "ms": 1200,
+     "limpar": true
     },
     {
-     "acao": "esperar",
-     "ms": 1500
+     "acao": "pairar",
+     "texto": "R51",
+     "ms": 700
+    },
+    {
+     "acao": "clicar",
+     "texto": "R51",
+     "ms": 2200
     }
    ]
   },
@@ -368,7 +376,8 @@
      "marcador": "Pergunte sobre a gestão da unidade",
      "valor": "Qual a taxa de ocupação agora?",
      "atraso": 55,
-     "ms": 300
+     "ms": 300,
+     "limpar": true
     },
     {
      "acao": "tecla",
@@ -632,7 +641,8 @@
      "rotulo": "Buscar ferramenta ou perguntar à IA",
      "valor": "noradrenalina pode correr em acesso periférico no adulto?",
      "atraso": 45,
-     "ms": 800
+     "ms": 800,
+     "limpar": true
     },
     {
      "acao": "clicar",
