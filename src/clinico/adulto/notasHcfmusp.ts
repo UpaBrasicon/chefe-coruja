@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { CDC_OPIOIDES_2022, DIRETRIZ_DOR_2022, fichaDorAnalgesiaAdulto } from './dorAnalgesia.ts'
 import { DIRETRIZ_COLICA_2025, EAU_UROLITIASE_2025, fichaColicaRenalAdulto } from './colicaRenal.ts'
 import { AIR_METANALISE_2025, WSES_APENDICITE_2025, alvarado } from '../escores/alvarado.ts'
 import { BTS_PLEURA_2023, DIRETRIZ_PLEURA_2023, light } from '../escores/light.ts'
@@ -158,6 +159,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap29-hemorragia-alveolar': 'hemorragia alveolar difusa e vasculite ANCA (granulomatose com poliangeíte, poliangeíte microscópica) no adulto: pulso de metilprednisolona, plasmaférese, ciclofosfamida, rituximabe, avacopan, corticoide',
   'nota-hcfmusp-cap49-dor-abdominal': 'dor abdominal aguda e apendicite aguda no adulto: escore de Alvarado, escore AIR, imagem, tomografia, ultrassom, apendicectomia negativa',
   'nota-hcfmusp-cap62-colica-nefretica': 'cólica nefrética, cálculo ureteral e urolitíase no adulto: ultrassom, tomografia de baixa dose, AINE, cetorolaco, opioide, morfina, tansulosina, terapia expulsiva',
+  'nota-hcfmusp-cap9-dor': 'dor aguda no adulto e analgesia na alta do pronto-socorro: opioide, dose em MME, duração da receita, naloxona, benzodiazepínico, paracetamol, dipirona, AINE',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -942,7 +944,13 @@ export const notaHcfmuspCap62 = notaLote8('nota-hcfmusp-cap62-colica-nefretica',
   [EAU_UROLITIASE_2025])
 notaHcfmuspCap62.ficha.revisadoEm = '14/11/2026 (lote 8 da revisão do HCFMUSP: itens da EAU 2025, pelo resumo; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap49, notaHcfmuspCap62]
+/** cap. 9: CDC 2022 de opioides, já na ficha de dor e analgesia. */
+export const notaHcfmuspCap9 = notaLote8('nota-hcfmusp-cap9-dor', 'Nota de atualização — manual HC, cap. 9: manejo da dor no PS', 'cap. 9, p. 140–151', fichaDorAnalgesiaAdulto,
+  DIRETRIZ_DOR_2022.map((d) => ({ tema: `Dor aguda e opioide: ${d.tema.charAt(0).toLowerCase()}${d.tema.slice(1)}`, diretriz: `${d.fonte} (${d.grau}; adulto ambulatorial, não vale para doença falciforme, câncer e paliativo): ${d.diretriz}`, manual: sem(d.livro) })),
+  [CDC_OPIOIDES_2022])
+notaHcfmuspCap9.ficha.revisadoEm = '14/11/2026 (lote 8 da revisão do HCFMUSP: itens do CDC 2022, lido no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap9, notaHcfmuspCap49, notaHcfmuspCap62]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8]
 
