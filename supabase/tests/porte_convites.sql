@@ -44,7 +44,7 @@ BEGIN
   SELECT * INTO r FROM public.gerar_convite('21000000-0000-4000-8000-000000000001', 'plantonista',
     (SELECT id FROM public.setores WHERE unidade_id = '21000000-0000-4000-8000-000000000001' LIMIT 1),
     'Dra. Teste Convidada', now() + interval '2 days', now() + interval '2 days 12 hours');
-  IF r.codigo !~ '^CC-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{5}$' THEN
+  IF r.codigo !~ '^CC-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{8}$' THEN  -- 8 caracteres desde o S2
     RAISE EXCEPTION 'FALHOU: código fora do formato: %', r.codigo;
   END IF;
   IF r.expira_em < now() + interval '6 days 23 hours' OR r.expira_em > now() + interval '7 days 1 minute' THEN
@@ -304,11 +304,14 @@ DO $$ BEGIN
 END $$;
 
 -- ── 6. quem já tem conta aceita convite para outro papel ────────────────────
-SELECT pg_temp.negado(format('SELECT public.aceitar_convite(%L, %L)', current_setting('teste.cod_tele'), 'termo-uso-sigilo-2026-10'),
+SELECT pg_temp.negado(format('SELECT public.aceitar_convite_com_limite(%L, %L)', current_setting('teste.cod_tele'), 'termo-uso-sigilo-2026-10'),
   'aceitou sem CPF/nascimento/registro no perfil');
 DO $$ BEGIN
-  PERFORM public.aceitar_convite(current_setting('teste.cod_tele'), 'termo-uso-sigilo-2026-10',
-    NULL, '987.650.002-34', '1985-03-02', 'CRM', '654321', 'RJ');
+  -- S2: a função com limite devolve o resultado
+  IF public.aceitar_convite_com_limite(current_setting('teste.cod_tele'), 'termo-uso-sigilo-2026-10',
+       NULL, '987.650.002-34', '1985-03-02', 'CRM', '654321', 'RJ') <> 'ok' THEN
+    RAISE EXCEPTION 'FALHOU: aceitar_convite_com_limite não devolveu ok';
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM public.vinculos WHERE perfil_id = '10000000-0000-4000-8000-000000000002'
                    AND papel = 'telemedicina' AND ativo) THEN
     RAISE EXCEPTION 'FALHOU: aceitar_convite não criou o vínculo';
@@ -320,11 +323,11 @@ SET LOCAL ROLE anon;
 SELECT pg_temp.anonimo('198.51.100.3');
 DO $$ BEGIN
   BEGIN
-    PERFORM public.aceitar_convite('CC-AAAAA', 'termo-uso-sigilo-2026-10');
-    RAISE EXCEPTION 'FALHOU: anônimo chamou aceitar_convite';
+    PERFORM public.aceitar_convite_com_limite('CC-AAAAA', 'termo-uso-sigilo-2026-10');
+    RAISE EXCEPTION 'FALHOU: anônimo chamou aceitar_convite_com_limite';
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
-  RAISE NOTICE 'OK  aceitar_convite fechado para anônimo';
+  RAISE NOTICE 'OK  aceitar_convite_com_limite fechado para anônimo';
 END $$;
 
 -- ── 7. contrato da rede: conta nasce, vínculo aguarda o administrador ──────

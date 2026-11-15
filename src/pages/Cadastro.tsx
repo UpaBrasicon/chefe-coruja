@@ -13,7 +13,7 @@ import { dataPura, hora } from '@/lib/formato'
 import { PAPEL_LABEL, UFS } from '@/lib/constants'
 import {
   AVISOS, CONSELHOS, TERMO_USO_VERSAO, conselhoDoPapel, cpfValido, exigeRegistro, formatarDiaHora,
-  formatarPlantao, mascaraContrato, mascaraConvite, mascaraCpf, mascaraData, nascimentoIso, regrasSenha,
+  codigoContratoValido, codigoConviteValido, formatarPlantao, mascaraContrato, mascaraConvite, mascaraCpf, mascaraData, nascimentoIso, regrasSenha,
   type ChaveAviso, type Conselho,
 } from '@/lib/primeiroAcesso'
 import type { Database, Papel } from '@/types/database'
@@ -225,7 +225,7 @@ function TermoDialogo({ aberto, onFechar }: { aberto: boolean; onFechar: () => v
 // ── a tela ──────────────────────────────────────────────────────────────────
 
 export function Cadastro() {
-  const { perfil } = useAuth()
+  const { perfil, signOut } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const logado = !!perfil
@@ -300,9 +300,9 @@ export function Cadastro() {
     const cod = codigo.trim().toUpperCase()
     setVinculo(null)
     setErroEnvio(null)
-    if (!/^CC-[A-Z0-9]{5}$/.test(cod)) {
+    if (!codigoConviteValido(cod)) {
       setCodigoInvalido(true)
-      setRecado({ tipo: 'erro', titulo: 'Código incompleto', texto: 'São cinco caracteres depois do traço, como na mensagem que você recebeu.' })
+      setRecado({ tipo: 'erro', titulo: 'Código incompleto', texto: 'São cinco ou oito caracteres depois do traço, como na mensagem que você recebeu.' })
       return
     }
     setConferindo(true)
@@ -366,7 +366,7 @@ export function Cadastro() {
     const mail = ctEmail.trim().toLowerCase()
     setVinculo(null)
     setErroEnvio(null)
-    if (!/^\S+@\S+\.\S+$/.test(mail) || !/^CT-\d{4}-\d{3}$/.test(num)) {
+    if (!/^\S+@\S+\.\S+$/.test(mail) || !codigoContratoValido(num)) {
       setCtInvalido(true)
       setRecado({ tipo: 'erro', titulo: 'Faltam dados', texto: 'Informe o e-mail corporativo e o número do contrato no formato CT-ano-000.' })
       return
@@ -447,7 +447,8 @@ export function Cadastro() {
 
     if (logado) {
       setEnviando(true)
-      const { error } = await supabase.rpc('aceitar_convite', {
+      // S2 da trilha de segurança: a função confere o código antes e conta os erros
+      const { data: resultado, error } = await supabase.rpc('aceitar_convite_com_limite', {
         p_codigo: vinculo.codigo,
         p_termo_versao: TERMO_USO_VERSAO,
         ...(faltaNoPerfil.cpf ? { p_cpf: cpf.replace(/\D/g, '') } : {}),
@@ -459,6 +460,14 @@ export function Cadastro() {
       setEnviando(false)
       if (error) {
         setErroEnvio(error.message)
+        return
+      }
+      if (resultado === 'muitas_tentativas') {
+        setErroEnvio('Muitas tentativas com código errado. Espere uma hora ou peça um convite novo à coordenação.')
+        return
+      }
+      if (resultado !== 'ok') {
+        setErroEnvio('O convite não confere ou já não vale. Confira o código ou peça um novo à coordenação.')
         return
       }
       await queryClient.invalidateQueries({ queryKey: ['vinculos'] })
@@ -588,6 +597,18 @@ export function Cadastro() {
                   : 'Este passo liga o acesso a você, a uma unidade e a um papel.'}
               </p>
 
+              {logado && (
+                // S2 da trilha de segurança: deixa claro em que conta o convite entra
+                <div className="mb-[22px] flex flex-wrap items-center justify-between gap-2 rounded-controle border px-3 py-2">
+                  <p className="text-apoio text-tinta-apoio">
+                    Você vai aceitar este convite como <strong className="text-tinta">{perfil?.email}</strong>.
+                  </p>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void signOut()}>
+                    Não sou eu: sair
+                  </Button>
+                </div>
+              )}
+
               {!logado && (
                 <div className="mb-[22px]">
                   <Abas
@@ -611,8 +632,8 @@ export function Cadastro() {
                       className={cn(campoCls, codigoCls)}
                       inputMode="text"
                       autoComplete="one-time-code"
-                      placeholder="CC-00000"
-                      maxLength={8}
+                      placeholder="CC-00000000"
+                      maxLength={11}
                       aria-describedby="codigo-ajuda"
                       aria-invalid={codigoInvalido}
                       value={codigo}
@@ -635,7 +656,7 @@ export function Cadastro() {
                     rotulo="Número do contrato"
                     ajuda={<span id="ct-ajuda" className="text-rotulo text-tinta-sussurro">Gestão e administração entram por contrato, não por convite de unidade.</span>}
                   >
-                    <Input id="ct-num" className={cn(campoCls, codigoCls)} placeholder="CT-2026-000" maxLength={11} aria-describedby="ct-ajuda"
+                    <Input id="ct-num" className={cn(campoCls, codigoCls)} placeholder="CT-2026-000" maxLength={14} aria-describedby="ct-ajuda"
                       value={ctNum} aria-invalid={ctInvalido} onChange={(e) => { setCtNum(mascaraContrato(e.target.value)); setCtInvalido(false) }} />
                   </Campo>
                   <Button type="submit" size="bloco" className="mt-1.5" disabled={conferindo}>

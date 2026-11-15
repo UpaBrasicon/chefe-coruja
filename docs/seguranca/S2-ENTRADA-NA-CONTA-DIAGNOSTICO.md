@@ -71,6 +71,8 @@ A tela de convite para quem já está logado (`src/pages/Cadastro.tsx:42, 450`) 
 - **A (recomendada):** você confere no painel do Supabase da produção, em Authentication → Sign In / Providers → Email → "Confirm email", e me diz se está ligado. Ligado, o E2 A fecha a lacuna. Desligado, a recomendação é ligar, já que o README diz que é obrigatório. Na mesma ida ao painel, vale olhar o hook "MFA verification attempt", que o T4 do S3 precisa ligado.
 - **B:** deixar como está.
 
+**Decisão do RT, 15/11/2026:** E1 a E4 = A ("Todas A"). Para o E4, falta o RT dizer o que viu no painel da produção (Confirm email e o hook MFA verification attempt).
+
 ## Riscos
 
 - **Cadastro e aceite de convite:** são o primeiro contato da equipe com o sistema. Conferir na homologação os três caminhos (convite novo, convite com conta já existente e contrato) antes da produção.

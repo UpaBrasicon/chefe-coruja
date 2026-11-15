@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, MailCheck } from 'lucide-react'
 
-import { supabase } from '@/lib/supabase'
+import { MARCA_LINK_RECUSADO, supabase } from '@/lib/supabase'
 import { conferirSenha } from '@/lib/senha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -55,6 +55,17 @@ function modoInicial(): Modo {
   return 'pedir'
 }
 
+// S2 (E3): o link era de outra conta e havia sessão aberta de outra pessoa nesta aba.
+function avisoLinkRecusado(): string | null {
+  try {
+    if (!sessionStorage.getItem(MARCA_LINK_RECUSADO)) return null
+    sessionStorage.removeItem(MARCA_LINK_RECUSADO)
+    return 'Este link é de outra conta. Saia da conta aberta neste navegador e abra o link de novo.'
+  } catch {
+    return null
+  }
+}
+
 export default function RecuperarSenha() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -66,7 +77,7 @@ export default function RecuperarSenha() {
   const [senha, setSenha] = React.useState('')
   const [confirmacao, setConfirmacao] = React.useState('')
   const [fatorId, setFatorId] = React.useState<string | null>(null)
-  const [erro, setErro] = React.useState<string | null>(null)
+  const [erro, setErro] = React.useState<string | null>(avisoLinkRecusado)
   const turnstile = useTurnstile()
   const [ocupado, setOcupado] = React.useState(false)
 

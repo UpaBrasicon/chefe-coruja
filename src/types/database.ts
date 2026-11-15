@@ -10475,6 +10475,30 @@ export type Database = {
         }
         Returns: undefined
       }
+      aceitar_convite_com_limite: {
+        Args: {
+          p_codigo: string
+          p_conselho?: string
+          p_cpf?: string
+          p_data_nascimento?: string
+          p_nome_completo?: string
+          p_registro_numero?: string
+          p_registro_uf?: string
+          p_termo_versao: string
+        }
+        Returns: string
+      }
+      adesoes_da_organizacao: {
+        Args: never
+        Returns: {
+          criado_em: string
+          email_confirmado: boolean
+          id: string
+          organizacao_id: string
+          papel: Database["public"]["Enums"]["papel"]
+          perfil_id: string
+        }[]
+      }
       aceitar_encaminhamento: {
         Args: { p_encaminhamento: string }
         Returns: undefined

@@ -75,7 +75,7 @@ BEGIN
 
   FOREACH c IN ARRAY ARRAY['segundo_fator_status', 'segundo_fator_tentativas', 'verificar_codigo_2fa',
                            'verificar_dispositivo_2fa', 'herdar_segundo_fator', 'usar_codigo_recuperacao',
-                           'conferir_convite', 'aceitar_convite', 'horario_servidor', 'data_atual',
+                           'conferir_convite', 'aceitar_convite_com_limite', 'horario_servidor', 'data_atual',
                            'registrar_erro_cliente'] LOOP
     PERFORM pg_temp.api('/rpc/' || c, 'POST');
     IF NOT pg_temp.passa() THEN RAISE EXCEPTION 'FALHOU: a RPC % do fluxo de confirmação foi barrada', c; END IF;
