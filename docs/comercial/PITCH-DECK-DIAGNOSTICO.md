@@ -48,6 +48,8 @@
 
 **P6. Contato.** `contato@chefecoruja.com.br` e o site `chefecoruja.com.br`, os mesmos do formulário "Agendar demonstração".
 
+**Decisão do RT, 15/11/2026:** P1 a P6 = A ("Todas A").
+
 ## Regras do conteúdo
 
 - **Nenhuma promessa** de RNDS ou e-SUS integrados, de certificação SBIS/CFM ou de assinatura ICP-Brasil.
