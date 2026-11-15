@@ -11,3 +11,5 @@ node docs/comercial/one-page/gerar-pdf.mjs tmp/comercial/chefe-coruja-one-page.p
 ```
 
 O PDF, a imagem de conferência e a cópia do mascote não vão para o git.
+
+**Aprovação:** o RT aprovou a one-page em 15/11/2026 ("Aprovado").
