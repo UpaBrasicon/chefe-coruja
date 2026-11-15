@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { definirManterConectado, manterConectadoMarcado } from '@/lib/supabase'
+import { lerFimDeSessao, textoDoFim, tirarFimDeSessao } from '@/lib/fimDeSessao'
 import { cn } from '@/lib/utils'
 import { Aviso } from '@/components/ui/aviso'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -58,6 +59,10 @@ function mensagemDoLogin(msg: string): string {
   return 'Não foi possível entrar agora. Tente de novo em instantes.'
 }
 
+function abaDoNavegador(): Storage | undefined {
+  try { return window.sessionStorage } catch { return undefined }
+}
+
 export function Login() {
   const { signIn } = useAuth()
   const turnstile = useTurnstile()
@@ -69,6 +74,9 @@ export function Login() {
   const [email, setEmail] = React.useState(estado?.email ?? '')
   const [senha, setSenha] = React.useState('')
   const [manter, setManter] = React.useState(manterConectadoMarcado)
+  // S7 (C1, C2): sessão encerrada pelo servidor ou pelas 12 horas; mostra uma vez
+  const [fimDeSessao] = React.useState(() => lerFimDeSessao(abaDoNavegador()))
+  React.useEffect(() => { tirarFimDeSessao(abaDoNavegador()) }, [])
   const [erro, setErro] = React.useState<string | null>(null)
   const [carregando, setCarregando] = React.useState(false)
   const [veuChegada, setVeuChegada] = React.useState(() => !!estado?.daLanding && !movimentoReduzido())
@@ -170,6 +178,9 @@ export function Login() {
 
           {estado?.aviso && passo === 'entrar' && (
             <Aviso tom="conforme" icone={CheckCircle2} className="mb-5">{estado.aviso}</Aviso>
+          )}
+          {!estado?.aviso && fimDeSessao && passo === 'entrar' && (
+            <Aviso tom="informacao" className="mb-5">{textoDoFim(fimDeSessao)}</Aviso>
           )}
 
           <div role="tablist" aria-label="Entrar ou ativar convite" className="mb-[26px] grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
