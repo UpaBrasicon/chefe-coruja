@@ -92,3 +92,13 @@ test('paliativo: sedação com midazolam 1 mg/mL, manutenção 50% do bolus, ale
   assert.equal(sedacaoPaliativa(5, 21)!.acimaDoLimite, true)
   assert.deepEqual([SEDACAO_PALIATIVA.bolusMg, SEDACAO_PALIATIVA.manutencaoMgH], [[2.5, 5], [0.5, 2.5]])
 })
+
+test('dor (cap. 9): CDC 2022 de opioides ao lado do manual', async () => {
+  const d = await import('./dorAnalgesia.ts')
+  assert.equal(d.fichaDorAnalgesiaAdulto.versao, '2026-11-14.1')
+  assert.match(d.fichaDorAnalgesiaAdulto.fontes[0].citacao, /Manual de Medicina de Emergência/)
+  assert.ok(d.fichaDorAnalgesiaAdulto.fontes.includes(d.CDC_OPIOIDES_2022))
+  assert.match(d.CDC_OPIOIDES_2022.citacao, /exclui doença falciforme/)
+  assert.equal(d.DIRETRIZ_DOR_2022.length, 6)
+  assert.equal(d.DIRETRIZ_DOR_2022.find((x) => x.tema === 'Naloxona')!.grau, 'categoria A, evidência tipo 4')
+})

@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
 import {
-  ADJUVANTES_TEXTO, DOR_NEUROPATICA, ESCADA_ANALGESICA, ESCADA_PAGINA, OCTREOTIDE, OPIOIDES, QUETAMINA_ANALGESICA,
+  ADJUVANTES_TEXTO, DIRETRIZ_DOR_2022, DOR_NEUROPATICA, ESCADA_ANALGESICA, ESCADA_PAGINA, OCTREOTIDE, OPIOIDES, QUETAMINA_ANALGESICA,
   esquemasOpioide, fichaDorAnalgesiaAdulto, intensidadeNumerica, meperidinaMaximos, morfinaEvMl, opioidePorPeso,
   quetaminaAnalgesica, type Faixa, type Opioide,
 } from '@/clinico/adulto/dorAnalgesia'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -82,6 +83,14 @@ export function DorAnalgesiaAdulto() {
           pagina={QUETAMINA_ANALGESICA.cap104.pagina}
           errata={QUETAMINA_ANALGESICA.errata}
         />
+      </Bloco>
+      <Bloco titulo="CDC 2022 — ao lado do manual" descricao="Opioide na dor aguda do adulto que recebe alta, pelo guia do CDC de 2022 (categoria A ou B e tipo de evidência), lido no texto integral. Não vale para doença falciforme, câncer e cuidados paliativos.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_DOR_2022.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
       </Bloco>
     </ToolLayout>
   )
