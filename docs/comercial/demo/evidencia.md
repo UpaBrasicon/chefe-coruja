@@ -40,7 +40,12 @@ Os tempos acima são da conferência automática. O tempo de 15 minutos sai do e
 5. **Roteiro de 07/10 desatualizado:** ele escalava a mesma pessoa em três setores ao mesmo tempo, o que a regra de escala sem sobreposição recusa hoje; e avisava para não recarregar a triagem, o que já não vale.
 6. **Escala de duas contas:** com o `03` rodado para duas contas, a que não apresenta aparece como "sem check-in" nas divergências do Painel.
 
+## Decisões do RT sobre os achados (15/11/2026: "Todas A")
+
+1. A conta @chefecoruja.com.br da homologação foi renomeada de "Teste Homologação" para **"Equipe Chefe Coruja"** e é a conta da demo.
+2. O `02` passou a gravar o primeiro atendimento de cada paciente da observação. Rodado de novo: os 6 pacientes da observação têm o evento de atendimento, e a porta segue com 8 de 11 leitos ocupados.
+6. A conta de teste `gestor.ubs.f5` saiu da Jardim Primavera: 3 plantões e 4 papéis desligados (`ativo = false`), sem apagar nada.
+
 ## Falta
 
-- Decisões do RT sobre os achados 1, 2 e 6.
-- Ensaio cronometrado do RT, até 15 minutos no fluxo principal: é a validação interna do item.
+- Ensaio cronometrado do RT com a conta "Equipe Chefe Coruja", até 15 minutos no fluxo principal: é a validação interna do item.

@@ -392,6 +392,20 @@ BEGIN
        SET criada_em = v_agora - make_interval(mins => c.m_desfecho),
            prazo = v_agora - make_interval(mins => c.m_desfecho) + interval '6 hours'
      WHERE tipo = 'observacao' AND internacao_id IN (SELECT i.id FROM public.internacoes i WHERE i.episodio_id = c.ep);
+    -- primeiro atendimento na observação (roteiro da demo, achado 2 do RT em 15/11/2026):
+    -- sem ele, o painel mostra "aguardando primeiro atendimento há 5 h". A equipe
+    -- fictícia não tem médico na Observação Adulto, e observacao_atender exige
+    -- plantão no setor; por isso o evento entra direto, em nome do médico que
+    -- atendeu na porta, 12 min depois da entrada (ou na metade do tempo, se menor).
+    IF c.destino = 'observacao' THEN
+      INSERT INTO public.observacao_eventos (unidade_id, paciente_id, internacao_id, tipo, autor_id, registrado_em)
+      SELECT i.unidade_id, i.paciente_id, i.id, 'atendimento',
+             (SELECT r.autor_id FROM public.atendimento_registros r WHERE r.episodio_id = c.ep ORDER BY r.criado_em LIMIT 1),
+             v_agora - make_interval(mins => c.m_desfecho) + make_interval(mins => least(12, c.m_desfecho / 2))
+        FROM public.internacoes i
+       WHERE i.episodio_id = c.ep
+         AND NOT EXISTS (SELECT 1 FROM public.observacao_eventos o WHERE o.internacao_id = i.id AND o.tipo = 'atendimento');
+    END IF;
   END LOOP;
 END $$;
 SET LOCAL session_replication_role = origin;

@@ -10,7 +10,7 @@ Roteiros da "Rede de Demonstração": a UPA 24h Jardim Primavera, com equipe e p
 |---|---|---|
 | `01_rede_demonstracao.sql` | Organização, unidade, setores, leitos, 24 pessoas fictícias sem senha, vínculos e a escala 12x36 do mês corrente e do seguinte, publicada pela coordenadora | Uma vez, e de novo quando virar o mês |
 | `02_plantao_agora.sql` | Apaga os pacientes da unidade, faz o check-in dos plantões já começados e cria o plantão de agora pelas funções do banco, como cada pessoa de plantão | Antes de cada captura ou apresentação |
-| `03_acesso_conta.sql` | Dá à conta indicada os papéis gestor e plantonista na unidade e a escala de hoje no Pronto Socorro | Uma vez por conta (troque o e-mail antes) |
+| `03_acesso_conta.sql` | Dá à conta indicada os papéis gestor, plantonista, recepção e enfermeiro na unidade e a escala de hoje no Pronto Socorro (roteiro da demo: `docs/comercial/demo/`) | Uma vez por conta (troque o e-mail antes) |
 | `capturar-telas.mjs` | Entra como a coordenadora fictícia por um link de acesso único e tira a porta, o painel do gestor e a escala em 1424 × 749, em JPG | Logo depois do `02`, para as telas da página de entrada |
 | `99_limpar_rede_demonstracao.sql` | Apaga a rede inteira, inclusive os acessos dados pelo 03 | Só quando a unidade não for mais usada |
 
@@ -54,6 +54,7 @@ Os arquivos não usam comandos do psql (`\set`) nem senha. Por isso não passam 
 
 ## Limites
 
+- **Primeiro atendimento na observação.** A equipe fictícia não tem médico na Observação Adulto, e `observacao_atender` exige plantão no setor. Por isso o `02` grava o evento de atendimento direto, em nome do médico que atendeu na porta, 12 min depois da entrada. Sem ele, o painel da observação mostraria "aguardando primeiro atendimento" em todos.
 - **Sem prescrição.** A prescrição exige dose, via e frequência escritas, e o roteiro não inventa dose. O indicador "medicação pendente" fica em 0.
 - **Autoria.** Tudo sai em nome da equipe de plantão na hora em que o `02` roda, inclusive as altas "de mais cedo". É assim porque as funções só aceitam quem está de plantão agora.
 - **Check-in da conta do `03`.** Fica para quem entra, como em `supabase/homolog/demo-preparar.sql`. Sem ele, depois de 30 min a porta do médico fecha. As telas do gestor não dependem da escala.

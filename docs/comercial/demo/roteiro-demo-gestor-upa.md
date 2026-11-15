@@ -24,7 +24,7 @@
 
 **Não usar dado real** em nenhum campo. **Não ditar dose:** na prescrição, quem apresenta digita o que prescreveria. O sistema não sugere dose; é regra do produto e vale mostrar.
 
-**O nome da conta aparece na tela:** no check-in da auditoria, como autor da classificação, da prescrição e da checagem. Use uma conta com nome neutro.
+**O nome da conta aparece na tela:** no check-in da auditoria, como autor da classificação, da prescrição e da checagem. Na homologação, a conta da demo é a @chefecoruja.com.br, renomeada para "Equipe Chefe Coruja" (decisão do RT, 15/11/2026). Só ela fica na escala da unidade: duas contas na escala fazem a outra aparecer como "sem check-in".
 
 ---
 
@@ -43,7 +43,7 @@ Todo o fluxo fica no Pronto Socorro, o setor da escala de quem apresenta. A regr
 | 8–9 | Plantonista | Aba **Prescrição** | Mostrar o aviso **Alergia não registrada**. Em **Novo item**, Medicamento: o sistema pede o **peso** antes; registrar o peso; buscar o medicamento, **digitar a dose**, a via e **Agora**; prescrever | "A dose é do médico; o campo diz 'escrita pelo médico'. Sem alergia registrada, ele avisa; sem peso, ele não deixa prescrever medicamento." |
 | 9–10 | Enfermeiro | **Checagem** | Trocar perfil para **Enfermeiro**. No item prescrito, **Feito**: aparece "Última checagem", com data, hora e nome | "A checagem sai com nome e hora. 'Não feito' e 'Recusado' pedem motivo: nada some." |
 | 10–11 | Plantonista | **Atendimento** › Em atendimento › aba **Desfecho** | Trocar perfil para **Plantonista**. **Abrir atendimento**; **Alta médica**: o CID de alta vem do atendimento; mostrar o "Antes de confirmar"; **Confirmar desfecho** | "Antes da alta, o sistema confere o registro, a hipótese, os exames e o CID. A alta fecha o atendimento, e o paciente sai da porta na hora." |
-| 11–12 | Gestor | **Porta** e **Leitos › Observação** | Trocar perfil para **Gestor**. A porta mudou. Em **Observação**, mostrar a coluna "Prazo de 6 h" | "Tudo o que aconteceu nos últimos dez minutos já está aqui. Na observação, o relógio das 6 horas tem consequência clínica." |
+| 11–12 | Gestor | **Porta** e **Leitos › Observação** | Trocar perfil para **Gestor**. A porta mudou. Em **Observação**, mostrar a situação de cada paciente e a coluna "Prazo de 6 h" | "Tudo o que aconteceu nos últimos dez minutos já está aqui. Na observação, o relógio das 6 horas tem consequência clínica." |
 | 12–13 | Gestor | **Painel** | Na **Auditoria de check-in**, filtrar **Divergências**: o check-in de quem apresenta, com atraso, fora do raio e com a justificativa. Na caixa de cima, perguntar: "Qual a taxa de ocupação agora?" | "Toda ação tem autor. E o senhor pergunta em português, sem nome de paciente na resposta." |
 | 13–15 | — | (fala) | Fechar com segurança | "Cada acesso pede segundo fator; a tela bloqueia sozinha com 10 minutos parada; toda ação tem autor numa trilha que denuncia adulteração; os dados ficam em São Paulo, com cópia diária cifrada guardada por 20 anos. Temos documento de segurança e LGPD para a sua TI." |
 
