@@ -38,3 +38,9 @@ A EAU 2025 confirma o manual na imagem e na analgesia. Duas coisas são novas:
 - A migration foi aplicada, e as duas fichas estão aguardando aprovação.
 - A ficha foi ingerida em 8 trechos e a nota em 4. A API foi reiniciada.
 - Os testes passam, e o typecheck e o lint estão limpos.
+
+## Produção do #730, 14/11/2026
+
+- A migration `20270414000047` foi aplicada antes do merge. O #730 foi mesclado com o CI verde.
+- Foram ingeridos 2 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As três respostas saíram como na homologação.

@@ -27,3 +27,9 @@ Em 14/11/2026 o RT decidiu Q1 a Q4 = A e liberou a produção do lote 8 inteiro.
 - A migration foi aplicada, e a nota está aguardando aprovação.
 - A nota foi ingerida em 3 trechos, e a API foi reiniciada.
 - Os testes da nota passam, e o typecheck está limpo.
+
+## Produção do #729, 14/11/2026
+
+- A migration `20270414000046` foi aplicada antes do merge. O #729 foi mesclado com o CI verde.
+- Foram ingeridos 1 arquivo, e a API foi reiniciada. O Vercel publicou o master.
+- As três respostas saíram como na homologação.
