@@ -84,3 +84,25 @@ Cada passo passa pela homologação e pelo CI verde antes da produção, que ped
 ## Decisão do RT (14/11/2026)
 
 Q1 a Q4 = A, e a produção do lote 7 inteiro está liberada. Cada passo segue pela homologação e pelo CI verde antes da produção.
+
+## Q4: capítulos sem diretriz nova (registro)
+
+Pela Q4 = A, os cap. 69 (distúrbios acidobásicos) e 101 (acidentes por animais peçonhentos) foram revistos e ficam sem nota.
+
+| Cap. | O que a busca no PubMed achou (14/11/2026) | O que segue valendo |
+|---|---|---|
+| 69 | nenhuma diretriz de sociedade depois do manual; a mais nova é a SRLF/SFMU 2019, anterior a ele | o manual; a ficha do bicarbonato já traz BICAR-ICU e ADA 2024 |
+| 101 | nenhuma diretriz do MS nem da OMS nova no PubMed; a chinesa 2024 e a WMS 2026 não servem à fauna brasileira | o manual e os PCDT do MS, já na ficha de animais peçonhentos |
+
+## Lote 7 concluído (14/11/2026)
+
+| Passo | PR | Doc |
+|---|---|---|
+| Q1: notas dos cap. 42, 63 e 89 | #722 | `HCFMUSP-LOTE7-Q1-NOTAS-42-63-89.md` |
+| Q2: cap. 51 | #723 | `HCFMUSP-LOTE7-Q2-HDB.md` |
+| Q2: cap. 8 | #724 | `HCFMUSP-LOTE7-Q2-DELIRIUM.md` |
+| Q2: cap. 36 | #725 | `HCFMUSP-LOTE7-Q2-DERRAME-PLEURAL.md` |
+| Q3: notas dos cap. 90, 74, 54 e 29 | #726 | `HCFMUSP-LOTE7-Q3-NOTAS-90-74-54-29.md` |
+| Q4: cap. 69 e 101 | este registro | — |
+
+Com o lote 7, 84 dos 108 capítulos foram revistos. Faltam 24, todos de risco menor.

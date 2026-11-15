@@ -44,3 +44,9 @@ A produção já tinha o texto aberto da GED 2.0 no acervo de artigos CC BY, e v
 - A migration foi aplicada, e as duas fichas estão aguardando aprovação.
 - O 4AT foi ingerido em 2 trechos e a nota em 7. A API foi reiniciada.
 - Os testes passam, e o typecheck e o lint estão limpos.
+
+## Produção do #724, 14/11/2026
+
+- A migration `20270414000043` foi aplicada antes do merge. O #724 foi mesclado com o CI verde.
+- Foram ingeridos 2 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As cinco respostas saíram como na homologação.
