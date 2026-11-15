@@ -2507,7 +2507,7 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 | Ordem | Material | Subtarefas | Critério de pronto | Pronto até |
 |---|---|---|---|---|
 | 1 | Demo comercial | Roteiro; base fictícia; falas; objeções; tempo de 15 minutos | Demo validada internamente | Fim da Fase 0 |
-| 2 | One-page | Dor; solução; módulos prontos; diferenciais; roadmap; contato | PDF pronto | Fase 1 |
+| 2 | One-page | Dor; solução; módulos prontos; diferenciais; roadmap; contato | PDF pronto | Fase 1. **15/11/2026:** atualizada para a rede (O1–O5 = A, `docs/comercial/ONE-PAGE-DIAGNOSTICO.md`): 10 blocos prontos, diferenciais, "fora da oferta atual" só com RNDS e ICP-Brasil, contato real, sem preço. Fonte em `docs/comercial/one-page/`. Espera a aprovação do RT |
 | 3 | Pitch deck | 8-10 slides; problema; solução; demo; segurança; implantação; próximos passos | Deck pronto para reunião | Fase 1. **15/11/2026:** 10 slides no tipo "Slides" do Claude, para a secretaria e o gestor de rede (P1–P6 = A, `docs/comercial/PITCH-DECK-DIAGNOSTICO.md`); texto e fontes em `docs/comercial/pitch/slides.md`. **Concluído:** aprovado pelo RT em 15/11/2026 ("Aprovado") |
 | 4 | Documento segurança/LGPD | RLS; auditoria; 2FA; backup/PITR; borda; limites; responsabilidades | Enviável para TI/jurídico | Fim da Fase 0 |
 | 5 | Proposta de piloto | Escopo; duração; métricas; responsabilidades; preço/condição | Documento pronto para cliente | Fase 1 |
