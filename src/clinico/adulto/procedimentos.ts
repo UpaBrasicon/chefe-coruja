@@ -16,7 +16,35 @@ export const ESC_PACING_2021: Fonte = {
   url: 'https://doi.org/10.1093/eurheartj/ehab364',
 }
 
-export const fichaAcessosAdulto = fichaAdulto('adulto-acessos-calibres', 'Acessos: calibres, French e intraósseo (adulto)', 'cap. 105 Acessos na emergência, p. 1396–1414 (Tabelas 1 e 2)')
+const fichaAcessosLivro = fichaAdulto('adulto-acessos-calibres', 'Acessos: calibres, French e intraósseo (adulto)', 'cap. 105 Acessos na emergência, p. 1396–1414 (Tabelas 1 e 2)')
+
+// Lote 9 da revisão do HCFMUSP, Q2 (decisão do RT de 15/11/2026): diretriz
+// alemã S1 2025 de acesso vascular na sala de reanimação, lida no texto
+// integral, ao lado do manual. Os calibres, o French e o intraósseo da tela
+// continuam os do livro.
+export const DGAI_ACESSOS_2025: Fonte = {
+  citacao: 'Struck MF, Bieler D, Henck A, et al. Vascular access for initial treatment of adult emergency patients in the resuscitation room: short summary of recommendations from the German national S1 guideline. Int J Emerg Med. 2025;18(1):187 (PMID 41039227). Texto integral lido; diretriz S1 de cinco sociedades alemãs (DGAI, DGINA, DGIIN, DGNI e DGU), por consenso de especialistas.',
+  url: 'https://doi.org/10.1186/s12245-025-01015-x',
+}
+
+const S1 = 'S1, consenso de especialistas'
+export const DIRETRIZ_ACESSOS_2025: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Acessos periféricos na sala de reanimação', diretriz: 'Ter pelo menos dois acessos venosos periféricos calibrosos, com fluxo de pelo menos 100 mL/min (por exemplo, 18 G). O acesso do pré-hospitalar pode ser usado depois de examinado', grau: S1, fonte: 'Alemã S1 2025', livro: 'calibres e cores nas Tabelas 1 e 2; o cap. 105 não fixa quantos acessos (p. 1396–1397)' },
+  { tema: 'Intraósseo', diretriz: 'Na ameaça imediata à vida com falha do periférico, fazer o intraósseo; na PCR, logo, se não houver acesso venoso rápido. Na PCR com só o intraósseo, puncionar também um periférico', grau: S1, fonte: 'Alemã S1 2025', livro: 'intraósseo na PCR quando o periférico não puder ser obtido, e no choque, queimadura extensa, politrauma, estado de mal e desidratação grave após várias tentativas (p. 1409); trocar por acesso venoso assim que possível, no máximo 24 h (p. 1414)' },
+  { tema: 'Vasopressor por acesso periférico', diretriz: 'A infusão contínua de vasopressor pode ser feita com segurança por acesso periférico, se o cateter estiver bem intravascular, o braço em repouso e a solução pouco concentrada', grau: S1, fonte: 'Alemã S1 2025', livro: 'o acesso central está indicado para medicações vasoconstritoras (p. 1399)' },
+  { tema: 'Quando passar o acesso central', diretriz: 'Passar o cateter central se o acesso periférico for insuficiente e houver instabilidade circulatória previsível. No paciente compensado, o cateter central e a linha arterial não devem atrasar o diagnóstico inicial (por exemplo, a TC)', grau: S1, fonte: 'Alemã S1 2025', livro: 'indicado na impossibilidade de acesso periférico e para medicações vasoconstritoras, hiperosmolares ou que causam flebite (p. 1399)' },
+  { tema: 'Ultrassom no acesso central', diretriz: 'Passar o cateter central guiado por ultrassom sempre que possível; saber fazer pela técnica de reparos anatômicos quando não houver aparelho', grau: S1, fonte: 'Alemã S1 2025', livro: 'idealmente, as punções venosas devem ser guiadas por USG (p. 1405)' },
+  { tema: 'Conferir a posição do cateter central', diretriz: 'A curva de pressão arterial mostra o mau posicionamento arterial; o ECG endovascular confere a ponta do cateter no ritmo sinusal; o ecocardiograma com bolus de soro pelo cateter confere a posição à beira do leito; a TC inicial do politrauma também serve', grau: S1, fonte: 'Alemã S1 2025', livro: 'radiografia de tórax após punção jugular ou subclávia; alternativa: ecocardiograma à beira do leito com microbolhas (p. 1408)' },
+  { tema: 'Acesso passado sem assepsia', diretriz: 'Se a emergência impediu a técnica asséptica, retirar o cateter e passar outro em outro sítio em até 24 h. Antibiótico profilático pelo acesso não está indicado', grau: S1, fonte: 'Alemã S1 2025', livro: 'o cap. 105 não trata do ponto' },
+  { tema: 'Sítio do cateter central', diretriz: 'Na insuficiência respiratória, evitar a subclávia (pneumotórax); preferir jugular interna ou femoral. Com trombolítico ou anticoagulante, evitar a subclávia e preferir a femoral esquerda (a direita fica para angiografia)', grau: S1, fonte: 'Alemã S1 2025', livro: 'na coagulopatia, sítios compressíveis e de fácil monitorização, como jugular interna e femoral, e punção guiada por USG (p. 1400)' },
+]
+
+export const fichaAcessosAdulto: Ficha = {
+  ...fichaAcessosLivro,
+  versao: '2026-11-15.1',
+  fontes: [...fichaAcessosLivro.fontes, DGAI_ACESSOS_2025],
+  revisadoEm: '15/11/2026 (diretriz alemã S1 2025 de acesso vascular na sala de reanimação, no texto integral, ao lado do manual; lote 9 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
+}
 
 // Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026): o
 // estudo de captura no marca-passo transcutâneo entra como nota no bloco do

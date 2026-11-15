@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { DGAI_ACESSOS_2025, DIRETRIZ_ACESSOS_2025, fichaAcessosAdulto } from './procedimentos.ts'
 import { CDC_OPIOIDES_2022, DIRETRIZ_DOR_2022, EAPC_SEDACAO_2024, fichaDorAnalgesiaAdulto, fichaPaliativoAdulto } from './dorAnalgesia.ts'
 import { DIRETRIZ_COLICA_2025, EAU_UROLITIASE_2025, fichaColicaRenalAdulto } from './colicaRenal.ts'
 import { AIR_METANALISE_2025, WSES_APENDICITE_2025, alvarado } from '../escores/alvarado.ts'
@@ -171,6 +172,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap55-ascite': 'ascite no adulto (cirrose): paracentese diagnóstica, paracentese de alívio ou de grande volume, reposição de albumina, cultura do líquido ascítico em frasco de hemocultura, nefrotóxicos, AINE',
   'nota-hcfmusp-cap104-paliativos-sintomas': 'manejo de sintomas em cuidados paliativos no PS, adulto: sedação paliativa, sofrimento refratário, proporcionalidade, midazolam, hidratação no fim de vida',
   'nota-hcfmusp-cap108-toracocentese': 'toracocentese no adulto: punção pleural guiada por ultrassom (POCUS), pneumotórax, amostra do líquido pleural, citologia, frasco de hemocultura',
+  'nota-hcfmusp-cap105-acessos': 'acessos vasculares na emergência e na sala de reanimação, adulto: acesso venoso periférico calibroso, intraósseo, vasopressor ou noradrenalina por acesso periférico (veia periférica), cateter venoso central guiado por ultrassom, posição do cateter, linha arterial, sítio do cateter (subclávia, jugular, femoral)',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -1098,10 +1100,18 @@ export const notaHcfmuspCap104 = notaLote9('nota-hcfmusp-cap104-paliativos-sinto
 export const notaHcfmuspCap48 = notaLote9('nota-hcfmusp-cap48-pre-hospitalar', 'Nota de atualização — manual HC, cap. 48: atendimento pré-hospitalar', 'cap. 48, p. 658–678', fichaTraumaAdulto, [
     daLista(DIRETRIZ_TRAUMA, 'Compressão e torniquete', 'XABCDE: o X é o controle de hemorragias externas exsanguinantes (p. 668)'),
     { tema: 'Ácido tranexâmico no pré-hospitalar', diretriz: 'PATCH-Trauma (NEJM 2023; ensaio, não diretriz): 1.310 adultos com trauma grave e suspeita de coagulopatia; TXA pré-hospitalar (1 g + 1 g em 8 h) contra placebo. Não aumentou a sobrevida com bom desfecho funcional em 6 meses (53,7% × 53,5%); a morte em 28 dias foi menor (17,3% × 21,8%), como desfecho secundário, sem diferença em eventos oclusivos', manual: 'o cap. 48 não trata do ponto' },
-    { tema: 'Sangue total no pré-hospitalar', diretriz: 'Dois ensaios randomizados (NEJM 2026; não são diretriz): o sangue total pré-hospitalar não foi superior aos componentes', manual: 'o cap. 48 não trata do ponto' },
+    { tema: 'Sangue total no pré-hospitalar (ensaios; sem diretriz nesta nota)', diretriz: 'Não há diretriz aqui, só ensaios. Dois ensaios randomizados (NEJM 2026): o sangue total pré-hospitalar não foi superior aos componentes', manual: 'o cap. 48 não trata do ponto' },
   ], [EUROPEIA_SANGRAMENTO_TRAUMA_2023, PATCH_TRAUMA_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026])
 
-export const NOTAS_HCFMUSP_LOTE9: NotaHcfmusp[] = [notaHcfmuspCap48, notaHcfmuspCap55, notaHcfmuspCap104, notaHcfmuspCap108]
+/** cap. 105: diretriz alemã S1 2025 de acesso vascular na sala de reanimação (Q2, lida no texto integral). */
+export const notaHcfmuspCap105 = notaLote9('nota-hcfmusp-cap105-acessos', 'Nota de atualização — manual HC, cap. 105: acessos na emergência', 'cap. 105, p. 1395–1415', fichaAcessosAdulto,
+  DIRETRIZ_ACESSOS_2025.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [DGAI_ACESSOS_2025])
+notaHcfmuspCap105.ficha.revisadoEm = '15/11/2026 (lote 9 da revisão do HCFMUSP, Q2: itens da diretriz alemã S1 2025, lida no texto integral; aguarda aprovação do RT)'
+
+notaHcfmuspCap48.ficha.versao = '2026-11-15.2'
+
+export const NOTAS_HCFMUSP_LOTE9: NotaHcfmusp[] = [notaHcfmuspCap48, notaHcfmuspCap55, notaHcfmuspCap104, notaHcfmuspCap105, notaHcfmuspCap108]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8, ...NOTAS_HCFMUSP_LOTE9]
 

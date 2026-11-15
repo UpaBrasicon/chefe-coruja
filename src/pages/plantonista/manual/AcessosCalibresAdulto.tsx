@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  AGULHADOS, ERRATA_PROCEDIMENTOS, FLEXIVEIS, LIDOCAINA_IO, MM_POR_FRENCH, PERMANENCIA_IO_MAX_H, SITIOS_IO_ADULTO, agulhaIoMotor, fichaAcessosAdulto,
+  AGULHADOS, DIRETRIZ_ACESSOS_2025, ERRATA_PROCEDIMENTOS, FLEXIVEIS, LIDOCAINA_IO, MM_POR_FRENCH, PERMANENCIA_IO_MAX_H, SITIOS_IO_ADULTO, agulhaIoMotor, fichaAcessosAdulto,
   frenchDoCalibre, frenchParaMm, lidocainaIo, mmParaFrench, type Calibre,
 } from '@/clinico/adulto/procedimentos'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -88,6 +88,15 @@ export function AcessosCalibresAdulto() {
           pagina={LIDOCAINA_IO.pagina}
         />
         {SITIOS_IO_ADULTO.map((s) => <LinhaManual key={s.sitio} nome={s.sitio} texto={s.local} pagina={s.pagina} />)}
+      </Bloco>
+
+      <Bloco titulo="Diretriz alemã S1 2025 — ao lado do manual" descricao="Acesso vascular do adulto na sala de reanimação, pela diretriz S1 de cinco sociedades alemãs (consenso de especialistas), lida no texto integral. Os calibres e o intraósseo acima continuam os do manual.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_ACESSOS_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
       </Bloco>
 
       <Bloco titulo="Errata e notas">
