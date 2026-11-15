@@ -30,7 +30,8 @@ CREATE TEMP TABLE protocolo (p text) ON COMMIT DROP;
 GRANT ALL ON protocolo TO authenticated;
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated"}', true);
-SELECT set_config('request.headers', '{"x-forwarded-for":"200.1.2.3, 10.0.0.1","user-agent":"Teste/1.0"}', true);
+-- o gateway acrescenta o IP real no fim; o primeiro item é do cliente (S6, B1)
+SELECT set_config('request.headers', '{"x-forwarded-for":"10.0.0.1, 200.1.2.3","user-agent":"Teste/1.0"}', true);
 
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM public.prescricoes WHERE paciente_id = '23000000-0000-4000-8000-000000000001') THEN

@@ -1,6 +1,8 @@
 // Regras puras do formulário "Agendar demonstração" (pedido 8, J3), sem Deno e
 // sem rede, para rodar no teste do Node (regras.test.ts).
 
+import { ipConfiavel } from '../_shared/borda.ts'
+
 export type Pedido = { nome: string; email: string; telefone: string; unidade: string; mensagem: string }
 
 export type Leitura =
@@ -55,10 +57,13 @@ export function jsonAscii(valor: unknown): string {
   return JSON.stringify(valor).replace(/[\u007f-￿]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'))
 }
 
-/** Endereço de rede de quem pediu: o primeiro do x-forwarded-for, que a borda do Supabase preenche. */
+/**
+ * Endereço de rede de quem pediu: o cf-connecting-ip ou o ÚLTIMO item do
+ * x-forwarded-for. O primeiro item é de quem chamou e pode ser inventado para
+ * furar o limite por endereço (S6, B1).
+ */
 export function enderecoDaRede(cabecalhos: Headers): string {
-  const encaminhado = cabecalhos.get('x-forwarded-for')?.split(',')[0]?.trim()
-  return encaminhado || cabecalhos.get('cf-connecting-ip')?.trim() || cabecalhos.get('x-real-ip')?.trim() || 'desconhecido'
+  return ipConfiavel((n) => cabecalhos.get(n)) || 'desconhecido'
 }
 
 /** Resumo do endereço com um sal secreto: a tabela de contagem nunca guarda o endereço. */

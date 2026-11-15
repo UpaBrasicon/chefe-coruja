@@ -17,6 +17,7 @@
 // no cabeçalho X-Coruja-Borda, para o IP do X-Coruja-IP-Cliente valer.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { lerCorpoLimitado } from '../_shared/borda.ts'
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { relatarErro } from '../_shared/sentry.ts'
 import { caminhoDaApi, chaveDoCabecalho, interpretar, ipDeOrigem, PORTA_LEITURA, problema, type CodigoErro } from './contrato.ts'
@@ -90,9 +91,11 @@ async function portaFinanceiro(req: Request, url: URL, requisicao: string): Prom
 
   let dados: Record<string, unknown> = rota.dados
   if (rota.metodo === 'POST') {
-    if (Number(req.headers.get('content-length') ?? '0') > 64 * 1024) return erro(413, 'requisicao_invalida', 'Corpo passa de 64 KB.', requisicao)
+    // S6 (B3): o limite vale para o corpo lido, não só para o Content-Length
+    const lido = await lerCorpoLimitado(req, 64 * 1024)
+    if ('excedeu' in lido) return erro(413, 'requisicao_invalida', 'Corpo passa de 64 KB.', requisicao)
     let corpo: unknown
-    try { corpo = await req.json() } catch { return erro(400, 'requisicao_invalida', 'Corpo não é JSON.', requisicao) }
+    try { corpo = JSON.parse(lido.texto) } catch { return erro(400, 'requisicao_invalida', 'Corpo não é JSON.', requisicao) }
     const r = lerRetorno(corpo)
     if ('erro' in r) return erro(r.erro.status, r.erro.codigo, r.erro.detalhe, requisicao)
     dados = { ...dados, ...r }
@@ -161,9 +164,11 @@ async function portaFhir(req: Request, url: URL, requisicao: string): Promise<Re
       if ('erro' in p) return fhirErro(p.erro.status, p.erro.detalhe, requisicao)
       dados = p
     } else {
-      if (Number(req.headers.get('content-length') ?? '0') > CORPO_MAX) return fhirErro(413, 'Corpo passa de 15 MB.', requisicao)
+      // S6 (B3): o limite vale para o corpo lido, não só para o Content-Length
+      const lido = await lerCorpoLimitado(req, CORPO_MAX)
+      if ('excedeu' in lido) return fhirErro(413, 'Corpo passa de 15 MB.', requisicao)
       let corpo: unknown
-      try { corpo = await req.json() } catch { return fhirErro(400, 'Corpo não é JSON.', requisicao) }
+      try { corpo = JSON.parse(lido.texto) } catch { return fhirErro(400, 'Corpo não é JSON.', requisicao) }
       if (rota.acao === 'coleta') {
         const s = lerSpecimen(corpo)
         if ('erro' in s) return fhirErro(s.erro.status, s.erro.detalhe, requisicao)
