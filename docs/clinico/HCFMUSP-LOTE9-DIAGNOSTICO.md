@@ -13,7 +13,7 @@
 
 ## Onde estamos no livro
 
-Lotes 1 a 8: 96 capítulos revistos. O lote 8 fecha quando o #734 (cap. 35 e 107) chegar à produção. Faltam estes 12.
+Lotes 1 a 8: 96 capítulos revistos, todos na produção (o lote 8 fechou com o #734). Faltam estes 12.
 
 ## Capítulos do lote 9
 
@@ -77,3 +77,7 @@ Lotes 1 a 8: 96 capítulos revistos. O lote 8 fecha quando o #734 (cap. 35 e 107
 4. Cap. 1, 73, 77, 103 e 106: registro no BACKLOG.
 
 Cada passo passa pela homologação e pelo CI verde antes da produção, que pede o ok do RT. Com o lote 9, a revisão chega aos 108 capítulos.
+
+## Decisão do RT (15/11/2026)
+
+Q1 a Q4 = A ("Ok todas a"). Cada passo segue pela homologação e pelo CI verde; a produção pede o ok do RT.

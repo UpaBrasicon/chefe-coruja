@@ -92,16 +92,13 @@ Pela Q4 = A, os cap. 52 (diarreia) e 26 (dispneia) foram revistos e ficam sem no
 | 52 | nenhuma diretriz de sociedade depois do manual; a mais nova é a IDSA 2017, anterior a ele | sem ficha de adulto |
 | 26 | nenhuma diretriz de sociedade nova e específica; a ACP 2021 de ultrassom na dispneia é anterior ao manual | `adulto-dispneia-abordagem`, pelo manual |
 
-## Pendentes: cap. 35 e 107
+## Cap. 35 e 107: resolvidos em 15/11/2026
 
-- **O problema:** as duas fontes estão em sites que pediram verificação de navegador ("Um momento…"), no Chrome do RT e no navegador do app. A verificação não foi contornada.
-  - Cap. 35: declaração da BTS 2023 sobre pneumonia aspirativa (thorax.bmj.com). Não tem resumo no PubMed.
-  - Cap. 107: CCS/CHRS 2026 de dispositivos implantáveis (onlinecjc.ca). O resumo não traz nada específico do PS.
-- **Opções do RT:**
-  - passar a verificação nos sites, e então os dois capítulos seguem a Q2 e a Q3;
-  - ou fechar os dois como revistos sem leitura possível.
+- As duas fontes estavam em sites que pediram verificação de navegador. A verificação não foi contornada.
+- Em 15/11/2026 o RT passou a verificação no Chrome dele. A BTS 2023 (cap. 35), a CCS/CHRS 2026 (cap. 107) e a AAO 2026 (cap. 85) foram lidas no texto integral.
+- Resultado: notas dos cap. 35 e 107 e a AAO 2026 na nota do cap. 85 (#734). Detalhes em `HCFMUSP-LOTE8-PENDENTES-35-107-85.md`.
 
-## Lote 8 até aqui (14/11/2026)
+## Lote 8 concluído (15/11/2026)
 
 | Passo | PR | Doc |
 |---|---|---|
@@ -110,6 +107,6 @@ Pela Q4 = A, os cap. 52 (diarreia) e 26 (dispneia) foram revistos e ficam sem no
 | Q2: cap. 9 | #731 | `HCFMUSP-LOTE8-Q2-DOR.md` |
 | Q3: notas dos cap. 87, 92, 75, 86 e 85 | #732 | `HCFMUSP-LOTE8-Q3-NOTAS-87-92-75-86-85.md` |
 | Q4: cap. 52 e 26 | este registro | — |
-| Cap. 35 e 107 | pendentes | — |
+| Cap. 35 e 107, e a AAO 2026 no cap. 85 | #734 | `HCFMUSP-LOTE8-PENDENTES-35-107-85.md` |
 
-Com o lote 8, 94 dos 108 capítulos foram revistos. Os cap. 35 e 107 estão pendentes e os 12 do lote 9 ainda não foram revistos.
+Com o lote 8, 96 dos 108 capítulos foram revistos, todos na produção. Os 12 restantes são o lote 9.
