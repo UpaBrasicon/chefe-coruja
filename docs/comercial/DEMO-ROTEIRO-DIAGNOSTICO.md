@@ -63,6 +63,8 @@ A pasta `produto/` fica ao lado do repositório e não tem git: esses materiais 
 - **A (recomendada):** eu percorro cada passo no Chrome, na homologação, com a sua conta já logada (o login e o 2FA são seus). Anoto o tempo de cada passo e corrijo o roteiro. Depois você faz um ensaio cronometrado, que é a validação.
 - **B:** só o seu ensaio.
 
+**Decisão do RT, 15/11/2026:** D1 a D6 = A ("Todas A").
+
 ## Subtarefas (com A em tudo)
 
 1. **Base:** `scripts/demo/03_acesso_conta.sql` com os papéis recepção e enfermeiro; rodar `01` (se o mês virou), `02` e `03` na homologação.
