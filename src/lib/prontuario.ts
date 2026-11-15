@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import { dataHoraCarimbo } from './formato.ts'
 import { contextoDoBanco, folhaDoRegistro, lerConteudo, montarFolha, montarRelatorio, type TipoFolha, type TipoRelatorio } from '@/lib/folhas'
+import { janelaEmBranco } from '@/lib/abrirEmJanela'
+import { escapeHtml } from '@/lib/utils'
 
 // Consulta e impressão são registradas pelo SERVIDOR (migration 0012). O banco
 // só devolve conteúdo clínico de prontuário aberto; abrir é a RPC que grava o
@@ -157,14 +159,14 @@ export async function folhaDoDocumentoEmitido(documentoId: string, tipoImpressao
  * impressão fica registrada. Chamar dentro do clique.
  */
 export async function imprimirDocumento(documentoId: string, tipoImpressao: string): Promise<boolean> {
-  const janela = window.open('', '_blank')
+  const janela = janelaEmBranco()
   if (!janela) return false
   // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
   janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
   const r = await folhaDoDocumentoEmitido(documentoId, tipoImpressao)
   if ('erro' in r) {
     // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
-    escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}. Nada foi impresso.</p>`)
+    escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${escapeHtml(r.erro)}` : ''}. Nada foi impresso.</p>`)
     return false
   }
   escrever(janela, r.html)
@@ -219,7 +221,7 @@ async function imprimirFolhaRelatorio(
   corpo: Record<string, unknown>,
   rpc: () => PromiseLike<{ data: unknown; error: { message: string } | null }>,
 ): Promise<boolean> {
-  const janela = window.open('', '_blank')
+  const janela = janelaEmBranco()
   if (!janela) return false
   // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
   janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>')
@@ -229,7 +231,7 @@ async function imprimirFolhaRelatorio(
     const { data, error } = await rpc()
     if (error || !data) {
       // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
-      escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">Não foi possível imprimir${error ? `: ${error.message}` : ''}. Nada foi impresso.</p>`)
+      escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">Não foi possível imprimir${error ? `: ${escapeHtml(error.message)}` : ''}. Nada foi impresso.</p>`)
       return false
     }
     const d = data as Parameters<typeof contextoDoBanco>[0] & { dados: unknown }
@@ -258,7 +260,7 @@ export async function abrirImpressao(opcoes: {
   /** rascunho do banco (Fase 4.1): se houver, é ele que vira o documento emitido */
   rascunhoId?: string | null
 }): Promise<Impressao | null> {
-  const janela = window.open('', '_blank')
+  const janela = janelaEmBranco()
   if (!janela) return null
   janela.document.write(
     // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
@@ -267,7 +269,7 @@ export async function abrirImpressao(opcoes: {
 
   const recusar = (motivo: string) => {
     // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
-    escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${motivo}</p>`)
+    escrever(janela, `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${escapeHtml(motivo)}</p>`)
     return null
   }
 

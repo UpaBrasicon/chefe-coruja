@@ -133,7 +133,7 @@ SET LOCAL ROLE authenticated;
 SELECT public.pedir_exames_atendimento(pg_temp.u('a'), ARRAY['Ureia']);
 
 -- 5a. pedido impresso: a linha com o nome do catálogo ganha o código
-SELECT public.emitir_documento(pg_temp.u('pac'), 'pedido_exames', '{"pedido":{"texto":"- Glicemia\n- Exame raro qualquer"}}');
+SELECT public.emitir_documento(pg_temp.u('pac'), 'pedido_exames', '{"exames":{"texto":"- Glicemia\n- Exame raro qualquer"}}');
 RESET ROLE;
 DO $$ BEGIN
   IF (SELECT procedimento FROM public.exames_pedidos WHERE exame = 'Glicemia' AND documento_id IS NOT NULL) IS DISTINCT FROM '0202990002'

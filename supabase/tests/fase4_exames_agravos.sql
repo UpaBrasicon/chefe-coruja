@@ -55,7 +55,7 @@ INSERT INTO t SELECT 'ib', id::text FROM public.internacoes WHERE episodio_id = 
 
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT public.emitir_documento(pg_temp.u('pa'), 'pedido_exames', '{"pedido":{"texto":"- Hemograma\n- PCR\n"}}');
+SELECT public.emitir_documento(pg_temp.u('pa'), 'pedido_exames', '{"exames":{"texto":"- Hemograma\n- PCR\n"}}');
 SELECT public.emitir_documento(pg_temp.u('pb'), 'pedido_exames', '{"exames":{"texto":"- Troponina"}}');
 SELECT pg_temp.falha(format('SELECT public.registrar_desfecho(%L, %L)', pg_temp.u('ea'), 'alta'),
   'Alta: exames pedidos sem resultado: Hemograma, PCR', 'alta da porta espera o resultado dos exames pedidos');

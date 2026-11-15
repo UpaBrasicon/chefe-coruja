@@ -240,10 +240,12 @@ const faixaAlergia = (ctx: ContextoFolha, d: Json) => `<div class="alergia">⚠ 
 function linhaUnidade(u: UnidadeFolha | null | undefined): string {
   return junta(' · ', u?.cnes ? `CNES ${u.cnes}` : '', junta('/', u?.municipio, u?.uf), 'SUS')
 }
+// S4 da trilha de segurança (D1): o cabeçalho escapa `doc` e `sub` aqui, num
+// lugar só; quem chama passa texto puro (o título do modelo do termo entrava cru).
 function cabecalho(ctx: ContextoFolha, doc: string, sub: string): string {
   const u = ctx.unidade
   return `<div class="cab"><div><h1>${esc(pri(u?.nome, 'Unidade de saúde'))}</h1><small>${esc(linhaUnidade(u))}</small></div>` +
-    `<div class="doc">${doc}${sub ? `<span>${sub}</span>` : ''}</div></div>`
+    `<div class="doc">${esc(doc)}${sub ? `<span>${esc(sub)}</span>` : ''}</div></div>`
 }
 function linhaPaciente(p: Pac, extra: [string, string][] = []): string {
   const itens: [string, string][] = [
@@ -397,7 +399,7 @@ function receita(d: Json, ctx: ContextoFolha): string {
   const fichas: Ficha[] = []
   if (comuns.length || !ctrl.length) {
     fichas.push({
-      doc: 'Receituário', sub: tipo && tipo.value !== 'branca' && tipo.value !== 'controle_especial' ? esc(tipo.label) : dataDoc,
+      doc: 'Receituário', sub: tipo && tipo.value !== 'branca' && tipo.value !== 'controle_especial' ? tipo.label : dataDoc,
       corpo: faixaAlergia(ctx, d) +
         (comuns.length ? `<ol class="itens">${comuns.map((i, k) => itemReceita(i, k, false)).join('')}</ol>` : '<p class="meta">Nenhum item preenchido.</p>') +
         blocoSe('Observações', r.obs) + `<p class="meta">Data: ${esc(dataDoc || '____/____/______')}</p>` +
@@ -607,7 +609,7 @@ function pedidoExames(d: Json, ctx: ContextoFolha): string {
       : ''
     const cardapio = n ? `<div class="cardapio">${blocos}${blocoOutros}</div>` : '<p class="meta">Nenhum exame marcado.</p>'
     return {
-      doc: f.documento ? esc(f.documento) : 'Solicitação de exames' + (f.titulo ? ` — ${esc(f.titulo)}` : ''), sub: carater ? `Caráter: ${esc(carater)}` : '', semPaciente: true,
+      doc: f.documento ? f.documento : 'Solicitação de exames' + (f.titulo ? ` — ${f.titulo}` : ''), sub: carater ? `Caráter: ${carater}` : '', semPaciente: true,
       corpo: idPac + faixaAlergia(ctx, d) + clinico + `<div class="qtd">${n} ${n === 1 ? 'exame solicitado' : 'exames solicitados'}</div>` + cardapio +
         blocoSe('Observações', p.obs) + (f.nota ? `<p class="meta">${esc(f.nota)}</p>` : '') + assinaturas([ass]),
     }
@@ -1047,7 +1049,7 @@ function relClassificacao(d: Json, ctx: ContextoFolha): string {
 .niv{display:flex;align-items:center;gap:8px}.niv .n{width:26px;height:26px;border:2px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11pt}.niv h2{font-size:12.5pt;margin:0;font-weight:900}
 .tag{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--cor);border-left-width:6px;padding:0 5px;font-weight:700}.seta{font-size:8pt;font-weight:700;margin-top:2px}`
   return pagina({ titulo: 'Classificação de risco', ctx, pac, estilo, docRodape: 'Classificação de risco',
-    fichas: [{ doc: 'Acolhimento com classificação de risco', sub: ep.chegada_em ? `Chegada ${esc(dataHoraBr(ep.chegada_em))}` : '', corpo }] })
+    fichas: [{ doc: 'Acolhimento com classificação de risco', sub: ep.chegada_em ? `Chegada ${dataHoraBr(ep.chegada_em)}` : '', corpo }] })
 }
 
 // ── relatório de evolução ────────────────────────────────────────────────────
