@@ -165,6 +165,8 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap75-reumatologicas': 'emergências reumatológicas no adulto: arterite de células gigantes (arterite temporal), corticoide, prednisona, crise renal esclerodérmica, esclerose sistêmica, inibidor da ECA, captopril',
   'nota-hcfmusp-cap86-otorrino': 'surdez súbita (perda auditiva neurossensorial súbita) no adulto: corticoide, prednisolona, intratimpânico, audiometria, ressonância, tomografia, antiviral, vasodilatador',
   'nota-hcfmusp-cap85-oftalmologia': 'oclusão da artéria central da retina no adulto: perda visual súbita, AVC, trombólise, alteplase, emergência oftalmológica',
+  'nota-hcfmusp-cap35-aspiracao': 'pneumonia aspirativa e síndromes aspirativas no adulto: antibiótico, anaeróbio, metronidazol, clindamicina, duração de 5 dias, radiografia, tomografia, deglutição, jejum',
+  'nota-hcfmusp-cap107-marca-passo': 'marca-passo e cardiodesfibrilador implantável (dispositivo cardíaco eletrônico) no adulto: infecção do dispositivo, hemocultura, ecocardiograma transesofágico, bacteremia, extração do eletrodo',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -979,6 +981,18 @@ export const ABORL_SURDEZ_2026: Fonte = {
   citacao: 'Bahmad F Jr, Hamerschmidt R, Tsuji RK, et al. Clinical practice guideline: sudden hearing loss — The Brazilian taskforce (ABORL/SBO) 2026. Braz J Otorhinolaryngol. 2026;93(1):101903 (PMID 42981831; PMC13757513). Texto integral lido.',
   url: 'https://doi.org/10.1016/j.bjorl.2026.101903',
 }
+export const AAO_FECHAMENTO_ANGULAR_2026: Fonte = {
+  citacao: 'Gedde SJ, Chopra V, Vinod K, et al. Primary Angle-Closure Disease Preferred Practice Pattern. Ophthalmology. 2026;133(4):P153–P201 (PMID 41665581). Texto integral lido no site da revista, pelo Chrome do RT.',
+  url: 'https://doi.org/10.1016/j.ophtha.2025.12.030',
+}
+export const BTS_ASPIRACAO_2023: Fonte = {
+  citacao: 'Simpson AJ, Allen JL, Chatwin M, et al. BTS clinical statement on aspiration pneumonia. Thorax. 2023;78(Suppl 1):s3–s21 (PMID 36863772). Texto integral lido no site da revista, pelo Chrome do RT; pontos de prática clínica, sem graduação.',
+  url: 'https://doi.org/10.1136/thorax-2022-219699',
+}
+export const CCS_CHRS_DCEI_2026: Fonte = {
+  citacao: 'Canadian Cardiovascular Society/Canadian Heart Rhythm Society. Comprehensive Guidelines for the Selection, Implantation, and Management of Patients With Cardiac Implantable Electronic Devices. Can J Cardiol. 2026;42(1):1–68 (PMID 41539743). Texto integral lido no site da revista, pelo Chrome do RT; GRADE.',
+  url: 'https://doi.org/10.1016/j.cjca.2025.08.363',
+}
 export const AHA_OACR_2021: Fonte = {
   citacao: 'Mac Grory B, Schrag M, Biousse V, et al. Management of Central Retinal Artery Occlusion: A Scientific Statement From the American Heart Association. Stroke. 2021;52(6):e282–e294 (PMID 33677974). Resumo lido; declaração científica, sem graduação.',
   url: 'https://doi.org/10.1161/STR.0000000000000366',
@@ -1015,11 +1029,31 @@ export const notaHcfmuspCap86 = notaSoManualLote8('nota-hcfmusp-cap86-otorrino',
   ], [ABORL_SURDEZ_2026])
 
 /** cap. 85: AHA 2021 de oclusão da artéria central da retina, pelo resumo. */
-export const notaHcfmuspCap85 = notaSoManualLote8('nota-hcfmusp-cap85-oftalmologia', 'Nota de atualização — manual HC, cap. 85: emergências oftalmológicas (oclusão da artéria central da retina)', 'cap. 85, p. 1119–1151', [
+export const notaHcfmuspCap85 = notaSoManualLote8('nota-hcfmusp-cap85-oftalmologia', 'Nota de atualização — manual HC, cap. 85: emergências oftalmológicas (oclusão da artéria da retina e glaucoma agudo)', 'cap. 85, p. 1119–1151', [
     { tema: 'Oclusão da artéria central da retina', diretriz: 'AHA 2021 (declaração científica, sem graduação; resumo lido): é uma forma de AVC isquêmico e emergência médica; priorizar o reconhecimento e o encaminhamento imediato; a alteplase EV pode ser eficaz; investigar e tratar com urgência os fatores de risco vasculares', manual: 'a oclusão arterial retiniana aparece só como complicação da celulite pós-septal (cap. 85, p. 1129)' },
-  ], [AHA_OACR_2021])
+    { tema: 'Glaucoma agudo (crise aguda de fechamento angular)', diretriz: 'AAO 2026 (texto integral lido): tratamento clínico ou outra intervenção (iridotomia periférica a laser, paracentese de câmara anterior ou iridoplastia a laser) para baixar a pressão intraocular logo e aliviar os sintomas; depois, iridotomia, iridectomia ou extração do cristalino', manual: 'acetazolamida 250 mg 2 comprimidos VO, manitol 20% 250 mL EV, colírios de timolol, brimonidina, prednisolona e pilocarpina 2% (Tabela 11, cap. 85, p. 1133)' },
+    { tema: 'Glaucoma agudo: o outro olho', diretriz: 'AAO 2026: depois da crise, o olho contralateral fácico em geral deve fazer iridotomia a laser logo, pelo risco alto de crise sem tratamento preventivo', manual: 'o cap. 85 não trata do ponto' },
+  ], [AHA_OACR_2021, AAO_FECHAMENTO_ANGULAR_2026])
+notaHcfmuspCap85.ficha.versao = '2026-11-15.1'
 
-export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap9, notaHcfmuspCap49, notaHcfmuspCap62, notaHcfmuspCap75, notaHcfmuspCap85, notaHcfmuspCap86, notaHcfmuspCap87, notaHcfmuspCap92]
+/** cap. 35: declaração da BTS 2023 sobre pneumonia aspirativa (pontos de prática clínica). */
+export const notaHcfmuspCap35 = notaSoManualLote8('nota-hcfmusp-cap35-aspiracao', 'Nota de atualização — manual HC, cap. 35: síndromes aspirativas', 'cap. 35, p. 473–484', [
+    { tema: 'Pneumonia aspirativa: diagnóstico', diretriz: 'BTS 2023 (ponto de prática clínica): história cuidadosa, buscando fatores de risco de aspiração; a radiografia deixa de mostrar a pneumonia aspirativa em até 25% dos casos, comparada à TC; o idoso pode ter resposta inflamatória atenuada', manual: 'hipoxemia, febre, taquipneia ou leucocitose com infiltrado em região dependente da gravidade, na radiografia ou na TC (cap. 35, p. 474)' },
+    { tema: 'Pneumonia aspirativa: anaeróbio', diretriz: 'BTS 2023: não cobrir anaeróbio de rotina, porque não se provou que piorem o desfecho; cobrir quando o risco é alto: doença dentária ou periodontal evidente, escarro pútrido ou suspeita de abscesso ou empiema', manual: 'esquemas da Tabela 4 incluem cobertura para anaeróbio (metronidazol, clindamicina); sem fator de risco para anaeróbio, cobrir aeróbios com quinolona respiratória ou ceftriaxona (cap. 35, p. 479)' },
+    { tema: 'Pneumonia aspirativa: antibiótico e duração', diretriz: 'BTS 2023: esquema guiado pela epidemiologia local, pelo antibiótico recente, pelas culturas e pelo local onde a pneumonia começou; 5 dias bastam, salvo se não melhorar', manual: '5 a 7 dias quando a evolução clínica é boa; mais tempo na pneumonia necrotizante, no abscesso ou no empiema (cap. 35, p. 479)' },
+    { tema: 'Pneumonia aspirativa: cuidados gerais', diretriz: 'BTS 2023: tromboprofilaxia (salvo contraindicação), hidratação e oxigênio se preciso; fisioterapia precoce. Na seção de prevenção: quem tem dificuldade de deglutir vai ao fonoaudiólogo, e o jejum oral é sempre temporário', manual: 'não comparado nesta nota' },
+  ], [BTS_ASPIRACAO_2023])
+
+/** cap. 107: CCS/CHRS 2026 de dispositivos cardíacos implantáveis, na infecção do dispositivo. */
+export const notaHcfmuspCap107 = notaSoManualLote8('nota-hcfmusp-cap107-marca-passo', 'Nota de atualização — manual HC, cap. 107: marca-passo e dispositivos implantáveis (infecção do dispositivo)', 'cap. 107, p. 1444–1460', [
+    { tema: 'Suspeita de infecção do dispositivo', diretriz: 'CCS/CHRS 2026 (forte, baixa): hemoculturas antes do antibiótico, ecocardiograma transesofágico antes da extração (para ver vegetação em valva ou eletrodo) e culturas do eletrodo, do tecido e da loja na extração', manual: 'o cap. 107 não trata do ponto' },
+    { tema: 'Infecção confirmada ou bacteremia persistente', diretriz: 'CCS/CHRS 2026 (forte, alta): retirar todo o sistema, eletrodos inclusive, na infecção definida do dispositivo (loja, eletrodo ou sistêmica) e na bacteremia ou fungemia persistente ou recorrente, sobretudo por Gram-positivo, apesar do antibiótico adequado e sem outra fonte', manual: 'o cap. 107 não trata do ponto' },
+  ], [CCS_CHRS_DCEI_2026])
+notaHcfmuspCap107.ficha.revisadoEm = '15/11/2026 (lote 8 da revisão do HCFMUSP, Q2 sem lista na ficha: a CCS/CHRS 2026 trata do implante e da infecção, não do marca-passo provisório da ficha; nota sem ficha; aguarda aprovação do RT)'
+notaHcfmuspCap35.ficha.versao = '2026-11-15.1'
+notaHcfmuspCap107.ficha.versao = '2026-11-15.1'
+
+export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap9, notaHcfmuspCap35, notaHcfmuspCap49, notaHcfmuspCap62, notaHcfmuspCap75, notaHcfmuspCap85, notaHcfmuspCap86, notaHcfmuspCap87, notaHcfmuspCap92, notaHcfmuspCap107]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8]
 
