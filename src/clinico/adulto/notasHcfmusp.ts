@@ -7,7 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
-import { CDC_OPIOIDES_2022, DIRETRIZ_DOR_2022, fichaDorAnalgesiaAdulto } from './dorAnalgesia.ts'
+import { CDC_OPIOIDES_2022, DIRETRIZ_DOR_2022, EAPC_SEDACAO_2024, fichaDorAnalgesiaAdulto, fichaPaliativoAdulto } from './dorAnalgesia.ts'
 import { DIRETRIZ_COLICA_2025, EAU_UROLITIASE_2025, fichaColicaRenalAdulto } from './colicaRenal.ts'
 import { AIR_METANALISE_2025, WSES_APENDICITE_2025, alvarado } from '../escores/alvarado.ts'
 import { BTS_PLEURA_2023, DIRETRIZ_PLEURA_2023, light } from '../escores/light.ts'
@@ -35,7 +35,7 @@ import { AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025, HEMOTION_2024, SAHARA_20
 import { DIRETRIZ_AFOGAMENTO, DIRETRIZ_HIPOTERMIA_2025, ERC_2025_HIPOTERMIA, WMS_AFOGAMENTO_2024, fichaHipotermiaAdulto, szpilman } from './ambientais.ts'
 import { ACG_HDB_2023, BAVENO_VIII_2026, DIRETRIZ_HDA, DIRETRIZ_HDB_2023, ESGE_UGIH_2026, fichaHemorragiaDigestiva, fichaOakland } from './hemorragiaDigestiva.ts'
 import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_2014, fichaHiponatremia } from './sodio.ts'
-import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
+import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, PATCH_TRAUMA_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026, fichaTraumaAdulto } from './trauma.ts'
 import { ABHH_NF_2024, DIRETRIZ_NF, MASCC_2026, fichaNeutropeniaFebrilAdulto } from './neutropeniaFebril.ts'
 import { BAP_SUBSTANCIAS_2026, DIRETRIZ_SAA, fichaAbstinenciaAlcoolica } from './abstinenciaAlcoolica.ts'
 import { CONSENSO_MIXEDEMA_2026, DIRETRIZ_IA, DIRETRIZ_MIXEDEMA, DIRETRIZ_TT, ESE_ES_IA_GLICOCORTICOIDE_2024, ES_IA_PRIMARIA_2016, ETA_TEMPESTADE_2026, SFE_CRISE_ADRENAL_2016, fichaCriseTireotoxica, fichaInsuficienciaAdrenal, fichaMixedema } from './endocrino.ts'
@@ -167,6 +167,10 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap85-oftalmologia': 'oclusão da artéria central da retina no adulto: perda visual súbita, AVC, trombólise, alteplase, emergência oftalmológica',
   'nota-hcfmusp-cap35-aspiracao': 'pneumonia aspirativa e síndromes aspirativas no adulto: antibiótico, anaeróbio, metronidazol, clindamicina, duração de 5 dias, radiografia, tomografia, deglutição, jejum',
   'nota-hcfmusp-cap107-marca-passo': 'marca-passo e cardiodesfibrilador implantável (dispositivo cardíaco eletrônico) no adulto: infecção do dispositivo, hemocultura, ecocardiograma transesofágico, bacteremia, extração do eletrodo',
+  'nota-hcfmusp-cap48-pre-hospitalar': 'atendimento pré-hospitalar do trauma no adulto (APH, SAMU, ambulância): hemorragia externa exsanguinante, torniquete, XABCDE, ácido tranexâmico no pré-hospitalar, sangue total, transfusão pré-hospitalar',
+  'nota-hcfmusp-cap55-ascite': 'ascite no adulto (cirrose): paracentese diagnóstica, paracentese de alívio ou de grande volume, reposição de albumina, cultura do líquido ascítico em frasco de hemocultura, nefrotóxicos, AINE',
+  'nota-hcfmusp-cap104-paliativos-sintomas': 'manejo de sintomas em cuidados paliativos no PS, adulto: sedação paliativa, sofrimento refratário, proporcionalidade, midazolam, hidratação no fim de vida',
+  'nota-hcfmusp-cap108-toracocentese': 'toracocentese no adulto: punção pleural guiada por ultrassom (POCUS), pneumotórax, amostra do líquido pleural, citologia, frasco de hemocultura',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -1055,7 +1059,51 @@ notaHcfmuspCap107.ficha.versao = '2026-11-15.1'
 
 export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap9, notaHcfmuspCap35, notaHcfmuspCap49, notaHcfmuspCap62, notaHcfmuspCap75, notaHcfmuspCap85, notaHcfmuspCap86, notaHcfmuspCap87, notaHcfmuspCap92, notaHcfmuspCap107]
 
-export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8]
+// ── Lote 9 (decisão do RT de 15/11/2026, Q1–Q4 = A; docs/clinico/HCFMUSP-LOTE9-DIAGNOSTICO.md).
+// Q1: os cap. 55, 108, 104 e 48 têm ficha que já cita fonte nova; os itens vêm da ficha.
+const REVISADO_LOTE9 = '15/11/2026 (lote 9 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a fonte; aguarda aprovação do RT)'
+function notaLote9(...a: Parameters<typeof nota>): NotaHcfmusp {
+  const n = nota(...a)
+  n.ficha.versao = '2026-11-15.1'
+  n.ficha.revisadoEm = REVISADO_LOTE9
+  return n
+}
+const daLista = (lista: { tema: string; diretriz: string; grau: string; fonte: string }[], tema: string, manual: string): ItemNota => {
+  const d = lista.find((x) => x.tema === tema)
+  if (!d) throw new Error(`tema ausente: ${tema}`)
+  return { tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual }
+}
+
+/** cap. 55: AASLD 2021, já na ficha de ascite, PBE e SHR. */
+export const notaHcfmuspCap55 = notaLote9('nota-hcfmusp-cap55-ascite', 'Nota de atualização — manual HC, cap. 55: ascite', 'cap. 55, p. 755–768', fichaAsciteShr, [
+    daLista(DIRETRIZ_PBE_SHR, 'Paracentese diagnóstica', 'puncionar a ascite sem diagnóstico prévio definido (p. 757); cultura em frascos de hemocultura (p. 762); INR alterado não contraindica a paracentese diagnóstica (p. 763)'),
+    daLista(DIRETRIZ_PBE_SHR, 'Paracentese de grande volume', 'repor albumina quando retirar mais de 5 L, 8 g/L (p. 766)'),
+    daLista(DIRETRIZ_PBE_SHR, 'Nefrotóxicos no cirrótico com ascite', 'o cap. 55 não trata do ponto'),
+  ], [AASLD_ASCITE_2021])
+
+/** cap. 108: BTS 2023 de doença pleural, já na ficha dos critérios de Light. */
+export const notaHcfmuspCap108 = notaLote9('nota-hcfmusp-cap108-toracocentese', 'Nota de atualização — manual HC, cap. 108: toracocentese', 'cap. 108, p. 1461–1479', light.ficha, [
+    daLista(DIRETRIZ_PLEURA_2023, 'Toracocentese', 'o POCUS evita lesão iatrogênica de estruturas vizinhas (p. 1462); aparelho de ultrassom na lista de material (p. 1463); pneumotórax de 0,3 a 3% guiado por POCUS contra até 30% na técnica convencional (p. 1468)'),
+    daLista(DIRETRIZ_PLEURA_2023, 'Amostra', 'na diagnóstica, retirar pequeno volume (30 mL, p. 1463) ou aspirar 50 mL (p. 1467); tubo seco, tubo EDTA e frascos de cultura aeróbia e anaeróbia (p. 1463)'),
+  ], [BTS_PLEURA_2023])
+
+/** cap. 104: EAPC 2024 de sedação paliativa, já na ficha de sintomas em cuidados paliativos. */
+export const notaHcfmuspCap104 = notaLote9('nota-hcfmusp-cap104-paliativos-sintomas', 'Nota de atualização — manual HC, cap. 104: manejo de sintomas em cuidados paliativos (sedação paliativa)', 'cap. 104, p. 1383–1394', fichaPaliativoAdulto, [
+    { tema: 'Sedação paliativa: indicação', diretriz: 'EAPC 2024 (Delphi internacional, consenso alto ou muito alto, sem graduação): a sedação paliativa segue o princípio da proporcionalidade, diante de sofrimento refratário físico, psicológico ou existencial; o marco não fixa tempo mínimo de expectativa de vida', manual: 'em fase final de vida, considerar quando o sintoma refratário causa sofrimento intolerável (p. 1387)' },
+    { tema: 'Sedação paliativa: hidratação', diretriz: 'EAPC 2024: a hidratação é decisão independente da sedação', manual: 'reavaliar nutrição e hidratação; a hiper-hidratação pode ser prejudicial no fim de vida (p. 1387)' },
+    { tema: 'Sedação paliativa: fármacos', diretriz: 'EAPC 2024: abordagem farmacológica escalonada; reforça a autonomia do paciente', manual: 'midazolam é a principal droga, também por via subcutânea (Tabela 2); clorpromazina e propofol em situações excepcionais (p. 1388). As doses da ficha continuam as do manual' },
+  ], [EAPC_SEDACAO_2024])
+
+/** cap. 48: diretriz europeia 2023 e ensaios pré-hospitalares, já na ficha do trauma. */
+export const notaHcfmuspCap48 = notaLote9('nota-hcfmusp-cap48-pre-hospitalar', 'Nota de atualização — manual HC, cap. 48: atendimento pré-hospitalar', 'cap. 48, p. 658–678', fichaTraumaAdulto, [
+    daLista(DIRETRIZ_TRAUMA, 'Compressão e torniquete', 'XABCDE: o X é o controle de hemorragias externas exsanguinantes (p. 668)'),
+    { tema: 'Ácido tranexâmico no pré-hospitalar', diretriz: 'PATCH-Trauma (NEJM 2023; ensaio, não diretriz): 1.310 adultos com trauma grave e suspeita de coagulopatia; TXA pré-hospitalar (1 g + 1 g em 8 h) contra placebo. Não aumentou a sobrevida com bom desfecho funcional em 6 meses (53,7% × 53,5%); a morte em 28 dias foi menor (17,3% × 21,8%), como desfecho secundário, sem diferença em eventos oclusivos', manual: 'o cap. 48 não trata do ponto' },
+    { tema: 'Sangue total no pré-hospitalar', diretriz: 'Dois ensaios randomizados (NEJM 2026; não são diretriz): o sangue total pré-hospitalar não foi superior aos componentes', manual: 'o cap. 48 não trata do ponto' },
+  ], [EUROPEIA_SANGRAMENTO_TRAUMA_2023, PATCH_TRAUMA_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026])
+
+export const NOTAS_HCFMUSP_LOTE9: NotaHcfmusp[] = [notaHcfmuspCap48, notaHcfmuspCap55, notaHcfmuspCap104, notaHcfmuspCap108]
+
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8, ...NOTAS_HCFMUSP_LOTE9]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha

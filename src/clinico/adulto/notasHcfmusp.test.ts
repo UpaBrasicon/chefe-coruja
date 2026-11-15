@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, NOTAS_HCFMUSP_LOTE4, NOTAS_HCFMUSP_LOTE5, NOTAS_HCFMUSP_LOTE6, NOTAS_HCFMUSP_LOTE7, NOTAS_HCFMUSP_LOTE8, textoNota } from './notasHcfmusp.ts'
+import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, NOTAS_HCFMUSP_LOTE4, NOTAS_HCFMUSP_LOTE5, NOTAS_HCFMUSP_LOTE6, NOTAS_HCFMUSP_LOTE7, NOTAS_HCFMUSP_LOTE8, NOTAS_HCFMUSP_LOTE9, textoNota } from './notasHcfmusp.ts'
 import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
@@ -47,7 +47,7 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
 
 test('lote 2: onze notas (cap. 3, 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
   assert.equal(NOTAS_HCFMUSP_LOTE2.length, 11)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length + NOTAS_HCFMUSP_LOTE8.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length + NOTAS_HCFMUSP_LOTE8.length + NOTAS_HCFMUSP_LOTE9.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
@@ -147,7 +147,7 @@ test('lote 3, N1: notas de 33, 40 e 76 a partir das listas das fichas; PAC com a
   const { DIRETRIZ_HSA_2023 } = await import('./hsa.ts')
   const { DIFERENCAS_AGITACAO_2024 } = await import('./agitacao.ts')
   assert.ok(NOTAS_HCFMUSP_LOTE3.length >= 3)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length + NOTAS_HCFMUSP_LOTE8.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length + NOTAS_HCFMUSP_LOTE8.length + NOTAS_HCFMUSP_LOTE9.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const por = (id: string) => NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === id)!
@@ -662,4 +662,18 @@ test('lote 8, pendentes: notas dos cap. 35 e 107 e a AAO 2026 na nota do cap. 85
   for (const id of ['nota-hcfmusp-cap35-aspiracao', 'nota-hcfmusp-cap107-marca-passo', 'nota-hcfmusp-cap85-oftalmologia']) assert.equal(por(id).ficha.versao, '2026-11-15.1', id)
   assert.equal(por('nota-hcfmusp-cap85-oftalmologia').ficha.fontes.length, 2)
   assert.match(textoNota(por('nota-hcfmusp-cap35-aspiracao')), /não cobrir anaeróbio de rotina/)
+})
+
+test('lote 9, Q1: notas dos cap. 48, 55, 104 e 108 tiradas das fichas', () => {
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE9.find((n) => n.ficha.id === id)!
+  const esperado: [string, number][] = [['nota-hcfmusp-cap48-pre-hospitalar', 3], ['nota-hcfmusp-cap55-ascite', 3], ['nota-hcfmusp-cap104-paliativos-sintomas', 3], ['nota-hcfmusp-cap108-toracocentese', 2]]
+  for (const [id, n] of esperado) {
+    assert.equal(por(id).itens.length, n, id)
+    assert.equal(por(id).ficha.versao, '2026-11-15.1', id)
+    assert.match(por(id).ficha.revisadoEm ?? '', /lote 9/, id)
+  }
+  assert.match(textoNota(por('nota-hcfmusp-cap55-ascite')), /AASLD 2021/)
+  assert.match(textoNota(por('nota-hcfmusp-cap108-toracocentese')), /BTS 2023/)
+  assert.match(textoNota(por('nota-hcfmusp-cap104-paliativos-sintomas')), /proporcionalidade/)
+  assert.match(textoNota(por('nota-hcfmusp-cap48-pre-hospitalar')), /PATCH-Trauma/)
 })
