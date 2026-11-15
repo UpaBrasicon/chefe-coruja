@@ -33,7 +33,7 @@ import { wellsTvp } from '@/clinico/escores/wellsTvp'
 import { cockcroftGault } from '@/clinico/escores/cockcroftGault'
 import { mcisaac } from '@/clinico/escores/mcisaac'
 import { ottawaJoelho, ottawaTornozelo } from '@/clinico/escores/ottawa'
-import { quatroAt } from '@/clinico/escores/quatroAt'
+import { DIRETRIZ_DELIRIUM_2025, quatroAt } from '@/clinico/escores/quatroAt'
 import { qtcAdulto } from '@/clinico/adulto/qtc'
 import { sgarbossaModificado } from '@/clinico/escores/sgarbossaModificado'
 import { sofa2 } from '@/clinico/escores/sofa2'
@@ -92,7 +92,18 @@ export const CockcroftGault = () => <EscoreTela escore={cockcroftGault} />
 export const OttawaTornozelo = () => <EscoreTela escore={ottawaTornozelo} />
 export const OttawaJoelho = () => <EscoreTela escore={ottawaJoelho} />
 export const McIsaac = () => <EscoreTela escore={mcisaac} />
-export const QuatroAt = () => <EscoreTela escore={quatroAt} />
+export const QuatroAt = () => (
+  <EscoreTela escore={quatroAt}>
+    <Bloco titulo="Diretrizes geriátricas de PS 2025 — ao lado do manual" descricao="Delirium no idoso no PS pelas Geriatric ED Guidelines 2.0 (GRADE; todas condicionais, certeza muito baixa), lidas no resumo, ao lado do cap. 8 do manual do HC.">
+      <div className="overflow-x-auto">
+        <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+          <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+          <TableBody>{DIRETRIZ_DELIRIUM_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+        </Table>
+      </div>
+    </Bloco>
+  </EscoreTela>
+)
 export const Qtc = () => <EscoreTela escore={qtcAdulto} />
 export const SgarbossaModificado = () => <EscoreTela escore={sgarbossaModificado} />
 export const Spesi = () => <EscoreTela escore={spesi} />
