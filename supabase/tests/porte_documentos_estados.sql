@@ -96,7 +96,7 @@ SELECT pg_temp.falha(format('DELETE FROM public.documentos_clinicos WHERE id = %
 -- pedido de exames cancelado cancela os exames sem resultado
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-INSERT INTO t SELECT 'ped', public.emitir_documento(pg_temp.u('pac'), 'pedido_exames', '{"pedido":{"texto":"hemograma\nureia"}}') ->> 'id';
+INSERT INTO t SELECT 'ped', public.emitir_documento(pg_temp.u('pac'), 'pedido_exames', '{"exames":{"texto":"hemograma\nureia"}}') ->> 'id';
 RESET ROLE;
 DO $$ BEGIN
   IF (SELECT count(*) FROM public.exames_pedidos WHERE documento_id = pg_temp.u('ped') AND situacao = 'pedido') <> 2 THEN

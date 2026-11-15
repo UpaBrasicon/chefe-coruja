@@ -28,21 +28,21 @@ INSERT INTO t SELECT 'ficha', public.registrar_ficha('22000000-0000-4000-8000-00
   '{"nome":"Documento Teste","data_nascimento":"1980-01-01"}');
 
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-INSERT INTO t SELECT 'at1', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"dias":1}');
-INSERT INTO t SELECT 'at1b', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"dias":1}');
-INSERT INTO t SELECT 'at2', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"dias":2}');
-INSERT INTO t SELECT 'rec', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'receita', '{"itens":["dipirona"]}');
+INSERT INTO t SELECT 'at1', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"atestado":{"tipo":"comparecimento"},"dias":1}');
+INSERT INTO t SELECT 'at1b', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"atestado":{"tipo":"comparecimento"},"dias":1}');
+INSERT INTO t SELECT 'at2', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"atestado":{"tipo":"comparecimento"},"dias":2}');
+INSERT INTO t SELECT 'rec', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'receita', '{"receita":{"itens":[{"medicamento":"dipirona","posologia":"1 cp de 6/6 h"}]},"itens":["dipirona"]}');
 
 DO $$ BEGIN
   BEGIN
-    PERFORM public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"dias":3}', NULL,
+    PERFORM public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"atestado":{"tipo":"comparecimento"},"dias":3}', NULL,
       (pg_temp.v('at2') ->> 'id')::uuid, 'curto');
     RAISE EXCEPTION 'FALHOU: retificação sem motivo';
   EXCEPTION WHEN raise_exception THEN
     IF SQLERRM NOT LIKE 'Informe o motivo%' THEN RAISE; END IF;
     RAISE NOTICE 'OK  retificar exige motivo';
   END;
-  INSERT INTO t SELECT 'ret', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"dias":3}', NULL,
+  INSERT INTO t SELECT 'ret', public.emitir_documento((pg_temp.v('ficha') ->> 'paciente_id')::uuid, 'atestado', '{"atestado":{"tipo":"comparecimento"},"dias":3}', NULL,
     (pg_temp.v('at2') ->> 'id')::uuid, 'dias corrigidos após reavaliação');
 END $$;
 RESET ROLE;
