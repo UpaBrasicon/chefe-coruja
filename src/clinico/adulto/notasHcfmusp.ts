@@ -150,6 +150,10 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap51-hdb': 'hemorragia digestiva baixa (HDB, hematoquezia) no adulto: escore de Oakland, alta, transfusão, varfarina, DOAC, reversão, ácido tranexâmico, angiotomografia, embolização, colonoscopia, anticoagulante',
   'nota-hcfmusp-cap8-delirium': 'delirium no idoso no pronto-socorro: rastreio, 4AT, CAM, bCAM, CAM-ICU, Delirium Triage Screen, Delirium Risk Score, REDEEM, tomografia de crânio',
   'nota-hcfmusp-cap36-derrame-pleural': 'derrame pleural e infecção pleural (derrame parapneumônico, empiema) no adulto: toracocentese guiada por ultrassom, pH do líquido, DHL, glicose, dreno torácico, fibrinolítico (TPA e DNase), critérios de Light, escore RAPID',
+  'nota-hcfmusp-cap90-influenza': 'influenza (gripe, H1N1) no adulto: oseltamivir, baloxavir, antiviral, profilaxia, antibiótico, corticoide, macrolídeo, caso grave e não grave',
+  'nota-hcfmusp-cap74-monoartrite': 'monoartrite aguda no adulto: artrite séptica (punção articular, leucócitos do líquido sinovial, hemocultura, antibiótico empírico, oxacilina, ceftriaxona, drenagem, artroscopia) e crise de gota (colchicina, AINE, corticoide, gelo, alopurinol, hipouricemiante)',
+  'nota-hcfmusp-cap54-diverticulite': 'diverticulite aguda no adulto: tomografia, antibiótico, tratamento ambulatorial, colonoscopia, recorrência, cirurgia eletiva',
+  'nota-hcfmusp-cap29-hemorragia-alveolar': 'hemorragia alveolar difusa e vasculite ANCA (granulomatose com poliangeíte, poliangeíte microscópica) no adulto: pulso de metilprednisolona, plasmaférese, ciclofosfamida, rituximabe, avacopan, corticoide',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -799,6 +803,12 @@ export const NOTAS_HCFMUSP_LOTE6: NotaHcfmusp[] = [notaHcfmuspCap5, notaHcfmuspC
 
 // ── Lote 7 (decisão do RT de 14/11/2026, Q1–Q4 = A; docs/clinico/HCFMUSP-LOTE7-DIAGNOSTICO.md).
 // Q1: cap. 42, 63 e 89, cuja ficha já cita a diretriz recente; os itens vêm da ficha.
+function notaSoManualLote7(...a: Parameters<typeof notaSoManual>): NotaHcfmusp {
+  const n = notaSoManual(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = '14/11/2026 (lote 7 da revisão do HCFMUSP, Q3: nota sem ficha de adulto na Central; aguarda aprovação do RT)'
+  return n
+}
 const REVISADO_LOTE7 = '14/11/2026 (lote 7 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a diretriz; aguarda aprovação do RT)'
 function notaLote7(...a: Parameters<typeof nota>): NotaHcfmusp {
   const n = nota(...a)
@@ -845,7 +855,66 @@ export const notaHcfmuspCap36 = notaLote7('nota-hcfmusp-cap36-derrame-pleural', 
   [BTS_PLEURA_2023])
 notaHcfmuspCap36.ficha.revisadoEm = '14/11/2026 (lote 7 da revisão do HCFMUSP: itens da BTS 2023, versão resumida lida no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap8, notaHcfmuspCap36, notaHcfmuspCap42, notaHcfmuspCap51, notaHcfmuspCap63, notaHcfmuspCap89]
+// Q3 = A: cap. 90, 74, 54 e 29 não têm ficha de adulto na Central. A nota liga só
+// ao capítulo do manual (conferido no PDF).
+export const OMS_INFLUENZA_2024: Fonte = {
+  citacao: 'Vandvik PO, Agarwal A, Rylance J, et al. Summary of WHO clinical practice guidelines for influenza. BMJ. 2026;392:e087397 (PMID 41760115). Resume a diretriz da OMS de 12/09/2024; resumo lido; certeza baixa a muito baixa.',
+  url: 'https://doi.org/10.1136/bmj-2025-087397',
+}
+export const SANJO_2023: Fonte = {
+  citacao: 'Ravn C, Neyt J, Benito N, et al. Guideline for management of septic arthritis in native joints (SANJO). J Bone Jt Infect. 2023;8(1):29–37 (PMID 36756304; PMC9901514). Texto integral lido; GRADE (letra e número).',
+  url: 'https://doi.org/10.5194/jbji-8-29-2023',
+}
+export const ACR_GOTA_2020: Fonte = {
+  citacao: 'FitzGerald JD, Dalbeth N, Mikuls T, et al. 2020 American College of Rheumatology Guideline for the Management of Gout. Arthritis Care Res. 2020;72(6):744–760 (PMID 32391934; PMC10563586). Texto integral lido na seção da crise; a certeza de cada recomendação está nas tabelas, que não foram lidas.',
+  url: 'https://doi.org/10.1002/acr.24180',
+}
+export const ACG_DIVERTICULITE_2026: Fonte = {
+  citacao: 'Peery AF, Strate LL, Stollman N, et al. ACG Clinical Guideline: Colonic Diverticulitis. Am J Gastroenterol. 2026;121(7):1549–1561 (PMID 42390126). Resumo lido; diretriz voltada ao ambulatório de gastroenterologia.',
+  url: 'https://doi.org/10.14309/ajg.0000000000004047',
+}
+export const BSR_VASCULITE_2025: Fonte = {
+  citacao: 'Biddle K, Jade J, Wilson-Morkeh H, et al. The 2025 British Society for Rheumatology management recommendations for ANCA-associated vasculitis. Rheumatology (Oxford). 2025;64(8):4470–4494 (PMID 40499922; PMC12316377). Texto integral lido; GRADE (1–2, A–C) e grau de concordância.',
+  url: 'https://doi.org/10.1093/rheumatology/keaf240',
+}
+
+/** cap. 90: OMS 2024 de influenza, pelo resumo do BMJ. */
+export const notaHcfmuspCap90 = notaSoManualLote7('nota-hcfmusp-cap90-influenza', 'Nota de atualização — manual HC, cap. 90: influenza', 'cap. 90, p. 1217–1226', [
+    { tema: 'Antiviral', diretriz: 'OMS 2024 (condicional; resumo lido): tratar dentro de 48 h do início dos sintomas, com oseltamivir no caso grave e baloxavir no caso não grave com alto risco de progressão', manual: 'oseltamivir 75 mg VO 12/12 h por 5 dias, prolongável a 7–10 dias; benefício maior nas primeiras 48 h; indicações na Tabela 6 (cap. 90, p. 1224–1225)' },
+    { tema: 'Profilaxia', diretriz: 'OMS 2024 (condicional; resumo lido): profilaxia com baloxavir, laninamivir, oseltamivir ou zanamivir para quem se expôs a influenza zoonótica e para quem se expôs a influenza sazonal e tem risco extremamente alto', manual: 'não comparado nesta nota' },
+    { tema: 'Antibiótico', diretriz: 'OMS 2024 (forte contra; resumo lido): no caso não grave, não usar antibiótico', manual: 'no quadro respiratório grave, antibiótico de amplo espectro como no tratamento da pneumonia (cap. 90, p. 1224)' },
+    { tema: 'Corticoide e outros adjuvantes no caso grave', diretriz: 'OMS 2024 (condicional contra; resumo lido): no caso grave, não usar corticoide, macrolídeo, inibidor de mTOR, AINE nem imunoterapia passiva', manual: 'com P/F < 200, glicocorticoide pode ser considerado; alguns autores sugerem macrolídeo (cap. 90, p. 1224)' },
+  ], [OMS_INFLUENZA_2024])
+
+/** cap. 74: SANJO 2023 (artrite séptica) e ACR 2020 (crise de gota). */
+export const notaHcfmuspCap74 = notaSoManualLote7('nota-hcfmusp-cap74-monoartrite', 'Nota de atualização — manual HC, cap. 74: monoartrites agudas', 'cap. 74, p. 985–993', [
+    { tema: 'Artrite séptica: punção', diretriz: 'SANJO 2023 (B1): puncionar o líquido sinovial o mais rápido possível quando se suspeita de artrite séptica', manual: 'não comparado nesta nota' },
+    { tema: 'Artrite séptica: leucócitos do líquido sinovial', diretriz: 'SANJO 2023 (B2; D2): mais de 50.000 leucócitos/µL sugere artrite séptica, mas sozinho não basta; menos de 25.000/µL reduz a probabilidade, mas não exclui; os cortes podem não valer no imunossuprimido', manual: 'não comparado nesta nota' },
+    { tema: 'Artrite séptica: culturas e momento do antibiótico', diretriz: 'SANJO 2023: cultura do líquido sinovial (B1); pelo menos 2 pares de hemocultura no paciente febril ou com suspeita de bacteremia ou sepse (C2); antibiótico depois da punção e das hemoculturas (D1); na sepse ou no choque séptico, antibiótico empírico o quanto antes (B1)', manual: 'o cap. 74 não trata do ponto' },
+    { tema: 'Artrite séptica: antibiótico empírico', diretriz: 'SANJO 2023 (D2 para escolher pela epidemiologia local; esquema sem grau): sem fator de risco para germe resistente e com Gram do líquido sem bactérias, os autores indicam penicilina semissintética (cloxacilina, cefazolina) com ceftriaxona, ou amoxicilina-clavulanato sozinha', manual: 'oxacilina 2 g a cada 4 h; com diabetes, etilismo importante, drogas injetáveis, cirrose, neoplasia ativa ou HIV, somar ceftriaxona 1 g EV 12/12 h ou ciprofloxacino 400 mg EV 12/12 h (cap. 74, p. 990)' },
+    { tema: 'Artrite séptica: drenagem', diretriz: 'SANJO 2023 (B2): desbridamento cirúrgico, sobretudo nas grandes articulações; artroscopia nos estágios de Gächter I a III; cirurgia aberta no III e no IV', manual: 'drenagem percutânea na maioria, muitas vezes repetida; cirúrgica (aberta ou artroscopia) em articulação difícil de drenar e outras situações (cap. 74, p. 991)' },
+    { tema: 'Crise de gota: tratamento', diretriz: 'ACR 2020: colchicina, AINE ou glicocorticoide (oral, intra-articular ou intramuscular) como primeira linha, em vez de inibidor de IL-1 ou ACTH (forte); colchicina em dose baixa em vez de dose alta (forte), na posologia da FDA de 1,2 mg e 0,6 mg uma hora depois; gelo local como adjuvante (condicional); sem via oral, glicocorticoide intramuscular, venoso ou intra-articular (forte)', manual: 'AINE é a primeira escolha; corticoide oral, intra-articular, intramuscular ou venoso quando o AINE é contraindicado; colchicina pouco usada pelos efeitos adversos, 1,5–3 mg por 3–6 dias (cap. 74, p. 992)' },
+    { tema: 'Crise de gota: hipouricemiante', diretriz: 'ACR 2020 (condicional): quando o hipouricemiante está indicado, começar durante a crise em vez de esperar a crise passar', manual: 'não iniciar o tratamento da hiperuricemia antes de 2 a 4 semanas da crise, pois pode piorá-la (cap. 74, p. 992)' },
+  ], [SANJO_2023, ACR_GOTA_2020])
+
+/** cap. 54: ACG 2026 de diverticulite, pelo resumo. */
+export const notaHcfmuspCap54 = notaSoManualLote7('nota-hcfmusp-cap54-diverticulite', 'Nota de atualização — manual HC, cap. 54: diverticulite aguda', 'cap. 54, p. 738–753', [
+    { tema: 'Diagnóstico', diretriz: 'ACG 2026 (resumo lido): a tomografia é essencial para confirmar a diverticulite, sobretudo no primeiro episódio e nos casos graves', manual: 'classificação de Hinchey modificada por Kaiser, pela tomografia (Tabela 1, cap. 54, p. 740)' },
+    { tema: 'Antibiótico', diretriz: 'ACG 2026 (sugere contra; resumo lido): não usar antibiótico de rotina na diverticulite aguda não complicada de baixo risco. Antibiótico com sinais de alto risco, imunossupressão, fragilidade ou sem garantia de manejo ambulatorial seguro', manual: 'no tratamento ambulatorial, diretrizes recentes sugerem que o antibiótico é dispensável; algumas ainda o recomendam (cap. 54, p. 745)' },
+    { tema: 'Colonoscopia depois', diretriz: 'ACG 2026 (resumo lido): colonoscopia depois da recuperação na diverticulite complicada; sugerida na não complicada com sinal de alarme ou rastreio de câncer colorretal em atraso', manual: 'eventualmente colonoscopia no seguimento ambulatorial (cap. 54, p. 752)' },
+    { tema: 'Recorrência', diretriz: 'ACG 2026 (resumo lido): a recorrência aumenta a cada episódio; encaminhar a cirurgião para discutir colectomia eletiva quando a diverticulite recorrente não complicada afeta muito a qualidade de vida', manual: 'cirurgia eletiva em complicação crônica (fístula, estenose), no imunossuprimido e nos episódios recorrentes (cap. 54, p. 752)' },
+  ], [ACG_DIVERTICULITE_2026])
+
+/** cap. 29: BSR 2025 de vasculite ANCA (granulomatose com poliangeíte e poliangeíte microscópica). */
+export const notaHcfmuspCap29 = notaSoManualLote7('nota-hcfmusp-cap29-hemorragia-alveolar', 'Nota de atualização — manual HC, cap. 29: hemorragia alveolar', 'cap. 29, p. 396–405', [
+    { tema: 'Gravidade da vasculite ANCA', diretriz: 'BSR 2025 (1C): toda vasculite ANCA ativa deve ser tratada como doença que pode ameaçar a vida ou o órgão', manual: 'tratar a causa; vasculites ANCA entre as causas de hemorragia alveolar (cap. 29, p. 401–403)' },
+    { tema: 'Pulso de metilprednisolona', diretriz: 'BSR 2025 (2C): pulso de metilprednisolona EV não é de rotina, mas pode ficar como opção nas manifestações que ameaçam órgão, como a hemorragia alveolar difusa', manual: 'na suspeita autoimune, metilprednisolona 500–1.000 mg EV por dia por 3 a 5 dias; lavado broncoalveolar ajuda a excluir infecção antes (cap. 29, p. 403)' },
+    { tema: 'Plasmaférese na vasculite ANCA', diretriz: 'BSR 2025 (vale para granulomatose com poliangeíte e poliangeíte microscópica, não para a doença antimembrana basal): não usar plasmaférese de rotina na hemorragia pulmonar sem acometimento renal grave (1A); considerar com creatinina > 300 µmol/L, pesados os efeitos adversos (2B)', manual: 'na granulomatose com poliangeíte, ciclofosfamida VO e plasmaférese são opções; na doença antimembrana basal, plasmaférese diária por 2 semanas (cap. 29, p. 404)' },
+    { tema: 'Doença antimembrana basal (síndrome de Goodpasture)', diretriz: 'A BSR 2025 trata só da vasculite ANCA: a recomendação de não usar plasmaférese de rotina na hemorragia pulmonar não vale para a doença antimembrana basal, em que segue valendo o manual', manual: 'na síndrome do anticorpo antimembrana basal glomerular, iniciar plasmaférese diária por 2 semanas (cap. 29, p. 404)' },
+    { tema: 'Indução na vasculite ANCA', diretriz: 'BSR 2025: ciclofosfamida EV em pulsos ou rituximabe (1A), com glicocorticoide ou avacopan (1A); na recaída, rituximabe (1B); os dois juntos podem ser considerados na doença que ameaça órgão ou vida (2C). Glicocorticoide oral 50–75 mg ou 1 mg/kg/dia, até 75 mg, com redução pelo esquema do PEXIVAS (1B)', manual: 'ciclofosfamida VO 2–3 mg/kg na granulomatose com poliangeíte; rituximabe estudado nos casos refratários (cap. 29, p. 404)' },
+  ], [BSR_VASCULITE_2025])
+
+export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap8, notaHcfmuspCap29, notaHcfmuspCap36, notaHcfmuspCap42, notaHcfmuspCap51, notaHcfmuspCap54, notaHcfmuspCap63, notaHcfmuspCap74, notaHcfmuspCap89, notaHcfmuspCap90]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7]
 
