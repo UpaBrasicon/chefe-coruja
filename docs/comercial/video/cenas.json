@@ -1,0 +1,124 @@
+{
+  "titulo": "Chefe Coruja — vídeo de venda",
+  "unidade_inicial": "UPA 24h Jardim Primavera",
+  "tema_inicial": "escuro",
+  "cenas": [
+    { "n": 1, "cartela": true, "duracao": 4, "titulo": "Chefe Coruja", "subtitulo": "Prontuário e gestão para UPA, pronto-socorro, hospital e UBS" },
+
+    { "n": 2, "publica": true, "duracao": 9, "legenda": "Só entra quem está na escala.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/", "ms": 3000 }, { "acao": "rolar", "px": 260, "ms": 4500 }, { "acao": "esperar", "ms": 1200 } ] },
+
+    { "n": 3, "duracao": 10, "legenda": "Check-in com localização; o gestor vê atraso e divergência.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/escala", "ms": 3500 }, { "acao": "rolar", "px": 500, "ms": 5000 }, { "acao": "esperar", "ms": 1000 } ] },
+
+    { "n": 3.1, "oculta": true, "acoes": [ { "acao": "perfil", "nome": "Recepção" } ] },
+    { "n": 4, "duracao": 11, "legenda": "A recepção busca antes de cadastrar. Prioridade legal entra sozinha.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/recepcao", "ms": 2500 },
+                 { "acao": "digitar", "marcador": "Nome, CPF, Cartão SUS ou nome da mãe", "valor": "Sebas", "atraso": 160, "ms": 3500 },
+                 { "acao": "esperar", "ms": 2500 } ] },
+
+    { "n": 4.1, "oculta": true, "acoes": [ { "acao": "perfil", "nome": "Enfermeiro" } ] },
+    { "n": 5, "duracao": 11, "legenda": "A enfermagem classifica o risco. A cor é do enfermeiro.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/triagem", "ms": 2500 },
+                 { "acao": "clicar", "papel": "button", "nome": "Triar", "ms": 2500 },
+                 { "acao": "rolar", "seletor": "[role=dialog]", "px": 700, "ms": 4000 },
+                 { "acao": "esperar", "ms": 800 }, { "acao": "tecla", "tecla": "Escape", "ms": 800 } ] },
+
+    { "n": 5.1, "oculta": true, "acoes": [ { "acao": "perfil", "nome": "Plantonista" } ] },
+    { "n": 6, "duracao": 13, "legenda": "Sinais da triagem e NEWS2 já na ficha, sem redigitar.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/atendimento?fila=atendimento", "ms": 2500 },
+                 { "acao": "clicar", "papel": "button", "nome": "Abrir atendimento", "ms": 2500 },
+                 { "acao": "pairar", "texto": "NEWS2", "ms": 1500 },
+                 { "acao": "digitar", "rotulo": "Avaliação · hipótese diagnóstica", "valor": "Cefaleia", "atraso": 110, "ms": 2500 },
+                 { "acao": "esperar", "ms": 1500 } ] },
+
+    { "n": 7, "duracao": 12, "legenda": "O médico escreve a dose. O sistema não sugere.", "corte": 0.3,
+      "acoes": [ { "acao": "clicar", "papel": "tab", "nome": "Prescrição", "ms": 2000 },
+                 { "acao": "pairar", "texto": "Alergia não registrada", "ms": 1500 },
+                 { "acao": "rolar", "seletor": "[role=dialog]", "px": 600, "ms": 3500 },
+                 { "acao": "pairar", "marcador": "escrita pelo médico", "ms": 2000 },
+                 { "acao": "tecla", "tecla": "Escape", "ms": 800 } ] },
+
+    { "n": 7.1, "oculta": true, "acoes": [ { "acao": "perfil", "nome": "Enfermeiro" } ] },
+    { "n": 8, "duracao": 10, "legenda": "Cada item checado tem nome e hora. Recusa pede motivo.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/checagem", "ms": 2500 },
+                 { "acao": "pairar", "texto": "Última checagem", "ms": 2000 },
+                 { "acao": "clicar", "papel": "button", "nome": "Recusado", "ms": 2500 },
+                 { "acao": "esperar", "ms": 1500 } ] },
+
+    { "n": 8.1, "oculta": true, "acoes": [ { "acao": "tecla", "tecla": "Escape" }, { "acao": "perfil", "nome": "Gestor" } ] },
+    { "n": 9, "duracao": 8, "legenda": "Farmácia: alta vigilância, interações críticas e dispensação.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/alta-vigilancia", "ms": 3000 }, { "acao": "rolar", "px": 300, "ms": 2500 },
+                 { "acao": "ir", "rota": "/gestao/farmacia", "ms": 3000 } ] },
+
+    { "n": 10, "duracao": 10, "legenda": "Observação com prazo de 6 horas à vista.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/observacao", "ms": 3500 }, { "acao": "rolar", "px": 400, "ms": 4000 }, { "acao": "esperar", "ms": 1000 } ] },
+
+    { "n": 11, "duracao": 11, "legenda": "Leito reservado, bloqueado ou em higienização: o mapa mostra.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/internacao", "ms": 3500 }, { "acao": "rolar", "px": 500, "ms": 5000 }, { "acao": "esperar", "ms": 1000 } ] },
+
+    { "n": 12, "duracao": 14, "legenda": "Pergunte em português. A resposta não traz nome de paciente.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/gestao", "ms": 3000 },
+                 { "acao": "clicar", "papel": "button", "nome": "Em conformidade", "ms": 1500 },
+                 { "acao": "digitar", "marcador": "Pergunte sobre a gestão da unidade", "valor": "Qual a taxa de ocupação agora?", "atraso": 55, "ms": 300 },
+                 { "acao": "tecla", "tecla": "Enter", "ms": 500 },
+                 { "acao": "esperar_texto", "texto": "Nenhum nome de paciente", "limite": 40000, "ms": 3500 } ] },
+
+    { "n": 13, "duracao": 11, "legenda": "A porta em tempo real, com o gargalo apontado.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/gestao/porta", "ms": 3500 }, { "acao": "rolar", "px": 450, "ms": 4500 }, { "acao": "esperar", "ms": 1200 } ] },
+
+    { "n": 14, "duracao": 11, "legenda": "Indicadores com filtros e exportação em CSV.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/indicadores", "ms": 3500 }, { "acao": "rolar", "px": 900, "ms": 5000 }, { "acao": "esperar", "ms": 1000 } ] },
+
+    { "n": 15, "duracao": 12, "legenda": "Pedidos à Central de Regulação com prioridade, prazo e alerta.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/regulacao", "ms": 3500 }, { "acao": "rolar", "px": 600, "ms": 5000 }, { "acao": "esperar", "ms": 1500 } ] },
+
+    { "n": 16, "duracao": 7, "legenda": "Tema escuro ou claro, pelo menu do usuário.", "corte": 0,
+      "acoes": [ { "acao": "rolar", "ate": "topo", "ms": 800 }, { "acao": "tema", "nome": "Claro", "ms": 2000 } ] },
+
+    { "n": 16.1, "oculta": true, "acoes": [ { "acao": "unidade", "nome": "UBS Vila Esperança" } ] },
+    { "n": 17, "duracao": 10, "legenda": "Na UBS: agenda, escuta inicial e encaminhados.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/agenda-consultas", "ms": 3500 }, { "acao": "rolar", "px": 300, "ms": 2500 },
+                 { "acao": "ir", "rota": "/encaminhados", "ms": 3500 } ] },
+
+    { "n": 18, "duracao": 11, "legenda": "Hiperdia com as regras C5 e C4 do Ministério da Saúde.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/hiperdia", "ms": 3500 }, { "acao": "rolar", "px": 350, "ms": 4000 }, { "acao": "esperar", "ms": 1500 } ] },
+
+    { "n": 19, "duracao": 8, "legenda": "Pré-natal e puericultura também estão aqui.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/pre-natal", "ms": 3800 }, { "acao": "ir", "rota": "/puericultura", "ms": 3800 } ] },
+
+    { "n": 19.1, "oculta": true, "acoes": [ { "acao": "unidade", "nome": "UPA 24h Jardim Primavera" }, { "acao": "perfil", "nome": "Plantonista" } ] },
+    { "n": 20, "duracao": 10, "legenda": "232 ferramentas clínicas, aprovadas pelo responsável técnico.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/plantonista", "ms": 3000 }, { "acao": "rolar", "px": 350, "ms": 4000 }, { "acao": "esperar", "ms": 1500 } ] },
+
+    { "n": 21, "duracao": 8, "legenda": "Escores, condutas, pediatria, protocolos e ventilação mecânica.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/plantonista/escores/curb-65", "ms": 3000 }, { "acao": "rolar", "px": 350, "ms": 3500 }, { "acao": "esperar", "ms": 1000 } ] },
+
+    { "n": 22, "duracao": 8, "legenda": "A IA só responde com fonte citada.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/plantonista", "ms": 2500 },
+                 { "acao": "digitar", "rotulo": "Buscar ferramenta ou perguntar à IA", "valor": "noradrenalina pode correr em acesso periférico no adulto?", "atraso": 45, "ms": 800 },
+                 { "acao": "clicar", "texto": "Perguntar à IA:", "ms": 1000 } ] },
+
+    { "n": 23, "duracao": 13, "legenda": "Diretriz nova e manual lado a lado quando divergem.", "corte": 0,
+      "acoes": [ { "acao": "esperar_texto", "texto": "Fontes", "exato": true, "limite": 90000, "ms": 2500 },
+                 { "acao": "rolar", "px": 450, "ms": 5000 }, { "acao": "esperar", "ms": 2500 } ] },
+
+    { "n": 23.1, "oculta": true, "acoes": [ { "acao": "perfil", "nome": "Gestor" } ] },
+    { "n": 24, "duracao": 10, "legenda": "A conta nasce na porta e na internação.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/faturamento/contas", "ms": 3500 }, { "acao": "rolar", "px": 400, "ms": 4000 }, { "acao": "esperar", "ms": 1500 } ] },
+
+    { "n": 25, "duracao": 10, "legenda": "BPA, AIH, APAC e glosas. Pendência trava o fechamento.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/faturamento", "ms": 4000 }, { "acao": "ir", "rota": "/aih", "ms": 4000 } ] },
+
+    { "n": 26, "publica": true, "duracao": 11, "legenda": "Segundo fator em todo acesso. Toda ação tem autor.", "corte": 1.5,
+      "acoes": [ { "acao": "ir", "rota": "/", "ms": 2000 }, { "acao": "rolar_ate", "seletor": "#seguranca", "ms": 3500, "pausa": 4500 } ] },
+
+    { "n": 27, "publica": true, "duracao": 11, "legenda": "Dados em São Paulo, com cópia diária cifrada por 20 anos.", "corte": 0,
+      "acoes": [ { "acao": "rolar", "px": 320, "ms": 5000 }, { "acao": "esperar", "ms": 4500 } ] },
+
+    { "n": 28, "publica": true, "duracao": 9, "legenda": "Sem conexão, os registros essenciais continuam.", "corte": 0,
+      "acoes": [ { "acao": "rolar", "px": 600, "ms": 6000 }, { "acao": "esperar", "ms": 2000 } ] },
+
+    { "n": 29, "cartela": true, "duracao": 6, "titulo": "Chefe Coruja", "subtitulo": "Agende uma demonstração em chefecoruja.com.br" }
+  ]
+}
