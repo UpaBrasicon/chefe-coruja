@@ -645,7 +645,7 @@ test('lote 8, Q2: nota do cap. 9 a partir do CDC 2022 na ficha de dor', async ()
 
 test('lote 8, Q3: notas dos cap. 87, 92, 75, 86 e 85 sem ficha da Central', () => {
   const por = (id: string) => NOTAS_HCFMUSP_LOTE8.find((n) => n.ficha.id === id)!
-  for (const [id, n] of [['nota-hcfmusp-cap87-covid', 4], ['nota-hcfmusp-cap92-chikungunya', 4], ['nota-hcfmusp-cap75-reumatologicas', 2], ['nota-hcfmusp-cap86-otorrino', 4], ['nota-hcfmusp-cap85-oftalmologia', 1]] as const) {
+  for (const [id, n] of [['nota-hcfmusp-cap87-covid', 4], ['nota-hcfmusp-cap92-chikungunya', 4], ['nota-hcfmusp-cap75-reumatologicas', 2], ['nota-hcfmusp-cap86-otorrino', 4], ['nota-hcfmusp-cap85-oftalmologia', 3]] as const) {
     const nota = por(id)
     assert.equal(nota.fichaCentral, '')
     assert.equal(nota.itens.length, n, id)
@@ -653,4 +653,13 @@ test('lote 8, Q3: notas dos cap. 87, 92, 75, 86 e 85 sem ficha da Central', () =
   }
   assert.match(textoNota(por('nota-hcfmusp-cap92-chikungunya')), /não usar AINE/)
   assert.match(textoNota(por('nota-hcfmusp-cap86-otorrino')), /sem teto universal/)
+})
+
+test('lote 8, pendentes: notas dos cap. 35 e 107 e a AAO 2026 na nota do cap. 85', () => {
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE8.find((n) => n.ficha.id === id)!
+  assert.equal(por('nota-hcfmusp-cap35-aspiracao').itens.length, 4)
+  assert.equal(por('nota-hcfmusp-cap107-marca-passo').itens.length, 2)
+  for (const id of ['nota-hcfmusp-cap35-aspiracao', 'nota-hcfmusp-cap107-marca-passo', 'nota-hcfmusp-cap85-oftalmologia']) assert.equal(por(id).ficha.versao, '2026-11-15.1', id)
+  assert.equal(por('nota-hcfmusp-cap85-oftalmologia').ficha.fontes.length, 2)
+  assert.match(textoNota(por('nota-hcfmusp-cap35-aspiracao')), /não cobrir anaeróbio de rotina/)
 })
