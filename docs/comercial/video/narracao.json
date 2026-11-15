@@ -1,0 +1,33 @@
+{
+ "voz": "pt-BR-FranciscaNeural",
+ "ritmo": "+6%",
+ "abertura": { "titulo": "Plantão lotado. Informação espalhada.", "subtitulo": "E se a rede inteira coubesse numa tela só?" },
+ "fechamento": { "titulo": "Chefe Coruja", "subtitulo": "Conheça em chefecoruja.com.br" },
+ "cenas": [
+  { "n": 1, "cartela": "abertura", "fala": "Plantão lotado. Fila na porta. E a informação que você precisa está espalhada em papel, planilha e grupo de mensagem." },
+  { "n": 2, "foco": [0.22, 0.28], "legenda": "Só entra quem está na escala", "fala": "Este é o Chefe Coruja. Prontuário e gestão para a rede pública. Aqui, só entra quem está na escala." },
+  { "n": 3, "foco": [0.85, 0.3], "legenda": "Escala define o acesso", "fala": "A escala do mês define a equipe. Quem está no plantão, acessa. Quem não está, fica de fora." },
+  { "n": 4, "foco": [0.25, 0.2], "legenda": "Sem cadastro duplicado", "fala": "Na recepção, o sistema busca o paciente antes de cadastrar de novo. E a prioridade legal aparece sozinha." },
+  { "n": 5, "foco": [0.5, 0.35], "legenda": "A cor é da enfermagem", "fala": "Na triagem, a enfermagem classifica o risco com protocolo de referência. A cor é do enfermeiro." },
+  { "n": 6, "foco": [0.35, 0.25], "legenda": "Sinais e NEWS2 na ficha", "fala": "O médico abre a ficha e encontra os sinais da triagem com o news dois calculado. A hipótese sugere o CID." },
+  { "n": 7, "foco": [0.45, 0.45], "legenda": "O sistema não sugere dose", "fala": "Na prescrição, o sistema avisa da alergia não registrada e exige o peso. A dose, quem escreve é o médico." },
+  { "n": 8, "foco": [0.3, 0.3], "legenda": "Checagem com nome e hora", "fala": "A enfermagem checa item por item, com nome e hora. Recusou? Tem que dizer o motivo. Fica tudo registrado." },
+  { "n": 9, "foco": [0.3, 0.3], "legenda": "Alta vigilância à vista", "fala": "A farmácia mantém a lista de medicamentos de alta vigilância da unidade, à vista de toda a equipe." },
+  { "n": 10, "foco": [0.45, 0.35], "legenda": "Prazo de seis horas", "fala": "Na observação, o prazo de seis horas fica na frente de todo mundo." },
+  { "n": 11, "foco": [0.4, 0.3], "legenda": "Internados por setor", "fala": "Na internação, os pacientes aparecem por setor. Leito em higienização, só a enfermagem libera." },
+  { "n": 12, "foco": [0.5, 0.3], "legenda": "Pergunte em português", "fala": "E o gestor? Vê a ocupação e a equipe em plantão. Pergunta em português e recebe a resposta, sem nome de paciente." },
+  { "n": 13, "foco": [0.3, 0.25], "legenda": "Onde está o gargalo", "fala": "A porta aparece em tempo real, com o gargalo apontado e a espera separada por cor." },
+  { "n": 14, "foco": [0.4, 0.4], "legenda": "Filtrar e exportar", "fala": "Os indicadores têm filtro e exportação. O número da reunião sai da própria tela." },
+  { "n": 15, "foco": [0.4, 0.35], "legenda": "Regulação com prazo", "fala": "Precisa transferir? O pedido segue para a Central de Regulação com prioridade e prazo. Destino sem resposta vira alerta." },
+  { "n": 16, "foco": [0.88, 0.15], "legenda": "Escuro ou claro", "fala": "Tema escuro ou claro, modo compacto e busca rápida. Cada um trabalha do seu jeito." },
+  { "n": 17, "foco": [0.3, 0.35], "legenda": "UBS: agenda e encaminhados", "fala": "Na UBS, a agenda de consultas e os pacientes encaminhados ficam na mesma tela." },
+  { "n": 18, "foco": [0.4, 0.3], "legenda": "Hiperdia nas regras do Ministério", "fala": "O Hiperdia segue as regras do Ministério da Saúde para hipertensão e diabetes." },
+  { "n": 19, "foco": [0.4, 0.35], "legenda": "Puericultura e pré-natal", "fala": "Puericultura e pré-natal acompanham a criança e a gestante, consulta a consulta." },
+  { "n": 20, "foco": [0.45, 0.4], "legenda": "232 ferramentas clínicas", "fala": "Para o plantonista, duzentas e trinta e duas ferramentas clínicas, revistas contra as diretrizes mais recentes e aprovadas pelo responsável técnico." },
+  { "n": 21, "foco": [0.4, 0.35], "legenda": "Escores na mão", "fala": "O escore abre, o médico preenche e o resultado sai na hora." },
+  { "n": 22, "ate": 23, "foco": [0.5, 0.45], "legenda": "Resposta com fonte citada", "fala": "Dúvida clínica no meio do plantão? Pergunte. A resposta vem com a fonte citada, diretriz e manual lado a lado." },
+  { "n": 24, "foco": [0.5, 0.3], "legenda": "Faturamento desde a porta", "fala": "A conta do atendimento nasce junto com ele, na porta e na internação. E pendência trava o fechamento." },
+  { "n": 26, "ate": 28, "foco": [0.45, 0.4], "legenda": "Toda ação tem autor", "fala": "Toda ação tem autor. Segundo fator, auditoria que não se reescreve, dados em São Paulo, cópia diária cifrada e modo sem conexão." },
+  { "n": 29, "cartela": "fechamento", "fala": "Chefe Coruja. Da porta à alta, da UPA à UBS. Conheça e fale com a gente em chefecoruja.com.br." }
+ ]
+}

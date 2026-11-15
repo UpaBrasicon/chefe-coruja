@@ -293,13 +293,12 @@
     },
     {
      "acao": "rolar",
-     "px": 300,
-     "ms": 2500
+     "px": 350,
+     "ms": 4000
     },
     {
-     "acao": "ir",
-     "rota": "/gestao/farmacia",
-     "ms": 4000
+     "acao": "esperar",
+     "ms": 1500
     }
    ]
   },
@@ -393,7 +392,13 @@
     {
      "acao": "ir",
      "rota": "/gestao/porta",
-     "ms": 3500
+     "ms": 500
+    },
+    {
+     "acao": "esperar_texto",
+     "texto": "Aguardando médico, por cor",
+     "limite": 60000,
+     "ms": 2500
     },
     {
      "acao": "rolar",
@@ -532,12 +537,24 @@
     {
      "acao": "ir",
      "rota": "/puericultura",
-     "ms": 3000
+     "ms": 500
+    },
+    {
+     "acao": "esperar_texto",
+     "texto": "Davi Lucas Oliveira",
+     "limite": 40000,
+     "ms": 3500
     },
     {
      "acao": "ir",
      "rota": "/pre-natal",
-     "ms": 4000
+     "ms": 300
+    },
+    {
+     "acao": "esperar_texto",
+     "texto": "Bruna Rodrigues Nunes",
+     "limite": 40000,
+     "ms": 3500
     }
    ]
   },
@@ -692,9 +709,13 @@
      "ms": 3000
     },
     {
-     "acao": "ir",
-     "rota": "/aih",
-     "ms": 4000
+     "acao": "rolar",
+     "px": 300,
+     "ms": 3500
+    },
+    {
+     "acao": "esperar",
+     "ms": 1500
     }
    ]
   },

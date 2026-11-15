@@ -83,3 +83,13 @@ Cerca de 600 palavras, para ler em uns 4:20, com pausas entre as cenas.
 - **Página pública:** é gravada sem login, num contexto separado do navegador.
 - **Trocas de perfil e de unidade:** gravadas como passagens ocultas, que não entram no vídeo.
 - **O que fica fora** (do roteiro do Fable): RNDS, certificação e assinatura ICP-Brasil; preço, clientes e depoimentos; dose de medicamento; painel de chamada, checklist de alta e escuta inicial em tela própria; troca de plantão sendo aprovada; check-in com GPS acontecendo.
+
+## Versão narrada (v2, 15/11/2026)
+
+Pedido do RT depois da primeira versão: mais polida, com música e narração ("desse modo a pessoa vai dormir vendo o vídeo"). Decisões: N1 = A (voz neural pelo edge-tts), M1 = B (trilha gerada por código), R1 = A (mais curto e com ritmo).
+
+- **Narração:** reescrita pelo Fable, mais curta (cerca de 450 palavras), em `narracao.json`. Corrigi três frases que diziam mais do que o sistema faz: a cor da triagem (o médico pode reclassificar), a alta vigilância (a tela é a lista da unidade) e o responsável técnico (é o do produto, não o da unidade).
+- **Voz:** pt-BR-FranciscaNeural, ritmo +6%. O texto vai ao serviço de voz da Microsoft; não tem dado de paciente.
+- **Música:** `scripts/demo/trilha.py`, instrumental sintetizado (Lá menor, 104 bpm), sem amostra de terceiros. Abaixa sozinha quando a voz fala.
+- **Imagem:** cada cena dura o tempo da fala, com zoom lento no ponto que importa, legenda curta com a palavra-chave e transições entre as cenas.
+- **Montagem:** `scripts/demo/montar-narrado.mjs`. Resultado: 2:50.
