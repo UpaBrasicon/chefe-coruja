@@ -29,3 +29,5 @@
 - Prévia local de todos os slides, com as imagens enviadas.
 - Três recortes refeitos por estarem ilegíveis: o CID, a regulação e a IA.
 - O recorte do CID deixa de fora a sugestão "O80.0 Parto espontâneo cefálico", que aparece para "Cefaleia" (achado guardado).
+
+**Aprovação:** o RT aprovou o deck em 15/11/2026 ("Aprovado").
