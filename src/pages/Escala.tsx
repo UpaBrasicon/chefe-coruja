@@ -32,6 +32,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
+import { ACCEPT_ANEXO_CLINICO, tipoDoArquivo } from '@/lib/anexo'
 import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
 import { dataHora, dataIso, hora } from '@/lib/formato'
@@ -701,6 +702,7 @@ export default function Escala({
       const { error: upErr } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).upload(caminho, anexo, {
         cacheControl: '3600',
         upsert: false,
+        contentType: tipoDoArquivo(anexo) || undefined,
       })
       setAnexando(false)
       if (upErr) {
@@ -1181,7 +1183,7 @@ export default function Escala({
                         className="mt-3"
                         rotulo="Anexar documento"
                         descricao="PDF, JPG ou PNG"
-                        accept=".pdf,image/png,image/jpeg,image/jpg"
+                        accept={ACCEPT_ANEXO_CLINICO}
                         disabled={anexando}
                         valor={anexo}
                         onArquivos={(fs) => setAnexo(fs[0] ?? null)}

@@ -37,10 +37,11 @@ import { abrirProntuario, folhaDoDocumentoEmitido } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { janelaEmBranco } from '@/lib/abrirEmJanela'
+import { ACCEPT_ANEXO_CLINICO, cabeNoAccept, tipoDoArquivo } from '@/lib/anexo'
 
 const MAX_ANEXO = 10 * 1024 * 1024
 /** PDF ou imagem até 10 MB; a frase vai depois do nome do arquivo. */
-const erroAnexo = (f: File) => (!(f.type === 'application/pdf' || f.type.startsWith('image/')) ? 'só PDF ou imagem.'
+const erroAnexo = (f: File) => (!cabeNoAccept(f, ACCEPT_ANEXO_CLINICO) ? 'só PDF ou imagem (JPEG, PNG, WebP ou HEIC).'
   : f.size > MAX_ANEXO ? 'acima de 10 MB. Reduza o arquivo.' : null)
 const MIN_CANCELAR = 10
 
@@ -220,10 +221,11 @@ export default function ImpressaoProntuario() {
         const problema = erroAnexo(f)
         if (problema) { setAviso(`${f.name}: ${problema}`); continue }
         const caminho = `${unidadeDoPaciente}/${pacienteId}/prontuario/${crypto.randomUUID()}-${f.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
-        const up = await supabase.storage.from('atendimento').upload(caminho, f, { upsert: false, contentType: f.type })
+        const tipo = tipoDoArquivo(f)
+        const up = await supabase.storage.from('atendimento').upload(caminho, f, { upsert: false, contentType: tipo })
         if (up.error) { setAviso(`${f.name}: ${up.error.message}`); continue }
         const r = await supabase.rpc('registrar_anexo_prontuario', {
-          p_paciente: pacienteId, p_caminho: caminho, p_nome: f.name, p_tipo_mime: f.type, p_tamanho: f.size,
+          p_paciente: pacienteId, p_caminho: caminho, p_nome: f.name, p_tipo_mime: tipo, p_tamanho: f.size,
         })
         if (r.error) setAviso(`${f.name}: ${r.error.message}`)
       }
@@ -426,8 +428,8 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
             <AreaDeAnexo
               id="prontuario-anexos"
               multiple
-              descricao="PDF ou imagem, até 10 MB cada"
-              accept="application/pdf,image/*"
+              descricao="PDF ou imagem (JPEG, PNG, WebP ou HEIC), até 10 MB cada"
+              accept={ACCEPT_ANEXO_CLINICO}
               maxBytes={MAX_ANEXO}
               validar={erroAnexo}
               ocupado={enviando}

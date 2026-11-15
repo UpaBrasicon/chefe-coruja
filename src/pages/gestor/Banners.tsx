@@ -248,7 +248,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
               <Input
                 id="banner-arquivo"
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp"
                 onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
               />
             </div>
