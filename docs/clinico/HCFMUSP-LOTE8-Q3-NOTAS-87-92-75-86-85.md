@@ -64,3 +64,9 @@ Os cap. 35 (BTS 2023 de aspiração) e 107 (CCS/CHRS 2026 de marca-passo) depend
 - A migration foi aplicada, e as cinco notas estão aguardando aprovação.
 - As notas foram ingeridas, e a API foi reiniciada.
 - Os testes da nota passam, e o typecheck está limpo.
+
+## Produção do #732, 14/11/2026
+
+- A migration `20270414000049` foi aplicada antes do merge. O #732 foi mesclado com o CI verde.
+- Foram ingeridos 5 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As sete respostas saíram como na homologação.
