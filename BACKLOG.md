@@ -2503,6 +2503,30 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 ---
 
+## Trilha — Segurança (auditoria Cloudflare), pedido do RT em 15/11/2026
+
+Origem: em 15/11/2026, antes do item 6 do backlog comercial, o RT pediu três passadas da skill `security-audit` da Cloudflare (github.com/cloudflare/security-audit-skill): auditoria do código inteiro, vulnerabilidades em `src/` e security review. Nada foi aplicado. O RT pediu para registrar as melhorias aqui ("Registrar no BACKLOG").
+
+Base: `docs/seguranca/auditoria-cloudflare-2026-11-15/`, com o resumo e, de cada passada, o `REPORT.md` e o `NEEDS-VALIDATION.md`. As três passadas leram o commit `d0251b7b` e usaram 55 agentes. O resultado foi 26 achados `needs_validation` e nenhum confirmado. A skill só confirma o que reproduz num ambiente isolado, e o computador da auditoria não tem esse ambiente, então nenhum código foi executado. Cada achado foi conferido no código por um segundo agente e traz o teste que decide o caso.
+
+Regra da trilha: primeiro S0, que diz quais achados existem de fato. Cada correção depois vira tarefa própria, com diagnóstico, migration expand/contract testada na homologação, PR próprio e ok produção do RT. A prioridade abaixo é sugestão; ordem e fase são do RT.
+
+| Item | O que fazer | Achados (pasta da auditoria) | Prioridade sugerida | Estado |
+|---|---|---|---|---|
+| S0 | Na homologação, conferir os seis fatos que decidem os achados: (1) valor de `exigir_segundo_fator` na produção; (2) "Confirm email" do Auth; (3) se o gateway do Supabase sobrescreve o `X-Forwarded-For`; (4) se o Storage serve SVG/HTML inline; (5) proteção do `master` e quem tem push; (6) `flowType` do supabase-js | `RESUMO.md`, seção "Fatos que decidem" | P0 | Pendente |
+| S1 | Vínculos e perfis: vínculo novo só por convite ou com as regras de `gerar_convite`, sem anexar perfil de outra organização sem consentimento; `perfis_select` limitado à própria organização; `zerar_segundo_fator` só por quem gere a unidade principal da pessoa | run-1 (reset de 2FA), run-3 (`vinculos_insert`, `perfis_select`) | P1 | Pendente |
+| S2 | Entrada na conta: limite de tentativas e bloqueio em `aceitar_convite` como em `conferir_convite`, e códigos mais longos; adesão ao contrato só depois do e-mail confirmado; `flowType: 'pkce'` e recusa de troca de sessão quando já há uma ativa | run-1 (convite), run-3 (contrato, login cruzado) | P1 | Pendente |
+| S3 | 2FA uniforme, antes de ligar `exigir_segundo_fator`: política restritiva `segundo_fator_ok()` nas 11 tabelas clínicas, no `chat_mensagens` e nas views, com teste em CI que falhe quando uma tabela clínica ficar sem ela; checagem do 2FA nas funções de borda que usam a chave secreta (`clinical-search`); código por e-mail antes de cadastrar o primeiro TOTP | run-1 (TOTP), run-2 (chat), run-3 (tabelas, `clinical-search`) | P1 (bloqueia ligar o 2FA) | Pendente |
+| S4 | Documentos e impressão: escapar `sub`/`doc` em `cabecalho()` nas duas cópias de `folhas.ts` e o texto de erro nas janelas de impressão; `opener = null` em toda janela; tipos exclusivos (termo, óbito, parecer, teleinterconsulta) fora dos caminhos genéricos; `faltas_documento` em todos os caminhos, inclusive a sincronização; reenvio offline conferido contra o último contato registrado no servidor | run-1 e run-2 (`folhas.ts`), run-2 (reenvio offline, `opener`), run-3 (tipos exclusivos, laudo de AIH) | P2 | Pendente |
+| S5 | Anexos: `allowed_mime_types` nos buckets `atendimento`, `farmacia`, `banners` e `fotos`; remover `atendimento_update` ou restringi-la ao super admin; anexo baixado como download; sha256 no registro do anexo | run-1 (UPDATE do `atendimento`), run-2 (SVG/HTML) | P2 | Pendente |
+| S6 | Borda e API de integração: `API_BORDA_SEGREDO` sempre definido ou IP do gateway, também em `private.requisicao_ip` e `pedir-demonstracao`; comparação de segredo em tempo constante; limite real de tamanho do corpo; limite de taxa com trava; checagem de DNS para endereço privado no webhook | run-1 (`X-Forwarded-For`), notas de endurecimento | P2 | Pendente |
+| S7 | Sessão no navegador: no `SIGNED_OUT`, a mesma limpeza do "Sair"; token de dispositivo confiável apagado ao sair; prazo de 12 h do "manter conectado" valendo também com a aba aberta | run-2 (limpeza parcial), notas de endurecimento | P2 | Pendente |
+| S8 | Hermes e VPS: desidentificação também no histórico do assistente; sem log dos argumentos reidentificados; o cron do RNDS só sobe commit com CI verde ou SHA fixado; usuário `rnds` fora do grupo docker e da pasta do script do root; `deploy-backend.sh` sem imprimir o token; porta 8642 do Nous só em `127.0.0.1`; rota `/homolog` da biblioteca sem o `.env` da produção; `hmac.compare_digest` na biblioteca | run-3 (gateway, cron), notas de endurecimento | P2 | Pendente |
+| S9 | Versões fixadas: `supabase-js` com versão exata e `deno.lock` nas funções de borda; actions do CI presas por SHA; imagens base por digest | notas de endurecimento | P3 | Pendente |
+| S10 | Passada nova nas áreas adiadas: serviço de cópia de 20 anos (`infra/guarda`, `scripts/arquivo`; nome de objeto vira caminho sem checar `..`), rota `/homolog` da biblioteca, porta 8642 do Nous, `landing/` e `scripts/` | `coverage-ledger.json` das três passadas, fora do git em `~/audits/my-project` | P2 | Pendente |
+
+---
+
 ## Backlog Comercial Paralelo
 | Ordem | Material | Subtarefas | Critério de pronto | Pronto até |
 |---|---|---|---|---|
