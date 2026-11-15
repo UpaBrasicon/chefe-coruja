@@ -323,11 +323,11 @@ SET LOCAL ROLE anon;
 SELECT pg_temp.anonimo('198.51.100.3');
 DO $$ BEGIN
   BEGIN
-    PERFORM public.aceitar_convite('CC-AAAAA', 'termo-uso-sigilo-2026-10');
-    RAISE EXCEPTION 'FALHOU: anônimo chamou aceitar_convite';
+    PERFORM public.aceitar_convite_com_limite('CC-AAAAA', 'termo-uso-sigilo-2026-10');
+    RAISE EXCEPTION 'FALHOU: anônimo chamou aceitar_convite_com_limite';
   EXCEPTION WHEN insufficient_privilege THEN NULL;
   END;
-  RAISE NOTICE 'OK  aceitar_convite fechado para anônimo';
+  RAISE NOTICE 'OK  aceitar_convite_com_limite fechado para anônimo';
 END $$;
 
 -- ── 7. contrato da rede: conta nasce, vínculo aguarda o administrador ──────

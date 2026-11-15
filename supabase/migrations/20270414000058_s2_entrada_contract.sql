@@ -7,6 +7,7 @@
 -- tem conta e recebeu convite") e o nome dela de volta no portão.
 -- ════════════════════════════════════════════════════════════════════════════
 
+-- contract: sai a aceitar_convite sem limite de tentativas, trocada pela aceitar_convite_com_limite (expand em 20270414000057)
 DROP FUNCTION IF EXISTS public.aceitar_convite(text, text, text, text, date, text, text, text);
 
 CREATE OR REPLACE FUNCTION public.portao_requisicao()
