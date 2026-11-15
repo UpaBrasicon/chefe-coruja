@@ -1,0 +1,422 @@
+{
+ "notas": "Vídeo de venda em blocos animados. Coordenadas em pixels da tela gravada (1920 x 1080).",
+ "blocos": [
+  {
+   "fala": 1,
+   "tipo": "abertura"
+  },
+  {
+   "fala": 2,
+   "tipo": "tela3d",
+   "img": "still/s02.jpg",
+   "titulo": "Só entra quem está na escala",
+   "angulo": 1
+  },
+  {
+   "fala": 3,
+   "tipo": "tela3d",
+   "img": "still/s03.jpg",
+   "titulo": "A escala define o acesso",
+   "legenda": "Quem não está na escala não entra",
+   "recortes": [
+    [
+     1500,
+     60,
+     340,
+     330
+    ]
+   ]
+  },
+  {
+   "fala": 4,
+   "tipo": "clipe",
+   "clipe": [
+    "sessao.mp4",
+    26.0,
+    34.5
+   ],
+   "titulo": "Recepção",
+   "legenda": "Busca antes de cadastrar",
+   "recortes": [
+    {
+     "img": "still/s04.jpg",
+     "r": [
+      170,
+      400,
+      780,
+      76
+     ],
+     "em": 0.62
+    }
+   ]
+  },
+  {
+   "fala": 5,
+   "tipo": "clipe",
+   "clipe": [
+    "sessao.mp4",
+    40.2,
+    50.3
+   ],
+   "titulo": "Triagem",
+   "legenda": "A cor é da enfermagem",
+   "recortes": [
+    {
+     "img": "still/s05b.jpg",
+     "r": [
+      500,
+      410,
+      820,
+      60
+     ],
+     "em": 0.45
+    }
+   ]
+  },
+  {
+   "fala": 6,
+   "tipo": "clipe",
+   "clipe": [
+    "sessao-2.9-5.1-6-7-25.1.mp4",
+    13.8,
+    23.9
+   ],
+   "titulo": "Atendimento",
+   "legenda": "A hipótese sugere o CID",
+   "recortes": [
+    {
+     "img": "still/s06.jpg",
+     "r": [
+      1600,
+      668,
+      215,
+      62
+     ],
+     "em": 0.7,
+     "escala": 2.4
+    }
+   ]
+  },
+  {
+   "fala": 7,
+   "tipo": "tela3d",
+   "img": "still/s07.jpg",
+   "corte": [
+    0,
+    210,
+    1920,
+    870
+   ],
+   "titulo": "Prescrição",
+   "legenda": "O sistema não sugere dose",
+   "recortes": [
+    [
+     200,
+     462,
+     760,
+     70
+    ],
+    [
+     200,
+     612,
+     760,
+     56
+    ]
+   ]
+  },
+  {
+   "fala": 8,
+   "tipo": "clipe",
+   "clipe": [
+    "sessao.mp4",
+    80.9,
+    89.1
+   ],
+   "titulo": "Checagem",
+   "legenda": "Nome e hora em cada item",
+   "recortes": [
+    {
+     "img": "still/s08.jpg",
+     "r": [
+      180,
+      612,
+      900,
+      92
+     ],
+     "em": 0.55
+    }
+   ]
+  },
+  {
+   "fala": 9,
+   "tipo": "tela3d",
+   "img": "still/s09d.jpg",
+   "titulo": "Farmácia",
+   "legenda": "Alta vigilância à vista",
+   "angulo": 1,
+   "recortes": [
+    [
+     1536,
+     250,
+     304,
+     150
+    ]
+   ]
+  },
+  {
+   "fala": 10,
+   "tipo": "tela3d",
+   "img": "still/s10.jpg",
+   "titulo": "Observação",
+   "legenda": "Prazo de seis horas",
+   "recortes": [
+    [
+     380,
+     285,
+     560,
+     80
+    ],
+    [
+     1260,
+     285,
+     380,
+     80
+    ]
+   ]
+  },
+  {
+   "fala": 11,
+   "tipo": "tela3d",
+   "img": "still/s11.jpg",
+   "titulo": "Internação",
+   "legenda": "Internados por setor",
+   "angulo": 1,
+   "recortes": [
+    [
+     380,
+     188,
+     590,
+     42
+    ]
+   ]
+  },
+  {
+   "fala": 12,
+   "tipo": "clipe",
+   "clipe": [
+    "sessao.mp4",
+    128.9,
+    138.7
+   ],
+   "titulo": "Painel do gestor",
+   "legenda": "Pergunte em português",
+   "recortes": [
+    {
+     "img": "still/s12.jpg",
+     "r": [
+      556,
+      240,
+      890,
+      226
+     ],
+     "em": 0.72
+    }
+   ]
+  },
+  {
+   "fala": 13,
+   "tipo": "tela3d",
+   "img": "porta.jpg",
+   "titulo": "A porta em tempo real",
+   "legenda": "Onde está o gargalo",
+   "recortes": [
+    {
+     "r": [
+      384,
+      251,
+      440,
+      46
+     ],
+     "escala": 2.4
+    },
+    {
+     "r": [
+      626,
+      321,
+      233,
+      122
+     ],
+     "escala": 2.2
+    }
+   ]
+  },
+  {
+   "fala": 14,
+   "tipo": "graficos",
+   "titulo": "Indicadores",
+   "legenda": "Filtrar e exportar"
+  },
+  {
+   "fala": 15,
+   "tipo": "tela3d",
+   "img": "still/s15.jpg",
+   "titulo": "Regulação",
+   "legenda": "Pedido com prioridade e prazo",
+   "angulo": 1,
+   "recortes": [
+    [
+     400,
+     160,
+     760,
+     80
+    ],
+    [
+     400,
+     640,
+     790,
+     40
+    ]
+   ]
+  },
+  {
+   "fala": 16,
+   "tipo": "tema",
+   "escuro": "still/s09d.jpg",
+   "claro": "still/s16c.jpg",
+   "titulo": "Escuro ou claro"
+  },
+  {
+   "fala": 17,
+   "tipo": "dispositivos",
+   "note": "still/s17b.jpg",
+   "tablet": "still/s18.jpg",
+   "celular": "still/s19.jpg",
+   "titulo": "Na UBS",
+   "legenda": "Agenda, Hiperdia e pré-natal"
+  },
+  {
+   "fala": 18,
+   "tipo": "tela3d",
+   "img": "still/s18.jpg",
+   "titulo": "Hiperdia",
+   "legenda": "Regras do Ministério da Saúde",
+   "recortes": [
+    [
+     380,
+     160,
+     760,
+     90
+    ]
+   ]
+  },
+  {
+   "fala": 19,
+   "tipo": "tela3d",
+   "img": "still/s19.jpg",
+   "titulo": "Pré-natal e puericultura",
+   "legenda": "Consulta a consulta",
+   "angulo": 1,
+   "recortes": [
+    [
+     380,
+     170,
+     760,
+     72
+    ]
+   ]
+  },
+  {
+   "fala": 20,
+   "tipo": "tela3d",
+   "img": "still/s20.jpg",
+   "corte": [
+    0,
+    210,
+    1920,
+    870
+   ],
+   "titulo": "Central do Plantonista",
+   "numero": 232,
+   "numeroRotulo": "ferramentas clínicas",
+   "recortes": [
+    [
+     160,
+     600,
+     900,
+     320
+    ]
+   ]
+  },
+  {
+   "fala": 21,
+   "tipo": "clipe",
+   "clipe": [
+    "sessao.mp4",
+    232.9,
+    238.9
+   ],
+   "titulo": "Escores",
+   "legenda": "Resultado na hora",
+   "recortes": [
+    {
+     "img": "still/s21.jpg",
+     "r": [
+      420,
+      255,
+      760,
+      230
+     ],
+     "em": 0.5
+    }
+   ]
+  },
+  {
+   "fala": 22,
+   "tipo": "clipe",
+   "clipe": [
+    "sessao.mp4",
+    241.3,
+    259.6
+   ],
+   "titulo": "Pergunte à IA",
+   "legenda": "Resposta com fonte citada",
+   "recortes": [
+    {
+     "img": "still/s23.jpg",
+     "r": [
+      180,
+      230,
+      900,
+      180
+     ],
+     "em": 0.6
+    }
+   ]
+  },
+  {
+   "fala": 24,
+   "tipo": "tela3d",
+   "img": "still/s24.jpg",
+   "titulo": "Faturamento",
+   "legenda": "Pendência trava o fechamento",
+   "angulo": 1,
+   "recortes": [
+    [
+     1080,
+     50,
+     760,
+     300
+    ]
+   ]
+  },
+  {
+   "fala": 26,
+   "tipo": "seguranca",
+   "titulo": "Toda ação tem autor"
+  },
+  {
+   "fala": 29,
+   "tipo": "fechamento"
+  }
+ ]
+}
