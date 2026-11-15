@@ -93,3 +93,11 @@ Pedido do RT depois da primeira versão: mais polida, com música e narração (
 - **Música:** `scripts/demo/trilha.py`, instrumental sintetizado (Lá menor, 104 bpm), sem amostra de terceiros. Abaixa sozinha quando a voz fala.
 - **Imagem:** cada cena dura o tempo da fala, com legenda curta com a palavra-chave e transições entre as cenas. O zoom lento da primeira versão narrada saiu: o filtro de zoom tremia a imagem, e o RT reprovou.
 - **Montagem:** `scripts/demo/montar-narrado.mjs`. Resultado: 2:50.
+
+## Versão animada (v3, 15/11/2026)
+
+Pedido do RT: vídeo mais dinâmico, no estilo de três modelos do YouTube que ele mandou (cenas filmadas, notebook com a tela do produto, telas em 3D, recortes saltando da interface, gráficos). O RT aprovou um trecho de 20 s e depois a versão inteira.
+
+- **Motor:** `scripts/demo/video-anim/`. Cada fala vira um bloco animado; o navegador desenha quadro a quadro, sem tremor.
+- **Abertura:** clipe do Pexels (corredor de hospital, licença comercial livre), com o notebook desenhado por cima.
+- **Mesma narração e mesma trilha** da versão narrada. Resultado: 2:58.

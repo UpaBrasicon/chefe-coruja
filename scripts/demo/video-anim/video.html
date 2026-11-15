@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Vídeo de venda</title>
+<style>
+  :root { --navy: #0b1220; --teal: #22d3ee; --tinta: #f8fafc; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--navy); font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; color: var(--tinta); }
+  .camada { position: absolute; inset: 0; }
+  .bloco { position: absolute; inset: 0; display: none; }
+  .mancha { position: absolute; width: 900px; height: 900px; border-radius: 50%; filter: blur(150px); opacity: .5; }
+  .titulo { position: absolute; left: 110px; top: 70px; font-size: 64px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; z-index: 5; }
+  .palavra { display: inline-block; }
+  .legenda { position: absolute; left: 96px; bottom: 120px; font-size: 48px; font-weight: 700; padding: 12px 26px; border-radius: 14px; background: rgba(14,116,144,.94); z-index: 6; white-space: nowrap; }
+  .palco { position: absolute; inset: 0; perspective: 2400px; }
+  .tela { position: absolute; left: 50%; top: 54%; border-radius: 20px; overflow: hidden; background-repeat: no-repeat; box-shadow: 0 60px 140px rgba(0,0,0,.6), 0 0 0 1px rgba(148,163,184,.25); }
+  .tela img { position: absolute; display: block; }
+  .recorte { position: absolute; left: 50%; border-radius: 14px; background-repeat: no-repeat; box-shadow: 0 30px 80px rgba(0,0,0,.65), 0 0 0 3px rgba(34,211,238,.75); z-index: 4; }
+  .numero { position: absolute; right: 110px; top: 60px; text-align: right; z-index: 5; }
+  .numero b { display: block; font-size: 170px; font-weight: 800; line-height: 1; background: linear-gradient(90deg, #22d3ee, #fbbf24); -webkit-background-clip: text; color: transparent; }
+  .numero span { font-size: 40px; color: #cbd5e1; }
+  /* abertura */
+  .note { position: absolute; left: 50%; top: 0; width: 1000px; transform-origin: 50% 45%; }
+  .note .ecra { position: relative; width: 1000px; height: 625px; background: #05070b; border-radius: 22px 22px 6px 6px; padding: 18px 18px 26px; box-shadow: 0 0 0 2px #2a3242 inset, 0 40px 90px rgba(0,0,0,.55); }
+  .note .ecra img { width: 100%; height: 100%; object-fit: cover; object-position: left top; border-radius: 4px; display: block; }
+  .note .base { position: relative; width: 1180px; height: 26px; margin-left: -90px; background: linear-gradient(180deg, #cfd5de, #8e97a5); border-radius: 0 0 26px 26px; clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%); }
+  .cartao { position: absolute; display: flex; align-items: center; gap: 18px; padding: 18px 26px 18px 18px; border-radius: 20px; background: rgba(15,23,42,.8); border: 1px solid rgba(148,163,184,.28); backdrop-filter: blur(14px); box-shadow: 0 20px 50px rgba(0,0,0,.45); white-space: nowrap; z-index: 4; }
+  .cartao .ic { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; flex: none; }
+  .cartao svg { width: 30px; height: 30px; stroke: white; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cartao b { display: block; font-size: 30px; font-weight: 650; }
+  .cartao span { display: block; font-size: 22px; color: #cbd5e1; margin-top: 2px; }
+  /* dispositivos */
+  .disp { position: absolute; background: #05070b; box-shadow: 0 40px 100px rgba(0,0,0,.6), 0 0 0 2px #2a3242 inset; overflow: hidden; }
+  .disp img { width: 100%; height: 100%; object-fit: cover; object-position: left top; display: block; }
+  .cartao.grande { padding: 26px 36px 26px 26px; gap: 26px; }
+  .cartao.grande .ic { width: 84px; height: 84px; border-radius: 22px; }
+  .cartao.grande svg { width: 44px; height: 44px; }
+  .cartao.grande b { font-size: 46px; }
+  .cartao.grande span { font-size: 30px; }
+  #selo { position: absolute; right: 36px; bottom: 26px; font-size: 22px; padding: 8px 14px; border-radius: 10px; background: rgba(11,18,32,.7); color: rgba(255,255,255,.9); z-index: 9; }
+</style>
+</head>
+<body>
+<div id="fundo" class="camada">
+  <div class="mancha" id="m1" style="background:#0e7490"></div>
+  <div class="mancha" id="m2" style="background:#be185d"></div>
+  <div class="mancha" id="m3" style="background:#1d4ed8"></div>
+</div>
+<div id="blocos" class="camada"></div>
+<div id="selo">Pacientes e equipe fictícios</div>
+<script src="assets/blocos.js"></script>
+<script>
+const $ = (s, el = document) => el.querySelector(s)
+const lim = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
+const prog = (t, a, b) => lim((t - a) / (b - a))
+const suave = (k) => k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2
+const saida = (k) => 1 - Math.pow(1 - k, 3)
+const mola = (k) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2) }
+const mix = (a, b, k) => a + (b - a) * k
+const T = 0.4
+const raiz = $('#blocos')
+
+function el(html) { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstElementChild }
+function palavras(container, texto) {
+  container.innerHTML = texto.split(' ').map((p) => `<span class="palavra">${p}</span>`).join(' ')
+  return [...container.querySelectorAll('.palavra')]
+}
+function animaPalavras(lista, t, ini, passo = 0.09, dur = 0.5) {
+  lista.forEach((w, i) => {
+    const k = saida(prog(t, ini + i * passo, ini + i * passo + dur))
+    w.style.opacity = k
+    w.style.transform = `translateY(${(1 - k) * 50}px)`
+  })
+}
+async function trocar(img, src) { if (img.dataset.src === src) return; img.dataset.src = src; img.src = src; await img.decode().catch(() => {}) }
+function regiao(div, src, [x, y, w, h], larg) {
+  // mostra só a região [x,y,w,h] da tela gravada, na largura larg
+  const s = larg / w
+  div.style.width = `${larg}px`; div.style.height = `${h * s}px`
+  div.style.backgroundImage = `url('${src}')`
+  div.style.backgroundSize = `${1920 * s}px ${1080 * s}px`
+  div.style.backgroundPosition = `${-x * s}px ${-y * s}px`
+  return s
+}
+function comTitulo(b, no) {
+  if (b.titulo) { b._t = palavras(no.appendChild(el('<div class="titulo"></div>')), b.titulo) }
+  if (b.legenda) { b._l = no.appendChild(el(`<div class="legenda">${b.legenda}</div>`)) }
+}
+function animaTitulo(b, t) {
+  if (b._t) animaPalavras(b._t, t, 0.25)
+  if (b._l) { const k = saida(prog(t, 0.7, 1.1)); b._l.style.opacity = k; b._l.style.transform = `translateX(${(1 - k) * -40}px)` }
+}
+
+// ── montagem de cada tipo ────────────────────────────────────────────────────
+const MONTA = {
+  abertura(b, no) {
+    no.innerHTML = `<img class="camada corredor" style="width:1920px;height:1080px;object-fit:cover">
+      <div class="camada" style="background:linear-gradient(180deg,rgba(11,18,32,.55),rgba(11,18,32,.15) 45%,rgba(11,18,32,.75))"></div>
+      <div class="note"><div class="ecra"><img src="assets/porta.jpg"></div><div class="base"></div></div>
+      <div class="titulo t1" style="top:110px;font-size:96px"></div><div class="titulo t2" style="top:220px;font-size:96px;color:var(--teal)"></div>
+      <div class="cartao" style="left:90px;top:470px"><div class="ic" style="background:#dc2626"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div><b>Fila na porta</b><span>9 esperando, 3 fora do tempo</span></div></div>
+      <div class="cartao" style="left:1455px;top:300px"><div class="ic" style="background:#ea580c"><svg viewBox="0 0 24 24"><path d="M3 18v-8h18v8M3 14h18M7 10V7h4v3"/></svg></div><div><b>Sala Vermelha</b><span>2 de 2 leitos: lotada</span></div></div>
+      <div class="cartao" style="left:1425px;top:660px"><div class="ic" style="background:#0e7490"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19c.8-3.5 3.4-5 6.5-5s5.7 1.5 6.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.2 0 3.8 1.2 4.5 4"/></svg></div><div><b>Quem está de plantão?</b><span>escala no papel</span></div></div>
+      <div class="cartao" style="left:110px;top:740px"><div class="ic" style="background:#ca8a04"><svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg></div><div><b>Pedido de vaga</b><span>sem resposta há 3 horas</span></div></div>`
+    b._t1 = palavras($('.t1', no), 'Plantão lotado.'); b._t2 = palavras($('.t2', no), 'Informação espalhada.')
+  },
+  tela3d(b, no) {
+    const corte = b.corte ?? [0, 0, 1920, 1080]
+    const larg = corte[2] / corte[3] > 1.9 ? 1560 : 1500
+    no.innerHTML = '<div class="palco"><div class="tela"></div></div>'
+    const tela = $('.tela', no)
+    if (b.tipo === 'clipe') { tela.innerHTML = '<img>'; b._img = $('img', tela) }
+    const src = b.tipo === 'clipe' ? '' : `assets/${b.img}`
+    const s = regiao(tela, src, corte, larg)
+    tela.style.marginLeft = `${-larg / 2}px`; tela.style.marginTop = `${-corte[3] * s / 2}px`
+    if (b._img) { Object.assign(b._img.style, { width: `${1920 * s}px`, height: `${1080 * s}px`, left: `${-corte[0] * s}px`, top: `${-corte[1] * s}px` }); tela.style.backgroundImage = 'none' }
+    b._tela = tela
+    const lista = (b.recortes ?? []).map((r) => Array.isArray(r) ? { r } : r)
+    b._rec = lista.map((r, i) => {
+      const d = no.appendChild(el('<div class="recorte"></div>'))
+      const [, , w, h] = r.r
+      const s2 = Math.min(r.escala ?? 1.85, 1500 / w, (lista.length > 1 ? 300 : 460) / h)
+      regiao(d, `assets/${r.img ?? b.img}`, r.r, w * s2)
+      const alturas = lista.map((x) => x.r[3] * Math.min(x.escala ?? 1.85, 1500 / x.r[2], (lista.length > 1 ? 300 : 460) / x.r[3]))
+      const totalH = alturas.reduce((a, c) => a + c, 0) + 40 * (lista.length - 1)
+      const topo = 560 - totalH / 2 + alturas.slice(0, i).reduce((a, c) => a + c + 40, 0)
+      d.style.top = `${topo}px`; d.style.marginLeft = `${-(w * s2) / 2}px`
+      return { d, em: r.em ?? (0.33 + i * 0.2) }
+    })
+    if (b.numero) { b._num = no.appendChild(el(`<div class="numero"><b>0</b><span>${b.numeroRotulo}</span></div>`)) }
+    comTitulo(b, no)
+  },
+  clipe(b, no) { MONTA.tela3d(b, no) },
+  graficos(b, no) {
+    const CORES = [['Vermelho', '#dc2626', 0], ['Laranja', '#ea580c', 1], ['Amarelo', '#eab308', 1], ['Verde', '#16a34a', 2], ['Azul', '#2563eb', 1]]
+    b._cores = CORES
+    no.innerHTML = CORES.map(([n, c, v], i) => `<div class="barra" style="position:absolute;bottom:400px;left:${220 + i * 200}px;width:150px;border-radius:16px 16px 6px 6px;background:${c}"></div><div class="num" style="position:absolute;left:${220 + i * 200}px;width:150px;text-align:center;font-size:44px;font-weight:700">${v}</div><div style="position:absolute;bottom:345px;left:${220 + i * 200}px;width:150px;text-align:center;font-size:26px;font-weight:650;color:${c}">${n}</div>`).join('') +
+      `<div style="position:absolute;left:220px;top:200px;font-size:40px;color:#cbd5e1">Aguardando médico, por cor</div>
+       <svg style="position:absolute;left:1270px;top:220px" width="520" height="420" viewBox="0 0 520 420">
+         <path d="M60 330 A200 200 0 1 1 460 330" stroke="rgba(148,163,184,.25)" stroke-width="34" fill="none" stroke-linecap="round"/>
+         <path class="arco" d="M60 330 A200 200 0 1 1 460 330" stroke="url(#gm)" stroke-width="34" fill="none" stroke-linecap="round"/>
+         <defs><linearGradient id="gm" x1="0" x2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#fbbf24"/></linearGradient></defs>
+         <text class="pct" x="260" y="270" text-anchor="middle" font-size="110" font-weight="700" fill="white">0%</text>
+         <text x="260" y="330" text-anchor="middle" font-size="30" fill="#cbd5e1">ocupação · 8 de 11 leitos</text></svg>`
+    b._arco = $('.arco', no); b._L = b._arco.getTotalLength(); b._arco.style.strokeDasharray = b._L
+    comTitulo(b, no)
+  },
+  tema(b, no) {
+    no.innerHTML = `<div class="palco"><div class="tela" style="width:1500px;height:844px;margin:-422px 0 0 -750px;background-image:url('assets/${b.escuro}');background-size:1500px 844px"></div>
+      <div class="tela claro" style="width:1500px;height:844px;margin:-422px 0 0 -750px;background-image:url('assets/${b.claro}');background-size:1500px 844px;box-shadow:none"></div>
+      <div class="linha" style="position:absolute;top:calc(54% - 440px);width:6px;height:880px;border-radius:3px;background:#22d3ee;box-shadow:0 0 30px #22d3ee"></div></div>`
+    comTitulo(b, no)
+  },
+  dispositivos(b, no) {
+    no.innerHTML = `<div class="disp n" style="left:170px;top:250px;width:1100px;height:688px;border-radius:22px;padding:16px"><img src="assets/${b.note}" style="border-radius:6px"></div>
+      <div class="disp t" style="left:1180px;top:300px;width:560px;height:420px;border-radius:30px;padding:18px"><img src="assets/${b.tablet}" style="border-radius:12px"></div>
+      <div class="disp c" style="left:1500px;top:470px;width:260px;height:520px;border-radius:40px;padding:12px"><img src="assets/${b.celular}" style="border-radius:30px;object-position:12% top"></div>`
+    comTitulo(b, no)
+  },
+  seguranca(b, no) {
+    const itens = [['Segundo fator', 'em todo acesso'], ['Auditoria', 'que não se reescreve'], ['Dados em São Paulo', 'cópia diária cifrada, guardada por 20 anos'], ['Modo sem conexão', 'para os registros essenciais'], ['Tela bloqueia', 'depois de 10 minutos parada']]
+    no.innerHTML = itens.map(([a, c], i) => `<div class="cartao item grande" style="left:${i % 2 ? 1010 : 130}px;top:${250 + Math.floor(i / 2) * 230}px"><div class="ic" style="background:#0e7490"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div><div><b>${a}</b><span>${c}</span></div></div>`).join('')
+    comTitulo(b, no)
+  },
+  fechamento(b, no) {
+    no.innerHTML = `<img src="assets/coruja.webp" style="position:absolute;left:50%;top:170px;height:330px;margin-left:-165px">
+      <div class="titulo" style="left:0;right:0;text-align:center;top:540px;font-size:110px">Chefe Coruja</div>
+      <div style="position:absolute;left:0;right:0;text-align:center;top:700px;font-size:48px;color:#7dd3fc">Da porta à alta, da UPA à UBS</div>
+      <div style="position:absolute;left:50%;top:800px;transform:translateX(-50%);font-size:46px;font-weight:700;padding:16px 40px;border-radius:999px;background:#22d3ee;color:#0b1220">chefecoruja.com.br</div>`
+  },
+}
+
+// ── animação de cada tipo (t = tempo local do bloco, d = duração) ─────────────
+const ANIMA = {
+  async abertura(b, no, t, d) {
+    const q = Math.min(239, Math.floor(t * 30))
+    await trocar($('.corredor', no), `assets/corredor/${String(q + 1).padStart(4, '0')}.jpg`)
+    const entra = mola(prog(t, 0.2, 1.3)), empurra = suave(prog(t, d - 1.7, d - 0.25))
+    const c = $('.corredor', no)
+    c.style.transform = `scale(${1.04 + 0.04 * prog(t, 0, d) + empurra * 0.25})`
+    c.style.filter = `blur(${3 + empurra * 10}px) brightness(${0.78 - empurra * 0.3})`
+    $('.note', no).style.transform = `translate(-50%, ${mix(mix(1180, 330, entra), 230, empurra)}px) scale(${mix(0.86, 2.05, empurra)})`
+    const some = prog(t, d - 1.9, d - 1.5)
+    ;[...b._t1, ...b._t2].forEach((w) => { w.style.opacity = (w.style.opacity || 1) * (1 - some) })
+    animaPalavras(b._t1, t, 0.6, 0.12, 0.55); animaPalavras(b._t2, t, 1.2, 0.12, 0.55)
+    ;[...b._t1, ...b._t2].forEach((w) => { w.style.opacity = Number(w.style.opacity) * (1 - some) })
+    ;[...no.querySelectorAll('.cartao')].forEach((x, i) => {
+      const ini = 2.2 + i * 0.6, k = mola(prog(t, ini, ini + 0.55)), sai = suave(prog(t, d - 2.0 + i * 0.05, d - 1.5 + i * 0.05))
+      x.style.opacity = lim(k) * (1 - sai)
+      x.style.transform = `translate(${(i % 2 ? 1 : -1) * sai * 260}px, ${Math.sin((t - ini) * 1.6 + i) * 6}px) scale(${0.6 + 0.4 * k})`
+    })
+  },
+  async tela3d(b, no, t, d) {
+    const lado = b.angulo ? -1 : 1
+    const ent = suave(prog(t, 0, 1.1))
+    const temRec = b._rec.length > 0
+    const foco = temRec ? suave(prog(t, d * b._rec[0].em - 0.3, d * b._rec[0].em + 0.3)) : 0
+    if (b._img) {
+      const n = b.quadros.n, k = Math.min(1, t / (d * 0.92))
+      await trocar(b._img, `assets/${b.quadros.pasta}/${String(Math.min(n, Math.floor(k * n)) + 1).padStart(4, '0')}.jpg`)
+    }
+    const rotY = mix(-26, -9, ent) * lado + Math.sin(t * 0.6) * 1.2
+    b._tela.style.transform = `rotateY(${rotY}deg) rotateX(${mix(12, 5, ent)}deg) scale(${mix(0.62, 0.84, ent) - foco * 0.05})`
+    b._tela.style.filter = `brightness(${1 - foco * 0.5}) blur(${foco * 2.5}px)`
+    b._rec.forEach(({ d: r, em }) => {
+      const k = mola(prog(t, d * em, d * em + 0.55))
+      r.style.opacity = lim(k * 1.6)
+      r.style.transform = `translateY(${(1 - k) * 70}px) scale(${0.8 + 0.2 * k})`
+    })
+    if (b._num) {
+      const k = suave(prog(t, 0.6, 2.2))
+      $('b', b._num).textContent = Math.round(b.numero * k)
+      b._num.style.opacity = prog(t, 0.5, 0.9)
+    }
+    animaTitulo(b, t)
+  },
+  clipe(b, no, t, d) { return ANIMA.tela3d(b, no, t, d) },
+  graficos(b, no, t, d) {
+    const barras = [...no.querySelectorAll('.barra')], nums = [...no.querySelectorAll('.num')]
+    b._cores.forEach(([, , v], i) => {
+      const k = mola(prog(t, 0.5 + i * 0.12, 1.2 + i * 0.12)), h = 40 + v * 170
+      barras[i].style.height = `${Math.max(0, h * k)}px`
+      nums[i].style.bottom = `${400 + h * k + 16}px`; nums[i].style.opacity = lim(k)
+    })
+    const kp = suave(prog(t, 1.0, 2.8))
+    b._arco.style.strokeDashoffset = b._L * (1 - 0.73 * kp)
+    $('.pct', no).textContent = `${Math.round(73 * kp)}%`
+    animaTitulo(b, t)
+  },
+  tema(b, no, t, d) {
+    const k = suave(prog(t, d * 0.3, d * 0.75))
+    const telas = [...no.querySelectorAll('.tela')]
+    const ent = suave(prog(t, 0, 1))
+    telas.forEach((x) => { x.style.transform = `rotateY(${mix(-18, -6, ent)}deg) rotateX(${mix(10, 4, ent)}deg) scale(${mix(0.7, 0.86, ent)})` })
+    telas[1].style.clipPath = `inset(0 ${100 - k * 100}% 0 0)`
+    const linha = $('.linha', no)
+    linha.style.left = `${960 - 750 * 0.86 + k * 1500 * 0.86}px`
+    linha.style.opacity = k > 0 && k < 1 ? 1 : 0
+    animaTitulo(b, t)
+  },
+  dispositivos(b, no, t, d) {
+    ;[['.n', 0.2], ['.t', 0.55], ['.c', 0.9]].forEach(([s, ini], i) => {
+      const k = mola(prog(t, ini, ini + 0.7)), x = $(s, no)
+      x.style.opacity = lim(k * 1.5)
+      x.style.transform = `translateY(${(1 - k) * 260 + Math.sin(t * 1.2 + i) * 5}px)`
+    })
+    animaTitulo(b, t)
+  },
+  seguranca(b, no, t, d) {
+    ;[...no.querySelectorAll('.item')].forEach((x, i) => {
+      const k = mola(prog(t, 0.6 + i * 0.45, 1.15 + i * 0.45))
+      x.style.opacity = lim(k * 1.5); x.style.transform = `scale(${0.7 + 0.3 * k})`
+    })
+    animaTitulo(b, t)
+  },
+  fechamento(b, no, t, d) {
+    const k = mola(prog(t, 0.2, 1.0))
+    no.style.transform = `scale(${0.92 + 0.08 * k})`
+  },
+}
+
+for (const b of window.BLOCOS) {
+  b._no = raiz.appendChild(el('<div class="bloco"></div>'))
+  MONTA[b.tipo](b, b._no)
+}
+
+window.renderizar = async (t) => {
+  ;[['m1', 300, 200, 0.3], ['m2', 1300, 500, 0.23], ['m3', 900, -200, 0.17]].forEach(([id, x, y, v]) => {
+    document.getElementById(id).style.transform = `translate(${x + Math.sin(t * v * 3) * 160}px, ${y + Math.cos(t * v * 2.4) * 120}px)`
+  })
+  for (const b of window.BLOCOS) {
+    const lt = t - b.ini
+    const ativo = lt >= 0 && lt <= b.dur
+    b._no.style.display = ativo ? 'block' : 'none'
+    if (!ativo) continue
+    const entra = suave(prog(lt, 0, T)), sai = 1 - suave(prog(lt, b.dur - T, b.dur))
+    b._no.style.opacity = Math.min(entra, sai)
+    if (b.tipo !== 'fechamento') b._no.style.transform = `scale(${1.03 - 0.03 * entra})`
+    await ANIMA[b.tipo](b, b._no, lt, b.dur)
+  }
+  document.getElementById('selo').style.opacity = t > window.TOTAL - 7 ? 0 : 1
+}
+</script>
+</body>
+</html>
