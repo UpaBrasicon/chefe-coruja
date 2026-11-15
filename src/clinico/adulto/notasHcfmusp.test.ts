@@ -685,3 +685,13 @@ test('lote 9, Q2: nota do cap. 105 pela diretriz alemã S1 2025, com a lista na 
   assert.match(textoNota(nota), /100 mL\/min/)
   assert.match(textoNota(nota), /Alemã S1 2025/)
 })
+
+test('lote 9, Q3: notas dos cap. 53 (RCEM 2024) e 56 (IDSA 2024), sem ficha de adulto', () => {
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE9.find((n) => n.ficha.id === id)!
+  for (const id of ['nota-hcfmusp-cap53-nauseas-vomitos', 'nota-hcfmusp-cap56-ictericia-colangite']) {
+    assert.equal(por(id).itens.length, 4, id)
+    assert.equal(por(id).ficha.versao, '2026-11-15.1', id)
+  }
+  assert.match(textoNota(por('nota-hcfmusp-cap53-nauseas-vomitos')), /0,05 mg\/kg \(máximo 5 mg/)
+  assert.match(textoNota(por('nota-hcfmusp-cap56-ictericia-colangite')), /POCUS ficou fora/)
+})
