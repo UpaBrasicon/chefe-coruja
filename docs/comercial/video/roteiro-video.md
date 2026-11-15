@@ -101,3 +101,4 @@ Pedido do RT: vídeo mais dinâmico, no estilo de três modelos do YouTube que e
 - **Motor:** `scripts/demo/video-anim/`. Cada fala vira um bloco animado; o navegador desenha quadro a quadro, sem tremor.
 - **Abertura:** clipe do Pexels (corredor de hospital, licença comercial livre), com o notebook desenhado por cima.
 - **Mesma narração e mesma trilha** da versão narrada. Resultado: 2:58.
+- **Aprovação:** o RT aprovou a versão animada em 15/11/2026 ("Aprovado"). O MP4 fica fora do git.
