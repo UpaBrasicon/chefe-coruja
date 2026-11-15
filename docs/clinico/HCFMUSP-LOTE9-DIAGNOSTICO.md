@@ -80,4 +80,28 @@ Cada passo passa pela homologação e pelo CI verde antes da produção, que ped
 
 ## Decisão do RT (15/11/2026)
 
-Q1 a Q4 = A ("Ok todas a"). Cada passo segue pela homologação e pelo CI verde; a produção pede o ok do RT.
+Q1 a Q4 = A ("Ok todas a"). Depois, o RT liberou a produção do lote 9 inteiro ("Sim, lote 9 inteiro"). Cada passo seguiu pela homologação e pelo CI verde antes da produção.
+
+## Q4: capítulos sem diretriz nova (registro)
+
+Pela Q4 = A, os cap. 1, 73, 77, 103 e 106 foram revistos e ficam sem nota. O manual continua valendo.
+
+| Cap. | O que a busca no PubMed achou (15/11/2026) | Na Central |
+|---|---|---|
+| 1 | nenhuma diretriz de sociedade nova sobre a abordagem inicial, a triagem ou os escores de alerta | o ABCDE do cap. 1 nas fichas de dispneia e de oxigenação |
+| 73 | nenhuma diretriz nova de lombalgia aguda; a OMS 2023 é de dor crônica e o ACR 2021 de imagem é anterior ao manual | sem ficha de adulto |
+| 77 | nenhuma diretriz de sociedade nova sobre intoxicação alcoólica no PS | sem ficha; a abstinência (cap. 78) já foi revista no lote 3 |
+| 103 | só um consenso alemão de 2023, fechado e em alemão | sem ficha de adulto |
+| 106 | a diretriz da ACEP 2023 trata de formação e escopo do ultrassom, não de conduta | sem ficha de ultrassom |
+
+## Lote 9 concluído (15/11/2026)
+
+| Passo | PR | Doc |
+|---|---|---|
+| Diagnóstico | #735 | este documento |
+| Q1: notas dos cap. 55, 108, 104 e 48 | #736 | `HCFMUSP-LOTE9-Q1-NOTAS-55-108-104-48.md` |
+| Q2: cap. 105 (acessos) | #737 | `HCFMUSP-LOTE9-Q2-ACESSOS.md` |
+| Q3: notas dos cap. 53 e 56 | #738 | `HCFMUSP-LOTE9-Q3-NOTAS-53-56.md` |
+| Q4: cap. 1, 73, 77, 103 e 106 | este registro | — |
+
+Com o lote 9, os 108 capítulos do manual foram revistos, todos na produção.
