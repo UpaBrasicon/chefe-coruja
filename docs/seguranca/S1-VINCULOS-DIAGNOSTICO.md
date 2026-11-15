@@ -67,6 +67,8 @@ O caminho certo para gente nova já existe: o convite (gerado pelo gestor, com c
 - **A (recomendada):** nenhuma mudança na função. Com a V1, o único caminho que a contornava, o vínculo sem consentimento, deixa de existir.
 - **B:** exigir também que o vínculo da pessoa na unidade de quem zera tenha vindo de convite ou contrato.
 
+**Decisão do RT, 15/11/2026:** V1 a V6 = A ("Todas A"). V5 feita na hora, com essa autorização (leitura só de estrutura na produção): 12 vínculos no total, nenhuma pessoa com vínculo em mais de uma organização e nenhuma adesão a contrato. Não há vínculo entre redes a desfazer.
+
 ## Riscos
 
 - **Tela Pessoas e Plataformas:** mudam de comportamento. Conferir na homologação com o admin da rede de demonstração.

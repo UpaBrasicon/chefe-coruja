@@ -14230,6 +14230,18 @@ export type Database = {
         Returns: string
       }
       verificar_dispositivo_2fa: { Args: { p_token: string }; Returns: boolean }
+      concluir_adesao: {
+        Args: { p_adesao: string; p_unidade: string }
+        Returns: string
+      }
+      reativar_vinculo: {
+        Args: { p_vinculo: string }
+        Returns: undefined
+      }
+      revogar_vinculo: {
+        Args: { p_vinculo: string }
+        Returns: undefined
+      }
       zerar_segundo_fator: {
         Args: { p_motivo: string; p_usuario: string }
         Returns: undefined
