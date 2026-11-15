@@ -580,3 +580,13 @@ test('lote 7, Q2: nota do cap. 51 a partir da ACG 2023 na ficha do Oakland', asy
   assert.match(nota.ficha.revisadoEm ?? '', /lote 7/)
   assert.match(textoNota(nota), /tranexâmico/)
 })
+
+test('lote 7, Q2: nota do cap. 8 a partir das diretrizes geriátricas de PS na ficha do 4AT', async () => {
+  const q = await import('../escores/quatroAt.ts')
+  const nota = NOTAS_HCFMUSP_LOTE7.find((n) => n.ficha.id === 'nota-hcfmusp-cap8-delirium')!
+  assert.equal(nota.fichaCentral, q.quatroAt.ficha.id)
+  assert.equal(nota.itens.length, q.DIRETRIZ_DELIRIUM_2025.length)
+  assert.deepEqual(nota.ficha.fontes, [q.GED_DELIRIUM_2025])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 7/)
+  assert.match(textoNota(nota), /REDEEM/)
+})
