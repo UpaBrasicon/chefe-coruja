@@ -38,6 +38,8 @@ A one-page de 08/10/2026 (`produto/docs/comercial/one-page.tpl.html` e o PDF, fo
 - **A (recomendada):** o mascote no topo e uma tela real (a Porta) em tamanho pequeno, com o selo de dados fictícios.
 - **B:** só o mascote, como em outubro.
 
+**Decisão do RT, 15/11/2026:** O1 a O5 = A ("Todas A").
+
 ## Regras do conteúdo
 
 As mesmas do deck: nenhuma promessa de RNDS, certificação ou assinatura como pronta; sem número de clientes, depoimento ou métrica inventada; sem dose; sem concorrente pelo nome. Cada bloco "pronto" tem de existir na produção hoje.
