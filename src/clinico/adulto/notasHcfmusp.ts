@@ -173,6 +173,8 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap104-paliativos-sintomas': 'manejo de sintomas em cuidados paliativos no PS, adulto: sedação paliativa, sofrimento refratário, proporcionalidade, midazolam, hidratação no fim de vida',
   'nota-hcfmusp-cap108-toracocentese': 'toracocentese no adulto: punção pleural guiada por ultrassom (POCUS), pneumotórax, amostra do líquido pleural, citologia, frasco de hemocultura',
   'nota-hcfmusp-cap105-acessos': 'acessos vasculares na emergência e na sala de reanimação, adulto: acesso venoso periférico calibroso, intraósseo, vasopressor ou noradrenalina por acesso periférico (veia periférica), cateter venoso central guiado por ultrassom, posição do cateter, linha arterial, sítio do cateter (subclávia, jugular, femoral)',
+  'nota-hcfmusp-cap53-nauseas-vomitos': 'náuseas e vômitos no adulto: síndrome de hiperêmese canabinoide (maconha, cannabis), vômitos cíclicos, alívio com banho quente, vômito refratário ao antiemético, haloperidol, capsaicina creme',
+  'nota-hcfmusp-cap56-ictericia-colangite': 'icterícia no adulto: colangite aguda e colecistite aguda, exame de imagem inicial (ultrassonografia, USG), tomografia, ressonância (colangiorressonância), cintilografia HIDA, gestante',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -1111,7 +1113,39 @@ notaHcfmuspCap105.ficha.revisadoEm = '15/11/2026 (lote 9 da revisão do HCFMUSP,
 
 notaHcfmuspCap48.ficha.versao = '2026-11-15.2'
 
-export const NOTAS_HCFMUSP_LOTE9: NotaHcfmusp[] = [notaHcfmuspCap48, notaHcfmuspCap55, notaHcfmuspCap104, notaHcfmuspCap105, notaHcfmuspCap108]
+// Q3: cap. 53 e 56, sem ficha de adulto na Central; só a nota.
+function notaSoManualLote9(...a: Parameters<typeof notaSoManual>): NotaHcfmusp {
+  const n = notaSoManual(...a)
+  n.ficha.versao = '2026-11-15.1'
+  n.ficha.revisadoEm = '15/11/2026 (lote 9 da revisão do HCFMUSP, Q3: nota sem ficha de adulto na Central; aguarda aprovação do RT)'
+  return n
+}
+export const RCEM_HIPEREMESE_CANABINOIDE_2024: Fonte = {
+  citacao: 'Humphries C, Gillings M. RCEM best practice guideline: suspected cannabinoid hyperemesis syndrome in emergency departments. Emerg Med J. 2024;41(5):328–331 (PMID 38448215). Texto integral lido no site da revista, com a Tabela 2; níveis de recomendação pela SORT (A a C).',
+  url: 'https://doi.org/10.1136/emermed-2024-213886',
+}
+export const IDSA_IMAGEM_VIA_BILIAR_2024: Fonte = {
+  citacao: 'Bonomo RA, Edwards MS, Abrahamian FM, et al. 2024 Clinical Practice Guideline Update by the Infectious Diseases Society of America on Complicated Intraabdominal Infections: Diagnostic Imaging of Suspected Acute Cholecystitis and Acute Cholangitis in Adults, Children, and Pregnant People. Clin Infect Dis. 2024;79(Suppl 3):S104–S108 (PMID 38963820). Texto integral lido no site da revista; GRADE.',
+  url: 'https://doi.org/10.1093/cid/ciae349',
+}
+
+/** cap. 53: RCEM 2024, hiperêmese canabinoide no PS. */
+export const notaHcfmuspCap53 = notaSoManualLote9('nota-hcfmusp-cap53-nauseas-vomitos', 'Nota de atualização — manual HC, cap. 53: náuseas e vômitos (hiperêmese canabinoide)', 'cap. 53, p. 728–737', [
+    { tema: 'Hiperêmese canabinoide: quando suspeitar', diretriz: 'RCEM 2024 (nível C): considerar a síndrome na náusea e no vômito de padrão cíclico com uso de cannabis. Achados frequentes: vômito cíclico recorrente por meses, idade abaixo de 50 anos, uso pelo menos semanal, alívio com banho quente e dor abdominal', manual: 'vômitos cíclicos aparecem entre as causas de náusea e vômito; o cap. 53 não cita a cannabis (Tabela 1, p. 730)' },
+    { tema: 'Hiperêmese canabinoide: investigação', diretriz: 'RCEM 2024: excluir causa clínica ou cirúrgica grave; pesquisar hipoglicemia, lesão renal aguda, distúrbios de sódio, potássio, cálcio, cloro e magnésio, e distúrbio acidobásico. Pensar em outro diagnóstico se houver perda de peso (sobretudo acima de 50 anos), massa abdominal, mudança do hábito intestinal, anemia ou alteração das provas hepáticas', manual: 'o cap. 53 não trata da hiperêmese canabinoide' },
+    { tema: 'Hiperêmese canabinoide refratária: haloperidol ou capsaicina', diretriz: 'RCEM 2024 (nível B): se o antiemético padrão falhar, considerar haloperidol ou capsaicina. Tabela 2: haloperidol IM 0,05 mg/kg (máximo 5 mg; o ensaio usou a via EV); capsaicina creme 0,1%, 5 g no abdome. Antes do haloperidol, ECG para o QTc; não dar com QTc prolongado, doença de Parkinson ou demência por corpos de Lewy; vigiar distonia aguda; não dar alta com receita de haloperidol. Se internar, oferecer banho quente', manual: 'antidopaminérgicos (metoclopramida, haloperidol) na distensão da parede intestinal (p. 736); no vômito refratário por opioide, metoclopramida com antipsicótico atípico (p. 737)' },
+    { tema: 'Hiperêmese canabinoide: alta e prevenção', diretriz: 'RCEM 2024 (nível C): a única prevenção definitiva é parar a cannabis. Conversar sem julgamento, dar informação escrita e indicar onde buscar ajuda para parar', manual: 'o cap. 53 não trata do ponto' },
+  ], [RCEM_HIPEREMESE_CANABINOIDE_2024])
+
+/** cap. 56: IDSA 2024, imagem na suspeita de colangite e colecistite agudas. */
+export const notaHcfmuspCap56 = notaSoManualLote9('nota-hcfmusp-cap56-ictericia-colangite', 'Nota de atualização — manual HC, cap. 56: icterícia (imagem na colangite aguda)', 'cap. 56, p. 769–778', [
+    { tema: 'Colangite ou colecistite aguda: primeira imagem', diretriz: 'IDSA 2024 (condicional, certeza muito baixa): no adulto não gestante, ultrassonografia de abdome como primeiro exame. A evidência é de USG feita e laudada por radiologista; o POCUS ficou fora da análise', manual: 'USG de abdome é diagnóstica em 90% dos casos de colangite; a CPRE é o exame diagnóstico definitivo e permite tratar (p. 776)' },
+    { tema: 'Colangite ou colecistite aguda: se a USG não resolver', diretriz: 'IDSA 2024 (condicional, certeza muito baixa): se a USG for duvidosa e a suspeita continuar, TC de abdome, de preferência com contraste EV. Se USG e TC forem duvidosas: na colecistite, ressonância (colangiorressonância) ou cintilografia HIDA; na colangite, a ressonância é opção razoável', manual: 'CPRE é o exame de escolha na suspeita de coledocolitíase; a TC serve mais para lesões que ocupam espaço (Tabela 5, p. 771)' },
+    { tema: 'Diagnóstico de colangite aguda', diretriz: 'IDSA 2024: juntar sinais clínicos (icterícia, febre, calafrios e dor no quadrante superior direito), exames de inflamação e de estase biliar, e imagem (dilatação da via biliar ou a causa, como cálculo, estenose ou massa)', manual: 'tríade de Charcot (dor no quadrante superior direito, febre e icterícia) em 50 a 75% dos casos; a pêntade de Reynold (como impresso) indica gravidade (p. 775)' },
+    { tema: 'Gestante com suspeita de colangite ou colecistite', diretriz: 'IDSA 2024 (lacuna de conhecimento): USG ou ressonância como primeiro exame; o painel não recomenda um sobre o outro', manual: 'o cap. 56 não trata do ponto' },
+  ], [IDSA_IMAGEM_VIA_BILIAR_2024])
+
+export const NOTAS_HCFMUSP_LOTE9: NotaHcfmusp[] = [notaHcfmuspCap48, notaHcfmuspCap53, notaHcfmuspCap55, notaHcfmuspCap56, notaHcfmuspCap104, notaHcfmuspCap105, notaHcfmuspCap108]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8, ...NOTAS_HCFMUSP_LOTE9]
 
