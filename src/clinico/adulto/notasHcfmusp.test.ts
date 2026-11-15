@@ -669,11 +669,19 @@ test('lote 9, Q1: notas dos cap. 48, 55, 104 e 108 tiradas das fichas', () => {
   const esperado: [string, number][] = [['nota-hcfmusp-cap48-pre-hospitalar', 3], ['nota-hcfmusp-cap55-ascite', 3], ['nota-hcfmusp-cap104-paliativos-sintomas', 3], ['nota-hcfmusp-cap108-toracocentese', 2]]
   for (const [id, n] of esperado) {
     assert.equal(por(id).itens.length, n, id)
-    assert.equal(por(id).ficha.versao, '2026-11-15.1', id)
+    assert.equal(por(id).ficha.versao, id === 'nota-hcfmusp-cap48-pre-hospitalar' ? '2026-11-15.2' : '2026-11-15.1', id)
     assert.match(por(id).ficha.revisadoEm ?? '', /lote 9/, id)
   }
   assert.match(textoNota(por('nota-hcfmusp-cap55-ascite')), /AASLD 2021/)
   assert.match(textoNota(por('nota-hcfmusp-cap108-toracocentese')), /BTS 2023/)
   assert.match(textoNota(por('nota-hcfmusp-cap104-paliativos-sintomas')), /proporcionalidade/)
   assert.match(textoNota(por('nota-hcfmusp-cap48-pre-hospitalar')), /PATCH-Trauma/)
+})
+
+test('lote 9, Q2: nota do cap. 105 pela diretriz alemã S1 2025, com a lista na ficha de acessos', () => {
+  const nota = NOTAS_HCFMUSP_LOTE9.find((n) => n.ficha.id === 'nota-hcfmusp-cap105-acessos')!
+  assert.equal(nota.itens.length, 8)
+  assert.equal(nota.ficha.versao, '2026-11-15.1')
+  assert.match(textoNota(nota), /100 mL\/min/)
+  assert.match(textoNota(nota), /Alemã S1 2025/)
 })
