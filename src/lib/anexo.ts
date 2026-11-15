@@ -18,12 +18,28 @@ const MIME_POR_EXTENSAO: Record<string, string> = {
   webp: 'image/webp',
   bmp: 'image/bmp',
   heic: 'image/heic',
+  heif: 'image/heif',
   csv: 'text/csv',
   txt: 'text/plain',
   xls: 'application/vnd.ms-excel',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   doc: 'application/msword',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+}
+
+/**
+ * Tipos que o bucket `atendimento` aceita (S5, A1): PDF e imagem comum, sem SVG
+ * nem outro tipo que rode script ao abrir. Vale para o anexo do prontuário e o
+ * atestado da justificativa de falta.
+ */
+export const ACCEPT_ANEXO_CLINICO = 'application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif'
+
+/**
+ * Tipo para mandar ao armazenamento: o do arquivo ou, quando o sistema não diz
+ * (comum com HEIC e CSV no Windows), o da extensão. Vazio quando não sabe.
+ */
+export function tipoDoArquivo(arquivo: Pick<ArquivoBasico, 'name' | 'type'>): string {
+  return (arquivo.type || MIME_POR_EXTENSAO[extensao(arquivo.name)] || '').toLowerCase()
 }
 
 /** Extensão do arquivo, sem o ponto e em minúsculas ("" quando não tem). */
@@ -46,7 +62,7 @@ export function cabeNoAccept(arquivo: Pick<ArquivoBasico, 'name' | 'type'>, acce
   const itens = itensDoAccept(accept)
   if (itens.length === 0) return true
   const ext = extensao(arquivo.name)
-  const tipo = (arquivo.type || MIME_POR_EXTENSAO[ext] || '').toLowerCase()
+  const tipo = tipoDoArquivo(arquivo)
   return itens.some((item) => {
     if (item.startsWith('.')) return ext !== '' && `.${ext}` === item
     if (item.endsWith('/*')) return tipo.startsWith(item.slice(0, -1))
