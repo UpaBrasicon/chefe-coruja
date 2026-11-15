@@ -13,3 +13,5 @@ node docs/comercial/matriz/gerar-pdf.mjs tmp/comercial/matriz-competitiva-intern
 ```
 
 "Não encontrado" não quer dizer "não tem". O PDF, as imagens e a cópia do mascote não vão para o git.
+
+**Aprovação:** o RT aprovou a matriz em 15/11/2026 ("Aprovado").
