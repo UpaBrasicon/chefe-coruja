@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { AIR_METANALISE_2025, WSES_APENDICITE_2025, alvarado } from '../escores/alvarado.ts'
 import { BTS_PLEURA_2023, DIRETRIZ_PLEURA_2023, light } from '../escores/light.ts'
 import { DIRETRIZ_DELIRIUM_2025, GED_DELIRIUM_2025, quatroAt } from '../escores/quatroAt.ts'
 import { ACG_ALD_2024, ACG_IHA_2023, DIRETRIZ_IHA_2023 } from './hepatopata.ts'
@@ -154,6 +155,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap74-monoartrite': 'monoartrite aguda no adulto: artrite séptica (punção articular, leucócitos do líquido sinovial, hemocultura, antibiótico empírico, oxacilina, ceftriaxona, drenagem, artroscopia) e crise de gota (colchicina, AINE, corticoide, gelo, alopurinol, hipouricemiante)',
   'nota-hcfmusp-cap54-diverticulite': 'diverticulite aguda no adulto: tomografia, antibiótico, tratamento ambulatorial, colonoscopia, recorrência, cirurgia eletiva',
   'nota-hcfmusp-cap29-hemorragia-alveolar': 'hemorragia alveolar difusa e vasculite ANCA (granulomatose com poliangeíte, poliangeíte microscópica) no adulto: pulso de metilprednisolona, plasmaférese, ciclofosfamida, rituximabe, avacopan, corticoide',
+  'nota-hcfmusp-cap49-dor-abdominal': 'dor abdominal aguda e apendicite aguda no adulto: escore de Alvarado, escore AIR, imagem, tomografia, ultrassom, apendicectomia negativa',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -916,7 +918,25 @@ export const notaHcfmuspCap29 = notaSoManualLote7('nota-hcfmusp-cap29-hemorragia
 
 export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap8, notaHcfmuspCap29, notaHcfmuspCap36, notaHcfmuspCap42, notaHcfmuspCap51, notaHcfmuspCap54, notaHcfmuspCap63, notaHcfmuspCap74, notaHcfmuspCap89, notaHcfmuspCap90]
 
-export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7]
+// ── Lote 8 (decisão do RT de 14/11/2026, Q1–Q4 = A; docs/clinico/HCFMUSP-LOTE8-DIAGNOSTICO.md).
+// Q1: o cap. 49 tem a ficha do Alvarado, que já cita a WSES 2025; os itens vêm da ficha.
+const REVISADO_LOTE8 = '14/11/2026 (lote 8 da revisão do HCFMUSP: itens tirados da ficha da Central, já conferidos com a diretriz; aguarda aprovação do RT)'
+function notaLote8(...a: Parameters<typeof nota>): NotaHcfmusp {
+  const n = nota(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = REVISADO_LOTE8
+  return n
+}
+
+/** cap. 49: WSES 2025 de apendicite e metanálise do AIR, já na ficha do Alvarado. */
+export const notaHcfmuspCap49 = notaLote8('nota-hcfmusp-cap49-dor-abdominal', 'Nota de atualização — manual HC, cap. 49: dor abdominal', 'cap. 49, p. 679–693', alvarado.ficha, [
+    { tema: 'Suspeita de apendicite: escore e imagem', diretriz: 'WSES 2025 (resumo lido): escores clínicos de risco somados à imagem melhoram a acurácia diagnóstica e reduzem a apendicectomia negativa. A WSES 2025 substitui a edição de 2020', manual: 'a apendicite aparece pela evolução da dor, de periumbilical a fossa ilíaca direita; o cap. 49 não traz escore (cap. 49, p. 689)' },
+    { tema: 'Escore AIR × Alvarado', diretriz: 'Metanálise do escore AIR (2025; 26 estudos, 15.699 pacientes; não é diretriz): área sob a curva de 0,86 do AIR contra 0,79 do Alvarado em todas as apendicites', manual: 'o cap. 49 não trata do ponto' },
+  ], [WSES_APENDICITE_2025, AIR_METANALISE_2025])
+
+export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap49]
+
+export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8]
 
 // Fichas, para a migration (npm run fichas:sql) e a Revisão Clínica.
 export const fichaNotaHcfmuspCap2 = notaHcfmuspCap2.ficha

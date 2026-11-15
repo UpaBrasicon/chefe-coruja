@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, NOTAS_HCFMUSP_LOTE4, NOTAS_HCFMUSP_LOTE5, NOTAS_HCFMUSP_LOTE6, NOTAS_HCFMUSP_LOTE7, textoNota } from './notasHcfmusp.ts'
+import { NOTAS_HCFMUSP, NOTAS_HCFMUSP_LOTE1, NOTAS_HCFMUSP_LOTE2, NOTAS_HCFMUSP_LOTE3, NOTAS_HCFMUSP_LOTE4, NOTAS_HCFMUSP_LOTE5, NOTAS_HCFMUSP_LOTE6, NOTAS_HCFMUSP_LOTE7, NOTAS_HCFMUSP_LOTE8, textoNota } from './notasHcfmusp.ts'
 import { DIRETRIZ_DPOC_GOLD_2026, GINA_ITENS } from './asmaDpoc.ts'
 import { DBHA_2025_ALVOS, DIFERENCAS_EH_2025, DIRETRIZ_AORTA_2024 } from './emergenciaHipertensiva.ts'
 import { DIFERENCAS_FA_2024, DOSES_FA_2024 } from './fibrilacaoAtrial.ts'
@@ -47,7 +47,7 @@ test('os itens vêm das listas das fichas, sem texto novo', () => {
 
 test('lote 2: onze notas (cap. 3, 15, 17, 18, 19, 20, 21, 30, 31, 32 e 67), itens das listas das fichas, só adulto', () => {
   assert.equal(NOTAS_HCFMUSP_LOTE2.length, 11)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + 11 + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length + NOTAS_HCFMUSP_LOTE8.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const caps = NOTAS_HCFMUSP_LOTE2.map((n) => n.capitulos).join(' ')
@@ -147,7 +147,7 @@ test('lote 3, N1: notas de 33, 40 e 76 a partir das listas das fichas; PAC com a
   const { DIRETRIZ_HSA_2023 } = await import('./hsa.ts')
   const { DIFERENCAS_AGITACAO_2024 } = await import('./agitacao.ts')
   assert.ok(NOTAS_HCFMUSP_LOTE3.length >= 3)
-  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length)
+  assert.equal(NOTAS_HCFMUSP.length, NOTAS_HCFMUSP_LOTE1.length + NOTAS_HCFMUSP_LOTE2.length + NOTAS_HCFMUSP_LOTE3.length + NOTAS_HCFMUSP_LOTE4.length + NOTAS_HCFMUSP_LOTE5.length + NOTAS_HCFMUSP_LOTE6.length + NOTAS_HCFMUSP_LOTE7.length + NOTAS_HCFMUSP_LOTE8.length)
   const ids = NOTAS_HCFMUSP.map((n) => n.ficha.id)
   assert.equal(new Set(ids).size, ids.length)
   const por = (id: string) => NOTAS_HCFMUSP_LOTE3.find((n) => n.ficha.id === id)!
@@ -613,4 +613,14 @@ test('lote 7, Q3: notas dos cap. 90, 74, 54 e 29 sem ficha da Central', () => {
   }
   assert.match(por('nota-hcfmusp-cap29-hemorragia-alveolar').ficha.fontes[0].url ?? '', /keaf240/)
   assert.match(textoNota(por('nota-hcfmusp-cap74-monoartrite')), /2 a 4 semanas/)
+})
+
+test('lote 8, Q1: nota do cap. 49 a partir da ficha do Alvarado', async () => {
+  const a = await import('../escores/alvarado.ts')
+  const nota = NOTAS_HCFMUSP_LOTE8.find((n) => n.ficha.id === 'nota-hcfmusp-cap49-dor-abdominal')!
+  assert.equal(nota.fichaCentral, a.alvarado.ficha.id)
+  assert.deepEqual(nota.ficha.fontes, [a.WSES_APENDICITE_2025, a.AIR_METANALISE_2025])
+  assert.equal(nota.ficha.versao, '2026-11-14.1')
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 8/)
+  assert.match(textoNota(nota), /apendicectomia negativa/)
 })
