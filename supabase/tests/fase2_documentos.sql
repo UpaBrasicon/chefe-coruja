@@ -76,11 +76,11 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 INSERT INTO t SELECT 'sync', public.sincronizar_registros(jsonb_build_array(jsonb_build_object(
   'id', 'd0000000-0000-4000-8000-000000000001', 'tipo', 'documento', 'hora', now() - interval '20 minutes',
   'sem_conexao', true, 'ultimo_contato', now() - interval '50 minutes', 'aparelho_id', 'aparelho-teste',
-  'dados', jsonb_build_object('paciente_id', pg_temp.v('ficha') ->> 'paciente_id', 'tipo', 'receita', 'conteudo', '{"itens":["paracetamol"]}'))));
+  'dados', jsonb_build_object('paciente_id', pg_temp.v('ficha') ->> 'paciente_id', 'tipo', 'receita', 'conteudo', '{"receita":{"itens":[{"medicamento":"paracetamol","posologia":"1 cp de 6/6 h"}]},"itens":["paracetamol"]}'))));
 INSERT INTO t SELECT 'sync2', public.sincronizar_registros(jsonb_build_array(jsonb_build_object(
   'id', 'd0000000-0000-4000-8000-000000000001', 'tipo', 'documento', 'hora', now() - interval '20 minutes',
   'sem_conexao', true, 'ultimo_contato', now() - interval '50 minutes', 'aparelho_id', 'aparelho-teste',
-  'dados', jsonb_build_object('paciente_id', pg_temp.v('ficha') ->> 'paciente_id', 'tipo', 'receita', 'conteudo', '{"itens":["paracetamol"]}'))));
+  'dados', jsonb_build_object('paciente_id', pg_temp.v('ficha') ->> 'paciente_id', 'tipo', 'receita', 'conteudo', '{"receita":{"itens":[{"medicamento":"paracetamol","posologia":"1 cp de 6/6 h"}]},"itens":["paracetamol"]}'))));
 RESET ROLE;
 DO $$
 DECLARE d public.documentos_clinicos;

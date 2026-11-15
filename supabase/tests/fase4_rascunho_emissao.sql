@@ -147,7 +147,7 @@ BEGIN
   END IF;
   RAISE NOTICE 'OK  o autor imprime o próprio rascunho, sem número (a folha sai marcada RASCUNHO)';
   IF f ->> 'numero' IS NULL OR (f ->> 'versao')::int <> 2 OR f ->> 'codigo' !~ '^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$'
-     OR f ->> 'protocolo' !~ '^IMP-' OR f ->> 'autor' <> 'Plantonista de Teste' OR f ->> 'conteudo' <> '{"itens":["a","b","d"]}' THEN
+     OR f ->> 'protocolo' !~ '^IMP-' OR f ->> 'autor' <> 'Plantonista de Teste' OR f ->> 'conteudo' <> '{"receita":{"itens":[{"medicamento":"a","posologia":"x"},{"medicamento":"b","posologia":"x"},{"medicamento":"d","posologia":"x"}]},"itens":["a","b","d"]}' THEN
     RAISE EXCEPTION 'FALHOU: folha_documento (%)', f;
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.log_acesso_prontuario WHERE documento_id = (pg_temp.v('ret') ->> 'id')::uuid AND tipo_acesso = 'impressao') THEN
