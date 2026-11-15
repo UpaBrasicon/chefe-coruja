@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { BTS_PLEURA_2023, DIRETRIZ_PLEURA_2023, light } from '../escores/light.ts'
 import { DIRETRIZ_DELIRIUM_2025, GED_DELIRIUM_2025, quatroAt } from '../escores/quatroAt.ts'
 import { ACG_ALD_2024, ACG_IHA_2023, DIRETRIZ_IHA_2023 } from './hepatopata.ts'
 import { DIRETRIZ_SSJ_NET_2025, LATAM_SSJ_NET_2025, fichaDermatosesAdulto } from './dermatoses.ts'
@@ -148,6 +149,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap89-itu': 'infecção do trato urinário (ITU) complicada e pielonefrite no adulto: antibiótico empírico, duração, troca de via venosa para oral, bacteremia, prostatite',
   'nota-hcfmusp-cap51-hdb': 'hemorragia digestiva baixa (HDB, hematoquezia) no adulto: escore de Oakland, alta, transfusão, varfarina, DOAC, reversão, ácido tranexâmico, angiotomografia, embolização, colonoscopia, anticoagulante',
   'nota-hcfmusp-cap8-delirium': 'delirium no idoso no pronto-socorro: rastreio, 4AT, CAM, bCAM, CAM-ICU, Delirium Triage Screen, Delirium Risk Score, REDEEM, tomografia de crânio',
+  'nota-hcfmusp-cap36-derrame-pleural': 'derrame pleural e infecção pleural (derrame parapneumônico, empiema) no adulto: toracocentese guiada por ultrassom, pH do líquido, DHL, glicose, dreno torácico, fibrinolítico (TPA e DNase), critérios de Light, escore RAPID',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -837,7 +839,13 @@ export const notaHcfmuspCap8 = notaLote7('nota-hcfmusp-cap8-delirium', 'Nota de 
   [GED_DELIRIUM_2025])
 notaHcfmuspCap8.ficha.revisadoEm = '14/11/2026 (lote 7 da revisão do HCFMUSP: itens das diretrizes geriátricas de PS 2.0, pelo resumo; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap8, notaHcfmuspCap42, notaHcfmuspCap51, notaHcfmuspCap63, notaHcfmuspCap89]
+/** cap. 36: BTS 2023 de doença pleural, já na ficha dos critérios de Light. */
+export const notaHcfmuspCap36 = notaLote7('nota-hcfmusp-cap36-derrame-pleural', 'Nota de atualização — manual HC, cap. 36: derrame pleural', 'cap. 36, p. 485–497', light.ficha,
+  DIRETRIZ_PLEURA_2023.map((d) => ({ tema: `Derrame pleural: ${d.tema.charAt(0).toLowerCase()}${d.tema.slice(1)}`, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [BTS_PLEURA_2023])
+notaHcfmuspCap36.ficha.revisadoEm = '14/11/2026 (lote 7 da revisão do HCFMUSP: itens da BTS 2023, versão resumida lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap8, notaHcfmuspCap36, notaHcfmuspCap42, notaHcfmuspCap51, notaHcfmuspCap63, notaHcfmuspCap89]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7]
 

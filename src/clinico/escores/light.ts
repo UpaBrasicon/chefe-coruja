@@ -1,4 +1,5 @@
 import { completo, numero, type Escore } from '../escore.ts'
+import type { Fonte } from '../ficha.ts'
 
 // Critérios de Light: exsudato se qualquer um dos três for positivo, com o
 // gradiente e a relação de albumina quando a albumina é informada. Porte do
@@ -7,11 +8,31 @@ import { completo, numero, type Escore } from '../escore.ts'
 
 const f2 = (x: number) => (Number.isFinite(x) ? String(Math.round(x * 100) / 100).replace('.', ',') : '—')
 
+// Lote 7 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): a BTS 2023
+// de doença pleural (versão resumida, lida no texto integral pelo Chrome do RT),
+// ao lado do cap. 36 do manual do HC (p. 485–497, conferido no PDF).
+export const BTS_PLEURA_2023: Fonte = {
+  citacao: 'Roberts ME, Rahman NM, Maskell NA, et al. British Thoracic Society Guideline for pleural disease. Thorax. 2023;78(11):1143–1156 (PMID 37553157); versão completa em Thorax. 2023;78(Suppl 3):s1–s42 (PMID 37433578). Texto da versão resumida lido; GRADE e consenso.',
+  url: 'https://doi.org/10.1136/thorax-2023-220304',
+}
+
+/** BTS 2023 × manual, no derrame pleural e na infecção pleural do adulto; grau como a diretriz escreve. */
+export const DIRETRIZ_PLEURA_2023: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Toracocentese', diretriz: 'Sempre guiar a toracocentese por imagem, para reduzir complicações', grau: 'forte, por consenso', fonte: 'BTS 2023', livro: 'toracocentese guiada por ultrassom com análise do líquido (cap. 36, p. 485)' },
+  { tema: 'Amostra', diretriz: 'Suspeita de derrame maligno: 25–50 mL para citologia. Suspeita de infecção: líquido em tubo seco e em frasco de hemocultura', grau: 'forte, por consenso', fonte: 'BTS 2023', livro: 'retirar 50–60 mL para celularidade, citologia, DHL, proteínas, glicose, pH, ADA, BAAR, bacterioscopia e culturas (cap. 36, p. 488)' },
+  { tema: 'pH na hora', diretriz: 'Derrame parapneumônico ou suspeita de infecção pleural sem pus franco na punção: medir o pH imediatamente; amostra sem anestésico local nem heparina', grau: 'forte, por consenso', fonte: 'BTS 2023', livro: 'pH entre os exames do líquido (cap. 36, p. 488)' },
+  { tema: 'pH do líquido e drenagem', diretriz: 'pH ≤ 7,2: alto risco de derrame parapneumônico complicado ou infecção pleural; drenar com dreno torácico se o volume acessível no ultrassom permitir com segurança. pH acima de 7,2 e abaixo de 7,4 (por exemplo, 7,3): risco intermediário; medir DHL e considerar drenagem se > 900 UI/L, sobretudo com febre que persiste, volume grande, glicose ≤ 4,0 mmol/L (72 mg/dL), realce pleural na TC ou septação no ultrassom. pH ≥ 7,4: baixo risco, sem indicação de dreno imediato; reavaliar e repetir a punção se for preciso', grau: 'forte, por consenso', fonte: 'BTS 2023', livro: 'pH < 7,2 indica drenagem no derrame parapneumônico; complicado também com glicose < 40 ou < 60 mg/dL, DHL > 1.000 U/L, bacterioscopia ou cultura positiva, ou pus (cap. 36, p. 491–492)' },
+  { tema: 'Sem pH disponível', diretriz: 'Glicose do líquido < 3,3 mmol/L indica alta probabilidade de derrame complicado ou infecção e pode orientar a drenagem', grau: 'forte, por consenso', fonte: 'BTS 2023', livro: 'glicose < 60 mg/dL sugere parapneumônico complicado (cap. 36, p. 491)' },
+  { tema: 'Calibre do dreno', diretriz: 'Drenar a infecção pleural com dreno fino (14F ou menor)', grau: 'condicional, por consenso', fonte: 'BTS 2023', livro: 'drenagem pleural fechada no parapneumônico complicado (cap. 36, p. 492)' },
+  { tema: 'Terapia intrapleural', diretriz: 'TPA com DNase quando a drenagem para e sobra coleção; TPA ou DNase sozinhos e estreptoquinase não devem ser usados; lavagem com soro se TPA com DNase ou cirurgia não forem possíveis', grau: 'condicional, por consenso', fonte: 'BTS 2023', livro: 'trombolítico no dreno ou videotoracoscopia no parapneumônico com loculação e no empiema (cap. 36, p. 494)' },
+  { tema: 'Prognóstico', diretriz: 'O escore RAPID (rim, idade, pus, origem da infecção, nutrição) pode estratificar o risco do adulto com infecção pleural', grau: 'condicional', fonte: 'BTS 2023', livro: 'o cap. 36 não trata do ponto' },
+]
+
 export const light: Escore = {
   ficha: {
     id: 'light',
     titulo: 'Critérios de Light — exsudato ou transudato',
-    versao: '2026-11-11.1',
+    versao: '2026-11-14.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Light RW, Macgregor MI, Luchsinger PC, Ball WC. Pleural effusions: the diagnostic separation of transudates and exudates. Ann Intern Med. 1972;77(4):507–513.', url: 'https://doi.org/10.7326/0003-4819-77-4-507' },
@@ -19,8 +40,9 @@ export const light: Escore = {
       { citacao: 'Porcel JM. Biomarkers in the diagnosis of pleural diseases: a 2018 update. Ther Adv Respir Dis. 2018;12:1753466618808660. NT-proBNP no líquido pleural acima de 1500 pg/mL.', url: 'https://doi.org/10.1177/1753466618808660' },
       { citacao: 'Porcel JM, Porcel L, Palma R, Bielsa S. Revisiting Light’s criteria: a validated blood-free triple combination matches diagnostic accuracy in over 7000 patients. ERJ Open Res. 2026;12(2):00821-2025 (PMID 41846683). 7.280 toracocenteses: desempenho de Light e combinação tripla sem soro.', url: 'https://doi.org/10.1183/23120541.00821-2025' },
       { citacao: 'Porcel JM, Trujillano J, Porcel L, et al. Development and validation of a diagnostic prediction model for heart failure-related pleural effusions: the BANCA score. ERJ Open Res. 2025;11:01030-2024. Corte ótimo de NT-proBNP 2500 pg/mL.', url: 'https://doi.org/10.1183/23120541.01030-2024' },
+      BTS_PLEURA_2023,
     ],
-    revisadoEm: '11/11/2026 (regra sem soro e desempenho pelo Porcel 2026, decisão H21 do RT)',
+    revisadoEm: '14/11/2026 (BTS 2023 ao lado do manual do HC, cap. 36; lote 7 da revisão do HCFMUSP; aguarda aprovação do RT); 11/11/2026 (regra sem soro e desempenho pelo Porcel 2026, decisão H21 do RT)',
   },
   descricao: 'Exsudato ou transudato no derrame pleural, com o gradiente de albumina',
   itens: [
