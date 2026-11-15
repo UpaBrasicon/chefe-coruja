@@ -28,7 +28,7 @@ import { AAO_HNS_EPISTAXE_2020, ANNEXA_I, DIRETRIZ_HIC_ESO_2025, ESO_HIC_2025, S
 import { SOHO_2026, fichaOxigenacaoAdulto } from './oxigenacao.ts'
 import { AABB_2023, AABB_IAM_2025, AABB_PLAQUETAS_2025, HEMOTION_2024, SAHARA_2025, TRAIN_2024, fichaTransfusaoAdulto } from './transfusao.ts'
 import { DIRETRIZ_AFOGAMENTO, DIRETRIZ_HIPOTERMIA_2025, ERC_2025_HIPOTERMIA, WMS_AFOGAMENTO_2024, fichaHipotermiaAdulto, szpilman } from './ambientais.ts'
-import { BAVENO_VIII_2026, DIRETRIZ_HDA, ESGE_UGIH_2026, fichaHemorragiaDigestiva } from './hemorragiaDigestiva.ts'
+import { ACG_HDB_2023, BAVENO_VIII_2026, DIRETRIZ_HDA, DIRETRIZ_HDB_2023, ESGE_UGIH_2026, fichaHemorragiaDigestiva, fichaOakland } from './hemorragiaDigestiva.ts'
 import { DIRETRIZ_HIPONATREMIA, ERA_HIPONATREMIA_2024, EUROPEIA_HIPONATREMIA_2014, fichaHiponatremia } from './sodio.ts'
 import { DIRETRIZ_TRAUMA, EAST_TXA_2025, EUROPEIA_SANGRAMENTO_TRAUMA_2023, fichaTraumaAdulto } from './trauma.ts'
 import { ABHH_NF_2024, DIRETRIZ_NF, MASCC_2026, fichaNeutropeniaFebrilAdulto } from './neutropeniaFebril.ts'
@@ -145,6 +145,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap42-vertigem': 'vertigem e tontura aguda no adulto: HINTS, nistagmo, síndrome vestibular aguda, marcha, tomografia, ressonância, AVC de fossa posterior',
   'nota-hcfmusp-cap63-rabdomiolise': 'rabdomiólise no adulto: CPK, diagnóstico, escore de McMahon, lesão renal aguda, hidratação, bicarbonato',
   'nota-hcfmusp-cap89-itu': 'infecção do trato urinário (ITU) complicada e pielonefrite no adulto: antibiótico empírico, duração, troca de via venosa para oral, bacteremia, prostatite',
+  'nota-hcfmusp-cap51-hdb': 'hemorragia digestiva baixa (HDB, hematoquezia) no adulto: escore de Oakland, alta, transfusão, varfarina, DOAC, reversão, ácido tranexâmico, angiotomografia, embolização, colonoscopia, anticoagulante',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -822,7 +823,13 @@ export const notaHcfmuspCap89 = notaLote7('nota-hcfmusp-cap89-itu', 'Nota de atu
     { tema: 'Troca da via venosa para oral', diretriz: 'IDSA 2025 (resumo lido): passar para via oral quando o paciente melhora, aceita medicação oral e há opção oral eficaz', manual: 'não comparado nesta nota' },
   ], [IDSA_ITU_EMPIRICO_2025, IDSA_ITU_DURACAO_2025, IDSA_ITU_EV_VO_2025])
 
-export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap42, notaHcfmuspCap63, notaHcfmuspCap89]
+/** cap. 51: ACG 2023 de HDB, já na ficha do Oakland. */
+export const notaHcfmuspCap51 = notaLote7('nota-hcfmusp-cap51-hdb', 'Nota de atualização — manual HC, cap. 51: hemorragia digestiva baixa', 'cap. 51, p. 707–716', fichaOakland,
+  DIRETRIZ_HDB_2023.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [ACG_HDB_2023])
+notaHcfmuspCap51.ficha.revisadoEm = '14/11/2026 (lote 7 da revisão do HCFMUSP: itens da ACG 2023, lida no texto integral; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE7: NotaHcfmusp[] = [notaHcfmuspCap42, notaHcfmuspCap51, notaHcfmuspCap63, notaHcfmuspCap89]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7]
 

@@ -236,7 +236,35 @@ export const NOTA_CALIBRE_5MM = 'O livro separa "< 5 mm" e "> 5 mm"; exatamente 
 
 // ── Oakland (Tabela 6, p. 715–716) ──────────────────────────────────────────
 
-export const fichaOakland = fichaAdulto('adulto-oakland', 'Escore de Oakland — hemorragia digestiva baixa (adulto)', 'cap. 51, p. 714–716')
+const fichaOaklandLivro = fichaAdulto('adulto-oakland', 'Escore de Oakland — hemorragia digestiva baixa (adulto)', 'cap. 51, p. 714–716')
+
+// Lote 7 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): a ACG 2023
+// de hemorragia digestiva baixa, lida no texto integral pelo Chrome do RT, ao
+// lado do cap. 51 do manual (p. 711–716, conferido no PDF).
+export const ACG_HDB_2023: Fonte = {
+  citacao: 'Sengupta N, Feuerstein JD, Jairath V, et al. Management of Patients With Acute Lower Gastrointestinal Bleeding: An Updated ACG Guideline. Am J Gastroenterol. 2023;118(2):208–231 (PMID 36735555). Texto integral lido; GRADE.',
+  url: 'https://doi.org/10.14309/ajg.0000000000002130',
+}
+
+/** ACG 2023 × manual, na HDB do adulto; o grau é como a diretriz escreve. */
+export const DIRETRIZ_HDB_2023: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Alta precoce', diretriz: 'Usar escore de risco (por exemplo, Oakland ≤ 8) para achar o paciente de baixo risco que pode ter alta precoce e investigação ambulatorial; o escore complementa, não substitui, o julgamento clínico', grau: 'condicional, baixa', fonte: 'ACG 2023', livro: 'Oakland < 8 no texto e ≤ 8 na tabela: seguimento ambulatorial; > 8: internar para colonoscopia (cap. 51, p. 714–716)' },
+  { tema: 'Transfusão', diretriz: 'Estratégia restritiva: transfundir hemácias com Hb < 7 g/dL no paciente estável', grau: 'condicional, baixa', fonte: 'ACG 2023', livro: 'hemácias com Hb < 7 g/dL (cap. 51, p. 713)' },
+  { tema: 'Varfarina', diretriz: 'A maioria não precisa de reversão. Reverter no sangramento com risco de vida e INR bem acima da faixa terapêutica; quando reverter, preferir complexo protrombínico de 4 fatores ao plasma fresco, pela rapidez', grau: 'condicional, muito baixa', fonte: 'ACG 2023', livro: 'plasma fresco se INR > 1,5 (cap. 51, p. 713)' },
+  { tema: 'DOAC', diretriz: 'Reverter só no pequeno grupo com sangramento com risco de vida que não responde à ressuscitação e à suspensão do anticoagulante; usar o reversor específico (idarucizumabe na dabigatrana; andexanete na apixabana e na rivaroxabana), quando disponível e se o DOAC foi tomado nas últimas 24 h', grau: 'condicional, muito baixa', fonte: 'ACG 2023', livro: 'o cap. 51 não trata do ponto' },
+  { tema: 'Ácido tranexâmico', diretriz: 'Não usar antifibrinolítico, como o ácido tranexâmico, na HDB', grau: 'forte, moderada', fonte: 'ACG 2023', livro: 'o cap. 51 não trata do ponto' },
+  { tema: 'Angiotomografia', diretriz: 'Angiotomografia como primeiro exame na hematoquezia com repercussão hemodinâmica que continua; rende pouco no sangramento pequeno ou que já parou', grau: 'condicional, baixa', fonte: 'ACG 2023', livro: 'angiotomografia como opção no paciente instável (índice de choque > 1) que não pode esperar a endoscopia; colonoscopia é o melhor método no PS (cap. 51, p. 711–714)' },
+  { tema: 'Angiotomografia positiva', diretriz: 'Com extravasamento na angiotomografia, encaminhar logo à radiologia intervencionista para arteriografia e possível embolização; em centro com experiência, considerar colonoscopia', grau: 'forte, moderada', fonte: 'ACG 2023', livro: 'arteriografia localiza sangramento de 0,5 mL/min e permite embolização (Tabela 5, cap. 51, p. 711–712)' },
+  { tema: 'Momento da colonoscopia', diretriz: 'No internado que precisa de colonoscopia, fazê-la sem urgência: a colonoscopia em até 24 h não melhorou ressangramento nem mortalidade', grau: 'forte, moderada', fonte: 'ACG 2023', livro: 'colonoscopia é o melhor método no PS, com diagnóstico em 70–90% (cap. 51, p. 711)' },
+  { tema: 'Retomar anticoagulante', diretriz: 'Retomar a anticoagulação depois que o sangramento parar, porque reduz tromboembolismo e mortalidade', grau: 'forte, moderada', fonte: 'ACG 2023', livro: 'o cap. 51 não trata do ponto' },
+]
+
+export const fichaOakland: Ficha = {
+  ...fichaOaklandLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaOaklandLivro.fontes, ACG_HDB_2023],
+  revisadoEm: '14/11/2026 (ACG 2023 de HDB ao lado do manual, no texto integral; lote 7 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro)',
+}
 
 const op = (rotulo: string, valor: number) => ({ rotulo: `${rotulo} — ${valor} ${valor === 1 ? 'ponto' : 'pontos'}`, valor })
 
