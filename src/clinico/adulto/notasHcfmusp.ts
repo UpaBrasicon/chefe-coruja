@@ -160,6 +160,11 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap49-dor-abdominal': 'dor abdominal aguda e apendicite aguda no adulto: escore de Alvarado, escore AIR, imagem, tomografia, ultrassom, apendicectomia negativa',
   'nota-hcfmusp-cap62-colica-nefretica': 'cólica nefrética, cálculo ureteral e urolitíase no adulto: ultrassom, tomografia de baixa dose, AINE, cetorolaco, opioide, morfina, tansulosina, terapia expulsiva',
   'nota-hcfmusp-cap9-dor': 'dor aguda no adulto e analgesia na alta do pronto-socorro: opioide, dose em MME, duração da receita, naloxona, benzodiazepínico, paracetamol, dipirona, AINE',
+  'nota-hcfmusp-cap87-covid': 'COVID-19 leve a moderada no adulto: antiviral, nirmatrelvir com ritonavir (Paxlovid), remdesivir, molnupiravir, fator de risco, 5 dias, corticoide inalatório',
+  'nota-hcfmusp-cap92-chikungunya': 'febre chikungunya no adulto e arboviroses: paracetamol, dipirona, anti-inflamatório (AINE), corticoide, hidratação oral, artralgia',
+  'nota-hcfmusp-cap75-reumatologicas': 'emergências reumatológicas no adulto: arterite de células gigantes (arterite temporal), corticoide, prednisona, crise renal esclerodérmica, esclerose sistêmica, inibidor da ECA, captopril',
+  'nota-hcfmusp-cap86-otorrino': 'surdez súbita (perda auditiva neurossensorial súbita) no adulto: corticoide, prednisolona, intratimpânico, audiometria, ressonância, tomografia, antiviral, vasodilatador',
+  'nota-hcfmusp-cap85-oftalmologia': 'oclusão da artéria central da retina no adulto: perda visual súbita, AVC, trombólise, alteplase, emergência oftalmológica',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -950,7 +955,71 @@ export const notaHcfmuspCap9 = notaLote8('nota-hcfmusp-cap9-dor', 'Nota de atual
   [CDC_OPIOIDES_2022])
 notaHcfmuspCap9.ficha.revisadoEm = '14/11/2026 (lote 8 da revisão do HCFMUSP: itens do CDC 2022, lido no texto integral; aguarda aprovação do RT)'
 
-export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap9, notaHcfmuspCap49, notaHcfmuspCap62]
+// Q3 = A: cap. 87, 92, 75, 86 e 85 não têm ficha de adulto na Central. A nota liga só
+// ao capítulo do manual (conferido no PDF).
+function notaSoManualLote8(...a: Parameters<typeof notaSoManual>): NotaHcfmusp {
+  const n = notaSoManual(...a)
+  n.ficha.versao = '2026-11-14.1'
+  n.ficha.revisadoEm = '14/11/2026 (lote 8 da revisão do HCFMUSP, Q3: nota sem ficha de adulto na Central; aguarda aprovação do RT)'
+  return n
+}
+export const IDSA_COVID_2025: Fonte = {
+  citacao: 'Shumaker AH, Bhimraj A, Bedimo R, et al. 2025 Clinical Practice Guideline Update by the Infectious Diseases Society of America on the Treatment and Management of COVID-19: antiviral treatment for mild to moderate COVID-19 in adults. Clin Infect Dis. 2026;82(Suppl 3):i1–i17 (PMID 41920902). O texto no PMC está em embargo; as recomendações foram lidas na página da diretriz no site da IDSA (atualizada em 14/10/2025); GRADE.',
+  url: 'https://doi.org/10.1093/cid/ciaf680',
+}
+export const EULAR_ACG_2025: Fonte = {
+  citacao: 'Mukhtyar C, Nikiphorou E, Bartoletti A, et al. 2025 EULAR recommendations for the management of polymyalgia rheumatica and primary large vessel vasculitis. Ann Rheum Dis. 2026 (PMID 42481270). Resumo lido.',
+  url: 'https://doi.org/10.1016/j.ard.2026.06.009',
+}
+export const SBR_ESCLEROSE_2023: Fonte = {
+  citacao: 'Kayser C, de Oliveira Delgado SM, Zimmermann AF, et al. 2023 Brazilian Society of Rheumatology guidelines for the treatment of systemic sclerosis. Adv Rheumatol. 2024;64(1):52 (PMID 38987832). Texto integral lido; recomendação da crise renal por opinião de especialistas.',
+  url: 'https://doi.org/10.1186/s42358-024-00392-w',
+}
+export const ABORL_SURDEZ_2026: Fonte = {
+  citacao: 'Bahmad F Jr, Hamerschmidt R, Tsuji RK, et al. Clinical practice guideline: sudden hearing loss — The Brazilian taskforce (ABORL/SBO) 2026. Braz J Otorhinolaryngol. 2026;93(1):101903 (PMID 42981831; PMC13757513). Texto integral lido.',
+  url: 'https://doi.org/10.1016/j.bjorl.2026.101903',
+}
+export const AHA_OACR_2021: Fonte = {
+  citacao: 'Mac Grory B, Schrag M, Biousse V, et al. Management of Central Retinal Artery Occlusion: A Scientific Statement From the American Heart Association. Stroke. 2021;52(6):e282–e294 (PMID 33677974). Resumo lido; declaração científica, sem graduação.',
+  url: 'https://doi.org/10.1161/STR.0000000000000366',
+}
+
+/** cap. 87: IDSA 2025, antiviral na COVID-19 leve a moderada. */
+export const notaHcfmuspCap87 = notaSoManualLote8('nota-hcfmusp-cap87-covid', 'Nota de atualização — manual HC, cap. 87: COVID-19 no PS', 'cap. 87, p. 1171–1187', [
+    { tema: 'Nirmatrelvir com ritonavir', diretriz: 'IDSA 2025: no alto risco de progressão ou com vários fatores de risco, nirmatrelvir com ritonavir em vez de nenhum antiviral (forte, moderada); no risco aumentado mas não alto, condicional (moderada); sem fator de risco, não usar de rotina (condicional, moderada). É a primeira opção no ambulatório; dentro de 5 dias do início dos sintomas, por 5 dias; checar interações e ajustar pela função renal', manual: 'o Paxlovid reduziu a hospitalização em 89% quando iniciado em até 5 dias, em não vacinados com fator de risco; estudo ainda não publicado e sem aprovação no Brasil na época (cap. 87, p. 1178)' },
+    { tema: 'Remdesivir', diretriz: 'IDSA 2025: remdesivir EV por 3 dias no alto risco (forte, moderada); no risco aumentado, condicional (baixa); sem fator de risco, não usar de rotina (condicional, moderada)', manual: 'o cap. 87 não trata do ponto' },
+    { tema: 'Molnupiravir', diretriz: 'IDSA 2025: só no alto risco sem outra opção de tratamento (condicional, baixa); no risco aumentado, não usar de rotina (condicional, baixa); sem fator de risco, não usar (forte, moderada); não escolher só por conveniência', manual: 'molnupiravir reduziu a hospitalização em 50%, em estudo ainda não publicado na época (cap. 87, p. 1178)' },
+    { tema: 'Corticoide inalatório', diretriz: 'IDSA (atualização de 2022, mantida): no paciente ambulatorial com COVID-19 leve a moderada, não usar corticoide inalatório (condicional, moderada); quem já usa por outra indicação pode continuar', manual: 'o cap. 87 não trata do ponto' },
+  ], [IDSA_COVID_2025])
+
+/** cap. 92: OMS 2025 de arboviroses (recomendações que valem para a chikungunya), resumo das recomendações lido. */
+export const notaHcfmuspCap92 = notaSoManualLote8('nota-hcfmusp-cap92-chikungunya', 'Nota de atualização — manual HC, cap. 92: febre chikungunya', 'cap. 92, p. 1241–1248', [
+    { tema: 'Dor e febre', diretriz: 'OMS 2025 (condicional, baixa): paracetamol ou dipirona para a dor e a febre na arbovirose não grave', manual: 'paracetamol é a droga de escolha para a febre e a dor articular (cap. 92, p. 1245)' },
+    { tema: 'Anti-inflamatório', diretriz: 'OMS 2025 (forte contra, baixa): não usar AINE na fase aguda da arbovirose suspeita ou confirmada, qualquer que seja a gravidade', manual: 'AINE reservado à artralgia e artrite sem melhora com paracetamol, depois de excluir dengue (cap. 92, p. 1245)' },
+    { tema: 'Corticoide', diretriz: 'OMS 2025 (condicional contra, baixa): não usar corticoide na arbovirose aguda não grave; no caso grave, também não (condicional, muito baixa)', manual: 'não comparado nesta nota' },
+    { tema: 'Hidratação', diretriz: 'OMS 2025 (condicional, baixa): hidratação oral com protocolo na arbovirose não grave', manual: 'não comparado nesta nota' },
+  ], [OMS_ARBOVIROSES_2025])
+
+/** cap. 75: EULAR 2025 (arterite de células gigantes) e SBR 2023 (crise renal esclerodérmica). */
+export const notaHcfmuspCap75 = notaSoManualLote8('nota-hcfmusp-cap75-reumatologicas', 'Nota de atualização — manual HC, cap. 75: emergências reumatológicas', 'cap. 75, p. 994–1002', [
+    { tema: 'Arterite de células gigantes', diretriz: 'EULAR 2025 (resumo lido): na suspeita, encaminhar ao especialista em até 24 horas; com suspeita clínica forte, começar glicocorticoide sem esperar os exames de confirmação; indução com 40 a 60 mg/dia de prednisona ou equivalente', manual: 'a arterite de células gigantes aparece só na classificação das vasculites (Tabela 1, cap. 75, p. 994)' },
+    { tema: 'Crise renal esclerodérmica', diretriz: 'SBR 2023 (opinião de especialistas): inibidor da ECA imediatamente, para controlar a pressão e limitar a lesão renal; somar bloqueador de canal de cálcio, bloqueador do receptor de angiotensina ou alfa e betabloqueador se a pressão não voltar em 48 a 72 h; terapia renal substitutiva se a função não se recuperar. Corticoide com cautela, porque aumenta o risco de crise renal', manual: 'inibidor da ECA em todos; captopril 6,25 mg 8/8 h, ajustado pela pressão; evitar betabloqueador; suporte da lesão renal aguda (cap. 75, p. 1001)' },
+  ], [EULAR_ACG_2025, SBR_ESCLEROSE_2023])
+
+/** cap. 86: ABORL/SBO 2026 de surdez súbita. */
+export const notaHcfmuspCap86 = notaSoManualLote8('nota-hcfmusp-cap86-otorrino', 'Nota de atualização — manual HC, cap. 86: emergências otorrinolaringológicas (surdez súbita)', 'cap. 86, p. 1153–1169', [
+    { tema: 'Surdez súbita: definição', diretriz: 'ABORL/SBO 2026: perda auditiva maior que 30 dB em pelo menos três frequências seguidas, instalada em até 72 horas; é emergência otológica', manual: 'o cap. 86 não trata do ponto' },
+    { tema: 'Surdez súbita: corticoide', diretriz: 'ABORL/SBO 2026 (recomendação forte): oferecer corticoide como tratamento inicial, de preferência nas duas primeiras semanas; sistêmico, intratimpânico ou os dois. O texto dá prednisolona 1 mg/kg/dia em dose única, até 60 mg/dia, por 10 a 14 dias, sem desmame; o resumo da mesma diretriz pede dose individualizada, sem teto universal', manual: 'o cap. 86 não trata do ponto' },
+    { tema: 'Surdez súbita: exames', diretriz: 'ABORL/SBO 2026: audiometria em até 14 dias do início (forte); ressonância para causa retrococlear (forte); não pedir TC de crânio de rotina e não atrasar o corticoide por ela; não pedir exames de laboratório de rotina', manual: 'o cap. 86 não trata do ponto' },
+    { tema: 'Surdez súbita: o que não usar', diretriz: 'ABORL/SBO 2026: não prescrever de rotina antiviral, trombolítico, vasodilatador ou substância vasoativa', manual: 'o cap. 86 não trata do ponto' },
+  ], [ABORL_SURDEZ_2026])
+
+/** cap. 85: AHA 2021 de oclusão da artéria central da retina, pelo resumo. */
+export const notaHcfmuspCap85 = notaSoManualLote8('nota-hcfmusp-cap85-oftalmologia', 'Nota de atualização — manual HC, cap. 85: emergências oftalmológicas (oclusão da artéria central da retina)', 'cap. 85, p. 1119–1151', [
+    { tema: 'Oclusão da artéria central da retina', diretriz: 'AHA 2021 (declaração científica, sem graduação; resumo lido): é uma forma de AVC isquêmico e emergência médica; priorizar o reconhecimento e o encaminhamento imediato; a alteplase EV pode ser eficaz; investigar e tratar com urgência os fatores de risco vasculares', manual: 'a oclusão arterial retiniana aparece só como complicação da celulite pós-septal (cap. 85, p. 1129)' },
+  ], [AHA_OACR_2021])
+
+export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap9, notaHcfmuspCap49, notaHcfmuspCap62, notaHcfmuspCap75, notaHcfmuspCap85, notaHcfmuspCap86, notaHcfmuspCap87, notaHcfmuspCap92]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8]
 

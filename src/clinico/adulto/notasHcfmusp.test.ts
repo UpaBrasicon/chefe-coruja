@@ -642,3 +642,15 @@ test('lote 8, Q2: nota do cap. 9 a partir do CDC 2022 na ficha de dor', async ()
   assert.deepEqual(nota.ficha.fontes, [d.CDC_OPIOIDES_2022])
   assert.match(textoNota(nota), /não vale para doença falciforme/)
 })
+
+test('lote 8, Q3: notas dos cap. 87, 92, 75, 86 e 85 sem ficha da Central', () => {
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE8.find((n) => n.ficha.id === id)!
+  for (const [id, n] of [['nota-hcfmusp-cap87-covid', 4], ['nota-hcfmusp-cap92-chikungunya', 4], ['nota-hcfmusp-cap75-reumatologicas', 2], ['nota-hcfmusp-cap86-otorrino', 4], ['nota-hcfmusp-cap85-oftalmologia', 1]] as const) {
+    const nota = por(id)
+    assert.equal(nota.fichaCentral, '')
+    assert.equal(nota.itens.length, n, id)
+    assert.match(nota.ficha.revisadoEm ?? '', /lote 8/)
+  }
+  assert.match(textoNota(por('nota-hcfmusp-cap92-chikungunya')), /não usar AINE/)
+  assert.match(textoNota(por('nota-hcfmusp-cap86-otorrino')), /sem teto universal/)
+})
