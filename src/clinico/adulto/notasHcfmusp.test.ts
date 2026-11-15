@@ -633,3 +633,12 @@ test('lote 8, Q2: nota do cap. 62 a partir da EAU 2025 na ficha de cólica nefr�
   assert.deepEqual(nota.ficha.fontes, [m.EAU_UROLITIASE_2025])
   assert.match(nota.ficha.revisadoEm ?? '', /lote 8/)
 })
+
+test('lote 8, Q2: nota do cap. 9 a partir do CDC 2022 na ficha de dor', async () => {
+  const d = await import('./dorAnalgesia.ts')
+  const nota = NOTAS_HCFMUSP_LOTE8.find((n) => n.ficha.id === 'nota-hcfmusp-cap9-dor')!
+  assert.equal(nota.fichaCentral, d.fichaDorAnalgesiaAdulto.id)
+  assert.equal(nota.itens.length, d.DIRETRIZ_DOR_2022.length)
+  assert.deepEqual(nota.ficha.fontes, [d.CDC_OPIOIDES_2022])
+  assert.match(textoNota(nota), /não vale para doença falciforme/)
+})
