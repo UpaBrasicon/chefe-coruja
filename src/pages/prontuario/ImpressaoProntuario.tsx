@@ -36,6 +36,7 @@ import { data as dataFmt, dataHoraCarimbo } from '@/lib/formato'
 import { abrirProntuario, folhaDoDocumentoEmitido } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { janelaEmBranco } from '@/lib/abrirEmJanela'
 
 const MAX_ANEXO = 10 * 1024 * 1024
 /** PDF ou imagem até 10 MB; a frase vai depois do nome do arquivo. */
@@ -233,7 +234,7 @@ export default function ImpressaoProntuario() {
   }
 
   async function abrirAnexo(a: Anexo) {
-    const janela = window.open('', '_blank')
+    const janela = janelaEmBranco()
     const { data, error } = await supabase.storage.from('atendimento').createSignedUrl(a.caminho, 120)
     if (error || !data) {
       janela?.close()
@@ -268,7 +269,7 @@ export default function ImpressaoProntuario() {
   async function imprimir() {
     if (!pronto || !prontuario.data) return
     // a janela abre dentro do clique, senão o navegador bloqueia
-    const janela = window.open('', '_blank')
+    const janela = janelaEmBranco()
     if (!janela) { setAviso('O navegador bloqueou a janela de impressão. Libere pop-ups para este endereço.'); return }
     janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a cópia do prontuário…</p>') // padrao-ok: HTML da janela de impressão, que não lê os tokens do app
     setImprimindo(true)

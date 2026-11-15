@@ -82,6 +82,8 @@ A sincronização depois do turno é proposital (ADR 0009). O problema é só a 
 - **A (recomendada):** um PR com as migrations (expand, sem retirar nada) e as telas. Conferido na homologação com os testes de banco, e a produção só com o seu ok.
 - **B:** um PR por item.
 
+**Decisão do RT, 15/11/2026:** D1 a D5 = A ("Todas A"). Conferido no código antes da migration: nenhuma tela emite os quatro tipos de fluxo próprio pelo caminho genérico; a tela do termo não usa rascunho no servidor, e o servidor já recusava copiar termo (o "Copiar" do termo saiu também da tela).
+
 ## Riscos
 
 - **Folhas impressas:** o escape dentro de `cabecalho()` pode escapar duas vezes onde a chamada já escapava (por exemplo, "&amp;" na tela). O caminho é conferir todas as chamadas e tirar o escape delas, comparando as folhas antes e depois na homologação.
