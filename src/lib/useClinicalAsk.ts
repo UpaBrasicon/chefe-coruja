@@ -31,7 +31,7 @@ export type ToolHit = { id: string; nome: string; tipo: string; categoria: strin
 /** E4: alta = duas ou mais fontes acima do corte; moderada = uma fonte só; baixa = sem resposta. */
 export type ConfiancaIa = 'alta' | 'moderada' | 'baixa'
 
-export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | 'error' | 'limite' | 'indisponivel' | 'identificacao'
+export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | 'error' | 'limite' | 'indisponivel' | 'identificacao' | 'segundo_fator'
 
 type Evento =
   | { type: 'meta'; request_id: string; gate: boolean; publico?: 'adulto' | 'pediatrico'; ferramentas: ToolHit[]; fontes: Fonte[]; confianca?: ConfiancaIa }
@@ -115,6 +115,12 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     if (res.status === 429) { setStatus('limite'); return }
     // gateway (ADR 0006): a pergunta tinha identificação e não saiu
     if (res.status === 422) { setStatus('identificacao'); return }
+    if (res.status === 403) {
+      // S3: a função recusa sessão sem o segundo fator confirmado
+      const corpo = await res.json().catch(() => null)
+      setStatus(typeof corpo?.erro === 'string' && corpo.erro.startsWith('SEGUNDO_FATOR') ? 'segundo_fator' : 'error')
+      return
+    }
     if (res.status === 503) { setStatus('indisponivel'); return }
     if (!res.ok || !res.body) { setStatus('error'); return }
     setRequestId(res.headers.get('X-Request-Id'))
