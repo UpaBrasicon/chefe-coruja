@@ -70,6 +70,8 @@
 - **A (recomendada):** documento editável no Claude, para o RT adaptar a cada cliente e exportar em PDF ou Word. O texto-base fica também no repositório, em `docs/comercial/proposta/`.
 - **B:** PDF fixo, como a one-page.
 
+**Decisão do RT, 15/11/2026:** PP1 a PP6 = A, e PP5 = C: campos de valor em branco ("Todas A, PP5 = C").
+
 ## Regras do conteúdo
 
 - Nenhuma promessa de RNDS, certificação SBIS/CFM ou assinatura ICP-Brasil como pronta.
