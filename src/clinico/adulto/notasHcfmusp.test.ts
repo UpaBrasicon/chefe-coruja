@@ -600,3 +600,17 @@ test('lote 7, Q2: nota do cap. 36 a partir da BTS 2023 na ficha dos critérios d
   assert.match(nota.ficha.revisadoEm ?? '', /lote 7/)
   assert.match(textoNota(nota), /DNase/)
 })
+
+test('lote 7, Q3: notas dos cap. 90, 74, 54 e 29 sem ficha da Central', () => {
+  const por = (id: string) => NOTAS_HCFMUSP_LOTE7.find((n) => n.ficha.id === id)!
+  for (const [id, n, f] of [['nota-hcfmusp-cap90-influenza', 4, 1], ['nota-hcfmusp-cap74-monoartrite', 7, 2], ['nota-hcfmusp-cap54-diverticulite', 4, 1], ['nota-hcfmusp-cap29-hemorragia-alveolar', 5, 1]] as const) {
+    const nota = por(id)
+    assert.equal(nota.fichaCentral, '')
+    assert.equal(nota.itens.length, n, id)
+    assert.equal(nota.ficha.fontes.length, f, id)
+    assert.match(nota.ficha.revisadoEm ?? '', /lote 7/)
+    assert.equal(new Set(nota.itens.map((i) => i.tema)).size, n)
+  }
+  assert.match(por('nota-hcfmusp-cap29-hemorragia-alveolar').ficha.fontes[0].url ?? '', /keaf240/)
+  assert.match(textoNota(por('nota-hcfmusp-cap74-monoartrite')), /2 a 4 semanas/)
+})
