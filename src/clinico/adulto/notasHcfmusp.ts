@@ -7,6 +7,7 @@
 // Central já conferiram (com página e fonte). Cada nota é uma ficha, com versão,
 // e passa pela aprovação do RT na Revisão Clínica (L3).
 import type { Fonte, Ficha } from '../ficha.ts'
+import { DIRETRIZ_COLICA_2025, EAU_UROLITIASE_2025, fichaColicaRenalAdulto } from './colicaRenal.ts'
 import { AIR_METANALISE_2025, WSES_APENDICITE_2025, alvarado } from '../escores/alvarado.ts'
 import { BTS_PLEURA_2023, DIRETRIZ_PLEURA_2023, light } from '../escores/light.ts'
 import { DIRETRIZ_DELIRIUM_2025, GED_DELIRIUM_2025, quatroAt } from '../escores/quatroAt.ts'
@@ -156,6 +157,7 @@ const ASSUNTO: Record<string, string> = {
   'nota-hcfmusp-cap54-diverticulite': 'diverticulite aguda no adulto: tomografia, antibiótico, tratamento ambulatorial, colonoscopia, recorrência, cirurgia eletiva',
   'nota-hcfmusp-cap29-hemorragia-alveolar': 'hemorragia alveolar difusa e vasculite ANCA (granulomatose com poliangeíte, poliangeíte microscópica) no adulto: pulso de metilprednisolona, plasmaférese, ciclofosfamida, rituximabe, avacopan, corticoide',
   'nota-hcfmusp-cap49-dor-abdominal': 'dor abdominal aguda e apendicite aguda no adulto: escore de Alvarado, escore AIR, imagem, tomografia, ultrassom, apendicectomia negativa',
+  'nota-hcfmusp-cap62-colica-nefretica': 'cólica nefrética, cálculo ureteral e urolitíase no adulto: ultrassom, tomografia de baixa dose, AINE, cetorolaco, opioide, morfina, tansulosina, terapia expulsiva',
   'nota-hcfmusp-cap50-hda': 'hemorragia digestiva alta (HDA) no adulto: úlcera péptica sangrante e varizes esofágicas (transfusão, endoscopia, IBP, vasoativo, antibiótico, TIPS, profilaxia)',
   'nota-hcfmusp-cap43-neuroinfeccao': 'meningite bacteriana, encefalite e neuroinfecção no adulto (antibiótico, dexametasona, aciclovir, profilaxia de contatos)',
   'nota-hcfmusp-cap39-hic': 'hemorragia intracerebral (intraparenquimatosa) espontânea, AVC hemorrágico (HIC, HIP) no adulto',
@@ -934,7 +936,13 @@ export const notaHcfmuspCap49 = notaLote8('nota-hcfmusp-cap49-dor-abdominal', 'N
     { tema: 'Escore AIR × Alvarado', diretriz: 'Metanálise do escore AIR (2025; 26 estudos, 15.699 pacientes; não é diretriz): área sob a curva de 0,86 do AIR contra 0,79 do Alvarado em todas as apendicites', manual: 'o cap. 49 não trata do ponto' },
   ], [WSES_APENDICITE_2025, AIR_METANALISE_2025])
 
-export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap49]
+/** cap. 62: EAU 2025 de urolitíase, já na ficha de cólica nefrética. */
+export const notaHcfmuspCap62 = notaLote8('nota-hcfmusp-cap62-colica-nefretica', 'Nota de atualização — manual HC, cap. 62: cólica nefrética', 'cap. 62, p. 842–851', fichaColicaRenalAdulto,
+  DIRETRIZ_COLICA_2025.map((d) => ({ tema: d.tema, diretriz: `${d.fonte} (${d.grau}): ${d.diretriz}`, manual: sem(d.livro) })),
+  [EAU_UROLITIASE_2025])
+notaHcfmuspCap62.ficha.revisadoEm = '14/11/2026 (lote 8 da revisão do HCFMUSP: itens da EAU 2025, pelo resumo; aguarda aprovação do RT)'
+
+export const NOTAS_HCFMUSP_LOTE8: NotaHcfmusp[] = [notaHcfmuspCap49, notaHcfmuspCap62]
 
 export const NOTAS_HCFMUSP: NotaHcfmusp[] = [...NOTAS_HCFMUSP_LOTE1, ...NOTAS_HCFMUSP_LOTE2, ...NOTAS_HCFMUSP_LOTE3, ...NOTAS_HCFMUSP_LOTE4, ...NOTAS_HCFMUSP_LOTE5, ...NOTAS_HCFMUSP_LOTE6, ...NOTAS_HCFMUSP_LOTE7, ...NOTAS_HCFMUSP_LOTE8]
 
