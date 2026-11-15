@@ -15,11 +15,36 @@ export type Faixa = [number, number]
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 
-export const fichaDorAnalgesiaAdulto = fichaAdulto(
+const fichaDorAnalgesiaLivro = fichaAdulto(
   'adulto-dor-analgesia',
   'Dor e analgesia — adulto',
   'cap. 9 Manejo da dor no departamento de emergência, p. 140–151 (Figuras 1 e 2, Tabela 3)',
 )
+
+// Lote 8 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): o guia do
+// CDC 2022 de prescrição de opioides, lido no texto integral (PMC), ao lado do
+// manual, só no que vale para a dor aguda do adulto que recebe alta.
+export const CDC_OPIOIDES_2022: Fonte = {
+  citacao: 'Dowell D, Ragan KR, Jones CM, et al. CDC Clinical Practice Guideline for Prescribing Opioids for Pain — United States, 2022. MMWR Recomm Rep. 2022;71(3):1–95 (PMID 36327391; PMC9639433). Texto integral lido; categoria de recomendação (A, B) e tipo de evidência (1 a 4). Vale para pacientes ambulatoriais de 18 anos ou mais; exclui doença falciforme, dor do câncer, cuidados paliativos e fim de vida.',
+  url: 'https://doi.org/10.15585/mmwr.rr7103a1',
+}
+
+/** CDC 2022 × manual, na dor aguda (< 1 mês) do adulto que recebe alta; grau como o guia escreve. */
+export const DIRETRIZ_DOR_2022: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Primeira escolha na dor aguda', diretriz: 'Terapia sem opioide é pelo menos tão eficaz quanto o opioide em muitas dores agudas comuns; maximizar as medidas sem opioide e só considerar opioide se o benefício esperado superar o risco', grau: 'categoria B, evidência tipo 3', fonte: 'CDC 2022', livro: 'na alta, paracetamol e dipirona na primeira linha da dor nociceptiva; AINE por curto período se houver componente inflamatório (cap. 9, p. 151)' },
+  { tema: 'Tipo de opioide', diretriz: 'Ao iniciar opioide, usar liberação imediata em vez de liberação prolongada ou de longa ação', grau: 'categoria A, evidência tipo 4', fonte: 'CDC 2022', livro: 'escada analgésica: opioide fraco (codeína, tramadol) na dor moderada e forte (morfina, oxicodona, fentanil) na intensa (cap. 9, p. 140)' },
+  { tema: 'Dose inicial', diretriz: 'No paciente que não usa opioide, a menor dose eficaz; a dose inicial costuma equivaler a cerca de 5–10 MME por dose ou 20–30 MME por dia', grau: 'categoria A, evidência tipo 3', fonte: 'CDC 2022', livro: 'doses de cada opioide na Tabela 3 (cap. 9, p. 147–149); o manual não traz equianalgesia' },
+  { tema: 'Duração da receita', diretriz: 'Não prescrever mais que o necessário para a duração esperada da dor forte o bastante para exigir opioide; em muitas dores não traumáticas e não cirúrgicas, poucos dias ou menos costumam bastar; individualizar', grau: 'categoria A, evidência tipo 4', fonte: 'CDC 2022', livro: 'prescrever opioide após avaliação criteriosa do diagnóstico, da dor, do risco de intoxicação e da eficácia esperada; seguimento ambulatorial (cap. 9, p. 151)' },
+  { tema: 'Naloxona', diretriz: 'Oferecer naloxona ao prescrever opioide, sobretudo a quem tem risco maior de overdose: overdose prévia, transtorno por uso de substância, distúrbio respiratório do sono, dose ≥ 50 MME por dia ou benzodiazepínico junto', grau: 'categoria A, evidência tipo 4', fonte: 'CDC 2022', livro: 'o cap. 9 não trata do ponto' },
+  { tema: 'Benzodiazepínico junto', diretriz: 'Cautela particular ao prescrever opioide e benzodiazepínico juntos; pesar benefício e risco com outros depressores do sistema nervoso central', grau: 'categoria B, evidência tipo 3', fonte: 'CDC 2022', livro: 'o cap. 9 não trata do ponto' },
+]
+
+export const fichaDorAnalgesiaAdulto: Ficha = {
+  ...fichaDorAnalgesiaLivro,
+  versao: '2026-11-14.1',
+  fontes: [...fichaDorAnalgesiaLivro.fontes, CDC_OPIOIDES_2022],
+  revisadoEm: '14/11/2026 (CDC 2022 de opioides ao lado do manual, no texto integral; lote 8 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro)',
+}
 
 // Revisão PubMed, itens médios (decisão do RT de 06/11/2026): o marco revisado
 // da EAPC sobre sedação paliativa (2024) entra como nota no bloco do
