@@ -63,8 +63,9 @@ CREATE FUNCTION pg_temp.tem_vinculo(p_perfil text, p_unidade text, p_papel text)
                   AND unidade_id = (SELECT id FROM ids WHERE nome = p_unidade) AND papel::text = p_papel AND ativo) $$;
 GRANT EXECUTE ON FUNCTION pg_temp.tem_vinculo(text, text, text) TO authenticated;
 
-INSERT INTO auth.users (id, email)
-SELECT id, nome || '@s1.local' FROM ids WHERE nome IN ('adma', 'admb', 'pessoab', 'solto', 'aderiu', 'antigo');
+-- e-mail confirmado: desde o S2, a adesão só se conclui com o e-mail confirmado
+INSERT INTO auth.users (id, email, email_confirmed_at)
+SELECT id, nome || '@s1.local', now() FROM ids WHERE nome IN ('adma', 'admb', 'pessoab', 'solto', 'aderiu', 'antigo');
 INSERT INTO public.perfis (id, nome_completo)
 SELECT id, 'Pessoa ' || nome FROM ids WHERE nome IN ('adma', 'admb', 'pessoab', 'solto', 'aderiu', 'antigo')
 ON CONFLICT (id) DO UPDATE SET nome_completo = EXCLUDED.nome_completo;
