@@ -16,11 +16,28 @@ export const MELTZER_2018: Fonte = {
 
 const PAG_COLICA = 'cap. 62 Cólica nefrética, p. 842–851'
 
+// Lote 8 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): a EAU 2025
+// de urolitíase, pelo resumo (o site pediu verificação de navegador e não foi
+// contornado), ao lado do manual.
+export const EAU_UROLITIASE_2025: Fonte = {
+  citacao: 'Skolarikos A, Geraghty R, Somani B, et al. European Association of Urology Guidelines on the Diagnosis and Treatment of Urolithiasis. Eur Urol. 2025;88(1):64–75 (PMID 40268592). Resumo lido; a força de cada recomendação não aparece no resumo.',
+  url: 'https://doi.org/10.1016/j.eururo.2025.03.011',
+}
+
+const GRAU_EAU = 'força não mostrada no resumo'
+
+/** EAU 2025 × manual, na cólica nefrética do adulto. */
+export const DIRETRIZ_COLICA_2025: { tema: string; diretriz: string; grau: string; fonte: string; livro: string }[] = [
+  { tema: 'Imagem', diretriz: 'Ultrassom como exame de primeira linha; TC de baixa dose como padrão-ouro para avaliar o cálculo', grau: GRAU_EAU, fonte: 'EAU 2025', livro: 'ultrassom como exame inicial; TC helicoidal sem contraste é o padrão-ouro (cap. 62, p. 846–847)' },
+  { tema: 'Analgesia', diretriz: 'AINE na primeira linha do controle da dor; opioide como segunda opção', grau: GRAU_EAU, fonte: 'EAU 2025', livro: 'cetorolaco 10 mg EV na primeira linha; morfina 2 a 5 mg EV na segunda (cap. 62, p. 848)' },
+  { tema: 'Terapia expulsiva', diretriz: 'Alfabloqueador pode ser considerado em pacientes escolhidos com cálculo ureteral', grau: GRAU_EAU, fonte: 'EAU 2025', livro: 'entre 5 e 10 mm, pode-se tentar tansulosina 0,4 mg (cap. 62, p. 849); o ensaio de Meltzer 2018, na ficha, não mostrou benefício abaixo de 9 mm' },
+]
+
 export const fichaColicaRenalAdulto: Ficha = {
   ...fichaAdulto('adulto-colica-renal', 'Cólica nefrética — analgesia, cálculo e internação (adulto)', PAG_COLICA),
-  versao: '2026-10-24.1',
-  fontes: [pagina(PAG_COLICA), MELTZER_2018],
-  revisadoEm: '24/10/2026 (lacunas da Central, lote 2; doses conferidas no texto do manual, com página; Meltzer 2018 pelo resumo)',
+  versao: '2026-11-14.1',
+  fontes: [pagina(PAG_COLICA), MELTZER_2018, EAU_UROLITIASE_2025],
+  revisadoEm: '14/11/2026 (EAU 2025 ao lado do manual, pelo resumo; lote 8 da revisão do HCFMUSP; aguarda aprovação do RT); 24/10/2026 (lacunas da Central, lote 2; doses conferidas no texto do manual, com página; Meltzer 2018 pelo resumo)',
 }
 
 export type Analgesia = { linha: string; droga: string; dose: string; pagina: string; nota?: string }

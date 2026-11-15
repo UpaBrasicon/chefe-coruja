@@ -624,3 +624,12 @@ test('lote 8, Q1: nota do cap. 49 a partir da ficha do Alvarado', async () => {
   assert.match(nota.ficha.revisadoEm ?? '', /lote 8/)
   assert.match(textoNota(nota), /apendicectomia negativa/)
 })
+
+test('lote 8, Q2: nota do cap. 62 a partir da EAU 2025 na ficha de cólica nefrética', async () => {
+  const m = await import('./colicaRenal.ts')
+  const nota = NOTAS_HCFMUSP_LOTE8.find((n) => n.ficha.id === 'nota-hcfmusp-cap62-colica-nefretica')!
+  assert.equal(nota.fichaCentral, m.fichaColicaRenalAdulto.id)
+  assert.equal(nota.itens.length, m.DIRETRIZ_COLICA_2025.length)
+  assert.deepEqual(nota.ficha.fontes, [m.EAU_UROLITIASE_2025])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 8/)
+})

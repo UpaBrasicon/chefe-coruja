@@ -27,3 +27,12 @@ test('cólica: acima de 10 mm avaliação urológica, sem tansulosina', () => {
   assert.match(c.texto, /improvável/)
   assert.equal(c.tansulosina, false)
 })
+
+test('cólica nefrética (cap. 62): EAU 2025 ao lado do manual; doses do manual iguais', async () => {
+  const m = await import('./colicaRenal.ts')
+  assert.equal(m.fichaColicaRenalAdulto.versao, '2026-11-14.1')
+  assert.ok(m.fichaColicaRenalAdulto.fontes.includes(m.EAU_UROLITIASE_2025))
+  assert.match(m.EAU_UROLITIASE_2025.citacao, /PMID 40268592/)
+  assert.equal(m.DIRETRIZ_COLICA_2025.length, 3)
+  assert.match(m.ANALGESIA[0].dose, /10 mg EV/)
+})
