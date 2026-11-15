@@ -2513,6 +2513,7 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 | 5 | Proposta de piloto | Escopo; duração; métricas; responsabilidades; preço/condição | Documento pronto para cliente | Fase 1 |
 | 6 | Roteiro de objeções | MV/Tasy/TOTVS; segurança; assinatura; RNDS; faturamento; offline; "e se cair?" (responder com contingência + PITR + rollback) | Respostas padronizadas | Fase 1 |
 | 7 | Matriz competitiva | Concorrentes; módulos; vantagens; lacunas; ataque comercial | Atualizada após cada fase | Contínuo |
+| 8 | Vídeo de venda (pedido do RT em 15/11/2026, P2) | Roteiro escrito por um agente no modelo Fable e produzido pelo Opus; até 5 min; porta à alta, internação e leitos, regulação, UBS, Central e IA, faturamento, tema claro e escuro; UBS e Central de Regulação fictícias na rede de demonstração; gravação automática com Playwright e montagem com ffmpeg; legendas na tela e texto da narração à parte. RT: V1–V5 = A. Diagnóstico em `docs/comercial/VIDEO-VENDA-DIAGNOSTICO.md` | MP4 aprovado pelo RT, sem dado real, sem nome de teste, sem promessa que o produto não cumpre | Depois do item 1 |
 
 ---
 
