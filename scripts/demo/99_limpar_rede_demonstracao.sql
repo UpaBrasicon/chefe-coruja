@@ -1,10 +1,15 @@
 -- ════════════════════════════════════════════════════════════════════════════
 -- Unidade de demonstração (pedido 8, J4) — 4/4: apaga a rede inteira.
 --
--- SÓ NA HOMOLOGAÇÃO (mesma trava do 01). Apaga a "Rede de Demonstração", a
--- UPA 24h Jardim Primavera e tudo o que foi gravado nela (pacientes, escala,
--- check-ins, vínculos, inclusive os da conta que recebeu acesso pelo 03), as
--- 24 pessoas fictícias (perfis e contas do Auth) e a auditoria da unidade.
+-- SÓ NA HOMOLOGAÇÃO (mesma trava do 01). Apaga a "Rede de Demonstração" e
+-- todas as unidades dela: a UPA 24h Jardim Primavera e, se o 04 rodou, a UBS
+-- Vila Esperança, o Hospital Regional Santa Aurora e a Central de Regulação
+-- de Santa Aurora. Vai junto tudo o que foi gravado nelas (pacientes, agenda,
+-- hiperdia, pré-natal, envios à UPA, pedidos de regulação, a central da rede,
+-- os serviços do mapa de vagas, escala, check-ins, vínculos, inclusive os da
+-- conta que recebeu acesso pelo 03 e os da coordenadora pelo 05), as pessoas
+-- fictícias (d0300000-…: as 24 do 01 e as 6 do 04, perfis e contas do Auth)
+-- e a auditoria das unidades.
 --
 -- Como scripts/e2e/99_limpar_rede_e2e.sql, roda com
 -- session_replication_role = replica (as tabelas clínicas e a auditoria são só

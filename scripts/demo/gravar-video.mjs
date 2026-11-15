@@ -91,6 +91,17 @@ async function cursor(p) {
   })
 }
 
+// espera a tela terminar de carregar: nenhum indicador girando por 0,8 s (até 40 s)
+async function carregada(p) {
+  await p.waitForFunction(() => {
+    const girando = [...document.querySelectorAll('.animate-spin')].some((e) => e.getClientRects().length > 0)
+    const w = window
+    if (girando) { w.__ccQuieto = 0; return false }
+    w.__ccQuieto = (w.__ccQuieto || 0) + 1
+    return w.__ccQuieto >= 8
+  }, null, { timeout: 40_000, polling: 100 }).catch(() => {})
+}
+
 async function alvo(p, a) {
   if (a.papel) return p.getByRole(a.papel, { name: a.nome, exact: a.exato ?? false }).first()
   if (a.texto) return p.getByText(a.texto, { exact: a.exato ?? false }).first()
@@ -116,6 +127,7 @@ async function executar(p, a) {
   switch (a.acao) {
     case 'ir':
       await p.goto(`${SITE}${a.rota}`, { waitUntil: 'load' })
+      await carregada(p)
       await espera(p, a.ms ?? 2500)
       await cursor(p)
       return
@@ -215,9 +227,13 @@ async function gravar(nav, cenas, nome, entrar) {
   await p.goto(share, { waitUntil: 'domcontentloaded' })
   if (entrar) await entrar(p)
   for (const cena of cenas) {
-    const ini = (Date.now() - t0) / 1000
+    let ini = (Date.now() - t0) / 1000
     try {
-      for (const a of cena.acoes) await executar(p, a)
+      for (const [i, a] of cena.acoes.entries()) {
+        await executar(p, a)
+        // a cena começa com a primeira tela já carregada
+        if (i === 0 && a.acao === 'ir') ini = (Date.now() - t0) / 1000 - Math.min(a.ms ?? 2500, 1500) / 1000
+      }
     } catch (e) {
       console.error(`Cena ${cena.n}: ${e.message}`)
       marcas.push({ n: cena.n, ini, fim: (Date.now() - t0) / 1000, erro: e.message })
