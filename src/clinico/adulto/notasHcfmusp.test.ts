@@ -590,3 +590,13 @@ test('lote 7, Q2: nota do cap. 8 a partir das diretrizes geriátricas de PS na f
   assert.match(nota.ficha.revisadoEm ?? '', /lote 7/)
   assert.match(textoNota(nota), /REDEEM/)
 })
+
+test('lote 7, Q2: nota do cap. 36 a partir da BTS 2023 na ficha dos critérios de Light', async () => {
+  const l = await import('../escores/light.ts')
+  const nota = NOTAS_HCFMUSP_LOTE7.find((n) => n.ficha.id === 'nota-hcfmusp-cap36-derrame-pleural')!
+  assert.equal(nota.fichaCentral, l.light.ficha.id)
+  assert.equal(nota.itens.length, l.DIRETRIZ_PLEURA_2023.length)
+  assert.deepEqual(nota.ficha.fontes, [l.BTS_PLEURA_2023])
+  assert.match(nota.ficha.revisadoEm ?? '', /lote 7/)
+  assert.match(textoNota(nota), /DNase/)
+})

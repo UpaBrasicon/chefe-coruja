@@ -18,7 +18,7 @@ import { grace } from '@/clinico/escores/grace'
 import { hasBled } from '@/clinico/escores/hasBled'
 import { DIRETRIZ_DOR_TORACICA_2025, heart } from '@/clinico/escores/heart'
 import { killip } from '@/clinico/escores/killip'
-import { light } from '@/clinico/escores/light'
+import { DIRETRIZ_PLEURA_2023, light } from '@/clinico/escores/light'
 import { meld3 } from '@/clinico/escores/meld3'
 import { news2 } from '@/clinico/escores/news2'
 import { psi } from '@/clinico/escores/psi'
@@ -71,7 +71,18 @@ export const Bisap = () => <EscoreTela escore={bisap} />
 export const CamIcu = () => <EscoreTela escore={camIcu} />
 export const CivdIsth = () => <EscoreTela escore={civdIsth} />
 export const CanadianCtHead = () => <EscoreTela escore={canadianCtHead} />
-export const Light = () => <EscoreTela escore={light} />
+export const Light = () => (
+  <EscoreTela escore={light}>
+    <Bloco titulo="BTS 2023 — ao lado do manual" descricao="Derrame e infecção pleural pela diretriz da British Thoracic Society de 2023 (GRADE e consenso), lida na versão resumida, ao lado do cap. 36 do manual do HC.">
+      <div className="overflow-x-auto">
+        <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+          <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+          <TableBody>{DIRETRIZ_PLEURA_2023.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+        </Table>
+      </div>
+    </Bloco>
+  </EscoreTela>
+)
 export const Four = () => <EscoreTela escore={four} />
 export const Grace = () => <EscoreTela escore={grace} />
 export const GenebraRevisado = () => <EscoreTela escore={genebraRevisado} />
