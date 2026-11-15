@@ -57,6 +57,8 @@ A matriz de 08/10/2026 fica em `produto/docs/comercial/` (`matriz.tpl.html`, o P
 - **A (recomendada):** um agente pesquisa só as fontes públicas dos fornecedores: site, documentação, lista de certificados da SBIS e o portal do e-SUS APS. Ele marca a data de acesso e a evidência curta de cada célula, sem login e sem formulário. Eu confiro cada célula antes de entrar.
 - **B:** você indica as fontes.
 
+**Decisão do RT, 15/11/2026:** M1 a M4 = A ("Todas A").
+
 ## Regras
 
 - "Não encontrado" nunca vira "não tem".
