@@ -22,6 +22,7 @@ import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 import { comRelato, relatarErro } from '../_shared/sentry.ts'
 import { hashEntrada, liberarPergunta, TIPO_NOME_NER, type PerguntaLiberada } from './liberar.ts'
 import { semLinhaDeUso } from './uso.ts'
+import { segundoFatorFalta } from './segundo.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -85,6 +86,10 @@ async function tratar(req: Request): Promise<Response> {
   })
   const { data: { user } } = await userClient.auth.getUser()
   if (!user) return erro(401, 'não autenticado')
+
+  // S3 (T3): a chave secreta não passa pelo portão do segundo fator. Ver segundo.ts.
+  const { data: sf } = await userClient.rpc('segundo_fator_status')
+  if (segundoFatorFalta(sf)) return erro(403, 'SEGUNDO_FATOR: confirme o segundo fator')
 
   let corpo: { q?: unknown; mode?: unknown; unidade_id?: unknown; publico?: unknown }
   try {

@@ -74,6 +74,8 @@ O hook `hook_segundo_fator_tentativa` só conta erros; não olha se é o primeir
 - **A (recomendada):** uma migration expand por item (T1, T2 e T4), testada na homologação com o teste de banco. A mudança de T3 na função de borda vem junto. Tudo num PR só, e a produção só com o seu ok depois da conferência na homologação. Antes de subir, conferir na homologação que nenhuma tela lê essas tabelas antes do 2FA (login, tela do código, cadastro).
 - **B:** um PR por item.
 
+**Decisão do RT, 15/11/2026:** T1 a T5 = A ("Todas A").
+
 ## Riscos
 
 - **Tela que leia uma dessas tabelas antes do 2FA:** ela passa a vir vazia. Mitigação: conferência na homologação com conta sem 2FA válido (QA com JWT simulado em transação desfeita).
