@@ -12,6 +12,7 @@ import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { type PlantaoEquipe, type Troca, type VagaAberta, usePedidosDaEquipe } from '@/hooks/usePedidosDaEquipe'
+import { ACCEPT_ANEXO_CLINICO, tipoDoArquivo } from '@/lib/anexo'
 import { BUCKET_JUSTIFICATIVA, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { dataPorExtenso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
@@ -161,7 +162,7 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
         let anexoUrl: string | null = null
         if (anexo) {
           const caminho = caminhoNovoAnexo(unidadeId, anexo.name, crypto.randomUUID())
-          const { error: upErr } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).upload(caminho, anexo, { cacheControl: '3600', upsert: false })
+          const { error: upErr } = await supabase.storage.from(BUCKET_JUSTIFICATIVA).upload(caminho, anexo, { cacheControl: '3600', upsert: false, contentType: tipoDoArquivo(anexo) || undefined })
           if (upErr) throw new Error('Falha ao enviar o anexo: ' + upErr.message)
           anexoUrl = caminho
         }
@@ -238,7 +239,7 @@ function JanelaPedido({ unidadeId, janela, equipe, faixa, nomeSetor, onFechar, o
                 id="falta-anexo"
                 rotulo="Anexo (opcional)"
                 descricao="PDF ou imagem"
-                accept="image/*,application/pdf"
+                accept={ACCEPT_ANEXO_CLINICO}
                 disabled={salvando}
                 valor={anexo}
                 onArquivos={(fs) => setAnexo(fs[0] ?? null)}

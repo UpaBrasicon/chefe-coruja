@@ -1,7 +1,7 @@
 // node --experimental-strip-types --test src/lib/anexo.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { cabeNoAccept, ehNomeDeColagem, extensao, itensDoAccept, nomeDeColado, problemaDoArquivo, tamanhoLegivel, triarArquivos } from './anexo.ts'
+import { ACCEPT_ANEXO_CLINICO, cabeNoAccept, ehNomeDeColagem, extensao, itensDoAccept, nomeDeColado, problemaDoArquivo, tamanhoLegivel, tipoDoArquivo, triarArquivos } from './anexo.ts'
 
 const MB = 1024 * 1024
 const arq = (name: string, type: string, size = 1000) => ({ name, type, size })
@@ -76,4 +76,20 @@ test('nome do colado leva data e hora de Brasília e a extensão do tipo', () =>
   assert.equal(nomeDeColado('image/jpeg', agora, 1), 'colado-2026-11-10-14-32-05-2.jpg')
   assert.equal(nomeDeColado('', agora, 0, 'image.webp'), 'colado-2026-11-10-14-32-05.webp')
   assert.equal(nomeDeColado('', agora), 'colado-2026-11-10-14-32-05')
+})
+
+test('S5: anexo clínico sem SVG nem HTML; HEIC sem tipo entra pela extensão', () => {
+  assert.equal(cabeNoAccept({ name: 'exame.pdf', type: 'application/pdf' }, ACCEPT_ANEXO_CLINICO), true)
+  assert.equal(cabeNoAccept({ name: 'foto.jpg', type: 'image/jpeg' }, ACCEPT_ANEXO_CLINICO), true)
+  assert.equal(cabeNoAccept({ name: 'foto.heic', type: '' }, ACCEPT_ANEXO_CLINICO), true)
+  assert.equal(cabeNoAccept({ name: 'desenho.svg', type: 'image/svg+xml' }, ACCEPT_ANEXO_CLINICO), false)
+  assert.equal(cabeNoAccept({ name: 'pagina.html', type: 'text/html' }, ACCEPT_ANEXO_CLINICO), false)
+  assert.equal(cabeNoAccept({ name: 'anim.gif', type: 'image/gif' }, ACCEPT_ANEXO_CLINICO), false)
+})
+
+test('S5: tipo para o armazenamento vem do arquivo ou da extensão', () => {
+  assert.equal(tipoDoArquivo({ name: 'foto.HEIC', type: '' }), 'image/heic')
+  assert.equal(tipoDoArquivo({ name: 'estoque.csv', type: '' }), 'text/csv')
+  assert.equal(tipoDoArquivo({ name: 'x.pdf', type: 'application/pdf' }), 'application/pdf')
+  assert.equal(tipoDoArquivo({ name: 'sem-extensao', type: '' }), '')
 })

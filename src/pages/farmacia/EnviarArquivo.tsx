@@ -12,6 +12,7 @@ import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
 import { Button } from '@/components/ui/button'
 import { dataHora } from '@/lib/formato'
 import { abrirEmJanela } from '@/lib/abrirEmJanela'
+import { tipoDoArquivo } from '@/lib/anexo'
 import { supabase } from '@/lib/supabase'
 
 type Arquivo = { id: string; nome: string; tamanho: number; caminho: string; enviado_em: string; enviado_por: { nome_completo: string } | null }
@@ -45,10 +46,10 @@ export function EnviarArquivo({ unidade, tipo, rotulo, ajuda, icone: Icone, comp
     try {
       const nomeSeguro = arquivo.name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9._-]+/g, '-').slice(-120)
       const caminho = `${unidade}/${tipo}/${Date.now()}-${nomeSeguro}`
-      const up = await supabase.storage.from('farmacia').upload(caminho, arquivo, { contentType: arquivo.type || undefined, upsert: false })
+      const up = await supabase.storage.from('farmacia').upload(caminho, arquivo, { contentType: tipoDoArquivo(arquivo) || undefined, upsert: false })
       if (up.error) throw up.error
       const { error } = await supabase.rpc('registrar_arquivo_farmacia', {
-        p_unidade: unidade, p_tipo: tipo, p_caminho: caminho, p_nome: arquivo.name, p_tamanho: arquivo.size, p_tipo_mime: arquivo.type || undefined,
+        p_unidade: unidade, p_tipo: tipo, p_caminho: caminho, p_nome: arquivo.name, p_tamanho: arquivo.size, p_tipo_mime: tipoDoArquivo(arquivo) || undefined,
       })
       if (error) throw error
       void qc.invalidateQueries({ queryKey: ['arquivos-farmacia', unidade, tipo] })
