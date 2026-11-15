@@ -78,3 +78,7 @@ Lote 9, com os capítulos de risco menor: abordagem na sala de emergência, pré
 4. Cap. 52 e 26: registro no BACKLOG.
 
 Cada passo passa pela homologação e pelo CI verde antes da produção, que pede o ok do RT.
+
+## Decisão do RT (14/11/2026)
+
+Q1 a Q4 = A, e a produção do lote 8 inteiro está liberada ("Ok todas a", em resposta à pergunta que incluía a produção). Cada passo segue pela homologação e pelo CI verde antes da produção.
