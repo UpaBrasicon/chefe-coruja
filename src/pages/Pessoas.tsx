@@ -209,12 +209,14 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                     <div className="text-apoio font-medium">{pessoa?.nome_completo ?? '—'}</div>
                     <div className="text-rotulo text-tinta-sussurro">
                       {pessoa?.email} · {PAPEL_LABEL[a.papel]}
+                      {!a.email_confirmado && ' · e-mail não confirmado'}
                     </div>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={a.perfil_id === perfil?.id}
+                    disabled={a.perfil_id === perfil?.id || !a.email_confirmado}
+                    title={a.email_confirmado ? undefined : 'A entrada é concluída depois de a pessoa confirmar o e-mail.'}
                     onClick={() => {
                       setErro(null)
                       setUnidadeEscolhida('')
