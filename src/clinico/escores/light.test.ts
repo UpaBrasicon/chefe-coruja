@@ -77,5 +77,15 @@ test('light: regra sem soro é a combinação tripla do Porcel 2026, com fonte',
   assert.doesNotMatch(semSoro, /capacidade discriminativa equivalente/)
   assert.match(r.derivados.find((d) => d[0] === 'Desempenho')![1], /Porcel 2026/)
   assert.ok(light.ficha.fontes.some((f) => /41846683/.test(f.citacao)))
-  assert.equal(light.ficha.versao, '2026-11-11.1')
+  assert.equal(light.ficha.versao, '2026-11-14.1')
+})
+
+test('Light (cap. 36): BTS 2023 ao lado do manual', async () => {
+  const l = await import('./light.ts')
+  assert.equal(l.light.ficha.versao, '2026-11-14.1')
+  assert.ok(l.light.ficha.fontes.includes(l.BTS_PLEURA_2023))
+  assert.match(l.BTS_PLEURA_2023.citacao, /PMID 37553157/)
+  assert.equal(new Set(l.DIRETRIZ_PLEURA_2023.map((d) => d.tema)).size, l.DIRETRIZ_PLEURA_2023.length)
+  const ph = l.DIRETRIZ_PLEURA_2023.find((d) => d.tema === 'pH do líquido e drenagem')!.diretriz
+  for (const faixa of [/pH ≤ 7,2/, /7,3\): risco intermediário/, /pH ≥ 7,4: baixo risco/]) assert.match(ph, faixa)
 })
