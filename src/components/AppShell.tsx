@@ -20,6 +20,7 @@ import { useChatRealtimeGlobal, useTotalNaoLidas } from '@/hooks/useChat'
 import { ChatDrawer } from '@/components/chat/ChatDrawer'
 import { ChatFab } from '@/components/chat/ChatFab'
 import { useAvisoDeMensagem } from '@/components/chat/useAvisoDeMensagem'
+import { AvisoFimSessao } from '@/components/casca/AvisoFimSessao'
 import { ForaDoExpediente } from '@/components/casca/ForaDoExpediente'
 import { AvisoCheckinPendente, GateCheckIn } from '@/components/GateCheckIn'
 import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTurnoBanner'
@@ -515,6 +516,7 @@ function Casca() {
           />
         )}
         <FitaDoSinal sinal={sinal} onTentar={() => void tentar()} />
+        <AvisoFimSessao />
 
         <NotificacoesTurnoBanner unidadeId={ehPlantonista ? unidadeId : undefined} habilitado={ehPlantonista} />
         {checkinPendente && situacaoCheckin && (

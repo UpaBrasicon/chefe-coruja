@@ -4,6 +4,7 @@ import { mensagemDe, reportarErro } from '@/lib/reportarErro'
 import { ehDefeitoDoBanco } from '@/lib/defeitoBanco'
 import { apagarTokensDeSessao } from '@/lib/offline/sessaoSemRede'
 import { decidirSessaoDoLink, tokensDoLink, type DecisaoDoLink } from '@/lib/sessaoDoLink'
+import { MANTER_MAX_MS, prazoDaSessao } from '@/lib/fimDeSessao'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -22,8 +23,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // desta regra é apagado na carga (quem estava logado entra de novo uma vez).
 const CHAVE_MANTER = 'cc-manter-conectado'
 const CHAVE_DESDE = 'cc-manter-desde'
-/** Quanto "manter conectado" segura a sessão depois do login. */
-export const MANTER_MAX_MS = 12 * 60 * 60 * 1000
+/** Quanto "manter conectado" segura a sessão depois do login (fimDeSessao.ts). */
+export { MANTER_MAX_MS }
 
 function ler(area: Storage | undefined, chave: string): string | null {
   try {
@@ -62,11 +63,15 @@ export function manterConectado(): boolean {
   return ler(local, CHAVE_MANTER) === '1'
 }
 
+/** Hora do login com "Manter conectado" (null sem ela). */
+export function inicioManterConectado(): number | null {
+  const desde = Number(ler(local, CHAVE_DESDE) ?? 0)
+  return desde > 0 ? desde : null
+}
+
 /** "Manter conectado" passou das 12 horas: a sessão tem de acabar. */
 export function manterConectadoVencido(): boolean {
-  if (!manterConectado()) return false
-  const desde = Number(ler(local, CHAVE_DESDE) ?? 0)
-  return !desde || Date.now() - desde > MANTER_MAX_MS
+  return prazoDaSessao(manterConectado(), inicioManterConectado(), Date.now()).tipo === 'vencido'
 }
 
 // Token de antes da regra (ou de quem desmarcou): nada de sessão esquecida no
