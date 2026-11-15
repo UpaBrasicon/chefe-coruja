@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
-import { ANALGESIA, EXAMES_E_INFECCAO, INTERNACAO, condutaPorTamanho, fichaColicaRenalAdulto, quetaminaMg } from '@/clinico/adulto/colicaRenal'
+import { ANALGESIA, DIRETRIZ_COLICA_2025, EXAMES_E_INFECCAO, INTERNACAO, condutaPorTamanho, fichaColicaRenalAdulto, quetaminaMg } from '@/clinico/adulto/colicaRenal'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { numero } from '@/lib/formato'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -50,6 +51,15 @@ export function ColicaRenalAdulto() {
 
       <Bloco titulo="Exames e infecção">
         {EXAMES_E_INFECCAO.map((e) => <p key={e.texto} className="text-apoio text-tinta-apoio">{e.texto} ({e.pagina})</p>)}
+      </Bloco>
+
+      <Bloco titulo="EAU 2025 — ao lado do manual" descricao="Urolitíase pela diretriz da Associação Europeia de Urologia de 2025, lida no resumo. As doses do manual acima continuam valendo.">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>{DIRETRIZ_COLICA_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+          </Table>
+        </div>
       </Bloco>
 
       <Bloco titulo="Internar (Tabela 5, p. 849–850)">
