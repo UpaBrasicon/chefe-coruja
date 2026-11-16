@@ -15,6 +15,9 @@
 2. `scripts/demo/03_acesso_conta.sql`, com o e-mail de quem apresenta numa cópia local (o e-mail não vai para o git).
 
 **No dia, até uma hora antes:**
+
+Atalho: `bash scripts/demo/preparar-ensaio.sh` faz os passos 1 e 2 com a conta Equipe Chefe Coruja e confere o resultado.
+
 1. `scripts/demo/02_plantao_agora.sql`: monta o plantão de agora, com 17 pacientes e 8 de 11 leitos ocupados (73%). Rodado na véspera, as esperas ficam longas demais.
 2. `03` de novo, se a demo cair em outro dia: ele põe quem apresenta na escala de hoje do Pronto Socorro.
 3. Entrar em `https://homolog.chefecoruja.com.br` (antes, o login da Vercel), confirmar o segundo fator e marcar "Manter conectado neste aparelho".

@@ -15,6 +15,7 @@ Roteiros da "Rede de Demonstração": a UPA 24h Jardim Primavera, com equipe e p
 | `05_video_acesso.sql` | Vídeo de venda: dá à coordenadora fictícia plantonista, enfermeiro e recepção na UPA, a escala de hoje no Pronto Socorro com check-in, e dois cuidados prescritos (sem dose) para os pacientes em atendimento, um já checado | No dia da gravação, depois do `02` e do `04` |
 | `gravar-video.mjs` | Vídeo de venda: entra como a coordenadora fictícia por um link de acesso único e grava as cenas de `docs/comercial/video/cenas.json` pelos quadros do navegador, em MP4 1920 × 1080; a página pública é gravada sem login | Depois do `05` (precisa de `HOMOLOG_SHARE` e `FFMPEG`) |
 | `montar-video.mjs` | Vídeo de venda: corta as cenas, põe legendas, selo e cartelas e monta o MP4 final com o ffmpeg | Depois do `gravar-video.mjs` |
+| `preparar-ensaio.sh` | Roda o `02` e o `03` com a conta @chefecoruja.com.br (o e-mail é lido da homologação na hora) e confere pacientes e plantão de hoje | No dia do ensaio ou da demo, até uma hora antes, entre 7h e 18h50 |
 | `capturar-telas.mjs` | Entra como a coordenadora fictícia por um link de acesso único e tira a porta, o painel do gestor e a escala em 1424 × 749, em JPG | Logo depois do `02`, para as telas da página de entrada |
 | `99_limpar_rede_demonstracao.sql` | Apaga a rede inteira, inclusive os acessos dados pelo 03 | Só quando a unidade não for mais usada |
 
