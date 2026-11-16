@@ -1,8 +1,12 @@
 import { useState, type ReactNode } from 'react'
 
-import { temReferenciaPediatrica } from '@/clinico/ficha'
+import { temReferenciaPediatrica, textoFontes } from '@/clinico/ficha'
 import { numero, type Escore, type Respostas } from '@/clinico/escore'
+import { ESCORES_PILOTO } from '@/content/pilotoCalculadoras'
+import { textoCopia } from '@/domain/copiaCalculo'
+import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { Chip } from '@/components/monitor/Pagina'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Input } from '@/components/ui/input'
@@ -33,8 +37,14 @@ function Linha({ rotulo, ajuda, rotuloId, opcoesEmLinha, children }: {
 
 /** Tela única dos escores do pacote src/clinico. */
 export function EscoreTela({ escore, children }: { escore: Escore; children?: ReactNode }) {
+  // Piloto das calculadoras (RT, 16/11/2026): os escores do piloto seguem o
+  // modo da Central (C5 = A) e ganham o resumo flutuante com "Copiar".
+  const piloto = ESCORES_PILOTO.has(escore.ficha.id)
+  const central = usePacienteCentral()
+  const modoCentral = piloto && central.modo ? (central.modo === 'pediatrico' ? 'crianca' : 'adulto') : null
   const [r, setR] = useState<Respostas>({})
-  const [paciente, setPaciente] = useState<'adulto' | 'crianca'>(escore.ficha.publico === 'pediatrico' ? 'crianca' : 'adulto')
+  const [pacienteEscolhido, setPaciente] = useState<'adulto' | 'crianca'>(escore.ficha.publico === 'pediatrico' ? 'crianca' : 'adulto')
+  const paciente = modoCentral ?? pacienteEscolhido
   const semRefPedi = paciente === 'crianca' && !temReferenciaPediatrica(escore.ficha)
   const semRefAdulto = paciente === 'adulto' && escore.ficha.publico === 'pediatrico'
   const res = semRefPedi || semRefAdulto ? null : escore.calcular(r)
@@ -42,13 +52,19 @@ export function EscoreTela({ escore, children }: { escore: Escore; children?: Re
   return (
     <ToolLayout title={escore.ficha.titulo} description={escore.descricao} ficha={escore.ficha}>
       <section aria-label="Itens do escore" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-        <Linha rotulo="Paciente" rotuloId="esc-paciente" opcoesEmLinha>
-          <div role="radiogroup" aria-labelledby="esc-paciente" className="flex flex-wrap gap-2">
-            {([['adulto', 'Adulto (14 anos ou mais)'], ['crianca', 'Criança (menos de 14 anos)']] as const).map(([v, rotulo]) => (
-              <Chip key={v} variante="opcao" radio ativo={paciente === v} onClick={() => setPaciente(v)}>{rotulo}</Chip>
-            ))}
-          </div>
-        </Linha>
+        {modoCentral ? (
+          <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-apoio">
+            Paciente: <span className="font-medium text-tinta">{modoCentral === 'crianca' ? 'criança (menos de 14 anos)' : 'adulto (14 anos ou mais)'}</span>, como escolhido na Central.
+          </p>
+        ) : (
+          <Linha rotulo="Paciente" rotuloId="esc-paciente" opcoesEmLinha>
+            <div role="radiogroup" aria-labelledby="esc-paciente" className="flex flex-wrap gap-2">
+              {([['adulto', 'Adulto (14 anos ou mais)'], ['crianca', 'Criança (menos de 14 anos)']] as const).map(([v, rotulo]) => (
+                <Chip key={v} variante="opcao" radio ativo={paciente === v} onClick={() => setPaciente(v)}>{rotulo}</Chip>
+              ))}
+            </div>
+          </Linha>
+        )}
 
         {escore.itens.map((item) =>
           item.tipo === 'numero' ? (
@@ -117,7 +133,7 @@ export function EscoreTela({ escore, children }: { escore: Escore; children?: Re
       )}
 
       {res && (
-        <section aria-label="Resultado" aria-live="polite" className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie px-5 py-4">
+        <section id="resultado-escore" aria-label="Resultado" aria-live="polite" className="flex scroll-mt-4 flex-col gap-2 rounded-cartao border border-fio bg-superficie px-5 py-4">
           <p className="text-corpo text-tinta">
             {/* a faixa do escore (estado) segue na cor do número, como antes na borda */}
             <span className="font-semibold">{res.rotulo}: </span>
@@ -145,6 +161,34 @@ export function EscoreTela({ escore, children }: { escore: Escore; children?: Re
         </section>
       )}
       {children}
+      {piloto && !semRefPedi && !semRefAdulto && (
+        <ResumoFlutuante
+          principal={res ? `${res.rotulo}: ${res.valor}${res.unidade ? ` ${res.unidade}` : ''}` : 'Responda os itens para ver o resultado'}
+          detalhe={res?.nota || undefined}
+          tom={res?.estado === 2 ? 'critico' : res?.estado === 1 ? 'atencao' : 'neutro'}
+          textoCopia={res ? copiaDoEscore(escore, r, paciente, res) : undefined}
+          alvoDetalhes={res ? 'resultado-escore' : undefined}
+        />
+      )}
     </ToolLayout>
   )
+}
+
+/** Texto do "Copiar" do escore: respostas dadas, resultado e derivados, alerta, fonte e versão. */
+function copiaDoEscore(escore: Escore, r: Respostas, paciente: 'adulto' | 'crianca', res: NonNullable<ReturnType<Escore['calcular']>>) {
+  const dados: [string, string][] = [['Paciente', paciente === 'crianca' ? 'criança' : 'adulto']]
+  const marcadas: string[] = []
+  for (const item of escore.itens) {
+    const v = r[item.id]
+    if (item.tipo === 'escolha' && typeof v === 'number') dados.push([item.rotulo, item.opcoes[v]?.rotulo ?? ''])
+    else if (item.tipo === 'numero' && typeof v === 'number') dados.push([item.rotulo, `${String(v).replace('.', ',')}${item.unidade ? ` ${item.unidade}` : ''}`])
+    else if (item.tipo === 'marca' && v === true) marcadas.push(item.rotulo)
+  }
+  if (marcadas.length) dados.push(['Marcados', marcadas.join(', ')])
+  const resultado = [
+    `${res.rotulo}: ${res.valor}${res.unidade ? ` ${res.unidade}` : ''}${res.nota ? ` · ${res.nota}` : ''}`,
+    ...res.derivados.map(([k, v]) => `${k}: ${v}`),
+    ...(res.alerta ? [res.alerta] : []),
+  ]
+  return textoCopia({ ferramenta: escore.ficha.titulo, dados, resultado, fonte: textoFontes(escore.ficha), versao: escore.ficha.versao, quando: new Date() })
 }
