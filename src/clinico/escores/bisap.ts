@@ -26,8 +26,12 @@ export const FONTES_ESCORES_PANCREATITE: Fonte[] = [
     url: 'https://doi.org/10.1016/j.pan.2025.04.020',
   },
   {
-    citacao: 'Cárdenas-Jaén K, Guilabert L, Martínez-Moneo E, et al. AEG-AESPANC-OPGE-SIED-SPG Ibero-Latin American Guidelines on Acute Pancreatitis (iLATAM-AP). United European Gastroenterol J. 2026;14(5):e70190 (PMID 42216617). Referência; o texto sobre os escores não foi conferido.',
+    citacao: 'Cárdenas-Jaén K, Guilabert L, Martínez-Moneo E, et al. AEG-AESPANC-OPGE-SIED-SPG Ibero-Latin American Guidelines on Acute Pancreatitis (iLATAM-AP). United European Gastroenterol J. 2026;14(5):e70190 (PMID 42216617; PMC13240590). GRADE; Tabela 1 lida no PMC em 16/11/2026.',
     url: 'https://doi.org/10.1002/ueg2.70190',
+  },
+  {
+    citacao: 'Leppäniemi A, Tolonen M, Tarasconi A, et al. 2019 WSES guidelines for the management of severe acute pancreatitis. World J Emerg Surg. 2019;14:27 (PMID 31210778; PMC6567462). Statements graduados lidos no PMC em 16/11/2026.',
+    url: 'https://doi.org/10.1186/s13017-019-0247-0',
   },
 ]
 
@@ -38,14 +42,14 @@ export const bisap: Escore = {
   ficha: {
     id: 'bisap',
     titulo: 'BISAP — gravidade da pancreatite aguda',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Wu BU, Johannes RS, Sun X, et al. The early prediction of mortality in acute pancreatitis: a large population-based study. Gut. 2008;57(12):1698–1703.', url: 'https://doi.org/10.1136/gut.2008.152702' },
       { citacao: 'Banks PA, Bollen TL, Dervenis C, et al. Classification of acute pancreatitis — 2012: revision of the Atlanta classification. Gut. 2013;62(1):102–111.', url: 'https://doi.org/10.1136/gutjnl-2012-302779' },
       ...FONTES_ESCORES_PANCREATITE,
     ],
-    revisadoEm: '06/11/2026 (nota do desempenho dos escores na pancreatite grave; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 5 das calculadoras pela iLATAM-AP 2026 e pela WSES 2019/2020, lidas no PMC; aguarda aprovação do RT); 06/11/2026 (nota do desempenho dos escores na pancreatite grave; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Gravidade da pancreatite aguda nas primeiras 24 horas e mortalidade da coorte original',
   itens: [
