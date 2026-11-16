@@ -3438,6 +3438,27 @@
   "publico": "adulto"
  },
  {
+  "id": "race",
+  "nome": "RACE — suspeita de oclusão de grande vaso",
+  "tipo": "escore",
+  "secao": "Escores",
+  "categoria": "Neurologia",
+  "sinonimos": [
+   "RACE",
+   "Rapid Arterial Occlusion Evaluation",
+   "AVC",
+   "oclusão de grande vaso",
+   "LVO",
+   "trombectomia",
+   "NIHSS",
+   "neurologia",
+   "stroke"
+  ],
+  "descricao": "Cinco itens do NIHSS simplificados, de 0 a 9; 5 ou mais no estudo: sensibilidade 0,85 e VPP 0,42. Não substitui a angiotomografia.",
+  "rota": "/plantonista/escores/race",
+  "publico": "adulto"
+ },
+ {
   "id": "4t-hit",
   "nome": "4T",
   "tipo": "escore",

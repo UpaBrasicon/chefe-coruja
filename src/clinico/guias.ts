@@ -319,6 +319,14 @@ export const GUIAS: Record<string, Guia> = {
       linhaAvc('Oclusão de basilar', [1, 2]),
     ],
   },
+  race: {
+    proximosPassos: [
+      linhaAvc('Trombolítico até 4,5 h'),
+      linhaAvc('Trombectomia 0–6 h', [2]),
+      linhaAvc('Trombectomia 6–24 h', [2]),
+      linhaAvc('Oclusão de basilar', [2]),
+    ],
+  },
   'wells-tvp': {
     proximosPassos: [
       { tema: 'TVP improvável: D-dímero primeiro', texto: 'Começar pelo D-dímero (de alta sensibilidade) para excluir a TVP; D-dímero negativo exclui, sem mais exames nem anticoagulação. Se precisar de mais exames, ultrassom proximal ou de toda a perna; sem D-dímero disponível, ultrassom proximal ou de toda a perna sozinho também serve.', ref: { fonte: ASH_TEV, pagina: 'recomendação 5a', grau: 'forte para o D-dímero; condicional para o ultrassom' }, faixas: [0] },
