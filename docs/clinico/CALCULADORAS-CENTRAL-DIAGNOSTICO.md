@@ -31,6 +31,36 @@ commit. A homologação pediu login da Vercel e não havia sessão aberta; o
 levantamento foi feito pelo código. A página do MDCalc foi aberta no navegador
 em 16/11/2026 (cookies não essenciais recusados).
 
+## Decisões do RT (16/11/2026)
+
+**C1 a C8 = A** ("Todas A", repassado pela sessão principal em 16/11/2026). O piloto
+do C7 ainda depende de o RT aprovar a lista de 10 ferramentas abaixo. Nada é
+implementado antes disso.
+
+### Piloto proposto (C7), esperando o RT
+
+Critério: o HEART que o RT citou, ferramentas de uso frequente no PS e pelo
+menos uma de cada montagem que se repete (seção 1), para a biblioteca nova
+(F6) ser testada em todas antes dos outros lotes. A contagem de uso da produção
+não foi lida (precisa do ok do RT); o RT pode trocar qualquer item.
+
+| # | Ferramenta | Seção | Montagem | Por que no piloto |
+|---|---|---|---|---|
+| 1 | HEART | Escores | `EscoreTela` | O modelo que o RT mandou |
+| 2 | CURB-65 | Escores | `EscoreTela` | Pneumonia, frequente; próximos passos claros por faixa |
+| 3 | Sepse no adulto (qSOFA, SOFA, lactato) | Escores | `EscoreTela` | Mais de um resultado na mesma tela: testa o resumo flutuante |
+| 4 | Escala de Coma de Glasgow (GCS-P) | Escores | `EscoreTela` | A mais comum no plantão; escore sem conduta própria |
+| 5 | Intubação orotraqueal (sequência rápida) | Calculadoras (no adulto) | campo próprio + tabela | Lista de doses por peso e a tabela longa da DAS 2025: testa C3, C5 e C6 |
+| 6 | Infusões contínuas — adulto | Calculadoras (no adulto) | campo próprio | Conta de mL/h muito usada; única que recebe dado pelo endereço |
+| 7 | Hipocalemia — potássio | Condutas — adulto | `LoteAPecas` (40 telas) | Várias contas em blocos na mesma tela |
+| 8 | PCR — drogas e desfibrilação | Condutas — adulto | `PecasLoteC` (62 telas, o maior kit) | Emergência, lista de doses com a AHA ao lado |
+| 9 | Doses pediátricas por peso | Pediatria | peças próprias | Peso e idade da Central; lista longa com errata e divergências: testa C5 e C6 |
+| 10 | Diarreia aguda — desidratação e planos | Pediatria | `PecasIcr` (36 telas) | Muito frequente; o maior kit da pediatria |
+
+Ficam para os lotes seguintes os kits `PecasP2`, `PecasP4`, `PecasP5`,
+`PecasLoteE6` e `PecasLoteE7`. Se o RT preferir a crise asmática da criança
+(`PecasP2`) no lugar do Glasgow, a troca não muda o resto do piloto.
+
 ## 1. Como as calculadoras funcionam hoje
 
 ### Onde ficam
