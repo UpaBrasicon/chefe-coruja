@@ -2466,6 +2466,7 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 | # | Prior. | Pedido | Hoje | Decisão do RT | Estado |
 |---|---|---|---|---|---|
 | 1 | a definir | "Médico" no lugar de "Plantonista" na tela (só o nome; o papel no banco continua `plantonista`) | Rótulo do papel em `src/lib/constants.ts`, "Plantonista" em 25 arquivos de `src/` (inclui "Central do Plantonista") e 19 mensagens do servidor (na escala, quase sempre "quem está de plantão", de qualquer categoria) | Incluído pelo RT em 16/11/2026 ("Sim, só o nome na tela"); R1–R5 = A | **Feito em 16/11/2026**, na homologação e na produção com o ok do RT (PR #780): rótulo do papel "Médico", "Central do Médico", textos das telas com "médico" (papel médico) ou "profissional" (qualquer categoria da escala), FAQ do site público e migration `20270414000064` com 15 mensagens do servidor (nenhuma com "plantonista" na produção). Rota `/plantonista`, nomes internos e o papel no banco ficaram. Conferido pelo RT na homologação com `medico.upa.f5` |
+| 2 | P1 | CID de referência: "Cefaleia" sugere O80.0 (parto espontâneo cefálico) | A busca de texto da CID-10 reduz as palavras ao radical: "cefaleia" e "cefálico" viram `cefal`. "Dor de cabeça" sugere dor torácica e traumatismo de cabeça, sem R51 | Achado guardado de 15/11/2026, pedido do RT em 16/11/2026 | Diagnóstico em `docs/porta/CID-CEFALEIA-DIAGNOSTICO.md` (G1–G3), esperando o RT |
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
