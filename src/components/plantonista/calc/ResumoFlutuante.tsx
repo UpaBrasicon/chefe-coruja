@@ -17,6 +17,7 @@ export function ResumoFlutuante({
   textoCopia,
   alvoDetalhes,
   rotuloDetalhes = 'Ver detalhes',
+  aoIrDetalhes,
 }: {
   principal: ReactNode
   detalhe?: ReactNode
@@ -27,6 +28,8 @@ export function ResumoFlutuante({
   /** id da seção para onde "Ver detalhes" rola */
   alvoDetalhes?: string
   rotuloDetalhes?: string
+  /** antes de rolar (ex.: abrir a aba "Próximos passos") */
+  aoIrDetalhes?: () => void
 }) {
   return (
     <div
@@ -59,7 +62,10 @@ export function ResumoFlutuante({
             variant="outline"
             size="sm"
             className="border-sobre-acao/50 bg-transparent text-sobre-acao hover:border-sobre-acao hover:bg-sobre-acao/10 hover:text-sobre-acao"
-            onClick={() => document.getElementById(alvoDetalhes)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            onClick={() => {
+              aoIrDetalhes?.()
+              document.getElementById(alvoDetalhes)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }}
           >
             <ArrowDown />
             {rotuloDetalhes}
