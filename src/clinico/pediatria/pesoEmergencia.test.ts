@@ -10,7 +10,7 @@ import { NOTA_PESO_DENGUE_WELLS, fichaDenguePed, pesoAproximadoMs } from './deng
 // Escores P2/P3, item P10 (decisão B do RT, 11/11/2026).
 test('peso de emergência: Wells 2017 nas duas fichas, versão nova', () => {
   assert.match(WELLS_PESO_2017.citacao, /PMID 28936627/)
-  assert.equal(fichaBolusPediatrico.versao, '2026-11-11.1')
+  assert.equal(fichaBolusPediatrico.versao, '2026-11-16.1') // piloto das calculadoras (16/11/2026)
   assert.equal(fichaDenguePed.versao, '2026-11-11.1')
   assert.ok(fichaBolusPediatrico.fontes.includes(WELLS_PESO_2017))
   assert.ok(fichaDenguePed.fontes.includes(WELLS_PESO_2017))

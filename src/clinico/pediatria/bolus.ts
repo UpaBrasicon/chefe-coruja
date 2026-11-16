@@ -1,6 +1,7 @@
 import { MANUAL_HC } from '../adulto/fonte.ts'
 import type { Ficha, Fonte } from '../ficha.ts'
 import { LIVRO_PS_PED, fichaPediatrica } from './fonte.ts'
+import { ILCOR_PLS_2020, WELLS_YENDE_DOSE } from '../fontesPubmed.ts'
 
 // Doses pediátricas em bolus por peso — Apêndice do PS Pediatria ICr-HCFMUSP
 // (4ª ed., 2023): tabela 1 (emergência e RCP) e os itens de emergência da
@@ -37,9 +38,9 @@ export const NOTA_PESO_EMERGENCIA =
 
 export const fichaBolusPediatrico: Ficha = {
   ...baseBolusPediatrico,
-  versao: '2026-11-11.1',
-  fontes: [...baseBolusPediatrico.fontes, WELLS_PESO_2017],
-  revisadoEm: '11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
+  versao: '2026-11-16.1',
+  fontes: [...baseBolusPediatrico.fontes, WELLS_PESO_2017, ILCOR_PLS_2020, WELLS_YENDE_DOSE],
+  revisadoEm: '16/11/2026 (próximos passos do piloto das calculadoras: ILCOR 2020 PLS 420 e Wells 2017 e 2024, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
 }
 
 export const NEONATO_FORA =

@@ -132,7 +132,7 @@ test('taquiarritmias: AHA 2025 ao lado do manual; doses do manual não mudam', a
 
 test('via aérea: DAS 2025 ao lado do manual; doses do Anexo 1 não mudam', async () => {
   const m = await import('./isr.ts')
-  assert.equal(m.fichaIsrAdulto.versao, '2026-11-14.1')
+  assert.equal(m.fichaIsrAdulto.versao, '2026-11-16.1')
   assert.ok(m.fichaIsrAdulto.fontes.includes(DAS_2025))
   assert.match(DAS_2025.citacao, /PMID 41203471/)
   const dose = (id: string) => m.DROGAS_ISR.find((d) => d.id === id)!.mgKg

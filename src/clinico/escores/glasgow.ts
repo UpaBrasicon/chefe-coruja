@@ -1,4 +1,5 @@
 import { completo, escolha, type Escore } from '../escore.ts'
+import { BTF_PREHOSPITALAR_2023, SNC_2013, SNC_2026, WSES_TCE_2019 } from '../fontesPubmed.ts'
 
 // Glasgow com GCS-P (total menos pupilas não reativas, mínimo 1). Componente
 // não testável entra com o mínimo por convenção e é registrado como NT.
@@ -8,15 +9,19 @@ export const glasgow: Escore = {
   ficha: {
     id: 'glasgow',
     titulo: 'Escala de Coma de Glasgow (GCS-P)',
-    versao: '2026-11-11.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Teasdale G, Jennett B. Assessment of coma and impaired consciousness. A practical scale. Lancet. 1974;2(7872):81–84.', url: 'https://doi.org/10.1016/S0140-6736(74)91639-0' },
       { citacao: 'Brennan PM, Murray GD, Teasdale GM. Simplifying the use of prognostic information in traumatic brain injury. Part 1: the GCS-Pupils score. J Neurosurg. 2018;128(6):1612–1620.', url: 'https://doi.org/10.3171/2017.12.JNS172780' },
       { citacao: 'Vreeburg RJG, van Leeuwen FD, Manley GT, et al. Validation of the GCS-Pupil Scale in Traumatic Brain Injury: Incremental Prognostic Value of Pupillary Reactivity with GCS in the Prospective Observational Cohorts CENTER-TBI and TRACK-TBI. J Neurotrauma. 2025;42(9-10):798–813 (PMID 39686742). O GCS-P captou cerca de metade do valor prognóstico das pupilas registradas à parte.', url: 'https://doi.org/10.1089/neu.2024.0458' },
       { citacao: 'Manley GT, et al. Best Practices in the Management of Traumatic Brain Injury. American College of Surgeons. 2024.' },
+      BTF_PREHOSPITALAR_2023,
+      SNC_2013,
+      SNC_2026,
+      WSES_TCE_2019,
     ],
-    revisadoEm: '11/11/2026 (pupilas no registro, Vreeburg 2024, decisão H20 do RT)',
+    revisadoEm: '16/11/2026 (próximos passos do TCE no piloto das calculadoras: BTF 2023, SNC 2013 e 2026, WSES 2019, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (pupilas no registro, Vreeburg 2024, decisão H20 do RT)',
   },
   descricao: 'Abertura ocular, resposta verbal e resposta motora, com o GCS-P pelas pupilas.',
   itens: [

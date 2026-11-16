@@ -1,5 +1,6 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto, pagina } from './fonte.ts'
+import { ILAS_2026, SSC_2026 } from './ressuscitacaoVolemica.ts'
 
 // Infusões contínuas do adulto — Anexo 1 do Manual de Medicina de Emergência
 // do HCFMUSP (3ª ed., 2022), p. 1482–1489. A concentração é CALCULADA do
@@ -19,9 +20,9 @@ const PAG_INFUSOES = 'Anexo 1 — Padrão de diluição de medicações HC – a
 
 export const fichaInfusoesAdulto: Ficha = {
   ...fichaAdulto('adulto-infusoes', 'Infusões contínuas do adulto', PAG_INFUSOES),
-  versao: '2026-09-28.1',
-  fontes: [pagina(PAG_INFUSOES), PADIS_2025],
-  revisadoEm: '28/09/2026 (PADIS 2025 conferida pelo resumo; Anexo 1 mantido como base)',
+  versao: '2026-11-16.1',
+  fontes: [pagina(PAG_INFUSOES), PADIS_2025, SSC_2026, { ...ILAS_2026, citacao: `${ILAS_2026.citacao} p. 11 e 13.` }],
+  revisadoEm: '16/11/2026 (próximos passos do piloto das calculadoras: meta de PAM e vasopressor pela SSC 2026 e pelo ILAS jul/2026, sedação pela PADIS 2025; aguarda aprovação do RT); 28/09/2026 (PADIS 2025 conferida pelo resumo; Anexo 1 mantido como base)',
 }
 
 /** PADIS 2025 — o que a atualização focada diz sobre sedação contínua e delirium. */
