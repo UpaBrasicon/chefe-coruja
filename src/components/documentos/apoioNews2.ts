@@ -20,8 +20,9 @@ const num = (v: string | undefined) => {
 
 // Valor neutro (0 ponto) para o parâmetro não medido: o escore fica parcial.
 const NEUTRO = { fr: 16, spo2: 98, pas: 120, fc: 80, temp: 37 }
-const NOMES = ['risco baixo', 'risco médio', 'risco alto']
-const CONDUTA = ['Monitorar no mínimo de 6 em 6 horas.', 'Monitorar de 1 em 1 hora e acionar a equipe.', 'Resposta clínica imediata.']
+// Nome da faixa e conduta: versão brasileira oficial do NEWS2 (Rev Gaúcha Enferm
+// 2020; RT, H14 N2 = A, 16/11/2026), pelo faixaNews2. A cor segue a banda.
+const FONTE_CONDUTA = 'NEWS2, versão brasileira oficial (Rev Gaúcha Enferm 2020)'
 const ROTULOS: Record<string, string> = { fr: 'FR', spo2: 'SpO₂', pas: 'PA sistólica', fc: 'FC', temp: 'temperatura' }
 
 export type ResultadoApoio = {
@@ -49,9 +50,10 @@ export function apoioNews2(v: VitaisAih | undefined): ResultadoApoio | null {
   const q = qsofa({ fr: medidos.fr, pas: medidos.pas, consciencia: x.cons ? 'C' : 'A' })
   const parcial = faltando.length > 0
   const total = `${f.total}${parcial ? '*' : ''}`
-  const resumo = `NEWS2 ${total} pontos (${NOMES[f.banda]}). ${CONDUTA[f.banda]} qSOFA ${q.total}${q.parcial ? '*' : ''} de 3${q.alerta ? ' (sinal de alerta: avaliar sepse)' : ''}.`
+  const conduta = `Monitoramento ${f.monitoramento}; ${f.resposta} (${FONTE_CONDUTA}).`
+  const resumo = `NEWS2 ${total} pontos (${f.rotulo}). ${conduta} qSOFA ${q.total}${q.parcial ? '*' : ''} de 3${q.alerta ? ' (sinal de alerta: avaliar sepse)' : ''}.`
   return {
-    total, banda: NOMES[f.banda], bandaN: f.banda, conduta: CONDUTA[f.banda],
+    total, banda: f.rotulo, bandaN: f.banda, conduta,
     qsofa: `${q.total}${q.parcial ? '*' : ''} de 3`, qsofaAlerta: q.alerta, parcial,
     faltando: faltando.map((k) => ROTULOS[k]).join(', '), resumo,
   }

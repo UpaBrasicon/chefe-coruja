@@ -9,6 +9,9 @@ import { faixaNews2, pontosNews2 } from '../news2.ts'
 // versão brasileira oficial e da validação dela no pronto-socorro, pelos
 // resumos. Os rótulos não mudam aqui: o alinhamento à versão oficial é tarefa à
 // parte, com a enfermagem. Cortes e pontos não mudam.
+// Versão de 16/11/2026 (RT, H14 N1 e N2 = A): rótulos, nomes das faixas,
+// monitoramento e resposta pela versão brasileira oficial (Figura 1 e quadro
+// da resposta clínica, lidos no SciELO). Cortes e pontos não mudam.
 
 export const NEWS2_BRASIL_2020: Fonte = {
   citacao: 'Oliveira APA, Urbanetto JS, Caregnato RCA. National Early Warning Score 2: transcultural adaptation to Brazilian Portuguese. Rev Gaúcha Enferm. 2020;41:e20190424 (PMID 33111761).',
@@ -27,7 +30,7 @@ export const news2: Escore = {
   ficha: {
     id: 'news2',
     titulo: 'NEWS2 — escore de alerta precoce',
-    versao: '2026-11-16.1',
+    versao: '2026-11-16.2',
     publico: 'adulto',
     fontes: [
       { citacao: 'Royal College of Physicians. National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS. London: RCP; 2017. Chart 2 (p. 30), Chart 4 (p. 39), recomendação 12 e p. 37–38, lidos no PDF em 16/11/2026.', url: 'https://www.rcp.ac.uk/media/a4ibkkbf/news2-final-report_0_0.pdf' },
@@ -35,20 +38,20 @@ export const news2: Escore = {
       NEWS2_BRASIL_2020,
       NEWS2_BRASIL_SEPSE_2025,
     ],
-    revisadoEm: '16/11/2026 (próximos passos do lote 6 das calculadoras; fontes lidas no texto integral em 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota da versão brasileira oficial, rótulos sem mudança; revisão PubMed, itens médios; mesmos cortes da acuidade do prontuário desde 27/09/2026)',
+    revisadoEm: '16/11/2026, versão .2 (rótulos, faixas e resposta clínica da versão brasileira oficial, Figura 1 lida no SciELO; RT, H14 N1 e N2 = A); 16/11/2026 (próximos passos do lote 6 das calculadoras; fontes lidas no texto integral em 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota da versão brasileira oficial, rótulos sem mudança; revisão PubMed, itens médios; mesmos cortes da acuidade do prontuário desde 27/09/2026)',
   },
   descricao: 'Sete parâmetros à beira do leito; na SSC 2026, ferramenta de rastreio de sepse no lugar do qSOFA',
   itens: [
-    { tipo: 'numero', id: 'fr', rotulo: 'Frequência respiratória', unidade: 'irpm', min: 0, max: 80, passo: 1 },
-    { tipo: 'numero', id: 'spo2', rotulo: 'Saturação de O₂', unidade: '%', min: 40, max: 100, passo: 1 },
+    { tipo: 'numero', id: 'fr', rotulo: 'Frequência respiratória (por minuto)', unidade: 'irpm', min: 0, max: 80, passo: 1 },
+    { tipo: 'numero', id: 'spo2', rotulo: 'SpO₂ %', unidade: '%', min: 40, max: 100, passo: 1 },
     { tipo: 'escolha', id: 'escala', rotulo: 'Escala de SpO₂', ajuda: 'A escala 2 é só para hipercapnia documentada, com alvo de 88–92% definido pelo médico.', opcoes: [
-      { rotulo: 'Escala 1 (padrão)', valor: 0 }, { rotulo: 'Escala 2 (hipercapnia, alvo 88–92%)', valor: 1 },
+      { rotulo: 'Escala 1', valor: 0 }, { rotulo: 'Escala 2 (hipercapnia, alvo 88–92%)', valor: 1 },
     ] },
-    { tipo: 'escolha', id: 'o2', rotulo: 'Oxigênio suplementar', opcoes: [{ rotulo: 'Ar ambiente', valor: 0 }, { rotulo: 'Em oxigênio', valor: 1 }] },
-    { tipo: 'numero', id: 'pas', rotulo: 'Pressão sistólica', unidade: 'mmHg', min: 30, max: 300, passo: 1 },
-    { tipo: 'numero', id: 'fc', rotulo: 'Frequência cardíaca', unidade: 'bpm', min: 10, max: 300, passo: 1 },
-    { tipo: 'escolha', id: 'consciencia', rotulo: 'Consciência (ACVPU)', opcoes: [
-      { rotulo: 'Alerta', valor: 0 }, { rotulo: 'Confusão nova, responde à voz, à dor ou sem resposta', valor: 1 },
+    { tipo: 'escolha', id: 'o2', rotulo: 'Ar ambiente ou oxigênio?', opcoes: [{ rotulo: 'Ar ambiente', valor: 0 }, { rotulo: 'Oxigênio', valor: 1 }] },
+    { tipo: 'numero', id: 'pas', rotulo: 'Pressão arterial sistólica', unidade: 'mmHg', min: 30, max: 300, passo: 1 },
+    { tipo: 'numero', id: 'fc', rotulo: 'Pulso (por minuto)', unidade: 'bpm', min: 10, max: 300, passo: 1 },
+    { tipo: 'escolha', id: 'consciencia', rotulo: 'Consciência', opcoes: [
+      { rotulo: 'Alerta', valor: 0 }, { rotulo: 'Confusão aguda, resposta à voz ou à dor, irresponsivo', valor: 1 },
     ] },
     { tipo: 'numero', id: 'temp', rotulo: 'Temperatura', unidade: '°C', min: 25, max: 45, passo: 0.1 },
   ],
@@ -69,22 +72,24 @@ export const news2: Escore = {
       rotulo: 'NEWS2',
       valor: String(f.total),
       unidade: 'pontos',
-      nota: 'faixa ' + f.rotulo,
+      nota: f.rotulo,
       estado: f.banda,
       derivados: [
         ['Frequência respiratória', `+${p.fr}`],
-        ['Saturação de O₂', `+${p.spo2}`],
-        ['Oxigênio suplementar', `+${p.oxigenio}`],
-        ['Pressão sistólica', `+${p.pas}`],
-        ['Frequência cardíaca', `+${p.fc}`],
+        ['SpO₂', `+${p.spo2}`],
+        ['Ar ambiente ou oxigênio', `+${p.oxigenio}`],
+        ['Pressão arterial sistólica', `+${p.pas}`],
+        ['Pulso', `+${p.fc}`],
         ['Consciência', `+${p.consciencia}`],
         ['Temperatura', `+${p.temp}`],
-        ['Faixas do RCP', '0–4 baixa · 3 em um parâmetro baixa-média · 5–6 média · 7 ou mais alta'],
+        ['Monitoramento', f.monitoramento],
+        ['Resposta clínica', f.resposta],
+        ['Faixas', 'Total 0 · Total 1–4 · 3 em um único parâmetro · 5 ou mais (resposta urgente) · 7 ou mais (resposta de emergência)'],
       ],
       alerta: f.maior === 3 && f.total < 5 ? 'Um parâmetro isolado marcou 3 pontos: a faixa sobe mesmo com total baixo.' : undefined,
       cuidados: [
         'Rastreio de sepse: a Surviving Sepsis Campaign 2026 recomenda NEWS, NEWS2, MEWS ou SIRS em vez do qSOFA como ferramenta única (recomendação forte, certeza moderada). NEWS2 alto em paciente com infecção suspeita pede a avaliação de sepse — o critério é o SOFA (ferramenta Sepse no adulto).',
-        'A resposta de cada faixa (frequência de reavaliação, acionamento) é do protocolo da unidade.',
+        'Monitoramento e resposta clínica de cada faixa: versão brasileira oficial (Rev Gaúcha Enferm 2020, adaptação do RCP 2017). O protocolo da unidade pode ser mais estrito.',
         'Escala de adulto: não se aplica a menores de 14 anos (na pediatria, PEWS) nem à gestante (escore obstétrico próprio).',
         'A acuidade do prontuário calcula o NEWS2 com a escala 1; a escala 2 só está nesta tela.',
         NOTA_NEWS2_BRASIL,
