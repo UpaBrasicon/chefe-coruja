@@ -34,7 +34,7 @@ test('heart: ficha de adulto, sem fonte pediátrica', () => {
 
 test('heart: SBC 2025 ao lado do manual (cap. 12, lote 6 do HCFMUSP)', async () => {
   const h = await import('./heart.ts')
-  assert.equal(h.heart.ficha.versao, '2026-11-14.1')
+  assert.equal(h.heart.ficha.versao, '2026-11-16.1')
   assert.ok(h.heart.ficha.fontes.includes(h.SBC_DOR_TORACICA_2025))
   assert.match(h.SBC_DOR_TORACICA_2025.citacao, /PMID 41379176/)
   assert.equal(new Set(h.DIRETRIZ_DOR_TORACICA_2025.map((d) => d.tema)).size, h.DIRETRIZ_DOR_TORACICA_2025.length)

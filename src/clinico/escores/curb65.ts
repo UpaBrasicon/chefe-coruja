@@ -12,13 +12,13 @@ export const curb65: Escore = {
   ficha: {
     id: 'curb-65',
     titulo: 'CURB-65 — gravidade da pneumonia comunitária',
-    versao: '2026-09-27.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Lim WS, van der Eerden MM, Laing R, et al. Defining community acquired pneumonia severity on presentation to hospital: an international derivation and validation study. Thorax. 2003;58(5):377–382.', url: 'https://doi.org/10.1136/thorax.58.5.377' },
       { citacao: 'Metlay JP, Waterer GW, Long AC, et al. Diagnosis and Treatment of Adults with Community-acquired Pneumonia. An Official Clinical Practice Guideline of the ATS and IDSA. Am J Respir Crit Care Med. 2019;200(7):e45–e67.', url: 'https://doi.org/10.1164/rccm.201908-1581ST' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (próximos passos, armadilhas e evidências do piloto das calculadoras, com fonte; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Gravidade da pneumonia comunitária e mortalidade em 30 dias da coorte original',
   itens: [
