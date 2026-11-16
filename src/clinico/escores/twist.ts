@@ -20,7 +20,19 @@ const LEWIS_2025: Fonte = {
   url: 'https://doi.org/10.1111/bju.70080',
   pediatrica: true,
 }
-const REVISADO = '11/11/2026 (escores P2/P3, item P9; pontos e cortes conferidos no resumo do Barbosa 2013 e da metanálise de 2025)'
+const EAU_PED_2026: Fonte = {
+  citacao: 'Radmayr C, et al. EAU Guidelines on Paediatric Urology. Arnhem: European Association of Urology; 2026 (atualização limitada de março de 2026). Capítulo 8, escroto agudo, p. 29–31, lido no PDF em 16/11/2026.',
+  url: 'https://uroweb.org/guidelines/paediatric-urology',
+  pediatrica: true,
+}
+
+const GIRFT_TORCAO_2026: Fonte = {
+  citacao: 'Getting It Right First Time (NHS England). Children and Young People: Testicular torsion pathway, versão 2.1, maio de 2026. Seções 3.3, 3.4 e 7.1 e fluxograma lidos no PDF em 16/11/2026 (consenso Delphi).',
+  url: 'https://gettingitrightfirsttime.co.uk/wp-content/uploads/2026/05/Paediatric-testicular-torsion-pathway-guide-FINAL-V2.1-May-2026.pdf',
+  pediatrica: true,
+}
+
+const REVISADO = '16/11/2026 (próximos passos do lote 8 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 11/11/2026 (escores P2/P3, item P9; pontos e cortes conferidos no resumo do Barbosa 2013 e da metanálise de 2025)'
 
 const ITENS: Item[] = [
   { tipo: 'marca', id: 'edema', rotulo: 'Edema testicular', pontos: 2 },
@@ -55,7 +67,7 @@ function calcularTwist(e: Escore, r: Respostas, cuidadoFaixa: string): Resultado
 }
 
 const fichaTwist = (id: string, publico: Ficha['publico'], titulo: string): Ficha => ({
-  id, titulo, versao: '2026-11-11.1', publico, fontes: [BARBOSA_2013, LEWIS_2025], revisadoEm: REVISADO,
+  id, titulo, versao: '2026-11-16.1', publico, fontes: [BARBOSA_2013, LEWIS_2025, EAU_PED_2026, GIRFT_TORCAO_2026], revisadoEm: REVISADO,
 })
 
 export const twistPed: Escore = {
