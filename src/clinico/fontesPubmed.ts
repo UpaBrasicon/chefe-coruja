@@ -49,3 +49,11 @@ export const KARDALAS_HIPOK_2018: Fonte = {
   citacao: 'Kardalas E, Paschou SA, Anagnostis P, et al. Hypokalemia: a clinical update. Endocr Connect. 2018;7(4):R135–R146 (PMID 29540487; PMC5881435). Revisão narrativa, sem graduação: ECG, tratamento, magnésio e excreção urinária de potássio.',
   url: 'https://doi.org/10.1530/EC-18-0109',
 }
+
+// ---------------------------------------------------------------- síndrome coronariana sem supra
+
+// A ESC 2023 de SCA não está no PMC; a diretriz brasileira de 2021 está.
+export const SBC_SCASSST_2021: Fonte = {
+  citacao: 'Nicolau JC, Feitosa Filho GS, Petriz JL, et al. Diretrizes da Sociedade Brasileira de Cardiologia sobre Angina Instável e Infarto Agudo do Miocárdio sem Supradesnível do Segmento ST – 2021. Arq Bras Cardiol. 2021;117(1):181–264 (PMID 34320090; PMC8294740). Estratificação de risco (5.3), estratégia invasiva (6.1) e revascularização; texto integral lido no PMC em 16/11/2026.',
+  url: 'https://doi.org/10.36660/abc.20210180',
+}

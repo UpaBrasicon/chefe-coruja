@@ -1,4 +1,5 @@
 import { completo, numero, somar, type Escore } from '../escore.ts'
+import { SBC_SCASSST_2021 } from '../fontesPubmed.ts'
 import type { Fonte } from '../ficha.ts'
 
 // GRACE (mortalidade hospitalar): idade, FC, PAS e creatinina por faixa, mais
@@ -54,16 +55,17 @@ export const grace: Escore = {
   ficha: {
     id: 'grace',
     titulo: 'GRACE — risco na síndrome coronariana aguda',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
+      SBC_SCASSST_2021,
       { citacao: 'Granger CB, Goldberg RJ, Dabbous O, et al. Predictors of hospital mortality in the Global Registry of Acute Coronary Events. Arch Intern Med. 2003;163(19):2345–2353.', url: 'https://doi.org/10.1001/archinte.163.19.2345' },
       { citacao: 'Byrne RA, Rossello X, Coughlan JJ, et al. 2023 ESC Guidelines for the management of acute coronary syndromes. Eur Heart J. 2023;44(38):3720–3826.', url: 'https://doi.org/10.1093/eurheartj/ehad191' },
       WENZL_GRACE3_2022,
       WENZL_GRACE3_2025,
       CALCULADORA_GRACE3,
     ],
-    revisadoEm: '06/11/2026 (nota do GRACE 3.0 com o endereço da calculadora oficial; revisão PubMed, itens médios; aviso das faixas da SCA sem supra em 28/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 2 das calculadoras, com fonte aberta no PMC; aguarda aprovação do RT); 06/11/2026 (nota do GRACE 3.0 com o endereço da calculadora oficial; revisão PubMed, itens médios; aviso das faixas da SCA sem supra em 28/09/2026)',
   },
   descricao: 'Mortalidade hospitalar na síndrome coronariana aguda por oito variáveis da admissão',
   itens: [

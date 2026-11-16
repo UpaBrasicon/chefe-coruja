@@ -2,7 +2,8 @@ import { useState, type ReactNode } from 'react'
 
 import { temReferenciaPediatrica, textoFontes } from '@/clinico/ficha'
 import { numero, type Escore, type Respostas } from '@/clinico/escore'
-import { ESCORES_PILOTO } from '@/content/pilotoCalculadoras'
+import { ESCORES_PILOTO, SECOES_NO_MODELO } from '@/content/pilotoCalculadoras'
+import { useParams } from 'react-router-dom'
 import { textoCopia } from '@/domain/copiaCalculo'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { Chip } from '@/components/monitor/Pagina'
@@ -43,7 +44,9 @@ function Linha({ rotulo, ajuda, rotuloId, opcoesEmLinha, children }: {
 export function EscoreTela({ escore, children }: { escore: Escore; children?: ReactNode }) {
   // Piloto das calculadoras (RT, 16/11/2026): os escores do piloto seguem o
   // modo da Central (C5 = A) e ganham o resumo flutuante com "Copiar".
-  const piloto = ESCORES_PILOTO.has(escore.ficha.id)
+  // Lote 2 (RT, 16/11/2026): todos os escores da seção Escores entram no modelo.
+  const { section } = useParams()
+  const piloto = ESCORES_PILOTO.has(escore.ficha.id) || SECOES_NO_MODELO.has(section ?? '')
   const central = usePacienteCentral()
   const modoCentral = piloto && central.modo ? (central.modo === 'pediatrico' ? 'crianca' : 'adulto') : null
   const guia = piloto ? guiaDa(escore.ficha.id) : undefined

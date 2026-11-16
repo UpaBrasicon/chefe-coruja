@@ -13,7 +13,7 @@ export const sincopeCanadense: Escore = {
   ficha: {
     id: 'sincope-canadense',
     titulo: 'Canadian Syncope Risk Score — síncope no pronto-socorro (adulto)',
-    versao: '2026-10-25.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Thiruganasambandamoorthy V, Kwong K, Wells GA, et al. Development of the Canadian Syncope Risk Score to predict serious adverse events after emergency department assessment of syncope. CMAJ. 2016;188(12):E289–E298.', url: 'https://doi.org/10.1503/cmaj.151469' },
@@ -21,7 +21,7 @@ export const sincopeCanadense: Escore = {
       { citacao: 'Zimmermann T, du Fay de Lavallaz J, Nestelberger T, et al. International Validation of the Canadian Syncope Risk Score: A Cohort Study. Ann Intern Med. 2022;175(6):783–794. Resumo: 40 anos ou mais, 8 países; AUC 0,85 para o desfecho primário; a classificação da síncope pelo médico sozinha teve AUC 0,83.', url: 'https://doi.org/10.7326/M21-2313' },
       { citacao: 'Suh EH, Winskill C, Sacco DL, et al. Validation of 2 Syncope Risk Scores and Comparison With Physician Risk Estimation. JAMA Netw Open. 2026;9(5):e2617362. Resumo: 40 anos ou mais, Estados Unidos; AUROC 0,72; escore abaixo de 0 com sensibilidade 91,9% e valor preditivo negativo 97,5%.', url: 'https://doi.org/10.1001/jamanetworkopen.2026.17362' },
     ],
-    revisadoEm: '25/10/2026 (lacunas da Central, lote 3: validações de 2020, 2022 e 2026; aguarda aprovação do RT)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 2 das calculadoras, com fonte já citada; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3: validações de 2020, 2022 e 2026; aguarda aprovação do RT)',
   },
   descricao: 'Nove itens (avaliação clínica, exames e diagnóstico no pronto-socorro), de −3 a 11 pontos, em cinco categorias de risco de evento grave em 30 dias.',
   itens: [

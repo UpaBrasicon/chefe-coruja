@@ -4,7 +4,7 @@ import { FolderSearch, Star } from 'lucide-react'
 
 import { acharSecao, CHAVES_FERRAMENTAS, secaoExibida } from '@/content/registry'
 import { publicoDaFerramenta } from '@/content/publicoFerramentas'
-import { RELACIONADAS } from '@/content/pilotoCalculadoras'
+import { relacionadasDe } from '@/content/pilotoCalculadoras'
 import { RelacionadasContexto } from '@/components/plantonista/calc/contexto'
 import { chaveFerramenta, useFavoritos, useRegistrarUso } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
@@ -28,7 +28,7 @@ export function ToolRouter() {
 
   useRegistrarUso(chave)
   // Relacionadas (piloto das calculadoras, F4): o ToolLayout desenha na coluna da direita.
-  const relacionadas = (chave ? RELACIONADAS[chave] ?? [] : []).flatMap((c) => {
+  const relacionadas = (chave ? relacionadasDe(chave) : []).flatMap((c) => {
     const [secaoSlug, slug] = c.split('/')
     const t = acharSecao(secaoSlug)?.tools.find((x) => x.slug === slug)
     return t ? [{ to: `/plantonista/${c}`, rotulo: t.label, descricao: t.description }] : []
