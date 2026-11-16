@@ -5,6 +5,8 @@
 // APP_ORIGIN aceita uma lista separada por vírgula; o par www/sem-www de cada
 // origem listada entra sozinho. A resposta devolve a origem da requisição
 // quando ela é permitida.
+// `extras`: origens aceitas só pela função que as passa, além do APP_ORIGIN (o
+// formulário de planos.chefecoruja.com.br chama só a pedir-demonstracao; S10, H3).
 
 function permitidas(): string[] {
   const base = (Deno.env.get('APP_ORIGIN') ?? '').split(',').map((s) => s.trim().replace(/\/$/, '')).filter(Boolean)
@@ -21,16 +23,17 @@ function permitidas(): string[] {
 }
 
 /** Origem a devolver em Access-Control-Allow-Origin para esta requisição. */
-export function origemPermitida(req: Request): string {
-  const lista = permitidas()
-  if (lista.length === 0) return '*'
+export function origemPermitida(req: Request, extras: string[] = []): string {
+  const base = permitidas()
+  if (base.length === 0) return '*'
+  const lista = [...base, ...extras]
   const origem = req.headers.get('Origin') ?? ''
   return lista.includes(origem) ? origem : lista[0]
 }
 
 /** Aplica a origem certa (e Vary: Origin) na resposta pronta. */
-export function comCors(req: Request, r: Response): Response {
-  r.headers.set('Access-Control-Allow-Origin', origemPermitida(req))
+export function comCors(req: Request, r: Response, extras: string[] = []): Response {
+  r.headers.set('Access-Control-Allow-Origin', origemPermitida(req, extras))
   r.headers.append('Vary', 'Origin')
   return r
 }

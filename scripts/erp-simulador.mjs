@@ -9,7 +9,8 @@
 // retorno uma vez, para mostrar que o reenvio igual não muda nada.
 //
 // Só roda com chave de homologação (cc_test_); chave de produção (cc_live_) é
-// recusada.
+// recusada. A URL da produção também é recusada (S10, H4), sem exceção: o
+// simulador responde com lançamento de TESTE.
 //
 // Uso:
 //   ERP_URL=https://<projeto>.supabase.co/functions/v1/api/v1 ERP_CHAVE=cc_test_... node scripts/erp-simulador.mjs
@@ -17,11 +18,13 @@
 //   --desde ISO           só o que mudou a partir deste momento
 //   --divergir            lança R$ 0,01 a menos, para ver a divergência
 //   --limite N            quantas versões tratar de cada tipo (padrão 10)
+import { ehProducao } from './ambiente/alvo-seguro.mjs'
 
 const url = process.env.ERP_URL?.replace(/\/+$/, '')
 const chave = process.env.ERP_CHAVE
 if (!url || !chave) { console.error('Defina ERP_URL e ERP_CHAVE.'); process.exit(1) }
 if (!chave.startsWith('cc_test_')) { console.error('O simulador só roda com chave de homologação (cc_test_).'); process.exit(1) }
+if (ehProducao(url)) { console.error('RECUSADO: ERP_URL aponta para a produção; o simulador só roda na homologação.'); process.exit(1) }
 const opc = (nome) => { const i = process.argv.indexOf(nome); return i > 0 ? process.argv[i + 1] : undefined }
 const so = opc('--so')
 if (so && !['contas', 'plantoes'].includes(so)) { console.error('--so contas ou --so plantoes.'); process.exit(1) }

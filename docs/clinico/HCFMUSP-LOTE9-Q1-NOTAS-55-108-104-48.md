@@ -46,3 +46,9 @@ Em 15/11/2026 o RT decidiu Q1 a Q4 = A no lote 9. Pela Q1, estes quatro capítul
 - A migration foi aplicada, e as quatro notas estão aguardando aprovação.
 - As notas foram ingeridas, e a API foi reiniciada.
 - Os testes da nota passam, e o typecheck está limpo.
+
+## Produção do #736, 15/11/2026
+
+- A migration `20270414000051` foi aplicada antes do merge. O #736 foi mesclado com o CI verde.
+- Foram ingeridos 4 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As seis respostas saíram como na homologação. Na do sangue total, a resposta chamou os dois ensaios de "diretriz atual"; o item foi corrigido no #737.

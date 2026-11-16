@@ -13,7 +13,9 @@ services:
     build: ./app-homolog
     container_name: biblioteca-api-homolog
     restart: unless-stopped
-    env_file: ./app/.env
+    # S8 (D8): .env próprio, com BIBLIOTECA_API_KEY diferente da produção;
+    # passo a passo em infra/seguranca-s8-vps.md
+    env_file: ./app-homolog/.env
     environment:
       BIBLIOTECA_COLECAO: biblioteca_homolog
     ports: ["127.0.0.1:8711:8710"]

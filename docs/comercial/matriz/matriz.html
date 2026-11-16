@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Matriz competitiva — uso interno</title>
+<style>
+  @page { size: A4 landscape; margin: 9mm 10mm; }
+  * { box-sizing: border-box; }
+  :root { --acao: #0E7490; --marca: #0E7490; --tinta: #1E293B; --apoio: #475569; --sussurro: #64748B; --fio: #CBD5E1; --campo: #F1F5F9; }
+  body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; color: var(--tinta); font-size: 8.4pt; line-height: 1.3; }
+  .pag { page-break-after: always; }
+  .pag:last-child { page-break-after: auto; }
+  header { display: flex; align-items: center; gap: 4mm; border-bottom: 2px solid var(--marca); padding-bottom: 2mm; margin-bottom: 2.2mm; }
+  header img { width: 11mm; height: 11mm; object-fit: contain; }
+  h1 { margin: 0; font-size: 14pt; }
+  .sub { margin: 0.5mm 0 0; color: var(--apoio); font-size: 8.2pt; }
+  .interno { margin-left: auto; font-size: 8pt; font-weight: 700; color: #B91C1C; border: 1.5px solid #B91C1C; border-radius: 1.5mm; padding: 0.8mm 2.5mm; white-space: nowrap; }
+  table.m { width: 100%; border-collapse: collapse; }
+  .m th, .m td { border: 1px solid var(--fio); padding: 0.4mm 1.3mm; text-align: center; font-size: 7.5pt; }
+  .m th { background: var(--campo); font-size: 8pt; }
+  .m td:first-child, .m th:first-child { text-align: left; }
+  .m th.cc { background: var(--acao); color: #fff; }
+  .grupo td { background: #E2E8F0; font-weight: 700; text-align: left !important; font-size: 7.4pt; letter-spacing: 0.02em; }
+  .novo { color: var(--acao); font-weight: 700; font-size: 6.6pt; }
+  .s { background: #DCFCE7; color: #166534; font-weight: 600; }
+  .p { background: #FEF3C7; color: #92400E; }
+  .n { background: #F8FAFC; color: #94A3B8; }
+  .c { background: #E0F2FE; color: #075985; }
+  .x { background: #FEE2E2; color: #991B1B; font-weight: 600; }
+  .z { background: #FFFFFF; color: #CBD5E1; }
+  .leg { display: flex; flex-wrap: wrap; gap: 2mm 5mm; margin-top: 1.6mm; font-size: 7.3pt; color: var(--apoio); align-items: center; }
+  .leg span.k { display: inline-block; padding: 0.2mm 2mm; border-radius: 1mm; margin-right: 1mm; }
+  h2 { font-size: 11pt; color: var(--acao); margin: 2mm 0 1.5mm; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; }
+  ul { margin: 0; padding-left: 4.5mm; }
+  li { margin-bottom: 1.2mm; }
+  .caixa { background: var(--campo); border-radius: 2mm; padding: 2.5mm 3.5mm; margin-top: 3mm; }
+  .fontes { font-size: 7.3pt; border-collapse: collapse; width: 100%; }
+  .fontes td { border: 1px solid var(--fio); padding: 1mm 1.5mm; vertical-align: top; }
+  .fontes td:first-child { width: 22mm; font-weight: 700; }
+  a { color: var(--acao); text-decoration: none; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<section class="pag">
+  <header>
+    <img src="coruja.webp" alt="">
+    <div><h1>Matriz competitiva</h1><p class="sub">Chefe Coruja × MV (Soul MV) · Tasy (Bionexo Tasy) · TOTVS RM Saúde · SisHOSP CORE · e-SUS APS (PEC) — fontes públicas; linhas novas e atualizadas acessadas em 15/11/2026, as demais em 08/10/2026</p></div>
+    <span class="interno">USO INTERNO — NÃO ENVIAR A CLIENTE</span>
+  </header>
+  <table class="m">
+    <tr><th style="width:21%">Critério</th><th class="cc" style="width:17%">Chefe Coruja (hoje)</th><th>MV</th><th>Tasy</th><th>TOTVS RM</th><th>SisHOSP</th><th>e-SUS APS</th></tr>
+    <tr class="grupo"><td colspan="7">Clínico da porta</td></tr>
+    <tr><td>Recepção e cadastro</td><td class="s">tem</td><td class="p">parcial</td><td class="s">sim</td><td class="s">sim</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr><td>Classificação de risco</td><td class="s">tem · cor da enfermagem</td><td class="s">sim</td><td class="s">sim (Manchester)</td><td class="s">sim</td><td class="s">sim · cor calculada</td><td class="z">n/p</td></tr>
+    <tr><td>PEP de pronto-socorro</td><td class="s">tem</td><td class="s">sim</td><td class="s">sim</td><td class="p">parcial</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr><td>Prescrição eletrônica</td><td class="s">tem · alergia e peso</td><td class="s">sim</td><td class="s">sim</td><td class="s">sim</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr><td>Checagem de enfermagem</td><td class="s">tem · aprazamento e motivo</td><td class="s">sim</td><td class="s">sim</td><td class="p">parcial</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr><td>Observação, internação, leitos</td><td class="s">tem · ciclo e reserva</td><td class="p">parcial</td><td class="s">sim</td><td class="s">sim</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr class="grupo"><td colspan="7">Gestão e BI</td></tr>
+    <tr><td>Painéis em tempo real</td><td class="s">tem · Porta a cada 15 s</td><td class="s">sim</td><td class="p">parcial</td><td class="p">parcial</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr><td>Tempos de espera da porta</td><td class="s">tem · por cor e alvo</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="p">parcial</td><td class="p">parcial</td><td class="z">n/p</td></tr>
+    <tr><td>Exportação de dados</td><td class="s">tem · CSV com filtros</td><td class="p">parcial</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="p">parcial</td><td class="z">n/p</td></tr>
+    <tr class="grupo"><td colspan="7">Apoio clínico <span class="novo">· grupo novo</span></td></tr>
+    <tr><td>IA clínica</td><td class="s">tem · Perguntar à IA</td><td class="s">sim · med.ai</td><td class="n">não encontrado</td><td class="p">parcial · transcrição</td><td class="s">sim · SARA</td><td class="p">parcial · regras, só dengue</td></tr>
+    <tr><td>IA cita a fonte da resposta</td><td class="s">tem</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td></tr>
+    <tr><td>Ferramentas, escores e protocolos</td><td class="s">tem · 232 revistas pelo RT</td><td class="p">parcial</td><td class="p">parcial</td><td class="s">sim</td><td class="p">parcial</td><td class="s">sim</td></tr>
+    <tr><td>Interações medicamentosas</td><td class="s">tem · interações críticas</td><td class="s">sim</td><td class="s">sim</td><td class="p">parcial</td><td class="s">sim</td><td class="n">não encontrado</td></tr>
+    <tr><td>Medicamentos de alta vigilância</td><td class="s">tem</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td></tr>
+    <tr class="grupo"><td colspan="7">Segurança e LGPD</td></tr>
+    <tr><td>Segundo fator (MFA)</td><td class="s">tem · obrigatório</td><td class="n">não encontrado</td><td class="s">sim</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="z">n/p</td></tr>
+    <tr><td>Trilha de auditoria</td><td class="s">tem · cadeia de hash</td><td class="p">parcial</td><td class="p">parcial</td><td class="s">sim</td><td class="p">parcial</td><td class="z">n/p</td></tr>
+    <tr><td>Nuvem no Brasil (local declarado)</td><td class="s">tem · São Paulo</td><td class="p">parcial</td><td class="p">parcial</td><td class="p">parcial</td><td class="p">parcial</td><td class="z">n/p</td></tr>
+    <tr><td>Funcionamento sem conexão <span class="novo">· novo</span></td><td class="s">tem · registros essenciais</td><td class="p">parcial · só app ACS</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="p">parcial · servidor espelho</td><td class="p">parcial · apps</td></tr>
+    <tr><td>Certificação SBIS/CFM</td><td class="x">não tem</td><td class="s">sim · NGS2 até 10/12/2026*</td><td class="s">sim · NGS2 até 20/05/2028</td><td class="n">não consta na lista</td><td class="n">não consta na lista</td><td class="n">não consta na lista</td></tr>
+    <tr class="grupo"><td colspan="7">SUS, rede, faturamento e integrações</td></tr>
+    <tr><td>Regulação de vagas</td><td class="s">tem · Central, prazo, mapa de vagas</td><td class="s">sim · leitos da rede</td><td class="p">parcial</td><td class="p">parcial</td><td class="p">parcial</td><td class="p">parcial</td></tr>
+    <tr><td>Atenção básica (UBS)</td><td class="s">tem · Hiperdia, pré-natal, puericultura</td><td class="p">parcial</td><td class="p">parcial</td><td class="p">parcial</td><td class="p">parcial</td><td class="s">sim</td></tr>
+    <tr><td>Faturamento SUS (AIH/BPA/APAC)</td><td class="s">tem · contas e glosas</td><td class="p">parcial · 2017</td><td class="p">parcial</td><td class="s">sim</td><td class="s">sim</td><td class="p">parcial · BPA, 2014</td></tr>
+    <tr><td>Faturamento de convênios (TISS)</td><td class="x">não tem · adiado</td><td class="s">sim</td><td class="n">não encontrado</td><td class="s">sim</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr><td>Integração RNDS</td><td class="c">em construção · espera credencial</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="n">não encontrado</td><td class="z">n/p</td></tr>
+    <tr><td>Assinatura digital ICP-Brasil</td><td class="c">em construção</td><td class="p">parcial</td><td class="s">sim</td><td class="p">parcial</td><td class="s">sim</td><td class="z">n/p</td></tr>
+    <tr><td>Laboratório e PACS (HL7/FHIR)</td><td class="x">não tem</td><td class="p">parcial</td><td class="s">sim (HL7)</td><td class="p">parcial</td><td class="p">parcial</td><td class="z">n/p</td></tr>
+  </table>
+  <div class="leg">
+    <span><span class="k s">tem / sim</span>documentado</span>
+    <span><span class="k p">parcial</span>evidência indireta, antiga ou incompleta</span>
+    <span><span class="k n">não encontrado</span>sem prova pública — não quer dizer que não tenha</span>
+    <span><span class="k c">em construção</span>no plano, sem data</span>
+    <span><span class="k x">não tem</span>o Chefe Coruja não faz hoje</span>
+    <span><span class="k z">n/p</span>não pesquisado (fora do escopo de 15/11)</span>
+  </div>
+  <p class="leg">* A lista da SBIS mostra o certificado da MV de 23/10/2024 com a validade estendida até 10/12/2026, sem certificado novo; outros certificados antigos tiveram a mesma extensão.</p>
+</section>
+
+<section class="pag">
+  <header>
+    <img src="coruja.webp" alt="">
+    <div><h1>Como ler a matriz</h1><p class="sub">Posicionamento para a equipe: o que dizer, o que não prometer, o que confirmar</p></div>
+    <span class="interno">USO INTERNO</span>
+  </header>
+  <div class="cols">
+    <div>
+      <h2>Onde o Chefe Coruja ganha</h2>
+      <ul>
+        <li><b>Gestão da porta em tempo real:</b> espera por etapa e por cor contra o alvo, evasão com motivo e CSV. Quase não aparece publicamente nos outros.</li>
+        <li><b>IA que cita a fonte:</b> nenhum dos cinco documenta resposta clínica com a fonte, nem a diretriz nova ao lado do manual.</li>
+        <li><b>Alta vigilância:</b> nenhum dos cinco documenta.</li>
+        <li><b>Rede num sistema só:</b> porta, leitos, regulação, UBS e faturamento SUS, em nuvem, sem servidor local.</li>
+        <li><b>Segurança declarada:</b> segundo fator obrigatório (só o Tasy cita MFA), auditoria com cadeia de hash, dados em São Paulo (nenhum dos quatro privados declara o local).</li>
+        <li><b>Decisão clínica do profissional:</b> a cor é da enfermagem; o SisHOSP mostra a cor calculada.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Onde o Chefe Coruja perde</h2>
+      <ul>
+        <li><b>Certificação SBIS/CFM:</b> o Tasy tem NGS2 novo, até 2028; a MV, até 10/12/2026. É o principal ponto fraco em edital ou cliente exigente.</li>
+        <li><b>Convênios (TISS):</b> MV, TOTVS e SisHOSP cobrem; aqui está adiado até haver cliente de convênio.</li>
+        <li><b>Assinatura ICP-Brasil e laboratório/PACS:</b> os grandes têm algo; aqui está em construção ou não existe.</li>
+        <li><b>Atenção básica:</b> o e-SUS APS é gratuito e oficial na UBS. O argumento é a rede integrada, não a UBS sozinha.</li>
+        <li><b>Regulação de leitos da rede:</b> a MV documenta; é comparação direta em secretaria.</li>
+        <li><b>Base instalada:</b> os outros têm centenas de clientes; o Chefe Coruja está em implantação.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Cuidados</h2>
+      <ul>
+        <li><b>Não usar marcas em material para cliente</b> (decisão do RT; propaganda comparativa exige prova).</li>
+        <li><b>"Não encontrado" não é "não tem":</b> confirmar em demonstração ou edital antes de qualquer afirmação.</li>
+        <li><b>RNDS:</b> nenhum dos quatro privados tem prova pública de integração, e o Chefe Coruja ainda não envia. Não vender como diferencial.</li>
+        <li><b>Tasy agora é Bionexo Tasy</b> (aquisição concluída em 2026, segundo a imprensa): oferta e preço podem mudar.</li>
+        <li><b>IA dos outros:</b> MV (med.ai) e SisHOSP (SARA) têm IA clínica documentada; a diferença está na fonte citada, não em "ter IA".</li>
+        <li><b>Preço:</b> nenhum dos privados publica; o e-SUS APS é gratuito.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="caixa">
+    <b>Mercado de cada um (fontes públicas):</b>
+    MV — médio e grande porte, redes, operadoras e gestão pública municipal e estadual.
+    Tasy — de clínicas a grandes hospitais, forte em privados acreditados; agora na Bionexo.
+    TOTVS RM Saúde — hospitais e clínicas de pequeno e médio porte.
+    SisHOSP CORE — hospitais pequenos e médios, filantrópicos e SUS; o mais próximo em porte.
+    e-SUS APS — sistema oficial e gratuito da atenção primária, do Ministério da Saúde.
+  </div>
+  <p class="leg">Detalhe de cada célula (evidência e link): <code>docs/comercial/matriz/pesquisa-concorrentes.md</code>. Coluna Chefe Coruja: o que está em produção em 15/11/2026.</p>
+</section>
+
+<section class="pag">
+  <header>
+    <img src="coruja.webp" alt="">
+    <div><h1>Principais fontes</h1><p class="sub">Lista completa, célula a célula, no arquivo da pesquisa. Acesso em 15/11/2026 para as linhas novas e atualizadas.</p></div>
+    <span class="interno">USO INTERNO</span>
+  </header>
+  <table class="fontes">
+    <tr><td>SBIS</td><td><a>https://sbis.org.br/certificacoes/certificacao-software/sistemas-certificados/</a></td></tr>
+    <tr><td>MV</td><td><a>https://mv.com.br/solucao/soul-mv-saude-publica</a> · <a>https://mv.com.br/produto/gestao-estadual</a> · <a>https://mv.com.br/produto/gestao-municipal</a> · <a>https://mv.com.br/solucao/medai</a> · <a>https://mv.com.br/produto/pep</a> · <a>https://mv.com.br/produto/faturamento</a></td></tr>
+    <tr><td>Tasy</td><td><a>https://bionexo.com/tasy/</a> · <a>https://bionexo.com/tasy-hospitais/</a> · <a>https://bionexo.com/tasy-atencao-primaria/</a> · <a>https://bionexo.com/lia/</a></td></tr>
+    <tr><td>TOTVS RM</td><td><a>https://produtos.totvs.com/ficha-tecnica/tudo-sobre-o-totvs-saude-hospitais-e-clinicas/</a> · <a>https://www.totvs.com/saude/hospitais-e-clinicas-linha-rm/</a> · <a>https://produtos.totvs.com/hospitais-e-clinicas/totvs-saude-hospitais-e-clinicas-12-1-2606/</a></td></tr>
+    <tr><td>SisHOSP</td><td><a>https://sishosp.com.br/hospitais/</a> · <a>https://sishosp.com.br/</a></td></tr>
+    <tr><td>e-SUS APS</td><td><a>https://sisaps.saude.gov.br/esus/</a> · Nota Técnica Conjunta nº 280/2025 (suporte à decisão clínica da dengue), em gov.br/saude</td></tr>
+  </table>
+</section>
+
+</body>
+</html>

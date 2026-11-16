@@ -14,14 +14,13 @@ landing/
 │   ├── not-found.tsx       # Página 404 personalizada
 │   ├── robots.ts           # robots.txt (permite indexação + aponta sitemap)
 │   ├── sitemap.ts          # sitemap.xml
-│   ├── api/contato/route.ts# API de contato (modo demo)
 │   ├── funcionalidades/    # /funcionalidades
 │   ├── precos/             # /precos (evento view_pricing)
-│   ├── contato/            # /contato (formulário + honeypot)
+│   ├── contato/            # /contato (formulário + honeypot + Turnstile)
 │   ├── privacidade/        # /privacidade (LGPD)
 │   └── obrigado/           # /obrigado (conversão)
 ├── components/             # Header, Footer, StickyCta, Breadcrumbs, CtaButton, Hero,
-│                           # CaseStudy, Testimonials, Team, FAQ, Location, ContactForm
+│                           # CaseStudy, Testimonials, Team, FAQ, Location, ContactForm, Turnstile
 ├── lib/
 │   ├── site.ts             # Constantes do negócio (endereço, telefone, geo)
 │   └── analytics.ts        # Camada GA4 (track, trackWhatsapp, trackDemo, trackViewPricing)
@@ -40,7 +39,8 @@ landing/
    - `NEXT_PUBLIC_SITE_URL` — domínio de produção (ex.: `https://chefecoruja.com.br`).
    - `NEXT_PUBLIC_GA_ID` — **Measurement ID do GA4** (ex.: `G-XXXXXXX`). Sem ele, o GA4 não carrega e os eventos são no-ops.
    - `NEXT_PUBLIC_WHATSAPP` — número comercial com DDI+DDD (ex.: `5562999999999`).
-   - `NEXT_PUBLIC_FORM_ENDPOINT` — endpoint do formulário (Formspree/Resend). Vazio = usa a API local `/api/contato` (modo demo).
+   - `NEXT_PUBLIC_SUPABASE_URL` — URL do projeto Supabase. O formulário de contato posta em `<URL>/functions/v1/pedir-demonstracao`, a mesma função do formulário do app (Turnstile, campo-isca, limite de 3 por hora, e-mail pela Resend).
+   - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` — site key pública do Turnstile (Cloudflare); o hostname do site tem de estar na lista de domínios do widget. Sem esta variável ou sem a anterior, o formulário não aparece e a página mostra o e-mail de contato.
 
 3. **Rodar local**
    ```bash
@@ -86,7 +86,6 @@ landing/
 - **Depoimentos** — 3 depoimentos reais com nome/cargo/unidade + autorização. (`Testimonials.tsx`)
 - **Preços** — definir tabela real (mensal/anual, por unidade ou leito). (`app/precos/page.tsx`)
 - **Empresa** — endereço, telefone, e-mail, CEP reais. (`lib/site.ts`)
-- **Formulário** — integrar serviço de e-mail/CRM e persistência. (`app/api/contato/route.ts`)
 - **Privacidade** — revisão jurídica, nome do DPO/Encarregado e prazo de retenção final. (`app/privacidade/page.tsx`)
 - **GA4** — confirmar IDs e funis de conversão. (`lib/analytics.ts`)
 - **OG images** — gerar 1200x630 por página (`/og-*.png`).
@@ -95,4 +94,4 @@ landing/
 
 - Lighthouse ≥ 90 em Performance/SEO/Accessibility é o alvo; imagens com `next/image` e lazy loading.
 - Sem dependências de UI pesadas — Tailwind puro.
-- O formulário usa honeypot anti-spam + validação client-side.
+- O formulário usa honeypot anti-spam + validação client-side, e envia à função `pedir-demonstracao` do Supabase, que confere o Turnstile e limita a 3 pedidos por hora por endereço de rede (S10, H3). A rota própria `/api/contato` saiu.

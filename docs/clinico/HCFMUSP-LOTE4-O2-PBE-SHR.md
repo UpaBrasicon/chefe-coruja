@@ -52,3 +52,10 @@ Cinco respostas passam a abrir pela diretriz. A de 48 h já abria. A da lactulos
 - 3 arquivos ingeridos e API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.242, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000019` foi aplicada antes do merge. O #692 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 3 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as sete respostas saíram como na homologação; midodrina e octreotídeo deixaram de dar "não encontrei".
+- O Vercel publicou o master.

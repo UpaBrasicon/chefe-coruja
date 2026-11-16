@@ -51,3 +51,9 @@ As seis respostas passam a abrir pela diretriz.
 - `adulto-anticoagulacao-plena.md` e `nota-hcfmusp-cap25-tvp.md` ingeridos. API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.236, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT para os capítulos restantes)
+
+- A migration `20270414000013` foi aplicada antes do merge. O #680 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis abrem pela ASH 2020.

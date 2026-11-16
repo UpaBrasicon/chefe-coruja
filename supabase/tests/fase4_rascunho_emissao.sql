@@ -116,7 +116,7 @@ SELECT pg_temp.como('10000000-0000-4000-8000-000000000001');   -- gestora
 SELECT pg_temp.falha(format('SELECT public.emitir_documento(%L, %L, %L, NULL, %L, %L)', pg_temp.u('pac'), 'receita', '{"itens":["x"]}',
   pg_temp.u('r1'), 'correção feita por outra pessoa'), 'Só o autor corrige', 'retificar documento emitido é só do autor');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-INSERT INTO t SELECT 'ret', public.emitir_documento(pg_temp.u('pac'), 'receita', '{"itens":["a","b","d"]}', NULL, pg_temp.u('r1'),
+INSERT INTO t SELECT 'ret', public.emitir_documento(pg_temp.u('pac'), 'receita', '{"receita":{"itens":[{"medicamento":"a","posologia":"x"},{"medicamento":"b","posologia":"x"},{"medicamento":"d","posologia":"x"}]},"itens":["a","b","d"]}', NULL, pg_temp.u('r1'),
   'item c trocado por d após reavaliação')::text;
 RESET ROLE;
 DO $$ BEGIN
@@ -147,7 +147,7 @@ BEGIN
   END IF;
   RAISE NOTICE 'OK  o autor imprime o próprio rascunho, sem número (a folha sai marcada RASCUNHO)';
   IF f ->> 'numero' IS NULL OR (f ->> 'versao')::int <> 2 OR f ->> 'codigo' !~ '^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$'
-     OR f ->> 'protocolo' !~ '^IMP-' OR f ->> 'autor' <> 'Plantonista de Teste' OR f ->> 'conteudo' <> '{"itens":["a","b","d"]}' THEN
+     OR f ->> 'protocolo' !~ '^IMP-' OR f ->> 'autor' <> 'Plantonista de Teste' OR f ->> 'conteudo' <> '{"receita":{"itens":[{"medicamento":"a","posologia":"x"},{"medicamento":"b","posologia":"x"},{"medicamento":"d","posologia":"x"}]},"itens":["a","b","d"]}' THEN
     RAISE EXCEPTION 'FALHOU: folha_documento (%)', f;
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.log_acesso_prontuario WHERE documento_id = (pg_temp.v('ret') ->> 'id')::uuid AND tipo_acesso = 'impressao') THEN

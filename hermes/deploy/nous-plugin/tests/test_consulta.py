@@ -342,7 +342,7 @@ class TestEscopos(unittest.TestCase):
         )
         r = consultar(rpc, "operacional", "notificacoes", {"dias": 30})
         self.assertEqual(r["dados"], [
-            {"tipo": "sentinela", "mensagem": "[PESSOA_1] e [PESSOA_2] sem check-in", "data": "2026-10-01"},
+            {"tipo": "sentinela", "mensagem": "[COLEGA_1] e [COLEGA_2] sem check-in", "data": "2026-10-01"},  # S8 (D3)
             {"tipo": "x", "mensagem": "", "data": "2026-10-01"},
         ])
         self.assertEqual(rpc.nomes(), ["hermes_identidade_por_canal", "hermes_minhas_notificacoes", "hermes_unidade_nomes"])

@@ -23,7 +23,8 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { dirname, join, relative } from 'node:path'
+import { caminhoConfinado, planejarAnexos } from './caminho.mjs'
 
 const args = process.argv.slice(2)
 const origem = args.includes('--linked') ? '--linked' : args.includes('--local') ? '--local' : null
@@ -37,13 +38,19 @@ if (!origem || !destinoBase) {
 const agora = new Date()
 const carimbo = agora.toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(/[: ]/g, '').replace(/^(\d{4}-\d{2}-\d{2})(\d{4}).*/, '$1-$2')
 const pasta = join(destinoBase, `guarda-${carimbo}`)
-mkdirSync(pasta, { recursive: true })
 
 const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+// No Windows o npx.cmd só roda via shell (cmd.exe). O único argumento variável
+// é o caminho do arquivo: vai sempre entre aspas, e o que o cmd ainda
+// interpretaria dentro das aspas (", %, !, quebra de linha) é recusado.
+if (process.platform === 'win32' && /["%!\r\n]/.test(pasta)) {
+  console.error('o caminho de --destino não pode ter ", %, ! nem quebra de linha (no Windows o npx roda pelo cmd.exe)')
+  process.exit(1)
+}
+mkdirSync(pasta, { recursive: true })
 function dump(arquivo, extras) {
   console.log(`→ ${arquivo}`)
-  // no Windows o npx roda via shell: caminho com espaço precisa de aspas
-  const q = (x) => (process.platform === 'win32' && /\s/.test(x) ? `"${x}"` : x)
+  const q = (x) => (process.platform === 'win32' ? `"${x}"` : x)
   execFileSync(npx, ['supabase', 'db', 'dump', origem, '-f', q(join(pasta, arquivo)), ...extras], {
     stdio: ['ignore', 'inherit', 'inherit'], shell: process.platform === 'win32',
   })
@@ -58,28 +65,57 @@ const chave = process.env.SUPABASE_SERVICE_ROLE_KEY
 let storage = 'não exportado: defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY para incluir os anexos'
 if (url && chave) {
   const h = { Authorization: `Bearer ${chave}`, apikey: chave }
-  const buckets = await (await fetch(`${url}/storage/v1/bucket`, { headers: h })).json()
-  let total = 0
+  // erro HTTP aborta a exportação: nunca grava a página de erro como se fosse o anexo
+  const pedir = async (u, init, oque) => {
+    const r = await fetch(u, { ...init, headers: { ...h, ...(init?.headers ?? {}) } })
+    if (!r.ok) throw new Error(`${oque}: HTTP ${r.status}`)
+    return r
+  }
+  const seg = (s) => s.split('/').map(encodeURIComponent).join('/')
+  const buckets = await (await pedir(`${url}/storage/v1/bucket`, {}, 'lista de buckets')).json()
+
+  // 1. lista tudo (paginado: a API devolve no máximo `limit` itens por vez)
+  const LIMITE = 1000
+  const lista = []
   for (const b of buckets) {
     const fila = ['']
     while (fila.length) {
       const prefixo = fila.shift()
-      const itens = await (await fetch(`${url}/storage/v1/object/list/${b.id}`, {
-        method: 'POST', headers: { ...h, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prefix: prefixo, limit: 1000, offset: 0 }),
-      })).json()
-      for (const it of itens) {
-        const caminho = prefixo ? `${prefixo}/${it.name}` : it.name
-        if (!it.id) { fila.push(caminho); continue }  // pasta
-        const r = await fetch(`${url}/storage/v1/object/${b.id}/${caminho}`, { headers: h })
-        const alvo = join(pasta, 'storage', b.id, ...caminho.split('/'))
-        mkdirSync(join(alvo, '..'), { recursive: true })
-        writeFileSync(alvo, Buffer.from(await r.arrayBuffer()))
-        total++
+      // até a página voltar vazia (não confia em "página menor = última")
+      let anterior = null
+      for (let offset = 0; ; ) {
+        const itens = await (await pedir(`${url}/storage/v1/object/list/${encodeURIComponent(b.id)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prefix: prefixo, limit: LIMITE, offset }),
+        }, `lista do bucket ${b.id}`)).json()
+        if (!Array.isArray(itens)) throw new Error(`lista do bucket ${b.id}: resposta inesperada`)
+        if (itens.length === 0) break
+        const marca = JSON.stringify(itens[0])
+        if (marca === anterior) throw new Error(`lista do bucket ${b.id}: a paginação repetiu a página`)
+        anterior = marca
+        offset += itens.length
+        for (const it of itens) {
+          const caminho = prefixo ? `${prefixo}/${it.name}` : it.name
+          if (!it.id) fila.push(caminho)   // pasta
+          else lista.push({ bucket: b.id, nome: caminho })
+        }
       }
     }
   }
-  storage = `${total} arquivo(s) de ${buckets.length} bucket(s)`
+
+  // 2. nome inválido ou colisão arquivo×pasta: pula com aviso (sem o nome)
+  const { aceitos, pulados } = planejarAnexos(lista)
+  for (const p of pulados) console.warn(`! anexo pulado no bucket ${p.bucket}: ${p.motivo} (${p.resumo})`)
+
+  // 3. baixa, cada um confinado em <guarda>/storage/
+  for (const a of aceitos) {
+    const r = await pedir(`${url}/storage/v1/object/${encodeURIComponent(a.bucket)}/${seg(a.nome)}`, {}, `anexo do bucket ${a.bucket}`)
+    const alvo = caminhoConfinado(join(pasta, 'storage'), `${a.bucket}/${a.nome}`)
+    mkdirSync(dirname(alvo), { recursive: true })
+    writeFileSync(alvo, Buffer.from(await r.arrayBuffer()))
+  }
+  storage = `${aceitos.length} arquivo(s) de ${buckets.length} bucket(s)`
+    + (pulados.length ? `; ${pulados.length} PULADO(S) por nome inválido ou colisão` : '')
 }
 
 // Manifesto com sha256 de cada arquivo.

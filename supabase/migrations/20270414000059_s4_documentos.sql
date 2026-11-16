@@ -45,11 +45,6 @@ BEGIN
   IF private.tipo_documento_fluxo_proprio(p_tipo) THEN
     RAISE EXCEPTION 'Este documento tem tela própria: emita por ela.';
   END IF;
-  -- S4 (D3): as mesmas faltas do caminho do rascunho, para todo tipo
-  v_faltas := private.faltas_documento(p_tipo, p_conteudo, p_paciente, v_perfil);
-  IF cardinality(v_faltas) > 0 THEN
-    RAISE EXCEPTION 'Falta para emitir: %.', array_to_string(v_faltas, '; ');
-  END IF;
   -- duplo clique / reimpressão: mesmo conteúdo do mesmo autor em 2 min → o mesmo documento
   SELECT * INTO r FROM public.documentos_clinicos
    WHERE paciente_id = p_paciente AND tipo_documento = p_tipo AND autor_id = v_perfil AND estado = 'ativo'
@@ -59,6 +54,13 @@ BEGIN
   IF NOT FOUND THEN
     r := private.gravar_documento_episodio(NULL, p_paciente, p_tipo, p_conteudo, p_episodio, p_retifica, p_motivo,
                                            v_perfil, now(), false, NULL);
+    -- S4 (D3): as mesmas faltas do caminho do rascunho, para todo tipo. Confere
+    -- depois da gravação, para os erros de permissão e de estado (retificação)
+    -- virem antes; o erro aqui desfaz a gravação inteira.
+    v_faltas := private.faltas_documento(p_tipo, p_conteudo, p_paciente, v_perfil);
+    IF cardinality(v_faltas) > 0 THEN
+      RAISE EXCEPTION 'Falta para emitir: %.', array_to_string(v_faltas, '; ');
+    END IF;
     PERFORM private.registrar_auditoria(CASE WHEN p_retifica IS NULL THEN 'emitir_documento' ELSE 'retificar_documento' END,
       'documentos_clinicos', r.id, r.unidade_id, jsonb_build_object('tipo', p_tipo));
   END IF;

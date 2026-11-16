@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 
 import { trackDemo } from '@/lib/analytics'
 import { CtaButton } from '@/components/CtaButton'
@@ -12,8 +11,8 @@ import { CtaButton } from '@/components/CtaButton'
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-primary/5 to-white">
-      <div className="container-site grid items-center gap-10 py-16 md:grid-cols-2 md:py-24">
-        <div>
+      <div className="container-site py-16 md:py-24">
+        <div className="min-w-0 max-w-2xl">
           <p className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
             Segue as normas do CFM e a LGPD
           </p>
@@ -35,17 +34,8 @@ export function Hero() {
           </p>
         </div>
 
-        <div className="relative mx-auto w-full max-w-md">
-          {/* TODO: imagem real do produto (dashboard) — 1200x800, formato webp */}
-          <Image
-            src="/hero-placeholder.svg"
-            alt="Painel do Chefe Coruja mostrando a gestão de leitos e pacientes da unidade"
-            width={1200}
-            height={800}
-            priority
-            className="rounded-2xl border border-slate-200 shadow-xl"
-          />
-        </div>
+        {/* A captura real do produto (porta, leitos, escala) entra no redesenho da landing,
+            pedido 8 do RT, P2. O desenho de painel que havia aqui saiu: não carregava e não era o produto. */}
       </div>
     </section>
   )

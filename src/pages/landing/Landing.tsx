@@ -119,6 +119,9 @@ const PAPEIS: [string, string][] = [
   ['Administrador', 'Todas as unidades da organização, só em agregado: nenhuma tela mostra identidade de paciente.'],
 ]
 
+/** Preços, Contato e Privacidade ficam na landing/, no subdomínio (pedido 8, J5; K1 do RT, 12/11/2026). */
+const SITE_PLANOS = 'https://planos.chefecoruja.com.br'
+
 /** Id da onda: a tela de login (Login.tsx) a retira quando o próprio véu já cobre a tela. */
 const ID_ONDA = 'cc-onda-landing'
 
@@ -217,6 +220,7 @@ export default function Landing() {
             <a href="#registro">Como funciona</a>
             <a href="#seguranca">Segurança</a>
             <a href="#papeis">Papéis</a>
+            <a href={`${SITE_PLANOS}/precos`}>Preços</a>
           </nav>
           <div className="topo-acoes">
             <AgendarDemonstracao className="topo-link topo-demo" />
@@ -366,6 +370,11 @@ export default function Landing() {
         <div className="env">
           <span>© {new Date().getFullYear()} Chefe Coruja</span>
           <span>Prontuário eletrônico centrado no plantão</span>
+          <nav className="rodape-links" aria-label="Site">
+            <a href={`${SITE_PLANOS}/precos`}>Preços</a>
+            <a href={`${SITE_PLANOS}/contato`}>Contato</a>
+            <a href={`${SITE_PLANOS}/privacidade`}>Privacidade</a>
+          </nav>
         </div>
       </footer>
     </div>

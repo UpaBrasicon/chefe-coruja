@@ -1,5 +1,16 @@
 -- Conferência das telas de 08/11/2026 (noite): pedido de leito nº 197 do paciente do 108, autorizado para o
 -- Hospital F5, para conferir a lista de leitos no aceite (item 13: sem os leitos da porta). Rodar depois do 108.
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 SELECT e2e.bpasso('ob8_pac', 'OB8.07.solicitar', 'f5_med_upa', '/regulacao (NovaSolicitacao)', 'Pedido de leito clínico (para conferir a lista de leitos no aceite)',
   format($q$SELECT (public.regulacao_solicitar(%L::uuid, %L::uuid, %L::jsonb) ->> 'id')$q$, 'f5100000-0000-4000-8000-000000000002', e2e.u('ob8_pac'),
     jsonb_build_object('tipo', 'leito', 'tipo_leito', 'clinico', 'procedimento', '0303060190', 'cid', 'R10.4',

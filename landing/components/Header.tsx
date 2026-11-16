@@ -5,11 +5,11 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 import { trackDemo, trackWhatsapp } from '@/lib/analytics'
-import { BUSINESS } from '@/lib/site'
+import { APP_URL, BUSINESS } from '@/lib/site'
 
 const NAV = [
-  { href: '/', label: 'Início' },
-  { href: '/funcionalidades', label: 'Funcionalidades' },
+  { href: APP_URL, label: 'Início' },
+  { href: `${APP_URL}/#registro`, label: 'Funcionalidades' },
   { href: '/precos', label: 'Preços' },
   { href: '/contato', label: 'Contato' },
 ]
@@ -21,13 +21,20 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="container-site flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2" aria-label="Chefe Coruja — página inicial">
-          {/* TODO: substituir por logotipo real (SVG/png transparente, 32x32) */}
+        <Link href={APP_URL} className="flex items-center gap-2" aria-label="Chefe Coruja — página inicial">
+          {/* a mesma marca do app (public/favicon.svg) */}
           <span
             className="flex size-9 items-center justify-center rounded-lg bg-primary text-white"
             aria-hidden="true"
           >
-            🦉
+            <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M16 7h.01" />
+            <path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20" />
+            <path d="m20 7 2 .5-2 .5" />
+            <path d="M10 18v3" />
+            <path d="M14 17.75V21" />
+            <path d="M7 18a6 6 0 0 0 3.84-10.61" />
+          </svg>
           </span>
           <span className="text-lg font-bold tracking-tight text-slate-900">Chefe Coruja</span>
         </Link>

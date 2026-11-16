@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useDecidirVersao, useFilaAprovacao, useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
+import { chaveVersao, ordemDeAprovacao, resumoDoLote } from '@/lib/aprovacaoLote'
 
 const PUBLICO: Record<string, string> = { adulto: 'Adulto', pediatrico: 'Pediatria', ambos: 'Adulto e pediatria' }
 
@@ -61,6 +62,31 @@ function FilaRT() {
   const decidir = useDecidirVersao()
   const [notas, setNotas] = useState<Record<string, string>>({})
   const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null)
+  // aprovar em lote (pedido do RT, 11/11/2026): uma chamada por versão, na ordem da mais antiga para a mais nova
+  const [marcadas, setMarcadas] = useState<Set<string>>(new Set())
+  const [confirmando, setConfirmando] = useState(false)
+  const [progresso, setProgresso] = useState<{ feito: number; total: number } | null>(null)
+  const naFila = (fila ?? []).map(chaveVersao)
+  const selecionadas = naFila.filter((c) => marcadas.has(c))
+  const alternar = (chave: string) => setMarcadas((s) => { const n = new Set(s); if (n.has(chave)) n.delete(chave); else n.add(chave); return n })
+
+  async function aprovarLote() {
+    const itens = ordemDeAprovacao((fila ?? []).filter((v) => marcadas.has(chaveVersao(v))))
+    const falhas: { chave: string; erro: string }[] = []
+    setConfirmando(false)
+    setProgresso({ feito: 0, total: itens.length })
+    for (const [i, v] of itens.entries()) {
+      try {
+        await decidir.mutateAsync({ ferramenta: v.ferramenta_id, versao: v.versao, aprovar: true })
+      } catch (e) {
+        falhas.push({ chave: chaveVersao(v), erro: e instanceof Error ? e.message : 'erro' })
+      }
+      setProgresso({ feito: i + 1, total: itens.length })
+    }
+    setProgresso(null)
+    setMarcadas(new Set())
+    setAviso({ ok: falhas.length === 0, texto: resumoDoLote(itens.length, falhas) })
+  }
 
   async function decidirItem(ferramenta: string, versao: string, aprovar: boolean) {
     const chave = `${ferramenta}@${versao}`
@@ -80,6 +106,28 @@ function FilaRT() {
         </p>
       )}
       {fila && fila.length === 0 && <p className="text-corpo text-tinta-sussurro">Nada aguardando sua decisão.</p>}
+      {fila && fila.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-superficie p-3">
+          <Button size="sm" variant="outline" disabled={!!progresso}
+            onClick={() => setMarcadas(selecionadas.length === naFila.length ? new Set() : new Set(naFila))}>
+            {selecionadas.length === naFila.length ? 'Desmarcar todas' : `Marcar todas (${naFila.length})`}
+          </Button>
+          {progresso ? (
+            <span role="status" className="text-apoio text-tinta">Aprovando {progresso.feito} de {progresso.total}…</span>
+          ) : confirmando ? (
+            <>
+              <span className="text-apoio text-tinta">Aprovar {selecionadas.length} {selecionadas.length === 1 ? 'versão' : 'versões'} com o seu nome e registro? Cada uma fica registrada; na mesma ferramenta, a mais antiga vai primeiro.</span>
+              <Button size="sm" onClick={() => void aprovarLote()}>Confirmar</Button>
+              <Button size="sm" variant="ghost" onClick={() => setConfirmando(false)}>Voltar</Button>
+            </>
+          ) : (
+            <Button size="sm" disabled={selecionadas.length === 0} onClick={() => setConfirmando(true)}>
+              Aprovar marcadas ({selecionadas.length})
+            </Button>
+          )}
+          <span className="text-rotulo text-tinta-sussurro">Reprovar continua uma por uma, com a correção escrita.</span>
+        </div>
+      )}
       {fila?.map((v) => {
         const chave = `${v.ferramenta_id}@${v.versao}`
         const fontes = (v.fontes ?? []) as unknown as Fonte[]
@@ -88,6 +136,10 @@ function FilaRT() {
           <Card key={chave}>
             <CardHeader>
               <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
+                {fila.length > 1 && (
+                  <input type="checkbox" className="size-4" aria-label={`Marcar ${v.titulo} versão ${v.versao} para aprovar em lote`}
+                    checked={marcadas.has(chave)} onChange={() => alternar(chave)} disabled={!!progresso} />
+                )}
                 {v.titulo}
                 <Badge variant="secondary">versão {v.versao}</Badge>
                 <Badge variant="outline">{PUBLICO[v.publico] ?? v.publico}</Badge>
@@ -111,7 +163,7 @@ function FilaRT() {
               <Textarea placeholder="Correção apontada (obrigatória para reprovar)" value={nota}
                 onChange={(e) => setNotas((n) => ({ ...n, [chave]: e.target.value }))} />
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => decidirItem(v.ferramenta_id, v.versao, true)} disabled={decidir.isPending}>Aprovar</Button>
+                <Button onClick={() => decidirItem(v.ferramenta_id, v.versao, true)} disabled={decidir.isPending || !!progresso}>Aprovar</Button>
                 <Button variant="outline" onClick={() => decidirItem(v.ferramenta_id, v.versao, false)}
                   disabled={decidir.isPending || nota.trim().length < 10}>Reprovar com correção</Button>
               </div>

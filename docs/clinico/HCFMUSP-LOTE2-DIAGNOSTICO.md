@@ -137,3 +137,53 @@ Ficam iguais: oxigênio só com SpO2 < 90% (I, C), opioide de rotina não (III, 
 A primeira rodada não achou a nota com "edema agudo de pulmão". O assunto da nota passou a incluir "edema agudo de pulmão (EAP)" e a busca achou.
 
 **Achado:** durante a ingestão na homologação, uma pergunta à produção deu erro 500 ("Server disconnected" do Qdrant), e a repetição funcionou. As duas coleções usam o mesmo Qdrant, então ingestão pesada na homologação pode afetar a produção.
+
+## M2, demais capítulos: situação em 13/11/2026
+
+Pela decisão M2, quando o texto da diretriz está fechado, a ficha fica como está e o RT é avisado. Mais tarde no mesmo dia, o RT autorizou baixar os PDFs. Com isso, a aorta e a DPOC andaram, cada uma em PR próprio.
+
+| Cap. | Diretriz | Situação |
+|---|---|---|
+| 32, TEP | AHA/ACC 2026 (PMID 41712677) | **Parado.** O texto é pago, não está no PMC, e o download pelo site da editora foi negado pela regra de permissão. O resumo no PubMed não traz recomendações |
+| 18, taquiarritmias | AHA 2025, parte de arritmias | **Parado.** O site da AHA responde 403 e o texto não está no PMC |
+| 20, aorta | ESC 2024 (PMID 39210722) | **Feito no #656.** Lido pelo slideset oficial da ESC, baixado com o ok do RT. Detalhes em `HCFMUSP-LOTE2-M2-AORTA.md` |
+| 3, via aérea | DAS 2025 (PMID 41203471) | **Parado.** É de acesso aberto, mas o download do PDF no site do BJA foi negado pela regra de permissão, e o texto não está no PMC |
+| 31, DPOC | GOLD 2026 | **Feito no #657.** Capítulo 4 lido no PDF do relatório, baixado com o ok do RT. Detalhes em `HCFMUSP-LOTE2-M2-DPOC.md` |
+| 67, hipopotassemia | nenhuma | **Fechado pelo RT em 14/11/2026: fica o manual.** No PubMed não há diretriz de sociedade para a hipopotassemia aguda no adulto, só revisões. A revisão aberta mais usada (Kardalas, Endocr Connect 2018, PMID 29540487) é mais antiga que o manual de 2022. A ficha `adulto-reposicao-potassio` não muda e não ganha nota de atualização |
+
+Não houve tentativa de passar por verificação anti-robô. Para TEP, taquiarritmias e via aérea, o caminho que sobra é ler com o login do RT, pelo Chrome conectado.
+
+**Achado no cap. 32:** a ficha `wells-tep` citava a AHA/ACC 2026 com o DOI errado (`…0001300`; o certo é `…0001415`). Ela também dizia que a diretriz não tem preferência entre Wells, Genebra e PERC, frase que não pôde ser conferida. A correção vai em PR próprio (#655).
+
+## M2 na produção (13/11/2026, com o "ok produção" do RT para os quatro PRs)
+
+| PR | O quê | Migration |
+|---|---|---|
+| #654 | IC aguda pela ESC 2026 e nota do cap. 21 | `20270413000007` |
+| #655 | DOI da AHA/ACC 2026 na ficha do Wells | `20270413000008` |
+| #656 | Síndrome aórtica pela ESC 2024 e nota do cap. 20 | `20270413000009` |
+| #657 | DPOC pelo GOLD 2026 e nota do cap. 31 | `20270413000010` |
+
+As quatro migrations foram aplicadas antes dos merges, e as oito fichas novas estão em `ferramenta_versoes`. Os três PRs com nota mexiam em `NOTAS_HCFMUSP_LOTE2`. O #656 e o #657 receberam o master antes do merge, com as notas somadas, e o CI ficou verde. O lote 2 tem agora oito notas.
+
+Dez arquivos do corpus foram gerados do master e ingeridos na produção, e a API foi reiniciada.
+
+Das 20 perguntas refeitas na produção, 18 abrem pela diretriz nova. Duas trazem outro texto antes, e nenhuma contradiz a diretriz:
+- **alvo de SpO2 na IC aguda:** cita o "> 95%" do manual junto com a indicação da ESC (SpO2 < 90%);
+- **VNI na DPOC:** abre pelo corte de outra ficha.
+
+Na homologação, as duas abriam pela diretriz. A diferença vem da ordem dos trechos na busca.
+
+## M2 concluído (14/11/2026)
+
+Com o Chrome do RT conectado, os três capítulos que faltavam foram lidos no texto integral e foram à produção com o "ok produção" do RT:
+
+| PR | Capítulo | Diretriz | Migration |
+|---|---|---|---|
+| #660 | 32, TEP | AHA/ACC 2026 | `20270414000001` |
+| #661 | 18, taquiarritmias | AHA 2025, Part 9 | `20270414000002` |
+| #662 | 3, via aérea | DAS 2025 | `20270414000003` |
+
+A hipopotassemia (cap. 67) ficou com o manual, por decisão do RT (#659).
+
+O lote 2 tem 11 notas de atualização. Os detalhes de cada capítulo, com antes e depois, estão em `HCFMUSP-LOTE2-M2-*.md`. As versões novas aguardam a aprovação do RT na Revisão Clínica.

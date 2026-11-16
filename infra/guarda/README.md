@@ -63,8 +63,44 @@ VPS (container chefe-coruja-guarda)            Supabase (produção)        AWS 
 2. `node scripts/arquivo/abrir-guarda.mjs <pasta-com-os-ccg> --destino <pasta> --chave-privada <guarda-privada.pem>` (pede a frase).
 3. `banco.dump` restaura com `pg_restore` (roteiro e evidência em `produto/docs/fase0/T8-T9-guarda.md`).
 
+## Endurecimento do S10 (H1 e H2, 16/11/2026)
+
+**O que mudou.**
+
+| Onde | Mudança |
+|---|---|
+| `chefe-coruja-guarda.service` | `--tmpfs /tmp` (2 GB, em memória): a cópia sem cifra não toca o disco do VPS. `--cap-drop ALL` e `--security-opt no-new-privileges`. |
+| `Dockerfile` | Copia também `scripts/arquivo/caminho.mjs`. |
+| `guarda-automatica.mjs` | Senha do banco por `PGPASSWORD` só no processo filho (não aparece no `ps`). Cada anexo vai com nome seguro (`storage/anexo-00001`), e o nome real fica no manifesto cifrado (`anexos`). Nome inválido (`..`, `\`, `:`, controle, absoluto) ou colisão arquivo×pasta é **pulado**: o log mostra o bucket e um resumo (tamanho e sha256 do nome, nunca o nome), e sai um e-mail "Guarda com anexos PULADOS". A guarda não cai. |
+| `cofre.mjs` | Tag GCM fixa em 16 bytes, e arquivo truncado é recusado (CCG1 e CCG2). Todo envio manda `If-None-Match: *`: o cofre recusa gravar por cima de objeto que já existe (HTTP 412, "objeto já existe no cofre"). |
+| `abrir-guarda.mjs` | Todo caminho do índice fica confinado em `--destino`. O que for recusado é pulado e conta como falha (saída 1). Anexo de guarda nova volta ao nome real se o nome passar na checagem; senão, fica com o nome seguro. |
+| `baixar-guarda.mjs` | Baixa a versão **mais antiga** de cada objeto e avisa em destaque se houver mais de uma. Falha se o cofre não devolver o checksum. |
+| `exportar-guarda.mjs` (manual) | Pagina a lista do Storage, aborta em erro HTTP e codifica a URL. Pula nome inválido. No Windows, o caminho vai entre aspas para o `cmd`. |
+
+**Compatibilidade.** O formato `.ccg` não mudou. Guardas antigas, sem a lista `anexos`, abrem como antes. A exceção é um caminho com `:`, `\` ou caractere de controle: ele agora é recusado. No Windows esse caminho já gravaria errado, porque `:` vira fluxo alternativo do NTFS. Até 16/11/2026 o Storage da produção não tinha nenhum arquivo.
+
+**Permissão nova no IAM.** O `baixar-guarda` usa `s3:ListBucketVersions` e `s3:GetObjectVersion`. A chave usada na restauração precisa dessas duas permissões, além de `s3:GetObject`.
+
+**Antes da próxima noite.** No VPS:
+1. `git pull`.
+2. `docker build -f infra/guarda/Dockerfile -t chefe-coruja-guarda .`
+3. `cp infra/guarda/chefe-coruja-guarda.service /etc/systemd/system/ && systemctl daemon-reload`.
+4. `systemctl start chefe-coruja-guarda.service`.
+5. Conferir `journalctl -u chefe-coruja-guarda.service -n 20` e `free -h` (o tmpfs de 2 GB precisa caber na RAM livre, ou no swap).
+
+**Como reverter.**
+- Container: tirar as linhas `--tmpfs`, `--cap-drop` e `--security-opt` do `.service`, copiar de novo para `/etc/systemd/system/` e rodar `systemctl daemon-reload`.
+- Código: `git revert` do PR e `docker build` de novo.
+
+Guardas feitas com o código novo continuam abrindo com o `abrir-guarda` antigo. Os anexos saem com o nome seguro, e o nome real está no `MANIFESTO.json` restaurado.
+
 ## Operação
 
 - Estado: `/var/lib/chefe-coruja-guarda/ultima.json` e `historico.jsonl` (sem dado de paciente, sem credencial).
 - Atualizar o código: `git pull` e `docker build …` de novo.
+- **Limpeza de imagens do VPS.** O cron `/etc/cron.d/docker-image-prune` apaga as imagens sem uso há mais de 24 h. A imagem da guarda só fica em uso enquanto a guarda roda (`--rm`), então ela entrava na limpeza. Foi o que aconteceu: a guarda ficou parada de 07/10 a 16/11/2026, e o vigia, que usa a mesma imagem, também falhava sem mandar alerta.
+  - Desde 16/11/2026 a imagem leva a etiqueta `br.com.chefecoruja.manter` (no `Dockerfile`), e o cron pula imagens com essa etiqueta.
+  - Para instalar o cron: `cp infra/guarda/docker-image-prune.cron /etc/cron.d/docker-image-prune`.
+  - Para conferir: `docker image inspect chefe-coruja-guarda --format '{{json .Config.Labels}}'`.
+  - Se a imagem sumir de novo, o journal mostra `Unable to find image 'chefe-coruja-guarda:latest'`. Para voltar, refaça o `docker build`.
 - Trocar a chave: gerar par novo, trocar a pública no VPS. Guardas antigas continuam abrindo com a privada antiga — **não descarte a privada antiga**.

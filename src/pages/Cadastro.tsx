@@ -603,7 +603,7 @@ export function Cadastro() {
                   <p className="text-apoio text-tinta-apoio">
                     Você vai aceitar este convite como <strong className="text-tinta">{perfil?.email}</strong>.
                   </p>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => void signOut()}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void signOut()}>
                     Não sou eu: sair
                   </Button>
                 </div>

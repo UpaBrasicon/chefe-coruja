@@ -3,6 +3,8 @@
 // rede, para testar no Node (contrato.test.ts). O contrato é
 // docs/api/openapi.yaml; o banco confere chave, escopo e limite em api_v1.
 
+import { iguaisTempoConstante, ipConfiavel } from '../_shared/borda.ts'
+
 export type Recurso = 'unidades' | 'paciente_busca' | 'paciente' | 'atendimentos' | 'atendimento'
   | 'leitos' | 'aih' | 'apac' | 'fechamentos'
   // Fase 5C-4.2: leitura por id do que o webhook avisa (porta public.api_v1_leitura)
@@ -151,10 +153,13 @@ export function chaveDoCabecalho(auth: string | null): string | null {
  * da borda manda, e só quando ele prova que é a borda (X-Coruja-Borda com o
  * segredo compartilhado). O CF-Connecting-IP não serve: o Supabase também
  * está atrás do Cloudflare, que reescreve esse cabeçalho com o IP do Worker.
- * Sem a prova da borda, vale o primeiro IP do X-Forwarded-For.
+ * Sem a prova da borda (chamada direta ao Supabase), vale o IP que o gateway
+ * enxerga: o CF-Connecting-IP ou o ÚLTIMO item do X-Forwarded-For. O primeiro
+ * item é de quem chamou e pode ser inventado (S6, B1). O segredo é comparado em
+ * tempo constante (S6, B2).
  */
 export function ipDeOrigem(cab: (n: string) => string | null, segredoBorda: string | undefined): string | null {
-  if (segredoBorda && cab('x-coruja-borda') === segredoBorda && cab('x-coruja-ip-cliente')) return cab('x-coruja-ip-cliente')
-  const xff = cab('x-forwarded-for')
-  return xff ? xff.split(',')[0].trim() || null : null
+  const daBorda = cab('x-coruja-ip-cliente')
+  if (segredoBorda && daBorda && iguaisTempoConstante(cab('x-coruja-borda') ?? '', segredoBorda)) return daBorda
+  return ipConfiavel(cab)
 }

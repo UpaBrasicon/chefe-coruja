@@ -15,6 +15,17 @@
 -- Rodar antes: 41_checkin_fase5.sql.
 -- ════════════════════════════════════════════════════════════════════════════
 \set ON_ERROR_STOP on
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 
 DELETE FROM e2e.vars WHERE nome LIKE 'rgo\_%';
 SELECT e2e.b_guardar('rgo_inicio', now()::text);

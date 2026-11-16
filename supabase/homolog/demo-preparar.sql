@@ -9,6 +9,17 @@
 --
 -- Não apaga nada. Rodar no SQL Editor da HOMOLOGAÇÃO, trocando o e-mail.
 -- Uso: npm run homolog:copiar -- 10 <email>   (copia já com o e-mail)
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
+
 DO $$
 DECLARE
   v_email   text := 'TROQUE-PELO-SEU-EMAIL@exemplo.com';

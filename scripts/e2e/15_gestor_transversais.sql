@@ -5,6 +5,17 @@
 -- recusa de tratamento, notificações, carga (60+ pacientes, 500 eventos).
 -- ════════════════════════════════════════════════════════════════════════════
 \set ON_ERROR_STOP on
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 
 -- ── 11. painel do gestor × banco ────────────────────────────────────────────
 SELECT e2e.passo('11.panorama', NULL, 'gestor', '/gestao', 'Panorama do gestor carrega', $q$SELECT left(public.panorama_gestor('e1100000-0000-4000-8000-000000000001')::text, 400)$q$, 'ok', 'panorama');

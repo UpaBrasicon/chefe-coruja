@@ -59,3 +59,10 @@ Seis respostas passam a abrir pela diretriz. A pergunta de controle ficou igual.
 - 2 arquivos ingeridos e API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.244, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000021` foi aplicada antes do merge. O #694 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 2 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis respostas abrem pela ESC 2023, e a de controle (Duke possível) ficou igual.
+- O Vercel publicou o master.

@@ -37,3 +37,9 @@ A produção já respondia a maior parte das perguntas pelas próprias fichas. A
 - A migration foi aplicada, e as três notas estão aguardando aprovação.
 - As notas foram ingeridas e a API foi reiniciada.
 - Os testes da nota passam, e o typecheck está limpo.
+
+## Produção do #722, 14/11/2026
+
+- A migration `20270414000041` foi aplicada antes do merge. O #722 foi mesclado com o CI verde.
+- Foram ingeridos 3 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As sete respostas saíram como na homologação.

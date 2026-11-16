@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { trackDemo } from '@/lib/analytics'
+import { APP_URL, SITE_URL } from '@/lib/site'
 
 type Crumb = { name: string; href: string }
 
@@ -13,7 +14,7 @@ type Crumb = { name: string; href: string }
  */
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   const pathname = usePathname()
-  const crumbs = [{ name: 'Início', href: '/' }, ...items]
+  const crumbs = [{ name: 'Início', href: APP_URL }, ...items]
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -22,7 +23,7 @@ export function Breadcrumbs({ items }: { items: Crumb[] }) {
       '@type': 'ListItem',
       position: i + 1,
       name: c.name,
-      item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://chefecoruja.com.br'}${c.href}`,
+      item: c.href.startsWith('http') ? c.href : `${SITE_URL}${c.href}`,
     })),
   }
 

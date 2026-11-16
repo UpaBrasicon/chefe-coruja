@@ -64,3 +64,9 @@ As seis respostas passam a abrir pela diretriz. A pergunta da crise adrenal cont
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000016` foi aplicada antes do merge. O #688 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 6 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção. As seis abrem pelo consenso, e a da crise adrenal continua certa.

@@ -40,3 +40,9 @@ As seis respostas abrem pela diretriz. Três mudaram; as outras três já abriam
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000014` foi aplicada antes do merge. O #684 foi mesclado com o CI verde.
+- A nota foi gerada do master e ingerida. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis abrem pela diretriz, como na homologação.

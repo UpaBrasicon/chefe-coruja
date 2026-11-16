@@ -15,10 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { createClient } from '@supabase/supabase-js'
 import { montarBundleRegulacao, type DadosMira } from '../../src/interop/fhir/index.ts'
+import { exigirAlvoSeguro } from '../ambiente/alvo-seguro.mjs'
 
 const url = process.env.SUPABASE_URL
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY
 if (!url || !key) throw new Error('SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY obrigatórias')
+// S10, H4: chave de serviço na produção só com --confirmo-producao
+exigirAlvoSeguro([url], { nome: 'interop/processar-outbox' })
 
 const client = createClient(url, key)
 

@@ -17,7 +17,8 @@
 // O segredo do cabeçalho x-motor-segredo é conferido com o do Vault
 // (webhooks_motor_segredo) por public.webhook_motor_autorizado.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
+import { nomePublico, type ResolverDns } from '../_shared/borda.ts'
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { relatarErro } from '../_shared/sentry.ts'
 import { cabecalhos, enderecoSeguro, resumoErro } from './assinatura.ts'
@@ -29,9 +30,34 @@ const AO_MESMO_TEMPO = 5
 const LIMITE_MS = 10_000
 const DURACAO_MS = 40_000
 
+// S6 (B5): resolve o nome antes de enviar. Sem a resolução do Deno no runtime,
+// usa DNS sobre HTTPS. O fetch resolve de novo depois; a conferência fecha o
+// caso comum (nome apontado para rede privada), não a troca de DNS no meio.
+const resolverDeno: ResolverDns = (nome, tipo) => Deno.resolveDns(nome, tipo) as Promise<string[]>
+const resolverDoh: ResolverDns = async (nome, tipo) => {
+  const r = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(nome)}&type=${tipo}`,
+    { headers: { accept: 'application/dns-json' }, signal: AbortSignal.timeout(5000) })
+  if (!r.ok) throw new Error(`DNS ${r.status}`)
+  const j = await r.json() as { Answer?: { type: number; data: string }[] }
+  const codigo = tipo === 'A' ? 1 : 28
+  return (j.Answer ?? []).filter((a) => a.type === codigo).map((a) => a.data)
+}
+
+// Nome que não resolveu pelo Deno (sem registro ou resolução indisponível no
+// runtime) é tentado de novo por DNS sobre HTTPS antes de recusar.
+async function conferirNome(host: string) {
+  if (typeof Deno.resolveDns === 'function') {
+    const r = await nomePublico(host, resolverDeno)
+    if (r.ok || r.motivo !== 'o nome não resolveu') return r
+  }
+  return await nomePublico(host, resolverDoh)
+}
+
 async function enviar(e: Entrega): Promise<{ status: number; erro: string | null }> {
   if (!enderecoSeguro(e.url)) return { status: 0, erro: 'Endereço recusado pelo motor (https com nome público).' }
   try {
+    const nome = await conferirNome(new URL(e.url).hostname)
+    if (!nome.ok) return { status: 0, erro: `Endereço recusado pelo motor: ${nome.motivo}.` }
     const h = await cabecalhos(e.segredo, e.id, Math.floor(Date.now() / 1000), e.corpo)
     const r = await fetch(e.url, { method: 'POST', headers: h, body: e.corpo, redirect: 'manual', signal: AbortSignal.timeout(LIMITE_MS) })
     const resposta = await r.text().catch(() => '')

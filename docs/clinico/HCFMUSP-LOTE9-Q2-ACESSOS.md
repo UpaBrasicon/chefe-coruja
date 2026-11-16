@@ -50,3 +50,9 @@ Na primeira rodada da homologação, a pergunta da noradrenalina continuou "não
 - A migration foi aplicada. A ficha e as notas estão aguardando aprovação.
 - A ficha e as duas notas foram ingeridas, e a API foi reiniciada.
 - Os testes passam, e o typecheck e o lint estão limpos.
+
+## Produção do #737, 15/11/2026
+
+- A migration `20270414000052` foi aplicada antes do merge. O #737 foi mesclado com o CI verde.
+- Foram ingeridos 3 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As seis respostas saíram como na homologação, inclusive a do sangue total, agora como "não há diretriz, só ensaios".

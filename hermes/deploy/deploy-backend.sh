@@ -7,7 +7,9 @@
 #   1. Gera SKILL_API_TOKEN (se ainda não existir no .env.prod)
 #   2. Rebuild + sobe o container hermes-app
 #   3. Verifica /skill/consulta → 401 (token ausente) = rota no ar
-#   4. Imprime o token para colar no ambiente do Nous
+#   4. Grava o token no ambiente do Nous (/home/hermes/.agent.extra.env,
+#      HERMES_SKILL_TOKEN), sem imprimir o valor (S8, D6). Vale no próximo
+#      `sh recriar-agente.sh`.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 cd /home/hermes/deploy
@@ -38,6 +40,14 @@ if [ "$CODE" != "401" ]; then
   exit 1
 fi
 
+# S8 (D6): o token vai direto para o arquivo do Nous; o valor nunca aparece no terminal
+EXTRA=/home/hermes/.agent.extra.env
+( umask 077
+  touch "$EXTRA"
+  grep -v '^HERMES_SKILL_TOKEN=' "$EXTRA" > "$EXTRA.tmp" || true
+  printf 'HERMES_SKILL_TOKEN=%s\n' "$(grep '^SKILL_API_TOKEN=' .env.prod | cut -d= -f2 | tr -d '\r')" >> "$EXTRA.tmp"
+  mv "$EXTRA.tmp" "$EXTRA" )
+chown hermes:hermes "$EXTRA" && chmod 600 "$EXTRA"
 echo "---"
-echo "TOKEN PARA O NOUS (cole no .env do Nous como HERMES_SKILL_TOKEN):"
-grep '^SKILL_API_TOKEN=' .env.prod | cut -d= -f2
+echo "[ok] HERMES_SKILL_TOKEN gravado em $EXTRA (valor não exibido)."
+echo "     Para valer no Nous: sh /home/hermes/deploy/recriar-agente.sh (como hermes)."

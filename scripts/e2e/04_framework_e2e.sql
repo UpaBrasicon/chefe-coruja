@@ -12,6 +12,17 @@
 -- transação quando o script é chamado pelo psql (autocommit).
 -- ════════════════════════════════════════════════════════════════════════════
 \set ON_ERROR_STOP on
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 CREATE SCHEMA IF NOT EXISTS e2e;
 GRANT USAGE ON SCHEMA e2e TO authenticated;
 
@@ -29,6 +40,10 @@ CREATE TABLE IF NOT EXISTS e2e.resultados (
   em          timestamptz NOT NULL DEFAULT clock_timestamp()
 );
 CREATE TABLE IF NOT EXISTS e2e.vars (nome text PRIMARY KEY, valor text);
+-- só leitura, e precisa: e2e.v/e2e.u (e e2e.d_v/d_u, b_* dos cenários) leem
+-- e2e.vars como o papel do passo (authenticated), dentro de e2e.passo. São ids
+-- da rede de teste, sem dado pessoal (S10, H6).
+REVOKE ALL ON e2e.vars FROM authenticated;
 GRANT SELECT ON e2e.vars TO authenticated;
 
 CREATE OR REPLACE FUNCTION e2e.v(p text) RETURNS text LANGUAGE sql STABLE AS $$ SELECT valor FROM e2e.vars WHERE nome = p $$;
@@ -68,9 +83,12 @@ BEGIN
 END $$;
 
 -- primeiro discriminador de uma cor no fluxograma (o protocolo carregado no ambiente)
-CREATE OR REPLACE FUNCTION e2e.disc(p_unidade uuid, p_fluxograma uuid, p_cor text) RETURNS text LANGUAGE sql STABLE SECURITY DEFINER AS $$
+-- SECURITY DEFINER com search_path vazio (S10, H6): tudo qualificado pelo esquema
+CREATE OR REPLACE FUNCTION e2e.disc(p_unidade uuid, p_fluxograma uuid, p_cor text) RETURNS text LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = '' AS $$
   SELECT private.discriminadores_efetivos(p_unidade, p_fluxograma) -> p_cor -> 0 ->> 0
 $$;
+REVOKE ALL ON FUNCTION e2e.disc(uuid, uuid, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION e2e.disc(uuid, uuid, text) TO authenticated;
 
 CREATE OR REPLACE FUNCTION e2e.passo(p_passo text, p_paciente int, p_papel text, p_rota text, p_descricao text,

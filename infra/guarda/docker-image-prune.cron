@@ -1,0 +1,6 @@
+# Limpeza diária de imagens Docker do VPS, em /etc/cron.d/docker-image-prune.
+# O filtro "label!=br.com.chefecoruja.manter" preserva as imagens com essa
+# etiqueta (a da guarda de 20 anos, ver infra/guarda/Dockerfile).
+# Linha original, até 16/11/2026, sem o filtro:
+#   33 0 * * * root docker image prune -af --filter "until=24h" > /dev/null 2>&1
+33 0 * * * root docker image prune -af --filter "until=24h" --filter "label!=br.com.chefecoruja.manter" > /dev/null 2>&1

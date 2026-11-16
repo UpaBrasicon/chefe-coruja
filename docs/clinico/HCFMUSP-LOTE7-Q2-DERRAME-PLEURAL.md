@@ -52,3 +52,9 @@ Em 14/11/2026 o RT decidiu Q1 a Q4 = A e liberou a produção do lote 7 inteiro.
 - A migration foi aplicada, e as duas fichas estão aguardando aprovação.
 - A ficha e a nota foram ingeridas, e a API foi reiniciada.
 - Os testes passam, e o typecheck e o lint estão limpos.
+
+## Produção do #725, 14/11/2026
+
+- A migration `20270414000044` foi aplicada antes do merge. O #725 foi mesclado com o CI verde.
+- Foram ingeridos 2 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As seis respostas saíram como na homologação; pH 7,3 aparece como risco intermediário.

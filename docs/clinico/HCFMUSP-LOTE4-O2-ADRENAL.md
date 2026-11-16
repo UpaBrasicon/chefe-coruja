@@ -61,3 +61,9 @@ As seis respostas passam a abrir pela diretriz.
 3. Reiniciar a API.
 4. Refazer as perguntas.
 5. Mesclar.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000015` foi aplicada antes do merge. O #686 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 6 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis abrem pela diretriz, e a da crise tireotóxica continua respondendo com as doses do manual.

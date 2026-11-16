@@ -1,6 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 const { Client } = require('pg')
+// S10, H4: DATABASE_URL da produção só com --confirmo-producao
+const { exigirAlvoSeguro } = require('../ambiente/alvo-seguro.mjs')
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FASE 3 — Load de diluições (rascunho) na tabela public.diluicao
@@ -33,6 +35,7 @@ function normalizar(s) {
 }
 
 async function main() {
+  exigirAlvoSeguro([process.env.DATABASE_URL], { nome: 'etl/09_load_diluicao' })
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },

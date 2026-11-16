@@ -1,6 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 const { Client } = require('pg')
+// S10, H4: DATABASE_URL da produção só com --confirmo-producao
+const { exigirAlvoSeguro } = require('../ambiente/alvo-seguro.mjs')
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FASE 1 — Load da tabela canônica `medicamento` a partir do medicamento.csv
@@ -39,6 +41,7 @@ function esc(v) {
 }
 
 async function main() {
+  exigirAlvoSeguro([process.env.DATABASE_URL], { nome: 'etl/03_load_medicamento' })
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },

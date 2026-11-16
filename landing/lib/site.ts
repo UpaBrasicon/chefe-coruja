@@ -1,6 +1,10 @@
 // Constantes globais do site — centralizadas para reuso em SEO e UI.
 
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://chefecoruja.com.br'
+// Pedido 8, J5 (decisão K1 do RT, 12/11/2026): a landing fica só com Preços,
+// Contato e Privacidade em planos.chefecoruja.com.br; a página de entrada da
+// marca é a do app, em www.chefecoruja.com.br.
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planos.chefecoruja.com.br'
+export const APP_URL = 'https://www.chefecoruja.com.br'
 export const SITE_NAME = 'Chefe Coruja'
 export const SITE_TAGLINE = 'Gestão hospitalar para hospitais, UPAs e clínicas'
 

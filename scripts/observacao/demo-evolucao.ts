@@ -1,11 +1,14 @@
 // Popula dados de demonstração de evolução clínica (FASE 2)
 // para validar o critério de aceite (gráfico de creatinina+ureia, 5 dias).
 // Uso: node scripts/observacao/demo-evolucao.ts <pacienteId> [unidadeId]
+// Recusa a produção sem --confirmo-producao (S10, H4).
 import { createClient } from '@supabase/supabase-js'
+import { exigirAlvoSeguro } from '../ambiente/alvo-seguro.mjs'
 
 const url = process.env.SUPABASE_URL
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY
 if (!url || !key) throw new Error('SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY obrigatórias')
+exigirAlvoSeguro([url], { nome: 'observacao/demo-evolucao' })
 
 const client = createClient(url, key)
 

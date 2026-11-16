@@ -53,3 +53,10 @@ As seis respostas de encefalopatia passam a abrir pela diretriz. A pergunta de c
 - 3 arquivos ingeridos e API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.243, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000020` foi aplicada antes do merge. O #693 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 3 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis respostas de encefalopatia abrem pela ACG 2026, e a de controle (albumina na PBE) segue a nota do #692.
+- O Vercel publicou o master.

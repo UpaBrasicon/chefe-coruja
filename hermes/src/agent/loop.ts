@@ -12,6 +12,7 @@ import {
 } from '../gateway/gateway.js'
 import { criarCofre } from '../gateway/desidentificacao.js'
 import { logger } from '../logger.js'
+import { argsParaLog } from './argsSeguros.js'
 import { executarTool } from './tools.js'
 import type { IdentidadeHermes } from './identidade.js'
 
@@ -129,7 +130,8 @@ export async function executarLoopAgente(
           args = {}
         }
 
-        logger.info({ tool: tc.function.name, args }, '[loop] executando tool')
+        // S8 (D2): os argumentos já vêm reidentificados; o log leva só os nomes dos campos
+        logger.info({ tool: tc.function.name, campos: argsParaLog(args) }, '[loop] executando tool')
         const exec = await executarTool(identidade, waId, tc.function.name, args)
         if (exec.resultado.ok) ctx.conhecidos.push(...nomesEmResultado(exec.resultado.dados))
         const resumo = exec.resultado.ok

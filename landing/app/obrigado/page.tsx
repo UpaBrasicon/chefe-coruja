@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 
 import { track } from '@/lib/analytics'
 import { CtaButton } from '@/components/CtaButton'
+import { APP_URL } from '@/lib/site'
 
 export default function ObrigadoPage() {
   // Evento de conversão (item 3) — reforço no servidor de conversão
@@ -25,7 +26,7 @@ export default function ObrigadoPage() {
           Obrigado pelo contato. Nossa equipe vai analisar sua solicitação e responder.
         </p>
         <div className="mt-8 flex flex-col items-center gap-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-sm font-semibold text-slate-600">
             Enquanto isso, você pode:
           </h2>
           <ul className="flex flex-col gap-2 text-sm text-slate-600">
@@ -33,10 +34,10 @@ export default function ObrigadoPage() {
             <li>Conferir nossas perguntas frequentes.</li>
           </ul>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-            <CtaButton href="/funcionalidades" variant="outline">
+            <CtaButton href={`${APP_URL}/#registro`} variant="outline">
               Ver funcionalidades
             </CtaButton>
-            <CtaButton href="/">Voltar ao início</CtaButton>
+            <CtaButton href={APP_URL}>Voltar ao início</CtaButton>
           </div>
         </div>
       </section>

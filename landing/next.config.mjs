@@ -13,6 +13,14 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  // Pedido 8, J5 (decisão K3 do RT, 12/11/2026): a página inicial e as
+  // funcionalidades repetem a página de entrada do app, que é a da marca.
+  async redirects() {
+    return [
+      { source: '/', destination: 'https://www.chefecoruja.com.br/', permanent: false },
+      { source: '/funcionalidades', destination: 'https://www.chefecoruja.com.br/#registro', permanent: false },
+    ]
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },

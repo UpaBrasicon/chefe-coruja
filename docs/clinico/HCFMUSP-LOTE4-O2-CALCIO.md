@@ -52,3 +52,10 @@ As seis respostas passam a abrir pela diretriz.
 - 6 arquivos ingeridos. API reiniciada.
 - Branch `homolog` publicada depois de `test:clinico` (1.240, sem falha) e typecheck limpos.
 - A tela não foi vista com login.
+
+## Produção (14/11/2026, com o "ok produção" do RT)
+
+- A migration `20270414000017` foi aplicada antes do merge. O #690 foi mesclado com o CI verde.
+- O corpus foi gerado do master e os 5 arquivos foram ingeridos. A API foi reiniciada.
+- Refiz as perguntas na produção: as seis respostas abrem pela diretriz, e a pergunta de controle do potássio continua certa.
+- O Vercel publicou o master.

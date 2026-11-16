@@ -93,9 +93,57 @@ def secao_do_livro(capitulo: str, titulo: str) -> str:
     return capitulo or titulo
 
 
-def chunks_pdf(caminho: Path):
+def titulo_em_maiusculas(linha: str) -> bool:
+    """Subtítulo do HCFMUSP: linha curta quase toda em maiúsculas
+    ("COMO ESTRATIFICAR O RISCO DO PACIENTE DE SCA?", "LEITURA SUGERIDA")."""
+    letras = [c for c in linha if c.isalpha()]
+    return 8 <= len(letras) and len(linha) <= 140 and sum(c.isupper() for c in letras) / len(letras) >= 0.9
+
+
+def chunks_da_pagina_capitulo_numero(md: str, estado: dict):
+    """(capítulo, título, bloco) no formato do Manual HCFMUSP 2022 (E3b, 13/11/2026):
+    o capítulo vem como "# 13" e o nome dele na linha seguinte; os subtítulos são
+    linhas em maiúsculas, com ou sem "#####"; e o pymupdf4llm marca com "#####"
+    também linhas de texto corrido, que aqui voltam a ser texto. `estado` guarda
+    capítulo e título entre as páginas (a página sem título herda, como no R2-14)."""
+    buf: list[str] = []
+
+    def soltar():
+        if buf:
+            yield estado["capitulo"], estado["titulo"], " ".join(buf)
+            buf.clear()
+
+    for linha in md.splitlines():
+        limpa = linha.strip()
+        sem_marca = re.sub(r"^#{1,6}\s*", "", limpa).strip()
+        m = re.match(r"^#{1,6}\s*(\d{1,3})$", limpa)
+        if m:
+            yield from soltar()
+            estado["num"], estado["capitulo"], estado["titulo"] = m.group(1), m.group(1), ""
+        elif not sem_marca or re.match(r"^\|?\s*[-:]{3,}", sem_marca) or re.match(r"^-{3,}$", sem_marca):
+            continue
+        elif estado.get("num"):
+            # a primeira linha depois de "# 13" é o nome do capítulo
+            estado["capitulo"] = f"{estado.pop('num')} {sem_marca}"
+        elif titulo_em_maiusculas(sem_marca):
+            yield from soltar()
+            estado["titulo"] = sem_marca
+        else:
+            buf.append(re.sub(r"\s*\|\s*", " | ", sem_marca).strip("| "))
+    yield from soltar()
+
+
+def chunks_pdf(caminho: Path, formato: str | None = None):
     import pymupdf4llm
     paginas = pymupdf4llm.to_markdown(str(caminho), page_chunks=True, show_progress=False)
+    if formato == "capitulo-numero":
+        estado = {"capitulo": "", "titulo": ""}
+        for pg in paginas:
+            for capitulo, titulo, bloco in chunks_da_pagina_capitulo_numero(pg["text"], estado):
+                for trecho in janelas(bloco):
+                    if len(trecho.split()) >= MIN_PALAVRAS:
+                        yield {"texto": trecho, "secao": secao_do_livro(capitulo, titulo), "pagina": pg["metadata"]["page"]}
+        return
     capitulo, titulo = "", ""
     for pg in paginas:
         n_pag = pg["metadata"]["page"]
@@ -162,7 +210,8 @@ def ingerir_pdf(fonte: dict):
         return
     fid = fonte_id_de(fonte["arquivo"])
     apagar_fonte(fid)
-    lote = list(chunks_pdf(caminho))
+    # `secoes: capitulo-numero` em fontes.yaml: leitor do formato do HCFMUSP (E3b)
+    lote = list(chunks_pdf(caminho, fonte.get("secoes")))
     n = gravar(fonte, fid, lote)
     print(f"{fonte['arquivo']}: {n} chunks", flush=True)
 

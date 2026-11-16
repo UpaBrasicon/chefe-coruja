@@ -49,3 +49,9 @@ A produção já tinha o texto aberto da SBC 2025 no acervo de artigos CC BY. Po
 - A migration foi aplicada, e as duas fichas estão aguardando aprovação.
 - O HEART foi ingerido em 2 trechos e a nota em 12. A API foi reiniciada.
 - Os testes da nota e do HEART passam, e o typecheck e o lint estão limpos.
+
+## Produção do #715, 14/11/2026
+
+- A migration `20270414000036` foi aplicada antes do merge. O #715 foi mesclado com o CI verde.
+- Foram ingeridos 2 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As sete respostas saíram como na homologação.

@@ -52,3 +52,9 @@ Na primeira versão, "síncope sem causa definida: posso dar alta?" respondia "n
 - A migration foi aplicada, e as duas fichas estão aguardando aprovação.
 - A ficha foi ingerida em 2 trechos e a nota em 7. A API foi reiniciada.
 - Os testes passam, e o typecheck e o lint estão limpos.
+
+## Produção do #716, 14/11/2026
+
+- A migration `20270414000037` foi aplicada antes do merge. O #716 foi mesclado com o CI verde.
+- Foram ingeridos 2 arquivos, e a API foi reiniciada. O Vercel publicou o master.
+- As seis respostas saíram como na homologação; a alta da síncope sem causa definida depende da estratificação de risco.

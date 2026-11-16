@@ -14,7 +14,7 @@
 //   deixa uma linha em ia_gateway_log (contagens, tipos e hash, nunca o texto).
 // - Limite: 30 perguntas "ask" por usuário por hora.
 // - Repassa o stream NDJSON da biblioteca sem armazenar a resposta.
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
 
 import { type Conhecido, type Contagem } from '../_shared/desidentificacao.ts'
 import { comCors } from '../_shared/cors.ts'
@@ -22,6 +22,7 @@ import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 import { comRelato, relatarErro } from '../_shared/sentry.ts'
 import { hashEntrada, liberarPergunta, TIPO_NOME_NER, type PerguntaLiberada } from './liberar.ts'
 import { semLinhaDeUso } from './uso.ts'
+import { segundoFatorFalta } from './segundo.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? '*',
@@ -85,6 +86,10 @@ async function tratar(req: Request): Promise<Response> {
   })
   const { data: { user } } = await userClient.auth.getUser()
   if (!user) return erro(401, 'não autenticado')
+
+  // S3 (T3): a chave secreta não passa pelo portão do segundo fator. Ver segundo.ts.
+  const { data: sf } = await userClient.rpc('segundo_fator_status')
+  if (segundoFatorFalta(sf)) return erro(403, 'SEGUNDO_FATOR: confirme o segundo fator')
 
   let corpo: { q?: unknown; mode?: unknown; unidade_id?: unknown; publico?: unknown }
   try {
@@ -173,13 +178,13 @@ async function tratar(req: Request): Promise<Response> {
   if (!upstream) return erro(503, 'biblioteca indisponível')
   if (!upstream.ok) return erro(upstream.status === 401 ? 502 : upstream.status, 'biblioteca recusou o pedido')
   // E6: modelo e tokens da pergunta ao modelo vão para o registro; a linha sai do stream
-  const corpo = mode === 'ask' && upstream.body
+  const resposta = mode === 'ask' && upstream.body
     ? upstream.body.pipeThrough(semLinhaDeUso(async (uso) => {
       const { error } = await admin.from('clinical_search_logs').update(uso).eq('request_id', request_id)
       if (error) relatarErro('clinical-search', 'uso_tokens', error.message)
     }))
     : upstream.body
-  return new Response(corpo, {
+  return new Response(resposta, {
     status: 200,
     headers: {
       ...cors,
