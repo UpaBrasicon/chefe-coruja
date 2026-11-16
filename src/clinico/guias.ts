@@ -149,7 +149,26 @@ const TEP_DIAGNOSTICO = (alta: Faixas, naoAlta: Faixas): PassoGuia[] => [
   linhaTep('Gestante'),
 ]
 
+// TVP: ASH 2018 (diagnóstico de TEV), já citada na ficha e lida no texto integral do PMC (PMC6258916).
+const ASH_TEV = 'ASH 2018, diagnóstico de tromboembolismo venoso'
+// CRB-65: McNally 2010 (PMC2944951), já citada; a conduta por faixa só está numa figura (imagem) e a BTS 2009 não está no PMC.
+const MCNALLY = 'McNally et al. 2010, revisão sistemática do CRB-65 (Br J Gen Pract)'
+
 export const GUIAS: Record<string, Guia> = {
+  'wells-tvp': {
+    proximosPassos: [
+      { tema: 'TVP improvável: D-dímero primeiro', texto: 'Começar pelo D-dímero (de alta sensibilidade) para excluir a TVP; D-dímero negativo exclui, sem mais exames nem anticoagulação. Se precisar de mais exames, ultrassom proximal ou de toda a perna; sem D-dímero disponível, ultrassom proximal ou de toda a perna sozinho também serve.', ref: { fonte: ASH_TEV, pagina: 'recomendação 5a', grau: 'forte para o D-dímero; condicional para o ultrassom' }, faixas: [0] },
+      { tema: 'TVP improvável: o que não fazer', texto: 'Não diagnosticar TVP só com D-dímero positivo, e não pedir mais exames depois de ultrassom proximal ou de toda a perna negativo.', ref: { fonte: ASH_TEV, pagina: 'recomendação 5b', grau: 'forte' }, faixas: [0] },
+      { tema: 'TVP provável: ultrassom primeiro', texto: 'Começar pelo ultrassom proximal ou de toda a perna; se negativo e sem diagnóstico alternativo, repetir o ultrassom (um novo exame em 1 semana).', ref: { fonte: ASH_TEV, pagina: 'recomendação 7a', grau: 'condicional' }, faixas: [2] },
+      { tema: 'TVP provável: o que não fazer', texto: 'Não diagnosticar TVP só com D-dímero positivo.', ref: { fonte: ASH_TEV, pagina: 'recomendação 7b', grau: 'forte' }, faixas: [2] },
+      { tema: 'Suspeita de TVP recorrente', texto: 'Com probabilidade improvável, começar pelo D-dímero para excluir; D-dímero positivo ou probabilidade provável, ultrassom proximal.', ref: { fonte: ASH_TEV, pagina: 'recomendação 8', grau: 'condicional' } },
+    ],
+  },
+  'crb-65': {
+    armadilhas: [
+      { texto: 'Fora do hospital (atenção primária), o CRB-65 superestima a mortalidade em 30 dias em todas as faixas; use com cautela nesse cenário.', ref: { fonte: MCNALLY, pagina: 'conclusão do resumo e discussão', grau: 'sem graduação' } },
+    ],
+  },
   'wells-tep': { proximosPassos: TEP_DIAGNOSTICO([2], [0, 1]) },
   'genebra-revisado': { proximosPassos: TEP_DIAGNOSTICO([2], [0, 1]) },
   years: {
