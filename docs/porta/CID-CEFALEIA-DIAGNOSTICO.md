@@ -80,3 +80,20 @@ Teste: `supabase/tests/cid_cefaleia.sql`.
 | parada cardiorrespiratória | I46.9, seguido de V17/V27 (ciclista e motociclista em colisão com objeto parado) | "parada cardiorrespiratória" e "PCR" → I46.9 Parada cardíaca não especificada |
 | vômitos | O21 (vômitos da gravidez) antes de R11 | "vômitos" → R11 Náusea e vômitos |
 | crise hipertensiva | G40.7 (epilepsia) em primeiro | código a escolher pelo RT (ex.: I10 Hipertensão essencial); não incluo sem a decisão |
+
+## Colisões da G3: decisão do RT (16/11/2026)
+
+As 4 propostas foram aceitas, e para a crise hipertensiva o RT escolheu **I10**. A CID-10 do DATASUS não tem o I16.
+
+Migration `20270414000074_cid_termos_colisoes.sql`, com 6 termos na lista e fonte "RT 16/11/2026, colisões G3":
+
+| Termo | Código |
+|---|---|
+| crise de pânico | F41.0 |
+| falta de ar | R06.0 |
+| parada cardiorrespiratória | I46.9 |
+| PCR | I46.9 |
+| vômitos | R11 |
+| crise hipertensiva | I10 |
+
+Conferido na homologação: os 6 termos trazem o código escolhido em primeiro, e "cefaleia" e "dor torácica" seguem iguais. Teste: `supabase/tests/cid_colisoes.sql`.
