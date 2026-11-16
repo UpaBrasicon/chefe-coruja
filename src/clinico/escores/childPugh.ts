@@ -1,4 +1,5 @@
 import { completo, somar, type Escore } from '../escore.ts'
+import { BAVENO_VIII_2026 } from '../adulto/hemorragiaDigestiva.ts'
 
 // Child-Pugh com INR: cinco parâmetros de 1 a 3 pontos, classe A/B/C.
 // Porte do protótipo (escores/Child-Pugh, construído em 29/08/2026).
@@ -9,15 +10,16 @@ export const childPugh: Escore = {
   ficha: {
     id: 'child-pugh',
     titulo: 'Child-Pugh — gravidade da cirrose',
-    versao: '2026-09-27.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Pugh RNH, Murray-Lyon IM, Dawson JL, et al. Transection of the oesophagus for bleeding oesophageal varices. Br J Surg. 1973;60(8):646–649.', url: 'https://doi.org/10.1002/bjs.1800600817' },
       // No protótipo esta fonte repetia o DOI do Pugh (link errado): fica sem url.
       { citacao: 'Child CG, Turcotte JG. Surgery and portal hypertension. In: The Liver and Portal Hypertension. Philadelphia: Saunders; 1964:50–64.' },
       { citacao: 'European Association for the Study of the Liver. EASL Clinical Practice Guidelines for the management of patients with decompensated cirrhosis. J Hepatol. 2018;69(2):406–460.', url: 'https://doi.org/10.1016/j.jhep.2018.03.024' },
+      BAVENO_VIII_2026,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 5 das calculadoras pela ESGE 2026 e pelo Baveno VIII, já lidos; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Classe A, B ou C, e a sobrevida estimada',
   itens: [

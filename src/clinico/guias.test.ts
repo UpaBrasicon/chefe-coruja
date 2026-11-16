@@ -44,3 +44,25 @@ test('piloto: as 10 ferramentas têm guia; Glasgow separa o TCE grave do leve', 
   assert.ok(!temas(0).includes('TCE grave: neurocirurgia'))
   assert.ok(!temas(2).includes('Tomografia no TCE leve e moderado'))
 })
+
+test('gastro: Glasgow-Blatchford 0–1 traz a alta sem EDA; risco maior traz o manejo inicial da HDA', () => {
+  const temas = (e: 0 | 1 | 2) => passosDaFaixa(GUIAS['glasgow-blatchford'], e).map((p) => p.tema ?? '')
+  assert.ok(temas(0).includes('Glasgow-Blatchford'))
+  assert.ok(!temas(0).includes('Transfusão (úlcera)'))
+  assert.ok(temas(2).includes('Transfusão (úlcera)'))
+  assert.ok(!temas(2).includes('Glasgow-Blatchford'))
+  assert.equal(passosDaFaixa(GUIAS['child-pugh'], 0).length, 2)
+  assert.equal(passosDaFaixa(GUIAS['child-pugh'], 2).length, 3)
+})
+
+test('pancreatite e apendicite: BISAP de 3 ou mais pede cuidado intermediário; Alvarado baixo não traz cirurgia', () => {
+  const bisap = (e: 0 | 1 | 2) => passosDaFaixa(GUIAS.bisap, e).map((p) => p.tema ?? '')
+  assert.ok(bisap(2).some((t) => t.startsWith('BISAP de 3')))
+  assert.ok(!bisap(1).some((t) => t.startsWith('BISAP de 3')))
+  assert.equal(passosDaFaixa(GUIAS.ranson, 0).length, passosDaFaixa(GUIAS.ranson, 2).length)
+  const alv = (e: 0 | 1 | 2) => passosDaFaixa(GUIAS.alvarado, e).map((p) => p.tema ?? '')
+  assert.deepEqual(alv(0), ['Escore para excluir'])
+  assert.ok(alv(1).includes('Risco intermediário: imagem'))
+  assert.ok(alv(2).includes('Via laparoscópica'))
+  assert.ok(!alv(1).includes('Via laparoscópica'))
+})

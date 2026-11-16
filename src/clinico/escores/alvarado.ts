@@ -28,15 +28,15 @@ export const alvarado: Escore = {
   ficha: {
     id: 'alvarado',
     titulo: 'Alvarado — probabilidade de apendicite aguda',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Alvarado A. A practical score for the early diagnosis of acute appendicitis. Ann Emerg Med. 1986;15(5):557–564.', url: 'https://doi.org/10.1016/S0196-0644(86)80993-3' },
-      { citacao: 'Di Saverio S, Podda M, De Simone B, et al. Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. World J Emerg Surg. 2020;15(1):27.', url: 'https://doi.org/10.1186/s13017-020-00306-3' },
+      { citacao: 'Di Saverio S, Podda M, De Simone B, et al. Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. World J Emerg Surg. 2020;15(1):27 (PMID 32295644; PMC7386163). Q.1.1, Q.1.5, Q.2.1, Q.2.3, Q.3.1, Q.4.1 e Q.7.1 lidas no PMC em 16/11/2026.', url: 'https://doi.org/10.1186/s13017-020-00306-3' },
       WSES_APENDICITE_2025,
       AIR_METANALISE_2025,
     ],
-    revisadoEm: '06/11/2026 (nota da WSES 2025 e do AIR, WSES 2020 mantida como fonte da regra; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 5 das calculadoras pela iLATAM-AP 2026 e pela WSES 2019/2020, lidas no PMC; aguarda aprovação do RT); 06/11/2026 (nota da WSES 2025 e do AIR, WSES 2020 mantida como fonte da regra; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Oito itens de história, exame e hemograma, de 0 a 10',
   itens: [

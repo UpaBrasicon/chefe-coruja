@@ -16,14 +16,14 @@ export const ranson: Escore = {
   ficha: {
     id: 'ranson',
     titulo: 'Ranson — gravidade da pancreatite não biliar',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Ranson JHC, Rifkind KM, Roses DF, et al. Prognostic signs and the role of operative management in acute pancreatitis. Surg Gynecol Obstet. 1974;139(1):69–81.', url: 'https://pubmed.ncbi.nlm.nih.gov/4834279/' },
       { citacao: 'Banks PA, Bollen TL, Dervenis C, et al. Classification of acute pancreatitis — 2012: revision of the Atlanta classification. Gut. 2013;62(1):102–111.', url: 'https://doi.org/10.1136/gutjnl-2012-302779' },
       ...FONTES_ESCORES_PANCREATITE,
     ],
-    revisadoEm: '06/11/2026 (nota do desempenho dos escores na pancreatite grave; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 5 das calculadoras pela iLATAM-AP 2026 e pela WSES 2019/2020, lidas no PMC; aguarda aprovação do RT); 06/11/2026 (nota do desempenho dos escores na pancreatite grave; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Gravidade da pancreatite aguda não biliar: cinco critérios na admissão e seis nas primeiras 48 horas',
   itens: [

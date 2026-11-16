@@ -1,4 +1,5 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
+import { ESGE_UGIH_2026 } from '../adulto/hemorragiaDigestiva.ts'
 
 // Rockall, versão clínica (antes da endoscopia) e completa (depois dela).
 // Porte do protótipo (gastro/Rockall, construído em 29/08/2026). O protótipo
@@ -25,13 +26,14 @@ export const rockall: Escore = {
   ficha: {
     id: 'rockall',
     titulo: 'Rockall — ressangramento e mortalidade na HDA',
-    versao: '2026-09-28.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Rockall TA, Logan RFA, Devlin HB, Northfield TC. Risk assessment after acute upper gastrointestinal haemorrhage. Gut. 1996;38(3):316–321. Tabela III (p. 318) e Tabela IV (p. 319).', url: 'https://doi.org/10.1136/gut.38.3.316' },
       { citacao: 'Stanley AJ, Laine L, Dalton HR, et al. Comparison of risk scoring systems for patients presenting with upper gastrointestinal bleeding. BMJ. 2017;356:i6432.', url: 'https://doi.org/10.1136/bmj.i6432' },
+      ESGE_UGIH_2026,
     ],
-    revisadoEm: '28/09/2026 (tabela de mortalidade conferida no artigo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 5 das calculadoras pela ESGE 2026 e pelo Baveno VIII, já lidos; aguarda aprovação do RT); 28/09/2026 (tabela de mortalidade conferida no artigo)',
   },
   descricao: 'Mortalidade e ressangramento na hemorragia digestiva alta, na forma clínica ou completa',
   itens: [

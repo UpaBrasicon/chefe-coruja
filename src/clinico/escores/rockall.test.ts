@@ -25,7 +25,7 @@ test('rockall completo: 80+ + hipotensão + IC + outro diagnóstico + estigma = 
   assert.equal(res.unidade, 'de 11')
 })
 test('rockall .1: mortalidade e ressangramento da Tabela IV(B), p. 319', () => {
-  assert.equal(rockall.ficha.versao, '2026-09-28.1')
+  assert.equal(rockall.ficha.versao, '2026-11-16.1')
   const zero = rockall.calcular(r(0, 0, 0, 1, 1))!
   assert.match(zero.nota, /mortalidade observada 0% · ressangramento 4,9%/)
   assert.equal(zero.estado, 0)
