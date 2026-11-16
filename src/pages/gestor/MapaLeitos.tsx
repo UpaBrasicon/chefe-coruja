@@ -97,9 +97,9 @@ export function MapaLeitos() {
       </div>
 
       <div>
-        <Cabeca titulo="Pacientes por plantonista" resumo="Escalados agora nos setores de internação e observação" />
+        <Cabeca titulo="Pacientes por médico" resumo="Escalados agora nos setores de internação e observação" />
         <div className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
-          {m.plantonistas.length === 0 && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Nenhum plantonista escalado agora nesses setores.</p>}
+          {m.plantonistas.length === 0 && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Nenhum médico escalado agora nesses setores.</p>}
           {m.plantonistas.map((p) => (
             <div key={`${p.perfil_id}-${p.setor}`} className="flex flex-wrap items-center gap-4 border-b border-trilha px-5 py-3 last:border-0">
               <div className="flex min-w-0 flex-[1_1_200px] flex-col gap-0.5">

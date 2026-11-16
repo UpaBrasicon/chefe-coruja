@@ -71,7 +71,7 @@ export function DadosObito({ id, valor, onChange, agora }: {
             <span id={`${id}-cond`} className="text-controle font-medium text-tinta">Você atesta como</span>
             <div role="radiogroup" aria-labelledby={`${id}-cond`} className="flex flex-wrap gap-2">
               <Chip radio variante="opcao" ativo={v.condicao === 'assistente'} onClick={() => muda({ condicao: 'assistente' })}>Assistente</Chip>
-              <Chip radio variante="opcao" ativo={v.condicao === 'substituto'} onClick={() => muda({ condicao: 'substituto' })}>Substituto (plantonista)</Chip>
+              <Chip radio variante="opcao" ativo={v.condicao === 'substituto'} onClick={() => muda({ condicao: 'substituto' })}>Substituto (médico de plantão)</Chip>
             </div>
             <span className="text-rotulo text-tinta-sussurro">Atesta quem verificou o óbito (Código de Ética Médica, art. 83). O atestante é o seu login.</span>
           </div>

@@ -163,7 +163,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
         <TituloPagina
           icone={Images}
           titulo="Imagens da unidade"
-          descricao={<>Quadro de imagens da Central do Plantonista em {unidadeAtiva?.unidade.nome}. As imagens trocam sozinhas e podem ter links.</>}
+          descricao={<>Quadro de imagens da Central do Médico em {unidadeAtiva?.unidade.nome}. As imagens trocam sozinhas e podem ter links.</>}
           acoes={botaoNovo}
           className="mb-0"
         />
@@ -235,7 +235,7 @@ export function Banners({ embutido = false }: { embutido?: boolean } = {}) {
           <DialogHeader>
             <DialogTitle>{editando ? 'Editar imagem' : 'Nova imagem'}</DialogTitle>
             <DialogDescription>
-              A imagem aparecerá no quadro da Central do Plantonista e trocará automaticamente.
+              A imagem aparecerá no quadro da Central do Médico e trocará automaticamente.
             </DialogDescription>
           </DialogHeader>
 

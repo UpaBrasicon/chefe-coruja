@@ -227,7 +227,7 @@ export default function PlantonistaHome() {
       <div className="min-w-0">
         <TituloPagina
           icone={Stethoscope}
-          titulo="Central do Plantonista"
+          titulo="Central do Médico"
           descricao={unidadeAtiva ? `${unidadeAtiva.unidade.nome} · ${TODAS.length} ferramentas clínicas` : undefined}
         />
 

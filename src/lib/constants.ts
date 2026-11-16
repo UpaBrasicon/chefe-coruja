@@ -3,7 +3,7 @@ import type { Papel, StatusLeito, TipoLeito, TipoSetor, TipoUnidade } from '@/ty
 export const PAPEL_LABEL: Record<Papel, string> = {
   admin: 'Administrador',
   gestor: 'Gestor',
-  plantonista: 'Plantonista',
+  plantonista: 'Médico',
   enfermeiro: 'Enfermeiro',
   tecnico_enfermagem: 'Técnico de Enfermagem',
   recepcao: 'Recepção',
@@ -25,7 +25,7 @@ export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   tecnico_enfermagem: 'Cuidados de enfermagem e sinais vitais',
   recepcao: 'Ficha de chegada e fila de atendimento',
   farmaceutico: 'Diluição padrão, validação de prescrição e faltas',
-  telemedicina: 'Teleinterconsulta de apoio ao plantonista',
+  telemedicina: 'Teleinterconsulta de apoio ao médico',
   regulador: 'Autoriza a AIH: aprova (número e competência) ou rejeita',
   faturamento: 'BPA: confere, fecha a competência e gera o arquivo do SUS',
   secretaria: 'Acompanha a rede: números, mapa de vagas e prazos das unidades liberadas',

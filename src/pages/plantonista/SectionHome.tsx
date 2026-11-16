@@ -71,7 +71,7 @@ export default function SectionHome() {
 
   return (
     <>
-      <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: secao.label }]} />
+      <Trilha niveis={[{ rotulo: 'Central do Médico', to: '/plantonista' }, { rotulo: secao.label }]} />
       <TituloPagina icone={secao.icon} titulo={secao.label} descricao={secao.description} />
       {secao.tools.length === 0 ? (
         <Vazio icone={FolderSearch} titulo="Seção em preparo" texto="Nenhuma ferramenta desta seção tem fonte declarada ainda." />

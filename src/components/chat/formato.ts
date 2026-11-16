@@ -31,7 +31,7 @@ export function quandoLista(iso: string | null | undefined, agora = new Date()) 
 }
 
 const ROTULO_PAPEL: Record<string, string> = {
-  plantonista: 'Plantonista',
+  plantonista: 'Médico',
   gestor: 'Gestão da unidade',
   farmaceutico: 'Farmácia',
   enfermeiro: 'Enfermagem',

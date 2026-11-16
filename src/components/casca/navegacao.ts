@@ -70,7 +70,7 @@ const ITEM_PUERICULTURA: ItemNav = { to: '/puericultura', rotulo: 'Puericultura'
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
-    { to: '/plantonista', rotulo: 'Central do Plantonista', curto: 'Central', icone: Stethoscope },
+    { to: '/plantonista', rotulo: 'Central do Médico', curto: 'Central', icone: Stethoscope },
     { to: '/plantao', rotulo: 'Plantão', icone: Activity },
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },

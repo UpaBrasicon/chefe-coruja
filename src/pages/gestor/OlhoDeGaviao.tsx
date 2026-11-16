@@ -31,7 +31,7 @@ type Decisao = 'tratado' | 'silenciado' | 'descartado'
 
 const MOTIVOS = [
   'A escala já foi refeita',
-  'O plantonista trocou de setor',
+  'O profissional trocou de setor',
   'O limite não se aplica a este vínculo',
   'Apontamento duplicado',
   'Erro de dado na varredura',

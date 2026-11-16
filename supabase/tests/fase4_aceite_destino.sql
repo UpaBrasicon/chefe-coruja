@@ -111,7 +111,7 @@ SELECT pg_temp.ok(jsonb_array_length(public.regulacao_destino_lista('21000000-00
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT pg_temp.falha($$SELECT public.regulacao_destino_lista('21000000-0000-4000-8000-0000000009c2')$$, 'Acesso negado', 'enfermagem não vê a lista do destino');
 SELECT pg_temp.falha(format('SELECT public.regulacao_destino_aceitar(%L, %L)', pg_temp.id(1), '24000000-0000-4000-8000-0000000009c1'),
-  'Responde pelo destino o médico plantonista ou o gestor', 'enfermagem não responde pelo destino');
+  'Responde pelo destino o médico de plantão ou o gestor', 'enfermagem não responde pelo destino');
 
 -- ── 3. prazo do destino (24 h, só alerta) ───────────────────────────────────
 RESET ROLE;

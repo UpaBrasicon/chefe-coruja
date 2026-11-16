@@ -20,7 +20,7 @@ test('escala: contexto, cabeçalho e campos protegidos', () => {
   assert.equal(s.charCodeAt(0), 0xfeff)
   const l = linhasDe(s)
   assert.deepEqual(l.slice(0, 3), ['Unidade;UPA Centro', 'Mês;11/2026', ''])
-  assert.equal(l[3], 'Setor;Data;Turno;Plantonista;Quinzenal')
+  assert.equal(l[3], 'Setor;Data;Turno;Profissional;Quinzenal')
   assert.equal(l[4], `"Sala; vermelha";2026-11-05;Manhã;"'=HYPERLINK(""x"")";sim`)
   assert.equal(l[5], 'Consultório;2026-11-06;Noite;;não')
 })
