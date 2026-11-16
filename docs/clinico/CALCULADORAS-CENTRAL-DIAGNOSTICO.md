@@ -34,10 +34,11 @@ em 16/11/2026 (cookies não essenciais recusados).
 ## Decisões do RT (16/11/2026)
 
 **C1 a C8 = A** ("Todas A", repassado pela sessão principal em 16/11/2026). O piloto
-do C7 ainda depende de o RT aprovar a lista de 10 ferramentas abaixo. Nada é
-implementado antes disso.
+do C7 usa a lista de 10 ferramentas abaixo, aprovada pelo RT em 16/11/2026,
+quando ele também confirmou C1–C8 = A diretamente. Depois do piloto, as demais
+ferramentas seguem em lotes por seção, cada um com homologação e "ok produção".
 
-### Piloto proposto (C7), esperando o RT
+### Piloto do C7 (lista aprovada pelo RT em 16/11/2026)
 
 Critério: o HEART que o RT citou, ferramentas de uso frequente no PS e pelo
 menos uma de cada montagem que se repete (seção 1), para a biblioteca nova
@@ -155,7 +156,7 @@ Com a sessão de médico aberta pelo RT no Chrome dele (UPA Fase 5 24h), sem gra
 | H5 | **Intubação: com 750 kg, a tela calcula "1.125 mg · 112,5 mL · 6 ampolas" na primeira droga, sem nenhum aviso** | P5: `IsrAdulto.tsx:14-23` não valida o peso |
 | H6 | Nenhum botão de copiar nas duas telas | P6 |
 
-H1 e H5 são defeitos de produção (o mesmo código está no master). Entram no
+**H1 e H5 corrigidos em 16/11/2026** (PR #790, na homologação e na produção com o ok do RT, conferidos pelo RT): o rótulo do escore só usa a base de 260 px com as opções na mesma linha; a intubação não calcula dose por peso fora de 30 a 250 kg, regra da unidade decidida pelo RT (`src/domain/pesoAdulto.ts`). A trava de peso entra nas outras ferramentas de adulto com o piloto (F7). Texto original: H1 e H5 são defeitos de produção (o mesmo código está no master). Entram no
 piloto (F2 e F7); se o RT quiser, podem ser corrigidos antes, em branch própria,
 como correção pequena.
 
