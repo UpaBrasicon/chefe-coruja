@@ -27,14 +27,16 @@ export const canadianCtHead: Escore = {
   ficha: {
     id: 'canadian-ct-head',
     titulo: 'Canadian CT Head Rule — TCE leve no adulto',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Stiell IG, Wells GA, Vandemheen K, et al. The Canadian CT Head Rule for patients with minor head injury. Lancet. 2001;357(9266):1391–1396.', url: 'https://doi.org/10.1016/S0140-6736(00)04561-X' },
       { citacao: 'Stiell IG, Clement CM, Rowe BH, et al. Comparison of the Canadian CT Head Rule and the New Orleans Criteria in patients with minor head injury. JAMA. 2005;294(12):1511–1518.', url: 'https://doi.org/10.1001/jama.294.12.1511' },
       KIMOTO_HELMET_2026,
+      { citacao: 'NICE. Head injury: assessment and early management. NICE guideline NG232. Londres: NICE; 2023. Recomendações 1.5.5, 1.5.8, 1.5.9 e 1.5.13 e justificativa (baseada na Canadian CT Head Rule), lidas em 16/11/2026.', url: 'https://www.nice.org.uk/guidance/ng232' },
+      { citacao: 'Shih RY, Burns J, Ajam AA, et al. ACR Appropriateness Criteria Head Trauma: 2021 Update. J Am Coll Radiol. 2021;18(5S):S13–S36 (PMID 33958108). Variantes 1 e 2 lidas no documento do ACR em 16/11/2026.', url: 'https://doi.org/10.1016/j.jacr.2021.01.006' },
     ],
-    revisadoEm: '06/11/2026 (nota da validação japonesa; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 7 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota da validação japonesa; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'TCE leve no adulto: cinco critérios de alto risco e dois de risco médio',
   itens: [

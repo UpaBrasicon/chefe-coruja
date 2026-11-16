@@ -12,15 +12,15 @@ export const quatroT: Escore = {
   ficha: {
     id: '4t-hit',
     titulo: '4T — probabilidade de trombocitopenia induzida por heparina',
-    versao: '2026-09-27.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Lo GK, Juhl D, Warkentin TE, et al. Evaluation of pretest clinical score (4 Ts) for the diagnosis of heparin-induced thrombocytopenia. J Thromb Haemost. 2006;4(4):759–765.', url: 'https://doi.org/10.1111/j.1538-7836.2006.01787.x' },
-      { citacao: 'Cuker A, Arepally GM, Chong BH, et al. American Society of Hematology 2018 guidelines for management of venous thromboembolism: heparin-induced thrombocytopenia. Blood Adv. 2018;2(22):3360–3392.', url: 'https://doi.org/10.1182/bloodadvances.2018024489' },
+      { citacao: 'Cuker A, Arepally GM, Chong BH, et al. American Society of Hematology 2018 guidelines for management of venous thromboembolism: heparin-induced thrombocytopenia. Blood Adv. 2018;2(22):3360–3392 (PMID 30482768; PMC6258919). Recomendações 2.1 a 2.10 e 3.1 a 3.6 lidas no PMC em 16/11/2026.', url: 'https://doi.org/10.1182/bloodadvances.2018024489' },
       { citacao: 'Cuker A, Gimotty PA, Crowther MA, Warkentin TE. Predictive value of the 4Ts scoring system for heparin-induced thrombocytopenia: a systematic review and meta-analysis. Blood. 2012;120(20):4160–4167.', url: 'https://doi.org/10.1182/blood-2012-07-443051' },
       { citacao: 'UpToDate. Clinical presentation and diagnosis of heparin-induced thrombocytopenia. (referência de escopo autorizada pelo usuário em 02/09/2026)', url: 'https://www.uptodate.com' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 7 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Probabilidade pré-teste de trombocitopenia induzida por heparina, de 0 a 8 pontos',
   itens: [
