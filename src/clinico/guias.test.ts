@@ -34,3 +34,13 @@ test('sepse: antimicrobiano em qualquer faixa; corticoide e vasopressor só no c
   assert.ok(temas(2).some((t) => t.startsWith('Corticoide')))
   assert.ok(temas(2).some((t) => t.startsWith('Vasopressor')))
 })
+
+test('piloto: as 10 ferramentas têm guia; Glasgow separa o TCE grave do leve', () => {
+  for (const id of ['heart', 'curb-65', 'sepse-adulto', 'glasgow', 'adulto-isr', 'adulto-infusoes', 'adulto-reposicao-potassio', 'adulto-pcr', 'ped-bolus', 'ped-diarreia-desidratacao']) {
+    assert.ok((GUIAS[id]?.proximosPassos ?? []).length > 0, id)
+  }
+  const temas = (e: 0 | 1 | 2) => passosDaFaixa(GUIAS.glasgow, e).map((p) => p.tema ?? '')
+  assert.ok(temas(2).includes('TCE grave: neurocirurgia'))
+  assert.ok(!temas(0).includes('TCE grave: neurocirurgia'))
+  assert.ok(!temas(2).includes('Tomografia no TCE leve e moderado'))
+})

@@ -28,9 +28,9 @@ export const DAS_2025: Fonte = {
 
 export const fichaIsrAdulto: Ficha = {
   ...fichaIsrLivro,
-  versao: '2026-11-14.1',
+  versao: '2026-11-16.1',
   fontes: [...fichaIsrLivro.fontes, ATS_IRPA_2026, DAS_2025],
-  revisadoEm: '14/11/2026 (DAS 2025 lida no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota da ATS 2026 na pré-oxigenação; revisão PubMed, itens médios)',
+  revisadoEm: '16/11/2026 (próximos passos do piloto das calculadoras, com fonte; aguarda aprovação do RT); 14/11/2026 (DAS 2025 lida no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota da ATS 2026 na pré-oxigenação; revisão PubMed, itens médios)',
 }
 
 const SEM_ITEM_VA = 'sem item do manual na ferramenta'

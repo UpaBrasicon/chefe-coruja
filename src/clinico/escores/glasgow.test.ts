@@ -48,5 +48,5 @@ test('glasgow: registro leva as pupilas; cuidado do Vreeburg 2024', () => {
   assert.match(duas.nota, /GCS-P 1/)
   assert.ok(duas.cuidados?.some((c) => /Vreeburg 2024/.test(c) && /separad/.test(c)))
   assert.ok(glasgow.ficha.fontes.some((f) => /39686742/.test(f.citacao)))
-  assert.equal(glasgow.ficha.versao, '2026-11-11.1')
+  assert.equal(glasgow.ficha.versao, '2026-11-16.1')
 })

@@ -1,5 +1,6 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { fichaAdulto } from './fonte.ts'
+import { KARDALAS_HIPOK_2018 } from '../fontesPubmed.ts'
 
 // Distúrbios eletrolíticos e reposições do adulto — Manual de Medicina de
 // Emergência do HCFMUSP (3ª ed., 2022): cap. 67 (potássio, p. 900–917),
@@ -8,7 +9,15 @@ import { fichaAdulto } from './fonte.ts'
 // esquema como "o manual traz"; a decisão é do profissional (ADR 0007).
 // Hiperpotassemia fica fora daqui: o app já tem regra própria (hiperpotassemia.ts).
 
-export const fichaReposicaoPotassio = fichaAdulto('adulto-reposicao-potassio', 'Hipocalemia — reposição de potássio', 'cap. 67, p. 900–907, e Anexo 5 — Reposições, p. 1498–1499')
+const baseReposicaoPotassio = fichaAdulto('adulto-reposicao-potassio', 'Hipocalemia — reposição de potássio', 'cap. 67, p. 900–907, e Anexo 5 — Reposições, p. 1498–1499')
+// Versão 2026-11-16.1: próximos passos do piloto das calculadoras pela revisão de
+// Kardalas 2018 (PMC, sem graduação), pedido do RT; nenhuma conta muda.
+export const fichaReposicaoPotassio: Ficha = {
+  ...baseReposicaoPotassio,
+  versao: '2026-11-16.1',
+  fontes: [...baseReposicaoPotassio.fontes, KARDALAS_HIPOK_2018],
+  revisadoEm: '16/11/2026 (próximos passos do piloto das calculadoras pela revisão narrativa de Kardalas 2018, texto integral do PMC; aguarda aprovação do RT); ' + baseReposicaoPotassio.revisadoEm,
+}
 export const fichaReposicaoMagnesio = fichaAdulto('adulto-reposicao-magnesio', 'Hipomagnesemia — reposição de magnésio', 'Anexo 5 — Reposições, p. 1501–1502; cap. 67, p. 907; cap. 68, p. 922')
 // Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 68: a
 // diretriz da Endocrine Society de 2023 (hipercalcemia da malignidade; GRADE) foi
