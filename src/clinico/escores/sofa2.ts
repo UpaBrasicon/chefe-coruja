@@ -17,14 +17,15 @@ export const sofa2: Escore = {
   ficha: {
     id: 'sofa-2',
     titulo: 'SOFA-2 — disfunção orgânica no adulto em UTI (2025)',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Ranzani OT, Singer M, Salluh JIF, et al. Development and Validation of the Sequential Organ Failure Assessment (SOFA)-2 Score. JAMA. 2025;334(23):2090–2103 (PMID 41159833). Tabela 2 e notas a–q (texto completo, PMC12573119); AUROC no resumo e em "Predictive Validity".', url: 'https://doi.org/10.1001/jama.2025.20516' },
       AHN_SOFA2_PS_2026,
       YEN_SOFA2_PS_2026,
+      { citacao: 'Singer M, Deutschman CS, Seymour CW, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801–810 (PMID 26903338; PMC4968574). Quadro 3 e critérios clínicos lidos no PMC em 16/11/2026.', url: 'https://doi.org/10.1001/jama.2016.0287' },
     ],
-    revisadoEm: '06/11/2026 (nota das validações no pronto-socorro, Ahn 2026 e Yen 2026; revisão PubMed, itens médios; lacunas da Central, lote 3, em 25/10/2026; aguarda aprovação do RT)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 6 das calculadoras; fontes lidas no texto integral em 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota das validações no pronto-socorro, Ahn 2026 e Yen 2026; revisão PubMed, itens médios; lacunas da Central, lote 3, em 25/10/2026; aguarda aprovação do RT)',
   },
   descricao: 'Seis sistemas de 0 a 4 pontos (0 a 24), com suporte orgânico atual e novos cortes. Desenvolvido e validado em UTI, com validações posteriores no pronto-socorro de adultos; o critério de sepse continua no SOFA original.',
   itens: [

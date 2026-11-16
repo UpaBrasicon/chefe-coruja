@@ -66,3 +66,18 @@ test('pancreatite e apendicite: BISAP de 3 ou mais pede cuidado intermediário; 
   assert.ok(alv(2).includes('Via laparoscópica'))
   assert.ok(!alv(1).includes('Via laparoscópica'))
 })
+
+test('UTI: NEWS2 separa resposta urgente e de emergência; CAM-ICU não avaliável traz o nível de alerta', () => {
+  const news = (e: 0 | 1 | 2) => passosDaFaixa(GUIAS.news2, e).map((p) => p.tema ?? '')
+  assert.ok(news(0).includes('Total 0 a 4'))
+  assert.ok(news(1).includes('Total 5 ou 6: resposta urgente'))
+  assert.ok(!news(1).includes('Total 7 ou mais: resposta de emergência'))
+  assert.ok(news(2).includes('Total 7 ou mais: resposta de emergência'))
+  const cam = (e: 0 | 1 | 2) => passosDaFaixa(GUIAS['cam-icu'], e).map((p) => p.tema ?? '')
+  assert.ok(cam(1).includes('Não avaliável'))
+  assert.ok(!cam(0).includes('Agitação que impede o desmame'))
+  assert.ok(cam(2).includes('Agitação que impede o desmame'))
+  assert.ok(cam(0).includes('Sem prevenção farmacológica'))
+  assert.ok(passosDaFaixa(GUIAS.rass, 0).some((p) => p.tema === 'Sedação leve'))
+  assert.equal((GUIAS['sofa-2'].armadilhas ?? []).length, 2)
+})

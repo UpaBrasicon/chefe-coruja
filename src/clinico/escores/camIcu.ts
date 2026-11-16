@@ -1,3 +1,4 @@
+import { PADIS_2025_LIDA } from '../adulto/infusoes.ts'
 import { completo, escolha, type Escore } from '../escore.ts'
 
 // CAM-ICU: regra lógica, não soma — característica 1 E 2, mais 3 OU 4.
@@ -13,13 +14,14 @@ export const camIcu: Escore = {
   ficha: {
     id: 'cam-icu',
     titulo: 'CAM-ICU — delirium no paciente crítico',
-    versao: '2026-09-27.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Ely EW, Inouye SK, Bernard GR, et al. Delirium in mechanically ventilated patients: validity and reliability of the confusion assessment method for the intensive care unit (CAM-ICU). JAMA. 2001;286(21):2703–2710.', url: 'https://doi.org/10.1001/jama.286.21.2703' },
-      { citacao: 'Devlin JW, Skrobik Y, Gélinas C, et al. Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med. 2018;46(9):e825–e873.', url: 'https://doi.org/10.1097/CCM.0000000000003299' },
+      { citacao: 'Devlin JW, Skrobik Y, Gélinas C, et al. Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med. 2018;46(9):e825–e873 (PMID 30113379). Texto integral gratuito na LWW lido em 16/11/2026.', url: 'https://doi.org/10.1097/CCM.0000000000003299' },
+      PADIS_2025_LIDA,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 6 das calculadoras; fontes lidas no texto integral em 16/11/2026; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Delirium no paciente crítico por quatro características, incluindo o intubado',
   itens: [
