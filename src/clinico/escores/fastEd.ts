@@ -1,4 +1,5 @@
 import { completo, escolha, somar, type Escore } from '../escore.ts'
+import { AHA_ASA_2026 } from '../adulto/avcTrombolise.ts'
 
 // FAST-ED (Field Assessment Stroke Triage for Emergency Destination): escores
 // P2/P3, item E8; decisão A do RT em 11/11/2026, como a única escala de
@@ -14,12 +15,13 @@ export const fastEd: Escore = {
   ficha: {
     id: 'fast-ed',
     titulo: 'FAST-ED — suspeita de oclusão de grande vaso no AVC',
-    versao: '2026-11-11.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Lima FO, Silva GS, Furie KL, et al. Field Assessment Stroke Triage for Emergency Destination: A Simple and Accurate Prehospital Scale to Detect Large Vessel Occlusion Strokes. Stroke. 2016;47(8):1997–2002 (PMID 27364531; texto completo e Tabela 1 lidos): itens, pontos, faixas e desempenho (≥ 4: sensibilidade 0,60, especificidade 0,89, VPP 0,72, VPN 0,82).', url: 'https://doi.org/10.1161/STROKEAHA.116.013301' },
+      AHA_ASA_2026,
     ],
-    revisadoEm: '11/11/2026 (escores P2/P3, item E8; Tabela 1 conferida no PDF do artigo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 4 das calculadoras pela AHA/ASA 2026 já lida; aguarda aprovação do RT); 11/11/2026 (escores P2/P3, item E8; Tabela 1 conferida no PDF do artigo)',
   },
   descricao: 'Cinco itens do NIHSS, de 0 a 9 pontos: face, braço, fala, olhar e negligência. O tempo é registrado e não pontua.',
   itens: [

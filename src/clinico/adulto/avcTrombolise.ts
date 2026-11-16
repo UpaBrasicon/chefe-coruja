@@ -325,7 +325,13 @@ export const CUIDADOS_AVC = [
 
 // ── NIHSS (Tabela 2, p. 515–518) ─────────────────────────────────────────────
 
-export const fichaNihssAdulto = fichaAdulto('adulto-nihss', 'NIHSS — escala de AVC do NIH (manual do HC)', 'cap. 38, p. 515–518 (Tabela 2); cortes citados nas p. 520–540')
+const baseNihss = fichaAdulto('adulto-nihss', 'NIHSS — escala de AVC do NIH (manual do HC)', 'cap. 38, p. 515–518 (Tabela 2); cortes citados nas p. 520–540')
+export const fichaNihssAdulto = {
+  ...baseNihss,
+  versao: '2026-11-16.1',
+  fontes: [...baseNihss.fontes, AHA_ASA_2026],
+  revisadoEm: '16/11/2026 (próximos passos do lote 4 das calculadoras pela AHA/ASA 2026 já lida; aguarda aprovação do RT); ' + baseNihss.revisadoEm,
+}
 
 const NT = { rotulo: 'Não testável — amputação ou fusão articular', valor: 0, naoTestavel: true }
 const motorSup = (lado: string): Item => ({ tipo: 'escolha', id: `5${lado === 'esquerdo' ? 'a' : 'b'}`, rotulo: `5${lado === 'esquerdo' ? 'a' : 'b'} — Motricidade do membro superior ${lado}`, opcoes: [

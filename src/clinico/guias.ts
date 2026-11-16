@@ -1,3 +1,4 @@
+import { DIRETRIZ_AVC_2026 } from './adulto/avcTrombolise.ts'
 import { DIRETRIZ_EI } from './adulto/duke.ts'
 import { DIRETRIZ_TEP_2026 } from './adulto/tep2026.ts'
 import { DIRETRIZ_PLEURA_2023 } from './escores/light.ts'
@@ -154,7 +155,48 @@ const ASH_TEV = 'ASH 2018, diagnóstico de tromboembolismo venoso'
 // CRB-65: McNally 2010 (PMC2944951), já citada; a conduta por faixa só está numa figura (imagem) e a BTS 2009 não está no PMC.
 const MCNALLY = 'McNally et al. 2010, revisão sistemática do CRB-65 (Br J Gen Pract)'
 
+// AVC: diretriz AHA/ASA 2026 já lida e guardada em avcTrombolise.ts (classe e página do PDF).
+function linhaAvc(tema: string, faixas?: Faixas): PassoGuia {
+  const l = DIRETRIZ_AVC_2026.find((d) => d.tema === tema)
+  if (!l) throw new Error(`linha da AHA/ASA 2026 sem tema "${tema}"`)
+  return { tema, texto: l.texto, ref: { fonte: 'AHA/ASA 2026, AVC isquêmico agudo', pagina: l.pagina, grau: l.classe }, faixas }
+}
+
+// AIT: ESO 2021 (PMC8370080); a declaração da AHA 2023 não está no PMC.
+const ESO_AIT = 'ESO 2021, ataque isquêmico transitório'
+
 export const GUIAS: Record<string, Guia> = {
+  abcd2: {
+    proximosPassos: [
+      { tema: 'Avaliação especializada em 24 h', texto: 'Avaliação por especialista em até 24 horas do início dos sintomas.', ref: { fonte: ESO_AIT, pagina: 'PICO 1.1', grau: 'recomendação forte, qualidade baixa' } },
+      { tema: 'ABCD2 de 4 ou mais: dupla antiagregação', texto: 'No AIT não cardioembólico de alto risco (ABCD2 de 4 ou mais), dupla antiagregação curta com AAS e clopidogrel em vez de um antiagregante, depois monoterapia.', ref: { fonte: ESO_AIT, pagina: 'PICO 8.1', grau: 'recomendação forte, qualidade alta' }, faixas: [1, 2] },
+      { tema: 'Como iniciar a dupla antiagregação', texto: 'Antes, imagem do encéfalo para excluir sangramento ou outra causa. Começar o quanto antes, de preferência nas primeiras 24 horas, com uma dose de ataque (pelo menos 150 mg de AAS e 300 mg de clopidogrel) e depois a dose diária de manutenção; entre 10 dias e 3 semanas, suspender um dos dois e seguir com o outro.', ref: { fonte: ESO_AIT, pagina: 'PICO 8.1, informação adicional', grau: 'sem graduação' }, faixas: [1, 2] },
+      { tema: 'ABCD2 abaixo de 4', texto: 'No AIT não cardioembólico de baixo risco ou com diagnóstico incerto, o painel votou contra a dupla antiagregação em vez de um antiagregante.', ref: { fonte: ESO_AIT, pagina: 'PICO 8.1, consenso de especialistas (9 de 9)', grau: 'consenso' }, faixas: [0] },
+      { tema: 'Estenose arterial', texto: 'Angio-RM ou angio-TC para confirmar, depois do ultrassom, estenose de grande artéria de 50% ou mais, para guiar a conduta.', ref: { fonte: ESO_AIT, pagina: 'PICO 6.1', grau: 'fraca, qualidade muito baixa' } },
+    ],
+    armadilhas: [
+      { texto: 'Não usar o ABCD2 sozinho para achar o alto risco ou decidir triagem e tratamento: com sensibilidade limitada, escores de 3 ou menos incluem pacientes que recorrem e precisam de avaliação e tratamento precoces.', ref: { fonte: ESO_AIT, pagina: 'PICO 4.1 e resumo', grau: 'fraca contra, qualidade muito baixa' } },
+    ],
+  },
+  'adulto-nihss': {
+    proximosPassos: [
+      linhaAvc('Trombolítico até 4,5 h'),
+      linhaAvc('Déficit leve não incapacitante (até 4,5 h)', [0]),
+      linhaAvc('PA antes da trombólise'),
+      linhaAvc('Trombectomia 0–6 h', [1, 2]),
+      linhaAvc('Trombectomia 6–24 h', [1, 2]),
+      linhaAvc('Oclusão de basilar', [1, 2]),
+      linhaAvc('Glicemia'),
+    ],
+  },
+  'fast-ed': {
+    proximosPassos: [
+      linhaAvc('Trombolítico até 4,5 h'),
+      linhaAvc('Trombectomia 0–6 h', [1, 2]),
+      linhaAvc('Trombectomia 6–24 h', [1, 2]),
+      linhaAvc('Oclusão de basilar', [1, 2]),
+    ],
+  },
   'wells-tvp': {
     proximosPassos: [
       { tema: 'TVP improvável: D-dímero primeiro', texto: 'Começar pelo D-dímero (de alta sensibilidade) para excluir a TVP; D-dímero negativo exclui, sem mais exames nem anticoagulação. Se precisar de mais exames, ultrassom proximal ou de toda a perna; sem D-dímero disponível, ultrassom proximal ou de toda a perna sozinho também serve.', ref: { fonte: ASH_TEV, pagina: 'recomendação 5a', grau: 'forte para o D-dímero; condicional para o ultrassom' }, faixas: [0] },
