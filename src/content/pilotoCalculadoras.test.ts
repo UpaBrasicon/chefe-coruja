@@ -15,8 +15,8 @@ secoes.forEach((s, i) => {
   for (const m of trecho.matchAll(/\bt\('([^']+)'/g)) chaves.add(`${s.slug}/${m[1]}`)
 })
 
-test('registro lido: as 232 ferramentas da Central', () => {
-  assert.equal(chaves.size, 232)
+test('registro lido: as 233 ferramentas da Central (RACE em 16/11/2026)', () => {
+  assert.equal(chaves.size, 233)
 })
 
 test('piloto: dez ferramentas, todas no registro', () => {
@@ -42,7 +42,7 @@ test('relacionadas: de 2 a 5 por ferramenta do piloto, todas no registro, sem a 
 test('lote 2: todo escore tem relacionadas que existem no registro, sem a própria', async () => {
   const { relacionadasDe } = await import('./pilotoCalculadoras.ts')
   const escores = [...chaves].filter((c) => c.startsWith('escores/'))
-  assert.equal(escores.length, 50)
+  assert.equal(escores.length, 51)
   for (const c of escores) {
     const r = relacionadasDe(c)
     // grupos de uma ferramenta só (McIsaac, 4AT, TWIST) ficam sem vizinhas
