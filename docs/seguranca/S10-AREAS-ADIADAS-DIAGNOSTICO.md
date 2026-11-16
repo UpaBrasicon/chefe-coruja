@@ -161,3 +161,5 @@ Decisão do RT, "Marca de ambiente":
 - o seed da homologação recusa onde a marca estiver `false`;
 - gravar `false` na produção espera a liberação de permissão do RT;
 - a rede fictícia da produção fica como está, a decidir depois.
+
+**Rede fictícia, decidida em 16/11/2026.** O RT escolheu apagar, mas o banco recusou apagar os 4 pacientes fictícios: a guarda de 20 anos do prontuário (`private.bloquear_exclusao_clinica`, Lei 13.787/2018) vale para qualquer paciente, e a transação foi desfeita. Com o ok do RT, a rede foi **desativada**: organização, unidade, 4 setores, 16 leitos e 6 salas com `ativo = false`. Saíram 126 linhas de `censo_ocupacao` e 1 de `hermes_resumo_unidade`, que não são registro clínico. A produção fica com 2 unidades ativas. Para voltar, basta religar o `ativo` nas mesmas linhas.
