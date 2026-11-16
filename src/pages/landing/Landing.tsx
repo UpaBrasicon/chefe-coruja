@@ -26,10 +26,10 @@ const HORAS = ['07', '09', '11', '13', '15', '17', '19', '21', '23', '01', '03',
 type Linha = { papel: string; turno: string; inicio: number; duracao: number; dentro: boolean; estado: string }
 
 const ESCALA: Linha[] = [
-  { papel: 'Plantonista', turno: '12 h · 07–19', inicio: 0, duracao: 12, dentro: true, estado: 'Na escala' },
+  { papel: 'Médico', turno: '12 h · 07–19', inicio: 0, duracao: 12, dentro: true, estado: 'Na escala' },
   { papel: 'Enfermeiro', turno: '12 h · 07–19', inicio: 0, duracao: 12, dentro: true, estado: 'Na escala' },
   { papel: 'Técnico de enfermagem', turno: '6 h · 13–19', inicio: 6, duracao: 6, dentro: true, estado: 'Na escala' },
-  { papel: 'Plantonista', turno: '12 h · 19–07', inicio: 12, duracao: 12, dentro: false, estado: 'Entra às 19:00' },
+  { papel: 'Médico', turno: '12 h · 19–07', inicio: 12, duracao: 12, dentro: false, estado: 'Entra às 19:00' },
   { papel: 'Farmacêutico', turno: '6 h · 07–13', inicio: 0, duracao: 6, dentro: false, estado: 'Turno encerrado' },
 ]
 
@@ -110,12 +110,12 @@ function Item({ termo, dado, children }: { termo: string; dado?: string; childre
 const PAPEIS: [string, string][] = [
   ['Recepção', 'Abre a ficha do paciente na porta e acompanha as filas.'],
   ['Enfermagem', 'Enfermeiro e técnico: triagem e classificação de risco (só o enfermeiro classifica), checagem da medicação, coleta, observação e internação.'],
-  ['Plantonista', 'Atendimento na porta, prescrição, exames, evolução, alta e passagem de plantão.'],
+  ['Médico', 'Atendimento na porta, prescrição, exames, evolução, alta e passagem de plantão.'],
   ['Farmacêutico', 'Dispensação, estoque e alta vigilância. Confere a alteração de prescrição: o que não confere volta para quem alterou.'],
   ['Gestor', 'Escala, presença, painel e listas da unidade, e reabertura de contas.'],
   ['Faturamento', 'Contas do atendimento, BPA, AIH e APAC, pré-auditoria e glosas.'],
   ['Regulador e NIR', 'Fila regulada, decisão, mapa de vagas e cobranças.'],
-  ['Telemedicina', 'Apoio remoto ao plantonista.'],
+  ['Telemedicina', 'Apoio remoto ao médico.'],
   ['Administrador', 'Todas as unidades da organização, só em agregado: nenhuma tela mostra identidade de paciente.'],
 ]
 
@@ -281,7 +281,7 @@ export default function Landing() {
                 Turnos de 12 h (07–19, 19–07) ou de 6 h, pela escala de cada setor. Fora do turno, o sistema não abre.
               </Item>
               <Item termo="Leito antes do nome" dado="12A">
-                O plantonista chama o paciente pelo leito, e a tela mostra o leito antes do nome. As listas quebram em duas linhas em
+                O médico chama o paciente pelo leito, e a tela mostra o leito antes do nome. As listas quebram em duas linhas em
                 vez de rolar para o lado, porque rolar esconderia a pendência.
               </Item>
             </Registro>

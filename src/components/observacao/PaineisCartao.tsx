@@ -328,7 +328,7 @@ export function PainelPassar({ linha, acao, fechar, erro }: { linha: LinhaObserv
       </Select>
       {colegas.data && colegas.data.length === 0 && <span className="text-apoio text-atencao">Ninguém na escala deste setor agora nem nas próximas 12 horas.</span>}
       <Textarea rows={2} value={resumo} onChange={(e) => setResumo(e.target.value)} aria-label="Resumo da passagem"
-        placeholder="O que o próximo plantonista precisa saber deste box (mínimo de 15 letras)" />
+        placeholder="O que o próximo profissional precisa saber deste box (mínimo de 15 letras)" />
       <div className="flex flex-wrap gap-2">
         <Button size="sm" disabled={!para || resumo.trim().length < 15}
           onClick={() => void acao(() => rpc('enviar_passagem', { p_internacao: linha.internacao_id, p_para: para, p_resumo: resumo })).then((ok) => ok && fechar())}>

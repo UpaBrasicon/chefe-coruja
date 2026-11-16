@@ -20,7 +20,7 @@ export function AvisoRascunhosCheckout({ unidadeId }: { unidadeId: string | null
       <FileWarning className="size-4 shrink-0" aria-hidden />
       <span className="min-w-0 flex-[1_1_220px] text-pretty">
         {n === 1 ? 'Você tem 1 documento em rascunho, ainda não emitido.' : `Você tem ${n} documentos em rascunho, ainda não emitidos.`}{' '}
-        Rascunho não emitido não entra no prontuário e o próximo plantonista não o vê. Isto é só um aviso: dá para sair assim mesmo. Emita ou descarte antes.
+        Rascunho não emitido não entra no prontuário e o próximo médico não o vê. Isto é só um aviso: dá para sair assim mesmo. Emita ou descarte antes.
       </span>
       {papelAtivo === 'plantonista' && <Link to="/pendencias-pep" className="font-medium whitespace-nowrap text-acao underline-offset-4 hover:underline">
         Ver pendências do PEP

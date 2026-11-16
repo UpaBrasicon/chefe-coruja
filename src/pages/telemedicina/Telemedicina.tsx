@@ -249,7 +249,7 @@ export function Extrato() {
         ))}
       </ul>
       <p className="text-rotulo text-pretty text-tinta-sussurro">
-        {pareceres} {pareceres === 1 ? 'parecer respondido' : 'pareceres respondidos'} nos plantões do mês. O valor de cada plantão é o que o gestor configurou para a unidade (o mesmo do extrato do plantonista); a rede não tem valor por parecer cadastrado, então parecer não entra na soma.
+        {pareceres} {pareceres === 1 ? 'parecer respondido' : 'pareceres respondidos'} nos plantões do mês. O valor de cada plantão é o que o gestor configurou para a unidade (o mesmo do extrato do médico); a rede não tem valor por parecer cadastrado, então parecer não entra na soma.
       </p>
     </section>
   )
@@ -490,7 +490,7 @@ function Credenciais() {
             </ul>
           </Secao>
           <Nota icone={<Lock />}>
-            Este papel não entra na Central do Plantonista, no Plantão nem nos leitos da unidade. O prontuário do paciente abre só pela teleinterconsulta que você aceitou, e cada abertura vai para a trilha de auditoria.
+            Este papel não entra na Central do Médico, no Plantão nem nos leitos da unidade. O prontuário do paciente abre só pela teleinterconsulta que você aceitou, e cada abertura vai para a trilha de auditoria.
           </Nota>
         </>
       )}

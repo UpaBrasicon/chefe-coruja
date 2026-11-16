@@ -136,7 +136,7 @@ SELECT pg_temp.falha(format('SELECT public.encaminhar_interno(%L, %L, %L)', pg_t
 SELECT pg_temp.falha(format('SELECT public.encaminhar_interno(%L, %L, %L, NULL, %L)', pg_temp.u('pac'), 'Cirurgia geral', 'abdome agudo a esclarecer', 'Cozinha'),
   'Serviço fora da lista', 'serviço fora da lista é recusado');
 SELECT pg_temp.falha(format('SELECT public.encaminhar_interno(%L, %L, %L, %L)', pg_temp.u('pac'), 'Cirurgia geral', 'abdome agudo a esclarecer', '10000000-0000-4000-8000-000000000004'),
-  'O médico de destino não é plantonista desta unidade', 'destino precisa ser médico da unidade');
+  'O destino não é médico desta unidade', 'destino precisa ser médico da unidade');
 SELECT pg_temp.falha(format('SELECT public.encaminhar_interno(%L, %L, %L, %L)', pg_temp.u('pac'), 'Cirurgia geral', 'abdome agudo a esclarecer', '10000000-0000-4000-8000-000000000002'),
   'Não se encaminha o paciente para si mesmo', 'não encaminha para si');
 SELECT pg_temp.confere((SELECT jsonb_agg(x ->> 'nome') FROM jsonb_array_elements(public.medicos_para_encaminhar(pg_temp.u('pac'))) x) = '["Teleconsultor de Teste"]'::jsonb,

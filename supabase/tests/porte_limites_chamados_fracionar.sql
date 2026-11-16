@@ -169,7 +169,7 @@ END $$;
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000005');
 SELECT pg_temp.falha(format($$SELECT public.fracionar_plantao(%L, 2)$$, pg_temp.v('p_noite')),
-  'Acesso negado: apenas o plantonista escalado ou o gestor', 'quem não é o escalado nem gestor não fraciona');
+  'Acesso negado: só quem está escalado ou o gestor', 'quem não é o escalado nem gestor não fraciona');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
 SELECT pg_temp.falha(format($$SELECT public.fracionar_plantao(%L, 5)$$, pg_temp.v('p_noite')),
   'O número de partes deve ser entre 2 e 4', 'no máximo 4 partes');

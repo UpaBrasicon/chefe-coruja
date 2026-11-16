@@ -43,7 +43,7 @@ export default function Protocolos() {
   return (
     <div className="mx-auto w-full max-w-[896px]">
       <TituloPagina icone={ClipboardPlus} titulo="Protocolos"
-        descricao="Os protocolos de prescrição publicados aqui aparecem no Receituário do plantonista. Ele escolhe item a item e nunca recebe o pacote sem ver." />
+        descricao="Os protocolos de prescrição publicados aqui aparecem no Receituário do médico. Ele escolhe item a item e nunca recebe o pacote sem ver." />
       <div className="flex flex-col gap-[22px]">
         <Classificacao />
         <TituloSecao className="mt-2 mb-0">Protocolos de prescrição</TituloSecao>
@@ -348,7 +348,7 @@ function EditorReceita({ unidadeId, p, onFim, onCancelar }: {
         <label className="flex flex-[1_1_320px] flex-col gap-[5px]"><span className="text-apoio font-medium text-grafite">Fonte</span>
           <Input value={fonte} onChange={(e) => setFonte(e.target.value)} placeholder="Protocolo ou diretriz da unidade, com versão e data" /></label>
       </div>
-      <span className="text-rotulo text-pretty text-tinta-sussurro">Publicar exige versão e fonte. Cada gravação fica guardada; a anterior não se apaga. O rascunho não aparece para o plantonista.</span>
+      <span className="text-rotulo text-pretty text-tinta-sussurro">Publicar exige versão e fonte. Cada gravação fica guardada; a anterior não se apaga. O rascunho não aparece para o médico.</span>
       {erro && <p className="text-apoio text-critico">{erro}</p>}
       <div className="flex flex-wrap gap-2">
         <Button disabled={salvando} onClick={() => void gravar(true)}><ShieldCheck /> Publicar nova versão</Button>

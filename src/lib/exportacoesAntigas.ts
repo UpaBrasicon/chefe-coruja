@@ -8,7 +8,7 @@ export type LinhaTransferenciaCsv = { paciente: string | null; data: string; mot
 
 export function csvEscala(unidade: string, mes: string, linhas: LinhaEscalaCsv[]) {
   return gerarCsv(
-    ['Setor', 'Data', 'Turno', 'Plantonista', 'Quinzenal'],
+    ['Setor', 'Data', 'Turno', 'Profissional', 'Quinzenal'],
     linhas.map((l) => [l.setor, l.data, l.turno, l.plantonista, l.quinzenal]),
     { contexto: [['Unidade', unidade], ['Mês', mes]] },
   )

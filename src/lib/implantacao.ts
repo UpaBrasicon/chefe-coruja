@@ -27,7 +27,7 @@ export const RESPONSAVEL: Record<Item['responsavel'], string> = {
 
 export const PAPEIS: Record<string, string> = {
   gestor: 'Gestor', recepcao: 'Recepção', enfermeiro: 'Enfermeiro', tecnico_enfermagem: 'Técnico de enfermagem',
-  plantonista: 'Médico plantonista', farmaceutico: 'Farmacêutico', faturamento: 'Faturamento',
+  plantonista: 'Médico', farmaceutico: 'Farmacêutico', faturamento: 'Faturamento',
   regulador: 'Médico regulador', telemedicina: 'Telemedicina',
 }
 
