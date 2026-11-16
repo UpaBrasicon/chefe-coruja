@@ -28,7 +28,7 @@ ficha.
 
 Base: `origin/master` em `81f5bff9` (16/11/2026). As linhas citadas são desse
 commit. A homologação pediu login da Vercel e não havia sessão aberta; o
-levantamento foi feito pelo código. A página do MDCalc foi aberta no navegador
+levantamento foi feito pelo código; depois o RT abriu a sessão no Chrome dele e duas telas foram conferidas (seção 3, "Conferido na homologação"). A página do MDCalc foi aberta no navegador
 em 16/11/2026 (cookies não essenciais recusados).
 
 ## Decisões do RT (16/11/2026)
@@ -141,6 +141,23 @@ com página aparece por item ("PS Pediatria ICr-HCFMUSP, p. …" em
 | P7 | 58 telas têm tabela com largura mínima fixa (`min-w-[640px]` e parecidas, ex.: `IsrAdulto.tsx:60`) | telas | Rolagem lateral no celular |
 | P8 | Nenhuma ligação entre o paciente aberto (porta, leito) e a Central. Só a de infusões lê parâmetro do endereço (`calculadoras/InfusoesAdulto.tsx:250`) | — | Abrir a calculadora a partir do paciente exige sair da tela dele |
 | P9 | Peças de resultado duplicadas (tabela da seção 1) | 8 kits | Cada melhoria precisa ser feita oito vezes; a aparência muda entre ferramentas |
+
+### Conferido na homologação (16/11/2026)
+
+Com a sessão de médico aberta pelo RT no Chrome dele (UPA Fase 5 24h), sem gravar nada:
+
+| # | O que se viu | Causa no código |
+|---|---|---|
+| H1 | **HEART: cada pergunta ocupa 329 px de altura, 260 deles vazios** entre o nome do item e as opções. Com 6 itens, o resultado começa a 1 986 px do topo, numa janela de 897 px: mais de duas telas abaixo | `EscoreTela.tsx:22-23`: quando as opções não cabem na linha, a linha vira coluna (`flex-col`) e o rótulo mantém `flex-[1_1_260px]`, que em coluna vira 260 px de altura. Vale para todo escore com opção longa |
+| H2 | HEART pergunta "Adulto / Criança" de novo e mostra a tabela inteira da SBC 2025 (10 linhas) na tela principal, abaixo do resultado | P2 e F5 |
+| H3 | HEART: as opções não mostram quantos pontos valem (o modelo mostra 0, +1, +2) | `EscoreTela.tsx:86-93` |
+| H4 | Intubação: o campo de peso abre com "0" e, apagado, volta a "0" | P3 |
+| H5 | **Intubação: com 750 kg, a tela calcula "1.125 mg · 112,5 mL · 6 ampolas" na primeira droga, sem nenhum aviso** | P5: `IsrAdulto.tsx:14-23` não valida o peso |
+| H6 | Nenhum botão de copiar nas duas telas | P6 |
+
+H1 e H5 são defeitos de produção (o mesmo código está no master). Entram no
+piloto (F2 e F7); se o RT quiser, podem ser corrigidos antes, em branch própria,
+como correção pequena.
 
 O que já funciona e fica: a conta separada da tela em `src/clinico`, com
 testes; a ficha com fonte, versão e aprovação do RT; o bloqueio da ferramenta de
