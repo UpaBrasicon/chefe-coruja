@@ -1,4 +1,6 @@
 import { DIRETRIZ_EI } from './adulto/duke.ts'
+import { DIRETRIZ_TEP_2026 } from './adulto/tep2026.ts'
+import { DIRETRIZ_PLEURA_2023 } from './escores/light.ts'
 import { DIRETRIZ_DAS_2025 } from './adulto/isr.ts'
 import { NOTAS_PADIS_2025 } from './adulto/infusoes.ts'
 import { COSTR_2026_PCR, DIRETRIZ_ALS_2025 } from './adulto/pcr.ts'
@@ -127,7 +129,99 @@ function linhaEi(tema: string, faixas?: Faixas): PassoGuia {
 // já citada na ficha e aberta no PMC (PMC7091474). Conclusão do estudo, não diretriz.
 const CSRS_2020 = 'Thiruganasambandamoorthy et al. 2020, validação do escore canadense (JAMA Intern Med)'
 
+// TEP: diretriz AHA/ACC 2026 já lida e citada (tep2026.ts). Light: BTS 2023 (light.ts).
+function linhaTep(tema: string, faixas?: Faixas): PassoGuia {
+  const l = DIRETRIZ_TEP_2026.find((d) => d.tema === tema)
+  if (!l) throw new Error(`linha da AHA/ACC 2026 de TEP sem tema "${tema}"`)
+  return { tema, texto: l.aha, ref: { fonte: 'AHA/ACC 2026, embolia pulmonar aguda', pagina: l.onde, grau: l.classe === 'figura' ? 'fluxograma da diretriz' : `classe ${l.classe}` }, faixas }
+}
+function linhaPleura(tema: string, faixas?: Faixas): PassoGuia {
+  const l = DIRETRIZ_PLEURA_2023.find((d) => d.tema === tema)
+  if (!l) throw new Error(`linha da BTS 2023 sem tema "${tema}"`)
+  return { tema, texto: l.diretriz, ref: { fonte: 'BTS 2023, doença pleural', grau: l.grau }, faixas }
+}
+const TEP_DIAGNOSTICO = (alta: Faixas, naoAlta: Faixas): PassoGuia[] => [
+  linhaTep('PERC', [0]),
+  linhaTep('D-dímero ajustado pela idade', naoAlta),
+  linhaTep('YEARS', naoAlta),
+  linhaTep('Exame de imagem'),
+  linhaTep('Início da anticoagulação', alta),
+  linhaTep('Gestante'),
+]
+
+// TVP: ASH 2018 (diagnóstico de TEV), já citada na ficha e lida no texto integral do PMC (PMC6258916).
+const ASH_TEV = 'ASH 2018, diagnóstico de tromboembolismo venoso'
+// CRB-65: McNally 2010 (PMC2944951), já citada; a conduta por faixa só está numa figura (imagem) e a BTS 2009 não está no PMC.
+const MCNALLY = 'McNally et al. 2010, revisão sistemática do CRB-65 (Br J Gen Pract)'
+
 export const GUIAS: Record<string, Guia> = {
+  'wells-tvp': {
+    proximosPassos: [
+      { tema: 'TVP improvável: D-dímero primeiro', texto: 'Começar pelo D-dímero (de alta sensibilidade) para excluir a TVP; D-dímero negativo exclui, sem mais exames nem anticoagulação. Se precisar de mais exames, ultrassom proximal ou de toda a perna; sem D-dímero disponível, ultrassom proximal ou de toda a perna sozinho também serve.', ref: { fonte: ASH_TEV, pagina: 'recomendação 5a', grau: 'forte para o D-dímero; condicional para o ultrassom' }, faixas: [0] },
+      { tema: 'TVP improvável: o que não fazer', texto: 'Não diagnosticar TVP só com D-dímero positivo, e não pedir mais exames depois de ultrassom proximal ou de toda a perna negativo.', ref: { fonte: ASH_TEV, pagina: 'recomendação 5b', grau: 'forte' }, faixas: [0] },
+      { tema: 'TVP provável: ultrassom primeiro', texto: 'Começar pelo ultrassom proximal ou de toda a perna; se negativo e sem diagnóstico alternativo, repetir o ultrassom (um novo exame em 1 semana).', ref: { fonte: ASH_TEV, pagina: 'recomendação 7a', grau: 'condicional' }, faixas: [2] },
+      { tema: 'TVP provável: o que não fazer', texto: 'Não diagnosticar TVP só com D-dímero positivo.', ref: { fonte: ASH_TEV, pagina: 'recomendação 7b', grau: 'forte' }, faixas: [2] },
+      { tema: 'Suspeita de TVP recorrente', texto: 'Com probabilidade improvável, começar pelo D-dímero para excluir; D-dímero positivo ou probabilidade provável, ultrassom proximal.', ref: { fonte: ASH_TEV, pagina: 'recomendação 8', grau: 'condicional' } },
+    ],
+  },
+  'crb-65': {
+    armadilhas: [
+      { texto: 'Fora do hospital (atenção primária), o CRB-65 superestima a mortalidade em 30 dias em todas as faixas; use com cautela nesse cenário.', ref: { fonte: MCNALLY, pagina: 'conclusão do resumo e discussão', grau: 'sem graduação' } },
+    ],
+  },
+  'wells-tep': { proximosPassos: TEP_DIAGNOSTICO([2], [0, 1]) },
+  'genebra-revisado': { proximosPassos: TEP_DIAGNOSTICO([2], [0, 1]) },
+  years: {
+    proximosPassos: [linhaTep('YEARS'), linhaTep('D-dímero ajustado pela idade'), linhaTep('Exame de imagem', [1]), linhaTep('Gestante')],
+  },
+  'adulto-pesi': {
+    proximosPassos: [
+      linhaTep('Escores de risco'),
+      linhaTep('Tratamento ambulatorial', [0]),
+      linhaTep('Início da anticoagulação'),
+      linhaTep('Anticoagulante oral'),
+      linhaTep('HBPM × HNF', [1, 2]),
+    ],
+    evidencias: [{ texto: 'Categorias A a E da AHA/ACC 2026: o PESI e o sPESI separam a categoria B (escore baixo) da C (escore elevado).', ref: { fonte: 'AHA/ACC 2026, embolia pulmonar aguda', pagina: 'categorias A a E' } }],
+  },
+  spesi: {
+    proximosPassos: [
+      linhaTep('Escores de risco'),
+      linhaTep('Tratamento ambulatorial', [0]),
+      linhaTep('Início da anticoagulação'),
+      linhaTep('Anticoagulante oral'),
+      linhaTep('HBPM × HNF', [2]),
+    ],
+  },
+  'psi-port': {
+    proximosPassos: [
+      {
+        tema: 'Internar ou tratar fora do hospital',
+        texto: 'Além do julgamento clínico, usar uma regra prognóstica validada para decidir a internação, de preferência o PSI (recomendação forte, qualidade moderada) em vez do CURB-65 (recomendação condicional, qualidade baixa).',
+        ref: atsIdsa('questão 6'),
+      },
+      {
+        tema: 'Quem vai direto para a UTI',
+        texto: 'Admissão direta na UTI do paciente com hipotensão que exige vasopressor ou com insuficiência respiratória que exige ventilação mecânica.',
+        ref: atsIdsa('questão 7, recomendação 1', 'forte, qualidade baixa'),
+      },
+    ],
+    armadilhas: [
+      { texto: 'O PSI pode subestimar a gravidade no paciente jovem e simplifica as variáveis contínuas; como apoio à decisão, use junto com o julgamento clínico.', ref: atsIdsa('questão 6, resumo da evidência') },
+      ...CURB65_ARMADILHAS,
+    ],
+  },
+  light: {
+    proximosPassos: [
+      linhaPleura('Toracocentese'),
+      linhaPleura('Amostra'),
+      linhaPleura('pH na hora'),
+      linhaPleura('pH do líquido e drenagem'),
+      linhaPleura('Sem pH disponível'),
+      linhaPleura('Calibre do dreno', [1]),
+      linhaPleura('Terapia intrapleural', [1]),
+    ],
+  },
   'adulto-duke-modificado': {
     proximosPassos: [
       linhaEi('Hemoculturas'),

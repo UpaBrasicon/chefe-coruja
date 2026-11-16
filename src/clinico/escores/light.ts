@@ -32,7 +32,7 @@ export const light: Escore = {
   ficha: {
     id: 'light',
     titulo: 'Critérios de Light — exsudato ou transudato',
-    versao: '2026-11-14.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Light RW, Macgregor MI, Luchsinger PC, Ball WC. Pleural effusions: the diagnostic separation of transudates and exudates. Ann Intern Med. 1972;77(4):507–513.', url: 'https://doi.org/10.7326/0003-4819-77-4-507' },
@@ -42,7 +42,7 @@ export const light: Escore = {
       { citacao: 'Porcel JM, Trujillano J, Porcel L, et al. Development and validation of a diagnostic prediction model for heart failure-related pleural effusions: the BANCA score. ERJ Open Res. 2025;11:01030-2024. Corte ótimo de NT-proBNP 2500 pg/mL.', url: 'https://doi.org/10.1183/23120541.01030-2024' },
       BTS_PLEURA_2023,
     ],
-    revisadoEm: '14/11/2026 (BTS 2023 ao lado do manual do HC, cap. 36; lote 7 da revisão do HCFMUSP; aguarda aprovação do RT); 11/11/2026 (regra sem soro e desempenho pelo Porcel 2026, decisão H21 do RT)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 3 das calculadoras, com fonte já lida; aguarda aprovação do RT); 14/11/2026 (BTS 2023 ao lado do manual do HC, cap. 36; lote 7 da revisão do HCFMUSP; aguarda aprovação do RT); 11/11/2026 (regra sem soro e desempenho pelo Porcel 2026, decisão H21 do RT)',
   },
   descricao: 'Exsudato ou transudato no derrame pleural, com o gradiente de albumina',
   itens: [

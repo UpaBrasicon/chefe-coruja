@@ -22,7 +22,7 @@ export const wellsTvp: Escore = {
   ficha: {
     id: 'wells-tvp',
     titulo: 'Wells para TVP — probabilidade de trombose venosa profunda',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Wells PS, Anderson DR, Rodger M, et al. Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis. N Engl J Med. 2003;349(13):1227–1235.', url: 'https://doi.org/10.1056/NEJMoa023153' },
@@ -31,7 +31,7 @@ export const wellsTvp: Escore = {
       { citacao: 'UpToDate. Clinical presentation and diagnosis of the nonpregnant adult with suspected deep vein thrombosis of the lower extremity. (referência de escopo autorizada pelo usuário em 02/09/2026)', url: 'https://www.uptodate.com' },
       LE_GAL_DDIMERO_IDADE_2026,
     ],
-    revisadoEm: '06/11/2026 (nota do D-dímero ajustado à idade; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos e armadilhas do lote 3 das calculadoras, com fonte já citada; aguarda aprovação do RT); 06/11/2026 (nota do D-dímero ajustado à idade; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Probabilidade clínica de TVP: nove itens e um subtrator',
   itens: [

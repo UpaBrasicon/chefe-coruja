@@ -1,4 +1,5 @@
 import { completo, numero, somar, type Escore } from '../escore.ts'
+import { AHA_TEP_2026 } from '../adulto/tep2026.ts'
 
 // Wells para TEP: sete critérios, quatro deles de 1,5 ponto. Porte do protótipo
 // (pneumologia/Wells para TEP, construído em 30/08/2026), com as leituras de
@@ -16,15 +17,16 @@ export const wellsTep: Escore = {
   ficha: {
     id: 'wells-tep',
     titulo: 'Wells para TEP — probabilidade de embolia pulmonar',
-    versao: '2026-11-13.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Wells PS, Anderson DR, Rodger M, et al. Derivation of a simple clinical model to categorize patients probability of pulmonary embolism. Thromb Haemost. 2000;83(3):416–420.', url: 'https://doi.org/10.1055/s-0037-1613830' },
-      { citacao: 'Creager MA, Barnes GD, Giri J, et al. 2026 AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN Guideline for the evaluation and management of acute pulmonary embolism in adults. Circulation. 2026;153(12):e977–e1051 (PMID 41712677). Texto integral fechado na editora: só o resumo foi lido.', url: 'https://doi.org/10.1161/CIR.0000000000001415' },
+      // a citação antiga dizia "só o resumo"; a versão corrigida da AHA/ACC 2026 foi lida no texto integral (tep2026.ts)
+      AHA_TEP_2026,
       { citacao: 'Kearon C, de Wit K, Parpia S, et al. Diagnosis of pulmonary embolism with d-dimer adjusted to clinical probability. N Engl J Med. 2019;381(22):2125–2134. Citado só para distinguir a variante de três níveis.', url: 'https://doi.org/10.1056/NEJMoa1909159' },
       { citacao: 'Righini M, Van Es J, Den Exter PL, et al. Age-adjusted D-dimer cutoff levels to rule out pulmonary embolism: the ADJUST-PE study. JAMA. 2014;311(11):1117–1124.', url: 'https://doi.org/10.1001/jama.2014.2135' },
     ],
-    revisadoEm: '13/11/2026 (DOI da diretriz AHA/ACC 2026 corrigido, conferido no PubMed; a frase sobre Wells, Genebra e PERC passou a dizer que a recomendação da diretriz não foi conferida). Antes: 28/09/2026 (variante de três níveis explicitada)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 3 das calculadoras, com fonte já lida; aguarda aprovação do RT); 13/11/2026 (DOI da diretriz AHA/ACC 2026 corrigido, conferido no PubMed; a frase sobre Wells, Genebra e PERC passou a dizer que a recomendação da diretriz não foi conferida). Antes: 28/09/2026 (variante de três níveis explicitada)',
   },
   descricao: 'Probabilidade pré-teste de embolia pulmonar, nas leituras de três níveis e dicotomizada, com o limiar de D-dímero ajustado pela idade',
   itens: [
