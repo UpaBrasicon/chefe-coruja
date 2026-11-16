@@ -4,6 +4,11 @@
 -- Decisão G2 do RT (12/11/2026): a captura usa a conta do próprio RT, sem conta
 -- nova e sem senha nova. Este roteiro dá a ela, na UPA 24h Jardim Primavera:
 --   • os papéis gestor (porta, painel e escala do gestor) e plantonista;
+--   • para o roteiro da demo (backlog comercial, item 1, D2 = A do RT em
+--     15/11/2026), também recepção e enfermeiro: quem apresenta faz a ficha,
+--     a classificação e a checagem com a mesma conta, trocando de perfil.
+--     Recepção e classificação valem no setor da escala (o Pronto Socorro);
+--     a checagem vale para paciente no setor da escala;
 --   • a escala de hoje no Pronto Socorro, nos três turnos (e a noite de ontem,
 --     se ainda estiver em curso), para ver os pacientes na porta do médico.
 --     Turno em que a conta já está escalada em outro lugar fica de fora (a
@@ -43,7 +48,7 @@ BEGIN
   IF v_id::text LIKE 'd0300000%' THEN RAISE EXCEPTION 'Esta é uma conta da equipe fictícia: use uma conta real.'; END IF;
 
   -- papéis (religa o vínculo se estava desligado)
-  FOREACH v_papel IN ARRAY ARRAY['gestor', 'plantonista'] LOOP
+  FOREACH v_papel IN ARRAY ARRAY['gestor', 'plantonista', 'recepcao', 'enfermeiro'] LOOP
     UPDATE public.vinculos SET ativo = true
      WHERE perfil_id = v_id AND unidade_id = v_unidade AND papel = v_papel::public.papel AND NOT ativo;
     INSERT INTO public.vinculos (perfil_id, unidade_id, papel)
@@ -69,7 +74,7 @@ BEGIN
     v_novos := v_novos + v_n;
   END LOOP;
 
-  RAISE NOTICE 'Acesso de % na UPA 24h Jardim Primavera: gestor e plantonista; % plantão(ões) novo(s) no Pronto Socorro.', v_email, v_novos;
+  RAISE NOTICE 'Acesso de % na UPA 24h Jardim Primavera: gestor, plantonista, recepção e enfermeiro; % plantão(ões) novo(s) no Pronto Socorro.', v_email, v_novos;
   IF cardinality(v_fora) > 0 THEN
     RAISE NOTICE 'Fora da escala da demonstração (sobreposição): %', array_to_string(v_fora, '; ');
   END IF;

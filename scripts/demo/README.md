@@ -10,11 +10,12 @@ Roteiros da "Rede de Demonstração": a UPA 24h Jardim Primavera, com equipe e p
 |---|---|---|
 | `01_rede_demonstracao.sql` | Organização, unidade, setores, leitos, 24 pessoas fictícias sem senha, vínculos e a escala 12x36 do mês corrente e do seguinte, publicada pela coordenadora | Uma vez, e de novo quando virar o mês |
 | `02_plantao_agora.sql` | Apaga os pacientes da unidade, faz o check-in dos plantões já começados e cria o plantão de agora pelas funções do banco, como cada pessoa de plantão | Antes de cada captura ou apresentação |
-| `03_acesso_conta.sql` | Dá à conta indicada os papéis gestor e plantonista na unidade e a escala de hoje no Pronto Socorro | Uma vez por conta (troque o e-mail antes) |
+| `03_acesso_conta.sql` | Dá à conta indicada os papéis gestor, plantonista, recepção e enfermeiro na unidade e a escala de hoje no Pronto Socorro (roteiro da demo: `docs/comercial/demo/`) | Uma vez por conta (troque o e-mail antes) |
 | `04_ubs_regulacao.sql` | Cria a UBS Vila Esperança, o Hospital Regional Santa Aurora e a Central de Regulação da rede, com equipe, escala e agenda. Apaga o que ele mesmo gravou antes e grava de novo os pacientes da UBS (hiperdia, pré-natal, puericultura), a agenda de hoje e dos próximos dias, os envios à UPA e os pedidos de regulação | Depois do `02`, entre 7h e 18h50, e de novo depois de cada `02` |
 | `05_video_acesso.sql` | Vídeo de venda: dá à coordenadora fictícia plantonista, enfermeiro e recepção na UPA, a escala de hoje no Pronto Socorro com check-in, e dois cuidados prescritos (sem dose) para os pacientes em atendimento, um já checado | No dia da gravação, depois do `02` e do `04` |
 | `gravar-video.mjs` | Vídeo de venda: entra como a coordenadora fictícia por um link de acesso único e grava as cenas de `docs/comercial/video/cenas.json` pelos quadros do navegador, em MP4 1920 × 1080; a página pública é gravada sem login | Depois do `05` (precisa de `HOMOLOG_SHARE` e `FFMPEG`) |
 | `montar-video.mjs` | Vídeo de venda: corta as cenas, põe legendas, selo e cartelas e monta o MP4 final com o ffmpeg | Depois do `gravar-video.mjs` |
+| `preparar-ensaio.sh` | Roda o `02` e o `03` com a conta @chefecoruja.com.br (o e-mail é lido da homologação na hora) e confere pacientes e plantão de hoje | No dia do ensaio ou da demo, até uma hora antes, entre 7h e 18h50 |
 | `capturar-telas.mjs` | Entra como a coordenadora fictícia por um link de acesso único e tira a porta, o painel do gestor e a escala em 1424 × 749, em JPG | Logo depois do `02`, para as telas da página de entrada |
 | `99_limpar_rede_demonstracao.sql` | Apaga a rede inteira, inclusive os acessos dados pelo 03 | Só quando a unidade não for mais usada |
 
@@ -78,6 +79,7 @@ Os arquivos não usam comandos do psql (`\set`) nem senha. Por isso não passam 
 
 ## Limites
 
+- **Primeiro atendimento na observação.** A equipe fictícia não tem médico na Observação Adulto, e `observacao_atender` exige plantão no setor. Por isso o `02` grava o evento de atendimento direto, em nome do médico que atendeu na porta, 12 min depois da entrada. Sem ele, o painel da observação mostraria "aguardando primeiro atendimento" em todos.
 - **Sem prescrição.** A prescrição exige dose, via e frequência escritas, e o roteiro não inventa dose. O indicador "medicação pendente" fica em 0.
 - **Autoria.** Tudo sai em nome da equipe de plantão na hora em que o `02` roda, inclusive as altas "de mais cedo". É assim porque as funções só aceitam quem está de plantão agora.
 - **Check-in da conta do `03`.** Fica para quem entra, como em `supabase/homolog/demo-preparar.sql`. Sem ele, depois de 30 min a porta do médico fecha. As telas do gestor não dependem da escala.
