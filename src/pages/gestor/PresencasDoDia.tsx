@@ -132,7 +132,7 @@ export function PresencasDoDia() {
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {(presencas ?? []).length === 0 ? (
-            <p className="text-apoio text-tinta-sussurro">Nenhum plantonista vinculado nesta unidade.</p>
+            <p className="text-apoio text-tinta-sussurro">Nenhum profissional vinculado nesta unidade.</p>
           ) : (
             (presencas ?? []).map((p) => (
               <div

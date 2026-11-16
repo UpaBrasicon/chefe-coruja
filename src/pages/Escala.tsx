@@ -957,7 +957,7 @@ export default function Escala({
                           <RefreshCcw className="size-4 text-suprimento" />
                           <span className="font-medium">Passar plantão</span>
                           <span className="text-rotulo font-normal text-tinta-sussurro">
-                            Transferir para outro plantonista
+                            Transferir para outro médico
                           </span>
                         </Button>
                         <Button
@@ -968,7 +968,7 @@ export default function Escala({
                           <RefreshCcw className="size-4 text-pediatria" />
                           <span className="font-medium">Trocar plantão</span>
                           <span className="text-rotulo font-normal text-tinta-sussurro">
-                            Troca bilateral com outro plantonista
+                            Troca bilateral com outro médico
                           </span>
                         </Button>
                         <Button
@@ -1043,7 +1043,7 @@ export default function Escala({
                         </Select>
                       </div>
                       <div className="mt-3 flex flex-col gap-1.5">
-                        <Label>Plantão de outro plantonista (que quero assumir)</Label>
+                        <Label>Plantão de outro médico (que quero assumir)</Label>
                         <Select items={Object.fromEntries(outrosPlantoesTroca.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno} · ${p.perfis?.nome_completo ?? '?'}`]))} value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
                           <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione o plantão do outro" />
@@ -1100,7 +1100,7 @@ export default function Escala({
                       </div>
                       <p className="mt-2 text-rotulo text-tinta-sussurro">
                         O horário do plantão é dividido em partes iguais (12 h em 2 = duas de 6 h). A 1ª
-                        parte continua com você; as outras viram vagas, e outros plantonistas se candidatam
+                        parte continua com você; as outras viram vagas, e outros médicos se candidatam
                         em Vagas. O gestor aprova quem assume cada parte.
                       </p>
                       {erroAcao && <p className="mt-2 text-apoio text-critico">{erroAcao}</p>}
@@ -1120,7 +1120,7 @@ export default function Escala({
                         <Label>Passar para</Label>
                         <Select items={Object.fromEntries((plantonistas ?? []).map((p) => [p.perfil_id, p.nome_completo + (p.crm ? ` · CRM ${p.crm}` : '')]))} value={destinoId || null} onValueChange={(v) => setDestinoId(v ?? '')}>
                           <SelectTrigger className="w-full bg-superficie">
-                            <SelectValue placeholder="Selecione o plantonista" />
+                            <SelectValue placeholder="Selecione o médico" />
                           </SelectTrigger>
                           <SelectContent>
                             {(plantonistas ?? [])
@@ -1704,7 +1704,7 @@ export default function Escala({
                     {(candidaturas ?? []).filter((c) => c.status === 'pendente').map((c) => (
                       <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-trilha px-4 py-2.5 text-apoio last:border-b-0">
                         <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
-                          <span className="text-tinta"><b className="font-medium">{c.perfis?.nome_completo ?? 'Plantonista'}</b> · candidatura a plantão livre</span>
+                          <span className="text-tinta"><b className="font-medium">{c.perfis?.nome_completo ?? 'Profissional'}</b> · candidatura a plantão livre</span>
                           <span className="text-rotulo text-tinta-sussurro">{c.setores?.nome ?? 'Setor'} · {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}</span>
                         </span>
                         <span className="flex gap-1.5">
@@ -1914,7 +1914,7 @@ export default function Escala({
                 <CardTitle className="text-corpo">
                   {TURNO_LABEL[turno]} · semana de {fmtDiaBR(dataInicio)}
                 </CardTitle>
-                <CardDescription>Clique em uma célula para adicionar ou remover plantonistas.</CardDescription>
+                <CardDescription>Clique em uma célula para adicionar ou remover profissionais.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table variante="referencia" className="w-full min-w-[760px] border-collapse text-apoio">
@@ -1984,7 +1984,7 @@ export default function Escala({
                   {setores?.find((s) => s.id === celula.setor_id)?.nome} · {fmtDiaBR(celula.data)} ·{' '}
                   {TURNO_LABEL[turno]}
                 </CardTitle>
-                <CardDescription>Plantonistas escalados neste plantão.</CardDescription>
+                <CardDescription>Profissionais escalados neste plantão.</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 {(escala ?? [])
@@ -2006,7 +2006,7 @@ export default function Escala({
                 {!carregandoEscala &&
                   (escala ?? []).filter(
                     (e) => e.setor_id === celula.setor_id && e.data === celula.data && e.turno === turno
-                  ).length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum plantonista neste plantão.</p>}
+                  ).length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum profissional neste plantão.</p>}
               </CardContent>
             </Card>
           )}
@@ -2020,7 +2020,7 @@ export default function Escala({
       <Dialog open={dialogAberto} onOpenChange={setDialogAberto}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{abaGestor === 'fixa' ? 'Adicionar à escala fixa' : 'Adicionar plantonista'}</DialogTitle>
+            <DialogTitle>{abaGestor === 'fixa' ? 'Adicionar à escala fixa' : 'Adicionar profissional'}</DialogTitle>
             <DialogDescription>
               {setores?.find((s) => s.id === (abaGestor === 'fixa' ? celulaFixa?.setor_id : celula?.setor_id))?.nome}
               {abaGestor === 'fixa'
@@ -2034,7 +2034,7 @@ export default function Escala({
 
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label>{ehGestor ? 'Profissional e categoria' : 'Plantonista'}</Label>
+              <Label>{ehGestor ? 'Profissional e categoria' : 'Médico'}</Label>
               {ehGestor ? (
                 <Select
                   value={plantonistaId && papelEscolhido ? `${plantonistaId}|${papelEscolhido}` : null}

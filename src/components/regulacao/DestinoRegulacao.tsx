@@ -361,7 +361,7 @@ export function RecebidosDestino({ unidadeId, detalhe }: { unidadeId: string; de
           <Hospital className="size-4" aria-hidden /> Recebidos da central
           {aguardando > 0 && <Badge variant="warning">Aguardando aceite: {aguardando}</Badge>}
         </CardTitle>
-        <CardDescription>Pedidos que a central mandou para esta unidade. O médico plantonista ou o gestor aceita ou recusa, e marca a chegada.</CardDescription>
+        <CardDescription>Pedidos que a central mandou para esta unidade. O médico de plantão ou o gestor aceita ou recusa, e marca a chegada.</CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">
         {lista.isLoading ? <Spinner /> : lista.error ? <p role="alert" className="text-critico">{(lista.error as Error).message}</p>

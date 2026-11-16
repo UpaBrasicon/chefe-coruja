@@ -131,7 +131,7 @@ SELECT public.regulacao_autorizar(pg_temp.v('p1')::uuid, 'rede', '21000000-0000-
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000004');
 SELECT pg_temp.ok(jsonb_array_length(public.regulacao_destino_lista('21000000-0000-4000-8000-0000000009e6')) = 1, 'NIR do destino vê o recebido');
 SELECT pg_temp.falha(format('SELECT public.regulacao_destino_aceitar(%L)', pg_temp.v('p1')),
-  'Responde pelo destino o médico plantonista ou o gestor', 'NIR do destino não aceita');
+  'Responde pelo destino o médico de plantão ou o gestor', 'NIR do destino não aceita');
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000003');
 SELECT public.regulacao_destino_aceitar(pg_temp.v('p1')::uuid, '24000000-0000-4000-8000-0000000009e6', NULL);
 -- A01 P2-2 (S1 a S3, 20270307000006): o paciente segue internado na origem,

@@ -52,7 +52,7 @@ type Acesso = {
 type Trilha = { seq: number; criado_em: string; ator_nome: string | null; acao: string; entidade: string; entidade_id: string | null; payload: Record<string, unknown> | null }
 
 const TIPO_ACESSO: Record<string, string> = { leitura_prontuario: 'Leitura', leitura_documento: 'Leitura de documento', impressao: 'Impressão', exportacao: 'Exportação' }
-const PAPEL: Record<string, string> = { plantonista: 'plantonista', enfermeiro: 'enfermeiro', tecnico_enfermagem: 'técnico de enfermagem', farmaceutico: 'farmacêutico', telemedicina: 'telemedicina', gestor: 'gestor', recepcao: 'recepção' }
+const PAPEL: Record<string, string> = { plantonista: 'médico', enfermeiro: 'enfermeiro', tecnico_enfermagem: 'técnico de enfermagem', farmaceutico: 'farmacêutico', telemedicina: 'telemedicina', gestor: 'gestor', recepcao: 'recepção' }
 
 const hoje = () => dataIso()
 const diasAtras = (n: number) => dataIso(Date.now() - n * 86_400_000)

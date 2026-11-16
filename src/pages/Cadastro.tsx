@@ -391,7 +391,7 @@ export function Cadastro() {
         : {
             tipo: 'erro',
             titulo: 'Contrato não confere',
-            texto: 'O número está no documento assinado pela rede, no formato CT-ano-000, e o e-mail precisa ser o corporativo da rede. Se você é plantonista, enfermagem ou farmácia, seu acesso vem por convite da unidade.',
+            texto: 'O número está no documento assinado pela rede, no formato CT-ano-000, e o e-mail precisa ser o corporativo da rede. Se você é médico, enfermagem ou farmácia, seu acesso vem por convite da unidade.',
           },
     )
   }

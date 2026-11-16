@@ -16,7 +16,7 @@ const FAQS = [
   {
     pergunta: 'Como funciona a escala médica na plataforma?',
     resposta:
-      'O gestor monta a escala fixa e mensal por setor e turno; o plantonista visualiza sua agenda, solicita trocas e justifica faltas. Acesso ao atendimento é liberado conforme a escala do dia.',
+      'O gestor monta a escala fixa e mensal por setor e turno; o médico visualiza sua agenda, solicita trocas e justifica faltas. Acesso ao atendimento é liberado conforme a escala do dia.',
   },
   {
     pergunta: 'Quanto tempo leva para implantar?',

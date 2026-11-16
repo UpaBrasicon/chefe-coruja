@@ -40,7 +40,7 @@ export function ToolRouter() {
       {exibida && <LateralSecao secao={exibida} atual={{ secao: secao.slug, slug: def.slug }} />}
       <div className="min-w-0">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <Trilha niveis={[{ rotulo: 'Central do Plantonista', to: '/plantonista' }, { rotulo: exibida?.label ?? secao.label, to: `/plantonista/${exibida?.slug ?? secao.slug}` }, { rotulo: def.label }]} />
+          <Trilha niveis={[{ rotulo: 'Central do Médico', to: '/plantonista' }, { rotulo: exibida?.label ?? secao.label, to: `/plantonista/${exibida?.slug ?? secao.slug}` }, { rotulo: def.label }]} />
           <div className="flex flex-wrap items-center gap-2">
             <SeloSemReferenciaPediatrica publico={publico} />
             {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title="Quantas vezes você abriu esta ferramenta">{vezes}×</span>}

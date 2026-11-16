@@ -58,7 +58,7 @@ export function LadoMarca() {
     >
       <LinhaMarca titulo="Escala antes da senha" texto="O acesso vale para a janela do plantão, não para o dia inteiro." />
       <LinhaMarca titulo="Check-in dentro do raio" texto="A presença é confirmada na unidade; o horário fica registrado." />
-      <LinhaMarca titulo="Cada papel vê o seu" texto="Recepção, enfermagem, plantonista, farmácia, gestão e os demais papéis têm telas próprias." />
+      <LinhaMarca titulo="Cada papel vê o seu" texto="Recepção, enfermagem, médico, farmácia, gestão e os demais papéis têm telas próprias." />
     </FolhaMarca>
   )
 }

@@ -308,7 +308,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
             Canal de comunicação
           </CardTitle>
           <CardDescription>
-            Defina como os plantonistas falam com a gestão. WhatsApp abre conversa no aplicativo (sem custo de
+            Defina como os profissionais falam com a gestão. WhatsApp abre conversa no aplicativo (sem custo de
             API); Chat usa o chat integrado.
           </CardDescription>
         </CardHeader>
@@ -336,7 +336,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
           </div>
           {canal === 'whatsapp' && (
             <p className="text-rotulo text-tinta-sussurro">
-              Exemplo: 5511999999999 (Brasil, SP). Os plantonistas verão um botão &quot;Falar no WhatsApp&quot;.
+              Exemplo: 5511999999999 (Brasil, SP). Os profissionais verão um botão &quot;Falar no WhatsApp&quot;.
             </p>
           )}
         </CardContent>
@@ -345,7 +345,7 @@ function FormUnidade({ unidade, unidadeId }: { unidade: UnidadeConfig; unidadeId
       <Card>
         <CardHeader>
           <CardTitle className="text-corpo">Geolocalização do check-in</CardTitle>
-          <CardDescription>Usada para validar se o plantonista está na unidade ao registrar presença.</CardDescription>
+          <CardDescription>Usada para validar se o profissional está na unidade ao registrar presença.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-3">

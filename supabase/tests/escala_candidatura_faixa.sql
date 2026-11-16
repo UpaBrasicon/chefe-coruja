@@ -82,12 +82,12 @@ SELECT pg_temp.ok(public.candidatar_faixa(pg_temp.id('ps'), private.data_atual()
 SELECT pg_temp.falha(pg_temp.cand('ps', 5, 'noite'), 'Você já se candidatou a esta faixa', 'M8: candidatura repetida é barrada');
 SELECT pg_temp.falha(pg_temp.cand('ps', -1, 'manha'), 'Este plantão já passou', 'M8: dia que já passou é barrado');
 SELECT pg_temp.falha(pg_temp.cand('ps', 4, 'tarde'), 'Você já tem plantão nesse horário', 'M8: conflito com plantão em outro setor é barrado');
-SELECT pg_temp.falha(pg_temp.cand('ps', 3, 'manha'), 'Esta faixa já tem plantonista escalado', 'M8: faixa com plantonista não é livre');
+SELECT pg_temp.falha(pg_temp.cand('ps', 3, 'manha'), 'Esta faixa já tem médico escalado', 'M8: faixa com plantonista não é livre');
 SELECT pg_temp.como('gm');
 SELECT pg_temp.ok(public.candidatar_faixa(pg_temp.id('ps'), private.data_atual() + 6, 'tarde') IS NOT NULL,
   'M8: quem é gestor e plantonista se candidata (antes a RLS barrava calada)');
 SELECT pg_temp.como('enf');
-SELECT pg_temp.falha(pg_temp.cand('ps', 6, 'manha'), 'A candidatura pela Escala geral é do plantonista', 'M8: quem não é plantonista não se candidata à faixa');
+SELECT pg_temp.falha(pg_temp.cand('ps', 6, 'manha'), 'A candidatura pela Escala geral é do médico', 'M8: quem não é plantonista não se candidata à faixa');
 
 RESET ROLE;
 SELECT count(*) AS testes FROM resultado;
