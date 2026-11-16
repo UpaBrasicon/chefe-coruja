@@ -5,6 +5,17 @@
 -- Doses e resultados são entradas de teste, não referência clínica.
 -- ════════════════════════════════════════════════════════════════════════════
 \set ON_ERROR_STOP on
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 CREATE OR REPLACE FUNCTION e2e.falhar(p text) RETURNS text LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION '%', p; END $$;
 GRANT EXECUTE ON FUNCTION e2e.falhar(text) TO authenticated;
 CREATE OR REPLACE FUNCTION e2e.med(p_principio text, p_apresentacao_parcial text DEFAULT NULL) RETURNS uuid LANGUAGE sql STABLE AS $$

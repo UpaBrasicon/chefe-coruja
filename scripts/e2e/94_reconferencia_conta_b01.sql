@@ -9,6 +9,17 @@
 -- as funções e2e.* criadas pelo 60_cenario_b01.sql. A conta da porta já foi
 -- fechada no B01 e não é tocada aqui.
 -- ════════════════════════════════════════════════════════════════════════════
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 SELECT e2e.b_guardar('b01_reconf_inicio', now()::text);
 SELECT e2e.bpasso('b01_int', 'B01.15.conta_internacao', 'banco', NULL, 'Conta de internação aberta (gatilho trg_conta_da_internacao), com conta_origem_id = conta da porta',
   format($q$SELECT coalesce((SELECT c.numero || ', origem ' || coalesce(right(c.conta_origem_id::text, 4), '-') FROM public.contas c

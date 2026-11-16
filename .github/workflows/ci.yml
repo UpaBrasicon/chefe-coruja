@@ -71,9 +71,13 @@ jobs:
       - name: Página de entrada (telas)
         run: node --experimental-strip-types --test src/pages/landing/*.test.ts
       - name: Cofre da guarda
-        run: node --test scripts/arquivo/cofre.test.mjs
+        run: node --test scripts/arquivo/*.test.mjs
       - name: Trava de alvo do Supabase (homologação antes de produção)
         run: node --test scripts/ambiente/supabase-alvo.test.mjs
+      # S10, H4 e H6: scripts recusam a produção sem flag; e2e só na homologação/local;
+      # biblioteca só do master limpo; detector de segredos com os formatos do projeto
+      - name: Travas dos scripts (S10)
+        run: node --test scripts/ambiente/alvo-seguro.test.mjs scripts/biblioteca-sync.test.mjs scripts/e2e/trava.test.mjs scripts/auditoria-fases/scan-segredos.test.ts
       # Fase 0, item 14: migration nova não apaga nem renomeia o que a versão anterior usa
       - name: Expand/contract nas migrations
         run: |

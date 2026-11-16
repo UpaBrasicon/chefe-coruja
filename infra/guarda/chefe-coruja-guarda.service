@@ -6,7 +6,19 @@ After=network-online.target docker.service
 [Service]
 Type=oneshot
 # a cópia sem cifra existe só dentro do container e é apagada no fim
+# S10 (H1), endurecimento do container:
+#  --tmpfs /tmp: a cópia sem cifra fica em memória, nunca no disco do VPS (se
+#    o processo morrer, some com o container). size=2g é o teto do banco.dump
+#    mais os anexos; ocupa RAM (ou swap) só pelo que usar. Se a guarda falhar
+#    com ENOSPC ("no space left on device"), aumente o size.
+#  --cap-drop ALL: o processo não precisa de nenhuma capacidade do kernel.
+#  --security-opt no-new-privileges: nada dentro do container ganha privilégio
+#    (setuid etc.).
+# Reverter: tirar as três linhas e rodar systemctl daemon-reload (infra/guarda/README.md).
 ExecStart=/usr/bin/docker run --rm --name chefe-coruja-guarda \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=2g,mode=1777 \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
   --env-file /etc/chefe-coruja/guarda.env \
   -v /etc/chefe-coruja/guarda-publica.pem:/chaves/guarda-publica.pem:ro \
   -v /var/lib/chefe-coruja-guarda:/estado \

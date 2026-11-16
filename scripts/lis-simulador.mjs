@@ -14,7 +14,8 @@
 //
 // Não inventa valor de exame: o resultado é o texto "TESTE — simulador, não é
 // exame real". Só roda com chave de homologação (cc_test_); chave de produção
-// (cc_live_) é recusada.
+// (cc_live_) é recusada. A URL da produção também é recusada (S10, H4), sem
+// exceção: o simulador devolve laudo de TESTE.
 //
 // Uso:
 //   LIS_URL=https://<projeto>.supabase.co/functions/v1/api/v1 LIS_CHAVE=cc_test_... node scripts/lis-simulador.mjs [--critico] [--limite 5]
@@ -24,11 +25,13 @@
 //   --critico      marca o item de teste como crítico de quem laudou (AA), para ver o aviso
 //   --limite N     quantos pedidos tratar (padrão 5)
 //   --sem-pdf      não manda o laudo em PDF (só o item de teste)
+import { ehProducao } from './ambiente/alvo-seguro.mjs'
 
 const url = process.env.LIS_URL?.replace(/\/+$/, '')
 const chave = process.env.LIS_CHAVE
 if (!url || !chave) { console.error('Defina LIS_URL e LIS_CHAVE.'); process.exit(1) }
 if (!chave.startsWith('cc_test_')) { console.error('O simulador só roda com chave de homologação (cc_test_).'); process.exit(1) }
+if (ehProducao(url)) { console.error('RECUSADO: LIS_URL aponta para a produção; o simulador só roda na homologação.'); process.exit(1) }
 const critico = process.argv.includes('--critico')
 const semPdf = process.argv.includes('--sem-pdf')
 const opc = (nome) => { const i = process.argv.indexOf(nome); return i > 0 ? process.argv[i + 1] : undefined }

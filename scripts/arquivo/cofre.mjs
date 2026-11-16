@@ -19,6 +19,9 @@ import {
 import { readFileSync } from 'node:fs'
 
 const MAGICO = Buffer.from('CCG1')
+// GCM aceita tag de 4 a 16 bytes se ninguém fixar: fixa em 16 (S10, H1)
+const TAG = { authTagLength: 16 }
+const MIN_CCG1 = 4 + 16 + 12 + 16
 const SCRYPT = { N: 2 ** 17, r: 8, p: 1, maxmem: 256 * 1024 * 1024 }
 
 export const sha256 = (b) => createHash('sha256').update(b).digest()
@@ -34,7 +37,7 @@ export function novoSal() {
 
 export function cifrar(chave, sal, claro) {
   const iv = randomBytes(12)
-  const c = createCipheriv('aes-256-gcm', chave, iv)
+  const c = createCipheriv('aes-256-gcm', chave, iv, TAG)
   const corpo = Buffer.concat([c.update(claro), c.final()])
   return Buffer.concat([MAGICO, sal, iv, c.getAuthTag(), corpo])
 }
@@ -42,6 +45,7 @@ export function cifrar(chave, sal, claro) {
 /** Lê o sal de um .ccg (para derivar a chave antes de decifrar). */
 export function salDe(cifrado) {
   if (!cifrado.subarray(0, 4).equals(MAGICO)) throw new Error('não é um arquivo da guarda (.ccg)')
+  if (cifrado.length < MIN_CCG1) throw new Error('arquivo da guarda truncado (menor que o cabeçalho)')
   return cifrado.subarray(4, 20)
 }
 
@@ -49,7 +53,7 @@ export function decifrar(chave, cifrado) {
   salDe(cifrado)
   const iv = cifrado.subarray(20, 32)
   const tag = cifrado.subarray(32, 48)
-  const d = createDecipheriv('aes-256-gcm', chave, iv)
+  const d = createDecipheriv('aes-256-gcm', chave, iv, TAG)
   d.setAuthTag(tag)
   try {
     return Buffer.concat([d.update(cifrado.subarray(48)), d.final()])
@@ -78,7 +82,7 @@ export function digitalDaChave(chavePublicaPem) {
 
 export function cifrar2(chave, envelope, claro) {
   const iv = randomBytes(12)
-  const c = createCipheriv('aes-256-gcm', chave, iv)
+  const c = createCipheriv('aes-256-gcm', chave, iv, TAG)
   const corpo = Buffer.concat([c.update(claro), c.final()])
   const tam = Buffer.alloc(2)
   tam.writeUInt16BE(envelope.length)
@@ -90,6 +94,8 @@ export const formatoDe = (cifrado) => cifrado.subarray(0, 4).toString('latin1')
 /** Envelope de um .ccg CCG2 (para abrir com a chave privada antes de decifrar). */
 export function envelopeDe(cifrado) {
   if (!cifrado.subarray(0, 4).equals(MAGICO2)) throw new Error('não é um arquivo CCG2 da guarda')
+  // cabeçalho (6) + envelope + iv (12) + tag (16); o texto cifrado pode ser vazio
+  if (cifrado.length < 6 || cifrado.length < 6 + cifrado.readUInt16BE(4) + 28) throw new Error('arquivo da guarda truncado (menor que o cabeçalho)')
   return cifrado.subarray(6, 6 + cifrado.readUInt16BE(4))
 }
 
@@ -106,7 +112,7 @@ export function decifrar2(chave, cifrado) {
   const fim = 6 + envelopeDe(cifrado).length
   const iv = cifrado.subarray(fim, fim + 12)
   const tag = cifrado.subarray(fim + 12, fim + 28)
-  const d = createDecipheriv('aes-256-gcm', chave, iv)
+  const d = createDecipheriv('aes-256-gcm', chave, iv, TAG)
   d.setAuthTag(tag)
   try {
     return Buffer.concat([d.update(cifrado.subarray(fim + 28)), d.final()])
@@ -136,9 +142,18 @@ export function credenciais(csv) {
   return { id, segredo }
 }
 
-/** Monta um pedido assinado ao S3 (estilo virtual-hosted). */
-export function assinar({ metodo, bucket, regiao, chaveObjeto, cabecalhos = {}, corpoHash, cred, agora = new Date(), host = `${bucket}.s3.${regiao}.amazonaws.com`, protocolo = 'https' }) {
-  const caminho = '/' + chaveObjeto.split('/').map(encodeURIComponent).join('/')
+// codificação de URI da SigV4 (RFC 3986: também !'()*)
+const uri = (s) => encodeURIComponent(s).replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+
+/**
+ * Monta um pedido assinado ao S3 (estilo virtual-hosted). `consulta` é a query
+ * string ({ versions: '', prefix: 'x' }); entra ordenada na assinatura.
+ */
+export function assinar({ metodo, bucket, regiao, chaveObjeto, consulta = {}, cabecalhos = {}, corpoHash, cred, agora = new Date(), host = `${bucket}.s3.${regiao}.amazonaws.com`, protocolo = 'https' }) {
+  const caminho = '/' + chaveObjeto.split('/').map(uri).join('/')
+  const query = Object.entries(consulta).filter(([, v]) => v !== undefined && v !== null)
+    .map(([k, v]) => [uri(k), uri(String(v))]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([k, v]) => `${k}=${v}`).join('&')
   const amzData = agora.toISOString().replace(/[:-]|\.\d{3}/g, '')
   const dia = amzData.slice(0, 8)
   const h = { ...cabecalhos, host, 'x-amz-content-sha256': corpoHash, 'x-amz-date': amzData }
@@ -146,7 +161,7 @@ export function assinar({ metodo, bucket, regiao, chaveObjeto, cabecalhos = {}, 
   const valor = (n) => String(h[Object.keys(h).find((k) => k.toLowerCase() === n)]).trim()
   const canonCab = nomes.map((n) => `${n}:${valor(n)}\n`).join('')
   const assinados = nomes.join(';')
-  const canon = [metodo, caminho, '', canonCab, assinados, corpoHash].join('\n')
+  const canon = [metodo, caminho, query, canonCab, assinados, corpoHash].join('\n')
   const escopo = `${dia}/${regiao}/s3/aws4_request`
   const paraAssinar = ['AWS4-HMAC-SHA256', amzData, escopo, sha256(canon).toString('hex')].join('\n')
   const k = hmac(hmac(hmac(hmac('AWS4' + cred.segredo, dia), regiao), 's3'), 'aws4_request')
@@ -154,7 +169,7 @@ export function assinar({ metodo, bucket, regiao, chaveObjeto, cabecalhos = {}, 
   const saida = { ...h }
   delete saida.host
   saida.authorization = `AWS4-HMAC-SHA256 Credential=${cred.id}/${escopo}, SignedHeaders=${assinados}, Signature=${assinatura}`
-  return { url: `${protocolo}://${host}${caminho}`, cabecalhos: saida }
+  return { url: `${protocolo}://${host}${caminho}${query ? '?' + query : ''}`, cabecalhos: saida }
 }
 
 // Destino alternativo (cofre local de teste, estilo caminho):
@@ -163,24 +178,29 @@ const destino = ({ bucket, chaveObjeto, host, protocolo, caminhoBase }) => (cami
   ? { chaveObjeto: `${caminhoBase.replace(/^\/|\/$/g, '')}/${bucket}/${chaveObjeto}`, host, protocolo }
   : { chaveObjeto, ...(host ? { host } : {}), ...(protocolo ? { protocolo } : {}) })
 
-/** Envia um objeto com sha256 conferido pelo S3 (exigido pelo Object Lock). */
+/**
+ * Envia um objeto com sha256 conferido pelo S3 (exigido pelo Object Lock).
+ * `If-None-Match: *` (assinado): o S3 recusa gravar por cima de chave que já
+ * existe (S10, H2), então uma guarda enviada não ganha "versão nova".
+ */
 export async function enviar({ bucket, regiao, chaveObjeto, corpo, cred, host, protocolo, caminhoBase }) {
   const hash = sha256(corpo)
   const { url, cabecalhos } = assinar({
     metodo: 'PUT', bucket, regiao, cred, corpoHash: hash.toString('hex'),
     ...destino({ bucket, chaveObjeto, host, protocolo, caminhoBase }),
-    cabecalhos: { 'x-amz-checksum-sha256': hash.toString('base64') },
+    cabecalhos: { 'x-amz-checksum-sha256': hash.toString('base64'), 'if-none-match': '*' },
   })
   const r = await fetch(url, { method: 'PUT', headers: cabecalhos, body: corpo })
+  if (r.status === 412) throw new Error(`envio de ${chaveObjeto} recusado: objeto já existe no cofre (nada foi sobrescrito)`)
   if (!r.ok) throw new Error(`envio de ${chaveObjeto} falhou: HTTP ${r.status} ${(await r.text()).slice(0, 300)}`)
   return hash.toString('base64')
 }
 
-/** Lê os metadados do objeto enviado: checksum, trava e data de liberação. */
-export async function consultar({ bucket, regiao, chaveObjeto, cred, host, protocolo, caminhoBase }) {
+/** Lê os metadados do objeto enviado (ou de uma versão dele): checksum, trava e data de liberação. */
+export async function consultar({ bucket, regiao, chaveObjeto, versao, cred, host, protocolo, caminhoBase }) {
   const vazio = sha256('').toString('hex')
   const { url, cabecalhos } = assinar({
-    metodo: 'HEAD', bucket, regiao, cred, corpoHash: vazio,
+    metodo: 'HEAD', bucket, regiao, cred, corpoHash: vazio, consulta: { versionId: versao },
     ...destino({ bucket, chaveObjeto, host, protocolo, caminhoBase }),
     cabecalhos: { 'x-amz-checksum-mode': 'ENABLED' },
   })
@@ -194,15 +214,62 @@ export async function consultar({ bucket, regiao, chaveObjeto, cred, host, proto
   }
 }
 
-/** Baixa um objeto (conferência de cofre que não devolve checksum, ex.: teste local). */
-export async function baixar({ bucket, regiao, chaveObjeto, cred, host, protocolo, caminhoBase }) {
+/** Baixa um objeto (ou uma versão dele, pelo versionId). */
+export async function baixar({ bucket, regiao, chaveObjeto, versao, cred, host, protocolo, caminhoBase }) {
   const { url, cabecalhos } = assinar({
-    metodo: 'GET', bucket, regiao, cred, corpoHash: 'UNSIGNED-PAYLOAD',
+    metodo: 'GET', bucket, regiao, cred, corpoHash: 'UNSIGNED-PAYLOAD', consulta: { versionId: versao },
     ...destino({ bucket, chaveObjeto, host, protocolo, caminhoBase }),
   })
   const r = await fetch(url, { headers: cabecalhos })
   if (!r.ok) throw new Error(`download de ${chaveObjeto} falhou: HTTP ${r.status}`)
   return Buffer.from(await r.arrayBuffer())
+}
+
+// ── versões de um objeto (S10, H2: restaurar a versão ORIGINAL) ──────────────
+
+const xmlTexto = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+  .replace(/&#(x?)([0-9a-fA-F]+);/g, (_, x, n) => String.fromCodePoint(parseInt(n, x ? 16 : 10))).replace(/&amp;/g, '&')
+const tagXml = (bloco, nome) => { const m = bloco.match(new RegExp(`<${nome}>([\\s\\S]*?)</${nome}>`)); return m ? xmlTexto(m[1]) : null }
+
+/**
+ * Lê uma página de ListObjectVersions (XML) e devolve as versões da chave
+ * EXATA (o prefixo também pega "00001.ccg.x"), sem os marcadores de exclusão,
+ * mais o que precisa para pedir a próxima página.
+ */
+export function lerVersoes(xml, chave) {
+  const versoes = [...xml.matchAll(/<Version>([\s\S]*?)<\/Version>/g)]
+    .map(([, b]) => ({ chave: tagXml(b, 'Key'), versao: tagXml(b, 'VersionId'), data: tagXml(b, 'LastModified'), atual: tagXml(b, 'IsLatest') === 'true' }))
+    .filter((v) => v.chave === chave)
+  const truncado = /<IsTruncated>\s*true\s*<\/IsTruncated>/.test(xml)
+  const fora = xml.replace(/<(Version|DeleteMarker|CommonPrefixes)>[\s\S]*?<\/\1>/g, '')
+  return { versoes, truncado, proxChave: tagXml(fora, 'NextKeyMarker'), proxVersao: tagXml(fora, 'NextVersionIdMarker') }
+}
+
+/** A versão mais antiga (a original) entre as listadas; null se não houver nenhuma. */
+export function versaoMaisAntiga(versoes) {
+  if (!versoes.length) return null
+  const t = (v) => { const n = Date.parse(v.data); if (Number.isNaN(n)) throw new Error('versão sem data válida na listagem do cofre'); return n }
+  return [...versoes].sort((a, b) => t(a) - t(b))[0]
+}
+
+/** Todas as versões da chave exata (ListObjectVersions com prefix, paginado). */
+export async function listarVersoes({ bucket, regiao, chaveObjeto, cred, host, protocolo, caminhoBase }) {
+  const todas = []
+  let marcador = {}
+  for (;;) {
+    const { url, cabecalhos } = assinar({
+      metodo: 'GET', bucket, regiao, cred, corpoHash: sha256('').toString('hex'),
+      consulta: { versions: '', prefix: chaveObjeto, ...marcador },
+      ...destino({ bucket, chaveObjeto: '', host, protocolo, caminhoBase }),
+    })
+    const r = await fetch(url, { headers: cabecalhos })
+    if (!r.ok) throw new Error(`listagem das versões de ${chaveObjeto} falhou: HTTP ${r.status}`)
+    const p = lerVersoes(await r.text(), chaveObjeto)
+    todas.push(...p.versoes)
+    if (!p.truncado) return todas
+    if (!p.proxChave) throw new Error(`listagem das versões de ${chaveObjeto} truncada sem marcador`)
+    marcador = { 'key-marker': p.proxChave, 'version-id-marker': p.proxVersao ?? undefined }
+  }
 }
 
 // ── senha digitada sem aparecer na tela ─────────────────────────────────────

@@ -1,6 +1,17 @@
 -- Limpeza da homologação depois da conferência das telas (08/11/2026): encerra
 -- as duas observações de teste da UPA F5, abertas por medico.upa.f5, e cancela
 -- o pedido nº 197. Cada passo como a conta do papel.
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 SELECT e2e.b_guardar('lp8_inicio', now()::text);
 SELECT e2e.b_guardar('lp8_gest', '0b0a5cd3-bc44-4998-94aa-e62f506bc93b');
 SELECT e2e.b_guardar('lp8_gest_reg', (SELECT s.id::text FROM public.regulacao_solicitacoes s JOIN public.internacoes i ON i.paciente_id = s.paciente_id

@@ -127,3 +127,37 @@ O formulário do app (`www`) já usa a função `pedir-demonstracao`, endurecida
 2. Formulário de `planos` com Turnstile e limite, conferido na homologação.
 3. SQL do e2e recusa rodar fora da homologação, conferido no banco local.
 4. CI verde.
+
+## Decisão do RT e implementação (16/11/2026)
+
+H1 a H6 = A ("Todas A").
+
+- **H1:**
+  - `scripts/arquivo/caminho.mjs` confina todo caminho;
+  - a guarda automática grava cada anexo como `storage/anexo-NNNNN`, com o nome real no manifesto cifrado, e pula nome ruim com aviso;
+  - exportação paginada com `r.ok`;
+  - checksum obrigatório;
+  - tag de 16 bytes;
+  - senha do banco por `PGPASSWORD`;
+  - contêiner com `/tmp` em memória, `--cap-drop ALL` e `no-new-privileges`.
+
+  Guardas antigas continuam abrindo.
+- **H2:** no código, todo envio ao cofre com `If-None-Match: *`, e a restauração pela versão mais antiga, com aviso se houver mais de uma. Na AWS, o passo a passo está em `infra/seguranca-s10-cofre.md` (política do bucket e chave só de leitura).
+- **H3:** o formulário de `planos` usa a função `pedir-demonstracao` (Turnstile e limite), e a rota `/api/contato` saiu. A função aceita a origem `planos.chefecoruja.com.br`.
+- **H4:** helper `scripts/ambiente/alvo-seguro.mjs` (os scripts com chave de serviço recusam a produção sem `--confirmo-producao`). Os simuladores recusam a produção sempre. `etl/11_publicar_exemplos.cjs` saiu. `biblioteca-sync` exige o `master` limpo e a flag.
+- **H5:** a trava de migrations olha dentro dos blocos DO e pega `DELETE … WHERE true`. O push de produção recusa migration sem commit.
+- **H6:**
+  - SIGTAP com `--sha256` obrigatório;
+  - detector de segredos com os formatos do projeto;
+  - `e2e.disc` com `search_path`;
+  - limpeza do e2e seguindo as chaves estrangeiras.
+
+**Achado na conferência:** a produção tem uma rede fictícia, "Rede de Homologação (fictícia)", com a UPA `31000000-…-0001`, criada em 05/10/2026, com 4 setores e 4 pacientes fictícios. A trava antiga da demo ("a UPA Homologação existe") passaria na produção.
+
+Decisão do RT, "Marca de ambiente":
+- as travas da demo, do e2e e dos SQL da homologação passam a exigir a chave `ambiente_teste` = `true` em `configuracao_plataforma`;
+- a homologação foi marcada em 16/11/2026, e o seed local também liga a marca;
+- na produção a marca não existe, então a trava recusa;
+- o seed da homologação recusa onde a marca estiver `false`;
+- gravar `false` na produção espera a liberação de permissão do RT;
+- a rede fictícia da produção fica como está, a decidir depois.

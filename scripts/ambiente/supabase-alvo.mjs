@@ -33,7 +33,7 @@ export function projetoLigado() {
 }
 
 /** Decide se a ação pode seguir. Puro, para teste. */
-export function conferirAlvo({ acao, alvo, ligado, confirmaProducao }) {
+export function conferirAlvo({ acao, alvo, ligado, confirmaProducao, migracoesModificadas = false }) {
   if (!['push', 'reset', 'functions'].includes(acao)) return { ok: false, motivo: `ação desconhecida: ${acao}` }
   if (!(alvo in PROJETOS)) return { ok: false, motivo: `alvo desconhecido: ${alvo} (use homolog ou producao)` }
   if (ligado !== PROJETOS[alvo]) {
@@ -45,6 +45,10 @@ export function conferirAlvo({ acao, alvo, ligado, confirmaProducao }) {
   if (alvo === 'producao' && acao === 'reset') return { ok: false, motivo: 'reset em produção é proibido' }
   if (alvo === 'producao' && !confirmaProducao) {
     return { ok: false, motivo: 'produção exige --confirmo-producao e a mudança já validada em homologação (BACKLOG.md, regra 3)' }
+  }
+  // S10, H5: como as funções, a produção só recebe migration commitada (revisada no PR)
+  if (alvo === 'producao' && acao === 'push' && migracoesModificadas) {
+    return { ok: false, motivo: 'há mudança não commitada em supabase/migrations; produção só recebe migration commitada' }
   }
   return { ok: true }
 }
@@ -65,6 +69,11 @@ export const VERSAO = '${commit}${modificado ? '-modificado' : ''}@${data}'
 `
 }
 
+/** Há mudança não commitada (inclusive arquivo novo) nas migrations? */
+function migracoesModificadas() {
+  return execSync('git status --porcelain supabase/migrations', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() !== ''
+}
+
 /** Commit atual e se há mudança não commitada nas funções. */
 function estadoDasFuncoes() {
   const sh = (c) => execSync(c, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim()
@@ -78,7 +87,13 @@ function principal(argv) {
     console.log(`Projeto ligado: ${nomeDoRef(ligado)} (${ligado || 'nenhum'})`)
     return 0
   }
-  const r = conferirAlvo({ acao, alvo, ligado, confirmaProducao: resto.includes('--confirmo-producao') })
+  const r = conferirAlvo({
+    acao,
+    alvo,
+    ligado,
+    confirmaProducao: resto.includes('--confirmo-producao'),
+    migracoesModificadas: acao === 'push' && alvo === 'producao' ? migracoesModificadas() : false,
+  })
   if (!r.ok) {
     console.error(`RECUSADO: ${r.motivo}`)
     return 1

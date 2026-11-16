@@ -13,10 +13,23 @@ export type Leitura =
 const texto = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max)
 
 /**
- * Lê o corpo do pedido com as mesmas regras do formulário da landing/
- * (landing/app/api/contato/route.ts): nome com 2 letras ou mais, e-mail válido
- * e telefone com 10 dígitos ou mais. O campo-isca (`website`) preenchido indica
- * robô: a função responde "ok" e nada é enviado.
+ * Origens aceitas só por esta função, além do APP_ORIGIN: o formulário de
+ * contato do site público (landing/components/ContactForm.tsx), que deixou a
+ * rota própria /api/contato e passou a usar esta função (S10, H3).
+ */
+export const ORIGENS_DO_FORMULARIO = ['https://planos.chefecoruja.com.br']
+
+/** Site de onde veio o pedido, para o e-mail: planos quando a origem é a dele; senão, o app. */
+export function siteDoPedido(origem: string | null): string {
+  const o = origem ?? ''
+  return ORIGENS_DO_FORMULARIO.includes(o) ? new URL(o).host : 'www.chefecoruja.com.br'
+}
+
+/**
+ * Lê o corpo do pedido: nome com 2 letras ou mais, e-mail válido e telefone com
+ * 10 dígitos ou mais (as mesmas regras do app e do formulário de planos). O
+ * campo-isca (`website`) preenchido indica robô: a função responde "ok" e nada
+ * é enviado.
  */
 export function lerPedido(corpo: unknown): Leitura {
   const b = (corpo && typeof corpo === 'object' ? corpo : {}) as Record<string, unknown>
@@ -35,9 +48,9 @@ export function lerPedido(corpo: unknown): Leitura {
 }
 
 /** Corpo do e-mail em texto puro: nada do que a pessoa digita vira HTML. */
-export function corpoEmail(p: Pedido): string {
+export function corpoEmail(p: Pedido, site = 'www.chefecoruja.com.br'): string {
   return [
-    'Pedido de demonstração pela página de entrada do Chefe Coruja (www.chefecoruja.com.br).',
+    `Pedido de demonstração pelo site do Chefe Coruja (${site}).`,
     '',
     `Nome: ${p.nome}`,
     `E-mail: ${p.email}`,
@@ -51,7 +64,7 @@ export function corpoEmail(p: Pedido): string {
 
 /**
  * JSON só com ASCII: cada caractere fora do ASCII vai como \uXXXX (correção dos
- * acentos de 09/11/2026, a mesma da landing/ e do enviar-codigo-2fa).
+ * acentos de 09/11/2026, a mesma do enviar-codigo-2fa).
  */
 export function jsonAscii(valor: unknown): string {
   return JSON.stringify(valor).replace(/[\u007f-￿]/g, (c) => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'))

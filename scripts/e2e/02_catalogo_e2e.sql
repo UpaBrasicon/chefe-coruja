@@ -7,6 +7,17 @@
 -- Idempotente. Ambiente local ou homologação; nunca produção.
 -- ════════════════════════════════════════════════════════════════════════════
 \set ON_ERROR_STOP on
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 INSERT INTO public.medicamento (principio_ativo, principio_ativo_norm, apresentacao, concentracao, alta_vigilancia)
 SELECT m.p, trim(regexp_replace(regexp_replace(lower(extensions.unaccent(m.p)), '[^a-z0-9 ]', ' ', 'g'), '\s+', ' ', 'g')), m.a, m.c, m.av
   FROM (VALUES

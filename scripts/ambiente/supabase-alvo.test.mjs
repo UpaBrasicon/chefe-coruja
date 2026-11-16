@@ -50,3 +50,13 @@ test('versão das Edge Functions: commit, data e marca de modificado', async () 
   assert.match(conteudoVersao('abc1234', '2026-10-07T01:00Z', false), /export const VERSAO = 'abc1234@2026-10-07T01:00Z'/)
   assert.match(conteudoVersao('abc1234', '2026-10-07T01:00Z', true), /'abc1234-modificado@/)
 })
+
+test('push em produção com migration não commitada é recusado (S10, H5)', () => {
+  const r = conferirAlvo({ acao: 'push', alvo: 'producao', ligado: P, confirmaProducao: true, migracoesModificadas: true })
+  assert.equal(r.ok, false)
+  assert.match(r.motivo, /supabase\/migrations/)
+})
+
+test('push em homologação com migration não commitada continua permitido', () => {
+  assert.equal(conferirAlvo({ acao: 'push', alvo: 'homolog', ligado: H, migracoesModificadas: true }).ok, true)
+})

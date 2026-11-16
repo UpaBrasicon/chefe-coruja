@@ -1,76 +1,150 @@
 -- ════════════════════════════════════════════════════════════════════════════
 -- Teste de ponta a ponta — apaga a "Rede E2E" e tudo o que foi gravado nela.
--- SÓ ambiente local ou homologação; NUNCA produção (o script confere o nome
--- do banco e para se não houver a organização E2E).
--- Uso: psql ... -f scripts/e2e/99_limpar_rede_e2e.sql
+-- SÓ ambiente local ou homologação; NUNCA produção: a trava abaixo para se o
+-- banco não for a homologação (UPA Homologação) nem o local (seed do
+-- supabase/seed.sql), e para se o id da organização for de outra rede.
+--
+-- Como scripts/demo/99_limpar_rede_demonstracao.sql (S10, H6): roda com
+-- session_replication_role = replica (as tabelas clínicas e a auditoria são só
+-- de inserção). Com os gatilhos desligados as chaves estrangeiras não agem, então
+-- o roteiro segue o catálogo (pg_constraint) e apaga, de pai para filho, toda
+-- linha que aponta para o que sai, sem deixar órfã. As contas do Auth saem no
+-- fim com as chaves ligadas: se algo ainda apontar para elas, nada é apagado.
+--
+-- Uso (local):       psql ... -f scripts/e2e/99_limpar_rede_e2e.sql
+-- Uso (homologação): node scripts/e2e/homolog/preparar.mjs scripts/e2e/99_limpar_rede_e2e.sql <saida.sql>
+--                    e rode a saída (npx supabase db query --linked -f <saida.sql>)
 -- ════════════════════════════════════════════════════════════════════════════
 \set ON_ERROR_STOP on
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 BEGIN;
-SET LOCAL session_replication_role = replica;  -- tabelas só de inserção e gatilhos de histórico
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM public.organizacoes WHERE id = 'e1000000-0000-4000-8000-000000000001' AND nome <> 'Rede E2E') THEN
+    RAISE EXCEPTION 'O id e1000000-…-0001 é de outra organização: nada foi apagado.';
+  END IF;
+END $$;
+
+SET LOCAL session_replication_role = replica;
+
+-- linhas a apagar (tabela + ctid); mesma função do scripts/demo/99_limpar_rede_demonstracao.sql
+CREATE TEMP TABLE e2e_marca (rel oid NOT NULL, linha tid NOT NULL, PRIMARY KEY (rel, linha)) ON COMMIT DROP;
+
+CREATE OR REPLACE FUNCTION pg_temp.e2e_apagar_marcados(p_preservar regclass[], p_esquemas text[]) RETURNS bigint LANGUAGE plpgsql AS $f$
+DECLARE
+  fk record; r record; n bigint; v_novas bigint; v_total bigint := 0;
+BEGIN
+  LOOP
+    v_novas := 0;
+    FOR fk IN
+      SELECT c.conrelid::regclass AS filho, c.confrelid::regclass AS pai, c.confrelid AS pai_oid,
+             (SELECT string_agg(format('f.%I', a.attname), ', ' ORDER BY k.i)
+                FROM unnest(c.conkey) WITH ORDINALITY k(num, i) JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = k.num) AS cols_f,
+             (SELECT string_agg(format('%I = NULL', a.attname), ', ' ORDER BY k.i)
+                FROM unnest(c.conkey) WITH ORDINALITY k(num, i) JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = k.num) AS anular,
+             (SELECT string_agg(format('p.%I', a.attname), ', ' ORDER BY k.i)
+                FROM unnest(c.confkey) WITH ORDINALITY k(num, i) JOIN pg_attribute a ON a.attrelid = c.confrelid AND a.attnum = k.num) AS cols_p
+        FROM pg_constraint c
+        JOIN pg_class cf ON cf.oid = c.conrelid
+        JOIN pg_namespace nf ON nf.oid = cf.relnamespace
+       WHERE c.contype = 'f' AND cf.relkind = 'r' AND nf.nspname = ANY (p_esquemas)
+         AND c.confrelid IN (SELECT DISTINCT m.rel FROM e2e_marca m)
+    LOOP
+      IF fk.filho = ANY (p_preservar) THEN
+        EXECUTE format('UPDATE %s f SET %s WHERE (%s) IN (SELECT %s FROM %s p WHERE p.ctid = ANY ($1))',
+                       fk.filho, fk.anular, fk.cols_f, fk.cols_p, fk.pai)
+          USING ARRAY(SELECT m.linha FROM e2e_marca m WHERE m.rel = fk.pai_oid);
+      ELSE
+        EXECUTE format('INSERT INTO pg_temp.e2e_marca (rel, linha) SELECT %s, f.ctid FROM %s f WHERE (%s) IN (SELECT %s FROM %s p WHERE p.ctid = ANY ($1)) ON CONFLICT DO NOTHING',
+                       fk.filho::oid, fk.filho, fk.cols_f, fk.cols_p, fk.pai)
+          USING ARRAY(SELECT m.linha FROM e2e_marca m WHERE m.rel = fk.pai_oid);
+        GET DIAGNOSTICS n = ROW_COUNT;
+        v_novas := v_novas + n;
+      END IF;
+    END LOOP;
+    EXIT WHEN v_novas = 0;
+  END LOOP;
+  FOR r IN SELECT m.rel, array_agg(m.linha) AS linhas FROM e2e_marca m GROUP BY m.rel LOOP
+    EXECUTE format('DELETE FROM %s WHERE ctid = ANY ($1)', r.rel::regclass) USING r.linhas;
+    GET DIAGNOSTICS n = ROW_COUNT;
+    v_total := v_total + n;
+  END LOOP;
+  RETURN v_total;
+END $f$;
 
 DO $$
 DECLARE
   v_org constant uuid := 'e1000000-0000-4000-8000-000000000001';
-  v_un uuid[];
+  v_un  uuid[];
+  v_pes uuid[];
   v_pac uuid[];
-  v_sol uuid[];
+  v_ep  uuid[];
+  v_int uuid[];
+  v_ids uuid[];
   t record;
+  v_apagadas bigint;
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.organizacoes WHERE id = v_org) THEN
-    RAISE NOTICE 'Rede E2E não existe: nada a apagar.'; RETURN;
+  IF NOT EXISTS (SELECT 1 FROM public.organizacoes WHERE id = v_org)
+     AND NOT EXISTS (SELECT 1 FROM auth.users WHERE id::text LIKE 'e2000000%') THEN
+    RAISE NOTICE 'Rede E2E não existe: nada a apagar.';
+    RETURN;
   END IF;
-  v_un := ARRAY(SELECT id FROM public.unidades WHERE organizacao_id = v_org);
+  v_un  := ARRAY(SELECT id FROM public.unidades WHERE organizacao_id = v_org);
+  v_pes := ARRAY(SELECT id FROM auth.users WHERE id::text LIKE 'e2000000%');
   v_pac := ARRAY(SELECT id FROM public.pacientes WHERE unidade_id = ANY (v_un));
-  v_sol := ARRAY(SELECT id FROM public.regulacao_solicitacoes WHERE organizacao_id = v_org);
+  v_ep  := ARRAY(SELECT id FROM public.episodios WHERE unidade_id = ANY (v_un) OR paciente_id = ANY (v_pac));
+  v_int := ARRAY(SELECT id FROM public.internacoes WHERE unidade_id = ANY (v_un) OR paciente_id = ANY (v_pac));
 
-  -- tabelas ligadas à regulação
-  DELETE FROM public.regulacao_destino_respostas WHERE solicitacao_id = ANY (v_sol);
-  DELETE FROM public.regulacao_evolucoes WHERE solicitacao_id = ANY (v_sol);
-  DELETE FROM public.regulacao_status_tempos WHERE solicitacao_id = ANY (v_sol);
-  DELETE FROM public.regulacao_anexos WHERE solicitacao_id = ANY (v_sol);
-  DELETE FROM public.regulacao_eventos WHERE solicitacao_id = ANY (v_sol);
-  DELETE FROM public.regulacao_solicitacoes WHERE id = ANY (v_sol);
-
-  -- lacuna 5 (20270326000001): o leito que espera o corpo aponta para o óbito,
-  -- e a D.O. anulada só tem o obito_id; saem antes do laço
-  IF to_regclass('public.obito_do_anuladas') IS NOT NULL THEN
-    EXECUTE 'UPDATE public.leitos SET obito_aguardando_id = NULL WHERE obito_aguardando_id IN (SELECT id FROM public.obitos WHERE paciente_id = ANY ($1))' USING v_pac;
-    EXECUTE 'DELETE FROM public.obito_do_anuladas WHERE obito_id IN (SELECT id FROM public.obitos WHERE paciente_id = ANY ($1))' USING v_pac;
-  END IF;
-
-  -- toda tabela pública com unidade_id ou paciente_id da rede E2E (ordem: as que
-  -- apontam para paciente primeiro); repete até não sobrar nada
-  FOR i IN 1..6 LOOP
-    FOR t IN SELECT c.table_name, c.column_name FROM information_schema.columns c
-               JOIN information_schema.tables tb ON tb.table_schema = c.table_schema AND tb.table_name = c.table_name AND tb.table_type = 'BASE TABLE'
-              WHERE c.table_schema = 'public' AND c.column_name IN ('paciente_id', 'unidade_id', 'unidade_origem_id', 'destino_unidade_id', 'central_id', 'organizacao_id')
-                AND c.table_name NOT IN ('unidades', 'organizacoes', 'pacientes', 'setores', 'leitos', 'vinculos', 'perfis')
-    LOOP
-      BEGIN
-        IF t.column_name = 'paciente_id' THEN
-          EXECUTE format('DELETE FROM public.%I WHERE paciente_id = ANY ($1)', t.table_name) USING v_pac;
-        ELSIF t.column_name = 'organizacao_id' THEN
-          EXECUTE format('DELETE FROM public.%I WHERE organizacao_id = $1', t.table_name) USING v_org;
-        ELSE
-          EXECUTE format('DELETE FROM public.%I WHERE %I = ANY ($1)', t.table_name, t.column_name) USING v_un;
-        END IF;
-      EXCEPTION WHEN foreign_key_violation THEN NULL;  -- tenta de novo na próxima volta
-      END;
-    END LOOP;
+  -- sementes: a organização, as unidades e os perfis das contas E2E
+  INSERT INTO e2e_marca SELECT 'public.organizacoes'::regclass::oid, ctid FROM public.organizacoes WHERE id = v_org;
+  INSERT INTO e2e_marca SELECT 'public.unidades'::regclass::oid, ctid FROM public.unidades WHERE id = ANY (v_un);
+  INSERT INTO e2e_marca SELECT 'public.perfis'::regclass::oid, ctid FROM public.perfis WHERE id = ANY (v_pes);
+  -- e o que guarda unidade (inclusive de origem, destino e central), organização,
+  -- paciente, episódio, internação ou pessoa da rede sem chave estrangeira
+  FOR t IN SELECT c.table_schema, c.table_name, c.column_name
+             FROM information_schema.columns c
+             JOIN information_schema.tables tb ON tb.table_schema = c.table_schema AND tb.table_name = c.table_name
+                                              AND tb.table_type = 'BASE TABLE'
+            WHERE c.table_schema IN ('public', 'private') AND c.data_type = 'uuid'
+              AND c.column_name IN ('unidade_id', 'unidade_origem_id', 'destino_unidade_id', 'central_id',
+                                    'organizacao_id', 'paciente_id', 'episodio_id', 'internacao_id', 'perfil_id') LOOP
+    v_ids := CASE t.column_name WHEN 'organizacao_id' THEN ARRAY[v_org] WHEN 'paciente_id' THEN v_pac
+                                WHEN 'episodio_id' THEN v_ep WHEN 'internacao_id' THEN v_int WHEN 'perfil_id' THEN v_pes
+                                ELSE v_un END;
+    CONTINUE WHEN cardinality(v_ids) = 0;
+    EXECUTE format('INSERT INTO pg_temp.e2e_marca (rel, linha) SELECT %s, ctid FROM %I.%I WHERE %I = ANY ($1) ON CONFLICT DO NOTHING',
+                   format('%I.%I', t.table_schema, t.table_name)::regclass::oid, t.table_schema, t.table_name, t.column_name)
+      USING v_ids;
   END LOOP;
 
-  DELETE FROM public.pacientes WHERE id = ANY (v_pac);
-  DELETE FROM public.leitos WHERE setor_id IN (SELECT id FROM public.setores WHERE unidade_id = ANY (v_un));
-  DELETE FROM public.setores WHERE unidade_id = ANY (v_un);
-  DELETE FROM public.vinculos WHERE unidade_id = ANY (v_un);
-  DELETE FROM public.centrais_regulacao WHERE organizacao_id = v_org;
-  DELETE FROM public.unidades WHERE id = ANY (v_un);
-  DELETE FROM public.organizacoes WHERE id = v_org;
-  DELETE FROM public.super_admins WHERE perfil_id::text LIKE 'e2000000%';
-  DELETE FROM public.notificacoes_plantonista WHERE perfil_id::text LIKE 'e2000000%';
-  DELETE FROM public.perfis WHERE id::text LIKE 'e2000000%';
-  DELETE FROM auth.identities WHERE user_id::text LIKE 'e2000000%';
-  DELETE FROM auth.users WHERE id::text LIKE 'e2000000%';
-  RAISE NOTICE 'Rede E2E apagada.';
+  -- nada se preserva
+  v_apagadas := pg_temp.e2e_apagar_marcados('{}'::regclass[], ARRAY['public', 'private']);
+  RAISE NOTICE 'Rede E2E apagada: % unidade(s), % conta(s), % paciente(s), % linha(s) no total.',
+    cardinality(v_un), cardinality(v_pes), cardinality(v_pac), v_apagadas;
 END $$;
+
+SET LOCAL session_replication_role = origin;
+
+-- contas do Auth com as chaves ligadas: o que ainda apontar para elas no banco
+-- recusa a exclusão (e nada fica gravado); sessões e fatores saem em cascata
+DELETE FROM auth.identities WHERE user_id::text LIKE 'e2000000%';
+DELETE FROM auth.users WHERE id::text LIKE 'e2000000%';
+
 COMMIT;
+
+SELECT 'Rede E2E apagada' AS situacao,
+       (SELECT count(*) FROM public.organizacoes WHERE id = 'e1000000-0000-4000-8000-000000000001') AS organizacoes,
+       (SELECT count(*) FROM public.unidades WHERE organizacao_id = 'e1000000-0000-4000-8000-000000000001') AS unidades,
+       (SELECT count(*) FROM public.perfis WHERE id::text LIKE 'e2000000%') AS perfis,
+       (SELECT count(*) FROM auth.users WHERE id::text LIKE 'e2000000%') AS contas;

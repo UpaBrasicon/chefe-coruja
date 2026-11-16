@@ -7,6 +7,13 @@ ligado, e o resultado fica em `e2e.resultados`.
 
 **Use só no ambiente local ou na homologação. Nunca em produção.**
 
+Todo SQL desta pasta começa por uma trava (S10, H4) que para o script quando o banco
+não é a homologação (falta a UPA Homologação, `31000000-…-0001`, de
+`supabase/homolog/seed-homolog.sql`) nem o banco local (falta a "Unidade Teste",
+`21000000-…-0001`, e a conta `gestor@teste.local`, de `supabase/seed.sql`). No psql a
+trava vem depois de `\set ON_ERROR_STOP on`; nos roteiros sem `\set` (os que rodam pelo
+`supabase db query`) ela é o primeiro comando. `trava.test.mjs` (no CI) recusa SQL novo sem ela.
+
 Relatório da rodada de 11/10/2026: `produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`.
 
 ## Ordem
