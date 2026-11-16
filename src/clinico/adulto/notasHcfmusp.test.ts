@@ -356,7 +356,7 @@ test('encefalopatia hepática (cap. 59): ACG 2026 ao lado do manual; doses do ma
 
 test('endocardite (cap. 23): ESC 2023 ao lado do manual; Duke-ISCVID igual', async () => {
   const d = await import('./duke.ts')
-  assert.equal(d.duke.ficha.versao, '2026-11-14.1')
+  assert.equal(d.duke.ficha.versao, '2026-11-16.1')
   assert.ok(d.duke.ficha.fontes.includes(d.ESC_EI_2023))
   assert.equal(d.preencheDuke(1, 3), true)
   assert.equal(d.possivelDuke(1, 1), true)

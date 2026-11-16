@@ -1,3 +1,4 @@
+import { DIRETRIZ_EI } from './adulto/duke.ts'
 import { DIRETRIZ_DAS_2025 } from './adulto/isr.ts'
 import { NOTAS_PADIS_2025 } from './adulto/infusoes.ts'
 import { COSTR_2026_PCR, DIRETRIZ_ALS_2025 } from './adulto/pcr.ts'
@@ -89,7 +90,108 @@ const WELLS24 = 'Wells e Yende 2024, revisão sistemática'
 // Hipocalemia: revisão narrativa aberta no PMC (sem diretriz de sociedade aberta).
 const KARDALAS = 'Kardalas et al. 2018, revisão narrativa (Endocr Connect)'
 
+// Fibrilação atrial: diretriz brasileira SBC/SOBRAC 2025, texto integral do PMC
+// (PMC13400077), Quadro 5 (seção 6.2). A ESC 2024 não está no PMC.
+const SBC_FA = 'Diretriz Brasileira de Fibrilação Atrial 2025 (SBC/SOBRAC), Quadro 5'
+
+// SCA sem supra: diretriz da SBC 2021, texto integral do PMC (PMC8294740).
+const SBC_SCA = 'Diretriz da SBC sobre angina instável e IAM sem supra de ST, 2021'
+const SCA_MUITO_ALTO: PassoGuia = {
+  tema: 'Muito alto risco: cateterismo imediato',
+  texto: 'Cineangiocoronariografia imediata (intervenção em até 2 h) com instabilidade hemodinâmica ou choque cardiogênico, angina recorrente ou persistente refratária ao tratamento clínico, arritmia ventricular maligna ou PCR, complicação mecânica, insuficiência cardíaca aguda ou alterações dinâmicas recorrentes de ST/T.',
+  ref: { fonte: SBC_SCA, pagina: 'estratégia invasiva de urgência (6.1) e Tabela 1.8', grau: 'classe I, nível A' },
+}
+const SCA_ESTRATIFICAR: PassoGuia = {
+  tema: 'Estratificar por mais de um método',
+  texto: 'Classificar todo paciente em risco alto, intermediário ou baixo, de preferência por mais de um método, e decidir pelo pior cenário.',
+  ref: { fonte: SBC_SCA, pagina: 'estratificação de risco (5.3)', grau: 'classe I, nível B' },
+}
+const SCA_ALTO_24H: PassoGuia = {
+  tema: 'Alto risco: cateterismo em até 24 h',
+  texto: 'Cineangiocoronariografia precoce, em até 24 h, no alto risco (troponina positiva, alteração dinâmica de ST/T ou GRACE acima de 140).',
+  ref: { fonte: SBC_SCA, pagina: 'estudo hemodinâmico, sumário de recomendações', grau: 'classe I, nível A' },
+}
+const SCA_INTERMEDIARIO_72H: PassoGuia = {
+  tema: 'Risco intermediário: cateterismo em até 72 h',
+  texto: 'Cineangiocoronariografia em até 72 h no risco intermediário, com recorrência de sintomas ou com teste não invasivo positivo para isquemia.',
+  ref: { fonte: SBC_SCA, pagina: 'estudo hemodinâmico, sumário de recomendações', grau: 'classe I, nível C' },
+}
+
+function linhaEi(tema: string, faixas?: Faixas): PassoGuia {
+  const l = DIRETRIZ_EI.find((d) => d.tema === tema)
+  if (!l) throw new Error(`linha da ESC 2023 de endocardite sem tema "${tema}"`)
+  return { tema, texto: l.diretriz, ref: { fonte: 'ESC 2023, endocardite infecciosa', grau: l.grau }, faixas }
+}
+
+// Síncope: validação multicêntrica do escore canadense (JAMA Intern Med 2020),
+// já citada na ficha e aberta no PMC (PMC7091474). Conclusão do estudo, não diretriz.
+const CSRS_2020 = 'Thiruganasambandamoorthy et al. 2020, validação do escore canadense (JAMA Intern Med)'
+
 export const GUIAS: Record<string, Guia> = {
+  'adulto-duke-modificado': {
+    proximosPassos: [
+      linhaEi('Hemoculturas'),
+      linhaEi('Eco transtorácico'),
+      linhaEi('Eco transesofágico'),
+      linhaEi('Repetir o eco', [0, 1]),
+      linhaEi('Antibiótico empírico: comunitária', [1, 2]),
+      linhaEi('Antibiótico empírico: prótese precoce ou hospitalar', [1, 2]),
+      linhaEi('Cirurgia por insuficiência cardíaca', [2]),
+      linhaEi('Cirurgia por infecção não controlada', [2]),
+      linhaEi('Cirurgia para evitar embolia', [2]),
+      linhaEi('Trombólise'),
+    ],
+  },
+  'sincope-canadense': {
+    proximosPassos: [
+      { tema: 'Risco muito baixo ou baixo', texto: 'Alta do pronto-socorro.', ref: { fonte: CSRS_2020, pagina: 'Conclusões', grau: 'conclusão do estudo, sem classe' }, faixas: [0] },
+      { tema: 'Risco médio', texto: 'Decisão compartilhada sobre o destino; alta com orientação clara sobre os sinais de doença grave é uma opção razoável, e uma observação breve também.', ref: { fonte: CSRS_2020, pagina: 'Conclusões e Discussão', grau: 'conclusão do estudo, sem classe' }, faixas: [1] },
+      { tema: 'Risco alto ou muito alto', texto: 'Internação por período curto.', ref: { fonte: CSRS_2020, pagina: 'Conclusões', grau: 'conclusão do estudo, sem classe' }, faixas: [2] },
+      { tema: 'Quando usar o escore', texto: 'Aplicar no fim da avaliação do pronto-socorro, quando nenhuma causa grave foi identificada. Paciente com causa grave, sinais vitais instáveis ou forte suspeita clínica precisa de internação para investigação ou monitorização.', ref: { fonte: CSRS_2020, pagina: 'Discussão', grau: 'conclusão do estudo, sem classe' } },
+    ],
+  },
+  grace: {
+    proximosPassos: [
+      SCA_MUITO_ALTO,
+      { ...SCA_ALTO_24H, faixas: [2] },
+      { ...SCA_INTERMEDIARIO_72H, faixas: [1] },
+      SCA_ESTRATIFICAR,
+    ],
+    evidencias: [
+      { texto: 'GRACE até 108: baixo risco de óbito hospitalar (até 1%); de 109 a 140: intermediário (1% a 3%); acima de 140: alto (acima de 3%).', ref: { fonte: SBC_SCA, pagina: 'seção 5.3.1 (texto)', grau: 'sem classe' } },
+    ],
+  },
+  'adulto-timi-nstemi': {
+    proximosPassos: [SCA_MUITO_ALTO, SCA_ALTO_24H, SCA_INTERMEDIARIO_72H, SCA_ESTRATIFICAR],
+    evidencias: [
+      { texto: 'A diretriz classifica o TIMI em baixo risco (0 a 2), intermediário (3 a 4) e alto (5 a 7). A escolha do momento do cateterismo segue os critérios clínicos e o GRACE, não a faixa do TIMI.', ref: { fonte: SBC_SCA, pagina: 'seção 5.3.1 (texto) e sumário do estudo hemodinâmico', grau: 'sem classe' } },
+    ],
+  },
+  killip: {
+    proximosPassos: [
+      { ...SCA_MUITO_ALTO, faixas: [2] },
+      { tema: 'Choque cardiogênico: lesão não culpada', texto: 'Não fazer angioplastia de rotina nas lesões não relacionadas ao infarto no choque cardiogênico.', ref: { fonte: SBC_SCA, pagina: 'revascularização, sumário de recomendações', grau: 'classe III, nível B' }, faixas: [2] },
+      SCA_ESTRATIFICAR,
+    ],
+  },
+  'cha2ds2-va': {
+    proximosPassos: [
+      { tema: 'Escore de 2 ou mais', texto: 'Terapia antitrombótica recomendada.', ref: { fonte: SBC_FA, grau: 'classe I, nível A' }, faixas: [2] },
+      { tema: 'Escore de 1', texto: 'A terapia antitrombótica pode ser instituída, pesando o benefício clínico, o risco de sangramento, a forma de apresentação da FA e a preferência do paciente.', ref: { fonte: SBC_FA, grau: 'classe IIa, nível B' }, faixas: [1] },
+      { tema: 'Escore 0', texto: 'Baixo risco: sem indicação de terapia antitrombótica.', ref: { fonte: SBC_FA, grau: 'classe I, nível A' }, faixas: [0] },
+      { tema: 'Qual anticoagulante', texto: 'Nos elegíveis, os anticoagulantes orais diretos são preferíveis aos antagonistas da vitamina K, exceto com válvula cardíaca mecânica ou estenose mitral moderada a grave.', ref: { fonte: SBC_FA, grau: 'classe I, nível A' }, faixas: [1, 2] },
+      { tema: 'Antiagregante não substitui', texto: 'Antiagregantes plaquetários, isolados ou combinados, não são recomendados para prevenir tromboembolismo na FA.', ref: { fonte: SBC_FA, grau: 'classe III, nível A' } },
+      { tema: 'Reavaliar', texto: 'Reavaliação periódica do risco tromboembólico e de sangramento.', ref: { fonte: SBC_FA, grau: 'classe I, nível B' } },
+    ],
+  },
+  'has-bled': {
+    proximosPassos: [
+      { tema: 'Sangramento não decide a anticoagulação', texto: 'Na ausência de contraindicação absoluta, a estimativa do risco de sangramento não deve guiar a decisão da terapia antitrombótica.', ref: { fonte: SBC_FA, grau: 'classe III, nível A' } },
+      { tema: 'Fatores modificáveis', texto: 'O HAS-BLED pode ser considerado para identificar fatores modificáveis no paciente de alto risco.', ref: { fonte: SBC_FA, grau: 'classe IIa, nível B' } },
+      { tema: 'HAS-BLED de 3 ou mais', texto: 'Alto risco, mas não contraindicação à anticoagulação: controlar melhor a pressão, evitar anti-inflamatórios e álcool e trocar a varfarina por anticoagulante oral direto.', ref: { fonte: 'Diretriz Brasileira de Fibrilação Atrial 2025 (SBC/SOBRAC), seção 6.2 (texto)', grau: 'texto da diretriz, sem classe' }, faixas: [2] },
+      { tema: 'Reavaliar', texto: 'Reavaliação periódica do risco tromboembólico e de sangramento.', ref: { fonte: SBC_FA, grau: 'classe I, nível B' } },
+    ],
+  },
   'adulto-reposicao-potassio': {
     proximosPassos: [
       {

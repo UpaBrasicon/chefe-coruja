@@ -38,3 +38,18 @@ test('relacionadas: de 2 a 5 por ferramenta do piloto, todas no registro, sem a 
     }
   }
 })
+
+test('lote 2: todo escore tem relacionadas que existem no registro, sem a própria', async () => {
+  const { relacionadasDe } = await import('./pilotoCalculadoras.ts')
+  const escores = [...chaves].filter((c) => c.startsWith('escores/'))
+  assert.equal(escores.length, 50)
+  for (const c of escores) {
+    const r = relacionadasDe(c)
+    // grupos de uma ferramenta só (McIsaac, 4AT, TWIST) ficam sem vizinhas
+    if (!['escores/mcisaac', 'escores/4at', 'escores/twist'].includes(c)) assert.ok(r.length >= 1, `${c} sem relacionadas`)
+    for (const x of r) {
+      assert.ok(chaves.has(x), `${c} → ${x}`)
+      assert.notEqual(x, c)
+    }
+  }
+})

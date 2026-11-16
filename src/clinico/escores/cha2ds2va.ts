@@ -12,7 +12,7 @@ export const cha2ds2va: Escore = {
   ficha: {
     id: 'cha2ds2-va',
     titulo: 'CHA₂DS₂-VA — risco de AVC na fibrilação atrial',
-    versao: '2026-09-28.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Van Gelder IC, Rienstra M, Bunting KV, et al. 2024 ESC Guidelines for the management of atrial fibrillation. Eur Heart J. 2024;45(36):3314–3414.', url: 'https://doi.org/10.1093/eurheartj/ehae176' },
@@ -21,7 +21,7 @@ export const cha2ds2va: Escore = {
       { citacao: 'Joglar JA, Chung MK, Armbruster AL, et al. 2023 ACC/AHA/ACCP/HRS Guideline for the diagnosis and management of atrial fibrillation. Circulation. 2024;149(1):e1–e156.', url: 'https://doi.org/10.1161/CIR.0000000000001193' },
       { citacao: 'Lip GYH, Nieuwlaat R, Pisters R, et al. Refining clinical risk stratification for predicting stroke and thromboembolism in atrial fibrillation using a novel risk factor-based approach. Chest. 2010;137(2):263–272.', url: 'https://doi.org/10.1378/chest.09-1584' },
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 2 das calculadoras, com fonte aberta no PMC; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Risco de AVC na fibrilação atrial, sem a categoria de sexo (ESC 2024)',
   itens: [
