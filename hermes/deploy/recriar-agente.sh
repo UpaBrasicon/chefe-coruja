@@ -18,7 +18,9 @@ if [ -f ~/.agent.extra.env ]; then
 fi
 docker stop hermes-agent >/dev/null
 docker rename hermes-agent hermes-agent-antigo
-docker run -d --name hermes-agent --restart unless-stopped --env-file ~/.agent.env -p 8642:8642 \
+# S8 (D7): a API do Nous só no 127.0.0.1 do VPS; o Docker publica por fora do
+# UFW, então "0.0.0.0" abriria a porta para a internet
+docker run -d --name hermes-agent --restart unless-stopped --env-file ~/.agent.env -p 127.0.0.1:8642:8642 \
   -v /home/hermes/.hermes:/opt/data -v /opt/hermes-wiki:/opt/hermes-wiki -w /opt/hermes \
   --entrypoint /opt/hermes/docker/entrypoint-dispatch.sh "$IMG" gateway run >/dev/null
 rm -f ~/.agent.env

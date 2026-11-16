@@ -262,3 +262,39 @@ test('NER marcando o próprio pseudônimo não bloqueia; nome junto do pseudôni
   assert.equal(temNomeAlemDoPseudonimo('Ligar o Telegram'), false, 'pedido de vínculo não é nome (produção 03/10)')
   assert.equal(temNomeAlemDoPseudonimo('Ligar o Telegram da Maria'), true, 'com nome junto continua contando')
 })
+
+// ── S8 (D1): nome na fala da IA vira pseudônimo, sem bloquear ──────────────
+test('S8 D1: nome na fala da IA vira pseudônimo e a conversa segue; na fala da pessoa continua bloqueando', async () => {
+  const nerFalso = async (t: string) => (t.includes('Maria Lima') ? ['Maria Lima'] : [])
+  const enviados: ChamadaLLM[] = []
+  const deps: Partial<DependenciasGateway> = {
+    ner: nerFalso,
+    completar: async (b): Promise<RespostaLLM> => {
+      enviados.push(b)
+      return { conteudo: 'Sobre [PESSOA_1]: segue estável.', toolCalls: [], provedor: 'primario', modelo: 'teste', latenciaMs: 1 }
+    },
+    registrar: async () => {},
+  }
+  const ctxD1 = (): ContextoGateway => ({
+    ...ctx(),
+    nerTextos: (m) => (m.role === 'user' ? [m.content ?? ''] : []),
+    nerPseudonimizar: (m) => (m.role === 'assistant' ? [m.content ?? ''] : []),
+  })
+  const historico: ChamadaLLM = {
+    mensagens: [
+      { role: 'system', content: 'Você é a Corujinha.' },
+      { role: 'user', content: 'como está o leito 3?' },
+      { role: 'assistant', content: 'Maria Lima, no leito 3, melhorou.' },
+      { role: 'user', content: 'e a pressão?' },
+    ],
+  }
+  const r = await chamarIA(historico, ctxD1(), deps)
+  assert.equal(enviados.length, 1)
+  const enviado = JSON.stringify(enviados[0])
+  assert.doesNotMatch(enviado, /Maria Lima/, 'o nome da fala da IA não volta ao provedor')
+  assert.match(enviado, /\[PESSOA_1\], no leito 3/)
+  assert.equal(r.conteudo, 'Sobre Maria Lima: segue estável.', 'a resposta volta reidentificada')
+
+  // a mesma pessoa digitada (sem estar na fala da IA) continua bloqueando
+  await assert.rejects(chamarIA(corpo('a Maria Lima piorou'), ctxD1(), deps), ChamadaBloqueada)
+})

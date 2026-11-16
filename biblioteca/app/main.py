@@ -1,6 +1,7 @@
 """API "biblioteca": busca híbrida (denso + lexical) nas fontes licenciadas e nas
 ferramentas da Central, e resposta com citação [n] via DeepSeek. O modelo não
 calcula (R3); a pergunta chega pseudonimizada (R5) e é pseudonimizada de novo."""
+import hmac
 import json
 import threading
 from collections import OrderedDict
@@ -70,7 +71,8 @@ class Req(BaseModel):
 
 
 def auth(h: str | None):
-    if not h or h != f"Bearer {E['BIBLIOTECA_API_KEY']}":
+    # S8 (D8): comparação em tempo constante
+    if not h or not hmac.compare_digest(h.encode(), f"Bearer {E['BIBLIOTECA_API_KEY']}".encode()):
         raise HTTPException(401)
 
 

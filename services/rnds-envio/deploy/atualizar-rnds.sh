@@ -3,7 +3,8 @@
 # Atualiza o serviço de envio à RNDS no VPS a partir do master (5C-5.3c).
 # Mesmo modelo do update-hermes.sh: teste de saúde depois de subir e volta à
 # imagem anterior se falhar. Cron do root, 04:10 (depois do Hermes, às 04:00):
-#   10 4 * * * /home/rnds/deploy/atualizar-rnds.sh >> /home/rnds/logs/atualizar.log 2>&1
+#   10 4 * * * /usr/local/sbin/atualizar-rnds.sh >> /home/rnds/logs/atualizar.log 2>&1
+# O script fica fora da pasta do rnds e é do root (S8, D5).
 #
 # Lê o clone /opt/chefe-coruja (o mesmo do Hermes) SEM mexer no HEAD dele:
 # só `git fetch` e `git archive origin/master`. O update-hermes.sh compara o

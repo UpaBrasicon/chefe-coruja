@@ -31,7 +31,7 @@ o container foi **recriado** com um volume extra:
 ⚠️ O container foi recriado com TODOS os flags do original (confirmados por
 `docker inspect` antes):
 - `--sysctl net.ipv6.conf.all.disable_ipv6=1` + `default` (fix do Telegram)
-- `-p 8642:8642`, `--restart unless-stopped`
+- `-p 127.0.0.1:8642:8642` (só no VPS, S8/D7; antes era `-p 8642:8642`), `--restart unless-stopped`
 - `-v /home/hermes/.hermes:/opt/data` (rw) + o novo volume do wiki
 - rede `deploy_default` reconectada (`docker network connect deploy_default hermes-agent`)
 - env defaults do container + `.env` do Nous

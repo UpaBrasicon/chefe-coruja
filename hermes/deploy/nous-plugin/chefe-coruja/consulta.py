@@ -268,6 +268,13 @@ def resolver_unidade(ident: dict, pedida: str | None) -> dict:
 _LETRA = r"[^\W\d_]"  # \p{L} aproximado: letra Unicode
 
 
+def prefixo_de_notificacao(texto: str) -> str:
+    """S8 (D3): [PESSOA_1] → [COLEGA_1]; outras categorias → [NOTIF_<CATEGORIA>_n]."""
+    return re.sub(r"\[([A-Z]+)_(\d+)\]",
+                  lambda m: f"[COLEGA_{m.group(2)}]" if m.group(1) == "PESSOA" else f"[NOTIF_{m.group(1)}_{m.group(2)}]",
+                  texto)
+
+
 def criar_cofre() -> dict:
     return {"paraOriginal": {}, "paraPseudonimo": {}, "contadores": {}}
 
@@ -511,8 +518,10 @@ def _consulta_operacional(rpc: Rpc, comando: str, unidade_id: str | None, args: 
         # Avisos citam colegas pelo nome: o texto passa pela desidentificação (ADR 0006).
         conhecidos = _nomes_da_unidade(rpc, ident["perfilId"], unidade_id)
         cofre = criar_cofre()
+        # S8 (D3): prefixo próprio, para não disputar o [PESSOA_n] do cofre da conversa
         return [
-            {**n, "mensagem": desidentificar(n.get("mensagem") if n.get("mensagem") is not None else "", cofre, conhecidos)["texto"]}
+            {**n, "mensagem": prefixo_de_notificacao(
+                desidentificar(n.get("mensagem") if n.get("mensagem") is not None else "", cofre, conhecidos)["texto"])}
             for n in linhas
         ]
     return dict(_DESCONHECIDO)
