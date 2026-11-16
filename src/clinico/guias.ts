@@ -45,7 +45,14 @@ const CURB65_EVIDENCIAS: ItemGuia[] = [
   { texto: 'Há menos evidência de que o CURB-65 funcione como apoio à decisão do local do tratamento; a recomendação condicional pesa a simplicidade de uso.', ref: atsIdsa('questão 6, resumo da evidência e justificativa') },
 ]
 
+const ICR = 'Pronto-Socorro de Pediatria ICr-HCFMUSP, 4ª ed., cap. 32 (diarreia aguda)'
+
 export const GUIAS: Record<string, Guia> = {
+  'ped-diarreia-desidratacao': {
+    proximosPassos: [
+      { tema: 'Reavaliar', texto: 'Reavaliar a desidratação a cada 30 minutos no início e depois a cada 1 hora.', ref: { fonte: ICR, pagina: 'p. 330' } },
+    ],
+  },
   heart: {
     proximosPassos: [
       linhaSbc('Alta do baixo risco', [0, 1]),

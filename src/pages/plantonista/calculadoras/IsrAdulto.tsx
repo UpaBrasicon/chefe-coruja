@@ -2,13 +2,18 @@ import { DIFERENCAS_DAS_2025, DIRETRIZ_DAS_2025, DROGAS_ISR, NOTA_ATS_PRE_OXIGEN
 import { textoFontes } from '@/clinico/ficha'
 import { CampoPesoAdulto } from '@/components/plantonista/calc/CampoNumero'
 import { usePesoAdulto } from '@/components/plantonista/calc/pacienteNaFerramenta'
-import { Evidencias, VerMais } from '@/components/plantonista/calc/Evidencias'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
+import { useState } from 'react'
 
 const PAPEL: Record<DrogaIsr['papel'], string> = { inducao: 'Indução', analgesia: 'Analgesia', bloqueio: 'Bloqueio neuromuscular' }
 const PAPEIS = Object.keys(PAPEL) as DrogaIsr['papel'][]
@@ -18,6 +23,8 @@ export function IsrAdulto() {
   // Peso da Central (C5 = A) e trava da unidade de 30 a 250 kg (RT, 16/11/2026).
   const pesoAdulto = usePesoAdulto()
   const { peso, leitura, pesoConta } = pesoAdulto
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaIsrAdulto.id)
   const linhas = DROGAS_ISR.map((d) => ({ d, r: calcularIsr(d, pesoConta) }))
   const doseTexto = (r: NonNullable<ReturnType<typeof calcularIsr>>) => `${r.dose} · ${r.volumeMl} mL${r.ampolas > 1 ? ` · ${r.ampolas} ampolas` : ''}`
 
@@ -61,13 +68,21 @@ export function IsrAdulto() {
                 <p className="text-tinta-sussurro">
                   {d.fixa ? `dose fixa ${d.fixa.minUg}–${d.fixa.maxUg} µg` : `${numero(d.mgKg!)} mg/kg`} · {d.apresentacao}
                 </p>
-                {d.nota && <VerMais rotulo="Divergência no livro"><p>{d.nota}</p></VerMais>}
               </div>
             ))}
           </CardContent>
         </Card>
       ))}
-      <Evidencias titulo="DAS 2025 — ao lado do manual" resumo="Difficult Airway Society 2025, lida no texto integral: recomendações de consenso, sem classe. As doses do Anexo 1 acima continuam valendo.">
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={leitura !== 'ok'}
+        armadilhas={[...DROGAS_ISR.filter((d) => d.nota).map((d) => `${d.nome} — divergência no livro: ${d.nota}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaIsrAdulto}
+        guia={guia}
+        comparacao={
+      <BlocoComparacao titulo="DAS 2025 — ao lado do manual" resumo="Difficult Airway Society 2025, lida no texto integral: recomendações de consenso, sem classe. As doses do Anexo 1 acima continuam valendo.">
         <div className="overflow-x-auto">
           <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
             <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">DAS 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
@@ -75,12 +90,17 @@ export function IsrAdulto() {
           </Table>
         </div>
         <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_DAS_2025.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Evidencias>
+      </BlocoComparacao>
+        }
+      />
       <ResumoFlutuante
         principal={leitura === 'ok' ? `Adulto · ${numeroBr(peso)} kg` : leitura === 'fora' ? 'Peso fora de 30 a 250 kg' : 'Informe o peso'}
         detalhe={leitura === 'ok' ? 'Doses por peso nas listas acima; "Copiar" leva todas.' : undefined}
         tom={leitura === 'fora' ? 'critico' : 'neutro'}
         textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
       />
     </ToolLayout>
   )

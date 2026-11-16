@@ -4,7 +4,14 @@ import { fichaIcr, ok, positivo } from './fonteIcr.ts'
 // Pronto-Socorro ICr-HCFMUSP (4ª ed., 2023), p. 326–334. A escala e os volumes
 // são os do livro; a classificação é apoio, a decisão é do profissional (ADR 0007).
 
-export const fichaDesidratacaoPed = fichaIcr('ped-diarreia-desidratacao', 'Diarreia aguda — desidratação e planos A, B e C', 'cap. 32, p. 326–334')
+// Versão 2026-11-16.1: piloto das calculadoras (RT, 16/11/2026) — a reavaliação da p. 330
+// passa a aparecer também em "Próximos passos"; nenhuma conta muda.
+const baseDiarreia = fichaIcr('ped-diarreia-desidratacao', 'Diarreia aguda — desidratação e planos A, B e C', 'cap. 32, p. 326–334')
+export const fichaDesidratacaoPed = {
+  ...baseDiarreia,
+  versao: '2026-11-16.1',
+  revisadoEm: `16/11/2026 (próximos passos e armadilhas do piloto das calculadoras, do próprio capítulo; aguarda aprovação do RT); ${baseDiarreia.revisadoEm}`,
+}
 
 // ---------------------------------------------------------------- grau pelo peso
 
