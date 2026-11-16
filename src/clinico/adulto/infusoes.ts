@@ -16,6 +16,13 @@ export const PADIS_2025: Fonte = {
   url: 'https://doi.org/10.1097/CCM.0000000000006574',
 }
 
+// Mesma atualização, lida no texto integral gratuito da LWW em 16/11/2026 (lote 6 das
+// calculadoras): fonte do RASS e do CAM-ICU. A ficha das infusões segue com a citação acima.
+export const PADIS_2025_LIDA: Fonte = {
+  citacao: 'Lewis K, Balas MC, Stollings JL, et al. A Focused Update to the Clinical Practice Guidelines for the Prevention and Management of Pain, Anxiety, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med. 2025;53(3):e711–e727 (PMID 39982143). Texto integral gratuito na LWW lido em 16/11/2026: recomendações 1 a 3.',
+  url: 'https://doi.org/10.1097/CCM.0000000000006574',
+}
+
 const PAG_INFUSOES = 'Anexo 1 — Padrão de diluição de medicações HC – adultos, p. 1482–1489'
 
 export const fichaInfusoesAdulto: Ficha = {

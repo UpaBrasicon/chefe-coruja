@@ -27,15 +27,15 @@ export const news2: Escore = {
   ficha: {
     id: 'news2',
     titulo: 'NEWS2 — escore de alerta precoce',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
-      { citacao: 'Royal College of Physicians. National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS. London: RCP; 2017.' },
+      { citacao: 'Royal College of Physicians. National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS. London: RCP; 2017. Chart 2 (p. 30), Chart 4 (p. 39), recomendação 12 e p. 37–38, lidos no PDF em 16/11/2026.', url: 'https://www.rcp.ac.uk/media/a4ibkkbf/news2-final-report_0_0.pdf' },
       { citacao: 'Prescott HC, Antonelli M, Alhazzani W, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2026. Crit Care Med. 2026.', url: 'https://doi.org/10.1097/CCM.0000000000007075' },
       NEWS2_BRASIL_2020,
       NEWS2_BRASIL_SEPSE_2025,
     ],
-    revisadoEm: '06/11/2026 (nota da versão brasileira oficial, rótulos sem mudança; revisão PubMed, itens médios; mesmos cortes da acuidade do prontuário desde 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 6 das calculadoras; fontes lidas no texto integral em 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota da versão brasileira oficial, rótulos sem mudança; revisão PubMed, itens médios; mesmos cortes da acuidade do prontuário desde 27/09/2026)',
   },
   descricao: 'Sete parâmetros à beira do leito; na SSC 2026, ferramenta de rastreio de sepse no lugar do qSOFA',
   itens: [
