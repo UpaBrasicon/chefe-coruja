@@ -17,7 +17,7 @@
 // O segredo do cabeçalho x-motor-segredo é conferido com o do Vault
 // (webhooks_motor_segredo) por public.webhook_motor_autorizado.
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
 import { nomePublico, type ResolverDns } from '../_shared/borda.ts'
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { relatarErro } from '../_shared/sentry.ts'

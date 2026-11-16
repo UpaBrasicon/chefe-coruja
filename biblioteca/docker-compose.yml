@@ -3,7 +3,9 @@
 # biblioteca.chefecoruja.com.br via reverse_proxy biblioteca-api:8710.
 services:
   qdrant:
-    image: qdrant/qdrant:latest
+    # S9 (V4): versão fixa, a mesma que rodava em 16/11/2026 (digest
+    # sha256:12364fe8…). Atualizar só por PR, conferindo o formato do índice.
+    image: qdrant/qdrant:v1.19.1
     container_name: biblioteca-qdrant
     restart: unless-stopped
     ports: ["127.0.0.1:6333:6333"]
@@ -11,7 +13,8 @@ services:
     deploy: { resources: { limits: { memory: 700m } } }
 
   ollama:
-    image: ollama/ollama:latest
+    # S9 (V4): versão fixa, a mesma que rodava em 16/11/2026 (digest sha256:8262851b…).
+    image: ollama/ollama:0.34.4
     container_name: biblioteca-ollama
     restart: unless-stopped
     ports: ["127.0.0.1:11434:11434"]

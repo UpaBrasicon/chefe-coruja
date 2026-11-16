@@ -18,7 +18,7 @@
 // Secrets (Edge Functions → Secrets): TURNSTILE_SECRET, RESEND_API_KEY,
 // APP_ORIGIN (CORS). Opcionais: DEMONSTRACAO_DESTINO (padrão
 // contato@chefecoruja.com.br) e DEMONSTRACAO_REMETENTE.
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
 
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { comCors } from '../_shared/cors.ts'
