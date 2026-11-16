@@ -133,3 +133,7 @@ FROM (VALUES
 ) AS v(nome, valor, h)
 JOIN public.conceito c ON c.nome = v.nome AND c.unidade_id IS NULL
 WHERE NOT EXISTS (SELECT 1 FROM public.observacao o WHERE o.paciente_id = '23000000-0000-4000-8000-000000000001');
+
+-- S10 (H4): marca de ambiente de teste (os scripts de demo e e2e só rodam com ela)
+INSERT INTO public.configuracao_plataforma (chave, valor) VALUES ('ambiente_teste', true)
+ON CONFLICT (chave) DO UPDATE SET valor = true;

@@ -2,8 +2,9 @@
 # Build (na raiz do repositório): docker build -f infra/guarda/Dockerfile -t chefe-coruja-guarda .
 FROM postgres:17-alpine
 RUN apk add --no-cache nodejs ca-certificates
-COPY scripts/arquivo/cofre.mjs scripts/arquivo/guarda-automatica.mjs /app/
-# roda sem root; a cópia sem cifra fica só no /tmp do container e é apagada no fim
+COPY scripts/arquivo/caminho.mjs scripts/arquivo/cofre.mjs scripts/arquivo/guarda-automatica.mjs /app/
+# roda sem root; a cópia sem cifra fica só no /tmp do container (tmpfs em
+# memória, ver chefe-coruja-guarda.service) e é apagada no fim
 USER postgres
 ENV GUARDA_ESTADO=/estado GUARDA_TMP=/tmp
 ENTRYPOINT ["node", "/app/guarda-automatica.mjs"]

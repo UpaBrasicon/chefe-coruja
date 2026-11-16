@@ -23,7 +23,8 @@
 // não imprime credencial nem dado de paciente.
 import { execFileSync } from 'node:child_process'
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
+import { join, relative } from 'node:path'
+import { caminhoConfinado, planejarAnexos } from './caminho.mjs'
 import { assinar, baixar, cifrar2, consultar, decifrar2, digitalDaChave, enviar, novaChaveEnvelopada, sha256 } from './cofre.mjs'
 
 const env = process.env
@@ -31,6 +32,19 @@ const modo = process.argv.includes('--vigiar') ? 'vigiar' : process.argv.include
 const ESTADO = env.GUARDA_ESTADO ?? '/estado'
 const exigir = (n) => { if (!env[n]) throw new Error(`falta a variável ${n}`); return env[n] }
 const local = (host) => /^(127\.0\.0\.1|localhost|host\.docker\.internal)(:\d+)?$/.test(host ?? '')
+
+/** URL do banco sem a senha e o ambiente do pg_dump/psql com PGPASSWORD (e sem as outras credenciais). */
+function conexaoBanco(urlComSenha) {
+  let u
+  try { u = new URL(urlComSenha) } catch { throw new Error('GUARDA_DB_URL precisa ser uma URL postgresql://usuario:senha@host:porta/banco') }
+  if (!/^postgres(ql)?:$/.test(u.protocol)) throw new Error('GUARDA_DB_URL precisa começar com postgresql://')
+  const senha = decodeURIComponent(u.password)
+  u.password = ''
+  const pgEnv = { ...env }
+  for (const n of ['GUARDA_DB_URL', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'GUARDA_STORAGE_S3_ID', 'GUARDA_STORAGE_S3_SEGREDO', 'RESEND_API_KEY']) delete pgEnv[n]
+  if (senha) pgEnv.PGPASSWORD = senha
+  return { dbUrl: u.toString(), pgEnv }
+}
 
 // ── alerta por e-mail (Resend) ──────────────────────────────────────────────
 async function alertar(assunto, texto) {
@@ -105,22 +119,39 @@ try {
   const semTrava = env.GUARDA_SEM_TRAVA === '1'
   if (semTrava && !local(cofre.host)) throw new Error('GUARDA_SEM_TRAVA só vale para cofre local de teste')
 
-  // 1a. banco
+  // 1a. banco. A senha NÃO vai na linha de comando (apareceria no `ps`): a URL
+  // segue sem senha e a senha vai por PGPASSWORD, só no ambiente do processo
+  // filho, que também não recebe as outras credenciais da guarda.
+  const { dbUrl, pgEnv } = conexaoBanco(exigir('GUARDA_DB_URL'))
   const pgDump = env.GUARDA_PG_DUMP ?? 'pg_dump'
   const schemas = (env.GUARDA_SCHEMAS ?? 'public,private,terminologia,auth,storage,supabase_migrations').split(',')
   execFileSync(pgDump, ['--format=custom', '--no-owner', '--no-privileges', ...schemas.flatMap((s) => ['-n', s.trim()]),
-    '-f', join(tmp, 'banco.dump'), '--dbname', exigir('GUARDA_DB_URL')], { stdio: ['ignore', 'ignore', 'pipe'] })
+    '-f', join(tmp, 'banco.dump'), '--dbname', dbUrl], { stdio: ['ignore', 'ignore', 'pipe'], env: pgEnv })
 
-  // 1b. anexos (lista pelo banco; arquivos pelo protocolo S3 do Storage)
+  // 1b. anexos (lista pelo banco; arquivos pelo protocolo S3 do Storage).
+  // Cada anexo vai para o disco com nome seguro (storage/anexo-00001); o nome
+  // real fica no manifesto (cifrado). Nome inválido ou colisão arquivo×pasta é
+  // pulado com aviso, sem derrubar a guarda (S10, H1).
   let storage = 'não exportado: defina GUARDA_STORAGE_S3_HOST e a chave S3 do Storage'
+  const anexos = []
+  let pulados = []
   if (env.GUARDA_STORAGE_S3_HOST) {
     const psql = env.GUARDA_PSQL ?? 'psql'
-    const lista = execFileSync(psql, ['--dbname', exigir('GUARDA_DB_URL'), '-At', '-F', '\t', '-c',
-      'SELECT bucket_id, name FROM storage.objects ORDER BY bucket_id, name'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
-      .split('\n').filter(Boolean).map((l) => l.split('\t'))
+    // em hex: nome com tab ou quebra de linha não desmonta a lista
+    const lista = execFileSync(psql, ['--dbname', dbUrl, '-At', '-F', '\t', '-c',
+      "SELECT encode(convert_to(bucket_id, 'UTF8'), 'hex'), encode(convert_to(name, 'UTF8'), 'hex') FROM storage.objects ORDER BY bucket_id, name"],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: pgEnv })
+      .split('\n').filter(Boolean).map((l) => {
+        const [b, n] = l.split('\t').map((x) => Buffer.from(x.trim(), 'hex').toString('utf8'))
+        return { bucket: b, nome: n }
+      })
+    const plano = planejarAnexos(lista)
+    pulados = plano.pulados
+    for (const p of pulados) console.error(`[guarda] anexo pulado no bucket ${p.bucket}: ${p.motivo} (${p.resumo})`)
     const credStorage = { id: exigir('GUARDA_STORAGE_S3_ID'), segredo: exigir('GUARDA_STORAGE_S3_SEGREDO') }
     const base = (env.GUARDA_STORAGE_S3_CAMINHO ?? 'storage/v1/s3').replace(/^\/|\/$/g, '')
-    for (const [bucket, nome] of lista) {
+    mkdirSync(join(tmp, 'storage'))
+    for (const [k, { bucket, nome }] of plano.aceitos.entries()) {
       const { url, cabecalhos } = assinar({
         metodo: 'GET', bucket, regiao: env.GUARDA_STORAGE_S3_REGIAO ?? 'sa-east-1', chaveObjeto: `${base}/${bucket}/${nome}`,
         host: env.GUARDA_STORAGE_S3_HOST, protocolo: env.GUARDA_STORAGE_S3_PROTOCOLO ?? 'https',
@@ -128,11 +159,11 @@ try {
       })
       const r = await fetch(url, { headers: cabecalhos })
       if (!r.ok) throw new Error(`anexo ${bucket}/… não baixou: HTTP ${r.status}`)
-      const alvo = join(tmp, 'storage', bucket, ...nome.split('/'))
-      mkdirSync(dirname(alvo), { recursive: true })
-      writeFileSync(alvo, Buffer.from(await r.arrayBuffer()))
+      const arquivo = `storage/anexo-${String(k + 1).padStart(5, '0')}`
+      writeFileSync(caminhoConfinado(tmp, arquivo), Buffer.from(await r.arrayBuffer()))
+      anexos.push({ arquivo, bucket, nome })
     }
-    storage = `${lista.length} arquivo(s)`
+    storage = `${anexos.length} arquivo(s)` + (pulados.length ? `; ${pulados.length} pulado(s) por nome inválido ou colisão` : '')
   }
 
   // 2. manifesto
@@ -141,7 +172,12 @@ try {
     const b = readFileSync(c)
     return { arquivo: relative(tmp, c).split(/[\\/]/).join('/'), bytes: b.length, sha256: sha256(b).toString('hex') }
   })
-  const manifesto = { versao: 2, gerado_em: inicio.toISOString(), origem: 'guarda automática (produção)', storage, arquivos }
+  // anexos: nome seguro → bucket e nome real (o manifesto vai cifrado);
+  // abrir-guarda.mjs usa esta lista para devolver cada anexo ao nome real.
+  const manifesto = {
+    versao: 2, gerado_em: inicio.toISOString(), origem: 'guarda automática (produção)', storage, arquivos,
+    anexos, anexos_pulados: pulados,
+  }
   writeFileSync(join(tmp, 'MANIFESTO.json'), JSON.stringify(manifesto, null, 2))
 
   // 3 e 4. cifra, confere, envia, consulta
@@ -184,6 +220,12 @@ try {
   }
   registrar(resultado)
   console.log(`✔ guarda ${prefixo}: ${resultado.objetos} objeto(s), ${resultado.bytes} bytes cifrados, travados até ${ri.ate?.slice(0, 10) ?? '— (cofre local de teste)'}`)
+  if (pulados.length) {
+    // a guarda saiu, mas incompleta: o responsável precisa saber (sem o nome do arquivo)
+    const porBucket = Object.entries(pulados.reduce((m, p) => ({ ...m, [p.bucket]: (m[p.bucket] ?? 0) + 1 }), {}))
+      .map(([b, n]) => `${b}: ${n}`).join(', ')
+    await alertar('[Chefe Coruja] Guarda com anexos PULADOS', `A guarda automática ${prefixo} foi feita, mas ${pulados.length} anexo(s) ficaram de fora por nome inválido ou colisão arquivo×pasta (${porBucket}).\n\nDetalhes (sem o nome): journalctl -u chefe-coruja-guarda.service. O anexo só entra na guarda depois de renomeado no Storage.`).catch(() => false)   // falha do e-mail não vira falha da guarda
+  }
 } catch (e) {
   const erro = String(e?.message ?? e).replace(/postgres(ql)?:\/\/[^\s]+/g, 'postgres://***')   // nunca vaza a URL com senha
   registrar({ ok: false, inicio: inicio.toISOString(), fim: new Date().toISOString(), prefixo, erro })

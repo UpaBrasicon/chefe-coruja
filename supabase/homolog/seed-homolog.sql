@@ -12,6 +12,17 @@
 -- Idempotente (ON CONFLICT / NOT EXISTS): pode rodar de novo.
 -- ════════════════════════════════════════════════════════════════════════════
 
+-- S10 (H4): a produção tem a marca ambiente_teste = false; este seed recusa ali
+-- (em 05/10/2026 uma rede fictícia de homologação apareceu na produção).
+DO $trava$
+BEGIN
+  IF EXISTS (SELECT 1 FROM public.configuracao_plataforma WHERE chave = 'ambiente_teste' AND valor = false) THEN
+    RAISE EXCEPTION 'Este banco é a produção (ambiente_teste = false): o seed da homologação não roda aqui.';
+  END IF;
+END
+$trava$;
+INSERT INTO public.configuracao_plataforma (chave, valor) VALUES ('ambiente_teste', true) ON CONFLICT (chave) DO NOTHING;
+
 DO $$
 BEGIN
   -- trava: só em banco recém-montado pelas migrations. Aceita a organização

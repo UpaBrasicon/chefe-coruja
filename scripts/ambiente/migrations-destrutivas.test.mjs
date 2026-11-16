@@ -35,3 +35,41 @@ test('expand/contract: contrato assumido com a migration expand anterior passa',
 test('migrations anteriores à adoção não são verificadas', () => {
   assert.deepEqual(analisar('20260101000000_antiga.sql', 'DROP TABLE t;'), [])
 })
+
+test('bloco DO: o corpo é analisado (S10, H5)', () => {
+  // o que é proibido fora do DO também é dentro dele
+  assert.match(analisar(nova, 'DO $$ BEGIN DROP TABLE public.antiga; END $$;')[0], /DROP de objeto/)
+  assert.match(analisar(nova, 'DO $d$ BEGIN DELETE FROM public.pacientes; END $d$;')[0], /DELETE sem WHERE/)
+  assert.match(analisar(nova, "DO $$ BEGIN EXECUTE 'DELETE FROM public.pacientes'; END $$;")[0], /DELETE sem WHERE/)
+  assert.match(analisar(nova, 'DO LANGUAGE plpgsql $$ BEGIN ALTER TABLE t DROP COLUMN c; END $$;')[0], /DROP COLUMN/)
+  // SQL dinâmico entre $q$ dentro do DO também
+  assert.match(analisar(nova, 'DO $$ BEGIN EXECUTE $q$TRUNCATE public.log$q$; END $$;')[0], /TRUNCATE/)
+  // e o que é permitido fora continua permitido dentro
+  assert.deepEqual(analisar(nova, "DO $$ BEGIN DROP POLICY IF EXISTS p ON t; DROP TRIGGER IF EXISTS g ON t; DELETE FROM t WHERE id = '1'; END $$;"), [])
+  // função criada dentro do DO por EXECUTE: o corpo dela continua fora da análise
+  assert.deepEqual(analisar(nova, 'DO $$ BEGIN EXECUTE $q$CREATE FUNCTION f() RETURNS void LANGUAGE plpgsql AS $b$ BEGIN DELETE FROM t; END $b$$q$; END $$;'), [])
+  // COMMENT com $$ fora de DO não é código
+  assert.deepEqual(analisar(nova, 'COMMENT ON TABLE t IS $$ sai o DROP TABLE antigo $$;'), [])
+})
+
+test('DROP FUNCTION recriada por EXECUTE num DO passa quando há GRANT nela depois', () => {
+  const sql = "DO $$ BEGIN EXECUTE def; DROP FUNCTION public.rpc(uuid); END $$;\nGRANT EXECUTE ON FUNCTION public.rpc(uuid, text) TO authenticated;"
+  assert.deepEqual(analisar(nova, sql), [])
+  assert.match(analisar(nova, 'DO $$ BEGIN DROP FUNCTION public.rpc(uuid); END $$;')[0], /sem recriar/)
+  // GRANT antes do DROP não conta
+  assert.match(analisar(nova, 'GRANT EXECUTE ON FUNCTION public.rpc(uuid) TO authenticated;\nDROP FUNCTION public.rpc(uuid);')[0], /sem recriar/)
+})
+
+test('DELETE com WHERE sempre verdadeiro reprova (S10, H5)', () => {
+  assert.match(analisar(nova, 'DELETE FROM public.pacientes WHERE true;')[0], /sempre verdadeiro/)
+  assert.match(analisar(nova, 'DELETE FROM public.pacientes WHERE 1=1;')[0], /sempre verdadeiro/)
+  assert.match(analisar(nova, 'DELETE FROM public.pacientes p WHERE 1 = 1 RETURNING id;')[0], /sempre verdadeiro/)
+  assert.match(analisar(nova, 'DO $$ BEGIN DELETE FROM t WHERE TRUE; END $$;')[0], /sempre verdadeiro/)
+  assert.deepEqual(analisar(nova, 'DELETE FROM t WHERE true_flag = false;'), [])
+  assert.deepEqual(analisar(nova, 'DELETE FROM t WHERE ativo = true;'), [])
+})
+
+test('limparSql: literal com -- e $$ não confunde a limpeza', () => {
+  assert.deepEqual(analisar(nova, "SELECT '-- não é comentário $$'; DROP TABLE t;").length, 1)
+  assert.deepEqual(analisar(nova, "SELECT E'a\' -- x'; SELECT 1;"), [])
+})

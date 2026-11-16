@@ -7,10 +7,20 @@
 //   tb_procedimento.txt  (+ tb_procedimento_layout.txt)
 // em data/terminologia/sigtap/ — pronto para importação.
 //
-// Uso: node scripts/terminologia/baixar-sigtap.ts
+// O espelho não é a fonte oficial (S10, H6): o zip só é usado se o SHA-256
+// bater com o valor passado em --sha256. Para obter o valor, baixe o mesmo
+// TabelaUnificada_<AAAAMM>_v<data>.zip do FTP oficial do DATASUS
+// (ftp2.datasus.gov.br/pub/sistemas/tup/downloads/) e calcule o hash:
+//   Windows: certutil -hashfile TabelaUnificada_....zip SHA256
+//   Linux/macOS: sha256sum TabelaUnificada_....zip
+// O script diz o nome do zip que vai baixar antes de conferir; se o espelho
+// tiver mudado de mês, o hash não bate e nada é gravado.
+//
+// Uso: node scripts/terminologia/baixar-sigtap.ts --sha256 <64 hex>
 // ─────────────────────────────────────────────────────────────────────────────
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { conferirSha256, lerSha256Esperado } from './lib/sha256.ts'
 
 const API_TABELAS = 'https://api.github.com/repos/RenatoKR/SIGTAP/contents/tabelas'
 const DIR_DESTINO = resolve('data/terminologia/sigtap')
@@ -100,10 +110,13 @@ async function extrairDoZip(zipBytes: Uint8Array, desejados: Map<string, string>
 }
 
 async function main() {
+  const esperado = lerSha256Esperado(process.argv)
   const maisRecente = await obterZipMaisRecente()
   console.log(`SIGTAP: baixando ${maisRecente.nome} (${maisRecente.url})`)
   const zipBytes = await baixarZip(maisRecente.url)
   console.log(`SIGTAP: zip baixado (${zipBytes.length} bytes)`)
+  conferirSha256(zipBytes, esperado)
+  console.log(`SIGTAP: SHA-256 confere (${esperado})`)
 
   mkdirSync(DIR_DESTINO, { recursive: true })
   await extrairDoZip(zipBytes, ARQUIVOS)

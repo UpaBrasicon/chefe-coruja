@@ -2,7 +2,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { corpoEmail, enderecoDaRede, jsonAscii, lerPedido, resumoDoEndereco } from './regras.ts'
+import { origemPermitida } from '../_shared/cors.ts'
+import { corpoEmail, enderecoDaRede, jsonAscii, lerPedido, ORIGENS_DO_FORMULARIO, resumoDoEndereco, siteDoPedido } from './regras.ts'
 
 const valido = { nome: 'Ana Souza', email: 'ana@exemplo.com', telefone: '(11) 98765-4321', unidade: 'UPA Centro, coordenação', mensagem: 'Quero ver a escala.', token: 'tk' }
 
@@ -69,4 +70,31 @@ test('resumo do endereço é sha256 hex, muda com o sal e não contém o endere�
   assert.match(a, /^[0-9a-f]{64}$/)
   assert.notEqual(a, b)
   assert.ok(!a.includes('203'))
+})
+
+test('S10 (H3): CORS aceita planos só nesta função, sem abrir para qualquer origem', () => {
+  const g = globalThis as { Deno?: unknown }
+  const antes = g.Deno
+  g.Deno = { env: { get: (n: string) => (n === 'APP_ORIGIN' ? 'https://www.chefecoruja.com.br' : undefined) } }
+  try {
+    const req = (origem: string) => new Request('https://x.supabase.co/functions/v1/pedir-demonstracao', { headers: { Origin: origem } })
+    const planos = 'https://planos.chefecoruja.com.br'
+    assert.equal(origemPermitida(req(planos), ORIGENS_DO_FORMULARIO), planos)
+    assert.equal(origemPermitida(req('https://chefecoruja.com.br'), ORIGENS_DO_FORMULARIO), 'https://chefecoruja.com.br')
+    // origem estranha recebe a primeira da lista, nunca a dela nem '*'
+    assert.equal(origemPermitida(req('https://golpe.example'), ORIGENS_DO_FORMULARIO), 'https://www.chefecoruja.com.br')
+    // as outras funções (sem extras) continuam sem aceitar planos
+    assert.equal(origemPermitida(req(planos)), 'https://www.chefecoruja.com.br')
+  } finally {
+    g.Deno = antes
+  }
+})
+
+test('S10 (H3): o e-mail diz de qual site veio o pedido', () => {
+  assert.equal(siteDoPedido('https://planos.chefecoruja.com.br'), 'planos.chefecoruja.com.br')
+  assert.equal(siteDoPedido('https://www.chefecoruja.com.br'), 'www.chefecoruja.com.br')
+  assert.equal(siteDoPedido('https://golpe.example'), 'www.chefecoruja.com.br')
+  assert.equal(siteDoPedido(null), 'www.chefecoruja.com.br')
+  const r = lerPedido(valido)
+  if (r.tipo === 'ok') assert.match(corpoEmail(r.pedido, 'planos.chefecoruja.com.br'), /\(planos\.chefecoruja\.com\.br\)/)
 })

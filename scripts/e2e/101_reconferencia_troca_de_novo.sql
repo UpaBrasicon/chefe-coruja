@@ -7,6 +7,17 @@
 -- cancela o pedido (limpeza).
 -- Rodar antes: 41_checkin_fase5.sql; e o 83 já rodado (as variáveis d04_*).
 -- ════════════════════════════════════════════════════════════════════════════
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 SELECT e2e.b_guardar('d04r_inicio', now()::text);
 -- ── 7. A cancela uma troca ainda sem decisão ────────────────────────────────
 SELECT e2e.d_dep('d04_t1', 'D04.01.solicitar', 'D04.07.terceira_troca', 4, 'd_plant_a', 'PedidosEscala', 'A (agora na Internação D) pede outra troca com B',

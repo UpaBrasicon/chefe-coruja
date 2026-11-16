@@ -1,6 +1,17 @@
 -- Conferência das telas de 08/11/2026 (noite): paciente novo "Observacao Tela Teste" em observação na UPA F5,
 -- aberta por medico.upa.f5, com o primeiro atendimento da observação (libera o Reavaliar). Para conferir no
 -- navegador o botão "Alergias" (item 17) e o "Reavaliar" (item 4) em "Observações que você abriu".
+-- trava (S10, H4): só homologação ou banco local; nunca a produção
+DO $trava$
+BEGIN
+  -- S10 (H4): só homologação ou banco local, pela marca ambiente_teste da
+  -- configuração (a produção tem uma rede fictícia com a UPA Homologação, então
+  -- a existência dessa unidade não prova nada)
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  END IF;
+END
+$trava$;
 DELETE FROM e2e.vars WHERE nome LIKE 'ob8\_%';
 SELECT e2e.b_guardar('ob8_inicio', now()::text);
 SELECT e2e.bpasso(NULL, 'OB8.01.ficha', 'f5_rec_upa', '/recepcao (Nova ficha)', 'Recepção abre a ficha de um paciente novo no PS',

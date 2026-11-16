@@ -30,8 +30,8 @@ DECLARE
   v_conflito text;
   v_fora    text[] := '{}';
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.unidades WHERE id = '31000000-0000-4000-8000-000000000001') THEN
-    RAISE EXCEPTION 'Este banco não é a homologação (falta a UPA Homologação). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
+  IF NOT coalesce((SELECT c.valor FROM public.configuracao_plataforma c WHERE c.chave = 'ambiente_teste'), false) THEN  -- S10 (H4): marca de ambiente
+    RAISE EXCEPTION 'Este banco não é de teste: a marca ambiente_teste não está ligada (só a homologação e o banco local a têm; a produção tem a marca desligada). Confira o projeto ligado (kswurfyxxvfydpjfrivy).';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.perfis WHERE id = v_id) THEN
     RAISE EXCEPTION 'A coordenadora fictícia não existe: rode antes scripts/demo/01_rede_demonstracao.sql.';

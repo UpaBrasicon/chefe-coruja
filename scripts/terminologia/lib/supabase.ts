@@ -8,6 +8,7 @@
 // supabase-js e mantém o cast isolado no factory.
 // ─────────────────────────────────────────────────────────────────────────────
 import { createClient } from '@supabase/supabase-js'
+import { exigirAlvoSeguro } from '../../ambiente/alvo-seguro.mjs'
 
 export type RespostaDb<T> = Promise<{
   data: T | null
@@ -37,6 +38,8 @@ export function criarCliente(): ClienteTerminologia {
         'A service_role key NUNCA vai para o cliente (VITE_*).'
     )
   }
+  // S10, H4: a importação grava com a chave de serviço; produção só com --confirmo-producao
+  exigirAlvoSeguro([url], { nome: 'a importação de terminologia' })
   const client = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     db: { schema: 'terminologia' },

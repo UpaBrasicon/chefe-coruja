@@ -5,7 +5,7 @@
 //   tb_procedimento.txt        (posicional, Windows-1252)
 //   tb_procedimento_layout.txt (descrição das colunas)
 //
-// Baixe primeiro com: node scripts/terminologia/baixar-sigtap.ts
+// Baixe primeiro com: node scripts/terminologia/baixar-sigtap.ts --sha256 <hex>
 // (mirror automático do FTP do DATASUS — RenatoKR/SIGTAP no GitHub).
 // Idempotente: upsert por `codigo` (PK).
 //

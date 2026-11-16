@@ -3,10 +3,12 @@
 // F1 = A (esta função, com Turnstile, campo-isca e limite por endereço de rede),
 // F2 = não gravar o pedido (o e-mail para contato@ é o registro),
 // F3 = 3 envios por endereço de rede por hora.
+// Desde o S10 (H3 = A), o formulário de contato de planos.chefecoruja.com.br
+// também usa esta função: a origem dele é aceita só aqui (ORIGENS_DO_FORMULARIO).
 //
 // Sem login (verify_jwt = false em config.toml). A ordem é:
 //   1. campo-isca preenchido: responde "ok" e não envia nada;
-//   2. dados: nome, e-mail e telefone, com as regras da landing/;
+//   2. dados: nome, e-mail e telefone (nome com 2 letras, e-mail, telefone com DDD);
 //   3. Turnstile, conferido na Cloudflare com o TURNSTILE_SECRET;
 //   4. limite: 3 pedidos por hora pelo resumo do endereço de rede
 //      (public.contar_pedido_demonstracao, migration 20270406000001);
@@ -21,11 +23,11 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { chaveSecreta } from '../_shared/chaves.ts'
 import { comCors } from '../_shared/cors.ts'
 import { comRelato, relatarErro } from '../_shared/sentry.ts'
-import { corpoEmail, enderecoDaRede, jsonAscii, lerPedido, resumoDoEndereco } from './regras.ts'
+import { corpoEmail, enderecoDaRede, jsonAscii, lerPedido, ORIGENS_DO_FORMULARIO, resumoDoEndereco, siteDoPedido } from './regras.ts'
 
 const FUNCAO = 'pedir-demonstracao'
 const DESTINO = Deno.env.get('DEMONSTRACAO_DESTINO') ?? 'contato@chefecoruja.com.br'
-// Remetente próprio, o mesmo do formulário da landing/ (testado em 09/11/2026).
+// Remetente próprio, o mesmo da antiga rota da landing/ (testado em 09/11/2026).
 // Não usa EMAIL_FROM: na homologação esse segredo estava vazio ou fora do
 // formato, e a Resend recusava o envio com 422 (12/11/2026).
 const REMETENTE_PADRAO = 'Site Chefe Coruja <nao-responda@chefecoruja.com.br>'
@@ -40,7 +42,7 @@ const cabecalhos = {
 const resposta = (status: number, corpo: Record<string, unknown>) =>
   new Response(JSON.stringify(corpo), { status, headers: { ...cabecalhos, 'Content-Type': 'application/json' } })
 
-Deno.serve(comRelato(FUNCAO, async (req) => comCors(req, await tratar(req))))
+Deno.serve(comRelato(FUNCAO, async (req) => comCors(req, await tratar(req), ORIGENS_DO_FORMULARIO)))
 
 async function tratar(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cabecalhos })
@@ -102,7 +104,7 @@ async function tratar(req: Request): Promise<Response> {
         to: [DESTINO],
         reply_to: p.email,
         subject: `Pedido de demonstração: ${p.nome}`,
-        text: corpoEmail(p),
+        text: corpoEmail(p, siteDoPedido(req.headers.get('Origin'))),
       }),
       signal: AbortSignal.timeout(LIMITE_MS),
     })
