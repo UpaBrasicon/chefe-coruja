@@ -1,5 +1,6 @@
 import { completo, numero, somar, type Escore } from '../escore.ts'
 import type { Fonte } from '../ficha.ts'
+import { AHA_TEP_2026 } from '../adulto/tep2026.ts'
 
 // YEARS: três itens e o limiar de D-dímero que depende deles (van der Hulle
 // 2017). Entrou em 28/09/2026 por decisão do RT. O YEARS do protótipo usava
@@ -24,13 +25,14 @@ export const years: Escore = {
   ficha: {
     id: 'years',
     titulo: 'YEARS — suspeita de embolia pulmonar',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
+      AHA_TEP_2026,
       { citacao: 'van der Hulle T, Cheung WY, Kooij S, et al. Simplified diagnostic management of suspected pulmonary embolism (the YEARS study): a prospective, multicentre, cohort study. Lancet. 2017;390(10091):289–297. Itens e limiares no resumo.', url: 'https://doi.org/10.1016/S0140-6736(17)30885-1' },
       HYDRA_YEARS_CANCER_2026,
     ],
-    revisadoEm: '06/11/2026 (nota do Hydra no câncer ativo; revisão PubMed, itens médios; fonte primária em 28/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 3 das calculadoras, com fonte já lida; aguarda aprovação do RT); 06/11/2026 (nota do Hydra no câncer ativo; revisão PubMed, itens médios; fonte primária em 28/09/2026)',
   },
   descricao: 'Três itens clínicos e o limiar de D-dímero de 1000 ou 500 ng/mL que eles definem',
   itens: [

@@ -16,13 +16,13 @@ export const crb65: Escore = {
   ficha: {
     id: 'crb-65',
     titulo: 'CRB-65 — gravidade da pneumonia comunitária sem ureia',
-    versao: '2026-10-25.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Lim WS, van der Eerden MM, Laing R, et al. Defining community acquired pneumonia severity on presentation to hospital: an international derivation and validation study. Thorax. 2003;58(5):377–382.', url: 'https://doi.org/10.1136/thorax.58.5.377' },
       { citacao: 'McNally M, Curtain J, O\'Brien KK, Dimitrov BD, Fahey T. Validity of British Thoracic Society guidance (the CRB-65 rule) for predicting the severity of pneumonia in general practice: systematic review and meta-analysis. Br J Gen Pract. 2010;60(579):e423–e433. Critérios e faixas na introdução; mortalidade observada na Tabela 2.', url: 'https://doi.org/10.3399/bjgp10X532422' },
     ],
-    revisadoEm: '25/10/2026 (lacunas da Central, lote 3; aguarda aprovação do RT)',
+    revisadoEm: '16/11/2026 (próximos passos e armadilhas do lote 3 das calculadoras, com fonte já citada; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3; aguarda aprovação do RT)',
   },
   descricao: 'Quatro critérios de 1 ponto, sem exame de laboratório; faixa de risco e mortalidade observada em 30 dias no hospital e na comunidade.',
   itens: [
