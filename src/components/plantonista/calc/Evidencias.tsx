@@ -39,3 +39,14 @@ export function VerMais({ children, rotulo = 'Notas do livro' }: { children: Rea
     </details>
   )
 }
+
+/** Comparação entre fontes já dentro da aba "Evidências" (sem recolher de novo). */
+export function BlocoComparacao({ titulo, resumo, children }: { titulo: string; resumo?: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2 border-t border-fio pt-4">
+      <span className="font-semibold text-tinta">{titulo}</span>
+      {resumo && <span className="text-tinta-sussurro">{resumo}</span>}
+      {children}
+    </div>
+  )
+}

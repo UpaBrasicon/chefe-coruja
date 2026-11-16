@@ -1,10 +1,14 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import { AHA_2025_PCR, CHOQUE_PCR, COSTR_2026_PCR, DIRETRIZ_ALS_2025, DROGAS_PCR, KCL_ATAQUE_MEQ, calcularPcr, fichaPcrAdulto, lidocainaSegundaDoseMg, type Faixa } from '@/clinico/adulto/pcr'
 import { textoFontes } from '@/clinico/ficha'
 import { CampoPesoAdulto } from '@/components/plantonista/calc/CampoNumero'
 import { usePesoAdulto } from '@/components/plantonista/calc/pacienteNaFerramenta'
-import { Evidencias } from '@/components/plantonista/calc/Evidencias'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,6 +26,8 @@ export function PcrAdulto() {
   // Peso da Central (C5 = A) e trava da unidade de 30 a 250 kg (RT, 16/11/2026).
   const pesoAdulto = usePesoAdulto()
   const { peso, leitura, pesoConta } = pesoAdulto
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaPcrAdulto.id)
   const r = calcularPcr(pesoConta)
   const lido2 = lidocainaSegundaDoseMg(pesoConta)
   const semPeso = leitura === 'fora' ? 'confira o peso' : 'informe o peso'
@@ -78,7 +84,7 @@ export function PcrAdulto() {
 
       <Bloco titulo="Medicações (Tabela 2)">
         {DROGAS_PCR.map((d) => (
-          <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} conta={conta[d.id]} pagina={d.pagina} errata={d.errata} nota={d.nota} recolher />
+          <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} conta={conta[d.id]} pagina={d.pagina} />
         ))}
         <LinhaManual
           origem="A AHA 2025 traz"
@@ -89,7 +95,22 @@ export function PcrAdulto() {
         />
       </Bloco>
 
-      <Evidencias titulo="AHA 2025 × manual do HC" resumo="Part 9 da AHA 2025, lido no texto integral publicado pela AHA; entre parênteses, a classe da recomendação.">
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={leitura !== 'ok'}
+        armadilhas={[
+          ...DROGAS_PCR.flatMap((d) => [
+            ...(d.errata ? [`${d.nome} — errata do livro: ${d.errata}`] : []),
+            ...(d.nota ? [`${d.nome}: ${d.nota}`] : []),
+          ]),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaPcrAdulto}
+        guia={guia}
+        comparacao={<>
+      <BlocoComparacao titulo="AHA 2025 × manual do HC" resumo="Part 9 da AHA 2025, lido no texto integral publicado pela AHA; entre parênteses, a classe da recomendação.">
         <div className="overflow-x-auto">
           <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
             <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2025</TableHead><TableHead className="pr-3 pb-2">Onde</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
@@ -108,9 +129,9 @@ export function PcrAdulto() {
             </TableBody>
           </Table>
         </div>
-      </Evidencias>
+      </BlocoComparacao>
 
-      <Evidencias titulo="CoSTR 2026 do ILCOR — o que veio depois da AHA 2025" resumo="Revisão anual do ILCOR (Resuscitation 2026), lida na pré-publicação aberta; só o adulto. Nenhuma dose muda; entre parênteses, a força da recomendação e a certeza da evidência.">
+      <BlocoComparacao titulo="CoSTR 2026 do ILCOR — o que veio depois da AHA 2025" resumo="Revisão anual do ILCOR (Resuscitation 2026), lida na pré-publicação aberta; só o adulto. Nenhuma dose muda; entre parênteses, a força da recomendação e a certeza da evidência.">
         <ul className="flex flex-col gap-2">
           {COSTR_2026_PCR.map((c) => (
             <li key={c.tema}>
@@ -118,13 +139,18 @@ export function PcrAdulto() {
             </li>
           ))}
         </ul>
-      </Evidencias>
+      </BlocoComparacao>
+        </>}
+      />
 
       <ResumoFlutuante
         principal={leitura === 'ok' ? `Adulto · ${numeroBr(peso)} kg` : leitura === 'fora' ? 'Peso fora de 30 a 250 kg' : 'Informe o peso'}
         detalhe={`Choque: ${CHOQUE_PCR.monofasicoJ} J mono · ${CHOQUE_PCR.bifasicoJ} J bi${leitura === 'ok' ? ' · "Copiar" leva todas as doses' : ''}`}
         tom={leitura === 'fora' ? 'critico' : 'neutro'}
         textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
       />
     </ToolLayout>
   )
