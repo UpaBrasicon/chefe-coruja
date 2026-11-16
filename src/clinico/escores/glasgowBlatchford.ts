@@ -1,5 +1,6 @@
 import { completo, escolha, numero, somar, type Escore } from '../escore.ts'
 import type { Fonte } from '../ficha.ts'
+import { BAVENO_VIII_2026 } from '../adulto/hemorragiaDigestiva.ts'
 
 // Glasgow-Blatchford. Porte do protótipo (gastro/Glasgow-Blatchford, construído
 // em 29/08/2026). Entrada de ureia em mg/dL, como no laudo brasileiro, com a
@@ -31,15 +32,16 @@ export const glasgowBlatchford: Escore = {
   ficha: {
     id: 'glasgow-blatchford',
     titulo: 'Glasgow-Blatchford — hemorragia digestiva alta',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Blatchford O, Murray WR, Blatchford M. A risk score to predict need for treatment for upper-gastrointestinal haemorrhage. Lancet. 2000;356(9238):1318–1321.', url: 'https://doi.org/10.1016/S0140-6736(00)02816-6' },
       { citacao: 'Laine L, Barkun AN, Saltzman JR, Martel M, Leontiadis GI. ACG Clinical Guideline: Upper Gastrointestinal and Ulcer Bleeding. Am J Gastroenterol. 2021;116(5):899–917.', url: 'https://doi.org/10.14309/ajg.0000000000001245' },
       { citacao: 'Stanley AJ, Laine L, Dalton HR, et al. Comparison of risk scoring systems for patients presenting with upper gastrointestinal bleeding. BMJ. 2017;356:i6432.', url: 'https://doi.org/10.1136/bmj.i6432' },
       ESGE_ULCERA_2026,
+      BAVENO_VIII_2026,
     ],
-    revisadoEm: '06/11/2026 (nota da ESGE 2026 sobre o horário da EDA; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 5 das calculadoras pela ESGE 2026 e pelo Baveno VIII, já lidos; aguarda aprovação do RT); 06/11/2026 (nota da ESGE 2026 sobre o horário da EDA; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Risco de necessidade de intervenção na hemorragia digestiva alta, com dados anteriores à endoscopia',
   itens: [

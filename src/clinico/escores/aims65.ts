@@ -1,4 +1,5 @@
 import { completo, somar, type Escore } from '../escore.ts'
+import { BAVENO_VIII_2026, ESGE_UGIH_2026 } from '../adulto/hemorragiaDigestiva.ts'
 
 // AIMS65: cinco critérios de 1 ponto. Porte do protótipo (gastro/AIMS65,
 // construído em 29/08/2026). Saiu (ADR 0007) a linha "Para decidir alta": fica
@@ -11,13 +12,14 @@ export const aims65: Escore = {
   ficha: {
     id: 'aims65',
     titulo: 'AIMS65 — mortalidade na hemorragia digestiva alta',
-    versao: '2026-09-27.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Saltzman JR, Tabak YP, Hyett BH, et al. A simple risk score accurately predicts in-hospital mortality, length of stay, and cost in acute upper GI bleeding. Gastrointest Endosc. 2011;74(6):1215–1224.', url: 'https://doi.org/10.1016/j.gie.2011.06.024' },
       { citacao: 'Stanley AJ, Laine L, Dalton HR, et al. Comparison of risk scoring systems for patients presenting with upper gastrointestinal bleeding. BMJ. 2017;356:i6432.', url: 'https://doi.org/10.1136/bmj.i6432' },
+      ESGE_UGIH_2026, BAVENO_VIII_2026,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 5 das calculadoras pela ESGE 2026 e pelo Baveno VIII, já lidos; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Mortalidade hospitalar na hemorragia digestiva alta com cinco itens da chegada',
   itens: [

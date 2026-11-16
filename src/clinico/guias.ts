@@ -1,5 +1,6 @@
 import { DIRETRIZ_AVC_2026 } from './adulto/avcTrombolise.ts'
 import { DIRETRIZ_EI } from './adulto/duke.ts'
+import { DIRETRIZ_HDA } from './adulto/hemorragiaDigestiva.ts'
 import { DIRETRIZ_TEP_2026 } from './adulto/tep2026.ts'
 import { DIRETRIZ_PLEURA_2023 } from './escores/light.ts'
 import { DIRETRIZ_DAS_2025 } from './adulto/isr.ts'
@@ -165,7 +166,82 @@ function linhaAvc(tema: string, faixas?: Faixas): PassoGuia {
 // AIT: ESO 2021 (PMC8370080); a declaração da AHA 2023 não está no PMC.
 const ESO_AIT = 'ESO 2021, ataque isquêmico transitório'
 
+// Hemorragia digestiva alta: ESGE 2026 (úlcera) e Baveno VIII (varizes), já lidas (hemorragiaDigestiva.ts).
+function linhaHda(tema: string, faixas?: Faixas): PassoGuia {
+  const l = DIRETRIZ_HDA.find((d) => d.tema === tema)
+  if (!l) throw new Error(`linha de HDA sem tema "${tema}"`)
+  return { tema, texto: l.diretriz, ref: { fonte: l.fonte === 'ESGE 2026' ? 'ESGE 2026, hemorragia digestiva alta não varicosa' : 'Baveno VIII, hipertensão portal', grau: l.grau }, faixas }
+}
+const HDA_INICIAL = (risco: Faixas): PassoGuia[] => [
+  linhaHda('Transfusão (úlcera)', risco),
+  linhaHda('IBP antes da EDA', risco),
+  linhaHda('Eritromicina antes da EDA (úlcera)', risco),
+  linhaHda('Intubação antes da EDA (úlcera)', risco),
+  linhaHda('Tempo da EDA (úlcera)', risco),
+  linhaHda('Tempo da EDA (varizes)', risco),
+]
+
+// Pancreatite aguda: iLATAM-AP 2026 (Tabela 1) e WSES 2019 (pancreatite grave), lidas no PMC
+// em 16/11/2026. O IAP 2025 e a AGA 2018 não estão abertos no PMC.
+const ILATAM = 'iLATAM-AP 2026, pancreatite aguda'
+const WSES_PA = 'WSES 2019, pancreatite aguda grave'
+const PANCREATITE_GERAL: PassoGuia[] = [
+  { tema: 'Volume', texto: 'Reposição moderada de volume, 1,5 mL/kg/h, com bolus opcional de 10 mL/kg no paciente hipovolêmico. Reavaliar o estado hemodinâmico com frequência: o excesso de volume faz mal.', ref: { fonte: ILATAM, pagina: 'Tabela 1, volume', grau: 'forte, qualidade alta' } },
+  { tema: 'Tipo de solução', texto: 'Ringer lactato é a solução preferida.', ref: { fonte: ILATAM, pagina: 'Tabela 1, volume', grau: 'forte, qualidade moderada' } },
+  { tema: 'Dieta oral precoce', texto: 'Dieta oral precoce (antes de 24–48 h) em todos os casos, se tolerada; na pancreatite leve, pode começar logo com dieta branda ou sólida. Sem tolerância depois de 3–4 dias, nutrição enteral por sonda; parenteral só quando as outras vias falharem.', ref: { fonte: ILATAM, pagina: 'Tabela 1, nutrição', grau: 'forte, qualidade moderada' } },
+  { tema: 'Sem antibiótico profilático', texto: 'Antibiótico profilático de rotina não é recomendado, nem na pancreatite necrosante; usar só na infecção bacteriana confirmada ou suspeita.', ref: { fonte: ILATAM, pagina: 'Tabela 1, antibióticos', grau: 'forte, qualidade alta' } },
+  { tema: 'UTI', texto: 'UTI cedo para falência orgânica que não responde à reposição inicial ou para necrose infectada com repercussão sistêmica; falência orgânica persistente (mais de 48 h) também é manejada na UTI.', ref: { fonte: ILATAM, pagina: 'Tabela 1, nível de cuidado', grau: 'forte, qualidade moderada' } },
+  { tema: 'Ultrassom na admissão', texto: 'Ultrassom na admissão para definir a causa (biliar).', ref: { fonte: WSES_PA, pagina: 'Statements, imagem', grau: '1C' } },
+  { tema: 'TC com contraste', texto: 'Na pancreatite grave, TC com contraste ou RM; o melhor momento da primeira TC é 72–96 h depois do início dos sintomas.', ref: { fonte: WSES_PA, pagina: 'Statements, imagem', grau: '1C' } },
+  { tema: 'CPRE', texto: 'CPRE de rotina na pancreatite biliar não é indicada; CPRE urgente (até 24 h) quando há colangite. Com coledocolitíase sem colangite, a CPRE pode esperar.', ref: { fonte: ILATAM, pagina: 'Tabela 1, CPRE; WSES 2019 1A e 1B', grau: 'forte, qualidade alta' } },
+  { tema: 'Colecistectomia', texto: 'Na pancreatite biliar leve, colecistectomia videolaparoscópica na mesma internação; nos casos moderadamente graves a graves, adiar até 8 semanas depois da alta ou até resolver as complicações locais.', ref: { fonte: ILATAM, pagina: 'Tabela 1, colecistectomia', grau: 'forte, moderada (leve); condicional, baixa (grave)' } },
+]
+
+// Apendicite aguda: WSES 2020 (Jerusalém), lida no PMC em 16/11/2026.
+const WSES_AA = 'WSES 2020, apendicite aguda'
+
 export const GUIAS: Record<string, Guia> = {
+  bisap: {
+    proximosPassos: [
+      { tema: 'BISAP de 3 ou mais: cuidado intermediário', texto: 'Pancreatite grave prevista (BISAP de 3 ou mais, SIRS persistente): internar em unidade de cuidado intermediário; sem essa unidade, monitorização próxima.', ref: { fonte: ILATAM, pagina: 'Tabela 1, nível de cuidado', grau: 'forte, qualidade moderada' }, faixas: [2] },
+      ...PANCREATITE_GERAL,
+    ],
+    armadilhas: [
+      { texto: 'BISAP e SIRS persistente são recomendados para a predição precoce pela simplicidade, mas a acurácia é limitada.', ref: { fonte: ILATAM, pagina: 'Tabela 1, predição', grau: 'forte, qualidade baixa' } },
+    ],
+  },
+  ranson: {
+    proximosPassos: PANCREATITE_GERAL,
+    armadilhas: [
+      { texto: 'Para a predição precoce, a iLATAM-AP recomenda BISAP e SIRS persistente; nenhuma das duas diretrizes traz recomendação ligada ao Ranson.', ref: { fonte: ILATAM, pagina: 'Tabela 1, predição', grau: 'forte, qualidade baixa' } },
+    ],
+  },
+  alvarado: {
+    proximosPassos: [
+      { tema: 'Escore para excluir', texto: 'Usar escore clínico para excluir apendicite e achar o paciente de risco intermediário que precisa de imagem.', ref: { fonte: WSES_AA, pagina: 'Q.1.1', grau: 'forte, qualidade alta (1A)' } },
+      { tema: 'Risco intermediário: imagem', texto: 'No risco intermediário, imagem em tempo oportuno e de forma sistemática.', ref: { fonte: WSES_AA, pagina: 'Q.1.5', grau: 'fraca, qualidade moderada (2B)' }, faixas: [1] },
+      { tema: 'Ultrassom primeiro', texto: 'Se a imagem está indicada, ultrassom à beira do leito (POCUS) é a primeira escolha, em adultos e crianças.', ref: { fonte: WSES_AA, pagina: 'Q.1.5', grau: 'forte, qualidade moderada (1B)' }, faixas: [1, 2] },
+      { tema: 'Ultrassom negativo: TC de baixa dose', texto: 'Com ultrassom negativo, TC com contraste de baixa dose em vez da dose padrão.', ref: { fonte: WSES_AA, pagina: 'Q.1.5', grau: 'forte, qualidade alta (1A)' }, faixas: [1, 2] },
+      { tema: 'Alto risco abaixo de 40 anos', texto: 'No alto risco abaixo de 40 anos (Alvarado 9–10, AIR 9–12 ou AAS de 16 ou mais), a TC pode ser dispensada antes da laparoscopia diagnóstica ou terapêutica.', ref: { fonte: WSES_AA, pagina: 'Q.1.5', grau: 'fraca, qualidade moderada (2B)' }, faixas: [2] },
+      { tema: 'Antibiótico sem cirurgia', texto: 'Na apendicite não complicada sem apendicolito, discutir o tratamento não operatório com antibiótico como alternativa segura à cirurgia em pacientes selecionados, avisando do risco de falha e de apendicite complicada não reconhecida. Nesse caso, antibiótico venoso no início e depois oral, conforme a evolução.', ref: { fonte: WSES_AA, pagina: 'Q.2.1 e Q.2.3', grau: 'forte, qualidade alta (1A); 1B' }, faixas: [2] },
+      { tema: 'Cirurgia em até 24 h', texto: 'Quando a cirurgia está indicada, não adiar a apendicectomia além de 24 h da admissão.', ref: { fonte: WSES_AA, pagina: 'Q.3.1', grau: 'forte, qualidade moderada (1B)' }, faixas: [2] },
+      { tema: 'Via laparoscópica', texto: 'Apendicectomia videolaparoscópica preferida à aberta, na apendicite não complicada e complicada, onde há equipamento e experiência.', ref: { fonte: WSES_AA, pagina: 'Q.4.1', grau: 'forte, qualidade alta (1A)' }, faixas: [2] },
+      { tema: 'Antibiótico profilático', texto: 'Dose única pré-operatória de antibiótico de amplo espectro; sem antibiótico pós-operatório na apendicite não complicada.', ref: { fonte: WSES_AA, pagina: 'Q.7.1', grau: 'forte, qualidade alta (1A)' }, faixas: [2] },
+    ],
+    armadilhas: [
+      { texto: 'Não usar o Alvarado para confirmar a suspeita de apendicite em adultos: serve para excluir e estratificar.', ref: { fonte: WSES_AA, pagina: 'Q.1.1', grau: 'fraca contra, qualidade moderada (2B)' } },
+    ],
+  },
+  'glasgow-blatchford': {
+    proximosPassos: [linhaHda('Glasgow-Blatchford', [0]), ...HDA_INICIAL([1, 2])],
+  },
+  aims65: { proximosPassos: HDA_INICIAL([0, 1, 2]) },
+  rockall: {
+    proximosPassos: [linhaHda('IBP depois da hemostasia'), linhaHda('Anticoagulante (úlcera)'), linhaHda('Dieta e ferro (úlcera)')],
+  },
+  'child-pugh': {
+    proximosPassos: [linhaHda('TIPS precoce', [1, 2]), linhaHda('Profilaxia primária'), linhaHda('Profilaxia secundária')],
+  },
   abcd2: {
     proximosPassos: [
       { tema: 'Avaliação especializada em 24 h', texto: 'Avaliação por especialista em até 24 horas do início dos sintomas.', ref: { fonte: ESO_AIT, pagina: 'PICO 1.1', grau: 'recomendação forte, qualidade baixa' } },
