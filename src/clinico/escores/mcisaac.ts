@@ -14,14 +14,15 @@ export const mcisaac: Escore = {
   ficha: {
     id: 'mcisaac-centor',
     titulo: 'McIsaac (Centor modificado) — faringite',
-    versao: '2026-10-23.1',
+    versao: '2026-11-16.1',
     publico: 'ambos',
     fontes: [
       { citacao: 'McIsaac WJ, White D, Tannenbaum D, Low DE. A clinical score to reduce unnecessary antibiotic use in patients with sore throat. CMAJ. 1998;158(1):75–83 (PMID 9475915): escore de 0 a 4, pacientes de 3 a 76 anos.', pediatrica: true },
       { citacao: 'Brennan-Krohn T, Ozonoff A, Sandora TJ. Adherence to guidelines for testing and treatment of children with pharyngitis. BMC Pediatr. 2018;18(1):43 (PMID 29426305): os itens; escore abaixo de 2 como risco muito baixo.', url: 'https://doi.org/10.1186/s12887-018-0988-z', pediatrica: true },
       { citacao: 'Fine AM, Nizet V, Mandl KD. Large-scale validation of the Centor and McIsaac scores to predict group A streptococcal pharyngitis. Arch Intern Med. 2012;172(11):847–852 (PMID 22566485): ajuste pela idade; não se aplica abaixo de 3 anos.', url: 'https://doi.org/10.1001/archinternmed.2012.950', pediatrica: true },
+      { citacao: 'Shulman ST, Bisno AL, Clegg HW, et al. Clinical Practice Guideline for the Diagnosis and Management of Group A Streptococcal Pharyngitis: 2012 Update by the Infectious Diseases Society of America. Clin Infect Dis. 2012;55(10):e86–e102 (PMID 22965026; PMC7108032). Recomendações 1, 2, 4, 5 e 8 e texto sobre escores clínicos lidos no PMC em 16/11/2026.', url: 'https://doi.org/10.1093/cid/cis629', pediatrica: true },
     ],
-    revisadoEm: '23/10/2026 (lacunas da Central, lote 1; itens conferidos no texto da fonte)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 8 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 23/10/2026 (lacunas da Central, lote 1; itens conferidos no texto da fonte)',
   },
   descricao: 'Dor de garganta a partir de 3 anos: quatro achados e a idade; orienta o teste para estreptococo do grupo A.',
   itens: [

@@ -45,15 +45,15 @@ export const ckdEpi: Escore = {
   ficha: {
     id: 'ckd-epi-2021',
     titulo: 'TFG estimada — CKD-EPI 2021 e 2009 (adulto)',
-    versao: '2026-10-09.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Inker LA, Eneanya ND, Coresh J, et al. New Creatinine- and Cystatin C–Based Equations to Estimate GFR without Race. N Engl J Med. 2021;385(19):1737–1749.', url: 'https://doi.org/10.1056/NEJMoa2102953' },
       { citacao: 'Levey AS, Stevens LA, Schmid CH, et al. A New Equation to Estimate Glomerular Filtration Rate. Ann Intern Med. 2009;150(9):604–612 (PMID 19414839). Usada aqui sem o coeficiente racial.', url: 'https://doi.org/10.7326/0003-4819-150-9-200905050-00006' },
       { citacao: 'Escott GM, Zingano CP, Ferlin E, et al. Is race adjustment necessary to estimate glomerular filtration rate in South Brazilians? J Nephrol. 2024;37(9):2635–2645 (PMID 38913268).', url: 'https://doi.org/10.1007/s40620-024-02001-x' },
-      { citacao: 'Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease. Kidney Int. 2024;105(4S):S117–S314. Categorias de TFG G1–G5.', url: 'https://doi.org/10.1016/j.kint.2023.10.018' },
+      { citacao: 'Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease. Kidney Int. 2024;105(4S):S117–S314. Categorias de TFG G1–G5; PP 1.1.1.2, 1.1.3.2, 3.16.2, 4.1.1, 4.1.2, 4.2.1 a 4.2.5, 4.4.1, 4.4.1.2 e 5.1.1 (Figura 48) lidos no PDF do kdigo.org em 16/11/2026.', url: 'https://doi.org/10.1016/j.kint.2023.10.018' },
     ],
-    revisadoEm: '09/10/2026 (2009 ao lado da 2021, pelo estudo brasileiro de 2024)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 8 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 09/10/2026 (2009 ao lado da 2021, pelo estudo brasileiro de 2024)',
   },
   descricao: 'Creatinina, idade e sexo. Equações de 2021 e de 2009, ambas sem coeficiente de raça; resultado em mL/min/1,73 m² com a categoria G da KDIGO.',
   itens: [

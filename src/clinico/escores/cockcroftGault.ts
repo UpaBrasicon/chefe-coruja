@@ -17,14 +17,15 @@ export const cockcroftGault: Escore = {
   ficha: {
     id: 'cockcroft-gault',
     titulo: 'Clearance de creatinina — Cockcroft-Gault (adulto)',
-    versao: '2026-10-23.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Cockcroft DW, Gault MH. Prediction of creatinine clearance from serum creatinine. Nephron. 1976;16(1):31–41 (PMID 1244564). Redução de 15% na mulher.', url: 'https://doi.org/10.1159/000180580' },
       { citacao: 'Scappaticci GB, Regal RE. Cockcroft-Gault revisited: new de-liver-ance on recommendations for use in cirrhosis. World J Hepatol. 2017;9(3):131–138 (PMID 28217249), Tabela 1: a fórmula; peso real no estudo original; limitações.', url: 'https://doi.org/10.4254/wjh.v9.i3.131' },
       { citacao: 'Quadri KH, Bernardini J, Greenberg A, et al. Assessment of renal function during pregnancy using a random urine protein to creatinine ratio and Cockcroft-Gault formula. Am J Kidney Dis. 1994;24(3):416–420 (PMID 8079966): creatinina em mg/dL.', url: 'https://doi.org/10.1016/s0272-6386(12)80897-3' },
+      { citacao: 'Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease. Kidney Int. 2024;105(4S):S117–S314. PP 1.1.1.2, 1.1.3.2, 3.16.2, 4.1.1, 4.1.2, 4.2.1 a 4.2.5, 4.4.1, 4.4.1.2 e 5.1.1 (Figura 48) lidos no PDF do kdigo.org em 16/11/2026; comentário sobre o Cockcroft-Gault na p. S249.', url: 'https://doi.org/10.1016/j.kint.2023.10.018' },
     ],
-    revisadoEm: '23/10/2026 (lacunas da Central, lote 1; fórmula conferida no texto da fonte)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 8 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 23/10/2026 (lacunas da Central, lote 1; fórmula conferida no texto da fonte)',
   },
   descricao: 'Creatinina, idade, peso real e sexo. ClCr em mL/min, o usado nas bulas para ajustar dose; não é a TFG.',
   itens: [
