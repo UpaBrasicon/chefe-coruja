@@ -1,5 +1,10 @@
 import { useState } from 'react'
 
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+
 import {
   APRESENTACOES_K, ERRATA_HIPOCALEMIA_P905, calcularKEV, classificarHipocalemia, deficitPotassio, esquemaHipocalemia, fichaReposicaoPotassio,
   interpretarKUrinario, quantidadeKVO,
@@ -16,6 +21,8 @@ import { br, faixaBr, informado } from './loteAFormato'
 /** Hipocalemia no adulto: classificação, esquema do Anexo 5 e preparo do KCl EV/VO. */
 export function ReposicaoPotassio() {
   const [k, setK] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaReposicaoPotassio.id)
   const [sint, setSint] = useState<'nao' | 'sim'>('nao')
   const [perda, setPerda] = useState<'nao' | 'sim'>('nao')
 
@@ -84,7 +91,7 @@ export function ReposicaoPotassio() {
             {esq.ev && <Resultado rotulo="EV" valor={`${esq.ev.mEq} mEq em ${faixaBr(esq.ev.horas, 0)} h = ${faixaBr([esq.ev.mEq / esq.ev.horas[1], esq.ev.mEq / esq.ev.horas[0]])} mEq/h`} />}
           </>
         )}
-        <Trecho texto="Classificação usada: leve 3–3,4; moderada 2,5–2,9; grave < 2,5 mEq/L." pagina="p. 900" errata={ERRATA_HIPOCALEMIA_P905} recolher />
+        <Trecho texto="Classificação usada: leve 3–3,4; moderada 2,5–2,9; grave < 2,5 mEq/L." pagina="p. 900" />
       </Bloco>
 
       <Bloco titulo="Preparo EV de KCl" descricao="Velocidade usual 10–20 mEq/h (até 40 só se ameaçadora à vida); concentração 20–60 mEq/L em SF para veia periférica; bomba de infusão (p. 905 e 1498).">
@@ -133,11 +140,23 @@ export function ReposicaoPotassio() {
         </div>
         {urina.map((u) => <Trecho key={u.texto} {...u} />)}
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!g && !ev}
+        armadilhas={[ERRATA_HIPOCALEMIA_P905, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaReposicaoPotassio}
+        guia={guia}
+      />
       <ResumoFlutuante
         principal={g ? (g === 'sem hipocalemia' ? 'K ≥ 3,5 mEq/L: sem hipocalemia' : `K ${br(k)} mEq/L · hipocalemia ${g}`) : 'Informe o K sérico'}
         detalhe={ev ? `Preparo EV: ${br(ev.mEqH)} mEq/h · bomba ${br(ev.mlH)} mL/h · ${br(ev.concentracaoMEqL)} mEq/L` : undefined}
         tom={g && g !== 'sem hipocalemia' && g.includes('grave') ? 'critico' : 'neutro'}
         textoCopia={g || ev ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
       />
     </ToolLayout>
   )

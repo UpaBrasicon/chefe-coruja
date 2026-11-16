@@ -7,11 +7,14 @@ import { Chip } from '@/components/monitor/Pagina'
 import { textoFontes } from '@/clinico/ficha'
 import { CampoPesoAdulto } from '@/components/plantonista/calc/CampoNumero'
 import { usePesoAdulto } from '@/components/plantonista/calc/pacienteNaFerramenta'
-import { VerMais } from '@/components/plantonista/calc/Evidencias'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
-import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -95,7 +98,6 @@ function Droga({ i, peso, onLinha }: { i: InfusaoAdulto; peso: number; onLinha: 
       <div className="flex flex-col gap-1">
         <p className="text-apoio text-tinta-apoio">{i.preparo}</p>
         <p className="text-apoio text-tinta-apoio">Faixa do livro: <strong className="tabular-nums">{br(min, 3)} a {br(max, 3)} {u}</strong> · Manual HCFMUSP, Anexo 1, {i.pagina}</p>
-        {i.errata && <VerMais rotulo="Errata do livro"><p className="text-apoio"><Badge variant="outline" className="mr-1">errata</Badge>{i.errata}</p></VerMais>}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -168,6 +170,8 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
   const pesoAdulto = usePesoAdulto()
   const { peso, leitura, pesoConta } = pesoAdulto
   const [linhaCopia, setLinhaCopia] = useState<string | null>(null)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaInfusoesAdulto.id)
   const [busca, setBusca] = useState('')
   const [aberta, setAberta] = useState<Classe | null>(grupo ?? null)
   const [droga, setDroga] = useState<string | null>(null)
@@ -242,22 +246,32 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
                   </div>
                 )
               })}
-              {c.abertaAgora && c.id === 'sedacao' && (
-                <div className="border-t border-fio px-4 py-3 text-apoio">
-                  <p className="font-medium">PADIS 2025 — sedação contínua e delirium (SCCM)</p>
-                  <p className="text-tinta-sussurro">Atualização focada (Crit Care Med 2025;53:e711–e727), conferida pelo resumo executivo e pela página da SCCM. As diluições acima seguem o Anexo 1 do manual.</p>
-                  <ul className="mt-1.5 flex flex-col gap-1">{NOTAS_PADIS_2025.map((n) => <li key={n.tema}><span className="font-medium">{n.tema}:</span> {n.texto} <span className="text-tinta-sussurro">({n.forca})</span></li>)}</ul>
-                </div>
-              )}
             </section>
           )
         })}
       </div>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!linhaCopia}
+        armadilhas={[...INFUSOES_ADULTO.filter((i) => i.errata).map((i) => `${i.nome} — errata do livro: ${i.errata}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaInfusoesAdulto}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="PADIS 2025 — sedação contínua e delirium (SCCM)" resumo="Atualização focada (Crit Care Med 2025;53:e711–e727), conferida pelo resumo executivo e pela página da SCCM. As diluições seguem o Anexo 1 do manual.">
+            <ul className="flex flex-col gap-1">{NOTAS_PADIS_2025.map((n) => <li key={n.tema}><span className="font-medium">{n.tema}:</span> {n.texto} <span className="text-tinta-sussurro">({n.forca})</span></li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
       <ResumoFlutuante
         principal={leitura === 'ok' ? `Adulto · ${numeroBr(peso)} kg` : leitura === 'fora' ? 'Peso fora de 30 a 250 kg' : 'Informe o peso'}
         detalhe={linhaCopia ?? 'Abra uma droga para calcular a velocidade.'}
         tom={leitura === 'fora' ? 'critico' : 'neutro'}
         textoCopia={linhaCopia ? textoCopia({ ferramenta: 'Infusões contínuas — adulto', dados: [['Peso', leitura === 'ok' ? `${numeroBr(peso)} kg` : '']], resultado: [linhaCopia], fonte: textoFontes(fichaInfusoesAdulto), versao: fichaInfusoesAdulto.versao, quando: new Date() }) : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
       />
     </ToolLayout>
   )

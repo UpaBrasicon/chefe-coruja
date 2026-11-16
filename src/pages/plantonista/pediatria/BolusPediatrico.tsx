@@ -7,6 +7,10 @@ import { CamposPacientePed } from '@/components/plantonista/calc/CamposPacienteP
 import { useInicioPedDaCentral } from '@/components/plantonista/calc/pacienteNaFerramenta'
 import { VerMais } from '@/components/plantonista/calc/Evidencias'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
@@ -49,10 +53,9 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
       {r?.noMaximo && <p className="text-atencao">Dose limitada ao máximo do livro.</p>}
       {r?.abaixoDoAviso && b.aviso && <p className="text-atencao">{b.aviso.texto}</p>}
-      {/* Piloto das calculadoras (C6 = A): errata, nota e divergência recolhidas; os avisos de dose acima ficam à vista. */}
-      {(b.errata || b.nota || b.anexo2Adulto) && (
+      {/* Piloto das calculadoras (C6 = A): nota e divergência recolhidas no item; a errata vai para a aba Armadilhas; os avisos de dose acima ficam à vista. */}
+      {(b.nota || b.anexo2Adulto) && (
         <VerMais>
-          {b.errata && <p><Badge variant="outline" className="mr-1">errata</Badge>{b.errata}</p>}
           {b.nota && <p>No livro: {b.nota}</p>}
           {b.anexo2Adulto && <p>Divergência: {b.anexo2Adulto}</p>}
         </VerMais>
@@ -70,6 +73,8 @@ export function BolusPediatrico() {
   const [anos, setAnos] = useState(inicio.anos)
   const [meses, setMeses] = useState(inicio.meses)
   const [busca, setBusca] = useState('')
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaBolusPediatrico.id)
   const valido = peso > 0 && peso <= 150
   const idadeInformada = anos > 0 || meses > 0
   const idadeMeses = idadeInformada ? Math.floor(anos) * 12 + Math.floor(meses) : undefined
@@ -157,11 +162,25 @@ export function BolusPediatrico() {
         </Card>
       ))}
       {!adulto && (
+        <>
+        <AbasResultado
+          aba={aba}
+          onAba={setAba}
+          passos={passosDaFaixa(guia, undefined)}
+          semResultado={!valido}
+          armadilhas={[...BOLUS.filter((b) => b.errata).map((b) => `${b.nome} — errata do livro (${b.pagina}): ${b.errata}`), ...(guia?.armadilhas ?? [])]}
+          ficha={fichaBolusPediatrico}
+          guia={guia}
+        />
         <ResumoFlutuante
           principal={valido ? `Criança · ${numeroBr(peso)} kg${idadeInformada ? ` · ${Math.floor(anos)} a ${Math.floor(meses)} m` : ''}` : 'Informe o peso'}
           detalhe={valido ? 'Doses do peso nas listas acima; "Copiar" leva a lista que está na tela.' : undefined}
           textoCopia={valido ? copia() : undefined}
+          alvoDetalhes={ID_ABAS_RESULTADO}
+          rotuloDetalhes="Próximos passos"
+          aoIrDetalhes={() => setAba('proximos')}
         />
+        </>
       )}
     </ToolLayout>
   )

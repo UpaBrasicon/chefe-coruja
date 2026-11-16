@@ -9,6 +9,10 @@ import { CampoNumero } from '@/components/plantonista/calc/CampoNumero'
 import { CamposPacientePed } from '@/components/plantonista/calc/CamposPacientePed'
 import { useInicioPedDaCentral } from '@/components/plantonista/calc/pacienteNaFerramenta'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { Card, CardContent } from '@/components/ui/card'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -22,6 +26,8 @@ export function DesidratacaoDiarreiaPed() {
   const [p, setP] = useState<Paciente>({ peso: inicio.peso, anos: inicio.anos, meses: inicio.meses, rn: false })
   const [pontos, setPontos] = useState<number[]>(ESCALA_CLINICA.map(() => 0))
   const [pesoAnterior, setPesoAnterior] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaDesidratacaoPed.id)
   const idade = idadeAnos(p.anos, p.meses)
   const escore = classificarEscore(pontos)
   const grau = pesoAnterior > 0 && p.peso > 0 ? grauPorPeso(pesoAnterior, p.peso) : null
@@ -118,8 +124,6 @@ export function DesidratacaoDiarreiaPed() {
           texto="tratamento domiciliar; líquidos após cada evacuação diarreica por idade; manter alimentação; sinais de alarme"
           conta={a ? <strong>{a.faixaMl ? `${faixaBr(a.faixaMl, 0)} mL por evacuação` : 'volume livre'}</strong> : undefined}
           pagina="p. 330"
-          nota={NOTA_PLANO_A_IDADE}
-          recolher
         />
         {b && (
           <LinhaLivro
@@ -161,10 +165,22 @@ export function DesidratacaoDiarreiaPed() {
           <LinhaLivro nome="Racecadotrila" texto="1,5 mg/kg três vezes ao dia enquanto houver diarreia" conta={<strong>{br(racecadotrilaMgDose(p.peso), 1)} mg/dose</strong>} pagina="p. 331" />
         </Bloco>
       )}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!calc && !escore}
+        armadilhas={[NOTA_PLANO_A_IDADE, 'O livro lembra que o peso anterior raramente é preciso; por isso a avaliação clínica é mais prática (p. 328).', ...(guia?.armadilhas ?? [])]}
+        ficha={fichaDesidratacaoPed}
+        guia={guia}
+      />
       <ResumoFlutuante
         principal={escore ? `Escore ${escore.escore}: ${CLASSE_TEXTO[escore.classe]}` : calc ? `Criança · ${numeroBr(p.peso)} kg` : 'Informe peso e idade'}
         detalhe={calc ? 'Volumes dos planos e doses nas listas acima; "Copiar" leva todos.' : undefined}
         textoCopia={calc ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
       />
     </ToolLayout>
   )
