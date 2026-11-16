@@ -3,8 +3,11 @@
 # Instala o serviço de envio à RNDS no VPS (5C-5.3c). Uma vez, como root.
 # Idempotente: rodar de novo não estraga o que já existe.
 #
-#   - usuário rnds (grupo docker), sem senha e sem login por senha
-#   - /home/rnds/deploy: atualizar-rnds.sh, .env.rnds (600, preencher à mão),
+#   - usuário rnds, sem senha, sem login e FORA do grupo docker (S8, D5)
+#   - /home/rnds e /home/rnds/deploy do root: o rnds não troca nada que o root
+#     execute (script, compose, código)
+#   - /usr/local/sbin/atualizar-rnds.sh (root, 750): o script do cron
+#   - /home/rnds/deploy: .env.rnds (600, preencher à mão),
 #     certificados/ (do usuário do contêiner, uid 1000, 700)
 #   - /home/rnds/deploy/cofre/chave.pem: a chave privada do cofre (5.4b), RSA
 #     3072, gerada aqui uma vez e nunca substituída por este script: chave nova
@@ -13,7 +16,7 @@
 #   - cron do root às 04:10 (depois do update-hermes.sh, às 04:00)
 #
 # Depois: preencher /home/rnds/deploy/.env.rnds e rodar
-#   /home/rnds/deploy/atualizar-rnds.sh --forcar
+#   /usr/local/sbin/atualizar-rnds.sh --forcar
 # Passo a passo e reversão em infra/rnds-envio.md.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
@@ -22,10 +25,15 @@ set -euo pipefail
 CLONE=/opt/chefe-coruja
 DEPLOY=/home/rnds/deploy
 
+SCRIPT=/usr/local/sbin/atualizar-rnds.sh
+
 id rnds >/dev/null 2>&1 || useradd --create-home --shell /usr/sbin/nologin rnds
-usermod -aG docker rnds
+# S8 (D5): grupo docker equivale a root; os contêineres são geridos pelo cron do root
+gpasswd -d rnds docker >/dev/null 2>&1 || true
 mkdir -p "$DEPLOY/certificados" /home/rnds/logs
-chown -R rnds:rnds /home/rnds
+# S8 (D5): tudo que o root executa ou lê para executar é do root
+chown root:root /home/rnds && chmod 755 /home/rnds
+chown -R root:root "$DEPLOY" /home/rnds/logs
 # o contêiner roda como o usuário node (uid 1000) e só lê
 chown 1000:1000 "$DEPLOY/certificados" && chmod 700 "$DEPLOY/certificados"
 
@@ -37,8 +45,9 @@ fi
 chown -R 1000:1000 "$DEPLOY/cofre" && chmod 700 "$DEPLOY/cofre" && chmod 400 "$DEPLOY/cofre/chave.pem"
 
 git -C "$CLONE" fetch --quiet origin master
-git -C "$CLONE" show origin/master:services/rnds-envio/deploy/atualizar-rnds.sh > "$DEPLOY/atualizar-rnds.sh"
-chmod 750 "$DEPLOY/atualizar-rnds.sh"
+git -C "$CLONE" show origin/master:services/rnds-envio/deploy/atualizar-rnds.sh > "$SCRIPT"
+chown root:root "$SCRIPT" && chmod 750 "$SCRIPT"
+rm -f "$DEPLOY/atualizar-rnds.sh"   # o lugar antigo, dentro da pasta do rnds
 
 if [ ! -f "$DEPLOY/.env.rnds" ]; then
   umask 077
@@ -53,6 +62,6 @@ EOF
   echo "preencha SUPABASE_SERVICE_ROLE_KEY em $DEPLOY/.env.rnds"
 fi
 
-LINHA="10 4 * * * $DEPLOY/atualizar-rnds.sh >> /home/rnds/logs/atualizar.log 2>&1"
+LINHA="10 4 * * * $SCRIPT >> /home/rnds/logs/atualizar.log 2>&1"
 ( crontab -l 2>/dev/null | grep -v 'atualizar-rnds.sh' ; echo "CRON_TZ=America/Sao_Paulo" ; echo "$LINHA" ) | awk '!(/^CRON_TZ=/ && seen++)' | crontab -
 echo "instalado; cron: $LINHA"

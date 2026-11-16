@@ -10,6 +10,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { supabaseUser } from '../lib/supabase.js'
 import { logger } from '../logger.js'
+import { argsParaAuditoria } from './argsSeguros.js'
 import type { IdentidadeHermes } from './identidade.js'
 
 export type ResultadoTool = {
@@ -147,7 +148,7 @@ async function registrarAuditoriaTool(
     p_phone: waId,
     p_direction: 'tool',
     p_tool_name: nome,
-    p_tool_args: args,
+    p_tool_args: argsParaAuditoria(args), // S8 (D2): texto livre vira resumo
     p_resumo: resultado.ok
       ? `ok ${JSON.stringify(resultado.dados).slice(0, 200)}`
       : `erro: ${resultado.erro}`,

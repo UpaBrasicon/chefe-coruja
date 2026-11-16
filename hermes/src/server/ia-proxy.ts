@@ -246,6 +246,11 @@ export function textosParaNER(m: MensagemLLM, todas: MensagemLLM[]): string[] {
  * que o NER marca como nome; ali o NER olha só o que a pessoa digita. Regex,
  * resíduo e pseudônimo continuam em tudo.
  */
+/** S8 (D1): na fala da IA, o nome achado pelo NER vira pseudônimo (não bloqueia). */
+export function textosParaPseudonimo(m: MensagemLLM): string[] {
+  return m.role === 'assistant' ? [m.content ?? ''] : []
+}
+
 export function textosParaNERLab(m: MensagemLLM): string[] {
   return m.role === 'user' ? [m.content ?? ''] : []
 }
@@ -352,6 +357,7 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
       // config.yaml, para nada vindo de conversa entrar no sistema.
       nerIgnoraSistema: true,
       nerTextos: agente === 'lab' ? textosParaNERLab : textosParaNER,
+      ...(agente === 'lab' ? {} : { nerPseudonimizar: textosParaPseudonimo }),
     }
 
     try {

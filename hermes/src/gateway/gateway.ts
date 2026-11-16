@@ -52,6 +52,13 @@ export type ContextoGateway = {
    * texto livre: o que a pessoa digita e os campos livres das ferramentas.
    */
   nerTextos?: (m: MensagemLLM, todas: MensagemLLM[]) => string[]
+  /**
+   * S8 (D1): textos em que o nome achado pelo NER é TROCADO por pseudônimo, sem
+   * bloquear. A Corujinha usa na fala da IA: o histórico volta com os nomes já
+   * reidentificados para a pessoa, e os falsos positivos ("Manole") de 02/10
+   * só viram pseudônimo no texto que vai ao modelo.
+   */
+  nerPseudonimizar?: (m: MensagemLLM) => string[]
 }
 
 function somar(total: Contagem, parcial: Contagem) {
@@ -234,6 +241,22 @@ async function bloquearSeNomeNER(
   }
 }
 
+/** S8 (D1): nomes que o NER acha nos textos indicados (já limpos), para virar pseudônimo. Falha do NER derruba o envio. */
+async function nomesParaPseudonimo(
+  mensagens: MensagemLLM[],
+  ner: (texto: string) => Promise<string[]>,
+  textosDe: (m: MensagemLLM) => string[],
+): Promise<string[]> {
+  const textos = [...new Set(mensagens.flatMap((m) => textosDe(m)).filter((t) => t.trim()))]
+  const nomes = new Set<string>()
+  for (let i = 0; i < textos.length; i += 4) {
+    const resultados = await Promise.all(textos.slice(i, i + 4).map((t) => ner(t)))
+    for (const lista of resultados) for (const n of lista) if (n.trim().length >= 2) nomes.add(n.trim())
+  }
+  // o mais longo primeiro: "Ana Paula Souza" antes de "Ana"
+  return [...nomes].sort((a, b) => b.length - a.length)
+}
+
 function limparMensagem(m: MensagemLLM, ctx: ContextoGateway, total: Contagem, achados: Residuo[]): MensagemLLM {
   const { texto, contagem } = desidentificar(m.content ?? '', ctx.cofre, ctx.conhecidos)
   somar(total, contagem)
@@ -314,9 +337,28 @@ export async function chamarIA(
   const registrarChamada = deps.registrar ?? registrar
 
   const hashEntrada = createHash('sha256').update(JSON.stringify(body.mensagens)).digest('hex')
-  const contagem: Contagem = {}
-  const achados: Residuo[] = []
-  const mensagens = body.mensagens.map((m) => limparMensagem(m, ctx, contagem, achados))
+  let contagem: Contagem = {}
+  let achados: Residuo[] = []
+  let mensagens = body.mensagens.map((m) => limparMensagem(m, ctx, contagem, achados))
+
+  if (ctx.nerPseudonimizar) {
+    try {
+      const novos = await nomesParaPseudonimo(mensagens, ner, ctx.nerPseudonimizar)
+      if (novos.length) {
+        // os nomes entram como conhecidos e a limpeza roda de novo em tudo
+        ctx.conhecidos.push(...novos.map((valor) => ({ valor, categoria: 'PESSOA' as const })))
+        contagem = {}
+        achados = []
+        mensagens = body.mensagens.map((m) => limparMensagem(m, ctx, contagem, achados))
+      }
+    } catch (err) {
+      if (err instanceof DesidentificacaoIndisponivel) {
+        logger.warn({ origem: ctx.origem, motivo: err.motivo }, '[gateway] desidentificação indisponível — chamada não enviada')
+        await registrarChamada(ctx, { bloqueado: true, contagem, residuos: achados.length, hashEntrada, erro: err.message })
+      }
+      throw err
+    }
+  }
 
   try {
     await bloquearSeNomeNER(mensagens, achados, ner, ctx.nerIgnoraSistema === true, ctx.nerTextos)  // red-team V5 + RT 02/10: NER obrigatório
