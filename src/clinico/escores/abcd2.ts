@@ -1,5 +1,6 @@
 import { completo, somar, type Escore } from '../escore.ts'
 import type { Fonte } from '../ficha.ts'
+import { ESO_AIT_2021 } from '../fontesPubmed.ts'
 
 // ABCD2: risco de AVC depois do AIT. Porte do protótipo (neurologia/ABCD2,
 // atualizado em 29/08/2026). Saíram (ADR 0007) "conduta vigente", "conduta da
@@ -29,7 +30,7 @@ export const abcd2: Escore = {
   ficha: {
     id: 'abcd2',
     titulo: 'ABCD2 — risco de AVC depois do AIT',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Johnston SC, Rothwell PM, Nguyen-Huynh MN, et al. Validation and refinement of scores to predict very early stroke risk after transient ischaemic attack. Lancet. 2007;369(9558):283–292.', url: 'https://doi.org/10.1016/S0140-6736(07)60150-0' },
@@ -38,8 +39,9 @@ export const abcd2: Escore = {
       { citacao: 'Amarenco P, Lavallée PC, Labreuche J, et al. One-Year Risk of Stroke after Transient Ischemic Attack or Minor Stroke. N Engl J Med. 2016;374(16):1533–1542.', url: 'https://doi.org/10.1056/NEJMoa1412981' },
       LUMIA_ABCD2_2026,
       DERIS_ESCORES_AIT_2025,
+      ESO_AIT_2021,
     ],
-    revisadoEm: '06/11/2026 (nota do AVC no próprio atendimento no risco baixo; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 4 das calculadoras pela ESO 2021 de AIT, PMC; aguarda aprovação do RT); 06/11/2026 (nota do AVC no próprio atendimento no risco baixo; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Risco de AVC em 2 e 7 dias após ataque isquêmico transitório',
   itens: [
