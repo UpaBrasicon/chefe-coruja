@@ -61,3 +61,7 @@ O risco que o PKCE fecha é baixo: precisa de alguém sem sessão aberta, que n�
 Por isso recomendo **K1 = B**: fechar o S12 aceitando o risco, com a proteção do S2. O S12 volta se o app passar a ter fluxos de link mais sensíveis (convite do Auth, troca de e-mail).
 
 Se o RT preferir fechar o risco mesmo assim: **K1 = A**, com K2, K3 e K4 = A.
+
+## Decisão do RT (16/11/2026)
+
+**K1 = B: risco aceito.** O fluxo implícito fica, com a proteção do S2. K2 a K4 não se aplicam. Reabrir o S12 se o app passar a usar o convite do Auth ou a troca de e-mail, ou se a recuperação deixar de ser feita no celular.
