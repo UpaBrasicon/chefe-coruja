@@ -1,4 +1,5 @@
 import { completo, somar, type Escore } from '../escore.ts'
+import { AHA_TEP_2026 } from '../adulto/tep2026.ts'
 
 // sPESI (PESI simplificado), lacunas da Central, lote 3 (25/10/2026). O manual do
 // HC só traz o PESI completo (Tabela 10, p. 445–446); o sPESI vem do artigo
@@ -11,13 +12,14 @@ export const spesi: Escore = {
   ficha: {
     id: 'spesi',
     titulo: 'sPESI — PESI simplificado no TEP (adulto)',
-    versao: '2026-10-25.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
+      AHA_TEP_2026,
       { citacao: 'Jiménez D, Aujesky D, Moores L, et al. Simplification of the pulmonary embolism severity index for prognostication in patients with acute symptomatic pulmonary embolism. Arch Intern Med. 2010;170(15):1383–1389. Resumo: mortalidade em 30 dias de 1,0% (derivação) e 1,1% (RIETE) no sPESI 0; 10,9% e 8,9% no sPESI ≥ 1.', url: 'https://doi.org/10.1001/archinternmed.2010.199' },
       { citacao: 'Bonsu KO, Young SW, Lee TA, et al. Optimizing sPESI with heart rate threshold adjustments for risk stratification in acute pulmonary embolism: a retrospective cohort study. Vasc Med. 2026;31(3):299–309. Seis variáveis do sPESI e um ponto para cada (texto completo, PMC13254130).', url: 'https://doi.org/10.1177/1358863X261420329' },
     ],
-    revisadoEm: '25/10/2026 (lacunas da Central, lote 3; aguarda aprovação do RT)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 3 das calculadoras, com fonte já lida; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3; aguarda aprovação do RT)',
   },
   descricao: 'Seis variáveis de 1 ponto no TEP confirmado: 0 ponto é baixo risco; 1 ou mais é alto risco de morte em 30 dias.',
   itens: [

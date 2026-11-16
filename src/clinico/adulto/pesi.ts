@@ -44,7 +44,7 @@ const LIVRO: Record<'I-II' | 'III-IV' | 'V', [string, string][]> = {
 export const pesi: Escore = {
   ficha: {
     ...fichaAdulto('adulto-pesi', 'PESI — gravidade do TEP (adulto)', `${TEP}, p. 445–447 (Tabela 10 e Figura 4)`),
-    versao: '2026-11-14.1',
+    versao: '2026-11-16.1',
     fontes: [pagina(`${TEP}, p. 445–447 (Tabela 10 e Figura 4)`), AHA_TEP_2026],
     revisadoEm: `14/11/2026 (AHA/ACC 2026 de TEP lida no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)`,
   },

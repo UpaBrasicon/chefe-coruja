@@ -103,7 +103,7 @@ test('TEP: AHA/ACC 2026 nas fichas de PERC, HESTIA, PESI e fibrinolíticos, sem 
   const { pesi } = await import('./pesi.ts')
   const { fichaFibrinoliticosAdulto, ALTEPLASE_TEP } = await import('./anticoagulacao.ts')
   for (const f of [perc.ficha, hestia.ficha, pesi.ficha, fichaFibrinoliticosAdulto]) {
-    assert.equal(f.versao, '2026-11-14.1', f.id)
+    assert.equal(f.versao, f === pesi.ficha ? '2026-11-16.1' : '2026-11-14.1', f.id) // PESI: lote 3 das calculadoras
     assert.ok(f.fontes.includes(AHA_TEP_2026), f.id)
     assert.ok(f.fontes.some((x) => /Manual de Medicina de Emergência/.test(x.citacao)), f.id)
   }

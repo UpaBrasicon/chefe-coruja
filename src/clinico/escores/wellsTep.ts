@@ -16,7 +16,7 @@ export const wellsTep: Escore = {
   ficha: {
     id: 'wells-tep',
     titulo: 'Wells para TEP — probabilidade de embolia pulmonar',
-    versao: '2026-11-13.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Wells PS, Anderson DR, Rodger M, et al. Derivation of a simple clinical model to categorize patients probability of pulmonary embolism. Thromb Haemost. 2000;83(3):416–420.', url: 'https://doi.org/10.1055/s-0037-1613830' },
@@ -24,7 +24,7 @@ export const wellsTep: Escore = {
       { citacao: 'Kearon C, de Wit K, Parpia S, et al. Diagnosis of pulmonary embolism with d-dimer adjusted to clinical probability. N Engl J Med. 2019;381(22):2125–2134. Citado só para distinguir a variante de três níveis.', url: 'https://doi.org/10.1056/NEJMoa1909159' },
       { citacao: 'Righini M, Van Es J, Den Exter PL, et al. Age-adjusted D-dimer cutoff levels to rule out pulmonary embolism: the ADJUST-PE study. JAMA. 2014;311(11):1117–1124.', url: 'https://doi.org/10.1001/jama.2014.2135' },
     ],
-    revisadoEm: '13/11/2026 (DOI da diretriz AHA/ACC 2026 corrigido, conferido no PubMed; a frase sobre Wells, Genebra e PERC passou a dizer que a recomendação da diretriz não foi conferida). Antes: 28/09/2026 (variante de três níveis explicitada)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 3 das calculadoras, com fonte já lida; aguarda aprovação do RT); 13/11/2026 (DOI da diretriz AHA/ACC 2026 corrigido, conferido no PubMed; a frase sobre Wells, Genebra e PERC passou a dizer que a recomendação da diretriz não foi conferida). Antes: 28/09/2026 (variante de três níveis explicitada)',
   },
   descricao: 'Probabilidade pré-teste de embolia pulmonar, nas leituras de três níveis e dicotomizada, com o limiar de D-dímero ajustado pela idade',
   itens: [
