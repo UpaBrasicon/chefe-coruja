@@ -3,7 +3,7 @@ import { AHA_ASA_2026 } from '../adulto/avcTrombolise.ts'
 
 // FAST-ED (Field Assessment Stroke Triage for Emergency Destination): escores
 // P2/P3, item E8; decisão A do RT em 11/11/2026, como a única escala de
-// oclusão de grande vaso do app (o RACE saiu do backlog). Pontos conferidos na
+// oclusão de grande vaso do app; o RACE voltou em 16/11/2026, com o artigo entregue pelo RT. Pontos conferidos na
 // Tabela 1 do Lima 2016, no PDF publicado (Stroke 2016;47:1997–2002) e no
 // manuscrito do PMC (PMC4961538), entregues pelo RT: cada item com a nota do
 // NIHSS de onde vem. O "T" (tempo) é registro para a decisão e não pontua.
