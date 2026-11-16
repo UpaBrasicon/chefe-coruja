@@ -2,7 +2,10 @@ import { BadgeCheck, Building2, CircleSlash, Clock, TriangleAlert } from 'lucide
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { textoFontes, type Ficha } from '@/clinico/ficha'
+import { Link } from 'react-router-dom'
+
 import { TituloPagina } from '@/components/monitor/Pagina'
+import { useRelacionadas, type Relacionada } from '@/components/plantonista/calc/contexto'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
 import { data } from '@/lib/formato'
@@ -40,6 +43,9 @@ export function ToolLayout({
   const revisado = ficha ? ficha.revisadoEm : revisadoEm
   const corpo = useRef<HTMLDivElement>(null)
   const indice = useIndice(corpo)
+  // Relacionadas (piloto das calculadoras): coluna da direita na tela larga, no fim nas outras.
+  const relacionadas = useRelacionadas()
+  const temLado = indice.length >= 3 || relacionadas.length > 0
   return (
     <div className={cn('flex flex-col gap-[22px]', className)}>
       <TituloPagina titulo={title} descricao={description} className="mb-0" />
@@ -58,16 +64,26 @@ export function ToolLayout({
       ) : (
         // Leitura de manual (revisão visual 3.8, opção C): com três partes ou
         // mais, "Nesta página" à direita leva a cada uma (tela larga).
-        <div className={cn('grid items-start gap-x-10', indice.length >= 3 && 'xl:grid-cols-[minmax(0,1fr)_200px]')}>
+        <div className={cn('grid items-start gap-x-10', temLado && 'xl:grid-cols-[minmax(0,1fr)_220px]')}>
           <div ref={corpo} className="cc-leitura flex min-w-0 flex-col gap-[22px]">{children}</div>
-          {indice.length >= 3 && (
-            <nav aria-label="Nesta página" className="sticky top-4 hidden flex-col gap-1.5 border-l border-fio pl-4 xl:flex">
-              <span className="text-rotulo font-semibold text-tinta-apoio">Nesta página</span>
-              {indice.map((s) => (
-                <a key={s.id} href={`#${s.id}`} className="text-apoio text-acao underline-offset-4 hover:underline">{s.texto}</a>
-              ))}
-            </nav>
+          {temLado && (
+            <div className="sticky top-4 hidden flex-col gap-6 border-l border-fio pl-4 xl:flex">
+              {indice.length >= 3 && (
+                <nav aria-label="Nesta página" className="flex flex-col gap-1.5">
+                  <span className="text-rotulo font-semibold text-tinta-apoio">Nesta página</span>
+                  {indice.map((s) => (
+                    <a key={s.id} href={`#${s.id}`} className="text-apoio text-acao underline-offset-4 hover:underline">{s.texto}</a>
+                  ))}
+                </nav>
+              )}
+              <ListaRelacionadas itens={relacionadas} />
+            </div>
           )}
+        </div>
+      )}
+      {relacionadas.length > 0 && (
+        <div className="rounded-cartao border border-fio bg-superficie px-5 py-4 xl:hidden">
+          <ListaRelacionadas itens={relacionadas} />
         </div>
       )}
       <div role="note" className="flex gap-2.5 border-t border-fio pt-3 text-apoio text-atencao">
@@ -160,5 +176,22 @@ function FaixaSituacao({ situacao, versao }: { situacao: SituacaoFerramenta; ver
         </div>
       )}
     </div>
+  )
+}
+
+function ListaRelacionadas({ itens }: { itens: Relacionada[] }) {
+  if (itens.length === 0) return null
+  return (
+    <nav aria-label="Ferramentas relacionadas" className="flex flex-col gap-2">
+      <span className="text-rotulo font-semibold text-tinta-apoio">Relacionadas</span>
+      <ul className="flex flex-col gap-2.5">
+        {itens.map((i) => (
+          <li key={i.to} className="flex flex-col gap-0.5">
+            <Link to={i.to} className="text-apoio font-medium text-acao underline-offset-4 hover:underline">{i.rotulo}</Link>
+            <span className="text-rotulo text-tinta-sussurro">{i.descricao}</span>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }

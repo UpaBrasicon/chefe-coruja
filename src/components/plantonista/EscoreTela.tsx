@@ -7,6 +7,10 @@ import { textoCopia } from '@/domain/copiaCalculo'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { Chip } from '@/components/monitor/Pagina'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Input } from '@/components/ui/input'
@@ -42,6 +46,8 @@ export function EscoreTela({ escore, children }: { escore: Escore; children?: Re
   const piloto = ESCORES_PILOTO.has(escore.ficha.id)
   const central = usePacienteCentral()
   const modoCentral = piloto && central.modo ? (central.modo === 'pediatrico' ? 'crianca' : 'adulto') : null
+  const guia = piloto ? guiaDa(escore.ficha.id) : undefined
+  const [aba, setAba] = useState<IdAba>('proximos')
   const [r, setR] = useState<Respostas>({})
   const [pacienteEscolhido, setPaciente] = useState<'adulto' | 'crianca'>(escore.ficha.publico === 'pediatrico' ? 'crianca' : 'adulto')
   const paciente = modoCentral ?? pacienteEscolhido
@@ -153,22 +159,38 @@ export function EscoreTela({ escore, children }: { escore: Escore; children?: Re
             </dl>
           )}
           {res.alerta && <p className={cn('text-apoio font-medium', res.estado === 2 ? 'text-critico' : 'text-atencao')}>{res.alerta}</p>}
-          {res.cuidados.length > 0 && (
+          {/* No piloto os cuidados vão para a aba "Armadilhas". */}
+          {!piloto && res.cuidados.length > 0 && (
             <ul className="list-disc pl-5 text-apoio text-tinta-apoio">
               {res.cuidados.map((c) => <li key={c}>{c}</li>)}
             </ul>
           )}
         </section>
       )}
-      {children}
-      {piloto && !semRefPedi && !semRefAdulto && (
-        <ResumoFlutuante
-          principal={res ? `${res.rotulo}: ${res.valor}${res.unidade ? ` ${res.unidade}` : ''}` : 'Responda os itens para ver o resultado'}
-          detalhe={res?.nota || undefined}
-          tom={res?.estado === 2 ? 'critico' : res?.estado === 1 ? 'atencao' : 'neutro'}
-          textoCopia={res ? copiaDoEscore(escore, r, paciente, res) : undefined}
-          alvoDetalhes={res ? 'resultado-escore' : undefined}
-        />
+      {piloto && !semRefPedi && !semRefAdulto ? (
+        <>
+          <AbasResultado
+            aba={aba}
+            onAba={setAba}
+            passos={res ? passosDaFaixa(guia, res.estado) : []}
+            semResultado={!res}
+            armadilhas={[...(res?.cuidados ?? []), ...(guia?.armadilhas ?? [])]}
+            ficha={escore.ficha}
+            guia={guia}
+            comparacao={children}
+          />
+          <ResumoFlutuante
+            principal={res ? `${res.rotulo}: ${res.valor}${res.unidade ? ` ${res.unidade}` : ''}` : 'Responda os itens para ver o resultado'}
+            detalhe={res?.nota || undefined}
+            tom={res?.estado === 2 ? 'critico' : res?.estado === 1 ? 'atencao' : 'neutro'}
+            textoCopia={res ? copiaDoEscore(escore, r, paciente, res) : undefined}
+            alvoDetalhes={res ? ID_ABAS_RESULTADO : undefined}
+            rotuloDetalhes="Próximos passos"
+            aoIrDetalhes={() => setAba('proximos')}
+          />
+        </>
+      ) : (
+        children
       )}
     </ToolLayout>
   )
