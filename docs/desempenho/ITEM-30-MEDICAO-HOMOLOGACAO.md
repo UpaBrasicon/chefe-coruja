@@ -52,3 +52,7 @@ Contas na tela sobre algumas centenas de linhas custam poucos milissegundos.
   - o Sentry (item 30) mostrar INP p75 acima de 200 ms ou LCP p75 acima de 2,5 s numa tela;
   - uma das quatro listas passar de 1.000 linhas numa unidade.
 - **B:** manter os três abertos até haver uso real na produção.
+
+## Decisão do RT (16/11/2026)
+
+**D1 = A.** O resto do 05, o 23 e o 26 estão fechados como "não se aplica por ora", com os gatilhos de reabertura acima.
