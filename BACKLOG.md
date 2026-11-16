@@ -2465,7 +2465,7 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 | # | Prior. | Pedido | Hoje | Decisão do RT | Estado |
 |---|---|---|---|---|---|
-| 1 | a definir | "Médico" no lugar de "Plantonista" na tela (só o nome; o papel no banco continua `plantonista`) | Rótulo do papel em `src/lib/constants.ts`, "Plantonista" em 25 arquivos de `src/` (inclui "Central do Plantonista") e 19 mensagens do servidor (na escala, quase sempre "quem está de plantão", de qualquer categoria) | Incluído pelo RT em 16/11/2026 ("Sim, só o nome na tela") | Diagnóstico em `docs/produto/ROTULO-MEDICO-DIAGNOSTICO.md` (R1–R5), esperando o RT |
+| 1 | a definir | "Médico" no lugar de "Plantonista" na tela (só o nome; o papel no banco continua `plantonista`) | Rótulo do papel em `src/lib/constants.ts`, "Plantonista" em 25 arquivos de `src/` (inclui "Central do Plantonista") e 19 mensagens do servidor (na escala, quase sempre "quem está de plantão", de qualquer categoria) | Incluído pelo RT em 16/11/2026 ("Sim, só o nome na tela"); R1–R5 = A | **Feito em 16/11/2026**, na homologação e na produção com o ok do RT (PR #780): rótulo do papel "Médico", "Central do Médico", textos das telas com "médico" (papel médico) ou "profissional" (qualquer categoria da escala), FAQ do site público e migration `20270414000064` com 15 mensagens do servidor (nenhuma com "plantonista" na produção). Rota `/plantonista`, nomes internos e o papel no banco ficaram. Conferido pelo RT na homologação com `medico.upa.f5` |
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
