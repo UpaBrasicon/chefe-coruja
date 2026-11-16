@@ -37,6 +37,8 @@ CREATE FUNCTION pg_temp.como(quem text, aal text DEFAULT 'aal1', p_min int DEFAU
 BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object(
     'sub', pg_temp.id(quem), 'role', 'authenticated', 'aal', aal,
+    -- S11 (F1-C): o aal2 com TOTP só vale com aplicativo confiável na sessão do JWT
+    'session_id', (SELECT id FROM ids WHERE nome = 'sessao_' || quem),
     'amr', CASE WHEN p_min IS NULL
                 THEN json_build_array(json_build_object('method', 'password', 'timestamp', extract(epoch FROM now())::bigint))
                 ELSE json_build_array(
@@ -68,6 +70,14 @@ GRANT EXECUTE ON FUNCTION pg_temp.id(text), pg_temp.como(text, text, int), pg_te
 
 INSERT INTO auth.users (id, email)
 SELECT id, nome || '@aprovacao-propria.local' FROM ids WHERE nome IN ('gestor', 'med', 'med2');
+-- S11 (F1-C): aplicativo autenticador confiável e sessão aal2 do gestor
+INSERT INTO ids VALUES ('fator_gestor', gen_random_uuid()), ('sessao_gestor', gen_random_uuid());
+INSERT INTO auth.mfa_factors (id, user_id, factor_type, status, created_at, updated_at)
+VALUES (pg_temp.id('fator_gestor'), pg_temp.id('gestor'), 'totp', 'verified', now(), now());
+INSERT INTO private.totp_confiavel (factor_id, user_id, confiavel, origem)
+VALUES (pg_temp.id('fator_gestor'), pg_temp.id('gestor'), true, 'anterior_ao_s11');
+INSERT INTO auth.sessions (id, user_id, aal, factor_id)
+VALUES (pg_temp.id('sessao_gestor'), pg_temp.id('gestor'), 'aal2', pg_temp.id('fator_gestor'));
 INSERT INTO public.perfis (id, nome_completo)
 SELECT id, nome FROM ids WHERE nome IN ('gestor', 'med', 'med2')
 ON CONFLICT (id) DO UPDATE SET nome_completo = EXCLUDED.nome_completo;

@@ -2,7 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { KeyRound, Laptop, LogOut, Mail, ShieldCheck, Trash2 } from 'lucide-react'
 import * as React from 'react'
 
-import { supabase } from '@/lib/supabase'
+import { manterConectado, supabase } from '@/lib/supabase'
+import { lerTokenDispositivo as lerToken, limparTokenDispositivo as limparToken, podeConfiarNoAparelho, salvarTokenDispositivo as salvarToken } from '@/lib/fimDeSessao'
 import { lerTentativasSegundoFator, MAX_TENTATIVAS_SEGUNDO_FATOR, useSegundoFator } from '@/hooks/useSegundoFator'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,16 +20,14 @@ import { SecaoCodigosRecuperacao, UsarCodigoRecuperacao } from '@/components/seg
 // dispositivos REVOGÁVEIS (seção abaixo) e token guardado só como hash.
 
 // ── Dispositivo confiável (token no navegador) ───────────────────────────────
-const CHAVE_DISPOSITIVO = 'cc_dispositivo_2fa'
-function lerTokenDispositivo(): string | null {
-  try { return localStorage.getItem(CHAVE_DISPOSITIVO) } catch { return null }
+// S7 (C3): só no aparelho da pessoa ("Manter conectado"); no computador do
+// posto o token nem é gravado, e o "Sair" apaga o que houver (fimDeSessao.ts).
+function areaLocal(): Storage | undefined {
+  try { return window.localStorage } catch { return undefined }
 }
-function salvarTokenDispositivo(t: string) {
-  try { localStorage.setItem(CHAVE_DISPOSITIVO, t) } catch { /* modo privado */ }
-}
-function limparTokenDispositivo() {
-  try { localStorage.removeItem(CHAVE_DISPOSITIVO) } catch { /* modo privado */ }
-}
+const lerTokenDispositivo = () => lerToken(areaLocal())
+const salvarTokenDispositivo = (t: string) => salvarToken(areaLocal(), t, manterConectado())
+const limparTokenDispositivo = () => limparToken(areaLocal())
 /** Rótulo amigável do dispositivo atual, para a lista de confiáveis. */
 function rotuloDispositivo(): string {
   const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
@@ -381,7 +380,7 @@ export function ConfirmarSegundoFatorEmail({ onPronto, permitirConfiar = true }:
       <p className="text-apoio text-tinta-apoio">Enviamos um código ao seu email. Digite abaixo.</p>
       {/* antes do campo: colar ou digitar o 6º dígito já confere o código, então a
           escolha de confiar no aparelho precisa vir primeiro */}
-      {permitirConfiar && (
+      {permitirConfiar && podeConfiarNoAparelho(manterConectado()) && (
         <label className="flex items-center gap-2 text-apoio text-tinta-apoio">
           <input type="checkbox" checked={confiar} onChange={(e) => setConfiar(e.target.checked)} className="size-4" />
           Confiar neste dispositivo por 30 dias (não pedir o código de novo aqui)

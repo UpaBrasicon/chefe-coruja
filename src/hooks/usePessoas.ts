@@ -6,6 +6,7 @@ export type UnidadeAdmin = {
   id: string
   nome: string
   tipo: TipoUnidade
+  organizacao_id: string
 }
 
 export type VinculoAdmin = {
@@ -16,19 +17,35 @@ export type VinculoAdmin = {
   ativo: boolean
 }
 
+// Quem aderiu a um contrato da organização e espera o admin concluir a entrada.
+export type AdesaoAdmin = {
+  id: string
+  perfil_id: string
+  papel: Papel
+  criado_em: string
+  organizacao_id: string
+  // S2: a entrada só se conclui depois de a pessoa confirmar o e-mail
+  email_confirmado: boolean
+}
+
 export function usePessoasAdmin() {
   return useQuery({
     queryKey: ['pessoas-admin'],
     queryFn: async () => {
-      const [unidadesRes, perfisRes] = await Promise.all([
-        supabase.from('unidades').select('id, nome, tipo').order('nome'),
+      // A RLS limita: perfis da própria organização (com ou sem vínculo ativo)
+      // e quem aderiu a contrato dela (S1 da trilha de segurança).
+      const [unidadesRes, perfisRes, adesoesRes] = await Promise.all([
+        supabase.from('unidades').select('id, nome, tipo, organizacao_id').order('nome'),
         supabase.from('perfis').select('id, nome_completo, email, crm, uf_crm, ativo').order('nome_completo'),
+        supabase.rpc('adesoes_da_organizacao'),
       ])
       if (unidadesRes.error) throw unidadesRes.error
       if (perfisRes.error) throw perfisRes.error
+      if (adesoesRes.error) throw adesoesRes.error
 
       const unidades = (unidadesRes.data ?? []) as UnidadeAdmin[]
       const perfis = (perfisRes.data ?? []) as Perfis['Row'][]
+      const adesoes: AdesaoAdmin[] = adesoesRes.data ?? []
 
       const unitIds = unidades.map((u) => u.id)
       const vinculosRes = await supabase
@@ -39,7 +56,7 @@ export function usePessoasAdmin() {
       if (vinculosRes.error) throw vinculosRes.error
       const vinculos = (vinculosRes.data ?? []) as VinculoAdmin[]
 
-      return { unidades, perfis, vinculos }
+      return { unidades, perfis, vinculos, adesoes }
     },
   })
 }

@@ -40,6 +40,8 @@ import {
   ADM_VAZIO, admTemAlgo, fichaAdm, formDaFicha, pendenciasAdm, textoAdm, type DetalheAdm, type FormAdm, type Sepse, type Spo2Cond,
 } from '@/components/internacao/documentos/documentosInternacao'
 import { ReavaliacoesQuadro } from './ReavaliacaoQuadro'
+import { janelaEmBranco } from '@/lib/abrirEmJanela'
+import { escapeHtml } from '@/lib/utils'
 
 type ConfigDetalhes = { esquemas: { id: string; nome: string; itens: string[]; ativo: boolean }[]; obrigatorios: string[] }
 
@@ -146,10 +148,10 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   async function registrar() {
     if (!internacaoId || !pacienteId || pendencias.length) return
     setErro(null)
-    const janela = window.open('', '_blank')
+    const janela = janelaEmBranco()
     if (!janela) return setErro('O navegador bloqueou a janela de impressão. Libere pop-ups e tente de novo.')
     const escrever = (html: string) => { janela.document.open(); janela.document.write(html); janela.document.close() }
-    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${m}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
+    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${escapeHtml(m)}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a admissão…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     setRegistrando(true)
     try {
@@ -187,10 +189,10 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   async function corrigir() {
     if (!registrada || !ficha.data || pendencias.length || justificativa.trim().length < JUSTIFICATIVA_CORRECAO_ADMISSAO) return
     setErro(null)
-    const janela = window.open('', '_blank')
+    const janela = janelaEmBranco()
     if (!janela) return setErro('O navegador bloqueou a janela de impressão. Libere pop-ups e tente de novo.')
     const escrever = (html: string) => { janela.document.open(); janela.document.write(html); janela.document.close() }
-    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${m}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
+    const falha = (m: string) => { escrever(`<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">${escapeHtml(m)}</p>`); setErro(m) } // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Gravando a correção…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     setRegistrando(true)
     try {
@@ -220,13 +222,13 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   }
 
   async function reimprimir(id: string) {
-    const janela = window.open('', '_blank')
+    const janela = janelaEmBranco()
     if (!janela) return setErro('O navegador bloqueou a janela de impressão.')
     janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     const r = await folhaDoDocumentoEmitido(id, 'Ficha de admissão médica · reimpressão')
     janela.document.open()
     // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
-    janela.document.write('erro' in r ? `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}.</p>` : r.html)
+    janela.document.write('erro' in r ? `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${escapeHtml(r.erro)}` : ''}.</p>` : r.html)
     janela.document.close()
     if (!('erro' in r)) {
       janela.focus()

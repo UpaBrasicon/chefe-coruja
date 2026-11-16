@@ -56,7 +56,9 @@ test('JSON só com ASCII', () => {
 })
 
 test('endereço de rede vem do primeiro x-forwarded-for', () => {
-  assert.equal(enderecoDaRede(new Headers({ 'x-forwarded-for': '203.0.113.7, 10.0.0.1' })), '203.0.113.7')
+  // S6 (B1): o primeiro item é do cliente; vale o último, que o gateway acrescenta
+  assert.equal(enderecoDaRede(new Headers({ 'x-forwarded-for': '10.0.0.1, 203.0.113.7' })), '203.0.113.7')
+  assert.equal(enderecoDaRede(new Headers({ 'x-forwarded-for': '10.0.0.1, 203.0.113.7', 'cf-connecting-ip': '198.51.100.2' })), '198.51.100.2')
   assert.equal(enderecoDaRede(new Headers({ 'cf-connecting-ip': '198.51.100.2' })), '198.51.100.2')
   assert.equal(enderecoDaRede(new Headers()), 'desconhecido')
 })

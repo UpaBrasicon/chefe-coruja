@@ -31,6 +31,7 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import type { FastifyInstance } from 'fastify'
 import { env } from '../config/env.js'
 import { logger } from '../logger.js'
+import { prefixoDeNotificacao } from '../agent/argsSeguros.js'
 import { hojeBrasilia } from '../lib/tempo.js'
 import { supabaseUser } from '../lib/supabase.js'
 import {
@@ -310,7 +311,8 @@ async function consultaOperacional(
       const cofre = criarCofre()
       return linhas.map((n) => ({
         ...n,
-        mensagem: desidentificar(n.mensagem ?? '', cofre, conhecidos).texto,
+        // S8 (D3): prefixo próprio, para não disputar o [PESSOA_n] do cofre da conversa
+        mensagem: prefixoDeNotificacao(desidentificar(n.mensagem ?? '', cofre, conhecidos).texto),
       }))
     }
     default:

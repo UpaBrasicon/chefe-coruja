@@ -33,16 +33,29 @@ export function exigeRegistro(papel: Papel | null | undefined): boolean {
 }
 
 // ── Máscaras ────────────────────────────────────────────────────────────────
+// S2 da trilha de segurança: convites novos têm 8 caracteres; os de 5 valem até vencer.
 export function mascaraConvite(v: string): string {
   let cru = v.toUpperCase().replace(/[^A-Z0-9]/g, '')
   if (cru.startsWith('CC')) cru = cru.slice(2)
-  return 'CC-' + cru.slice(0, 5)
+  return 'CC-' + cru.slice(0, 8)
 }
 
+export function codigoConviteValido(v: string): boolean {
+  return /^CC-([A-Z0-9]{5}|[A-Z0-9]{8})$/.test(v)
+}
+
+// Contrato: CT-ano-000 (os de antes) ou CT-ano-XXXXXX (os novos, S2).
 export function mascaraContrato(v: string): string {
-  const d = v.replace(/\D/g, '').slice(0, 7)
-  if (!d) return ''
-  return d.length > 4 ? `CT-${d.slice(0, 4)}-${d.slice(4)}` : `CT-${d}`
+  let cru = v.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  if (cru.startsWith('CT')) cru = cru.slice(2)
+  const ano = cru.slice(0, 4).replace(/\D/g, '')
+  if (!ano) return ''
+  const resto = ano.length === 4 ? cru.slice(4, 10) : ''
+  return resto ? `CT-${ano}-${resto}` : `CT-${ano}`
+}
+
+export function codigoContratoValido(v: string): boolean {
+  return /^CT-\d{4}-(\d{3}|[A-Z0-9]{6})$/.test(v)
 }
 
 export function mascaraCpf(v: string): string {

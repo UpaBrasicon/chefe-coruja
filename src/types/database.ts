@@ -10475,6 +10475,30 @@ export type Database = {
         }
         Returns: undefined
       }
+      aceitar_convite_com_limite: {
+        Args: {
+          p_codigo: string
+          p_conselho?: string
+          p_cpf?: string
+          p_data_nascimento?: string
+          p_nome_completo?: string
+          p_registro_numero?: string
+          p_registro_uf?: string
+          p_termo_versao: string
+        }
+        Returns: string
+      }
+      adesoes_da_organizacao: {
+        Args: never
+        Returns: {
+          criado_em: string
+          email_confirmado: boolean
+          id: string
+          organizacao_id: string
+          papel: Database["public"]["Enums"]["papel"]
+          perfil_id: string
+        }[]
+      }
       aceitar_encaminhamento: {
         Args: { p_encaminhamento: string }
         Returns: undefined
@@ -14230,6 +14254,18 @@ export type Database = {
         Returns: string
       }
       verificar_dispositivo_2fa: { Args: { p_token: string }; Returns: boolean }
+      concluir_adesao: {
+        Args: { p_adesao: string; p_unidade: string }
+        Returns: string
+      }
+      reativar_vinculo: {
+        Args: { p_vinculo: string }
+        Returns: undefined
+      }
+      revogar_vinculo: {
+        Args: { p_vinculo: string }
+        Returns: undefined
+      }
       zerar_segundo_fator: {
         Args: { p_motivo: string; p_usuario: string }
         Returns: undefined

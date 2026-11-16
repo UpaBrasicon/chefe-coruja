@@ -26,3 +26,12 @@ export async function abrirEmJanela(obter: () => Promise<string | null>): Promis
     throw e
   }
 }
+
+// S4 da trilha de segurança (D1): janela vazia para impressão, já sem
+// `opener`. A janela continua sendo escrita por quem a abriu (document.write),
+// mas o conteúdo dela não alcança mais a aba do sistema.
+export function janelaEmBranco(): Window | null {
+  const janela = window.open('', '_blank')
+  if (janela) janela.opener = null
+  return janela
+}

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Chefe Coruja — apresentação em uma página</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root { --escuro: #0B1220; --teal: #0E7490; --ciano: #22D3EE; --tinta: #0F172A; --apoio: #475569; --sussurro: #64748B; --fio: #D6DEE6; --campo: #F1F5F9; --ambar-fundo: #FFF7ED; --ambar-fio: #FED7AA; --ambar: #B45309; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #FBFCFD; }
+  body { width: 210mm; height: 297mm; font-family: 'Segoe UI', system-ui, sans-serif; color: var(--tinta); font-size: 9pt; line-height: 1.38; }
+  .pagina { padding: 11mm 12mm 9mm; height: 297mm; display: flex; flex-direction: column; gap: 3.6mm; }
+  header { display: flex; align-items: center; gap: 5mm; padding-bottom: 3mm; border-bottom: 2px solid var(--teal); }
+  header img { width: 26mm; height: 26mm; object-fit: contain; }
+  h1 { margin: 0; font-size: 22pt; letter-spacing: -0.02em; line-height: 1.05; }
+  .sub { margin: 1.2mm 0 0; font-size: 11pt; color: var(--teal); font-weight: 600; }
+  h2 { margin: 0 0 1.6mm; font-size: 10pt; color: var(--teal); letter-spacing: 0.01em; }
+  .proposta { background: var(--campo); border-radius: 3mm; padding: 3mm 4mm; font-size: 9.6pt; }
+  .proposta b { color: var(--teal); }
+  .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2mm 5mm; }
+  .mod { border-left: 3px solid var(--teal); padding: 0.3mm 0 0.3mm 2.6mm; }
+  .mod b { display: block; font-size: 9.4pt; }
+  .mod span { color: var(--apoio); font-size: 8.5pt; }
+  .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  ul { margin: 0; padding-left: 4mm; }
+  li { margin: 0 0 0.9mm; font-size: 8.7pt; }
+  .tela { width: 100%; border-radius: 2mm; border: 1px solid #27385A; display: block; }
+  .legenda { font-size: 7.4pt; color: var(--sussurro); margin-top: 1mm; }
+  .fora { background: var(--ambar-fundo); border: 1px solid var(--ambar-fio); border-radius: 3mm; padding: 2.6mm 3.4mm; margin-top: 2.6mm; }
+  .fora h2 { color: var(--ambar); margin-bottom: 1mm; }
+  .fora p { margin: 0; color: var(--apoio); font-size: 8.4pt; }
+  footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 6mm; background: var(--escuro); color: #F8FAFC; border-radius: 3mm; padding: 4mm 5mm; }
+  footer b { font-size: 11pt; }
+  footer p { margin: 0.6mm 0 0; color: #B6C4D6; font-size: 8.8pt; }
+  .contato { text-align: right; font-size: 10pt; font-weight: 600; color: var(--ciano); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header>
+    <img src="coruja.webp" alt="Mascote do Chefe Coruja">
+    <div>
+      <h1>Chefe Coruja</h1>
+      <p class="sub">Prontuário e gestão para a rede pública de saúde: da porta à alta, da UPA à UBS.</p>
+    </div>
+  </header>
+
+  <div class="proposta">
+    <b>O que muda na rede:</b> a recepção não duplica paciente, a enfermagem classifica pelo protocolo da unidade, o médico recebe os sinais da triagem sem redigitar, a regulação tem prazo e alerta, a UBS acompanha seus programas, e o gestor vê agora quem espera, onde está o gargalo e quanto do leito está ocupado. Tudo com autor, horário e uma trilha que denuncia adulteração.
+  </div>
+
+  <section>
+    <h2>Pronto e em uso</h2>
+    <div class="grade">
+      <div class="mod"><b>Recepção e triagem</b><span>Busca antes de cadastrar, prioridade legal automática, classificação de risco da enfermagem com o protocolo da unidade e chamada em painel.</span></div>
+      <div class="mod"><b>Atendimento no pronto-socorro</b><span>SOAP, CID sugerido pela hipótese, NEWS2, prescrição estruturada com aviso de alergia e peso, exames, atestado, receita e desfechos.</span></div>
+      <div class="mod"><b>Medicação</b><span>Aprazamento, checagem com nome e hora, motivo para não feito e recusado, interações críticas e alta vigilância.</span></div>
+      <div class="mod"><b>Observação, internação e leitos</b><span>Prazo de 6 horas na observação, evolução, mapa de leitos com reserva, higienização e bloqueio com motivo.</span></div>
+      <div class="mod"><b>Escala e presença</b><span>Só entra quem está na escala; check-in com localização e justificativa; trocas aprovadas pelo gestor.</span></div>
+      <div class="mod"><b>Gestão</b><span>Porta ao vivo, indicadores com filtros e CSV, evasão com motivo e perguntas em português, sem nome de paciente na resposta.</span></div>
+      <div class="mod"><b>Regulação</b><span>Consulta, exame, leito e transferência para a Central, com prioridade, prazo, alerta de destino sem resposta e mapa de vagas.</span></div>
+      <div class="mod"><b>Atenção básica (UBS)</b><span>Agenda, escuta inicial, encaminhados, Hiperdia nas regras C5 e C4, pré-natal e puericultura.</span></div>
+      <div class="mod"><b>Faturamento SUS</b><span>A conta nasce na porta e na internação; BPA, AIH, APAC e glosas; a pendência trava o fechamento.</span></div>
+      <div class="mod"><b>Apoio clínico</b><span>232 ferramentas revistas contra as diretrizes mais recentes e aprovadas pelo responsável técnico; IA que responde com fonte. O sistema não sugere dose.</span></div>
+    </div>
+  </section>
+
+  <div class="duas">
+    <section>
+      <h2>Diferenciais</h2>
+      <ul>
+        <li><b>Segurança no banco de dados</b>, não só na tela: cada acesso conferido no servidor.</li>
+        <li><b>Segundo fator</b> em todo acesso e tela que bloqueia sozinha depois de 10 minutos.</li>
+        <li><b>Auditoria encadeada:</b> quem fez, quando e por quê, inclusive quem abriu um prontuário antigo.</li>
+        <li><b>LGPD:</b> dados em São Paulo, cópia diária cifrada guardada por 20 anos (Lei 13.787/2018).</li>
+        <li><b>IA sem identidade:</b> os identificadores do paciente saem antes da consulta.</li>
+        <li><b>A decisão clínica é do profissional:</b> a cor é da enfermagem, a dose é do médico.</li>
+        <li><b>Sem internet</b>, os registros essenciais seguem, com plano de contingência.</li>
+      </ul>
+    </section>
+    <section>
+      <img class="tela" src="porta.jpg" alt="Tela Porta: etapas da porta, gargalo apontado e espera por cor">
+      <p class="legenda">Tela real da Porta, na rede de demonstração, com pacientes e equipe fictícios.</p>
+      <div class="fora">
+        <h2>Fora da oferta atual, sem data</h2>
+        <p>Envio à RNDS e assinatura digital ICP-Brasil.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div>
+      <b>Agende uma demonstração</b>
+      <p>15 minutos, com telas reais, da porta à alta.</p>
+    </div>
+    <div class="contato">contato@chefecoruja.com.br<br>chefecoruja.com.br</div>
+  </footer>
+</div>
+</body>
+</html>

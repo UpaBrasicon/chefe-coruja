@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase'
 import { dataHoraCarimbo } from './formato.ts'
 import { montarPulseira, type DadosPulseira, type MotivoReimpressao } from '@/domain/pulseira'
 import { esc, folhaPulseira } from './folhaPulseira.ts'
+import { janelaEmBranco } from '@/lib/abrirEmJanela'
 
 const mensagem = (texto: string, erro = false) =>
   `<p style="font:15px system-ui,sans-serif;padding:24px;color:${erro ? 'firebrick' : 'dimgray'}">${esc(texto)}</p>`
@@ -33,7 +34,7 @@ export type PedidoPulseira = {
  * hora, senão o navegador bloqueia). Devolve a mensagem de erro, ou null.
  */
 export async function imprimirPulseira(o: PedidoPulseira): Promise<string | null> {
-  const janela = window.open('', '_blank')
+  const janela = janelaEmBranco()
   if (!janela) return 'O navegador bloqueou a janela de impressão. Libere as janelas deste site e tente de novo.'
   escrever(janela, mensagem('Registrando impressão…'))
   const { data, error } = await supabase.rpc('registrar_impressao_pulseira', {

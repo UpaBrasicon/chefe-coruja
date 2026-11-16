@@ -5,6 +5,7 @@ import App from './App'
 import { AvisoVersaoNova } from '@/components/AvisoVersaoNova'
 import { iniciarTema } from '@/lib/tema'
 import { deveRecarregar } from '@/lib/recargaDeploy'
+import { aceitarSessaoDoLink } from '@/lib/supabase'
 
 // Tema (guia do padrão, 1.4): pinta antes do React, com a cópia do aparelho.
 iniciarTema()
@@ -26,12 +27,18 @@ import { iniciarSentry } from '@/lib/sentry'
 // Sentry (item 11): sem coleta automática; só recebe o que reportarErro manda.
 iniciarSentry(higienizar, versaoApp())
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-    <AvisoVersaoNova />
-  </StrictMode>
-)
+// S2 da trilha de segurança (E3): a sessão do link (#access_token) só vale nas
+// telas que esperam um; o app sobe depois dessa decisão.
+void aceitarSessaoDoLink()
+  .catch(() => 'nenhum')
+  .finally(() => {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+        <AvisoVersaoNova />
+      </StrictMode>
+    )
+  })
 
 // Painel de erros do admin (onda 12): defeitos que escapam do React.
 // — Erros de JS não tratados. Erros de CARGA de recurso (img/script) chegam

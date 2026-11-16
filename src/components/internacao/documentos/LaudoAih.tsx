@@ -28,13 +28,14 @@ import { AnexosLaudo, Aviso, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pilulas
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { data as dataBr } from '@/lib/formato'
-import { cn } from '@/lib/utils'
+import { cn, escapeHtml } from '@/lib/utils'
 
 import {
   AIH_VAZIO, aihTemAlgo, CAUSAS_EXTERNAS, codigoCid, conteudoAih, formDoConteudoAih, pendenciasAih, type CausaExterna, type FormAih,
 } from '@/components/internacao/documentos/documentosInternacao'
 import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
+import { janelaEmBranco } from '@/lib/abrirEmJanela'
 
 type Conferencia = { avisos: { campo: string; texto: string }[]; criticas?: CriticaAih[]; competencia: string | null; nota: string }
 
@@ -144,13 +145,13 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
   }
 
   async function reimprimir(id: string) {
-    const janela = window.open('', '_blank')
+    const janela = janelaEmBranco()
     if (!janela) return setErro('O navegador bloqueou a janela de impressão.')
     janela.document.write('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando impressão…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     const r = await folhaDoDocumentoEmitido(id, 'Laudo de internação (AIH) · reimpressão')
     janela.document.open()
     // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
-    janela.document.write('erro' in r ? `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${r.erro}` : ''}.</p>` : r.html)
+    janela.document.write('erro' in r ? `<p style="font:15px system-ui,sans-serif;padding:24px;color:#B91C1C">A folha não pôde ser montada${r.erro ? `: ${escapeHtml(r.erro)}` : ''}.</p>` : r.html)
     janela.document.close()
     if (!('erro' in r)) {
       janela.focus()

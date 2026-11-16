@@ -8,10 +8,19 @@ SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.es
  WHERE e.ativo AND e.perfil_id IS NOT NULL AND e.inicio <= now() AND now() < e.inicio + make_interval(mins => e.duracao_min)
 ON CONFLICT DO NOTHING;
 
+-- S11 (F1-C): o aal2 com TOTP só vale com aplicativo confiável na sessão do JWT
+INSERT INTO auth.mfa_factors (id, user_id, factor_type, status, created_at, updated_at)
+VALUES ('00000000-0000-4000-8000-0000000111f1', '10000000-0000-4000-8000-000000000002', 'totp', 'verified', now(), now());
+INSERT INTO private.totp_confiavel (factor_id, user_id, confiavel, origem)
+VALUES ('00000000-0000-4000-8000-0000000111f1', '10000000-0000-4000-8000-000000000002', true, 'anterior_ao_s11');
+INSERT INTO auth.sessions (id, user_id, aal, factor_id)
+VALUES ('00000000-0000-4000-8000-0000000111b1', '10000000-0000-4000-8000-000000000002', 'aal2', '00000000-0000-4000-8000-0000000111f1');
+
 CREATE FUNCTION pg_temp.sessao(aal text, minutos_desde_totp int) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object(
     'sub', '10000000-0000-4000-8000-000000000002', 'role', 'authenticated', 'aal', aal,
+    'session_id', '00000000-0000-4000-8000-0000000111b1',
     'amr', CASE WHEN minutos_desde_totp IS NULL
                 THEN json_build_array(json_build_object('method', 'password', 'timestamp', extract(epoch FROM now())::bigint))
                 ELSE json_build_array(

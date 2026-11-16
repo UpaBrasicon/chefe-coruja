@@ -1,14 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Controller, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { UserPlus, UserRoundX, Users } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { UserPlus, UserRoundCheck, UserRoundX, Users } from 'lucide-react'
 import * as React from 'react'
 
-import { usePessoasAdmin } from '@/hooks/usePessoas'
-import { criarOuReativarVinculo, revogarVinculo } from '@/lib/api'
-import { PAPEL_DESCRIPTION, PAPEL_LABEL, TIPO_UNIDADE_LABEL } from '@/lib/constants'
-import type { Papel } from '@/types/database'
+import { usePessoasAdmin, type AdesaoAdmin } from '@/hooks/usePessoas'
+import { concluirAdesao, reativarVinculo, revogarVinculo } from '@/lib/api'
+import { PAPEL_LABEL, TIPO_UNIDADE_LABEL } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import { ZerarSegundoFator } from '@/components/seguranca/CodigosRecuperacao'
 import { TituloPagina } from '@/components/monitor/Pagina'
@@ -47,65 +44,41 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-const schema = z.object({
-  perfil_id: z.string().min(1, 'Selecione uma pessoa.'),
-  unidade_id: z.string().min(1, 'Selecione uma unidade.'),
-  papel: z.enum(['admin', 'gestor', 'plantonista']),
-})
-
-type FormData = z.infer<typeof schema>
-
+// S1 da trilha de segurança: o admin não cria vínculo direto. Revoga e reativa
+// vínculos da própria organização e conclui a entrada de quem aderiu ao
+// contrato. Pessoa nova ou papel novo entram pelo convite (aba Convites da
+// unidade). O banco confere tudo e grava a auditoria.
 export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
   const { data, isLoading, error } = usePessoasAdmin()
   const { perfil } = useAuth()
   const queryClient = useQueryClient()
-  const [dialogAberto, setDialogAberto] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
-
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: { perfil_id: '', unidade_id: '', papel: undefined },
-  })
+  const [adesaoAberta, setAdesaoAberta] = React.useState<AdesaoAdmin | null>(null)
+  const [unidadeEscolhida, setUnidadeEscolhida] = React.useState<string>('')
 
   const invalidar = () => queryClient.invalidateQueries({ queryKey: ['pessoas-admin'] })
 
-  const criarMutation = useMutation({
-    mutationFn: (form: FormData) =>
-      criarOuReativarVinculo({
-        perfil_id: form.perfil_id,
-        unidade_id: form.unidade_id,
-        papel: form.papel,
-        criado_por: perfil!.id,
-      }),
-    onSuccess: () => {
-      invalidar()
-      setDialogAberto(false)
-      reset()
-    },
-    onError: (err) => setErro(err.message),
-  })
-
   const revogarMutation = useMutation({
-    mutationFn: (v: { id: string; unidadeId: string }) => revogarVinculo(v.id, v.unidadeId),
+    mutationFn: (id: string) => revogarVinculo(id),
     onSuccess: invalidar,
     onError: (err) => setErro(err.message),
   })
 
-  function abrirDialog(perfilPreselecionado?: string) {
-    reset({ perfil_id: perfilPreselecionado ?? '', unidade_id: '', papel: undefined })
-    setErro(null)
-    setDialogAberto(true)
-  }
+  const reativarMutation = useMutation({
+    mutationFn: (id: string) => reativarVinculo(id),
+    onSuccess: invalidar,
+    onError: (err) => setErro(err.message),
+  })
 
-  async function onSubmit(form: FormData) {
-    setErro(null)
-    criarMutation.mutate(form)
-  }
+  const concluirMutation = useMutation({
+    mutationFn: (v: { adesaoId: string; unidadeId: string }) => concluirAdesao(v.adesaoId, v.unidadeId),
+    onSuccess: () => {
+      invalidar()
+      setAdesaoAberta(null)
+      setUnidadeEscolhida('')
+    },
+    onError: (err) => setErro(err.message),
+  })
 
   if (isLoading) {
     return (
@@ -119,30 +92,41 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
     return <p className="text-apoio text-critico">Falha ao carregar pessoas: {error?.message}</p>
   }
 
-  const { perfis, unidades, vinculos } = data
+  const { perfis, unidades, vinculos, adesoes } = data
   const vinculosAtivos = vinculos.filter((v) => v.ativo)
-  const semVinculo = perfis.filter((p) => !vinculosAtivos.some((v) => v.perfil_id === p.id))
+  const vinculosInativos = vinculos.filter((v) => !v.ativo)
+  // adesão espera entrada enquanto a pessoa não tem vínculo ativo numa unidade da organização do contrato
+  const adesoesPendentes = adesoes.filter(
+    (a) =>
+      !vinculosAtivos.some(
+        (v) => v.perfil_id === a.perfil_id && unidades.some((u) => u.id === v.unidade_id && u.organizacao_id === a.organizacao_id)
+      )
+  )
+  const unidadesDaAdesao = adesaoAberta ? unidades.filter((u) => u.organizacao_id === adesaoAberta.organizacao_id) : []
 
-  const botaoNovoVinculo = (
-    <Button onClick={() => abrirDialog()}>
+  const botaoConvite = (
+    <Button render={<Link to="/unidade?aba=convites" />} nativeButton={false}>
       <UserPlus />
-      Novo vínculo
+      Gerar convite
     </Button>
   )
+
+  const nomeDe = (perfilId: string) => perfis.find((p) => p.id === perfilId)
+  const unidadeDe = (unidadeId: string) => unidades.find((u) => u.id === unidadeId)
 
   return (
     <div className="flex flex-col gap-6">
       {embutido ? (
         <div className="flex items-center justify-between">
-          <div />
-          {botaoNovoVinculo}
+          <p className="text-apoio text-tinta-apoio">Pessoa nova ou papel novo entram pelo convite da unidade.</p>
+          {botaoConvite}
         </div>
       ) : (
         <TituloPagina
           icone={Users}
           titulo="Pessoas"
-          descricao="Crie e revogue vínculos por unidade. Todas as alterações ficam no log de auditoria."
-          acoes={botaoNovoVinculo}
+          descricao="Revogue e reative vínculos da sua organização. Pessoa nova ou papel novo entram pelo convite. Tudo fica no log de auditoria."
+          acoes={botaoConvite}
           className="mb-0"
         />
       )}
@@ -166,8 +150,8 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
             </TableHeader>
             <TableBody>
               {vinculosAtivos.map((v) => {
-                const pessoa = perfis.find((p) => p.id === v.perfil_id)
-                const unidade = unidades.find((u) => u.id === v.unidade_id)
+                const pessoa = nomeDe(v.perfil_id)
+                const unidade = unidadeDe(v.unidade_id)
                 return (
                   <TableRow key={v.id}>
                     <TableCell>
@@ -182,15 +166,17 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
                       {pessoa && pessoa.id !== perfil?.id && (
                         <ZerarSegundoFator perfilId={pessoa.id} nome={pessoa.nome_completo} />
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={revogarMutation.isPending}
-                        onClick={() => revogarMutation.mutate({ id: v.id, unidadeId: v.unidade_id })}
-                      >
-                        <UserRoundX />
-                        Revogar
-                      </Button>
+                      {v.perfil_id !== perfil?.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={revogarMutation.isPending}
+                          onClick={() => revogarMutation.mutate(v.id)}
+                        >
+                          <UserRoundX />
+                          Revogar
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 )
@@ -208,131 +194,121 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Pessoas sem vínculo</CardTitle>
+          <CardTitle>Entrada pelo contrato</CardTitle>
           <CardDescription>
-            Contas criadas que ainda aguardam liberação. Vincule uma unidade e um papel para liberar
-            o acesso.
+            Pessoas que aderiram ao contrato da rede. Escolha a unidade para concluir a entrada, com o papel do contrato.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2">
-            {semVinculo.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between rounded-controle border px-3 py-2"
-              >
-                <div>
-                  <div className="text-apoio font-medium">{p.nome_completo}</div>
-                  <div className="text-rotulo text-tinta-sussurro">{p.email}</div>
+            {adesoesPendentes.map((a) => {
+              const pessoa = nomeDe(a.perfil_id)
+              return (
+                <div key={a.id} className="flex items-center justify-between rounded-controle border px-3 py-2">
+                  <div>
+                    <div className="text-apoio font-medium">{pessoa?.nome_completo ?? '—'}</div>
+                    <div className="text-rotulo text-tinta-sussurro">
+                      {pessoa?.email} · {PAPEL_LABEL[a.papel]}
+                      {!a.email_confirmado && ' · e-mail não confirmado'}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={a.perfil_id === perfil?.id || !a.email_confirmado}
+                    title={a.email_confirmado ? undefined : 'A entrada é concluída depois de a pessoa confirmar o e-mail.'}
+                    onClick={() => {
+                      setErro(null)
+                      setUnidadeEscolhida('')
+                      setAdesaoAberta(a)
+                    }}
+                  >
+                    <UserRoundCheck />
+                    Concluir entrada
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => abrirDialog(p.id)}>
-                  Vincular
-                </Button>
-              </div>
-            ))}
-            {semVinculo.length === 0 && (
-              <p className="py-4 text-center text-apoio text-tinta-sussurro">
-                Nenhuma conta aguardando liberação.
-              </p>
+              )
+            })}
+            {adesoesPendentes.length === 0 && (
+              <p className="py-4 text-center text-apoio text-tinta-sussurro">Ninguém aguardando entrada pelo contrato.</p>
             )}
           </div>
         </CardContent>
       </Card>
 
-      <Dialog open={dialogAberto} onOpenChange={(o) => { setDialogAberto(o); if (!o) reset() }}>
+      {vinculosInativos.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Vínculos revogados</CardTitle>
+            <CardDescription>Quem já passou pela organização. Reativar devolve o mesmo papel na mesma unidade.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-2">
+              {vinculosInativos.map((v) => {
+                const pessoa = nomeDe(v.perfil_id)
+                return (
+                  <div key={v.id} className="flex items-center justify-between rounded-controle border px-3 py-2">
+                    <div>
+                      <div className="text-apoio font-medium">{pessoa?.nome_completo ?? '—'}</div>
+                      <div className="text-rotulo text-tinta-sussurro">
+                        {unidadeDe(v.unidade_id)?.nome ?? '—'} · {PAPEL_LABEL[v.papel]}
+                      </div>
+                    </div>
+                    {v.perfil_id !== perfil?.id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={reativarMutation.isPending}
+                        onClick={() => reativarMutation.mutate(v.id)}
+                      >
+                        Reativar
+                      </Button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <Dialog open={adesaoAberta !== null} onOpenChange={(o) => { if (!o) setAdesaoAberta(null) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Criar vínculo</DialogTitle>
+            <DialogTitle>Concluir entrada</DialogTitle>
             <DialogDescription>
-              Atribua um papel por unidade. O acesso passa a valer na sessão seguinte.
+              {adesaoAberta ? `${nomeDe(adesaoAberta.perfil_id)?.nome_completo ?? 'A pessoa'} entra como ${PAPEL_LABEL[adesaoAberta.papel]}, o papel do contrato. O acesso passa a valer na sessão seguinte.` : null}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label>Pessoa</Label>
-              <Controller
-                control={control}
-                name="perfil_id"
-                render={({ field }) => (
-                  <Select items={Object.fromEntries(perfis.map((p) => [p.id, p.nome_completo]))} value={field.value || null} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione a pessoa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {perfis.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.nome_completo}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.perfil_id && (
-                <p className="text-rotulo text-critico">{errors.perfil_id.message}</p>
-              )}
-            </div>
+          <div className="flex flex-col gap-2">
+            <Label>Unidade</Label>
+            <Select
+              items={Object.fromEntries(unidadesDaAdesao.map((u) => [u.id, `${u.nome} (${TIPO_UNIDADE_LABEL[u.tipo]})`]))}
+              value={unidadeEscolhida || null}
+              onValueChange={(v) => setUnidadeEscolhida(v ?? '')}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecione a unidade" />
+              </SelectTrigger>
+              <SelectContent>
+                {unidadesDaAdesao.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.nome} ({TIPO_UNIDADE_LABEL[u.tipo]})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <Label>Unidade</Label>
-              <Controller
-                control={control}
-                name="unidade_id"
-                render={({ field }) => (
-                  <Select items={Object.fromEntries(unidades.map((u) => [u.id, `${u.nome} (${TIPO_UNIDADE_LABEL[u.tipo]})`]))} value={field.value || null} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione a unidade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {unidades.map((u) => (
-                        <SelectItem key={u.id} value={u.id}>
-                          {u.nome} ({TIPO_UNIDADE_LABEL[u.tipo]})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.unidade_id && (
-                <p className="text-rotulo text-critico">{errors.unidade_id.message}</p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label>Papel</Label>
-              <Controller
-                control={control}
-                name="papel"
-                render={({ field }) => (
-                  <Select value={field.value || null} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o papel" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(Object.keys(PAPEL_LABEL) as Papel[]).map((p) => (
-                        <SelectItem key={p} value={p}>
-                          <div className="flex flex-col gap-0.5">
-                            <span>{PAPEL_LABEL[p]}</span>
-                            <span className="text-rotulo text-tinta-sussurro">
-                              {PAPEL_DESCRIPTION[p]}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.papel && <p className="text-rotulo text-critico">{errors.papel.message}</p>}
-            </div>
-
-            <DialogFooter>
-              <Button type="submit" disabled={criarMutation.isPending}>
-                {criarMutation.isPending ? <Spinner /> : 'Criar vínculo'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogFooter>
+            <Button
+              disabled={!adesaoAberta || !unidadeEscolhida || concluirMutation.isPending}
+              onClick={() => adesaoAberta && concluirMutation.mutate({ adesaoId: adesaoAberta.id, unidadeId: unidadeEscolhida })}
+            >
+              {concluirMutation.isPending ? <Spinner /> : 'Concluir entrada'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -45,7 +45,9 @@ test('chave no cabeçalho Bearer', () => {
 
 test('IP: o do Worker só com o segredo da borda', () => {
   const cab = (h: Record<string, string>) => (n: string) => h[n] ?? null
-  assert.equal(ipDeOrigem(cab({ 'x-coruja-ip-cliente': '1.1.1.1', 'x-forwarded-for': '9.9.9.9, 8.8.8.8' }), 's'), '9.9.9.9')
+  // S6 (B1): sem a prova da borda vale o último item (o primeiro é do cliente) ou o cf-connecting-ip
+  assert.equal(ipDeOrigem(cab({ 'x-coruja-ip-cliente': '1.1.1.1', 'x-forwarded-for': '9.9.9.9, 8.8.8.8' }), 's'), '8.8.8.8')
+  assert.equal(ipDeOrigem(cab({ 'x-forwarded-for': '9.9.9.9, 8.8.8.8', 'cf-connecting-ip': '7.7.7.7' }), 's'), '7.7.7.7')
   assert.equal(ipDeOrigem(cab({ 'x-coruja-ip-cliente': '1.1.1.1', 'x-coruja-borda': 'errado', 'x-forwarded-for': '9.9.9.9' }), 's'), '9.9.9.9')
   assert.equal(ipDeOrigem(cab({ 'x-coruja-ip-cliente': '1.1.1.1', 'x-coruja-borda': 's', 'x-forwarded-for': '9.9.9.9' }), 's'), '1.1.1.1')
   assert.equal(ipDeOrigem(cab({ 'x-coruja-ip-cliente': '1.1.1.1', 'x-coruja-borda': 's' }), undefined), null)
