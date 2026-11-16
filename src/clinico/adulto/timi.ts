@@ -1,5 +1,6 @@
 import { completo, somar, type Escore, type Item } from '../escore.ts'
 import { fichaAdulto } from './fonte.ts'
+import { SBC_SCASSST_2021 } from '../fontesPubmed.ts'
 
 // TIMI como o Manual de Medicina de Emergência do HCFMUSP (3ª ed., 2022) traz:
 // só o TIMI-NSTEMI (sem supra de ST), na Tabela 4 do cap. 12 (p. 192, conferido
@@ -12,12 +13,21 @@ const fator = (id: string, rotulo: string): Item => ({
   tipo: 'escolha', id, rotulo, opcoes: [{ rotulo: 'Não', valor: 0 }, { rotulo: 'Sim — 1 ponto', valor: 1 }],
 })
 
-export const timiSemSupra: Escore = {
-  ficha: fichaAdulto(
+// Versão 2026-11-16.1: próximos passos do lote 2 das calculadoras pela SBC 2021 (PMC).
+const baseTimi = fichaAdulto(
     'adulto-timi-nstemi',
     'TIMI-NSTEMI — risco na SCA sem supra de ST (adulto)',
     'cap. 12 Abordagem inicial do paciente com dor torácica, p. 192–194 (Tabela 4); cap. 13 Infarto agudo do miocárdio sem supradesnivelamento do segmento ST, p. 205 e p. 210 (Tabela 2)',
-  ),
+  )
+const fichaTimi = {
+  ...baseTimi,
+  versao: '2026-11-16.1',
+  fontes: [...baseTimi.fontes, SBC_SCASSST_2021],
+  revisadoEm: '16/11/2026 (próximos passos do lote 2 das calculadoras, com fonte aberta no PMC; aguarda aprovação do RT); ' + baseTimi.revisadoEm,
+}
+
+export const timiSemSupra: Escore = {
+  ficha: fichaTimi,
   descricao: 'Sete fatores de 1 ponto cada, da Tabela 4 do manual do HC. Baixo risco é 0 ou 1 ponto.',
   itens: [
     fator('idade', '65 anos de idade ou mais'),

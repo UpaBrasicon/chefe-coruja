@@ -87,13 +87,13 @@ export const ERRATA_DUKE = [
 export const duke: Escore = {
   ficha: {
     ...fichaAdulto('adulto-duke-modificado', 'Endocardite infecciosa — critérios de Duke-ISCVID 2023 (adulto)', 'cap. 23 Endocardite infecciosa, p. 324–326 (Tabela 2, Duke modificado de 2000, como referência)'),
-    versao: '2026-11-14.1',
+    versao: '2026-11-16.1',
     fontes: [
       DUKE_ISCVID_2023,
       ESC_EI_2023,
       pagina('cap. 23 Endocardite infecciosa, p. 324–326 (Tabela 2, Duke modificado de 2000, como referência)'),
     ],
-    revisadoEm: '14/11/2026 (ESC 2023 de endocardite lida no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT); 09/10/2026 (Duke-ISCVID 2023 conferido na página da revista; livro mantido como referência)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 2 das calculadoras, com fonte já citada; aguarda aprovação do RT); 14/11/2026 (ESC 2023 de endocardite lida no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT); 09/10/2026 (Duke-ISCVID 2023 conferido na página da revista; livro mantido como referência)',
   },
   descricao: 'Critérios de Duke-ISCVID 2023: definida com critério patológico, 2 maiores, 1 maior e 3 menores, ou 5 menores; possível com 1 maior e 1 menor, ou 3 menores.',
   itens: [
