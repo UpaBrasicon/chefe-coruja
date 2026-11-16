@@ -1,3 +1,4 @@
+import { PADIS_2025_LIDA } from '../adulto/infusoes.ts'
 import { completo, escolha, type Escore } from '../escore.ts'
 
 // RASS: dez níveis, de +4 a −5. Porte do protótipo (neurologia/RASS,
@@ -13,14 +14,15 @@ export const rass: Escore = {
   ficha: {
     id: 'rass',
     titulo: 'RASS — escala de agitação e sedação de Richmond',
-    versao: '2026-09-27.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Sessler CN, Gosnell MS, Grap MJ, et al. The Richmond Agitation-Sedation Scale: validity and reliability in adult intensive care unit patients. Am J Respir Crit Care Med. 2002;166(10):1338–1344.', url: 'https://doi.org/10.1164/rccm.2107138' },
       { citacao: 'Ely EW, Truman B, Shintani A, et al. Monitoring sedation status over time in ICU patients: reliability and validity of the Richmond Agitation-Sedation Scale (RASS). JAMA. 2003;289(22):2983–2991.', url: 'https://doi.org/10.1001/jama.289.22.2983' },
-      { citacao: 'Devlin JW, Skrobik Y, Gélinas C, et al. Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med. 2018;46(9):e825–e873.', url: 'https://doi.org/10.1097/CCM.0000000000003299' },
+      { citacao: 'Devlin JW, Skrobik Y, Gélinas C, et al. Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med. 2018;46(9):e825–e873 (PMID 30113379). Texto integral gratuito na LWW lido em 16/11/2026.', url: 'https://doi.org/10.1097/CCM.0000000000003299' },
+      PADIS_2025_LIDA,
     ],
-    revisadoEm: '27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 6 das calculadoras; fontes lidas no texto integral em 16/11/2026; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Nível de agitação ou sedação, de +4 combativo a −5 sem despertar',
   itens: [

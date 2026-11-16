@@ -59,10 +59,10 @@ function linhaCostr(tema: string): PassoGuia {
   return { tema: `${tema} — CoSTR 2026`, texto: l.recomendacao, ref: { fonte: 'ILCOR CoSTR 2026', pagina: l.codigo, grau: l.forca } }
 }
 
-function linhaPadis(tema: string): PassoGuia {
+function linhaPadis(tema: string, faixas?: Faixas): PassoGuia {
   const l = NOTAS_PADIS_2025.find((d) => d.tema === tema)
   if (!l) throw new Error(`linha da PADIS 2025 sem tema "${tema}"`)
-  return { tema: `${tema} — PADIS 2025`, texto: l.texto, ref: { fonte: 'SCCM PADIS 2025 (atualização focada)', grau: l.forca } }
+  return { tema: `${tema} — PADIS 2025`, texto: l.texto, ref: { fonte: 'SCCM PADIS 2025 (atualização focada)', grau: l.forca }, faixas }
 }
 
 const ATS_IDSA = 'ATS/IDSA 2019 — pneumonia adquirida na comunidade no adulto (Metlay et al.)'
@@ -200,7 +200,53 @@ const PANCREATITE_GERAL: PassoGuia[] = [
 // Apendicite aguda: WSES 2020 (Jerusalém), lida no PMC em 16/11/2026.
 const WSES_AA = 'WSES 2020, apendicite aguda'
 
+// UTI: NEWS2 pelo relatório do RCP 2017 (PDF lido em 16/11/2026; recomendações do grupo de
+// trabalho, sem graduação); RASS e CAM-ICU pela PADIS 2018 e pela atualização de 2025 (texto
+// integral gratuito na LWW, lido em 16/11/2026); SOFA-2 pelo artigo (PMC) e pela Sepsis-3 (PMC).
+const RCP_NEWS2 = 'RCP 2017, NEWS2'
+const SEM_GRAU_RCP = 'recomendação do grupo de trabalho, sem graduação'
+const PADIS_2018 = 'SCCM PADIS 2018'
+
 export const GUIAS: Record<string, Guia> = {
+  news2: {
+    proximosPassos: [
+      { tema: 'Total 0 a 4', texto: 'Total 0: sinais vitais pelo menos a cada 12 h. Total 1 a 4: pelo menos a cada 4–6 h; avisar o enfermeiro, que avalia e decide se aumenta a frequência ou escala o cuidado.', ref: { fonte: RCP_NEWS2, pagina: 'Chart 4, p. 39', grau: SEM_GRAU_RCP }, faixas: [0] },
+      { tema: '3 em um parâmetro', texto: 'Sinais vitais pelo menos de hora em hora; a equipe médica revê o paciente com urgência, busca a causa e decide se escala o cuidado.', ref: { fonte: RCP_NEWS2, pagina: 'Chart 4, p. 39; recomendação 12', grau: SEM_GRAU_RCP }, faixas: [1] },
+      { tema: 'Total 5 ou 6: resposta urgente', texto: 'Sinais vitais pelo menos de hora em hora; avisar a equipe médica na hora; avaliação urgente por médico ou equipe com competência no paciente agudo, que decide se chama a equipe de cuidados críticos; cuidado em ambiente com monitorização.', ref: { fonte: RCP_NEWS2, pagina: 'Chart 4, p. 39; recomendação 12', grau: SEM_GRAU_RCP }, faixas: [1] },
+      { tema: 'Total 7 ou mais: resposta de emergência', texto: 'Monitorização contínua dos sinais vitais; avaliação de emergência por equipe com competência em cuidados críticos, incluindo manejo avançado de via aérea; considerar a transferência para unidade de cuidado intermediário ou UTI.', ref: { fonte: RCP_NEWS2, pagina: 'Chart 4, p. 39; recomendação 12', grau: SEM_GRAU_RCP }, faixas: [2] },
+      { tema: 'Infecção e NEWS de 5 ou mais', texto: 'Com infecção confirmada ou suspeita, ou risco de infecção, NEWS de 5 ou mais levanta a suspeita de sepse e pede resposta clínica urgente por equipe competente no manejo da sepse.', ref: { fonte: RCP_NEWS2, pagina: 'p. 30', grau: SEM_GRAU_RCP }, faixas: [1, 2] },
+    ],
+    armadilhas: [
+      { texto: 'A preocupação clínica com o paciente sempre prevalece sobre o NEWS quando o profissional julga necessário escalar o cuidado.', ref: { fonte: RCP_NEWS2, pagina: 'p. 37', grau: SEM_GRAU_RCP } },
+    ],
+  },
+  rass: {
+    proximosPassos: [
+      { tema: 'Sedação leve', texto: 'No adulto grave em ventilação mecânica, sedação leve em vez de profunda.', ref: { fonte: PADIS_2018, pagina: 'Agitação/sedação, sedação leve', grau: 'condicional, qualidade baixa' } },
+      { tema: 'Interrupção diária ou protocolo', texto: 'Interrupção diária da sedação ou sedação protocolada pela enfermagem alcançam e mantêm a sedação leve; mirar sedação leve, não profunda, salvo indicação clínica de sedação mais profunda.', ref: { fonte: PADIS_2018, pagina: 'Interrupção diária / sedação protocolada', grau: 'sem graduação' }, faixas: [1, 2] },
+      { tema: 'Qual sedativo', texto: 'No adulto grave em ventilação mecânica, propofol ou dexmedetomidina em vez de benzodiazepínico.', ref: { fonte: PADIS_2018, pagina: 'Escolha do sedativo', grau: 'condicional, qualidade baixa' } },
+      linhaPadis('Dexmedetomidina × propofol'),
+    ],
+    armadilhas: [
+      { texto: 'Não há definição universal de sedação leve: RASS de −2 a +1 foi a faixa usada como sedação leve nos estudos avaliados, não uma meta graduada.', ref: { fonte: PADIS_2018, pagina: 'Sedação leve, justificativa', grau: 'sem graduação' } },
+    ],
+  },
+  'cam-icu': {
+    proximosPassos: [
+      { tema: 'Rastreio regular', texto: 'Avaliar delirium regularmente no adulto grave com ferramenta validada (CAM-ICU ou ICDSC).', ref: { fonte: PADIS_2018, pagina: 'Delirium, avaliação', grau: 'boa prática, sem graduação' } },
+      { tema: 'Não avaliável', texto: 'O nível de alerta pode influenciar a avaliação com a ferramenta de rastreio; não descartar o significado clínico do delirium nesse cenário.', ref: { fonte: PADIS_2018, pagina: 'Nível de alerta e avaliação', grau: 'sem graduação' }, faixas: [1] },
+      { tema: 'Medidas não farmacológicas', texto: 'Intervenção não farmacológica com vários componentes: reduzir fatores de risco modificáveis, melhorar a cognição e otimizar sono, mobilidade, audição e visão.', ref: { fonte: PADIS_2018, pagina: 'Delirium, prevenção e tratamento não farmacológicos', grau: 'condicional, qualidade baixa' } },
+      { tema: 'Sem prevenção farmacológica', texto: 'Não usar haloperidol, antipsicótico atípico, dexmedetomidina, estatina ou cetamina para prevenir delirium em todos os adultos graves.', ref: { fonte: PADIS_2018, pagina: 'Delirium, prevenção e tratamento farmacológicos', grau: 'condicional, qualidade muito baixa a baixa' }, faixas: [0] },
+      linhaPadis('Antipsicótico no delirium', [2]),
+      { tema: 'Agitação que impede o desmame', texto: 'Dexmedetomidina para o delirium do adulto em ventilação mecânica quando a agitação impede o desmame ou a extubação.', ref: { fonte: PADIS_2018, pagina: 'Delirium, prevenção e tratamento farmacológicos', grau: 'condicional, qualidade baixa' }, faixas: [2] },
+    ],
+  },
+  'sofa-2': {
+    armadilhas: [
+      { texto: 'O SOFA-2 descreve a disfunção orgânica no adulto em UTI; foi desenvolvido e validado só na UTI, e o uso fora dela (pronto-socorro, pediatria) ainda precisa de estudo.', ref: { fonte: 'Ranzani et al., JAMA 2025 (SOFA-2)', pagina: 'conclusões e limitações', grau: 'sem graduação' } },
+      { texto: 'A regra de sepse (aumento agudo de 2 pontos ou mais) foi definida pela Sepsis-3 para o SOFA original; o artigo do SOFA-2 não a reescreve. O SOFA não serve como ferramenta de manejo, e sim para caracterizar o paciente séptico.', ref: { fonte: 'Sepsis-3, JAMA 2016', pagina: 'Quadro 3 e critérios clínicos', grau: 'consenso' } },
+    ],
+  },
   bisap: {
     proximosPassos: [
       { tema: 'BISAP de 3 ou mais: cuidado intermediário', texto: 'Pancreatite grave prevista (BISAP de 3 ou mais, SIRS persistente): internar em unidade de cuidado intermediário; sem essa unidade, monitorização próxima.', ref: { fonte: ILATAM, pagina: 'Tabela 1, nível de cuidado', grau: 'forte, qualidade moderada' }, faixas: [2] },
