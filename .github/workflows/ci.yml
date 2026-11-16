@@ -87,6 +87,10 @@ jobs:
           deno-version: v2.1.4
       - name: deno.lock das funções de borda (S9)
         working-directory: supabase/functions
+        # sem isso o Deno lê o package.json da raiz (o app) e quer pôr as
+        # dependências dele no lock; as funções não usam package.json
+        env:
+          DENO_NO_PACKAGE_JSON: '1'
         run: deno cache --lock=deno.lock --frozen api/index.ts clinical-search/index.ts enviar-codigo-2fa/index.ts folha/index.ts pedir-demonstracao/index.ts webhooks/index.ts
       # Fase 0, item 14: migration nova não apaga nem renomeia o que a versão anterior usa
       - name: Expand/contract nas migrations
