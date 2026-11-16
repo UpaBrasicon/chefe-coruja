@@ -1,32 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { StatusLeito, TipoLeito, TipoSetor, TipoUnidade } from '@/types/database'
-
-export type CensoUnidade = {
-  unidade_id: string
-  unidade_nome: string
-  unidade_tipo: TipoUnidade
-  total_setores: number | null
-  total_leitos: number | null
-  leitos_livres: number | null
-  leitos_ocupados: number | null
-  leitos_bloqueados: number | null
-  leitos_higienizacao: number | null
-}
-
-export function useCenso() {
-  return useQuery({
-    queryKey: ['censo'],
-    queryFn: async () => {
-      // item 24 do kit de desempenho: as colunas de CensoUnidade, por nome
-      const { data, error } = await supabase.from('vw_censo_unidade').select(
-        'unidade_id, unidade_nome, unidade_tipo, total_setores, total_leitos, leitos_livres, leitos_ocupados, leitos_bloqueados, leitos_higienizacao',
-      )
-      if (error) throw error
-      return (data ?? []) as CensoUnidade[]
-    },
-  })
-}
+import type { StatusLeito, TipoLeito, TipoSetor } from '@/types/database'
 
 export type SetorComLeitos = {
   id: string
