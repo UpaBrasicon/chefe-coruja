@@ -22,3 +22,15 @@ test('HEART: baixo risco traz a alta do baixo risco; alto risco não traz', () =
   assert.ok(!temas(2).includes('Dosagem única de troponina'))
   assert.ok(temas(2).includes('Antiagregação antes do diagnóstico'))
 })
+
+test('CURB-65: os três passos da ATS/IDSA valem em qualquer pontuação (a diretriz não os separa pelo CURB-65)', () => {
+  for (const e of [0, 1, 2] as const) assert.equal(passosDaFaixa(GUIAS['curb-65'], e).length, 3)
+})
+
+test('sepse: antimicrobiano em qualquer faixa; corticoide e vasopressor só no choque', () => {
+  const temas = (e: 0 | 1 | 2) => passosDaFaixa(GUIAS['sepse-adulto'], e).map((p) => p.tema ?? '')
+  assert.ok(temas(0).some((t) => t.startsWith('Antimicrobiano')))
+  assert.ok(!temas(1).some((t) => t.startsWith('Corticoide')))
+  assert.ok(temas(2).some((t) => t.startsWith('Corticoide')))
+  assert.ok(temas(2).some((t) => t.startsWith('Vasopressor')))
+})

@@ -51,7 +51,7 @@ export const sepseAdulto: Escore = {
   ficha: {
     id: 'sepse-adulto',
     titulo: 'Sepse no adulto — SOFA, choque e lactato (Sepsis-3 · SSC 2026 · ILAS 2026)',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Singer M, Deutschman CS, Seymour CW, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801–810.', url: 'https://doi.org/10.1001/jama.2016.0287' },
@@ -63,7 +63,7 @@ export const sepseAdulto: Escore = {
       AHN_SOFA2_PS_2026,
       YEN_SOFA2_PS_2026,
     ],
-    revisadoEm: '06/11/2026 (nota do SOFA-2 e das validações no pronto-socorro, SOFA-1 mantido; revisão PubMed, itens médios; SSC 2026 e ILAS jul/2026 conferidos no texto em 28/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos, armadilhas e evidências do piloto das calculadoras, com fonte; aguarda aprovação do RT); 06/11/2026 (nota do SOFA-2 e das validações no pronto-socorro, SOFA-1 mantido; revisão PubMed, itens médios; SSC 2026 e ILAS jul/2026 conferidos no texto em 28/09/2026)',
   },
   descricao: 'Disfunção orgânica pelo SOFA, choque séptico pelo Sepsis-3 e pelo ILAS, clareamento de lactato; o rastreio é pelo NEWS2',
   itens: [
