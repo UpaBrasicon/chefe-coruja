@@ -5,6 +5,7 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { AVISO_PESO_ADULTO_FORA, lerPesoAdulto } from '@/domain/pesoAdulto'
 import { numero } from '@/lib/formato'
 
 const PAPEL: Record<DrogaIsr['papel'], string> = { inducao: 'Indução', analgesia: 'Analgesia', bloqueio: 'Bloqueio neuromuscular' }
@@ -12,6 +13,9 @@ const PAPEL: Record<DrogaIsr['papel'], string> = { inducao: 'Indução', analges
 /** Intubação em sequência rápida do adulto (Anexo 1 do manual do HCFMUSP). */
 export function IsrAdulto() {
   const [peso, setPeso] = useState(0)
+  // Trava da unidade (RT, 16/11/2026): fora de 30 a 250 kg, nenhuma dose por peso.
+  const leitura = lerPesoAdulto(peso)
+  const pesoConta = leitura === 'ok' ? peso : 0
   return (
     <ToolLayout
       title="Intubação em sequência rápida — adulto"
@@ -19,8 +23,9 @@ export function IsrAdulto() {
       ficha={fichaIsrAdulto}
     >
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="flex flex-col gap-2 pt-6">
           <NumberField id="isr-peso" label="Peso" unit="kg" value={peso} onChange={setPeso} min={0} step={0.1} />
+          {leitura === 'fora' && <p role="alert" className="text-apoio font-medium text-critico">{AVISO_PESO_ADULTO_FORA}</p>}
         </CardContent>
       </Card>
       <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ATS_PRE_OXIGENACAO}</p>
@@ -31,13 +36,13 @@ export function IsrAdulto() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             {DROGAS_ISR.filter((d) => d.papel === p).map((d) => {
-              const r = calcularIsr(d, peso)
+              const r = calcularIsr(d, pesoConta)
               return (
                 <div key={d.id} className="rounded-controle border px-3 py-2 text-apoio">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <span className="font-medium">{d.nome}</span>
                     <span className="tabular-nums">
-                      {r ? <><strong>{r.dose}</strong> · {r.volumeMl} mL{r.ampolas > 1 ? ` · ${r.ampolas} ampolas` : ''}</> : 'informe o peso'}
+                      {r ? <><strong>{r.dose}</strong> · {r.volumeMl} mL{r.ampolas > 1 ? ` · ${r.ampolas} ampolas` : ''}</> : leitura === 'fora' ? 'confira o peso' : 'informe o peso'}
                     </span>
                   </div>
                   <p className="text-tinta-sussurro">

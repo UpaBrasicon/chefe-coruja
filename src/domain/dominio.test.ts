@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { ehPediatrico, idadeEm, rotuloIdade } from './idade.ts'
+import { lerPesoAdulto } from './pesoAdulto.ts'
 import { formatarDuracao, nivelDaObservacao, nivelDoTurno, tempoDeTurno } from './plantao.ts'
 
 test('pediatria: recém-nascido nas primeiras 24 horas é pediátrico', () => {
@@ -249,4 +250,15 @@ test('homônimos: mesmo nome (sem acento e caixa) e nascimento marcam as duas li
 test('homônimos: o diferenciador traz prontuário e mãe, ou o responsável', () => {
   assert.equal(diferenciador({ nome: 'X', data_nascimento: null, prontuario: '1', nome_mae: 'Ana' }), 'Prontuário 1 · Mãe: Ana')
   assert.equal(diferenciador({ nome: 'X', data_nascimento: null, prontuario: '2', responsavel_nome: 'Escola' }), 'Prontuário 2 · Responsável: Escola')
+})
+
+test('peso do adulto: 30 a 250 kg calcula; fora disso não; vazio não avisa', () => {
+  assert.equal(lerPesoAdulto(0), 'vazio')
+  assert.equal(lerPesoAdulto(Number.NaN), 'vazio')
+  assert.equal(lerPesoAdulto(29.9), 'fora')
+  assert.equal(lerPesoAdulto(30), 'ok')
+  assert.equal(lerPesoAdulto(75), 'ok')
+  assert.equal(lerPesoAdulto(250), 'ok')
+  assert.equal(lerPesoAdulto(250.1), 'fora')
+  assert.equal(lerPesoAdulto(750), 'fora')
 })
