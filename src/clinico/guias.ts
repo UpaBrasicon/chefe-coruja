@@ -207,7 +207,57 @@ const RCP_NEWS2 = 'RCP 2017, NEWS2'
 const SEM_GRAU_RCP = 'recomendação do grupo de trabalho, sem graduação'
 const PADIS_2018 = 'SCCM PADIS 2018'
 
+// Hematologia e trauma (lote 7, 16/11/2026): ASH 2018 de HIT (PMC6258919), NICE NG232 de TCE
+// (2023), ACR Appropriateness Criteria de TCE e de tornozelo (2020) e J-SSCG 2024 (PMC11907869),
+// textos lidos em 16/11/2026. A ISTH (Wada 2013, Iba 2025) não está aberta; joelho e ISS ficam sem.
+const ASH_HIT = 'ASH 2018, trombocitopenia induzida por heparina'
+const NICE_TCE = 'NICE NG232 (2023), traumatismo craniano'
+const SEM_GRAU_NICE = 'NICE, sem graduação ("fazer"; "considerar" quando a evidência é menor)'
+const ACR_TCE = 'ACR Appropriateness Criteria, traumatismo craniano (2020)'
+const ACR_TORNOZELO = 'ACR Appropriateness Criteria, trauma agudo do tornozelo (2020)'
+const JSSCG = 'J-SSCG 2024, sepse (Japão)'
+
 export const GUIAS: Record<string, Guia> = {
+  '4t-hit': {
+    proximosPassos: [
+      { tema: '4T e imunoensaio', texto: 'Usar o 4T para estimar a probabilidade de HIT, em vez da impressão clínica; com 4T intermediário ou alto, pedir imunoensaio.', ref: { fonte: ASH_HIT, pagina: 'recomendação 2.1', grau: 'forte, certeza moderada' } },
+      { tema: 'Baixa probabilidade: não testar', texto: 'Com 4T de baixa probabilidade, não pedir exame laboratorial de HIT.', ref: { fonte: ASH_HIT, pagina: 'recomendação 2.2', grau: 'forte, certeza moderada' }, faixas: [0] },
+      { tema: 'Baixa probabilidade: não tratar', texto: 'Com 4T de baixa probabilidade, não tratar HIT empiricamente: não suspender a heparina nem iniciar anticoagulante não heparínico.', ref: { fonte: ASH_HIT, pagina: 'recomendação 2.3', grau: 'forte, certeza moderada' }, faixas: [0] },
+      { tema: 'Intermediária: suspender a heparina', texto: 'Com 4T intermediário, suspender a heparina; iniciar anticoagulante não heparínico em intensidade profilática se o risco de sangramento for alto, e em intensidade terapêutica se não for (ou se já houver outra indicação de anticoagulação plena).', ref: { fonte: ASH_HIT, pagina: 'recomendações 2.4 e 2.5', grau: 'forte para suspender; condicional para a intensidade' }, faixas: [1] },
+      { tema: 'Alta: suspender e anticoagular', texto: 'Com 4T alto, suspender a heparina e iniciar anticoagulante não heparínico em intensidade terapêutica.', ref: { fonte: ASH_HIT, pagina: 'recomendação 2.6', grau: 'forte, certeza moderada' }, faixas: [2] },
+      { tema: 'Depois do imunoensaio', texto: 'Imunoensaio negativo: suspender o anticoagulante não heparínico e retomar a heparina, se indicada. Positivo: manter sem heparina, com anticoagulante não heparínico em intensidade terapêutica.', ref: { fonte: ASH_HIT, pagina: 'recomendações 2.7 a 2.10', grau: 'forte, certeza moderada' }, faixas: [1, 2] },
+      { tema: 'HIT aguda: qual anticoagulante', texto: 'Argatroban, bivalirudina, danaparoide, fondaparinux ou anticoagulante oral direto. No paciente grave, com mais risco de sangramento ou de procedimento urgente, argatroban ou bivalirudina podem ser preferidos pelo efeito mais curto; na disfunção hepática moderada ou grave (Child-Pugh B e C), evitar o argatroban ou reduzir a dose.', ref: { fonte: ASH_HIT, pagina: 'recomendação 3.1 e observações', grau: 'condicional, certeza muito baixa' }, faixas: [1, 2] },
+      { tema: 'Sem varfarina, sem plaqueta de rotina', texto: 'Não iniciar antagonista da vitamina K antes da recuperação das plaquetas (em geral 150 × 10⁹/L ou mais). Sem transfusão de plaquetas de rotina no risco de sangramento habitual; pode ser opção no sangramento ativo ou no risco alto.', ref: { fonte: ASH_HIT, pagina: 'recomendações 3.5 e 3.6', grau: 'forte (varfarina); condicional, certeza baixa (plaquetas)' }, faixas: [1, 2] },
+    ],
+    armadilhas: [
+      { texto: 'Se faltar informação, errar para o 4T mais alto. Reavaliar com frequência e recalcular o 4T se o quadro mudar.', ref: { fonte: ASH_HIT, pagina: 'recomendação 2.1, observações', grau: 'sem graduação' } },
+    ],
+  },
+  'civd-isth': {
+    armadilhas: [
+      { texto: 'Na sepse, o escore de CIVD manifesta da ISTH diagnostica a CIVD avançada e prediz a mortalidade; para a CIVD precoce e para decidir o início do tratamento, a diretriz japonesa usa os critérios JAAM-DIC e SIC.', ref: { fonte: JSSCG, pagina: 'CQ5-1', grau: 'informação de contexto, sem graduação' } },
+      { texto: 'Quadros parecidos com CIVD, como microangiopatia trombótica e HIT, exigem diagnóstico diferencial.', ref: { fonte: JSSCG, pagina: 'CQ5-2', grau: 'informação de contexto, sem graduação' } },
+    ],
+  },
+  'canadian-ct-head': {
+    proximosPassos: [
+      { tema: 'Regra negativa', texto: 'No TCE leve (Glasgow 13 a 15) sem indicação de imagem pela regra de decisão clínica, a TC de crânio em geral não é apropriada.', ref: { fonte: ACR_TCE, pagina: 'variante 1', grau: 'em geral não apropriada' }, faixas: [0] },
+      { tema: 'Regra positiva: TC sem contraste', texto: 'Com imagem indicada pela regra de decisão clínica, TC de crânio sem contraste.', ref: { fonte: ACR_TCE, pagina: 'variante 2', grau: 'em geral apropriada' }, faixas: [1, 2] },
+      { tema: 'TC em até 1 hora', texto: 'Em 16 anos ou mais, TC de crânio em até 1 hora se houver: Glasgow de 12 ou menos na avaliação inicial; Glasgow abaixo de 15 duas horas depois do trauma; suspeita de fratura aberta ou com afundamento; sinal de fratura de base; convulsão pós-traumática; déficit neurológico focal; ou mais de 1 episódio de vômito.', ref: { fonte: NICE_TCE, pagina: '1.5.8', grau: SEM_GRAU_NICE }, faixas: [1, 2] },
+      { tema: 'TC em até 8 horas', texto: 'Com perda de consciência ou amnésia, TC em até 8 horas do trauma (ou em até 1 hora se chegou depois de 8 horas) se houver: 65 anos ou mais; sangramento ou distúrbio de coagulação; mecanismo perigoso (pedestre ou ciclista atingido por veículo, ejeção do veículo, queda de mais de 1 m ou 5 degraus); ou mais de 30 minutos de amnésia retrógrada.', ref: { fonte: NICE_TCE, pagina: '1.5.9', grau: SEM_GRAU_NICE }, faixas: [1, 2] },
+      { tema: 'Sem tomógrafo', texto: 'Com indicação de TC num hospital sem tomógrafo, providenciar a transferência para hospital adequado.', ref: { fonte: NICE_TCE, pagina: '1.5.5', grau: SEM_GRAU_NICE }, faixas: [1, 2] },
+      { tema: 'Anticoagulado ou antiagregado', texto: 'Sem outra indicação de TC, mas em uso de anticoagulante (antagonista da vitamina K, anticoagulante oral direto, heparina ou heparina de baixo peso) ou antiagregante (exceto AAS isolado): considerar TC em até 8 horas do trauma, ou em até 1 hora se chegou depois de 8 horas.', ref: { fonte: NICE_TCE, pagina: '1.5.13', grau: SEM_GRAU_NICE } },
+    ],
+  },
+  'ottawa-tornozelo-pe': {
+    proximosPassos: [
+      { tema: 'Regra positiva: radiografia', texto: 'Com a regra de Ottawa positiva, a radiografia do tornozelo é o exame inicial; ultrassom, ressonância, TC e cintilografia em geral não são apropriados.', ref: { fonte: ACR_TORNOZELO, pagina: 'variante 1', grau: 'em geral apropriada' }, faixas: [1] },
+      { tema: 'Regra negativa: sem imagem', texto: 'Com 5 anos ou mais, sem critério de exclusão, andando e sem dor à palpação dos maléolos, do tálus ou do calcâneo, a imagem em geral não é apropriada.', ref: { fonte: ACR_TORNOZELO, pagina: 'variante 2 e resumo', grau: 'em geral não apropriada' }, faixas: [0] },
+    ],
+    armadilhas: [
+      { texto: 'A regra não vale abaixo de 5 anos, na alteração neurológica da perna com sensibilidade diminuída (como no diabético), no sensório alterado ou em quem não consegue se comunicar; nesses casos, a radiografia do tornozelo em geral é apropriada.', ref: { fonte: ACR_TORNOZELO, pagina: 'introdução e variante 3', grau: 'em geral apropriada' } },
+    ],
+  },
   news2: {
     proximosPassos: [
       { tema: 'Total 0 a 4', texto: 'Total 0: sinais vitais pelo menos a cada 12 h. Total 1 a 4: pelo menos a cada 4–6 h; avisar o enfermeiro, que avalia e decide se aumenta a frequência ou escala o cuidado.', ref: { fonte: RCP_NEWS2, pagina: 'Chart 4, p. 39', grau: SEM_GRAU_RCP }, faixas: [0] },
