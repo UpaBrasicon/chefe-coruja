@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { VerMais } from '@/components/plantonista/calc/Evidencias'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -42,6 +43,7 @@ export function LinhaManual({
   errata,
   nota,
   origem = 'O manual traz',
+  recolher,
 }: {
   nome: string
   texto: ReactNode
@@ -51,6 +53,8 @@ export function LinhaManual({
   nota?: string
   /** quem traz a dose: o manual do HC por padrão; outra fonte (PCDT) diz o nome */
   origem?: string
+  /** piloto das calculadoras (C6 = A): nota e errata recolhidas em "Notas do livro" */
+  recolher?: boolean
 }) {
   return (
     <div className="rounded-controle border px-3 py-2 text-apoio">
@@ -59,12 +63,21 @@ export function LinhaManual({
         {conta && <span className="tabular-nums">{conta}</span>}
       </div>
       <p className="text-tinta-sussurro">{origem}: {texto} ({pagina})</p>
-      {nota && <p className="text-tinta-sussurro">{nota}</p>}
-      {errata && (
-        <p className="text-atencao">
-          <Badge variant="warning" className="mr-1">errata</Badge>
-          {errata}
-        </p>
+      {recolher && (nota || errata) ? (
+        <VerMais>
+          {nota && <p>{nota}</p>}
+          {errata && <p className="text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{errata}</p>}
+        </VerMais>
+      ) : (
+        <>
+          {nota && <p className="text-tinta-sussurro">{nota}</p>}
+          {errata && (
+            <p className="text-atencao">
+              <Badge variant="warning" className="mr-1">errata</Badge>
+              {errata}
+            </p>
+          )}
+        </>
       )}
     </div>
   )

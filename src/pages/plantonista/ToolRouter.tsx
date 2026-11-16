@@ -1,9 +1,10 @@
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Suspense } from 'react'
 import { FolderSearch, Star } from 'lucide-react'
 
 import { acharSecao, CHAVES_FERRAMENTAS, secaoExibida } from '@/content/registry'
 import { publicoDaFerramenta } from '@/content/publicoFerramentas'
+import { RELACIONADAS } from '@/content/pilotoCalculadoras'
 import { chaveFerramenta, useFavoritos, useRegistrarUso } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
 import { Trilha, Vazio } from '@/components/monitor/Pagina'
@@ -58,7 +59,33 @@ export function ToolRouter() {
             <Component key={chave} />
           </Suspense>
         )}
+        {!suprimir && <Relacionadas chave={chave} />}
       </div>
     </div>
+  )
+}
+
+/** Ferramentas relacionadas (piloto das calculadoras, F4): no fim da tela. */
+function Relacionadas({ chave }: { chave: string }) {
+  const itens = (RELACIONADAS[chave] ?? [])
+    .map((c) => {
+      const [secaoSlug, slug] = c.split('/')
+      const t = acharSecao(secaoSlug)?.tools.find((x) => x.slug === slug)
+      return t ? { c, rotulo: t.label, descricao: t.description } : null
+    })
+    .filter((x): x is { c: string; rotulo: string; descricao: string } => !!x)
+  if (itens.length === 0) return null
+  return (
+    <nav aria-label="Ferramentas relacionadas" className="mt-8 flex flex-col gap-2 border-t border-fio pt-5">
+      <span className="text-controle font-semibold text-tinta">Relacionadas</span>
+      <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+        {itens.map((i) => (
+          <li key={i.c} className="flex flex-col gap-0.5">
+            <Link to={`/plantonista/${i.c}`} className="text-controle font-medium text-acao underline-offset-4 hover:underline">{i.rotulo}</Link>
+            <span className="text-apoio text-tinta-sussurro">{i.descricao}</span>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }

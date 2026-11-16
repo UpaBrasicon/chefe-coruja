@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 
 import { ehPediatrico, idadeEm, rotuloIdade } from './idade.ts'
 import { lerPesoAdulto } from './pesoAdulto.ts'
+import { lerNumeroDigitado, numeroBr, textoCopia } from './copiaCalculo.ts'
 import { formatarDuracao, nivelDaObservacao, nivelDoTurno, tempoDeTurno } from './plantao.ts'
 
 test('pediatria: recém-nascido nas primeiras 24 horas é pediátrico', () => {
@@ -261,4 +262,34 @@ test('peso do adulto: 30 a 250 kg calcula; fora disso não; vazio não avisa', (
   assert.equal(lerPesoAdulto(250), 'ok')
   assert.equal(lerPesoAdulto(250.1), 'fora')
   assert.equal(lerPesoAdulto(750), 'fora')
+})
+
+test('copiar: ferramenta, dados, resultado, fonte, versão, hora e ressalva; sem dado vazio', () => {
+  const t = textoCopia({
+    ferramenta: 'HEART',
+    dados: [['História', 'moderadamente suspeita'], ['Peso', '']],
+    resultado: ['HEART: 4 de 10 · risco moderado'],
+    fonte: 'Six 2008',
+    versao: '2026-11-14.1',
+    quando: new Date(2026, 10, 16, 9, 5),
+  })
+  assert.equal(t, [
+    'HEART',
+    'Dados: História: moderadamente suspeita',
+    'HEART: 4 de 10 · risco moderado',
+    'Fonte: Six 2008',
+    'Regra versão 2026-11-14.1 · calculado em 16/11/2026 09:05',
+    'Apoio à decisão clínica; conferido pelo médico.',
+  ].join('\n'))
+})
+
+test('campo numérico: vírgula e ponto valem; vazio é 0; lixo é null', () => {
+  assert.equal(lerNumeroDigitado('7,5'), 7.5)
+  assert.equal(lerNumeroDigitado('7.5'), 7.5)
+  assert.equal(lerNumeroDigitado(''), 0)
+  assert.equal(lerNumeroDigitado('70,'), 70)
+  assert.equal(lerNumeroDigitado('7a'), null)
+  assert.equal(lerNumeroDigitado('1,2,3'), null)
+  assert.equal(numeroBr(7.5), '7,5')
+  assert.equal(numeroBr(70), '70')
 })

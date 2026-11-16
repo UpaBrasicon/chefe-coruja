@@ -1,10 +1,15 @@
 import { Activity, ChevronDown, ChevronRight, Droplet, Moon, Search, X, Zap, type LucideIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { INFUSOES_ADULTO, NOTAS_PADIS_2025, concentracao, doseAdulto, fichaInfusoesAdulto, unidadeDose, velocidadeAdulto, type InfusaoAdulto } from '@/clinico/adulto/infusoes'
 import { Chip } from '@/components/monitor/Pagina'
-import { NumberField } from '@/components/plantonista/NumberField'
+import { textoFontes } from '@/clinico/ficha'
+import { CampoPesoAdulto } from '@/components/plantonista/calc/CampoNumero'
+import { usePesoAdulto } from '@/components/plantonista/calc/pacienteNaFerramenta'
+import { VerMais } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -45,7 +50,7 @@ function passoDaFaixa(span: number) {
   return span >= 50 ? 1 : span >= 10 ? 0.5 : span >= 2 ? 0.1 : span >= 0.5 ? 0.05 : 0.01
 }
 
-function Droga({ i, peso }: { i: InfusaoAdulto; peso: number }) {
+function Droga({ i, peso, onLinha }: { i: InfusaoAdulto; peso: number; onLinha: (linha: string | null) => void }) {
   const [min, max] = i.faixa
   const span = max - min
   const passo = passoDaFaixa(span)
@@ -78,12 +83,19 @@ function Droga({ i, peso }: { i: InfusaoAdulto; peso: number }) {
   const corTexto = { critico: 'text-critico', atencao: 'text-atencao', acao: 'text-acao' }[cor]
   const corFundo = { critico: 'bg-critico', atencao: 'bg-atencao', acao: 'bg-acao' }[cor]
 
+  // Linha do "Copiar" (piloto, C4 = A): droga, dose, velocidade e o preparo usado.
+  const linha = !semPeso && vel !== null && Number.isFinite(dose)
+    ? `${i.nome}: ${br(dose, 3)} ${u} = ${br(vel)} mL/h (${servico ? 'diluição do serviço' : 'padrão HC'}, ${br(conc, 2)} ${unConc}; Anexo 1, ${i.pagina})`
+    : null
+  useEffect(() => onLinha(linha), [linha, onLinha])
+  useEffect(() => () => onLinha(null), [onLinha])
+
   return (
     <div className="flex flex-col gap-4 border-t border-fio px-4 py-4">
       <div className="flex flex-col gap-1">
         <p className="text-apoio text-tinta-apoio">{i.preparo}</p>
         <p className="text-apoio text-tinta-apoio">Faixa do livro: <strong className="tabular-nums">{br(min, 3)} a {br(max, 3)} {u}</strong> · Manual HCFMUSP, Anexo 1, {i.pagina}</p>
-        {i.errata && <p className="text-apoio text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{i.errata}</p>}
+        {i.errata && <VerMais rotulo="Errata do livro"><p className="text-apoio"><Badge variant="outline" className="mr-1">errata</Badge>{i.errata}</p></VerMais>}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -152,7 +164,10 @@ function Droga({ i, peso }: { i: InfusaoAdulto; peso: number }) {
 
 /** Infusões contínuas do adulto: porta única com classes, busca e barra de dose. */
 export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
-  const [peso, setPeso] = useState(0)
+  // Peso da Central (C5 = A) e trava da unidade de 30 a 250 kg (RT, 16/11/2026).
+  const pesoAdulto = usePesoAdulto()
+  const { peso, leitura, pesoConta } = pesoAdulto
+  const [linhaCopia, setLinhaCopia] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
   const [aberta, setAberta] = useState<Classe | null>(grupo ?? null)
   const [droga, setDroga] = useState<string | null>(null)
@@ -174,7 +189,7 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
       ficha={fichaInfusoesAdulto}
     >
       <div className="grid gap-4 rounded-container border border-fio bg-card p-4 sm:grid-cols-2">
-        <NumberField id="inf-peso" label="Peso" unit="kg" value={peso} onChange={setPeso} min={0} step={0.1} />
+        <CampoPesoAdulto id="inf-peso" estado={pesoAdulto} />
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="inf-busca">Buscar droga</Label>
           <div className="relative">
@@ -223,7 +238,7 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
                       <span className="text-apoio text-tinta-sussurro tabular-nums">{unidadeDose(i)}</span>
                       <ChevronRight className={cn('size-4 text-tinta-sussurro transition-transform', sel && 'rotate-90')} aria-hidden />
                     </BotaoLinha>
-                    {sel && <Droga i={i} peso={peso} />}
+                    {sel && <Droga i={i} peso={pesoConta} onLinha={setLinhaCopia} />}
                   </div>
                 )
               })}
@@ -238,6 +253,12 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
           )
         })}
       </div>
+      <ResumoFlutuante
+        principal={leitura === 'ok' ? `Adulto · ${numeroBr(peso)} kg` : leitura === 'fora' ? 'Peso fora de 30 a 250 kg' : 'Informe o peso'}
+        detalhe={linhaCopia ?? 'Abra uma droga para calcular a velocidade.'}
+        tom={leitura === 'fora' ? 'critico' : 'neutro'}
+        textoCopia={linhaCopia ? textoCopia({ ferramenta: 'Infusões contínuas — adulto', dados: [['Peso', leitura === 'ok' ? `${numeroBr(peso)} kg` : '']], resultado: [linhaCopia], fonte: textoFontes(fichaInfusoesAdulto), versao: fichaInfusoesAdulto.versao, quando: new Date() }) : undefined}
+      />
     </ToolLayout>
   )
 }

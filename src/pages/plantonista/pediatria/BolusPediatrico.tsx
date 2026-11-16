@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react'
 
 import { BOLUS, GRUPOS, NEONATO_FORA, NOTA_PESO_EMERGENCIA, calcularBolus, fichaBolusPediatrico, type Bolus, type Grupo } from '@/clinico/pediatria/bolus'
 import { IDADE_ADULTO_ANOS } from '@/clinico/ficha'
-import { NumberField } from '@/components/plantonista/NumberField'
+import { textoFontes } from '@/clinico/ficha'
+import { CamposPacientePed } from '@/components/plantonista/calc/CamposPacientePed'
+import { useInicioPedDaCentral } from '@/components/plantonista/calc/pacienteNaFerramenta'
+import { VerMais } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,9 +49,14 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
       {r?.noMaximo && <p className="text-atencao">Dose limitada ao máximo do livro.</p>}
       {r?.abaixoDoAviso && b.aviso && <p className="text-atencao">{b.aviso.texto}</p>}
-      {b.errata && <p className="text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{b.errata}</p>}
-      {b.nota && <p className="text-tinta-sussurro">No livro: {b.nota}</p>}
-      {b.anexo2Adulto && <p className="text-tinta-sussurro">Divergência: {b.anexo2Adulto}</p>}
+      {/* Piloto das calculadoras (C6 = A): errata, nota e divergência recolhidas; os avisos de dose acima ficam à vista. */}
+      {(b.errata || b.nota || b.anexo2Adulto) && (
+        <VerMais>
+          {b.errata && <p><Badge variant="outline" className="mr-1">errata</Badge>{b.errata}</p>}
+          {b.nota && <p>No livro: {b.nota}</p>}
+          {b.anexo2Adulto && <p>Divergência: {b.anexo2Adulto}</p>}
+        </VerMais>
+      )}
       <p className="text-rotulo text-tinta-sussurro">PS Pediatria ICr-HCFMUSP, {b.pagina}.</p>
     </div>
   )
@@ -54,9 +64,11 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
 
 /** Doses pediátricas em bolus por peso (Fase 5.4; fonte em src/clinico/pediatria/fonte.ts). */
 export function BolusPediatrico() {
-  const [peso, setPeso] = useState(0)
-  const [anos, setAnos] = useState(0)
-  const [meses, setMeses] = useState(0)
+  // Peso e idade da Central (C5 = A): abrem preenchidos, com selo, e continuam editáveis.
+  const inicio = useInicioPedDaCentral()
+  const [peso, setPeso] = useState(inicio.peso)
+  const [anos, setAnos] = useState(inicio.anos)
+  const [meses, setMeses] = useState(inicio.meses)
   const [busca, setBusca] = useState('')
   const valido = peso > 0 && peso <= 150
   const idadeInformada = anos > 0 || meses > 0
@@ -69,6 +81,28 @@ export function BolusPediatrico() {
     return (Object.keys(GRUPOS) as Grupo[]).map((g) => ({ g, itens: lista.filter((b) => b.grupo === g) })).filter((x) => x.itens.length)
   }, [busca])
 
+  // Texto do "Copiar" (C3 e C4 = A): a lista que está na tela (com a busca), dose do peso, volume e página.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Doses pediátricas por peso (Apêndice do PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Peso', `${numeroBr(peso)} kg`],
+        ['Idade', idadeInformada ? `${Math.floor(anos)} anos e ${Math.floor(meses)} meses` : ''],
+        ['Busca', busca.trim()],
+      ],
+      resultado: grupos.flatMap(({ g, itens }) => [
+        `${GRUPOS[g]}:`,
+        ...itens.flatMap((b) => {
+          const r = calcularBolus(b, peso, idadeMeses)
+          if (!r || r.aplica === 'nao') return []
+          return [`- ${b.nome}: ${faixaTxt(r.faixa)} ${b.unidade}${r.volumeMl ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ' (no máximo do livro)' : ''} · ${b.via} (${b.pagina})`]
+        }),
+      ]),
+      fonte: textoFontes(fichaBolusPediatrico),
+      versao: fichaBolusPediatrico.versao,
+      quando: new Date(),
+    })
+
   return (
     <ToolLayout
       title="Doses pediátricas por peso"
@@ -76,19 +110,27 @@ export function BolusPediatrico() {
       ficha={fichaBolusPediatrico}
     >
       <Card>
-        <CardContent className="grid gap-4 pt-6 md:grid-cols-4">
-          <NumberField id="ped-peso" label="Peso aferido ou estimado" unit="kg" value={peso} onChange={setPeso} min={0} step={0.1} />
-          <NumberField id="ped-anos" label="Idade" unit="anos completos" value={anos} onChange={setAnos} min={0} max={13} step={1} />
-          <NumberField id="ped-meses" label="e meses" unit="0 a 11" value={meses} onChange={setMeses} min={0} max={11} step={1} />
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="ped-busca" className="text-apoio font-medium">Buscar medicamento</label>
-            <Input id="ped-busca" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="ex.: naloxona, crise" />
-          </div>
-          <p className="text-apoio text-tinta-sussurro md:col-span-4">
+        <CardContent className="flex flex-col gap-4 pt-6">
+          <CamposPacientePed
+            idBase="ped"
+            peso={peso}
+            anos={anos}
+            meses={meses}
+            onPeso={setPeso}
+            onAnos={setAnos}
+            onMeses={setMeses}
+            daCentral={inicio.daCentral}
+          >
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="ped-busca" className="text-apoio font-medium">Buscar medicamento</label>
+              <Input id="ped-busca" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="ex.: naloxona, crise" />
+            </div>
+          </CamposPacientePed>
+          <p className="text-apoio text-tinta-sussurro">
             {NEONATO_FORA} A idade é opcional: só muda o que o livro separa por idade (ex.: midazolam, diazepam, naloxona).
             A dose mostrada é a faixa do livro para o peso; a escolha dentro dela é do profissional.
           </p>
-          <p role="note" className="text-apoio text-tinta-sussurro md:col-span-4">{NOTA_PESO_EMERGENCIA}</p>
+          <p role="note" className="text-apoio text-tinta-sussurro">{NOTA_PESO_EMERGENCIA}</p>
         </CardContent>
       </Card>
 
@@ -114,6 +156,13 @@ export function BolusPediatrico() {
           </CardContent>
         </Card>
       ))}
+      {!adulto && (
+        <ResumoFlutuante
+          principal={valido ? `Criança · ${numeroBr(peso)} kg${idadeInformada ? ` · ${Math.floor(anos)} a ${Math.floor(meses)} m` : ''}` : 'Informe o peso'}
+          detalhe={valido ? 'Doses do peso nas listas acima; "Copiar" leva a lista que está na tela.' : undefined}
+          textoCopia={valido ? copia() : undefined}
+        />
+      )}
     </ToolLayout>
   )
 }

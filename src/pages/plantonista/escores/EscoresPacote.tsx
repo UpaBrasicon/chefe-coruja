@@ -39,6 +39,7 @@ import { sgarbossaModificado } from '@/clinico/escores/sgarbossaModificado'
 import { sofa2 } from '@/clinico/escores/sofa2'
 import { spesi } from '@/clinico/escores/spesi'
 import { twist } from '@/clinico/escores/twist'
+import { Evidencias } from '@/components/plantonista/calc/Evidencias'
 import { EscoreTela } from '@/components/plantonista/EscoreTela'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Bloco } from '../manual/LoteAPecas'
@@ -52,14 +53,15 @@ export const HasBled = () => <EscoreTela escore={hasBled} />
 export const ChildPugh = () => <EscoreTela escore={childPugh} />
 export const Heart = () => (
   <EscoreTela escore={heart}>
-    <Bloco titulo="SBC 2025 — ao lado do manual" descricao="Dor torácica na emergência pela diretriz brasileira de 2025 (classe de recomendação e nível de evidência), lida no texto integral, ao lado do cap. 12 do manual do HC.">
+    {/* Piloto das calculadoras (C6 = A): a comparação com a SBC 2025 sai da frente e fica recolhida. */}
+    <Evidencias titulo="SBC 2025 — ao lado do manual" resumo="Dor torácica na emergência pela diretriz brasileira de 2025 (classe de recomendação e nível de evidência), lida no texto integral, ao lado do cap. 12 do manual do HC.">
       <div className="overflow-x-auto">
         <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
           <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
           <TableBody>{DIRETRIZ_DOR_TORACICA_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
         </Table>
       </div>
-    </Bloco>
+    </Evidencias>
   </EscoreTela>
 )
 export const WellsTvp = () => <EscoreTela escore={wellsTvp} />
