@@ -98,4 +98,9 @@ Guardas feitas com o código novo continuam abrindo com o `abrir-guarda` antigo.
 
 - Estado: `/var/lib/chefe-coruja-guarda/ultima.json` e `historico.jsonl` (sem dado de paciente, sem credencial).
 - Atualizar o código: `git pull` e `docker build …` de novo.
+- **Limpeza de imagens do VPS.** O cron `/etc/cron.d/docker-image-prune` apaga as imagens sem uso há mais de 24 h. A imagem da guarda só fica em uso enquanto a guarda roda (`--rm`), então ela entrava na limpeza. Foi o que aconteceu: a guarda ficou parada de 07/10 a 16/11/2026, e o vigia, que usa a mesma imagem, também falhava sem mandar alerta.
+  - Desde 16/11/2026 a imagem leva a etiqueta `br.com.chefecoruja.manter` (no `Dockerfile`), e o cron pula imagens com essa etiqueta.
+  - Para instalar o cron: `cp infra/guarda/docker-image-prune.cron /etc/cron.d/docker-image-prune`.
+  - Para conferir: `docker image inspect chefe-coruja-guarda --format '{{json .Config.Labels}}'`.
+  - Se a imagem sumir de novo, o journal mostra `Unable to find image 'chefe-coruja-guarda:latest'`. Para voltar, refaça o `docker build`.
 - Trocar a chave: gerar par novo, trocar a pública no VPS. Guardas antigas continuam abrindo com a privada antiga — **não descarte a privada antiga**.
