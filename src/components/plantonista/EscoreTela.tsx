@@ -20,7 +20,9 @@ function Linha({ rotulo, ajuda, rotuloId, opcoesEmLinha, children }: {
 }) {
   return (
     <div className={cn('flex gap-x-4 gap-y-2 border-b border-trilha px-5 py-3 last:border-0', opcoesEmLinha ? 'flex-wrap items-center justify-between' : 'flex-col')}>
-      <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5">
+      {/* A base de 260 px só vale lado a lado (a pergunta divide a linha com as
+          opções). Em coluna ela virava 260 px de altura vazia em cada item. */}
+      <div className={cn('flex min-w-0 flex-col gap-0.5', opcoesEmLinha && 'flex-[1_1_260px]')}>
         <span id={rotuloId} className="text-controle text-tinta">{rotulo}</span>
         {ajuda && <span className="text-apoio text-tinta-sussurro">{ajuda}</span>}
       </div>
