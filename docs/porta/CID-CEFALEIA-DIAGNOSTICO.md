@@ -54,3 +54,29 @@ O R51 sempre vem primeiro quando a palavra é "cefaleia", porque é termo curado
 1. "Cefaleia" e "cefaleia em salvas" não trazem O80.0. "Cefaleia em salvas" traz G44.0, e "dor de cabeça" traz R51 primeiro.
 2. Os 69 termos curados mantêm o primeiro código de hoje.
 3. Teste de banco no CI.
+
+## Decisão do RT e resultado (16/11/2026)
+
+G1 a G3 = A ("Todas A"). Migration `20270414000065_cid_cefaleia.sql`:
+- **G1:** a palavra da descrição precisa começar com a digitada sem as 2 últimas letras (7 letras ou mais) ou sem a última (5 e 6 letras). Palavra de até 4 letras precisa estar inteira.
+- **G2:** três termos novos na lista.
+
+Teste: `supabase/tests/cid_cefaleia.sql`.
+
+**G3, varredura** dos 69 termos da lista e de 54 queixas comuns do PS. Comparei a produção de antes com a homologação depois da mudança.
+- **Corrigido:**
+  - "Cefaleia", "cefaleia em salvas" e "cefaleia tensional" não trazem mais o O80.0;
+  - "cefaleia em salvas" → G44.0;
+  - "cefaleia tensional" → G44.2;
+  - "dor de cabeça" → R51, sem dor torácica nem traumatismo;
+  - "picada de escorpião" não traz mais "Pica do lactente".
+- **Sem mudança no primeiro código:** todos os outros termos da lista e queixas. "Reação alérgica" segue com T78.4 primeiro.
+- **Colisões que a regra de palavras não resolve.** Precisam de um termo na lista (C7). Proposta para o RT:
+
+| Digitado | Hoje | Proposta de termo |
+|---|---|---|
+| crise de pânico | G40.7 e G40.6 (epilepsia), E27.2 (crise addisoniana), D57 (falciforme) | "crise de pânico" → F41.0 Transtorno de pânico |
+| falta de ar | X54.9 Falta de água, X53.9 Falta de alimento, Z59.0 Falta de domicílio | "falta de ar" → R06.0 Dispnéia |
+| parada cardiorrespiratória | I46.9, seguido de V17/V27 (ciclista e motociclista em colisão com objeto parado) | "parada cardiorrespiratória" e "PCR" → I46.9 Parada cardíaca não especificada |
+| vômitos | O21 (vômitos da gravidez) antes de R11 | "vômitos" → R11 Náusea e vômitos |
+| crise hipertensiva | G40.7 (epilepsia) em primeiro | código a escolher pelo RT (ex.: I10 Hipertensão essencial); não incluo sem a decisão |
