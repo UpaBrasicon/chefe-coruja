@@ -11,7 +11,7 @@
 // POST { relatorio: 'notificaveis', unidade_id, de?, ate?, cids? } → text/html (folha 08)
 //   (origem ainda é aceita e ignorada: as folhas não usam mais imagem de fundo)
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
 import { contextoDoBanco, folhaDoRegistro, montarRelatorio, type TipoRelatorio } from '../_shared/folhas.ts'
 import { chavePublica } from '../_shared/chaves.ts'
 import { comRelato, relatarErro } from '../_shared/sentry.ts'

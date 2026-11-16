@@ -7,7 +7,7 @@
 // Secrets (Edge Functions → Secrets): RESEND_API_KEY (= senha SMTP do Resend),
 // EMAIL_FROM (ex.: "Chefe Coruja <nao-responda@chefecoruja.com.br>"),
 // APP_ORIGIN (origem do app p/ CORS). CC_PUBLISHABLE_KEY como nas outras.
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
 
 import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'

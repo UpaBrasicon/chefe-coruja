@@ -24,8 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           cache: npm
@@ -78,6 +78,20 @@ jobs:
       # biblioteca só do master limpo; detector de segredos com os formatos do projeto
       - name: Travas dos scripts (S10)
         run: node --test scripts/ambiente/alvo-seguro.test.mjs scripts/biblioteca-sync.test.mjs scripts/e2e/trava.test.mjs scripts/auditoria-fases/scan-segredos.test.ts
+      # S9 (V2 e V3): import das funções de borda com versão exata, deno.lock em dia,
+      # ações do CI presas por SHA e nenhuma imagem 'latest' de terceiro
+      - name: Versões fixadas (S9)
+        run: node --test scripts/ambiente/versoes-fixadas.test.mjs
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: v2.1.4
+      - name: deno.lock das funções de borda (S9)
+        working-directory: supabase/functions
+        # sem isso o Deno lê o package.json da raiz (o app) e quer pôr as
+        # dependências dele no lock; as funções não usam package.json
+        env:
+          DENO_NO_PACKAGE_JSON: '1'
+        run: deno cache --lock=deno.lock --frozen api/index.ts clinical-search/index.ts enviar-codigo-2fa/index.ts folha/index.ts pedir-demonstracao/index.ts webhooks/index.ts
       # Fase 0, item 14: migration nova não apaga nem renomeia o que a versão anterior usa
       - name: Expand/contract nas migrations
         run: |
@@ -90,11 +104,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
         with:
           # mesma versão do devDependency `supabase` do package.json
           version: 2.102.0
@@ -109,13 +123,13 @@ jobs:
       # Postgres e serviços em chaves separadas: o cache do Postgres já existe.
       - name: Restaurar a imagem do Postgres do cache
         id: cache-postgres
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: /tmp/supabase-postgres.tar
           key: supabase-postgres-17.6.1.131
       - name: Restaurar as imagens do auth e do storage do cache
         id: cache-servicos
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: /tmp/supabase-servicos.tar
           key: supabase-gotrue-v2.189.0-storage-api-v1.60.0
@@ -154,13 +168,13 @@ jobs:
           obter /tmp/supabase-servicos.tar supabase/gotrue:v2.189.0 supabase/storage-api:v1.60.0
       - name: Guardar a imagem do Postgres no cache
         if: steps.cache-postgres.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: /tmp/supabase-postgres.tar
           key: supabase-postgres-17.6.1.131
       - name: Guardar as imagens do auth e do storage no cache
         if: steps.cache-servicos.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: /tmp/supabase-servicos.tar
           key: supabase-gotrue-v2.189.0-storage-api-v1.60.0
@@ -217,8 +231,8 @@ jobs:
       HERMES_ORG_TESTE_ID: 00000000-0000-0000-0000-000000000001
       REDIS_URL: redis://127.0.0.1:6379
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           cache: npm
@@ -241,8 +255,8 @@ jobs:
     # Plugin e vigias do Nous (Python, só stdlib nos testes unitários).
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.13'
       - name: Plugin chefe-coruja

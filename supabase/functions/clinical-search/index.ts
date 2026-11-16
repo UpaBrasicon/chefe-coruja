@@ -14,7 +14,7 @@
 //   deixa uma linha em ia_gateway_log (contagens, tipos e hash, nunca o texto).
 // - Limite: 30 perguntas "ask" por usuário por hora.
 // - Repassa o stream NDJSON da biblioteca sem armazenar a resposta.
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
 
 import { type Conhecido, type Contagem } from '../_shared/desidentificacao.ts'
 import { comCors } from '../_shared/cors.ts'
