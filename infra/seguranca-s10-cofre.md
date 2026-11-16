@@ -67,3 +67,22 @@ A chave dessa conta fica **só com o RT**, no Bitwarden, e nunca vai ao VPS. Os 
 ## Quem faz
 
 Os dois passos são no console da AWS, com a conta do RT. Posso fazer pelo navegador logado do RT, com o ok dele para cada passo, ou o RT faz seguindo esta página. Em nenhum dos dois casos a chave nova passa pelo chat.
+
+## Aplicado em 16/11/2026
+
+- **Conta:** o bucket fica na conta-membro **Chefe-coruja-backup (836503213839)**, não na conta de gerenciamento (267307198728).
+- **Como entrar:** pela tela nova de login da AWS ("Change to new experience"), com o e-mail do RT, escolhendo **"Sign in with Builder ID"**. O console abre na 836503213839 com a função `managed/AccountFullAccessRole`.
+- **O que não funciona** (as SCPs de conta gerenciada da organização proíbem criar funções nas contas-membro):
+  - o login raiz pelo e-mail, que cai sempre na conta de gerenciamento;
+  - a troca de função (`OrganizationAccountAccessRole` não existe);
+  - o portal do IAM Identity Center (sem conjuntos de permissões).
+- **O CloudShell** não abre nessa conta ("verificação da conta em andamento"). Por isso os passos foram feitos pela tela do S3 e do IAM.
+
+**Feito:**
+1. Política do bucket com a declaração `S10NaoSobrescreve` (o bucket não tinha política antes).
+2. Conferência:
+   - a guarda `auto-20261116-1945` gravou com a regra ligada;
+   - um envio pelo console, sem `If-None-Match`, foi recusado ("Acesso negado").
+
+   A criação de pasta pelo console passou, porque o console manda o cabeçalho. Ficou no bucket a pasta vazia `teste-s10-sem-cabecalho/`, travada como o resto.
+3. Usuário IAM `guarda-leitura`, sem acesso ao console, com a política em linha `cofre-somente-leitura`, igual à da seção 2. O RT criou a chave e a guardou no Bitwarden. Ela não passou pelo chat e não vai ao VPS.
