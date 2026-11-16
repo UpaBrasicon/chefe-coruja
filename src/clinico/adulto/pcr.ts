@@ -97,9 +97,9 @@ const PAG_PCR = 'cap. 2 PCR no adulto, p. 48–51 (Tabela 2)'
 
 export const fichaPcrAdulto: Ficha = {
   ...fichaAdulto('adulto-pcr', 'Drogas e desfibrilação na PCR — adulto', PAG_PCR),
-  versao: '2026-11-13.1',
+  versao: '2026-11-16.1',
   fontes: [pagina(PAG_PCR), AHA_ALS_2025, IVIO_2025, PARAMEDIC3_2025, DOSE_VF_2022, BICARBONATO_PCR_IH_2026, ILCOR_COSTR_2026],
-  revisadoEm: '13/11/2026 (CoSTR 2026 do ILCOR: trombolítico e volume de rotina, adrenalina IM, carga do desfibrilador, ventilação; lote 1 da revisão do HCFMUSP, sem mudança de dose); 06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
+  revisadoEm: '16/11/2026 (próximos passos do piloto das calculadoras, com fonte; aguarda aprovação do RT); 13/11/2026 (CoSTR 2026 do ILCOR: trombolítico e volume de rotina, adrenalina IM, carga do desfibrilador, ventilação; lote 1 da revisão do HCFMUSP, sem mudança de dose); 06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
 }
 
 export const CHOQUE_PCR = { monofasicoJ: 360, bifasicoJ: 200, pagina: 'p. 48' }
