@@ -20,15 +20,16 @@ export const ottawaTornozelo: Escore = {
   ficha: {
     id: 'ottawa-tornozelo-pe',
     titulo: 'Regras de Ottawa — tornozelo e pé (adulto)',
-    versao: '2026-10-23.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Stiell IG, Greenberg GH, McKnight RD, et al. Decision rules for the use of radiography in acute ankle injuries. Refinement and prospective validation. JAMA. 1993;269(9):1127–1132 (PMID 8433468).', url: 'https://doi.org/10.1001/jama.269.9.1127' },
       { citacao: 'Bachmann LM, Kolb E, Koller MT, Steurer J, ter Riet G. Accuracy of Ottawa ankle rules to exclude fractures of the ankle and mid-foot: systematic review. BMJ. 2003;326(7386):417 (PMID 12595378): LR− 0,08 no tornozelo e no mediopé.', url: 'https://doi.org/10.1136/bmj.326.7386.417' },
       { citacao: 'Schiper SP, Rodrigues HM, Reis JELE, et al. Implementation of Ottawa ankle rules in university hospital emergency room: pilot study. Acta Ortop Bras. 2023;31(5):e266034 (PMID 37876862), Tabela 1: os critérios.', url: 'https://doi.org/10.1590/1413-785220233105e266034' },
       { citacao: 'Yazdani S, Jahandideh H, Ghofrani H. Validation of the Ottawa Ankle Rules in Iran. BMC Emerg Med. 2006;6:3 (PMID 16480520): as zonas maleolar e do mediopé.', url: 'https://doi.org/10.1186/1471-227X-6-3' },
+      { citacao: 'Smith SE, Chang EY, Ha AS, et al. ACR Appropriateness Criteria Acute Trauma to the Ankle. J Am Coll Radiol. 2020;17(11S):S355–S366 (PMID 33153549). Variantes 1 a 3 e introdução lidas no documento do ACR em 16/11/2026.', url: 'https://doi.org/10.1016/j.jacr.2020.09.014' },
     ],
-    revisadoEm: '23/10/2026 (lacunas da Central, lote 1; critérios conferidos no texto da fonte)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 7 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 23/10/2026 (lacunas da Central, lote 1; critérios conferidos no texto da fonte)',
   },
   descricao: 'Trauma agudo de tornozelo ou pé: duas regras (tornozelo e mediopé), cada uma com a sua zona de dor.',
   itens: [

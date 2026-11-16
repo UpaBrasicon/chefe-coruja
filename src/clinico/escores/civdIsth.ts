@@ -31,17 +31,18 @@ export const civdIsth: Escore = {
   ficha: {
     id: 'civd-isth',
     titulo: 'CIVD manifesta — escore do ISTH',
-    versao: '2026-11-06.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Taylor FB Jr, Toh CH, Hoots WK, et al. Towards definition, clinical and laboratory criteria, and a scoring system for disseminated intravascular coagulation. Thromb Haemost. 2001;86(5):1327–1330.', url: 'https://doi.org/10.1055/s-0037-1616068' },
       { citacao: 'Wada H, Thachil J, Di Nisio M, et al. Guidance for diagnosis and treatment of disseminated intravascular coagulation from harmonization of the recommendations from three guidelines. J Thromb Haemost. 2013;11(4):761–767.', url: 'https://doi.org/10.1111/jth.12155' },
       { citacao: 'Levi M, Scully M. How I treat disseminated intravascular coagulation. Blood. 2018;131(8):845–854.', url: 'https://doi.org/10.1182/blood-2017-10-804096' },
       { citacao: 'UpToDate. Disseminated intravascular coagulation (DIC) in adults: Evaluation and management. (referência de escopo autorizada pelo usuário em 02/09/2026)', url: 'https://www.uptodate.com' },
+      { citacao: 'Shime N, Nakada TA, Yatabe T, et al. The Japanese Clinical Practice Guidelines for Management of Sepsis and Septic Shock 2024. J Intensive Care. 2025;13(1):15 (PMID 40087807; PMC11907869). CQ5-1 e CQ5-2 (CIVD) lidas no PMC em 16/11/2026.', url: 'https://doi.org/10.1186/s40560-025-00776-0' },
       ISTH_CIVD_2025,
       ISTH_CIVD_2025_SEMIN,
     ],
-    revisadoEm: '06/11/2026 (nota da definição ISTH 2025, escore de 2001 mantido; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 7 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota da definição ISTH 2025, escore de 2001 mantido; revisão PubMed, itens médios; porte do protótipo em 27/09/2026)',
   },
   descricao: 'Quatro parâmetros laboratoriais, 0 a 8 pontos, com a doença de base como pré-requisito',
   itens: [
