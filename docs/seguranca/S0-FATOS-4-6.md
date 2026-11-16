@@ -57,4 +57,4 @@ O aceite de convite passou a pedir e-mail confirmado (S2) e tem limite de tentat
 
 ## Estado do S0
 
-Com os fatos 4 e 6, os seis fatos estão conferidos. O S0 fecha com a decisão F6.
+**Decisão do RT (16/11/2026): F6 = A.** O login por PKCE virou o item S12 do BACKLOG (P3, depois do S9). Os seis fatos estão conferidos, e o S0 está concluído.
