@@ -1,3 +1,5 @@
+import { GRUPOS_SECAO } from './gruposSecoes.ts'
+
 // Piloto das calculadoras da Central (diagnóstico em
 // docs/clinico/CALCULADORAS-CENTRAL-DIAGNOSTICO.md; C1–C8 = A e lista
 // aprovada pelo RT em 16/11/2026). As dez ferramentas ganham o modelo novo
@@ -35,4 +37,27 @@ export const RELACIONADAS: Record<string, string[]> = {
   'emergencias/pcr-adulto': ['emergencias/pos-pcr-adulto', 'emergencias/taquiarritmias-adulto', 'emergencias/bradicardia-adulto', 'calculadoras/iot'],
   'pediatria/bolus': ['pediatria/infusoes', 'pediatria/rcp-pediatrica', 'pediatria/via-aerea'],
   'pediatria/desidratacao-diarreia-ped': ['pediatria/fluidoterapia-manutencao-ped', 'pediatria/sodio-ped', 'pediatria/eletrolitos-ped'],
+}
+
+// ---------------------------------------------------------------- lote 2 (RT, 16/11/2026)
+
+/**
+ * Seções inteiras já no modelo novo (resumo flutuante, abas, Central). Lote 2:
+ * os 50 escores. O EscoreTela liga o modelo pela seção do endereço.
+ */
+export const SECOES_NO_MODELO = new Set(['escores'])
+
+/**
+ * Relacionadas: a lista escolhida à mão (RELACIONADAS) ou, nas seções do
+ * modelo, até 3 vizinhas do mesmo grupo da seção (gruposSecoes.ts).
+ */
+export function relacionadasDe(chave: string): string[] {
+  if (RELACIONADAS[chave]) return RELACIONADAS[chave]
+  const [secao, slug] = chave.split('/')
+  if (!SECOES_NO_MODELO.has(secao)) return []
+  const grupo = (GRUPOS_SECAO[secao] ?? []).find((g) => g.slugs.includes(slug))
+  if (!grupo) return []
+  const i = grupo.slugs.indexOf(slug)
+  const vizinhas = [...grupo.slugs.slice(i + 1), ...grupo.slugs.slice(0, i)].slice(0, 3)
+  return vizinhas.map((s) => `${secao}/${s}`)
 }
