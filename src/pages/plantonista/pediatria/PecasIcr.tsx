@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 import { SEM_VALOR_NEONATAL } from '@/clinico/pediatria/fonteIcr'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { VerMais } from '@/components/plantonista/calc/Evidencias'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -65,7 +66,9 @@ export function Bloco({ titulo, descricao, children }: { titulo: string; descric
 }
 
 /** Uma linha: o que o livro traz, a conta para o peso (quando há) e a página. */
-export function LinhaLivro({ nome, texto, conta, pagina, errata, nota }: { nome: string; texto: ReactNode; conta?: ReactNode; pagina: string; errata?: string; nota?: string }) {
+export function LinhaLivro({ nome, texto, conta, pagina, errata, nota, recolher }: { nome: string; texto: ReactNode; conta?: ReactNode; pagina: string; errata?: string; nota?: string
+  /** piloto das calculadoras (C6 = A): nota e errata recolhidas em "Notas do livro" */
+  recolher?: boolean }) {
   return (
     <div className="rounded-controle border px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -75,8 +78,17 @@ export function LinhaLivro({ nome, texto, conta, pagina, errata, nota }: { nome:
       <p className="text-tinta-sussurro">
         O livro traz: {texto} ({pagina})
       </p>
-      {nota && <p className="text-tinta-sussurro">{nota}</p>}
-      {errata && <Errata texto={errata} />}
+      {recolher && (nota || errata) ? (
+        <VerMais>
+          {nota && <p>{nota}</p>}
+          {errata && <Errata texto={errata} />}
+        </VerMais>
+      ) : (
+        <>
+          {nota && <p className="text-tinta-sussurro">{nota}</p>}
+          {errata && <Errata texto={errata} />}
+        </>
+      )}
     </div>
   )
 }

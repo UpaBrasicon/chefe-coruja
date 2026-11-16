@@ -4,15 +4,22 @@ import {
   CLASSE_TEXTO, ESCALA_CLINICA, GRAU_PESO_TEXTO, NOTA_ESCALA, NOTA_PLANO_A_IDADE, NOTA_PLANO_C, NOTA_ZINCO, classificarEscore, fichaDesidratacaoPed, grauPorPeso, ondansetronaMg,
   planoA, planoB, planoC, racecadotrilaMgDose, zincoMgDia,
 } from '@/clinico/pediatria/diarreia'
-import { NumberField } from '@/components/plantonista/NumberField'
+import { textoFontes } from '@/clinico/ficha'
+import { CampoNumero } from '@/components/plantonista/calc/CampoNumero'
+import { CamposPacientePed } from '@/components/plantonista/calc/CamposPacientePed'
+import { useInicioPedDaCentral } from '@/components/plantonista/calc/pacienteNaFerramenta'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { Card, CardContent } from '@/components/ui/card'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
-import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, podeCalcular } from './formatoIcr'
-import { Bloco, CampoPaciente, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
+import { br, faixaBr, idadeAnos, idadePediatrica, podeCalcular, type Paciente } from './formatoIcr'
+import { Bloco, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
 
-/** Diarreia aguda: escala de desidratação e planos A, B e C — cap. 32 do Pronto-Socorro ICr-HCFMUSP. */
+/** Diarreia aguda: escala de desidratação e planos A, B e C — cap. 32 do Pronto-Socorro ICr-HCFMUSP. Piloto das calculadoras. */
 export function DesidratacaoDiarreiaPed() {
-  const [p, setP] = useState(PACIENTE_VAZIO)
+  const inicio = useInicioPedDaCentral()
+  const [p, setP] = useState<Paciente>({ peso: inicio.peso, anos: inicio.anos, meses: inicio.meses, rn: false })
   const [pontos, setPontos] = useState<number[]>(ESCALA_CLINICA.map(() => 0))
   const [pesoAnterior, setPesoAnterior] = useState(0)
   const idade = idadeAnos(p.anos, p.meses)
@@ -24,15 +31,60 @@ export function DesidratacaoDiarreiaPed() {
   const c = calc ? planoC(p.peso) : null
   const zinco = zincoMgDia(idade * 12)
 
+  // Texto do "Copiar" (C4 = A): dados, escala, planos e medicações com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Diarreia aguda — desidratação e planos de hidratação',
+      dados: [
+        ['Peso', `${numeroBr(p.peso)} kg`],
+        ['Idade', `${p.anos} anos e ${p.meses} meses`],
+        ['Peso antes da doença', pesoAnterior > 0 ? `${numeroBr(pesoAnterior)} kg` : ''],
+      ],
+      resultado: [
+        ...(escore ? [`Escala clínica: ${escore.escore} — ${CLASSE_TEXTO[escore.classe]}`] : []),
+        ...(grau ? [`Peso perdido: ${br(grau.perdaPct)}%${grau.grau ? ` — ${GRAU_PESO_TEXTO[grau.grau]}` : ''}`] : []),
+        ...(a ? [`Plano A: ${a.faixaMl ? `${faixaBr(a.faixaMl, 0)} mL por evacuação` : 'volume livre'} (p. 330)`] : []),
+        ...(b ? [`Plano B: SRO ${br(b.totalMl, 0)} mL em 4 h (≈ ${br(b.mlH, 0)} mL/h) (p. 330)`] : []),
+        ...(c
+          ? [
+              `Plano C (ESPGHAN): ${br(c.espghan.mlH, 0)} mL/h (${faixaBr(c.espghan.totalMl, 0)} mL) (p. 330)`,
+              `Plano C (OMS): ${br(c.oms.totalMl, 0)} mL (${faixaBr(c.oms.mlH, 0)} mL/h) (p. 330)`,
+            ]
+          : []),
+        `Ondansetrona: ${br(ondansetronaMg(p.peso), 2)} mg (p. 331)`,
+        `Zinco: ${zinco === null ? '— (6 meses exatos: o livro não escolhe dose)' : `${zinco} mg/dia`} (p. 331)`,
+        `Racecadotrila: ${br(racecadotrilaMgDose(p.peso), 1)} mg/dose (p. 331)`,
+      ],
+      fonte: textoFontes(fichaDesidratacaoPed),
+      versao: fichaDesidratacaoPed.versao,
+      quando: new Date(),
+    })
+
   return (
     <ToolLayout
       title="Diarreia aguda — desidratação e planos de hidratação"
       description="Escala clínica de desidratação, grau pelo peso perdido e volumes dos planos A, B e C pelo livro do ICr-HCFMUSP. Pediatria: até antes dos 14 anos."
       ficha={fichaDesidratacaoPed}
     >
-      <CampoPaciente id="diar" p={p} onChange={setP}>
-        <NumberField id="diar-peso-ant" label="Peso antes da doença (opcional)" unit="kg" value={pesoAnterior} onChange={setPesoAnterior} step={0.1} />
-      </CampoPaciente>
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-6">
+          <CamposPacientePed
+            idBase="diar"
+            peso={p.peso}
+            anos={p.anos}
+            meses={p.meses}
+            onPeso={(peso) => setP({ ...p, peso })}
+            onAnos={(anos) => setP({ ...p, anos })}
+            onMeses={(meses) => setP({ ...p, meses })}
+            daCentral={inicio.daCentral}
+            rn={p.rn}
+            onRn={(rn) => setP({ ...p, rn })}
+          >
+            <CampoNumero id="diar-peso-ant" rotulo="Peso antes da doença (opcional)" unidade="kg" valor={pesoAnterior} onChange={setPesoAnterior} />
+          </CamposPacientePed>
+          {!idadePediatrica(p.anos, p.meses) && <p className="text-apoio text-atencao">A partir dos 14 anos completos é adulto: esta ferramenta é pediátrica.</p>}
+        </CardContent>
+      </Card>
 
       <Bloco titulo="Escala de desidratação clínica (Tabela 1, p. 329)" descricao={NOTA_ESCALA}>
         {ESCALA_CLINICA.map((item, i) => (
@@ -67,6 +119,7 @@ export function DesidratacaoDiarreiaPed() {
           conta={a ? <strong>{a.faixaMl ? `${faixaBr(a.faixaMl, 0)} mL por evacuação` : 'volume livre'}</strong> : undefined}
           pagina="p. 330"
           nota={NOTA_PLANO_A_IDADE}
+          recolher
         />
         {b && (
           <LinhaLivro
@@ -108,6 +161,11 @@ export function DesidratacaoDiarreiaPed() {
           <LinhaLivro nome="Racecadotrila" texto="1,5 mg/kg três vezes ao dia enquanto houver diarreia" conta={<strong>{br(racecadotrilaMgDose(p.peso), 1)} mg/dose</strong>} pagina="p. 331" />
         </Bloco>
       )}
+      <ResumoFlutuante
+        principal={escore ? `Escore ${escore.escore}: ${CLASSE_TEXTO[escore.classe]}` : calc ? `Criança · ${numeroBr(p.peso)} kg` : 'Informe peso e idade'}
+        detalhe={calc ? 'Volumes dos planos e doses nas listas acima; "Copiar" leva todos.' : undefined}
+        textoCopia={calc ? copia() : undefined}
+      />
     </ToolLayout>
   )
 }

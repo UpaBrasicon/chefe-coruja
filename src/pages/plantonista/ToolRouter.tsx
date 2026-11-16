@@ -4,6 +4,8 @@ import { FolderSearch, Star } from 'lucide-react'
 
 import { acharSecao, CHAVES_FERRAMENTAS, secaoExibida } from '@/content/registry'
 import { publicoDaFerramenta } from '@/content/publicoFerramentas'
+import { RELACIONADAS } from '@/content/pilotoCalculadoras'
+import { RelacionadasContexto } from '@/components/plantonista/calc/contexto'
 import { chaveFerramenta, useFavoritos, useRegistrarUso } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
 import { Trilha, Vazio } from '@/components/monitor/Pagina'
@@ -25,6 +27,12 @@ export function ToolRouter() {
   const { suprimir } = useModoNaFerramenta(publico)
 
   useRegistrarUso(chave)
+  // Relacionadas (piloto das calculadoras, F4): o ToolLayout desenha na coluna da direita.
+  const relacionadas = (chave ? RELACIONADAS[chave] ?? [] : []).flatMap((c) => {
+    const [secaoSlug, slug] = c.split('/')
+    const t = acharSecao(secaoSlug)?.tools.find((x) => x.slug === slug)
+    return t ? [{ to: `/plantonista/${c}`, rotulo: t.label, descricao: t.description }] : []
+  })
 
   if (!secao || !def || !chave) {
     return <Vazio icone={FolderSearch} titulo="Ferramenta não encontrada" texto="O endereço não corresponde a nenhuma ferramenta da Central." />
@@ -52,11 +60,13 @@ export function ToolRouter() {
         </div>
         <FaixaModo publico={publico} />
         {!suprimir && (
+          <RelacionadasContexto.Provider value={relacionadas}>
           <Suspense fallback={<div className="flex h-40 items-center justify-center"><Spinner /></div>}>
             {/* Estado de resposta por ferramenta: a chave remonta o formulário, e
                 as respostas de um escore não vazam para o próximo (telas/20). */}
             <Component key={chave} />
           </Suspense>
+          </RelacionadasContexto.Provider>
         )}
       </div>
     </div>

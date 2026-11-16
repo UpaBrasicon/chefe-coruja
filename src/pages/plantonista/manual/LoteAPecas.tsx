@@ -4,11 +4,23 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { VerMais } from '@/components/plantonista/calc/Evidencias'
 
 // Peças comuns das telas do lote A: trecho do livro com página e errata,
 // escolha por botões, bloco de resultado e alertas.
 
-export function Trecho({ texto, pagina, errata }: { texto: string; pagina: string; errata?: string }) {
+export function Trecho({ texto, pagina, errata, recolher }: { texto: string; pagina: string; errata?: string
+  /** piloto das calculadoras (C6 = A): errata recolhida em "Notas do livro" */
+  recolher?: boolean }) {
+  // Com a errata recolhida, o trecho vira div: <details> não pode ficar dentro de <p>.
+  if (errata && recolher) {
+    return (
+      <div className="text-apoio">
+        <p>{texto} <span className="text-tinta-sussurro">(Manual HCFMUSP, {pagina})</span></p>
+        <VerMais rotulo="Errata do livro"><p>{errata}</p></VerMais>
+      </div>
+    )
+  }
   return (
     <p className="text-apoio">
       {texto} <span className="text-tinta-sussurro">(Manual HCFMUSP, {pagina})</span>

@@ -36,7 +36,7 @@ export const heart: Escore = {
   ficha: {
     id: 'heart',
     titulo: 'HEART — dor torácica no pronto-socorro',
-    versao: '2026-11-14.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Six AJ, Backus BE, Kelder JC. Chest pain in the emergency room: value of the HEART score. Neth Heart J. 2008;16(6):191–196.', url: 'https://doi.org/10.1007/BF03086144' },
@@ -44,7 +44,7 @@ export const heart: Escore = {
       { citacao: 'Byrne RA, Rossello X, Coughlan JJ, et al. 2023 ESC Guidelines for the management of acute coronary syndromes. Eur Heart J. 2023;44(38):3720–3826.', url: 'https://doi.org/10.1093/eurheartj/ehad191' },
       SBC_DOR_TORACICA_2025,
     ],
-    revisadoEm: '14/11/2026 (diretriz brasileira de dor torácica 2025 lida no texto integral, ao lado do manual do HC, cap. 12; lote 6 da revisão do HCFMUSP; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3)',
+    revisadoEm: '16/11/2026 (próximos passos, armadilhas e evidências do piloto das calculadoras, com fonte; aguarda aprovação do RT); 14/11/2026 (diretriz brasileira de dor torácica 2025 lida no texto integral, ao lado do manual do HC, cap. 12; lote 6 da revisão do HCFMUSP; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3)',
   },
   descricao: 'Risco de evento cardíaco maior em 6 semanas',
   itens: [

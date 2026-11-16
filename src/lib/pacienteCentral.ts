@@ -32,6 +32,18 @@ export function alterarPaciente(patch: Partial<Omit<EstadoPaciente, 'modo'>>) {
   avisar()
 }
 
+/**
+ * O paciente da Central agora, fora do React (estado inicial das ferramentas
+ * do piloto das calculadoras: C5 = A, RT em 16/11/2026). Só devolve peso e
+ * idade quando o modo é o esperado pela ferramenta; com outro modo, ou sem
+ * modo, nada vem da Central.
+ */
+export function pacienteDaCentral(modoEsperado: 'adulto' | 'pediatrico') {
+  const leitura = lerPaciente(estado)
+  if (estado.modo !== modoEsperado) return { pesoKg: null, idade: null, unidadeIdade: estado.unidadeIdade }
+  return { pesoKg: leitura.pesoKg, idade: leitura.idade, unidadeIdade: estado.unidadeIdade }
+}
+
 export function usePacienteCentral() {
   const p = useSyncExternalStore(assinar, () => estado, () => estado)
   return { ...p, leitura: lerPaciente(p) }
