@@ -323,6 +323,10 @@ export default function App() {
                       </Route>
 
                       {/* Atendimento médico da porta: SOAP, reclassificação e desfecho */}
+                      {/* U6, PR 2 (percurso da UBS): o consultório de enfermagem é a mesma tela, com as fichas da enfermagem */}
+                      <Route element={<RequireRole papeis={['enfermeiro']} />}>
+                        <Route path="/consultorio-enfermagem" element={<AtendimentoPorta />} />
+                      </Route>
                       <Route element={<RequireRole papeis={['plantonista']} />}>
                         <Route path="/atendimento" element={<AtendimentoPorta />} />
                         {/* PEP: rascunhos a emitir, impeditivos de alta e cópia do prontuário (onda 6) */}
