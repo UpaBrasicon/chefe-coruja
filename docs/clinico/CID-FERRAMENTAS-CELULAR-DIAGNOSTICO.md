@@ -9,7 +9,7 @@ Decisões do RT na mesma conversa:
 - os dois pedidos viram **um item só**;
 - o item entra **antes das trilhas LG (obrigatórios legais) e SP (sepse)**.
 
-Este documento é só diagnóstico. Nada de código até o RT decidir CF1 a CF9.
+**Decisões do RT em 17/11/2026:** CF1 a CF9 = A ("Todas A"). O ABCD2 entra só no G45 (AIT), seguindo a fonte. Começa pela F1.
 
 ## 1. Como está hoje
 
