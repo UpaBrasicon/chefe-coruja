@@ -10403,6 +10403,7 @@ export type Database = {
           p_origem_episodio?: string
           p_paciente: string
           p_perfil: string
+          p_servico?: string
           p_tipo_atendimento?: string
           p_unidade: string
         }
