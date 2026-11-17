@@ -13,7 +13,7 @@ O que já está decidido:
   - pode ser desligado por unidade;
   - testes.
 
-Este documento é só diagnóstico. Nada de código até o RT decidir AV1 a AV8.
+**Decisão do RT em 17/11/2026:** AV1 a AV8 = A ("Todas A"). Começa pela migration (função compartilhada, RPC e tabela de registro), com o teste de regressão do alerta da internação, na homologação.
 
 ## 1. Como está hoje
 
