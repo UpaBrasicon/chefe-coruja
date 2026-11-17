@@ -12,7 +12,8 @@ test('topo: toda frase das abas tem fonte, e o resumo é uma frase só', () => {
       assert.ok(i.texto.length > 10, id)
       assert.ok(i.ref.fonte.length > 3, id)
     }
-    if (t.resumo) assert.equal(t.resumo.split('. ').length, 1, `${id}: resumo com mais de uma frase`)
+    // frase nova = ponto seguido de maiúscula ("cap. 37" e "p. 12" não contam)
+    if (t.resumo) assert.equal(t.resumo.split(/\.\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇ])/).length, 1, `${id}: resumo com mais de uma frase`)
   }
 })
 
