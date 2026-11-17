@@ -92,7 +92,12 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   const painel = usePainelPS(ep.id, aberto)
   const alergias = useAlergias(ep.paciente_id)
 
-  const unidadeJanela = useUnidade().unidadeAtiva?.unidade_id
+  const { unidadeAtiva: unidadeJanelaAtiva, papelAtivo } = useUnidade()
+  const unidadeJanela = unidadeJanelaAtiva?.unidade_id
+  // U6, PR 3 (percurso da UBS): consulta de enfermagem. O enfermeiro registra o
+  // SOAP, as alergias, a avaliação do crescimento e a conduta; prescrição,
+  // exames, documentos médicos e envio ficam com o médico (P1 e P2 em PR próprio)
+  const consultaEnfermagem = !!ep.tipo_atendimento_aps && papelAtivo === 'enfermeiro'
   const [verHistorico, setVerHistorico] = React.useState(false)
   const [aba, setAba] = React.useState<Aba>(ep.reavaliar_em ? 'reav' : 'atend')
   const [erro, setErro] = React.useState<string | null>(null)
@@ -197,7 +202,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     { k: 'fim', rotulo: 'Desfecho' },
     { k: 'conduta', rotulo: 'Conduta' },
   ]
-  const abas = todas.filter((a) => (ubs ? !['reav', 'proc', 'fim'].includes(a.k) : a.k !== 'conduta'))
+  const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'conduta'].includes(a.k)
+    : ubs ? !['reav', 'proc', 'fim'].includes(a.k) : a.k !== 'conduta'))
 
   return (
     <div className="flex flex-col overflow-hidden rounded-cartao border border-fio bg-campo">
