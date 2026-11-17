@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 
 import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, cartaoDoGuia, type IconeGuia } from '@/content/guiaRapido'
+import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -164,7 +165,11 @@ function InicioDoGuia() {
   const cartoes = crianca ? GUIA_CRIANCA : GUIA_ADULTO
   return (
     <div className="flex flex-col gap-4">
-      <TituloPagina titulo="Guia rápido" className="mb-0" />
+      <TituloPagina
+        titulo="Guia rápido"
+        descricao={<Link to={ROTA_SOBRE_MODULO} className="text-acao underline-offset-4 hover:underline">Sobre o módulo clínico</Link>}
+        className="mb-0"
+      />
       <Chave />
       {p.modo ? (
         <div className="grid grid-cols-2 gap-2.5">
