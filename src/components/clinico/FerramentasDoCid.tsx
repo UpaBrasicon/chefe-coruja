@@ -34,22 +34,22 @@ export function FerramentasDoCid({ cids, faixa, pacienteId, nascimento, classNam
   const lista = ferramentasDosCids(cids, faixa)
   if (lista.length === 0) return null
   return (
-    <div role="group" aria-label="Ferramentas para este CID" className={cn('flex flex-col gap-1.5', className)}>
-      <span className="flex items-center gap-1.5 text-rotulo font-semibold text-tinta">
-        <Calculator className="size-3.5" aria-hidden /> Ferramentas para este CID
+    <div role="group" aria-label="Ferramentas para este CID" className={cn('flex flex-col gap-2 rounded-cartao border border-fio-forte bg-superficie p-3', className)}>
+      <span className="flex items-center gap-1.5 text-controle font-semibold text-tinta">
+        <Calculator className="size-4" aria-hidden /> Ferramentas para este CID
       </span>
       <div className="flex flex-wrap gap-1.5">
         {lista.map((f) => {
           const rotulo = rotuloDaRota(f.rota)
           return (
-            <Button key={f.ficha} type="button" size="xs" variant="outline" className="max-w-full"
+            <Button key={f.ficha} type="button" size="sm" variant="outline" className="max-w-full border-fio-forte font-medium text-tinta"
               title={`Ferramenta ligada ao CID ${f.cid}`} onClick={() => setAberta({ rota: f.rota, rotulo })}>
               <span className="truncate">{rotulo}</span>
             </Button>
           )
         })}
       </div>
-      <span className="text-rotulo text-tinta-sussurro">{ROTULO_BLOCO_CID}</span>
+      <span className="text-rotulo text-tinta-apoio">{ROTULO_BLOCO_CID}</span>
       <JanelaFerramenta key={aberta?.rota ?? ''} ferramenta={aberta} pacienteId={pacienteId} nascimento={nascimento} faixa={faixa}
         aoFechar={() => setAberta(null)} />
     </div>
