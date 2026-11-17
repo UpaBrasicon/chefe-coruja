@@ -2,6 +2,8 @@
 
 Trilha de obrigatórios legais e regulatórios, item LG6 (P0). É a maior exposição legal da trilha: texto escrito por profissional de saúde vai a um provedor de IA fora do Brasil, sem contrato de transferência internacional.
 
+**Decisão do RT, 17/11/2026: "Todas A"** (I1 a I5). A implementação segue em PRs próprios.
+
 **Não é parecer jurídico.** É o mapa técnico para o RT decidir e para o advogado confirmar a leitura da norma. Este documento não muda código nem banco.
 
 ## Como é hoje
