@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
+import { formatarDuracao } from '@/domain/plantao'
 import { supabase } from '@/lib/supabase'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { soDigitos } from '@/lib/documentos'
@@ -107,7 +108,7 @@ function maiorEspera(itens: NaFila[], agora: number): string {
   if (!esperando.length) return '—'
   const desde = Math.min(...esperando.map((e) => new Date(e.etapa === 'atendimento' ? (e.classificado_em ?? e.chegada_em) : e.chegada_em).getTime()))
   const min = Math.max(0, Math.round((agora - desde) / 60_000))
-  return min < 60 ? `${min} min` : `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}`
+  return formatarDuracao(min)
 }
 
 /** Quem da fila médica, ainda sem atendimento, já passou do alvo da cor. */

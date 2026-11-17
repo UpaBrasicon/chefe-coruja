@@ -1,3 +1,4 @@
+import { formatarDuracao } from '@/domain/plantao'
 import { ALVO_MIN, type CorRisco } from '@/domain/risco'
 import { dataIso, diaMesHora, hora as horaFmt } from '@/lib/formato'
 
@@ -39,6 +40,8 @@ export const ehFeminino = (ep: NaFila) => /^f/i.test(ep.paciente?.sexo ?? '')
 
 /** Minutos desde a chegada (a espera da triagem conta da ficha da recepção). */
 export const esperaMin = (chegada: string, agora = Date.now()) => Math.max(0, Math.round((agora - new Date(chegada).getTime()) / 60_000))
+/** A espera escrita como nas outras filas: "45 min", "3h20", "2 dias e 4h" (U2). */
+export const esperaTexto = (chegada: string, agora = Date.now()) => formatarDuracao(esperaMin(chegada, agora))
 
 /** Chave da sala no aparelho — a mesma que BotaoChamar (components/porta/Chamada.tsx) lê. */
 export const chaveSala = (setor: string) => `cc-sala:${setor}:triagem`
