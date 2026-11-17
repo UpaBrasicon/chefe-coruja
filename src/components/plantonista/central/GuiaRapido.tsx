@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { useId } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
-  Baby, Brain, Bug, Calculator, ChevronRight, Droplet, HandHeart, Heart, HeartPulse, Moon, Syringe, Thermometer,
+  ArrowLeft, Baby, Brain, Bug, Calculator, ChevronRight, Droplet, HandHeart, Heart, HeartPulse, Moon, Syringe, Thermometer,
   TriangleAlert, User, Waves, Wind, type LucideIcon,
 } from 'lucide-react'
 
-import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, type IconeGuia } from '@/content/guiaRapido'
+import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, cartaoDoGuia, type IconeGuia } from '@/content/guiaRapido'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -67,7 +67,37 @@ function CampoGrande({ id, rotulo, valor, unidade, aoMudar, modo }: {
   )
 }
 
+// Cartão que junta ferramentas (ex.: parada e reanimação na criança): a lista delas.
+function GrupoDoGuia({ grupo }: { grupo: NonNullable<ReturnType<typeof cartaoDoGuia>> }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Link to="/plantonista" className="flex min-h-11 items-center gap-2 self-start text-controle font-semibold text-acao no-underline">
+        <ArrowLeft className="size-5" aria-hidden /> Guia rápido
+      </Link>
+      <TituloPagina titulo={grupo.nome} className="mb-0" />
+      <ul className="flex flex-col gap-3">
+        {grupo.itens.map((i) => (
+          <li key={i.rota}>
+            <Link to={i.rota}
+              className="flex min-h-16 items-center gap-3 rounded-cartao border border-fio-forte bg-superficie px-4 py-3 text-corpo font-semibold text-tinta no-underline hover:border-acao">
+              <span className="flex-1">{i.nome}</span>
+              <ChevronRight className="size-5 text-tinta-apoio" aria-hidden />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export function GuiaRapido() {
+  const [params] = useSearchParams()
+  const grupo = cartaoDoGuia(params.get('guia'))
+  if (grupo) return <GrupoDoGuia grupo={grupo} />
+  return <InicioDoGuia />
+}
+
+function InicioDoGuia() {
   const p = usePacienteCentral()
   const idPeso = useId()
   const idIdade = useId()
@@ -120,8 +150,8 @@ export function GuiaRapido() {
         {cartoes.map((c) => {
           const Icone = ICONES[c.icone]
           return (
-            <li key={c.rota}>
-              <Link to={c.rota}
+            <li key={c.nome}>
+              <Link to={'rota' in c ? c.rota : `/plantonista?guia=${c.id}`}
                 className="flex min-h-27 flex-col justify-between gap-3.5 rounded-cartao border border-fio-forte bg-superficie p-3.5 text-tinta no-underline hover:border-acao">
                 <span className={cn('flex size-10 items-center justify-center rounded-container', crianca ? 'bg-pediatria/10 text-pediatria' : 'bg-alerta-marca text-acao')}>
                   <Icone className="size-5.5" aria-hidden />
