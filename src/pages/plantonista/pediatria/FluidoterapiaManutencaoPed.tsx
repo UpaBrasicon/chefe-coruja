@@ -4,16 +4,46 @@ import {
   CATEGORIAS_FIGURA1, ERRATA_FAIXAS_HOLLIDAY, ERRATA_TABELAS_SOLUCOES, MAX_ML_H, SOLUCOES_PADRAO, TABELA_SOLUCOES, composicao, expansaoMl, fichaManutencaoPed, manutencao,
   volumeCategoria,
 } from '@/clinico/pediatria/manutencao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, podeCalcular } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Pendencia } from './PecasIcr'
+import { Bloco, CampoPaciente, LinhaLivro, Nota, Pendencia } from './PecasIcr'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /** Fluidoterapia de manutenção pediátrica — cap. 77 do Pronto-Socorro ICr-HCFMUSP. */
 export function FluidoterapiaManutencaoPed() {
   const [p, setP] = useState(PACIENTE_VAZIO)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaManutencaoPed.id)
   const m = podeCalcular(p) ? manutencao(p.peso) : null
+
+  // Texto do "Copiar" (C4 = A): Holliday-Segar, regra prática, expansão e as categorias da Figura 1, com a página.
+  const copia = () =>
+    m &&
+    textoCopia({
+      ferramenta: 'Fluidoterapia de manutenção — criança',
+      dados: [
+        ['Peso', `${numeroBr(p.peso)} kg`],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+      ],
+      resultado: [
+        `Holliday-Segar: ${br(m.mlDia, 0)} mL/dia → ${br(m.mlHCalculado)} mL/h${m.mlHCalculado > MAX_ML_H ? ` → ${MAX_ML_H} mL/h (teto)` : ''} (Livro ICr, p. 840–841)`,
+        `Regra prática: ${br(m.praticaMlH)} mL/h (Livro ICr, p. 840–841)`,
+        ...(m.noTeto ? [`Cálculo acima de ${MAX_ML_H} mL/h: o livro limita a velocidade em ${MAX_ML_H} mL/h.`] : []),
+        `Depleção de volume ou hipoperfusão: ${br(expansaoMl(p.peso), 0)} mL (20 mL/kg de soro isotônico, repetindo até perfusão adequada) (Figura 1, p. 842)`,
+        ...CATEGORIAS_FIGURA1.map((c) => `${c.grupo} (${faixaBr([c.fracao[0] * 100, c.fracao[1] * 100], 0)}% do volume calculado): ${faixaBr(volumeCategoria(p.peso, c), 1)} mL/h (Figura 1, p. 842)`),
+      ],
+      fonte: textoFontes(fichaManutencaoPed),
+      versao: fichaManutencaoPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -35,7 +65,6 @@ export function FluidoterapiaManutencaoPed() {
           </p>
           {m.noTeto && <p className="text-atencao">Cálculo acima de {MAX_ML_H} mL/h: o livro limita a velocidade em {MAX_ML_H} mL/h.</p>}
           <Nota>Exemplo do livro: 17 kg → 1.350 mL/dia (56 mL/h) ou 54 mL/h pela regra prática (p. 841–842).</Nota>
-          <Errata texto={ERRATA_FAIXAS_HOLLIDAY} />
         </Bloco>
       )}
 
@@ -78,7 +107,6 @@ export function FluidoterapiaManutencaoPed() {
             </div>
           )
         })}
-        <Errata texto={ERRATA_TABELAS_SOLUCOES} />
       </Bloco>
 
       <Bloco titulo="Principais soluções (Tabela 1, p. 840)" descricao="Isotônica: Na próximo do plasma (131 a 154 mEq/L); hipotônica: < 130 mEq/L (p. 838).">
@@ -108,6 +136,24 @@ export function FluidoterapiaManutencaoPed() {
         </div>
         <Nota>Eletrólitos em mEq/L; osmolaridade em mOsm/L. O acompanhamento (diurese, balanço hídrico, peso, eletrólitos e função renal) segue o livro (p. 841).</Nota>
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!m}
+        armadilhas={[`Faixas de Holliday-Segar — errata do livro: ${ERRATA_FAIXAS_HOLLIDAY}`, `Tabelas 1 e 2 — errata do livro: ${ERRATA_TABELAS_SOLUCOES}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaManutencaoPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={m ? `Holliday-Segar ${m.noTeto ? `${MAX_ML_H} mL/h (teto)` : `${br(m.mlHCalculado)} mL/h`}` : 'Informe o peso'}
+        detalhe={m ? `Criança · ${numeroBr(p.peso)} kg · regra prática ${br(m.praticaMlH)} mL/h` : undefined}
+        tom={m?.noTeto ? 'atencao' : 'neutro'}
+        textoCopia={copia() || undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

@@ -4,6 +4,13 @@ import { idadeEmDias } from '@/clinico/pediatria/fonteP2'
 import { DICA_CAP2, fichaSinaisVitais, referenciasPorIdade } from '@/clinico/pediatria/sinaisVitais'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoFontes } from '@/clinico/ficha'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { Card, CardContent } from '@/components/ui/card'
 
 import { Bloco } from './PecasP2'
@@ -18,6 +25,28 @@ export function SinaisVitaisPediatricos() {
   const idade = idadeEmDias(anos, meses, dias)
   const informada = anos > 0 || meses > 0 || dias > 0
   const r = informada && idade !== null ? referenciasPorIdade(idade) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaSinaisVitais.id)
+  const idadeTxt = `${anos} anos, ${meses} meses e ${dias} dias`
+
+  // Texto do "Copiar" (C4 = A): as referências da idade que estão na tela, com a página do livro (sem valor do paciente).
+  const copia = () =>
+    r &&
+    textoCopia({
+      ferramenta: 'Sinais vitais por idade (PS Pediatria ICr-HCFMUSP)',
+      dados: [['Idade', idadeTxt]],
+      resultado: [
+        ...(r.fc ? [`FC normal (${r.fc.rotulo}): acordado ${f(r.fc.valor.acordado)} bpm · sono ${f(r.fc.valor.sono)} bpm (cap. 2, Quadro 1, p. 40)`] : []),
+        ...(r.anormal
+          ? [`Anormais no choque séptico (${r.anormal.rotulo}): FC > ${r.anormal.valor.fcAcima} · FR > ${r.anormal.valor.frAcima} · PA sistólica < ${r.anormal.pas} mmHg${r.anormal.valor.pasAbaixo === 'formula' ? ' (70 + 2 × idade em anos)' : ''} · temperatura central ${r.anormal.valor.temperatura} °C (cap. 5, Tabela 1, p. 87)`]
+          : []),
+        ...(r.pasAnafilaxia ? [`PA sistólica baixa na anafilaxia (${r.pasAnafilaxia.rotulo}): < ${r.pasAnafilaxia.pas} mmHg (cap. 6, Quadro 3, p. 98)`] : []),
+        ...(r.frAsma ? [`FR normal (${r.frAsma.rotulo}): ${r.frAsma.valor} (cap. 8, Tabela 1, rodapé, p. 114)`] : []),
+      ],
+      fonte: textoFontes(fichaSinaisVitais),
+      versao: fichaSinaisVitais.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -60,6 +89,24 @@ export function SinaisVitaisPediatricos() {
           </Bloco>
         </>
       )}
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!r}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaSinaisVitais}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={r?.fc ? `FC acordado ${f(r.fc.valor.acordado)} bpm · sono ${f(r.fc.valor.sono)} bpm` : r ? 'Referências da idade acima' : informada ? 'Pediatria vai até antes dos 14 anos' : 'Informe a idade'}
+        detalhe={r ? `${idadeTxt} · referências do livro, sem valor do paciente` : undefined}
+        textoCopia={r ? copia() || undefined : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

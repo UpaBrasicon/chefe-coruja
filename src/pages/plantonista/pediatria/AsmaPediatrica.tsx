@@ -3,17 +3,52 @@ import { useState } from 'react'
 import {
   CLASSIFICACAO_ASMA, DOSES_ASMA, FIXOS_ASMA, MAGNESIO_PADRAO_MG_KG, fichaAsmaPediatrica, ipratropioNebulizacao,
 } from '@/clinico/pediatria/asma'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { calcularDose, type DosePeso } from '@/clinico/pediatria/fonteP2'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { num, pesoValido } from './formatoP2'
+import { faixaTxt, num, pesoValido } from './formatoP2'
 import { AvisoRn, Bloco, CampoPesoRn, LinhaDose, LinhaReferencia, PesoInvalido } from './PecasP2'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+/** Linha do "Copiar" com a mesma conta da LinhaDose (dose, volume, máximo, via e página). */
+function linhaCopia(d: DosePeso, peso: number, extra?: string): string[] {
+  const r = calcularDose(d, peso)
+  if (!r) return []
+  return [`- ${d.nome}: ${faixaTxt(r.dose)} ${d.unidade}${r.volumeMl && d.unidade !== 'mL' ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ' (limitado ao máximo do livro)' : ''} · ${d.via}${extra ? ` · ${extra}` : ''} (Livro ICr, ${d.pagina})`]
+}
 
 /** Crise asmática na criança (livro do ICr, cap. 8). */
 export function AsmaPediatrica() {
   const [peso, setPeso] = useState(0)
   const [rn, setRn] = useState(false)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAsmaPediatrica.id)
   const ipra = ipratropioNebulizacao(peso)
+  const calc = !rn && pesoValido(peso)
+
+  // Texto do "Copiar" (C3 e C4 = A): a lista inteira de doses do peso e as doses fixas, com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Crise asmática — criança',
+      dados: [['Peso', `${numeroBr(peso)} kg`]],
+      resultado: [
+        'Doses pelo peso (Tabela 3, p. 119, e texto):',
+        ...DOSES_ASMA.flatMap((d) => linhaCopia(d, peso, d.id === 'magnesio-tabela' ? `dose padrão (50 mg/kg): ${num(MAGNESIO_PADRAO_MG_KG * peso, 0)} mg` : undefined)),
+        ...(ipra ? [`- Ipratrópio em nebulização (250 µg/mL): ${ipra.mcg} µg · ${ipra.gotas} gotas, a cada 20 min, geralmente na primeira hora, intercalado ao salbutamol (Livro ICr, p. 119, Tabela 3)`] : []),
+        'Sem cálculo por peso:',
+        ...FIXOS_ASMA.map((f) => `- ${f.nome}: ${f.dose} (Livro ICr, cap. 8, ${f.pagina})`),
+      ],
+      fonte: textoFontes(fichaAsmaPediatrica),
+      versao: fichaAsmaPediatrica.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -71,6 +106,23 @@ export function AsmaPediatrica() {
         <p className="text-tinta-sussurro">FR normal: &lt; 2 meses, &lt; 60; 2 a 11 meses, &lt; 50; 1 a 5 anos, &lt; 40; 6 a 8 anos, &lt; 30; acima de 8 anos, igual ao adulto.</p>
         <p className="text-rotulo text-tinta-sussurro">Livro ICr, cap. 8, p. 114.</p>
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!calc}
+        armadilhas={[...DOSES_ASMA.filter((d) => d.errata).map((d) => `${d.nome} — errata do livro (${d.pagina}): ${d.errata}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaAsmaPediatrica}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={rn ? 'Recém-nascido: a ferramenta não calcula dose' : calc ? `Criança · ${numeroBr(peso)} kg` : 'Informe o peso'}
+        detalhe={calc ? 'Doses do peso na lista acima; "Copiar" leva todas, com as doses fixas.' : undefined}
+        textoCopia={calc ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

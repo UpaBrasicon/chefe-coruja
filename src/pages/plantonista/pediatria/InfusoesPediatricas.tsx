@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { IDADE_ADULTO_ANOS } from '@/clinico/ficha'
+import { IDADE_ADULTO_ANOS, textoFontes } from '@/clinico/ficha'
 import {
   GRUPOS_INFUSAO,
   INFUSOES_PED,
@@ -17,6 +17,12 @@ import {
 import { NEONATO_FORA } from '@/clinico/pediatria/bolus'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { Badge } from '@/components/ui/badge'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -50,6 +56,35 @@ export function InfusoesPediatricas() {
   const doseDaBomba = Number.isFinite(v) ? dosePed(i, v, peso, c) : null
   const alertas = alertasInfusao(i, Number.isFinite(d) ? d : doseDaBomba, peso, c)
   const falta = faltaPeso ? 'Informe o peso.' : faltaConc ? `Informe a concentração (${uc}).` : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaInfusoesPediatricas.id)
+  const temConta = !i.semCalculo && !falta && (faixaMl !== null || vel !== null || doseDaBomba !== null)
+  const principal = i.semCalculo
+    ? `${i.nome} — sem cálculo`
+    : falta ?? (vel !== null ? `${br(vel)} mL/h` : doseDaBomba !== null ? `${br(doseDaBomba, 3)} ${u}` : faixaMl ? `Faixa ${br(faixaMl[0])}–${br(faixaMl[1])} mL/h` : i.nome)
+
+  // Texto do "Copiar" (C4 = A): medicamento, dados usados, as contas da tela, alertas e a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Infusões contínuas pediátricas (Apêndice do PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Medicamento', i.nome],
+        ['Peso', peso > 0 ? `${numeroBr(peso)} kg` : ''],
+        ['Idade', anos > 0 ? `${Math.floor(anos)} anos` : ''],
+        ['Concentração', precisaConcentracao(i) && c > 0 ? `${numeroBr(c)} ${uc}` : ''],
+        ['Dose informada', Number.isFinite(d) ? `${numeroBr(d)} ${u}` : ''],
+        ['Velocidade informada', Number.isFinite(v) ? `${numeroBr(v)} mL/h` : ''],
+      ],
+      resultado: [
+        `Faixa do livro: ${br(i.faixa[0], 3)}–${br(i.faixa[1], 3)} ${u}${faixaMl ? ` = ${br(faixaMl[0])}–${br(faixaMl[1])} mL/h` : ''} (${i.pagina})`,
+        ...(vel !== null ? [`Dose ${br(d, 3)} ${u} → ${br(vel)} mL/h`] : []),
+        ...(doseDaBomba !== null ? [`Bomba ${br(v)} mL/h → ${br(doseDaBomba, 3)} ${u}`] : []),
+        ...alertas.map((a) => `Alerta: ${a.texto}`),
+      ],
+      fonte: textoFontes(fichaInfusoesPediatricas),
+      versao: fichaInfusoesPediatricas.versao,
+      quando: new Date(),
+    })
 
   const trocar = (novo: string) => {
     setId(novo)
@@ -136,6 +171,28 @@ export function InfusoesPediatricas() {
             <p className="text-rotulo text-tinta-sussurro">PS Pediatria ICr-HCFMUSP, {i.pagina}.</p>
           </CardContent>
         </Card>
+      )}
+      {!adulto && (
+        <>
+          <AbasResultado
+            aba={aba}
+            onAba={setAba}
+            passos={passosDaFaixa(guia, undefined)}
+            semResultado={!temConta}
+            armadilhas={[...(guia?.armadilhas ?? [])]}
+            ficha={fichaInfusoesPediatricas}
+            guia={guia}
+          />
+          <ResumoFlutuante
+            principal={principal}
+            detalhe={temConta ? `${i.nome}${peso > 0 ? ` · ${numeroBr(peso)} kg` : ''}${precisaConcentracao(i) && c > 0 ? ` · ${numeroBr(c)} ${uc}` : ''}` : undefined}
+            tom={alertas.length ? 'atencao' : 'neutro'}
+            textoCopia={temConta ? copia() : undefined}
+            alvoDetalhes={ID_ABAS_RESULTADO}
+            rotuloDetalhes="Próximos passos"
+            aoIrDetalhes={() => setAba('proximos')}
+          />
+        </>
       )}
     </ToolLayout>
   )

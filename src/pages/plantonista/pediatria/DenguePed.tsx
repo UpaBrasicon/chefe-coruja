@@ -5,10 +5,18 @@ import {
   DIFERENCAS_MS_2024_PED, MS_CRIANCA_TEXTO, NOTA_PESO_DENGUE_WELLS, SINAIS_VITAIS_MS, albumina5, analgesicosMs2024, expansaoGrupoC, expansaoGrupoD, fichaDenguePed, grupoBParaC, grupoCMs2024, grupoDenguePed, hidratacaoOral, manutencaoAdolescente, pasP5Ms, pesoAproximadoMs, pressaoMediaLaco, type Perfil
 } from '@/clinico/pediatria/denguePed'
 import { manutencao } from '@/clinico/pediatria/manutencao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { PACIENTE_VAZIO, br, faixaBr, podeCalcular } from './formatoIcr'
+import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, Nota, Opcoes, Pendencia } from './PecasIcr'
 import { Marcadores } from './PecasP4'
 import { LinhaFaixa, ListaLivro, ListaQuadro } from './PecasP5'
@@ -39,6 +47,50 @@ export function DenguePed() {
   const idadeMeses = p.anos * 12 + p.meses
   const pesoEst = p.rn ? null : pesoAproximadoMs(idadeMeses)
   const pasP5 = p.rn ? null : pasP5Ms(p.anos)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaDenguePed.id)
+  const expC = calc ? expansaoGrupoC(p.peso) : null
+  const expD = calc ? expansaoGrupoD(p.peso) : null
+  const manutAdol = calc && perfil === 'adolescente' ? manutencaoAdolescente(p.peso) : null
+  const textoReclass = reclass === null ? null : reclass ? 'Ht > 38% e/ou plaquetas < 100.000: o livro reclassifica para o grupo C (p. 449).' : 'Ht e plaquetas abaixo dos limiares de reclassificação do grupo B (p. 449).'
+
+  // Texto do "Copiar" (C3 e C4 = A): dados, achados marcados, grupo, prova do laço e os volumes da tela, livro e MS lado a lado, com a página.
+  const temResultado = calc || marcados.size > 0 || media !== null
+  const copia = temResultado ? textoCopia({
+    ferramenta: 'Dengue — criança (grupos e hidratação)',
+    dados: [
+      ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+      ['Idade', `${p.anos} anos e ${p.meses} meses`],
+      ['Linha do Quadro 8', perfil === 'crianca' ? 'criança' : 'adolescente'],
+      ['Achados marcados', [...SINAIS_GRAVIDADE, ...SINAIS_ALARME, ...ACHADOS_GRUPO_B].filter((a) => marcados.has(a.id)).map((a) => a.texto).join('; ')],
+      ['Hematócrito', grupo === 'B' && lab.ht > 0 ? `${numeroBr(lab.ht)}%` : ''],
+      ['Plaquetas', grupo === 'B' && lab.plaq > 0 ? `${numeroBr(lab.plaq)}/mm³` : ''],
+      ['PA', pa.pas > 0 || pa.pad > 0 ? `${numeroBr(pa.pas)} × ${numeroBr(pa.pad)} mmHg` : ''],
+    ],
+    resultado: [
+      `Pelo texto do livro: grupo ${grupo} — ${DESCRICAO_GRUPO[grupo]}`,
+      ...(textoReclass ? [textoReclass] : []),
+      ...(media !== null ? [`Prova do laço: valor médio ${br(media, 0)} mmHg; insuflar por ${LACO_CRIANCA.minutos} minutos; positiva com ${LACO_CRIANCA.petequias} ou mais petéquias no quadrado de 2,5 cm (Quadro 5, p. 447)`] : []),
+      ...(calc
+        ? [
+            'Hidratação (Quadro 8, p. 450):',
+            ...(oral ? [`- Grupos A e B — hidratação oral (${oral.mlKgDia} mL/kg/dia): ${br(oral.dia, 0)} mL/dia · SRO ${br(oral.sro, 0)} mL (${faixaBr(oral.sroMlH, 0)} mL/h) · caseiros ${br(oral.caseiros, 0)} mL`] : []),
+            ...(expC ? [`- Grupo C — expansão com cristaloide: ${faixaBr(expC, 0)} mL/h (10 a 20 mL/kg/h, repetindo até 3 vezes)`] : []),
+            ...(perfil === 'crianca'
+              ? hs ? [`- Grupo C — manutenção (criança): ${br(hs.mlDia, 0)} mL/dia · ${br(hs.mlH, 0)} mL/h${hs.noTeto ? ' (teto do cap. 77)' : ''} — Holliday-Segar com solução balanceada; internação por 48 h (p. 450; cap. 77, p. 840)`] : []
+              : (manutAdol ?? []).map((e) => `- Grupo C — manutenção (adolescente), ${e.etapa}: ${faixaBr(e.volumeMl, 0)} mL${e.mlH ? ` · ${faixaBr(e.mlH, 0)} mL/h` : ''} — ${e.regra}`)),
+            ...(expD ? [`- Grupo D — expansão: ${faixaBr(expD, 0)} mL (solução salina isotônica 20 mL/kg em até 20 minutos, até 3 vezes)`] : []),
+            ...(alb ? [`- Grupo D — albumina 5% (Ht em ascensão e choque): ${faixaBr(alb.volume, 0)} mL · albumina 20% ${faixaBr(alb.albumina20, 0)} mL + SF ${faixaBr(alb.sf, 0)} mL (${faixaBr(alb.gramas, 1)} g) (p. 450–451)`] : []),
+          ]
+        : []),
+      ...(cMs ? [`MS 2024 — grupo C (p. 33): ${br(cMs.hora1Ml, 0)} mL na 1ª hora e ${br(cMs.hora2Ml, 0)} mL/h na 2ª até o Ht (máx. ${br(cMs.maxFaseMl, 0)} mL por fase, até 3 fases); manutenção com SF ${br(cMs.manut6hMl, 0)} mL em 6 h (${br(cMs.manut6hMlH, 0)} mL/h) e ${br(cMs.manut8hMl, 0)} mL em 8 h (${br(cMs.manut8hMlH, 0)} mL/h)`] : []),
+      ...(analg ? [`MS 2024 — analgesia (Apêndice H): dipirona ${br(analg.dipironaMg, 0)} mg e paracetamol ${br(analg.paracetamolMg, 0)} mg por dose (10 mg/kg), até de 6/6 h, respeitando a dose máxima por peso e idade`] : []),
+      ...(pasP5 !== null ? [`MS 2024 — 5º percentil da PAS para a idade (p. 16): ${pasP5} mmHg — abaixo disso é hipotensão`] : []),
+    ],
+    fonte: textoFontes(fichaDenguePed),
+    versao: fichaDenguePed.versao,
+    quando: new Date(),
+  }) : undefined
 
   return (
     <ToolLayout
@@ -81,7 +133,6 @@ export function DenguePed() {
           <NumberField id="den-pad" label="PA diastólica" unit="mmHg" value={pa.pad} onChange={(pad) => setPa({ ...pa, pad })} min={0} />
         </div>
         {media !== null && <p>Valor médio: <strong className="tabular-nums">{br(media, 0)} mmHg</strong></p>}
-        <Errata texto={ERRATA_LACO} />
       </Bloco>
 
       {!calc ? (
@@ -142,7 +193,6 @@ export function DenguePed() {
         {pasP5 !== null && <p>5º percentil da PAS para a idade (MS, p. 16): <strong>{pasP5} mmHg</strong> — abaixo disso é hipotensão.</p>}
         {MS_CRIANCA_TEXTO.map((t) => <p key={t} className="text-tinta-sussurro">{t}</p>)}
         {SINAIS_VITAIS_MS.map((t) => <p key={t.tabela} className="text-tinta-sussurro"><span className="font-medium text-tinta">{t.tabela}:</span> {t.linhas.join('; ')}.</p>)}
-        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_MS_2024_PED.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
 
       <Bloco titulo="Critérios de internação (Quadro 7)">
@@ -154,6 +204,28 @@ export function DenguePed() {
       <Bloco titulo="Do capítulo">
         <ListaLivro itens={REFERENCIAS_DENGUE} />
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[`Errata do livro: ${ERRATA_LACO}`, `Errata do livro: ${ERRATA_HT}`, NOTA_ALBUMINA, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaDenguePed}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="Livro do ICr × Manual do Ministério da Saúde (6ª ed., 2024)">
+            <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_MS_2024_PED.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={`Grupo ${grupo}${textoReclass && reclass ? ' → C pelo Ht/plaquetas' : ''}`}
+        detalhe={calc ? `Criança · ${numeroBr(p.peso)} kg · linha "${perfil === 'crianca' ? 'criança' : 'adolescente'}" do Quadro 8; "Copiar" leva os volumes.` : p.rn ? 'Recém-nascido: sem valor neonatal no capítulo' : idadePediatrica(p.anos, p.meses) ? 'Informe peso e idade para os volumes.' : 'A partir de 14 anos é adulto: ferramenta pediátrica'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

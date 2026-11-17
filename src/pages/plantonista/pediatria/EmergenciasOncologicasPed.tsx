@@ -5,11 +5,20 @@ import {
   LIMIARES_PLAQUETAS, NOTA_MASCC_PED, NOTA_NF_SUSPENSAO_PRECOCE, REFERENCIAS_ONCO, TABELA7_HB, alopurinolM2, caspofungina, chOncoMl, classificarSlt, crioOncoU, criteriosLabSlt, diureseAlvoSlt,
   fichaOncologiaPed, hidratacaoSltMlDia, indicaCitorreducao, leituraNeutrofilos, oseltamivirMg, pfcOncoMl, plaquetasOncoMl, produtoCaP,
 } from '@/clinico/pediatria/oncologiaPed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { calcularDoseLivro, textoDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica, podeCalcular } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, Nota, Opcoes, Pendencia } from './PecasIcr'
+import { Bloco, CampoPaciente, Nota, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaDoseLivro, Marcadores, TabelaLivro } from './PecasP4'
 import { CampoSC, LinhaFaixa, ListaLivro, ListaQuadro } from './PecasP5'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -20,6 +29,18 @@ const VARIACAO_25 = [
   { id: 'fosforo', texto: 'Fósforo: aumento de 25% do basal' },
   { id: 'calcio', texto: 'Cálcio: diminuição de 25% do basal' },
 ]
+
+const casasDose = (u: DoseLivro['unidade'], x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar" com a mesma conta da LinhaDoseLivro (PecasP4); no RN, só as linhas com valor neonatal. */
+function linhaDoseLivro(d: DoseLivro, peso: number, rn = false): string[] {
+  if (rn && !d.neonatal) return []
+  const r = calcularDoseLivro(d, peso)
+  if (!r) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casasDose(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta}${r.noMaximo ? ` (limitado ao máximo${d.fonteMaximo ? `, ${d.fonteMaximo}` : ' do livro'})` : ''} · o livro traz ${textoDoseLivro(d)} · ${d.via} (Livro ICr, ${d.pagina})`]
+}
 
 /** Emergências oncológicas — cap. 66 do livro do ICr. */
 export function EmergenciasOncologicasPed() {
@@ -44,6 +65,72 @@ export function EmergenciasOncologicasPed() {
   const neut = leuco.neutrofilos > 0 ? leituraNeutrofilos(leuco.neutrofilos, queda) : null
   const caspo = !p.rn ? caspofungina(sc) : null
   const osel = calc ? oseltamivirMg(p.peso) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaOncologiaPed.id)
+  const hidra = !p.rn ? hidratacaoSltMlDia(sc) : null
+  const textoSlt = `Critérios laboratoriais: ${crit.length ? crit.join(', ') : 'nenhum'} — ${slt === 'sem critério' ? 'não preenche SLT laboratorial' : slt}`
+  const textoNf = risco.size > 0 ? 'Neutropenia febril de alto risco (NFAR) pelo livro.' : 'Sem critério de alto risco marcado: baixo risco (NFBR) pelo livro.'
+  const crio = calc ? crioOncoU(p.peso) : null
+  const temResultado = calc || sc > 0
+
+  // Texto do "Copiar" (C3 e C4 = A): dados, leituras da tela e as listas de volumes e doses, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Emergências oncológicas — criança',
+        dados: [
+          ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+          ['Idade', `${p.anos} anos e ${p.meses} meses`],
+          ['Superfície corpórea (informada)', sc > 0 ? `${numeroBr(sc)} m²` : ''],
+          ['Ácido úrico', lab.acidoUrico > 0 ? `${numeroBr(lab.acidoUrico)} mg/dL` : ''],
+          ['Potássio', lab.potassio > 0 ? `${numeroBr(lab.potassio)} mEq/L` : ''],
+          ['Fósforo', lab.fosforo > 0 ? `${numeroBr(lab.fosforo)} mg/dL` : ''],
+          ['Cálcio', lab.calcio > 0 ? `${numeroBr(lab.calcio)} mg/dL` : ''],
+          ['Alteração clínica', clinico ? 'sim' : ''],
+          ['Leucócitos', leuco.leucocitos > 0 ? `${numeroBr(leuco.leucocitos)}/mL (${tipo})` : ''],
+          ['Neutrófilos', leuco.neutrofilos > 0 ? `${numeroBr(leuco.neutrofilos)}/mm³` : ''],
+        ],
+        resultado: [
+          `Síndrome de lise tumoral — Cairo e Bishop (Tabela 2, p. 695): ${textoSlt}`,
+          ...(cap !== null ? [`Produto Ca × P: ${br(cap, 0)}${cap >= 70 ? ' — ≥ 70: indicação de TSR na SLT (p. 700)' : ''}`] : []),
+          ...(!p.rn
+            ? [
+                'Lise tumoral — hidratação e hipouricemiantes (p. 699–702):',
+                ...(hidra ? [`- Hidratação: ${faixaBr(hidra, 0)} mL/dia — 2.000 a 3.000 mL/m²/dia EV, sem potássio, fosfato ou cálcio (p. 699)`] : []),
+                ...(diurese?.mlKgH ? [`- Diurese-alvo (≤ 10 kg): ${faixaBr(diurese.mlKgH, 0)} mL/h — 4 a 6 mL/kg/h; densidade urinária < 1.010 (p. 699)`] : []),
+                ...(diurese?.mlM2H ? [`- Diurese-alvo (por m²): ${faixaBr(diurese.mlM2H, 0)} mL/h — 80 a 100 mL/m²/h; densidade urinária < 1.010 (p. 699)`] : []),
+                ...(alo ? [`- Alopurinol por m²: ${faixaBr(alo.porDose, 0)} mg/dose · ${faixaBr(alo.dia, 0)} mg/dia (teto ${br(alo.maxDia, 0)}) — 50 a 100 mg/m²/dose VO de 8/8 h, máximo 300 mg/m²/dia (p. 700; Tabela 6, p. 702)`] : []),
+                ...(calc ? DOSES_SLT.flatMap((d) => linhaDoseLivro(d, p.peso, p.rn)) : []),
+              ]
+            : []),
+          ...(calc
+            ? [
+                'Hemocomponentes (p. 705–706; Tabela 8, p. 708–709):',
+                `- Concentrado de hemácias (irradiado): ${faixaBr(chOncoMl(p.peso), 0)} mL — 10 a 20 mL/kg em até 3 a 4 h (p. 705)`,
+                `- Concentrado de plaquetas (irradiado): ${faixaBr(plaquetasOncoMl(p.peso), 0)} mL — 10 mL/kg em 30 a 60 min (p. 706)`,
+                `- Plasma fresco congelado: ${faixaBr(pfcOncoMl(p.peso), 0)} mL — 10 a 15 mL/kg (p. 706)`,
+                ...(crio !== null ? [`- Crioprecipitado: ${br(crio, 1)} U — 2 U/10 kg (p. 706)`] : []),
+                ...DOSES_HEMATO_ONCO.flatMap((d) => linhaDoseLivro(d, p.peso, p.rn)),
+              ]
+            : []),
+          ...(cito !== null ? [cito ? 'Acima do limiar de tratamento da hiperviscosidade do livro (LMA > 100.000; LLA > 200.000 ou > 100.000 com sintomas) (p. 707–708)' : 'Abaixo do limiar de tratamento da hiperviscosidade do livro (p. 707–708)'] : []),
+          ...(neut ? [neut === 'profunda' ? 'Neutropenia profunda (< 100/mm³) (p. 707–708)' : neut === 'neutropenia' ? 'Neutropenia pela definição do livro (p. 707–708)' : 'Fora da definição de neutropenia do livro (p. 707–708)'] : []),
+          `Neutropenia febril — risco (p. 709–711): ${textoNf}`,
+          ...(calc
+            ? [
+                'Neutropenia febril — antimicrobianos do ICr (Tabela 11, p. 714–715):',
+                ...DOSES_NEUTROPENIA.flatMap((d) => linhaDoseLivro(d, p.peso, p.rn)),
+                ...(caspo ? [`- Caspofungina: ${br(caspo.ataque, 1)} mg (ataque) · manutenção ${br(caspo.manutencao, 1)} mg/dia — ataque 70 mg/m² IV 1 dose; manutenção 50 mg/m² a cada 24 h; máximo 70 mg/dia (p. 715)`] : []),
+                ...(osel ? [`- Oseltamivir: ${faixaBr([osel[0], osel[osel.length - 1]], 0)} mg 12/12 h — < 15 kg 30 mg; 15–23 kg 45 mg; 23–40 kg 60 mg; > 40 kg 75 mg VO de 12/12 h (p. 715)${osel.length > 1 ? '. Com 23 kg exatos o peso cai em duas faixas da tabela.' : ''}`] : []),
+                'Síndromes compressivas (p. 717–720; Tabela 12):',
+                ...DOSES_COMPRESSIVAS.flatMap((d) => linhaDoseLivro(d, p.peso, p.rn)),
+              ]
+            : []),
+        ],
+        fonte: textoFontes(fichaOncologiaPed),
+        versao: fichaOncologiaPed.versao,
+        quando: new Date(),
+      })
+    : undefined
   const campo = <T extends Record<string, number>>(obj: T, set: (o: T) => void, k: keyof T & string, label: string, unit: string, step = 0.1) => (
     <NumberField id={`onc-${k}`} label={label} unit={unit} value={obj[k]} onChange={(x) => set({ ...obj, [k]: x })} min={0} step={step} />
   )
@@ -137,28 +224,50 @@ export function EmergenciasOncologicasPed() {
       {calc && (
         <Bloco titulo="Síndromes compressivas (p. 717–720; Tabela 12)">
           {DOSES_COMPRESSIVAS.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
-          <Errata texto={ERRATA_PIC_ONCO} />
         </Bloco>
       )}
-
-      <Bloco titulo="Neutropenia febril — IPFNG 2023 (J Clin Oncol 2023;41:1774–1785)" descricao="Diretriz internacional pediátrica lida no texto, ao lado do cap. 66. Forte/condicional conforme GRADE.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Rec.</TableHead><TableHead className="pr-3 pb-2">IPFNG 2023</TableHead><TableHead className="pb-2">Força</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {IPFNG_ITENS.map((i) => (
-                <TableRow key={i.codigo} className="border-t"><TableCell className="pr-3 py-2 font-medium whitespace-nowrap">{i.codigo}</TableCell><TableCell className="pr-3 py-2">{i.texto}</TableCell><TableCell className="py-2 text-tinta-sussurro">{i.forca}</TableCell></TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_NF_2023.map((d) => <li key={d}>{d}</li>)}</ul>
-        <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{NOTA_NF_SUSPENSAO_PRECOCE}</p>
-      </Bloco>
 
       <Bloco titulo="Do capítulo">
         <ListaLivro itens={REFERENCIAS_ONCO} />
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[
+          `Errata do livro: ${ERRATA_HIDRATACAO}`,
+          `Errata do livro: ${ERRATA_PIC_ONCO}`,
+          ...[...DOSES_SLT, ...DOSES_HEMATO_ONCO, ...DOSES_NEUTROPENIA, ...DOSES_COMPRESSIVAS].filter((d) => d.errata).map((d) => `${d.nome} — errata do livro (${d.pagina}): ${d.errata}`),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaOncologiaPed}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="Neutropenia febril — IPFNG 2023 (J Clin Oncol 2023;41:1774–1785)" resumo="Diretriz internacional pediátrica lida no texto, ao lado do cap. 66. Forte/condicional conforme GRADE.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Rec.</TableHead><TableHead className="pr-3 pb-2">IPFNG 2023</TableHead><TableHead className="pb-2">Força</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {IPFNG_ITENS.map((i) => (
+                    <TableRow key={i.codigo} className="border-t"><TableCell className="pr-3 py-2 font-medium whitespace-nowrap">{i.codigo}</TableCell><TableCell className="pr-3 py-2">{i.texto}</TableCell><TableCell className="py-2 text-tinta-sussurro">{i.forca}</TableCell></TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_NF_2023.map((d) => <li key={d}>{d}</li>)}</ul>
+            <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{NOTA_NF_SUSPENSAO_PRECOCE}</p>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(p.peso)} kg${sc > 0 ? ` · ${numeroBr(sc)} m²` : ''}` : sc > 0 && !p.rn ? `Criança · ${numeroBr(sc)} m²` : p.rn ? 'Recém-nascido: sem valor neonatal no capítulo' : idadePediatrica(p.anos, p.meses) ? 'Informe peso e superfície corpórea' : 'A partir de 14 anos é adulto: ferramenta pediátrica'}
+        detalhe={`${slt === 'sem critério' ? 'Sem SLT laboratorial' : slt} · ${risco.size > 0 ? 'NF de alto risco' : 'NF sem critério de alto risco'}`}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

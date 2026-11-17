@@ -5,11 +5,18 @@ import {
   AVISO_ELETRICA, COLUNAS_LB, ERRATA_LUND_BROWDER, GRANDE_QUEIMADO_PCT, MAO_ESPALMADA_PCT, NOTA_MANUTENCAO, PRE_HOSPITALAR_ML_KG_H, REGIOES_LB, colunaPorIdade, diureseAlvo,
   fichaQueimaduraPed, manutencao24hMl, parkland, somaManutencao, superficieQueimada, totalCorpo, valorRegiao,
 } from '@/clinico/pediatria/queimadura'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, podeCalcular } from './formatoIcr'
+import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, idadePediatrica, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes } from './PecasIcr'
 
 const FRACOES: [number, string][] = [
@@ -36,6 +43,44 @@ export function QueimaduraPed() {
   const soma = calc ? somaManutencao(idade, p.peso) : null
   const man = soma ? manutencao24hMl(p.peso) : null
   const diurese = calc ? diureseAlvo(p.peso, pigmento) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaQueimaduraPed.id)
+  const grandeQueimado = scqLB !== null && scqLB > GRANDE_QUEIMADO_PCT
+  const temResultado = calc || scq > 0
+
+  // Texto do "Copiar" (C3 e C4 = A): dados, superfície queimada, Parkland, manutenção e diurese-alvo da tela, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Queimadura — superfície queimada e Parkland (criança)',
+        dados: [
+          ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+          ['Idade', `${p.anos} anos e ${p.meses} meses`],
+          ['Horas desde o acidente', calc && horas > 0 ? `${numeroBr(horas)} h` : ''],
+          ['Hematúria ou mioglobinúria', calc && pigmento ? 'sim' : ''],
+        ],
+        resultado: [
+          ...(scqManual > 0
+            ? [`SCQ estimada (informada): ${br(scqManual, 2)}%`]
+            : scqLB !== null
+              ? [`SCQ pela Figura 1 (Lund e Browder, coluna de ${coluna} ano${coluna === 1 ? '' : 's'}): ${br(scqLB, 2)}%${grandeQueimado ? ` — acima de ${GRANDE_QUEIMADO_PCT}%: grande queimado em pediatria (p. 159)` : ''} (p. 160)`]
+              : []),
+          ...(pk
+            ? [
+                'Reposição — Parkland (p. 161–162):',
+                `- Volume em 24 h: ${br(pk.totalMl, 0)} mL — 3 × ${br(p.peso)} kg × ${br(pk.scqUsada)}%${scq > 50 ? ' (teto de 50%)' : ''} (p. 161)`,
+                `- Até completar 8 h do acidente: ${pk.mlHAte8h === null ? 'as 8 h já passaram' : `${br(pk.primeiras8hMl, 0)} mL em ${br(pk.horasRestantes8h, 1)} h ≈ ${br(pk.mlHAte8h, 0)} mL/h`} (p. 162)`,
+                `- 16 h seguintes: ${br(pk.seguintes16hMl, 0)} mL ≈ ${br(pk.mlH16h, 0)} mL/h (p. 162)`,
+                ...(man !== null ? [`- + soro de manutenção (< 5 anos ou < 30 kg): ${br(man, 0)} mL/dia ≈ ${br(man / 24, 0)} mL/h (p. 161)`] : []),
+              ]
+            : []),
+          ...(calc ? [`Pré-hospitalar: com SCQ > 10% ou transporte prolongado, SF ou Ringer lactato ${PRE_HOSPITALAR_ML_KG_H} mL/kg/h = ${br(PRE_HOSPITALAR_ML_KG_H * p.peso, 0)} mL/h (p. 161)`] : []),
+          ...(calc && diurese ? [`Diurese-alvo nas primeiras 24 h: ${faixaBr(diurese.mlKgH, 1)} mL/kg/h = ${faixaBr(diurese.mlH, 0)} mL/h (p. 162)`] : []),
+        ],
+        fonte: textoFontes(fichaQueimaduraPed),
+        versao: fichaQueimaduraPed.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -142,6 +187,28 @@ export function QueimaduraPed() {
       )}
 
       <Nota>{AVISO_ELETRICA}</Nota>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[...ERRATA_LUND_BROWDER.map((e) => `Errata do livro: ${e}`), NOTA_MANUTENCAO, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaQueimaduraPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={pk ? `Parkland ${br(pk.totalMl, 0)} mL em 24 h` : scq > 0 ? `SCQ ${br(scq, 2)}%` : calc ? `Criança · ${numeroBr(p.peso)} kg` : p.rn ? 'Recém-nascido: sem valor neonatal no capítulo' : idadePediatrica(p.anos, p.meses) ? 'Informe peso, idade e superfície queimada' : 'A partir de 14 anos é adulto: ferramenta pediátrica'}
+        tom={grandeQueimado ? 'atencao' : 'neutro'}
+        detalhe={[
+          calc && pk ? `Criança · ${numeroBr(p.peso)} kg` : '',
+          pk ? `SCQ ${br(scq, 2)}%` : '',
+          grandeQueimado ? 'grande queimado em pediatria' : '',
+        ].filter(Boolean).join(' · ') || undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

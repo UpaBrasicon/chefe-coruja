@@ -4,11 +4,18 @@ import {
   ANTI_D_MCG_POR_UNIDADE, DIRETRIZES_HEMO_PED, ERRATAS_HEMOTERAPIA, LIMIARES, LIMITE_INFUSAO_MIN, PESO_UNIDADE_FRACIONADA_KG, REACOES, UNIDADE_CH_ML, albumina, chAnemiaAgudaMl,
   chPadraoMl, chPorIncrementoMl, crioUnidades, fatorIXUI, fatorVIIIUI, fichaHemoterapiaPed, gluconatoMacicaMl, minutosA25, pfcMl, plaquetasVolumeMl, sfDiluicaoMaxMl,
 } from '@/clinico/pediatria/hemoterapiaPed'
+import { textoFontes } from '@/clinico/ficha'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
+import { Bloco, CampoPaciente, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaReferencia } from './PecasP2'
 import { TabelaLivro } from './PecasP4'
 
@@ -34,6 +41,39 @@ export function HemocomponentesPed() {
   const f9 = calc ? fatorIXUI(peso, fator) : null
   const alb = calc ? albumina(peso, deltaAlb) : null
   const ca = calc ? gluconatoMacicaMl(volCh, volemia) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHemoterapiaPed.id)
+  const pfc = calc ? pfcMl(peso) : null
+
+  // Texto do "Copiar" (C3 e C4 = A): os volumes que estão na tela para o peso, com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Hemocomponentes — volumes por peso (PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Peso', `${numeroBr(peso)} kg`],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['Aumento de Hb desejado', incHb > 0 ? `${numeroBr(incHb)} g/dL` : ''],
+        ['Volemia (informada)', volemia > 0 ? `${numeroBr(volemia)} mL` : ''],
+        ['Δ plaquetas', deltaPlaq > 0 ? `${numeroBr(deltaPlaq)}/mm³ (${produto === 'af' ? 'aférese' : 'standard'})` : ''],
+        ['Fator desejado', fator > 0 ? `${numeroBr(fator)}%` : ''],
+        ['Δ albuminemia', deltaAlb > 0 ? `${numeroBr(deltaAlb)} g/dL` : ''],
+        ['CH transfundido', volCh > 0 ? `${numeroBr(volCh)} mL` : ''],
+      ],
+      resultado: [
+        `Concentrado de hemácias, volume padrão: ${br(ch, 0)} mL (p. 725)`,
+        ...(chInc !== null ? [`Concentrado de hemácias pelo incremento: ${br(chInc, 0)} mL (p. 725)`] : []),
+        ...(chAg ? [`Concentrado de hemácias, anemia aguda com repercussão: ${faixaBr(chAg, 0)} mL (cap. 62, p. 659)`] : []),
+        ...(pfc ? [`Plasma fresco congelado: ${faixaBr(pfc, 0)} mL (p. 728–729)`] : []),
+        ...(plaq !== null ? [`Plaquetas: ${br(plaq, 0)} mL (p. 727)`] : []),
+        ...(f8 ? [`Fator VIII: ${br(f8.dose, 0)} UI; repetição ${br(f8.repeticao8h, 0)} UI a cada 8 h; crioprecipitado ${crio ? faixaBr(crio, 1) : '—'} unidades (p. 728–729)`] : []),
+        ...(f9 !== null ? [`Fator IX: ${br(f9, 0)} UI (p. 729)`] : []),
+        ...(alb ? [`Albumina humana: ${br(alb.g, 1)} g (≈ ${br(alb.mL20, 0)} mL de albumina 20%) (p. 730)`] : []),
+        ...(ca !== null ? [`Gluconato de cálcio 10% na transfusão maciça: ${br(ca, 1)} mL (p. 725)`] : []),
+      ],
+      fonte: textoFontes(fichaHemoterapiaPed),
+      versao: fichaHemoterapiaPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -58,7 +98,7 @@ export function HemocomponentesPed() {
           </Bloco>
 
           <Bloco titulo="Plasma fresco congelado (p. 728)">
-            <LinhaLivro nome="PFC" conta={<strong>{faixaBr(pfcMl(peso)!, 0)} mL</strong>} texto="10 a 15 mL/kg; unidades de 200 a 250 mL; infusão rápida" pagina="p. 728–729" />
+            <LinhaLivro nome="PFC" conta={<strong>{faixaBr(pfc!, 0)} mL</strong>} texto="10 a 15 mL/kg; unidades de 200 a 250 mL; infusão rápida" pagina="p. 728–729" />
           </Bloco>
 
           <Bloco titulo="Plaquetas (p. 727)" descricao="V (mL) = Δplaq (/mm³) × 1.000 × volemia (mL) / (concentração × 0,80).">
@@ -118,9 +158,24 @@ export function HemocomponentesPed() {
       <Bloco titulo="Reações transfusionais (Tabela 2, p. 731)">
         <TabelaLivro cabecalho={['Reação', 'Clínica', 'Manejo']} linhas={REACOES.map((r) => [...r])} largura={600} />
       </Bloco>
-      <Bloco titulo="Erratas conferidas no PDF">
-        {ERRATAS_HEMOTERAPIA.map((e) => <Errata key={e} texto={e} />)}
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!calc}
+        // Erratas conferidas no PDF, sem efeito nos volumes, vão para "Armadilhas" (C6 = A).
+        armadilhas={[...ERRATAS_HEMOTERAPIA, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaHemoterapiaPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(peso)} kg` : 'Informe peso e idade'}
+        detalhe={calc ? 'Volumes do peso nas listas acima; "Copiar" leva todos.' : undefined}
+        textoCopia={calc ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

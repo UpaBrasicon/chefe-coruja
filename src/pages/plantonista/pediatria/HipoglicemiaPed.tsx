@@ -5,10 +5,17 @@ import {
   glicoseOralG, glucagonMg, linhaTabela, linhasTexto, taxaDextroseMlH,
 } from '@/clinico/pediatria/hipoglicemiaPed'
 import { regraPraticaMlH } from '@/clinico/pediatria/manutencao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, podeCalcular } from './formatoIcr'
+import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, idadePediatrica, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
 
 /** Hipoglicemia na criança — cap. 51 do Pronto-Socorro ICr-HCFMUSP. */
@@ -22,6 +29,35 @@ export function HipoglicemiaPed() {
   const oral = calc ? glicoseOralG(p.peso) : null
   const taxa = calc && vig > 0 ? taxaDextroseMlH(vig, p.peso, pct) : null
   const manut = calc ? regraPraticaMlH(p.peso) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHipoglicemiaPed.id)
+
+  // Texto do "Copiar" (C3 e C4 = A): dados, via oral, linhas EV, glucagon e infusão de glicose da tela, com a página.
+  const copia = calc
+    ? textoCopia({
+        ferramenta: 'Hipoglicemia — glicose e glucagon por peso (criança)',
+        dados: [
+          ['Peso', `${numeroBr(p.peso)} kg`],
+          ['Idade', `${p.anos} anos e ${p.meses} meses`],
+          ['VIG', vig > 0 ? `${numeroBr(vig)} mg/kg/min` : ''],
+          ['Dextrose', vig > 0 ? `${pct}%` : ''],
+        ],
+        resultado: [
+          ...(oral !== null ? [`Via oral (consciente e deglutindo): 0,3 g/kg = ${br(oral)} g (p. 510)`] : []),
+          `Via EV (PALS no texto: ${EV_G_KG.join(' a ')} g/kg, máximo ${EV_MAX_G} g) (p. 510–511):`,
+          ...linhas.map((l) => {
+            const r = calcularLinha(l, p.peso)!
+            return `- ${l.solucao} (${l.fonte === 'texto' ? 'texto' : 'Tabela 2'}): ${faixaBr(r.ml, 0)} mL = ${faixaBr(r.g, 1)} g${r.limitada ? ' (máximo)' : ''} — ${faixaBr(l.mlKg, 0)} mL/kg${l.maxMl ? ` (máx. ${l.maxMl} mL)` : ''}${l.preparo ? `; preparo: ${l.preparo}` : ''} (${l.pagina})`
+          }),
+          `- Glucagon IM ou SC (sem via oral e sem acesso venoso): ${br(glucagonMg(p.peso), 1)} mg — 0,5 mg (< 25 kg) ou 1 mg (≥ 25 kg), máximo 1 mg; glicemia a cada 10 a 15 min (p. 510)`,
+          ...(taxa !== null ? [`Após a reversão: taxa ${br(taxa)} mL/h de dextrose ${pct}% (VIG × 6 × peso ÷ % de dextrose; p. 510)`] : []),
+          ...(manut !== null ? [`Solução de manutenção da Tabela 2: ${br(manut, 0)} mL/h — SG 10% ${MANUTENCAO_TABELA2.sg10Ml} mL + NaCl 20% ${MANUTENCAO_TABELA2.nacl20Ml} mL + KCl 19,1% ${MANUTENCAO_TABELA2.kcl191Ml} mL; manter glicemia ${MANUTENCAO_TABELA2.glicemia.join(' a ')} mg/dL (${MANUTENCAO_TABELA2.pagina})`] : []),
+        ],
+        fonte: textoFontes(fichaHipoglicemiaPed),
+        versao: fichaHipoglicemiaPed.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -108,6 +144,23 @@ export function HipoglicemiaPed() {
           />
         </Bloco>
       )}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!calc}
+        armadilhas={[...ERRATA_HIPOGLICEMIA_EV.map((e) => `Errata do livro: ${e}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaHipoglicemiaPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(p.peso)} kg${p.anos > 0 || p.meses > 0 ? ` · ${p.anos} a ${p.meses} m` : ''}` : p.rn ? 'Recém-nascido: sem valor neonatal no capítulo' : idadePediatrica(p.anos, p.meses) ? 'Informe o peso' : 'A partir de 14 anos é adulto: ferramenta pediátrica'}
+        detalhe={calc && oral !== null ? `Via oral ${br(oral)} g · glucagon ${br(glucagonMg(p.peso), 1)} mg; "Copiar" leva as linhas EV.` : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

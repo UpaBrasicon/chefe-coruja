@@ -5,12 +5,33 @@ import {
   NOTA_FIGURA2, NOTA_LIMIARES_AAP, NOTA_NITRITO, NOTA_VIA_AAP, OPCOES_ESTERASE, OPCOES_LEUCOCITOS, QUADRO3, REFERENCIAS_ITU, REFERENCIA_AAP, REFERENCIA_LIVRO, SEM_URINALISE,
   faixaCompativel, fichaItuPed, lerUrinaliseAap, lerUrocultura, usaAap, type Coleta, type FaixaItu, type Urinalise,
 } from '@/clinico/pediatria/ituPed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { calcularDoseLivro, textoDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { PACIENTE_VAZIO, idadePediatrica } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, Nota, Opcoes, Pendencia } from './PecasIcr'
+import { PACIENTE_VAZIO, faixaBr, idadePediatrica } from './formatoIcr'
+import { Bloco, CampoPaciente, Nota, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaDoseLivro } from './PecasP4'
+
+const casasDose = (u: DoseLivro['unidade'], x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar" com a mesma conta da LinhaDoseLivro (PecasP4). */
+function linhaDoseLivro(d: DoseLivro, peso: number): string[] {
+  const r = calcularDoseLivro(d, peso)
+  if (!r) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casasDose(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta}${r.noMaximo ? ` (limitado ao máximo${d.fonteMaximo ? `, ${d.fonteMaximo}` : ' do livro'})` : ''} · o livro traz ${textoDoseLivro(d)} · ${d.via} (Livro ICr, ${d.pagina})`]
+}
+
+const COLETAS: [Coleta, string][] = [['sondagem', 'Sondagem vesical'], ['psp', 'Punção suprapúbica'], ['jato', 'Jato médio'], ['saco', 'Saco coletor']]
 
 /** Infecção urinária na criança — cap. 57 do livro do ICr; AAP 2026 de 8 dias a 5 anos. */
 export function InfeccaoUrinariaPed() {
@@ -25,6 +46,44 @@ export function InfeccaoUrinariaPed() {
   const uro = faixa !== '' && (ufc > 0 || coleta === 'saco') ? lerUrocultura(faixa, coleta, ufc, umGerme, ua) : null
   const incompativel = faixa !== '' && !faixaCompativel(faixa, p.anos, p.meses, p.rn)
   const calc = !p.rn && p.peso > 0 && idadePediatrica(p.anos, p.meses)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaItuPed.id)
+  const rotulo = <T,>(ops: [T, string][], v: T) => ops.find(([x]) => x === v)?.[1] ?? ''
+  const temResultado = calc || leituraUa !== null || uro !== null
+
+  // Texto do "Copiar" (C3 e C4 = A): dados, leitura da urinálise e da urocultura e as listas de antibióticos da tela, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Infecção urinária — criança',
+        dados: [
+          ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+          ['Idade', `${p.anos} anos e ${p.meses} meses`],
+          ['Recém-nascido', p.rn ? 'sim' : ''],
+          ['Faixa de idade', faixa !== '' ? rotulo(FAIXAS_ITU, faixa) : ''],
+          ['Leucócitos por campo', aap ? rotulo(OPCOES_LEUCOCITOS, ua.leucocitos) : ''],
+          ['Esterase leucocitária', aap ? rotulo(OPCOES_ESTERASE, ua.esterase) : ''],
+          ['Coleta da urocultura', uro ? rotulo(COLETAS, coleta) : ''],
+          ['Contagem', uro && ufc > 0 ? `${numeroBr(ufc)} UFC/mL` : ''],
+          ['Crescimento', uro ? (umGerme ? 'um uropatógeno' : 'mais de um germe') : ''],
+        ],
+        resultado: [
+          ...(faixa !== '' ? [`Referência aplicada: ${aap ? REFERENCIA_AAP : REFERENCIA_LIVRO}`] : []),
+          ...(leituraUa ? [leituraUa] : []),
+          ...(uro ? uro.linhas : []),
+          ...(calc
+            ? [
+                'Via oral (Tabela 3, p. 597):',
+                ...DOSES_ITU_ORAL.flatMap((d) => linhaDoseLivro(d, p.peso)),
+                'Via parenteral (Tabela 4, p. 597–598):',
+                ...DOSES_ITU_PARENTERAL.flatMap((d) => linhaDoseLivro(d, p.peso)),
+              ]
+            : []),
+        ],
+        fonte: textoFontes(fichaItuPed),
+        versao: fichaItuPed.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -81,7 +140,7 @@ export function InfeccaoUrinariaPed() {
 
         {faixa !== '' && (
           <>
-            <Opcoes label="Coleta da urocultura" valor={coleta} opcoes={[['sondagem', 'Sondagem vesical'], ['psp', 'Punção suprapúbica'], ['jato', 'Jato médio'], ['saco', 'Saco coletor']]} onChange={setColeta} />
+            <Opcoes label="Coleta da urocultura" valor={coleta} opcoes={COLETAS} onChange={setColeta} />
             <NumberField id="itu-ufc" label="Contagem" unit="UFC/mL" value={ufc} onChange={setUfc} min={0} step={1000} />
             <Opcoes label="Crescimento" valor={umGerme} opcoes={[[true, 'Um uropatógeno'], [false, 'Mais de um germe']]} onChange={setUmGerme} />
             {uro && uro.linhas.map((l) => <p key={l}>{l}</p>)}
@@ -118,8 +177,28 @@ export function InfeccaoUrinariaPed() {
             {r.notaAap && <Nota>{r.notaAap}</Nota>}
           </div>
         ))}
-        <Errata texto={ERRATA_ITU} />
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[
+          `Errata do livro: ${ERRATA_ITU}`,
+          ...[...DOSES_ITU_ORAL, ...DOSES_ITU_PARENTERAL].filter((d) => d.errata).map((d) => `${d.nome} — errata do livro (${d.pagina}): ${d.errata}`),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaItuPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(p.peso)} kg${p.anos > 0 || p.meses > 0 ? ` · ${p.anos} a ${p.meses} m` : ''}` : p.rn ? 'Recém-nascido: sem dose neonatal no capítulo' : idadePediatrica(p.anos, p.meses) ? 'Informe o peso' : 'A partir de 14 anos é adulto: ferramenta pediátrica'}
+        detalhe={leituraUa ?? uro?.linhas[0] ?? (faixa !== '' ? `Referência: ${aap ? REFERENCIA_AAP : REFERENCIA_LIVRO}` : undefined)}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

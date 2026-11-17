@@ -4,16 +4,37 @@ import {
   DIFERENCAS_ICR_AAP, DOSES_FSSL, ELEGIBILIDADE_AAP, ERRATA_AAP_LIQUOR, EXCLUSOES, FATORES_URINA, KAS_AAP_2021, LIVRO_COLETA_URINA, NOTA_LEUCOGRAMA, PECARN_DESEMPENHO,
   REFERENCIAS_FSSL, TEXTO_FAIXA, faixaAap2021, faixaFssl, fichaFebreSemSinais, leituraColetaUrina, leucogramaAlterado, marcadoresAap2021, pcrAlterada, pecarn2019,
 } from '@/clinico/pediatria/febreSemSinaisPed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { calcularDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Pergunta } from '../manual/PecasLoteC'
 
-import { PACIENTE_VAZIO, idadePediatrica } from './formatoIcr'
+import { PACIENTE_VAZIO, faixaBr, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, Nota } from './PecasIcr'
 import { Aviso, LinhaDoseLivro, Marcadores } from './PecasP4'
 import { ListaLivro, ListaQuadro } from './PecasP5'
+
+const casas = (u: DoseLivro['unidade'], x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar" com a mesma conta da LinhaDoseLivro; RN sem valor neonatal fica de fora. */
+function linhaCopia(d: DoseLivro, peso: number, rn: boolean): string[] {
+  if (rn && !d.neonatal) return []
+  const r = calcularDoseLivro(d, peso)
+  if (!r || (!r.porDose && !r.dia)) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casas(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta}${r.noMaximo ? ` — limitado ao máximo${d.fonteMaximo ? ` (${d.fonteMaximo})` : ' do livro'}` : ''} · ${d.via} (Livro ICr, ${d.pagina})`]
+}
 
 /** Febre sem sinais localizatórios — cap. 45 do livro do ICr. */
 export function FebreSemSinaisPed() {
@@ -24,6 +45,8 @@ export function FebreSemSinaisPed() {
   const [temp, setTemp] = useState(0)
   const [pct, setPct] = useState(0)
   const [urinaNeg, setUrinaNeg] = useState<boolean>()
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaFebreSemSinais.id)
   const meses = p.anos * 12 + p.meses
   const faixa = faixaFssl(dias, meses)
   const menor90 = dias > 0 && dias <= 90
@@ -34,9 +57,41 @@ export function FebreSemSinaisPed() {
   const pecarn = faixaAap && pct > 0 && lab.neutrofilos > 0 ? pecarn2019({ urinaNegativa: urinaNeg, neutrofilos: lab.neutrofilos, procalcitonina: pct }) : null
   const urina = leituraColetaUrina(dias > 0 ? dias / 30.4375 : meses > 0 ? meses : NaN, fatores.size)
   const calc = p.peso > 0 && idadePediatrica(p.anos, p.meses)
+  const temResultado = faixa !== null || leuco !== null || pcr !== null || calc
   const campo = (k: keyof typeof lab, label: string, unit: string, step = 1) => (
     <NumberField id={`fssl-${k}`} label={label} unit={unit} value={lab[k]} onChange={(x) => setLab({ ...lab, [k]: x })} min={0} step={step} />
   )
+
+  // Texto do "Copiar" (C3 e C4 = A): fluxograma pela idade, leitura do leucograma e da PCR, AAP/PECARN, urina e antibióticos do peso.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Febre sem sinais localizatórios — criança',
+      dados: [
+        ['Idade em dias', dias > 0 ? `${numeroBr(dias)} dias` : ''],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['Recém-nascido', p.rn ? 'sim' : ''],
+        ['Leucócitos', lab.leucocitos > 0 ? `${numeroBr(lab.leucocitos)}/mm³` : ''],
+        ['Neutrófilos', lab.neutrofilos > 0 ? `${numeroBr(lab.neutrofilos)}/mm³` : ''],
+        ['Bastões ÷ neutrófilos', lab.bastoesSobreNeutrofilos > 0 ? numeroBr(lab.bastoesSobreNeutrofilos) : ''],
+        ['PCR', lab.pcr > 0 ? `${numeroBr(lab.pcr)} mg/L` : ''],
+        ['Temperatura máxima', faixaAap && temp > 0 ? `${numeroBr(temp)} °C` : ''],
+        ['Procalcitonina', faixaAap && pct > 0 ? `${numeroBr(pct)} ng/mL` : ''],
+        ['Exame de urina', faixaAap && urinaNeg !== undefined ? (urinaNeg ? 'negativo' : 'positivo') : ''],
+      ],
+      resultado: [
+        ...(faixa ? [`Fluxograma pela idade: ${TEXTO_FAIXA[faixa]}`] : []),
+        ...(leuco ? [leuco.alterado ? `Leucograma de maior risco para DBG: ${leuco.motivos.join('; ')} (p. 463–467)` : 'Leucograma fora dos cortes de risco do livro (p. 463–467)'] : []),
+        ...(pcr !== null ? [pcr ? 'PCR > 20 mg/L (p. 463–467)' : 'PCR ≤ 20 mg/L (p. 463–467)'] : []),
+        ...(aap?.algumInformado ? [aap.alterados.length ? `Marcadores alterados pela AAP 2021: ${aap.alterados.join('; ')}` : 'Nenhum marcador informado acima do corte da AAP 2021'] : []),
+        ...(pecarn ? [`PECARN 2019: ${pecarn === 'baixo-risco' ? 'baixo risco' : 'não é baixo risco'} (urina negativa, neutrófilos ≤ 4.090 e procalcitonina ≤ 1,71)`] : []),
+        `Coleta de urina (AAP 2026, Figura 2): ${urina}`,
+        ...(calc ? ['Antibióticos (p. 466–468; Apêndice):', ...DOSES_FSSL.flatMap((d) => linhaCopia(d, p.peso, p.rn))] : []),
+      ],
+      fonte: textoFontes(fichaFebreSemSinais),
+      versao: fichaFebreSemSinais.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -86,21 +141,7 @@ export function FebreSemSinaisPed() {
           <ul className="grid gap-1 text-apoio">
             {KAS_AAP_2021[faixaAap].map((k) => <li key={k.kas}><span className="font-medium">KAS {k.kas}:</span> {k.texto} <span className="text-tinta-sussurro">({k.grau})</span></li>)}
           </ul>
-          {faixaAap === '22-28' && <Nota>{ERRATA_AAP_LIQUOR}</Nota>}
-          <div className="overflow-x-auto">
-            <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
-              <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Livro do ICr</TableHead><TableHead className="pb-2">AAP 2021</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {DIFERENCAS_ICR_AAP.map((d) => (
-                  <TableRow key={d.tema} className="border-t">
-                    <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                    <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell>
-                    <TableCell className="py-2">{d.aap}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          {/* Piloto das calculadoras (C6 = A): a divergência do KAS 11b vai para a aba Armadilhas e a tabela livro × AAP para Evidências. */}
         </Bloco>
       )}
 
@@ -121,6 +162,41 @@ export function FebreSemSinaisPed() {
       <Bloco titulo="Do capítulo">
         <ListaLivro itens={REFERENCIAS_FSSL} />
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[`AAP 2021, lactente de 22 a 28 dias — divergência no texto: ${ERRATA_AAP_LIQUOR}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaFebreSemSinais}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="Livro do ICr × AAP 2021" resumo="A AAP 2021 entra ao lado do livro; as doses continuam só as do livro do ICr.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Livro do ICr</TableHead><TableHead className="pb-2">AAP 2021</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {DIFERENCAS_ICR_AAP.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                      <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                      <TableCell className="py-2">{d.aap}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={faixa ? (dias > 0 ? `Lactente de ${numeroBr(dias)} dias` : `Criança de ${meses} meses`) + (calc ? ` · ${numeroBr(p.peso)} kg` : '') : calc ? `Criança · ${numeroBr(p.peso)} kg` : 'Informe a idade'}
+        detalhe={[leuco?.alterado && 'leucograma de maior risco', pcr && 'PCR > 20 mg/L', aap?.algumInformado && aap.alterados.length > 0 && 'marcador alterado pela AAP', pecarn && `PECARN: ${pecarn === 'baixo-risco' ? 'baixo risco' : 'não é baixo risco'}`].filter(Boolean).join(' · ') || (faixa ? 'Fluxograma da idade no bloco acima; "Copiar" leva a leitura.' : undefined)}
+        textoCopia={temResultado ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

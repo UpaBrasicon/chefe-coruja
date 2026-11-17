@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
-import { BOLUS } from '@/clinico/pediatria/bolus'
+import { BOLUS, calcularBolus, type Bolus } from '@/clinico/pediatria/bolus'
+import { calcularDoseLivro, textoDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
+import { textoFontes } from '@/clinico/ficha'
 import {
   DOSES_HDA, ENCEFALOPATIA, NOTA_VASOATIVOS, REFERENCIAS_HDA, REFERENCIAS_IHA, TRATAMENTO_ESPECIFICO, criterioCoagulacaoPalf,
   fichaDigestivoHepaticoPed, glicoseIhaMgMin, leituraAmonia, leituraParacetamol, octreotidaInfusaoUgH, ofertaRestritaIha, somatostatinaUgH,
@@ -8,6 +10,12 @@ import {
 import { manutencao } from '@/clinico/pediatria/manutencao'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, Nota, Opcoes, Pendencia } from './PecasIcr'
@@ -16,6 +24,25 @@ import { LinhaFaixa, ListaLivro } from './PecasP5'
 
 const VITAMINA_K = BOLUS.find((b) => b.id === 'vitamina-k')
 const TEXTO_AMONIA = { acima: 'acima de 200 µmol/L', faixa: 'na faixa de 150 a 200 µmol/L', abaixo: 'abaixo de 150 µmol/L' } as const
+
+const casasLivro = (u: string, x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar": a mesma conta da LinhaDoseLivro (PecasP4). */
+function doseLivroTxt(d: DoseLivro, peso: number, rn = false): string[] {
+  if (rn && !d.neonatal) return []
+  const r = calcularDoseLivro(d, peso)
+  if (!r) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casasLivro(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta || textoDoseLivro(d)}${r.noMaximo ? ` (limitado ao máximo${d.fonteMaximo ? `, ${d.fonteMaximo}` : ''})` : ''} · ${d.via} (${d.pagina})`]
+}
+
+/** Linha do "Copiar": a mesma conta da LinhaBolusApendice (PecasP4). */
+function bolusTxt(b: Bolus, peso: number, idadeMeses?: number): string[] {
+  const r = calcularBolus(b, peso, idadeMeses)
+  if (!r || r.aplica === 'nao') return []
+  return [`- ${b.nome}: ${faixaBr(r.faixa, r.faixa[1] >= 10 ? 1 : 2)} ${b.unidade}${r.volumeMl ? ` · ${faixaBr(r.volumeMl, 2)} mL` : ''}${r.noMaximo ? ' (limitado ao máximo do livro)' : ''}${r.aplica === 'indefinido' ? ' (depende da idade)' : ''} · ${b.via} (Apêndice, ${b.pagina})`]
+}
 
 /** Hemorragia digestiva e insuficiência hepática aguda — caps. 34 e 36 do livro do ICr. */
 export function DigestivoHepaticoPed() {
@@ -31,6 +58,49 @@ export function DigestivoHepaticoPed() {
   const nh3 = leituraAmonia(amonia)
   const hs = calc ? manutencao(p.peso) : null
   const oferta = calc ? ofertaRestritaIha(base) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaDigestivoHepaticoPed.id)
+  const temConta = calc || palf !== null || para !== null || nh3 !== null
+
+  // Texto do "Copiar" (C3 e C4 = A): doses e leituras que estão na tela, com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Hemorragia digestiva e insuficiência hepática aguda — criança (PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['INR', coag.inr > 0 ? numeroBr(coag.inr) : ''],
+        ['TP', coag.tp > 0 ? `${numeroBr(coag.tp)} s` : ''],
+        ['Encefalopatia clínica', palf !== null ? (eh ? 'sim' : 'não') : ''],
+        ['Paracetamol ingerido', mg > 0 ? `${numeroBr(mg)} mg` : ''],
+        ['Amônia', amonia > 0 ? `${numeroBr(amonia)} µmol/L` : ''],
+        ['Necessidade hídrica basal considerada', calc && base > 0 ? `${numeroBr(base)} mL/dia` : ''],
+      ],
+      resultado: [
+        ...(calc
+          ? [
+              'Hemorragia digestiva alta:',
+              ...DOSES_HDA.flatMap((d) => doseLivroTxt(d, p.peso, p.rn)),
+              `- Octreotida — infusão contínua: ${faixaBr(octreotidaInfusaoUgH(p.peso), 1)} µg/h (p. 349)`,
+              `- Somatostatina — infusão: ${faixaBr(somatostatinaUgH(p.peso), 1)} µg/h (p. 349)`,
+            ]
+          : []),
+        ...(palf !== null ? [`PALF: ${palf ? 'preenche' : 'não preenche'} o critério de coagulação (${eh ? 'com encefalopatia: INR > 1,5 ou TP ≥ 15 s' : 'sem encefalopatia: INR > 2 ou TP ≥ 20 s'}) (p. 357)`] : []),
+        ...(para && para.mgKg !== null ? [`Paracetamol: ${br(para.mgKg, 0)} mg/kg — ${para.toxicaUnica === 'sim' ? 'acima de 200 mg/kg' : para.toxicaUnica === 'faixa' ? 'na faixa tóxica de 150 a 200 mg/kg' : 'até 150 mg/kg'} (p. 358)`] : []),
+        ...(nh3 ? [`Amônia ${TEXTO_AMONIA[nh3]} (p. 364)`] : []),
+        ...(calc
+          ? [
+              'IHA — suporte:',
+              `- Glicose em altas taxas: ${faixaBr(glicoseIhaMgMin(p.peso), 0)} mg/min (p. 364)`,
+              ...(oferta ? [`- Oferta hídrica EV restrita: ${faixaBr(oferta, 0)} mL/dia · ${faixaBr([oferta[0] / 24, oferta[1] / 24], 0)} mL/h (p. 361)`] : []),
+              ...(VITAMINA_K ? bolusTxt(VITAMINA_K, p.peso, p.anos * 12 + p.meses) : []),
+            ]
+          : []),
+      ],
+      fonte: textoFontes(fichaDigestivoHepaticoPed),
+      versao: fichaDigestivoHepaticoPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -109,6 +179,24 @@ export function DigestivoHepaticoPed() {
       <Bloco titulo="IHA — do capítulo">
         <ListaLivro itens={REFERENCIAS_IHA} />
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temConta}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaDigestivoHepaticoPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(p.peso)} kg` : temConta ? 'Leituras nos blocos acima' : 'Informe peso e idade'}
+        detalhe={temConta ? 'Doses e leituras nas listas acima; "Copiar" leva todas.' : undefined}
+        textoCopia={temConta ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

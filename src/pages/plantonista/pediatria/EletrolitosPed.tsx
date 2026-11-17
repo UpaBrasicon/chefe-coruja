@@ -1,5 +1,8 @@
 import { useState } from 'react'
 
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { hollidaySegarMlDia } from '@/clinico/pediatria/manutencao'
 import {
   CLORETO_CA_TABELA7, CORRECAO_ALBUMINA_TEXTO, ERRATA_CALCIO, ERRATA_TABELA11, FATOR_IR_MG, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEMIA, HIPOCALCEMIA, HIPOMAGNESEMIA,
@@ -8,9 +11,13 @@ import {
 } from '@/clinico/pediatria/eletrolitosPed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, podeCalcular } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
+import { Bloco, CampoPaciente, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
 
 function LinhaDose({ d, peso, extra }: { d: Dose; peso: number; extra?: (f: [number, number]) => string | null }) {
   const r = calcularDose(d, peso)
@@ -39,6 +46,21 @@ function LinhaDose({ d, peso, extra }: { d: Dose; peso: number; extra?: (f: [num
 
 type Aba = 'k' | 'ca' | 'mg' | 'p'
 
+const NOME_ABA: Record<Aba, string> = { k: 'Potássio', ca: 'Cálcio', mg: 'Magnésio', p: 'Fósforo' }
+
+/** Linha do "Copiar": a mesma conta da LinhaDose acima. */
+function doseTxt(d: Dose, peso: number, extra?: (f: [number, number]) => string | null): string[] {
+  const r = calcularDose(d, peso)
+  if (!r) return []
+  const x = extra ? extra(r.faixa) : null
+  return [`- ${d.nome}: ${faixaBr(r.faixa, 2)} ${d.unidade}${x ? ` · ${x}` : ''}${r.noMaximo ? ' (máximo)' : ''} (${d.pagina})`]
+}
+
+const extraKvo = (f: [number, number]) => `${faixaBr([f[0] / 4, f[1] / 2], 1)} mEq por tomada (2 a 4 tomadas)`
+const extraCloretoCa = (f: [number, number]) => `${br(f[0] * 100, 0)} mg`
+const extraGluconato = (f: [number, number]) => `${faixaBr([f[0] * 9, f[1] * 9], 0)} mg de Ca elementar`
+const extraFosforo = (f: [number, number]) => `${faixaBr([mlFosforoOrganico(f[0])!, mlFosforoOrganico(f[1])!], 2)} mL de fósforo orgânico (1 mmol/mL; 2 mEq/mL de Na)`
+
 /** Potássio, cálcio, magnésio e fósforo na criança — cap. 54 do Pronto-Socorro ICr-HCFMUSP. */
 export function EletrolitosPed() {
   const [p, setP] = useState(PACIENTE_VAZIO)
@@ -52,6 +74,60 @@ export function EletrolitosPed() {
   const grauMg = mg > 0 ? grauHipomagnesemia(mg) : null
   const fe = fracaoExcrecaoMg(femg.uMg, femg.pCr, femg.pMg, femg.uCr)
   const basal = calc ? hollidaySegarMlDia(p.peso) : null
+  const [abaRes, setAbaRes] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaEletrolitosPed.id)
+  const extraKiv = (f: [number, number]) => `volume mínimo ${faixaBr([volumeMinimoMlH(f[0], acesso)!, volumeMinimoMlH(f[1], acesso)!], 0)} mL/h para ≤ ${K_CONC_MAX[acesso]} mEq/L`
+  const grausMg = grauMg ? [grauMg] : (['grave', 'moderada', 'leve'] as const)
+  const doseMg = (g: (typeof grausMg)[number]) => {
+    const d = HIPOMAGNESEMIA[g]
+    const r = calcularDose(d, p.peso)
+    const f = r ? (ir ? ([r.faixa[0] * FATOR_IR_MG, r.faixa[1] * FATOR_IR_MG] as [number, number]) : r.faixa) : null
+    return { d, r, f }
+  }
+
+  // Texto do "Copiar" (C3 e C4 = A): a lista do eletrólito que está na tela, com a página do livro.
+  const resultadoCopia = (): string[] => {
+    if (aba === 'k')
+      return [
+        ...doseTxt(K_IV, p.peso, extraKiv),
+        ...(kIv ? [`- KCl 19,1% (2,5 mEq/mL, Tabela 11): ${faixaBr([mlKcl191(kIv.faixa[0])!, mlKcl191(kIv.faixa[1])!], 1)} mL por hora de infusão`] : []),
+        ...doseTxt(K_VO, p.peso, extraKvo),
+        ...HIPERCALEMIA.flatMap((d) => doseTxt(d, p.peso, d.id === 'cloreto-ca' ? extraCloretoCa : undefined)),
+        ...doseTxt(CLORETO_CA_TABELA7, p.peso),
+      ]
+    if (aba === 'ca')
+      return [
+        ...HIPOCALCEMIA.flatMap((d) => doseTxt(d, p.peso, extraGluconato)),
+        ...HIPERCALCEMIA.flatMap((d) => doseTxt(d, p.peso)),
+        ...(basal !== null ? [`- Oferta hídrica 1,5 a 2 vezes a basal: ${faixaBr(ofertaHipercalcemia(basal), 0)} mL/dia (Holliday-Segar ${br(basal, 0)} mL/dia, cap. 77, p. 840)`] : []),
+      ]
+    if (aba === 'mg')
+      return [
+        ...grausMg.flatMap((g) => {
+          const { d, r, f } = doseMg(g)
+          if (!f) return []
+          return [`- ${d.nome}${ir ? ' — com redução de 50%' : ''}: ${faixaBr(f, 2)} ${d.unidade}${g === 'grave' ? ` · ${faixaBr([mlSulfMg10(f[0])!, mlSulfMg10(f[1])!], 1)} mL de sulfato de Mg 10%` : ''}${r?.noMaximo ? ' (máximo)' : ''} (${d.pagina})`]
+        }),
+        ...(fe ? [`- FEMg ${br(fe.femg, 2)}% — ${fe.leitura} (p. 557)`] : []),
+        ...HIPERMAGNESEMIA.flatMap((d) => doseTxt(d, p.peso)),
+      ]
+    return FOSFORO.flatMap((d) => doseTxt(d, p.peso, d.id === 'p-ev' ? extraFosforo : undefined))
+  }
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Potássio, cálcio, magnésio e fósforo — criança (PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Peso', `${numeroBr(p.peso)} kg`],
+        ['Eletrólito', NOME_ABA[aba]],
+        ['Acesso', aba === 'k' ? (acesso === 'central' ? 'central' : 'periférico') : ''],
+        ['Magnésio sérico', aba === 'mg' && mg > 0 ? `${numeroBr(mg)} mg/dL` : ''],
+        ['Insuficiência renal', aba === 'mg' && ir ? 'sim (doses −50%)' : ''],
+      ],
+      resultado: [`${NOME_ABA[aba]}:`, ...resultadoCopia()],
+      fonte: textoFontes(fichaEletrolitosPed),
+      versao: fichaEletrolitosPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -75,14 +151,14 @@ export function EletrolitosPed() {
                 <LinhaDose
                   d={K_IV}
                   peso={p.peso}
-                  extra={(f) => `volume mínimo ${faixaBr([volumeMinimoMlH(f[0], acesso)!, volumeMinimoMlH(f[1], acesso)!], 0)} mL/h para ≤ ${K_CONC_MAX[acesso]} mEq/L`}
+                  extra={extraKiv}
                 />
                 {kIv && (
                   <Nota>
                     KCl 19,1% (2,5 mEq/mL, Tabela 11): {faixaBr([mlKcl191(kIv.faixa[0])!, mlKcl191(kIv.faixa[1])!], 1)} mL por hora de infusão.
                   </Nota>
                 )}
-                <LinhaDose d={K_VO} peso={p.peso} extra={(f) => `${faixaBr([f[0] / 4, f[1] / 2], 1)} mEq por tomada (2 a 4 tomadas)`} />
+                <LinhaDose d={K_VO} peso={p.peso} extra={extraKvo} />
               </>
             )}
           </Bloco>
@@ -93,7 +169,7 @@ export function EletrolitosPed() {
             {calc && (
               <>
                 {HIPERCALEMIA.map((d) => (
-                  <LinhaDose key={d.id} d={d} peso={p.peso} extra={d.id === 'cloreto-ca' ? (f) => `${br(f[0] * 100, 0)} mg` : undefined} />
+                  <LinhaDose key={d.id} d={d} peso={p.peso} extra={d.id === 'cloreto-ca' ? extraCloretoCa : undefined} />
                 ))}
                 <LinhaDose d={CLORETO_CA_TABELA7} peso={p.peso} />
                 <Nota>O livro inclui ainda agonista beta-adrenérgico inalatório ou EV (sem dose no capítulo) e diálise como último recurso (p. 549).</Nota>
@@ -109,7 +185,7 @@ export function EletrolitosPed() {
             titulo="Hipocalcemia (p. 550–552)"
             descricao={`Cálcio sérico < ${LIMIAR_HIPOCALCEMIA.prematuro} mg/dL no prematuro, < ${LIMIAR_HIPOCALCEMIA.rnTermo} no RN a termo, < ${LIMIAR_HIPOCALCEMIA.crianca} em crianças e adolescentes (p. 550).`}
           >
-            {calc && HIPOCALCEMIA.map((d) => <LinhaDose key={d.id} d={d} peso={p.peso} extra={(f) => `${faixaBr([f[0] * 9, f[1] * 9], 0)} mg de Ca elementar`} />)}
+            {calc && HIPOCALCEMIA.map((d) => <LinhaDose key={d.id} d={d} peso={p.peso} extra={extraGluconato} />)}
             <Nota>{CORRECAO_ALBUMINA_TEXTO}</Nota>
             <Nota>1 mL de gluconato de cálcio 10% = 9 mg de cálcio elementar; 1 mL de cloreto de cálcio 10% = 27 mg (p. 552).</Nota>
           </Bloco>
@@ -120,9 +196,6 @@ export function EletrolitosPed() {
                 Oferta hídrica 1,5 a 2 vezes a basal: {faixaBr(ofertaHipercalcemia(basal), 0)} mL/dia sobre a basal de Holliday-Segar ({br(basal, 0)} mL/dia, cap. 77, p. 840).
               </Nota>
             )}
-            {ERRATA_CALCIO.map((e) => (
-              <Errata key={e} texto={e} />
-            ))}
           </Bloco>
         </>
       )}
@@ -139,10 +212,8 @@ export function EletrolitosPed() {
             </div>
             {mg > 0 && !grauMg && <p className="text-tinta-sussurro">Sem hipomagnesemia pelo corte do livro.</p>}
             {calc &&
-              (grauMg ? [grauMg] : (['grave', 'moderada', 'leve'] as const)).map((g) => {
-                const d = HIPOMAGNESEMIA[g]
-                const r = calcularDose(d, p.peso)
-                const f = r ? (ir ? ([r.faixa[0] * FATOR_IR_MG, r.faixa[1] * FATOR_IR_MG] as [number, number]) : r.faixa) : null
+              grausMg.map((g) => {
+                const { d, r, f } = doseMg(g)
                 return (
                   <LinhaLivro
                     key={g}
@@ -188,13 +259,30 @@ export function EletrolitosPed() {
         <Bloco titulo="Hipofosfatemia (p. 553–554)" descricao={`Normal em crianças, de modo geral, ${LIMIARES_P.normal.join(' a ')} mg/dL (conferir a referência do laboratório); sintomas abaixo de ${LIMIARES_P.sintomas.join(' a ')} mg/dL.`}>
           {calc &&
             FOSFORO.map((d) => (
-              <LinhaDose key={d.id} d={d} peso={p.peso} extra={d.id === 'p-ev' ? (f) => `${faixaBr([mlFosforoOrganico(f[0])!, mlFosforoOrganico(f[1])!], 2)} mL de fósforo orgânico (1 mmol/mL; 2 mEq/mL de Na)` : undefined} />
+              <LinhaDose key={d.id} d={d} peso={p.peso} extra={d.id === 'p-ev' ? extraFosforo : undefined} />
             ))}
           <Nota>Hiperfosfatemia: o livro traz hidratação, restrição dietética, quelantes e diálise, sem dose por peso (p. 555).</Nota>
         </Bloco>
       )}
 
-      <Errata texto={ERRATA_TABELA11} />
+      <AbasResultado
+        aba={abaRes}
+        onAba={setAbaRes}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!calc}
+        // Erratas do livro sem efeito na dose vão para "Armadilhas" (C6 = A); as erratas e notas de cada dose ficam no item.
+        armadilhas={[ERRATA_TABELA11, ...ERRATA_CALCIO, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaEletrolitosPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(p.peso)} kg · ${NOME_ABA[aba]}` : 'Informe o peso'}
+        detalhe={calc ? 'Doses do peso nas listas acima; "Copiar" leva a lista do eletrólito na tela.' : undefined}
+        textoCopia={calc ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAbaRes('proximos')}
+      />
     </ToolLayout>
   )
 }

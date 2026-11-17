@@ -3,8 +3,15 @@ import { useState } from 'react'
 import {
   FATORES_NEUROTOXICIDADE, faixaBilirrubina, fichaIctericiaNeonatal, limiaresIctericia, pedirSerica, suspensaoFototerapia,
 } from '@/clinico/pediatria/ictericia'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +26,16 @@ const TEXTO_FAIXA = {
   exsanguineo: 'No limiar de exsanguineotransfusão ou acima (Tabelas Suplementares 3 e 4).',
 }
 
+/** Rótulo curto da faixa para o resumo flutuante (o texto inteiro fica no quadro acima). */
+const FAIXA_CURTA = {
+  abaixo: 'abaixo do limiar de fototerapia',
+  fototerapia: 'no limiar de fototerapia ou acima',
+  escalonamento: 'no limiar de escalonamento ou acima',
+  exsanguineo: 'no limiar de exsanguineotransfusão ou acima',
+}
+
+const NOTA_BT = 'Usar a bilirrubina total; não subtrair a direta. Os limiares vêm de opinião de especialistas (Tabelas Suplementares).'
+
 /** Icterícia neonatal ≥ 35 semanas: limiares hora a hora da AAP 2022. */
 export function IctericiaNeonatal() {
   const [ig, setIg] = useState(0)
@@ -27,8 +44,37 @@ export function IctericiaNeonatal() {
   const [btc, setBtc] = useState(0)
   const [fator, setFator] = useState<boolean>()
   const [subindo, setSubindo] = useState<boolean>()
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaIctericiaNeonatal.id)
   const l = ig > 0 && horas > 0 && fator !== undefined ? limiaresIctericia({ igSemanas: ig, horasDeVida: Math.floor(horas), fatorRisco: fator, subindoNaFoto: subindo }) : null
   const faixa = l && bt > 0 ? faixaBilirrubina(bt, l) : null
+  const textoSerica = l && btc > 0 ? (pedirSerica(btc, l.fototerapia) ? 'Transcutânea a até 3 mg/dL do limiar de fototerapia ou ≥ 15 mg/dL: dosar a bilirrubina total sérica (KAS 6).' : 'Transcutânea abaixo do critério de dosagem sérica do KAS 6.') : null
+
+  // Texto do "Copiar" (C4 = A): dados, limiares da hora de vida, faixa da bilirrubina e a tabela da AAP.
+  const copia = () =>
+    l &&
+    textoCopia({
+      ferramenta: 'Icterícia neonatal ≥ 35 semanas — fototerapia e escalonamento (AAP 2022)',
+      dados: [
+        ['Idade gestacional', `${numeroBr(ig)} semanas`],
+        ['Horas de vida', `${Math.floor(horas)} h`],
+        ['Fator de risco de neurotoxicidade além da IG', fator ? 'sim' : 'não'],
+        ['Bilirrubina subindo apesar da fototerapia', subindo === undefined ? '' : subindo ? 'sim' : 'não'],
+        ['Bilirrubina total sérica', bt > 0 ? `${mg(bt)} mg/dL` : ''],
+        ['Bilirrubina transcutânea', btc > 0 ? `${mg(btc)} mg/dL` : ''],
+      ],
+      resultado: [
+        `Limiar de fototerapia: ${mg(l.fototerapia)} mg/dL (Tabela Suplementar ${l.tabelaFoto})`,
+        `Limiar de escalonamento de cuidado: ${mg(l.escalonamento)} mg/dL (2 mg/dL abaixo da exsanguineotransfusão, KAS 17)`,
+        `Limiar de exsanguineotransfusão: ${mg(l.exsanguineo)} mg/dL (Tabela Suplementar ${l.tabelaExs})`,
+        ...(textoSerica ? [textoSerica] : []),
+        ...(faixa ? [`Bilirrubina ${mg(bt)} mg/dL: ${TEXTO_FAIXA[faixa]}`] : []),
+        ...(faixa && faixa !== 'abaixo' ? [`Suspender a fototerapia é opção quando a bilirrubina cair a ${mg(suspensaoFototerapia(l.fototerapia))} mg/dL ou menos (2 mg/dL abaixo do limiar no início, KAS 15).`] : []),
+      ],
+      fonte: textoFontes(fichaIctericiaNeonatal),
+      versao: fichaIctericiaNeonatal.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -58,9 +104,9 @@ export function IctericiaNeonatal() {
             <NumberField id="ict-bt" label="Bilirrubina total sérica" unit="mg/dL" value={bt} onChange={setBt} min={0} step={0.1} />
             <NumberField id="ict-btc" label="Bilirrubina transcutânea (se houver)" unit="mg/dL" value={btc} onChange={setBtc} min={0} step={0.1} />
           </div>
-          {btc > 0 && (
+          {textoSerica && (
             <p className="text-apoio text-tinta-apoio">
-              {pedirSerica(btc, l.fototerapia) ? 'Transcutânea a até 3 mg/dL do limiar de fototerapia ou ≥ 15 mg/dL: dosar a bilirrubina total sérica (KAS 6).' : 'Transcutânea abaixo do critério de dosagem sérica do KAS 6.'}
+              {textoSerica}
             </p>
           )}
           {faixa && (
@@ -70,9 +116,27 @@ export function IctericiaNeonatal() {
               {faixa !== 'abaixo' && <p className="text-apoio text-tinta-sussurro">Suspender a fototerapia é opção quando a bilirrubina cair a {mg(suspensaoFototerapia(l.fototerapia))} mg/dL ou menos (2 mg/dL abaixo do limiar no início, KAS 15).</p>}
             </div>
           )}
-          <p className="text-apoio text-tinta-sussurro">Usar a bilirrubina total; não subtrair a direta. Os limiares vêm de opinião de especialistas (Tabelas Suplementares).</p>
+          <p className="text-apoio text-tinta-sussurro">{NOTA_BT}</p>
         </Bloco>
       )}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!l}
+        armadilhas={[NOTA_BT, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaIctericiaNeonatal}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={faixa ? `BT ${mg(bt)} mg/dL · ${FAIXA_CURTA[faixa]}` : l ? `Fototerapia a partir de ${mg(l.fototerapia)} mg/dL` : 'Informe IG, horas de vida e fator de risco'}
+        detalhe={l ? `Às ${Math.floor(horas)} h: fototerapia ${mg(l.fototerapia)} · escalonamento ${mg(l.escalonamento)} · exsanguineotransfusão ${mg(l.exsanguineo)} mg/dL` : undefined}
+        tom={faixa === 'escalonamento' || faixa === 'exsanguineo' ? 'critico' : faixa === 'fototerapia' ? 'atencao' : 'neutro'}
+        textoCopia={copia() || undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

@@ -5,8 +5,15 @@ import {
   SOLUCOES_NA, bolusNaCl3Ml, deficitAguaLivrePed, diferencaOsmolar, fichaSodioPed, horasMinimasHiper, litrosParaVariacao, osmEfetiva, sg5RapidoMl, sodioCorrigidoPed,
   tonicidadePed, variacaoNaPorLitro,
 } from '@/clinico/pediatria/sodioPed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, LinhaLivro, Nota, Pendencia } from './PecasIcr'
@@ -32,6 +39,48 @@ export function DisturbiosSodioPed() {
   const hipo = naRef !== null && naRef < LIMIARES.hiponatremia
   const deficit = calc && naRef !== null && naDesejado > 0 ? deficitAguaLivrePed(p.peso, naRef, naDesejado) : null
   const horas = naRef !== null && naDesejado > 0 ? horasMinimasHiper(naRef, naDesejado) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaSodioPed.id)
+  const textoNa = naRef === null ? null : hipo ? `Hiponatremia (< ${LIMIARES.hiponatremia} mEq/L, p. 533); "grave" varia na literatura: < 120 ou < 125.` : hiper ? `Hipernatremia (> ${LIMIARES.hipernatremia} mEq/L, p. 540).` : 'Sódio entre 135 e 145 mEq/L.'
+  const temResultado = naRef !== null || calc
+
+  // Texto do "Copiar" (C4 = A): sódio e osmolalidade, e as contas do peso que estão na tela, com a página.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Hipo e hipernatremia — criança',
+      dados: [
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['Sódio medido', na > 0 ? `${numeroBr(na)} mEq/L` : ''],
+        ['Glicemia', glic > 0 ? `${numeroBr(glic)} mg/dL` : ''],
+        ['Osmolalidade medida', osmMedida > 0 ? `${numeroBr(osmMedida)} mOsm/kg` : ''],
+        ['Variação desejada', calc && naRef !== null && variacao !== 0 ? `${variacao > 0 ? '+' : ''}${numeroBr(variacao)} mEq/L` : ''],
+        ['Sódio desejado', calc && naDesejado > 0 ? `${numeroBr(naDesejado)} mEq/L` : ''],
+      ],
+      resultado: [
+        ...(glic > 100 && naRef !== null ? [`Sódio corrigido pela glicemia: ${br(naRef)} mEq/L (p. 534)`] : []),
+        ...(osmEf !== null ? [`Osmolalidade efetiva: ${br(osmEf, 0)} mOsm/kg (p. 537)${dif ? ` · diferença medida − efetiva ${br(dif.diferenca, 0)}${dif.acimaDe50 ? ' — acima de 50 a 60 sugere outros osmóis (p. 537)' : ''}` : ''}`] : []),
+        ...(ton ? [`Pela osmolalidade medida: hiponatremia ${TONICIDADE[ton]} (p. 534)`] : []),
+        ...(textoNa ? [textoNa] : []),
+        ...(bolus ? [`NaCl 3% no coma ou crise convulsiva: ${br(bolus.ml, 0)} mL${bolus.noMaximo ? ' (máximo)' : ''} ≈ +${br(bolus.ml / p.peso)} mEq/L (p. 538; Figura 4, p. 539)`] : []),
+        ...(calc && naRef !== null
+          ? [
+              'Variação estimada por litro (Tabela 3, p. 540):',
+              ...SOLUCOES_NA.map((s) => {
+                const porL = variacaoNaPorLitro(naRef, s.naMeqL, p.peso)
+                const litros = porL !== null && variacao !== 0 ? litrosParaVariacao(variacao, porL) : null
+                return `- ${s.nome} (Na ${s.naMeqL} mEq/L): 1 L muda o Na em ${porL === null ? '—' : `${porL > 0 ? '+' : ''}${br(porL)} mEq/L`}${litros !== null ? ` · para ${variacao > 0 ? '+' : ''}${br(variacao)} mEq/L: ${br(litros * 1000, 0)} mL` : ''}`
+              }),
+            ]
+          : []),
+        ...(calc ? [`SG 5% na hipernatremia aguda com convulsão, coma, hemorragia intracraniana ou trombose de seios venosos: ${br(sg5RapidoMl(p.peso), 0)} mL (p. 542)`] : []),
+        ...(deficit !== null ? [deficit > 0 ? `Déficit de água livre: ${br(deficit, 2)} L (Tabela 6, p. 543)` : 'Sem déficit de água livre para esse alvo.'] : []),
+        ...(calc && horas !== null && naRef !== null ? [`A ${QUEDA_MAX_HIPER_MEQ_H} mEq/L/h, de ${br(naRef)} a ${br(naDesejado)} mEq/L levaria no mínimo ${br(horas)} h.`] : []),
+      ],
+      fonte: textoFontes(fichaSodioPed),
+      versao: fichaSodioPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -59,11 +108,7 @@ export function DisturbiosSodioPed() {
           </p>
         )}
         {ton && <p>Pela osmolalidade medida: hiponatremia {TONICIDADE[ton]} (p. 534).</p>}
-        {naRef !== null && (
-          <p>
-            {hipo ? `Hiponatremia (< ${LIMIARES.hiponatremia} mEq/L, p. 533); "grave" varia na literatura: < 120 ou < 125.` : hiper ? `Hipernatremia (> ${LIMIARES.hipernatremia} mEq/L, p. 540).` : 'Sódio entre 135 e 145 mEq/L.'}
-          </p>
-        )}
+        {textoNa && <p>{textoNa}</p>}
         <Nota>
           Densidade urinária x osmolalidade urinária (Tabela 2, p. 537–538): {DENSIDADE_OSM_URINARIA.map((d) => `${d.densidade} ≈ ${d.osm}`).join(' · ')} mOsm/L.
         </Nota>
@@ -144,6 +189,23 @@ export function DisturbiosSodioPed() {
           <Nota>Na via parenteral o livro usa SG 5% com o volume estimado pela Tabela 3 (bloco acima) e acrescenta a reposição das perdas que continuam (p. 542).</Nota>
         </Bloco>
       )}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaSodioPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={naRef !== null ? `Na ${br(naRef)} mEq/L · ${hipo ? 'hiponatremia' : hiper ? 'hipernatremia' : 'entre 135 e 145'}` : calc ? `Criança · ${numeroBr(p.peso)} kg` : 'Informe o sódio e o peso'}
+        detalhe={calc ? `${naRef !== null ? `Criança · ${numeroBr(p.peso)} kg · ` : ''}volumes do peso nos blocos acima; "Copiar" leva todos.` : naRef !== null ? (p.rn ? 'Recém-nascido: a ferramenta não calcula volume.' : 'Informe o peso para os volumes.') : undefined}
+        textoCopia={temResultado ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
