@@ -2537,6 +2537,69 @@ Regra da trilha: primeiro S0, que diz quais achados existem de fato. Cada corre�
 
 ---
 
+## Trilha — Obrigatórios legais e regulatórios, pedido do RT em 17/11/2026
+
+Origem: perguntas do RT sobre o modelo do produto (SaaS, prontuário oficial, SaMD, LGPD, assinatura, IA), respondidas na conversa de 16 e 17/11/2026. Base: `docs/regulatorio/SAMD-CAMINHO-1-DIAGNOSTICO.md`.
+
+Regra da trilha:
+- **Cada item começa por diagnóstico com decisões A/B.**
+- **Peças jurídicas** (contrato, relatório de impacto e outras) saem como rascunho técnico, para o advogado e o consultor revisarem. Não são parecer.
+- **Mudança de código** segue o fluxo de sempre: homologação, CI verde e "ok produção".
+
+Começa depois que a trilha das calculadoras terminar.
+
+| Item | O que fazer | Base | Prioridade sugerida | Estado |
+|---|---|---|---|---|
+| LG1 | Contrato de operador (DPA) padrão por cliente: hospital controlador, empresa operadora; suboperadores (Supabase, Vercel, AWS, Resend e o provedor de IA); fim do contrato e devolução ou guarda dos dados | LGPD, art. 39 | P0 | Pendente |
+| LG2 | Encarregado (DPO) nomeado e publicado no site, com canal de contato | LGPD, art. 41 | P0 | Pendente |
+| LG3 | Relatório de impacto (RIPD) do tratamento de dado de saúde | LGPD, arts. 5º XVII e 38 | P0 | Pendente |
+| LG4 | Inventário das operações de tratamento: que dado, para quê, onde fica, quem acessa e por quanto tempo | LGPD, art. 37 | P1 | Pendente |
+| LG5 | Plano de resposta a incidente: quem decide, modelo de aviso à ANPD e ao titular, prazo | Resolução CD/ANPD 15/2024 | P0 | Pendente |
+| LG6 | IA com dado de saúde: trocar o provedor ou a região do modelo (hoje DeepSeek), ou assinar as cláusulas-padrão, ou tirar o dado de paciente da IA | LGPD, art. 33; Resolução ANPD 19/2024 | P0 | Pendente |
+| LG7 | Assinatura qualificada ICP-Brasil (certificado em nuvem: BirdID, VIDaaS, SafeID e outros) em receita de controlado, atestado e documentos do prontuário | Lei 14.063/2020; Res. CFM 2.299/2021 e 1.821/2007; Lei 13.787/2018 | P1 | Pendente |
+| LG8 | Telemedicina: termo de consentimento, registro no prontuário e documento assinado na teleinterconsulta | Lei 14.510/2022; Res. CFM 2.314/2022 | P2 | Pendente |
+| LG9 | Conferir a guarda dos registros de acesso por pelo menos 6 meses | Marco Civil, art. 15 | P2 | Pendente |
+| LG10 | Gate de aprovação clínica antes de publicar: a ficha nova só aparece ao usuário depois de aprovada; até lá, a versão anterior | `docs/regulatorio/SAMD-CAMINHO-1-DIAGNOSTICO.md` | P0 | Pendente |
+| LG11 | Enquadramento SaMD com consultor regulatório (decisões R1 a R5 e as 8 perguntas do diagnóstico); depois, módulo clínico separado e notificação ou registro na ANVISA | RDC 657 e 751/2022; RDC 665/2022 | P1 | Diagnóstico do caminho 1 escrito em 16/11/2026, esperando o consultor |
+| LG12 | Tecnovigilância: canal de evento adverso, investigação e aviso à ANVISA. Vale depois da regularização do LG11 | RDC 67/2009 | P2 | Pendente (depende do LG11) |
+| LG13 | Comitê clínico: médico, farmacêutico e enfermeiro aprovando as fichas; revisão dupla das doses pelo farmacêutico | Boa prática (ISO 14971 e ANVISA); diagnóstico do caminho 1 | P1 | Pendente |
+
+Ordem sugerida:
+1. LG10, porque é código e vale em qualquer cenário.
+2. LG6, a maior exposição legal.
+3. LG1, LG2, LG3 e LG5, peças de papel, para revisão do advogado.
+4. LG4.
+5. LG11, com o consultor.
+6. LG13.
+7. LG7.
+8. LG8, LG9 e LG12.
+
+---
+
+## Trilha — Sepse com evidência, pedido do RT em 17/11/2026
+
+Origem: o RT perguntou como chegar perto do Prenosis Sepsis ImmunoScore, IA de sepse autorizada pela FDA por De Novo em abril de 2024: 22 parâmetros, pontuação de risco em 4 categorias, dentro do prontuário.
+
+Hoje temos o degrau 0: alerta de sepse do adulto por regra (qSOFA, NEWS2 e SOFA, com fonte). A SSC 2026 recomenda o NEWS2 para rastreio.
+
+Regras da trilha:
+- **É aprendizado de máquina sobre dado estruturado, não modelo de linguagem.**
+- **Nenhum modelo vai para a tela antes de passar pelo modo silencioso e pela regularização.**
+- **Dado de paciente para pesquisa** só com aprovação no comitê de ética (CEP) e anonimizado.
+
+| Item | O que fazer | Precisa de | Prioridade sugerida | Estado |
+|---|---|---|---|---|
+| SP1 | Medir o alerta por regra: quantos disparos viraram sepse, falsos alarmes, casos perdidos (sepse pelo Sepsis-3, calculada dos dados: suspeita de infecção mais SOFA ≥ 2) | Hospital parceiro em uso real; consulta e painel de desempenho do alerta | P1 | Pendente (depende de cliente em uso) |
+| SP2 | Integração real com o laboratório (LIS) do parceiro: lactato, leucócitos, plaquetas, creatinina, bilirrubina, PCR | Contrato com o parceiro; hoje só existe simulador | P1 | Pendente |
+| SP3 | Base de pesquisa: protocolo no CEP, base legal de pesquisa na LGPD e extração anonimizada dos episódios rotulados | SP1 e SP2; parceria com pesquisador ou hospital-escola | P2 | Pendente |
+| SP4 | Modelo próprio simples e explicável, comparado com o NEWS2 (AUROC, calibração e carga de alertas) | SP3; cientista de dados | P2 | Pendente |
+| SP5 | Modo silencioso: o modelo calcula e ninguém vê; mede-se contra o desfecho real | SP4 | P2 | Pendente |
+| SP6 | Estudo clínico, publicação e regularização na ANVISA como SaMD com IA, com o relatório de IA da RDC 657 | SP5 e LG11 | P3 | Pendente |
+
+Atalho comercial: o SP1 já vale publicar ("o alerta pegou X% das sepses com Y falsos alarmes"), e gera os dados do SP3.
+
+---
+
 ## Backlog Comercial Paralelo
 | Ordem | Material | Subtarefas | Critério de pronto | Pronto até |
 |---|---|---|---|---|
