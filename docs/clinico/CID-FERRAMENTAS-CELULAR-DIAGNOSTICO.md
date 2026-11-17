@@ -22,6 +22,8 @@ Decisões do RT na mesma conversa:
 - **Fora da URL:** idade, peso e CID nunca vão no endereço (query ou hash). Conferir que o Sentry e os breadcrumbs não capturam esses campos.
 - **Comitê clínico:** o mapa entra na revisão do comitê quando o LG13 existir.
 
+**F5 fora (decisão do RT em 17/11/2026):** abaixo de 1024 px o médico não tem a aba Atendimento (só Central, Leitos, Prontuários e Agenda, `ABAS_ESTREITAS_PLANTONISTA`). O atendimento continua só no computador, com o bloco do CID e o aviso de sepse; no celular fica só a F4, nas ferramentas da Central.
+
 **F7, pedido do RT em 17/11/2026:** CID de quadro infeccioso com NEWS2 da triagem aumentado abre o aviso "pensar em sepse", que orienta os exames para fechar o diagnóstico.
 - Entra neste item, depois da F2.
 - O RT liberou uma exceção à regra "nada sugere conduta" da aba Atendimento, só para este aviso. Os exames vêm de fonte citada com página, e nada é pedido sozinho.
