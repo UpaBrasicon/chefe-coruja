@@ -22,3 +22,9 @@ test('topo: piloto nos quatro escores do piloto, com ids de ficha que existem', 
     assert.ok(ids.has(id), id)
   }
 })
+
+test('topo: toda chave é id de escore que existe', () => {
+  const ids = new Set(ESCORES.map((e) => e.ficha.id))
+  for (const id of Object.keys(TOPOS)) assert.ok(ids.has(id), id)
+  assert.ok(Object.keys(TOPOS).length >= 46)
+})
