@@ -2,6 +2,8 @@
 // define, por profissional, os dias, os períodos com início e fim e a duração
 // da consulta (Manual do PEC, seção 3.5.5), e fecha a agenda por um período
 // com motivo (seção 3.5.6). Mudar a grade não mexe no que já está marcado.
+// Percurso da UBS (U3, RT 17/11/2026): antes das grades, o horário de
+// funcionamento da UBS; a escala e as grades ficam dentro dele.
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CalendarX, Save } from 'lucide-react'
 import * as React from 'react'
@@ -16,12 +18,12 @@ import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   DIAS_SEMANA, MOTIVOS_FECHAMENTO, PERIODOS, rotuloMotivo,
-  type HorarioConfig, type MotivoFechamento, type Periodo, type ProfissionalConfig,
+  type HorarioConfig, type HorarioFuncionamento, type MotivoFechamento, type Periodo, type ProfissionalConfig,
 } from '@/domain/agenda'
 import { dataIso, dataPura } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
-import { useConfiguracaoAgenda } from './useAgenda'
+import { useConfiguracaoAgenda, useFuncionamentoUbs } from './useAgenda'
 
 type Celula = { ativo: boolean; inicio: string; fim: string; duracao: number }
 const PADRAO: Record<Periodo, Omit<Celula, 'ativo'>> = {
@@ -54,6 +56,7 @@ export function ConfiguracaoAgenda({ unidadeId }: { unidadeId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <Funcionamento unidadeId={unidadeId} />
       <div role="radiogroup" aria-label="Profissional" className="flex flex-wrap gap-2">
         {lista.map((p) => (
           <Chip key={p.perfil_id} variante="opcao" radio ativo={p.perfil_id === prof?.perfil_id} contagem={p.horarios.length || undefined}
@@ -65,6 +68,78 @@ export function ConfiguracaoAgenda({ unidadeId }: { unidadeId: string }) {
       {prof && <Grade key={prof.perfil_id} unidadeId={unidadeId} prof={prof} />}
       {prof && <Fechamentos key={`f-${prof.perfil_id}`} unidadeId={unidadeId} prof={prof} />}
     </div>
+  )
+}
+
+type DiaAberto = { ativo: boolean; abre: string; fecha: string }
+
+function Funcionamento({ unidadeId }: { unidadeId: string }) {
+  const atual = useFuncionamentoUbs(unidadeId)
+  if (atual.isLoading) return <Spinner />
+  if (atual.error) return <p className="text-apoio text-critico">{msg(atual.error)}</p>
+  return <FuncionamentoForm key={JSON.stringify(atual.data)} unidadeId={unidadeId} salvos={atual.data ?? []} />
+}
+
+function FuncionamentoForm({ unidadeId, salvos }: { unidadeId: string; salvos: HorarioFuncionamento[] }) {
+  const qc = useQueryClient()
+  const [d, setD] = React.useState<Record<number, DiaAberto>>(() => {
+    const x: Record<number, DiaAberto> = {}
+    for (const dia of ORDEM_DIAS) {
+      const s = salvos.find((h) => h.dia === dia)
+      x[dia] = s ? { ativo: true, abre: s.abre, fecha: s.fecha } : { ativo: false, abre: '07:00', fecha: '19:00' }
+    }
+    return x
+  })
+  const [salvo, setSalvo] = React.useState(false)
+  const mudar = (dia: number, v: Partial<DiaAberto>) => { setSalvo(false); setD((x) => ({ ...x, [dia]: { ...x[dia], ...v } })) }
+  const salvar = useMutation({
+    mutationFn: async () => {
+      const horarios: HorarioFuncionamento[] = ORDEM_DIAS.filter((dia) => d[dia].ativo).map((dia) => ({ dia, abre: d[dia].abre, fecha: d[dia].fecha }))
+      const { error } = await supabase.rpc('ubs_definir_funcionamento', { p_unidade: unidadeId, p_horarios: horarios })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      setSalvo(true)
+      void qc.invalidateQueries({ queryKey: ['ubs-funcionamento'] })
+      void qc.invalidateQueries({ queryKey: ['agenda-dia'] })
+    },
+  })
+
+  return (
+    <section aria-label="Horário de funcionamento da UBS" className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-4 py-3">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-controle font-semibold text-tinta">Horário de funcionamento da UBS</span>
+        <span className="text-apoio text-tinta-sussurro">
+          {salvos.length === 0
+            ? 'Sem horário salvo: a escala e a agenda aceitam qualquer horário.'
+            : 'A escala e as grades da agenda ficam dentro deste horário. A ficha não atendida vence uma hora depois do fechamento.'}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-x-5 gap-y-2.5">
+        {ORDEM_DIAS.map((dia) => (
+          <div key={dia} className="flex flex-col gap-1.5">
+            <CaixaMarcar marcado={d[dia].ativo} onChange={(m) => mudar(dia, { ativo: m })}>
+              <span className="text-apoio text-tinta">{DIAS_SEMANA[dia]}</span>
+            </CaixaMarcar>
+            {d[dia].ativo && (
+              <div className="flex items-center gap-1.5">
+                <Input type="time" aria-label={`${DIAS_SEMANA[dia]}: abre`} value={d[dia].abre} className="w-[104px]"
+                  onChange={(e) => mudar(dia, { abre: e.target.value })} />
+                <span className="text-tinta-sussurro">a</span>
+                <Input type="time" aria-label={`${DIAS_SEMANA[dia]}: fecha`} value={d[dia].fecha} className="w-[104px]"
+                  onChange={(e) => mudar(dia, { fecha: e.target.value })} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 border-t border-trilha pt-3">
+        <span className="mr-auto text-rotulo text-tinta-sussurro">Dia sem marca: a UBS não abre. Grade ou plantão fora do horário precisam sair antes.</span>
+        {salvar.error && <span role="alert" className="text-apoio text-critico">{msg(salvar.error)}</span>}
+        {salvo && <span role="status" className="text-apoio text-conforme">Horário salvo.</span>}
+        <Button disabled={salvar.isPending} onClick={() => salvar.mutate()}><Save /> Salvar o horário</Button>
+      </div>
+    </section>
   )
 }
 

@@ -10384,6 +10384,8 @@ export type Database = {
       contrarreferencias_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       agenda_cancelar: { Args: { p_agendamento: string; p_motivo?: string }; Returns: undefined }
       agenda_configuracao: { Args: { p_unidade: string }; Returns: Json }
+      ubs_definir_funcionamento: { Args: { p_horarios: Json; p_unidade: string }; Returns: undefined }
+      ubs_funcionamento: { Args: { p_unidade: string }; Returns: Json }
       agenda_definir_configuracao: {
         Args: { p_horarios: Json; p_perfil: string; p_unidade: string }
         Returns: undefined
@@ -13408,6 +13410,7 @@ export type Database = {
       registrar_escuta_aps: {
         Args: {
           p_cor: string
+          p_dum?: string
           p_episodio: string
           p_obs?: string
           p_publico?: string
