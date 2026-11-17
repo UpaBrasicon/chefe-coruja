@@ -457,11 +457,15 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
         p_outra_pessoa: outraPessoa ?? false,
       })
       if (error) throw error
-      return data as { prontuario: string; paciente_id: string }
+      return data as { prontuario: string; paciente_id: string; etapa?: string }
     },
     onSuccess: (r) => {
       const nome = modo === 'existente' ? existente?.nome : dados.nome.trim()
-      setAviso(`${nome || 'Paciente'} entrou na fila ${ubs ? (tipoAps === 'escuta_inicial' ? 'da escuta inicial' : 'do consultório') : 'da triagem'} · prontuário ${r.prontuario}.`)
+      // percurso da UBS (U8): sem enfermeiro de plantão, a escuta vai direto ao médico
+      const semEnfermeiro = ubs && tipoAps === 'escuta_inicial' && r.etapa === 'atendimento'
+      setAviso(semEnfermeiro
+        ? `${nome || 'Paciente'} entrou na fila do consultório: não há enfermeiro de plantão para a escuta · prontuário ${r.prontuario}.`
+        : `${nome || 'Paciente'} entrou na fila ${ubs ? (tipoAps === 'escuta_inicial' ? 'da escuta inicial' : 'do consultório') : 'da triagem'} · prontuário ${r.prontuario}.`)
       setPulseira(ubs || !r.paciente_id ? null : { id: r.paciente_id, nome: nome || 'Paciente' })
       limpar()
       setTermo('')

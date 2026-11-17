@@ -5,14 +5,15 @@
 // orientação ou agendamento. A cor é a que o enfermeiro marca; o sistema nunca
 // pré-seleciona. Sinais vitais opcionais (decisão do RT), com a altura para o
 // hiperdia (achado F5-T2). O servidor (registrar_escuta_aps) confere tudo de novo.
+// Percurso da UBS (RT, 17/11/2026): o enfermeiro não envia à UPA (D2: só o
+// médico); a escuta registra a DUM (U8), que o pré-natal lê; azul com
+// agendamento abre a agenda com o paciente escolhido (U8).
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Ambulance, CalendarPlus, Check } from 'lucide-react'
+import { CalendarPlus, Check } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { CamposVitais } from '@/components/clinico/CamposVitais'
-import { EnviarUpa } from '@/components/encaminhamento/EnviarUpa'
-import { useUnidade } from '@/contexts/UnidadeContext'
 import { Chip } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { linkMarcarNaAgenda } from '@/domain/agenda'
 import { CLASSIFICACAO_CAB28, SAIDAS_AZUL, type CorCab28, type SaidaEscuta } from '@/domain/aps'
-import { ehPediatrico } from '@/domain/idade'
+import { ehPediatrico, idadeEm } from '@/domain/idade'
 import { paraNumeros, type Publico } from '@/domain/vitais'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -77,8 +78,12 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
   const [saidaAzul, setSaidaAzul] = React.useState<Exclude<SaidaEscuta, 'consulta'> | null>(null)
   const [obs, setObs] = React.useState('')
   const [tentou, setTentou] = React.useState(false)
-  const [enviarUpa, setEnviarUpa] = React.useState(false)
-  const { unidadeAtiva } = useUnidade()
+  const [dum, setDum] = React.useState('')
+  const navigate = useNavigate()
+  const hoje = dataSP()
+  // DUM: de quem pode gestar (não do cadastro masculino; a partir dos 10 anos)
+  const idade = nasc ? idadeEm(nasc, hoje) : null
+  const pedeDum = !/^m/i.test(ep.paciente?.sexo ?? '') && (!idade || idade.anos >= 10)
 
   const erroAtual = (() => {
     if (!publico) return 'Sem data de nascimento: escolha adulto ou pediatria.'
@@ -86,6 +91,7 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
     if (cor === 'azul' && !saidaAzul) return 'Na situação não aguda, escolha orientação ou agendamento.'
     if (cor === 'azul' && obs.trim().length < 10) return 'Escreva a orientação dada ou o agendamento (mínimo de 10 letras).'
     try { paraNumeros(vitais) } catch (e) { return (e as Error).message }
+    if (dum && dum > hoje) return 'DUM no futuro.'
     return null
   })()
 
@@ -99,6 +105,7 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
         p_sinais: paraNumeros(vitais),
         p_publico: pubIdade ? undefined : publico!,
         p_obs: obs.trim() || undefined,
+        p_dum: pedeDum && dum ? dum : undefined,
       })
       if (error) throw error
     },
@@ -106,6 +113,11 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
       void queryClient.invalidateQueries({ queryKey: ['triagem-fila'] })
       void queryClient.invalidateQueries({ queryKey: ['triagem-espera'] })
       const rotulo = CLASSIFICACAO_CAB28.find((c) => c.cor === cor)!.rotulo.toLowerCase()
+      // azul com agendamento: a agenda abre com o paciente já escolhido (U8)
+      if (cor === 'azul' && saidaAzul === 'agendamento') {
+        navigate(linkMarcarNaAgenda(ep.paciente_id, ep.id))
+        return
+      }
       onFim(cor === 'azul'
         ? `${nomeDe(ep)}: escuta registrada (${saidaAzul === 'agendamento' ? 'agendamento' : 'orientação'}); a ficha foi encerrada.`
         : `${nomeDe(ep)}: escuta registrada (${rotulo}); foi para a fila do médico.`)
@@ -137,6 +149,14 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
         </div>
       )}
 
+      {pedeDum && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="escuta-dum">DUM <span className="font-normal text-tinta-sussurro">(se gestante ou suspeita de gestação)</span></Label>
+          <Input id="escuta-dum" type="date" className="w-44" max={hoje} value={dum} onChange={(e) => setDum(e.target.value)} />
+          <span className="text-rotulo text-tinta-sussurro">Data da última menstruação. O pré-natal usa esta data quando o médico registra a gestação.</span>
+        </div>
+      )}
+
       <div className="flex flex-col gap-2">
         <span className="text-controle font-semibold text-tinta">Sinais vitais <span className="font-normal text-tinta-sussurro">(opcionais)</span></span>
         <CamposVitais publico={publico} opcionais extras={['estatura']} prefixo="escuta" valores={vitais} onChange={(k, v) => setVitais((s) => ({ ...s, [k]: v }))} />
@@ -165,16 +185,6 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
           )}
         </Cartao>
       </div>
-
-      {/* tarefa 5 (H5): sem médico para o imediato, o enfermeiro envia à UPA da rede */}
-      {cor === 'vermelho' && unidadeAtiva && (
-        <div role="note" className="flex flex-wrap items-center gap-2 rounded-container border border-mts-vermelho/30 bg-alerta-critico px-3.5 py-2.5 text-apoio text-tinta">
-          <span className="flex-1">Atendimento imediato: sem médico na UBS agora, envie à UPA da rede (a ficha da UBS encerra com o envio).</span>
-          <Button size="sm" variant="outline" onClick={() => setEnviarUpa(true)}><Ambulance /> Enviar à UPA</Button>
-          <EnviarUpa aberto={enviarUpa} onFechar={() => setEnviarUpa(false)} episodioId={ep.id} unidadeId={unidadeAtiva.unidade_id}
-            nome={nomeDe(ep)} motivoInicial={queixa} onEnviado={(a) => { setEnviarUpa(false); void queryClient.invalidateQueries({ queryKey: ['triagem-fila'] }); onFim(a) }} />
-        </div>
-      )}
 
       {cor && (
         <p role="status" className="rounded-container border border-fio bg-campo px-3.5 py-2.5 text-apoio text-tinta">

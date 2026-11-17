@@ -113,7 +113,7 @@ INSERT INTO v SELECT 'x2', public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('u
 SELECT pg_temp.como('recu');
 INSERT INTO v SELECT 'epu2', (public.registrar_ficha(pg_temp.id('porta'), 'Falta de ar (vindo da UBS)', NULL,
   '{"nome":"Paciente Retorno Dois","data_nascimento":"1990-04-04"}') ->> 'episodio_id')::uuid;
-SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('x2'), true, pg_temp.v('epu2'));
+-- a ficha da UPA marca a chegada sozinha (percurso da UBS, U9)
 RESET ROLE;
 INSERT INTO v SELECT 'p2', paciente_id FROM public.episodios WHERE id = pg_temp.v('ep2');
 -- a classificação de risco não é o assunto daqui: o paciente vai direto ao médico
