@@ -133,8 +133,8 @@ SELECT pg_temp.falha($$SELECT public.registrar_conduta_aps(pg_temp.e('um'), 'con
   'Registre o atendimento (SOAP)', 'conduta exige o SOAP com Avaliação');
 SELECT public.registrar_soap(pg_temp.e('um'), 'Cefaleia frontal há 3 dias', 'PA 150x95, sem sinais focais',
   'Cefaleia tensional; HAS sem controle', 'Analgésico, ajuste do anti-hipertensivo', 'G44.2');
-SELECT pg_temp.falha($$SELECT public.registrar_conduta_aps(pg_temp.e('um'), 'consulta_no_dia', '{}', '{}', '{alta_episodio}')$$,
-  'Informe ao menos um problema', 'conduta exige ao menos um problema ou CID');
+-- U10 (20270415000004): com o CID no SOAP (G44.2), a conduta já tem um problema
+-- avaliado; a regra "ao menos um problema" sem CID no SOAP está em ubs_cid_um_lugar.sql
 SELECT pg_temp.falha($$SELECT public.registrar_conduta_aps(pg_temp.e('um'), 'consulta_no_dia', '{cefaleia}', '{}', '{alta_episodio}')$$,
   'Problema/condição avaliada fora da lista', 'problema fora da lista da ficha é recusado');
 SELECT pg_temp.falha($$SELECT public.registrar_conduta_aps(pg_temp.e('um'), 'consulta_no_dia', '{hipertensao_arterial}', '{}', '{}')$$,
