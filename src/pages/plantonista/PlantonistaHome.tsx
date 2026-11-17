@@ -234,7 +234,7 @@ export default function PlantonistaHome() {
         {/* Adulto ou pediátrico só no celular (pedido do RT de 23/10/2026): na
             tela larga cada ferramenta pergunta o paciente na própria tela. */}
         <div className="lg:hidden"><ModoPaciente /></div>
-        <CartaoTurno unidadeId={unidadeId} perfilId={perfil?.id} />
+        <CartaoTurno unidadeId={unidadeId} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
 
         <div className="mb-[22px]">
           <div className="relative">

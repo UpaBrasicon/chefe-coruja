@@ -89,8 +89,12 @@ const ABAS: { aba: Aba; rotulo: string; icone: LucideIcon; titulo: string; descr
 
 // 5A, tarefa 2 (D3 e D7 do RT em 02/11/2026): na UBS a ficha vai direto para
 // a fila do consultório, sem triagem e sem painel da porta.
+// Percurso da UBS (RT, 17/11/2026, R9): a recepção também vê a fila da
+// enfermagem, quem espera a escuta inicial, só para acompanhar.
 const ABAS_UBS: typeof ABAS = [
-  { ...ABAS[0], descricao: 'Procure o paciente antes de cadastrar: quem já tem cadastro abre a ficha com um clique. A ficha vai para a fila do consultório.' },
+  { ...ABAS[0], descricao: 'Procure o paciente antes de cadastrar: quem já tem cadastro abre a ficha com um clique. A ficha vai para a escuta da enfermagem ou para o consultório, pelo tipo de atendimento.' },
+  { ...ABAS[1], rotulo: 'Fila da enfermagem', titulo: 'Fila da enfermagem',
+    descricao: 'Fichas aguardando a escuta inicial, com prioridade legal primeiro e depois por ordem de chegada. Você acompanha; quem chama é a enfermagem.' },
   { ...ABAS[2], rotulo: 'Fila do consultório', titulo: 'Fila do consultório',
     descricao: 'Pacientes aguardando a consulta, com prioridade legal primeiro e depois por ordem de chegada. Quem chama é o médico.' },
 ]
@@ -204,7 +208,8 @@ export default function Recepcao() {
     // na UBS: quem aguarda a escuta e quem aguarda a consulta, na ordem da fila
     // do médico (imediato e prioritário da escuta, depois prioridade legal e chegada)
     if (ubs) {
-      const todos = fila.data ?? []
+      // quem aguarda a escuta fica na fila da enfermagem (R9)
+      const todos = (fila.data ?? []).filter((e) => e.etapa !== 'triagem')
       return [...todos.filter((e) => !e.atendimento_iniciado_em).sort(ordemFilaUbs), ...todos.filter((e) => e.atendimento_iniciado_em).sort(ordemFilaUbs)]
     }
     const lista = (fila.data ?? []).filter((e) => e.etapa === 'atendimento')
@@ -287,9 +292,9 @@ export default function Recepcao() {
         <ListaFila
           carregando={fila.isLoading}
           erro={fila.error as Error | null}
-          vazia="Ninguém aguardando triagem."
+          vazia={ubs ? 'Ninguém aguardando a escuta.' : 'Ninguém aguardando triagem.'}
           agora={agora}
-          grupos={[{ titulo: 'Aguardando triagem', itens: filaTriagem, maiorEspera: maiorEspera(filaTriagem, agora) }]}
+          grupos={[{ titulo: ubs ? 'Aguardando a escuta' : 'Aguardando triagem', itens: filaTriagem, maiorEspera: maiorEspera(filaTriagem, agora) }]}
         />
       )}
 

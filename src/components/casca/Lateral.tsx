@@ -234,8 +234,8 @@ function LateralAreas({ itens, notas, papelTexto, inicio, unidadeId, ehGestor, o
       {atual && atual.itens.length > 1 && (
         <aside className="flex h-full w-[220px] flex-col justify-between overflow-y-auto border-r border-fio bg-superficie py-[18px]">
           <div>
-            <span className="block px-[17px] pt-1.5 pb-[18px] text-secao font-semibold text-tinta">{atual.grupo}</span>
-            <nav aria-label={`Telas de ${atual.grupo}`} className="flex flex-col gap-[3px] px-2.5">
+            <span className="block px-[17px] pt-1.5 pb-[18px] text-secao font-semibold text-tinta">{atual.grupo ?? atual.itens[0].rotulo}</span>
+            <nav aria-label={`Telas de ${atual.grupo ?? atual.itens[0].rotulo}`} className="flex flex-col gap-[3px] px-2.5">
               {atual.itens.map((item) => (
                 <ItemLateral key={item.to} item={item} nota={item.nota ? notas[item.nota] : undefined} />
               ))}

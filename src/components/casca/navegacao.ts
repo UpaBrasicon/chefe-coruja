@@ -265,8 +265,24 @@ const FORA_DA_UBS = new Set([
   '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/contingencia',
   '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/aih', '/apac',
   '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
-  '/recepcao/fila-triagem', '/recepcao/painel',
+  '/recepcao/painel',
 ])
+// Percurso da UBS (RT, 17/11/2026, U5): o que sai do menu de um papel só na UBS.
+// Recepção sem Encaminhados (R8); enfermeiro sem Alta vigilância, que fica com o
+// farmacêutico (E10); médico sem Pareceres (D7) e sem Notificação compulsória,
+// que fica com o enfermeiro (D8).
+const FORA_DA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
+  recepcao: new Set(['/encaminhados']),
+  enfermeiro: new Set(['/alta-vigilancia']),
+  plantonista: new Set(['/pareceres', '/notificacao-compulsoria']),
+}
+// e o que muda de nome nela: na UBS a "triagem" é a escuta da enfermagem (R9)
+const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
+  '/recepcao/fila-triagem': { rotulo: 'Fila da enfermagem', curto: 'Enfermagem' },
+}
+// Grupos do gestor: na UBS o grupo "Porta" só tem os cadastros duplicados e o
+// "Leitos" só a regulação (U5, achado GE7).
+const GRUPO_NA_UBS: Record<string, string> = { Porta: 'Cadastro', Leitos: 'Rede' }
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
 const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
 
@@ -283,7 +299,12 @@ export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefin
  */
 export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false,
   tipoUnidade: TipoUnidade | null = null): ItemNav[] {
-  return itensDoPapel(papel, responsavelTecnico, superAdmin).filter((i) => !foraDoTipo(i.to, tipoUnidade))
+  const itens = itensDoPapel(papel, responsavelTecnico, superAdmin).filter((i) => !foraDoTipo(i.to, tipoUnidade))
+  if (tipoUnidade !== 'ubs') return itens
+  const fora = (papel && FORA_DA_UBS_NO_PAPEL[papel]) || null
+  return itens
+    .filter((i) => !fora?.has(i.to))
+    .map((i) => ({ ...i, ...NOME_NA_UBS[i.to], ...(i.grupo && GRUPO_NA_UBS[i.grupo] ? { grupo: GRUPO_NA_UBS[i.grupo] } : {}) }))
 }
 
 function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdmin: boolean): ItemNav[] {
@@ -328,6 +349,8 @@ export function agruparNavegacao(itens: ItemNav[]): { grupo: string | null; iten
 export const ICONE_GRUPO: Record<string, LucideIcon> = {
   Porta: DoorOpen,
   Leitos: BedDouble,
+  Cadastro: GitMerge,
+  Rede: Waypoints,
   'Farmácia': FlaskConical,
   Exames: TestTube,
   Faturamento: Receipt,
