@@ -337,6 +337,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
   const [prioridades, setPrioridades] = React.useState<PrioridadeLegal[]>([])
   // UBS: tipo de atendimento da ficha do e-SUS APS (o médico confirma na consulta)
   const [tipoAps, setTipoAps] = React.useState('')
+  // U6, PR 2: na UBS a ficha vai ao médico ou à enfermagem
+  const [destino, setDestino] = React.useState<'medico' | 'enfermagem'>('medico')
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
   // lacuna 2 (RT 10/11/2026): pulseira logo depois da ficha, do não identificado e do RN
@@ -390,6 +392,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     setQueixa('')
     setPrioridades([])
     setTipoAps('')
+    setDestino('medico')
     setDuplicata(null)
     setErroLocal(null)
     setAlvoAberto(null)
@@ -452,19 +455,22 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
         p_setor: porta.id,
         p_queixa: queixa.trim(),
         p_paciente: pacienteId ?? existente?.id ?? undefined,
-        p_dados: ubs ? { ...enviados, tipo_atendimento: tipoAps } : enviados,
+        p_dados: ubs ? { ...enviados, tipo_atendimento: tipoAps, destino } : enviados,
         p_prioridades: prioridades,
         p_outra_pessoa: outraPessoa ?? false,
       })
       if (error) throw error
-      return data as { prontuario: string; paciente_id: string; etapa?: string }
+      return data as { prontuario: string; paciente_id: string; etapa?: string; destino?: string | null }
     },
     onSuccess: (r) => {
       const nome = modo === 'existente' ? existente?.nome : dados.nome.trim()
       // percurso da UBS (U8): sem enfermeiro de plantão, a escuta vai direto ao médico
       const semEnfermeiro = ubs && tipoAps === 'escuta_inicial' && r.etapa === 'atendimento'
-      setAviso(semEnfermeiro
-        ? `${nome || 'Paciente'} entrou na fila do consultório: não há enfermeiro de plantão para a escuta · prontuário ${r.prontuario}.`
+      const enfermagemSemEnfermeiro = ubs && destino === 'enfermagem' && r.destino === 'medico'
+      setAviso(semEnfermeiro || enfermagemSemEnfermeiro
+        ? `${nome || 'Paciente'} entrou na fila do consultório médico: não há enfermeiro de plantão · prontuário ${r.prontuario}.`
+        : ubs && r.destino === 'enfermagem' && tipoAps !== 'escuta_inicial'
+        ? `${nome || 'Paciente'} entrou na fila do consultório de enfermagem · prontuário ${r.prontuario}.`
         : `${nome || 'Paciente'} entrou na fila ${ubs ? (tipoAps === 'escuta_inicial' ? 'da escuta inicial' : 'do consultório') : 'da triagem'} · prontuário ${r.prontuario}.`)
       setPulseira(ubs || !r.paciente_id ? null : { id: r.paciente_id, nome: nome || 'Paciente' })
       limpar()
@@ -662,6 +668,13 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
                 {TIPOS_ATENDIMENTO_APS.map((t) => <option key={t.valor} value={t.valor}>{t.grupo ? `${t.grupo}: ${t.rotulo}` : t.rotulo}</option>)}
               </CampoSelecao>
             </Campo>
+          )}
+          {ubs && (
+            <div role="radiogroup" aria-label="Atendimento com" className="flex flex-wrap items-center gap-2">
+              <span className="text-apoio font-medium text-tinta">Atendimento com</span>
+              <Chip variante="opcao" radio ativo={destino === 'medico'} onClick={() => setDestino('medico')}>Médico</Chip>
+              <Chip variante="opcao" radio ativo={destino === 'enfermagem'} onClick={() => setDestino('enfermagem')}>Enfermagem</Chip>
+            </div>
           )}
 
           <Campo id="rec-queixa" rotulo="Queixa referida pelo paciente">
