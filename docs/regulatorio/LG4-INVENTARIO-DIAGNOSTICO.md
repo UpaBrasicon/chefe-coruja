@@ -4,6 +4,8 @@ Trilha de obrigatórios legais e regulatórios, item LG4 (P1). Base legal: LGPD,
 
 **Decisão do RT, 17/11/2026: "Todas A"** (V1–V4).
 
+**Feito:** o inventário ficou em `docs/regulatorio/inventario/operacoes.json`. O formato é JSON, e não YAML, porque o projeto não tem leitor de YAML e não vale trazer dependência nova só para isso. O documento legível é `LG4-INVENTARIO.md`.
+
 Este documento não é parecer jurídico e não muda código nem banco.
 
 ## Como está hoje
