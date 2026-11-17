@@ -88,6 +88,10 @@ test('observação: janela de 6 h — âmbar na última hora, vermelho depois', 
 test('duração formatada', () => {
   assert.equal(formatarDuracao(45), '45 min')
   assert.equal(formatarDuracao(185), '3h05')
+  // U2 do percurso da UBS: dias e horas a partir de 24 h, nunca minutos crus
+  assert.equal(formatarDuracao(1440), '1 dia')
+  assert.equal(formatarDuracao(15024), '10 dias e 10h')
+  assert.equal(formatarDuracao(19857), '13 dias e 18h')
 })
 
 test('janela do plantão: noite de 12 h que começou ontem às 19h, às 02h faltam 5h', async () => {

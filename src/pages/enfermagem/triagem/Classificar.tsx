@@ -29,7 +29,7 @@ import { BlocoDor } from './Dor'
 import { BlocoGestacao } from './Gestacao'
 import { HistoricoClassificacoes } from './Historico'
 import { ReferenciaSinal } from './ReferenciaSinal'
-import { dataSP, ehFeminino, esperaMin, hora, nomeDe, type Fluxograma, type NaFila } from './comum'
+import { dataSP, ehFeminino, esperaTexto, hora, nomeDe, type Fluxograma, type NaFila } from './comum'
 import { TituloCartao } from '@/components/monitor/Pagina'
 import { BotaoLinha, OpcaoLista } from '@/components/ui/botao-linha'
 
@@ -279,7 +279,7 @@ export function Classificar({ ep, onFim, corAtual = null }: {
               {reclass ? `Classificado como ${rotuloCor(corAtual!)} · aguardando o médico` : 'Aguardando classificação da enfermagem'}
             </span>
             <span className="text-apoio text-tinta-sussurro">
-              Na fila há {esperaMin(ep.chegada_em)} min (ficha às {hora(ep.chegada_em)}).{' '}
+              Na fila há {esperaTexto(ep.chegada_em)} (ficha às {hora(ep.chegada_em)}).{' '}
               {reclass
                 ? 'Reclassifique se o quadro mudou na espera. Depois que o médico iniciar o atendimento, só ele reclassifica.'
                 : 'Enquanto o paciente espera o médico, a enfermagem pode reclassificar.'}

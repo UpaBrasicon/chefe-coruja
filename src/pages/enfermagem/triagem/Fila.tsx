@@ -13,7 +13,7 @@ import { ExcluirDaFila } from '@/components/porta/Chamada'
 import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
 import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 import { Estado } from '@/components/porta/Estado'
-import { dataSP, esperaMin, hora, nomeDe, type NaFila } from './comum'
+import { dataSP, esperaTexto, hora, nomeDe, type NaFila } from './comum'
 import type { SalaTriagem, SalaTriagemCtx, UltimaChamada } from './useSalaTriagem'
 import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
@@ -161,7 +161,7 @@ export function FilaTriagem({ fila, carregando, erro, sala, onTriar, ubs = false
                 <TableRow key={e.id}>
                   <TableCell><CelulaPaciente e={e} iguais={iguais} /></TableCell>
                   <QueixaCelula texto={e.queixa} />
-                  <TableCell className="tabular-nums" title={`Ficha às ${hora(e.chegada_em)}; espera desde a ficha da recepção`}>{esperaMin(e.chegada_em)} min</TableCell>
+                  <TableCell className="tabular-nums" title={`Ficha às ${hora(e.chegada_em)}; espera desde a ficha da recepção`}>{esperaTexto(e.chegada_em)}</TableCell>
                   <TableCell><SituacaoChamada ch={ch} /></TableCell>
                   <TableCell>
                     <div className="flex flex-nowrap items-start justify-end gap-[7px]">
