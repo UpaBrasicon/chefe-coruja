@@ -33,4 +33,6 @@ test('a rota não colide com uma seção da Central e está ligada no app, nas f
   assert.ok(rota > 0 && rota < app.indexOf('path="/plantonista/:section"'))
   assert.match(readFileSync(new URL('../components/plantonista/ToolLayout.tsx', import.meta.url), 'utf8'), /ROTA_SOBRE_MODULO/)
   assert.match(readFileSync(new URL('../pages/plantonista/PlantonistaHome.tsx', import.meta.url), 'utf8'), /ROTA_SOBRE_MODULO/)
+  // no celular e no tablet a Central é o Guia rápido
+  assert.match(readFileSync(new URL('../components/plantonista/central/GuiaRapido.tsx', import.meta.url), 'utf8'), /ROTA_SOBRE_MODULO/)
 })
