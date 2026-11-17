@@ -36,16 +36,24 @@ test('news2: oxigênio +2 e consciência alterada +3', () => {
   assert.equal(pt({ oxigenio: true }).oxigenio, 2)
   assert.equal(pt({ alerta: false }).consciencia, 3)
 })
-test('news2: faixas — 4 baixa, 3 isolado baixa-média, 5 média, 7 alta', () => {
+test('news2: faixas da versão brasileira — 0, 1–4, 3 isolado, 5 ou mais urgente, 7 ou mais emergência', () => {
   const quatro = faixaNews2(pt({ fr: 22, fc: 100, temp: 38.5 })) // 2+1+1
   assert.deepEqual([quatro.total, quatro.banda], [4, 0])
   const isolado = faixaNews2(pt({ fr: 25 }))
   assert.deepEqual([isolado.total, isolado.banda], [3, 1])
-  assert.match(isolado.rotulo, /baixa-média/)
+  assert.equal(isolado.rotulo, '3 em um único parâmetro')
+  assert.equal(isolado.monitoramento, 'mínimo a cada 1 hora')
+  assert.equal(quatro.rotulo, 'Total 1–4')
+  assert.equal(quatro.monitoramento, 'mínimo a cada 4–6 horas')
+  const zero = faixaNews2(pt({}))
+  assert.deepEqual([zero.rotulo, zero.monitoramento], ['Total 0', 'mínimo a cada 12 horas'])
   const cinco = faixaNews2(pt({ fr: 22, fc: 115, temp: 38.5 })) // 2+2+1
   assert.deepEqual([cinco.total, cinco.banda], [5, 1])
   const sete = faixaNews2(pt({ fr: 22, fc: 115, temp: 38.5, oxigenio: true })) // 2+2+1+2
   assert.deepEqual([sete.total, sete.banda], [7, 2])
+  assert.match(cinco.rotulo, /5 ou mais \(limite de resposta urgente\)/)
+  assert.match(sete.rotulo, /7 ou mais \(limite de resposta de emergência\)/)
+  assert.equal(sete.monitoramento, 'monitoramento contínuo dos sinais vitais')
 })
 test('news2 (tela): calcula com tudo preenchido, null se faltar; adulto só', () => {
   // escala 0 = escala 1; o2 0 = ar; consciencia 0 = alerta

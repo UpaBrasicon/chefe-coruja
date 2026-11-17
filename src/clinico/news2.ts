@@ -31,14 +31,37 @@ export function pontosNews2(v: VitaisNews2): PontosNews2 {
   return { fr, spo2, oxigenio: v.oxigenio ? 2 : 0, pas, fc, consciencia: v.alerta ? 0 : 3, temp }
 }
 
-export type FaixaNews2 = { total: number; maior: number; banda: 0 | 1 | 2; rotulo: string }
+export type FaixaNews2 = {
+  total: number
+  maior: number
+  banda: 0 | 1 | 2
+  /** nome da faixa na versão brasileira oficial */
+  rotulo: string
+  /** frequência mínima de monitoramento, da versão brasileira oficial */
+  monitoramento: string
+  /** resposta clínica resumida, da versão brasileira oficial */
+  resposta: string
+}
 
-/** Faixa do RCP: 7 ou mais alta; 5–6 média; 3 em um parâmetro isolado, baixa-média. */
+// Faixas, monitoramento e resposta clínica: "Descrição da resposta clínica dos
+// desencadeadores NEWS 2 — versão brasileira" (Oliveira APA, Urbanetto JS,
+// Caregnato RCA. Rev Gaúcha Enferm. 2020;41:e20190424; figura lida no SciELO em
+// 16/11/2026; decisão do RT, H14 N1 e N2 = A). É a adaptação autorizada do
+// Chart 4 do RCP 2017. Os cortes e a banda (cor) não mudam.
+const FAIXAS = {
+  zero: { rotulo: 'Total 0', monitoramento: 'mínimo a cada 12 horas', resposta: 'continuar com o monitoramento NEWS2 de rotina' },
+  baixa: { rotulo: 'Total 1–4', monitoramento: 'mínimo a cada 4–6 horas', resposta: 'informar o enfermeiro, que avalia o paciente e decide se aumenta a frequência de monitoramento ou intensifica o cuidado' },
+  parametro: { rotulo: '3 em um único parâmetro', monitoramento: 'mínimo a cada 1 hora', resposta: 'o enfermeiro informa a equipe médica, que revisa e decide se intensifica o cuidado' },
+  urgente: { rotulo: 'Total de 5 ou mais (limite de resposta urgente)', monitoramento: 'mínimo a cada 1 hora', resposta: 'o enfermeiro informa imediatamente a equipe médica e solicita avaliação urgente; cuidado em ambiente com monitoramento' },
+  emergencia: { rotulo: 'Total de 7 ou mais (limite de resposta de emergência)', monitoramento: 'monitoramento contínuo dos sinais vitais', resposta: 'informar imediatamente a equipe médica; avaliação de emergência por equipe de cuidado crítico; considerar transferência para unidade intermediária ou UTI' },
+} as const
+
+/** Faixa da versão brasileira oficial (RCP 2017): 7 ou mais emergência; 5 ou mais urgente; 3 em um parâmetro isolado. */
 export function faixaNews2(p: PontosNews2): FaixaNews2 {
   const valores = Object.values(p)
   const total = valores.reduce((a, b) => a + b, 0)
   const maior = Math.max(...valores)
   const banda = total >= 7 ? 2 : total >= 5 || maior === 3 ? 1 : 0
-  const rotulo = total >= 7 ? 'alta' : total >= 5 ? 'média' : maior === 3 ? 'baixa-média (3 em um parâmetro)' : 'baixa'
-  return { total, maior, banda, rotulo }
+  const f = total >= 7 ? FAIXAS.emergencia : total >= 5 ? FAIXAS.urgente : maior === 3 ? FAIXAS.parametro : total === 0 ? FAIXAS.zero : FAIXAS.baixa
+  return { total, maior, banda, ...f }
 }
