@@ -186,15 +186,50 @@ Achados A5, A11, A12, A13:
   - sugestão de inclusão no hiperdia a partir do retorno da UPA.
 - **B:** só o resultado de exame externo; o cadastro por unidade fica para uma decisão de arquitetura à parte.
 
-### U13. Produção e indicadores da UBS
+### U13. Painel e indicadores do gestor da UBS
 
-Achados GE5 e GE6:
-- os indicadores são de hospital e UPA;
+Achados GE1, GE5 e GE6:
+- o Painel do Gestor e os Indicadores da UBS são de hospital e UPA: internações, giro de leitos, ocupação, censo e óbitos;
 - o faturamento mostra contas de porta e internação, BPA e glosas;
 - a produção da UBS vai ao SISAB pelo e-SUS APS, e o app não exporta para lá.
 
-- **A:** entra no BACKLOG como trilha própria: painel de indicadores da APS (boas práticas C1 a C7, faltas na agenda, produção por profissional) e exportação para o e-SUS APS e SISAB.
-- **B:** só o painel de indicadores da APS; a exportação fica para quando houver cliente UBS.
+Pedido do RT (17/11/2026): a UBS só faz atendimento ambulatorial, então os indicadores do gestor devem se basear nisso (por exemplo medicações e atendimentos de gestantes), seguindo o Ministério da Saúde.
+
+**Referência do Ministério da Saúde.** O componente de qualidade do cofinanciamento da APS (Portaria GM/MS 3.493/2024, alterada pela 10.994/2026) usa as notas metodológicas da SAPS:
+
+| Indicador | O que mede | No app hoje |
+|---|---|---|
+| C1 Mais acesso | Atendimentos de demanda programada sobre o total (programada e espontânea), por médico e enfermeiro. Ótimo de 50% a 70% | Dá para calcular: o tipo de atendimento já é registrado |
+| C2 Desenvolvimento infantil | Boas práticas da criança até 2 anos | Painel de puericultura, sem visita do ACS e vacina |
+| C3 Gestação e puerpério | Boas práticas do pré-natal e do puerpério | Painel de pré-natal, sem ACS, dTpa, saúde bucal; testes rápidos e parto com lacunas (A3, A8) |
+| C4 Diabetes | Consulta e pressão em 6 meses; peso e altura, HbA1c e pés em 12 meses; 2 visitas do ACS | Painel do hiperdia, sem ACS |
+| C5 Hipertensão | Consulta e pressão em 6 meses; peso e altura em 12 meses; visitas do ACS | Painel do hiperdia, sem ACS |
+| C6 Pessoa idosa | Consulta em 12 meses; peso e altura em 12 meses; 2 visitas do ACS; vacina da influenza | Não existe; consulta e peso e altura dá para calcular |
+| C7 Câncer da mulher | Rastreio do colo de 25 a 64 anos (36 meses); vacina HPV de 9 a 14; atendimento de saúde sexual e reprodutiva de 14 a 69; mamografia de 50 a 69 (24 meses) | Não existe; exames pedidos e atendimento dá para calcular |
+| B1–B6 Saúde bucal, M1–M2 eMulti | Equipes de saúde bucal e multiprofissional | Fora: o app não tem esses módulos |
+
+Nas notas C1, C4, C6 e C7, a consulta do **enfermeiro** conta igual à do médico (CBO 2235), e o técnico de enfermagem conta nos procedimentos (CBO 3222). Hoje o app só conta a consulta do médico (A1, G1). Portanto o U6 A é condição para os indicadores baterem com os do Ministério.
+
+**Indicadores de gestão ambulatorial**, com dados que o app já tem:
+- **Produção:** atendimentos por dia, turno e profissional, por tipo de demanda e faixa etária. Inclui escutas por classificação e consultas de gestantes, de crianças até 2 anos, de hipertensos e de diabéticos.
+- **Agenda:** consultas marcadas, comparecimento, faltas e ocupação da grade, por profissional.
+- **Espera:** da chegada à escuta e da escuta à consulta (reaproveita o que existe na UPA), e "não aguardou".
+- **Medicamentos:** itens e pacientes atendidos na dispensação, os 10 mais dispensados, retiradas sem farmacêutico, estoque crítico e falta, e doses administradas na UBS (checagem).
+- **Rede:** envios à UPA (chegou ou não chegou), regulação aguardando e atrasada, retornos recebidos.
+- **Vigilância:** notificações compulsórias pendentes.
+
+Decisões:
+- **A:** o Painel do Gestor e os Indicadores da UBS são trocados por uma versão ambulatorial.
+  - Saem as abas de hospital.
+  - Entram as seis frentes de gestão acima e os indicadores C1 a C7. C6 e C7 são novos, com o que o app registra; o que ele não registra (ACS, vacina, saúde bucal) aparece como "fora do app".
+  - Fórmulas e faixas pelas notas metodológicas da SAPS vigentes, com a fonte citada em cada indicador.
+  - A exportação para o e-SUS APS e o SISAB entra no BACKLOG como trilha própria.
+- **B:** só saem as abas de hospital e entram os painéis que já existem (C2 a C5). C1, C6, C7 e a gestão ambulatorial ficam para depois.
+
+Fontes:
+- [Nota metodológica C1](https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/fichas-tecnicas/equipe-de-atencao-primaria-e-saude-da-familia/nota-metodologica-c1-mais-acesso);
+- [C4](https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/fichas-tecnicas/equipe-de-atencao-primaria-e-saude-da-familia/nota-metodologica-c4-cuidado-da-pessoa-com-diabetes), [C6](https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/fichas-tecnicas/equipe-de-atencao-primaria-e-saude-da-familia/nota-metodologica-c6-cuidado-da-pessoa-idosa) e [C7](https://www.gov.br/saude/pt-br/composicao/saps/publicacoes/fichas-tecnicas/equipe-de-atencao-primaria-e-saude-da-familia/nota-metodologica-c7-cuidado-da-mulher-na-prevencao-do-cancer);
+- [Atualização das notas de junho de 2026 (COSEMS-SP)](https://www.cosemssp.org.br/wp-content/uploads/2026/06/notas-metodologicas-indicadores-APS.pdf), que traz o campo "Data do Parto" no C3 e a janela de 4 meses no M1 e M2.
 
 ### U14. Textos
 
@@ -231,4 +266,4 @@ Sem A/B: são correções de texto que entram junto com o U5.
 6. **U6 e U7:** consulta de enfermagem, tipo de serviço, sinais vitais e procedimentos. É o maior; sai em vários PRs.
 7. **U4:** tela do dia da recepção.
 8. **U11 e U12:** parto, recém-nascido e dados de fora.
-9. **U13:** trilha no BACKLOG.
+9. **U13:** painel e indicadores ambulatoriais do gestor; exportação para o SISAB como trilha no BACKLOG.
