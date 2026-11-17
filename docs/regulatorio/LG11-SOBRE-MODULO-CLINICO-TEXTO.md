@@ -1,5 +1,7 @@
 # LG11, decisão C5: texto da página "Sobre o módulo clínico" (para aprovação do RT)
 
+**Aprovado pelo RT em 17/11/2026, como está** (pontos 1 a 3: a frase da situação regulatória entra, o canal de erro fica no contato@ até o LG12, o nome fica "módulo clínico").
+
 Rascunho do texto que vai numa página da Central, ligada por um link discreto no rodapé de cada ferramenta e no topo da Central. **Nada vai ao ar antes do seu ok no texto.** Depois do ok, o caminho é o de sempre: homologação, CI e "ok produção".
 
 É a rotulagem mínima: finalidade, público, limites, fontes e canal de erro. Não substitui as instruções de uso que o consultor vai pedir (LG11) nem o canal de tecnovigilância (LG12).

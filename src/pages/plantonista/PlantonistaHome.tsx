@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Fuse from 'fuse.js'
 import { History, Search, Sparkles, Star, Stethoscope } from 'lucide-react'
 
@@ -7,6 +7,7 @@ import { CHAVES_FERRAMENTAS, SECOES, SECOES_EXIBIDAS, SECOES_JUNTAS, secaoExibid
 import { GRUPOS_SECAO } from '@/content/gruposSecoes'
 import { coresDaSecao } from '@/content/coresSecao'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
+import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { normalizar } from '@/lib/search'
@@ -240,7 +241,12 @@ function CentralCompleta() {
         <TituloPagina
           icone={Stethoscope}
           titulo="Central do Médico"
-          descricao={unidadeAtiva ? `${unidadeAtiva.unidade.nome} · ${TODAS.length} ferramentas clínicas` : undefined}
+          descricao={
+            <>
+              {unidadeAtiva && `${unidadeAtiva.unidade.nome} · ${TODAS.length} ferramentas clínicas · `}
+              <Link to={ROTA_SOBRE_MODULO} className="text-acao underline-offset-4 hover:underline">Sobre o módulo clínico</Link>
+            </>
+          }
         />
 
         {/* Adulto ou pediátrico só no celular (pedido do RT de 23/10/2026): na
