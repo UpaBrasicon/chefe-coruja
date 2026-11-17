@@ -822,7 +822,7 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
         className={cn('text-apoio whitespace-nowrap tabular-nums', estourou ? 'font-semibold text-critico' : 'text-tinta-apoio')}
         title={medica ? 'Espera desde a classificação' : 'Espera desde a ficha'}
       >
-        {espera} min{alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
+        {formatarDuracao(espera)}{alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
       </span>
       <span className={cn('flex min-w-0 items-center gap-[7px] text-apoio', textoStatus)}>
         <span aria-hidden className={cn('size-2.5 shrink-0 rounded-capsula border-2', ponto)} />
