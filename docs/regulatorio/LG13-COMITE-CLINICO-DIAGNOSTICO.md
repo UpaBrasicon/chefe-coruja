@@ -4,6 +4,8 @@ Trilha de obrigatórios legais e regulatórios, item LG13 (P1). Base: boa práti
 
 Este documento não muda código nem banco.
 
+**Decisão do RT, 17/11/2026: "Todas A"** (K1–K6). Regimento em `LG13-REGIMENTO-COMITE.md`.
+
 ## Como está hoje
 
 **Quem aprova:**
