@@ -16,5 +16,5 @@ Guarda: 5 anos (Resolução CD/ANPD 15/2024). O registro não leva dado pessoal:
 | Contexto | piloto, com a produção sem paciente real (só o RT na UPA Centro desde 31/10/2026) |
 | Contenção | arquivos apagados do B2 de vez em 17/11/2026 (`--b2-hard-delete` e `rclone cleanup`). Desde 17/11, só sobe cifrado com a chave pública do cofre (`infra/vps-backup-offbox.md`) |
 | Avaliação técnica | risco baixo. O advogado decide se é comunicável. Como não há cliente com dado real, não há controlador a avisar |
-| Pendente | troca das chaves em 5 fases (`docs/seguranca/TROCA-CHAVES-2026-11.md`): fase 1 concluída em 17/11/2026 (tokens internos e senhas do Postgres); faltam Telegram, a chave da Edge, DeepSeek e WhatsApp. Levar o bucket para a UE (J4) |
+| Pendente | troca das chaves em 5 fases (`docs/seguranca/TROCA-CHAVES-2026-11.md`): fases 1, 2, 3 e 5 concluídas em 17/11/2026 (tokens internos, senhas do Postgres, 5 bots do Telegram, chave da Edge e WhatsApp), conferidas com a chave antiga recusada; falta a chave do DeepSeek, que o RT apaga quando o Bedrock entrar. Levar o bucket para a UE (J4) |
 | Decisão do RT | [ ] |

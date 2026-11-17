@@ -133,4 +133,5 @@ A volta fica no arquivo `/srv/biblioteca/app/.env.bak-troca-2026-11-edge`.
 ### Faltam
 
 - **Fase 4:** o RT apaga a chave do DeepSeek no painel quando o Bedrock entrar (LG6, I1).
-- **Fase 5:** chaves do WhatsApp (fora de uso). O RT revoga no painel da Meta, e os valores no `.env.prod` viram texto aleatório, porque o Hermes exige as variáveis para subir.
+- **Fase 5, concluída em 17/11/2026:** as três chaves do WhatsApp (`META_*`) no `.env.prod` viraram `desativado-<aleatório>`. O hermes-app foi recriado e o `/health` está ok. Volta: `.env.prod.bak-troca-2026-11-meta`. Se o RT ainda tiver acesso ao painel da Meta, vale revogar o token lá também.
+- **Limpeza:** apagar os arquivos `*.bak-troca-2026-11*` do VPS em 18/11/2026, depois de um dia de operação sem problema. Eles guardam os valores antigos.
