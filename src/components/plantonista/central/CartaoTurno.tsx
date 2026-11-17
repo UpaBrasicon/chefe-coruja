@@ -94,7 +94,7 @@ function useRelogioServidor(agoraServidor: Date | undefined) {
   return agora
 }
 
-export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfilId?: string }) {
+export function CartaoTurno({ unidadeId, perfilId, ubs = false }: { unidadeId?: string; perfilId?: string; ubs?: boolean }) {
   const cartao = useCartaoTurno(unidadeId, perfilId)
   const faixa = useFaixaPlantonista(unidadeId)
   const agoraServidor = faixa.data?.agoraServidor
@@ -214,10 +214,13 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
 
       <div className="flex flex-wrap items-center justify-between gap-3 bg-campo px-5 py-[11px]">
         <div className="flex flex-wrap items-center gap-4">
-          <Link to="/plantao/internacao/pacientes" className="flex items-center gap-1.5 text-apoio text-acao underline-offset-4 hover:underline">
-            <Users className="size-[15px] text-tinta-sussurro" aria-hidden />
-            Ver pacientes internados
-          </Link>
+          {/* percurso da UBS (U5, M2): a UBS não interna nem observa */}
+          {!ubs && (
+            <Link to="/plantao/internacao/pacientes" className="flex items-center gap-1.5 text-apoio text-acao underline-offset-4 hover:underline">
+              <Users className="size-[15px] text-tinta-sussurro" aria-hidden />
+              Ver pacientes internados
+            </Link>
+          )}
           {emCurso && (
             <div className="flex flex-wrap items-center gap-1.5" title="Espera na porta desde a classificação, por cor (Manchester)">
               <span className="text-rotulo text-tinta-sussurro">Espera na porta</span>
@@ -240,6 +243,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
           )}
         </div>
         <div className="flex flex-auto flex-wrap items-center justify-end gap-2">
+          {!ubs && (<>
           <Link to="/plantao" className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3.5 py-[7px] text-apoio text-tinta-apoio whitespace-nowrap hover:border-acao hover:text-acao">
             Abrir plantão
           </Link>
@@ -254,6 +258,7 @@ export function CartaoTurno({ unidadeId, perfilId }: { unidadeId?: string; perfi
             {obsMin === null ? 'Ver observação' : `Observação · maior ${formatarDuracao(obsMin)}`}
             <ArrowRight className="size-[15px]" aria-hidden />
           </Link>
+          </>)}
         </div>
       </div>
     </section>
