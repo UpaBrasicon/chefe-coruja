@@ -6,7 +6,7 @@ import { textoRef, type ItemGuia } from '@/clinico/guia'
 import { topoDa, type Topo } from '@/clinico/topos'
 import { Link } from 'react-router-dom'
 
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { useRelacionadas, type Relacionada } from '@/components/plantonista/calc/contexto'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
@@ -213,20 +213,13 @@ function CabecalhoTopo({ topo }: { topo: Topo }) {
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap gap-2">
             {abas.map(([id, rotulo]) => (
-              <button
-                key={id}
-                type="button"
-                aria-expanded={aberta === id}
-                aria-controls="topo-aba"
-                onClick={() => setAberta((a) => (a === id ? null : id))}
-                className={cn('rounded-capsula border px-3 py-1 text-apoio font-medium', aberta === id ? 'border-acao bg-acao text-sobre-acao' : 'border-fio bg-superficie text-tinta hover:bg-campo')}
-              >
+              <Chip key={id} variante="opcao" ativo={aberta === id} onClick={() => setAberta((a) => (a === id ? null : id))}>
                 {rotulo}
-              </button>
+              </Chip>
             ))}
           </div>
           {aberta && (
-            <ul id="topo-aba" className="flex list-disc flex-col gap-1.5 rounded-container border border-fio bg-superficie py-3 pr-4 pl-8 text-apoio text-tinta">
+            <ul className="flex list-disc flex-col gap-1.5 rounded-container border border-fio bg-superficie py-3 pr-4 pl-8 text-apoio text-tinta">
               {itens.map((i) => <li key={i.texto}>{i.texto} <span className="text-tinta-sussurro">({textoRef(i.ref)})</span></li>)}
             </ul>
           )}
