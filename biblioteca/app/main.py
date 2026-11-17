@@ -470,141 +470,151 @@ def ask(r: Req, authorization: str | None = Header(None)):
     tipo = armadilha(q)
     if tipo:
         return resposta_fixa(r, publico_da_pergunta(q, r.publico), tipo, t0)
-    _uso_reescrita.valor = None
-    termos = reescrever(q)
-    uso_reescrita = uso_da_reescrita()
-    t_reescrita = int((time.time() - t0) * 1000)
-    # pergunta sem idade sobre doença da criança ("bronquiolite precisa de
-    # corticoide"): os termos da reescrita levam à pediatria (avaliação de 14/10)
-    publico = publico_com_termos(q, termos, r.publico)
-    chave = _chave_cache(f"{r.tenant_id}|{publico}", pq)
-    guardada = None if tem_peso else cache_ler(chave)
-    if guardada is not None:
-        def repetir():
-            # o request_id da meta é o da pergunta atual
-            primeira = json.loads(guardada[0]); primeira["request_id"] = r.request_id; primeira["cache"] = True
-            yield json.dumps(primeira, ensure_ascii=False) + "\n"
-            yield from guardada[1:]
-            uso = somar_uso(uso_reescrita)  # E6: só a reescrita gastou tokens
+    # Pedido do RT (17/11/2026): a tela mostra a etapa enquanto espera. A resposta
+    # começa já com {"type":"etapa"} e a reescrita e a busca rodam dentro do
+    # stream (antes, nada chegava à tela até o fim da busca). Cada etapa roda
+    # entre dois yields, no mesmo thread (o uso da reescrita é thread-local).
+    def fluxo():
+        yield json.dumps({"type": "etapa", "etapa": "lendo"}) + "\n"
+        _uso_reescrita.valor = None
+        termos = reescrever(q)
+        uso_reescrita = uso_da_reescrita()
+        t_reescrita = int((time.time() - t0) * 1000)
+        # pergunta sem idade sobre doença da criança ("bronquiolite precisa de
+        # corticoide"): os termos da reescrita levam à pediatria (avaliação de 14/10)
+        publico = publico_com_termos(q, termos, r.publico)
+        chave = _chave_cache(f"{r.tenant_id}|{publico}", pq)
+        guardada = None if tem_peso else cache_ler(chave)
+        if guardada is not None:
+            def repetir():
+                # o request_id da meta é o da pergunta atual
+                primeira = json.loads(guardada[0]); primeira["request_id"] = r.request_id; primeira["cache"] = True
+                yield json.dumps(primeira, ensure_ascii=False) + "\n"
+                yield from guardada[1:]
+                uso = somar_uso(uso_reescrita)  # E6: só a reescrita gastou tokens
+                if uso:
+                    yield json.dumps(uso) + "\n"
+                log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
+            yield from repetir()
+            return
+        yield json.dumps({"type": "etapa", "etapa": "procurando"}) + "\n"
+        tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
+        t_busca = int((time.time() - t0) * 1000)
+        # E4: a tela recalcula a confiança só com as fontes que a resposta cita
+        corte = GATE_MIN if com_lexico else GATE_SEM_LEXICO
+        fontes = [fmt_src(i, p) | {"fonte_id": p.payload.get("fonte_id"), "acima_do_corte": (p.score or 0) >= corte}
+                  for i, p in enumerate(trechos)]
+        gate_ok = passa_gate(melhor, com_lexico, trechos)
+        # R2-11: sem resposta, nenhuma ferramenta ou fonte sem relação na tela
+        ferramentas = [fmt_tool(t) for t in tools if t.score > FERRAMENTA_MIN] if gate_ok else []
+        sem_resposta = MSG_SEM_PEDIATRIA if publico == PED else NAO_ENCONTREI
+
+        def gerar():
+            linhas: list[str] = []
+            t_primeiro = None
+            meta = json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
+                               "confianca": confianca(trechos, com_lexico, gate_ok),
+                               "publico": publico, "termos": termos, "ferramentas": ferramentas, "fontes": fontes if gate_ok else []},
+                              ensure_ascii=False) + "\n"
+            linhas.append(meta)
+            yield meta
+            if not gate_ok:
+                yield json.dumps({"type": "delta", "text": sem_resposta}, ensure_ascii=False) + "\n"
+                # E5: sem material, a lista do PubMed ao vivo (antes do "done", que encerra a tela)
+                linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
+                if linha_pubmed:
+                    yield linha_pubmed
+                yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "nao_encontrou": True}) + "\n"
+                # E6: a reescrita gastou tokens mesmo sem resposta; o uso não entra na memória
+                uso = somar_uso(uso_reescrita, uso_pubmed)
+                if uso:
+                    yield json.dumps(uso) + "\n"
+                log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": False, "top": round(melhor, 3),
+                                     "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms": int((time.time() - t0) * 1000)}))
+                return
+            mapa = FONTES.mapa()
+            rotulo = {PED: "fonte pediátrica", AMBOS: "fonte adulto e criança", ADULTO: "fonte de adulto"}
+            contexto = "\n\n".join(
+                f"[{i + 1}] ({p.payload['titulo']}, {p.payload.get('secao') or 'sem seção'}, {local(p)}; "
+                f"{rotulo[mapa.get(p.payload.get('fonte_id'), ADULTO)]})\n{p.payload['texto']}"
+                for i, p in enumerate(trechos))
+            lista_tools = "\n".join(f"- {t['nome']} ({t['rota']})" for t in ferramentas) or "- nenhuma"
+            # a tela mostra só a frase quando a resposta começa por "Não encontrei" (R2-11);
+            # resposta parcial que começava pela frase sumia (avaliação de 14/10/2026)
+            lembrete = ("\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."
+                        " Se algum trecho responde a qualquer parte da pergunta, NÃO comece com"
+                        f' "{NAO_ENCONTREI}": comece pela parte que o material traz.')
+            if tem_peso:
+                lembrete += " A pergunta traz dados do paciente: NÃO calcule a dose para ele; dê só a dose de referência por kg e aponte a ferramenta."
+            if publico == PED:
+                lembrete += (" A pergunta é de CRIANÇA (pediatria até 13 anos e 11 meses): use só o que o trecho afirma para criança;"
+                             " em trecho de adulto e criança, só a parte pediátrica. Se nenhum trecho para criança tratar do assunto, diga exatamente:"
+                             f' "{MSG_SEM_PEDIATRIA}" e pare; se tratarem de parte, responda essa parte.')
+            texto = ""
+            uso_resposta = None
+            try:
+                # max_tokens alto: em modelo com "raciocínio" os tokens de pensamento
+                # contam no limite e um limite curto devolvia resposta vazia (evals 28/09).
+                stream = llm.chat.completions.create(
+                    model=MODELO, temperature=0.1, stream=True, max_tokens=MAX_TOKENS, extra_body=EXTRA_LLM,
+                    stream_options={"include_usage": True},
+                    messages=[{"role": "system", "content": SYSTEM + (REGRA_PED if publico == PED else "")},
+                              {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}{lembrete}"}])
+                for ch in stream:
+                    if getattr(ch, "usage", None):  # E6: o último pedaço traz o uso
+                        uso_resposta = (getattr(ch, "model", None) or MODELO, ch.usage)
+                    d = (ch.choices[0].delta.content or "") if ch.choices else ""
+                    if d:
+                        if t_primeiro is None:
+                            t_primeiro = int((time.time() - t0) * 1000)
+                        texto += d
+                        linha = json.dumps({"type": "delta", "text": d}, ensure_ascii=False) + "\n"
+                        linhas.append(linha)
+                        yield linha
+            except Exception as e:  # modelo fora do ar: o cliente mostra "IA indisponível"
+                log.error(json.dumps({"rid": r.request_id, "erro": type(e).__name__}))
+                yield json.dumps({"type": "error", "text": "IA indisponível no momento."}, ensure_ascii=False) + "\n"
+                return
+            if not texto.strip():
+                log.error(json.dumps({"rid": r.request_id, "erro": "resposta_vazia"}))
+                yield json.dumps({"type": "error", "text": "O modelo não devolveu texto. Tente reformular a pergunta."}, ensure_ascii=False) + "\n"
+                return
+            citadas = {int(n) for n in re.findall(r"\[(\d+)\]", texto)}
+            invalidas = sorted(n for n in citadas if n < 1 or n > len(trechos))
+            nao_encontrou = NAO_ENCONTREI.rstrip(".") in texto or MSG_SEM_PEDIATRIA.rstrip(".") in texto
+            # pós-checagem R3: com dados do paciente na pergunta, uma quantidade na
+            # resposta que não existe em nenhum trecho sugere cálculo feito pelo modelo
+            # R2-17: "não encontrei" não leva o alerta de cálculo (a tela mostra só a frase)
+            calculo_suspeito = False
+            if tem_peso and not nao_encontrou:
+                base = re.sub(r"\s+", "", " ".join(p.payload["texto"] for p in trechos)).lower()
+                for qtd in re.findall(r"\d+(?:[,.]\d+)?\s*(?:mg|ml|mcg|µg|ui|meq|mmol|g)\b", texto, re.I):
+                    if re.sub(r"\s+", "", qtd).lower() not in base:
+                        calculo_suspeito = True
+                        break
+            # E5: o modelo disse que o material não traz: a lista do PubMed ao vivo
+            uso_pubmed = None
+            if nao_encontrou:
+                linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
+                if linha_pubmed:
+                    yield linha_pubmed
+            fim = json.dumps({"type": "done", "citacoes_invalidas": invalidas,
+                              "sem_citacao": (not citadas) and (not nao_encontrou),
+                              "calculo_suspeito": calculo_suspeito, "nao_encontrou": nao_encontrou}) + "\n"
+            linhas.append(fim)
+            yield fim
+            # E6: o uso vai depois do fim e fora de `linhas`: a resposta guardada na
+            # memória não repete o custo quando é servida de novo
+            uso = somar_uso(uso_reescrita, uso_resposta, uso_pubmed)
             if uso:
                 yield json.dumps(uso) + "\n"
-            log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "cache": True, "ms": int((time.time() - t0) * 1000)}))
-        return StreamingResponse(repetir(), media_type="application/x-ndjson")
-    tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
-    t_busca = int((time.time() - t0) * 1000)
-    # E4: a tela recalcula a confiança só com as fontes que a resposta cita
-    corte = GATE_MIN if com_lexico else GATE_SEM_LEXICO
-    fontes = [fmt_src(i, p) | {"fonte_id": p.payload.get("fonte_id"), "acima_do_corte": (p.score or 0) >= corte}
-              for i, p in enumerate(trechos)]
-    gate_ok = passa_gate(melhor, com_lexico, trechos)
-    # R2-11: sem resposta, nenhuma ferramenta ou fonte sem relação na tela
-    ferramentas = [fmt_tool(t) for t in tools if t.score > FERRAMENTA_MIN] if gate_ok else []
-    sem_resposta = MSG_SEM_PEDIATRIA if publico == PED else NAO_ENCONTREI
+            if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
+                cache_gravar(chave, linhas)
+            log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": True, "top": round(melhor, 3),
+                                 "fontes": [f["titulo"] for f in fontes], "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms_busca": t_busca, "ms_1o_trecho": t_primeiro,
+                                 "ms": int((time.time() - t0) * 1000)}, ensure_ascii=False))
 
-    def gerar():
-        linhas: list[str] = []
-        t_primeiro = None
-        meta = json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
-                           "confianca": confianca(trechos, com_lexico, gate_ok),
-                           "publico": publico, "termos": termos, "ferramentas": ferramentas, "fontes": fontes if gate_ok else []},
-                          ensure_ascii=False) + "\n"
-        linhas.append(meta)
-        yield meta
-        if not gate_ok:
-            yield json.dumps({"type": "delta", "text": sem_resposta}, ensure_ascii=False) + "\n"
-            # E5: sem material, a lista do PubMed ao vivo (antes do "done", que encerra a tela)
-            linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
-            if linha_pubmed:
-                yield linha_pubmed
-            yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "nao_encontrou": True}) + "\n"
-            # E6: a reescrita gastou tokens mesmo sem resposta; o uso não entra na memória
-            uso = somar_uso(uso_reescrita, uso_pubmed)
-            if uso:
-                yield json.dumps(uso) + "\n"
-            log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": False, "top": round(melhor, 3),
-                                 "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms": int((time.time() - t0) * 1000)}))
-            return
-        mapa = FONTES.mapa()
-        rotulo = {PED: "fonte pediátrica", AMBOS: "fonte adulto e criança", ADULTO: "fonte de adulto"}
-        contexto = "\n\n".join(
-            f"[{i + 1}] ({p.payload['titulo']}, {p.payload.get('secao') or 'sem seção'}, {local(p)}; "
-            f"{rotulo[mapa.get(p.payload.get('fonte_id'), ADULTO)]})\n{p.payload['texto']}"
-            for i, p in enumerate(trechos))
-        lista_tools = "\n".join(f"- {t['nome']} ({t['rota']})" for t in ferramentas) or "- nenhuma"
-        # a tela mostra só a frase quando a resposta começa por "Não encontrei" (R2-11);
-        # resposta parcial que começava pela frase sumia (avaliação de 14/10/2026)
-        lembrete = ("\n\nLembrete: cada afirmação clínica termina com a citação [n] do trecho."
-                    " Se algum trecho responde a qualquer parte da pergunta, NÃO comece com"
-                    f' "{NAO_ENCONTREI}": comece pela parte que o material traz.')
-        if tem_peso:
-            lembrete += " A pergunta traz dados do paciente: NÃO calcule a dose para ele; dê só a dose de referência por kg e aponte a ferramenta."
-        if publico == PED:
-            lembrete += (" A pergunta é de CRIANÇA (pediatria até 13 anos e 11 meses): use só o que o trecho afirma para criança;"
-                         " em trecho de adulto e criança, só a parte pediátrica. Se nenhum trecho para criança tratar do assunto, diga exatamente:"
-                         f' "{MSG_SEM_PEDIATRIA}" e pare; se tratarem de parte, responda essa parte.')
-        texto = ""
-        uso_resposta = None
-        try:
-            # max_tokens alto: em modelo com "raciocínio" os tokens de pensamento
-            # contam no limite e um limite curto devolvia resposta vazia (evals 28/09).
-            stream = llm.chat.completions.create(
-                model=MODELO, temperature=0.1, stream=True, max_tokens=MAX_TOKENS, extra_body=EXTRA_LLM,
-                stream_options={"include_usage": True},
-                messages=[{"role": "system", "content": SYSTEM + (REGRA_PED if publico == PED else "")},
-                          {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}{lembrete}"}])
-            for ch in stream:
-                if getattr(ch, "usage", None):  # E6: o último pedaço traz o uso
-                    uso_resposta = (getattr(ch, "model", None) or MODELO, ch.usage)
-                d = (ch.choices[0].delta.content or "") if ch.choices else ""
-                if d:
-                    if t_primeiro is None:
-                        t_primeiro = int((time.time() - t0) * 1000)
-                    texto += d
-                    linha = json.dumps({"type": "delta", "text": d}, ensure_ascii=False) + "\n"
-                    linhas.append(linha)
-                    yield linha
-        except Exception as e:  # modelo fora do ar: o cliente mostra "IA indisponível"
-            log.error(json.dumps({"rid": r.request_id, "erro": type(e).__name__}))
-            yield json.dumps({"type": "error", "text": "IA indisponível no momento."}, ensure_ascii=False) + "\n"
-            return
-        if not texto.strip():
-            log.error(json.dumps({"rid": r.request_id, "erro": "resposta_vazia"}))
-            yield json.dumps({"type": "error", "text": "O modelo não devolveu texto. Tente reformular a pergunta."}, ensure_ascii=False) + "\n"
-            return
-        citadas = {int(n) for n in re.findall(r"\[(\d+)\]", texto)}
-        invalidas = sorted(n for n in citadas if n < 1 or n > len(trechos))
-        nao_encontrou = NAO_ENCONTREI.rstrip(".") in texto or MSG_SEM_PEDIATRIA.rstrip(".") in texto
-        # pós-checagem R3: com dados do paciente na pergunta, uma quantidade na
-        # resposta que não existe em nenhum trecho sugere cálculo feito pelo modelo
-        # R2-17: "não encontrei" não leva o alerta de cálculo (a tela mostra só a frase)
-        calculo_suspeito = False
-        if tem_peso and not nao_encontrou:
-            base = re.sub(r"\s+", "", " ".join(p.payload["texto"] for p in trechos)).lower()
-            for qtd in re.findall(r"\d+(?:[,.]\d+)?\s*(?:mg|ml|mcg|µg|ui|meq|mmol|g)\b", texto, re.I):
-                if re.sub(r"\s+", "", qtd).lower() not in base:
-                    calculo_suspeito = True
-                    break
-        # E5: o modelo disse que o material não traz: a lista do PubMed ao vivo
-        uso_pubmed = None
-        if nao_encontrou:
-            linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
-            if linha_pubmed:
-                yield linha_pubmed
-        fim = json.dumps({"type": "done", "citacoes_invalidas": invalidas,
-                          "sem_citacao": (not citadas) and (not nao_encontrou),
-                          "calculo_suspeito": calculo_suspeito, "nao_encontrou": nao_encontrou}) + "\n"
-        linhas.append(fim)
-        yield fim
-        # E6: o uso vai depois do fim e fora de `linhas`: a resposta guardada na
-        # memória não repete o custo quando é servida de novo
-        uso = somar_uso(uso_reescrita, uso_resposta, uso_pubmed)
-        if uso:
-            yield json.dumps(uso) + "\n"
-        if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
-            cache_gravar(chave, linhas)
-        log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": True, "top": round(melhor, 3),
-                             "fontes": [f["titulo"] for f in fontes], "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms_busca": t_busca, "ms_1o_trecho": t_primeiro,
-                             "ms": int((time.time() - t0) * 1000)}, ensure_ascii=False))
+        yield from gerar()
 
-    return StreamingResponse(gerar(), media_type="application/x-ndjson",
+    return StreamingResponse(fluxo(), media_type="application/x-ndjson",
                              headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
