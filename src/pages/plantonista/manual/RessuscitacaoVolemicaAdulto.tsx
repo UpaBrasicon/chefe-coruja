@@ -5,8 +5,16 @@ import {
   SOLUCOES_TABELA5, SOLUCOES_TABELA7, VASOPRESSINA_SSC_PRATICA,
   diureseMinimaMlH, diureseMlKgH, fichaRessuscitacaoAdulto, gatilhoVasopressina, lactatoMmol, reducaoLactato, vazaoAliquota, vcSepse, volumeSepse,
 } from '@/clinico/adulto/ressuscitacaoVolemica'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -34,6 +42,49 @@ export function RessuscitacaoVolemicaAdulto() {
   const lac = lac0 > 0 && lac1 > 0 ? reducaoLactato(lac0, lac1) : null
   const vaso = nora > 0 && horas > 0 ? gatilhoVasopressina(nora, unid, horas, informado(peso)) : null
   const vc = vcSepse(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaRessuscitacaoAdulto.id)
+  const atingido = (b: boolean) => (b ? 'atingido' : 'não atingido')
+  const diurMin = diureseMinimaMlH(peso)
+
+  // Texto do "Copiar" (C3 e C4 = A): os dados usados e as contas que a tela mostra, com a página.
+  const copia = vol || diurese || lac || vaso
+    ? textoCopia({
+        ferramenta: 'Ressuscitação volêmica no choque e na sepse — adulto',
+        dados: [
+          ['Peso', vol ? `${numeroBr(peso)} kg` : ''],
+          ['Alíquota', vazao !== null ? `${numeroBr(aliqMl)} mL em ${numeroBr(aliqMin)} min` : ''],
+          ['Diurese medida', diurese ? `${numeroBr(diurMl)} mL em ${numeroBr(diurH)} h` : ''],
+          ['Lactato inicial / após 2 h', lac ? `${numeroBr(lac0)} / ${numeroBr(lac1)} mmol/L` : ''],
+          ['Noradrenalina', vaso ? `${numeroBr(nora)} ${unid === 'ug/min' ? 'µg/min' : 'µg/kg/min'} há ${numeroBr(horas)} h` : ''],
+        ],
+        resultado: [
+          ...(vol
+            ? [
+                `Sepse, 30 mL/kg: ${br(vol.totalMl, 0)} mL · em 1 h (livro, p. 122) ${br(vol.mlH, 0)} mL/h · em 3 h (SSC 2026 / ILAS) ${br(vol.mlHEm3h, 0)} mL/h`,
+                `Alíquotas de 250–500 mL (p. 122): ${faixaBr(vol.aliquotas, 0)} · alíquotas de 200 mL (p. 74): ${vol.aliquotasDe200}`,
+              ]
+            : []),
+          ...(vazao !== null ? [`Vazão equivalente da alíquota na bomba: ${br(vazao, 0)} mL/h`] : []),
+          ...(diurMin !== null ? [`Diurese mínima (0,5 mL/kg/h): ${br(diurMin, 0)} mL/h`] : []),
+          ...(diurese ? [`Diurese: ${br(diurese.mlKgH, 2)} mL/kg/h ${diurese.abaixoDe05 ? '— abaixo de 0,5 mL/kg/h (oligúria pela definição da p. 67)' : '— 0,5 mL/kg/h ou mais'}`] : []),
+          ...(lac ? [`Lactato: queda de ${br(lac.reducaoPct, 0)}% ${lac.atingiuMeta20 ? '(≥ 20%)' : '(< 20%)'}`] : []),
+          ...(vaso
+            ? [
+                `Noradrenalina: ${br(vaso.ugMin)} µg/min${vaso.ugKgMin !== null ? ` = ${br(vaso.ugKgMin, 2)} µg/kg/min` : ''}`,
+                `- Cap. 4 (p. 76) — > 5 µg/min após 6 horas: ${atingido(vaso.cap4Seis)}`,
+                `- Cap. 4 (p. 76) — > 15 µg/min nas últimas 3 horas: ${atingido(vaso.cap4Tres)}`,
+                `- Cap. 7 (p. 122) — > 5 µg/min por mais de 6 horas: ${atingido(vaso.cap7)}`,
+                `- SSC 2026 (prática do painel, p. 42) — ${br(VASOPRESSINA_SSC_PRATICA.ugKgMin, 1)} µg/kg/min ou mais: ${vaso.sscPratica === null ? 'informe o peso' : atingido(vaso.sscPratica)}`,
+              ]
+            : []),
+          ...(vc ? [`VC 4–6 mL/kg (peso informado): ${faixaBr(vc, 0)} mL`] : []),
+        ],
+        fonte: textoFontes(fichaRessuscitacaoAdulto),
+        versao: fichaRessuscitacaoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -110,26 +161,6 @@ export function RessuscitacaoVolemicaAdulto() {
         <Resultado rotulo="VC 4–6 mL/kg (peso informado; o livro não diz se é peso predito — o ILAS usa 6 mL/kg de peso predito na SDRA)" valor={vc ? `${faixaBr(vc, 0)} mL` : '—'} />
       </Bloco>
 
-      <Bloco titulo="SSC 2026 × ILAS jul/2026 × manual do HC" descricao="O que cada fonte escreve, com página. Decisão do responsável técnico (28/09/2026): o ILAS entra como referência brasileira ao lado da SSC 2026; o livro fica como base. A ferramenta mostra; a conduta é do médico.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro">
-              <TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">SSC 2026</TableHead><TableHead className="pr-3 pb-2">ILAS jul/2026</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow>
-            </TableHeader>
-            <TableBody>
-              {DIRETRIZES_2026.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}{d.nota && <p className="mt-1 font-normal text-atencao">{d.nota}</p>}</TableCell>
-                  {[d.ssc, d.ilas, d.livro].map((c, i) => (
-                    <TableCell key={i} className="pr-3 py-2">{c ? <>{c.texto} <span className="text-tinta-sussurro">({c.pagina})</span></> : <span className="text-tinta-sussurro">—</span>}</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Bloco>
-
       <Bloco titulo="Soluções cristaloides" descricao="Tabela 5 do cap. 4 (p. 74), em mmol/L; osmolaridade em mOsm/L.">
         <div className="overflow-x-auto">
           <Table variante="referencia" className="w-full text-left tabular-nums">
@@ -150,11 +181,45 @@ export function RessuscitacaoVolemicaAdulto() {
         <p className="text-tinta-sussurro">Tabela 7 do cap. 7 (p. 122): {SOLUCOES_TABELA7.map((s) => `${s.nome} — ${s.texto}`).join('; ')}.</p>
       </Bloco>
 
-      <Bloco titulo="Errata e divergências do livro" descricao="Os valores pediátricos destes capítulos não entram nesta ferramenta.">
-        <ul className="list-disc pl-5 text-tinta-sussurro">
-          {ERRATA_RESSUSCITACAO.map((e) => <li key={e}>{e}</li>)}
-        </ul>
-      </Bloco>
+      {/* O bloco "Errata e divergências do livro" vai para "Armadilhas" e a tabela SSC × ILAS × manual para "Evidências" (C6 = A). */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!vol}
+        armadilhas={['Os valores pediátricos destes capítulos não entram nesta ferramenta.', ...ERRATA_RESSUSCITACAO, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaRessuscitacaoAdulto}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="SSC 2026 × ILAS jul/2026 × manual do HC" resumo="O que cada fonte escreve, com página. Decisão do responsável técnico (28/09/2026): o ILAS entra como referência brasileira ao lado da SSC 2026; o livro fica como base. A ferramenta mostra; a conduta é do médico.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro">
+                  <TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">SSC 2026</TableHead><TableHead className="pr-3 pb-2">ILAS jul/2026</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  {DIRETRIZES_2026.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}{d.nota && <p className="mt-1 font-normal text-atencao">{d.nota}</p>}</TableCell>
+                      {[d.ssc, d.ilas, d.livro].map((c, i) => (
+                        <TableCell key={i} className="pr-3 py-2">{c ? <>{c.texto} <span className="text-tinta-sussurro">({c.pagina})</span></> : <span className="text-tinta-sussurro">—</span>}</TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={vol ? `30 mL/kg = ${br(vol.totalMl, 0)} mL` : 'Informe o peso'}
+        detalhe={vol ? `Adulto · ${numeroBr(peso)} kg · ${br(vol.mlH, 0)} mL/h em 1 h ou ${br(vol.mlHEm3h, 0)} mL/h em 3 h` : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

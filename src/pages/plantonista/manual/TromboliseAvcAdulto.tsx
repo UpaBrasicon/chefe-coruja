@@ -5,9 +5,17 @@ import {
   NITROPRUSSIATO_AVC, SANGRAMENTO_POS_ALTEPLASE, TABELA4_PAGINA, TENECTEPLASE_2026, TENECTEPLASE_AVC, alteplaseAvc, avaliarTrombolise, conferirPa,
   fichaTromboliseAvcAdulto, nitroprussiatoMlH, reducao15, tenecteplase2026, tenecteplaseAvc, tranexamicoPosAlteplase, type Faixa, type SituacaoPa,
 } from '@/clinico/adulto/avcTrombolise'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { cn } from '@/lib/utils'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -60,6 +68,56 @@ export function TromboliseAvcAdulto() {
   })
   const pa = conferirPa(sitPa, pas, pad)
   const r15 = reducao15(pas, pad)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaTromboliseAvcAdulto.id)
+  const nAbsolutas = av.absolutas.length + marcadas.length
+  const errataTnkManual = `${TENECTEPLASE_AVC.errata} A AHA/ASA 2026 não recomenda 0,4 mg/kg (Classe 3: sem benefício, LOE A; p. 42).`
+
+  // As contas que a tela mostra, em texto, para o resumo e o "Copiar".
+  const textoAlt = alt ? `total ${br(alt.totalMg)} mg${alt.limitadoAoTeto ? ' (no teto)' : ''} · bolus ${br(alt.bolusMg)} mg · ${br(alt.infusaoMg)} mg em 60 min (${br(alt.infusaoMgH)} mg/h)` : null
+  const textoTnk26 = tnk26 ? `0,25 mg/kg = ${br(tnk26.mg)} mg${tnk26.limitadoAoTeto ? ' (no teto de 25 mg)' : ''} · Tabela 7 (${tnk26.faixaTabela7.faixa}): ${br(tnk26.faixaTabela7.mg)} mg = ${br(tnk26.faixaTabela7.ml)} mL a 5 mg/mL` : null
+  const textoPa = pa ? `PA ${pas} × ${pad} mmHg: ${pa.acimaDoCorte ? 'no corte ou acima' : 'abaixo do corte'} — ${pa.corte} (${pa.pagina})${sitPa === 'sem-trombolise' && pa.acimaDoCorte && r15 ? ` · 15% abaixo: ${br(r15.pas, 0)} × ${br(r15.pad, 0)} mmHg` : ''}` : null
+
+  // Texto do "Copiar" (C3 e C4 = A): os dados informados, as doses, a conferência da Tabela 4 e da PA, com página.
+  const copia = alt
+    ? textoCopia({
+        ferramenta: 'Trombólise no AVC isquêmico — adulto',
+        dados: [
+          ['Peso', `${numeroBr(peso)} kg`],
+          ['Idade', idade > 0 ? `${numeroBr(idade)} anos` : ''],
+          ['Desde a última vez assintomático', horas > 0 ? `${numeroBr(horas)} h` : ''],
+          ['NIHSS', nihss > 0 ? String(nihss) : ''],
+          ['Plaquetas', plaq > 0 ? `${numeroBr(plaq)}/mm³` : ''],
+          ['INR', inr > 0 ? numeroBr(inr) : ''],
+          ['TTPa', ttpa > 0 ? `${numeroBr(ttpa)} s` : ''],
+          ['TP', tp > 0 ? `${numeroBr(tp)} s` : ''],
+          ['PA', pas > 0 && pad > 0 ? `${pas} × ${pad} mmHg` : ''],
+          ['Glicemia', glic > 0 ? `${numeroBr(glic)} mg/dL` : ''],
+          ['Rankin prévio', rankinPrev >= 0 ? String(rankinPrev) : ''],
+          ['Uso de varfarina', varfarina ? 'sim' : ''],
+          ['AVC prévio + diabetes', avcDm ? 'sim' : ''],
+        ],
+        resultado: [
+          'Dose do trombolítico:',
+          `- Alteplase: ${textoAlt} (${ALTEPLASE_AVC.pagina})`,
+          ...(textoTnk26 ? [`- Tenecteplase — AHA/ASA 2026: ${textoTnk26} (${TENECTEPLASE_2026.pagina})`] : []),
+          ...(tnk !== null ? [`- Tenecteplase — manual do HC (superada pela AHA/ASA 2026): ${br(tnk)} mg (${TENECTEPLASE_AVC.pagina}). Errata: ${errataTnkManual}`] : []),
+          `Critérios numéricos da Tabela 4 (${TABELA4_PAGINA}):`,
+          ...av.indicacao.map((i) => `- Indicação preenchida: ${i}`),
+          ...av.foraDaIndicacao.map((i) => `- Fora dos critérios de indicação: ${i}`),
+          ...av.absolutas.map((i) => `- Contraindicação absoluta (numérica): ${i}`),
+          ...av.ponderar.map((i) => `- Risco e benefício: ${i}`),
+          ...marcadas.map((m) => `- Contraindicação absoluta marcada: ${m}`),
+          ...(av.faltando.length ? [`- Falta informar: ${av.faltando.join(', ')}`] : []),
+          ...(textoPa ? [textoPa] : []),
+          ...(nitro !== null ? [`Nitroprussiato: 0,25 µg/kg/min = ${br(nitro, 2)} mL/h (200 µg/mL) (${NITROPRUSSIATO_AVC.pagina})`] : []),
+          ...(txa ? [`Ácido tranexâmico (sangramento pós-alteplase): 10–15 mg/kg EV em 20 min = ${faixa(txa, 0)} mg (p. 528, Tabela 6)`] : []),
+        ],
+        fonte: textoFontes(fichaTromboliseAvcAdulto),
+        versao: fichaTromboliseAvcAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -85,30 +143,7 @@ export function TromboliseAvcAdulto() {
           conta={tnk26 ? <>0,25 mg/kg = <strong>{br(tnk26.mg)} mg</strong>{tnk26.limitadoAoTeto && ' (no teto de 25 mg)'} · Tabela 7 ({tnk26.faixaTabela7.faixa}): <strong>{br(tnk26.faixaTabela7.mg)} mg = {br(tnk26.faixaTabela7.ml)} mL</strong> a 5 mg/mL</> : 'informe o peso'}
           pagina={TENECTEPLASE_2026.pagina}
         />
-        <LinhaManual nome="Tenecteplase — manual do HC (superada pela AHA/ASA 2026)" texto={TENECTEPLASE_AVC.texto} conta={tnk !== null ? <strong>{br(tnk)} mg</strong> : 'informe o peso'} pagina={TENECTEPLASE_AVC.pagina} errata={`${TENECTEPLASE_AVC.errata} A AHA/ASA 2026 não recomenda 0,4 mg/kg (Classe 3: sem benefício, LOE A; p. 42).`} />
-      </Bloco>
-
-      <Bloco titulo="AHA/ASA 2026 — o que a diretriz escreve, com classe e página" descricao="Prabhakaran et al., Stroke 2026;57:e316–e436 (páginas do PDF). Decisão do responsável técnico (28/09/2026): alteplase e tenecteplase lado a lado. A ferramenta mostra; a indicação é do médico.">
-        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">
-          {CORRECAO_AHA_2026.texto} <a className="underline" href={CORRECAO_AHA_2026.url} target="_blank" rel="noreferrer">Correção</a>
-        </p>
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro">
-              <TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA/ASA 2026</TableHead><TableHead className="pr-3 pb-2">Classe · página</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow>
-            </TableHeader>
-            <TableBody>
-              {DIRETRIZ_AVC_2026.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">{d.texto}</TableCell>
-                  <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.classe} · {d.pagina}</TableCell>
-                  <TableCell className="py-2 text-tinta-sussurro">{d.livro ?? '—'}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <LinhaManual nome="Tenecteplase — manual do HC (superada pela AHA/ASA 2026)" texto={TENECTEPLASE_AVC.texto} conta={tnk !== null ? <strong>{br(tnk)} mg</strong> : 'informe o peso'} pagina={TENECTEPLASE_AVC.pagina} errata={errataTnkManual} />
       </Bloco>
 
       <Bloco titulo={`Critérios numéricos da Tabela 4 (${TABELA4_PAGINA})`} descricao="A ferramenta confere os cortes contra os dados informados e mostra em que grupo do livro cada um cai. A indicação é do médico.">
@@ -184,6 +219,61 @@ export function TromboliseAvcAdulto() {
           {CUIDADOS_AVC.map((c) => <li key={c.texto}>{c.texto} <span className="text-tinta-sussurro">({c.pagina})</span></li>)}
         </ul>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!alt}
+        armadilhas={[
+          `Tenecteplase do manual — errata do livro: ${errataTnkManual}`,
+          `Pressão arterial — errata do livro: ${ERRATA_PA_AVC}`,
+          ...(NITROPRUSSIATO_AVC.errata ? [`Nitroprussiato — errata do livro: ${NITROPRUSSIATO_AVC.errata}`] : []),
+          ...(SANGRAMENTO_POS_ALTEPLASE.errata ? [`Sangramento pós-alteplase — errata do livro: ${SANGRAMENTO_POS_ALTEPLASE.errata}`] : []),
+          ...(ANGIOEDEMA_POS_ALTEPLASE.errata ? [`Angioedema — ${ANGIOEDEMA_POS_ALTEPLASE.errata}`] : []),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaTromboliseAvcAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela da AHA/ASA 2026 ao lado do manual vai para "Evidências" (C6 = A), com o aviso da correção oficial; as doses ficam no bloco do trombolítico.
+          <BlocoComparacao titulo="AHA/ASA 2026 — o que a diretriz escreve, com classe e página" resumo="Prabhakaran et al., Stroke 2026;57:e316–e436 (páginas do PDF). Decisão do responsável técnico (28/09/2026): alteplase e tenecteplase lado a lado. A ferramenta mostra; a indicação é do médico.">
+            <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">
+              {CORRECAO_AHA_2026.texto} <a className="underline" href={CORRECAO_AHA_2026.url} target="_blank" rel="noreferrer">Correção</a>
+            </p>
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro">
+                  <TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA/ASA 2026</TableHead><TableHead className="pr-3 pb-2">Classe · página</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  {DIRETRIZ_AVC_2026.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                      <TableCell className="pr-3 py-2">{d.texto}</TableCell>
+                      <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.classe} · {d.pagina}</TableCell>
+                      <TableCell className="py-2 text-tinta-sussurro">{d.livro ?? '—'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={alt ? `Alteplase ${br(alt.totalMg)} mg${tnk26 ? ` · tenecteplase ${br(tnk26.mg)} mg` : ''}` : 'Informe o peso'}
+        detalhe={nAbsolutas > 0
+          ? `${nAbsolutas} contraindicação(ões) absoluta(s) na lista do livro`
+          : av.foraDaIndicacao.length > 0
+            ? `Fora dos critérios de indicação: ${av.foraDaIndicacao[0]}`
+            : alt ? `Adulto · ${numeroBr(peso)} kg${idade > 0 ? ` · ${numeroBr(idade)} anos` : ''}` : undefined}
+        tom={nAbsolutas > 0 ? 'critico' : av.foraDaIndicacao.length > 0 ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

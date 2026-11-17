@@ -5,7 +5,15 @@ import {
   adrenalinaImWaoMg, bolusEvMl, criteriosWao2020, fichaAnafilaxiaAdulto, infusaoPorMlH, infusaoPorMlMin, triptaseLimiar, ugMlInfusao, volumeChoqueMl,
   type AchadosWao, type Faixa,
 } from '@/clinico/adulto/anafilaxia'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -44,6 +52,39 @@ export function AnafilaxiaAdulto() {
   const porHora = Number.isFinite(lerNumero(mlH)) ? infusaoPorMlH(lerNumero(mlH)) : null
   const faixaMlH: Faixa = [ADRENALINA_INFUSAO.mlMin[0] * 60, ADRENALINA_INFUSAO.mlMin[1] * 60]
   const faixaUg: Faixa = [ADRENALINA_INFUSAO.mlMin[0] * ugMlInfusao(), ADRENALINA_INFUSAO.mlMin[1] * ugMlInfusao()]
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAnafilaxiaAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+
+  // Texto do "Copiar" (C3 e C4 = A): o peso e a lista de doses do adulto, com a página.
+  // A segunda linha vai sem as notas: uma delas cita a dose por kg da criança, que não entra no adulto.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Anafilaxia — adulto',
+        dados: [
+          ['Peso', `${br(peso)} kg`],
+          ['Achados marcados (WAO 2020)', ACHADOS.filter((a) => achados[a.id]).map((a) => a.rotulo.split(' (')[0]).join('; ') || 'nenhum'],
+        ],
+        resultado: [
+          wao.provavel ? `Anafilaxia muito provável pela WAO 2020 — critério ${wao.criterio} (Tabela 2)` : 'Nenhum dos dois critérios da WAO 2020 preenchido com o que foi marcado (não é preciso preenchê-los antes de dar adrenalina).',
+          'Adrenalina:',
+          `- Intramuscular (1:1.000): ${faixa(ADRENALINA_IM.mg)} mg = ${faixa(ADRENALINA_IM.mg)} mL IM no ${ADRENALINA_IM.local}, repetida a cada ${faixa(ADRENALINA_IM.repeticaoMin, 0)} minutos conforme resposta ou recidiva (${ADRENALINA_IM.pagina})`,
+          ...(imWao ? [`- Intramuscular por peso (WAO 2020): ${br(ADRENALINA_IM_WAO.mgKg, 2)} mg/kg, máximo ${br(ADRENALINA_IM_WAO.maximoMg)} mg = ${br(imWao.mg, 2)} mg = ${br(imWao.mg, 2)} mL de 1:1.000${imWao.noMaximo ? ' (no máximo)' : ''}`] : []),
+          `- Bolus EV (1:10.000): ${br(ADRENALINA_BOLUS_EV.mg)} mg — ${ADRENALINA_BOLUS_EV.preparo}, aplicando 1 mL = ${br(bolusEvMl())} mL do preparo, ao longo de ${faixa(ADRENALINA_BOLUS_EV.minutos, 0)} min; ${ADRENALINA_BOLUS_EV.quando} (${ADRENALINA_BOLUS_EV.pagina})`,
+          `- Infusão contínua: 1 mg em 500 mL de SG ou SF (${br(ugMlInfusao(), 0)} µg/mL) a ${faixa(ADRENALINA_INFUSAO.mlMin)} mL/min = ${faixa(faixaMlH, 0)} mL/h = ${faixa(faixaUg, 0)} µg/min, titulando o efeito (${ADRENALINA_INFUSAO.pagina})`,
+          ...(porMin ? [`  Velocidade informada ${br(lerNumero(mlMin), 2)} mL/min = ${br(porMin.mlH)} mL/h · ${br(porMin.ugMin)} µg/min${porMin.foraDaFaixa ? ' — fora da faixa de 0,5–2 mL/min do manual' : ''}`] : []),
+          ...(porHora ? [`  Bomba informada ${br(lerNumero(mlH))} mL/h = ${br(porHora.ugMin)} µg/min · ${br(porHora.mlMin, 2)} mL/min${porHora.foraDaFaixa ? ' — fora da faixa de 30–120 mL/h (0,5–2 mL/min) do manual' : ''}`] : []),
+          ...(vol ? [`Volume no choque: cristaloide 10 a 20 mL/kg = ${faixa(vol, 0)} mL nos primeiros minutos, por acesso calibroso (p. 177)`] : []),
+          ...CUIDADOS_ANAFILAXIA.map((c) => `${c.texto} (${c.pagina}).`),
+          ...(limiar !== null ? [`Triptase: elevação significativa se a aguda for de ${br(limiar)} ng/mL ou mais (1,2 × basal + 2; Practice Parameter 2023, p. 3 e 16)`] : []),
+          'Segunda linha (doses de adulto do capítulo):',
+          ...SEGUNDA_LINHA_ANAFILAXIA.map((d) => `- ${d.nome}: ${d.dose} (${d.pagina})`),
+        ],
+        fonte: textoFontes(fichaAnafilaxiaAdulto),
+        versao: fichaAnafilaxiaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -125,27 +166,46 @@ export function AnafilaxiaAdulto() {
         </div>
       </Bloco>
 
-      <Bloco titulo="WAO 2020 e Practice Parameter 2023 × manual do HC">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretrizes</TableHead><TableHead className="pr-3 pb-2">Onde</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {DIRETRIZES_ANAFILAXIA.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">{d.texto}</TableCell>
-                  <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.onde}</TableCell>
-                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Bloco>
-
       <Bloco titulo="Segunda linha" descricao="Doses de adulto do capítulo. As doses por kg que o capítulo dá para criança não entram nesta tela.">
         {SEGUNDA_LINHA_ANAFILAXIA.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={d.dose} pagina={d.pagina} nota={d.nota} />)}
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[...CUIDADOS_ANAFILAXIA.map((c) => `${c.texto} (${c.pagina}).`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaAnafilaxiaAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação WAO 2020 / Practice Parameter 2023 × manual vai para "Evidências" (C6 = A); nenhuma dose muda.
+          <BlocoComparacao titulo="WAO 2020 e Practice Parameter 2023 × manual do HC">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretrizes</TableHead><TableHead className="pr-3 pb-2">Onde</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {DIRETRIZES_ANAFILAXIA.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                      <TableCell className="pr-3 py-2">{d.texto}</TableCell>
+                      <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.onde}</TableCell>
+                      <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${br(peso)} kg` : 'Informe o peso'}
+        detalhe={`Adrenalina IM ${faixa(ADRENALINA_IM.mg)} mg (${faixa(ADRENALINA_IM.mg)} mL de 1:1.000)${wao.provavel ? ` · WAO 2020: muito provável, critério ${wao.criterio}` : ''}`}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

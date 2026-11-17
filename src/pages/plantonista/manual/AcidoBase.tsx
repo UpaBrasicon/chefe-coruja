@@ -5,12 +5,21 @@ import {
   anionGapCorrigido, anionGapUrinario, calcularEsquemaBic, criterioLaboratorialBicarbonato, deficitBicarbonato, deltaDelta, fichaBicarbonato,
   fichaGasometria, gapOsmolar, lerCloroUrinario, phArterialEstimado, type Tempo,
 } from '@/clinico/adulto/acidobase'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+const maiuscula = (s: string) => `${s[0].toUpperCase()}${s.slice(1)}`
 
 /** Distúrbios acidobásicos: passo a passo do cap. 69 (primário, compensação, AG, delta-delta, AG urinário, Cl urinário, gap osmolar). */
 export function GasometriaAcidoBase() {
@@ -28,6 +37,8 @@ export function GasometriaAcidoBase() {
   const [osmM, setOsmM] = useState(0)
   const [osmC, setOsmC] = useState(0)
   const [phV, setPhV] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaGasometria.id)
 
   const a = ph > 0 && pco2 > 0 && hco3 > 0 ? analisarGasometria({ ph, pco2, hco3, tempoRespiratorio: tempo === 'nao' ? undefined : tempo }) : null
   const ag = na > 0 && cl > 0 && hco3 > 0 ? anionGap(na, hco3, cl) : null
@@ -37,6 +48,48 @@ export function GasometriaAcidoBase() {
   const clLeitura = clUAlc > 0 ? lerCloroUrinario(clUAlc) : null
   const go = osmM > 0 && osmC > 0 ? gapOsmolar(osmM, osmC) : null
   const phA = phV > 0 ? phArterialEstimado(phV) : null
+  const primario = a ? (a.primarios.length ? a.primarios.join(' + ') : '—') : null
+  const temAlgo = !!(a || ag !== null || agu || clLeitura || go || phA)
+
+  // Texto do "Copiar" (C4 = A): os dados informados e cada leitura com a página do manual.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Distúrbios acidobásicos — análise da gasometria (adulto)',
+      dados: [
+        ['pH', ph > 0 ? br(ph, 2) : ''],
+        ['pCO2', pco2 > 0 ? `${br(pco2)} mmHg` : ''],
+        ['HCO3', hco3 > 0 ? `${br(hco3)} mEq/L` : ''],
+        ['Distúrbio respiratório', a && tempo !== 'nao' ? (tempo === 'aguda' ? 'agudo' : 'crônico') : ''],
+        ['Na', na > 0 ? `${br(na)} mEq/L` : ''],
+        ['Cl', cl > 0 ? `${br(cl)} mEq/L` : ''],
+        ['Albumina', alb > 0 ? `${br(alb)} g/dL` : ''],
+        ['Na urinário', naU > 0 ? `${br(naU)} mEq/L` : ''],
+        ['K urinário', kU > 0 ? `${br(kU)} mEq/L` : ''],
+        ['Cl urinário (AG urinário)', clU > 0 ? `${br(clU)} mEq/L` : ''],
+        ['Cl urinário (alcalose)', clUAlc > 0 ? `${br(clUAlc)} mEq/L` : ''],
+        ['Osmolaridade medida', osmM > 0 ? `${br(osmM)} mOsm/kg` : ''],
+        ['Osmolaridade calculada', osmC > 0 ? `${br(osmC)} mOsm/kg` : ''],
+        ['pH venoso periférico', phV > 0 ? br(phV, 2) : ''],
+      ],
+      resultado: [
+        ...(a
+          ? [
+              `Estado: ${a.estado} · distúrbio primário (Tab. 1, p. 931): ${primario}${a.phCalculado !== null ? ` · pH por Henderson-Hasselbalch ${br(a.phCalculado, 2)}` : ''}`,
+              ...a.compensacoes.map((c) => `${maiuscula(c.primario)} — ${c.esperado}. ${c.leitura} (${c.pagina})`),
+              ...a.observacoes,
+            ]
+          : []),
+        ...(ag !== null ? [`Ânion-gap: ${br(ag)} mEq/L${agc !== null ? ` · corrigido pela albumina ${br(agc)} mEq/L` : ''} (p. 935–936)`] : []),
+        ...(dd ? [`ΔAG/ΔHCO3${agc !== null ? ' (com AG corrigido)' : ''}: ${br(dd.razao, 2)} (ΔAG ${br(dd.deltaAG)}; ΔHCO3 ${br(dd.deltaHCO3)}). ${dd.texto} (p. 936)`] : []),
+        ...(agu ? [`AG urinário ${br(agu.valor)} mEq/L. ${agu.texto} (p. 937)`] : []),
+        ...(clLeitura ? [`${clLeitura.texto} (${clLeitura.pagina})`] : []),
+        ...(go ? [`Gap osmolar: ${br(go.valor)} mOsm/kg${go.acimaDe15 ? ' — acima de 15' : ''} (p. 1326 e 1512)`] : []),
+        ...(phA ? [`pH arterial estimado: ${faixaBr(phA, 2)} (p. 932)`] : []),
+      ],
+      fonte: textoFontes(fichaGasometria),
+      versao: fichaGasometria.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -55,16 +108,17 @@ export function GasometriaAcidoBase() {
           <>
             <div className="grid gap-3 sm:grid-cols-3">
               <Resultado rotulo="Estado" valor={a.estado} />
-              <Resultado rotulo="Distúrbio primário (Tab. 1)" valor={a.primarios.length ? a.primarios.join(' + ') : '—'} />
+              <Resultado rotulo="Distúrbio primário (Tab. 1)" valor={primario} />
               <Resultado rotulo="pH por Henderson-Hasselbalch" valor={a.phCalculado === null ? '—' : br(a.phCalculado, 2)} />
             </div>
             {a.compensacoes.map((c) => (
-              <Trecho key={c.primario + c.esperado} texto={`${c.primario[0].toUpperCase()}${c.primario.slice(1)} — ${c.esperado}. ${c.leitura}`} pagina={c.pagina} />
+              <Trecho key={c.primario + c.esperado} texto={`${maiuscula(c.primario)} — ${c.esperado}. ${c.leitura}`} pagina={c.pagina} />
             ))}
             {a.observacoes.map((o) => <p key={o} className="text-atencao">{o}</p>)}
           </>
         )}
-        <Trecho texto="Fórmulas: pH = 6,10 + log(HCO3 ÷ (0,03 × pCO2)); acidose metabólica: pCO2 = 1,5 × HCO3 + 8 ± 2 (Winter) ou HCO3 + 15; alcalose metabólica: pCO2 = 0,7 × (HCO3 − 24) + 40 ± 2; acidose respiratória: HCO3 +1 (aguda) ou +4–5 (crônica) por 10 mmHg de pCO2 acima de 40; alcalose respiratória: −2 (aguda) ou −4–5 (crônica) por 10 mmHg abaixo de 40." pagina="p. 931, 934, 938 e 942" errata={ERRATA_CORTES_FIGURAS} />
+        {/* A errata dos cortes das figuras vai para a aba "Armadilhas" (C6 = A); a ferramenta segue a Tabela 1. */}
+        <Trecho texto="Fórmulas: pH = 6,10 + log(HCO3 ÷ (0,03 × pCO2)); acidose metabólica: pCO2 = 1,5 × HCO3 + 8 ± 2 (Winter) ou HCO3 + 15; alcalose metabólica: pCO2 = 0,7 × (HCO3 − 24) + 40 ± 2; acidose respiratória: HCO3 +1 (aguda) ou +4–5 (crônica) por 10 mmHg de pCO2 acima de 40; alcalose respiratória: −2 (aguda) ou −4–5 (crônica) por 10 mmHg abaixo de 40." pagina="p. 931, 934, 938 e 942" />
       </Bloco>
 
       <Bloco titulo="Ânion-gap e delta-delta" descricao="AG = Na − (HCO3 + Cl); referência 7–13 mEq/L (mais recentemente 3–10, média 6; cada laboratório define a sua) (p. 935). AG corrigido = AG + 2,5 × (4,0 − albumina) (p. 936). ΔAG = AG − 10; ΔHCO3 = 24 − HCO3 (p. 936).">
@@ -114,6 +168,27 @@ export function GasometriaAcidoBase() {
         {phA && <Resultado rotulo="pH arterial estimado" valor={faixaBr(phA, 2)} />}
         <Trecho texto="pH venoso periférico ~0,02–0,04 menor que o arterial; HCO3 com diferença média de −1,41 mEq/L; pCO2 com diferença provável de 5,7 mmHg (pode não valer no choque); pO2 venosa não serve para avaliar hipoxemia." pagina="p. 932" />
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temAlgo}
+        armadilhas={[
+          `Errata do livro (Figuras 1 e 2, p. 944–945): ${ERRATA_CORTES_FIGURAS}`,
+          ...(clLeitura?.errata ? [`Errata do livro (${clLeitura.pagina}): ${clLeitura.errata}`] : []),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaGasometria}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={a ? `${maiuscula(a.estado)} · ${primario}` : 'Informe pH, pCO2 e HCO3'}
+        detalhe={[ag !== null ? `AG ${br(ag)} mEq/L` : '', agc !== null ? `corrigido ${br(agc)}` : '', dd ? `Δ/Δ ${br(dd.razao, 2)}` : ''].filter(Boolean).join(' · ') || undefined}
+        textoCopia={temAlgo ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
@@ -123,8 +198,38 @@ export function BicarbonatoAdulto() {
   const [peso, setPeso] = useState(0)
   const [hco3, setHco3] = useState(0)
   const [ph, setPh] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaBicarbonato.id)
   const def = peso > 0 && hco3 > 0 ? deficitBicarbonato(peso, hco3) : null
   const crit = ph > 0 && hco3 > 0 ? criterioLaboratorialBicarbonato(ph, hco3) : null
+  const textoCrit = crit === null
+    ? null
+    : crit
+      ? 'pH < 7,1 e HCO3 < 8 mEq/L: dentro do critério laboratorial que o livro descreve; o livro exige ainda quadro agudo e sintomático (p. 937).'
+      : 'Fora do critério laboratorial que o livro descreve (pH < 7,1 com HCO3 < 8 mEq/L, em quadro agudo e sintomático) (p. 937).'
+  const temAlgo = def !== null || crit !== null
+
+  // Texto do "Copiar" (C4 = A): déficit, critério e os dois esquemas com mL/h.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Bicarbonato de sódio — déficit e esquemas (adulto)',
+      dados: [
+        ['Peso', peso > 0 ? `${br(peso)} kg` : ''],
+        ['HCO3', hco3 > 0 ? `${br(hco3)} mEq/L` : ''],
+        ['pH', ph > 0 ? br(ph, 2) : ''],
+      ],
+      resultado: [
+        ...(def !== null ? [`Déficit total estimado: ${br(def, 0)} mEq = ${br(def / NAHCO3_84_MEQ_POR_ML, 0)} mL de NaHCO3 8,4% — o livro diz que nunca deve ser totalmente reposto (p. 938)`] : []),
+        ...(textoCrit ? [textoCrit] : []),
+        ...ESQUEMAS_BICARBONATO.map((e) => {
+          const c = calcularEsquemaBic(e.id)!
+          return `${e.id === 'cad' ? 'Cetoacidose diabética' : 'Hipercalemia'}: ${br(c.mEq, 0)} mEq · volume final ${br(c.volumeTotalMl, 0)} mL (${br(c.concentracaoMEqL, 0)} mEq/L) · bomba ${faixaBr(c.mlH)} mL/h (${e.pagina})`
+        }),
+      ],
+      fonte: textoFontes(fichaBicarbonato),
+      versao: fichaBicarbonato.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -139,13 +244,7 @@ export function BicarbonatoAdulto() {
           <NumberField id="bic-ph" label="pH" value={ph} onChange={setPh} step={0.01} />
         </div>
         {def !== null && <Resultado rotulo="Déficit total estimado" valor={`${br(def, 0)} mEq = ${br(def / NAHCO3_84_MEQ_POR_ML, 0)} mL de NaHCO3 8,4%`} />}
-        {crit !== null && (
-          <p className={crit ? 'text-atencao' : 'text-tinta-sussurro'}>
-            {crit
-              ? 'pH < 7,1 e HCO3 < 8 mEq/L: dentro do critério laboratorial que o livro descreve; o livro exige ainda quadro agudo e sintomático (p. 937).'
-              : 'Fora do critério laboratorial que o livro descreve (pH < 7,1 com HCO3 < 8 mEq/L, em quadro agudo e sintomático) (p. 937).'}
-          </p>
-        )}
+        {crit !== null && <p className={crit ? 'text-atencao' : 'text-tinta-sussurro'}>{textoCrit}</p>}
         {REFERENCIAS_BICARBONATO.map((r) => <Trecho key={r.texto} {...r} />)}
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_BICARICU2}</p>
       </Bloco>
@@ -163,6 +262,23 @@ export function BicarbonatoAdulto() {
           </Bloco>
         )
       })}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temAlgo}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaBicarbonato}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={def !== null ? `Déficit ${br(def, 0)} mEq = ${br(def / NAHCO3_84_MEQ_POR_ML, 0)} mL de NaHCO3 8,4%` : 'Informe peso e HCO3'}
+        detalhe={crit === null ? 'Informe pH e HCO3 para o critério do livro' : crit ? 'Dentro do critério laboratorial do livro (pH < 7,1 e HCO3 < 8)' : 'Fora do critério laboratorial do livro'}
+        textoCopia={temAlgo ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

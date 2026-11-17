@@ -5,8 +5,15 @@ import {
   instalacaoHipercapnia, lerGradienteAa, lerIrpa, lerPF, lerSat, relacaoPF,
 } from '@/clinico/adulto/oxigenacao'
 import { NOTA_ATS_POS_EXTUBACAO } from '@/clinico/adulto/ventilacaoMecanica'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Alertas, Bloco, Escolha, Resultado } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -33,6 +40,46 @@ export function OxigenacaoIrpaAdulto() {
   const cat = incrementoCateter(lmin)
   const vni = cortesVni({ fr: informado(fr), paco2: informado(paco2), pf: pf ?? undefined, ph: informado(ph), idade: informado(idade), apache: informado(apache) })
   const temGaso = pao2 > 0 || paco2 > 0 || spo2 > 0
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaOxigenacaoAdulto.id)
+  const iot = [
+    ...(pao2 > 0 && pao2 < 60 ? ['PaO2 < 60 mmHg: corte numérico da p. 498 (junto com esforço respiratório sem melhora após O2 adequado).'] : []),
+    ...(paco2 > 55 ? ['PaCO2 > 55 mmHg: corte numérico da p. 498 (em não retentor crônico).'] : []),
+  ]
+  const temResultado = temGaso || cat !== null || vni.length > 0
+  const textoCriterios = irpa.criterios.length ? `Critérios de IRpA em ar ambiente (p. 370): ${irpa.criterios.join('; ')}` : 'Nenhum critério de IRpA da p. 370 nos valores informados.'
+
+  // Texto do "Copiar" (C4 = A): gasometria, leitura do cap. 27, gradiente, P/F, alvo de SatO2, cateter e cortes de VNI e IOT.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Oxigenação e insuficiência respiratória — adulto',
+        dados: [
+          ['PaO2', pao2 > 0 ? `${br(pao2, 0)} mmHg` : ''],
+          ['PaCO2', paco2 > 0 ? `${br(paco2, 0)} mmHg` : ''],
+          ['pH', ph > 0 ? br(ph, 2) : ''],
+          ['FiO2 na coleta', fio2 > 0 ? `${br(fio2, 0)}%` : ''],
+          ['SpO2', spo2 > 0 ? `${br(spo2, 0)}%` : ''],
+          ['Idade', idade > 0 ? `${br(idade, 0)} anos` : ''],
+          ['DPOC ou risco de hipercapnia', sat.length > 0 ? (risco === 'sim' ? 'sim' : 'não') : ''],
+          ['Cateter nasal — fluxo', lmin > 0 ? `${br(lmin, 1)} L/min` : ''],
+          ['FR', fr > 0 ? `${br(fr, 0)} ipm` : ''],
+          ['APACHE II', apache > 0 ? br(apache, 0) : ''],
+        ],
+        resultado: [
+          ...(temGaso ? [textoCriterios, ...(irpa.tipo ? [`${irpa.tipo} (p. 373–374)`] : []), ...irpa.notas] : []),
+          ...(instal.length ? [`Tempo de instalação (Tabela 5, p. 377–378): ${instal.join(' · ')}`] : []),
+          ...(aa ? [`Gradiente A-a (Tabela 1, p. 371): ${br(aa.gradiente, 0)} mmHg${aa.esperado ? ` · esperado pela idade ${br(aa.esperado.formula1, 1)} ou ${br(aa.esperado.formula2, 1)} mmHg` : ''}`, ...aa.notas] : []),
+          ...(pf !== null ? [`P/F ${br(pf, 0)} mmHg — ${lerPF(pf)}`] : []),
+          ...sat,
+          ...(cat ? [`Cateter nasal ${br(lmin, 1)} L/min: incremento de FiO2 +${faixaBr(cat.cap1, 0)} pontos (cap. 1) ou +${faixaBr(cat.cap27, 0)} pontos (cap. 27)`, ...cat.avisos] : []),
+          ...(vni.length ? [`VNI (p. 378, 382–386): ${vni.join('; ')}`] : []),
+          ...iot,
+        ],
+        fonte: textoFontes(fichaOxigenacaoAdulto),
+        versao: fichaOxigenacaoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -120,13 +167,33 @@ export function OxigenacaoIrpaAdulto() {
 
       <Bloco titulo="Intubação e VM invasiva">
         <ul className="list-disc pl-5">{INDICACOES_IOT.map((i) => <li key={i.texto}>{i.texto} <span className="text-tinta-sussurro">({i.pagina})</span></li>)}</ul>
-        {pao2 > 0 && pao2 < 60 && <p>PaO2 &lt; 60 mmHg: corte numérico da p. 498 (junto com esforço respiratório sem melhora após O2 adequado).</p>}
-        {paco2 > 55 && <p>PaCO2 &gt; 55 mmHg: corte numérico da p. 498 (em não retentor crônico).</p>}
+        {iot.map((t) => <p key={t}>{t}</p>)}
       </Bloco>
 
-      <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_OXIGENACAO.map((e) => <li key={e}>{e}</li>)}</ul>
-      </Bloco>
+      {/* Errata e divergências do livro vão para "Armadilhas" (C6 = A). */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[...ERRATA_OXIGENACAO.map((e) => `Errata do livro — ${e}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaOxigenacaoAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={temGaso ? (irpa.tipo ?? (irpa.criterios.length ? `IRpA: ${irpa.criterios.join('; ')}` : 'Nenhum critério de IRpA da p. 370')) : 'Informe gasometria ou SpO2'}
+        detalhe={[
+          ...(aa ? [`Gradiente A-a ${br(aa.gradiente, 0)} mmHg`] : []),
+          ...(pf !== null ? [`P/F ${br(pf, 0)} mmHg`] : []),
+          ...(vni.length ? [`${vni.length} corte${vni.length > 1 ? 's' : ''} de VNI atingido${vni.length > 1 ? 's' : ''}`] : []),
+        ].join(' · ') || undefined}
+        tom={vni.length ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
+
     </ToolLayout>
   )
 }

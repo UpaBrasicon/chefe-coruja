@@ -1,8 +1,15 @@
 import { useState } from 'react'
 
 import { AUTO_PEEP, OBSTRUIDO, conferirObstruido, fichaVmObstruidoAdulto, peepPorAutoPeep, relacaoIE, vcPorPeso } from '@/clinico/adulto/ventilacaoMecanica'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Alertas, Bloco, Resultado } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -22,6 +29,36 @@ export function VmObstruidoGraveAdulto() {
   const peep85 = peepPorAutoPeep(autoPeep)
   const ie = relacaoIE(fr, tins)
   const avisos = conferirObstruido({ fr: informado(fr), tins: informado(tins), fluxo: informado(fluxo), pplato: informado(pplato), ppico: informado(ppico), ph: informado(ph) })
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaVmObstruidoAdulto.id)
+  const temResultado = vt !== null || peep85 !== null || fluxo > 0 || pplato > 0 || ppico > 0 || ph > 0 || avisos.length > 0
+  const textoIE = ie ? `Ciclo ${br(ie.cicloS, 2)} s · Te ${br(ie.teS, 2)} s · I:E 1:${br(ie.n, 1)}` : null
+
+  // Texto do "Copiar" (C4 = A): o que foi informado, as contas e a conferência contra a Tabela 4.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Ventilação mecânica no obstruído grave (adulto)',
+        dados: [
+          ['Peso usado na conta', peso > 0 ? `${br(peso, 1)} kg` : ''],
+          ['Auto-PEEP medida', autoPeep > 0 ? `${br(autoPeep, 1)} cmH2O` : ''],
+          ['FR', fr > 0 ? `${br(fr, 0)} rpm` : ''],
+          ['Tins', tins > 0 ? `${br(tins, 2)} s` : ''],
+          ['Fluxo (VCV)', fluxo > 0 ? `${br(fluxo, 0)} L/min` : ''],
+          ['Pplatô', pplato > 0 ? `${br(pplato, 0)} cmH2O` : ''],
+          ['Ppico', ppico > 0 ? `${br(ppico, 0)} cmH2O` : ''],
+          ['pH', ph > 0 ? br(ph, 2) : ''],
+        ],
+        resultado: [
+          ...(vt ? [`Vt ${OBSTRUIDO.vtMlKg} mL/kg do peso informado (Tabela 4, p. 505): ${br(vt[0], 0)} mL`] : []),
+          ...(peep85 !== null ? [`85% da auto-PEEP (Tabela 4, p. 505): ${br(peep85, 1)} cmH2O`] : []),
+          ...(textoIE ? [textoIE] : []),
+          ...(avisos.length ? avisos : ['Nenhum valor informado fora da Tabela 4.']),
+        ],
+        fonte: textoFontes(fichaVmObstruidoAdulto),
+        versao: fichaVmObstruidoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -70,6 +107,25 @@ export function VmObstruidoGraveAdulto() {
         <p className="font-medium">Como evitar e otimizar</p>
         <ul className="list-disc pl-5">{AUTO_PEEP.otimizar.map((i) => <li key={i}>{i}</li>)}</ul>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaVmObstruidoAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={vt ? `Vt ${OBSTRUIDO.vtMlKg} mL/kg · ${br(vt[0], 0)} mL` : peep85 !== null ? `85% da auto-PEEP · ${br(peep85, 1)} cmH2O` : 'Informe peso ou valores do ventilador'}
+        detalhe={avisos.length ? `${avisos.length} valor${avisos.length > 1 ? 'es' : ''} fora da Tabela 4` : textoIE ?? undefined}
+        tom={avisos.length ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

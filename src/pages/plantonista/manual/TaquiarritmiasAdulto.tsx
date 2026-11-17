@@ -3,7 +3,15 @@ import { useState } from 'react'
 import {
   BCC_EV, DIFERENCAS_TAQUI_2025, DIRETRIZ_TAQUI_2025, LIDOCAINA_TV, MAGNESIO_TORSADES, adenosina, esquemaAmiodarona, fichaTaquiarritmiaAdulto, lidocainaTv, type Faixa,
 } from '@/clinico/adulto/pcr'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -18,6 +26,34 @@ export function TaquiarritmiasAdulto() {
   const [central, setCentral] = useState(false)
   const ami = esquemaAmiodarona()
   const lido = lidocainaTv(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaTaquiarritmiaAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const doseAdenosina = `${adenosina(central).map((d) => br(d)).join(' → ')} mg`
+
+  // Texto do "Copiar" (C3 e C4 = A): o peso e a lista inteira do manual, com a página de cada linha.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Taquiarritmias — drogas EV (adulto)',
+        dados: [['Peso', `${br(peso)} kg`], ['Adenosina por acesso central de cava superior', central ? 'sim' : 'não']],
+        resultado: [
+          'QRS estreito:',
+          `- Adenosina: 6 mg em bolus rápido; sem resolução em 2 min, 12 mg, que pode ser repetida uma vez; metade da dose por acesso central — ${doseAdenosina} (p. 265)`,
+          ...BCC_EV.map((b) => `- ${b.nome}: ${br(b.mgMin)} mg/min até o total de ${b.totalMg} mg — total em ${br(b.minutosAteTotal, 0)} min; o manual contraindica em disfunção de VE e em FA com Wolff-Parkinson-White (${b.pagina})`),
+          'TV monomórfica estável:',
+          `- Amiodarona: 150 mg em 10 min, 1 mg/min por 6 h, 0,5 mg/min por 18 h — ${ami.fases.map((f) => `${f.mg} mg`).join(' + ')} = ${br(ami.total24hMg, 0)} mg em 24 h (p. 265)`,
+          ...(lido
+            ? [`- Lidocaína: ataque ${faixa(LIDOCAINA_TV.ataqueMgKg)} mg/kg a ${LIDOCAINA_TV.velocidadeMgMin} mg/min = ${faixa(lido.ataqueMg, 0)} mg em ${faixa(lido.minutos)} min · dois ataques ${faixa(lido.doisAtaquesMg, 0)} mg${lido.doisAtaquesPassamDe200 ? ' (acima de 200 mg)' : ''}; não infundir mais que ${faixa(LIDOCAINA_TV.tetoMgHora, 0)} mg em 1 hora (${LIDOCAINA_TV.pagina})`]
+            : []),
+          'Torsades de pointes (paciente estável):',
+          `- Sulfato de magnésio: ${MAGNESIO_TORSADES.g} g EV durante ${MAGNESIO_TORSADES.minutos} min, mesmo sem hipomagnesemia (${MAGNESIO_TORSADES.pagina})`,
+          'Paciente instável: cardioversão elétrica sincronizada (desfibrilação na torsades de pointes), p. 262.',
+        ],
+        fonte: textoFontes(fichaTaquiarritmiaAdulto),
+        versao: fichaTaquiarritmiaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
   return (
     <ToolLayout
       title="Taquiarritmias — drogas EV (adulto)"
@@ -40,7 +76,7 @@ export function TaquiarritmiasAdulto() {
         <LinhaManual
           nome="Adenosina"
           texto="6 mg em bolus rápido; sem resolução em 2 min, 12 mg em bolus rápido, que pode ser repetida uma vez; metade da dose por acesso central de cava superior"
-          conta={<strong>{adenosina(central).map((d) => br(d)).join(' → ')} mg</strong>}
+          conta={<strong>{doseAdenosina}</strong>}
           pagina="p. 265"
         />
         {BCC_EV.map((b) => (
@@ -66,7 +102,6 @@ export function TaquiarritmiasAdulto() {
             </>
           ) : 'informe o peso'}
           pagina={LIDOCAINA_TV.pagina}
-          errata={LIDOCAINA_TV.errata}
         />
       </Bloco>
 
@@ -74,15 +109,39 @@ export function TaquiarritmiasAdulto() {
         <LinhaManual nome="Sulfato de magnésio" texto={`${MAGNESIO_TORSADES.g} g EV durante ${MAGNESIO_TORSADES.minutos} min, mesmo sem hipomagnesemia`} pagina={MAGNESIO_TORSADES.pagina} />
       </Bloco>
 
-      <Bloco titulo="AHA 2025 — ao lado do manual" descricao="Recomendações de taquicardia com pulso da AHA 2025 (Part 9), lidas no texto integral, com classe (COR) e nível (LOE). As doses do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_TAQUI_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.aha} <span className="text-tinta-sussurro">({d.classe}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TAQUI_2025.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[
+          // A errata da lidocaína (infusão contínua não calculada) sai da linha (C6 = A); o teto por hora segue na linha.
+          `Lidocaína — errata do livro: ${LIDOCAINA_TV.errata}`,
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaTaquiarritmiaAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a AHA 2025 vai para "Evidências" (C6 = A); as doses do manual não mudam.
+          <BlocoComparacao titulo="AHA 2025 — ao lado do manual" resumo="Recomendações de taquicardia com pulso da AHA 2025 (Part 9), lidas no texto integral, com classe (COR) e nível (LOE). As doses do manual acima continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_TAQUI_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.aha} <span className="text-tinta-sussurro">({d.classe}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TAQUI_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${br(peso)} kg` : 'Informe o peso'}
+        detalhe={`Adenosina ${doseAdenosina}${central ? ' (acesso central)' : ''}${lido ? ` · lidocaína ${faixa(lido.ataqueMg, 0)} mg${lido.doisAtaquesPassamDe200 ? ' (dois ataques acima de 200 mg)' : ''}` : ''}`}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

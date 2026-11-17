@@ -8,8 +8,15 @@ import {
   frascosPorNivel, gravidadeParacetamol, hidroxocobalaminaProxima, indicacoesNac, insulinaAltaDose, nacEV, nacVO,
   nitritoSodioMg, pralidoxima, tiossulfatoAdultoMl, type Faixa,
 } from '@/clinico/adulto/intoxicacoes'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha } from './LoteAPecas'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -260,9 +267,101 @@ function Cianeto() {
   )
 }
 
+/** Erratas do livro que as linhas mostram; repetidas na aba "Armadilhas" (C6 = A), sem sair da linha. */
+const ERRATAS_INTOXICACOES: string[] = [
+  ...CARVAO_INDICACAO.flatMap((i) => (i.errata ? [`Carvão — ${i.nome} — errata do livro: ${i.errata}`] : [])),
+  ...(NAC.ev.errata ? [`NAC EV — errata do livro: ${NAC.ev.errata}`] : []),
+  ...(BETABLOQUEADOR.insulina.errata ? [`Insulina em alta dose (betabloqueador) — errata do livro: ${BETABLOQUEADOR.insulina.errata}`] : []),
+  ...(BCC.calcio.errata ? [`Cálcio no bloqueador de canal de cálcio — errata do livro: ${BCC.calcio.errata}`] : []),
+  `Bicarbonato — errata do livro: ${BICARBONATO_ERRATA}`,
+  ...(ALCOOIS.fomepizol.errata ? [`Fomepizol — errata do livro: ${ALCOOIS.fomepizol.errata}`] : []),
+  ...(ALCOOIS.etanolVO.errata ? [`Etanol VO — errata do livro: ${ALCOOIS.etanolVO.errata}`] : []),
+  ...(CIANETO.tiossulfato.errata ? [`Tiossulfato de sódio — errata do livro: ${CIANETO.tiossulfato.errata}`] : []),
+]
+
+/**
+ * As contas por peso que as linhas mostram, em texto, para o "Copiar" (C3 = A).
+ * As que dependem de outro dado da tela (massa ingerida, digoxinemia, atropina,
+ * hidroxocobalamina já feita) ficam só na tela. Os valores pediátricos que o
+ * capítulo cita não entram.
+ */
+function linhasDoPeso(peso: number): string[] {
+  const porPeso = carvaoPorPeso(peso)
+  const tca = carvaoTriciclico(peso)
+  const vo = nacVO(peso)
+  const ev = nacEV(peso)
+  const ins = insulinaAltaDose(peso)
+  const ca = calcioBccManutencao(peso)
+  const fig = bccFigura(peso)
+  const fo = fomepizol(peso)
+  const et = etanolEV(peso)
+  const af = acidoFolicoMg(peso)
+  const pr = pralidoxima(peso)
+  const az = azulMetileno(peso)
+  return [
+    'Carvão ativado (cap. 97):',
+    ...(porPeso ? [`- Dose desconhecida: ${faixa(CARVAO.semDoseConhecidaG, 0)} g (1 g/kg) = ${br(porPeso.g)} g${porPeso.foraDaFaixa ? ' (1 g/kg fora da faixa de 25–100 g)' : ''} (p. 1300)`] : []),
+    ...(tca ? [`- Tricíclicos: 1 g/kg, máximo de 50 g, em até 1 h = ${br(tca.g)} g${tca.limitadoAoTeto ? ' (no teto)' : ''} (p. 1308)`] : []),
+    'Paracetamol e N-acetilcisteína (cap. 98):',
+    ...(vo ? [`- NAC VO: ataque ${br(vo.ataqueMg, 0)} mg · manutenção ${br(vo.manutencaoMg, 0)} mg 4/4 h (≈ ${vo.doses} doses) (${NAC.vo.pagina})`] : []),
+    ...(ev ? [
+      `- NAC EV (3 fases): total ${br(ev.totalMg, 0)} mg (${ev.totalMgKg} mg/kg em 21 h) (${NAC.ev.pagina})`,
+      ...ev.fases.map((f) => `  ${f.rotulo}: ${br(f.mg, 0)} mg em ${f.horas} h = ${br(f.mgH, 0)} mg/h (${br(f.mgKgH, 2)} mg/kg/h); ${f.preparo}`),
+    ] : []),
+    'Antídotos de dose fixa (cap. 98):',
+    `- Flumazenil: ${FLUMAZENIL.texto}; até ${flumazenilBolusMaximos()} bolus de 0,2 mg (${FLUMAZENIL.pagina})`,
+    ...NALOXONA.cenarios.map((c) => `- Naloxona — ${c.rotulo}: ${faixa(c.mg, 2)} mg IV; ${NALOXONA.alvo} (${NALOXONA.pagina})`),
+    'Betabloqueador (p. 1317–1318):',
+    `- Atropina: ${BETABLOQUEADOR.atropina.mg} mg IV, até ${BETABLOQUEADOR.atropina.dosesMax} doses = até ${BETABLOQUEADOR.atropina.mg * BETABLOQUEADOR.atropina.dosesMax} mg (${BETABLOQUEADOR.atropina.pagina})`,
+    ...(ins ? [`- Insulina em alta dose: bolus ${br(ins.bolusUi, 0)} UI · ${br(ins.infusaoUiH, 0)} UI/h · teto impresso ${br(ins.tetoUi, 0)} UI (${BETABLOQUEADOR.insulina.pagina})`] : []),
+    'Bloqueador de canal de cálcio (p. 1318 e Figura 2, p. 1321):',
+    ...(ca ? [`- Cálcio (texto): manutenção ${faixa(ca)} mL/h de gluconato 10% (${BCC.calcio.pagina})`] : []),
+    ...(fig ? [
+      `- Glucagon (figura): 0,03–0,05 mg/kg = ${faixa(fig.glucagonPorPesoMg)} mg (${BCC.figura.pagina})`,
+      `- Insulina (figura): bolus ${faixa(fig.insulinaBolusUi, 0)} UI · ${faixa(fig.insulinaInfusaoUiH, 0)} UI/h (${BCC.figura.pagina})`,
+      `- Emulsão lipídica 20% (figura): bolus ${br(fig.emulsaoBolusMl, 0)} mL · ${br(fig.emulsaoMlMin)} mL/min (${br(fig.emulsaoMlH, 0)} mL/h) (${BCC.figura.pagina})`,
+    ] : []),
+    `Digoxina: quantidade e nível desconhecidos = ${DIGOXINA.frascosEmpiricos} frascos (p. 1322)`,
+    'Bicarbonato de sódio 8,4% (1 mEq/mL):',
+    ...BICARBONATO_USOS.flatMap((u) => {
+      const r = bicarbonatoBolus(u, peso)
+      return r ? [`- ${u.nome}: bolus ${faixa(r.mEq, 0)} mEq = ${faixa(r.ml, 0)} mL (${u.pagina})`] : []
+    }),
+    'Metanol e etilenoglicol (cap. 99, Tabela 2):',
+    ...(fo ? [`- Fomepizol: ataque ${br(fo.ataqueMg, 0)} mg · ${br(fo.manutencaoMg, 0)} mg 12/12 h (${fo.dosesEm48h} doses em 48 h) · depois ${br(fo.depoisMg, 0)} mg (${ALCOOIS.fomepizol.pagina})`] : []),
+    ...(et ? [`- Etanol 10% EV: ataque ${br(et.ataqueMl, 0)} mL · ${br(et.infusaoMlH)} mL/h (${ALCOOIS.etanolEV.pagina})`] : []),
+    ...(af !== null ? [`- Ácido fólico (metanol): ${br(af)} mg 4/4 h (${ALCOOIS.acidoFolico.pagina})`] : []),
+    'Organofosforados e carbamatos (p. 1333–1334):',
+    ...(pr ? [`- Pralidoxima: bolus ${br(pr.bolusMg, 0)} mg em 30 min · ${br(pr.infusaoMgH, 0)} mg/h (p. 1334)`] : []),
+    ...(az ? [`Metemoglobinemia — azul de metileno (a AHA traz): ${faixa(az.doseMg, 0)} mg por dose · máximo ${br(az.maxMg, 0)} mg (${AZUL_METILENO.pagina})`] : []),
+    'Cianeto (p. 1334–1337):',
+    `- Tiossulfato de sódio 25%: 12,5 g = ${br(tiossulfatoAdultoMl(), 0)} mL a 25% (${CIANETO.tiossulfato.pagina})`,
+    `- Nitritos (sem hidroxocobalamina): nitrito de sódio ${br(nitritoSodioMg(), 0)} mg (10 mL a 3%) (${CIANETO.pagina})`,
+  ]
+}
+
 /** Intoxicações e antídotos do adulto (caps. 97–99 do manual do HCFMUSP). */
 export function IntoxicacoesAntidotosAdulto() {
   const [peso, setPeso] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaIntoxicacoesAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+
+  // Texto do "Copiar" (C3 e C4 = A): o peso e as doses que dependem dele, com a página de cada linha.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Intoxicações e antídotos — adulto',
+        dados: [['Peso', `${numeroBr(peso)} kg`]],
+        resultado: [
+          ...linhasDoPeso(peso),
+          'Doses que dependem de outro dado (massa ingerida, digoxinemia, atropina no organofosforado, hidroxocobalamina já feita) ficam na tela.',
+        ],
+        fonte: textoFontes(fichaIntoxicacoesAdulto),
+        versao: fichaIntoxicacoesAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
+
   return (
     <ToolLayout
       title="Intoxicações e antídotos — adulto"
@@ -280,6 +379,24 @@ export function IntoxicacoesAntidotosAdulto() {
       <Organofosforado peso={peso} />
       <Metemoglobinemia peso={peso} />
       <Cianeto />
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[...ERRATAS_INTOXICACOES, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaIntoxicacoesAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg` : 'Informe o peso'}
+        detalhe={temPeso ? 'Contas por peso nas listas acima; "Copiar" leva todas.' : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

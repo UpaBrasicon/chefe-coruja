@@ -3,10 +3,17 @@ import { useState } from 'react'
 import {
   COLUNA_ADULTO_LB, ERRATA_LUND_BROWDER_ADULTO, QUEIMADURA, RECOMENDACOES_ABA, fichaQueimaduraAdulto, reposicaoQueimado, superficieQueimadaAdulto, totalCorpoAdulto, valorRegiaoAdulto,
 } from '@/clinico/adulto/queimadura'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { REGIOES_LB } from '@/clinico/pediatria/queimadura'
 import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
@@ -31,6 +38,30 @@ export function QueimaduraAdulto() {
   const scqLB = superficieQueimadaAdulto(fracoes)
   const scq = scqManual > 0 ? scqManual : scqLB ?? 0
   const r = reposicaoQueimado(peso, scq)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaQueimaduraAdulto.id)
+  const origemScq = scqManual > 0 ? 'estimada (informada)' : 'pela Figura 1 (Lund e Browder, coluna Adulto)'
+
+  // Texto do "Copiar" (C4 = A): peso, SCQ e o volume inicial com os limites de vigilância que a tela mostra.
+  const copia = r
+    ? textoCopia({
+        ferramenta: 'Queimadura — superfície queimada e reposição inicial (adulto)',
+        dados: [
+          ['Peso', `${numeroBr(peso)} kg`],
+          ['SCQ', `${pct(scq)}% ${origemScq}`],
+        ],
+        resultado: r.aplica
+          ? [
+              `Início a ${QUEIMADURA.inicioMlKgScq} mL/kg/%SCQ: ${ml(r.volume24hMl)} mL em 24 h (ABA 2024, Questão 3, p. 581)`,
+              `Só a taxa inicial: titular pela resposta. Para comparação, o Parkland (${QUEIMADURA.parklandMlKgScq} mL/kg/%SCQ) daria ${ml(r.parkland24hMl)} mL.`,
+              `Vigilância (pressão intra-abdominal e intraocular) se o volume de 24 h, real ou previsto, se aproximar de ${ml(r.limiteVigilanciaMl)} mL (${r.limiteVigilancia}) (ABA 2024, Questão 10, p. 586).`,
+            ]
+          : [`A diretriz da ABA 2024 trata de adultos com ${QUEIMADURA.scqMinima}% ou mais de SCQ; abaixo disso, ela não se aplica.`],
+        fonte: textoFontes(fichaQueimaduraAdulto),
+        versao: fichaQueimaduraAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -88,6 +119,25 @@ export function QueimaduraAdulto() {
       <Bloco titulo="Recomendações da ABA 2024">
         {RECOMENDACOES_ABA.map((x) => <p key={x.texto} className="text-apoio text-tinta-apoio">{x.texto} ({x.pagina})</p>)}
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!r}
+        armadilhas={[...ERRATA_LUND_BROWDER_ADULTO.map((e) => `Lund e Browder — errata do livro: ${e}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaQueimaduraAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={r ? (r.aplica ? `${ml(r.volume24hMl)} mL em 24 h (início a ${QUEIMADURA.inicioMlKgScq} mL/kg/%SCQ)` : `SCQ abaixo de ${QUEIMADURA.scqMinima}%: a ABA 2024 não se aplica`) : scq > 0 ? `SCQ ${pct(scq)}% · informe o peso` : 'Marque a superfície queimada e o peso'}
+        detalhe={r ? `Adulto · ${numeroBr(peso)} kg · SCQ ${pct(scq)}%${r.aplica ? ` · vigilância perto de ${ml(r.limiteVigilanciaMl)} mL` : ''}` : undefined}
+        tom={r && !r.aplica ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

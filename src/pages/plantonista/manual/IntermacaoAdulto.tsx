@@ -1,8 +1,15 @@
 import { useState } from 'react'
 
 import { INTERMACAO, RECOMENDACOES_SCCM, avaliarResfriamento, fichaIntermacaoAdulto, taxaParaAlvo } from '@/clinico/adulto/intermacao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
@@ -16,8 +23,37 @@ export function IntermacaoAdulto() {
   const [inicial, setInicial] = useState(0)
   const [atual, setAtual] = useState(0)
   const [minutos, setMinutos] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaIntermacaoAdulto.id)
   const necessaria = inicial > 0 ? taxaParaAlvo(inicial) : null
   const r = inicial > 0 && atual > 0 ? avaliarResfriamento(inicial, atual, minutos) : null
+
+  // As mesmas frases que a tela mostra, para o resumo e o "Copiar".
+  const textoNecessaria = necessaria !== null ? `Para chegar abaixo de ${INTERMACAO.alvoC} °C em ${INTERMACAO.minutosAteAlvo} min a partir de ${c1(inicial)} °C: ${c3(necessaria)} °C/min. A diretriz pede métodos de ${numero(INTERMACAO.taxaMinimaCMin)} °C/min ou mais (Boa prática 4).` : null
+  const textoTaxa = r ? (r.noAlvo ? `Abaixo de ${INTERMACAO.alvoC} °C: alvo atingido` : `${c3(r.taxaCMin)} °C/min — ${r.taxaSuficiente ? 'taxa dentro da meta' : 'abaixo de 0,155 °C/min'}`) : null
+  const textoFalta = r && !r.noAlvo
+    ? [
+        r.minutosAteAlvo !== null ? `Mantida a taxa, faltam cerca de ${Math.ceil(r.minutosAteAlvo)} min para o alvo.` : 'A temperatura não está caindo.',
+        ...(r.taxaNecessariaCMin !== null ? [`Para fechar os ${INTERMACAO.minutosAteAlvo} min, seriam necessários ${c3(r.taxaNecessariaCMin)} °C/min daqui em diante.`] : []),
+        ...(!r.taxaSuficiente ? ['Sem imersão, a diretriz orienta o método ou a combinação mais rápida disponível.'] : []),
+      ]
+    : []
+
+  // Texto do "Copiar" (C4 = A): temperaturas, taxa necessária e a taxa medida.
+  const copia = textoNecessaria
+    ? textoCopia({
+        ferramenta: 'Intermação — resfriamento e meta (adulto)',
+        dados: [
+          ['Temperatura central inicial', `${numeroBr(inicial)} °C`],
+          ['Temperatura agora', r ? `${numeroBr(atual)} °C` : ''],
+          ['Minutos entre as medidas', r ? `${numeroBr(minutos)} min` : ''],
+        ],
+        resultado: [textoNecessaria, ...(textoTaxa ? [textoTaxa] : []), ...textoFalta],
+        fonte: textoFontes(fichaIntermacaoAdulto),
+        versao: fichaIntermacaoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -37,7 +73,7 @@ export function IntermacaoAdulto() {
         {r && (
           <div role="status" className={cn('rounded-cartao border px-4 py-3', r.noAlvo ? 'border-acao' : r.taxaSuficiente ? 'border-fio' : 'border-atencao')}>
             <p className="text-corpo font-semibold text-tinta">
-              {r.noAlvo ? `Abaixo de ${INTERMACAO.alvoC} °C: alvo atingido` : `${c3(r.taxaCMin)} °C/min — ${r.taxaSuficiente ? 'taxa dentro da meta' : 'abaixo de 0,155 °C/min'}`}
+              {textoTaxa}
             </p>
             {!r.noAlvo && (
               <p className="text-apoio text-tinta-apoio">
@@ -55,6 +91,25 @@ export function IntermacaoAdulto() {
           {RECOMENDACOES_SCCM.map((x) => <li key={x.texto}><span className="text-tinta">{x.texto}</span> <span className="text-tinta-sussurro">({x.grau})</span></li>)}
         </ul>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={necessaria === null}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaIntermacaoAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={textoTaxa ?? (necessaria !== null ? `Meta: ${c3(necessaria)} °C/min a partir de ${c1(inicial)} °C` : 'Informe a temperatura inicial')}
+        detalhe={r && !r.noAlvo ? textoFalta[0] : necessaria !== null && !r ? `Alvo abaixo de ${INTERMACAO.alvoC} °C em ${INTERMACAO.minutosAteAlvo} min` : undefined}
+        tom={r && !r.noAlvo && !r.taxaSuficiente ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

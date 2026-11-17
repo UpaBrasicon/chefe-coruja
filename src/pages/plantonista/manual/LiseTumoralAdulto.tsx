@@ -4,13 +4,24 @@ import {
   ALOPURINOL_SLT, DIFERENCAS_SLT, DIRETRIZ_SLT, HIDRATACAO_SLT, OUTRAS_SLT, RASBURICASE_SLT, RISCO_SLT, alopurinolSlt, fichaLiseTumoralAdulto, hidratacaoSlt, produtoCalcioFosforo,
   rasburicaseSlt, type FuncaoRenalAlopurinol,
 } from '@/clinico/adulto/liseTumoral'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Escolhas, ListaLivro } from './PecasLoteE7'
 import { br, faixa } from './loteE7Formato'
+
+const FUNCOES_RENAIS = [['normal', 'Função renal sem ajuste'], ['ira', 'IRA'], ['clcr10a20', 'ClCr 10-20 mL/min'], ['clcrMenor10', 'ClCr < 10 mL/min']] as const
+const NOTA_TETO_ALOPURINOL = 'O livro não diz se o teto de 800 mg/dia vale também para a dose por m²; a conta por SC é mostrada sem teto.'
 
 /** Síndrome de lise tumoral do adulto (cap. 84 do manual do HCFMUSP). */
 export function LiseTumoralAdulto() {
@@ -23,6 +34,43 @@ export function LiseTumoralAdulto() {
   const alo = alopurinolSlt(sc > 0 ? sc : undefined, peso > 0 ? peso : undefined, renal)
   const ras = rasburicaseSlt(peso)
   const cap = produtoCalcioFosforo(ca, p)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaLiseTumoralAdulto.id)
+  const temDado = peso > 0 || sc > 0 || cap !== null
+  const contaAlopurinol =
+    renal === 'clcr10a20' ? '200 mg/dia'
+      : renal === 'clcrMenor10' ? '100 mg/dia'
+        : `${alo.porSc ? `${br(alo.porSc.mgDose, 0)} mg 8/8 h (${br(alo.porSc.mgDia, 0)} mg/dia)` : 'SC —'} · ${alo.porPeso ? `${br(alo.porPeso.mgDia, 0)} mg/dia pelo peso${alo.porPeso.limitado ? ' (no teto de 800)' : ''}` : 'peso —'}`
+
+  // Texto do "Copiar" (C3/C4 = A): os dados usados e as contas de hidratação, hipouricemiantes e Ca × P (só adulto).
+  const copia = temDado
+    ? textoCopia({
+        ferramenta: 'Síndrome de lise tumoral — adulto',
+        dados: [
+          ['Peso', peso > 0 ? `${numeroBr(peso)} kg` : ''],
+          ['Superfície corporal', sc > 0 ? `${numeroBr(sc)} m²` : ''],
+          ['Função renal', FUNCOES_RENAIS.find(([v]) => v === renal)![1]],
+          ['Cálcio', ca > 0 ? `${numeroBr(ca)} mg/dL` : ''],
+          ['Fósforo', p > 0 ? `${numeroBr(p)} mg/dL` : ''],
+        ],
+        resultado: [
+          ...(h
+            ? [
+                `Hidratação: ${faixa(HIDRATACAO_SLT.lM2Dia, 0)} L/m²/dia = ${faixa(h.lDia)} L/dia = ${faixa(h.mlH, 0)} mL/h (${HIDRATACAO_SLT.pagina})`,
+                `Diurese-alvo: ${br(h.diureseAlvoScMlH ?? 0, 0)} mL/h pela SC${h.diureseAlvoPesoMlH !== null ? ` · ${br(h.diureseAlvoPesoMlH, 0)} mL/h pelo peso` : ''} (${HIDRATACAO_SLT.pagina})`,
+              ]
+            : []),
+          ...(peso > 0 || sc > 0 || renal === 'clcr10a20' || renal === 'clcrMenor10'
+            ? [`Alopurinol: ${ALOPURINOL_SLT.mgM2Dose} mg/m²/dose a cada ${ALOPURINOL_SLT.intervaloH} h (ou ${ALOPURINOL_SLT.mgKgDia} mg/kg/dia, máximo de ${ALOPURINOL_SLT.maxMgDia} mg/dia em ${ALOPURINOL_SLT.tomadas} tomadas) VO; ${alo.ajusteRenal} → ${contaAlopurinol}. ${NOTA_TETO_ALOPURINOL} (${ALOPURINOL_SLT.pagina})`]
+            : []),
+          ...(ras ? [`Rasburicase: ${faixa(RASBURICASE_SLT.mgKg, 2)} mg/kg EV 1 vez ao dia, por ${faixa(RASBURICASE_SLT.dias, 0)} dias = ${faixa(ras)} mg/dia (${RASBURICASE_SLT.pagina})`] : []),
+          ...(cap ? [`Produto Ca × P: ${br(cap.produto)} mg²/dL²${cap.acimaDoCorte ? ' — ≥ 70, entre as indicações de hemodiálise do livro' : ' — abaixo de 70'} (p. 1105)`] : []),
+        ],
+        fonte: textoFontes(fichaLiseTumoralAdulto),
+        versao: fichaLiseTumoralAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -64,7 +112,7 @@ export function LiseTumoralAdulto() {
       <Bloco titulo="Hipouricemiantes (p. 1103–1104)">
         <Escolhas
           valor={renal}
-          opcoes={[['normal', 'Função renal sem ajuste'], ['ira', 'IRA'], ['clcr10a20', 'ClCr 10-20 mL/min'], ['clcrMenor10', 'ClCr < 10 mL/min']] as const}
+          opcoes={FUNCOES_RENAIS}
           onChange={setRenal}
         />
         <LinhaManual
@@ -80,7 +128,7 @@ export function LiseTumoralAdulto() {
                 </>
           }
           pagina={ALOPURINOL_SLT.pagina}
-          nota="O livro não diz se o teto de 800 mg/dia vale também para a dose por m²; a conta por SC é mostrada sem teto."
+          nota={NOTA_TETO_ALOPURINOL}
         />
         <LinhaManual
           nome="Rasburicase"
@@ -100,15 +148,41 @@ export function LiseTumoralAdulto() {
           </p>
         </div>
       </Bloco>
-      <Bloco titulo="BSH 2025 — ao lado do manual" descricao="Diretriz da British Society for Haematology de 2025 sobre lise tumoral em neoplasias hematológicas (GRADE), lida no texto integral; só o adulto. As doses e contas do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_SLT.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SLT.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temDado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaLiseTumoralAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a BSH 2025 vai para "Evidências" (C6 = A); nenhuma dose do manual muda.
+          <BlocoComparacao titulo="BSH 2025 — ao lado do manual" resumo="Diretriz da British Society for Haematology de 2025 sobre lise tumoral em neoplasias hematológicas (GRADE), lida no texto integral; só o adulto. As doses e contas do manual acima continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_SLT.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SLT.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={peso > 0 || sc > 0 ? `Adulto${peso > 0 ? ` · ${numeroBr(peso)} kg` : ''}${sc > 0 ? ` · SC ${numeroBr(sc)} m²` : ''}` : 'Informe peso e superfície corporal'}
+        detalhe={
+          [
+            ...(h ? [`hidratação ${faixa(h.lDia)} L/dia = ${faixa(h.mlH, 0)} mL/h`] : []),
+            ...(cap ? [`Ca × P ${br(cap.produto)} mg²/dL²`] : []),
+          ].join(' · ') || undefined
+        }
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

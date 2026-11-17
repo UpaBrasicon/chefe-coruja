@@ -4,8 +4,15 @@ import { Link } from 'react-router-dom'
 import {
   IST_VIOLENCIA, LEVONORGESTREL, SEGUIMENTO_PEP, VIOLENCIA_SEXUAL, esquemaPep, fichaPepHivAdulto, ighahbMl, indicacaoPep, type StatusFonte,
 } from '@/clinico/adulto/pepHiv'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +22,8 @@ const br = (x: number) => numero(Math.round(x * 10) / 10)
 const Ir = ({ para, children }: { para: string; children: ReactNode }) => <Link to={para} className="text-acao hover:underline">{children}</Link>
 
 const ROTULO_STATUS = { indicada: 'PEP indicada', nao_indicada: 'PEP não indicada', individualizar: 'Decisão individualizada' }
+const ROTULO_TESTE = { nao_reagente: 'não reagente', reagente: 'reagente', discordante: 'discordante', desconhecida: 'desconhecida' }
+const simNao = (b: boolean | undefined) => (b === undefined ? '' : b ? 'sim' : 'não')
 
 /** PEP de HIV, IST e hepatite B no adulto (PCDT PEP do Ministério da Saúde, 2024). */
 export function PepHivAdulto() {
@@ -36,6 +45,49 @@ export function PepHivAdulto() {
   const ind = respondido ? indicacaoPep({ materialDeRisco: material, exposicaoDeRisco: exposicao, horas, exposta, fonte, fonteJanela: janela }) : null
   const esq = esquemaPep({ gestante, semTenofovir: semTdf, semDolutegravir: semDtg, indutor, tfg: tfg > 0 ? tfg : undefined })
   const ig = ighahbMl(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaPepHivAdulto.id)
+
+  // Texto do "Copiar" (C3 e C4 = A): as respostas dos quatro passos, a indicação e o que a tela lista, com a página do PCDT.
+  const copia = ind
+    ? textoCopia({
+        ferramenta: 'PEP de HIV, IST e hepatite B (adulto e adolescente com mais de 45 kg)',
+        dados: [
+          ['Peso', peso > 0 ? `${br(peso)} kg` : ''],
+          ['Horas desde a exposição', `${br(horas)} h`],
+          ['TFG', tfg > 0 ? `${br(tfg)} mL/min` : ''],
+          ['Material biológico de risco', simNao(material)],
+          ['Exposição de risco', simNao(exposicao)],
+          ['Teste rápido da pessoa exposta', exposta ? ROTULO_TESTE[exposta] : ''],
+          ['Pessoa-fonte', fonte ? ROTULO_TESTE[fonte] : ''],
+          ['Fonte com exposição de risco nos últimos 30 dias', fonte === 'nao_reagente' ? simNao(janela) : ''],
+          ['Gestante', simNao(gestante)],
+          ['Não pode usar tenofovir', simNao(semTdf)],
+          ['Não pode usar dolutegravir', simNao(semDtg)],
+          ['Indutor enzimático em uso', !semDtg ? simNao(indutor) : ''],
+          ['Violência sexual', simNao(violencia)],
+        ],
+        resultado: [
+          `${ROTULO_STATUS[ind.status]}: ${ind.texto} (${ind.pagina})`,
+          `Esquema por 28 dias — ${esq.nome} (${esq.pagina}):`,
+          ...esq.remedios.map((r) => `- ${r.droga}: ${r.posologia}`),
+          ...esq.avisos,
+          `Hepatite B — IGHAHB 0,06 mL/kg IM em dose única, máximo de 5 mL${ig ? ` = ${br(ig.ml)} mL${ig.noTeto ? ' (no teto)' : ''}` : ''} (p. 29–30)`,
+          ...(violencia
+            ? [
+                'Violência sexual — profilaxia das IST (Quadro 13, p. 26):',
+                ...IST_VIOLENCIA.map((d) => `- ${d.nome}: ${d.dose} (${d.pagina})${d.nota ? ` ${d.nota}` : ''}`),
+                `- ${LEVONORGESTREL.nome}: ${LEVONORGESTREL.dose} (${LEVONORGESTREL.pagina})${LEVONORGESTREL.nota ? ` ${LEVONORGESTREL.nota}` : ''}`,
+              ]
+            : []),
+          'Seguimento (Quadro 12, p. 21):',
+          ...SEGUIMENTO_PEP.map((s) => `- ${s}`),
+        ],
+        fonte: textoFontes(fichaPepHivAdulto),
+        versao: fichaPepHivAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -109,6 +161,24 @@ export function PepHivAdulto() {
         </ul>
         <p className="text-apoio text-tinta-sussurro">Avaliar PrEP ao fim dos 28 dias para quem relata exposições repetidas (p. 21).</p>
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!ind}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaPepHivAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={ind ? ROTULO_STATUS[ind.status] : 'Responda os quatro passos'}
+        detalhe={ind ? `${esq.nome}${ig ? ` · IGHAHB ${br(ig.ml)} mL` : ''}` : 'Informe as horas desde a exposição'}
+        tom={ind?.status === 'individualizar' ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

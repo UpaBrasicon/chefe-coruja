@@ -7,8 +7,16 @@ import {
   albuminaParacentese, albuminaPbe, albuminaShr, classificarLiquidoAscitico, criteriosDispensaAlbuminaPbe, criteriosPeritoniteSecundaria, degrausContinua,
   estadioIcaAki, fichaAsciteShr, gasa, quedaPmn, respostaTerlipressina, terlipressinaContinua, type CulturaLa,
 } from '@/clinico/adulto/hepatopata'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -51,6 +59,61 @@ export function AsciteHepatorrenalAdulto() {
   const est = estadioIcaAki(crBasal, crAtual, dialise)
   const resp = respostaTerlipressina(crInicial, crAtual, informado(crBasal))
   const cont = terlipressinaContinua(mgDia)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAsciteShr.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const temDispensa = cr > 0 || bt > 0 || ureia > 0
+  const temResultado = temPeso || g !== null || para !== null || pmn > 0 || temDispensa || est !== null || resp !== null
+  const textoEst = est ? `${est.estadio === 0 ? 'sem estádio' : `estádio ${est.estadio}`} — ${est.motivos.join('; ')}` : null
+
+  // Texto do "Copiar" (C3 e C4 = A): exames informados, cada conta da tela e as listas de albumina, antibiótico e terlipressina.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Ascite, PBE e síndrome hepatorrenal — adulto',
+        dados: [
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['Albumina sérica / do líquido', g ? `${numeroBr(albS)} / ${numeroBr(albA)} g/dL` : ''],
+          ['Volume retirado', litros > 0 ? `${numeroBr(litros)} L` : ''],
+          ['PMN no líquido', pmn > 0 ? `${numeroBr(pmn)}/mm³` : ''],
+          ['Cultura', pmn > 0 ? cultura : ''],
+          ['Glicose no líquido', glic > 0 ? `${numeroBr(glic)} mg/dL` : ''],
+          ['Proteínas no líquido', prot > 0 ? `${numeroBr(prot)} g/dL` : ''],
+          ['DHL do líquido > limite superior sérico', pmn > 0 && dhl ? 'sim' : ''],
+          ['PMN em 48 h', pmn48 > 0 ? `${numeroBr(pmn48)}/mm³` : ''],
+          ['Creatinina', cr > 0 ? `${numeroBr(cr)} mg/dL` : ''],
+          ['Bilirrubina total', bt > 0 ? `${numeroBr(bt)} mg/dL` : ''],
+          ['Ureia', ureia > 0 ? `${numeroBr(ureia)} mg/dL` : ''],
+          ['Creatinina basal', crBasal > 0 ? `${numeroBr(crBasal)} mg/dL` : ''],
+          ['Creatinina atual', crAtual > 0 ? `${numeroBr(crAtual)} mg/dL` : ''],
+          ['Início de diálise', est && dialise ? 'sim' : ''],
+          ['Creatinina no início da terlipressina', crInicial > 0 ? `${numeroBr(crInicial)} mg/dL` : ''],
+        ],
+        resultado: [
+          ...(g ? [`GASA ${br(g.gasa, 2)} g/dL — ${g.texto}`] : []),
+          ...(para
+            ? para.acimaDoLimite
+              ? [`Albumina pós-paracentese (${ALBUMINA_PARACENTESE.pagina}): 8 g × litros retirados = ${br(para.gVolumeTotal)} g — ${frascos(para.frascosTotal)}; 8 g × litros acima de 5 = ${br(para.gSoExcedente)} g — ${frascos(para.frascosExcedente)}`]
+              : ['Albumina pós-paracentese: até 5 L, o livro não indica reposição.']
+            : []),
+          ...(liq ? [`${liq.texto} (${liq.pagina})`] : []),
+          ...(pmn > 0 ? [`Peritonite secundária (p. 781): ${pbs.achados.length ? pbs.achados.join('; ') : 'nenhum critério bioquímico marcado'} — ${pbs.criterioDoLivro ? 'PMN > 250 e 2 ou mais critérios: cabe no critério do livro' : 'critério do livro não preenchido'}.`] : []),
+          ...(queda ? [`Queda dos PMN em 48 h: ${br(queda.quedaPct, 0)}%${queda.atingiu25 ? ' (≥ 25%)' : ' (< 25%)'}`] : []),
+          ...(pbe ? [`Albumina na PBE (${ALBUMINA_PBE.pagina}): D1 ${br(pbe.d1G)} g em 6 h · D3 ${br(pbe.d3G)} g (D1: ${frascos(pbe.frascosD1)}; D3: ${frascos(pbe.frascosD3)})`] : []),
+          ...(temDispensa ? [`Critérios de dispensa da p. 785 presentes: ${dispensa.length ? dispensa.join('; ') : 'nenhum'}.`] : []),
+          'Antibiótico na PBE:',
+          ...ATB_PBE.map((a) => `- ${a.droga}: ${a.texto} (${a.pagina})${a.errata ? ` Errata: ${a.errata}` : ''}`),
+          ...(textoEst ? [`Estádio ICA-AKI (Tabela 2, p. 791): ${textoEst}`] : []),
+          ...(shr ? [`Albumina — expansão na SHR (${ALBUMINA_SHR.pagina}): ${br(shr.gDia)} g/dia × 2 dias${shr.limitadoA100 ? ' (limitado a 100 g/dia)' : ''}; por dia: ${frascos(shr.frascosDia)}`] : []),
+          ...(terl ? [`Albumina com terlipressina (${ALBUMINA_COM_TERLIPRESSINA.pagina}): D1 ${br(terl.d1G)} g${terl.d1AcimaDe100 ? ' (acima de 100 g)' : ''}; depois ${faixaBr(terl.demaisGDia, 0)} g/dia`] : []),
+          `Terlipressina em bolus (p. 797): ${TERLIPRESSINA_SHR.degraus.map((d) => `${d.rotulo} = ${d.mgDia} mg/dia`).join(' · ')}`,
+          ...(cont ? [`Terlipressina em infusão contínua: ${br(cont.mgDia, 1)} mg/dia em 50 mL = ${br(cont.concentracaoMgMl, 2)} mg/mL${cont.acimaDoTetoBolus ? ' (acima dos 12 mg/dia da sequência em bolus)' : ''} (p. 797)`] : []),
+          ...(resp ? [`Queda da creatinina em relação à inicial: ${br(resp.quedaPct, 0)}%${resp.atingiu25 ? ' (≥ 25%: resposta pela p. 795)' : ' (< 25%)'}; até basal + 0,3 mg/dL: ${resp.completa == null ? 'basal não informada' : resp.completa ? 'sim' : 'não'}`] : []),
+        ],
+        fonte: textoFontes(fichaAsciteShr),
+        versao: fichaAsciteShr.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -122,7 +185,7 @@ export function AsciteHepatorrenalAdulto() {
           <NumberField id="as-cra" label="Creatinina atual" unit="mg/dL" value={crAtual} onChange={setCrAtual} step={0.1} />
         </div>
         <Marca rotulo="Início de diálise" marcado={dialise} onChange={setDialise} />
-        <Resultado rotulo="Estádio ICA-AKI (Tabela 2, p. 791)" valor={est ? `${est.estadio === 0 ? 'sem estádio' : `estádio ${est.estadio}`} — ${est.motivos.join('; ')}` : 'informe as creatininas'} />
+        <Resultado rotulo="Estádio ICA-AKI (Tabela 2, p. 791)" valor={textoEst ?? 'informe as creatininas'} />
         <ul className="list-disc pl-5">{CRITERIOS_SHR.map((c) => <li key={c}>{c}</li>)}</ul>
         <p className="text-tinta-sussurro">Critérios diagnósticos da SHR (Tabela 2, p. 790–791).</p>
         <div className="overflow-x-auto">
@@ -168,15 +231,40 @@ export function AsciteHepatorrenalAdulto() {
       <Bloco titulo="O que o manual não traz">
         <Fora itens={FORA_HEPATOPATA} />
       </Bloco>
-      <Bloco titulo="AASLD 2021 e ADQI-ICA 2024 — ao lado do manual" descricao="PBE, paracentese e SHR pela guidance da AASLD de 2021 (sem graduação) e pelo consenso ADQI-ICA de 2024 (graduado), lidos no texto integral. As doses e contas do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_PBE_SHR.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_PBE_SHR.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      {/* AASLD 2021 e ADQI-ICA 2024 vão para "Evidências" (C6 = A); as erratas ficam nos itens: mudam critério ou dose. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaAsciteShr}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="AASLD 2021 e ADQI-ICA 2024 — ao lado do manual" resumo="PBE, paracentese e SHR pela guidance da AASLD de 2021 (sem graduação) e pelo consenso ADQI-ICA de 2024 (graduado), lidos no texto integral. As doses e contas do manual na página continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_PBE_SHR.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_PBE_SHR.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg` : g ? `GASA ${br(g.gasa, 2)} g/dL` : textoEst ? `ICA-AKI: ${est!.estadio === 0 ? 'sem estádio' : `estádio ${est!.estadio}`}` : 'Informe o peso ou os exames'}
+        detalhe={[
+          ...(temPeso && g ? [`GASA ${br(g.gasa, 2)} g/dL`] : []),
+          ...(liq ? [`PMN ${numeroBr(pmn)}/mm³`] : []),
+          ...((temPeso || g) && est ? [`ICA-AKI ${est.estadio === 0 ? 'sem estádio' : `estádio ${est.estadio}`}`] : []),
+          ...(temPeso ? ['"Copiar" leva albumina, antibiótico e terlipressina'] : []),
+        ].join(' · ') || undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

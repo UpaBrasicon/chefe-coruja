@@ -4,7 +4,15 @@ import {
   CRITERIOS_ALTA_PAC, DESTINO_POR_PORT, DIRETRIZ_PAC_2026, EVIDENCIA_CORTICOIDE_PAC, NOTA_IDSA_PAC_2026, DURACAO_PAC, FATORES_PSEUDOMONAS, METILPREDNISOLONA_PAC, NOTA_CLARITROMICINA, PAC_ANTIBIOTICOS,
   PROCALCITONINA_PAC, fichaPacAntibioticoAdulto, metilprednisolonaPac, type GrupoPac,
 } from '@/clinico/adulto/tepPac'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Escolhas, ListaLivro } from './PecasLoteE7'
@@ -15,8 +23,28 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 export function PacAntibioticoAdulto() {
   const [peso, setPeso] = useState(0)
   const [grupo, setGrupo] = useState<GrupoPac>('baixo')
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaPacAntibioticoAdulto.id)
   const g = PAC_ANTIBIOTICOS.find((x) => x.grupo === grupo)!
   const mp = metilprednisolonaPac(peso)
+
+  // Texto do "Copiar" (C3/C4 = A): o grupo escolhido, os esquemas da Tabela 10, a duração e o corticoide com peso.
+  const copia = textoCopia({
+    ferramenta: 'PAC — antibiótico por grupo de risco (adulto)',
+    dados: [
+      ['Grupo de risco', g.nome],
+      ['Peso', peso > 0 ? `${numeroBr(peso)} kg` : ''],
+    ],
+    resultado: [
+      ...g.opcoes.map((o, i) => `- Opção ${i + 1}: ${o} (Tabela 10, p. 463)`),
+      NOTA_CLARITROMICINA,
+      ...DURACAO_PAC.map((d) => `Duração — ${d.grupo}: ${d.texto} (${d.pagina})`),
+      ...(mp ? [`Metilprednisolona (choque séptico com altas doses de vasopressores): ${br(METILPREDNISOLONA_PAC.mgKg)} mg/kg 12/12 h EV por ${METILPREDNISOLONA_PAC.dias} dias = ${br(mp.mgDose)} mg por dose · ${br(mp.mgDia)} mg/dia (${METILPREDNISOLONA_PAC.pagina})`] : []),
+    ],
+    fonte: textoFontes(fichaPacAntibioticoAdulto),
+    versao: fichaPacAntibioticoAdulto.versao,
+    quando: new Date(),
+  })
 
   return (
     <ToolLayout
@@ -47,26 +75,8 @@ export function PacAntibioticoAdulto() {
           conta={mp ? <><strong>{br(mp.mgDose)} mg por dose</strong> · {br(mp.mgDia)} mg/dia</> : 'informe o peso'}
           pagina={METILPREDNISOLONA_PAC.pagina}
         />
-      </Bloco>
-
-      <Bloco titulo="ATS 2026 × manual do HC" descricao="Diretriz da PAC (Am J Respir Crit Care Med 2026;212:24–44; on-line em nov/2025), lida no texto integral em 14/11/2026, com o comunicado da IDSA de 2026. Esquemas antimicrobianos não foram revisados por ela.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ATS 2026</TableHead><TableHead className="pr-3 pb-2">Força</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {DIRETRIZ_PAC_2026.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">{d.ats}</TableCell>
-                  <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.forca}</TableCell>
-                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        {/* Aviso de segurança sobre corticoide na PAC grave: fica junto do corticoide, visível (C6 = A); a tabela da ATS foi para "Evidências". */}
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{EVIDENCIA_CORTICOIDE_PAC}</p>
-        <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_IDSA_PAC_2026}</p>
       </Bloco>
 
       <Bloco titulo="Procalcitonina e alta (p. 452, 464–465)">
@@ -74,6 +84,44 @@ export function PacAntibioticoAdulto() {
         <p className="text-apoio font-medium">Sinais vitais estáveis por 24 horas e demais critérios de alta</p>
         <ul className="list-disc pl-5 text-apoio">{CRITERIOS_ALTA_PAC.map((c) => <li key={c}>{c}</li>)}</ul>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaPacAntibioticoAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a ATS 2026 e o comunicado da IDSA vão para "Evidências" (C6 = A); nenhum esquema do manual muda.
+          <BlocoComparacao titulo="ATS 2026 × manual do HC" resumo="Diretriz da PAC (Am J Respir Crit Care Med 2026;212:24–44; on-line em nov/2025), lida no texto integral em 14/11/2026, com o comunicado da IDSA de 2026. Esquemas antimicrobianos não foram revisados por ela.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ATS 2026</TableHead><TableHead className="pr-3 pb-2">Força</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {DIRETRIZ_PAC_2026.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                      <TableCell className="pr-3 py-2">{d.ats}</TableCell>
+                      <TableCell className="pr-3 py-2 text-tinta-sussurro">{d.forca}</TableCell>
+                      <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_IDSA_PAC_2026}</p>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={`Adulto · ${g.nome}`}
+        detalhe={`${g.opcoes.map((o, i) => `opção ${i + 1}: ${o}`).join(' · ')}${mp ? ` · metilprednisolona ${br(mp.mgDose)} mg 12/12 h (${numeroBr(peso)} kg)` : ''}`}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

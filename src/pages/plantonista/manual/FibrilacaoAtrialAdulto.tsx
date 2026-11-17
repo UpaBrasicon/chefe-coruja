@@ -4,8 +4,16 @@ import {
   ANTICOAGULACAO_FA_2025, DIFERENCAS_FA_2024, DOSES_FA_2024, TEXTO_JANELA_2024, janelaFa2024, AMIODARONA_FA, ANTICOAGULACAO_FA, DDIMERO_FA, DIGOXINA_FA, DILTIAZEM_FA, DILUICOES_FA, ERRATA_FA, ESMOLOL_FA, MAGNESIO_FA, PROPAFENONA_FA, TEXTO_JANELA, VERAPAMIL_FA,
   amiodaronaFa, digoxinaFa, diltiazemFa, edoxabanaClcrAlto, esmololFa, fichaFibrilacaoAtrialAdulto, janelaFa, propafenonaFa, varfarinaInicialMg, verapamilFa,
 } from '@/clinico/adulto/fibrilacaoAtrial'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
@@ -32,6 +40,41 @@ export function FibrilacaoAtrialAdulto() {
   const pr = propafenonaFa(peso)
   const wf = varfarinaInicialMg(peso, idoso)
   const janela = janelaFa(horasSabidas && horas > 0 ? horas : null)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaFibrilacaoAtrialAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const duracaoInformada = !horasSabidas || horas > 0
+  const edoxabanaAlerta = clcr > 0 && edoxabanaClcrAlto(clcr)
+
+  // Texto do "Copiar" (C3 e C4 = A): o peso e a lista inteira, com a mesma conta e a página de cada linha.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Fibrilação atrial — adulto',
+        dados: [
+          ['Peso', `${numeroBr(peso)} kg`],
+          ['Duração da FA', !horasSabidas ? 'tempo indeterminado' : horas > 0 ? `${numeroBr(horas)} h` : ''],
+          ['Idoso', idoso ? 'sim' : 'não'],
+          ['Clearance de creatinina', clcr > 0 ? `${numeroBr(clcr)} mL/min` : ''],
+        ],
+        resultado: [
+          'Controle de frequência:',
+          `- Esmolol: ataque ${es ? `${br(es.ataqueMg)} mg` : '—'} · manutenção ${es ? `${faixaBr(es.manutMlH)} mL/h` : '—'} (${DILUICOES_FA.esmolol.preparo}) (${ESMOLOL_FA.pagina})`,
+          `- Verapamil: bolus ${ve ? `${faixaBr(ve.bolusMg)} mg` : '—'} em ${VERAPAMIL_FA.bolusMin} min; manutenção ${VERAPAMIL_FA.manutMgH} mg/h (o livro não traz diluição) (${VERAPAMIL_FA.pagina})`,
+          `- Diltiazem: bolus ${di ? `${br(di.bolusMg)} mg` : '—'} · manutenção ${di ? `${faixaBr(di.manutMlH, 0)} mL/h` : '—'} (${DILUICOES_FA.diltiazem.preparo}) (${DILTIAZEM_FA.pagina})`,
+          `- Digoxina: bolus ${faixaBr(DIGOXINA_FA.bolusMg, 2)} mg até o máximo de ${DIGOXINA_FA.maximoMg} mg; máximo por peso ${dg ? `${faixaBr(dg.maximoPorPesoMg, 2)} mg${dg.maximoPorPesoMg[1] > dg.maximoAbsolutoMg ? ' (acima de 1 mg: vale o teto absoluto)' : ''}` : '—'} (${DIGOXINA_FA.pagina})`,
+          `- Amiodarona: ataque ${AMIODARONA_FA.ataqueMg} mg em ${AMIODARONA_FA.ataqueMin} min (${br(am.ataqueMgMin, 0)} mg/min) · manutenção ${faixaBr(am.manutMlH)} mL/h · ${faixaBr(am.manut24hMg, 0)} mg em 24 h (${DILUICOES_FA.amiodarona.preparo}) (${AMIODARONA_FA.pagina})`,
+          'Controle de ritmo:',
+          `- Propafenona (cardioversão): ${pr ? `${pr} mg` : '—'}; não repetir por pelo menos ${PROPAFENONA_FA.naoRepetirH} h; no primeiro uso, monitorização por pelo menos ${PROPAFENONA_FA.monitorH} h (${PROPAFENONA_FA.pagina})`,
+          `- Magnésio: considerar bolus de ${faixaBr(MAGNESIO_FA.g, 0)} g antes da cardioversão (${MAGNESIO_FA.pagina})`,
+          ...(duracaoInformada ? [TEXTO_JANELA[janela]] : []),
+          `Varfarina inicial: ${wf ? `${br(wf)} mg/d` : '—'}`,
+          ...(edoxabanaAlerta ? ['ClCr ≥ 95 mL/min: o livro diz que a edoxabana não deve ser a preferência (p. 251).'] : []),
+        ],
+        fonte: textoFontes(fichaFibrilacaoAtrialAdulto),
+        versao: fichaFibrilacaoAtrialAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -115,27 +158,45 @@ export function FibrilacaoAtrialAdulto() {
           </div>
           <NumberField id="fa-clcr" label="Clearance de creatinina" unit="mL/min" value={clcr} onChange={setClcr} step={1} />
         </div>
-        {clcr > 0 && edoxabanaClcrAlto(clcr) && <p className="text-atencao">ClCr ≥ 95 mL/min: o livro diz que a edoxabana não deve ser a preferência (p. 251).</p>}
+        {edoxabanaAlerta && <p className="text-atencao">ClCr ≥ 95 mL/min: o livro diz que a edoxabana não deve ser a preferência (p. 251).</p>}
         <p className="text-tinta-sussurro">CHA2DS2-VA e HAS-BLED têm telas próprias no pacote; o livro usa o CHA2DS2-VASc (Tabela 1, p. 250).</p>
         <Trecho texto={`D-dímero < ${DDIMERO_FA.corteNgMl} ng/mL com valor preditivo negativo de ${DDIMERO_FA.vpn} para trombo atrial. ${DDIMERO_FA.nota}`} pagina={DDIMERO_FA.pagina} />
       </Bloco>
 
-      <Bloco titulo="Errata e lacunas do capítulo">
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">
-          {ERRATA_FA.map((e) => <li key={e}>{e}</li>)}
-        </ul>
-      </Bloco>
-      <Bloco titulo="ESC 2024 e SBC 2025 — janela de 24 h, anticoagulação e doses IV" descricao="Diretrizes lidas no texto integral, ao lado do capítulo. A fronteira das duas diretrizes é 24 h (o manual usa 48 h).">
-        <LinhaManual nome={j24 === 'ate-24h' ? 'Até 24 h' : 'Mais de 24 h ou indeterminada'} texto={TEXTO_JANELA_2024[j24]} pagina="ESC 2024 p. 3355–3356; SBC 2025 p. 37" />
-        {ANTICOAGULACAO_FA_2025.map((a) => <LinhaManual key={a.tema} nome={a.tema} texto={a.texto} pagina={a.fonte} />)}
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Droga</TableHead><TableHead className="pr-3 pb-2">ESC 2024</TableHead><TableHead className="pr-3 pb-2">SBC 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DOSES_FA_2024.map((d) => <TableRow key={d.droga} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.droga}</TableCell><TableCell className="pr-3 py-2">{d.esc}</TableCell><TableCell className="pr-3 py-2">{d.sbc}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_FA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      {/* Errata e lacunas do capítulo vão para "Armadilhas"; ESC 2024 e SBC 2025 vão para "Evidências" (C6 = A).
+          As erratas da diluição do diltiazem e da amiodarona ficam no item: explicam a conta do mL/h. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[...ERRATA_FA.map((e) => `Errata e lacunas do capítulo — ${e}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaFibrilacaoAtrialAdulto}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="ESC 2024 e SBC 2025 — janela de 24 h, anticoagulação e doses IV" resumo="Diretrizes lidas no texto integral, ao lado do capítulo. A fronteira das duas diretrizes é 24 h (o manual usa 48 h).">
+            <LinhaManual nome={j24 === 'ate-24h' ? 'Até 24 h' : 'Mais de 24 h ou indeterminada'} texto={TEXTO_JANELA_2024[j24]} pagina="ESC 2024 p. 3355–3356; SBC 2025 p. 37" />
+            {ANTICOAGULACAO_FA_2025.map((a) => <LinhaManual key={a.tema} nome={a.tema} texto={a.texto} pagina={a.fonte} />)}
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Droga</TableHead><TableHead className="pr-3 pb-2">ESC 2024</TableHead><TableHead className="pr-3 pb-2">SBC 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DOSES_FA_2024.map((d) => <TableRow key={d.droga} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.droga}</TableCell><TableCell className="pr-3 py-2">{d.esc}</TableCell><TableCell className="pr-3 py-2">{d.sbc}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_FA_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg` : 'Informe o peso'}
+        detalhe={temPeso
+          ? `${duracaoInformada ? (janela === 'menos-de-48h' ? 'FA < 48 h · ' : janela === 'exatamente-48h' ? 'FA de 48 h · ' : 'FA > 48 h ou indeterminada · ') : ''}Doses de frequência e ritmo nas listas acima; "Copiar" leva todas.`
+          : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

@@ -3,11 +3,18 @@ import { useState } from 'react'
 import {
   DESMAME, DESMAME_OUTROS, DESMAME_SUBJETIVOS, FALHA_TRE_CLINICA, NOTA_AARC_TRE, NOTA_ATS_POS_EXTUBACAO, criteriosObjetivosDesmame, falhaTre, fichaDesmameAdulto,
 } from '@/clinico/adulto/ventilacaoMecanica'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Alertas, Bloco } from './LoteAPecas'
-import { faixaBr, informado } from './loteAFormato'
+import { br, faixaBr, informado } from './loteAFormato'
 
 const marca = (a: boolean | null) => (a === null ? '—' : a ? 'atende' : 'não atende')
 
@@ -25,6 +32,38 @@ export function DesmameVmAdulto() {
   const objetivos = criteriosObjetivosDesmame({ po2: informado(po2), fio2Pct: informado(fio2), peep: informado(peep), fc: informado(fc) })
   const falha = falhaTre({ fc: informado(treFc), fr: informado(treFr), sat: informado(treSat), pas: informado(trePas) })
   const algumTre = treFc > 0 || treFr > 0 || treSat > 0 || trePas > 0
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaDesmameAdulto.id)
+  const lidos = objetivos.filter((o) => o.atende !== null)
+  const atendidos = lidos.filter((o) => o.atende).length
+  const temResultado = lidos.length > 0 || algumTre
+  const textoTre = falha.length
+    ? `Critérios de falência da Figura 5 presentes: ${falha.join('; ')}`
+    : 'Nenhum critério numérico de falência da Figura 5 nos valores informados'
+
+  // Texto do "Copiar" (C4 = A): parâmetros antes do TRE, o que atende e os critérios de falência no teste.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Desmame da ventilação mecânica (adulto)',
+        dados: [
+          ['PO2', po2 > 0 ? `${br(po2, 0)} mmHg` : ''],
+          ['FiO2', fio2 > 0 ? `${br(fio2, 0)}%` : ''],
+          ['PEEP', peep > 0 ? `${br(peep, 0)} cmH2O` : ''],
+          ['FC', fc > 0 ? `${br(fc, 0)} bpm` : ''],
+          ['FC no TRE', treFc > 0 ? `${br(treFc, 0)} bpm` : ''],
+          ['FR no TRE', treFr > 0 ? `${br(treFr, 0)} rpm` : ''],
+          ['SatO2 no TRE', treSat > 0 ? `${br(treSat, 0)}%` : ''],
+          ['PAS no TRE', trePas > 0 ? `${br(trePas, 0)} mmHg` : ''],
+        ],
+        resultado: [
+          ...(lidos.length ? ['Antes do TRE (Figura 5, p. 510):', ...lidos.map((o) => `- ${o.texto}: ${marca(o.atende)}`)] : []),
+          ...(algumTre ? [`TRE (Figura 5, p. 510): ${textoTre}`] : []),
+        ],
+        fonte: textoFontes(fichaDesmameAdulto),
+        versao: fichaDesmameAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -64,6 +103,25 @@ export function DesmameVmAdulto() {
         <p className="text-tinta-sussurro">No fluxograma do livro, qualquer critério presente leva ao ramo de não extubar (reiniciar sedação se necessário e reajustar a VM); nenhum, ao ramo de extubação. A decisão é da equipe.</p>
         <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_ATS_POS_EXTUBACAO}</p>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaDesmameAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={algumTre ? (falha.length ? `TRE: ${falha.length} critério${falha.length > 1 ? 's' : ''} de falência` : 'TRE: nenhum critério numérico de falência') : lidos.length ? `Antes do TRE: ${atendidos} de ${lidos.length} atendido${lidos.length > 1 ? 's' : ''}` : 'Informe os parâmetros antes do TRE'}
+        detalhe={algumTre && falha.length ? falha.join(' · ') : algumTre && lidos.length ? `Antes do TRE: ${atendidos} de ${lidos.length} atendido${lidos.length > 1 ? 's' : ''}` : undefined}
+        tom={falha.length ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

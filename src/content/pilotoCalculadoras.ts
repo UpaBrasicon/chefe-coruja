@@ -46,7 +46,8 @@ export const RELACIONADAS: Record<string, string[]> = {
  * os 50 escores. O EscoreTela liga o modelo pela seção do endereço.
  */
 // 16/11/2026: a seção Calculadoras entra no modelo (QTc pela tela única de escores).
-export const SECOES_NO_MODELO = new Set(['escores', 'calculadoras'])
+// 17/11/2026: Emergências no modelo (escores da tela única e relacionadas pelos grupos da seção).
+export const SECOES_NO_MODELO = new Set(['escores', 'calculadoras', 'emergencias'])
 
 /**
  * Relacionadas: a lista escolhida à mão (RELACIONADAS) ou, nas seções do
