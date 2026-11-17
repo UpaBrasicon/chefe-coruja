@@ -95,7 +95,9 @@ SELECT pg_temp.ok((SELECT count(*) = 1 FROM jsonb_array_elements(public.encaminh
                     WHERE e ->> 'situacao' = 'enviado'), 'UPA: o paciente aparece em "Vindo da UBS"');
 INSERT INTO v SELECT 'epu', (public.registrar_ficha(pg_temp.id('porta'), 'Falta de ar (vindo da UBS)', NULL,
   '{"nome":"Paciente Ponta a Ponta","data_nascimento":"1985-05-05","cns":"898001160000001"}') ->> 'episodio_id')::uuid;
-SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('envio'), true, pg_temp.v('epu'));
+-- a ficha da UPA marca a chegada sozinha (percurso da UBS, U9): mesmo CNS
+SELECT pg_temp.ok((SELECT count(*) = 0 FROM jsonb_array_elements(public.encaminhamentos_upa_destino(pg_temp.id('upa'))) e
+                    WHERE e ->> 'situacao' = 'enviado'), 'UPA: com a ficha aberta, sai de "Vindo da UBS" (chegou)');
 RESET ROLE;
 -- a classificação de risco não é o assunto daqui: o paciente vai direto ao médico
 UPDATE public.episodios SET etapa = 'atendimento' WHERE id = pg_temp.v('epu');

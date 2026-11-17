@@ -65,8 +65,9 @@ test('H1/H3: a conduta, a escuta vermelha, a recepção da UPA e a janela levam 
   assert.match(conduta, /const urgencia = condutas\.includes\('encaminhamento_urgencia'\)/)
   assert.match(conduta, /\{urgencia && unidadeAtiva && \(/)
   assert.match(conduta, /linkRegulacaoDaConsulta\(\{ paciente: pacienteId, tipo: regulacao/)
+  // percurso da UBS (D2, 17/11/2026): só o médico envia; a escuta não tem mais o envio
   const escuta = readFileSync('src/pages/enfermagem/triagem/EscutaInicial.tsx', 'utf8')
-  assert.match(escuta, /\{cor === 'vermelho' && unidadeAtiva && \(/)
+  assert.doesNotMatch(escuta, /EnviarUpa/)
   const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
   assert.match(recepcao, /\{!ubs && <VindoDaUbs /)
   const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
