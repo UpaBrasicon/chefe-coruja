@@ -238,7 +238,9 @@ BEGIN
                           'conferir_convite', 'pedir_novo_convite', 'conferir_contrato',
                           'registrar_erro_cliente',
                           -- o PostgREST roda o portão do 2FA em toda requisição, anon inclusive
-                          'portao_requisicao');
+                          'portao_requisicao',
+                          -- LG10 (G6): o CI lê o status das versões de ficha com a chave publicável
+                          'status_versoes_fichas');
   IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon (%)', n, nomes; END IF;
   RAISE NOTICE 'OK  nenhuma função de public executável por anon (fora as públicas de propósito)';
 END $$;

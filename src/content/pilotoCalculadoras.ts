@@ -47,7 +47,8 @@ export const RELACIONADAS: Record<string, string[]> = {
  */
 // 16/11/2026: a seção Calculadoras entra no modelo (QTc pela tela única de escores).
 // 17/11/2026: Emergências no modelo (escores da tela única e relacionadas pelos grupos da seção).
-export const SECOES_NO_MODELO = new Set(['escores', 'calculadoras', 'emergencias'])
+// 17/11/2026: Pediatria no modelo (mesmo motivo).
+export const SECOES_NO_MODELO = new Set(['escores', 'calculadoras', 'emergencias', 'pediatria'])
 
 /**
  * Relacionadas: a lista escolhida à mão (RELACIONADAS) ou, nas seções do

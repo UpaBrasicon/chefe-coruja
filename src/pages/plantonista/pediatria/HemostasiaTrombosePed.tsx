@@ -5,14 +5,35 @@ import {
   REFERENCIAS_HEMOSTASIA, ajusteHnf, ajusteVarfarina, enoxaparinaPorIdade, fichaHemostasiaTromboPed, hnfAtaqueUI, hnfManutencaoUIkgH, reposicaoQuadro2, rtpaMgH, varfarinaDia1Mg,
 } from '@/clinico/pediatria/hemostasiaTromboPed'
 import { fatorIXUI, fatorVIIIUI } from '@/clinico/pediatria/hemoterapiaPed'
+import { calcularDoseLivro, textoDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
+import { textoFontes } from '@/clinico/ficha'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, Nota, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaDoseLivro, TabelaLivro } from './PecasP4'
 import { LinhaFaixa, ListaLivro } from './PecasP5'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+const casasLivro = (u: string, x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar": a mesma conta da LinhaDoseLivro (PecasP4). */
+function doseLivroTxt(d: DoseLivro, peso: number, rn = false): string[] {
+  if (rn && !d.neonatal) return []
+  const r = calcularDoseLivro(d, peso)
+  if (!r) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casasLivro(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta || textoDoseLivro(d)}${r.noMaximo ? ` (limitado ao máximo${d.fonteMaximo ? `, ${d.fonteMaximo}` : ''})` : ''} · ${d.via} (${d.pagina})`]
+}
 
 /** Hemofilia, von Willebrand, PTI e anticoagulação — caps. 64 e 65 do livro do ICr. */
 export function HemostasiaTrombosePed() {
@@ -36,6 +57,63 @@ export function HemostasiaTrombosePed() {
   const enox = calcIdade ? enoxaparinaPorIdade(p.rn ? 0 : meses) : null
   const aj = ajusteHnf(ttpa)
   const av = ajusteVarfarina(inr, dia)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHemostasiaTromboPed.id)
+  const temConta = calc || calcIdade
+  const idadeTxt = p.rn ? 'recém-nascido' : temIdade ? `${p.anos} anos e ${p.meses} meses` : ''
+  const varf = calc ? varfarinaDia1Mg(p.peso) : null
+  const rtpa = calc ? rtpaMgH(p.peso) : null
+
+  // Texto do "Copiar" (C3 e C4 = A): as doses que estão na tela para o peso e a idade, com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Hemofilia, von Willebrand, PTI e anticoagulação — criança (PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Peso', `${numeroBr(p.peso)} kg`],
+        ['Idade', idadeTxt],
+        ['Fator', fator === 'f8' ? 'VIII (hemofilia A)' : 'IX (hemofilia B)'],
+        ['Tipo de hemorragia', calc ? l.tipo : ''],
+        ['Δ fator', delta > 0 ? `${numeroBr(delta)}%` : ''],
+        ['TTPa', ttpa > 0 ? `${numeroBr(ttpa)} s` : ''],
+        ['INR', inr > 0 ? `${numeroBr(inr)} (${dia === 'd2-4' ? 'dias 2 a 4' : 'dia 5 em diante'})` : ''],
+      ],
+      resultado: [
+        ...(rep ? [`Quadro 2 — ${l.tipo}, ${fator === 'f8' ? 'fator VIII' : 'fator IX'}: ${faixaBr(rep.inicial, 0)} UI${rep.manutencao ? ` · manutenção ${faixaBr(rep.manutencao, 0)} UI` : ''}; duração (dias): ${l.dias} (p. 680)`] : []),
+        ...(formula !== null ? [`Pela fórmula (${fator === 'f8' ? 'Δ × peso ÷ 2' : 'Δ × peso'}): ${br(formula, 0)} UI (p. 679)`] : []),
+        ...(calc
+          ? [
+              'Desmopressina, antifibrinolítico e inibidores:',
+              ...DOSES_HEMOSTASIA.flatMap((d) => doseLivroTxt(d, p.peso, p.rn)),
+              ...QUADRO5_DVW.map((q) => `- DVW, ${q.tipo}: ${faixaBr([q.uiKg[0] * p.peso, q.uiKg[1] * p.peso], 0)} UI (${faixaBr(q.uiKg, 0)} UI/kg) · ${q.frequencia} (Quadro 5, p. 682–683)`),
+              'Trombocitopenia imune:',
+              ...DOSES_PTI.flatMap((d) => doseLivroTxt(d, p.peso, p.rn)),
+            ]
+          : []),
+        ...(calcIdade
+          ? [
+              'Heparina não fracionada:',
+              `- Ataque: ${faixaBr(hnfAtaqueUI(p.peso), 0)} UI (p. 690)`,
+              ...(typeof man === 'number' ? [`- Manutenção inicial: ${br(man * p.peso, 0)} UI/h (${man} UI/kg/h) (p. 690)`] : []),
+              `- Dose profilática: ${br(HNF_PROFILATICA_UI_KG_H * p.peso, 0)} UI/h (p. 690)`,
+            ]
+          : []),
+        ...(aj ? [`Nomograma do TTPa: bolus ${aj.bolusUIkg} UI/kg${calcIdade && aj.bolusUIkg > 0 ? ` (${br(aj.bolusUIkg * p.peso, 0)} UI)` : ''} · pausa ${aj.pausaMin} min · ajuste ${aj.ajustePct > 0 ? '+' : ''}${aj.ajustePct}% · repetir TTPa em ${aj.repetirTtpa} (p. 690)`] : []),
+        ...(calcIdade && enox && enox !== 'indefinido'
+          ? [
+              'Enoxaparina:',
+              `- Terapêutica 12/12 h: ${faixaBr([enox.terapeutica12h[0] * p.peso, enox.terapeutica12h[1] * p.peso], 1)} mg/dose (p. 690)`,
+              `- Profilática 12/12 h: ${br(enox.profilatica12h * p.peso, 1)} mg/dose (p. 690)`,
+              `- Profilática 1x/dia: ${br(enox.profilatica24h * p.peso, 1)} mg/dose (p. 690)`,
+            ]
+          : []),
+        ...(varf !== null ? [`Varfarina dia 1: ${br(varf, 2)} mg (p. 690)`] : []),
+        ...(av ? [`Varfarina, Quadro 5: ${av} (p. 690–691)`] : []),
+        ...(rtpa ? [`rt-PA (trombólise sistêmica): ${faixaBr(rtpa, 2)} mg/h (p. 691)`] : []),
+      ],
+      fonte: textoFontes(fichaHemostasiaTromboPed),
+      versao: fichaHemostasiaTromboPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -134,23 +212,43 @@ export function HemostasiaTrombosePed() {
         {calc && <LinhaFaixa nome="rt-PA — trombólise sistêmica (CHEST)" faixa={rtpaMgH(p.peso)} unidade="mg/h" casas={2} texto="0,1 a 0,6 mg/kg/h por 6 horas; discutir com quem tem experiência em trombólise pediátrica" pagina="p. 691" />}
       </Bloco>
 
-      <Bloco titulo="TEV pediátrico — ASH/ISTH 2025, ao lado do cap. 65" descricao="Blood Adv 2025;9:2587–2636, conferida pelo resumo oficial das mudanças. As doses pediátricas de DOAC não constam do resumo e não são calculadas.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Rec.</TableHead><TableHead className="pr-3 pb-2">População</TableHead><TableHead className="pr-3 pb-2">ASH/ISTH 2025</TableHead><TableHead className="pb-2">Mudança</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {ASH_ISTH_ITENS.map((i) => (
-                <TableRow key={i.numero} className="border-t"><TableCell className="pr-3 py-2 font-medium whitespace-nowrap">{i.numero}</TableCell><TableCell className="pr-3 py-2">{i.populacao}</TableCell><TableCell className="pr-3 py-2">{i.texto}</TableCell><TableCell className="py-2 text-tinta-sussurro">{i.mudanca}</TableCell></TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_TEV_2025.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
-
       <Bloco titulo="Dos capítulos">
         <ListaLivro itens={REFERENCIAS_HEMOSTASIA} />
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temConta}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaHemostasiaTromboPed}
+        guia={guia}
+        comparacao={
+          // Tabela da ASH/ISTH 2025 ao lado do cap. 65 vai para "Evidências" (C6 = A); nenhuma dose do livro muda.
+          <BlocoComparacao titulo="TEV pediátrico — ASH/ISTH 2025, ao lado do cap. 65" resumo="Blood Adv 2025;9:2587–2636, conferida pelo resumo oficial das mudanças. As doses pediátricas de DOAC não constam do resumo e não são calculadas.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Rec.</TableHead><TableHead className="pr-3 pb-2">População</TableHead><TableHead className="pr-3 pb-2">ASH/ISTH 2025</TableHead><TableHead className="pb-2">Mudança</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {ASH_ISTH_ITENS.map((i) => (
+                    <TableRow key={i.numero} className="border-t"><TableCell className="pr-3 py-2 font-medium whitespace-nowrap">{i.numero}</TableCell><TableCell className="pr-3 py-2">{i.populacao}</TableCell><TableCell className="pr-3 py-2">{i.texto}</TableCell><TableCell className="py-2 text-tinta-sussurro">{i.mudanca}</TableCell></TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-tinta-sussurro">{DIFERENCAS_TEV_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temConta ? `${p.rn ? 'Recém-nascido' : 'Criança'} · ${numeroBr(p.peso)} kg${temIdade && !p.rn ? ` · ${p.anos} a ${p.meses} m` : ''}` : 'Informe peso e idade'}
+        detalhe={temConta ? 'Doses do peso nas listas acima; "Copiar" leva todas.' : undefined}
+        textoCopia={temConta ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

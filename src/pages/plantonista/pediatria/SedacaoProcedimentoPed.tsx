@@ -4,13 +4,28 @@ import {
   ASA, JEJUM_H, REFERENCIAS_SEDACAO, REVERSORES_APENDICE, SEDATIVOS_APENDICE, SUGESTOES_PROCEDIMENTO, cetaminaContraindicadaIdade, cetaminaTerapeuticaMg, dexmedetomidina,
   fichaSedacaoProcedimento, jejumFaltaH, type Ingesta,
 } from '@/clinico/pediatria/sedacaoProcedimento'
+import { calcularBolus, type Bolus } from '@/clinico/pediatria/bolus'
+import { textoFontes } from '@/clinico/ficha'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, LinhaLivro, Opcoes, Pendencia } from './PecasIcr'
 import { LinhaReferencia } from './PecasP2'
 import { LinhaBolusApendice, TabelaLivro } from './PecasP4'
+
+/** Linha do "Copiar": a mesma conta da LinhaBolusApendice (PecasP4). */
+function bolusTxt(b: Bolus, peso: number, idadeMeses?: number): string[] {
+  const r = calcularBolus(b, peso, idadeMeses)
+  if (!r || r.aplica === 'nao') return []
+  return [`- ${b.nome}: ${faixaBr(r.faixa, r.faixa[1] >= 10 ? 1 : 2)} ${b.unidade}${r.volumeMl ? ` · ${faixaBr(r.volumeMl, 2)} mL` : ''}${r.noMaximo ? ' (limitado ao máximo do livro)' : ''}${r.aplica === 'indefinido' ? ' (depende da idade)' : ''} · ${b.via} (Apêndice, ${b.pagina})`]
+}
 
 /** Sedação e analgesia para procedimentos — cap. 78 do livro do ICr. */
 export function SedacaoProcedimentoPed() {
@@ -23,6 +38,38 @@ export function SedacaoProcedimentoPed() {
   const ceta = calc ? cetaminaTerapeuticaMg(p.peso) : null
   const cetaProibida = cetaminaContraindicadaIdade(idadeMeses)
   const dex = calc ? dexmedetomidina(p.peso) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaSedacaoProcedimento.id)
+  const temConta = calc || falta !== null
+  const jejumTxt = falta === null ? '' : falta === 0 ? 'Jejum: tempo já cumprido' : `Jejum: faltam ${br(falta, 1)} h`
+
+  // Texto do "Copiar" (C3 e C4 = A): jejum e doses que estão na tela, com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Sedação para procedimento — criança (PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['Última ingesta', falta !== null ? `${JEJUM_H[ingesta].rotulo} há ${numeroBr(horas)} h` : ''],
+      ],
+      resultado: [
+        ...(falta !== null ? [`${jejumTxt} (recomendação do livro: ${JEJUM_H[ingesta].horas} h; Tabela 4, p. 847)`] : []),
+        ...(calc
+          ? [
+              'Do capítulo:',
+              ...(ceta ? [`- Cetamina — dose terapêutica: ${cetaProibida ? 'contraindicada < 3 meses' : `${faixaBr(ceta, 1)} mg`} (p. 848)`] : []),
+              ...(dex ? [`- Dexmedetomidina: ataque ${br(dex.ataqueMcg, 1)} µg em 30 min · manutenção ${faixaBr(dex.manutencaoMcgH, 1)} µg/h (p. 849)`] : []),
+              'Sedativos e analgésicos do Apêndice:',
+              ...SEDATIVOS_APENDICE.flatMap((b) => bolusTxt(b, p.peso, idadeMeses)),
+              'Reversores:',
+              ...REVERSORES_APENDICE.flatMap((b) => bolusTxt(b, p.peso, idadeMeses)),
+            ]
+          : []),
+      ],
+      fonte: textoFontes(fichaSedacaoProcedimento),
+      versao: fichaSedacaoProcedimento.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -88,6 +135,24 @@ export function SedacaoProcedimentoPed() {
       <Bloco titulo="Cuidados do capítulo">
         {REFERENCIAS_SEDACAO.map((r) => <LinhaReferencia key={r.rotulo} rotulo={r.rotulo} texto={r.texto} pagina={`cap. 78, ${r.pagina}`} />)}
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temConta}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaSedacaoProcedimento}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(p.peso)} kg${p.anos > 0 || p.meses > 0 ? ` · ${p.anos} a ${p.meses} m` : ''}` : falta !== null ? jejumTxt : 'Informe peso e idade'}
+        detalhe={calc ? [jejumTxt, 'doses nas listas acima; "Copiar" leva todas.'].filter(Boolean).join(' · ') : undefined}
+        textoCopia={temConta ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

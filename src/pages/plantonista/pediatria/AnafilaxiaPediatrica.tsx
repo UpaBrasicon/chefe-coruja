@@ -4,13 +4,27 @@ import {
   CRITERIOS_ANAFILAXIA, DOSES_ANAFILAXIA, FIXOS_ANAFILAXIA, LINHAS_ANAFILAXIA,
   epinefrinaDoseFixa, fenoterolGotas, fichaAnafilaxiaPediatrica, type LinhaAnafilaxia,
 } from '@/clinico/pediatria/anafilaxia'
-import { idadeEmDias } from '@/clinico/pediatria/fonteP2'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { calcularDose, idadeEmDias, type DosePeso } from '@/clinico/pediatria/fonteP2'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent } from '@/components/ui/card'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { num, pesoValido } from './formatoP2'
+import { faixaTxt, num, pesoValido } from './formatoP2'
 import { AvisoRn, Bloco, CampoPesoRn, LinhaDose, LinhaReferencia, PesoInvalido } from './PecasP2'
+
+/** Linha do "Copiar" com a mesma conta da LinhaDose (PecasP2). */
+function linhaDose(d: DosePeso, peso: number): string[] {
+  const r = calcularDose(d, peso)
+  if (!r) return []
+  return [`- ${d.nome}: ${faixaTxt(r.dose)} ${d.unidade}${r.volumeMl && d.unidade !== 'mL' ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ' (limitado ao máximo do livro)' : ''} · ${d.via} (Livro ICr, ${d.pagina})`]
+}
 
 /** Anafilaxia na criança (livro do ICr, cap. 6). */
 export function AnafilaxiaPediatrica() {
@@ -21,6 +35,40 @@ export function AnafilaxiaPediatrica() {
   const temIdade = anos > 0 || meses > 0
   const fixa = temIdade ? epinefrinaDoseFixa(idadeEmDias(anos, meses) ?? 0) : null
   const fen = fenoterolGotas(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAnafilaxiaPediatrica.id)
+  const calc = !rn && pesoValido(peso)
+  const epiIm = DOSES_ANAFILAXIA.find((d) => d.id === 'epinefrina-im')
+  const epi = calc && epiIm ? calcularDose(epiIm, peso) : null
+  const idadeTxt = temIdade ? `${Math.floor(anos)} a ${Math.floor(meses)} m` : ''
+
+  // Texto do "Copiar" (C3 e C4 = A): peso, idade, a lista por linha, a dose fixa por idade e o que não se calcula, com a página.
+  const copia = calc || fixa
+    ? textoCopia({
+        ferramenta: 'Anafilaxia — criança',
+        dados: [
+          ['Peso', calc ? `${numeroBr(peso)} kg` : ''],
+          ['Idade', temIdade ? `${Math.floor(anos)} anos e ${Math.floor(meses)} meses` : ''],
+        ],
+        resultado: [
+          ...(calc
+            ? (Object.keys(LINHAS_ANAFILAXIA) as LinhaAnafilaxia[]).flatMap((l) => [
+                `${LINHAS_ANAFILAXIA[l]}:`,
+                ...DOSES_ANAFILAXIA.filter((d) => d.linha === l).flatMap((d) => linhaDose(d, peso)),
+                ...(l === 'segunda' && fen
+                  ? [`- Fenoterol em nebulização (broncoespasmo): ${num(fen.gotas, 1)} gotas · ${num(fen.mg)} mg${fen.noMaximo ? ' (limitado ao máximo do livro)' : ''} · 1 gota (0,25 mg) a cada 3 kg, máximo 10 gotas, em 3 a 5 mL de SF (Livro ICr, p. 101, Tabela 3)`]
+                  : []),
+              ])
+            : []),
+          ...(fixa ? [`Epinefrina IM — dose fixa por idade (alternativa do livro): ${fixa.doses.join(' ou ')} (Livro ICr, cap. 6, p. 98 e 101, Tabela 3)`] : []),
+          'Sem cálculo por peso:',
+          ...FIXOS_ANAFILAXIA.map((f) => `- ${f.nome}: ${f.dose} (cap. 6, ${f.pagina})`),
+        ],
+        fonte: textoFontes(fichaAnafilaxiaPediatrica),
+        versao: fichaAnafilaxiaPediatrica.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -72,6 +120,23 @@ export function AnafilaxiaPediatrica() {
       <Bloco titulo="Sem cálculo por peso">
         {FIXOS_ANAFILAXIA.map((f) => <LinhaReferencia key={f.nome} rotulo={f.nome} texto={f.dose} pagina={`cap. 6, ${f.pagina}`} />)}
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!calc && !fixa}
+        armadilhas={[...DOSES_ANAFILAXIA.filter((d) => d.errata).map((d) => `${d.nome} — errata do livro (${d.pagina}): ${d.errata}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaAnafilaxiaPediatrica}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={calc ? `Criança · ${numeroBr(peso)} kg${idadeTxt ? ` · ${idadeTxt}` : ''}` : rn ? 'Recém-nascido: sem valor neonatal no capítulo' : fixa ? `Criança · ${idadeTxt}` : 'Informe o peso'}
+        detalhe={epi ? `Epinefrina IM ${faixaTxt(epi.dose)} mg${epi.volumeMl ? ` (${faixaTxt(epi.volumeMl)} mL de 1:1.000)` : ''}${epi.noMaximo ? ', no máximo do livro' : ''}; "Copiar" leva a lista.` : fixa ? `Epinefrina IM por idade: ${fixa.doses.join(' ou ')}` : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

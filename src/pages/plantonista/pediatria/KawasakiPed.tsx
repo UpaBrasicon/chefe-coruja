@@ -4,12 +4,21 @@ import {
   CRITERIOS_CLINICOS, DIFERENCAS_KAWASAKI_2024, DOSES_AHA_2024, DOSES_KAWASAKI, ERRATA_GIGANTE_AHA_2024, ERRATA_Z, LAB_INCOMPLETA, ROTULO_CORONARIA,
   altoRiscoAha2024, classificarZ, fichaKawasaki, lerCriterios, lerIncompleta, velocidadeIvigMlH,
 } from '@/clinico/pediatria/kawasaki'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { calcularDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { PACIENTE_VAZIO, br, idadePediatrica } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, Nota, Pendencia } from './PecasIcr'
+import { PACIENTE_VAZIO, br, faixaBr, idadePediatrica } from './formatoIcr'
+import { Bloco, CampoPaciente, Nota, Pendencia } from './PecasIcr'
 import { LinhaDoseLivro, Marcadores } from './PecasP4'
 
 const TEXTO_INCOMPLETA = {
@@ -17,6 +26,17 @@ const TEXTO_INCOMPLETA = {
   'tratar-lab': 'PCR ≥ 3 mg/dL e/ou VHS ≥ 40 mm/h com ≥ 3 alterações laboratoriais: a Figura 1 leva a "tratar como doença de Kawasaki".',
   'depende-eco': 'PCR ≥ 3 mg/dL e/ou VHS ≥ 40 mm/h com menos de 3 alterações: a Figura 1 depende do ecocardiograma (coronária Z ≥ 2,5, ou ≥ 3 entre realce coronariano, disfunção de VE, regurgitação mitral, pericardite, Z entre 2 e 2,5).',
 } as const
+
+const casas = (u: DoseLivro['unidade'], x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar" com a mesma conta da LinhaDoseLivro. */
+function linhaCopia(d: DoseLivro, peso: number, fonte = 'Livro ICr', extra?: string): string[] {
+  const r = calcularDoseLivro(d, peso)
+  if (!r || (!r.porDose && !r.dia)) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casas(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta}${r.noMaximo ? ` — limitado ao máximo${d.fonteMaximo ? ` (${d.fonteMaximo})` : ' do livro'}` : ''} · ${d.via}${extra ? ` · ${extra}` : ''} (${fonte}, ${d.pagina})`]
+}
 
 /** Doença de Kawasaki — cap. 70 do livro do ICr. */
 export function KawasakiPed() {
@@ -29,6 +49,8 @@ export function KawasakiPed() {
   const [z, setZ] = useState(0)
   const [mm, setMm] = useState(0)
   const [choque, setChoque] = useState(false)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaKawasaki.id)
   const idadeMeses = p.anos * 12 + p.meses
   const leitura = lerCriterios(dias, crit.size, idadeMeses)
   const incompleta = pcr > 0 || vhs > 0 ? lerIncompleta(pcr, vhs, lab.size) : null
@@ -36,6 +58,50 @@ export function KawasakiPed() {
   const calc = !p.rn && p.peso > 0 && idadePediatrica(p.anos, p.meses)
   const vel = calc ? velocidadeIvigMlH(p.peso) : null
   const risco = altoRiscoAha2024(p.anos > 0 || p.meses > 0 ? idadeMeses : null, z !== 0 ? z : null, choque)
+  const temCriterios = !!leitura && (dias > 0 || crit.size > 0)
+  const temResultado = temCriterios || incompleta !== null || coronaria !== null || risco.altoRisco || calc
+  const textoLeitura = leitura
+    ? [
+        `${leitura.criterios} de 5 manifestações.`,
+        leitura.classica && 'Preenche os critérios clássicos do livro.',
+        leitura.quartoDia && 'Com 4 ou mais manifestações, a AHA admite o diagnóstico já no 4º dia de febre (p. 747).',
+        leitura.incompletaAvaliar && 'Situação de entrada do algoritmo da forma incompleta (Figura 1, p. 748).',
+      ].filter(Boolean).join(' ')
+    : ''
+  const textoVel = vel ? `Velocidade pelo Apêndice (p. 904): iniciar a ${br(vel.inicial, 1)} mL/h (0,01 mL/kg/min), dobrando a cada 15–30 min até ${br(vel.maxima, 1)} mL/h (0,08 mL/kg/min); monitorar PA.` : undefined
+
+  // Texto do "Copiar" (C3 e C4 = A): critérios, forma incompleta, coronária, alto risco e as doses do peso, com a página.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Doença de Kawasaki — critérios e doses',
+      dados: [
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['Dias de febre', dias > 0 ? `${numeroBr(dias)} dias` : ''],
+        ['PCR', pcr > 0 ? `${numeroBr(pcr)} mg/dL` : ''],
+        ['VHS', vhs > 0 ? `${numeroBr(vhs)} mm/h` : ''],
+        ['Z-score', z !== 0 ? numeroBr(z) : ''],
+        ['Diâmetro', mm > 0 ? `${numeroBr(mm)} mm` : ''],
+        ['Choque do Kawasaki', choque ? 'sim' : ''],
+      ],
+      resultado: [
+        ...(temCriterios ? [`Critérios clássicos (p. 747): ${textoLeitura}`] : []),
+        ...(incompleta ? [`Forma incompleta (Figura 1, p. 748): ${TEXTO_INCOMPLETA[incompleta]}`] : []),
+        ...(coronaria ? [`Coronárias (p. 749–750): ${ROTULO_CORONARIA[coronaria]}`] : []),
+        ...(risco.altoRisco ? [`Alto risco pela AHA 2024: ${risco.motivos.join('; ')} (p. e482 e e489)`] : []),
+        ...(calc
+          ? [
+              'Doses (Tabela 1, p. 750–751):',
+              ...DOSES_KAWASAKI.flatMap((d) => linhaCopia(d, p.peso, 'Livro ICr', d.id === 'ivig' ? textoVel : undefined)),
+              'Doses da AHA 2024 (Tabela 3, p. e489):',
+              ...DOSES_AHA_2024.flatMap((d) => linhaCopia(d, p.peso, 'AHA 2024')),
+            ]
+          : []),
+      ],
+      fonte: textoFontes(fichaKawasaki),
+      versao: fichaKawasaki.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -73,8 +139,7 @@ export function KawasakiPed() {
           <NumberField id="kaw-mm" label="Diâmetro (opcional)" unit="mm" value={mm} onChange={setMm} min={0} step={0.1} />
         </div>
         {coronaria && <p><strong>{ROTULO_CORONARIA[coronaria]}</strong></p>}
-        <Errata texto={ERRATA_Z} />
-        <Errata texto={ERRATA_GIGANTE_AHA_2024} />
+        {/* Piloto das calculadoras (C6 = A): as erratas do Z = +2,5 e do aneurisma gigante foram para a aba Armadilhas. */}
       </Bloco>
 
       <Bloco titulo="Alto risco de aneurisma (AHA 2024, p. e482 e e489)" descricao="Idade abaixo de 6 meses ou Z ≥ 2,5 no ecocardiograma do diagnóstico; o Z usado é o do campo acima.">
@@ -115,27 +180,45 @@ export function KawasakiPed() {
           {DOSES_AHA_2024.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} fonte="AHA 2024" origem="A AHA traz" />)}
         </Bloco>
       )}
-
-      <Bloco titulo="AHA 2024 × livro do ICr">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2024</TableHead><TableHead className="pr-3 pb-2">p.</TableHead><TableHead className="pb-2">Livro do ICr</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {DIFERENCAS_KAWASAKI_2024.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">
-                    {d.aha}
-                    {d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}
-                  </TableCell>
-                  <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</TableCell>
-                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[`Z = +2,5 — errata do livro: ${ERRATA_Z}`, `Aneurisma gigante — divergência da AHA 2024: ${ERRATA_GIGANTE_AHA_2024}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaKawasaki}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="AHA 2024 × livro do ICr">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA 2024</TableHead><TableHead className="pr-3 pb-2">p.</TableHead><TableHead className="pb-2">Livro do ICr</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {DIFERENCAS_KAWASAKI_2024.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                      <TableCell className="pr-3 py-2">
+                        {d.aha}
+                        {d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}
+                      </TableCell>
+                      <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</TableCell>
+                      <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temCriterios && leitura ? `${leitura.criterios} de 5 manifestações${leitura.classica ? ' · critérios clássicos' : leitura.quartoDia ? ' · 4º dia (AHA)' : leitura.incompletaAvaliar ? ' · avaliar forma incompleta' : ''}` : calc ? `Criança · ${numeroBr(p.peso)} kg` : 'Informe os dias de febre e as manifestações'}
+        detalhe={[coronaria && ROTULO_CORONARIA[coronaria].split(':')[0], risco.altoRisco && 'alto risco pela AHA 2024', temCriterios && calc && `${numeroBr(p.peso)} kg: doses nas listas acima`].filter(Boolean).join(' · ') || (calc ? 'Doses do peso nas listas acima; "Copiar" leva todas.' : undefined)}
+        textoCopia={temResultado ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

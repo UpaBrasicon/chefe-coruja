@@ -6,10 +6,17 @@ import {
   expansaoEhh, fichaCadPed, gravidadeCad, hidratacaoCad, insulinaEhhUiH, insulinaEv, insulinaScIcr, kMaxMeqH, kclOralMeqDia, magnesioEhh, nphIcr, osmEfetivaCad, pushGlicose25,
   sodioRealCad, todosAtendem, type Criterio, type MotivoDose,
 } from '@/clinico/pediatria/cadPed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { manutencao } from '@/clinico/pediatria/manutencao'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Button } from '@/components/ui/button'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
@@ -68,6 +75,88 @@ export function CadEhhPed() {
   const ehh = calc ? expansaoEhh(p.peso) : null
   const man = calc ? manutencao(p.peso) : null
   const mgEhh = calc ? magnesioEhh(p.peso) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaCadPed.id)
+  const cad = criteriosCad(gaso, corte)
+  const ehhCrit = criteriosEhh(gaso)
+  const situacao = (cs: Criterio[]) => {
+    const todos = todosAtendem(cs)
+    return todos === null ? 'dados incompletos' : todos ? 'critérios do livro presentes' : 'critérios do livro não preenchidos'
+  }
+  const temGaso = g.glicemia > 0 || g.ph > 0 || g.bic > 0
+  const temResultado = temGaso || calc
+
+  // Texto do "Copiar" (C3 e C4 = A): critérios, fórmulas do Quadro 6 e os volumes e doses do peso que estão na tela, com a página.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Cetoacidose diabética e EHH — criança',
+      dados: [
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['Idade', p.anos > 0 || p.meses > 0 ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['Glicemia', g.glicemia > 0 ? `${numeroBr(g.glicemia)} mg/dL` : ''],
+        ['pH', g.ph > 0 ? `${numeroBr(g.ph)} (${venoso ? 'venoso' : 'arterial'})` : ''],
+        ['Bicarbonato', g.bic > 0 ? `${numeroBr(g.bic)} mEq/L` : ''],
+        ['Sódio', g.na > 0 ? `${numeroBr(g.na)} mEq/L` : ''],
+        ['Cloro', g.cl > 0 ? `${numeroBr(g.cl)} mEq/L` : ''],
+        ['Cetonemia', g.cetonemia > 0 ? `${numeroBr(g.cetonemia)} mmol/L` : ''],
+        ['Cetonúria 2+ ou mais', cetonuria === 'nd' ? '' : cetonuria === 'sim' ? 'sim' : 'não'],
+        ['Corte do bicarbonato na CAD', `< ${corte}`],
+        ['Insulina para o cálculo', calc ? `${numeroBr(uiKgH)} UI/kg/h` : ''],
+      ],
+      resultado: [
+        `CAD: ${situacao(cad)} (Quadros 2 e 3, p. 515–516)`,
+        `EHH (ISPAD): ${situacao(ehhCrit)}`,
+        ...(grav ? [`Gravidade da CAD pelo Quadro 3: ${grav}`] : []),
+        ...(naReal !== null ? [`Na real: ${br(naReal)} mEq/L (Quadro 6, p. 517)`] : []),
+        ...(osm !== null ? [`Osmolalidade efetiva: ${br(osm, 0)} mOsm/kg (Quadro 6, p. 517)`] : []),
+        ...(ag !== null ? [`Ânion-gap: ${br(ag)} mEq/L (Quadro 6, p. 517)`] : []),
+        ...(calc && choque && etapas
+          ? [
+              'CAD — fluidos (p. 518–520; Figura 3):',
+              `- Com choque: ${br(20 * p.peso, 0)} mL em ${br(choque.minutos, 0)} min (${br(choque.mlH, 0)} mL/h) (${choque.pagina})`,
+              ...etapas.map((e) => `- ${e.nome}: ${br(e.mlH, 0)} mL/h${e.noTeto ? ' (teto)' : ''} (${e.pagina})`),
+              `- Glicemia < 200 na expansão: glicose 25% ${faixaBr(pushGlicose25(p.peso), 0)} mL (p. 518)`,
+              ...(man ? [`- Soro de manutenção isotônico: ${br(man.mlDia, 0)} mL/dia (${br(man.mlH)} mL/h) (${SORO_MANUTENCAO_CAD.pagina})`] : []),
+            ]
+          : []),
+        ...(calc
+          ? [
+              'CAD — potássio (p. 520–521; Quadro 8):',
+              ...REPOSICAO_K_CAD.filter((l) => l.maxMeqKgH !== null).map((l) => `- ${l.quando}: até ${br(kMaxMeqH(p.peso, l.maxMeqKgH!), 1)} mEq/h (${l.pagina})`),
+              `- Após a estabilização: KCl xarope ${br(kclOralMeqDia(p.peso), 0)} mEq/dia (p. 521)`,
+            ]
+          : []),
+        ...(calc && ins && sc
+          ? [
+              'CAD — insulina (p. 521–522):',
+              livro.texto,
+              `- Insulina regular EV contínua: ${br(ins.uiH, 2)} UI/h = ${br(ins.mlH, 1)} mL/h (p. 521)`,
+              `- Esquema SC do ICr-HCFMUSP: ${br(sc.inicial, 1)} U → ${br(sc.reduzida, 1)} U a cada 2 h (p. 521)`,
+              `- Após a resolução: NPH ${br(nphIcr(p.peso), 1)} UI/dose a cada 8 h (p. 522)`,
+            ]
+          : []),
+        ...(calc && bic && edema
+          ? [
+              'CAD — bicarbonato e edema cerebral (p. 522–524):',
+              `- Bicarbonato (só em pH < ${PH_BICARBONATO_CAD} mesmo após a 1ª hora de expansão): ${faixaBr(bic.porKg, 0)} mEq${bic.formula !== null ? ` · fórmula ${br(bic.formula, 1)} mEq` : ''} (p. 522)`,
+              `- Manitol: ${faixaBr(edema.manitolG, 1)} g (Quadro 11, p. 524)`,
+              `- NaCl 3%: ${faixaBr(edema.nacl3Ml, 0)} mL (Quadro 11, p. 524)`,
+            ]
+          : []),
+        ...(calc && ehh && mgEhh
+          ? [
+              'EHH (p. 522–523; Figura 4):',
+              `- Expansão (texto): ${br(ehh.texto.mlH, 0)} mL/h${ehh.texto.noTeto ? ' (teto)' : ''} (p. 522)`,
+              `- Com choque (Figura 4): ${br(ehh.choqueFigura4.mlH, 0)} mL/h${ehh.choqueFigura4.noTeto ? ' (teto)' : ''} (Figura 4, p. 525)`,
+              `- Insulina EV: ${faixaBr(insulinaEhhUiH(p.peso), 2)} UI/h (p. 523)`,
+              `- Magnésio (hipomagnesemia grave < 1 mg/dL): ${faixaBr(mgEhh.mg, 0)} mg em ≥ ${faixaBr(mgEhh.minutosMin, 0)} min (p. 523)`,
+            ]
+          : []),
+      ],
+      fonte: textoFontes(fichaCadPed),
+      versao: fichaCadPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -89,8 +178,8 @@ export function CadEhhPed() {
           <Opcoes label="Gasometria" valor={venoso} opcoes={[[true, 'Venosa'], [false, 'Arterial']]} onChange={setVenoso} />
           <Opcoes label="Corte do bicarbonato na CAD" valor={corte} opcoes={[[15, '< 15 (BSPED/NICE 2021)'], [18, '< 18 (ISPAD 2022)']]} onChange={setCorte} />
         </div>
-        <ListaCriterios titulo="CAD" cs={criteriosCad(gaso, corte)} />
-        <ListaCriterios titulo="EHH (ISPAD)" cs={criteriosEhh(gaso)} />
+        <ListaCriterios titulo="CAD" cs={cad} />
+        <ListaCriterios titulo="EHH (ISPAD)" cs={ehhCrit} />
         {grav && (
           <p>
             Gravidade da CAD pelo Quadro 3: <strong>{grav}</strong>
@@ -197,7 +286,6 @@ export function CadEhhPed() {
           <LinhaLivro nome="Manitol" texto="0,5 a 1 g/kg em 10 a 15 min; repetir se não houver resposta em 30 min a 1 h" conta={<strong>{faixaBr(edema.manitolG, 1)} g</strong>} pagina="Quadro 11, p. 524" />
           <LinhaLivro nome="NaCl 3%" texto="2,5 a 5 mL/kg em 10 a 15 min, alternativa ao manitol" conta={<strong>{faixaBr(edema.nacl3Ml, 0)} mL</strong>} pagina="Quadro 11, p. 524" />
           <Nota>O Quadro 11 traz ainda: reduzir os fluidos em um terço, cabeceira a 30°, PaCO2 27–30 mmHg se intubado, TC após as medidas iniciais.</Nota>
-          <Errata texto={ERRATA_QUADRO11} />
         </Bloco>
       )}
 
@@ -222,6 +310,23 @@ export function CadEhhPed() {
           />
         </Bloco>
       )}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[`Quadro 11 — errata do livro: ${ERRATA_QUADRO11}`, `Expansão no EHH — errata do livro: ${ERRATA_EHH_EXPANSAO}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaCadPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={grav ? `Gravidade da CAD: ${grav}` : calc ? `Criança · ${numeroBr(p.peso)} kg${p.anos > 0 || p.meses > 0 ? ` · ${p.anos} a ${p.meses} m` : ''}` : temGaso ? `CAD: ${situacao(cad)}` : 'Informe o peso e a gasometria'}
+        detalhe={grav && calc ? `Criança · ${numeroBr(p.peso)} kg · volumes e doses nos blocos acima` : calc ? 'Volumes e doses do peso nos blocos acima; "Copiar" leva todos.' : temGaso ? `EHH (ISPAD): ${situacao(ehhCrit)}` : undefined}
+        textoCopia={temResultado ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

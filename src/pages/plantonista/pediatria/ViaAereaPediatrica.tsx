@@ -1,18 +1,35 @@
 import { useState } from 'react'
 
-import { idadeEmDias, SEM_VALOR_NEONATAL_P2 } from '@/clinico/pediatria/fonteP2'
+import { calcularDose, idadeEmDias, SEM_VALOR_NEONATAL_P2, type DosePeso } from '@/clinico/pediatria/fonteP2'
+import { textoFontes } from '@/clinico/ficha'
 import {
   DOSES_SRI, EQUIPAMENTO, NOTAS_SRI, equipamentoPorIdade, fichaViaAereaPediatrica, fluxoApneia,
   profundidadeCm, succinilcolinaAplica, tuboPorIdade, type Tubo,
 } from '@/clinico/pediatria/viaAerea'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
-import { num, pesoValido } from './formatoP2'
+import { faixaTxt, num, pesoValido } from './formatoP2'
 import { Bloco, CampoPesoRn, LinhaDose, LinhaReferencia } from './PecasP2'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+/** Linha do "Copiar": a mesma conta da LinhaDose (PecasP2). */
+function doseP2Txt(d: DosePeso, peso: number): string[] {
+  const r = calcularDose(d, peso)
+  if (!r) return []
+  return [`- ${d.nome}: ${faixaTxt(r.dose)} ${d.unidade}${r.volumeMl && d.unidade !== 'mL' ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ' (limitado ao máximo do livro)' : ''} · ${d.via} (${d.pagina})`]
+}
+
+const tuboTxt = (rotulo: string, t: Tubo) =>
+  `${rotulo}: ${num(t.calculadoMm, 2)} mm pela fórmula; vizinhos ${t.vizinhosMm.map((d) => `${num(d, 1)} mm (profundidade ${num(profundidadeCm(d)!, 1)} cm no lábio superior)`).join(' · ')} (cap. 4, p. 75)`
 
 function LinhaTubo({ rotulo, t }: { rotulo: string; t: Tubo }) {
   return (
@@ -36,6 +53,39 @@ export function ViaAereaPediatrica() {
   const t = tuboPorIdade(anos)
   const eq = temIdade ? equipamentoPorIdade(dias) : null
   const fluxo = temIdade ? fluxoApneia(dias) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaViaAereaPediatrica.id)
+  const doses = !rn && pesoValido(peso)
+  const temConta = temIdade || doses
+  const idadeTxt = temIdade ? `${anos} a ${meses} m` : ''
+
+  // Texto do "Copiar" (C3 e C4 = A): tubo, equipamento da faixa e doses da SRI que estão na tela, com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Via aérea pediátrica (PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Idade', temIdade ? `${anos} anos e ${meses} meses` : ''],
+        ['Peso', peso > 0 ? `${numeroBr(peso)} kg` : ''],
+        ['Recém-nascido', rn ? 'sim' : ''],
+      ],
+      resultado: [
+        ...(temIdade && t ? [tuboTxt('Tubo sem cuff — (idade/4) + 4', t.semCuff), tuboTxt('Tubo com cuff — (idade/4) + 3,5', t.comCuff)] : []),
+        ...(temIdade && fluxo !== null ? [`O₂ por cateter nasal durante a apneia: ${fluxo} L/min (cap. 4, p. 69)`] : []),
+        ...(eq
+          ? [`Equipamento (${eq.rotulo}): máscara O₂ ${eq.mascaraO2}; Guedel ${eq.guedel}; laringoscópio ${eq.laringoscopio}; tubo ${eq.tubo}; manguito ${eq.manguito}; jelco ${eq.jelco}; sonda gástrica ${eq.sondaGastrica}; dreno de tórax ${eq.drenoTorax}; Foley ${eq.foley}; colar ${eq.colarCervical} (cap. 13, p. 150–151)`]
+          : []),
+        ...(doses
+          ? [
+              'Sequência rápida (cap. 4, Tabelas 1 e 2):',
+              ...DOSES_SRI.filter((d) => succinilcolinaAplica(d.id, peso)).flatMap((d) => doseP2Txt(d, peso)),
+              ...(peso === 10 ? ['Succinilcolina: a Tabela 2 separa menos de 10 kg e mais de 10 kg; 10 kg exatos não têm linha (errata).'] : []),
+            ]
+          : []),
+      ],
+      fonte: textoFontes(fichaViaAereaPediatrica),
+      versao: fichaViaAereaPediatrica.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -103,6 +153,24 @@ export function ViaAereaPediatrica() {
       <Bloco titulo="Do capítulo de SRI">
         {NOTAS_SRI.map((n) => <LinhaReferencia key={n.texto} texto={n.texto} pagina={`cap. 4, ${n.pagina}`} />)}
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temConta}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaViaAereaPediatrica}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={temIdade && t ? `Tubo ${num(t.semCuff.calculadoMm, 2)} mm sem cuff · ${num(t.comCuff.calculadoMm, 2)} mm com cuff` : temIdade ? `Criança · ${idadeTxt}` : doses ? `Criança · ${numeroBr(peso)} kg` : 'Informe a idade e o peso'}
+        detalhe={temConta ? [temIdade && t ? idadeTxt : '', doses ? `${numeroBr(peso)} kg · doses da SRI acima` : ''].filter(Boolean).join(' · ') || undefined : undefined}
+        textoCopia={temConta ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

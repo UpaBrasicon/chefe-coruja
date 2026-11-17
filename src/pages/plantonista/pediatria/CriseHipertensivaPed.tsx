@@ -4,13 +4,33 @@ import {
   DOSES_CRISE_HA, ERRATAS_CRISE_HA, HIDRALAZINA_IV, INFUSOES_CRISE_HA, REFERENCIAS_CRISE_HA, ROTULO_ESTAGIO, acimaDoP95, classificar13ouMais, classificarMenor13,
   fichaCriseHipertensivaPed, pamMinima8h, percentisAap2017, type SexoPa,
 } from '@/clinico/pediatria/criseHipertensivaPed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { calcularBolus } from '@/clinico/pediatria/bolus'
+import { calcularDoseLivro, textoDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, faixaBr, idadeAnos, idadePediatrica } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, LinhaLivro, Pendencia } from './PecasIcr'
+import { Bloco, CampoPaciente, LinhaLivro, Pendencia } from './PecasIcr'
 import { LinhaBolusApendice, LinhaDoseLivro } from './PecasP4'
 import { Pergunta } from '../manual/PecasLoteC'
+
+const casasDose = (u: DoseLivro['unidade'], x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar" com a mesma conta da LinhaDoseLivro (PecasP4). */
+function linhaDoseLivro(d: DoseLivro, peso: number): string[] {
+  const r = calcularDoseLivro(d, peso)
+  if (!r) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casasDose(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta}${r.noMaximo ? ` (limitado ao máximo${d.fonteMaximo ? `, ${d.fonteMaximo}` : ' do livro'})` : ''} · o livro traz ${textoDoseLivro(d)} · ${d.via} (Livro ICr, ${d.pagina})`]
+}
 
 /** Crise hipertensiva na criança — cap. 26 do livro do ICr. */
 export function CriseHipertensivaPed() {
@@ -31,6 +51,47 @@ export function CriseHipertensivaPed() {
   const pamMin = pamMinima8h(pam)
   const calc = !p.rn && p.peso > 0 && pediatrico
   const idadeMeses = p.anos * 12 + p.meses
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaCriseHipertensivaPed.id)
+  const preocupa = acima !== null && acima > 30
+  const hidralazina = calc && HIDRALAZINA_IV ? calcularBolus(HIDRALAZINA_IV, p.peso, idadeMeses) : null
+  const temResultado = calc || estagio !== null || pamMin !== null
+
+  // Texto do "Copiar" (C3 e C4 = A): dados, classificação, meta da PAM e as drogas por peso da tela, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Crise hipertensiva — criança',
+        dados: [
+          ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+          ['Idade', `${p.anos} anos e ${p.meses} meses`],
+          ['PA', pas > 0 || pad > 0 ? `${numeroBr(pas)} × ${numeroBr(pad)} mmHg` : ''],
+          ['Sexo', faixa === 'crianca' && sexo ? (sexo === 'M' ? 'masculino' : 'feminino') : ''],
+          ['Estatura', faixa === 'crianca' && estatura > 0 ? `${numeroBr(estatura)} cm` : ''],
+          ['PAM atual', pam > 0 ? `${numeroBr(pam)} mmHg` : ''],
+        ],
+        resultado: [
+          ...(aap ? [`AAP 2017, Tabela ${sexo === 'M' ? '4 (meninos)' : '5 (meninas)'}, ${aap.idade} ${aap.idade === 1 ? 'ano' : 'anos'}, coluna de estatura p${aap.percentilEstatura} (${br(aap.cmColuna, 1)} cm): sistólica p90 ${aap.p90s}, p95 ${aap.p95s}, p95 + 12 ${aap.p95s + 12}; diastólica p90 ${aap.p90d}, p95 ${aap.p95d}, p95 + 12 ${aap.p95d + 12} mmHg`] : []),
+          ...(!aap && faixa === 'crianca' && pc.p95s > 0 ? [`Percentis informados: sistólica p90 ${pc.p90s}, p95 ${pc.p95s}; diastólica p90 ${pc.p90d}, p95 ${pc.p95d} mmHg`] : []),
+          ...(estagio ? [`Pela Tabela 1 (p. 272): ${ROTULO_ESTAGIO[estagio]} (sistólica e diastólica avaliadas em separado; vale a mais alta)`] : []),
+          ...(preocupa ? [`PAS ${br(acima, 0)} mmHg acima do p95: o livro diz que aumento > 30 mmHg acima do p95 deve preocupar para lesão de órgão-alvo (p. 272)`] : []),
+          ...(pamMin !== null ? [`Meta na emergência hipertensiva: redução de no máximo 25% nas primeiras 8 h — PAM não abaixo de ${br(pamMin, 0)} mmHg; depois, PA em torno do p95 em 12 a 24/48 h (p. 275)`] : []),
+          ...(calc
+            ? [
+                'Sintomas ameaçadores à vida (Tabela 3, p. 276):',
+                ...(HIDRALAZINA_IV && hidralazina && hidralazina.aplica !== 'nao'
+                  ? [`- ${HIDRALAZINA_IV.nome}: ${faixaBr(hidralazina.faixa, hidralazina.faixa[1] >= 10 ? 1 : 2)} ${HIDRALAZINA_IV.unidade}${hidralazina.volumeMl ? ` · ${faixaBr(hidralazina.volumeMl, 2)} mL` : ''}${hidralazina.noMaximo ? ' (limitado ao máximo do livro)' : ''} · ${HIDRALAZINA_IV.via} (Livro ICr, Apêndice, ${HIDRALAZINA_IV.pagina})`]
+                  : []),
+                ...INFUSOES_CRISE_HA.map((f) => `- ${f.nome}: ${faixaBr([f.faixa[0] * p.peso, f.faixa[1] * p.peso], 1)} µg/min — ${faixaBr(f.faixa, 2)} µg/kg/min${f.maximo ? ` até ${br(f.maximo, 2)} µg/kg/min (${br(f.maximo * p.peso, 1)} µg/min)` : ''}. ${f.nota} (${f.pagina})`),
+                'Sintomas menos significativos — VO (Tabela 3, p. 276):',
+                ...DOSES_CRISE_HA.flatMap((d) => linhaDoseLivro(d, p.peso)),
+              ]
+            : []),
+        ],
+        fonte: textoFontes(fichaCriseHipertensivaPed),
+        versao: fichaCriseHipertensivaPed.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -111,9 +172,6 @@ export function CriseHipertensivaPed() {
         </>
       )}
 
-      <Bloco titulo="Erratas e divergências conferidas no PDF">
-        {ERRATAS_CRISE_HA.map((e) => <Errata key={e} texto={e} />)}
-      </Bloco>
       <Bloco titulo="Do capítulo">
         {REFERENCIAS_CRISE_HA.map((r) => (
           <p key={r.texto} className="text-tinta-sussurro">
@@ -121,6 +179,32 @@ export function CriseHipertensivaPed() {
           </p>
         ))}
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[
+          ...ERRATAS_CRISE_HA.map((e) => `Errata ou divergência conferida no PDF: ${e}`),
+          ...DOSES_CRISE_HA.filter((d) => d.errata).map((d) => `${d.nome} — errata do livro (${d.pagina}): ${d.errata}`),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaCriseHipertensivaPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={estagio ? ROTULO_ESTAGIO[estagio] : calc ? `Criança · ${numeroBr(p.peso)} kg${p.anos > 0 || p.meses > 0 ? ` · ${p.anos} a ${p.meses} m` : ''}` : pediatrico ? 'Informe peso e PA' : 'A partir de 14 anos é adulto: ferramenta pediátrica'}
+        tom={preocupa ? 'atencao' : 'neutro'}
+        detalhe={[
+          estagio && calc ? `Criança · ${numeroBr(p.peso)} kg` : '',
+          preocupa ? `PAS ${br(acima, 0)} mmHg acima do p95` : '',
+          pamMin !== null ? `PAM não abaixo de ${br(pamMin, 0)} mmHg nas primeiras 8 h` : '',
+        ].filter(Boolean).join(' · ') || undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
