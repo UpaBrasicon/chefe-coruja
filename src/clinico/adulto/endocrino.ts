@@ -144,7 +144,11 @@ export const fichaInsuficienciaAdrenal: Ficha = {
   fontes: [...fichaIaLivro.fontes, ES_IA_PRIMARIA_2016, SFE_CRISE_ADRENAL_2016, ESE_ES_IA_GLICOCORTICOIDE_2024],
   revisadoEm: '14/11/2026 (Endocrine Society 2016, SfE 2016 e ESE/ES 2024 lidas no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
 }
-export const fichaBurchWartofsky = fichaAdulto('adulto-burch-wartofsky', 'Burch-Wartofsky — crise tireotóxica (adulto)', 'cap. 70, Tabela 4, p. 951–952')
+// Burch-Wartofsky: decisão do RT de 16/11/2026 (A) — o total de 45 exato, sem
+// classe na Tabela 4 do manual ("> 45" e "25–44"), segue o consenso ETA/BTA/SfE
+// 2026 (≥ 45 muito sugestivo), com o mesmo texto e o mesmo estado do > 45.
+const fichaBwLivro = fichaAdulto('adulto-burch-wartofsky', 'Burch-Wartofsky — crise tireotóxica (adulto)', 'cap. 70, Tabela 4, p. 951–952')
+export const fichaBurchWartofsky: Ficha = { ...fichaBwLivro, versao: '2026-11-16.1', fontes: [...fichaBwLivro.fontes, ETA_TEMPESTADE_2026], revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaBwLivro.revisadoEm }
 export const fichaEscoreMixedema = fichaAdulto('adulto-escore-mixedema', 'Escore diagnóstico do estado mixedematoso (adulto)', 'cap. 71, Tabela 3, p. 960–961')
 
 export type Faixa = [number, number]
@@ -155,7 +159,7 @@ const pts = (rotulo: string, valor: number) => ({ rotulo: `${rotulo} — ${valor
 
 // ── Burch-Wartofsky (Tabela 4, p. 951–952) ──────────────────────────────────
 
-export const ERRATA_BURCH = 'Faixas como impressas: a 1ª temperatura começa em 37,0 °C e a última é "> 39,3" (39,3 exato sem linha); FC "130–139" e depois "> 140" (140 exato sem linha); corte "> 45 = crise" e "25–44 = iminente" (45 exato sem classe). Temperatura < 37,0 e FC < 90 não têm linha: a ferramenta dá 0.'
+export const ERRATA_BURCH = 'Faixas como impressas: a 1ª temperatura começa em 37,0 °C e a última é "> 39,3" (39,3 exato sem linha); FC "130–139" e depois "> 140" (140 exato sem linha); corte "> 45 = crise" e "25–44 = iminente" (45 exato sem classe no livro; a ferramenta segue o consenso ETA/BTA/SfE 2026, que dá ≥ 45 como muito sugestivo). Temperatura < 37,0 e FC < 90 não têm linha: a ferramenta dá 0.'
 
 export const burchWartofsky: Escore = {
   ficha: fichaBurchWartofsky,
@@ -176,15 +180,17 @@ export const burchWartofsky: Escore = {
   calcular(r) {
     if (!completo(burchWartofsky, r)) return null
     const total = somar(burchWartofsky, r)
-    const faixa = total > 45 ? '> 45: crise tireotóxica' : total === 45 ? '45: sem classe na tabela ("> 45" crise; "25–44" iminente)' : total >= 25 ? '25–44: crise iminente' : '< 25: crise improvável'
+    const nota = total >= 45
+      ? '≥ 45: muito sugestivo de crise tireotóxica (ETA/BTA/SfE 2026; o manual escreve "> 45 = crise", p. 952)'
+      : total >= 25 ? '25–44: crise iminente (p. 952)' : '< 25: crise improvável (p. 952)'
     return {
       rotulo: 'Burch-Wartofsky',
       valor: String(total),
       unidade: 'de 140',
-      nota: `${faixa} (p. 952)`,
+      nota,
       estado: total >= 45 ? 2 : total >= 25 ? 1 : 0,
       derivados: [['Temperatura', escolha(burchWartofsky, r, 'temp')!.rotulo], ['Frequência cardíaca', escolha(burchWartofsky, r, 'fc')!.rotulo]],
-      alerta: total === 45 ? ERRATA_BURCH : undefined,
+      alerta: total === 45 ? '45 exato não tem classe na Tabela 4 do manual ("> 45" crise; "25–44" iminente); classificado pelo consenso ETA/BTA/SfE 2026, que dá ≥ 45 como muito sugestivo.' : undefined,
       cuidados: [
         'O diagnóstico é clínico; o escore ajuda nos casos duvidosos (p. 947, 950).',
         ERRATA_BURCH,

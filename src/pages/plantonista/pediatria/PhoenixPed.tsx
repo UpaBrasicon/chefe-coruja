@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { NOTA_PHOENIX_VALIDACAO, PAM_PHOENIX, PHOENIX_TEXTO, fichaPhoenixPed, phoenix } from '@/clinico/pediatria/choque'
+import { IDADE_MAX_MESES_PHOENIX, NOTA_PHOENIX_FAIXA, NOTA_PHOENIX_VALIDACAO, PAM_PHOENIX, PHOENIX_TEXTO, fichaPhoenixPed, phoenix } from '@/clinico/pediatria/choque'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 
@@ -36,9 +36,10 @@ export function PhoenixCalculo({ nota }: { nota?: string } = {}) {
   return (
     <Bloco titulo="Critérios de Phoenix 2024 — sepse e choque séptico (JAMA 2024)">
       <p className="text-tinta-sussurro">{PHOENIX_TEXTO.criterios} {PHOENIX_TEXTO.naoVale} ({PHOENIX_TEXTO.pagina})</p>
+      <p className="text-tinta-sussurro">{NOTA_PHOENIX_FAIXA}</p>
       {nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{nota}</p>}
       <div className="grid gap-3 sm:grid-cols-3">
-        <NumberField id="phx-idade" label="Idade" unit="meses" value={idadeMeses} onChange={setIdadeMeses} min={0} max={215} />
+        <NumberField id="phx-idade" label="Idade" unit="meses" value={idadeMeses} onChange={setIdadeMeses} min={0} max={IDADE_MAX_MESES_PHOENIX - 1} />
         <NumberField id="phx-pf" label="PaO₂/FiO₂" value={pf} onChange={setPf} min={0} />
         <NumberField id="phx-sf" label="SpO₂/FiO₂ (só com SpO₂ ≤ 97%)" value={sf} onChange={setSf} min={0} />
         <NumberField id="phx-vasos" label="Vasoativos em uso" unit="n" value={vasos} onChange={setVasos} min={0} max={5} />
@@ -65,7 +66,9 @@ export function PhoenixCalculo({ nota }: { nota?: string } = {}) {
           <p className="text-tinta-sussurro">PAM da faixa {PAM_PHOENIX[ph.faixa].rotulo}: 1 ponto entre {PAM_PHOENIX[ph.faixa].umPonto[0]} e {PAM_PHOENIX[ph.faixa].umPonto[1]} mmHg, 2 pontos abaixo de {PAM_PHOENIX[ph.faixa].doisPontos}. {PHOENIX_TEXTO.mortalidade}</p>
           {ph.avisos.map((a) => <p key={a} className="text-atencao">{a}</p>)}
         </div>
-      ) : <p className="text-tinta-sussurro">Informe a idade em meses (o Phoenix vale de 37 semanas pós-concepcionais até 17 anos).</p>}
+      ) : idadeMeses >= IDADE_MAX_MESES_PHOENIX
+        ? <p className="text-atencao">Idade de 14 anos ou mais: fora da pediatria desta tela (até 13 anos 11 meses e 29 dias, ou seja, até {IDADE_MAX_MESES_PHOENIX - 1} meses).</p>
+        : <p className="text-tinta-sussurro">Informe a idade em meses (nesta tela, de 37 semanas pós-concepcionais até 13 anos 11 meses e 29 dias).</p>}
     </Bloco>
   )
 }

@@ -41,14 +41,14 @@ export const NOTA_PROMPT_BOLUS =
 
 export const fichaChoquePediatrico: Ficha = {
   ...fichaP2('ped-choque-icr', 'Choque séptico — criança', 'cap. 5, p. 79–88'),
-  versao: '2026-10-09.1',
+  versao: '2026-11-16.1',
   fontes: [
     ...fichaP2('ped-choque-icr', 'Choque séptico — criança', 'cap. 5, p. 79–88').fontes,
     { ...PHOENIX_2024, citacao: `${PHOENIX_2024.citacao} Tabela do escore (p. E3 do PDF).` },
     { ...SSC_PED_2026, citacao: `${SSC_PED_2026.citacao} Tabela 3, rec. 3, 5–7, 19–24, 28–32, 39 e 40 (p. 944–951).` },
     PROMPT_BOLUS_2026,
   ],
-  revisadoEm: '09/10/2026 (nota do PRoMPT BOLUS no fluido; Phoenix 2024 e SSC pediátrica 2026 conferidas no texto; livro do ICr mantido como base)',
+  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 09/10/2026 (nota do PRoMPT BOLUS no fluido; Phoenix 2024 e SSC pediátrica 2026 conferidas no texto; livro do ICr mantido como base)',
 }
 
 // Revisão PubMed de 09/10/2026, itens médios (decisão do RT em 06/11/2026):
@@ -74,14 +74,14 @@ export const NOTA_PHOENIX_VALIDACAO =
 export const fichaPhoenixPed: Ficha = {
   id: 'ped-phoenix',
   titulo: 'Escore de Phoenix — sepse e choque séptico (criança)',
-  versao: '2026-11-06.1',
+  versao: '2026-11-16.1',
   publico: 'pediatrico',
   fontes: [
     { ...PHOENIX_2024, citacao: `${PHOENIX_2024.citacao} Tabela do escore (p. E3 do PDF).` },
     PHOENIX_SENTINEL_2025,
     PHOENIX_HONG_KONG_2026,
   ],
-  revisadoEm: '06/11/2026 (nota das validações externas SENTINEL e Hong Kong; revisão PubMed, itens médios; mesma regra conferida no texto em 28/09; aguarda aprovação do RT como ferramenta própria)',
+  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota das validações externas SENTINEL e Hong Kong; revisão PubMed, itens médios; mesma regra conferida no texto em 28/09; aguarda aprovação do RT como ferramenta própria)',
 }
 
 export type Volume = {
@@ -121,27 +121,40 @@ export const METAS_CHOQUE: { texto: string; pagina: string }[] = [
 
 // ---------------------------------------------------------------- Phoenix 2024
 
-export type FaixaEtariaPhoenix = '<1m' | '1-11m' | '1-<2a' | '2-<5a' | '5-<12a' | '12-17a'
+export type FaixaEtariaPhoenix = '<1m' | '1-11m' | '1-<2a' | '2-<5a' | '5-<12a' | '12-<14a'
 
-/** PAM por idade (Tabela, p. E3): 1 ponto na faixa, 2 pontos abaixo do menor valor. */
+/**
+ * PAM por idade (Tabela, p. E3): 1 ponto na faixa, 2 pontos abaixo do menor valor.
+ * A tabela vai até 17 anos (faixa 12 a 17 anos); a Central só usa a parte de
+ * 12 a < 14 anos, com os mesmos limiares (pediatria até 13 anos 11 meses e 29 dias).
+ */
 export const PAM_PHOENIX: Record<FaixaEtariaPhoenix, { umPonto: [number, number]; doisPontos: number; rotulo: string }> = {
   '<1m': { umPonto: [17, 30], doisPontos: 17, rotulo: '< 1 mês' },
   '1-11m': { umPonto: [25, 38], doisPontos: 25, rotulo: '1 a 11 meses' },
   '1-<2a': { umPonto: [31, 43], doisPontos: 31, rotulo: '1 a < 2 anos' },
   '2-<5a': { umPonto: [32, 44], doisPontos: 32, rotulo: '2 a < 5 anos' },
   '5-<12a': { umPonto: [36, 48], doisPontos: 36, rotulo: '5 a < 12 anos' },
-  '12-17a': { umPonto: [38, 51], doisPontos: 38, rotulo: '12 a 17 anos' },
+  '12-<14a': { umPonto: [38, 51], doisPontos: 38, rotulo: '12 a < 14 anos' },
 }
 
-/** Faixa de Phoenix pela idade em meses (o Phoenix não vale para < 37 semanas de idade pós-concepcional, internação de nascimento nem ≥ 18 anos). */
+/** Idade máxima (exclusiva) em meses aceita pela Central: 14 anos (pediatria até 13 anos 11 meses e 29 dias). */
+export const IDADE_MAX_MESES_PHOENIX = 168
+
+export const NOTA_PHOENIX_FAIXA =
+  'O critério de Phoenix foi derivado até 17 anos; nesta tela, só até 13 anos 11 meses e 29 dias.'
+
+/**
+ * Faixa de Phoenix pela idade em meses. O Phoenix não vale para < 37 semanas de idade
+ * pós-concepcional, internação de nascimento nem ≥ 18 anos; a Central limita a < 14 anos.
+ */
 export function faixaPhoenix(idadeMeses: number): FaixaEtariaPhoenix | null {
-  if (!Number.isFinite(idadeMeses) || idadeMeses < 0 || idadeMeses >= 216) return null
+  if (!Number.isFinite(idadeMeses) || idadeMeses < 0 || idadeMeses >= IDADE_MAX_MESES_PHOENIX) return null
   if (idadeMeses < 1) return '<1m'
   if (idadeMeses < 12) return '1-11m'
   if (idadeMeses < 24) return '1-<2a'
   if (idadeMeses < 60) return '2-<5a'
   if (idadeMeses < 144) return '5-<12a'
-  return '12-17a'
+  return '12-<14a'
 }
 
 export type EntradaPhoenix = {

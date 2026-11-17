@@ -8,7 +8,8 @@ import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
 // Apêndice (o capítulo só indica "IBP"), critérios do PALF, dose tóxica de
 // paracetamol, amônia, VIG e oferta hídrica restrita da IHA. Sem valor neonatal.
 
-export const fichaDigestivoHepaticoPed = fichaP4('ped-hda-hepatica', 'Hemorragia digestiva e insuficiência hepática aguda — criança', 'cap. 34, p. 343–352; cap. 36, p. 357–366; Apêndice, p. 896, 905–910')
+const fichaDigestivoHepaticoLivro = fichaP4('ped-hda-hepatica', 'Hemorragia digestiva e insuficiência hepática aguda — criança', 'cap. 34, p. 343–352; cap. 36, p. 357–366; Apêndice, p. 896, 905–910')
+export const fichaDigestivoHepaticoPed = { ...fichaDigestivoHepaticoLivro, versao: '2026-11-16.1', revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaDigestivoHepaticoLivro.revisadoEm }
 
 // ------------------------------------------------------------ hemorragia digestiva
 
@@ -22,9 +23,8 @@ export const DOSES_HDA: DoseLivro[] = [
 /** Infusão contínua de octreotida (p. 349): 1 µg/kg/h, podendo chegar a 4 µg/kg/h. */
 export const octreotidaInfusaoUgH = (pesoKg: number) => porPeso([1, 4], pesoKg)
 
-/** Somatostatina (p. 349): 1 a 20 µg/kg/h; adolescentes e adultos 250 a 500 µg/h. */
+/** Somatostatina (p. 349): 1 a 20 µg/kg/h (só o valor por kg; a faixa fixa de adolescente/adulto não entra na tela pediátrica). */
 export const somatostatinaUgH = (pesoKg: number) => porPeso([1, 20], pesoKg)
-export const SOMATOSTATINA_ADOLESCENTE_UG_H: Faixa = [250, 500]
 
 export const NOTA_VASOATIVOS =
   'Divergência com o Apêndice: octreotida contínua 0,5 a 2 µg/kg/h (p. 896) ou 1 a 2 µg/kg/h (p. 905); somatostatina ataque 3,5 µg/kg (máx. 250 µg) e manutenção 3,5 a 10 µg/kg/h com máximo de 50 µg/h (p. 908). O capítulo (p. 349) diz que as recomendações "variam muito" e dá as faixas mostradas; o teto de 50 µg/h do Apêndice não é aplicado à faixa do capítulo.'
@@ -54,17 +54,18 @@ export function criterioCoagulacaoPalf(v: { inr: number; tpSeg: number; encefalo
   return (temInr && v.inr > 2) || (temTp && v.tpSeg >= 20)
 }
 
-export type LeituraParacetamol = { mgKg: number | null; toxicaUnica: 'sim' | 'faixa' | 'nao' | null; adolescenteAcima75g: boolean | null }
+export type LeituraParacetamol = { mgKg: number | null; toxicaUnica: 'sim' | 'faixa' | 'nao' | null }
 
 /**
  * Paracetamol (p. 358): dose tóxica em ingestão única > 150 a 200 mg/kg (criança);
- * adolescente > 7,5 g em dose única; repetida: > 75 mg/kg/dia em < 6 anos.
+ * repetida: > 75 mg/kg/dia em < 6 anos. O limiar em gramas do adolescente/adulto
+ * não entra na tela pediátrica (só mg/kg).
  */
 export function leituraParacetamol(mgIngeridos: number, pesoKg: number): LeituraParacetamol | null {
   if (!positivoP5(mgIngeridos)) return null
   const mgKg = positivoP5(pesoKg) ? mgIngeridos / pesoKg : null
   const toxicaUnica = mgKg === null ? null : mgKg > 200 ? 'sim' : mgKg > 150 ? 'faixa' : 'nao'
-  return { mgKg, toxicaUnica, adolescenteAcima75g: mgIngeridos > 7500 }
+  return { mgKg, toxicaUnica }
 }
 
 /** Amônia (p. 364): > 150 a 200 µmol/L (255 a 340 µg/dL) é fator de risco para HIC na IHA. */

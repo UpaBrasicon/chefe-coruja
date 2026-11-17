@@ -30,10 +30,12 @@ test('Phoenix 2024: faixas etárias e PAM da tabela (p. E3)', () => {
   assert.equal(faixaPhoenix(18), '1-<2a')
   assert.equal(faixaPhoenix(36), '2-<5a')
   assert.equal(faixaPhoenix(100), '5-<12a')
-  assert.equal(faixaPhoenix(200), '12-17a')
-  assert.equal(faixaPhoenix(216), null) // 18 anos: fora
+  assert.equal(faixaPhoenix(160), '12-<14a')
+  assert.equal(faixaPhoenix(167), '12-<14a')
+  assert.equal(faixaPhoenix(168), null) // 14 anos: fora da pediatria da Central
+  assert.equal(faixaPhoenix(200), null)
   assert.deepEqual(PAM_PHOENIX['<1m'].umPonto, [17, 30])
-  assert.equal(PAM_PHOENIX['12-17a'].doisPontos, 38)
+  assert.equal(PAM_PHOENIX['12-<14a'].doisPontos, 38)
 })
 
 test('Phoenix 2024: pontos por sistema, sepse ≥ 2 e choque com ponto cardiovascular', () => {

@@ -26,7 +26,7 @@ export const qtcAdulto: Escore = {
   ficha: {
     id: 'adulto-qtc',
     titulo: 'QTc — Bazett, Fridericia, Framingham e Hodges (adulto)',
-    versao: '2026-10-23.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Drew BJ, Ackerman MJ, Funk M, et al. Prevention of torsade de pointes in hospital settings: a scientific statement from the AHA and ACCF. Circulation. 2010;121(8):1047–1060 (PMID 20142454): Bazett, Fridericia e os limiares (470/480, 500 ms, aumento de 60 ms).', url: 'https://doi.org/10.1161/CIRCULATIONAHA.109.192704' },
@@ -34,7 +34,7 @@ export const qtcAdulto: Escore = {
       { citacao: 'Patel PJ, Borovskiy Y, Killian A, et al. Optimal QT interval correction formula in sinus tachycardia for identifying cardiovascular and mortality risk. Heart Rhythm. 2016;13(2):527–535 (PMID 26552754): Hodges e Framingham em ms.', url: 'https://doi.org/10.1016/j.hrthm.2015.11.008' },
       { citacao: 'Vandenberk B, Vandael E, Robyns T, et al. Which QT correction formulae to use for QT monitoring? J Am Heart Assoc. 2016;5(6):e003264 (PMID 27317349): Fridericia e Framingham corrigem melhor; Bazett superestima.', url: 'https://doi.org/10.1161/JAHA.116.003264' },
     ],
-    revisadoEm: '23/10/2026 (lacunas da Central, lote 1; fórmulas e limiares conferidos no texto da fonte)',
+    revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 23/10/2026 (lacunas da Central, lote 1; fórmulas e limiares conferidos no texto da fonte)',
   },
   descricao: 'QT medido e frequência cardíaca. QTc pelas quatro fórmulas, com os limiares da AHA/ACCF 2010.',
   itens: [
@@ -53,7 +53,6 @@ export const qtcAdulto: Escore = {
     const basal = numero(qtcAdulto, r, 'basal')
     const aumento = basal !== undefined ? b - basal : undefined
     const muitoAlto = b > 500 || (aumento !== undefined && aumento >= 60)
-    const fc = numero(qtcAdulto, r, 'fc')!
     return {
       rotulo: 'QTc (Bazett)',
       valor: String(b),
@@ -70,7 +69,8 @@ export const qtcAdulto: Escore = {
         ? 'Na declaração da AHA/ACCF 2010, QTc acima de 500 ms ou aumento de 60 ms ou mais sobre o basal pede ação imediata (risco de torsades).'
         : undefined,
       cuidados: [
-        ...(fc > 85 ? ['Com frequência acima de 85 bpm, Bazett superestima o QTc; Fridericia e Framingham corrigem melhor.'] : []),
+        // Sem fonte para um corte de frequência (o "acima de 85 bpm" saiu por decisão do RT de 16/11/2026): o aviso aparece sempre.
+        'Com frequência cardíaca alta, Bazett superestima o QTc; Fridericia e Framingham corrigem melhor.',
         'Os limiares de 470 e 480 ms valem para pós-púberes; os pontos de corte por sexo variam entre as fontes.',
         'Bloqueio de ramo novo alarga o QT sem significar QT longo; na fibrilação atrial, a declaração orienta a média do QTc do RR mais curto e do mais longo.',
       ],

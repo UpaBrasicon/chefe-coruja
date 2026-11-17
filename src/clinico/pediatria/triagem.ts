@@ -21,7 +21,8 @@ export const FAIXAS_POPS: { id: FaixaPops; rotulo: string }[] = [
   { id: '1-2', rotulo: '1 a 2 anos' },
   { id: '2-5', rotulo: '2 a 5 anos' },
   { id: '5-12', rotulo: '5 a 12 anos' },
-  { id: '13-16', rotulo: '13 a 16 anos' },
+  // O livro traz 13 a 16 anos; a Central só usa a parte abaixo de 14 anos (pediatria até 13a 11m 29d).
+  { id: '13-16', rotulo: '13 a < 14 anos (no livro, 13 a 16 anos)' },
 ]
 
 /** Faixa da tabela: limites inclusivos, ou abertos (< / >) nas pontas. */
@@ -86,11 +87,13 @@ const esc = (id: string, rotulo: string, opcoes: [string, number][], ajuda?: str
   tipo: 'escolha' as const, id, rotulo, ajuda, opcoes: opcoes.map(([r, valor]) => ({ rotulo: r, valor })),
 })
 
+const fichaPopsLivro = fichaP2('ped-pops-icr', 'POPS — Escore de Observação de Prioridade Pediátrica', 'cap. 82, p. 881–882 (Tabela 4)')
+
 export const pops: Escore = {
-  ficha: fichaP2('ped-pops-icr', 'POPS — Escore de Observação de Prioridade Pediátrica', 'cap. 82, p. 881–882 (Tabela 4)'),
+  ficha: { ...fichaPopsLivro, versao: '2026-11-16.1', revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaPopsLivro.revisadoEm },
   descricao: 'Sinais de alerta da Tabela 4 do cap. 82 (Roland et al., 2016): 0 a 2 pontos por parâmetro.',
   itens: [
-    esc('faixa', 'Faixa etária da tabela', FAIXAS_POPS.map((f, i) => [f.rotulo, i]), 'Os rótulos são os do livro; entre 12 e 13 anos a tabela não tem linha.'),
+    esc('faixa', 'Faixa etária da tabela', FAIXAS_POPS.map((f, i) => [f.rotulo, i]), 'Os rótulos são os do livro, exceto a última faixa: o livro traz 13 a 16 anos e esta tela só vale até 13 anos 11 meses e 29 dias. Entre 12 e 13 anos a tabela não tem linha.'),
     esc('so2', 'SO₂', [['> 95%', 0], ['90–94%', 1], ['< 90%', 2]], 'A tabela não tem faixa para 95% exatos (errata, p. 882).'),
     esc('respiracao', 'Respiração', [['Confortável', 0], ['Sibilos', 1], ['Tiragem leve', 1], ['Estridor', 2], ['Tiragem intensa', 2]]),
     esc('responsividade', 'Responsividade', [['Alerta', 0], ['Responde ao chamado', 1], ['Responde à dor', 2]]),

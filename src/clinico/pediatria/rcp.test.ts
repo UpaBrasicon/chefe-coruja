@@ -30,10 +30,8 @@ test('rcp: cargas 2 → 4 → 4–10 J/kg e cardioversão 0,5–1 → 1–2 J/kg
   assert.equal(c.primeiro, 40)
   assert.equal(c.segundo, 80)
   assert.deepEqual(c.subsequentes, [80, 200])
-  assert.equal(c.acimaDoAdulto, false)
   assert.deepEqual(c.cardioversaoInicial, [10, 20])
   assert.deepEqual(c.cardioversaoSeguinte, [20, 40])
-  assert.equal(cargasPorPeso(25)!.acimaDoAdulto, true) // 250 J > 200 J bifásico
   assert.equal(cargasPorPeso(0), null)
 })
 
@@ -69,7 +67,7 @@ test('rcp: máximos — amiodarona 300 mg; adenosina 6 e 12 mg (p. 32, 50)', () 
 // ── AHA 2025, Part 8 no texto integral (lacunas da Central, lote 3) ──
 
 test('RCP pediátrica: ficha .2 com o Part 8 completo', () => {
-  assert.equal(fichaRcpPediatrica.versao, '2026-10-25.1')
+  assert.equal(fichaRcpPediatrica.versao, '2026-11-16.1') // achados de 16/11/2026 (sem carga do adulto)
   assert.match(fichaRcpPediatrica.fontes[1].citacao, /Topjian AA.*S479–S537/)
 })
 test('RCP pediátrica: epinefrina 0,01 mg/kg com teto de 1 mg (AHA 2025, Figura 2)', () => {

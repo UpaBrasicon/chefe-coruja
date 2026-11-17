@@ -117,6 +117,12 @@ test('San Francisco (Tabela 3, p. 238): risco com ≥ 1 fator', () => {
   assert.equal(sincopeSanFrancisco.calcular({ ht: true })!.estado, 1)
 })
 
+test('San Francisco: desempenho do livro para eventos graves em 7 dias, não 1 ano (p. 237–238, conferido pelo RT)', () => {
+  const desempenho = sincopeSanFrancisco.calcular({})!.derivados.find(([k]) => k.startsWith('Desempenho'))![1]
+  assert.match(desempenho, /eventos graves em 7 dias/)
+  assert.doesNotMatch(desempenho, /1 ano/)
+})
+
 test('TIMI IAMCSST (Morrow 2000): 0 a 14 e mortalidade por ponto', () => {
   assert.equal(timiIamcsst.calcular({}), null)
   assert.match(timiIamcsst.calcular({ idade: 0 })!.nota, /0,8%/)
@@ -237,7 +243,7 @@ test('PRAM: pesos por item e limites 0–3 / 4–7 / 8–12', () => {
 
 test('San Francisco (cap. 16): EUSEM 2024 ao lado do manual, lote 6 do HCFMUSP', async () => {
   const s = await import('./adulto/sincopeSanFrancisco.ts')
-  assert.equal(s.sincopeSanFrancisco.ficha.versao, '2026-11-14.1')
+  assert.equal(s.sincopeSanFrancisco.ficha.versao, '2026-11-16.1') // 7 dias, conferido pelo RT
   assert.match(s.sincopeSanFrancisco.ficha.fontes[0].citacao, /Manual de Medicina de Emergência/)
   assert.ok(s.sincopeSanFrancisco.ficha.fontes.includes(s.EUSEM_SINCOPE_2024))
   assert.match(s.EUSEM_SINCOPE_2024.citacao, /PMID 38874507/)

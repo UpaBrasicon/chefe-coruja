@@ -30,17 +30,37 @@ test('elapídico 5–10 e laquético 12–20, sempre graves (p. 1353), com nota 
   assert.ok(ACIDENTES.find((a) => a.id === 'laquetico')!.errata)
 })
 
-test('escorpião: soro só no grave do adulto, 4–6 ampolas (p. 1356)', () => {
-  assert.deepEqual([amp('escorpionico', 'leve'), amp('escorpionico', 'moderado'), amp('escorpionico', 'grave')], [null, null, [4, 6]])
+test('escorpião pelo PCDT 2026 (decisão do RT de 16/11/2026): 3 no moderado e 6 no grave, manual só para comparação', () => {
+  assert.deepEqual([amp('escorpionico', 'leve'), amp('escorpionico', 'moderado'), amp('escorpionico', 'grave')], [null, [3, 3], [6, 6]])
+  const mod = soroPorGravidade('escorpionico', 'moderado')!.classe.ms!
+  assert.match(mod.texto, /independentemente da idade/)
+  assert.match(mod.pagina, /PCDT 2026, Quadro 4, p\. 15–17/)
+  assert.match(mod.livro, /2–3 ampolas só em < 7 anos \(p\. 1356\)/)
+  const grave = soroPorGravidade('escorpionico', 'grave')!.classe.ms!
+  assert.match(grave.texto, /não administrar mais de 6/)
+  assert.match(grave.livro, /4–6 ampolas \(p\. 1356\)/)
+  assert.equal(soroPorGravidade('escorpionico', 'leve')!.classe.ms, undefined)
 })
 
-test('aranhas (Tabela 3, p. 1357–1359): Phoneutria, Loxosceles e Latrodectus IM', () => {
+test('aranhas: Phoneutria pelo manual (igual ao MS); Loxosceles e Latrodectus pelo portal do MS, manual para comparação', () => {
   assert.deepEqual([amp('phoneutria', 'moderado'), amp('phoneutria', 'grave')], [[2, 4], [5, 10]])
-  assert.deepEqual([amp('loxosceles', 'moderado'), amp('loxosceles', 'grave')], [[5, 5], [5, 5]])
-  assert.deepEqual(soroPorGravidade('loxosceles', 'grave')!.classe.ampolasAlternativa!.ampolas, [10, 10])
+  assert.equal(soroPorGravidade('phoneutria', 'grave')!.classe.ms, undefined)
+  assert.deepEqual([amp('loxosceles', 'leve'), amp('loxosceles', 'moderado'), amp('loxosceles', 'grave')], [null, [5, 5], [10, 10]])
+  assert.match(soroPorGravidade('loxosceles', 'grave')!.classe.ms!.livro, /5 ampolas; 10 na forma cutaneovisceral/)
+  for (const g of ['leve', 'moderado', 'grave'] as const) {
+    const lat = soroPorGravidade('latrodectus', g)!
+    assert.equal(lat.classe.ampolas, null, g)
+    assert.match(lat.classe.ms!.semSoro!, /não há soro disponível/, g)
+  }
   const lat = soroPorGravidade('latrodectus', 'grave')!
-  assert.deepEqual([lat.classe.ampolas, lat.acidente.via], [[1, 2], 'IM'])
+  assert.match(lat.classe.ms!.livro, /1–2 ampolas IM/)
   assert.match(lat.acidente.errata!, /Phoneutria/)
+})
+
+test('serpentes seguem o manual, sem conta do MS', () => {
+  for (const id of ['botropico', 'crotalico', 'elapidico', 'laquetico']) {
+    for (const c of ACIDENTES.find((a) => a.id === id)!.classes) assert.equal(c.ms, undefined, `${id} ${c.gravidade}`)
+  }
 })
 
 test('pré-medicação por peso com teto (p. 1350)', () => {

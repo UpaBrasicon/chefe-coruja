@@ -53,7 +53,7 @@ export function PeconhentosPed() {
 
       {calc && p.peso > 0 && animal === 'loxosceles' && grav !== 'leve' && (
         <Bloco titulo="Prednisona (Tabela 3, p. 214)">
-          <LinhaLivro nome="Prednisona" conta={<strong>{br(prednisonaLoxoscelesMgDia(p.peso), 1)} mg/dia</strong>} texto="crianças 1 mg/kg/dia durante 5 dias (adultos 40 mg/dia — não usado como teto na criança)" pagina="p. 214" />
+          <LinhaLivro nome="Prednisona" conta={<strong>{br(prednisonaLoxoscelesMgDia(p.peso), 1)} mg/dia</strong>} texto="crianças 1 mg/kg/dia durante 5 dias" pagina="p. 214" />
         </Bloco>
       )}
       {calc && p.peso > 0 && animal === 'escorpiao' && (

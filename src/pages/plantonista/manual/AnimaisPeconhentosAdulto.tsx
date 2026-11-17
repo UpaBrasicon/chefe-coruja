@@ -24,35 +24,42 @@ export function AnimaisPeconhentosAdulto() {
   const [gravidadeEscolhida, setGravidade] = useState<Gravidade>('leve')
   const gravidade = gravidades.includes(gravidadeEscolhida) ? gravidadeEscolhida : gravidades[0]
   const r = soroPorGravidade(acidenteId, gravidade)!
+  const ms = r.classe.ms
   const neo = neostigmina(peso)
 
   return (
     <ToolLayout
       title="Acidentes por animais peçonhentos — adulto"
-      description="Número de ampolas de soro pela gravidade (serpentes, escorpião e aranhas), pré-medicação por peso e neostigmina no elapídico, pelo manual do HC. Adulto (14 anos ou mais)."
+      description="Número de ampolas de soro pela gravidade (serpentes pelo manual do HC; escorpião e aranhas pelo Ministério da Saúde), pré-medicação por peso e neostigmina no elapídico, pelo manual do HC. Adulto (14 anos ou mais)."
       ficha={fichaPeconhentosAdulto}
     >
       <CampoPeso id="pec-peso" peso={peso} onChange={setPeso} />
 
-      <Bloco titulo="Soro pela gravidade" descricao="A gravidade é escolhida por quem atende, pelas manifestações de cada tabela do manual.">
+      <Bloco titulo="Soro pela gravidade" descricao="A gravidade é escolhida por quem atende, pelas manifestações de cada tabela do manual. Decisão do responsável técnico (16/11/2026): no escorpião e nas aranhas a conta segue o Ministério da Saúde, e o número do manual aparece só para comparação; Phoneutria tem os mesmos números nas duas fontes.">
         <Escolha label="Acidente" value={acidenteId} onChange={setAcidenteId} opcoes={ACIDENTES.map((a) => ({ value: a.id, label: a.nome }))} />
         <Escolha label="Gravidade" value={gravidade} onChange={setGravidade}
           opcoes={acidente.classes.map((c) => ({ value: c.gravidade, label: c.gravidade[0].toUpperCase() + c.gravidade.slice(1) }))} />
         <LinhaManual
           nome={`${acidente.nome} — ${gravidade}`}
-          texto={`${r.classe.manifestacoes}; soro ${acidente.soro} ${acidente.via}`}
-          pagina={acidente.pagina}
+          texto={ms ? ms.texto : `${r.classe.manifestacoes}; soro ${acidente.soro} ${acidente.via}`}
+          pagina={ms ? ms.pagina : acidente.pagina}
+          origem={ms?.origem}
           conta={r.classe.ampolas
-            ? <><strong>{ampolas(r.classe.ampolas)} ({acidente.via})</strong>{r.classe.ampolasAlternativa && <> · {r.classe.ampolasAlternativa.rotulo}: <strong>{ampolas(r.classe.ampolasAlternativa.ampolas)}</strong></>}</>
-            : <strong>o manual não indica soro nesta gravidade (adulto)</strong>}
+            ? <strong>{ampolas(r.classe.ampolas)}{ms ? '' : ` (${acidente.via})`}</strong>
+            : <strong>{ms?.semSoro ?? 'o manual não indica soro nesta gravidade (adulto)'}</strong>}
           nota={acidente.nota}
           errata={acidente.errata}
         />
+        {ms && (
+          <p className="text-apoio text-tinta-sussurro">
+            Manifestações pelo manual do HC: {r.classe.manifestacoes} ({acidente.pagina}). Manual do HC, só para comparação: {ms.livro}.
+          </p>
+        )}
         <ul className="grid gap-1 text-apoio md:grid-cols-3">
           {acidente.classes.map((c) => (
             <li key={c.gravidade} className="rounded-controle border px-3 py-2">
-              <span className="font-medium capitalize">{c.gravidade}</span>: {c.ampolas ? ampolas(c.ampolas) : 'sem soro'}
-              {c.ampolasAlternativa && ` (${c.ampolasAlternativa.rotulo}: ${ampolas(c.ampolasAlternativa.ampolas)})`}
+              <span className="font-medium capitalize">{c.gravidade}</span>: {c.ampolas ? ampolas(c.ampolas) : (c.ms?.semSoro ?? 'sem soro')}
+              {c.ms && ` · manual do HC: ${c.ms.livro}`}
             </li>
           ))}
         </ul>

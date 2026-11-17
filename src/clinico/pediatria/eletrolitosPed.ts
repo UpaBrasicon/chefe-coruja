@@ -2,7 +2,7 @@ import { faixaTeto, faixaVezes, fichaIcr, positivo } from './fonteIcr.ts'
 
 // Potássio, cálcio, magnésio e fósforo na criança — cap. 54 do Pronto-Socorro
 // ICr-HCFMUSP (4ª ed., 2023), p. 543–559. Doses por peso como o livro traz,
-// com página; a indicação e a escolha são do profissional (ADR 0007).
+// com página; a indicação e a escolha são do médico (ADR 0007).
 
 export const fichaEletrolitosPed = fichaIcr('ped-eletrolitos', 'Potássio, cálcio, magnésio e fósforo — criança', 'cap. 54, p. 543–559')
 
