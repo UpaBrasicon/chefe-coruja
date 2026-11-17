@@ -2,9 +2,11 @@ import { BadgeCheck, Building2, CircleSlash, Clock, TriangleAlert } from 'lucide
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { textoFontes, type Ficha } from '@/clinico/ficha'
+import { textoRef, type ItemGuia } from '@/clinico/guia'
+import { topoDa, type Topo } from '@/clinico/topos'
 import { Link } from 'react-router-dom'
 
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { useRelacionadas, type Relacionada } from '@/components/plantonista/calc/contexto'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
@@ -46,9 +48,12 @@ export function ToolLayout({
   // Relacionadas (piloto das calculadoras): coluna da direita na tela larga, no fim nas outras.
   const relacionadas = useRelacionadas()
   const temLado = indice.length >= 3 || relacionadas.length > 0
+  // Textos do topo (modelo das calculadoras, RT 16/11/2026): frase-resumo no lugar da descrição.
+  const topo = ficha ? topoDa(ficha.id) : undefined
   return (
     <div className={cn('flex flex-col gap-[22px]', className)}>
-      <TituloPagina titulo={title} descricao={description} className="mb-0" />
+      <TituloPagina titulo={title} descricao={topo?.resumo ?? description} className="mb-0" />
+      {topo && <CabecalhoTopo topo={topo} />}
       {ficha && situacao && <FaixaSituacao situacao={situacao} versao={ficha.versao} />}
       {semFonte && (
         <div role="note" className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-apoio text-tinta-apoio">
@@ -193,5 +198,38 @@ function ListaRelacionadas({ itens }: { itens: Relacionada[] }) {
         ))}
       </ul>
     </nav>
+  )
+}
+
+// Abas recolhidas do topo, como no modelo do RT (MDCalc): "Quando usar" e
+// "Por que usar", com a fonte de cada frase; abaixo, as instruções curtas.
+function CabecalhoTopo({ topo }: { topo: Topo }) {
+  const [aberta, setAberta] = useState<'quando' | 'porque' | null>(null)
+  const abas = ([['quando', 'Quando usar', topo.quandoUsar], ['porque', 'Por que usar', topo.porQueUsar]] as const).filter(([, , itens]) => (itens ?? []).length > 0)
+  const itens: ItemGuia[] = (aberta === 'quando' ? topo.quandoUsar : aberta === 'porque' ? topo.porQueUsar : undefined) ?? []
+  return (
+    <div className="flex flex-col gap-3">
+      {abas.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
+            {abas.map(([id, rotulo]) => (
+              <Chip key={id} variante="opcao" ativo={aberta === id} onClick={() => setAberta((a) => (a === id ? null : id))}>
+                {rotulo}
+              </Chip>
+            ))}
+          </div>
+          {aberta && (
+            <ul className="flex list-disc flex-col gap-1.5 rounded-container border border-fio bg-superficie py-3 pr-4 pl-8 text-apoio text-tinta">
+              {itens.map((i) => <li key={i.texto}>{i.texto} <span className="text-tinta-sussurro">({textoRef(i.ref)})</span></li>)}
+            </ul>
+          )}
+        </div>
+      )}
+      {topo.instrucoes && (
+        <div role="note" className="rounded-container border border-fio bg-superficie px-4 py-3 text-apoio text-tinta">
+          <span className="font-semibold">Instruções</span> · {topo.instrucoes}
+        </div>
+      )}
+    </div>
   )
 }
