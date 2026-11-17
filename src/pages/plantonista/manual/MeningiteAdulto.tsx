@@ -5,10 +5,18 @@ import {
   fichaMeningiteAdulto, rifampicinaMeningococoMg, riscoListeria, suspeitaMeningite, type LinhaQuimio,
   DIFERENCAS_MENINGITE, DIRETRIZ_MENINGITE,
 } from '@/clinico/adulto/meningite'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { Chip } from '@/components/monitor/Pagina'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 
 import { Bloco, CampoPeso, LinhaManual, Pergunta } from './PecasLoteC'
@@ -38,6 +46,47 @@ export function MeningiteAdulto() {
   const rifampicina = rifampicinaMeningococoMg(peso)
   const listeria = riscoListeria({ idadeAnos: idade > 0 ? idade : undefined, imunossuprimido: imuno, corticoide, gestante })
   const alternar = (s: string) => setSinais((m) => (m.includes(s) ? m.filter((x) => x !== s) : [...m, s]))
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaMeningiteAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const textoSuspeita = sinais.length === 0 ? null : suspeitaMeningite(sinais.length) ? `${sinais.length} de 4: suspeita de meningite pelo critério do capítulo.` : '1 de 4: abaixo do critério de dois sinais; reavaliar.'
+  const simNao = (b: boolean | undefined) => (b === undefined ? '' : b ? 'sim' : 'não')
+
+  // Texto do "Copiar" (C3 e C4 = A): dados usados e a conduta do adulto com a página.
+  // As tabelas de quimioprofilaxia dos contatos (com linhas da criança) ficam de fora: só o adulto entra na cópia.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Meningite e encefalite — adulto',
+        dados: [
+          ['Peso', `${br(peso)} kg`],
+          ['Idade', idade > 0 ? `${numero(idade)} anos` : ''],
+          ['Sinais clássicos', sinais.join(', ')],
+          ['Imunossupressão', simNao(imuno)],
+          ['Uso de corticoide', simNao(corticoide)],
+          ['Gestante', simNao(gestante)],
+        ],
+        resultado: [
+          ...(textoSuspeita ? [`${textoSuspeita} (p. 589)`] : []),
+          'Primeira hora:',
+          ...PRIMEIRA_HORA.map((p) => `- ${p.texto} (${p.pagina})`),
+          'Esquema empírico (Tabela 2, p. 591–592):',
+          '- Ceftriaxona: 2 g EV 12/12 h, por 10–14 dias no empírico (Tabela 2, p. 591)',
+          `- Ampicilina: 2 g EV 4/4 h, associada quando há risco de Listeria — ${listeria.length ? `indicada: ${listeria.join(', ')}` : 'sem fator de risco informado'} (Tabela 2, p. 591–592; p. 593)`,
+          ...(doses
+            ? [
+                `- Dexametasona: 0,15 mg/kg/dose EV 6/6 h por 4 dias, de preferência com a primeira dose do antibiótico = ${br(doses.dexametasonaMg)} mg 6/6 h (Tabela 2, p. 591)`,
+                `- Aciclovir (suspeita de encefalite herpética): 10 mg/kg/dose EV 8/8 h por 14–21 dias; reajustar pela função renal = ${br(doses.aciclovirMg)} mg 8/8 h (Tabela 2, p. 591)`,
+              ]
+            : []),
+          'Por agente (Tabela 2, p. 591–592):',
+          ...TABELA2_MENINGITE.map((e) => `- ${e.quem}: ${e.antibiotico}; corticoide: ${e.corticoide}`),
+          ...(rifampicina ? [`Rifampicina — meningococo, este paciente na alta (Guia de Vigilância em Saúde, MS, 2024): 10 mg/kg/dose (máximo de 600 mg) 12/12 h por 2 dias = ${br(rifampicina)} mg 12/12 h por 2 dias; não precisa se foi tratado com ceftriaxona (Quadro 3, p. 117)`] : []),
+        ],
+        fonte: textoFontes(fichaMeningiteAdulto),
+        versao: fichaMeningiteAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -55,7 +104,7 @@ export function MeningiteAdulto() {
         </div>
         {sinais.length > 0 && (
           <p className="text-apoio text-tinta">
-            {suspeitaMeningite(sinais.length) ? `${sinais.length} de 4: suspeita de meningite pelo critério do capítulo.` : '1 de 4: abaixo do critério de dois sinais; reavaliar.'}
+            {textoSuspeita}
           </p>
         )}
       </Bloco>
@@ -126,15 +175,39 @@ export function MeningiteAdulto() {
       <Bloco titulo="Haemophilus influenzae (Quadro 11, p. 143)">
         <TabelaQuimio linhas={QUIMIO_HIB} />
       </Bloco>
-      <Bloco titulo="ESCMID 2016 e EAN–ESCMID 2026 — ao lado do manual" descricao="Meningite bacteriana pela ESCMID 2016 (grau A = apoio forte a D = contra) e encefalite infecciosa pela EAN–ESCMID 2026 (GRADE), lidas no texto integral. As doses do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_MENINGITE.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_MENINGITE.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaMeningiteAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a ESCMID e a EAN–ESCMID vai para "Evidências" (C6 = A); as doses do manual não mudam.
+          <BlocoComparacao titulo="ESCMID 2016 e EAN–ESCMID 2026 — ao lado do manual" resumo="Meningite bacteriana pela ESCMID 2016 (grau A = apoio forte a D = contra) e encefalite infecciosa pela EAN–ESCMID 2026 (GRADE), lidas no texto integral. As doses do manual acima continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_MENINGITE.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_MENINGITE.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? ['Adulto', `${br(peso)} kg`, idade > 0 ? `${numero(idade)} anos` : ''].filter(Boolean).join(' · ') : 'Informe o peso'}
+        detalhe={[
+          sinais.length ? (suspeitaMeningite(sinais.length) ? `suspeita: ${sinais.length} de 4 sinais` : '1 de 4 sinais') : '',
+          listeria.length ? 'ampicilina indicada (risco de Listeria)' : '',
+          doses ? `dexametasona ${br(doses.dexametasonaMg)} mg 6/6 h` : '',
+        ].filter(Boolean).join(' · ') || undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

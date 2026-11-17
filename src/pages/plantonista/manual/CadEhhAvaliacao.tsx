@@ -5,12 +5,19 @@ import {
   gravidadeCad2024, gravidadePorBicarbonato, gravidadePorPh, osmolalidadeEfetiva2024, osmolaridadeEfetiva, resolucaoCad2024, resolucaoEhh2024,
 } from '@/clinico/adulto/glicemia'
 import { ERRATA_SODIO_CORRIGIDO, sodioCorrigido } from '@/clinico/adulto/sodio'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 
 const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
@@ -23,15 +30,6 @@ function Item({ rotulo, valor, detalhe }: { rotulo: string; valor: string; detal
       <div className="text-corpo font-semibold tabular-nums">{valor}</div>
       {detalhe && <div className="text-rotulo text-tinta-sussurro">{detalhe}</div>}
     </div>
-  )
-}
-
-function Errata({ children }: { children: string }) {
-  return (
-    <p className="text-rotulo text-tinta-sussurro">
-      <Badge variant="outline" className="mr-1">errata</Badge>
-      {children}
-    </p>
   )
 }
 
@@ -52,6 +50,8 @@ export function CadEhhAvaliacao() {
   const [bhb, setBhb] = useState(0)
   const [cetonaRes, setCetonaRes] = useState(0)
   const [diurese, setDiurese] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaCadEhhAvaliacao.id)
 
   const naCorr = sodioCorrigido(na, glic)
   const osm = naCorr === null ? null : osmolaridadeEfetiva(naCorr, glic)
@@ -70,6 +70,45 @@ export function CadEhhAvaliacao() {
   const g2024 = gravidadeCad2024({ bhb: bhbOpc, ph: ph > 0 ? ph : undefined, hco3: hco3 > 0 ? hco3 : undefined })
   const resCad2024 = cetonaRes > 0 || (ph > 0 && hco3 > 0) ? resolucaoCad2024(ph, hco3, cetonaRes) : null
   const resEhh2024 = osm2024 !== null && diurese > 0 ? resolucaoEhh2024(osm2024, diurese, glic) : null
+  const temResultado = !!(cad2024 || ehh2024)
+
+  // Texto do "Copiar" (C4 = A): só o consenso 2024, que é a conduta da tela; o manual de 2022 fica de fora.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Cetoacidose e estado hiperosmolar — critérios (adulto)',
+      dados: [
+        ['Glicemia', glic > 0 ? `${br(glic, 0)} mg/dL` : ''],
+        ['Sódio medido', na > 0 ? `${br(na)} mEq/L` : ''],
+        ['Cloro', cl > 0 ? `${br(cl)} mEq/L` : ''],
+        ['Bicarbonato', hco3 > 0 ? `${br(hco3)} mEq/L` : ''],
+        ['pH', ph > 0 ? br(ph, 2) : ''],
+        ['Cetonúria 2+ ou mais', cetose === null ? '' : cetose ? 'positiva' : 'negativa'],
+        ['β-hidroxibutirato', bhb > 0 ? `${br(bhb)} mmol/L` : ''],
+        ['Diabetes prévio', dmPrevio ? 'sim' : 'não'],
+        ['Cetona atual', cetonaRes > 0 ? `${br(cetonaRes)} mmol/L` : ''],
+        ['Diurese', diurese > 0 ? `${br(diurese)} mL/kg/h` : ''],
+      ],
+      resultado: [
+        ...(cad2024
+          ? [
+              `CAD (Fig. 2A, p. 1262): glicose ≥ 200 ou diabetes prévio: ${sn(cad2024.hiperglicemiaOuDm)}; BHB ≥ 3,0 ou cetonúria 2+: ${sn(cad2024.cetose)}; pH < 7,3 e/ou HCO₃ < 18: ${sn(cad2024.acidose)}`,
+              `Critérios de CAD do consenso preenchidos: ${sn(cad2024.preenche)}${cad2024.euglicemica ? ' — CAD euglicêmica (glicose < 200): dextrose desde o início' : ''}`,
+            ]
+          : []),
+        ...(ehh2024
+          ? [
+              `EHH (Fig. 2B, p. 1262): glicose ≥ 600: ${sn(ehh2024.glicemia)}; osmolalidade efetiva ${br(osm2024)} (> 300) ou total > 320: ${sn(ehh2024.hiperosmolar)}; BHB < 3,0 ou cetonúria < 2+: ${sn(ehh2024.semCetoseSignificativa)}; pH ≥ 7,3 e HCO₃ ≥ 15: ${sn(ehh2024.semAcidose)}`,
+              `Critérios de EHH do consenso preenchidos: ${sn(ehh2024.preenche)}`,
+            ]
+          : []),
+        `Gravidade da CAD (Tabela 2, p. 1263): BHB ${g2024.porBhb ?? '—'}; pH ${g2024.porPh ?? '—'}; HCO₃ ${g2024.porHco3 ?? '—'}; pior parâmetro ${g2024.pior ?? '—'}`,
+        ...(resCad2024 ? [`Resolução da CAD (Fig. 4, p. 1264): ${resCad2024.resolvida ? 'atinge' : 'não atinge'}`] : []),
+        ...(resEhh2024 ? [`Resolução do EHH (Fig. 4, p. 1264): ${resEhh2024.resolvido ? 'atinge' : 'não atinge'}`] : []),
+      ],
+      fonte: textoFontes(fichaCadEhhAvaliacao),
+      versao: fichaCadEhhAvaliacao.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -165,8 +204,7 @@ export function CadEhhAvaliacao() {
             <Item rotulo="Osmolaridade efetiva" valor={`${br(osm)} mOsm`} detalhe="2 × Na corrigido + glicemia/18" />
             <Item rotulo="Ânion-gap" valor={`${br(ag)} mEq/L`} detalhe="Na medido − (HCO3 + Cl)" />
           </div>
-          <Errata>{ERRATA_SODIO_CORRIGIDO}</Errata>
-          <Errata>{ERRATA_OSMOLARIDADE}</Errata>
+          {/* As erratas das fórmulas vão para a aba "Armadilhas" (C6 = A). */}
         </CardContent>
       </Card>
 
@@ -227,19 +265,37 @@ export function CadEhhAvaliacao() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-corpo">Manual do HC × consenso 2024 — todas as diferenças</CardTitle>
-          <CardDescription>Onde diferem, esta tela segue o consenso.</CardDescription>
-        </CardHeader>
-        <CardContent className="text-apoio">
-          <ul className="flex flex-col gap-1">
-            {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
-          </ul>
-        </CardContent>
-      </Card>
         </div>
       </details>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[
+          `Errata do manual do HC (sódio corrigido): ${ERRATA_SODIO_CORRIGIDO}`,
+          `Errata do manual do HC (osmolaridade): ${ERRATA_OSMOLARIDADE}`,
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaCadEhhAvaliacao}
+        guia={guia}
+        comparacao={
+          // A lista de diferenças manual × consenso vai para "Evidências" (C6 = A).
+          <BlocoComparacao titulo="Manual do HC × consenso 2024 — todas as diferenças" resumo="Onde diferem, esta tela segue o consenso.">
+            <ul className="flex flex-col gap-1">
+              {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
+            </ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temResultado ? `CAD: ${cad2024 ? sn(cad2024.preenche) : '—'} · EHH: ${ehh2024 ? sn(ehh2024.preenche) : '—'}` : 'Informe glicemia, pH e bicarbonato'}
+        detalhe={temResultado ? `Consenso 2024 · gravidade (pior parâmetro): ${g2024.pior ?? '—'}${cad2024?.euglicemica ? ' · CAD euglicêmica' : ''}` : undefined}
+        textoCopia={temResultado ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

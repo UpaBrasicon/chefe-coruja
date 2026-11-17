@@ -4,8 +4,15 @@ import {
   AJUSTE_INICIAL, ASSINCRONIAS, DOPE, ERRATA_VM, INDICACOES_VM, NOME_MODO, POS_INTUBACAO, TABELA2, cortesIndicacaoVm, fichaVmAjusteAdulto,
   relacaoIE, tinsVcv, vcPorPeso, type Modo,
 } from '@/clinico/adulto/ventilacaoMecanica'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Alertas, Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -20,6 +27,8 @@ export function VmAjusteInicialAdulto() {
   const [tins, setTins] = useState(1)
   const [vc, setVc] = useState(0)
   const [fluxo, setFluxo] = useState(60)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaVmAjusteAdulto.id)
 
   const cortes = cortesIndicacaoVm({ po2: informado(po2), pco2: informado(pco2) })
   const vt = vcPorPeso(peso, AJUSTE_INICIAL.vtMlKg)
@@ -32,6 +41,37 @@ export function VmAjusteInicialAdulto() {
   if (modo === 'vcv' && fluxo > 0 && (fluxo < AJUSTE_INICIAL.fluxo[0] || fluxo > AJUSTE_INICIAL.fluxo[1])) avisos.push('Fluxo fora de 30–60 L/min (Tabela 2, VCV)')
   if (ie && (ie.n < AJUSTE_INICIAL.ie[0] || ie.n > AJUSTE_INICIAL.ie[1])) avisos.push(`I:E 1:${br(ie.n, 1)} — a Tabela 2 visa 1:2 ou 1:3`)
   if (vc > 0 && vt && (vc < vt[0] || vc > vt[1])) avisos.push(`VC ${vc} mL fora de 6–8 mL/kg do peso informado (${faixaBr(vt, 0)} mL)`)
+
+  const temGaso = po2 > 0 || pco2 > 0
+  const temResultado = temGaso || vt !== null || (modo === 'vcv' && ie !== null)
+  const textoCortes = cortes.length ? `cortes do livro atingidos: ${cortes.join('; ')}` : 'nenhum corte numérico da p. 498 atingido'
+  const textoIE = ie && tinsCalc ? `Ciclo ${br(ie.cicloS, 2)} s · Tins ${br(tinsCalc, 2)} s · Te ${br(ie.teS, 2)} s · I:E 1:${br(ie.n, 1)}` : null
+
+  // Texto do "Copiar" (C4 = A): gasometria, modo, Vt pelo peso informado, I:E e os avisos da Tabela 2.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Ventilação mecânica — ajuste inicial (adulto)',
+        dados: [
+          ['PO2', po2 > 0 ? `${br(po2, 0)} mmHg` : ''],
+          ['PCO2', pco2 > 0 ? `${br(pco2, 0)} mmHg` : ''],
+          ['Modo', NOME_MODO[modo]],
+          ['Peso usado na conta', peso > 0 ? `${br(peso, 1)} kg` : ''],
+          ['FR', modo !== 'psv' && fr > 0 ? `${br(fr, 0)} rpm` : ''],
+          ['Tins', modo === 'pcv' && tins > 0 ? `${br(tins, 2)} s` : ''],
+          ['VC ajustado', modo === 'vcv' && vc > 0 ? `${br(vc, 0)} mL` : ''],
+          ['Fluxo (onda quadrada)', modo === 'vcv' && fluxo > 0 ? `${br(fluxo, 0)} L/min` : ''],
+        ],
+        resultado: [
+          ...(temGaso ? [`Indicação (p. 498): ${textoCortes}`] : []),
+          ...(vt ? [`Vt 6–8 mL/kg do peso informado (Tabela 2, p. 501–502): ${faixaBr(vt, 0)} mL`] : []),
+          ...(modo !== 'psv' && textoIE ? [`${textoIE} (Tabela 2, p. 501–502)`] : []),
+          ...avisos,
+        ],
+        fonte: textoFontes(fichaVmAjusteAdulto),
+        versao: fichaVmAjusteAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -97,9 +137,25 @@ export function VmAjusteInicialAdulto() {
         ))}
       </Bloco>
 
-      <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_VM.map((e) => <li key={e}>{e}</li>)}</ul>
-      </Bloco>
+      {/* Errata e divergências do cap. 37 vão para "Armadilhas" (C6 = A); o aviso do peso fica no bloco do Vt. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[...ERRATA_VM.map((e) => `Errata do cap. 37 — ${e}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaVmAjusteAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={vt ? `${NOME_MODO[modo]} · Vt ${faixaBr(vt, 0)} mL` : temGaso ? (cortes.length ? 'Corte de indicação da p. 498 atingido' : 'Nenhum corte da p. 498 atingido') : `${NOME_MODO[modo]} · informe gasometria ou peso`}
+        detalhe={avisos.length ? `${avisos.length} valor${avisos.length > 1 ? 'es' : ''} fora da Tabela 2` : modo !== 'psv' && textoIE ? textoIE : undefined}
+        tom={avisos.length ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

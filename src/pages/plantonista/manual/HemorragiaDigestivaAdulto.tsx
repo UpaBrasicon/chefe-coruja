@@ -5,8 +5,16 @@ import {
   NOTA_HDB_MACICA, OMEPRAZOL_HDA, PROFILAXIA_VARIZES, VASOATIVOS_VARIZES, eritromicinaMg, fichaHemorragiaDigestiva, hdbMacica, indiceDeChoque,
   omeprazolAltaDose, referenciaForrest, testeOrtostatico, vasoativosTotais24h, type ClasseForrest,
 } from '@/clinico/adulto/hemorragiaDigestiva'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
@@ -35,6 +43,49 @@ export function HemorragiaDigestivaAdulto() {
   const eri = eritromicinaMg(peso)
   const refF = referenciaForrest(forrest)
   const V = VASOATIVOS_VARIZES
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHemorragiaDigestiva.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const temResultado = temPeso || orto !== null || ic !== null || quedaHt > 0 || ch > 0
+  const textoOrto = orto
+    ? `Queda da PAS ${br(orto.quedaPas, 0)} mmHg; aumento da FC ${br(orto.aumentoFc, 0)} bpm — ${orto.positivo ? 'acima de 10: o livro associa a perda de pelo menos 1.000 mL (p. 696)' : 'nenhuma variação acima de 10.'}`
+    : null
+  const textoIc = ic ? `${br(ic.indice, 2)}${ic.acimaDe1 ? ' — > 1 (instável, p. 714)' : ''}` : null
+
+  // Texto do "Copiar" (C3 e C4 = A): sinais informados, leituras do livro e a lista de drogas com a mesma conta da tela.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Hemorragia digestiva alta e baixa — adulto',
+        dados: [
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['PAS deitado / em pé', orto ? `${numeroBr(pasD)} / ${numeroBr(pasP)} mmHg` : ''],
+          ['FC deitado / em pé', orto ? `${numeroBr(fcD)} / ${numeroBr(fcP)} bpm` : ''],
+          ['FC', fc > 0 ? `${numeroBr(fc)} bpm` : ''],
+          ['PAS', pas > 0 ? `${numeroBr(pas)} mmHg` : ''],
+          ['Queda do Ht', quedaHt > 0 ? `${numeroBr(quedaHt)} pontos` : ''],
+          ['CH transfundidos', ch > 0 ? numeroBr(ch) : ''],
+          ['Achado endoscópico (Forrest)', forrest],
+        ],
+        resultado: [
+          ...(textoOrto ? [`Teste ortostático: ${textoOrto}`] : []),
+          `Forrest ${forrest}: ${refF.texto} (${refF.pagina})`,
+          `- Omeprazol — dose alta: ${ome.bolusMg} mg bolus + ${OMEPRAZOL_HDA.infusaoMgH} mg/h (${ome.mgDiaInfusao} mg/dia) = ${ome.totalMg} mg em 72 h (${OMEPRAZOL_HDA.pagina})`,
+          `- Eritromicina antes da EDA: ${eri ? `${br(eri, 0)} mg, ${faixaBr(ERITROMICINA_EDA.janelaMin, 0)} min antes` : '—'} (${ERITROMICINA_EDA.pagina})`,
+          'Sangramento varicoso — vasoativos:',
+          `- Terlipressina: ${faixaBr(V.terlipressina.ataqueMg, 0)} mg; depois ${faixaBr(vaso.terlipressinaMgDia, 0)} mg/dia (${V.terlipressina.pagina})`,
+          `- Somatostatina: ${V.somatostatina.bolusUg} µg; ${faixaBr(vaso.somatostatinaUgDia, 0)} µg/dia (${V.somatostatina.pagina})`,
+          `- Octreotídeo: ${V.octreotideo.bolusUg} µg; ${br(vaso.octreotideoUgDia, 0)} µg/dia (${V.octreotideo.pagina})`,
+          `Cirrótico com ascite e HDA — antibiótico (${INDICACAO_ATB_CIRROTICO.pagina}):`,
+          ...ATB_CIRROTICO_HDA.map((a) => `- ${a.droga}: ${a.texto} (${a.pagina})${a.errata ? ` Errata: ${a.errata}` : ''}`),
+          ...(textoIc ? [`Índice de choque (FC/PAS): ${textoIc}`] : []),
+          ...(quedaHt > 0 ? [`Queda do Ht > 8 pontos: ${mac.quedaHt ? 'sim' : 'não'}`] : []),
+          ...(ch > 0 ? [`Mais de 2 CH: ${mac.transfusao ? 'sim' : 'não'}`] : []),
+        ],
+        fonte: textoFontes(fichaHemorragiaDigestiva),
+        versao: fichaHemorragiaDigestiva.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -96,7 +147,7 @@ export function HemorragiaDigestivaAdulto() {
           <NumberField id="hd-ch" label="CH transfundidos" value={ch} onChange={setCh} />
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Resultado rotulo="Índice de choque (FC/PAS)" valor={ic ? `${br(ic.indice, 2)}${ic.acimaDe1 ? ' — > 1 (instável, p. 714)' : ''}` : 'informe FC e PAS'} />
+          <Resultado rotulo="Índice de choque (FC/PAS)" valor={textoIc ?? 'informe FC e PAS'} />
           <Resultado rotulo="Queda do Ht > 8 pontos" valor={quedaHt > 0 ? (mac.quedaHt ? 'sim' : 'não') : '—'} />
           <Resultado rotulo="Mais de 2 CH" valor={ch > 0 ? (mac.transfusao ? 'sim' : 'não') : '—'} />
         </div>
@@ -111,15 +162,40 @@ export function HemorragiaDigestivaAdulto() {
       <Bloco titulo="O que o manual não traz">
         <Fora itens={FORA_HDA} />
       </Bloco>
-      <Bloco titulo="ESGE 2026 e Baveno VIII — ao lado do manual" descricao="Úlcera péptica pela ESGE 2026 (força e qualidade da evidência) e sangramento varicoso pelo Baveno VIII (nível de evidência, NE), lidos no texto integral. As doses do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_HDA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_HDA.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      {/* ESGE 2026 e Baveno VIII vão para "Evidências" (C6 = A); a errata da ciprofloxacina fica no item: é de dose. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaHemorragiaDigestiva}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="ESGE 2026 e Baveno VIII — ao lado do manual" resumo="Úlcera péptica pela ESGE 2026 (força e qualidade da evidência) e sangramento varicoso pelo Baveno VIII (nível de evidência, NE), lidos no texto integral. As doses do manual na página continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_HDA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_HDA.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg` : ic ? `Índice de choque ${textoIc}` : 'Informe o peso ou os sinais vitais'}
+        detalhe={[
+          ...(temPeso && ic ? [`índice de choque ${textoIc}`] : []),
+          ...(orto ? [orto.positivo ? 'ortostático: variação acima de 10' : 'ortostático: nenhuma variação acima de 10'] : []),
+          `Forrest ${forrest}`,
+          '"Copiar" leva a lista de drogas',
+        ].join(' · ')}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

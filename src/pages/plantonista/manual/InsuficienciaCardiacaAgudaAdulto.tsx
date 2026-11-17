@@ -5,8 +5,16 @@ import {
   classificarFe, criteriosUti, faixaPasFigura, fichaIcAgudaAdulto, furosemidaIca, leituraBnp, leituraNtProBnp, levosimendana, mlHFaixaCap, perfilHemodinamico,
   prognosticoIc, respostaDiuretico,
 } from '@/clinico/adulto/insuficienciaCardiacaAguda'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -43,6 +51,64 @@ export function InsuficienciaCardiacaAgudaAdulto() {
   const levo = levosimendana(peso)
   const resp = respostaDiuretico(informado(naU), informado(vol6))
   const uti = criteriosUti({ sao2: informado(sao2), fr: informado(fr), fc: informado(fc), pas: informado(pas) })
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaIcAgudaAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const temResultado = temPeso || pas > 0 || fe > 0 || prog !== null || bnp > 0 || nt > 0 || resp.length > 0 || sao2 > 0 || fr > 0 || fc > 0
+  const infusoes = INFUSOES_IC.map((i) => {
+    const ml = informado(peso) || i.id === 'nitroglicerina' ? mlHFaixaCap(i, peso) : null
+    const conta = i.id === 'levosimendana'
+      ? (levo ? `${faixaBr(levo.ugMin, 2)} µg/min · ${faixaBr(levo.total24hMg, 2)} mg em 24 h` : '—')
+      : ml ? `${faixaBr(ml)} mL/h` : '—'
+    return `- ${i.nome}: ${faixaBr(i.faixaCap, 3)} ${i.unidade} — ${conta} (${i.pagina})`
+  })
+
+  // Texto do "Copiar" (C3 e C4 = A): dados, perfil, furosemida e infusões com a mesma conta da tela, laboratório e UTI.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Insuficiência cardíaca aguda — adulto',
+        dados: [
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['PAS', pas > 0 ? `${numeroBr(pas)} mmHg` : ''],
+          ['Fração de ejeção', fe > 0 ? `${numeroBr(fe)}%` : ''],
+          ['Perfusão', perf === 'frio' ? 'fria (mal perfundido)' : 'quente (bem perfundido)'],
+          ['Volemia', vol === 'umido' ? 'úmido (congesto)' : 'seco'],
+          ['Ureia', ureia > 0 ? `${numeroBr(ureia)} mg/dL` : ''],
+          ['Creatinina', cr > 0 ? `${numeroBr(cr)} mg/dL` : ''],
+          ['BNP', bnp > 0 ? `${numeroBr(bnp)} pg/mL` : ''],
+          ['NT-proBNP', nt > 0 ? `${numeroBr(nt)} pg/mL` : ''],
+          ['Idade', idade > 0 ? `${numeroBr(idade)} anos` : ''],
+          ['Na urinário em 2 h', naU > 0 ? `${numeroBr(naU)} mEq/L` : ''],
+          ['Diurese em 6 h', vol6 > 0 ? `${numeroBr(vol6)} mL` : ''],
+          ['SaO2', sao2 > 0 ? `${numeroBr(sao2)}%` : ''],
+          ['FR', fr > 0 ? `${numeroBr(fr)} irpm` : ''],
+          ['FC', fc > 0 ? `${numeroBr(fc)} bpm` : ''],
+        ],
+        resultado: [
+          `Perfil ${PERFIS[perfil].nome}: ${PERFIS[perfil].texto} (${PERFIS[perfil].pagina})`,
+          ...(faixas ? [`Figura 1 (p. 302): ${faixas.join(' e ')}`] : []),
+          ...(cfe ? [`FE ${br(fe, 0)}%: ${cfe.rotulos.join(' e ') || '—'}${cfe.nota ? ` (${cfe.nota})` : ''} (p. 286)`] : []),
+          ...(temPeso
+            ? [
+                `Furosemida (p. 296 e 298): dose ${furo ? `${faixaBr(furo.doseMg, 0)} mg · dobrada ${faixaBr(furo.dobradaMg, 0)} mg` : '—'}`,
+                ...(furo?.acimaDe240 ? ['A dose dobrada passa de 240 mg, o máximo diário da p. 296.'] : []),
+                `Errata da furosemida: ${FUROSEMIDA_ICA.errata}`,
+                'Infusões (p. 296–297; mL/h no preparo do Anexo 1):',
+                ...infusoes,
+                `- Digoxina: IC com FA de resposta rápida (> ${DIGOXINA_ICA.fcCorte} bpm): ${faixaBr(DIGOXINA_ICA.semUsoPrevioMg, 2)} mg EV sem uso prévio; idosos ou insuficiência renal ${faixaBr(DIGOXINA_ICA.idosoOuIrMg, 4)} mg (${DIGOXINA_ICA.pagina})`,
+              ]
+            : []),
+          ...resp.map((x) => `${x.criterio}: ${LEITURA[x.leitura]} (corte do livro: Na ≥ 50–70 mEq/L; débito 100–150 mL/h)`),
+          ...(prog ? [`Prognóstico, três variáveis (p. 292–294): ${prog.n} de 3 — ${prog.texto}`] : []),
+          ...(bnp > 0 ? [leituraBnp(bnp) ?? ''] : []),
+          ...(nt > 0 ? [leituraNtProBnp(nt, idade) ?? 'NT-proBNP: informe a idade'] : []),
+          ...(uti.length ? [`Critérios de UTI (p. 302): ${uti.join('; ')}`] : []),
+        ].filter((l) => l !== ''),
+        fonte: textoFontes(fichaIcAgudaAdulto),
+        versao: fichaIcAgudaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -135,17 +201,43 @@ export function InsuficienciaCardiacaAgudaAdulto() {
         {uti.length > 0 ? <ul className="list-disc pl-5 text-atencao">{uti.map((u) => <li key={u}>{u}</li>)}</ul> : <p className="text-tinta-sussurro">Nenhum critério numérico atingido com os valores informados.</p>}
         <p className="text-apoio text-tinta-sussurro">O livro também lista necessidade de intubação, uso de musculatura acessória, hipoperfusão/baixo débito e arritmias graves.</p>
       </Bloco>
-      <Bloco titulo="ESC 2026 e ensaios recentes — ao lado da ESC 2021 e do manual" descricao="ESC 2026: recomendações da seção 7 (IC descompensada) pelo slideset oficial da ESC, com classe e nível; o texto integral está fechado e os slides não trazem dose. ADVOR, CLOROTIC e DAPA ACT pelos resumos.">
-        {sao2 > 0 && <p className="text-apoio">{sao2 < 90 ? 'SpO2 informada abaixo de 90%: a ESC 2026 recomenda oxigênio (I, C).' : 'SpO2 informada ≥ 90%: a ESC 2026 não indica oxigênio de rotina (o manual mira > 95%).'}</p>}
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[760px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESC 2026</TableHead><TableHead className="pr-3 pb-2">ESC 2021</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_ICA_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.esc2026} <span className="text-tinta-sussurro">({d.classe}; {d.slide})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.esc2021}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        {ENSAIOS_ICA.map((e) => <LinhaManual key={e.ensaio} nome={e.ensaio} texto={e.texto} pagina="resumo" />)}
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ICA_2026.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      {/* ESC 2026 e ensaios vão para "Evidências" (C6 = A); a errata da furosemida fica no item: muda o máximo da dose. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaIcAgudaAdulto}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="ESC 2026 e ensaios recentes — ao lado da ESC 2021 e do manual" resumo="ESC 2026: recomendações da seção 7 (IC descompensada) pelo slideset oficial da ESC, com classe e nível; o texto integral está fechado e os slides não trazem dose. ADVOR, CLOROTIC e DAPA ACT pelos resumos.">
+            {sao2 > 0 && <p className="text-apoio">{sao2 < 90 ? 'SpO2 informada abaixo de 90%: a ESC 2026 recomenda oxigênio (I, C).' : 'SpO2 informada ≥ 90%: a ESC 2026 não indica oxigênio de rotina (o manual mira > 95%).'}</p>}
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[760px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESC 2026</TableHead><TableHead className="pr-3 pb-2">ESC 2021</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_ICA_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.esc2026} <span className="text-tinta-sussurro">({d.classe}; {d.slide})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.esc2021}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            {ENSAIOS_ICA.map((e) => <LinhaManual key={e.ensaio} nome={e.ensaio} texto={e.texto} pagina="resumo" />)}
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ICA_2026.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg · perfil ${perfil}` : `Perfil ${PERFIS[perfil].nome} · informe o peso`}
+        detalhe={[
+          ...(furo ? [`furosemida ${faixaBr(furo.doseMg, 0)} mg`] : []),
+          ...(furo?.acimaDe240 ? ['dose dobrada acima de 240 mg'] : []),
+          ...(uti.length ? [`${uti.length} critério${uti.length > 1 ? 's' : ''} de UTI`] : []),
+          ...(temPeso ? ['"Copiar" leva também as infusões'] : []),
+        ].join(' · ') || undefined}
+        tom={uti.length || furo?.acimaDe240 ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

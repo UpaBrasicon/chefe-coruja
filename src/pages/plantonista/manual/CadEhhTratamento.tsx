@@ -5,10 +5,18 @@ import {
   fichaCadEhhTratamento, fluido2024, hidratacao, insulina2024, insulinaInicial, insulinaReduzida, mlHDeInsulina, potassio2024, solucaoSegundaFase, transicaoSc, PREPAROS_INSULINA, type EsquemaInsulina, type PreparoInsulina,
 } from '@/clinico/adulto/glicemia'
 import { sodioCorrigido } from '@/clinico/adulto/sodio'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 
 const br = (x: number | null | undefined, casas = 1) => (x === null || x === undefined ? '—' : numero(Math.round(x * 10 ** casas) / 10 ** casas))
@@ -49,6 +57,8 @@ export function CadEhhTratamento() {
   const [total, setTotal] = useState(500)
   const [dextrose, setDextrose] = useState(0)
   const [ins24, setIns24] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaCadEhhTratamento.id)
 
   const T = TRATAMENTO_2024
   const f24 = fluido2024()
@@ -68,6 +78,42 @@ export function CadEhhTratamento() {
   const bic = bicarbonato(ph)
   const bolsas = duasBolsas(total, dextrose)
   const sc = transicaoSc(ins24, peso)
+  const temAlgo = peso > 0 || glic > 0 || k24 !== null || bic24 !== null
+
+  // Texto do "Copiar" (C3 e C4 = A): a conduta do consenso 2024 com as contas da tela; o manual de 2022 fica de fora.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Cetoacidose e estado hiperosmolar — tratamento (adulto)',
+      dados: [
+        ['Peso', peso > 0 ? `${br(peso)} kg` : ''],
+        ['Glicemia', glic > 0 ? `${br(glic, 0)} mg/dL` : ''],
+        ['Sódio medido', na > 0 ? `${br(na)} mEq/L` : ''],
+        ['Potássio', k > 0 ? `${br(k)} mmol/L` : ''],
+        ['pH', ph > 0 ? br(ph, 2) : ''],
+        ['Preparo da insulina', i24 ? PREPAROS_INSULINA[preparo].rotulo : ''],
+      ],
+      resultado: [
+        `Hidratação (${T.fluido.pagina}): ${T.fluido.texto}. Primeiras 2–4 h: ${faixa(f24.mlH)} mL/h = ${faixa(f24.totalEm2a4h)} mL no período. ${T.fluido.fragil}.`,
+        `Glicose (${T.glicose.pagina}): ${T.glicose.texto}.`,
+        ...(glicoseBaixa ? [`Glicemia ${br(glic, 0)} mg/dL: abaixo de ${T.glicose.limiar}, acrescentar dextrose 5–10% e reduzir a insulina para 0,05 U/kg/h.`] : []),
+        ...(i24
+          ? [
+              `Insulina regular EV (${T.insulina.pagina}), preparo ${PREPAROS_INSULINA[preparo].texto}:`,
+              `- CAD moderada ou grave: 0,1 U/kg/h = ${br(i24.uH)} U/h = ${br(i24.mlH)} mL/h, em taxa fixa`,
+              `- Bolus de 0,1 U/kg = ${br(i24.bolusSeAtrasoU)} U só se houver atraso para montar a infusão`,
+              `- Glicose < 250 mg/dL ou EHH: 0,05 U/kg/h = ${br(i24.reduzidaUH)} U/h = ${br(i24.reduzidaMlH)} mL/h; no EHH, alvo de glicose 200–250 mg/dL até resolver`,
+            ]
+          : []),
+        ...(k24 === 'baixo' ? ['K < 3,5 mmol/L: repor potássio e só iniciar a insulina depois de K > 3,5.'] : []),
+        ...(k24 ? [`Potássio (${T.potassio.pagina}): ${T.potassio.texto[k24]}.`] : []),
+        `Bicarbonato (${T.bicarbonato.pagina}): ${T.bicarbonato.texto}.${bic24 !== null ? ` pH ${br(ph, 2)}: ${bic24 ? 'dentro da indicação (< 7,0)' : 'fora da indicação (≥ 7,0)'}.` : ''}`,
+        `Fosfato (${T.fosfato.pagina}): ${T.fosfato.texto}.`,
+        `Transição para SC (${T.transicao.pagina}): ${T.transicao.texto}${peso > 0 ? ` → basal ${faixa([T.transicao.basalUKg[0] * peso, T.transicao.basalUKg[1] * peso], 1)} U para o peso informado` : ''}.`,
+      ],
+      fonte: textoFontes(fichaCadEhhTratamento),
+      versao: fichaCadEhhTratamento.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -211,22 +257,41 @@ export function CadEhhTratamento() {
             <NumberField id="cadt-24h" label="Insulina EV nas últimas 24 h" unit="U" value={ins24} onChange={setIns24} step={0.1} />
             <p className="tabular-nums">2/3 da dose de 24 h: <strong>{br(sc.doisTercos)} U</strong> · NPH 0,6 U/kg: <strong>{br(sc.nphPorPeso)} U</strong></p>
           </Secao>
-
-          <Secao titulo="Texto × fluxogramas do capítulo" descricao="Divergências encontradas no próprio livro (errata).">
-            <ul className="flex flex-col gap-1">
-              {DIVERGENCIAS_CAD.map((d) => (
-                <li key={d.tema}><strong>{d.tema}:</strong> texto — {d.texto}; figura — {d.figura}.</li>
-              ))}
-            </ul>
-          </Secao>
-
-          <Secao titulo="Manual do HC × consenso 2024 — todas as diferenças" descricao="Onde diferem, a conduta desta tela segue o consenso.">
+          {/* As divergências texto × figura do livro vão para "Armadilhas" e as diferenças manual × consenso para "Evidências" (C6 = A). */}
+        </div>
+      </details>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temAlgo}
+        armadilhas={[
+          ...DIVERGENCIAS_CAD.map((d) => `Manual do HC (2022), texto × fluxograma — ${d.tema}: texto — ${d.texto}; figura — ${d.figura}.`),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaCadEhhTratamento}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="Manual do HC × consenso 2024 — todas as diferenças" resumo="Onde diferem, a conduta desta tela segue o consenso.">
             <ul className="flex flex-col gap-1">
               {DIFERENCAS_2024.map((d) => <li key={d.tema}><strong>{d.tema}:</strong> manual — {d.manual}; consenso — {d.consenso}.</li>)}
             </ul>
-          </Secao>
-        </div>
-      </details>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={peso > 0 ? `Adulto · ${br(peso)} kg` : 'Informe o peso'}
+        detalhe={[
+          i24 ? `Insulina 0,1 U/kg/h = ${br(i24.uH)} U/h = ${br(i24.mlH)} mL/h` : '',
+          k24 === 'baixo' ? 'K < 3,5: repor antes da insulina' : '',
+          glicoseBaixa ? 'glicose < 250: dextrose e 0,05 U/kg/h' : '',
+          temAlgo ? '"Copiar" leva a conduta inteira' : '',
+        ].filter(Boolean).join(' · ') || undefined}
+        textoCopia={temAlgo ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

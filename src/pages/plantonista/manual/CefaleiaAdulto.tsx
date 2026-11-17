@@ -4,15 +4,24 @@ import { Link } from 'react-router-dom'
 import {
   AHS_2025_NIVEIS, ESQUEMA_REFRATARIA, SBCE_TABELAS, SINAIS, THUNDERCLAP, TRATAMENTO, avaliarSinais, clorpromazinaMg, fichaCefaleiaAdulto,
 } from '@/clinico/adulto/cefaleia'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { Chip } from '@/components/monitor/Pagina'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 
 const Ir = ({ para, children }: { para: string; children: ReactNode }) => <Link to={para} className="text-acao hover:underline">{children}</Link>
+
+const TEXTO_CLORPROMAZINA = '0,1–0,7 mg/kg IM ou IV diluído em SF 0,9%, repetir até 3 vezes nas 24 h; na refratária, 0,1 mg/kg IV em 3 minutos (p. 376). O manual pede monitorização cardíaca na via parenteral (p. 573).'
 
 /** Cefaleia aguda do adulto: sinais de alarme (SNNOOP10 e Tabela 2) e tratamento das primárias (cap. 41 do manual do HCFMUSP). */
 export function CefaleiaAdulto() {
@@ -21,6 +30,37 @@ export function CefaleiaAdulto() {
   const av = avaliarSinais(marcados)
   const [peso, setPeso] = useState(0)
   const clorpromazina = clorpromazinaMg(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaCefaleiaAdulto.id)
+  const rotuloAlarmes = av.alarmes ? `${av.alarmes} ${av.alarmes > 1 ? 'sinais' : 'sinal'} de alarme` : 'Nenhum sinal de alarme marcado'
+  const textoAlarmes = av.alarmes
+    ? 'Com sinal de alarme, o manual orienta investigar causa secundária conforme a Tabela 2 (p. 566–568).'
+    : 'Sem sinal de alarme, o capítulo trata como provável cefaleia primária; tratar a dor forte com analgesia otimizada, porque a resposta ao tratamento tem pouco valor diagnóstico (p. 575).'
+  const temAlgo = marcados.length > 0 || peso > 0
+
+  // Texto do "Copiar" (C3 e C4 = A): sinais marcados, leitura do manual, diferencial e as listas de tratamento, com a página.
+  const copia = temAlgo
+    ? textoCopia({
+        ferramenta: 'Cefaleia aguda (adulto)',
+        dados: [
+          ['Sinais de alarme marcados (SNNOOP10)', SINAIS.filter((s) => marcados.includes(s.id)).map((s) => s.rotulo).join('; ') || 'nenhum'],
+          ['Peso', peso > 0 ? `${numero(peso)} kg` : ''],
+        ],
+        resultado: [
+          `${rotuloAlarmes}. ${textoAlarmes}`,
+          ...(av.linhas.length ? ['Diferencial e investigação (Tabela 2, p. 566–568):', ...av.linhas.map((l) => `- ${l.sinal}: ${l.diferenciais}. Investigação: ${l.investigacao}`)] : []),
+          ...(av.semLinha.length ? [`Sem linha própria na Tabela 2: ${av.semLinha.join('; ')}.`] : []),
+          ...(marcados.includes('subita') ? ['Cefaleia em thunderclap (p. 568–569):', ...THUNDERCLAP.map((t) => `- ${t}`)] : []),
+          ...Object.values(TRATAMENTO).flatMap((t) => [`${t.titulo} — tratamento da crise:`, ...t.itens.map((i) => `- ${i.droga}: ${i.texto} (${i.pagina})`)]),
+          'Doses na crise de migrânea — consenso da SBCe (2000), que o capítulo do manual não traz:',
+          `- Clorpromazina — crise forte: ${TEXTO_CLORPROMAZINA}${clorpromazina ? ` = ${numero(clorpromazina[0])}–${numero(clorpromazina[1])} mg` : ''} (Tabela 3, p. 378)`,
+          ...SBCE_TABELAS.flatMap((t) => [`${t.titulo} — ${t.pagina}:`, ...t.linhas.map((l) => `- ${l.droga}: ${l.dose} (classe ${l.classe})`)]),
+        ],
+        fonte: textoFontes(fichaCefaleiaAdulto),
+        versao: fichaCefaleiaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -36,12 +76,8 @@ export function CefaleiaAdulto() {
       </Bloco>
 
       <div role="status" className={cn('rounded-cartao border px-4 py-3', av.alarmes ? 'border-atencao' : 'border-fio')}>
-        <p className="text-corpo font-semibold text-tinta">{av.alarmes ? `${av.alarmes} ${av.alarmes > 1 ? 'sinais' : 'sinal'} de alarme` : 'Nenhum sinal de alarme marcado'}</p>
-        <p className="text-apoio text-tinta-apoio">
-          {av.alarmes
-            ? 'Com sinal de alarme, o manual orienta investigar causa secundária conforme a Tabela 2 (p. 566–568).'
-            : 'Sem sinal de alarme, o capítulo trata como provável cefaleia primária; tratar a dor forte com analgesia otimizada, porque a resposta ao tratamento tem pouco valor diagnóstico (p. 575).'}
-        </p>
+        <p className="text-corpo font-semibold text-tinta">{rotuloAlarmes}</p>
+        <p className="text-apoio text-tinta-apoio">{textoAlarmes}</p>
       </div>
 
       {av.linhas.length > 0 && (
@@ -72,7 +108,7 @@ export function CefaleiaAdulto() {
       >
         <LinhaManual
           nome="Clorpromazina — crise forte"
-          texto="0,1–0,7 mg/kg IM ou IV diluído em SF 0,9%, repetir até 3 vezes nas 24 h; na refratária, 0,1 mg/kg IV em 3 minutos (p. 376). O manual pede monitorização cardíaca na via parenteral (p. 573)."
+          texto={TEXTO_CLORPROMAZINA}
           conta={clorpromazina ? <strong>{numero(clorpromazina[0])}–{numero(clorpromazina[1])} mg</strong> : 'informe o peso'}
           pagina="Tabela 3, p. 378"
           origem="O consenso traz"
@@ -98,6 +134,31 @@ export function CefaleiaAdulto() {
       <Bloco titulo="AHS 2025 — crise de migrânea no PS (pelo resumo)" descricao="Níveis de recomendação da American Headache Society para drogas parenterais no PS. O resumo não traz dose; o texto integral não foi lido.">
         {AHS_2025_NIVEIS.map((n) => <p key={n.nivel} className="text-apoio text-tinta-apoio"><span className="font-medium text-tinta">{n.nivel}:</span> {n.drogas.join(', ')}.</p>)}
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temAlgo}
+        armadilhas={[
+          ...SINAIS.flatMap((s) => (s.nota ? [`${s.rotulo}: ${s.nota}`] : [])),
+          'A lista de sinais de alarme não foi validada prospectivamente; ausência de sinais não exclui causa secundária.',
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaCefaleiaAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={rotuloAlarmes}
+        detalhe={[
+          av.alarmes ? 'investigar causa secundária (Tabela 2)' : marcados.length === 0 ? 'marque os sinais presentes' : '',
+          clorpromazina ? `clorpromazina ${numero(clorpromazina[0])}–${numero(clorpromazina[1])} mg (SBCe 2000)` : '',
+        ].filter(Boolean).join(' · ') || undefined}
+        tom={av.alarmes ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

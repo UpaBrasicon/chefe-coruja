@@ -4,8 +4,16 @@ import {
   DROGAS_ASMA, ERRATA_ASMA, EXAMES_ASMA, FIGURA1_ASMA, GINA_ITENS, GINA_TRATAMENTO, MGSO4_ASMA, NOME_COLUNA, PREDITORES_ASMA_GRAVE, TABELA1_CLINICA, TABELA1_NUMERICA, VM_ASMA,
   fichaAsmaAdulto, gravidadeGina, infusaoMgAsma, percentualPredito, posicionarAsma, type Coluna, type ParametroAsma,
 } from '@/clinico/adulto/asmaDpoc'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
@@ -29,6 +37,35 @@ export function AsmaExacerbacaoAdulto() {
   const mg = infusaoMgAsma(gramas, diluente)
   const [gina, setGina] = useState({ incapaz: false, silente: false, sonolento: false, frases: false })
   const g = gravidadeGina({ fr: valores.fr || undefined, spo2: valores.sao2 || undefined, pefPct: pct ?? (valores.vef1 || undefined), incapazFalarBeberDeitar: gina.incapaz, toraxSilente: gina.silente, sonolentoConfusoCianotico: gina.sonolento, falaEmFrases: gina.frases || undefined })
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAsmaAdulto.id)
+  const temResultado = pos.itens.length > 0 || Boolean(g.gravidade) || Boolean(pct)
+  const textoMg = mg ? `MgSO4 ${numeroBr(gramas)} g em SF ${numeroBr(diluente)} mL: MgSO4 10% ${br(mg.mlMgSO4_10)} mL (${br(mg.mEq)} mEq) · volume final ${br(mg.volumeTotalMl, 0)} mL · ${br(mg.mlH, 0)} mL/h em ${MGSO4_ASMA.minutos} min` : null
+  const alertaMg = mg?.foraDaFaixa ? 'Fora da faixa de 1,2–2,0 g que o capítulo traz.' : null
+
+  // Texto do "Copiar" (C3 e C4 = A): os valores informados, a posição na Tabela 1, a GINA 2026 e as medicações do manual.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Exacerbação de asma — adulto',
+        dados: [
+          ...PARAMETROS.map((p): [string, string] => [TABELA1_NUMERICA[p].rotulo, valores[p] > 0 ? `${br(valores[p])} ${TABELA1_NUMERICA[p].unidade}`.trim() : '']),
+          ['VEF1/PFE medido / predito', pct ? `${numeroBr(medido)} / ${numeroBr(predito)}` : ''],
+          ['Achados clínicos (GINA)', [gina.frases && 'fala em frases', gina.incapaz && 'incapaz de falar, beber ou deitar', gina.silente && 'tórax silente', gina.sonolento && 'sonolento, confuso ou cianótico'].filter(Boolean).join(', ')],
+        ],
+        resultado: [
+          ...(pct ? [`VEF1/PFE: ${br(pct, 0)}% do predito`] : []),
+          ...pos.itens.map((i) => `Tabela 1 (p. 407–408) — ${TABELA1_NUMERICA[i.parametro].rotulo} ${br(i.valor)} ${TABELA1_NUMERICA[i.parametro].unidade}: ${i.posicao.colunas.length ? i.posicao.colunas.map((c) => `${NOME_COLUNA[c]} (${TABELA1_NUMERICA[i.parametro].texto[c]})`).join(' ou ') : 'sem coluna na tabela'}`),
+          ...(pos.maisGrave ? [`Coluna mais à direita atingida por um parâmetro: ${NOME_COLUNA[pos.maisGrave]}`] : []),
+          ...(g.gravidade ? [`Gravidade pela GINA 2026 (Figura 9, p. 36): ${g.gravidade}${g.motivos.length ? ` — ${g.motivos.join('; ')}` : ''}`, GINA_TRATAMENTO[g.gravidade]] : []),
+          'Medicações do manual:',
+          ...DROGAS_ASMA.map((d) => `- ${d.nome}: ${d.texto} (${d.pagina})`),
+          ...(textoMg ? [`${textoMg} (${MGSO4_ASMA.pagina}; Anexo 5, p. 1501)${alertaMg ? ` — ${alertaMg}` : ''}`] : []),
+        ],
+        fonte: textoFontes(fichaAsmaAdulto),
+        versao: fichaAsmaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -122,26 +159,46 @@ export function AsmaExacerbacaoAdulto() {
             <p className="text-apoio">{GINA_TRATAMENTO[g.gravidade]}</p>
           </>
         ) : <p className="text-tinta-sussurro">Informe SaO2, VEF1/PFE ou marque os achados.</p>}
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">GINA 2026</TableHead><TableHead className="pr-3 pb-2">p.</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {GINA_ITENS.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">{d.gina}</TableCell>
-                  <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</TableCell>
-                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
       </Bloco>
 
-      <Bloco titulo="Errata e divergências do livro" descricao="As metas de SatO2 de crianças e gestantes do capítulo não entram nesta ferramenta.">
-        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_ASMA.map((e) => <li key={e}>{e}</li>)}</ul>
-      </Bloco>
+      {/* A tabela GINA × manual vai para "Evidências" e o bloco "Errata e divergências do livro" para "Armadilhas" (C6 = A). */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={['As metas de SatO2 de crianças e gestantes do capítulo não entram nesta ferramenta.', ...ERRATA_ASMA, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaAsmaAdulto}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="GINA 2026 × manual do HC" resumo="O que a GINA 2026 escreve, com página, ao lado do manual.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">GINA 2026</TableHead><TableHead className="pr-3 pb-2">p.</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {GINA_ITENS.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                      <TableCell className="pr-3 py-2">{d.gina}</TableCell>
+                      <TableCell className="pr-3 py-2 whitespace-nowrap text-tinta-sussurro">{d.pagina}</TableCell>
+                      <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={g.gravidade ? `GINA 2026: ${g.gravidade}` : pos.maisGrave ? `Tabela 1: ${NOME_COLUNA[pos.maisGrave]}` : 'Informe os parâmetros ou marque os achados'}
+        detalhe={alertaMg ? `MgSO4: ${alertaMg}` : g.gravidade && pos.maisGrave ? `Tabela 1 do manual, coluna mais à direita: ${NOME_COLUNA[pos.maisGrave]}` : mg ? `MgSO4 ${numeroBr(gramas)} g: ${br(mg.mlH, 0)} mL/h em ${MGSO4_ASMA.minutos} min` : undefined}
+        tom={alertaMg ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

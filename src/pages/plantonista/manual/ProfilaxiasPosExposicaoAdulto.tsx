@@ -7,7 +7,15 @@ import {
   type AcidenteRaiva, type AnimalRaiva, type ContatoRaiva, type FerimentoGvs, type FerimentoTetano, type FonteHbv, type HistoricoGvs, type HistoricoVacinalTetano,
   type SituacaoProfissional,
 } from '@/clinico/adulto/profilaxiaPosExposicao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha } from './LoteAPecas'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -16,6 +24,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const simNao = (b: boolean) => (b ? 'sim' : 'não')
+const rotuloDe = <T extends string>(opcoes: { value: T; label: string }[], v: T) => opcoes.find((o) => o.value === v)?.label ?? v
 
 /** Tétano: profilaxia por ferimento × histórico vacinal (Anexo 7) e tratamento do tétano acidental (cap. 93). */
 export function TetanoProfilaxiaAdulto() {
@@ -30,6 +39,42 @@ export function TetanoProfilaxiaAdulto() {
   const [vulneravel, setVulneravel] = useState(false)
   const g = profilaxiaTetanoGvs(historicoGvs, ferimentoGvs, vulneravel)
   const gvs = TRATAMENTO_GVS_2024
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaTetanoAdulto.id)
+  const opcoesGvs = [...HISTORICO_TETANO, { value: 'mais10Especial' as const, label: '3 doses ou mais; última há 10 anos ou mais, em situações especiais' }]
+  const textoProfilaxia = `Vacina: ${simNao(p.vacina)} · SAT/IGHAT: ${simNao(p.imunoglobulina)}`
+
+  // Texto do "Copiar" (C3 e C4 = A): as duas tabelas de profilaxia na combinação escolhida e as doses do adulto.
+  // Os textos do GVS que trazem dose de criança não entram; vão só os números do adulto.
+  const copia = textoCopia({
+    ferramenta: 'Tétano — profilaxia e tratamento (adulto)',
+    dados: [
+      ['História vacinal (Anexo 7)', rotuloDe(HISTORICO_TETANO, historico)],
+      ['Ferimento (Anexo 7)', rotuloDe(FERIMENTO_TETANO, ferimento)],
+      ['História vacinal (GVS)', rotuloDe(opcoesGvs, historicoGvs)],
+      ['Ferimento (GVS)', rotuloDe(FERIMENTO_GVS, ferimentoGvs)],
+      ['Imunodeprimido, desnutrido grave ou idoso', simNao(vulneravel)],
+      ['Peso', t ? `${numeroBr(peso)} kg` : ''],
+    ],
+    resultado: [
+      `Profilaxia pelo Anexo 7: ${textoProfilaxia}. ${IMUNOGLOBULINA_PROFILAXIA.sat}; ${IMUNOGLOBULINA_PROFILAXIA.ighat} (${IMUNOGLOBULINA_PROFILAXIA.pagina})`,
+      `Profilaxia pelo GVS 2024: vacina: ${simNao(g.vacina)}${g.reforco ? ' (um reforço)' : ''}; SAT ou IGHAT: ${simNao(g.imunoglobulina)}. ${g.notas.join(' ')} (${g.pagina})`,
+      ...(t
+        ? [
+            'Tétano acidental — tratamento (cap. 93):',
+            `- Bloqueio neuromuscular: rocurônio ${br(t.rocuronioMg, 0)} mg · vecurônio ${br(t.vecuronioPrimingMg, 2)} mg → ${br(t.vecuronioMg)} mg (${tt.bnm.pagina})`,
+            `- Sulfato de magnésio: ataque ${br(t.magnesioAtaqueG, 2)} g em 30 min · ${br(t.magnesioManutencaoGH)} g/h (${tt.magnesio.pagina})`,
+          ]
+        : []),
+      'GVS 2024 — tratamento (Quadros 1–3):',
+      `- IGHAT: ${gvs.ighat.terapeuticaUi} UI (terapêutica; até ${numero(gvs.ighat.terapeuticaMaxUi)}) · profilática ${gvs.ighat.profilaticaUi} UI (${gvs.ighat.pagina})`,
+      `- SAT: ${numero(gvs.sat.terapeuticaUi)} UI (terapêutico) · profilático ${numero(gvs.sat.profilaticaUi)} UI (${gvs.sat.pagina})`,
+      `- Antibiótico: penicilina 2.000.000 UI 4/4 h · ou metronidazol ${gvs.antibiotico.metronidazolMg} mg 8/8 h · 7–10 dias (${gvs.antibiotico.pagina})`,
+    ],
+    fonte: textoFontes(fichaTetanoAdulto),
+    versao: fichaTetanoAdulto.versao,
+    quando: new Date(),
+  })
 
   return (
     <ToolLayout
@@ -47,22 +92,6 @@ export function TetanoProfilaxiaAdulto() {
           conta={<><strong>Vacina: {simNao(p.vacina)}</strong> · <strong>SAT/IGHAT: {simNao(p.imunoglobulina)}</strong></>}
           errata={TABELA5_TETANO.errata}
         />
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full text-left text-apoio">
-            <caption className="pb-1 text-left text-tinta-sussurro">Tabela 5 do cap. 93 ({TABELA5_TETANO.pagina}), para comparação</caption>
-            <TableHeader>
-              <TableRow><TableHead className="pr-2">Ferimento</TableHead>{TABELA5_TETANO.colunas.map((c) => <TableHead key={c} className="pr-2">{c}</TableHead>)}</TableRow>
-            </TableHeader>
-            <TableBody>
-              {TABELA5_TETANO.linhas.map((l) => (
-                <TableRow key={l.ferimento} className="border-t align-top">
-                  <TableCell className="pr-2 font-medium">{l.ferimento}</TableCell>
-                  {l.celulas.map((c, i) => <TableCell key={i} className="pr-2">{c}</TableCell>)}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
       </Bloco>
 
       <CampoPeso id="tet-peso" peso={peso} onChange={setPeso} />
@@ -80,7 +109,7 @@ export function TetanoProfilaxiaAdulto() {
       </Bloco>
 
       <Bloco titulo="Guia de Vigilância em Saúde 2024 — profilaxia (Quadro 4, p. 335)" descricao="Fonte do Ministério da Saúde ao lado do Anexo 7 do manual; as quatro linhas coincidem, e o GVS acrescenta a nota d e as situações especiais.">
-        <Escolha label="História de vacinação contra tétano" value={historicoGvs} onChange={setHistoricoGvs} opcoes={[...HISTORICO_TETANO, { value: 'mais10Especial' as const, label: '3 doses ou mais; última há 10 anos ou mais, em situações especiais' }]} />
+        <Escolha label="História de vacinação contra tétano" value={historicoGvs} onChange={setHistoricoGvs} opcoes={opcoesGvs} />
         <Escolha label="Ferimento" value={ferimentoGvs} onChange={setFerimentoGvs} opcoes={FERIMENTO_GVS} />
         <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={vulneravel} onChange={(e) => setVulneravel(e.target.checked)} /> Imunodeprimido, desnutrido grave ou idoso (nota d)</label>
         <LinhaManual
@@ -100,6 +129,47 @@ export function TetanoProfilaxiaAdulto() {
         <LinhaManual nome="Medidas gerais" texto={gvs.medidasGerais.texto} pagina={gvs.medidasGerais.pagina} errata={gvs.medidasGerais.errata} />
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TETANO_GVS.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        armadilhas={[
+          `Anexo 7 × Tabela 5 — errata do livro: ${TABELA5_TETANO.errata}`,
+          ...[tt.espasmos.errata, tt.disautonomia.errata, gvs.sedativos.errata, gvs.medidasGerais.errata].filter((e): e is string => Boolean(e)),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaTetanoAdulto}
+        guia={guia}
+        comparacao={
+          // A Tabela 5 do cap. 93, mostrada "para comparação", vai para "Evidências" (C6 = A); a errata fica na linha do Anexo 7.
+          <BlocoComparacao titulo={`Tabela 5 do cap. 93 (${TABELA5_TETANO.pagina}), para comparação`} resumo="Outra tabela do mesmo livro; a conduta da tela segue o Anexo 7.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full text-left text-apoio">
+                <TableHeader>
+                  <TableRow><TableHead className="pr-2">Ferimento</TableHead>{TABELA5_TETANO.colunas.map((c) => <TableHead key={c} className="pr-2">{c}</TableHead>)}</TableRow>
+                </TableHeader>
+                <TableBody>
+                  {TABELA5_TETANO.linhas.map((l) => (
+                    <TableRow key={l.ferimento} className="border-t align-top">
+                      <TableCell className="pr-2 font-medium">{l.ferimento}</TableCell>
+                      {l.celulas.map((c, i) => <TableCell key={i} className="pr-2">{c}</TableCell>)}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={`Anexo 7: ${textoProfilaxia}`}
+        detalhe={t ? `Adulto · ${numeroBr(peso)} kg · "Copiar" leva a profilaxia e as doses do tratamento` : 'Informe o peso para as doses do tratamento'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
@@ -114,6 +184,36 @@ export function RaivaPosExposicaoAdulto() {
   const r = profilaxiaRaiva(contato, acidente, animal, area === '' ? null : area === 'sim')
   const [pesoRaiva, setPesoRaiva] = useState(0)
   const soro = doseSoroRaiva(pesoRaiva)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaRaivaAdulto.id)
+  const textoSar = soro ? `${numero(soro.sarUi)} UI = ${numero(soro.sarMlVinrab)} mL de VINRAB (${soro.frascosVinrab} frasco${soro.frascosVinrab > 1 ? 's' : ''})` : null
+
+  // Texto do "Copiar" (C4 = A): a exposição, a célula do fluxograma e, com peso, o soro e a imunoglobulina.
+  const copia = r
+    ? textoCopia({
+        ferramenta: 'Raiva — profilaxia pós-exposição (adulto)',
+        dados: [
+          ['Contato', contato === 'direto' ? 'direto' : 'indireto com morcego'],
+          ['Acidente', contato === 'direto' ? acidente : ''],
+          ['Animal', contato === 'direto' ? rotuloDe(ANIMAL_RAIVA, animal) : ''],
+          ['Área controlada / animal só doméstico', precisaArea ? (area === 'sim' ? 'sim' : 'não ou dúvida') : ''],
+          ['Peso', soro ? `${numeroBr(pesoRaiva)} kg` : ''],
+        ],
+        resultado: [
+          `Fluxograma: ${r.texto} (${RAIVA.pagina})`,
+          ...(r.observar10Dias ? [`Observação: ${RAIVA.observacao}.`] : []),
+          ...(soro
+            ? [
+                `Soro antirrábico (SAR) 40 UI/kg: ${textoSar} (NT 8/2022, item 2.2; NT 35/2026, itens 3.2 e 4.4)`,
+                `Imunoglobulina humana (IGHAR) 20 UI/kg: ${numero(soro.igharUi)} UI (NT 8/2022, item 2.2)`,
+              ]
+            : []),
+        ],
+        fonte: textoFontes(fichaRaivaAdulto),
+        versao: fichaRaivaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -162,6 +262,24 @@ export function RaivaPosExposicaoAdulto() {
           <li>Animais de interesse econômico: {RAIVA.interesseEconomico}. Contato indireto: {RAIVA.contatoIndireto}.</li>
         </ul>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!r}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaRaivaAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={r ? r.texto : 'Responda à pergunta sobre a área e o animal'}
+        detalhe={soro ? `Adulto · ${numeroBr(pesoRaiva)} kg · SAR ${numero(soro.sarUi)} UI · IGHAR ${numero(soro.igharUi)} UI` : 'Informe o peso para a dose do soro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
@@ -174,6 +292,27 @@ export function HepatiteBPosExposicaoAdulto() {
   const c = profilaxiaHepatiteB(fonte, situacao)
   const ml = hbigMl(peso)
   const mostraHbig = c.dosesHbig > 0 || c.hbigSeAntiHbsBaixo
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHepatiteBAdulto.id)
+  const textoHbig = mostraHbig && ml !== null ? `HBIG ${c.hbigSeAntiHbsBaixo ? 'se anti-HBs < 10: ' : `${c.dosesHbig} × `}${br(ml, 2)} mL IM (0,06 mL/kg)` : null
+
+  // Texto do "Copiar" (C4 = A): fonte, profissional, a célula da tabela e o volume de HBIG pelo peso.
+  const copia = textoCopia({
+    ferramenta: 'Hepatite B — profilaxia pós-exposição ocupacional (adulto)',
+    dados: [
+      ['Paciente-fonte', rotuloDe(FONTE_HBV, fonte)],
+      ['Profissional exposto', rotuloDe(SITUACAO_HBV, situacao)],
+      ['Peso', ml !== null ? `${numeroBr(peso)} kg` : ''],
+    ],
+    resultado: [
+      ...c.itens.map((i) => `${i} (${HBV.pagina})`),
+      ...(textoHbig ? [textoHbig] : mostraHbig ? ['HBIG: informe o peso para o volume'] : []),
+      HBV.alergia,
+    ],
+    fonte: textoFontes(fichaHepatiteBAdulto),
+    versao: fichaHepatiteBAdulto.versao,
+    quando: new Date(),
+  })
 
   return (
     <ToolLayout
@@ -191,9 +330,26 @@ export function HepatiteBPosExposicaoAdulto() {
           pagina={HBV.pagina}
           conta={mostraHbig ? (ml !== null ? <>HBIG {c.hbigSeAntiHbsBaixo ? 'se anti-HBs < 10: ' : `${c.dosesHbig} × `}<strong>{br(ml, 2)} mL</strong> IM (0,06 mL/kg)</> : 'informe o peso para o volume de HBIG') : undefined}
           nota={HBV.alergia}
-          errata={HBV.errata}
         />
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        // A errata de digitação do livro (não muda a conduta) vai para "Armadilhas" (C6 = A).
+        armadilhas={[`Anexo 6 — errata do livro: ${HBV.errata}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaHepatiteBAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={c.itens[0]}
+        detalhe={textoHbig ?? (mostraHbig ? 'Informe o peso para o volume de HBIG' : undefined)}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

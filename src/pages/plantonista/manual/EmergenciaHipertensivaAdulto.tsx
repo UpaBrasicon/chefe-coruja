@@ -4,8 +4,16 @@ import {
   DBHA_2025_ALVOS, DIFERENCAS_EH_2025, INDISPONIVEIS_BRASIL_DBHA, MAGNESIO_PE, METOPROLOL_EH_2025, QUADRO_11_4, RECOMENDACAO_MAGNESIO, TOXICIDADE_MAGNESIO, esmololDbha2025, mlSulfatoMagnesio, CAPTOPRIL_SEM_DOMH, DOMH, ERRATA_EH, ESMOLOL_EH, HIDRALAZINA_EH, METAS_EH, NITROGLICERINA_EH, NITROPRUSSIATO_EH,
   esmololEH, fichaEmergenciaHipertensivaAdulto, hidralazinaSaldo, nitroglicerinaMlH, nitroprussiatoMlH, pamAlvo, regraGeralEH,
 } from '@/clinico/adulto/emergenciaHipertensiva'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha, Resultado } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
@@ -34,6 +42,51 @@ export function EmergenciaHipertensivaAdulto() {
   const es = esmololEH(peso)
   const np = nitroprussiatoMlH(peso, npDose)
   const ntg = nitroglicerinaMlH(ntgDose)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaEmergenciaHipertensivaAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const npAcimaTeto = npDose > NITROPRUSSIATO_EH.ugKgMin[1]
+  const temResultado = temPeso || geral !== null || alvoPam !== null
+  const saldoHidra = hidralazinaSaldo(hidraFeito)
+
+  // Texto do "Copiar" (C3 e C4 = A): alvo da condição, regra geral e a lista de drogas EV com a mesma conta da tela.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Emergência hipertensiva — adulto',
+        dados: [
+          ['Condição', meta.condicao],
+          ['PAM atual', meta.reducaoPam && pam > 0 ? `${numeroBr(pam)} mmHg` : ''],
+          ['PAS atual', pas > 0 ? `${numeroBr(pas)} mmHg` : ''],
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['Dose do nitroprussiato', temPeso ? `${br(npDose, 2)} µg/kg/min` : ''],
+          ['Dose da nitroglicerina', ntg !== null ? `${br(ntgDose, 0)} µg/min` : ''],
+          ['Hidralazina já feita em 24 h', hidraFeito > 0 ? `${numeroBr(hidraFeito)} mg` : ''],
+        ],
+        resultado: [
+          `${meta.condicao} (Tabela 4, p. 274–275): alvo ${meta.alvo}. Tempo e redução inicial: ${meta.tempo}`,
+          ...(meta.reducaoPam && alvoPam ? [`PAM após redução de ${faixaBr(meta.reducaoPam, 0)}%: ${faixaBr(alvoPam, 0)} mmHg`] : []),
+          ...(geral ? [`Nos demais casos (rodapé da Tabela 4, p. 275): minutos a 1 h (−20 a 25%) PAS ${faixaBr(geral.pasEmAte1h, 0)} mmHg; próximas 2 a 6 h 160/100 mmHg; nas 24 a 48 h seguintes, níveis normais`] : []),
+          ...(temPeso
+            ? [
+                'Drogas EV (Tabela 3, p. 273):',
+                `- Esmolol — dissecção de aorta: ataque ${es ? `${faixaBr(es.ataqueMg, 0)} mg` : '—'} · ${es ? `${faixaBr(es.manutMlH)} mL/h` : '—'} (${ESMOLOL_EH.preparo}) (${ESMOLOL_EH.pagina})`,
+                `- Nitroprussiato de sódio: ${np !== null ? `${br(np)} mL/h para ${br(npDose, 2)} µg/kg/min` : '—'} (${NITROPRUSSIATO_EH.preparo}) (${NITROPRUSSIATO_EH.pagina})`,
+                ...(npAcimaTeto ? [`  Acima de ${NITROPRUSSIATO_EH.ugKgMin[1]} µg/kg/min, o teto do livro.`] : []),
+                `- Nitroglicerina — IAM: ${ntg !== null ? `${br(ntg)} mL/h para ${br(ntgDose, 0)} µg/min` : '—'} (${NITROGLICERINA_EH.preparo}) (${NITROGLICERINA_EH.pagina})`,
+                `- Hidralazina — pré-eclâmpsia ou eclâmpsia: ${HIDRALAZINA_EH.inicialMg} mg IV, repetir ${faixaBr(HIDRALAZINA_EH.repeticaoMg, 0)} mg a cada ${HIDRALAZINA_EH.intervaloMin} min; máximo de ${HIDRALAZINA_EH.maximo24hMg} mg em 24 h; saldo até o teto: ${br(saldoHidra, 0)} mg (${HIDRALAZINA_EH.pagina})`,
+              ]
+            : []),
+          'Sulfato de magnésio — pré-eclâmpsia grave e eclâmpsia (OMS; doses fixas, não por peso):',
+          `- Esquema EV: ${MAGNESIO_PE.ev.texto}. ${MAGNESIO_PE.duracao} (${br(mlSulfatoMagnesio(MAGNESIO_PE.ev.ataque), 0)} mL a 50% no ataque · ${MAGNESIO_PE.ev.manutencaoGH} g/h) (${MAGNESIO_PE.pagina})`,
+          `- Esquema IM: ${MAGNESIO_PE.im.texto}. ${MAGNESIO_PE.duracao} (${br(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueEv), 0)} mL a 20% EV · ${br(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueIm), 0)} mL a 50% IM (${br(mlSulfatoMagnesio(MAGNESIO_PE.im.ataqueIm) / 2, 0)} mL em cada nádega) · manutenção ${br(mlSulfatoMagnesio(MAGNESIO_PE.im.manutencao), 0)} mL a 50% de ${MAGNESIO_PE.im.intervaloH}/${MAGNESIO_PE.im.intervaloH} h) (${MAGNESIO_PE.pagina})`,
+          `- Convulsão recorrente: ${MAGNESIO_PE.recorrencia.texto} (${br(mlSulfatoMagnesio(MAGNESIO_PE.recorrencia.dose), 0)} mL a 50%) (${MAGNESIO_PE.pagina})`,
+          `  Antes de cada nova dose, suspender ou adiar se: ${TOXICIDADE_MAGNESIO.suspender.join('; ')}. ${TOXICIDADE_MAGNESIO.antidoto.texto} (${TOXICIDADE_MAGNESIO.pagina}).`,
+        ],
+        fonte: textoFontes(fichaEmergenciaHipertensivaAdulto),
+        versao: fichaEmergenciaHipertensivaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -88,7 +141,7 @@ export function EmergenciaHipertensivaAdulto() {
           <NumberField id="eh-np" label="Dose do nitroprussiato" unit="µg/kg/min" value={npDose} onChange={setNpDose} step={0.05} />
           <NumberField id="eh-ntg" label="Dose da nitroglicerina" unit="µg/min" value={ntgDose} onChange={setNtgDose} step={1} />
         </div>
-        {npDose > NITROPRUSSIATO_EH.ugKgMin[1] && <p className="text-atencao">Acima de {NITROPRUSSIATO_EH.ugKgMin[1]} µg/kg/min, o teto do livro.</p>}
+        {npAcimaTeto && <p className="text-atencao">Acima de {NITROPRUSSIATO_EH.ugKgMin[1]} µg/kg/min, o teto do livro.</p>}
         <LinhaManual
           nome="Nitroglicerina — IAM"
           texto={`${faixaBr(NITROGLICERINA_EH.ugMin, 0)} µg/min. Diluição: ${NITROGLICERINA_EH.preparo}`}
@@ -99,7 +152,7 @@ export function EmergenciaHipertensivaAdulto() {
         <LinhaManual
           nome="Hidralazina — pré-eclâmpsia ou eclâmpsia"
           texto={`${HIDRALAZINA_EH.inicialMg} mg IV, repetir ${faixaBr(HIDRALAZINA_EH.repeticaoMg, 0)} mg a cada ${HIDRALAZINA_EH.intervaloMin} min; máximo de ${HIDRALAZINA_EH.maximo24hMg} mg em 24 h`}
-          conta={<>saldo até o teto: <strong>{br(hidralazinaSaldo(hidraFeito), 0)} mg</strong></>}
+          conta={<>saldo até o teto: <strong>{br(saldoHidra, 0)} mg</strong></>}
           pagina={HIDRALAZINA_EH.pagina}
         />
         <div className="grid gap-4 sm:grid-cols-3">
@@ -139,22 +192,41 @@ export function EmergenciaHipertensivaAdulto() {
         </ul>
       </Bloco>
 
-      <Bloco titulo="Errata">
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{ERRATA_EH.map((e) => <li key={e}>{e}</li>)}</ul>
-      </Bloco>
-      <Bloco titulo="Diretriz Brasileira de Hipertensão 2025 (cap. 11) — ao lado do manual" descricao={`PDF lido. Não disponíveis no Brasil segundo a própria diretriz: ${INDISPONIVEIS_BRASIL_DBHA.join(', ')} — nenhum entra na ferramenta.`}>
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Situação</TableHead><TableHead className="pr-3 pb-2">DBHA 2025</TableHead><TableHead className="pr-3 pb-2">Força</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DBHA_2025_ALVOS.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.dbha}{d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}</TableCell><TableCell className="pr-3 py-2">{d.forca}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        {QUADRO_11_4.map((q) => <LinhaManual key={q.droga} nome={`${q.droga} (Quadro 11.4)`} texto={`${q.dose} — ${q.indicacao}`} pagina="DBHA 2025, p. 101–102" errata={q.errata} />)}
-        <LinhaManual nome="Esmolol pela DBHA 2025" texto="ataque 500 µg/kg; 25–50 µg/kg/min, +25 a cada 10–20 min, máx. 300 µg/kg/min" pagina="DBHA 2025, Quadro 11.4"
-          conta={esm25 ? <>ataque <strong>{fmtE(esm25.ataqueMg)} mg</strong> · início {fmtE(esm25.manutInicialUgMin[0], 0)}–{fmtE(esm25.manutInicialUgMin[1], 0)} µg/min · máx. {fmtE(esm25.maximoUgMin, 0)} µg/min</> : 'informe o peso'} />
-        <LinhaManual nome="Metoprolol IV" texto={`${METOPROLOL_EH_2025.doseMg} mg a cada ${METOPROLOL_EH_2025.intervaloMin} min até ${METOPROLOL_EH_2025.maximoMg} mg (${METOPROLOL_EH_2025.doses} doses)`} pagina={METOPROLOL_EH_2025.pagina} />
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_EH_2025.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      {/* A lista de erratas vai para "Armadilhas" e a DBHA 2025 para "Evidências" (C6 = A).
+          As erratas do esmolol e do alvo da condição ficam no item: mudam a leitura da dose e do alvo. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[...ERRATA_EH.map((e) => `Errata — ${e}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaEmergenciaHipertensivaAdulto}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="Diretriz Brasileira de Hipertensão 2025 (cap. 11) — ao lado do manual" resumo={`PDF lido. Não disponíveis no Brasil segundo a própria diretriz: ${INDISPONIVEIS_BRASIL_DBHA.join(', ')} — nenhum entra na ferramenta.`}>
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[720px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Situação</TableHead><TableHead className="pr-3 pb-2">DBHA 2025</TableHead><TableHead className="pr-3 pb-2">Força</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DBHA_2025_ALVOS.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.dbha}{d.nota && <p role="note" className="mt-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2 py-1 text-rotulo text-atencao">{d.nota}</p>}</TableCell><TableCell className="pr-3 py-2">{d.forca}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            {QUADRO_11_4.map((q) => <LinhaManual key={q.droga} nome={`${q.droga} (Quadro 11.4)`} texto={`${q.dose} — ${q.indicacao}`} pagina="DBHA 2025, p. 101–102" errata={q.errata} />)}
+            <LinhaManual nome="Esmolol pela DBHA 2025" texto="ataque 500 µg/kg; 25–50 µg/kg/min, +25 a cada 10–20 min, máx. 300 µg/kg/min" pagina="DBHA 2025, Quadro 11.4"
+              conta={esm25 ? <>ataque <strong>{fmtE(esm25.ataqueMg)} mg</strong> · início {fmtE(esm25.manutInicialUgMin[0], 0)}–{fmtE(esm25.manutInicialUgMin[1], 0)} µg/min · máx. {fmtE(esm25.maximoUgMin, 0)} µg/min</> : 'informe o peso'} />
+            <LinhaManual nome="Metoprolol IV" texto={`${METOPROLOL_EH_2025.doseMg} mg a cada ${METOPROLOL_EH_2025.intervaloMin} min até ${METOPROLOL_EH_2025.maximoMg} mg (${METOPROLOL_EH_2025.doses} doses)`} pagina={METOPROLOL_EH_2025.pagina} />
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_EH_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg` : geral ? `PAS em até 1 h: ${faixaBr(geral.pasEmAte1h, 0)} mmHg` : 'Informe a PAS ou o peso'}
+        detalhe={`${meta.condicao}: alvo ${meta.alvo}${npAcimaTeto ? ` · nitroprussiato acima de ${NITROPRUSSIATO_EH.ugKgMin[1]} µg/kg/min` : ''}`}
+        tom={npAcimaTeto ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

@@ -4,10 +4,18 @@ import {
   DIFERENCAS_DPOC_GOLD_2026, DIRETRIZ_DPOC_GOLD_2026, DROGAS_DPOC, ERRATA_DPOC, INDICACOES_UTI_DPOC, INDICACOES_VM_DPOC, INDICACOES_VNI_DPOC, NOTA_ATS_HIPERCAPNICA, SINTOMAS_CARDINAIS, VM_DPOC, VNI_DPOC,
   cicloVentilatorio, classificarDpoc, fichaDpocAdulto, lerGasometriaDpoc, mgBeta2, suporteVni, vcDpoc,
 } from '@/clinico/adulto/asmaDpoc'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -31,6 +39,48 @@ export function DpocExacerbacaoAdulto() {
   const ciclo = cicloVentilatorio(fr, 1, ie)
   const ps = suporteVni()
   const alternar = (id: string) => setSintomas((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaDpocAdulto.id)
+  const temResultado = Boolean(classe) || temGaso || Boolean(vc)
+  const alertaGotas = gotas > 10 ? 'Acima de 10 gotas: a p. 423 registra que a maioria dos autores recomenda não ultrapassar 10 gotas por inalação.' : null
+  const linhasGaso = temGaso
+    ? [
+        `Insuficiência respiratória (PaO2 < 60 e/ou PaCO2 > 50, p. 422): ${gaso.irpa.length ? gaso.irpa.join(', ') : 'nenhum corte atingido'}`,
+        `Grande gravidade (PaO2 < 50, PaCO2 > 70, pH < 7,3, p. 422): ${gaso.granGravidade.length ? gaso.granGravidade.join(', ') : 'nenhum corte atingido'}`,
+        `Tabela 6 — VNI (lido como pH < 7,35 e PaCO2 > 60): ${gaso.vni.length ? 'critério gasométrico atingido' : 'não atingido'}`,
+        `Tabela 9 — UTI (PaO2 < 40 ou pH < 7,25): ${gaso.uti.length ? gaso.uti.join(', ') : 'nenhum corte atingido'}`,
+      ]
+    : []
+  const nomeSintoma = (id: string) => SINTOMAS_CARDINAIS.find((s) => s.id === id)?.rotulo ?? id
+
+  // Texto do "Copiar" (C3 e C4 = A): sintomas, gasometria, peso e o que a tela mostra de medicação, VNI e VM, com página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Exacerbação de DPOC — adulto',
+        dados: [
+          ['Peso', vc ? `${numeroBr(peso)} kg` : ''],
+          ['Sintomas cardinais', sintomas.map(nomeSintoma).join(', ')],
+          ['PaO2', pao2 > 0 ? `${numeroBr(pao2)} mmHg` : ''],
+          ['PaCO2', paco2 > 0 ? `${numeroBr(paco2)} mmHg` : ''],
+          ['pH', ph > 0 ? numeroBr(ph) : ''],
+          ['β2 por inalação', `${numeroBr(gotas)} gotas`],
+          ['FR e I:E da conta do ciclo', ciclo ? `${numeroBr(fr)} irpm · 1:${numeroBr(ie)}` : ''],
+        ],
+        resultado: [
+          ...(classe ? [`Sintomas cardinais (Tabela 1, p. 418): ${sintomas.length} de 3 — ${classe.definicao}`] : []),
+          ...linhasGaso,
+          `β2: ${numeroBr(gotas)} gotas = ${br(mgBeta2(gotas), 2)} mg (10 gotas = 2,5 mg, p. 423)${alertaGotas ? ` — ${alertaGotas}` : ''}`,
+          'Medicações do manual:',
+          ...DROGAS_DPOC.map((d) => `- ${d.nome}: ${d.texto} (${d.pagina})`),
+          `VNI: IPAP ${faixaBr(VNI_DPOC.ipap, 0)} cmH2O e EPAP ${faixaBr(VNI_DPOC.epap, 0)} cmH2O; pressão de suporte ${faixaBr(ps, 0)} cmH2O (${VNI_DPOC.pagina})`,
+          `VM invasiva (p. 425): ${vc ? `VC 5–6 mL/kg = ${faixaBr(vc, 0)} mL · ` : ''}FR ${faixaBr(VM_DPOC.fr, 0)} irpm · PEEP ${faixaBr(VM_DPOC.peep, 0)} cmH2O · pico < ${VM_DPOC.picoMenorQue}; platô < ${VM_DPOC.plato} cmH2O · SaO2 ${faixaBr(VM_DPOC.sao2, 0)}%; PaO2 ${faixaBr(VM_DPOC.pao2, 0)} mmHg · I/E impresso ${VM_DPOC.ieImpressa}`,
+          ...(ciclo ? [`Ciclo · Ti · Te (FR ${numeroBr(fr)}, I:E 1:${numeroBr(ie)}): ${br(ciclo.cicloS, 2)} s · ${br(ciclo.tiS, 2)} s · ${br(ciclo.teS, 2)} s`] : []),
+        ],
+        fonte: textoFontes(fichaDpocAdulto),
+        versao: fichaDpocAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -70,7 +120,7 @@ export function DpocExacerbacaoAdulto() {
           <NumberField id="dp-gotas" label="β2 (salbutamol/fenoterol)" unit="gotas" value={gotas} onChange={setGotas} step={1} />
           <Resultado rotulo="Em mg (10 gotas = 2,5 mg, p. 423)" valor={`${br(mgBeta2(gotas), 2)} mg`} />
         </div>
-        {gotas > 10 && <p className="text-atencao">Acima de 10 gotas: a p. 423 registra que a maioria dos autores recomenda não ultrapassar 10 gotas por inalação.</p>}
+        {alertaGotas && <p className="text-atencao">{alertaGotas}</p>}
         {DROGAS_DPOC.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={d.texto} pagina={d.pagina} nota={d.nota} />)}
       </Bloco>
 
@@ -102,19 +152,39 @@ export function DpocExacerbacaoAdulto() {
         <ul className="list-disc pl-5">{INDICACOES_UTI_DPOC.map((i) => <li key={i}>{i}</li>)}</ul>
       </Bloco>
 
-      <Bloco titulo="GOLD 2026 — ao lado do manual" descricao="Capítulo 4 do relatório GOLD 2026 (exacerbações), PDF lido. O GOLD não dá classe de recomendação; o nível de evidência aparece quando a Figura 4.6 o traz.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">GOLD 2026</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_DPOC_GOLD_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.gold} <span className="text-tinta-sussurro">({d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DPOC_GOLD_2026.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
-
-      <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-tinta-sussurro">{ERRATA_DPOC.map((e) => <li key={e}>{e}</li>)}</ul>
-      </Bloco>
+      {/* A tabela GOLD × manual vai para "Evidências" e o bloco "Errata e divergências do livro" para "Armadilhas" (C6 = A). */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[...ERRATA_DPOC, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaDpocAdulto}
+        guia={guia}
+        comparacao={
+          <BlocoComparacao titulo="GOLD 2026 — ao lado do manual" resumo="Capítulo 4 do relatório GOLD 2026 (exacerbações), PDF lido. O GOLD não dá classe de recomendação; o nível de evidência aparece quando a Figura 4.6 o traz.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">GOLD 2026</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_DPOC_GOLD_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.gold} <span className="text-tinta-sussurro">({d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DPOC_GOLD_2026.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={classe ? `${sintomas.length} de 3 sintomas cardinais · ${classe.classe}` : 'Marque os sintomas cardinais'}
+        detalhe={alertaGotas
+          ?? (temGaso
+            ? (gaso.uti.length ? 'Gasometria: corte de UTI atingido (Tabela 9)' : gaso.vni.length ? 'Gasometria: critério gasométrico de VNI atingido (Tabela 6)' : gaso.granGravidade.length ? 'Gasometria: corte de grande gravidade atingido (p. 422)' : gaso.irpa.length ? 'Gasometria: insuficiência respiratória (p. 422)' : 'Gasometria: nenhum corte atingido')
+            : vc ? `Adulto · ${numeroBr(peso)} kg · VC ${faixaBr(vc, 0)} mL` : undefined)}
+        tom={alertaGotas ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

@@ -4,7 +4,15 @@ import {
   ACIDENTES, MS_2026_PECONHENTOS, NEOSTIGMINA, PEDIATRICO_CITADO, PRE_MEDICACAO, SORO_ADMINISTRACAO, fichaPeconhentosAdulto, neostigmina, preMedicacao,
   soroPorGravidade, type Faixa, type Gravidade,
 } from '@/clinico/adulto/peconhentos'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha } from './LoteAPecas'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -26,6 +34,37 @@ export function AnimaisPeconhentosAdulto() {
   const r = soroPorGravidade(acidenteId, gravidade)!
   const ms = r.classe.ms
   const neo = neostigmina(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaPeconhentosAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const textoSoro = r.classe.ampolas ? `${ampolas(r.classe.ampolas)}${ms ? '' : ` (${acidente.via})`}` : (ms?.semSoro ?? 'o manual não indica soro nesta gravidade (adulto)')
+
+  // Texto do "Copiar" (C3 e C4 = A): o soro da gravidade escolhida, a pré-medicação e a neostigmina do adulto.
+  // Os valores pediátricos que o capítulo cita não entram.
+  const copia = textoCopia({
+    ferramenta: 'Acidentes por animais peçonhentos — adulto',
+    dados: [
+      ['Acidente', acidente.nome],
+      ['Gravidade', gravidade],
+      ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+    ],
+    resultado: [
+      `Soro: ${textoSoro} — ${ms ? `${ms.origem}: ${ms.texto}` : `O manual traz: ${r.classe.manifestacoes}; soro ${acidente.soro} ${acidente.via}`} (${ms ? ms.pagina : acidente.pagina})`,
+      ...(ms ? [`Manual do HC, só para comparação: ${ms.livro}`] : []),
+      ...(acidente.errata ? [`Errata: ${acidente.errata}`] : []),
+      `${SORO_ADMINISTRACAO.texto} (${SORO_ADMINISTRACAO.pagina})`,
+      `Pré-medicação antes do soro (${PRE_MEDICACAO.pagina}):`,
+      `- Adrenalina SC: 0,25 mg SC no braço, imediatamente antes do soro`,
+      ...PRE_MEDICACAO.drogas.map((d) => {
+        const c = preMedicacao(d, peso)
+        return `- ${d.nome}: ${br(d.mgKg, 2)} mg/kg até o máximo de ${br(d.maxMg, 0)} mg${c ? ` = ${br(c.mg, 2)} mg${c.limitadoAoTeto ? ' (no teto)' : ''}` : ''}`
+      }),
+      `Neostigmina no acidente elapídico (${NEOSTIGMINA.pagina}): bolus ${faixa(neo.bolusMg, 0)} mg = ${faixa(neo.bolusMl, 0)} mL${neo.infusaoUgH !== null ? ` · infusão inicial ${br(neo.infusaoUgH, 0)} µg/h` : ''}`,
+    ],
+    fonte: textoFontes(fichaPeconhentosAdulto),
+    versao: fichaPeconhentosAdulto.versao,
+    quando: new Date(),
+  })
 
   return (
     <ToolLayout
@@ -66,23 +105,6 @@ export function AnimaisPeconhentosAdulto() {
         <p className="text-apoio text-tinta-sussurro">{SORO_ADMINISTRACAO.texto} ({SORO_ADMINISTRACAO.pagina})</p>
       </Bloco>
 
-      <Bloco titulo="Ministério da Saúde — PCDT dos acidentes escorpiônicos (2026) e portal das aranhas" descricao="Decisão do responsável técnico (28/09/2026): os PCDTs do MS são a fonte dos peçonhentos. As serpentes seguem o manual até o PCDT completo dos acidentes ofídicos ser lido (o resumo não traz ampolas).">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">MS</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {MS_2026_PECONHENTOS.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">{d.ms} <span className="text-tinta-sussurro">({d.pagina})</span></TableCell>
-                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Bloco>
-
       <Bloco titulo="Pré-medicação antes do soro (p. 1350)" descricao={`${PRE_MEDICACAO.adrenalinaTexto}. Demais: ${PRE_MEDICACAO.momento}.`}>
         <LinhaManual nome="Adrenalina SC" texto="0,25 mg SC no braço, imediatamente antes do soro" pagina={PRE_MEDICACAO.pagina} conta={<strong>0,25 mg</strong>} />
         {PRE_MEDICACAO.drogas.map((d) => {
@@ -99,6 +121,45 @@ export function AnimaisPeconhentosAdulto() {
           conta={<>bolus <strong>{faixa(neo.bolusMg, 0)} mg</strong> = {faixa(neo.bolusMl, 0)} mL{neo.infusaoUgH !== null && <> · infusão inicial <strong>{br(neo.infusaoUgH, 0)} µg/h</strong></>}</>} />
         <p className="text-apoio text-tinta-sussurro">Valores pediátricos que o capítulo cita e esta ferramenta de adulto não usa: {PEDIATRICO_CITADO.join('; ')}.</p>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        armadilhas={[
+          ...ACIDENTES.flatMap((a) => (a.errata ? [`${a.nome} — errata do livro: ${a.errata}`] : [])),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaPeconhentosAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela MS × manual vai para "Evidências" (C6 = A); a conta da linha do soro não muda.
+          <BlocoComparacao titulo="Ministério da Saúde — PCDT dos acidentes escorpiônicos (2026) e portal das aranhas" resumo="Decisão do responsável técnico (28/09/2026): os PCDTs do MS são a fonte dos peçonhentos. As serpentes seguem o manual até o PCDT completo dos acidentes ofídicos ser lido (o resumo não traz ampolas).">
+        <div className="overflow-x-auto">
+          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">MS</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+            <TableBody>
+              {MS_2026_PECONHENTOS.map((d) => (
+                <TableRow key={d.tema} className="border-t">
+                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                  <TableCell className="pr-3 py-2">{d.ms} <span className="text-tinta-sussurro">({d.pagina})</span></TableCell>
+                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={`${acidente.nome} — ${gravidade}: ${textoSoro}`}
+        detalhe={temPeso ? `Adulto · ${numeroBr(peso)} kg · "Copiar" leva soro, pré-medicação e neostigmina` : 'Informe o peso para a pré-medicação'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

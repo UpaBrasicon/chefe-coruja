@@ -3,7 +3,14 @@ import { useState } from 'react'
 import {
   BRADI_2025, DIFERENCAS_BRADI_2025, ADRENALINA_BRADI, ATROPINA, DOPAMINA_BRADI, OUTRAS_BRADI, adrenalinaBradiMlH, dopaminaUgMin, esquemaAtropina, fichaBradicardiaAdulto, type Faixa,
 } from '@/clinico/adulto/pcr'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -17,6 +24,27 @@ export function BradicardiaAdulto() {
   const [peso, setPeso] = useState(0)
   const at = esquemaAtropina()
   const dopa = dopaminaUgMin(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaBradicardiaAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+
+  // Texto do "Copiar" (C3 e C4 = A): o peso e a lista inteira do manual, com a página de cada linha.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Bradicardia sintomática — adulto',
+        dados: [['Peso', `${br(peso)} kg`]],
+        resultado: [
+          'Farmacoterapia (p. 229):',
+          `- Atropina: ${br(ATROPINA.doseMg)} mg EV repetida a cada ${ATROPINA.intervaloMin} minutos até o máximo de ${ATROPINA.maximoMg} mg — ${at.doses} doses · máximo atingido em ${at.minutosAteUltima} min (${ATROPINA.pagina})`,
+          `- Dopamina: ${faixa(DOPAMINA_BRADI, 0)} µg/kg/min${dopa ? ` = ${faixa(dopa, 0)} µg/min` : ''} (p. 229); o livro não traz preparo padrão, o mL/h não é calculado`,
+          `- Adrenalina: ${faixa(ADRENALINA_BRADI.ugMin, 0)} µg/min = ${faixa(adrenalinaBradiMlH())} mL/h no preparo do Anexo 1 (60 µg/mL) — unidade corrigida pela errata (${ADRENALINA_BRADI.pagina})`,
+          ...OUTRAS_BRADI.map((d) => `- ${d.nome}: ${d.dose} — ${d.quando} (${d.pagina})`),
+        ],
+        fonte: textoFontes(fichaBradicardiaAdulto),
+        versao: fichaBradicardiaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
   return (
     <ToolLayout
       title="Bradicardia sintomática — adulto"
@@ -55,6 +83,27 @@ export function BradicardiaAdulto() {
         <LinhaManual nome="Marca-passo" texto={BRADI_2025.marcaPasso} pagina="RCUK 2025 ALS" />
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_BRADI_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[
+          // A errata da adrenalina muda a dose: fica também na linha, visível (C6 = A).
+          `Adrenalina — errata do livro: ${ADRENALINA_BRADI.errata}`,
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaBradicardiaAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${br(peso)} kg` : 'Informe o peso'}
+        detalhe={`Atropina ${br(ATROPINA.doseMg)} mg a cada ${ATROPINA.intervaloMin} min até ${ATROPINA.maximoMg} mg (${at.doses} doses)${temPeso ? ' · "Copiar" leva todas as doses' : ''}`}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

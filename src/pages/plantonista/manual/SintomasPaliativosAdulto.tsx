@@ -5,8 +5,15 @@ import {
   QUETAMINA_ANALGESICA, SEDACAO_PALIATIVA, escalonarBolus, fichaPaliativoAdulto, furosemidaDispneia, quetaminaAnalgesica,
   resgateOpioide, sedacaoPaliativa, type Faixa,
 } from '@/clinico/adulto/dorAnalgesia'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -27,6 +34,47 @@ export function SintomasPaliativosAdulto() {
   const furo = furosemidaDispneia(peso)
   const q = quetaminaAnalgesica(peso)
   const sed = sedacaoPaliativa(bolusMidaz, mgHAtual > 0 ? mgHAtual : undefined)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaPaliativoAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+
+  // As frases que a tela mostra, para o resumo e o "Copiar".
+  const textoResgate = resgate ? `Resgate ${br(resgate.resgateMg)} mg · nova dose total ${faixa(resgate.novaTotalMg)} mg/dia` : null
+  const alertaSed = sed?.acimaDoLimite === true ? 'acima de 20 mg/h: o livro diz considerar associação' : sed?.acimaDoLimite === 'faixa' ? 'entre 15 e 20 mg/h: faixa em que o livro diz considerar associação' : null
+  const textoSed = sed ? `Manutenção pelo bolus: ${br(sed.manutencaoPeloBolusMgH, 2)} mg/h = ${br(sed.mlH, 2)} mL/h (1 mg/mL) · faixa do livro ${faixa(SEDACAO_PALIATIVA.manutencaoMgH)} mg/h${alertaSed ? ` · ${alertaSed}` : ''}` : null
+  const dadosUsados = [
+    temPeso ? `${numeroBr(peso)} kg` : '',
+    resgate ? `morfina ${numeroBr(totalDia)} mg/dia` : '',
+    sed ? `midazolam bolus ${numeroBr(bolusMidaz)} mg` : '',
+  ].filter(Boolean)
+
+  // Texto do "Copiar" (C3 e C4 = A): os dados usados e a lista inteira do capítulo, com a página.
+  const copia = dadosUsados.length
+    ? textoCopia({
+        ferramenta: 'Dor, dispneia e sedação em cuidados paliativos — adulto',
+        dados: [
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['Dose total diária de morfina', resgate ? `${numeroBr(totalDia)} mg/dia` : ''],
+          ['Bolus de morfina atual (dispneia)', morf ? `${numeroBr(bolusMorfina)} mg` : ''],
+          ['Bolus inicial de midazolam (sedação)', sed ? `${numeroBr(bolusMidaz)} mg` : ''],
+          ['Infusão atual de midazolam', sed && mgHAtual > 0 ? `${numeroBr(mgHAtual)} mg/h` : ''],
+        ],
+        resultado: [
+          `Dor intensa (7–10) sem uso prévio de opioide (${DOR_PALIATIVO_PAGINA}):`,
+          ...DOR_PALIATIVO_SEM_OPIOIDE.map((d) => `- ${d.droga}: ${d.texto}`),
+          ...(textoResgate ? [`Dor intensa em usuário de opioide (p. 1384): ${textoResgate}`] : []),
+          ...(q ? [`Quetamina (p. 1384): bolus ${faixa(q.bolusMg)} mg · infusão ${faixa(q.infusaoMgH, 2)} mg/h = ${faixa(q.infusaoMlH)} mL/h (${br(q.mgMl)} mg/mL) (${QUETAMINA_ANALGESICA.cap104.pagina})`] : []),
+          `Dispneia (${DISPNEIA_PALIATIVO.pagina}):`,
+          ...(furo ? [`- Furosemida: considerar 0,5–1 mg/kg EV = ${faixa(furo)} mg, se compatível com o objetivo de cuidado`] : []),
+          ...(morf ? [`- Morfina: próximo bolus ${faixa(morf.proximoMg)} mg · infusão ${br(morf.infusaoMgH)} mg/h`] : []),
+          `- Midazolam (refratária a opioide): ${DISPNEIA_PALIATIVO.midazolamTexto}`,
+          ...(textoSed ? [`Sedação paliativa — midazolam (${SEDACAO_PALIATIVA.pagina}): ${textoSed}`] : []),
+        ],
+        fonte: textoFontes(fichaPaliativoAdulto),
+        versao: fichaPaliativoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -93,6 +141,25 @@ export function SintomasPaliativosAdulto() {
         </ul>
         <p className="text-apoio text-atencao">{EXTUBACAO_PALIATIVA.errata}</p>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={dadosUsados.length === 0}
+        armadilhas={[`Extubação paliativa — errata do livro: ${EXTUBACAO_PALIATIVA.errata}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaPaliativoAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={dadosUsados.length ? `Adulto · ${dadosUsados.join(' · ')}` : 'Informe o peso, a dose diária de morfina ou o bolus de midazolam'}
+        detalhe={alertaSed ? `Midazolam ${alertaSed}` : textoResgate ?? (sed ? `Midazolam: manutenção ${br(sed.manutencaoPeloBolusMgH, 2)} mg/h` : undefined)}
+        tom={alertaSed ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

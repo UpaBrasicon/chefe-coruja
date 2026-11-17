@@ -5,8 +5,15 @@ import {
   INCREMENTO_CH, NOTA_TRANSFUSAO_LESAO_CEREBRAL, PAGINA_GATILHOS_HB, PFC, PFC_TABELA4, PLAQUETAS, PLAQUETAS_AABB_2025, REGRA_HB_TEXTO, TRANSFUSAO_MACICA, TRAUMA_TRANSFUSAO, criterioMacica, doseCcp, doseCrio, dosePfc,
   dosePlaquetas, expectativaCh, fichaTransfusaoAdulto, gatilhosAbaixo, gatilhosAbaixoAabb, respostaPlaquetas, velocidadeCh,
 } from '@/clinico/adulto/transfusao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -38,6 +45,53 @@ export function TransfusaoAdulto() {
   const pfc = dosePfc(peso)
   const crio = doseCrio(peso, fib > 0 ? fib : undefined, informado(unCrio))
   const ccp = inr > 0 ? doseCcp(peso, inr) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaTransfusaoAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const temResultado = temPeso || hb > 0
+  const dadosUsados = [temPeso ? `${numeroBr(peso)} kg` : '', hb > 0 ? `Hb ${numeroBr(hb)} g/dL` : ''].filter(Boolean)
+  const textoMacica = ch24 > 0 || ch1 > 0
+    ? (mac.por24h || mac.por1h
+      ? `Cabe na definição do livro: ${[mac.por24h && '≈ 10 CH em 24 h', mac.por1h && '> 4 unidades em 1 h'].filter(Boolean).join(' e ')}.`
+      : 'Abaixo dos números da definição do livro (≈ 10 CH em 24 h; > 4 em 1 h). A definição por volemia não é calculada.')
+    : null
+
+  // Texto do "Copiar" (C3 e C4 = A): os dados usados e as contas que a tela mostra, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Transfusão de hemocomponentes — adulto',
+        dados: [
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['Hb atual', hb > 0 ? `${numeroBr(hb)} g/dL` : ''],
+          ['Ht atual', ht > 0 ? `${numeroBr(ht)}%` : ''],
+          ['Unidades de CH', exp ? String(unidades) : ''],
+          ['CH nas últimas 24 h', ch24 > 0 ? String(ch24) : ''],
+          ['CH na última 1 h', ch1 > 0 ? String(ch1) : ''],
+          ['Plaquetas antes / depois', resp ? `${mil(plqAntes)} / ${mil(plqDepois)}/µL` : ''],
+          ['Fibrinogênio atual', fib > 0 ? `${numeroBr(fib)} mg/dL` : ''],
+          ['Unidades de crioprecipitado', unCrio > 0 ? String(unCrio) : ''],
+          ['INR', inr > 0 ? numeroBr(inr) : ''],
+        ],
+        resultado: [
+          ...GATILHOS_HB.filter((g) => abaixo.includes(g.id)).map((g) => `Hb abaixo do gatilho do manual — ${g.condicao}: ${g.texto} (${PAGINA_GATILHOS_HB})`),
+          ...GATILHOS_HB_AABB.filter((g) => abaixoAabb.includes(g.id)).map((g) => `Hb abaixo do limiar AABB — ${g.situacao}: Hb < ${br(g.hb, 1)} g/dL (${g.forca}; ${g.fonte})`),
+          ...(exp ? [`CH: Hb esperada ${br(exp.hb)} g/dL${exp.ht != null ? ` · Ht esperado ${br(exp.ht, 0)}%` : ''} após ${unidades} unidade(s) (${INCREMENTO_CH.pagina})`] : []),
+          `CH — velocidade: primeiros ${CH.inicial.minutos} min ${faixaBr(vel.inicialMlH, 0)} mL/h · depois ${br(vel.depoisMlH, 0)} mL/h${vel.sobrecargaMlH ? ` · alto risco de sobrecarga ${br(vel.sobrecargaMlH, 0)} mL/h` : ''} (${CH.pagina})`,
+          ...(vel.tabela4MlH ? [`CH — Tabela 4: ${faixaBr(CH_TABELA4.mlKgH, 0)} mL/kg/h = ${faixaBr(vel.tabela4MlH, 0)} mL/h (${CH_TABELA4.pagina}; diverge do texto da p. 1076)`] : []),
+          ...(textoMacica ? [`Transfusão maciça: ${textoMacica}`] : []),
+          ...(plq ? [`Plaquetas: randômicas ${br(plq.randomicas)} U · equivalente em aférese ${br(plq.afereseEquivalente)} U · aférese 5 mL/kg ${br(plq.afereseMlKg, 0)} mL · alto risco de sobrecarga ${br(plq.sobrecargaMlH, 0)} mL/h (p. 1078; Tabela 4, p. 1082)`] : []),
+          ...(resp ? [`Incremento de plaquetas: ${mil(resp.incremento)}/µL${resp.acimaDe10mil ? ' (> 10.000)' : ' (≤ 10.000)'} (p. 1079)`] : []),
+          ...(pfc ? [`Plasma: ${faixaBr(pfc.ml, 0)} mL (10–20 mL/kg) · ${faixaBr(pfc.bolsas)} bolsas · ${faixaBr(pfc.mlH, 0)} mL/h · hipervolemia/ICC ${br(pfc.iccMlH, 0)} mL/h (${PFC.pagina}); Tabela 4: ${faixaBr(pfc.tabela4Ml, 0)} mL · ${faixaBr(pfc.tabela4MlH, 0)} mL/h (${PFC_TABELA4.pagina})`] : []),
+          ...(crio ? [`Crioprecipitado: ${br(crio.unidadesPeso)} U (1 U/10 kg) · incremento ${faixaBr(crio.incremento, 0)} mg/dL${crio.fibrinogenioEsperado ? ` · fibrinogênio esperado ${faixaBr(crio.fibrinogenioEsperado, 0)} mg/dL` : ''}${crio.unidadesParaAlvo ? ` · ${faixaBr(crio.unidadesParaAlvo, 0)} U para passar de 100 mg/dL` : ''} (${CRIO.pagina})`] : []),
+          ...(ccp && ccp.length > 0
+            ? ccp.map((d) => `Complexo protrombínico — ${d.faixa}: ${br(d.uiKg, 0)} UI/kg × ${br(peso)} kg = ${mil(d.uiCalculada)} UI${d.limitada ? ` → teto de ${mil(d.maxUi)} UI` : ''} · ${mil(d.ui)} UI · ≥ ${br(d.minutos, 0)} min a ${CCP.uiMin} UI/min (${CCP.pagina})`)
+            : []),
+        ],
+        fonte: textoFontes(fichaTransfusaoAdulto),
+        versao: fichaTransfusaoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -204,11 +258,27 @@ export function TransfusaoAdulto() {
         {ccp && ccp.length > 1 && <p className="text-atencao">INR exatamente na divisa de duas faixas do livro: as duas doses aparecem.</p>}
       </Bloco>
 
-      <Bloco titulo="Errata e divergências do livro">
-        <ul className="list-disc pl-5 text-tinta-sussurro">
-          {ERRATA_TRANSFUSAO.map((e) => <li key={e}>{e}</li>)}
-        </ul>
-      </Bloco>
+      {/* O bloco "Errata e divergências do livro" vai para a aba "Armadilhas" (C6 = A); as erratas de cada linha ficam nelas. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[...ERRATA_TRANSFUSAO, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaTransfusaoAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={dadosUsados.length ? `Adulto · ${dadosUsados.join(' · ')}` : 'Informe o peso ou a Hb'}
+        detalhe={abaixo.length > 0
+          ? `Hb abaixo de ${abaixo.length} gatilho(s) da tabela do manual`
+          : exp ? `Hb esperada ${br(exp.hb)} g/dL após ${unidades} CH` : temPeso ? '"Copiar" leva as doses por peso' : undefined}
+        tom={abaixo.length > 0 ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
