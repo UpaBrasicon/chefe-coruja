@@ -118,7 +118,8 @@ function Panorama({ unidadeId, ubs = false }: { unidadeId: string; ubs?: boolean
           ? <p className="px-5 py-4 text-apoio text-tinta-apoio">Este painel está sem medidas escolhidas.</p>
           : <ResumoParametros>{atual.medidas.map(regua)}</ResumoParametros>}
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-trilha px-5 py-2.5">
-          <span className="text-rotulo text-tinta-sussurro">{atual.nota(data.n)}</span>
+          {/* na UBS a nota não fala de leitos (U5, GE1) */}
+          <span className="text-rotulo text-tinta-sussurro">{ubs ? atual.nota(data.n).replace(/^\d+ de \d+ leitos · /, '') : atual.nota(data.n)}</span>
           {escolher}
         </div>
       </div>
