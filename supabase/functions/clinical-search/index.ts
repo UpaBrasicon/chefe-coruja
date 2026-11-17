@@ -189,7 +189,13 @@ async function tratar(req: Request): Promise<Response> {
     headers: {
       ...cors,
       'Content-Type': upstream.headers.get('Content-Type') ?? 'application/json',
-      'Cache-Control': 'no-store',
+      // Pedido do RT (17/11/2026): as etapas ("lendo", "procurando") são linhas
+      // pequenas e chegavam presas junto com a resposta. no-transform pede ao caminho
+      // (gateway e CDN) que não comprima nem segure a resposta; identity e
+      // X-Accel-Buffering reforçam o mesmo.
+      'Cache-Control': 'no-store, no-transform',
+      'Content-Encoding': 'identity',
+      'X-Accel-Buffering': 'no',
       'X-Request-Id': request_id,
     },
   })
