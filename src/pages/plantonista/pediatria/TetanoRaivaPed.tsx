@@ -8,8 +8,15 @@ import {
   ANTIBIOTICO_TETANO_PED, ERRATA_VOLUME_MUSCULO, IMUNOBIOLOGICOS_TETANO_PED, RAIVA_PED, SEDATIVOS_TETANO_PED, VACINA_TETANO_PED,
   VOLUME_MAXIMO_MUSCULO, fichaTetanoRaivaPed, penicilinaTetanoPed,
 } from '@/clinico/pediatria/tetanoRaivaPed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 
 import { Escolha } from '../manual/LoteAPecas'
@@ -27,6 +34,36 @@ export function TetanoRaivaPed() {
   const g = profilaxiaTetanoGvs(historico, ferimento, vulneravel)
   const pen = penicilinaTetanoPed(peso)
   const soro = doseSoroRaiva(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaTetanoRaivaPed.id)
+  const opcoesHistorico = [...HISTORICO_TETANO, { value: 'mais10Especial' as const, label: '3 doses ou mais; última há 10 anos ou mais, em situações especiais' }]
+  const quadro4 = `Vacina: ${simNao(g.vacina)} · SAT/IGHAT: ${simNao(g.imunoglobulina)}`
+
+  // Texto do "Copiar" (C4 = A): dados, o Quadro 4 para a combinação marcada, a vacina pela idade e as doses do peso, com a página do MS.
+  const copia = textoCopia({
+    ferramenta: 'Tétano e raiva — criança',
+    dados: [
+      ['Peso', peso > 0 ? `${numeroBr(peso)} kg` : ''],
+      ['História de vacinação contra tétano', opcoesHistorico.find((o) => o.value === historico)?.label ?? ''],
+      ['Ferimento', FERIMENTO_GVS.find((o) => o.value === ferimento)?.label ?? ''],
+      ['Imunodeprimido ou desnutrido grave', vulneravel ? 'sim' : ''],
+    ],
+    resultado: [
+      `Tétano — Quadro 4 (GVS 2024): vacina: ${simNao(g.vacina)}${g.reforco ? ' (um reforço)' : ''}; SAT ou IGHAT: ${simNao(g.imunoglobulina)}. ${g.notas.join(' ')} (${g.pagina})`,
+      `Qual vacina, pela idade: ${VACINA_TETANO_PED.menor7} ${VACINA_TETANO_PED.aPartir7} (${VACINA_TETANO_PED.pagina})`,
+      ...(pen ? [`Tétano acidental — penicilina G cristalina: ${inteiro(pen.uiDia[0])}–${inteiro(pen.uiDia[1])} UI/dia · ${inteiro(pen.uiDose[0])}–${inteiro(pen.uiDose[1])} UI por dose de 4/4 h. ${ANTIBIOTICO_TETANO_PED.semMaximo} (${ANTIBIOTICO_TETANO_PED.pagina})`] : []),
+      ...(soro
+        ? [
+            `Raiva — soro antirrábico (SAR) 40 UI/kg: ${numero(soro.sarUi)} UI = ${numero(soro.sarMlVinrab)} mL de VINRAB (${soro.frascosVinrab} frasco${soro.frascosVinrab > 1 ? 's' : ''}) (${SORO_RAIVA.pagina})`,
+            `Raiva — imunoglobulina humana (IGHAR) 20 UI/kg: ${numero(soro.igharUi)} UI (NT 8/2022, item 2.2)`,
+            RAIVA_PED.soroCasoACaso,
+          ]
+        : []),
+    ],
+    fonte: textoFontes(fichaTetanoRaivaPed),
+    versao: fichaTetanoRaivaPed.versao,
+    quando: new Date(),
+  })
 
   return (
     <ToolLayout
@@ -37,7 +74,7 @@ export function TetanoRaivaPed() {
       <CampoPeso id="tetano-raiva-ped-peso" peso={peso} onChange={setPeso} />
 
       <Bloco titulo="Tétano — profilaxia no ferimento (GVS 2024, Quadro 4, p. 335)" descricao="O quadro do MS vale para todas as idades; a vacina é a da idade (abaixo).">
-        <Escolha label="História de vacinação contra tétano" value={historico} onChange={setHistorico} opcoes={[...HISTORICO_TETANO, { value: 'mais10Especial' as const, label: '3 doses ou mais; última há 10 anos ou mais, em situações especiais' }]} />
+        <Escolha label="História de vacinação contra tétano" value={historico} onChange={setHistorico} opcoes={opcoesHistorico} />
         <Escolha label="Ferimento" value={ferimento} onChange={setFerimento} opcoes={FERIMENTO_GVS} />
         <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={vulneravel} onChange={(e) => setVulneravel(e.target.checked)} /> Imunodeprimido ou desnutrido grave (nota d)</label>
         <LinhaManual
@@ -56,8 +93,8 @@ export function TetanoRaivaPed() {
         <LinhaManual nome="SAT" texto={IMUNOBIOLOGICOS_TETANO_PED.sat} pagina={IMUNOBIOLOGICOS_TETANO_PED.pagina} origem="O MS traz" />
         <LinhaManual nome="Penicilina G cristalina" texto={ANTIBIOTICO_TETANO_PED.texto} pagina={ANTIBIOTICO_TETANO_PED.pagina} origem="O MS traz" nota={ANTIBIOTICO_TETANO_PED.semMaximo}
           conta={pen ? <><strong>{inteiro(pen.uiDia[0])}–{inteiro(pen.uiDia[1])} UI/dia</strong> · {inteiro(pen.uiDose[0])}–{inteiro(pen.uiDose[1])} UI por dose de 4/4 h</> : 'informe o peso'} />
-        <LinhaManual nome="Metronidazol" texto={ANTIBIOTICO_TETANO_PED.metronidazol} pagina={ANTIBIOTICO_TETANO_PED.pagina} origem="O MS traz" errata={ANTIBIOTICO_TETANO_PED.errataMetronidazol} />
-        <LinhaManual nome="Sedativos (Quadro 1, como impresso)" texto={SEDATIVOS_TETANO_PED.texto} pagina={SEDATIVOS_TETANO_PED.pagina} origem="O MS traz" errata={SEDATIVOS_TETANO_PED.errata} />
+        <LinhaManual nome="Metronidazol" texto={ANTIBIOTICO_TETANO_PED.metronidazol} pagina={ANTIBIOTICO_TETANO_PED.pagina} origem="O MS traz" errata={ANTIBIOTICO_TETANO_PED.errataMetronidazol} recolher />
+        <LinhaManual nome="Sedativos (Quadro 1, como impresso)" texto={SEDATIVOS_TETANO_PED.texto} pagina={SEDATIVOS_TETANO_PED.pagina} origem="O MS traz" errata={SEDATIVOS_TETANO_PED.errata} recolher />
       </Bloco>
 
       <Bloco titulo="Raiva — soro e vacina na criança (NTs 8/2022, 134/2022 e 35/2026)" descricao={RAIVA_PED.soroCasoACaso}>
@@ -87,6 +124,27 @@ export function TetanoRaivaPed() {
         </div>
         {PROTOCOLO_RAIVA_2022.map((i) => <LinhaManual key={i.tema} nome={i.tema} texto={i.ms} pagina={i.pagina} origem="O MS traz" />)}
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        armadilhas={[
+          `Metronidazol (${ANTIBIOTICO_TETANO_PED.pagina}): ${ANTIBIOTICO_TETANO_PED.errataMetronidazol}`,
+          `Sedativos (${SEDATIVOS_TETANO_PED.pagina}): ${SEDATIVOS_TETANO_PED.errata}`,
+          ERRATA_VOLUME_MUSCULO,
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaTetanoRaivaPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={quadro4}
+        detalhe={soro ? `Criança · ${numeroBr(peso)} kg · SAR ${numero(soro.sarUi)} UI · IGHAR ${numero(soro.igharUi)} UI` : 'Informe o peso para soro, imunoglobulina e penicilina.'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

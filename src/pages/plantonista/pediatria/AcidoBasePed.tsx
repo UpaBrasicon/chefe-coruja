@@ -4,11 +4,18 @@ import {
   AG_TEXTO, BIC14_MEQ_ML, ERRATA_ALCALOSE_METABOLICA, ERRATA_BIC14, HCL_MMOL_L, HCO3_DESEJADO, NORMAIS_IDADE, NORMAL_TABELA2, NOTA_MARGEM, NOTA_TEMPOS, PH_NORMAL, anionGap,
   bicarbonatoMeq, criterioBicarbonato, fichaAcidoBasePed, hclMeq, lerGasometria, mlBic14, mlHcl, razaoDelta, type Tempo,
 } from '@/clinico/pediatria/acidobasePed'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { PACIENTE_VAZIO, br, podeCalcular } from './formatoIcr'
-import { Bloco, CampoPaciente, Errata, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
+import { Bloco, CampoPaciente, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
 
 /** Distúrbios acidobásicos na criança — cap. 55 do Pronto-Socorro ICr-HCFMUSP. */
 export function AcidoBasePed() {
@@ -17,6 +24,8 @@ export function AcidoBasePed() {
   const [tempo, setTempo] = useState<Tempo>('aguda')
   const [agNormal, setAgNormal] = useState(12)
   const [hco3Desejado, setHco3Desejado] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAcidoBasePed.id)
   const leitura = lerGasometria(g.ph, g.pco2, g.hco3, tempo)
   const ag = g.na > 0 && g.cl > 0 && g.hco3 > 0 ? anionGap(g.na, g.cl, g.hco3) : null
   const delta = ag !== null && agNormal > 0 ? razaoDelta(ag, g.hco3, agNormal) : null
@@ -24,6 +33,47 @@ export function AcidoBasePed() {
   const indicaBic = g.ph > 0 && g.hco3 > 0 ? criterioBicarbonato(g.ph, g.hco3) : null
   const bic = calc && g.hco3 > 0 ? bicarbonatoMeq(p.peso, g.hco3) : null
   const hcl = calc && g.hco3 > 0 && hco3Desejado > 0 ? hclMeq(p.peso, g.hco3, hco3Desejado) : null
+  const textoIndicaBic = indicaBic === null ? null : indicaBic ? 'pH < 7,1 ou HCO3 < 8 mEq/L: critério geral do livro presente.' : 'Critério geral do livro (pH < 7,1 ou HCO3 < 8) ausente.'
+  const temResultado = !!leitura || ag !== null || bic !== null
+
+  // Texto do "Copiar" (C4 = A): leitura da gasometria, ânion-gap, razão delta e as contas do peso, com a página.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Distúrbios acidobásicos — criança',
+      dados: [
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['pH', g.ph > 0 ? numeroBr(g.ph) : ''],
+        ['pCO2', g.pco2 > 0 ? `${numeroBr(g.pco2)} mmHg` : ''],
+        ['HCO3', g.hco3 > 0 ? `${numeroBr(g.hco3)} mEq/L` : ''],
+        ['Se respiratório', leitura ? (tempo === 'aguda' ? 'agudo' : 'crônico') : ''],
+        ['Sódio', g.na > 0 ? `${numeroBr(g.na)} mEq/L` : ''],
+        ['Cloro', g.cl > 0 ? `${numeroBr(g.cl)} mEq/L` : ''],
+        ['Ânion-gap normal do laboratório', ag !== null ? `${numeroBr(agNormal)} mEq/L` : ''],
+        ['HCO3 desejado', hcl ? `${numeroBr(hco3Desejado)} mEq/L` : ''],
+      ],
+      resultado: [
+        ...(leitura
+          ? [
+              `Gasometria: ${leitura.estado}${leitura.primarios.length > 0 ? ` — ${leitura.primarios.join(' + ')}` : ''} (p. 561–563; 571–572)`,
+              ...(leitura.compensacao ? [`Esperado: ${leitura.compensacao.esperado} · ${leitura.compensacao.texto}`] : []),
+              ...leitura.alertas,
+            ]
+          : []),
+        ...(ag !== null ? [`Ânion-gap = Na − (Cl + HCO3): ${br(ag)} mEq/L (p. 564)`] : []),
+        ...(delta ? [`ΔAG/ΔHCO3 = ${br(delta.razao, 2)} — ${delta.texto} (p. 571)`] : []),
+        ...(calc && textoIndicaBic ? [`Bicarbonato de sódio: ${textoIndicaBic}`] : []),
+        ...(bic !== null ? [`Correção até HCO3 ${HCO3_DESEJADO}: ${br(bic, 1)} mEq = ${br(mlBic14(bic), 0)} mL a 1,4% (Livro ICr, p. 566)`] : []),
+        ...(hcl
+          ? [
+              `HCl: ${br(hcl.total, 1)} mEq (metade ${br(hcl.metade, 1)} mEq ≥ ${br(hcl.horasMin, 1)} h a ≤ ${br(hcl.maxMeqH, 1)} mEq/h) (Livro ICr, p. 567–568)`,
+              `Metade: ${br(mlHcl(hcl.metade, HCL_MMOL_L['0,1 M']), 0)} mL de HCl 0,1 M ou ${br(mlHcl(hcl.metade, HCL_MMOL_L['0,2 M']), 0)} mL de HCl 0,2 M.`,
+            ]
+          : []),
+      ],
+      fonte: textoFontes(fichaAcidoBasePed),
+      versao: fichaAcidoBasePed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -60,7 +110,7 @@ export function AcidoBasePed() {
         )}
         <Nota>{NOTA_TEMPOS}</Nota>
         <Nota>{NOTA_MARGEM}</Nota>
-        <Errata texto={ERRATA_ALCALOSE_METABOLICA} />
+        {/* Piloto das calculadoras (C6 = A): a errata da Tabela 3 (alcalose metabólica) foi para a aba Armadilhas. */}
         <details className="text-rotulo text-tinta-sussurro">
           <summary className="cursor-pointer">Valores normais por idade (Tabela 1, p. 562)</summary>
           <ul className="mt-1">
@@ -96,7 +146,7 @@ export function AcidoBasePed() {
 
       {calc && (
         <Bloco titulo="Bicarbonato de sódio (p. 566)" descricao="Na CAD a indicação e a dose seguem o cap. 52 (ferramenta de CAD).">
-          {indicaBic !== null && <p>{indicaBic ? 'pH < 7,1 ou HCO3 < 8 mEq/L: critério geral do livro presente.' : 'Critério geral do livro (pH < 7,1 ou HCO3 < 8) ausente.'}</p>}
+          {textoIndicaBic && <p>{textoIndicaBic}</p>}
           <LinhaLivro
             nome="Correção até HCO3 15"
             texto={`mEq = (${HCO3_DESEJADO} − HCO3) × 0,3 × peso; solução isosmolar a 1,4% (${br(BIC14_MEQ_ML, 2)} mEq/mL) em 1 a 2 h, com gasometria depois`}
@@ -125,6 +175,24 @@ export function AcidoBasePed() {
           )}
         </Bloco>
       )}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[`Alcalose metabólica (Tabela 3) — errata do livro: ${ERRATA_ALCALOSE_METABOLICA}`, `Bicarbonato a 1,4% — errata do livro: ${ERRATA_BIC14}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaAcidoBasePed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={leitura ? `${leitura.estado}${leitura.primarios.length > 0 ? ` — ${leitura.primarios.join(' + ')}` : ''}` : ag !== null ? `Ânion-gap ${br(ag)} mEq/L` : 'Informe pH, pCO2 e HCO3'}
+        detalhe={leitura?.alertas[0] ?? ([leitura && ag !== null && `ânion-gap ${br(ag)} mEq/L`, delta && `ΔAG/ΔHCO3 ${br(delta.razao, 2)}`, bic !== null && `bicarbonato ${br(bic, 1)} mEq`].filter(Boolean).join(' · ') || undefined)}
+        tom={leitura && leitura.alertas.length > 0 ? 'atencao' : 'neutro'}
+        textoCopia={temResultado ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

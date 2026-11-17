@@ -3,15 +3,35 @@ import { useState } from 'react'
 import {
   CENARIOS, DURACAO, TABELA2_OSTEO, TABELA3, classificarOsteomielite, faixaOsteo, fichaOsteoarticularPed, sinovialSugestivo, type Cenario,
 } from '@/clinico/pediatria/osteoarticularPed'
+import { calcularDoseLivro, textoDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
+import { textoFontes } from '@/clinico/ficha'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
-import { PACIENTE_VAZIO, idadePediatrica } from './formatoIcr'
+import { PACIENTE_VAZIO, faixaBr, idadePediatrica } from './formatoIcr'
 import { Bloco, CampoPaciente, Opcoes } from './PecasIcr'
 import { Aviso, LinhaDoseLivro } from './PecasP4'
 import { ListaLivro } from './PecasP5'
 
 const FAIXA_TEXTO = { '0-3m': '0 a 3 meses', '3m-5a': '3 meses a 5 anos', '>5a': 'mais de 5 anos' } as const
+
+const casasLivro = (u: string, x: number) => (u === 'UI' ? 0 : x >= 100 ? 0 : x >= 10 ? 1 : 2)
+
+/** Linha do "Copiar": a mesma conta da LinhaDoseLivro (PecasP4). */
+function doseLivroTxt(d: DoseLivro, peso: number, rn = false): string[] {
+  if (rn && !d.neonatal) return []
+  const r = calcularDoseLivro(d, peso)
+  if (!r) return []
+  const fmt = (f: [number, number]) => faixaBr(f, casasLivro(d.unidade, f[1]))
+  const conta = [r.porDose && `${fmt(r.porDose)} ${d.unidade}/dose`, r.dia && `${fmt(r.dia)} ${d.unidade}/dia`].filter(Boolean).join(' · ')
+  return [`- ${d.nome}: ${conta || textoDoseLivro(d)}${r.noMaximo ? ` (limitado ao máximo${d.fonteMaximo ? `, ${d.fonteMaximo}` : ''})` : ''} · ${d.via} (${d.pagina})`]
+}
 
 /** Artrite séptica e osteomielite — cap. 49 do livro do ICr. */
 export function ArtriteOsteomielitePed() {
@@ -26,6 +46,35 @@ export function ArtriteOsteomielitePed() {
   const tipo = dias > 0 ? classificarOsteomielite(dias) : null
   const sinovial = sinovialSugestivo(sin, pmn, gram)
   const calc = p.peso > 0 && idadePediatrica(p.anos, p.meses)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaOsteoarticularPed.id)
+  const doses = calc && !p.rn
+  const cenarioTxt = CENARIOS.find(([c]) => c === cenario)?.[1] ?? ''
+  const temConta = doses || faixa !== null || tipo !== null || sinovial !== null
+
+  // Texto do "Copiar" (C3 e C4 = A): cobertura pela idade, doses do cenário escolhido e leituras, com a página do livro.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Artrite séptica e osteomielite — criança (PS Pediatria ICr-HCFMUSP)',
+      dados: [
+        ['Peso', p.peso > 0 ? `${numeroBr(p.peso)} kg` : ''],
+        ['Idade', p.rn ? 'recém-nascido' : temIdade ? `${p.anos} anos e ${p.meses} meses` : ''],
+        ['Resistência local', doses ? cenarioTxt : ''],
+        ['Dias de sintomas', dias > 0 ? String(dias) : ''],
+        ['Leucócitos no líquido sinovial', sin > 0 ? `${numeroBr(sin)}/mm³` : ''],
+        ['Predomínio de PMN', pmn ? 'sim' : ''],
+        ['Gram positivo', gram ? 'sim' : ''],
+      ],
+      resultado: [
+        ...(faixa ? [`${FAIXA_TEXTO[faixa]}: ${TABELA2_OSTEO[faixa].agentes}. Cobertura: ${TABELA2_OSTEO[faixa].cobertura} (Tabela 2, p. 497–498)`] : []),
+        ...(doses ? [`Antibiótico — ${cenarioTxt} (Tabela 3, p. 498–499):`, ...TABELA3[cenario].flatMap((d) => doseLivroTxt(d, p.peso, p.rn))] : []),
+        ...(tipo ? [`Osteomielite ${tipo} (p. 494)`] : []),
+        ...(sinovial ? [sinovial.achados.length ? `Achados sugestivos de artrite séptica: ${sinovial.achados.join('; ')} (p. 496)` : 'Nenhum dos achados sugestivos citados pelo livro (p. 496)'] : []),
+      ],
+      fonte: textoFontes(fichaOsteoarticularPed),
+      versao: fichaOsteoarticularPed.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -74,6 +123,24 @@ export function ArtriteOsteomielitePed() {
       <Bloco titulo="Duração e cirurgia">
         <ListaLivro itens={DURACAO} />
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temConta}
+        armadilhas={[...(guia?.armadilhas ?? [])]}
+        ficha={fichaOsteoarticularPed}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={doses ? `Criança · ${numeroBr(p.peso)} kg${faixa ? ` · ${FAIXA_TEXTO[faixa]}` : ''}` : faixa ? `Faixa: ${FAIXA_TEXTO[faixa]}` : temConta ? 'Leituras nos blocos acima' : 'Informe peso e idade'}
+        detalhe={doses ? `${cenarioTxt}; doses acima, "Copiar" leva todas.` : undefined}
+        textoCopia={temConta ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
