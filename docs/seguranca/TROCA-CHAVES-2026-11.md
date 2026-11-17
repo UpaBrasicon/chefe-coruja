@@ -7,7 +7,7 @@
 - o backup sobe cifrado desde 17/11;
 - não há sinal de acesso indevido (bucket privado).
 
-Mesmo assim, toda chave que estava nesses arquivos é tratada como exposta. O RT pediu o plano em 17/11/2026 ("Sim, planeje").
+Mesmo assim, toda chave que estava nesses arquivos é tratada como exposta. O RT pediu o plano em 17/11/2026 ("Sim, planeje") e aprovou "Todas A, ok fase 1".
 
 **Regras deste plano:**
 - **Nenhum valor de chave aparece** em tela, log, chat ou git. As chaves novas são geradas no VPS (`openssl rand -hex 32`) e gravadas direto no arquivo.
@@ -69,3 +69,40 @@ Mesmo assim, toda chave que estava nesses arquivos é tratada como exposta. O RT
 ## Evidência ao fim
 
 Cada fase registra o que foi conferido, só com status, sem valor de chave. O registro vai para a entrada 1 do registro de incidentes e para `infra/vps-backup-offbox.md`.
+
+## Execução
+
+### Fase 1, concluída em 17/11/2026 (script `/root/troca-chaves-fase1.sh` no VPS)
+
+**O que foi trocado:**
+- `SKILL_API_TOKEN` / `HERMES_SKILL_TOKEN`: 8 lugares.
+- `IA_GATEWAY_TOKEN`: 9 lugares, contando o `config.yaml` dos agentes.
+- `IA_GATEWAY_TOKEN_LAB`: 3 lugares.
+- `API_SERVER_KEY`: 7 lugares nos quatro agentes, mais 1 no lab.
+- Credencial do DeepSeek no `auth.json` do Nous: retirada.
+
+**Senhas do Postgres (`hermes_app_user` e `hermes_app_job`):**
+- **Primeira tentativa:** `ALTER ROLE CURRENT_USER` pelo próprio papel. A troca no banco funcionou, mas a primeira conexão com a senha nova falhou, porque o pooler guarda a senha por alguns segundos. O script parou antes de gravar a senha nova, e ela se perdeu. A senha antiga já não entrava.
+- **Correção:**
+  - o VPS gerou senhas novas e entregou só o verificador SCRAM-SHA-256;
+  - o verificador foi aplicado na produção (`ALTER ROLE … PASSWORD 'SCRAM-SHA-256$…'`), sem a senha passar pela sessão;
+  - o VPS gravou as senhas novas nos arquivos e apagou os temporários.
+- **Tempo afetado:** as consultas diretas dos agentes ao banco ficaram alguns minutos sem acesso.
+
+**Recriados:** hermes-app (health ok), Corujinha (pelo `recriar-agente.sh`), clínica, gestora, suporte e lab.
+
+**Conferência (só status):**
+- gateway de IA: token novo 200, antigo 401;
+- API das skills: token novo passa (400 com pedido vazio), antigo 401;
+- senha antiga do `hermes_app_user` recusada; senhas novas aceitas pelo pooler;
+- os 4 agentes com o mesmo token das skills, do gateway e da URL do banco que o hermes-app;
+- `config.yaml` de cada agente com o token certo;
+- os 5 agentes de pé, sem erro no log.
+
+**Volta:** arquivos `*.bak-troca-2026-11`. Atenção: eles têm os valores antigos, que não valem mais.
+
+### Fase 2: Telegram, com o RT
+
+1. No @BotFather, `/mybots` → bot → **API Token** → **Revoke current token**, e copiar o token novo.
+2. No terminal do VPS (o terminal do navegador da Hostinger serve), rodar `bash /root/trocar-token-telegram.sh <bot>`, com `corujinha`, `clinica`, `gestora`, `suporte` ou `lab`, e colar o token. O script grava o token e recria só aquele agente.
+3. Mandar uma mensagem ao bot no Telegram para conferir.
