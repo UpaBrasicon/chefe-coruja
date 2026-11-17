@@ -2,14 +2,18 @@
 // 17/11/2026, M1–M6 = A, protótipo aprovado). Cartões por situação do plantão,
 // pelo modelo de organização do ANY App (não a marca). Cada cartão abre uma
 // conduta que já existe na Central; o teste confere que a rota existe.
-// Ordem do RT: "Parada e reanimação" primeiro no adulto e na criança;
-// "Reanimação neonatal" em segundo na criança.
+// Ordem do RT: "Parada e reanimação" primeiro no adulto e na criança. Na criança
+// o cartão junta a parada pediátrica e a reanimação neonatal (pedido do RT em
+// 17/11/2026: "pode agrupar, que vamos construir juntos").
 
 export type IconeGuia =
   | 'parada' | 'seringa' | 'via-aerea' | 'pulmao' | 'gota' | 'termometro' | 'coracao' | 'cerebro'
   | 'lua' | 'alerta' | 'inseto' | 'maos' | 'bebe'
 
-export type CartaoGuia = { nome: string; rota: string; icone: IconeGuia }
+/** Cartão que abre uma ferramenta (rota) ou um grupo de ferramentas (itens, aberto em ?guia=<id>). */
+export type CartaoGuia =
+  | { nome: string; rota: string; icone: IconeGuia }
+  | { nome: string; id: string; itens: { nome: string; rota: string }[]; icone: IconeGuia }
 
 export const GUIA_ADULTO: CartaoGuia[] = [
   { nome: 'Parada e reanimação', rota: '/plantonista/emergencias/pcr-adulto', icone: 'parada' },
@@ -30,8 +34,13 @@ export const GUIA_ADULTO: CartaoGuia[] = [
 ]
 
 export const GUIA_CRIANCA: CartaoGuia[] = [
-  { nome: 'Parada e reanimação', rota: '/plantonista/pediatria/rcp-pediatrica', icone: 'parada' },
-  { nome: 'Reanimação neonatal', rota: '/plantonista/pediatria/reanimacao-neonatal', icone: 'bebe' },
+  {
+    nome: 'Parada e reanimação', id: 'parada-crianca', icone: 'parada',
+    itens: [
+      { nome: 'Parada cardiorrespiratória na criança', rota: '/plantonista/pediatria/rcp-pediatrica' },
+      { nome: 'Reanimação neonatal', rota: '/plantonista/pediatria/reanimacao-neonatal' },
+    ],
+  },
   { nome: 'Bolus e infusões', rota: '/plantonista/pediatria/bolus', icone: 'seringa' },
   { nome: 'Via aérea', rota: '/plantonista/pediatria/via-aerea', icone: 'via-aerea' },
   { nome: 'Choque', rota: '/plantonista/pediatria/choque-pediatrico', icone: 'gota' },
@@ -46,3 +55,9 @@ export const GUIA_CRIANCA: CartaoGuia[] = [
 
 /** "Calculadoras e escores": a Central completa (busca, grupos, favoritos). */
 export const ROTA_TODAS_FERRAMENTAS = '/plantonista?todas=1'
+
+/** Todas as rotas de um cartão (a dele ou as do grupo). */
+export const rotasDoCartao = (c: CartaoGuia): string[] => ('rota' in c ? [c.rota] : c.itens.map((i) => i.rota))
+
+export const cartaoDoGuia = (id: string | null): Extract<CartaoGuia, { id: string }> | undefined =>
+  [...GUIA_ADULTO, ...GUIA_CRIANCA].find((c): c is Extract<CartaoGuia, { id: string }> => 'id' in c && c.id === id)
