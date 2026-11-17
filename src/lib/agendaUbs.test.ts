@@ -81,3 +81,17 @@ test('U3 do percurso da UBS: o gestor salva o horário de funcionamento antes da
   assert.match(conf, /supabase\.rpc\('ubs_definir_funcionamento', \{ p_unidade: unidadeId, p_horarios: horarios \}\)/)
   assert.match(readFileSync('src/pages/agenda/useAgenda.ts', 'utf8'), /supabase\.rpc\('ubs_funcionamento', \{ p_unidade: unidadeId! \}\)/)
 })
+
+test('U6, PR 1 do percurso da UBS: serviço da consulta na agenda', async () => {
+  const { servicosDoPapel, rotuloServico } = await import('../domain/agenda.ts')
+  assert.deepEqual(servicosDoPapel('plantonista'), ['consulta_medica', 'implante', 'diu', 'preventivo', 'outro'])
+  assert.deepEqual(servicosDoPapel('enfermeiro'), ['consulta_enfermagem', 'preventivo', 'curativo', 'teste_rapido', 'outro'])
+  assert.equal(rotuloServico('teste_rapido'), 'Teste rápido')
+  assert.equal(rotuloServico(null), null)
+  const tela = readFileSync('src/pages/agenda/AgendaConsultas.tsx', 'utf8')
+  assert.match(tela, /p_servico: servico \?\? undefined/)
+  assert.match(tela, /aria-label="Serviço"/)
+  const sql = readFileSync('supabase/migrations/20270415000005_ubs_servico_agenda.sql', 'utf8')
+  assert.match(sql, /ARRAY\['consulta_medica', 'implante', 'diu', 'preventivo', 'outro'\]/)
+  assert.match(sql, /ARRAY\['consulta_enfermagem', 'preventivo', 'curativo', 'teste_rapido', 'outro'\]/)
+})
