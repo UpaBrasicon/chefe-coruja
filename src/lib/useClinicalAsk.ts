@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { etapaDoEvento, type EtapaIa } from '@/lib/etapaIa'
 
 // "Perguntar à IA" da Central: chama a Edge Function clinical-search (que
 // confere o vínculo com a unidade, mascara dados e repassa o stream NDJSON da
@@ -39,6 +40,7 @@ type Evento =
   | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean; nao_encontrou?: boolean; recusa?: boolean }
   | { type: 'error'; text: string }
   | { type: 'pubmed'; origem: string; busca: string; artigos: ArtigoPubmed[] }
+  | { type: 'etapa'; etapa: string }
 
 const URL_FUNCAO = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clinical-search`
 
@@ -83,13 +85,15 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
   const [publico, setPublico] = useState<'adulto' | 'pediatrico' | null>(null)
   const [confianca, setConfianca] = useState<ConfiancaIa | null>(null)
   const [pubmed, setPubmed] = useState<ArtigoPubmed[]>([])
+  // pedido do RT (17/11/2026): etapa da espera, mostrada com as bolinhas
+  const [etapa, setEtapa] = useState<EtapaIa | null>(null)
   const controle = useRef<AbortController | null>(null)
 
   useEffect(() => () => controle.current?.abort(), [])
 
   const limpar = useCallback(() => {
     controle.current?.abort()
-    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([])
+    setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([]); setEtapa(null)
     setStatus('idle')
   }, [])
 
@@ -98,7 +102,7 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     controle.current?.abort()
     const ac = new AbortController()
     controle.current = ac
-    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([])
+    setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([]); setEtapa('lendo')
     setStatus('loading')
     let res: Response
     try {
@@ -139,7 +143,10 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
           if (!l.trim()) continue
           let ev: Evento
           try { ev = JSON.parse(l) as Evento } catch { continue }
-          if (ev.type === 'meta') {
+          if (ev.type === 'etapa') {
+            const e = etapaDoEvento(ev.etapa)
+            if (e) setEtapa(e)
+          } else if (ev.type === 'meta') {
             setRequestId((r) => r ?? ev.request_id)
             setFontes(ev.fontes ?? [])
             setFerramentas(ev.ferramentas ?? [])
@@ -168,5 +175,5 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     }
   }, [unidadeId, modo])
 
-  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed }
+  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed, etapa }
 }

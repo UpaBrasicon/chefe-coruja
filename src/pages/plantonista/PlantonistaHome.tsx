@@ -280,6 +280,7 @@ export default function PlantonistaHome() {
           publico={ia.publico}
           confianca={ia.confianca}
           pubmed={ia.pubmed}
+          etapa={ia.etapa}
           onFechar={ia.limpar}
         />
 

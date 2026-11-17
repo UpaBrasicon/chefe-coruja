@@ -37,6 +37,12 @@ def perguntar(cliente, q, rota="/v1/ask", publico=None):
     r = cliente.post(rota, headers={"Authorization": "Bearer t"}, json=corpo)
     if rota == "/v1/search":
         return r.json()
+    # as linhas de etapa (pedido do RT de 17/11/2026) ficam fora: os testes olham a resposta
+    return [ev for ev in (json.loads(l) for l in r.text.splitlines() if l.strip()) if ev.get("type") != "etapa"]
+
+
+def etapas(cliente, q):
+    r = cliente.post("/v1/ask", headers={"Authorization": "Bearer t"}, json={"q": q, "tenant_id": "global", "request_id": "r1"})
     return [json.loads(l) for l in r.text.splitlines() if l.strip()]
 
 
@@ -189,6 +195,15 @@ class TestRespostaComTrecho(unittest.TestCase):
             self.enviado.update(kw)
             yield SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content=texto))])
         mock.patch.object(main.llm.chat.completions, "create", side_effect=falso).start()
+
+    def test_etapas_antes_da_resposta(self):
+        # pedido do RT (17/11/2026): "lendo" e "procurando" chegam antes da meta
+        self.modelo_diz("Adrenalina IM [1].", [ponto("adu1", "adrenalina 0,5 mg IM")])
+        tipos = [ev["type"] for ev in etapas(self.cliente, "dose de adrenalina na anafilaxia")]
+        self.assertEqual(tipos[:3], ["etapa", "etapa", "meta"])
+        self.assertIn("delta", tipos)
+        ev = etapas(self.cliente, "dose de adrenalina na anafilaxia")
+        self.assertEqual([e["etapa"] for e in ev if e["type"] == "etapa"], ["lendo"])  # da memória: sem busca
 
     def test_nao_encontrei_sem_alerta_de_calculo(self):
         self.modelo_diz("Não encontrei isso no material de referência. Glicose 50% 50 mL EV.", [ponto("adu1", "tiamina 100 mg")])

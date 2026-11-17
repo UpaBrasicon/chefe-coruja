@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { confiancaDasCitadas, fontesCitadas, mostrarPubmed, SEM_PEDIATRIA, semResposta, textoConfianca } from '@/lib/respostaIa'
 import type { ArtigoPubmed, ConfiancaIa, Fonte, StatusIa, ToolHit } from '@/lib/useClinicalAsk'
 import { cn } from '@/lib/utils'
+import { etapaVisivel, ROTULO_ETAPA, type EtapaIa } from '@/lib/etapaIa'
 
 // Painel da resposta da IA (guia §9.4): texto em streaming com [n] clicável,
 // ferramentas sugeridas, lista de fontes, estados de bloqueio/erro, feedback
@@ -29,7 +30,26 @@ type Props = {
   confianca?: ConfiancaIa | null
   /** E5: artigos do PubMed ao vivo quando o material não respondeu. */
   pubmed?: ArtigoPubmed[]
+  /** Etapa da espera (lendo, procurando, escrevendo), mostrada com as bolinhas. */
+  etapa?: EtapaIa | null
   onFechar: () => void
+}
+
+/**
+ * Espera com etapa (pedido do RT, 17/11/2026): três bolinhas que sobem e descem
+ * e o nome da etapa. Com movimento reduzido no aparelho, as bolinhas ficam paradas.
+ */
+function Pensando({ etapa }: { etapa: EtapaIa }) {
+  return (
+    <p role="status" className="flex items-center gap-2.5 text-corpo text-tinta-sussurro">
+      <span className="flex items-end gap-1" aria-hidden>
+        <span className="size-1.5 rounded-capsula bg-acao motion-safe:animate-bounce" />
+        <span className="size-1.5 rounded-capsula bg-acao motion-safe:animate-bounce motion-safe:[animation-delay:150ms]" />
+        <span className="size-1.5 rounded-capsula bg-acao motion-safe:animate-bounce motion-safe:[animation-delay:300ms]" />
+      </span>
+      {ROTULO_ETAPA[etapa]}…
+    </p>
+  )
 }
 
 /** E5: lista do PubMed ao vivo, sem texto da IA. */
@@ -156,12 +176,12 @@ function CartoesFerramentas({ ferramentas }: { ferramentas: ToolHit[] }) {
   )
 }
 
-export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed = [], onFechar }: Props) {
+export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed = [], etapa = null, onFechar }: Props) {
   if (status === 'idle') return null
   const curto = status === 'streaming' || status === 'done' ? semResposta(texto) : null
   if (curto) { fontes = []; ferramentas = [] } else if (status === 'done') fontes = fontesCitadas(texto, fontes)
   const mensagem: Record<string, string | null> = {
-    loading: 'Consultando o material de referência…',
+    loading: null,
     blocked: publico === 'pediatrico' ? SEM_PEDIATRIA : 'Não encontrei isso no material de referência.',
     limite: 'Limite de 30 perguntas por hora atingido. A busca local continua disponível.',
     indisponivel: 'IA indisponível no momento. A busca local continua disponível.',
@@ -170,6 +190,7 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
     identificacao: 'A pergunta parece ter identificação de paciente (nome, CPF, CNS, data ou prontuário) e não foi enviada. Pergunte sem o dado: a IA não recebe identificação.',
   }
   const aviso = mensagem[status] ?? null
+  const pensando = etapaVisivel(status, texto, etapa)
   // E4: o nível vale pelas fontes citadas na resposta (fontes já filtradas acima)
   const nivel = confiancaDasCitadas(fontes, confianca)
   return (
@@ -187,9 +208,10 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
 
       <div className="space-y-4 px-4 py-3">
         {alerta && <p className="rounded-controle border border-alerta/40 bg-alerta/10 px-3 py-2 text-apoio text-tinta">{alerta}</p>}
-        {aviso && <p className={cn('text-corpo', status === 'loading' ? 'animate-pulse text-tinta-sussurro' : 'text-tinta')}>{aviso}</p>}
+        {aviso && <p className="text-corpo text-tinta">{aviso}</p>}
+        {pensando && <Pensando etapa={pensando} />}
         {(status === 'streaming' || status === 'done') && (curto ? <p className="text-corpo text-tinta">{curto}</p> : <Texto texto={texto} fontes={fontes} />)}
-        {status === 'streaming' && <span className="inline-block h-4 w-1.5 animate-pulse bg-acao align-middle" aria-hidden />}
+        {status === 'streaming' && !pensando && <span className="inline-block h-4 w-1.5 animate-pulse bg-acao align-middle" aria-hidden />}
         {status === 'done' && !curto && textoConfianca(nivel) && (
           <p className={cn('text-apoio', nivel === 'alta' ? 'text-tinta-sussurro' : 'text-tinta')} data-confianca={nivel}>
             {textoConfianca(nivel)}
