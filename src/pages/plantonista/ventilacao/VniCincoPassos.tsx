@@ -6,8 +6,15 @@ import {
   ALVOS_SAT_VNI, CONTRAINDICACOES_VNI, INTERFACES_VNI, MODOS_VNI, PASSOS_VNI, QUADROS_VNI, RETIRADA_VNI, fichaVniPassos, lerAcompanhamentoVni, lerAjustesVni,
   type ModoVni, type QuadroVni,
 } from '@/clinico/adulto/vniPassos'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Alertas, Escolha, Resultado } from '../manual/LoteAPecas'
 import { informado } from '../manual/loteAFormato'
@@ -59,6 +66,64 @@ export function VniCincoPassos() {
   const alvoEscolhido = alvo || (quadro === 'dpoc' ? 'dpoc' : quadro === 'eap' ? 'ic' : '')
   const acomp = lerAcompanhamentoVni({ ph: informado(ph4), paco2: informado(paco24), pao2: informado(pao24), sat: informado(sat4), alvoSat: alvoEscolhido, naoRetentor, rebaixamento, instabilidade, pausas, secrecao, dpoc: quadro === 'dpoc' })
   const alternar = (t: string) => setContra((c) => (c.includes(t) ? c.filter((x) => x !== t) : [...c, t]))
+
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaVniPassos.id)
+  const nomeModo = modo === 'cpap' ? 'CPAP' : 'BiPAP'
+  const alvoSat = ALVOS_SAT_VNI.find((a) => a.id === alvoEscolhido)
+  const textoAlvo = alvoSat ? `${alvoSat.contexto}: ${alvoSat.faixa ? `${alvoSat.faixa[0]}–${alvoSat.faixa[1]}%` : `> ${alvoSat.acima}%`} (${alvoSat.pagina})` : ''
+  const pressaoInformada = modo === 'cpap' ? cpap > 0 : ipap > 0 || epap > 0
+  // Os mesmos avisos que a tela mostra em <Alertas>: contraindicação marcada, ajuste fora do livro, indicação de VM invasiva.
+  const alertasTela = (contra.length > 0 ? 1 : 0) + ajustes.foraDoLivro.length + acomp.invasiva.length
+  const marcas: [string, boolean][] = [
+    ['não retentor crônico de CO2', naoRetentor],
+    ['rebaixamento do nível de consciência', rebaixamento],
+    ['instabilidade hemodinâmica', instabilidade],
+    ...(quadro === 'dpoc' ? [['pausas respiratórias com rebaixamento', pausas] as [string, boolean]] : []),
+    ['não consegue manejar ou remover secreção', secrecao],
+  ]
+  const temResultado = pf !== null || cortes.length > 0 || contra.length > 0 || iface !== '' || pressaoInformada || acomp.sat !== null || acomp.invasiva.length > 0
+
+  // Texto do "Copiar" (C4 = A): o que foi informado em cada passo e o que o livro traz, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Ventilação não invasiva em cinco passos (adulto)',
+        dados: [
+          ['Quadro', QUADROS_VNI[quadro].nome],
+          ['FR', fr > 0 ? `${numeroBr(fr)} ipm` : ''],
+          ['pH', ph > 0 ? numeroBr(ph) : ''],
+          ['PaCO2', paco2 > 0 ? `${numeroBr(paco2)} mmHg` : ''],
+          ['PaO2', pao2 > 0 ? `${numeroBr(pao2)} mmHg` : ''],
+          ['FiO2', fio2 > 0 ? `${numeroBr(fio2)}%` : ''],
+          ['Interface', iface],
+          ['Modo', nomeModo],
+          ['IPAP', modo === 'bipap' && ipap > 0 ? `${numeroBr(ipap)} cmH2O` : ''],
+          ['EPAP', modo === 'bipap' && epap > 0 ? `${numeroBr(epap)} cmH2O` : ''],
+          ['CPAP', modo === 'cpap' && cpap > 0 ? `${numeroBr(cpap)} cmH2O` : ''],
+          ['Alvo de SatO2', textoAlvo],
+          ['pH no acompanhamento', ph4 > 0 ? numeroBr(ph4) : ''],
+          ['PaCO2 no acompanhamento', paco24 > 0 ? `${numeroBr(paco24)} mmHg` : ''],
+          ['PaO2 no acompanhamento', pao24 > 0 ? `${numeroBr(pao24)} mmHg` : ''],
+          ['SatO2 no acompanhamento', sat4 > 0 ? `${numeroBr(sat4)}%` : ''],
+          ['Marcados no acompanhamento', marcas.filter(([, v]) => v).map(([k]) => k).join(', ')],
+        ],
+        resultado: [
+          ...(pf !== null ? [`P/F ${Math.round(pf)}`] : []),
+          ...cortes,
+          ...(cortes.length > 0 ? ['O livro diz que não há critério gasométrico específico para indicar VNI (p. 378): a tela lista os cortes, não decide.'] : []),
+          ...(contra.length > 0 ? [`${contra.length} contraindicação(ões) do livro marcada(s): ${contra.join('; ')}.`] : []),
+          `O livro, para o quadro: ${QUADROS_VNI[quadro].livro} (${QUADROS_VNI[quadro].pagina})`,
+          ...(ajustes.suporte !== null ? [`Pressão de suporte (IPAP − EPAP): ${ajustes.suporte} cmH2O`] : []),
+          ...ajustes.foraDoLivro,
+          ...ajustes.notas,
+          ...(acomp.sat ? [acomp.sat] : []),
+          ...acomp.invasiva,
+        ],
+        fonte: textoFontes(fichaVniPassos),
+        versao: fichaVniPassos.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -154,6 +219,25 @@ export function VniCincoPassos() {
           <NavPassos atual={5} total={5} ir={ir} />
         </CartaoPasso>
       )}
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaVniPassos}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={`Passo ${passo} de 5 · ${PASSOS_VNI[passo - 1]}`}
+        detalhe={`${QUADROS_VNI[quadro].nome}${iface ? ` · ${iface}` : ''} · ${nomeModo}${ajustes.suporte !== null ? ` · suporte ${ajustes.suporte} cmH2O` : ''}${alertasTela > 0 ? ` · ${alertasTela} alerta${alertasTela > 1 ? 's' : ''}` : ''}`}
+        tom={alertasTela > 0 ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

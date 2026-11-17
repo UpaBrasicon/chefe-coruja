@@ -2012,6 +2012,17 @@ export const TOPOS: Record<string, Topo> = {
       { texto: 'Na IRpA hipercápnica, a ATS 2026 faz recomendação forte de VNI para reduzir mortalidade e intubação.', ref: { fonte: 'ATS 2026, suporte respiratório não invasivo (Goel et al., Am J Respir Crit Care Med 2026)', grau: 'forte' } },
     ],
   },
+  // PRAM (16/11/2026): resumo do Ducharme 2008 no PubMed (PMID 18346499).
+  'ped-pram': {
+    resumo: 'Mede a gravidade da crise de asma na criança pelo exame à beira do leito, na triagem e depois do broncodilatador.',
+    instrucoes: 'Pontue os cinco itens do exame (0 a 12 pontos): leve de 0 a 3, moderada de 4 a 7 e grave de 8 a 12.',
+    quandoUsar: [
+      { texto: 'Crise aguda de asma na criança, na triagem, depois do broncodilatador inicial e na decisão de destino.', ref: { fonte: 'Ducharme et al., J Pediatr 2008', pagina: 'resumo' } },
+    ],
+    porQueUsar: [
+      { texto: 'Em 782 crianças de 2 a 17 anos, o PRAM na triagem e depois do broncodilatador se associou à internação (r = 0,4 e 0,5), mostrou boa resposta ao tratamento (0,7) e boa concordância entre examinadores (r = 0,78) em todas as idades.', ref: { fonte: 'Ducharme et al., J Pediatr 2008', pagina: 'resumo' } },
+    ],
+  },
 }
 
 export function topoDa(fichaId: string): Topo | undefined {

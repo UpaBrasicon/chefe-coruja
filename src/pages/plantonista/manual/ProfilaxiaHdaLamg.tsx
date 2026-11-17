@@ -4,7 +4,14 @@ import {
   CRITERIOS_ISOLADOS, CRITERIOS_PAREADOS, DIFERENCAS_ULCERA_2024, ERRATA_ALCOOL, FORA_DO_LIVRO_ULCERA, IBP_DUPLA_ANTIAGREGACAO, NOTA_AVC_ULCERA, NOTA_IAM_SUPRA, REVISE,
   SCCM_ASHP_ITENS, ULCERA_ESTRESSE, avaliarIbpDupla, fichaProfilaxiaUlceraEstresse,
 } from '@/clinico/adulto/profilaxiaUlceraEstresse'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { Badge } from '@/components/ui/badge'
 
 import { Bloco, LinhaManual } from './PecasLoteC'
@@ -28,6 +35,37 @@ export function ProfilaxiaHdaLamg() {
   const [pareados, setPareados] = useState<string[]>([])
   const [alcool, setAlcool] = useState(false)
   const r = avaliarIbpDupla({ duplaAntiagregacao: dupla, isolados, pareados, alcool })
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaProfilaxiaUlceraEstresse.id)
+
+  const nomesIsolados = CRITERIOS_ISOLADOS.filter((c) => isolados.includes(c.id)).map((c) => c.rotulo)
+  const nomesPareados = CRITERIOS_PAREADOS.filter((c) => pareados.includes(c.id)).map((c) => c.rotulo)
+  const leitura = r.semDuplaAntiagregacao
+    ? 'Sem dupla antiagregação marcada'
+    : r.criterioPresente
+      ? `Critério do manual presente (${IBP_DUPLA_ANTIAGREGACAO.pagina})`
+      : `Nenhum critério da p. 208 marcado${r.alcoolAmbiguo ? ' (álcool não somado)' : ''}`
+
+  // Texto do "Copiar" (C4 = A): os critérios marcados e a leitura da p. 208, como a tela mostra.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Profilaxia de úlcera de estresse e gastroproteção (adulto) — IBP na dupla antiagregação',
+      dados: [
+        ['Dupla antiagregação plaquetária', 'sim'],
+        ['Critérios isolados marcados', nomesIsolados.join(', ') || 'nenhum'],
+        ['Critérios pareados marcados', nomesPareados.join(', ') || 'nenhum'],
+        ['Uso de álcool', alcool ? 'sim (não somado; ver errata da p. 208)' : 'não'],
+      ],
+      resultado: r.criterioPresente
+        ? [
+            `Critério do manual presente (${IBP_DUPLA_ANTIAGREGACAO.pagina}): ${r.motivos.join('; ')}`,
+            `O manual: ${IBP_DUPLA_ANTIAGREGACAO.texto}: ${IBP_DUPLA_ANTIAGREGACAO.droga} (${IBP_DUPLA_ANTIAGREGACAO.pagina})`,
+          ]
+        : [`Nenhum critério da p. 208 marcado${r.alcoolAmbiguo ? ' (o álcool não é somado; ver errata)' : ''}`],
+      fonte: textoFontes(fichaProfilaxiaUlceraEstresse),
+      versao: fichaProfilaxiaUlceraEstresse.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -76,6 +114,24 @@ export function ProfilaxiaHdaLamg() {
           {FORA_DO_LIVRO_ULCERA.map((x) => <li key={x}>{x}</li>)}
         </ul>
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!dupla}
+        armadilhas={[ERRATA_ALCOOL, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaProfilaxiaUlceraEstresse}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={leitura}
+        detalhe={dupla ? 'IBP na dupla antiagregação (cap. 13, p. 208)' : 'Marque a dupla antiagregação para ler o critério da p. 208'}
+        tom={r.criterioPresente ? 'atencao' : 'neutro'}
+        textoCopia={dupla ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

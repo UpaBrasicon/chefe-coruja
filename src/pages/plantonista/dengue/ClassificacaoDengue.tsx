@@ -3,13 +3,21 @@ import { useState } from 'react'
 import {
   ALTA, AMINAS_CARDIOPATA, ANALGESICOS_ADULTO, ANTITROMBOTICOS, BICARBONATO_SEM_GASOMETRIA, CARDIOPATA_PARAMETROS, CASO_SUSPEITO, CONDICOES_ESPECIAIS, CONSIDERACOES_C_D, DIAGNOSTICO_LAB, DIFERENCAS_2024, DIFERENCAS_DENGUE_OMS, DIFERENCIAL, DIRETRIZ_DENGUE_OMS, ERRATA_PARACETAMOL, EXAMES, GESTANTE, HIPERIDRATACAO, HIPERTENSOS, HIPOTENSAO, IDOSOS_ALERTA, INOTROPICOS, INTERNACAO, INTERROMPER_INFUSAO, PLAQUETAS_GRUPO_D, PROVA_LACO, QUADRO2_PRIORIDADE, REAVALIACAO, SANGRAMENTO_ANTITROMBOTICO, SINAIS_ALARME, SINAIS_GRAVIDADE, TABELA_HEMODINAMICA, antitromboticoDengue, bicarbonatoDengue, cardiopataDengue, fichaDengue, grupoDPorPeso, grupoDengue, hidratacaoAdulto, hipocalemiaDengue, hiponatremiaDengue, provaDoLaco, type Antitrombotico, type ClasseNyha,
 } from '@/clinico/dengue'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { Chip } from '@/components/monitor/Pagina'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, LinhaManual } from '../manual/PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -69,6 +77,62 @@ export function ClassificacaoDengue() {
   const card = cardiopataDengue(nyha, peso)
   const anti = plaq > 0 ? antitromboticoDengue(droga, plaq) : null
   const laco = provaDoLaco(pa.pas, pa.pad)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaDengue.id)
+  const comPeso = peso > 0
+  const sn = (b: boolean) => (b ? 'sim' : 'não')
+
+  // Texto do "Copiar" (C4 = A; C3 = A: leva a lista do grupo). Na criança, só a classificação:
+  // os volumes, eletrólitos e demais contas desta tela são do adulto.
+  const copia =
+    crianca || comPeso
+      ? textoCopia({
+          ferramenta: `Dengue — classificação, conduta e hidratação (MS 2024)${crianca ? ' — criança: só a classificação' : ' — adulto'}`,
+          dados: [
+            ['Paciente', crianca ? 'criança (menos de 14 anos)' : 'adulto (14 anos ou mais)'],
+            ['Peso', crianca ? '' : `${n(peso, 1)} kg`],
+            ['Sangramento de pele', sn(sangramentoPele)],
+            ['Condição especial, risco social ou comorbidade', sn(especial)],
+            ['Sinais de alarme', [...alarme].join(', ') || 'nenhum'],
+            ['Sinais de gravidade', [...grave].join(', ') || 'nenhum'],
+            ...(crianca
+              ? []
+              : ([
+                  ['Sódio', el.na > 0 ? `${n(el.na)} mEq/L` : ''],
+                  ['Potássio', el.k > 0 ? `${n(el.k, 1)} mEq/L` : ''],
+                  ['Bicarbonato', el.hco3 > 0 ? `${n(el.hco3)} mEq/L` : ''],
+                  ['pH', el.ph > 0 ? n(el.ph, 2) : ''],
+                  ['Plaquetas', anti ? `${n(plaq)}/mm³ (${ANTITROMBOTICOS.find((a) => a.value === droga)?.label ?? droga})` : ''],
+                  ['PAS/PAD', laco !== null ? `${n(pa.pas)}/${n(pa.pad)} mmHg` : ''],
+                ] as [string, string][])),
+          ],
+          resultado: [
+            `Grupo ${grupo}: ${DESCRICAO_GRUPO[grupo]}`,
+            ...(crianca
+              ? ['Volumes da criança: ferramenta Dengue — criança (seção Pediatria), pelo livro do ICr-HCFMUSP.']
+              : fases.map((f) => `- ${f.etapa}: ${f.regra} — ${f.volumeMl === null ? '—' : `${numero(f.volumeMl)} mL`}${f.mlH ? ` (${numero(f.mlH)} mL/h)` : ''}`)),
+            `Reavaliação: ${REAVALIACAO[grupo]}`,
+            `Exames: ${EXAMES[grupo]}`,
+            ...(grupo === 'C' || grupo === 'D' ? [IDOSOS_ALERTA] : []),
+            ...(!crianca && grupo === 'D' && d
+              ? [
+                  `Ht em ascensão — albumina 0,5–1 g/kg a 5%: ${faixa(d.albuminaG)} g = ${faixa(d.albumina5Ml)} mL a 5% (${faixa(d.albumina20Ml)} mL de albumina 20% + ${faixa(d.sfParaAlbuminaMl)} mL de SF) · coloide ${n(d.coloideMlH)} mL/h (p. 38)`,
+                  `Ht em queda com hemorragia — concentrado de hemácias: ${faixa(d.concentradoHemaciasMlDia)} mL/dia (p. 38)`,
+                  `Coagulopatia: plasma ${n(d.plasmaMl)} mL · crio ${faixa(d.crioU)} U (p. 38)`,
+                  ...INOTROPICOS.map((i) => `${i.droga} ${faixa(i.ugKgMin, 1)} µg/kg/min = ${faixa([i.ugKgMin[0] * peso, i.ugKgMin[1] * peso], 0)} µg/min (p. 40)`),
+                ]
+              : []),
+            ...(!crianca && hipoNa ? [`Hiponatremia: ${n(hipoNa.mEq)} mEq = ${n(hipoNa.mlNaCl3)} mL de NaCl 3% · ${faixa(hipoNa.mlH)} mL/h${hipoNa.indicada ? '' : ' — Na ≥ 120: o manual só corrige com sintomas neurológicos'} (p. 41)`] : []),
+            ...(!crianca && hipoK ? [`Hipocalemia: ${faixa(hipoK.mEqH, 1)} mEq/h${hipoK.indicada ? '' : ' — K ≥ 2,5: fora do critério EV do manual'} (p. 41)`] : []),
+            ...(!crianca && bic ? [`Bicarbonato: ${faixa(bic.mEq)} mEq${bic.indicado ? '' : ' — fora do critério do manual'} (p. 41)`] : []),
+            ...(!crianca && anti ? [`Antiagregante/anticoagulante: ${anti} (p. 58–63)`] : []),
+            ...(!crianca && laco !== null ? [`Prova do laço: insuflar a ${n(laco)} mmHg (Apêndice G, p. 76)`] : []),
+          ],
+          fonte: textoFontes(fichaDengue),
+          versao: fichaDengue.versao,
+          quando: new Date(),
+        })
+      : undefined
 
   return (
     <ToolLayout
@@ -243,15 +307,42 @@ export function ClassificacaoDengue() {
       <Bloco titulo="O que mudou nesta versão">
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_2024.map((x) => <li key={x}>{x}</li>)}</ul>
       </Bloco>
-      <Bloco titulo="OMS 2025 — ao lado do manual do HC" descricao="Recomendações da OMS de 2025 para arboviroses (GRADE), lidas no resumo oficial. A classificação e a hidratação acima seguem o Ministério da Saúde 2024 e não mudam.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">OMS 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_DENGUE_OMS.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DENGUE_OMS.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!crianca && !comPeso}
+        armadilhas={[`Errata do Apêndice H: ${ERRATA_PARACETAMOL}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaDengue}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a OMS 2025 vai para "Evidências" (C6 = A); a conduta do MS não muda.
+          <BlocoComparacao titulo="OMS 2025 — ao lado do manual do HC" resumo="Recomendações da OMS de 2025 para arboviroses (GRADE), lidas no resumo oficial. A classificação e a hidratação desta tela seguem o Ministério da Saúde 2024 e não mudam.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">OMS 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_DENGUE_OMS.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_DENGUE_OMS.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={`Grupo ${grupo}${crianca ? ' · criança' : comPeso ? ` · adulto · ${n(peso, 1)} kg` : ' · informe o peso'}`}
+        detalhe={
+          crianca
+            ? 'A classificação vale para a criança; os volumes estão na ferramenta Dengue — criança'
+            : comPeso
+              ? 'Hidratação e conduta do grupo nas listas acima; "Copiar" leva todas'
+              : undefined
+        }
+        tom={grupo === 'D' ? 'critico' : grupo === 'C' ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

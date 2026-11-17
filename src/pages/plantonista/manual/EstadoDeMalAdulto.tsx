@@ -3,9 +3,16 @@ import { useState } from 'react'
 import {
   ATAQUE_ESTADO_DE_MAL, DESMAME_ESTADO_DE_MAL, ESTABILIZACAO_ESTADO_DE_MAL, LEVETIRACETAM_EME, LEVETIRACETAM_INFUSAO_MIN, RESULTADO_ESETT,
   TEMPOS_ESTADO_DE_MAL, TERCEIRA_LINHA, calcularAtaque, calcularTerceiraLinha, fichaEstadoDeMalAdulto, levetiracetamMgMin,
-  type DrogaAtaque, type Faixa,
+  type AtaqueCalculado, type DrogaAtaque, type DrogaTerceiraLinha, type Faixa, type TerceiraLinhaCalculada,
 } from '@/clinico/adulto/estadoDeMal'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -18,6 +25,15 @@ function textoDose(d: DrogaAtaque) {
   return `${dose}; ${d.apresentacao}; ${d.administracao}`
 }
 
+/** A conta da linha em texto, para o "Copiar" (a mesma que a tela mostra). */
+function textoAtaque(r: AtaqueCalculado) {
+  return `${faixa(r.mg, 0)} mg${r.limitadoAoTeto ? ' (no teto)' : ''}${r.ml ? ` · ${faixa(r.ml)} mL` : ''}${r.tempos.map((t) => ` · a ${t.rotulo}: ≥ ${faixa(t.minutos)} min`).join('')}`
+}
+
+function textoTerceira(r: TerceiraLinhaCalculada) {
+  return `bolus ${faixa(r.bolusMg, 0)} mg${r.bolusAcumuladoMaxMg !== null ? ` (acumulado até ${br(r.bolusAcumuladoMaxMg, 0)} mg)` : ''} · manutenção ${faixa(r.manutencaoMgH, 0)} mg/h${r.manutencaoMlH ? ` = ${faixa(r.manutencaoMlH)} mL/h (${br(r.mgMlPreparo!, 0)} mg/mL)` : ''}`
+}
+
 function Ataque({ d, peso, origem }: { d: DrogaAtaque; peso: number; origem?: string }) {
   const r = calcularAtaque(d, peso)
   const conta = !r ? 'informe o peso' : (
@@ -28,14 +44,54 @@ function Ataque({ d, peso, origem }: { d: DrogaAtaque; peso: number; origem?: st
       {r.tempos.map((t) => <span key={t.rotulo}> · a {t.rotulo}: ≥ {faixa(t.minutos)} min</span>)}
     </>
   )
-  return <LinhaManual origem={origem} nome={d.nome} texto={textoDose(d)} conta={conta} pagina={d.pagina} errata={d.errata} nota={d.nota} />
+  // A errata do livro vai para a aba "Armadilhas" (C6 = A); a nota fica na linha.
+  return <LinhaManual origem={origem} nome={d.nome} texto={textoDose(d)} conta={conta} pagina={d.pagina} nota={d.nota} />
 }
+
+const TODAS_DE_ATAQUE: DrogaAtaque[] = [...ATAQUE_ESTADO_DE_MAL, LEVETIRACETAM_EME]
 
 /** Estado de mal epiléptico convulsivo do adulto (cap. 46 do manual do HCFMUSP). */
 export function EstadoDeMalAdulto() {
   const [peso, setPeso] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaEstadoDeMalAdulto.id)
   const ritmo = levetiracetamMgMin(peso)
   const esett = RESULTADO_ESETT
+  const temPeso = Number.isFinite(peso) && peso > 0
+
+  const linhaAtaque = (d: DrogaAtaque) => {
+    const r = calcularAtaque(d, peso)
+    return `- ${d.nome}: ${r ? textoAtaque(r) : textoDose(d)} (${d.pagina})`
+  }
+  const linhaTerceira = (d: DrogaTerceiraLinha) => {
+    const r = calcularTerceiraLinha(d, peso)
+    return `- ${d.nome}: ${r ? textoTerceira(r) : '—'} (${d.pagina})`
+  }
+
+  // Texto do "Copiar" (C3 e C4 = A): o peso e a lista inteira, com a página de cada linha.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Estado de mal epiléptico — adulto',
+        dados: [['Peso', `${numeroBr(peso)} kg`]],
+        resultado: [
+          `Estabilização: ${ESTABILIZACAO_ESTADO_DE_MAL.texto} (${ESTABILIZACAO_ESTADO_DE_MAL.pagina})`,
+          '1ª linha (Tabela 3):',
+          ...ATAQUE_ESTADO_DE_MAL.filter((d) => d.linha === 1).map(linhaAtaque),
+          '2ª linha (Tabela 4):',
+          ...ATAQUE_ESTADO_DE_MAL.filter((d) => d.linha === 2).map(linhaAtaque),
+          '2ª linha fora do manual (ESETT 2019; AES 2016):',
+          linhaAtaque(LEVETIRACETAM_EME),
+          ...(ritmo ? [`  Em ${LEVETIRACETAM_INFUSAO_MIN} minutos, como no ESETT: ${faixa(ritmo, 0)} mg/min.`] : []),
+          '3ª linha — infusão contínua (Tabela 5):',
+          ...TERCEIRA_LINHA.map(linhaTerceira),
+          `Desmame: ${DESMAME_ESTADO_DE_MAL.texto} (${DESMAME_ESTADO_DE_MAL.pagina})`,
+        ],
+        fonte: textoFontes(fichaEstadoDeMalAdulto),
+        versao: fichaEstadoDeMalAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
+
   return (
     <ToolLayout
       title="Estado de mal epiléptico — adulto"
@@ -92,6 +148,27 @@ export function EstadoDeMalAdulto() {
         })}
         <p className="text-apoio text-tinta-sussurro">{DESMAME_ESTADO_DE_MAL.texto} ({DESMAME_ESTADO_DE_MAL.pagina})</p>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[
+          ...TODAS_DE_ATAQUE.flatMap((d) => (d.errata ? [`${d.nome} — errata do livro: ${d.errata}`] : [])),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaEstadoDeMalAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg` : 'Informe o peso'}
+        detalhe={temPeso ? 'Doses de 1ª, 2ª e 3ª linha nas listas acima; "Copiar" leva todas.' : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

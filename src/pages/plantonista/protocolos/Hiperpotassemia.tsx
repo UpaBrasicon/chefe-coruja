@@ -4,12 +4,20 @@ import {
   ANEXO2_SEM_REGISTRO, DIVERGENCIA_MANUAL_HC, NEONATO_FORA, avaliarHiperpotassemia, avaliarHiperpotassemiaPed, fichaHiperpotassemia, neonatoPelaIdade,
   type Ecg, type ResultadoHiperKPed,
 } from '@/clinico/hiperpotassemia'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { Chip } from '@/components/monitor/Pagina'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { faixaBr } from '@/pages/plantonista/pediatria/formatoIcr'
 import { LinhaLivro, Nota } from '@/pages/plantonista/pediatria/PecasIcr'
@@ -30,6 +38,9 @@ function Escolha<T extends string>({ titulo, opcoes, valor, set }: { titulo: str
 }
 
 type Sim = 'sim' | 'nao'
+const NOME_ECG: Record<Ecg, string> = { nao_feito: 'não feito', sem_alteracao: 'sem alteração', alterado: 'alterado' }
+const textoCalcio = (c: 'indicado' | 'nao_indicado' | 'indeterminado') =>
+  c === 'indicado' ? 'Cálcio indicado' : c === 'indeterminado' ? 'Sem ECG, a indicação de cálcio não pode ser descartada' : 'Cálcio não indicado por estes dados'
 const simNao = (b: boolean | null): Sim | null => (b === null ? null : b ? 'sim' : 'nao')
 
 /** Criança: só o livro do ICr-HCFMUSP (cap. 54), com as divergências do mesmo livro. */
@@ -136,6 +147,56 @@ export function Hiperpotassemia() {
   const rPed = potassio > 0 && crianca
     ? avaliarHiperpotassemiaPed({ potassio, ecg, neonato: rn === null ? null : rn === 'sim', pesoKg: peso > 0 ? peso : undefined })
     : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHiperpotassemia.id)
+  // Fonte do "Copiar" só da parte em uso: a criança não leva as referências do adulto.
+  const fonteDoModo = textoFontes({ ...fichaHiperpotassemia, fontes: fichaHiperpotassemia.fontes.filter((f) => Boolean(f.pediatrica) === crianca) })
+
+  // Texto do "Copiar" (C4 = A; C3 = A: leva a lista inteira). Adulto e criança em separado.
+  const copiaAdulto = r
+    ? textoCopia({
+        ferramenta: 'Hiperpotassemia — conduta por nível e por ECG (adulto)',
+        dados: [
+          ['Paciente', 'adulto (14 anos ou mais)'],
+          ['Potássio sérico', `${numeroBr(potassio)} mEq/L`],
+          ['ECG', NOME_ECG[ecg]],
+          ['Diurese', diurese === 'comprometida' ? 'anúrico ou oligúrico grave' : 'preservada'],
+          ['Acidose metabólica', acidose],
+        ],
+        resultado: [
+          `Gravidade: ${r.faixa}`,
+          textoCalcio(r.calcio),
+          ...r.alertas,
+          ...r.blocos.flatMap((b) => [`${b.titulo}: ${b.sub}`, ...b.linhas.map((l) => `- ${l.item}: ${l.texto}${l.quando ? ` (${l.quando})` : ''}`)]),
+        ],
+        fonte: fonteDoModo,
+        versao: fichaHiperpotassemia.versao,
+        quando: new Date(),
+      })
+    : undefined
+  const copiaCrianca = rPed
+    ? textoCopia({
+        ferramenta: 'Hiperpotassemia — criança (livro do ICr-HCFMUSP, cap. 54)',
+        dados: [
+          ['Paciente', 'criança (menos de 14 anos)'],
+          ['Recém-nascido', rn === null ? 'não informado' : rn === 'sim' ? 'sim' : 'não, 28 dias ou mais'],
+          ['Potássio sérico', `${numeroBr(potassio)} mEq/L`],
+          ['Peso', peso > 0 ? `${numeroBr(peso)} kg` : ''],
+          ['ECG', NOME_ECG[ecg]],
+        ],
+        resultado: [
+          rPed.leitura,
+          ...rPed.alertas,
+          ...(rPed.neonato
+            ? [`Recém-nascido: sem referência pediátrica de dose. ${NEONATO_FORA}`]
+            : rPed.doses.map((d) => `- ${d.nome}: ${d.texto}${d.faixa ? ` = ${faixaBr(d.faixa, 2)} ${d.unidade}${d.noMaximo ? ' (máximo)' : ''}` : ''} (${d.pagina})`)),
+          `Sem referência pediátrica de dose: ${rPed.semReferencia.map((s) => s.item).join('; ')}`,
+        ],
+        fonte: fonteDoModo,
+        versao: fichaHiperpotassemia.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -186,9 +247,7 @@ export function Hiperpotassemia() {
               <CardTitle className="flex flex-wrap items-center gap-3 text-corpo">
                 Gravidade <Badge className="text-corpo">{r.faixa}</Badge>
               </CardTitle>
-              <CardDescription>
-                {r.calcio === 'indicado' ? 'Cálcio indicado' : r.calcio === 'indeterminado' ? 'Sem ECG, a indicação de cálcio não pode ser descartada' : 'Cálcio não indicado por estes dados'}
-              </CardDescription>
+              <CardDescription>{textoCalcio(r.calcio)}</CardDescription>
             </CardHeader>
             {r.alertas.length > 0 && (
               <CardContent className="flex flex-col gap-1 text-apoio text-critico">
@@ -219,27 +278,71 @@ export function Hiperpotassemia() {
         </>
       )}
 
-      {!crianca && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-corpo">Divergência: {DIVERGENCIA_MANUAL_HC.fonte}</CardTitle>
-            <CardDescription>
-              Esta tela segue a referência mais recente (decisão do responsável técnico). O manual do HCFMUSP traz outra classificação e quantifica as doses.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2 text-apoio">
-            <p>{DIVERGENCIA_MANUAL_HC.classificacao}</p>
-            {DIVERGENCIA_MANUAL_HC.itens.map((l) => (
-              <div key={l.item} className="rounded-controle border px-3 py-2">
-                <span className="font-medium">{l.item}: </span>
-                <span className="text-tinta-sussurro">{l.texto} ({l.pagina})</span>
-              </div>
-            ))}
-            <ul className="list-disc pl-5 text-tinta-sussurro">
-              {DIVERGENCIA_MANUAL_HC.diferencas.map((d) => <li key={d}>{d}</li>)}
-            </ul>
-          </CardContent>
-        </Card>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={crianca ? !rPed : !r}
+        armadilhas={[
+          // Na criança, só a errata do livro do ICr; no adulto, o cuidado obrigatório da conduta.
+          ...(crianca
+            ? (rPed?.doses ?? []).flatMap((d) => (d.errata ? [`${d.nome} — errata do livro: ${d.errata}`] : []))
+            : (r?.blocos ?? []).flatMap((b) => b.linhas.filter((l) => l.quando === 'obrigatório').map((l) => `${l.item}: ${l.texto}`))),
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaHiperpotassemia}
+        guia={guia}
+        comparacao={
+          // Divergência do manual do HCFMUSP (doses do adulto) vai para "Evidências" (C6 = A), só no modo adulto.
+          !crianca && (
+            <BlocoComparacao
+              titulo={`Divergência: ${DIVERGENCIA_MANUAL_HC.fonte}`}
+              resumo="Esta tela segue a referência mais recente (decisão do responsável técnico). O manual do HCFMUSP traz outra classificação e quantifica as doses."
+            >
+              <p>{DIVERGENCIA_MANUAL_HC.classificacao}</p>
+              {DIVERGENCIA_MANUAL_HC.itens.map((l) => (
+                <div key={l.item} className="rounded-controle border px-3 py-2">
+                  <span className="font-medium">{l.item}: </span>
+                  <span className="text-tinta-sussurro">{l.texto} ({l.pagina})</span>
+                </div>
+              ))}
+              <ul className="list-disc pl-5 text-tinta-sussurro">
+                {DIVERGENCIA_MANUAL_HC.diferencas.map((d) => <li key={d}>{d}</li>)}
+              </ul>
+            </BlocoComparacao>
+          )
+        }
+      />
+      {crianca ? (
+        <ResumoFlutuante
+          principal={rPed ? `Criança · K ${numeroBr(potassio)} mEq/L · ${rPed.acimaDoLimiar ? 'hipercalemia pelo livro' : 'abaixo do limiar do livro'}` : 'Informe o potássio sérico'}
+          detalhe={
+            !rPed
+              ? undefined
+              : rPed.neonato
+                ? 'Recém-nascido: sem referência pediátrica de dose'
+                : rn === null
+                  ? 'Diga se é recém-nascido para ver as doses'
+                  : peso > 0
+                    ? `${numeroBr(peso)} kg · doses do cap. 54 na lista acima; "Copiar" leva todas`
+                    : 'Informe o peso para ver a dose calculada'
+          }
+          tom={rPed?.risco ? 'critico' : rPed?.acimaDoLimiar ? 'atencao' : 'neutro'}
+          textoCopia={copiaCrianca}
+          alvoDetalhes={ID_ABAS_RESULTADO}
+          rotuloDetalhes="Próximos passos"
+          aoIrDetalhes={() => setAba('proximos')}
+        />
+      ) : (
+        <ResumoFlutuante
+          principal={r ? `Adulto · K ${numeroBr(potassio)} mEq/L · ${r.faixa}` : 'Informe o potássio sérico'}
+          detalhe={r ? `${textoCalcio(r.calcio)}; "Copiar" leva a conduta inteira` : undefined}
+          tom={r?.gravidade === 2 ? 'critico' : r?.gravidade === 1 ? 'atencao' : 'neutro'}
+          textoCopia={copiaAdulto}
+          alvoDetalhes={ID_ABAS_RESULTADO}
+          rotuloDetalhes="Próximos passos"
+          aoIrDetalhes={() => setAba('proximos')}
+        />
       )}
     </ToolLayout>
   )
