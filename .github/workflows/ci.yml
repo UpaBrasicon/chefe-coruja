@@ -79,6 +79,13 @@ jobs:
         run: |
           export PR_BODY="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json body -q .body)"
           node --experimental-strip-types scripts/gate-fichas.mjs --base HEAD^1
+      # LG4: toda tabela das migrations precisa estar numa operação do
+      # inventário (docs/regulatorio/inventario/operacoes.json), e o
+      # LG4-INVENTARIO.md precisa estar igual ao JSON.
+      - name: Inventário das operações de tratamento (LG4)
+        run: |
+          node --test scripts/inventario-lgpd.test.mjs
+          node scripts/inventario-lgpd.mjs --conferir
       - name: Gateway (cópia da desidentificação)
         run: npm run test:gateway
       - name: Domínio, terminologia, observação, interop

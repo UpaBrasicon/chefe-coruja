@@ -95,3 +95,19 @@ test('U6, PR 1 do percurso da UBS: serviço da consulta na agenda', async () => 
   assert.match(sql, /ARRAY\['consulta_medica', 'implante', 'diu', 'preventivo', 'outro'\]/)
   assert.match(sql, /ARRAY\['consulta_enfermagem', 'preventivo', 'curativo', 'teste_rapido', 'outro'\]/)
 })
+
+test('U7, PR 5: a lista de procedimentos da tela é a mesma do banco, e cada papel vê os seus', async () => {
+  const { PROCEDIMENTOS_UBS, procedimentosDoPapel } = await import('../domain/procedimentosUbs.ts')
+  const sql = readFileSync('supabase/migrations/20270415000009_ubs_procedimentos.sql', 'utf8')
+  for (const p of PROCEDIMENTOS_UBS) {
+    const linha = sql.split('\n').find((l) => l.includes(`('${p.codigo}',`))
+    assert.ok(linha, `${p.codigo} fora do banco`)
+    assert.ok(linha!.includes(`'${p.nome}'`), `${p.codigo}: nome diferente do banco`)
+    assert.ok(linha!.includes(p.comResultado ? ', true,' : ', false,'), `${p.codigo}: resultado diferente do banco`)
+    for (const papel of p.papeis) assert.ok(linha!.includes(`'${papel}'`), `${p.codigo}: ${papel} fora do banco`)
+  }
+  assert.equal((sql.match(/\('0\d{9}',/g) ?? []).length, PROCEDIMENTOS_UBS.length, 'o banco tem procedimento que a tela não tem')
+  assert.ok(procedimentosDoPapel('tecnico_enfermagem').every((p) => !p.comResultado), 'o técnico não faz teste rápido')
+  assert.ok(!procedimentosDoPapel('enfermeiro').some((p) => p.codigo === '0301040176'), 'o enfermeiro não faz implante')
+  assert.equal(procedimentosDoPapel('recepcao').length, 0)
+})

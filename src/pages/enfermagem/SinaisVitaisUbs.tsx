@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { HeartPulse } from 'lucide-react'
 import * as React from 'react'
 
+import { ProcedimentosAps } from '@/components/clinico/ProcedimentosAps'
 import { SinaisVitaisAps } from '@/components/clinico/SinaisVitaisAps'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -51,7 +52,7 @@ export default function SinaisVitaisUbs() {
   return (
     <div className="flex w-full max-w-4xl flex-col gap-4">
       <TituloPagina icone={HeartPulse} titulo="Sinais vitais"
-        descricao="Fichas abertas dos consultórios do seu plantão. Os sinais registrados aqui entram no prontuário e no hiperdia e no pré-natal." />
+        descricao="Fichas abertas dos consultórios do seu plantão: sinais vitais e procedimentos. O que é registrado aqui entra no prontuário, no hiperdia e no pré-natal." />
       {fichas.isLoading && <Spinner />}
       {fichas.error && <p role="alert" className="text-apoio text-critico">{(fichas.error as Error).message}</p>}
       {fichas.data === null && <Vazio icone={HeartPulse} titulo="Sem plantão agora" texto="Você não está na escala de nenhum consultório agora." />}
@@ -74,7 +75,11 @@ export default function SinaisVitaisUbs() {
                   {f.queixa && <span className="text-apoio text-tinta-apoio">{f.queixa}</span>}
                 </BotaoLinha>
                 {aberta === f.id && (
-                  <SinaisVitaisAps episodioId={f.id} nascimento={f.paciente?.data_nascimento ?? null} chegadaEm={f.chegada_em} />
+                  <>
+                    <SinaisVitaisAps episodioId={f.id} nascimento={f.paciente?.data_nascimento ?? null} chegadaEm={f.chegada_em} />
+                    {/* U7, PR 5: curativo, medicação e glicemia do técnico (P4 = A) */}
+                    <ProcedimentosAps episodioId={f.id} />
+                  </>
                 )}
               </li>
             )
