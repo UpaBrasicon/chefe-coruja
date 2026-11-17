@@ -2611,7 +2611,7 @@ Regras da trilha:
 
 | Ordem | Item | O que fazer (decisão A) | Prioridade | Estado |
 |---|---|---|---|---|
-| 1 | U5 + U14 | Menus por papel na UBS: recepção sem Encaminhados e com a fila da enfermagem; enfermeiro sem Alta vigilância; médico sem Pareceres e sem Notificação compulsória. Esconder na UBS os itens de UPA e hospital (internados, observação, check-out, contenção, intercorrência, abas de leitos do gestor) e dar nomes próprios ao trilho. Textos: "Farmácia fechada", Nasf ou eMulti (conferir), "Em atendimento há 0 min", "Telas de null" | P1 | Pendente |
+| 1 | U5 + U14 | Menus por papel na UBS: recepção sem Encaminhados e com a fila da enfermagem; enfermeiro sem Alta vigilância; médico sem Pareceres e sem Notificação compulsória. Esconder na UBS os itens de UPA e hospital (internados, observação, check-out, contenção, intercorrência, abas de leitos do gestor) e dar nomes próprios ao trilho. Textos: "Farmácia fechada", Nasf ou eMulti (conferir), "Em atendimento há 0 min", "Telas de null" | P1 | Concluído em 17/11/2026 (#853, na produção). Ficam para depois: Nasf ou eMulti (conferir no e-SUS APS) e "Em atendimento há 0 min" (investigar) |
 | 2 | U1 + U2 | A ficha não atendida vence no fim do expediente ("não aguardou"); tempo de espera num formato só (minutos, horas, dias) | P1 | Pendente |
 | 3 | U8 + U9 + D2 | Escuta: sem enfermeiro de plantão a ficha vai ao médico; DUM na escuta; azul com agendamento abre a agenda; só o médico envia à UPA. Chegada na UPA registrada sozinha quando a recepção abre a ficha | P1 | Pendente |
 | 4 | U3 | Horário de funcionamento da UBS; escala e grade da agenda dentro dele; corrigir a homologação | P1 | Pendente |
