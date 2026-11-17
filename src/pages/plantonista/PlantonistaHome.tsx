@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Fuse from 'fuse.js'
 import { History, Search, Sparkles, Star, Stethoscope } from 'lucide-react'
 
@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button'
 import { RespostaIa } from '@/components/plantonista/RespostaIa'
 import { CartaoTurno } from '@/components/plantonista/central/CartaoTurno'
 import { ModoPaciente } from '@/components/plantonista/central/ModoPaciente'
+import { GuiaRapido } from '@/components/plantonista/central/GuiaRapido'
+import { useLarguraAte } from '@/hooks/useLarguraAte'
 
 // Central do Plantonista (P/index.html 1368–1566). Desde a onda 9 do porte a
 // faixa de parâmetros saiu daqui: o cartão de turno a substitui (decisão do
@@ -131,7 +133,17 @@ function Atalho({ f, vezes, favorito }: { f: Ferramenta; vezes: number; favorito
   )
 }
 
+// Celular e tablet (abaixo de 1024 px, a mesma largura da barra de baixo): o
+// Guia rápido (F4, RT em 17/11/2026). "Calculadoras e escores" abre esta mesma
+// Central completa com ?todas=1. No computador nada muda.
 export default function PlantonistaHome() {
+  const estreito = useLarguraAte(1023)
+  const [params] = useSearchParams()
+  if (estreito && params.get('todas') !== '1') return <GuiaRapido />
+  return <CentralCompleta />
+}
+
+function CentralCompleta() {
   const navigate = useNavigate()
   const { perfil } = useAuth()
   const { unidadeAtiva } = useUnidade()

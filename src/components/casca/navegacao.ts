@@ -390,7 +390,8 @@ export function dividirBarraCelular(papel: Papel | null, itens: ItemNav[]): { fi
  * largura para o numeral da pendência.
  */
 export const ABAS_ESTREITAS_PLANTONISTA: ItemNav[] = [
-  { to: '/plantonista', rotulo: 'Central', icone: Stethoscope },
+  // Guia rápido no celular e no tablet (RT, 17/11/2026): a mesma rota da Central
+  { to: '/plantonista', rotulo: 'Guia rápido', icone: Stethoscope },
   { to: '/plantao/internacao/pacientes', rotulo: 'Leitos', icone: Users },
   { to: '/prontuarios', rotulo: 'Prontuários', icone: BookOpen },
   { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
