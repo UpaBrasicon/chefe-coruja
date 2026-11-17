@@ -14,7 +14,7 @@ export const pram: Escore = {
   ficha: {
     id: 'ped-pram',
     titulo: 'PRAM — gravidade da crise de asma (criança)',
-    versao: '2026-11-06.1',
+    versao: '2026-11-17.lg10-ensaio',
     publico: 'pediatrico',
     fontes: [
       { citacao: 'Ducharme FM, Chalut D, Plotnick L, et al. The Pediatric Respiratory Assessment Measure: a valid clinical score for assessing acute asthma severity from toddlers to teenagers. J Pediatr. 2008;152(4):476–480.', url: 'https://doi.org/10.1016/j.jpeds.2007.08.034', pediatrica: true },
