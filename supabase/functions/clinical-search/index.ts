@@ -188,13 +188,13 @@ async function tratar(req: Request): Promise<Response> {
     status: 200,
     headers: {
       ...cors,
-      'Content-Type': upstream.headers.get('Content-Type') ?? 'application/json',
-      // Pedido do RT (17/11/2026): as etapas ("lendo", "procurando") são linhas
-      // pequenas e chegavam presas junto com a resposta. no-transform pede ao caminho
-      // (gateway e CDN) que não comprima nem segure a resposta; identity e
-      // X-Accel-Buffering reforçam o mesmo.
+      // Pedido do RT (17/11/2026): com application/x-ndjson o gateway do Supabase
+      // segurava a resposta inteira (medido na homologação: nada chegava antes de
+      // 6,6 a 7,6 s, embora a função respondesse em 0,7 s). Como text/event-stream
+      // ele entrega na hora: "lendo" em 0,6 s, "procurando" em 1,6 s, texto em 2,8 s.
+      // O corpo continua NDJSON (uma linha JSON por evento); a tela não olha o tipo.
+      'Content-Type': mode === 'ask' ? 'text/event-stream; charset=utf-8' : (upstream.headers.get('Content-Type') ?? 'application/json'),
       'Cache-Control': 'no-store, no-transform',
-      'Content-Encoding': 'identity',
       'X-Accel-Buffering': 'no',
       'X-Request-Id': request_id,
     },
