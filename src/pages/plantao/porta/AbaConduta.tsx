@@ -25,6 +25,8 @@ import { Label } from '@/components/ui/label'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { FerramentasDoCid } from '@/components/clinico/FerramentasDoCid'
+import type { FaixaEtaria } from '@/domain/idade'
 import { linkMarcarNaAgenda } from '@/domain/agenda'
 import { linkRegulacaoDaConsulta } from '@/domain/encaminhamento'
 import { CONDUTAS_APS, PROBLEMAS_APS, TIPOS_ATENDIMENTO_APS, rotuloProblemaAps } from '@/domain/aps'
@@ -123,8 +125,10 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
   )
 }
 
-export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registros, soap, onIrPara, onConfirmado }: {
+export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registros, soap, faixa, onIrPara, onConfirmado }: {
   episodioId: string; pacienteId: string; nome: string; tipoInicial: string | null | undefined
+  /** faixa pela IDADE do paciente (JanelaAtendimento), para as ferramentas do CID */
+  faixa: FaixaEtaria
   registros: RegistroSoap[]; soap: Soap
   /** leva a outra aba da janela (Atendimento, Encaminhar) */
   onIrPara: (aba: 'atend' | 'enc') => void
@@ -200,6 +204,8 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
           onAdicionar={(p) => setProblemas((x) => [...x, p])}
           onTirar={(p) => setProblemas((x) => x.filter((y) => chave(y) !== chave(p)))} />
         <span className="text-rotulo text-tinta-sussurro">O que foi avaliado e manejado nesta consulta. A busca mostra a lista da ficha, depois a CIAP-2 e depois a CID-10.</span>
+        {/* F2 das ferramentas pelo CID (RT, 17/11/2026): só lista e abre ferramentas da Central */}
+        <FerramentasDoCid faixa={faixa} cids={[...problemas.flatMap((p) => ('cid' in p ? [p.cid] : 'ciap' in p ? [p.cidRelacionada] : [])), soap.cid]} />
       </div>
 
       {/* 5A, tarefa 7: hiperdia do paciente e avaliação dos pés */}
