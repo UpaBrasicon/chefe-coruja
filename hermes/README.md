@@ -3,7 +3,7 @@
 Assistente de IA (via WhatsApp) para gestão hospitalar multi-tenant. Orquestra escala,
 plantões e comunicação da equipe — **nunca** lê/manipula dado clínico de paciente.
 
-- **LLM:** DeepSeek V4 Flash (`deepseek-v4-flash`, endpoint OpenAI-compatible); fallback Kimi K2.6 (opcional)
+- **LLM:** DeepSeek V4 Flash (`deepseek-v4-flash`, endpoint OpenAI-compatible); sem provedor de reserva (LG6, 17/11/2026)
 - **Stack:** Node 22 · TypeScript · Fastify · BullMQ · Redis · Docker · Supabase (fonte da verdade)
 - **Fases:** 0 (fundação ✅) · 1 (núcleo do agente — implementada, aguarda credenciais reais para teste e2e) · 2+ (escrita, PubMed, resumos, VPS — futuras)
 
