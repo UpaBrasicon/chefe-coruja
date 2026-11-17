@@ -80,7 +80,7 @@ function mensagemResultado(tc: ToolCallLLM, conteudo: string): MensagemLLM {
 
 /**
  * Executa o loop completo e retorna a resposta final em texto.
- * Em falha de LLM (primário + fallback), retorna a mensagem de instabilidade
+ * Em falha de LLM (primário e nova tentativa), retorna a mensagem de instabilidade
  * (nunca silêncio).
  */
 export async function executarLoopAgente(

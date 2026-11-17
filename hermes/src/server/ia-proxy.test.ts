@@ -11,8 +11,8 @@ import Fastify from 'fastify'
 
 import { registrarProxyIA, MSG_SO_TEXTO, semNotasDoNous } from './ia-proxy.js'
 import {
-  DesidentificacaoIndisponivel, MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL,
-  type DependenciasGateway,
+  AVISO_DADO_PACIENTE, DesidentificacaoIndisponivel, MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL,
+  primeiraResposta, type DependenciasGateway,
 } from '../gateway/gateway.js'
 import type { ChamadaLLM, RespostaLLM } from '../lib/llm.js'
 
@@ -72,7 +72,9 @@ test('Corujinha: texto livre passa pelo gateway — modelo recebe CPF pseudonimi
   assert.doesNotMatch(JSON.stringify(enviados[0]), /529\.982/, 'CPF cru não chega ao modelo')
   assert.ok(nerViu.some((t) => t.includes('[CPF_1]')), 'o NER foi consultado antes do modelo')
   const j = r.json() as { choices: { message: { content: string }; finish_reason: string }[]; usage: { total_tokens: number } }
-  assert.equal(j.choices[0]!.message.content, `Recebi o CPF ${CPF}.`)
+  assert.equal(j.choices[0]!.message.content, `Recebi o CPF ${CPF}.
+
+${AVISO_DADO_PACIENTE}`, 'primeira resposta leva o lembrete (LG6)')
   assert.equal(j.choices[0]!.finish_reason, 'stop')
   assert.equal(j.usage.total_tokens, 15)
 })
@@ -253,4 +255,29 @@ test('senha por agente: origem certa no registro; Lab com NER só no digitado; s
   assert.equal(registros.at(-1)!.origem, 'corujinha:telegram')
   const r = await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: { authorization: `Bearer ${'z'.repeat(40)}` }, payload: comTerminal('ok') })
   assert.equal(r.statusCode, 401)
+})
+
+test('LG6: lembrete de dado do paciente só na primeira resposta da conversa', async () => {
+  const { app } = montar()
+  const payload = {
+    model: 'qualquer',
+    messages: [
+      { role: 'system', content: 'Você é a Corujinha.' },
+      { role: 'user', content: 'quantos setores?' },
+      { role: 'assistant', content: 'São 8 setores.' },
+      { role: 'user', content: 'e leitos?' },
+    ],
+  }
+  const r = await app.inject({ method: 'POST', url: '/v1/chat/completions', headers: auth, payload })
+  assert.doesNotMatch((r.json() as { choices: { message: { content: string } }[] }).choices[0]!.message.content, /Lembrete: não escreva/)
+})
+
+test('LG6: primeiraResposta não conta as idas às ferramentas da mesma rodada', () => {
+  assert.ok(primeiraResposta([{ role: 'system', content: 's' }, { role: 'user', content: 'oi' }]))
+  assert.ok(primeiraResposta([
+    { role: 'user', content: 'censo?' },
+    { role: 'assistant', content: '', tool_calls: [{}] },
+    { role: 'tool', content: '{"total":3}' },
+  ]))
+  assert.ok(!primeiraResposta([{ role: 'user', content: 'a' }, { role: 'assistant', content: 'b' }, { role: 'user', content: 'c' }]))
 })

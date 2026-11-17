@@ -22,6 +22,7 @@ import { carregarSessao, salvarSessao, type MensagemSessao } from './sessao.js'
 import { executarLoopAgente } from './loop.js'
 import { extrairUrls, verificarUrl, hashUrl } from '../tools/urlcheck.js'
 import { montarSystemPrompt } from './system-prompt.js'
+import { comAvisoDadoPaciente } from '../gateway/gateway.js'
 
 const TTL_DEDUP_S = 24 * 60 * 60 // 24h
 const LIMITE_MSGS = 20 // rate limit por usuário / 10 min
@@ -52,6 +53,15 @@ export async function dentroDoRateLimit(redis: Redis, waId: string): Promise<boo
   const atual = await redis.incr(chave)
   if (atual === 1) await redis.expire(chave, JANELA_RATE_LIMIT_S)
   return atual <= LIMITE_MSGS
+}
+
+/**
+ * LG6 (I3 = A, 17/11/2026): a auditoria guarda o tamanho e o sha256 do texto,
+ * nunca o texto. O texto da conversa fica só na sessão, que perde o texto em
+ * 30 dias (private.apagar_texto_ia_vencido).
+ */
+export function resumoDoTexto(texto: string): string {
+  return `${texto.length} caracteres, sha256 ${createHash('sha256').update(texto).digest('hex').slice(0, 16)}`
 }
 
 async function gravarAuditoria(
@@ -116,7 +126,7 @@ export async function processarMensagem(
     }
   }
 
-  await gravarAuditoria(null, waId, 'in', `msg recebida: ${texto.slice(0, 100)}`)
+  await gravarAuditoria(null, waId, 'in', `msg recebida: ${resumoDoTexto(texto)}`)
 
   // b. Resolução de identidade
   const identidade = await resolverIdentidadePorWaId(waId)
@@ -141,7 +151,9 @@ export async function processarMensagem(
   )
 
   // e. Resposta + persistência da sessão
-  const resposta = resultado.ok ? resultado.texto : MSG_INSTABILIDADE
+  // LG6 (I2): a primeira resposta da sessão lembra de não escrever dado do paciente
+  const resposta = !resultado.ok ? MSG_INSTABILIDADE
+    : historicoSessao.length === 0 ? comAvisoDadoPaciente(resultado.texto) : resultado.texto
   const envio = await enviarTexto(waId, resposta)
 
   const novasMsgs: MensagemSessao[] = [
@@ -150,7 +162,7 @@ export async function processarMensagem(
     { role: 'assistant', content: resposta, ts: new Date().toISOString() },
   ]
   await salvarSessao(identidade.perfilId, waId, novasMsgs)
-  await gravarAuditoria(identidade.perfilId, waId, 'out', `envio ${envio.ok ? 'ok' : 'falhou'}: ${resposta.slice(0, 100)}`)
+  await gravarAuditoria(identidade.perfilId, waId, 'out', `envio ${envio.ok ? 'ok' : 'falhou'}: ${resumoDoTexto(resposta)}`)
 
   logger.info({ waId, messageId, envioOk: envio.ok }, '[pipeline] mensagem processada')
 }

@@ -85,6 +85,30 @@ export const MSG_DESIDENTIFICACAO_INDISPONIVEL =
 export const MSG_CHAMADA_BLOQUEADA =
   'Não enviei sua mensagem ao assistente: ela parece ter um dado que identifica alguém (nome, número de documento, data completa ou e-mail). Reescreva sem esse dado, por favor.'
 
+/**
+ * LG6 (I2 = A, 17/11/2026): o modelo roda fora do Brasil até a troca de
+ * provedor. A primeira resposta de cada conversa leva este lembrete.
+ */
+export const AVISO_DADO_PACIENTE =
+  'Lembrete: não escreva nome, documento ou outro dado que identifique o paciente. O assistente de IA ainda roda fora do Brasil.'
+
+/** Acrescenta o lembrete ao fim da resposta. */
+export function comAvisoDadoPaciente(texto: string): string {
+  return texto.trim() ? `${texto}
+
+${AVISO_DADO_PACIENTE}` : texto
+}
+
+/**
+ * É a primeira resposta da conversa: uma fala do usuário e nenhuma fala do
+ * assistente com texto (as idas às ferramentas da mesma rodada não contam).
+ */
+export function primeiraResposta(mensagens: { role: string; content?: string | null; tool_calls?: unknown[] }[]): boolean {
+  const falasUsuario = mensagens.filter((m) => m.role === 'user').length
+  const falouAntes = mensagens.some((m) => m.role === 'assistant' && (m.content ?? '').trim() && !(m.tool_calls?.length))
+  return falasUsuario === 1 && !falouAntes
+}
+
 export type MotivoIndisponivel =
   | 'sem_configuracao' | 'timeout' | 'rede' | 'http' | 'resposta_invalida' | 'ner_inativo'
 

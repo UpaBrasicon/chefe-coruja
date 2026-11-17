@@ -27,7 +27,7 @@ import { z } from 'zod'
 
 import {
   chamarIA, ChamadaBloqueada, DesidentificacaoIndisponivel, nomesEmResultado, nomesNER,
-  MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL,
+  MSG_CHAMADA_BLOQUEADA, MSG_DESIDENTIFICACAO_INDISPONIVEL, comAvisoDadoPaciente, primeiraResposta,
   type ContextoGateway, type DependenciasGateway,
 } from '../gateway/gateway.js'
 import { criarCofre, desidentificar, type Conhecido } from '../gateway/desidentificacao.js'
@@ -364,7 +364,9 @@ export function registrarProxyIA(app: FastifyInstance, opcoes: OpcoesProxyIA) {
       // NER no sistema também falha fechado: sem ele, nada vai ao modelo.
       ctx.conhecidos.push(...(await nomesDoSistema(chamada.mensagens, opcoes.depsGateway?.ner ?? ((t) => nomesNER(t)))))
       const r = await chamarIA(chamada, ctx, opcoes.depsGateway)
-      return responder(reply, stream, { conteudo: r.conteudo, toolCalls: r.toolCalls, uso: r.uso, modelo: r.modelo })
+      // LG6 (I2): lembrete de não escrever dado do paciente na primeira resposta da conversa
+      const conteudo = !r.toolCalls.length && primeiraResposta(chamada.mensagens) ? comAvisoDadoPaciente(r.conteudo) : r.conteudo
+      return responder(reply, stream, { conteudo, toolCalls: r.toolCalls, uso: r.uso, modelo: r.modelo })
     } catch (err) {
       if (err instanceof DesidentificacaoIndisponivel) {
         return responder(reply, stream, { conteudo: MSG_DESIDENTIFICACAO_INDISPONIVEL, toolCalls: [], modelo: 'gateway' })
