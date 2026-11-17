@@ -55,6 +55,15 @@ export async function dentroDoRateLimit(redis: Redis, waId: string): Promise<boo
   return atual <= LIMITE_MSGS
 }
 
+/**
+ * LG6 (I3 = A, 17/11/2026): a auditoria guarda o tamanho e o sha256 do texto,
+ * nunca o texto. O texto da conversa fica só na sessão, que perde o texto em
+ * 30 dias (private.apagar_texto_ia_vencido).
+ */
+export function resumoDoTexto(texto: string): string {
+  return `${texto.length} caracteres, sha256 ${createHash('sha256').update(texto).digest('hex').slice(0, 16)}`
+}
+
 async function gravarAuditoria(
   userId: string | null,
   waId: string,
@@ -117,7 +126,7 @@ export async function processarMensagem(
     }
   }
 
-  await gravarAuditoria(null, waId, 'in', `msg recebida: ${texto.slice(0, 100)}`)
+  await gravarAuditoria(null, waId, 'in', `msg recebida: ${resumoDoTexto(texto)}`)
 
   // b. Resolução de identidade
   const identidade = await resolverIdentidadePorWaId(waId)
@@ -153,7 +162,7 @@ export async function processarMensagem(
     { role: 'assistant', content: resposta, ts: new Date().toISOString() },
   ]
   await salvarSessao(identidade.perfilId, waId, novasMsgs)
-  await gravarAuditoria(identidade.perfilId, waId, 'out', `envio ${envio.ok ? 'ok' : 'falhou'}: ${resposta.slice(0, 100)}`)
+  await gravarAuditoria(identidade.perfilId, waId, 'out', `envio ${envio.ok ? 'ok' : 'falhou'}: ${resumoDoTexto(resposta)}`)
 
   logger.info({ waId, messageId, envioOk: envio.ok }, '[pipeline] mensagem processada')
 }
