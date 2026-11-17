@@ -9,7 +9,7 @@ import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { Chip } from '@/components/monitor/Pagina'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
-import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ID_ABAS_RESULTADO, useSecaoDaFerramenta, type IdAba } from '@/components/plantonista/calc/contexto'
 import { passosDaFaixa } from '@/clinico/guia'
 import { guiaDa } from '@/clinico/guias'
 import { SemReferenciaPediatrica } from '@/components/plantonista/SemReferenciaPediatrica'
@@ -45,7 +45,8 @@ export function EscoreTela({ escore, children }: { escore: Escore; children?: Re
   // Piloto das calculadoras (RT, 16/11/2026): os escores do piloto seguem o
   // modo da Central (C5 = A) e ganham o resumo flutuante com "Copiar".
   // Lote 2 (RT, 16/11/2026): todos os escores da seção Escores entram no modelo.
-  const { section } = useParams()
+  const { section: secaoDaRota } = useParams()
+  const section = useSecaoDaFerramenta() ?? secaoDaRota
   const piloto = ESCORES_PILOTO.has(escore.ficha.id) || SECOES_NO_MODELO.has(section ?? '')
   const central = usePacienteCentral()
   const modoCentral = piloto && central.modo ? (central.modo === 'pediatrico' ? 'crianca' : 'adulto') : null

@@ -76,9 +76,9 @@ export function AvisoSepseAtendimento({ episodioId, pacienteId, nascimento, faix
   if (!mostrar) return null
   const rotaSepse = ROTA_DA_FICHA['sepse-adulto']
   return (
-    <div role="note" aria-label="Aviso: pode ser sepse" className="flex flex-col gap-2 rounded-cartao border border-fio bg-campo px-3 py-2.5 text-apoio text-tinta">
-      <p className="font-medium [text-wrap:pretty]">{AVISO_SEPSE_ATENDIMENTO}</p>
-      <p className="text-rotulo text-tinta-sussurro">
+    <div role="note" aria-label="Aviso: pode ser sepse" className="flex flex-col gap-2 rounded-cartao border border-fio-forte border-l-4 border-l-tinta bg-superficie px-3 py-3 text-apoio text-tinta">
+      <p className="text-controle font-semibold [text-wrap:pretty]">{AVISO_SEPSE_ATENDIMENTO}</p>
+      <p className="text-apoio text-tinta-apoio">
         NEWS2 {a.total}{a.parcial ? ` (parcial: falta ${(a.faltando ?? []).join(', ').toLowerCase() || 'parte dos sinais'})` : ''} · {a.gatilho.descricao} · vitais das últimas 6 h deste atendimento.
       </p>
       {dispensando ? (
@@ -92,11 +92,11 @@ export function AvisoSepseAtendimento({ episodioId, pacienteId, nascimento, faix
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           {rotaSepse && (
-            <Button type="button" size="xs" variant="outline" onClick={() => setJanela({ rota: rotaSepse, rotulo: 'Sepse no adulto' })}>
+            <Button type="button" size="sm" onClick={() => setJanela({ rota: rotaSepse, rotulo: 'Sepse no adulto' })}>
               Abrir sepse (adulto)
             </Button>
           )}
-          <Button type="button" size="xs" variant="outline" onClick={() => setDispensando(true)}>Dispensar</Button>
+          <Button type="button" size="sm" variant="outline" className="border-fio-forte text-tinta" onClick={() => setDispensando(true)}>Dispensar</Button>
         </div>
       )}
       {registrar.isError && <p role="alert" className="text-rotulo text-critico">Não foi possível registrar. Tente de novo.</p>}
