@@ -5,7 +5,8 @@
 -- 1. o enfermeiro atende a ficha da enfermagem: inicia, registra o SOAP e
 --    fecha pela conduta da UBS; a consulta conta no hiperdia;
 -- 2. o enfermeiro não atende a ficha do médico;
--- 3. o pedido de exame na consulta de enfermagem fica para a lista do protocolo.
+-- 3. o pedido de exame na consulta de enfermagem sai da lista do protocolo
+--    (texto livre recusado; a lista é testada em ubs_exames_enfermeiro.sql).
 -- ════════════════════════════════════════════════════════════════════════════
 BEGIN;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
@@ -83,9 +84,9 @@ SELECT public.iniciar_atendimento(pg_temp.v('enf'));
 SELECT public.registrar_soap(pg_temp.v('enf'), 'Hipertensa, sem queixas', 'PA 142x90', 'Hipertensão em acompanhamento',
   'Orientação e retorno', NULL);
 
--- ── 3. exame ainda não ──────────────────────────────────────────────────────
+-- ── 3. exame: só da lista do protocolo (20270415000010) ─────────────────────
 SELECT pg_temp.falha($$SELECT public.pedir_exames(pg_temp.v('enf'), '[{"nome":"Hemoglobina glicada (HbA1c)"}]')$$,
-  'O pedido de exame na consulta de enfermagem chega com a lista do protocolo', '3. o enfermeiro ainda não pede exame');
+  'Na consulta de enfermagem o exame sai da lista do protocolo', '3. o enfermeiro não pede exame em texto livre');
 
 SELECT public.registrar_conduta_aps(pg_temp.v('enf'), 'consulta_programada', '{hipertensao_arterial}', '{}',
   '{retorno_cuidado_continuado}', 'Retorno em 30 dias', '{}');

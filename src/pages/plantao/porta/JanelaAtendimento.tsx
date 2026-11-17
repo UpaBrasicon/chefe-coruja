@@ -205,7 +205,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     { k: 'conduta', rotulo: 'Conduta' },
   ]
   // U7, PR 5: na UBS a aba Procedimentos é a dos procedimentos da UBS (com o resultado dos testes)
-  const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'proc', 'conduta'].includes(a.k)
+  // U6 (P1 = A): o enfermeiro pede exames da lista do protocolo
+  const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'exames', 'proc', 'conduta'].includes(a.k)
     : ubs ? !['reav', 'fim'].includes(a.k) : a.k !== 'conduta'))
 
   return (
@@ -294,7 +295,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
               {p && <AbaPrescricao pacienteId={ep.paciente_id} nome={nome} itens={p.prescricao} pediatrico={pediatrico} aoMudar={recarregar} ubs={ubs} />}
             </TabsContent>
             <TabsContent value="exames">
-              {p && <AbaExames episodioId={ep.id} pacienteId={ep.paciente_id} exames={p.exames} aoMudar={recarregar} />}
+              {p && <AbaExames episodioId={ep.id} pacienteId={ep.paciente_id} exames={p.exames} aoMudar={recarregar} protocoloEnfermagem={consultaEnfermagem} />}
             </TabsContent>
             <TabsContent value="reav">
               {p && <AbaReavaliacao episodioId={ep.id} painel={p} reavHora={reavHora} setReavHora={setReavHora} aoMudar={recarregar} />}
