@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { AVISO_FITA, CORES_BROSELOW, pesoDaCor, rotuloAlturaIdade, rotuloPesoDaCor, type CorBroselow } from '@/clinico/pediatria/fitaBroselow'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
 import { cn } from '@/lib/utils'
+import { corDoPeso, lerPesoTexto } from '@/lib/fitaDoPeso'
 
 // Guia rápido (F4, celular e tablet; pedido do RT de 17/11/2026, M1–M6 = A,
 // protótipo aprovado). No alto, a chave criança ↔ adulto e o peso e a idade,
@@ -105,9 +106,18 @@ function corEscolhida(origem: string) {
 }
 const origemDaCor = (c: CorBroselow) => `${PREFIXO_FITA}${c.nome.toLowerCase()} (${rotuloPesoDaCor(c)})`
 
+// Peso digitado → cor (pedido do RT, 17/11/2026): sem cor escolhida na lista, a
+// cor sai do peso pela mesma tabela; no vão entre cores, nenhuma.
+function leituraDaFita(p: { origem: string; peso: string }) {
+  const escolhida = corEscolhida(p.origem)
+  if (escolhida) return { cor: escolhida, pelaLista: true, leitura: corDoPeso(pesoDaCor(escolhida)) }
+  const leitura = corDoPeso(lerPesoTexto(p.peso))
+  return { cor: leitura.tipo === 'cor' ? leitura.cor : undefined, pelaLista: false, leitura }
+}
+
 function CorDaFita() {
   const p = usePacienteCentral()
-  const cor = corEscolhida(p.origem)
+  const { cor } = leituraDaFita(p)
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <span className="text-corpo font-bold text-tinta">Cor Broselow</span>
@@ -147,12 +157,18 @@ function CorDaFita() {
 
 function DetalheDaFita() {
   const p = usePacienteCentral()
-  const cor = corEscolhida(p.origem)
-  if (!cor) return null
+  const { cor, pelaLista, leitura } = leituraDaFita(p)
+  if (leitura.tipo === 'vazio') return null
+  const faixa = (c: CorBroselow) => `${c.nome.toLowerCase()} (${c.pesoKg[0]}–${c.pesoKg[1]} kg)`
+  const titulo = cor
+    ? (pelaLista ? `Cor ${cor.nome.toLowerCase()} · ${rotuloPesoDaCor(cor)}` : `Peso ${p.peso.trim()} kg → cor ${faixa(cor)}`)
+    : leitura.tipo === 'entre'
+      ? `Peso ${p.peso.trim()} kg fica entre a cor ${faixa(leitura.abaixo)} e a ${faixa(leitura.acima)}`
+      : `Peso ${p.peso.trim()} kg fora da fita (3 a 36 kg)`
   return (
     <div className="col-span-2 flex flex-col gap-1 rounded-container border border-fio-forte bg-superficie px-3.5 py-2.5">
-      <span className="text-controle font-semibold text-tinta">Cor {cor.nome.toLowerCase()} · {rotuloPesoDaCor(cor)}</span>
-      <span className="text-rotulo text-tinta-apoio">{rotuloAlturaIdade(cor)}. {AVISO_FITA}</span>
+      <span className="text-controle font-semibold text-tinta">{titulo}</span>
+      <span className="text-rotulo text-tinta-apoio">{cor ? `${rotuloAlturaIdade(cor)}. ` : ''}{AVISO_FITA}</span>
     </div>
   )
 }
