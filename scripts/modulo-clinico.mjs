@@ -4,10 +4,11 @@
 // Uso:
 //   node --experimental-strip-types scripts/modulo-clinico.mjs            confere e grava
 //   node --experimental-strip-types scripts/modulo-clinico.mjs --conferir confere e falha se o documento estiver velho (CI)
+//   node --experimental-strip-types scripts/modulo-clinico.mjs --sql      imprime o SQL das revisões exigidas (LG13)
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { conferirMapa, gerarDocumentoMapa } from './modulo-clinico-regras.mjs'
+import { conferirMapa, gerarDocumentoMapa, sqlRevisoes } from './modulo-clinico-regras.mjs'
 
 const raiz = join(import.meta.dirname, '..')
 const MAPA = join(raiz, 'docs/regulatorio/modulo-clinico/mapa.json')
@@ -39,7 +40,10 @@ if (problemas.length) {
 }
 
 const texto = gerarDocumentoMapa(mapa)
-if (process.argv.includes('--conferir')) {
+if (process.argv.includes('--sql')) {
+  // LG13: as revisões exigidas de todas as fichas, para uma migration
+  console.log(sqlRevisoes(mapa))
+} else if (process.argv.includes('--conferir')) {
   const atual = existsSync(DOCUMENTO) ? readFileSync(DOCUMENTO, 'utf8').replace(/\r\n/g, '\n') : ''
   if (atual !== texto) {
     console.error('docs/regulatorio/LG11-MAPA-MODULO-CLINICO.md está diferente do JSON. Rode `node --experimental-strip-types scripts/modulo-clinico.mjs` e faça o commit.')

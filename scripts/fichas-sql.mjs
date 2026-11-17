@@ -3,9 +3,10 @@
 //   (npm run fichas:sql -- 20261001000001_fase5_fichas)
 // Versão já registrada não muda (ON CONFLICT DO NOTHING): regra alterada tem
 // de ganhar versão nova, e a versão nova entra aguardando aprovação.
-import { readdirSync, statSync, writeFileSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { sqlRevisoes } from './modulo-clinico-regras.mjs'
 
 const nome = process.argv[2]
 if (!nome) {
@@ -46,6 +47,12 @@ fichas.splice(0, fichas.length, ...porId.values())
 const linhas = [
   '-- Gerado por scripts/fichas-sql.mjs a partir de src/clinico. Não editar à mão.',
   ...fichas.map((f) => `SELECT private.registrar_versao_ferramenta(${q(f.id)}, ${q(f.titulo)}, ${q(f.versao)}, ${q(f.publico)}, ${q(JSON.stringify(f.fontes))}::jsonb);`),
+  // LG13: que profissões revisam cada ficha, pelo mapa do módulo clínico (LG11)
+  '-- LG13: revisões exigidas, pelo mapa do módulo clínico (docs/regulatorio/modulo-clinico/mapa.json)',
+  sqlRevisoes(
+    JSON.parse(readFileSync(join(import.meta.dirname, '..', 'docs', 'regulatorio', 'modulo-clinico', 'mapa.json'), 'utf8')),
+    new Set(fichas.map((f) => f.id)),
+  ),
 ]
 const destino = join(import.meta.dirname, '..', 'supabase', 'migrations', nome + '.sql')
 writeFileSync(destino, linhas.join('\n') + '\n')

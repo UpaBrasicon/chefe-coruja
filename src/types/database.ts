@@ -5287,6 +5287,57 @@ export type Database = {
           },
         ]
       }
+      ferramenta_revisoes: {
+        Row: {
+          aprovada: boolean
+          em: string
+          id: string
+          nota: string | null
+          perfil_id: string
+          registro: string
+          retroativa: boolean
+          tipo: string
+          versao_id: string
+        }
+        Insert: {
+          aprovada: boolean
+          em?: string
+          id?: string
+          nota?: string | null
+          perfil_id: string
+          registro: string
+          retroativa?: boolean
+          tipo: string
+          versao_id: string
+        }
+        Update: {
+          aprovada?: boolean
+          em?: string
+          id?: string
+          nota?: string | null
+          perfil_id?: string
+          registro?: string
+          retroativa?: boolean
+          tipo?: string
+          versao_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ferramenta_revisoes_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ferramenta_revisoes_versao_id_fkey"
+            columns: ["versao_id"]
+            isOneToOne: false
+            referencedRelation: "ferramenta_versoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ferramenta_uso: {
         Row: {
           chave: string
@@ -5389,16 +5440,19 @@ export type Database = {
         Row: {
           criado_em: string
           id: string
+          revisoes_exigidas: string[]
           titulo: string
         }
         Insert: {
           criado_em?: string
           id: string
+          revisoes_exigidas?: string[]
           titulo: string
         }
         Update: {
           criado_em?: string
           id?: string
+          revisoes_exigidas?: string[]
           titulo?: string
         }
         Relationships: []
@@ -11088,6 +11142,16 @@ export type Database = {
         Args: { p_paciente: string }
         Returns: Json
       }
+      revisar_versao_ferramenta: {
+        Args: {
+          p_aprovar: boolean
+          p_ferramenta: string
+          p_nota?: string
+          p_tipo: string
+          p_versao: string
+        }
+        Returns: string
+      }
       usar_medicamento_na_unidade: {
         Args: { p_medicamento: string; p_unidade: string }
         Returns: undefined
@@ -12112,6 +12176,19 @@ export type Database = {
           ultima_chamada_em: string
           ultima_sala: string
           ultimo_chamador: string
+        }[]
+      }
+      fila_revisao_ferramentas: {
+        Args: { p_tipo: string }
+        Returns: {
+          ferramenta_id: string
+          fontes: Json
+          medico_aprovou: boolean
+          publico: string
+          registrada_em: string
+          retroativa: boolean
+          titulo: string
+          versao: string
         }[]
       }
       fila_validacao: {
