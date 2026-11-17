@@ -43,7 +43,10 @@ test('condição do LG: rótulo fixo e o bloco nunca mostra cor, dose ou conduta
     assert.doesNotMatch(bloco, proibido)
   }
   // nada do paciente na URL: a janela usa só a rota da ferramenta como endereço interno
-  assert.match(janelaFerr, /<Routes location=\{ferramenta\.rota\}>/)
+  // o endereço não muda dentro do /atendimento (Routes com location quebrava o roteador,
+  // achado do RT em 17/11/2026): a seção vai por contexto
+  assert.doesNotMatch(janelaFerr, /<Routes|useRoutes/)
+  assert.match(janelaFerr, /<SecaoDaFerramentaContexto\.Provider value=\{ferramenta\.rota\.split\('\/'\)\[2\] \?\? null\}>/)
   assert.match(janelaFerr, /to=\{ferramenta\.rota\}/)
   for (const src of [bloco, janelaFerr]) assert.doesNotMatch(src, /[?#]\$\{|search=|hash=|useNavigate|navigate\(/)
 })

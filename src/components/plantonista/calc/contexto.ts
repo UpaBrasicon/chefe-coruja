@@ -15,3 +15,14 @@ export const RelacionadasContexto = createContext<Relacionada[]>([])
 export function useRelacionadas() {
   return useContext(RelacionadasContexto)
 }
+
+/**
+ * Seção da Central quando a ferramenta abre fora da rota dela: na janela por
+ * cima do atendimento (F3 das ferramentas pelo CID). Sem isso a tela lê a
+ * seção do endereço; trocar o endereço dentro do /atendimento quebra o roteador.
+ */
+export const SecaoDaFerramentaContexto = createContext<string | null>(null)
+
+export function useSecaoDaFerramenta() {
+  return useContext(SecaoDaFerramentaContexto)
+}
