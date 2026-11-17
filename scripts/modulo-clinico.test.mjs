@@ -1,8 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { conferirMapa, gerarDocumentoMapa } from './modulo-clinico-regras.mjs'
+import { conferirMapa, gerarDocumentoMapa, sqlRevisoes } from './modulo-clinico-regras.mjs'
 
-const grupo = (id, fichas, extra = {}) => ({ id, nome: `Grupo ${id}`, classe: 'dentro', motivo: 'm', fichas, ...extra })
+const grupo = (id, fichas, extra = {}) => ({ id, nome: `Grupo ${id}`, classe: 'dentro', motivo: 'm', revisoes: ['medico'], fichas, ...extra })
 const funcao = (id, extra = {}) => ({ id, nome: `Função ${id}`, classe: 'zona-cinzenta', motivo: 'm', onde: ['src/a.ts'], ...extra })
 const mapa = (grupos, funcoes = []) => ({
   versao: 'x',
@@ -44,6 +44,20 @@ test('documento conta por classe e é determinístico', () => {
   const m = mapa([grupo('a', ['heart', 'timi']), grupo('b', ['fugulin'], { classe: 'fora' })], [funcao('f')])
   const d = gerarDocumentoMapa(m)
   assert.match(d, /3 fichas: 2 dentro, 0 na zona cinzenta e 1 fora\. Mais 1 funções/)
-  assert.match(d, /\| Grupo a \| dentro \(SaMD provável\) \| 2 \|/)
+  assert.match(d, /\| Grupo a \| dentro \(SaMD provável\) \| medico \| 2 \|/)
   assert.equal(d, gerarDocumentoMapa(m))
+})
+
+test('LG13: revisões do grupo precisam incluir o médico e só profissões conhecidas', () => {
+  const p = conferirMapa(mapa([grupo('a', ['x'], { revisoes: ['farmaceutico'] }), grupo('b', ['y'], { revisoes: ['medico', 'dentista'] })]), new Set(['x', 'y']), existe)
+  assert.equal(p.filter((x) => /"revisoes" precisa incluir/.test(x)).length, 2)
+})
+
+test('LG13: SQL das revisões é idempotente e agrupa por conjunto', () => {
+  const m = mapa([grupo('a', ['heart', "o'neil"]), grupo('b', ['bolus'], { revisoes: ['medico', 'farmaceutico'] })])
+  const sql = sqlRevisoes(m)
+  assert.match(sql, /SET revisoes_exigidas = ARRAY\['medico', 'farmaceutico'\]::text\[\]\n WHERE id = ANY \(ARRAY\['bolus'\]::text\[\]\)/)
+  assert.match(sql, /ARRAY\['heart', 'o''neil'\]/)
+  assert.match(sql, /IS DISTINCT FROM/)
+  assert.doesNotMatch(sqlRevisoes(m, new Set(['bolus'])), /heart/)
 })

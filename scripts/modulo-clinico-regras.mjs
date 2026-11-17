@@ -3,6 +3,40 @@
 
 export const CLASSES = ['dentro', 'zona-cinzenta', 'fora']
 
+// LG13 (K2): que profissões revisam cada grupo. O médico revisa tudo.
+export const REVISORES = ['medico', 'farmaceutico', 'enfermeiro']
+
+/** Ficha → revisões exigidas, pelo grupo do mapa. */
+export function revisoesPorFicha(mapa) {
+  const m = new Map()
+  for (const g of mapa.grupos ?? []) for (const f of g.fichas ?? []) m.set(f, g.revisoes)
+  return m
+}
+
+const q = (s) => "'" + String(s).replace(/'/g, "''") + "'"
+const arr = (xs) => `ARRAY[${xs.map(q).join(', ')}]::text[]`
+
+/**
+ * SQL que grava em public.ferramentas_clinicas.revisoes_exigidas o que o mapa
+ * pede (LG13). Idempotente: só muda o que está diferente. Com `ids`, só essas fichas.
+ */
+export function sqlRevisoes(mapa, ids) {
+  const porConjunto = new Map()
+  for (const [f, rev] of revisoesPorFicha(mapa)) {
+    if (ids && !ids.has(f)) continue
+    const k = rev.join(',')
+    if (!porConjunto.has(k)) porConjunto.set(k, [])
+    porConjunto.get(k).push(f)
+  }
+  return [...porConjunto.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, fs]) => {
+      const rev = k.split(',')
+      return `UPDATE public.ferramentas_clinicas SET revisoes_exigidas = ${arr(rev)}\n WHERE id = ANY (${arr(fs.sort())})\n   AND revisoes_exigidas IS DISTINCT FROM ${arr(rev)};`
+    })
+    .join('\n')
+}
+
 /**
  * Confere o mapa contra as fichas do código.
  * @param {object} mapa           docs/regulatorio/modulo-clinico/mapa.json
@@ -23,6 +57,8 @@ export function conferirMapa(mapa, fichas, existe) {
   for (const g of mapa.grupos ?? []) {
     item('grupo', g)
     if (!g.fichas?.length) problemas.push(`grupo ${g.id}: sem fichas`)
+    if (!Array.isArray(g.revisoes) || !g.revisoes.includes('medico') || g.revisoes.some((r) => !REVISORES.includes(r)))
+      problemas.push(`grupo ${g.id}: "revisoes" precisa incluir "medico" e só usar ${REVISORES.join(', ')}`)
     for (const f of g.fichas ?? []) {
       if (vistas.has(f)) problemas.push(`ficha ${f} está em dois grupos: ${vistas.get(f)} e ${g.id}`)
       vistas.set(f, g.id)
@@ -59,9 +95,9 @@ export function gerarDocumentoMapa(mapa) {
     '',
     `${total} fichas: ${conta('dentro')} dentro, ${conta('zona-cinzenta')} na zona cinzenta e ${conta('fora')} fora. Mais ${mapa.funcoes.length} funções do sistema que não são fichas.`,
     '',
-    '| Grupo | Classe | Fichas |',
-    '|---|---|---|',
-    ...mapa.grupos.map((g) => `| ${g.nome} | ${ROTULO[g.classe]} | ${g.fichas.length} |`),
+    '| Grupo | Classe | Revisam (LG13) | Fichas |',
+    '|---|---|---|---|',
+    ...mapa.grupos.map((g) => `| ${g.nome} | ${ROTULO[g.classe]} | ${g.revisoes.join(' + ')} | ${g.fichas.length} |`),
     '',
     '## Funções do sistema',
     '',
@@ -72,7 +108,7 @@ export function gerarDocumentoMapa(mapa) {
     '## Grupos de fichas',
   ]
   for (const g of mapa.grupos) {
-    p.push('', `### ${g.nome}`, '', `\`${g.id}\` · ${ROTULO[g.classe]} · ${g.fichas.length} fichas`, '', g.motivo, '', g.fichas.map((f) => `\`${f}\``).join(', '))
+    p.push('', `### ${g.nome}`, '', `\`${g.id}\` · ${ROTULO[g.classe]} · revisam: ${g.revisoes.join(' + ')} · ${g.fichas.length} fichas`, '', g.motivo, '', g.fichas.map((f) => `\`${f}\``).join(', '))
   }
   return p.join('\n') + '\n'
 }

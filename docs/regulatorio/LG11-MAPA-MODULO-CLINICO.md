@@ -14,16 +14,17 @@ Versão 2026-11-17. Mapa técnico para o consultor regulatório (LG11, decisão 
 
 332 fichas: 226 dentro, 104 na zona cinzenta e 2 fora. Mais 10 funções do sistema que não são fichas.
 
-| Grupo | Classe | Fichas |
-|---|---|---|
-| Escores da Central | dentro (SaMD provável) | 46 |
-| Condutas e calculadoras do adulto | dentro (SaMD provável) | 123 |
-| Condutas e calculadoras da pediatria | dentro (SaMD provável) | 53 |
-| Escores que alimentam alertas no prontuário | dentro (SaMD provável) | 4 |
-| Apoio à classificação de risco | zona cinzenta | 5 |
-| Apoio de enfermagem, crescimento, paliativo e atalhos | zona cinzenta | 9 |
-| Notas de referência do HCFMUSP | zona cinzenta | 90 |
-| Carga de trabalho da enfermagem | fora | 2 |
+| Grupo | Classe | Revisam (LG13) | Fichas |
+|---|---|---|---|
+| Escores da Central | dentro (SaMD provável) | medico | 46 |
+| Condutas e calculadoras do adulto | dentro (SaMD provável) | medico + farmaceutico | 123 |
+| Condutas e calculadoras da pediatria | dentro (SaMD provável) | medico + farmaceutico | 53 |
+| Escores que alimentam alertas no prontuário | dentro (SaMD provável) | medico | 4 |
+| Apoio à classificação de risco | zona cinzenta | medico + enfermeiro | 5 |
+| Escalas e diagnósticos de enfermagem | zona cinzenta | medico + enfermeiro | 3 |
+| Apoio clínico, crescimento, paliativo e atalhos | zona cinzenta | medico | 6 |
+| Notas de referência do HCFMUSP | zona cinzenta | medico | 90 |
+| Carga de trabalho da enfermagem | fora | medico + enfermeiro | 2 |
 
 ## Funções do sistema
 
@@ -44,7 +45,7 @@ Versão 2026-11-17. Mapa técnico para o consultor regulatório (LG11, decisão 
 
 ### Escores da Central
 
-`escores` · dentro (SaMD provável) · 46 fichas
+`escores` · dentro (SaMD provável) · revisam: medico · 46 fichas
 
 Calcula pontuação e faixa de risco com os dados de um paciente e mostra os próximos passos.
 
@@ -52,7 +53,7 @@ Calcula pontuação e faixa de risco com os dados de um paciente e mostra os pr�
 
 ### Condutas e calculadoras do adulto
 
-`adulto` · dentro (SaMD provável) · 123 fichas
+`adulto` · dentro (SaMD provável) · revisam: medico + farmaceutico · 123 fichas
 
 Orienta conduta de um paciente; a maior parte calcula dose, volume ou escore pelo peso, pela idade ou pelos exames.
 
@@ -60,7 +61,7 @@ Orienta conduta de um paciente; a maior parte calcula dose, volume ou escore pel
 
 ### Condutas e calculadoras da pediatria
 
-`pediatria` · dentro (SaMD provável) · 53 fichas
+`pediatria` · dentro (SaMD provável) · revisam: medico + farmaceutico · 53 fichas
 
 Calcula dose, volume ou escore pelo peso e pela idade da criança; só com fonte pediátrica.
 
@@ -68,7 +69,7 @@ Calcula dose, volume ou escore pelo peso e pela idade da criança; só com fonte
 
 ### Escores que alimentam alertas no prontuário
 
-`alertas` · dentro (SaMD provável) · 4 fichas
+`alertas` · dentro (SaMD provável) · revisam: medico · 4 fichas
 
 O sistema calcula sozinho, a partir dos sinais vitais registrados, e mostra o alerta na tela do paciente.
 
@@ -76,23 +77,31 @@ O sistema calcula sozinho, a partir dos sinais vitais registrados, e mostra o al
 
 ### Apoio à classificação de risco
 
-`classificacao-risco` · zona cinzenta · 5 fichas
+`classificacao-risco` · zona cinzenta · revisam: medico + enfermeiro · 5 fichas
 
 Sugere fluxograma, dor e idade gestacional; a cor final é sempre da enfermagem (decisão R2 com o consultor).
 
 `triagem-anexos-sinais-vitais`, `triagem-dor-flacc`, `triagem-dor-nips`, `triagem-dor-numerica`, `triagem-gestacao-naegele`
 
-### Apoio de enfermagem, crescimento, paliativo e atalhos
+### Escalas e diagnósticos de enfermagem
 
-`zona-cinzenta-apoio` · zona cinzenta · 9 fichas
+`enfermagem-risco` · zona cinzenta · revisam: medico + enfermeiro · 3 fichas
 
-Escalas de risco de enfermagem, curva da OMS, rastreio paliativo, tabelas de acesso e o atalho de ferramentas pelo CID: podem orientar conduta, mas não calculam dose.
+Braden, Morse e SAE: risco e diagnóstico de enfermagem a partir do registro do paciente.
 
-`acesso-venoso`, `adulto-acessos-calibres`, `avaliacao-braden`, `avaliacao-morse`, `curva-crescimento-oms`, `enfermagem-sae`, `mapa-cid-ferramentas`, `paliativo-pergunta-surpresa`, `ped-sinais-vitais-icr`
+`avaliacao-braden`, `avaliacao-morse`, `enfermagem-sae`
+
+### Apoio clínico, crescimento, paliativo e atalhos
+
+`zona-cinzenta-apoio` · zona cinzenta · revisam: medico · 6 fichas
+
+Curva da OMS, rastreio paliativo, sinais vitais por idade, tabelas de acesso e o atalho de ferramentas pelo CID: podem orientar conduta, mas não calculam dose.
+
+`acesso-venoso`, `adulto-acessos-calibres`, `curva-crescimento-oms`, `mapa-cid-ferramentas`, `paliativo-pergunta-surpresa`, `ped-sinais-vitais-icr`
 
 ### Notas de referência do HCFMUSP
 
-`notas-referencia` · zona cinzenta · 90 fichas
+`notas-referencia` · zona cinzenta · revisam: medico · 90 fichas
 
 Texto de referência resumido do livro, igual para todo paciente; vira SaMD se passar a mudar conforme o paciente.
 
@@ -100,7 +109,7 @@ Texto de referência resumido do livro, igual para todo paciente; vira SaMD se p
 
 ### Carga de trabalho da enfermagem
 
-`carga-enfermagem` · fora · 2 fichas
+`carga-enfermagem` · fora · revisam: medico + enfermeiro · 2 fichas
 
 Fugulin e Dini classificam a carga de cuidado para dimensionar a equipe, não orientam o tratamento.
 

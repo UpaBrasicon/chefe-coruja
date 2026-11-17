@@ -6,12 +6,20 @@
     "zona-cinzenta": "o consultor decide.",
     "fora": "registro, gestão ou referência igual para todo paciente."
   },
+  "revisoes": {
+    "medico": "Responsável técnico médico (CRM): revisa todas as fichas.",
+    "farmaceutico": "Farmacêutico (CRF): ficha com dose, volume, diluição ou infusão (LG13, K2).",
+    "enfermeiro": "Enfermeiro (COREN): fichas de enfermagem e de classificação de risco (LG13, K2)."
+  },
   "grupos": [
     {
       "id": "escores",
       "nome": "Escores da Central",
       "classe": "dentro",
       "motivo": "Calcula pontuação e faixa de risco com os dados de um paciente e mostra os próximos passos.",
+      "revisoes": [
+        "medico"
+      ],
       "fichas": [
         "4at-delirium",
         "4t-hit",
@@ -66,6 +74,10 @@
       "nome": "Condutas e calculadoras do adulto",
       "classe": "dentro",
       "motivo": "Orienta conduta de um paciente; a maior parte calcula dose, volume ou escore pelo peso, pela idade ou pelos exames.",
+      "revisoes": [
+        "medico",
+        "farmaceutico"
+      ],
       "fichas": [
         "adulto-abc-score",
         "adulto-abstinencia-alcoolica",
@@ -197,6 +209,10 @@
       "nome": "Condutas e calculadoras da pediatria",
       "classe": "dentro",
       "motivo": "Calcula dose, volume ou escore pelo peso e pela idade da criança; só com fonte pediátrica.",
+      "revisoes": [
+        "medico",
+        "farmaceutico"
+      ],
       "fichas": [
         "ped-acidobase",
         "ped-anafilaxia-icr",
@@ -258,6 +274,9 @@
       "nome": "Escores que alimentam alertas no prontuário",
       "classe": "dentro",
       "motivo": "O sistema calcula sozinho, a partir dos sinais vitais registrados, e mostra o alerta na tela do paciente.",
+      "revisoes": [
+        "medico"
+      ],
       "fichas": [
         "news2",
         "ped-pews-icr",
@@ -270,6 +289,10 @@
       "nome": "Apoio à classificação de risco",
       "classe": "zona-cinzenta",
       "motivo": "Sugere fluxograma, dor e idade gestacional; a cor final é sempre da enfermagem (decisão R2 com o consultor).",
+      "revisoes": [
+        "medico",
+        "enfermeiro"
+      ],
       "fichas": [
         "triagem-anexos-sinais-vitais",
         "triagem-dor-flacc",
@@ -279,17 +302,32 @@
       ]
     },
     {
-      "id": "zona-cinzenta-apoio",
-      "nome": "Apoio de enfermagem, crescimento, paliativo e atalhos",
+      "id": "enfermagem-risco",
+      "nome": "Escalas e diagnósticos de enfermagem",
       "classe": "zona-cinzenta",
-      "motivo": "Escalas de risco de enfermagem, curva da OMS, rastreio paliativo, tabelas de acesso e o atalho de ferramentas pelo CID: podem orientar conduta, mas não calculam dose.",
+      "motivo": "Braden, Morse e SAE: risco e diagnóstico de enfermagem a partir do registro do paciente.",
+      "revisoes": [
+        "medico",
+        "enfermeiro"
+      ],
+      "fichas": [
+        "avaliacao-braden",
+        "avaliacao-morse",
+        "enfermagem-sae"
+      ]
+    },
+    {
+      "id": "zona-cinzenta-apoio",
+      "nome": "Apoio clínico, crescimento, paliativo e atalhos",
+      "classe": "zona-cinzenta",
+      "motivo": "Curva da OMS, rastreio paliativo, sinais vitais por idade, tabelas de acesso e o atalho de ferramentas pelo CID: podem orientar conduta, mas não calculam dose.",
+      "revisoes": [
+        "medico"
+      ],
       "fichas": [
         "acesso-venoso",
         "adulto-acessos-calibres",
-        "avaliacao-braden",
-        "avaliacao-morse",
         "curva-crescimento-oms",
-        "enfermagem-sae",
         "mapa-cid-ferramentas",
         "paliativo-pergunta-surpresa",
         "ped-sinais-vitais-icr"
@@ -300,6 +338,9 @@
       "nome": "Notas de referência do HCFMUSP",
       "classe": "zona-cinzenta",
       "motivo": "Texto de referência resumido do livro, igual para todo paciente; vira SaMD se passar a mudar conforme o paciente.",
+      "revisoes": [
+        "medico"
+      ],
       "fichas": [
         "nota-hcfmusp-cap10-sedacao",
         "nota-hcfmusp-cap100-afogamento",
@@ -398,6 +439,10 @@
       "nome": "Carga de trabalho da enfermagem",
       "classe": "fora",
       "motivo": "Fugulin e Dini classificam a carga de cuidado para dimensionar a equipe, não orientam o tratamento.",
+      "revisoes": [
+        "medico",
+        "enfermeiro"
+      ],
       "fichas": [
         "dini-pediatrico",
         "fugulin-12-areas"

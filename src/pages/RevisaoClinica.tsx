@@ -8,15 +8,19 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { data as dataBr } from '@/lib/formato'
-import { Chip, TituloPagina } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import { useDecidirVersao, useFilaAprovacao, useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
+import {
+  useAguardandoOutraProfissao, useDecidirVersao, useFilaAprovacao, useFilaRevisao, useMeuPapelTecnico, useRevisarVersao,
+  useRevisoesExigidas, type PapelTecnico,
+} from '@/hooks/useFerramentaClinica'
 import { chaveVersao, ordemDeAprovacao, resumoDoLote } from '@/lib/aprovacaoLote'
+import { NOME_REVISOR, listaRevisores, podeAprovarEmLote } from '@/lib/comiteClinico'
 
 // LG10 (decisões do RT de 17/11/2026): a fila da produção aponta para a tela
 // da homologação, onde a versão aguardando já roda.
@@ -39,13 +43,16 @@ export default function RevisaoClinica() {
   const { data: papeis, isLoading } = useMeuPapelTecnico()
   const { papeisDaUnidade } = useUnidade()
   const rt = papeis?.find((p) => p.tipo === 'medico')
+  // LG13: farmacêutico e enfermeiro do comitê clínico têm a fila da profissão
+  const revisores = (papeis ?? []).filter((p) => p.tipo !== 'medico')
+  const revisor = revisores[0]
   const ehGestor = papeisDaUnidade.includes('gestor')
 
   if (isLoading) return <div className="flex justify-center py-8"><Spinner /></div>
-  if (!rt && !ehGestor) {
+  if (!rt && !revisor && !ehGestor) {
     return (
       <p className="text-corpo text-tinta-sussurro">
-        Esta fila é do responsável técnico médico nomeado pela rede. Seu perfil não tem essa nomeação.
+        Esta fila é do comitê clínico nomeado pela rede (responsável técnico médico, farmacêutico e enfermeiro). Seu perfil não tem essa nomeação.
       </p>
     )
   }
@@ -55,8 +62,11 @@ export default function RevisaoClinica() {
       <TituloPagina icone={ShieldCheck} titulo="Revisão Clínica"
         descricao={rt
           ? `Versões de regra da camada base aguardando sua decisão. Sua aprovação fica registrada com o seu nome e ${rt.conselho} ${rt.registro}/${rt.uf}.`
-          : 'Toda ferramenta da Central carrega a ressalva de referência geral até o responsável técnico conferir. A conferência tira a ressalva da tela de quem prescreve; a correção apontada a troca por um aviso vermelho. A decisão é do responsável técnico nomeado pela rede; aqui o gestor acompanha.'} />
+          : revisor
+            ? `Fichas que pedem a revisão do ${NOME_REVISOR[revisor.tipo]} do comitê clínico. Sua revisão fica registrada com o seu nome e ${revisor.conselho} ${revisor.registro}/${revisor.uf}.`
+            : 'Toda ferramenta da Central carrega a ressalva de referência geral até o responsável técnico conferir. A conferência tira a ressalva da tela de quem prescreve; a correção apontada a troca por um aviso vermelho. A decisão é do responsável técnico nomeado pela rede; aqui o gestor acompanha.'} />
       {rt && <FilaRT />}
+      {revisores.map((r) => <FilaRevisor key={r.tipo} papel={r} />)}
       <Panorama />
     </div>
   )
@@ -64,19 +74,23 @@ export default function RevisaoClinica() {
 
 function FilaRT() {
   const { data: fila } = useFilaAprovacao(true)
+  const { data: exigidas } = useRevisoesExigidas(true)
+  const { data: esperando } = useAguardandoOutraProfissao(true)
   const decidir = useDecidirVersao()
+  // LG13, K6: ficha com dose (pede farmacêutico) fica fora do lote; aprova uma a uma
+  const noLote = (v: { ferramenta_id: string }) => podeAprovarEmLote(exigidas?.[v.ferramenta_id])
   const [notas, setNotas] = useState<Record<string, string>>({})
   const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null)
   // aprovar em lote (pedido do RT, 11/11/2026): uma chamada por versão, na ordem da mais antiga para a mais nova
   const [marcadas, setMarcadas] = useState<Set<string>>(new Set())
   const [confirmando, setConfirmando] = useState(false)
   const [progresso, setProgresso] = useState<{ feito: number; total: number } | null>(null)
-  const naFila = (fila ?? []).map(chaveVersao)
+  const naFila = (fila ?? []).filter(noLote).map(chaveVersao)
   const selecionadas = naFila.filter((c) => marcadas.has(c))
   const alternar = (chave: string) => setMarcadas((s) => { const n = new Set(s); if (n.has(chave)) n.delete(chave); else n.add(chave); return n })
 
   async function aprovarLote() {
-    const itens = ordemDeAprovacao((fila ?? []).filter((v) => marcadas.has(chaveVersao(v))))
+    const itens = ordemDeAprovacao((fila ?? []).filter((v) => noLote(v) && marcadas.has(chaveVersao(v))))
     const falhas: { chave: string; erro: string }[] = []
     setConfirmando(false)
     setProgresso({ feito: 0, total: itens.length })
@@ -111,7 +125,13 @@ function FilaRT() {
         </p>
       )}
       {fila && fila.length === 0 && <p className="text-corpo text-tinta-sussurro">Nada aguardando sua decisão.</p>}
-      {fila && fila.length > 1 && (
+      {esperando && esperando.length > 0 && (
+        <p role="status" className="rounded-controle border border-fio bg-superficie p-3 text-apoio text-tinta">
+          Você já decidiu {esperando.length === 1 ? '1 versão que espera' : `${esperando.length} versões que esperam`} outra profissão do comitê:{' '}
+          {esperando.map((v) => `${v.ferramenta_id} ${v.versao}`).join(', ')}. Até lá, vale a versão anterior.
+        </p>
+      )}
+      {fila && naFila.length > 1 && (
         <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-superficie p-3">
           <Button size="sm" variant="outline" disabled={!!progresso}
             onClick={() => setMarcadas(selecionadas.length === naFila.length ? new Set() : new Set(naFila))}>
@@ -130,7 +150,9 @@ function FilaRT() {
               Aprovar marcadas ({selecionadas.length})
             </Button>
           )}
-          <span className="text-rotulo text-tinta-sussurro">Reprovar continua uma por uma, com a correção escrita.</span>
+          <span className="text-rotulo text-tinta-sussurro">
+            Reprovar continua uma por uma, com a correção escrita. Ficha com dose fica fora do lote: aprove uma a uma (comitê clínico).
+          </span>
         </div>
       )}
       {fila?.map((v) => {
@@ -141,13 +163,16 @@ function FilaRT() {
           <Card key={chave}>
             <CardHeader>
               <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
-                {fila.length > 1 && (
+                {naFila.length > 1 && noLote(v) && (
                   <input type="checkbox" className="size-4" aria-label={`Marcar ${v.titulo} versão ${v.versao} para aprovar em lote`}
                     checked={marcadas.has(chave)} onChange={() => alternar(chave)} disabled={!!progresso} />
                 )}
                 {v.titulo}
                 <Badge variant="secondary">versão {v.versao}</Badge>
                 <Badge variant="outline">{PUBLICO[v.publico] ?? v.publico}</Badge>
+                {(exigidas?.[v.ferramenta_id]?.length ?? 0) > 1 && (
+                  <Badge variant="outline">revisam: {listaRevisores(exigidas![v.ferramenta_id])}</Badge>
+                )}
               </CardTitle>
               <CardDescription>
                 {v.vigente_versao ? `Substitui a versão aprovada ${v.vigente_versao}.` : 'Primeira versão desta ferramenta.'}
@@ -187,6 +212,101 @@ function FilaRT() {
         )
       })}
     </div>
+  )
+}
+
+// LG13: fila do farmacêutico ou do enfermeiro do comitê clínico. Primeiro as
+// versões novas; depois as que já estão no ar (revisão retroativa, K4), com a
+// pediatria na frente. Sem lote: cada ficha com a tela aberta.
+function FilaRevisor({ papel }: { papel: PapelTecnico }) {
+  const tipo = papel.tipo === 'enfermeiro' ? 'enfermeiro' : 'farmaceutico'
+  const { data: fila, isLoading } = useFilaRevisao(tipo)
+  const revisar = useRevisarVersao()
+  const [notas, setNotas] = useState<Record<string, string>>({})
+  const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null)
+  const novas = (fila ?? []).filter((v) => !v.retroativa).length
+
+  async function revisarItem(ferramenta: string, versao: string, aprovar: boolean, retroativa: boolean) {
+    const chave = `${ferramenta}@${versao}`
+    try {
+      const st = await revisar.mutateAsync({ ferramenta, versao, tipo, aprovar, nota: notas[chave] })
+      setAviso({
+        ok: true,
+        texto: retroativa
+          ? aprovar ? 'Revisão registrada. A versão segue no ar.' : 'Achado registrado. A correção vira versão nova, aprovada pelo médico e por você.'
+          : st === 'aprovada' ? 'Revisão registrada. A versão está aprovada.'
+            : st === 'reprovada' ? 'Versão reprovada com a correção registrada.'
+              : 'Revisão registrada. A versão espera a decisão do médico.',
+      })
+    } catch (e) {
+      setAviso({ ok: false, texto: e instanceof Error ? e.message : 'Não foi possível registrar a revisão.' })
+    }
+  }
+
+  return (
+    <section className="flex flex-col gap-3" aria-label={`Fila do ${NOME_REVISOR[papel.tipo]}`}>
+      <TituloSecao extra={fila ? `${novas} novas · ${fila.length - novas} já no ar` : undefined}>
+        Revisão do {NOME_REVISOR[papel.tipo]}
+      </TituloSecao>
+      {aviso && (
+        <p role="status" className={aviso.ok ? 'rounded-controle border border-fio bg-superficie p-3 text-apoio text-tinta' : 'rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico'}>
+          {aviso.texto}
+        </p>
+      )}
+      {isLoading && <div className="flex justify-center py-4"><Spinner /></div>}
+      {fila && fila.length === 0 && <p className="text-corpo text-tinta-sussurro">Nada aguardando a sua revisão.</p>}
+      {fila?.map((v) => {
+        const chave = `${v.ferramenta_id}@${v.versao}`
+        const fontes = (v.fontes ?? []) as unknown as Fonte[]
+        const nota = notas[chave] ?? ''
+        return (
+          <Card key={chave}>
+            <CardHeader>
+              <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
+                {v.titulo}
+                <Badge variant="secondary">versão {v.versao}</Badge>
+                <Badge variant="outline">{PUBLICO[v.publico] ?? v.publico}</Badge>
+                {v.retroativa && <Badge variant="outline">já no ar</Badge>}
+              </CardTitle>
+              <CardDescription>
+                {v.retroativa
+                  ? 'Versão aprovada antes do comitê. A revisão fica registrada sem tirar a ficha do ar.'
+                  : v.medico_aprovou ? 'O médico já aprovou. Falta a sua revisão para ir ao ar.' : 'Aguarda também a decisão do médico.'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-1 text-apoio text-tinta">
+                {fontes.map((f) => (
+                  <li key={f.citacao}>
+                    {f.url ? <a href={f.url} target="_blank" rel="noreferrer" className="underline">{f.citacao}</a> : f.citacao}
+                    {f.pediatrica && <Badge variant="outline" className="ml-2">fonte pediátrica</Badge>}
+                  </li>
+                ))}
+              </ul>
+              {ROTA_DA_FICHA[v.ferramenta_id] && (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-apoio">
+                  {!NA_HOMOLOGACAO && !v.retroativa && (
+                    <a href={HOMOLOGACAO + ROTA_DA_FICHA[v.ferramenta_id]} target="_blank" rel="noreferrer" className="text-acao underline">
+                      Ver a versão {v.versao} na homologação
+                    </a>
+                  )}
+                  <Link to={ROTA_DA_FICHA[v.ferramenta_id]} className="text-acao underline">Abrir a ferramenta para conferir</Link>
+                </div>
+              )}
+              <Textarea placeholder="Correção apontada (obrigatória para reprovar)" value={nota}
+                onChange={(e) => setNotas((n) => ({ ...n, [chave]: e.target.value }))} />
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => revisarItem(v.ferramenta_id, v.versao, true, v.retroativa)} disabled={revisar.isPending}>Aprovar</Button>
+                <Button variant="outline" onClick={() => revisarItem(v.ferramenta_id, v.versao, false, v.retroativa)}
+                  disabled={revisar.isPending || nota.trim().length < 10}>
+                  {v.retroativa ? 'Registrar achado' : 'Reprovar com correção'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })}
+    </section>
   )
 }
 
