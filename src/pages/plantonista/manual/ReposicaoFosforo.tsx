@@ -4,8 +4,15 @@ import {
   ESQUEMAS_PO4_IV, FOSFATO_EV, REFERENCIAS_PO4, classificarFosforo, comprimidosFosfato, fichaReposicaoFosforo, fosforoMmolL, reposicaoFosforoIV,
   type EsquemaPO4, type SalFosfato,
 } from '@/clinico/adulto/eletrolitos'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Alertas, Bloco, Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br } from './loteAFormato'
@@ -20,6 +27,8 @@ export function ReposicaoFosforo() {
   const [horas, setHoras] = useState(esq.horas[0])
   const [sal, setSal] = useState<SalFosfato>('potassio')
   const [mmolVO, setMmolVO] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaReposicaoFosforo.id)
 
   const g = po4 > 0 ? classificarFosforo(po4) : null
   const r = reposicaoFosforoIV({ esquema: esqId, pesoKg: peso, mmolKg, horas, sal })
@@ -29,6 +38,34 @@ export function ReposicaoFosforo() {
     setMmolKg(e.mmolKg[0])
     setHoras(e.horas[0])
   }
+  const textoFaixa = g === 'sem hipofosfatemia' ? 'PO4 ≥ 2,5 mg/dL: sem hipofosfatemia' : g === 'hipofosfatemia' ? 'Hipofosfatemia (sem gravidade nomeada no livro)' : `Hipofosfatemia ${g}`
+  const voFora = mmolVO > 0 && (mmolVO < 30 || mmolVO > 80)
+
+  // Texto do "Copiar" (C4 = A): PO4, faixa, reposição IV com alertas e a VO.
+  const copia = () =>
+    textoCopia({
+      ferramenta: 'Hipofosfatemia — reposição de fósforo (adulto)',
+      dados: [
+        ['PO4 sérico', po4 > 0 ? `${br(po4)} mg/dL` : ''],
+        ['Peso', peso > 0 ? `${br(peso)} kg` : ''],
+        ['Esquema IV', r ? esq.nome : ''],
+        ['Dose', r ? `${br(mmolKg, 2)} mmol/kg em ${br(horas)} h` : ''],
+        ['Sal', r ? FOSFATO_EV[sal].nome : ''],
+      ],
+      resultado: [
+        ...(g ? [`Faixa (p. 1501): ${textoFaixa} · ${br(fosforoMmolL(po4), 2)} mmol/L`] : []),
+        ...(r
+          ? [
+              `Reposição IV: ${br(r.mmol)} mmol de fosfato = ${br(r.ml)} mL · carga de ${r.cation} ${br(r.mEqCation)} mEq · ${br(r.mmolH, 2)} mmol/h (${esq.referencia.pagina})`,
+              ...r.alertas,
+            ]
+          : []),
+        ...(mmolVO > 0 ? [`VO: ${br(mmolVO)} mmol/dia = ${br(comprimidosFosfato(mmolVO))} comprimidos de 8 mmol/dia (p. 1501)`, ...(voFora ? ['Fora da faixa de 30–80 mmol/dia do manual.'] : [])] : []),
+      ],
+      fonte: textoFontes(fichaReposicaoFosforo),
+      versao: fichaReposicaoFosforo.versao,
+      quando: new Date(),
+    })
 
   return (
     <ToolLayout
@@ -40,7 +77,7 @@ export function ReposicaoFosforo() {
         <NumberField id="po4" label="PO4 sérico" unit="mg/dL" value={po4} onChange={setPo4} step={0.1} />
         {g && (
           <div className="grid gap-3 sm:grid-cols-2">
-            <Resultado rotulo="Faixa" valor={g === 'sem hipofosfatemia' ? 'PO4 ≥ 2,5 mg/dL: sem hipofosfatemia' : g === 'hipofosfatemia' ? 'Hipofosfatemia (sem gravidade nomeada no livro)' : `Hipofosfatemia ${g}`} />
+            <Resultado rotulo="Faixa" valor={textoFaixa} />
             <Resultado rotulo="Equivalente" valor={`${br(fosforoMmolL(po4), 2)} mmol/L`} />
           </div>
         )}
@@ -72,8 +109,26 @@ export function ReposicaoFosforo() {
       <Bloco titulo="Reposição VO" descricao="Moderada em ventilação espontânea: 30–80 mmol/dia em 2–3 doses. Fosfato de sódio comprimido = 250 mg de PO4 elementar (8 mmol) (p. 1501).">
         <NumberField id="po4-vo" label="Fosfato no dia" unit="mmol" value={mmolVO} onChange={setMmolVO} />
         {mmolVO > 0 && <Resultado rotulo="Comprimidos de 8 mmol" valor={`${br(comprimidosFosfato(mmolVO))} comprimidos/dia`} />}
-        {mmolVO > 0 && (mmolVO < 30 || mmolVO > 80) && <Alertas itens={['Fora da faixa de 30–80 mmol/dia do manual.']} />}
+        {voFora && <Alertas itens={['Fora da faixa de 30–80 mmol/dia do manual.']} />}
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!g && !r && !(mmolVO > 0)}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaReposicaoFosforo}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={g ? (g === 'sem hipofosfatemia' ? textoFaixa : `PO4 ${br(po4)} mg/dL · ${g === 'hipofosfatemia' ? 'hipofosfatemia' : `hipofosfatemia ${g}`}`) : 'Informe o PO4 sérico'}
+        detalhe={r ? `IV: ${br(r.mmol)} mmol = ${br(r.ml)} mL · ${br(r.mmolH, 2)} mmol/h${r.alertas.length ? ' · confira os alertas' : ''}` : 'Reposição IV: informe peso, dose e tempo'}
+        tom={g === 'grave' ? 'critico' : 'neutro'}
+        textoCopia={g || r || mmolVO > 0 ? copia() : undefined}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

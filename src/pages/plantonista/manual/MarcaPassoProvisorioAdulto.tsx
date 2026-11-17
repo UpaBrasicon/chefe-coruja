@@ -3,22 +3,58 @@ import { useState } from 'react'
 import {
   ESC_2021_MP, ERRATA_PROCEDIMENTOS, IMA_MARCA_PASSO, MPTC, MPTV_AS_CEGAS, NOTA_MPTC_CAPTURA, correnteMptc, fichaMarcaPassoAdulto, saidaMptv, sensibilidadeMptv,
 } from '@/clinico/adulto/procedimentos'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, LinhaManual } from './PecasLoteC'
-import { Erratas } from './PecasLoteE7'
 import { br, faixa } from './loteE7Formato'
 
+// Erratas do livro sem efeito em parâmetro (a saída já diz "na unidade do gerador"): saem da página para "Armadilhas" (C6 = A).
+const ERRATAS_MP = ERRATA_PROCEDIMENTOS.filter((e) => e.startsWith('p. 145'))
 
 /** Marca-passo provisório transcutâneo e transvenoso (cap. 107 do manual do HCFMUSP). */
 export function MarcaPassoProvisorioAdulto() {
   const [limiarTc, setLimiarTc] = useState(0)
   const [limiarSens, setLimiarSens] = useState(0)
   const [limiarCmd, setLimiarCmd] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaMarcaPassoAdulto.id)
   const corrente = correnteMptc(limiarTc)
   const sens = sensibilidadeMptv(limiarSens)
   const saida = saidaMptv(limiarCmd)
+  const linhas = [
+    ...(corrente ? [`Transcutâneo: corrente ${faixa(corrente, 0)} mA`] : []),
+    ...(sens !== null ? [`sensibilidade ${br(sens, 2)} mV`] : []),
+    ...(saida !== null ? [`saída ${br(saida, 1)}`] : []),
+  ]
+
+  // Texto do "Copiar" (C4 = A): os limiares informados e os parâmetros calculados, com a página.
+  const copia = linhas.length
+    ? textoCopia({
+        ferramenta: 'Marca-passo provisório — parâmetros (adulto)',
+        dados: [
+          ['Limiar de captura (transcutâneo)', corrente ? `${numeroBr(limiarTc)} mA` : ''],
+          ['Limiar de sensibilidade (transvenoso)', sens !== null ? `${numeroBr(limiarSens)} mV` : ''],
+          ['Limiar de comando (transvenoso)', saida !== null ? `${numeroBr(limiarCmd)} (V ou mA)` : ''],
+        ],
+        resultado: [
+          ...(corrente ? [`Transcutâneo: frequência ${faixa(MPTC.fcPpm, 0)} ppm; corrente = limiar + ${faixa(MPTC.margemMa, 0)} mA = ${faixa(corrente, 0)} mA (p. 1448–1449)`] : []),
+          ...(sens !== null ? [`Transvenoso: sensibilidade programada ${br(sens, 2)} mV (50% do limiar) (p. 1456–1457)`] : []),
+          ...(saida !== null ? [`Transvenoso: saída programada ${br(saida, 1)} (2 × limiar + 1, na unidade do gerador) (p. 1456–1457)`] : []),
+        ],
+        fonte: textoFontes(fichaMarcaPassoAdulto),
+        versao: fichaMarcaPassoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -66,12 +102,29 @@ export function MarcaPassoProvisorioAdulto() {
         <LinhaManual nome="Ímã" texto={IMA_MARCA_PASSO.texto} pagina={IMA_MARCA_PASSO.pagina} />
       </Bloco>
 
-      <Bloco titulo="Errata e notas">
-        <Erratas itens={ERRATA_PROCEDIMENTOS.filter((e) => e.startsWith('p. 145'))} />
-      </Bloco>
-      <Bloco titulo="ESC 2021 — estimulação temporária" descricao="Diretriz de estimulação cardíaca lida no texto. Os parâmetros numéricos do manual acima não são contrariados.">
-        {ESC_2021_MP.map((m) => <LinhaManual key={m.texto} nome={`Classe ${m.classe}`} texto={m.texto} pagina="ESC 2021, p. 3438; 3486–3487" />)}
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={linhas.length === 0}
+        armadilhas={[...ERRATAS_MP, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaMarcaPassoAdulto}
+        guia={guia}
+        comparacao={
+          // A diretriz da ESC, ao lado do manual, vai para "Evidências" (C6 = A); nenhum parâmetro do manual muda.
+          <BlocoComparacao titulo="ESC 2021 — estimulação temporária" resumo="Diretriz de estimulação cardíaca lida no texto. Os parâmetros numéricos do manual acima não são contrariados.">
+            {ESC_2021_MP.map((m) => <LinhaManual key={m.texto} nome={`Classe ${m.classe}`} texto={m.texto} pagina="ESC 2021, p. 3438; 3486–3487" />)}
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={linhas.length ? `${linhas[0].charAt(0).toUpperCase()}${linhas[0].slice(1)}` : 'Informe um limiar'}
+        detalhe={linhas.length > 1 ? linhas.slice(1).join(' · ') : `Transcutâneo ${faixa(MPTC.fcPpm, 0)} ppm; ponte preferencialmente < ${MPTC.pontePorMin} min`}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

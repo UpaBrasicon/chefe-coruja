@@ -4,8 +4,16 @@ import {
   ACEP_2024_RECOMENDACOES, COMBINACOES_AGITACAO, CONTENCAO_MECANICA, CONTENCAO_QUIMICA, CORTES_CAUSAS_ORGANICAS, DELIRIUM_TABELA7, DIFERENCAS_AGITACAO_2024, DOSES_ENSAIOS_ACEP,
   ERRATA_AGITACAO, QUETAMINA_AGITACAO, SNM, TEMPOS_AGITACAO, TITULACAO_DELIRIUM, contaSnm, fichaAgitacaoAdulto, metadeDaDose, quetaminaAgitacao, restanteAteMaxima, shockIndex,
 } from '@/clinico/adulto/agitacao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -30,6 +38,38 @@ export function AgitacaoDeliriumAdulto() {
   const antip = DELIRIUM_TABELA7.find((d) => d.id === droga)!
   const lista = doses.split(/[;\s]+/).filter(Boolean).map(lerNumero)
   const soma = lista.length ? restanteAteMaxima(antip.maximaMg, lista) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAgitacaoAdulto.id)
+  const temDado = peso > 0 || si !== null || soma !== null
+
+  // Texto do "Copiar" (C3/C4 = A): os dados usados e as listas de dose da tela (Tabelas 4 e 7 e SNM), com as contas.
+  const copia = temDado
+    ? textoCopia({
+        ferramenta: 'Paciente agitado e delirium — adulto',
+        dados: [
+          ['Peso', peso > 0 ? `${numeroBr(peso)} kg` : ''],
+          ['Idoso', idoso === 'sim' ? 'sim' : 'não'],
+          ['FC', fc > 0 ? `${numeroBr(fc)} bpm` : ''],
+          ['PAS', pas > 0 ? `${numeroBr(pas)} mmHg` : ''],
+          ['Doses já feitas', soma ? `${antip.nome}: ${lista.map((x) => numeroBr(x)).join(' + ')} mg` : ''],
+        ],
+        resultado: [
+          ...CONTENCAO_QUIMICA.map((c) => `- Agitação ${c.nivel}: escolha ${c.escolha}; segunda linha ${c.segundaLinha} (Tabela 4, p. 1011)`),
+          ...(q ? [`- Quetamina por peso: IM tabela ${br(q.tabelaImMg, 0)} mg · IM texto ${faixa(q.imMg, 0)} mg · IV ${faixa(q.ivMg, 0)} mg; o livro não traz dose máxima (${QUETAMINA_AGITACAO.pagina})`] : []),
+          ...COMBINACOES_AGITACAO.map((c) => `- ${c.nome}: ${c.dose} (${c.pagina})`),
+          ...(idoso === 'sim' ? [`Idosos: iniciar com metade da dose inicial típica (p. 1014): haloperidol 5-10 mg → ${faixa(metadeDaDose([5, 10]))} mg; midazolam 2-5 mg → ${faixa(metadeDaDose([2, 5]))} mg`] : []),
+          ...(si ? [`Shock index: ${br(si.valor, 2)}${si.acimaDoCorte ? ' — acima de 0,7' : ' — até 0,7'} (Tabela 5, p. 1012–1014)`] : []),
+          ...DELIRIUM_TABELA7.map((d) => `- Delirium, ${d.nome}: inicial ${faixa(d.inicialMg, 2)} mg; máxima ${br(d.maximaMg, 1)} mg; ${d.vias} (Tabela 7, p. 136–137)`),
+          ...(soma ? [`${antip.nome}: somadas ${br(soma.somaMg, 2)} mg · faltam ${br(soma.restanteMg, 2)} mg para a máxima da Tabela 7${soma.atingiu ? ' (soma igual ou acima da dose máxima)' : ''}`] : []),
+          `- SNM, volume: 3-4 L/dia para evitar rabdomiólise = ${snm ? `${faixa(snm.volumeMlH, 0)} mL/h` : '125–167 mL/h'} (${SNM.pagina})`,
+          `- SNM, dantroleno: 50 mg EV conforme a necessidade; dose máxima de 10 mg/kg ao dia${snm ? ` = teto ${br(snm.dantrolenoMaxMgDia, 0)} mg/dia (${snm.dosesDe50AteMax} doses de 50 mg)` : ''} (${SNM.pagina})`,
+          `- SNM, bromocriptina: 2,5 a 10 mg 3 vezes ao dia; máximo de 40 mg ao dia (10 mg 6/6 h); por 10 dias, com redução gradual (${SNM.pagina})`,
+        ],
+        fonte: textoFontes(fichaAgitacaoAdulto),
+        versao: fichaAgitacaoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -109,24 +149,53 @@ export function AgitacaoDeliriumAdulto() {
         <LinhaManual nome="Bromocriptina" texto="2,5 a 10 mg 3 vezes ao dia; máximo de 40 mg ao dia (10 mg 6/6 h); por 10 dias, com redução gradual" pagina={SNM.pagina} />
       </Bloco>
 
-      <Bloco titulo="ACEP 2024 — agitação grave no PS" descricao="Política clínica da ACEP (Ann Emerg Med 2024;83:e1–e30), lida no texto. As doses listadas são as dos ensaios que a política resume, não uma prescrição da ACEP.">
-        {ACEP_2024_RECOMENDACOES.map((r) => <LinhaManual key={r.nivel} nome={`Nível ${r.nivel}`} texto={r.texto} pagina="p. e4" />)}
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Droga</TableHead><TableHead className="pr-3 pb-2">Dose nos ensaios</TableHead><TableHead className="pb-2">Ensaios</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {DOSES_ENSAIOS_ACEP.map((d) => (
-                <TableRow key={d.droga} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.droga}</TableCell><TableCell className="pr-3 py-2">{d.dose}</TableCell><TableCell className="py-2 text-tinta-sussurro">{d.fonte}</TableCell></TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_AGITACAO_2024.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
-
       <Bloco titulo="Errata e notas">
         <Erratas itens={ERRATA_AGITACAO} />
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temDado}
+        armadilhas={[...ERRATA_AGITACAO, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaAgitacaoAdulto}
+        guia={guia}
+        comparacao={
+          // A política da ACEP, ao lado do manual, vai para "Evidências" (C6 = A); nenhuma dose do manual muda.
+          <BlocoComparacao titulo="ACEP 2024 — agitação grave no PS" resumo="Política clínica da ACEP (Ann Emerg Med 2024;83:e1–e30), lida no texto. As doses listadas são as dos ensaios que a política resume, não uma prescrição da ACEP.">
+            {ACEP_2024_RECOMENDACOES.map((r) => <LinhaManual key={r.nivel} nome={`Nível ${r.nivel}`} texto={r.texto} pagina="p. e4" />)}
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Droga</TableHead><TableHead className="pr-3 pb-2">Dose nos ensaios</TableHead><TableHead className="pb-2">Ensaios</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {DOSES_ENSAIOS_ACEP.map((d) => (
+                    <TableRow key={d.droga} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.droga}</TableCell><TableCell className="pr-3 py-2">{d.dose}</TableCell><TableCell className="py-2 text-tinta-sussurro">{d.fonte}</TableCell></TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_AGITACAO_2024.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={peso > 0 ? `Adulto · ${numeroBr(peso)} kg${idoso === 'sim' ? ' · idoso' : ''}` : 'Informe o peso'}
+        detalhe={
+          soma
+            ? `${antip.nome}: somadas ${br(soma.somaMg, 2)} mg · faltam ${br(soma.restanteMg, 2)} mg para a máxima da Tabela 7`
+            : q
+              ? `Quetamina IM (Tabela 4) ${br(q.tabelaImMg, 0)} mg; "Copiar" leva todas as doses`
+              : si
+                ? `Shock index ${br(si.valor, 2)}${si.acimaDoCorte ? ' — acima de 0,7' : ' — até 0,7'}`
+                : undefined
+        }
+        tom={soma?.atingiu ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

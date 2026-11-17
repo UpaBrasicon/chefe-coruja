@@ -1,14 +1,29 @@
 import { useState } from 'react'
 
 import { ADJUVANTES_SAP, ALTA_SAP, ASA_SAP, DIFERENCAS_SAP, DIRETRIZ_SAP, DROGAS_SAP, FLUMAZENIL, JEJUM_SAP, KETOFOL, NALOXONA, NIVEIS_SEDACAO, RISCO_AUMENTADO_SAP, calcularAdjuvante, calcularSap, fichaSedacaoProcedimentoAdulto, type DrogaSap, type Faixa } from '@/clinico/adulto/sedacaoProcedimento'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
 const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
+
+/** A conta da linha em texto, para o "Copiar" (a mesma que a tela mostra). */
+function textoDroga(d: DrogaSap, peso: number, virgemOpioide: boolean): string | null {
+  const r = calcularSap(d, peso, { virgemOpioide })
+  if (!r) return null
+  return `inicial ${faixa(r.inicial)} ${d.unidade}${r.limitadoAoTeto ? ' (no teto)' : ''}${r.inicialMl.map((m) => ` · ${faixa(m.ml, 2)} mL a ${br(m.concentracao)} ${d.unidade}/mL`).join('')}${r.repique ? ` · repique ${faixa(r.repique)} ${d.unidade}` : ''}`
+}
 
 function Droga({ d, peso, virgemOpioide }: { d: DrogaSap; peso: number; virgemOpioide: boolean }) {
   const r = calcularSap(d, peso, { virgemOpioide })
@@ -28,6 +43,35 @@ function Droga({ d, peso, virgemOpioide }: { d: DrogaSap; peso: number; virgemOp
 export function SedacaoProcedimentoAdulto() {
   const [peso, setPeso] = useState(0)
   const [virgem, setVirgem] = useState(true)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaSedacaoProcedimentoAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+
+  // Texto do "Copiar" (C3 e C4 = A): o peso e a lista inteira (drogas, adjuvantes e reversores), com a página de cada linha.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Sedação e analgesia para procedimentos — adulto',
+        dados: [
+          ['Peso', `${numeroBr(peso)} kg`],
+          ['Virgem de opioide (teto de 4 mg da morfina)', virgem ? 'sim' : 'não'],
+        ],
+        resultado: [
+          'Drogas (Tabela 2, p. 161–166):',
+          ...DROGAS_SAP.map((d) => `- ${d.nome}: ${textoDroga(d, peso, virgem) ?? d.inicialTexto} (${d.pagina})`),
+          'Adjuvantes citados na Tabela 2:',
+          ...ADJUVANTES_SAP.map((a) => {
+            const r = calcularAdjuvante(a, peso)
+            return `- ${a.nome}: ${r ? `${faixa(r)} ${a.unidade}` : a.texto} (${a.pagina})`
+          }),
+          'Reversores:',
+          `- Flumazenil: até ${br(FLUMAZENIL.maxCicloMg)} mg por ciclo · ${br(FLUMAZENIL.maxHoraMg)} mg/h (${FLUMAZENIL.pagina})`,
+          `- Naloxona: inicial ${faixa(NALOXONA.inicialMg)} mg (${NALOXONA.pagina})`,
+        ],
+        fonte: textoFontes(fichaSedacaoProcedimentoAdulto),
+        versao: fichaSedacaoProcedimentoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -78,15 +122,39 @@ export function SedacaoProcedimentoAdulto() {
           {ALTA_SAP.criterios.map((c) => <li key={c}>{c}</li>)}
         </ul>
       </Bloco>
-      <Bloco titulo="ACEP 2026 — ao lado do manual" descricao="Sedação para procedimentos pelo consenso Delphi da ACEP de 2026 (parte 2), lido no texto integral; consenso forte em todas as seções, sem doses. As doses e contas do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_SAP.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SAP.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[
+          ...DROGAS_SAP.flatMap((d) => (d.errata ? [`${d.nome} — errata do livro: ${d.errata}`] : [])),
+          `Ketofol — errata do livro: ${KETOFOL.errata}`,
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaSedacaoProcedimentoAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a ACEP 2026 vai para "Evidências" (C6 = A); nenhuma dose do manual muda.
+          <BlocoComparacao titulo="ACEP 2026 — ao lado do manual" resumo="Sedação para procedimentos pelo consenso Delphi da ACEP de 2026 (parte 2), lido no texto integral; consenso forte em todas as seções, sem doses. As doses e contas do manual acima continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_SAP.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SAP.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? `Adulto · ${numeroBr(peso)} kg` : 'Informe o peso'}
+        detalhe={temPeso ? `${virgem ? 'Virgem de opioide' : 'Não virgem de opioide'} · doses na lista acima; "Copiar" leva todas` : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

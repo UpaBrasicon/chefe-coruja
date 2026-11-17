@@ -4,15 +4,31 @@ import {
   DIRETRIZ_HIPOTERMIA_2025, ESTAGIOS_ERC_2025, METODOS_REAQUECIMENTO, OUTROS_HIPOTERMIA, criteriosEcpr2025, estagioHipotermia, fichaHipotermiaAdulto, rcpNaHipotermia,
   taxaReaquecimento,
 } from '@/clinico/adulto/ambientais'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, LinhaManual } from './PecasLoteC'
-import { Erratas, Escolhas, ListaLivro } from './PecasLoteE7'
+import { Escolhas, ListaLivro } from './PecasLoteE7'
 import { br, lerNumero } from './loteE7Formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+// Erratas do livro sem efeito em dose: saem da página para "Armadilhas" (C6 = A).
+const ERRATAS_HIPOTERMIA = [
+  'p. 1360 — as faixas da Tabela 1 se tocam (35-32 e 32-28 °C): a ferramenta põe 32 °C em HT I e 28 °C em HT II.',
+  'p. 1366 — o livro não traz intervalo de RCP próprio acima de 28 °C.',
+  'p. 1368 — aquecimento ativo externo "aumenta de 0,6-2,5 °C" sem unidade de tempo.',
+  'p. 1370 — a Tabela 6 escreve "Grau I / Graus 2 e 3 / Grau 4" para os estágios HT I a IV.',
+]
 
 function CampoTemp({ id, rotulo, valor, onChange }: { id: string; rotulo: string; valor: string; onChange: (v: string) => void }) {
   return (
@@ -40,6 +56,43 @@ export function HipotermiaAdulto() {
   const rcp = rcpNaHipotermia(Number.isFinite(t) ? t : null)
   const taxa = taxaReaquecimento(lerNumero(t1), lerNumero(t2), lerNumero(horas))
   const ecpr = criteriosEcpr2025({ fc: lerNumero(fc), pas: lerNumero(pas), arritmiaVentricular: arritmia === 'sim', tempC: Number.isFinite(t) ? t : undefined })
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHipotermiaAdulto.id)
+  const temDado = est !== null || taxa !== null || ecpr.length > 0
+
+  // Texto do "Copiar" (C4 = A): temperatura, estágio, regras de RCP para a temperatura, taxa e critérios de ECPR.
+  const copia = temDado
+    ? textoCopia({
+        ferramenta: 'Hipotermia acidental — estágio, RCP e reaquecimento (adulto)',
+        dados: [
+          ['Temperatura central', Number.isFinite(t) ? `${br(t)} °C` : ''],
+          ['Sinais vitais presentes', est ? (sinais === 'sim' ? 'sim' : 'não') : ''],
+          ['Temperatura inicial', taxa ? `${br(lerNumero(t1))} °C` : ''],
+          ['Temperatura atual', taxa ? `${br(lerNumero(t2))} °C` : ''],
+          ['Intervalo', taxa ? `${br(lerNumero(horas))} h` : ''],
+          ['FC', Number.isFinite(lerNumero(fc)) ? `${br(lerNumero(fc), 0)} /min` : ''],
+          ['PAS', Number.isFinite(lerNumero(pas)) ? `${br(lerNumero(pas), 0)} mmHg` : ''],
+          ['Arritmia ventricular', arritmia === 'sim' ? 'sim' : ''],
+        ],
+        resultado: [
+          ...(est
+            ? [
+                `Estágio (Tabela 1, p. 1360): ${est.estagio} — ${est.nome}`,
+                ...(est.reaquecimento !== '—' ? [`Reaquecimento (Tabela 6, p. 1370): ${est.reaquecimento}`] : []),
+                ...(est.nota ? [est.nota] : []),
+              ]
+            : []),
+          `RCP (${Number.isFinite(t) ? `${br(t)} °C` : 'temperatura desconhecida'}): ${rcp.ciclo} (p. 1366)`,
+          `Adrenalina e medicações: ${rcp.adrenalina} (p. 1366)`,
+          `Desfibrilação: ${rcp.desfibrilacao} (p. 1367)`,
+          ...(taxa ? [`Taxa de reaquecimento: ${br(taxa.cPorHora, 2)} °C/h${taxa.falhaPassivo ? ' — abaixo de 0,5 °C/h (critério do livro de falha do passivo)' : ''} (Tabela 5, p. 1368–1369)`] : []),
+          ...(ecpr.length ? [`ERC/RCUK 2025, critério(s) para centro de ECPR: ${ecpr.join('; ')}`] : []),
+        ],
+        fonte: textoFontes(fichaHipotermiaAdulto),
+        versao: fichaHipotermiaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -100,35 +153,52 @@ export function HipotermiaAdulto() {
         </ul>
       </Bloco>
 
-      <Bloco titulo="ERC/RCUK 2025 × manual do HC">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ERC/RCUK 2025</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {DIRETRIZ_HIPOTERMIA_2025.map((d) => (
-                <TableRow key={d.tema} className="border-t">
-                  <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
-                  <TableCell className="pr-3 py-2">{d.erc}</TableCell>
-                  <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Bloco>
-
       <Bloco titulo="Outros números do capítulo">
         <ListaLivro itens={OUTROS_HIPOTERMIA} />
       </Bloco>
 
-      <Bloco titulo="Errata e notas">
-        <Erratas itens={[
-          'p. 1360 — as faixas da Tabela 1 se tocam (35-32 e 32-28 °C): a ferramenta põe 32 °C em HT I e 28 °C em HT II.',
-          'p. 1366 — o livro não traz intervalo de RCP próprio acima de 28 °C.',
-          'p. 1368 — aquecimento ativo externo "aumenta de 0,6-2,5 °C" sem unidade de tempo.',
-          'p. 1370 — a Tabela 6 escreve "Grau I / Graus 2 e 3 / Grau 4" para os estágios HT I a IV.',
-        ]} />
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temDado}
+        armadilhas={[...ERRATAS_HIPOTERMIA, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaHipotermiaAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a ERC/RCUK 2025 vai para "Evidências" (C6 = A); nada do manual muda.
+          <BlocoComparacao titulo="ERC/RCUK 2025 × manual do HC">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[560px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ERC/RCUK 2025</TableHead><TableHead className="pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {DIRETRIZ_HIPOTERMIA_2025.map((d) => (
+                    <TableRow key={d.tema} className="border-t">
+                      <TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell>
+                      <TableCell className="pr-3 py-2">{d.erc}</TableCell>
+                      <TableCell className="py-2 text-tinta-sussurro">{d.livro}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={est ? `${est.estagio} · ${est.nome} · ${br(t)} °C` : 'Informe a temperatura central'}
+        detalhe={
+          [
+            ...(taxa ? [`reaquecimento ${br(taxa.cPorHora, 2)} °C/h${taxa.falhaPassivo ? ' (falha do passivo)' : ''}`] : []),
+            ...(ecpr.length ? [`critério de ECPR: ${ecpr.join('; ')}`] : []),
+          ].join(' · ') || (est?.reaquecimento && est.reaquecimento !== '—' ? `Reaquecimento: ${est.reaquecimento}` : undefined)
+        }
+        tom={est?.nota ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

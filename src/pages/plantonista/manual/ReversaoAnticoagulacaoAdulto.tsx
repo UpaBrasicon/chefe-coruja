@@ -5,10 +5,18 @@ import {
   REVERSAO_DOAC, SANGRAMENTO_MAIOR, TABELA_PROTAMINA, VITAMINA_K, ccpUnidades, conferirPasHip, crioUnidades,
   fichaReversaoAnticoagulacaoAdulto, plasmaMl, protamina, reversaoVarfarina, type Faixa, type Sangramento, type TempoHeparina,
 } from '@/clinico/adulto/reversaoAnticoagulacao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -33,6 +41,48 @@ export function ReversaoAnticoagulacaoAdulto() {
   const crio = crioUnidades(peso)
   const prot = protamina(ui, tempo)
   const pasHip = conferirPasHip(pas)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaReversaoAnticoagulacaoAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const rotuloSang = { nao: 'sem sangramento', leve: 'sangramento leve', grave: 'sangramento grave' }[sang]
+  const textoProt = prot ? `${faixa(prot.mg, 1)} mg${prot.limitadoAoTeto ? ' (no teto de 50 mg)' : ''} = ${faixa(prot.ampolas, 2)} ampola(s) de 50 mg` : null
+  const dadosUsados = [temPeso ? `${numeroBr(peso)} kg` : '', inr > 0 ? `INR ${numeroBr(inr)}` : ''].filter(Boolean)
+  const temResultado = Boolean(varf || temPeso || prot || pasHip)
+
+  // Texto do "Copiar" (C3 e C4 = A): os dados usados e as contas e linhas da tela, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Reversão de anticoagulação e sangramento — adulto',
+        dados: [
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['INR', inr > 0 ? numeroBr(inr) : ''],
+          ['Sangramento', varf ? rotuloSang : ''],
+          ['Heparina a neutralizar', prot ? `${numeroBr(ui)} U (${TABELA_PROTAMINA[tempo].rotulo})` : ''],
+          ['PAS', pasHip ? `${numeroBr(pas)} mmHg` : ''],
+        ],
+        resultado: [
+          ...(varf
+            ? [
+                'Varfarina — Tabela 4 (cap. 79, p. 1043):',
+                ...varf.linhas.map((l) => `- INR ${l.inr} · ${l.sangramento}: ${l.texto}`),
+                ...(varf.nota ? [varf.nota] : []),
+              ]
+            : []),
+          ...(ccp ? [`Complexo protrombínico (CCP): ${ccp.unidades !== null ? `${br(ccp.unidades, 0)} U` : ccp.nota} (${CCP.pagina})`] : []),
+          ...(pfc ? [`Plasma fresco congelado: HIP ${faixa(pfc.hip, 0)} mL · hepatopatia ${br(pfc.hepatopatia, 0)} mL (${PLASMA.pagina})`] : []),
+          ...(crio !== null ? [`Crioprecipitado: ${br(crio)} unidades (~ +50 mg/dL) (${CRIOPRECIPITADO.pagina})`] : []),
+          'Vitamina K1:',
+          ...VITAMINA_K.map((v) => `- ${v.contexto}: ${v.texto} (${v.pagina})`),
+          ...(textoProt ? [`Protamina (Tabela 5, cap. 79, p. 1044): ${textoProt}`] : []),
+          `Anticoagulantes orais diretos (${DOAC_PAGINA}):`,
+          ...REVERSAO_DOAC.map((d) => `- ${d.droga}: sangramento maior: ${d.maior.join('; ')}. Sangramento menor: ${d.menor.join('; ')}`),
+          ...(pasHip ? [`Hemorragia intraparenquimatosa: ${pasHip}`] : []),
+        ],
+        fonte: textoFontes(fichaReversaoAnticoagulacaoAdulto),
+        versao: fichaReversaoAnticoagulacaoAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -115,16 +165,6 @@ export function ReversaoAnticoagulacaoAdulto() {
         <p className="text-apoio text-tinta-sussurro">{EPISTAXE_AAO_HNS.publico}</p>
       </Bloco>
 
-      <Bloco titulo="Andexanete — divergência (ANNEXA-I, 2024)" descricao="O manual não cita o andexanete. A tela mostra o resultado do estudo, sem dose.">
-        <p className="text-apoio text-tinta-apoio">{DIVERGENCIA_ANDEXANETE.populacao}.</p>
-        <ul className="grid gap-1 text-apoio">
-          <li><span className="font-medium">Eficácia hemostática:</span> {DIVERGENCIA_ANDEXANETE.eficacia.andexanete} com andexanete × {DIVERGENCIA_ANDEXANETE.eficacia.usual} com cuidado usual — {DIVERGENCIA_ANDEXANETE.eficacia.texto}.</li>
-          <li><span className="font-medium">Trombose:</span> {DIVERGENCIA_ANDEXANETE.trombose.andexanete} × {DIVERGENCIA_ANDEXANETE.trombose.usual} — {DIVERGENCIA_ANDEXANETE.trombose.texto}; AVC isquêmico {DIVERGENCIA_ANDEXANETE.avcIsquemico.andexanete} × {DIVERGENCIA_ANDEXANETE.avcIsquemico.usual}.</li>
-          <li>{DIVERGENCIA_ANDEXANETE.semDiferenca}.</li>
-        </ul>
-        <p className="text-apoio text-tinta-sussurro">{DIVERGENCIA_ANDEXANETE.conclusao}</p>
-      </Bloco>
-
       <Bloco titulo="Hemorragia intraparenquimatosa (cap. 39, p. 543–549)" descricao="O escore ICH está na tela própria.">
         <div className="grid gap-4 md:grid-cols-3">
           <NumberField id="rev-pas" label="PAS" unit="mmHg" value={pas} onChange={setPas} min={0} />
@@ -136,15 +176,55 @@ export function ReversaoAnticoagulacaoAdulto() {
         <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_HIP_CIRURGIA}</p>
       </Bloco>
 
-      <Bloco titulo="ESO/EANS 2025 — HIC, ao lado do manual" descricao="Diretriz europeia de hemorragia intracerebral espontânea, lida no texto integral. Consenso é declaração de especialistas, sem graduação de evidência. As doses do manual nos blocos acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESO 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_HIC_ESO_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.eso} <span className="text-tinta-sussurro">({d.forca}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_HIC_2025.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[
+          ...(CCP.errata ? [`CCP — errata do livro: ${CCP.errata}`] : []),
+          `Vitamina K1 — errata do livro: ${ERRATA_VITAMINA_K}`,
+          `Protamina — errata do livro: ${PROTAMINA_REVERSAO.errata}`,
+          `DOAC — errata do livro: ${ERRATA_DOAC}`,
+          `HIP — errata do livro: ${ERRATA_HIP_CIRURGIA}`,
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaReversaoAnticoagulacaoAdulto}
+        guia={guia}
+        comparacao={<>
+          {/* Divergência do andexanete e tabela da ESO 2025 vão para "Evidências" (C6 = A); nenhuma dose do manual muda. */}
+          <BlocoComparacao titulo="Andexanete — divergência (ANNEXA-I, 2024)" resumo="O manual não cita o andexanete. A tela mostra o resultado do estudo, sem dose.">
+            <p className="text-apoio text-tinta-apoio">{DIVERGENCIA_ANDEXANETE.populacao}.</p>
+            <ul className="grid gap-1 text-apoio">
+              <li><span className="font-medium">Eficácia hemostática:</span> {DIVERGENCIA_ANDEXANETE.eficacia.andexanete} com andexanete × {DIVERGENCIA_ANDEXANETE.eficacia.usual} com cuidado usual — {DIVERGENCIA_ANDEXANETE.eficacia.texto}.</li>
+              <li><span className="font-medium">Trombose:</span> {DIVERGENCIA_ANDEXANETE.trombose.andexanete} × {DIVERGENCIA_ANDEXANETE.trombose.usual} — {DIVERGENCIA_ANDEXANETE.trombose.texto}; AVC isquêmico {DIVERGENCIA_ANDEXANETE.avcIsquemico.andexanete} × {DIVERGENCIA_ANDEXANETE.avcIsquemico.usual}.</li>
+              <li>{DIVERGENCIA_ANDEXANETE.semDiferenca}.</li>
+            </ul>
+            <p className="text-apoio text-tinta-sussurro">{DIVERGENCIA_ANDEXANETE.conclusao}</p>
+          </BlocoComparacao>
+          <BlocoComparacao titulo="ESO/EANS 2025 — HIC, ao lado do manual" resumo="Diretriz europeia de hemorragia intracerebral espontânea, lida no texto integral. Consenso é declaração de especialistas, sem graduação de evidência. As doses do manual nos blocos acima continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">ESO 2025</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_HIC_ESO_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.eso} <span className="text-tinta-sussurro">({d.forca}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_HIC_2025.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        </>}
+      />
+      <ResumoFlutuante
+        principal={dadosUsados.length ? `Adulto · ${dadosUsados.join(' · ')}` : 'Informe o peso e o INR'}
+        detalhe={[
+          ccp && ccp.unidades !== null ? `CCP ${br(ccp.unidades, 0)} U` : null,
+          prot ? `protamina ${faixa(prot.mg, 1)} mg` : null,
+          pasHip,
+        ].filter(Boolean).join(' · ') || (varf ? `Varfarina: ${rotuloSang}` : undefined)}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

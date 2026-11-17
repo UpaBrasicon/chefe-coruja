@@ -4,8 +4,16 @@ import {
   DIRETRIZ_SCA_2025, alteplaseIam2025, tenecteplase2025, ALTEPLASE_TEP, ESTREPTOQUINASE, alteplaseIam, alteplaseTepAlternativo, fichaFibrinoliticosAdulto, mgHDaFase, tenecteplase, uiPorHora,
 } from '@/clinico/adulto/anticoagulacao'
 import { DIFERENCAS_TEP_2026, DIRETRIZ_TEP_2026 } from '@/clinico/adulto/tep2026'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -19,12 +27,48 @@ const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** 
 export function FibrinoliticosAdulto() {
   const [peso, setPeso] = useState(0)
   const [idade, setIdade] = useState(0)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaFibrinoliticosAdulto.id)
   const alt = alteplaseIam(peso)
   const tnk = tenecteplase(peso, idade > 0 ? idade : undefined)
   const altTep = alteplaseTepAlternativo(peso)
   const tnk25 = tenecteplase2025(peso, idade > 0 ? idade : undefined)
   const alt25 = alteplaseIam2025(peso)
   const skAlt = ESTREPTOQUINASE.tepAlternativo
+
+  // As mesmas contas que a tela mostra em cada linha, em texto, para o "Copiar".
+  const textoAlt = alt ? `${alt.fases.map((f) => { const mgH = mgHDaFase(f); return `${br(f.mg)} mg ${f.fase}${mgH !== null ? ` (${br(mgH)} mg/h)` : ''}` }).join(' · ')} · total ${br(alt.totalMg)} mg` : null
+  const textoTnk = tnk ? `${tnk.mg[0] === tnk.mg[1] ? br(tnk.mg[0]) : `${br(tnk.mg[0])} ou ${br(tnk.mg[1])}`} mg${tnk.metadePorIdade ? ' (metade por idade)' : ''}` : null
+  const notaBorda = tnk?.bordaAmbigua ? 'Com 70 ou 80 kg exatos o peso cabe em duas faixas do livro; as duas doses aparecem e a escolha é do médico.' : undefined
+
+  // Texto do "Copiar" (C3 e C4 = A): peso, idade e a lista inteira, com a página de cada linha.
+  const copia = alt
+    ? textoCopia({
+        ferramenta: 'Fibrinolíticos — adulto',
+        dados: [
+          ['Peso', `${numeroBr(peso)} kg`],
+          ['Idade', idade > 0 ? `${numeroBr(idade)} anos` : ''],
+        ],
+        resultado: [
+          'IAM com supra (cap. 14, p. 218–219):',
+          `- Estreptoquinase: 1.500.000 U em 1 hora = ${br(uiPorHora(ESTREPTOQUINASE.iam), 0)} U/h (${ESTREPTOQUINASE.iam.pagina})`,
+          `- Alteplase (acelerado): ${textoAlt} (p. 218)`,
+          `- Tenecteplase: ${textoTnk} (p. 218–219)${notaBorda ? ` — ${notaBorda}` : ''}`,
+          'TEP (cap. 32, Tabela 8, p. 443):',
+          `- Estreptoquinase — preferível: 1.500.000 UI IV em 2 horas = ${br(uiPorHora(ESTREPTOQUINASE.tepPreferivel), 0)} UI/h (${ESTREPTOQUINASE.tepPreferivel.pagina})`,
+          `- Estreptoquinase — alternativa: ataque ${br(skAlt.ataqueUI, 0)} UI em ${skAlt.ataqueMinutos} min · manutenção não calculada (${skAlt.pagina}). Errata: ${skAlt.errata}`,
+          `- rtPA (alteplase) — preferível: 100 mg IV em 2 horas = ${br((ALTEPLASE_TEP.preferivel.mg / ALTEPLASE_TEP.preferivel.minutos) * 60)} mg/h (${ALTEPLASE_TEP.pagina})`,
+          ...(altTep ? [`- rtPA (alteplase) — alternativa: ${br(altTep.mg)} mg em 15 min${altTep.limitadoAoTeto ? ' (no teto)' : ''} (${ALTEPLASE_TEP.pagina})`] : []),
+          `- Alteplase na PCR por TEP: ${ALTEPLASE_TEP.pcr.mg} mg (${ALTEPLASE_TEP.pagina})`,
+          'AHA 2025, só para comparação (as doses do manual continuam valendo):',
+          ...(tnk25 ? [`- Tenecteplase — faixas fechadas: ${fmtE(tnk25.mgFinal)} mg (${tnk25.faixa}${tnk25.metadePorIdade ? `; metade de ${tnk25.mg} mg por idade > 75` : ''}) (AHA 2025 e806; ESC 2023 p. 3762)`] : []),
+          ...(alt25 ? [`- Alteplase acelerada — corte em 67 kg: ${alt25.fases.map((f) => `${fmtE(f.mg)} mg ${f.fase}`).join(' · ')} · total ${fmtE(alt25.totalMg)} mg (AHA 2025 e806)`] : []),
+        ],
+        fonte: textoFontes(fichaFibrinoliticosAdulto),
+        versao: fichaFibrinoliticosAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -65,7 +109,7 @@ export function FibrinoliticosAdulto() {
           texto="< 60 kg 30 mg; 60–70 kg 35 mg; 70–80 kg 40 mg; 80–90 kg 45 mg; > 90 kg 50 mg; metade da dose acima de 75 anos"
           conta={tnk ? <><strong>{tnk.mg[0] === tnk.mg[1] ? br(tnk.mg[0]) : `${br(tnk.mg[0])} ou ${br(tnk.mg[1])}`} mg</strong>{tnk.metadePorIdade && ' (metade por idade)'}</> : 'informe o peso'}
           pagina="p. 218–219"
-          nota={tnk?.bordaAmbigua ? 'Com 70 ou 80 kg exatos o peso cabe em duas faixas do livro; as duas doses aparecem e a escolha é do médico.' : undefined}
+          nota={notaBorda}
         />
       </Bloco>
 
@@ -100,27 +144,50 @@ export function FibrinoliticosAdulto() {
           O manual traz que a HNF não deve ser infundida durante estreptoquinase e uroquinase, mas pode ser mantida com alteplase (p. 443).
         </p>
       </Bloco>
-      <Bloco titulo="AHA/ACC 2026 — TEP, ao lado do manual" descricao="Diretriz de TEP agudo lida no texto integral, com classe (COR) e nível (LOE). Ela não traz dose de trombolítico: as doses do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA/ACC 2026</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_TEP_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.aha} <span className="text-tinta-sussurro">({d.classe}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TEP_2026.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
       <Bloco titulo="AHA/ACC 2025, ESC 2023 e SBC 2025 — IAM com supra, ao lado do manual" descricao="Diretrizes lidas no texto integral. As doses do manual acima continuam valendo; aqui ficam as da AHA 2025 para comparação.">
         <LinhaManual nome="Tenecteplase — faixas fechadas (AHA 2025, Tabela 13)" texto="< 60 kg 30 mg; 60–69 kg 35; 70–79 kg 40; 80–89 kg 45; ≥ 90 kg 50 mg; meia dose > 75 anos (ESC 2023, IIa B)" pagina="AHA 2025 e806; ESC 2023 p. 3762"
           conta={tnk25 ? <><strong>{fmtE(tnk25.mgFinal)} mg</strong> ({tnk25.faixa}{tnk25.metadePorIdade ? `; metade de ${tnk25.mg} mg por idade > 75` : ''})</> : 'informe o peso'} />
         <LinhaManual nome="Alteplase acelerada — corte em 67 kg (AHA 2025)" texto="≥ 67 kg: 15 + 50/30 min + 35/60 min; < 67 kg: 15 mg + 0,75 mg/kg (máx. 50) + 0,5 mg/kg (máx. 35)" pagina="AHA 2025 e806"
           conta={alt25 ? <>{alt25.fases.map((f) => `${fmtE(f.mg)} mg ${f.fase}`).join(' · ')} · <strong>total {fmtE(alt25.totalMg)} mg</strong></> : 'informe o peso'} />
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Fonte</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_SCA_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz}</TableCell><TableCell className="pr-3 py-2">{d.fonte}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!alt}
+        armadilhas={[`Estreptoquinase no TEP, esquema alternativo — errata do livro: ${skAlt.errata}`, ...(guia?.armadilhas ?? [])]}
+        ficha={fichaFibrinoliticosAdulto}
+        guia={guia}
+        comparacao={<>
+          {/* Tabelas de comparação com as diretrizes vão para "Evidências" (C6 = A); nenhuma dose do manual muda. */}
+          <BlocoComparacao titulo="AHA/ACC 2026 — TEP, ao lado do manual" resumo="Diretriz de TEP agudo lida no texto integral, com classe (COR) e nível (LOE). Ela não traz dose de trombolítico: as doses do manual acima continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">AHA/ACC 2026</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_TEP_2026.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.aha} <span className="text-tinta-sussurro">({d.classe}; {d.onde})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TEP_2026.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+          <BlocoComparacao titulo="AHA/ACC 2025, ESC 2023 e SBC 2025 — IAM com supra, ao lado do manual" resumo="Diretrizes lidas no texto integral. As doses do manual continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Fonte</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_SCA_2025.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz}</TableCell><TableCell className="pr-3 py-2">{d.fonte}</TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+          </BlocoComparacao>
+        </>}
+      />
+      <ResumoFlutuante
+        principal={alt ? `Adulto · ${numeroBr(peso)} kg${idade > 0 ? ` · ${numeroBr(idade)} anos` : ''}` : 'Informe o peso'}
+        detalhe={alt ? `Tenecteplase ${textoTnk} · alteplase total ${br(alt.totalMg)} mg · "Copiar" leva todas as doses` : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

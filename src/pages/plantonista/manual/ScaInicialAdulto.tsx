@@ -4,8 +4,15 @@ import { Link } from 'react-router-dom'
 import {
   EQUIVALENTES_SUPRA, OUTRAS_MEDIDAS, condutaSca, fichaScaInicialAdulto, limiarSupraV2V3, type Dose, type TipoSca,
 } from '@/clinico/adulto/scaInicial'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 
 import { Bloco, CampoPeso, LinhaManual, Pergunta } from './PecasLoteC'
@@ -18,6 +25,11 @@ const LinhaDose = ({ d }: { d: Dose }) => (
 )
 
 const Ir = ({ para, children }: { para: string; children: ReactNode }) => <Link to={para} className="text-acao hover:underline">{children}</Link>
+
+const ROTULO_TIPO: Record<TipoSca, string> = { supra: 'Supra de ST', equivalente: 'Equivalente de supra', sem_supra: 'Sem supra' }
+const ROTULO_VIA = { angioplastia: 'Angioplastia primária', fibrinolitico: 'Fibrinolítico' } as Record<string, string>
+const textoDose = (d: Dose) => `${d.droga}: ${d.manutencao ? `ataque ${d.ataque}; manutenção ${d.manutencao}` : d.ataque} (${d.pagina})`
+const simNao = (b: boolean | undefined) => (b === undefined ? '' : b ? 'sim' : 'não')
 
 
 /** SCA — conduta inicial do adulto (caps. 13 e 14 do manual do HCFMUSP). */
@@ -40,6 +52,43 @@ export function ScaInicialAdulto() {
     contraindicacaoLitico: contra, isquemiaPersistente: isquemia, invasivaPrecoce: precoce, icpEm6h: icp6h, avcAitPrevio: avc,
   })
   const enox = c?.enoxaparina?.dose
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaScaInicialAdulto.id)
+  const via = c?.reperfusao ? (ROTULO_VIA[c.reperfusao.via] ?? 'Sem definição no manual') : null
+  const contaEnox = !c?.enoxaparina ? null : !enox ? 'informe o peso' : enox.doseMg === null ? 'sem dose no capítulo' : `${enox.bolusEvMg !== null ? `ataque ${enox.bolusEvMg} mg EV + ` : ''}${br(enox.doseMg)} mg ${enox.intervalo}`
+
+  // Texto do "Copiar" (C3 e C4 = A): os dados usados e a conduta inteira mostrada na tela, com a página.
+  const copia = c && tipo
+    ? textoCopia({
+        ferramenta: 'SCA — conduta inicial (adulto)',
+        dados: [
+          ['ECG', ROTULO_TIPO[tipo]],
+          ['Peso', peso > 0 ? `${br(peso)} kg` : ''],
+          ['Idade', idade > 0 ? `${br(idade, 0)} anos` : ''],
+          ['Clearance de creatinina', clcr > 0 ? `${br(clcr, 0)} mL/min` : ''],
+          ['Início dos sintomas', tipo === 'supra' && horas > 0 ? `${br(horas)} h` : ''],
+          ['Tempo previsto até a ICP', tipo === 'supra' && atraso > 0 ? `${br(atraso, 0)} min` : ''],
+          ['Contraindicação ao fibrinolítico', tipo === 'supra' ? simNao(contra) : ''],
+          ['Ainda há isquemia', tipo === 'supra' && horas > 12 ? simNao(isquemia) : ''],
+          ['Estratificação invasiva em < 6–24 h', tipo === 'sem_supra' ? simNao(precoce) : ''],
+          ['AVC ou AIT prévio', tipo === 'sem_supra' && precoce === false ? simNao(avc) : ''],
+          ['Candidato a ICP em até 6 h', tipo === 'sem_supra' && precoce === false ? simNao(icp6h) : ''],
+        ],
+        resultado: [
+          ...(c.reperfusao ? [`Reperfusão: ${via} — ${c.reperfusao.motivo} (${c.reperfusao.pagina})`] : []),
+          'Antiagregantes:',
+          ...c.antiagregantes.map((d) => `- ${textoDose(d)}`),
+          ...c.avisos,
+          `Anticoagulação: ${c.anticoagulacaoTexto}`,
+          ...(c.enoxaparina ? [`- Enoxaparina — ${c.enoxaparina.contexto.toLowerCase()}: ${contaEnox} (${c.enoxaparina.pagina})${enox?.observacoes.length ? ` ${enox.observacoes.join(' ')}` : ''}`] : []),
+          'Demais medidas:',
+          ...OUTRAS_MEDIDAS.map((d) => `- ${textoDose(d)}`),
+        ],
+        fonte: textoFontes(fichaScaInicialAdulto),
+        versao: fichaScaInicialAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -82,7 +131,7 @@ export function ScaInicialAdulto() {
           {c.reperfusao && (
             <Bloco titulo="Reperfusão">
               <p className="text-corpo text-tinta">
-                {c.reperfusao.via === 'angioplastia' ? 'Angioplastia primária' : c.reperfusao.via === 'fibrinolitico' ? 'Fibrinolítico' : 'Sem definição no manual'}
+                {via}
               </p>
               <p className="text-apoio text-tinta-apoio">{c.reperfusao.motivo} ({c.reperfusao.pagina})</p>
               {c.reperfusao.via === 'fibrinolitico' && (
@@ -129,6 +178,23 @@ export function ScaInicialAdulto() {
           Escores de risco do IAM sem supra (Tabela 2, p. 210): <Ir para="/plantonista/escores/grace">GRACE</Ir>, <Ir para="/plantonista/escores/timi">TIMI</Ir> e <Ir para="/plantonista/escores/heart">HEART</Ir>.
         </p>
       </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!c}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaScaInicialAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={!tipo ? 'Escolha o achado do ECG' : via ? `${ROTULO_TIPO[tipo]} · ${via}` : tipo === 'supra' ? `${ROTULO_TIPO[tipo]} · reperfusão: informe tempos ou contraindicação` : ROTULO_TIPO[tipo]}
+        detalhe={tipo ? [peso > 0 ? `Adulto · ${br(peso)} kg` : '', contaEnox ? `enoxaparina ${contaEnox}` : ''].filter(Boolean).join(' · ') || undefined : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

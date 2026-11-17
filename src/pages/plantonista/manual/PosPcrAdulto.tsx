@@ -4,8 +4,15 @@ import {
   AMIODARONA_TEMPESTADE, METAS_ERC_2025, METAS_POS_PCR, MILRINONA_ATAQUE, MONITORIZACAO, PROGNOSTICO_TEXTO, REAQUECIMENTO, RESFRIAMENTO_EXTERNO_C_H, SF_FRIO,
   amiodaronaTempestade, fichaPosPcrAdulto, horasResfriamentoExterno, janelasAtingidas, lerMetas, milrinonaAtaque, reaquecimento, sfFrio,
 } from '@/clinico/adulto/posPcr'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
@@ -34,6 +41,43 @@ export function PosPcrAdulto() {
   const mil = milrinonaAtaque(peso)
   const amio = amiodaronaTempestade(informado(acumulado))
   const janelas = horas > 0 ? janelasAtingidas(horas) : null
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaPosPcrAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const foraDaMeta = leituras.filter((l) => l.fora).length
+  const temResultado = temPeso || leituras.length > 0 || ext !== null || reaq !== null || acumulado > 0 || janelas !== null
+
+  // Texto do "Copiar" (C3 e C4 = A): valores lidos pela ERC-ESICM 2025, contas de temperatura, drogas e janelas do neuroprognóstico.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Cuidados pós-PCR — adulto',
+        dados: [
+          ['Peso', temPeso ? `${numeroBr(peso)} kg` : ''],
+          ['PaCO2', paco2 > 0 ? `${numeroBr(paco2)} mmHg` : ''],
+          ['SatO2', sato2 > 0 ? `${numeroBr(sato2)}%` : ''],
+          ['PaO2', pao2 > 0 ? `${numeroBr(pao2)} mmHg` : ''],
+          ['PAM', pam > 0 ? `${numeroBr(pam)} mmHg` : ''],
+          ['Glicemia', glic > 0 ? `${numeroBr(glic)} mg/dL` : ''],
+          ['Temperatura central atual', tAtual > 0 ? `${numeroBr(tAtual)} °C` : ''],
+          ['Alvo do resfriamento', tAlvo > 0 ? `${numeroBr(tAlvo)} °C` : ''],
+          ['Temperatura final do reaquecimento', tFinal > 0 ? `${numeroBr(tFinal)} °C` : ''],
+          ['Amiodarona acumulada', acumulado > 0 ? `${numeroBr(acumulado)} mg` : ''],
+          ['Horas desde o RCE', horas > 0 ? `${numeroBr(horas)} h` : ''],
+        ],
+        resultado: [
+          ...(leituras.length ? ['Seus valores pela ERC-ESICM 2025:', ...leituras.map((l) => `- ${l.texto}`)] : []),
+          ...(sf ? [`SF 0,9% a ${SF_FRIO.temperaturaC} °C (livro, 2022; só se o médico decidir resfriar): ${faixaBr(sf.volumeMl, 0)} mL · ${faixaBr(sf.mlH, 0)} mL/h em 30 min (${SF_FRIO.pagina})`] : []),
+          ...(ext ? [`Resfriamento externo (${faixaBr(RESFRIAMENTO_EXTERNO_C_H)} °C/h): ${faixaBr(ext)} h`] : []),
+          ...(reaq ? [`Reaquecimento: ${br(reaq.horasNoAlvo)} h no alvo de ${br(REAQUECIMENTO.alvoCh, 2)} °C/h; mínimo de ${br(reaq.horasMinimas)} h sem passar de ${br(REAQUECIMENTO.maximoCh)} °C/h (${REAQUECIMENTO.pagina})`] : []),
+          ...(mil ? [`Milrinona — ataque: ${br(mil.ug, 0)} µg = ${br(mil.ml)} mL · ${br(mil.mlH10min, 0)} mL/h por 10 min (preparo do Anexo 1, 200 µg/mL) (${MILRINONA_ATAQUE.pagina})`] : []),
+          `Amiodarona — tempestade elétrica ou TV incessante: ${amio.esquema.fases.map((f) => `${f.mg} mg`).join(' + ')} = ${br(amio.esquema.total24hMg, 0)} mg em 24 h${amio.saldoAteImpregnacaoMg ? `; saldo até 10–15 g: ${faixaBr(amio.saldoAteImpregnacaoMg, 0)} mg` : ''} (${AMIODARONA_TEMPESTADE.pagina})`,
+          ...(janelas ? ['Neuroprognóstico:', ...janelas.map((j) => `- ${j.atingida ? 'Na janela' : 'Fora da janela'}: ${j.janela.texto} (${j.janela.pagina})`)] : []),
+        ],
+        fonte: textoFontes(fichaPosPcrAdulto),
+        versao: fichaPosPcrAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -118,6 +162,29 @@ export function PosPcrAdulto() {
         {PROGNOSTICO_TEXTO.map((t) => <p key={t} className="text-apoio">{t}</p>)}
         {MONITORIZACAO.map((m) => <Trecho key={m.texto} texto={m.texto} pagina={m.pagina} />)}
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaPosPcrAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={leituras.length ? (foraDaMeta ? `${foraDaMeta} de ${leituras.length} valor${leituras.length > 1 ? 'es' : ''} fora da meta ERC-ESICM 2025` : 'Valores informados dentro das metas ERC-ESICM 2025') : temPeso ? `Adulto · ${numeroBr(peso)} kg` : 'Informe o peso ou seus valores'}
+        detalhe={[
+          ...(leituras.length && temPeso ? [`Adulto · ${numeroBr(peso)} kg`] : []),
+          ...(mil ? [`milrinona ${br(mil.ml)} mL no ataque`] : []),
+          ...(janelas ? [`${janelas.filter((j) => j.atingida).length} janela${janelas.filter((j) => j.atingida).length === 1 ? '' : 's'} do neuroprognóstico atingida${janelas.filter((j) => j.atingida).length === 1 ? '' : 's'}`] : []),
+        ].join(' · ') || undefined}
+        tom={foraDaMeta ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

@@ -5,6 +5,13 @@ import {
   type ContextoEnoxaparina, type Faixa,
 } from '@/clinico/adulto/anticoagulacao'
 import { DIFERENCAS_TVP, DIRETRIZ_TVP } from '@/clinico/adulto/tvp2026'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Label } from '@/components/ui/label'
@@ -13,11 +20,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 const fmtE = (x: number, c = 1) => numero(Math.round(x * 10 ** c) / 10 ** c)
 
 const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
+
+const TEXTO_ENOXAPARINA: Record<ContextoEnoxaparina, string> = {
+  iamsst: '1 mg/kg 12/12 h SC',
+  'iamcsst-trombolise': 'ataque 30 mg EV e 1 mg/kg SC 12/12 h por 7 dias; > 75 anos sem ataque e 0,75 mg/kg 12/12 h; ClCr 15–30: 1 mg/kg 1 x/d',
+  'tep-12h': '1 mg/kg SC 12/12 h; ClCr < 30: 1 mg/kg 1 x/dia; sugere não usar com ClCr < 15',
+  'tep-1x': '1,5 mg/kg SC 1 x/d; ClCr < 30: 1 mg/kg 1 x/dia; sugere não usar com ClCr < 15',
+  tvp: '1,5 mg/kg SC 1 x/dia',
+}
+
+const ERRATA_EDOXABANA = 'O livro escreve "< 60 kg" e "> 60 kg": com exatamente 60 kg não há dose. A conta não escolhe.'
 
 /** Anticoagulação plena por peso do adulto (caps. 13, 14, 25 e 32 do manual do HCFMUSP). */
 export function AnticoagulacaoPlenaAdulto() {
@@ -33,6 +51,44 @@ export function AnticoagulacaoPlenaAdulto() {
   const fonda = fondaparinuxMg(peso, clcrInformado)
   const sc = hnfSc(peso)
   const edo = edoxabanaMg(peso)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAnticoagulacaoPlenaAdulto.id)
+  const temPeso = Number.isFinite(peso) && peso > 0
+  const contaEnox = !enox ? null : enox.doseMg === null ? 'sem dose no capítulo' : `${enox.bolusEvMg !== null ? `ataque ${enox.bolusEvMg} mg EV + ` : ''}${br(enox.doseMg)} mg ${enox.intervalo}`
+
+  // Texto do "Copiar" (C3 e C4 = A): peso, idade e clearance usados e a lista inteira com a página.
+  const copia = temPeso
+    ? textoCopia({
+        ferramenta: 'Anticoagulação plena por peso — adulto',
+        dados: [
+          ['Peso', `${br(peso)} kg`],
+          ['Idade', idade > 0 ? `${br(idade, 0)} anos` : ''],
+          ['Clearance de creatinina', clcrInformado ? `${br(clcrInformado, 0)} mL/min` : 'não informado (sem ajuste renal)'],
+          ['Contexto da enoxaparina', CONTEXTOS_ENOXAPARINA[ctx].rotulo],
+          ['Trombólise com estreptoquinase', ctx === 'iamcsst-trombolise' ? (sk ? 'sim' : 'não') : ''],
+        ],
+        resultado: [
+          `Enoxaparina — ${CONTEXTOS_ENOXAPARINA[ctx].rotulo}: ${TEXTO_ENOXAPARINA[ctx]} → ${contaEnox ?? '—'} (${CONTEXTOS_ENOXAPARINA[ctx].pagina})`,
+          ...(enox?.observacoes ?? []),
+          'Outras heparinas (cap. 25, p. 352):',
+          `- Fondaparinux: ${fonda === null ? 'ClCr < 30: não usar' : `${br(fonda)} mg SC 1 x/dia`}`,
+          ...(sc ? [`- Heparina não fracionada SC (concentrada): ${br(sc.inicialU, 0)} U e depois ${br(sc.manutencaoU, 0)} U 12/12 h${sc.volumes.map((v) => ` · ${br(v.uMl, 0)} U/mL: ${br(v.inicialMl, 2)} e ${br(v.manutencaoMl, 2)} mL`).join('')}; só com frasco de 20.000 ou 25.000 U/mL`] : []),
+          ...OUTRAS_HBPM.map((h) => `- ${h.nome}: ${h.uKg} unidades/kg = ${br(h.uKg * peso, 0)} unidades 1 x/dia`),
+          ...BIVALIRUDINA.map((b) => {
+            const mgH = bivalirudinaMgH(b.mgKgH, peso)
+            return `- Bivalirudina — ${b.situacao}: ${faixa(b.mgKgH, 2)} mg/kg/h${mgH ? ` = ${faixa(mgH, 2)} mg/h` : ''}, TTPA 1,5–2,5 vezes o controle`
+          }),
+          'Anticoagulantes orais:',
+          ...ORAIS.map((o) => `- ${o.nome}: ${o.dose}${o.id === 'edoxabana' ? ` → ${edo === null ? '60 kg exatos: sem dose no livro' : `${edo} mg VO 1 x/dia`}` : ''} (${o.pagina})`),
+          'AHA/ACC 2025 — anticoagulação com fibrinolítico no IAM (e795):',
+          ...(enox25 ? [`- Enoxaparina com fibrinolítico: ${enox25.regra} → ${enox25.bolusMg ? `${enox25.bolusMg} mg IV + ` : ''}${fmtE(enox25.doseMg)} mg ${enox25.intervalo}${enox25.noTeto ? ' (no teto das 2 primeiras doses)' : ''}`] : []),
+          ...(hnf25 ? [`- HNF com fibrinolítico: bolus ${fmtE(hnf25.bolusUi, 0)} UI${hnf25.bolusNoTeto ? ' (teto)' : ''} · ${fmtE(hnf25.infusaoUiH, 0)} UI/h${hnf25.infusaoNoTeto ? ' (teto)' : ''}, TTPa 60–80 s (${HNF_LITICO_2025.pagina})`] : []),
+        ],
+        fonte: textoFontes(fichaAnticoagulacaoPlenaAdulto),
+        versao: fichaAnticoagulacaoPlenaAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -59,13 +115,7 @@ export function AnticoagulacaoPlenaAdulto() {
         </div>
         <LinhaManual
           nome={CONTEXTOS_ENOXAPARINA[ctx].rotulo}
-          texto={{
-            iamsst: '1 mg/kg 12/12 h SC',
-            'iamcsst-trombolise': 'ataque 30 mg EV e 1 mg/kg SC 12/12 h por 7 dias; > 75 anos sem ataque e 0,75 mg/kg 12/12 h; ClCr 15–30: 1 mg/kg 1 x/d',
-            'tep-12h': '1 mg/kg SC 12/12 h; ClCr < 30: 1 mg/kg 1 x/dia; sugere não usar com ClCr < 15',
-            'tep-1x': '1,5 mg/kg SC 1 x/d; ClCr < 30: 1 mg/kg 1 x/dia; sugere não usar com ClCr < 15',
-            tvp: '1,5 mg/kg SC 1 x/dia',
-          }[ctx]}
+          texto={TEXTO_ENOXAPARINA[ctx]}
           conta={!enox ? 'informe o peso' : enox.doseMg === null ? 'sem dose no capítulo' : (
             <>
               {enox.bolusEvMg !== null && <>ataque <strong>{enox.bolusEvMg} mg EV</strong> + </>}
@@ -112,7 +162,7 @@ export function AnticoagulacaoPlenaAdulto() {
         {ORAIS.map((o) => (
           <LinhaManual key={o.id} nome={o.nome} texto={o.dose} pagina={o.pagina}
             conta={o.id === 'edoxabana' && peso > 0 ? (edo === null ? '60 kg exatos: sem dose no livro' : <strong>{edo} mg VO 1 x/dia</strong>) : undefined}
-            errata={o.id === 'edoxabana' ? 'O livro escreve "< 60 kg" e "> 60 kg": com exatamente 60 kg não há dose. A conta não escolhe.' : undefined} />
+            errata={o.id === 'edoxabana' ? ERRATA_EDOXABANA : undefined} />
         ))}
       </Bloco>
       <Bloco titulo="AHA/ACC 2025 — anticoagulação com fibrinolítico no IAM (e795)" descricao="Usa peso, idade e clearance informados acima, ao lado da dose do manual (contexto IAM com supra após trombólise).">
@@ -122,15 +172,39 @@ export function AnticoagulacaoPlenaAdulto() {
           conta={hnf25 ? <>bolus <strong>{fmtE(hnf25.bolusUi, 0)} UI</strong>{hnf25.bolusNoTeto ? ' (teto)' : ''} · <strong>{fmtE(hnf25.infusaoUiH, 0)} UI/h</strong>{hnf25.infusaoNoTeto ? ' (teto)' : ''}</> : 'informe o peso'} />
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_ANTICOAG_2025.map((d) => <li key={d}>{d}</li>)}</ul>
       </Bloco>
-      <Bloco titulo="TVP: ASH 2020 — ao lado do manual" descricao="Tratamento da TVP pela diretriz da ASH de 2020 (GRADE: forte ou condicional, com a certeza), lida no texto integral. As doses e contas do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_TVP.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TVP.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temPeso}
+        armadilhas={[
+          // A errata da edoxabana muda a dose (60 kg exatos): fica também na linha, visível.
+          `Edoxabana — errata do livro: ${ERRATA_EDOXABANA}`,
+          ...(guia?.armadilhas ?? []),
+        ]}
+        ficha={fichaAnticoagulacaoPlenaAdulto}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a ASH 2020 vai para "Evidências" (C6 = A); as doses do manual não mudam.
+          <BlocoComparacao titulo="TVP: ASH 2020 — ao lado do manual" resumo="Tratamento da TVP pela diretriz da ASH de 2020 (GRADE: forte ou condicional, com a certeza), lida no texto integral. As doses e contas do manual acima continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_TVP.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TVP.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={temPeso ? ['Adulto', `${br(peso)} kg`, idade > 0 ? `${br(idade, 0)} anos` : '', clcrInformado ? `ClCr ${br(clcrInformado, 0)} mL/min` : ''].filter(Boolean).join(' · ') : 'Informe o peso'}
+        detalhe={temPeso ? `Enoxaparina (${CONTEXTOS_ENOXAPARINA[ctx].rotulo}): ${contaEnox ?? '—'}${clcrInformado ? '' : ' · sem ajuste renal'}` : undefined}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
