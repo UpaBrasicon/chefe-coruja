@@ -25,6 +25,8 @@ test('qtc: aumento de 60 ms ou mais sobre o basal é crítico', () => {
   assert.equal(r.estado, 2)
   assert.ok(r.derivados.some(([k, v]) => k.startsWith('Aumento') && v === '+60 ms'))
 })
-test('qtc: com FC acima de 85 avisa que Bazett superestima', () => {
-  assert.ok(qtcAdulto.calcular({ qt: 380, fc: 110, sexo: 1 })!.cuidados.some((c) => c.includes('Bazett superestima')))
+test('qtc: aviso de que Bazett superestima com FC alta aparece sempre, sem corte de frequência sem fonte', () => {
+  const aviso = 'Com frequência cardíaca alta, Bazett superestima o QTc; Fridericia e Framingham corrigem melhor.'
+  for (const fc of [60, 85, 86, 110]) assert.ok(qtcAdulto.calcular({ qt: 380, fc, sexo: 1 })!.cuidados.includes(aviso), String(fc))
+  assert.ok(!qtcAdulto.calcular({ qt: 380, fc: 110, sexo: 1 })!.cuidados.some((c) => c.includes('85 bpm')))
 })

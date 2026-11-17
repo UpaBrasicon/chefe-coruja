@@ -6,7 +6,7 @@ import { temReferenciaPediatrica } from '../ficha.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
 import {
   DOSES_NEUTROPENIA, DOSES_SLT, alopurinolM2, caspofungina, classificarSlt, criteriosLabSlt, crioOncoU, diureseAlvoSlt, fichaOncologiaPed, hidratacaoSltMlDia,
-  indicaCitorreducao, leituraNeutrofilos, mascc, oseltamivirMg, produtoCaP,
+  indicaCitorreducao, leituraNeutrofilos, oseltamivirMg, produtoCaP,
 } from './oncologiaPed.ts'
 
 const d = (id: string) => [...DOSES_SLT, ...DOSES_NEUTROPENIA].find((x) => x.id === id)!
@@ -42,8 +42,6 @@ test('neutropenia febril (p. 708–715)', () => {
   assert.equal(leituraNeutrofilos(50, false), 'profunda')
   assert.equal(leituraNeutrofilos(800, true), 'neutropenia')
   assert.equal(leituraNeutrofilos(800, false), 'sem')
-  assert.deepEqual(mascc(5, new Set(['semHipotensao', 'semDpoc', 'solido', 'idade'])), { pontos: 20, baixoRisco: false })
-  assert.equal(mascc(5, new Set(['semHipotensao', 'semDpoc', 'solido', 'idade', 'domicilio'])).baixoRisco, true)
   assert.deepEqual(calcularDoseLivro(d('cefepima'), 50)!.dia, [6000, 6000])
   assert.deepEqual(calcularDoseLivro(d('vancomicina'), 80)!.porDose, [1000, 1000])
   assert.deepEqual(caspofungina(1.2), { ataque: 70, manutencao: 60 })

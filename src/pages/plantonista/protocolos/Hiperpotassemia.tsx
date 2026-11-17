@@ -60,7 +60,7 @@ function ResultadoCrianca({ r }: { r: ResultadoHiperKPed }) {
           <CardHeader>
             <CardTitle className="text-corpo">Tratamento da hipercalemia (cap. 54, p. 549; Tabela 7)</CardTitle>
             <CardDescription>
-              Doses por peso como o livro traz, com página; a indicação e a escolha são do profissional.
+              Doses por peso como o livro traz, com página; a indicação e a escolha são do médico.
               {r.semPeso && ' Informe o peso para ver a dose calculada.'}
             </CardDescription>
           </CardHeader>

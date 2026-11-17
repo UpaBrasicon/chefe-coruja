@@ -5,7 +5,8 @@ import { fichaAdulto } from './fonte.ts'
 // Regra de San Francisco como o Manual de Medicina de Emergência do HCFMUSP
 // (3ª ed., 2022) traz: Tabela 3 do capítulo de síncope (p. 238), com o texto
 // da p. 237–238 (sensibilidade 98% e especificidade 56% para eventos graves
-// em 1 ano; risco com pelo menos 1 fator presente).
+// em 7 dias; risco com pelo menos 1 fator presente). O prazo de 7 dias foi
+// conferido pelo RT na p. 237–238 em 16/11/2026; antes a ficha dizia "1 ano".
 
 // Lote 6 da revisão do HCFMUSP (Q2 = A, decisão do RT de 14/11/2026): o consenso
 // da EUSEM 2024, lido no texto integral, ao lado do manual. É um consenso de
@@ -34,9 +35,9 @@ const fator = (id: string, rotulo: string): Item => ({ tipo: 'marca', id, rotulo
 export const sincopeSanFrancisco: Escore = {
   ficha: {
     ...FICHA_SF_LIVRO,
-    versao: '2026-11-14.1',
+    versao: '2026-11-16.1',
     fontes: [...FICHA_SF_LIVRO.fontes, EUSEM_SINCOPE_2024],
-    revisadoEm: '14/11/2026 (consenso da EUSEM 2024 ao lado do manual, no texto integral; lote 6 da revisão do HCFMUSP; aguarda aprovação do RT); 30/09/2026 (conferido no texto do livro)',
+    revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 14/11/2026 (consenso da EUSEM 2024 ao lado do manual, no texto integral; lote 6 da revisão do HCFMUSP; aguarda aprovação do RT); 30/09/2026 (conferido no texto do livro)',
   },
   descricao: 'Cinco fatores da Tabela 3 do manual do HC. Há risco se pelo menos um estiver presente.',
   itens: [
@@ -54,7 +55,7 @@ export const sincopeSanFrancisco: Escore = {
       unidade: 'de 5 fatores',
       nota: m.length ? 'Pelo menos 1 fator: paciente de risco pela regra (p. 238)' : 'Nenhum fator marcado',
       estado: m.length ? 1 : 0,
-      derivados: [['Desempenho citado no livro', 'sensibilidade 98% e especificidade 56% para eventos graves em 1 ano (1.418 pacientes, p. 237–238)']],
+      derivados: [['Desempenho citado no livro', 'sensibilidade 98% e especificidade 56% para eventos graves em 7 dias (1.418 pacientes, p. 237–238)']],
       cuidados: [
         'O hematócrito na regra não torna o exame obrigatório (p. 238).',
         'Nenhum fator marcado não é o mesmo que fator ausente: confira se cada item foi avaliado.',

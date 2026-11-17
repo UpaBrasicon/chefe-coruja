@@ -9,7 +9,8 @@ import { positivoP5, type ItemLivro } from './fonteP5.ts'
 // dexametasona do edema vasogênico. A Glasgow pediátrica e as doses
 // hiperosmolares do TCE já estão em `tceDecisao.ts`. Sem valor neonatal.
 
-export const fichaComaHicPed = fichaP4('ped-coma-hic', 'Coma e hipertensão intracraniana — criança', 'cap. 37, p. 368–377; cap. 41, p. 415–422; Apêndice, p. 896')
+const fichaComaHicLivro = fichaP4('ped-coma-hic', 'Coma e hipertensão intracraniana — criança', 'cap. 37, p. 368–377; cap. 41, p. 415–422; Apêndice, p. 896')
+export const fichaComaHicPed = { ...fichaComaHicLivro, versao: '2026-11-16.1', revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaComaHicLivro.revisadoEm }
 
 /** Escore de resposta pupilar (p. 374): ambas não reativas = 2; uma = 1; nenhuma = 0. GCS-P = Glasgow − escore. */
 export function gcsPupilas(glasgow: number, pupilasNaoReativas: 0 | 1 | 2): number | null {
@@ -68,4 +69,5 @@ export const METAS_COMA: ItemLivro[] = [
 export const ERRATAS_COMA_HIC: string[] = [
   'p. 420 (conferido no PDF): "cabeça deve ser mantida elevada de 15 a 30%" — o sinal "%" não cabe; o cap. 37 fala em cabeceira a 30° (p. 375) e o cap. 36 em 20 a 30° (p. 364).',
   'p. 417: "FSC + PPC/RVC" — pelo texto (FSC diretamente relacionado à PPC e inversamente à RVC), o sinal deveria ser "=". Não usado em cálculo.',
+  'p. 374–375 × p. 420–421: o cap. 37 (coma) manda hiperventilar na HIC mantendo "pCO2 entre 30 e 35 mmHg"; o cap. 41 (HIC) pede PaCO2 entre 35 e 40 mmHg, com 30 a 35 mmHg só temporariamente até medida definitiva (< 30 só na herniação aguda). Os dois valores aparecem acima com a página de cada um; o livro não diz qual prevalece.',
 ]

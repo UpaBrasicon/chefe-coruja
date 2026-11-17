@@ -12,11 +12,12 @@ import { DIAS_ANO, DIAS_MES, fichaP2 } from './fonteP2.ts'
 // ("1 a 5 anos", "6 a 8 anos"; "1 a 10", "11 a 17"), a faixa vai até antes do
 // ano seguinte ao último citado.
 
-export const fichaSinaisVitais = fichaP2(
+const fichaSinaisVitaisLivro = fichaP2(
   'ped-sinais-vitais-icr',
   'Sinais vitais por idade — referências do livro',
   'cap. 2, p. 40 (Quadro 1); cap. 5, p. 87 (Tabela 1); cap. 6, p. 97–98 (Quadro 3); cap. 8, p. 114 (Tabela 1)',
 )
+export const fichaSinaisVitais = { ...fichaSinaisVitaisLivro, versao: '2026-11-16.1', revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaSinaisVitaisLivro.revisadoEm }
 
 const M = DIAS_MES
 const A = DIAS_ANO
@@ -65,7 +66,7 @@ export const FR_NORMAL_ASMA: Linha<string>[] = [
   { rotulo: '2 a 11 meses', de: 2 * M, ate: 1 * A, valor: '< 50 ciclos/min' },
   { rotulo: '1 a 5 anos', de: 1 * A, ate: 6 * A, valor: '< 40 ciclos/min' },
   { rotulo: '6 a 8 anos', de: 6 * A, ate: 9 * A, valor: '< 30 ciclos/min' },
-  { rotulo: 'Acima de 8 anos', de: 9 * A, ate: Infinity, valor: 'igual à FR do adulto (o livro não dá o número)' },
+  { rotulo: 'Acima de 8 anos', de: 9 * A, ate: Infinity, valor: 'a tabela do livro não dá o número para esta faixa' },
 ]
 
 export const DICA_CAP2 =

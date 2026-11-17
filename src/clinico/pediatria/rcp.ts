@@ -26,9 +26,9 @@ const baseRcp = fichaP2('ped-rcp-icr', 'RCP pediátrica — parâmetros, choque 
 
 export const fichaRcpPediatrica: Ficha = {
   ...baseRcp,
-  versao: '2026-10-25.1',
+  versao: '2026-11-16.1',
   fontes: [...baseRcp.fontes, AHA_AAP_2025],
-  revisadoEm: '25/10/2026 (lacunas da Central, lote 3: Part 8 lido no texto integral; livro do ICr mantido como base)',
+  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3: Part 8 lido no texto integral; livro do ICr mantido como base)',
 }
 
 /** Alvo de pressão diastólica durante a RCP com linha arterial (AHA 2025, novo): ≥ 25 mmHg no lactente; ≥ 30 mmHg a partir de 1 ano. */
@@ -127,15 +127,10 @@ export const OUTROS_PARAMETROS: { rotulo: string; valor: string; pagina: string 
 
 // ── Desfibrilação e cardioversão (p. 28–29, 35; cap. 2 p. 51–52) ──
 
-/** Carga máxima de adulto que o livro cita para o choque subsequente (p. 35). */
-export const CARGA_ADULTO = { bifasico: [120, 200] as Faixa, monofasico: 360 }
-
 export type Cargas = {
   primeiro: number
   segundo: number
   subsequentes: Faixa
-  /** a ponta de cima dos subsequentes passa da carga máxima bifásica de adulto citada no livro */
-  acimaDoAdulto: boolean
   cardioversaoInicial: Faixa
   cardioversaoSeguinte: Faixa
 }
@@ -148,14 +143,13 @@ export function cargasPorPeso(pesoKg: number): Cargas | null {
     primeiro: 2 * pesoKg,
     segundo: 4 * pesoKg,
     subsequentes,
-    acimaDoAdulto: subsequentes[1] > CARGA_ADULTO.bifasico[1],
     cardioversaoInicial: [0.5 * pesoKg, 1 * pesoKg],
     cardioversaoSeguinte: [1 * pesoKg, 2 * pesoKg],
   }
 }
 
 export const NOTAS_CHOQUE: { texto: string; pagina: string }[] = [
-  { texto: 'FV/TV sem pulso: 1º choque 2 J/kg; se refratário, 4 J/kg; os seguintes, 4 a 10 J/kg ou a dose máxima indicada para adultos (120 a 200 J no bifásico, 360 J no monofásico).', pagina: 'p. 35' },
+  { texto: 'FV/TV sem pulso: 1º choque 2 J/kg; se refratário, 4 J/kg; os seguintes, 4 a 10 J/kg.', pagina: 'p. 35' },
   { texto: 'Pás do desfibrilador manual: adulto para maiores de 1 ano ou 10 kg; infantil para menores de 1 ano. Posição anterolateral; anteroposterior se as pás se tocarem.', pagina: 'p. 35' },
   { texto: 'DEA: carga fixa de cerca de 250 J; pás pediátricas com atenuador abaixo de 8 anos, quando disponível; na falta, pá de adulto (exceto no período neonatal). Pode ser usado abaixo de 1 ano na falta de desfibrilador manual.', pagina: 'p. 28–29, 31' },
   { texto: 'Cardioversão sincronizada na TSV: 0,5 a 1 J/kg; se persistir, duplicar para 1 a 2 J/kg. Se não converter, reavaliar TSV versus TV. Modo sync antes de cada tentativa.', pagina: 'cap. 2, p. 51–52' },

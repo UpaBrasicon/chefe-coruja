@@ -6,8 +6,8 @@ import { comTeto, porPeso, porSC, positivoP5, type ItemLivro } from './fonteP5.t
 // Emergências oncológicas na criança — livro do ICr, cap. 66 (p. 693–722).
 // Síndrome de lise tumoral (Cairo-Bishop, hidratação por m², alopurinol,
 // rasburicase, hipercalemia, hiperfosfatemia), hemocomponentes e limiares,
-// hiperviscosidade, neutropenia febril (definições, alto risco, MASCC e a
-// Tabela 11 do ICr com os máximos da própria tabela) e síndromes compressivas
+// hiperviscosidade, neutropenia febril (definições, alto risco e a Tabela 11
+// do ICr com os máximos da própria tabela) e síndromes compressivas
 // (Tabela 12). Superfície corpórea informada pelo médico. Sem valor neonatal.
 
 // Versão .1 de 28/09/2026: neutropenia febril pela diretriz internacional
@@ -36,9 +36,9 @@ const baseOncologia = fichaP4('ped-emergencias-oncologicas', 'Emergências oncol
 
 export const fichaOncologiaPed: Ficha = {
   ...baseOncologia,
-  versao: '2026-11-06.1',
+  versao: '2026-11-16.1',
   fontes: [...baseOncologia.fontes, IPFNG_2023, NF_SUSPENSAO_PRECOCE_2026],
-  revisadoEm: '06/11/2026 (nota do ECR de suspensão precoce do antibiótico na neutropenia febril; revisão PubMed, itens médios; IPFNG 2023 lida no texto; livro do ICr mantido como base)',
+  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota do ECR de suspensão precoce do antibiótico na neutropenia febril; revisão PubMed, itens médios; IPFNG 2023 lida no texto; livro do ICr mantido como base)',
 }
 
 export const IPFNG_ITENS: { codigo: string; texto: string; forca: string }[] = [
@@ -198,20 +198,13 @@ export const ALTO_RISCO_NF: { id: string; texto: string }[] = [
   { id: 'qt-plaq', texto: 'QT há ≤ 7 dias com plaquetas < 50.000/mm³' },
 ]
 
-/** MASCC (Tabela 9, p. 710–711): pontuação ≥ 21 = baixo risco de complicação. */
-export const MASCC_GRAVIDADE: [number, string][] = [[5, 'Sintomas leves ou ausentes (5)'], [3, 'Sintomas moderados (3)'], [0, 'Sintomas graves (0)']]
-export const MASCC_ITENS: { id: string; texto: string; pontos: number }[] = [
-  { id: 'semHipotensao', texto: 'Sem hipotensão (PAS ≥ 90 mmHg)', pontos: 5 },
-  { id: 'semDpoc', texto: 'Ausência de DPOC', pontos: 4 },
-  { id: 'solido', texto: 'Tumor sólido/linfoma sem infecção fúngica prévia', pontos: 4 },
-  { id: 'semDesidratacao', texto: 'Ausência de desidratação', pontos: 3 },
-  { id: 'domicilio', texto: 'Em domicílio no início da febre', pontos: 3 },
-  { id: 'idade', texto: 'Idade < 60 anos', pontos: 2 },
-]
-export function mascc(gravidade: number, marcados: Set<string>): { pontos: number; baixoRisco: boolean } {
-  const pontos = gravidade + MASCC_ITENS.filter((i) => marcados.has(i.id)).reduce((s, i) => s + i.pontos, 0)
-  return { pontos, baixoRisco: pontos >= 21 }
-}
+/**
+ * MASCC (Tabela 9, p. 710–711) não é calculado na tela pediátrica (decisão do RT,
+ * 16/11/2026): é escore de adulto ("idade < 60 anos", DPOC) e a IPFNG 2023 pede
+ * regra de estratificação validada em crianças (A1).
+ */
+export const NOTA_MASCC_PED =
+  'MASCC é escore de adulto; a IPFNG 2023 pede regra validada em crianças (A1, sem escolher uma). O livro traz o MASCC na Tabela 9 (p. 710–711); esta tela não o calcula.'
 
 /** Tabela 11 (p. 714–715): antimicrobianos do ICr para o neutropênico febril, com os máximos da própria tabela. */
 export const DOSES_NEUTROPENIA: DoseLivro[] = [

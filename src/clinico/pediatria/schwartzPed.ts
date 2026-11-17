@@ -17,8 +17,8 @@ export const schwartzPed: Escore = {
   ficha: {
     ...fichaP4('ped-tfg-schwartz', 'TFG estimada — Schwartz / CKiD (criança)', 'cap. 56, p. 575–576 (Tabela 2)'),
     publico: 'pediatrico',
-    versao: '2026-09-30.1',
-    revisadoEm: '30/09/2026 (conferido no texto do livro; aguarda aprovação do RT)',
+    versao: '2026-11-16.1',
+    revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 30/09/2026 (conferido no texto do livro; aguarda aprovação do RT)',
   },
   descricao: 'Estatura × k ÷ creatinina, com a constante do método de dosagem da creatinina (Tabela 2 do livro do ICr).',
   itens: [
@@ -41,7 +41,7 @@ export const schwartzPed: Escore = {
       cuidados: [
         'Pergunte ao laboratório o método da creatinina: a constante muda o resultado.',
         'Sem creatinina basal conhecida, o livro usa a creatinina que dá TFG 120 pela Schwartz (p. 575) — ver Injúria renal aguda — criança.',
-        'Adulto (18 anos ou mais): CKD-EPI 2021.',
+        'A partir de 14 anos, a Central usa as ferramentas do adulto (CKD-EPI 2021).',
       ],
     }
   },
