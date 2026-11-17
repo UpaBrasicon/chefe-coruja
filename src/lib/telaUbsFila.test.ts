@@ -51,3 +51,9 @@ test('U8 do percurso da UBS: escuta com DUM, azul abre a agenda e a recepção a
   assert.doesNotMatch(escuta, /EnviarUpa|Ambulance/)
   assert.match(recepcao, /const semEnfermeiro = ubs && tipoAps === 'escuta_inicial' && r\.etapa === 'atendimento'/)
 })
+
+test('U10 do percurso da UBS: o CID do SOAP conta como problema avaliado na conduta', () => {
+  const conduta = readFileSync('src/pages/plantao/porta/AbaConduta.tsx', 'utf8')
+  assert.match(conduta, /\{ ok: problemas\.length > 0 \|\| !!cidSoap, texto: 'Ao menos um problema ou condição avaliada' \}/)
+  assert.match(conduta, /o CID do registro do atendimento, já conta como problema avaliado/)
+})
