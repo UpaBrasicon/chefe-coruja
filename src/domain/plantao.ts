@@ -58,7 +58,10 @@ export function formatarDuracao(minutos: number): string {
   const m = Math.max(0, Math.round(minutos))
   if (m < 60) return `${m} min`
   const h = Math.floor(m / 60)
-  return `${h}h${String(m % 60).padStart(2, '0')}`
+  if (h < 24) return `${h}h${String(m % 60).padStart(2, '0')}`
+  // percurso da UBS (U2, RT 17/11/2026): passou de um dia, conta em dias e horas
+  const d = Math.floor(h / 24)
+  return `${d} ${d === 1 ? 'dia' : 'dias'}${h % 24 ? ` e ${h % 24}h` : ''}`
 }
 
 /**

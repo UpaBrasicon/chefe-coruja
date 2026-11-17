@@ -3,6 +3,7 @@ import { Check, Printer } from 'lucide-react'
 import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
+import { formatarDuracao } from '@/domain/plantao'
 import { supabase } from '@/lib/supabase'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { imprimirRelatorio } from '@/lib/prontuario'
@@ -144,7 +145,7 @@ export default function Triagem() {
           </TabsList>
           {/* o que pede atenção aparece em qualquer aba */}
           <span className="pb-2.5 text-apoio text-tinta-sussurro">
-            {contagem.triagem > 0 && <>maior espera {ubs ? 'na escuta' : 'na triagem'} {maiorEspera} min{!ubs && ' · '}</>}
+            {contagem.triagem > 0 && <>maior espera {ubs ? 'na escuta' : 'na triagem'} {formatarDuracao(maiorEspera)}{!ubs && ' · '}</>}
             {!ubs && <span className={cn(acima > 0 && 'font-medium text-critico')}>{acima} acima do alvo da cor</span>}
           </span>
         </div>

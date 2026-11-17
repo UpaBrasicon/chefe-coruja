@@ -1,5 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 
+import { formatarDuracao } from '@/domain/plantao'
 import { homonimos } from '@/domain/homonimos'
 import { ALVO_MIN } from '@/domain/risco'
 import { cn } from '@/lib/utils'
@@ -52,7 +53,7 @@ export function EsperaMedico({ lista, carregando, erro, onReclassificar, ubs = f
                   <QueixaCelula texto={e.queixa} />
                   <TableCell className="tabular-nums text-tinta-apoio">{hora(e.classificado_em)}</TableCell>
                   <TableCell className={cn('tabular-nums', acima && 'font-semibold text-critico')} title="Espera desde a classificação">
-                    {desde} min
+                    {formatarDuracao(desde)}
                   </TableCell>
                   <TableCell className="text-right">
                     {!ubs && (

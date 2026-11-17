@@ -4,6 +4,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
+import { formatarDuracao } from '@/domain/plantao'
 import { supabase } from '@/lib/supabase'
 import type { CorRisco } from '@/domain/risco'
 import type { Publico } from '@/domain/vitais'
@@ -44,7 +45,7 @@ export const msg = (e: unknown) => (e instanceof Error ? e.message : String((e a
 export function minutos(desde: string | null | undefined, agora: number) {
   if (!desde) return ''
   const min = Math.max(0, Math.round((agora - Date.parse(desde)) / 60_000))
-  return min >= 60 ? `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}` : `${min} min`
+  return formatarDuracao(min)
 }
 
 /** Relógio da tela: anda sozinho, sem recarregar nada. */
