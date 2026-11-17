@@ -101,8 +101,25 @@ Cada fase registra o que foi conferido, só com status, sem valor de chave. O re
 
 **Volta:** arquivos `*.bak-troca-2026-11`. Atenção: eles têm os valores antigos, que não valem mais.
 
-### Fase 2: Telegram, com o RT
+### Fase 2, concluída em 17/11/2026 (Telegram, com o RT)
 
-1. No @BotFather, `/mybots` → bot → **API Token** → **Revoke current token**, e copiar o token novo.
-2. No terminal do VPS (o terminal do navegador da Hostinger serve), rodar `bash /root/trocar-token-telegram.sh <bot>`, com `corujinha`, `clinica`, `gestora`, `suporte` ou `lab`, e colar o token. O script grava o token e recria só aquele agente.
-3. Mandar uma mensagem ao bot no Telegram para conferir.
+O RT revogou os 5 tokens no @BotFather e gravou os novos com `bash /root/trocar-token-telegram.sh <bot>`:
+
+| Comando | Bot |
+|---|---|
+| `corujinha` | Chefe Coruja, @Chefe_coruja_bot |
+| `clinica` | @Coruja_clinica_cc_bot |
+| `gestora` | @coruja_gestora_cc_bot |
+| `suporte` | @coruja_suporte_cc_bot |
+| `lab` | @Coruja_lab_bot |
+
+**Conferência:** nos 5 bots, o `getMe` responde ok com o token novo e recusa o antigo (401). Os agentes estão de pé, sem erro de autenticação; na Clínica apareceu uma única queda de rede, passageira.
+
+### Fase 3: chave da Edge (precisa de "ok produção")
+
+`bash /root/trocar-chave-edge.sh` no terminal do VPS:
+1. mostra a chave nova só na tela do RT;
+2. o RT cola em Supabase → Edge Functions → Secrets → `BIBLIOTECA_API_KEY`;
+3. com Enter, a biblioteca da produção é recriada com a chave nova.
+
+**Conferência:** o `/v1/ask` responde 401 com a chave antiga e não dá 401 com a nova, e o "Perguntar" do app volta a responder. A volta fica no arquivo `/srv/biblioteca/app/.env.bak-troca-2026-11-edge`.
