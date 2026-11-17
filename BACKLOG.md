@@ -2632,6 +2632,32 @@ Dado criado no percurso: a grade da enfermeira na homologação (D1), de segunda
 
 ---
 
+## Trilha — UBS: envio à RNDS e ao SISAB, pedido do RT em 17/11/2026
+
+Origem: o RT pediu, "por fim e último", que o sistema da UBS transmita os dados para a RNDS e para o SISAB. Em 17/11/2026, ele confirmou que esta é a última trilha, depois da sepse, com prioridade P1.
+
+Como está hoje:
+- **RNDS:** existe o envio da regulação no modelo MIRA (Fase 5C, serviço `rnds-envio` no VPS, ligado ao simulador). O RAC e o Sumário de Alta estão planejados (`docs/rnds/`). Tudo está parado à espera da credencial.
+- **SISAB:** a UBS registra o atendimento, a CIAP-2, os programas (pré-natal e puericultura) e o encaminhamento, mas nada vai ao SISAB. Não há exportação no layout do e-SUS APS.
+
+Regras da trilha:
+- **Cada item começa por diagnóstico com decisões A/B.**
+- **O envio real só acontece depois do ambiente de homologação oficial.** Antes dele, o envio vai só ao simulador ou ao validador.
+- **Dado de paciente só sai pelo canal oficial,** com o registro de cada envio e de cada recusa.
+
+| Item | O que fazer | Base | Prioridade sugerida | Estado |
+|---|---|---|---|---|
+| RS1 | Diagnóstico: o que a UBS registra hoje × o que o SISAB pede (fichas do e-SUS APS pelo LEDI APS: atendimento individual, procedimentos, vacinação, cadastro individual e domiciliar, atividade coletiva) e o que a RNDS pede da atenção primária (RAC; RIA, se houver vacinação). Caminho do envio ao SISAB: direto, ou pelo PEC ou centralizador do município | Manuais do LEDI APS e da RNDS; `docs/rnds/` | P1 | Pendente |
+| RS2 | Credenciais e ambientes: homologação da RNDS para a APS (o mesmo pedido do RAC) e o caminho de envio ao SISAB combinado com a secretaria municipal | Portal de Serviços do DATASUS; secretaria | P1 | Pendente (depende do RT e da secretaria) |
+| RS3 | Mapa dos dados: CNS ou CPF, CBO e CNES do profissional, CIAP-2 e CID, procedimentos do SIGTAP, condições avaliadas e desfechos, com a lista do que falta capturar na tela | RS1 | P1 | Pendente |
+| RS4 | Exportação do SISAB no layout do LEDI APS, com teste no validador oficial e envio pelo caminho de RS2 | RS1 a RS3 | P1 | Pendente |
+| RS5 | RNDS na UBS: RAC (e RIA, se houver vacinação) pelo serviço `rnds-envio` que já existe, no simulador e depois na homologação | RS2, RS3; Fase 5C | P1 | Pendente |
+| RS6 | Painel de envio: o que foi, o que voltou com erro, reenvio e prazo da competência; entra no inventário do LG4 | RS4 e RS5 | P2 | Pendente |
+
+Ordem sugerida: RS1 → RS3 → RS2 (em paralelo, com o RT) → RS4 → RS5 → RS6.
+
+---
+
 ## Backlog Comercial Paralelo
 | Ordem | Material | Subtarefas | Critério de pronto | Pronto até |
 |---|---|---|---|---|
