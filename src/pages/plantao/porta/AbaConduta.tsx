@@ -25,6 +25,7 @@ import { Label } from '@/components/ui/label'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { AvisoSepseAtendimento } from '@/components/clinico/AvisoSepseAtendimento'
 import { FerramentasDoCid } from '@/components/clinico/FerramentasDoCid'
 import type { FaixaEtaria } from '@/domain/idade'
 import { linkMarcarNaAgenda } from '@/domain/agenda'
@@ -208,6 +209,9 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
         <span className="text-rotulo text-tinta-sussurro">O que foi avaliado e manejado nesta consulta. A busca mostra a lista da ficha, depois a CIAP-2 e depois a CID-10.</span>
         {/* F2 das ferramentas pelo CID (RT, 17/11/2026): só lista e abre ferramentas da Central */}
         <FerramentasDoCid faixa={faixa} pacienteId={pacienteId} nascimento={nascimento} cids={[...problemas.flatMap((p) => ('cid' in p ? [p.cid] : 'ciap' in p ? [p.cidRelacionada] : [])), soap.cid]} />
+        {/* F7 (RT, 17/11/2026): aviso "pensar em sepse" pela regra do alerta da internação; exceção à regra acima, só para ele */}
+        <AvisoSepseAtendimento episodioId={episodioId} pacienteId={pacienteId} nascimento={nascimento} faixa={faixa}
+          cids={[...problemas.flatMap((p) => ('cid' in p ? [p.cid] : 'ciap' in p ? [p.cidRelacionada] : [])), soap.cid]} />
       </div>
 
       {/* 5A, tarefa 7: hiperdia do paciente e avaliação dos pés */}

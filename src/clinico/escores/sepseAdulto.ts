@@ -47,11 +47,24 @@ const fmt = (x: number) => String(Math.round(x * 10) / 10).replace('.', ',')
 /** Número opcional digitado fora da faixa: não se ignora em silêncio. */
 const opcionalInvalido = (r: Respostas, id: string) => r[id] !== undefined && numero(sepseAdulto, r, id) === undefined
 
+// Aviso "pensar em sepse" no atendimento (F7 das ferramentas pelo CID; pedido do
+// RT de 17/11/2026, AV1–AV8 = A; condições da sessão de obrigatórios legais).
+// A regra é a do alerta da internação (private.sepse_adulto_regra, migration
+// 20270416000001): 14 anos ou mais, gatilho de infecção e NEWS2 de 5 ou mais.
+// No atendimento, os vitais valem por 6 h, só os do episódio. Os números abaixo
+// são os mesmos do SQL (o teste confere).
+export const CORTE_NEWS2_SEPSE = 5
+export const CORTE_NEWS2_SEPSE_ALTO = 7
+export const HORAS_VITAIS_AVISO_ATENDIMENTO = 6
+/** Texto do aviso: só exames com fonte já lida (AV4); sem cor e sem "diagnóstico". */
+export const AVISO_SEPSE_ATENDIMENTO =
+  'Pode ser sepse. Considere: lactato (SSC 2026, rec. 51 e 52, p. 39–40; ILAS jul/2026, p. 8 e 14) e os exames de disfunção orgânica que o ILAS lista: creatinina, PaO₂/FiO₂, plaquetas e bilirrubinas (ILAS jul/2026, p. 3). A decisão é do médico.'
+
 export const sepseAdulto: Escore = {
   ficha: {
     id: 'sepse-adulto',
     titulo: 'Sepse no adulto — SOFA, choque e lactato (Sepsis-3 · SSC 2026 · ILAS 2026)',
-    versao: '2026-11-16.1',
+    versao: '2026-11-17.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Singer M, Deutschman CS, Seymour CW, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801–810.', url: 'https://doi.org/10.1001/jama.2016.0287' },
@@ -63,7 +76,7 @@ export const sepseAdulto: Escore = {
       AHN_SOFA2_PS_2026,
       YEN_SOFA2_PS_2026,
     ],
-    revisadoEm: '16/11/2026 (próximos passos, armadilhas e evidências do piloto das calculadoras, com fonte; aguarda aprovação do RT); 06/11/2026 (nota do SOFA-2 e das validações no pronto-socorro, SOFA-1 mantido; revisão PubMed, itens médios; SSC 2026 e ILAS jul/2026 conferidos no texto em 28/09/2026)',
+    revisadoEm: '17/11/2026 (aviso "pensar em sepse" no atendimento pela mesma regra do alerta da internação, com lactato e exames de disfunção do ILAS; decisões AV1–AV8 do RT; aguarda aprovação do RT); 16/11/2026 (próximos passos, armadilhas e evidências do piloto das calculadoras, com fonte; aguarda aprovação do RT); 06/11/2026 (nota do SOFA-2 e das validações no pronto-socorro, SOFA-1 mantido; revisão PubMed, itens médios; SSC 2026 e ILAS jul/2026 conferidos no texto em 28/09/2026)',
   },
   descricao: 'Disfunção orgânica pelo SOFA, choque séptico pelo Sepsis-3 e pelo ILAS, clareamento de lactato; o rastreio é pelo NEWS2',
   itens: [

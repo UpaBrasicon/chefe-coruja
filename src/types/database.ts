@@ -10932,6 +10932,10 @@ export type Database = {
         }[]
       }
       avaliacoes_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      aviso_sepse_atendimento: {
+        Args: { p_cids?: string[]; p_episodio: string }
+        Returns: Json
+      }
       avancar_falta: {
         Args: { p_falta: string; p_situacao: string }
         Returns: undefined
@@ -13360,6 +13364,10 @@ export type Database = {
           p_unidade: string
         }
         Returns: string
+      }
+      registrar_aviso_sepse: {
+        Args: { p_cids?: string[]; p_episodio: string; p_evento: string; p_motivo?: string }
+        Returns: undefined
       }
       registrar_auditoria: {
         Args: {
