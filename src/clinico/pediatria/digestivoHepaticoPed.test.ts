@@ -31,7 +31,6 @@ test('paracetamol, amônia, glicose e oferta restrita (p. 358–364)', () => {
   assert.equal(leituraParacetamol(3500, 20)!.toxicaUnica, 'faixa')
   assert.equal(leituraParacetamol(5000, 20)!.toxicaUnica, 'sim')
   assert.equal(leituraParacetamol(2000, 20)!.toxicaUnica, 'nao')
-  assert.equal(leituraParacetamol(8000, 50)!.adolescenteAcima75g, true)
   assert.equal(leituraAmonia(150), 'abaixo')
   assert.equal(leituraAmonia(180), 'faixa')
   assert.equal(leituraAmonia(210), 'acima')

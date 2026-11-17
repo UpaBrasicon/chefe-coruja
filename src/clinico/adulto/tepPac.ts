@@ -194,8 +194,8 @@ export const atsIdsaPac: Escore = {
 // Antibióticos por grupo (Tabela 10, p. 463–464) e texto (p. 460–462)
 
 // Versão .1 de 28/09/2026: diretriz ATS 2026 da PAC (publicada on-line em
-// 11/11/2025) ao lado do manual — lida pela página do periódico e pelo
-// comunicado da ATS (texto integral bloqueado). Os esquemas antimicrobianos
+// 11/11/2025) ao lado do manual — lida primeiro pela página do periódico e pelo
+// comunicado da ATS; o texto integral foi lido em 14/11/2026 (ver ATS_PAC_2026). Os esquemas antimicrobianos
 // não foram revisados por ela (segue a ATS/IDSA 2019); o manual fica como base.
 
 export const ATS_PAC_2026: Fonte = {

@@ -96,8 +96,10 @@ export const DOR_NEUROPATICA = {
   pagina: 'p. 146–147',
 }
 
+const fichaEscalaNumericaLivro = fichaAdulto('adulto-escala-numerica-dor', 'Escala numérica de dor (0–10) — adulto', 'cap. 9, p. 141, 145 (Figura 1) e p. 147 (Figura 2)')
+
 export const escalaNumericaDor: Escore = {
-  ficha: fichaAdulto('adulto-escala-numerica-dor', 'Escala numérica de dor (0–10) — adulto', 'cap. 9, p. 141, 145 (Figura 1) e p. 147 (Figura 2)'),
+  ficha: { ...fichaEscalaNumericaLivro, versao: '2026-11-16.1', revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaEscalaNumericaLivro.revisadoEm },
   descricao: 'Intensidade informada pelo paciente de 0 (sem dor) a 10 (pior dor possível), com o degrau da escada analgésica do manual do HC.',
   itens: [{ tipo: 'numero', id: 'nota', rotulo: 'Nota dada pelo paciente', unidade: '0 a 10', min: 0, max: 10, passo: 1 }],
   calcular(r) {
@@ -113,7 +115,7 @@ export const escalaNumericaDor: Escore = {
       estado: i === 'intensa' ? 2 : i === 'moderada' ? 1 : 0,
       derivados: degrau ? [['Escada analgésica (Figura 2, p. 147)', `${degrau.degrau}º degrau: ${degrau.classe}`]] : [],
       cuidados: [
-        'A escala visual analógica tem bom desempenho na dor aguda; na dor crônica o desempenho é questionável (p. 145).',
+        'Sobre a escala visual analógica (outra escala, não esta), o livro diz que tem bom desempenho na dor aguda e desempenho questionável na dor crônica (p. 145).',
         'Reavaliar a intensidade para verificar a eficácia do tratamento (p. 141).',
         'Sem referência pediátrica declarada.',
       ],

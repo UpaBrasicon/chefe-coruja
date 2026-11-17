@@ -17,7 +17,7 @@ test('endócrino: fichas de adulto do manual do HC, sem referência pediátrica'
   }
 })
 
-test('Burch-Wartofsky: soma e faixas; 45 exato sem classe (Tabela 4, p. 951–952)', () => {
+test('Burch-Wartofsky: soma e faixas; 45 exato pelo consenso ETA/BTA/SfE 2026 (Tabela 4, p. 951–952)', () => {
   const zero = { temp: 0, snc: 0, gi: 0, fc: 0, ic: 0, fa: 0, precipitante: 0 }
   assert.equal(burchWartofsky.calcular({ temp: 0 }), null)
   assert.match(burchWartofsky.calcular(zero)!.nota, /improvável/)
@@ -29,6 +29,13 @@ test('Burch-Wartofsky: soma e faixas; 45 exato sem classe (Tabela 4, p. 951–95
   const x45 = burchWartofsky.calcular({ ...zero, temp: 1, fc: 5, fa: 1, ic: 1 })!
   assert.equal(x45.valor, '45')
   assert.ok(x45.alerta)
+  assert.equal(x45.estado, 2)
+  assert.match(x45.nota, /≥ 45: muito sugestivo de crise tireotóxica \(ETA\/BTA\/SfE 2026/)
+  const x50 = burchWartofsky.calcular({ ...zero, temp: 2, fc: 5, fa: 1, ic: 1 })!
+  assert.equal(x50.valor, '50')
+  assert.equal([x50.nota, x50.estado].join('|'), [x45.nota, x45.estado].join('|'))
+  assert.equal(x50.alerta, undefined)
+  assert.ok(fichaBurchWartofsky.fontes.some((f) => /Thyroid J\. 2026/.test(f.citacao)))
   const max = burchWartofsky.calcular({ temp: 6, snc: 3, gi: 2, fc: 5, ic: 3, fa: 1, precipitante: 1 })!
   assert.equal(max.valor, '140')
 })

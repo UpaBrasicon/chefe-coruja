@@ -2,7 +2,7 @@ import { completo, escolha, type Escore, type Respostas } from '../escore.ts'
 
 // PECARN de trauma contuso na criança (lacunas da Central, lote 1, 23/10/2026).
 // Conferido no texto:
-//   • coluna cervical (Leonard 2024): quatro fatores de alto risco (Glasgow 3–8
+//   • coluna cervical (Leonard 2024): três grupos de fatores de alto risco (Glasgow 3–8
 //     ou AVPU "não responde"; via aérea, respiração ou circulação alteradas;
 //     déficit neurológico focal) e cinco de risco não desprezível (dor cervical;
 //     alteração do estado mental; lesão substancial de tronco; lesão substancial
@@ -25,14 +25,14 @@ export const pecarnCervical: Escore = {
   ficha: {
     id: 'ped-pecarn-coluna-cervical',
     titulo: 'PECARN — coluna cervical no trauma contuso (criança)',
-    versao: '2026-10-23.1',
+    versao: '2026-11-16.1',
     publico: 'pediatrico',
     fontes: [
       { citacao: 'Leonard JC, Harding M, Cook LJ, et al. PECARN prediction rule for cervical spine imaging of children presenting to the emergency department with blunt trauma: a multicentre prospective observational study. Lancet Child Adolesc Health. 2024;8(7):482–490 (PMID 38843852): fatores, algoritmo e desempenho (sensibilidade 94,3%, VPN 99,9%).', url: 'https://doi.org/10.1016/S2352-4642(24)00104-4', pediatrica: true },
     ],
-    revisadoEm: REVISADO,
+    revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + REVISADO,
   },
-  descricao: 'Trauma contuso de 0 a 17 anos: quatro fatores de alto risco e cinco de risco não desprezível para lesão da coluna cervical.',
+  descricao: 'Trauma contuso na criança: três grupos de fatores de alto risco e cinco de risco não desprezível para lesão da coluna cervical (estudo de 0 a 17 anos).',
   itens: [
     { tipo: 'escolha', id: 'consciencia', rotulo: 'Alto risco — Glasgow de 3 a 8, ou não responde (AVPU)', opcoes: NAO_SIM },
     { tipo: 'escolha', id: 'abc', rotulo: 'Alto risco — via aérea, respiração ou circulação alteradas', opcoes: NAO_SIM },

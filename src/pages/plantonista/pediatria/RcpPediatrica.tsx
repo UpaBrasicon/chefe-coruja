@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  CARGA_ADULTO, DIRETRIZ_PALS_2025, DROGAS_RCP, FAIXAS_RCP, GRUPOS_RCP, NOTAS_CHOQUE, OUTROS_PARAMETROS,
+  DIRETRIZ_PALS_2025, DROGAS_RCP, FAIXAS_RCP, GRUPOS_RCP, NOTAS_CHOQUE, OUTROS_PARAMETROS,
   cargasPorPeso, fichaRcpPediatrica, metaPadRcp2025, parametrosRcp, type FaixaRcp, type GrupoRcp,
 } from '@/clinico/pediatria/rcp'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -58,11 +58,10 @@ export function RcpPediatrica() {
             <dl className="grid gap-x-4 gap-y-1 tabular-nums sm:grid-cols-[auto_1fr]">
               <dt className="text-tinta-sussurro">FV/TV sem pulso — 1º choque (2 J/kg)</dt><dd><strong>{num(c.primeiro, 1)} J</strong></dd>
               <dt className="text-tinta-sussurro">2º choque (4 J/kg)</dt><dd><strong>{num(c.segundo, 1)} J</strong></dd>
-              <dt className="text-tinta-sussurro">Seguintes (4 a 10 J/kg)</dt><dd><strong>{faixaTxt(c.subsequentes, 1)} J</strong> ou a dose máxima de adulto ({faixaTxt(CARGA_ADULTO.bifasico, 0)} J bifásico; {CARGA_ADULTO.monofasico} J monofásico)</dd>
+              <dt className="text-tinta-sussurro">Seguintes (4 a 10 J/kg)</dt><dd><strong>{faixaTxt(c.subsequentes, 1)} J</strong></dd>
               <dt className="text-tinta-sussurro">Cardioversão TSV — inicial (0,5 a 1 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoInicial, 1)} J</strong></dd>
               <dt className="text-tinta-sussurro">Cardioversão TSV — se persistir (1 a 2 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoSeguinte, 1)} J</strong></dd>
             </dl>
-            {c.acimaDoAdulto && <p className="text-atencao">A ponta de cima dos choques seguintes passa de {CARGA_ADULTO.bifasico[1]} J, a carga máxima bifásica de adulto citada no livro.</p>}
             {NOTAS_CHOQUE.map((n) => <LinhaReferencia key={n.texto} texto={n.texto} pagina={n.pagina} />)}
           </Bloco>
           {(Object.keys(GRUPOS_RCP) as GrupoRcp[]).map((g) => (

@@ -2,8 +2,8 @@ import { useState } from 'react'
 
 import {
   ALTO_RISCO_NF, DIFERENCAS_NF_2023, DOSES_COMPRESSIVAS, DOSES_HEMATO_ONCO, DOSES_NEUTROPENIA, DOSES_SLT, ERRATA_HIDRATACAO, ERRATA_PIC_ONCO, INDICACOES_TSR_SLT, IPFNG_ITENS,
-  LIMIARES_PLAQUETAS, MASCC_GRAVIDADE, MASCC_ITENS, NOTA_NF_SUSPENSAO_PRECOCE, REFERENCIAS_ONCO, TABELA7_HB, alopurinolM2, caspofungina, chOncoMl, classificarSlt, crioOncoU, criteriosLabSlt, diureseAlvoSlt,
-  fichaOncologiaPed, hidratacaoSltMlDia, indicaCitorreducao, leituraNeutrofilos, mascc, oseltamivirMg, pfcOncoMl, plaquetasOncoMl, produtoCaP,
+  LIMIARES_PLAQUETAS, NOTA_MASCC_PED, NOTA_NF_SUSPENSAO_PRECOCE, REFERENCIAS_ONCO, TABELA7_HB, alopurinolM2, caspofungina, chOncoMl, classificarSlt, crioOncoU, criteriosLabSlt, diureseAlvoSlt,
+  fichaOncologiaPed, hidratacaoSltMlDia, indicaCitorreducao, leituraNeutrofilos, oseltamivirMg, pfcOncoMl, plaquetasOncoMl, produtoCaP,
 } from '@/clinico/pediatria/oncologiaPed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
@@ -33,8 +33,6 @@ export function EmergenciasOncologicasPed() {
   const [sintomas, setSintomas] = useState(false)
   const [queda, setQueda] = useState(false)
   const [risco, setRisco] = useState<Set<string>>(new Set())
-  const [grav, setGrav] = useState(5)
-  const [mItens, setMItens] = useState<Set<string>>(new Set())
   const sc = idadePediatrica(p.anos, p.meses) ? scInformada : 0
   const calc = podeCalcular(p)
   const crit = criteriosLabSlt(lab, var25)
@@ -44,7 +42,6 @@ export function EmergenciasOncologicasPed() {
   const alo = !p.rn ? alopurinolM2(sc) : null
   const cito = indicaCitorreducao(leuco.leucocitos, tipo, sintomas)
   const neut = leuco.neutrofilos > 0 ? leituraNeutrofilos(leuco.neutrofilos, queda) : null
-  const escore = mascc(grav, mItens)
   const caspo = !p.rn ? caspofungina(sc) : null
   const osel = calc ? oseltamivirMg(p.peso) : null
   const campo = <T extends Record<string, number>>(obj: T, set: (o: T) => void, k: keyof T & string, label: string, unit: string, step = 0.1) => (
@@ -54,7 +51,7 @@ export function EmergenciasOncologicasPed() {
   return (
     <ToolLayout
       title="Emergências oncológicas — criança"
-      description="Lise tumoral (Cairo-Bishop, hidratação por m², alopurinol, rasburicase, hipercalemia), hemocomponentes, hiperviscosidade, neutropenia febril (alto risco, MASCC, Tabela 11 do ICr) e síndromes compressivas — livro do ICr-HCFMUSP. A decisão é do médico e do oncologista."
+      description="Lise tumoral (Cairo-Bishop, hidratação por m², alopurinol, rasburicase, hipercalemia), hemocomponentes, hiperviscosidade, neutropenia febril (alto risco, Tabela 11 do ICr) e síndromes compressivas — livro do ICr-HCFMUSP. A decisão é do médico e do oncologista."
       ficha={fichaOncologiaPed}
     >
       <CampoPaciente id="onc" p={p} onChange={setP} />
@@ -126,13 +123,7 @@ export function EmergenciasOncologicasPed() {
         <p className="font-medium">Alto risco se qualquer um</p>
         <Marcadores itens={ALTO_RISCO_NF} marcados={risco} onChange={setRisco} />
         <p>{risco.size > 0 ? <strong>Neutropenia febril de alto risco (NFAR) pelo livro.</strong> : 'Sem critério de alto risco marcado: baixo risco (NFBR) pelo livro.'}</p>
-        <p className="font-medium">MASCC (Tabela 9)</p>
-        <Opcoes<number> label="Gravidade da doença" valor={grav} opcoes={MASCC_GRAVIDADE} onChange={setGrav} />
-        <Marcadores itens={MASCC_ITENS.map((i) => ({ id: i.id, texto: `${i.texto} (${i.pontos})` }))} marcados={mItens} onChange={setMItens} />
-        <p>
-          MASCC: <strong className="tabular-nums">{escore.pontos}</strong> — {escore.baixoRisco ? '≥ 21, baixo risco de complicação' : '< 21'}
-        </p>
-        <Nota>O MASCC está no capítulo como a Associação Multinacional o publicou (inclui "idade &lt; 60 anos" e DPOC).</Nota>
+        <Nota>{NOTA_MASCC_PED}</Nota>
       </Bloco>
 
       {calc && (

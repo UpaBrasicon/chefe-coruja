@@ -804,7 +804,7 @@ export const TOPOS: Record<string, Topo> = {
     ],
   },
   'adulto-animais-peconhentos': {
-    resumo: 'Mostra o número de ampolas de soro pela gravidade nos acidentes por serpentes, escorpião e aranhas pelo manual do HC, com o PCDT do Ministério da Saúde ao lado, e calcula a pré-medicação e a neostigmina por peso.',
+    resumo: 'Mostra o número de ampolas de soro pela gravidade — escorpião e aranhas pelo Ministério da Saúde (PCDT e portal), serpentes pelo manual do HC — e calcula a pré-medicação e a neostigmina por peso.',
     instrucoes: 'Informe o peso e escolha o acidente e a gravidade pelas manifestações de cada tabela do manual.',
   },
   'adulto-tetano-profilaxia': {
@@ -1955,7 +1955,7 @@ export const TOPOS: Record<string, Topo> = {
       { texto: 'O consenso europeu de síncope no pronto-socorro estratifica pelas categorias de risco da ESC 2018 e não usa escores como San Francisco.', ref: { fonte: 'EUSEM 2024, síncope no pronto-socorro (Möckel et al., Eur J Emerg Med 2024)', grau: 'consenso de processo, sem graduação' } },
     ],
     porQueUsar: [
-      { texto: 'Pelo manual, sensibilidade de 98% e especificidade de 56% para eventos graves em 1 ano, em 1.418 pacientes.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 16', pagina: 'p. 237–238' } },
+      { texto: 'Pelo manual, sensibilidade de 98% e especificidade de 56% para eventos graves em 7 dias, em 1.418 pacientes.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 16', pagina: 'p. 237–238' } },
     ],
   },
   'adulto-duke-modificado': {

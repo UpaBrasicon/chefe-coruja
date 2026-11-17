@@ -28,13 +28,13 @@ const base = fichaP4('ped-escorpiao-aranhas', 'Escorpião e aranhas — soro por
 
 export const fichaPeconhentosPed: Ficha = {
   ...base,
-  versao: '2026-09-28.1',
+  versao: '2026-11-16.1',
   fontes: [
     ...base.fontes,
     { ...PCDT_ESCORPIAO_2026, citacao: `${PCDT_ESCORPIAO_2026.citacao} Quadro 3 (p. 9), determinantes de gravidade (p. 10), tratamento específico (p. 15–17, Quadro 4), fluxo (p. 25).` },
     MS_ARANHAS,
   ],
-  revisadoEm: '28/09/2026 (PCDT escorpiônicos 2026 e portal do MS conferidos; livro do ICr mantido como base)',
+  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 28/09/2026 (PCDT escorpiônicos 2026 e portal do MS conferidos; livro do ICr mantido como base)',
 }
 
 /** PCDT dos Acidentes Escorpiônicos (MS, 2026): soro por gravidade, independentemente da idade. */
@@ -108,12 +108,12 @@ export const TABELA_SORO: Record<Animal, Record<Gravidade, LinhaSoro>> = {
   escorpiao: {
     leve: { clinica: 'Apenas manifestações locais: dor local ou irradiada, edema, eritema, sudorese, parestesia, frialdade; pode haver ponto de inoculação', ampolas: null, outros: 'Observação clínica por 4 horas; analgesia VO/parenteral e/ou anestesia local', pagina: 'p. 211 (Tabela 1)' },
     moderado: { clinica: 'Quadro local + alguns episódios de vômito, sudorese fria, hipertensão, taquicardia (ou bradicardia) e agitação leve', ampolas: [3, 3], soro: 'soro antiescorpiônico ou antiaracnídico', via: 'EV em 15–20 min', outros: 'Internação por 24 h; analgesia e/ou anestesia local', pagina: 'p. 211 (Tabela 1)',
-      idade: 'Na tabela, 3 ampolas para crianças ≤ 10 anos; > 10 anos e adultos: tratar primeiro a dor e, sem melhora em 30–40 min, está indicada a soroterapia (a tabela não repete o número de ampolas para esse grupo).' },
+      idade: 'Na tabela, 3 ampolas para crianças ≤ 10 anos (p. 211).' },
     grave: { clinica: 'Além do moderado: vários vômitos, sudorese intensa, taquicardia ou bradicardia, hiper ou hipotensão, taquipneia, priapismo, agitação alternada com sonolência; pode evoluir para choque e edema agudo de pulmão', ampolas: [6, 6], soro: 'soro antiescorpiônico ou antiaracnídico', via: 'EV em 15–20 min', outros: 'Suporte vital/cuidados intensivos; analgesia e/ou anestesia local', pagina: 'p. 212 (Tabela 1)' },
   },
   phoneutria: {
     leve: { clinica: 'Dor local na maioria dos casos, eventualmente taquicardia e agitação', ampolas: null, outros: 'Observação até 6 horas', pagina: 'p. 212 (Tabela 2)' },
-    moderado: { clinica: 'Dor local intensa + sudorese e/ou vômitos ocasionais e/ou agitação e/ou hipertensão', ampolas: [2, 4], soro: 'SAAr', via: 'EV', outros: 'Internação', pagina: 'p. 212 (Tabela 2)', idade: 'A tabela traz as ampolas "em crianças"; no adulto, só nos graves (p. 212).' },
+    moderado: { clinica: 'Dor local intensa + sudorese e/ou vômitos ocasionais e/ou agitação e/ou hipertensão', ampolas: [2, 4], soro: 'SAAr', via: 'EV', outros: 'Internação', pagina: 'p. 212 (Tabela 2)', idade: 'A tabela traz as ampolas "em crianças" (p. 212).' },
     grave: { clinica: 'Além das anteriores, uma ou mais: sudorese profusa, sialorreia, vômitos frequentes, hipertonia, priapismo, choque e/ou edema pulmonar agudo', ampolas: [5, 10], soro: 'SAAr', via: 'EV', outros: 'Unidade de cuidados intensivos', pagina: 'p. 212 (Tabela 2)' },
   },
   loxosceles: {
@@ -146,6 +146,6 @@ export function expansaoEscorpiaoMl(pesoKg: number): number | null {
 export const NOTAS_PECONHENTOS: { texto: string; pagina: string }[] = [
   { texto: 'Soro após 3 h do acidente escorpiônico é sinal de mau prognóstico; SAV em 15 a 20 min, sem diluição padrão. Vômitos abundantes indicam potencial gravidade.', pagina: 'p. 210–211' },
   { texto: 'Escorpião leve: bloqueio anestésico sem vasoconstritor (bupivacaína 0,5% ou lidocaína 2%), pode ser repetido até 3 vezes com intervalo de 1 h. Balanço hídrico rigoroso.', pagina: 'p. 211' },
-  { texto: 'Phoneutria: infiltração troncular com lidocaína 2% sem vasoconstritor — 1 a 2 mL em crianças (3 a 4 mL em adultos).', pagina: 'p. 212' },
+  { texto: 'Phoneutria: infiltração troncular com lidocaína 2% sem vasoconstritor — 1 a 2 mL em crianças.', pagina: 'p. 212' },
   { texto: 'Loxosceles: eficácia do soro parece reduzida após 36 h; compressas frias, limpeza da ferida; debridamento após delimitação da necrose (em geral após 1 semana).', pagina: 'p. 214' },
 ]

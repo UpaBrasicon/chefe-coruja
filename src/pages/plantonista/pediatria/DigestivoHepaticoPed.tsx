@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { BOLUS } from '@/clinico/pediatria/bolus'
 import {
-  DOSES_HDA, ENCEFALOPATIA, NOTA_VASOATIVOS, REFERENCIAS_HDA, REFERENCIAS_IHA, SOMATOSTATINA_ADOLESCENTE_UG_H, TRATAMENTO_ESPECIFICO, criterioCoagulacaoPalf,
+  DOSES_HDA, ENCEFALOPATIA, NOTA_VASOATIVOS, REFERENCIAS_HDA, REFERENCIAS_IHA, TRATAMENTO_ESPECIFICO, criterioCoagulacaoPalf,
   fichaDigestivoHepaticoPed, glicoseIhaMgMin, leituraAmonia, leituraParacetamol, octreotidaInfusaoUgH, ofertaRestritaIha, somatostatinaUgH,
 } from '@/clinico/pediatria/digestivoHepaticoPed'
 import { manutencao } from '@/clinico/pediatria/manutencao'
@@ -46,7 +46,7 @@ export function DigestivoHepaticoPed() {
         <Bloco titulo="Hemorragia digestiva alta — drogas (p. 349–350)">
           {DOSES_HDA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
           <LinhaFaixa nome="Octreotida — infusão contínua" faixa={octreotidaInfusaoUgH(p.peso)} unidade="µg/h" casas={1} texto="1 µg/kg/h, podendo ser aumentada até 4 µg/kg/h; 48 a 72 h" pagina="p. 349" />
-          <LinhaFaixa nome="Somatostatina — infusão" faixa={somatostatinaUgH(p.peso)} unidade="µg/h" casas={1} texto={`1 a 20 µg/kg/h; adolescentes e adultos ${SOMATOSTATINA_ADOLESCENTE_UG_H[0]} a ${SOMATOSTATINA_ADOLESCENTE_UG_H[1]} µg/h`} pagina="p. 349" />
+          <LinhaFaixa nome="Somatostatina — infusão" faixa={somatostatinaUgH(p.peso)} unidade="µg/h" casas={1} texto="1 a 20 µg/kg/h" pagina="p. 349" />
           <Nota>{NOTA_VASOATIVOS}</Nota>
         </Bloco>
       )}
@@ -75,7 +75,6 @@ export function DigestivoHepaticoPed() {
         {para && (
           <p>
             {para.mgKg !== null && <>{br(para.mgKg, 0)} mg/kg — {para.toxicaUnica === 'sim' ? <strong>acima de 200 mg/kg</strong> : para.toxicaUnica === 'faixa' ? <strong>na faixa tóxica de 150 a 200 mg/kg</strong> : 'até 150 mg/kg'} (dose tóxica da criança: &gt; 150 a 200 mg/kg). </>}
-            {para.adolescenteAcima75g && <strong>Acima de 7,5 g (limiar do adolescente).</strong>}
           </p>
         )}
         <Nota>Dose repetida: intoxicação com mais de 75 mg/kg/dia em menores de 6 anos (p. 358). Antídoto e nomograma: ferramenta de intoxicações.</Nota>

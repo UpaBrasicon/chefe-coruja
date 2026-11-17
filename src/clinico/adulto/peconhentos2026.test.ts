@@ -6,7 +6,7 @@ import { ACIDENTES, MS_2026_PECONHENTOS, fichaPeconhentosAdulto } from './peconh
 // PCDT escorpiônicos 2026 e portal do MS (aranhas), ao lado do manual do HC.
 
 test('peçonhentos adulto: ficha .1 de 28/09 com o manual, o PCDT escorpiônicos, o portal das aranhas e o PCDT ofídicos citados', () => {
-  assert.equal(fichaPeconhentosAdulto.versao, '2026-09-28.1')
+  assert.equal(fichaPeconhentosAdulto.versao, '2026-11-16.1') // escorpião e aranhas pelo MS (RT, 16/11/2026)
   assert.equal(fichaPeconhentosAdulto.fontes.length, 4)
   assert.match(fichaPeconhentosAdulto.fontes[1].citacao, /Acidentes Escorpiônicos.*2026/)
   assert.match(fichaPeconhentosAdulto.fontes[3].citacao, /Acidentes Ofídicos.*Portaria SECTICS\/MS nº 83/)

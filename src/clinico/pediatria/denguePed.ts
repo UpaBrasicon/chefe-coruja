@@ -27,9 +27,9 @@ const baseDenguePed = fichaP4('ped-dengue', 'Dengue — criança (grupos e hidra
 
 export const fichaDenguePed: Ficha = {
   ...baseDenguePed,
-  versao: '2026-11-11.1',
+  versao: '2026-11-16.1',
   fontes: [...baseDenguePed.fontes, MS_DENGUE_2024_PED, WELLS_PESO_2017],
-  revisadoEm: '11/11/2026 (nota de divergência do Wells 2017 ao lado do peso aproximado do MS; escores P2/P3, item P10); 28/09/2026 (manual do MS 6ª ed. 2024 lido; livro do ICr mantido como base)',
+  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 11/11/2026 (nota de divergência do Wells 2017 ao lado do peso aproximado do MS; escores P2/P3, item P10); 28/09/2026 (manual do MS 6ª ed. 2024 lido; livro do ICr mantido como base)',
 }
 
 // Escores P2/P3, item P10 (decisão B do RT em 11/11/2026): a fórmula do MS fica
@@ -112,7 +112,6 @@ export const ACHADOS_GRUPO_B: { id: string; texto: string }[] = [
   { id: 'laco', texto: 'Prova do laço positiva' },
   { id: 'lactente', texto: 'Alto risco — lactente < 2 anos (Quadro 6)' },
   { id: 'doencaBase', texto: 'Alto risco — doença de base (cardiovascular, diabetes, pneumopatia, hematológica crônica/falciforme, renal crônica, ácido-péptica, autoimune) (Quadro 6)' },
-  { id: 'gestante', texto: 'Alto risco — gestante (Quadro 6)' },
 ]
 
 export type GrupoDenguePed = 'A' | 'B' | 'C' | 'D'

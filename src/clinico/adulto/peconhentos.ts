@@ -16,6 +16,16 @@ import { fichaAdulto, pagina } from './fonte.ts'
 // nº 83, de 7/10/2025) existe e é citado, mas só o resumo pôde ser lido e ele
 // não traz o número de ampolas: as serpentes ficam com o livro até o RT abrir
 // o PCDT completo.
+//
+// Decisão do RT de 16/11/2026 (A): a conta principal do "soro pela gravidade"
+// passa a seguir o MS no escorpião e nas aranhas, e o número do manual fica só
+// como comparação ("manual do HC: ..."). Escorpião pelo PCDT 2026 (Quadro 4,
+// p. 15–17): 3 frascos-ampolas no moderado e 6 no grave, sem passar de 6, em
+// qualquer idade. Latrodectus pelo portal do MS: não há soro disponível.
+// Loxosceles também pelo portal do MS, que dá números próprios (cutânea
+// moderada 5; cutânea grave e cutâneo-hemolítica 10). Phoneutria fica como
+// está: o portal do MS dá os mesmos números do manual. Serpentes seguem o
+// livro até o PCDT ofídico completo ser lido.
 
 export const PCDT_ESCORPIAO_2026_ADULTO: Fonte = {
   citacao: 'Ministério da Saúde. Protocolo Clínico e Diretrizes Terapêuticas dos Acidentes Escorpiônicos. Brasília: MS/CONITEC; 2026. Quadro 3 (p. 9), p. 15–17 (Quadro 4).',
@@ -36,9 +46,9 @@ const PAG_PECONHENTOS = 'cap. 101 Acidentes por animais peçonhentos, p. 1349–
 
 export const fichaPeconhentosAdulto: Ficha = {
   ...fichaAdulto('adulto-animais-peconhentos', 'Acidentes por animais peçonhentos — adulto', PAG_PECONHENTOS),
-  versao: '2026-09-28.1',
+  versao: '2026-11-16.1',
   fontes: [pagina(PAG_PECONHENTOS), PCDT_ESCORPIAO_2026_ADULTO, MS_ARANHAS_ADULTO, PCDT_OFIDICOS_2025],
-  revisadoEm: '28/09/2026 (PCDT escorpiônicos 2026 e portal do MS conferidos; serpentes seguem o livro até o PCDT completo ser lido)',
+  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 28/09/2026 (PCDT escorpiônicos 2026 e portal do MS conferidos; serpentes seguem o livro até o PCDT completo ser lido)',
 }
 
 /** O que o MS (PCDT 2026 e portal) escreve, ao lado do manual. */
@@ -59,13 +69,26 @@ export type Via = 'EV' | 'IM'
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
 
+/** Conta tirada do Ministério da Saúde (decisão do RT de 16/11/2026); o manual fica para comparação. */
+export type ClasseMs = {
+  /** quem traz o número, para a linha "… traz: …" */
+  origem: string
+  texto: string
+  pagina: string
+  /** o que o manual do HC dá nesta gravidade, só para comparação */
+  livro: string
+  /** com ampolas null: o que mostrar no lugar do número de ampolas */
+  semSoro?: string
+}
+
 export type ClasseAcidente = {
   gravidade: Gravidade
+  /** manifestações como o manual do HC as descreve */
   manifestacoes: string
-  /** null = o livro não indica soro nesta gravidade (no adulto) */
+  /** ampolas da conta principal; null = sem soro nesta gravidade */
   ampolas: Faixa | null
-  /** Loxosceles grave: 5 ampolas na forma cutânea e 10 na cutaneovisceral */
-  ampolasAlternativa?: { rotulo: string; ampolas: Faixa }
+  /** presente quando a conta vem do MS e não do manual */
+  ms?: ClasseMs
 }
 
 export type Acidente = {
@@ -77,6 +100,13 @@ export type Acidente = {
   pagina: string
   nota?: string
   errata?: string
+}
+
+const LATRODECTUS_MS = {
+  origem: 'O portal do MS traz',
+  texto: 'não há soro disponível: analgésicos, benzodiazepínicos, gluconato de cálcio e clorpromazina; internação por pelo menos 24 h',
+  pagina: 'portal MS, tabela',
+  semSoro: 'não há soro disponível (MS)',
 }
 
 export const ACIDENTES: Acidente[] = [
@@ -101,11 +131,13 @@ export const ACIDENTES: Acidente[] = [
     errata: 'O livro dá 12 a 20 ampolas. O inventário do projeto aponta divergência com o esquema do Ministério da Saúde; o capítulo não cita outra fonte para conferir. Mostra-se o valor impresso.' },
   { id: 'escorpionico', nome: 'Escorpiônico', soro: 'antiescorpiônico', via: 'EV', pagina: 'p. 1355–1356',
     classes: [
-      { gravidade: 'leve', manifestacoes: 'apenas dor; observação de 4 a 6 horas', ampolas: null },
-      { gravidade: 'moderado', manifestacoes: 'algumas manifestações sistêmicas leves; observação de 24 a 48 horas', ampolas: null },
-      { gravidade: 'grave', manifestacoes: 'manifestações sistêmicas evidentes e intensas; internação e monitorização contínua', ampolas: [4, 6] },
+      { gravidade: 'leve', manifestacoes: 'apenas dor', ampolas: null },
+      { gravidade: 'moderado', manifestacoes: 'algumas manifestações sistêmicas leves', ampolas: [3, 3],
+        ms: { origem: 'O PCDT dos acidentes escorpiônicos (MS, 2026) traz', texto: '3 frascos-ampolas de SAEsc (ou SAA), imediatamente, independentemente da idade', pagina: 'PCDT 2026, Quadro 4, p. 15–17', livro: 'sem soro no adulto; 2–3 ampolas só em < 7 anos (p. 1356)' } },
+      { gravidade: 'grave', manifestacoes: 'manifestações sistêmicas evidentes e intensas; internação e monitorização contínua', ampolas: [6, 6],
+        ms: { origem: 'O PCDT dos acidentes escorpiônicos (MS, 2026) traz', texto: '6 frascos-ampolas de SAEsc (ou SAA); não administrar mais de 6; em qualquer idade', pagina: 'PCDT 2026, Quadro 4, p. 15–17', livro: '4–6 ampolas (p. 1356)' } },
     ],
-    nota: 'No moderado o livro indica 2–3 ampolas só em crianças < 7 anos (valor pediátrico, não usado aqui). Com soro, monitorizar ao menos 24–48 h. Bloqueio com lidocaína ou bupivacaína para a dor.' },
+    nota: 'Observação pelo PCDT 2026: sem clínica 4 h; leve 6–12 h; com soro no mínimo 24 h, o grave em CTI; persistindo, reclassificar e complementar (Quadro 3, p. 9; p. 15). O manual dá leve 4–6 h e moderado 24–48 h (p. 1355–1356). Bloqueio com lidocaína ou bupivacaína para a dor (manual).' },
   { id: 'phoneutria', nome: 'Phoneutria (armadeira)', soro: 'antiaracnídico', via: 'EV', pagina: 'p. 1357–1358 (Tabela 3)',
     classes: [
       { gravidade: 'leve', manifestacoes: 'dor local', ampolas: null },
@@ -114,18 +146,24 @@ export const ACIDENTES: Acidente[] = [
     ] },
   { id: 'loxosceles', nome: 'Loxosceles (aranha-marrom)', soro: 'antiaracnídico', via: 'EV', pagina: 'p. 1357–1358 (Tabela 3)',
     classes: [
-      { gravidade: 'leve', manifestacoes: 'sinais/sintomas locais incaracterísticos ou sugestivos; sem alteração laboratorial', ampolas: null },
-      { gravidade: 'moderado', manifestacoes: 'lesão com rash ou < 3 cm; sem alteração laboratorial', ampolas: [5, 5] },
-      { gravidade: 'grave', manifestacoes: 'lesão > 3 cm, evidência de hemólise', ampolas: [5, 5], ampolasAlternativa: { rotulo: 'forma cutaneovisceral', ampolas: [10, 10] } },
+      { gravidade: 'leve', manifestacoes: 'sinais/sintomas locais incaracterísticos ou sugestivos; sem alteração laboratorial', ampolas: null,
+        ms: { origem: 'O portal do MS traz', texto: 'forma cutânea leve: sem soro', pagina: 'portal MS, tabela', livro: 'sem soro (Tabela 3)', semSoro: 'sem soro (MS)' } },
+      { gravidade: 'moderado', manifestacoes: 'lesão com rash ou < 3 cm; sem alteração laboratorial', ampolas: [5, 5],
+        ms: { origem: 'O portal do MS traz', texto: 'forma cutânea moderada (< 3 cm): 5 ampolas de SALox ou SAAr', pagina: 'portal MS, tabela', livro: '5 ampolas (Tabela 3)' } },
+      { gravidade: 'grave', manifestacoes: 'lesão > 3 cm, evidência de hemólise', ampolas: [10, 10],
+        ms: { origem: 'O portal do MS traz', texto: 'forma cutânea grave (> 3 cm): 10; forma cutâneo-hemolítica: 10 (SALox ou SAAr)', pagina: 'portal MS, tabela', livro: '5 ampolas; 10 na forma cutaneovisceral (Tabela 3)' } },
     ],
     nota: 'Antiveneno com melhor eficácia até 36 h da picada; prednisona 40 mg/dia por 7–10 dias e dapsona 50–100 mg/dia (p. 1357).' },
   { id: 'latrodectus', nome: 'Latrodectus (viúva-negra)', soro: 'antiaracnídico', via: 'IM', pagina: 'p. 1357–1359 (Tabela 3)',
     classes: [
-      { gravidade: 'leve', manifestacoes: 'dor local, edema local discreto', ampolas: null },
-      { gravidade: 'moderado', manifestacoes: 'dor em membros inferiores, parestesia, tremores e contraturas', ampolas: [1, 1] },
-      { gravidade: 'grave', manifestacoes: 'sudorese generalizada, agitação, mialgia, dificuldade de deambular, cefaleia, hipertermia, taqui/bradicardia, HAS, dispneia, vômitos, priapismo, retenção urinária, fácies latrodectísmica', ampolas: [1, 2] },
+      { gravidade: 'leve', manifestacoes: 'dor local, edema local discreto', ampolas: null,
+        ms: { ...LATRODECTUS_MS, livro: 'sem soro (Tabela 3)' } },
+      { gravidade: 'moderado', manifestacoes: 'dor em membros inferiores, parestesia, tremores e contraturas', ampolas: null,
+        ms: { ...LATRODECTUS_MS, livro: 'soro antiaracnídico 1 ampola IM (Tabela 3)' } },
+      { gravidade: 'grave', manifestacoes: 'sudorese generalizada, agitação, mialgia, dificuldade de deambular, cefaleia, hipertermia, taqui/bradicardia, HAS, dispneia, vômitos, priapismo, retenção urinária, fácies latrodectísmica', ampolas: null,
+        ms: { ...LATRODECTUS_MS, livro: 'soro antiaracnídico 1–2 ampolas IM (Tabela 3)' } },
     ],
-    nota: 'Única exceção entre os antivenenos: via intramuscular; alívio em cerca de 3 h (p. 1357).',
+    nota: 'O manual usa o soro antiaracnídico por via intramuscular, única exceção entre os antivenenos, com alívio em cerca de 3 h (p. 1357); o portal do MS informa que não há soro disponível.',
     errata: 'Na p. 1359 a continuação da Tabela 3 repete o cabeçalho "Phoneutria" sobre a linha "Grave — 1 a 2 ampolas (IM)". Pela via IM e pela "fácies latrodectísmica", a linha é do Latrodectus e está atribuída a ele aqui.' },
 ]
 
