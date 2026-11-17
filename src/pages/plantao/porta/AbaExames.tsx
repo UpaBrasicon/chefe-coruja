@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom'
 import { LaudoDoGrupo } from '@/components/clinico/LaudoDoGrupo'
 import { ResultadoExame } from '@/components/clinico/ResultadoExame'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { examesDaLinha, LINHAS_CUIDADO } from '@/domain/examesEnfermagemUbs'
 import { botoesDeExame, codigoExameNaTela, GRUPOS_EXAME, itemDoPedidoPorta, jaPedido, type ExameBuscado, type GrupoExame, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
@@ -87,7 +88,12 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
 // laboratório integrado). Urgência e observação valem para o que for pedido.
 // Ponto 12, pergunta 3 (RT, 10/11/2026): laboratório, imagem e ECG vão em pedidos
 // separados; o texto livre leva o grupo escolhido.
-export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodioId: string; pacienteId: string; exames: ExamePS[]; aoMudar: () => void }) {
+// U6 (P1 = A): na consulta de enfermagem da UBS o enfermeiro pede só da lista do
+// protocolo, por linha de cuidado. Sem busca, sem texto livre e sem pedido
+// impresso: o banco recusa o que estiver fora da lista.
+export function AbaExames({ episodioId, pacienteId, exames, aoMudar, protocoloEnfermagem = false }: {
+  episodioId: string; pacienteId: string; exames: ExamePS[]; aoMudar: () => void; protocoloEnfermagem?: boolean
+}) {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const [outro, setOutro] = React.useState('')
@@ -108,7 +114,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
   const termo = outro.trim()
   const busca = useQuery({
     queryKey: ['buscar-exames', unidadeId, termo],
-    enabled: !!unidadeId && termo.length >= 3,
+    enabled: !!unidadeId && termo.length >= 3 && !protocoloEnfermagem,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('buscar_exames', { p_unidade: unidadeId!, p_termo: termo })
       if (error) throw error
@@ -126,6 +132,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
   }
   const botoes = botoesDeExame(lista.data?.exames)
   const comLista = (lista.data?.exames ?? []).length > 0
+  const naUnidade = new Set((lista.data?.exames ?? []).map((x) => x.procedimento))
 
   return (
     <div className="flex flex-col gap-4">
@@ -145,7 +152,30 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
           <Input className="h-8 min-w-48 flex-1" aria-label="Observação do pedido (opcional)" placeholder="Observação (opcional)" maxLength={300}
             value={observacao} onChange={(e) => setObservacao(e.target.value)} />
         </div>
-        <div className="flex flex-wrap gap-1.5 px-4 py-3">
+        {protocoloEnfermagem && (
+          <div className="flex flex-col gap-3 px-4 py-3">
+            {LINHAS_CUIDADO.map((l) => (
+              <div key={l.id} className="flex flex-col gap-1.5">
+                <span className="text-rotulo text-tinta-sussurro">{l.rotulo}</span>
+                <div role="group" aria-label={`Exames do protocolo: ${l.rotulo}`} className="flex flex-wrap gap-1.5">
+                  {examesDaLinha(l.id).map((x) => {
+                    const on = jaPedido({ rotulo: x.nome, procedimento: x.codigo }, exames)
+                    const foraDaUnidade = comLista && !naUnidade.has(x.codigo)
+                    return (
+                      <Chip key={x.codigo} ativo={on} desabilitado={on || pedindo || foraDaUnidade}
+                        onClick={() => void pedir([{ procedimento: x.codigo }])}
+                        titulo={on ? 'Já pedido neste atendimento' : foraDaUnidade ? 'Fora da lista de exames da unidade' : `Pedir ${x.nome}`}>
+                        {x.nome}
+                      </Chip>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+            <span className="text-rotulo text-tinta-sussurro">Lista do protocolo de enfermagem da atenção básica (COFEN 195/1997). Outros exames, só o médico.</span>
+          </div>
+        )}
+        {!protocoloEnfermagem && <div className="flex flex-wrap gap-1.5 px-4 py-3">
           {botoes.map((b) => {
             const on = jaPedido(b, exames)
             return (
@@ -156,8 +186,8 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
               </Chip>
             )
           })}
-        </div>
-        <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
+        </div>}
+        {!protocoloEnfermagem && <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
           <div className="flex flex-wrap gap-2">
             <Input className="h-8 min-w-48 flex-1" aria-label="Buscar exame" placeholder={comLista ? 'Buscar na lista da unidade' : 'Buscar no SIGTAP (laboratório)'}
               value={outro} onChange={(e) => setOutro(e.target.value)} />
@@ -186,7 +216,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar }: { episodi
           {termo.length >= 3 && busca.isSuccess && (busca.data ?? []).length === 0 && (
             <span className="text-rotulo text-tinta-sussurro">Nada no catálogo com esse nome. Pode pedir como texto livre (sem código).</span>
           )}
-        </div>
+        </div>}
         {erro && <p className="border-t border-trilha px-4 py-2 text-apoio text-critico">{erro}</p>}
         {exames.length === 0 && <p className="border-t border-trilha px-4 py-3 text-apoio text-tinta-sussurro">Nenhum exame pedido neste atendimento.</p>}
         {exames.length > 0 && <div className="border-t border-trilha">{exames.map((e) => <LinhaExame key={e.id} e={e} aoMudar={aoMudar} />)}</div>}
