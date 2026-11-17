@@ -12,7 +12,7 @@ import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import type { UnidadeIdade } from '@/domain/pacienteCentral'
+import { AVISO_FITA, CORES_BROSELOW, pesoDaCor, rotuloAlturaIdade, rotuloPesoDaCor, type CorBroselow } from '@/clinico/pediatria/fitaBroselow'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
 import { cn } from '@/lib/utils'
 
@@ -26,7 +26,6 @@ const ICONES: Record<IconeGuia, LucideIcon> = {
   parada: HeartPulse, seringa: Syringe, 'via-aerea': Wind, pulmao: Waves, gota: Droplet, termometro: Thermometer,
   coracao: Heart, cerebro: Brain, lua: Moon, alerta: TriangleAlert, inseto: Bug, maos: HandHeart, bebe: Baby,
 }
-const UNIDADES: UnidadeIdade[] = ['anos', 'meses', 'dias']
 
 function Chave() {
   const p = usePacienteCentral()
@@ -98,6 +97,66 @@ export function GuiaRapido() {
   return <InicioDoGuia />
 }
 
+// Cor da fita escolhida: lida da origem do peso (mudar o peso à mão apaga a origem
+// e, com ela, a cor; o peso digitado vale).
+const PREFIXO_FITA = 'fita de Broselow, cor '
+function corEscolhida(origem: string) {
+  return origem.startsWith(PREFIXO_FITA) ? CORES_BROSELOW.find((c) => origem === origemDaCor(c)) : undefined
+}
+const origemDaCor = (c: CorBroselow) => `${PREFIXO_FITA}${c.nome.toLowerCase()} (${rotuloPesoDaCor(c)})`
+
+function CorDaFita() {
+  const p = usePacienteCentral()
+  const cor = corEscolhida(p.origem)
+  return (
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <span className="text-corpo font-bold text-tinta">Cor Broselow</span>
+      {/* lista própria, arredondada (pedido do RT): a do navegador não aceita canto arredondado */}
+      <Select value={cor?.id ?? null} onValueChange={(v) => {
+        const c = CORES_BROSELOW.find((x) => x.id === v)
+        if (c) alterarPaciente({ peso: String(pesoDaCor(c)).replace('.', ','), origem: origemDaCor(c) })
+      }}>
+        <SelectTrigger aria-label="Cor da fita de Broselow"
+          className="h-15 w-full rounded-container border-2 border-tinta bg-superficie px-3.5 text-corpo font-bold">
+          <SelectValue placeholder="Selecione">
+            {cor && (
+              <span className="flex items-center gap-2">
+                <span aria-hidden className="size-5 rounded-capsula border border-tinta/40" style={{ background: cor.amostra }} />
+                {cor.nome}
+              </span>
+            )}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent className="rounded-cartao border-2 border-tinta p-1.5">
+          {CORES_BROSELOW.map((c) => (
+            <SelectItem key={c.id} value={c.id} className="min-h-14 rounded-container px-3 py-2">
+              <span className="flex items-center gap-3">
+                <span aria-hidden className="size-6 shrink-0 rounded-capsula border border-tinta/40" style={{ background: c.amostra }} />
+                <span className="flex flex-col">
+                  <span className="text-corpo font-bold text-tinta">{c.nome}</span>
+                  <span className="text-rotulo text-tinta-apoio">{rotuloPesoDaCor(c)} · {rotuloAlturaIdade(c)}</span>
+                </span>
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+function DetalheDaFita() {
+  const p = usePacienteCentral()
+  const cor = corEscolhida(p.origem)
+  if (!cor) return null
+  return (
+    <div className="col-span-2 flex flex-col gap-1 rounded-container border border-fio-forte bg-superficie px-3.5 py-2.5">
+      <span className="text-controle font-semibold text-tinta">Cor {cor.nome.toLowerCase()} · {rotuloPesoDaCor(cor)}</span>
+      <span className="text-rotulo text-tinta-apoio">{rotuloAlturaIdade(cor)}. {AVISO_FITA}</span>
+    </div>
+  )
+}
+
 function InicioDoGuia() {
   const p = usePacienteCentral()
   const idPeso = useId()
@@ -116,23 +175,15 @@ function InicioDoGuia() {
         <div className="grid grid-cols-2 gap-2.5">
           <CampoGrande id={idPeso} rotulo="Peso" unidade="kg" modo="decimal" valor={p.peso}
             aoMudar={(v) => alterarPaciente({ peso: v })} />
-          {/* criança: a unidade da idade é escolhida dentro da caixa (pedido do RT, 17/11/2026) */}
-          <CampoGrande id={idIdade} rotulo="Idade" modo="numeric" valor={p.idade}
-            aoMudar={(v) => alterarPaciente({ idade: v })}
-            unidade={crianca ? (
-              // lista própria, arredondada (pedido do RT): a do navegador não aceita canto arredondado
-              <Select value={p.unidadeIdade} onValueChange={(v) => { if (v) alterarPaciente({ unidadeIdade: v as UnidadeIdade }) }}>
-                <SelectTrigger aria-label="Unidade da idade"
-                  className="h-11 shrink-0 rounded-container border-2 border-tinta bg-superficie px-3 text-controle font-bold">
-                  <SelectValue>{p.unidadeIdade}</SelectValue>
-                </SelectTrigger>
-                <SelectContent className="rounded-cartao border-2 border-tinta p-1.5">
-                  {UNIDADES.map((u) => (
-                    <SelectItem key={u} value={u} className="min-h-11 rounded-container px-3 text-corpo font-semibold">{u}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : 'anos'} />
+          {crianca ? (
+            // criança: peso e a cor da fita de Broselow (pedido do RT, 17/11/2026); a idade
+            // fica para as ferramentas que precisam dela
+            <CorDaFita />
+          ) : (
+            <CampoGrande id={idIdade} rotulo="Idade" modo="numeric" valor={p.idade} unidade="anos"
+              aoMudar={(v) => alterarPaciente({ idade: v })} />
+          )}
+          {crianca && <DetalheDaFita />}
         </div>
       ) : (
         <p className="text-controle text-tinta-apoio">Toque em Criança ou Adulto para começar. Trocar o lado apaga peso e idade.</p>
