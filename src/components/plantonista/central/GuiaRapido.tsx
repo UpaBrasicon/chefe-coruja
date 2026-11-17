@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { useId } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -8,6 +9,7 @@ import {
 import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, type IconeGuia } from '@/content/guiaRapido'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import type { UnidadeIdade } from '@/domain/pacienteCentral'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
@@ -50,7 +52,7 @@ function Chave() {
 }
 
 function CampoGrande({ id, rotulo, valor, unidade, aoMudar, modo }: {
-  id: string; rotulo: string; valor: string; unidade: string; aoMudar: (v: string) => void; modo: 'decimal' | 'numeric'
+  id: string; rotulo: string; valor: string; unidade: React.ReactNode; aoMudar: (v: string) => void; modo: 'decimal' | 'numeric'
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
@@ -59,7 +61,7 @@ function CampoGrande({ id, rotulo, valor, unidade, aoMudar, modo }: {
         <Input id={id} inputMode={modo} value={valor} onChange={(e) => aoMudar(e.target.value)} placeholder="—"
           // padrao-ok: número grande no celular (pedido do RT), sem borda própria dentro da caixa
           className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 text-[24px] font-bold shadow-none focus-visible:shadow-none" />
-        <span className="text-controle font-semibold text-tinta-apoio">{unidade}</span>
+        {typeof unidade === 'string' ? <span className="text-controle font-semibold text-tinta-apoio">{unidade}</span> : unidade}
       </div>
     </div>
   )
@@ -79,19 +81,16 @@ export function GuiaRapido() {
         <div className="grid grid-cols-2 gap-2.5">
           <CampoGrande id={idPeso} rotulo="Peso" unidade="kg" modo="decimal" valor={p.peso}
             aoMudar={(v) => alterarPaciente({ peso: v })} />
-          <CampoGrande id={idIdade} rotulo="Idade" unidade={p.unidadeIdade} modo="numeric" valor={p.idade}
-            aoMudar={(v) => alterarPaciente({ idade: v })} />
-          {crianca && (
-            <div role="group" aria-label="Unidade da idade" className="col-span-2 flex gap-2">
-              {UNIDADES.map((u) => (
-                <Button key={u} type="button" variant="outline" size="sm" aria-pressed={p.unidadeIdade === u}
-                  onClick={() => alterarPaciente({ unidadeIdade: u })}
-                  className={cn('border-fio-forte text-tinta', p.unidadeIdade === u && 'border-pediatria bg-pediatria text-sobre-acao hover:text-sobre-acao')}>
-                  {u}
-                </Button>
-              ))}
-            </div>
-          )}
+          {/* criança: a unidade da idade é escolhida dentro da caixa (pedido do RT, 17/11/2026) */}
+          <CampoGrande id={idIdade} rotulo="Idade" modo="numeric" valor={p.idade}
+            aoMudar={(v) => alterarPaciente({ idade: v })}
+            unidade={crianca ? (
+              <CampoSelecao aria-label="Unidade da idade" value={p.unidadeIdade}
+                onChange={(e) => alterarPaciente({ unidadeIdade: e.target.value as UnidadeIdade })}
+                className="h-10 shrink-0 border-fio-forte bg-trilha px-1.5 text-controle font-semibold">
+                {UNIDADES.map((u) => <option key={u} value={u}>{u}</option>)}
+              </CampoSelecao>
+            ) : 'anos'} />
         </div>
       ) : (
         <p className="text-controle text-tinta-apoio">Toque em Criança ou Adulto para começar. Trocar o lado apaga peso e idade.</p>
