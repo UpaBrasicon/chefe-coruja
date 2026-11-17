@@ -51,13 +51,19 @@ Este documento não muda código nem banco.
   - Também não resolve a ficha nova, que não tem versão anterior.
 
 **G2. Versão nova obrigatória quando o conteúdo clínico muda**
-- **A (recomendada):** guarda no CI.
-  - Falha se mudar arquivo clínico sem versão nova da ficha ligada a ele. Contam como arquivo clínico `src/clinico`, as telas da Central e cada chave de `topos.ts`.
-  - A ligação entre tela e ficha sai do `ROTA_DA_FICHA` (`src/clinico/indice.ts`) e do `registry.tsx`, como já faz o `scripts/rotas-fichas.mjs`.
-  - Mudança só de forma (estilo, refatoração, tipo) passa com a linha `Sem mudança clínica: <motivo>` no corpo do PR. O RT vê a linha no PR.
-- **B:** sem guarda; fica na disciplina de cada PR, como hoje.
+Além da ficha, há texto clínico com fonte citada fora dela: o topo (`TOPOS[id]` em `src/clinico/topos.ts`, 227 ferramentas) e o guia de próximos passos, armadilhas e evidências (`GUIAS[id]` em `src/clinico/guias.ts`, 34 ferramentas). Os dois são guardados pelo id da ficha e hoje mudam sem versão nova. As telas em `src/pages/plantonista/**` também têm texto clínico, como as listas de dose.
 
-Efeito do G2 = A nos lotes que faltam das calculadoras (emergências, 73 telas; pediatria, 50): cada tela mudada ganha versão nova, entra na migration do lote e precisa ser aprovada antes do merge. A aprovação em lote já existe.
+- **A (recomendada):** guarda no CI, com duas regras.
+  - **Conteúdo puro:** a guarda compara, para cada id, a ficha, o `TOPOS[id]` e o `GUIAS[id]` do PR com os do `master`. Se algum mudou e a versão da ficha não, o CI falha. Não há linha que dispense, porque esses arquivos só têm conteúdo.
+  - **Telas:** se mudou o arquivo de uma tela ligada a uma ficha e a versão não subiu, o CI falha. A exceção é a mudança só de interface (abas, faixa, "Copiar", estilo), que passa com a linha `Sem mudança clínica: <motivo>` no corpo do PR. O RT vê a linha antes de dar o "ok produção".
+  - A ligação entre tela e ficha sai do `ROTA_DA_FICHA` (`src/clinico/indice.ts`) e do `registry.tsx`, como já faz o `scripts/rotas-fichas.mjs`.
+- **B:** a guarda olha só a ficha. Topo, guia e telas ficam na disciplina de cada PR, como hoje.
+
+O custo do G2 = A é reaprovar a ficha quando muda o topo ou o guia dela. Hoje esse custo é quase zero, porque nenhuma versão está aprovada na homologação: a primeira aprovação de cada ferramenta já cobre o topo e o guia atuais.
+
+Efeito nos lotes que faltam das calculadoras (pediatria, 50 telas): pela sessão das calculadoras, o modelo completo só reorganiza a interface, sem mudar o texto clínico. Nesse caso o lote passa com a linha "Sem mudança clínica", sem versão nova. Se um lote mudar texto, topo ou guia, a versão sobe, entra na migration e espera a aprovação. A aprovação em lote já existe.
+
+Opção considerada e deixada de lado: uma versão própria para o topo e o guia, aprovada à parte. São duas filas para a mesma ferramenta, e a tela teria de juntar as duas aprovações.
 
 **G3. Ferramentas que nunca tiveram versão aprovada (o estado de hoje)**
 - **A (recomendada):**
@@ -113,7 +119,7 @@ Os passos 3 e 4 continuam separados. O "ok produção" é sobre o banco; a aprov
 | Ensaio | Na homologação, um PR de teste com versão nova de uma ficha real: o gate apontado para a homologação fica vermelho; depois de aprovar lá, fica verde. Evidência registrada no PR. |
 | Registro | BACKLOG e memória do projeto. |
 
-**Antes de mexer no código:** combinar com a sessão das calculadoras, que ainda edita `src/clinico` e as telas. O aviso já foi mandado em 17/11/2026.
+**Antes de mexer no código:** combinar com a sessão das calculadoras, que ainda edita as telas. Ela respondeu em 17/11/2026: o lote de emergências (64 telas, branch `feat/calculadoras-modelo-condutas-lote2`) não mexe em `src/clinico`, ficha nem migration; o `ToolLayout.tsx` está livre, partindo do `master` atual.
 
 ## Riscos
 
