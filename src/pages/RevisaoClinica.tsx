@@ -18,6 +18,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { useDecidirVersao, useFilaAprovacao, useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { chaveVersao, ordemDeAprovacao, resumoDoLote } from '@/lib/aprovacaoLote'
 
+// LG10 (decisões do RT de 17/11/2026): a fila da produção aponta para a tela
+// da homologação, onde a versão aguardando já roda.
+const HOMOLOGACAO = 'https://homolog.chefecoruja.com.br'
+const NA_HOMOLOGACAO = typeof window !== 'undefined' && window.location.origin === HOMOLOGACAO
+
 const PUBLICO: Record<string, string> = { adulto: 'Adulto', pediatrico: 'Pediatria', ambos: 'Adulto e pediatria' }
 
 type Fonte = { citacao: string; url?: string; pediatrica?: boolean }
@@ -158,7 +163,17 @@ function FilaRT() {
                 ))}
               </ul>
               {ROTA_DA_FICHA[v.ferramenta_id] && (
-                <Link to={ROTA_DA_FICHA[v.ferramenta_id]} className="text-apoio text-acao underline">Abrir a ferramenta para conferir</Link>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-apoio">
+                  {/* LG10: a versão nova só vai ao ar depois de aprovada; até lá ela roda na homologação */}
+                  {!NA_HOMOLOGACAO && (
+                    <a href={HOMOLOGACAO + ROTA_DA_FICHA[v.ferramenta_id]} target="_blank" rel="noreferrer" className="text-acao underline">
+                      Ver a versão {v.versao} na homologação
+                    </a>
+                  )}
+                  <Link to={ROTA_DA_FICHA[v.ferramenta_id]} className="text-acao underline">
+                    {NA_HOMOLOGACAO ? 'Abrir a ferramenta para conferir' : 'Abrir a versão que está no ar'}
+                  </Link>
+                </div>
               )}
               <Textarea placeholder="Correção apontada (obrigatória para reprovar)" value={nota}
                 onChange={(e) => setNotas((n) => ({ ...n, [chave]: e.target.value }))} />

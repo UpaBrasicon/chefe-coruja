@@ -152,6 +152,14 @@ function FaixaSituacao({ situacao, versao }: { situacao: SituacaoFerramenta; ver
           Versão {versao} aprovada por {situacao.decidida_por ?? 'responsável técnico'}
           {situacao.decisao_registro ? ` (${situacao.decisao_registro})` : ''} em {dataBr(situacao.decidida_em)}.
         </p>
+      ) : s === 'substituida' && situacao.decidida_em ? (
+        // LG10: a versão nova é aprovada antes de ir ao ar; até a publicação,
+        // a tela segue com esta, que foi aprovada.
+        <p className="flex items-center gap-2 text-apoio text-tinta-apoio">
+          <BadgeCheck className="size-4 shrink-0 text-acao" aria-hidden />
+          Versão {versao} aprovada por {situacao.decidida_por ?? 'responsável técnico'}
+          {situacao.decisao_registro ? ` (${situacao.decisao_registro})` : ''} em {dataBr(situacao.decidida_em)}. A versão nova já foi aprovada e entra na próxima publicação.
+        </p>
       ) : s === 'reprovada' ? (
         <div role="alert" className="flex gap-2.5 rounded-container bg-alerta-critico px-4 py-3 text-apoio text-critico">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
