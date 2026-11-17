@@ -14,8 +14,10 @@ import type { EpFila } from './porta/comum'
 // cor ou conduta (ADR 0007). As peças moram em ./porta/.
 
 export default function AtendimentoPorta() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
+  // U6, PR 2: o consultório de enfermagem da UBS usa a mesma fila, com as fichas da enfermagem
+  const enfermagem = ubs && papelAtivo === 'enfermeiro'
   const [atual, setAtual] = React.useState<EpFila | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
 
@@ -31,7 +33,9 @@ export default function AtendimentoPorta() {
 
   return (
     <>
-      {ubs
+      {enfermagem
+        ? <TituloPagina icone={Stethoscope} titulo="Consultório de enfermagem" descricao="Fichas da UBS para a enfermagem, por ordem de chegada, com a prioridade legal na frente." />
+        : ubs
         ? <TituloPagina icone={Stethoscope} titulo="Consultório" descricao="Pacientes da UBS por ordem de chegada, com a prioridade legal na frente · chamar e atender." />
         : <TituloPagina icone={Stethoscope} titulo="Pronto-Socorro" descricao="Pacientes triados por prioridade · chamar e atender. A cor manda; 80+ e prioridade legal só desempatam dentro da mesma cor." />}
       <FilaPS aviso={aviso} onAbrir={(e) => { setAviso(null); setAtual(e) }} />

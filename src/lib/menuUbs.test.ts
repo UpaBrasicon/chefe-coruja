@@ -100,3 +100,14 @@ test('percurso da UBS (U5): itens de porta e leito somem das telas da UBS', () =
   assert.match(recepcao, /rotulo: 'Fila da enfermagem'/)
   assert.match(recepcao, /filter\(\(e\) => e\.etapa !== 'triagem'\)/)
 })
+
+test('U6, PR 2: o enfermeiro da UBS tem o consultório de enfermagem, e a fila separa médico e enfermagem', () => {
+  assert.ok(itensDeNavegacao('enfermeiro', false, false, 'ubs').some((i) => i.to === '/consultorio-enfermagem'))
+  assert.ok(!itensDeNavegacao('enfermeiro', false, false, 'upa').some((i) => i.to === '/consultorio-enfermagem'))
+  assert.match(readFileSync('src/App.tsx', 'utf8'), /<Route path="\/consultorio-enfermagem" element=\{<AtendimentoPorta \/>\} \/>/)
+  const fila = readFileSync('src/pages/plantao/porta/FilaPS.tsx', 'utf8')
+  assert.match(fila, /const filtroDestino = enfermagem \? 'destino_aps\.eq\.enfermagem' : 'destino_aps\.is\.null,destino_aps\.eq\.medico'/)
+  assert.match(fila, /if \(ubs\) q = q\.or\(filtroDestino\)/)
+  const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
+  assert.match(recepcao, /p_dados: ubs \? \{ \.\.\.enviados, tipo_atendimento: tipoAps, destino \} : enviados/)
+})

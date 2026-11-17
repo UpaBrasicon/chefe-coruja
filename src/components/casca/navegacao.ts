@@ -135,6 +135,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   enfermeiro: [
     // 5A, tarefa 2, parte 2.4: na UBS a triagem é a escuta inicial do CAB 28
     { to: '/escuta', rotulo: 'Escuta inicial', curto: 'Escuta', icone: Ear, exato: true, nota: 'triagem' },
+    // U6, PR 2 (percurso da UBS): as fichas da UBS que vão para a enfermagem
+    { to: '/consultorio-enfermagem', rotulo: 'Consultório de enfermagem', curto: 'Consultório', icone: DoorOpen, exato: true },
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
@@ -284,7 +286,7 @@ const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
 // "Leitos" só a regulação (U5, achado GE7).
 const GRUPO_NA_UBS: Record<string, string> = { Porta: 'Cadastro', Leitos: 'Rede' }
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
-const SO_NA_UBS = new Set(['/escuta', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
+const SO_NA_UBS = new Set(['/escuta', '/consultorio-enfermagem', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {

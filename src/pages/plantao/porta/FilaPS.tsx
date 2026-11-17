@@ -130,7 +130,7 @@ const Queixa = ({ texto }: { texto: string }) => (
 )
 
 export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: EpFila) => void }) {
-  const { unidadeAtiva, ehGestor, ehPlantonista } = useUnidade()
+  const { unidadeAtiva, ehGestor, ehPlantonista, papelAtivo } = useUnidade()
   const { perfil } = useAuth()
   const qc = useQueryClient()
   // lacuna 8 (R9): a saída que está sendo reaberta e o aviso depois
@@ -139,6 +139,9 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   // 5A, tarefa 2 (D7 do RT em 02/11/2026): na UBS a fila é do consultório, sem
   // cor nem alvo; prioridade legal e ordem de chegada; a saída é a conduta.
   const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
+  // U6, PR 2: na UBS o enfermeiro vê as fichas da enfermagem; o médico, as dele
+  const enfermagem = ubs && papelAtivo === 'enfermeiro'
+  const filtroDestino = enfermagem ? 'destino_aps.eq.enfermagem' : 'destino_aps.is.null,destino_aps.eq.medico'
   const agora = useAgora()
   const [busca, setBusca] = useSearchParams()
   const aba: Aba = ABAS.some((a) => a.valor === busca.get('fila')) ? (busca.get('fila') as Aba) : 'aguardando'
@@ -170,15 +173,17 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   const alvoDe = (cor: CorRisco) => limites.alvos_medico[cor]
 
   const fila = useQuery({
-    queryKey: ['fila-medica', unidadeAtiva?.unidade_id, meusSetores, ubs],
+    queryKey: ['fila-medica', unidadeAtiva?.unidade_id, meusSetores, ubs, enfermagem],
     enabled: meusSetores.length > 0,
     refetchInterval: 20_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from('episodios')
         .select(COLUNAS_FILA)
         .in('setor_id', meusSetores)
         .eq('etapa', 'atendimento')
+      if (ubs) q = q.or(filtroDestino)
+      const { data, error } = await q
       if (error) throw error
       // na UBS, o imediato e o prioritário da escuta (CAB 28) vêm antes
       return ((data ?? []) as unknown as EpFila[]).sort(ubs ? ordemFilaUbs : ordemMedica)
@@ -186,7 +191,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   })
   // finalizados e excluídos do dia (desde 0h de Brasília)
   const saidas = useQuery({
-    queryKey: ['saidas-plantao', unidadeAtiva?.unidade_id, meusSetores, ubs],
+    queryKey: ['saidas-plantao', unidadeAtiva?.unidade_id, meusSetores, ubs, enfermagem],
     enabled: meusSetores.length > 0,
     refetchInterval: 60_000,
     queryFn: async () => {
@@ -198,6 +203,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
         .not('etapa', 'in', '(triagem,atendimento)')
       // a consulta da UBS encerra pela conduta, sem desfecho da porta
       if (!ubs) q = q.not('desfecho', 'is', null)
+      else q = q.or(filtroDestino)
       const { data, error } = await q
         .or(`desfecho_em.gte.${desde},encerrado_em.gte.${desde}`)
         .limit(200)
