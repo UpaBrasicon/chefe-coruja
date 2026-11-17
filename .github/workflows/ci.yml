@@ -86,6 +86,12 @@ jobs:
         run: |
           node --test scripts/inventario-lgpd.test.mjs
           node scripts/inventario-lgpd.mjs --conferir
+      # LG11 (decisão C3): toda ficha de src/clinico precisa estar num grupo do
+      # mapa do módulo clínico (docs/regulatorio/modulo-clinico/mapa.json).
+      - name: Mapa do módulo clínico (LG11)
+        run: |
+          node --test scripts/modulo-clinico.test.mjs
+          node --experimental-strip-types scripts/modulo-clinico.mjs --conferir
       - name: Gateway (cópia da desidentificação)
         run: npm run test:gateway
       - name: Domínio, terminologia, observação, interop

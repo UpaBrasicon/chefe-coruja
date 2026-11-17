@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-27 operações cobrem 298 tabelas.
+27 operações cobrem 299 tabelas.
 
 ## Papéis
 
@@ -48,7 +48,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | RNDS, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 12 |
 | Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 8 |
 | Site comercial e pedido de demonstração | controlador | não | 2 anos | 1 |
-| Catálogos clínicos, terminologias e regras (sem dado de paciente) | controlador | não | enquanto estiver em uso; versões antigas das fichas ficam como histórico | 45 |
+| Catálogos clínicos, terminologias e regras (sem dado de paciente) | controlador | não | enquanto estiver em uso; versões antigas das fichas ficam como histórico | 46 |
 | Testes automáticos da homologação | controlador | não | enquanto servir aos testes | 4 |
 
 ## Operações
@@ -961,11 +961,11 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - art. 7º, V para o nome de quem aprovou cada ficha
 
 **Titulares**
-- responsáveis técnicos (nome de quem aprovou a versão da ficha)
+- responsáveis técnicos e revisores do comitê clínico (nome e registro de quem aprovou ou revisou a versão)
 
 **Dados**
 - conteúdo técnico
-- aprovação das fichas com autor e data
+- aprovação e revisão das fichas por profissão, com autor, conselho e data (LG13)
 
 **Quem acessa**
 - todos os usuários (leitura)
@@ -979,9 +979,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Medidas próprias**
 - versão nova de ficha só entra aprovada (gate do LG10)
 
-**Tabelas (45)**
+**Tabelas (46)**
 
-`terminologia.cid10`, `terminologia.ciap2`, `terminologia.cbo`, `terminologia.loinc`, `terminologia.medicamento_cmed`, `terminologia.sigtap_procedimento`, `terminologia.sigtap_procedimento_cid`, `terminologia.sigtap_procedimento_ocupacao`, `terminologia.sigtap_procedimento_registro`, `public.conceito`, `public.conceito_opcao`, `public.medicamento`, `public.medicamento_sinonimo`, `public.medicamento_bula`, `private.correcao_nome_medicamento`, `public.substancias_controladas`, `public.cid_termo`, `public.cid_infeccao_regras`, `public.lnnc_agravos`, `public.lnnc_cids`, `public.ferramentas_clinicas`, `public.ferramenta_versoes`, `public.ferramenta_unidade`, `public.protocolos_classificacao`, `public.protocolo_fluxogramas`, `public.classificacao_fluxograma_unidade`, `public.protocolos_observacao`, `public.tipos_intercorrencia`, `public.eventos_adversos_graus`, `public.especialidades_parecer`, `public.grupos_interacao`, `public.grupos_interacao_membros`, `public.interacoes_criticas`, `private.modelos_interacao`, `private.modelos_grupo_membro`, `public.classe_alergenica`, `public.classe_alergenica_membro`, `private.regras_alta_vigilancia`, `public.alta_vigilancia_unidade`, `public.receita_protocolos`, `public.receita_protocolos_versoes`, `public.admissao_detalhes_esquemas`, `public.admissao_detalhes_obrigatorio`, `public.termos_modelos`, `private.marcos`
+`terminologia.cid10`, `terminologia.ciap2`, `terminologia.cbo`, `terminologia.loinc`, `terminologia.medicamento_cmed`, `terminologia.sigtap_procedimento`, `terminologia.sigtap_procedimento_cid`, `terminologia.sigtap_procedimento_ocupacao`, `terminologia.sigtap_procedimento_registro`, `public.conceito`, `public.conceito_opcao`, `public.medicamento`, `public.medicamento_sinonimo`, `public.medicamento_bula`, `private.correcao_nome_medicamento`, `public.substancias_controladas`, `public.cid_termo`, `public.cid_infeccao_regras`, `public.lnnc_agravos`, `public.lnnc_cids`, `public.ferramentas_clinicas`, `public.ferramenta_versoes`, `public.ferramenta_revisoes`, `public.ferramenta_unidade`, `public.protocolos_classificacao`, `public.protocolo_fluxogramas`, `public.classificacao_fluxograma_unidade`, `public.protocolos_observacao`, `public.tipos_intercorrencia`, `public.eventos_adversos_graus`, `public.especialidades_parecer`, `public.grupos_interacao`, `public.grupos_interacao_membros`, `public.interacoes_criticas`, `private.modelos_interacao`, `private.modelos_grupo_membro`, `public.classe_alergenica`, `public.classe_alergenica_membro`, `private.regras_alta_vigilancia`, `public.alta_vigilancia_unidade`, `public.receita_protocolos`, `public.receita_protocolos_versoes`, `public.admissao_detalhes_esquemas`, `public.admissao_detalhes_obrigatorio`, `public.termos_modelos`, `private.marcos`
 
 ### Testes automáticos da homologação
 

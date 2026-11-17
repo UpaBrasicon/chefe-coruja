@@ -11,6 +11,7 @@ import { useRelacionadas, type Relacionada } from '@/components/plantonista/calc
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
+import { textoRevisaoPendente } from '@/lib/comiteClinico'
 import { data } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
@@ -181,6 +182,13 @@ function FaixaSituacao({ situacao, versao }: { situacao: SituacaoFerramenta; ver
               : `Regra (versão ${versao}) aguardando aprovação do responsável técnico.`}
           </p>
         </div>
+      )}
+      {/* LG13: enquanto o comitê não completa a revisão (sem revisor nomeado), a tela diz o que falta */}
+      {s === 'aprovada' && textoRevisaoPendente(situacao.revisoes_pendentes) && (
+        <p role="note" className="flex items-center gap-2 text-apoio text-atencao">
+          <Clock className="size-4 shrink-0" aria-hidden />
+          {textoRevisaoPendente(situacao.revisoes_pendentes)}
+        </p>
       )}
       {situacao.unidade?.nota_local && (
         <div className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-apoio text-tinta">
