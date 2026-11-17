@@ -13,6 +13,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { SinaisVitaisAps } from '@/components/clinico/SinaisVitaisAps'
 import { Contencao } from '@/components/prontuario/Contencao'
 import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
@@ -282,6 +283,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {aberto && dados.data && (
           <Tabs value={aba}>
             <TabsContent value="atend">
+              {/* U7, PR 4 (percurso da UBS): sinais vitais na consulta da UBS */}
+              {ubs && <div className="mb-4"><SinaisVitaisAps episodioId={ep.id} nascimento={ep.paciente?.data_nascimento ?? null} chegadaEm={ep.chegada_em} /></div>}
               <AbaAtendimento episodioId={ep.id} pacienteId={ep.paciente_id} nascimento={ep.paciente?.data_nascimento ?? null} faixa={faixa} corAtual={ultimaCor ?? ep.cor_atual} ubs={ubs}
                 soap={soap} setSoap={setSoap} salvoEm={salvoEm} classificacoes={cls} registros={registros} aoRegistrar={aoRegistrarSoap} />
             </TabsContent>
