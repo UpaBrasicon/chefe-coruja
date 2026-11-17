@@ -9,6 +9,8 @@ Trilha de obrigatórios legais e regulatórios. As quatro peças andam juntas, p
 | LG3 | Relatório de impacto (RIPD) |
 | LG5 | Plano de resposta a incidente |
 
+**Decisão do RT, 17/11/2026: "Todas A"** (J1–J4, E1–E2, R1, P1–P3). Os rascunhos seguem em `docs/regulatorio/juridico/`.
+
 - **Não é parecer jurídico.** É o mapa técnico e as decisões para o RT. Depois delas, cada peça sai como rascunho em `docs/regulatorio/juridico/`, para o advogado revisar.
 - **Nada vai ao site** sem o ok do RT.
 
