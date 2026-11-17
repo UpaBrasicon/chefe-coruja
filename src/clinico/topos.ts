@@ -1441,6 +1441,577 @@ export const TOPOS: Record<string, Topo> = {
       { texto: 'Estimulação transcutânea na bradiarritmia com comprometimento hemodinâmico quando a transvenosa temporária não é possível ou disponível.', ref: { fonte: 'ESC 2021, estimulação cardíaca', pagina: 'p. 3438; 3486–3487', grau: 'IIa C' } },
     ],
   },
+  // Condutas, lote 2 (16/11/2026): pediatria e demais seções, no mesmo método do lote 1
+  // (trecho literal do módulo ou da tela, conferido por script). Pediatria sem conteúdo de adulto.
+  'adulto-heparina-nao-fracionada': {
+    resumo: 'Calcula o bolus e a infusão de heparina não fracionada EV do adulto pelo peso e o ajuste pelo TTPA pela Tabela 7 do manual do HC, com a orientação da ISTH 2026 ao lado.',
+    instrucoes: 'Informe o peso e, se quiser o mL/h, a concentração do seu preparo. Para o ajuste, informe o TTPA e a infusão atual em UI/kg/h.',
+    quandoUsar: [
+      { texto: 'O manual cita preferência pela HNF na instabilidade hemodinâmica, na disfunção renal, nos extremos de peso e de idade e no alto risco de sangramento.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 32', pagina: 'p. 442' } },
+    ],
+  },
+  'adulto-hiponatremia': {
+    resumo: 'Corrige o sódio pela glicemia, classifica a hiponatremia e estima o NaCl 3% pela regra do manual do HC (1 mL/kg sobe cerca de 1 mEq/L), com os limites e as condutas das Tabelas 4 e 5.',
+    instrucoes: 'Informe peso e sódio; glicemia e osmolaridade são opcionais. Depois escolha a elevação desejada ou a infusão em mL/h e o cenário clínico das Tabelas 4 e 5.',
+    quandoUsar: [
+      { texto: 'Hiponatremia é o sódio abaixo de 135 mEq/L: leve de 130 a 134, moderada de 120 a 129 e grave abaixo de 120.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 66', pagina: 'p. 882; p. 888' } },
+    ],
+  },
+  'adulto-hipernatremia': {
+    resumo: 'Calcula a água corporal total, o déficit de água livre e a variação do sódio por litro de cada solução (Adrogué-Madias) na hipernatremia do adulto, com os limites de velocidade do manual do HC.',
+    instrucoes: 'Informe peso, sódio, sexo, se é idoso e se a instalação é aguda ou crônica; a glicemia é opcional. Depois informe a redução desejada para ver os litros de cada solução.',
+    quandoUsar: [
+      { texto: 'Hipernatremia é o sódio acima de 145 mEq/L.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 66', pagina: 'p. 892' } },
+    ],
+  },
+  'adulto-estado-de-mal-epileptico': {
+    resumo: 'Calcula por peso as doses de 1ª, 2ª e 3ª linha do estado de mal epiléptico do adulto pelo manual do HC, com volume, tempo mínimo de infusão e mL/h, e o levetiracetam pelo ESETT ao lado.',
+    instrucoes: 'Informe o peso: cada droga mostra a dose, o volume da apresentação e o tempo mínimo de infusão; as infusões de 3ª linha saem em mL/h no preparo do Anexo 1.',
+    quandoUsar: [
+      { texto: 'A primeira linha é para a crise prolongada por mais de 5 minutos.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 46', pagina: 'p. 627 (Tabela 3)' } },
+    ],
+  },
+  'adulto-profilaxia-tev': {
+    resumo: 'Reúne as doses de profilaxia de TEV do manual do HC, os capítulos em que o livro a cita e a reversão da heparina SC por protamina; o livro não traz escore de risco.',
+    instrucoes: 'Não há conta para a profilaxia: a tela mostra as doses e onde o manual cita a profilaxia. Para a reversão, informe as UI de heparina SC recebidas.',
+    quandoUsar: [
+      { texto: 'Na sepse com disfunção orgânica, o manual indica considerar a profilaxia de TEV.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 7', pagina: 'p. 127' } },
+      { texto: 'Na exacerbação de DPOC, profilaxia de TEV durante a internação, salvo contraindicação.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 31', pagina: 'p. 425' } },
+    ],
+  },
+  'acesso-venoso': {
+    resumo: 'Sugere o dispositivo de acesso venoso do adulto pela duração da terapia, pelo tipo de infusão, pela rede venosa e pela urgência.',
+    instrucoes: 'Responda às cinco etapas: perfil, duração da terapia, característica da infusão, rede venosa e urgência. Para criança, a tela não tem referência.',
+  },
+  'adulto-qtc': {
+    resumo: 'Corrige o QT pela frequência cardíaca pelas fórmulas de Bazett, Fridericia, Framingham e Hodges e compara o resultado com os limiares da AHA/ACCF 2010.',
+    instrucoes: 'Informe o QT medido em ms, a frequência cardíaca e o sexo. O QTc basal antes da droga é opcional e mostra o aumento sobre ele.',
+    quandoUsar: [
+      { texto: 'Percentil 99 do QTc em pós-púberes: 470 ms no homem e 480 ms na mulher.', ref: { fonte: 'Drew et al., Circulation 2010 (AHA/ACCF)' } },
+      { texto: 'QTc acima de 500 ms ou aumento de 60 ms ou mais sobre o basal pede ação imediata, pelo risco de torsades.', ref: { fonte: 'Drew et al., Circulation 2010 (AHA/ACCF)' } },
+    ],
+    porQueUsar: [
+      { texto: 'Em 6.609 adultos em ritmo sinusal, Fridericia e Framingham corrigiram melhor a frequência e previram melhor a mortalidade em 30 dias; Bazett foi a pior e superestimou o número de pacientes com QTc perigosamente longo.', ref: { fonte: 'Vandenberk et al., J Am Heart Assoc 2016', pagina: 'resumo' } },
+    ],
+  },
+  'ped-infusoes': {
+    resumo: 'Converte dose em velocidade da bomba, e velocidade em dose, das infusões contínuas pediátricas, com as faixas do apêndice do PS Pediatria do ICr-HCFMUSP.',
+    instrucoes: 'Informe o peso (a idade é opcional), escolha o medicamento e informe a concentração final da solução que você preparou; depois, a dose ou a velocidade na bomba.',
+    quandoUsar: [
+      { texto: 'Não serve para o recém-nascido: o apêndice do livro não cobre o período neonatal.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 894' } },
+    ],
+  },
+  'ped-rcp-icr': {
+    resumo: 'Mostra compressão e ventilação por faixa etária e calcula pelo peso as cargas de desfibrilação e cardioversão e as drogas da parada cardiorrespiratória da criança, pelo livro do ICr-HCFMUSP, com a AHA/AAP 2025 ao lado.',
+    instrucoes: 'Escolha a faixa do suporte básico para ver compressão e ventilação; informe o peso para as cargas e as doses.',
+    quandoUsar: [
+      { texto: 'Lactente é a criança com menos de 1 ano, fora do período de recém-nascido; no adolescente, com sinais de puberdade, o livro remete à RCP do adulto.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 25' } },
+    ],
+  },
+  'ped-via-aerea': {
+    resumo: 'Calcula o tubo traqueal com e sem cuff e a profundidade pela idade, mostra o equipamento por idade e peso e calcula as doses da sequência rápida da criança, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe a idade em anos e meses para o tubo e o equipamento, e o peso para as doses da sequência rápida.',
+  },
+  'ped-anafilaxia-icr': {
+    resumo: 'Mostra os critérios clínicos da anafilaxia e calcula a epinefrina IM por peso ou por idade e as medidas de segunda, terceira linha e da forma refratária na criança, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe o peso para as doses por kg; a idade em anos e meses dá a dose fixa de epinefrina IM, alternativa do próprio livro.',
+    quandoUsar: [
+      { texto: 'Anafilaxia: início súbito com acometimento de pele ou mucosa e comprometimento respiratório ou queda da PA ou sintomas de órgão-alvo.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'Quadro 3, p. 97–98' } },
+      { texto: 'Também é anafilaxia a queda da PA após exposição a alérgeno conhecido: na criança, PA sistólica baixa para a idade ou queda maior que 30%.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'Quadro 3, p. 97–98' } },
+    ],
+  },
+  'ped-asma-icr': {
+    resumo: 'Calcula por peso o corticoide, o ipratrópio, o magnésio e o salbutamol contínuo da crise asmática da criança e mostra a classificação da crise como referência, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe o peso: a tela mostra as doses da Tabela 3 e do texto, com as divergências. A classificação da Tabela 1 é só referência; a tela não classifica.',
+    quandoUsar: [
+      { texto: 'A gravidade da crise vem da tabela de classificação do livro: a presença de vários parâmetros, mas não necessariamente de todos, indica a classificação.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'Tabela 1, p. 114' } },
+    ],
+  },
+  'ped-crise-epileptica-icr': {
+    resumo: 'Calcula por peso os benzodiazepínicos, a dose de ataque, o fenobarbital e as infusões do estado de mal refratário da criança, com o tempo de infusão, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe o peso: cada etapa mostra a dose do livro; fenitoína e valproato mostram também o tempo de infusão.',
+    quandoUsar: [
+      { texto: 'Medicar as crises que duram mais de 3 a 5 minutos.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 126' } },
+    ],
+  },
+  'ped-sinais-vitais-icr': {
+    resumo: 'Mostra, para a idade da criança, as referências do livro do ICr-HCFMUSP: FC normal, valores anormais no choque séptico, PA sistólica baixa na anafilaxia e FR normal.',
+    instrucoes: 'Informe a idade em anos, meses e dias. A tela só mostra a referência da idade; não marca valor como alterado.',
+    quandoUsar: [
+      { texto: 'Taquicardia é a FC acima de 180 bpm até 1 ano e acima de 120 bpm depois de 1 ano; bradicardia, abaixo de 60 bpm em qualquer idade.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'cap. 2, p. 40' } },
+    ],
+  },
+  'ped-choque-icr': {
+    resumo: 'Calcula a expansão volêmica em mL/kg e as drogas vasoativas do choque séptico da criança pelo livro do ICr-HCFMUSP, com o escore de Phoenix 2024 e a Surviving Sepsis Campaign pediátrica 2026 ao lado.',
+    instrucoes: 'Informe o peso para os volumes e as vasoativas. Para o Phoenix, informe a idade em meses e os dados que houver: oxigenação, suporte respiratório, vasoativos, lactato, PAM, coagulação e Glasgow.',
+    quandoUsar: [
+      { texto: 'Sepse é a infecção suspeita com escore de Phoenix de 2 ou mais; choque séptico é a sepse com 1 ponto cardiovascular ou mais (hipotensão grave para a idade, lactato de 5 mmol/L ou mais ou vasoativo).', ref: { fonte: 'Schlapbach et al., JAMA 2024 (Phoenix)', pagina: 'JAMA 2024, p. E1–E5 do PDF (Tabela na p. E3)' } },
+    ],
+  },
+  'ped-tce-icr': {
+    resumo: 'Calcula por peso o NaCl 3% e o manitol da terapia hiperosmolar no TCE grave da criança e mostra as metas do capítulo (PaCO2, PIC, pressão de perfusão cerebral e osmolaridade), pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe o peso para as doses da terapia hiperosmolar; as metas e os critérios do capítulo aparecem abaixo, com página.',
+    quandoUsar: [
+      { texto: 'TCE grave é o Glasgow de 3 a 8 pela classificação do livro.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 172' } },
+    ],
+  },
+  'ped-pecarn-menor2-icr': {
+    resumo: 'Indica, pela Figura 2 do livro do ICr-HCFMUSP (baseada no PECARN), se a TC de crânio é recomendada, opcional com observação ou não recomendada no TCE leve abaixo de 2 anos.',
+    instrucoes: 'Responda sim ou não aos três itens do 1º quadro e aos três do 2º. Qualquer sim no 1º leva a "TC recomendada"; só no 2º, a "TC ou observação".',
+    quandoUsar: [
+      { texto: 'Criança abaixo de 2 anos com TCE leve (Glasgow de 13 a 15).', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 172; Figura 2, p. 176' } },
+    ],
+  },
+  'ped-pecarn-maior2-icr': {
+    resumo: 'Indica, pela Figura 3 do livro do ICr-HCFMUSP (baseada no PECARN), se a TC de crânio é recomendada, opcional com observação ou não recomendada no TCE leve a partir de 2 anos.',
+    instrucoes: 'Responda sim ou não aos três itens do 1º quadro e aos quatro do 2º. Qualquer sim no 1º leva a "TC recomendada"; só no 2º, a "TC ou observação".',
+    quandoUsar: [
+      { texto: 'Criança de 2 anos ou mais com TCE leve (Glasgow de 13 a 15).', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 172; Figura 3, p. 176' } },
+    ],
+  },
+  'ped-pecarn-coluna-cervical': {
+    resumo: 'Classifica o risco de lesão da coluna cervical na criança com trauma contuso pelos fatores do PECARN e mostra o que o algoritmo do estudo faz em cada faixa.',
+    instrucoes: 'Responda sim ou não aos três itens de alto risco e aos cinco de risco não desprezível.',
+    quandoUsar: [
+      { texto: 'Criança com trauma contuso conhecido ou suspeito no pronto-socorro, para decidir quem precisa de imagem da coluna cervical.', ref: { fonte: 'Leonard et al., Lancet Child Adolesc Health 2024', pagina: 'resumo' } },
+      { texto: 'No algoritmo do estudo: com fator de alto risco, tomografia; só com fator de risco não desprezível, radiografia simples; sem nenhum fator, liberação clínica sem imagem.', ref: { fonte: 'Leonard et al., Lancet Child Adolesc Health 2024', pagina: 'resumo' } },
+    ],
+    porQueUsar: [
+      { texto: 'Validada em 18 prontos-socorros pediátricos dos Estados Unidos, com sensibilidade de 94,3% e valor preditivo negativo de 99,9%; ainda sem validação fora da rede do estudo.', ref: { fonte: 'Leonard et al., Lancet Child Adolesc Health 2024', pagina: 'resumo' } },
+      { texto: 'No estudo, 12,7% das crianças com algum fator de alto risco tinham lesão da coluna cervical.', ref: { fonte: 'Leonard et al., Lancet Child Adolesc Health 2024', pagina: 'resumo' } },
+    ],
+  },
+  'ped-pecarn-abdome': {
+    resumo: 'Identifica a criança com trauma contuso de tronco em risco muito baixo de lesão intra-abdominal que exige intervenção, pelos sete achados do PECARN.',
+    instrucoes: 'Responda sim ou não aos sete achados de história e exame; o risco é muito baixo só com os sete ausentes.',
+    quandoUsar: [
+      { texto: 'Criança com trauma contuso de tronco, para identificar quem tem risco muito baixo de lesão intra-abdominal que exige intervenção e pode dispensar a TC.', ref: { fonte: 'Holmes et al., Ann Emerg Med 2013', pagina: 'resumo' } },
+      { texto: 'Regra positiva não obriga tomografia: pedir TC para toda criança com regra positiva é uso inadequado da regra.', ref: { fonte: 'Holmes et al., Lancet Child Adolesc Health 2024 (validação)', pagina: 'texto' } },
+    ],
+    porQueUsar: [
+      { texto: 'Na validação prospectiva de 2024, a regra teve sensibilidade de 100% (145 de 145 crianças com lesão que exigiu intervenção) e valor preditivo negativo de 100%.', ref: { fonte: 'Holmes et al., Lancet Child Adolesc Health 2024 (validação)', pagina: 'resumo' } },
+      { texto: 'Na derivação, com 12.044 crianças em 20 prontos-socorros, o valor preditivo negativo foi de 99,9% e a sensibilidade de 97%.', ref: { fonte: 'Holmes et al., Ann Emerg Med 2013', pagina: 'resumo' } },
+    ],
+  },
+  'ped-twist': {
+    resumo: 'Estratifica o risco de torção testicular na criança com dor testicular aguda a partir de cinco achados clínicos.',
+    instrucoes: 'Marque os achados presentes (0 a 7 pontos): edema testicular e testículo endurecido valem 2; reflexo cremastérico ausente, náusea ou vômito e testículo elevado valem 1. Baixo risco 0 a 2, intermediário 3 a 4, alto 5 a 7.',
+    quandoUsar: [
+      { texto: 'Criança com escroto agudo, para estratificar o risco de torção e reduzir os pedidos de ultrassom, que ficaria só para o risco intermediário.', ref: { fonte: 'Barbosa et al., J Urol 2013', pagina: 'resumo' } },
+    ],
+    porQueUsar: [
+      { texto: 'Em metanálise de 10 estudos, comparando alto risco (5 a 7) com baixo risco (0 a 2), a sensibilidade foi de 94,2% e a especificidade de 98%.', ref: { fonte: 'Lewis et al., BJU Int 2026', pagina: 'resumo' } },
+      { texto: 'Na derivação prospectiva (338 pacientes com escroto agudo, 51 com torção), os cortes de 2 e de 5 tiveram valores preditivos negativo e positivo de 100%.', ref: { fonte: 'Barbosa et al., J Urol 2013', pagina: 'resumo' } },
+    ],
+  },
+  'ped-ten-4-facesp': {
+    resumo: 'Rastreia, pela localização e pelo padrão do hematoma e pela idade, a criança abaixo de 4 anos com hematoma suspeito de maus-tratos.',
+    instrucoes: 'Confirme que é criança abaixo de 4 anos com pelo menos um hematoma e responda aos quatro componentes (TEN, FACES, 4 e p); qualquer sim torna a regra positiva.',
+    quandoUsar: [
+      { texto: 'Criança abaixo de 4 anos com hematoma: qualquer componente positivo indica risco potencial de maus-tratos e pede avaliação adicional.', ref: { fonte: 'Pierce et al., JAMA Netw Open 2021', pagina: 'resumo' } },
+    ],
+    porQueUsar: [
+      { texto: 'Na validação em prontos-socorros de 5 hospitais pediátricos (2.161 crianças com hematoma), a regra teve sensibilidade de 95,6% e especificidade de 87,1% para separar maus-tratos de trauma acidental.', ref: { fonte: 'Pierce et al., JAMA Netw Open 2021', pagina: 'resumo' } },
+      { texto: 'Com hematoma único (349 crianças, 27 por maus-tratos), a sensibilidade foi de 81,5% e a especificidade de 87,6%: regra negativa deve ser lida com cautela.', ref: { fonte: 'Raut et al., Pediatrics 2025', pagina: 'resumo' } },
+    ],
+  },
+  'ped-glasgow-icr': {
+    resumo: 'Calcula a Escala de Coma de Glasgow da criança, com a versão modificada para menores de 5 anos, e classifica a gravidade do TCE pelo total, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Escolha a melhor resposta ocular, verbal e motora; abaixo de 5 anos, use a descrição da escala modificada que aparece em cada opção.',
+    quandoUsar: [
+      { texto: 'Abaixo de 5 anos, o livro sugere a escala modificada (James, 1985).', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 172 (Tabela 1)' } },
+      { texto: 'Gravidade do TCE pelo total: leve de 13 a 15, moderado de 9 a 12 e grave de 3 a 8.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 172' } },
+    ],
+  },
+  'ped-pops-icr': {
+    resumo: 'Calcula o POPS, escore de alerta da triagem pediátrica que soma sinais vitais, observação clínica, condição de base e a preocupação de quem avalia, pela Tabela 4 do livro do ICr-HCFMUSP.',
+    instrucoes: 'Escolha a faixa etária da tabela e os cinco itens de observação (SO2, respiração, responsividade, impressão e condição de base) e informe pulso, FR e temperatura. Onde a tabela impressa tem lacuna ou sobreposição, o total sai como faixa.',
+    quandoUsar: [
+      { texto: 'Pontuação total acima de 8 indica avaliação imediata na sala de emergência.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 881' } },
+    ],
+  },
+  'ped-pews-icr': {
+    resumo: 'Calcula o PEWS, escore de alerta precoce pediátrico, pelos itens de comportamento, cardiovascular e respiratório da Figura 2 do livro do ICr-HCFMUSP.',
+    instrucoes: 'Escolha a pontuação de 0 a 3 em comportamento, cardiovascular e respiratório, começando pelo pior parâmetro, e marque se está em oxigenoterapia (+2). O livro não traz ponto de corte.',
+  },
+  'ped-phoenix': {
+    resumo: 'Calcula o escore de Phoenix 2024 e identifica sepse e choque séptico na criança com infecção suspeita pela disfunção respiratória, cardiovascular, de coagulação e neurológica.',
+    instrucoes: 'Informe a idade em meses e os dados que houver: PaO2/FiO2 ou SpO2/FiO2, suporte respiratório, vasoativos, lactato, PAM, plaquetas, INR, D-dímero, fibrinogênio, Glasgow e pupilas. O escore pode ser calculado sem algumas variáveis.',
+    quandoUsar: [
+      { texto: 'Sepse é a infecção suspeita com escore de Phoenix de 2 ou mais; choque séptico é a sepse com 1 ponto cardiovascular ou mais (hipotensão grave para a idade, lactato de 5 mmol/L ou mais ou vasoativo).', ref: { fonte: 'Schlapbach et al., JAMA 2024 (Phoenix)', pagina: 'JAMA 2024, p. E1–E5 do PDF (Tabela na p. E3)' } },
+      { texto: 'Não vale na internação de nascimento nem com idade pós-concepcional abaixo de 37 semanas, e não é ferramenta de triagem precoce.', ref: { fonte: 'Schlapbach et al., JAMA 2024 (Phoenix)', pagina: 'JAMA 2024, p. E1–E5 do PDF (Tabela na p. E3)' } },
+    ],
+    porQueUsar: [
+      { texto: 'Escore de 2 ou mais: mortalidade hospitalar de 7,1% em locais de mais recursos e de 28,5% nos de menos recursos; no choque séptico, 10,8% e 33,5%.', ref: { fonte: 'Schlapbach et al., JAMA 2024 (Phoenix)', pagina: 'JAMA 2024, p. E1–E5 do PDF (Tabela na p. E3)' } },
+      { texto: 'O escore foi desenvolvido com mais de 3 milhões de atendimentos em prontuário eletrônico de 10 locais em 4 continentes.', ref: { fonte: 'Schlapbach et al., JAMA 2024 (Phoenix)', pagina: 'resumo' } },
+      { texto: 'Na validação externa em 11 prontos-socorros da Austrália e da Nova Zelândia (6.232 crianças), só 4,9% preencheram o Phoenix e a sensibilidade para morte hospitalar foi de 55,0%: o Phoenix define sepse, não faz triagem.', ref: { fonte: 'Long et al., JAMA Netw Open 2025 (SENTINEL)', pagina: 'resumo' } },
+    ],
+  },
+  'ped-fluidoterapia-manutencao': {
+    resumo: 'Calcula a necessidade hídrica basal da criança por Holliday-Segar e pela regra prática e mostra as soluções-padrão e as categorias da Figura 1, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe peso e idade: a tela dá o volume em 24 h e o mL/h, com o teto de 100 mL/h do livro, e o volume de cada categoria da Figura 1.',
+    quandoUsar: [
+      { texto: 'Solução isotônica tem sódio próximo ao do plasma (131 a 154 mEq/L); hipotônica, abaixo de 130 mEq/L.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 838' } },
+    ],
+  },
+  'ped-sodio': {
+    resumo: 'Corrige o sódio pela glicemia, calcula a osmolalidade efetiva, o NaCl 3% por peso, a variação estimada por litro e o déficit de água livre na hipo e na hipernatremia da criança, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe peso, idade e sódio; glicemia e osmolalidade medida são opcionais. Para as contas, informe a variação desejada ou o sódio desejado.',
+    quandoUsar: [
+      { texto: 'Hiponatremia é o sódio abaixo de 135 mEq/L; hipernatremia, acima de 145 mEq/L.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 533; p. 540' } },
+      { texto: 'Correção direta do sódio só na hiponatremia sintomática ou na hipovolêmica com sódio abaixo de 120 mEq/L.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 538–539; Figura 4' } },
+    ],
+  },
+  'ped-eletrolitos': {
+    resumo: 'Calcula por peso as doses, os máximos e as fórmulas dos distúrbios de potássio, cálcio, magnésio e fósforo da criança, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe peso e idade e escolha o eletrólito; cada aba pede o valor sérico ou os dados da conta, como o acesso no potássio e a função renal no magnésio.',
+    quandoUsar: [
+      { texto: 'Hipocalemia é o potássio abaixo de 3,5 mEq/L (grave abaixo de 2,5); hipercalemia, acima de 5,5 mEq/L.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 544; p. 546' } },
+      { texto: 'Hipocalcemia é o cálcio abaixo de 7 mg/dL no prematuro, de 8 no recém-nascido a termo e de 8,8 em crianças e adolescentes.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 550' } },
+    ],
+  },
+  'ped-cad-ehh': {
+    resumo: 'Confere os critérios e a gravidade da cetoacidose diabética e do estado hiperglicêmico hiperosmolar na criança e calcula por peso fluidos, potássio, insulina, bicarbonato e o tratamento do edema cerebral, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe peso e idade, glicemia, pH, bicarbonato, sódio e cloro, a cetonemia ou a cetonúria e o tipo de gasometria, e escolha o corte do bicarbonato (15 ou 18).',
+    quandoUsar: [
+      { texto: 'CAD: glicemia acima de 200 mg/dL, pH abaixo de 7,3, bicarbonato abaixo de 15 (BSPED/NICE 2021) ou de 18 mEq/L (ISPAD 2022) e cetonemia de 3 mmol/L ou mais ou cetonúria de 2+ ou mais.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'Quadro 2, p. 515' } },
+      { texto: 'EHH (ISPAD): glicemia acima de 600 mg/dL, pH acima de 7,3 arterial ou de 7,25 venoso, bicarbonato acima de 15, cetonemia abaixo de 3 ou cetonúria ausente ou baixa e osmolalidade acima de 320.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'Quadro 2, p. 515' } },
+    ],
+  },
+  'ped-hipoglicemia': {
+    resumo: 'Calcula por peso e idade a glicose por via oral, o bolus de glicose EV e o glucagon na hipoglicemia da criança, e a velocidade de infusão de glicose depois da reversão, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe peso e idade. Para a infusão depois da reversão, informe a VIG em mg/kg/min e escolha a dextrose a 5% ou a 10%.',
+    quandoUsar: [
+      { texto: 'Tríade de Whipple: glicemia venosa total abaixo de 40 mg/dL ou plasmática ou sérica abaixo de 45 mg/dL.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 507' } },
+      { texto: 'Com sintomas, glicemia abaixo de 70 mg/dL confirma o diagnóstico.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 509' } },
+    ],
+  },
+  'ped-acidobase': {
+    resumo: 'Lê a gasometria da criança em três etapas, calcula a compensação esperada, o ânion-gap e a razão delta, e as doses de bicarbonato e de HCl, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe pH, pCO2 e HCO3 e, no distúrbio respiratório, se é agudo ou crônico. Sódio e cloro dão o ânion-gap; o peso entra nas contas de bicarbonato e de HCl.',
+    quandoUsar: [
+      { texto: 'Acidemia é o pH abaixo de 7,36; alcalemia, acima de 7,44.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 561–562' } },
+      { texto: 'Bicarbonato: indicação geral com pH abaixo de 7,1 ou HCO3 abaixo de 8 mEq/L; na CAD, o critério é outro.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 566' } },
+    ],
+  },
+  'ped-reanimacao-neonatal': {
+    resumo: 'Mostra a sequência da reanimação do recém-nascido de 34 semanas ou mais em sala de parto, a saturação-alvo, a marca da cânula e as doses de adrenalina e de expansor pela diretriz 2026 da SBP.',
+    instrucoes: 'Informe o peso estimado ou ao nascer para as doses e a idade gestacional para a marca da cânula traqueal.',
+    quandoUsar: [
+      { texto: 'RN com boa vitalidade (respirando ou chorando, tônus em flexão) fica com a mãe.', ref: { fonte: 'SBP, Reanimação do RN ≥ 34 semanas, 2026', pagina: 'p. 12–13' } },
+      { texto: 'Apneia, respiração irregular ou FC abaixo de 100 bpm após os passos iniciais: VPP nos primeiros 60 segundos.', ref: { fonte: 'SBP, Reanimação do RN ≥ 34 semanas, 2026', pagina: 'p. 16–17' } },
+    ],
+  },
+  'ped-ictericia-neonatal': {
+    resumo: 'Mostra os limiares hora a hora de fototerapia, de escalonamento de cuidado e de exsanguineotransfusão no recém-nascido de 35 semanas ou mais, pela AAP 2022.',
+    instrucoes: 'Informe a idade gestacional, as horas de vida e se há fator de risco de neurotoxicidade; a bilirrubina total sérica, e a transcutânea se houver, mostram em que faixa o RN está.',
+    quandoUsar: [
+      { texto: 'Recém-nascido de 35 semanas ou mais, até 14 dias de vida.', ref: { fonte: 'AAP 2022, hiperbilirrubinemia neonatal', pagina: 'Tabelas Suplementares 1–4' } },
+      { texto: 'Dosar a bilirrubina sérica se a transcutânea estiver a até 3 mg/dL do limiar ou for de 15 mg/dL ou mais.', ref: { fonte: 'AAP 2022, hiperbilirrubinemia neonatal', pagina: 'KAS 6' } },
+    ],
+  },
+  'ped-queimadura': {
+    resumo: 'Calcula a superfície corporal queimada da criança pelo esquema de Lund e Browder e o volume de reposição pela fórmula de Parkland, com a diurese-alvo, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe peso e idade e marque a fração queimada de cada superfície, ou informe a SCQ estimada. Depois informe as horas desde o acidente e se há hematúria ou mioglobinúria.',
+    quandoUsar: [
+      { texto: 'Grande queimado em pediatria é a criança com mais de 10% da superfície corporal queimada.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 159' } },
+      { texto: 'Na superfície queimada, só entram as queimaduras de 2º e 3º graus.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 159' } },
+    ],
+  },
+  'ped-intoxicacoes': {
+    resumo: 'Calcula por peso a descontaminação, a eliminação e os antídotos da intoxicação exógena da criança e mostra as toxíndromes e os antídotos de eficácia comprovada, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe peso e idade: a tela mostra as doses do capítulo e do Apêndice; toxíndromes e antídotos aparecem como referência.',
+    quandoUsar: [
+      { texto: 'O capítulo recomenda consultar o centro de controle de intoxicações antes de um antídoto.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'p. 205–206' } },
+    ],
+  },
+  'ped-escorpiao-aranhas': {
+    resumo: 'Mostra o soro e as medidas que o livro do ICr-HCFMUSP associa a cada gravidade do acidente por escorpião e por aranha, com o PCDT do Ministério da Saúde 2026 ao lado; a ferramenta não classifica o acidente.',
+    instrucoes: 'Informe peso e idade, escolha o animal e a gravidade que o médico avaliou.',
+    quandoUsar: [
+      { texto: 'No acidente por escorpião, crianças de 10 anos ou menos, sobretudo as menores de 7, são mais vulneráveis a manifestações sistêmicas graves.', ref: { fonte: 'PCDT dos Acidentes Escorpiônicos, MS 2026', pagina: 'p. 10' } },
+    ],
+  },
+  'ped-tetano-raiva': {
+    resumo: 'Mostra a profilaxia do tétano no ferimento, o tratamento do tétano acidental e o soro e a vacina antirrábicos na criança pelo Ministério da Saúde, com o soro calculado pelo peso.',
+    instrucoes: 'Informe o peso, a história de vacinação contra tétano e o tipo de ferimento, e marque se a criança é imunodeprimida ou desnutrida grave. A tela mostra o que o Quadro 4 traz para a combinação e o soro antirrábico para o peso.',
+    quandoUsar: [
+      { texto: 'Na criança, o uso do soro antirrábico deve ser avaliado caso a caso, considerando o tipo de exposição.', ref: { fonte: 'MS, Nota Técnica Conjunta nº 35/2026 (raiva)', pagina: 'item 4.7.3' } },
+    ],
+  },
+  'ped-sedacao-procedimento': {
+    resumo: 'Reúne jejum, classificação ASA, sugestões de sedação por tipo de procedimento e os sedativos e reversores por peso da criança pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe idade e peso, a última ingesta e as horas desde ela: a tela diz se o jejum foi cumprido e mostra as doses do capítulo e do Apêndice para o peso.',
+    quandoUsar: [
+      { texto: 'ASA III ou mais tem maior risco de eventos adversos; procedimentos eletivos devem ser postergados.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 78', pagina: 'Tabela 1, p. 845' } },
+    ],
+  },
+  'ped-vias-aereas-superiores': {
+    resumo: 'Calcula por peso os antibióticos da otite média aguda, da faringite estreptocócica e da sinusite bacteriana e o corticoide do crupe, e mostra a gravidade do crupe pela Tabela 6 do livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe idade e peso e escolha o quadro. No crupe, a tela mostra a tabela de gravidade, que não tem pontuação, e calcula a cânula reduzida a partir do DI calculado para a idade.',
+    quandoUsar: [
+      { texto: 'OMA pela AAP: abaulamento moderado ou grave da membrana timpânica, otorreia recente não atribuível a otite externa, ou abaulamento leve com otalgia de início recente (menos de 48 h) ou hiperemia importante da membrana.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 28', pagina: 'p. 286' } },
+      { texto: 'Sinusite bacteriana pela AAP: sintomas persistentes por mais de 10 dias sem melhora, piora depois de melhora inicial, ou sintomas graves com 3 dias ou mais seguidos de temperatura de 39 °C ou mais e secreção purulenta.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 28', pagina: 'p. 291–292' } },
+    ],
+  },
+  'ped-bronquiolite': {
+    resumo: 'Lista as indicações de internação da bronquiolite, calcula o fluxo da cânula nasal de alto fluxo pelo peso e confere a elegibilidade ao nirsevimabe pelo Ministério da Saúde, com o livro do ICr-HCFMUSP e a diretriz australasiana de 2025.',
+    instrucoes: 'Informe idade e peso, a frequência respiratória e marque os achados presentes. Para o nirsevimabe, informe a idade gestacional ao nascer, as comorbidades e se é período sazonal.',
+    quandoUsar: [
+      { texto: 'Bronquiolite: sibilância em criança com menos de 2 anos, com sinais de infecção viral e sem atopia; alguns autores limitam ao primeiro episódio em menores de 1 ano.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 29', pagina: 'p. 300–301' } },
+      { texto: 'Nirsevimabe pelo MS: prematuro com idade gestacional até 36 semanas e 6 dias, o ano todo; criança com menos de 24 meses e comorbidade da lista, só no período sazonal (fevereiro a agosto).', ref: { fonte: 'MS, NT 109/2025 e Guia de estratégia contra o VSR 2026', pagina: 'NT 109/2025, item 3 (p. 1); Guia VSR 2026 via SMS-SP, p. 3–6, 10 e 13–14' } },
+    ],
+  },
+  'ped-insuficiencia-cardiaca': {
+    resumo: 'Calcula por peso diuréticos, iECA, betabloqueadores, digoxina e levosimendana da insuficiência cardíaca na criança e o índice cardiotorácico, com as classificações de Ross e ISHLT do livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe idade e peso para as doses. Para o índice cardiotorácico, informe as medidas A, B e C da radiografia.',
+    quandoUsar: [
+      { texto: 'Disfunção sistólica do VE na criança: fração de encurtamento abaixo de 25% e/ou fração de ejeção abaixo de 55%.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 22', pagina: 'p. 237' } },
+      { texto: 'Índice cardiotorácico acima de 0,55 na criança e de 0,6 no neonato sugere cardiomegalia.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 22', pagina: 'Figura 3, p. 237' } },
+    ],
+  },
+  'ped-crise-hipertensiva': {
+    resumo: 'Classifica a pressão arterial da criança pela Tabela 1 do livro do ICr-HCFMUSP, com os percentis da AAP 2017, mostra a meta de redução da PAM na emergência e calcula as drogas da crise hipertensiva por peso.',
+    instrucoes: 'Informe idade, peso e a PA sistólica e diastólica; de 1 a menos de 13 anos, informe também sexo e estatura (ou os percentis lidos na tabela). Para a meta, informe a PAM medida.',
+    quandoUsar: [
+      { texto: 'Urgência hipertensiva é a elevação aguda sintomática sem lesão de órgão-alvo; emergência, com lesão de órgão-alvo ou ameaça à vida.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 26', pagina: 'p. 272' } },
+      { texto: 'PA sistólica mais de 30 mmHg acima do p95 deve preocupar para lesão de órgão-alvo.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 26', pagina: 'p. 272' } },
+    ],
+  },
+  'ped-meningite': {
+    resumo: 'Corrige o liquor no acidente de punção, aplica o Bacterial Meningitis Score e calcula por peso os antibióticos empíricos, o aciclovir, a dexametasona e a quimioprofilaxia da meningite na criança pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe as contagens do liquor e do sangue para a correção, marque os critérios do BMS presentes e informe idade e peso para as doses.',
+    quandoUsar: [
+      { texto: 'O Bacterial Meningitis Score vale na criança com pleocitose: muito baixo risco só se todos os critérios estiverem ausentes; com qualquer critério presente, tratar como bacteriana até as culturas.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 40', pagina: 'p. 410' } },
+      { texto: 'Quimioprofilaxia do meningococo no contato íntimo: mesmo domicílio, quarto ou secreções nos 7 dias anteriores, escola ou creche nos 7 dias, intubação sem paramentação ou voo de mais de 8 h ao lado.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 40', pagina: 'p. 412' } },
+    ],
+  },
+  'ped-infeccao-urinaria': {
+    resumo: 'Diz quem testar e lê a urinálise e a urocultura da criança pela AAP 2026 de 8 dias a 5 anos (pelo livro do ICr-HCFMUSP fora dessa faixa) e calcula por peso os antibióticos orais e parenterais do livro.',
+    instrucoes: 'Escolha a faixa de idade, os achados da urinálise, a forma de coleta e a contagem da urocultura. Informe idade e peso para as doses.',
+    quandoUsar: [
+      { texto: 'Testar a urina de 2 a 24 meses com febre de 39 °C ou mais, bom estado geral e sem foco aparente, pesando os fatores de risco da Figura 2.', ref: { fonte: 'AAP 2026, ITU de 8 dias a 5 anos (Alverson et al., Pediatrics 2026)', pagina: 'Figura 2, p. 28' } },
+      { texto: 'De 8 dias a 5 anos, a ITU pela AAP 2026 pede urocultura por sonda ou punção com 10.000 UFC/mL ou mais de um uropatógeno (jato médio, 100.000 ou mais, só a partir de 2 meses), sempre com piúria.', ref: { fonte: 'AAP 2026, ITU de 8 dias a 5 anos (Alverson et al., Pediatrics 2026)', pagina: 'Tabela 1, p. 5' } },
+    ],
+  },
+  'ped-pneumonia': {
+    resumo: 'Calcula por faixa etária e peso o antibiótico empírico domiciliar e hospitalar da pneumonia comunitária na criança, com situações especiais, sinais de gravidade e leitura do líquido pleural pelo livro do ICr-HCFMUSP, e a PAC complicada pela SBP 2024.',
+    instrucoes: 'Informe idade e peso e escolha o regime, domiciliar ou hospitalar. No derrame, informe pH, glicose e DHL do líquido pleural.',
+    quandoUsar: [
+      { texto: 'Internar com toxemia ou sepse, hipoxemia, insuficiência respiratória, intolerância à via oral, fatores sociais, idade abaixo de 2 meses, doença de base ou complicações; os critérios variam entre instituições.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 30', pagina: 'p. 312' } },
+    ],
+  },
+  'ped-hemoterapia': {
+    resumo: 'Calcula por peso os volumes de concentrado de hemácias, plasma, plaquetas, fatores VIII e IX, crioprecipitado, albumina e cálcio na transfusão maciça da criança pelo livro do ICr-HCFMUSP, com os limiares pediátricos da AABB ao lado.',
+    instrucoes: 'Informe idade e peso; para plaquetas e cálcio, informe também a volemia, que a tela não estima. O aumento desejado de Hb, plaquetas, fator e albumina é opcional.',
+    quandoUsar: [
+      { texto: 'Na anemia aguda, Hb entre 6 e 7 g/dL é tolerada; a reposição de hemácias na criança começa com perda aguda de 15 a 20% ou mais e se baseia mais nos sinais clínicos que na Hb.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 67', pagina: 'p. 724' } },
+      { texto: 'Criança crítica ou em risco, estável, sem hemoglobinopatia transfusão-dependente, cardiopatia cianótica ou hipoxemia grave: transfundir hemácias com Hb abaixo de 7 g/dL.', ref: { fonte: 'AABB 2023 (Carson et al., JAMA 2023)', pagina: 'rec. 3, p. 1897', grau: 'forte, evidência moderada' } },
+    ],
+  },
+  'ped-falciforme': {
+    resumo: 'Gradua a crise álgica pela intensidade da dor e calcula a analgesia por peso, com febre, sequestro esplênico, AVC e síndrome torácica aguda da doença falciforme na criança, pelo livro do ICr-HCFMUSP e pelo PCDT do Ministério da Saúde de 2024.',
+    instrucoes: 'Informe idade, peso e a nota da dor de 1 a 10. No sequestro esplênico, informe a Hb basal e a atual.',
+    quandoUsar: [
+      { texto: 'Crise álgica: dor leve de 1 a 3, moderada de 4 a 6 e intensa de 7 a 10; avaliar e medicar em até 1 h da chegada.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 63', pagina: 'Figura 1, p. 668' } },
+      { texto: 'Sequestro esplênico: queda de Hb de 2 g/dL ou mais em relação ao basal, com baço aumentado.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 63', pagina: 'p. 670' } },
+    ],
+  },
+  'ped-kawasaki': {
+    resumo: 'Conta os critérios clássicos, aplica o algoritmo da AHA para a forma incompleta, classifica as coronárias pelo Z-score e calcula as doses da doença de Kawasaki por peso, pelo livro do ICr-HCFMUSP com a AHA 2024 ao lado.',
+    instrucoes: 'Informe os dias de febre e marque as manifestações; na forma incompleta, informe PCR, VHS e as alterações laboratoriais. Informe o Z-score (e o diâmetro, se houver), a idade e o peso.',
+    quandoUsar: [
+      { texto: 'Forma clássica: febre alta por ao menos 5 dias com ao menos 4 das 5 manifestações.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 70', pagina: 'p. 747' } },
+      { texto: 'Forma incompleta: febre de 5 dias ou mais com 2 ou 3 critérios, ou lactente com menos de 6 meses e febre de 7 dias ou mais sem explicação.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 70', pagina: 'Figura 1, p. 748' } },
+    ],
+  },
+  'ped-dengue': {
+    resumo: 'Classifica a dengue da criança nos grupos A a D pelos achados e calcula a hidratação por faixa de peso, as expansões dos grupos C e D, a albumina 5% e a prova do laço pelo livro do ICr-HCFMUSP, com o manual do Ministério da Saúde de 2024 ao lado.',
+    instrucoes: 'Informe idade e peso, escolha a linha do Quadro 8 (criança ou adolescente) e marque os achados. No grupo B, informe hematócrito e plaquetas; para a prova do laço, a PA sistólica e a diastólica.',
+    quandoUsar: [
+      { texto: 'Caso suspeito na criança: quadro febril agudo de 2 a 7 dias, sem foco aparente, em quem vive ou veio de área com transmissão.', ref: { fonte: 'MS, Dengue: diagnóstico e manejo clínico, 6ª ed., 2024', pagina: 'p. 55' } },
+      { texto: 'Suspeita sem sinais de alarme: febre de 2 a 7 dias com ao menos 2 entre cefaleia, dor retro-orbitária, mialgia, artralgia, exantema, vômitos ou náuseas, leucopenia e prova do laço positiva, em área de transmissão nos últimos 15 dias.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 44', pagina: 'Quadro 1, p. 445' } },
+    ],
+  },
+  'ped-febre-sem-sinais': {
+    resumo: 'Indica o fluxograma da febre sem sinais localizatórios pela idade, lê leucograma e PCR, aplica a AAP 2021 e a regra do PECARN no lactente de 8 a 60 dias e calcula os antibióticos por peso pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe a idade em dias (até 90) ou em meses, o leucograma e a PCR. De 8 a 60 dias, informe também temperatura, procalcitonina e o exame de urina; marque os fatores para a coleta de urina e informe o peso para as doses.',
+    quandoUsar: [
+      { texto: 'Febre sem sinais localizatórios: febre retal de 38 °C ou mais há menos de 7 dias, em criança em bom estado geral, sem causa na história e no exame.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 45', pagina: 'p. 461' } },
+      { texto: 'Pela AAP, lactente em bom estado geral, de 8 a 60 dias, nascido de 37 a menos de 42 semanas, com temperatura retal de 38,0 °C ou mais nas últimas 24 h; prematuros e bronquiolite clínica ficam de fora.', ref: { fonte: 'AAP 2021, lactente febril de 8 a 60 dias (Pantell et al., Pediatrics 2021)', pagina: 'Elegibilidade e exclusões' } },
+    ],
+    porQueUsar: [
+      { texto: 'A regra do PECARN foi derivada em 908 lactentes febris de até 60 dias e validada em 913; infecção bacteriana grave ocorreu em 9,3%.', ref: { fonte: 'Kuppermann et al., JAMA Pediatr 2019 (PECARN)', pagina: 'resumo' } },
+      { texto: 'Na validação, sensibilidade de 97,7%, especificidade de 60,0% e valor preditivo negativo de 99,6%, sem meningite bacteriana perdida; os autores pedem nova validação antes do uso clínico.', ref: { fonte: 'Kuppermann et al., JAMA Pediatr 2019 (PECARN)', pagina: 'resumo' } },
+    ],
+  },
+  'ped-insuficiencia-adrenal': {
+    resumo: 'Calcula a hidrocortisona da crise adrenal pela superfície corpórea, a expansão com SF e a fludrocortisona na criança pelo livro do ICr-HCFMUSP, com a alternativa por peso do Apêndice ao lado.',
+    instrucoes: 'Informe idade, peso e a superfície corpórea, que a tela não calcula. Para a fludrocortisona, informe a hidrocortisona EV das 24 h.',
+    quandoUsar: [
+      { texto: 'Crise adrenal: deterioração aguda com hipotensão absoluta ou relativa que melhora com glicocorticoide parenteral; sem melhora da hipotensão em 1 h, pensar em outra causa.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 53', pagina: 'p. 527' } },
+      { texto: 'Suspeitar na insuficiência adrenal conhecida, na interrupção abrupta de corticoterapia prolongada ou no choque refratário às medidas habituais.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 53', pagina: 'p. 528–529' } },
+    ],
+  },
+  'ped-injuria-renal': {
+    resumo: 'Estadia a injúria renal aguda da criança pelo KDIGO pediátrico, estima a TFG por Schwartz e calcula FeNa, ureia/creatinina, sobrecarga hídrica e as doses da Tabela 8 pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe estatura, creatinina atual (e a basal, se conhecida) e o método do laboratório, e a diurese em mL/kg/h com o número de horas. Índices urinários, balanço e eletrólitos são opcionais; o peso libera as doses.',
+    quandoUsar: [
+      { texto: 'Estágio 1 do KDIGO pediátrico: aumento da creatinina de 0,3 mg/dL ou mais em menos de 48 h, ou de 1,5 a 1,9 vez a basal em 7 dias, ou diurese abaixo de 0,5 mL/kg/h por 6 a 12 h.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 56', pagina: 'Tabela 1, p. 576' } },
+      { texto: 'Sem creatinina basal conhecida, usar a que corresponde a TFG de 120 mL/min/1,73 m² pela Schwartz.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 56', pagina: 'p. 575' } },
+    ],
+  },
+  'ped-tfg-schwartz': {
+    resumo: 'Estima a taxa de filtração glomerular da criança pela fórmula de Schwartz, com a constante do método de dosagem da creatinina, como o livro do ICr-HCFMUSP traz.',
+    instrucoes: 'Informe estatura, creatinina sérica e o método da creatinina no laboratório (enzimático ou Jaffé, pela idade e sexo). A conta é estatura × k ÷ creatinina.',
+  },
+  'ped-glomerulopatias-shu': {
+    resumo: 'Reúne as definições da síndrome nefrótica, a hipotensão postural, albumina 20% e diuréticos, a restrição hídrica da GNPE, os pulsos de metilprednisolona e os limiares da SHU na criança pelo livro do ICr-HCFMUSP, com KDIGO 2025 e IPNA 2023 ao lado.',
+    instrucoes: 'Informe idade, peso e, se houver, a superfície corpórea. Conforme o quadro, informe a Pr/Cr, a albumina e a proteinúria de 24 h, a PA deitado e sentado ou a Hb e o Ht.',
+    quandoUsar: [
+      { texto: 'Proteinúria nefrótica: relação proteína/creatinina de 200 mg/mmol (2 g/g) ou mais em amostra isolada, ou 1.000 mg/m²/dia ou mais; síndrome nefrótica é a proteinúria nefrótica com hipoalbuminemia ou edema.', ref: { fonte: 'KDIGO 2025, síndrome nefrótica na criança', pagina: 'Practice Point 1.1.1, p. S255' } },
+      { texto: 'SHU: tríade de anemia hemolítica microangiopática, trombocitopenia e lesão renal aguda.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 60', pagina: 'Tabela 2, p. 633' } },
+    ],
+  },
+  'ped-hda-hepatica': {
+    resumo: 'Calcula por peso octreotida, somatostatina e omeprazol da hemorragia digestiva e aplica o critério de coagulação do PALF, a dose tóxica de paracetamol, a amônia, a glicose e a oferta hídrica da insuficiência hepática aguda na criança, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe idade e peso para as doses. Na IHA, informe INR ou TP e se há encefalopatia; o paracetamol ingerido, a amônia e a necessidade hídrica basal são opcionais.',
+    quandoUsar: [
+      { texto: 'IHA pelo PALF: sem hepatopatia crônica conhecida, com lesão hepática bioquímica e coagulopatia que não corrige com vitamina K, e INR acima de 1,5 ou TP de 15 s ou mais com encefalopatia, ou INR acima de 2 ou TP de 20 s ou mais sem encefalopatia.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 36', pagina: 'p. 357' } },
+    ],
+  },
+  'ped-coma-hic': {
+    resumo: 'Calcula o GCS-Pupilas, a pressão de perfusão cerebral com a meta por idade e o corte da bainha do nervo óptico, e as doses de glicose, midazolam e dexametasona do coma e da hipertensão intracraniana na criança, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe o Glasgow e quantas pupilas não reagem à luz; para a PPC, a PAM e a PIC. Para a bainha, a idade, o diâmetro medido e se a fontanela está aberta; o peso libera as doses.',
+    quandoUsar: [
+      { texto: 'PIC normal na criança: 9 a 21 mmHg (12 a 28 cmH2O).', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 41', pagina: 'p. 415' } },
+      { texto: 'Via aérea avançada com Glasgow abaixo de 8 se o tratamento etiológico não for imediato, ou na suspeita de HIC.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 37', pagina: 'p. 374' } },
+    ],
+  },
+  'ped-hemostasia-trombose': {
+    resumo: 'Calcula por peso a reposição de fator na hemofilia, DDAVP, antifibrinolítico, von Willebrand, PTI, heparina com nomograma do TTPa, enoxaparina, varfarina e rt-PA na criança, pelo livro do ICr-HCFMUSP, com a ASH/ISTH 2025 ao lado.',
+    instrucoes: 'Informe idade e peso, o fator e o tipo de hemorragia (ou o Δ de fator desejado). Para ajustar a anticoagulação, informe o TTPa ou o INR e a fase da varfarina.',
+    quandoUsar: [
+      { texto: 'Hemofilia pela atividade de fator: leve de 5 a 40%, moderada de 1 a 5% e grave abaixo de 1%.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 64', pagina: 'p. 678' } },
+      { texto: 'PTI: plaquetas abaixo de 100.000 isoladas; tratar a recém-diagnosticada com menos de 20.000 e sangramento ativo.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 64', pagina: 'p. 682–684' } },
+    ],
+  },
+  'ped-emergencias-oncologicas': {
+    resumo: 'Reúne lise tumoral pelos critérios de Cairo e Bishop com hidratação por m², hemocomponentes, hiperviscosidade, neutropenia febril e síndromes compressivas da criança com câncer, pelo livro do ICr-HCFMUSP, com a diretriz pediátrica IPFNG 2023 ao lado.',
+    instrucoes: 'Informe idade, peso e superfície corpórea. Na lise tumoral, informe ácido úrico, potássio, fósforo e cálcio; na hiperviscosidade e na neutropenia, leucócitos e neutrófilos; marque os critérios de alto risco.',
+    quandoUsar: [
+      { texto: 'Neutropenia: neutrófilos até 500/mm³, ou até 1.000 com queda prevista para 500 ou menos em 24 a 48 h; profunda abaixo de 100.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 66', pagina: 'p. 708' } },
+      { texto: 'Febre no neutropênico: axilar de 38,5 °C ou mais, ou de 38 °C ou mais sustentada por 1 h.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 66', pagina: 'p. 709' } },
+    ],
+  },
+  'ped-choque-toxico-partes-moles': {
+    resumo: 'Aplica os critérios do CDC para síndrome do choque tóxico estafilocócica e estreptocócica e calcula por peso os antibióticos e a imunoglobulina do choque tóxico e os antibióticos das infecções de pele e partes moles na criança, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Marque os critérios clínicos, os sistemas acometidos e o critério laboratorial; na forma estreptocócica, a hipotensão, os órgãos e o sítio de isolamento. Informe idade e peso para as doses.',
+    quandoUsar: [
+      { texto: 'SCT estafilocócica: caso provável com critério laboratorial e 4 dos 5 critérios clínicos; confirmado com os 5, incluindo a descamação.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 46', pagina: 'Tabela 2, p. 473–474' } },
+      { texto: 'SCT estreptocócica: hipotensão com 2 ou mais órgãos acometidos; provável com isolamento de sítio não estéril e confirmado com isolamento de sítio estéril.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 46', pagina: 'Tabela 3, p. 473–474' } },
+    ],
+  },
+  'ped-febre-imunodeprimido': {
+    resumo: 'Calcula por peso a terapia antimicrobiana empírica do imunodeprimido não oncológico, confere a dose imunossupressora de corticoide e mostra padrões por tipo de imunodeficiência e profilaxias, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe idade e peso para as doses. Para o corticoide, informe a dose em mg/kg/dia de prednisona e há quantos dias está em uso.',
+  },
+  'ped-artrite-osteomielite': {
+    resumo: 'Calcula por peso o antibiótico da artrite séptica e da osteomielite pela resistência local, mostra a cobertura por faixa etária, classifica a osteomielite pelo tempo e lê o líquido sinovial, pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Informe idade e peso e escolha o cenário de resistência local. Para a classificação, os dias de sintomas; para o líquido sinovial, os leucócitos, o predomínio de PMN e o Gram.',
+    quandoUsar: [
+      { texto: 'Osteomielite aguda até 2 semanas; subaguda de 2 semanas a 3 meses; crônica depois disso.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 49', pagina: 'p. 494' } },
+      { texto: 'Gram positivo, mais de 50.000 leucócitos/mm³ e predomínio de polimorfonucleares no líquido sinovial sugerem artrite séptica.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023, cap. 49', pagina: 'p. 496' } },
+    ],
+  },
+  'adulto-pesi': {
+    resumo: 'Estima a gravidade do TEP agudo confirmado no adulto pelo Pulmonary Embolism Severity Index, em cinco classes, com a conduta por classe do manual do HC.',
+    instrucoes: 'Informe a idade em anos e o sexo e marque cada variável presente; o total é a idade mais os pontos. Classes I e II (até 85 pontos) são de baixo risco pelo livro.',
+    quandoUsar: [
+      { texto: 'No paciente com TEP confirmado.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 32', pagina: 'Tabela 10, p. 445–446' } },
+      { texto: 'Nas categorias A e B, Hestia, PESI ou sPESI acham o baixo risco; nelas, tratar em casa é opção razoável, com anticoagulante na mão e seguimento garantido.', ref: { fonte: 'AHA/ACC 2026, TEP agudo no adulto', pagina: 'seções 3.2.1 e 4.1.1; Figura 2', grau: '1, B-R; 2a, B-R' } },
+    ],
+  },
+  'adulto-nihss': {
+    resumo: 'Pontua o déficit neurológico do AVC pela National Institutes of Health Stroke Scale como a Tabela 2 do manual do HC traz, com os cortes que o capítulo usa em cada decisão.',
+    instrucoes: 'Escolha a resposta de cada item, de 1A a 11, com os membros separados por lado; o total vai de 0 a 42. Itens não testáveis entram com 0.',
+    quandoUsar: [
+      { texto: 'Entre 3 e 4,5 h do início, a trombólise exige NIHSS de 25 ou menos; NIHSS de 6 ou mais é critério clínico de angio-TC e trombectomia até 16 h.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 38', pagina: 'p. 520–521' } },
+      { texto: 'Oclusão proximal de circulação anterior (ACI ou M1) com NIHSS de 6 ou mais, Rankin prévio de 0 a 1 e ASPECTS de 3 a 10, em até 6 h: trombectomia recomendada.', ref: { fonte: 'AHA/ASA 2026, AVC isquêmico agudo', pagina: 'p. 5 e 53', grau: 'COR 1' } },
+    ],
+  },
+  'adulto-timi-nstemi': {
+    resumo: 'Estratifica o risco na síndrome coronariana aguda sem supra de ST com os sete fatores do TIMI da Tabela 4 do manual do HC.',
+    instrucoes: 'Marque cada fator presente; cada um vale 1 ponto, de 0 a 7. Baixo risco é 0 ou 1 ponto.',
+    quandoUsar: [
+      { texto: 'Com TIMI de 0 ou 1 e baixo risco na curva de troponina, descartar SCA é razoável quando ela é a única suspeita.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 13', pagina: 'p. 205' } },
+      { texto: 'TIMI de 2 ou mais está entre os critérios de estratégia invasiva (72 h); 0 ou 1, entre os de estratégia conservadora.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 13', pagina: 'Tabela 2, p. 210' } },
+    ],
+  },
+  'adulto-sincope-san-francisco': {
+    resumo: 'Identifica o adulto com síncope em risco de evento grave pelos cinco fatores da regra de San Francisco, como o manual do HC traz.',
+    instrucoes: 'Marque cada fator presente: insuficiência cardíaca, ECG anormal, hematócrito abaixo de 30%, dispneia e PAS abaixo de 90 mmHg. Basta 1 fator para o paciente ser de risco.',
+    quandoUsar: [
+      { texto: 'O consenso europeu de síncope no pronto-socorro estratifica pelas categorias de risco da ESC 2018 e não usa escores como San Francisco.', ref: { fonte: 'EUSEM 2024, síncope no pronto-socorro (Möckel et al., Eur J Emerg Med 2024)', grau: 'consenso de processo, sem graduação' } },
+    ],
+    porQueUsar: [
+      { texto: 'Pelo manual, sensibilidade de 98% e especificidade de 56% para eventos graves em 1 ano, em 1.418 pacientes.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 16', pagina: 'p. 237–238' } },
+    ],
+  },
+  'adulto-duke-modificado': {
+    resumo: 'Classifica a endocardite infecciosa como definida, possível ou que não preenche pelos critérios de Duke-ISCVID 2023, com o Duke modificado do manual do HC como referência.',
+    instrucoes: 'Marque o critério patológico e os critérios maiores e menores presentes. Definida: critério patológico, 2 maiores, 1 maior e 3 menores, ou 5 menores; possível: 1 maior e 1 menor, ou 3 menores.',
+    porQueUsar: [
+      { texto: 'O Duke-ISCVID 2023 atualiza os critérios de 1994, modificados em 2000: entram novos métodos microbiológicos, PET-CT com 18F-FDG, TC cardíaca e a inspeção na cirurgia como critério maior, e saem as exigências de tempo e de punções separadas nas hemoculturas.', ref: { fonte: 'Fowler et al., Clin Infect Dis 2023 (Duke-ISCVID)', pagina: 'resumo' } },
+    ],
+  },
+  'adulto-profilaxia-ulcera-estresse': {
+    resumo: 'Mostra o que o manual do HC traz para profilaxia de úlcera de estresse e confere o critério de IBP na dupla antiagregação plaquetária, com o REVISE e a SCCM/ASHP 2024 ao lado.',
+    instrucoes: 'Marque se o paciente usa dupla antiagregação e os critérios presentes: qualquer um da primeira lista ou dois da segunda. O uso de álcool aparece à parte, sem somar.',
+    quandoUsar: [
+      { texto: 'Considerar profilaxia de úlcera de estresse no paciente em ventilação mecânica por mais de 48 horas, com coagulopatia ou choque.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 7', pagina: 'p. 127' } },
+      { texto: 'IBP no paciente em dupla antiagregação plaquetária com risco de sangramento digestivo.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 13', pagina: 'p. 208' } },
+    ],
+  },
+  'hiperpotassemia': {
+    resumo: 'No adulto, classifica a hiperpotassemia pelo nível, indica o cálcio pelo ECG e organiza a conduta em estabilizar, deslocar e remover; na criança, mostra os limiares e as doses por peso do livro do ICr-HCFMUSP.',
+    instrucoes: 'Escolha adulto ou criança (ou use o paciente da Central) e informe o potássio sérico, o peso e o ECG. No adulto, informe a diurese e se há acidose; na criança, se é recém-nascido.',
+    quandoUsar: [
+      { texto: 'No adulto, hiperpotassemia leve de 5,0 a 5,4, moderada de 5,5 a 6,0 e grave acima de 6,0 mEq/L.', ref: { fonte: 'Geldermann et al., Emerg Med J 2026' } },
+      { texto: 'No adulto, o cálcio é indicado com alteração no ECG ou potássio de 6,5 mEq/L ou mais.', ref: { fonte: 'Geldermann et al., Emerg Med J 2026' } },
+    ],
+  },
+  'adulto-abstinencia-alcoolica': {
+    resumo: 'Pontua a abstinência alcoólica pela CIWA-Ar, confere os critérios de Caine para encefalopatia de Wernicke e mostra as doses do manual do HC no adulto, com a BAP 2026 ao lado.',
+    instrucoes: 'Responda aos 10 itens da CIWA-Ar e marque os critérios de Caine presentes. As doses diárias do esquema citado aparecem calculadas.',
+    quandoUsar: [
+      { texto: 'Usar escala validada para identificar o risco de abstinência grave ou complicada e para monitorar os sintomas; quem tem alto risco de complicação fica internado.', ref: { fonte: 'BAP 2026 (Sinclair et al., J Psychopharmacol 2026)', grau: 'Level D' } },
+      { texto: 'Encefalopatia de Wernicke pelos critérios de Caine: o manual exige dois critérios para o diagnóstico.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 78', pagina: 'Tabela 4, p. 1032' } },
+    ],
+  },
+  'dengue-classificacao': {
+    resumo: 'Classifica a dengue nos grupos A a D pelo manual do Ministério da Saúde de 2024 e, no adulto, calcula a hidratação por peso, o grupo D com hemocomponentes, os eletrólitos e a conduta em hipertensos, cardiopatas, gestantes e em uso de antitrombóticos.',
+    instrucoes: 'Escolha adulto ou criança, informe o peso e marque sangramento de pele, condição especial, sinais de alarme e de gravidade. A classificação vale para a criança; os volumes dela ficam em Dengue — criança.',
+    quandoUsar: [
+      { texto: 'Caso suspeito: quem vive em área com dengue ou viajou nos últimos 14 dias para área com transmissão, com febre de 2 a 7 dias e duas ou mais entre náuseas, vômitos, exantema, mialgias, artralgias, cefaleia, dor retro-orbital, petéquias, prova do laço positiva e leucopenia.', ref: { fonte: 'MS, Dengue: diagnóstico e manejo clínico, 6ª ed., 2024', pagina: 'p. 55' } },
+    ],
+  },
+  'adulto-vm-cinco-passos': {
+    resumo: 'Guia a ventilação mecânica do adulto em cinco passos (quem, modo, ajustes, acompanhamento e desmame) e confere os valores do ventilador contra as tabelas do cap. 37 do manual do HC, sem escolher o ajuste.',
+    instrucoes: 'Em cada passo, informe o que a tela pede: gasometria e quadro, modo, ajustes e o peso que quer usar, mecânica e gasometria de controle, e os parâmetros do desmame e do teste de respiração espontânea.',
+    quandoUsar: [
+      { texto: 'Hipoxemia com PO2 abaixo de 60 e esforço respiratório, sem melhora após oxigênio adequado (cateter nasal, máscara de Venturi, máscara não reinalante e VNI quando indicada).', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 37', pagina: 'p. 498' } },
+      { texto: 'Hipercapnia com PCO2 acima de 55 em quem não é retentor crônico, sobretudo com falência ventilatória ou carbonarcose.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 37', pagina: 'p. 498' } },
+    ],
+  },
+  'adulto-vni-cinco-passos': {
+    resumo: 'Guia a ventilação não invasiva do adulto em cinco passos (quem, interface, ajustes, acompanhamento e retirada) com o que o manual do HC traz, e só compara pressões na DPOC, único quadro em que o livro dá valores.',
+    instrucoes: 'No primeiro passo, escolha o quadro, informe FR, gasometria e FiO2 e marque as contraindicações; depois, a interface, o modo e as pressões, e os dados de acompanhamento.',
+    quandoUsar: [
+      { texto: 'Maior evidência de benefício na exacerbação de DPOC com acidose respiratória (PaCO2 acima de 45 mmHg ou pH abaixo de 7,3) e no edema pulmonar cardiogênico.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 27', pagina: 'p. 383' } },
+      { texto: 'Na IRpA hipercápnica, a ATS 2026 faz recomendação forte de VNI para reduzir mortalidade e intubação.', ref: { fonte: 'ATS 2026, suporte respiratório não invasivo (Goel et al., Am J Respir Crit Care Med 2026)', grau: 'forte' } },
+    ],
+  },
 }
 
 export function topoDa(fichaId: string): Topo | undefined {
