@@ -2620,7 +2620,7 @@ Regras da trilha:
 | 7 | U4 | Tela "Hoje" da recepção: agendados, demanda espontânea, fila da enfermagem e fila médica | P2 | Pendente |
 | 8 | U11 + U12 | Parto ou aborto do hospital fecha a gestação na UBS; recém-nascido na puericultura da UBS da mãe; nascimento obrigatório; DUM contra parto recente. Exame externo sem pedido (HbA1c, sífilis, HIV, hepatites); sugestão de hiperdia vinda da UPA | P2 | Pendente |
 | 9 | U13 | Painel e Indicadores do gestor da UBS em versão ambulatorial: produção, agenda, espera, medicamentos, rede, vigilância e os indicadores C1 a C7 pelas notas metodológicas da SAPS | P1 | Pendente |
-| 10 | U13 (trilha) | Exportação para o e-SUS APS e o SISAB | P2 | Pendente (trilha própria) |
+| 10 | U15 | Transmissão dos dados da UBS ao SISAB (hoje SIAPS, pelo e-SUS APS) e à RNDS (registro de atendimento clínico, vacinação e resultado de exame). Pedido do RT em 17/11/2026: "por fim e último, o sistema da UBS tem que transmitir dados para a RNDS e o SISAB". Começa por diagnóstico A/B, reaproveitando a RNDS da Fase 3 (`docs/rnds/`) e o envio da Fase 5C | P1 | Pendente (último da trilha) |
 
 Dado criado no percurso: a grade da enfermeira na homologação (D1), de segunda a sexta, 07–11 e 13–17, de 30 em 30 minutos.
 
