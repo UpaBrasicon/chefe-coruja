@@ -26,7 +26,7 @@
 --     DROP FUNCTION public.registrar_escuta_aps(uuid, text, text, text, jsonb, text, text, date);
 --   DROP FUNCTION private.enfermeiro_de_plantao(uuid);
 
-CREATE OR REPLACE FUNCTION pg_temp.trocar(p_f regprocedure, VARIADIC p_pares text[])
+CREATE OR REPLACE FUNCTION pg_temp.u8_trocar(p_f regprocedure, VARIADIC p_pares text[])
 RETURNS void LANGUAGE plpgsql AS $$
 DECLARE
   def text := replace(pg_get_functiondef(p_f), chr(13), '');
@@ -59,7 +59,7 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
 $$;
 REVOKE ALL ON FUNCTION private.enfermeiro_de_plantao(uuid) FROM PUBLIC, anon, authenticated;
 
-SELECT pg_temp.trocar('public.registrar_ficha(uuid, text, uuid, jsonb, text[], boolean)',
+SELECT pg_temp.u8_trocar('public.registrar_ficha(uuid, text, uuid, jsonb, text[], boolean)',
   -- a etapa da ficha (aparece duas vezes: no INSERT e na auditoria)
   'CASE WHEN v_ubs AND v_tipo_aps IS DISTINCT FROM ''escuta_inicial'' THEN ''atendimento'' ELSE ''triagem'' END, v_tipo_aps)',
   'CASE WHEN v_ubs AND (v_tipo_aps IS DISTINCT FROM ''escuta_inicial'' OR NOT private.enfermeiro_de_plantao(p_setor)) THEN ''atendimento'' ELSE ''triagem'' END, v_tipo_aps)',
@@ -172,7 +172,7 @@ GRANT EXECUTE ON FUNCTION public.registrar_escuta_aps(uuid, text, text, text, js
 
 -- ── 3. só o médico envia à UPA (D2) ─────────────────────────────────────────
 -- (trechos de uma linha só: o fim de linha do arquivo não entra na comparação)
-SELECT pg_temp.trocar('public.encaminhar_upa(uuid, uuid, text)',
+SELECT pg_temp.u8_trocar('public.encaminhar_upa(uuid, uuid, text)',
   'OR NOT (private.tenho_papel(e.unidade_id, ''plantonista'') IS TRUE OR private.tenho_papel(e.unidade_id, ''enfermeiro'') IS TRUE) THEN',
   'OR private.tenho_papel(e.unidade_id, ''plantonista'') IS NOT TRUE THEN',
   'RAISE EXCEPTION ''Acesso negado: envia o médico ou o enfermeiro de plantão no consultório.'';',
@@ -225,4 +225,4 @@ DROP TRIGGER IF EXISTS trg_encaminhamento_upa_chegada_pela_ficha ON public.episo
 CREATE TRIGGER trg_encaminhamento_upa_chegada_pela_ficha AFTER INSERT ON public.episodios
   FOR EACH ROW EXECUTE FUNCTION private.encaminhamento_upa_chegada_pela_ficha();
 
-DROP FUNCTION pg_temp.trocar(regprocedure, text[]);
+DROP FUNCTION pg_temp.u8_trocar(regprocedure, text[]);
