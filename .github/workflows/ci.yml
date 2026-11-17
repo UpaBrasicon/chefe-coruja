@@ -1,6 +1,7 @@
 # CI do Chefe Coruja — roda a cada push e PR em master e porte-frontend.
-# Sem segredos: nada aqui fala com o Supabase de produção. O banco é o local
-# (Docker) que o `supabase start` sobe no próprio runner, com migrations + seed.
+# Sem segredos. O banco é o local (Docker) que o `supabase start` sobe no
+# próprio runner, com migrations + seed. A única leitura da produção é o gate
+# do LG10: status de versões de ficha, com a chave publicável, sem login.
 name: CI
 
 on:
@@ -23,8 +24,13 @@ jobs:
     name: web (lint, build, testes)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: read # LG10: o gate lê o corpo atual do PR
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 2 # LG10: o gate compara com HEAD^1, o master no commit de merge do PR
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
@@ -57,6 +63,22 @@ jobs:
         run: node --experimental-strip-types --test supabase/functions/api/contrato.test.ts supabase/functions/api/fhir.test.ts supabase/functions/api/financeiro.test.ts supabase/functions/webhooks/assinatura.test.ts supabase/functions/pedir-demonstracao/regras.test.ts supabase/functions/clinical-search/liberar.test.ts supabase/functions/clinical-search/uso.test.ts supabase/functions/clinical-search/segundo.test.ts supabase/functions/_shared/borda.test.ts
       - name: Testes clínicos
         run: npm run test:clinico
+      # LG10 (docs/regulatorio/LG10-GATE-APROVACAO-DIAGNOSTICO.md): guarda de
+      # versão (G2) e gate de aprovação (G1). Ficha, topo, guia ou tela que
+      # mudou sem versão nova falha; versão nova só passa aprovada na produção.
+      # Depois de aprovar na Revisão Clínica, ou de pôr "Sem mudança clínica:"
+      # no corpo do PR, rode de novo este job.
+      - name: Testes do gate das fichas (LG10)
+        run: node --test scripts/gate-fichas.test.mjs
+      - name: Gate de aprovação das fichas (LG10)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GATE_SUPABASE_URL: https://saqjrjtrkzkswsxxvdxn.supabase.co
+          GATE_SUPABASE_KEY: ${{ vars.GATE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          export PR_BODY="$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json body -q .body)"
+          node --experimental-strip-types scripts/gate-fichas.mjs --base HEAD^1
       - name: Gateway (cópia da desidentificação)
         run: npm run test:gateway
       - name: Domínio, terminologia, observação, interop
