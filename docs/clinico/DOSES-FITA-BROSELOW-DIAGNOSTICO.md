@@ -89,6 +89,8 @@ Achados das telas que já estão na produção. A fonte das telas é o livro do 
 | D11 | Achados das telas de hoje (tabela acima) | Lote de correção separado, depois do módulo, cada ficha aprovada por você | Corrigir agora, antes do módulo |
 | D12 | Volume em mL | Mostrar mg e mL com a concentração escrita ao lado ("0,65 mL de 0,1 mg/mL"); mL arredondado a 0,01 abaixo de 1 mL; milhar sem ponto ("1200 mg") | Só mg |
 
+**Decisão do RT (17/11/2026): todas A.**
+
 ## Ordem depois das decisões
 
 1. Rodada do D10 no PubMed (se A).
