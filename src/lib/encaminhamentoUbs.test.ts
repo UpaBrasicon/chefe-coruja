@@ -63,7 +63,8 @@ test('"Encaminhados" só aparece na UBS, para quem envia e acompanha', () => {
 test('H1/H3: a conduta, a escuta vermelha, a recepção da UPA e a janela levam ao envio', () => {
   const conduta = readFileSync('src/pages/plantao/porta/AbaConduta.tsx', 'utf8')
   assert.match(conduta, /const urgencia = condutas\.includes\('encaminhamento_urgencia'\)/)
-  assert.match(conduta, /\{urgencia && unidadeAtiva && \(/)
+  // U6, PR 3: na consulta de enfermagem o envio fica com o médico (D2)
+  assert.match(conduta, /\{urgencia && unidadeAtiva && !enfermagem && \(/)
   assert.match(conduta, /linkRegulacaoDaConsulta\(\{ paciente: pacienteId, tipo: regulacao/)
   // percurso da UBS (D2, 17/11/2026): só o médico envia; a escuta não tem mais o envio
   const escuta = readFileSync('src/pages/enfermagem/triagem/EscutaInicial.tsx', 'utf8')

@@ -158,7 +158,9 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
   const retorno = condutas.includes('retorno_cuidado_continuado') ? 'consulta_programada'
     : condutas.includes('retorno_consulta_agendada') ? 'consulta_agendada' : null
   // tarefa 5 (H1, H2): urgência vai à UPA da rede; especializado e internação, pela regulação
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
+  // U6, PR 3: na consulta de enfermagem o envio à UPA e a regulação ficam com o médico (D2)
+  const enfermagem = papelAtivo === 'enfermeiro'
   const [enviarUpa, setEnviarUpa] = React.useState(false)
   const [avisoEnvio, setAvisoEnvio] = React.useState<string | null>(null)
   const urgencia = condutas.includes('encaminhamento_urgencia')
@@ -253,7 +255,7 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
             <Button size="xs" variant="outline" onClick={() => onIrPara('enc')}>Abrir Encaminhar</Button>
           </div>
         )}
-        {urgencia && unidadeAtiva && (
+        {urgencia && unidadeAtiva && !enfermagem && (
           <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
             <span className="flex-1">{avisoEnvio ?? 'Paciente vai à UPA da rede? O envio avisa a UPA com o resumo e acompanha a chegada.'}</span>
             {!avisoEnvio && <Button size="xs" variant="outline" onClick={() => setEnviarUpa(true)}><Ambulance /> Enviar à UPA</Button>}
@@ -261,7 +263,7 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
               nome={nome} motivoInicial={hipotese ?? ''} onEnviado={(a) => { setAvisoEnvio(a); setEnviarUpa(false) }} />
           </div>
         )}
-        {regulacao && (
+        {regulacao && !enfermagem && (
           <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
             <span className="flex-1">{regulacao === 'leito' ? 'A internação' : 'O serviço especializado'} se pede pela regulação da rede (abre em outra aba, já com o paciente, o CID e o quadro).</span>
             <Button size="xs" variant="outline" render={<Link to={linkRegulacaoDaConsulta({ paciente: pacienteId, tipo: regulacao, cid: cidDaConsulta, quadro, hipotese })} target="_blank" rel="noopener" />}>
