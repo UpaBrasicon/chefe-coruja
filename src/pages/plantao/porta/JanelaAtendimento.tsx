@@ -276,7 +276,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
         {aberto && dados.data && (
           <Tabs value={aba}>
             <TabsContent value="atend">
-              <AbaAtendimento episodioId={ep.id} pacienteId={ep.paciente_id} faixa={faixa} corAtual={ultimaCor ?? ep.cor_atual} ubs={ubs}
+              <AbaAtendimento episodioId={ep.id} pacienteId={ep.paciente_id} nascimento={ep.paciente?.data_nascimento ?? null} faixa={faixa} corAtual={ultimaCor ?? ep.cor_atual} ubs={ubs}
                 soap={soap} setSoap={setSoap} salvoEm={salvoEm} classificacoes={cls} registros={registros} aoRegistrar={aoRegistrarSoap} />
             </TabsContent>
             <TabsContent value="presc">
@@ -323,7 +323,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 soap={soap} agora={agora} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
             <TabsContent value="conduta" keepMounted>
-              {ubs && <AbaConduta episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} tipoInicial={ep.tipo_atendimento_aps} registros={registros} soap={soap} faixa={faixa}
+              {ubs && <AbaConduta episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} tipoInicial={ep.tipo_atendimento_aps} registros={registros} soap={soap} faixa={faixa} nascimento={ep.paciente?.data_nascimento ?? null}
                 onIrPara={(a) => { setAba(a); setErro(null) }} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
           </Tabs>

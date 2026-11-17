@@ -2474,6 +2474,7 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 | # | Prior. | Pedido | Hoje | Decisão do RT | Estado |
 |---|---|---|---|---|---|
 | 1 | P1 | Ferramentas pelo CID no atendimento e tela do celular. Quando o médico escolhe um CID, na urgência ou na UBS, aparecem as calculadoras e os escores daquela doença (ex.: I20 → HEART, TIMI; I64 → NIHSS); e as ferramentas e o atendimento ganham tela própria no celular. Motivo do RT para ter criado as calculadoras e os escores | Não existe ligação CID → ferramenta (nem no código nem no banco; a ficha não tem campo de CID). A ferramenta só abre pela rota da Central, sem os dados do paciente do atendimento. No celular, o topo longo vem antes das entradas, o menu da seção e a coluna da direita somem, 62 telas têm tabela que rola para o lado e o atendimento tem 12 abas numa linha | Pedido do RT em 17/11/2026 ("seja na urgência ou UBS"). Os dois pedidos viram um item só, que entra antes das trilhas LG e SP | Diagnóstico em `docs/clinico/CID-FERRAMENTAS-CELULAR-DIAGNOSTICO.md` (frentes F1–F6; decisões CF1–CF9). Achado: o ABCD2 é escore de AIT (G45), não de AVC (I64). **Decisões do RT em 17/11/2026:** CF1–CF9 = A; ABCD2 só no G45. Leitura da sessão de obrigatórios legais: entra com condições (rótulo fixo, peso e idade do prontuário com origem e data, peso velho acima de 24 h na criança e de 7 dias no adulto, dose só depois de calcular, nada na URL), aceitas pelo RT. **F1 na produção em 17/11/2026, PR #862, ok do RT:** mapa CID → ferramentas como ficha `mapa-cid-ferramentas` 2026-11-17.1 (247 ligações, 201 ferramentas, trecho literal do topo em cada uma), migration `20270414000084`, ficha aprovada pelo RT na Revisão Clínica; dúvidas em `docs/clinico/CID-FERRAMENTAS-MAPA-DUVIDAS.md`. **F7 (pedido do RT em 17/11/2026):** aviso "pensar em sepse" quando o CID é infeccioso e o NEWS2 da triagem está aumentado, com os vitais das últimas 6 h, só para 14 anos ou mais e pela mesma regra do alerta de sepse do adulto; o RT liberou a exceção à regra de conduta só para este aviso, e a sessão legal liberou com condições. Próximo: F2 (bloco no atendimento) |
+| 2 | P1 | Otimizar o VPS e tirar o que não é necessário | Máquina folgada (4,3 de 7,8 GB de memória; disco 36%). Achado: a cópia do backup no Backblaze parou em 20/10/2026 (limite grátis de 10 GB cheio de versões escondidas) | Pedido do RT em 17/11/2026; "Sim, itens 1 a 3" e "Sim, conserte" | Cache de build limpo (884 MB); B2 limpo pela regra de 14 dias e `backup.sh` corrigido; reenvio automático até o B2 liberar (`infra/vps-backup-offbox.md`). Imagem de volta do Nous (3,9 GB) e backups do Nous de 05/10 (0,5 GB) apagados com o ok do RT; disco em 31% |
 
 ## Trilha Paralela — Hermes / Evidências (RAG clínico)
 **Gate de início:** Fase 0 fechada com evidência. Não compete com os P0 de nenhuma fase.
@@ -2561,7 +2562,7 @@ Começa depois que a trilha das calculadoras terminar, e depois do item 1 dos pe
 | LG3 | Relatório de impacto (RIPD) do tratamento de dado de saúde | LGPD, arts. 5º XVII e 38 | P0 | Pendente |
 | LG4 | Inventário das operações de tratamento: que dado, para quê, onde fica, quem acessa e por quanto tempo | LGPD, art. 37 | P1 | Pendente |
 | LG5 | Plano de resposta a incidente: quem decide, modelo de aviso à ANPD e ao titular, prazo | Resolução CD/ANPD 15/2024 | P0 | Pendente |
-| LG6 | IA com dado de saúde: trocar o provedor ou a região do modelo (hoje DeepSeek), ou assinar as cláusulas-padrão, ou tirar o dado de paciente da IA | LGPD, art. 33; Resolução ANPD 19/2024 | P0 | Pendente |
+| LG6 | IA com dado de saúde: trocar o provedor ou a região do modelo (hoje DeepSeek), ou assinar as cláusulas-padrão, ou tirar o dado de paciente da IA | LGPD, art. 33; Resolução ANPD 19/2024 | P0 | **Em andamento (17/11/2026).** Decisões do RT: todas A (#849, `docs/regulatorio/LG6-IA-DADO-SAUDE-DIAGNOSTICO.md`). Na produção com o ok do RT: I2 (#852, sem Kimi e com lembrete na primeira resposta; `LLM_FALLBACK_*` tirado do `.env.prod`), I3 (#855, migration 20270414000083: texto para a IA apagado em 30 dias) e I5 (#857: só a Edge abre o `/v1/ask`; Hermes e Nous com chave interna, conferido 401/200 em cada contêiner). I4 na tabela de fornecedores e na ADR 0006. Falta o I1: comparativo em `docs/regulatorio/LG6-COMPARATIVO-PROVEDORES.md`, com a decisão do RT de 17/11/2026 ("Amazon, todas A": Bedrock `sa-east-1` só In-Region, modelo pelas avaliações, conta AWS nova); falta a conta, as avaliações e a troca |
 | LG7 | Assinatura qualificada ICP-Brasil (certificado em nuvem: BirdID, VIDaaS, SafeID e outros) em receita de controlado, atestado e documentos do prontuário | Lei 14.063/2020; Res. CFM 2.299/2021 e 1.821/2007; Lei 13.787/2018 | P1 | Pendente |
 | LG8 | Telemedicina: termo de consentimento, registro no prontuário e documento assinado na teleinterconsulta | Lei 14.510/2022; Res. CFM 2.314/2022 | P2 | Pendente |
 | LG9 | Conferir a guarda dos registros de acesso por pelo menos 6 meses | Marco Civil, art. 15 | P2 | Pendente |
@@ -2629,6 +2630,32 @@ Regras da trilha:
 | 10 | U15 | Transmissão dos dados da UBS ao SISAB (hoje SIAPS, pelo e-SUS APS) e à RNDS (registro de atendimento clínico, vacinação e resultado de exame). Pedido do RT em 17/11/2026: "por fim e último, o sistema da UBS tem que transmitir dados para a RNDS e o SISAB". Começa por diagnóstico A/B, reaproveitando a RNDS da Fase 3 (`docs/rnds/`) e o envio da Fase 5C | P1 | Pendente (último da trilha) |
 
 Dado criado no percurso: a grade da enfermeira na homologação (D1), de segunda a sexta, 07–11 e 13–17, de 30 em 30 minutos.
+
+---
+
+## Trilha — UBS: envio à RNDS e ao SISAB, pedido do RT em 17/11/2026
+
+Origem: o RT pediu, "por fim e último", que o sistema da UBS transmita os dados para a RNDS e para o SISAB. Em 17/11/2026, ele confirmou que esta é a última trilha, depois da sepse, com prioridade P1.
+
+Como está hoje:
+- **RNDS:** existe o envio da regulação no modelo MIRA (Fase 5C, serviço `rnds-envio` no VPS, ligado ao simulador). O RAC e o Sumário de Alta estão planejados (`docs/rnds/`). Tudo está parado à espera da credencial.
+- **SISAB:** a UBS registra o atendimento, a CIAP-2, os programas (pré-natal e puericultura) e o encaminhamento, mas nada vai ao SISAB. Não há exportação no layout do e-SUS APS.
+
+Regras da trilha:
+- **Cada item começa por diagnóstico com decisões A/B.**
+- **O envio real só acontece depois do ambiente de homologação oficial.** Antes dele, o envio vai só ao simulador ou ao validador.
+- **Dado de paciente só sai pelo canal oficial,** com o registro de cada envio e de cada recusa.
+
+| Item | O que fazer | Base | Prioridade sugerida | Estado |
+|---|---|---|---|---|
+| RS1 | Diagnóstico: o que a UBS registra hoje × o que o SISAB pede (fichas do e-SUS APS pelo LEDI APS: atendimento individual, procedimentos, vacinação, cadastro individual e domiciliar, atividade coletiva) e o que a RNDS pede da atenção primária (RAC; RIA, se houver vacinação). Caminho do envio ao SISAB: direto, ou pelo PEC ou centralizador do município | Manuais do LEDI APS e da RNDS; `docs/rnds/` | P1 | Pendente |
+| RS2 | Credenciais e ambientes: homologação da RNDS para a APS (o mesmo pedido do RAC) e o caminho de envio ao SISAB combinado com a secretaria municipal | Portal de Serviços do DATASUS; secretaria | P1 | Pendente (depende do RT e da secretaria) |
+| RS3 | Mapa dos dados: CNS ou CPF, CBO e CNES do profissional, CIAP-2 e CID, procedimentos do SIGTAP, condições avaliadas e desfechos, com a lista do que falta capturar na tela | RS1 | P1 | Pendente |
+| RS4 | Exportação do SISAB no layout do LEDI APS, com teste no validador oficial e envio pelo caminho de RS2 | RS1 a RS3 | P1 | Pendente |
+| RS5 | RNDS na UBS: RAC (e RIA, se houver vacinação) pelo serviço `rnds-envio` que já existe, no simulador e depois na homologação | RS2, RS3; Fase 5C | P1 | Pendente |
+| RS6 | Painel de envio: o que foi, o que voltou com erro, reenvio e prazo da competência; entra no inventário do LG4 | RS4 e RS5 | P2 | Pendente |
+
+Ordem sugerida: RS1 → RS3 → RS2 (em paralelo, com o RT) → RS4 → RS5 → RS6.
 
 ---
 

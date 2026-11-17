@@ -5,6 +5,7 @@ import { AVISO_PESO_ADULTO_FORA, PESO_ADULTO_MAX_KG, PESO_ADULTO_MIN_KG } from '
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { usePacienteCentral } from '@/lib/pacienteCentral'
 
 import type { PesoAdulto } from './pacienteNaFerramenta'
 
@@ -86,14 +87,19 @@ export function CampoNumero({
   )
 }
 
-/** Selo "da Central": o valor veio do paciente da Central e não foi mudado. */
+/**
+ * Selo "da Central": o valor veio do paciente da Central e não foi mudado.
+ * Vindo do atendimento (F3 das ferramentas pelo CID), o selo diz a origem e a
+ * data, como "peso do prontuário, 12/11" (condição da sessão legal).
+ */
 export function SeloDaCentral() {
+  const { origem } = usePacienteCentral()
   return (
     <span
-      title="Valor do paciente da Central do Médico, nesta aba. Mude no campo se não for este."
+      title={origem ? `Valor do atendimento (${origem}). Mude no campo se não for este.` : "Valor do paciente da Central do Médico, nesta aba. Mude no campo se não for este."}
       className="rounded-capsula border border-acao/30 bg-alerta-marca px-2 py-px text-rotulo font-medium text-acao"
     >
-      da Central
+      {origem || 'da Central'}
     </span>
   )
 }

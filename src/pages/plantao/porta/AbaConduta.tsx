@@ -125,8 +125,10 @@ function BuscaProblema({ escolhidos, onAdicionar, onTirar }: {
   )
 }
 
-export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registros, soap, faixa, onIrPara, onConfirmado }: {
+export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registros, soap, faixa, nascimento = null, onIrPara, onConfirmado }: {
   episodioId: string; pacienteId: string; nome: string; tipoInicial: string | null | undefined
+  /** data de nascimento (idade para a ferramenta aberta pelo CID, F3) */
+  nascimento?: string | null
   /** faixa pela IDADE do paciente (JanelaAtendimento), para as ferramentas do CID */
   faixa: FaixaEtaria
   registros: RegistroSoap[]; soap: Soap
@@ -205,7 +207,7 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
           onTirar={(p) => setProblemas((x) => x.filter((y) => chave(y) !== chave(p)))} />
         <span className="text-rotulo text-tinta-sussurro">O que foi avaliado e manejado nesta consulta. A busca mostra a lista da ficha, depois a CIAP-2 e depois a CID-10.</span>
         {/* F2 das ferramentas pelo CID (RT, 17/11/2026): só lista e abre ferramentas da Central */}
-        <FerramentasDoCid faixa={faixa} cids={[...problemas.flatMap((p) => ('cid' in p ? [p.cid] : 'ciap' in p ? [p.cidRelacionada] : [])), soap.cid]} />
+        <FerramentasDoCid faixa={faixa} pacienteId={pacienteId} nascimento={nascimento} cids={[...problemas.flatMap((p) => ('cid' in p ? [p.cid] : 'ciap' in p ? [p.cidRelacionada] : [])), soap.cid]} />
       </div>
 
       {/* 5A, tarefa 7: hiperdia do paciente e avaliação dos pés */}

@@ -27,8 +27,10 @@ export function definirModo(modo: EstadoPaciente['modo']) {
   avisar()
 }
 
+// Mudou à mão, a origem some: o selo volta a dizer "da Central" (F3 das
+// ferramentas pelo CID, RT em 17/11/2026).
 export function alterarPaciente(patch: Partial<Omit<EstadoPaciente, 'modo'>>) {
-  estado = { ...estado, ...patch }
+  estado = { ...estado, origem: '', ...patch }
   avisar()
 }
 

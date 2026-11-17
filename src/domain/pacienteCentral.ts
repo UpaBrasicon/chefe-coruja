@@ -54,9 +54,11 @@ export type EstadoPaciente = {
   gestante: boolean
   idade: string
   unidadeIdade: UnidadeIdade
+  /** de onde vieram idade e peso, quando não foram digitados na Central (ex.: "peso do prontuário, 12/11") */
+  origem: string
 }
 
-export const PACIENTE_VAZIO: EstadoPaciente = { modo: null, peso: '', gestante: false, idade: '', unidadeIdade: 'anos' }
+export const PACIENTE_VAZIO: EstadoPaciente = { modo: null, peso: '', gestante: false, idade: '', unidadeIdade: 'anos', origem: '' }
 
 export type LeituraPaciente = {
   modo: ModoPaciente | null
