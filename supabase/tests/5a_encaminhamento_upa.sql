@@ -2,11 +2,12 @@
 -- Testes da migration 20270216000001_encaminhamento_upa.sql (5A, tarefa 5,
 -- parte 5.1). Tudo em transação com ROLLBACK. O cenário é criado aqui.
 --
--- 1. quem envia: médico ou enfermeiro de plantão no consultório (recepção não);
+-- 1. quem envia: o médico de plantão no consultório (recepção não; o enfermeiro
+--    também não, desde o percurso da UBS, D2, 17/11/2026);
 --    destino: UPA ou hospital da mesma rede; motivo; um envio aberto por vez;
 -- 2. da consulta: o resumo leva o SOAP e o episódio da UBS segue aberto; da
 --    escuta: a ficha da UBS encerra; o destino é avisado;
--- 3. a UPA vê e marca a chegada (com a ficha dela) ou o não chegou; quem
+-- 3. a UPA vê; a ficha aberta na UPA marca a chegada sozinha (U9); o não chegou; quem
 --    enviou é avisado; a UBS não vê a lista do destino;
 -- 4. o prazo de 12 h marca "não chegou" e avisa; a UPA ainda corrige;
 -- 5. cancelamento pela origem; listas da origem e do paciente; o job existe.
@@ -98,7 +99,7 @@ INSERT INTO v SELECT 'ep3', (public.registrar_ficha(pg_temp.id('cons'), 'Tontura
 
 -- ── 1. quem envia e para onde ───────────────────────────────────────────────
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa'), 'Dor torácica típica, sem ECG na UBS')$$,
-  'Acesso negado: envia o médico ou o enfermeiro', 'recepção não envia');
+  'Acesso negado: o envio à UPA é do médico', 'recepção não envia');
 SELECT pg_temp.como('med');
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa2'), 'Dor torácica típica, sem ECG na UBS')$$,
   'Escolha uma UPA ou um hospital da rede', 'UPA de outra rede é recusada');
@@ -115,7 +116,10 @@ INSERT INTO v SELECT 'x1', public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('u
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa'), 'Dor torácica típica, de novo')$$,
   'Já há um envio à UPA em andamento', 'um envio aberto por consulta');
 SELECT pg_temp.como('enf');
-INSERT INTO v SELECT 'x2', public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, sem médico na UBS');
+SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, sem médico na UBS')$$,
+  'Acesso negado: o envio à UPA é do médico', 'D2: o enfermeiro não envia à UPA');
+SELECT pg_temp.como('med');
+INSERT INTO v SELECT 'x2', public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, vai à UPA');
 RESET ROLE;
 SELECT pg_temp.ok((SELECT resumo -> 'soap' ->> 'avaliacao' = 'Suspeita de síndrome coronariana aguda' AND resumo -> 'paciente' ->> 'cns' = '898001160000001'
                           AND prazo_em > now() + interval '11 hours' FROM public.encaminhamentos_upa WHERE id = pg_temp.v('x1')),
@@ -136,8 +140,10 @@ SELECT pg_temp.falha($$SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v
   'A ficha informada não é desta unidade', 'a ficha da chegada é da UPA');
 INSERT INTO v SELECT 'epu', (public.registrar_ficha(pg_temp.id('porta'), 'Dor torácica (vindo da UBS)', NULL,
   '{"nome":"Paciente Envio Um","data_nascimento":"1958-03-03"}') ->> 'episodio_id')::uuid;
-SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('x1'), true, pg_temp.v('epu'));
-SELECT pg_temp.ok(pg_temp.sit('x1') = 'chegou', 'chegou, ligado à ficha da UPA');
+-- U9: a ficha aberta na UPA (mesmo nome e nascimento) marca a chegada sozinha
+SELECT pg_temp.ok(pg_temp.sit('x1') = 'chegou', 'U9: a ficha da UPA marca a chegada sozinha');
+SELECT pg_temp.falha($$SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('x1'), true, pg_temp.v('epu'))$$,
+  'Este envio não está esperando a chegada', 'chegada já registrada não se marca de novo');
 SELECT pg_temp.falha($$SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('x2'), false)$$,
   'Escreva o que aconteceu', 'não chegou pede o relato');
 RESET ROLE;
@@ -147,7 +153,7 @@ SELECT pg_temp.ok((SELECT count(*) = 1 FROM public.notificacoes_plantonista WHER
 -- ── 4. prazo ────────────────────────────────────────────────────────────────
 UPDATE public.encaminhamentos_upa SET prazo_em = now() - interval '1 minute' WHERE id = pg_temp.v('x2');
 SELECT pg_temp.ok(private.encaminhamentos_upa_prazo() = 1 AND pg_temp.sit('x2') = 'nao_chegou', 'sem chegada em 12 h: não chegou');
-SELECT pg_temp.ok((SELECT count(*) = 1 FROM public.notificacoes_plantonista WHERE perfil_id = pg_temp.id('enf') AND tipo LIKE 'ubs_upa_%'
+SELECT pg_temp.ok((SELECT count(*) = 1 FROM public.notificacoes_plantonista WHERE perfil_id = pg_temp.id('med') AND tipo LIKE 'ubs_upa_%'
                      AND mensagem LIKE '%não registrou a chegada em 12 horas%'), 'quem enviou é avisado do prazo');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('recu');

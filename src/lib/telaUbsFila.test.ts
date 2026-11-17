@@ -42,3 +42,12 @@ test('U2 do percurso da UBS: as filas mostram a espera pelo formatarDuracao, nun
   const espera = readFileSync('src/pages/enfermagem/triagem/Espera.tsx', 'utf8')
   assert.match(espera, /\{formatarDuracao\(desde\)\}/)
 })
+
+test('U8 do percurso da UBS: escuta com DUM, azul abre a agenda e a recepção avisa quando não há enfermeiro', () => {
+  const escuta = readFileSync('src/pages/enfermagem/triagem/EscutaInicial.tsx', 'utf8')
+  assert.match(escuta, /p_dum: pedeDum && dum \? dum : undefined/)
+  assert.match(escuta, /const pedeDum = !\/\^m\/i\.test\(ep\.paciente\?\.sexo \?\? ''\)/)
+  assert.match(escuta, /if \(cor === 'azul' && saidaAzul === 'agendamento'\) \{\s*navigate\(linkMarcarNaAgenda\(ep\.paciente_id, ep\.id\)\)/)
+  assert.doesNotMatch(escuta, /EnviarUpa|Ambulance/)
+  assert.match(recepcao, /const semEnfermeiro = ubs && tipoAps === 'escuta_inicial' && r\.etapa === 'atendimento'/)
+})
