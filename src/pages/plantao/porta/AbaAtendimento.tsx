@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { CamposVitais } from '@/components/clinico/CamposVitais'
+import { FerramentasDoCid } from '@/components/clinico/FerramentasDoCid'
 import { CidsDeReferencia } from '@/components/clinico/CidsDeReferencia'
 import { SepsePorta } from '@/components/internacao/LeitoAberto'
 
@@ -130,6 +131,8 @@ export function AbaAtendimento({
         {/* só referência: o clique preenche o CID-10 do rascunho; Registrar continua com o médico */}
         <CidsDeReferencia className="md:col-span-2" texto={soap.a} valorDoCampo={soap.cid}
           onEscolher={(c) => setSoap({ ...soap, cid: c.codigo })} />
+        {/* F2 das ferramentas pelo CID (RT, 17/11/2026): só lista e abre ferramentas da Central; nada de dose, cor ou conduta */}
+        <FerramentasDoCid className="md:col-span-2" cids={[soap.cid.trim() || [...registros].reverse().find((r) => r.cid)?.cid]} faixa={faixa} />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="soap-p">Plano</Label>

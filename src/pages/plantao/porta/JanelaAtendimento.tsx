@@ -323,7 +323,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 soap={soap} agora={agora} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
             <TabsContent value="conduta" keepMounted>
-              {ubs && <AbaConduta episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} tipoInicial={ep.tipo_atendimento_aps} registros={registros} soap={soap}
+              {ubs && <AbaConduta episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} tipoInicial={ep.tipo_atendimento_aps} registros={registros} soap={soap} faixa={faixa}
                 onIrPara={(a) => { setAba(a); setErro(null) }} onConfirmado={(aviso) => { recarregar(); onFechar(aviso) }} />}
             </TabsContent>
           </Tabs>
