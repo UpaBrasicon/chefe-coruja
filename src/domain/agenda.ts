@@ -17,6 +17,8 @@ export type Agendamento = {
   nome_social: string | null
   data_nascimento: string | null
   tipo_atendimento_aps: 'consulta_agendada' | 'consulta_programada' | null
+  /** Serviço da consulta (percurso da UBS, U6): nulo nas marcadas antes. */
+  servico?: Servico | null
   observacao: string | null
   motivo_reserva: MotivoReserva | null
   especifique: string | null
@@ -66,6 +68,26 @@ export const PERIODOS: { valor: Periodo; rotulo: string }[] = [
   { valor: 'noite', rotulo: 'Noite' },
 ]
 export const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+
+/** Serviço da consulta marcada (percurso da UBS, U6, PR 1). A vacina fica fora (P3 = B). */
+export type Servico = 'consulta_medica' | 'consulta_enfermagem' | 'preventivo' | 'implante' | 'diu' | 'curativo' | 'teste_rapido' | 'outro'
+export const SERVICOS: { valor: Servico; rotulo: string }[] = [
+  { valor: 'consulta_medica', rotulo: 'Consulta médica' },
+  { valor: 'consulta_enfermagem', rotulo: 'Consulta de enfermagem' },
+  { valor: 'preventivo', rotulo: 'Coleta de preventivo' },
+  { valor: 'implante', rotulo: 'Inserção de implante' },
+  { valor: 'diu', rotulo: 'Inserção de DIU' },
+  { valor: 'curativo', rotulo: 'Curativo' },
+  { valor: 'teste_rapido', rotulo: 'Teste rápido' },
+  { valor: 'outro', rotulo: 'Outro' },
+]
+/** Os serviços de cada profissional, como no banco (agenda_servicos_do_profissional). O primeiro é o padrão. */
+export function servicosDoPapel(papel: 'plantonista' | 'enfermeiro'): Servico[] {
+  return papel === 'plantonista'
+    ? ['consulta_medica', 'implante', 'diu', 'preventivo', 'outro']
+    : ['consulta_enfermagem', 'preventivo', 'curativo', 'teste_rapido', 'outro']
+}
+export const rotuloServico = (s: Servico | null | undefined) => SERVICOS.find((x) => x.valor === s)?.rotulo ?? null
 
 /** Horário de funcionamento da UBS num dia da semana (percurso da UBS, U3). */
 export type HorarioFuncionamento = { dia: number; abre: string; fecha: string }

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { ExternalLink, UserCheck } from 'lucide-react'
 import * as React from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
-import { RelacionadasContexto } from '@/components/plantonista/calc/contexto'
+import { RelacionadasContexto, SecaoDaFerramentaContexto } from '@/components/plantonista/calc/contexto'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { acharSecao } from '@/content/registry'
@@ -20,7 +20,10 @@ import { cn } from '@/lib/utils'
 // Idade e peso do prontuário só entram na ferramenta depois do clique em "Usar
 // idade e peso"; o selo do campo diz a origem e a data, e o campo continua
 // editável. Peso velho não vai (criança > 24 h, adulto > 7 dias). Nada do
-// paciente vai na URL: a rota da ferramenta é só o endereço interno da janela.
+// paciente vai na URL, e o endereço não muda: a janela diz à ferramenta a
+// seção dela por contexto (trocar o endereço dentro do /atendimento quebrava o
+// roteador, achado do RT na homologação em 17/11/2026). A janela mostra só a
+// ferramenta escolhida, sem as relacionadas.
 // Abrir e fechar zera o paciente da Central desta aba, para o dado de um
 // paciente nunca aparecer na ferramenta de outro.
 
@@ -103,13 +106,13 @@ export function JanelaFerramenta({ ferramenta, pacienteId, nascimento, faixa, ao
           )}
         </div>
         {ferramenta && Componente ? (
-          <RelacionadasContexto.Provider value={[]}>
-            <React.Suspense fallback={<p className="text-apoio text-tinta-sussurro">Abrindo a ferramenta…</p>}>
-              <Routes location={ferramenta.rota}>
-                <Route path="/plantonista/:section/:tool" element={React.createElement(Componente, { key: versao })} />
-              </Routes>
-            </React.Suspense>
-          </RelacionadasContexto.Provider>
+          <SecaoDaFerramentaContexto.Provider value={ferramenta.rota.split('/')[2] ?? null}>
+            <RelacionadasContexto.Provider value={[]}>
+              <React.Suspense fallback={<p className="text-apoio text-tinta-sussurro">Abrindo a ferramenta…</p>}>
+                {React.createElement(Componente, { key: versao })}
+              </React.Suspense>
+            </RelacionadasContexto.Provider>
+          </SecaoDaFerramentaContexto.Provider>
         ) : (
           <p className="text-apoio text-tinta-sussurro">Ferramenta não encontrada na Central.</p>
         )}
