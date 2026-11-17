@@ -77,9 +77,11 @@ export function CampoCid({ id, valor, onChange, placeholder }: { id: string; val
 }
 
 export function AbaAtendimento({
-  episodioId, pacienteId, faixa, corAtual, soap, setSoap, salvoEm, classificacoes, registros, aoRegistrar, ubs = false,
+  episodioId, pacienteId, nascimento = null, faixa, corAtual, soap, setSoap, salvoEm, classificacoes, registros, aoRegistrar, ubs = false,
 }: {
   episodioId: string; pacienteId: string
+  /** data de nascimento (idade para a ferramenta aberta pelo CID, F3) */
+  nascimento?: string | null
   /** consulta da UBS (5A, D7): sem classificação de risco nem reclassificação */
   ubs?: boolean
   /** faixa pela IDADE do paciente (JanelaAtendimento), nunca pela porta */
@@ -132,7 +134,8 @@ export function AbaAtendimento({
         <CidsDeReferencia className="md:col-span-2" texto={soap.a} valorDoCampo={soap.cid}
           onEscolher={(c) => setSoap({ ...soap, cid: c.codigo })} />
         {/* F2 das ferramentas pelo CID (RT, 17/11/2026): só lista e abre ferramentas da Central; nada de dose, cor ou conduta */}
-        <FerramentasDoCid className="md:col-span-2" cids={[soap.cid.trim() || [...registros].reverse().find((r) => r.cid)?.cid]} faixa={faixa} />
+        <FerramentasDoCid className="md:col-span-2" cids={[soap.cid.trim() || [...registros].reverse().find((r) => r.cid)?.cid]} faixa={faixa}
+          pacienteId={pacienteId} nascimento={nascimento} />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="soap-p">Plano</Label>
