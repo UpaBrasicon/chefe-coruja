@@ -2,6 +2,8 @@
 
 Trilha de obrigatórios legais e regulatórios, item LG11 (P1). Base: RDC 657/2022 (software como dispositivo médico), RDC 751/2022 (classificação e regularização de dispositivos médicos) e RDC 665/2022 (boas práticas de fabricação).
 
+**Decisão do RT, 17/11/2026: "Todas A"** (C1–C5).
+
 Este documento não é parecer regulatório e não muda código nem banco. Quem confirma enquadramento, classe e caminho na ANVISA é o consultor.
 
 ## O que já está escrito
