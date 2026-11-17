@@ -62,7 +62,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ferramenta_revisoes_versao_tipo_uq ON public.f
 CREATE INDEX IF NOT EXISTS ferramenta_revisoes_perfil_idx ON public.ferramenta_revisoes (perfil_id);
 
 ALTER TABLE public.ferramenta_revisoes ENABLE ROW LEVEL SECURITY;
-REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.ferramenta_revisoes FROM anon, authenticated;
+REVOKE ALL ON public.ferramenta_revisoes FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.ferramenta_revisoes TO authenticated;
 DROP POLICY IF EXISTS ferramenta_revisoes_select ON public.ferramenta_revisoes;
 CREATE POLICY ferramenta_revisoes_select ON public.ferramenta_revisoes FOR SELECT TO authenticated USING (true);
