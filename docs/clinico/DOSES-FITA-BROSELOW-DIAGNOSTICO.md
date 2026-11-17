@@ -63,6 +63,9 @@ Achados das telas que já estão na produção. A fonte das telas é o livro do 
 | `anafilaxia.ts` difenidramina | 1–2 mg/kg | 1 mg/kg máx 50 mg (diretriz chinesa 2020) |
 | `bolus.ts` epinefrina IM | "a cada 20 min" | 5–15 min (WAO 2020; `anafilaxia.ts` já diz 5–15) |
 | `bolus.ts` naloxona | só 0,1 mg/kg | também dose baixa 1–5 µg/kg (Coreia 2025) |
+| `diarreia.ts` ondansetrona (rodada D10) | 0,1 mg/kg, sem teto | 0,15 mg/kg, máx 8 mg IV (Rerksuppaphol 2010); VO por faixa de peso (Sociedade Canadense de Pediatria 2011) |
+| `asma.ts` salbutamol (rodada D10) | só contínuo e spray | nebulização intermitente de 2,5 a 5 mg (Sociedade Italiana de Pediatria 2018) |
+| gluconato de cálcio em 6 arquivos (rodada D10) | tetos diferentes: nenhum, 20 mL, 3 g | única fonte aberta: 60 mg/kg, até a dose de adulto de 6 g (AHA 2025 Part 10, Tabela 4, intoxicação) |
 
 ## Como ficaria o módulo
 
