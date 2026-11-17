@@ -23,7 +23,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
   MOTIVOS_RESERVA, SITUACAO, acoesDaLinha, contagem, horariosLivres, linhasDoDia, rotuloMotivo,
-  type LinhaDia, type MotivoReserva,
+  type LinhaDia, type MotivoReserva, rotuloServico, servicosDoPapel, SERVICOS, type Servico,
 } from '@/domain/agenda'
 import { rotuloIdade } from '@/domain/idade'
 import { dataIso, dataPura, diaMes, hora, mesAno, semanaCurta } from '@/lib/formato'
@@ -151,7 +151,7 @@ function Linha({ l, dia, hoje, agora, onChegou, onCancelar }: {
         {l.tipo === 'consulta' ? (
           <span className="text-controle text-tinta">
             {l.nome_social || l.nome}
-            <span className="text-apoio text-tinta-sussurro">{l.data_nascimento ? ` · ${rotuloIdade(l.data_nascimento, hoje)}` : ''} · {l.profissional}</span>
+            <span className="text-apoio text-tinta-sussurro">{l.data_nascimento ? ` · ${rotuloIdade(l.data_nascimento, hoje)}` : ''} · {l.profissional}{rotuloServico(l.servico) ? ` · ${rotuloServico(l.servico)}` : ''}</span>
           </span>
         ) : (
           <span className="text-controle text-tinta-apoio">
@@ -336,6 +336,10 @@ function MarcarConsulta({ unidadeId, diaInicial, hoje, pacienteUrl, origemUrl, t
   const origem = usarUrl && !escolhido && paciente?.id === pacienteUrl ? origemUrl : null
   const [tipo, setTipo] = React.useState<'consulta_agendada' | 'consulta_programada'>(tipoUrl)
   const [obs, setObs] = React.useState('')
+  // U6: o serviço da consulta, entre os do profissional (o primeiro é o padrão)
+  const servicos = prof ? servicosDoPapel(prof.papel) : []
+  const [servicoEscolhido, setServico] = React.useState<Servico | null>(null)
+  const servico = servicoEscolhido && servicos.includes(servicoEscolhido) ? servicoEscolhido : servicos[0] ?? null
   const [motivo, setMotivo] = React.useState<MotivoReserva | null>(null)
   const [especifique, setEspecifique] = React.useState('')
   const [aviso, setAviso] = React.useState<string | null>(null)
@@ -363,6 +367,7 @@ function MarcarConsulta({ unidadeId, diaInicial, hoje, pacienteUrl, origemUrl, t
         const { error } = await supabase.rpc('agenda_marcar', {
           p_unidade: unidadeId, p_perfil: prof!.perfil_id, p_inicio: inicio!, p_paciente: paciente!.id,
           p_tipo_atendimento: tipo, p_observacao: obs.trim() || undefined, p_origem_episodio: origem ?? undefined,
+          p_servico: servico ?? undefined,
         })
         if (error) throw error
       } else {
@@ -455,6 +460,13 @@ function MarcarConsulta({ unidadeId, diaInicial, hoje, pacienteUrl, origemUrl, t
 
       {modo === 'consulta' ? (
         <>
+          {servicos.length > 0 && (
+            <div role="radiogroup" aria-label="Serviço" className="flex flex-wrap gap-2">
+              {SERVICOS.filter((x) => servicos.includes(x.valor)).map((x) => (
+                <Chip key={x.valor} variante="opcao" radio ativo={servico === x.valor} onClick={() => setServico(x.valor)}>{x.rotulo}</Chip>
+              ))}
+            </div>
+          )}
           <div role="radiogroup" aria-label="Tipo da consulta" className="flex flex-wrap gap-2">
             <Chip variante="opcao" radio ativo={tipo === 'consulta_agendada'} onClick={() => setTipo('consulta_agendada')}>Consulta agendada</Chip>
             <Chip variante="opcao" radio ativo={tipo === 'consulta_programada'} onClick={() => setTipo('consulta_programada')}>Cuidado continuado</Chip>
