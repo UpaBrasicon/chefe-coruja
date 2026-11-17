@@ -141,11 +141,14 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
   const [condutas, setCondutas] = React.useState<string[]>([])
   const [obs, setObs] = React.useState('')
   const pendRascunho = !soapVazio(soap)
+  // U10 do percurso da UBS: o CID do registro do atendimento (SOAP) conta como
+  // problema avaliado; o servidor o junta ao CID da conduta (registrar_conduta_aps)
+  const cidSoap = (pendRascunho && soap.cid.trim()) || [...registros].reverse().find((r) => r.cid?.trim())?.cid?.trim() || ''
 
   const regras = [
     { ok: registros.some((r) => r.avaliacao?.trim()) || !!soap.a.trim(), texto: 'Registro do atendimento (SOAP) com a Avaliação, na aba Atendimento' },
     { ok: !!tipo, texto: 'Tipo de atendimento' },
-    { ok: problemas.length > 0, texto: 'Ao menos um problema ou condição avaliada' },
+    { ok: problemas.length > 0 || !!cidSoap, texto: 'Ao menos um problema ou condição avaliada' },
     { ok: condutas.length > 0, texto: 'Ao menos uma conduta' },
   ]
   const tudoOk = regras.every((r) => r.ok)
@@ -206,6 +209,11 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
           onAdicionar={(p) => setProblemas((x) => [...x, p])}
           onTirar={(p) => setProblemas((x) => x.filter((y) => chave(y) !== chave(p)))} />
         <span className="text-rotulo text-tinta-sussurro">O que foi avaliado e manejado nesta consulta. A busca mostra a lista da ficha, depois a CIAP-2 e depois a CID-10.</span>
+        {cidSoap && (
+          <span role="note" className="text-apoio text-tinta-apoio">
+            <strong className="font-semibold text-tinta">{cidSoap.toUpperCase()}</strong>, o CID do registro do atendimento, já conta como problema avaliado.
+          </span>
+        )}
         {/* F2 das ferramentas pelo CID (RT, 17/11/2026): só lista e abre ferramentas da Central */}
         <FerramentasDoCid faixa={faixa} pacienteId={pacienteId} nascimento={nascimento} cids={[...problemas.flatMap((p) => ('cid' in p ? [p.cid] : 'ciap' in p ? [p.cidRelacionada] : [])), soap.cid]} />
       </div>

@@ -110,7 +110,8 @@ SELECT public.registrar_soap(pg_temp.v('ep1')::uuid, 'Hipertensa há 10 anos, se
 SELECT public.registrar_conduta_aps(pg_temp.v('ep1')::uuid, 'consulta_programada', '{hipertensao_arterial}', '{E11.9}',
   '{retorno_cuidado_continuado,encaminhamento_especializado}', 'Retorno em 30 dias com o MAPA');
 SELECT pg_temp.ok((SELECT etapa = 'encerrado' AND desfecho IS NULL AND conduta_aps = '{encaminhamento_especializado,retorno_cuidado_continuado}'
-                          AND cid_aps = '{E11.9}' AND problemas_aps = '{hipertensao_arterial}' AND desfecho_motivo = 'Retorno em 30 dias com o MAPA'
+                          -- U10 (20270415000004): o CID do SOAP (I10) também entra no CID da conduta
+                          AND cid_aps = '{E11.9,I10}' AND problemas_aps = '{hipertensao_arterial}' AND desfecho_motivo = 'Retorno em 30 dias com o MAPA'
                      FROM public.episodios WHERE id = pg_temp.v('ep1')::uuid), 'conduta: consulta encerrada com a ficha do e-SUS APS');
 -- saídas do plantão (FilaPS.tsx): na UBS entram as sem desfecho
 SELECT pg_temp.ok((SELECT count(*) = 1 FROM public.episodios WHERE setor_id = pg_temp.v('cons')::uuid AND etapa NOT IN ('triagem', 'atendimento')
