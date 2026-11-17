@@ -2,6 +2,8 @@
 
 Trilha de obrigatórios legais e regulatórios, item LG4 (P1). Base legal: LGPD, art. 37. Controlador e operador mantêm registro das operações de tratamento: que dado, para quê, onde fica, quem acessa e por quanto tempo.
 
+**Decisão do RT, 17/11/2026: "Todas A"** (V1–V4).
+
 Este documento não é parecer jurídico e não muda código nem banco.
 
 ## Como está hoje
