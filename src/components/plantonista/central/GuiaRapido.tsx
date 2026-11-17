@@ -87,7 +87,7 @@ export function GuiaRapido() {
             unidade={crianca ? (
               <CampoSelecao aria-label="Unidade da idade" value={p.unidadeIdade}
                 onChange={(e) => alterarPaciente({ unidadeIdade: e.target.value as UnidadeIdade })}
-                className="h-10 shrink-0 border-fio-forte bg-trilha px-1.5 text-controle font-semibold">
+                className="h-11 shrink-0 rounded-container border-2 border-tinta bg-superficie px-2.5 text-controle font-bold">
                 {UNIDADES.map((u) => <option key={u} value={u}>{u}</option>)}
               </CampoSelecao>
             ) : 'anos'} />
