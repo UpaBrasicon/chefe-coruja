@@ -115,11 +115,22 @@ O RT revogou os 5 tokens no @BotFather e gravou os novos com `bash /root/trocar-
 
 **Conferência:** nos 5 bots, o `getMe` responde ok com o token novo e recusa o antigo (401). Os agentes estão de pé, sem erro de autenticação; na Clínica apareceu uma única queda de rede, passageira.
 
-### Fase 3: chave da Edge (precisa de "ok produção")
+### Fase 3, concluída em 17/11/2026 (chave da Edge, com o "ok produção" do RT)
 
 `bash /root/trocar-chave-edge.sh` no terminal do VPS:
 1. mostra a chave nova só na tela do RT;
 2. o RT cola em Supabase → Edge Functions → Secrets → `BIBLIOTECA_API_KEY`;
 3. com Enter, a biblioteca da produção é recriada com a chave nova.
 
-**Conferência:** o `/v1/ask` responde 401 com a chave antiga e não dá 401 com a nova, e o "Perguntar" do app volta a responder. A volta fica no arquivo `/srv/biblioteca/app/.env.bak-troca-2026-11-edge`.
+**Conferência:**
+- o `/v1/deid` da produção responde 200 com a chave nova e 401 com a antiga;
+- o RT testou o "Perguntar" no app da produção, e ele respondeu: o log da biblioteca registra o `/v1/ask` com 200, primeiro trecho em 3,5 s e resposta completa em 7,9 s.
+
+O RT notou que a resposta "demorou e apareceu toda de uma vez". O tempo está dentro do normal da busca; o jeito como a tela mostra o texto fica anotado à parte, porque não tem relação com a chave.
+
+A volta fica no arquivo `/srv/biblioteca/app/.env.bak-troca-2026-11-edge`.
+
+### Faltam
+
+- **Fase 4:** o RT apaga a chave do DeepSeek no painel quando o Bedrock entrar (LG6, I1).
+- **Fase 5:** chaves do WhatsApp (fora de uso). O RT revoga no painel da Meta, e os valores no `.env.prod` viram texto aleatório, porque o Hermes exige as variáveis para subir.
