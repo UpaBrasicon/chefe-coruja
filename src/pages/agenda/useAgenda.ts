@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
-import type { AgendaDia, ProfissionalConfig } from '@/domain/agenda'
+import type { AgendaDia, HorarioFuncionamento, ProfissionalConfig } from '@/domain/agenda'
 import { supabase } from '@/lib/supabase'
 
 export function useAgendaDia(unidadeId: string | undefined, data: string) {
@@ -27,6 +27,19 @@ export function useConfiguracaoAgenda(unidadeId: string | undefined) {
       const { data: r, error } = await supabase.rpc('agenda_configuracao', { p_unidade: unidadeId! })
       if (error) throw error
       return (r ?? []) as unknown as ProfissionalConfig[]
+    },
+  })
+}
+
+/** Horário de funcionamento da UBS (U3): vazio = sem trava. */
+export function useFuncionamentoUbs(unidadeId: string | undefined) {
+  return useQuery({
+    queryKey: ['ubs-funcionamento', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data: r, error } = await supabase.rpc('ubs_funcionamento', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (r ?? []) as unknown as HorarioFuncionamento[]
     },
   })
 }

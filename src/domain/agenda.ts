@@ -67,6 +67,9 @@ export const PERIODOS: { valor: Periodo; rotulo: string }[] = [
 ]
 export const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
+/** Horário de funcionamento da UBS num dia da semana (percurso da UBS, U3). */
+export type HorarioFuncionamento = { dia: number; abre: string; fecha: string }
+
 export const SITUACAO: Record<SituacaoAgendamento, { rotulo: string; tom: 'cinza' | 'ambar' | 'verde' | 'vermelho' | 'teal' }> = {
   agendado: { rotulo: 'Agendado', tom: 'cinza' },
   presente: { rotulo: 'Presente', tom: 'ambar' },
