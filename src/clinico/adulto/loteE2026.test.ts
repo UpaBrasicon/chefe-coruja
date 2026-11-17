@@ -34,7 +34,7 @@ test('lote E: fichas cardio na versão .1 de 28/09 com o manual como primeira fo
     assert.match(f.fontes[0].citacao, /Manual de Medicina de Emergência/, f.id)
     assert.ok(f.fontes.some((x) => re.test(x.citacao)), f.id)
   }
-  assert.equal(cha2ds2va.ficha.versao, '2026-11-16.1') // lote 2 das calculadoras
+  assert.equal(cha2ds2va.ficha.versao, '2026-11-16.2') // lote 2 das calculadoras; .2 corrige o DOI do Yoshimura 2024
   assert.equal(hasBled.ficha.versao, '2026-11-16.1')
   assert.ok(hasBled.ficha.fontes.some((f) => /2024 ESC/.test(f.citacao)))
 })

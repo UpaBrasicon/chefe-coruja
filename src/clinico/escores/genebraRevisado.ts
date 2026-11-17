@@ -15,15 +15,15 @@ export const genebraRevisado: Escore = {
   ficha: {
     id: 'genebra-revisado',
     titulo: 'Genebra revisado — probabilidade de embolia pulmonar',
-    versao: '2026-11-16.1',
+    versao: '2026-11-16.2',
     publico: 'adulto',
     fontes: [
       AHA_TEP_2026,
       { citacao: 'Le Gal G, Righini M, Roy PM, et al. Prediction of pulmonary embolism in the emergency department: the revised Geneva score. Ann Intern Med. 2006;144(3):165–171.', url: 'https://doi.org/10.7326/0003-4819-144-3-200602070-00004' },
       { citacao: 'Klok FA, Mos IC, Nijkeuter M, et al. Simplification of the revised Geneva score for assessing clinical probability of pulmonary embolism. Arch Intern Med. 2008;168(19):2131–2136.', url: 'https://doi.org/10.1001/archinte.168.19.2131' },
-      { citacao: 'Etemadi A, Hosseini M, Rafiee H, et al. Comparative diagnostic accuracy of pre-test clinical probability scores for the risk stratification of patients with suspected pulmonary embolism. BMC Pulm Med. 2025.', url: 'https://doi.org/10.1186/s12890-025-03500-8' },
+      { citacao: 'Etemadi A, Hosseini M, Rafiee H, et al. Comparative diagnostic accuracy of pre-test clinical probability scores for the risk stratification of patients with suspected pulmonary embolism: a systematic review and Bayesian network meta-analysis. BMC Pulm Med. 2025;25(1):162 (PMID 40200307; PMC11980127).', url: 'https://doi.org/10.1186/s12890-025-03637-6' },
     ],
-    revisadoEm: '16/11/2026 (próximos passos do lote 3 das calculadoras, com fonte já lida; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
+    revisadoEm: '16/11/2026 (correção de citação: DOI e título do artigo conferidos no PubMed; aguarda aprovação do RT); 16/11/2026 (próximos passos do lote 3 das calculadoras, com fonte já lida; aguarda aprovação do RT); 27/09/2026 (porte do protótipo)',
   },
   descricao: 'Probabilidade pré-teste de embolia pulmonar só com itens objetivos',
   itens: [
