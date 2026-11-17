@@ -2,6 +2,8 @@
 
 Pedido do RT: "percorre e propõe". O percurso foi feito na homologação, na UBS Fase 5, com as contas `*.ubs.f5@teste.local` de recepção, enfermeiro, médico e gestor. Nas telas do enfermeiro foi feito também o rastreio no código de onde vem cada dado.
 
+**Decisão do RT (17/11/2026): A em todas, de U1 a U13.** A execução está no BACKLOG, em "Trilha — Percurso da UBS por papel".
+
 Este documento não muda código. Cada grupo traz os achados, as decisões já tomadas pelo RT e as decisões A/B que faltam.
 
 O único dado criado no percurso foi a grade da enfermeira na homologação (decisão D1): segunda a sexta, 07–11 e 13–17, de 30 em 30 minutos. Foi criada pela função do gestor (`agenda_definir_configuracao`).

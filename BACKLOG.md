@@ -2600,6 +2600,32 @@ Atalho comercial: o SP1 já vale publicar ("o alerta pegou X% das sepses com Y f
 
 ---
 
+## Trilha — Percurso da UBS por papel, pedido do RT em 17/11/2026
+
+Origem: percurso na homologação com recepção, enfermeiro, médico e gestor ("percorre e propõe"). Diagnóstico em `docs/ubs/PERCURSO-UBS-DIAGNOSTICO.md`. O RT decidiu A em todas (U1 a U13), além de D1–D8, R8, R9 e E10.
+
+Regras da trilha:
+- **Ordem de execução:** a da coluna "Ordem".
+- **Cada item segue o fluxo de sempre:** branch e PR próprios, homologação, CI verde e "ok produção" do RT quando houver migration.
+- **Até o U6 sair, não se marca consulta com o enfermeiro na homologação.** A ficha iria para o médico e ficaria presa.
+
+| Ordem | Item | O que fazer (decisão A) | Prioridade | Estado |
+|---|---|---|---|---|
+| 1 | U5 + U14 | Menus por papel na UBS: recepção sem Encaminhados e com a fila da enfermagem; enfermeiro sem Alta vigilância; médico sem Pareceres e sem Notificação compulsória. Esconder na UBS os itens de UPA e hospital (internados, observação, check-out, contenção, intercorrência, abas de leitos do gestor) e dar nomes próprios ao trilho. Textos: "Farmácia fechada", Nasf ou eMulti (conferir), "Em atendimento há 0 min", "Telas de null" | P1 | Pendente |
+| 2 | U1 + U2 | A ficha não atendida vence no fim do expediente ("não aguardou"); tempo de espera num formato só (minutos, horas, dias) | P1 | Pendente |
+| 3 | U8 + U9 + D2 | Escuta: sem enfermeiro de plantão a ficha vai ao médico; DUM na escuta; azul com agendamento abre a agenda; só o médico envia à UPA. Chegada na UPA registrada sozinha quando a recepção abre a ficha | P1 | Pendente |
+| 4 | U3 | Horário de funcionamento da UBS; escala e grade da agenda dentro dele; corrigir a homologação | P1 | Pendente |
+| 5 | U10 | CID do SOAP vira o primeiro problema da conduta na UBS; a notificação lê CID da conduta, problemas e CIAP | P1 | Pendente |
+| 6 | U6 + U7 | Consulta de enfermagem completa (contando nos painéis, como nas notas da SAPS); tipo de serviço na agenda (consulta de enfermagem, vacinação, implante, DIU, preventivo, curativo, coleta); sinais vitais na consulta e tela do técnico; procedimentos com resultado dos testes rápidos, e o reagente sugere notificação. Vários PRs | P0 | Pendente |
+| 7 | U4 | Tela "Hoje" da recepção: agendados, demanda espontânea, fila da enfermagem e fila médica | P2 | Pendente |
+| 8 | U11 + U12 | Parto ou aborto do hospital fecha a gestação na UBS; recém-nascido na puericultura da UBS da mãe; nascimento obrigatório; DUM contra parto recente. Exame externo sem pedido (HbA1c, sífilis, HIV, hepatites); sugestão de hiperdia vinda da UPA | P2 | Pendente |
+| 9 | U13 | Painel e Indicadores do gestor da UBS em versão ambulatorial: produção, agenda, espera, medicamentos, rede, vigilância e os indicadores C1 a C7 pelas notas metodológicas da SAPS | P1 | Pendente |
+| 10 | U13 (trilha) | Exportação para o e-SUS APS e o SISAB | P2 | Pendente (trilha própria) |
+
+Dado criado no percurso: a grade da enfermeira na homologação (D1), de segunda a sexta, 07–11 e 13–17, de 30 em 30 minutos.
+
+---
+
 ## Backlog Comercial Paralelo
 | Ordem | Material | Subtarefas | Critério de pronto | Pronto até |
 |---|---|---|---|---|
