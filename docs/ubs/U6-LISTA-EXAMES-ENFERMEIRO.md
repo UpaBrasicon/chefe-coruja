@@ -2,7 +2,7 @@
 
 Decisão P1 = A do plano (`docs/ubs/U6-U7-PLANO.md`): o enfermeiro pede só os exames do protocolo da atenção básica, numa lista fixa. Hoje o pedido de exame na consulta de enfermagem está travado. A trava é a migration `20270415000007`, que espera esta lista.
 
-**Esta é uma proposta para o RT conferir. Nada foi implementado.**
+**Decisões do RT (17/11/2026): E1 = A, E2 = A, E3 = A.** A lista vale depois de conferida com os Cadernos. A conferência e a implementação vêm em PRs próprios.
 
 ## Base
 
@@ -25,7 +25,7 @@ O pedido de exame (`pedir_exames`) só aceita o grupo 02.02 do SIGTAP, que é la
 - ultrassonografia obstétrica (02.05);
 - eletrocardiograma (02.11).
 
-Esses exames ficam fora desta lista. Para entrarem, o pedido de exame precisa aceitar imagem e citopatologia, o que é um PR à parte (decisão E1 abaixo).
+Esses exames ficam fora desta lista. Para entrarem, o pedido de exame precisa aceitar imagem e citopatologia, o que é um PR à parte (decisão E2 abaixo).
 
 ## Lista proposta (laboratório, grupo 02.02)
 
@@ -91,3 +91,10 @@ Esses exames ficam fora desta lista. Para entrarem, o pedido de exame precisa ac
 **E3. Parceria da gestante**
 - **A:** manter os exames da parceria na consulta da gestante. O pedido sai em nome da parceria, que precisa estar cadastrada.
 - **B:** tirar da lista. A parceria faz pela própria ficha.
+
+## Decisões tomadas
+
+Em 17/11/2026 o RT respondeu "Todas A":
+- **E1 = A:** a lista vale depois de conferida com os Cadernos nº 32, 36 e 37 e com o protocolo Saúde das Mulheres.
+- **E2 = A:** um PR próprio fará o pedido de exame aceitar citopatológico, mamografia, ultrassonografia obstétrica e ECG.
+- **E3 = A:** os exames da parceria ficam na consulta da gestante.
