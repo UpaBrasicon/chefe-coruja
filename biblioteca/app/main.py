@@ -71,14 +71,14 @@ class Req(BaseModel):
 
 
 def auth(h: str | None):
-    # S8 (D8): comparação em tempo constante
-    if not chaves.confere(h, chaves.chave_geral(E)):
+    # S8 (D8): comparação em tempo constante; LG6 (I5): chave da Edge ou interna
+    if not chaves.rota_geral(h, E):
         raise HTTPException(401)
 
 
 def auth_ask(h: str | None):
     # LG6 (I5): o /v1/ask, que chama o modelo, só com a chave da Edge (chaves.py)
-    if not chaves.confere(h, chaves.chave_ask(E)):
+    if not chaves.rota_ask(h, E):
         raise HTTPException(401)
 
 
