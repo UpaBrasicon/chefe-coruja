@@ -68,6 +68,23 @@ INSERT INTO public.presenca_plantonista (unidade_id, escala_plantao_id, perfil_i
 SELECT e.unidade_id, e.id, e.perfil_id, e.data, e.turno, e.inicio FROM public.escala_plantao e
  WHERE e.unidade_id = pg_temp.id('ubs') ON CONFLICT DO NOTHING;
 
+-- o CI não tem a tabela SIGTAP inteira: os códigos do teste entram aqui (na homologação já existem)
+INSERT INTO terminologia.sigtap_procedimento (codigo, nome, complexidade, sexo, idade_min, idade_max, competencia) VALUES
+  ('0202020380', 'HEMOGRAMA COMPLETO', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202020355', 'ELETROFORESE DE HEMOGLOBINA', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202031179', 'TESTE NAO TREPONEMICO P/ DETECCAO DE SIFILIS EM GESTANTES', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202030768', 'PESQUISA DE ANTICORPOS IGG ANTITOXOPLASMA', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202031489', 'PESQUISA LABORATORIAL DE ANTI-HCV EM GESTANTE', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202031500', 'PESQUISA LABORATORIAL DE HIV PARA POPULACAO GERAL', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202010317', 'DOSAGEM DE CREATININA', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202010120', 'DOSAGEM DE ACIDO URICO', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202010503', 'DOSAGEM DE HEMOGLOBINA GLICOSILADA', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202050092', 'DOSAGEM DE MICROALBUMINA NA URINA', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0202060250', 'DOSAGEM DE HORMONIO TIREOESTIMULANTE (TSH)', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0204030188', 'MAMOGRAFIA BILATERAL PARA RASTREAMENTO', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM')),
+  ('0211020036', 'ELETROCARDIOGRAMA', '1', 'I', 0, 1560, to_char(now(), 'YYYYMM'))
+ON CONFLICT (codigo) DO NOTHING;
+
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('rec');
 INSERT INTO v SELECT 'enf', (public.registrar_ficha(pg_temp.id('cons'), 'Pré-natal: exames do 1º trimestre', NULL,
