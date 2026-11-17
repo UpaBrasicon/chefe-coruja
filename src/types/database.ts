@@ -13674,6 +13674,7 @@ export type Database = {
         }
         Returns: string
       }
+      registrar_sinais_aps: { Args: { p_episodio: string; p_sinais: Json }; Returns: number }
       registrar_soap: {
         Args: {
           p_avaliacao: string

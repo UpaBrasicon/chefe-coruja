@@ -111,3 +111,14 @@ test('U6, PR 2: o enfermeiro da UBS tem o consultório de enfermagem, e a fila s
   const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
   assert.match(recepcao, /p_dados: ubs \? \{ \.\.\.enviados, tipo_atendimento: tipoAps, destino \} : enviados/)
 })
+
+test('U7, PR 4: sinais vitais na UBS para o técnico e o enfermeiro, e na consulta', () => {
+  for (const papel of ['tecnico_enfermagem', 'enfermeiro'] as const) {
+    assert.ok(itensDeNavegacao(papel, false, false, 'ubs').some((i) => i.to === '/sinais-vitais'), `${papel} sem Sinais vitais na UBS`)
+    assert.ok(!itensDeNavegacao(papel, false, false, 'upa').some((i) => i.to === '/sinais-vitais'), `${papel} vê Sinais vitais na UPA`)
+  }
+  assert.equal(inicioDoPapel('tecnico_enfermagem', 'ubs'), '/sinais-vitais')
+  assert.match(readFileSync('src/App.tsx', 'utf8'), /<Route path="\/sinais-vitais" element=\{<SinaisVitaisUbs \/>\} \/>/)
+  assert.match(readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8'), /\{ubs && <div className="mb-4"><SinaisVitaisAps /)
+  assert.match(readFileSync('src/components/clinico/SinaisVitaisAps.tsx', 'utf8'), /supabase\.rpc\('registrar_sinais_aps'/)
+})

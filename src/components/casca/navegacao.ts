@@ -67,6 +67,8 @@ const ITEM_HIPERDIA: ItemNav = { to: '/hiperdia', rotulo: 'Hiperdia', icone: Hea
 const ITEM_PRE_NATAL: ItemNav = { to: '/pre-natal', rotulo: 'Pré-natal', icone: Baby, exato: true }
 // 5A, tarefa 7 (K6): puericultura da UBS, para os mesmos papéis
 const ITEM_PUERICULTURA: ItemNav = { to: '/puericultura', rotulo: 'Puericultura', icone: Sprout, exato: true }
+// U7, PR 4 (percurso da UBS): sinais vitais do técnico e do enfermeiro na UBS
+const ITEM_SINAIS_VITAIS: ItemNav = { to: '/sinais-vitais', rotulo: 'Sinais vitais', curto: 'Vitais', icone: HeartPulse, exato: true }
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
@@ -137,6 +139,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/escuta', rotulo: 'Escuta inicial', curto: 'Escuta', icone: Ear, exato: true, nota: 'triagem' },
     // U6, PR 2 (percurso da UBS): as fichas da UBS que vão para a enfermagem
     { to: '/consultorio-enfermagem', rotulo: 'Consultório de enfermagem', curto: 'Consultório', icone: DoorOpen, exato: true },
+    ITEM_SINAIS_VITAIS,
     { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
@@ -156,6 +159,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_ESCALA,
   ],
   tecnico_enfermagem: [
+    ITEM_SINAIS_VITAIS,
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
     { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
@@ -286,7 +290,7 @@ const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
 // "Leitos" só a regulação (U5, achado GE7).
 const GRUPO_NA_UBS: Record<string, string> = { Porta: 'Cadastro', Leitos: 'Rede' }
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
-const SO_NA_UBS = new Set(['/escuta', '/consultorio-enfermagem', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
+const SO_NA_UBS = new Set(['/escuta', '/consultorio-enfermagem', '/sinais-vitais', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {
