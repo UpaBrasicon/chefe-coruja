@@ -8,7 +8,7 @@ import { abasEstreitasPlantonista, inicioDoPapel, itensDeNavegacao } from '../co
 // internação nem AIH; esses itens somem do menu. Numa UPA nada muda.
 const FORA = ['/plantonista', '/plantao', '/contingencia', '/gestao/porta', '/gestao/intercorrencias', '/internacao',
   '/observacao', '/nir', '/aih', '/apac', '/triagem', '/enfermagem', '/enfermagem/pronto-socorro',
-  '/enfermagem/internacao', '/recepcao/fila-triagem', '/recepcao/painel']
+  '/enfermagem/internacao', '/recepcao/painel']
 const PAPEIS = ['plantonista', 'gestor', 'enfermeiro', 'tecnico_enfermagem', 'recepcao', 'regulador', 'faturamento',
   'farmaceutico', 'nir', 'admin'] as const
 
@@ -60,4 +60,43 @@ test('5A, parte 2.4: a escuta inicial só existe na UBS e é o começo do enferm
   assert.equal(inicioDoPapel('enfermeiro', 'ubs'), '/escuta')
   assert.equal(inicioDoPapel('enfermeiro', 'upa'), '/triagem')
   assert.match(readFileSync('src/App.tsx', 'utf8'), /<Route path="\/escuta" element=\{<Triagem \/>\} \/>/)
+})
+
+test('percurso da UBS (U5): menus por papel decididos pelo RT em 17/11/2026', () => {
+  const rotas = (papel: Parameters<typeof itensDeNavegacao>[0], tipo: 'ubs' | 'upa') =>
+    itensDeNavegacao(papel, false, false, tipo).map((i) => i.to)
+  // R8 e R9: recepção sem Encaminhados e com a fila da enfermagem
+  assert.ok(!rotas('recepcao', 'ubs').includes('/encaminhados'))
+  assert.equal(itensDeNavegacao('recepcao', false, false, 'ubs').find((i) => i.to === '/recepcao/fila-triagem')?.rotulo, 'Fila da enfermagem')
+  assert.equal(itensDeNavegacao('recepcao', false, false, 'upa').find((i) => i.to === '/recepcao/fila-triagem')?.rotulo, 'Fila da triagem')
+  // E10: Alta vigilância sai do enfermeiro na UBS e fica com o farmacêutico
+  assert.ok(!rotas('enfermeiro', 'ubs').includes('/alta-vigilancia'))
+  assert.ok(rotas('enfermeiro', 'upa').includes('/alta-vigilancia'))
+  assert.ok(rotas('farmaceutico', 'ubs').includes('/alta-vigilancia'))
+  // D7 e D8: médico sem Pareceres e sem Notificação na UBS; telemedicina fica
+  for (const to of ['/pareceres', '/notificacao-compulsoria']) {
+    assert.ok(!rotas('plantonista', 'ubs').includes(to), `médico vê ${to} na UBS`)
+    assert.ok(rotas('plantonista', 'upa').includes(to), `médico perdeu ${to} na UPA`)
+  }
+  assert.ok(rotas('plantonista', 'ubs').includes('/teleinterconsulta'))
+  assert.ok(rotas('enfermeiro', 'ubs').includes('/notificacao-compulsoria'))
+  // GE7: grupos do gestor com nome da UBS
+  const gestor = itensDeNavegacao('gestor', false, false, 'ubs')
+  assert.ok(!gestor.some((i) => i.grupo === 'Porta' || i.grupo === 'Leitos'))
+  assert.equal(gestor.find((i) => i.to === '/cadastros-duplicados')?.grupo, 'Cadastro')
+  assert.equal(gestor.find((i) => i.to === '/regulacao')?.grupo, 'Rede')
+})
+
+test('percurso da UBS (U5): itens de porta e leito somem das telas da UBS', () => {
+  const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
+  assert.match(janela, /\{!ubs && <Contencao /)
+  assert.match(janela, /\{!ubs && <Intercorrencias /)
+  const cartao = readFileSync('src/components/plantonista/central/CartaoTurno.tsx', 'utf8')
+  assert.match(cartao, /\{!ubs && \(\s*<Link to="\/plantao\/internacao\/pacientes"/)
+  assert.match(readFileSync('src/pages/plantonista/PlantonistaHome.tsx', 'utf8'), /ubs=\{unidadeAtiva\?\.unidade\.tipo === 'ubs'\}/)
+  const painel = readFileSync('src/pages/gestor/PainelGestor.tsx', 'utf8')
+  assert.match(painel, /PAINEIS_FORA_DA_UBS = new Set\(\['permanencia', 'internacoes', 'giro', 'porta'\]\)/)
+  const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
+  assert.match(recepcao, /rotulo: 'Fila da enfermagem'/)
+  assert.match(recepcao, /filter\(\(e\) => e\.etapa !== 'triagem'\)/)
 })

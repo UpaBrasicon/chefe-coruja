@@ -49,7 +49,9 @@ test('H2: a regulação abre com paciente, tipo, CID e quadro da consulta', () =
 })
 
 test('"Encaminhados" só aparece na UBS, para quem envia e acompanha', () => {
-  for (const papel of ['recepcao', 'enfermeiro', 'plantonista', 'gestor'] as const) {
+  // a recepção saiu (percurso da UBS, R8): não envia nem recebe
+  assert.ok(!itensDeNavegacao('recepcao', false, false, 'ubs').some((i) => i.to === '/encaminhados'), 'recepção com Encaminhados na UBS')
+  for (const papel of ['enfermeiro', 'plantonista', 'gestor'] as const) {
     assert.ok(itensDeNavegacao(papel, false, false, 'ubs').some((i) => i.to === '/encaminhados'), `${papel} sem Encaminhados na UBS`)
     assert.ok(!itensDeNavegacao(papel, false, false, 'upa').some((i) => i.to === '/encaminhados'), `${papel} vê Encaminhados na UPA`)
   }

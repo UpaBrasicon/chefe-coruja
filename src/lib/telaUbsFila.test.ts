@@ -15,10 +15,14 @@ test('a recepção da UBS abre a ficha no consultório, com o tipo de atendiment
   assert.match(recepcao, /TIPOS_ATENDIMENTO_APS\.map/)
 })
 
-test('na UBS a recepção não mostra triagem nem painel e ordena por prioridade e chegada', () => {
+test('na UBS a recepção não mostra painel; a fila da enfermagem é a escuta, e o consultório ordena por prioridade e chegada', () => {
   assert.match(recepcao, /const abas = ubs \? ABAS_UBS : ABAS/)
-  assert.doesNotMatch(recepcao.match(/const ABAS_UBS[\s\S]*?\n\]/)![0], /ABAS\[1\]|ABAS\[3\]/)
-  // parte 2.4: entra quem aguarda a escuta, e a cor da escuta ordena
+  const abasUbs = recepcao.match(/const ABAS_UBS[\s\S]*?\n\]/)![0]
+  assert.doesNotMatch(abasUbs, /ABAS\[3\]/)
+  // percurso da UBS (R9, 17/11/2026): a "triagem" vira a fila da enfermagem
+  assert.match(abasUbs, /\{ \.\.\.ABAS\[1\], rotulo: 'Fila da enfermagem'/)
+  // parte 2.4: a cor da escuta ordena; quem aguarda a escuta fica na fila da enfermagem
+  assert.match(recepcao, /const todos = \(fila\.data \?\? \[\]\)\.filter\(\(e\) => e\.etapa !== 'triagem'\)/)
   assert.match(recepcao, /return \[\.\.\.todos\.filter\(\(e\) => !e\.atendimento_iniciado_em\)\.sort\(ordemFilaUbs\)/)
 })
 

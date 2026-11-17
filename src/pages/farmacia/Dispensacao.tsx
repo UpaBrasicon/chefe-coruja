@@ -56,7 +56,10 @@ export default function DispensacaoPagina() {
       <TituloPagina icone={PackageOpen} titulo="Dispensação"
         descricao={farmacia
           ? 'O que sai da farmácia para o paciente, em unidades de consumo. O sistema sugere a quantidade; quem dispensa define. Dispensar baixa o estoque.'
-          : 'Farmácia fechada: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'} />
+          : unidadeAtiva?.unidade.tipo === 'ubs'
+            // percurso da UBS (U14, E6): a farmácia da UBS tem horário
+            ? 'Fora do horário da farmácia: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'
+            : 'Farmácia fechada: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'} />
       <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="mb-[18px]">
         <TabsList aria-label="Dispensação">
           {abas.map(([k, r]) => <TabsTrigger key={k} value={k}>{r}</TabsTrigger>)}

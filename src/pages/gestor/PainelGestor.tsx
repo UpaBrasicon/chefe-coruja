@@ -58,7 +58,10 @@ const CAMINHO: Record<string, [rotulo: string, destino: string]> = {
 const hora = (iso: string | null) => (iso ? formatarHora(iso) : '—')
 
 // ── Panorama em abas ────────────────────────────────────────────────────────
-function Panorama({ unidadeId }: { unidadeId: string }) {
+// Abas de hospital e UPA que não cabem na UBS (percurso da UBS, U5, GE1).
+const PAINEIS_FORA_DA_UBS = new Set(['permanencia', 'internacoes', 'giro', 'porta'])
+
+function Panorama({ unidadeId, ubs = false }: { unidadeId: string; ubs?: boolean }) {
   const { data, isLoading, error } = usePanorama(unidadeId)
   const navigate = useNavigate()
   const [aba, setAba] = React.useState<string | null>(null)
@@ -67,8 +70,8 @@ function Panorama({ unidadeId }: { unidadeId: string }) {
   if (error) return <MensagemErro texto={`Falha ao carregar o panorama: ${(error as Error).message}`} />
   if (isLoading || !data) return <div className="flex h-40 items-center justify-center rounded-cartao border border-fio bg-superficie"><Spinner /></div>
 
-  const paineis = PAINEIS.filter((p) => !fora.has(chavePainel(p.chave))).map((p) => {
-    const medidas = p.medidas(data.n).filter((m) => !fora.has(chaveMedida(p.chave, m.chave)))
+  const paineis = PAINEIS.filter((p) => !fora.has(chavePainel(p.chave)) && !(ubs && PAINEIS_FORA_DA_UBS.has(p.chave))).map((p) => {
+    const medidas = p.medidas(data.n).filter((m) => !fora.has(chaveMedida(p.chave, m.chave)) && !(ubs && m.chave === 'ocupacao'))
     return { ...p, medidas, pedem: medidas.filter((m) => m.nivel !== 'ok').length }
   })
   const atual = paineis.find((p) => p.chave === aba) ?? paineis[0]
@@ -281,7 +284,7 @@ export default function PainelGestor() {
     <div className="mx-auto flex w-full max-w-[896px] flex-col gap-5">
       <TituloPagina icone={LayoutDashboard} titulo="Painel do Gestor" descricao={unidadeAtiva?.unidade?.nome} />
       <Pergunta unidadeId={unidadeId} />
-      <Panorama unidadeId={unidadeId} />
+      <Panorama unidadeId={unidadeId} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
       <AuditoriaCheckin unidadeId={unidadeId} />
     </div>
   )
