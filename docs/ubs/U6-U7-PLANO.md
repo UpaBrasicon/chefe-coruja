@@ -4,7 +4,14 @@ O RT decidiu A no U6 e no U7, no diagnóstico `docs/ubs/PERCURSO-UBS-DIAGNOSTICO
 - **U6:** consulta de enfermagem completa, contando nos painéis, e tipo de serviço na agenda.
 - **U7:** sinais vitais na consulta e uma tela para o técnico; procedimentos com resultado dos testes rápidos, e o reagente sugere notificação.
 
-Este documento só divide o trabalho em PRs e traz as decisões que faltam. Não muda código.
+Este documento só divide o trabalho em PRs e traz as decisões. Não muda código.
+
+**Decisões do RT (17/11/2026):** P1 = A, P2 = B, P3 = B, P4 = A, P5 = A.
+- O enfermeiro pede os exames do protocolo da atenção básica (P1).
+- O enfermeiro prescreve pelos protocolos do município (P2). Entra o PR 3b.
+- A vacina fica fora até a integração com o SI-PNI e a RNDS (P3). O PR 6 sai daqui e vai para o U15.
+- O técnico registra sinais vitais, curativo, administração de medicamento e glicemia capilar (P4, sem a vacina).
+- A ordem é a da tabela (P5).
 
 ## Por que importa
 
@@ -43,9 +50,10 @@ A vacina não é procedimento SIGTAP. Ela é registrada na ficha de vacinação 
 | 1. Tipo de serviço na agenda | Cada consulta marcada ganha o serviço: consulta médica, consulta de enfermagem, coleta de preventivo, inserção de implante, inserção de DIU, curativo, teste rápido, vacinação, outro. A grade do enfermeiro só oferece serviços de enfermagem; a do médico, consulta médica, implante e DIU | coluna `servico` em `agendamentos` (expand) | agenda: escolher o serviço; o dia mostra o serviço |
 | 2. A ficha vai para o profissional | A ficha da UBS passa a ter destino: médico ou enfermagem. A chegada do agendado leva o destino da agenda; na demanda do dia, a recepção ou a escuta escolhem. O enfermeiro ganha a fila "Consultório de enfermagem" | coluna `destino` em `episodios`; `fila_da_porta` filtra pelo destino | recepção (destino); menu do enfermeiro (fila) |
 | 3. Consulta de enfermagem | O enfermeiro de plantão inicia a consulta, registra o SOAP e fecha pela conduta da UBS (mesma ficha do e-SUS APS). Prescrição e pedido de exame seguem como hoje (decisões P1 e P2) | trava `profissional_na_porta` (médico ou, com destino enfermagem, enfermeiro) em iniciar, SOAP e conduta | janela da consulta sem as abas que não cabem ao enfermeiro |
+| 3b. Prescrição pelo protocolo do município (P2 = B) | O gestor cadastra o protocolo de enfermagem do município: documento de origem (número, data e órgão) e os medicamentos permitidos, com apresentação e posologia do protocolo. O enfermeiro só prescreve itens do protocolo vigente; fora dele, o sistema recusa | tabela `protocolos_enfermagem` e itens; trava na prescrição | cadastro do protocolo (gestor); prescrição do enfermeiro limitada ao protocolo |
 | 4. Sinais vitais | Bloco de sinais vitais na consulta (médico e enfermeiro). Tela "Sinais vitais" para o técnico e o enfermeiro, com os pacientes do dia | `registrar_sinais_aps` (escala de plantão; grava em `observacao`) | bloco na consulta; tela nova no menu do técnico |
 | 5. Procedimentos com resultado | Registro dos procedimentos da tabela acima, com resultado nos testes rápidos (reagente, não reagente, inválido). Teste reagente de sífilis, HIV ou hepatites sugere a notificação (sífilis em gestante quando for o teste de gestante) | coluna `resultado` em `procedimentos_realizados` (expand); `registrar_procedimento_aps`; a notificação passa a ler o reagente | aba "Procedimentos" na consulta da UBS; atalho na tela do técnico |
-| 6. Vacinação (decisão P3) | Registro simples da vacina aplicada | tabela `vacinas_aplicadas` | tela de vacina do enfermeiro e do técnico |
+| ~~6. Vacinação~~ | Saiu pelo P3 = B: vai com a integração do SI-PNI e da RNDS (U15) | | |
 
 Cada PR passa por homologação, CI verde e "ok produção". Os PRs 4 e 5 não dependem do 2 nem do 3, e podem sair antes se o RT preferir.
 
