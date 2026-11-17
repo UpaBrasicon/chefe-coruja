@@ -33,14 +33,16 @@ export const quatroAt: Escore = {
   ficha: {
     id: '4at-delirium',
     titulo: '4AT — rastreio de delirium no idoso',
-    versao: '2026-11-14.1',
+    versao: '2026-11-16.1',
     publico: 'adulto',
     fontes: [
       { citacao: 'Bellelli G, Morandi A, Davis DH, et al. Validation of the 4AT, a new instrument for rapid delirium screening: a study in 234 hospitalised older people. Age Ageing. 2014;43(4):496–502 (PMID 24590568): leitura dos escores; sensibilidade 89,7%, especificidade 84,1%.', url: 'https://doi.org/10.1093/ageing/afu021' },
       { citacao: 'Shenkin SD, Fox C, Godfrey M, et al. Delirium detection in older acute medical inpatients: a multicentre prospective comparative diagnostic test accuracy study of the 4AT and the CAM. BMC Med. 2019;17(1):138 (PMID 31337404): pontuação de cada item.', url: 'https://doi.org/10.1186/s12916-019-1367-9' },
       GED_DELIRIUM_2025,
+      { citacao: 'Scottish Intercollegiate Guidelines Network. SIGN 157: Risk reduction and management of delirium. Edimburgo: SIGN; 2019. Recomendações-chave 2.1 a 2.3 e seções 3.1, 3.4, 6 e 7 lidas no PDF em 16/11/2026.', url: 'https://www.sign.ac.uk/media/1423/sign157.pdf' },
+      { citacao: 'NICE. Delirium: prevention, diagnosis and management in hospital and long-term care. Clinical guideline CG103 (2010, atualizada em 2023). Recomendações 1.6.1 a 1.7.5 lidas em 16/11/2026.', url: 'https://www.nice.org.uk/guidance/cg103' },
     ],
-    revisadoEm: '14/11/2026 (diretrizes geriátricas de PS 2.0, delirium, ao lado do manual, pelo resumo; lote 7 da revisão do HCFMUSP; aguarda aprovação do RT); 23/10/2026 (lacunas da Central, lote 1; pontos conferidos no texto da fonte)',
+    revisadoEm: '16/11/2026 (próximos passos do lote 8 das calculadoras; fontes lidas no texto em 16/11/2026; aguarda aprovação do RT); 14/11/2026 (diretrizes geriátricas de PS 2.0, delirium, ao lado do manual, pelo resumo; lote 7 da revisão do HCFMUSP; aguarda aprovação do RT); 23/10/2026 (lacunas da Central, lote 1; pontos conferidos no texto da fonte)',
   },
   descricao: 'Idoso no pronto-socorro: alerta, AMT4, meses de trás para frente e mudança aguda ou curso flutuante.',
   itens: [

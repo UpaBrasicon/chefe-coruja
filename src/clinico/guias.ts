@@ -217,7 +217,79 @@ const ACR_TCE = 'ACR Appropriateness Criteria, traumatismo craniano (2020)'
 const ACR_TORNOZELO = 'ACR Appropriateness Criteria, trauma agudo do tornozelo (2020)'
 const JSSCG = 'J-SSCG 2024, sepse (Japão)'
 
+// Lote 8 (16/11/2026): KDIGO 2024 de DRC (PDF do kdigo.org), IDSA 2012 de faringite
+// (PMC7108032), EAU 2026 de urologia pediátrica e GIRFT 2026 de torção testicular (PDFs),
+// SIGN 157 (2019) e NICE CG103 de delirium, todos lidos em 16/11/2026.
+const KDIGO = 'KDIGO 2024, doença renal crônica'
+const PP = 'ponto de prática, sem graduação'
+const IDSA_GAS = 'IDSA 2012, faringite estreptocócica'
+const EAU_PED = 'EAU 2026, urologia pediátrica (escroto agudo)'
+const GIRFT = 'GIRFT 2026 (NHS), via da torção testicular'
+const GRAU_GIRFT = 'consenso Delphi, sem graduação'
+const SIGN_DEL = 'SIGN 157 (2019), delirium'
+const NICE_DEL = 'NICE CG103, delirium'
+
+const KDIGO_CONFIRMAR: PassoGuia = { tema: 'Confirmar antes de chamar de DRC', texto: 'Diante de TFG baixa encontrada por acaso, repetir os exames para confirmar a DRC. Não presumir cronicidade por um valor isolado de TFG: pode ser lesão renal aguda ou doença renal aguda recente; a DRC exige alteração por pelo menos 3 meses.', ref: { fonte: KDIGO, pagina: 'PP 1.1.1.2 e 1.1.3.2', grau: PP } }
+const KDIGO_DOSE: PassoGuia = { tema: 'Dose de remédio', texto: 'Considerar a TFG ao dosar remédios de eliminação renal. Para a maioria das pessoas e situações, as equações de TFG validadas com creatinina servem para dosar; quando a dose pede mais precisão (janela terapêutica estreita, toxicidade) ou a estimativa pela creatinina é pouco confiável, usar creatinina com cistatina C ou TFG medida.', ref: { fonte: KDIGO, pagina: 'PP 4.2.1 a 4.2.3', grau: PP } }
+const KDIGO_NEFROTOXICO: PassoGuia = { tema: 'Nefrotóxicos e contraste', texto: 'Na DRC, pesar benefício e dano antes de prescrever remédio nefrotóxico e monitorar TFG, eletrólitos e nível sérico quando indicado. Com TFG abaixo de 60, o contraste venoso pode seguir os consensos das sociedades de radiologia; a indicação do exame de imagem é a mesma da população geral.', ref: { fonte: KDIGO, pagina: 'PP 4.1.1, 4.1.2, 4.4.1 e 4.4.1.2', grau: PP }, faixas: [1, 2] }
+
+const TWIST_GUIA: Guia = {
+  proximosPassos: [
+    { tema: 'Emergência, avaliação em 60 minutos', texto: 'A torção testicular é emergência e pede tratamento imediato. Avaliação por cirurgião com poder de decisão em até 60 minutos da chegada ao pronto-socorro.', ref: { fonte: EAU_PED, pagina: '8.4; GIRFT 3.3', grau: 'forte' } },
+    { tema: 'TWIST de 5 ou mais: exploração', texto: 'TWIST de 5 ou mais com dor há menos de 48 horas indica exploração escrotal, em qualquer idade, se não houver diagnóstico alternativo que mude a conduta; operar em até 1 hora da decisão.', ref: { fonte: GIRFT, pagina: '3.3 e 3.4', grau: GRAU_GIRFT }, faixas: [2] },
+    { tema: 'Ultrassom não atrasa a cirurgia', texto: 'O diagnóstico é clínico, pelo exame físico. O Doppler ajuda, mas não deve atrasar a intervenção; não transferir a criança só para fazer ultrassom.', ref: { fonte: EAU_PED, pagina: '8.4; GIRFT 3.3', grau: 'forte' } },
+    { tema: 'TWIST de 0 a 4 não exclui', texto: 'TWIST de 0 a 4 não exclui torção: com suspeita clínica, seguir a mesma via do alto risco.', ref: { fonte: GIRFT, pagina: '3.3 e nota 2 do fluxograma', grau: GRAU_GIRFT }, faixas: [0, 1] },
+    { tema: 'Distorção manual', texto: 'A distorção manual pode ser tentada no pronto-socorro enquanto se espera a cirurgia, sem atrasá-la.', ref: { fonte: EAU_PED, pagina: '8.3.2, texto', grau: 'sem graduação' }, faixas: [1, 2] },
+  ],
+  armadilhas: [
+    { texto: 'Escores não confirmam nem afastam a torção e não devem ser usados sozinhos; onde há pouco recurso diagnóstico, pode ser prudente baixar o limiar de intervenção. Ultrassom negativo não exclui torção nem torção intermitente.', ref: { fonte: EAU_PED, pagina: '8.2, texto; GIRFT nota 3', grau: 'sem graduação' } },
+  ],
+}
+
 export const GUIAS: Record<string, Guia> = {
+  'ckd-epi-2021': {
+    proximosPassos: [
+      KDIGO_CONFIRMAR,
+      KDIGO_DOSE,
+      KDIGO_NEFROTOXICO,
+      { tema: 'TFG abaixo de 30: nefrologia', texto: 'Encaminhar o adulto com DRC e TFG abaixo de 30 mL/min/1,73 m² ao serviço especializado em rim, para planejar e preparar a terapia renal substitutiva.', ref: { fonte: KDIGO, pagina: 'PP 5.1.1 e Figura 48', grau: PP }, faixas: [2] },
+    ],
+    armadilhas: [
+      { texto: 'No peso extremo, a TFG não indexada pela superfície corporal pode ser a indicada para dosar remédio de janela estreita: TFG indexada × superfície corporal ÷ 1,73 m². Fora do estado de equilíbrio (TFG mudando, volume de distribuição alterado), adaptar a dose.', ref: { fonte: KDIGO, pagina: 'PP 4.2.4 e 4.2.5; p. S249', grau: PP } },
+    ],
+  },
+  'cockcroft-gault': {
+    proximosPassos: [
+      KDIGO_DOSE,
+      KDIGO_NEFROTOXICO,
+      { tema: 'Anticoagulante oral direto', texto: 'O ajuste da dose do anticoagulante oral direto pela função renal é obrigatório, com cuidado redobrado na DRC G4–G5; os cortes de dose da KDIGO usam o clearance de creatinina estimado por Cockcroft-Gault.', ref: { fonte: KDIGO, pagina: 'PP 3.16.2 e Figura 43', grau: PP }, faixas: [1, 2] },
+    ],
+    armadilhas: [
+      { texto: 'A KDIGO aponta problemas no Cockcroft-Gault: foi feito antes da padronização da creatinina, sem mulheres nem pessoas negras na amostra, e usa o peso, que muda com edema ou obesidade. Muitos estudos de dose de remédio, porém, foram feitos com ele.', ref: { fonte: KDIGO, pagina: 'p. S249, texto', grau: 'sem graduação' } },
+    ],
+  },
+  'mcisaac-centor': {
+    proximosPassos: [
+      { tema: 'Quadro viral: não testar', texto: 'Com sinais que sugerem fortemente vírus (tosse, coriza, rouquidão, úlceras orais), em geral não testar para estreptococo do grupo A.', ref: { fonte: IDSA_GAS, pagina: 'recomendação 4', grau: 'forte, qualidade alta' } },
+      { tema: 'Abaixo de 3 anos', texto: 'Não testar abaixo de 3 anos, porque a febre reumática é rara nessa idade; testar só casos selecionados com outro fator de risco, como irmão mais velho com estreptococo.', ref: { fonte: IDSA_GAS, pagina: 'recomendação 5', grau: 'forte, qualidade moderada' } },
+      { tema: 'Testar: teste rápido ou cultura', texto: 'Colher swab de orofaringe para teste rápido de antígeno e/ou cultura, porque a clínica sozinha não separa estreptococo de vírus. Na criança e no adolescente, teste rápido negativo pede cultura; teste rápido positivo dispensa a cultura. No adulto, a cultura depois de teste rápido negativo em geral não é necessária.', ref: { fonte: IDSA_GAS, pagina: 'recomendações 1 e 2', grau: 'forte, qualidade alta (adulto: moderada)' }, faixas: [1] },
+      { tema: 'Confirmado: penicilina ou amoxicilina', texto: 'Na faringite estreptocócica confirmada, tratar com antibiótico adequado, em geral por 10 dias; penicilina ou amoxicilina são as de escolha para quem não é alérgico.', ref: { fonte: IDSA_GAS, pagina: 'recomendação 8', grau: 'forte, qualidade alta' }, faixas: [1] },
+    ],
+    armadilhas: [
+      { texto: 'Os escores clínicos servem para achar quem tem risco tão baixo que dispensa o teste; mesmo com todos os critérios, o estreptococo se confirma em só 35% a 50% dos casos, por isso o tratamento pede confirmação microbiológica.', ref: { fonte: IDSA_GAS, pagina: 'diagnóstico, texto', grau: 'sem graduação' } },
+    ],
+  },
+  twist: TWIST_GUIA,
+  'ped-twist': TWIST_GUIA,
+  '4at-delirium': {
+    proximosPassos: [
+      { tema: '4AT positivo: confirmar', texto: 'Com 4AT sugestivo, avaliação formal e diagnóstico por profissional treinado; registrar o diagnóstico de delirium e informar o paciente e a família.', ref: { fonte: SIGN_DEL, pagina: '3.1; NICE CG103 1.6.2', grau: 'boa prática' }, faixas: [2] },
+      { tema: 'Causas que ameaçam a vida primeiro', texto: 'Considerar primeiro as causas agudas graves: hipoxemia, hipotensão, hipoglicemia, intoxicação ou abstinência. Depois, buscar e tratar as causas de forma sistemática (remédios, doença aguda; várias causas juntas são comuns) e otimizar fisiologia, ambiente, remédios e sono.', ref: { fonte: SIGN_DEL, pagina: 'recomendação-chave 2.3, seção 6', grau: 'forte' }, faixas: [2] },
+      { tema: 'Revisar os remédios', texto: 'Todo paciente com risco de delirium deve ter os remédios revisados por profissional experiente.', ref: { fonte: SIGN_DEL, pagina: 'recomendação-chave 2.2', grau: 'forte' }, faixas: [1, 2] },
+      { tema: 'TC de crânio só com indicação', texto: 'TC de crânio não de rotina; considerar com sinal neurológico focal novo, rebaixamento da consciência sem outra explicação, queda recente, trauma craniano ou anticoagulação. Punção lombar não de rotina.', ref: { fonte: SIGN_DEL, pagina: '3.4', grau: 'condicional' }, faixas: [2] },
+      { tema: 'Agitação ou angústia', texto: 'Com angústia ou risco para si ou para outros, usar primeiro técnicas verbais e não verbais para acalmar. Se não funcionarem, considerar haloperidol por curto prazo (em geral 1 semana ou menos), começando pela menor dose clinicamente adequada, com atenção aos efeitos cardíacos e neurológicos (sobretudo na doença de Parkinson e na demência com corpos de Lewy).', ref: { fonte: NICE_DEL, pagina: '1.7.3 e 1.7.4', grau: 'sem graduação' }, faixas: [2] },
+    ],
+  },
   '4t-hit': {
     proximosPassos: [
       { tema: '4T e imunoensaio', texto: 'Usar o 4T para estimar a probabilidade de HIT, em vez da impressão clínica; com 4T intermediário ou alto, pedir imunoensaio.', ref: { fonte: ASH_HIT, pagina: 'recomendação 2.1', grau: 'forte, certeza moderada' } },

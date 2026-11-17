@@ -26,7 +26,7 @@ test('4at: alerta alterado e mudança aguda somam 4 cada (máximo 12)', () => {
 
 test('4AT (cap. 8): diretrizes geriátricas de PS 2025 ao lado do manual', async () => {
   const q = await import('./quatroAt.ts')
-  assert.equal(q.quatroAt.ficha.versao, '2026-11-14.1')
+  assert.equal(q.quatroAt.ficha.versao, '2026-11-16.1')
   assert.ok(q.quatroAt.ficha.fontes.includes(q.GED_DELIRIUM_2025))
   assert.match(q.GED_DELIRIUM_2025.citacao, /PMID 41146403/)
   assert.equal(q.DIRETRIZ_DELIRIUM_2025.length, 6)
