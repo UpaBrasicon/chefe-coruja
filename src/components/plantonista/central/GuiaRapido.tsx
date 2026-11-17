@@ -106,11 +106,6 @@ function corEscolhida(origem: string) {
 }
 const origemDaCor = (c: CorBroselow) => `${PREFIXO_FITA}${c.nome.toLowerCase()} (${rotuloPesoDaCor(c)})`
 
-<<<<<<< origin/homolog
-function CorDaFita() {
-  const p = usePacienteCentral()
-  const cor = corEscolhida(p.origem)
-=======
 // Peso digitado → cor (pedido do RT, 17/11/2026): sem cor escolhida na lista, a
 // cor sai do peso pela mesma tabela; no vão entre cores, nenhuma.
 function leituraDaFita(p: { origem: string; peso: string }) {
@@ -123,7 +118,6 @@ function leituraDaFita(p: { origem: string; peso: string }) {
 function CorDaFita() {
   const p = usePacienteCentral()
   const { cor } = leituraDaFita(p)
->>>>>>> HEAD
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <span className="text-corpo font-bold text-tinta">Cor Broselow</span>
@@ -163,14 +157,6 @@ function CorDaFita() {
 
 function DetalheDaFita() {
   const p = usePacienteCentral()
-<<<<<<< origin/homolog
-  const cor = corEscolhida(p.origem)
-  if (!cor) return null
-  return (
-    <div className="col-span-2 flex flex-col gap-1 rounded-container border border-fio-forte bg-superficie px-3.5 py-2.5">
-      <span className="text-controle font-semibold text-tinta">Cor {cor.nome.toLowerCase()} · {rotuloPesoDaCor(cor)}</span>
-      <span className="text-rotulo text-tinta-apoio">{rotuloAlturaIdade(cor)}. {AVISO_FITA}</span>
-=======
   const { cor, pelaLista, leitura } = leituraDaFita(p)
   if (leitura.tipo === 'vazio') return null
   const faixa = (c: CorBroselow) => `${c.nome.toLowerCase()} (${c.pesoKg[0]}–${c.pesoKg[1]} kg)`
@@ -183,7 +169,6 @@ function DetalheDaFita() {
     <div className="col-span-2 flex flex-col gap-1 rounded-container border border-fio-forte bg-superficie px-3.5 py-2.5">
       <span className="text-controle font-semibold text-tinta">{titulo}</span>
       <span className="text-rotulo text-tinta-apoio">{cor ? `${rotuloAlturaIdade(cor)}. ` : ''}{AVISO_FITA}</span>
->>>>>>> HEAD
     </div>
   )
 }
