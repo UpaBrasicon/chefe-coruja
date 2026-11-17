@@ -10,6 +10,7 @@ import { RequireSuperAdmin } from '@/routes/RequireSuperAdmin'
 import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
 import { destinoEscala } from '@/lib/rotaEscala'
+import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { AppShell } from '@/components/AppShell'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { ErroForcado } from '@/components/ErroForcado'
@@ -105,6 +106,7 @@ const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
+const SobreModuloClinico = lazy(() => import('@/pages/plantonista/SobreModuloClinico'))
 const ToolRouter = lazy(() => import('@/pages/plantonista/ToolRouter').then((m) => ({ default: m.ToolRouter })))
 const PreferenciasPrescricao = lazy(() => import('@/pages/PreferenciasPrescricao'))
 const NotificacaoCompulsoria = lazy(() => import('@/pages/notificacao/NotificacaoCompulsoria'))
@@ -451,6 +453,8 @@ export default function App() {
                       {/* ── Plantonista + gestão ───────────────────────── */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>
                         <Route path="/plantonista" element={<PlantonistaHome />} />
+                        {/* LG11, C5: rotulagem mínima do módulo clínico (antes de :section) */}
+                        <Route path={ROTA_SOBRE_MODULO} element={<SobreModuloClinico />} />
                         <Route path="/plantonista/:section" element={<SectionHome />} />
                         {/* Entradas que saíram da Central (RT, 23/10/2026): abriam a mesma tela de outra. */}
                         <Route path="/plantonista/calculadoras/drogas-vasoativas" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=vasoativo" />} />

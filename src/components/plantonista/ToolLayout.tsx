@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 
 import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { useRelacionadas, type Relacionada } from '@/components/plantonista/calc/contexto'
+import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
 import { data } from '@/lib/formato'
@@ -93,7 +94,10 @@ export function ToolLayout({
       )}
       <div role="note" className="flex gap-2.5 border-t border-fio pt-3 text-apoio text-atencao">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-        <p>Apoio à decisão clínica: confira antes de prescrever. Não substitui o julgamento do profissional responsável.</p>
+        <p>
+          Apoio à decisão clínica: confira antes de prescrever. Não substitui o julgamento do profissional responsável.{' '}
+          <Link to={ROTA_SOBRE_MODULO} className="text-acao underline underline-offset-4">Sobre o módulo clínico</Link>
+        </p>
       </div>
       {(fonte || revisado) && (
         <section aria-label="Fonte" className="flex flex-col gap-0.5">
