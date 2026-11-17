@@ -13,6 +13,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { ProcedimentosAps } from '@/components/clinico/ProcedimentosAps'
 import { SinaisVitaisAps } from '@/components/clinico/SinaisVitaisAps'
 import { Contencao } from '@/components/prontuario/Contencao'
 import { Intercorrencias } from '@/components/prontuario/Intercorrencias'
@@ -203,8 +204,9 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     { k: 'fim', rotulo: 'Desfecho' },
     { k: 'conduta', rotulo: 'Conduta' },
   ]
-  const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'conduta'].includes(a.k)
-    : ubs ? !['reav', 'proc', 'fim'].includes(a.k) : a.k !== 'conduta'))
+  // U7, PR 5: na UBS a aba Procedimentos é a dos procedimentos da UBS (com o resultado dos testes)
+  const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'proc', 'conduta'].includes(a.k)
+    : ubs ? !['reav', 'fim'].includes(a.k) : a.k !== 'conduta'))
 
   return (
     <div className="flex flex-col overflow-hidden rounded-cartao border border-fio bg-campo">
@@ -319,10 +321,12 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
                 faixa={faixa} cid={cidAtend} estado={docs} setEstado={setDocs} />
             </TabsContent>
             <TabsContent value="proc">
+              {ubs ? <ProcedimentosAps episodioId={ep.id} /> : (
               <div className="flex flex-col gap-4">
                 {unidadeJanela && <QuadroProcedimentos pacienteId={ep.paciente_id} unidadeId={unidadeJanela} episodioId={ep.id} />}
                 <SolicitarApac pacienteId={ep.paciente_id} episodioId={ep.id} />
               </div>
+              )}
             </TabsContent>
             {/* Desfecho e Conduta guardam as escolhas só na memória até confirmar: ficam
                 montadas, escondidas, para não zerar quando o médico vai a outra aba e
