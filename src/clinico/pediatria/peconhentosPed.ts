@@ -28,13 +28,13 @@ const base = fichaP4('ped-escorpiao-aranhas', 'Escorpião e aranhas — soro por
 
 export const fichaPeconhentosPed: Ficha = {
   ...base,
-  versao: '2026-11-16.1',
+  versao: '2026-11-16.2',
   fontes: [
     ...base.fontes,
     { ...PCDT_ESCORPIAO_2026, citacao: `${PCDT_ESCORPIAO_2026.citacao} Quadro 3 (p. 9), determinantes de gravidade (p. 10), tratamento específico (p. 15–17, Quadro 4), fluxo (p. 25).` },
     MS_ARANHAS,
   ],
-  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 28/09/2026 (PCDT escorpiônicos 2026 e portal do MS conferidos; livro do ICr mantido como base)',
+  revisadoEm: '16/11/2026 (.2: orientação do livro para acima de 10 anos restaurada sem a palavra "adultos", decisão do RT; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 28/09/2026 (PCDT escorpiônicos 2026 e portal do MS conferidos; livro do ICr mantido como base)',
 }
 
 /** PCDT dos Acidentes Escorpiônicos (MS, 2026): soro por gravidade, independentemente da idade. */
@@ -108,7 +108,7 @@ export const TABELA_SORO: Record<Animal, Record<Gravidade, LinhaSoro>> = {
   escorpiao: {
     leve: { clinica: 'Apenas manifestações locais: dor local ou irradiada, edema, eritema, sudorese, parestesia, frialdade; pode haver ponto de inoculação', ampolas: null, outros: 'Observação clínica por 4 horas; analgesia VO/parenteral e/ou anestesia local', pagina: 'p. 211 (Tabela 1)' },
     moderado: { clinica: 'Quadro local + alguns episódios de vômito, sudorese fria, hipertensão, taquicardia (ou bradicardia) e agitação leve', ampolas: [3, 3], soro: 'soro antiescorpiônico ou antiaracnídico', via: 'EV em 15–20 min', outros: 'Internação por 24 h; analgesia e/ou anestesia local', pagina: 'p. 211 (Tabela 1)',
-      idade: 'Na tabela, 3 ampolas para crianças ≤ 10 anos (p. 211).' },
+      idade: 'Na tabela, 3 ampolas para crianças ≤ 10 anos (p. 211). Acima de 10 anos, o livro orienta tratar primeiro a dor e, sem melhora em 30–40 min, está indicada a soroterapia; a tabela não repete o número de ampolas para essa faixa.' },
     grave: { clinica: 'Além do moderado: vários vômitos, sudorese intensa, taquicardia ou bradicardia, hiper ou hipotensão, taquipneia, priapismo, agitação alternada com sonolência; pode evoluir para choque e edema agudo de pulmão', ampolas: [6, 6], soro: 'soro antiescorpiônico ou antiaracnídico', via: 'EV em 15–20 min', outros: 'Suporte vital/cuidados intensivos; analgesia e/ou anestesia local', pagina: 'p. 212 (Tabela 1)' },
   },
   phoneutria: {
