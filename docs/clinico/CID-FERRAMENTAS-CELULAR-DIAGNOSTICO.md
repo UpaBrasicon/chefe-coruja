@@ -11,6 +11,22 @@ Decisões do RT na mesma conversa:
 
 **Decisões do RT em 17/11/2026:** CF1 a CF9 = A ("Todas A"). O ABCD2 entra só no G45 (AIT), seguindo a fonte. Começa pela F1.
 
+**Leitura da sessão de obrigatórios legais (17/11/2026), aceita pelo RT:** entra com condições, sem esperar nenhum LG. Não muda o caminho 1 nem a classe. O mapa e o preenchimento automático vão para a lista do LG11, para o consultor confirmar. Condições:
+- **Rótulo fixo no bloco:** "Atalho para ferramentas de referência. A decisão é do médico."
+- **Idade e peso do prontuário (F3):**
+  - o campo mostra a origem e a data ("peso do prontuário, 12/11") e continua editável;
+  - sem peso, ou com peso velho, o campo fica vazio e pede digitação. Peso velho, decisão do RT: na criança, mais de 24 h; no adulto, mais de 7 dias;
+  - idade pelo corte de 13 anos, 11 meses e 29 dias;
+  - a dose só aparece depois do clique em calcular.
+- **Teste:** prova que o bloco nunca mostra cor, dose ou conduta.
+- **Fora da URL:** idade, peso e CID nunca vão no endereço (query ou hash). Conferir que o Sentry e os breadcrumbs não capturam esses campos.
+- **Comitê clínico:** o mapa entra na revisão do comitê quando o LG13 existir.
+
+**F7, pedido do RT em 17/11/2026:** CID de quadro infeccioso com NEWS2 da triagem aumentado abre o aviso "pensar em sepse", que orienta os exames para fechar o diagnóstico.
+- Entra neste item, depois da F2.
+- O RT liberou uma exceção à regra "nada sugere conduta" da aba Atendimento, só para este aviso. Os exames vêm de fonte citada com página, e nada é pedido sozinho.
+- Antes do código: diagnóstico curto com o corte do NEWS2, a lista de CIDs infecciosos e os exames, tudo da fonte (SSC 2026, ILAS). Só adulto. A leitura da sessão legal ainda está pendente.
+
 ## 1. Como está hoje
 
 ### Onde o CID é escolhido no atendimento
