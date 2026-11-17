@@ -6,6 +6,8 @@ O que se quer: a ficha nova só aparece para quem usa depois de aprovada pelo re
 
 Este documento não muda código nem banco.
 
+**Decisão do RT, 17/11/2026: "Todas A"** (G1 a G7). A implementação segue em PR próprio.
+
 ## Como é hoje
 
 ### Onde mora a regra
