@@ -23,6 +23,7 @@ const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))
 const Farmacia = lazy(() => import('@/pages/farmacia/Farmacia'))
 const Checagem = lazy(() => import('@/pages/enfermagem/Checagem'))
+const SinaisVitaisUbs = lazy(() => import('@/pages/enfermagem/SinaisVitaisUbs'))
 const ProntoSocorroEnfermagem = lazy(() => import('@/pages/enfermagem/ProntoSocorroEnfermagem'))
 const InternacaoEnfermagem = lazy(() => import('@/pages/enfermagem/InternacaoEnfermagem'))
 const InicioEnfermagem = lazy(() => import('@/pages/enfermagem/InicioEnfermagem'))
@@ -244,6 +245,8 @@ export default function App() {
                       {/* Enfermagem: checagem da prescrição (Fase 4.6) */}
                       <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem']} />}>
                         <Route path="/checagem" element={<Checagem />} />
+                        {/* U7, PR 4 (percurso da UBS): sinais vitais do técnico e do enfermeiro */}
+                        <Route path="/sinais-vitais" element={<SinaisVitaisUbs />} />
                         {/* Porte: Pronto Socorro e Internação da enfermagem (com a passagem de plantão) */}
                         <Route path="/enfermagem" element={<InicioEnfermagem />} />
                         <Route path="/enfermagem/pronto-socorro" element={<ProntoSocorroEnfermagem />} />
