@@ -13,7 +13,7 @@ Pedido do RT em 17/11/2026: otimizar o VPS e tirar o que não é necessário. An
 - **Não é sobra, e ficou:**
   - a imagem `hermes-nous:v2026.8.19-atual` (3,9 GB) é o plano B do `/root/update-agente.sh` (contêiner `rollback-hermes-nous-0.20.5`);
   - os backups `nous-*-2026-10-05*.tgz` (cerca de 0,5 GB) existem só no VPS.
-  Os dois esperam decisão do RT.
+  O RT autorizou apagar os dois em 17/11/2026 ("1 sim, 2 sim"): o contêiner `rollback-hermes-nous-0.20.5` e a imagem foram removidos, junto com os 7 arquivos `nous-*-2026-10-05*.tgz`; o comentário do `update-agente.sh` foi atualizado. Disco foi para 29 de 96 GB (31%), e os 5 agentes do Nous seguem no ar.
 
 ## O que foi feito (com o "sim" do RT)
 
