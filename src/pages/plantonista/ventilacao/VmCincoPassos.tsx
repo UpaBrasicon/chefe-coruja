@@ -5,10 +5,17 @@ import {
   TABELAS_PEEP, berlim, cortesIndicacaoVm, criteriosObjetivosDesmame, falhaTre, marcosPf, mecanica, relacaoPF,
   type ClasseBerlim, type Modo, type TabelaPeepId,
 } from '@/clinico/adulto/ventilacaoMecanica'
-import { ALARMES_LIVRO, ALVO_SAT, PASSOS_VM, QUADROS_VM, checarAjustes, fichaVmPassos, lerAcompanhamento, tabelaPeepSdra, type QuadroVm } from '@/clinico/adulto/vmPassos'
+import { ALARMES_LIVRO, ALVO_SAT, PASSOS_VM, QUADROS_VM, checarAjustes, fichaVmPassos, lerAcompanhamento, tabelaPeepSdra, type EstadoLinha, type QuadroVm } from '@/clinico/adulto/vmPassos'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Button } from '@/components/ui/button'
+import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Alertas, Escolha, Resultado } from '../manual/LoteAPecas'
 import { br, faixaBr, informado } from '../manual/loteAFormato'
@@ -17,6 +24,9 @@ import { hora } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 type Checagem = { hora: string; cst: number | null; driving: number | null; pplato: number; peep: number }
+
+/** Leitura da linha da conferência, com as mesmas palavras da tabela da tela. */
+const LEITURA_LINHA: Record<EstadoLinha, string> = { ok: 'dentro do livro', fora: 'fora do livro', 'sem-faixa': 'sem faixa no livro', vazio: 'não informado' }
 
 /** VM em cinco passos no formato do protótipo, com as faixas do cap. 37 do manual do HCFMUSP. */
 export function VmCincoPassos() {
@@ -86,6 +96,49 @@ export function VmCincoPassos() {
   const ir = (n: number) => setPasso(Math.min(5, Math.max(1, n)))
   const criterios = criteriosObjetivosDesmame({ po2: informado(po2D), fio2Pct: informado(fio2D), peep: peepD > 0 ? peepD : undefined, fc: informado(fcD) })
   const falha = falhaTre({ fc: informado(fcT), fr: informado(frT), sat: informado(satT), pas: informado(pasT) })
+
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaVmPassos.id)
+  const cortes = po2 > 0 || pco2 > 0 ? cortesIndicacaoVm({ po2: informado(po2), pco2: informado(pco2) }) : null
+  const linhasInformadas = checagem.linhas.filter((l) => l.estado !== 'vazio')
+  const foraDoLivro = checagem.linhas.filter((l) => l.estado === 'fora').length
+  const alertasTela = [...acompanhamento, ...marcos, ...falha]
+  const criteriosLidos = criterios.filter((c) => c.atende !== null)
+  const temResultado = cortes !== null || pf !== null || checagem.vtAlvoMl !== null || linhasInformadas.length > 0 || mec !== null || alertasTela.length > 0 || criteriosLidos.length > 0
+
+  // Texto do "Copiar" (C4 = A): o que foi conferido contra o livro, passo a passo, com a página.
+  const copia = temResultado
+    ? textoCopia({
+        ferramenta: 'Ventilação mecânica em cinco passos (adulto)',
+        dados: [
+          ['Quadro', `${QUADROS_VM[quadro].nome} (${QUADROS_VM[quadro].tabela})`],
+          ['Modo', NOME_MODO[modoValido]],
+          ['Peso usado na conta', peso > 0 ? `${br(peso, 1)} kg` : ''],
+          ['PO2', po2 > 0 ? `${br(po2, 0)} mmHg` : ''],
+          ['PCO2', pco2 > 0 ? `${br(pco2, 0)} mmHg` : ''],
+          ['PaO2 / FiO2 (SDRA)', quadro === 'sdra' && pf !== null ? `${br(pao2Sdra, 0)} mmHg / ${br(fio2Sdra, 0)}%` : ''],
+          ['Classe de Berlim escolhida', quadro === 'sdra' && classeManual ? NOME_BERLIM[classeManual] : ''],
+        ],
+        resultado: [
+          ...(cortes ? [`Indicação (p. 498): ${cortes.join('; ') || 'nenhum corte numérico da p. 498 atingido'}`] : []),
+          ...(quadro === 'sdra' && pf !== null ? [`P/F ${Math.round(pf)} · ${leituraBerlim?.classe ? NOME_BERLIM[leituraBerlim.classe] : leituraBerlim?.nota ?? '—'} (p. 505)`] : []),
+          ...(checagem.vtAlvoMl ? [`Vt do quadro pelo peso informado: ${faixaBr(checagem.vtAlvoMl, 0)} mL`] : []),
+          ...linhasInformadas.map((l) => `- ${l.parametro}: ${l.valor} — livro ${l.livro} (${l.pagina}): ${LEITURA_LINHA[l.estado]}${l.nota ? `. ${l.nota}` : ''}`),
+          ...(mec
+            ? [
+                `Mecânica: resistência ${mec.resistencia !== null ? `${br(mec.resistencia, 1)} cmH2O/L/s` : '—'} · complacência estática ${mec.complacencia !== null ? `${br(mec.complacencia, 1)} mL/cmH2O` : '—'} · driving pressure ${mec.driving !== null ? `${br(mec.driving, 0)} cmH2O` : '—'}${mec.tau ? ` · constante de tempo ${br(mec.tau.tauS, 2)} s` : ''} (p. 499–500)`,
+              ]
+            : []),
+          ...acompanhamento,
+          ...marcos,
+          ...criteriosLidos.map((c) => `Desmame (${DESMAME.pagina}): ${c.texto} — ${c.atende ? 'atende' : 'não atende'}`),
+          ...falha.map((f) => `Critério de falência do TRE atingido: ${f}`),
+        ],
+        fonte: textoFontes(fichaVmPassos),
+        versao: fichaVmPassos.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -234,10 +287,25 @@ export function VmCincoPassos() {
         </CartaoPasso>
       )}
 
-      <details className="rounded-container border border-fio bg-card px-4 py-3 text-apoio">
-        <summary className="cursor-pointer font-medium">Errata e divergências do cap. 37</summary>
-        <ul className="mt-2 list-disc pl-5 text-tinta-sussurro">{ERRATA_VM.map((e) => <li key={e}>{e}</li>)}</ul>
-      </details>
+      {/* Errata e divergências do cap. 37 vão para "Armadilhas" (C6 = A); o aviso do peso fica no passo 1. */}
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!temResultado}
+        armadilhas={[...ERRATA_VM.map((e) => `Errata do cap. 37 — ${e}`), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaVmPassos}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={`Passo ${passo} de 5 · ${PASSOS_VM[passo - 1]}`}
+        detalhe={`${QUADROS_VM[quadro].nome} · ${NOME_MODO[modoValido]}${peso > 0 ? ` · ${br(peso, 1)} kg` : ''}${checagem.vtAlvoMl ? ` · Vt ${faixaBr(checagem.vtAlvoMl, 0)} mL` : ''}${foraDoLivro > 0 ? ` · ${foraDoLivro} fora do livro` : ''}${alertasTela.length > 0 ? ` · ${alertasTela.length} alerta${alertasTela.length > 1 ? 's' : ''}` : ''}`}
+        tom={foraDoLivro > 0 || alertasTela.length > 0 ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

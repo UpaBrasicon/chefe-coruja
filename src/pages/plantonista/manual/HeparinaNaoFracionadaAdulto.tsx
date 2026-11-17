@@ -1,8 +1,15 @@
 import { useState } from 'react'
 
 import { HNF_EV, NOMOGRAMA_TTPA, NOTA_HNF_ANTI_XA, ajustarHnf, fichaHnfAdulto, inicioHnf, mlHDeUIH } from '@/clinico/adulto/anticoagulacao'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
@@ -20,8 +27,40 @@ export function HeparinaNaoFracionadaAdulto() {
   const [conc, setConc] = useState(0)
   const [ttpa, setTtpa] = useState(0)
   const [atual, setAtual] = useState(HNF_EV.infusaoUIKgH)
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaHnfAdulto.id)
   const ini = inicioHnf(peso)
   const aj = ajustarHnf(ttpa, peso, atual)
+  const textoAjuste = aj
+    ? `${aj.linha.deltaUIKgH === 0 ? 'Manter' : `${aj.linha.deltaUIKgH > 0 ? 'Aumentar' : 'Diminuir'} ${Math.abs(aj.linha.deltaUIKgH)} UI/kg/h`} → ${br(aj.novaInfusaoUIKgH)} UI/kg/h = ${br(aj.novaInfusaoUIH, 0)} UI/h${comMl(aj.novaInfusaoUIH, conc)}`
+    : ''
+
+  // Texto do "Copiar" (C4 = A): peso, início e o ajuste pelo TTPA quando informado.
+  const copia = ini
+    ? textoCopia({
+        ferramenta: 'Heparina não fracionada EV — adulto',
+        dados: [
+          ['Peso', `${numeroBr(peso)} kg`],
+          ['Concentração do preparo', conc > 0 ? `${numeroBr(conc)} UI/mL` : ''],
+          ['TTPA', aj ? `${numeroBr(ttpa)} s` : ''],
+          ['Infusão atual', aj ? `${numeroBr(atual)} UI/kg/h` : ''],
+        ],
+        resultado: [
+          `Início: bolus ${br(ini.bolusUI, 0)} UI (${HNF_EV.bolusUIKg} UI/kg) · infusão ${br(ini.infusaoUIH, 0)} UI/h (${HNF_EV.infusaoUIKgH} UI/kg/h)${comMl(ini.infusaoUIH, conc)} (${HNF_EV.pagina})`,
+          ...(aj
+            ? [
+                `Ajuste pelo TTPA (Tabela 7, ${HNF_EV.pagina}): linha ${aj.linha.faixa}`,
+                ...(aj.novoBolusUI !== null ? [`Novo bolus: ${br(aj.novoBolusUI, 0)} UI (${aj.linha.novoBolusUIKg} UI/kg)`] : []),
+                ...(aj.linha.pararMin > 0 ? ['Parar a infusão por 1 hora.'] : []),
+                textoAjuste,
+              ]
+            : []),
+        ],
+        fonte: textoFontes(fichaHnfAdulto),
+        versao: fichaHnfAdulto.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -79,6 +118,30 @@ export function HeparinaNaoFracionadaAdulto() {
           TTPA fracionado entre duas faixas (p. ex. 45,5 s) é lido pela faixa seguinte (46–70 s). O manual não traz o intervalo de coleta do TTPA nem dose máxima de bolus.
         </p>
       </Bloco>
+
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!ini}
+        armadilhas={guia?.armadilhas ?? []}
+        ficha={fichaHnfAdulto}
+        guia={guia}
+      />
+      <ResumoFlutuante
+        principal={ini ? `Adulto · ${numeroBr(peso)} kg` : 'Informe o peso'}
+        detalhe={
+          aj
+            ? `TTPA ${aj.linha.faixa}: ${aj.novoBolusUI !== null ? `novo bolus ${br(aj.novoBolusUI, 0)} UI · ` : ''}${aj.linha.pararMin > 0 ? 'parar 1 h · ' : ''}${br(aj.novaInfusaoUIKgH)} UI/kg/h = ${br(aj.novaInfusaoUIH, 0)} UI/h`
+            : ini
+              ? `Início: bolus ${br(ini.bolusUI, 0)} UI · ${br(ini.infusaoUIH, 0)} UI/h${comMl(ini.infusaoUIH, conc)}`
+              : undefined
+        }
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }

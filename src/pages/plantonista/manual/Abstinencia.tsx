@@ -4,8 +4,16 @@ import {
   CRITERIOS_CAINE, DIFERENCAS_SAA, DIRETRIZ_SAA, DOSES_ABSTINENCIA, ERRATA_CIWA, FATORES_RISCO_SAA, NOTAS_TEMPO_SAA, NOTA_ABSTINENCIA_FENOBARBITAL, SEM_DOSE_NO_CAPITULO, TEMPOS_SAA,
   caine, ciwaAr, doseDiaria, fichaAbstinenciaAlcoolica, midazolamDelirium, type DoseAbstinencia, type Faixa,
 } from '@/clinico/adulto/abstinenciaAlcoolica'
-import type { Respostas } from '@/clinico/escore'
+import { escolha, type Respostas } from '@/clinico/escore'
+import { textoFontes } from '@/clinico/ficha'
+import { passosDaFaixa } from '@/clinico/guia'
+import { guiaDa } from '@/clinico/guias'
+import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
+import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
+import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { textoCopia } from '@/domain/copiaCalculo'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
@@ -34,13 +42,59 @@ function contaDose(d: DoseAbstinencia) {
   )
 }
 
+/** A mesma conta de `contaDose`, em texto, para o "Copiar". */
+function contaDoseTexto(d: DoseAbstinencia): string | null {
+  if (d.id === 'midazolam') {
+    const m = midazolamDelirium()
+    return m.mlH === null ? null : `bolus ${br(m.bolusMl!)} mL · ${br(m.mlH)} mL/h (${br(m.mgMl!)} mg/mL, Anexo 1)`
+  }
+  if (!d.mg || !d.intervalosH) return null
+  const partes = d.intervalosH.flatMap((h) => {
+    const dia = doseDiaria(d.mg!, h)
+    return dia ? [`${h}/${h} h = ${faixa(dia)} mg/dia`] : []
+  })
+  if (d.tetoDiaMg) partes.push(`até ${faixa(d.tetoDiaMg)} mg/dia`)
+  return partes.length ? partes.join(' · ') : null
+}
+
 /** Síndrome de abstinência alcoólica (cap. 78 do manual do HCFMUSP). */
 export function Abstinencia() {
   const [r, setR] = useState<Respostas>({})
   const [caineMarcados, setCaine] = useState<string[]>([])
+  const [aba, setAba] = useState<IdAba>('proximos')
+  const guia = guiaDa(fichaAbstinenciaAlcoolica.id)
   const res = ciwaAr.calcular(r)
   const respondidos = ciwaAr.itens.filter((i) => typeof r[i.id] === 'number').length
   const cn2 = caine(caineMarcados.length)
+  const textoCaine = `Caine ${cn2.marcados} de 4 — ${cn2.preenche ? 'critério de Caine preenchido (2 ou mais)' : 'menos de 2 critérios'}`
+
+  // Texto do "Copiar" (C4 = A; C3 = A: leva a lista de doses do manual).
+  const copia = res
+    ? textoCopia({
+        ferramenta: 'Síndrome de abstinência alcoólica (adulto)',
+        dados: [
+          ...ciwaAr.itens.map((i): [string, string] => {
+            const o = escolha(ciwaAr, r, i.id)
+            return [i.rotulo, o ? `${o.valor} ponto${o.valor === 1 ? '' : 's'}` : '']
+          }),
+          ['Critérios de Caine marcados', caineMarcados.join(', ') || 'nenhum'],
+        ],
+        resultado: [
+          `CIWA-Ar ${res.valor}${res.unidade ? ` ${res.unidade}` : ''} — ${res.nota} (Tabela 3, p. 1028–1030)`,
+          ...res.derivados.map(([k, v]) => `${k}: ${v}`),
+          ...(res.alerta ? [`Errata: ${res.alerta}`] : []),
+          `${textoCaine} (Tabela 4, p. 1032)`,
+          'Doses do manual (p. 1031–1034):',
+          ...DOSES_ABSTINENCIA.map((d) => {
+            const conta = contaDoseTexto(d)
+            return `- ${d.nome} — ${d.contexto}: ${d.texto}${conta ? ` (${conta})` : ''} (${d.pagina})`
+          }),
+        ],
+        fonte: textoFontes(fichaAbstinenciaAlcoolica),
+        versao: fichaAbstinenciaAlcoolica.versao,
+        quando: new Date(),
+      })
+    : undefined
 
   return (
     <ToolLayout
@@ -82,7 +136,6 @@ export function Abstinencia() {
             {res.alerta && <p className="text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{res.alerta}</p>}
           </div>
         )}
-        <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{ERRATA_CIWA.cabecalho}</p>
       </Bloco>
 
       <Bloco titulo="Critérios de Caine — encefalopatia de Wernicke (Tabela 4, p. 1032)" descricao="O livro exige dois critérios para o diagnóstico.">
@@ -124,15 +177,36 @@ export function Abstinencia() {
           {FATORES_RISCO_SAA.itens.map((f) => <li key={f}>{f}</li>)}
         </ul>
       </Bloco>
-      <Bloco titulo="BAP 2026 — ao lado do manual" descricao="Parte de álcool da diretriz da British Association for Psychopharmacology de 2026 (níveis A–D; S = padrão de cuidado), lida no texto integral. As doses do manual acima continuam valendo.">
-        <div className="overflow-x-auto">
-          <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
-            <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
-            <TableBody>{DIRETRIZ_SAA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
-          </Table>
-        </div>
-        <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SAA.map((d) => <li key={d}>{d}</li>)}</ul>
-      </Bloco>
+      <AbasResultado
+        aba={aba}
+        onAba={setAba}
+        passos={passosDaFaixa(guia, undefined)}
+        semResultado={!res}
+        armadilhas={[ERRATA_CIWA.cabecalho, ERRATA_CIWA.faixa15, ...(res?.cuidados ?? []), ...(guia?.armadilhas ?? [])]}
+        ficha={fichaAbstinenciaAlcoolica}
+        guia={guia}
+        comparacao={
+          // Tabela de comparação com a BAP 2026 vai para "Evidências" (C6 = A); nenhuma dose do manual muda.
+          <BlocoComparacao titulo="BAP 2026 — ao lado do manual" resumo="Parte de álcool da diretriz da British Association for Psychopharmacology de 2026 (níveis A–D; S = padrão de cuidado), lida no texto integral. As doses do manual continuam valendo.">
+            <div className="overflow-x-auto">
+              <Table variante="referencia" className="w-full min-w-[640px] text-left align-top text-apoio">
+                <TableHeader className="text-tinta-sussurro"><TableRow><TableHead className="pr-3 pb-2">Tema</TableHead><TableHead className="pr-3 pb-2">Diretriz</TableHead><TableHead className="pr-3 pb-2">Manual do HC</TableHead></TableRow></TableHeader>
+                <TableBody>{DIRETRIZ_SAA.map((d) => <TableRow key={d.tema} className="border-t"><TableCell className="pr-3 py-2 font-medium">{d.tema}</TableCell><TableCell className="pr-3 py-2">{d.diretriz} <span className="text-tinta-sussurro">({d.fonte}; {d.grau})</span></TableCell><TableCell className="pr-3 py-2 text-tinta-sussurro">{d.livro}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </div>
+            <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_SAA.map((d) => <li key={d}>{d}</li>)}</ul>
+          </BlocoComparacao>
+        }
+      />
+      <ResumoFlutuante
+        principal={res ? `CIWA-Ar ${res.valor} · ${res.nota}` : `CIWA-Ar: ${respondidos} de 10 respondidos`}
+        detalhe={`${textoCaine}${res ? ' · "Copiar" leva também as doses do manual' : ''}`}
+        tom={res?.estado === 2 ? 'critico' : res?.estado === 1 ? 'atencao' : 'neutro'}
+        textoCopia={copia}
+        alvoDetalhes={ID_ABAS_RESULTADO}
+        rotuloDetalhes="Próximos passos"
+        aoIrDetalhes={() => setAba('proximos')}
+      />
     </ToolLayout>
   )
 }
