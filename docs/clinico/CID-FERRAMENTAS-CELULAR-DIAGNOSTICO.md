@@ -24,6 +24,16 @@ Decisões do RT na mesma conversa:
 
 **F5 fora (decisão do RT em 17/11/2026):** abaixo de 1024 px o médico não tem a aba Atendimento (só Central, Leitos, Prontuários e Agenda, `ABAS_ESTREITAS_PLANTONISTA`). O atendimento continua só no computador, com o bloco do CID e o aviso de sepse; no celular fica só a F4, nas ferramentas da Central.
 
+**F4, celular na Central (17/11/2026).** O RT testou no celular e não tem queixa de funcionamento; quer otimizar o visual. Modelos que ele gosta: ANY App e PedAjuda, estudados no Chrome dele. Deles se leva a organização, nunca a marca, as cores ou os textos. Referências do Refero: Clearful (grade de cartões grandes), GrowPal (resultado grande no topo) e Grok (chave de dois lados no topo). Decisões do RT, M1 a M6 = A:
+- **M1, início:** grade de cartões grandes, 2 por linha, com ícone e nome curto, um cartão por grupo clínico.
+- **M2, dentro do grupo:** busca no topo e lista das ferramentas, com contagem.
+- **M3, adulto e criança:** chave fixa no topo, com bebê de um lado e adulto do outro. Um toque troca o lado e zera idade e peso, como a regra de hoje.
+- **M4, dentro da ferramenta:** respostas em botões grandes, resultado na faixa de baixo e textos de apoio recolhidos no fim.
+- **M5:** vale só no celular; o computador fica como está.
+- **M6:** cores da marca, com o contraste reforçado.
+
+Antes do código, um protótipo no tamanho de celular vai ao RT para aprovação.
+
 **F7, pedido do RT em 17/11/2026:** CID de quadro infeccioso com NEWS2 da triagem aumentado abre o aviso "pensar em sepse", que orienta os exames para fechar o diagnóstico.
 - Entra neste item, depois da F2.
 - O RT liberou uma exceção à regra "nada sugere conduta" da aba Atendimento, só para este aviso. Os exames vêm de fonte citada com página, e nada é pedido sozinho.
