@@ -2,6 +2,8 @@
 
 Decisão do RT de 17/11/2026, I1 = A: trocar o DeepSeek por um provedor que processe no Brasil, com contrato de operador e sem uso para treino, escolhido por comparativo (`docs/regulatorio/LG6-IA-DADO-SAUDE-DIAGNOSTICO.md`).
 
+**Decisão do RT, 17/11/2026: "Amazon, todas A"** (P1 Bedrock `sa-east-1` só In-Region; P2 modelo pelas avaliações; P3 conta nova separada do cofre).
+
 **Não é parecer jurídico.**
 - **Fontes:** páginas oficiais dos provedores, lidas em 17/11/2026 (lista no fim).
 - **Preços:** sob demanda, em dólar por 1 milhão de tokens (entrada / saída).
