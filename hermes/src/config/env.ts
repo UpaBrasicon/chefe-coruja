@@ -39,10 +39,7 @@ const schema = z.object({
   LLM_MODEL: z.string().default('deepseek-v4-flash'),
   LLM_API_KEY: z.string().default(''),
 
-  // LLM fallback — Kimi K2.6 (opcional nesta fase)
-  LLM_FALLBACK_BASE_URL: z.string().url().optional(),
-  LLM_FALLBACK_MODEL: z.string().optional(),
-  LLM_FALLBACK_API_KEY: z.string().optional(),
+  // Sem provedor de reserva (LG6, I2 = A, 17/11/2026): LLM_FALLBACK_* é ignorado.
 
   // Redis (fila BullMQ)
   REDIS_URL: z.string().default('redis://redis:6379'),

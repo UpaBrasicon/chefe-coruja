@@ -22,6 +22,7 @@ import { carregarSessao, salvarSessao, type MensagemSessao } from './sessao.js'
 import { executarLoopAgente } from './loop.js'
 import { extrairUrls, verificarUrl, hashUrl } from '../tools/urlcheck.js'
 import { montarSystemPrompt } from './system-prompt.js'
+import { comAvisoDadoPaciente } from '../gateway/gateway.js'
 
 const TTL_DEDUP_S = 24 * 60 * 60 // 24h
 const LIMITE_MSGS = 20 // rate limit por usuário / 10 min
@@ -141,7 +142,9 @@ export async function processarMensagem(
   )
 
   // e. Resposta + persistência da sessão
-  const resposta = resultado.ok ? resultado.texto : MSG_INSTABILIDADE
+  // LG6 (I2): a primeira resposta da sessão lembra de não escrever dado do paciente
+  const resposta = !resultado.ok ? MSG_INSTABILIDADE
+    : historicoSessao.length === 0 ? comAvisoDadoPaciente(resultado.texto) : resultado.texto
   const envio = await enviarTexto(waId, resposta)
 
   const novasMsgs: MensagemSessao[] = [

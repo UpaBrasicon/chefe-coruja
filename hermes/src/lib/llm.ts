@@ -3,7 +3,11 @@
 // Camada LLM — cliente OpenAI-compatible para o DeepSeek V4 Flash.
 //
 // Suporta: tool/function calling (formato OpenAI), timeout 60s, 1 retry com
-// backoff, fallback opcional (Kimi), e teste de fumaça (`npm run test:llm`).
+// backoff e teste de fumaça (`npm run test:llm`).
+//
+// LG6 (docs/regulatorio/LG6-IA-DADO-SAUDE-DIAGNOSTICO.md, I2 = A, 17/11/2026):
+// sem provedor de reserva. O Kimi era um segundo provedor fora do Brasil, sem
+// contrato de transferência internacional; LLM_FALLBACK_* do .env é ignorado.
 //
 // ⚠️ Modo thinking: reservado para jobs semanais (Fase 4). A doc oficial do
 // DeepSeek indica que o modo é ativado por parâmetro na request (mesmo model
@@ -49,7 +53,7 @@ export type ChamadaLLM = {
 export type RespostaLLM = {
   conteudo: string
   toolCalls: ToolCallLLM[]
-  provedor: 'primario' | 'fallback'
+  provedor: 'primario'
   modelo: string
   latenciaMs: number
   /** Contagem de tokens do provedor, quando vier (a Corujinha usa para compactar o contexto). */
@@ -122,31 +126,12 @@ async function chamarProvedor(
 
 export async function completar(body: ChamadaLLM): Promise<RespostaLLM> {
   try {
-    try {
-      const r = await chamarProvedor(env.LLM_BASE_URL, env.LLM_MODEL, env.LLM_API_KEY, body)
-      return { ...r, provedor: 'primario', modelo: env.LLM_MODEL }
-    } catch (err) {
-      logger.warn({ err: (err as Error).message }, '[llm] primário falhou, tentando retry')
-      const r = await chamarProvedor(env.LLM_BASE_URL, env.LLM_MODEL, env.LLM_API_KEY, body)
-      return { ...r, provedor: 'primario', modelo: env.LLM_MODEL }
-    }
-  } catch (errPrimario) {
-    if (env.LLM_FALLBACK_BASE_URL && env.LLM_FALLBACK_API_KEY && env.LLM_FALLBACK_MODEL) {
-      try {
-        const r = await chamarProvedor(
-          env.LLM_FALLBACK_BASE_URL,
-          env.LLM_FALLBACK_MODEL,
-          env.LLM_FALLBACK_API_KEY,
-          body
-        )
-        return { ...r, provedor: 'fallback', modelo: env.LLM_FALLBACK_MODEL }
-      } catch (errFallback) {
-        throw new Error(
-          `LLM primário e fallback falharam: ${(errPrimario as Error).message} | fallback: ${(errFallback as Error).message}`
-        )
-      }
-    }
-    throw errPrimario
+    const r = await chamarProvedor(env.LLM_BASE_URL, env.LLM_MODEL, env.LLM_API_KEY, body)
+    return { ...r, provedor: 'primario', modelo: env.LLM_MODEL }
+  } catch (err) {
+    logger.warn({ err: (err as Error).message }, '[llm] primário falhou, tentando retry')
+    const r = await chamarProvedor(env.LLM_BASE_URL, env.LLM_MODEL, env.LLM_API_KEY, body)
+    return { ...r, provedor: 'primario', modelo: env.LLM_MODEL }
   }
 }
 
