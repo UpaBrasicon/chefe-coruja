@@ -11,6 +11,7 @@ const bloco = readFileSync('src/components/clinico/FerramentasDoCid.tsx', 'utf8'
 const atend = readFileSync('src/pages/plantao/porta/AbaAtendimento.tsx', 'utf8')
 const conduta = readFileSync('src/pages/plantao/porta/AbaConduta.tsx', 'utf8')
 const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
+const janelaFerr = readFileSync('src/components/clinico/JanelaFerramenta.tsx', 'utf8')
 
 test('exemplos do RT: I20 traz HEART; G45 traz ABCD2; código completo herda a categoria', () => {
   const fichas = (cids: string[]) => ferramentasDosCids(cids, 'adulto').map((f) => f.ficha)
@@ -41,14 +42,28 @@ test('condição do LG: rótulo fixo e o bloco nunca mostra cor, dose ou conduta
   for (const proibido of [/supabase/, /registrar_/, /useMutation/, /CORES_RISCO/, /\bcalcular\w*\(/, /f\.motivo/]) {
     assert.doesNotMatch(bloco, proibido)
   }
-  // nada do paciente na URL: o link leva só a rota da ferramenta
-  assert.match(bloco, /to=\{f\.rota\}/)
-  assert.doesNotMatch(bloco, /[?#]\$\{|search=|hash=/)
+  // nada do paciente na URL: a janela usa só a rota da ferramenta como endereço interno
+  assert.match(janelaFerr, /<Routes location=\{ferramenta\.rota\}>/)
+  assert.match(janelaFerr, /to=\{ferramenta\.rota\}/)
+  for (const src of [bloco, janelaFerr]) assert.doesNotMatch(src, /[?#]\$\{|search=|hash=|useNavigate|navigate\(/)
 })
 
 test('o bloco está no Atendimento (urgência e UBS) e na Conduta da UBS, com a faixa pela idade', () => {
   assert.match(atend, /<FerramentasDoCid className="md:col-span-2" cids=\{\[soap\.cid\.trim\(\)/)
-  assert.match(atend, /faixa=\{faixa\} \/>/)
-  assert.match(conduta, /<FerramentasDoCid faixa=\{faixa\} cids=/)
+  assert.match(atend, /pacienteId=\{pacienteId\} nascimento=\{nascimento\} \/>/)
+  assert.match(conduta, /<FerramentasDoCid faixa=\{faixa\} pacienteId=\{pacienteId\} nascimento=\{nascimento\} cids=/)
   assert.match(janela, /<AbaConduta [^\n]*faixa=\{faixa\}/)
+})
+
+test('F3: idade e peso só entram depois do clique, com a origem; abrir e fechar zera a Central', () => {
+  assert.match(janelaFerr, /Usar idade e peso na ferramenta/)
+  assert.match(janelaFerr, /onClick=\{usarDados\}/)
+  // alterarPaciente só dentro de usarDados, nunca ao abrir
+  assert.equal(janelaFerr.split('alterarPaciente(').length - 1, 1)
+  assert.match(janelaFerr, /function usarDados\(\) \{[\s\S]*?alterarPaciente\(/)
+  assert.match(janelaFerr, /origem,/)
+  assert.match(janelaFerr, /definirModo\(modoDaFaixa\(faixa\)\)/)
+  assert.match(janelaFerr, /return \(\) => definirModo\(null\)/)
+  // a ferramenta remonta para ler a Central de novo
+  assert.match(janelaFerr, /React\.createElement\(Componente, \{ key: versao \}\)/)
 })
