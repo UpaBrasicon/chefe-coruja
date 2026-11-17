@@ -11,6 +11,29 @@ Decisões do RT na mesma conversa:
 
 **Decisões do RT em 17/11/2026:** CF1 a CF9 = A ("Todas A"). O ABCD2 entra só no G45 (AIT), seguindo a fonte. Começa pela F1.
 
+**Leitura da sessão de obrigatórios legais (17/11/2026), aceita pelo RT:** entra com condições, sem esperar nenhum LG. Não muda o caminho 1 nem a classe. O mapa e o preenchimento automático vão para a lista do LG11, para o consultor confirmar. Condições:
+- **Rótulo fixo no bloco:** "Atalho para ferramentas de referência. A decisão é do médico."
+- **Idade e peso do prontuário (F3):**
+  - o campo mostra a origem e a data ("peso do prontuário, 12/11") e continua editável;
+  - sem peso, ou com peso velho, o campo fica vazio e pede digitação. Peso velho, decisão do RT: na criança, mais de 24 h; no adulto, mais de 7 dias;
+  - idade pelo corte de 13 anos, 11 meses e 29 dias;
+  - a dose só aparece depois do clique em calcular.
+- **Teste:** prova que o bloco nunca mostra cor, dose ou conduta.
+- **Fora da URL:** idade, peso e CID nunca vão no endereço (query ou hash). Conferir que o Sentry e os breadcrumbs não capturam esses campos.
+- **Comitê clínico:** o mapa entra na revisão do comitê quando o LG13 existir.
+
+**F7, pedido do RT em 17/11/2026:** CID de quadro infeccioso com NEWS2 da triagem aumentado abre o aviso "pensar em sepse", que orienta os exames para fechar o diagnóstico.
+- Entra neste item, depois da F2.
+- O RT liberou uma exceção à regra "nada sugere conduta" da aba Atendimento, só para este aviso. Os exames vêm de fonte citada com página, e nada é pedido sozinho.
+- Antes do código: diagnóstico curto com o corte do NEWS2, a lista de CIDs infecciosos e os exames, tudo da fonte (SSC 2026, ILAS). Só adulto.
+- **Leitura da sessão legal (17/11/2026): entra com condições.** É apoio à decisão sobre um paciente específico, dentro do SaMD, na mesma categoria do alerta de sepse da internação. O uso novo na porta e na UBS vai como pergunta ao consultor no LG11. Condições:
+  - **Mesmo critério:** usa a mesma regra e a mesma ficha do alerta de sepse do adulto (`sepse-adulto`). Não pode haver dois alertas de sepse com regras diferentes.
+  - **Texto:** "Pode ser sepse. Considere: <exames com fonte e página>. A decisão é do médico." Sem cor, sem a palavra "diagnóstico", sem exame pré-marcado e sem pedido feito sozinho.
+  - **Disparo:** só com o NEWS2 do episódio atual e vitais recentes das últimas 6 h (decisão do RT em 17/11/2026). Sem vitais, não há aviso. Só para 14 anos ou mais.
+  - **Registro:** grava que o aviso apareceu e se foi dispensado (episódio, autor do login, hora, motivo opcional), numa tabela só de inserção, com RLS de quem cuida do paciente. É também o dado do SP1 e entra no inventário do LG4.
+  - **Desligar por unidade:** pela camada que já existe (`ferramenta_unidade.oculta`), com motivo e auditoria. Vem ligado.
+  - **Testes:** a criança nunca recebe o aviso; o aviso nunca aparece sem vitais recentes; os limites do NEWS2 seguem a ficha.
+
 ## 1. Como está hoje
 
 ### Onde o CID é escolhido no atendimento
