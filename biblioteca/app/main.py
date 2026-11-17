@@ -1,7 +1,6 @@
 """API "biblioteca": busca híbrida (denso + lexical) nas fontes licenciadas e nas
 ferramentas da Central, e resposta com citação [n] via DeepSeek. O modelo não
 calcula (R3); a pergunta chega pseudonimizada (R5) e é pseudonimizada de novo."""
-import hmac
 import json
 import threading
 from collections import OrderedDict
@@ -24,6 +23,7 @@ from armadilhas import RESPOSTA as RESPOSTA_ARMADILHA, armadilha
 from pii import NerIndisponivel, nomes_proprios_estrito, pseudonimizar
 from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_serve, publico_com_termos, publico_da_pergunta
 from siglas import expandir_siglas
+import chaves
 import pubmed
 
 E = os.environ
@@ -72,7 +72,13 @@ class Req(BaseModel):
 
 def auth(h: str | None):
     # S8 (D8): comparação em tempo constante
-    if not h or not hmac.compare_digest(h.encode(), f"Bearer {E['BIBLIOTECA_API_KEY']}".encode()):
+    if not chaves.confere(h, chaves.chave_geral(E)):
+        raise HTTPException(401)
+
+
+def auth_ask(h: str | None):
+    # LG6 (I5): o /v1/ask, que chama o modelo, só com a chave da Edge (chaves.py)
+    if not chaves.confere(h, chaves.chave_ask(E)):
         raise HTTPException(401)
 
 
@@ -447,7 +453,7 @@ def resposta_fixa(r: Req, publico: str, tipo: str, t0: float):
 
 @app.post("/v1/ask")
 def ask(r: Req, authorization: str | None = Header(None)):
-    auth(authorization)
+    auth_ask(authorization)
     t0 = time.time()
     # siglas expandidas ("icc" → "icc (insuficiência cardíaca congestiva)"):
     # sem isso a similaridade da pergunta curta com os trechos fica abaixo do gate

@@ -162,7 +162,10 @@ async function tratar(req: Request): Promise<Response> {
   }
 
   const qRed = liberacao.registro === null ? '[não registrada]' : redact(liberacao.registro)
-  const upstream = await chamarBiblioteca(base, chave, mode, liberacao.texto, { tenant_id: unidadeId, request_id, publico })
+  // LG6 (I5 = A): o /v1/ask, que chama o modelo, tem chave própria só desta Edge
+  // (BIBLIOTECA_ASK_KEY); sem ela configurada vale a chave única (transição).
+  const chaveDoModo = mode === 'ask' ? (Deno.env.get('BIBLIOTECA_ASK_KEY') || chave) : chave
+  const upstream = await chamarBiblioteca(base, chaveDoModo, mode, liberacao.texto, { tenant_id: unidadeId, request_id, publico })
 
   await admin.from('clinical_search_logs').insert({
     request_id, user_id: user.id, unidade_id: unidadeId, mode, query_redacted: qRed,
