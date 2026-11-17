@@ -1,4 +1,5 @@
 import type { Ficha, Fonte } from '../ficha.ts'
+import { numeroSemMilhar } from '../../lib/formato.ts'
 import { calcularBolus, type Bolus, type DoseCalculada, type Regra, type Condicao } from './bolus.ts'
 import { CORES_BROSELOW, pesoDaCor, type CorBroselow } from './fitaBroselow.ts'
 import { LIVRO_PS_PED } from './fonte.ts'
@@ -372,6 +373,5 @@ export function dosesDoPeso(pesoKg: number, idadeMeses?: number, secao?: SecaoDa
 
 /** Número para a tela (D12): vírgula decimal, sem ponto de milhar ("1200 mg", não "1.200 mg"). */
 export function numeroDaDose(n: number): string {
-  const casas = n < 10 ? 2 : 1
-  return n.toLocaleString('pt-BR', { maximumFractionDigits: casas, useGrouping: false })
+  return numeroSemMilhar(n, n < 10 ? 2 : 1)
 }
