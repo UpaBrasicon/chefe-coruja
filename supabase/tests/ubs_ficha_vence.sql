@@ -102,6 +102,7 @@ SELECT pg_temp.ok((SELECT situacao FROM public.agendamentos WHERE id = pg_temp.i
 
 -- 4. idempotente e agendado
 SELECT pg_temp.ok(private.ubs_vencer_fichas() = 0, '4. rodar de novo não vence nada');
-SELECT pg_temp.ok(EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'ubs-ficha-vence' AND schedule = '5 3 * * *'), '4. job diário às 00:05 de Brasília');
+-- U3 (20270415000003): o job passou a rodar a cada 30 minutos, para vencer pelo fechamento
+SELECT pg_temp.ok(EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'ubs-ficha-vence' AND schedule = '*/30 * * * *'), '4. job a cada 30 minutos');
 
 ROLLBACK;

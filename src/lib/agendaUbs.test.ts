@@ -74,3 +74,10 @@ test('F6: a conduta e a escuta levam à agenda com o paciente e a origem', () =>
   const agenda = readFileSync('src/pages/agenda/AgendaConsultas.tsx', 'utf8')
   assert.match(agenda, /p_origem_episodio: origem \?\? undefined/)
 })
+
+test('U3 do percurso da UBS: o gestor salva o horário de funcionamento antes das grades', () => {
+  const conf = readFileSync('src/pages/agenda/ConfiguracaoAgenda.tsx', 'utf8')
+  assert.match(conf, /<Funcionamento unidadeId=\{unidadeId\} \/>/)
+  assert.match(conf, /supabase\.rpc\('ubs_definir_funcionamento', \{ p_unidade: unidadeId, p_horarios: horarios \}\)/)
+  assert.match(readFileSync('src/pages/agenda/useAgenda.ts', 'utf8'), /supabase\.rpc\('ubs_funcionamento', \{ p_unidade: unidadeId! \}\)/)
+})
