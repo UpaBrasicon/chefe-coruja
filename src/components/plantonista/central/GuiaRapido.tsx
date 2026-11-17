@@ -9,7 +9,7 @@ import {
 import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, type IconeGuia } from '@/content/guiaRapido'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
-import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import type { UnidadeIdade } from '@/domain/pacienteCentral'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
@@ -85,11 +85,18 @@ export function GuiaRapido() {
           <CampoGrande id={idIdade} rotulo="Idade" modo="numeric" valor={p.idade}
             aoMudar={(v) => alterarPaciente({ idade: v })}
             unidade={crianca ? (
-              <CampoSelecao aria-label="Unidade da idade" value={p.unidadeIdade}
-                onChange={(e) => alterarPaciente({ unidadeIdade: e.target.value as UnidadeIdade })}
-                className="h-11 shrink-0 rounded-container border-2 border-tinta bg-superficie px-2.5 text-controle font-bold">
-                {UNIDADES.map((u) => <option key={u} value={u}>{u}</option>)}
-              </CampoSelecao>
+              // lista própria, arredondada (pedido do RT): a do navegador não aceita canto arredondado
+              <Select value={p.unidadeIdade} onValueChange={(v) => { if (v) alterarPaciente({ unidadeIdade: v as UnidadeIdade }) }}>
+                <SelectTrigger aria-label="Unidade da idade"
+                  className="h-11 shrink-0 rounded-container border-2 border-tinta bg-superficie px-3 text-controle font-bold">
+                  <SelectValue>{p.unidadeIdade}</SelectValue>
+                </SelectTrigger>
+                <SelectContent className="rounded-cartao border-2 border-tinta p-1.5">
+                  {UNIDADES.map((u) => (
+                    <SelectItem key={u} value={u} className="min-h-11 rounded-container px-3 text-corpo font-semibold">{u}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : 'anos'} />
         </div>
       ) : (
