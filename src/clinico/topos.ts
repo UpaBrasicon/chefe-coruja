@@ -69,6 +69,39 @@ export const TOPOS: Record<string, Topo> = {
       { texto: 'Nos dados do CRASH e do IMPACT (cerca de 15.900 pacientes), somar as pupilas aumentou a informação sobre o desfecho: com Glasgow 3 a mortalidade foi de 51%, e com GCS-P 1, de 74%. O GCS-P também desfez o achado paradoxal de Glasgow 4 com desfecho pior que Glasgow 3.', ref: { fonte: BRENNAN, pagina: 'resumo' } },
     ],
   },
+  // Condutas do piloto (16/11/2026): frase-resumo e instruções descrevem a própria
+  // ferramenta (fonte = a da ficha, com a página); "Quando usar" só onde o livro
+  // define a indicação. "Por que usar" fica vazio: as condutas não são escores.
+  'adulto-isr': {
+    resumo: 'Calcula dose, volume e ampolas das drogas da intubação em sequência rápida do adulto pelo peso, no padrão de diluição do manual do HC.',
+    instrucoes: 'Informe o peso: cada droga aparece com a dose por kg, o volume e as ampolas da apresentação do Anexo 1 (p. 1480–1482). A DAS 2025 fica ao lado do manual.',
+  },
+  'adulto-infusoes': {
+    resumo: 'Calcula a velocidade da bomba pela dose, e a dose pela velocidade, das infusões contínuas do adulto: vasoativos, sedação e analgesia, bloqueio neuromuscular e anticoagulação.',
+    instrucoes: 'Escolha a droga e a diluição (o padrão do Anexo 1 do manual do HC ou a do serviço), informe o peso e a dose ou a velocidade da bomba.',
+  },
+  'adulto-reposicao-potassio': {
+    resumo: 'Classifica a hipocalemia e calcula a reposição de potássio e o preparo do KCl pelo esquema do manual do HC.',
+    instrucoes: 'Informe o potássio sérico, se há sintomas e se há perda urinária. Depois escolha a apresentação, a dose, o diluente e o tempo para ver volume, ampolas, concentração e velocidade.',
+    quandoUsar: [
+      { texto: 'Hipocalemia é o potássio abaixo de 3,5 mEq/L: leve de 3 a 3,4, moderada de 2,5 a 2,9 e grave abaixo de 2,5.', ref: { fonte: 'Manual de Medicina de Emergência do HCFMUSP, cap. 67', pagina: 'p. 900' } },
+    ],
+  },
+  'adulto-pcr': {
+    resumo: 'Calcula as doses das drogas da parada cardiorrespiratória do adulto pelo peso e mostra a carga do choque, com a Tabela 2 do manual do HC e a AHA 2025 ao lado.',
+    instrucoes: 'Informe o peso: a tela mostra as doses da Tabela 2, a carga da desfibrilação na FV e na TV sem pulso e as diferenças com a AHA 2025 e o CoSTR 2026.',
+  },
+  'ped-bolus': {
+    resumo: 'Calcula as doses dos medicamentos de emergência pediátrica pelo peso, pelo apêndice do PS Pediatria do ICr-HCFMUSP.',
+    instrucoes: 'Informe o peso e busque o medicamento: cada dose mostra a página do livro, com errata e divergências quando houver.',
+  },
+  'ped-diarreia-desidratacao': {
+    resumo: 'Classifica a desidratação da criança com diarreia aguda e calcula os volumes dos planos A, B e C pelo livro do ICr-HCFMUSP.',
+    instrucoes: 'Preencha a escala clínica de desidratação e o peso; o peso antes da doença é opcional e permite o grau pelo peso perdido.',
+    quandoUsar: [
+      { texto: 'Criança com diarreia aguda: a escala clínica de desidratação, adaptada de Friedman et al. (2004), classifica o grau de desidratação e orienta o plano de hidratação.', ref: { fonte: 'PS Pediatria ICr-HCFMUSP, 4ª ed., 2023', pagina: 'Tabela 1, p. 329; planos na p. 330' } },
+    ],
+  },
   // Lote 2 (16/11/2026, formato aprovado pelo RT): os demais escores da seção, por grupo.
   // Textos redigidos a partir dos resumos do PubMed, do PMC e das diretrizes já lidas;
   // cada número conferido contra a citação original. Campo sem fonte legível fica vazio.
