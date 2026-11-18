@@ -53,6 +53,7 @@ function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; o
   const [cnes, setCnes] = React.useState(unidade?.cnes ?? '')
   const [municipio, setMunicipio] = React.useState(unidade?.municipio ?? '')
   const [uf, setUf] = React.useState(unidade?.uf ?? '')
+  const [endereco, setEndereco] = React.useState(unidade?.endereco ?? '')
   const [ativo, setAtivo] = React.useState(unidade?.ativo ?? true)
 
   const orgs = useQuery({
@@ -81,6 +82,11 @@ function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; o
           p_municipio: municipio.trim() || undefined, p_uf: uf.trim() || undefined,
         })
         if (error) throw error
+        // LG8: o endereço vai por função própria (o gestor também o define)
+        if (endereco.trim() !== (unidade.endereco ?? '')) {
+          const r = await supabase.rpc('definir_endereco_unidade', { p_unidade: unidade.id, p_endereco: endereco.trim() || undefined })
+          if (r.error) throw r.error
+        }
       }
     },
     onSuccess: () => {
@@ -97,7 +103,8 @@ function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; o
   const cnesDigitos = cnes.replace(/\D/g, '')
   const cnesRuim = nova && cnesDigitos !== '' && cnesDigitos.length !== 7
   const ufRuim = uf.trim() !== '' && !/^[A-Za-z]{2}$/.test(uf.trim())
-  const pronto = !!org && nome.trim().length >= 3 && !!tipo && !cnesRuim && !ufRuim
+  const enderecoRuim = endereco.trim() !== '' && (endereco.trim().length < 5 || endereco.trim().length > 300)
+  const pronto = !!org && nome.trim().length >= 3 && !!tipo && !cnesRuim && !ufRuim && !enderecoRuim
 
   return (
     <>
@@ -138,6 +145,11 @@ function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; o
         <Linha id="un-municipio" rotulo="Município">
           <Input id="un-municipio" value={municipio} onChange={(e) => setMunicipio(e.target.value)} />
         </Linha>
+        {!nova && (
+          <Linha id="un-endereco" rotulo="Endereço" nota="Rua e número. Vai nos documentos de telemedicina (Res. CFM 2.314/2022, art. 13).">
+            <Input id="un-endereco" maxLength={300} value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+          </Linha>
+        )}
         <Linha id="un-uf" rotulo="UF">
           <Input id="un-uf" className="w-20 uppercase" maxLength={2} aria-invalid={ufRuim} value={uf} onChange={(e) => setUf(e.target.value)} />
           {ufRuim && <span className="text-rotulo text-critico">A UF tem 2 letras.</span>}

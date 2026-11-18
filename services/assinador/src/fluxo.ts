@@ -62,6 +62,8 @@ const TIPO_SAUDE: Record<string, MetadadosSaude['tipo']> = {
   sumario_alta: 'relatorio',
   documento_transferencia: 'relatorio',
   laudo_aih: 'relatorio',
+  // LG8, M3: solicitação e parecer da teleinterconsulta (Res. CFM 2.314/2022, art. 13, d)
+  teleinterconsulta: 'relatorio',
 }
 export const tiposAssinaveis = () => Object.keys(TIPO_SAUDE)
 

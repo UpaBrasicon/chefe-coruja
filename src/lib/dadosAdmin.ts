@@ -112,6 +112,8 @@ export type UnidadeCadastro = {
   cnes: string | null
   municipio: string | null
   uf: string | null
+  /** LG8: endereço de rua, que vai nos documentos de telemedicina (art. 13 da Res. CFM 2.314) */
+  endereco: string | null
   ativo: boolean
   organizacao_id: string
 }
@@ -123,7 +125,7 @@ export function useUnidadesCadastro() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('unidades')
-        .select('id, nome, tipo, cnes, municipio, uf, ativo, organizacao_id')
+        .select('id, nome, tipo, cnes, municipio, uf, endereco, ativo, organizacao_id')
         .order('nome')
       if (error) throw error
       return (data ?? []) as UnidadeCadastro[]

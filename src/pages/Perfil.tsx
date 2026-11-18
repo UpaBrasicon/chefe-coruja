@@ -21,6 +21,7 @@ import { SecaoSegundoFator } from '@/components/seguranca/SegundoFator'
 import { ConectarTelegram } from '@/components/seguranca/ConectarTelegram'
 import { CampoCbo } from '@/components/perfil/CampoCbo'
 import { CampoCns } from '@/components/perfil/CampoCns'
+import { CampoEnderecoProfissional } from '@/components/perfil/CampoEnderecoProfissional'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -278,6 +279,7 @@ export default function Perfil() {
             {/* CBO e CNS de quem tem registro profissional: vão na AIH e no BPA (Fase 3) */}
             {(perfil?.crm || perfil?.registro_numero) && <CampoCbo inicial={perfil.cbo ?? null} />}
             {(perfil?.crm || perfil?.registro_numero) && <CampoCns inicial={perfil.cns ?? null} />}
+            {(perfil?.crm || perfil?.registro_numero) && <CampoEnderecoProfissional inicial={perfil.endereco_profissional ?? null} />}
           </div>
         </CardContent>
       </Card>
