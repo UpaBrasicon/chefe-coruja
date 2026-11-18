@@ -1,6 +1,6 @@
 # LG9: guarda dos registros de acesso à aplicação por 6 meses (diagnóstico, 18/11/2026)
 
-Trilha de obrigatórios legais e regulatórios, item LG9 (P2). **Decisões do RT: pendentes** (R1–R3). Este documento não muda código nem banco e não é parecer jurídico.
+Trilha de obrigatórios legais e regulatórios, item LG9 (P2). **Decisão do RT, 18/11/2026: "Todas A"** (R1–R3). Este documento não muda código nem banco e não é parecer jurídico.
 
 **Base:**
 - Lei 12.965/2014 (Marco Civil da Internet):

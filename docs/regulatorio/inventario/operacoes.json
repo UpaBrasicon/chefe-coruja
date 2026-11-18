@@ -963,7 +963,6 @@
       "finalidade": "Saber quem viu ou mudou cada dado, para responder ao paciente, ao cliente e à fiscalização.",
       "base_legal": [
         "art. 11, II, a (integridade do prontuário)",
-        "art. 7º, II (Marco Civil da Internet, art. 15)",
         "art. 11, II, g"
       ],
       "titulares": [
@@ -986,7 +985,7 @@
       ],
       "prazo": {
         "guarda": "20 anos",
-        "base": "integridade do prontuário (V3); cobre os 6 meses do Marco Civil (LG9)",
+        "base": "integridade do prontuário (V3)",
         "descarte": "rotina com registro, depois do prazo (V3)"
       },
       "seguranca": [
@@ -996,6 +995,41 @@
         "public.log_auditoria",
         "public.log_acesso_prontuario",
         "private.acessos_historico"
+      ]
+    },
+    {
+      "id": "acesso-aplicacao",
+      "nome": "Registro de acesso à aplicação (Marco Civil)",
+      "papel": "controlador",
+      "finalidade": "Guardar data, hora e IP de cada entrada e uso do sistema por 6 meses, como pede o Marco Civil, e entregar só com ordem judicial.",
+      "base_legal": [
+        "art. 7º, II (Marco Civil da Internet, art. 15; Decreto 8.771/2016, art. 13)"
+      ],
+      "titulares": [
+        "profissionais"
+      ],
+      "dados": [
+        "usuário, data, hora, ação (entrada, renovação da sessão, saída, troca de senha) e IP",
+        "guarda pedida pela autoridade: usuário, data final e número do pedido"
+      ],
+      "sensivel": false,
+      "acesso": [
+        "super admin, com o segundo fator, só por ordem judicial (cada extração fica na auditoria)"
+      ],
+      "local": [
+        "Supabase (São Paulo)"
+      ],
+      "prazo": {
+        "guarda": "6 meses",
+        "base": "Marco Civil, art. 15, e Decreto 8.771/2016, art. 13, § 2º (LG9, R2)",
+        "descarte": "rotina diária às 03:45 de Brasília, com a quantidade apagada na auditoria; o que está sob guarda fica até a data da guarda"
+      },
+      "seguranca": [
+        "fora da API: só o banco lê `auth.audit_log_entries`",
+        "papel (operador ou controlador) é a pergunta 1 do LG9 ao advogado"
+      ],
+      "tabelas": [
+        "private.guardas_registros_acesso"
       ]
     },
     {
