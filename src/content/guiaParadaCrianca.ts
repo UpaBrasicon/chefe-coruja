@@ -3,7 +3,7 @@
 // do módulo ped-doses-fita (src/clinico/pediatria/dosesDaFita.ts) pelo id, ou os
 // choques pelo peso. Nenhum número fica aqui: só a ordem da tela.
 
-export type SituacaoParada = 'pcr' | 'bradicardia' | 'taquicardia' | 'intubacao' | 'rcp'
+export type SituacaoParada = 'pcr' | 'bradicardia' | 'taquicardia' | 'intubacao' | 'dispositivos' | 'rcp'
 
 export type GrupoParada = { titulo: string; choque: 'desfibrilacao' | 'cardioversao' } | { titulo: string; doses: string[] }
 
@@ -39,6 +39,8 @@ export const SITUACOES_PARADA: { id: SituacaoParada; nome: string; grupos: Grupo
       },
     ],
   },
+  // G2 (DP1–DP6): dispositivos pela cor, do módulo ped-dispositivos-fita
+  { id: 'dispositivos', nome: 'Dispositivos', grupos: [] },
   { id: 'rcp', nome: 'RCP', grupos: [] },
 ]
 

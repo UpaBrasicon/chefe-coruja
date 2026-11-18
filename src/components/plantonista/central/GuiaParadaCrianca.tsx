@@ -8,7 +8,9 @@ import { FERRAMENTAS_DA_PARADA, SITUACOES_PARADA, type GrupoParada, type Situaca
 import { choquesDoPeso, dosesDoPeso, numeroDaDose, type DoseDaFitaCalculada } from '@/clinico/pediatria/dosesDaFita'
 import { FAIXAS_RCP, parametrosRcp } from '@/clinico/pediatria/rcp'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
-import { corEscolhida, pedePesoNaCor, pesoDaDoseDoPaciente } from '@/lib/fitaDoPeso'
+import { corEscolhida, leituraDaFita, pedePesoNaCor, pesoDaDoseDoPaciente } from '@/lib/fitaDoPeso'
+import { NOTAS_DISPOSITIVOS, ROTULOS_DISPOSITIVO, dispositivosDaCor } from '@/clinico/pediatria/dispositivosDaFita'
+import type { CorBroselow } from '@/clinico/pediatria/fitaBroselow'
 import { cn } from '@/lib/utils'
 import { CampoGrande, CorDaFita, DetalheDaFita } from './CamposDoGuia'
 
@@ -115,6 +117,49 @@ function Rcp() {
   )
 }
 
+function TabelaDispositivos({ cor }: { cor: CorBroselow }) {
+  const d = dispositivosDaCor(cor.id)
+  if (!d) return null
+  return (
+    <section className="flex flex-col gap-2">
+      <TituloSecao className="mb-0">
+        <span className="flex items-center gap-2">
+          <span aria-hidden className="size-4 rounded-capsula border border-tinta/40" style={{ background: cor.amostra }} />
+          Cor {cor.nome.toLowerCase()} ({cor.pesoKg[0]}–{cor.pesoKg[1]} kg)
+        </span>
+      </TituloSecao>
+      <dl className="rounded-cartao border border-fio-forte bg-superficie px-4">
+        {ROTULOS_DISPOSITIVO.map(([k, rotulo]) => (
+          <div key={k} className="flex flex-col gap-0.5 border-b border-fio py-2.5 last:border-b-0">
+            <dt className="text-apoio text-tinta-sussurro">{rotulo}</dt>
+            <dd className="text-corpo font-semibold text-tinta">{d[k].valor}</dd>
+            <dd className="text-rotulo text-tinta-sussurro">{d[k].fonte}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
+function Dispositivos() {
+  const p = usePacienteCentral()
+  const { cor, leitura } = leituraDaFita(p)
+  const cores = cor ? [cor] : leitura.tipo === 'entre' ? [leitura.abaixo, leitura.acima] : []
+  if (cores.length === 0) {
+    return <p className="text-controle text-tinta-apoio">Escolha a cor da fita ou digite um peso de 3 a 36 kg para ver os dispositivos.</p>
+  }
+  return (
+    <div className="flex flex-col gap-5">
+      {leitura.tipo === 'entre' && <p className="text-controle text-tinta-apoio">O peso fica entre duas cores: as duas aparecem.</p>}
+      {cores.map((c) => <TabelaDispositivos key={c.id} cor={c} />)}
+      <ul className="flex list-disc flex-col gap-1 pl-5 text-apoio text-tinta-apoio">
+        {NOTAS_DISPOSITIVOS.map((n) => <li key={n}>{n}</li>)}
+      </ul>
+      <p className="text-rotulo text-tinta-sussurro">Fonte aberta primeiro, depois o livro do ICr; o e-book Fita PED só confere (decisões DP1–DP6, ficha ped-dispositivos-fita).</p>
+    </div>
+  )
+}
+
 function Grupo({ grupo, kg }: { grupo: GrupoParada; kg: number }) {
   if ('choque' in grupo) {
     return (
@@ -170,7 +215,7 @@ export function GuiaParadaCrianca() {
               : 'Digite o peso ou escolha a cor da fita para ver as doses.')}
           </p>
           <Abas rotulo="Situação" valor={aba} onChange={setAba} abas={SITUACOES_PARADA.map((s) => [s.id, s.nome] as const)} className="mb-0" />
-          {aba === 'rcp' ? <Rcp /> : peso.origem === 'nenhum' ? null : (
+          {aba === 'rcp' ? <Rcp /> : aba === 'dispositivos' ? <Dispositivos /> : peso.origem === 'nenhum' ? null : (
             <div className="flex flex-col gap-5">
               {situacao.grupos.map((g) => <Grupo key={g.titulo} grupo={g} kg={peso.kg} />)}
               <p className="text-rotulo text-tinta-sussurro">A decisão é do médico. Doses conferidas no PubMed (ficha ped-doses-fita); nenhum número vem do e-book.</p>
