@@ -157,3 +157,9 @@ export function linkMarcarNaAgenda(pacienteId: string, origemEpisodio: string | 
   // sem episódio de origem: o retorno vindo da UPA (5A, tarefa 6) marca só pelo paciente
   return `/agenda-consultas?${new URLSearchParams({ paciente: pacienteId, ...(origemEpisodio ? { origem: origemEpisodio } : {}), consulta: tipo })}`
 }
+
+/** Tela "Hoje" da recepção (U4): quem está na fila sem ter vindo da agenda de hoje. */
+export function demandaEspontanea(fichas: { episodio_id: string }[], episodiosDaAgenda: (string | null)[]): number {
+  const daAgenda = new Set(episodiosDaAgenda.filter(Boolean))
+  return fichas.filter((f) => !daAgenda.has(f.episodio_id)).length
+}

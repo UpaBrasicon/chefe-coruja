@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Baby, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, UserRoundSearch, X } from 'lucide-react'
+import { ArrowRight, Baby, CalendarCheck, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, UserRoundSearch, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -36,6 +36,9 @@ import { Aviso } from '@/components/ui/aviso'
 import { TituloCartao } from '@/components/monitor/Pagina'
 import { EscolherGestante, type Gestante } from '@/components/preNatal/EscolherGestante'
 import { diaMes, hora } from '@/lib/formato'
+import { contagem as contagemAgenda, demandaEspontanea, linhasDoDia } from '@/domain/agenda'
+import { useAgendaDia } from '@/hooks/useAgenda'
+import { ListaDoDia } from '@/components/agenda/ListaDoDia'
 
 // Recepção (protótipo: rec-cadastro, rec-fila-enf, rec-fila-med, rec-painel).
 // Procurar antes de cadastrar, abrir a ficha — que abre o episódio — e
@@ -77,7 +80,7 @@ type NaFila = {
 type Chamada = { id: string; criado_em: string; nome: string; sala: string; quem: string | null; numero: number }
 type Aberto = { episodio_id: string; chegada_em: string; setor: string; etapa: string; em_atendimento: boolean; na_minha_porta: boolean }
 
-type Aba = 'ficha' | 'triagem' | 'medica' | 'painel'
+type Aba = 'hoje' | 'ficha' | 'triagem' | 'medica' | 'painel'
 const ABAS: { aba: Aba; rotulo: string; icone: LucideIcon; titulo: string; descricao: string }[] = [
   { aba: 'ficha', rotulo: 'Nova ficha', icone: ClipboardPlus, titulo: 'Nova ficha',
     descricao: 'Procure o paciente antes de cadastrar: quem já tem cadastro abre a ficha com um clique. A ficha vai para a fila da triagem.' },
@@ -93,7 +96,12 @@ const ABAS: { aba: Aba; rotulo: string; icone: LucideIcon; titulo: string; descr
 // a fila do consultório, sem triagem e sem painel da porta.
 // Percurso da UBS (RT, 17/11/2026, R9): a recepção também vê a fila da
 // enfermagem, quem espera a escuta inicial, só para acompanhar.
+// Percurso da UBS, U4 (RT, 17/11/2026): a tela "Hoje" junta os agendados do
+// dia (chegou ou faltou), a demanda espontânea e as duas filas.
+const ABA_HOJE: (typeof ABAS)[number] = { aba: 'hoje', rotulo: 'Hoje', icone: CalendarCheck, titulo: 'Hoje',
+  descricao: 'O dia da UBS num lugar só: quem tem consulta marcada (chegou ou faltou), quem veio sem marcar e as filas da enfermagem e do consultório.' }
 const ABAS_UBS: typeof ABAS = [
+  ABA_HOJE,
   { ...ABAS[0], descricao: 'Procure o paciente antes de cadastrar: quem já tem cadastro abre a ficha com um clique. A ficha vai para a escuta da enfermagem ou para o consultório, pelo tipo de atendimento.' },
   { ...ABAS[1], rotulo: 'Fila da enfermagem', titulo: 'Fila da enfermagem',
     descricao: 'Fichas aguardando a escuta inicial, com prioridade legal primeiro e depois por ordem de chegada. Você acompanha; quem chama é a enfermagem.' },
@@ -101,7 +109,7 @@ const ABAS_UBS: typeof ABAS = [
     descricao: 'Pacientes aguardando a consulta, com prioridade legal primeiro e depois por ordem de chegada. Quem chama é o médico.' },
 ]
 
-const ROTA: Record<Aba, string> = { ficha: '', triagem: 'fila-triagem', medica: 'fila-medica', painel: 'painel' }
+const ROTA: Record<Aba, string> = { hoje: 'hoje', ficha: '', triagem: 'fila-triagem', medica: 'fila-medica', painel: 'painel' }
 
 /** Maior espera de quem ainda não foi atendido (desde a ficha ou a classificação). */
 function maiorEspera(itens: NaFila[], agora: number): string {
@@ -166,7 +174,7 @@ export default function Recepcao() {
   const [params] = useSearchParams()
   // /recepcao/fila-triagem, /fila-medica e /painel (itens da lateral); ?aba= continua valendo
   const aba: Aba = (Object.entries(ROTA) as [Aba, string][]).find(([, r]) => r === tela)?.[0]
-    ?? (['ficha', 'triagem', 'medica', 'painel'] as const).find((a) => a === params.get('aba')) ?? 'ficha'
+    ?? (['hoje', 'ficha', 'triagem', 'medica', 'painel'] as const).find((a) => a === params.get('aba')) ?? 'ficha'
   const irPara = (a: Aba) => navigate(a === 'ficha' ? '/recepcao' : `/recepcao/${ROTA[a]}`, { replace: true })
   // a Recepção troca de tela pela lateral; quem abre ficha por outro papel usa as abas
   const mostrarAbas = papelAtivo !== 'recepcao'
@@ -271,6 +279,11 @@ export default function Recepcao() {
       )}
       {portas && portas.length > 1 && !porta && <p className="text-apoio text-tinta-sussurro">{ubs ? 'Escolha o consultório.' : 'Escolha a porta de entrada.'}</p>}
 
+      {porta && ubs && aba === 'hoje' && unidadeId && (
+        <HojeUbs unidadeId={unidadeId} fichas={fila.data ?? []} carregando={fila.isLoading} erro={fila.error as Error | null}
+          agora={agora} filaEnfermagem={filaTriagem} filaConsultorio={filaMedica} />
+      )}
+
       {porta && aba === 'ficha' && (
         // o formulário fica estreito mesmo com a página na largura da coluna
         <div className="w-full max-w-4xl">
@@ -321,6 +334,52 @@ export default function Recepcao() {
 
       {porta && aba === 'painel' && <PainelChamada porta={porta} chamadas={chamadas.data} carregando={chamadas.isLoading} erro={chamadas.error as Error | null} />}
       {aba === 'painel' && unidadeId && <PropagandaPainel unidadeId={unidadeId} />}
+    </div>
+  )
+}
+
+// ── Hoje (UBS, U4) ───────────────────────────────────────────────────────────
+
+function HojeUbs({ unidadeId, fichas, carregando, erro, agora, filaEnfermagem, filaConsultorio }: {
+  unidadeId: string; fichas: NaFila[]; carregando: boolean; erro: Error | null; agora: number
+  filaEnfermagem: NaFila[]; filaConsultorio: NaFila[]
+}) {
+  const hoje = hojeSP()
+  const agenda = useAgendaDia(unidadeId, hoje)
+  const linhas = linhasDoDia(agenda.data)
+  const n = contagemAgenda(linhas)
+  const consultas = linhas.filter((l) => l.tipo === 'consulta' && l.situacao !== 'cancelado')
+  const chegaram = consultas.filter((l) => l.situacao === 'presente' || l.situacao === 'realizado').length
+  const espontanea = demandaEspontanea(fichas, linhas.map((l) => l.episodio_id))
+  const aguardandoConsulta = filaConsultorio.filter((e) => !e.atendimento_iniciado_em)
+  const resumo: { rotulo: string; valor: number; nota: string }[] = [
+    { rotulo: 'Consultas marcadas', valor: consultas.length, nota: `${chegaram} chegaram · ${n.faltas} faltaram` },
+    { rotulo: 'Demanda espontânea', valor: espontanea, nota: 'na fila sem consulta marcada' },
+    { rotulo: 'Fila da enfermagem', valor: filaEnfermagem.length, nota: 'aguardando a escuta' },
+    { rotulo: 'Aguardando consulta', valor: aguardandoConsulta.length, nota: `${filaConsultorio.length - aguardandoConsulta.length} em atendimento` },
+  ]
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {resumo.map((r) => (
+          <div key={r.rotulo} className="flex flex-col rounded-cartao border border-fio bg-superficie px-4 py-3">
+            <span className="text-rotulo text-tinta-sussurro">{r.rotulo}</span>
+            <span className="text-titulo font-semibold tabular-nums text-tinta">{r.valor}</span>
+            <span className="text-rotulo text-tinta-sussurro">{r.nota}</span>
+          </div>
+        ))}
+      </div>
+      <TituloCartao>Consultas de hoje</TituloCartao>
+      <ListaDoDia unidadeId={unidadeId} dia={hoje} hoje={hoje} />
+      <TituloCartao>Fila da enfermagem</TituloCartao>
+      <ListaFila carregando={carregando} erro={erro} vazia="Ninguém aguardando a escuta." agora={agora}
+        grupos={[{ titulo: 'Aguardando a escuta', itens: filaEnfermagem, maiorEspera: maiorEspera(filaEnfermagem, agora) }]} />
+      <TituloCartao>Fila do consultório</TituloCartao>
+      <ListaFila carregando={carregando} erro={erro} vazia="Ninguém aguardando a consulta." agora={agora} ubs
+        grupos={[
+          { titulo: 'Aguardando a consulta', itens: aguardandoConsulta, maiorEspera: maiorEspera(filaConsultorio, agora) },
+          { titulo: 'Em atendimento', itens: filaConsultorio.filter((e) => e.atendimento_iniciado_em) },
+        ]} />
     </div>
   )
 }

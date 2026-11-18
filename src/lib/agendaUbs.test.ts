@@ -79,7 +79,7 @@ test('U3 do percurso da UBS: o gestor salva o horário de funcionamento antes da
   const conf = readFileSync('src/pages/agenda/ConfiguracaoAgenda.tsx', 'utf8')
   assert.match(conf, /<Funcionamento unidadeId=\{unidadeId\} \/>/)
   assert.match(conf, /supabase\.rpc\('ubs_definir_funcionamento', \{ p_unidade: unidadeId, p_horarios: horarios \}\)/)
-  assert.match(readFileSync('src/pages/agenda/useAgenda.ts', 'utf8'), /supabase\.rpc\('ubs_funcionamento', \{ p_unidade: unidadeId! \}\)/)
+  assert.match(readFileSync('src/hooks/useAgenda.ts', 'utf8'), /supabase\.rpc\('ubs_funcionamento', \{ p_unidade: unidadeId! \}\)/)
 })
 
 test('U6, PR 1 do percurso da UBS: serviço da consulta na agenda', async () => {
@@ -110,4 +110,9 @@ test('U7, PR 5: a lista de procedimentos da tela é a mesma do banco, e cada pap
   assert.ok(procedimentosDoPapel('tecnico_enfermagem').every((p) => !p.comResultado), 'o técnico não faz teste rápido')
   assert.ok(!procedimentosDoPapel('enfermeiro').some((p) => p.codigo === '0301040176'), 'o enfermeiro não faz implante')
   assert.equal(procedimentosDoPapel('recepcao').length, 0)
+})
+
+test('U4: demanda espontânea é quem está na fila sem vir da agenda de hoje', async () => {
+  const { demandaEspontanea } = await import('../domain/agenda.ts')
+  assert.equal(demandaEspontanea([{ episodio_id: 'a' }, { episodio_id: 'b' }, { episodio_id: 'c' }], ['b', null]), 2)
 })

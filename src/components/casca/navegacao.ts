@@ -27,7 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
-import { Baby, CalendarDays, Ear, HeartPulse, Package, Send, Sprout } from 'lucide-react'
+import { Baby, CalendarCheck, CalendarDays, Ear, HeartPulse, Package, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -176,6 +176,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // Recepção (P/index.html 32220–32224): as quatro telas na lateral, com a
   // contagem das duas filas.
   recepcao: [
+    // percurso da UBS, U4: a tela "Hoje" (só na UBS) abre a recepção
+    { to: '/recepcao/hoje', rotulo: 'Hoje', curto: 'Hoje', icone: CalendarCheck, exato: true },
     { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
@@ -290,7 +292,7 @@ const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
 // "Leitos" só a regulação (U5, achado GE7).
 const GRUPO_NA_UBS: Record<string, string> = { Porta: 'Cadastro', Leitos: 'Rede' }
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
-const SO_NA_UBS = new Set(['/escuta', '/consultorio-enfermagem', '/sinais-vitais', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
+const SO_NA_UBS = new Set(['/recepcao/hoje', '/escuta', '/consultorio-enfermagem', '/sinais-vitais', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {

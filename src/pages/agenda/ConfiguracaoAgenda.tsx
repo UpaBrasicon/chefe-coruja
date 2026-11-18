@@ -23,7 +23,7 @@ import {
 import { dataIso, dataPura } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
-import { useConfiguracaoAgenda, useFuncionamentoUbs } from './useAgenda'
+import { useConfiguracaoAgenda, useFuncionamentoUbs } from '@/hooks/useAgenda'
 
 type Celula = { ativo: boolean; inicio: string; fim: string; duracao: number }
 const PADRAO: Record<Periodo, Omit<Celula, 'ativo'>> = {
