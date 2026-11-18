@@ -11,7 +11,7 @@ import { FERRAMENTAS_DA_PARADA, SITUACOES_PARADA } from './guiaParadaCrianca.ts'
 // Guia de parada e reanimação da criança (G1–G5 = A, RT em 18/11/2026).
 
 test('abas na ordem do RT e toda dose citada existe no módulo aprovado', () => {
-  assert.deepEqual(SITUACOES_PARADA.map((s) => s.nome), ['Parada', 'Bradicardia', 'Taquicardia', 'Intubação', 'RCP'])
+  assert.deepEqual(SITUACOES_PARADA.map((s) => s.nome), ['Parada', 'Bradicardia', 'Taquicardia', 'Intubação', 'Dispositivos', 'RCP'])
   const ids = new Set(DOSES_DA_FITA.map((d) => d.id))
   for (const s of SITUACOES_PARADA) {
     for (const g of s.grupos) if ('doses' in g) for (const id of g.doses) assert.ok(ids.has(id), `${s.id}: ${id}`)
