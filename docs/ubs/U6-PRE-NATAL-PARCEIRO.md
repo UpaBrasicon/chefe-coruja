@@ -4,7 +4,7 @@ O RT decidiu E3 = A em `docs/ubs/U6-LISTA-EXAMES-ENFERMEIRO.md`: os exames da pa
 
 Antes de implementar, conferi a fonte do Ministério da Saúde. **Ela pede outro desenho.** O RT decide abaixo.
 
-**Nada foi implementado.**
+**Decisões do RT (18/11/2026): PP1 = A, PP2 = A, PP3 = A, PP4 = A.** A E3 passa a ser o pré-natal do parceiro em consulta própria, ligada à gestante.
 
 ## Fontes conferidas
 
