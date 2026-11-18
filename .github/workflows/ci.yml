@@ -100,6 +100,13 @@ jobs:
           npm run test:terminologia
           npm run test:observacao
           npm run test:interop
+      # LG7: assinador ICP-Brasil (PAdES AD-RB e DOC-ICP-17), só com certificado de teste
+      - name: Assinador ICP-Brasil (LG7)
+        working-directory: services/assinador
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          ../../node_modules/.bin/tsc -p tsconfig.json
+          npm test
       - name: src/lib (cópias das Edge Functions)
         run: node --experimental-strip-types --test src/lib/*.test.ts src/lib/offline/*.test.ts
       # Pedido 8, J4: telas da página de entrada (tamanho, peso, texto alternativo)
