@@ -21,6 +21,18 @@ export type CriancaLinha = RegistrosPuericultura & {
   nome_social: string | null
   data_nascimento: string
   nome_mae: string | null
+  /** U11 (N1 do RT): cadastro em segundo plano (RN do hospital) que ainda não veio à UBS */
+  pre_cadastro?: boolean
+  mae?: { nome: string; telefone: string | null } | null
+}
+
+/** U11: gestação da UBS que passou da DPP sem parto registrado — procurar a mãe. */
+export type BebeEsperado = { gestacao_id: string; paciente_id: string; nome: string; telefone: string | null; dpp: string }
+
+/** Texto do alerta do bebê esperado: DPP e contato da mãe. */
+export function alertaBebeEsperado(b: BebeEsperado): string {
+  const dpp = b.dpp.split('-').reverse().join('/')
+  return `Bebê esperado de ${b.nome}: DPP ${dpp}, sem parto registrado. Procure a mãe${b.telefone ? ` (telefone ${b.telefone})` : ''}.`
 }
 
 export type DoPaciente =

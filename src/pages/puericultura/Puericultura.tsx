@@ -16,7 +16,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { linkMarcarNaAgenda } from '@/domain/agenda'
 import {
-  META, TETO_NO_APP, faseDa, frasesDa, pontosDa, resumoPuericultura, rotuloIdadeCurta, temAtraso, type CriancaLinha, type Fase,
+  META, TETO_NO_APP, alertaBebeEsperado, faseDa, frasesDa, pontosDa, resumoPuericultura, rotuloIdadeCurta, temAtraso, type BebeEsperado, type CriancaLinha, type Fase,
 } from '@/domain/puericultura'
 import { dataIso, diaMesHora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
@@ -41,6 +41,16 @@ export default function Puericultura() {
       return (d ?? []) as unknown as CriancaLinha[]
     },
   })
+  // U11 (N1 do RT): gestação que passou da DPP sem parto registrado — procurar a mãe
+  const esperados = useQuery({
+    queryKey: ['puericultura', 'esperados', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data: d, error } = await supabase.rpc('puericultura_bebes_esperados', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (d ?? []) as unknown as BebeEsperado[]
+    },
+  })
   const [filtro, setFiltro] = React.useState<Filtro>('todas')
   const [retirar, setRetirar] = React.useState<CriancaLinha | null>(null)
   const linhas = painel.data ?? []
@@ -53,6 +63,12 @@ export default function Puericultura() {
   return (
     <>
       <TituloPagina titulo="Puericultura" descricao="Crianças de até 2 anos da unidade, pelas boas práticas da nota C2 do Ministério da Saúde." />
+      {(esperados.data ?? []).length > 0 && (
+        <section aria-label="Bebês esperados" className="mb-4 flex flex-col gap-1.5 rounded-cartao border border-atencao/40 bg-alerta-atencao px-4 py-3">
+          <span className="text-controle font-semibold text-tinta">Bebês esperados</span>
+          {(esperados.data ?? []).map((b) => <p key={b.gestacao_id} className="text-apoio text-tinta">{alertaBebeEsperado(b)}</p>)}
+        </section>
+      )}
       {painel.isLoading ? <Spinner /> : painel.error ? <p className="text-apoio text-critico">{msg(painel.error)}</p>
         : linhas.length === 0 ? (
           <Vazio icone={Sprout} titulo="Nenhuma criança de até 2 anos"
@@ -88,6 +104,11 @@ export default function Puericultura() {
                       <div className="min-w-0">
                         <strong className="text-tinta">{nomeDe(l)}</strong>
                         <div className="text-apoio text-tinta-apoio">{rotuloIdadeCurta(l.data_nascimento, hoje)}{l.nome_mae ? ` · mãe ${l.nome_mae}` : ''}</div>
+                        {l.pre_cadastro && (
+                          <div className="text-apoio text-atencao">
+                            Ainda não veio à UBS (nasceu fora). {l.mae ? `Contato da mãe: ${l.mae.nome}${l.mae.telefone ? `, ${l.mae.telefone}` : ''}.` : ''}
+                          </div>
+                        )}
                       </div>
                       <div className="min-w-0">
                         <LinhaDoTempoCrianca c={l} hoje={hoje} />

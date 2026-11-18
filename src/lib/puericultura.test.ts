@@ -79,3 +79,9 @@ test('a consulta mostra o bloco e o painel usa as RPCs da puericultura', () => {
   // o banco só conta a consulta com o problema "Puericultura" (Quadro 02)
   assert.match(readFileSync('supabase/migrations/20270224000001_puericultura.sql', 'utf8'), /'puericultura' = ANY \(coalesce\(e\.problemas_aps/)
 })
+
+test('U11: o alerta do bebê esperado traz a DPP e o telefone da mãe', async () => {
+  const { alertaBebeEsperado } = await import('../domain/puericultura.ts')
+  assert.equal(alertaBebeEsperado({ gestacao_id: 'g', paciente_id: 'p', nome: 'Maria', telefone: '11988880000', dpp: '2026-11-01' }),
+    'Bebê esperado de Maria: DPP 01/11/2026, sem parto registrado. Procure a mãe (telefone 11988880000).')
+})
