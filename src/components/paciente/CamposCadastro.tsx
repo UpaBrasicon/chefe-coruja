@@ -62,13 +62,13 @@ const SELECT = 'w-full min-w-0 px-2.5 text-controle outline-none focus-visible:b
  * (cadastro existente na ficha: só contato, documentos e dados do SUS).
  * `extras` entra depois do convênio (a porta põe peso e alergias ali).
  */
-export function CamposCadastro({ prefixo, valores, onChange, identificacao = true, extras, hoje = hojeSP() }: {
+export function CamposCadastro({ prefixo, valores, onChange, identificacao = true, extras, hoje = hojeSP(), nascimentoObrigatorio = false }: {
   prefixo: string
   valores: Cadastro
   onChange: (k: CampoCadastro, v: string) => void
   identificacao?: boolean
   extras?: ReactNode
-  hoje?: string
+  /** U11 (N2 = A): na UBS a data de nascimento é obrigatória */ nascimentoObrigatorio?: boolean; hoje?: string
 }) {
   const [tocados, setTocados] = React.useState<Partial<Record<CampoCadastro, boolean>>>({})
   const tocar = (k: CampoCadastro) => () => setTocados((t) => ({ ...t, [k]: true }))
@@ -97,7 +97,7 @@ export function CamposCadastro({ prefixo, valores, onChange, identificacao = tru
           <Campo id={id('nome_social')} rotulo="Nome social" className="flex-[1_1_240px]">
             <Input {...txt('nome_social')} autoComplete="off" />
           </Campo>
-          <Campo id={id('data_nascimento')} rotulo="Data de nascimento" erro={eNasc} className="flex-[1_1_180px]"
+          <Campo id={id('data_nascimento')} rotulo={nascimentoObrigatorio ? 'Data de nascimento *' : 'Data de nascimento'} erro={eNasc} className="flex-[1_1_180px]"
             dica={idade ? `${idade}${pediatrico ? ' · pediátrico' : ''}` : undefined}>
             <Input {...txt('data_nascimento')} type="date" max={hoje} aria-invalid={!!eNasc} aria-describedby={eNasc ? `${id('data_nascimento')}-erro` : undefined} />
           </Campo>
