@@ -1,0 +1,17 @@
+{
+  "name": "assinador",
+  "private": true,
+  "description": "Assinador ICP-Brasil (LG7): PDF da folha com PAdES AD-RB, certificado em nuvem pelo DOC-ICP-17. O código roda com o Node 24 direto do TypeScript.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"tests/*.test.ts\""
+  },
+  "dependencies": {
+    "asn1js": "3.1.0",
+    "pdf-lib": "1.17.1",
+    "pkijs": "3.4.3"
+  }
+}
