@@ -347,11 +347,12 @@ BEGIN
     'numero', r.numero, 'ferramenta_id', r.ferramenta_id, 'versao', r.versao, 'tipo', r.tipo, 'desfecho', r.desfecho,
     'unidade', (SELECT u.nome FROM public.unidades u WHERE u.id = r.unidade_id),
     'relatado_em', r.relatado_em, 'prazo_em', r.prazo_em,
+    -- RT médico; sem e-mail válido (contas de teste .local), os super admins
     'destinatarios', coalesce(
       (SELECT jsonb_agg(DISTINCT au.email) FROM public.responsaveis_tecnicos t JOIN auth.users au ON au.id = t.perfil_id
-        WHERE t.tipo = 'medico' AND t.ativo AND au.email IS NOT NULL),
+        WHERE t.tipo = 'medico' AND t.ativo AND au.email IS NOT NULL AND au.email NOT ILIKE '%.local'),
       (SELECT jsonb_agg(DISTINCT au.email) FROM public.super_admins s JOIN auth.users au ON au.id = s.perfil_id
-        WHERE au.email IS NOT NULL),
+        WHERE au.email IS NOT NULL AND au.email NOT ILIKE '%.local'),
       '[]'::jsonb));
 END $$;
 
