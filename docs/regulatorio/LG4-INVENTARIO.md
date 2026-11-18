@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-27 operações cobrem 300 tabelas.
+27 operações cobrem 302 tabelas.
 
 ## Papéis
 
@@ -35,7 +35,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
 | Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 8 |
 | Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 7 |
-| Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 6 |
+| Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 8 |
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
 | Faturamento SUS e contas | operador | sim | 5 anos | 20 |
 | Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 14 |
@@ -510,6 +510,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - arquivos anexados
 - impressões do prontuário
 - pedido e decisão de destinação
+- assinatura ICP-Brasil do documento: certificado (serial, emissor e só o final do CPF), sessão e hash do PDF (LG7)
 
 **Quem acessa**
 - médico
@@ -520,15 +521,17 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Onde fica**
 - Supabase (São Paulo, banco e arquivos)
 - cofre da guarda (AWS S3, São Paulo)
+- servidor Hostinger (Brasil): o assinador gera o PDF e guarda, cifrado, o token da sessão com o provedor
 
 **Prazo.** 20 anos a partir do último registro (Lei 13.787/2018). Descarte: rotina com registro, depois do prazo (V3).
 
 **Medidas próprias**
 - destinação só com aprovação registrada; a identificação fica como hash
+- o token do provedor de certificado nunca vai ao navegador nem ao banco
 
-**Tabelas (6)**
+**Tabelas (8)**
 
-`public.documentos_clinicos`, `public.anexos_prontuario`, `public.impressoes_prontuario`, `private.documento_sequencia`, `public.termos_cancelamentos`, `public.destinacoes_prontuario`
+`public.documentos_clinicos`, `public.anexos_prontuario`, `public.impressoes_prontuario`, `private.documento_sequencia`, `public.termos_cancelamentos`, `public.destinacoes_prontuario`, `public.assinaturas_documento`, `private.sessoes_assinatura`
 
 ### Farmácia e estoque
 
