@@ -85,7 +85,7 @@ Envia o RAC (porta), o Sumário de Alta e a regulação (MIRA). Nenhuma unidade 
    - no banco, a modalidade, o caráter, o enfermeiro e a chave por unidade;
    - teste da carga.
 2. **Fila do LEDI (V1, V2):**
-   - `interop_outbox` com os tipos `ledi_fai` e `ledi_fp`;
+   - fila própria, `ledi_fila`, com os tipos `fai` e `fp` (no PR 2 trocou a `interop_outbox`: o serviço da RNDS pega qualquer item da outbox, sem olhar o tipo);
    - a configuração por unidade: IBGE, INE, endereço do PEC, credencial no cofre e envio ligado (nasce desligado);
    - a carga de cada ficha e o que retém (falta CNS ou CPF, CIAP/CID ou CBO);
    - a conferência noturna.

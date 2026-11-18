@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-29 operações cobrem 310 tabelas.
+29 operações cobrem 312 tabelas.
 
 ## Papéis
 
@@ -47,7 +47,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Tecnovigilância do módulo clínico | controlador | não | 5 anos depois da conclusão | 3 |
 | Erros do aplicativo e vigilância técnica | controlador | não | a definir com o advogado (proposta: 1 ano) | 5 |
 | Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
-| RNDS, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 12 |
+| RNDS, SISAB, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 14 |
 | Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 8 |
 | Site comercial e pedido de demonstração | controlador | não | 2 anos | 1 |
 | Catálogos clínicos, terminologias e regras (sem dado de paciente) | controlador | não | enquanto estiver em uso; versões antigas das fichas ficam como histórico | 46 |
@@ -919,11 +919,11 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 `public.clinical_search_logs`, `public.clinical_search_feedback`, `public.ia_gateway_log`, `private.ia_preco_modelo`, `public.hermes_sessions`, `public.hermes_identidades`, `private.hermes_codigos_vinculo`, `public.hermes_almanaque`, `public.hermes_resumo_unidade`, `public.hermes_audit_log`, `public.gaviao_relatorios_semanais`, `public.gaviao_decisoes`
 
-### RNDS, API e integrações com outros sistemas
+### RNDS, SISAB, API e integrações com outros sistemas
 
 `rnds-integracoes` · papel da Chefe Coruja: **operador** · dado sensível: **sim**
 
-**Finalidade.** Enviar dados à Rede Nacional de Dados em Saúde e trocar dados com sistemas que o cliente autorizou.
+**Finalidade.** Enviar dados à Rede Nacional de Dados em Saúde e, da UBS, ao SISAB pelo PEC e-SUS APS do município, e trocar dados com sistemas que o cliente autorizou.
 
 **Base legal (LGPD)**
 - art. 11, II, a (Portaria GM/MS 1.434/2020, RNDS)
@@ -941,6 +941,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Quem acessa**
 - Ministério da Saúde (RNDS)
+- PEC e-SUS APS do município (SISAB)
 - sistemas autorizados pelo cliente
 - gestor da unidade (exportação)
 
@@ -955,9 +956,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - certificado da RNDS no cofre do servidor
 - exportação pode sair mascarada e pede motivo
 
-**Tabelas (12)**
+**Tabelas (14)**
 
-`public.rnds_credenciais`, `public.rnds_chaves_publicas`, `public.rnds_bloqueios`, `public.rnds_config_unidade`, `private.rnds_conferencias`, `public.interop_outbox`, `public.webhook_destinos`, `public.webhook_eventos`, `public.webhook_entregas`, `public.api_chaves`, `public.api_acessos`, `public.exportacoes`
+`public.rnds_credenciais`, `public.rnds_chaves_publicas`, `public.rnds_bloqueios`, `public.rnds_config_unidade`, `private.rnds_conferencias`, `public.interop_outbox`, `public.ledi_config_unidade`, `public.ledi_fila`, `public.webhook_destinos`, `public.webhook_eventos`, `public.webhook_entregas`, `public.api_chaves`, `public.api_acessos`, `public.exportacoes`
 
 ### Cliente, unidades e implantação
 
