@@ -620,7 +620,8 @@
         "documentos emitidos e cancelados",
         "arquivos anexados",
         "impressões do prontuário",
-        "pedido e decisão de destinação"
+        "pedido e decisão de destinação",
+        "assinatura ICP-Brasil do documento: certificado (serial, emissor e só o final do CPF), sessão e hash do PDF (LG7)"
       ],
       "sensivel": true,
       "acesso": [
@@ -631,7 +632,8 @@
       ],
       "local": [
         "Supabase (São Paulo, banco e arquivos)",
-        "cofre da guarda (AWS S3, São Paulo)"
+        "cofre da guarda (AWS S3, São Paulo)",
+        "servidor Hostinger (Brasil): o assinador gera o PDF e guarda, cifrado, o token da sessão com o provedor"
       ],
       "prazo": {
         "guarda": "20 anos a partir do último registro",
@@ -639,7 +641,8 @@
         "descarte": "rotina com registro, depois do prazo (V3)"
       },
       "seguranca": [
-        "destinação só com aprovação registrada; a identificação fica como hash"
+        "destinação só com aprovação registrada; a identificação fica como hash",
+        "o token do provedor de certificado nunca vai ao navegador nem ao banco"
       ],
       "tabelas": [
         "public.documentos_clinicos",
@@ -647,7 +650,9 @@
         "public.impressoes_prontuario",
         "private.documento_sequencia",
         "public.termos_cancelamentos",
-        "public.destinacoes_prontuario"
+        "public.destinacoes_prontuario",
+        "public.assinaturas_documento",
+        "private.sessoes_assinatura"
       ]
     },
     {

@@ -135,3 +135,14 @@ Conferi com o texto dos quatro documentos, baixados do bvsms.saude.gov.br. As p�
 - Migration `20270415000010_ubs_exames_enfermeiro.sql`: lista em `private.ubs_exames_enfermagem()`; o gatilho da consulta de enfermagem só deixa passar código da lista e recusa texto livre.
 - Tela: na consulta de enfermagem, a aba Exames mostra a lista final por linha de cuidado (pré-natal, hipertensão e diabetes). Sem busca, sem texto livre e sem pedido impresso. Exame fora da lista de exames da unidade aparece desligado.
 - Exames da parceria da gestante (E3 = A): PR próprio, porque o pedido sai em nome da parceria cadastrada.
+
+## Citopatológico (E2), implementação (18/11/2026)
+
+- **Migration `20270415000012_ubs_citopatologico.sql`:** o pedido de exame aceita o subgrupo 02.03.01 (citopatologia).
+  - Exames 02.03.01 entram no catálogo, na busca, na lista da unidade, no pedido impresso, na porta e na internação.
+  - O citopatológico vai em pedido próprio (grupo "citopatologia"), como laboratório, imagem e ECG.
+  - O anatomopatológico (02.03.02, biópsia e peça) continua fora: é da atenção especializada.
+- **Enfermeiro:** pede o citopatológico de rastreamento (02.03.01.008-6) na linha "Rastreio do câncer do colo do útero".
+  - Fonte: Saúde das Mulheres (2016), p. 175, "Exame citopatológico do colo do útero", quem faz "Enfermeiro(a)/médico(a)".
+  - O citopatológico diagnóstico (02.03.01.001-9) fica com o médico.
+- **Resultado:** entra pelo registro do exame, como imagem e ECG. A porta do laboratório integrado segue só com 02.02.

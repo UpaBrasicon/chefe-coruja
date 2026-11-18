@@ -152,7 +152,7 @@ export default function ExamesUnidade() {
               {exames.map((e) => (
                 <TableRow key={e.id} className="border-b border-trilha align-top last:border-0">
                   <TableCell className="px-3 py-2 font-medium text-tinta">{e.nome_curto}
-                    <Badge variant={tipoDoCodigo(e.procedimento) === 'imagem' ? 'secondary' : 'outline'} className="ml-1.5">{tipoDoCodigo(e.procedimento) === 'imagem' ? 'imagem' : 'laboratório'}</Badge>
+                    <Badge variant={tipoDoCodigo(e.procedimento) === 'imagem' ? 'secondary' : 'outline'} className="ml-1.5">{tipoDoCodigo(e.procedimento) === 'imagem' ? 'imagem' : tipoDoCodigo(e.procedimento) === 'citopatologia' ? 'citopatológico' : 'laboratório'}</Badge>
                   </TableCell>
                   <TableCell className="px-3 py-2">{codigoExameNaTela(e.procedimento)}<span className="block text-rotulo text-tinta-sussurro">{e.nome_sigtap ?? ''}</span></TableCell>
                   <TableCell className="px-3 py-2">{e.loinc ?? <span className="text-tinta-sussurro">—</span>}</TableCell>

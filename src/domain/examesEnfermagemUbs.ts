@@ -1,15 +1,17 @@
 // Exames que o enfermeiro pede na consulta de enfermagem da UBS (percurso da UBS,
 // U6, decisão P1 = A; lista em docs/ubs/U6-LISTA-EXAMES-ENFERMEIRO.md, E1 = A).
 // Cópia da lista do banco (private.ubs_exames_enfermagem, migration
-// 20270415000011_ubs_pre_natal_parceiro.sql, que acrescenta a linha da parceria
-// à 20270415000010): código SIGTAP conferido na tabela da homologação e a linha de cuidado de cada exame. Fora desta lista, o banco recusa.
+// 20270415000012_ubs_citopatologico.sql, que acrescenta o citopatológico à lista
+// das 20270415000010 e 20270415000011): código SIGTAP conferido na tabela da homologação e a linha de cuidado de cada exame. Fora desta lista, o banco recusa.
 
-export type LinhaCuidado = 'pre_natal' | 'hiperdia' | 'parceria'
+export type LinhaCuidado = 'pre_natal' | 'hiperdia' | 'colo' | 'parceria'
 export type ExameEnfermagem = { codigo: string; nome: string; linhas: LinhaCuidado[] }
 
 export const LINHAS_CUIDADO: { id: LinhaCuidado; rotulo: string }[] = [
   { id: 'pre_natal', rotulo: 'Pré-natal' },
   { id: 'hiperdia', rotulo: 'Hipertensão e diabetes' },
+  // U6, E2: citopatológico de rastreamento (Saúde das Mulheres, MS 2016, p. 175)
+  { id: 'colo', rotulo: 'Rastreio do câncer do colo do útero' },
   // U6, E3: só na ficha do pré-natal do parceiro (Guia do pré-natal do parceiro, MS 2023, p. 47–48)
   { id: 'parceria', rotulo: 'Pré-natal do parceiro' },
 ]
@@ -40,6 +42,7 @@ export const EXAMES_ENFERMAGEM_UBS: ExameEnfermagem[] = [
   { codigo: '0202031527', nome: 'HIV em parceria de gestante', linhas: ['parceria'] },
   { codigo: '0202031462', nome: 'Hepatite B (HBsAg) em parceria de gestante', linhas: ['parceria'] },
   { codigo: '0202031497', nome: 'Hepatite C (anti-HCV) em parceria de gestante', linhas: ['parceria'] },
+  { codigo: '0203010086', nome: 'Citopatológico do colo do útero (rastreamento)', linhas: ['colo'] },
 ]
 
 export const examesDaLinha = (linha: LinhaCuidado) => EXAMES_ENFERMAGEM_UBS.filter((e) => e.linhas.includes(linha))

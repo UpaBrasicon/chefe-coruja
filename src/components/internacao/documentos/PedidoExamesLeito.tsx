@@ -6,7 +6,7 @@
 // fica no grupo da seção. A regra (um grupo por pedido, quem pede) é do
 // servidor; aqui só se marca e se pede.
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, FlaskConical, ScanLine, X } from 'lucide-react'
+import { Activity, FlaskConical, Microscope, ScanLine, X } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -27,6 +27,7 @@ const ICONE: Record<GrupoExame, React.ReactNode> = {
   laboratorio: <FlaskConical className="size-4 text-acao" aria-hidden />,
   imagem: <ScanLine className="size-4 text-acao" aria-hidden />,
   grafico: <Activity className="size-4 text-acao" aria-hidden />,
+  citopatologia: <Microscope className="size-4 text-acao" aria-hidden />,
 }
 
 export function PedidoExamesLeito({ internacaoId }: { internacaoId: string }) {

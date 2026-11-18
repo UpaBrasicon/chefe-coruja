@@ -88,3 +88,9 @@ test('rótulo da versão: manual é transcrição; laboratório e imagem liberam
   assert.equal(rotuloVersaoResultado('imagem', '10/11/2026, 23:01', 'Ana'), 'liberado pelo serviço de imagem 10/11/2026, 23:01 · registrado por Ana')
   assert.doesNotMatch(rotuloVersaoResultado('manual', 'x', 'y'), /liberado/)
 })
+
+test('U6, E2: o citopatológico (02.03.01) tem grupo e tipo próprios; o anatomopatológico não entra', () => {
+  assert.equal(grupoDoCodigo('0203010086'), 'citopatologia')
+  assert.equal(tipoDoCodigo('0203010019'), 'citopatologia')
+  assert.equal(grupoDoCodigo('0203020081'), null)
+})
