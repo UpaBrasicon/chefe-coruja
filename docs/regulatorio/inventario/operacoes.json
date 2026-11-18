@@ -1035,6 +1035,48 @@
       ]
     },
     {
+      "id": "tecnovigilancia",
+      "nome": "Tecnovigilância do módulo clínico",
+      "papel": "controlador",
+      "finalidade": "Receber, investigar e responder relatos de problema no módulo clínico, e suspender a versão com defeito, como pede a RDC 67/2009.",
+      "base_legal": [
+        "art. 7º, II (RDC 67/2009 e RDC 551/2021, quando o módulo for notificado ou registrado; LG11)",
+        "art. 7º, IX (legítimo interesse: segurança do produto)"
+      ],
+      "titulares": [
+        "profissionais (quem relata e quem investiga)"
+      ],
+      "dados": [
+        "ferramenta, versão, unidade, tipo e desfecho do problema",
+        "descrição livre sem dado do paciente (a tela e o banco recusam CPF, CNS e telefone)",
+        "andamento, causa, ação e versão corrigida"
+      ],
+      "sensivel": false,
+      "acesso": [
+        "responsável técnico médico da Chefe Coruja e super admin (fila)",
+        "gestor da unidade (relatos da unidade, só leitura)",
+        "quem relatou (os próprios relatos e a conclusão)"
+      ],
+      "local": [
+        "Supabase (São Paulo)",
+        "Resend (e-mail ao RT no relato grave, sem dado do paciente)"
+      ],
+      "prazo": {
+        "guarda": "5 anos depois da conclusão",
+        "base": "RDC 67/2009, art. 6º, parágrafo único (mínimo de 2 anos e a vida útil do produto) (LG12, V3)",
+        "descarte": "rotina diária às 03:50 de Brasília, com a quantidade apagada na auditoria; relato com suspensão vigente fica"
+      },
+      "seguranca": [
+        "relato e andamento só de inclusão",
+        "só o banco grava, pelas funções; ninguém lê as tabelas pela API"
+      ],
+      "tabelas": [
+        "private.tecnovigilancia_relatos",
+        "private.tecnovigilancia_andamento",
+        "private.tecnovigilancia_suspensoes"
+      ]
+    },
+    {
       "id": "seguranca-tecnica",
       "nome": "Erros do aplicativo e vigilância técnica",
       "papel": "controlador",
