@@ -325,8 +325,15 @@ export function CronometroParada() {
 
           <details className="rounded-container border border-fio-forte bg-superficie px-3.5 py-2.5">
             <summary className="cursor-pointer text-controle font-semibold text-tinta">Causas reversíveis</summary>
-            <ul className="mt-2 list-disc pl-5 text-controle text-tinta-apoio">
-              {CAUSAS_REVERSIVEIS[registro.publico].itens.map((c) => <li key={c}>{c}</li>)}
+            <ul className="mt-2 flex flex-col">
+              {CAUSAS_REVERSIVEIS[registro.publico].itens.map((c) => (
+                <li key={c.causa} className="flex flex-col gap-0.5 border-b border-fio py-2 last:border-b-0">
+                  <span className="text-corpo font-semibold text-tinta">{c.causa}</span>
+                  <span className="text-controle text-tinta-apoio"><b className="font-semibold text-tinta">Identificar:</b> {c.identificar}</span>
+                  <span className="text-controle text-tinta-apoio"><b className="font-semibold text-tinta">Tratar:</b> {c.tratar}</span>
+                  <span className="text-rotulo text-tinta-sussurro">{c.fonte}</span>
+                </li>
+              ))}
             </ul>
             <p className="mt-1 text-rotulo text-tinta-sussurro">{CAUSAS_REVERSIVEIS[registro.publico].fonte}</p>
           </details>

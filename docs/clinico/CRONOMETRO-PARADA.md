@@ -39,3 +39,25 @@ A epinefrina no ritmo chocável do adulto não tem o mesmo momento em todas as f
 - Coreia 2025: já no ciclo depois do 1º choque.
 
 O cronômetro segue a AHA e o manual, como a ferramenta PCR do adulto.
+
+## Causas reversíveis: identificar e tratar (versão .2)
+
+O RT pediu em 18/11/2026 que cada causa tenha uma linha "identificar" e outra "tratar". As decisões foram CR1–CR4 = A:
+
+- cada linha tem a fonte aberta embaixo;
+- onde não há fonte aberta, a tela diz "sem fonte aberta";
+- as doses são só as que já estão aprovadas no app.
+
+Os trechos e os locais de cada fonte estão em [CRONOMETRO-PARADA-CAUSAS.md](CRONOMETRO-PARADA-CAUSAS.md).
+
+**Sem fonte aberta:**
+- trombose coronária na criança;
+- reposição na hipocalemia da criança;
+- dose de trombolítico na criança, que o app não tem;
+- sinais clássicos do pneumotórax e do tamponamento, como desvio de traqueia e turgência jugular;
+- volume em mL/kg durante a parada.
+
+**Achados para o lote de correções D11, sem mudança no cronômetro:**
+1. **Glicose na hipercalemia do adulto:** a ferramenta PCR do adulto usa 25 g de glicose com 10 U de insulina (`pcr.ts`, manual p. 51). A AHA 2025, Part 10, Tabela 3, dá 50 g. Por isso o cronômetro não mostra número de glicose (CR3).
+2. **KCl no adulto:** a manutenção tem errata no app. A diretriz coreana 2025 (Part 5) dá 10 mmol em 5 a 10 min, depois de 2 mmol/min por 10 min.
+3. **Força da recomendação:** na hipercalemia (cálcio, bicarbonato, glicose com insulina) e na naloxona durante a parada, a AHA 2025 classifica como 2b. A tela diz "benefício na parada não estabelecido".
