@@ -22,6 +22,7 @@ import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { RespostaIa } from '@/components/plantonista/RespostaIa'
 import { CartaoTurno } from '@/components/plantonista/central/CartaoTurno'
+import { SessaoAssinatura } from '@/components/assinatura/SessaoAssinatura'
 import { ModoPaciente } from '@/components/plantonista/central/ModoPaciente'
 import { GuiaRapido } from '@/components/plantonista/central/GuiaRapido'
 import { useLarguraAte } from '@/hooks/useLarguraAte'
@@ -253,6 +254,8 @@ function CentralCompleta() {
             tela larga cada ferramenta pergunta o paciente na própria tela. */}
         <div className="lg:hidden"><ModoPaciente /></div>
         <CartaoTurno unidadeId={unidadeId} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
+        {/* LG7: sessão de assinatura ICP-Brasil (some enquanto o assinador estiver desligado) */}
+        <SessaoAssinatura />
 
         <div className="mb-[22px]">
           <div className="relative">
