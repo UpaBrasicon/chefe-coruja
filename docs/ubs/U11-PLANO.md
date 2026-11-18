@@ -6,7 +6,12 @@ Decisão U11 = A do diagnóstico (`docs/ubs/PERCURSO-UBS-DIAGNOSTICO.md`, achado
 - a data de nascimento passa a ser obrigatória;
 - a DUM é conferida contra parto recente da mesma mulher.
 
-**Nada foi implementado.**
+**Decisões do RT (18/11/2026):**
+- **N1, decidida pelo RT nas palavras dele** (nem A nem B como estavam):
+  - quando o RN é cadastrado no hospital, a UBS da mãe recebe um aviso e um cadastro em segundo plano. Na primeira consulta, a criança já tem cadastro;
+  - o RN aparece sozinho na puericultura, com o alerta "ainda não veio à UBS" e os dados da mãe (nome e telefone), para a UBS entrar em contato;
+  - se a criança nascer fora do sistema e a mãe foi acompanhada no pré-natal da UBS, a puericultura fica em aberto. Ao chegar a DPP sem parto registrado, ela alerta para procurar a mãe.
+- **N2 = A:** a data de nascimento fica obrigatória só na UBS.
 
 ## O que o app tem hoje
 
@@ -42,7 +47,17 @@ Decisão U11 = A do diagnóstico (`docs/ubs/PERCURSO-UBS-DIAGNOSTICO.md`, achado
 - Sem CNS, CPF nem unificação, a UBS não é achada e a gestação continua aberta. A UBS fecha à mão, como hoje.
 
 **PR 3. O recém-nascido na puericultura da UBS da mãe** (N1)
-- Depende da decisão N1, abaixo.
+- **RN do hospital:**
+  - o `cadastrar_rn` cria, em segundo plano, o cadastro do RN na UBS da mãe, achada por CNS, CPF ou unificação;
+  - o cadastro leva "RN de <mãe>", a data de nascimento, o sexo e a mãe ligada, e fica marcado como "cadastro vindo do hospital";
+  - a UBS recebe o aviso.
+- **Puericultura:**
+  - o RN aparece sozinho, com o alerta "ainda não veio à UBS" e os dados da mãe (nome e telefone) até a primeira consulta;
+  - na chegada, a recepção completa o cadastro: nome, CNS e CPF.
+- **Bebê esperado:**
+  - a gestação da UBS que passa da DPP sem parto registrado entra na puericultura como "bebê esperado de <mãe>, DPP tal";
+  - o alerta é "procurar a mãe", com os dados dela;
+  - sai quando o parto é registrado ou quando a UBS dá a saída.
 
 Ordem: PR 1, PR 2, PR 3.
 
