@@ -18,6 +18,8 @@ export type SituacaoFerramenta = {
   /** LG13: profissões que revisam esta ficha e as que ainda faltam nesta versão */
   revisoes_exigidas?: string[] | null
   revisoes_pendentes?: string[] | null
+  /** LG12, V4: versão suspensa pelo RT na rede toda, até a correção */
+  suspensa_rede?: { motivo: string; em: string; relato: number | null } | null
 }
 
 export function useSituacaoFerramenta(ficha: Ficha | undefined, unidadeId: string | undefined) {

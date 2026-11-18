@@ -12295,6 +12295,21 @@ export type Database = {
         }[]
       }
       anotar_guarda_registros_acesso: { Args: { p_ate: string; p_pedido: string; p_usuario: string }; Returns: number }
+      andamento_tecnovigilancia: {
+        Args: { p_acao?: string; p_causa?: string; p_relato: string; p_situacao: string; p_texto: string; p_versao_corrigida?: string }
+        Returns: undefined
+      }
+      aviso_tecnovigilancia: { Args: { p_marcar?: boolean; p_relato: string }; Returns: Json }
+      encerrar_suspensao_rede: { Args: { p_nota: string; p_suspensao: string }; Returns: undefined }
+      fila_tecnovigilancia: { Args: never; Returns: Json }
+      meus_relatos_tecnovigilancia: { Args: never; Returns: Json }
+      relatar_tecnovigilancia: {
+        Args: { p_descricao: string; p_desfecho: string; p_ferramenta: string; p_tipo: string; p_unidade: string; p_versao: string }
+        Returns: Json
+      }
+      suspender_versao_rede: { Args: { p_ferramenta: string; p_motivo: string; p_relato?: string; p_versao: string }; Returns: string }
+      suspensoes_rede_vigentes: { Args: never; Returns: Json }
+      tecnovigilancia_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       fila_revisao_ferramentas: {
         Args: { p_tipo: string }
         Returns: {

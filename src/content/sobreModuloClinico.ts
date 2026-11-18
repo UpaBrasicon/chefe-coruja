@@ -51,7 +51,7 @@ export const SOBRE_MODULO_CLINICO: ParteSobre[] = [
   {
     titulo: 'Achou um erro?',
     texto:
-      'Avise o gestor da sua unidade, que abre um chamado técnico, ou escreva para contato@chefecoruja.com.br. Diga a ferramenta, a versão mostrada na tela e o que estava errado. Não mande nome nem documento do paciente.',
+      'Use "Relatar problema", no topo de cada ferramenta ou aqui embaixo. O relato vai para o responsável técnico da Chefe Coruja, que investiga no prazo e responde em "Meus relatos". Diga o que a tela mostrou e o que era esperado. Não mande nome nem documento do paciente. Se o problema chegou ao paciente, avise também o gestor da sua unidade. Sem acesso ao sistema, escreva para contato@chefecoruja.com.br.',
   },
   {
     titulo: 'Situação regulatória',

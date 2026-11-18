@@ -6,6 +6,7 @@ import { textoRef, type ItemGuia } from '@/clinico/guia'
 import { topoDa, type Topo } from '@/clinico/topos'
 import { Link } from 'react-router-dom'
 
+import { RelatarProblema } from '@/components/clinico/RelatarProblema'
 import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { useRelacionadas, type Relacionada } from '@/components/plantonista/calc/contexto'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
@@ -42,7 +43,8 @@ export function ToolLayout({
 }) {
   const { unidadeAtiva } = useUnidade()
   const { data: situacao } = useSituacaoFerramenta(ficha, unidadeAtiva?.unidade_id)
-  const suspensa = !!situacao?.unidade?.oculta
+  const suspensaRede = situacao?.suspensa_rede ?? null
+  const suspensa = !!situacao?.unidade?.oculta || !!suspensaRede
   const fonte = ficha ? textoFontes(ficha) : referencia
   const revisado = ficha ? ficha.revisadoEm : revisadoEm
   const corpo = useRef<HTMLDivElement>(null)
@@ -54,7 +56,8 @@ export function ToolLayout({
   const topo = ficha ? topoDa(ficha.id) : undefined
   return (
     <div className={cn('flex flex-col gap-[22px]', className)}>
-      <TituloPagina titulo={title} descricao={topo?.resumo ?? description} className="mb-0" />
+      <TituloPagina titulo={title} descricao={topo?.resumo ?? description} className="mb-0"
+        acoes={ficha && <RelatarProblema ferramentaId={ficha.id} versao={ficha.versao} />} />
       {topo && <CabecalhoTopo topo={topo} />}
       {ficha && situacao && <FaixaSituacao situacao={situacao} versao={ficha.versao} />}
       {semFonte && (
@@ -63,7 +66,15 @@ export function ToolLayout({
           <p>Sem fonte declarada: material de consulta, sem dose, fora da camada base aprovada pelo responsável técnico.</p>
         </div>
       )}
-      {suspensa ? (
+      {suspensaRede ? (
+        <div role="status" className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-corpo text-tinta">
+          <CircleSlash className="mt-0.5 size-4 shrink-0 text-tinta-apoio" aria-hidden />
+          <p>
+            Versão {ficha?.versao} suspensa para correção pelo responsável técnico, em toda a rede
+            {suspensaRede.relato ? ` (relato nº ${suspensaRede.relato})` : ''}: {suspensaRede.motivo}
+          </p>
+        </div>
+      ) : suspensa ? (
         <div role="status" className="flex gap-2.5 rounded-container border border-fio bg-superficie px-4 py-3 text-corpo text-tinta">
           <CircleSlash className="mt-0.5 size-4 shrink-0 text-tinta-apoio" aria-hidden />
           <p>A gestão desta unidade suspendeu o uso desta ferramenta. A regra da camada base continua registrada.</p>
