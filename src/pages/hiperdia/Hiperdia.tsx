@@ -9,6 +9,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { IncluirNoHiperdia } from '@/components/hiperdia/IncluirNoHiperdia'
+import { SugestoesHiperdia } from '@/components/hiperdia/SugestoesHiperdia'
 import { SeloPrograma } from '@/components/hiperdia/SeloPrograma'
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -59,6 +60,8 @@ export default function Hiperdia() {
     <>
       <TituloPagina titulo="Hiperdia" descricao="Hipertensão e diabetes da unidade, pelas boas práticas das notas C5 e C4 do Ministério da Saúde."
         acoes={podeIncluir && unidadeId && !painel.error ? <IncluirNoHiperdia unidadeId={unidadeId} jaNoPrograma={jaNoPrograma} /> : undefined} />
+      {/* U12: retorno da UPA com CID de hipertensão ou diabetes */}
+      {unidadeId && <SugestoesHiperdia unidadeId={unidadeId} podeIncluir={podeIncluir} />}
       {painel.isLoading ? <Spinner /> : painel.error ? <p className="text-apoio text-critico">{msg(painel.error)}</p>
         : linhas.length === 0 ? (
           <Vazio icone={HeartPulse} titulo="Ninguém no hiperdia ainda"

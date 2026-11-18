@@ -10505,6 +10505,8 @@ export type Database = {
       encaminhar_upa: { Args: { p_destino: string; p_episodio: string; p_motivo: string }; Returns: string }
       contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
       hiperdia_do_paciente: { Args: { p_paciente: string }; Returns: Json }
+      hiperdia_sugestoes: { Args: { p_unidade: string }; Returns: Json }
+      hiperdia_dispensar_sugestao: { Args: { p_contrarreferencia: string; p_programa: string; p_motivo: string }; Returns: undefined }
       hiperdia_painel: { Args: { p_unidade: string }; Returns: Json }
       conta_lancar_material: { Args: { p_conta: string; p_material: string; p_observacao?: string; p_quantidade: number }; Returns: Json }
       conta_retirar_material: { Args: { p_lancamento: string; p_motivo: string }; Returns: Json }
@@ -10516,6 +10518,7 @@ export type Database = {
       puericultura_desfazer_saida: { Args: { p_paciente: string }; Returns: undefined }
       puericultura_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       puericultura_bebes_esperados: { Args: { p_unidade: string }; Returns: Json }
+      registrar_exame_externo: { Args: { p_paciente: string; p_procedimento: string; p_data: string; p_valor: string; p_laboratorio?: string }; Returns: string }
       puericultura_painel: { Args: { p_unidade: string }; Returns: Json }
       puericultura_retirar: { Args: { p_motivo: string; p_paciente: string }; Returns: string }
       pre_natal_definir_dum: { Args: { p_dum: string; p_gestacao: string }; Returns: undefined }
