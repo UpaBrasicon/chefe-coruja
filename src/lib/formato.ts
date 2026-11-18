@@ -79,6 +79,10 @@ export const dataHoraInput = (v: Instante = Date.now()) => fmtInput.format(comoD
 /** "1.234,5": até `maxCasas` decimais (sem completar com zeros). */
 export const numeroAte = (n: number, maxCasas: number) => new Intl.NumberFormat('pt-BR', { maximumFractionDigits: maxCasas }).format(n)
 
+/** "1234,5": como `numeroAte`, sem ponto de milhar (dose: "1.200 mg" pode ser lido como 1,2 mg). */
+export const numeroSemMilhar = (n: number, maxCasas: number) =>
+  new Intl.NumberFormat('pt-BR', { maximumFractionDigits: maxCasas, useGrouping: false }).format(n)
+
 const fmtCarimbo = new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
 /** "19/10/2026, 19:43:12": carimbo com segundos (registro de emissão e de impressão na folha). */
