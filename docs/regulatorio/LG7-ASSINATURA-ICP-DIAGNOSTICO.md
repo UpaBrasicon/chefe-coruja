@@ -1,6 +1,8 @@
 # LG7: assinatura qualificada ICP-Brasil (diagnóstico, 17/11/2026)
 
-Trilha de obrigatórios legais e regulatórios, item LG7 (P1). Este documento não muda código nem banco e não é parecer jurídico. As fontes foram lidas em 17/11/2026, só fontes primárias. O que não foi confirmado vem marcado.
+Trilha de obrigatórios legais e regulatórios, item LG7 (P1).
+
+**Decisão do RT, 18/11/2026: "Todas A"** (A1–A7). Este documento não muda código nem banco e não é parecer jurídico. As fontes foram lidas em 17/11/2026, só fontes primárias. O que não foi confirmado vem marcado.
 
 ## Como está hoje
 
