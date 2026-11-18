@@ -21,7 +21,7 @@ test('numa UBS, nenhum papel vê porta, leito, internação, AIH ou APAC', () =>
 
 test('numa UBS ficam os itens que não dependem de porta ou leito', () => {
   const gestor = itensDeNavegacao('gestor', false, false, 'ubs').map((i) => i.to)
-  for (const to of ['/gestao', '/unidade', '/escala', '/faturamento', '/regulacao', '/gestao/farmacia']) {
+  for (const to of ['/gestao', '/unidade', '/escala', '/faturamento/erp', '/regulacao', '/gestao/farmacia']) {
     assert.ok(gestor.includes(to), `gestor perdeu ${to}`)
   }
   assert.ok(itensDeNavegacao('enfermeiro', false, false, 'ubs').some((i) => i.to === '/notificacao-compulsoria'))
@@ -140,4 +140,15 @@ test('U11 (N2 = A): na UBS a recepção exige a data de nascimento, também do c
   assert.match(recepcao, /Na UBS, informe a data de nascimento do paciente\./)
   assert.match(recepcao, /nascimentoObrigatorio=\{ubs\}/)
   assert.match(recepcao, /k === 'data_nascimento' && semNascimento/)
+})
+
+test('U13, PR 3: o faturamento de porta e internação sai do gestor da UBS; o Envio ao ERP fica', () => {
+  const ubs = itensDeNavegacao('gestor', false, false, 'ubs').map((i) => i.to)
+  const upa = itensDeNavegacao('gestor', false, false, 'upa').map((i) => i.to)
+  for (const to of ['/faturamento/contas', '/faturamento', '/faturamento/glosas', '/faturamento/materiais']) {
+    assert.ok(!ubs.includes(to), `gestor da UBS ainda vê ${to}`)
+    assert.ok(upa.includes(to), `gestor da UPA perdeu ${to}`)
+  }
+  assert.ok(ubs.includes('/faturamento/erp'))
+  assert.ok(itensDeNavegacao('faturamento', false, false, 'ubs').some((i) => i.to === '/faturamento'), 'o papel faturamento não muda')
 })
