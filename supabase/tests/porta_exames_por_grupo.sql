@@ -68,7 +68,7 @@ SELECT pg_temp.falha(format('SELECT public.pedir_exames(%L, %L)', pg_temp.u('a')
   'Laboratório, imagem e ECG vão em pedidos separados', 'laboratório e imagem em texto livre no mesmo pedido');
 -- 3. grupo fora da lista
 SELECT pg_temp.falha(format('SELECT public.pedir_exames(%L, %L)', pg_temp.u('a'), '[{"nome":"Algo","grupo":"outro"}]'),
-  'Grupo do exame: laboratório, imagem ou ECG', 'grupo inválido');
+  'Grupo do exame: laboratório, imagem, ECG ou citopatológico', 'grupo inválido');
 
 -- 4. um grupo por pedido passa; o texto livre grava o grupo; sem grupo, como antes
 SELECT public.pedir_exames(pg_temp.u('a'), '[{"procedimento":"0202990041"},{"procedimento":"0202990042"},{"nome":"Troponina rápida","grupo":"laboratorio"}]');
