@@ -1,5 +1,5 @@
-// LG12, decisão V1 = A (RT, 18/11/2026): "Relatar problema" no rodapé de cada
-// ferramenta, nos avisos automáticos e na página Sobre o módulo clínico. O
+// LG12, decisão V1 = A (RT, 18/11/2026): "Relatar problema" no topo de cada
+// ferramenta (ao lado do título, direção A escolhida pelo RT no mesmo dia), nos avisos automáticos e na página Sobre o módulo clínico. O
 // relato vai para a fila de tecnovigilância da Chefe Coruja (RT médico); o
 // gestor da unidade vê os da unidade. Autor = quem está no login (o servidor
 // grava). O texto não pode ter dado do paciente (CPF, CNS, telefone).
@@ -27,7 +27,7 @@ export function RelatarProblema({ ferramentaId, versao, rotulo = 'Relatar proble
   const [aberta, setAberta] = React.useState(false)
   return (
     <>
-      <Button type="button" size="xs" variant="ghost" className={className} onClick={() => setAberta(true)}>
+      <Button type="button" size="sm" variant="outline" className={className} onClick={() => setAberta(true)}>
         <Flag className="size-3.5" aria-hidden /> {rotulo}
       </Button>
       {aberta && <GavetaRelato ferramentaId={ferramentaId} versao={versao} onFechar={() => setAberta(false)} />}

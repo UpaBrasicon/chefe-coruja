@@ -13,7 +13,7 @@ Versão 1, 18/11/2026. Decisões V1–V5 = A do RT (`docs/regulatorio/LG12-TECNO
 
 ## 2. Receber
 
-- **Canal:** o botão "Relatar problema" fica no rodapé de cada ferramenta da Central, no aviso de sepse do atendimento e na página "Sobre o módulo clínico".
+- **Canal:** o botão "Relatar problema" fica no topo de cada ferramenta da Central, ao lado do título, no aviso de sepse do atendimento e na página "Sobre o módulo clínico".
 - **Reserva:** quem não tem acesso ao sistema escreve para contato@chefecoruja.com.br. Quem recebe o e-mail registra o relato no sistema no mesmo dia, sem dado do paciente.
 - **O que vem preenchido:** ferramenta, versão, unidade, data e quem relatou.
 - **Dado do paciente:** a tela e o banco recusam CPF, CNS e telefone.
