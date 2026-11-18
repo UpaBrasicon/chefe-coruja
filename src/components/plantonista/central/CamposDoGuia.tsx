@@ -1,10 +1,11 @@
 import * as React from 'react'
 
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AVISO_FITA, CORES_BROSELOW, pesoDaCor, rotuloAlturaIdade, rotuloPesoDaCor, type CorBroselow } from '@/clinico/pediatria/fitaBroselow'
 import { alterarPaciente, usePacienteCentral } from '@/lib/pacienteCentral'
-import { leituraDaFita, origemDaCor } from '@/lib/fitaDoPeso'
+import { PESOS_DA_CINZA, leituraDaFita, origemDaCor, pedePesoNaCor } from '@/lib/fitaDoPeso'
 
 // Campos grandes do Guia rápido (peso, idade e cor da fita), usados no início do
 // guia e nas telas que ele abre (parada e reanimação da criança). Leem e gravam
@@ -35,7 +36,8 @@ export function CorDaFita() {
       {/* lista própria, arredondada (pedido do RT): a do navegador não aceita canto arredondado */}
       <Select value={cor?.id ?? null} onValueChange={(v) => {
         const c = CORES_BROSELOW.find((x) => x.id === v)
-        if (c) alterarPaciente({ peso: String(pesoDaCor(c)).replace('.', ','), origem: origemDaCor(c) })
+        // G6: na cinza o peso fica vazio até o médico escolher 3, 4 ou 5 kg
+        if (c) alterarPaciente({ peso: pedePesoNaCor(c) ? '' : String(pesoDaCor(c)).replace('.', ','), origem: origemDaCor(c) })
       }}>
         <SelectTrigger aria-label="Cor da fita de Broselow"
           className="h-15 w-full rounded-container border-2 border-tinta bg-superficie px-3.5 text-corpo font-bold">
@@ -71,14 +73,26 @@ export function DetalheDaFita() {
   const { cor, pelaLista, leitura } = leituraDaFita(p)
   if (leitura.tipo === 'vazio') return null
   const faixa = (c: CorBroselow) => `${c.nome.toLowerCase()} (${c.pesoKg[0]}–${c.pesoKg[1]} kg)`
+  const pedePeso = pelaLista && pedePesoNaCor(cor)
   const titulo = cor
-    ? (pelaLista ? `Cor ${cor.nome.toLowerCase()} · ${rotuloPesoDaCor(cor)}` : `Peso ${p.peso.trim()} kg → cor ${faixa(cor)}`)
+    ? (pedePeso ? `Cor ${faixa(cor)}: escolha o peso` : pelaLista ? `Cor ${cor.nome.toLowerCase()} · ${rotuloPesoDaCor(cor)}` : `Peso ${p.peso.trim()} kg → cor ${faixa(cor)}`)
     : leitura.tipo === 'entre'
       ? `Peso ${p.peso.trim()} kg fica entre a cor ${faixa(leitura.abaixo)} e a ${faixa(leitura.acima)}`
       : `Peso ${p.peso.trim()} kg fora da fita (3 a 36 kg)`
   return (
     <div className="col-span-2 flex flex-col gap-1 rounded-container border border-fio-forte bg-superficie px-3.5 py-2.5">
       <span className="text-controle font-semibold text-tinta">{titulo}</span>
+      {pedePeso && (
+        // G6 (RT, 18/11/2026): na cinza o meio da faixa erraria até 33%
+        <div role="group" aria-label="Peso na cor cinza" className="flex gap-2 py-1">
+          {PESOS_DA_CINZA.map((kg) => (
+            <Button key={kg} type="button" variant="outline" className="h-12 flex-1 text-corpo font-bold"
+              onClick={() => alterarPaciente({ peso: String(kg) })}>
+              {kg} kg
+            </Button>
+          ))}
+        </div>
+      )}
       <span className="text-rotulo text-tinta-apoio">{cor ? `${rotuloAlturaIdade(cor)}. ` : ''}{AVISO_FITA}</span>
     </div>
   )

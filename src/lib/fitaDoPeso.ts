@@ -40,7 +40,15 @@ export function corDoPeso(kg: number | null): LeituraDoPeso {
 // ela, a cor; aí vale o peso digitado.
 const PREFIXO_FITA = 'fita de Broselow, cor '
 
-export const origemDaCor = (c: CorBroselow) => `${PREFIXO_FITA}${c.nome.toLowerCase()} (${rotuloPesoDaCor(c)})`
+/**
+ * G6 (RT, 18/11/2026): na cinza (3 a 5 kg) o meio da faixa erra até 33% (bebê de
+ * 3 kg com dose de 4 kg); sem peso, a tela pede 3, 4 ou 5 kg em vez de usar o meio.
+ */
+export const PESOS_DA_CINZA = [3, 4, 5] as const
+export const pedePesoNaCor = (c: CorBroselow | undefined) => c?.id === 'cinza'
+
+export const origemDaCor = (c: CorBroselow) =>
+  `${PREFIXO_FITA}${c.nome.toLowerCase()} (${pedePesoNaCor(c) ? `${c.pesoKg[0]}–${c.pesoKg[1]} kg` : rotuloPesoDaCor(c)})`
 
 export function corEscolhida(origem: string): CorBroselow | undefined {
   return origem.startsWith(PREFIXO_FITA) ? CORES_BROSELOW.find((c) => origem === origemDaCor(c)) : undefined
@@ -56,10 +64,11 @@ export function leituraDaFita(p: { origem: string; peso: string }) {
 
 /**
  * Peso da dose para o paciente da Central (regra do RT de 17/11/2026): com peso
- * digitado, vale o peso; com a cor escolhida na lista, o meio da faixa da cor.
+ * digitado, vale o peso; com a cor escolhida na lista, o meio da faixa da cor —
+ * menos na cinza (G6), que pede o peso.
  */
 export function pesoDaDoseDoPaciente(p: { origem: string; peso: string }): PesoDaDose {
   const escolhida = corEscolhida(p.origem)
-  if (escolhida) return pesoDaDose(null, escolhida.id)
+  if (escolhida) return pedePesoNaCor(escolhida) ? { origem: 'nenhum' } : pesoDaDose(null, escolhida.id)
   return pesoDaDose(lerPesoTexto(p.peso), null)
 }
