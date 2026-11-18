@@ -9,6 +9,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { GestaoUbs } from '@/components/gestor/GestaoUbs'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { AtrasoChecagemIndicador } from '@/pages/gestor/AtrasoChecagemIndicador'
@@ -57,7 +58,21 @@ function corTaxa(taxa: number | null, limitePct: number) {
   return 'text-conforme'
 }
 
+// U13 (PR 2): na UBS a página é ambulatorial, sem censo, ocupação nem porta.
 export default function Indicadores() {
+  const { unidadeAtiva } = useUnidade()
+  if (unidadeAtiva?.unidade.tipo === 'ubs') {
+    return (
+      <div className="mx-auto flex w-full max-w-[896px] flex-col gap-5">
+        <TituloPagina icone={LineChart} titulo="Indicadores" descricao="Gestão ambulatorial da UBS: produção, agenda, espera, medicamentos, rede e vigilância, por período." />
+        <GestaoUbs unidadeId={unidadeAtiva.unidade_id} />
+      </div>
+    )
+  }
+  return <IndicadoresHospital />
+}
+
+function IndicadoresHospital() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
