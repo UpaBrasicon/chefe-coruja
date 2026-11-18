@@ -111,3 +111,8 @@ test('U7, PR 5: a lista de procedimentos da tela é a mesma do banco, e cada pap
   assert.ok(!procedimentosDoPapel('enfermeiro').some((p) => p.codigo === '0301040176'), 'o enfermeiro não faz implante')
   assert.equal(procedimentosDoPapel('recepcao').length, 0)
 })
+
+test('U4: demanda espontânea é quem está na fila sem vir da agenda de hoje', async () => {
+  const { demandaEspontanea } = await import('../domain/agenda.ts')
+  assert.equal(demandaEspontanea([{ episodio_id: 'a' }, { episodio_id: 'b' }, { episodio_id: 'c' }], ['b', null]), 2)
+})
