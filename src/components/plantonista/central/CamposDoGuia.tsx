@@ -4,12 +4,39 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AVISO_FITA, CORES_BROSELOW, pesoDaCor, rotuloAlturaIdade, rotuloPesoDaCor, type CorBroselow } from '@/clinico/pediatria/fitaBroselow'
-import { alterarPaciente, usePacienteCentral } from '@/lib/pacienteCentral'
+import { Baby, User } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
 import { PESOS_DA_CINZA, leituraDaFita, origemDaCor, pedePesoNaCor } from '@/lib/fitaDoPeso'
 
 // Campos grandes do Guia rápido (peso, idade e cor da fita), usados no início do
 // guia e nas telas que ele abre (parada e reanimação da criança). Leem e gravam
 // a Central do paciente desta aba.
+
+export function ChaveDoPaciente() {
+  const p = usePacienteCentral()
+  const crianca = p.modo === 'pediatrico'
+  const adulto = p.modo === 'adulto'
+  const lado = 'relative z-10 flex h-full flex-1 items-center justify-center gap-2 rounded-capsula text-corpo font-bold transition-colors'
+  return (
+    <div role="group" aria-label="Paciente: criança ou adulto"
+      className="relative flex h-16 w-full items-stretch gap-1 rounded-capsula border-2 border-tinta bg-trilha p-1">
+      {p.modo && (
+        <span aria-hidden className={cn('absolute top-1 bottom-1 w-[calc(50%-6px)] rounded-capsula transition-[left] duration-200',
+          crianca ? 'left-1 bg-pediatria' : 'left-[calc(50%+2px)] bg-acao')} />
+      )}
+      <Button type="button" variant="ghost" aria-pressed={crianca} onClick={() => { if (!crianca) definirModo('pediatrico') }}
+        className={cn(lado, crianca ? 'text-sobre-acao hover:text-sobre-acao' : 'text-tinta-apoio')}>
+        <Baby className="size-6" aria-hidden /> Criança
+      </Button>
+      <Button type="button" variant="ghost" aria-pressed={adulto} onClick={() => { if (!adulto) definirModo('adulto') }}
+        className={cn(lado, adulto ? 'text-sobre-acao hover:text-sobre-acao' : 'text-tinta-apoio')}>
+        <User className="size-6" aria-hidden /> Adulto
+      </Button>
+    </div>
+  )
+}
 
 export function CampoGrande({ id, rotulo, valor, unidade, aoMudar, modo }: {
   id: string; rotulo: string; valor: string; unidade: React.ReactNode; aoMudar: (v: string) => void; modo: 'decimal' | 'numeric'

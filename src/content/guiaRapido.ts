@@ -16,7 +16,8 @@ export type CartaoGuia =
   | { nome: string; id: string; itens: { nome: string; rota: string }[]; icone: IconeGuia }
 
 export const GUIA_ADULTO: CartaoGuia[] = [
-  { nome: 'Parada e reanimação', rota: '/plantonista/emergencias/pcr-adulto', icone: 'parada' },
+  // G3 (RT, 18/11/2026): o cartão abre o cronômetro da parada, com a PCR completa embaixo
+  { nome: 'Parada e reanimação', id: 'parada-adulto', icone: 'parada', itens: [{ nome: 'PCR do adulto completa', rota: '/plantonista/emergencias/pcr-adulto' }] },
   { nome: 'Infusões e vasoativas', rota: '/plantonista/calculadoras/infusoes-adulto', icone: 'seringa' },
   { nome: 'Via aérea e intubação', rota: '/plantonista/calculadoras/iot', icone: 'via-aerea' },
   { nome: 'Ventilação mecânica', rota: '/plantonista/ventilacao-mecanica/vm-cinco-passos', icone: 'pulmao' },

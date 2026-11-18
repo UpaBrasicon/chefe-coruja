@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Baby, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Baby, ChevronRight, HeartPulse } from 'lucide-react'
 
 import { Abas, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -43,7 +43,7 @@ function CartaoDose({ item }: { item: DoseDaFitaCalculada }) {
         <div className="flex flex-wrap gap-1.5">
           {d.maximo !== undefined && (
             <span className={cn('rounded-controle px-2 py-0.5 text-rotulo font-semibold',
-              c.noMaximo ? 'bg-alerta-atencao/15 text-alerta-atencao' : 'bg-trilha text-tinta-apoio')}>
+              c.noMaximo ? 'bg-alerta-atencao text-atencao' : 'bg-trilha text-tinta-apoio')}>
               {c.noMaximo ? 'no máximo' : 'máx.'} {numeroDaDose(d.maximo)} {un}
             </span>
           )}
@@ -66,8 +66,8 @@ function Choques({ tipo, kg }: { tipo: 'desfibrilacao' | 'cardioversao'; kg: num
   if (!c) return null
   const J = (x: number) => numeroDaDose(Math.round(x * 10) / 10)
   const quadro = (rotulo: string, valor: string, porKg: string) => (
-    <div className="flex flex-col gap-0.5 rounded-cartao bg-alerta-critico/10 px-4 py-3">
-      <span className="text-rotulo font-semibold tracking-wide text-alerta-critico uppercase">{rotulo}</span>
+    <div className="flex flex-col gap-0.5 rounded-cartao bg-alerta-critico px-4 py-3">
+      <span className="text-rotulo font-semibold tracking-wide text-critico uppercase">{rotulo}</span>
       <span className="text-numeral-compacto leading-tight font-bold tabular-nums text-tinta">{valor} J</span>
       <span className="text-apoio text-tinta-apoio">{porKg}</span>
     </div>
@@ -193,6 +193,11 @@ export function GuiaParadaCrianca() {
         <ArrowLeft className="size-5" aria-hidden /> Guia rápido
       </Link>
       <TituloPagina titulo="Parada e reanimação" descricao="Criança até 13 anos, 11 meses e 29 dias" className="mb-0" />
+      {/* G3 (RT, 18/11/2026): o cronômetro abre por aqui na criança */}
+      <Link to="/plantonista?guia=cronometro"
+        className="flex min-h-18 items-center justify-center gap-3 rounded-cartao bg-critico px-4 py-3 text-secao font-extrabold tracking-wide text-sobre-acao no-underline hover:bg-critico/90 hover:text-sobre-acao">
+        <HeartPulse className="size-7" aria-hidden /> INICIAR PARADA (cronômetro)
+      </Link>
       {p.modo !== 'pediatrico' ? (
         <div className="flex flex-col gap-3 rounded-cartao border border-fio-forte bg-superficie p-4">
           <p className="text-corpo text-tinta">Esta tela é da criança. Mudar para criança apaga o peso e a idade do adulto.</p>

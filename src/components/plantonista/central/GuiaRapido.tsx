@@ -2,16 +2,16 @@ import { useId } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft, Baby, Brain, Bug, Calculator, ChevronRight, Droplet, HandHeart, Heart, HeartPulse, Moon, Syringe, Thermometer,
-  TriangleAlert, User, Waves, Wind, type LucideIcon,
+  TriangleAlert, Waves, Wind, type LucideIcon,
 } from 'lucide-react'
 
 import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, cartaoDoGuia, type IconeGuia } from '@/content/guiaRapido'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
-import { Button } from '@/components/ui/button'
-import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
+import { alterarPaciente, usePacienteCentral } from '@/lib/pacienteCentral'
 import { cn } from '@/lib/utils'
-import { CampoGrande, CorDaFita, DetalheDaFita } from './CamposDoGuia'
+import { CampoGrande, ChaveDoPaciente, CorDaFita, DetalheDaFita } from './CamposDoGuia'
+import { CronometroParada } from './CronometroParada'
 import { GuiaParadaCrianca } from './GuiaParadaCrianca'
 
 // Guia rápido (F4, celular e tablet; pedido do RT de 17/11/2026, M1–M6 = A,
@@ -25,29 +25,6 @@ const ICONES: Record<IconeGuia, LucideIcon> = {
   coracao: Heart, cerebro: Brain, lua: Moon, alerta: TriangleAlert, inseto: Bug, maos: HandHeart, bebe: Baby,
 }
 
-function Chave() {
-  const p = usePacienteCentral()
-  const crianca = p.modo === 'pediatrico'
-  const adulto = p.modo === 'adulto'
-  const lado = 'relative z-10 flex h-full flex-1 items-center justify-center gap-2 rounded-capsula text-corpo font-bold transition-colors'
-  return (
-    <div role="group" aria-label="Paciente: criança ou adulto"
-      className="relative flex h-16 w-full items-stretch gap-1 rounded-capsula border-2 border-tinta bg-trilha p-1">
-      {p.modo && (
-        <span aria-hidden className={cn('absolute top-1 bottom-1 w-[calc(50%-6px)] rounded-capsula transition-[left] duration-200',
-          crianca ? 'left-1 bg-pediatria' : 'left-[calc(50%+2px)] bg-acao')} />
-      )}
-      <Button type="button" variant="ghost" aria-pressed={crianca} onClick={() => { if (!crianca) definirModo('pediatrico') }}
-        className={cn(lado, crianca ? 'text-sobre-acao hover:text-sobre-acao' : 'text-tinta-apoio')}>
-        <Baby className="size-6" aria-hidden /> Criança
-      </Button>
-      <Button type="button" variant="ghost" aria-pressed={adulto} onClick={() => { if (!adulto) definirModo('adulto') }}
-        className={cn(lado, adulto ? 'text-sobre-acao hover:text-sobre-acao' : 'text-tinta-apoio')}>
-        <User className="size-6" aria-hidden /> Adulto
-      </Button>
-    </div>
-  )
-}
 
 // Cartão que junta ferramentas (ex.: parada e reanimação na criança): a lista delas.
 function GrupoDoGuia({ grupo }: { grupo: NonNullable<ReturnType<typeof cartaoDoGuia>> }) {
@@ -77,6 +54,8 @@ export function GuiaRapido() {
   const guia = params.get('guia')
   // G5 (RT, 18/11/2026): o cartão "Parada e reanimação" da criança abre direto o guia de parada
   if (guia === 'parada-crianca') return <GuiaParadaCrianca />
+  // G3 (RT, 18/11/2026): cronômetro da parada; o cartão do adulto abre direto nele
+  if (guia === 'cronometro' || guia === 'parada-adulto') return <CronometroParada />
   const grupo = cartaoDoGuia(guia)
   if (grupo) return <GrupoDoGuia grupo={grupo} />
   return <InicioDoGuia />
@@ -95,7 +74,7 @@ function InicioDoGuia() {
         descricao={<Link to={ROTA_SOBRE_MODULO} className="text-acao underline-offset-4 hover:underline">Sobre o módulo clínico</Link>}
         className="mb-0"
       />
-      <Chave />
+      <ChaveDoPaciente />
       {p.modo ? (
         <div className="grid grid-cols-2 gap-2.5">
           <CampoGrande id={idPeso} rotulo="Peso" unidade="kg" modo="decimal" valor={p.peso}
