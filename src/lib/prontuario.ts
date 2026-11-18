@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { assinarSeDer } from '@/lib/assinador'
 import { dataHoraCarimbo } from './formato.ts'
 import { contextoDoBanco, folhaDoRegistro, lerConteudo, montarFolha, montarRelatorio, type TipoFolha, type TipoRelatorio } from '@/lib/folhas'
 import { janelaEmBranco } from '@/lib/abrirEmJanela'
@@ -303,6 +304,8 @@ export async function abrirImpressao(opcoes: {
       return recusar(`Não foi possível emitir o documento: ${error.message}. Nada foi impresso.`)
     }
     const documento = data as { id: string; numero: string }
+    // LG7: assina com ICP-Brasil se houver sessão; nunca trava a impressão
+    void assinarSeDer({ id: documento.id, tipo: doc.tipo })
     if (!(await folhaEmitida(janela, recusar, documento.id, opcoes.tipo))) return null
     return { janela, rodape: '', provisoria: false, pronta: true }
   }

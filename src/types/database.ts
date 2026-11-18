@@ -979,6 +979,51 @@ export type Database = {
           },
         ]
       }
+      assinaturas_documento: {
+        Row: {
+          cert_emissor: string
+          cert_serial: string
+          codigo_sha256: string
+          documento_id: string
+          em: string
+          id: string
+          medico_id: string
+          pdf_caminho: string
+          pdf_sha256: string
+          politica: string
+          provedor: string
+          sessao_id: string
+        }
+        Insert: {
+          cert_emissor: string
+          cert_serial: string
+          codigo_sha256: string
+          documento_id: string
+          em?: string
+          id?: string
+          medico_id: string
+          pdf_caminho: string
+          pdf_sha256: string
+          politica?: string
+          provedor: string
+          sessao_id: string
+        }
+        Update: {
+          cert_emissor?: string
+          cert_serial?: string
+          codigo_sha256?: string
+          documento_id?: string
+          em?: string
+          id?: string
+          medico_id?: string
+          pdf_caminho?: string
+          pdf_sha256?: string
+          politica?: string
+          provedor?: string
+          sessao_id?: string
+        }
+        Relationships: []
+      }
       atendimento_rascunhos: {
         Row: {
           atualizado_em: string
@@ -7991,6 +8036,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pdfs_assinados: {
+        Row: {
+          assinatura_id: string
+          em: string
+          pdf: string
+        }
+        Insert: {
+          assinatura_id: string
+          em?: string
+          pdf: string
+        }
+        Update: {
+          assinatura_id?: string
+          em?: string
+          pdf?: string
+        }
+        Relationships: []
       }
       pedidos_acesso_prontuario: {
         Row: {
