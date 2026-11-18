@@ -84,11 +84,11 @@ function montar(over: Partial<Dependencias> & { docs?: Record<string, Documento>
       doc.addPage()
       return doc.save()
     },
-    guardarPdf: async (c, pdf) => { guardados.set(c, pdf) },
+    urlConferencia: 'https://assina.exemplo/v',
     banco: {
       abrirSessao: async (v) => { registro.push({ abrir: v }); return 'sessao-1' },
       encerrarSessao: async (id, motivo) => { registro.push({ encerrar: id, motivo }) },
-      registrarAssinatura: async (v) => { registro.push({ assinatura: v }); return 'assinatura-1' },
+      registrarComPdf: async (v) => { guardados.set(v.documentoId, v.pdf); registro.push({ assinatura: v }); return 'assinatura-1' },
     },
     agora: () => agora,
     ...over,
@@ -125,12 +125,12 @@ test('assinar: PDF PAdES conferido, guardado e registrado; o banco guarda só o 
   await abrirSessao(d)
   const { assinaturaId, codigo } = await assinarDocumento(d, 'jwt-p1', 'd1')
   assert.equal(assinaturaId, 'assinatura-1')
-  const pdf = guardados.get('u1/pac1/assinados/d1.pdf')!
+  const pdf = guardados.get('d1')!
   const { faixa, cms } = lerAssinatura(pdf)
   assert.deepEqual(await conferirCms(cms, bytesCobertos(pdf, faixa), new Date('2026-11-18T14:00:00Z')), { ok: true })
-  const reg = registro.find((x) => 'assinatura' in x)!.assinatura as { codigoSha256: string; pdfSha256: string }
+  const reg = registro.find((x) => 'assinatura' in x)!.assinatura as { codigoSha256: string }
   assert.equal(reg.codigoSha256, createHash('sha256').update(codigo).digest('hex'))
-  assert.equal(reg.pdfSha256, createHash('sha256').update(pdf).digest('hex'))
+  assert.match(codigo, /^[A-HJ-NP-Z2-9]{32}$/, 'código alfanumérico de 32 símbolos, sem 0/O e 1/I')
 })
 
 test('assinar: recusa evolução (fica com login e 2FA), documento de outro médico e JWT inválido', async () => {

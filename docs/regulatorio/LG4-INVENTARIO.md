@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-27 operações cobrem 302 tabelas.
+27 operações cobrem 303 tabelas.
 
 ## Papéis
 
@@ -35,7 +35,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
 | Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 8 |
 | Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 7 |
-| Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 8 |
+| Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 9 |
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
 | Faturamento SUS e contas | operador | sim | 5 anos | 20 |
 | Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 14 |
@@ -529,9 +529,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - destinação só com aprovação registrada; a identificação fica como hash
 - o token do provedor de certificado nunca vai ao navegador nem ao banco
 
-**Tabelas (8)**
+**Tabelas (9)**
 
-`public.documentos_clinicos`, `public.anexos_prontuario`, `public.impressoes_prontuario`, `private.documento_sequencia`, `public.termos_cancelamentos`, `public.destinacoes_prontuario`, `public.assinaturas_documento`, `private.sessoes_assinatura`
+`public.documentos_clinicos`, `public.anexos_prontuario`, `public.impressoes_prontuario`, `private.documento_sequencia`, `public.termos_cancelamentos`, `public.destinacoes_prontuario`, `public.assinaturas_documento`, `private.sessoes_assinatura`, `public.pdfs_assinados`
 
 ### Farmácia e estoque
 
