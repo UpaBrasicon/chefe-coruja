@@ -13426,6 +13426,10 @@ export type Database = {
         Args: { p_unidade: string }
         Returns: Json
       }
+      definir_protocolo_enfermagem: {
+        Args: { p_protocolo: string; p_enfermagem: boolean; p_numero?: string; p_data?: string; p_orgao?: string }
+        Returns: undefined
+      }
       recusar_encaminhamento: {
         Args: { p_encaminhamento: string; p_motivo: string }
         Returns: undefined
