@@ -164,7 +164,7 @@ function AcoesRT({ r }: { r: RelatoTv }) {
           <>
             {r.situacao === 'recebido' && <Button size="sm" variant="outline" disabled={andamento.isPending} onClick={() => andamento.mutate('em_investigacao')}>Em investigação</Button>}
             <Button size="sm" variant="outline" onClick={() => setConcluindo(true)}>Concluir</Button>
-            {podeSuspender && <Button size="sm" variant="ghost" className="text-critico" onClick={() => setSuspendendo(true)}>Suspender esta versão na rede</Button>}
+            {podeSuspender && <Button size="sm" variant="destructive" onClick={() => setSuspendendo(true)}>Suspender esta versão na rede</Button>}
           </>
         )}
       </div>
