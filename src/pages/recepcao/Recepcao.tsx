@@ -392,6 +392,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
   const [buscado, setBuscado] = React.useState('')
   const [modo, setModo] = React.useState<'nenhum' | 'existente' | 'novo'>('nenhum')
   const [existente, setExistente] = React.useState<Achado | null>(null)
+  // U11 (N2 = A): cadastro existente sem a data de nascimento, na UBS
+  const semNascimento = ubs && modo === 'existente' && !!existente && !existente.data_nascimento
   const [dados, setDados] = React.useState<Cadastro>(CADASTRO_VAZIO)
   const [queixa, setQueixa] = React.useState('')
   const [prioridades, setPrioridades] = React.useState<PrioridadeLegal[]>([])
@@ -512,7 +514,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
       const paraExistente = !!pacienteId || modo === 'existente'
       const enviados = Object.fromEntries(
         Object.entries(normalizarCadastro(dados)).filter(([k, v]) =>
-          paraExistente ? v.trim() !== '' && !IDENTIDADE.includes(k as CampoCadastro) : true),
+          paraExistente ? v.trim() !== '' && (!IDENTIDADE.includes(k as CampoCadastro) || (k === 'data_nascimento' && semNascimento)) : true),
       )
       const { data, error } = await supabase.rpc('registrar_ficha', {
         p_setor: porta.id,
@@ -564,6 +566,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     if (primeiro) return setErroLocal(primeiro)
     if (queixa.trim().length < 3) return setErroLocal('Escreva a queixa referida.')
     if (ubs && !tipoAps) return setErroLocal('Escolha o tipo de atendimento.')
+    // U11 (N2 = A): na UBS a ficha exige a data de nascimento
+    if (ubs && !dados.data_nascimento.trim() && (modo === 'novo' || semNascimento)) return setErroLocal('Na UBS, informe a data de nascimento do paciente.')
     if (ubs && tipoAps === 'pre_natal_parceiro' && !gestante) return setErroLocal('Escolha a gestante do pré-natal do parceiro.')
     setErroLocal(null)
     registrar.mutate({})
@@ -713,7 +717,14 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
             </div>
           )}
 
-          <CamposCadastro prefixo="rec" valores={dados} onChange={mudar} identificacao={modo === 'novo'} hoje={hoje} />
+          <CamposCadastro prefixo="rec" valores={dados} onChange={mudar} identificacao={modo === 'novo'} hoje={hoje} nascimentoObrigatorio={ubs} />
+          {semNascimento && (
+            <Campo id="rec-nasc-existente" rotulo="Data de nascimento *" className="max-w-xs"
+              dica="O cadastro está sem a data. Na UBS ela é obrigatória para abrir a ficha.">
+              <Input id="rec-nasc-existente" type="date" max={hoje} value={dados.data_nascimento}
+                onChange={(e) => { mudar('data_nascimento', e.target.value); setErroLocal(null) }} />
+            </Campo>
+          )}
 
           {/* Fase 3, tarefa 3: endereço do SUS (BPA), sem travar a ficha */}
           {modo === 'existente' && existente && (
