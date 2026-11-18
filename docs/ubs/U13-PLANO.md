@@ -4,7 +4,7 @@ Decisão U13 = A do diagnóstico (`docs/ubs/PERCURSO-UBS-DIAGNOSTICO.md`, achado
 - Saem as abas de hospital.
 - Entram as seis frentes de gestão e os indicadores C1 a C7 da SAPS, pelas notas metodológicas vigentes, com a fonte citada.
 
-**Nada foi implementado.**
+**Decisões do RT (18/11/2026): G1 = A, G2 = A, G3 = A.**
 
 ## Fonte conferida
 
