@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom'
 import { LaudoDoGrupo } from '@/components/clinico/LaudoDoGrupo'
 import { ResultadoExame } from '@/components/clinico/ResultadoExame'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { examesDaLinha, LINHAS_CUIDADO } from '@/domain/examesEnfermagemUbs'
+import { examesDaLinha, linhasDaFicha } from '@/domain/examesEnfermagemUbs'
 import { botoesDeExame, codigoExameNaTela, GRUPOS_EXAME, itemDoPedidoPorta, jaPedido, type ExameBuscado, type GrupoExame, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
@@ -91,8 +91,8 @@ function LinhaExame({ e, aoMudar }: { e: ExamePS; aoMudar: () => void }) {
 // U6 (P1 = A): na consulta de enfermagem da UBS o enfermeiro pede só da lista do
 // protocolo, por linha de cuidado. Sem busca, sem texto livre e sem pedido
 // impresso: o banco recusa o que estiver fora da lista.
-export function AbaExames({ episodioId, pacienteId, exames, aoMudar, protocoloEnfermagem = false }: {
-  episodioId: string; pacienteId: string; exames: ExamePS[]; aoMudar: () => void; protocoloEnfermagem?: boolean
+export function AbaExames({ episodioId, pacienteId, exames, aoMudar, protocoloEnfermagem = false, tipoAtendimento = null }: {
+  episodioId: string; pacienteId: string; exames: ExamePS[]; aoMudar: () => void; protocoloEnfermagem?: boolean; tipoAtendimento?: string | null
 }) {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -154,7 +154,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar, protocoloEn
         </div>
         {protocoloEnfermagem && (
           <div className="flex flex-col gap-3 px-4 py-3">
-            {LINHAS_CUIDADO.map((l) => (
+            {linhasDaFicha(tipoAtendimento).map((l) => (
               <div key={l.id} className="flex flex-col gap-1.5">
                 <span className="text-rotulo text-tinta-sussurro">{l.rotulo}</span>
                 <div role="group" aria-label={`Exames do protocolo: ${l.rotulo}`} className="flex flex-wrap gap-1.5">
@@ -172,6 +172,9 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar, protocoloEn
                 </div>
               </div>
             ))}
+            {tipoAtendimento === 'pre_natal_parceiro' && (
+              <span className="text-rotulo text-tinta-sussurro">Grupo ABO e fator Rh só se a gestante for Rh negativo (Guia do pré-natal do parceiro, MS 2023).</span>
+            )}
             <span className="text-rotulo text-tinta-sussurro">Lista do protocolo de enfermagem da atenção básica (COFEN 195/1997). Outros exames, só o médico.</span>
           </div>
         )}

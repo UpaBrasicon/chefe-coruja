@@ -138,7 +138,9 @@ export function AbaConduta({ episodioId, pacienteId, nome, tipoInicial, registro
   onConfirmado: (aviso: string) => void
 }) {
   const [tipo, setTipo] = React.useState(tipoInicial ?? '')
-  const [problemas, setProblemas] = React.useState<Problema[]>([])
+  // U6, E3: o pré-natal do parceiro sem queixa é CIAP A29 (Guia do pré-natal do parceiro, MS 2023, p. 44)
+  const [problemas, setProblemas] = React.useState<Problema[]>(() =>
+    tipoInicial === 'pre_natal_parceiro' ? [{ ciap: 'A29', descricao: 'OUTROS SINAIS/SINTOMAS GERAIS', cidRelacionada: 'R68.8' }] : [])
   const [condutas, setCondutas] = React.useState<string[]>([])
   const [obs, setObs] = React.useState('')
   const pendRascunho = !soapVazio(soap)

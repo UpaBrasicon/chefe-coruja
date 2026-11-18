@@ -15,6 +15,9 @@ export const TIPOS_ATENDIMENTO_APS: OpcaoAps[] = [
   { valor: 'escuta_inicial', rotulo: 'Escuta inicial / orientação', grupo: 'Demanda espontânea', curto: 'Escuta inicial' },
   { valor: 'consulta_no_dia', rotulo: 'Consulta no dia', grupo: 'Demanda espontânea', curto: 'No dia' },
   { valor: 'atendimento_urgencia', rotulo: 'Atendimento de urgência', grupo: 'Demanda espontânea', curto: 'Urgência' },
+  // U6, E3 (migration 20270415000011): consulta própria da parceria da gestante,
+  // SIGTAP 03.01.01.023-4 (Guia do pré-natal do parceiro, MS 2023)
+  { valor: 'pre_natal_parceiro', rotulo: 'Pré-natal do parceiro', curto: 'Pré-natal do parceiro' },
 ]
 
 export const PROBLEMAS_APS: OpcaoAps[] = [

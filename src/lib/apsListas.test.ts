@@ -15,7 +15,10 @@ const lista = (nome: string) => {
 const valores = (l: { valor: string }[]) => l.map((o) => o.valor).sort()
 
 test('tipos de atendimento iguais aos do banco', () => {
-  assert.deepEqual(valores(TIPOS_ATENDIMENTO_APS), lista('tipo_atendimento'))
+  // U6, E3: o pré-natal do parceiro entra na lista pela migration 20270415000011
+  const parceiro = readFileSync('supabase/migrations/20270415000011_ubs_pre_natal_parceiro.sql', 'utf8')
+  assert.match(parceiro, /'atendimento_urgencia', 'pre_natal_parceiro'\]/)
+  assert.deepEqual(valores(TIPOS_ATENDIMENTO_APS), [...lista('tipo_atendimento'), 'pre_natal_parceiro'].sort())
 })
 
 test('problemas/condições iguais aos do banco', () => {
