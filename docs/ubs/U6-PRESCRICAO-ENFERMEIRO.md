@@ -2,7 +2,7 @@
 
 Decisão P2 = B do plano (`docs/ubs/U6-U7-PLANO.md`): o enfermeiro prescreve pelos protocolos do município.
 
-**Nada foi implementado.**
+**Decisões do RT (18/11/2026): R1 = A, R2 = A, R3 = A, R4 = A, R5 = A.**
 
 ## Base legal
 
