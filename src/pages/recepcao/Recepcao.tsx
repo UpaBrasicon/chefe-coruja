@@ -37,8 +37,8 @@ import { TituloCartao } from '@/components/monitor/Pagina'
 import { EscolherGestante, type Gestante } from '@/components/preNatal/EscolherGestante'
 import { diaMes, hora } from '@/lib/formato'
 import { contagem as contagemAgenda, demandaEspontanea, linhasDoDia } from '@/domain/agenda'
-import { useAgendaDia } from '@/pages/agenda/useAgenda'
-import { ListaDoDia } from '@/pages/agenda/AgendaConsultas'
+import { useAgendaDia } from '@/hooks/useAgenda'
+import { ListaDoDia } from '@/components/agenda/ListaDoDia'
 
 // Recepção (protótipo: rec-cadastro, rec-fila-enf, rec-fila-med, rec-painel).
 // Procurar antes de cadastrar, abrir a ficha — que abre o episódio — e
