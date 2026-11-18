@@ -104,7 +104,10 @@ SELECT pg_temp.falha($$UPDATE private.tecnovigilancia_relatos SET descricao = 'm
 
 -- aviso ao RT: só o grave, uma vez
 SELECT pg_temp.confere(public.aviso_tecnovigilancia((SELECT (v ->> 'id')::uuid FROM r WHERE k = 'conteudo')) IS NULL, 'relato não grave não avisa');
-SELECT pg_temp.confere(jsonb_array_length(public.aviso_tecnovigilancia((SELECT (v ->> 'id')::uuid FROM r WHERE k = 'obito')) -> 'destinatarios') >= 1, 'grave traz o e-mail do RT');
+SELECT pg_temp.confere(NOT EXISTS (SELECT 1 FROM jsonb_array_elements_text(public.aviso_tecnovigilancia((SELECT (v ->> 'id')::uuid FROM r WHERE k = 'obito')) -> 'destinatarios') e
+  WHERE e ILIKE '%.local'), 'conta de teste .local não recebe e-mail');
+UPDATE auth.users SET email = 'rt-lg12@exemplo.com' WHERE id = '10000000-0000-4000-8000-000000000002';
+SELECT pg_temp.confere(public.aviso_tecnovigilancia((SELECT (v ->> 'id')::uuid FROM r WHERE k = 'obito')) -> 'destinatarios' = '["rt-lg12@exemplo.com"]'::jsonb, 'grave traz o e-mail do RT');
 SELECT public.aviso_tecnovigilancia((SELECT (v ->> 'id')::uuid FROM r WHERE k = 'obito'), true);
 SELECT pg_temp.confere(public.aviso_tecnovigilancia((SELECT (v ->> 'id')::uuid FROM r WHERE k = 'obito')) IS NULL, 'aviso não se repete');
 SELECT pg_temp.confere(has_function_privilege('service_role', 'public.aviso_tecnovigilancia(uuid,boolean)', 'EXECUTE')
