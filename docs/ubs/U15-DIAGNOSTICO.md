@@ -77,7 +77,9 @@ Envia o RAC (porta), o Sumário de Alta e a regulação (MIRA). Nenhuma unidade 
 - **A:** uma chave por unidade: "a RNDS do atendimento da APS vai pelo app" ou "vai pelo PEC". Nasce "pelo app" e o gestor troca na implantação, depois de confirmar com o município.
 - **B:** a UBS manda à RNDS só pelo PEC: o app não envia RAC de atendimento da UBS.
 
-## Plano em PRs (se V1 a V5 = A)
+**Decisão do RT (18/11/2026): V1 a V5 = A.**
+
+## Plano em PRs (V1 a V5 = A)
 
 1. **RAC da UBS (V4, V5):**
    - no banco, a modalidade, o caráter, o enfermeiro e a chave por unidade;
