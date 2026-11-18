@@ -652,7 +652,8 @@
         "public.termos_cancelamentos",
         "public.destinacoes_prontuario",
         "public.assinaturas_documento",
-        "private.sessoes_assinatura"
+        "private.sessoes_assinatura",
+        "public.pdfs_assinados"
       ]
     },
     {

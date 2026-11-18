@@ -242,7 +242,9 @@ BEGIN
                           -- LG10 (G6): o CI lê o status das versões de ficha com a chave publicável
                           'status_versoes_fichas',
                           -- LG7: conferência pública da assinatura pelo QR code (sem dado do paciente)
-                          'conferir_assinatura');
+                          'conferir_assinatura',
+                          -- LG7: o PDF assinado pelo código secreto do QR code (VALIDAR)
+                          'pdf_assinado');
   IF n > 0 THEN RAISE EXCEPTION 'FALHOU: % funções de public ainda executáveis por anon (%)', n, nomes; END IF;
   RAISE NOTICE 'OK  nenhuma função de public executável por anon (fora as públicas de propósito)';
 END $$;
