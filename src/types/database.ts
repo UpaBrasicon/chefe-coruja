@@ -10520,6 +10520,7 @@ export type Database = {
       puericultura_bebes_esperados: { Args: { p_unidade: string }; Returns: Json }
       registrar_exame_externo: { Args: { p_paciente: string; p_procedimento: string; p_data: string; p_valor: string; p_laboratorio?: string }; Returns: string }
       indicadores_aps: { Args: { p_unidade: string }; Returns: Json }
+      gestao_ubs: { Args: { p_unidade: string; p_de?: string; p_ate?: string }; Returns: Json }
       puericultura_painel: { Args: { p_unidade: string }; Returns: Json }
       puericultura_retirar: { Args: { p_motivo: string; p_paciente: string }; Returns: string }
       pre_natal_definir_dum: { Args: { p_dum: string; p_gestacao: string }; Returns: undefined }
