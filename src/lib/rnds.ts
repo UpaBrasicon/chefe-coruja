@@ -14,6 +14,8 @@ export type PainelRnds = {
   config: {
     financiamento: string | null; envio_ligado: boolean
     pausado_em: string | null; pausa_motivo: string | null; atualizado_em: string | null
+    /** U15 (V5): na UBS, quem manda o RAC da APS à RNDS */
+    rac_aps_pelo?: 'app' | 'pec'
   } | null
   credencial: {
     id: string; nome: string; ambiente: 'homologacao' | 'producao'; identificador_solicitante: string | null

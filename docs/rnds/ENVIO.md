@@ -48,8 +48,8 @@ Um procedimento repetido no mesmo dia vai uma vez só, com a quantidade somada, 
 
 | Campo | Regra |
 |---|---|
-| Modalidade | porta e observação **06**; internação **04** |
-| Caráter | eletiva **01**; o resto **02** (a 06 não aceita eletivo, ERR784) |
+| Modalidade | porta e observação **06**; internação **04**; atendimento da UBS **01** (Atenção Básica; U15, migration 20270415000021) |
+| Caráter | eletiva **01**; o resto **02** (a 06 não aceita eletivo, ERR784). Na UBS, a consulta programada e a agendada são **01** |
 | Procedência | internação vinda de outra unidade **12**; o resto **99** (informação ausente) |
 | Desfecho | alta e alta após medicação **01**; a pedido **02**; evasão **04**; óbito **06**; transferência **09** |
 
@@ -309,3 +309,9 @@ Detalhes:
   - CPF de teste;
   - portfólio do MIRA;
   - quem envia o MIRA.
+
+## A UBS (U15, PR 1)
+
+- O RAC da UBS sai com a modalidade 01 e o caráter da tabela acima. O enfermeiro assina a consulta de enfermagem, porque é ele quem inicia o atendimento.
+- A ficha que venceu na UBS (ninguém atendeu) não vira RAC.
+- `rnds_config_unidade.rac_aps_pelo` escolhe quem manda à RNDS o atendimento da APS: `app` (padrão) ou `pec` (o PEC e-SUS APS do município). Com `pec`, o RAC da UBS não entra na fila, e o que estava pendente ou retido é descartado. O gestor da UBS troca na aba RNDS (`rnds_rac_aps_pelo`), com segundo fator e auditoria.
