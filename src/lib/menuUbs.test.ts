@@ -123,3 +123,13 @@ test('U7, PR 4: sinais vitais na UBS para o técnico e o enfermeiro, e na consul
   assert.match(readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8'), /\{ubs && <div className="mb-4"><SinaisVitaisAps /)
   assert.match(readFileSync('src/components/clinico/SinaisVitaisAps.tsx', 'utf8'), /supabase\.rpc\('registrar_sinais_aps'/)
 })
+
+test('U4 do percurso da UBS: a recepção da UBS abre na tela Hoje, que junta agenda, demanda espontânea e filas', async () => {
+  const ubs = itensDeNavegacao('recepcao', false, false, 'ubs')
+  assert.equal(ubs[0]?.to, '/recepcao/hoje')
+  assert.ok(!itensDeNavegacao('recepcao', false, false, 'upa').some((i) => i.to === '/recepcao/hoje'), 'na UPA não há a tela Hoje')
+  const home = readFileSync('src/routes/RedirectHome.tsx', 'utf8')
+  assert.match(home, /tipo === 'ubs' && papelAtivo === 'recepcao' \? '\/recepcao\/hoje'/)
+  const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
+  assert.match(recepcao, /<ListaDoDia unidadeId=\{unidadeId\} dia=\{hoje\} hoje=\{hoje\} \/>/)
+})

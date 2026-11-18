@@ -29,6 +29,8 @@ export function RedirectHome() {
   // Numa UBS, a tela inicial de porta ou leito dá lugar ao primeiro item do menu.
   const tipo = unidadeAtiva?.unidade.tipo ?? null
   const inicial = papelAtivo ? ROTA_INICIAL[papelAtivo] : undefined
-  const alvo = inicial && foraDoTipo(inicial, tipo) ? inicioDoPapel(papelAtivo, tipo) : inicial
+  // percurso da UBS, U4: a recepção da UBS abre na tela "Hoje"
+  const alvo = tipo === 'ubs' && papelAtivo === 'recepcao' ? '/recepcao/hoje'
+    : inicial && foraDoTipo(inicial, tipo) ? inicioDoPapel(papelAtivo, tipo) : inicial
   return <Navigate to={alvo ?? '/aguardando'} replace />
 }

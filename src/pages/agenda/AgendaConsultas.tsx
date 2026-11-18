@@ -90,7 +90,8 @@ export default function AgendaConsultas() {
 }
 
 // ── lista do dia ────────────────────────────────────────────────────────────
-function ListaDoDia({ unidadeId, dia, hoje }: { unidadeId: string; dia: string; hoje: string }) {
+// também na tela "Hoje" da recepção da UBS (percurso da UBS, U4)
+export function ListaDoDia({ unidadeId, dia, hoje }: { unidadeId: string; dia: string; hoje: string }) {
   const agenda = useAgendaDia(unidadeId, dia)
   const agora = useAgora()
   const [filtro, setFiltro] = React.useState<Filtro>('todos')
