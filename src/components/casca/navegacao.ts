@@ -283,6 +283,10 @@ const FORA_DA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
   recepcao: new Set(['/encaminhados']),
   enfermeiro: new Set(['/alta-vigilancia']),
   plantonista: new Set(['/pareceres', '/notificacao-compulsoria']),
+  // U13, PR 3: o faturamento de porta e internação (contas, BPA, glosas e
+  // materiais) sai do gestor da UBS; a produção da UBS vai ao SISAB (U15). Fica o
+  // Envio ao ERP, que leva os plantões do mês.
+  gestor: new Set(['/faturamento/contas', '/faturamento', '/faturamento/glosas', '/faturamento/materiais']),
 }
 // e o que muda de nome nela: na UBS a "triagem" é a escuta da enfermagem (R9)
 const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
