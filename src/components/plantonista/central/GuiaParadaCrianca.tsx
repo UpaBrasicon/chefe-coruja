@@ -8,7 +8,7 @@ import { FERRAMENTAS_DA_PARADA, SITUACOES_PARADA, type GrupoParada, type Situaca
 import { choquesDoPeso, dosesDoPeso, numeroDaDose, type DoseDaFitaCalculada } from '@/clinico/pediatria/dosesDaFita'
 import { FAIXAS_RCP, parametrosRcp } from '@/clinico/pediatria/rcp'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
-import { pesoDaDoseDoPaciente } from '@/lib/fitaDoPeso'
+import { corEscolhida, pedePesoNaCor, pesoDaDoseDoPaciente } from '@/lib/fitaDoPeso'
 import { cn } from '@/lib/utils'
 import { CampoGrande, CorDaFita, DetalheDaFita } from './CamposDoGuia'
 
@@ -165,7 +165,9 @@ export function GuiaParadaCrianca() {
           <p className="text-controle text-tinta-apoio">
             {peso.origem === 'peso' && <>Dose pelo <b className="text-tinta">peso digitado: {numeroDaDose(peso.kg)} kg</b>.</>}
             {peso.origem === 'cor' && <>Dose pela <b className="text-tinta">cor {peso.cor.nome.toLowerCase()}: {numeroDaDose(peso.kg)} kg</b> (meio da faixa). Pese quando der: com o peso, a dose sai do peso.</>}
-            {peso.origem === 'nenhum' && 'Digite o peso ou escolha a cor da fita para ver as doses.'}
+            {peso.origem === 'nenhum' && (pedePesoNaCor(corEscolhida(p.origem))
+              ? 'Na cor cinza, escolha 3, 4 ou 5 kg acima para ver as doses.'
+              : 'Digite o peso ou escolha a cor da fita para ver as doses.')}
           </p>
           <Abas rotulo="Situação" valor={aba} onChange={setAba} abas={SITUACOES_PARADA.map((s) => [s.id, s.nome] as const)} className="mb-0" />
           {aba === 'rcp' ? <Rcp /> : peso.origem === 'nenhum' ? null : (
