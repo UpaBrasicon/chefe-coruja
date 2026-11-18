@@ -43,6 +43,7 @@ import { SolicitarApac } from '@/components/apac/SolicitarApac'
 import { AbaAtendimento, type Classificacao, type RegistroSoap } from './AbaAtendimento'
 import { AbaAtestadoReceita } from './AbaAtestadoReceita'
 import { ReceitaEnfermagem } from '@/components/documentos/ReceitaEnfermagem'
+import { ExameExterno } from '@/components/clinico/ExameExterno'
 import { AbaConduta } from './AbaConduta'
 import { AbaDesfecho } from './AbaDesfecho'
 import { AbaExames } from './AbaExames'
@@ -297,6 +298,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             </TabsContent>
             <TabsContent value="exames">
               {p && <AbaExames episodioId={ep.id} pacienteId={ep.paciente_id} exames={p.exames} aoMudar={recarregar} protocoloEnfermagem={consultaEnfermagem} tipoAtendimento={ep.tipo_atendimento_aps} />}
+              {/* U12: exame feito fora da UBS, trazido em papel */}
+              {ubs && <div className="mt-4"><ExameExterno pacienteId={ep.paciente_id} /></div>}
             </TabsContent>
             <TabsContent value="reav">
               {p && <AbaReavaliacao episodioId={ep.id} painel={p} reavHora={reavHora} setReavHora={setReavHora} aoMudar={recarregar} />}
