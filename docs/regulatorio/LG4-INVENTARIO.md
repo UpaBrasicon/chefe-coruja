@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-28 operações cobrem 305 tabelas.
+28 operações cobrem 306 tabelas.
 
 ## Papéis
 
@@ -33,7 +33,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Internação, leitos e transferência | operador | sim | 20 anos a partir do último registro | 11 |
 | Regulação de vagas | operador | sim | 20 anos a partir do último registro | 13 |
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
-| Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 8 |
+| Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 9 |
 | Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 7 |
 | Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 9 |
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
@@ -452,9 +452,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Prazo.** 20 anos a partir do último registro (Lei 13.787/2018). Descarte: rotina com registro, depois do prazo (V3).
 
-**Tabelas (8)**
+**Tabelas (9)**
 
-`public.agendamentos`, `public.agenda_configuracoes`, `public.agenda_fechamentos`, `public.ubs_funcionamento`, `public.pre_natal_gestacoes`, `public.pre_natal_parcerias`, `public.puericultura_saidas`, `public.programa_participantes`
+`public.agendamentos`, `public.agenda_configuracoes`, `public.agenda_fechamentos`, `public.ubs_funcionamento`, `public.pre_natal_gestacoes`, `public.pre_natal_parcerias`, `public.puericultura_saidas`, `public.programa_participantes`, `public.programa_sugestoes_dispensadas`
 
 ### Pedido e resultado de exames
 
