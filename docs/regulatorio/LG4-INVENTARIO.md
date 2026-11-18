@@ -4,7 +4,11 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
+<<<<<<< origin/homolog
 27 operações cobrem 300 tabelas.
+=======
+28 operações cobrem 305 tabelas.
+>>>>>>> feat/ubs-u12-exame-externo
 
 ## Papéis
 
@@ -43,6 +47,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
 | Auditoria e registro de acesso ao prontuário | operador | sim | 20 anos | 3 |
+| Registro de acesso à aplicação (Marco Civil) | controlador | não | 6 meses | 2 |
 | Erros do aplicativo e vigilância técnica | controlador | não | a definir com o advogado (proposta: 1 ano) | 5 |
 | Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
 | RNDS, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 12 |
@@ -743,7 +748,6 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Base legal (LGPD)**
 - art. 11, II, a (integridade do prontuário)
-- art. 7º, II (Marco Civil da Internet, art. 15)
 - art. 11, II, g
 
 **Titulares**
@@ -763,7 +767,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - Supabase (São Paulo)
 - cofre da guarda (AWS S3, São Paulo)
 
-**Prazo.** 20 anos (integridade do prontuário (V3); cobre os 6 meses do Marco Civil (LG9)). Descarte: rotina com registro, depois do prazo (V3).
+**Prazo.** 20 anos (integridade do prontuário (V3)). Descarte: rotina com registro, depois do prazo (V3).
 
 **Medidas próprias**
 - só inclusão: ninguém edita nem apaga pelo app
@@ -771,6 +775,38 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Tabelas (3)**
 
 `public.log_auditoria`, `public.log_acesso_prontuario`, `private.acessos_historico`
+
+### Registro de acesso à aplicação (Marco Civil)
+
+`acesso-aplicacao` · papel da Chefe Coruja: **controlador** · dado sensível: **não**
+
+**Finalidade.** Guardar data, hora e IP de cada entrada e uso do sistema por 6 meses, como pede o Marco Civil, e entregar só com ordem judicial.
+
+**Base legal (LGPD)**
+- art. 7º, II (Marco Civil da Internet, art. 15; Decreto 8.771/2016, art. 13)
+
+**Titulares**
+- profissionais
+
+**Dados**
+- usuário, data, hora, ação (entrada, renovação da sessão, saída) e IP
+- guarda pedida pela autoridade: usuário, data final e número do pedido
+
+**Quem acessa**
+- super admin, com o segundo fator, só por ordem judicial (cada extração fica na auditoria)
+
+**Onde fica**
+- Supabase (São Paulo)
+
+**Prazo.** 6 meses (Marco Civil, art. 15, e Decreto 8.771/2016, art. 13, § 2º (LG9, R2)). Descarte: rotina diária às 03:45 de Brasília, com a quantidade apagada na auditoria; o que está sob guarda fica até a data da guarda.
+
+**Medidas próprias**
+- só o banco grava, por gatilho na sessão; ninguém lê pela API
+- papel (operador ou controlador) é a pergunta 1 do LG9 ao advogado
+
+**Tabelas (2)**
+
+`private.registros_acesso_aplicacao`, `private.guardas_registros_acesso`
 
 ### Erros do aplicativo e vigilância técnica
 

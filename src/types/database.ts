@@ -10516,6 +10516,7 @@ export type Database = {
       puericultura_desfazer_saida: { Args: { p_paciente: string }; Returns: undefined }
       puericultura_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       puericultura_bebes_esperados: { Args: { p_unidade: string }; Returns: Json }
+      registrar_exame_externo: { Args: { p_paciente: string; p_procedimento: string; p_data: string; p_valor: string; p_laboratorio?: string }; Returns: string }
       puericultura_painel: { Args: { p_unidade: string }; Returns: Json }
       puericultura_retirar: { Args: { p_motivo: string; p_paciente: string }; Returns: string }
       pre_natal_definir_dum: { Args: { p_dum: string; p_gestacao: string }; Returns: undefined }
@@ -12190,6 +12191,10 @@ export type Database = {
         Returns: undefined
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      extrair_registros_acesso: {
+        Args: { p_ate: string; p_de: string; p_ordem: string; p_usuario: string }
+        Returns: { acao: string; em: string; ip: string }[]
+      }
       falta_do_medicamento: { Args: { p_medicamento: string; p_unidade: string }; Returns: Json }
       faltas_priorizadas: { Args: { p_unidade: string }; Returns: Json }
       faltas_rascunho: { Args: { p_rascunho: string }; Returns: Json }
@@ -12285,6 +12290,7 @@ export type Database = {
           ultimo_chamador: string
         }[]
       }
+      anotar_guarda_registros_acesso: { Args: { p_ate: string; p_pedido: string; p_usuario: string }; Returns: number }
       fila_revisao_ferramentas: {
         Args: { p_tipo: string }
         Returns: {
