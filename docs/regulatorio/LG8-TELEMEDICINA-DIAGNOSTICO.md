@@ -1,6 +1,6 @@
 # LG8: telemedicina, consentimento, registro e documento assinado (diagnóstico, 18/11/2026)
 
-Trilha de obrigatórios legais e regulatórios, item LG8 (P2). Este documento não muda código nem banco e não é parecer jurídico.
+Trilha de obrigatórios legais e regulatórios, item LG8 (P2). **Decisão do RT, 18/11/2026: "Todas A"** (M1–M4). Este documento não muda código nem banco e não é parecer jurídico.
 
 **Base:**
 - Res. CFM 2.314/2022, lida no PDF oficial em 29/09/2026 (`produto/docs/pesquisa/cfm-2314-teleinterconsulta.md`).
