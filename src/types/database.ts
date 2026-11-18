@@ -12189,6 +12189,10 @@ export type Database = {
         Returns: undefined
       }
       excluir_mensagem: { Args: { p_mensagem_id: string }; Returns: undefined }
+      extrair_registros_acesso: {
+        Args: { p_ate: string; p_de: string; p_ordem: string; p_usuario: string }
+        Returns: { acao: string; em: string; ip: string }[]
+      }
       falta_do_medicamento: { Args: { p_medicamento: string; p_unidade: string }; Returns: Json }
       faltas_priorizadas: { Args: { p_unidade: string }; Returns: Json }
       faltas_rascunho: { Args: { p_rascunho: string }; Returns: Json }
@@ -12284,6 +12288,7 @@ export type Database = {
           ultimo_chamador: string
         }[]
       }
+      anotar_guarda_registros_acesso: { Args: { p_ate: string; p_pedido: string; p_usuario: string }; Returns: number }
       fila_revisao_ferramentas: {
         Args: { p_tipo: string }
         Returns: {
