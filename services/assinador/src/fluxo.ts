@@ -25,13 +25,18 @@ export type Dependencias = {
   fimDoPlantao(jwt: string): Promise<Date | null>
   /** documento lido com o JWT do médico (a RLS decide se ele vê) */
   documento(jwt: string, id: string): Promise<Documento | null>
-  /** folha A4 do documento em PDF (Edge `folha` com o JWT, renderizada pelo Chromium) */
-  folhaPdf(jwt: string, documentoId: string): Promise<Uint8Array>
-  guardarPdf(caminho: string, pdf: Uint8Array): Promise<void>
+  /**
+   * folha A4 do documento em PDF (Edge `folha` com o JWT, renderizada pelo
+   * Chromium), com o rodapé da conferência: QR code e código impresso
+   */
+  folhaPdf(jwt: string, documentoId: string, conferencia: { codigo: string; url: string }): Promise<Uint8Array>
+  /** endereço público da conferência (o QR code aponta para ele) */
+  urlConferencia: string
   banco: {
     abrirSessao(v: { perfilId: string; provedor: string; serial: string; emissor: string; cpfFinal: string; certValidoAte: Date; validaAte: Date }): Promise<string>
     encerrarSessao(sessaoId: string, motivo: string): Promise<void>
-    registrarAssinatura(v: { documentoId: string; sessaoId: string; pdfSha256: string; pdfCaminho: string; codigoSha256: string }): Promise<string>
+    /** grava a assinatura e o PDF juntos; o banco calcula o hash do PDF */
+    registrarComPdf(v: { documentoId: string; sessaoId: string; pdf: Uint8Array; codigoSha256: string }): Promise<string>
   }
   fetch?: Fetch
   agora?: () => Date
@@ -114,7 +119,9 @@ export async function assinarDocumento(d: Dependencias, jwt: string, documentoId
   if (!p) throw new ErroAssinador(400, 'Provedor de certificado não configurado')
 
   const agora = (d.agora ?? (() => new Date()))()
-  const folha = await d.folhaPdf(jwt, documentoId)
+  // o código da conferência vai impresso no documento antes de assinar; o banco guarda só o hash
+  const codigo = codigoDeConferencia()
+  const folha = await d.folhaPdf(jwt, documentoId, { codigo, url: d.urlConferencia })
   const preparado = await prepararPdf(folha, {
     tipo, crmNumero: medico.crmNumero, crmUf: medico.crmUf, nomeMedico: medico.nome,
     motivo: `Documento nº ${doc.numero}`, local: doc.unidadeNome, quando: agora,
@@ -129,17 +136,17 @@ export async function assinarDocumento(d: Dependencias, jwt: string, documentoId
   const conferido = await conferirCms(cms, cobertos, agora)
   if (!conferido.ok) throw new ErroAssinador(502, `A assinatura devolvida pelo provedor não confere (${conferido.motivo})`)
   const assinado = gravarCms(fechado, faixa, cms)
-
-  const codigo = randomBytes(24).toString('base64url') // vai no QR code; o banco guarda só o hash
-  const caminho = `${doc.unidadeId}/${doc.pacienteId}/assinados/${doc.id}.pdf`
-  await d.guardarPdf(caminho, assinado)
-  const assinaturaId = await d.banco.registrarAssinatura({
-    documentoId: doc.id, sessaoId: s.sessaoId,
-    pdfSha256: createHash('sha256').update(assinado).digest('hex'),
-    pdfCaminho: caminho,
+  const assinaturaId = await d.banco.registrarComPdf({
+    documentoId: doc.id, sessaoId: s.sessaoId, pdf: assinado,
     codigoSha256: createHash('sha256').update(codigo).digest('hex'),
   })
   return { assinaturaId, codigo }
+}
+
+// 32 símbolos sem os parecidos (0/O, 1/I): 160 bits, alfanumérico como pede o VALIDAR
+const ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+export function codigoDeConferencia(): string {
+  return [...randomBytes(32)].map((b) => ALFABETO[b % 32]).join('')
 }
 
 export async function encerrarSessao(d: Dependencias, jwt: string, motivo = 'encerrada pelo médico'): Promise<void> {

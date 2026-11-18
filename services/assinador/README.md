@@ -23,17 +23,22 @@ Serviço que assina os documentos médicos com certificado em nuvem: PAdES AD-RB
 - O openssl confere o CMS de forma independente.
 - Nenhuma assinatura de teste é válida na ICP-Brasil.
 
-## O que falta (próximo PR)
+## Peças reais e servidor (#2 do LG7)
 
-1. `main.ts` com as peças reais:
-   - banco pelo papel `assinador_app`;
-   - quem é o médico pelo Supabase Auth;
-   - fim do plantão pela escala;
-   - folha em PDF pela Edge `folha` e pelo Chromium;
-   - guarda do PDF.
-2. Servidor HTTP: iniciar, retorno, assinar, encerrar e a conferência pública do QR code no formato do VALIDAR.
-3. Dockerfile, docker-compose e Caddy (`assina.chefecoruja.com.br`) no VPS.
-4. Telas do app, desligadas até a homologação com um provedor real.
+| Arquivo | O que faz |
+|---|---|
+| `src/real.ts` | Supabase com o JWT do médico (perfil, plantão, documento, folha), banco pelo papel `assinador_app` e o Chromium que faz o PDF |
+| `src/rodape.ts` | QR code e código de conferência impressos na folha antes de assinar, e a resposta no formato do VALIDAR |
+| `src/servidor.ts` | rotas do médico (JWT) e da conferência pública (`/v`, `/pdf`), CORS só para o app e limite de pedidos |
+| `src/main.ts` | liga tudo pelo ambiente (variáveis em `infra/assinador.md`) |
+| `Dockerfile`, `deploy/docker-compose.yml` | contêiner só de leitura, sem porta no host, atrás do Caddy |
+
+Testes: 21 no total.
+
+## O que falta
+
+- **Telas do app:** "Iniciar sessão de assinatura", selo "Assinado (ICP-Brasil)" e link da conferência. Ficam desligadas até a homologação com um provedor real.
+- **Instalação no VPS:** pede o "ok produção" do RT. Passo a passo em `infra/assinador.md`.
 
 ## A conferir na homologação com um provedor real
 

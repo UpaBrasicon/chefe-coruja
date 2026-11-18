@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Assinador ICP-Brasil no VPS (LG7). Instalação e reversão em infra/assinador.md.
+#
+# Na pasta /home/assinador/deploy do VPS:
+#   app/              services/assinador, copiado do master
+#   .env.assinador    variáveis do src/main.ts (600). Segredos (ASSINADOR_CHAVE,
+#                     ASSINADOR_PG_URL e os CLIENT_SECRET dos provedores) são
+#                     gravados pelo RT no terminal, nunca pelo chat.
+#
+# Nenhuma porta publicada no host: o Caddy chega pela rede do Caddy
+# (assina.chefecoruja.com.br → assinador:8090).
+# ─────────────────────────────────────────────────────────────────────────────
+name: assinador
+
+services:
+  assinador:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    image: assinador:local
+    container_name: assinador
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=256m"]
+    shm_size: "256m"
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    env_file:
+      - .env.assinador
+    volumes:
+      - dados:/dados
+    networks: [caddy]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8090/saude').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+volumes:
+  dados:
+
+networks:
+  caddy:
+    external: true
+    name: ${REDE_DO_CADDY:?defina REDE_DO_CADDY no .env.assinador (a rede do hermes-caddy)}

@@ -32,7 +32,7 @@ Segue as decisões do RT de 18/11/2026 (A1–A7 = A, `LG7-ASSINATURA-ICP-DIAGNOS
 **2. Assinar cada documento**
 1. Ao emitir (estado `ativo`), o app pede ao assinador a assinatura do documento.
 2. O assinador busca a folha na Edge `folha` com o JWT do médico. Assim o acesso e o registro de impressão seguem as regras de hoje.
-3. Gera o PDF com o Chromium e acrescenta:
+3. Gera o PDF com o Chromium, com o QR code e o código de conferência já impressos no rodapé, e acrescenta:
    - os metadados de saúde que o VALIDAR pede: CFM 2.16.76.1.4.2.2; tipo do documento 2.16.76.1.12.1.x, com prescrição .1, atestado .2, pedido de exame .3 e relatório .11;
    - o QR code do VALIDAR, que aponta para o nosso endereço de conferência com código secreto;
    - o espaço da assinatura (ByteRange).
@@ -43,7 +43,7 @@ Segue as decisões do RT de 18/11/2026 (A1–A7 = A, `LG7-ASSINATURA-ICP-DIAGNOS
 5. Manda **só esse hash** ao provedor, no formato `RAW`. Isso funciona igual em qualquer provedor do DOC-ICP-17.
 6. Monta o CMS SignedData com o certificado e a cadeia, e o grava dentro do PDF.
 7. Confere a assinatura antes de gravar: a assinatura bate com o hash e o certificado está dentro da validade.
-8. Guarda o PDF no Storage (bucket privado `atendimento`) e chama `private.registrar_assinatura_documento`. Essa função só aceita o papel do assinador:
+8. Guarda o PDF no banco, numa chamada só com a assinatura (`private.registrar_assinatura_com_pdf`, migration 091). O banco calcula o hash do PDF. Atualização de 18/11/2026: o PDF fica no banco, e não no Storage, porque o assinador não tem chave de Storage e o banco já tem backup e cofre. Essa função só aceita o papel do assinador:
    - grava `assinaturas_documento`;
    - preenche `assinatura_id` e `assinado_em` no documento.
    - O estado continua `ativo`: 42 consultas do sistema procuram documento `ativo`, e trocar o estado quebraria listas, impressões e altas. O selo da tela vem de `assinado_em`.
