@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { hora as formatarHora, numero } from '@/lib/formato'
+import { IndicadoresAps } from '@/components/gestor/IndicadoresAps'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
@@ -286,6 +287,8 @@ export default function PainelGestor() {
       <TituloPagina icone={LayoutDashboard} titulo="Painel do Gestor" descricao={unidadeAtiva?.unidade?.nome} />
       <Pergunta unidadeId={unidadeId} />
       <Panorama unidadeId={unidadeId} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
+      {/* U13: indicadores da APS (C1 a C7) só na UBS */}
+      {unidadeAtiva?.unidade.tipo === 'ubs' && <IndicadoresAps unidadeId={unidadeId} />}
       <AuditoriaCheckin unidadeId={unidadeId} />
     </div>
   )
