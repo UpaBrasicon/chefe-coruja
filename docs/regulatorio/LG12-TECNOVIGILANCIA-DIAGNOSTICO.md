@@ -1,6 +1,6 @@
 # LG12: tecnovigilância do módulo clínico (diagnóstico, 18/11/2026)
 
-Trilha de obrigatórios legais e regulatórios, item LG12 (P2). **Decisões do RT: pendentes** (V1–V5). Este documento não muda código nem banco e não é parecer jurídico.
+Trilha de obrigatórios legais e regulatórios, item LG12 (P2). **Decisão do RT, 18/11/2026: "A em todas"** (V1–V5). Este documento não muda código nem banco e não é parecer jurídico.
 
 **Base:** RDC 67/2009 da ANVISA, lida no texto do Ministério da Saúde (saudelegis) em 18/11/2026:
 - art. 2º: tecnovigilância é a vigilância de eventos adversos e queixas técnicas de produtos para a saúde depois que chegam ao mercado.

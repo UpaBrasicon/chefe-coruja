@@ -5,7 +5,8 @@ import { JanelaFerramenta, type FerramentaNaJanela } from '@/components/clinico/
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { categoriaCid } from '@/clinico/cidFerramentas'
-import { AVISO_SEPSE_ATENDIMENTO } from '@/clinico/escores/sepseAdulto'
+import { AVISO_SEPSE_ATENDIMENTO, sepseAdulto } from '@/clinico/escores/sepseAdulto'
+import { RelatarProblema } from '@/components/clinico/RelatarProblema'
 import { ROTA_DA_FICHA } from '@/clinico/indice'
 import type { FaixaEtaria } from '@/domain/idade'
 import { supabase } from '@/lib/supabase'
@@ -97,6 +98,7 @@ export function AvisoSepseAtendimento({ episodioId, pacienteId, nascimento, faix
             </Button>
           )}
           <Button type="button" size="sm" variant="outline" className="border-fio-forte text-tinta" onClick={() => setDispensando(true)}>Dispensar</Button>
+          <RelatarProblema ferramentaId={sepseAdulto.ficha.id} versao={sepseAdulto.ficha.versao} />
         </div>
       )}
       {registrar.isError && <p role="alert" className="text-rotulo text-critico">Não foi possível registrar. Tente de novo.</p>}

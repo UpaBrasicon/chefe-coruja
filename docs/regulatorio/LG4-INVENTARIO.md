@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-28 operações cobrem 305 tabelas.
+29 operações cobrem 308 tabelas.
 
 ## Papéis
 
@@ -44,6 +44,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
 | Auditoria e registro de acesso ao prontuário | operador | sim | 20 anos | 3 |
 | Registro de acesso à aplicação (Marco Civil) | controlador | não | 6 meses | 2 |
+| Tecnovigilância do módulo clínico | controlador | não | 5 anos depois da conclusão | 3 |
 | Erros do aplicativo e vigilância técnica | controlador | não | a definir com o advogado (proposta: 1 ano) | 5 |
 | Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
 | RNDS, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 12 |
@@ -806,6 +807,43 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Tabelas (2)**
 
 `private.registros_acesso_aplicacao`, `private.guardas_registros_acesso`
+
+### Tecnovigilância do módulo clínico
+
+`tecnovigilancia` · papel da Chefe Coruja: **controlador** · dado sensível: **não**
+
+**Finalidade.** Receber, investigar e responder relatos de problema no módulo clínico, e suspender a versão com defeito, como pede a RDC 67/2009.
+
+**Base legal (LGPD)**
+- art. 7º, II (RDC 67/2009 e RDC 551/2021, quando o módulo for notificado ou registrado; LG11)
+- art. 7º, IX (legítimo interesse: segurança do produto)
+
+**Titulares**
+- profissionais (quem relata e quem investiga)
+
+**Dados**
+- ferramenta, versão, unidade, tipo e desfecho do problema
+- descrição livre sem dado do paciente (a tela e o banco recusam CPF, CNS e telefone)
+- andamento, causa, ação e versão corrigida
+
+**Quem acessa**
+- responsável técnico médico da Chefe Coruja e super admin (fila)
+- gestor da unidade (relatos da unidade, só leitura)
+- quem relatou (os próprios relatos e a conclusão)
+
+**Onde fica**
+- Supabase (São Paulo)
+- Resend (e-mail ao RT no relato grave, sem dado do paciente)
+
+**Prazo.** 5 anos depois da conclusão (RDC 67/2009, art. 6º, parágrafo único (mínimo de 2 anos e a vida útil do produto) (LG12, V3)). Descarte: rotina diária às 03:50 de Brasília, com a quantidade apagada na auditoria; relato com suspensão vigente fica.
+
+**Medidas próprias**
+- relato e andamento só de inclusão
+- só o banco grava, pelas funções; ninguém lê as tabelas pela API
+
+**Tabelas (3)**
+
+`private.tecnovigilancia_relatos`, `private.tecnovigilancia_andamento`, `private.tecnovigilancia_suspensoes`
 
 ### Erros do aplicativo e vigilância técnica
 
