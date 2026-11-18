@@ -1,8 +1,8 @@
-import type { Ficha } from './ficha.ts'
-import { AHA_ALS_2025, AHA_2025_PCR, CHOQUE_PCR } from './adulto/pcr.ts'
+import type { Ficha, Fonte } from './ficha.ts'
+import { AHA_ALS_2025, AHA_2025_PCR, CHOQUE_PCR, ILCOR_COSTR_2026 } from './adulto/pcr.ts'
 import { pagina } from './adulto/fonte.ts'
 import { AHA_AAP_2025 } from './pediatria/rcp.ts'
-import { COREIA_PALS_2025, choquesDoPeso, dosesDoPeso, numeroDaDose } from './pediatria/dosesDaFita.ts'
+import { AHA_CIRCUNSTANCIAS_2025, COREIA_PALS_2025, choquesDoPeso, dosesDoPeso, numeroDaDose } from './pediatria/dosesDaFita.ts'
 
 // Cronômetro da parada (G3; construído com o RT em 18/11/2026 no protótipo
 // https://claude.ai/artifact/3j35VFgsN7yNmKwuiz2f7m). Criança e adulto.
@@ -18,13 +18,29 @@ import { COREIA_PALS_2025, choquesDoPeso, dosesDoPeso, numeroDaDose } from './pe
 // HCFMUSP, p. 48–49, e AHA 2025, Part 9). Este arquivo só tem a lógica de tempo
 // e de ordem; a tela fica em src/components/plantonista/central/CronometroParada.tsx.
 
+const pmc = (id: string) => `https://pmc.ncbi.nlm.nih.gov/articles/${id}/`
+
+// Causas reversíveis com "identificar" e "tratar" (versão .2, pedido do RT; CR1–CR4 = A)
+export const COREIA_ALS_2025: Fonte = {
+  citacao: 'Korean Guidelines for Cardiopulmonary Resuscitation 2025: Part 4. Adult advanced life support. Clin Exp Emerg Med. 2026 (PMC13277415).',
+  url: pmc('PMC13277415'),
+}
+export const COREIA_CIRCUNSTANCIAS_2025: Fonte = {
+  citacao: 'Korean Guidelines for Cardiopulmonary Resuscitation 2025: Part 5. Special circumstances. Clin Exp Emerg Med. 2026 (PMC13277411).',
+  url: pmc('PMC13277411'),
+}
+export const COREIA_POS_PCR_2025: Fonte = {
+  citacao: 'Korean Guidelines for Cardiopulmonary Resuscitation 2025: Part 6. Post-cardiac arrest care. Clin Exp Emerg Med. 2026 (PMC13285305).',
+  url: pmc('PMC13285305'),
+}
+
 export const fichaCronometroParada: Ficha = {
   id: 'cronometro-parada',
   titulo: 'Cronômetro da parada — ritmo, choque, epinefrina e registro (criança e adulto)',
-  versao: '2026-11-18.1',
+  versao: '2026-11-18.2',
   publico: 'ambos',
-  fontes: [AHA_AAP_2025, COREIA_PALS_2025, AHA_ALS_2025, pagina('cap. 2 PCR no adulto, p. 48–49 (Tabela 2)')],
-  revisadoEm: '18/11/2026 (fluxo construído com o RT no protótipo; tempos e ordem pela AHA 2025 e pelo manual do HCFMUSP; aguarda aprovação do RT)',
+  fontes: [AHA_AAP_2025, COREIA_PALS_2025, AHA_ALS_2025, AHA_CIRCUNSTANCIAS_2025, COREIA_ALS_2025, COREIA_CIRCUNSTANCIAS_2025, COREIA_POS_PCR_2025, ILCOR_COSTR_2026, pagina('cap. 2 PCR no adulto, p. 48–50 (Tabela 2)')],
+  revisadoEm: '18/11/2026 (versão .2: causas reversíveis com identificar e tratar, CR1–CR4 = A; fluxo construído com o RT no protótipo; tempos e ordem pela AHA 2025 e pelo manual do HCFMUSP; aguarda aprovação do RT)',
 }
 
 export type PublicoParada = 'crianca' | 'adulto'

@@ -11,8 +11,16 @@ import { GUIA_ADULTO, rotasDoCartao } from './guiaRapido.ts'
 test('causas reversíveis da AHA 2025: 11 na criança (com hipoglicemia), 10 no adulto', () => {
   assert.equal(CAUSAS_REVERSIVEIS.crianca.itens.length, 11)
   assert.equal(CAUSAS_REVERSIVEIS.adulto.itens.length, 10)
-  assert.ok(CAUSAS_REVERSIVEIS.crianca.itens.includes('Hipoglicemia'))
-  assert.ok(!CAUSAS_REVERSIVEIS.adulto.itens.includes('Hipoglicemia'))
+  const nomes = (p: 'crianca' | 'adulto') => CAUSAS_REVERSIVEIS[p].itens.map((c) => c.causa)
+  assert.ok(nomes('crianca').includes('Hipoglicemia'))
+  assert.ok(!nomes('adulto').includes('Hipoglicemia'))
+  // CR1/CR2: cada causa tem identificar, tratar e fonte; sem fonte, a tela diz
+  for (const c of [...CAUSAS_REVERSIVEIS.crianca.itens, ...CAUSAS_REVERSIVEIS.adulto.itens]) {
+    assert.ok(c.identificar && c.tratar && c.fonte, c.causa)
+  }
+  assert.equal(CAUSAS_REVERSIVEIS.crianca.itens.find((c) => c.causa === 'Trombose coronária')?.tratar, 'Sem fonte aberta.')
+  // CR3: hipercalemia do adulto sem número de glicose (divergência 25 × 50 g vai para o lote D11)
+  assert.ok(!/\d+ ?g\b/.test(CAUSAS_REVERSIVEIS.adulto.itens.find((c) => c.causa === 'Hipo ou hipercalemia')!.tratar))
   assert.match(CAUSAS_REVERSIVEIS.crianca.fonte, /Part 8, Figura 2/)
   assert.match(CAUSAS_REVERSIVEIS.adulto.fonte, /Part 9, Figura 2/)
 })
