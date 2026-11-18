@@ -231,6 +231,8 @@ type ItemReceita = { medicamento: string; posologia: string; quantidade: string 
 type ProtocoloReceita = {
   id: string; nome: string; indicacao: string | null; versao: string | null; fonte: string | null; itens: ItemReceita[]
   ativo: boolean; atualizado_em: string; atualizado_por: string | null; versoes: number
+  // U6, 3b (migration 20270415000013): protocolo de enfermagem do município e o documento de origem
+  enfermagem?: boolean; origem_numero?: string | null; origem_data?: string | null; origem_orgao?: string | null
 }
 
 function Prescricao() {
@@ -238,6 +240,7 @@ function Prescricao() {
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
   const [editando, setEditando] = React.useState<string | 'novo' | null>(null)
+  const [marcando, setMarcando] = React.useState<string | null>(null)
   const lista = useQuery({
     queryKey: ['receita-protocolos', unidadeId],
     enabled: !!unidadeId,
@@ -247,7 +250,7 @@ function Prescricao() {
       return (data ?? []) as unknown as ProtocoloReceita[]
     },
   })
-  const recarregar = () => { setEditando(null); void qc.invalidateQueries({ queryKey: ['receita-protocolos'] }) }
+  const recarregar = () => { setEditando(null); setMarcando(null); void qc.invalidateQueries({ queryKey: ['receita-protocolos'] }) }
 
   return (
     <div className="flex flex-col gap-4">
@@ -270,6 +273,7 @@ function Prescricao() {
                 <span className={cn('rounded-capsula px-2 py-[2px] text-rotulo font-semibold uppercase', p.ativo ? 'bg-alerta-marca text-acao' : 'bg-trilha text-tinta-sussurro')}>
                   {p.ativo ? 'Publicado' : 'Rascunho'}
                 </span>
+                {p.enfermagem && <span className="rounded-capsula bg-alerta-conforme px-2 py-[2px] text-rotulo font-semibold text-conforme">Enfermagem</span>}
               </span>
             </div>
             {p.itens.map((it, i) => (
@@ -285,9 +289,14 @@ function Prescricao() {
                 {p.fonte ? ` · Fonte: ${p.fonte}` : ' · sem fonte (não publicado)'}
                 {p.atualizado_por ? ` · ${p.atualizado_por}, ${dataHora(p.atualizado_em)}` : ''}
                 {p.versoes > 1 ? ` · ${p.versoes} gravações guardadas` : ''}
+                {p.enfermagem && p.origem_numero ? ` · Protocolo de enfermagem: ${p.origem_numero}, ${p.origem_orgao ?? ''}, ${p.origem_data ? p.origem_data.split('-').reverse().join('/') : ''}` : ''}
               </span>
-              <Button size="sm" variant="outline" onClick={() => setEditando(p.id)}>Editar itens</Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setMarcando(marcando === p.id ? null : p.id)}>Protocolo de enfermagem</Button>
+                <Button size="sm" variant="outline" onClick={() => setEditando(p.id)}>Editar itens</Button>
+              </div>
             </div>
+            {marcando === p.id && <MarcaEnfermagem p={p} onFim={recarregar} onCancelar={() => setMarcando(null)} />}
           </section>
         ))}
       {editando === 'novo'
@@ -356,5 +365,47 @@ function EditorReceita({ unidadeId, p, onFim, onCancelar }: {
         <Button variant="ghost" onClick={onCancelar}>Cancelar</Button>
       </div>
     </section>
+  )
+}
+
+// U6, 3b (R1 = A): o protocolo de enfermagem do município. O enfermeiro só
+// prescreve os itens destes protocolos publicados, como estão (R2 = A).
+function MarcaEnfermagem({ p, onFim, onCancelar }: { p: ProtocoloReceita; onFim: () => void; onCancelar: () => void }) {
+  const [numero, setNumero] = React.useState(p.origem_numero ?? '')
+  const [data, setData] = React.useState(p.origem_data ?? '')
+  const [orgao, setOrgao] = React.useState(p.origem_orgao ?? '')
+  const [erro, setErro] = React.useState<string | null>(null)
+  const [salvando, setSalvando] = React.useState(false)
+  async function gravar(enfermagem: boolean) {
+    setErro(null); setSalvando(true)
+    const { error } = await supabase.rpc('definir_protocolo_enfermagem', {
+      p_protocolo: p.id, p_enfermagem: enfermagem,
+      p_numero: enfermagem ? numero : undefined, p_data: enfermagem ? data || undefined : undefined, p_orgao: enfermagem ? orgao : undefined,
+    })
+    setSalvando(false)
+    if (error) return setErro(error.message)
+    onFim()
+  }
+  return (
+    <div className="flex flex-col gap-3 border-t border-trilha px-5 py-4">
+      <span className="text-apoio text-pretty text-tinta-apoio">
+        Protocolo de enfermagem do município: o enfermeiro prescreve só estes itens, como estão, na consulta de enfermagem.
+        Controlado (Portaria 344/1998) nunca sai pelo enfermeiro.
+      </span>
+      <div className="flex flex-wrap gap-3">
+        <label className="flex flex-[1_1_220px] flex-col gap-[5px]"><span className="text-apoio font-medium text-grafite">Documento de origem</span>
+          <Input value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="Ex.: Portaria SMS nº 12/2026" /></label>
+        <label className="flex flex-[0_1_180px] flex-col gap-[5px]"><span className="text-apoio font-medium text-grafite">Data</span>
+          <Input type="date" value={data} onChange={(e) => setData(e.target.value)} /></label>
+        <label className="flex flex-[1_1_240px] flex-col gap-[5px]"><span className="text-apoio font-medium text-grafite">Órgão</span>
+          <Input value={orgao} onChange={(e) => setOrgao(e.target.value)} placeholder="Ex.: Secretaria Municipal de Saúde" /></label>
+      </div>
+      {erro && <p className="text-apoio text-critico">{erro}</p>}
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={salvando} onClick={() => void gravar(true)}><ShieldCheck /> Marcar como protocolo de enfermagem</Button>
+        {p.enfermagem && <Button size="sm" variant="outline" disabled={salvando} onClick={() => void gravar(false)}>Tirar a marca</Button>}
+        <Button size="sm" variant="outline" onClick={onCancelar}>Cancelar</Button>
+      </div>
+    </div>
   )
 }

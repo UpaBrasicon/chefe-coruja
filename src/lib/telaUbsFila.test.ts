@@ -61,7 +61,7 @@ test('U10 do percurso da UBS: o CID do SOAP conta como problema avaliado na cond
 test('U6, PR 3 do percurso da UBS: a janela da consulta de enfermagem tem só as abas do enfermeiro', () => {
   const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
   assert.match(janela, /const consultaEnfermagem = !!ep\.tipo_atendimento_aps && papelAtivo === 'enfermeiro'/)
-  assert.match(janela, /consultaEnfermagem \? \['atend', 'alg', 'aval', 'exames', 'proc', 'conduta'\]\.includes\(a\.k\)/)
+  assert.match(janela, /consultaEnfermagem \? \['atend', 'alg', 'aval', 'exames', 'proc', 'docs', 'conduta'\]\.includes\(a\.k\)/)
   const conduta = readFileSync('src/pages/plantao/porta/AbaConduta.tsx', 'utf8')
   assert.match(conduta, /\{urgencia && unidadeAtiva && !enfermagem && \(/)
   assert.match(conduta, /\{regulacao && !enfermagem && \(/)

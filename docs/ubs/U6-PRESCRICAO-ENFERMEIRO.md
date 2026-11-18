@@ -4,13 +4,20 @@ Decisão P2 = B do plano (`docs/ubs/U6-U7-PLANO.md`): o enfermeiro prescreve pel
 
 **Decisões do RT (18/11/2026): R1 = A, R2 = A, R3 = A, R4 = A, R5 = A.**
 
-## Base legal
+## Base legal (conferida no texto oficial em 18/11/2026)
 
-- Lei 7.498/1986, art. 11, II, c, e Decreto 94.406/1987, art. 8º, II, c: o enfermeiro, como integrante da equipe, prescreve medicamentos estabelecidos em programas de saúde pública e em rotina aprovada pela instituição de saúde.
-- PNAB, Portaria de Consolidação nº 2/2017, Anexo XXII: entre as atribuições do enfermeiro, prescrever medicações conforme protocolos, diretrizes clínicas e terapêuticas, ou outras normativas técnicas estabelecidas pelos gestores federal, estadual, municipal ou do Distrito Federal.
-- Portaria SVS/MS 344/1998: a receita de controle especial e a notificação de receita são de prescritor habilitado. O enfermeiro não prescreve controlado.
-
-Estes textos foram escritos de memória. Antes de valer, cada um precisa ser conferido com a publicação oficial, como as fichas clínicas.
+- **Lei 7.498/1986, art. 11, II, c** (planalto.gov.br): como integrante da equipe de saúde, o enfermeiro faz a "prescrição de medicamentos estabelecidos em programas de saúde pública e em rotina aprovada pela instituição de saúde".
+- **Decreto 94.406/1987, art. 8º, II, c**: o mesmo, com a palavra "previamente".
+- **PNAB, Portaria de Consolidação GM/MS nº 2/2017, Anexo XXII, Anexo 1, item 4.2.1 (Enfermeiro), inciso II**: o enfermeiro prescreve "medicações conforme protocolos, diretrizes clínicas e terapêuticas, ou outras normativas técnicas", estabelecidas pelo gestor federal, estadual, municipal ou do Distrito Federal. Segue vigente.
+- **Resolução Cofen 801/2026** (DOU de 22/01/2026), específica da prescrição de medicamentos pelo enfermeiro:
+  - art. 2º: a prescrição se fundamenta em protocolos aprovados ou de programas de saúde pública e é feita na consulta de enfermagem;
+  - art. 3º, I: a receita traz a identificação do protocolo usado e o ano de publicação;
+  - art. 3º, II: a receita traz a instituição e o CNPJ.
+  - Situação judicial: a ação do CFM (ACP 1045641-03.2026.4.01.3400) teve a liminar negada em 14/11/2026. A resolução segue em vigor, com o mérito pendente.
+- **Portaria SVS/MS 344/1998**:
+  - Notificação de Receita: só por inscrito no CRM, CRMV ou CRO (art. 1º);
+  - Receita de Controle Especial: "profissionais devidamente habilitados" (art. 55);
+  - não há permissão para o enfermeiro.
 
 ## O que o app tem hoje
 
@@ -60,3 +67,19 @@ Um PR, como os outros do U6:
   - consulta de enfermagem: aba "Receita" com os itens do protocolo para escolher;
   - a folha da receita sai em nome do enfermeiro, com o registro no conselho do perfil.
 - Testes de banco e de tela, homologação, PR com CI verde, ok produção.
+
+## Implementação (18/11/2026)
+
+- **Migration `20270415000013_ubs_prescricao_enfermeiro.sql`:**
+  - `receita_protocolos` ganha `enfermagem` e o documento de origem (número, data e órgão), com CHECK: protocolo de enfermagem publicado sem a origem não grava;
+  - `definir_protocolo_enfermagem` é a ação do gestor, com auditoria;
+  - `receita_protocolos_da_unidade` devolve a marca e a origem;
+  - `private.faltas_receita_papel` entra em `faltas_documento`, que vale para a emissão direta, o rascunho e a sincronização. A receita só sai assim:
+    - do médico (plantonista ou telemedicina);
+    - ou do enfermeiro, na consulta de enfermagem aberta do paciente, com itens iguais aos do protocolo publicado e sem controle especial.
+- **Tela:**
+  - Protocolos (gestor): botão "Protocolo de enfermagem", com o documento de origem;
+  - consulta de enfermagem: aba "Receita", com os itens do protocolo para escolher;
+  - a receita sai com o protocolo e o ano em "Observações" (Cofen 801/2026, art. 3º, I).
+  - Criança e paciente sem data de nascimento ficam com o médico, porque o protocolo não separa a dose por idade.
+- **Para o RT:** a Cofen 801/2026 (art. 3º, II) pede o CNPJ da instituição na receita. A folha da receita hoje não traz o CNPJ, e é preciso conferir se o cadastro da unidade o tem.

@@ -42,6 +42,7 @@ import { SolicitarApac } from '@/components/apac/SolicitarApac'
 
 import { AbaAtendimento, type Classificacao, type RegistroSoap } from './AbaAtendimento'
 import { AbaAtestadoReceita } from './AbaAtestadoReceita'
+import { ReceitaEnfermagem } from '@/components/documentos/ReceitaEnfermagem'
 import { AbaConduta } from './AbaConduta'
 import { AbaDesfecho } from './AbaDesfecho'
 import { AbaExames } from './AbaExames'
@@ -198,7 +199,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     { k: 'aval', rotulo: 'Avaliação' },
     { k: 'enc', rotulo: 'Encaminhar' },
     { k: 'termo', rotulo: 'Termo' },
-    { k: 'docs', rotulo: 'Atestado e receita', n: ((docs.atEmitidoEm ? 1 : 0) + (docs.rxEmitidaEm ? 1 : 0)) || undefined },
+    { k: 'docs', rotulo: consultaEnfermagem ? 'Receita' : 'Atestado e receita', n: ((docs.atEmitidoEm ? 1 : 0) + (docs.rxEmitidaEm ? 1 : 0)) || undefined },
     // Fase 3, tarefa 3: procedimentos realizados (BPA) e endereço do SUS
     { k: 'proc', rotulo: 'Procedimentos' },
     { k: 'fim', rotulo: 'Desfecho' },
@@ -206,7 +207,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   ]
   // U7, PR 5: na UBS a aba Procedimentos é a dos procedimentos da UBS (com o resultado dos testes)
   // U6 (P1 = A): o enfermeiro pede exames da lista do protocolo
-  const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'exames', 'proc', 'conduta'].includes(a.k)
+  const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'exames', 'proc', 'docs', 'conduta'].includes(a.k)
     : ubs ? !['reav', 'fim'].includes(a.k) : a.k !== 'conduta'))
 
   return (
@@ -318,8 +319,10 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             </TabsContent>
             <TabsContent value="termo"><AbaTermoConsentimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
             <TabsContent value="docs">
-              <AbaAtestadoReceita episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} nascimento={ep.paciente?.data_nascimento ?? null}
-                faixa={faixa} cid={cidAtend} estado={docs} setEstado={setDocs} />
+              {consultaEnfermagem ? (
+                <ReceitaEnfermagem pacienteId={ep.paciente_id} nome={nome} nascimento={ep.paciente?.data_nascimento ?? null} faixa={faixa} />
+              ) : <AbaAtestadoReceita episodioId={ep.id} pacienteId={ep.paciente_id} nome={nome} nascimento={ep.paciente?.data_nascimento ?? null}
+                faixa={faixa} cid={cidAtend} estado={docs} setEstado={setDocs} />}
             </TabsContent>
             <TabsContent value="proc">
               {ubs ? <ProcedimentosAps episodioId={ep.id} /> : (

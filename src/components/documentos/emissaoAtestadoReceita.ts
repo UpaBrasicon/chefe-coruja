@@ -75,7 +75,8 @@ export function useEmissaoAtestadoReceita({ pacienteId, nome, nascimento, leito 
     })
     if (ok) setEstado((s) => ({ ...s, atEmitidoEm: new Date().toISOString() }))
   }
-  async function emitirReceita() {
+  // obs: a receita do enfermeiro leva o protocolo usado (U6, 3b; Cofen 801/2026)
+  async function emitirReceita(obs = '') {
     if (!estado.receita.length) return setErro('A receita não tem itens.')
     if (!controlados.pronto) return setErro('Carregando a lista de medicamentos controlados. Tente de novo em instantes.')
     const destino = (i: EstadoDocs['receita'][number]) => controlados.destino(i.medicamento, i.medicamento_id)
@@ -89,7 +90,7 @@ export function useEmissaoAtestadoReceita({ pacienteId, nome, nascimento, leito 
     const ok = await emitir('receita', {
       paciente: pacienteFolha(),
       receita: {
-        tipo: 'branca', obs: '',
+        tipo: 'branca', obs,
         itens: estado.receita.map((i) => ({
           id: i.id, medicamento: i.medicamento, dose: '', posologia: i.posologia, quantidade: i.quantidade,
           controle_especial: destino(i).tipo === 'controle_especial', medicamento_id: i.medicamento_id,
