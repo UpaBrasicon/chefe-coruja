@@ -34,6 +34,7 @@ import { PropagandaPainel } from './PropagandaPainel'
 import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
 import { Aviso } from '@/components/ui/aviso'
 import { TituloCartao } from '@/components/monitor/Pagina'
+import { EscolherGestante, type Gestante } from '@/components/preNatal/EscolherGestante'
 import { diaMes, hora } from '@/lib/formato'
 
 // Recepção (protótipo: rec-cadastro, rec-fila-enf, rec-fila-med, rec-painel).
@@ -339,6 +340,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
   const [tipoAps, setTipoAps] = React.useState('')
   // U6, PR 2: na UBS a ficha vai ao médico ou à enfermagem
   const [destino, setDestino] = React.useState<'medico' | 'enfermagem'>('medico')
+  // U6, E3: o pré-natal do parceiro pede a gestante
+  const [gestante, setGestante] = React.useState<Gestante | null>(null)
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
   // lacuna 2 (RT 10/11/2026): pulseira logo depois da ficha, do não identificado e do RN
@@ -393,6 +396,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     setPrioridades([])
     setTipoAps('')
     setDestino('medico')
+    setGestante(null)
     setDuplicata(null)
     setErroLocal(null)
     setAlvoAberto(null)
@@ -455,7 +459,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
         p_setor: porta.id,
         p_queixa: queixa.trim(),
         p_paciente: pacienteId ?? existente?.id ?? undefined,
-        p_dados: ubs ? { ...enviados, tipo_atendimento: tipoAps, destino } : enviados,
+        p_dados: ubs ? { ...enviados, tipo_atendimento: tipoAps, destino, ...(tipoAps === 'pre_natal_parceiro' && gestante ? { gestante_id: gestante.id } : {}) } : enviados,
         p_prioridades: prioridades,
         p_outra_pessoa: outraPessoa ?? false,
       })
@@ -501,6 +505,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     if (primeiro) return setErroLocal(primeiro)
     if (queixa.trim().length < 3) return setErroLocal('Escreva a queixa referida.')
     if (ubs && !tipoAps) return setErroLocal('Escolha o tipo de atendimento.')
+    if (ubs && tipoAps === 'pre_natal_parceiro' && !gestante) return setErroLocal('Escolha a gestante do pré-natal do parceiro.')
     setErroLocal(null)
     registrar.mutate({})
   }
@@ -668,6 +673,9 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
                 {TIPOS_ATENDIMENTO_APS.map((t) => <option key={t.valor} value={t.valor}>{t.grupo ? `${t.grupo}: ${t.rotulo}` : t.rotulo}</option>)}
               </CampoSelecao>
             </Campo>
+          )}
+          {ubs && tipoAps === 'pre_natal_parceiro' && (
+            <EscolherGestante unidadeId={unidadeId} gestante={gestante} onEscolher={(g) => { setGestante(g); setErroLocal(null) }} />
           )}
           {ubs && (
             <div role="radiogroup" aria-label="Atendimento com" className="flex flex-wrap items-center gap-2">

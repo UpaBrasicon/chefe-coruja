@@ -109,7 +109,8 @@ test('U6, PR 2: o enfermeiro da UBS tem o consultório de enfermagem, e a fila s
   assert.match(fila, /const filtroDestino = enfermagem \? 'destino_aps\.eq\.enfermagem' : 'destino_aps\.is\.null,destino_aps\.eq\.medico'/)
   assert.match(fila, /if \(ubs\) q = q\.or\(filtroDestino\)/)
   const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
-  assert.match(recepcao, /p_dados: ubs \? \{ \.\.\.enviados, tipo_atendimento: tipoAps, destino \} : enviados/)
+  // U6, E3: o pré-natal do parceiro manda também a gestante (telaUbsExames.test.ts)
+  assert.match(recepcao, /p_dados: ubs \? \{ \.\.\.enviados, tipo_atendimento: tipoAps, destino, /)
 })
 
 test('U7, PR 4: sinais vitais na UBS para o técnico e o enfermeiro, e na consulta', () => {

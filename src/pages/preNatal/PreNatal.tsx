@@ -17,7 +17,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { linkMarcarNaAgenda } from '@/domain/agenda'
 import { rotuloIdade } from '@/domain/idade'
 import {
-  ROTULO_FASE, TETO_NO_APP, diaDoPuerperio, diasEntre, faseDa, fimDaGestacao, frasesDa, pontosDa, resumoPreNatal, rotuloIG, temAtraso,
+  ROTULO_FASE, TETO_NO_APP, diaDoPuerperio, diasEntre, faseDa, fimDaGestacao, frasesDa, pontosDa, resumoParceria, resumoPreNatal, rotuloIG, temAtraso,
   type Fase, type PreNatalLinha,
 } from '@/domain/preNatal'
 import { dataIso, diaMesHora } from '@/lib/formato'
@@ -119,6 +119,7 @@ function Linha({ l, hoje, podeEditar, onAcao }: { l: PreNatalLinha; hoje: string
             ? `${l.desfecho === 'parto' && l.desfecho_em ? `parto ${dataBr(l.desfecho_em)}` : `fim ${dataBr(fimDaGestacao(l)!)}`} · puerpério dia ${dp ?? 0}`
             : l.dum ? `${rotuloIG(diasEntre(l.dum, hoje))} · DPP ${dataBr(l.dpp!)}` : ROTULO_FASE.sem_dum}
         </div>
+        <div className="text-rotulo text-tinta-sussurro">{resumoParceria(l.parceria)}</div>
       </div>
       <div className="min-w-0">
         {l.dum ? (
