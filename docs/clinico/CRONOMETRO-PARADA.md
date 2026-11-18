@@ -1,0 +1,41 @@
+# Cronômetro da parada (G3)
+
+Construído com o RT em 18/11/2026, a partir de um protótipo ajustado em várias rodadas. Vale para criança e adulto e abre pelo Guia rápido do celular. Na criança, abre pelo botão vermelho no alto da tela de parada. No adulto, abre pelo cartão "Parada e reanimação".
+
+## Fluxo combinado com o RT
+
+1. Botão vermelho grande "Iniciar parada". Ao tocar, o tempo total começa em segundo plano e o ciclo de 2 min fica em destaque.
+2. Os 4 ritmos aparecem na tela, com tiras desenhadas por nós (esquema, não traçado real): TV sem pulso e FV (chocáveis), AESP e assistolia (não chocáveis), além de "Pulso presente — RCE".
+3. Tocar no ritmo abre a conduta com **uma ação agora** e a lista **próximos**, com contagem regressiva:
+   - ação agora: choque, epinefrina ou compressões;
+   - próximos: próximo choque e quando, próxima epinefrina, amiodarona.
+
+   O RT pediu "uma calculadora que até uma criança saiba usar".
+4. No fim do ciclo: bipe, vibração e volta aos ritmos. A epinefrina dá bipe aos 3 e aos 5 min. A tela fica acesa enquanto o cronômetro corre.
+5. Metrônomo das compressões (110/min), que liga e desliga a qualquer momento e não entra no registro.
+6. Nada é gravado. O registro, com a hora de cada medicação e intervenção, é copiado pelo médico para o prontuário.
+
+## Regras e fontes
+
+Ficha `cronometro-parada`, com a lógica em `src/clinico/cronometroParada.ts`. Trechos e links das fontes em [CRONOMETRO-PARADA-FONTES.md](CRONOMETRO-PARADA-FONTES.md).
+
+- **Ritmo a cada 2 min:** RCP logo depois do choque, por 2 min, sem checar o pulso (Coreia 2025, Part 4 e Part 8).
+- **Epinefrina a cada 3 a 5 min:**
+  - no ritmo não chocável, o mais cedo possível;
+  - no chocável, depois do 2º choque (AHA 2025, Part 8 na criança; Figura 2 da Part 9 e manual do HCFMUSP p. 49 no adulto).
+- **Amiodarona ou lidocaína:** depois do 3º choque. No adulto, a 2ª dose de amiodarona vem depois do 5º choque (manual p. 49).
+- **Causas reversíveis:**
+  - criança: 11 itens da AHA 2025, Part 8, Figura 2, com hipoglicemia;
+  - adulto: 10 itens da Part 9, Figura 2.
+- **Doses:**
+  - criança: módulo `ped-doses-fita`, pelo peso digitado ou pela cor;
+  - adulto: as mesmas da ferramenta PCR do adulto.
+
+## Divergência registrada
+
+A epinefrina no ritmo chocável do adulto não tem o mesmo momento em todas as fontes:
+- AHA 2025 (Figura 2) e o app (`pcr.ts`): depois do 2º choque;
+- ERC/RCUK 2025: depois do 3º choque;
+- Coreia 2025: já no ciclo depois do 1º choque.
+
+O cronômetro segue a AHA e o manual, como a ferramenta PCR do adulto.
