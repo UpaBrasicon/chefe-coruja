@@ -129,7 +129,8 @@
         "anamnese, exame físico, hipóteses e CID",
         "escalas e escores",
         "pareceres e teleinterconsultas",
-        "pendências e resumo de alta"
+        "pendências e resumo de alta",
+        "teleinterconsulta: termo de consentimento, forma da concordância, nome da testemunha ou do representante, endereço do paciente e endereço profissional do médico (LG8)"
       ],
       "sensivel": true,
       "acesso": [
@@ -826,7 +827,8 @@
         "nome, e-mail, conselho e registro",
         "papel em cada unidade",
         "eventos do segundo fator e dispositivos confiáveis",
-        "convites e aceite dos termos"
+        "convites e aceite dos termos",
+        "endereço profissional do médico (LG8)"
       ],
       "sensivel": false,
       "acesso": [
