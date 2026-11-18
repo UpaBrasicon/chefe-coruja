@@ -13,12 +13,13 @@
 // servidor. O estado vem do banco (documentos_do_paciente), então a barra
 // enxerga também o que foi emitido em outro aparelho.
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Copy, FilePlus2, History, Printer, Send, X } from 'lucide-react'
+import { AlertTriangle, Copy, FilePlus2, FileSignature, History, Printer, Send, X } from 'lucide-react'
 import * as React from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { abrirPdfAssinado } from '@/lib/assinador'
 import { cn } from '@/lib/utils'
 
 import {
@@ -51,7 +52,7 @@ function metaDe(d: DocumentoEpisodio): string {
   const autor = d.autor ?? '—'
   switch (estadoDoDocumento(d)) {
     case 'aberto': return `Aberto às ${hora(d.criado_em)} · ${autor} · salvo às ${hora(d.atualizado_em)}`
-    case 'emitido': return `Emitido às ${hora(d.emitido_em ?? d.criado_em)} · ${autor}`
+    case 'emitido': return `Emitido às ${hora(d.emitido_em ?? d.criado_em)} · ${autor}${d.assinado_em ? ` · assinado com ICP-Brasil às ${hora(d.assinado_em)}` : ''}`
     case 'assinado': return `Assinado às ${hora(d.assinado_em)} · ${autor}`
     case 'retificado': return `Emitido às ${hora(d.emitido_em ?? d.criado_em)} · ${autor} · substituído por versão nova`
     case 'cancelado': return `Cancelado às ${hora(d.cancelado_em)} por ${d.cancelado_por ?? '—'} · "${d.motivo_cancelamento ?? ''}"`
@@ -74,6 +75,12 @@ export function BarraDocumento({
   const [erro, setErro] = React.useState<string | null>(null)
   // 'Novo' clicado: vale para este paciente e este último emitido, até o rascunho chegar
   const [novoPara, setNovoPara] = React.useState<string | null>(null)
+  // LG7: o assinador avisa quando terminou de assinar; a barra recarrega o estado
+  React.useEffect(() => {
+    const ao = () => invalidarDocumentos(qc)
+    window.addEventListener('cc-documento-assinado', ao)
+    return () => window.removeEventListener('cc-documento-assinado', ao)
+  }, [qc])
 
   const rot = rotulo ?? rotuloDocumento(tipo)
   const lista = React.useMemo(() => docs.data ?? [], [docs.data])
@@ -143,6 +150,7 @@ export function BarraDocumento({
     <section aria-label={`Documento: ${rot}`} className={cn('flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-4 py-3 shadow-repouso', className)}>
       <div className="flex flex-wrap items-center gap-2.5">
         <Badge variant={COR_ESTADO[estado]}>{NOME_ESTADO[estado]}</Badge>
+        {atual?.assinado_em && <Badge variant="success">Assinado ICP-Brasil</Badge>}
         <span className="min-w-0 flex-[1_1_240px] text-apoio text-pretty text-tinta-apoio">{texto}</span>
       </div>
 
@@ -170,6 +178,12 @@ export function BarraDocumento({
           <Button size="sm" variant="outline" disabled={!pacienteId} onClick={aoImprimir}
             title={aberto ? 'Rascunho imprime com marca d’água' : 'Imprimir'}>
             <Printer /> Imprimir
+          </Button>
+        )}
+        {atual?.assinado_em && (
+          <Button size="sm" variant="outline" disabled={ocupado} onClick={() => void executar(() => abrirPdfAssinado(atual.id))}
+            title="Abre o PDF assinado com ICP-Brasil (com o QR code de conferência)">
+            <FileSignature /> PDF assinado
           </Button>
         )}
         <Button size="sm" variant="outline" aria-expanded={histAberto} disabled={!pacienteId} onClick={() => setHistAberto((v) => !v)}>
@@ -229,6 +243,7 @@ export function BarraDocumento({
                   <span className={cn('min-w-0 flex-1 text-apoio font-semibold', e === 'cancelado' ? 'text-tinta-sussurro line-through' : 'text-tinta')}>
                     {tituloDe(d)}
                   </span>
+                  {d.assinado_em && <Badge variant="success">ICP-Brasil</Badge>}
                   <Badge variant={COR_ESTADO[e]}>{NOME_ESTADO[e]}</Badge>
                 </div>
                 <span className="text-rotulo text-tinta-sussurro">{metaDe(d)}</span>

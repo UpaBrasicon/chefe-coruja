@@ -17,6 +17,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { hora, invalidarDocumentos, rotuloDocumento, emitirRascunho, diaHora } from '@/components/documento/documentos'
+import { assinarSeDer } from '@/lib/assinador'
 import { rotaDoRascunho, usePendenciasPep, type RascunhoPep } from '@/components/documento/pendenciasPep'
 import { TituloPagina, TituloSecao, Trilha } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -79,6 +80,7 @@ export default function PendenciasPep() {
     for (const r of lista) {
       try {
         const e = await emitirRascunho(r.id)
+        void assinarSeDer({ id: e.id, tipo: r.tipo }) // LG7: com sessão, sai assinado
         saida.push({ id: r.id, ok: true, texto: `${rotuloDocumento(r.tipo)} · ${r.paciente}: emitido nº ${e.numero}` })
       } catch (e) {
         saida.push({ id: r.id, ok: false, texto: `${rotuloDocumento(r.tipo)} · ${r.paciente}: ${(e as Error).message}` })
