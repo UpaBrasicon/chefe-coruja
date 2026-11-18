@@ -14,3 +14,15 @@ test('U15, PR 1: a escolha "RNDS da APS pelo app ou pelo PEC" aparece só na UBS
   assert.match(aba, /\{unidadeAtiva\?\.unidade\.tipo === 'ubs' && <SecaoRacAps p=\{p\} unidade=\{unidade\} \/>\}/)
   assert.match(aba, /supabase\.rpc\('rnds_rac_aps_pelo', \{ p_unidade: unidade, p_pelo: pelo \}\)/)
 })
+
+test('U15, PR 2: a fila do LEDI é própria (o serviço da RNDS não a pega) e só o gestor a lê', () => {
+  const mig = readFileSync('supabase/migrations/20270415000022_ubs_u15_fila_ledi.sql', 'utf8')
+  assert.match(mig, /CREATE TABLE IF NOT EXISTS public\.ledi_fila/)
+  assert.doesNotMatch(mig, /INSERT INTO public\.interop_outbox/)
+  for (const tabela of ['ledi_fila', 'ledi_config_unidade']) {
+    assert.ok(mig.includes(`ALTER TABLE public.${tabela} ENABLE ROW LEVEL SECURITY`), `${tabela} sem RLS`)
+    assert.ok(mig.includes(`REVOKE INSERT, UPDATE, DELETE ON public.${tabela} FROM anon, authenticated`), `${tabela} gravável pela API`)
+  }
+  // o envio nasce desligado
+  assert.match(mig, /envio_ligado\s+boolean NOT NULL DEFAULT false/)
+})
