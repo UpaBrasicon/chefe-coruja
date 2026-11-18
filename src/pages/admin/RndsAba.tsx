@@ -80,6 +80,7 @@ export function RndsAba() {
       {p.credencial && <Numeros p={p} />}
       <SecaoCredencial p={p} onDialogo={setDialogo} />
       {p.credencial && <SecaoEnvio p={p} unidade={unidade} />}
+      {unidadeAtiva?.unidade.tipo === 'ubs' && <SecaoRacAps p={p} unidade={unidade} />}
       {p.credencial && <div ref={bloqueiosRef}><SecaoBloqueios p={p} /></div>}
       <SecaoFila unidade={unidade} />
       {p.credencial && <EnviarCertificado aberto={dialogo === 'certificado'} credencialId={p.credencial.id} onFechar={() => setDialogo(null)} />}
@@ -251,6 +252,45 @@ function SecaoEnvio({ p, unidade }: { p: PainelRnds; unidade: string }) {
           <span className="text-critico">Pausado desde {diaMesHora(p.config.pausado_em)}: {p.config.pausa_motivo}</span>
         )}
         <Button size="sm" className="self-start" disabled={!mudou || salvar.isPending || (ligado && !financiamento)} onClick={() => salvar.mutate()}>Salvar</Button>
+        {salvar.error && <MensagemErro texto={(salvar.error as Error).message} />}
+      </CardContent>
+    </Card>
+  )
+}
+
+// U15 (V5): na UBS, a RNDS do atendimento da APS vai pelo app ou pelo PEC
+// e-SUS APS do município; com o PEC, o app não manda o RAC e descarta a fila.
+function SecaoRacAps({ p, unidade }: { p: PainelRnds; unidade: string }) {
+  const recarregar = useRecarregar()
+  const atual = p.config?.rac_aps_pelo ?? 'app'
+  const [pelo, setPelo] = React.useState<'app' | 'pec'>(atual)
+  const salvar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('rnds_rac_aps_pelo', { p_unidade: unidade, p_pelo: pelo })
+      if (error) throw error
+    },
+    onSuccess: recarregar,
+  })
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-corpo">Atendimento da APS</CardTitle>
+        <CardDescription>
+          Quem manda à RNDS o atendimento desta UBS. Se o PEC e-SUS APS do município já manda, o app não envia, para o atendimento não chegar duas vezes. Confirme com o município na implantação.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-apoio">
+        <div className="flex max-w-sm flex-col gap-1">
+          <Label htmlFor="rnds-aps" className="text-rotulo">Quem manda</Label>
+          <CampoSelecao id="rnds-aps" tamanho="compacto" value={pelo} onChange={(e) => setPelo(e.target.value as 'app' | 'pec')}>
+            <option value="app">O Chefe Coruja</option>
+            <option value="pec">O PEC e-SUS APS do município</option>
+          </CampoSelecao>
+        </div>
+        {pelo === 'pec' && atual === 'app' && (
+          <span className="text-tinta-apoio">Os atendimentos desta UBS que esperam na fila da RNDS serão descartados.</span>
+        )}
+        <Button size="sm" className="self-start" disabled={pelo === atual || salvar.isPending} onClick={() => salvar.mutate()}>Salvar</Button>
         {salvar.error && <MensagemErro texto={(salvar.error as Error).message} />}
       </CardContent>
     </Card>
