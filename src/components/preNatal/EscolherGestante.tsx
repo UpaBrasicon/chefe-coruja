@@ -35,7 +35,7 @@ export function EscolherGestante({ unidadeId, gestante, onEscolher }: {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-apoio font-medium text-tinta">Gestante</span>
         <span className="text-apoio text-tinta">{gestante.nome_social || gestante.nome}</span>
-        <Button size="xs" variant="ghost" onClick={() => { onEscolher(null); setTermo('') }}>Trocar</Button>
+        <Button size="xs" variant="outline" onClick={() => { onEscolher(null); setTermo('') }}>Trocar</Button>
       </div>
     )
   }
