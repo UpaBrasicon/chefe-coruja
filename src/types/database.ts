@@ -12310,6 +12310,9 @@ export type Database = {
       suspender_versao_rede: { Args: { p_ferramenta: string; p_motivo: string; p_relato?: string; p_versao: string }; Returns: string }
       suspensoes_rede_vigentes: { Args: never; Returns: Json }
       tecnovigilancia_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      casos_revisao_alerta_sepse: { Args: { p_meses: number; p_motivo: string; p_unidade: string }; Returns: Json }
+      desempenho_alerta_sepse: { Args: { p_meses?: number; p_unidade: string }; Returns: Json }
+      registrar_alerta_sepse_internacao: { Args: { p_paciente: string; p_unidade: string }; Returns: boolean }
       fila_revisao_ferramentas: {
         Args: { p_tipo: string }
         Returns: {

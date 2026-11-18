@@ -161,6 +161,7 @@
         "public.diagnosticos_episodio",
         "public.reavaliacoes_quadro",
         "public.avisos_sepse_atendimento",
+        "public.alertas_sepse_internacao",
         "public.pareceres_medicos",
         "public.encaminhamentos_internos",
         "public.teleinterconsultas",

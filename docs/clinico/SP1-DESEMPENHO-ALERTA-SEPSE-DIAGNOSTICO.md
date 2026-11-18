@@ -1,6 +1,6 @@
 # SP1: medir o alerta de sepse por regra (diagnóstico, 18/11/2026)
 
-Trilha "Sepse com evidência", item SP1 (P1). **Decisões do RT: pendentes** (S1–S6). Este documento não muda código nem banco.
+Trilha "Sepse com evidência", item SP1 (P1). **Decisão do RT, 18/11/2026: "Todas A"** (S1–S6). Este documento não muda código nem banco.
 
 **Pergunta:**
 - De cada 100 alertas, quantos eram sepse?

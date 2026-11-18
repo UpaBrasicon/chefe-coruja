@@ -106,6 +106,8 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     },
   })
 
+  // SP1 (S2 = A): o primeiro disparo exibido do alerta do adulto fica registrado; o servidor recalcula a regra
+  const alertaRegistrado = React.useRef(new Set<string>())
   // Infecção: Phoenix na criança (Fase 3.7) e NEWS2 de 5 ou mais no adulto (B P2-1, 11/11/2026), no servidor
   const { data: alertasSepse } = useQuery({
     queryKey: ['alertas-sepse', unidadeId],
@@ -114,6 +116,12 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     queryFn: async () => {
       const { data, error } = await supabase.rpc('alertas_sepse', { p_unidade: unidadeId! })
       if (error) throw error
+      for (const a of data ?? []) {
+        const chave = `${a.paciente_id}:${a.nivel}`
+        if (!a.nivel.startsWith('news2') || alertaRegistrado.current.has(chave)) continue
+        alertaRegistrado.current.add(chave)
+        void supabase.rpc('registrar_alerta_sepse_internacao', { p_unidade: unidadeId!, p_paciente: a.paciente_id }).then(() => undefined)
+      }
       return new Map((data ?? []).map((a) => [a.paciente_id, a]))
     },
   })
