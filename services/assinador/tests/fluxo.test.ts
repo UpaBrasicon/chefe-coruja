@@ -57,7 +57,9 @@ before(async () => {
 after(() => srv.close())
 
 function montar(over: Partial<Dependencias> & { docs?: Record<string, Documento>; cpf?: string } = {}) {
-  const agora = new Date('2026-11-18T14:00:00Z')
+  // relógio do teste = hora real: o certificado de teste nasce agora (openssl -days 30)
+  const agora = new Date()
+  const fimPlantao = new Date(agora.getTime() + 5 * 3600_000)
   const guardados = new Map<string, Uint8Array>()
   const registro: Record<string, unknown>[] = []
   const provedor: Provedor = {
@@ -77,7 +79,7 @@ function montar(over: Partial<Dependencias> & { docs?: Record<string, Documento>
       if (jwt !== 'jwt-p1') throw new ErroAssinador(401, 'Sessão inválida')
       return { perfilId: 'p1', nome: 'Médica Teste', cpf: over.cpf ?? '12345678909', crmNumero: '12345', crmUf: 'SP' }
     },
-    fimDoPlantao: async () => new Date('2026-11-18T19:00:00Z'),
+    fimDoPlantao: async () => fimPlantao,
     documento: async (_jwt, id) => docs[id] ?? null,
     folhaPdf: async () => {
       const doc = await PDFDocument.create()
@@ -93,7 +95,7 @@ function montar(over: Partial<Dependencias> & { docs?: Record<string, Documento>
     agora: () => agora,
     ...over,
   }
-  return { d, guardados, registro, agora }
+  return { d, guardados, registro, agora, fimPlantao }
 }
 
 async function abrirSessao(d: Dependencias) {
@@ -104,11 +106,11 @@ async function abrirSessao(d: Dependencias) {
 }
 
 test('sessão: abre só no plantão, vai até o fim dele (máx. 12 h) e confere o CPF do certificado', async () => {
-  const { d, registro } = montar()
+  const { d, registro, fimPlantao } = montar()
   const { url } = await iniciarSessao(d, 'jwt-p1', 'vidaas')
-  assert.equal(new URL(url).searchParams.get('lifetime'), String(5 * 3600), 'até o fim do plantão (19:00)')
+  assert.equal(new URL(url).searchParams.get('lifetime'), String(5 * 3600), 'até o fim do plantão (5 h)')
   const r = await abrirSessao(d)
-  assert.equal(r.validaAte, '2026-11-18T19:00:00.000Z')
+  assert.equal(r.validaAte, fimPlantao.toISOString())
   const aberta = registro.find((x) => 'abrir' in x)!.abrir as { cpfFinal: string; emissor: string }
   assert.equal(aberta.cpfFinal, '8909', 'o banco recebe só o final do CPF')
   assert.equal(aberta.emissor, 'AC TESTE')
@@ -120,14 +122,14 @@ test('sessão: abre só no plantão, vai até o fim dele (máx. 12 h) e confere 
 })
 
 test('assinar: PDF PAdES conferido, guardado e registrado; o banco guarda só o hash do código', async () => {
-  const { d, guardados, registro } = montar()
+  const { d, guardados, registro, agora } = montar()
   await assert.rejects(assinarDocumento(d, 'jwt-p1', 'd1'), /Sem sessão de assinatura/)
   await abrirSessao(d)
   const { assinaturaId, codigo } = await assinarDocumento(d, 'jwt-p1', 'd1')
   assert.equal(assinaturaId, 'assinatura-1')
   const pdf = guardados.get('d1')!
   const { faixa, cms } = lerAssinatura(pdf)
-  assert.deepEqual(await conferirCms(cms, bytesCobertos(pdf, faixa), new Date('2026-11-18T14:00:00Z')), { ok: true })
+  assert.deepEqual(await conferirCms(cms, bytesCobertos(pdf, faixa), agora), { ok: true })
   const reg = registro.find((x) => 'assinatura' in x)!.assinatura as { codigoSha256: string }
   assert.equal(reg.codigoSha256, createHash('sha256').update(codigo).digest('hex'))
   assert.match(codigo, /^[A-HJ-NP-Z2-9]{32}$/, 'código alfanumérico de 32 símbolos, sem 0/O e 1/I')

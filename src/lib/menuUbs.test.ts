@@ -133,3 +133,11 @@ test('U4 do percurso da UBS: a recepção da UBS abre na tela Hoje, que junta ag
   const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
   assert.match(recepcao, /<ListaDoDia unidadeId=\{unidadeId\} dia=\{hoje\} hoje=\{hoje\} \/>/)
 })
+
+test('U11 (N2 = A): na UBS a recepção exige a data de nascimento, também do cadastro antigo sem a data', () => {
+  const recepcao = readFileSync('src/pages/recepcao/Recepcao.tsx', 'utf8')
+  assert.match(recepcao, /const semNascimento = ubs && modo === 'existente' && !!existente && !existente\.data_nascimento/)
+  assert.match(recepcao, /Na UBS, informe a data de nascimento do paciente\./)
+  assert.match(recepcao, /nascimentoObrigatorio=\{ubs\}/)
+  assert.match(recepcao, /k === 'data_nascimento' && semNascimento/)
+})
