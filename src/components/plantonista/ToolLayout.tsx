@@ -56,7 +56,8 @@ export function ToolLayout({
   const topo = ficha ? topoDa(ficha.id) : undefined
   return (
     <div className={cn('flex flex-col gap-[22px]', className)}>
-      <TituloPagina titulo={title} descricao={topo?.resumo ?? description} className="mb-0" />
+      <TituloPagina titulo={title} descricao={topo?.resumo ?? description} className="mb-0"
+        acoes={ficha && <RelatarProblema ferramentaId={ficha.id} versao={ficha.versao} />} />
       {topo && <CabecalhoTopo topo={topo} />}
       {ficha && situacao && <FaixaSituacao situacao={situacao} versao={ficha.versao} />}
       {semFonte && (
@@ -110,7 +111,6 @@ export function ToolLayout({
           <Link to={ROTA_SOBRE_MODULO} className="text-acao underline underline-offset-4">Sobre o módulo clínico</Link>
         </p>
       </div>
-      {ficha && <RelatarProblema ferramentaId={ficha.id} versao={ficha.versao} className="-mt-3 self-start" />}
       {(fonte || revisado) && (
         <section aria-label="Fonte" className="flex flex-col gap-0.5">
           <p className="text-apoio text-tinta-apoio"><span className="font-semibold text-tinta">Fonte</span>{fonte && <> · {fonte}</>}</p>
