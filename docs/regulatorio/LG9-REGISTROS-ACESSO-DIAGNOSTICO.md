@@ -1,6 +1,6 @@
 # LG9: guarda dos registros de acesso à aplicação por 6 meses (diagnóstico, 18/11/2026)
 
-Trilha de obrigatórios legais e regulatórios, item LG9 (P2). **Decisão do RT, 18/11/2026: "Todas A"** (R1–R3). Este documento não muda código nem banco e não é parecer jurídico.
+Trilha de obrigatórios legais e regulatórios, item LG9 (P2). **Decisão do RT, 18/11/2026: "Todas A"** (R1–R3); **R1 revista para D** no mesmo dia (abaixo). Este documento não muda código nem banco e não é parecer jurídico.
 
 **Base:**
 - Lei 12.965/2014 (Marco Civil da Internet):
@@ -53,6 +53,17 @@ Uma ressalva: o inventário (LG4) diz que a guarda de 20 anos da auditoria "cobr
   - A função de entrega é só do super admin, com o segundo fator. Recebe o usuário, o período e o número da ordem judicial, devolve data, hora, ação e IP, e grava na auditoria quem extraiu, de quem e por qual ordem. Isso é o inventário de acesso do decreto.
   - Um roteiro curto diz quem recebe o pedido, como responder e o prazo.
 - **B:** só o roteiro. A entrega seria feita por SQL manual, sem registro automático.
+
+## Revisão da R1 (18/11/2026): D, gatilho na sessão
+
+Na homologação, com a gravação do log do Auth ligada, a entrada (login) e a saída foram gravadas **sem IP**. A sessão da mesma entrada (`auth.sessions`) tinha o IP público certo.
+
+**D (escolhida pelo RT: "d, evitando novos gastos"):**
+- Uma tabela própria, `private.registros_acesso_aplicacao`, preenchida por gatilho em `auth.sessions`.
+- O gatilho grava usuário, data, hora, ação e IP na entrada (sessão aberta), na renovação (cerca de 1 vez por hora com o app aberto) e na saída (sessão apagada).
+- É do servidor e não tem custo novo.
+- A chave "Write audit logs to the database" volta a ficar desligada, porque grava sem IP.
+- R2 e R3 continuam iguais, sobre a tabela nova.
 
 ## Perguntas para o advogado (vão com o pacote do LG1–LG5)
 

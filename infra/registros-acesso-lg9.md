@@ -1,14 +1,14 @@
 # Registros de acesso à aplicação (LG9)
 
-Marco Civil da Internet, art. 15, e Decreto 8.771/2016, art. 13. Decisões R1–R3 = A do RT em 18/11/2026 (`docs/regulatorio/LG9-REGISTROS-ACESSO-DIAGNOSTICO.md`). Migration `20270418000093_lg9_registros_acesso.sql`.
+Marco Civil da Internet, art. 15, e Decreto 8.771/2016, art. 13. Decisões do RT em 18/11/2026: R1 = D (revista), R2 e R3 = A (`docs/regulatorio/LG9-REGISTROS-ACESSO-DIAGNOSTICO.md`). Migration `20270418000093_lg9_registros_acesso.sql`.
 
 ## O que cobre
 
-- **Fonte:** o log de auditoria do Auth no banco (`auth.audit_log_entries`). O Auth grava usuário, ação, data, hora e IP:
-  - em cada entrada;
-  - em cada renovação da sessão (cerca de 1 vez por hora com o app aberto);
-  - em cada saída e troca de senha.
-  O app não consegue pular esse registro.
+- **Fonte:** o gatilho `lg9_registro_acesso` em `auth.sessions` grava em `private.registros_acesso_aplicacao` o usuário, a data, a hora, a ação e o IP:
+  - na entrada, quando a sessão é aberta;
+  - na renovação, quando `refreshed_at` muda (cerca de 1 vez por hora com o app aberto);
+  - na saída, quando a sessão é apagada (sair, expirar ou o usuário ser removido).
+  O app não consegue pular esse registro. Um erro no gatilho vira aviso no log do banco e nunca impede a entrada.
 - **Prazo:** 6 meses. O job `lg9-registros-acesso-6-meses` roda às 06:45 UTC (03:45 de Brasília) e chama `private.apagar_registros_acesso_vencidos(6)`.
   - Apaga o que tem mais de 6 meses e anota a quantidade em `log_auditoria`.
   - O prazo nunca fica abaixo de 6 meses, mesmo se a função for chamada com menos.
@@ -21,22 +21,20 @@ Marco Civil da Internet, art. 15, e Decreto 8.771/2016, art. 13. Decisões R1–
 - **Porta lógica de origem:** o gateway do Supabase não a repassa. É a pergunta 2 ao advogado.
 - **WhatsApp (Hermes):** chega pela Meta, sem IP. Fica o telefone, a data e a hora em `hermes_audit_log`. É a pergunta 3 ao advogado.
 - **Logs do painel do Supabase:** guardam por 7 dias no plano Pro e continuam como estão.
-- **Antes de religar:** o registro anterior à mudança no painel não existe e não volta.
+- **Log do Auth no banco** (`auth.audit_log_entries`): grava a ação sem o IP, conferido na homologação em 18/11/2026. Por isso a chave "Write audit logs to the database" fica desligada.
+- **Antes da migration:** sessões abertas antes dela só aparecem a partir da primeira renovação.
 
 ## Chaves envolvidas
 
-Nenhuma chave nova. A gravação depende de uma opção no painel do Supabase de cada projeto: Authentication → Audit Logs → "Disable writing auth audit logs to project database", que precisa ficar **desligada**.
+Nenhuma chave nova e nenhum custo novo. Não depende do painel.
 
-## Como ligar (o RT, primeiro na homologação)
+## Como conferir
 
-1. No painel do projeto, abrir Authentication → Audit Logs e desligar "Disable writing auth audit logs to project database".
-2. Entrar no app e sair.
-3. Conferir que apareceram as linhas de entrada e de saída, com o IP real. Comparar com o `cf-connecting-ip` (S6):
+Entrar no app, esperar um pouco e sair. Depois:
 
-   ```sql
-   SELECT created_at, payload ->> 'action', ip_address <> '' AS tem_ip
-     FROM auth.audit_log_entries ORDER BY created_at DESC LIMIT 5;
-   ```
+```sql
+SELECT em, acao, ip IS NOT NULL AS tem_ip FROM private.registros_acesso_aplicacao ORDER BY id DESC LIMIT 5;
+```
 
 ## Roteiro: pedido de guarda ou ordem judicial
 
@@ -56,5 +54,5 @@ Nenhuma chave nova. A gravação depende de uma opção no painel do Supabase de
 
 ## Como reverter
 
-- **Parar a gravação:** ligar de novo a opção no painel.
-- **Tirar a rotina, as funções e a tabela:** `docs/regulatorio/LG9-ROLLBACK-20270418000093.sql`, testado na homologação em 18/11/2026. Antes de rodar, conferir se há guarda vigente.
+- **Parar a gravação sem apagar nada:** `DROP TRIGGER IF EXISTS lg9_registro_acesso ON auth.sessions;`
+- **Tirar tudo** (gatilho, rotina, funções e tabelas, com os registros guardados): `docs/regulatorio/LG9-ROLLBACK-20270418000093.sql`, testado na homologação em 18/11/2026. Antes de rodar, conferir se há guarda vigente.

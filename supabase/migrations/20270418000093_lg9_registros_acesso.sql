@@ -1,18 +1,33 @@
 -- ════════════════════════════════════════════════════════════════════════════
--- LG9, decisões R1–R3 = A do RT (18/11/2026,
--- docs/regulatorio/LG9-REGISTROS-ACESSO-DIAGNOSTICO.md): registros de acesso
--- à aplicação (Marco Civil, art. 15; Decreto 8.771/2016, art. 13).
---   R1: a fonte é o log de auditoria do Auth no banco (auth.audit_log_entries),
---       religado no painel pelo RT. Esta migration não liga nada no Auth.
---   R2: guarda de 6 meses. Rotina diária às 03:45 de Brasília (06:45 UTC)
+-- LG9, decisões do RT (18/11/2026, docs/regulatorio/LG9-REGISTROS-ACESSO-DIAGNOSTICO.md):
+-- registros de acesso à aplicação (Marco Civil, art. 15; Decreto 8.771/2016, art. 13).
+--   R1 = D (revista): o log do Auth no banco grava a ação sem o IP, conferido
+--       na homologação. O registro vem de um gatilho em auth.sessions, que tem
+--       o IP: entrada (sessão aberta), renovação (refreshed_at muda, cerca de
+--       1 vez por hora com o app aberto) e saída (sessão apagada). É do
+--       servidor; o app não consegue pular. Sem custo novo.
+--   R2 = A: guarda de 6 meses. Rotina diária às 03:45 de Brasília (06:45 UTC)
 --       apaga o que venceu, menos o que está sob guarda.
---   R3: guarda maior a pedido da autoridade (art. 15, § 2º) e entrega por
+--   R3 = A: guarda maior a pedido da autoridade (art. 15, § 2º) e entrega por
 --       ordem judicial (art. 15, § 3º), só pelo super admin, com o segundo
 --       fator e registro em log_auditoria (inventário do decreto, art. 13, III).
 --
--- Expand: cria uma tabela, três funções e um agendamento; não muda coluna.
+-- Expand: cria duas tabelas, quatro funções, um gatilho e um agendamento.
 -- Volta: docs/regulatorio/LG9-ROLLBACK-20270418000093.sql
 -- ════════════════════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS private.registros_acesso_aplicacao (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  usuario_id uuid NOT NULL,
+  sessao_id uuid,
+  acao text NOT NULL CHECK (acao IN ('entrada', 'renovacao', 'saida')),
+  ip inet,
+  em timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS registros_acesso_aplicacao_usuario_idx ON private.registros_acesso_aplicacao (usuario_id, em);
+CREATE INDEX IF NOT EXISTS registros_acesso_aplicacao_em_idx ON private.registros_acesso_aplicacao (em);
+ALTER TABLE private.registros_acesso_aplicacao ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON private.registros_acesso_aplicacao FROM PUBLIC, anon, authenticated;
 
 CREATE TABLE IF NOT EXISTS private.guardas_registros_acesso (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -26,22 +41,52 @@ CREATE INDEX IF NOT EXISTS guardas_registros_acesso_usuario_idx ON private.guard
 ALTER TABLE private.guardas_registros_acesso ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON private.guardas_registros_acesso FROM PUBLIC, anon, authenticated;
 
--- R2: apaga o registro de acesso com mais de p_meses, menos o de usuário sob guarda.
+-- R1: uma linha por entrada, renovação e saída. Nunca derruba a entrada no
+-- sistema: um erro aqui vira aviso no log do banco.
+CREATE OR REPLACE FUNCTION private.registrar_acesso_aplicacao()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+BEGIN
+  BEGIN
+    IF TG_OP = 'INSERT' THEN
+      INSERT INTO private.registros_acesso_aplicacao (usuario_id, sessao_id, acao, ip)
+      VALUES (NEW.user_id, NEW.id, 'entrada', NEW.ip);
+    ELSIF TG_OP = 'UPDATE' THEN
+      IF NEW.refreshed_at IS DISTINCT FROM OLD.refreshed_at THEN
+        INSERT INTO private.registros_acesso_aplicacao (usuario_id, sessao_id, acao, ip)
+        VALUES (NEW.user_id, NEW.id, 'renovacao', NEW.ip);
+      END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+      INSERT INTO private.registros_acesso_aplicacao (usuario_id, sessao_id, acao, ip)
+      VALUES (OLD.user_id, OLD.id, 'saida', OLD.ip);
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'LG9: registro de acesso não gravado: %', SQLERRM;
+  END;
+  RETURN NULL;
+END $$;
+REVOKE ALL ON FUNCTION private.registrar_acesso_aplicacao() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS lg9_registro_acesso ON auth.sessions;
+CREATE TRIGGER lg9_registro_acesso
+  AFTER INSERT OR UPDATE OF refreshed_at OR DELETE ON auth.sessions
+  FOR EACH ROW EXECUTE FUNCTION private.registrar_acesso_aplicacao();
+
+-- R2: apaga o registro com mais de p_meses (nunca menos de 6), menos o de usuário sob guarda.
 CREATE OR REPLACE FUNCTION private.apagar_registros_acesso_vencidos(p_meses int DEFAULT 6)
 RETURNS int
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
-  v_corte timestamptz := now() - make_interval(months => greatest(coalesce(p_meses, 6), 6));
+  v_meses int := greatest(coalesce(p_meses, 6), 6);
   n int;
 BEGIN
-  DELETE FROM auth.audit_log_entries e
-   WHERE e.created_at < v_corte
+  DELETE FROM private.registros_acesso_aplicacao r
+   WHERE r.em < now() - make_interval(months => v_meses)
      AND NOT EXISTS (SELECT 1 FROM private.guardas_registros_acesso g
-                      WHERE g.usuario_id::text = e.payload ->> 'actor_id' AND g.ate >= current_date);
+                      WHERE g.usuario_id = r.usuario_id AND g.ate >= current_date);
   GET DIAGNOSTICS n = ROW_COUNT;
   IF n > 0 THEN
-    PERFORM private.registrar_auditoria('apagar_registros_acesso_vencidos', 'auth.audit_log_entries', NULL, NULL,
-      jsonb_build_object('quantidade', n, 'limite', greatest(coalesce(p_meses, 6), 6)));
+    PERFORM private.registrar_auditoria('apagar_registros_acesso_vencidos', 'registros_acesso_aplicacao', NULL, NULL,
+      jsonb_build_object('quantidade', n, 'limite', v_meses));
   END IF;
   RETURN n;
 END $$;
@@ -66,7 +111,7 @@ BEGIN
   INSERT INTO private.guardas_registros_acesso (usuario_id, ate, pedido, anotado_por)
   VALUES (p_usuario, p_ate, btrim(p_pedido), private.meu_perfil_id())
   RETURNING id INTO v_id;
-  PERFORM private.registrar_auditoria('anotar_guarda_registros_acesso', 'auth.audit_log_entries', p_usuario, NULL,
+  PERFORM private.registrar_auditoria('anotar_guarda_registros_acesso', 'registros_acesso_aplicacao', p_usuario, NULL,
     jsonb_build_object('perfil_id', p_usuario, 'ordem', btrim(p_pedido)));
   RETURN v_id;
 END $$;
@@ -88,13 +133,12 @@ BEGIN
     RAISE EXCEPTION 'Escreva o número da ordem judicial (art. 15, § 3º, do Marco Civil).';
   END IF;
   RETURN QUERY
-    SELECT e.created_at, e.payload ->> 'action', nullif(e.ip_address, '')::text
-      FROM auth.audit_log_entries e
-     WHERE e.payload ->> 'actor_id' = p_usuario::text
-       AND e.created_at >= p_de AND e.created_at < p_ate
-     ORDER BY e.created_at;
+    SELECT r.em, r.acao, host(r.ip)
+      FROM private.registros_acesso_aplicacao r
+     WHERE r.usuario_id = p_usuario AND r.em >= p_de AND r.em < p_ate
+     ORDER BY r.em, r.id;
   GET DIAGNOSTICS n = ROW_COUNT;
-  PERFORM private.registrar_auditoria('extrair_registros_acesso', 'auth.audit_log_entries', p_usuario, NULL,
+  PERFORM private.registrar_auditoria('extrair_registros_acesso', 'registros_acesso_aplicacao', p_usuario, NULL,
     jsonb_build_object('perfil_id', p_usuario, 'ordem', btrim(p_ordem), 'quantidade', n));
 END $$;
 

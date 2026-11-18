@@ -1009,7 +1009,7 @@
         "profissionais"
       ],
       "dados": [
-        "usuário, data, hora, ação (entrada, renovação da sessão, saída, troca de senha) e IP",
+        "usuário, data, hora, ação (entrada, renovação da sessão, saída) e IP",
         "guarda pedida pela autoridade: usuário, data final e número do pedido"
       ],
       "sensivel": false,
@@ -1025,10 +1025,11 @@
         "descarte": "rotina diária às 03:45 de Brasília, com a quantidade apagada na auditoria; o que está sob guarda fica até a data da guarda"
       },
       "seguranca": [
-        "fora da API: só o banco lê `auth.audit_log_entries`",
+        "só o banco grava, por gatilho na sessão; ninguém lê pela API",
         "papel (operador ou controlador) é a pergunta 1 do LG9 ao advogado"
       ],
       "tabelas": [
+        "private.registros_acesso_aplicacao",
         "private.guardas_registros_acesso"
       ]
     },
