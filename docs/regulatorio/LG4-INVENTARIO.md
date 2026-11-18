@@ -146,6 +146,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - escalas e escores
 - pareceres e teleinterconsultas
 - pendências e resumo de alta
+- teleinterconsulta: termo de consentimento, forma da concordância, nome da testemunha ou do representante, endereço do paciente e endereço profissional do médico (LG8)
 
 **Quem acessa**
 - médico
@@ -649,6 +650,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - papel em cada unidade
 - eventos do segundo fator e dispositivos confiáveis
 - convites e aceite dos termos
+- endereço profissional do médico (LG8)
 
 **Quem acessa**
 - o próprio profissional

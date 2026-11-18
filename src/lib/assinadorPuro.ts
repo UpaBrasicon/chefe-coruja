@@ -7,7 +7,7 @@ import { hora } from './formato.ts'
  * (um teste confere que são iguais). Evolução e prescrição do internado ficam
  * com o login e o 2FA.
  */
-export const TIPOS_ASSINAVEIS = new Set(['receita', 'atestado', 'pedido_exames', 'encaminhamento', 'sumario_alta', 'documento_transferencia', 'laudo_aih'])
+export const TIPOS_ASSINAVEIS = new Set(['receita', 'atestado', 'pedido_exames', 'encaminhamento', 'sumario_alta', 'documento_transferencia', 'laudo_aih', 'teleinterconsulta'])
 
 export type SessaoAssinatura = {
   ativa: boolean

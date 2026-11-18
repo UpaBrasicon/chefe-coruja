@@ -8244,6 +8244,7 @@ export type Database = {
           dados_pessoais: Json
           data_nascimento: string | null
           email: string | null
+          endereco_profissional: string | null
           foto_url: string | null
           id: string
           nome_completo: string
@@ -8266,6 +8267,7 @@ export type Database = {
           dados_pessoais?: Json
           data_nascimento?: string | null
           email?: string | null
+          endereco_profissional?: string | null
           foto_url?: string | null
           id: string
           nome_completo: string
@@ -8288,6 +8290,7 @@ export type Database = {
           dados_pessoais?: Json
           data_nascimento?: string | null
           email?: string | null
+          endereco_profissional?: string | null
           foto_url?: string | null
           id?: string
           nome_completo?: string
@@ -9827,6 +9830,7 @@ export type Database = {
         Row: {
           aceita_em: string | null
           cancelada_em: string | null
+          consentimento_forma: string | null
           consentimento: string
           consultor_id: string | null
           criada_em: string
@@ -9834,19 +9838,24 @@ export type Database = {
           documento_solicitacao_id: string | null
           episodio_id: string | null
           id: string
+          justificativa_emergencia: string | null
           organizacao_id: string
           paciente_id: string
           pergunta: string
+          representante: string | null
           respondida_em: string | null
           resposta: string | null
           solicitante_id: string
           status: string
+          termo_documento_id: string | null
+          testemunha: string | null
           unidade_id: string
           urgencia: string
         }
         Insert: {
           aceita_em?: string | null
           cancelada_em?: string | null
+          consentimento_forma?: string | null
           consentimento: string
           consultor_id?: string | null
           criada_em?: string
@@ -9854,19 +9863,24 @@ export type Database = {
           documento_solicitacao_id?: string | null
           episodio_id?: string | null
           id?: string
+          justificativa_emergencia?: string | null
           organizacao_id: string
           paciente_id: string
           pergunta: string
+          representante?: string | null
           respondida_em?: string | null
           resposta?: string | null
           solicitante_id: string
           status?: string
+          termo_documento_id?: string | null
+          testemunha?: string | null
           unidade_id: string
           urgencia?: string
         }
         Update: {
           aceita_em?: string | null
           cancelada_em?: string | null
+          consentimento_forma?: string | null
           consentimento?: string
           consultor_id?: string | null
           criada_em?: string
@@ -9874,13 +9888,17 @@ export type Database = {
           documento_solicitacao_id?: string | null
           episodio_id?: string | null
           id?: string
+          justificativa_emergencia?: string | null
           organizacao_id?: string
           paciente_id?: string
           pergunta?: string
+          representante?: string | null
           respondida_em?: string | null
           resposta?: string | null
           solicitante_id?: string
           status?: string
+          termo_documento_id?: string | null
+          testemunha?: string | null
           unidade_id?: string
           urgencia?: string
         }
@@ -10257,6 +10275,7 @@ export type Database = {
           canal_comunicacao: string
           cnes: string | null
           created_at: string
+          endereco: string | null
           id: string
           latitude: number | null
           longitude: number | null
@@ -10267,8 +10286,8 @@ export type Database = {
           raio_metros: number
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf: string | null
-          usa_pulseira: boolean
           updated_at: string
+          usa_pulseira: boolean
           whatsapp_numero: string | null
         }
         Insert: {
@@ -10276,6 +10295,7 @@ export type Database = {
           canal_comunicacao?: string
           cnes?: string | null
           created_at?: string
+          endereco?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -10286,8 +10306,8 @@ export type Database = {
           raio_metros?: number
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
-          usa_pulseira?: boolean
           updated_at?: string
+          usa_pulseira?: boolean
           whatsapp_numero?: string | null
         }
         Update: {
@@ -10295,6 +10315,7 @@ export type Database = {
           canal_comunicacao?: string
           cnes?: string | null
           created_at?: string
+          endereco?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -10305,8 +10326,8 @@ export type Database = {
           raio_metros?: number
           tipo?: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
-          usa_pulseira?: boolean
           updated_at?: string
+          usa_pulseira?: boolean
           whatsapp_numero?: string | null
         }
         Relationships: [
@@ -10466,6 +10487,14 @@ export type Database = {
     }
     Functions: {
       encaminhamento_upa_cancelar: { Args: { p_id: string; p_motivo: string }; Returns: undefined }
+      definir_endereco_unidade: {
+        Args: { p_endereco?: string; p_unidade: string }
+        Returns: undefined
+      }
+      definir_meu_endereco_profissional: {
+        Args: { p_endereco?: string }
+        Returns: undefined
+      }
       encaminhamento_upa_marcar_chegada: {
         Args: { p_chegou: boolean; p_episodio?: string; p_id: string; p_observacao?: string }
         Returns: Json
@@ -11212,6 +11241,20 @@ export type Database = {
           p_nota?: string
           p_tipo: string
           p_versao: string
+        }
+        Returns: string
+      }
+      solicitar_teleinterconsulta_com_termo: {
+        Args: {
+          p_consentimento: string
+          p_episodio?: string
+          p_forma: string
+          p_justificativa?: string
+          p_paciente: string
+          p_pergunta: string
+          p_representante?: string
+          p_testemunha?: string
+          p_urgencia?: string
         }
         Returns: string
       }

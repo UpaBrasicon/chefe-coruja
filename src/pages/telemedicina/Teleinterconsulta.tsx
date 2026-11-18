@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
@@ -14,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { faltasDoConsentimento, TEXTO_TCLE_TELEMEDICINA, type FormaConsentimento } from '@/lib/tcleTelemedicina'
 import { cn } from '@/lib/utils'
 
 import { Cartao, COR_SITUACAO, hhmm, Nota, PontoSituacao, ROTULO_SITUACAO, Secao, TopoTele, useTeles, VazioLinha, type Situacao } from './comum'
@@ -63,7 +65,14 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
   const [paciente, setPaciente] = React.useState('')
   const [pergunta, setPergunta] = React.useState('')
   const [consentimento, setConsentimento] = React.useState('')
+  // LG8, M1: termo de telemedicina e a forma de concordância (Res. CFM 2.314/2022, art. 15)
+  const [forma, setForma] = React.useState<FormaConsentimento | ''>('')
+  const [testemunha, setTestemunha] = React.useState('')
+  const [representante, setRepresentante] = React.useState('')
+  const [justificativa, setJustificativa] = React.useState('')
   const [urgente, setUrgente] = React.useState(false)
+  const emergencia = consentimento === 'emergencia_sem_condicao'
+  const faltas = faltasDoConsentimento({ consentimento, forma, testemunha, representante, justificativa })
 
   // pacientes que o banco deixa ver: os dos setores do plantão em curso
   const pacientes = useQuery({
@@ -78,13 +87,19 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
 
   const solicitar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('solicitar_teleinterconsulta', {
-        p_paciente: paciente, p_pergunta: pergunta.trim(), p_consentimento: consentimento, p_urgencia: urgente ? 'urgente' : 'rotina',
+      const { error } = await supabase.rpc('solicitar_teleinterconsulta_com_termo', {
+        p_paciente: paciente, p_pergunta: pergunta.trim(), p_consentimento: consentimento,
+        p_forma: emergencia ? 'emergencia' : forma || 'assinatura_papel',
+        p_testemunha: forma === 'verbal_testemunha' ? testemunha.trim() : undefined,
+        p_representante: consentimento === 'representante_legal' ? representante.trim() : undefined,
+        p_justificativa: emergencia ? justificativa.trim() : undefined,
+        p_urgencia: urgente ? 'urgente' : 'rotina',
       })
       if (error) throw error
     },
     onSuccess: () => {
       setPergunta(''); setConsentimento(''); setUrgente(false); setPaciente('')
+      setForma(''); setTestemunha(''); setRepresentante(''); setJustificativa('')
       void qc.invalidateQueries({ queryKey: ['teleinterconsultas'] })
     },
   })
@@ -96,7 +111,7 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['teleinterconsultas'] }),
   })
 
-  const pode = paciente && pergunta.trim().length >= 10 && consentimento
+  const pode = paciente && pergunta.trim().length >= 10 && faltas.length === 0
   const minhas = (teles.data ?? []).filter((t) => t.minha)
 
   return (
@@ -129,11 +144,46 @@ function Solicitante({ unidadeId }: { unidadeId: string }) {
               ))}
             </div>
           </fieldset>
+          {consentimento && !emergencia && (
+            <div className="grid gap-2.5 rounded-controle border border-fio bg-campo p-3">
+              <p className="text-apoio font-semibold text-tinta">Termo para ler ao {consentimento === 'representante_legal' ? 'representante' : 'paciente'}</p>
+              <div className="flex flex-col gap-1.5 text-apoio text-tinta">
+                {TEXTO_TCLE_TELEMEDICINA.map((f) => <p key={f}>{f}</p>)}
+              </div>
+              {consentimento === 'representante_legal' && (
+                <div className="grid gap-1.5">
+                  <Label htmlFor="rep">Representante legal (nome e vínculo)</Label>
+                  <Input id="rep" value={representante} onChange={(e) => setRepresentante(e.target.value)} placeholder="Ex.: Ana Souza, mãe" />
+                </div>
+              )}
+              <fieldset className="grid gap-1.5">
+                <legend className="mb-1 text-apoio font-medium">Como concordou</legend>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant={forma === 'assinatura_papel' ? 'default' : 'outline'} onClick={() => setForma('assinatura_papel')}>Assinou o termo impresso</Button>
+                  <Button type="button" size="sm" variant={forma === 'verbal_testemunha' ? 'default' : 'outline'} onClick={() => setForma('verbal_testemunha')}>Verbal, com testemunha</Button>
+                </div>
+              </fieldset>
+              {forma === 'verbal_testemunha' && (
+                <div className="grid gap-1.5">
+                  <Label htmlFor="test">Testemunha da equipe (nome)</Label>
+                  <Input id="test" value={testemunha} onChange={(e) => setTestemunha(e.target.value)} placeholder="Ex.: Enf. Maria da Silva" />
+                </div>
+              )}
+              <p className="text-rotulo text-tinta-sussurro">O termo entra no prontuário como documento numerado, ligado a esta solicitação.</p>
+            </div>
+          )}
+          {emergencia && (
+            <div className="grid gap-1.5">
+              <Label htmlFor="just">Por que não houve consentimento</Label>
+              <Textarea id="just" rows={2} value={justificativa} onChange={(e) => setJustificativa(e.target.value)} placeholder="Ex.: paciente inconsciente e sem acompanhante na chegada" />
+            </div>
+          )}
           <label className="flex items-center gap-2 text-apoio">
             <input type="checkbox" checked={urgente} onChange={(e) => setUrgente(e.target.checked)} /> Urgente
           </label>
           <div className="flex items-center gap-2">
-            <Button onClick={() => solicitar.mutate()} disabled={!pode || solicitar.isPending}><Send className="size-4" />Solicitar</Button>
+            <Button onClick={() => solicitar.mutate()} disabled={!pode || solicitar.isPending}
+              title={faltas.length ? `Falta: ${faltas.join(' · ')}` : undefined}><Send className="size-4" />Solicitar</Button>
             {solicitar.error && <span className="text-apoio text-critico">{(solicitar.error as Error).message}</span>}
           </div>
         </CardContent>
