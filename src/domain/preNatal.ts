@@ -9,6 +9,25 @@
 
 export type Agravo = 'sifilis' | 'hiv' | 'hepatite_b' | 'hepatite_c'
 
+/** Pré-natal do parceiro (U6, E3; migration 20270415000011): só a situação dos
+ *  exames; o resultado é da parceria, no prontuário dela. */
+export type Parceria = {
+  paciente_id: string
+  nome: string
+  consultas: number
+  exames: { nome: string; situacao: string }[]
+  testes_rapidos: number
+}
+
+/** Resumo da parceria para a linha do pré-natal. */
+export function resumoParceria(p: Parceria | null | undefined): string {
+  if (!p) return 'Pré-natal do parceiro: ainda não veio'
+  const comResultado = p.exames.filter((x) => x.situacao === 'resultado').length
+  return [`Parceria: ${p.nome}`, `${p.consultas} ${p.consultas === 1 ? 'consulta' : 'consultas'}`,
+    `exames ${comResultado}/${p.exames.length} com resultado`,
+    `${p.testes_rapidos} ${p.testes_rapidos === 1 ? 'teste rápido' : 'testes rápidos'}`].join(' · ')
+}
+
 export type Gestacao = {
   id: string
   origem: 'consulta' | 'manual'
@@ -20,6 +39,7 @@ export type Gestacao = {
   desfecho: 'parto' | 'aborto' | null
   desfecho_em: string | null
   proxima_consulta: string | null
+  parceria?: Parceria | null
   // só com a DUM (sem ela não há janela)
   primeira_consulta?: string | null
   consultas?: number

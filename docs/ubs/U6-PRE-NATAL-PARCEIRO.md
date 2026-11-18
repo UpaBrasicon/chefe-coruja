@@ -91,3 +91,19 @@ Um PR, como os outros do U6:
   - consulta: aba Exames com a linha "Parceria";
   - pré-natal: a parceria e os exames dela.
 - Testes de banco e de tela, homologação, PR com CI verde, ok produção.
+
+## Implementação (18/11/2026)
+
+- **Migration `20270415000011_ubs_pre_natal_parceiro.sql`:**
+  - tipo de atendimento `pre_natal_parceiro` no CHECK e na lista da ficha;
+  - tabela `pre_natal_parcerias`, que liga a ficha da parceria à gestação (acesso só por RPC);
+  - `registrar_ficha`: com o tipo novo, exige a gestante (`gestante_id`) com pré-natal ativo na UBS;
+  - lista do enfermeiro com a linha "parceria". Na ficha da parceria só vale essa linha; nas outras fichas, pré-natal e hiperdia;
+  - o registro da gestação ganha `parceria`: nome, consultas encerradas, situação dos exames e número de testes rápidos. Nunca o resultado, que é da parceria e fica no prontuário dela.
+- **Tela:**
+  - recepção: o tipo "Pré-natal do parceiro" pede a gestante (busca no cadastro);
+  - consulta da parceria: a aba Exames mostra a linha "Pré-natal do parceiro", com o aviso de que ABO e Rh são só para gestante Rh negativo;
+  - a Conduta já vem com CIAP A29;
+  - Pré-natal: cada gestante mostra a linha da parceria.
+- **SISAB (U15):** o tipo `pre_natal_parceiro` é a Consulta Pré-Natal do Parceiro (03.01.01.023-4). A exportação ainda não existe.
+- **Fica de fora:** marcar o pré-natal do parceiro pela agenda. A agenda aceita só consulta agendada ou programada; a parceria vem pela recepção.

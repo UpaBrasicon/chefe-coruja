@@ -295,7 +295,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
               {p && <AbaPrescricao pacienteId={ep.paciente_id} nome={nome} itens={p.prescricao} pediatrico={pediatrico} aoMudar={recarregar} ubs={ubs} />}
             </TabsContent>
             <TabsContent value="exames">
-              {p && <AbaExames episodioId={ep.id} pacienteId={ep.paciente_id} exames={p.exames} aoMudar={recarregar} protocoloEnfermagem={consultaEnfermagem} />}
+              {p && <AbaExames episodioId={ep.id} pacienteId={ep.paciente_id} exames={p.exames} aoMudar={recarregar} protocoloEnfermagem={consultaEnfermagem} tipoAtendimento={ep.tipo_atendimento_aps} />}
             </TabsContent>
             <TabsContent value="reav">
               {p && <AbaReavaliacao episodioId={ep.id} painel={p} reavHora={reavHora} setReavHora={setReavHora} aoMudar={recarregar} />}

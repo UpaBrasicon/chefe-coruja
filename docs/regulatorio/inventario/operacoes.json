@@ -552,6 +552,7 @@
         "public.agenda_fechamentos",
         "public.ubs_funcionamento",
         "public.pre_natal_gestacoes",
+        "public.pre_natal_parcerias",
         "public.puericultura_saidas",
         "public.programa_participantes"
       ]
