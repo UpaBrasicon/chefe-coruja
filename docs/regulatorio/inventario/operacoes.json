@@ -1173,9 +1173,9 @@
     },
     {
       "id": "rnds-integracoes",
-      "nome": "RNDS, API e integrações com outros sistemas",
+      "nome": "RNDS, SISAB, API e integrações com outros sistemas",
       "papel": "operador",
-      "finalidade": "Enviar dados à Rede Nacional de Dados em Saúde e trocar dados com sistemas que o cliente autorizou.",
+      "finalidade": "Enviar dados à Rede Nacional de Dados em Saúde e, da UBS, ao SISAB pelo PEC e-SUS APS do município, e trocar dados com sistemas que o cliente autorizou.",
       "base_legal": [
         "art. 11, II, a (Portaria GM/MS 1.434/2020, RNDS)",
         "art. 11, II, b",
@@ -1193,6 +1193,7 @@
       "sensivel": true,
       "acesso": [
         "Ministério da Saúde (RNDS)",
+        "PEC e-SUS APS do município (SISAB)",
         "sistemas autorizados pelo cliente",
         "gestor da unidade (exportação)"
       ],
@@ -1217,6 +1218,8 @@
         "public.rnds_config_unidade",
         "private.rnds_conferencias",
         "public.interop_outbox",
+        "public.ledi_config_unidade",
+        "public.ledi_fila",
         "public.webhook_destinos",
         "public.webhook_eventos",
         "public.webhook_entregas",

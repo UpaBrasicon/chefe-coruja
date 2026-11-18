@@ -11156,6 +11156,7 @@ export type Database = {
       rnds_reenviar: { Args: { p_item: string }; Returns: string }
       rnds_salvar_config: { Args: { p_unidade: string; p_financiamento: string | null; p_envio_ligado: boolean }; Returns: undefined }
       rnds_rac_aps_pelo: { Args: { p_unidade: string; p_pelo: string }; Returns: number }
+      ledi_salvar_config: { Args: { p_unidade: string; p_ibge: string | null; p_ine: string | null; p_pec_url: string | null }; Returns: undefined }
       rnds_retomar: { Args: { p_unidade: string }; Returns: undefined }
       rnds_salvar_credencial: { Args: { p_credencial: string | null; p_nome: string; p_unidade_principal: string; p_identificador: string | null; p_unidades: string[] }; Returns: string }
       rnds_definir_ambiente: { Args: { p_credencial: string; p_ambiente: string }; Returns: undefined }
