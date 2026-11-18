@@ -105,6 +105,7 @@ jobs:
         working-directory: services/assinador
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
+          ../../node_modules/.bin/tsc -p tsconfig.json
           npm test
       - name: src/lib (cópias das Edge Functions)
         run: node --experimental-strip-types --test src/lib/*.test.ts src/lib/offline/*.test.ts

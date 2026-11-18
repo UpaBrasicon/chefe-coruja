@@ -104,7 +104,7 @@ test('PAdES de ponta a ponta: o CMS confere com os bytes cobertos e o PDF contin
   assert.doesNotMatch(texto, /\/Perms/)
 
   // o CMS leva o certificado e a cadeia
-  const sd = new pkijs.SignedData({ schema: pkijs.ContentInfo.fromBER(cms.buffer.slice(cms.byteOffset, cms.byteOffset + cms.byteLength)).content })
+  const sd = new pkijs.SignedData({ schema: pkijs.ContentInfo.fromBER(cms.buffer.slice(cms.byteOffset, cms.byteOffset + cms.byteLength) as ArrayBuffer).content })
   assert.equal(sd.certificates?.length, 2)
 })
 
