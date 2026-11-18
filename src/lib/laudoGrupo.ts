@@ -8,8 +8,8 @@ export type ExameAguardandoLaudo = {
   id: string; exame: string; grupo: GrupoExame; situacao: string; pedido_em: string; urgencia: string | null; tipo: string | null
 }
 
-export const ROTULO_GRUPO_LAUDO: Record<GrupoExame, string> = { laboratorio: 'Laboratório', grafico: 'ECG e gráficos', imagem: 'Imagem' }
-const ORDEM: GrupoExame[] = ['laboratorio', 'grafico', 'imagem']
+export const ROTULO_GRUPO_LAUDO: Record<GrupoExame, string> = { laboratorio: 'Laboratório', grafico: 'ECG e gráficos', imagem: 'Imagem', citopatologia: 'Citopatológico' }
+const ORDEM: GrupoExame[] = ['laboratorio', 'grafico', 'imagem', 'citopatologia']
 
 /** Grupos com dois ou mais exames aguardando: só eles ganham o laudo do grupo (um exame só vai pelo registro do exame). */
 export function gruposParaLaudo(exames: ExameAguardandoLaudo[]): { grupo: GrupoExame; exames: ExameAguardandoLaudo[] }[] {

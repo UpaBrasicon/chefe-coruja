@@ -2,7 +2,8 @@
 // escolha dos botões de pedido rápido. A lista da unidade é do gestor, sobre o
 // grupo 02.02 do SIGTAP; o pedido em texto livre continua, sem código.
 
-export type TipoExame = 'laboratorio' | 'imagem'
+// U6, E2 (migration 20270415000012): o citopatológico (02.03.01) tem tipo e grupo próprios
+export type TipoExame = 'laboratorio' | 'imagem' | 'citopatologia'
 /** De onde veio o resultado: à mão, do LIS ou do RIS (porta FHIR, 5C-1 e 5C-2). */
 export type OrigemResultado = 'manual' | 'laboratorio' | 'imagem'
 
@@ -46,22 +47,24 @@ export function botoesDeExame(lista: ExameUnidade[] | undefined): BotaoExame[] {
   return temImagem ? daLista : [...daLista, ...EXAMES_LIVRES_OUTROS.map((rotulo) => ({ rotulo, procedimento: null }))]
 }
 
-/** Laboratório é o grupo 02.02 do SIGTAP; imagem e métodos gráficos, 02.04 a 02.07 e 02.11. */
+/** Laboratório é o grupo 02.02 do SIGTAP; citopatológico, 02.03.01; imagem e métodos gráficos, 02.04 a 02.07 e 02.11. */
 export const tipoDoCodigo = (codigo: string | null | undefined): TipoExame | null =>
-  !codigo ? null : codigo.startsWith('0202') ? 'laboratorio' : 'imagem'
+  !codigo ? null : codigo.startsWith('0202') ? 'laboratorio' : codigo.startsWith('020301') ? 'citopatologia' : 'imagem'
 
 // ── Ponto 12 do plantonista: laboratório, imagem e ECG em pedidos separados ──
-export type GrupoExame = 'laboratorio' | 'imagem' | 'grafico'
+export type GrupoExame = 'laboratorio' | 'imagem' | 'grafico' | 'citopatologia'
 export const GRUPOS_EXAME: { id: GrupoExame; rotulo: string; livres: string[] }[] = [
   { id: 'laboratorio', rotulo: 'Laboratório', livres: EXAMES_LIVRES_LAB },
   { id: 'imagem', rotulo: 'Imagem', livres: ['Radiografia de tórax'] },
   { id: 'grafico', rotulo: 'ECG', livres: ['ECG'] },
+  { id: 'citopatologia', rotulo: 'Citopatológico', livres: ['Citopatológico do colo do útero'] },
 ]
 
-/** O grupo pelo código SIGTAP (o mesmo de private.grupo_do_procedimento): 02.02, 02.11 e 02.04 a 02.07. */
+/** O grupo pelo código SIGTAP (o mesmo de private.grupo_do_procedimento): 02.02, 02.03.01, 02.11 e 02.04 a 02.07. */
 export function grupoDoCodigo(codigo: string | null | undefined): GrupoExame | null {
   if (!codigo) return null
   const g = codigo.slice(0, 4)
+  if (codigo.startsWith('020301')) return 'citopatologia'
   return g === '0202' ? 'laboratorio' : g === '0211' ? 'grafico' : ['0204', '0205', '0206', '0207'].includes(g) ? 'imagem' : null
 }
 
