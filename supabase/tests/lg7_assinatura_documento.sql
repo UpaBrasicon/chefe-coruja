@@ -50,7 +50,9 @@ SELECT pg_temp.falha($$INSERT INTO public.assinaturas (prescricao_id, medico_id,
 SELECT pg_temp.confere((public.minha_sessao_assinatura() ->> 'ativa')::boolean = false, 'sem sessão, o app vê a sessão inativa');
 RESET ROLE;
 
--- 2. assinador abre a sessão e assina
+-- 2. assinador abre a sessão e assina (o hash do código da conferência vem
+-- pronto do assinador; aqui é calculado antes de trocar de papel)
+INSERT INTO t VALUES ('codigo', encode(extensions.digest('codigo-secreto-de-teste-com-32-letras!!', 'sha256'), 'hex'));
 SET LOCAL ROLE assinador_app;
 SELECT pg_temp.falha($$SELECT private.abrir_sessao_assinatura('10000000-0000-4000-8000-000000000002', 'vidaas', 's', 'e', '1234', now() - interval '1 day', now() + interval '6 hours')$$,
   'Certificado vencido', 'certificado vencido não abre sessão');
@@ -69,7 +71,7 @@ SET LOCAL ROLE assinador_app;
 SELECT pg_temp.falha(format($$SELECT private.registrar_assinatura_documento('26000000-0000-4000-8000-000000000712', %L, repeat('a', 64), 'p', repeat('c', 64))$$, (SELECT valor FROM t WHERE nome = 'sessao')),
   'Só documento emitido e numerado', 'rascunho não se assina');
 INSERT INTO t VALUES ('assinatura', private.registrar_assinatura_documento('26000000-0000-4000-8000-000000000711', (SELECT valor FROM t WHERE nome = 'sessao')::uuid,
-  repeat('A', 64), 'unidade/paciente/assinados/doc.pdf', encode(extensions.digest('codigo-secreto-de-teste-com-32-letras!!', 'sha256'), 'hex'))::text);
+  repeat('A', 64), 'unidade/paciente/assinados/doc.pdf', (SELECT valor FROM t WHERE nome = 'codigo'))::text);
 SELECT pg_temp.falha(format($$SELECT private.registrar_assinatura_documento('26000000-0000-4000-8000-000000000711', %L, repeat('a', 64), 'p', repeat('d', 64))$$, (SELECT valor FROM t WHERE nome = 'sessao')),
   'Documento já assinado', 'documento não se assina duas vezes');
 RESET ROLE;
