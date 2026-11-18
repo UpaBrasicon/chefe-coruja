@@ -30,7 +30,7 @@ Versão 2026-11-17. Mapa técnico para o consultor regulatório (LG11, decisão 
 
 | Função | Classe | Motivo | Onde |
 |---|---|---|---|
-| Alerta de sepse do adulto no painel da internação e da observação | dentro (SaMD provável) | Regra (NEWS2, qSOFA e SOFA) sobre os sinais vitais de um paciente gera alerta. | `supabase/migrations/20270405000002_sepse_adulto_alerta.sql`, `src/clinico/escores/sepseAdulto.ts` |
+| Alerta de sepse do adulto no painel da internação e da observação | dentro (SaMD provável) | Regra (NEWS2, qSOFA e SOFA) sobre os sinais vitais de um paciente gera alerta. | `supabase/migrations/20270405000002_sepse_adulto_alerta.sql`, `src/clinico/escores/sepseAdulto.ts`, `supabase/migrations/20270418000095_sp1_desempenho_alerta_sepse.sql` |
 | Aviso "pensar em sepse" no atendimento (F7) | dentro (SaMD provável) | CID infeccioso mais NEWS2 da triagem geram aviso com exames a considerar. | `supabase/migrations/20270416000001_f7_aviso_sepse_atendimento.sql`, `src/components/clinico/AvisoSepseAtendimento.tsx` |
 | NEWS2 e PEWS calculados dos sinais vitais do prontuário | dentro (SaMD provável) | Cálculo automático de risco do paciente mostrado na tela. | `supabase/migrations/20260928000002_fase3_vitais_crus_acuidade.sql`, `src/clinico/news2.ts` |
 | Phoenix e PELOD-2 na pediatria | dentro (SaMD provável) | Critério de sepse pediátrica calculado com os dados da criança. | `supabase/migrations/20260928000007_fase3_phoenix_pelod2.sql` |

@@ -461,8 +461,10 @@
       "motivo": "Regra (NEWS2, qSOFA e SOFA) sobre os sinais vitais de um paciente gera alerta.",
       "onde": [
         "supabase/migrations/20270405000002_sepse_adulto_alerta.sql",
-        "src/clinico/escores/sepseAdulto.ts"
-      ]
+        "src/clinico/escores/sepseAdulto.ts",
+        "supabase/migrations/20270418000095_sp1_desempenho_alerta_sepse.sql"
+      ],
+      "desempenho": "Medido pelo SP1 (docs/clinico/SP1-METODO.md): sensibilidade, valor preditivo e carga de alertas contra a Sepsis-3 calculada dos dados (Seymour 2016)."
     },
     {
       "id": "aviso-sepse-atendimento",

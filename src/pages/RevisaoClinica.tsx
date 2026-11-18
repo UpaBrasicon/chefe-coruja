@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { data as dataBr } from '@/lib/formato'
+import { DesempenhoAlertaSepse } from '@/components/clinico/DesempenhoAlertaSepse'
 import { FilaTecnovigilancia, RelatosDaUnidade } from '@/components/clinico/FilaTecnovigilancia'
 import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
@@ -70,6 +71,9 @@ export default function RevisaoClinica() {
       {rt && <FilaTecnovigilancia />}
       {revisores.map((r) => <FilaRevisor key={r.tipo} papel={r} />)}
       {ehGestor && unidadeAtiva && <RelatosDaUnidade unidadeId={unidadeAtiva.unidade_id} />}
+      {(rt || ehGestor) && unidadeAtiva && (
+        <DesempenhoAlertaSepse unidadeId={unidadeAtiva.unidade_id} unidadeNome={unidadeAtiva.unidade?.nome ?? 'unidade'} rt={!!rt} />
+      )}
       <Panorama />
     </div>
   )
