@@ -12,13 +12,13 @@ Versão 2026-11-17. Mapa técnico para o consultor regulatório (LG11, decisão 
 
 ## Resumo
 
-336 fichas: 230 dentro, 104 na zona cinzenta e 2 fora. Mais 10 funções do sistema que não são fichas.
+337 fichas: 231 dentro, 104 na zona cinzenta e 2 fora. Mais 10 funções do sistema que não são fichas.
 
 | Grupo | Classe | Revisam (LG13) | Fichas |
 |---|---|---|---|
 | Escores da Central | dentro (SaMD provável) | medico | 46 |
 | Condutas e calculadoras do adulto | dentro (SaMD provável) | medico + farmaceutico | 124 |
-| Condutas e calculadoras da pediatria | dentro (SaMD provável) | medico + farmaceutico | 56 |
+| Condutas e calculadoras da pediatria | dentro (SaMD provável) | medico + farmaceutico | 57 |
 | Escores que alimentam alertas no prontuário | dentro (SaMD provável) | medico | 4 |
 | Apoio à classificação de risco | zona cinzenta | medico + enfermeiro | 5 |
 | Escalas e diagnósticos de enfermagem | zona cinzenta | medico + enfermeiro | 3 |
@@ -61,11 +61,11 @@ Orienta conduta de um paciente; a maior parte calcula dose, volume ou escore pel
 
 ### Condutas e calculadoras da pediatria
 
-`pediatria` · dentro (SaMD provável) · revisam: medico + farmaceutico · 56 fichas
+`pediatria` · dentro (SaMD provável) · revisam: medico + farmaceutico · 57 fichas
 
 Calcula dose, volume ou escore pelo peso e pela idade da criança; só com fonte pediátrica.
 
-`ped-acidobase`, `ped-anafilaxia-icr`, `ped-artrite-osteomielite`, `ped-asma-icr`, `ped-bolus`, `ped-bronquiolite`, `ped-cad-ehh`, `ped-choque-icr`, `ped-choque-toxico-partes-moles`, `ped-coma-hic`, `ped-crise-epileptica-icr`, `ped-crise-hipertensiva`, `ped-dengue`, `ped-diarreia-desidratacao`, `ped-dispositivos-fita`, `ped-doses-fita`, `ped-eletrolitos`, `ped-emergencias-oncologicas`, `ped-escorpiao-aranhas`, `ped-falciforme`, `ped-febre-imunodeprimido`, `ped-febre-sem-sinais`, `ped-fita-broselow`, `ped-fluidoterapia-manutencao`, `ped-glasgow-icr`, `ped-glomerulopatias-shu`, `ped-hda-hepatica`, `ped-hemostasia-trombose`, `ped-hemoterapia`, `ped-hipoglicemia`, `ped-ictericia-neonatal`, `ped-infeccao-urinaria`, `ped-infusoes`, `ped-injuria-renal`, `ped-insuficiencia-adrenal`, `ped-insuficiencia-cardiaca`, `ped-intoxicacoes`, `ped-kawasaki`, `ped-meningite`, `ped-pecarn-abdome`, `ped-pecarn-coluna-cervical`, `ped-pecarn-maior2-icr`, `ped-pecarn-menor2-icr`, `ped-pneumonia`, `ped-pops-icr`, `ped-queimadura`, `ped-rcp-icr`, `ped-reanimacao-neonatal`, `ped-sedacao-procedimento`, `ped-sodio`, `ped-tce-icr`, `ped-ten-4-facesp`, `ped-tetano-raiva`, `ped-tfg-schwartz`, `ped-via-aerea`, `ped-vias-aereas-superiores`
+`ped-acidobase`, `ped-ampolas`, `ped-anafilaxia-icr`, `ped-artrite-osteomielite`, `ped-asma-icr`, `ped-bolus`, `ped-bronquiolite`, `ped-cad-ehh`, `ped-choque-icr`, `ped-choque-toxico-partes-moles`, `ped-coma-hic`, `ped-crise-epileptica-icr`, `ped-crise-hipertensiva`, `ped-dengue`, `ped-diarreia-desidratacao`, `ped-dispositivos-fita`, `ped-doses-fita`, `ped-eletrolitos`, `ped-emergencias-oncologicas`, `ped-escorpiao-aranhas`, `ped-falciforme`, `ped-febre-imunodeprimido`, `ped-febre-sem-sinais`, `ped-fita-broselow`, `ped-fluidoterapia-manutencao`, `ped-glasgow-icr`, `ped-glomerulopatias-shu`, `ped-hda-hepatica`, `ped-hemostasia-trombose`, `ped-hemoterapia`, `ped-hipoglicemia`, `ped-ictericia-neonatal`, `ped-infeccao-urinaria`, `ped-infusoes`, `ped-injuria-renal`, `ped-insuficiencia-adrenal`, `ped-insuficiencia-cardiaca`, `ped-intoxicacoes`, `ped-kawasaki`, `ped-meningite`, `ped-pecarn-abdome`, `ped-pecarn-coluna-cervical`, `ped-pecarn-maior2-icr`, `ped-pecarn-menor2-icr`, `ped-pneumonia`, `ped-pops-icr`, `ped-queimadura`, `ped-rcp-icr`, `ped-reanimacao-neonatal`, `ped-sedacao-procedimento`, `ped-sodio`, `ped-tce-icr`, `ped-ten-4-facesp`, `ped-tetano-raiva`, `ped-tfg-schwartz`, `ped-via-aerea`, `ped-vias-aereas-superiores`
 
 ### Escores que alimentam alertas no prontuário
 

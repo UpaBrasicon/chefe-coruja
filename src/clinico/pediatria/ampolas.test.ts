@@ -3,7 +3,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, problemasDasAmpolas, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
+import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, fichaAmpolas, problemasDasAmpolas, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
 import { BOLUS } from './bolus.ts'
 import { DROGAS_RCP } from './rcp.ts'
 import { DOSES_SRI } from './viaAerea.ts'
@@ -64,7 +64,27 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
   }
 })
 
-test('lote 0: nenhuma ampola cadastrada ainda (a tela fica como antes)', () => {
-  assert.deepEqual(AMPOLAS, {})
+test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
+  assert.deepEqual(AMPOLAS.adenosina.map((a) => a.porMl), [3])
+  assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
+  assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [20])
+  assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
+  assert.equal(fichaAmpolas.versao, '2026-11-19.1')
+  assert.equal(fichaAmpolas.publico, 'pediatrico')
+})
+
+test('lote 1: atropina e lidocaína traqueal ficam sem mL (decisão do RT)', () => {
   assert.deepEqual(ampolasDoItem('rcp:atropina'), [])
+  assert.deepEqual(ampolasDoItem('bolus:atropina-bradicardia'), [])
+  assert.deepEqual(ampolasDoItem('rcp:lidocaina-et'), [])
+})
+
+test('lote 1: contas de exemplo', () => {
+  // adenosina 0,1 mg/kg em 15 kg = 1,5 mg = 0,5 mL da ampola de 3 mg/mL
+  assert.deepEqual(volumeDaAmpola([1.5, 1.5], ampolasDoItem('rcp:adenosina-1')[0])?.ml, [0.5, 0.5])
+  // amiodarona 5 mg/kg em 10 kg = 50 mg = 1 mL, a aspirar e diluir
+  assert.deepEqual(volumeDaAmpola([50, 50], ampolasDoItem('bolus:amiodarona-fvtv')[0]), { ml: [1, 1], aspirar: true })
+  // cálcio elementar 5 a 7 mg/kg em 10 kg = 50 a 70 mg: gluconato 10% (9 mg/mL) ≈ 5,6 a 7,8 mL
+  const gl = volumeDaAmpola([50, 70], ampolasDoItem('rcp:calcio')[0], 'elemento')!
+  assert.ok(Math.abs(gl.ml[0] - 50 / 9) < 1e-9 && Math.abs(gl.ml[1] - 70 / 9) < 1e-9)
 })

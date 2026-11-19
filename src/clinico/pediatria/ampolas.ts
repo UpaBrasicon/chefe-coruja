@@ -6,6 +6,9 @@
 // lote 1, quando entrar a primeira bula, e cada lote passa pela aprovação do
 // RT (gate LG10).
 //
+import type { Ficha, Fonte } from '../ficha.ts'
+import { LIVRO_PS_PED } from './fonte.ts'
+
 // Regras do RT:
 // - concentração do livro do ICr ou da bula do Bulário Eletrônico da ANVISA,
 //   sempre com a fonte; as listas locais (data/*.csv) nunca são fonte (ML9);
@@ -42,15 +45,71 @@ export type ItemComAmpola = {
   base?: BaseDose
 }
 
-/** Apresentações por princípio ativo. Vazio no lote 0. */
-export const AMPOLAS: Record<string, Apresentacao[]> = {}
+const BULARIO = (nome: string) => `https://consultas.anvisa.gov.br/#/bulario/q/?nomeProduto=${encodeURIComponent(nome)}`
+
+// Lote 1 (RCP e arritmias), bulas do profissional baixadas do Bulário Eletrônico
+// pelo RT e lidas em 19/11/2026; tabela aprovada pelo RT no mesmo dia. A
+// atropina injetável não tem bula no Bulário e o livro não cita a ampola: fica
+// sem mL. A lidocaína traqueal fica sem mL (preparo próprio; decisão do RT).
+export const BULA_ADENOSINA: Fonte = {
+  citacao: 'Bula do profissional, adenosina 3 mg/mL, Newcom Farmacêutica Ltda., expediente 0710158262, publicada em 17/07/2026 (Bulário Eletrônico da ANVISA, lida em 19/11/2026).',
+  url: BULARIO('adenosina'),
+}
+export const BULA_AMIODARONA: Fonte = {
+  citacao: 'Bulas do profissional, cloridrato de amiodarona 50 mg/mL injetável: Newcom Farmacêutica Ltda., expediente 0716157268, 20/07/2026; Hipolabor Farmacêutica Ltda., expediente 1466419245, 24/10/2024 (Bulário Eletrônico da ANVISA, lidas em 19/11/2026). As duas mandam diluir em glicose 5%, inclusive no bolo da PCR.',
+  url: BULARIO('cloridrato de amiodarona'),
+}
+export const BULA_LIDOCAINA: Fonte = {
+  citacao: 'Bulas do profissional, cloridrato de lidocaína 20 mg/mL (2%) sem vasoconstritor: Blau Farmacêutica S.A., expediente 1609670256, 16/12/2025; Hypofarma, expediente 1609728254, 16/12/2025; Hipolabor Farmacêutica Ltda., expediente 1616391243, 26/11/2024 (Bulário Eletrônico da ANVISA, lidas em 19/11/2026).',
+  url: BULARIO('cloridrato de lidocaína'),
+}
+
+/** Apresentações por princípio ativo. */
+export const AMPOLAS: Record<string, Apresentacao[]> = {
+  adenosina: [
+    { id: 'adenosina-3', rotulo: 'Adenosina 3 mg/mL (ampola de 2 mL)', porMl: 3, fonte: 'bula Newcom, expediente 0710158262, 17/07/2026', url: BULA_ADENOSINA.url },
+  ],
+  amiodarona: [
+    { id: 'amiodarona-50', rotulo: 'Amiodarona 50 mg/mL (ampola de 3 mL)', porMl: 50, diluir: true, fonte: 'bulas Newcom (0716157268, 20/07/2026) e Hipolabor (1466419245, 24/10/2024); diluir em glicose 5%', url: BULA_AMIODARONA.url },
+  ],
+  lidocaina: [
+    { id: 'lidocaina-20', rotulo: 'Lidocaína 2% sem vasoconstritor, 20 mg/mL', porMl: 20, fonte: 'bulas Blau (1609670256), Hypofarma (1609728254) e Hipolabor (1616391243)', url: BULA_LIDOCAINA.url },
+  ],
+  // dose em cálcio elementar (RCP): concentração elementar do livro (ML6)
+  calcio: [
+    { id: 'gluconato-10', rotulo: 'Gluconato de cálcio 10% (9 mg de cálcio elementar/mL)', porMl: 9, base: 'elemento', fonte: 'livro do ICr, Tabela 11, p. 558' },
+    { id: 'cloreto-10', rotulo: 'Cloreto de cálcio 10% (27 mg de cálcio elementar/mL)', porMl: 27, base: 'elemento', fonte: 'livro do ICr, Tabela 11, p. 559' },
+  ],
+}
+
+export const fichaAmpolas: Ficha = {
+  id: 'ped-ampolas',
+  titulo: 'Ampolas para a dose em mL (criança)',
+  versao: '2026-11-19.1',
+  publico: 'pediatrico',
+  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA],
+  revisadoEm: '19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
+}
 
 /**
  * Itens de dose que mostram a escolha da ampola, pela chave "lista:id":
  * 'bolus:<id>' (bolus.ts), 'rcp:<id>' (rcp.ts), 'sri:<id>' (viaAerea.ts).
- * Vazio no lote 0.
  */
-export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {}
+export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
+  // lote 1: RCP e arritmias
+  'rcp:adenosina-1': { principio: 'adenosina' },
+  'rcp:adenosina-2': { principio: 'adenosina' },
+  'rcp:amiodarona': { principio: 'amiodarona' },
+  'rcp:lidocaina-iv': { principio: 'lidocaina' },
+  'rcp:calcio': { principio: 'calcio', base: 'elemento' },
+  'bolus:adenosina-1': { principio: 'adenosina' },
+  'bolus:adenosina-2': { principio: 'adenosina' },
+  'bolus:adenosina-50-1': { principio: 'adenosina' },
+  'bolus:adenosina-50-2': { principio: 'adenosina' },
+  'bolus:amiodarona-fvtv': { principio: 'amiodarona' },
+  'bolus:amiodarona-iv': { principio: 'amiodarona' },
+  'bolus:lidocaina-iv': { principio: 'lidocaina' },
+}
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
 export const PECA_A_AMPOLA = 'Escolha a ampola para ver o volume em mL.'
