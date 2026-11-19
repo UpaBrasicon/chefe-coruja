@@ -42,3 +42,27 @@ A ficha fica retida, com o motivo, quando falta:
 3. **Paciente só com CNS.** Ele vai com `stCidadaoNaoPossuiCpf` = falso. A justificativa de "não possui CPF" só serve para os casos da lista do LEDI (recém-nascido, indígena sem CPF e outros), que o app não registra.
 4. **CBO.** O app não confere a tabela de CBOs de cada ficha (Tabelas 3 e 6). O PEC confere e devolve erro. O médico, o enfermeiro e o técnico de enfermagem já estão nas notas da SAPS.
 5. **Números dos campos.** Conferidos com o IDL oficial. A prova final é o PEC de homologação aceitar a ficha, no PR 4. O envio segue o exemplo oficial: login e ficha em `multipart/form-data`, e a ficha aceita volta com o código 201.
+
+## Envio ao PEC (PR 4)
+
+Quem envia é o serviço da RNDS no VPS (`services/rnds-envio`), num ciclo à parte (`src/ledi.ts`). Segue o exemplo oficial (`ExemploEnvioApi.java`):
+1. Login em `POST <pec>/api/recebimento/login`, com `usuario` e `senha` em `multipart/form-data`. O serviço guarda o cookie `JSESSIONID`.
+2. Envio em `POST <pec>/api/v1/recebimento/ficha`, com o campo `ficha` (arquivo `<uuidFicha>.esus`). O PEC responde 201 quando aceita.
+
+| Resposta | Resultado na fila |
+|---|---|
+| 201 | enviado |
+| 401, 403 ou redirecionamento | entra de novo uma vez; se repetir, reenviar |
+| 400, ou 500 de desserialização | erro: o PEC recusou a ficha; não tenta de novo |
+| outro 5xx, ou PEC fora do ar | reenviar: em 1, 2, 4… minutos, no máximo 1 hora; na 30ª tentativa vira erro |
+| login recusado (400) | retido: credencial errada ou inativa; tenta de novo em 1 hora |
+
+**Banco** (`20270415000023_ubs_u15_envio_pec.sql`):
+- `ledi_pegar_lote`, `ledi_dados_ficha` e `ledi_registrar_resultado` são só da chave de serviço.
+- `ledi_ligar_envio(unidade, ligado)` é do gestor da UBS, com segundo fator e auditoria. Ligar exige CNES, código IBGE e o endereço do PEC.
+
+**No VPS**, o ciclo só roda com:
+- `LEDI_INSTALACAO`: arquivo JSON com quem envia (`contraChave`, `uuidInstalacao`, `cpfOuCnpj` e `nomeOuRazaoSocial`, que é o CNPJ da empresa);
+- `LEDI_CREDENCIAIS_DIR`: uma credencial da API do PEC por unidade (`<unidade_id>.json`, com `usuario` e `senha`), gerada pelo administrador da instalação do PEC do município.
+
+Sem esses dois, o SISAB fica parado e a RNDS segue igual. Hoje nenhum dos dois está configurado. O primeiro envio real espera o município: PEC 5.5.26 ou superior, com HTTPS e a credencial da API.
