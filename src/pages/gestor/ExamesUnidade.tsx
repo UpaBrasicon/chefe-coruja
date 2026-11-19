@@ -75,6 +75,15 @@ export default function ExamesUnidade() {
     onSuccess: () => { setRetirando(null); setMotivo(''); recarregar() },
   })
 
+  // SP2 (L2 = A): exames da sepse com SIGTAP e LOINC conferidos nas tabelas oficiais
+  const sepse = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('aplicar_exames_sepse', { p_unidade: unidadeId! })
+      if (error) throw error
+      return data as unknown as { incluidos: string[]; loinc_preenchido: string[]; mantidos: { exame: string; loinc_atual: string; loinc_referencia: string }[] }
+    },
+    onSuccess: recarregar,
+  })
   const exames = lista.data?.exames ?? []
   const pode = !!lista.data?.pode_definir
   const naLista = new Set(exames.map((e) => e.procedimento))
@@ -88,7 +97,23 @@ export default function ExamesUnidade() {
         titulo="Exames da unidade"
         descricao="Exames que a unidade oferece, do SIGTAP: laboratório (02.02), imagem (02.04 a 02.07) e métodos gráficos como o ECG (02.11), com o nome que aparece no pedido. Os marcados como botão aparecem no pedido rápido do atendimento. Sem lista, o pedido busca nesses grupos inteiros."
       />
-      <MensagemErro texto={(lista.error ?? salvar.error ?? retirar.error) ? ((lista.error ?? salvar.error ?? retirar.error) as Error).message : null} />
+      <MensagemErro texto={(lista.error ?? salvar.error ?? retirar.error ?? sepse.error) ? ((lista.error ?? salvar.error ?? retirar.error ?? sepse.error) as Error).message : null} />
+      {pode && (
+        <section className="flex flex-wrap items-center gap-2 rounded-container border border-fio bg-superficie p-3 text-apoio text-tinta-apoio">
+          <span className="min-w-0 flex-[1_1_320px]">
+            Exames da sepse (hemograma, creatinina, bilirrubina, gasometria, lactato, PCR e hemocultura) com o LOINC para o laboratório integrado. Entra o que falta; o que já tem outro LOINC fica como está.
+          </span>
+          <Button size="sm" variant="outline" disabled={sepse.isPending} onClick={() => sepse.mutate()}>Aplicar exames da sepse</Button>
+          {sepse.data && (
+            <span role="status" className="basis-full text-tinta">
+              {sepse.data.incluidos.length ? `Incluídos: ${sepse.data.incluidos.join(', ')}. ` : ''}
+              {sepse.data.loinc_preenchido.length ? `LOINC preenchido: ${sepse.data.loinc_preenchido.join(', ')}. ` : ''}
+              {sepse.data.mantidos.length ? `Mantidos com outro LOINC (confira): ${sepse.data.mantidos.map((m) => `${m.exame} (${m.loinc_atual}; referência ${m.loinc_referencia})`).join(', ')}. ` : ''}
+              {!sepse.data.incluidos.length && !sepse.data.loinc_preenchido.length && !sepse.data.mantidos.length ? 'Os exames da sepse já estavam na lista com o LOINC.' : ''}
+            </span>
+          )}
+        </section>
+      )}
 
       {pode && !editando && (
         <section className="flex flex-col gap-2 rounded-container border border-fio bg-superficie p-3">

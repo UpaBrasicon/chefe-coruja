@@ -12315,6 +12315,8 @@ export type Database = {
       casos_revisao_alerta_sepse: { Args: { p_meses: number; p_motivo: string; p_unidade: string }; Returns: Json }
       desempenho_alerta_sepse: { Args: { p_meses?: number; p_unidade: string }; Returns: Json }
       registrar_alerta_sepse_internacao: { Args: { p_paciente: string; p_unidade: string }; Returns: boolean }
+      aplicar_exames_sepse: { Args: { p_unidade: string }; Returns: Json }
+      recusas_laboratorio_sem_pedido: { Args: { p_semanas?: number; p_unidade: string }; Returns: Json }
       fila_revisao_ferramentas: {
         Args: { p_tipo: string }
         Returns: {
