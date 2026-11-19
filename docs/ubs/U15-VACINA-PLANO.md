@@ -65,7 +65,7 @@ Hoje esses itens contam zero no app (U13, G1 = A: "fora do app").
 
 ## Plano em PRs (se VC1 a VC7 = A)
 
-1. **Tabelas de referência:** imunobiológico, estratégia, dose, grupo de atendimento, fabricante, via, local de aplicação e a relação imunobiológico × estratégia × dose, do LEDI 8.7.0, no banco.
+1. **Tabelas de referência:** imunobiológico, estratégia, dose, grupo de atendimento, fabricante, via, local de aplicação e a relação imunobiológico × estratégia × dose, do LEDI 8.7.0, no banco. Feito na migration `20270415000025_ubs_u15_vacina_referencias.sql` (schema `terminologia`, 871 regras). A influenza tetravalente (77) e o HPV nonavalente (93) não têm regra no LEDI: no app, só como registro anterior. Os códigos de HPV são 60 (bivalente), 67 (quadrivalente) e 93 (nonavalente).
 2. **CPF (VC7):** justificativa na recepção da UBS e nas fichas FAI e FP já existentes.
 3. **Lotes da UBS (VC3).**
 4. **Sala de vacina:**
