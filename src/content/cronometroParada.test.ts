@@ -18,7 +18,10 @@ test('causas reversíveis da AHA 2025: 11 na criança (com hipoglicemia), 10 no 
   for (const c of [...CAUSAS_REVERSIVEIS.crianca.itens, ...CAUSAS_REVERSIVEIS.adulto.itens]) {
     assert.ok(c.identificar && c.tratar && c.fonte, c.causa)
   }
-  assert.equal(CAUSAS_REVERSIVEIS.crianca.itens.find((c) => c.causa === 'Trombose coronária')?.tratar, 'Sem fonte aberta.')
+  // CL2: dose nova sem diretriz vem marcada
+  assert.match(CAUSAS_REVERSIVEIS.crianca.itens.find((c) => c.causa === 'Trombose pulmonar')!.tratar, /sem diretriz/)
+  // CL4: punção do adulto pela ERC (linha axilar anterior)
+  assert.match(CAUSAS_REVERSIVEIS.adulto.itens.find((c) => c.causa === 'Pneumotórax hipertensivo')!.tratar, /axilar anterior/)
   // CR3: hipercalemia do adulto sem número de glicose (divergência 25 × 50 g vai para o lote D11)
   assert.ok(!/\d+ ?g\b/.test(CAUSAS_REVERSIVEIS.adulto.itens.find((c) => c.causa === 'Hipo ou hipercalemia')!.tratar))
   assert.match(CAUSAS_REVERSIVEIS.crianca.fonte, /Part 8, Figura 2/)

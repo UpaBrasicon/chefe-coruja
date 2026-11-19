@@ -61,3 +61,26 @@ Os trechos e os locais de cada fonte estão em [CRONOMETRO-PARADA-CAUSAS.md](CRO
 1. **Glicose na hipercalemia do adulto:** a ferramenta PCR do adulto usa 25 g de glicose com 10 U de insulina (`pcr.ts`, manual p. 51). A AHA 2025, Part 10, Tabela 3, dá 50 g. Por isso o cronômetro não mostra número de glicose (CR3).
 2. **KCl no adulto:** a manutenção tem errata no app. A diretriz coreana 2025 (Part 5) dá 10 mmol em 5 a 10 min, depois de 2 mmol/min por 10 min.
 3. **Força da recomendação:** na hipercalemia (cálcio, bicarbonato, glicose com insulina) e na naloxona durante a parada, a AHA 2025 classifica como 2b. A tela diz "benefício na parada não estabelecido".
+
+## Lacunas buscadas no PubMed (versão 2026-11-19.1)
+
+O RT pediu em 19/11/2026 que o que faltava fosse buscado no PubMed. As decisões foram CL1–CL4 = A:
+
+- **CL1:** cada linha diz a fonte e o nível dela: diretriz, consenso ou revisão.
+- **CL2:** as doses novas na criança entram com a fonte e o nível: KCl na hipocalemia peri-parada, alteplase no TEP e emulsão lipídica. O alteplase pediátrico vem marcado "protocolo de revisão, sem diretriz".
+- **CL3:** a ERC 2021, na tradução alemã aberta no PMC, vale enquanto a 2025 não estiver aberta.
+- **CL4:** a punção do adulto segue a ERC (4º ou 5º EIC, linha axilar anterior).
+
+Trechos e locais de cada fonte em [CRONOMETRO-PARADA-LACUNAS.md](CRONOMETRO-PARADA-LACUNAS.md).
+
+**Continua sem fonte aberta:**
+- volume em mL/kg próprio da parada na criança, e volume em mL no adulto;
+- calibre e comprimento da agulha na criança;
+- trombose coronária como causa da parada na criança (o consenso de Kawasaki trata da síndrome coronária);
+- capnografia como pista da causa na criança;
+- potássio durante a parada em si;
+- dose pediátrica de trombolítico em diretriz.
+
+**Achados para o lote D11, sem mudança no cronômetro:**
+4. **Punção do pneumotórax:** a ferramenta de trauma do adulto (`trauma.ts`) punciona no 5º EIC, linha axilar média. A ERC 2021 aponta a linha axilar anterior, no 4º ou 5º EIC, como a de menor falha.
+5. **Emulsão lipídica:** a ferramenta PCR do adulto (`pcr.ts`) não traz o teto de 12 mL/kg nem os bolus extras.
