@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { dataPura } from '@/lib/formato'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
@@ -100,6 +101,7 @@ function ChavesAba() {
         </p>
       )}
       {ehSuperAdmin && <NovaChave unidades={unidades.data ?? []} />}
+      <RecusasLaboratorio />
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
         <Vazio icone={KeyRound} titulo="Nenhuma chave" texto="Nenhum integrador tem chave para as suas unidades." />
       ) : (
@@ -286,5 +288,29 @@ function CartaoChave({ c }: { c: Chave }) {
         ))}
       </CardContent>
     </Card>
+  )
+}
+
+// SP2 (L4 = A): laudo do laboratório sem pedido no sistema continua recusado;
+// o gestor vê quantos foram recusados por semana para decidir se muda a regra.
+function RecusasLaboratorio() {
+  const { unidadeAtiva, papeisDaUnidade, ehSuperAdmin } = useUnidade()
+  const unidadeId = unidadeAtiva?.unidade_id
+  const pode = !!unidadeId && (ehSuperAdmin || papeisDaUnidade.includes('gestor'))
+  const { data } = useQuery({
+    queryKey: ['recusas-laboratorio', unidadeId],
+    enabled: pode,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('recusas_laboratorio_sem_pedido', { p_unidade: unidadeId!, p_semanas: 8 })
+      if (error) throw error
+      return (data ?? []) as unknown as { semana: string; recusas: number }[]
+    },
+  })
+  if (!pode || !data?.length) return null
+  return (
+    <p className="rounded-container border border-fio bg-superficie px-3.5 py-2.5 text-apoio text-tinta-apoio">
+      Laudos do laboratório recusados porque o pedido não está no sistema (últimas 8 semanas, nesta unidade):{' '}
+      {data.map((s) => `semana de ${dataPura(s.semana)}: ${s.recusas}`).join('; ')}. O exame precisa ser pedido no Chefe Coruja para o laudo entrar.
+    </p>
   )
 }

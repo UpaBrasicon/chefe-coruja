@@ -116,7 +116,9 @@ export type Laudo = {
 function valorDaObservacao(o: Obj): { valor: string | null; unidade: string | null } {
   const q = obj(o.valueQuantity)
   if (q && (typeof q.value === 'number' || typeof q.value === 'string')) {
-    return { valor: `${texto(q.comparator) ?? ''}${String(q.value)}`, unidade: texto(q.unit) ?? texto(q.code) }
+    // SP2 (L3): número do JSON vai com vírgula decimal; o banco lê "150.000" como milhar
+    const n = typeof q.value === 'number' ? String(q.value).replace('.', ',') : String(q.value)
+    return { valor: `${texto(q.comparator) ?? ''}${n}`, unidade: texto(q.unit) ?? texto(q.code) }
   }
   if (typeof o.valueString === 'string') return { valor: o.valueString, unidade: null }
   const cc = obj(o.valueCodeableConcept)

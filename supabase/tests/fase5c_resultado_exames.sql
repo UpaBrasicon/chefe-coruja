@@ -159,7 +159,9 @@ BEGIN
   SELECT * INTO r FROM public.exame_resultados WHERE exame_id = e.id AND vigente;
   IF NOT e.critico OR e.resultado_origem <> 'laboratorio' OR r.laboratorio_ref <> 'LAB-123'
      OR (SELECT valor_num FROM public.exame_resultado_itens WHERE resultado_id = r.id AND analito = 'Hemoglobina') <> 6.9
-     OR (SELECT valor_num FROM public.exame_resultado_itens WHERE resultado_id = r.id AND analito = 'Leucócitos') IS NOT NULL
+     -- SP2 (L3 = A, 18/11/2026): ">50000" vira 50000 com o sinal à parte
+     OR (SELECT valor_num FROM public.exame_resultado_itens WHERE resultado_id = r.id AND analito = 'Leucócitos') IS DISTINCT FROM 50000
+     OR (SELECT comparador FROM public.exame_resultado_itens WHERE resultado_id = r.id AND analito = 'Leucócitos') IS DISTINCT FROM '>'
      OR (SELECT valor_texto FROM public.exame_resultado_itens WHERE resultado_id = r.id AND analito = 'Leucócitos') <> '>50000'
      OR e.resultado NOT LIKE 'Hemoglobina 6,9 g/dL;%' THEN
     RAISE EXCEPTION 'FALHOU: resultado do laboratório: % / %', e, r;
