@@ -18,11 +18,18 @@ import * as React from 'react'
 import { TurnstileWidget } from './TurnstileWidget'
 
 export const TURNSTILE_SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined)?.trim() || undefined
+
+/** Aviso quando a pessoa envia antes de a verificação terminar. */
+export const AVISO_TURNSTILE_PENDENTE =
+  'Falta a verificação anti-robô: marque a caixa "Confirme que é humano" no quadro do Cloudflare, acima do botão.'
+
 /**
  * Token do Turnstile para uma chamada ao Auth sem sessão.
  * `pronto` é verdadeiro quando há token (ou quando o Turnstile não está
- * configurado neste ambiente). Passe `captchaToken` em `options` e chame
- * `resetar()` depois de cada tentativa.
+ * configurado neste ambiente). `aguardando` é verdadeiro enquanto o quadro
+ * ainda não deu o token e não falhou (o botão de enviar fica parado).
+ * `pendente` é a frase a mostrar se a pessoa enviar antes. Passe
+ * `captchaToken` em `options` e chame `resetar()` depois de cada tentativa.
  */
 export function useTurnstile() {
   const [token, setToken] = React.useState<string | null>(null)
@@ -39,8 +46,10 @@ export function useTurnstile() {
   return {
     ativo,
     pronto: !ativo || !!token,
+    aguardando: ativo && !token && !falha,
     captchaToken: token ?? undefined,
     falha,
+    pendente: falha ?? AVISO_TURNSTILE_PENDENTE,
     resetar,
     widget,
   }
