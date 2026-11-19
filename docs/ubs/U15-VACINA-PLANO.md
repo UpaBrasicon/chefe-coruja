@@ -67,7 +67,7 @@ Hoje esses itens contam zero no app (U13, G1 = A: "fora do app").
 
 1. **Tabelas de referência:** imunobiológico, estratégia, dose, grupo de atendimento, fabricante, via, local de aplicação e a relação imunobiológico × estratégia × dose, do LEDI 8.7.0, no banco. Feito na migration `20270415000025_ubs_u15_vacina_referencias.sql` (schema `terminologia`, 871 regras). A influenza tetravalente (77) e o HPV nonavalente (93) não têm regra no LEDI: no app, só como registro anterior. Os códigos de HPV são 60 (bivalente), 67 (quadrivalente) e 93 (nonavalente).
 2. **CPF (VC7):** justificativa na recepção da UBS e nas fichas FAI e FP já existentes. Feito na migration `20270415000026_ubs_u15_cpf_justificativa.sql`: o motivo fica em `pacientes.cpf_justificativa`, a tela da recepção da UBS pede, e a ficha sem CPF e sem motivo fica retida no SISAB. O banco não trava a ficha do atendimento.
-3. **Lotes da UBS (VC3).**
+3. **Lotes da UBS (VC3).** Feito na migration `20270415000027_ubs_u15_vacina_lotes.sql` e na tela "Lotes de vacina" (gestor e enfermeiro da UBS): imunobiológico com regra no LEDI, lote no formato do LEDI, fabricante da RNDS e validade; o vencido e o desativado não vão à sala de vacina.
 4. **Sala de vacina:**
    - tela do técnico de enfermagem e do enfermeiro, com a regra da tabela;
    - caderneta do paciente com o registro anterior (VC4).
