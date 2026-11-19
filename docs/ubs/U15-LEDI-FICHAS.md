@@ -5,7 +5,7 @@ Este PR monta as fichas que vão ao PEC e-SUS APS do município: a Ficha de Aten
 ## Formato
 
 - **Arquivo:** o `DadoTransporte`, serializado no Apache Thrift, protocolo binário. A ficha vai dentro dele, também serializada, no campo `dadoSerializado`.
-- **Números dos campos:** são os "#N" dos dicionários de dados do LEDI 8.7.0.
+- **Números dos campos:** são os do IDL oficial do Thrift, no repositório de exemplos da Bridge que a documentação do LEDI indica (`laboratoriobridge/esusaps-integracao`, commit 9316f280f526). Nos registros filhos (FAI e FP) e no `VariasLotacoesHeader`, esses números não são os "#N" dos dicionários. Na FAI, por exemplo, as medições são o 39 e os problemas o 40. A primeira versão do PR 3 usou os "#N" e foi corrigida antes de qualquer envio.
 - **Tipos:** String vira `string`, Long vira `i64`, Integer vira `i32`, Boolean vira `bool`, Double vira `double` e List vira `list`.
 - **Cabeçalho do transporte:**
   - tipo 4 (FAI) ou 7 (FP);
@@ -41,4 +41,4 @@ A ficha fica retida, com o motivo, quando falta:
 2. **Escuta inicial.** Ela vai como FAI tipo 4. Escuta encerrada sem conduta fica retida. No PEC, a escuta inicial também pode ir como Ficha de Procedimentos (`statusEscutaInicialOrientacao`). Isso será conferido com o PEC de homologação no PR 4.
 3. **Paciente só com CNS.** Ele vai com `stCidadaoNaoPossuiCpf` = falso. A justificativa de "não possui CPF" só serve para os casos da lista do LEDI (recém-nascido, indígena sem CPF e outros), que o app não registra.
 4. **CBO.** O app não confere a tabela de CBOs de cada ficha (Tabelas 3 e 6). O PEC confere e devolve erro. O médico, o enfermeiro e o técnico de enfermagem já estão nas notas da SAPS.
-5. **Números dos campos.** Os números do Thrift seguem os "#N" dos dicionários. A conferência final é o PEC de homologação aceitar a ficha, no PR 4.
+5. **Números dos campos.** Conferidos com o IDL oficial. A prova final é o PEC de homologação aceitar a ficha, no PR 4. O envio segue o exemplo oficial: login e ficha em `multipart/form-data`, e a ficha aceita volta com o código 201.

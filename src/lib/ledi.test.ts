@@ -56,27 +56,31 @@ test('FAI: DadoTransporte com tipo 4, CNES, IBGE, versão 8.7.0 e a ficha dentro
   const f = desserializar(t[7]) as Record<number, never>
   assert.equal(texto(f[3]), UUID)
   assert.equal(f[4], 3) // tpCdsOrigem = sistemas terceiros
+  // VariasLotacoesHeaderThrift: 6 principal, 8 data, 9 IBGE
   const lot = (f[1] as Record<number, never>)
-  assert.equal(texto((lot[1] as Record<number, never>)[1]), '700000000000005')
-  assert.equal(texto((lot[1] as Record<number, never>)[2]), '225142')
-  assert.equal(texto(lot[4]), '3550308')
+  assert.equal(texto((lot[6] as Record<number, never>)[1]), '700000000000005')
+  assert.equal(texto((lot[6] as Record<number, never>)[2]), '225142')
+  assert.equal(lot[8], BigInt(Date.parse('2026-11-10T13:25:00Z')))
+  assert.equal(texto(lot[9]), '3550308')
 
   const c = (f[2] as never[])[0] as Record<number, never>
   assert.equal(texto(c[2]), '898000000000002') // CNS, sem CPF
-  assert.equal(c[24], undefined)
+  assert.equal(c[30], undefined)
   assert.equal(c[3], BigInt(Date.parse('1956-03-10T00:00:00-03:00')))
   assert.equal(c[4], 1n) // UBS
   assert.equal(c[5], 0n) // masculino
   assert.equal(c[6], 1n) // 10h de Brasília: manhã
   assert.equal(c[7], 1n) // consulta programada
-  assert.deepEqual(c[17], [2n]) // conduta sem repetição
-  assert.equal(c[33], false)
-  const probs = (c[28] as Record<number, never>[]).map((p) => texto(p[5]) ?? texto(p[4]))
+  assert.deepEqual(c[22], [2n]) // conduta sem repetição
+  assert.equal(c[28], BigInt(Date.parse('2026-11-10T13:05:00Z')))
+  assert.equal(c[29], BigInt(Date.parse('2026-11-10T13:25:00Z')))
+  assert.equal(c[47], false)
+  const probs = (c[40] as Record<number, never>[]).map((p) => texto(p[5]) ?? texto(p[4]))
   assert.deepEqual(probs, ['I10', 'E119', 'K86', 'ABP022'])
-  const ex = (c[13] as Record<number, never>[])[0]
+  const ex = (c[17] as Record<number, never>[])[0]
   assert.equal(texto(ex[1]), '0202010503')
   // medições: peso e altura; a pressão só vai com a sistólica e a diastólica juntas
-  assert.deepEqual(c[8], { 11: 70.25, 12: 170 })
+  assert.deepEqual(c[39], { 11: 70.25, 12: 170 })
   assert.ok(arq.avisos.some((a) => a.includes('hipertensao_arterial')))
 })
 
@@ -97,9 +101,9 @@ test('FAI: CPF no lugar do CNS, nunca os dois; pressão vai com as duas medidas'
   carga.medicoes = [...carga.medicoes, { conceito: 'pressao-arterial-diastolica', loinc: '8462-4', valor: 91, unidade: 'mmHg', aferido_em: '2026-11-10T12:50:00Z' }]
   const t = desserializar(fichaFai(UUID, carga, { ...INST }).bytes) as Record<number, never>
   const c = ((desserializar(t[7]) as Record<number, never>)[2] as never[])[0] as Record<number, never>
-  assert.equal(texto(c[24]), '52998224725')
+  assert.equal(texto(c[30]), '52998224725')
   assert.equal(c[2], undefined)
-  assert.deepEqual(c[8], { 3: 142, 4: 91, 11: 70.25, 12: 170 })
+  assert.deepEqual(c[39], { 3: 142, 4: 91, 11: 70.25, 12: 170 })
 })
 
 test('FP: DadoTransporte com tipo 7 e o procedimento com quem fez, turno e cidadão', async () => {
@@ -119,9 +123,12 @@ test('FP: DadoTransporte com tipo 7 e o procedimento com quem fez, turno e cidad
   assert.equal(texto(h[4]), '0001234567')
   assert.equal(texto(h[6]), '3550308')
   const c = (f[4] as never[])[0] as Record<number, never>
-  assert.deepEqual((c[9] as Uint8Array[]).map((x) => texto(x)), ['0214010015'])
-  assert.equal(c[5], 1n) // feminino
-  assert.equal(c[7], 2n) // 17h30 de Brasília: tarde
+  assert.deepEqual((c[8] as Uint8Array[]).map((x) => texto(x)), ['0214010015'])
+  assert.equal(c[4], 1n) // feminino
+  assert.equal(c[5], 1n) // UBS
+  assert.equal(c[6], 2n) // 17h30 de Brasília: tarde
+  assert.equal(texto(c[2]), '898000000000002')
+  assert.equal(c[20], false)
   assert.equal(turnoLedi('2026-11-10T20:30:00Z'), 2) // 17h30 de Brasília: tarde
   assert.equal(turnoLedi('2026-11-10T21:00:00Z'), 3) // 18h: noite
   assert.ok(arq.avisos[0].includes('quantidade 2'))
