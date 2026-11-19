@@ -66,3 +66,13 @@ Quem envia é o serviço da RNDS no VPS (`services/rnds-envio`), num ciclo à pa
 - `LEDI_CREDENCIAIS_DIR`: uma credencial da API do PEC por unidade (`<unidade_id>.json`, com `usuario` e `senha`), gerada pelo administrador da instalação do PEC do município.
 
 Sem esses dois, o SISAB fica parado e a RNDS segue igual. Hoje nenhum dos dois está configurado. O primeiro envio real espera o município: PEC 5.5.26 ou superior, com HTTPS e a credencial da API.
+
+## Ficha de Vacinação (vacina, PR 6)
+
+Tipo 14, pelo IDL oficial `ficha_vacinacao.thrift` (mesmo commit). Montagem em `fichaFv` (`src/interop/ledi/fichas.ts`); carga em `private.ledi_carga_fv` (`20270415000030_ubs_u15_ficha_vacinacao.sql`).
+
+- **Uma ficha por vacina registrada**, com o profissional que registrou no cabeçalho (UnicaLotacaoHeader). A vacina aplicada e a transcrita da caderneta (registro anterior) vão do mesmo jeito; a transcrita leva a data em `dataRegistroAnterior`.
+- **Números do IDL, não do dicionário.** O fabricante vai no campo 19 (`coRndsFabricante`). O campo 5 (`fabricante`) é o antigo e fica vazio. A condição maternal vai no 15; os campos 9 e 10 (gestante e puérpera) são antigos e ficam vazios.
+- **Retém:** profissional com CBO fora da Tabela 12 do LEDI; paciente sem CPF e sem motivo (VC7); vacina sem condição maternal fora do sexo masculino; BCG sem "comunicante de hanseníase"; vacina aplicada sem lote, fabricante, estratégia ou grupo.
+- **Cancelada antes do envio:** a ficha é descartada. **Em aberto:** a vacina cancelada depois de enviada pediria a ficha de cancelamento (`uuidFichaCancelada`, campo 5 do mestre), que o app ainda não manda.
+- Pesquisa clínica vai sempre "não": a sala de vacina não registra o protocolo da ANVISA.

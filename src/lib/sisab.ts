@@ -12,7 +12,7 @@ export type PainelSisab = {
 
 export type ItemSisab = {
   id: string
-  tipo: 'fai' | 'fp'
+  tipo: 'fai' | 'fp' | 'fv'
   uuid_ficha: string
   status: StatusItem
   tentativas: number
@@ -22,7 +22,7 @@ export type ItemSisab = {
   proxima_tentativa_em: string | null
 }
 
-export const ROTULO_FICHA: Record<ItemSisab['tipo'], string> = { fai: 'Atendimento individual', fp: 'Procedimento' }
+export const ROTULO_FICHA: Record<ItemSisab['tipo'], string> = { fai: 'Atendimento individual', fp: 'Procedimento', fv: 'Vacinação' }
 export { ROTULO_STATUS, VARIANTE_STATUS }
 
 /** O que falta para ligar o envio (ledi_ligar_envio exige os três). */
