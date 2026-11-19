@@ -36,6 +36,8 @@ export type DosePeso = {
   porKg: Faixa
   /** máximo por dose, na mesma unidade */
   maximo?: number
+  /** de onde vem o máximo quando não é o livro (ex.: "AHA 2025"); sem o campo, a tela diz "do livro" */
+  fonteMaximo?: string
   /** concentração da solução do livro (unidade da dose por mL) → volume */
   porMl?: number
   /** volume por kg quando o livro dá o volume direto (sem concentração limpa) */

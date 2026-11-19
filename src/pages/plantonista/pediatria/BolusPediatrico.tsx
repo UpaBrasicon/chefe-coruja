@@ -18,6 +18,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { numero } from '@/lib/formato'
 
+import { doMaximo } from './formatoP2'
+
 const num = (x: number, casas = 2) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixaTxt = ([a, b]: [number, number], casas = 2) => (a === b ? num(a, casas) : `${num(a, casas)}–${num(b, casas)}`)
 const porKgTxt = (b: Bolus) => `${faixaTxt(b.faixa, 3)} ${b.unidade}${b.porKg ? '/kg' : ''}`
@@ -51,7 +53,7 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
       )}
       {fora && <p className="text-tinta-sussurro">Fora da condição do livro para o peso/idade informados.</p>}
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
-      {r?.noMaximo && <p className="text-atencao">Dose limitada ao máximo do livro.</p>}
+      {r?.noMaximo && <p className="text-atencao">Dose limitada ao máximo {doMaximo(b.fonteMaximo)}.</p>}
       {r?.abaixoDoAviso && b.aviso && <p className="text-atencao">{b.aviso.texto}</p>}
       {/* Piloto das calculadoras (C6 = A): nota e divergência recolhidas no item; a errata vai para a aba Armadilhas; os avisos de dose acima ficam à vista. */}
       {(b.nota || b.anexo2Adulto) && (
@@ -101,7 +103,7 @@ export function BolusPediatrico() {
         ...itens.flatMap((b) => {
           const r = calcularBolus(b, peso, idadeMeses)
           if (!r || r.aplica === 'nao') return []
-          return [`- ${b.nome}: ${faixaTxt(r.faixa)} ${b.unidade}${r.volumeMl ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ' (no máximo do livro)' : ''} · ${b.via} (${b.pagina})`]
+          return [`- ${b.nome}: ${faixaTxt(r.faixa)} ${b.unidade}${r.volumeMl ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ` (no máximo ${doMaximo(b.fonteMaximo)})` : ''} · ${b.via} (${b.pagina})`]
         }),
       ]),
       fonte: textoFontes(fichaBolusPediatrico),

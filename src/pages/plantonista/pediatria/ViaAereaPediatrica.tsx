@@ -17,7 +17,7 @@ import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
-import { faixaTxt, num, pesoValido } from './formatoP2'
+import { doMaximo, faixaTxt, num, pesoValido } from './formatoP2'
 import { Bloco, CampoPesoRn, LinhaDose, LinhaReferencia } from './PecasP2'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -25,7 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 function doseP2Txt(d: DosePeso, peso: number): string[] {
   const r = calcularDose(d, peso)
   if (!r) return []
-  return [`- ${d.nome}: ${faixaTxt(r.dose)} ${d.unidade}${r.volumeMl && d.unidade !== 'mL' ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ' (limitado ao máximo do livro)' : ''} · ${d.via} (${d.pagina})`]
+  return [`- ${d.nome}: ${faixaTxt(r.dose)} ${d.unidade}${r.volumeMl && d.unidade !== 'mL' ? ` · ${faixaTxt(r.volumeMl)} mL` : ''}${r.noMaximo ? ` (limitado ao máximo ${doMaximo(d.fonteMaximo)})` : ''} · ${d.via} (${d.pagina})`]
 }
 
 const tuboTxt = (rotulo: string, t: Tubo) =>
