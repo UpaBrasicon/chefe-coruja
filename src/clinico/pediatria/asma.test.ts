@@ -3,7 +3,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
-import { CLASSIFICACAO_ASMA, DOSES_ASMA, fichaAsmaPediatrica, ipratropioNebulizacao } from './asma.ts'
+import { INDINNIMEO_ASMA_2018 } from '../fontesPubmed.ts'
+import { CLASSIFICACAO_ASMA, DOSES_ASMA, FIXOS_ASMA, fichaAsmaPediatrica, ipratropioNebulizacao } from './asma.ts'
 import { calcularDose } from './fonteP2.ts'
 
 const d = (id: string) => DOSES_ASMA.find((x) => x.id === id)!
@@ -36,4 +37,17 @@ test('salbutamol contínuo 0,5 mg/kg/h, máx. 20 mg/h; ipratrópio por peso', ()
   assert.ok(d('salbutamol-continuo').errata)
   assert.deepEqual(ipratropioNebulizacao(19.9), { mcg: 250, gotas: 20 })
   assert.deepEqual(ipratropioNebulizacao(20), { mcg: 500, gotas: 40 })
+})
+
+// ── Lote D11 (decisão do RT de 19/11/2026): item 14 ──
+
+test('lote D11: salbutamol em nebulização intermitente, 2,5 a 5 mg (Sociedade Italiana de Pediatria 2018)', () => {
+  assert.equal(fichaAsmaPediatrica.versao, '2026-11-19.1')
+  assert.ok(fichaAsmaPediatrica.fontes.includes(INDINNIMEO_ASMA_2018))
+  assert.match(fichaAsmaPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: item 14/)
+  const neb = FIXOS_ASMA.find((f) => /nebulização intermitente/.test(f.nome))!
+  assert.match(neb.dose, /^2,5 a 5 mg por nebulização.*até 3 vezes, a cada 20 a 30 min, na primeira hora/)
+  assert.match(neb.fonte!, /Sociedade Italiana de Pediatria/)
+  // os itens do livro seguem com a página do livro e sem fonte aberta
+  for (const f of FIXOS_ASMA.filter((x) => x !== neb)) assert.equal(f.fonte, undefined, f.nome)
 })

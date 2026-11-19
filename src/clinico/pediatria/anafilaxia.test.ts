@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
+import { CHINA_ANAFILAXIA_2020 } from '../fontesPubmed.ts'
 import { DOSES_ANAFILAXIA, epinefrinaDoseFixa, fenoterolGotas, fichaAnafilaxiaPediatrica } from './anafilaxia.ts'
 import { DIAS_ANO, calcularDose } from './fonteP2.ts'
 
@@ -37,9 +38,26 @@ test('segunda e terceira linha (Tabela 3, p. 101–102)', () => {
   assert.deepEqual(calcularDose(d('cristaloide'), 10)!.dose, [100, 200])
   assert.deepEqual(fenoterolGotas(12), { gotas: 4, mg: 1, noMaximo: false })
   assert.deepEqual(fenoterolGotas(45), { gotas: 10, mg: 2.5, noMaximo: true })
-  assert.deepEqual(calcularDose(d('difenidramina-texto'), 40)!.dose, [40, 50]) // máx. 50 mg (texto)
+  assert.deepEqual(calcularDose(d('difenidramina-texto'), 40)!.dose, [40, 40]) // 1 mg/kg pela diretriz chinesa 2020 (lote D11)
   assert.deepEqual(calcularDose(d('difenidramina-tabela'), 40)!.dose, [20, 40])
   assert.deepEqual(calcularDose(d('glucagon'), 40)!.dose, [800, 1000]) // máx. 1 mg
   assert.deepEqual(calcularDose(d('norepinefrina'), 10)!.dose, [0.5, 20])
   assert.ok(d('metilprednisolona').nota)
+})
+
+// ── Lote D11 (decisão do RT de 19/11/2026): item 10 ──
+
+test('lote D11: difenidramina pelo texto passa a 1 mg/kg, máx. 50 mg (diretriz chinesa 2020); Tabela 3 igual', () => {
+  assert.equal(fichaAnafilaxiaPediatrica.versao, '2026-11-19.1')
+  assert.ok(fichaAnafilaxiaPediatrica.fontes.includes(CHINA_ANAFILAXIA_2020))
+  assert.match(fichaAnafilaxiaPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: item 10/)
+  const t = d('difenidramina-texto')
+  assert.deepEqual(t.porKg, [1, 1])
+  assert.equal(t.maximo, 50)
+  const r = calcularDose(t, 70)!
+  assert.deepEqual(r.dose, [50, 50])
+  assert.equal(r.noMaximo, true)
+  assert.match(t.nota!, /\(p\. 100\) dá 1 a 2 mg\/kg.*diretriz chinesa/)
+  // a linha da Tabela 3 não muda
+  assert.deepEqual(d('difenidramina-tabela').porKg, [0.5, 1])
 })

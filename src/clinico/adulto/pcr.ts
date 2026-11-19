@@ -95,11 +95,23 @@ export const COSTR_2026_PCR: ItemCostr2026[] = [
 
 const PAG_PCR = 'cap. 2 PCR no adulto, p. 48–51 (Tabela 2)'
 
+// Lote D11 (decisão do RT de 19/11/2026, "Todas A"): itens 17, 18, 19 e 21 de
+// docs/clinico/D11-CORRECOES-FONTES.md. Nota da AHA 2025 (Part 10) na glicose com
+// insulina (50 g × 25 g do manual, sem trocar a dose) e a força 2b nas drogas da
+// hipercalemia; manutenção do KCl pela Coreia 2025 (Part 5) no lugar da errata;
+// bolus a mais e máximo da emulsão lipídica pelo ERC 2021.
+export const NOTA_HIPERCALEMIA_PCR_2B = 'AHA 2025, Part 10: 2b, benefício na parada não estabelecido.'
+
+/** Emulsão lipídica: máximo de 12 mL/kg (ERC 2021, lote D11). */
+export const EMULSAO_MAX_ML_KG = 12
+
 export const fichaPcrAdulto: Ficha = {
   ...fichaAdulto('adulto-pcr', 'Drogas e desfibrilação na PCR — adulto', PAG_PCR),
-  versao: '2026-11-16.1',
+  versao: '2026-11-19.1',
+  // Lote D11: as fontes novas (AHA 2025 Part 10, Coreia 2025 Part 5, ERC 2021) ficam citadas no texto de
+  // cada item; a lista abaixo não muda porque a nota do HCFMUSP (cap. 2) é montada a partir dela.
   fontes: [pagina(PAG_PCR), AHA_ALS_2025, IVIO_2025, PARAMEDIC3_2025, DOSE_VF_2022, BICARBONATO_PCR_IH_2026, ILCOR_COSTR_2026],
-  revisadoEm: '16/11/2026 (próximos passos do piloto das calculadoras, com fonte; aguarda aprovação do RT); 13/11/2026 (CoSTR 2026 do ILCOR: trombolítico e volume de rotina, adrenalina IM, carga do desfibrilador, ventilação; lote 1 da revisão do HCFMUSP, sem mudança de dose); 06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
+  revisadoEm: '19/11/2026 (lote D11: itens 17, 18, 19 e 21, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras, com fonte; aguarda aprovação do RT); 13/11/2026 (CoSTR 2026 do ILCOR: trombolítico e volume de rotina, adrenalina IM, carga do desfibrilador, ventilação; lote 1 da revisão do HCFMUSP, sem mudança de dose); 06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
 }
 
 export const CHOQUE_PCR = { monofasicoJ: 360, bifasicoJ: 200, pagina: 'p. 48' }
@@ -110,13 +122,16 @@ export const DROGAS_PCR: ItemManual[] = [
   { id: 'lidocaina', nome: 'Lidocaína', dose: '1–1,5 mg/kg', quando: 'FV/TV sem pulso, como alternativa à amiodarona', pagina: 'p. 49' },
   { id: 'magnesio', nome: 'Magnésio', dose: '1–2 g IV em bolus; manutenção 0,5 a 2 g/h', quando: 'torsades de pointes; hipomagnesemia', pagina: 'p. 49' },
   { id: 'bicarbonato', nome: 'Bicarbonato de sódio 8,4%', dose: '1–1,5 mEq/kg IV; adicional: metade da dose a cada 5–15 minutos', quando: 'intoxicação por tricíclicos, hipercalemia, acidose metabólica grave previamente conhecida', pagina: 'p. 50',
-    nota: 'O livro dá a dose em mEq; o volume em mL não é calculado porque o capítulo não traz a concentração em mEq/mL.' },
-  { id: 'calcio', nome: 'Gluconato de cálcio 10%', dose: '20–30 mL IV a cada 2–5 minutos', quando: 'hipercalemia', pagina: 'p. 50' },
-  { id: 'kcl', nome: 'KCl 19,1%', dose: '2 mEq/min durante 10 minutos (20 mEq); manutenção "0,5–1 mEq por mais 10 minutos" se PCR mantida', quando: 'hipocalemia', pagina: 'p. 50',
-    errata: 'Na manutenção falta a unidade de tempo ("0,5–1 mEq por mais 10 minutos"): não se sabe se é por minuto. A manutenção não é calculada.' },
+    nota: `O livro dá a dose em mEq; o volume em mL não é calculado porque o capítulo não traz a concentração em mEq/mL. ${NOTA_HIPERCALEMIA_PCR_2B}` },
+  { id: 'calcio', nome: 'Gluconato de cálcio 10%', dose: '20–30 mL IV a cada 2–5 minutos', quando: 'hipercalemia', pagina: 'p. 50',
+    nota: NOTA_HIPERCALEMIA_PCR_2B },
+  { id: 'kcl', nome: 'KCl 19,1%', dose: '2 mEq/min durante 10 minutos (20 mEq); manutenção: 10 mmol (mEq) em 5 a 10 min, depois dos 2 mEq/min por 10 min (Coreia 2025, Part 5)', quando: 'hipocalemia', pagina: 'p. 50',
+    nota: 'O manual trazia a manutenção "0,5–1 mEq por mais 10 minutos" se PCR mantida, sem unidade de tempo (p. 50); a manutenção passou à da Coreia 2025, Part 5 (lote D11, decisão do RT de 19/11/2026).' },
   { id: 'alteplase', nome: 'Alteplase', dose: '50 mg IV em bolus, podendo ser repetido após 15 minutos; o consenso europeu orienta compressões por 60–90 min após', quando: 'TEP suspeito ou confirmado (não trombolisar IAM)', pagina: 'p. 50' },
-  { id: 'emulsao', nome: 'Emulsão lipídica', dose: '1,5 mL/kg IV em 1 minuto e infusão de 0,25 mL/kg/min por 30–60 minutos', quando: 'intoxicação por anestésico local', pagina: 'p. 50' },
-  { id: 'glicose-insulina', nome: 'Glicose + insulina', dose: '25 g de glicose + 10 U de insulina regular IV em bolus', quando: 'hipercalemia', pagina: 'p. 51' },
+  { id: 'emulsao', nome: 'Emulsão lipídica', dose: '1,5 mL/kg IV em 1 minuto e infusão de 0,25 mL/kg/min por 30–60 minutos; até 2 bolus a mais e máximo de 12 mL/kg (ERC 2021)', quando: 'intoxicação por anestésico local', pagina: 'p. 50',
+    nota: 'O manual não traz bolus a mais nem dose máxima (p. 50); os 2 bolus a mais e o máximo de 12 mL/kg são do ERC 2021 (lote D11, decisão do RT de 19/11/2026).' },
+  { id: 'glicose-insulina', nome: 'Glicose + insulina', dose: '25 g de glicose + 10 U de insulina regular IV em bolus', quando: 'hipercalemia', pagina: 'p. 51',
+    nota: `AHA 2025, Part 10, Tabela 3: 50 g de glicose com 10 U de insulina; o manual dá 25 g (p. 51). A dose do manual não muda (lote D11). ${NOTA_HIPERCALEMIA_PCR_2B}` },
 ]
 
 export type PcrPorPeso = {
@@ -128,6 +143,8 @@ export type PcrPorPeso = {
   emulsaoMlH: number
   /** volume da infusão em 30 e em 60 minutos */
   emulsaoInfusaoMl: Faixa
+  /** volume máximo total, 12 mL/kg (ERC 2021, lote D11) */
+  emulsaoMaximoMl: number
 }
 
 /** Doses por peso da Tabela 2 (p. 49–50). */
@@ -143,6 +160,7 @@ export function calcularPcr(pesoKg: number): PcrPorPeso | null {
     emulsaoMlMin: mlMin,
     emulsaoMlH: mlMin * 60,
     emulsaoInfusaoMl: [mlMin * 30, mlMin * 60],
+    emulsaoMaximoMl: EMULSAO_MAX_ML_KG * pesoKg,
   }
 }
 
@@ -198,9 +216,9 @@ const PAG_BRADI = 'cap. 15 Bradiarritmias, p. 229; preparo da adrenalina: Anexo 
 
 export const fichaBradicardiaAdulto: Ficha = {
   ...fichaAdulto('adulto-bradicardia', 'Bradicardia sintomática — adulto', PAG_BRADI),
-  versao: '2026-10-27.1',
+  versao: '2026-11-19.1',
   fontes: [pagina(PAG_BRADI), ERC_RCUK_2025_ALS, AHA_ALS_2025_BRADI],
-  revisadoEm: '27/10/2026 (AHA 2025 lida no texto integral: seção 19 e Figura 8; ERC/RCUK 2025 no texto aberto; manual mantido como base)',
+  revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 27/10/2026 (AHA 2025 lida no texto integral: seção 19 e Figura 8; ERC/RCUK 2025 no texto aberto; manual mantido como base)',
 }
 
 /**
@@ -288,9 +306,9 @@ export const AHA_ALS_2025_TAQUI: Fonte = {
 
 export const fichaTaquiarritmiaAdulto: Ficha = {
   ...fichaAdulto('adulto-taquiarritmias', 'Taquiarritmias — drogas EV do adulto', PAG_TAQUI),
-  versao: '2026-11-14.1',
+  versao: '2026-11-19.1',
   fontes: [pagina(PAG_TAQUI), AHA_ALS_2025_TAQUI],
-  revisadoEm: '14/11/2026 (AHA 2025, Part 9, seções de taquicardia lidas no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
+  revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 14/11/2026 (AHA 2025, Part 9, seções de taquicardia lidas no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
 }
 
 const SEM_ITEM_TAQUI = 'sem item do manual na ferramenta'

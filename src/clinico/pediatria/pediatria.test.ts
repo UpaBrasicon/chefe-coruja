@@ -3,7 +3,11 @@ import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
+import { AES_2016, COREIA_PALS_2025, ISPAD_HIPOGLICEMIA_2022, SBA_VIA_AEREA_PED_2024, WAO_ANAFILAXIA_2020_PED } from '../fontesPubmed.ts'
 import { BOLUS, GRUPOS, avaliarCondicao, calcularBolus, fichaBolusPediatrico, type Bolus } from './bolus.ts'
+import { AHA_AAP_2025 } from './rcp.ts'
+import { ANTIDOTOS_APENDICE } from './intoxicacaoPed.ts'
+import { REVERSORES_APENDICE } from './sedacaoProcedimento.ts'
 import { LIVRO_PS_PED, VERSAO_FICHAS_PEDIATRICAS, fichaPediatrica } from './fonte.ts'
 
 const b = (id: string): Bolus => {
@@ -42,7 +46,8 @@ test('bolus: ids únicos, grupo conhecido, página em todo item, faixa ordenada'
   assert.equal(new Set(ids).size, ids.length)
   for (const x of BOLUS) {
     assert.ok(GRUPOS[x.grupo], x.id)
-    assert.match(x.pagina, /^p\. \d/, x.id)
+    // lote D11: a naloxona em dose baixa vem só da Coreia 2025 (sem página do livro)
+    assert.match(x.pagina, /^(p\. \d|Coreia 2025, Tabela 2$)/, x.id)
     assert.ok(x.faixa[0] <= x.faixa[1], x.id)
     if (x.apresentacao) assert.match(x.apresentacao, /p\. \d/, `${x.id}: apresentação sem página`)
     for (const t of [x.nota, x.errata, x.anexo2Adulto, x.semCalculo].filter(Boolean)) assert.match(t!, /p\. \d/, `${x.id}: texto sem página`)
@@ -144,7 +149,7 @@ test('midazolam IV: máx. 6 mg < 5 anos e 10 mg > 5 anos; idade em anos completo
 })
 
 test('outras regras por idade: diazepam, vecurônio, morfina, neostigmina, polarizante', () => {
-  assert.deepEqual(faixa('diazepam-iv-menor5', 40), [5, 5])
+  assert.deepEqual(faixa('diazepam-iv-menor5', 40), [6, 8]) // máximo de 10 mg pela AES 2016 (lote D11); o apêndice dava 5 mg
   assert.deepEqual(faixa('diazepam-iv-maior5', 80), [10, 10])
   assert.equal(calcularBolus(b('diazepam-vr-2a5'), 12, anos(1))!.aplica, 'nao') // 6 m a 2 a: dose não estabelecida
   assert.equal(calcularBolus(b('diazepam-vr-2a5'), 15, anos(5) + 6)!.aplica, 'sim')
@@ -160,7 +165,7 @@ test('outras regras por idade: diazepam, vecurônio, morfina, neostigmina, polar
   assert.equal(calcularBolus(b('polarizante-g10'), 12, anos(3))!.aplica, 'sim')
   assert.equal(calcularBolus(b('polarizante-g25'), 12, anos(3))!.aplica, 'nao')
   assert.deepEqual(faixa('polarizante-g25', 30), [60, 60]) // 2 mL/kg de G25% = 0,5 g/kg
-  assert.deepEqual(faixa('glucagon-menor20', 18), [0.36, 0.5])
+  assert.deepEqual(faixa('glucagon-menor20', 18), [0.5, 0.5]) // 0,5 mg fixo pela ISPAD 2022 (lote D11); o apêndice dava 0,02 a 0,03 mg/kg
 })
 
 test('glucagon > 20 kg: o livro só dá o máximo — sem cálculo', () => {
@@ -200,4 +205,42 @@ test('divergências com o Anexo 2 do manual do adulto ficam só como nota', () =
   // o cálculo usa o apêndice, não o Anexo 2
   assert.deepEqual(faixa('succinilcolina-iv', 10), [10, 20])
   assert.deepEqual(faixa('propofol', 10), [10, 20])
+})
+
+// ── Lote D11 (decisão do RT de 19/11/2026): itens 3, 8, 9, 11, 12 e 15 ──
+
+test('lote D11: doses por peso corrigidas pelas fontes abertas, com o valor do livro na nota', () => {
+  assert.equal(fichaBolusPediatrico.versao, '2026-11-19.1')
+  for (const f of [AHA_AAP_2025, AES_2016, ISPAD_HIPOGLICEMIA_2022, WAO_ANAFILAXIA_2020_PED, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024])
+    assert.ok(fichaBolusPediatrico.fontes.includes(f), f.citacao)
+  assert.match(fichaBolusPediatrico.revisadoEm, /^19\/11\/2026 \(lote D11: itens 3, 8, 9, 11, 12 e 15/)
+  // item 3: epinefrina na PCR com teto de 1 mg (AHA 2025)
+  assert.deepEqual(faixa('epinefrina-pcr', 120), [1, 1])
+  assert.equal(calcularBolus(b('epinefrina-pcr'), 120)!.noMaximo, true)
+  assert.deepEqual(vol('epinefrina-pcr', 120), [10, 10])
+  assert.match(b('epinefrina-pcr').nota!, /sem teto \(p\. 895\).*AHA 2025/)
+  // item 8: diazepam IV abaixo de 5 anos com máximo de 10 mg (AES 2016)
+  assert.deepEqual(faixa('diazepam-iv-menor5', 60), [9, 10])
+  assert.match(b('diazepam-iv-menor5').nota!, /máximo de 5 mg.*\(p\. 901\).*AES 2016/)
+  // item 9: glucagon abaixo de 20 kg, 0,5 mg fixo (ISPAD 2022)
+  assert.equal(b('glucagon-menor20').porKg, false)
+  assert.equal(b('glucagon-menor20').maximo, undefined)
+  assert.deepEqual(faixa('glucagon-menor20', 8), [0.5, 0.5])
+  assert.match(b('glucagon-menor20').nota!, /0,02 a 0,03 mg\/kg.*p\. 902.*ISPAD 2022/)
+  // item 11: epinefrina IM a cada 5 a 15 min (WAO 2020)
+  assert.match(b('epinefrina-im').via, /a cada 5 a 15 min/)
+  assert.match(b('epinefrina-im').nota!, /a cada 20 min.*p\. 895.*WAO 2020/)
+  // item 12: naloxona em dose baixa, 1 a 5 µg/kg (Coreia 2025)
+  const n = b('dose-baixa-naloxona')
+  assert.equal(n.unidade, 'µg')
+  assert.equal(n.porKg, true)
+  assert.deepEqual(faixa('dose-baixa-naloxona', 20), [20, 100])
+  // fora dos antídotos do Apêndice nas telas de sedação e de intoxicação (essas fichas não mudam)
+  assert.equal(n.grupo, 'isr')
+  assert.equal(REVERSORES_APENDICE.some((x) => x.id === n.id), false)
+  assert.equal(ANTIDOTOS_APENDICE.some((x) => x.id === n.id), false)
+  assert.equal(calcularBolus(n, 20, anos(8))!.aplica, 'sim')
+  // item 15: propofol segue 1 a 2 mg/kg; a SBA 2024 entra como nota
+  assert.deepEqual(faixa('propofol', 10), [10, 20])
+  assert.match(b('propofol').nota!, /SBA 2024.*até 3 mg\/kg em criança pequena/)
 })
