@@ -3,6 +3,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { DocumentoCarregado, Fila, ItemLote, Registro } from './ciclo.ts'
 import type { BancoDoCofre, CertificadoNoBanco } from './cofre.ts'
+import type { FichaCarregada, FilaLedi, ItemLedi, RegistroLedi } from './ledi.ts'
 
 export function clienteSupabase(url: string, chaveServico: string): SupabaseClient {
   return createClient(url, chaveServico, { auth: { persistSession: false, autoRefreshToken: false } })
@@ -61,6 +62,28 @@ export function cofreSupabase(db: SupabaseClient): BancoDoCofre {
         p_impressao: l.impressao ?? null,
         p_erro: l.erro ?? null,
       })
+    },
+  }
+}
+
+// U15, PR 4: a fila do LEDI (migration 20270415000023)
+export function filaLediSupabase(db: SupabaseClient): FilaLedi {
+  return {
+    async pegarLote(limite) {
+      const { data, error } = await db.rpc('ledi_pegar_lote', { p_limite: limite })
+      if (error) throw new Error(`ledi_pegar_lote: ${error.message}`)
+      return (data ?? []) as ItemLedi[]
+    },
+    async dados(item) {
+      const { data, error } = await db.rpc('ledi_dados_ficha', { p_item: item })
+      if (error) throw new Error(error.message)
+      return data as FichaCarregada
+    },
+    async registrar(item, r: RegistroLedi) {
+      const { error } = await db.rpc('ledi_registrar_resultado', {
+        p_item: item, p_resultado: r.resultado, p_resposta: r.resposta ?? null, p_erro: r.erro ?? null,
+      })
+      if (error) throw new Error(`ledi_registrar_resultado: ${error.message}`)
     },
   }
 }
