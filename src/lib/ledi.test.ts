@@ -138,3 +138,83 @@ test('FP: DadoTransporte com tipo 7 e o procedimento com quem fez, turno e cidad
   assert.equal(turnoLedi('2026-11-10T21:00:00Z'), 3) // 18h: noite
   assert.ok(arq.avisos[0].includes('quantidade 2'))
 })
+
+// ── U15, vacina, PR 6: Ficha de Vacinação ───────────────────────────────────
+function cargaFv(extra: Record<string, unknown> = {}, cidadao: Record<string, unknown> = {}) {
+  return {
+    unidade: UNIDADE, profissional: { ...TECNICO, cbo: '322205' }, cidadao: { ...PACIENTE, ...cidadao },
+    vacina: {
+      id: 'v', registro_anterior: false, data_aplicacao: '2026-11-10', registrado_em: '2026-11-10T13:30:00Z',
+      imunobiologico: 42, estrategia: 1, dose: 1, lote: 'PENTA01', fabricante: '152', grupo_atendimento: 121,
+      via: 3, local: 18, aplicado_exterior: null, condicao_maternal: null, viajante: false, comunicante_hanseniase: null,
+      prescritor_cbo: null, cid10_motivo: null, pesquisa_clinica: false, ...extra,
+    },
+  }
+}
+
+test('FV: DadoTransporte tipo 14 e a vacina aplicada nos campos do IDL oficial', async () => {
+  const { fichaFv, montarFicha } = await import('../interop/ledi/fichas.ts')
+  const { desserializar, texto } = await import('../interop/ledi/thrift.ts')
+  const arq = fichaFv(UUID, cargaFv(), INST)
+  const t = desserializar(arq.bytes) as Record<number, never>
+  assert.equal(t[2], 14n)
+  const f = desserializar(t[7]) as Record<number, never>
+  assert.equal(texto(f[1]), UUID)
+  assert.equal(f[2], 3) // tpCdsOrigem
+  const h = f[3] as Record<number, never>
+  assert.equal(texto(h[1]), '700000000000013')
+  assert.equal(texto(h[2]), '322205')
+  assert.equal(texto(h[6]), '3550308')
+  const c = (f[4] as never[])[0] as Record<number, never>
+  assert.equal(c[1], 1n) // 10h30 de Brasília: manhã
+  assert.equal(texto(c[3]), '898000000000002')
+  assert.equal(c[5], 0n)
+  assert.equal(c[6], 1n)
+  assert.equal(c[7], false)
+  assert.equal(c[8], undefined) // não é BCG
+  assert.equal(c[15], undefined) // masculino: sem condição maternal
+  assert.equal(c[16], true) // sem CPF
+  assert.equal(c[17], 8n)
+  const v = (c[11] as never[])[0] as Record<number, never>
+  assert.equal(v[1], 42n)
+  assert.equal(v[2], 1n)
+  assert.equal(v[3], 1n)
+  assert.equal(texto(v[4]), 'PENTA01')
+  assert.equal(v[6], 121n)
+  assert.equal(v[7], false)
+  assert.equal(v[8], undefined)
+  assert.equal(v[13], false)
+  assert.equal(v[17], 3n)
+  assert.equal(v[18], 18n)
+  assert.equal(texto(v[19]), '152')
+  assert.equal(v[5], undefined) // o fabricante vai no 19 (coRndsFabricante), não no 5
+  assert.deepEqual(montarFicha('fv', UUID, cargaFv(), INST).bytes, arq.bytes)
+})
+
+test('FV: registro anterior, condição maternal, BCG e o que retém', async () => {
+  const { fichaFv } = await import('../interop/ledi/fichas.ts')
+  const { desserializar } = await import('../interop/ledi/thrift.ts')
+  const linha = (b: Uint8Array) => {
+    const f = desserializar((desserializar(b) as Record<number, never>)[7]) as Record<number, never>
+    const c = (f[4] as never[])[0] as Record<number, never>
+    return { c, v: (c[11] as never[])[0] as Record<number, never> }
+  }
+  const ant = linha(fichaFv(UUID, cargaFv({ registro_anterior: true, estrategia: null, lote: null, fabricante: null, grupo_atendimento: null,
+    imunobiologico: 85, data_aplicacao: '2021-08-01', aplicado_exterior: true }), INST).bytes)
+  assert.equal(ant.v[7], true)
+  assert.equal(ant.v[8], BigInt(Date.parse('2021-08-01T00:00:00-03:00')))
+  assert.equal(ant.v[9], true)
+  assert.equal(ant.v[4], undefined)
+  assert.equal(ant.v[6], undefined)
+  const mulher = linha(fichaFv(UUID, cargaFv({ condicao_maternal: 2 }, { sexo: 'F' }), INST).bytes)
+  assert.equal(mulher.c[15], 2n)
+  assert.throws(() => fichaFv(UUID, cargaFv({}, { sexo: 'F' }), INST), /retido: vacina sem a condição maternal/)
+  const bcg = linha(fichaFv(UUID, cargaFv({ imunobiologico: 15, comunicante_hanseniase: false }), INST).bytes)
+  assert.equal(bcg.c[8], false)
+  assert.throws(() => fichaFv(UUID, cargaFv({ imunobiologico: 15 }), INST), /retido: BCG sem comunicante/)
+  assert.throws(() => fichaFv(UUID, cargaFv({ lote: null }), INST), /retido: vacina aplicada sem lote/)
+  assert.throws(() => fichaFv(UUID, cargaFv({}, { justificativa_sem_cpf: null }), INST), /retido: paciente sem CPF e sem justificativa/)
+  const esp = linha(fichaFv(UUID, cargaFv({ estrategia: 2, dose: 8, prescritor_cbo: '225125', cid10_motivo: 'D80.0' }), INST).bytes)
+  assert.equal(esp.v[11] && new TextDecoder().decode(esp.v[11] as Uint8Array), '225125')
+  assert.equal(new TextDecoder().decode(esp.v[12] as Uint8Array), 'D800')
+})
