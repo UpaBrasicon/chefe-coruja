@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-29 operações cobrem 311 tabelas.
+29 operações cobrem 312 tabelas.
 
 ## Papéis
 
@@ -25,7 +25,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 |---|---|---|---|---|
 | Cadastro e identificação do paciente | operador | sim | 20 anos a partir do último registro | 9 |
 | Recepção, classificação de risco e chamada | operador | sim | 20 anos a partir do último registro | 12 |
-| Atendimento médico, evolução e alta | operador | sim | 20 anos a partir do último registro | 22 |
+| Atendimento médico, evolução e alta | operador | sim | 20 anos a partir do último registro | 23 |
 | Observação e protocolos de cuidado | operador | sim | 20 anos a partir do último registro | 4 |
 | Intercorrências, eventos adversos, notificação e óbito | operador | sim | 20 anos a partir do último registro | 8 |
 | Prescrição, checagem e administração de medicamentos | operador | sim | 20 anos a partir do último registro | 16 |
@@ -165,9 +165,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - rascunho guardado com chave por sessão
 - registro fechado não se edita: correção vira novo registro
 
-**Tabelas (22)**
+**Tabelas (23)**
 
-`public.atendimento_registros`, `public.atendimento_rascunhos`, `private.rascunho_chave`, `public.atendimento_reavaliacoes`, `public.evolucoes_estruturadas`, `public.resumos_clinicos`, `public.diagnosticos_episodio`, `public.reavaliacoes_quadro`, `public.avisos_sepse_atendimento`, `public.pareceres_medicos`, `public.encaminhamentos_internos`, `public.teleinterconsultas`, `public.cuidados_plantonistas`, `public.avaliacoes_escala`, `public.avaliacoes_pes`, `public.pendencias`, `public.sincronizacao_revisao`, `public.admissao_fichas`, `public.checklist_admissao`, `public.alta_paciente`, `public.pacotes_alta`, `public.pacotes_alta_acessos`
+`public.atendimento_registros`, `public.atendimento_rascunhos`, `private.rascunho_chave`, `public.atendimento_reavaliacoes`, `public.evolucoes_estruturadas`, `public.resumos_clinicos`, `public.diagnosticos_episodio`, `public.reavaliacoes_quadro`, `public.avisos_sepse_atendimento`, `public.alertas_sepse_internacao`, `public.pareceres_medicos`, `public.encaminhamentos_internos`, `public.teleinterconsultas`, `public.cuidados_plantonistas`, `public.avaliacoes_escala`, `public.avaliacoes_pes`, `public.pendencias`, `public.sincronizacao_revisao`, `public.admissao_fichas`, `public.checklist_admissao`, `public.alta_paciente`, `public.pacotes_alta`, `public.pacotes_alta_acessos`
 
 ### Observação e protocolos de cuidado
 
