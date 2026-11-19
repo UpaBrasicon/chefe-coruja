@@ -55,7 +55,7 @@ function Formulario({ fechar }: { fechar: () => void }) {
     setAviso(null)
     if (Object.keys(encontrados).length > 0) return
     if (!turnstile.pronto) {
-      setAviso('Aguarde a verificação anti-robô terminar e envie de novo.')
+      setAviso(turnstile.pendente)
       return
     }
     setEnviando(true)

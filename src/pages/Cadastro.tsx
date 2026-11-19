@@ -501,7 +501,7 @@ export function Cadastro() {
   async function criarConta(comAvisos: boolean) {
     if (!vinculo) return
     if (!turnstile.pronto) {
-      setErroAvisos(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      setErroAvisos(turnstile.pendente)
       return
     }
     setErroAvisos(null)

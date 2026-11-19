@@ -119,7 +119,7 @@ export default function RecuperarSenha() {
       return
     }
     if (!turnstile.pronto) {
-      setErro(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      setErro(turnstile.pendente)
       return
     }
     setErro(null)
@@ -215,8 +215,8 @@ export default function RecuperarSenha() {
                 </div>
                 {turnstile.widget}
                 {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
-                <Button type="submit" size="bloco" disabled={ocupado} className={BOTAO}>
-                  {ocupado ? 'Enviando…' : 'Enviar o link'}
+                <Button type="submit" size="bloco" disabled={ocupado || turnstile.aguardando} className={BOTAO}>
+                  {ocupado ? 'Enviando…' : turnstile.aguardando ? 'Aguardando a verificação…' : 'Enviar o link'}
                   <ArrowRight className="size-4" aria-hidden />
                 </Button>
               </form>
