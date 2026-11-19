@@ -1,4 +1,5 @@
 import type { Ficha, Fonte } from '../ficha.ts'
+import { COREIA_PALS_2025 } from '../fontesPubmed.ts'
 import { fichaP2, type DosePeso, type Faixa } from './fonteP2.ts'
 
 // RCP pediátrica e arritmias — livro do ICr (caps. 1 e 2). Parâmetros de
@@ -15,6 +16,12 @@ import { fichaP2, type DosePeso, type Faixa } from './fonteP2.ts'
 // texto integral publicado pela AHA em cpr.heart.org. As doses e cargas do quadro
 // da Figura 2 conferem com o livro; entram o teto de 1 mg da epinefrina e os
 // temas que os Destaques não traziam.
+//
+// Versão 2026-11-19.1 (lote D11, decisão do RT de 19/11/2026, "Todas A"): itens
+// 1, 4, 5 e 6 de docs/clinico/D11-CORRECOES-FONTES.md. Atropina com máximo de
+// 0,5 mg, cloreto de cálcio com teto de 20 mL (2 g), magnésio com teto de 2 g e
+// cardioversão da TSV na 2ª tentativa com 2 J/kg, pela AHA 2025 e pela Coreia
+// 2025. O valor do livro fica na nota de cada linha.
 
 export const AHA_AAP_2025: Fonte = {
   citacao: 'Lasa JJ, Dhillon GS, Duff JP, Hayes J, Kamath-Rayne BD, Levy A, Mahgoub M, Morgan RW, McCormick T, Roberts JS, Ross CE, Schexnayder SM, Sweberg T, Valdes SO, Topjian AA. Part 8: pediatric advanced life support: 2025 American Heart Association Guidelines for Cardiopulmonary Resuscitation and Emergency Cardiovascular Care. Circulation. 2025;152(suppl 2):S479–S537. Texto integral em cpr.heart.org (recomendações e quadro da Figura 2); Part 6 (PBLS) pelos Destaques oficiais (Highlights of the 2025 AHA Guidelines for CPR and ECC, Heart & Stroke edition, p. 11–15).',
@@ -26,9 +33,9 @@ const baseRcp = fichaP2('ped-rcp-icr', 'RCP pediátrica — parâmetros, choque 
 
 export const fichaRcpPediatrica: Ficha = {
   ...baseRcp,
-  versao: '2026-11-16.1',
-  fontes: [...baseRcp.fontes, AHA_AAP_2025],
-  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3: Part 8 lido no texto integral; livro do ICr mantido como base)',
+  versao: '2026-11-19.1',
+  fontes: [...baseRcp.fontes, AHA_AAP_2025, COREIA_PALS_2025],
+  revisadoEm: '19/11/2026 (lote D11: itens 1, 4, 5 e 6, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3: Part 8 lido no texto integral; livro do ICr mantido como base)',
 }
 
 /** Alvo de pressão diastólica durante a RCP com linha arterial (AHA 2025, novo): ≥ 25 mmHg no lactente; ≥ 30 mmHg a partir de 1 ano. */
@@ -135,7 +142,11 @@ export type Cargas = {
   cardioversaoSeguinte: Faixa
 }
 
-/** Joules pelo peso: FV/TV sem pulso 2 → 4 → 4–10 J/kg; cardioversão TSV 0,5–1 → 1–2 J/kg. */
+/**
+ * Joules pelo peso: FV/TV sem pulso 2 → 4 → 4–10 J/kg; cardioversão TSV 0,5–1 →
+ * 2 J/kg (AHA 2025 e Coreia 2025, lote D11; o livro, cap. 2, p. 51–52, dava 1 a
+ * 2 J/kg na 2ª tentativa). A 2ª tentativa fica como faixa de pontas iguais.
+ */
 export function cargasPorPeso(pesoKg: number): Cargas | null {
   if (!Number.isFinite(pesoKg) || pesoKg <= 0) return null
   const subsequentes: Faixa = [4 * pesoKg, 10 * pesoKg]
@@ -144,7 +155,7 @@ export function cargasPorPeso(pesoKg: number): Cargas | null {
     segundo: 4 * pesoKg,
     subsequentes,
     cardioversaoInicial: [0.5 * pesoKg, 1 * pesoKg],
-    cardioversaoSeguinte: [1 * pesoKg, 2 * pesoKg],
+    cardioversaoSeguinte: [2 * pesoKg, 2 * pesoKg],
   }
 }
 
@@ -152,7 +163,7 @@ export const NOTAS_CHOQUE: { texto: string; pagina: string }[] = [
   { texto: 'FV/TV sem pulso: 1º choque 2 J/kg; se refratário, 4 J/kg; os seguintes, 4 a 10 J/kg.', pagina: 'p. 35' },
   { texto: 'Pás do desfibrilador manual: adulto para maiores de 1 ano ou 10 kg; infantil para menores de 1 ano. Posição anterolateral; anteroposterior se as pás se tocarem.', pagina: 'p. 35' },
   { texto: 'DEA: carga fixa de cerca de 250 J; pás pediátricas com atenuador abaixo de 8 anos, quando disponível; na falta, pá de adulto (exceto no período neonatal). Pode ser usado abaixo de 1 ano na falta de desfibrilador manual.', pagina: 'p. 28–29, 31' },
-  { texto: 'Cardioversão sincronizada na TSV: 0,5 a 1 J/kg; se persistir, duplicar para 1 a 2 J/kg. Se não converter, reavaliar TSV versus TV. Modo sync antes de cada tentativa.', pagina: 'cap. 2, p. 51–52' },
+  { texto: 'Cardioversão sincronizada na TSV: 0,5 a 1 J/kg; se persistir, 2 J/kg (AHA 2025 e Coreia 2025; o livro dá 1 a 2 J/kg na 2ª tentativa). Se não converter, reavaliar TSV versus TV. Modo sync antes de cada tentativa.', pagina: 'cap. 2, p. 51–52' },
 ]
 
 // ── Drogas (Tabela 2, p. 31–32; bradicardia p. 32; adenosina cap. 2 p. 50) ──
@@ -178,12 +189,15 @@ export const DROGAS_RCP: DoseRcp[] = [
   { grupo: 'pcr', id: 'bicarbonato', nome: 'Bicarbonato de sódio 8,4%', unidade: 'mEq', porKg: [1, 1], porMl: 1, solucao: '8,4%: 1 mL = 1 mEq', via: 'IV/IO; não é de rotina — PCR prolongada, acidose metabólica grave documentada', pagina: 'p. 32 (Tabela 2)' },
   { grupo: 'pcr', id: 'calcio', nome: 'Cálcio elementar', unidade: 'mg', porKg: [5, 7], via: 'IV/IO, de preferência central; hipocalcemia, hipercalemia, hipermagnesemia, bloqueador de canal de cálcio', pagina: 'p. 31–32 (Tabela 2)',
     nota: 'Volume pelo livro: 0,2 mL/kg de cloreto de cálcio 10% ou 0,6 mL/kg de gluconato de cálcio (ver abaixo).' },
-  { grupo: 'pcr', id: 'cloreto-calcio', nome: 'Cloreto de cálcio 10% (volume)', unidade: 'mL', porKg: [0.2, 0.2], via: 'IV/IO, de preferência central (preparação de escolha)', pagina: 'p. 31–32 (Tabela 2)' },
+  { grupo: 'pcr', id: 'cloreto-calcio', nome: 'Cloreto de cálcio 10% (volume)', unidade: 'mL', porKg: [0.2, 0.2], maximo: 20, via: 'IV/IO, de preferência central (preparação de escolha)', pagina: 'p. 31–32 (Tabela 2)',
+    nota: 'sem teto (p. 31–32). Teto de 20 mL (2 g) pela Coreia 2025 (Tabela 2), lote D11.' },
   { grupo: 'pcr', id: 'gluconato-calcio', nome: 'Gluconato de cálcio (volume)', unidade: 'mL', porKg: [0.6, 0.6], via: 'IV/IO', pagina: 'p. 32 (Tabela 2)' },
-  { grupo: 'pcr', id: 'magnesio', nome: 'Sulfato de magnésio 50%', unidade: 'mg', porKg: [25, 50], porMl: 500, solucao: 'MgSO₄ 50% = 500 mg/mL', via: 'IV; hipomagnesemia, torsades de pointes', pagina: 'p. 31–32 (Tabela 2)' },
+  { grupo: 'pcr', id: 'magnesio', nome: 'Sulfato de magnésio 50%', unidade: 'mg', porKg: [25, 50], maximo: 2000, porMl: 500, solucao: 'MgSO₄ 50% = 500 mg/mL', via: 'IV; hipomagnesemia, torsades de pointes', pagina: 'p. 31–32 (Tabela 2)',
+    nota: 'sem teto (p. 31–32). Teto de 2 g pela Coreia 2025 (seção Magnesium), lote D11.' },
   { grupo: 'pcr', id: 'glicose', nome: 'Glicose (hipoglicemia)', unidade: 'g', porKg: [0.5, 1], mlPorKg: [2, 4], solucao: 'glicose 25%: 2 a 4 mL/kg', via: 'IV/IO', pagina: 'p. 32 (Tabela 2)' },
   { grupo: 'bradicardia', id: 'epinefrina-bradi', nome: 'Epinefrina', unidade: 'mg', porKg: [0.01, 0.01], porMl: 0.1, solucao: '1:10.000 — 0,1 mL/kg', via: 'IV/IO, repetir a cada 3 a 5 min, se persistir apesar de via aérea e ventilação', pagina: 'p. 32' },
-  { grupo: 'bradicardia', id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], via: 'na suspeita de tônus vagal aumentado ou BAV primário; pode ser repetida uma vez', pagina: 'p. 32' },
+  { grupo: 'bradicardia', id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], maximo: 0.5, via: 'na suspeita de tônus vagal aumentado ou BAV primário; pode ser repetida uma vez', pagina: 'p. 32',
+    nota: 'sem máximo (p. 32). Máximo de 0,5 mg pela AHA 2025 (Part 8, Figura 6) e pela Coreia 2025, lote D11.' },
   { grupo: 'tsv', id: 'adenosina-1', nome: 'Adenosina — 1ª dose', unidade: 'mg', porKg: [0.1, 0.1], maximo: 6, via: 'bolo IV rápido seguido de 3 a 5 mL de AD ou SF; acesso central: cerca de 50% da dose', pagina: 'cap. 2, p. 50' },
   { grupo: 'tsv', id: 'adenosina-2', nome: 'Adenosina — 2ª dose (dobrada)', unidade: 'mg', porKg: [0.2, 0.2], maximo: 12, via: 'bolo IV rápido', pagina: 'cap. 2, p. 50' },
 ]

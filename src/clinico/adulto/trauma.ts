@@ -1,5 +1,6 @@
 import type { Ficha, Fonte } from '../ficha.ts'
 import { completo, escolha, marcadas, numero, somar, type Escore, type Respostas } from '../escore.ts'
+import { ERC_CIRCUNSTANCIAS_2021 } from '../fontesPubmed.ts'
 import { fichaAdulto } from './fonte.ts'
 import type { Faixa } from './pcr.ts'
 
@@ -105,11 +106,15 @@ const fichaTraumaLivro = fichaAdulto(
   'Politraumatizado — tempos e volumes do atendimento inicial (adulto)',
   'cap. 47 Atendimento inicial do politraumatizado, p. 636–657; cap. 48 Atendimento pré-hospitalar, Tabela 3, p. 664',
 )
+// Lote D11 (decisão do RT de 19/11/2026, "Todas A"): item 20 de
+// docs/clinico/D11-CORRECOES-FONTES.md. Punção do pneumotórax hipertensivo no 4º
+// ou 5º EIC, linha axilar anterior (ERC 2021); o manual (p. 644) dá 5º EIC, linha
+// axilar média, e fica no mesmo texto.
 export const fichaTraumaAdulto: Ficha = {
   ...fichaTraumaLivro,
-  versao: '2026-11-14.1',
-  fontes: [...fichaTraumaLivro.fontes, PATCH_TRAUMA_2023, CRYOSTAT2_2023, UK_REBOA_2023, PROCOAG_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026, EUROPEIA_SANGRAMENTO_TRAUMA_2023, EAST_TXA_2025],
-  revisadoEm: '14/11/2026 (europeia 2023 de sangramento no trauma lida no texto integral e EAST 2025 pelo resumo, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota do PATCH-Trauma no ácido tranexâmico e dos ensaios sem benefício na circulação; revisão PubMed, itens médios)',
+  versao: '2026-11-19.1',
+  fontes: [...fichaTraumaLivro.fontes, PATCH_TRAUMA_2023, CRYOSTAT2_2023, UK_REBOA_2023, PROCOAG_2023, SANGUE_TOTAL_SMITH_2026, SANGUE_TOTAL_SPERRY_2026, EUROPEIA_SANGRAMENTO_TRAUMA_2023, EAST_TXA_2025, ERC_CIRCUNSTANCIAS_2021],
+  revisadoEm: '19/11/2026 (lote D11: item 20, decisão do RT de 19/11/2026; aguarda aprovação do RT); 14/11/2026 (europeia 2023 de sangramento no trauma lida no texto integral e EAST 2025 pelo resumo, ao lado do manual; lote 3 da revisão do HCFMUSP; aguarda aprovação do RT); 06/11/2026 (nota do PATCH-Trauma no ácido tranexâmico e dos ensaios sem benefício na circulação; revisão PubMed, itens médios)',
 }
 
 const valido = (x: number) => Number.isFinite(x) && x > 0
@@ -130,7 +135,7 @@ const NEXUS_ITENS = [
 ] as const
 
 export const nexus: Escore = {
-  ficha: fichaAdulto('adulto-nexus', 'NEXUS — retirada do colar cervical (adulto)', 'cap. 47, Tabela 1, p. 641; restrições na p. 643'),
+  ficha: { ...fichaAdulto('adulto-nexus', 'NEXUS — retirada do colar cervical (adulto)', 'cap. 47, Tabela 1, p. 641; restrições na p. 643'), versao: '2026-11-19.1', revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)' },
   descricao: 'Cinco critérios; todos presentes permitem, segundo o livro, retirar o colar sem exame de imagem. Não vale acima de 60 anos nem em criança.',
   itens: [
     { tipo: 'numero', id: 'idade', rotulo: 'Idade', unidade: 'anos', min: 0, max: 130 },
@@ -178,7 +183,7 @@ const BAIXO = [
 ] as const
 
 export const regraCanadenseColuna: Escore = {
-  ficha: fichaAdulto('adulto-regra-canadense-coluna', 'Regra canadense da coluna cervical (adulto)', 'cap. 47, Tabela 1, p. 641–642; restrição pediátrica na p. 643'),
+  ficha: { ...fichaAdulto('adulto-regra-canadense-coluna', 'Regra canadense da coluna cervical (adulto)', 'cap. 47, Tabela 1, p. 641–642; restrição pediátrica na p. 643'), versao: '2026-11-19.1', revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)' },
   descricao: 'Três passos: fatores de alto risco, fatores de baixo risco e rotação ativa do pescoço a 45°, na forma da Tabela 1 do livro',
   itens: [
     { tipo: 'numero', id: 'idade', rotulo: 'Idade (alto risco: > 65 anos)', unidade: 'anos', min: 0, max: 130 },
@@ -220,7 +225,7 @@ export const regraCanadenseColuna: Escore = {
 // ── MGAP (p. 671) ───────────────────────────────────────────────────────────
 
 export const mgap: Escore = {
-  ficha: fichaAdulto('adulto-mgap', 'MGAP — gravidade do trauma no pré-hospitalar (adulto)', 'cap. 48 Atendimento pré-hospitalar, p. 670–671'),
+  ficha: { ...fichaAdulto('adulto-mgap', 'MGAP — gravidade do trauma no pré-hospitalar (adulto)', 'cap. 48 Atendimento pré-hospitalar, p. 670–671'), versao: '2026-11-19.1', revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)' },
   descricao: 'Mecanismo, Glasgow, idade e pressão sistólica; soma de 3 a 29, com as faixas que o livro imprime',
   itens: [
     { tipo: 'escolha', id: 'mecanismo', rotulo: 'Mecanismo de trauma', opcoes: [{ rotulo: 'Fechado (0)', valor: 0 }, { rotulo: 'Aberto (4)', valor: 4 }] },
@@ -260,7 +265,7 @@ export const pontoPasRts = (p: number) => (p > 89 ? 4 : p >= 76 ? 3 : p >= 50 ? 
 export const pontoFrRts = (f: number) => (f > 29 ? 3 : f >= 10 ? 4 : f >= 6 ? 2 : f >= 1 ? 1 : 0)
 
 export const triageRts: Escore = {
-  ficha: fichaAdulto('adulto-triage-rts', 'Triage-RTS — escore de trauma revisado de triagem (adulto)', 'cap. 48 Atendimento pré-hospitalar, p. 671–672 (Tabela 4)'),
+  ficha: { ...fichaAdulto('adulto-triage-rts', 'Triage-RTS — escore de trauma revisado de triagem (adulto)', 'cap. 48 Atendimento pré-hospitalar, p. 671–672 (Tabela 4)'), versao: '2026-11-19.1', revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)' },
   descricao: 'Glasgow, PAS e frequência ventilatória, de 0 a 4 cada; soma de 0 a 12',
   itens: [
     { tipo: 'numero', id: 'gcs', rotulo: 'Escala de coma de Glasgow', min: 3, max: 15 },
@@ -344,7 +349,7 @@ export function cristaloideAcumulado(ml: number): 'abaixo' | 'dentro' | 'acima' 
 export const TRAUMA_REFERENCIAS = [
   { texto: 'Saturação adequada: igual ou superior a 95%', pagina: 'p. 639' },
   { texto: 'IOT de imediato com Glasgow < 8 (p. 640); via aérea definitiva com Glasgow ≤ 8 (p. 649)', pagina: 'p. 640 e 649' },
-  { texto: 'Pneumotórax hipertensivo: punção no 5º espaço intercostal, linha axilar média; dreno n. 24 a 28 entre as linhas axilar média e anterior (4º ou 5º EIC)', pagina: 'p. 644' },
+  { texto: 'Pneumotórax hipertensivo: punção com agulha longa no 4º ou 5º EIC, linha axilar anterior (ERC 2021); o manual (p. 644) dá 5º EIC, linha axilar média; dreno n. 24 a 28 entre as linhas axilar média e anterior (4º ou 5º EIC)', pagina: 'p. 644' },
   { texto: 'Hemotórax volumoso: > 1.500 mL de sangue; dreno n. 38; cristaloide aquecido a 38 °C', pagina: 'p. 644' },
   { texto: 'Hipotensão permissiva: PAS 80–90 e PAM 50–60 mmHg; TCE grave: PAM > 80 mmHg; alíquotas de 250–500 mL (ver também a tela de ressuscitação volêmica)', pagina: 'p. 646' },
   { texto: 'Transfusão maciça: 10 unidades de concentrado de hemácias nas primeiras 24 h; proporção 1:1:1 plasma, plaquetas e hemácias', pagina: 'p. 647' },

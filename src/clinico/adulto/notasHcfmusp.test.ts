@@ -120,7 +120,7 @@ test('TEP: AHA/ACC 2026 nas fichas de PERC, HESTIA, PESI e fibrinolíticos, sem 
 
 test('taquiarritmias: AHA 2025 ao lado do manual; doses do manual não mudam', async () => {
   const m = await import('./pcr.ts')
-  assert.equal(m.fichaTaquiarritmiaAdulto.versao, '2026-11-14.1')
+  assert.equal(m.fichaTaquiarritmiaAdulto.versao, '2026-11-19.1')
   assert.ok(m.fichaTaquiarritmiaAdulto.fontes.includes(m.AHA_ALS_2025_TAQUI))
   assert.ok(m.fichaTaquiarritmiaAdulto.fontes.some((f) => /Manual de Medicina de Emergência/.test(f.citacao)))
   assert.match(m.AHA_ALS_2025_TAQUI.citacao, /PMID 41122884/)
@@ -220,7 +220,7 @@ test('sódio (cap. 66): europeia 2014 e ERA 2024 ao lado do manual; contas do ma
 
 test('trauma (cap. 47): europeia 2023 e EAST 2025 ao lado do manual; contas do manual iguais', async () => {
   const tr = await import('./trauma.ts')
-  assert.equal(tr.fichaTraumaAdulto.versao, '2026-11-14.1')
+  assert.equal(tr.fichaTraumaAdulto.versao, '2026-11-19.1') // lote D11 (19/11/2026)
   for (const f of [tr.EUROPEIA_SANGRAMENTO_TRAUMA_2023, tr.EAST_TXA_2025, tr.UK_REBOA_2023]) assert.ok(tr.fichaTraumaAdulto.fontes.includes(f))
   assert.match(tr.EUROPEIA_SANGRAMENTO_TRAUMA_2023.citacao, /PMID 36859355/)
   assert.match(tr.EAST_TXA_2025.citacao, /resumo/)

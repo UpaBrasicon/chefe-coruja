@@ -35,7 +35,7 @@ export function PcrAdulto() {
   const conta: Record<string, ReactNode> = {
     lidocaina: r ? <strong>{faixa(r.lidocainaMg, 0)} mg</strong> : semPeso,
     bicarbonato: r ? <><strong>{faixa(r.bicarbonatoMEq, 0)} mEq</strong> · adicional {faixa(r.bicarbonatoAdicionalMEq, 0)} mEq</> : semPeso,
-    emulsao: r ? <><strong>{br(r.emulsaoBolusMl, 0)} mL</strong> em 1 min · {br(r.emulsaoMlMin)} mL/min ({br(r.emulsaoMlH, 0)} mL/h) · {faixa(r.emulsaoInfusaoMl, 0)} mL em 30–60 min</> : semPeso,
+    emulsao: r ? <><strong>{br(r.emulsaoBolusMl, 0)} mL</strong> em 1 min · {br(r.emulsaoMlMin)} mL/min ({br(r.emulsaoMlH, 0)} mL/h) · {faixa(r.emulsaoInfusaoMl, 0)} mL em 30–60 min · máximo {br(r.emulsaoMaximoMl, 0)} mL (ERC 2021)</> : semPeso,
     kcl: <><strong>{KCL_ATAQUE_MEQ} mEq</strong> em 10 min</>,
   }
 
@@ -43,7 +43,7 @@ export function PcrAdulto() {
   const contaTexto: Record<string, string | null> = {
     lidocaina: r ? `${faixa(r.lidocainaMg, 0)} mg` : null,
     bicarbonato: r ? `${faixa(r.bicarbonatoMEq, 0)} mEq · adicional ${faixa(r.bicarbonatoAdicionalMEq, 0)} mEq` : null,
-    emulsao: r ? `${br(r.emulsaoBolusMl, 0)} mL em 1 min · ${br(r.emulsaoMlMin)} mL/min (${br(r.emulsaoMlH, 0)} mL/h) · ${faixa(r.emulsaoInfusaoMl, 0)} mL em 30–60 min` : null,
+    emulsao: r ? `${br(r.emulsaoBolusMl, 0)} mL em 1 min · ${br(r.emulsaoMlMin)} mL/min (${br(r.emulsaoMlH, 0)} mL/h) · ${faixa(r.emulsaoInfusaoMl, 0)} mL em 30–60 min · máximo ${br(r.emulsaoMaximoMl, 0)} mL (ERC 2021)` : null,
     kcl: `${KCL_ATAQUE_MEQ} mEq em 10 min`,
   }
   const copia = r

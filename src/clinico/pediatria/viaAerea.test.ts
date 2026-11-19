@@ -3,7 +3,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
+import { COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024 } from '../fontesPubmed.ts'
 import { DIAS_ANO, DIAS_MES, calcularDose } from './fonteP2.ts'
+import { AHA_AAP_2025 } from './rcp.ts'
 import {
   DOSES_SRI, EQUIPAMENTO, equipamentoPorIdade, fichaViaAereaPediatrica, fluxoApneia,
   profundidadeCm, succinilcolinaAplica, tuboPorIdade,
@@ -58,10 +60,25 @@ test('SRI: Tabelas 1 e 2 (p. 69–70) e atropina (p. 71) a 20 kg', () => {
   assert.deepEqual(calcularDose(d('fentanil'), 20)!.dose, [40, 140])
   assert.deepEqual(calcularDose(d('quetamina'), 20)!.dose, [20, 80])
   assert.deepEqual(calcularDose(d('atropina'), 20)!.dose, [0.4, 0.4])
-  assert.deepEqual(calcularDose(d('atropina'), 60)!.dose, [1, 1]) // máximo 1 mg
+  assert.deepEqual(calcularDose(d('atropina'), 60)!.dose, [0.5, 0.5]) // máximo 0,5 mg (lote D11; o livro dava 1 mg)
   assert.deepEqual(calcularDose(d('atropina'), 3)!.dose.map((x) => Math.round(x * 100) / 100), [0.06, 0.06]) // sem dose mínima
   assert.equal(succinilcolinaAplica('succinilcolina-menor10', 8), true)
   assert.equal(succinilcolinaAplica('succinilcolina-maior10', 8), false)
   assert.equal(succinilcolinaAplica('succinilcolina-menor10', 10), false) // errata: 10 kg sem linha
   assert.equal(succinilcolinaAplica('succinilcolina-maior10', 10), false)
+})
+
+// ── Lote D11 (decisão do RT de 19/11/2026): itens 2 e 15 ──
+
+test('lote D11: atropina da SRI com máximo de 0,5 mg; nota da SBA 2024 no propofol', () => {
+  assert.equal(fichaViaAereaPediatrica.versao, '2026-11-19.1')
+  for (const f of [AHA_AAP_2025, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024]) assert.ok(fichaViaAereaPediatrica.fontes.includes(f))
+  assert.match(fichaViaAereaPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: itens 2 e 15/)
+  const at = calcularDose(d('atropina'), 40)!
+  assert.deepEqual(at.dose, [0.5, 0.5])
+  assert.equal(at.noMaximo, true)
+  assert.match(d('atropina').nota!, /livro \(p\. 71\) e a SBA 2024 dão máximo de 1 mg/)
+  // propofol: a conta segue 1 a 2 mg/kg; a SBA 2024 entra como nota
+  assert.deepEqual(calcularDose(d('propofol'), 10)!.dose, [10, 20])
+  assert.match(d('propofol').nota!, /SBA 2024.*2 mg\/kg, até 3 mg\/kg em criança pequena/)
 })

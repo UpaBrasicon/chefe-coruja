@@ -61,7 +61,7 @@ export function RcpPediatrica() {
               `- 2º choque (4 J/kg): ${num(c.segundo, 1)} J`,
               `- Seguintes (4 a 10 J/kg): ${faixaTxt(c.subsequentes, 1)} J`,
               `- Cardioversão TSV — inicial (0,5 a 1 J/kg): ${faixaTxt(c.cardioversaoInicial, 1)} J`,
-              `- Cardioversão TSV — se persistir (1 a 2 J/kg): ${faixaTxt(c.cardioversaoSeguinte, 1)} J`,
+              `- Cardioversão TSV — se persistir (2 J/kg, AHA 2025 e Coreia 2025): ${faixaTxt(c.cardioversaoSeguinte, 1)} J`,
               ...(Object.keys(GRUPOS_RCP) as GrupoRcp[]).flatMap((g) => [`${GRUPOS_RCP[g]}:`, ...DROGAS_RCP.filter((d) => d.grupo === g).flatMap((d) => doseP2Txt(d, peso))]),
             ]
           : []),
@@ -107,7 +107,7 @@ export function RcpPediatrica() {
               <dt className="text-tinta-sussurro">2º choque (4 J/kg)</dt><dd><strong>{num(c.segundo, 1)} J</strong></dd>
               <dt className="text-tinta-sussurro">Seguintes (4 a 10 J/kg)</dt><dd><strong>{faixaTxt(c.subsequentes, 1)} J</strong></dd>
               <dt className="text-tinta-sussurro">Cardioversão TSV — inicial (0,5 a 1 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoInicial, 1)} J</strong></dd>
-              <dt className="text-tinta-sussurro">Cardioversão TSV — se persistir (1 a 2 J/kg)</dt><dd><strong>{faixaTxt(c.cardioversaoSeguinte, 1)} J</strong></dd>
+              <dt className="text-tinta-sussurro">Cardioversão TSV — se persistir (2 J/kg, AHA 2025 e Coreia 2025)</dt><dd><strong>{faixaTxt(c.cardioversaoSeguinte, 1)} J</strong></dd>
             </dl>
             {NOTAS_CHOQUE.map((n) => <LinhaReferencia key={n.texto} texto={n.texto} pagina={n.pagina} />)}
           </Bloco>

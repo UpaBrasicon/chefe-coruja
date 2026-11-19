@@ -1,7 +1,10 @@
 import { MANUAL_HC } from '../adulto/fonte.ts'
 import type { Ficha, Fonte } from '../ficha.ts'
 import { LIVRO_PS_PED, fichaPediatrica } from './fonte.ts'
-import { ILCOR_PLS_2020, WELLS_YENDE_DOSE } from '../fontesPubmed.ts'
+import {
+  AES_2016, COREIA_PALS_2025, ILCOR_PLS_2020, ISPAD_HIPOGLICEMIA_2022, SBA_VIA_AEREA_PED_2024, WAO_ANAFILAXIA_2020_PED, WELLS_YENDE_DOSE,
+} from '../fontesPubmed.ts'
+import { AHA_AAP_2025 } from './rcp.ts'
 
 // Doses pediátricas em bolus por peso — Apêndice do PS Pediatria ICr-HCFMUSP
 // (4ª ed., 2023): tabela 1 (emergência e RCP) e os itens de emergência da
@@ -36,11 +39,20 @@ export const WELLS_PESO_2017: Fonte = {
 export const NOTA_PESO_EMERGENCIA =
   'Pese sempre que der. Se não der para pesar, numa metanálise de 2017 (Wells) a estimativa dos pais acertou mais (69,8% dentro de 10% do peso real) que a fita de Broselow (55,6%), e as fórmulas por idade tiveram exatidão muito baixa. Os métodos mais exatos (Mercy, fita PAWPER) pedem medidas ou fita que a unidade pode não ter.'
 
+// Versão 2026-11-19.1 (lote D11, decisão do RT de 19/11/2026, "Todas A"): itens
+// 3, 8, 9, 11, 12 e 15 de docs/clinico/D11-CORRECOES-FONTES.md. Teto de 1 mg da
+// epinefrina na PCR (AHA 2025), diazepam IV com máximo de 10 mg (AES 2016),
+// glucagon de 0,5 mg fixo abaixo de 20 kg (ISPAD 2022), epinefrina IM a cada 5 a
+// 15 min (WAO 2020), naloxona em dose baixa (Coreia 2025) e nota da SBA 2024 no
+// propofol. O valor do livro fica na nota de cada linha.
 export const fichaBolusPediatrico: Ficha = {
   ...baseBolusPediatrico,
-  versao: '2026-11-16.1',
-  fontes: [...baseBolusPediatrico.fontes, WELLS_PESO_2017, ILCOR_PLS_2020, WELLS_YENDE_DOSE],
-  revisadoEm: '16/11/2026 (próximos passos do piloto das calculadoras: ILCOR 2020 PLS 420 e Wells 2017 e 2024, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
+  versao: '2026-11-19.1',
+  fontes: [
+    ...baseBolusPediatrico.fontes, WELLS_PESO_2017, ILCOR_PLS_2020, WELLS_YENDE_DOSE,
+    AHA_AAP_2025, AES_2016, ISPAD_HIPOGLICEMIA_2022, WAO_ANAFILAXIA_2020_PED, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024,
+  ],
+  revisadoEm: '19/11/2026 (lote D11: itens 3, 8, 9, 11, 12 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras: ILCOR 2020 PLS 420 e Wells 2017 e 2024, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
 }
 
 export const NEONATO_FORA =
@@ -130,7 +142,8 @@ export const BOLUS: Bolus[] = [
     aviso: AVISO_ATROPINA, nota: 'Cap. de SRI (p. 71): 0,02 mg/kg, máximo de 1 mg, "sem dose mínima".', anexo2Adulto: ANEXO2_ATROPINA }),
   B({ id: 'bicarbonato-pcr', nome: 'Bicarbonato de sódio — PCR', grupo: 'pcr', unidade: 'mEq', porKg: true, faixa: [0.5, 1], porMl: 1, apresentacao: BIC, via: 'IV/IO; pode repetir 0,5 mEq/kg 1 vez', pagina: 'p. 894',
     nota: 'Tabela de drogas da PCR (p. 32): 1 mEq/kg/dose, não indicado de rotina (p. 32).' }),
-  B({ id: 'epinefrina-pcr', nome: 'Epinefrina — PCR', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [0.01, 0.01], porMl: 0.1, apresentacao: EPI_1_10000, via: 'IV/IO, a cada 3 a 5 min', pagina: 'p. 895; p. 31' }),
+  B({ id: 'epinefrina-pcr', nome: 'Epinefrina — PCR', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [0.01, 0.01], maximo: 1, porMl: 0.1, apresentacao: EPI_1_10000, via: 'IV/IO, a cada 3 a 5 min', pagina: 'p. 895; p. 31',
+    nota: 'sem teto (p. 895). Teto de 1 mg pela AHA 2025 (Part 8, Figura 2), como na RCP pediátrica (lote D11).' }),
   B({ id: 'epinefrina-et', nome: 'Epinefrina — endotraqueal', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [0.1, 0.1], porMl: 1, apresentacao: EPI_1_1000, via: 'ET (só sem acesso vascular — p. 31)', pagina: 'p. 895; p. 31' }),
   B({ id: 'gluconato-pcr', nome: 'Gluconato de cálcio — PCR', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [60, 100], maximo: 3000, porMl: 100, apresentacao: 'solução a 10% = 100 mg/mL (p. 896)', via: 'IV; pode repetir em 10 min; evitar infusão rápida', pagina: 'p. 896',
     nota: 'Tabela de drogas da PCR (p. 32): 5 a 7 mg/kg de cálcio elementar = 0,6 mL/kg de gluconato de cálcio 10%. Incompatível com ceftriaxona (p. 896).' }),
@@ -172,7 +185,7 @@ export const BOLUS: Bolus[] = [
   B({ id: 'midazolam-in', nome: 'Midazolam — intranasal', grupo: 'isr', unidade: 'mg', porKg: true, faixa: [0.2, 0.3], via: 'IN', pagina: 'p. 896',
     nota: 'O apêndice não traz máximo para IN. Crise epiléptica (p. 127): IN ou bucal 0,2 a 0,3 mg/kg, máximo 7,5 mg.' }),
   B({ id: 'propofol', nome: 'Propofol — SRI', grupo: 'isr', unidade: 'mg', porKg: true, faixa: [1, 2], via: 'IV', pagina: 'p. 896',
-    nota: 'Evitar na hipotensão ou choque; contraindicado em alergia a ovo e soja (p. 72).', anexo2Adulto: 'Anexo 2 do manual do adulto: 1 a 3 mg/kg (p. 1492–1493).' }),
+    nota: 'Evitar na hipotensão ou choque; contraindicado em alergia a ovo e soja (p. 72). SBA 2024 (Tabela 7): 2 mg/kg, até 3 mg/kg em criança pequena (lote D11).', anexo2Adulto: 'Anexo 2 do manual do adulto: 1 a 3 mg/kg (p. 1492–1493).' }),
   B({ id: 'tiopental', nome: 'Tiopental', grupo: 'isr', unidade: 'mg', porKg: true, faixa: [2, 5], via: 'IV', pagina: 'p. 897',
     nota: 'SRI (p. 69): 2 a 5 mg/kg. Crise epiléptica (p. 127): bolus de 5 mg/kg, máximo 500 mg.' }),
   B({ id: 'rocuronio', nome: 'Rocurônio — SRI', grupo: 'isr', unidade: 'mg', porKg: true, faixa: [0.6, 1.2], via: 'IV; associar sedação', pagina: 'p. 896',
@@ -192,7 +205,8 @@ export const BOLUS: Bolus[] = [
     condicao: so('> 2 anos', r('anos', '>', 2)) }),
 
   // ── Anafilaxia ──
-  B({ id: 'epinefrina-im', nome: 'Epinefrina — IM', grupo: 'anafilaxia', unidade: 'mg', porKg: true, faixa: [0.01, 0.01], maximo: 0.5, porMl: 1, apresentacao: EPI_1_1000, via: 'IM no vasto lateral da coxa; a cada 20 min', pagina: 'p. 895; p. 99' }),
+  B({ id: 'epinefrina-im', nome: 'Epinefrina — IM', grupo: 'anafilaxia', unidade: 'mg', porKg: true, faixa: [0.01, 0.01], maximo: 0.5, porMl: 1, apresentacao: EPI_1_1000, via: 'IM no vasto lateral da coxa; a cada 5 a 15 min se não melhorar', pagina: 'p. 895; p. 99',
+    nota: '"a cada 20 min" (p. 895). Intervalo de 5 a 15 min pela WAO 2020 ("Management of anaphylaxis"), o mesmo da anafilaxia pediátrica (lote D11).' }),
   B({ id: 'epinefrina-iv-anafilaxia', nome: 'Epinefrina — IV (anafilaxia refratária)', grupo: 'anafilaxia', unidade: 'mg', porKg: true, faixa: [0.01, 0.01], maximo: 0.5, porMl: 0.1, apresentacao: EPI_1_10000, via: 'IV em bolus, a cada 20 min', pagina: 'p. 100; p. 102' }),
   B({ id: 'glucagon-anafilaxia', nome: 'Glucagon — hipotensão persistente (betabloqueado)', grupo: 'anafilaxia', unidade: 'µg', porKg: true, faixa: [20, 30], maximo: 1000, via: 'IV em 5 min; depois infusão de 5 a 15 mcg/min', pagina: 'p. 101; p. 102' }),
   B({ id: 'azul-metileno-anafilaxia', nome: 'Azul de metileno 1% — anafilaxia refratária', grupo: 'anafilaxia', unidade: 'mg', porKg: true, faixa: [1, 2], porMl: 10, apresentacao: 'azul de metileno 1% = 10 mg/mL (p. 102)', via: 'IV, uma dose', pagina: 'p. 102',
@@ -209,10 +223,12 @@ export const BOLUS: Bolus[] = [
   B({ id: 'epinefrina-nebulizacao', nome: 'Epinefrina — nebulização', grupo: 'respiratorio', unidade: 'mL', porKg: false, faixa: [3, 5], apresentacao: EPI_1_1000, via: 'inalatória; efeito breve, possível rebote', pagina: 'p. 895' }),
 
   // ── Crise epiléptica e HIC ──
-  B({ id: 'diazepam-iv-menor5', nome: 'Diazepam — IV', grupo: 'neuro', unidade: 'mg', porKg: true, faixa: [0.15, 0.2], maximo: 5, via: 'IV, a cada 2 a 5 min; infusão rápida pode deprimir a respiração', pagina: 'p. 901', condicao: MENOR_5,
-    nota: 'Crise epiléptica (p. 127): 0,2 a 0,4 mg/kg, máximo 10 mg.', anexo2Adulto: 'Anexo 2 do manual do adulto: 0,3 a 0,6 mg/kg (p. 1492).' }),
+  // Lote D11, item 8: o máximo abaixo de 5 anos passou de 5 mg (apêndice) para os
+  // 10 mg da AES 2016; as duas linhas ficam (mesma dose) para não mudar a condição.
+  B({ id: 'diazepam-iv-menor5', nome: 'Diazepam — IV', grupo: 'neuro', unidade: 'mg', porKg: true, faixa: [0.15, 0.2], maximo: 10, via: 'IV, a cada 2 a 5 min; infusão rápida pode deprimir a respiração', pagina: 'p. 901', condicao: MENOR_5,
+    nota: 'máximo de 5 mg abaixo de 5 anos (p. 901). Máximo de 10 mg por dose pela AES 2016 (Figura 1), que permite repetir 1 vez (lote D11). Crise epiléptica (p. 127): 0,2 a 0,4 mg/kg, máximo 10 mg.', anexo2Adulto: 'Anexo 2 do manual do adulto: 0,3 a 0,6 mg/kg (p. 1492).' }),
   B({ id: 'diazepam-iv-maior5', nome: 'Diazepam — IV', grupo: 'neuro', unidade: 'mg', porKg: true, faixa: [0.15, 0.2], maximo: 10, via: 'IV, a cada 2 a 5 min; infusão rápida pode deprimir a respiração', pagina: 'p. 901', condicao: MAIOR_5,
-    nota: 'Crise epiléptica (p. 127): 0,2 a 0,4 mg/kg, máximo 10 mg.', anexo2Adulto: 'Anexo 2 do manual do adulto: 0,3 a 0,6 mg/kg (p. 1492).' }),
+    nota: 'Crise epiléptica (p. 127): 0,2 a 0,4 mg/kg, máximo 10 mg. AES 2016 (Figura 1): 0,15 a 0,2 mg/kg, máximo 10 mg, pode repetir 1 vez.', anexo2Adulto: 'Anexo 2 do manual do adulto: 0,3 a 0,6 mg/kg (p. 1492).' }),
   B({ id: 'diazepam-vr-2a5', nome: 'Diazepam — retal', grupo: 'neuro', unidade: 'mg', porKg: true, faixa: [0.5, 0.5], via: 'VR', pagina: 'p. 901',
     condicao: so('2 a 5 anos (de 6 meses a 2 anos o livro diz "dose não estabelecida")', r('anos', '>=', 2), r('anos', '<=', 5)),
     nota: 'Crise epiléptica (p. 127): VR 0,5 a 1 mg/kg.' }),
@@ -236,8 +252,9 @@ export const BOLUS: Bolus[] = [
   B({ id: 'polarizante-g10', nome: 'Solução polarizante — glicose 10%', grupo: 'metabolico', unidade: 'mL', porKg: true, faixa: [5, 5], via: 'IV com a insulina, em 30 min (0,5 g/kg de glicose)', pagina: 'p. 897', condicao: MENOR_5 }),
   B({ id: 'polarizante-g25', nome: 'Solução polarizante — glicose 25%', grupo: 'metabolico', unidade: 'mL', porKg: true, faixa: [2, 2], via: 'IV com a insulina, em 30 min (0,5 g/kg de glicose)', pagina: 'p. 897', condicao: MAIOR_5 }),
   B({ id: 'glicose-25', nome: 'Glicose 25% — hipoglicemia', grupo: 'metabolico', unidade: 'mL', porKg: true, faixa: [2, 4], via: 'IV/IO (0,5 a 1 g/kg de glicose)', pagina: 'p. 32' }),
-  B({ id: 'glucagon-menor20', nome: 'Glucagon — hipoglicemia', grupo: 'metabolico', unidade: 'mg', porKg: true, faixa: [0.02, 0.03], maximo: 0.5, via: 'IM/IV; pode repetir até 3 doses', pagina: 'p. 902',
-    condicao: so('< 20 kg (o livro não define a dose em exatamente 20 kg)', r('peso', '<', 20)) }),
+  B({ id: 'glucagon-menor20', nome: 'Glucagon — hipoglicemia', grupo: 'metabolico', unidade: 'mg', porKg: false, faixa: [0.5, 0.5], via: 'IM/IV; pode repetir até 3 doses', pagina: 'p. 902',
+    condicao: so('< 20 kg (o livro não define a dose em exatamente 20 kg)', r('peso', '<', 20)),
+    nota: '0,02 a 0,03 mg/kg, máximo 0,5 mg (p. 902). Dose fixa de 0,5 mg abaixo de 20 kg pela ISPAD 2022 (seção "Glucagon"), lote D11.' }),
   B({ id: 'glucagon-maior20', nome: 'Glucagon — hipoglicemia', grupo: 'metabolico', unidade: 'mg', porKg: false, faixa: [1, 1], via: 'IM/IV; pode repetir até 3 doses', pagina: 'p. 902',
     condicao: so('> 20 kg (o livro não define a dose em exatamente 20 kg)', r('peso', '>', 20)),
     semCalculo: 'O apêndice traz para > 20 kg só "dose máx. 1 mg", sem dose por kg (p. 902). Sem cálculo.' }),
@@ -278,6 +295,14 @@ export const BOLUS: Bolus[] = [
   B({ id: 'naloxona-maior', nome: 'Naloxona', grupo: 'antidoto', unidade: 'mg', porKg: false, faixa: [2, 2], via: 'IV, SC, IM ou ET, a cada 2 a 3 min', pagina: 'p. 896; p. 207',
     condicao: ou('> 5 anos ou > 20 kg (o livro sobrepõe as faixas: a criança pode caber nas duas)', [r('anos', '>', 5)], [r('peso', '>', 20)]),
     nota: 'Dose máxima cumulativa de 10 mg (p. 896).' }),
+  // Lote D11, item 12: o livro só traz a dose de intoxicação (p. 896); a dose baixa
+  // vem da Coreia 2025, Tabela 2: "Use lower doses to reverse respiratory
+  // depression associated with therapeutic opioid use (1–5 μg/kg titrate to effect)".
+  // Fica no grupo de sedação e analgesia (é o opioide em dose terapêutica) e o id não
+  // começa com "naloxona": as telas de intoxicação (grupo "antidoto") e de sedação
+  // (prefixo "naloxona") listam só os antídotos do Apêndice, e esta dose não é do Apêndice.
+  B({ id: 'dose-baixa-naloxona', nome: 'Naloxona — dose baixa (opioide terapêutico)', grupo: 'isr', unidade: 'µg', porKg: true, faixa: [1, 5], via: 'IV, titulando até o efeito; depressão respiratória pelo opioide em dose terapêutica', pagina: 'Coreia 2025, Tabela 2',
+    nota: 'só a dose de intoxicação, 0,1 mg/kg (p. 896). A dose baixa é da Coreia 2025 (lote D11).' }),
   B({ id: 'vitamina-k', nome: 'Vitamina K (fitomenadiona) — anticoagulantes', grupo: 'antidoto', unidade: 'mg', porKg: true, faixa: [0.03, 0.03], via: 'IV', pagina: 'p. 910; p. 208',
     nota: 'Alternativa: 2 a 5 mg/dose SC, IM ou VO (p. 910); 5 mg no sangramento significativo (p. 208).' }),
   B({ id: 'difenidramina', nome: 'Difenidramina', grupo: 'antidoto', unidade: 'mg', porKg: true, faixa: [1, 1], maximo: 50, via: 'IV ou IM a cada 6 a 8 h (máx. 5 mg/kg/dia)', pagina: 'p. 901',

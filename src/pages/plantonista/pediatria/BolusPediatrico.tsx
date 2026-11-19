@@ -60,7 +60,8 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
           {b.anexo2Adulto && <p>Divergência: {b.anexo2Adulto}</p>}
         </VerMais>
       )}
-      <p className="text-rotulo text-tinta-sussurro">PS Pediatria ICr-HCFMUSP, {b.pagina}.</p>
+      {/* Lote D11: item que vem só de fonte aberta (sem página do livro) mostra a fonte no lugar do livro. */}
+      <p className="text-rotulo text-tinta-sussurro">{b.pagina.startsWith('p. ') ? `PS Pediatria ICr-HCFMUSP, ${b.pagina}` : b.pagina}.</p>
     </div>
   )
 }

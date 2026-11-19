@@ -2,8 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
+import { ERC_CIRCUNSTANCIAS_2021 } from '../fontesPubmed.ts'
 import {
-  cristaloideAcumulado, fichaTraumaAdulto, hemotorax, mgap, nexus, pontoFrRts, pontoGcsRts, pontoPasRts, regraCanadenseColuna, torniqueteRestante, triageRts, txaTrauma,
+  TRAUMA_REFERENCIAS, cristaloideAcumulado, fichaTraumaAdulto, hemotorax, mgap, nexus, pontoFrRts, pontoGcsRts, pontoPasRts, regraCanadenseColuna, torniqueteRestante, triageRts, txaTrauma,
 } from './trauma.ts'
 
 const TODOS_SIM = { dor: 1, intox: 1, alerta: 1, deficit: 1, distrator: 1 }
@@ -81,4 +82,17 @@ test('Torniquete 2 h e cristaloide 1–3 L antes da transfusão (p. 646–647)',
   assert.equal(cristaloideAcumulado(500), 'abaixo')
   assert.equal(cristaloideAcumulado(2000), 'dentro')
   assert.equal(cristaloideAcumulado(3500), 'acima')
+})
+
+// ── Lote D11 (decisão do RT de 19/11/2026): item 20 ──
+
+test('lote D11: punção do pneumotórax hipertensivo no 4º ou 5º EIC, linha axilar anterior (ERC 2021)', () => {
+  assert.equal(fichaTraumaAdulto.versao, '2026-11-19.1')
+  assert.ok(fichaTraumaAdulto.fontes.includes(ERC_CIRCUNSTANCIAS_2021))
+  assert.match(fichaTraumaAdulto.revisadoEm, /^19\/11\/2026 \(lote D11: item 20/)
+  const pnx = TRAUMA_REFERENCIAS.find((t) => t.texto.startsWith('Pneumotórax hipertensivo'))!
+  assert.match(pnx.texto, /punção com agulha longa no 4º ou 5º EIC, linha axilar anterior \(ERC 2021\)/)
+  assert.match(pnx.texto, /o manual \(p\. 644\) dá 5º EIC, linha axilar média/)
+  assert.match(pnx.texto, /dreno n\. 24 a 28/)
+  assert.equal(pnx.pagina, 'p. 644')
 })
