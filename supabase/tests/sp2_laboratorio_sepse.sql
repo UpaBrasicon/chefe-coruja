@@ -18,15 +18,15 @@ BEGIN
 END $$;
 GRANT EXECUTE ON FUNCTION pg_temp.falha(text, text, text) TO authenticated;
 
--- L2: a referência bate com as tabelas oficiais (quando carregadas: homologação e produção)
+-- L2: a referência bate com as tabelas oficiais quando carregadas inteiras (homologação e produção; o CI tem só uma parte)
 SELECT pg_temp.confere((SELECT count(*) = 7 FROM public.exames_referencia_sepse), '7 exames da sepse na referência');
 SELECT pg_temp.confere(
-  (SELECT count(*) FROM terminologia.sigtap_procedimento) = 0
+  (SELECT count(*) FROM terminologia.sigtap_procedimento) < 1000
   OR NOT EXISTS (SELECT 1 FROM public.exames_referencia_sepse r
                   WHERE NOT EXISTS (SELECT 1 FROM terminologia.sigtap_procedimento s WHERE s.codigo = r.procedimento)),
   'todo procedimento da referência existe no SIGTAP carregado');
 SELECT pg_temp.confere(
-  (SELECT count(*) FROM terminologia.loinc) = 0
+  (SELECT count(*) FROM terminologia.loinc) < 50000
   OR NOT EXISTS (SELECT 1 FROM public.exames_referencia_sepse r
                   CROSS JOIN LATERAL (SELECT r.loinc_pedido AS c UNION ALL SELECT a ->> 'loinc' FROM jsonb_array_elements(r.analitos) a) x
                   WHERE NOT EXISTS (SELECT 1 FROM terminologia.loinc l WHERE l.codigo = x.c)),
