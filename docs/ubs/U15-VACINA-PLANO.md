@@ -71,6 +71,7 @@ Hoje esses itens contam zero no app (U13, G1 = A: "fora do app").
 4. **Sala de vacina:**
    - tela do técnico de enfermagem e do enfermeiro, com a regra da tabela;
    - caderneta do paciente com o registro anterior (VC4).
+   Feito na migration `20270415000028_ubs_u15_sala_vacina.sql` e na tela "Sala de vacina" (`/vacina`): técnico de enfermagem e enfermeiro de plantão na UBS; aplicação com a regra do LEDI e o lote da UBS na validade; transcrição sem lote e com a data; cancelar com motivo.
 5. **Painéis:** C2, C3, C6 e C7 passam a contar a vacina, e o Painel do Gestor deixa de mostrar a vacina como "fora do app".
 6. **Ficha de Vacinação (SISAB):** fila, carga e montagem no Thrift oficial, tipo 14.
 7. **RIA (RNDS):** pelo modelo oficial da RNDS e pela escolha app/PEC.

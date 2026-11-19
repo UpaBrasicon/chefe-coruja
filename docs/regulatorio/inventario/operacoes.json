@@ -554,6 +554,7 @@
         "public.agenda_fechamentos",
         "public.ubs_funcionamento",
         "public.vacina_lotes",
+        "public.vacinacoes",
         "public.pre_natal_gestacoes",
         "public.pre_natal_parcerias",
         "public.puericultura_saidas",
