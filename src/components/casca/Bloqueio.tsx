@@ -41,7 +41,7 @@ export function TelaBloqueada({
     e.preventDefault()
     if (!email || !senha || conferindo) return
     if (!turnstile.pronto) {
-      setErro(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      setErro(turnstile.pendente)
       return
     }
     setConferindo(true)
@@ -108,10 +108,10 @@ export function TelaBloqueada({
         )}
         <button
           type="submit"
-          disabled={!senha || conferindo}
+          disabled={!senha || conferindo || turnstile.aguardando}
           className="inline-flex min-h-11 items-center justify-center rounded-controle bg-acao px-4 text-controle font-medium text-sobre-acao hover:bg-acao-pressionada disabled:opacity-45"
         >
-          {conferindo ? 'Conferindo…' : 'Desbloquear'}
+          {conferindo ? 'Conferindo…' : turnstile.aguardando ? 'Aguardando a verificação…' : 'Desbloquear'}
         </button>
         <button type="button" onClick={onSair} className="inline-flex items-center justify-center gap-2 py-1 text-apoio text-tinta-sussurro hover:text-critico">
           <LogOut className="size-4" aria-hidden />

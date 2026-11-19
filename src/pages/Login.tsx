@@ -142,7 +142,7 @@ export function Login() {
     definirManterConectado(manter)
     if (!turnstile.pronto) {
       setCarregando(false)
-      setErro(turnstile.falha ?? 'Aguarde a verificação anti-robô terminar e tente de novo.')
+      setErro(turnstile.pendente)
       return
     }
     const r = await signIn(email.trim(), senha, turnstile.captchaToken)
@@ -232,8 +232,8 @@ export function Login() {
                 </div>
                 {turnstile.widget}
                 {erro && <p role="alert" className="text-controle text-critico">{erro}</p>}
-                <Button type="submit" size="bloco" disabled={carregando} className="mt-1.5 gap-2 px-[18px] text-corpo">
-                  {carregando ? 'Entrando…' : 'Entrar'}
+                <Button type="submit" size="bloco" disabled={carregando || turnstile.aguardando} className="mt-1.5 gap-2 px-[18px] text-corpo">
+                  {carregando ? 'Entrando…' : turnstile.aguardando ? 'Aguardando a verificação…' : 'Entrar'}
                   <ArrowRight className="size-4" aria-hidden />
                 </Button>
               </form>

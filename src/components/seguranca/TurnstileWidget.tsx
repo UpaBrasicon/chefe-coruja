@@ -55,8 +55,11 @@ export function TurnstileWidget({ sitekey, onToken, idRef, onFalha }: {
       idRef.current = api.render(el.current, {
         sitekey,
         language: 'pt-br',
-        // só aparece quando o Cloudflare precisa de interação; no resto é invisível
-        appearance: 'interaction-only',
+        // Sempre visível (RT, 19/11/2026): no modo invisível a caixa "Confirme
+        // que é humano" surgia segundos depois, sem aviso, e quem tocava em
+        // Entrar antes ficava preso. Visível, o quadro mostra "Verificando…",
+        // depois "Sucesso" ou a caixa para marcar, quando o Cloudflare pede.
+        appearance: 'always',
         callback: (t) => { onFalha(null); onToken(t) },
         'expired-callback': () => onToken(null),
         'error-callback': () => { onToken(null); onFalha('A verificação anti-robô falhou. Recarregue a página e tente de novo.') },
@@ -69,6 +72,7 @@ export function TurnstileWidget({ sitekey, onToken, idRef, onFalha }: {
       if (id && window.turnstile) window.turnstile.remove(id)
     }
   }, [sitekey, onToken, idRef, onFalha])
-  return <div ref={el} className="flex justify-center empty:hidden" />
+  // altura do quadro reservada (65 px no tamanho normal) para o botão não pular
+  return <div ref={el} className="flex min-h-[65px] justify-center" />
 }
 
