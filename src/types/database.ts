@@ -7318,6 +7318,7 @@ export type Database = {
           cns: string | null
           convenio: string | null
           cpf: string | null
+          cpf_justificativa: number | null
           created_at: string
           data_nascimento: string | null
           data_nascimento_estimada: boolean
@@ -7361,6 +7362,7 @@ export type Database = {
           cns?: string | null
           convenio?: string | null
           cpf?: string | null
+          cpf_justificativa?: number | null
           created_at?: string
           data_nascimento?: string | null
           data_nascimento_estimada?: boolean
@@ -7404,6 +7406,7 @@ export type Database = {
           cns?: string | null
           convenio?: string | null
           cpf?: string | null
+          cpf_justificativa?: number | null
           created_at?: string
           data_nascimento?: string | null
           data_nascimento_estimada?: boolean

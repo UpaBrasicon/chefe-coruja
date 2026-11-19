@@ -15,6 +15,7 @@ import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPriorid
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
 import { VindoDaUbs } from '@/components/encaminhamento/VindoDaUbs'
 import { ordemFilaUbs, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
+import { JUSTIFICATIVAS_SEM_CPF, pedeMotivoSemCpf } from '@/domain/justificativaCpf'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
@@ -403,6 +404,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
   const [destino, setDestino] = React.useState<'medico' | 'enfermagem'>('medico')
   // U6, E3: o pré-natal do parceiro pede a gestante
   const [gestante, setGestante] = React.useState<Gestante | null>(null)
+  // U15, vacina, PR 2 (VC7 = A): sem CPF, o motivo da lista do LEDI (vai nas fichas do SISAB)
+  const [motivoCpf, setMotivoCpf] = React.useState('')
   const [duplicata, setDuplicata] = React.useState<{ tipo: 'documento' | 'provavel'; id: string; texto: string } | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
   // lacuna 2 (RT 10/11/2026): pulseira logo depois da ficha, do não identificado e do RN
@@ -458,6 +461,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     setTipoAps('')
     setDestino('medico')
     setGestante(null)
+    setMotivoCpf('')
     setDuplicata(null)
     setErroLocal(null)
     setAlvoAberto(null)
@@ -507,6 +511,19 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     setPulseira(null)
   }
 
+  // cadastro existente sem CPF: o motivo que já está no cadastro
+  const motivoAtual = useQuery({
+    queryKey: ['recepcao-motivo-cpf', existente?.id],
+    enabled: ubs && modo === 'existente' && !!existente && !existente.cpf_final,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes').select('cpf_justificativa').eq('id', existente!.id).maybeSingle()
+      if (error) throw error
+      return data?.cpf_justificativa ?? null
+    },
+  })
+  const pedeMotivo = ubs && modo !== 'nenhum' && !motivoAtual.isLoading
+    && pedeMotivoSemCpf(dados.cpf, modo === 'existente' && !!existente?.cpf_final, motivoAtual.data ?? null)
+
   const registrar = useMutation({
     mutationFn: async ({ outraPessoa, pacienteId }: { outraPessoa?: boolean; pacienteId?: string } = {}) => {
       // p_dados: pessoa nova manda tudo; cadastro existente manda só o que foi
@@ -520,7 +537,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
         p_setor: porta.id,
         p_queixa: queixa.trim(),
         p_paciente: pacienteId ?? existente?.id ?? undefined,
-        p_dados: ubs ? { ...enviados, tipo_atendimento: tipoAps, destino, ...(tipoAps === 'pre_natal_parceiro' && gestante ? { gestante_id: gestante.id } : {}) } : enviados,
+        p_dados: ubs ? { ...enviados, tipo_atendimento: tipoAps, destino, ...(tipoAps === 'pre_natal_parceiro' && gestante ? { gestante_id: gestante.id } : {}),
+          ...(pedeMotivo && motivoCpf ? { cpf_justificativa: motivoCpf } : {}) } : enviados,
         p_prioridades: prioridades,
         p_outra_pessoa: outraPessoa ?? false,
       })
@@ -569,6 +587,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     // U11 (N2 = A): na UBS a ficha exige a data de nascimento
     if (ubs && !dados.data_nascimento.trim() && (modo === 'novo' || semNascimento)) return setErroLocal('Na UBS, informe a data de nascimento do paciente.')
     if (ubs && tipoAps === 'pre_natal_parceiro' && !gestante) return setErroLocal('Escolha a gestante do pré-natal do parceiro.')
+    // U15 (VC7 = A): na UBS, o CPF ou o motivo de não ter CPF
+    if (pedeMotivo && !motivoCpf) return setErroLocal('Na UBS, informe o CPF ou o motivo de não ter CPF.')
     setErroLocal(null)
     registrar.mutate({})
   }
@@ -723,6 +743,16 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
               dica="O cadastro está sem a data. Na UBS ela é obrigatória para abrir a ficha.">
               <Input id="rec-nasc-existente" type="date" max={hoje} value={dados.data_nascimento}
                 onChange={(e) => { mudar('data_nascimento', e.target.value); setErroLocal(null) }} />
+            </Campo>
+          )}
+
+          {pedeMotivo && (
+            <Campo id="rec-motivo-cpf" rotulo="Sem CPF: motivo *" className="max-w-md"
+              dica="Na UBS, a ficha do SISAB vai com o CPF. Sem ele, vai com o Cartão SUS e um destes motivos.">
+              <CampoSelecao id="rec-motivo-cpf" value={motivoCpf} onChange={(e) => { setMotivoCpf(e.target.value); setErroLocal(null) }}>
+                <option value="">Escolha o motivo</option>
+                {JUSTIFICATIVAS_SEM_CPF.map((j) => <option key={j.codigo} value={j.codigo}>{j.rotulo}</option>)}
+              </CampoSelecao>
             </Campo>
           )}
 

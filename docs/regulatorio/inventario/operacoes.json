@@ -1345,6 +1345,7 @@
       "tabelas": [
         "terminologia.cid10",
         "terminologia.ciap2",
+        "terminologia.ledi_justificativa_sem_cpf",
         "terminologia.cbo",
         "terminologia.loinc",
         "terminologia.medicamento_cmed",

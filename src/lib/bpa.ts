@@ -98,6 +98,8 @@ export type EnderecoSus = {
   tipo_logradouro: string | null; endereco: string | null; numero_endereco: string | null
   complemento: string | null; bairro: string | null; nacionalidade: string | null; etnia: string | null
   raca_cor: string | null; situacao_rua: boolean; sem_documento: boolean
+  /** U15, VC7: sem CPF válido, o motivo da lista do LEDI. */
+  tem_cpf: boolean; cpf_justificativa: number | null
 }
 
 /** Rótulo das críticas e avisos (códigos do servidor). */
