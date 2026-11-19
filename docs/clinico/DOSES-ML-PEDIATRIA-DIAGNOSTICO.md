@@ -948,3 +948,16 @@ Em `src/clinico/pediatria/`:
 - **`InfusaoPed`** (mL/h com a concentração digitada): `infusoes.ts`.
 - **Funções de dose** (tabela da seção 1): `acidobasePed.ts`, `anafilaxia.ts`, `asma.ts`, `cadPed.ts`, `denguePed.ts`, `diarreia.ts`, `falciformePed.ts`, `glomerulopatiasPed.ts`, `hemostasiaTromboPed.ts`, `hemoterapiaPed.ts`, `hipoglicemiaPed.ts`, `insuficienciaAdrenalPed.ts`, `oncologiaPed.ts`, `peconhentosPed.ts`, `reanimacaoNeonatal.ts`, `sedacaoProcedimento.ts`, `tetanoRaivaPed.ts`, `viasAereasSuperiores.ts`.
 - **Só volumes de soro ou hemocomponente** (já em mL): `manutencao.ts`, `queimadura.ts`, `sodioPed.ts`, `choque.ts` (`volumesChoque`), `denguePed.ts`, `hemoterapiaPed.ts`.
+
+## Decisões do RT (19/11/2026)
+
+Todas A, com um ajuste na pergunta 1:
+
+1. **ML1:** o RT resolve a verificação "sou humano" do Bulário no Chrome. A sessão lê a bula do profissional e anota produto, empresa, expediente, data da bula e concentração. O RT confere a tabela antes do código.
+2. **ML2:** entra cada concentração diferente com registro ativo na ANVISA, agrupada por concentração e não por marca.
+3. **ML3 a ML5:** VO e pó ficam sem mL neste ciclo, com a nota "reconstituir conforme a bula" no pó. Nos itens que precisam de diluição, a tela mostra "volume a aspirar da ampola" com o aviso fixo "diluir antes de administrar".
+4. **ML6 e ML7:** mL só quando a dose e a concentração estão na mesma base, com o rótulo dizendo qual. A insulina nunca mostra mL do frasco de 100 UI/mL, só do preparo diluído do livro (0,1 UI/mL, p. 521).
+5. **ML8:** o azul de metileno é conferido na bula no lote 4. Até lá, a tela escreve "solução a 1%" ao lado do volume.
+6. **ML9:** as listas locais servem só de pista para a busca na bula. Nunca entram como opção de ampola.
+7. **ML10:** o rótulo da ampola usa o nome do produto da bula, e o RT confirma se a dose do livro vale para os dois produtos.
+8. **ML11:** os lotes seguem a ordem 0, 1, 2, 3, 4, 5 e 6, cada um com seu PR e com homologação antes da produção.
