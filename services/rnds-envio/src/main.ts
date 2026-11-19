@@ -16,6 +16,11 @@
 //   RNDS_INTERVALO_S (60), RNDS_LOTE (20)
 //   RNDS_SAUDE_PORTA (8080)                  GET /saude, para o teste de saúde do
 //                                            contêiner e da atualização (5.3c)
+//   LEDI_INSTALACAO                          U15, PR 4: arquivo JSON com quem envia ao
+//                                            PEC (contraChave, uuidInstalacao, cpfOuCnpj,
+//                                            nomeOuRazaoSocial); sem ele, o SISAB fica parado
+//   LEDI_CREDENCIAIS_DIR                     <unidade_id>.json com a credencial da API do
+//                                            PEC da unidade ({"usuario", "senha"})
 // ─────────────────────────────────────────────────────────────────────────────
 import { readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
@@ -24,7 +29,8 @@ import { certificadosEmPasta } from './certificados.ts'
 import { processarLote } from './ciclo.ts'
 import { ClienteRnds } from './cliente-rnds.ts'
 import { carregarChave, CofreDeCertificados } from './cofre.ts'
-import { clienteSupabase, cofreSupabase, filaSupabase } from './fila-supabase.ts'
+import { clienteSupabase, cofreSupabase, filaLediSupabase, filaSupabase } from './fila-supabase.ts'
+import { ClientePec, credenciaisEmPasta, processarLoteLedi, type DependenciasLedi } from './ledi.ts'
 
 function exigir(nome: string): string {
   const v = process.env[nome]
@@ -59,6 +65,17 @@ const deps = {
   log,
 }
 
+// U15, PR 4: o envio ao PEC e-SUS APS do município só roda com a instalação configurada
+const ledi: DependenciasLedi | null = process.env.LEDI_INSTALACAO
+  ? {
+      fila: filaLediSupabase(db),
+      credenciais: credenciaisEmPasta(exigir('LEDI_CREDENCIAIS_DIR')),
+      pec: new ClientePec(),
+      instalacao: JSON.parse(readFileSync(process.env.LEDI_INSTALACAO, 'utf8')),
+      log,
+    }
+  : null
+
 let parar = false
 const acordar = new AbortController()
 for (const sinal of ['SIGTERM', 'SIGINT'] as const) process.on(sinal, () => { parar = true; acordar.abort() })
@@ -76,7 +93,7 @@ saude.listen(Number(process.env.RNDS_SAUDE_PORTA ?? 8080), '127.0.0.1')
 
 log({
   evento: 'inicio', simulador: Boolean(process.env.RNDS_AUTH_URL), unidades_no_simulador: deps.unidadesSimulador?.size ?? 'todas',
-  producao: deps.permitirProducao, cofre: Boolean(cofre),
+  producao: deps.permitirProducao, cofre: Boolean(cofre), sisab: Boolean(ledi),
 })
 while (!parar) {
   try {
@@ -90,6 +107,13 @@ while (!parar) {
       r = await processarLote(deps, lote)
       if (Object.values(r).some((n) => n > 0)) log({ evento: 'lote', ...r })
     } while (!parar && Object.values(r).reduce((a, b) => a + b, 0) >= lote)
+    if (ledi) {
+      let s
+      do {
+        s = await processarLoteLedi(ledi, lote)
+        if (Object.values(s).some((n) => n > 0)) log({ evento: 'lote_sisab', ...s })
+      } while (!parar && Object.values(s).reduce((a, b) => a + b, 0) >= lote)
+    }
     ultimoCicloBom = Date.now()
   } catch (e) {
     log({ evento: 'falha', erro: (e as Error).message })
