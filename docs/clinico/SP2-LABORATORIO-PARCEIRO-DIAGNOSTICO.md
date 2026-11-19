@@ -1,6 +1,6 @@
 # SP2: laboratório do parceiro para a sepse (diagnóstico, 18/11/2026)
 
-Trilha "Sepse com evidência", item SP2 (P1). **Decisões do RT: pendentes** (L1–L5). Este documento não muda código nem banco.
+Trilha "Sepse com evidência", item SP2 (P1). **Decisão do RT, 18/11/2026: "A em todas"** (L1–L5). Este documento não muda código nem banco.
 
 **Pergunta:** o que falta para que lactato, leucócitos, plaquetas, creatinina, bilirrubina, PCR, gasometria e hemocultura do laboratório do parceiro cheguem sozinhos ao prontuário? Com eles, o SOFA do SP1 deixa de depender de digitação.
 
