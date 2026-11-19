@@ -11167,6 +11167,11 @@ export type Database = {
       vacina_lotes_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       vacina_lote_salvar: { Args: { p_unidade: string; p_imunobiologico: number; p_lote: string; p_fabricante: string; p_validade: string }; Returns: string }
       vacina_lote_desativar: { Args: { p_lote: string }; Returns: undefined }
+      vacina_referencias: { Args: never; Returns: Json }
+      vacina_aplicar: { Args: { p_paciente: string; p_dados: Json }; Returns: string }
+      vacina_registrar_anterior: { Args: { p_paciente: string; p_dados: Json }; Returns: string }
+      vacina_caderneta: { Args: { p_paciente: string }; Returns: Json }
+      vacina_cancelar: { Args: { p_vacinacao: string; p_motivo: string }; Returns: undefined }
       rnds_retomar: { Args: { p_unidade: string }; Returns: undefined }
       rnds_salvar_credencial: { Args: { p_credencial: string | null; p_nome: string; p_unidade_principal: string; p_identificador: string | null; p_unidades: string[] }; Returns: string }
       rnds_definir_ambiente: { Args: { p_credencial: string; p_ambiente: string }; Returns: undefined }
