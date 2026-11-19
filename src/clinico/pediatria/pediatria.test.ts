@@ -210,10 +210,10 @@ test('divergências com o Anexo 2 do manual do adulto ficam só como nota', () =
 // ── Lote D11 (decisão do RT de 19/11/2026): itens 3, 8, 9, 11, 12 e 15 ──
 
 test('lote D11: doses por peso corrigidas pelas fontes abertas, com o valor do livro na nota', () => {
-  assert.equal(fichaBolusPediatrico.versao, '2026-11-19.1')
+  assert.equal(fichaBolusPediatrico.versao, '2026-11-19.2')
   for (const f of [AHA_AAP_2025, AES_2016, ISPAD_HIPOGLICEMIA_2022, WAO_ANAFILAXIA_2020_PED, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024])
     assert.ok(fichaBolusPediatrico.fontes.includes(f), f.citacao)
-  assert.match(fichaBolusPediatrico.revisadoEm, /^19\/11\/2026 \(lote D11: itens 3, 8, 9, 11, 12 e 15/)
+  assert.match(fichaBolusPediatrico.revisadoEm, /19\/11\/2026 \(lote D11: itens 3, 8, 9, 11, 12 e 15/)
   // item 3: epinefrina na PCR com teto de 1 mg (AHA 2025)
   assert.deepEqual(faixa('epinefrina-pcr', 120), [1, 1])
   assert.equal(calcularBolus(b('epinefrina-pcr'), 120)!.noMaximo, true)

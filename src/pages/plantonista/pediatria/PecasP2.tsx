@@ -5,7 +5,7 @@ import { NumberField } from '@/components/plantonista/NumberField'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-import { faixaTxt, num } from './formatoP2'
+import { doMaximo, faixaTxt, num } from './formatoP2'
 
 // Peças visuais do lote P2 (livro do ICr). Só componentes.
 
@@ -63,7 +63,7 @@ export function LinhaDose({ d, peso, extra }: { d: DosePeso; peso: number; extra
         {d.solucao && ` · ${d.solucao}`}
         {' · '}{d.via}
       </p>
-      {r.noMaximo && <p className="text-atencao">Limitado ao máximo do livro.</p>}
+      {r.noMaximo && <p className="text-atencao">Limitado ao máximo {doMaximo(d.fonteMaximo)}.</p>}
       {extra}
       {d.nota && <p className="text-tinta-sussurro">No livro: {d.nota}</p>}
       {d.errata && <p className="text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{d.errata}</p>}

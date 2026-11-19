@@ -47,12 +47,12 @@ export const NOTA_PESO_EMERGENCIA =
 // propofol. O valor do livro fica na nota de cada linha.
 export const fichaBolusPediatrico: Ficha = {
   ...baseBolusPediatrico,
-  versao: '2026-11-19.1',
+  versao: '2026-11-19.2',
   fontes: [
     ...baseBolusPediatrico.fontes, WELLS_PESO_2017, ILCOR_PLS_2020, WELLS_YENDE_DOSE,
     AHA_AAP_2025, AES_2016, ISPAD_HIPOGLICEMIA_2022, WAO_ANAFILAXIA_2020_PED, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024,
   ],
-  revisadoEm: '19/11/2026 (lote D11: itens 3, 8, 9, 11, 12 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras: ILCOR 2020 PLS 420 e Wells 2017 e 2024, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
+  revisadoEm: '19/11/2026 (rótulo do máximo: a tela diz de onde vem o teto quando não é o livro; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (lote D11: itens 3, 8, 9, 11, 12 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras: ILCOR 2020 PLS 420 e Wells 2017 e 2024, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
 }
 
 export const NEONATO_FORA =
@@ -88,6 +88,8 @@ export type Bolus = {
   porKg: boolean
   faixa: [number, number]
   maximo?: number
+  /** de onde vem o máximo quando não é o livro (ex.: "AHA 2025"); sem o campo, a tela diz "do livro" */
+  fonteMaximo?: string
   /** unidade por mL da apresentação que o livro cita (mesma unidade da dose) */
   porMl?: number
   apresentacao?: string
@@ -142,7 +144,7 @@ export const BOLUS: Bolus[] = [
     aviso: AVISO_ATROPINA, nota: 'Cap. de SRI (p. 71): 0,02 mg/kg, máximo de 1 mg, "sem dose mínima".', anexo2Adulto: ANEXO2_ATROPINA }),
   B({ id: 'bicarbonato-pcr', nome: 'Bicarbonato de sódio — PCR', grupo: 'pcr', unidade: 'mEq', porKg: true, faixa: [0.5, 1], porMl: 1, apresentacao: BIC, via: 'IV/IO; pode repetir 0,5 mEq/kg 1 vez', pagina: 'p. 894',
     nota: 'Tabela de drogas da PCR (p. 32): 1 mEq/kg/dose, não indicado de rotina (p. 32).' }),
-  B({ id: 'epinefrina-pcr', nome: 'Epinefrina — PCR', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [0.01, 0.01], maximo: 1, porMl: 0.1, apresentacao: EPI_1_10000, via: 'IV/IO, a cada 3 a 5 min', pagina: 'p. 895; p. 31',
+  B({ id: 'epinefrina-pcr', nome: 'Epinefrina — PCR', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [0.01, 0.01], maximo: 1, fonteMaximo: 'AHA 2025', porMl: 0.1, apresentacao: EPI_1_10000, via: 'IV/IO, a cada 3 a 5 min', pagina: 'p. 895; p. 31',
     nota: 'sem teto (p. 895). Teto de 1 mg pela AHA 2025 (Part 8, Figura 2), como na RCP pediátrica (lote D11).' }),
   B({ id: 'epinefrina-et', nome: 'Epinefrina — endotraqueal', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [0.1, 0.1], porMl: 1, apresentacao: EPI_1_1000, via: 'ET (só sem acesso vascular — p. 31)', pagina: 'p. 895; p. 31' }),
   B({ id: 'gluconato-pcr', nome: 'Gluconato de cálcio — PCR', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [60, 100], maximo: 3000, porMl: 100, apresentacao: 'solução a 10% = 100 mg/mL (p. 896)', via: 'IV; pode repetir em 10 min; evitar infusão rápida', pagina: 'p. 896',
@@ -225,7 +227,7 @@ export const BOLUS: Bolus[] = [
   // ── Crise epiléptica e HIC ──
   // Lote D11, item 8: o máximo abaixo de 5 anos passou de 5 mg (apêndice) para os
   // 10 mg da AES 2016; as duas linhas ficam (mesma dose) para não mudar a condição.
-  B({ id: 'diazepam-iv-menor5', nome: 'Diazepam — IV', grupo: 'neuro', unidade: 'mg', porKg: true, faixa: [0.15, 0.2], maximo: 10, via: 'IV, a cada 2 a 5 min; infusão rápida pode deprimir a respiração', pagina: 'p. 901', condicao: MENOR_5,
+  B({ id: 'diazepam-iv-menor5', nome: 'Diazepam — IV', grupo: 'neuro', unidade: 'mg', porKg: true, faixa: [0.15, 0.2], maximo: 10, fonteMaximo: 'AES 2016', via: 'IV, a cada 2 a 5 min; infusão rápida pode deprimir a respiração', pagina: 'p. 901', condicao: MENOR_5,
     nota: 'máximo de 5 mg abaixo de 5 anos (p. 901). Máximo de 10 mg por dose pela AES 2016 (Figura 1), que permite repetir 1 vez (lote D11). Crise epiléptica (p. 127): 0,2 a 0,4 mg/kg, máximo 10 mg.', anexo2Adulto: 'Anexo 2 do manual do adulto: 0,3 a 0,6 mg/kg (p. 1492).' }),
   B({ id: 'diazepam-iv-maior5', nome: 'Diazepam — IV', grupo: 'neuro', unidade: 'mg', porKg: true, faixa: [0.15, 0.2], maximo: 10, via: 'IV, a cada 2 a 5 min; infusão rápida pode deprimir a respiração', pagina: 'p. 901', condicao: MAIOR_5,
     nota: 'Crise epiléptica (p. 127): 0,2 a 0,4 mg/kg, máximo 10 mg. AES 2016 (Figura 1): 0,15 a 0,2 mg/kg, máximo 10 mg, pode repetir 1 vez.', anexo2Adulto: 'Anexo 2 do manual do adulto: 0,3 a 0,6 mg/kg (p. 1492).' }),

@@ -80,7 +80,7 @@ export function LinhaBolusApendice({ b, peso, idadeMeses }: { b: Bolus; peso: nu
         {b.apresentacao && ` · ${b.apresentacao}`} · {b.via}
       </p>
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
-      {r?.noMaximo && <p className="text-atencao">Limitado ao máximo do livro.</p>}
+      {r?.noMaximo && <p className="text-atencao">Limitado ao máximo{b.fonteMaximo ? ` (${b.fonteMaximo})` : ' do livro'}.</p>}
       {b.nota && <p className="text-tinta-sussurro">{b.nota}</p>}
       {b.errata && <Errata texto={b.errata} />}
       <p className="text-rotulo text-tinta-sussurro">Livro ICr, Apêndice, {b.pagina}.</p>
