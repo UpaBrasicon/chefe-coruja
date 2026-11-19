@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { calcularDose, SEM_VALOR_NEONATAL_P2, type DosePeso } from '@/clinico/pediatria/fonteP2'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -45,7 +46,8 @@ export function PesoInvalido() {
 }
 
 /** Uma linha de dose calculada pelo peso, com faixa por kg, máximo, via e página. */
-export function LinhaDose({ d, peso, extra }: { d: DosePeso; peso: number; extra?: ReactNode }) {
+/** `ampola`: chave "lista:id" da escolha da ampola (src/clinico/pediatria/ampolas.ts); sem ampola cadastrada, nada muda. */
+export function LinhaDose({ d, peso, extra, ampola }: { d: DosePeso; peso: number; extra?: ReactNode; ampola?: string }) {
   const r = calcularDose(d, peso)
   if (!r) return null
   return (
@@ -64,6 +66,7 @@ export function LinhaDose({ d, peso, extra }: { d: DosePeso; peso: number; extra
         {' · '}{d.via}
       </p>
       {r.noMaximo && <p className="text-atencao">Limitado ao máximo {doMaximo(d.fonteMaximo)}.</p>}
+      {ampola && <EscolhaDaAmpola chave={ampola} dose={r.dose} unidade={d.unidade} />}
       {extra}
       {d.nota && <p className="text-tinta-sussurro">No livro: {d.nota}</p>}
       {d.errata && <p className="text-tinta-sussurro"><Badge variant="outline" className="mr-1">errata</Badge>{d.errata}</p>}

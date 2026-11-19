@@ -145,7 +145,7 @@ export function ViaAereaPediatrica() {
         ) : !pesoValido(peso) ? (
           <p className="text-tinta-sussurro">Informe o peso para calcular (acima de 0 e até 80 kg).</p>
         ) : (
-          DOSES_SRI.filter((d) => succinilcolinaAplica(d.id, peso)).map((d) => <LinhaDose key={d.id} d={d} peso={peso} />)
+          DOSES_SRI.filter((d) => succinilcolinaAplica(d.id, peso)).map((d) => <LinhaDose key={d.id} d={d} peso={peso} ampola={`sri:${d.id}`} />)
         )}
         {!rn && pesoValido(peso) && peso === 10 && <p className="text-atencao">Succinilcolina: a Tabela 2 separa menos de 10 kg e mais de 10 kg; 10 kg exatos não têm linha (errata).</p>}
       </Bloco>
