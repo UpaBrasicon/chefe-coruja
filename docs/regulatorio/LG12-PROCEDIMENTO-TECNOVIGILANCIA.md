@@ -35,7 +35,7 @@ A fila mostra o relógio de cada relato. Antes do registro (LG11), o prazo é um
 1. Ler o relato e marcar "Em investigação".
 2. Reproduzir o problema na homologação, com os mesmos dados, sem dado real de paciente.
 3. Conferir a ficha com a fonte citada.
-4. Se pode causar dano: **suspender a versão na rede** (Revisão Clínica, Tecnovigilância). A ficha some de todas as unidades com o aviso "suspensa para correção" e o motivo.
+4. Se pode causar dano: **suspender a versão na rede** (aba Tecnovigilância). A ficha some de todas as unidades com o aviso "suspensa para correção" e o motivo.
 5. Corrigir pelo caminho de sempre:
    - versão nova da ficha;
    - revisões do comitê (LG13);

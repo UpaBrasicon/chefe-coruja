@@ -69,6 +69,7 @@ const InternacaoPainel = lazy(() => import('@/pages/InternacaoPainel'))
 const Notificacoes = lazy(() => import('@/pages/Notificacoes'))
 const Perfil = lazy(() => import('@/pages/Perfil'))
 const RevisaoClinica = lazy(() => import('@/pages/RevisaoClinica'))
+const Tecnovigilancia = lazy(() => import('@/pages/Tecnovigilancia'))
 const PedidosProntuario = lazy(() => import('@/pages/prontuario/PedidosProntuario'))
 const ProntuarioLeitura = lazy(() => import('@/pages/prontuario/ProntuarioLeitura'))
 const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
@@ -449,6 +450,8 @@ export default function App() {
                           Revisão Clínica é da nomeação de RT, não do papel na unidade (o banco confere). */}
                       <Route path="/perfil" element={<Perfil />} />
                       <Route path="/revisao-clinica" element={<RevisaoClinica />} />
+                      {/* LG12 numa aba própria (RT, 19/11/2026): fila do RT e relatos da unidade para o gestor */}
+                      <Route path="/tecnovigilancia" element={<Tecnovigilancia />} />
 
                       {/* ── Plantonista + gestão ───────────────────────── */}
                       <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin']} />}>

@@ -27,7 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
-import { Baby, CalendarCheck, CalendarDays, Ear, HeartPulse, Package, Send, Sprout } from 'lucide-react'
+import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, Package, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -130,6 +130,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos', grupo: 'Unidade' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true, grupo: 'Unidade' },
     { to: '/revisao-clinica', rotulo: 'Revisão clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true, grupo: 'Unidade' },
+    { to: '/tecnovigilancia', rotulo: 'Tecnovigilância', icone: Flag, exato: true, grupo: 'Unidade' },
     { to: '/gestao/chamados', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: LifeBuoy, exato: true, grupo: 'Unidade' },
   ],
   // Enfermagem (P/index.html 32225–32230): o técnico não tem Triagem nem
@@ -252,6 +253,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
 }
 
 const ITEM_REVISAO_CLINICA: ItemNav = { to: '/revisao-clinica', rotulo: 'Revisão clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true, nota: 'revisao' }
+// LG12 numa aba própria (RT, 19/11/2026): o responsável técnico médico tem a fila
+const ITEM_TECNOVIGILANCIA: ItemNav = { to: '/tecnovigilancia', rotulo: 'Tecnovigilância', icone: Flag, exato: true }
 
 // "Erros e alertas" é do administrador geral (RequireSuperAdmin em App.tsx):
 // o administrador da organização que não é super admin não vê o item
@@ -334,6 +337,10 @@ function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdm
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)
     if (i >= 0) itens[i] = { ...ITEM_REVISAO_CLINICA, grupo: itens[i].grupo }
     else itens.push(ITEM_REVISAO_CLINICA)
+    if (!itens.some((x) => x.to === ITEM_TECNOVIGILANCIA.to)) {
+      const j = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)
+      itens.splice(j + 1, 0, { ...ITEM_TECNOVIGILANCIA, grupo: itens[j].grupo })
+    }
   }
   return papel === 'gestor' ? ordenarPorGrupo(itens) : itens
 }
