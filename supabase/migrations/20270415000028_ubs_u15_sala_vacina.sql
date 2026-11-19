@@ -111,6 +111,10 @@ ALTER TABLE public.vacinacoes ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS vacinacoes_le ON public.vacinacoes;
 CREATE POLICY vacinacoes_le ON public.vacinacoes FOR SELECT TO authenticated
   USING (private.vacina_pode_ler(unidade_id));
+-- dado de paciente: leitura só com o segundo fator (S3, migration 20270414000054)
+DROP POLICY IF EXISTS vacinacoes_segundo_fator ON public.vacinacoes;
+CREATE POLICY vacinacoes_segundo_fator ON public.vacinacoes AS RESTRICTIVE FOR ALL TO authenticated
+  USING (private.segundo_fator_ok());
 REVOKE ALL ON public.vacinacoes FROM anon;
 REVOKE INSERT, UPDATE, DELETE ON public.vacinacoes FROM authenticated;
 GRANT SELECT ON public.vacinacoes TO authenticated;
