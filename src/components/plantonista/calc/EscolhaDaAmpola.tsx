@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  AVISO_DILUIR, PECA_A_AMPOLA, ampolasDoItem, volumeDaAmpola, type BaseDose,
+  AVISO_DILUIR, ITENS_COM_AMPOLA, PECA_A_AMPOLA, ampolasDoItem, volumeDaAmpola, type BaseDose,
 } from '@/clinico/pediatria/ampolas'
 import { Button } from '@/components/ui/button'
 import { numeroSemMilhar } from '@/lib/formato'
@@ -26,7 +26,7 @@ export function EscolhaDaAmpola({ chave, dose, unidade, base }: {
   const [escolhida, setEscolhida] = useState<string | null>(null)
   if (ampolas.length === 0) return null
   const ampola = ampolas.find((a) => a.id === escolhida)
-  const volume = volumeDaAmpola(dose, ampola, base)
+  const volume = volumeDaAmpola(dose, ampola, base ?? ITENS_COM_AMPOLA[chave]?.base)
   return (
     <div className="mt-2 flex flex-col gap-1.5">
       <div role="group" aria-label="Ampola" className="flex flex-wrap gap-1.5">
