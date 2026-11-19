@@ -10,7 +10,11 @@
 // (https://integracao.esusaps.bridge.ufsc.tech/ledi/documentacao/), dicionários
 // "Camada de transporte", "Cabeçalhos de lotação", "Atendimento Individual" e
 // "Procedimentos", e as tabelas de referência (Dicionário de dados). O número
-// de cada campo é o "#N" do dicionário.
+// de cada campo é o do IDL oficial do Thrift (laboratoriobridge/esusaps-integracao,
+// commit 9316f280f526: dado_transporte.thrift, common.thrift,
+// ficha_atendimento_individual.thrift e ficha_atendimento_procedimento.thrift).
+// Nos registros filhos e no VariasLotacoesHeader, ele não é o "#N" do
+// dicionário (correção do U15, PR 3).
 //
 // Falta de dado vira erro com o prefixo "retido:", como na RNDS: o serviço de
 // envio (PR 4) grava a ficha como retida, com o motivo, e tenta de novo depois.
@@ -108,14 +112,14 @@ export const epoch = (instante: string) => {
 export const cidLedi = (c: string) => c.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
 
 // ── partes comuns ────────────────────────────────────────────────────────────
-/** Identificação do cidadão: CPF (24/3) ou CNS (2/2), nunca os dois. */
+/** Identificação do cidadão: CPF ou CNS, nunca os dois. */
 function identificacao(c: CidadaoLedi): { cpf?: string; cns?: string } {
   if (c.cpf) return { cpf: c.cpf }
   if (c.cns) return { cns: c.cns }
   throw new Error('retido: paciente sem CNS e sem CPF')
 }
 
-/** Medicoes (#1 a #13 do dicionário), pelos conceitos do app. */
+/** MedicoesThrift (1 a 13), pelos conceitos do app. */
 export function medicoes(lista_: MedicaoLedi[]): Struct | undefined {
   const v = (nome: string) => lista_.find((m) => m.conceito === nome)?.valor
   const umaCasa = (n: number) => Math.round(n * 10) / 10
@@ -185,6 +189,7 @@ export function fichaFai(uuidFicha: string, c: CargaFai, inst: Instalacao): Arqu
   const exames = [...new Set(a.exames_solicitados)].slice(0, 100)
     .map((cod) => struct({ 1: str(cod), 2: lista(TIPO.STRING, [str('S')]) }))
 
+  // FichaAtendimentoIndividualChildThrift
   const filho: Struct = {
     2: id.cns ? str(id.cns) : undefined,
     3: i64(epochData(c.cidadao.data_nascimento)),
@@ -192,19 +197,20 @@ export function fichaFai(uuidFicha: string, c: CargaFai, inst: Instalacao): Arqu
     5: i64(sexoLedi(c.cidadao.sexo)),
     6: i64(turnoLedi(a.fim)),
     7: i64(tipo),
-    8: med ? struct(med) : undefined,
-    13: exames.length ? lista(TIPO.STRUCT, exames) : undefined,
-    17: lista(TIPO.I64, condutas.map((x) => i64(x))),
-    22: i64(inicio),
-    23: i64(fim),
-    24: id.cpf ? str(id.cpf) : undefined,
-    28: lista(TIPO.STRUCT, problemas.map((p) => struct(p))),
-    33: bool(false),
+    17: exames.length ? lista(TIPO.STRUCT, exames) : undefined,
+    22: lista(TIPO.I64, condutas.map((x) => i64(x))),
+    28: i64(inicio),
+    29: i64(fim),
+    30: id.cpf ? str(id.cpf) : undefined,
+    39: med ? struct(med) : undefined,
+    40: lista(TIPO.STRUCT, problemas.map((p) => struct(p))),
+    47: bool(false),
   }
   const lotacao: Struct = { 1: str(c.profissional.cns), 2: str(c.profissional.cbo), 3: str(c.unidade.cnes),
     4: c.unidade.ine ? str(c.unidade.ine) : undefined }
+  // FichaAtendimentoIndividualMasterThrift, com o VariasLotacoesHeaderThrift (6 principal, 8 data, 9 IBGE)
   const ficha = serializar({
-    1: struct({ 1: struct(lotacao), 3: i64(fim), 4: str(c.unidade.codigo_ibge) }),
+    1: struct({ 6: struct(lotacao), 8: i64(fim), 9: str(c.unidade.codigo_ibge) }),
     2: lista(TIPO.STRUCT, [struct(filho)]),
     3: str(uuidFicha),
     4: i32(ORIGEM_TERCEIROS),
@@ -220,17 +226,18 @@ export function fichaFp(uuidFicha: string, c: CargaFp, inst: Instalacao): Arquiv
   const id = identificacao(c.cidadao)
   const em = epoch(p.realizado_em)
   const avisos = p.quantidade > 1 ? [`quantidade ${p.quantidade}: a ficha leva o procedimento uma vez (o LEDI não repete código)`] : []
+  // FichaProcedimentoChildThrift
   const filho: Struct = {
     2: id.cns ? str(id.cns) : undefined,
-    3: id.cpf ? str(id.cpf) : undefined,
-    4: i64(epochData(c.cidadao.data_nascimento)),
-    5: i64(sexoLedi(c.cidadao.sexo)),
-    6: i64(LOCAL_UBS),
-    7: i64(turnoLedi(p.realizado_em)),
-    9: lista(TIPO.STRING, [str(p.codigo_sigtap)]),
+    3: i64(epochData(c.cidadao.data_nascimento)),
+    4: i64(sexoLedi(c.cidadao.sexo)),
+    5: i64(LOCAL_UBS),
+    6: i64(turnoLedi(p.realizado_em)),
+    8: lista(TIPO.STRING, [str(p.codigo_sigtap)]),
     10: i64(em),
     11: i64(em),
-    14: bool(false),
+    12: id.cpf ? str(id.cpf) : undefined,
+    20: bool(false),
   }
   const ficha = serializar({
     1: str(uuidFicha),
