@@ -26,7 +26,7 @@ import {
 } from 'lucide-react'
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
-import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren } from 'lucide-react'
+import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren, Syringe } from 'lucide-react'
 import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, Package, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
@@ -69,6 +69,8 @@ const ITEM_PRE_NATAL: ItemNav = { to: '/pre-natal', rotulo: 'Pré-natal', icone:
 const ITEM_PUERICULTURA: ItemNav = { to: '/puericultura', rotulo: 'Puericultura', icone: Sprout, exato: true }
 // U7, PR 4 (percurso da UBS): sinais vitais do técnico e do enfermeiro na UBS
 const ITEM_SINAIS_VITAIS: ItemNav = { to: '/sinais-vitais', rotulo: 'Sinais vitais', curto: 'Vitais', icone: HeartPulse, exato: true }
+// U15, vacina, PR 3 (VC3 = A): lotes de vacina da UBS, do gestor e do enfermeiro
+const ITEM_LOTES_VACINA: ItemNav = { to: '/vacina/lotes', rotulo: 'Lotes de vacina', curto: 'Lotes', icone: Syringe, exato: true }
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
@@ -129,6 +131,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true, grupo: 'Unidade' },
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos', grupo: 'Unidade' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true, grupo: 'Unidade' },
+    { ...ITEM_LOTES_VACINA, grupo: 'Unidade' },
     { to: '/revisao-clinica', rotulo: 'Revisão clínica', curto: 'Revisão', icone: SquareCheckBig, exato: true, grupo: 'Unidade' },
     { to: '/tecnovigilancia', rotulo: 'Tecnovigilância', icone: Flag, exato: true, grupo: 'Unidade' },
     { to: '/gestao/chamados', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: LifeBuoy, exato: true, grupo: 'Unidade' },
@@ -147,6 +150,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
     ITEM_PUERICULTURA,
+    ITEM_LOTES_VACINA,
     { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
@@ -299,7 +303,7 @@ const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
 // "Leitos" só a regulação (U5, achado GE7).
 const GRUPO_NA_UBS: Record<string, string> = { Porta: 'Cadastro', Leitos: 'Rede' }
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
-const SO_NA_UBS = new Set(['/recepcao/hoje', '/escuta', '/consultorio-enfermagem', '/sinais-vitais', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura'])
+const SO_NA_UBS = new Set(['/recepcao/hoje', '/escuta', '/consultorio-enfermagem', '/sinais-vitais', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura', '/vacina/lotes'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
 export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefined): boolean {

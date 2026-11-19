@@ -11164,6 +11164,9 @@ export type Database = {
       ledi_painel: { Args: { p_unidade: string }; Returns: Json }
       ledi_itens: { Args: { p_unidade: string; p_status?: string | null; p_limite?: number }; Returns: Json }
       ledi_reenviar: { Args: { p_item: string }; Returns: undefined }
+      vacina_lotes_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      vacina_lote_salvar: { Args: { p_unidade: string; p_imunobiologico: number; p_lote: string; p_fabricante: string; p_validade: string }; Returns: string }
+      vacina_lote_desativar: { Args: { p_lote: string }; Returns: undefined }
       rnds_retomar: { Args: { p_unidade: string }; Returns: undefined }
       rnds_salvar_credencial: { Args: { p_credencial: string | null; p_nome: string; p_unidade_principal: string; p_identificador: string | null; p_unidades: string[] }; Returns: string }
       rnds_definir_ambiente: { Args: { p_credencial: string; p_ambiente: string }; Returns: undefined }

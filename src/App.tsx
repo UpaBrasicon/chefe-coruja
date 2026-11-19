@@ -35,6 +35,7 @@ const Encaminhados = lazy(() => import('@/pages/encaminhados/Encaminhados'))
 const Hiperdia = lazy(() => import('@/pages/hiperdia/Hiperdia'))
 const PreNatal = lazy(() => import('@/pages/preNatal/PreNatal'))
 const Puericultura = lazy(() => import('@/pages/puericultura/Puericultura'))
+const LotesVacina = lazy(() => import('@/pages/vacina/LotesVacina'))
 const AtendimentoPorta = lazy(() => import('@/pages/plantao/AtendimentoPorta'))
 const PainelChamada = lazy(() => import('@/pages/public/PainelChamada'))
 const PacoteAlta = lazy(() => import('@/pages/public/PacoteAlta'))
@@ -354,6 +355,10 @@ export default function App() {
                       {/* 5A, tarefa 5: envios à UPA e regulações da UBS, com o rastreio */}
                       <Route element={<RequireRole papeis={['recepcao', 'enfermeiro', 'plantonista', 'gestor']} />}>
                         <Route path="/encaminhados" element={<Encaminhados />} />
+                      </Route>
+                      {/* U15, vacina, PR 3: lotes de vacina da UBS */}
+                      <Route element={<RequireRole papeis={['gestor', 'enfermeiro']} />}>
+                        <Route path="/vacina/lotes" element={<LotesVacina />} />
                       </Route>
                       {/* 5A, tarefa 7 (J5): hiperdia da UBS */}
                       <Route element={<RequireRole papeis={['enfermeiro', 'tecnico_enfermagem', 'plantonista', 'gestor']} />}>
