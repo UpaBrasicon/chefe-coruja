@@ -10,6 +10,7 @@
 //
 // Fase 5C, tarefa 4, etapa 4.3: a página ganhou a aba Webhooks (WebhooksAba.tsx).
 // Fase 5C, tarefa 5, etapa 5.4c: e a aba RNDS (RndsAba.tsx).
+// Percurso da UBS, U15, PR 5: na UBS, a aba SISAB (SisabAba.tsx).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, KeyRound } from 'lucide-react'
@@ -30,6 +31,7 @@ import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { RndsAba } from './RndsAba'
+import { SisabAba } from './SisabAba'
 import { WebhooksAba } from './WebhooksAba'
 
 type Recurso = 'pacientes' | 'atendimentos' | 'leitos' | 'producao' | 'laboratorio' | 'imagem' | 'financeiro'
@@ -57,7 +59,8 @@ type Chave = {
 type Acesso = { recurso: string; unidade: string | null; status: number; ip: string | null; requisicao: string | null; em: string }
 
 export default function Integracoes() {
-  const { ehSuperAdmin } = useUnidade()
+  const { ehSuperAdmin, unidadeAtiva } = useUnidade()
+  const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
   return (
     <TabsPagina icone={KeyRound} titulo="Integrações" largura="max-w-5xl"
       descricao={ehSuperAdmin ? 'Chaves da API para os sistemas parceiros, os webhooks que avisam esses sistemas e o envio à RNDS. Chave e segredo aparecem uma única vez, na criação.'
@@ -66,6 +69,7 @@ export default function Integracoes() {
         { valor: 'chaves', rotulo: 'Chaves da API', conteudo: () => <ChavesAba /> },
         { valor: 'webhooks', rotulo: 'Webhooks', conteudo: () => <WebhooksAba /> },
         { valor: 'rnds', rotulo: 'RNDS', conteudo: () => <RndsAba /> },
+        ...(ubs ? [{ valor: 'sisab', rotulo: 'SISAB', conteudo: () => <SisabAba /> }] : []),
       ]} />
   )
 }
