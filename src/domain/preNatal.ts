@@ -4,8 +4,9 @@
 // O banco (pre_natal_painel e pre_natal_do_paciente, migrations 20270222000001
 // e 20270223000001) conta o que o app registra na janela de cada boa prática.
 // Aqui fica o estado de cada uma (feito, no prazo, perdido), os pontos e a
-// linha do tempo. Visita do ACS, vacina dTpa e saúde bucal não existem no app
-// (K3): não pontuam, então o teto no app é 64 de 100.
+// linha do tempo. Visita do ACS e saúde bucal não existem no app (K3) e não
+// pontuam. A dTpa (F) conta desde o U15 (vacina, PR 5; migration
+// 20270415000029). O teto no app é 73 de 100.
 
 export type Agravo = 'sifilis' | 'hiv' | 'hepatite_b' | 'hepatite_c'
 
@@ -49,6 +50,8 @@ export type Gestacao = {
   testes_1tri?: Partial<Record<Agravo, string>>
   testes_3tri?: Partial<Record<'sifilis' | 'hiv', string>>
   consulta_puerperio?: string | null
+  /** U15: a dTpa a partir da 20ª semana (data) */
+  dtpa?: string | null
 }
 
 export type PreNatalLinha = Gestacao & { paciente_id: string; nome: string; nome_social: string | null; data_nascimento: string | null }
@@ -61,6 +64,8 @@ export const JANELA = {
   t1Ate: 97,
   /** 3º trimestre a partir de 28s0d */
   t3Desde: 196,
+  /** (F) dTpa a partir da 20ª semana: 20s0d */
+  dtpaDesde: 140,
   /** sem desfecho, a gestação termina com 42 semanas */
   fim: 294,
   /** puerpério: 42 dias depois do fim */
@@ -70,7 +75,7 @@ export const JANELA = {
 /** Pelo menos 7 consultas, pressões e pesos com altura na gestação (B, C, D). */
 export const META = 7
 
-export type ItemPreNatal = 'primeira' | 'consultas' | 'pa' | 'peso_altura' | 'testes_1tri' | 'testes_3tri' | 'puerperio'
+export type ItemPreNatal = 'primeira' | 'consultas' | 'pa' | 'peso_altura' | 'dtpa' | 'testes_1tri' | 'testes_3tri' | 'puerperio'
 export type EstadoItem = 'feito' | 'no_prazo' | 'perdido' | 'ainda_nao'
 
 /** Quadro 01 da nota C3: os itens que o app registra. */
@@ -79,14 +84,14 @@ export const ITENS: { item: ItemPreNatal; letra: string; rotulo: string; pontos:
   { item: 'consultas', letra: 'B', rotulo: 'Consultas', pontos: 9 },
   { item: 'pa', letra: 'C', rotulo: 'Pressão', pontos: 9 },
   { item: 'peso_altura', letra: 'D', rotulo: 'Peso e altura', pontos: 9 },
+  { item: 'dtpa', letra: 'F', rotulo: 'Vacina dTpa a partir de 20 semanas', pontos: 9 },
   { item: 'testes_1tri', letra: 'G', rotulo: 'Testes do 1º trimestre', pontos: 9 },
   { item: 'testes_3tri', letra: 'H', rotulo: 'Testes do 3º trimestre', pontos: 9 },
   { item: 'puerperio', letra: 'I', rotulo: 'Consulta no puerpério', pontos: 9 },
 ]
-/** E, F, J e K (visitas do ACS, dTpa, saúde bucal): fora do app. */
+/** E, J e K (visitas do ACS e saúde bucal): fora do app. */
 export const FORA_DO_APP = [
   { letra: 'E', rotulo: '3 visitas do ACS', pontos: 9 },
-  { letra: 'F', rotulo: 'Vacina dTpa a partir de 20 semanas', pontos: 9 },
   { letra: 'J', rotulo: 'Visita do ACS no puerpério', pontos: 9 },
   { letra: 'K', rotulo: 'Atividade de saúde bucal', pontos: 9 },
 ]
@@ -141,6 +146,10 @@ export function estadoDoItem(g: Gestacao, item: ItemPreNatal, hoje: string): Est
       return emGestacao && ig <= JANELA.primeiraAte ? 'no_prazo' : 'perdido'
     case 'consultas': case 'pa': case 'peso_altura':
       return (g[item] ?? 0) >= META ? 'feito' : emGestacao ? 'no_prazo' : 'perdido'
+    case 'dtpa':
+      if (g.dtpa) return 'feito'
+      if (!emGestacao) return 'perdido'
+      return ig < JANELA.dtpaDesde ? 'ainda_nao' : 'no_prazo'
     case 'testes_1tri':
       return faltaTestes(g, 1).length === 0 ? 'feito' : emGestacao && ig <= JANELA.t1Ate ? 'no_prazo' : 'perdido'
     case 'testes_3tri':
@@ -198,6 +207,8 @@ export function frasesDa(g: Gestacao, hoje: string): { perdido: string[]; aFazer
   else if (e('testes_3tri') === 'no_prazo') aFazer.push(`${lista(t3)} do 3º trimestre até ${ddmm(prazoDoItem(g, 'testes_3tri')!)}`)
   const contas = (['consultas', 'pa', 'peso_altura'] as const).filter((i) => e(i) === 'perdido')
   if (contas.length) perdido.push(contas.map((i) => `${ITENS.find((x) => x.item === i)!.rotulo.toLowerCase()} ${g[i] ?? 0}/${META}`).join(' · '))
+  if (e('dtpa') === 'perdido') perdido.push('sem dTpa a partir de 20 semanas')
+  else if (e('dtpa') === 'no_prazo') aFazer.push(`dTpa até ${ddmm(prazoDoItem(g, 'dtpa')!)}`)
   if (e('puerperio') === 'perdido') perdido.push('sem consulta no puerpério')
   else if (e('puerperio') === 'no_prazo') aFazer.push(`consulta do puerpério até ${ddmm(prazoDoItem(g, 'puerperio')!)}`)
   return { perdido, aFazer }

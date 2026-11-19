@@ -4,7 +4,9 @@
 // banco (puericultura_painel e puericultura_do_paciente, migration
 // 20270224000001) traz as consultas com o problema "Puericultura" e os pesos
 // com altura até os 2 anos; aqui fica o estado de cada boa prática e os pontos.
-// Visitas do ACS (D) e vacinas (E) não existem no app (K3): o teto é 60 de 100.
+// Visitas do ACS (D) não existem no app (K3). As vacinas (E) contam desde o U15
+// (vacina, PR 5; migration 20270415000029): o banco devolve o que falta no
+// esquema primário (vacinas_faltam). O teto no app é 80 de 100.
 
 export type RegistrosPuericultura = {
   primeira_consulta: string | null
@@ -13,6 +15,8 @@ export type RegistrosPuericultura = {
   peso_altura: number
   datas_peso_altura: string[]
   proxima_consulta: string | null
+  /** U15: o que falta no esquema primário (pentavalente, VIP, tríplice viral, pneumocócica); vazio = completo */
+  vacinas_faltam?: string[] | null
 }
 
 export type CriancaLinha = RegistrosPuericultura & {
@@ -44,7 +48,7 @@ export const PRIMEIRA_ATE_DIAS = 29
 /** (B) e (C): pelo menos 9 até os 2 anos. */
 export const META = 9
 
-export type ItemPuericultura = 'primeira' | 'consultas' | 'peso_altura'
+export type ItemPuericultura = 'primeira' | 'consultas' | 'peso_altura' | 'vacinas'
 export type EstadoItem = 'feito' | 'no_prazo' | 'perdido'
 
 /** Quadro 01 da nota C2: o que o app registra. */
@@ -52,10 +56,10 @@ export const ITENS: { item: ItemPuericultura; letra: string; rotulo: string; pon
   { item: 'primeira', letra: 'A', rotulo: '1ª consulta até o 30º dia', pontos: 20 },
   { item: 'consultas', letra: 'B', rotulo: 'Consultas', pontos: 20 },
   { item: 'peso_altura', letra: 'C', rotulo: 'Peso e altura', pontos: 20 },
+  { item: 'vacinas', letra: 'E', rotulo: 'Vacinas com todas as doses', pontos: 20 },
 ]
 export const FORA_DO_APP = [
   { letra: 'D', rotulo: '2 visitas do ACS (até 30 dias e até 6 meses)', pontos: 20 },
-  { letra: 'E', rotulo: 'Vacinas com todas as doses', pontos: 20 },
 ]
 export const TETO_NO_APP = ITENS.reduce((s, i) => s + i.pontos, 0)
 
@@ -98,6 +102,10 @@ export function estadoDoItem(c: RegistrosPuericultura & { data_nascimento: strin
     if (c.primeira_consulta) return diasEntre(nasc, c.primeira_consulta) <= PRIMEIRA_ATE_DIAS ? 'feito' : 'perdido'
     return diasEntre(nasc, hoje) <= PRIMEIRA_ATE_DIAS ? 'no_prazo' : 'perdido'
   }
+  if (item === 'vacinas') {
+    if (Array.isArray(c.vacinas_faltam) && c.vacinas_faltam.length === 0) return 'feito'
+    return hoje < doisAnos(nasc) ? 'no_prazo' : 'perdido'
+  }
   return (c[item] ?? 0) >= META ? 'feito' : hoje < doisAnos(nasc) ? 'no_prazo' : 'perdido'
 }
 
@@ -117,6 +125,7 @@ export function frasesDa(c: RegistrosPuericultura & { data_nascimento: string },
   if (e === 'perdido') {
     perdido.push(c.primeira_consulta ? `1ª consulta com ${diasEntre(c.data_nascimento, c.primeira_consulta)} dias` : 'sem consulta até o 30º dia')
   } else if (e === 'no_prazo') aFazer.push(`1ª consulta até ${ddmm(somarDias(c.data_nascimento, PRIMEIRA_ATE_DIAS))}`)
+  if (c.vacinas_faltam?.length) aFazer.push(`vacinas: falta ${c.vacinas_faltam.join(', ')}`)
   return { perdido, aFazer }
 }
 

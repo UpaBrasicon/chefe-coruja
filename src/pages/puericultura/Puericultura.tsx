@@ -133,8 +133,8 @@ export default function Puericultura() {
               </ul>
               {visiveis.length === 0 && <p className="px-4 py-6 text-center text-apoio text-tinta-sussurro">Ninguém neste filtro.</p>}
               <p className="border-t border-fio bg-campo px-4 py-2.5 text-rotulo text-tinta-sussurro">
-                Régua: nota metodológica C2 da SAPS/MS, junho de 2026. Conta a consulta com o problema "Puericultura". Visitas do ACS e vacinas
-                não são registradas no app (a pontuação vai até {TETO_NO_APP} de 100); a pontuação oficial é a do SISAB.
+                Régua: nota metodológica C2 da SAPS/MS, junho de 2026. Conta a consulta com o problema "Puericultura" e as vacinas da
+                sala de vacina e da caderneta. Visitas do ACS não são registradas no app (a pontuação vai até {TETO_NO_APP} de 100); a pontuação oficial é a do SISAB.
               </p>
             </div>
           </div>
