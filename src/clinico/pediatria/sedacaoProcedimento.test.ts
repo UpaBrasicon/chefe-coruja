@@ -32,3 +32,11 @@ test('jejum da Tabela 4 (p. 847)', () => {
   assert.equal(jejumFaltaH('gordurosa', 0), 8)
   assert.equal(jejumFaltaH('claros', -1), null)
 })
+
+test('lote D11: a ficha sobe porque a linha do propofol mostra a nota da SBA 2024', () => {
+  assert.equal(fichaSedacaoProcedimento.versao, '2026-11-19.1')
+  assert.ok(fichaSedacaoProcedimento.fontes.some((f) => f.citacao.includes('PMID 38147975')))
+  const propofol = SEDATIVOS_APENDICE.find((b) => b.id === 'propofol')
+  assert.ok(propofol?.nota?.includes('até 3 mg/kg em criança pequena'))
+  assert.deepEqual(propofol?.faixa, [1, 2])
+})
