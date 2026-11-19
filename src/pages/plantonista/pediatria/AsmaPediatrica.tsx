@@ -43,7 +43,7 @@ export function AsmaPediatrica() {
         ...DOSES_ASMA.flatMap((d) => linhaCopia(d, peso, d.id === 'magnesio-tabela' ? `dose padrão (50 mg/kg): ${num(MAGNESIO_PADRAO_MG_KG * peso, 0)} mg` : undefined)),
         ...(ipra ? [`- Ipratrópio em nebulização (250 µg/mL): ${ipra.mcg} µg · ${ipra.gotas} gotas, a cada 20 min, geralmente na primeira hora, intercalado ao salbutamol (Livro ICr, p. 119, Tabela 3)`] : []),
         'Sem cálculo por peso:',
-        ...FIXOS_ASMA.map((f) => `- ${f.nome}: ${f.dose} (Livro ICr, cap. 8, ${f.pagina})`),
+        ...FIXOS_ASMA.map((f) => `- ${f.nome}: ${f.dose} (${f.fonte ? `${f.fonte}, ${f.pagina}` : `Livro ICr, cap. 8, ${f.pagina}`})`),
       ],
       fonte: textoFontes(fichaAsmaPediatrica),
       versao: fichaAsmaPediatrica.versao,
@@ -81,7 +81,7 @@ export function AsmaPediatrica() {
       )}
 
       <Bloco titulo="Sem cálculo por peso">
-        {FIXOS_ASMA.map((f) => <LinhaReferencia key={f.nome} rotulo={f.nome} texto={f.dose} pagina={`cap. 8, ${f.pagina}`} />)}
+        {FIXOS_ASMA.map((f) => <LinhaReferencia key={f.nome} rotulo={f.nome} texto={f.dose} pagina={f.fonte ? f.pagina : `cap. 8, ${f.pagina}`} fonte={f.fonte} />)}
       </Bloco>
 
       <Bloco titulo="Classificação da crise (Tabela 1, p. 114) — referência">

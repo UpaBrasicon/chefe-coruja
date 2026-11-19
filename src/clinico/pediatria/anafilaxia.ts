@@ -1,15 +1,28 @@
+import type { Ficha } from '../ficha.ts'
+import { CHINA_ANAFILAXIA_2020 } from '../fontesPubmed.ts'
 import { DIAS_ANO, DIAS_MES, fichaP2, type DosePeso } from './fonteP2.ts'
 
 // Anafilaxia na criança — livro do ICr, cap. 6 (p. 89–106). Epinefrina IM por
 // peso (com a dose fixa por idade como alternativa do próprio livro), segunda e
 // terceira linha e refratária, da Tabela 3 (p. 101–102) e do texto (p. 98–101).
 // Onde o texto e a Tabela 3 divergem, os dois aparecem.
+//
+// Versão 2026-11-19.1 (lote D11, decisão do RT de 19/11/2026, "Todas A"): item 10
+// de docs/clinico/D11-CORRECOES-FONTES.md. A linha da difenidramina pelo texto
+// passa a 1 mg/kg, máximo 50 mg (diretriz chinesa de 2020); o livro (p. 100)
+// dava 1 a 2 mg/kg. A linha da Tabela 3 não muda.
 
-export const fichaAnafilaxiaPediatrica = fichaP2(
+const baseAnafilaxia = fichaP2(
   'ped-anafilaxia-icr',
   'Anafilaxia — criança',
   'cap. 6, p. 97–102',
 )
+export const fichaAnafilaxiaPediatrica: Ficha = {
+  ...baseAnafilaxia,
+  versao: '2026-11-19.1',
+  fontes: [...baseAnafilaxia.fontes, CHINA_ANAFILAXIA_2020],
+  revisadoEm: `19/11/2026 (lote D11: item 10, decisão do RT de 19/11/2026; aguarda aprovação do RT); ${baseAnafilaxia.revisadoEm}`,
+}
 
 export type LinhaAnafilaxia = 'primeira' | 'segunda' | 'terceira' | 'refrataria'
 
@@ -27,8 +40,8 @@ export const DOSES_ANAFILAXIA: DoseAnafilaxia[] = [
   { linha: 'segunda', id: 'cristaloide', nome: 'Cristaloide (SF)', unidade: 'mL', porKg: [10, 20], via: 'IV em bolo, sob pressão, em alguns minutos; repetir se necessário', pagina: 'p. 100, 101 (Tabela 3)' },
   { linha: 'terceira', id: 'difenidramina-tabela', nome: 'Difenidramina — Tabela 3', unidade: 'mg', porKg: [0.5, 1], via: 'IV 0,5 a 1 mg/kg (ou IM 1 mg/kg)', pagina: 'p. 101 (Tabela 3)',
     nota: 'O texto (p. 100) dá ataque de 1 a 2 mg/kg IV lento, máximo 50 mg; manutenção 5 mg/kg/dia de 6/6 h, máximo 300 mg/dia.' },
-  { linha: 'terceira', id: 'difenidramina-texto', nome: 'Difenidramina — texto', unidade: 'mg', porKg: [1, 2], maximo: 50, via: 'IV lentamente (ataque)', pagina: 'p. 100',
-    nota: 'A Tabela 3 (p. 101) dá 1 mg/kg IM ou 0,5 a 1 mg/kg IV.' },
+  { linha: 'terceira', id: 'difenidramina-texto', nome: 'Difenidramina — texto', unidade: 'mg', porKg: [1, 1], maximo: 50, via: 'IV lentamente (ataque)', pagina: 'p. 100',
+    nota: 'o texto (p. 100) dá 1 a 2 mg/kg, máximo 50 mg; a Tabela 3 (p. 101) dá 1 mg/kg IM ou 0,5 a 1 mg/kg IV. Dose de 1 mg/kg, máximo 50 mg, pela diretriz chinesa de anafilaxia de 2020, lote D11.' },
   { linha: 'terceira', id: 'metilprednisolona', nome: 'Metilprednisolona', unidade: 'mg', porKg: [1, 2], via: 'IV', pagina: 'p. 101 (Tabela 3)',
     nota: 'O texto (p. 100) dá 1 a 2 mg/kg/dia, de 6/6 h, por 4 dias. O livro não traz máximo.' },
   { linha: 'refrataria', id: 'epinefrina-iv', nome: 'Epinefrina IV em bolus', unidade: 'mg', porKg: [0.01, 0.01], maximo: 0.5, porMl: 0.1, solucao: '1:10.000 — 0,1 mL/kg', via: 'IV a cada 20 min, ou infusão contínua de 0,1 µg/kg/min titulável', pagina: 'p. 100, 102 (Tabela 3)' },

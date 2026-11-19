@@ -1,3 +1,5 @@
+import type { Ficha } from '../ficha.ts'
+import { INDINNIMEO_ASMA_2018 } from '../fontesPubmed.ts'
 import { fichaP2, type DosePeso } from './fonteP2.ts'
 
 // Crise asmática — livro do ICr, cap. 8 (p. 113–122). Doses da Tabela 3
@@ -5,8 +7,19 @@ import { fichaP2, type DosePeso } from './fonteP2.ts'
 // classificação de gravidade (Tabela 1, p. 114) é referência: o livro diz que
 // vários parâmetros, mas não necessariamente todos, indicam a classificação —
 // não há pontuação para somar, e a tela não classifica.
+//
+// Versão 2026-11-19.1 (lote D11, decisão do RT de 19/11/2026, "Todas A"): item 14
+// de docs/clinico/D11-CORRECOES-FONTES.md. Entra o salbutamol em nebulização
+// intermitente, 2,5 a 5 mg, da Sociedade Italiana de Pediatria (2018); o livro só
+// traz a nebulização contínua e o spray.
 
-export const fichaAsmaPediatrica = fichaP2('ped-asma-icr', 'Crise asmática — criança', 'cap. 8, p. 113–122')
+const baseAsma = fichaP2('ped-asma-icr', 'Crise asmática — criança', 'cap. 8, p. 113–122')
+export const fichaAsmaPediatrica: Ficha = {
+  ...baseAsma,
+  versao: '2026-11-19.1',
+  fontes: [...baseAsma.fontes, INDINNIMEO_ASMA_2018],
+  revisadoEm: `19/11/2026 (lote D11: item 14, decisão do RT de 19/11/2026; aguarda aprovação do RT); ${baseAsma.revisadoEm}`,
+}
 
 export const DOSES_ASMA: DosePeso[] = [
   { id: 'prednisolona', nome: 'Prednisona ou prednisolona', unidade: 'mg', porKg: [1, 2], maximo: 40, via: 'VO, por dia; geralmente 3 a 5 dias', pagina: 'p. 118–119 (Tabela 3)',
@@ -33,8 +46,10 @@ export function ipratropioNebulizacao(pesoKg: number): { mcg: number; gotas: num
   return pesoKg < 20 ? { mcg: 250, gotas: 20 } : { mcg: 500, gotas: 40 }
 }
 
-export const FIXOS_ASMA: { nome: string; dose: string; pagina: string }[] = [
+/** `fonte`: quando o item não vem do livro, a fonte aberta (a tela mostra no lugar de "Livro ICr, cap. 8"). */
+export const FIXOS_ASMA: { nome: string; dose: string; pagina: string; fonte?: string }[] = [
   { nome: 'Salbutamol aerossol com espaçador (100 µg/jato)', dose: '4 a 10 jatos a cada 20 min na primeira hora (3 vezes)', pagina: 'p. 116 (Figuras 1 e 2), 119 (Tabela 3)' },
+  { nome: 'Salbutamol — nebulização intermitente (crise grave)', dose: '2,5 a 5 mg por nebulização (dose fixa), com oxigênio; até 3 vezes, a cada 20 a 30 min, na primeira hora. O livro (p. 117–119) só traz a nebulização contínua e o spray (lote D11)', pagina: 'Indinnimeo 2018', fonte: 'Sociedade Italiana de Pediatria' },
   { nome: 'Ipratrópio aerossol com espaçador (18 µg/jato)', dose: '4 a 8 jatos a cada 20 min, na primeira hora, intercalado ao salbutamol; só no atendimento inicial das crises moderadas e graves', pagina: 'p. 118–119' },
   { nome: 'Oxigênio', dose: 'SpO₂ entre 94 e 98%; baixo fluxo (< 10 L/min) nas leves, alto fluxo (> 10 L/min) nas graves', pagina: 'p. 115' },
   { nome: 'Corticoide — quando', dose: 'acima de 6 anos, mesmo nas crises leves; abaixo de 6 anos, nas graves e sem resposta ao tratamento inicial nas leves/moderadas', pagina: 'p. 118' },

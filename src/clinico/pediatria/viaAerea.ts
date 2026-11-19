@@ -1,6 +1,8 @@
 import { MANUAL_HC } from '../adulto/fonte.ts'
 import type { Ficha } from '../ficha.ts'
+import { COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024 } from '../fontesPubmed.ts'
 import { CITACAO_PS_PED, DIAS_ANO, DIAS_MES, type DosePeso } from './fonteP2.ts'
+import { AHA_AAP_2025 } from './rcp.ts'
 
 // Via aérea pediátrica — livro do ICr (cap. 4, SRI; cap. 13, equipamento por
 // idade e peso). Fórmulas do tubo com e sem cuff e profundidade (p. 75),
@@ -10,17 +12,23 @@ import { CITACAO_PS_PED, DIAS_ANO, DIAS_MES, type DosePeso } from './fonteP2.ts'
 //
 // O manual de emergência do HCFMUSP (Anexo 2, p. 1494) traz a mesma fórmula do
 // tubo sem cuff, (idade/4) + 4; fica como segunda fonte, concordante.
+//
+// Versão 2026-11-19.1 (lote D11, decisão do RT de 19/11/2026, "Todas A"): itens
+// 2 e 15 de docs/clinico/D11-CORRECOES-FONTES.md. Atropina com máximo de 0,5 mg
+// (AHA 2025 e Coreia 2025; o livro e a SBA 2024 dão 1 mg) e nota da SBA 2024 no
+// propofol (até 3 mg/kg em criança pequena).
 
 export const fichaViaAereaPediatrica: Ficha = {
   id: 'ped-via-aerea',
   titulo: 'Via aérea pediátrica — tubo, equipamento e SRI',
-  versao: '2026-09-27.3',
+  versao: '2026-11-19.1',
   publico: 'pediatrico',
   fontes: [
     { citacao: `${CITACAO_PS_PED} cap. 4, p. 67–78; cap. 13, p. 150–151.`, pediatrica: true },
     { citacao: `${MANUAL_HC.citacao} Anexo 2, p. 1494 (tubo sem cuff, mesma fórmula).`, pediatrica: true },
+    AHA_AAP_2025, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024,
   ],
-  revisadoEm: '27/09/2026 (conferido no livro, com errata anotada)',
+  revisadoEm: '19/11/2026 (lote D11: itens 2 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
 }
 
 // ── Tubo pela idade (p. 75) ──
@@ -113,8 +121,8 @@ export function fluxoApneia(dias: number): number | null {
 // ── Doses da SRI (Tabelas 1 e 2, p. 69–70; texto p. 71–73) ──
 
 export const DOSES_SRI: DosePeso[] = [
-  { id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], maximo: 1, via: 'IV; não é de rotina (p. 71)', pagina: 'p. 71',
-    nota: 'O livro diz "sem dose mínima". O Anexo 2 do manual HCFMUSP usa mínimo de 0,1 mg.' },
+  { id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], maximo: 0.5, via: 'IV; não é de rotina (p. 71)', pagina: 'p. 71',
+    nota: 'O livro diz "sem dose mínima". O Anexo 2 do manual HCFMUSP usa mínimo de 0,1 mg. Máximo de 0,5 mg pela AHA 2025 e pela Coreia 2025; o livro (p. 71) e a SBA 2024 dão máximo de 1 mg (lote D11).' },
   { id: 'fentanil', nome: 'Fentanil', unidade: 'µg', porKg: [2, 7], via: 'IV; início 1 min, duração 30–60 min', pagina: 'p. 70 (Tabela 1)' },
   { id: 'tiopental', nome: 'Tiopental', unidade: 'mg', porKg: [2, 5], via: 'IV', pagina: 'p. 69 (Tabela 1)' },
   { id: 'quetamina', nome: 'Quetamina', unidade: 'mg', porKg: [1, 4], via: 'IV', pagina: 'p. 69 (Tabela 1)' },
@@ -122,7 +130,8 @@ export const DOSES_SRI: DosePeso[] = [
   { id: 'midazolam', nome: 'Midazolam', unidade: 'mg', porKg: [0.1, 0.4], via: 'IV', pagina: 'p. 70 (Tabela 1)',
     nota: 'O texto (p. 72) cita 0,3 mg/kg como a dose em geral empregada na SRI.' },
   { id: 'etomidato', nome: 'Etomidato', unidade: 'mg', porKg: [0.2, 0.4], via: 'IV', pagina: 'p. 70 (Tabela 1)' },
-  { id: 'propofol', nome: 'Propofol', unidade: 'mg', porKg: [1, 2], via: 'IV', pagina: 'p. 70 (Tabela 1)' },
+  { id: 'propofol', nome: 'Propofol', unidade: 'mg', porKg: [1, 2], via: 'IV', pagina: 'p. 70 (Tabela 1)',
+    nota: '1 a 2 mg/kg (p. 70). SBA 2024 (Tabela 7): 2 mg/kg, até 3 mg/kg em criança pequena (lote D11).' },
   { id: 'rocuronio', nome: 'Rocurônio', unidade: 'mg', porKg: [0.9, 1.2], via: 'IV', pagina: 'p. 70 (Tabela 2)',
     nota: 'O texto (p. 73) diz que 1 mg/kg dá melhores condições de intubação que 0,6 mg/kg.' },
   { id: 'vecuronio', nome: 'Vecurônio', unidade: 'mg', porKg: [0.15, 0.2], via: 'IV', pagina: 'p. 70 (Tabela 2)' },

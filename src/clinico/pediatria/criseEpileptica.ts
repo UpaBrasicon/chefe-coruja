@@ -1,15 +1,27 @@
+import type { Ficha } from '../ficha.ts'
+import { AES_2016 } from '../fontesPubmed.ts'
 import { fichaP2, type DosePeso, type Faixa } from './fonteP2.ts'
 
 // Crise epiléptica na criança — livro do ICr, cap. 9 (p. 123–128). Doses da
 // Tabela 1 (p. 127) e do texto (p. 126), com o tempo mínimo de infusão que o
 // livro dá (fenitoína até 50 mg/min; valproato 1,5 a 3 mg/kg/min; fenobarbital
 // em 10 min). Medicar crises que duram mais de 3 a 5 minutos (p. 126).
+//
+// Versão 2026-11-19.1 (lote D11, decisão do RT de 19/11/2026, "Todas A"): item 7
+// de docs/clinico/D11-CORRECOES-FONTES.md. Diazepam IV de 0,15 a 0,2 mg/kg,
+// máximo 10 mg, repetível 1 vez (AES 2016); o livro dava 0,2 a 0,4 mg/kg.
 
-export const fichaCriseEpilepticaPediatrica = fichaP2(
+const baseCrise = fichaP2(
   'ped-crise-epileptica-icr',
   'Crise epiléptica — criança',
   'cap. 9, p. 123–128',
 )
+export const fichaCriseEpilepticaPediatrica: Ficha = {
+  ...baseCrise,
+  versao: '2026-11-19.1',
+  fontes: [...baseCrise.fontes, AES_2016],
+  revisadoEm: `19/11/2026 (lote D11: item 7, decisão do RT de 19/11/2026; aguarda aprovação do RT); ${baseCrise.revisadoEm}`,
+}
 
 export type EtapaCrise = 'benzodiazepinico' | 'segunda' | 'terceira' | 'refratario' | 'suporte'
 
@@ -26,7 +38,8 @@ export type DoseCrise = DosePeso & { etapa: EtapaCrise }
 export const DOSES_CRISE: DoseCrise[] = [
   { etapa: 'suporte', id: 'glicose25', nome: 'Glicose 25% (hipoglicemia)', unidade: 'mL', porKg: [2, 4], via: 'IV em push', pagina: 'p. 126' },
   { etapa: 'benzodiazepinico', id: 'lorazepam', nome: 'Lorazepam IV ou IM', unidade: 'mg', porKg: [0.05, 0.1], maximo: 4, via: 'IV ou IM', pagina: 'p. 127 (Tabela 1)' },
-  { etapa: 'benzodiazepinico', id: 'diazepam-iv', nome: 'Diazepam IV', unidade: 'mg', porKg: [0.2, 0.4], maximo: 10, via: 'IV', pagina: 'p. 127 (Tabela 1)' },
+  { etapa: 'benzodiazepinico', id: 'diazepam-iv', nome: 'Diazepam IV', unidade: 'mg', porKg: [0.15, 0.2], maximo: 10, via: 'IV; pode repetir 1 vez (AES 2016)', pagina: 'p. 127 (Tabela 1)',
+    nota: '0,2 a 0,4 mg/kg, máximo 10 mg (p. 127). Dose de 0,15 a 0,2 mg/kg, máximo 10 mg, repetível 1 vez, pela AES 2016 (Figura 1), lote D11.' },
   { etapa: 'benzodiazepinico', id: 'diazepam-vr', nome: 'Diazepam retal', unidade: 'mg', porKg: [0.5, 1], via: 'VR (o livro não dá máximo por esta via)', pagina: 'p. 127 (Tabela 1)' },
   { etapa: 'benzodiazepinico', id: 'midazolam-iv', nome: 'Midazolam IV', unidade: 'mg', porKg: [0.1, 0.3], maximo: 10, via: 'IV', pagina: 'p. 127 (Tabela 1)' },
   { etapa: 'benzodiazepinico', id: 'midazolam-im', nome: 'Midazolam IM', unidade: 'mg', porKg: [0.2, 0.4], maximo: 5, via: 'IM', pagina: 'p. 127 (Tabela 1)' },

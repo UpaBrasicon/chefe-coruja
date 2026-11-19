@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
+import { AES_2016 } from '../fontesPubmed.ts'
 import { DOSES_CRISE, fichaCriseEpilepticaPediatrica, tempoMinimoFenitoina, tempoValproato } from './criseEpileptica.ts'
 import { calcularDose } from './fonteP2.ts'
 
@@ -17,7 +18,7 @@ test('crise: ficha do ICr; ids únicos; toda dose com página', () => {
 test('benzodiazepínicos com máximo (Tabela 1, p. 127)', () => {
   assert.deepEqual(calcularDose(d('lorazepam'), 20)!.dose, [1, 2])
   assert.deepEqual(calcularDose(d('lorazepam'), 60)!.dose, [3, 4])
-  assert.deepEqual(calcularDose(d('diazepam-iv'), 40)!.dose, [8, 10])
+  assert.deepEqual(calcularDose(d('diazepam-iv'), 40)!.dose, [6, 8]) // 0,15 a 0,2 mg/kg pela AES 2016 (lote D11); o livro dava 0,2 a 0,4
   assert.deepEqual(calcularDose(d('diazepam-vr'), 10)!.dose, [5, 10])
   assert.deepEqual(calcularDose(d('midazolam-iv'), 50)!.dose, [5, 10])
   assert.deepEqual(calcularDose(d('midazolam-im'), 20)!.dose, [4, 5])
@@ -40,4 +41,20 @@ test('refratário: tiopental máx. 500 mg; infusões por peso', () => {
   assert.deepEqual(calcularDose(d('midazolam-continuo'), 10)!.dose, [10, 180])
   assert.deepEqual(calcularDose(d('tiopental-continuo'), 10)!.dose, [10, 30])
   assert.deepEqual(calcularDose(d('propofol'), 10)!.dose, [50, 50])
+})
+
+// ── Lote D11 (decisão do RT de 19/11/2026): item 7 ──
+
+test('lote D11: diazepam IV 0,15 a 0,2 mg/kg, máx. 10 mg, repetir 1 vez (AES 2016)', () => {
+  assert.equal(fichaCriseEpilepticaPediatrica.versao, '2026-11-19.1')
+  assert.ok(fichaCriseEpilepticaPediatrica.fontes.includes(AES_2016))
+  assert.match(fichaCriseEpilepticaPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: item 7/)
+  const dz = d('diazepam-iv')
+  assert.deepEqual(dz.porKg, [0.15, 0.2])
+  assert.equal(dz.maximo, 10)
+  assert.match(dz.via, /pode repetir 1 vez/)
+  const r = calcularDose(dz, 60)!
+  assert.deepEqual(r.dose, [9, 10])
+  assert.equal(r.noMaximo, true)
+  assert.match(dz.nota!, /0,2 a 0,4 mg\/kg.*p\. 127.*AES 2016/)
 })

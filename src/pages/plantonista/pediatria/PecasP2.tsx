@@ -83,13 +83,13 @@ export function Bloco({ titulo, children }: { titulo: string; children: ReactNod
   )
 }
 
-/** Item de referência sem cálculo (texto do livro + página). */
-export function LinhaReferencia({ rotulo, texto, pagina }: { rotulo?: string; texto: string; pagina: string }) {
+/** Item de referência sem cálculo (texto do livro + página). `fonte` troca o "Livro ICr" quando o item vem de fonte aberta (lote D11). */
+export function LinhaReferencia({ rotulo, texto, pagina, fonte = 'Livro ICr' }: { rotulo?: string; texto: string; pagina: string; fonte?: string }) {
   return (
     <div className="rounded-controle border px-3 py-2 text-apoio">
       {rotulo && <p className="font-medium">{rotulo}</p>}
       <p className={rotulo ? 'text-tinta-sussurro' : ''}>{texto}</p>
-      <p className="text-rotulo text-tinta-sussurro">Livro ICr, {pagina}.</p>
+      <p className="text-rotulo text-tinta-sussurro">{fonte}, {pagina}.</p>
     </div>
   )
 }

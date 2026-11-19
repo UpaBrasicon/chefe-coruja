@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import {
-  CLASSE_TEXTO, ESCALA_CLINICA, GRAU_PESO_TEXTO, NOTA_ESCALA, NOTA_PLANO_A_IDADE, NOTA_PLANO_C, NOTA_ZINCO, classificarEscore, fichaDesidratacaoPed, grauPorPeso, ondansetronaMg,
-  planoA, planoB, planoC, racecadotrilaMgDose, zincoMgDia,
+  CLASSE_TEXTO, ESCALA_CLINICA, GRAU_PESO_TEXTO, NOTA_ESCALA, NOTA_ONDANSETRONA, NOTA_PLANO_A_IDADE, NOTA_PLANO_C, NOTA_ZINCO, classificarEscore, fichaDesidratacaoPed, grauPorPeso, ondansetronaMg,
+  ondansetronaVoMg, planoA, planoB, planoC, racecadotrilaMgDose, zincoMgDia,
 } from '@/clinico/pediatria/diarreia'
 import { textoFontes } from '@/clinico/ficha'
 import { CampoNumero } from '@/components/plantonista/calc/CampoNumero'
@@ -36,6 +36,8 @@ export function DesidratacaoDiarreiaPed() {
   const b = calc ? planoB(p.peso) : null
   const c = calc ? planoC(p.peso) : null
   const zinco = zincoMgDia(idade * 12)
+  const vo = ondansetronaVoMg(p.peso)
+  const voOndansetrona = vo ? `${faixaBr(vo, 0)} mg` : '— (abaixo de 8 kg a fonte não dá dose)'
 
   // Texto do "Copiar" (C4 = A): dados, escala, planos e medicações com a página do livro.
   const copia = () =>
@@ -57,7 +59,7 @@ export function DesidratacaoDiarreiaPed() {
               `Plano C (OMS): ${br(c.oms.totalMl, 0)} mL (${faixaBr(c.oms.mlH, 0)} mL/h) (p. 330)`,
             ]
           : []),
-        `Ondansetrona: ${br(ondansetronaMg(p.peso), 2)} mg (p. 331)`,
+        `Ondansetrona: IV ${br(ondansetronaMg(p.peso), 2)} mg (Rerksuppaphol 2010); VO ${voOndansetrona} (Sociedade Canadense de Pediatria 2011); o livro dá 0,1 mg/kg (p. 331)`,
         `Zinco: ${zinco === null ? '— (6 meses exatos: o livro não escolhe dose)' : `${zinco} mg/dia`} (p. 331)`,
         `Racecadotrila: ${br(racecadotrilaMgDose(p.peso), 1)} mg/dose (p. 331)`,
       ],
@@ -154,7 +156,13 @@ export function DesidratacaoDiarreiaPed() {
 
       {calc && (
         <Bloco titulo="Medicações citadas no capítulo (p. 331)">
-          <LinhaLivro nome="Ondansetrona" texto="0,1 mg/kg (o livro não traz dose máxima)" conta={<strong>{br(ondansetronaMg(p.peso), 2)} mg</strong>} pagina="p. 331" />
+          <LinhaLivro
+            nome="Ondansetrona"
+            texto="0,1 mg/kg (o livro não traz dose máxima)"
+            conta={<><strong>IV {br(ondansetronaMg(p.peso), 2)} mg</strong> · VO {voOndansetrona}</>}
+            pagina="p. 331"
+            nota={NOTA_ONDANSETRONA}
+          />
           <LinhaLivro
             nome="Zinco"
             texto="10 mg/dia < 6 meses; 20 mg/dia > 6 meses, por 10 a 14 dias, em grupos de risco"

@@ -2,7 +2,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { temReferenciaPediatrica } from '../ficha.ts'
-import { classificarEscore, fichaDesidratacaoPed, grauPorPeso, ondansetronaMg, planoA, planoB, planoC, racecadotrilaMgDose, zincoMgDia } from './diarreia.ts'
+import { CPS_ONDANSETRONA_2011, RERKSUPPAPHOL_ONDANSETRONA_2010 } from '../fontesPubmed.ts'
+import {
+  NOTA_ONDANSETRONA, ONDANSETRONA_LIVRO_MG_KG, classificarEscore, fichaDesidratacaoPed, grauPorPeso, ondansetronaMg, ondansetronaVoMg, planoA, planoB, planoC, racecadotrilaMgDose, zincoMgDia,
+} from './diarreia.ts'
 
 test('diarreia: ficha do livro do ICr (cap. 32)', () => {
   assert.equal(temReferenciaPediatrica(fichaDesidratacaoPed), true)
@@ -50,9 +53,31 @@ test('plano C: ESPGHAN 20 mL/kg/h por 2–4 h; OMS 100 mL/kg em 3–6 h (p. 330)
 })
 
 test('medicações do capítulo por peso/idade (p. 331)', () => {
-  assert.equal(Math.round(ondansetronaMg(12)! * 100) / 100, 1.2)
+  assert.equal(Math.round(ondansetronaMg(12)! * 100) / 100, 1.8) // IV 0,15 mg/kg (lote D11); o livro dava 0,1 mg/kg
   assert.equal(zincoMgDia(3), 10)
   assert.equal(zincoMgDia(8), 20)
   assert.equal(zincoMgDia(6), null)
   assert.equal(racecadotrilaMgDose(10), 15)
+})
+
+// ── Lote D11 (decisão do RT de 19/11/2026): item 13 ──
+
+test('lote D11: ondansetrona IV 0,15 mg/kg (máx. 8 mg) e VO por faixa de peso; o livro fica na nota', () => {
+  assert.equal(fichaDesidratacaoPed.versao, '2026-11-19.1')
+  for (const f of [RERKSUPPAPHOL_ONDANSETRONA_2010, CPS_ONDANSETRONA_2011]) assert.ok(fichaDesidratacaoPed.fontes.includes(f))
+  assert.match(fichaDesidratacaoPed.revisadoEm, /^19\/11\/2026 \(lote D11: item 13/)
+  // IV: 0,15 mg/kg, máximo 8 mg (Rerksuppaphol 2010)
+  assert.equal(Math.round(ondansetronaMg(20)! * 100) / 100, 3)
+  assert.equal(ondansetronaMg(70), 8)
+  assert.equal(ondansetronaMg(0), null)
+  // VO (Sociedade Canadense de Pediatria 2011): 8–15 kg 2 mg; > 15–30 kg 4 mg; > 30 kg 6–8 mg
+  assert.equal(ondansetronaVoMg(7.9), null)
+  assert.deepEqual(ondansetronaVoMg(8), [2, 2])
+  assert.deepEqual(ondansetronaVoMg(15), [2, 2])
+  assert.deepEqual(ondansetronaVoMg(15.1), [4, 4])
+  assert.deepEqual(ondansetronaVoMg(30), [4, 4])
+  assert.deepEqual(ondansetronaVoMg(31), [6, 8])
+  // o valor do livro continua registrado
+  assert.equal(ONDANSETRONA_LIVRO_MG_KG, 0.1)
+  assert.match(NOTA_ONDANSETRONA, /O livro dá 0,1 mg\/kg, sem dose máxima \(p\. 331\)/)
 })

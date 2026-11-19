@@ -1,3 +1,5 @@
+import type { Ficha } from '../ficha.ts'
+import { CPS_ONDANSETRONA_2011, RERKSUPPAPHOL_ONDANSETRONA_2010 } from '../fontesPubmed.ts'
 import { fichaIcr, ok, positivo } from './fonteIcr.ts'
 
 // Diarreia aguda — desidratação e planos de hidratação. Cap. 32 do
@@ -6,11 +8,14 @@ import { fichaIcr, ok, positivo } from './fonteIcr.ts'
 
 // Versão 2026-11-16.1: piloto das calculadoras (RT, 16/11/2026) — a reavaliação da p. 330
 // passa a aparecer também em "Próximos passos"; nenhuma conta muda.
+// Versão 2026-11-19.1 (lote D11, decisão do RT de 19/11/2026, "Todas A"): item 13
+// de docs/clinico/D11-CORRECOES-FONTES.md, ondansetrona IV e VO pelas fontes abertas.
 const baseDiarreia = fichaIcr('ped-diarreia-desidratacao', 'Diarreia aguda — desidratação e planos A, B e C', 'cap. 32, p. 326–334')
-export const fichaDesidratacaoPed = {
+export const fichaDesidratacaoPed: Ficha = {
   ...baseDiarreia,
-  versao: '2026-11-16.1',
-  revisadoEm: `16/11/2026 (próximos passos e armadilhas do piloto das calculadoras, do próprio capítulo; aguarda aprovação do RT); ${baseDiarreia.revisadoEm}`,
+  versao: '2026-11-19.1',
+  fontes: [...baseDiarreia.fontes, RERKSUPPAPHOL_ONDANSETRONA_2010, CPS_ONDANSETRONA_2011],
+  revisadoEm: `19/11/2026 (lote D11: item 13, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos e armadilhas do piloto das calculadoras, do próprio capítulo; aguarda aprovação do RT); ${baseDiarreia.revisadoEm}`,
 }
 
 // ---------------------------------------------------------------- grau pelo peso
@@ -101,10 +106,33 @@ export const NOTA_PLANO_C =
 
 // ---------------------------------------------------------------- medicações citadas
 
-/** Ondansetrona 0,1 mg/kg (p. 331). O livro não traz dose máxima. */
+// Ondansetrona, lote D11 (item 13, decisão do RT de 19/11/2026): o livro dá
+// 0,1 mg/kg sem dose máxima (p. 331); a conta passa a seguir as fontes abertas.
+// IV: 0,15 mg/kg, máximo 8 mg, em 2 min (Rerksuppaphol 2010, Methods). VO, dose
+// única por faixa de peso (Sociedade Canadense de Pediatria 2011): 8 a 15 kg 2 mg;
+// mais de 15 a 30 kg 4 mg; mais de 30 kg 6 a 8 mg. A fonte escreve 15 kg nas duas
+// faixas; aqui 15 kg fica na de 2 mg, como nas doses da fita.
+
+/** Dose do livro (p. 331), só como registro: a conta não usa. */
+export const ONDANSETRONA_LIVRO_MG_KG = 0.1
+export const ONDANSETRONA_IV_MG_KG = 0.15
+export const ONDANSETRONA_IV_MAX_MG = 8
+
+/** Ondansetrona IV: 0,15 mg/kg, máximo 8 mg (Rerksuppaphol 2010). */
 export function ondansetronaMg(pesoKg: number): number | null {
-  return positivo(pesoKg) ? 0.1 * pesoKg : null
+  return positivo(pesoKg) ? Math.min(ONDANSETRONA_IV_MG_KG * pesoKg, ONDANSETRONA_IV_MAX_MG) : null
 }
+
+/** Ondansetrona VO por faixa de peso (Sociedade Canadense de Pediatria 2011); abaixo de 8 kg a fonte não dá dose. */
+export function ondansetronaVoMg(pesoKg: number): [number, number] | null {
+  if (!positivo(pesoKg) || pesoKg < 8) return null
+  if (pesoKg <= 15) return [2, 2]
+  if (pesoKg <= 30) return [4, 4]
+  return [6, 8]
+}
+
+export const NOTA_ONDANSETRONA =
+  'A conta segue as fontes abertas (lote D11, decisão do RT de 19/11/2026): IV 0,15 mg/kg, máximo 8 mg, em 2 min (Rerksuppaphol 2010); VO em dose única por faixa de peso, 8 a 15 kg 2 mg, mais de 15 a 30 kg 4 mg, mais de 30 kg 6 a 8 mg (Sociedade Canadense de Pediatria 2011). Abaixo de 8 kg a fonte não dá dose VO. O livro dá 0,1 mg/kg, sem dose máxima (p. 331).'
 
 /** Zinco: 10 mg/dia < 6 meses; 20 mg/dia > 6 meses, por 10 a 14 dias (p. 331). */
 export function zincoMgDia(idadeMeses: number): number | null {
