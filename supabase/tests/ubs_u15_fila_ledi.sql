@@ -83,7 +83,7 @@ INSERT INTO public.exames_pedidos (unidade_id, paciente_id, exame, procedimento,
 UPDATE public.unidades SET cnes = '9912345' WHERE id = pg_temp.id('ubs');
 UPDATE public.perfis SET cns = '700000000000005', cbo = '225125' WHERE id = pg_temp.id('med');
 UPDATE public.perfis SET cns = '700000000000013', cbo = '223505' WHERE id = pg_temp.id('enf');
-UPDATE public.pacientes SET cns = '898000000000002' WHERE id = pg_temp.id('idoso');
+UPDATE public.pacientes SET cns = '898000000000002', cpf_justificativa = 8 WHERE id = pg_temp.id('idoso');  -- U15 (VC7): sem CPF, o motivo do LEDI
 UPDATE public.pacientes SET cpf = '52998224725' WHERE id = pg_temp.id('h40');
 
 CREATE FUNCTION pg_temp.ep(p text, p_tipo text DEFAULT NULL) RETURNS uuid LANGUAGE sql AS $$
@@ -156,7 +156,7 @@ SELECT pg_temp.ok((SELECT codigo_ibge = '3550308' AND pec_url = 'https://pec.exe
 
 -- 3. carga com a configuração
 SELECT pg_temp.ok((SELECT j @> '{"unidade": {"cnes": "9912345", "codigo_ibge": "3550308"}, "profissional": {"cns": "700000000000005", "cbo": "225125"},
-                                  "cidadao": {"cns": "898000000000002"}, "atendimento": {"tipo_atendimento": "consulta_programada"}}'
+                                  "cidadao": {"cns": "898000000000002", "justificativa_sem_cpf": 8}, "atendimento": {"tipo_atendimento": "consulta_programada"}}'
                      AND jsonb_array_length(j -> 'medicoes') >= 1
                      FROM (SELECT private.ledi_carga_fai(pg_temp.ep('idoso')) AS j) x),
   '3. a carga da FAI traz unidade, profissional, cidadão, atendimento e medições');
@@ -165,10 +165,10 @@ SELECT pg_temp.ok((SELECT j @> '{"profissional": {"cbo": "223505"}, "cidadao": {
   '3. a carga da FP traz o procedimento e quem fez');
 DO $$ BEGIN
   PERFORM private.ledi_carga_fai(pg_temp.ep('m30'));
-  RAISE EXCEPTION 'FALHOU: 3. paciente sem CNS e CPF — passou sem erro';
+  RAISE EXCEPTION 'FALHOU: 3. paciente sem CPF e sem motivo — passou sem erro';
 EXCEPTION WHEN raise_exception THEN
-  IF SQLERRM NOT LIKE 'retido: paciente sem CNS e sem CPF%' THEN RAISE; END IF;
-  RAISE NOTICE 'OK  3. paciente sem CNS e sem CPF fica retido';
+  IF SQLERRM NOT LIKE 'retido: paciente sem CPF e sem justificativa%' THEN RAISE; END IF;
+  RAISE NOTICE 'OK  3. paciente sem CPF e sem motivo fica retido (U15, VC7)';
 END $$;
 
 -- 2. cancelado antes do envio
