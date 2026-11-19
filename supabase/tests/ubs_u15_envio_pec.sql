@@ -83,7 +83,7 @@ GRANT ALL ON r, ids TO service_role;
 GRANT EXECUTE ON FUNCTION pg_temp.id(text) TO service_role;
 UPDATE public.unidades SET cnes = '9912345' WHERE id = pg_temp.id('ubs');
 UPDATE public.perfis SET cns = '700000000000005', cbo = '225125' WHERE id = pg_temp.id('med');
-UPDATE public.pacientes SET cns = '898000000000002' WHERE id = pg_temp.id('idoso');
+UPDATE public.pacientes SET cns = '898000000000002', cpf_justificativa = 8 WHERE id = pg_temp.id('idoso');  -- U15 (VC7): sem CPF, o motivo do LEDI
 CREATE FUNCTION pg_temp.ep(p text) RETURNS uuid LANGUAGE sql AS $$
   SELECT id FROM public.episodios WHERE paciente_id = pg_temp.id(p) LIMIT 1 $$;
 UPDATE public.episodios SET etapa = 'atendimento', encerrado_em = NULL WHERE id = pg_temp.ep('idoso');

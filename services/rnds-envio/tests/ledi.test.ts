@@ -50,7 +50,7 @@ function carga(): FichaCarregada['carga'] {
   return {
     unidade: { cnes: '9912345', codigo_ibge: '3550308', ine: null },
     profissional: { id: 'm', nome: 'Médica', cns: '700000000000005', cbo: '225142', cpf: null },
-    cidadao: { id: 'p', cns: '898000000000002', cpf: null, data_nascimento: '1956-03-10', sexo: 'M' },
+    cidadao: { id: 'p', cns: '898000000000002', cpf: null, data_nascimento: '1956-03-10', sexo: 'M', justificativa_sem_cpf: 8 },
     procedimento: { id: 'r', codigo_sigtap: '0214010015', quantidade: 1, realizado_em: '2026-11-10T13:00:00Z', episodio_id: null },
   }
 }

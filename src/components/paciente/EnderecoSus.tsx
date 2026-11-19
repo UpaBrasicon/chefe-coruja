@@ -1,7 +1,8 @@
 // Endereço e dados do SUS do paciente (Fase 3, tarefa 3): campos do BPA-I
 // que não travam a porta. O que faltar vira aviso na conferência do
 // faturamento. Grava por salvar_endereco_sus (quem atua no paciente e o
-// faturamento); só as chaves alteradas vão ao servidor.
+// faturamento); só as chaves alteradas vão ao servidor. U15 (VC7): sem CPF,
+// o motivo da lista do LEDI, que vai nas fichas do SISAB.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
@@ -9,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { JUSTIFICATIVAS_SEM_CPF } from '@/domain/justificativaCpf'
 import type { EnderecoSus as Endereco } from '@/lib/bpa'
 import { supabase } from '@/lib/supabase'
 
@@ -34,7 +37,7 @@ export function EnderecoSus({ pacienteId, titulo = true }: { pacienteId: string;
       return data as unknown as Endereco
     },
   })
-  const [mudou, setMudou] = React.useState<Partial<Record<Campo | 'situacao_rua' | 'sem_documento', string | boolean>>>({})
+  const [mudou, setMudou] = React.useState<Partial<Record<Campo | 'situacao_rua' | 'sem_documento' | 'cpf_justificativa', string | boolean>>>({})
   const salvar = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('salvar_endereco_sus', { p_paciente: pacienteId, p_dados: mudou })
@@ -73,6 +76,17 @@ export function EnderecoSus({ pacienteId, titulo = true }: { pacienteId: string;
           </div>
         )}
       </div>
+      {!e.tem_cpf && (
+        <div className="flex max-w-md flex-col gap-1">
+          <Label htmlFor={`sus-cpf-just-${pacienteId}`} className="text-rotulo">Sem CPF: motivo (e-SUS APS)</Label>
+          <CampoSelecao id={`sus-cpf-just-${pacienteId}`} className="h-8"
+            value={'cpf_justificativa' in mudou ? String(mudou.cpf_justificativa ?? '') : String(e.cpf_justificativa ?? '')}
+            onChange={(ev) => setMudou((m) => ({ ...m, cpf_justificativa: ev.target.value }))}>
+            <option value="">Escolha o motivo</option>
+            {JUSTIFICATIVAS_SEM_CPF.map((j) => <option key={j.codigo} value={j.codigo}>{j.rotulo}</option>)}
+          </CampoSelecao>
+        </div>
+      )}
       {e.municipio && <span className="text-rotulo text-tinta-sussurro">Município no cadastro: {e.municipio}{e.uf ? `/${e.uf}` : ''}</span>}
       <div className="flex flex-wrap items-center gap-4 text-apoio">
         <label className="flex items-center gap-2">

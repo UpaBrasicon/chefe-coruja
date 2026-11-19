@@ -24,7 +24,11 @@ import { TIPO, bool, double, i32, i64, lista, serializar, str, struct, type Stru
 // ── carga do banco ───────────────────────────────────────────────────────────
 export type UnidadeLedi = { cnes: string; codigo_ibge: string; ine: string | null }
 export type ProfissionalLedi = { id: string; nome: string | null; cns: string; cbo: string; cpf: string | null }
-export type CidadaoLedi = { id: string; cns: string | null; cpf: string | null; data_nascimento: string; sexo: string | null }
+export type CidadaoLedi = {
+  id: string; cns: string | null; cpf: string | null; data_nascimento: string; sexo: string | null
+  /** U15, VC7: motivo de não ter CPF (lista do LEDI); só vem sem CPF. */
+  justificativa_sem_cpf?: number | null
+}
 export type MedicaoLedi = { conceito: string; loinc: string | null; valor: number; unidade: string | null; aferido_em: string }
 
 export type CargaFai = {
@@ -112,11 +116,12 @@ export const epoch = (instante: string) => {
 export const cidLedi = (c: string) => c.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
 
 // ── partes comuns ────────────────────────────────────────────────────────────
-/** Identificação do cidadão: CPF ou CNS, nunca os dois. */
-function identificacao(c: CidadaoLedi): { cpf?: string; cns?: string } {
+/** Identificação do cidadão: CPF; sem CPF, o CNS e o motivo da lista do LEDI (U15, VC7). Nunca os dois. */
+function identificacao(c: CidadaoLedi): { cpf?: string; cns?: string; justificativa?: number } {
   if (c.cpf) return { cpf: c.cpf }
-  if (c.cns) return { cns: c.cns }
-  throw new Error('retido: paciente sem CNS e sem CPF')
+  if (!c.justificativa_sem_cpf) throw new Error('retido: paciente sem CPF e sem justificativa')
+  if (!c.cns) throw new Error('retido: paciente sem CPF e sem CNS')
+  return { cns: c.cns, justificativa: c.justificativa_sem_cpf }
 }
 
 /** MedicoesThrift (1 a 13), pelos conceitos do app. */
@@ -204,7 +209,8 @@ export function fichaFai(uuidFicha: string, c: CargaFai, inst: Instalacao): Arqu
     30: id.cpf ? str(id.cpf) : undefined,
     39: med ? struct(med) : undefined,
     40: lista(TIPO.STRUCT, problemas.map((p) => struct(p))),
-    47: bool(false),
+    47: bool(!id.cpf),
+    48: id.justificativa ? i64(id.justificativa) : undefined,
   }
   const lotacao: Struct = { 1: str(c.profissional.cns), 2: str(c.profissional.cbo), 3: str(c.unidade.cnes),
     4: c.unidade.ine ? str(c.unidade.ine) : undefined }
@@ -237,7 +243,8 @@ export function fichaFp(uuidFicha: string, c: CargaFp, inst: Instalacao): Arquiv
     10: i64(em),
     11: i64(em),
     12: id.cpf ? str(id.cpf) : undefined,
-    20: bool(false),
+    20: bool(!id.cpf),
+    21: id.justificativa ? i64(id.justificativa) : undefined,
   }
   const ficha = serializar({
     1: str(uuidFicha),

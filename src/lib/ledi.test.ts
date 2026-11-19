@@ -5,8 +5,8 @@ import assert from 'node:assert/strict'
 const UNIDADE = { cnes: '9912345', codigo_ibge: '3550308', ine: null }
 const MEDICO = { id: 'm', nome: 'Médica', cns: '700000000000005', cbo: '225142', cpf: null }
 const TECNICO = { id: 't', nome: 'Técnico', cns: '700000000000013', cbo: '322205', cpf: null }
-const PACIENTE: { id: string; cns: string | null; cpf: string | null; data_nascimento: string; sexo: string | null } =
-  { id: 'p', cns: '898000000000002', cpf: null, data_nascimento: '1956-03-10', sexo: 'M' }
+const PACIENTE: { id: string; cns: string | null; cpf: string | null; data_nascimento: string; sexo: string | null; justificativa_sem_cpf: number | null } =
+  { id: 'p', cns: '898000000000002', cpf: null, data_nascimento: '1956-03-10', sexo: 'M', justificativa_sem_cpf: 8 }
 const INST = { contraChave: 'Chefe Coruja - 2026.11', uuidInstalacao: '0b6a0c4e-1f7e-4e43-9d5d-2a6f8a1c0001', cpfOuCnpj: '00000000000191', nomeOuRazaoSocial: 'Chefe Coruja' }
 const UUID = '9912345-6f1c2b9e-3a3e-4b7b-9a51-0c1f2d3e4f50'
 
@@ -74,7 +74,8 @@ test('FAI: DadoTransporte com tipo 4, CNES, IBGE, versão 8.7.0 e a ficha dentro
   assert.deepEqual(c[22], [2n]) // conduta sem repetição
   assert.equal(c[28], BigInt(Date.parse('2026-11-10T13:05:00Z')))
   assert.equal(c[29], BigInt(Date.parse('2026-11-10T13:25:00Z')))
-  assert.equal(c[47], false)
+  assert.equal(c[47], true) // sem CPF: CNS e o motivo (U15, VC7)
+  assert.equal(c[48], 8n)
   const probs = (c[40] as Record<number, never>[]).map((p) => texto(p[5]) ?? texto(p[4]))
   assert.deepEqual(probs, ['I10', 'E119', 'K86', 'ABP022'])
   const ex = (c[17] as Record<number, never>[])[0]
@@ -89,7 +90,8 @@ test('FAI: retém sem tipo do LEDI, sem conduta, sem CID/CIAP, sem CNS e CPF ou 
   assert.throws(() => fichaFai(UUID, cargaFai({ tipo_atendimento: 'pre_natal_parceiro' }), INST), /^Error: retido: tipo de atendimento/)
   assert.throws(() => fichaFai(UUID, cargaFai({ condutas: [] }), INST), /retido: atendimento sem conduta/)
   assert.throws(() => fichaFai(UUID, cargaFai({ cid: [], ciap: [], problemas: ['asma'] }), INST), /retido: atendimento sem CID nem CIAP/)
-  assert.throws(() => fichaFai(UUID, { ...cargaFai(), cidadao: { ...PACIENTE, cns: null } }, INST), /retido: paciente sem CNS e sem CPF/)
+  assert.throws(() => fichaFai(UUID, { ...cargaFai(), cidadao: { ...PACIENTE, cns: null } }, INST), /retido: paciente sem CPF e sem CNS/)
+  assert.throws(() => fichaFai(UUID, { ...cargaFai(), cidadao: { ...PACIENTE, justificativa_sem_cpf: null } }, INST), /retido: paciente sem CPF e sem justificativa/)
   assert.throws(() => fichaFai(UUID, { ...cargaFai(), unidade: { ...UNIDADE, codigo_ibge: '' } }, INST), /retido: unidade sem código IBGE/)
 })
 
@@ -103,6 +105,8 @@ test('FAI: CPF no lugar do CNS, nunca os dois; pressão vai com as duas medidas'
   const c = ((desserializar(t[7]) as Record<number, never>)[2] as never[])[0] as Record<number, never>
   assert.equal(texto(c[30]), '52998224725')
   assert.equal(c[2], undefined)
+  assert.equal(c[47], false)
+  assert.equal(c[48], undefined)
   assert.deepEqual(c[39], { 3: 142, 4: 91, 11: 70.25, 12: 170 })
 })
 
@@ -128,7 +132,8 @@ test('FP: DadoTransporte com tipo 7 e o procedimento com quem fez, turno e cidad
   assert.equal(c[5], 1n) // UBS
   assert.equal(c[6], 2n) // 17h30 de Brasília: tarde
   assert.equal(texto(c[2]), '898000000000002')
-  assert.equal(c[20], false)
+  assert.equal(c[20], true) // sem CPF
+  assert.equal(c[21], 8n)
   assert.equal(turnoLedi('2026-11-10T20:30:00Z'), 2) // 17h30 de Brasília: tarde
   assert.equal(turnoLedi('2026-11-10T21:00:00Z'), 3) // 18h: noite
   assert.ok(arq.avisos[0].includes('quantidade 2'))
