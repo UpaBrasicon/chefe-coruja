@@ -34,13 +34,58 @@ export const COREIA_POS_PCR_2025: Fonte = {
   url: pmc('PMC13285305'),
 }
 
+// Versão .3 (RT em 19/11/2026, CL1–CL4 = A): lacunas das causas reversíveis pelo PubMed
+export const ERC_CIRCUNSTANCIAS_2021: Fonte = {
+  citacao: 'Lott C, et al. Kreislaufstillstand unter besonderen Umständen (ERC Leitlinien 2021, tradução alemã de "Cardiac arrest in special circumstances"). Notf Rett Med. 2021;24(4):447–523 (PMID 34127910, PMC8190767).',
+  url: pmc('PMC8190767'),
+}
+export const ERC_PEDIATRIA_2021: Fonte = {
+  citacao: 'Van de Voorde P, et al. Lebensrettende Maßnahmen bei Kindern (ERC Leitlinien 2021, tradução alemã de "Paediatric Life Support"). Notf Rett Med. 2021;24(4):650–719 (PMID 34093080, PMC8170638).',
+  url: pmc('PMC8170638'),
+  pediatrica: true,
+}
+export const ESPNIC_POCUS_2020: Fonte = {
+  citacao: 'Singh Y, et al. International evidence-based guidelines on Point of Care Ultrasound (POCUS) for critically ill neonates and children issued by the POCUS Working Group of the ESPNIC. Crit Care. 2020;24:65 (PMID 32093763, PMC7041196).',
+  url: pmc('PMC7041196'),
+  pediatrica: true,
+}
+export const PEREZ_CASARES_2017: Fonte = {
+  citacao: 'Pérez-Casares A, et al. Echocardiographic Evaluation of Pericardial Effusion and Cardiac Tamponade. Front Pediatr. 2017;5:79 (PMID 28484689, PMC5401877). Revisão pediátrica.',
+  url: pmc('PMC5401877'),
+  pediatrica: true,
+}
+export const ZIA_TEP_PEDIATRICO_2025: Fonte = {
+  citacao: 'Zia A, Goldenberg NA, Rajpurkar M. How I treat pediatric pulmonary embolism. Blood. 2025;146(14):1643–1653 (PMID 40643104, PMC13122310). Tabela 2: protocolo de um hospital (revisão, não diretriz).',
+  url: pmc('PMC13122310'),
+  pediatrica: true,
+}
+export const LEE_LIPIDIO_PEDIATRICO_2024: Fonte = {
+  citacao: 'Lee SH, Kim S, Sohn JT. Lipid emulsion treatment for local anesthetic systemic toxicity in pediatric patients: a systematic review. Medicine. 2024;103(11):e37534 (PMID 38489714, PMC10939516). Revisão sistemática de relatos de caso.',
+  url: pmc('PMC10939516'),
+  pediatrica: true,
+}
+export const BROGAN_KAWASAKI_2020: Fonte = {
+  citacao: 'Brogan P, et al. Lifetime cardiovascular management of patients with previous Kawasaki disease. Heart. 2020;106(6):411–420 (PMID 31843876, PMC7057818). Consenso britânico.',
+  url: pmc('PMC7057818'),
+  pediatrica: true,
+}
+export const ANTO_POCUS_2026: Fonte = {
+  citacao: 'Anto AM, et al. Point-of-care-ultrasound in cardiac arrest: a useful tool for resuscitation. Front Med. 2026;13:1795346 (PMID 41939769, PMC13047127). Revisão.',
+  url: pmc('PMC13047127'),
+}
+export const VAN_DEN_BEMPT_AESP_2021: Fonte = {
+  citacao: 'Van den Bempt S, et al. Pulseless Electrical Activity: Detection of Underlying Causes in a Prehospital Setting. Med Princ Pract. 2021;30(3):212–222 (PMID 33254164, PMC8280430). Revisão.',
+  url: pmc('PMC8280430'),
+}
+
 export const fichaCronometroParada: Ficha = {
   id: 'cronometro-parada',
   titulo: 'Cronômetro da parada — ritmo, choque, epinefrina e registro (criança e adulto)',
-  versao: '2026-11-18.2',
+  versao: '2026-11-19.1',
   publico: 'ambos',
-  fontes: [AHA_AAP_2025, COREIA_PALS_2025, AHA_ALS_2025, AHA_CIRCUNSTANCIAS_2025, COREIA_ALS_2025, COREIA_CIRCUNSTANCIAS_2025, COREIA_POS_PCR_2025, ILCOR_COSTR_2026, pagina('cap. 2 PCR no adulto, p. 48–50 (Tabela 2)')],
-  revisadoEm: '18/11/2026 (versão .2: causas reversíveis com identificar e tratar, CR1–CR4 = A; fluxo construído com o RT no protótipo; tempos e ordem pela AHA 2025 e pelo manual do HCFMUSP; aguarda aprovação do RT)',
+  fontes: [AHA_AAP_2025, COREIA_PALS_2025, AHA_ALS_2025, AHA_CIRCUNSTANCIAS_2025, COREIA_ALS_2025, COREIA_CIRCUNSTANCIAS_2025, COREIA_POS_PCR_2025, ILCOR_COSTR_2026, ERC_CIRCUNSTANCIAS_2021, ERC_PEDIATRIA_2021, ESPNIC_POCUS_2020, PEREZ_CASARES_2017, ZIA_TEP_PEDIATRICO_2025,
+    LEE_LIPIDIO_PEDIATRICO_2024, BROGAN_KAWASAKI_2020, ANTO_POCUS_2026, VAN_DEN_BEMPT_AESP_2021, pagina('cap. 2 PCR no adulto, p. 48–50 (Tabela 2)')],
+  revisadoEm: '19/11/2026 (lacunas das causas reversíveis pelo PubMed, CL1–CL4 = A); 18/11/2026 (versão .2: causas reversíveis com identificar e tratar, CR1–CR4 = A; fluxo construído com o RT no protótipo; tempos e ordem pela AHA 2025 e pelo manual do HCFMUSP; aguarda aprovação do RT)',
 }
 
 export type PublicoParada = 'crianca' | 'adulto'
