@@ -33,9 +33,9 @@ const baseRcp = fichaP2('ped-rcp-icr', 'RCP pediátrica — parâmetros, choque 
 
 export const fichaRcpPediatrica: Ficha = {
   ...baseRcp,
-  versao: '2026-11-19.1',
+  versao: '2026-11-19.2',
   fontes: [...baseRcp.fontes, AHA_AAP_2025, COREIA_PALS_2025],
-  revisadoEm: '19/11/2026 (lote D11: itens 1, 4, 5 e 6, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3: Part 8 lido no texto integral; livro do ICr mantido como base)',
+  revisadoEm: '19/11/2026 (rótulo do máximo: a tela diz de onde vem o teto quando não é o livro; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (lote D11: itens 1, 4, 5 e 6, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 25/10/2026 (lacunas da Central, lote 3: Part 8 lido no texto integral; livro do ICr mantido como base)',
 }
 
 /** Alvo de pressão diastólica durante a RCP com linha arterial (AHA 2025, novo): ≥ 25 mmHg no lactente; ≥ 30 mmHg a partir de 1 ano. */
@@ -189,14 +189,14 @@ export const DROGAS_RCP: DoseRcp[] = [
   { grupo: 'pcr', id: 'bicarbonato', nome: 'Bicarbonato de sódio 8,4%', unidade: 'mEq', porKg: [1, 1], porMl: 1, solucao: '8,4%: 1 mL = 1 mEq', via: 'IV/IO; não é de rotina — PCR prolongada, acidose metabólica grave documentada', pagina: 'p. 32 (Tabela 2)' },
   { grupo: 'pcr', id: 'calcio', nome: 'Cálcio elementar', unidade: 'mg', porKg: [5, 7], via: 'IV/IO, de preferência central; hipocalcemia, hipercalemia, hipermagnesemia, bloqueador de canal de cálcio', pagina: 'p. 31–32 (Tabela 2)',
     nota: 'Volume pelo livro: 0,2 mL/kg de cloreto de cálcio 10% ou 0,6 mL/kg de gluconato de cálcio (ver abaixo).' },
-  { grupo: 'pcr', id: 'cloreto-calcio', nome: 'Cloreto de cálcio 10% (volume)', unidade: 'mL', porKg: [0.2, 0.2], maximo: 20, via: 'IV/IO, de preferência central (preparação de escolha)', pagina: 'p. 31–32 (Tabela 2)',
+  { grupo: 'pcr', id: 'cloreto-calcio', nome: 'Cloreto de cálcio 10% (volume)', unidade: 'mL', porKg: [0.2, 0.2], maximo: 20, fonteMaximo: 'Coreia 2025', via: 'IV/IO, de preferência central (preparação de escolha)', pagina: 'p. 31–32 (Tabela 2)',
     nota: 'sem teto (p. 31–32). Teto de 20 mL (2 g) pela Coreia 2025 (Tabela 2), lote D11.' },
   { grupo: 'pcr', id: 'gluconato-calcio', nome: 'Gluconato de cálcio (volume)', unidade: 'mL', porKg: [0.6, 0.6], via: 'IV/IO', pagina: 'p. 32 (Tabela 2)' },
-  { grupo: 'pcr', id: 'magnesio', nome: 'Sulfato de magnésio 50%', unidade: 'mg', porKg: [25, 50], maximo: 2000, porMl: 500, solucao: 'MgSO₄ 50% = 500 mg/mL', via: 'IV; hipomagnesemia, torsades de pointes', pagina: 'p. 31–32 (Tabela 2)',
+  { grupo: 'pcr', id: 'magnesio', nome: 'Sulfato de magnésio 50%', unidade: 'mg', porKg: [25, 50], maximo: 2000, fonteMaximo: 'Coreia 2025', porMl: 500, solucao: 'MgSO₄ 50% = 500 mg/mL', via: 'IV; hipomagnesemia, torsades de pointes', pagina: 'p. 31–32 (Tabela 2)',
     nota: 'sem teto (p. 31–32). Teto de 2 g pela Coreia 2025 (seção Magnesium), lote D11.' },
   { grupo: 'pcr', id: 'glicose', nome: 'Glicose (hipoglicemia)', unidade: 'g', porKg: [0.5, 1], mlPorKg: [2, 4], solucao: 'glicose 25%: 2 a 4 mL/kg', via: 'IV/IO', pagina: 'p. 32 (Tabela 2)' },
   { grupo: 'bradicardia', id: 'epinefrina-bradi', nome: 'Epinefrina', unidade: 'mg', porKg: [0.01, 0.01], porMl: 0.1, solucao: '1:10.000 — 0,1 mL/kg', via: 'IV/IO, repetir a cada 3 a 5 min, se persistir apesar de via aérea e ventilação', pagina: 'p. 32' },
-  { grupo: 'bradicardia', id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], maximo: 0.5, via: 'na suspeita de tônus vagal aumentado ou BAV primário; pode ser repetida uma vez', pagina: 'p. 32',
+  { grupo: 'bradicardia', id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], maximo: 0.5, fonteMaximo: 'AHA 2025 e Coreia 2025', via: 'na suspeita de tônus vagal aumentado ou BAV primário; pode ser repetida uma vez', pagina: 'p. 32',
     nota: 'sem máximo (p. 32). Máximo de 0,5 mg pela AHA 2025 (Part 8, Figura 6) e pela Coreia 2025, lote D11.' },
   { grupo: 'tsv', id: 'adenosina-1', nome: 'Adenosina — 1ª dose', unidade: 'mg', porKg: [0.1, 0.1], maximo: 6, via: 'bolo IV rápido seguido de 3 a 5 mL de AD ou SF; acesso central: cerca de 50% da dose', pagina: 'cap. 2, p. 50' },
   { grupo: 'tsv', id: 'adenosina-2', nome: 'Adenosina — 2ª dose (dobrada)', unidade: 'mg', porKg: [0.2, 0.2], maximo: 12, via: 'bolo IV rápido', pagina: 'cap. 2, p. 50' },

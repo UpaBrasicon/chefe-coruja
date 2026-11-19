@@ -68,7 +68,7 @@ test('rcp: máximos — amiodarona 300 mg; adenosina 6 e 12 mg (p. 32, 50)', () 
 // ── AHA 2025, Part 8 no texto integral (lacunas da Central, lote 3) ──
 
 test('RCP pediátrica: ficha .2 com o Part 8 completo', () => {
-  assert.equal(fichaRcpPediatrica.versao, '2026-11-19.1') // lote D11 (19/11/2026)
+  assert.equal(fichaRcpPediatrica.versao, '2026-11-19.2') // lote D11 e rótulo do máximo (19/11/2026)
   assert.match(fichaRcpPediatrica.fontes[1].citacao, /Topjian AA.*S479–S537/)
 })
 test('RCP pediátrica: epinefrina 0,01 mg/kg com teto de 1 mg (AHA 2025, Figura 2)', () => {
@@ -80,9 +80,9 @@ test('RCP pediátrica: epinefrina 0,01 mg/kg com teto de 1 mg (AHA 2025, Figura 
 // ── Lote D11 (decisão do RT de 19/11/2026): itens 1, 4, 5 e 6 ──
 
 test('lote D11: atropina máx. 0,5 mg; cloreto de cálcio até 20 mL; magnésio até 2 g; cardioversão 2 J/kg', () => {
-  assert.equal(fichaRcpPediatrica.versao, '2026-11-19.1')
+  assert.equal(fichaRcpPediatrica.versao, '2026-11-19.2')
   assert.ok(fichaRcpPediatrica.fontes.includes(COREIA_PALS_2025))
-  assert.match(fichaRcpPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: itens 1, 4, 5 e 6/)
+  assert.match(fichaRcpPediatrica.revisadoEm, /19\/11\/2026 \(lote D11: itens 1, 4, 5 e 6/)
   // item 1: atropina 0,02 mg/kg, máx. 0,5 mg (o livro não tinha máximo)
   const at = calcularDose(d('atropina'), 40)!
   assert.deepEqual(at.dose, [0.5, 0.5])

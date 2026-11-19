@@ -21,14 +21,14 @@ import { AHA_AAP_2025 } from './rcp.ts'
 export const fichaViaAereaPediatrica: Ficha = {
   id: 'ped-via-aerea',
   titulo: 'Via aérea pediátrica — tubo, equipamento e SRI',
-  versao: '2026-11-19.1',
+  versao: '2026-11-19.2',
   publico: 'pediatrico',
   fontes: [
     { citacao: `${CITACAO_PS_PED} cap. 4, p. 67–78; cap. 13, p. 150–151.`, pediatrica: true },
     { citacao: `${MANUAL_HC.citacao} Anexo 2, p. 1494 (tubo sem cuff, mesma fórmula).`, pediatrica: true },
     AHA_AAP_2025, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024,
   ],
-  revisadoEm: '19/11/2026 (lote D11: itens 2 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
+  revisadoEm: '19/11/2026 (rótulo do máximo: a tela diz de onde vem o teto quando não é o livro; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (lote D11: itens 2 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
 }
 
 // ── Tubo pela idade (p. 75) ──
@@ -121,7 +121,7 @@ export function fluxoApneia(dias: number): number | null {
 // ── Doses da SRI (Tabelas 1 e 2, p. 69–70; texto p. 71–73) ──
 
 export const DOSES_SRI: DosePeso[] = [
-  { id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], maximo: 0.5, via: 'IV; não é de rotina (p. 71)', pagina: 'p. 71',
+  { id: 'atropina', nome: 'Atropina', unidade: 'mg', porKg: [0.02, 0.02], maximo: 0.5, fonteMaximo: 'AHA 2025 e Coreia 2025', via: 'IV; não é de rotina (p. 71)', pagina: 'p. 71',
     nota: 'O livro diz "sem dose mínima". O Anexo 2 do manual HCFMUSP usa mínimo de 0,1 mg. Máximo de 0,5 mg pela AHA 2025 e pela Coreia 2025; o livro (p. 71) e a SBA 2024 dão máximo de 1 mg (lote D11).' },
   { id: 'fentanil', nome: 'Fentanil', unidade: 'µg', porKg: [2, 7], via: 'IV; início 1 min, duração 30–60 min', pagina: 'p. 70 (Tabela 1)' },
   { id: 'tiopental', nome: 'Tiopental', unidade: 'mg', porKg: [2, 5], via: 'IV', pagina: 'p. 69 (Tabela 1)' },

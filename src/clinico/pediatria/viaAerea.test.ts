@@ -71,9 +71,9 @@ test('SRI: Tabelas 1 e 2 (p. 69–70) e atropina (p. 71) a 20 kg', () => {
 // ── Lote D11 (decisão do RT de 19/11/2026): itens 2 e 15 ──
 
 test('lote D11: atropina da SRI com máximo de 0,5 mg; nota da SBA 2024 no propofol', () => {
-  assert.equal(fichaViaAereaPediatrica.versao, '2026-11-19.1')
+  assert.equal(fichaViaAereaPediatrica.versao, '2026-11-19.2')
   for (const f of [AHA_AAP_2025, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024]) assert.ok(fichaViaAereaPediatrica.fontes.includes(f))
-  assert.match(fichaViaAereaPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: itens 2 e 15/)
+  assert.match(fichaViaAereaPediatrica.revisadoEm, /19\/11\/2026 \(lote D11: itens 2 e 15/)
   const at = calcularDose(d('atropina'), 40)!
   assert.deepEqual(at.dose, [0.5, 0.5])
   assert.equal(at.noMaximo, true)
