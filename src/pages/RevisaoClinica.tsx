@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { data as dataBr } from '@/lib/formato'
 import { DesempenhoAlertaSepse } from '@/components/clinico/DesempenhoAlertaSepse'
-import { FilaTecnovigilancia, RelatosDaUnidade } from '@/components/clinico/FilaTecnovigilancia'
 import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -68,9 +67,7 @@ export default function RevisaoClinica() {
             ? `Fichas que pedem a revisão do ${NOME_REVISOR[revisor.tipo]} do comitê clínico. Sua revisão fica registrada com o seu nome e ${revisor.conselho} ${revisor.registro}/${revisor.uf}.`
             : 'Toda ferramenta da Central carrega a ressalva de referência geral até o responsável técnico conferir. A conferência tira a ressalva da tela de quem prescreve; a correção apontada a troca por um aviso vermelho. A decisão é do responsável técnico nomeado pela rede; aqui o gestor acompanha.'} />
       {rt && <FilaRT />}
-      {rt && <FilaTecnovigilancia />}
       {revisores.map((r) => <FilaRevisor key={r.tipo} papel={r} />)}
-      {ehGestor && unidadeAtiva && <RelatosDaUnidade unidadeId={unidadeAtiva.unidade_id} />}
       {(rt || ehGestor) && unidadeAtiva && (
         <DesempenhoAlertaSepse unidadeId={unidadeAtiva.unidade_id} unidadeNome={unidadeAtiva.unidade?.nome ?? 'unidade'} rt={!!rt} />
       )}

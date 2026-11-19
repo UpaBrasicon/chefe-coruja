@@ -29,12 +29,9 @@ export function FilaTecnovigilancia() {
   const abertos = (fila ?? []).filter((r) => r.situacao !== 'concluido')
   const concluidos = (fila ?? []).filter((r) => r.situacao === 'concluido')
   return (
-    <section aria-label="Tecnovigilância" className="flex flex-col gap-3">
-      <TituloSecao className="mb-0">Tecnovigilância</TituloSecao>
-      <p className="text-apoio text-tinta-apoio">
-        Relatos de problema no módulo clínico. Prazo da RDC 67/2009, art. 8º: óbito, 72 h; dano permanente ou internação, 10 dias; os outros, 30 dias.
-      </p>
+    <section aria-label="Fila de tecnovigilância" className="flex flex-col gap-3">
       <SuspensoesVigentes />
+      <TituloSecao className="mb-0">Relatos abertos</TituloSecao>
       {abertos.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum relato aberto.</p>}
       {abertos.map((r) => <CartaoRelato key={r.id} r={r} rt />)}
       {concluidos.length > 0 && (
@@ -56,14 +53,14 @@ export function RelatosDaUnidade({ unidadeId }: { unidadeId: string }) {
       return (data ?? []) as unknown as RelatoTv[]
     },
   })
-  if (!data?.length) return null
   return (
     <section aria-label="Relatos de tecnovigilância da unidade" className="flex flex-col gap-2">
       <TituloSecao className="mb-0">Relatos de problema da unidade</TituloSecao>
       <p className="text-apoio text-tinta-apoio">
         Cópia para a gestão. Quem investiga é o responsável técnico da Chefe Coruja. Se o problema chegou ao paciente, o Núcleo de Segurança do Paciente da unidade avalia a notificação no Notivisa.
       </p>
-      {data.map((r) => <CartaoRelato key={r.id} r={r} rt={false} />)}
+      {data && data.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum relato da unidade.</p>}
+      {(data ?? []).map((r) => <CartaoRelato key={r.id} r={r} rt={false} />)}
     </section>
   )
 }

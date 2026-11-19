@@ -34,7 +34,7 @@ export function textoAviso(d: DadosAviso, origem: string): string {
     `Recebido em: ${quando(d.relatado_em)} (Brasília)`,
     `Prazo (RDC 67/2009, art. 8º): ${quando(d.prazo_em)} (Brasília)`,
     ``,
-    `Leia o relato e registre o andamento em Revisão Clínica, Tecnovigilância: ${origem}/revisao-clinica`,
+    `Leia o relato e registre o andamento na aba Tecnovigilância: ${origem}/tecnovigilancia`,
     `Se for preciso, suspenda a versão na rede pela mesma tela.`,
     ``,
     `Este e-mail não traz dado do paciente.`,
