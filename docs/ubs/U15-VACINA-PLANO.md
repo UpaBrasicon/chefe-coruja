@@ -33,6 +33,8 @@ Hoje esses itens contam zero no app (U13, G1 = A: "fora do app").
 
 ## Decisões para o RT
 
+**Decidido pelo RT em 19/11/2026: VC1 a VC7 = A.** O plano em PRs abaixo vale como está.
+
 **VC1. Quais vacinas o app registra**
 - **A:** todas as da tabela de imunobiológicos do LEDI 8.7.0, com a regra de imunobiológico, estratégia e dose do LEDI. A sala de vacina usa só o app.
 - **B:** só as que contam nos indicadores (C2, C3, C6 e C7). O resto continua no PEC do município.
