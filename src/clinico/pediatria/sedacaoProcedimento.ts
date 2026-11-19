@@ -1,3 +1,4 @@
+import { SBA_VIA_AEREA_PED_2024 } from '../fontesPubmed.ts'
 import { BOLUS, type Bolus } from './bolus.ts'
 import { fichaP4, type Referencia } from './fonteP4.ts'
 
@@ -8,7 +9,17 @@ import { fichaP4, type Referencia } from './fonteP4.ts'
 // < 3 meses, dexmedetomidina (ataque em 30 min e manutenção), jejum (Tabela 4),
 // ASA (Tabela 1) e sugestões por tipo de procedimento (Tabela 5).
 
-export const fichaSedacaoProcedimento = fichaP4('ped-sedacao-procedimento', 'Sedação para procedimento — criança', 'cap. 78, p. 844–851; Apêndice, p. 894–897')
+// Versão 2026-11-19.1 (lote D11, achado depois da mesclagem): a linha do propofol
+// vem de bolus.ts e ganhou a nota da SBA 2024 ("até 3 mg/kg em criança pequena");
+// a tela da sedação mostra a nota, por isso a ficha sobe e cita a SBA 2024.
+// A dose calculada não muda (1 a 2 mg/kg, p. 72).
+const baseSedacao = fichaP4('ped-sedacao-procedimento', 'Sedação para procedimento — criança', 'cap. 78, p. 844–851; Apêndice, p. 894–897')
+export const fichaSedacaoProcedimento = {
+  ...baseSedacao,
+  versao: '2026-11-19.1',
+  fontes: [...baseSedacao.fontes, SBA_VIA_AEREA_PED_2024],
+  revisadoEm: '19/11/2026 (lote D11: a linha do propofol mostra a nota da SBA 2024, Tabela 7, "até 3 mg/kg em criança pequena"; a dose calculada não muda; aguarda aprovação do RT); ' + baseSedacao.revisadoEm,
+}
 
 const ids = ['midazolam-iv-menor5', 'midazolam-iv-maior5', 'midazolam-im', 'midazolam-in', 'fentanil', 'cetamina-iv', 'cetamina-im', 'propofol', 'etomidato', 'dexmedetomidina-proc']
 /** Sedativos/analgésicos do Apêndice (bolus.ts). */
