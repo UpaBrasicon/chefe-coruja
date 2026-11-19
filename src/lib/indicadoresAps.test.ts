@@ -22,6 +22,8 @@ test('U13: C2 a C7 pelas faixas 75/50/25; C7 soma as partes com os pesos da nota
   // colo 1/2 × 20 + saúde sexual 1/2 × 30 + mamografia 1/1 × 20 = 45 (vacina HPV fora do app)
   assert.equal(c7Ministerio({ colo: { faixa: 2, feito: 1 }, ssr: { faixa: 2, feito: 1 }, mama: { faixa: 1, feito: 1 } }), 45)
   assert.equal(c7Ministerio({ colo: { faixa: 0, feito: 0 }, ssr: { faixa: 0, feito: 0 }, mama: { faixa: 0, feito: 0 } }), 0)
+  // U15: vacina HPV 1/2 × 30 soma 15
+  assert.equal(c7Ministerio({ colo: { faixa: 2, feito: 1 }, ssr: { faixa: 2, feito: 1 }, mama: { faixa: 1, feito: 1 }, hpv: { faixa: 2, feito: 1 } }), 60)
 })
 
 test('U13: nota final da NT 8/2026 (pesos 1 e 2, total 10)', async () => {

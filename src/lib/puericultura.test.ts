@@ -9,7 +9,7 @@ import {
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
 // 5A, tarefa 7 (K6 = A do RT em 05/11/2026): a régua da nota C2 da SAPS/MS.
-// Os pontos repetem o Quadro 01; (D) ACS e (E) vacinas ficam fora do app.
+// Os pontos repetem o Quadro 01; (D) ACS fica fora do app; (E) vacinas contam desde o U15.
 const HOJE = '2026-11-05'
 const NASC = (dias: number) => somarDias(HOJE, -dias)
 const c = (idade: number, r: Partial<CriancaLinha> = {}): CriancaLinha => ({
@@ -19,7 +19,7 @@ const c = (idade: number, r: Partial<CriancaLinha> = {}): CriancaLinha => ({
 
 test('pontos do Quadro 01 somam 100; o teto no app é 60', () => {
   assert.equal([...ITENS, ...FORA_DO_APP].reduce((s, i) => s + i.pontos, 0), 100)
-  assert.equal(TETO_NO_APP, 60)
+  assert.equal(TETO_NO_APP, 80)
   assert.equal(META, 9)
   assert.equal(PRIMEIRA_ATE_DIAS, 29, '30º dia de vida, com o nascimento como 1º dia')
 })
@@ -51,6 +51,7 @@ test('(B) e (C): 9 até os 2 anos', () => {
 test('pontos, atraso, frases, marcas e resumo', () => {
   const boa = c(200, { primeira_consulta: NASC(190), consultas: 9, peso_altura: 9, datas_consultas: [NASC(190), NASC(100)] })
   assert.equal(pontosDa(boa, HOJE), 60)
+  assert.equal(pontosDa({ ...boa, vacinas_faltam: [] }, HOJE), 80)
   assert.equal(temAtraso(boa, HOJE), false)
   const tarde = c(100, { primeira_consulta: NASC(55), consultas: 1, datas_consultas: [NASC(55)] })
   assert.deepEqual(frasesDa(tarde, HOJE).perdido, ['1ª consulta com 45 dias'])

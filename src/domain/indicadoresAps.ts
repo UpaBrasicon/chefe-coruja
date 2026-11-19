@@ -1,7 +1,8 @@
 // Indicadores de qualidade da APS (percurso da UBS, U13; plano em
 // docs/ubs/U13-PLANO.md, G1–G3 = A). Fonte: notas metodológicas C1 a C7 da
 // SAPS/MS (junho de 2026) e NT 8/2026-DEAPS/SAPS/MS (nota final). C1, C6 e C7
-// vêm de indicadores_aps (migration 20270415000019); C2 a C5, dos painéis.
+// vêm de indicadores_aps (migration 20270415000019); C2 a C5, dos painéis. As
+// vacinas contam desde o U15 (migration 20270415000029).
 
 export type Indicador = 'C1' | 'C2' | 'C3' | 'C4' | 'C5' | 'C6' | 'C7'
 export type Conceito = 'otimo' | 'bom' | 'suficiente' | 'regular'
@@ -32,19 +33,20 @@ export function conceitoBoasPraticas(v: number): Conceito {
 export type FaixaC7 = { faixa: number; feito: number }
 export type ResultadoApsBanco = {
   c1: { programados: number; total: number; de: string; ate: string }
-  c6: { pessoas: number; consulta: number; peso_altura: number; media: number | null }
-  c7: { colo: FaixaC7; ssr: FaixaC7; mama: FaixaC7 }
+  c6: { pessoas: number; consulta: number; peso_altura: number; influenza?: number; media: number | null }
+  c7: { colo: FaixaC7; ssr: FaixaC7; mama: FaixaC7; hpv?: FaixaC7 }
 }
 
 const fracao = (f: FaixaC7) => (f.faixa > 0 ? f.feito / f.faixa : 0)
 
-/** C7 pela nota: A colo × 20 + B vacina HPV × 30 (fora do app: zero) + C saúde sexual × 30 + D mamografia × 20. */
+/** C7 pela nota: A colo × 20 + B vacina HPV × 30 + C saúde sexual × 30 + D mamografia × 20 (U15: o B conta). */
 export function c7Ministerio(c7: ResultadoApsBanco['c7']): number {
-  return Math.round((fracao(c7.colo) * 20 + fracao(c7.ssr) * 30 + fracao(c7.mama) * 20) * 10) / 10
+  const hpv = c7.hpv ?? { faixa: 0, feito: 0 }
+  return Math.round((fracao(c7.colo) * 20 + fracao(hpv) * 30 + fracao(c7.ssr) * 30 + fracao(c7.mama) * 20) * 10) / 10
 }
 
-/** Teto do que o app registra em cada indicador de boas práticas (G1 = A). */
-export const TETO_APP: Partial<Record<Indicador, number>> = { C6: 50, C7: 70 }
+/** Teto do que o app registra em cada indicador de boas práticas (G1 = A; U15: vacinas no app). */
+export const TETO_APP: Partial<Record<Indicador, number>> = { C6: 75, C7: 100 }
 
 export const media = (v: number[]) => (v.length ? Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 10) / 10 : null)
 

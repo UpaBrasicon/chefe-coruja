@@ -50,25 +50,25 @@ export function IndicadoresAps({ unidadeId }: { unidadeId: string }) {
     .map((l) => pontosDoPaciente(l, agora)[p] ?? 0))
   const c4 = prog('diabetes'); const c5 = prog('hipertensao')
   const c6 = banco.c6.media
-  const c7 = banco.c7.colo.faixa + banco.c7.ssr.faixa + banco.c7.mama.faixa > 0 ? c7Ministerio(banco.c7) : null
+  const c7 = banco.c7.colo.faixa + banco.c7.ssr.faixa + banco.c7.mama.faixa + (banco.c7.hpv?.faixa ?? 0) > 0 ? c7Ministerio(banco.c7) : null
   const cbp = (v: number | null) => (v === null ? null : conceitoBoasPraticas(v))
 
   const linhas: Linha[] = [
     { ind: 'C1', nome: 'Mais acesso', app: c1 === null ? '—' : `${banco.c1.programados} de ${banco.c1.total} atendimentos programados (4 meses)`,
       ministerio: c1, conceito: c1 === null ? null : conceitoC1(c1), fora: '—', base: 'ótimo acima de 50% até 70%' },
     { ind: 'C2', nome: 'Criança até 2 anos', app: pct(c2, TETO_PUERICULTURA), ministerio: c2, conceito: cbp(c2),
-      fora: 'visitas do ACS e vacinas', base: `${criancas.length} crianças` },
+      fora: 'visitas do ACS', base: `${criancas.length} crianças` },
     { ind: 'C3', nome: 'Gestação e puerpério', app: pct(c3, TETO_PRE_NATAL), ministerio: c3, conceito: cbp(c3),
-      fora: 'ACS, dTpa e saúde bucal', base: `${gestantes.length} gestantes e puérperas` },
+      fora: 'ACS e saúde bucal', base: `${gestantes.length} gestantes e puérperas` },
     { ind: 'C4', nome: 'Diabetes', app: pct(c4, TETO_HIPERDIA.diabetes), ministerio: c4, conceito: cbp(c4),
       fora: 'visitas do ACS', base: `${hiperdia.filter((l) => l.programas.some((x) => x.programa === 'diabetes')).length} pessoas` },
     { ind: 'C5', nome: 'Hipertensão', app: pct(c5, TETO_HIPERDIA.hipertensao), ministerio: c5, conceito: cbp(c5),
       fora: 'visitas do ACS', base: `${hiperdia.filter((l) => l.programas.some((x) => x.programa === 'hipertensao')).length} pessoas` },
     { ind: 'C6', nome: 'Pessoa idosa', app: pct(c6, TETO_APP.C6!), ministerio: c6, conceito: cbp(c6),
-      fora: 'visitas do ACS e vacina da influenza', base: `${banco.c6.pessoas} pessoas de 60 anos ou mais` },
+      fora: 'visitas do ACS', base: `${banco.c6.pessoas} pessoas de 60 anos ou mais · influenza ${banco.c6.influenza ?? 0}` },
     { ind: 'C7', nome: 'Mulher, prevenção do câncer', app: pct(c7, TETO_APP.C7!), ministerio: c7, conceito: cbp(c7),
-      fora: 'vacina HPV de 9 a 14 anos',
-      base: `preventivo ${banco.c7.colo.feito}/${banco.c7.colo.faixa} · saúde sexual ${banco.c7.ssr.feito}/${banco.c7.ssr.faixa} · mamografia ${banco.c7.mama.feito}/${banco.c7.mama.faixa}` },
+      fora: '—',
+      base: `preventivo ${banco.c7.colo.feito}/${banco.c7.colo.faixa} · vacina HPV ${banco.c7.hpv?.feito ?? 0}/${banco.c7.hpv?.faixa ?? 0} · saúde sexual ${banco.c7.ssr.feito}/${banco.c7.ssr.faixa} · mamografia ${banco.c7.mama.feito}/${banco.c7.mama.faixa}` },
   ]
   const nota = notaFinal(Object.fromEntries(linhas.map((l) => [l.ind, l.conceito])))
 

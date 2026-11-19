@@ -26,12 +26,12 @@ const g = (ig: number | null, r: Partial<PreNatalLinha> = {}): PreNatalLinha => 
 
 test('pontos do Quadro 01 somam 100; o teto no app é 64', () => {
   assert.equal(ITENS.reduce((s, i) => s + i.pontos, 0) + FORA_DO_APP.reduce((s, i) => s + i.pontos, 0), 100)
-  assert.equal(TETO_NO_APP, 64)
+  assert.equal(TETO_NO_APP, 73)
   assert.deepEqual([...ITENS, ...FORA_DO_APP].map((i) => i.letra).sort(), ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'])
 })
 
 test('janelas: 12s6d, 13s6d, 28s0d, 42 semanas e 42 dias', () => {
-  assert.deepEqual(JANELA, { primeiraAte: 12 * 7 + 6, t1Ate: 13 * 7 + 6, t3Desde: 28 * 7, fim: 42 * 7, puerperio: 42 })
+  assert.deepEqual(JANELA, { primeiraAte: 12 * 7 + 6, t1Ate: 13 * 7 + 6, t3Desde: 28 * 7, dtpaDesde: 20 * 7, fim: 42 * 7, puerperio: 42 })
   assert.equal(rotuloIG(65), '9s2d')
   assert.equal(diasEntre('2026-10-31', '2026-11-05'), 5)
   assert.equal(somarDias('2026-02-27', 2), '2026-03-01')

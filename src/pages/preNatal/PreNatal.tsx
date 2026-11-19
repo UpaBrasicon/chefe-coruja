@@ -92,8 +92,8 @@ export default function PreNatal() {
               </ul>
               {visiveis.length === 0 && <p className="px-4 py-6 text-center text-apoio text-tinta-sussurro">Ninguém neste filtro.</p>}
               <p className="border-t border-fio bg-campo px-4 py-2.5 text-rotulo text-tinta-sussurro">
-                Régua: nota metodológica C3 da SAPS/MS, junho de 2026; trimestres do Caderno de Atenção Básica nº 32. Visita do ACS,
-                vacina dTpa e saúde bucal não são registradas no app (a pontuação vai até {TETO_NO_APP} de 100); a pontuação oficial é a do SISAB.
+                Régua: nota metodológica C3 da SAPS/MS, junho de 2026; trimestres do Caderno de Atenção Básica nº 32. A dTpa vem da sala de
+                vacina e da caderneta. Visita do ACS e saúde bucal não são registradas no app (a pontuação vai até {TETO_NO_APP} de 100); a pontuação oficial é a do SISAB.
               </p>
             </div>
           </div>
