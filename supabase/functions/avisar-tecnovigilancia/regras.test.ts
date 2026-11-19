@@ -19,7 +19,7 @@ test('texto traz ferramenta, unidade e prazo em Brasília, sem descrição livre
   assert.match(t, /Unidade: UPA Centro/)
   assert.match(t, /Recebido em: 18\/11\/2026,? 12:00/)
   assert.match(t, /Prazo \(RDC 67\/2009, art\. 8º\): 21\/11\/2026,? 12:00/)
-  assert.match(t, /https:\/\/www\.chefecoruja\.com\.br\/revisao-clinica/)
+  assert.match(t, /https:\/\/www\.chefecoruja\.com\.br\/tecnovigilancia/)
   assert.doesNotMatch(t, /descri/i)
 })
 
