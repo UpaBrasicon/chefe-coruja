@@ -1,0 +1,163 @@
+{
+  "resourceType": "Bundle",
+  "type": "document",
+  "timestamp": "2026-11-20T13:00:00Z",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:00000000-0000-4000-8000-000000000001",
+      "resource": {
+        "resourceType": "Composition",
+        "meta": {
+          "profile": [
+            "http://www.saude.gov.br/fhir/r4/StructureDefinition/BRRegistroImunobiologicoAdministradoRotina-2.0"
+          ]
+        },
+        "status": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRTipoDocumento",
+              "code": "RIA"
+            }
+          ]
+        },
+        "subject": {
+          "identifier": {
+            "system": "http://www.saude.gov.br/fhir/r4/StructureDefinition/BRIndividuo-1.0",
+            "value": "52998224725"
+          }
+        },
+        "date": "2026-11-20T13:00:00Z",
+        "author": [
+          {
+            "identifier": {
+              "system": "http://www.saude.gov.br/fhir/r4/StructureDefinition/BREstabelecimentoSaude-1.0",
+              "value": "9912345"
+            }
+          }
+        ],
+        "title": "Registro de Imunobiologico Administrado na Rotina",
+        "section": [
+          {
+            "entry": [
+              {
+                "reference": "urn:uuid:00000000-0000-4000-8000-000000000002"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:00000000-0000-4000-8000-000000000002",
+      "resource": {
+        "resourceType": "Immunization",
+        "meta": {
+          "profile": [
+            "http://www.saude.gov.br/fhir/r4/StructureDefinition/BRImunobiologicoAdministrado-3.0"
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://www.saude.gov.br/fhir/r4/StructureDefinition/BRGrupoAtendimento",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRGrupoAtendimento",
+                  "code": "00"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://www.saude.gov.br/fhir/r4/StructureDefinition/BRCondicaoMaternal",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRCondicaoMaternal",
+                  "code": "1"
+                }
+              ]
+            }
+          }
+        ],
+        "status": "completed",
+        "vaccineCode": {
+          "coding": [
+            {
+              "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRImunobiologico",
+              "code": "9"
+            }
+          ]
+        },
+        "patient": {
+          "identifier": {
+            "system": "http://www.saude.gov.br/fhir/r4/StructureDefinition/BRIndividuo-1.0",
+            "value": "52998224725"
+          }
+        },
+        "occurrenceDateTime": "1990-01-02",
+        "primarySource": false,
+        "reportOrigin": {
+          "coding": [
+            {
+              "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRRegistroOrigem",
+              "code": "01"
+            }
+          ]
+        },
+        "location": {
+          "identifier": {
+            "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRPais",
+            "value": "10"
+          }
+        },
+        "site": {
+          "coding": [
+            {
+              "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRLocalAplicacao",
+              "code": "1"
+            }
+          ]
+        },
+        "route": {
+          "coding": [
+            {
+              "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BRViaAdministracao",
+              "code": "10890"
+            }
+          ]
+        },
+        "performer": [
+          {
+            "actor": {
+              "reference": "Practitioner/700000000000005"
+            }
+          }
+        ],
+        "protocolApplied": [
+          {
+            "extension": [
+              {
+                "url": "http://www.saude.gov.br/fhir/r4/StructureDefinition/BREstrategiaVacinacao-1.0",
+                "valueCodeableConcept": {
+                  "coding": [
+                    {
+                      "system": "http://www.saude.gov.br/fhir/r4/CodeSystem/BREstrategiaVacinacao",
+                      "code": "0"
+                    }
+                  ]
+                }
+              }
+            ],
+            "doseNumberString": "1"
+          }
+        ]
+      }
+    }
+  ],
+  "identifier": {
+    "system": "http://www.saude.gov.br/fhir/r4/NamingSystem/BRRNDS-99999",
+    "value": "ria-v1"
+  }
+}

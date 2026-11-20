@@ -56,7 +56,7 @@ para a versão anterior na hora de pedir.
 | I6 | **Bloqueio do profissional sem CBO no CNES:** não enfileirar em nome dele e avisar o gestor | banco pronto na 5C-5.4a: ERR906/ERR879 bloqueia e avisa; os documentos seguintes ficam retidos até o desbloqueio |
 | I7 | **Corrigir os documentos gerados** (`src/interop/fhir/`): havia divergências com os exemplos e o validador oficiais (seção 7) | feito na 5C-5.2 (28/10/2026): RAC e SA passam no validador oficial sem erro |
 | I8 | **Validador local:** baixado (seção 6) | roda desde a 5C-5.2, num contêiner sem rede, só com documentos de teste (`VALIDADOR.md`) |
-| I9 | **Modelos RIA e REL:** o código atual só monta RAC e SA | RIA de rotina (RIA-R) feito no U15, vacina, PR 7 (`src/interop/fhir/ria.ts`, migration 20270415000031): as restrições dos perfis do validador estão nos testes (`scripts/interop/tests/ria.test.ts`), mas o validador local ainda não rodou com ele. REL a construir quando houver laboratório no escopo |
+| I9 | **Modelos RIA e REL:** o código atual só monta RAC e SA | RIA de rotina (RIA-R) feito no U15, vacina, PR 7 (`src/interop/fhir/ria.ts`, migration 20270415000031): passa no validador local oficial com as definições do RIA (`npm run fhir:validar -- --ria`, 20/11/2026, `docs/rnds/evidencia/u15-ria-validador.txt`). REL a construir quando houver laboratório no escopo |
 
 ## 4. Dados que o formulário de credencial pede
 
