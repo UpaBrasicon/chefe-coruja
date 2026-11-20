@@ -76,7 +76,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.3')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.4')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -128,11 +128,11 @@ test('lote 2: concentrações das bulas aprovadas pelo RT (20/11/2026)', () => {
   assert.deepEqual(c('naloxona-ug'), [400])
 })
 
-test('lote 2: succinilcolina (pó) e morfina ficam sem mL; dexmedetomidina em ataque (infusão) também', () => {
-  for (const chave of ['sri:succinilcolina-menor10', 'sri:succinilcolina-maior10', 'fita:fita-succinilcolina-lactente', 'fita:fita-morfina-iv', 'bolus:dexmedetomidina-ataque']) {
+test('lote 2: succinilcolina (pó) e dexmedetomidina em ataque (infusão) ficam sem mL', () => {
+  for (const chave of ['sri:succinilcolina-menor10', 'sri:succinilcolina-maior10', 'fita:fita-succinilcolina-lactente', 'bolus:dexmedetomidina-ataque']) {
     assert.deepEqual(ampolasDoItem(chave), [], chave)
   }
-  assert.equal(AMPOLAS.morfina, undefined)
+  // a morfina ficou sem mL no lote 2 e entrou no lote 5 (L5-3)
 })
 
 test('lote 2: contas de exemplo', () => {
@@ -187,4 +187,36 @@ test('L4-5: aviso de volume abaixo de 0,1 mL', () => {
   assert.equal(volumeAbaixoDe01([0, 0]), false)
   assert.equal(volumeAbaixoDe01(null), false)
   assert.equal(volumeAbaixoDe01(undefined), false)
+})
+
+test('lote 5 (L5-1 a L5-6 do RT, 20/11/2026): concentrações da CMED, nenhuma marcada', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  assert.deepEqual(ids('bolus:flumazenil'), [['flumazenil-0-1', 0.1]])
+  assert.deepEqual(ids('bolus:hidralazina'), [['hidralazina-20', 20]])
+  assert.deepEqual(ids('bolus:terbutalina-ataque'), [['terbutalina-500', 500]]) // µg/mL
+  assert.deepEqual(ids('fita:fita-ondansetrona-iv'), [['ondansetrona-2', 2]])
+  assert.deepEqual(ids('bolus:octreotida-ataque'), [['octreotida-50', 50], ['octreotida-100', 100], ['octreotida-500', 500]]) // µg/mL (L5-4)
+  for (const c of ['bolus:neostigmina-0a2', 'bolus:neostigmina-maior2']) assert.deepEqual(ids(c), [['neostigmina-0-5', 0.5]], c) // L5-6
+  // L5-3: só 1 e 10 mg/mL (10×); 0,1 e 0,2 mg/mL esperam a bula dizer se pode IV
+  for (const c of ['bolus:morfina-menor6m', 'bolus:morfina-maior6m', 'fita:fita-morfina-iv']) assert.deepEqual(ids(c), [['morfina-1', 1], ['morfina-10', 10]], c)
+  // terbutalina 10 µg/kg em 20 kg = 200 µg = 0,4 mL
+  assert.deepEqual(volumeDaAmpola([200, 200], AMPOLAS.terbutalina[0])?.ml, [0.4, 0.4])
+  // morfina 0,1 mg/kg em 10 kg = 1 mg: 1 mL da 1 mg/mL ou 0,1 mL da 10 mg/mL
+  assert.deepEqual(volumeDaAmpola([1, 1], AMPOLAS.morfina[0])?.ml, [1, 1])
+  assert.deepEqual(volumeDaAmpola([1, 1], AMPOLAS.morfina[1])?.ml, [0.1, 0.1])
+})
+
+test('lote 5, L5-5 e ML7: insulina só pelo preparo de 0,1 UI/mL do livro, nunca pelo frasco', () => {
+  const [prep] = ampolasDoItem('bolus:polarizante-insulina')
+  assert.equal(prep.porMl, 0.1)
+  assert.match(prep.rotulo, /50 UI em 500 mL/)
+  assert.ok(Object.values(AMPOLAS).flat().every((a) => !/insulina/i.test(a.id) || a.porMl < 100))
+  // 0,1 UI/kg em 20 kg = 2 UI = 20 mL do preparo (1 mL/kg)
+  assert.deepEqual(volumeDaAmpola([2, 2], prep)?.ml, [20, 20])
+})
+
+test('lote 5: vitamina K, acetilcisteína, esmolol, milrinona e pralidoxima esperam a bula ou não têm apresentação', () => {
+  for (const c of ['bolus:vitamina-k', 'bolus:acetilcisteina-1', 'bolus:acetilcisteina-2', 'bolus:acetilcisteina-3', 'bolus:esmolol-bolus', 'bolus:milrinona-ataque', 'bolus:pralidoxima']) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
 })

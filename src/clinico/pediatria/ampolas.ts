@@ -180,6 +180,40 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
   dexmedetomidina: [
     { id: 'dexmedetomidina-100', rotulo: 'Dexmedetomidina 100 µg/mL (frasco de 2 mL)', porMl: 100, diluir: true, fonte: 'bulas de 6 fabricantes; todas mandam diluir', url: BULA_DEXMEDETOMIDINA.url },
   ],
+  // lote 5 (antídotos, metabólico e cardio; L5-1 a L5-6 = A do RT em 20/11/2026,
+  // docs/clinico/DOSES-ML-LOTE5-ANTIDOTOS-CARDIO.md), primeira parte: concentração
+  // pela CMED (só à venda) ou pelo livro; a diluição entra quando a bula for lida.
+  flumazenil: [
+    { id: 'flumazenil-0-1', rotulo: 'Flumazenil 0,1 mg/mL (ampola de 5 mL)', porMl: 0.1, fonte: 'CMED 09/11/2026: Fresenius (1004102250012), Cristália (1029802870035), Teuto (1037006350032), União Química (1049713260015), Hipolabor (1134301960018) e Biopas (1897700020011), à venda', url: CMED_PMC_2026_11.url },
+  ],
+  hidralazina: [
+    { id: 'hidralazina-20', rotulo: 'Hidralazina 20 mg/mL (ampola de 1 mL)', porMl: 20, fonte: 'CMED 09/11/2026: Cristália (1029800890037), à venda', url: CMED_PMC_2026_11.url },
+  ],
+  // dose em µg: 0,5 mg/mL = 500 µg/mL
+  terbutalina: [
+    { id: 'terbutalina-500', rotulo: 'Terbutalina 0,5 mg/mL = 500 µg/mL (ampola de 1 mL)', porMl: 500, fonte: 'CMED 09/11/2026: Fresenius (1004101740016), União Química (1049711760029) e Hipolabor (1134301760035), à venda', url: CMED_PMC_2026_11.url },
+  ],
+  ondansetrona: [
+    { id: 'ondansetrona-2', rotulo: 'Ondansetrona 2 mg/mL (ampolas de 2 e 4 mL)', porMl: 2, fonte: 'CMED 09/11/2026: Fresenius, Cristália, Halex, Hypofarma, União Química, Aché, Hipolabor e Blau, à venda', url: CMED_PMC_2026_11.url },
+  ],
+  // dose em µg; três concentrações, nenhuma marcada (L5-4); o pó de depósito não é IV e fica fora
+  octreotida: [
+    { id: 'octreotida-50', rotulo: 'Octreotida 0,05 mg/mL = 50 µg/mL (ampola de 1 mL)', porMl: 50, fonte: 'CMED 09/11/2026: Novartis (1006800090017), à venda', url: CMED_PMC_2026_11.url },
+    { id: 'octreotida-100', rotulo: 'Octreotida 0,1 mg/mL = 100 µg/mL (ampola de 1 mL)', porMl: 100, fonte: 'CMED 09/11/2026: Novartis (1006800090025) e Sun (1468200200046), à venda', url: CMED_PMC_2026_11.url },
+    { id: 'octreotida-500', rotulo: 'Octreotida 0,5 mg/mL = 500 µg/mL (ampola de 1 mL)', porMl: 500, fonte: 'CMED 09/11/2026: Novartis (1006800090033), à venda', url: CMED_PMC_2026_11.url },
+  ],
+  neostigmina: [
+    { id: 'neostigmina-0-5', rotulo: 'Neostigmina 0,5 mg/mL (ampola de 1 mL)', porMl: 0.5, fonte: 'CMED 09/11/2026: União Química (1049714060044) e Blau (1163701340029), à venda', url: CMED_PMC_2026_11.url },
+  ],
+  // L5-3: 1 e 10 mg/mL, nenhuma marcada (10×); 0,1 e 0,2 mg/mL só se a bula permitir IV
+  morfina: [
+    { id: 'morfina-1', rotulo: 'Morfina 1 mg/mL (ampola de 2 mL)', porMl: 1, fonte: 'CMED 09/11/2026: Cristália (1029800970131) e União Química (1049714550114, IV/EPI/IT/IM), à venda', url: CMED_PMC_2026_11.url },
+    { id: 'morfina-10', rotulo: 'Morfina 10 mg/mL (ampola de 1 mL)', porMl: 10, fonte: 'CMED 09/11/2026: Cristália (1029800970032), Hipolabor (1134301630034, IM/IV/IT/EPI) e União Química (1049714550165), à venda', url: CMED_PMC_2026_11.url },
+  ],
+  // ML7 e L5-5: nunca o frasco de 100 UI/mL; só o preparo do livro
+  'insulina-preparo': [
+    { id: 'insulina-0-1', rotulo: 'Insulina regular 0,1 UI/mL: 50 UI em 500 mL de NaCl 0,9% (preparo do livro, p. 521); nunca o frasco de 100 UI/mL', porMl: 0.1, fonte: 'livro do ICr, p. 521 (preparo de 0,1 UI/mL)' },
+  ],
   // a mesma ampola em mg (dose da intoxicação) e em µg (dose baixa)
   naloxona: [
     { id: 'naloxona-0-4', rotulo: 'Naloxona 0,4 mg/mL (ampola de 1 mL)', porMl: 0.4, fonte: 'bula Hipolabor', url: BULA_NALOXONA.url },
@@ -192,12 +226,12 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
 export const fichaAmpolas: Ficha = {
   id: 'ped-ampolas',
   titulo: 'Ampolas para a dose em mL (criança)',
-  versao: '2026-11-20.3',
+  versao: '2026-11-20.4',
   publico: 'pediatrico',
-  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL); p. 32 (MgSO₄ 50% = 500 mg/mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
+  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL); p. 32 (MgSO₄ 50% = 500 mg/mL); p. 521 (insulina regular 0,1 UI/mL: 50 UI em 500 mL de NaCl 0,9%).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
     BULA_FENTANILA, BULA_MIDAZOLAM, BULA_ESCETAMINA, BULA_ETOMIDATO, BULA_PROPOFOL, BULA_ROCURONIO, BULA_DEXMEDETOMIDINA, BULA_NALOXONA,
     CMED_PMC_2026_11, BULA_DIAZEPAM],
-  revisadoEm: '20/11/2026 (lote 4 da dose em mL, primeira parte: magnésio 10% e 50% pela CMED na asma e na torsades, nenhuma marcada; aviso de volume abaixo de 0,1 mL; decisões L4-1 a L4-5 do RT; diluição do magnésio e difenidramina, dexametasona e azul de metileno esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
+  revisadoEm: '20/11/2026 (lote 5 da dose em mL, primeira parte: flumazenil, hidralazina, terbutalina, ondansetrona IV, octreotida (3 concentrações), neostigmina e morfina 1 e 10 mg/mL pela CMED, nenhuma marcada; insulina só pelo preparo de 0,1 UI/mL do livro, p. 521; decisões L5-1 a L5-6 do RT; diluição, vitamina K, acetilcisteína, esmolol, milrinona e morfina 0,1 e 0,2 mg/mL esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 4 da dose em mL, primeira parte: magnésio 10% e 50% pela CMED na asma e na torsades, nenhuma marcada; aviso de volume abaixo de 0,1 mL; decisões L4-1 a L4-5 do RT; diluição do magnésio e difenidramina, dexametasona e azul de metileno esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
 }
 
 /**
@@ -280,6 +314,18 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'bolus:magnesio-torsades': { principio: 'magnesio', base: 'sal' },
   'fita:fita-magnesio-asma': { principio: 'magnesio', base: 'sal' },
   'fita:fita-magnesio-torsades': { principio: 'magnesio', base: 'sal' },
+  // lote 5, primeira parte
+  'bolus:flumazenil': { principio: 'flumazenil' },
+  'bolus:hidralazina': { principio: 'hidralazina' },
+  'bolus:terbutalina-ataque': { principio: 'terbutalina' },
+  'fita:fita-ondansetrona-iv': { principio: 'ondansetrona' },
+  'bolus:octreotida-ataque': { principio: 'octreotida' },
+  'bolus:neostigmina-0a2': { principio: 'neostigmina' },
+  'bolus:neostigmina-maior2': { principio: 'neostigmina' },
+  'bolus:morfina-menor6m': { principio: 'morfina' },
+  'bolus:morfina-maior6m': { principio: 'morfina' },
+  'fita:fita-morfina-iv': { principio: 'morfina' },
+  'bolus:polarizante-insulina': { principio: 'insulina-preparo' },
 }
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
