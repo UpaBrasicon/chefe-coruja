@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 import { calcularBolus, type Bolus } from '@/clinico/pediatria/bolus'
 import { SEM_VALOR_NEONATAL_P4, calcularDoseLivro, textoDoseLivro, type DoseLivro } from '@/clinico/pediatria/fonteP4'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -81,6 +82,7 @@ export function LinhaBolusApendice({ b, peso, idadeMeses }: { b: Bolus; peso: nu
       </p>
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
       {r?.noMaximo && <p className="text-atencao">Limitado ao máximo{b.fonteMaximo ? ` (${b.fonteMaximo})` : ' do livro'}.</p>}
+      {r && <EscolhaDaAmpola chave={`bolus:${b.id}`} dose={r.faixa} unidade={b.unidade} />}
       {b.nota && <p className="text-tinta-sussurro">{b.nota}</p>}
       {b.errata && <Errata texto={b.errata} />}
       <p className="text-rotulo text-tinta-sussurro">Livro ICr, Apêndice, {b.pagina}.</p>

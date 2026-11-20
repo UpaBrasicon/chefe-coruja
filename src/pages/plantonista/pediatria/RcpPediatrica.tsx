@@ -113,7 +113,7 @@ export function RcpPediatrica() {
           </Bloco>
           {(Object.keys(GRUPOS_RCP) as GrupoRcp[]).map((g) => (
             <Bloco key={g} titulo={GRUPOS_RCP[g]}>
-              {DROGAS_RCP.filter((d) => d.grupo === g).map((d) => <LinhaDose key={d.id} d={d} peso={peso} />)}
+              {DROGAS_RCP.filter((d) => d.grupo === g).map((d) => <LinhaDose key={d.id} d={d} peso={peso} ampola={`rcp:${d.id}`} />)}
             </Bloco>
           ))}
         </>

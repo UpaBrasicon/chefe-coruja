@@ -4,6 +4,7 @@ import { BOLUS, GRUPOS, NEONATO_FORA, NOTA_PESO_EMERGENCIA, calcularBolus, ficha
 import { IDADE_ADULTO_ANOS } from '@/clinico/ficha'
 import { textoFontes } from '@/clinico/ficha'
 import { CamposPacientePed } from '@/components/plantonista/calc/CamposPacientePed'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { useInicioPedDaCentral } from '@/components/plantonista/calc/pacienteNaFerramenta'
 import { VerMais } from '@/components/plantonista/calc/Evidencias'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
@@ -54,6 +55,7 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
       {fora && <p className="text-tinta-sussurro">Fora da condição do livro para o peso/idade informados.</p>}
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
       {r?.noMaximo && <p className="text-atencao">Dose limitada ao máximo {doMaximo(b.fonteMaximo)}.</p>}
+      {r && !fora && <EscolhaDaAmpola chave={`bolus:${b.id}`} dose={r.faixa} unidade={b.unidade} />}
       {r?.abaixoDoAviso && b.aviso && <p className="text-atencao">{b.aviso.texto}</p>}
       {/* Piloto das calculadoras (C6 = A): nota e divergência recolhidas no item; a errata vai para a aba Armadilhas; os avisos de dose acima ficam à vista. */}
       {(b.nota || b.anexo2Adulto) && (
