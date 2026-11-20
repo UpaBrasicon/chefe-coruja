@@ -5,7 +5,7 @@
 export type SituacaoCertificado =
   | 'sem_certificado' | 'aguardando' | 'valido' | 'senha_incorreta' | 'invalido' | 'vencido' | 'chave_trocada'
 export type StatusItem = 'pendente' | 'retido' | 'erro' | 'enviado'
-export type TipoDocumento = 'rac' | 'sumario_alta' | 'regulacao'
+export type TipoDocumento = 'rac' | 'sumario_alta' | 'regulacao' | 'ria'
 
 export type BloqueioRnds = { id: string; profissional: string | null; codigo: string; mensagem: string | null; bloqueado_em: string }
 
@@ -55,7 +55,7 @@ export const VARIANTE_STATUS: Record<StatusItem, 'secondary' | 'warning' | 'dest
   pendente: 'secondary', retido: 'warning', erro: 'destructive', enviado: 'success',
 }
 export const ROTULO_TIPO: Record<TipoDocumento, string> = {
-  rac: 'Atendimento (RAC)', sumario_alta: 'Sumário de alta', regulacao: 'Regulação',
+  rac: 'Atendimento (RAC)', sumario_alta: 'Sumário de alta', regulacao: 'Regulação', ria: 'Vacina (RIA)',
 }
 
 /**
