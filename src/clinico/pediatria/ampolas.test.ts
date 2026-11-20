@@ -8,6 +8,7 @@ import { BOLUS } from './bolus.ts'
 import { DROGAS_RCP } from './rcp.ts'
 import { DOSES_SRI } from './viaAerea.ts'
 import { DOSES_DA_FITA } from './dosesDaFita.ts'
+import { DOSES_CRISE } from './criseEpileptica.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -59,6 +60,7 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
   const ids: Record<string, Set<string>> = {
     bolus: new Set(BOLUS.map((b) => b.id)), rcp: new Set(DROGAS_RCP.map((d) => d.id)), sri: new Set(DOSES_SRI.map((d) => d.id)),
     fita: new Set(DOSES_DA_FITA.map((d) => d.id)),
+    crise: new Set(DOSES_CRISE.map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -69,17 +71,15 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
 test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.adenosina.map((a) => a.porMl), [3])
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
-  assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [20])
+  assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.1')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.2')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
-test('lote 1: atropina e lidocaína traqueal ficam sem mL (decisão do RT)', () => {
-  assert.deepEqual(ampolasDoItem('rcp:atropina'), [])
-  assert.deepEqual(ampolasDoItem('bolus:atropina-bradicardia'), [])
+test('lote 1: lidocaína traqueal fica sem mL (decisão do RT); a atropina ganhou mL pela CMED no lote 3', () => {
   assert.deepEqual(ampolasDoItem('rcp:lidocaina-et'), [])
-  assert.deepEqual(ampolasDoItem('fita:fita-atropina'), [])
+  assert.deepEqual(ampolasDoItem('rcp:atropina').map((a) => a.porMl), [0.25, 0.5])
 })
 
 test('guia de parada: ampola só onde a fita não traz mL (sem dois volumes na mesma dose)', () => {
@@ -135,4 +135,16 @@ test('lote 2: contas de exemplo', () => {
   // naloxona dose baixa 20 µg = 0,05 mL de 400 µg/mL; dose de intoxicação 1,5 mg = 3,75 mL de 0,4 mg/mL
   assert.deepEqual(volumeDaAmpola([20, 20], ampolasDoItem('bolus:dose-baixa-naloxona')[0])?.ml, [0.05, 0.05])
   assert.deepEqual(volumeDaAmpola([1.5, 1.5], ampolasDoItem('bolus:naloxona-menor')[0])?.ml, [3.75, 3.75])
+})
+
+test('lote 3 (crise) e CMED: concentrações aprovadas pelo RT (20/11/2026)', () => {
+  assert.deepEqual(AMPOLAS.diazepam.map((a) => [a.porMl, a.diluir ?? false]), [[5, false]])
+  assert.deepEqual(AMPOLAS.fenitoina.map((a) => [a.porMl, a.diluir]), [[50, true]])
+  assert.deepEqual(AMPOLAS.fenobarbital.map((a) => a.porMl), [100])
+  assert.deepEqual(AMPOLAS.atropina.map((a) => a.porMl), [0.25, 0.5])
+  // sem injetável à venda: levetiracetam, valproato e lorazepam; diazepam retal fica fora (VR)
+  for (const c of ['crise:levetiracetam', 'crise:valproato', 'crise:lorazepam', 'crise:diazepam-vr']) assert.deepEqual(ampolasDoItem(c), [], c)
+  // diazepam 0,3 mg/kg em 10 kg = 3 mg = 0,6 mL de 5 mg/mL; fenitoína 20 mg/kg em 10 kg = 200 mg = 4 mL a aspirar e diluir
+  assert.deepEqual(volumeDaAmpola([3, 3], ampolasDoItem('crise:diazepam-iv')[0])?.ml, [0.6, 0.6])
+  assert.deepEqual(volumeDaAmpola([200, 200], ampolasDoItem('crise:fenitoina')[0]), { ml: [4, 4], aspirar: true })
 })
