@@ -2481,10 +2481,11 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 A API da ANVISA (credencial do RT) respondeu 403 e depois "Invalid client secret". O vigia (`scripts/anvisa/lista-cmed.mjs` e `.github/workflows/cmed-vigia.yml`, dias 1 e 16; `infra/anvisa-api.md`) usa a planilha pública e abre um aviso quando aparece uma concentração à venda fora do cadastro.
 
-**Guias de bolso do hospital e da UPA (pedido do RT de 20/11/2026, pela organização do PedBook e do PedAjuda), PR #1015, na homologação:**
+**Guias de bolso do hospital e da UPA (pedido do RT de 20/11/2026, pela organização do PedBook e do PedAjuda), PR #1015, na produção em 20/11/2026 com o ok do RT (1979d0e4):**
 - criança: doses por classe, crise epiléptica, anafilaxia e desidratação;
 - adulto: intubação, anafilaxia e crise epiléptica;
-- só dados das fichas aprovadas; espera o ok produção.
+- só dados das fichas aprovadas;
+- conferidos pelo RT na homologação em 20/11/2026 ("Conferi, ficou ótimo, mas vamos melhorar ao final"): as melhorias ficam para o fim do backlog.
 
 Próximos lotes do mL: anafilaxia e asma (4), antídotos e cardio (5), demais capítulos (6). Faltam: peso e idade em todas as ferramentas; botões grandes dentro das ferramentas; outros cartões do Guia rápido com o RT |
 | 2 | P1 | Otimizar o VPS e tirar o que não é necessário | Máquina folgada (4,3 de 7,8 GB de memória; disco 36%). Achado: a cópia do backup no Backblaze parou em 20/10/2026 (limite grátis de 10 GB cheio de versões escondidas) | Pedido do RT em 17/11/2026; "Sim, itens 1 a 3" e "Sim, conserte" | Cache de build limpo (884 MB); B2 limpo pela regra de 14 dias e `backup.sh` corrigido; reenvio automático até o B2 liberar (`infra/vps-backup-offbox.md`). Imagem de volta do Nous (3,9 GB) e backups do Nous de 05/10 (0,5 GB) apagados com o ok do RT; disco em 31% |
