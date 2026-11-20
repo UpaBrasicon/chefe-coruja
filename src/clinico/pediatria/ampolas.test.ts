@@ -7,6 +7,7 @@ import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, fichaAmpolas, problemasDasAmp
 import { BOLUS } from './bolus.ts'
 import { DROGAS_RCP } from './rcp.ts'
 import { DOSES_SRI } from './viaAerea.ts'
+import { DOSES_DA_FITA } from './dosesDaFita.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -57,6 +58,7 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
   assert.deepEqual(problemasDasAmpolas(), [])
   const ids: Record<string, Set<string>> = {
     bolus: new Set(BOLUS.map((b) => b.id)), rcp: new Set(DROGAS_RCP.map((d) => d.id)), sri: new Set(DOSES_SRI.map((d) => d.id)),
+    fita: new Set(DOSES_DA_FITA.map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -77,6 +79,21 @@ test('lote 1: atropina e lidocaína traqueal ficam sem mL (decisão do RT)', () 
   assert.deepEqual(ampolasDoItem('rcp:atropina'), [])
   assert.deepEqual(ampolasDoItem('bolus:atropina-bradicardia'), [])
   assert.deepEqual(ampolasDoItem('rcp:lidocaina-et'), [])
+  assert.deepEqual(ampolasDoItem('fita:fita-atropina'), [])
+})
+
+test('guia de parada: ampola só onde a fita não traz mL (sem dois volumes na mesma dose)', () => {
+  for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('fita:'))) {
+    const d = DOSES_DA_FITA.find((x) => x.id === chave.slice(5))!
+    assert.equal(d.porMl, undefined, `${chave} já tem mL`)
+  }
+  for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('bolus:'))) {
+    assert.equal(BOLUS.find((x) => x.id === chave.slice(6))!.porMl, undefined, `${chave} já tem mL`)
+  }
+  for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('rcp:'))) {
+    const d = DROGAS_RCP.find((x) => x.id === chave.slice(4))!
+    assert.ok(d.porMl === undefined && d.mlPorKg === undefined, `${chave} já tem mL`)
+  }
 })
 
 test('lote 1: contas de exemplo', () => {
