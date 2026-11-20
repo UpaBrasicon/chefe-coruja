@@ -57,7 +57,7 @@ Todas A ("Todas a"). Primeira parte feita na branch `fase-ml/lote4-anafilaxia-as
 - **Epinefrina IM por idade:** `epinefrinaDoseFixa` devolve também o volume da solução 1:1.000 (1 mg/mL), a mesma da dose por peso.
 - **L4-5:** aviso "Volume abaixo de 0,1 mL: use seringa de 1 mL." na escolha da ampola, na `LinhaDose` e na linha do bolus, quando algum volume da faixa fica abaixo de 0,1 mL.
 - **Telas:** anafilaxia e asma passam `anafilaxia:<id>` e `asma:<id>` na `LinhaDose`.
-- **Fichas:** `ped-ampolas` 2026-11-20.3, `ped-bolus` 2026-11-20.1, `ped-doses-fita` 2026-11-20.1 e `ped-anafilaxia-icr` 2026-11-20.1; migration `20270416000016_fichas_ampolas_lote4.sql` (ainda não aplicada; vai à homologação junto com a tela).
+- **Fichas:** `ped-ampolas` 2026-11-20.3, `ped-bolus` 2026-11-20.1, `ped-doses-fita` 2026-11-20.1 e `ped-anafilaxia-icr` 2026-11-20.1; migration `20270416000016_fichas_ampolas_lote4.sql`, aplicada na homologação em 20/11/2026 (fontes das 4 fichas conferidas por md5 contra o arquivo; volta testada em transação desfeita, 4 linhas). Na primeira tentativa a sessão aplicou por engano um comando vazio com o nome `fichas_ampolas_lote4` (não mudou dado); a aplicação certa ficou como `fichas_ampolas_lote4_conteudo` no histórico da homologação.
 - **Evidência local (20/11/2026):** `npm run test:clinico` com 1.388 testes, 0 falhas; `npm run typecheck` e `eslint` sem erro; `lista-cmed.mjs --conferir` sem concentração nova.
 
 Falta, pela ordem:
@@ -65,6 +65,6 @@ Falta, pela ordem:
 1. Bulas do Bulário baixadas pelo RT (L4-1): difenidramina (Cristália), dexametasona 2 e 4 mg/mL, sulfato de magnésio (Samtec ou Halex) e azul de metileno injetável, se houver.
 2. Com as bulas: diluição do magnésio; difenidramina; dexametasona, se a base bater (L4-2); azul de metileno (L4-4).
 3. Depois do merge dos guias de bolso (#1015): ligar `anafilaxia:<id>` no `cartaoDaDose` do `GuiaDeBolso.tsx` (hoje só a crise passa a chave).
-4. Homologação (tela e migration, com o rollback testado), conferência do RT, produção com o ok do RT.
+4. Conferência do RT na homologação e produção com o ok do RT (PR #1017).
 
 A produção espera pelo menos a bula do magnésio: a escolha 10% ou 50% vai sem o aviso de diluição até a bula ser lida.
