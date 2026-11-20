@@ -44,6 +44,7 @@ export function LinhaManual({
   nota,
   origem = 'O manual traz',
   recolher,
+  extra,
 }: {
   nome: string
   texto: ReactNode
@@ -55,6 +56,8 @@ export function LinhaManual({
   origem?: string
   /** piloto das calculadoras (C6 = A): nota e errata recolhidas em "Notas do livro" */
   recolher?: boolean
+  /** bloco embaixo do texto (ex.: escolha da ampola e volume em mL) */
+  extra?: ReactNode
 }) {
   return (
     <div className="rounded-controle border px-3 py-2 text-apoio">
@@ -63,6 +66,7 @@ export function LinhaManual({
         {conta && <span className="tabular-nums">{conta}</span>}
       </div>
       <p className="text-tinta-sussurro">{origem}: {texto} ({pagina})</p>
+      {extra}
       {recolher && (nota || errata) ? (
         <VerMais>
           {nota && <p>{nota}</p>}

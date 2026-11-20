@@ -3,10 +3,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, problemasDasAmpolas, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
+import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, fichaAmpolas, problemasDasAmpolas, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
 import { BOLUS } from './bolus.ts'
 import { DROGAS_RCP } from './rcp.ts'
 import { DOSES_SRI } from './viaAerea.ts'
+import { DOSES_DA_FITA } from './dosesDaFita.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -57,6 +58,7 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
   assert.deepEqual(problemasDasAmpolas(), [])
   const ids: Record<string, Set<string>> = {
     bolus: new Set(BOLUS.map((b) => b.id)), rcp: new Set(DROGAS_RCP.map((d) => d.id)), sri: new Set(DOSES_SRI.map((d) => d.id)),
+    fita: new Set(DOSES_DA_FITA.map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -64,7 +66,73 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
   }
 })
 
-test('lote 0: nenhuma ampola cadastrada ainda (a tela fica como antes)', () => {
-  assert.deepEqual(AMPOLAS, {})
+test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
+  assert.deepEqual(AMPOLAS.adenosina.map((a) => a.porMl), [3])
+  assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
+  assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [20])
+  assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
+  assert.equal(fichaAmpolas.versao, '2026-11-20.1')
+  assert.equal(fichaAmpolas.publico, 'pediatrico')
+})
+
+test('lote 1: atropina e lidocaína traqueal ficam sem mL (decisão do RT)', () => {
   assert.deepEqual(ampolasDoItem('rcp:atropina'), [])
+  assert.deepEqual(ampolasDoItem('bolus:atropina-bradicardia'), [])
+  assert.deepEqual(ampolasDoItem('rcp:lidocaina-et'), [])
+  assert.deepEqual(ampolasDoItem('fita:fita-atropina'), [])
+})
+
+test('guia de parada: ampola só onde a fita não traz mL (sem dois volumes na mesma dose)', () => {
+  for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('fita:'))) {
+    const d = DOSES_DA_FITA.find((x) => x.id === chave.slice(5))!
+    assert.equal(d.porMl, undefined, `${chave} já tem mL`)
+  }
+  for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('bolus:'))) {
+    assert.equal(BOLUS.find((x) => x.id === chave.slice(6))!.porMl, undefined, `${chave} já tem mL`)
+  }
+  for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('rcp:'))) {
+    const d = DROGAS_RCP.find((x) => x.id === chave.slice(4))!
+    assert.ok(d.porMl === undefined && d.mlPorKg === undefined, `${chave} já tem mL`)
+  }
+})
+
+test('lote 1: contas de exemplo', () => {
+  // adenosina 0,1 mg/kg em 15 kg = 1,5 mg = 0,5 mL da ampola de 3 mg/mL
+  assert.deepEqual(volumeDaAmpola([1.5, 1.5], ampolasDoItem('rcp:adenosina-1')[0])?.ml, [0.5, 0.5])
+  // amiodarona 5 mg/kg em 10 kg = 50 mg = 1 mL, a aspirar e diluir
+  assert.deepEqual(volumeDaAmpola([50, 50], ampolasDoItem('bolus:amiodarona-fvtv')[0]), { ml: [1, 1], aspirar: true })
+  // cálcio elementar 5 a 7 mg/kg em 10 kg = 50 a 70 mg: gluconato 10% (9 mg/mL) ≈ 5,6 a 7,8 mL
+  const gl = volumeDaAmpola([50, 70], ampolasDoItem('rcp:calcio')[0], 'elemento')!
+  assert.ok(Math.abs(gl.ml[0] - 50 / 9) < 1e-9 && Math.abs(gl.ml[1] - 70 / 9) < 1e-9)
+})
+
+test('lote 2: concentrações das bulas aprovadas pelo RT (20/11/2026)', () => {
+  const c = (p: string) => AMPOLAS[p].map((a) => a.porMl)
+  assert.deepEqual(c('fentanila'), [50])
+  assert.deepEqual(c('midazolam'), [1, 5])
+  assert.deepEqual(c('escetamina'), [50])
+  assert.deepEqual(c('etomidato'), [2])
+  assert.deepEqual(c('propofol'), [10, 20])
+  assert.deepEqual(c('rocuronio'), [10])
+  assert.deepEqual(AMPOLAS.dexmedetomidina.map((a) => [a.porMl, a.diluir]), [[100, true]])
+  assert.deepEqual(c('naloxona'), [0.4])
+  assert.deepEqual(c('naloxona-ug'), [400])
+})
+
+test('lote 2: succinilcolina (pó) e morfina ficam sem mL; dexmedetomidina em ataque (infusão) também', () => {
+  for (const chave of ['sri:succinilcolina-menor10', 'sri:succinilcolina-maior10', 'fita:fita-succinilcolina-lactente', 'fita:fita-morfina-iv', 'bolus:dexmedetomidina-ataque']) {
+    assert.deepEqual(ampolasDoItem(chave), [], chave)
+  }
+  assert.equal(AMPOLAS.morfina, undefined)
+})
+
+test('lote 2: contas de exemplo', () => {
+  // fentanila 2 µg/kg em 15 kg = 30 µg = 0,6 mL de 50 µg/mL
+  assert.deepEqual(volumeDaAmpola([30, 30], ampolasDoItem('sri:fentanil')[0])?.ml, [0.6, 0.6])
+  // midazolam 3 mg: 3 mL de 1 mg/mL ou 0,6 mL de 5 mg/mL (o médico escolhe)
+  const mid = ampolasDoItem('bolus:midazolam-iv-maior5')
+  assert.deepEqual(mid.map((a) => volumeDaAmpola([3, 3], a)?.ml[0]), [3, 0.6])
+  // naloxona dose baixa 20 µg = 0,05 mL de 400 µg/mL; dose de intoxicação 1,5 mg = 3,75 mL de 0,4 mg/mL
+  assert.deepEqual(volumeDaAmpola([20, 20], ampolasDoItem('bolus:dose-baixa-naloxona')[0])?.ml, [0.05, 0.05])
+  assert.deepEqual(volumeDaAmpola([1.5, 1.5], ampolasDoItem('bolus:naloxona-menor')[0])?.ml, [3.75, 3.75])
 })

@@ -83,6 +83,7 @@
         "adulto-abstinencia-alcoolica",
         "adulto-add-rs",
         "adulto-agitacao",
+        "adulto-ampolas",
         "adulto-anafilaxia",
         "adulto-animais-peconhentos",
         "adulto-anticoagulacao-plena",
@@ -216,6 +217,7 @@
       ],
       "fichas": [
         "ped-acidobase",
+        "ped-ampolas",
         "ped-anafilaxia-icr",
         "ped-artrite-osteomielite",
         "ped-asma-icr",

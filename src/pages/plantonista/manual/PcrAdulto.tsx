@@ -1,7 +1,9 @@
 import { useState, type ReactNode } from 'react'
 
 import { AHA_2025_PCR, CHOQUE_PCR, COSTR_2026_PCR, DIRETRIZ_ALS_2025, DROGAS_PCR, KCL_ATAQUE_MEQ, calcularPcr, fichaPcrAdulto, lidocainaSegundaDoseMg, type Faixa } from '@/clinico/adulto/pcr'
+import { AMPOLAS_PCR_ADULTO, DOSES_FIXAS_PCR_ADULTO } from '@/clinico/adulto/ampolasAdulto'
 import { textoFontes } from '@/clinico/ficha'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { CampoPesoAdulto } from '@/components/plantonista/calc/CampoNumero'
 import { usePesoAdulto } from '@/components/plantonista/calc/pacienteNaFerramenta'
 import { BlocoComparacao } from '@/components/plantonista/calc/Evidencias'
@@ -37,6 +39,21 @@ export function PcrAdulto() {
     bicarbonato: r ? <><strong>{faixa(r.bicarbonatoMEq, 0)} mEq</strong> · adicional {faixa(r.bicarbonatoAdicionalMEq, 0)} mEq</> : semPeso,
     emulsao: r ? <><strong>{br(r.emulsaoBolusMl, 0)} mL</strong> em 1 min · {br(r.emulsaoMlMin)} mL/min ({br(r.emulsaoMlH, 0)} mL/h) · {faixa(r.emulsaoInfusaoMl, 0)} mL em 30–60 min · máximo {br(r.emulsaoMaximoMl, 0)} mL (ERC 2021)</> : semPeso,
     kcl: <><strong>{KCL_ATAQUE_MEQ} mEq</strong> em 10 min</>,
+  }
+
+  // Dose em mL (pedido do RT de 19/11/2026): a ampola é escolhida na tela, nenhuma vem marcada.
+  const fixa = (x: number): Faixa => [x, x]
+  const ampola: Record<string, ReactNode> = {
+    adrenalina: <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.adrenalina} dose={fixa(DOSES_FIXAS_PCR_ADULTO.adrenalinaMg)} unidade="mg" />,
+    amiodarona: <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.amiodarona} unidade="mg" doses={[
+      { rotulo: '1ª dose', dose: fixa(DOSES_FIXAS_PCR_ADULTO.amiodaronaMg.primeira) },
+      { rotulo: '2ª dose', dose: fixa(DOSES_FIXAS_PCR_ADULTO.amiodaronaMg.segunda) },
+    ]} />,
+    lidocaina: r ? <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.lidocaina} dose={r.lidocainaMg} unidade="mg" /> : null,
+    bicarbonato: r ? <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.bicarbonato} unidade="mEq" doses={[
+      { rotulo: 'Dose', dose: r.bicarbonatoMEq },
+      { rotulo: 'Adicional', dose: r.bicarbonatoAdicionalMEq },
+    ]} /> : null,
   }
 
   // Texto do "Copiar" (C4 = A): carga, drogas com a conta do peso e a página do manual.
@@ -84,7 +101,7 @@ export function PcrAdulto() {
 
       <Bloco titulo="Medicações (Tabela 2)">
         {DROGAS_PCR.map((d) => (
-          <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} conta={conta[d.id]} pagina={d.pagina} />
+          <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} conta={conta[d.id]} pagina={d.pagina} extra={ampola[d.id]} />
         ))}
         <LinhaManual
           origem="A AHA 2025 traz"
