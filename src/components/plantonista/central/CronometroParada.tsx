@@ -292,16 +292,16 @@ export function CronometroParada() {
               <Proximo rotulo="Checar o ritmo" valor="pulso e ritmo" quando={<>em <Conta ms={resta} /></>} />
             )}
             {s.epinefrinas > 0 ? (
-              <Proximo rotulo={`Epinefrina ${s.epinefrinas + 1}`} valor={doses?.epinefrina.valor ?? ''}
+              <Proximo rotulo={`Epinefrina ${s.epinefrinas + 1}`} valor={doses?.epinefrina.valor ?? ''} ml={doses?.epinefrina.ml}
                 quando={epinefrinaDevida(s, agora) ? <b className="text-conforme">já pode (até 5 min da última)</b>
                   : <>em <Conta ms={EPI_MIN_MS - (desdeAEpinefrina(s, agora) ?? 0)} /> (3 a 5 min da última)</>} />
             ) : r.chocavel && s.choques < CHOQUES_ANTES_DA_EPINEFRINA ? (
-              <Proximo rotulo="Epinefrina 1" valor={doses?.epinefrina.valor ?? ''} quando={`depois do ${CHOQUES_ANTES_DA_EPINEFRINA}º choque (faltam ${CHOQUES_ANTES_DA_EPINEFRINA - s.choques})`} />
+              <Proximo rotulo="Epinefrina 1" valor={doses?.epinefrina.valor ?? ''} ml={doses?.epinefrina.ml} quando={`depois do ${CHOQUES_ANTES_DA_EPINEFRINA}º choque (faltam ${CHOQUES_ANTES_DA_EPINEFRINA - s.choques})`} />
             ) : null}
             {r.chocavel && (
-              <Proximo rotulo={s.antiarritmicos === 0 ? 'Amiodarona' : 'Amiodarona, dose seguinte'} valor={doses?.amiodarona(s.antiarritmicos).valor ?? ''}
+              <Proximo rotulo={s.antiarritmicos === 0 ? 'Amiodarona' : 'Amiodarona, dose seguinte'} valor={doses?.amiodarona(s.antiarritmicos).valor ?? ''} ml={doses?.amiodarona(s.antiarritmicos).ml}
                 quando={antiarritmicoLiberado(s)
-                  ? <b className="text-conforme">já pode{doses ? ` (ou lidocaína ${doses.lidocaina.valor})` : ''}</b>
+                  ? <b className="text-conforme">já pode{doses ? ` (ou lidocaína ${doses.lidocaina.valor}${doses.lidocaina.ml ? `, ${doses.lidocaina.ml}` : ''})` : ''}</b>
                   : `depois do ${CHOQUES_ANTES_DO_ANTIARRITMICO}º choque (faltam ${CHOQUES_ANTES_DO_ANTIARRITMICO - s.choques})`} />
             )}
           </ul>
@@ -310,9 +310,9 @@ export function CronometroParada() {
             {antiarritmicoLiberado(s) && (
               <>
                 <Button type="button" variant="outline" className="min-h-12 text-controle font-semibold"
-                  onClick={() => anota('amiodarona', `Amiodarona${doses ? `: ${doses.amiodarona(s.antiarritmicos).valor}` : ''}`)}>Amiodarona dada</Button>
+                  onClick={() => anota('amiodarona', `Amiodarona${doses ? `: ${doses.amiodarona(s.antiarritmicos).valor}${doses.amiodarona(s.antiarritmicos).ml ? ` (${doses.amiodarona(s.antiarritmicos).ml})` : ''}` : ''}`)}>Amiodarona dada</Button>
                 <Button type="button" variant="outline" className="min-h-12 text-controle font-semibold"
-                  onClick={() => anota('lidocaina', `Lidocaína${doses ? `: ${doses.lidocaina.valor}` : ''}`)}>Lidocaína dada</Button>
+                  onClick={() => anota('lidocaina', `Lidocaína${doses ? `: ${doses.lidocaina.valor}${doses.lidocaina.ml ? ` (${doses.lidocaina.ml})` : ''}` : ''}`)}>Lidocaína dada</Button>
               </>
             )}
             {(['acesso', 'via-aerea'] as const).map((t) => (
@@ -411,11 +411,12 @@ function Conta({ ms }: { ms: number | null }) {
   return <strong className="font-mono text-secao font-bold tabular-nums text-tinta">{ms === null ? '--:--' : minSeg(ms)}</strong>
 }
 
-function Proximo({ rotulo, valor, quando }: { rotulo: string; valor: string; quando: React.ReactNode }) {
+function Proximo({ rotulo, valor, ml, quando }: { rotulo: string; valor: string; ml?: string | null; quando: React.ReactNode }) {
   return (
     <li className="grid grid-cols-[1fr_auto] gap-x-2.5 gap-y-0.5 rounded-container border border-fio-forte bg-superficie px-3.5 py-2.5">
       <span className="text-corpo font-semibold text-tinta">{rotulo}</span>
       <span className="text-right text-corpo font-bold tabular-nums text-tinta">{valor}</span>
+      {ml && <span className="col-span-2 text-controle font-semibold tabular-nums text-acao">{ml}</span>}
       <span className="col-span-2 text-controle text-tinta-apoio">{quando}</span>
     </li>
   )
