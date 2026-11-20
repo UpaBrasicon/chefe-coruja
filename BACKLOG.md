@@ -2481,15 +2481,16 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 A API da ANVISA (credencial do RT) respondeu 403 e depois "Invalid client secret". O vigia (`scripts/anvisa/lista-cmed.mjs` e `.github/workflows/cmed-vigia.yml`, dias 1 e 16; `infra/anvisa-api.md`) usa a planilha pública e abre um aviso quando aparece uma concentração à venda fora do cadastro.
 
-**Guias de bolso do hospital e da UPA (pedido do RT de 20/11/2026, pela organização do PedBook e do PedAjuda), PR #1015, na homologação:**
+**Guias de bolso do hospital e da UPA (pedido do RT de 20/11/2026, pela organização do PedBook e do PedAjuda), PR #1015, na produção em 20/11/2026 com o ok do RT (1979d0e4):**
 - criança: doses por classe, crise epiléptica, anafilaxia e desidratação;
 - adulto: intubação, anafilaxia e crise epiléptica;
-- só dados das fichas aprovadas; espera o ok produção;
+- só dados das fichas aprovadas;
 - conferidos pelo RT na homologação em 20/11/2026 ("Conferi, ficou ótimo, mas vamos melhorar ao final"): as melhorias ficam para o fim do backlog.
 
 **Lote 4 do mL (anafilaxia, asma e crupe), em andamento:** plano em `docs/clinico/DOSES-ML-LOTE4-ANAFILAXIA-ASMA.md`; decisões L4-1 a L4-5 = A do RT em 20/11/2026 (bulas pelo Bulário; dexametasona só com a base conferida na bula; magnésio 10% e 50% sem marcação na asma e na torsades; azul de metileno pelo Bulário; aviso de volume abaixo de 0,1 mL).
 - primeira parte na branch `fase-ml/lote4-anafilaxia-asma`, testes verdes: magnésio, epinefrina IM por idade em mL e o aviso de 0,1 mL; fichas `ped-ampolas` 2026-11-20.3, `ped-bolus`, `ped-doses-fita` e `ped-anafilaxia-icr` 2026-11-20.1; migration `20270416000016`;
-- espera as bulas (difenidramina, dexametasona, magnésio e azul de metileno) e a homologação.
+- na homologação em 20/11/2026, PR #1017: migration aplicada (fontes conferidas por md5) e volta testada em transação desfeita; guia de bolso da anafilaxia com a escolha da ampola;
+- espera a conferência do RT, a aprovação das 4 fichas e as bulas (difenidramina, dexametasona, magnésio e azul de metileno); a produção espera pelo menos a bula do magnésio.
 
 **Lote 5 do mL (antídotos, metabólico e cardio):** plano em `docs/clinico/DOSES-ML-LOTE5-ANTIDOTOS-CARDIO.md` (20/11/2026), com a CMED cruzada; espera as decisões L5-1 a L5-6 do RT. Achados: vitamina K à venda quase toda IM/SC (a dose do livro é IV); morfina em 4 concentrações (0,1 a 10 mg/mL); pralidoxima sem apresentação na CMED; neostigmina 0,5 mg/mL à venda.
 
