@@ -21,7 +21,7 @@ test('ordem do RT: parada primeiro nos dois; na criança o cartão junta a parad
   assert.equal(cartaoDoGuia('parada-crianca')?.itens.length, 2)
   assert.equal(cartaoDoGuia(null), undefined)
   assert.equal(GUIA_ADULTO.length, 15)
-  assert.equal(GUIA_CRIANCA.length, 11)
+  assert.equal(GUIA_CRIANCA.length, 12)
 })
 
 test('criança só abre telas da pediatria; adulto, nenhuma da pediatria', () => {
