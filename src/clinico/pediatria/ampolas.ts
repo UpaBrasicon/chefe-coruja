@@ -93,7 +93,8 @@ export const fichaAmpolas: Ficha = {
 
 /**
  * Itens de dose que mostram a escolha da ampola, pela chave "lista:id":
- * 'bolus:<id>' (bolus.ts), 'rcp:<id>' (rcp.ts), 'sri:<id>' (viaAerea.ts).
+ * 'bolus:<id>' (bolus.ts), 'rcp:<id>' (rcp.ts), 'sri:<id>' (viaAerea.ts),
+ * 'fita:<id>' (dosesDaFita.ts, guia de parada da criança).
  */
 export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   // lote 1: RCP e arritmias
@@ -109,6 +110,11 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'bolus:amiodarona-fvtv': { principio: 'amiodarona' },
   'bolus:amiodarona-iv': { principio: 'amiodarona' },
   'bolus:lidocaina-iv': { principio: 'lidocaina' },
+  // guia de parada da criança (o cálcio da fita já mostra mL em sal, 100 mg/mL)
+  'fita:fita-amiodarona': { principio: 'amiodarona' },
+  'fita:fita-lidocaina': { principio: 'lidocaina' },
+  'fita:fita-adenosina-1': { principio: 'adenosina' },
+  'fita:fita-adenosina-2': { principio: 'adenosina' },
 }
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
@@ -148,7 +154,7 @@ export function problemasDasAmpolas(ampolas: Record<string, Apresentacao[]> = AM
     if (new Set(porMl).size !== porMl.length) p.push(`${principio}: concentração repetida (agrupar por concentração, ML2)`)
   }
   for (const [chave, item] of Object.entries(itens)) {
-    if (!/^(bolus|rcp|sri):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
+    if (!/^(bolus|rcp|sri|fita):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
     if (!ampolas[item.principio]?.length) p.push(`${chave}: princípio ${item.principio} sem ampola`)
     const bases = new Set((ampolas[item.principio] ?? []).map((a) => a.base).filter(Boolean))
     if (bases.size > 1 && !item.base) p.push(`${chave}: ${item.principio} tem sal e elemento; o item precisa dizer a base (ML6)`)
