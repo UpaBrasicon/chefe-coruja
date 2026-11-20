@@ -19,7 +19,7 @@ export const GUIA_ADULTO: CartaoGuia[] = [
   // G3 (RT, 18/11/2026): o cartão abre o cronômetro da parada, com a PCR completa embaixo
   { nome: 'Parada e reanimação', id: 'parada-adulto', icone: 'parada', itens: [{ nome: 'PCR do adulto completa', rota: '/plantonista/emergencias/pcr-adulto' }] },
   { nome: 'Infusões e vasoativas', rota: '/plantonista/calculadoras/infusoes-adulto', icone: 'seringa' },
-  { nome: 'Via aérea e intubação', rota: '/plantonista/calculadoras/iot', icone: 'via-aerea' },
+  { nome: 'Via aérea e intubação', id: 'iot-adulto', icone: 'via-aerea', itens: [{ nome: 'Via aérea e intubação completa', rota: '/plantonista/calculadoras/iot' }] },
   { nome: 'Ventilação mecânica', rota: '/plantonista/ventilacao-mecanica/vm-cinco-passos', icone: 'pulmao' },
   { nome: 'Choque e volume', rota: '/plantonista/emergencias/ressuscitacao-volemica-adulto', icone: 'gota' },
   { nome: 'Sepse', rota: '/plantonista/escores/sepse-adulto', icone: 'termometro' },
@@ -28,7 +28,7 @@ export const GUIA_ADULTO: CartaoGuia[] = [
   { nome: 'TEP', rota: '/plantonista/escores/wells-tep', icone: 'pulmao' },
   { nome: 'Sedação', rota: '/plantonista/emergencias/sedacao-procedimento-adulto', icone: 'lua' },
   { nome: 'Intoxicações e antídotos', rota: '/plantonista/emergencias/intoxicacoes-antidotos-adulto', icone: 'alerta' },
-  { nome: 'Anafilaxia', rota: '/plantonista/emergencias/anafilaxia-adulto', icone: 'alerta' },
+  { nome: 'Anafilaxia', id: 'anafilaxia-adulto', icone: 'alerta', itens: [{ nome: 'Anafilaxia completa', rota: '/plantonista/emergencias/anafilaxia-adulto' }] },
   { nome: 'Cetoacidose e EHH', rota: '/plantonista/emergencias/cad-ehh-tratamento', icone: 'gota' },
   { nome: 'Dengue', rota: '/plantonista/dengue/classificacao-conduta-hidratacao', icone: 'inseto' },
   { nome: 'Cuidados paliativos', rota: '/plantonista/emergencias/sintomas-paliativos-adulto', icone: 'maos' },
