@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { CampoGrande, ChaveDoPaciente, CorDaFita, DetalheDaFita } from './CamposDoGuia'
 import { CronometroParada } from './CronometroParada'
 import { GuiaParadaCrianca } from './GuiaParadaCrianca'
-import { AnafilaxiaDeBolso, CriseDeBolso, DosesDeBolso } from './GuiaDeBolso'
+import { AnafilaxiaDeBolso, CriseDeBolso, DesidratacaoDeBolso, DosesDeBolso } from './GuiaDeBolso'
 import { AnafilaxiaAdultoDeBolso, IntubacaoAdultoDeBolso } from './GuiaDeBolsoAdulto'
 
 // Guia rápido (F4, celular e tablet; pedido do RT de 17/11/2026, M1–M6 = A,
@@ -62,6 +62,7 @@ export function GuiaRapido() {
   if (guia === 'doses-crianca') return <DosesDeBolso />
   if (guia === 'crise-crianca') return <CriseDeBolso />
   if (guia === 'anafilaxia-crianca') return <AnafilaxiaDeBolso />
+  if (guia === 'desidratacao-crianca') return <DesidratacaoDeBolso />
   if (guia === 'iot-adulto') return <IntubacaoAdultoDeBolso />
   if (guia === 'anafilaxia-adulto') return <AnafilaxiaAdultoDeBolso />
   const grupo = cartaoDoGuia(guia)

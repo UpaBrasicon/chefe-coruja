@@ -46,7 +46,7 @@ export const GUIA_CRIANCA: CartaoGuia[] = [
   { nome: 'Doses por classe', id: 'doses-crianca', icone: 'seringa', itens: [{ nome: 'Doses por peso completas', rota: '/plantonista/pediatria/bolus' }] },
   { nome: 'Via aérea', rota: '/plantonista/pediatria/via-aerea', icone: 'via-aerea' },
   { nome: 'Choque', rota: '/plantonista/pediatria/choque-pediatrico', icone: 'gota' },
-  { nome: 'Desidratação e diarreia', rota: '/plantonista/pediatria/desidratacao-diarreia-ped', icone: 'gota' },
+  { nome: 'Desidratação e diarreia', id: 'desidratacao-crianca', icone: 'gota', itens: [{ nome: 'Desidratação e diarreia completa', rota: '/plantonista/pediatria/desidratacao-diarreia-ped' }] },
   { nome: 'Crise epiléptica', id: 'crise-crianca', icone: 'cerebro', itens: [{ nome: 'Crise epiléptica completa', rota: '/plantonista/pediatria/crise-epileptica-pediatrica' }] },
   { nome: 'Anafilaxia', id: 'anafilaxia-crianca', icone: 'alerta', itens: [{ nome: 'Anafilaxia completa', rota: '/plantonista/pediatria/anafilaxia-pediatrica' }] },
   { nome: 'Asma', rota: '/plantonista/pediatria/asma-pediatrica', icone: 'pulmao' },

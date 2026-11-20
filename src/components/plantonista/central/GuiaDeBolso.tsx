@@ -8,6 +8,7 @@ import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { BOLUS, GRUPOS, calcularBolus, type Bolus, type Grupo } from '@/clinico/pediatria/bolus'
 import { DOSES_CRISE, ETAPAS_CRISE, type EtapaCrise } from '@/clinico/pediatria/criseEpileptica'
 import { DOSES_ANAFILAXIA } from '@/clinico/pediatria/anafilaxia'
+import { NOTA_PLANO_C, SRO_HORAS, SRO_ML_KG, ondansetronaMg, ondansetronaVoMg, planoA, planoB, planoC } from '@/clinico/pediatria/diarreia'
 import { calcularDose, type DosePeso } from '@/clinico/pediatria/fonteP2'
 import { numeroDaDose } from '@/clinico/pediatria/dosesDaFita'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
@@ -238,4 +239,62 @@ const ROTULO_LINHA: Record<string, string> = {
   segunda: '2ª linha',
   terceira: '3ª linha',
   refrataria: 'Anafilaxia refratária',
+}
+
+/** Desidratação de bolso: planos A, B e C e ondansetrona, da ficha ped-diarreia-desidratacao. */
+export function DesidratacaoDeBolso() {
+  const kg = usePesoDeBolso()
+  const b = kg !== null ? planoB(kg) : null
+  const c = kg !== null ? planoC(kg) : null
+  const ondIv = kg !== null ? ondansetronaMg(kg) : null
+  const ondVo = kg !== null ? ondansetronaVoMg(kg) : null
+  const ml = (x: number) => numeroSemMilhar(Math.round(x), 0)
+  return (
+    <div className="flex flex-col gap-4">
+      <CabecalhoDeBolso titulo="Desidratação" descricao="Criança: planos de hidratação pelo peso" />
+      <section className="flex flex-col gap-2">
+        <TituloSecao className="mb-0">Plano A (sem desidratação), após cada evacuação</TituloSecao>
+        <ul className="flex flex-col gap-1 text-apoio text-tinta">
+          {[0, 5, 11].map((anos) => <li key={anos}>{planoA(anos)?.texto}</li>)}
+        </ul>
+      </section>
+      {b && c && (
+        <>
+          <section className="flex flex-col gap-2">
+            <TituloSecao className="mb-0">Plano B: SRO em observação</TituloSecao>
+            <ul className="flex flex-col gap-2.5">
+              <CartaoTexto nome={`SRO ${SRO_ML_KG} mL/kg em ${SRO_HORAS} horas`} valor={`${ml(b.totalMl)} mL`} detalhe={`${ml(b.mlH)} mL/h`} />
+            </ul>
+          </section>
+          <section className="flex flex-col gap-2">
+            <TituloSecao className="mb-0">Plano C: via parenteral (SF 0,9% ou Ringer lactato)</TituloSecao>
+            <ul className="flex flex-col gap-2.5">
+              <CartaoTexto nome={c.espghan.texto} valor={`${ml(c.espghan.mlH)} mL/h`} detalhe={`total de ${ml(c.espghan.totalMl[0])} a ${ml(c.espghan.totalMl[1])} mL`} />
+              <CartaoTexto nome={c.oms.texto} valor={`${ml(c.oms.totalMl)} mL`} detalhe={`${ml(c.oms.mlH[0])} a ${ml(c.oms.mlH[1])} mL/h`} />
+            </ul>
+            <p className="text-apoio text-tinta-apoio">{NOTA_PLANO_C}</p>
+          </section>
+          <section className="flex flex-col gap-2">
+            <TituloSecao className="mb-0">Ondansetrona (vômitos)</TituloSecao>
+            <ul className="flex flex-col gap-2.5">
+              {ondIv !== null && <CartaoTexto nome="Ondansetrona IV (0,15 mg/kg, máx. 8 mg, em 2 min)" valor={`${numeroDaDose(ondIv)} mg`} />}
+              <CartaoTexto nome="Ondansetrona VO, dose única por faixa de peso" valor={ondVo ? `${faixa(ondVo[0], ondVo[1])} mg` : 'abaixo de 8 kg a fonte não dá dose VO'} />
+            </ul>
+          </section>
+          <p className="text-rotulo text-tinta-sussurro">A decisão é do médico. Ficha aprovada ped-diarreia-desidratacao (livro do ICr, p. 330–331; ondansetrona pelas fontes do lote D11).</p>
+        </>
+      )}
+      <LinkCompleto rota="/plantonista/pediatria/desidratacao-diarreia-ped" nome="Desidratação e diarreia completa" />
+    </div>
+  )
+}
+
+function CartaoTexto({ nome, valor, detalhe }: { nome: string; valor: string; detalhe?: string }) {
+  return (
+    <li className="flex flex-col gap-1 rounded-cartao border border-fio-forte bg-superficie px-4 py-3">
+      <span className="text-corpo font-semibold text-tinta">{nome}</span>
+      <span className="text-numeral-compacto leading-tight font-bold tabular-nums text-tinta">{valor}</span>
+      {detalhe && <span className="text-corpo font-semibold tabular-nums text-acao">{detalhe}</span>}
+    </li>
+  )
 }
