@@ -1,0 +1,5 @@
+-- Gerado por scripts/fichas-sql.mjs a partir de src/clinico. Não editar à mão.
+-- Dose em mL, lote 4: a tela da asma passou a mostrar a escolha da ampola do magnésio (L4-3); ped-asma-icr 2026-11-20.1 (pedido pela guarda do LG10).
+SELECT private.registrar_versao_ferramenta('ped-asma-icr', 'Crise asmática — criança', '2026-11-20.1', 'pediatrico', '[{"citacao":"Schvartsman C, et al. (coords.). Pronto-Socorro — Pediatria ICr-HCFMUSP. 4ª ed. Santana de Parnaíba: Manole; 2023. ISBN 978-65-5576-759-9. cap. 8, p. 113–122.","pediatrica":true},{"citacao":"Indinnimeo L, et al. Clinical practice guidelines for the management of acute asthma attacks in children (Italian Society of Pediatrics). Ital J Pediatr. 2018;44(1):46 (PMID 29625590, PMC5889573).","url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC5889573/","pediatrica":true}]'::jsonb);
+-- Volta (testada na homologação em 20/11/2026 em transação desfeita: 1 linha apagada e desfeita):
+--   DELETE FROM public.ferramenta_versoes WHERE (ferramenta_id, versao) IN (('ped-asma-icr', '2026-11-20.1'));

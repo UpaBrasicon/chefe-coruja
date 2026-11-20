@@ -68,3 +68,5 @@ Falta, pela ordem:
 4. Conferência do RT na homologação e produção com o ok do RT (PR #1017).
 
 A produção espera pelo menos a bula do magnésio: a escolha 10% ou 50% vai sem o aviso de diluição até a bula ser lida.
+
+**Correção de 20/11/2026 (guarda do LG10):** a tela da asma mudou (escolha da ampola do magnésio) e a ficha `ped-asma-icr` não tinha subido. Subiu para 2026-11-20.1, migration `20270416000018_ficha_asma_lote4.sql`, aplicada na homologação (fontes conferidas por md5; volta testada). O lote 4 fica com 5 fichas para o RT aprovar.
