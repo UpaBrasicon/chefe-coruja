@@ -70,12 +70,13 @@ test('doses: criança pelo peso (módulo aprovado); criança sem peso, nada; adu
 test('mL na ampola (RT, 20/11/2026): só com uma concentração; amiodarona a aspirar e diluir', () => {
   const c = dosesDaParada('crianca', 13)!
   assert.match(c.amiodarona(0).detalhe, /^1,3 mL da ampola de 50 mg\/mL, aspirar e diluir · /)
-  assert.match(c.lidocaina.detalhe, /^0,65 mL da ampola de 20 mg\/mL · /)
+  // lidocaína tem 1% e 2% desde a conferência pela CMED: o cronômetro não escolhe e não mostra mL
+  assert.equal(c.lidocaina.ml, null)
   const a = dosesDaParada('adulto', 70)!
   assert.match(a.epinefrina.detalhe, /^1 mL da ampola de 1 mg\/mL · /)
   assert.match(a.amiodarona(0).detalhe, /^6 mL da ampola de 50 mg\/mL, aspirar e diluir/)
   assert.match(a.amiodarona(1).detalhe, /^3 mL da ampola/)
-  assert.match(a.lidocaina.detalhe, /^3,5 a 5,25 mL da ampola de 20 mg\/mL/)
+  assert.equal(a.lidocaina.ml, null)
   // com duas concentrações, o cronômetro não escolhe
   assert.equal(mlNaAmpola([10, 10], [{ id: 'a', rotulo: 'a', porMl: 1, fonte: 'x' }, { id: 'b', rotulo: 'b', porMl: 5, fonte: 'x' }]), null)
   assert.equal(mlNaAmpola([10, 10], undefined), null)

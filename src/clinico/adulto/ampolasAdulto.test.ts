@@ -13,8 +13,16 @@ test('cadastro sem problema e só com itens da Tabela 2', () => {
   for (const id of Object.keys(AMPOLAS_PCR_ADULTO)) assert.ok(ids.has(id), `${id} não está em DROGAS_PCR`)
 })
 
-test('ficam sem mL: magnésio (várias concentrações sem bula lida) e as doses já em mL', () => {
-  for (const id of ['magnesio', 'calcio', 'emulsao', 'kcl', 'alteplase', 'glicose-insulina']) assert.equal(AMPOLAS_PCR_ADULTO[id], undefined, id)
+test('ficam sem mL: as doses já em mL e as infusões', () => {
+  for (const id of ['calcio', 'emulsao', 'kcl', 'alteplase', 'glicose-insulina']) assert.equal(AMPOLAS_PCR_ADULTO[id], undefined, id)
+})
+
+test('CMED (RT, 20/11/2026): magnésio 10% e 50%, bicarbonato 8,4% e 10%; adrenalina só 1 mg/mL (0,1 mg/mL sem venda)', () => {
+  assert.deepEqual(AMPOLAS_PCR_ADULTO.magnesio.map((a) => a.porMl), [0.1, 0.5])
+  assert.deepEqual(AMPOLAS_PCR_ADULTO.bicarbonato.map((a) => a.porMl), [1, 1.19])
+  assert.deepEqual(AMPOLAS_PCR_ADULTO.adrenalina.map((a) => a.porMl), [1])
+  // magnésio 2 g: 20 mL de 10% ou 4 mL de 50%
+  assert.deepEqual(AMPOLAS_PCR_ADULTO.magnesio.map((a) => volumeDaAmpola([2, 2], a)?.ml[0]), [20, 4])
 })
 
 test('as doses fixas batem com a Tabela 2 e com a AHA 2025', () => {
@@ -30,12 +38,12 @@ test('contas: adrenalina 1 mL; amiodarona 6 e 3 mL a aspirar e diluir; bicarbona
   assert.deepEqual(volumeDaAmpola([150, 150], AMPOLAS_PCR_ADULTO.amiodarona[0])?.ml, [3, 3])
   const r = calcularPcr(70)!
   assert.deepEqual(volumeDaAmpola(r.bicarbonatoMEq, AMPOLAS_PCR_ADULTO.bicarbonato[0])?.ml, [70, 105])
-  assert.deepEqual(volumeDaAmpola(r.lidocainaMg, AMPOLAS_PCR_ADULTO.lidocaina[0])?.ml, [3.5, 5.25])
+  assert.deepEqual(volumeDaAmpola(r.lidocainaMg, AMPOLAS_PCR_ADULTO.lidocaina.find((a) => a.porMl === 20))?.ml, [3.5, 5.25])
 })
 
 test('ficha do adulto com as fontes de cada concentração', () => {
   assert.equal(fichaAmpolasAdulto.publico, 'adulto')
-  assert.equal(fichaAmpolasAdulto.versao, '2026-11-19.1')
+  assert.equal(fichaAmpolasAdulto.versao, '2026-11-20.1')
   const c = fichaAmpolasAdulto.fontes.map((f) => f.citacao).join(' ')
   for (const t of ['p. 938', 'Adrenalina® 1 mg/mL', 'amiodarona 50 mg/mL', 'lidocaína 20 mg/mL']) assert.ok(c.includes(t), t)
 })

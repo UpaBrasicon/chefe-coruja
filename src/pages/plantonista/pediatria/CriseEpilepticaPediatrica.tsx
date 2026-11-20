@@ -94,7 +94,7 @@ export function CriseEpilepticaPediatrica() {
       ) : !pesoValido(peso) ? <PesoInvalido /> : (
         (Object.keys(ETAPAS_CRISE) as EtapaCrise[]).map((e) => (
           <Bloco key={e} titulo={ETAPAS_CRISE[e]}>
-            {DOSES_CRISE.filter((d) => d.etapa === e).map((d) => <LinhaDose key={d.id} d={d} peso={peso} extra={extra(d.id)} />)}
+            {DOSES_CRISE.filter((d) => d.etapa === e).map((d) => <LinhaDose key={d.id} d={d} peso={peso} extra={extra(d.id)} ampola={`crise:${d.id}`} />)}
             {e === 'suporte' && <LinhaReferencia rotulo="Piridoxina" texto={`${PIRIDOXINA.dose} — ${PIRIDOXINA.indicacao}.`} pagina={`cap. 9, ${PIRIDOXINA.pagina}`} />}
           </Bloco>
         ))
