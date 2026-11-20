@@ -50,6 +50,7 @@ export function PcrAdulto() {
       { rotulo: '2ª dose', dose: fixa(DOSES_FIXAS_PCR_ADULTO.amiodaronaMg.segunda) },
     ]} />,
     lidocaina: r ? <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.lidocaina} dose={r.lidocainaMg} unidade="mg" /> : null,
+    magnesio: <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.magnesio} dose={DOSES_FIXAS_PCR_ADULTO.magnesioG} unidade="g" />,
     bicarbonato: r ? <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.bicarbonato} unidade="mEq" doses={[
       { rotulo: 'Dose', dose: r.bicarbonatoMEq },
       { rotulo: 'Adicional', dose: r.bicarbonatoAdicionalMEq },

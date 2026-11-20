@@ -63,3 +63,7 @@ scripts/e2e/.hash-e2e
 
 # Item 8 (Power BI): chave de teste da homologação, nunca no git
 scripts/powerbi/.chave-homolog
+
+# API da ANVISA (credenciais do RT e cache da Lista CMED; ver infra/anvisa-api.md)
+scripts/anvisa/.credenciais
+scripts/anvisa/.cache/

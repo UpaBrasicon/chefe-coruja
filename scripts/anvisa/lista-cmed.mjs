@@ -1,0 +1,217 @@
+// Lista CMED pela API da ANVISA (portal api.anvisa.gov.br, pedido do RT de
+// 20/11/2026): todas as apresentações de medicamento à venda, com a concentração
+// por extenso. Serve para achar as concentrações das ampolas da dose em mL
+// (ML2: toda concentração com registro ativo). Ver infra/anvisa-api.md.
+//
+// Credenciais (nunca no git, nunca impressas):
+//   ANVISA_CLIENT_ID e ANVISA_CLIENT_SECRET no ambiente, ou o arquivo
+//   scripts/anvisa/.credenciais com as duas linhas
+//     ANVISA_CLIENT_ID=...
+//     ANVISA_CLIENT_SECRET=...
+// O client_id é o CPF de quem gerou a credencial: dado pessoal, fica só no arquivo.
+//
+// Sem a API (credencial recusada em 20/11/2026), a mesma lista sai da planilha
+// pública da CMED no gov.br (lista PMC, xlsx, atualizada pela CMED):
+//   node scripts/anvisa/lista-cmed.mjs --atualizar          acha a planilha mais nova na página da CMED, baixa e converte
+//   node scripts/anvisa/lista-cmed.mjs --planilha <xlsx>    converte uma planilha já baixada
+//
+// Uso:
+//   node scripts/anvisa/lista-cmed.mjs --baixar            baixa a lista pela API (cache em scripts/anvisa/.cache/)
+//   node scripts/anvisa/lista-cmed.mjs --conferir           compara as ampolas cadastradas com a CMED (sai 1 se houver concentração nova)
+//   node scripts/anvisa/lista-cmed.mjs --injetaveis midazolam,fentanila
+//                                                          lista as apresentações injetáveis do cache
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const AQUI = dirname(fileURLToPath(import.meta.url))
+const CACHE = join(AQUI, '.cache', 'lista-cmed.json')
+const TOKEN_URL = 'https://acesso.prd.apps.anvisa.gov.br/auth/realms/externo/protocol/openid-connect/token'
+const LISTA_URL = 'https://api-gateway.prd.apps.anvisa.gov.br/anvs-listacmed-service/api/v1/listascmed/recuperar-lista-cmed-completa'
+
+function credenciais() {
+  let id = process.env.ANVISA_CLIENT_ID
+  let segredo = process.env.ANVISA_CLIENT_SECRET
+  const arq = join(AQUI, '.credenciais')
+  if ((!id || !segredo) && existsSync(arq)) {
+    for (const linha of readFileSync(arq, 'utf8').split(/\r?\n/)) {
+      const m = linha.match(/^\s*(ANVISA_CLIENT_ID|ANVISA_CLIENT_SECRET)\s*=\s*(.+?)\s*$/)
+      if (m?.[1] === 'ANVISA_CLIENT_ID') id = m[2]
+      if (m?.[1] === 'ANVISA_CLIENT_SECRET') segredo = m[2]
+    }
+  }
+  if (!id || !segredo) throw new Error('Faltam ANVISA_CLIENT_ID e ANVISA_CLIENT_SECRET (ambiente ou scripts/anvisa/.credenciais).')
+  return { id, segredo }
+}
+
+async function token() {
+  const { id, segredo } = credenciais()
+  const r = await fetch(TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'client_credentials', client_id: id, client_secret: segredo, scope: 'openid' }),
+  })
+  // só o status: a resposta de erro pode ecoar o client_id
+  if (!r.ok) throw new Error(`token: HTTP ${r.status}`)
+  const j = await r.json()
+  if (!j.access_token) throw new Error('token: resposta sem access_token')
+  return j.access_token
+}
+
+async function baixar() {
+  const t = await token()
+  const r = await fetch(LISTA_URL, { headers: { Accept: 'application/json', 'Accept-Encoding': 'gzip', Authorization: `Bearer ${t}` } })
+  if (!r.ok) throw new Error(`lista CMED: HTTP ${r.status}`)
+  const lista = await r.json()
+  if (!Array.isArray(lista)) throw new Error('lista CMED: resposta não é uma lista')
+  mkdirSync(dirname(CACHE), { recursive: true })
+  writeFileSync(CACHE, JSON.stringify({ baixadaEm: new Date().toISOString(), fonte: LISTA_URL, itens: lista }))
+  console.log(`Lista CMED: ${lista.length} apresentações, salva em ${CACHE}`)
+}
+
+const PAGINA_CMED = 'https://www.gov.br/anvisa/pt-br/assuntos/medicamentos/cmed/precos'
+
+/** Converte a planilha PMC da CMED (aba "Lista PMC") no mesmo formato da API. */
+export function lerPlanilha(arquivo) {
+  const XLSX = createRequire(import.meta.url)('xlsx')
+  const wb = XLSX.readFile(arquivo, { dense: true })
+  const aba = wb.SheetNames.find((n) => /lista/i.test(n)) ?? wb.SheetNames[wb.SheetNames.length - 1]
+  const linhas = XLSX.utils.sheet_to_json(wb.Sheets[aba], { header: 1, defval: '' })
+  const h = linhas.findIndex((l) => l.some((c) => /^SUBST/i.test(String(c))))
+  if (h < 0) throw new Error('planilha sem a linha de cabeçalho (SUBSTÂNCIA)')
+  const cab = linhas[h].map((c) => semAcento(c).trim())
+  const col = (re) => cab.findIndex((c) => re.test(c))
+  const ix = {
+    substancia: col(/^substancia/), laboratorio: col(/^laboratorio/), registro: col(/^registro/), produto: col(/^produto$/),
+    apresentacao: col(/^apresentacao/), restricaoHospitalar: col(/^restricao hospitalar/), comercializacaoUltimoPeriodo: col(/^comercializacao/),
+  }
+  for (const [k, v] of Object.entries(ix)) if (v < 0) throw new Error(`planilha sem a coluna ${k}`)
+  return linhas.slice(h + 1).filter((l) => l[ix.substancia]).map((l) => Object.fromEntries(Object.entries(ix).map(([k, v]) => [k, String(l[v]).trim()])))
+}
+
+function salvarCache(itens, fonte) {
+  mkdirSync(dirname(CACHE), { recursive: true })
+  writeFileSync(CACHE, JSON.stringify({ baixadaEm: new Date().toISOString(), fonte, itens }))
+  console.log(`Lista CMED: ${itens.length} apresentações (${fonte}), salva em ${CACHE}`)
+}
+
+async function atualizarPelaPagina() {
+  const html = await (await fetch(PAGINA_CMED)).text()
+  // o link vem relativo ou escapado no JSON da página; o nome do arquivo basta
+  const nomes = [...new Set([...html.matchAll(/lista_pmc_(\d{8})_\d+\.xlsx/g)].map((m) => m[0]))]
+  if (!nomes.length) throw new Error('não achei a planilha PMC na página da CMED')
+  nomes.sort((x, y) => y.localeCompare(x))
+  const data = nomes[0].slice(10, 18)
+  const url = `${PAGINA_CMED}/arquivos/${nomes[0]}/@@download/file`
+  const arq = join(dirname(CACHE), `lista_pmc_${data}.xlsx`)
+  if (!existsSync(arq)) {
+    const r = await fetch(url)
+    if (!r.ok) throw new Error(`planilha CMED: HTTP ${r.status}`)
+    mkdirSync(dirname(arq), { recursive: true })
+    writeFileSync(arq, Buffer.from(await r.arrayBuffer()))
+  }
+  salvarCache(lerPlanilha(arq), `planilha PMC da CMED de ${data}`)
+}
+
+const semAcento = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+const INJETAVEL = /\bINJ\b|INJETAVEL|INJ\.|SOL INJ|EMU INJ|PO LIOF|PO INJ/
+
+export function injetaveis(itens, termos) {
+  const t = termos.map(semAcento)
+  return itens
+    // só substância única (as misturas de nutrição parenteral e soluções têm ';')
+    .filter((i) => !String(i.substancia).includes(';'))
+    .filter((i) => t.some((x) => new RegExp('(^|[^a-z])' + x).test(semAcento(i.substancia))))
+    .filter((i) => INJETAVEL.test(semAcento(i.apresentacao).toUpperCase()))
+    .map((i) => ({
+      substancia: i.substancia, produto: i.produto, laboratorio: i.laboratorio, registro: i.registro,
+      apresentacao: i.apresentacao, comercializado: i.comercializacaoUltimoPeriodo, hospitalar: i.restricaoHospitalar,
+    }))
+}
+
+/** Concentração por mL na apresentação da CMED, na unidade pedida ("3 MG/ML", "0,05 MG/ML", "50 MCG/ML"). */
+export function concentracaoPorMl(apresentacao, unidade) {
+  const m = String(apresentacao).toUpperCase().match(/^\s*(\d+(?:[.,]\d+)?)\s*(MG|MCG|UI|MEQ|G)\s*\/\s*ML/)
+  if (!m) return null
+  const n = Number(m[1].replace(',', '.'))
+  const em = { MG: 1, MCG: 0.001, G: 1000 }
+  if (unidade === 'µg' && m[2] in em) return Math.round(n * em[m[2]] * 1000 * 1000) / 1000
+  if (unidade === 'mg' && m[2] in em) return Math.round(n * em[m[2]] * 1000) / 1000
+  if (unidade === 'g' && m[2] in em) return Math.round((n * em[m[2]]) / 1000 * 1000) / 1000
+  if (unidade === 'mEq' && m[2] === 'MEQ') return n
+  return null
+}
+
+// princípio cadastrado -> termos da substância na CMED e unidade da concentração no cadastro.
+// Ficam fora: cálcio (dose em elemento), bicarbonato (CMED em mg/mL, cadastro em mEq/mL) e
+// naloxona-ug (a mesma ampola da naloxona em µg).
+export const PRINCIPIOS_CMED = {
+  adenosina: { termos: ['adenosina'], unidade: 'mg' },
+  amiodarona: { termos: ['amiodarona'], unidade: 'mg' },
+  lidocaina: { termos: ['lidocaina'], unidade: 'mg' },
+  fentanila: { termos: ['fentanila'], unidade: 'µg' },
+  midazolam: { termos: ['midazolam'], unidade: 'mg' },
+  escetamina: { termos: ['escetamina'], unidade: 'mg' },
+  etomidato: { termos: ['etomidato'], unidade: 'mg' },
+  propofol: { termos: ['propofol'], unidade: 'mg' },
+  rocuronio: { termos: ['rocuronio'], unidade: 'mg' },
+  dexmedetomidina: { termos: ['dexmedetomidina'], unidade: 'µg' },
+  naloxona: { termos: ['naloxona'], unidade: 'mg' },
+  adrenalina: { termos: ['epinefrina'], unidade: 'mg' },
+  atropina: { termos: ['atropina'], unidade: 'mg' },
+  diazepam: { termos: ['diazepam'], unidade: 'mg' },
+  fenitoina: { termos: ['fenitoina'], unidade: 'mg' },
+  fenobarbital: { termos: ['fenobarbital'], unidade: 'mg' },
+  magnesio: { termos: ['sulfato de magnesio'], unidade: 'g' },
+}
+
+/** Concentrações da CMED que o cadastro não tem, por princípio (só injetável, substância única). */
+export function conferir(itens, cadastro) {
+  const novas = []
+  for (const [principio, { termos, unidade }] of Object.entries(PRINCIPIOS_CMED)) {
+    const temos = new Set((cadastro[principio] ?? []).map((a) => a.porMl))
+    if (!temos.size) continue
+    const achadas = new Map()
+    for (const i of injetaveis(itens, termos)) {
+      // decisão do RT (20/11/2026): só entram as apresentações à venda
+      if (semAcento(i.comercializado) !== 'sim') continue
+      const c = concentracaoPorMl(i.apresentacao, unidade)
+      if (c === null || temos.has(c)) continue
+      const lista = achadas.get(c) ?? []
+      lista.push(`${i.laboratorio} (${i.registro}, comercializado: ${i.comercializado})`)
+      achadas.set(c, lista)
+    }
+    for (const [c, labs] of achadas) novas.push({ principio, concentracao: `${c} ${unidade}/mL`, laboratorios: [...new Set(labs)] })
+  }
+  return novas
+}
+
+const args = process.argv.slice(2)
+if (args[0] === '--baixar') {
+  await baixar()
+} else if (args[0] === '--atualizar') {
+  await atualizarPelaPagina()
+} else if (args[0] === '--planilha' && args[1]) {
+  salvarCache(lerPlanilha(args[1]), `planilha ${args[1]}`)
+} else if (args[0] === '--conferir') {
+  if (!existsSync(CACHE)) throw new Error('Sem cache: rode antes com --atualizar.')
+  const { baixadaEm, fonte, itens } = JSON.parse(readFileSync(CACHE, 'utf8'))
+  const { AMPOLAS } = await import('../../src/clinico/pediatria/ampolas.ts')
+  const { AMPOLAS_PCR_ADULTO } = await import('../../src/clinico/adulto/ampolasAdulto.ts')
+  const cadastro = { ...AMPOLAS, adrenalina: AMPOLAS_PCR_ADULTO.adrenalina, magnesio: AMPOLAS_PCR_ADULTO.magnesio }
+  const novas = conferir(itens, cadastro)
+  console.log(`# Conferência das ampolas com a CMED (${fonte}, baixada em ${baixadaEm})`)
+  if (!novas.length) console.log('Nenhuma concentração nova: o cadastro cobre todas as ampolas injetáveis da CMED.')
+  for (const n of novas) console.log(`- ${n.principio}: ${n.concentracao} — ${n.laboratorios.join('; ')}`)
+  process.exitCode = novas.length ? 1 : 0
+} else if (args[0] === '--injetaveis' && args[1]) {
+  if (!existsSync(CACHE)) throw new Error('Sem cache: rode antes com --baixar.')
+  const { baixadaEm, itens } = JSON.parse(readFileSync(CACHE, 'utf8'))
+  const r = injetaveis(itens, args[1].split(','))
+  console.log(`# Lista CMED baixada em ${baixadaEm}; ${r.length} apresentações injetáveis`)
+  for (const i of r) console.log([i.substancia, i.laboratorio, i.registro, i.apresentacao, `comercializado: ${i.comercializado}`].join(' | '))
+} else if (args.length) {
+  console.error('Uso: --baixar | --atualizar | --planilha <xlsx> | --conferir | --injetaveis termo1,termo2')
+  process.exit(2)
+}

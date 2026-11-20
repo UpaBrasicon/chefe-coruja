@@ -1,0 +1,49 @@
+name: vigia da CMED (ampolas)
+
+# Pedido do RT de 20/11/2026: atualizar a lista de medicamentos da CMED a cada
+# 15 dias e avisar quando aparecer uma concentração de ampola que o cadastro da
+# dose em mL não tem (ML2: toda concentração com registro ativo). O vigia não
+# muda nenhuma ficha: abre um aviso para o RT decidir. Ver infra/anvisa-api.md.
+on:
+  schedule:
+    - cron: '0 11 1,16 * *' # dias 1 e 16, 08:00 de Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  conferir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: baixa a planilha mais nova da CMED
+        run: node scripts/anvisa/lista-cmed.mjs --atualizar
+      - name: confere as ampolas
+        id: conferir
+        run: |
+          set +e
+          node --experimental-strip-types scripts/anvisa/lista-cmed.mjs --conferir > conferencia.md
+          echo "saida=$?" >> "$GITHUB_OUTPUT"
+          cat conferencia.md
+      - name: abre ou atualiza o aviso
+        if: steps.conferir.outputs.saida == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          titulo="CMED: concentração de ampola fora do cadastro da dose em mL"
+          {
+            echo "O vigia da CMED achou concentração injetável que o cadastro das ampolas não tem."
+            echo "Decisão do RT: incluir como opção (com a bula), ou registrar por que fica fora."
+            echo
+            cat conferencia.md
+          } > corpo.md
+          numero=$(gh issue list --state open --search "\"$titulo\" in:title" --json number --jq '.[0].number')
+          if [ -n "$numero" ]; then gh issue comment "$numero" --body-file corpo.md; else gh issue create --title "$titulo" --body-file corpo.md; fi

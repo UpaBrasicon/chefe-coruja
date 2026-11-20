@@ -97,6 +97,20 @@ export const BULA_NALOXONA: Fonte = {
   url: BULARIO('cloridrato de naloxona'),
 }
 
+// Lote 3 e conferência pela CMED (decisões do RT de 20/11/2026): a lista de
+// preços da CMED passa a ser fonte da concentração, ao lado da bula ("CMED +
+// bula"); entram só as apresentações à venda. Atropina sai da lista de "sem mL"
+// (0,25 e 0,5 mg/mL na CMED); lidocaína ganha a de 1%; morfina continua sem mL.
+// Levetiracetam, valproato e lorazepam: nenhum injetável à venda, ficam sem mL.
+export const CMED_PMC_2026_11: Fonte = {
+  citacao: 'Lista de preços de medicamentos da CMED (PMC), ANVISA, publicada em 09/11/2026 (substância, laboratório, registro e apresentação; conferida com scripts/anvisa/lista-cmed.mjs).',
+  url: 'https://www.gov.br/anvisa/pt-br/assuntos/medicamentos/cmed/precos',
+}
+export const BULA_DIAZEPAM: Fonte = {
+  citacao: 'Bulas do profissional, diazepam 5 mg/mL injetável: Hipolabor e Teuto (Bulário Eletrônico da ANVISA, lidas em 20/11/2026): "usado em bolus e sem diluição".',
+  url: BULARIO('diazepam'),
+}
+
 export const BULA_LIDOCAINA: Fonte = {
   citacao: 'Bulas do profissional, cloridrato de lidocaína 20 mg/mL (2%) sem vasoconstritor: Blau Farmacêutica S.A., expediente 1609670256, 16/12/2025; Hypofarma, expediente 1609728254, 16/12/2025; Hipolabor Farmacêutica Ltda., expediente 1616391243, 26/11/2024 (Bulário Eletrônico da ANVISA, lidas em 19/11/2026).',
   url: BULARIO('cloridrato de lidocaína'),
@@ -111,7 +125,23 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
     { id: 'amiodarona-50', rotulo: 'Amiodarona 50 mg/mL (ampola de 3 mL)', porMl: 50, diluir: true, fonte: 'bulas Newcom (0716157268, 20/07/2026) e Hipolabor (1466419245, 24/10/2024); diluir em glicose 5%', url: BULA_AMIODARONA.url },
   ],
   lidocaina: [
+    { id: 'lidocaina-10', rotulo: 'Lidocaína 1% sem vasoconstritor, 10 mg/mL', porMl: 10, fonte: 'CMED 09/11/2026: Cristália (1029803570078) e Hypofarma (1038700390106), à venda', url: CMED_PMC_2026_11.url },
     { id: 'lidocaina-20', rotulo: 'Lidocaína 2% sem vasoconstritor, 20 mg/mL', porMl: 20, fonte: 'bulas Blau (1609670256), Hypofarma (1609728254) e Hipolabor (1616391243)', url: BULA_LIDOCAINA.url },
+  ],
+  // atropina: sem bula injetável no Bulário; concentrações da CMED (decisão do RT, 20/11/2026)
+  atropina: [
+    { id: 'atropina-025', rotulo: 'Atropina 0,25 mg/mL', porMl: 0.25, fonte: 'CMED 09/11/2026: Blau, Farmace e outros, à venda', url: CMED_PMC_2026_11.url },
+    { id: 'atropina-05', rotulo: 'Atropina 0,5 mg/mL', porMl: 0.5, fonte: 'CMED 09/11/2026: Blau, à venda', url: CMED_PMC_2026_11.url },
+  ],
+  // lote 3: crise epiléptica
+  diazepam: [
+    { id: 'diazepam-5', rotulo: 'Diazepam 5 mg/mL (ampola de 2 mL)', porMl: 5, fonte: 'CMED 09/11/2026 e bulas Hipolabor e Teuto (bolus sem diluição)', url: BULA_DIAZEPAM.url },
+  ],
+  fenitoina: [
+    { id: 'fenitoina-50', rotulo: 'Fenitoína 50 mg/mL', porMl: 50, diluir: true, fonte: 'CMED 09/11/2026: Hipolabor, Teuto e Cristália; diluir em SF, precipita em SG (livro do ICr, Apêndice)', url: CMED_PMC_2026_11.url },
+  ],
+  fenobarbital: [
+    { id: 'fenobarbital-100', rotulo: 'Fenobarbital 100 mg/mL', porMl: 100, fonte: 'CMED 09/11/2026: Cristália, à venda (a de 200 mg/mL está sem venda)', url: CMED_PMC_2026_11.url },
   ],
   // dose em cálcio elementar (RCP): concentração elementar do livro (ML6)
   calcio: [
@@ -154,11 +184,12 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
 export const fichaAmpolas: Ficha = {
   id: 'ped-ampolas',
   titulo: 'Ampolas para a dose em mL (criança)',
-  versao: '2026-11-20.1',
+  versao: '2026-11-20.2',
   publico: 'pediatrico',
   fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
-    BULA_FENTANILA, BULA_MIDAZOLAM, BULA_ESCETAMINA, BULA_ETOMIDATO, BULA_PROPOFOL, BULA_ROCURONIO, BULA_DEXMEDETOMIDINA, BULA_NALOXONA],
-  revisadoEm: '20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
+    BULA_FENTANILA, BULA_MIDAZOLAM, BULA_ESCETAMINA, BULA_ETOMIDATO, BULA_PROPOFOL, BULA_ROCURONIO, BULA_DEXMEDETOMIDINA, BULA_NALOXONA,
+    CMED_PMC_2026_11, BULA_DIAZEPAM],
+  revisadoEm: '20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
 }
 
 /**
@@ -212,6 +243,27 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'fita:fita-naloxona': { principio: 'naloxona' },
   'fita:fita-naloxona-maior': { principio: 'naloxona' },
   'fita:fita-naloxona-baixa': { principio: 'naloxona-ug' },
+  // atropina (CMED) e lote 3 (crise epiléptica)
+  'rcp:atropina': { principio: 'atropina' },
+  'sri:atropina': { principio: 'atropina' },
+  'bolus:atropina-bradicardia': { principio: 'atropina' },
+  'bolus:atropina-pre': { principio: 'atropina' },
+  'bolus:atropina-organofosforado': { principio: 'atropina' },
+  'fita:fita-atropina': { principio: 'atropina' },
+  'fita:fita-atropina-iot': { principio: 'atropina' },
+  'crise:diazepam-iv': { principio: 'diazepam' },
+  'crise:midazolam-iv': { principio: 'midazolam' },
+  'crise:midazolam-im': { principio: 'midazolam' },
+  'crise:midazolam-in': { principio: 'midazolam' },
+  'crise:fenitoina': { principio: 'fenitoina' },
+  'crise:fenitoina-cronico': { principio: 'fenitoina' },
+  'crise:fenobarbital': { principio: 'fenobarbital' },
+  'bolus:diazepam-iv-menor5': { principio: 'diazepam' },
+  'bolus:diazepam-iv-maior5': { principio: 'diazepam' },
+  'bolus:fenitoina': { principio: 'fenitoina' },
+  'bolus:fenobarbital': { principio: 'fenobarbital' },
+  'sri:diazepam': { principio: 'diazepam' },
+  'fita:fita-diazepam-iv': { principio: 'diazepam' },
 }
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
@@ -251,7 +303,7 @@ export function problemasDasAmpolas(ampolas: Record<string, Apresentacao[]> = AM
     if (new Set(porMl).size !== porMl.length) p.push(`${principio}: concentração repetida (agrupar por concentração, ML2)`)
   }
   for (const [chave, item] of Object.entries(itens)) {
-    if (!/^(bolus|rcp|sri|fita):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
+    if (!/^(bolus|rcp|sri|fita|crise):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
     if (!ampolas[item.principio]?.length) p.push(`${chave}: princípio ${item.principio} sem ampola`)
     const bases = new Set((ampolas[item.principio] ?? []).map((a) => a.base).filter(Boolean))
     if (bases.size > 1 && !item.base) p.push(`${chave}: ${item.principio} tem sal e elemento; o item precisa dizer a base (ML6)`)
