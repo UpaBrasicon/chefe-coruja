@@ -1,6 +1,6 @@
 # Dose em mL, lote 6: demais capítulos (plano)
 
-Data: 20/11/2026. Situação: plano para o RT, nenhum código mudou. Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
+Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); implementação depois do lote 5. Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
 
 Lista da CMED: planilha PMC de 09/11/2026 (`scripts/anvisa/lista-cmed.mjs --injetaveis`). Só entram apresentações com "comercializado: Sim".
 
