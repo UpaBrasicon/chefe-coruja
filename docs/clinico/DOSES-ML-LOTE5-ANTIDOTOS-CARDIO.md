@@ -1,6 +1,6 @@
 # Dose em mL, lote 5: antídotos, metabólico e cardiovascular (plano)
 
-Data: 20/11/2026. Situação: plano para o RT, nenhum código mudou. Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 4, lote 5), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3, 20/11/2026).
+Data: 20/11/2026. Situação: decisões L5-1 a L5-6 = A (RT, 20/11/2026, "Todas a"); primeira parte na branch `fase-ml/lote5-antidotos-cardio` (seção 5). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 4, lote 5), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3, 20/11/2026).
 
 Lista da CMED: planilha PMC de 09/11/2026 (`scripts/anvisa/lista-cmed.mjs --injetaveis`). Só entram apresentações com "comercializado: Sim".
 
@@ -48,3 +48,14 @@ Já feitos em lotes anteriores e fora daqui: atropina (inclusive organofosforado
 - Morfina: quatro concentrações, de 0,1 a 10 mg/mL (100×); a de neuroeixo na veia (L5-3).
 - Octreotida: 0,05 a 0,5 mg/mL (10×).
 - Insulina: o frasco de 100 UI/mL dá volumes abaixo de 0,1 mL e erro de até 1.000× (ML7).
+
+## 5. Decisões do RT (20/11/2026) e andamento
+
+Todas A. Primeira parte, com a concentração da CMED ou do livro (a diluição de cada uma entra quando a bula for lida, L5-1):
+
+- flumazenil 0,1 mg/mL; hidralazina 20 mg/mL; terbutalina 500 µg/mL; ondansetrona IV 2 mg/mL; octreotida 50, 100 e 500 µg/mL (L5-4); neostigmina 0,5 mg/mL (L5-6); morfina 1 e 10 mg/mL (L5-3), nenhuma marcada quando há mais de uma;
+- insulina da solução polarizante só pelo preparo do livro, 0,1 UI/mL (50 UI em 500 mL de NaCl 0,9%, p. 521), nunca pelo frasco (ML7, L5-5);
+- ficha `ped-ampolas` 2026-11-20.4; migration `20270416000017_ficha_ampolas_lote5.sql`, aplicada na homologação em 20/11/2026 (fontes conferidas por md5; volta testada em transação desfeita);
+- evidência local: `npm run test:clinico` 1.391 testes, 0 falhas; typecheck e eslint sem erro; `lista-cmed.mjs --conferir` sem concentração nova.
+
+Falta: bulas (L5-1) de vitamina K (via IV, L5-2), acetilcisteína, esmolol, milrinona, morfina 0,1 e 0,2 mg/mL e da diluição de cada princípio; homologação; conferência e aprovação da ficha pelo RT; produção com o ok do RT. Pralidoxima fica sem mL (sem apresentação na CMED).
