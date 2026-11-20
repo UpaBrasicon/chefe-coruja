@@ -71,7 +71,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-19.1')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.1')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -104,4 +104,35 @@ test('lote 1: contas de exemplo', () => {
   // cálcio elementar 5 a 7 mg/kg em 10 kg = 50 a 70 mg: gluconato 10% (9 mg/mL) ≈ 5,6 a 7,8 mL
   const gl = volumeDaAmpola([50, 70], ampolasDoItem('rcp:calcio')[0], 'elemento')!
   assert.ok(Math.abs(gl.ml[0] - 50 / 9) < 1e-9 && Math.abs(gl.ml[1] - 70 / 9) < 1e-9)
+})
+
+test('lote 2: concentrações das bulas aprovadas pelo RT (20/11/2026)', () => {
+  const c = (p: string) => AMPOLAS[p].map((a) => a.porMl)
+  assert.deepEqual(c('fentanila'), [50])
+  assert.deepEqual(c('midazolam'), [1, 5])
+  assert.deepEqual(c('escetamina'), [50])
+  assert.deepEqual(c('etomidato'), [2])
+  assert.deepEqual(c('propofol'), [10, 20])
+  assert.deepEqual(c('rocuronio'), [10])
+  assert.deepEqual(AMPOLAS.dexmedetomidina.map((a) => [a.porMl, a.diluir]), [[100, true]])
+  assert.deepEqual(c('naloxona'), [0.4])
+  assert.deepEqual(c('naloxona-ug'), [400])
+})
+
+test('lote 2: succinilcolina (pó) e morfina ficam sem mL; dexmedetomidina em ataque (infusão) também', () => {
+  for (const chave of ['sri:succinilcolina-menor10', 'sri:succinilcolina-maior10', 'fita:fita-succinilcolina-lactente', 'fita:fita-morfina-iv', 'bolus:dexmedetomidina-ataque']) {
+    assert.deepEqual(ampolasDoItem(chave), [], chave)
+  }
+  assert.equal(AMPOLAS.morfina, undefined)
+})
+
+test('lote 2: contas de exemplo', () => {
+  // fentanila 2 µg/kg em 15 kg = 30 µg = 0,6 mL de 50 µg/mL
+  assert.deepEqual(volumeDaAmpola([30, 30], ampolasDoItem('sri:fentanil')[0])?.ml, [0.6, 0.6])
+  // midazolam 3 mg: 3 mL de 1 mg/mL ou 0,6 mL de 5 mg/mL (o médico escolhe)
+  const mid = ampolasDoItem('bolus:midazolam-iv-maior5')
+  assert.deepEqual(mid.map((a) => volumeDaAmpola([3, 3], a)?.ml[0]), [3, 0.6])
+  // naloxona dose baixa 20 µg = 0,05 mL de 400 µg/mL; dose de intoxicação 1,5 mg = 3,75 mL de 0,4 mg/mL
+  assert.deepEqual(volumeDaAmpola([20, 20], ampolasDoItem('bolus:dose-baixa-naloxona')[0])?.ml, [0.05, 0.05])
+  assert.deepEqual(volumeDaAmpola([1.5, 1.5], ampolasDoItem('bolus:naloxona-menor')[0])?.ml, [3.75, 3.75])
 })
