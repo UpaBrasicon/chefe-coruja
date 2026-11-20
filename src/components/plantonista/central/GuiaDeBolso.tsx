@@ -166,16 +166,16 @@ export function DosesDeBolso() {
       <ul className="grid grid-cols-2 gap-2.5">
         {(Object.keys(GRUPOS) as Grupo[]).map((g) => (
           <li key={g}>
-            <button type="button" aria-pressed={g === classe}
+            <Button type="button" variant="outline" aria-pressed={g === classe}
               onClick={() => {
                 setParams((p) => { const n = new URLSearchParams(p); n.set('classe', g); return n })
                 // no celular a lista fica embaixo da grade: leva até ela
                 setTimeout(() => document.getElementById('doses-da-classe')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
               }}
-              className={cn('flex min-h-18 w-full items-center rounded-cartao border px-3.5 py-3 text-left text-controle leading-tight font-semibold',
+              className={cn('h-auto min-h-18 w-full justify-start rounded-cartao px-3.5 py-3 text-left text-controle leading-tight font-semibold whitespace-normal',
                 g === classe ? 'border-acao bg-alerta-marca text-acao' : 'border-fio-forte bg-superficie text-tinta hover:border-acao')}>
               {GRUPOS[g]}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
