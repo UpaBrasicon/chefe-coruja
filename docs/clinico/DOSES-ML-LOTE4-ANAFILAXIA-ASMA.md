@@ -64,7 +64,7 @@ Falta, pela ordem:
 
 1. Bulas do Bulário baixadas pelo RT (L4-1): difenidramina (Cristália), dexametasona 2 e 4 mg/mL, sulfato de magnésio (Samtec ou Halex) e azul de metileno injetável, se houver.
 2. Com as bulas: diluição do magnésio; difenidramina; dexametasona, se a base bater (L4-2); azul de metileno (L4-4).
-3. Depois do merge dos guias de bolso (#1015): ligar `anafilaxia:<id>` no `cartaoDaDose` do `GuiaDeBolso.tsx` (hoje só a crise passa a chave).
+3. Feito em 20/11/2026, depois do merge dos guias de bolso (#1015): o `cartaoDaDose` do `GuiaDeBolso.tsx` passa `anafilaxia:<id>` além de `crise:<id>`, e o cartão com volume fixo mostra o aviso de 0,1 mL (L4-5).
 4. Conferência do RT na homologação e produção com o ok do RT (PR #1017).
 
 A produção espera pelo menos a bula do magnésio: a escolha 10% ou 50% vai sem o aviso de diluição até a bula ser lida.
