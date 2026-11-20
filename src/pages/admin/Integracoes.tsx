@@ -61,10 +61,12 @@ type Acesso = { recurso: string; unidade: string | null; status: number; ip: str
 export default function Integracoes() {
   const { ehSuperAdmin, unidadeAtiva } = useUnidade()
   const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
+  // na UBS, a página também cuida do envio ao SISAB (aba SISAB)
+  const envio = ubs ? 'o envio à RNDS e ao SISAB' : 'o envio à RNDS'
   return (
     <TabsPagina icone={KeyRound} titulo="Integrações" largura="max-w-5xl"
-      descricao={ehSuperAdmin ? 'Chaves da API para os sistemas parceiros, os webhooks que avisam esses sistemas e o envio à RNDS. Chave e segredo aparecem uma única vez, na criação.'
-        : 'Chaves e webhooks dos sistemas parceiros que acessam a sua unidade, e o envio à RNDS. Você pode revogar uma chave ou desligar um webhook a qualquer hora.'}
+      descricao={ehSuperAdmin ? `Chaves da API para os sistemas parceiros, os webhooks que avisam esses sistemas e ${envio}. Chave e segredo aparecem uma única vez, na criação.`
+        : `Chaves e webhooks dos sistemas parceiros que acessam a sua unidade, e ${envio}. Você pode revogar uma chave ou desligar um webhook a qualquer hora.`}
       abas={[
         { valor: 'chaves', rotulo: 'Chaves da API', conteudo: () => <ChavesAba /> },
         { valor: 'webhooks', rotulo: 'Webhooks', conteudo: () => <WebhooksAba /> },

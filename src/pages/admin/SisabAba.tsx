@@ -60,8 +60,8 @@ export function SisabAba() {
   return (
     <div className="flex flex-col gap-4">
       <p className="max-w-2xl text-apoio text-tinta-apoio">
-        Os atendimentos e os procedimentos da UBS vão ao SISAB pelo PEC e-SUS APS do município, em fichas do LEDI APS 8.7.0.
-        Cada atendimento encerrado entra na fila; com o envio ligado, o serviço manda as fichas ao PEC.
+        Os atendimentos, os procedimentos e as vacinas da UBS vão ao SISAB pelo PEC e-SUS APS do município, em fichas do LEDI APS 8.7.0.
+        Cada atendimento encerrado e cada vacina registrada entram na fila; com o envio ligado, o serviço manda as fichas ao PEC.
       </p>
       <Contagem p={p} />
       {/* montado com a chave da última gravação: os campos nascem do que está no banco */}
