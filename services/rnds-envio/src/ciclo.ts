@@ -120,6 +120,21 @@ async function processarItem(d: Dependencias, item: ItemLote): Promise<Registro>
   if (!envio.profissional_cns) return { resultado: 'retido', erro: 'retido: profissional sem CNS (é quem assina o envio)' }
   const simulador = d.sobrepor && (!d.unidadesSimulador || d.unidadesSimulador.has(item.unidade_id))
   const end = enderecos(ambiente, envio.uf, simulador ? d.sobrepor : undefined)
+  // U15, vacina cancelada depois de enviada: o FHIR Delete do RIA enviado
+  if (doc.tipo === 'ria' && (doc.dados as { acao?: string } | null)?.acao === 'excluir') {
+    if (!envio.id_rnds_anterior) return { resultado: 'erro', erro: 'exclusão sem o id RNDS do RIA enviado' }
+    if (!end.ehr) return { resultado: 'retido', erro: 'retido: unidade sem UF (endereço da RNDS na produção)' }
+    const cert = await d.certificados.obter(item.unidade_id)
+    if (!cert) return { resultado: 'retido', erro: 'retido: unidade sem certificado da RNDS' }
+    if ('retido' in cert) return { resultado: 'retido', erro: cert.retido }
+    const r = await d.rnds.enviar({
+      chaveToken: `${envio.credencial_id ?? item.unidade_id}:${ambiente}`,
+      enderecos: end, certificado: cert, cns: envio.profissional_cns, bundle: null, excluir: envio.id_rnds_anterior,
+    })
+    return r.resultado === 'enviado'
+      ? { resultado: 'enviado', idRnds: r.idRnds, resposta: r.resposta }
+      : { resultado: r.resultado, erro: r.erro, resposta: r.resposta }
+  }
   if (!end.ehr) return { resultado: 'retido', erro: 'retido: unidade sem UF (endereço da RNDS na produção)' }
 
   let bundle: Bundle

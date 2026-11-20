@@ -1,0 +1,40 @@
+Validador local oficial da RNDS (SOA-RNDS_ValidadorLocal_Aplicativo.zip, SHA-256 registrado) com as definições do RIA
+(produto/docs/pesquisa/rnds-oficial/ria/definicoes-validador-ria.zip, SHA-256 b251c790eb0f1a00befd089234ad0300531554b51fa961455a31ab88de7b0048),
+em contêiner sem rede. Comando: npm run fhir:validar -- --ria. Data: 20/11/2026. Percurso da UBS, U15, vacina.
+Arquivos: scripts/interop/__snapshots__/ria/*.json (gerados por scripts/interop/tests/ria.test.ts).
+
+=== /v/entrada/ria-aplicada.json
+-----------------------------------
+       >>> RESUMO GERAL <<<
+          Δ 00:00:11.212
+-----------------------------------
+>>> Validação sem falhas ----------
+-----------------------------------
+         total itens: 1
+         itens falha: 0
+       itens sucesso: 1
+-----------------------------------
+
+=== /v/entrada/ria-especial-bcg.json
+-----------------------------------
+       >>> RESUMO GERAL <<<
+          Δ 00:00:07.272
+-----------------------------------
+>>> Validação sem falhas ----------
+-----------------------------------
+         total itens: 1
+         itens falha: 0
+       itens sucesso: 1
+-----------------------------------
+
+=== /v/entrada/ria-transcricao.json
+-----------------------------------
+       >>> RESUMO GERAL <<<
+          Δ 00:00:06.237
+-----------------------------------
+>>> Validação sem falhas ----------
+-----------------------------------
+         total itens: 1
+         itens falha: 0
+       itens sucesso: 1
+-----------------------------------

@@ -54,6 +54,24 @@ arquivos oficiais nem o Docker. O CI roda os testes de estrutura
 
 Relatório em `docs/rnds/evidencia/5.2-validador.txt`.
 
+## RIA de rotina (U15, vacina, 20/11/2026)
+
+As definições do SA não trazem os CodeSystems da vacina. O RIA roda com as
+definições do próprio RIA (`ria/definicoes-validador-ria.zip`, SHA-256
+registrado), e os snapshots ficam em `scripts/interop/__snapshots__/ria/`:
+
+```bash
+npm run fhir:validar -- --ria
+```
+
+| Arquivo | Resultado |
+|---|---|
+| `ria-aplicada.json` | sem falha |
+| `ria-transcricao.json` | sem falha |
+| `ria-especial-bcg.json` | sem falha |
+
+Relatório em `docs/rnds/evidencia/u15-ria-validador.txt`.
+
 Os exemplos oficiais também falham, por defeitos nos próprios dados:
 
 | Exemplo | Erros |

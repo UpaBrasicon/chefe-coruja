@@ -5,12 +5,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { Composition, Condition, Immunization } from '@medplum/fhirtypes'
 
 import { montarBundleRIA, PERFIL_IMUNIZACAO, PERFIL_RIA_R, type EntidadeRIA } from '../../../src/interop/fhir/ria.ts'
 import type { EnvioRnds } from '../../../src/interop/fhir/tipos.ts'
 
 const RNDS = 'http://www.saude.gov.br/fhir/r4'
+// snapshots que o validador local confere: npm run fhir:validar -- --ria
+const ATUALIZAR = process.argv.includes('--atualizar')
+const SNAP_DIR = resolve('scripts/interop/__snapshots__/ria')
 
 function envio(extra: Partial<EnvioRnds> = {}): EnvioRnds {
   let n = 0
@@ -35,6 +40,23 @@ const partes = (b: ReturnType<typeof montarBundleRIA>) => ({
   c: b.entry![0].resource as Composition,
   i: b.entry![1].resource as Immunization,
   outros: b.entry!.slice(2).map((e) => e.resource),
+})
+
+describe('snapshots do RIA', () => {
+  const casos = [
+    { nome: 'ria-aplicada.json', gerar: () => montarBundleRIA(dados(), envio()) },
+    { nome: 'ria-transcricao.json', gerar: () => montarBundleRIA(dados({ registro_anterior: true, estrategia: '0', grupo_atendimento: '00', lote: null, fabricante: null, validade: null, imunobiologico: '9', dose: '1', data_aplicacao: '1990-01-02' }), envio()) },
+    { nome: 'ria-especial-bcg.json', gerar: () => montarBundleRIA(dados({ imunobiologico: '15', dose: '9', comunicante_hanseniase: false, estrategia: '2', prescritor_cbo: '225125', cid10_motivo: 'D80.0', via: '10885', local: '14', lote: 'BCG01', fabricante: '149' }, { cpf: null, cns: '898000000000002', sexo: 'F' }), envio()) },
+  ]
+  for (const caso of casos) {
+    it(caso.nome, () => {
+      mkdirSync(SNAP_DIR, { recursive: true })
+      const caminho = resolve(SNAP_DIR, caso.nome)
+      const gerado = JSON.stringify(caso.gerar(), null, 2) + '\n'
+      if (ATUALIZAR || !existsSync(caminho)) { writeFileSync(caminho, gerado); return }
+      assert.equal(readFileSync(caminho, 'utf8').replace(/\r\n/g, '\n'), gerado, `${caso.nome} diverge: rode com --atualizar e confira o diff`)
+    })
+  }
 })
 
 describe('RIA-R: vacina aplicada na UBS', () => {

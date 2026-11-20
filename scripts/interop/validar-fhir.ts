@@ -10,6 +10,8 @@
 // Uso:
 //   npm run fhir:validar                               # os snapshots
 //   npm run fhir:validar -- --arquivo a.json --arquivo b.json
+//   npm run fhir:validar -- --ria                      # os snapshots do RIA (U15),
+//                                                        com as definições do RIA
 //
 // Precisa de Docker e de um JDK no PATH (javac, para compilar a classe).
 // Caminhos: RNDS_VALIDADOR_ZIP e RNDS_DEFINICOES_ZIP, ou a pasta da pesquisa
@@ -49,7 +51,10 @@ function zip(variavel: string, relativo: string): string {
 const SHA256: Record<string, string> = {
   'SOA-RNDS_ValidadorLocal_Aplicativo.zip': 'c39777b051ca459df6ea356db600219fe752dd6e90b88fa89a6a6737c99aa3a4',
   'definicoes-validador-sa.zip': 'f5116c43f11013ad195d24c7ea06a8a9cd245184bc72abbfc1a0065df63057f2',
+  // U15, vacina: as definições do SA não trazem os CodeSystems da vacina
+  'definicoes-validador-ria.zip': 'b251c790eb0f1a00befd089234ad0300531554b51fa961455a31ab88de7b0048',
 }
+const RIA = process.argv.includes('--ria')
 
 function extrair(arquivo: string, destino: string) {
   if (existsSync(destino)) return
@@ -65,14 +70,24 @@ function bundles(): string[] {
   const args = process.argv.slice(2)
   const escolhidos = args.flatMap((a, i) => (a === '--arquivo' && args[i + 1] ? [resolve(args[i + 1])] : []))
   if (escolhidos.length) return escolhidos
-  return readdirSync(SNAP_DIR).filter((f) => f.endsWith('.json')).sort().map((f) => resolve(SNAP_DIR, f))
+  const pasta = RIA ? resolve(SNAP_DIR, 'ria') : SNAP_DIR
+  return readdirSync(pasta).filter((f) => f.endsWith('.json')).sort().map((f) => resolve(pasta, f))
+}
+
+/** A pasta das definições: arquivos_definicoes (SA) ou a que tem CodeSystem/ (RIA). */
+function pastaDefinicoes(defs: string): string {
+  const sa = resolve(defs, 'arquivos_definicoes')
+  if (existsSync(sa)) return sa
+  const achada = readdirSync(defs).map((d) => resolve(defs, d)).find((d) => existsSync(resolve(d, 'CodeSystem')))
+  if (!achada) throw new Error(`definições sem a pasta CodeSystem: ${defs}`)
+  return achada
 }
 
 function main() {
   const app = resolve(CACHE, 'aplicativo')
-  const defs = resolve(CACHE, 'definicoes')
+  const defs = resolve(CACHE, RIA ? 'definicoes-ria' : 'definicoes')
   extrair(zip('RNDS_VALIDADOR_ZIP', 'validador/SOA-RNDS_ValidadorLocal_Aplicativo.zip'), app)
-  extrair(zip('RNDS_DEFINICOES_ZIP', 'sa/definicoes-validador-sa.zip'), defs)
+  extrair(zip('RNDS_DEFINICOES_ZIP', RIA ? 'ria/definicoes-validador-ria.zip' : 'sa/definicoes-validador-sa.zip'), defs)
   const libs = resolve(app, 'rnds-fhir-validador/libs')
 
   const classes = resolve(CACHE, 'classes')
@@ -90,7 +105,7 @@ function main() {
   const r = spawnSync('docker', [
     'run', '--rm', '--network', 'none', '--read-only', '--tmpfs', '/tmp',
     '-v', `${libs}:/v/libs:ro`,
-    '-v', `${resolve(defs, 'arquivos_definicoes')}:/v/definicoes:ro`,
+    '-v', `${pastaDefinicoes(defs)}:/v/definicoes:ro`,
     '-v', `${classes}:/v/classes:ro`,
     '-v', `${entrada}:/v/entrada:ro`,
     IMAGEM,

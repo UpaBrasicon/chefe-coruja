@@ -9,6 +9,8 @@
 // - Envio: POST {ehr}/api/fhir/r4/Bundle com X-Authorization-Server (o token)
 //   e Authorization (o CNS de quem assina). O id RNDS vem no Location.
 // - Um 401 no envio pede token novo uma vez; se repetir, é a credencial.
+// - Exclusão lógica (U15, vacina cancelada depois de enviada; Manual RIA-R v1.9,
+//   3.3 e 8): DELETE {ehr}/api/fhir/r4/Bundle/{id RNDS}, resposta 204.
 //
 // A resposta vira um dos resultados de public.rnds_registrar_resultado.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -77,6 +79,8 @@ export class ClienteRnds {
     certificado: Certificado
     cns: string
     bundle: unknown
+    /** id RNDS do documento a excluir: em vez do POST, o FHIR Delete */
+    excluir?: string
   }): Promise<Resultado> {
     for (let tentativa = 0; tentativa < 2; tentativa++) {
       let token: string
@@ -87,14 +91,18 @@ export class ClienteRnds {
       }
       let r: Resposta
       try {
-        r = await this.chamar(`${p.enderecos.ehr}/api/fhir/r4/Bundle`, 'POST', {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Authorization-Server': `Bearer ${token}`,
-            Authorization: p.cns,
-          },
-          corpo: JSON.stringify(p.bundle),
-        })
+        r = p.excluir
+          ? await this.chamar(`${p.enderecos.ehr}/api/fhir/r4/Bundle/${encodeURIComponent(p.excluir)}`, 'DELETE', {
+              headers: { 'X-Authorization-Server': `Bearer ${token}`, Authorization: p.cns },
+            })
+          : await this.chamar(`${p.enderecos.ehr}/api/fhir/r4/Bundle`, 'POST', {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Authorization-Server': `Bearer ${token}`,
+                Authorization: p.cns,
+              },
+              corpo: JSON.stringify(p.bundle),
+            })
       } catch (e) {
         return { resultado: 'reenviar', erro: `sem resposta da RNDS: ${(e as Error).message}` }
       }
@@ -102,7 +110,7 @@ export class ClienteRnds {
         this.tokens.delete(p.chaveToken) // token vencido ou revogado do lado de lá: pede outro uma vez
         continue
       }
-      return classificar(r)
+      return p.excluir ? classificarExclusao(r, p.excluir) : classificar(r)
     }
     return { resultado: 'credencial', erro: 'a RNDS recusou o token novo' }
   }
@@ -136,7 +144,7 @@ export class ClienteRnds {
     return { resultado: 'reenviar', erro: `sem resposta do EHR Auth: ${msg}` }
   }
 
-  private chamar(url: string, metodo: 'GET' | 'POST', o: {
+  private chamar(url: string, metodo: 'GET' | 'POST' | 'DELETE', o: {
     headers?: Record<string, string>
     corpo?: string
     certificado?: Certificado
@@ -189,6 +197,17 @@ export function classificar(r: Resposta): Resultado {
   }
   if (r.status === 429 || r.status >= 500) return { resultado: 'reenviar', erro: `RNDS respondeu ${r.status}`, resposta }
   return { resultado: 'erro', erro: `RNDS recusou o documento (${r.status}) ${resumoDoErro(r.corpo)}`.trim(), resposta }
+}
+
+/**
+ * A resposta do FHIR Delete: 204 (ou 200) exclui; 410 é o documento já
+ * excluído (o pedido se cumpriu); 404 é o id que a RNDS não conhece.
+ */
+export function classificarExclusao(r: Resposta, idRnds: string): Resultado {
+  const resposta = gravavel(r)
+  if (r.status === 204 || r.status === 200 || r.status === 410) return { resultado: 'enviado', idRnds, resposta }
+  if (r.status === 404) return { resultado: 'erro', erro: `RNDS não encontrou o documento a excluir (404) ${resumoDoErro(r.corpo)}`.trim(), resposta }
+  return classificar(r)
 }
 
 function gravavel(r: Resposta): RespostaGravada {
