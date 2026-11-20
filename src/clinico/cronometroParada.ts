@@ -3,6 +3,8 @@ import { AHA_ALS_2025, AHA_2025_PCR, CHOQUE_PCR, ILCOR_COSTR_2026 } from './adul
 import { pagina } from './adulto/fonte.ts'
 import { AHA_AAP_2025 } from './pediatria/rcp.ts'
 import { AHA_CIRCUNSTANCIAS_2025, COREIA_PALS_2025, choquesDoPeso, dosesDoPeso, numeroDaDose } from './pediatria/dosesDaFita.ts'
+import { AMPOLAS, BULA_AMIODARONA, BULA_LIDOCAINA, type Apresentacao } from './pediatria/ampolas.ts'
+import { AMPOLAS_PCR_ADULTO } from './adulto/ampolasAdulto.ts'
 
 // Cronômetro da parada (G3; construído com o RT em 18/11/2026 no protótipo
 // https://claude.ai/artifact/3j35VFgsN7yNmKwuiz2f7m). Criança e adulto.
@@ -81,11 +83,12 @@ export const VAN_DEN_BEMPT_AESP_2021: Fonte = {
 export const fichaCronometroParada: Ficha = {
   id: 'cronometro-parada',
   titulo: 'Cronômetro da parada — ritmo, choque, epinefrina e registro (criança e adulto)',
-  versao: '2026-11-19.1',
+  versao: '2026-11-20.1',
   publico: 'ambos',
   fontes: [AHA_AAP_2025, COREIA_PALS_2025, AHA_ALS_2025, AHA_CIRCUNSTANCIAS_2025, COREIA_ALS_2025, COREIA_CIRCUNSTANCIAS_2025, COREIA_POS_PCR_2025, ILCOR_COSTR_2026, ERC_CIRCUNSTANCIAS_2021, ERC_PEDIATRIA_2021, ESPNIC_POCUS_2020, PEREZ_CASARES_2017, ZIA_TEP_PEDIATRICO_2025,
-    LEE_LIPIDIO_PEDIATRICO_2024, BROGAN_KAWASAKI_2020, ANTO_POCUS_2026, VAN_DEN_BEMPT_AESP_2021, pagina('cap. 2 PCR no adulto, p. 48–50 (Tabela 2)')],
-  revisadoEm: '19/11/2026 (lacunas das causas reversíveis pelo PubMed, CL1–CL4 = A); 18/11/2026 (versão .2: causas reversíveis com identificar e tratar, CR1–CR4 = A; fluxo construído com o RT no protótipo; tempos e ordem pela AHA 2025 e pelo manual do HCFMUSP; aguarda aprovação do RT)',
+    LEE_LIPIDIO_PEDIATRICO_2024, BROGAN_KAWASAKI_2020, ANTO_POCUS_2026, VAN_DEN_BEMPT_AESP_2021, pagina('cap. 2 PCR no adulto, p. 48–50 (Tabela 2)'),
+    BULA_AMIODARONA, BULA_LIDOCAINA],
+  revisadoEm: '20/11/2026 (mL das drogas da parada pela ampola das fichas ped-ampolas e adulto-ampolas, só quando o princípio tem uma concentração; pedido do RT: "mostrar ml auxilia e perde menos tempo"; aguarda aprovação do RT); 19/11/2026 (lacunas das causas reversíveis pelo PubMed, CL1–CL4 = A); 18/11/2026 (versão .2: causas reversíveis com identificar e tratar, CR1–CR4 = A; fluxo construído com o RT no protótipo; tempos e ordem pela AHA 2025 e pelo manual do HCFMUSP; aguarda aprovação do RT)',
 }
 
 export type PublicoParada = 'crianca' | 'adulto'
@@ -180,24 +183,46 @@ export function acaoAgora(s: Situacao, agora: number): AcaoAgora {
 /** Antiarrítmico já pode (ritmo chocável depois do 3º choque)? */
 export const antiarritmicoLiberado = (s: Situacao) => !!s.ritmo && ritmoDaParada(s.ritmo).chocavel && s.choques >= CHOQUES_ANTES_DO_ANTIARRITMICO
 
+/** `ml`: volume na ampola, quando o princípio tem uma concentração (RT, 20/11/2026). */
+export type DoseDaParada = { valor: string; detalhe: string; ml?: string | null }
+
 export type DosesDaParada = {
-  choque: (n: number) => { valor: string; detalhe: string }
-  epinefrina: { valor: string; detalhe: string }
-  amiodarona: (n: number) => { valor: string; detalhe: string }
-  lidocaina: { valor: string; detalhe: string }
+  choque: (n: number) => DoseDaParada
+  epinefrina: DoseDaParada
+  amiodarona: (n: number) => DoseDaParada
+  lidocaina: DoseDaParada
   fonte: string
 }
 
 /** Doses mostradas no cronômetro. Criança sem peso: pede o peso (nada é estimado). */
+/**
+ * mL da dose na ampola, para o cronômetro (pedido do RT de 20/11/2026: mostrar o
+ * mL perde menos tempo). Só quando o princípio tem uma concentração cadastrada;
+ * com mais de uma, o cronômetro não escolhe por ninguém e não mostra mL.
+ */
+export function mlNaAmpola(doseMg: [number, number], ampolas: Apresentacao[] | undefined): string | null {
+  if (!ampolas || ampolas.length !== 1) return null
+  const a = ampolas[0]
+  if (!doseMg.every((x) => Number.isFinite(x) && x > 0)) return null
+  const ml = (x: number) => numeroDaDose(Math.round((x / a.porMl) * 100) / 100)
+  const v = doseMg[0] === doseMg[1] ? ml(doseMg[0]) : `${ml(doseMg[0])} a ${ml(doseMg[1])}`
+  return `${v} mL da ampola de ${numeroDaDose(a.porMl)} mg/mL${a.diluir ? ', aspirar e diluir' : ''}`
+}
+
+const comMl = (valor: string, detalhe: string, ml: string | null): DoseDaParada => ({ valor, detalhe: ml ? `${ml} · ${detalhe}` : detalhe, ml })
+
 export function dosesDaParada(publico: PublicoParada, pesoKg: number | null): DosesDaParada | null {
   const kg = pesoKg !== null && Number.isFinite(pesoKg) && pesoKg > 0 ? pesoKg : null
   if (publico === 'adulto') {
     return {
       choque: () => ({ valor: `${CHOQUE_PCR.bifasicoJ} J bifásico`, detalhe: `monofásico ${CHOQUE_PCR.monofasicoJ} J (manual p. 48); AHA 2025: carga do fabricante, ${AHA_2025_PCR.bifasicoJ[0]}–${AHA_2025_PCR.bifasicoJ[1]} J` }),
-      epinefrina: { valor: `${AHA_2025_PCR.adrenalinaMg} mg`, detalhe: 'IV/IO, a cada 3 a 5 min' },
-      amiodarona: (n) => ({ valor: `${n === 0 ? AHA_2025_PCR.amiodaronaMg[0] : AHA_2025_PCR.amiodaronaMg[1]} mg`, detalhe: n === 0 ? 'IV/IO, 1ª dose' : 'IV/IO, 2ª dose (depois do 5º choque)' }),
+      epinefrina: comMl(`${AHA_2025_PCR.adrenalinaMg} mg`, 'IV/IO, a cada 3 a 5 min', mlNaAmpola([AHA_2025_PCR.adrenalinaMg, AHA_2025_PCR.adrenalinaMg], AMPOLAS_PCR_ADULTO.adrenalina)),
+      amiodarona: (n) => {
+        const mg = n === 0 ? AHA_2025_PCR.amiodaronaMg[0] : AHA_2025_PCR.amiodaronaMg[1]
+        return comMl(`${mg} mg`, n === 0 ? 'IV/IO, 1ª dose' : 'IV/IO, 2ª dose (depois do 5º choque)', mlNaAmpola([mg, mg], AMPOLAS_PCR_ADULTO.amiodarona))
+      },
       lidocaina: kg
-        ? { valor: `${numeroDaDose(kg)} a ${numeroDaDose(1.5 * kg)} mg`, detalhe: '1 a 1,5 mg/kg, alternativa à amiodarona' }
+        ? comMl(`${numeroDaDose(kg)} a ${numeroDaDose(1.5 * kg)} mg`, '1 a 1,5 mg/kg, alternativa à amiodarona', mlNaAmpola([kg, 1.5 * kg], AMPOLAS_PCR_ADULTO.lidocaina))
         : { valor: '1 a 1,5 mg/kg', detalhe: 'alternativa à amiodarona; digite o peso para a dose' },
       fonte: 'Adulto: manual do HCFMUSP (p. 48–49) e AHA 2025, Part 9 — as mesmas da ferramenta PCR do adulto.',
     }
@@ -213,9 +238,15 @@ export function dosesDaParada(publico: PublicoParada, pesoKg: number | null): Do
     choque: (n) => n === 0
       ? { valor: `${J(c.desfibrilacaoPrimeiro)} J`, detalhe: `2 J/kg · ${numeroDaDose(kg)} kg` }
       : { valor: `${J(c.desfibrilacaoSeguinte)} J`, detalhe: `4 J/kg · pode subir até ${J(c.desfibrilacaoTeto)} J (10 J/kg), sem passar da dose de adulto` },
-    epinefrina: { valor: `${numeroDaDose(epi.faixa[0])} mg`, detalhe: `${numeroDaDose(epi.volumeMl![0])} mL de 0,1 mg/mL · a cada 3 a 5 min` },
-    amiodarona: (n) => ({ valor: `${numeroDaDose(n === 0 ? amio.faixa[0] : Math.min(amio.faixa[0], 150))} mg`, detalhe: n === 0 ? '5 mg/kg (máx. 300 mg)' : '5 mg/kg (máx. 150 mg nas seguintes; até 3 doses)' }),
-    lidocaina: { valor: `${numeroDaDose(dose('fita-lidocaina').calculo.faixa[0])} mg`, detalhe: '1 mg/kg, alternativa à amiodarona' },
+    epinefrina: { valor: `${numeroDaDose(epi.faixa[0])} mg`, detalhe: `${numeroDaDose(epi.volumeMl![0])} mL de 0,1 mg/mL · a cada 3 a 5 min`, ml: `${numeroDaDose(epi.volumeMl![0])} mL de 0,1 mg/mL` },
+    amiodarona: (n) => {
+      const mg = n === 0 ? amio.faixa[0] : Math.min(amio.faixa[0], 150)
+      return comMl(`${numeroDaDose(mg)} mg`, n === 0 ? '5 mg/kg (máx. 300 mg)' : '5 mg/kg (máx. 150 mg nas seguintes; até 3 doses)', mlNaAmpola([mg, mg], AMPOLAS.amiodarona))
+    },
+    lidocaina: (() => {
+      const mg = dose('fita-lidocaina').calculo.faixa[0]
+      return comMl(`${numeroDaDose(mg)} mg`, '1 mg/kg, alternativa à amiodarona', mlNaAmpola([mg, mg], AMPOLAS.lidocaina))
+    })(),
     fonte: 'Criança: módulo ped-doses-fita pelo peso digitado (AHA 2025, Figura 2).',
   }
 }
