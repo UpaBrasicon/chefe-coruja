@@ -6,6 +6,7 @@ import { Abas, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { FERRAMENTAS_DA_PARADA, SITUACOES_PARADA, type GrupoParada, type SituacaoParada } from '@/content/guiaParadaCrianca'
 import { choquesDoPeso, dosesDoPeso, numeroDaDose, type DoseDaFitaCalculada } from '@/clinico/pediatria/dosesDaFita'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { FAIXAS_RCP, parametrosRcp } from '@/clinico/pediatria/rcp'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
 import { corEscolhida, leituraDaFita, pedePesoNaCor, pesoDaDoseDoPaciente } from '@/lib/fitaDoPeso'
@@ -38,6 +39,7 @@ function CartaoDose({ item }: { item: DoseDaFitaCalculada }) {
           {faixa(c.volumeMl[0], c.volumeMl[1])} mL <span className="font-normal text-tinta-apoio">de {d.apresentacao}</span>
         </span>
       )}
+      {!c.volumeMl && <EscolhaDaAmpola chave={`fita:${d.id}`} dose={c.faixa} unidade={un} grande />}
       <span className="text-apoio text-tinta-apoio">{d.via}</span>
       {(d.maximo !== undefined || c.aplica === 'indefinido') && (
         <div className="flex flex-wrap gap-1.5">

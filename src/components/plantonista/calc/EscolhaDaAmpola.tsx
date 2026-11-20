@@ -15,12 +15,14 @@ const faixaMl = ([a, b]: [number, number]) => (Math.abs(a - b) < 1e-9 ? ml(a) : 
  * Nenhuma ampola vem marcada; sem escolha, a tela não mostra mL. Item sem
  * ampola cadastrada não mostra nada (a linha fica como antes).
  */
-export function EscolhaDaAmpola({ chave, dose, unidade, base }: {
+export function EscolhaDaAmpola({ chave, dose, unidade, base, grande }: {
   /** "lista:id", ex. 'rcp:atropina' (ver ITENS_COM_AMPOLA) */
   chave: string
   dose: [number, number]
   unidade: string
   base?: BaseDose
+  /** volume no estilo do guia de parada (texto maior, cor de ação) */
+  grande?: boolean
 }) {
   const ampolas = ampolasDoItem(chave)
   const [escolhida, setEscolhida] = useState<string | null>(null)
@@ -41,10 +43,10 @@ export function EscolhaDaAmpola({ chave, dose, unidade, base }: {
       {!volume && <p className="text-tinta-sussurro">{PECA_A_AMPOLA}</p>}
       {volume && ampola && (
         <>
-          <p className="tabular-nums text-tinta">
+          <p className={cn('tabular-nums', grande ? 'text-corpo font-semibold text-acao' : 'text-tinta')}>
             <strong>{faixaMl(volume.ml)} mL</strong> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL
           </p>
-          {volume.aspirar && <p className={cn('font-medium text-atencao')}>{AVISO_DILUIR}</p>}
+          {volume.aspirar && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
           <p className="text-rotulo text-tinta-sussurro">Concentração: {ampola.fonte}.</p>
         </>
       )}
