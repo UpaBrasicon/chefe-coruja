@@ -315,3 +315,14 @@ Detalhes:
 - O RAC da UBS sai com a modalidade 01 e o caráter da tabela acima. O enfermeiro assina a consulta de enfermagem, porque é ele quem inicia o atendimento.
 - A ficha que venceu na UBS (ninguém atendeu) não vira RAC.
 - `rnds_config_unidade.rac_aps_pelo` escolhe quem manda à RNDS o atendimento da APS: `app` (padrão) ou `pec` (o PEC e-SUS APS do município). Com `pec`, o RAC da UBS não entra na fila, e o que estava pendente ou retido é descartado. O gestor da UBS troca na aba RNDS (`rnds_rac_aps_pelo`), com segundo fator e auditoria.
+
+## A vacina (U15, vacina, PR 7)
+
+O RIA de rotina (RIA-R) entra na fila como `ria`, um item por vacina registrada (aplicada ou transcrita da caderneta). Migration `20270415000031_ubs_u15_ria_rnds.sql`; documento em `src/interop/fhir/ria.ts`, pelo Manual de Integração RIA-R v1.9 e pelos perfis do validador oficial (`BRRegistroImunobiologicoAdministradoRotina-2.0`, `BRImunobiologicoAdministrado-3.0`).
+
+- A UBS com `rac_aps_pelo = 'pec'` não enfileira o RIA: a vacina vai à RNDS pelo PEC do município (VC6 = A).
+- Os códigos do LEDI guardados no banco batem com os da RNDS: imunobiológico e dose pelo mesmo código; estratégia, grupo, via e local pela coluna `codigo_rnds`.
+- Quem aplicou ou transcreveu vai pelo CNS (`Practitioner/<CNS>`), como pede o manual; sem CNS, o documento fica retido.
+- Transcrição: `primarySource` falso, `reportOrigin` 01 (ou 02 no exterior), país 10 (Brasil). Sem lote e fabricante. Grupo e estratégia com o código "sem registro" (00 e 0).
+- Vacina cancelada antes do envio: o item é descartado. **Em aberto:** a exclusão na RNDS da vacina cancelada depois de enviada (nota técnica de exclusão e substituição).
+- Os códigos que o validador de 2024 não tem (imunobiológicos 115 a 117 e 7 fabricantes novos do LEDI) podem ser recusados pela RNDS; o item fica com erro e o motivo.

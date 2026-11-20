@@ -16,15 +16,17 @@ import type { Bundle } from '@medplum/fhirtypes'
 import {
   montarBundleRAC,
   montarBundleRegulacao,
+  montarBundleRIA,
   montarBundleSumarioAlta,
   type DadosMira,
   type EntidadeAtendimentoRAC,
+  type EntidadeRIA,
   type EntidadeSumarioAlta,
   type EnvioRnds,
 } from '../../../src/interop/fhir/index.ts'
 import { enderecos, type Ambiente, type Certificado, type ClienteRnds, type Enderecos, type Resultado } from './cliente-rnds.ts'
 
-export type ItemLote = { id: string; tipo_documento: 'rac' | 'sumario_alta' | 'regulacao'; unidade_id: string; tentativas: number }
+export type ItemLote = { id: string; tipo_documento: 'rac' | 'sumario_alta' | 'regulacao' | 'ria'; unidade_id: string; tentativas: number }
 
 /** O que public.rnds_dados_documento devolve. */
 export type DocumentoCarregado = {
@@ -152,5 +154,6 @@ async function processarItem(d: Dependencias, item: ItemLote): Promise<Registro>
 function montar(doc: DocumentoCarregado, envio: EnvioRnds): Bundle {
   if (doc.tipo === 'rac') return montarBundleRAC(doc.dados as EntidadeAtendimentoRAC, envio)
   if (doc.tipo === 'sumario_alta') return montarBundleSumarioAlta(doc.dados as EntidadeSumarioAlta, envio)
+  if (doc.tipo === 'ria') return montarBundleRIA(doc.dados as EntidadeRIA, envio)  // U15, vacina
   return montarBundleRegulacao(doc.dados as DadosMira, envio)
 }
