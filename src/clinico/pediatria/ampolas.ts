@@ -59,6 +59,44 @@ export const BULA_AMIODARONA: Fonte = {
   citacao: 'Bulas do profissional, cloridrato de amiodarona 50 mg/mL injetável: Newcom Farmacêutica Ltda., expediente 0716157268, 20/07/2026; Hipolabor Farmacêutica Ltda., expediente 1466419245, 24/10/2024 (Bulário Eletrônico da ANVISA, lidas em 19/11/2026). As duas mandam diluir em glicose 5%, inclusive no bolo da PCR.',
   url: BULARIO('cloridrato de amiodarona'),
 }
+// Lote 2 (intubação, sedação e antídotos): bulas baixadas pelo RT e lidas em
+// 20/11/2026; tabela aprovada pelo RT no mesmo dia. Succinilcolina (só pó para
+// reconstituir) fica sem mL (ML3–ML5). Morfina fica sem mL até a bula do Dimorf
+// (há 0,2, 1 e 10 mg/mL; erro de 10×). Escetamina: o RT confirmou que a dose do
+// livro (Ketamin S®, p. 88) vale para as ampolas de escetamina 50 mg/mL.
+export const BULA_FENTANILA: Fonte = {
+  citacao: 'Bulas do profissional, citrato de fentanila 50 µg/mL: Hipolabor, expediente 0219492263, 05/03/2026; Teuto, expediente 0981354262, 21/09/2026; Newcom, expediente 0710253265, 17/07/2026 (Bulário Eletrônico da ANVISA, lidas em 20/11/2026).',
+  url: BULARIO('citrato de fentanila'),
+}
+export const BULA_MIDAZOLAM: Fonte = {
+  citacao: 'Bulas do profissional, midazolam 1 mg/mL e 5 mg/mL: Hipolabor (1 mg/mL), expediente 1147276269, 29/10/2026; União Química (5 mg/mL), expediente 4849915221, 21/10/2022; Teuto (1 e 5 mg/mL), expediente 1189771241, 29/08/2024 (Bulário Eletrônico da ANVISA, lidas em 20/11/2026).',
+  url: BULARIO('midazolam'),
+}
+export const BULA_ESCETAMINA: Fonte = {
+  citacao: 'Bulas do profissional, cloridrato de escetamina 50 mg/mL: União Química, expediente 0763401269, 30/07/2026; Hipolabor, expediente 0759890242, 06/06/2024; Santisa, expediente 0995211264, 23/09/2026 (Bulário Eletrônico da ANVISA, lidas em 20/11/2026).',
+  url: BULARIO('cloridrato de escetamina'),
+}
+export const BULA_ETOMIDATO: Fonte = {
+  citacao: 'Bulas do profissional, etomidato 2 mg/mL: Blau, expediente 1025663268, 30/09/2026; Cristália, expediente 0920059261, 04/09/2026 (Bulário Eletrônico da ANVISA, lidas em 20/11/2026).',
+  url: BULARIO('etomidato'),
+}
+export const BULA_PROPOFOL: Fonte = {
+  citacao: 'Bulas do profissional, propofol 10 mg/mL (1%) e 20 mg/mL (2%): Camber, expediente 1171258267, 05/11/2026; Teuto, expediente 1200670256, 10/09/2025; Fresenius Kabi (1% e 2%), expediente 0626793262, 25/06/2026; Blau, expediente 1179691253, 04/09/2025 (Bulário Eletrônico da ANVISA, lidas em 20/11/2026).',
+  url: BULARIO('propofol'),
+}
+export const BULA_ROCURONIO: Fonte = {
+  citacao: 'Bulas do profissional, brometo de rocurônio 10 mg/mL: Eurofarma, expediente 1064019242, 05/08/2024; Viatris (Mylan), expediente 2481128222, 20/04/2022 (Bulário Eletrônico da ANVISA, lidas em 20/11/2026).',
+  url: BULARIO('brometo de rocurônio'),
+}
+export const BULA_DEXMEDETOMIDINA: Fonte = {
+  citacao: 'Bulas do profissional, cloridrato de dexmedetomidina 100 µg/mL (solução para diluição): Antibióticos do Brasil, Cristália, Eugia, Eurofarma, Sanval e União Química (Bulário Eletrônico da ANVISA, lidas em 20/11/2026). Todas mandam diluir antes de administrar.',
+  url: BULARIO('cloridrato de dexmedetomidina'),
+}
+export const BULA_NALOXONA: Fonte = {
+  citacao: 'Bula do profissional, cloridrato de naloxona 0,4 mg/mL: Hipolabor, expediente 1567333249, 14/11/2024 (Bulário Eletrônico da ANVISA, lidas em 20/11/2026).',
+  url: BULARIO('cloridrato de naloxona'),
+}
+
 export const BULA_LIDOCAINA: Fonte = {
   citacao: 'Bulas do profissional, cloridrato de lidocaína 20 mg/mL (2%) sem vasoconstritor: Blau Farmacêutica S.A., expediente 1609670256, 16/12/2025; Hypofarma, expediente 1609728254, 16/12/2025; Hipolabor Farmacêutica Ltda., expediente 1616391243, 26/11/2024 (Bulário Eletrônico da ANVISA, lidas em 19/11/2026).',
   url: BULARIO('cloridrato de lidocaína'),
@@ -80,15 +118,47 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
     { id: 'gluconato-10', rotulo: 'Gluconato de cálcio 10% (9 mg de cálcio elementar/mL)', porMl: 9, base: 'elemento', fonte: 'livro do ICr, Tabela 11, p. 558' },
     { id: 'cloreto-10', rotulo: 'Cloreto de cálcio 10% (27 mg de cálcio elementar/mL)', porMl: 27, base: 'elemento', fonte: 'livro do ICr, Tabela 11, p. 559' },
   ],
+  // lote 2: intubação, sedação e antídotos
+  fentanila: [
+    { id: 'fentanila-50', rotulo: 'Fentanila 50 µg/mL', porMl: 50, fonte: 'bulas Hipolabor, Teuto e Newcom', url: BULA_FENTANILA.url },
+  ],
+  midazolam: [
+    { id: 'midazolam-1', rotulo: 'Midazolam 1 mg/mL (ampola de 5 mL)', porMl: 1, fonte: 'bulas Hipolabor e Teuto', url: BULA_MIDAZOLAM.url },
+    { id: 'midazolam-5', rotulo: 'Midazolam 5 mg/mL', porMl: 5, fonte: 'bulas União Química e Teuto', url: BULA_MIDAZOLAM.url },
+  ],
+  escetamina: [
+    { id: 'escetamina-50', rotulo: 'Escetamina 50 mg/mL (Ketamin S® e genéricos)', porMl: 50, fonte: 'bulas União Química, Hipolabor e Santisa; livro do ICr, p. 88', url: BULA_ESCETAMINA.url },
+  ],
+  etomidato: [
+    { id: 'etomidato-2', rotulo: 'Etomidato 2 mg/mL (ampola de 10 mL)', porMl: 2, fonte: 'bulas Blau e Cristália', url: BULA_ETOMIDATO.url },
+  ],
+  propofol: [
+    { id: 'propofol-10', rotulo: 'Propofol 1% (10 mg/mL)', porMl: 10, fonte: 'bulas Camber, Teuto, Fresenius e Blau', url: BULA_PROPOFOL.url },
+    { id: 'propofol-20', rotulo: 'Propofol 2% (20 mg/mL)', porMl: 20, fonte: 'bula Fresenius Kabi', url: BULA_PROPOFOL.url },
+  ],
+  rocuronio: [
+    { id: 'rocuronio-10', rotulo: 'Rocurônio 10 mg/mL', porMl: 10, fonte: 'bulas Eurofarma e Viatris', url: BULA_ROCURONIO.url },
+  ],
+  dexmedetomidina: [
+    { id: 'dexmedetomidina-100', rotulo: 'Dexmedetomidina 100 µg/mL (frasco de 2 mL)', porMl: 100, diluir: true, fonte: 'bulas de 6 fabricantes; todas mandam diluir', url: BULA_DEXMEDETOMIDINA.url },
+  ],
+  // a mesma ampola em mg (dose da intoxicação) e em µg (dose baixa)
+  naloxona: [
+    { id: 'naloxona-0-4', rotulo: 'Naloxona 0,4 mg/mL (ampola de 1 mL)', porMl: 0.4, fonte: 'bula Hipolabor', url: BULA_NALOXONA.url },
+  ],
+  'naloxona-ug': [
+    { id: 'naloxona-400', rotulo: 'Naloxona 0,4 mg/mL = 400 µg/mL (ampola de 1 mL)', porMl: 400, fonte: 'bula Hipolabor', url: BULA_NALOXONA.url },
+  ],
 }
 
 export const fichaAmpolas: Ficha = {
   id: 'ped-ampolas',
   titulo: 'Ampolas para a dose em mL (criança)',
-  versao: '2026-11-19.1',
+  versao: '2026-11-20.1',
   publico: 'pediatrico',
-  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA],
-  revisadoEm: '19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
+  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
+    BULA_FENTANILA, BULA_MIDAZOLAM, BULA_ESCETAMINA, BULA_ETOMIDATO, BULA_PROPOFOL, BULA_ROCURONIO, BULA_DEXMEDETOMIDINA, BULA_NALOXONA],
+  revisadoEm: '20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
 }
 
 /**
@@ -115,6 +185,33 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'fita:fita-lidocaina': { principio: 'lidocaina' },
   'fita:fita-adenosina-1': { principio: 'adenosina' },
   'fita:fita-adenosina-2': { principio: 'adenosina' },
+  // lote 2: intubação, sedação e antídotos
+  'sri:fentanil': { principio: 'fentanila' },
+  'sri:quetamina': { principio: 'escetamina' },
+  'sri:midazolam': { principio: 'midazolam' },
+  'sri:etomidato': { principio: 'etomidato' },
+  'sri:propofol': { principio: 'propofol' },
+  'sri:rocuronio': { principio: 'rocuronio' },
+  'bolus:fentanil': { principio: 'fentanila' },
+  'bolus:dexmedetomidina-proc': { principio: 'dexmedetomidina' },
+  'bolus:etomidato': { principio: 'etomidato' },
+  'bolus:midazolam-im': { principio: 'midazolam' },
+  'bolus:midazolam-iv-menor5': { principio: 'midazolam' },
+  'bolus:midazolam-iv-maior5': { principio: 'midazolam' },
+  'bolus:midazolam-in': { principio: 'midazolam' },
+  'bolus:propofol': { principio: 'propofol' },
+  'bolus:rocuronio': { principio: 'rocuronio' },
+  'bolus:naloxona-menor': { principio: 'naloxona' },
+  'bolus:naloxona-maior': { principio: 'naloxona' },
+  'bolus:dose-baixa-naloxona': { principio: 'naloxona-ug' },
+  'fita:fita-etomidato': { principio: 'etomidato' },
+  'fita:fita-propofol': { principio: 'propofol' },
+  'fita:fita-rocuronio': { principio: 'rocuronio' },
+  'fita:fita-fentanil-menor6': { principio: 'fentanila' },
+  'fita:fita-fentanil-maior6': { principio: 'fentanila' },
+  'fita:fita-naloxona': { principio: 'naloxona' },
+  'fita:fita-naloxona-maior': { principio: 'naloxona' },
+  'fita:fita-naloxona-baixa': { principio: 'naloxona-ug' },
 }
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
