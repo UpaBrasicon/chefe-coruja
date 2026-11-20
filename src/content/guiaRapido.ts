@@ -25,6 +25,7 @@ export const GUIA_ADULTO: CartaoGuia[] = [
   { nome: 'Sepse', rota: '/plantonista/escores/sepse-adulto', icone: 'termometro' },
   { nome: 'Dor torácica e SCA', rota: '/plantonista/emergencias/sca-inicial-adulto', icone: 'coracao' },
   { nome: 'AVC e trombólise', rota: '/plantonista/emergencias/trombolise-avc-adulto', icone: 'cerebro' },
+  { nome: 'Crise epiléptica', id: 'crise-adulto', icone: 'cerebro', itens: [{ nome: 'Estado de mal epiléptico completo', rota: '/plantonista/calculadoras/hidantalizacao' }] },
   { nome: 'TEP', rota: '/plantonista/escores/wells-tep', icone: 'pulmao' },
   { nome: 'Sedação', rota: '/plantonista/emergencias/sedacao-procedimento-adulto', icone: 'lua' },
   { nome: 'Intoxicações e antídotos', rota: '/plantonista/emergencias/intoxicacoes-antidotos-adulto', icone: 'alerta' },

@@ -8,6 +8,9 @@ import { DROGAS_ISR, calcularIsr, type DrogaIsr } from '@/clinico/adulto/isr'
 import {
   ADRENALINA_BOLUS_EV, ADRENALINA_IM, CUIDADOS_ANAFILAXIA, SEGUNDA_LINHA_ANAFILAXIA, bolusEvMl, volumeChoqueMl,
 } from '@/clinico/adulto/anafilaxia'
+import {
+  ATAQUE_ESTADO_DE_MAL, ESTABILIZACAO_ESTADO_DE_MAL, LEVETIRACETAM_EME, TEMPOS_ESTADO_DE_MAL, calcularAtaque, type DrogaAtaque,
+} from '@/clinico/adulto/estadoDeMal'
 import { numeroDaDose } from '@/clinico/pediatria/dosesDaFita'
 import { alterarPaciente, definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
 import { CampoGrande } from './CamposDoGuia'
@@ -158,6 +161,41 @@ export function AnafilaxiaAdultoDeBolso() {
       </section>
       <p className="text-rotulo text-tinta-sussurro">A decisão é do médico. Doses da ficha aprovada adulto-anafilaxia.</p>
       <LinkCompleto rota="/plantonista/emergencias/anafilaxia-adulto" nome="Anafilaxia completa" />
+    </div>
+  )
+}
+
+/** Crise epiléptica de bolso (adulto): estado de mal por janela de tempo, da ficha adulto-estado-de-mal-epileptico. */
+export function CriseAdultoDeBolso() {
+  const kg = usePesoAdultoDeBolso()
+  const n = (x: number) => numeroDaDose(Math.round(x * 10) / 10)
+  const cartaoAtaque = (d: DrogaAtaque) => {
+    const r = calcularAtaque(d, kg ?? NaN)
+    if (!r) return <Cartao key={d.id} nome={d.nome} dose={d.mgKg ? `${faixa(d.mgKg[0], d.mgKg[1])} mg/kg` : '—'} detalhe="digite o peso para a dose" fonte={d.pagina.startsWith('p.') ? `manual do HCFMUSP, ${d.pagina}` : d.pagina} />
+    return (
+      <Cartao key={d.id} nome={d.nome} dose={`${faixa(r.mg[0], r.mg[1])} mg${r.limitadoAoTeto ? ' (teto)' : ''}`}
+        volume={r.ml ? `${faixa(r.ml[0], r.ml[1])} mL de ${numeroDaDose(d.mgMl!)} mg/mL` : undefined}
+        detalhe={[d.administracao, ...r.tempos.map((t) => `${t.rotulo}: ${n(t.minutos[0])}${t.minutos[0] !== t.minutos[1] ? ` a ${n(t.minutos[1])}` : ''} min`)].join(' · ')}
+        nota={[d.errata, d.nota].filter(Boolean).join(' ') || undefined} fonte={d.pagina.startsWith('p.') ? `manual do HCFMUSP, ${d.pagina}` : d.pagina} />
+    )
+  }
+  return (
+    <div className="flex flex-col gap-4">
+      <CabecalhoAdulto titulo="Crise epiléptica" descricao="Adulto: estado de mal por janela de tempo" />
+      {TEMPOS_ESTADO_DE_MAL.map((t, i) => (
+        <section key={t.etapa} className="flex flex-col gap-2">
+          <TituloSecao className="mb-0">{i + 1}. {t.etapa} · {t.janela}</TituloSecao>
+          {i === 0 && <p className="text-corpo text-tinta">{ESTABILIZACAO_ESTADO_DE_MAL.texto} ({ESTABILIZACAO_ESTADO_DE_MAL.pagina})</p>}
+          {(i === 1 || i === 2) && (
+            <ul className="flex flex-col gap-2.5">
+              {[...ATAQUE_ESTADO_DE_MAL.filter((d) => d.linha === i), ...(i === 2 ? [LEVETIRACETAM_EME] : [])].map(cartaoAtaque)}
+            </ul>
+          )}
+          {i === 3 && <LinkCompleto rota="/plantonista/calculadoras/hidantalizacao" nome="Infusão contínua da 3ª linha (ferramenta completa)" />}
+        </section>
+      ))}
+      <p className="text-rotulo text-tinta-sussurro">A decisão é do médico. Doses da ficha aprovada adulto-estado-de-mal-epileptico.</p>
+      <LinkCompleto rota="/plantonista/calculadoras/hidantalizacao" nome="Estado de mal epiléptico completo" />
     </div>
   )
 }

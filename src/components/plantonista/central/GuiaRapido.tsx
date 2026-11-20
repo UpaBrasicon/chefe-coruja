@@ -14,7 +14,7 @@ import { CampoGrande, ChaveDoPaciente, CorDaFita, DetalheDaFita } from './Campos
 import { CronometroParada } from './CronometroParada'
 import { GuiaParadaCrianca } from './GuiaParadaCrianca'
 import { AnafilaxiaDeBolso, CriseDeBolso, DesidratacaoDeBolso, DosesDeBolso } from './GuiaDeBolso'
-import { AnafilaxiaAdultoDeBolso, IntubacaoAdultoDeBolso } from './GuiaDeBolsoAdulto'
+import { AnafilaxiaAdultoDeBolso, CriseAdultoDeBolso, IntubacaoAdultoDeBolso } from './GuiaDeBolsoAdulto'
 
 // Guia rápido (F4, celular e tablet; pedido do RT de 17/11/2026, M1–M6 = A,
 // protótipo aprovado). No alto, a chave criança ↔ adulto e o peso e a idade,
@@ -65,6 +65,7 @@ export function GuiaRapido() {
   if (guia === 'desidratacao-crianca') return <DesidratacaoDeBolso />
   if (guia === 'iot-adulto') return <IntubacaoAdultoDeBolso />
   if (guia === 'anafilaxia-adulto') return <AnafilaxiaAdultoDeBolso />
+  if (guia === 'crise-adulto') return <CriseAdultoDeBolso />
   const grupo = cartaoDoGuia(guia)
   if (grupo) return <GrupoDoGuia grupo={grupo} />
   return <InicioDoGuia />
