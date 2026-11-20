@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { AVISO_VOLUME_PEQUENO, volumeAbaixoDe01 } from '@/clinico/pediatria/ampolas'
 import { BOLUS, GRUPOS, NEONATO_FORA, NOTA_PESO_EMERGENCIA, calcularBolus, fichaBolusPediatrico, type Bolus, type Grupo } from '@/clinico/pediatria/bolus'
 import { IDADE_ADULTO_ANOS } from '@/clinico/ficha'
 import { textoFontes } from '@/clinico/ficha'
@@ -55,6 +56,7 @@ function Item({ b, peso, idadeMeses }: { b: Bolus; peso: number; idadeMeses?: nu
       {fora && <p className="text-tinta-sussurro">Fora da condição do livro para o peso/idade informados.</p>}
       {r?.aplica === 'indefinido' && <p className="text-tinta-sussurro">Depende da idade: informe a idade para conferir a condição do livro.</p>}
       {r?.noMaximo && <p className="text-atencao">Dose limitada ao máximo {doMaximo(b.fonteMaximo)}.</p>}
+      {r && !fora && b.unidade !== 'mL' && volumeAbaixoDe01(r.volumeMl) && <p className="text-atencao">{AVISO_VOLUME_PEQUENO}</p>}
       {r && !fora && <EscolhaDaAmpola chave={`bolus:${b.id}`} dose={r.faixa} unidade={b.unidade} />}
       {r?.abaixoDoAviso && b.aviso && <p className="text-atencao">{b.aviso.texto}</p>}
       {/* Piloto das calculadoras (C6 = A): nota e divergência recolhidas no item; a errata vai para a aba Armadilhas; os avisos de dose acima ficam à vista. */}

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { AVISO_VOLUME_PEQUENO, volumeAbaixoDe01 } from '@/clinico/pediatria/ampolas'
 import { calcularDose, SEM_VALOR_NEONATAL_P2, type DosePeso } from '@/clinico/pediatria/fonteP2'
 import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { NumberField } from '@/components/plantonista/NumberField'
@@ -66,6 +67,7 @@ export function LinhaDose({ d, peso, extra, ampola }: { d: DosePeso; peso: numbe
         {' · '}{d.via}
       </p>
       {r.noMaximo && <p className="text-atencao">Limitado ao máximo {doMaximo(d.fonteMaximo)}.</p>}
+      {d.unidade !== 'mL' && volumeAbaixoDe01(r.volumeMl) && <p className="text-atencao">{AVISO_VOLUME_PEQUENO}</p>}
       {ampola && <EscolhaDaAmpola chave={ampola} dose={r.dose} unidade={d.unidade} />}
       {extra}
       {d.nota && <p className="text-tinta-sussurro">No livro: {d.nota}</p>}

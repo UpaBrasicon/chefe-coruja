@@ -64,6 +64,7 @@ export function AsmaPediatrica() {
               key={d.id}
               d={d}
               peso={peso}
+              ampola={`asma:${d.id}`}
               extra={d.id === 'magnesio-tabela' ? <p>Dose padrão (50 mg/kg): <strong className="tabular-nums">{num(MAGNESIO_PADRAO_MG_KG * peso, 0)} mg</strong></p> : undefined}
             />
           ))}
