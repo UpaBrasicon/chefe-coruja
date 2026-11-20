@@ -3,12 +3,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, fichaAmpolas, problemasDasAmpolas, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
+import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, fichaAmpolas, problemasDasAmpolas, volumeAbaixoDe01, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
 import { BOLUS } from './bolus.ts'
 import { DROGAS_RCP } from './rcp.ts'
 import { DOSES_SRI } from './viaAerea.ts'
 import { DOSES_DA_FITA } from './dosesDaFita.ts'
 import { DOSES_CRISE } from './criseEpileptica.ts'
+import { DOSES_ASMA } from './asma.ts'
+import { DOSES_ANAFILAXIA } from './anafilaxia.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -61,6 +63,7 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     bolus: new Set(BOLUS.map((b) => b.id)), rcp: new Set(DROGAS_RCP.map((d) => d.id)), sri: new Set(DOSES_SRI.map((d) => d.id)),
     fita: new Set(DOSES_DA_FITA.map((d) => d.id)),
     crise: new Set(DOSES_CRISE.map((d) => d.id)),
+    asma: new Set(DOSES_ASMA.map((d) => d.id)), anafilaxia: new Set(DOSES_ANAFILAXIA.map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -73,7 +76,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.2')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.3')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -93,6 +96,12 @@ test('guia de parada: ampola só onde a fita não traz mL (sem dois volumes na m
   for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('rcp:'))) {
     const d = DROGAS_RCP.find((x) => x.id === chave.slice(4))!
     assert.ok(d.porMl === undefined && d.mlPorKg === undefined, `${chave} já tem mL`)
+  }
+  for (const [prefixo, lista] of [['asma:', DOSES_ASMA], ['anafilaxia:', DOSES_ANAFILAXIA]] as const) {
+    for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith(prefixo))) {
+      const d = lista.find((x) => x.id === chave.slice(prefixo.length))!
+      assert.ok(d.porMl === undefined && d.mlPorKg === undefined, `${chave} já tem mL`)
+    }
   }
 })
 
@@ -147,4 +156,35 @@ test('lote 3 (crise) e CMED: concentrações aprovadas pelo RT (20/11/2026)', ()
   // diazepam 0,3 mg/kg em 10 kg = 3 mg = 0,6 mL de 5 mg/mL; fenitoína 20 mg/kg em 10 kg = 200 mg = 4 mL a aspirar e diluir
   assert.deepEqual(volumeDaAmpola([3, 3], ampolasDoItem('crise:diazepam-iv')[0])?.ml, [0.6, 0.6])
   assert.deepEqual(volumeDaAmpola([200, 200], ampolasDoItem('crise:fenitoina')[0]), { ml: [4, 4], aspirar: true })
+})
+
+test('lote 4 (L4-3 do RT, 20/11/2026): magnésio 10% e 50% pela CMED, no sal, nenhuma marcada', () => {
+  assert.deepEqual(AMPOLAS.magnesio.map((a) => [a.porMl, a.base]), [[100, 'sal'], [500, 'sal']])
+  for (const c of ['asma:magnesio-tabela', 'asma:magnesio-texto', 'bolus:magnesio-asma', 'bolus:magnesio-torsades', 'fita:fita-magnesio-asma', 'fita:fita-magnesio-torsades']) {
+    assert.deepEqual(ampolasDoItem(c).map((a) => a.id), ['magnesio-100', 'magnesio-500'], c)
+  }
+  // a RCP do livro (Tabela 2) nomeia a 50%: fica como está
+  assert.deepEqual(ampolasDoItem('rcp:magnesio'), [])
+  // asma 50 mg/kg em 20 kg = 1.000 mg = 10 mL da 10% ou 2 mL da 50%
+  const [mg10, mg50] = AMPOLAS.magnesio
+  assert.deepEqual(volumeDaAmpola([1000, 1000], mg10, 'sal')?.ml, [10, 10])
+  assert.deepEqual(volumeDaAmpola([1000, 1000], mg50, 'sal')?.ml, [2, 2])
+  // sem ampola escolhida, nada de mL; dose em elemento não usa a ampola do sal (ML6)
+  assert.equal(volumeDaAmpola([1000, 1000], undefined), null)
+  assert.equal(volumeDaAmpola([100, 100], mg50, 'elemento'), null)
+})
+
+test('lote 4: difenidramina, dexametasona e azul de metileno esperam a bula (L4-1, L4-2, L4-4)', () => {
+  for (const c of ['anafilaxia:difenidramina-tabela', 'anafilaxia:difenidramina-texto', 'bolus:difenidramina', 'fita:fita-difenidramina',
+    'asma:dexametasona', 'bolus:dexametasona-crupe', 'fita:fita-dexametasona-crupe']) assert.deepEqual(ampolasDoItem(c), [], c)
+})
+
+test('L4-5: aviso de volume abaixo de 0,1 mL', () => {
+  assert.equal(volumeAbaixoDe01([0.03, 0.06]), true)
+  assert.equal(volumeAbaixoDe01([0.05, 0.2]), true)
+  assert.equal(volumeAbaixoDe01([0.1, 0.1]), false)
+  assert.equal(volumeAbaixoDe01([0.3 / 3, 1]), false) // 0,1 com resto de ponto flutuante
+  assert.equal(volumeAbaixoDe01([0, 0]), false)
+  assert.equal(volumeAbaixoDe01(null), false)
+  assert.equal(volumeAbaixoDe01(undefined), false)
 })

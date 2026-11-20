@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  AVISO_DILUIR, ITENS_COM_AMPOLA, PECA_A_AMPOLA, ampolasDoItem, volumeDaAmpola, type Apresentacao, type BaseDose,
+  AVISO_DILUIR, AVISO_VOLUME_PEQUENO, ITENS_COM_AMPOLA, PECA_A_AMPOLA, ampolasDoItem, volumeAbaixoDe01, volumeDaAmpola, type Apresentacao, type BaseDose,
 } from '@/clinico/pediatria/ampolas'
 import { Button } from '@/components/ui/button'
 import { numeroSemMilhar } from '@/lib/formato'
@@ -56,6 +56,7 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
             </p>
           ))}
           {algum.aspirar && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
+          {linhas.some((l) => volumeAbaixoDe01(l.volume?.ml)) && <p className="font-medium text-atencao">{AVISO_VOLUME_PEQUENO}</p>}
           <p className="text-rotulo text-tinta-sussurro">Concentração: {ampola.fonte}.</p>
         </>
       )}

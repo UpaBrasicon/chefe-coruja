@@ -124,7 +124,7 @@ export const AHA_CIRCUNSTANCIAS_2025: Fonte = {
 export const fichaDosesDaFita: Ficha = {
   id: 'ped-doses-fita',
   titulo: 'Doses pela cor da fita e pelo peso (Guia rápido da criança)',
-  versao: '2026-11-17.1',
+  versao: '2026-11-20.1',
   publico: 'pediatrico',
   fontes: [
     AHA_AAP_2025, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024, SFAR_IOT_2019, AES_2016, WAO_ANAFILAXIA_2020_PED,
@@ -132,7 +132,7 @@ export const fichaDosesDaFita: Ficha = {
     SANDELICH_OPIOIDE_2024, CUNICO_DOR_2023, NIEHUES_FEBRE_2026, RERKSUPPAPHOL_ONDANSETRONA_2010,
     CPS_ONDANSETRONA_2011, INDINNIMEO_ASMA_2018, AHA_CIRCUNSTANCIAS_2025, LIVRO_PS_PED,
   ],
-  revisadoEm: '17/11/2026 (cada dose conferida no PubMed com trecho literal; e-book Fita PED só organiza as seções; decisões D1–D12 do RT de 17/11/2026; aguarda aprovação do RT)',
+  revisadoEm: '20/11/2026 (lote 4 da dose em mL, L4-3 do RT: o magnésio da asma e da torsades deixa o mL fixo da ampola de 50% e passa pela escolha da ampola, 10% ou 50%, da ficha ped-ampolas; dose sem mudança; aguarda aprovação do RT); 17/11/2026 (cada dose conferida no PubMed com trecho literal; e-book Fita PED só organiza as seções; decisões D1–D12 do RT de 17/11/2026; aguarda aprovação do RT)',
 }
 
 export type SecaoDaFita = 'reanimacao' | 'intubacao' | 'gerais'
@@ -158,7 +158,6 @@ const D = (d: DoseDaFita) => d
 
 const EPI_0_1 = 'epinefrina 0,1 mg/mL (1 ampola de 1 mg/mL + 9 mL de SF ou AD; livro do ICr, p. 31)'
 const EPI_1 = 'epinefrina 1 mg/mL (ampola pura; livro do ICr, p. 895)'
-const MG_50 = 'sulfato de magnésio 50% = 500 mg/mL (livro do ICr, p. 32)'
 const BIC_84 = 'bicarbonato de sódio 8,4%: 1 mL = 1 mEq (livro do ICr, p. 32)'
 const CETAMINA_50 = 'cetamina 50 mg/mL (livro do ICr, p. 88)'
 
@@ -195,7 +194,7 @@ export const DOSES_DA_FITA: DoseDaFita[] = [
     apresentacao: 'gluconato de cálcio 10% = 100 mg/mL (0,6 mL/kg)', via: 'IV lento; alternativa ao cloreto', pagina: 'AHA 2025 Part 10, Tabela 4', fontes: [AHA_CIRCUNSTANCIAS_2025],
     trecho: '60 mg/kg 0.28 mEq/kg Ca2+ 0.6 mL/kg 100 mg/mL solution',
     nota: 'A dose está na tabela de intoxicação por betabloqueador ou bloqueador de canal de cálcio. O teto de 6 g é a dose de adulto da mesma tabela ("Maximum pediatric dose should not exceed adult dose"). Não é de rotina na parada (AHA 2025).' }),
-  D({ secao: 'reanimacao', grupo: 'pcr', id: 'fita-magnesio-torsades', nome: 'Sulfato de magnésio — torsades', unidade: 'mg', porKg: true, faixa: [25, 50], maximo: 2000, porMl: 500, apresentacao: MG_50,
+  D({ secao: 'reanimacao', grupo: 'pcr', id: 'fita-magnesio-torsades', nome: 'Sulfato de magnésio — torsades', unidade: 'mg', porKg: true, faixa: [25, 50], maximo: 2000,
     via: 'IV rápido (em alguns minutos)', pagina: 'Coreia 2025, seção Magnesium', fontes: [COREIA_PALS_2025],
     trecho: 'Regardless of the cause, torsades de pointes should be treated with 25 to 50 mg/kg (maximum, 2 g) of magnesium sulfate, administered rapidly via IV (over several minutes).' }),
   D({ secao: 'reanimacao', grupo: 'pcr', id: 'fita-bicarbonato', nome: 'Bicarbonato de sódio 8,4%', unidade: 'mEq', porKg: true, faixa: [1, 1], porMl: 1, apresentacao: BIC_84,
@@ -252,7 +251,7 @@ export const DOSES_DA_FITA: DoseDaFita[] = [
     via: 'VO, IM ou IV, dose única', pagina: 'Cochrane 2018; teto: livro do ICr, p. 294', fontes: [COCHRANE_CRUPE_2018, LIVRO_PS_PED],
     trecho: 'Three studies compared 0.6 mg/kg to 0.15 mg/kg dosages of dexamethasone, a common clinical question.',
     nota: 'A Cochrane não define teto; o máximo de 10 mg é do livro do ICr (p. 294), decisão D9.' }),
-  D({ secao: 'gerais', grupo: 'respiratorio', id: 'fita-magnesio-asma', nome: 'Sulfato de magnésio — asma grave', unidade: 'mg', porKg: true, faixa: [40, 40], maximo: 2000, porMl: 500, apresentacao: MG_50,
+  D({ secao: 'gerais', grupo: 'respiratorio', id: 'fita-magnesio-asma', nome: 'Sulfato de magnésio — asma grave', unidade: 'mg', porKg: true, faixa: [40, 40], maximo: 2000,
     via: 'IV em 20 min', pagina: 'Cochrane 2016 (BNFc)', fontes: [COCHRANE_MG_ASMA_2016],
     trecho: 'The British National Formulary for Children advises 40 mg/kg and up to a maximum total dose of 2 g, delivered by intravenous infusion over 20 minutes.',
     nota: 'Os estudos usaram de 25 a 75 mg/kg.' }),
