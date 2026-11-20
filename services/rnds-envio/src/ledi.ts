@@ -19,12 +19,12 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { montarFicha, type CargaFai, type CargaFp, type Instalacao } from '../../../src/interop/ledi/fichas.ts'
 
-export type ItemLedi = { id: string; tipo: 'fai' | 'fp'; unidade_id: string; uuid_ficha: string; tentativas: number }
+export type ItemLedi = { id: string; tipo: 'fai' | 'fp' | 'fv'; unidade_id: string; uuid_ficha: string; tentativas: number }
 
 /** O que public.ledi_dados_ficha devolve. */
 export type FichaCarregada = {
   item_id: string
-  tipo: 'fai' | 'fp'
+  tipo: 'fai' | 'fp' | 'fv'
   uuid_ficha: string
   unidade_id: string
   carga: CargaFai | CargaFp

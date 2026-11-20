@@ -2,7 +2,8 @@
 // Fichas do LEDI APS 8.7.0 (percurso da UBS, U15, PR 3) — PURAS, sem banco.
 //
 // Recebem a carga do banco (private.ledi_carga_fai e private.ledi_carga_fp,
-// migration 20270415000022) e devolvem o arquivo `<uuidFicha>.esus` que vai à
+// migration 20270415000022; private.ledi_carga_fv, U15 vacina, migration
+// 20270415000030) e devolvem o arquivo `<uuidFicha>.esus` que vai à
 // API do PEC e-SUS APS do município (POST api/v1/recebimento/ficha): o
 // DadoTransporte serializado no Thrift binário, com a ficha dentro.
 //
@@ -12,7 +13,8 @@
 // "Procedimentos", e as tabelas de referência (Dicionário de dados). O número
 // de cada campo é o do IDL oficial do Thrift (laboratoriobridge/esusaps-integracao,
 // commit 9316f280f526: dado_transporte.thrift, common.thrift,
-// ficha_atendimento_individual.thrift e ficha_atendimento_procedimento.thrift).
+// ficha_atendimento_individual.thrift, ficha_atendimento_procedimento.thrift e
+// ficha_vacinacao.thrift).
 // Nos registros filhos e no VariasLotacoesHeader, ele não é o "#N" do
 // dicionário (correção do U15, PR 3).
 //
@@ -56,6 +58,19 @@ export type CargaFp = {
   procedimento: { id: string; codigo_sigtap: string; quantidade: number; realizado_em: string; episodio_id: string | null }
 }
 
+export type CargaFv = {
+  unidade: UnidadeLedi
+  profissional: ProfissionalLedi
+  cidadao: CidadaoLedi
+  vacina: {
+    id: string; registro_anterior: boolean; data_aplicacao: string; registrado_em: string
+    imunobiologico: number; estrategia: number | null; dose: number; lote: string | null; fabricante: string | null
+    grupo_atendimento: number | null; via: number; local: number; aplicado_exterior: boolean | null
+    condicao_maternal: number | null; viajante: boolean; comunicante_hanseniase: boolean | null
+    prescritor_cbo: string | null; cid10_motivo: string | null; pesquisa_clinica: boolean
+  }
+}
+
 /** Quem gera e envia o dado (DadoInstalacao). Vem da configuração do serviço de envio. */
 export type Instalacao = {
   contraChave: string
@@ -69,7 +84,7 @@ export type Instalacao = {
 // ── tabelas de referência do LEDI 8.7.0 ─────────────────────────────────────
 export const VERSAO_LEDI = { major: 8, minor: 7, revision: 0 } as const
 /** TipoDadoSerializado */
-export const TIPO_DADO = { fai: 4, fp: 7 } as const
+export const TIPO_DADO = { fai: 4, fp: 7, fv: 14 } as const
 /** tpCdsOrigem: sistemas terceiros */
 const ORIGEM_TERCEIROS = 3
 /** LocalDeAtendimento: 1 = UBS */
@@ -256,8 +271,74 @@ export function fichaFp(uuidFicha: string, c: CargaFp, inst: Instalacao): Arquiv
   return { nome: `${uuidFicha}.esus`, bytes: transporte('fp', uuidFicha, c.unidade, ficha, inst), avisos }
 }
 
+// ── Ficha de Vacinação (U15, vacina, PR 6) ──────────────────────────────────
+/** BCG: o único imunobiológico com "comunicante de hanseníase". */
+const BCG = 15
+
+export function fichaFv(uuidFicha: string, c: CargaFv, inst: Instalacao): Arquivo {
+  conferirUnidade(c.unidade)
+  const v = c.vacina
+  const id = identificacao(c.cidadao)
+  const em = epoch(v.registrado_em)
+  const sexo = sexoLedi(c.cidadao.sexo)
+  // condição maternal: obrigatória fora do sexo masculino, proibida nele
+  if (sexo !== 0 && !v.condicao_maternal) throw new Error('retido: vacina sem a condição maternal')
+  if (v.imunobiologico === BCG && v.comunicante_hanseniase == null) throw new Error('retido: BCG sem comunicante de hanseníase')
+  if (!v.registro_anterior && (!v.lote || !v.fabricante || !v.estrategia || !v.grupo_atendimento)) {
+    throw new Error('retido: vacina aplicada sem lote, fabricante, estratégia ou grupo')
+  }
+  // VacinaRowThrift (IDL: 1 imunobiológico, 2 estratégia, 3 dose, 4 lote, 6 grupo, 7 registro anterior,
+  // 8 data do registro anterior, 9 aplicada no exterior, 11 CBO do prescritor, 12 CID-10, 13 pesquisa clínica,
+  // 17 via, 18 local, 19 fabricante RNDS)
+  const linha: Struct = {
+    1: i64(v.imunobiologico),
+    2: v.estrategia ? i64(v.estrategia) : undefined,
+    3: i64(v.dose),
+    4: v.lote ? str(v.lote) : undefined,
+    6: !v.registro_anterior && v.grupo_atendimento ? i64(v.grupo_atendimento) : undefined,
+    7: bool(v.registro_anterior),
+    8: v.registro_anterior ? i64(epochData(v.data_aplicacao)) : undefined,
+    9: v.registro_anterior && v.aplicado_exterior != null ? bool(v.aplicado_exterior) : undefined,
+    11: v.prescritor_cbo ? str(v.prescritor_cbo) : undefined,
+    12: v.cid10_motivo ? str(cidLedi(v.cid10_motivo)) : undefined,
+    13: bool(v.pesquisa_clinica),
+    17: i64(v.via),
+    18: i64(v.local),
+    19: v.fabricante ? str(v.fabricante) : undefined,
+  }
+  // FichaVacinacaoChildThrift (IDL: 1 turno, 3 CNS, 4 nascimento, 5 sexo, 6 local, 7 viajante,
+  // 8 comunicante de hanseníase, 11 vacinas, 12 e 13 início e fim, 14 CPF, 15 condição maternal,
+  // 16 não possui CPF, 17 justificativa)
+  const filho: Struct = {
+    1: i64(turnoLedi(v.registrado_em)),
+    3: id.cns ? str(id.cns) : undefined,
+    4: i64(epochData(c.cidadao.data_nascimento)),
+    5: i64(sexo),
+    6: i64(LOCAL_UBS),
+    7: bool(v.viajante),
+    8: v.imunobiologico === BCG ? bool(!!v.comunicante_hanseniase) : undefined,
+    11: lista(TIPO.STRUCT, [struct(linha)]),
+    12: i64(em),
+    13: i64(em),
+    14: id.cpf ? str(id.cpf) : undefined,
+    15: sexo !== 0 ? i64(v.condicao_maternal!) : undefined,
+    16: bool(!id.cpf),
+    17: id.justificativa ? i64(id.justificativa) : undefined,
+  }
+  // FichaVacinacaoMasterThrift (1 uuid, 2 origem, 3 UnicaLotacaoHeader, 4 vacinações)
+  const ficha = serializar({
+    1: str(uuidFicha),
+    2: i32(ORIGEM_TERCEIROS),
+    3: struct({ 1: str(c.profissional.cns), 2: str(c.profissional.cbo), 3: str(c.unidade.cnes),
+      4: c.unidade.ine ? str(c.unidade.ine) : undefined, 5: i64(em), 6: str(c.unidade.codigo_ibge) }),
+    4: lista(TIPO.STRUCT, [struct(filho)]),
+  })
+  return { nome: `${uuidFicha}.esus`, bytes: transporte('fv', uuidFicha, c.unidade, ficha, inst), avisos: [] }
+}
+
 /** Ponto de entrada do serviço de envio: o tipo da fila e a carga do banco. */
-export function montarFicha(tipo: 'fai' | 'fp', uuidFicha: string, carga: CargaFai | CargaFp, inst: Instalacao): Arquivo {
+export function montarFicha(tipo: 'fai' | 'fp' | 'fv', uuidFicha: string, carga: CargaFai | CargaFp | CargaFv, inst: Instalacao): Arquivo {
   if (uuidFicha.length < 36 || uuidFicha.length > 44) throw new Error('uuid da ficha fora de 36 a 44 caracteres')
+  if (tipo === 'fv') return fichaFv(uuidFicha, carga as CargaFv, inst)
   return tipo === 'fai' ? fichaFai(uuidFicha, carga as CargaFai, inst) : fichaFp(uuidFicha, carga as CargaFp, inst)
 }
