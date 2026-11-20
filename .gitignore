@@ -1,3 +1,68 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Credenciais — NUNCA versionar
+.env.local
+
+# VIDaaS spike — tokens e saídas NUNCA versionar
+spikes/vidaas/saida/
+spikes/vidaas/*.token
+spikes/vidaas/.vidaas-env
+
+# Strix — artefatos de varredura local (nunca versionar; resumos em docs/seguranca/)
+strix_runs/
+
+# Ferramentas do agente e bytecode — artefatos locais, nunca versionar
+.claude/
+__pycache__/
+
+# deepseek-harness — clone externo do harness (tem .git próprio; nunca versionar)
+deepseek-harness/
+
+# Dados brutos de terminologia — fontes públicas regeneráveis (~118MB), ver LEIA-ME.txt
+data/terminologia/*
+!data/terminologia/LEIA-ME.txt
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.vercel
+.env*
+
+# partes geradas do sigtap_cid.sql para o SQL Editor (homologação)
+supabase/homolog/partes/
+
+# grafo local do graphify (cache, não versionar)
+graphify-out/
+
+# validador da RNDS extraído (5C-5.2; o original fica na pesquisa)
+tools/rnds/.cache/
+
+# senha local das contas de teste do portão da Fase 5 (nunca no git)
+scripts/e2e/.senha-e2e*
+scripts/e2e/.hash-e2e
+
+# Item 8 (Power BI): chave de teste da homologação, nunca no git
+scripts/powerbi/.chave-homolog
 
 # API da ANVISA (credenciais do RT e cache da Lista CMED; ver infra/anvisa-api.md)
 scripts/anvisa/.credenciais
