@@ -47,12 +47,12 @@ export const NOTA_PESO_EMERGENCIA =
 // propofol. O valor do livro fica na nota de cada linha.
 export const fichaBolusPediatrico: Ficha = {
   ...baseBolusPediatrico,
-  versao: '2026-11-19.2',
+  versao: '2026-11-20.1',
   fontes: [
     ...baseBolusPediatrico.fontes, WELLS_PESO_2017, ILCOR_PLS_2020, WELLS_YENDE_DOSE,
     AHA_AAP_2025, AES_2016, ISPAD_HIPOGLICEMIA_2022, WAO_ANAFILAXIA_2020_PED, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024,
   ],
-  revisadoEm: '19/11/2026 (rótulo do máximo: a tela diz de onde vem o teto quando não é o livro; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (lote D11: itens 3, 8, 9, 11, 12 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras: ILCOR 2020 PLS 420 e Wells 2017 e 2024, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
+  revisadoEm: '20/11/2026 (lote 4 da dose em mL, L4-3 do RT: o magnésio da asma e da torsades deixa o mL fixo da ampola de 50% e passa pela escolha da ampola, 10% ou 50%, da ficha ped-ampolas; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (rótulo do máximo: a tela diz de onde vem o teto quando não é o livro; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (lote D11: itens 3, 8, 9, 11, 12 e 15, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras: ILCOR 2020 PLS 420 e Wells 2017 e 2024, lidos no texto integral do PMC; aguarda aprovação do RT); 11/11/2026 (nota de peso de emergência, Wells 2017; escores P2/P3, item P10)',
 }
 
 export const NEONATO_FORA =
@@ -121,7 +121,6 @@ const AVISO_ATROPINA = {
 const EPI_1_10000 = 'solução 1:10.000 = 0,1 mg/mL (1 ampola de 1 mg/mL + 9 mL de SF ou AD — p. 31)'
 const EPI_1_1000 = 'solução 1:1.000 = 1 mg/mL (p. 895)'
 const BIC = 'NaHCO₃ 8,4%: 1 mL = 1 mEq (p. 32)'
-const MGSO4 = 'MgSO₄ 50% = 500 mg/mL (p. 32)'
 const CETAMINA = 'Ketamin S® 50 mg/mL (p. 88)'
 
 export const BOLUS: Bolus[] = [
@@ -151,7 +150,7 @@ export const BOLUS: Bolus[] = [
     nota: 'Tabela de drogas da PCR (p. 32): 5 a 7 mg/kg de cálcio elementar = 0,6 mL/kg de gluconato de cálcio 10%. Incompatível com ceftriaxona (p. 896).' }),
   B({ id: 'lidocaina-iv', nome: 'Lidocaína — IV (arritmia)', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [1, 1], maximo: 100, via: 'IV, seguida de infusão contínua (ver infusões)', pagina: 'p. 896',
     nota: 'Tabela de drogas da PCR (p. 32): FV/TV sem pulso 1 mg/kg IV/IO; endotraqueal 2 a 3 mg/kg.' }),
-  B({ id: 'magnesio-torsades', nome: 'Sulfato de magnésio — torsades de pointes', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [25, 50], maximo: 2000, porMl: 500, apresentacao: MGSO4, via: 'IV; infusão rápida pode causar hipotensão', pagina: 'p. 908',
+  B({ id: 'magnesio-torsades', nome: 'Sulfato de magnésio — torsades de pointes', grupo: 'pcr', unidade: 'mg', porKg: true, faixa: [25, 50], maximo: 2000, via: 'IV; infusão rápida pode causar hipotensão', pagina: 'p. 908',
     nota: 'O apêndice escreve "concentração máxima 20% para emergências (60 mg/mL)" (p. 908); 20% seriam 200 mg/mL, então os dois números não batem. O sistema não calcula diluição.' }),
 
   // ── Intubação, sedação e analgesia ──
@@ -215,7 +214,7 @@ export const BOLUS: Bolus[] = [
     nota: 'O livro também dá 25 a 50 mg/m² IV (p. 102). Uso na anafilaxia restrito a relatos de caso (p. 100).' }),
 
   // ── Asma e crupe ──
-  B({ id: 'magnesio-asma', nome: 'Sulfato de magnésio — asma', grupo: 'respiratorio', unidade: 'mg', porKg: true, faixa: [25, 75], maximo: 2000, porMl: 500, apresentacao: MGSO4, via: 'IV em 20 a 40 min (p. 119), com monitorização', pagina: 'p. 908',
+  B({ id: 'magnesio-asma', nome: 'Sulfato de magnésio — asma', grupo: 'respiratorio', unidade: 'mg', porKg: true, faixa: [25, 75], maximo: 2000, via: 'IV em 20 a 40 min (p. 119), com monitorização', pagina: 'p. 908',
     nota: 'Cap. de asma (p. 119): dose padrão 50 mg/kg (margem 25 a 75 mg/kg); o texto cita 25 mg/kg, máximo 2 g, em > 4 anos.' }),
   B({ id: 'hidrocortisona-asma', nome: 'Hidrocortisona — asma (ataque)', grupo: 'respiratorio', unidade: 'mg', porKg: true, faixa: [4, 8], maximo: 250, via: 'IV; manutenção 2 mg/kg a cada 6 h', pagina: 'p. 903',
     nota: 'Cap. de asma (p. 118–119): 10 mg/kg/dose, máximo 200 mg/dia.' }),

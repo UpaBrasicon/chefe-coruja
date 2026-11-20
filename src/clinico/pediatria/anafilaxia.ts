@@ -11,6 +11,9 @@ import { DIAS_ANO, DIAS_MES, fichaP2, type DosePeso } from './fonteP2.ts'
 // de docs/clinico/D11-CORRECOES-FONTES.md. A linha da difenidramina pelo texto
 // passa a 1 mg/kg, máximo 50 mg (diretriz chinesa de 2020); o livro (p. 100)
 // dava 1 a 2 mg/kg. A linha da Tabela 3 não muda.
+//
+// Versão 2026-11-20.1 (lote 4 da dose em mL, decisões L4-1 a L4-5 do RT de
+// 20/11/2026): a dose fixa por idade mostra o mL da solução 1 mg/mL.
 
 const baseAnafilaxia = fichaP2(
   'ped-anafilaxia-icr',
@@ -19,9 +22,9 @@ const baseAnafilaxia = fichaP2(
 )
 export const fichaAnafilaxiaPediatrica: Ficha = {
   ...baseAnafilaxia,
-  versao: '2026-11-19.1',
+  versao: '2026-11-20.1',
   fontes: [...baseAnafilaxia.fontes, CHINA_ANAFILAXIA_2020],
-  revisadoEm: `19/11/2026 (lote D11: item 10, decisão do RT de 19/11/2026; aguarda aprovação do RT); ${baseAnafilaxia.revisadoEm}`,
+  revisadoEm: `20/11/2026 (lote 4 da dose em mL: a dose fixa de epinefrina IM por idade ganha o volume da solução 1:1.000, 1 mg/mL, a mesma da dose por peso; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (lote D11: item 10, decisão do RT de 19/11/2026; aguarda aprovação do RT); ${baseAnafilaxia.revisadoEm}`,
 }
 
 export type LinhaAnafilaxia = 'primeira' | 'segunda' | 'terceira' | 'refrataria'
@@ -72,21 +75,33 @@ export const FIXOS_ANAFILAXIA: { nome: string; dose: string; pagina: string }[] 
   { nome: 'Autoinjetor na alta', dose: '0,15 mg para lactentes e crianças de 15 a 30 kg; 0,3 mg acima de 30 kg e adolescentes', pagina: 'p. 101' },
 ]
 
+/** Epinefrina 1:1.000 = 1 mg/mL: a mesma solução da dose por peso (Tabela 3, p. 101). */
+export const EPINEFRINA_IM_MG_POR_ML = 1
+
+const br = (x: number) => String(x).replace('.', ',')
+const faixaTxt = ([a, b]: [number, number], un: string) => (a === b ? `${br(a)} ${un}` : `${br(a)} a ${br(b)} ${un}`)
+
 /**
  * Dose fixa de epinefrina IM por idade — alternativa do livro (p. 98 e Tabela 3):
  * < 6 meses 0,1–0,15 mg; 6 meses a 6 anos 0,15 mg; 6 a 12 anos 0,3 mg; a partir
  * de 12 anos 0,5 mg. Com 6 e 12 anos completos o livro cabe em duas faixas: as
- * duas doses são devolvidas.
+ * duas doses são devolvidas. `volumes` é o mL da solução 1 mg/mL (lote 4 da dose
+ * em mL, decisão do RT de 20/11/2026).
  */
-export function epinefrinaDoseFixa(dias: number): { doses: string[]; ambigua: boolean } | null {
+export function epinefrinaDoseFixa(dias: number): { doses: string[]; volumes: string[]; ambigua: boolean } | null {
   if (!Number.isFinite(dias) || dias < 0) return null
-  if (dias < 6 * DIAS_MES) return { doses: ['0,1 a 0,15 mg'], ambigua: false }
+  const de = (faixas: [number, number][], ambigua = false) => ({
+    doses: faixas.map((f) => faixaTxt(f, 'mg')),
+    volumes: faixas.map(([a, b]) => faixaTxt([a / EPINEFRINA_IM_MG_POR_ML, b / EPINEFRINA_IM_MG_POR_ML], 'mL')),
+    ambigua,
+  })
+  if (dias < 6 * DIAS_MES) return de([[0.1, 0.15]])
   const anos = Math.floor(dias / DIAS_ANO)
-  if (anos < 6) return { doses: ['0,15 mg'], ambigua: false }
-  if (anos === 6) return { doses: ['0,15 mg', '0,3 mg'], ambigua: true }
-  if (anos < 12) return { doses: ['0,3 mg'], ambigua: false }
-  if (anos === 12) return { doses: ['0,3 mg', '0,5 mg'], ambigua: true }
-  return { doses: ['0,5 mg'], ambigua: false }
+  if (anos < 6) return de([[0.15, 0.15]])
+  if (anos === 6) return de([[0.15, 0.15], [0.3, 0.3]], true)
+  if (anos < 12) return de([[0.3, 0.3]])
+  if (anos === 12) return de([[0.3, 0.3], [0.5, 0.5]], true)
+  return de([[0.5, 0.5]])
 }
 
 export const CRITERIOS_ANAFILAXIA: string[] = [

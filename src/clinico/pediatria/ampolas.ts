@@ -148,6 +148,14 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
     { id: 'gluconato-10', rotulo: 'Gluconato de cálcio 10% (9 mg de cálcio elementar/mL)', porMl: 9, base: 'elemento', fonte: 'livro do ICr, Tabela 11, p. 558' },
     { id: 'cloreto-10', rotulo: 'Cloreto de cálcio 10% (27 mg de cálcio elementar/mL)', porMl: 27, base: 'elemento', fonte: 'livro do ICr, Tabela 11, p. 559' },
   ],
+  // lote 4 (anafilaxia, asma e crupe; L4-1 a L4-5 = A do RT em 20/11/2026,
+  // docs/clinico/DOSES-ML-LOTE4-ANAFILAXIA-ASMA.md). Magnésio: dose e
+  // concentração no sal (MgSO₄), as duas à venda e nenhuma marcada (L4-3). A
+  // diluição entra quando a bula for lida (L4-1).
+  magnesio: [
+    { id: 'magnesio-100', rotulo: 'Sulfato de magnésio 10% (100 mg/mL, ampola de 10 mL)', porMl: 100, base: 'sal', fonte: 'CMED 09/11/2026: Samtec (1559200050025) e Halex (1031101630013), à venda', url: CMED_PMC_2026_11.url },
+    { id: 'magnesio-500', rotulo: 'Sulfato de magnésio 50% (500 mg/mL, ampola de 10 mL)', porMl: 500, base: 'sal', fonte: 'livro do ICr, p. 32 (MgSO₄ 50% = 500 mg/mL); CMED 09/11/2026: Samtec (1559200050092) e Halex (1031101630021), à venda', url: CMED_PMC_2026_11.url },
+  ],
   // lote 2: intubação, sedação e antídotos
   fentanila: [
     { id: 'fentanila-50', rotulo: 'Fentanila 50 µg/mL', porMl: 50, fonte: 'bulas Hipolabor, Teuto e Newcom', url: BULA_FENTANILA.url },
@@ -184,18 +192,19 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
 export const fichaAmpolas: Ficha = {
   id: 'ped-ampolas',
   titulo: 'Ampolas para a dose em mL (criança)',
-  versao: '2026-11-20.2',
+  versao: '2026-11-20.3',
   publico: 'pediatrico',
-  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
+  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL); p. 32 (MgSO₄ 50% = 500 mg/mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
     BULA_FENTANILA, BULA_MIDAZOLAM, BULA_ESCETAMINA, BULA_ETOMIDATO, BULA_PROPOFOL, BULA_ROCURONIO, BULA_DEXMEDETOMIDINA, BULA_NALOXONA,
     CMED_PMC_2026_11, BULA_DIAZEPAM],
-  revisadoEm: '20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
+  revisadoEm: '20/11/2026 (lote 4 da dose em mL, primeira parte: magnésio 10% e 50% pela CMED na asma e na torsades, nenhuma marcada; aviso de volume abaixo de 0,1 mL; decisões L4-1 a L4-5 do RT; diluição do magnésio e difenidramina, dexametasona e azul de metileno esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
 }
 
 /**
  * Itens de dose que mostram a escolha da ampola, pela chave "lista:id":
  * 'bolus:<id>' (bolus.ts), 'rcp:<id>' (rcp.ts), 'sri:<id>' (viaAerea.ts),
- * 'fita:<id>' (dosesDaFita.ts, guia de parada da criança).
+ * 'fita:<id>' (dosesDaFita.ts, guia de parada da criança), 'crise:<id>'
+ * (criseEpileptica.ts), 'asma:<id>' (asma.ts) e 'anafilaxia:<id>' (anafilaxia.ts).
  */
 export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   // lote 1: RCP e arritmias
@@ -264,10 +273,25 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'bolus:fenobarbital': { principio: 'fenobarbital' },
   'sri:diazepam': { principio: 'diazepam' },
   'fita:fita-diazepam-iv': { principio: 'diazepam' },
+  // lote 4: magnésio na asma e na torsades (L4-3), em mg do sal
+  'asma:magnesio-tabela': { principio: 'magnesio', base: 'sal' },
+  'asma:magnesio-texto': { principio: 'magnesio', base: 'sal' },
+  'bolus:magnesio-asma': { principio: 'magnesio', base: 'sal' },
+  'bolus:magnesio-torsades': { principio: 'magnesio', base: 'sal' },
+  'fita:fita-magnesio-asma': { principio: 'magnesio', base: 'sal' },
+  'fita:fita-magnesio-torsades': { principio: 'magnesio', base: 'sal' },
 }
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
 export const PECA_A_AMPOLA = 'Escolha a ampola para ver o volume em mL.'
+/** L4-5 = A (RT, 20/11/2026): volume pequeno demais para medir sem seringa de 1 mL. */
+export const AVISO_VOLUME_PEQUENO = 'Volume abaixo de 0,1 mL: use seringa de 1 mL.'
+
+/** Algum volume da faixa fica abaixo de 0,1 mL (L4-5). */
+export function volumeAbaixoDe01(ml: readonly number[] | null | undefined): boolean {
+  // folga de ponto flutuante: 0,1 mL exato não avisa
+  return !!ml && ml.some((x) => Number.isFinite(x) && x > 0 && x < 0.1 - 1e-9)
+}
 
 /** As ampolas que valem para o item (mesma base da dose), ou lista vazia. */
 export function ampolasDoItem(chave: string): Apresentacao[] {
@@ -303,7 +327,7 @@ export function problemasDasAmpolas(ampolas: Record<string, Apresentacao[]> = AM
     if (new Set(porMl).size !== porMl.length) p.push(`${principio}: concentração repetida (agrupar por concentração, ML2)`)
   }
   for (const [chave, item] of Object.entries(itens)) {
-    if (!/^(bolus|rcp|sri|fita|crise):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
+    if (!/^(bolus|rcp|sri|fita|crise|asma|anafilaxia):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
     if (!ampolas[item.principio]?.length) p.push(`${chave}: princípio ${item.principio} sem ampola`)
     const bases = new Set((ampolas[item.principio] ?? []).map((a) => a.base).filter(Boolean))
     if (bases.size > 1 && !item.base) p.push(`${chave}: ${item.principio} tem sal e elemento; o item precisa dizer a base (ML6)`)
