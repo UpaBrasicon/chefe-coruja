@@ -11,6 +11,10 @@ import { DOSES_DA_FITA } from './dosesDaFita.ts'
 import { DOSES_CRISE } from './criseEpileptica.ts'
 import { DOSES_ASMA } from './asma.ts'
 import { DOSES_ANAFILAXIA } from './anafilaxia.ts'
+import { DOMICILIAR, DOSES_SBP_2024, ESPECIAIS, HOSPITALAR } from './pneumoniaPed.ts'
+import { DOSES_ITU_ORAL, DOSES_ITU_PARENTERAL } from './ituPed.ts'
+import { DOSES_CRISE_ALGICA } from './falciformePed.ts'
+import { calcularDoseLivro } from './fonteP4.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -64,6 +68,10 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     fita: new Set(DOSES_DA_FITA.map((d) => d.id)),
     crise: new Set(DOSES_CRISE.map((d) => d.id)),
     asma: new Set(DOSES_ASMA.map((d) => d.id)), anafilaxia: new Set(DOSES_ANAFILAXIA.map((d) => d.id)),
+    pneumonia: new Set([...DOSES_SBP_2024, ...ESPECIAIS.flatMap((e) => e.doses),
+      ...Object.values(DOMICILIAR).flatMap((t) => [...t.inicial, ...t.falha]), ...Object.values(HOSPITALAR).flatMap((t) => [...t.inicial, ...t.falha])].map((d) => d.id)),
+    itu: new Set([...DOSES_ITU_ORAL, ...DOSES_ITU_PARENTERAL].map((d) => d.id)),
+    falciforme: new Set(DOSES_CRISE_ALGICA.map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -76,7 +84,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.4')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.5')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -218,5 +226,28 @@ test('lote 5, L5-5 e ML7: insulina só pelo preparo de 0,1 UI/mL do livro, nunca
 test('lote 5: vitamina K, acetilcisteína, esmolol, milrinona e pralidoxima esperam a bula ou não têm apresentação', () => {
   for (const c of ['bolus:vitamina-k', 'bolus:acetilcisteina-1', 'bolus:acetilcisteina-2', 'bolus:acetilcisteina-3', 'bolus:esmolol-bolus', 'bolus:milrinona-ataque', 'bolus:pralidoxima']) {
     assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+})
+
+test('lote 6a (L6-1 e L6-2 do RT, 20/11/2026): soluções prontas, dipirona e morfina da crise álgica', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.pronta ?? false])
+  assert.deepEqual(ids('pneumonia:sbp-levo-menor5'), [['levofloxacino-5', 5, true]])
+  assert.deepEqual(ids('pneumonia:sbp-levo-maior5'), [['levofloxacino-5', 5, true]])
+  assert.deepEqual(ids('pneumonia:sbp-metro'), [['metronidazol-5', 5, true]])
+  assert.deepEqual(ids('pneumonia:sbp-linez'), [['linezolida-2', 2, true]])
+  assert.deepEqual(ids('itu:cipro-iv'), [['ciprofloxacino-2', 2, true]])
+  assert.deepEqual(ids('falciforme:dipirona'), [['dipirona-500', 500, false]])
+  for (const c of ['falciforme:morfina-figura', 'falciforme:morfina-texto']) assert.deepEqual(ampolasDoItem(c).map((a) => a.porMl), [1, 10], c)
+  // solução pronta nunca é "aspirar e diluir"
+  assert.ok(Object.values(AMPOLAS).flat().every((a) => !(a.pronta && a.diluir)))
+  // L6-1: o mL sai da dose por tomada. Metronidazol 30 mg/kg/dia em 4 doses, 20 kg = 150 mg/dose = 30 mL
+  const metro = DOSES_SBP_2024.find((d) => d.id === 'sbp-metro')!
+  const r = calcularDoseLivro(metro, 20)!
+  assert.deepEqual(r.porDose, [150, 150])
+  assert.deepEqual(volumeDaAmpola(r.porDose!, AMPOLAS.metronidazol[0])?.ml, [30, 30])
+  // aminoglicosídeos e SMX-TMP esperam a bula (L6-3)
+  for (const d of [...Object.values(HOSPITALAR).flatMap((t) => [...t.inicial, ...t.falha]), ...DOSES_ITU_PARENTERAL].filter((x) => /amica|genta|tobra/i.test(x.id))) {
+    assert.deepEqual(ampolasDoItem(`pneumonia:${d.id}`), [], d.id)
+    assert.deepEqual(ampolasDoItem(`itu:${d.id}`), [], d.id)
   }
 })

@@ -24,9 +24,9 @@ const baseFalciforme = fichaP4('ped-falciforme', 'Doença falciforme — crise �
 
 export const fichaFalciformePed: Ficha = {
   ...baseFalciforme,
-  versao: '2026-09-28.1',
+  versao: '2026-11-20.1',
   fontes: [...baseFalciforme.fontes, { ...PCDT_FALCIFORME_2024, citacao: `${PCDT_FALCIFORME_2024.citacao} Critérios (p. 6–8), transfusão (p. 9–10), febre (p. 16 e 19), esquemas (p. 18–19), sequestro e STA (p. 22).` }],
-  revisadoEm: '28/09/2026 (PCDT 2024 conferido no texto; livro do ICr mantido como base)',
+  revisadoEm: '20/11/2026 (lote 6a da dose em mL: dipirona 500 mg/mL e morfina 1 e 10 mg/mL, nenhuma marcada, da ficha ped-ampolas, só da dose por tomada; dose sem mudança; decisões L5-3 e L6-1 a L6-9 do RT; aguarda aprovação do RT); 28/09/2026 (PCDT 2024 conferido no texto; livro do ICr mantido como base)',
 }
 
 const pos = (x: number) => Number.isFinite(x) && x > 0

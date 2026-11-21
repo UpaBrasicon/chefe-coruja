@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import {
-  AVISO_DILUIR, AVISO_VOLUME_PEQUENO, ITENS_COM_AMPOLA, PECA_A_AMPOLA, ampolasDoItem, volumeAbaixoDe01, volumeDaAmpola, type Apresentacao, type BaseDose,
+  AVISO_DILUIR, AVISO_VOLUME_PEQUENO, ITENS_COM_AMPOLA, PECA_A_AMPOLA, PECA_A_SOLUCAO, ampolasDoItem, volumeAbaixoDe01, volumeDaAmpola, type Apresentacao, type BaseDose,
 } from '@/clinico/pediatria/ampolas'
 import { Button } from '@/components/ui/button'
 import { numeroSemMilhar } from '@/lib/formato'
@@ -47,12 +47,14 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
           </Button>
         ))}
       </div>
-      {!algum && <p className="text-tinta-sussurro">{PECA_A_AMPOLA}</p>}
+      {!algum && <p className="text-tinta-sussurro">{ampolas.every((a) => a.pronta) ? PECA_A_SOLUCAO : PECA_A_AMPOLA}</p>}
       {algum && ampola && (
         <>
           {linhas.map((l) => l.volume && (
             <p key={l.rotulo} className={cn('tabular-nums', grande ? 'text-corpo font-semibold text-acao' : 'text-tinta')}>
-              {l.rotulo && <>{l.rotulo}: </>}<strong>{faixaMl(l.volume.ml)} mL</strong> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL
+              {l.rotulo && <>{l.rotulo}: </>}<strong>{faixaMl(l.volume.ml)} mL</strong>{ampola.pronta
+                ? <> da solução pronta de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL (volume a infundir)</>
+                : <> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL</>}
             </p>
           ))}
           {algum.aspirar && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
