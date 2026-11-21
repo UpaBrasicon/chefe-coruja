@@ -17,6 +17,7 @@ import { DOSES_CRISE_ALGICA } from './falciformePed.ts'
 import { DOSES_IRA, DOSES_TABELA8 } from './injuriaRenalPed.ts'
 import { DOSES_HEMOSTASIA, DOSES_PTI } from './hemostasiaTromboPed.ts'
 import { DOSES_COMPRESSIVAS, DOSES_HEMATO_ONCO, DOSES_NEUTROPENIA, DOSES_SLT } from './oncologiaPed.ts'
+import { CLORETO_CA_TABELA7, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEMIA, HIPOCALCEMIA, HIPOMAGNESEMIA, K_IV, K_VO, calcularDose } from './eletrolitosPed.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
 
 // dados de teste, não são concentrações para a tela
@@ -78,6 +79,7 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     renal: new Set([...DOSES_IRA, ...DOSES_TABELA8].map((d) => d.id)),
     hemostasia: new Set([...DOSES_HEMOSTASIA, ...DOSES_PTI].map((d) => d.id)),
     oncologia: new Set([...DOSES_SLT, ...DOSES_HEMATO_ONCO, ...DOSES_NEUTROPENIA, ...DOSES_COMPRESSIVAS].map((d) => d.id)),
+    eletrolitos: new Set([...HIPERCALEMIA, CLORETO_CA_TABELA7, ...HIPOCALCEMIA, ...HIPERCALCEMIA, ...Object.values(HIPOMAGNESEMIA), ...HIPERMAGNESEMIA, ...FOSFORO, K_IV, K_VO].map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -90,7 +92,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.6')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.7')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -276,8 +278,9 @@ test('lote 6b (renal, hemostasia e oncologia, 20/11/2026): concentrações da CM
 })
 
 test('lote 6b: item sem via escrita, VO, por bula ou por decisão própria fica sem mL', () => {
-  for (const c of ['hemostasia:atx-dvw', 'oncologia:fenitoina-prof', 'hemostasia:atx-vo', 'hemostasia:ddavp', 'renal:beta2', 'renal:cacl', 'renal:gluconato',
-    'renal:gluconato-assint', 'renal:bic', 'renal:glicose', 'renal:mg', 'renal:nac-contraste', 'renal:sorcal', 'oncologia:bic3', 'oncologia:gluconato',
+  // cálcio e bicarbonato da injúria renal e o gluconato da oncologia ganharam mL no lote 6c
+  for (const c of ['hemostasia:atx-dvw', 'oncologia:fenitoina-prof', 'hemostasia:atx-vo', 'hemostasia:ddavp', 'renal:beta2',
+    'renal:glicose', 'renal:mg', 'renal:nac-contraste', 'renal:sorcal', 'oncologia:bic3',
     'oncologia:glicose25', 'oncologia:amicacina', 'oncologia:tmp', 'oncologia:dexa-sms', 'oncologia:cipro-vo', 'oncologia:nacl3-bolo']) {
     assert.deepEqual(ampolasDoItem(c), [], c)
   }
@@ -308,4 +311,45 @@ test('lote 6b: seringa preenchida não pode ser solução pronta nem "aspirar e 
   const p = problemasDasAmpolas({ x: [{ id: 'x-1', rotulo: 'x', porMl: 1, seringa: true, pronta: true, fonte: 'teste' }] }, {})
   assert.ok(p.some((x) => /seringa preenchida/.test(x)))
   assert.ok(Object.values(AMPOLAS).flat().every((a) => !(a.seringa && (a.pronta || a.diluir))))
+})
+
+test('lote 6c (eletrólitos; L6-6 e L6-7 do RT, 20/11/2026): bicarbonato e cálcio no sal, nenhum marcado', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, Math.round(a.porMl * 1000) / 1000])
+  for (const c of ['eletrolitos:bic', 'renal:bic']) assert.deepEqual(ids(c), [['bicarbonato-8-4', 1], ['bicarbonato-10', 1.19]], c)
+  for (const c of ['eletrolitos:cloreto-ca-mg', 'renal:cacl']) assert.deepEqual(ids(c), [['cloreto-sal-10', 100]], c)
+  for (const c of ['eletrolitos:gluconato-ca-mg', 'renal:gluconato', 'renal:gluconato-assint', 'oncologia:gluconato']) assert.deepEqual(ids(c), [['gluconato-sal-10', 100]], c)
+  // dose em sal nunca vê a concentração elementar (ML6), e o cloreto nunca vê o gluconato
+  for (const c of Object.keys(ITENS_COM_AMPOLA).filter((k) => ITENS_COM_AMPOLA[k].base === 'sal')) {
+    assert.ok(ampolasDoItem(c).every((a) => a.base === 'sal'), c)
+  }
+  assert.deepEqual(ampolasDoItem('rcp:calcio').map((a) => a.base), ['elemento', 'elemento'])
+  // magnésio grave: 10% e 50% no sal, sem o 10% fixo
+  assert.deepEqual(ids('eletrolitos:mg-grave'), [['magnesio-100', 100], ['magnesio-500', 500]])
+  for (const c of ['eletrolitos:furosemida-k', 'eletrolitos:furosemida-ca']) assert.deepEqual(ids(c), [['furosemida-10', 10]], c)
+  assert.deepEqual(ids('eletrolitos:insulina'), [['insulina-0-1', 0.1]])
+})
+
+test('lote 6c: glicose, 3%, magnésio elementar, dose por dia e itens já em mL ficam sem a escolha', () => {
+  for (const c of ['eletrolitos:glicose-polarizante', 'renal:glicose', 'oncologia:glicose25', 'oncologia:bic3', 'renal:mg', 'eletrolitos:mg-moderada', 'eletrolitos:mg-leve',
+    'eletrolitos:k-iv', 'eletrolitos:p-ev', 'eletrolitos:gluconato-ca', 'eletrolitos:cloreto-ca', 'eletrolitos:cloreto-ca-tab7', 'eletrolitos:gluconato-rapido',
+    'eletrolitos:hidrocortisona-ca', 'eletrolitos:calcitonina']) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+})
+
+test('lote 6c: contas de exemplo', () => {
+  // bicarbonato 1 a 2 mEq/kg, 10 kg: 10 a 20 mL do 8,4%; 8,4 a 16,8 mL do 10%
+  const bic = calcularDose(HIPERCALEMIA.find((d) => d.id === 'bic')!, 10)!
+  assert.deepEqual(volumeDaAmpola(bic.faixa, AMPOLAS.bicarbonato[0])?.ml, [10, 20])
+  assert.deepEqual(volumeDaAmpola(bic.faixa, AMPOLAS.bicarbonato[1])?.ml.map((x) => Math.round(x * 100) / 100), [8.4, 16.8])
+  // cloreto de cálcio 20 mg/kg do sal, 10 kg = 200 mg = 2 mL (o livro: 0,2 mL/kg, p. 549)
+  const cacl = calcularDose(HIPERMAGNESEMIA.find((d) => d.id === 'cloreto-ca-mg')!, 10)!
+  assert.deepEqual(volumeDaAmpola(cacl.faixa, AMPOLAS['cloreto-de-calcio'][0], 'sal')?.ml, [2, 2])
+  // gluconato 100 mg/kg, máx. 3 g: 50 kg = 30 mL
+  const glu = calcularDose(HIPERMAGNESEMIA.find((d) => d.id === 'gluconato-ca-mg')!, 50)!
+  assert.deepEqual(volumeDaAmpola(glu.faixa, AMPOLAS['gluconato-de-calcio'][0], 'sal')?.ml, [30, 30])
+  // magnésio grave 25 a 50 mg/kg do sal, 20 kg = 500 a 1.000 mg: 5 a 10 mL do 10% e 1 a 2 mL do 50%
+  const mg = calcularDose(HIPOMAGNESEMIA.grave, 20)!
+  assert.deepEqual(volumeDaAmpola(mg.faixa, AMPOLAS.magnesio[0], 'sal')?.ml, [5, 10])
+  assert.deepEqual(volumeDaAmpola(mg.faixa, AMPOLAS.magnesio[1], 'sal')?.ml, [1, 2])
 })

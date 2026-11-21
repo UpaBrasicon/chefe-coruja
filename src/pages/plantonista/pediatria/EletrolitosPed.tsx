@@ -7,11 +7,12 @@ import { hollidaySegarMlDia } from '@/clinico/pediatria/manutencao'
 import {
   CLORETO_CA_TABELA7, CORRECAO_ALBUMINA_TEXTO, ERRATA_CALCIO, ERRATA_TABELA11, FATOR_IR_MG, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEMIA, HIPOCALCEMIA, HIPOMAGNESEMIA,
   K_CONC_MAX, K_IV, K_POR_PH, K_VO, LIMIARES_K, LIMIARES_MG, LIMIARES_P, LIMIAR_HIPOCALCEMIA, calcularDose, fichaEletrolitosPed, fracaoExcrecaoMg, grauHipomagnesemia,
-  mlFosforoOrganico, mlKcl191, mlSulfMg10, ofertaHipercalcemia, volumeMinimoMlH, type Dose,
+  mlFosforoOrganico, mlKcl191, ofertaHipercalcemia, volumeMinimoMlH, type Dose,
 } from '@/clinico/pediatria/eletrolitosPed'
 import { NumberField } from '@/components/plantonista/NumberField'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
@@ -19,6 +20,7 @@ import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { PACIENTE_VAZIO, br, faixaBr, podeCalcular } from './formatoIcr'
 import { Bloco, CampoPaciente, LinhaLivro, Nota, Opcoes, Pendencia } from './PecasIcr'
 
+/** Ampola só nos itens de ITENS_COM_AMPOLA ('eletrolitos:<id>'); os outros não mostram nada. */
 function LinhaDose({ d, peso, extra }: { d: Dose; peso: number; extra?: (f: [number, number]) => string | null }) {
   const r = calcularDose(d, peso)
   const x = r && extra ? extra(r.faixa) : null
@@ -40,6 +42,7 @@ function LinhaDose({ d, peso, extra }: { d: Dose; peso: number; extra?: (f: [num
       pagina={d.pagina}
       errata={d.errata}
       nota={d.nota}
+      depois={r && <EscolhaDaAmpola chave={`eletrolitos:${d.id}`} dose={r.faixa} unidade={d.unidade} />}
     />
   )
 }
@@ -106,7 +109,7 @@ export function EletrolitosPed() {
         ...grausMg.flatMap((g) => {
           const { d, r, f } = doseMg(g)
           if (!f) return []
-          return [`- ${d.nome}${ir ? ' — com redução de 50%' : ''}: ${faixaBr(f, 2)} ${d.unidade}${g === 'grave' ? ` · ${faixaBr([mlSulfMg10(f[0])!, mlSulfMg10(f[1])!], 1)} mL de sulfato de Mg 10%` : ''}${r?.noMaximo ? ' (máximo)' : ''} (${d.pagina})`]
+          return [`- ${d.nome}${ir ? ' — com redução de 50%' : ''}: ${faixaBr(f, 2)} ${d.unidade}${r?.noMaximo ? ' (máximo)' : ''} (${d.pagina})`]
         }),
         ...(fe ? [`- FEMg ${br(fe.femg, 2)}% — ${fe.leitura} (p. 557)`] : []),
         ...HIPERMAGNESEMIA.flatMap((d) => doseTxt(d, p.peso)),
@@ -225,13 +228,13 @@ export function EletrolitosPed() {
                           <strong>
                             {faixaBr(f, 2)} {d.unidade}
                           </strong>
-                          {g === 'grave' && <span className="text-tinta-sussurro"> · {faixaBr([mlSulfMg10(f[0])!, mlSulfMg10(f[1])!], 1)} mL de sulfato de Mg 10%</span>}
                           {r?.noMaximo && <span className="text-atencao"> (máximo)</span>}
                         </>
                       )
                     }
                     pagina={d.pagina}
                     nota={d.nota}
+                    depois={f && <EscolhaDaAmpola chave={`eletrolitos:${d.id}`} dose={f} unidade={d.unidade} />}
                   />
                 )
               })}
