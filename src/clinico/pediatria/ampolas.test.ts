@@ -14,6 +14,9 @@ import { DOSES_ANAFILAXIA } from './anafilaxia.ts'
 import { DOMICILIAR, DOSES_SBP_2024, ESPECIAIS, HOSPITALAR } from './pneumoniaPed.ts'
 import { DOSES_ITU_ORAL, DOSES_ITU_PARENTERAL } from './ituPed.ts'
 import { DOSES_CRISE_ALGICA } from './falciformePed.ts'
+import { DOSES_IRA, DOSES_TABELA8 } from './injuriaRenalPed.ts'
+import { DOSES_HEMOSTASIA, DOSES_PTI } from './hemostasiaTromboPed.ts'
+import { DOSES_COMPRESSIVAS, DOSES_HEMATO_ONCO, DOSES_NEUTROPENIA, DOSES_SLT } from './oncologiaPed.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
 
 // dados de teste, não são concentrações para a tela
@@ -72,6 +75,9 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
       ...Object.values(DOMICILIAR).flatMap((t) => [...t.inicial, ...t.falha]), ...Object.values(HOSPITALAR).flatMap((t) => [...t.inicial, ...t.falha])].map((d) => d.id)),
     itu: new Set([...DOSES_ITU_ORAL, ...DOSES_ITU_PARENTERAL].map((d) => d.id)),
     falciforme: new Set(DOSES_CRISE_ALGICA.map((d) => d.id)),
+    renal: new Set([...DOSES_IRA, ...DOSES_TABELA8].map((d) => d.id)),
+    hemostasia: new Set([...DOSES_HEMOSTASIA, ...DOSES_PTI].map((d) => d.id)),
+    oncologia: new Set([...DOSES_SLT, ...DOSES_HEMATO_ONCO, ...DOSES_NEUTROPENIA, ...DOSES_COMPRESSIVAS].map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -84,7 +90,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.5')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.6')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -250,4 +256,56 @@ test('lote 6a (L6-1 e L6-2 do RT, 20/11/2026): soluções prontas, dipirona e mo
     assert.deepEqual(ampolasDoItem(`pneumonia:${d.id}`), [], d.id)
     assert.deepEqual(ampolasDoItem(`itu:${d.id}`), [], d.id)
   }
+})
+
+test('lote 6b (renal, hemostasia e oncologia, 20/11/2026): concentrações da CMED e do livro, nenhuma marcada', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  for (const c of ['renal:furosemida', 'renal:furo-k', 'oncologia:furo']) assert.deepEqual(ids(c), [['furosemida-10', 10]], c)
+  assert.deepEqual(ids('hemostasia:atx-iv'), [['acido-tranexamico-50', 50]])
+  assert.deepEqual(ids('oncologia:enoxa-svcs'), [['enoxaparina-100', 100]])
+  assert.equal(AMPOLAS.enoxaparina[0].seringa, true)
+  assert.deepEqual(ids('oncologia:manitol'), [['manitol-20', 0.2]])
+  assert.equal(AMPOLAS.manitol[0].pronta, true)
+  for (const c of ['renal:insulina', 'oncologia:insulina']) assert.deepEqual(ids(c), [['insulina-0-1', 0.1]], c)
+  for (const c of ['oncologia:midaz-iv', 'oncologia:midaz-im', 'oncologia:midaz-in']) assert.deepEqual(ampolasDoItem(c).map((a) => a.porMl), [1, 5], c)
+  for (const c of ['oncologia:fenitoina-ataque', 'oncologia:fenitoina-man']) assert.deepEqual(ids(c), [['fenitoina-50', 50]], c)
+  assert.deepEqual(ids('oncologia:linezolida'), [['linezolida-2', 2]])
+  assert.deepEqual(ids('oncologia:metronidazol'), [['metronidazol-5', 5]])
+  assert.deepEqual(ids('oncologia:cipro-iv'), [['ciprofloxacino-2', 2]])
+  assert.deepEqual(ids('oncologia:levo'), [['levofloxacino-5', 5]])
+})
+
+test('lote 6b: item sem via escrita, VO, por bula ou por decisão própria fica sem mL', () => {
+  for (const c of ['hemostasia:atx-dvw', 'oncologia:fenitoina-prof', 'hemostasia:atx-vo', 'hemostasia:ddavp', 'renal:beta2', 'renal:cacl', 'renal:gluconato',
+    'renal:gluconato-assint', 'renal:bic', 'renal:glicose', 'renal:mg', 'renal:nac-contraste', 'renal:sorcal', 'oncologia:bic3', 'oncologia:gluconato',
+    'oncologia:glicose25', 'oncologia:amicacina', 'oncologia:tmp', 'oncologia:dexa-sms', 'oncologia:cipro-vo', 'oncologia:nacl3-bolo']) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+})
+
+test('lote 6b: contas de exemplo, só da dose por tomada (L6-1)', () => {
+  const doItem = (lista: { id: string }[], id: string) => lista.find((d) => d.id === id) as (typeof DOSES_IRA)[number]
+  const furo = calcularDoseLivro(doItem(DOSES_IRA, 'furosemida'), 20)!
+  assert.deepEqual(volumeDaAmpola(furo.porDose!, AMPOLAS.furosemida[0])?.ml, [2, 3])
+  const atx = calcularDoseLivro(doItem(DOSES_HEMOSTASIA, 'atx-iv'), 20)!
+  assert.deepEqual(volumeDaAmpola(atx.porDose!, AMPOLAS['acido-tranexamico'][0])?.ml, [4, 4])
+  const manitol = calcularDoseLivro(doItem(DOSES_COMPRESSIVAS, 'manitol'), 20)!
+  assert.deepEqual(volumeDaAmpola(manitol.porDose!, AMPOLAS.manitol[0])?.ml.map((x) => Math.round(x * 1e6) / 1e6), [25, 100])
+  // fenitoína de manutenção: 4 a 8 mg/kg/dia em 2 doses, 20 kg = 40 a 80 mg por dose = 0,8 a 1,6 mL a aspirar
+  const fen = calcularDoseLivro(doItem(DOSES_COMPRESSIVAS, 'fenitoina-man'), 20)!
+  assert.deepEqual(volumeDaAmpola(fen.porDose!, AMPOLAS.fenitoina[0]), { ml: [0.8, 1.6], aspirar: true })
+  // enoxaparina no lactente de 3 kg: 3 a 4,5 mg = 0,03 a 0,045 mL, com o aviso de volume pequeno (L4-5)
+  const enoxa = calcularDoseLivro(doItem(DOSES_COMPRESSIVAS, 'enoxa-svcs'), 3)!
+  const v = volumeDaAmpola(enoxa.porDose!, AMPOLAS.enoxaparina[0])!
+  assert.deepEqual(v.ml.map((x) => Math.round(x * 1e6) / 1e6), [0.03, 0.045])
+  assert.equal(volumeAbaixoDe01(v.ml), true)
+  // insulina da hipercalemia (oncologia): 0,1 UI/kg, máx. 10 UI = 100 mL do preparo de 0,1 UI/mL
+  const ins = calcularDoseLivro(doItem(DOSES_SLT, 'insulina'), 150)!
+  assert.deepEqual(volumeDaAmpola(ins.porDose!, AMPOLAS['insulina-preparo'][0])?.ml.map((x) => Math.round(x * 1e6) / 1e6), [100, 100])
+})
+
+test('lote 6b: seringa preenchida não pode ser solução pronta nem "aspirar e diluir"', () => {
+  const p = problemasDasAmpolas({ x: [{ id: 'x-1', rotulo: 'x', porMl: 1, seringa: true, pronta: true, fonte: 'teste' }] }, {})
+  assert.ok(p.some((x) => /seringa preenchida/.test(x)))
+  assert.ok(Object.values(AMPOLAS).flat().every((a) => !(a.seringa && (a.pronta || a.diluir))))
 })

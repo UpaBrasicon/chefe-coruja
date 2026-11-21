@@ -26,9 +26,9 @@ const baseHemostasia = fichaP4('ped-hemostasia-trombose', 'Hemofilia, von Willeb
 
 export const fichaHemostasiaTromboPed: Ficha = {
   ...baseHemostasia,
-  versao: '2026-09-28.1',
+  versao: '2026-11-20.1',
   fontes: [...baseHemostasia.fontes, ASH_ISTH_2025_TEV],
-  revisadoEm: '28/09/2026 (ASH/ISTH 2025 conferida pelos resumos; livro do ICr mantido como base)',
+  revisadoEm: '20/11/2026 (lote 6b da dose em mL: ácido tranexâmico IV da hemofilia com a ampola de 50 mg/mL, da ficha ped-ampolas, só da dose por tomada; o item da doença de von Willebrand não escreve a via e fica sem mL; desmopressina espera a bula; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 28/09/2026 (ASH/ISTH 2025 conferida pelos resumos; livro do ICr mantido como base)',
 }
 
 export const ASH_ISTH_ITENS: { numero: string; populacao: string; texto: string; mudanca: string }[] = [

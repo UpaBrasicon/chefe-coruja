@@ -1,6 +1,6 @@
 # Dose em mL, lote 6: demais capítulos (plano)
 
-Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); em partes pequenas por capítulo (opção A do RT, 20/11/2026); parte 6a na branch `fase-ml/lote6a-pneumonia-itu-falciforme` (seção 7). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
+Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); em partes pequenas por capítulo (opção A do RT, 20/11/2026); partes 6a e 6b nas branches `fase-ml/lote6a-pneumonia-itu-falciforme` e `fase-ml/lote6b-renal-hemostasia-onco` (seção 7). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
 
 Lista da CMED: planilha PMC de 09/11/2026 (`scripts/anvisa/lista-cmed.mjs --injetaveis`). Só entram apresentações com "comercializado: Sim".
 
@@ -114,5 +114,14 @@ O gate do LG10 obriga a subir a ficha de cada capítulo cuja tela muda. Para nã
 - pneumonia (SBP 2024): levofloxacino 5 mg/mL, metronidazol 5 mg/mL e linezolida 2 mg/mL; ITU: ciprofloxacino IV 2 mg/mL; crise álgica: dipirona 500 mg/mL e morfina 1 e 10 mg/mL (lote 5);
 - fichas `ped-ampolas` 2026-11-20.5, `ped-pneumonia`, `ped-infeccao-urinaria` e `ped-falciforme` 2026-11-20.1; migration `20270416000019_fichas_lote6a.sql`, aplicada na homologação em 20/11/2026 (fontes conferidas por md5; volta testada em transação desfeita);
 - evidência local: 1.392 testes, 0 falhas; typecheck, eslint e padrão do frontend sem erro; CMED sem concentração nova.
+
+**6b: injúria renal, hemostasia e emergências oncológicas** (branch `fase-ml/lote6b-renal-hemostasia-onco`, empilhada sobre a 6a):
+- princípios novos, uma concentração à venda de cada (CMED 09/11/2026), nenhum marcado: furosemida 10 mg/mL (ampola de 2 mL); ácido tranexâmico 50 mg/mL (a de 100 mg/mL das listas locais não está na lista); enoxaparina 100 mg/mL em seringa preenchida (todas as seringas à venda, de 20 a 100 mg, são de 100 mg/mL), com o texto "da seringa preenchida … (volume a aplicar)"; manitol 20% = 0,2 g/mL como solução pronta (livro p. 720 e 179; oito fabricantes);
+- insulina da hipercalemia (`renal:insulina`, `oncologia:insulina`) pelo preparo de 0,1 UI/mL do livro, como na solução polarizante do lote 5 (L5-5, ML7);
+- já cadastrados, só ligados: midazolam (IV, IM e IN), fenitoína (ataque e manutenção, aspirar e diluir) e linezolida, metronidazol, ciprofloxacino e levofloxacino como solução pronta;
+- **sem mL por não escreverem a via:** `hemostasia:atx-dvw` (ácido tranexâmico na doença de von Willebrand, 10 a 20 mg/kg) e `oncologia:fenitoina-prof` (fenitoína profilática). O ácido tranexâmico tem dose diferente IV e VO na hemofilia (10 contra 15 a 20 mg/kg); dar o volume da ampola IV a uma dose que pode ser oral seria escolher a via pelo médico. Ligam depois de o RT conferir a via na p. 682 e na p. 720;
+- fichas `ped-ampolas` 2026-11-20.6 e `ped-injuria-renal`, `ped-hemostasia-trombose` e `ped-emergencias-oncologicas` 2026-11-20.1; migration `20270416000020_fichas_lote6b.sql`, aplicada na homologação em 20/11/2026 (fontes conferidas por md5; volta testada em transação desfeita, 4 linhas);
+- risco para o RT olhar: a enoxaparina no lactente dá volumes abaixo de 0,1 mL (3 kg × 1 mg/kg = 0,03 mL); o aviso de seringa de 1 mL aparece (L4-5), e as seringas de 20 e 40 mg não são graduadas pela descrição da CMED;
+- evidência local: 1.396 testes, 0 falhas; typecheck, eslint e padrão do frontend sem erro; guarda do LG10 liberada contra a 6a.
 
 Ficam para as próximas partes: aminoglicosídeos, clindamicina, SMX-TMP, desmopressina e salbutamol (bula, L6-3), dexametasona (L4-2), cálcio, bicarbonato, glicose e fósforo (L6-6 a L6-8) e os demais capítulos.

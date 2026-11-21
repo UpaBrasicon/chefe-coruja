@@ -178,7 +178,7 @@ export function InjuriaRenalPed() {
       ) : (
         <>
           <Bloco titulo="Furosemida e contraste (p. 584–585)">
-            {DOSES_IRA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {DOSES_IRA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`renal:${d.id}`} />)}
             <LinhaFaixa nome="Hidratação profilática do contraste" faixa={hidratacaoContrasteMlH(p.peso)} unidade="mL/h" casas={0} texto="SF ou solução com bicarbonato com 150 mEq/L de Na, 1 a 3 mL/kg/h, idealmente 12 h antes até 12 h depois" pagina="p. 584" />
           </Bloco>
           <Bloco titulo="Tabela 8 — distúrbios hidroeletrolíticos e acidobásicos (p. 583)">
@@ -188,7 +188,7 @@ export function InjuriaRenalPed() {
             </div>
             {na && <p>Na a repor (desejado 130, × peso × 0,6): <strong className="tabular-nums">{br(na.meq, 1)} mEq</strong> = {br(na.mlNaCl3, 0)} mL de NaCl 3% (0,5 mEq/mL). Indicação: aguda e sintomática ou &lt; 120 mEq/L.</p>}
             {bic !== null && <p>Déficit de HCO3 (desejado 15, × peso × 0,3): <strong className="tabular-nums">{br(bic, 1)} mEq</strong>. Indicação: pH &lt; 7,1 e/ou HCO3 &lt; 10 mEq/L.</p>}
-            {DOSES_TABELA8.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {DOSES_TABELA8.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`renal:${d.id}`} />)}
           </Bloco>
         </>
       )}
