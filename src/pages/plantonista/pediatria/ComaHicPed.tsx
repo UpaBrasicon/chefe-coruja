@@ -117,7 +117,7 @@ export function ComaHicPed() {
 
       {!calc ? <Pendencia p={p} /> : (
         <Bloco titulo="Doses (caps. 37 e 41)">
-          {DOSES_COMA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+          {DOSES_COMA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`coma:${d.id}`} />)}
         </Bloco>
       )}
 

@@ -110,10 +110,10 @@ export function ChoqueToxicoPartesMolesPed() {
       ) : (
         <>
           <Bloco titulo="Choque tóxico — Figura 1 (p. 476)" descricao={p.rn ? 'Recém-nascido: o capítulo não traz valor neonatal; nenhuma linha calcula.' : 'Iniciar na primeira hora; associação obrigatória de penicilina e clindamicina.'}>
-            {DOSES_SCT.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {DOSES_SCT.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`pele:${d.id}`} />)}
           </Bloco>
           <Bloco titulo="Pele e partes moles — antibióticos citados no cap. 48 (doses do Apêndice)">
-            {DOSES_PELE.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {DOSES_PELE.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`pele:${d.id}`} />)}
             <Nota>{TEICOPLANINA}</Nota>
           </Bloco>
         </>

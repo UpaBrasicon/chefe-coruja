@@ -1,6 +1,6 @@
 # Dose em mL, lote 6: demais capítulos (plano)
 
-Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); em partes pequenas por capítulo (opção A do RT, 20/11/2026); partes 6a, 6b e 6c nas branches `fase-ml/lote6a-pneumonia-itu-falciforme`, `fase-ml/lote6b-renal-hemostasia-onco` e `fase-ml/lote6c-eletrolitos` (seção 7). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
+Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); em partes pequenas por capítulo (opção A do RT, 20/11/2026); partes 6a a 6d nas branches `fase-ml/lote6a-pneumonia-itu-falciforme`, `fase-ml/lote6b-renal-hemostasia-onco`, `fase-ml/lote6c-eletrolitos` e `fase-ml/lote6d-capitulos-cadastrados` (seção 7). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
 
 Lista da CMED: planilha PMC de 09/11/2026 (`scripts/anvisa/lista-cmed.mjs --injetaveis`). Só entram apresentações com "comercializado: Sim".
 
@@ -133,5 +133,13 @@ O gate do LG10 obriga a subir a ficha de cada capítulo cuja tela muda. Para nã
 - **glicose sem mL:** 5%, 10%, 25%, 50% e 75% à venda (até 15×) e nenhuma decisão própria do RT; o livro cita 25% (p. 32). Pergunta ao RT: só a 25% do livro, ou todas sem marcação;
 - fichas `ped-ampolas` 2026-11-20.7 e `ped-eletrolitos` 2026-11-20.1; migration `20270416000021_fichas_lote6c.sql`, aplicada na homologação em 20/11/2026 (md5 conferido; volta testada em transação desfeita, 2 linhas). As telas da injúria renal e da oncologia mudam só pela ficha `ped-ampolas` (as chaves já estavam na tela desde a 6b);
 - evidência local: 1.399 testes, 0 falhas; typecheck, eslint e padrão sem erro; guarda do LG10 liberada contra a 6b.
+
+**6d: capítulos com princípio já cadastrado** (branch `fase-ml/lote6d-capitulos-cadastrados`, empilhada sobre a 6c; sem princípio novo):
+- síndrome nefrótica e SHU (`glomerulo:furo-albumina`, `furo-hiper`, `furo-shu`) e diurese forçada (`intoxicacao:furosemida-iv`): furosemida 10 mg/mL;
+- bicarbonato da diurese alcalina (`intoxicacao:bicarbonato-alcalina`, 8,4% e 10%, nenhum marcado): infusão de 3 a 4 h (p. 205), então o mL é o volume a aspirar e o aviso de diluir vem do próprio item (`diluir` em `ItemComAmpola`, novo; a guarda acusa item para diluir com solução pronta ou seringa preenchida);
+- atropina do capítulo de intoxicações (`intoxicacao:atropina-cap`, 0,25 e 0,5 mg/mL); midazolam do coma (`coma:midazolam`, 1 e 5 mg/mL); bolus de octreotida (`hda:octreotida-bolus`, 50, 100 e 500 µg/mL, L5-4); linezolida e metronidazol IV do choque tóxico e da pele (`pele:`, solução pronta);
+- **sem mL nesta parte:** furosemida da GNPE (por dia, VO); furosemida VO da diurese forçada; pralidoxima (sem injetável à venda); lista oral da insuficiência cardíaca (a furosemida está numa tabela de medicações orais); imunodeprimido e osteoarticular (os itens não escrevem a via); clindamicina, SMX-TMP e vitamina K (bula);
+- fichas `ped-ampolas` 2026-11-20.8 e `ped-glomerulopatias-shu`, `ped-intoxicacoes`, `ped-coma-hic`, `ped-hda-hepatica` e `ped-choque-toxico-partes-moles` 2026-11-20.1; migration `20270416000022_fichas_lote6d.sql`, aplicada na homologação em 20/11/2026 (md5 conferido; volta testada em transação desfeita, 6 linhas);
+- evidência local: 1.401 testes, 0 falhas; typecheck, eslint e padrão sem erro; guarda do LG10 liberada contra a 6c.
 
 Ficam para as próximas partes: aminoglicosídeos, clindamicina, SMX-TMP, desmopressina e salbutamol (bula, L6-3), dexametasona (L4-2), glicose (decisão do RT) e os demais capítulos.

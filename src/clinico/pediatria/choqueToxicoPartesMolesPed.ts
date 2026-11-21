@@ -1,3 +1,4 @@
+import type { Ficha } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 import type { ItemLivro } from './fonteP5.ts'
 
@@ -8,7 +9,13 @@ import type { ItemLivro } from './fonteP5.ts'
 // (Tabela 1); as doses mostradas saem da Tabela 2 do Apêndice (p. 898–909),
 // citadas como tal. Sem valor neonatal.
 
-export const fichaChoqueToxicoPartesMoles = fichaP4('ped-choque-toxico-partes-moles', 'Choque tóxico e infecções de pele e partes moles — criança', 'cap. 46, p. 471–477; cap. 48, p. 487–493; Apêndice, p. 898–909')
+const baseChoqueToxico = fichaP4('ped-choque-toxico-partes-moles', 'Choque tóxico e infecções de pele e partes moles — criança', 'cap. 46, p. 471–477; cap. 48, p. 487–493; Apêndice, p. 898–909')
+
+export const fichaChoqueToxicoPartesMoles: Ficha = {
+  ...baseChoqueToxico,
+  versao: '2026-11-20.1',
+  revisadoEm: `20/11/2026 (lote 6d da dose em mL: linezolida e metronidazol IV com o volume da solução pronta (2 e 5 mg/mL), da ficha ped-ampolas; clindamicina e SMX-TMP esperam a bula; só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); ${baseChoqueToxico.revisadoEm}`,
+}
 
 /** Tabela 2 (p. 473–474): critérios clínicos da SCT estafilocócica. */
 export const CLINICOS_ESTAFILO: { id: string; texto: string }[] = [
