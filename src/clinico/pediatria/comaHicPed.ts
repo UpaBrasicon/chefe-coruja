@@ -10,7 +10,7 @@ import { positivoP5, type ItemLivro } from './fonteP5.ts'
 // hiperosmolares do TCE já estão em `tceDecisao.ts`. Sem valor neonatal.
 
 const fichaComaHicLivro = fichaP4('ped-coma-hic', 'Coma e hipertensão intracraniana — criança', 'cap. 37, p. 368–377; cap. 41, p. 415–422; Apêndice, p. 896')
-export const fichaComaHicPed = { ...fichaComaHicLivro, versao: '2026-11-16.1', revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaComaHicLivro.revisadoEm }
+export const fichaComaHicPed = { ...fichaComaHicLivro, versao: '2026-11-20.1', revisadoEm: '20/11/2026 (lote 6d da dose em mL: midazolam do algoritmo do coma com as ampolas de 1 e 5 mg/mL, nenhuma marcada, da ficha ped-ampolas; só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaComaHicLivro.revisadoEm }
 
 /** Escore de resposta pupilar (p. 374): ambas não reativas = 2; uma = 1; nenhuma = 0. GCS-P = Glasgow − escore. */
 export function gcsPupilas(glasgow: number, pupilasNaoReativas: 0 | 1 | 2): number | null {

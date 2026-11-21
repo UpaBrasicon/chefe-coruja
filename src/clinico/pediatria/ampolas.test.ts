@@ -17,6 +17,12 @@ import { DOSES_CRISE_ALGICA } from './falciformePed.ts'
 import { DOSES_IRA, DOSES_TABELA8 } from './injuriaRenalPed.ts'
 import { DOSES_HEMOSTASIA, DOSES_PTI } from './hemostasiaTromboPed.ts'
 import { DOSES_COMPRESSIVAS, DOSES_HEMATO_ONCO, DOSES_NEUTROPENIA, DOSES_SLT } from './oncologiaPed.ts'
+import { DOSES_NEFRITICA, DOSES_NEFROTICA, DOSES_SHU } from './glomerulopatiasPed.ts'
+import { DOSES_CAPITULO_INTOX } from './intoxicacaoPed.ts'
+import { DOSES_COMA } from './comaHicPed.ts'
+import { DOSES_HDA } from './digestivoHepaticoPed.ts'
+import { DOSES_PELE, DOSES_SCT } from './choqueToxicoPartesMolesPed.ts'
+import { DOSES_IC_ORAIS } from './insuficienciaCardiacaPed.ts'
 import { CLORETO_CA_TABELA7, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEMIA, HIPOCALCEMIA, HIPOMAGNESEMIA, K_IV, K_VO, calcularDose } from './eletrolitosPed.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
 
@@ -80,6 +86,9 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     hemostasia: new Set([...DOSES_HEMOSTASIA, ...DOSES_PTI].map((d) => d.id)),
     oncologia: new Set([...DOSES_SLT, ...DOSES_HEMATO_ONCO, ...DOSES_NEUTROPENIA, ...DOSES_COMPRESSIVAS].map((d) => d.id)),
     eletrolitos: new Set([...HIPERCALEMIA, CLORETO_CA_TABELA7, ...HIPOCALCEMIA, ...HIPERCALCEMIA, ...Object.values(HIPOMAGNESEMIA), ...HIPERMAGNESEMIA, ...FOSFORO, K_IV, K_VO].map((d) => d.id)),
+    glomerulo: new Set([...DOSES_NEFROTICA, ...DOSES_NEFRITICA, ...DOSES_SHU].map((d) => d.id)),
+    intoxicacao: new Set(DOSES_CAPITULO_INTOX.map((d) => d.id)), coma: new Set(DOSES_COMA.map((d) => d.id)),
+    hda: new Set(DOSES_HDA.map((d) => d.id)), pele: new Set([...DOSES_SCT, ...DOSES_PELE].map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -92,7 +101,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.7')
+  assert.equal(fichaAmpolas.versao, '2026-11-20.8')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -352,4 +361,22 @@ test('lote 6c: contas de exemplo', () => {
   const mg = calcularDose(HIPOMAGNESEMIA.grave, 20)!
   assert.deepEqual(volumeDaAmpola(mg.faixa, AMPOLAS.magnesio[0], 'sal')?.ml, [5, 10])
   assert.deepEqual(volumeDaAmpola(mg.faixa, AMPOLAS.magnesio[1], 'sal')?.ml, [1, 2])
+})
+
+test('lote 6d: capítulos com princípio já cadastrado, sem princípio novo', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => a.id)
+  for (const c of ['glomerulo:furo-albumina', 'glomerulo:furo-hiper', 'glomerulo:furo-shu', 'intoxicacao:furosemida-iv']) assert.deepEqual(ids(c), ['furosemida-10'], c)
+  assert.deepEqual(ampolasDoItem('intoxicacao:atropina-cap').map((a) => a.porMl), [0.25, 0.5])
+  assert.deepEqual(ampolasDoItem('coma:midazolam').map((a) => a.porMl), [1, 5])
+  assert.deepEqual(ampolasDoItem('hda:octreotida-bolus').map((a) => a.porMl), [50, 100, 500])
+  assert.deepEqual(ids('pele:linezolida'), ['linezolida-2'])
+  assert.deepEqual(ids('pele:metronidazol'), ['metronidazol-5'])
+  // sem mL: VO, dose por dia sem número de doses, infusão sem aviso de diluição, bula pendente e a lista oral da IC
+  for (const c of ['glomerulo:furo-gnpe', 'intoxicacao:furosemida-vo', 'intoxicacao:bicarbonato-alcalina', 'intoxicacao:pralidoxima-im', 'pele:clindamicina', 'pele:doxi',
+    ...DOSES_IC_ORAIS.map((d) => `ic:${d.id}`)]) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+  // furosemida da SHU 2 a 5 mg/kg, 10 kg = 20 a 50 mg = 2 a 5 mL
+  const r = calcularDoseLivro(DOSES_SHU.find((d) => d.id === 'furo-shu')!, 10)!
+  assert.deepEqual(volumeDaAmpola(r.porDose!, AMPOLAS.furosemida[0])?.ml, [2, 5])
 })

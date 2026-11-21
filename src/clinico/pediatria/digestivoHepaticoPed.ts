@@ -9,7 +9,7 @@ import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
 // paracetamol, amônia, VIG e oferta hídrica restrita da IHA. Sem valor neonatal.
 
 const fichaDigestivoHepaticoLivro = fichaP4('ped-hda-hepatica', 'Hemorragia digestiva e insuficiência hepática aguda — criança', 'cap. 34, p. 343–352; cap. 36, p. 357–366; Apêndice, p. 896, 905–910')
-export const fichaDigestivoHepaticoPed = { ...fichaDigestivoHepaticoLivro, versao: '2026-11-16.1', revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaDigestivoHepaticoLivro.revisadoEm }
+export const fichaDigestivoHepaticoPed = { ...fichaDigestivoHepaticoLivro, versao: '2026-11-20.1', revisadoEm: '20/11/2026 (lote 6d da dose em mL: bolus de octreotida com as ampolas de 50, 100 e 500 µg/mL, nenhuma marcada (L5-4), da ficha ped-ampolas; só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaDigestivoHepaticoLivro.revisadoEm }
 
 // ------------------------------------------------------------ hemorragia digestiva
 
