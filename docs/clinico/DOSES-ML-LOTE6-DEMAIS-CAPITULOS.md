@@ -1,6 +1,6 @@
 # Dose em mL, lote 6: demais capítulos (plano)
 
-Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); em partes pequenas por capítulo (opção A do RT, 20/11/2026); partes 6a e 6b nas branches `fase-ml/lote6a-pneumonia-itu-falciforme` e `fase-ml/lote6b-renal-hemostasia-onco` (seção 7). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
+Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); em partes pequenas por capítulo (opção A do RT, 20/11/2026); partes 6a, 6b e 6c nas branches `fase-ml/lote6a-pneumonia-itu-falciforme`, `fase-ml/lote6b-renal-hemostasia-onco` e `fase-ml/lote6c-eletrolitos` (seção 7). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
 
 Lista da CMED: planilha PMC de 09/11/2026 (`scripts/anvisa/lista-cmed.mjs --injetaveis`). Só entram apresentações com "comercializado: Sim".
 
@@ -124,4 +124,14 @@ O gate do LG10 obriga a subir a ficha de cada capítulo cuja tela muda. Para nã
 - risco para o RT olhar: a enoxaparina no lactente dá volumes abaixo de 0,1 mL (3 kg × 1 mg/kg = 0,03 mL); o aviso de seringa de 1 mL aparece (L4-5), e as seringas de 20 e 40 mg não são graduadas pela descrição da CMED;
 - evidência local: 1.396 testes, 0 falhas; typecheck, eslint e padrão do frontend sem erro; guarda do LG10 liberada contra a 6a.
 
-Ficam para as próximas partes: aminoglicosídeos, clindamicina, SMX-TMP, desmopressina e salbutamol (bula, L6-3), dexametasona (L4-2), cálcio, bicarbonato, glicose e fósforo (L6-6 a L6-8) e os demais capítulos.
+**6c: eletrólitos** (branch `fase-ml/lote6c-eletrolitos`, empilhada sobre a 6b):
+- bicarbonato 8,4% (1 mEq/mL, livro p. 32) e 10% (1,19 mEq/mL pela conta do sal; Farmace), nenhum marcado; o 3% da oncologia fica sem mL (L6-6);
+- cálcio em mg do sal (L6-7): um princípio por sal (`gluconato-de-calcio` e `cloreto-de-calcio`, 100 mg do sal/mL), para a dose de cloreto nunca ganhar o volume do gluconato. A base é o sal quando o livro dá, para a mesma dose, o volume da solução a 10% (p. 549: 20 mg/kg = 0,2 mL/kg; p. 583: 50 a 100 mg/kg = 0,5 a 1 mL/kg). **Nenhum dos dois aparece à venda na CMED de 09/11/2026** (a ampola de cloreto 10% da Vasconcelos está sem venda; gluconato injetável não está na lista); a concentração vem do livro (Tabela 11);
+- ligados: `eletrolitos:bic`, `insulina` (preparo de 0,1 UI/mL), `furosemida-k`, `furosemida-ca`, `cloreto-ca-mg`, `gluconato-ca-mg`; `renal:bic`, `cacl`, `gluconato`, `gluconato-assint`; `oncologia:gluconato`;
+- **magnésio grave dos eletrólitos:** o volume fixo do sulfato 10% sai da tela e do "Copiar" e entra a escolha de 10% e 50% no sal (lote 4, L4-3), como na asma e na torsades;
+- ficam com o mL do livro, como estavam: KCl 19,1% (2,5 mEq/mL) e fósforo orgânico (1 mmol/mL; a CMED tem o glicerofosfato de sódio 216 mg/mL da Fresenius e da Vasconcelos, de uso hospitalar), e os itens de cálcio já escritos em mL;
+- **glicose sem mL:** 5%, 10%, 25%, 50% e 75% à venda (até 15×) e nenhuma decisão própria do RT; o livro cita 25% (p. 32). Pergunta ao RT: só a 25% do livro, ou todas sem marcação;
+- fichas `ped-ampolas` 2026-11-20.7 e `ped-eletrolitos` 2026-11-20.1; migration `20270416000021_fichas_lote6c.sql`, aplicada na homologação em 20/11/2026 (md5 conferido; volta testada em transação desfeita, 2 linhas). As telas da injúria renal e da oncologia mudam só pela ficha `ped-ampolas` (as chaves já estavam na tela desde a 6b);
+- evidência local: 1.399 testes, 0 falhas; typecheck, eslint e padrão sem erro; guarda do LG10 liberada contra a 6b.
+
+Ficam para as próximas partes: aminoglicosídeos, clindamicina, SMX-TMP, desmopressina e salbutamol (bula, L6-3), dexametasona (L4-2), glicose (decisão do RT) e os demais capítulos.

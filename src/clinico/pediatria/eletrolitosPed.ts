@@ -1,10 +1,17 @@
+import type { Ficha } from '../ficha.ts'
 import { faixaTeto, faixaVezes, fichaIcr, positivo } from './fonteIcr.ts'
 
 // Potássio, cálcio, magnésio e fósforo na criança — cap. 54 do Pronto-Socorro
 // ICr-HCFMUSP (4ª ed., 2023), p. 543–559. Doses por peso como o livro traz,
 // com página; a indicação e a escolha são do médico (ADR 0007).
 
-export const fichaEletrolitosPed = fichaIcr('ped-eletrolitos', 'Potássio, cálcio, magnésio e fósforo — criança', 'cap. 54, p. 543–559')
+const baseEletrolitos = fichaIcr('ped-eletrolitos', 'Potássio, cálcio, magnésio e fósforo — criança', 'cap. 54, p. 543–559')
+
+export const fichaEletrolitosPed: Ficha = {
+  ...baseEletrolitos,
+  versao: '2026-11-20.1',
+  revisadoEm: `20/11/2026 (lote 6c da dose em mL: bicarbonato 8,4% e 10%, gluconato e cloreto de cálcio 10% em mg do sal, furosemida e insulina pelo preparo de 0,1 UI/mL, da ficha ped-ampolas, nenhuma marcada; o magnésio grave deixa o volume fixo do sulfato 10% e passa à escolha de 10% e 50% (lote 4); glicose sem mL até decisão do RT; KCl e fósforo orgânico seguem com o mL do livro; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); ${baseEletrolitos.revisadoEm}`,
+}
 
 export type Dose = {
   id: string
