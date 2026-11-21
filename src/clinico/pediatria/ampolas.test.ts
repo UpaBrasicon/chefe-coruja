@@ -371,12 +371,23 @@ test('lote 6d: capítulos com princípio já cadastrado, sem princípio novo', (
   assert.deepEqual(ampolasDoItem('hda:octreotida-bolus').map((a) => a.porMl), [50, 100, 500])
   assert.deepEqual(ids('pele:linezolida'), ['linezolida-2'])
   assert.deepEqual(ids('pele:metronidazol'), ['metronidazol-5'])
-  // sem mL: VO, dose por dia sem número de doses, infusão sem aviso de diluição, bula pendente e a lista oral da IC
-  for (const c of ['glomerulo:furo-gnpe', 'intoxicacao:furosemida-vo', 'intoxicacao:bicarbonato-alcalina', 'intoxicacao:pralidoxima-im', 'pele:clindamicina', 'pele:doxi',
+  // sem mL: VO, dose por dia sem número de doses, bula pendente e a lista oral da IC
+  for (const c of ['glomerulo:furo-gnpe', 'intoxicacao:furosemida-vo', 'intoxicacao:pralidoxima-im', 'pele:clindamicina', 'pele:doxi',
     ...DOSES_IC_ORAIS.map((d) => `ic:${d.id}`)]) {
     assert.deepEqual(ampolasDoItem(c), [], c)
   }
   // furosemida da SHU 2 a 5 mg/kg, 10 kg = 20 a 50 mg = 2 a 5 mL
   const r = calcularDoseLivro(DOSES_SHU.find((d) => d.id === 'furo-shu')!, 10)!
   assert.deepEqual(volumeDaAmpola(r.porDose!, AMPOLAS.furosemida[0])?.ml, [2, 5])
+})
+
+test('lote 6d: aviso de diluir no próprio item (infusão do livro), sem ampola marcada', () => {
+  assert.equal(ITENS_COM_AMPOLA['intoxicacao:bicarbonato-alcalina'].diluir, true)
+  assert.deepEqual(ampolasDoItem('intoxicacao:bicarbonato-alcalina').map((a) => a.id), ['bicarbonato-8-4', 'bicarbonato-10'])
+  // a ampola em si não pede diluição; o bolus da hipercalemia segue sem o aviso
+  assert.ok(AMPOLAS.bicarbonato.every((a) => !a.diluir))
+  assert.equal(ITENS_COM_AMPOLA['eletrolitos:bic'].diluir, undefined)
+  // a guarda acusa item para diluir com solução pronta
+  const p = problemasDasAmpolas({ s: [{ id: 's-1', rotulo: 's', porMl: 1, pronta: true, fonte: 'teste' }] }, { 'pele:x': { principio: 's', diluir: true } })
+  assert.ok(p.some((x) => /item para diluir/.test(x)))
 })
