@@ -103,7 +103,7 @@ test('Tabelas 3 e 4 (p. 597–598) com máximos do Apêndice', () => {
 
 test('AAP 2026 lida em 11/11/2026: aviso com os números novos, sem dose e sem cefixima', () => {
   assert.ok(fichaItuPed.fontes.some((f) => f.citacao.includes('PMID 42803578')))
-  assert.equal(fichaItuPed.versao, '2026-11-11.1')
+  assert.ok(fichaItuPed.versao >= '2026-11-11.1') // subiu no lote 6a da dose em mL (20/11/2026)
   const aviso = AVISO_AAP_2026.join(' ')
   assert.match(aviso, /≥ 10\.000 UFC\/mL/)
   assert.match(aviso, /11\/11\/2026/)

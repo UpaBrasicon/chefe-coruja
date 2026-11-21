@@ -20,7 +20,7 @@ const casas = (u: DoseLivro['unidade'], x: number) => (u === 'UI' ? 0 : x >= 100
  * o livro escreve, via, página, máximo emprestado do Apêndice, nota e errata.
  * RN sem valor neonatal explícito não calcula.
  */
-export function LinhaDoseLivro({ d, peso, rn = false, extra, fonte = 'Livro ICr', origem = 'O livro traz' }: { d: DoseLivro; peso: number; rn?: boolean; extra?: ReactNode; fonte?: string; origem?: string }) {
+export function LinhaDoseLivro({ d, peso, rn = false, extra, fonte = 'Livro ICr', origem = 'O livro traz', ampola }: { d: DoseLivro; peso: number; rn?: boolean; extra?: ReactNode; fonte?: string; origem?: string; /** chave da ampola (ampolas.ts); o mL sai só da dose por tomada (L6-1) */ ampola?: string }) {
   const bloqueadaRn = rn && !d.neonatal
   const r = bloqueadaRn ? null : calcularDoseLivro(d, peso)
   const fmt = (f: [number, number]) => faixaBr(f, casas(d.unidade, f[1]))
@@ -49,6 +49,7 @@ export function LinhaDoseLivro({ d, peso, rn = false, extra, fonte = 'Livro ICr'
       {bloqueadaRn && <p className="text-atencao">{SEM_VALOR_NEONATAL_P4}</p>}
       {r?.noMaximo && <p className="text-atencao">Limitado ao máximo{d.fonteMaximo ? ` (${d.fonteMaximo})` : ' do livro'}.</p>}
       {!r?.noMaximo && d.fonteMaximo && <p className="text-tinta-sussurro">Máximo usado: {d.fonteMaximo}.</p>}
+      {ampola && r?.porDose && <EscolhaDaAmpola chave={ampola} dose={r.porDose} unidade={d.unidade} />}
       {extra}
       {d.nota && <p className="text-tinta-sussurro">{d.nota}</p>}
       {d.errata && <Errata texto={d.errata} />}
