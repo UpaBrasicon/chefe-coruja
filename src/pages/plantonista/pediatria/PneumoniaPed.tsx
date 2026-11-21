@@ -99,10 +99,10 @@ export function PneumoniaPed() {
       ) : (
         <>
           <Bloco titulo={`Escolha inicial — ${ROTULO_FAIXA[faixa!]}`}>
-            {tabela.inicial.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {tabela.inicial.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`pneumonia:${d.id}`} />)}
           </Bloco>
           <Bloco titulo="Escolha opcional (falha terapêutica)">
-            {tabela.falha.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {tabela.falha.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`pneumonia:${d.id}`} />)}
             {faixa === 'maior5a' && regime === 'domiciliar' && <Nota>{NOTA_MAIOR5}</Nota>}
           </Bloco>
           {!p.rn && (
@@ -110,7 +110,7 @@ export function PneumoniaPed() {
               {ESPECIAIS.map((s) => (
                 <div key={s.titulo} className="flex flex-col gap-2">
                   <p className="font-medium">{s.titulo}</p>
-                  {s.doses.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} />)}
+                  {s.doses.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} ampola={`pneumonia:${d.id}`} />)}
                 </div>
               ))}
               <Nota>{NOTA_ERITRO_RN}</Nota>
@@ -133,7 +133,7 @@ export function PneumoniaPed() {
         <Nota>Líquido purulento é empiema: só análise microbiológica (p. 314). {DURACAO_DERRAME}</Nota>
       </Bloco>
       <Bloco titulo="PAC complicada — SBP 2024 (Quadro 2, p. 9–10) e derrame — IDSA/PIDS 2026" descricao="Documento científico da SBP lido no PDF; recomendações IDSA/PIDS 2026 pelo resumo (texto integral bloqueado). Doses IV da PAC complicada pelo peso informado.">
-        {calc ? DOSES_SBP_2024.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} />) : <Nota>Informe peso e idade pediátrica para as doses por peso.</Nota>}
+        {calc ? DOSES_SBP_2024.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} ampola={`pneumonia:${d.id}`} />) : <Nota>Informe peso e idade pediátrica para as doses por peso.</Nota>}
         {ESQUEMAS_SBP_2024.map((e) => <p key={e.situacao} className="text-tinta-sussurro"><span className="font-medium text-tinta">{e.situacao}:</span> {e.texto} (SBP 2024, {e.pagina})</p>)}
         <p><span className="font-medium">Drenagem pleural simples (SBP 2024, p. 13):</span> {DRENAGEM_SBP_2024.indicacoes.join('; ')}. Falha: {DRENAGEM_SBP_2024.falha.join('; ')}. Retirada do dreno: {DRENAGEM_SBP_2024.retirada}.</p>
         <p className="text-tinta-sussurro">Empiema (p. 7): {DRENAGEM_SBP_2024.empiema}. Fibrinolítico (p. 12–13): {DRENAGEM_SBP_2024.fibrinolitico}.</p>

@@ -1,6 +1,6 @@
 # Dose em mL, lote 6: demais capítulos (plano)
 
-Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); implementação depois do lote 5. Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
+Data: 20/11/2026. Situação: decisões L6-1 a L6-9 = A (RT, 20/11/2026, "Todas a"); em partes pequenas por capítulo (opção A do RT, 20/11/2026); parte 6a na branch `fase-ml/lote6a-pneumonia-itu-falciforme` (seção 7). Base: `docs/clinico/DOSES-ML-PEDIATRIA-DIAGNOSTICO.md` (seção 1, arquivos de `choqueToxicoPartesMolesPed.ts` a `viasAereasSuperiores.ts`, e seção 4, lote 6), decisões ML1 a ML11 de 19/11/2026 e a CMED como fonte da concentração ao lado da bula (lote 3).
 
 Lista da CMED: planilha PMC de 09/11/2026 (`scripts/anvisa/lista-cmed.mjs --injetaveis`). Só entram apresentações com "comercializado: Sim".
 
@@ -103,3 +103,16 @@ Doxiciclina IV (`doxi`), calcitonina, prednisolona injetável (`aha-prednisolona
 - Amicacina 50 × 250 mg/mL (5×) e glicose de 5% a 75% (15×).
 - SMX-TMP: usar 80 mg/mL numa dose escrita em TMP dá 5× menos volume que o certo (L6-5).
 - Cálcio: sal × elemento dá cerca de 11× no gluconato (ML6, L6-7).
+
+## 7. Andamento por partes (opção A do RT, 20/11/2026)
+
+O gate do LG10 obriga a subir a ficha de cada capítulo cuja tela muda. Para não pedir 15 a 20 aprovações de uma vez, o lote 6 vai em partes pequenas, primeiro os capítulos mais usados na UPA.
+
+**6a: pneumonia, ITU e crise álgica** (branch `fase-ml/lote6a-pneumonia-itu-falciforme`, empilhada sobre o lote 5):
+- `LinhaDoseLivro` (`PecasP4.tsx`) aceita a chave da ampola e mostra a escolha só com a dose por tomada (L6-1);
+- solução pronta (`pronta: true`) mostra "da solução pronta de … (volume a infundir)" e pede "Escolha a solução…" (L6-2); a guarda acusa solução pronta marcada para diluir;
+- pneumonia (SBP 2024): levofloxacino 5 mg/mL, metronidazol 5 mg/mL e linezolida 2 mg/mL; ITU: ciprofloxacino IV 2 mg/mL; crise álgica: dipirona 500 mg/mL e morfina 1 e 10 mg/mL (lote 5);
+- fichas `ped-ampolas` 2026-11-20.5, `ped-pneumonia`, `ped-infeccao-urinaria` e `ped-falciforme` 2026-11-20.1; migration `20270416000019_fichas_lote6a.sql`;
+- evidência local: 1.392 testes, 0 falhas; typecheck, eslint e padrão do frontend sem erro; CMED sem concentração nova.
+
+Ficam para as próximas partes: aminoglicosídeos, clindamicina, SMX-TMP, desmopressina e salbutamol (bula, L6-3), dexametasona (L4-2), cálcio, bicarbonato, glicose e fósforo (L6-6 a L6-8) e os demais capítulos.
