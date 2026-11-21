@@ -33,6 +33,8 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
   if (ampolas.length === 0) return null
   const ampola = ampolas.find((a) => a.id === escolhida)
   const baseDaDose = base ?? (chave ? ITENS_COM_AMPOLA[chave]?.base : undefined)
+  // aviso de diluir pela ampola (bula) ou pelo item (infusão do livro)
+  const diluirItem = chave ? ITENS_COM_AMPOLA[chave]?.diluir === true : false
   const linhas = (doses ?? (dose ? [{ rotulo: '', dose }] : []))
     .map((l) => ({ rotulo: l.rotulo, volume: volumeDaAmpola(l.dose, ampola, baseDaDose) }))
   const algum = linhas.find((l) => l.volume)?.volume
@@ -59,7 +61,7 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
                   : <> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL</>}
             </p>
           ))}
-          {algum.aspirar && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
+          {(algum.aspirar || diluirItem) && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
           {linhas.some((l) => volumeAbaixoDe01(l.volume?.ml)) && <p className="font-medium text-atencao">{AVISO_VOLUME_PEQUENO}</p>}
           <p className="text-rotulo text-tinta-sussurro">Concentração: {ampola.fonte}.</p>
         </>

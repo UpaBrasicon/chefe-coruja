@@ -15,7 +15,7 @@ const baseIntoxicacao = fichaP4('ped-intoxicacoes', 'Intoxicações exógenas �
 export const fichaIntoxicacaoPed: Ficha = {
   ...baseIntoxicacao,
   versao: '2026-11-20.1',
-  revisadoEm: `20/11/2026 (lote 6d da dose em mL: furosemida EV da diurese forçada (10 mg/mL) e atropina do capítulo (0,25 e 0,5 mg/mL, nenhuma marcada), da ficha ped-ampolas; o bicarbonato da diurese alcalina (infusão de 3 a 4 h) espera o aviso de diluição por item; vitamina K espera a bula; só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); ${baseIntoxicacao.revisadoEm}`,
+  revisadoEm: `20/11/2026 (lote 6d da dose em mL: furosemida EV da diurese forçada (10 mg/mL) e atropina do capítulo (0,25 e 0,5 mg/mL, nenhuma marcada); bicarbonato da diurese alcalina (8,4% e 10%, nenhum marcado) como volume a aspirar, com o aviso de diluir, por ser infusão de 3 a 4 h; da ficha ped-ampolas; vitamina K espera a bula; só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); ${baseIntoxicacao.revisadoEm}`,
 }
 
 /** Antídotos do Apêndice (bolus.ts), sem duplicar número. */

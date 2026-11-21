@@ -136,9 +136,10 @@ O gate do LG10 obriga a subir a ficha de cada capítulo cuja tela muda. Para nã
 
 **6d: capítulos com princípio já cadastrado** (branch `fase-ml/lote6d-capitulos-cadastrados`, empilhada sobre a 6c; sem princípio novo):
 - síndrome nefrótica e SHU (`glomerulo:furo-albumina`, `furo-hiper`, `furo-shu`) e diurese forçada (`intoxicacao:furosemida-iv`): furosemida 10 mg/mL;
+- bicarbonato da diurese alcalina (`intoxicacao:bicarbonato-alcalina`, 8,4% e 10%, nenhum marcado): infusão de 3 a 4 h (p. 205), então o mL é o volume a aspirar e o aviso de diluir vem do próprio item (`diluir` em `ItemComAmpola`, novo; a guarda acusa item para diluir com solução pronta ou seringa preenchida);
 - atropina do capítulo de intoxicações (`intoxicacao:atropina-cap`, 0,25 e 0,5 mg/mL); midazolam do coma (`coma:midazolam`, 1 e 5 mg/mL); bolus de octreotida (`hda:octreotida-bolus`, 50, 100 e 500 µg/mL, L5-4); linezolida e metronidazol IV do choque tóxico e da pele (`pele:`, solução pronta);
-- **sem mL nesta parte:** furosemida da GNPE (por dia, VO); furosemida VO da diurese forçada; bicarbonato da diurese alcalina (infusão de 3 a 4 h: espera um aviso de diluição por item); pralidoxima (sem injetável à venda); lista oral da insuficiência cardíaca (a furosemida está numa tabela de medicações orais); imunodeprimido e osteoarticular (os itens não escrevem a via); clindamicina, SMX-TMP e vitamina K (bula);
+- **sem mL nesta parte:** furosemida da GNPE (por dia, VO); furosemida VO da diurese forçada; pralidoxima (sem injetável à venda); lista oral da insuficiência cardíaca (a furosemida está numa tabela de medicações orais); imunodeprimido e osteoarticular (os itens não escrevem a via); clindamicina, SMX-TMP e vitamina K (bula);
 - fichas `ped-ampolas` 2026-11-20.8 e `ped-glomerulopatias-shu`, `ped-intoxicacoes`, `ped-coma-hic`, `ped-hda-hepatica` e `ped-choque-toxico-partes-moles` 2026-11-20.1; migration `20270416000022_fichas_lote6d.sql`, aplicada na homologação em 20/11/2026 (md5 conferido; volta testada em transação desfeita, 6 linhas);
-- evidência local: 1.400 testes, 0 falhas; typecheck, eslint e padrão sem erro; guarda do LG10 liberada contra a 6c.
+- evidência local: 1.401 testes, 0 falhas; typecheck, eslint e padrão sem erro; guarda do LG10 liberada contra a 6c.
 
 Ficam para as próximas partes: aminoglicosídeos, clindamicina, SMX-TMP, desmopressina e salbutamol (bula, L6-3), dexametasona (L4-2), glicose (decisão do RT) e os demais capítulos.
