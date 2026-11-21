@@ -114,7 +114,7 @@ export function DigestivoHepaticoPed() {
         <Pendencia p={p} />
       ) : (
         <Bloco titulo="Hemorragia digestiva alta — drogas (p. 349–350)">
-          {DOSES_HDA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+          {DOSES_HDA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`hda:${d.id}`} />)}
           <LinhaFaixa nome="Octreotida — infusão contínua" faixa={octreotidaInfusaoUgH(p.peso)} unidade="µg/h" casas={1} texto="1 µg/kg/h, podendo ser aumentada até 4 µg/kg/h; 48 a 72 h" pagina="p. 349" />
           <LinhaFaixa nome="Somatostatina — infusão" faixa={somatostatinaUgH(p.peso)} unidade="µg/h" casas={1} texto="1 a 20 µg/kg/h" pagina="p. 349" />
           <Nota>{NOTA_VASOATIVOS}</Nota>

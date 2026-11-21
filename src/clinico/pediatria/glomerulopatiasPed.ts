@@ -31,9 +31,9 @@ const baseGlomerulo = fichaP4('ped-glomerulopatias-shu', 'Síndromes nefrítica 
 
 export const fichaGlomerulopatiasPed: Ficha = {
   ...baseGlomerulo,
-  versao: '2026-09-28.1',
+  versao: '2026-11-20.1',
   fontes: [...baseGlomerulo.fontes, KDIGO_2025_NEFROTICA, IPNA_2023_SSNS],
-  revisadoEm: '28/09/2026 (KDIGO 2025 e IPNA 2023 lidas no texto; livro do ICr mantido como base)',
+  revisadoEm: '20/11/2026 (lote 6d da dose em mL: furosemida EV da síndrome nefrótica e da SHU com a ampola de 10 mg/mL, da ficha ped-ampolas; a furosemida da GNPE é por dia e de via VO, sem mL; só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 28/09/2026 (KDIGO 2025 e IPNA 2023 lidas no texto; livro do ICr mantido como base)',
 }
 
 /**

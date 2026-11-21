@@ -1,4 +1,5 @@
 import { BOLUS, type Bolus } from './bolus.ts'
+import type { Ficha } from '../ficha.ts'
 import { fichaP4, type DoseLivro, type Referencia } from './fonteP4.ts'
 
 // Intoxicações exógenas — livro do ICr, cap. 18 (p. 201–208). Os antídotos do
@@ -9,7 +10,13 @@ import { fichaP4, type DoseLivro, type Referencia } from './fonteP4.ts'
 // recomenda consultar o centro de controle de intoxicações antes de um
 // antídoto (p. 205–206).
 
-export const fichaIntoxicacaoPed = fichaP4('ped-intoxicacoes', 'Intoxicações exógenas — criança', 'cap. 18, p. 201–208; Apêndice, p. 894–910')
+const baseIntoxicacao = fichaP4('ped-intoxicacoes', 'Intoxicações exógenas — criança', 'cap. 18, p. 201–208; Apêndice, p. 894–910')
+
+export const fichaIntoxicacaoPed: Ficha = {
+  ...baseIntoxicacao,
+  versao: '2026-11-20.1',
+  revisadoEm: `20/11/2026 (lote 6d da dose em mL: furosemida EV da diurese forçada (10 mg/mL) e atropina do capítulo (0,25 e 0,5 mg/mL, nenhuma marcada), da ficha ped-ampolas; o bicarbonato da diurese alcalina (infusão de 3 a 4 h) espera o aviso de diluição por item; vitamina K espera a bula; só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); ${baseIntoxicacao.revisadoEm}`,
+}
 
 /** Antídotos do Apêndice (bolus.ts), sem duplicar número. */
 export const ANTIDOTOS_APENDICE: Bolus[] = BOLUS.filter((b) => b.grupo === 'antidoto')

@@ -77,7 +77,7 @@ export function IntoxicacoesPed() {
       {calc && (
         <>
           <Bloco titulo="Descontaminação, eliminação e antídotos do capítulo (p. 205–208)">
-            {DOSES_CAPITULO_INTOX.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} />)}
+            {DOSES_CAPITULO_INTOX.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} ampola={`intoxicacao:${d.id}`} />)}
           </Bloco>
           <Bloco titulo="Antídotos do Apêndice (p. 894–910)" descricao="As mesmas doses da ferramenta de doses por peso.">
             {ANTIDOTOS_APENDICE.map((b) => <LinhaBolusApendice key={b.id} b={b} peso={p.peso} idadeMeses={idadeMeses} />)}
