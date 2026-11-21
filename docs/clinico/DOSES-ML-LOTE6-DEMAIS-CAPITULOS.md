@@ -112,7 +112,7 @@ O gate do LG10 obriga a subir a ficha de cada capítulo cuja tela muda. Para nã
 - `LinhaDoseLivro` (`PecasP4.tsx`) aceita a chave da ampola e mostra a escolha só com a dose por tomada (L6-1);
 - solução pronta (`pronta: true`) mostra "da solução pronta de … (volume a infundir)" e pede "Escolha a solução…" (L6-2); a guarda acusa solução pronta marcada para diluir;
 - pneumonia (SBP 2024): levofloxacino 5 mg/mL, metronidazol 5 mg/mL e linezolida 2 mg/mL; ITU: ciprofloxacino IV 2 mg/mL; crise álgica: dipirona 500 mg/mL e morfina 1 e 10 mg/mL (lote 5);
-- fichas `ped-ampolas` 2026-11-20.5, `ped-pneumonia`, `ped-infeccao-urinaria` e `ped-falciforme` 2026-11-20.1; migration `20270416000019_fichas_lote6a.sql`;
+- fichas `ped-ampolas` 2026-11-20.5, `ped-pneumonia`, `ped-infeccao-urinaria` e `ped-falciforme` 2026-11-20.1; migration `20270416000019_fichas_lote6a.sql`, aplicada na homologação em 20/11/2026 (fontes conferidas por md5; volta testada em transação desfeita);
 - evidência local: 1.392 testes, 0 falhas; typecheck, eslint e padrão do frontend sem erro; CMED sem concentração nova.
 
 Ficam para as próximas partes: aminoglicosídeos, clindamicina, SMX-TMP, desmopressina e salbutamol (bula, L6-3), dexametasona (L4-2), cálcio, bicarbonato, glicose e fósforo (L6-6 a L6-8) e os demais capítulos.
