@@ -147,7 +147,7 @@ export function HemostasiaTrombosePed() {
 
       {calc && (
         <Bloco titulo="Desmopressina, antifibrinolítico e inibidores (p. 679–682)">
-          {DOSES_HEMOSTASIA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+          {DOSES_HEMOSTASIA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`hemostasia:${d.id}`} />)}
           <TabelaLivro
             cabecalho={['DVW — Quadro 5 (p. 682–683)', 'UI/kg', 'Para o peso', 'Frequência', 'Objetivo']}
             linhas={QUADRO5_DVW.map((q) => [q.tipo, faixaBr(q.uiKg, 0), `${faixaBr([q.uiKg[0] * p.peso, q.uiKg[1] * p.peso], 0)} UI`, q.frequencia, q.objetivo])}

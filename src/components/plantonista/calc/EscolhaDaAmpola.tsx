@@ -54,7 +54,9 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
             <p key={l.rotulo} className={cn('tabular-nums', grande ? 'text-corpo font-semibold text-acao' : 'text-tinta')}>
               {l.rotulo && <>{l.rotulo}: </>}<strong>{faixaMl(l.volume.ml)} mL</strong>{ampola.pronta
                 ? <> da solução pronta de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL (volume a infundir)</>
-                : <> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL</>}
+                : ampola.seringa
+                  ? <> da seringa preenchida de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL (volume a aplicar)</>
+                  : <> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL</>}
             </p>
           ))}
           {algum.aspirar && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}

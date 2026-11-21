@@ -35,6 +35,8 @@ export type Apresentacao = {
   diluir?: boolean
   /** solução pronta para infusão (bolsa ou frasco): o mL é o volume a infundir (L6-2) */
   pronta?: boolean
+  /** seringa preenchida: o mL é o volume a aplicar da seringa (lote 6b) */
+  seringa?: boolean
   /** página do livro ou bula: produto, empresa, expediente e data */
   fonte: string
   url?: string
@@ -233,6 +235,20 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
   dipirona: [
     { id: 'dipirona-500', rotulo: 'Dipirona 500 mg/mL (ampolas de 2 e 5 mL)', porMl: 500, fonte: 'CMED 09/11/2026: Santisa (1018600360022), Teuto (1037004700052), Hypofarma (1038700180012), Farmace (1108500180048) e Hipolabor (1134301200021, IM/IV), à venda', url: CMED_PMC_2026_11.url },
   ],
+  // lote 6b (renal, hemostasia e emergências oncológicas, CMED 09/11/2026): uma
+  // concentração à venda de cada; nenhuma marcada (ML2)
+  furosemida: [
+    { id: 'furosemida-10', rotulo: 'Furosemida 10 mg/mL (ampola de 2 mL)', porMl: 10, fonte: 'CMED 09/11/2026: Santisa (1018600320012), Teuto (1037002770037), Hypofarma (1038700380011), Hipolabor (1134301350015) e Sanofi Medley (1832603560029), à venda', url: CMED_PMC_2026_11.url },
+  ],
+  'acido-tranexamico': [
+    { id: 'acido-tranexamico-50', rotulo: 'Ácido tranexâmico 50 mg/mL (ampola de 5 mL)', porMl: 50, fonte: 'CMED 09/11/2026: Fresenius (1004102310015), Hipolabor (1134301860021), Blau (1163700990011) e Zydus Nikkho (1565100450026), à venda; a de 100 mg/mL das listas locais não está na lista', url: CMED_PMC_2026_11.url },
+  ],
+  enoxaparina: [
+    { id: 'enoxaparina-100', rotulo: 'Enoxaparina 100 mg/mL (seringas preenchidas de 20 a 100 mg, 0,2 a 1 mL)', porMl: 100, seringa: true, fonte: 'CMED 09/11/2026: seringas de 100 mg/mL de Aché, Biomm, Blau, Cristália, Eurofarma, Sanofi Medley e Viatris à venda (ex.: Eurofarma 1004310160081, Blau 1163700710086, Aché 1057307640018); nenhuma outra concentração', url: CMED_PMC_2026_11.url },
+  ],
+  manitol: [
+    { id: 'manitol-20', rotulo: 'Manitol 20% = 0,2 g/mL, solução pronta (250 e 500 mL)', porMl: 0.2, pronta: true, fonte: 'livro do ICr, p. 720 e p. 179 (manitol 20% = 0,2 g/mL); CMED 09/11/2026: B. Braun (1008500420077), Cristália (1029805340029), Halex (1031100710072), Beker (1034600110044), JP (1049100120091), Baxter (1068300900036), Farmace (1108500370017) e Equiplex (1177200080032), à venda', url: CMED_PMC_2026_11.url },
+  ],
   // a mesma ampola em mg (dose da intoxicação) e em µg (dose baixa)
   naloxona: [
     { id: 'naloxona-0-4', rotulo: 'Naloxona 0,4 mg/mL (ampola de 1 mL)', porMl: 0.4, fonte: 'bula Hipolabor', url: BULA_NALOXONA.url },
@@ -245,12 +261,12 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
 export const fichaAmpolas: Ficha = {
   id: 'ped-ampolas',
   titulo: 'Ampolas para a dose em mL (criança)',
-  versao: '2026-11-20.5',
+  versao: '2026-11-20.6',
   publico: 'pediatrico',
-  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL); p. 32 (MgSO₄ 50% = 500 mg/mL); p. 521 (insulina regular 0,1 UI/mL: 50 UI em 500 mL de NaCl 0,9%).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
+  fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL); p. 32 (MgSO₄ 50% = 500 mg/mL); p. 521 (insulina regular 0,1 UI/mL: 50 UI em 500 mL de NaCl 0,9%); p. 720 e p. 179 (manitol 20% = 0,2 g/mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
     BULA_FENTANILA, BULA_MIDAZOLAM, BULA_ESCETAMINA, BULA_ETOMIDATO, BULA_PROPOFOL, BULA_ROCURONIO, BULA_DEXMEDETOMIDINA, BULA_NALOXONA,
     CMED_PMC_2026_11, BULA_DIAZEPAM],
-  revisadoEm: '20/11/2026 (lote 6a da dose em mL: pneumonia, ITU e crise álgica; levofloxacino, metronidazol, linezolida e ciprofloxacino como solução pronta, com o volume a infundir; dipirona 500 mg/mL; morfina da crise álgica pelas ampolas do lote 5; só a dose por tomada; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 20/11/2026 (lote 5 da dose em mL, primeira parte: flumazenil, hidralazina, terbutalina, ondansetrona IV, octreotida (3 concentrações), neostigmina e morfina 1 e 10 mg/mL pela CMED, nenhuma marcada; insulina só pelo preparo de 0,1 UI/mL do livro, p. 521; decisões L5-1 a L5-6 do RT; diluição, vitamina K, acetilcisteína, esmolol, milrinona e morfina 0,1 e 0,2 mg/mL esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 4 da dose em mL, primeira parte: magnésio 10% e 50% pela CMED na asma e na torsades, nenhuma marcada; aviso de volume abaixo de 0,1 mL; decisões L4-1 a L4-5 do RT; diluição do magnésio e difenidramina, dexametasona e azul de metileno esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
+  revisadoEm: '20/11/2026 (lote 6b da dose em mL: injúria renal, hemostasia e emergências oncológicas; furosemida 10 mg/mL, ácido tranexâmico 50 mg/mL, enoxaparina 100 mg/mL em seringa preenchida e manitol 20% como solução pronta, pela CMED e pelo livro; insulina da hipercalemia pelo preparo de 0,1 UI/mL (L5-5); midazolam, fenitoína e antibióticos de solução pronta já cadastrados; item sem via escrita fica sem mL; só a dose por tomada; aguarda aprovação do RT); 20/11/2026 (lote 6a da dose em mL: pneumonia, ITU e crise álgica; levofloxacino, metronidazol, linezolida e ciprofloxacino como solução pronta, com o volume a infundir; dipirona 500 mg/mL; morfina da crise álgica pelas ampolas do lote 5; só a dose por tomada; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 20/11/2026 (lote 5 da dose em mL, primeira parte: flumazenil, hidralazina, terbutalina, ondansetrona IV, octreotida (3 concentrações), neostigmina e morfina 1 e 10 mg/mL pela CMED, nenhuma marcada; insulina só pelo preparo de 0,1 UI/mL do livro, p. 521; decisões L5-1 a L5-6 do RT; diluição, vitamina K, acetilcisteína, esmolol, milrinona e morfina 0,1 e 0,2 mg/mL esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 4 da dose em mL, primeira parte: magnésio 10% e 50% pela CMED na asma e na torsades, nenhuma marcada; aviso de volume abaixo de 0,1 mL; decisões L4-1 a L4-5 do RT; diluição do magnésio e difenidramina, dexametasona e azul de metileno esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
 }
 
 /**
@@ -258,8 +274,9 @@ export const fichaAmpolas: Ficha = {
  * 'bolus:<id>' (bolus.ts), 'rcp:<id>' (rcp.ts), 'sri:<id>' (viaAerea.ts),
  * 'fita:<id>' (dosesDaFita.ts, guia de parada da criança), 'crise:<id>'
  * (criseEpileptica.ts), 'asma:<id>' (asma.ts), 'anafilaxia:<id>' (anafilaxia.ts),
- * 'pneumonia:<id>' (pneumoniaPed.ts), 'itu:<id>' (ituPed.ts) e 'falciforme:<id>'
- * (falciformePed.ts). Nos capítulos (DoseLivro), o mL sai só da dose por tomada (L6-1).
+ * 'pneumonia:<id>' (pneumoniaPed.ts), 'itu:<id>' (ituPed.ts), 'falciforme:<id>'
+ * (falciformePed.ts), 'renal:<id>' (injuriaRenalPed.ts), 'hemostasia:<id>'
+ * (hemostasiaTromboPed.ts) e 'oncologia:<id>' (oncologiaPed.ts). Nos capítulos (DoseLivro), o mL sai só da dose por tomada (L6-1).
  */
 export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   // lote 1: RCP e arritmias
@@ -356,6 +373,25 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'falciforme:dipirona': { principio: 'dipirona' },
   'falciforme:morfina-figura': { principio: 'morfina' },
   'falciforme:morfina-texto': { principio: 'morfina' },
+  // lote 6b: só a dose por tomada (L6-1); item sem via escrita (atx-dvw,
+  // fenitoina-prof) fica sem mL
+  'renal:furosemida': { principio: 'furosemida' },
+  'renal:furo-k': { principio: 'furosemida' },
+  'renal:insulina': { principio: 'insulina-preparo' },
+  'hemostasia:atx-iv': { principio: 'acido-tranexamico' },
+  'oncologia:insulina': { principio: 'insulina-preparo' },
+  'oncologia:furo': { principio: 'furosemida' },
+  'oncologia:linezolida': { principio: 'linezolida' },
+  'oncologia:metronidazol': { principio: 'metronidazol' },
+  'oncologia:cipro-iv': { principio: 'ciprofloxacino' },
+  'oncologia:levo': { principio: 'levofloxacino' },
+  'oncologia:enoxa-svcs': { principio: 'enoxaparina' },
+  'oncologia:manitol': { principio: 'manitol' },
+  'oncologia:fenitoina-ataque': { principio: 'fenitoina' },
+  'oncologia:fenitoina-man': { principio: 'fenitoina' },
+  'oncologia:midaz-iv': { principio: 'midazolam' },
+  'oncologia:midaz-im': { principio: 'midazolam' },
+  'oncologia:midaz-in': { principio: 'midazolam' },
 }
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
@@ -401,12 +437,13 @@ export function problemasDasAmpolas(ampolas: Record<string, Apresentacao[]> = AM
       if (/data\/|padroniza|HU-UFGD|diluicao\.csv/i.test(a.fonte)) p.push(`${principio}/${a.id}: lista local não é fonte (ML9)`)
       if (/insulina/i.test(principio) && a.porMl >= 100) p.push(`${principio}/${a.id}: insulina do frasco não entra (ML7)`)
       if (a.pronta && a.diluir) p.push(`${principio}/${a.id}: solução pronta não se dilui (L6-2)`)
+      if (a.seringa && (a.pronta || a.diluir)) p.push(`${principio}/${a.id}: seringa preenchida não é solução pronta nem se dilui`)
     }
     const porMl = lista.map((a) => `${a.base ?? ''}${a.porMl}`)
     if (new Set(porMl).size !== porMl.length) p.push(`${principio}: concentração repetida (agrupar por concentração, ML2)`)
   }
   for (const [chave, item] of Object.entries(itens)) {
-    if (!/^(bolus|rcp|sri|fita|crise|asma|anafilaxia|pneumonia|itu|falciforme):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
+    if (!/^(bolus|rcp|sri|fita|crise|asma|anafilaxia|pneumonia|itu|falciforme|renal|hemostasia|oncologia):[a-z0-9-]+$/.test(chave)) p.push(`${chave}: chave fora do padrão lista:id`)
     if (!ampolas[item.principio]?.length) p.push(`${chave}: princípio ${item.principio} sem ampola`)
     const bases = new Set((ampolas[item.principio] ?? []).map((a) => a.base).filter(Boolean))
     if (bases.size > 1 && !item.base) p.push(`${chave}: ${item.principio} tem sal e elemento; o item precisa dizer a base (ML6)`)
