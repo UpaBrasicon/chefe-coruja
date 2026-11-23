@@ -25,7 +25,6 @@ O motivo real de querer "criar conta pela administração" costuma ser a implant
 
 **B.** Não fazer agora; seguir com um convite por vez.
 
-## Perguntas ao RT
+## Decisões do RT
 
-1. CA1: A ou B?
-2. CA2 (se CA1 = A): A ou B?
+23/11/2026, nas palavras dele: "Sim, todas A". CA1 = A: o item 16 fecha sem código, com o motivo acima. CA2 = A: convites em lote na tela Convites, P2.
