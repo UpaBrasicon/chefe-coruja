@@ -2,7 +2,7 @@
 // Divergências vs. o prompt (o código manda): acuidade_dos_pacientes/alergias_dos_pacientes
 // (em lote) não existem → tendencia_acuidade(p_paciente) e alergias_paciente(p_paciente),
 // por paciente.
-import { rpc, select } from '../lib/supa.js'
+import { rpc } from '../lib/supa.js'
 import { DADOS, aleatorio } from '../lib/dados.js'
 import { pausa, ESCRITA } from '../lib/config.js'
 
@@ -24,20 +24,21 @@ export function plantonista(token) {
   rpc(token, 'prescricao_vigente', { p_paciente: pac })
   pausa()
 
-  // Busca no catálogo de medicamentos (PostgREST direto, ~200 itens)
-  select(token, `medicamento?select=id,nome&nome=ilike.*${aleatorio(TERMOS)}*&limit=20`, {
-    name: 'get:medicamento',
-  })
+  // Busca no catálogo, como a prescrição faz (PrescricaoEstruturada.tsx:440).
+  // A tabela medicamento não tem coluna "nome": o GET direto dava 400.
+  rpc(token, 'buscar_medicamento', { p_unidade: u, p_termo: aleatorio(TERMOS) })
   pausa()
 
-  // Escrita: prescrição em 15% das visitas (só com -e ESCRITA=1).
-  // TODO: confirmar o jsonb p_itens igual ao do front (PrescricaoEstruturada.tsx)
-  // antes de ligar a escrita na carga/stress.
+  // Escrita: prescrição em 15% das visitas (só com -e ESCRITA=1). A tela usa
+  // prescrever(p_paciente, p_item), um item por chamada (PrescricaoEstruturada.tsx:546).
+  // registrar_prescricao_itens é legado e só a service_role executa (403 com JWT).
+  // Item de cuidado: sem catálogo, sem idade e peso, sem a trava de dois "Agora".
+  // ATENÇÃO: prescrição é só inserção (guarda de 20 anos); a massa de carga fica para sempre.
   if (ESCRITA && Math.random() < 0.15) {
     rpc(
       token,
-      'registrar_prescricao_itens',
-      { p_paciente: pac, p_observacoes: 'LOADTEST — prescrição de carga', p_itens: [] },
+      'prescrever',
+      { p_paciente: pac, p_item: { tipo: 'cuidado', descricao: 'LOADTEST cuidado de carga' } },
       { tipo: 'escrita' },
     )
   }

@@ -9,13 +9,13 @@ RPCs conferidas com assinatura real em `src/types/database.ts`:
 | Papel | RPC (args reais) | Tipo |
 |---|---|---|
 | Plantonista | `meu_plantao_agora()` · `minhas_notificacoes(p_unidade)` · `situacao_leitos(p_unidade)` · `painel_observacao(p_unidade)` · `tendencia_acuidade(p_paciente)` · `alergias_paciente(p_paciente,p_limite?)` · `prescricao_vigente(p_paciente,p_em?)` · `escala_da_unidade(p_de,p_ate,p_unidade)` · `contatos_chat()` | leitura |
-| Plantonista | `registrar_prescricao_itens(p_paciente,p_observacoes?,p_itens?)` · `enviar_mensagem(p_conversa_id,p_corpo)` | escrita |
+| Plantonista | `prescrever(p_paciente,p_item)` · `enviar_mensagem(p_conversa_id,p_corpo)` | escrita |
 | Enfermagem | `enfermagem_leitos(p_unidade)` · `enfermagem_pacientes_do_setor(p_setor)` · `fila_checagem()` · `prescricao_vigente(...)` | leitura |
 | Gestor | `painel_organizacao(p_dias)` · `ocupacao_setores(p_unidade)` · `situacao_leitos(p_unidade)` · `escala_mes_gestor(p_ano,p_mes,p_unidade)` · `presencas_do_dia_gestor(p_unidade)` | leitura |
 | Recepção | `fila_da_porta(p_setor)` · `buscar_pacientes(p_termo,p_unidade)` | leitura |
-| Recepção | `salvar_cadastro_paciente(p_dados,p_setor,p_outra_pessoa)` | escrita |
+| Recepção | `registrar_ficha(p_setor,p_queixa,p_dados?,p_prioridades?,p_outra_pessoa?)` | escrita |
 | Pico | `registrar_checkin(p_unidade,p_lat?,p_lng?,...)` · `registrar_checkout(p_registro,p_lat?,p_lng?)` | escrita |
-| Catálogo | `GET /rest/v1/medicamento?select=...&nome=ilike.*termo*` | leitura |
+| Catálogo | `buscar_medicamento(p_unidade,p_termo)` | leitura |
 
 ## 2. Divergências vs. o prompt (corrigidas na suíte)
 
@@ -32,12 +32,12 @@ RPCs conferidas com assinatura real em `src/types/database.ts`:
 
 1. **Estado da produção (B1):** bloqueado para mim — Ricardo confirma no dashboard que só há dados de teste.
 2. **`criar_massa.mjs` (domínio):** usuários prontos; unidade/setores/leitos/pacientes/escala/chat dependem do schema (~230 tabelas) e dos RPCs de criação do app, ainda não lidos. Cada passo está marcado com a tabela/RPC-alvo.
-3. **Payload `p_itens` da prescrição:** confirmar o jsonb igual ao do front (`PrescricaoEstruturada.tsx`) antes de ligar `-e ESCRITA=1` na carga.
-4. **Join do Realtime:** capturar do front (devtools → WS) o `phx_join` real do supabase-js para `chat-global` e colar em `testes/realtime.js`.
-5. **`limpar_massa.mjs`:** completar `APAGAVEIS[]` a partir do levantamento P8 (gatilhos de imutabilidade — leitura de schema). As imutáveis ficam.
-6. **2FA (achado a registrar):** verificar se as RPCs aceitam o JWT de senha **sem a 2FA concluída**. Se aceitarem, é achado de segurança da Fase 0 (2FA só no front). Nenhuma policy de RLS usa `aal` (indício de que sim).
+3. **Escritas: conferido em 23/11/2026.** `registrar_prescricao_itens` é legado e só a service_role executa. A tela usa `prescrever(p_paciente, p_item)`, e o cenário manda um item de cuidado. A recepção usa `registrar_ficha` (paciente e episódio), não `salvar_cadastro_paciente`, e a chave `sem_documento` não existia. A busca de medicamento é a RPC `buscar_medicamento`, porque a tabela não tem coluna `nome`. Prescrição, paciente e episódio são só inserção: toda escrita de carga fica para sempre.
+4. **Realtime: conferido em 23/11/2026.** O supabase-js 2.106.2 usa vsn 2.0.0 com mensagens em array. O join copia a config do `channel('chat-global')` de `src/hooks/useChat.ts`.
+5. **`limpar_massa.mjs`: refeito em 23/11/2026.** Apaga só chat, notificações, presença, escala e vínculos. Unidade, setores, leitos e organização ficam com `ativo=false`, e os usuários `carga-*` ficam banidos, porque as tabelas clínicas e a auditoria apontam para eles sem ON DELETE.
+6. **2FA: conferido em 23/11/2026, não é achado.** O servidor exige o segundo fator. O portão `portao_requisicao` (`pgrst.db_pre_request`, migration `20270414000058`) recusa com 403 "SEGUNDO_FATOR" toda RPC e toda escrita de sessão sem 2FA. As policies RESTRICTIVE `<tabela>_segundo_fator` (66 tabelas) devolvem vazio. Cerca de 200 RPCs chamam `private.exigir_segundo_fator()`. A chave `configuracao_plataforma.exigir_segundo_fator` está **ligada na produção** e **desligada na homologação**. Com ela desligada, o login só por senha do `pre_login.mjs` funciona, mas a carga fica otimista, porque `segundo_fator_ok()` não faz as consultas que faz na produção. Ligar a chave na homologação para a carga é decisão do RT; nesse caso, o `pre_login` confirma cada sessão por dispositivo confiável (`verificar_dispositivo_2fa`).
 7. **Limites de taxa do Auth / CAPTCHA / plano / compute (👤):** dashboard, do Ricardo.
 
 ## 4. Ambiente da geração de carga
 
-O k6 **não roda no meu ambiente** (rede restrita a registries+GitHub; IP de nuvem). Roda na máquina do Ricardo ou no VPS (P9).
+Decisão do RT em 23/11/2026: o k6 roda no **VPS**, pelo Docker (`infra/teste-carga.md`). A sessão na nuvem não alcança o Supabase da homologação nem baixa o k6.
