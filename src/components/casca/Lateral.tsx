@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowUpRight, Building2, LogOut, Megaphone, Pause, Play } from 'lucide-react'
+import { ArrowUpRight, Building2, LogOut, Megaphone, PanelLeftClose, PanelLeftOpen, Pause, Play } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, matchPath, useLocation } from 'react-router-dom'
 
+import { Button } from '@/components/ui/button'
 import { useBanners } from '@/hooks/useBanners'
+import { guardarLateralRecolhida, lerLateralRecolhida } from '@/lib/lateral'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +13,8 @@ import { Marca } from './Marca'
 import { agruparNavegacao, ICONE_GRUPO, type ChaveNota, type ItemNav } from './navegacao'
 import { diaMes as fmtData } from '@/lib/formato'
 
-// A lateral da casca (P/index.html 895–973): recolhida em 68px de ícones,
+// A lateral da casca (P/index.html 895–973). Desde o contraste CT3 (RT,
+// 23/11/2026) abre com os rótulos; recolhida (escolha guardada) fica em 68px de ícones,
 // abre por cima do conteúdo ao passar o mouse ou com foco (CSS .cc-recolhe
 // em index.css). Três blocos: a navegação com as notas, os avisos "Da
 // unidade" (ou "Da rede" do administrador) e o Sair no pé. O gestor, com os
@@ -250,9 +253,13 @@ function LateralAreas({ itens, notas, papelTexto, inicio, unidadeId, ehGestor, o
 
 export function Lateral(props: PropsLateral) {
   const { itens, notas, papelTexto, inicio, unidadeId, ehGestor, ehAdmin, onSair } = props
+  // Contraste CT3 (RT, 23/11/2026): aberto por padrão, com o nome de cada item;
+  // recolher é escolha da pessoa e fica guardada neste aparelho.
+  const [recolhida, setRecolhida] = useState(lerLateralRecolhida)
+  const alternar = () => setRecolhida((r) => { guardarLateralRecolhida(!r); return !r })
   if (itens.some((i) => i.grupo)) return <LateralAreas {...props} />
   return (
-    <aside className="cc-side cc-recolhe sticky top-0 hidden h-dvh w-[var(--cc-lateral)] shrink-0 flex-col border-r border-fio bg-superficie md:flex">
+    <aside className={cn('cc-side sticky top-0 hidden h-dvh w-[var(--cc-lateral)] shrink-0 flex-col border-r border-fio bg-superficie md:flex', recolhida && 'cc-recolhe')}>
       <div className="cc-side-miolo flex h-full flex-col justify-between py-[18px]">
         <div>
           <Link to={inicio} title="Página principal" className="flex items-center px-[17px] pb-[22px] text-tinta hover:text-acao">
@@ -265,7 +272,12 @@ export function Lateral(props: PropsLateral) {
           </nav>
           {ehAdmin ? <DaRede /> : <DaUnidadeLateral unidadeId={unidadeId} ehGestor={ehGestor} />}
         </div>
-        <div className="px-[26px]">
+        <div className="flex flex-col gap-1 px-[26px]">
+          <Button variant="ghost" size="sm" onClick={alternar} aria-pressed={!recolhida}
+            className="-ml-2 justify-start gap-[9px] px-2 text-apoio font-normal text-tinta-sussurro hover:text-acao">
+            {recolhida ? <PanelLeftOpen className="size-4 shrink-0" aria-hidden /> : <PanelLeftClose className="size-4 shrink-0" aria-hidden />}
+            <span className="cc-some">{recolhida ? 'Manter o menu aberto' : 'Recolher o menu'}</span>
+          </Button>
           <button type="button" onClick={onSair} className="flex w-full items-center gap-[9px] py-2 text-apoio text-tinta-sussurro hover:text-acao">
             <LogOut className="size-4 shrink-0" aria-hidden />
             <span className="cc-some">Sair</span>
