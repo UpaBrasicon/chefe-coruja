@@ -2724,12 +2724,12 @@ Regras da trilha:
 
 | Item | O que fazer | Base | Prioridade sugerida | Estado |
 |---|---|---|---|---|
-| RS1 | Diagnóstico: o que a UBS registra hoje × o que o SISAB pede (fichas do e-SUS APS pelo LEDI APS: atendimento individual, procedimentos, vacinação, cadastro individual e domiciliar, atividade coletiva) e o que a RNDS pede da atenção primária (RAC; RIA, se houver vacinação). Caminho do envio ao SISAB: direto, ou pelo PEC ou centralizador do município | Manuais do LEDI APS e da RNDS; `docs/rnds/` | P1 | Pendente |
-| RS2 | Credenciais e ambientes: homologação da RNDS para a APS (o mesmo pedido do RAC) e o caminho de envio ao SISAB combinado com a secretaria municipal | Portal de Serviços do DATASUS; secretaria | P1 | Pendente (depende do RT e da secretaria) |
-| RS3 | Mapa dos dados: CNS ou CPF, CBO e CNES do profissional, CIAP-2 e CID, procedimentos do SIGTAP, condições avaliadas e desfechos, com a lista do que falta capturar na tela | RS1 | P1 | Pendente |
-| RS4 | Exportação do SISAB no layout do LEDI APS, com teste no validador oficial e envio pelo caminho de RS2 | RS1 a RS3 | P1 | Pendente |
-| RS5 | RNDS na UBS: RAC (e RIA, se houver vacinação) pelo serviço `rnds-envio` que já existe, no simulador e depois na homologação | RS2, RS3; Fase 5C | P1 | Pendente |
-| RS6 | Painel de envio: o que foi, o que voltou com erro, reenvio e prazo da competência; entra no inventário do LG4 | RS4 e RS5 | P2 | Pendente |
+| RS1 | Diagnóstico: o que a UBS registra hoje × o que o SISAB pede (fichas do e-SUS APS pelo LEDI APS: atendimento individual, procedimentos, vacinação, cadastro individual e domiciliar, atividade coletiva) e o que a RNDS pede da atenção primária (RAC; RIA, se houver vacinação). Caminho do envio ao SISAB: direto, ou pelo PEC ou centralizador do município | Manuais do LEDI APS e da RNDS; `docs/rnds/` | P1 | Coberto pelo U15 (percurso da UBS): diagnóstico `docs/ubs/U15-DIAGNOSTICO.md` (#964, V1–V5 = A em 18/11/2026). Cadastro individual e domiciliar e atividade coletiva ficaram fora do U15 |
+| RS2 | Credenciais e ambientes: homologação da RNDS para a APS (o mesmo pedido do RAC) e o caminho de envio ao SISAB combinado com a secretaria municipal | Portal de Serviços do DATASUS; secretaria | P1 | Espera terceiros: PEC do município (endereço e credenciais do LEDI), credencial da RNDS e CNPJ; chave `ledi_ligar_envio` pronta (U15, #976) |
+| RS3 | Mapa dos dados: CNS ou CPF, CBO e CNES do profissional, CIAP-2 e CID, procedimentos do SIGTAP, condições avaliadas e desfechos, com a lista do que falta capturar na tela | RS1 | P1 | Coberto pelo U15: mapa em `docs/ubs/U15-LEDI-FICHAS.md` (#972); 5 códigos abertos e problema → CIAP2 pedem fonte e decisão do RT |
+| RS4 | Exportação do SISAB no layout do LEDI APS, com teste no validador oficial e envio pelo caminho de RS2 | RS1 a RS3 | P1 | Coberto pelo U15 até o envio: FAI, Ficha de Procedimentos e Ficha de Vacinação no Thrift do LEDI 8.7.0 (#969–#976, #1002); o envio real espera o RS2 |
+| RS5 | RNDS na UBS: RAC (e RIA, se houver vacinação) pelo serviço `rnds-envio` que já existe, no simulador e depois na homologação | RS2, RS3; Fase 5C | P1 | Coberto pelo U15 até o envio: RAC da UBS (#965) e RIA (#1006, #1009) no `rnds-envio`; o envio real espera a credencial |
+| RS6 | Painel de envio: o que foi, o que voltou com erro, reenvio e prazo da competência; entra no inventário do LG4 | RS4 e RS5 | P2 | Coberto pelo U15: aba SISAB em Integrações (#979, textos #1014) |
 
 Ordem sugerida: RS1 → RS3 → RS2 (em paralelo, com o RT) → RS4 → RS5 → RS6.
 
