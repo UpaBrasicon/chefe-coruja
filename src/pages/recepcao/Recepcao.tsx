@@ -14,7 +14,7 @@ import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
 import { VindoDaUbs } from '@/components/encaminhamento/VindoDaUbs'
-import { ordemFilaUbs, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
+import { ordemFilaUbsComAgenda, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
 import { JUSTIFICATIVAS_SEM_CPF, pedeMotivoSemCpf } from '@/domain/justificativaCpf'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -77,6 +77,8 @@ type NaFila = {
   chamadas: number
   ultima_sala: string | null
   ultimo_chamador: string | null
+  /** RF1: início da consulta marcada hoje (só na UBS, vindo da agenda) */
+  hora_marcada?: string | null
 }
 type Chamada = { id: string; criado_em: string; nome: string; sala: string; quem: string | null; numero: number }
 type Aberto = { episodio_id: string; chegada_em: string; setor: string; etapa: string; em_atendimento: boolean; na_minha_porta: boolean }
@@ -215,13 +217,19 @@ export default function Recepcao() {
     },
   })
   const filaTriagem = React.useMemo(() => (fila.data ?? []).filter((e) => e.etapa === 'triagem').sort(ordemTriagem), [fila.data])
+  // RF1 (RT, 23/11/2026): a hora marcada de quem veio da agenda de hoje
+  const agendaHoje = useAgendaDia(ubs ? unidadeId : undefined, hojeSP())
   const filaMedica = React.useMemo(() => {
-    // na UBS: quem aguarda a escuta e quem aguarda a consulta, na ordem da fila
-    // do médico (imediato e prioritário da escuta, depois prioridade legal e chegada)
+    // na UBS: quem aguarda a consulta, na ordem da fila do médico (RF1: vermelho
+    // e amarelo; agendados pela hora marcada; o resto da demanda espontânea)
     if (ubs) {
+      const horaMarcada = new Map<string, string>()
+      for (const l of linhasDoDia(agendaHoje.data)) if (l.episodio_id && l.tipo === 'consulta') horaMarcada.set(l.episodio_id, l.inicio)
+      const ordem = ordemFilaUbsComAgenda<NaFila>((e) => horaMarcada.get(e.episodio_id))
       // quem aguarda a escuta fica na fila da enfermagem (R9)
       const todos = (fila.data ?? []).filter((e) => e.etapa !== 'triagem')
-      return [...todos.filter((e) => !e.atendimento_iniciado_em).sort(ordemFilaUbs), ...todos.filter((e) => e.atendimento_iniciado_em).sort(ordemFilaUbs)]
+        .map((e) => ({ ...e, hora_marcada: horaMarcada.get(e.episodio_id) ?? null }))
+      return [...todos.filter((e) => !e.atendimento_iniciado_em).sort(ordem), ...todos.filter((e) => e.atendimento_iniciado_em).sort(ordem)]
     }
     const lista = (fila.data ?? []).filter((e) => e.etapa === 'atendimento')
     const esperando = lista.filter((e) => !e.atendimento_iniciado_em)
@@ -231,7 +239,7 @@ export default function Recepcao() {
         .sort(ordemMedica)
         .map(({ _cor, ...e }) => ({ ...e, cor_atual: _cor }))
     return [...ordenar(esperando), ...ordenar(emAtendimento)]
-  }, [fila.data, ubs])
+  }, [fila.data, ubs, agendaHoje.data])
 
   const chamadas = useQuery({
     queryKey: ['recepcao-chamadas', porta?.id],
@@ -922,6 +930,8 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
   const linha = [
     e.queixa ? `Queixa: ${e.queixa}` : '',
     prioridades.length ? `Prioridade: ${prioridades.join(', ')}` : '',
+    // RF1: na fila do consultório da UBS, quem tem consulta marcada e quem veio sem marcar
+    ubs && e.etapa === 'atendimento' ? (e.hora_marcada ? `Consulta marcada às ${hora(e.hora_marcada)}` : 'Demanda espontânea') : '',
     `Ficha às ${hora(e.chegada_em)}`,
   ].filter(Boolean).join(' · ')
 

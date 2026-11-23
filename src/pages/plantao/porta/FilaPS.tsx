@@ -15,7 +15,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { faixaEtaria, rotuloFaixa, rotuloIdade } from '@/domain/idade'
 import { homonimos } from '@/domain/homonimos'
 import { rotulosPrioridade } from '@/domain/prioridade'
-import { ordemFilaUbs, rotuloCondutaAps, rotuloTipoAps, rotuloTipoApsCurto } from '@/domain/aps'
+import { ordemFilaUbs, ordemFilaUbsComAgenda, rotuloCondutaAps, rotuloTipoAps, rotuloTipoApsCurto } from '@/domain/aps'
+import { linhasDoDia } from '@/domain/agenda'
+import { useAgendaDia } from '@/hooks/useAgenda'
 import { gravidade, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -212,7 +214,16 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
     },
   })
 
+  // RF1 (RT, 23/11/2026): na UBS, vermelho e amarelo; depois os agendados pela
+  // hora marcada; depois o resto da demanda espontânea
+  const agendaHoje = useAgendaDia(ubs ? unidadeAtiva?.unidade_id : undefined, hoje())
+  const horaMarcada = React.useMemo(() => {
+    const m = new Map<string, string>()
+    for (const l of linhasDoDia(agendaHoje.data)) if (l.episodio_id && l.tipo === 'consulta') m.set(l.episodio_id, l.inicio)
+    return m
+  }, [agendaHoje.data])
   const aguardando = (fila.data ?? []).filter((e) => !e.atendimento_iniciado_em)
+  if (ubs) aguardando.sort(ordemFilaUbsComAgenda<EpFila>((e) => horaMarcada.get(e.id)))
   const emAtendimento = (fila.data ?? []).filter((e) => e.atendimento_iniciado_em)
   // na UBS a espera conta da ficha (não há classificação) e não há alvo
   const esperaDesde = (e: EpFila) => (ubs ? e.chegada_em : e.classificado_em)
@@ -314,6 +325,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                               {/* a cor da escuta inicial (CAB 28), quando houve */}
                               {e.cor_atual && <PilulaRisco cor={e.cor_atual} className="mr-2" />}
                               {rotuloTipoApsCurto(e.tipo_atendimento_aps) || <Nada />}
+                              {horaMarcada.has(e.id) && <span className="ml-1 tabular-nums">· marcada {hora(horaMarcada.get(e.id)!)}</span>}
                             </TableCell>
                           )
                           : <TableCell className="tabular-nums text-tinta-sussurro">{alvoDe(e.cor_atual)} min</TableCell>}

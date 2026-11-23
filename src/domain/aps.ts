@@ -107,3 +107,37 @@ export const pesoCab28 = (cor: string | null | undefined) => (cor === 'vermelho'
 export function ordemFilaUbs<T extends { prioridades_legais: string[]; chegada_em: string; cor_atual?: string | null }>(a: T, b: T): number {
   return pesoCab28(a.cor_atual) - pesoCab28(b.cor_atual) || ordemTriagem(a, b)
 }
+
+/** Refinamento da UBS, RF1 = A (RT, 23/11/2026): a fila do consultório da UBS
+ *  em três faixas.
+ *  - prioritário: vermelho e amarelo da escuta (CAB 28), nunca atrás de agendado;
+ *  - agendado: quem tem consulta marcada hoje, pela hora marcada;
+ *  - espontâneo: o resto da demanda espontânea, o verde antes de quem não
+ *    passou pela escuta, e cada um pela prioridade legal e pela chegada. */
+export type FaixaFilaUbs = 'prioritario' | 'agendado' | 'espontaneo'
+const TIPOS_AGENDADOS = new Set(['consulta_agendada', 'consulta_programada'])
+const ORDEM_FAIXA: Record<FaixaFilaUbs, number> = { prioritario: 0, agendado: 1, espontaneo: 2 }
+type NaFilaUbs = { prioridades_legais: string[]; chegada_em: string; cor_atual?: string | null; tipo_atendimento_aps?: string | null }
+
+/** A faixa de quem está na fila; `horaMarcada` é o início do agendamento de hoje, quando há. */
+export function faixaFilaUbs(e: NaFilaUbs, horaMarcada: string | null | undefined): FaixaFilaUbs {
+  if (pesoCab28(e.cor_atual) < 2) return 'prioritario'
+  if (horaMarcada || TIPOS_AGENDADOS.has(e.tipo_atendimento_aps ?? '')) return 'agendado'
+  return 'espontaneo'
+}
+
+/** Comparador da fila do consultório da UBS, com a hora marcada de cada um. */
+export function ordemFilaUbsComAgenda<T extends NaFilaUbs>(horaDe: (e: T) => string | null | undefined) {
+  return (a: T, b: T): number => {
+    const ha = horaDe(a), hb = horaDe(b)
+    const fa = faixaFilaUbs(a, ha), fb = faixaFilaUbs(b, hb)
+    if (fa !== fb) return ORDEM_FAIXA[fa] - ORDEM_FAIXA[fb]
+    if (fa === 'prioritario') return ordemFilaUbs(a, b)
+    if (fa === 'agendado') {
+      // sem a hora (agendamento de outro dia), depois de quem tem hora hoje
+      const porHora = ha && hb ? ha.localeCompare(hb) : ha ? -1 : hb ? 1 : 0
+      return porHora || a.chegada_em.localeCompare(b.chegada_em)
+    }
+    return (a.cor_atual ? 0 : 1) - (b.cor_atual ? 0 : 1) || ordemTriagem(a, b)
+  }
+}
