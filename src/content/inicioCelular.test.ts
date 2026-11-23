@@ -4,7 +4,7 @@ import { test } from 'node:test'
 
 import { ROTA_DA_FICHA } from '../clinico/indice.ts'
 import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, cartaoDoGuia } from './guiaRapido.ts'
-import { INICIO_ADULTO, INICIO_CRIANCA, URGENCIAS_RAPIDAS, categoriasDoInicio, rotaDaBusca } from './inicioCelular.ts'
+import { INICIO_ADULTO, INICIO_CRIANCA, ROTA_PCR, categoriasDoInicio, rotaDaBusca } from './inicioCelular.ts'
 
 // Início do celular (item 6; mescla A + B escolhida pelo RT em 23/11/2026).
 const rotas = new Set(Object.values(ROTA_DA_FICHA))
@@ -25,9 +25,7 @@ test('todo item e todo atalho abrem uma tela que existe', () => {
     if (c.rota) assert.equal(c.rota, ROTA_TODAS_FERRAMENTAS)
     assert.ok(c.itens.length > 0 || !!c.rota, `${c.nome} sem itens nem rota`)
   }
-  for (const u of Object.values(URGENCIAS_RAPIDAS)) {
-    for (const r of [u.pcr, u.sepse.rota, u.cad.rota]) assert.ok(existe(r), r)
-  }
+  for (const r of Object.values(ROTA_PCR)) assert.ok(existe(r), r)
 })
 
 test('as mesmas seis categorias nos dois lados, na ordem do CM5 (sem as que ainda não existem)', () => {
@@ -51,8 +49,16 @@ test('criança só abre telas da pediatria (ou a farmácia); adulto, nenhuma da 
   assert.ok(crianca.every((r) => r.startsWith('/plantonista/pediatria/') || r.startsWith('/plantonista/farmacia/')), crianca.join(' '))
   const adulto = INICIO_ADULTO.flatMap((c) => c.itens.map((i) => i.rota))
   assert.ok(adulto.every((r) => !r.startsWith('/plantonista/pediatria/')))
-  assert.ok(URGENCIAS_RAPIDAS.crianca.sepse.rota.startsWith('/plantonista/pediatria/'))
-  assert.ok(URGENCIAS_RAPIDAS.crianca.cad.rota.startsWith('/plantonista/pediatria/'))
+})
+
+test('Sepse e CAD saíram do topo e estão em Urgências ou Calculadoras nos dois lados (RT, 23/11/2026)', () => {
+  for (const cats of [INICIO_ADULTO, INICIO_CRIANCA]) {
+    const nomes = cats.filter((c) => c.id === 'urgencias' || c.id === 'calculadoras').flatMap((c) => c.itens.map((i) => i.nome))
+    assert.ok(nomes.some((n) => n.startsWith('Sepse')), 'sepse')
+    assert.ok(nomes.some((n) => n.startsWith('Cetoacidose')), 'CAD')
+  }
+  assert.equal(ROTA_PCR.adulto, '/plantonista?guia=parada-adulto')
+  assert.equal(ROTA_PCR.crianca, '/plantonista?guia=parada-crianca')
 })
 
 test('a busca abre a Central completa com o texto', () => {

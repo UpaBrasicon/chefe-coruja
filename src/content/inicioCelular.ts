@@ -82,8 +82,10 @@ export const INICIO_ADULTO: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'calculadoras', nome: 'Calculadoras', exemplos: 'Sódio, potássio, gasometria, QTc', icone: 'calculadoras',
+    id: 'calculadoras', nome: 'Calculadoras', exemplos: 'Sepse, CAD, sódio, potássio', icone: 'calculadoras',
     itens: [
+      { nome: 'Sepse', sigla: 'SP', rota: p('escores/sepse-adulto') },
+      { nome: 'Cetoacidose e EHH', sigla: 'CAD', rota: p('emergencias/cad-ehh-tratamento') },
       { nome: 'Hiponatremia', sigla: 'Na', rota: p('calculadoras/hiponatremia') },
       { nome: 'Hipernatremia', sigla: 'Na', rota: p('calculadoras/hipernatremia') },
       { nome: 'Reposição de potássio', sigla: 'K', rota: p('emergencias/hipocalemia-reposicao-potassio') },
@@ -131,8 +133,10 @@ export const INICIO_CRIANCA: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'calculadoras', nome: 'Calculadoras', exemplos: 'Hidratação, sódio, eletrólitos', icone: 'calculadoras',
+    id: 'calculadoras', nome: 'Calculadoras', exemplos: 'Sepse, CAD, hidratação, sódio', icone: 'calculadoras',
     itens: [
+      { nome: 'Sepse (Phoenix)', sigla: 'SP', rota: p('pediatria/phoenix') },
+      { nome: 'Cetoacidose e EHH', sigla: 'CAD', rota: p('pediatria/cad-ehh-ped') },
       { nome: 'Hidratação de manutenção', sigla: 'HM', rota: p('pediatria/fluidoterapia-manutencao-ped') },
       { nome: 'Sódio', sigla: 'Na', rota: p('pediatria/sodio-ped') },
       { nome: 'Eletrólitos', sigla: 'K', rota: p('pediatria/eletrolitos-ped') },
@@ -164,18 +168,11 @@ export const INICIO_CRIANCA: CategoriaInicio[] = [
   TODAS,
 ]
 
-/** Os três atalhos da Central de Urgências (CM3 = A), por lado. */
-export const URGENCIAS_RAPIDAS: Record<LadoInicio, { pcr: string; sepse: { nome: string; rota: string }; cad: { nome: string; rota: string } }> = {
-  adulto: {
-    pcr: '/plantonista?guia=parada-adulto',
-    sepse: { nome: 'Sepse', rota: p('escores/sepse-adulto') },
-    cad: { nome: 'CAD', rota: p('emergencias/cad-ehh-tratamento') },
-  },
-  crianca: {
-    pcr: '/plantonista?guia=parada-crianca',
-    sepse: { nome: 'Sepse', rota: p('pediatria/phoenix') },
-    cad: { nome: 'CAD', rota: p('pediatria/cad-ehh-ped') },
-  },
+/** "Iniciar PCR" (CM3 = A), em bloco inteiro acima dos cartões. Sepse e CAD saíram do
+ *  topo e ficam nas categorias (RT, 23/11/2026, conferindo o lote 1 na homologação). */
+export const ROTA_PCR: Record<LadoInicio, string> = {
+  adulto: '/plantonista?guia=parada-adulto',
+  crianca: '/plantonista?guia=parada-crianca',
 }
 
 export const categoriasDoInicio = (lado: LadoInicio) => (lado === 'crianca' ? INICIO_CRIANCA : INICIO_ADULTO)
