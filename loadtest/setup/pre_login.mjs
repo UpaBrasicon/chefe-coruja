@@ -1,6 +1,12 @@
 // Faz login de cada usuário carga-* UMA vez, espaçando as chamadas para ficar
 // abaixo do limite de taxa do Auth por IP (P5), e grava .tokens.json.
 // Uso: node setup/pre_login.mjs   (reexecute se os tokens tiverem >10 min)
+//
+// O Auth da homologação tem CAPTCHA (Turnstile), que recusa o login por senha
+// feito por script. Decisão do RT em 23/11/2026: a sessão sai do link de acesso
+// que a chave de serviço gera (admin/generate_link + verify), sem mexer no
+// CAPTCHA. O teste não mede o login; a sessão é a mesma de um login normal.
+// LOGIN=senha volta ao login por senha (para um Auth sem CAPTCHA).
 import { carregarEnv, sleep, lerDados, gravarTokens } from './_lib.mjs'
 
 const env = carregarEnv()
@@ -9,13 +15,33 @@ const ESPACO_MS = Number(process.env.LOGIN_ESPACO_MS || 1500) // ajuste conforme
 const dados = lerDados()
 if (!dados.usuarios?.length) throw new Error('dados.json sem usuarios — rode criar_massa.mjs antes.')
 
-const tokens = []
-for (const u of dados.usuarios) {
-  const res = await fetch(`${env.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+const POR_SENHA = process.env.LOGIN === 'senha'
+
+async function entrar(email) {
+  if (POR_SENHA) {
+    return fetch(`${env.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { apikey: env.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: env.LOADTEST_SENHA }),
+    })
+  }
+  const link = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/generate_link`, {
+    method: 'POST',
+    headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'magiclink', email }),
+  })
+  if (!link.ok) return link
+  const { hashed_token } = await link.json()
+  return fetch(`${env.SUPABASE_URL}/auth/v1/verify`, {
     method: 'POST',
     headers: { apikey: env.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: u.email, password: env.LOADTEST_SENHA }),
+    body: JSON.stringify({ type: 'magiclink', token_hash: hashed_token }),
   })
+}
+
+const tokens = []
+for (const u of dados.usuarios) {
+  const res = await entrar(u.email)
   if (!res.ok) {
     console.error(`FALHA login ${u.email}: ${res.status} ${await res.text()}`)
     await sleep(ESPACO_MS)
