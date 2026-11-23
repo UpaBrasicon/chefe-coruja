@@ -14,6 +14,7 @@ import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco } from './LoteAPecas'
 import { faixaBr } from './loteAFormato'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { CampoPeso, LinhaManual } from './PecasLoteC'
 import { Errata, Fora } from './PecasLoteE6'
 
@@ -61,7 +62,10 @@ export function CriseTireotoxicaAdulto() {
 
       <Bloco titulo="Drogas da crise tireotóxica" descricao="Cap. 70, p. 953–954. O capítulo não traz diluição (sem mL/h).">
         {DROGAS_CRISE_TIREOTOXICA.map((d) => (
-          <LinhaManual key={d.droga} nome={d.droga} texto={d.texto} pagina={d.pagina} errata={d.errata} conta={conta[d.droga] && <strong>{conta[d.droga]}</strong>} />
+          <LinhaManual key={d.droga} nome={d.droga} texto={d.texto} pagina={d.pagina} errata={d.errata} conta={conta[d.droga] && <strong>{conta[d.droga]}</strong>}
+            // os números vêm do texto do item (teste em ampolas.test.ts): metoprolol 5 mg IV; dexametasona 2–4 mg EV
+            extra={d.droga === 'Metoprolol' ? <EscolhaDaAmpola chave="adulto-endocrino:metoprolol" dose={[5, 5]} unidade="mg" />
+              : d.droga === 'Dexametasona' ? <EscolhaDaAmpola chave="adulto-endocrino:dexametasona" dose={[2, 4]} unidade="mg" /> : undefined} />
         ))}
         <Errata texto={ERRATA_ORDEM_IODO} />
         <p className="text-tinta-sussurro">Suporte: antitérmico (paracetamol; a Figura 1, p. 956, diz evitar AAS), hidratação, nutrição, oxigênio, tratamento de ICC e do fator desencadeante (Tabela 6, p. 955). O peso só entra na conta do esmolol.</p>
