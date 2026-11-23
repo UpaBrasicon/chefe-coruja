@@ -163,7 +163,7 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
   // diluição entra quando a bula for lida (L4-1).
   magnesio: [
     { id: 'magnesio-100', rotulo: 'Sulfato de magnésio 10% (100 mg/mL, ampola de 10 mL)', porMl: 100, base: 'sal', fonte: 'CMED 09/11/2026: Samtec (1559200050025) e Halex (1031101630013), à venda', url: CMED_PMC_2026_11.url },
-    { id: 'magnesio-500', rotulo: 'Sulfato de magnésio 50% (500 mg/mL, ampola de 10 mL)', porMl: 500, base: 'sal', fonte: 'livro do ICr, p. 32 (MgSO₄ 50% = 500 mg/mL); CMED 09/11/2026: Samtec (1559200050092) e Halex (1031101630021), à venda', url: CMED_PMC_2026_11.url },
+    { id: 'magnesio-500', rotulo: 'Sulfato de magnésio 50% (500 mg/mL, ampola de 10 mL)', porMl: 500, base: 'sal', diluir: true, fonte: 'diluir: o livro dá concentração máxima de 20% (p. 908); livro do ICr, p. 32 (MgSO₄ 50% = 500 mg/mL); CMED 09/11/2026: Samtec (1559200050092) e Halex (1031101630021), à venda', url: CMED_PMC_2026_11.url },
   ],
   // lote 2: intubação, sedação e antídotos
   fentanila: [
@@ -421,7 +421,7 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'eletrolitos:bic': { principio: 'bicarbonato' },
   'eletrolitos:insulina': { principio: 'insulina-preparo' },
   'eletrolitos:furosemida-k': { principio: 'furosemida' },
-  'eletrolitos:furosemida-ca': { principio: 'furosemida' },
+  // furosemida-ca saiu na revisão de 23/11/2026: o item não escreve a via (regra do lote 6, item sem via fica sem mL)
   'eletrolitos:mg-grave': { principio: 'magnesio', base: 'sal' },
   'eletrolitos:cloreto-ca-mg': { principio: 'cloreto-de-calcio', base: 'sal' },
   'eletrolitos:gluconato-ca-mg': { principio: 'gluconato-de-calcio', base: 'sal' },
