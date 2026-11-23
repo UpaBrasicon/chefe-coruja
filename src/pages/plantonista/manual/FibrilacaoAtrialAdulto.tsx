@@ -17,6 +17,7 @@ import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Trecho } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -96,6 +97,7 @@ export function FibrilacaoAtrialAdulto() {
           texto={`ataque opcional ${ESMOLOL_FA.ataqueMgKg} mg/kg em ${ESMOLOL_FA.ataqueMin} min; manutenção ${faixaBr(ESMOLOL_FA.manutUgKgMin, 0)} µg/kg/min; meia-vida de ${ESMOLOL_FA.meiaVidaMin} min. Diluição: ${DILUICOES_FA.esmolol.preparo}`}
           conta={es ? <>ataque <strong>{br(es.ataqueMg)} mg</strong> · manutenção <strong>{faixaBr(es.manutMlH)} mL/h</strong></> : pede}
           pagina={ESMOLOL_FA.pagina}
+          extra={es ? <EscolhaDaAmpola chave="adulto-fa:esmolol" unidade="mg" doses={[{ rotulo: 'Ataque', dose: [es.ataqueMg, es.ataqueMg] }]} /> : undefined}
         />
         <LinhaManual
           nome="Verapamil"
@@ -123,6 +125,7 @@ export function FibrilacaoAtrialAdulto() {
           conta={<>ataque {br(am.ataqueMgMin, 0)} mg/min · manutenção <strong>{faixaBr(am.manutMlH)} mL/h</strong> · {faixaBr(am.manut24hMg, 0)} mg em 24 h</>}
           pagina={AMIODARONA_FA.pagina}
           errata={DILUICOES_FA.amiodarona.errata}
+          extra={<EscolhaDaAmpola chave="adulto-fa:amiodarona" unidade="mg" doses={[{ rotulo: 'Ataque', dose: [AMIODARONA_FA.ataqueMg, AMIODARONA_FA.ataqueMg] }]} />}
         />
       </Bloco>
 
@@ -133,7 +136,8 @@ export function FibrilacaoAtrialAdulto() {
           conta={pr ? <strong>{pr} mg</strong> : pede}
           pagina={PROPAFENONA_FA.pagina}
         />
-        <LinhaManual nome="Magnésio" texto={`considerar bolus de ${faixaBr(MAGNESIO_FA.g, 0)} g antes da cardioversão`} pagina={MAGNESIO_FA.pagina} />
+        <LinhaManual nome="Magnésio" texto={`considerar bolus de ${faixaBr(MAGNESIO_FA.g, 0)} g IV antes da cardioversão`} pagina={MAGNESIO_FA.pagina}
+          extra={<EscolhaDaAmpola chave="adulto-fa:magnesio" dose={MAGNESIO_FA.g} unidade="g" />} />
         <Trecho texto="FA inédita: pelo menos uma tentativa de conversão; considerar não cardioverter muito idosos, assintomáticos, com múltiplas comorbidades" pagina="p. 249" />
       </Bloco>
 

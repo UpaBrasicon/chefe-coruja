@@ -17,6 +17,7 @@ import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha, Resultado } from './LoteAPecas'
 import { br, faixaBr } from './loteAFormato'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -129,6 +130,7 @@ export function EmergenciaHipertensivaAdulto() {
           conta={es ? <>ataque <strong>{faixaBr(es.ataqueMg, 0)} mg</strong> · <strong>{faixaBr(es.manutMlH)} mL/h</strong></> : pede}
           pagina={ESMOLOL_EH.pagina}
           errata={ESMOLOL_EH.errata}
+          extra={es ? <EscolhaDaAmpola chave="adulto-has:esmolol" unidade="mg" doses={[{ rotulo: 'Ataque', dose: es.ataqueMg }]} /> : undefined}
         />
         <LinhaManual
           nome="Nitroprussiato de sódio — EAP, AVC, dissecção de aorta"
@@ -154,6 +156,10 @@ export function EmergenciaHipertensivaAdulto() {
           texto={`${HIDRALAZINA_EH.inicialMg} mg IV, repetir ${faixaBr(HIDRALAZINA_EH.repeticaoMg, 0)} mg a cada ${HIDRALAZINA_EH.intervaloMin} min; máximo de ${HIDRALAZINA_EH.maximo24hMg} mg em 24 h`}
           conta={<>saldo até o teto: <strong>{br(saldoHidra, 0)} mg</strong></>}
           pagina={HIDRALAZINA_EH.pagina}
+          extra={<EscolhaDaAmpola chave="adulto-has:hidralazina" unidade="mg" doses={[
+            { rotulo: 'Inicial', dose: [HIDRALAZINA_EH.inicialMg, HIDRALAZINA_EH.inicialMg] },
+            { rotulo: 'Repetição', dose: HIDRALAZINA_EH.repeticaoMg },
+          ]} />}
         />
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="eh-hidra" label="Hidralazina já feita em 24 h" unit="mg" value={hidraFeito} onChange={setHidraFeito} step={5} />
