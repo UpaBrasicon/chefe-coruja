@@ -25,6 +25,7 @@ import { DOSES_PELE, DOSES_SCT } from './choqueToxicoPartesMolesPed.ts'
 import { DOSES_IC_ORAIS } from './insuficienciaCardiacaPed.ts'
 import { CLORETO_CA_TABELA7, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEMIA, HIPOCALCEMIA, HIPOMAGNESEMIA, K_IV, K_VO, calcularDose } from './eletrolitosPed.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
+import { DOSES_MENINGITE, DOSES_PROFILAXIA } from './meningitePed.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -89,6 +90,7 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     glomerulo: new Set([...DOSES_NEFROTICA, ...DOSES_NEFRITICA, ...DOSES_SHU].map((d) => d.id)),
     intoxicacao: new Set(DOSES_CAPITULO_INTOX.map((d) => d.id)), coma: new Set(DOSES_COMA.map((d) => d.id)),
     hda: new Set(DOSES_HDA.map((d) => d.id)), pele: new Set([...DOSES_SCT, ...DOSES_PELE].map((d) => d.id)),
+    meningite: new Set([...DOSES_MENINGITE, ...DOSES_PROFILAXIA].map((d) => d.id)),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -101,7 +103,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.8')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.1')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -199,9 +201,8 @@ test('lote 4 (L4-3 do RT, 20/11/2026): magnésio 10% e 50% pela CMED, no sal, ne
   assert.equal(volumeDaAmpola([100, 100], mg50, 'elemento'), null)
 })
 
-test('lote 4: difenidramina, dexametasona e azul de metileno esperam a bula (L4-1, L4-2, L4-4)', () => {
-  for (const c of ['anafilaxia:difenidramina-tabela', 'anafilaxia:difenidramina-texto', 'bolus:difenidramina', 'fita:fita-difenidramina',
-    'asma:dexametasona', 'bolus:dexametasona-crupe', 'fita:fita-dexametasona-crupe']) assert.deepEqual(ampolasDoItem(c), [], c)
+test('lote 4: dexametasona VO, IM ou IV (asma e crupe) fica sem mL até a decisão da via mista', () => {
+  for (const c of ['asma:dexametasona', 'bolus:dexametasona-crupe', 'fita:fita-dexametasona-crupe']) assert.deepEqual(ampolasDoItem(c), [], c)
 })
 
 test('L4-5: aviso de volume abaixo de 0,1 mL', () => {
@@ -222,13 +223,14 @@ test('lote 5 (L5-1 a L5-6 do RT, 20/11/2026): concentrações da CMED, nenhuma m
   assert.deepEqual(ids('fita:fita-ondansetrona-iv'), [['ondansetrona-2', 2]])
   assert.deepEqual(ids('bolus:octreotida-ataque'), [['octreotida-50', 50], ['octreotida-100', 100], ['octreotida-500', 500]]) // µg/mL (L5-4)
   for (const c of ['bolus:neostigmina-0a2', 'bolus:neostigmina-maior2']) assert.deepEqual(ids(c), [['neostigmina-0-5', 0.5]], c) // L5-6
-  // L5-3: só 1 e 10 mg/mL (10×); 0,1 e 0,2 mg/mL esperam a bula dizer se pode IV
-  for (const c of ['bolus:morfina-menor6m', 'bolus:morfina-maior6m', 'fita:fita-morfina-iv']) assert.deepEqual(ids(c), [['morfina-1', 1], ['morfina-10', 10]], c)
+  // L5-3: 1 e 10 mg/mL; 0,1 e 0,2 mg/mL entraram no lote 7 (a bula do Dimorf permite IV)
+  for (const c of ['bolus:morfina-menor6m', 'bolus:morfina-maior6m', 'fita:fita-morfina-iv']) assert.deepEqual(ids(c), [['morfina-0-1', 0.1], ['morfina-0-2', 0.2], ['morfina-1', 1], ['morfina-10', 10]], c)
   // terbutalina 10 µg/kg em 20 kg = 200 µg = 0,4 mL
   assert.deepEqual(volumeDaAmpola([200, 200], AMPOLAS.terbutalina[0])?.ml, [0.4, 0.4])
   // morfina 0,1 mg/kg em 10 kg = 1 mg: 1 mL da 1 mg/mL ou 0,1 mL da 10 mg/mL
-  assert.deepEqual(volumeDaAmpola([1, 1], AMPOLAS.morfina[0])?.ml, [1, 1])
-  assert.deepEqual(volumeDaAmpola([1, 1], AMPOLAS.morfina[1])?.ml, [0.1, 0.1])
+  const morfina = (id: string) => AMPOLAS.morfina.find((a) => a.id === id)
+  assert.deepEqual(volumeDaAmpola([1, 1], morfina('morfina-1'))?.ml, [1, 1])
+  assert.deepEqual(volumeDaAmpola([1, 1], morfina('morfina-10'))?.ml, [0.1, 0.1])
 })
 
 test('lote 5, L5-5 e ML7: insulina só pelo preparo de 0,1 UI/mL do livro, nunca pelo frasco', () => {
@@ -240,8 +242,8 @@ test('lote 5, L5-5 e ML7: insulina só pelo preparo de 0,1 UI/mL do livro, nunca
   assert.deepEqual(volumeDaAmpola([2, 2], prep)?.ml, [20, 20])
 })
 
-test('lote 5: vitamina K, acetilcisteína, esmolol, milrinona e pralidoxima esperam a bula ou não têm apresentação', () => {
-  for (const c of ['bolus:vitamina-k', 'bolus:acetilcisteina-1', 'bolus:acetilcisteina-2', 'bolus:acetilcisteina-3', 'bolus:esmolol-bolus', 'bolus:milrinona-ataque', 'bolus:pralidoxima']) {
+test('lote 5: vitamina K IV (bulas contraindicam a veia) e pralidoxima ficam sem mL (L5-2)', () => {
+  for (const c of ['bolus:vitamina-k', 'bolus:pralidoxima']) {
     assert.deepEqual(ampolasDoItem(c), [], c)
   }
 })
@@ -254,7 +256,7 @@ test('lote 6a (L6-1 e L6-2 do RT, 20/11/2026): soluções prontas, dipirona e mo
   assert.deepEqual(ids('pneumonia:sbp-linez'), [['linezolida-2', 2, true]])
   assert.deepEqual(ids('itu:cipro-iv'), [['ciprofloxacino-2', 2, true]])
   assert.deepEqual(ids('falciforme:dipirona'), [['dipirona-500', 500, false]])
-  for (const c of ['falciforme:morfina-figura', 'falciforme:morfina-texto']) assert.deepEqual(ampolasDoItem(c).map((a) => a.porMl), [1, 10], c)
+  for (const c of ['falciforme:morfina-figura', 'falciforme:morfina-texto']) assert.deepEqual(ampolasDoItem(c).map((a) => a.porMl), [0.1, 0.2, 1, 10], c)
   // solução pronta nunca é "aspirar e diluir"
   assert.ok(Object.values(AMPOLAS).flat().every((a) => !(a.pronta && a.diluir)))
   // L6-1: o mL sai da dose por tomada. Metronidazol 30 mg/kg/dia em 4 doses, 20 kg = 150 mg/dose = 30 mL
@@ -262,11 +264,9 @@ test('lote 6a (L6-1 e L6-2 do RT, 20/11/2026): soluções prontas, dipirona e mo
   const r = calcularDoseLivro(metro, 20)!
   assert.deepEqual(r.porDose, [150, 150])
   assert.deepEqual(volumeDaAmpola(r.porDose!, AMPOLAS.metronidazol[0])?.ml, [30, 30])
-  // aminoglicosídeos e SMX-TMP esperam a bula (L6-3)
-  for (const d of [...Object.values(HOSPITALAR).flatMap((t) => [...t.inicial, ...t.falha]), ...DOSES_ITU_PARENTERAL].filter((x) => /amica|genta|tobra/i.test(x.id))) {
-    assert.deepEqual(ampolasDoItem(`pneumonia:${d.id}`), [], d.id)
-    assert.deepEqual(ampolasDoItem(`itu:${d.id}`), [], d.id)
-  }
+  // aminoglicosídeos da ITU são IV ou IM (lote 7): o aviso de diluir só vale na veia
+  assert.deepEqual(ampolasDoItem('itu:amicacina'), [])
+  assert.deepEqual(ampolasDoItem('itu:gentamicina'), [])
 })
 
 test('lote 6b (renal, hemostasia e oncologia, 20/11/2026): concentrações da CMED e do livro, nenhuma marcada', () => {
@@ -288,9 +288,9 @@ test('lote 6b (renal, hemostasia e oncologia, 20/11/2026): concentrações da CM
 
 test('lote 6b: item sem via escrita, VO, por bula ou por decisão própria fica sem mL', () => {
   // cálcio e bicarbonato da injúria renal e o gluconato da oncologia ganharam mL no lote 6c
-  for (const c of ['hemostasia:atx-dvw', 'oncologia:fenitoina-prof', 'hemostasia:atx-vo', 'hemostasia:ddavp', 'renal:beta2',
+  for (const c of ['hemostasia:atx-dvw', 'oncologia:fenitoina-prof', 'hemostasia:atx-vo', 'renal:beta2',
     'renal:glicose', 'renal:mg', 'renal:nac-contraste', 'renal:sorcal', 'oncologia:bic3',
-    'oncologia:glicose25', 'oncologia:amicacina', 'oncologia:tmp', 'oncologia:dexa-sms', 'oncologia:cipro-vo', 'oncologia:nacl3-bolo']) {
+    'oncologia:glicose25', 'oncologia:tmp', 'oncologia:cipro-vo', 'oncologia:nacl3-bolo']) {
     assert.deepEqual(ampolasDoItem(c), [], c)
   }
 })
@@ -394,4 +394,39 @@ test('lote 6d: aviso de diluir no próprio item (infusão do livro), sem ampola 
   // a guarda acusa item para diluir com solução pronta
   const p = problemasDasAmpolas({ s: [{ id: 's-1', rotulo: 's', porMl: 1, pronta: true, fonte: 'teste' }] }, { 'pele:x': { principio: 's', diluir: true } })
   assert.ok(p.some((x) => /item para diluir/.test(x)))
+})
+
+test('lote 7 (L7-1 a L7-7 = A do RT, 23/11/2026): bulas lidas, nenhuma ampola marcada', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  for (const c of ['anafilaxia:difenidramina-tabela', 'anafilaxia:difenidramina-texto', 'bolus:difenidramina', 'fita:fita-difenidramina']) assert.deepEqual(ids(c), [['difenidramina-50', 50, false]], c)
+  // L7-1: rótulo do fosfato de dexametasona, só nos itens EV ou IV
+  for (const c of ['meningite:dexametasona', 'oncologia:dexa-sms', 'oncologia:dexa-cce-ataque', 'oncologia:dexa-cce-man', 'oncologia:dexa-hic-ataque', 'oncologia:dexa-hic-man']) {
+    assert.deepEqual(ids(c), [['dexametasona-2', 2, false], ['dexametasona-4', 4, false]], c)
+  }
+  for (const c of ['bolus:acetilcisteina-1', 'bolus:acetilcisteina-2', 'bolus:acetilcisteina-3']) assert.deepEqual(ids(c), [['acetilcisteina-100', 100, true]], c)
+  assert.deepEqual(ids('bolus:esmolol-bolus'), [['esmolol-10000', 10000, false]]) // µg/mL do cloridrato (L7-4)
+  assert.deepEqual(ids('bolus:milrinona-ataque'), [['milrinona-1000', 1000, false]]) // µg/mL (L7-2)
+  assert.deepEqual(ids('pele:clinda-iv'), [['clindamicina-150', 150, true]])
+  for (const c of ['pneumonia:amicacina', 'oncologia:amicacina']) assert.deepEqual(ids(c), [['amicacina-50', 50, true], ['amicacina-250', 250, true]], c)
+  assert.deepEqual(ids('itu:tobramicina'), [['tobramicina-50', 50, true]])
+  assert.deepEqual(ids('pneumonia:genta'), [['gentamicina-40', 40, true]]) // L7-3 = B: rótulo; sem a de 20 mg/mL
+  assert.deepEqual(ids('hemostasia:ddavp'), [['desmopressina-4', 4, true]]) // µg/mL do acetato (L7-5)
+  assert.deepEqual(ids('intoxicacao:vitk-sc'), [['vitamina-k-10', 10, false]]) // só SC (Eskavit e Hyvit K)
+  // L7-6: salbutamol injetável (uso adulto) fica sem mL; item sem via escrita ou de via mista também
+  for (const c of ['renal:beta2', 'coma:dexa-hic', 'pele:clindamicina', 'pele:smxtmp', 'oncologia:tmp']) assert.deepEqual(ampolasDoItem(c), [], c)
+})
+
+test('lote 7: contas de exemplo', () => {
+  // difenidramina 1 mg/kg em 10 kg = 10 mg = 0,2 mL
+  assert.deepEqual(volumeDaAmpola([10, 10], AMPOLAS.difenidramina[0])?.ml, [0.2, 0.2])
+  // esmolol 500 µg/kg em 20 kg = 10.000 µg = 1 mL do frasco de 10 mg/mL
+  assert.deepEqual(volumeDaAmpola([10000, 10000], AMPOLAS.esmolol[0])?.ml, [1, 1])
+  // milrinona 50 µg/kg em 10 kg = 500 µg = 0,5 mL
+  assert.deepEqual(volumeDaAmpola([500, 500], AMPOLAS.milrinona[0])?.ml, [0.5, 0.5])
+  // acetilcisteína 150 mg/kg em 20 kg = 3.000 mg = 30 mL a aspirar
+  assert.deepEqual(volumeDaAmpola([3000, 3000], AMPOLAS.acetilcisteina[0]), { ml: [30, 30], aspirar: true })
+  // desmopressina 0,3 µg/kg em 20 kg = 6 µg = 1,5 mL a aspirar
+  assert.deepEqual(volumeDaAmpola([6, 6], AMPOLAS.desmopressina[0]), { ml: [1.5, 1.5], aspirar: true })
+  // amicacina 250 mg: 5 mL da 50 mg/mL ou 1 mL da 250 mg/mL (5×, nenhuma marcada)
+  assert.deepEqual(AMPOLAS.amicacina.map((a) => volumeDaAmpola([250, 250], a)?.ml), [[5, 5], [1, 1]])
 })
