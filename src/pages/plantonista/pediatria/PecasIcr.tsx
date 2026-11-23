@@ -66,9 +66,11 @@ export function Bloco({ titulo, descricao, children }: { titulo: string; descric
 }
 
 /** Uma linha: o que o livro traz, a conta para o peso (quando há) e a página. */
-export function LinhaLivro({ nome, texto, conta, pagina, errata, nota, recolher }: { nome: string; texto: ReactNode; conta?: ReactNode; pagina: string; errata?: string; nota?: string
+export function LinhaLivro({ nome, texto, conta, pagina, errata, nota, recolher, depois }: { nome: string; texto: ReactNode; conta?: ReactNode; pagina: string; errata?: string; nota?: string
   /** piloto das calculadoras (C6 = A): nota e errata recolhidas em "Notas do livro" */
-  recolher?: boolean }) {
+  recolher?: boolean
+  /** abaixo do texto do livro (ex.: escolha da ampola, dose em mL) */
+  depois?: ReactNode }) {
   return (
     <div className="rounded-controle border px-3 py-2 text-apoio">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -78,6 +80,7 @@ export function LinhaLivro({ nome, texto, conta, pagina, errata, nota, recolher 
       <p className="text-tinta-sussurro">
         O livro traz: {texto} ({pagina})
       </p>
+      {depois}
       {recolher && (nota || errata) ? (
         <VerMais>
           {nota && <p>{nota}</p>}

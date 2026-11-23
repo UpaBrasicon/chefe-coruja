@@ -153,10 +153,10 @@ export function InfeccaoUrinariaPed() {
       {calc && (
         <>
           <Bloco titulo="Via oral (Tabela 3, p. 597)">
-            {DOSES_ITU_ORAL.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} />)}
+            {DOSES_ITU_ORAL.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} ampola={`itu:${d.id}`} />)}
           </Bloco>
           <Bloco titulo="Via parenteral (Tabela 4, p. 597–598)">
-            {DOSES_ITU_PARENTERAL.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} />)}
+            {DOSES_ITU_PARENTERAL.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} ampola={`itu:${d.id}`} />)}
           </Bloco>
         </>
       )}

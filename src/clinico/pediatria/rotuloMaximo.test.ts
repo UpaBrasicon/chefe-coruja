@@ -25,7 +25,7 @@ test('tetos que vieram de fora do livro no lote D11 têm a fonte do máximo', ()
 
 test('as três fichas sobem para 2026-11-19.2', () => {
   for (const f of [fichaRcpPediatrica, fichaViaAereaPediatrica, fichaBolusPediatrico]) {
-    assert.equal(f.versao, '2026-11-19.2', f.id)
+    assert.ok(f.versao >= '2026-11-19.2', f.id) // ped-bolus subiu de novo no lote 4 da dose em mL (20/11/2026)
     assert.match(f.revisadoEm, /rótulo do máximo/)
   }
 })

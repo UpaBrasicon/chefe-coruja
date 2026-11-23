@@ -1,3 +1,4 @@
+import type { Ficha } from '../ficha.ts'
 import { fichaP4, type DoseLivro } from './fonteP4.ts'
 import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
 
@@ -7,7 +8,13 @@ import { porPeso, positivoP5, type ItemLivro } from './fonteP5.ts'
 // por contraste e as doses da Tabela 8. O capítulo cita o pRIFLE mas não o
 // transcreve: fica de fora. Sem valor neonatal explícito nas doses.
 
-export const fichaInjuriaRenalPed = fichaP4('ped-injuria-renal', 'Injúria renal aguda — KDIGO, Schwartz e doses (criança)', 'cap. 56, p. 575–587')
+const baseInjuriaRenal = fichaP4('ped-injuria-renal', 'Injúria renal aguda — KDIGO, Schwartz e doses (criança)', 'cap. 56, p. 575–587')
+
+export const fichaInjuriaRenalPed: Ficha = {
+  ...baseInjuriaRenal,
+  versao: '2026-11-20.1',
+  revisadoEm: `20/11/2026 (lote 6b da dose em mL: furosemida 10 mg/mL e insulina da solução polarizante pelo preparo de 0,1 UI/mL (L5-5), da ficha ped-ampolas, só da dose por tomada; cálcio, bicarbonato, glicose, salbutamol e magnésio elementar ficam sem mL nesta parte; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); ${baseInjuriaRenal.revisadoEm}`,
+}
 
 export type EstagioKdigo = 0 | 1 | 2 | 3
 

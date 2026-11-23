@@ -168,7 +168,7 @@ export function EmergenciasOncologicasPed() {
             {diurese?.mlKgH && <LinhaFaixa nome="Diurese-alvo (≤ 10 kg)" faixa={diurese.mlKgH} unidade="mL/h" casas={0} texto="4 a 6 mL/kg/h; densidade urinária < 1.010" pagina="p. 699" />}
             {diurese?.mlM2H && <LinhaFaixa nome="Diurese-alvo (por m²)" faixa={diurese.mlM2H} unidade="mL/h" casas={0} texto="80 a 100 mL/m²/h; densidade urinária < 1.010" pagina="p. 699" />}
             {alo && <LinhaFaixa nome="Alopurinol por m²" faixa={alo.porDose} unidade="mg/dose" casas={0} texto="50 a 100 mg/m²/dose VO de 8/8 h, máximo 300 mg/m²/dia" pagina="p. 700; Tabela 6, p. 702" extra={<span className="text-tinta-sussurro"> · {faixaBr(alo.dia, 0)} mg/dia (teto {br(alo.maxDia, 0)})</span>} />}
-            {calc && DOSES_SLT.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {calc && DOSES_SLT.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`oncologia:${d.id}`} />)}
             {!calc && <Nota>Informe o peso para as doses por kg.</Nota>}
           </>
         )}
@@ -183,7 +183,7 @@ export function EmergenciasOncologicasPed() {
             <LinhaFaixa nome="Concentrado de plaquetas (irradiado)" faixa={plaquetasOncoMl(p.peso)} unidade="mL" casas={0} texto="10 mL/kg em 30 a 60 min" pagina="p. 706" />
             <LinhaFaixa nome="Plasma fresco congelado" faixa={pfcOncoMl(p.peso)} unidade="mL" casas={0} texto="10 a 15 mL/kg (sangramento significativo com coagulopatia)" pagina="p. 706" />
             <LinhaFaixa nome="Crioprecipitado" faixa={crioOncoU(p.peso) !== null ? [crioOncoU(p.peso)!, crioOncoU(p.peso)!] : null} unidade="U" casas={1} texto="2 U/10 kg, para fibrinogênio > 150 mg/dL; vitamina K 5 mg" pagina="p. 706" />
-            {DOSES_HEMATO_ONCO.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {DOSES_HEMATO_ONCO.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`oncologia:${d.id}`} />)}
           </>
         ) : (
           <Pendencia p={p} />
@@ -215,7 +215,7 @@ export function EmergenciasOncologicasPed() {
 
       {calc && (
         <Bloco titulo="Neutropenia febril — antimicrobianos do ICr (Tabela 11, p. 714–715)">
-          {DOSES_NEUTROPENIA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+          {DOSES_NEUTROPENIA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`oncologia:${d.id}`} />)}
           {caspo && <LinhaFaixa nome="Caspofungina" faixa={[caspo.ataque, caspo.ataque]} unidade="mg (ataque)" casas={1} texto="ataque 70 mg/m² IV 1 dose; manutenção 50 mg/m² a cada 24 h; máximo 70 mg/dia" pagina="p. 715" extra={<span className="text-tinta-sussurro"> · manutenção {br(caspo.manutencao, 1)} mg/dia</span>} />}
           {osel && <LinhaFaixa nome="Oseltamivir" faixa={[osel[0], osel[osel.length - 1]]} unidade="mg 12/12 h" casas={0} texto="< 15 kg 30 mg; 15–23 kg 45 mg; 23–40 kg 60 mg; > 40 kg 75 mg VO de 12/12 h (3 mg/kg/dose também listado)" pagina="p. 715" nota={osel.length > 1 ? 'Com 23 kg exatos o peso cai em duas faixas da tabela.' : undefined} />}
         </Bloco>
@@ -223,7 +223,7 @@ export function EmergenciasOncologicasPed() {
 
       {calc && (
         <Bloco titulo="Síndromes compressivas (p. 717–720; Tabela 12)">
-          {DOSES_COMPRESSIVAS.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+          {DOSES_COMPRESSIVAS.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`oncologia:${d.id}`} />)}
         </Bloco>
       )}
 

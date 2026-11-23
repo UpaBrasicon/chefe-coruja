@@ -160,14 +160,14 @@ export function GlomerulopatiasShuPed() {
             <LinhaFaixa nome="Albumina 20%" faixa={alb.gramas} unidade="g" casas={1} texto="0,5 a 1 g/kg em 4 horas (Figura 1: 1 g/kg), com sinais vitais e PA" pagina="p. 624; Figura 1, p. 626" extra={<span className="text-tinta-sussurro"> · {faixaBr(alb.mL, 0)} mL de albumina 20%</span>} />
           )}
           <ListaQuadro itens={INDICACOES_ALBUMINA} pagina="p. 624" />
-          {DOSES_NEFROTICA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+          {DOSES_NEFROTICA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`glomerulo:${d.id}`} />)}
           <LinhaFaixa nome="Sal na dieta" faixa={salNefroticaMeqDia(p.peso)} unidade="mEq/dia" casas={0} texto="2 a 3 mEq/kg/dia; dieta normoproteica, sem restrição de líquidos VO com função renal preservada" pagina="p. 624" nota={NOTA_SAL} />
         </Bloco>
       )}
 
       <Bloco titulo="Síndrome nefrítica / GNPE (cap. 58)">
         <LinhaFaixa nome="Restrição hídrica — base" faixa={restricaoHidricaGnpe(sc)} unidade="mL/dia" casas={0} texto="perdas insensíveis subtraídas da água endógena (400 mL/m²/dia), + reposição parcial da diurese; balanço negativo enquanto houver edema" pagina="p. 608" />
-        {calc && DOSES_NEFRITICA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+        {calc && DOSES_NEFRITICA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`glomerulo:${d.id}`} />)}
         <p className="font-medium">Indicações de biópsia na apresentação da GNPE</p>
         <ListaQuadro itens={BIOPSIA_GNPE} pagina="p. 607" />
       </Bloco>
@@ -182,7 +182,7 @@ export function GlomerulopatiasShuPed() {
         {chv && (
           <LinhaFaixa nome="Concentrado de hemácias" faixa={[chv.mL, chv.mL]} unidade="mL" casas={0} texto="10 mL/kg em 3 a 4 horas (costuma elevar a Hb em 1 g/dL); meta pós-transfusional 8 a 9 g/dL; lento, com sinais vitais e potássio" pagina="p. 635" extra={<span className="text-tinta-sussurro"> · {faixaBr(chv.mlH, 0)} mL/h</span>} />
         )}
-        {calc && DOSES_SHU.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+        {calc && DOSES_SHU.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`glomerulo:${d.id}`} />)}
         {calc && <LinhaFaixa nome="Plasmaférese — volume de troca" faixa={plasmafereseShuMl(p.peso)} unidade="mL" casas={0} texto="40 a 60 mL/kg, com plasma fresco congelado como reposição (SHUa ou SNC grave até o eculizumabe)" pagina="p. 636" />}
         <p className="font-medium">Diálise na SHU</p>
         <ListaQuadro itens={DIALISE_SHU} pagina="p. 636" />

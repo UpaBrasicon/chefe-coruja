@@ -34,6 +34,16 @@ test('dose fixa por idade (p. 98): faixas e ambiguidade aos 6 e 12 anos', () => 
   assert.deepEqual(epinefrinaDoseFixa(13 * DIAS_ANO)!.doses, ['0,5 mg'])
 })
 
+test('dose fixa por idade em mL da solução 1:1.000 = 1 mg/mL (lote 4 da dose em mL)', () => {
+  assert.deepEqual(epinefrinaDoseFixa(90)!.volumes, ['0,1 a 0,15 mL'])
+  assert.deepEqual(epinefrinaDoseFixa(2 * DIAS_ANO)!.volumes, ['0,15 mL'])
+  assert.deepEqual(epinefrinaDoseFixa(6 * DIAS_ANO + 10)!.volumes, ['0,15 mL', '0,3 mL'])
+  assert.deepEqual(epinefrinaDoseFixa(9 * DIAS_ANO)!.volumes, ['0,3 mL'])
+  assert.deepEqual(epinefrinaDoseFixa(13 * DIAS_ANO)!.volumes, ['0,5 mL'])
+  assert.equal(epinefrinaDoseFixa(-1), null)
+  assert.equal(fichaAnafilaxiaPediatrica.versao, '2026-11-20.1')
+})
+
 test('segunda e terceira linha (Tabela 3, p. 101–102)', () => {
   assert.deepEqual(calcularDose(d('cristaloide'), 10)!.dose, [100, 200])
   assert.deepEqual(fenoterolGotas(12), { gotas: 4, mg: 1, noMaximo: false })
@@ -48,9 +58,9 @@ test('segunda e terceira linha (Tabela 3, p. 101–102)', () => {
 // ── Lote D11 (decisão do RT de 19/11/2026): item 10 ──
 
 test('lote D11: difenidramina pelo texto passa a 1 mg/kg, máx. 50 mg (diretriz chinesa 2020); Tabela 3 igual', () => {
-  assert.equal(fichaAnafilaxiaPediatrica.versao, '2026-11-19.1')
+  assert.ok(fichaAnafilaxiaPediatrica.versao >= '2026-11-19.1')
   assert.ok(fichaAnafilaxiaPediatrica.fontes.includes(CHINA_ANAFILAXIA_2020))
-  assert.match(fichaAnafilaxiaPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: item 10/)
+  assert.match(fichaAnafilaxiaPediatrica.revisadoEm, /19\/11\/2026 \(lote D11: item 10/)
   const t = d('difenidramina-texto')
   assert.deepEqual(t.porKg, [1, 1])
   assert.equal(t.maximo, 50)

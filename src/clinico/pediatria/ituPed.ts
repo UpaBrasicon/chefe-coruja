@@ -40,9 +40,9 @@ export const AVISO_AAP_2026: string[] = [
 const fichaItuLivro = fichaP4('ped-infeccao-urinaria', 'Infecção urinária — criança', 'cap. 57, p. 588–601; Apêndice, p. 898–909')
 export const fichaItuPed: Ficha = {
   ...fichaItuLivro,
-  versao: '2026-11-11.1',
+  versao: '2026-11-20.1',
   fontes: [...fichaItuLivro.fontes, AAP_ITU_2026, AAP_ITU_2026_DIAGNOSTICO, AAP_ITU_2026_MANEJO],
-  revisadoEm: '11/11/2026 (limiares da AAP 2026 de 8 dias a 5 anos: urocultura, piúria pela Tabela 1 e quem testar pela Figura 2, sem etnia; notas da AAP ao lado da duração, da via e da escolha empírica, sem dose; decisão do RT, I1–I6 = A, I7–I10 = B, I11–I13 = C); 09/10/2026 (aviso da diretriz AAP 2026)',
+  revisadoEm: '20/11/2026 (lote 6a da dose em mL: ciprofloxacino IV com o volume da solução pronta, da ficha ped-ampolas, só da dose por tomada; aminoglicosídeos esperam a bula; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 11/11/2026 (limiares da AAP 2026 de 8 dias a 5 anos: urocultura, piúria pela Tabela 1 e quem testar pela Figura 2, sem etnia; notas da AAP ao lado da duração, da via e da escolha empírica, sem dose; decisão do RT, I1–I6 = A, I7–I10 = B, I11–I13 = C); 09/10/2026 (aviso da diretriz AAP 2026)',
 }
 
 /**

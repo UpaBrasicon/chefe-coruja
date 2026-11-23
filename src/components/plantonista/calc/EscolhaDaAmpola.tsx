@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
 import {
-  AVISO_DILUIR, ITENS_COM_AMPOLA, PECA_A_AMPOLA, ampolasDoItem, volumeDaAmpola, type Apresentacao, type BaseDose,
+  AVISO_DILUIR, AVISO_VOLUME_PEQUENO, ITENS_COM_AMPOLA, PECA_A_AMPOLA, PECA_A_SOLUCAO, ampolasDoItem, volumeAbaixoDe01, volumeDaAmpola, type Apresentacao, type BaseDose,
 } from '@/clinico/pediatria/ampolas'
 import { Button } from '@/components/ui/button'
 import { numeroSemMilhar } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
-const ml = (x: number) => numeroSemMilhar(x, 2)
+// abaixo de 0,1 mL, 3 casas (0,006 mL não vira 0,01)
+const ml = (x: number) => numeroSemMilhar(x, x < 0.1 ? 3 : 2)
 const faixaMl = ([a, b]: [number, number]) => (Math.abs(a - b) < 1e-9 ? ml(a) : `${ml(a)}–${ml(b)}`)
 
 /**
@@ -33,6 +34,8 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
   if (ampolas.length === 0) return null
   const ampola = ampolas.find((a) => a.id === escolhida)
   const baseDaDose = base ?? (chave ? ITENS_COM_AMPOLA[chave]?.base : undefined)
+  // aviso de diluir pela ampola (bula) ou pelo item (infusão do livro)
+  const diluirItem = chave ? ITENS_COM_AMPOLA[chave]?.diluir === true : false
   const linhas = (doses ?? (dose ? [{ rotulo: '', dose }] : []))
     .map((l) => ({ rotulo: l.rotulo, volume: volumeDaAmpola(l.dose, ampola, baseDaDose) }))
   const algum = linhas.find((l) => l.volume)?.volume
@@ -47,15 +50,20 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
           </Button>
         ))}
       </div>
-      {!algum && <p className="text-tinta-sussurro">{PECA_A_AMPOLA}</p>}
+      {!algum && <p className="text-tinta-sussurro">{ampolas.every((a) => a.pronta) ? PECA_A_SOLUCAO : PECA_A_AMPOLA}</p>}
       {algum && ampola && (
         <>
           {linhas.map((l) => l.volume && (
             <p key={l.rotulo} className={cn('tabular-nums', grande ? 'text-corpo font-semibold text-acao' : 'text-tinta')}>
-              {l.rotulo && <>{l.rotulo}: </>}<strong>{faixaMl(l.volume.ml)} mL</strong> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL
+              {l.rotulo && <>{l.rotulo}: </>}<strong>{faixaMl(l.volume.ml)} mL</strong>{ampola.pronta
+                ? <> da solução pronta de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL (volume a infundir)</>
+                : ampola.seringa
+                  ? <> da seringa preenchida de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL (volume a aplicar)</>
+                  : <> da ampola de {numeroSemMilhar(ampola.porMl, 3)} {unidade}/mL</>}
             </p>
           ))}
-          {algum.aspirar && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
+          {(algum.aspirar || diluirItem) && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
+          {linhas.some((l) => volumeAbaixoDe01(l.volume?.ml)) && <p className="font-medium text-atencao">{AVISO_VOLUME_PEQUENO}</p>}
           <p className="text-rotulo text-tinta-sussurro">Concentração: {ampola.fonte}.</p>
         </>
       )}

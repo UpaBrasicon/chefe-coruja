@@ -42,9 +42,9 @@ test('salbutamol contínuo 0,5 mg/kg/h, máx. 20 mg/h; ipratrópio por peso', ()
 // ── Lote D11 (decisão do RT de 19/11/2026): item 14 ──
 
 test('lote D11: salbutamol em nebulização intermitente, 2,5 a 5 mg (Sociedade Italiana de Pediatria 2018)', () => {
-  assert.equal(fichaAsmaPediatrica.versao, '2026-11-19.1')
+  assert.ok(fichaAsmaPediatrica.versao >= '2026-11-19.1') // subiu no lote 4 da dose em mL (20/11/2026)
   assert.ok(fichaAsmaPediatrica.fontes.includes(INDINNIMEO_ASMA_2018))
-  assert.match(fichaAsmaPediatrica.revisadoEm, /^19\/11\/2026 \(lote D11: item 14/)
+  assert.match(fichaAsmaPediatrica.revisadoEm, /19\/11\/2026 \(lote D11: item 14/)
   const neb = FIXOS_ASMA.find((f) => /nebulização intermitente/.test(f.nome))!
   assert.match(neb.dose, /^2,5 a 5 mg por nebulização.*até 3 vezes, a cada 20 a 30 min, na primeira hora/)
   assert.match(neb.fonte!, /Sociedade Italiana de Pediatria/)
