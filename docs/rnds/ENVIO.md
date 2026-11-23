@@ -270,7 +270,7 @@ Escolhas do RT de 29/10/2026 ("todas a"): desenho A, com o estado no topo. Refer
 - **O certificado** é cifrado no navegador (`src/interop/rnds/cofre.ts`) antes de sair do computador. A tela pede o `.pfx` (ou `.p12`, até 100 KB) e a senha.
 - **A produção** só passa depois de o super admin digitar o nome da credencial.
 - **O sino** ganha a categoria "RNDS": os avisos `rnds_…` levam à aba (`/integracoes?aba=rnds`).
-- **O financiamento** lista os códigos 01 a 08 de `BRFinanciamento`. Só 01 (SUS federal) e 07 (SUS municipal) têm o nome conferido. Os outros aparecem só pelo código, até a conferência com a tabela oficial.
+- **O financiamento** lista os códigos 01 a 08 de `BRFinanciamento` com o nome da tabela oficial (CodeSystem `http://www.saude.gov.br/fhir/r4/CodeSystem/BRFinanciamento`, versão 201701A, do pacote de definições do validador da RNDS; conferido em 23/11/2026): 01 Federal SUS, 02 Plano de Saúde Público, 03 Plano de Saúde Privado, 04 Particular, 05 Gratuidade, 06 Estadual SUS, 07 Municipal SUS, 08 Programas e Projetos Federais.
 
 ---
 
