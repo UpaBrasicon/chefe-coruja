@@ -26,9 +26,9 @@ const baseHemostasia = fichaP4('ped-hemostasia-trombose', 'Hemofilia, von Willeb
 
 export const fichaHemostasiaTromboPed: Ficha = {
   ...baseHemostasia,
-  versao: '2026-11-20.1',
+  versao: '2026-11-23.1',
   fontes: [...baseHemostasia.fontes, ASH_ISTH_2025_TEV],
-  revisadoEm: '20/11/2026 (lote 6b da dose em mL: ácido tranexâmico IV da hemofilia com a ampola de 50 mg/mL, da ficha ped-ampolas, só da dose por tomada; o item da doença de von Willebrand não escreve a via e fica sem mL; desmopressina espera a bula; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 28/09/2026 (ASH/ISTH 2025 conferida pelos resumos; livro do ICr mantido como base)',
+  revisadoEm: '23/11/2026 (lote 8 da dose em mL: via do ácido tranexâmico da doença de von Willebrand escrita como IV ou VO, conferida pelo RT no livro, p. 682; o volume da ampola de 50 mg/mL vem com o aviso de via mista; aguarda aprovação do RT); 20/11/2026 (lote 6b da dose em mL: ácido tranexâmico IV da hemofilia com a ampola de 50 mg/mL, da ficha ped-ampolas, só da dose por tomada; o item da doença de von Willebrand não escreve a via e fica sem mL; desmopressina espera a bula; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 28/09/2026 (ASH/ISTH 2025 conferida pelos resumos; livro do ICr mantido como base)',
 }
 
 export const ASH_ISTH_ITENS: { numero: string; populacao: string; texto: string; mudanca: string }[] = [
@@ -82,7 +82,7 @@ export const DOSES_HEMOSTASIA: DoseLivro[] = [
     nota: 'Dose-teste prévia; contraindicada com convulsões, HAS ou cardiopatia; risco de hiponatremia dilucional.' },
   { id: 'atx-iv', nome: 'Ácido tranexâmico IV — hemofilia', unidade: 'mg', porKgDose: [10, 10], doses: [3, 4], maxDia: 2000, via: 'EV a cada 6 ou 8 h', pagina: 'p. 679' },
   { id: 'atx-vo', nome: 'Ácido tranexâmico VO — hemofilia', unidade: 'mg', porKgDose: [15, 20], doses: [3, 4], maxDia: 2000, via: 'VO a cada 6 ou 8 h', pagina: 'p. 679' },
-  { id: 'atx-dvw', nome: 'Ácido tranexâmico — doença de von Willebrand', unidade: 'mg', porKgDose: [10, 20], doses: [3, 4], maxDia: 2000, via: 'a cada 6 ou 8 h; contraindicado se hematúria', pagina: 'p. 682' },
+  { id: 'atx-dvw', nome: 'Ácido tranexâmico — doença de von Willebrand', unidade: 'mg', porKgDose: [10, 20], doses: [3, 4], maxDia: 2000, via: 'IV ou VO, a cada 6 ou 8 h; contraindicado se hematúria', pagina: 'p. 682' },
   { id: 'ccpa', nome: 'CCPa — inibidor (Quadro 3)', unidade: 'UI', porKgDose: [75, 100], via: 'a cada 12 h (grave) ou 12–24 h / 24 h conforme o quadro', pagina: 'p. 681' },
   { id: 'rfviia', nome: 'Fator VII recombinante ativado — inibidor (Quadro 3)', unidade: 'µg', porKgDose: [90, 120], via: 'a cada 2 h inicialmente; no moderado de alta resposta, 1 a 4 doses ou dose única de até 270 µg/kg', pagina: 'p. 681' },
 ]
