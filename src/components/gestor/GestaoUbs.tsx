@@ -112,8 +112,9 @@ export function GestaoUbs({ unidadeId }: { unidadeId: string }) {
               <Linhas itens={[
                 ['até a escuta inicial (média · mediana)', `${minutos(e.escuta_media_min)} · ${minutos(e.escuta_mediana_min)}`],
                 ['até a consulta (média · mediana)', `${minutos(e.consulta_media_min)} · ${minutos(e.consulta_mediana_min)}`],
-                ['não aguardou', numero(e.nao_aguardou)],
-                ['fichas vencidas', numero(e.fichas_vencidas)],
+                // RF8 (RT, 23/11/2026): "ficha vencida" vira "não aguardou", com o motivo ao lado
+                ['não aguardou (saiu antes)', numero(e.nao_aguardou)],
+                ['não aguardou (fim do expediente)', numero(e.fichas_vencidas)],
               ]} />
             </Frente>
 
@@ -154,7 +155,7 @@ export function GestaoUbs({ unidadeId }: { unidadeId: string }) {
       </Chips>
       {corpo}
       <p className="text-rotulo text-pretty text-tinta-sussurro">
-        Atendimentos de médico e enfermeiro pelo papel na unidade, encerrados no período; a ficha vencida fica fora da produção e conta em "fichas vencidas".
+        Atendimentos de médico e enfermeiro pelo papel na unidade, encerrados no período; a ficha que o sistema fecha no fim do expediente fica fora da produção e conta em "não aguardou (fim do expediente)".
       </p>
     </div>
   )
