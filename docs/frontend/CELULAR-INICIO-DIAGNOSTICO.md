@@ -66,5 +66,5 @@ O protótipo teve três opções (A no molde dos prints, B com cartões grandes,
 Lotes, todos pela homologação:
 
 1. **Início novo** (`InicioCelular.tsx`, `src/content/inicioCelular.ts`): saudação, chave Adulto/Criança, busca (abre a Central completa com o texto), Central de Urgências e as categorias. "Urgências" reaproveita os cartões do Guia rápido; as outras listam as ferramentas mais usadas de cada tipo. CID fica de fora até existir a busca fora do atendimento (CM5).
-2. **Abas "Conteúdo" e "Meu plantão"** (CM4): turno, próximo plantão, favoritos e mais usados. O marcador de cada item já grava o favorito desde o lote 1 (pedido do RT na conferência, 23/11/2026), com a mesma chave da Central completa.
+2. **Abas "Conteúdo" e "Meu plantão"** (CM4; no PR do lote 1, a pedido do RT em 23/11/2026; a aba fica no endereço, `?aba=plantao`): turno, próximo plantão, favoritos e mais usados. O marcador de cada item já grava o favorito desde o lote 1 (pedido do RT na conferência, 23/11/2026), com a mesma chave da Central completa.
 3. **Barra embaixo com 5 itens e botão flutuante de busca** (CM1 e CM7), com o aviso da troca por uma semana.

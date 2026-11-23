@@ -1,18 +1,21 @@
 import { useId, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  ArrowUpRight, Baby, Bookmark, Calculator, ChartColumn, FlaskConical, HeartPulse, LayoutGrid, Search, Siren, Skull, Sparkles, User, X,
+  ArrowUpRight, Baby, Bookmark, ChevronRight, History, Calculator, ChartColumn, FlaskConical, HeartPulse, LayoutGrid, Search, Siren, Skull, Sparkles, User, X,
   type LucideIcon,
 } from 'lucide-react'
 
-import { CHAVES_FERRAMENTAS } from '@/content/registry'
+import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useAuth } from '@/contexts/AuthContext'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
 import { useFavoritos } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { Abas, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { SessaoAssinatura } from '@/components/assinatura/SessaoAssinatura'
+import { CartaoTurno } from './CartaoTurno'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 
@@ -147,6 +150,59 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
   )
 }
 
+// Nome e endereço de cada ferramenta pela chave de favorito (secao/slug).
+const FERRAMENTA_POR_CHAVE = new Map<string, { nome: string; rota: string }>(SECOES.flatMap((sec) => sec.tools.map((t) => [`${sec.slug}/${t.slug}`, { nome: t.label, rota: `/plantonista/${sec.slug}/${t.slug}` }] as const)))
+
+function LinhaAtalho({ nome, rota, favorito, vezes }: { nome: string; rota: string; favorito?: boolean; vezes?: number }) {
+  return (
+    <li>
+      <Link to={rota}
+        className="flex min-h-13 items-center gap-2.5 rounded-cartao border border-fio-forte/45 bg-superficie px-3.5 py-2.5 text-tinta no-underline shadow-repouso hover:border-acao">
+        {favorito ? <Bookmark className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className="size-4 shrink-0 text-tinta-apoio" aria-hidden />}
+        <span className="min-w-0 flex-1 text-controle font-medium">{nome}</span>
+        {!!vezes && <span className="text-rotulo tabular-nums text-tinta-sussurro" title={`Aberta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por você`}>{vezes}×</span>}
+        <ChevronRight className="size-4 shrink-0 text-tinta-apoio" aria-hidden />
+      </Link>
+    </li>
+  )
+}
+
+// Aba "Meu plantão" (CM4 = A): só o que já existe — o cartão do turno (com o
+// próximo plantão), a sessão de assinatura, os favoritos e os mais usados.
+function MeuPlantao() {
+  const { perfil } = useAuth()
+  const { unidadeAtiva } = useUnidade()
+  const { favoritos, usos } = useFavoritos(CHAVES_FERRAMENTAS)
+  const favs = favoritos.flatMap((c) => { const x = FERRAMENTA_POR_CHAVE.get(c); return x ? [{ chave: c, ...x }] : [] })
+  const maisUsados = Object.entries(usos)
+    .filter(([c, n]) => n > 0 && !favoritos.includes(c))
+    .sort((a, b) => b[1] - a[1])
+    .flatMap(([c, n]) => { const x = FERRAMENTA_POR_CHAVE.get(c); return x ? [{ chave: c, vezes: n, ...x }] : [] })
+    .slice(0, 5)
+  return (
+    <div className="flex flex-col gap-4">
+      <CartaoTurno unidadeId={unidadeAtiva?.unidade_id} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
+      <SessaoAssinatura />
+      <section aria-label="Favoritos" className="flex flex-col gap-2">
+        <TituloSecao className="mb-0">Favoritos</TituloSecao>
+        {favs.length ? (
+          <ul className="flex flex-col gap-2">{favs.map((x) => <LinhaAtalho key={x.chave} nome={x.nome} rota={x.rota} favorito vezes={usos[x.chave]} />)}</ul>
+        ) : (
+          <p className="text-apoio text-tinta-apoio">Toque na bandeirinha de uma ferramenta, em Conteúdo, para ela aparecer aqui.</p>
+        )}
+      </section>
+      {maisUsados.length > 0 && (
+        <section aria-label="Mais usados por você" className="flex flex-col gap-2">
+          <TituloSecao className="mb-0">Mais usados por você</TituloSecao>
+          <ul className="flex flex-col gap-2">{maisUsados.map((x) => <LinhaAtalho key={x.chave} nome={x.nome} rota={x.rota} vezes={x.vezes} />)}</ul>
+        </section>
+      )}
+    </div>
+  )
+}
+
+type AbaInicio = 'conteudo' | 'plantao'
+
 export function InicioCelular() {
   const { perfil } = useAuth()
   const p = usePacienteCentral()
@@ -154,6 +210,10 @@ export function InicioCelular() {
   const lado: LadoInicio = p.modo === 'pediatrico' ? 'crianca' : 'adulto'
   const categorias = categoriasDoInicio(lado)
   const [aberta, setAberta] = useState<string | null>(null)
+  // a aba fica no endereço (?aba=plantao): voltar de uma ferramenta devolve à mesma aba
+  const [params, setParams] = useSearchParams()
+  const aba: AbaInicio = params.get('aba') === 'plantao' ? 'plantao' : 'conteudo'
+  const trocarAba = (k: AbaInicio) => setParams((p) => { const n = new URLSearchParams(p); if (k === 'plantao') n.set('aba', 'plantao'); else n.delete('aba'); return n }, { replace: true })
   const [busca, setBusca] = useState('')
   const base = useId()
   const primeiroNome = perfil?.nome_completo?.trim().split(/\s+/)[0]
@@ -182,6 +242,10 @@ export function InicioCelular() {
 
       <IniciarPcr lado={lado} />
 
+      <Abas<AbaInicio> rotulo="Início" valor={aba} onChange={trocarAba} className="mb-0 [&>button]:min-h-11 [&>button]:px-4 [&>button]:text-controle"
+        abas={[['conteudo', 'Conteúdo'], ['plantao', 'Meu plantão']]} />
+
+      {aba === 'plantao' ? <MeuPlantao /> : (
       <section aria-label="Conteúdo" className="flex flex-col gap-3">
         {linhas.map((par) => {
           const aberto = par.find((c) => c.id === aberta && c.itens.length)
@@ -198,6 +262,7 @@ export function InicioCelular() {
           )
         })}
       </section>
+      )}
 
       <Link to={ROTA_SOBRE_MODULO} className="self-start text-apoio text-acao underline-offset-4 hover:underline">Sobre o módulo clínico</Link>
     </div>
