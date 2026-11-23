@@ -61,8 +61,8 @@ L7-1 a L7-7 = A. Implementado:
 - morfina 0,1 e 0,2 mg/mL (Dimorf) ao lado de 1 e 10 mg/mL, nenhuma marcada.
 - vitamina K 10 mg/mL só na via SC da intoxicação (bulas Eskavit e Hyvit K, lidas em 23/11/2026: IM e SC).
 
-Gentamicina: a bula da Fresenius não está no Bulário (nem nos dados abertos de 23/11/2026); a L7-3 A não tem como se cumprir e volta ao RT (B: 40 mg/mL pelo rótulo; C: sem mL).
+Gentamicina: a bula da Fresenius não está no Bulário (nem nos dados abertos de 23/11/2026). O RT escolheu a L7-3 B em 23/11/2026: entra 40 mg/mL pelo rótulo (Santisa e Hipolabor), a aspirar e diluir, só na pneumonia EV; a de 20 mg/mL fica fora.
 
-Ficam sem mL: gentamicina (espera a bula da Fresenius, L7-3), amicacina e gentamicina da ITU (IV ou IM; o aviso de diluir só vale na veia), salbutamol injetável (L7-6), vitamina K IV (as três bulas contraindicam a veia), SMX-TMP e clindamicina sem via só IV.
+Ficam sem mL: amicacina e gentamicina da ITU (IV ou IM; o aviso de diluir só vale na veia), salbutamol injetável (L7-6), vitamina K IV (as três bulas contraindicam a veia), SMX-TMP e clindamicina sem via só IV.
 
 Ficha `ped-ampolas` 2026-11-23.1; migration `20270416000023` na homologação (volta testada em transação desfeita).

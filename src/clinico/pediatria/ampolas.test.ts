@@ -264,12 +264,9 @@ test('lote 6a (L6-1 e L6-2 do RT, 20/11/2026): soluções prontas, dipirona e mo
   const r = calcularDoseLivro(metro, 20)!
   assert.deepEqual(r.porDose, [150, 150])
   assert.deepEqual(volumeDaAmpola(r.porDose!, AMPOLAS.metronidazol[0])?.ml, [30, 30])
-  // gentamicina espera a bula da Fresenius (L7-3); a amicacina da ITU é IV ou IM (lote 7)
-  for (const d of [...Object.values(HOSPITALAR).flatMap((t) => [...t.inicial, ...t.falha]), ...DOSES_ITU_PARENTERAL].filter((x) => /genta/i.test(x.id))) {
-    assert.deepEqual(ampolasDoItem(`pneumonia:${d.id}`), [], d.id)
-    assert.deepEqual(ampolasDoItem(`itu:${d.id}`), [], d.id)
-  }
+  // aminoglicosídeos da ITU são IV ou IM (lote 7): o aviso de diluir só vale na veia
   assert.deepEqual(ampolasDoItem('itu:amicacina'), [])
+  assert.deepEqual(ampolasDoItem('itu:gentamicina'), [])
 })
 
 test('lote 6b (renal, hemostasia e oncologia, 20/11/2026): concentrações da CMED e do livro, nenhuma marcada', () => {
@@ -412,6 +409,7 @@ test('lote 7 (L7-1 a L7-7 = A do RT, 23/11/2026): bulas lidas, nenhuma ampola ma
   assert.deepEqual(ids('pele:clinda-iv'), [['clindamicina-150', 150, true]])
   for (const c of ['pneumonia:amicacina', 'oncologia:amicacina']) assert.deepEqual(ids(c), [['amicacina-50', 50, true], ['amicacina-250', 250, true]], c)
   assert.deepEqual(ids('itu:tobramicina'), [['tobramicina-50', 50, true]])
+  assert.deepEqual(ids('pneumonia:genta'), [['gentamicina-40', 40, true]]) // L7-3 = B: rótulo; sem a de 20 mg/mL
   assert.deepEqual(ids('hemostasia:ddavp'), [['desmopressina-4', 4, true]]) // µg/mL do acetato (L7-5)
   assert.deepEqual(ids('intoxicacao:vitk-sc'), [['vitamina-k-10', 10, false]]) // só SC (Eskavit e Hyvit K)
   // L7-6: salbutamol injetável (uso adulto) fica sem mL; item sem via escrita ou de via mista também
