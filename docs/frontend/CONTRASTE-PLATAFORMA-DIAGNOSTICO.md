@@ -62,6 +62,6 @@ No tema escuro, o texto passa folgado e a borda forte (`fio-forte`) já fecha 3:
 
 Por tokens e componentes de base (`src/index.css`, `src/components/ui/*`), sem tela por tela; um PR por item (CT2 primeiro, que é o mais grave), cada um com capturas antes e depois no tema claro e no escuro e com o padrão do frontend no CI. Só frontend.
 
-## Perguntas ao RT
+## Decisões do RT
 
-1. CT1 a CT4: A ou B em cada um?
+23/11/2026, nas palavras dele: "Sim, todas A". CT1 a CT4 = A, na ordem CT2, CT1, CT4, CT3.
