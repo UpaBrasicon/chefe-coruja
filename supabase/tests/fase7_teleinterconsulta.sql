@@ -74,13 +74,18 @@ DO $$ BEGIN
   PERFORM public.registrar_checkin('21000000-0000-4000-8000-000000000001');
   RAISE NOTICE 'OK  telemedicina: escala sem acesso ao setor; check-in remoto sem cerca';
 END $$;
+-- LG8 (contrato, 23/11/2026): a solicitar_teleinterconsulta antiga não é mais do authenticated;
+-- a tela usa a _com_termo. O teste da regra antiga chama como dono, com o mesmo login nas claims.
+RESET ROLE;
 SELECT pg_temp.negado($$SELECT public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000098', 'Pergunta de quem não está com o paciente', 'obtido')$$,
   'telemedicina solicitou teleinterconsulta');
+SET LOCAL ROLE authenticated;
 SELECT pg_temp.negado($$SELECT public.emitir_documento('23000000-0000-4000-8000-000000000098', 'evolucao', 'evolução escrita pela telemedicina')$$,
   'telemedicina emitiu evolução');
 
 -- ── 2. plantonista solicita; consentimento obrigatório ──────────────────────
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
+RESET ROLE;
 SELECT pg_temp.negado($$SELECT public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000098', 'Dúvida sobre o antibiótico', 'nao_sei')$$,
   'solicitação sem consentimento válido');
 DO $$
@@ -91,6 +96,7 @@ BEGIN
   PERFORM set_config('teste.tele', v::text, true);
   RAISE NOTICE 'OK  plantonista solicita com consentimento';
 END $$;
+SET LOCAL ROLE authenticated;
 SELECT pg_temp.negado(format('SELECT public.aceitar_teleinterconsulta(%L)', current_setting('teste.tele')), 'plantonista aceitou a própria');
 
 -- ── 3. telemedicina vê a fila, aceita, lê, responde ─────────────────────────
