@@ -66,6 +66,6 @@ Lido na master (cc5c6bf9). Nada foi programado.
 2. Texto de ciência e base legal com o advogado, junto com LG1 a LG5. **Sem isso, nenhum código.**
 3. Plano em PRs: banco (link do portal e conteúdo), página do paciente, geração na recepção e no enfermeiro, testes, homologação e "ok produção".
 
-## Perguntas ao RT
+## Decisões do RT
 
-1. PP1 a PP6: A ou B em cada um?
+23/11/2026, nas palavras dele: "Sim, todas A". PP1 a PP6 = A. O próximo passo é o item 2 da ordem acima (advogado, junto com LG1 a LG5); nenhum código antes disso.

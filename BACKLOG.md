@@ -2703,7 +2703,7 @@ Origem: no meio da conferência da vacina (20/11/2026), o RT pediu para anotar a
 
 | Ordem | Item | O que fazer | Prioridade | Estado |
 |---|---|---|---|---|
-| 1 | PP0 | Diagnóstico A/B em `docs/ubs/PORTAL-PACIENTE-DIAGNOSTICO.md` (PP1 a PP6: conteúdo, acesso, responsável legal, Meu SUS Digital, formato, registro e consentimento) | P2 | Diagnóstico pronto; espera as decisões do RT |
+| 1 | PP0 | Diagnóstico A/B em `docs/ubs/PORTAL-PACIENTE-DIAGNOSTICO.md` (PP1 a PP6: conteúdo, acesso, responsável legal, Meu SUS Digital, formato, registro e consentimento) | P2 | Concluído em 23/11/2026: RT decidiu A em PP1 a PP6 ("Sim, todas A") |
 | 2 | PP-legal | Texto de ciência e base legal com o advogado, junto com LG1 a LG5 | P2 | Espera o advogado |
 | 3 | PP-código | Plano em PRs depois das decisões e do advogado | P2 | Bloqueado pelo item 2 |
 
