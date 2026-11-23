@@ -34,6 +34,6 @@ Seria um suboperador novo recebendo dado de uso de profissional de saúde (e, se
 
 **B.** Só a contagem de ferramentas que já existe, exposta ao administrador sem a pessoa; nada novo.
 
-## Perguntas ao RT
+## Decisões do RT
 
-1. PH1 a PH3: A ou B em cada um?
+23/11/2026, nas palavras dele: "Sim, todas A". PH1 a PH3 = A: sem PostHog; uso medido no próprio banco, agregado por dia, unidade, papel e evento, sem pessoa e sem paciente, com painel "Uso do app" para o administrador da plataforma; flag por unidade segue como chave no banco.
