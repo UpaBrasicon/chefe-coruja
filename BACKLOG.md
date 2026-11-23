@@ -257,7 +257,7 @@ Todas as tarefas de 1 a 9 estão **em produção**. As PRs foram mergeadas no ma
 
 | Tarefa | Situação | Onde |
 |---|---|---|
-| 1 — Dupla checagem → liberação da farmácia | A versão com dupla de enfermagem está em produção. **A troca para liberação da farmácia (decisão do RT de 09/10) está na homologação.** Falta o teste do RT e o "ok produção" | Migrations `20261031000001_dupla_checagem.sql` e `20261101000002_liberacao_farmacia_alta_vigilancia.sql` (só homologação); testes `fase2_dupla_checagem.sql` e `fase2_liberacao_farmacia.sql`; branch `fase2/liberacao-farmacia` (sobre a `fase2/defeitos-leves`) |
+| 1 — Dupla checagem → liberação da farmácia | A versão com dupla de enfermagem está em produção. **A troca para liberação da farmácia (decisão do RT de 09/10) está na produção: migration `20261101000002` registrada no banco da produção (auditoria de 23/11/2026).** | Migrations `20261031000001_dupla_checagem.sql` e `20261101000002_liberacao_farmacia_alta_vigilancia.sql` (só homologação); testes `fase2_dupla_checagem.sql` e `fase2_liberacao_farmacia.sql`; branch `fase2/liberacao-farmacia` (sobre a `fase2/defeitos-leves`) |
 | 2 — Aprazamento assistido | Em produção | Migration `20261031000002_aprazamento_assistido.sql`; teste `supabase/tests/fase2_aprazamento_assistido.sql` |
 | 3 — Interações medicamentosas | Em produção (opção A: lista curada de pares críticos, com fonte por linha; a base comercial, opção B, fica como plano futuro) | Migration `20261031000005_interacoes_criticas.sql`; teste `supabase/tests/fase2_interacoes_criticas.sql`; opções em `produto/docs/pesquisa/interacoes-medicamentosas-fontes.md` |
 | 4 — Intercorrência estruturada | Em produção (os dois defeitos graves do roteiro foram corrigidos, PR #45) | Migration `20261031000003_intercorrencia.sql`; teste `supabase/tests/fase2_intercorrencia.sql` |
@@ -267,9 +267,9 @@ Todas as tarefas de 1 a 9 estão **em produção**. As PRs foram mergeadas no ma
 | 8 — Auditoria clínica | Em produção | Migration `20261031000007_auditoria_clinica.sql`; teste `supabase/tests/fase2_auditoria_clinica.sql` |
 | 9 — Painel da farmácia | Em produção (a correção do cache entrou pela PR #43) | Migration `20261031000008_painel_farmacia.sql`; teste `supabase/tests/fase2_painel_farmacia.sql` |
 | 10 — Réplica de leitura | Não agora (decisão do RT de 08/10) | — |
-| Defeitos leves do roteiro | Corrigidos e conferidos no navegador local; na homologação; falta o PR | Branch `fase2/defeitos-leves`, sem migration |
+| Defeitos leves do roteiro | Corrigidos; Fase 2 encerrada em 09/10/2026 com o aceite do RT (ver abaixo) (auditoria de 23/11/2026) | Branch `fase2/defeitos-leves`, sem migration |
 
-**Para encerrar a Fase 2 (com o RT):**
+**Para encerrar a Fase 2 (com o RT):** feito; a Fase 2 foi encerrada em 09/10/2026 (auditoria de 23/11/2026).
 1. Testar os 5 defeitos leves na homologação, pela seção 10 do roteiro. Depois, merge do PR `fase2/defeitos-leves`.
 1a. Testar a liberação da farmácia, pela tarefa 1 do roteiro, que foi refeita. Dar o "ok produção" da migration `20261101000002`, aplicada antes do merge, e depois fazer o merge do PR `fase2/liberacao-farmacia`.
 2. Fazer o teste final pelo roteiro `produto/docs/fase2/roteiro-teste-fase2.md`, na homologação.
@@ -1168,7 +1168,7 @@ aviso de vencimento e bloqueio por CBO; 5.5 homologação oficial e evidência, 
 - Teste `supabase/tests/fase5c_rnds_regulacao.sql` e rollback passaram na homologação, numa transação
   desfeita; o teste do documento (`scripts/interop/tests/regulacao.test.ts`) roda no CI. Conversões
   e pontos a conferir em `docs/rnds/MIRA.md`.
-- No master em 28/10/2026 (#313). **A migration não está na produção:** o RT decidiu esperar
+- No master em 28/10/2026 (#313). **Na produção desde 29/10/2026** (ver "Banco da RNDS na produção" abaixo (auditoria de 23/11/2026)). Histórico: **a migration não estava na produção:** o RT decidiu esperar
   (28/10/2026) e só a E2 da escala foi aplicada nesse dia. Ela pede um "ok produção" próprio, depois
   que o RT conferir a 5.1 e a 5.2 na homologação. Quando for, o push usa `db push --include-all`,
   porque a `20270202000003` (E2) entrou na produção fora da ordem dos números.
@@ -1527,7 +1527,7 @@ atendimento", "Em atendimento", "Saídas do plantão"), com quem passou do alvo 
 aba. As abas entraram no `master` antes de o RT conferi-las na homologação (o deploy de lá ainda estava na
 fila); a homologação foi conferida pelo RT depois, e a produção foi conferida pelo pacote publicado.
 
-**3.3, complemento: fila do PS em tabela dentro das abas (21/10/2026, em homologação, branch
+**3.3, complemento: fila do PS em tabela dentro das abas (21/10/2026; no master e na produção, commit c19fafd9 (auditoria de 23/11/2026); branch
 `feat/visual-3-3-tabela`).** O RT pediu uma pesquisa nos sistemas comerciais (Epic, Oracle/Cerner,
 athenaOne, Symphony, MV) e viu seis modelos montados com os componentes reais; escolheu a **tabela densa,
 mantendo as abas**. Entra só o que a fila já lê: cor, paciente (prioridade legal e faixa pela idade embaixo
@@ -2196,10 +2196,10 @@ deixar o modelo sempre carregado (só configuração do VPS, vale para homologa�
 **Ponto 1 aplicado em 27/10/2026, com "ok produção" do RT (PR #301).** O modelo de busca fica sempre
 carregado, e um aviso no cron a cada 10 min o recarrega depois de um restart. Medido direto no VPS,
 depois da mudança: pergunta completa em 4,3–6,0 s na homologação e 6,6 s na produção (antes: 22,9 s, e
-erros 500 em ~61 s). Como reverter: `infra/biblioteca-ollama-quente.md`. Falta conferir pela tela do app
+erros 500 em ~61 s). Como reverter: `infra/biblioteca-ollama-quente.md`. Conferido na produção em 17/11/2026: primeiro texto em 5,3 s (#884) (auditoria de 23/11/2026)
 e pelo `clinical_search_logs` nos próximos dias; só se ainda passar de 10 s mexer na reescrita.
 
-**Situação: registrado, aguardando a decisão do RT.** Nenhum ponto vira código antes de o RT dizer quais
+**Situação: os 10 pontos foram decididos e estão na produção ou fechados (auditoria de 23/11/2026).** Nenhum ponto vira código antes de o RT dizer quais
 entram, com qual prioridade e em qual fase. Achados do diagnóstico que pedem atenção: na homologação, uma
 pergunta ao "Perguntar à IA" parou em 68 s com erro 500 em 27/10 (ponto 1); o campo "Peso (kg)" da
 prescrição do leito não grava peso (ponto 11); a "Evolução médica" esconde o formulário sem dizer o
@@ -2207,7 +2207,7 @@ motivo (ponto 9); a "Impressão de prontuário" só abre pelo cartão que o RT p
 
 | Ordem sugerida | Prioridade sugerida | Pontos | Tipo |
 |---|---|---|---|
-| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); falta conferir pelo app** | bug |
+| 1 | P1 | 1 — "Perguntar à IA" lento: modelo de busca sempre carregado no VPS. **Aplicado em 27/10/2026 (PR #301); conferido na produção em 17/11/2026, primeiro texto em 5,3 s (#884) (auditoria de 23/11/2026)** | bug |
 | 2 | P1 | 11 — busca de medicamento e peso na prescrição do leito. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (P1, opção A). PR #308: o merge publicou a tela (e0f688f). Com o "ok produção" do RT, as migrations 20270203000001 (busca e o que falta para prescrever) e 20270203000002 (sinônimos: lista A aprovada pelo RT e 21 nomes comerciais conferidos na Anvisa) foram aplicadas na produção. Plano e listas em `docs/plantonista/PONTO-11-PRESCRICAO.md` e `PONTO-11-SINONIMOS.md` | bug + ajuste |
 | 3 | P1 | 9 — "Evolução médica" não cria; Diagnóstico dentro de Evolução. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (regra B e sub-aba). PR #319 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000003 (motivo de não poder evoluir; a evolução médica vale também para o plantão no setor do cadastro do paciente) foi aplicada na produção. O campo de CID saiu da evolução (resposta do RT em 28/10/2026, PR #323, só tela, em produção): a evolução mostra o diagnóstico vigente e grava o retrato dele. **Ponto 9 concluído.** Plano em `docs/plantonista/PONTO-09-EVOLUCAO.md` | bug + ajuste |
 | 4 | P1 | 12 — exame laboratorial em pedido separado de imagem e ECG. **Em produção desde 28/10/2026.** Aprovado pelo RT em 28/10/2026 (três pedidos, tela A). PR #330 juntado ao master (tela no ar); com o "ok produção" do RT, a migration 20270203000004 foi aplicada na produção e conferida (função, coluna, gatilho, permissões). No leito, laboratório, imagem e ECG saem em pedidos separados, pelo catálogo, ligados à internação. Em aberto (sem resposta do RT): a mesma regra no pedido rápido da porta e a folha impressa por pedido no leito. Plano em `docs/plantonista/PONTO-12-EXAMES.md` | nova (regra) |
@@ -2282,11 +2282,11 @@ Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia pa
 
 **Correção do médio M7 (teste ponta a ponta de 29/10/2026; decisão do RT em 31/10/2026, "Categoria em comum"): plantão sem categoria.** O plantão sem categoria pulava a trava de troca e passagem dentro da categoria. Agora, enquanto não tem categoria, troca e passagem só valem com quem tem categoria em comum com o dono; o gestor define a categoria de um ou de vários plantões de uma vez (`definir_categoria_plantoes`), e o mês do gestor mostra o aviso "N plantões sem categoria" com o atalho por pessoa ou um por um. Migration `20270208000017`, branch `fix/escala-m7-sem-categoria`; teste `escala_sem_categoria.sql` falha sem a migration e passa com ela (9 de 9), mais `src/lib/semCategoria.test.ts` (2 de 2); rollback testado; na homologação em 31/10 (004, 005, 002 e 009 E2E). Evidência em `docs/escala/CORRECAO-M7-SEM-CATEGORIA.md`. Produção: migration aplicada em 01/11/2026 (ok do RT, pela sessão principal), versão registrada; PR #382 mesclado. **Concluído.**
 
-**Médios do teste ponta a ponta de 29/10/2026 que dependem de decisão do RT (M2, M7, M9) e registros (M4, M12).** Propostas em `docs/escala/PROPOSTAS-MEDIOS-M2-M7-M9.md`, com a recomendação de cada uma: M2 (o que aprovar falta e saída do fixo faz: abrir vaga / encerrar a linha da fixa), M7 (plantão sem categoria: trocar só com quem tem categoria em comum + aviso ao gestor), M9 (gestor aprova o próprio pedido: com 2º fator e registro). Aguardam o RT; nada codificado. M4 (quem pede a troca não cancelava) fica resolvido pelo A4 (#357) quando ele for à produção. M12 (farmacêutico e faturamento pela escala) foi adiado de propósito na E3, não é bug; ligado em 11/11/2026 (opção A do RT).
+**Médios do teste ponta a ponta de 29/10/2026 que dependem de decisão do RT (M2, M7, M9) e registros (M4, M12).** Depois decididos e corrigidos: M2 fixo, M7 e M9 (registros mais abaixo nesta seção (auditoria de 23/11/2026)). Propostas em `docs/escala/PROPOSTAS-MEDIOS-M2-M7-M9.md`, com a recomendação de cada uma: M2 (o que aprovar falta e saída do fixo faz: abrir vaga / encerrar a linha da fixa), M7 (plantão sem categoria: trocar só com quem tem categoria em comum + aviso ao gestor), M9 (gestor aprova o próprio pedido: com 2º fator e registro). Aguardam o RT; nada codificado. M4 (quem pede a troca não cancelava) fica resolvido pelo A4 (#357) quando ele for à produção. M12 (farmacêutico e faturamento pela escala) foi adiado de propósito na E3, não é bug; ligado em 11/11/2026 (opção A do RT).
 
 **Correção do bug baixo do teste em produção de 31/10/2026, achado 3: "sua categoria" com todos os papéis.** Em `/minha-escala`, o subtítulo e o dia diziam "Plantonista e Telemedicina e Enfermeiro e…" para quem tem vários papéis na unidade. Agora a categoria da tela é o papel ativo (`categoriaDaTela`, `src/lib/categoriaEscala.ts`): o subtítulo e o dia mostram só ela, a equipe do dia lista os plantões dessa categoria (plantão sem categoria conta como plantonista, como no M1) mais os meus, e "Seus plantões em todas as unidades" (M11) aparece com o papel ativo de Telemedicina. As vagas abertas continuam as de `vagas_abertas` (todas as minhas categorias; a RPC não devolve a categoria da vaga). Só tela, sem migration; teste `src/lib/categoriaEscala.test.ts` (3 de 3). Branch `fix/escala-minha-categoria-papel-ativo`. Produção: sem migration; PR #376 mesclado em 31/10/2026 (publica a tela). **Concluído.**
 
-**Baixos do teste ponta a ponta de 29/10/2026 — situação, propostas e registro.** Em `docs/escala/BAIXOS-PROPOSTAS-E-REGISTRO.md`. Corrigidos: B2 (no #358, com o M1), B4 (#367), B8 (#366, em produção), B10 (#368). Resolvidos por outros itens: B1 (A1), B6, B7 e B9 (A4, #357), parte do B12 (M3 e B10). Propostas para o RT, nada codificado: B3 (escalar em dia passado: aceitar só como acerto retroativo do gestor), B5 (completar a ordem do papel mais forte), B11 (o portão do check-in deixa abrir a aba Escala para justificar a falta), B12 (bloquear a troca de plantão já iniciado; a passagem continua).
+**Baixos do teste ponta a ponta de 29/10/2026 — situação, propostas e registro.** Em `docs/escala/BAIXOS-PROPOSTAS-E-REGISTRO.md`. Corrigidos: B2 (no #358, com o M1), B4 (#367), B8 (#366, em produção), B10 (#368). Resolvidos por outros itens: B1 (A1), B6, B7 e B9 (A4, #357), parte do B12 (M3 e B10). Propostas para o RT (depois decididas e corrigidas: B3, B5, B11 e B12, registros nesta seção (auditoria de 23/11/2026)): B3 (escalar em dia passado: aceitar só como acerto retroativo do gestor), B5 (completar a ordem do papel mais forte), B11 (o portão do check-in deixa abrir a aba Escala para justificar a falta), B12 (bloquear a troca de plantão já iniciado; a passagem continua).
 
 **Decisões do RT em 31/10/2026 sobre as propostas da escala (M2, M7, M9, B3, B5, B11, B12).** M2, falta justificada aprovada: "Só registra" (opção B) — nada muda no código; o gestor abre a vaga à mão se quiser cobrir. M2, saída do fixo aprovada: "Encerra a fixa" (opção A). M7: "Categoria em comum" (opção A), com o aviso "N plantões sem categoria" e o atalho no mês do gestor. M9: "Pode, com 2º fator" (opção A). B3: "Aceita como retroativo" (opção A). B5: "Completar a lista" (opção A), com teste de cada par afetado. B11: "Libera só a aba Escala" (opção A). B12: "Passa sim, troca não" (opção A). Cada uma em PR próprio (teste primeiro, migration expand/contract com rollback testado, homologação, "ok produção" do RT antes do merge). Registro em `docs/escala/PROPOSTAS-MEDIOS-M2-M7-M9.md` e `docs/escala/BAIXOS-PROPOSTAS-E-REGISTRO.md`.
 
@@ -2330,7 +2330,7 @@ Ajuste da E4 (pedido do RT em 28/10/2026: "só tem justificar falta"): no dia pa
 
 **Conferido sem bug:** calendários da escala, contas de competência no frontend (`somarMeses`, `competenciasDaValidade`, `competenciaDaData`), datas das folhas impressas, 29 de fevereiro em `idadeEm`, cron do censo, `data_atual`, `competencia_limites`/`competencia_de`/`competencia_sugerida`.
 
-**Pergunta de desenho, não verificada:** o BI põe o turno `noite` pelo dia da chegada (`filtros_bi`), então o plantão de 19h às 7h aparece partido em duas datas.
+**Resolvida no bloco rápido de 10/11/2026, item 5 (#538) (auditoria de 23/11/2026).** Pergunta de desenho: o BI põe o turno `noite` pelo dia da chegada (`filtros_bi`), então o plantão de 19h às 7h aparece partido em duas datas.
 
 ## Teste ponta a ponta da rede — pedido do RT em 06/11/2026
 
@@ -2338,8 +2338,8 @@ Pedido do RT: "criar n número de possibilidades para testar todo o fluxo de tod
 
 | # | Prioridade | Tarefa | Estado |
 |---|---|---|---|
-| 1 | P0 | Catálogo de cenários (20 ou mais) cobrindo todos os papéis e a rede: UBS, UPA, hospital, regulação, farmácia, faturamento e custos. Os custos são fictícios e marcados como exemplo. Nada é gravado no banco. Fica em `docs/teste-rede/` | Em andamento (06/11/2026) |
-| 2 | P1 | Carga dos cenários na homologação (pacientes, atendimentos e custos fictícios) e execução com login, papel por papel | Aval do RT em 06/11/2026. Ambiente F5 ampliado pelo `scripts/e2e/46_rede_fase5_ampliacao.sql`: Secretaria e módulo de rede, setores pediátrico, isolamento, UTI e obstetrícia, 9 contas novas, CNS e CBO, escala até 13/11. A execução vem em seguida |
+| 1 | P0 | Catálogo de cenários (20 ou mais) cobrindo todos os papéis e a rede: UBS, UPA, hospital, regulação, farmácia, faturamento e custos. Os custos são fictícios e marcados como exemplo. Nada é gravado no banco. Fica em `docs/teste-rede/` | Feito: execuções A01 a D12 em `docs/teste-rede/` e fila ITEM-09 a ITEM-19 na produção (auditoria de 23/11/2026) |
+| 2 | P1 | Carga dos cenários na homologação (pacientes, atendimentos e custos fictícios) e execução com login, papel por papel | Aval do RT em 06/11/2026. Ambiente F5 ampliado pelo `scripts/e2e/46_rede_fase5_ampliacao.sql`: Secretaria e módulo de rede, setores pediátrico, isolamento, UTI e obstetrícia, 9 contas novas, CNS e CBO, escala até 13/11. Executado (A01 a D12) (auditoria de 23/11/2026) |
 | 3 | P2 | Relatório de achados da execução, com a correção de cada um na sua própria branch | A01 executado em 06/11/2026 (`docs/teste-rede/EXECUCAO-A01.md`). Decisão do RT no mesmo dia: o médico da porta que pôs o paciente em observação deve poder encerrá-la (hoje é recusado). Fica na lista de correções |
 
 **11/11/2026, B P2-1 (alerta de sepse do adulto, que estava parado à espera da fonte):** diagnóstico em `docs/teste-rede/SEPSE-ADULTO-ALERTA-DIAGNOSTICO.md` (#598). O RT escolheu A: o mesmo gatilho de infecção da criança e NEWS2 de 5 ou mais (pela `calcular_acuidade`; rastreio pelo NEWS2 da SSC 2026). `alertas_sepse` ganhou o laço do adulto, com os níveis `news2_rastreio` (5 a 6) e `news2_alto` (7 ou mais), e o painel de internação mostra o NEWS2 (#599). A migration `20270405000002` está na homologação e na produção (ok do RT, md5 iguais), com o rollback testado. Tela publicada na produção e na homologação em 11/11/2026, conferida no pacote publicado.
@@ -2431,7 +2431,7 @@ Origem: levantamento das decisões ainda abertas no BACKLOG e nos documentos, fe
 
 Origem: seção 3 do relatório do teste de ponta a ponta de 11/10/2026 (`produto/docs/teste-e2e/RELATORIO_E2E_2026-10-11.md`), com as funções que o roteiro esperava e o produto não tinha. Estavam "aguardando a decisão do RT sobre a entrada no backlog". Em 10/11/2026 conferi cada uma contra o código: as nove primeiras continuam abertas, a 10 está parcial (só o painel do administrador mostra óbitos) e a 11 existe, mas não foi testada. O RT escolheu "A, todas nessa ordem".
 
-**Trilha concluída em 10/11/2026:** as lacunas 1 a 10 estão na produção; a 11 teve as regras testadas e falta o envio real com login, pelo roteiro.
+**Trilha concluída em 10/11/2026:** as lacunas 1 a 10 estão na produção; a 11 foi concluída em 11/11/2026 com o envio real do RT (#579) (auditoria de 23/11/2026).
 
 Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as opções para o RT decidir antes de qualquer código; depois, branch e PR próprios (`lacunas/<nome>`), homologação e, com migration, o "ok produção". Conteúdo clínico ou legal só com fonte citada.
 
