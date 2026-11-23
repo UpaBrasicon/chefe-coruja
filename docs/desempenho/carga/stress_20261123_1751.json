@@ -1,0 +1,304 @@
+{
+    "metrics": {
+        "http_req_receiving": {
+            "min": 0.025508,
+            "med": 0.158647,
+            "max": 209.661642,
+            "p(90)": 1.3365742000000007,
+            "p(95)": 2.187345999999996,
+            "avg": 0.64142288061706
+        },
+        "vus_max": {
+            "value": 450,
+            "min": 450,
+            "max": 450
+        },
+        "http_req_blocked": {
+            "avg": 0.21826362542494118,
+            "min": 0.00014,
+            "med": 0.000731,
+            "max": 107.586968,
+            "p(90)": 0.001082,
+            "p(95)": 0.001182
+        },
+        "data_sent": {
+            "count": 14786965,
+            "rate": 12021.852936643652
+        },
+        "http_reqs": {
+            "count": 35005,
+            "rate": 28.45918429151696
+        },
+        "checks": {
+            "passes": 35005,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.99": false
+            },
+            "value": 1
+        },
+        "http_req_duration{tipo:escrita}": {
+            "min": 23.091873,
+            "med": 43.7518015,
+            "max": 857.778132,
+            "p(90)": 88.60273680000007,
+            "p(95)": 121.36662180000003,
+            "avg": 56.71017998602481,
+            "thresholds": {
+                "p(95)<1500": false
+            }
+        },
+        "http_req_duration{tipo:leitura}": {
+            "avg": 77.7351023908796,
+            "min": 17.992528,
+            "med": 42.791944,
+            "max": 4110.747889,
+            "p(90)": 102.704225,
+            "p(95)": 279.083947,
+            "thresholds": {
+                "p(95)<800": false,
+                "p(99)<2000": false
+            }
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 35005,
+            "thresholds": {
+                "rate<0.01": false,
+                "rate<0.05": false
+            },
+            "value": 0
+        },
+        "http_req_connecting": {
+            "min": 0,
+            "med": 0,
+            "max": 16.426415,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.05612813920868443
+        },
+        "iteration_duration": {
+            "med": 53448.991137,
+            "max": 113106.728976,
+            "p(90)": 85538.00568639999,
+            "p(95)": 91652.59902,
+            "avg": 55814.3782504916,
+            "min": 10945.885492
+        },
+        "vus": {
+            "value": 2,
+            "min": 0,
+            "max": 450
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 77.34829907624676,
+            "min": 17.992528,
+            "med": 42.814809,
+            "max": 4110.747889,
+            "p(90)": 102.33274520000003,
+            "p(95)": 275.8403651999997
+        },
+        "http_req_tls_handshaking": {
+            "min": 0,
+            "med": 0,
+            "max": 92.031882,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.1564988595629195
+        },
+        "http_req_waiting": {
+            "max": 4108.989622,
+            "p(90)": 100.6501566000002,
+            "p(95)": 273.8980137999995,
+            "avg": 76.4379312373949,
+            "min": 17.758899,
+            "med": 41.986292
+        },
+        "http_req_duration": {
+            "avg": 77.34829907624676,
+            "min": 17.992528,
+            "med": 42.814809,
+            "max": 4110.747889,
+            "p(90)": 102.33274520000003,
+            "p(95)": 275.8403651999997
+        },
+        "http_req_sending": {
+            "min": 0.037045,
+            "med": 0.197125,
+            "max": 69.966341,
+            "p(90)": 0.3376062000000005,
+            "p(95)": 0.5299139999999981,
+            "avg": 0.26894495823453796
+        },
+        "data_received": {
+            "rate": 527593.5526052138,
+            "count": 648943839
+        },
+        "iterations": {
+            "count": 5129,
+            "rate": 4.169894478822753
+        }
+    },
+    "root_group": {
+        "groups": {},
+        "checks": {
+                "rpc:meu_plantao_agora 2xx": {
+                    "path": "::rpc:meu_plantao_agora 2xx",
+                    "id": "418184b9d3efa5e974e2ed02e2636917",
+                    "passes": 2432,
+                    "fails": 0,
+                    "name": "rpc:meu_plantao_agora 2xx"
+                },
+                "rpc:minhas_notificacoes 2xx": {
+                    "id": "5e7c76ee2738a19281bb1bb788eb51bc",
+                    "passes": 2432,
+                    "fails": 0,
+                    "name": "rpc:minhas_notificacoes 2xx",
+                    "path": "::rpc:minhas_notificacoes 2xx"
+                },
+                "rpc:enfermagem_leitos 2xx": {
+                    "name": "rpc:enfermagem_leitos 2xx",
+                    "path": "::rpc:enfermagem_leitos 2xx",
+                    "id": "3e1101347b25685534da3b6bb3c4ab5c",
+                    "passes": 1311,
+                    "fails": 0
+                },
+                "rpc:situacao_leitos 2xx": {
+                    "passes": 3081,
+                    "fails": 0,
+                    "name": "rpc:situacao_leitos 2xx",
+                    "path": "::rpc:situacao_leitos 2xx",
+                    "id": "30d158c3d5d8d77c06a2e76e7e064d96"
+                },
+                "rpc:painel_observacao 2xx": {
+                    "name": "rpc:painel_observacao 2xx",
+                    "path": "::rpc:painel_observacao 2xx",
+                    "id": "a860efe65704c35e27a9ae9c873d7572",
+                    "passes": 2432,
+                    "fails": 0
+                },
+                "rpc:painel_gestor 2xx": {
+                    "name": "rpc:painel_gestor 2xx",
+                    "path": "::rpc:painel_gestor 2xx",
+                    "id": "39b3346fdfe1ac26f2363057fcdae2cc",
+                    "passes": 649,
+                    "fails": 0
+                },
+                "rpc:fila_da_porta 2xx": {
+                    "passes": 961,
+                    "fails": 0,
+                    "name": "rpc:fila_da_porta 2xx",
+                    "path": "::rpc:fila_da_porta 2xx",
+                    "id": "9339cb211fd917cd9ad5faa9a42aa77c"
+                },
+                "rpc:buscar_pacientes 2xx": {
+                    "name": "rpc:buscar_pacientes 2xx",
+                    "path": "::rpc:buscar_pacientes 2xx",
+                    "id": "049741cefa7e613e29eba2c3c84355ed",
+                    "passes": 961,
+                    "fails": 0
+                },
+                "rpc:tendencia_acuidade 2xx": {
+                    "path": "::rpc:tendencia_acuidade 2xx",
+                    "id": "fc02ece0d4d0ef403f0e661f49ab2a72",
+                    "passes": 2425,
+                    "fails": 0,
+                    "name": "rpc:tendencia_acuidade 2xx"
+                },
+                "rpc:alergias_do_paciente 2xx": {
+                    "name": "rpc:alergias_do_paciente 2xx",
+                    "path": "::rpc:alergias_do_paciente 2xx",
+                    "id": "17ce7ed2c8e693d456d7793c51cb5e0f",
+                    "passes": 2425,
+                    "fails": 0
+                },
+                "rpc:prescricao_vigente 2xx": {
+                    "id": "20b8629dcf65dc38bcd7ebd4cd29ae7f",
+                    "passes": 3727,
+                    "fails": 0,
+                    "name": "rpc:prescricao_vigente 2xx",
+                    "path": "::rpc:prescricao_vigente 2xx"
+                },
+                "rpc:enfermagem_pacientes_do_setor 2xx": {
+                    "name": "rpc:enfermagem_pacientes_do_setor 2xx",
+                    "path": "::rpc:enfermagem_pacientes_do_setor 2xx",
+                    "id": "01b978d8c8e336335dfb49d2bb3e3793",
+                    "passes": 1311,
+                    "fails": 0
+                },
+                "rpc:ocupacao_setores 2xx": {
+                    "name": "rpc:ocupacao_setores 2xx",
+                    "path": "::rpc:ocupacao_setores 2xx",
+                    "id": "61ab876eda026f65acfe4a2795df7348",
+                    "passes": 649,
+                    "fails": 0
+                },
+                "rpc:fila_checagem 2xx": {
+                    "name": "rpc:fila_checagem 2xx",
+                    "path": "::rpc:fila_checagem 2xx",
+                    "id": "96827a79f3b02a97b8a933963c0f56ad",
+                    "passes": 1303,
+                    "fails": 0
+                },
+                "rpc:buscar_medicamento 2xx": {
+                    "path": "::rpc:buscar_medicamento 2xx",
+                    "id": "19c1dc450654a0444e194fe7d06095f1",
+                    "passes": 2375,
+                    "fails": 0,
+                    "name": "rpc:buscar_medicamento 2xx"
+                },
+                "rpc:escala_da_unidade 2xx": {
+                    "path": "::rpc:escala_da_unidade 2xx",
+                    "id": "9ab5fb99eeff210f06937ca69d8debbc",
+                    "passes": 2325,
+                    "fails": 0,
+                    "name": "rpc:escala_da_unidade 2xx"
+                },
+                "rpc:escala_mes_gestor 2xx": {
+                    "path": "::rpc:escala_mes_gestor 2xx",
+                    "id": "e9c3a694b14fd3e9ee6ff027936ae2a6",
+                    "passes": 645,
+                    "fails": 0,
+                    "name": "rpc:escala_mes_gestor 2xx"
+                },
+                "rpc:presencas_do_dia_gestor 2xx": {
+                    "path": "::rpc:presencas_do_dia_gestor 2xx",
+                    "id": "eb51002ce84351f4360f803858c529e0",
+                    "passes": 645,
+                    "fails": 0,
+                    "name": "rpc:presencas_do_dia_gestor 2xx"
+                },
+                "rpc:contatos_chat 2xx": {
+                    "name": "rpc:contatos_chat 2xx",
+                    "path": "::rpc:contatos_chat 2xx",
+                    "id": "39b4d599795f0a0579c32a006e7eac21",
+                    "passes": 2272,
+                    "fails": 0
+                },
+                "rpc:prescrever 2xx": {
+                    "name": "rpc:prescrever 2xx",
+                    "path": "::rpc:prescrever 2xx",
+                    "id": "12a5595acf4159712ad30a6ee5c26cf2",
+                    "passes": 361,
+                    "fails": 0
+                },
+                "rpc:enviar_mensagem 2xx": {
+                    "fails": 0,
+                    "name": "rpc:enviar_mensagem 2xx",
+                    "path": "::rpc:enviar_mensagem 2xx",
+                    "id": "92a603a9b3111df372cb23a6a01fc1b5",
+                    "passes": 233
+                },
+                "rpc:registrar_ficha 2xx": {
+                    "name": "rpc:registrar_ficha 2xx",
+                    "path": "::rpc:registrar_ficha 2xx",
+                    "id": "3474ee3a6f0887781fecff579df5a22d",
+                    "passes": 50,
+                    "fails": 0
+                }
+            },
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+}
