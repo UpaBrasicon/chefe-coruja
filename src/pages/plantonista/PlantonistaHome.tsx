@@ -163,6 +163,13 @@ function CentralCompleta() {
   const resultados = useMemo(() => buscarLocal(consulta), [consulta])
   const perguntavel = consulta.trim().length >= 3
 
+  // "Perguntar à IA" da barra de baixo (?ia=1) e a busca flutuante (?busca=1) abrem
+  // esta tela com o campo já em foco (item 6, CM1 e CM7).
+  const focarAoAbrir = params.get('ia') === '1' || params.get('busca') === '1'
+  useEffect(() => {
+    if (focarAoAbrir) campoBusca.current?.focus()
+  }, [focarAoAbrir])
+
   // Atalho "/" foca a busca (fora de campos de texto).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

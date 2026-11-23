@@ -27,7 +27,8 @@ import { NotificacoesTurnoBanner } from '@/components/plantonista/NotificacoesTu
 import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
-import { abasEstreitasPlantonista, agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { AvisoBarraMedico, BarraMedico, BuscaFlutuante } from '@/components/casca/BarraMedico'
+import { agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
@@ -501,7 +502,6 @@ function Casca() {
             plantao={{ em: emPlantao, rotulo: fimTurno ? `Plantão até ${fimTurno}` : 'Plantão', to: '/plantao' }}
             avatar={menu(38)}
             onSair={() => setSaidaAberta(true)}
-            abas={abasEstreitasPlantonista(tipoUnidade)}
             notas={notas}
           />
         ) : (
@@ -519,6 +519,7 @@ function Casca() {
         )}
         <FitaDoSinal sinal={sinal} onTentar={() => void tentar()} />
         <AvisoFimSessao />
+        {topoEstreito && <AvisoBarraMedico />}
 
         <NotificacoesTurnoBanner unidadeId={ehPlantonista ? unidadeId : undefined} habilitado={ehPlantonista} />
         {checkinPendente && situacaoCheckin && (
@@ -529,7 +530,8 @@ function Casca() {
         )}
 
         {/* De 768px para cima só a topbar fica fora da área que rola. */}
-        <main className="flex-1 pb-[calc(96px+env(safe-area-inset-bottom))] md:overflow-y-auto md:overscroll-contain md:pb-[72px]">
+        <main className={cn('flex-1 pb-[calc(96px+env(safe-area-inset-bottom))] md:overflow-y-auto md:overscroll-contain md:pb-[72px]',
+          topoEstreito && 'md:pb-[calc(96px+env(safe-area-inset-bottom))] lg:pb-[72px]')}>
           <div className="cc-pagina cc-coluna mx-auto w-full px-4 pt-5 md:px-7 md:pt-7">
             {status === 'carregando' ? (
               <div className="flex h-40 items-center justify-center">
@@ -576,6 +578,14 @@ function Casca() {
         </nav>
       )}
 
+      {/* Médico abaixo de 1024px: a barra de baixo com 5 itens e a busca flutuante (item 6, CM1 e CM7). */}
+      {topoEstreito && (
+        <>
+          <BarraMedico itens={itens} notas={notas} tipoUnidade={tipoUnidade} />
+          <BuscaFlutuante acimaDasMensagens={chatHabilitado && !chatAbertoEfetivo} />
+        </>
+      )}
+
       <Paleta
         aberta={paleta.aberta}
         onAbertaChange={paleta.setAberta}
@@ -586,7 +596,7 @@ function Casca() {
 
       {chatHabilitado && (
         <>
-          {!chatAbertoEfetivo && <ChatFab naoLidas={totalNaoLidas} onAbrir={() => setChatAberto(true)} />}
+          {!chatAbertoEfetivo && <ChatFab naoLidas={totalNaoLidas} onAbrir={() => setChatAberto(true)} acimaDaBarraAte1024={topoEstreito} />}
           <ChatDrawer aberto={chatAbertoEfetivo} onFechar={() => setChatAberto(false)} />
           <AvisoDeMensagem />
         </>

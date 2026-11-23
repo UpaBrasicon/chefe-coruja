@@ -20,7 +20,7 @@ function GrupoDoGuia({ grupo }: { grupo: NonNullable<ReturnType<typeof cartaoDoG
   return (
     <div className="flex flex-col gap-4">
       <Link to="/plantonista" className="flex min-h-11 items-center gap-2 self-start text-controle font-semibold text-acao no-underline">
-        <ArrowLeft className="size-5" aria-hidden /> Guia rápido
+        <ArrowLeft className="size-5" aria-hidden /> Início
       </Link>
       <TituloPagina titulo={grupo.nome} className="mb-0" />
       <ul className="flex flex-col gap-3">

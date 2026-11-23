@@ -49,7 +49,7 @@ function CabecalhoDeBolso({ titulo, descricao }: { titulo: string; descricao: st
   return (
     <>
       <Link to="/plantonista" className="flex min-h-11 items-center gap-2 self-start text-controle font-semibold text-acao no-underline">
-        <ArrowLeft className="size-5" aria-hidden /> Guia rápido
+        <ArrowLeft className="size-5" aria-hidden /> Início
       </Link>
       <TituloPagina titulo={titulo} descricao={descricao} className="mb-0" />
       {p.modo !== 'pediatrico' ? (
