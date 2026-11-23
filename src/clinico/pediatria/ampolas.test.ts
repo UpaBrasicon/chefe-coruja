@@ -27,6 +27,8 @@ import { CLORETO_CA_TABELA7, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEM
 import { calcularDoseLivro } from './fonteP4.ts'
 import { DOSES_MENINGITE, DOSES_PROFILAXIA } from './meningitePed.ts'
 import { DROGAS_PCR, OUTRAS_BRADI } from '../adulto/pcr.ts'
+import { SEGUNDA_LINHA_ANAFILAXIA } from '../adulto/anafilaxia.ts'
+import { ADJUVANTES_SAP } from '../adulto/sedacaoProcedimento.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -96,6 +98,8 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     'adulto-pcr': new Set(DROGAS_PCR.map((d) => d.id)),
     'adulto-bradi': new Set(['atropina', 'aminofilina']),
     'adulto-taqui': new Set(['adenosina', 'amiodarona', 'lidocaina', 'magnesio']),
+    'adulto-anafilaxia': new Set(SEGUNDA_LINHA_ANAFILAXIA.map((d) => d.id)),
+    'adulto-sedacao': new Set([...ADJUVANTES_SAP.map((a) => a.id), 'flumazenil', 'naloxona']),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -108,7 +112,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-23.4')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.5')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -497,4 +501,24 @@ test('adulto A0 e A1 (MA1 a MA7 e A1-1 a A1-4 = A do RT, 23/11/2026): cadastro �
   // KCl 20 mEq = 14,9 mL da 10% ou 7,8 mL da 19,1%; aminofilina 250 mg = 10,4 mL
   assert.ok(Math.abs(volumeDaAmpola([20, 20], AMPOLAS['kcl-meq'][1])!.ml[0] - 7.8125) < 1e-9)
   assert.ok(Math.abs(volumeDaAmpola([250, 250], AMPOLAS.aminofilina[0])!.ml[0] - 10.4167) < 1e-3)
+})
+
+test('adulto A2, primeira parte (A2-1 a A2-4 do RT, 23/11/2026): anafilaxia e sedação', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  assert.deepEqual(ids('adulto-anafilaxia:difenidramina'), [['difenidramina-50', 50, false]])
+  assert.deepEqual(ids('adulto-anafilaxia:magnesio').map((a) => a[1]), [0.1, 0.5])
+  assert.equal(ITENS_COM_AMPOLA['adulto-anafilaxia:magnesio'].diluir, true) // 2 g em 20 a 30 min
+  // o número da dose bate com o texto do manual (MA2)
+  for (const d of SEGUNDA_LINHA_ANAFILAXIA.filter((x) => x.doseNum)) {
+    assert.ok(d.dose.startsWith(d.doseNum![0] === d.doseNum![1] ? `${d.doseNum![0]} ${d.unidade}` : `${d.doseNum![0]} a ${d.doseNum![1]} ${d.unidade}`), d.id)
+  }
+  for (const c of ['adulto-sedacao:lidocaina', 'adulto-sedacao:lidocaina-diluida']) assert.deepEqual(ids(c).map((a) => a[1]), [10, 20], c)
+  for (const c of ['adulto-sedacao:midazolam-premed', 'adulto-sedacao:midazolam-emersao', 'adulto-sedacao:midazolam-mioclonia']) assert.deepEqual(ids(c).map((a) => a[1]), [1, 5], c)
+  assert.deepEqual(ids('adulto-sedacao:fentanil-teto'), [['fentanila-50', 50, false]])
+  assert.deepEqual(ids('adulto-sedacao:flumazenil'), [['flumazenil-0-1', 0.1, false]])
+  assert.deepEqual(ids('adulto-sedacao:naloxona'), [['naloxona-0-4', 0.4, false]])
+  // haloperidol espera a bula (A2-4); difenidramina 50 mg = 1 mL; flumazenil 0,2 mg = 2 mL
+  assert.deepEqual(ampolasDoItem('adulto-sedacao:haloperidol-premed'), [])
+  assert.deepEqual(volumeDaAmpola([50, 50], AMPOLAS.difenidramina[0])?.ml, [1, 1])
+  assert.deepEqual(volumeDaAmpola([0.2, 0.2], AMPOLAS.flumazenil[0])?.ml, [2, 2])
 })

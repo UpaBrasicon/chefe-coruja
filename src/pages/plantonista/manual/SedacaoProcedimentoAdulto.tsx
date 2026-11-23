@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
@@ -95,13 +96,15 @@ export function SedacaoProcedimentoAdulto() {
       <Bloco titulo="Adjuvantes citados na Tabela 2">
         {ADJUVANTES_SAP.map((a) => {
           const r = calcularAdjuvante(a, peso)
-          return <LinhaManual key={a.id} nome={a.nome} texto={a.texto} conta={r ? <strong>{faixa(r)} {a.unidade}</strong> : 'informe o peso'} pagina={a.pagina} />
+          return <LinhaManual key={a.id} nome={a.nome} texto={a.texto} conta={r ? <strong>{faixa(r)} {a.unidade}</strong> : 'informe o peso'} pagina={a.pagina}
+            extra={r ? <EscolhaDaAmpola chave={`adulto-sedacao:${a.id}`} dose={r} unidade={a.unidade} /> : undefined} />
         })}
       </Bloco>
 
       <Bloco titulo="Reversores">
-        <LinhaManual nome="Flumazenil (benzodiazepínico)" texto={FLUMAZENIL.texto} conta={<>até <strong>{br(FLUMAZENIL.maxCicloMg)} mg</strong> por ciclo · <strong>{br(FLUMAZENIL.maxHoraMg)} mg/h</strong></>} pagina={FLUMAZENIL.pagina} />
-        <LinhaManual nome="Naloxona (opioide)" texto={NALOXONA.texto} conta={<>inicial <strong>{faixa(NALOXONA.inicialMg)} mg</strong></>} pagina={NALOXONA.pagina} />
+        <LinhaManual nome="Flumazenil (benzodiazepínico)" texto={FLUMAZENIL.texto} conta={<>até <strong>{br(FLUMAZENIL.maxCicloMg)} mg</strong> por ciclo · <strong>{br(FLUMAZENIL.maxHoraMg)} mg/h</strong></>} extra={<EscolhaDaAmpola chave="adulto-sedacao:flumazenil" dose={[FLUMAZENIL.doseMg, FLUMAZENIL.doseMg]} unidade="mg" />} pagina={FLUMAZENIL.pagina} />
+        <LinhaManual nome="Naloxona (opioide)" texto={NALOXONA.texto} conta={<>inicial <strong>{faixa(NALOXONA.inicialMg)} mg</strong></>} pagina={NALOXONA.pagina}
+          extra={<EscolhaDaAmpola chave="adulto-sedacao:naloxona" dose={NALOXONA.inicialMg} unidade="mg" />} />
       </Bloco>
 
       <Bloco titulo="Níveis de sedoanalgesia (Tabela 1, p. 156–158)" descricao="A sedação é contínua, sem marcos definitivos entre os níveis.">

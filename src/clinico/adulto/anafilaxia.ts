@@ -37,9 +37,9 @@ const PAG_ANAF = 'cap. 11 Anafilaxia, p. 175–179'
 
 export const fichaAnafilaxiaAdulto: Ficha = {
   ...fichaAdulto('adulto-anafilaxia', 'Anafilaxia — adulto', PAG_ANAF),
-  versao: '2026-11-06.1',
+  versao: '2026-11-23.1',
   fontes: [pagina(PAG_ANAF), WAO_2020, PP_ANAFILAXIA_2023, GALEN_2024],
-  revisadoEm: '06/11/2026 (nota do consenso GALEN 2024; revisão PubMed, itens médios; WAO 2020 e Practice Parameter 2023 desde 25/10/2026; manual mantido como base)',
+  revisadoEm: '23/11/2026 (lote A2 da dose em mL: difenidramina e magnésio da segunda linha ganham o número da dose ao lado do texto, para a escolha da ampola; texto e dose sem mudança; aguarda aprovação do RT); 06/11/2026 (nota do consenso GALEN 2024; revisão PubMed, itens médios; WAO 2020 e Practice Parameter 2023 desde 25/10/2026; manual mantido como base)',
 }
 
 export type Faixa = [number, number]
@@ -99,18 +99,19 @@ export function volumeChoqueMl(pesoKg: number): Faixa | null {
   return valido(pesoKg) ? [10 * pesoKg, 20 * pesoKg] : null
 }
 
-export type ItemAnafilaxia = { id: string; nome: string; dose: string; pagina: string; nota?: string }
+/** dose: o texto do manual; doseNum e unidade: o mesmo número, para o volume em mL (MA2, lote A2) */
+export type ItemAnafilaxia = { id: string; nome: string; dose: string; pagina: string; nota?: string; doseNum?: Faixa; unidade?: 'mg' | 'g' }
 
 export const SEGUNDA_LINHA_ANAFILAXIA: ItemAnafilaxia[] = [
   { id: 'hidrocortisona', nome: 'Hidrocortisona', dose: '200 a 300 mg IV', pagina: 'p. 177' },
   { id: 'metilprednisolona', nome: 'Metilprednisolona', dose: 'dose máxima de 125 mg', pagina: 'p. 177',
     nota: 'O capítulo dá a dose por kg só para criança (1–2 mg/kg) e o teto de 125 mg; não traz dose própria do adulto.' },
   { id: 'prednisona', nome: 'Prednisona (na alta)', dose: '40 mg por 3 a 5 dias, se manifestações cutâneas persistentes', pagina: 'p. 177' },
-  { id: 'difenidramina', nome: 'Difenidramina', dose: '25 a 50 mg IV', pagina: 'p. 177' },
+  { id: 'difenidramina', nome: 'Difenidramina', dose: '25 a 50 mg IV', pagina: 'p. 177', doseNum: [25, 50], unidade: 'mg' },
   { id: 'ranitidina', nome: 'Ranitidina', dose: '50 mg IV', pagina: 'p. 177' },
   { id: 'fenoterol', nome: 'Fenoterol', dose: '100–250 µg inalatório', pagina: 'p. 177' },
   { id: 'ipratropio', nome: 'Ipratrópio', dose: '250–500 µg inalatório', pagina: 'p. 177' },
-  { id: 'magnesio', nome: 'Sulfato de magnésio (broncoespasmo grave)', dose: '2 g EV durante 20 a 30 minutos', pagina: 'p. 177' },
+  { id: 'magnesio', nome: 'Sulfato de magnésio (broncoespasmo grave)', dose: '2 g EV durante 20 a 30 minutos', pagina: 'p. 177', doseNum: [2, 2], unidade: 'g' },
   { id: 'glucagon', nome: 'Glucagon (usuário de betabloqueador)', dose: '1 mg IV a cada 5 minutos até resolver a hipotensão, seguido de infusão de 5 a 15 µg/min', pagina: 'p. 177',
     nota: 'Divergência interna: no cap. 15 (p. 229), para intoxicação por betabloqueador, o mesmo livro dá bolus de 5–10 mg e infusão de 1–5 mg/h. Aqui fica o texto do cap. 11.' },
   { id: 'icatibanto', nome: 'Icatibanto (angioedema hereditário)', dose: '30 mg SC, pode ser repetido a cada 6 horas (máximo de 3 injeções = 90 mg)', pagina: 'p. 179' },
