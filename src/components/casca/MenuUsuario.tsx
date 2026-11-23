@@ -1,8 +1,11 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
-import { Building2, Lock, LogOut, Monitor, Moon, Repeat, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
+import { Building2, Compass, Lock, LogOut, Monitor, Moon, Repeat, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { BotaoLinha } from '@/components/ui/botao-linha'
+import { guiaDoPapel } from '@/domain/primeirosPassos'
+import { reabrirPrimeirosPassos } from '@/hooks/usePrimeirosPassos'
 import { Button } from '@/components/ui/button'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { TEMA_ESCURO_LIBERADO, TEMAS, type Tema } from '@/lib/tema'
@@ -36,6 +39,7 @@ export function MenuUsuario({
   onTrocarPapel,
   onSair,
   onBloquear,
+  primeirosPassos,
   tema = 'automatico',
   onTrocarTema,
   tamanho = 32,
@@ -51,6 +55,8 @@ export function MenuUsuario({
   onSair: () => void
   /** Bloqueia a tela agora (quem sai da frente do computador). */
   onBloquear: () => void
+  /** Fase 1, item 13: para reabrir o cartão "Primeiros passos" do papel. */
+  primeirosPassos?: { perfilId?: string; inicio: string; rotas: string[] }
   tema?: Tema
   onTrocarTema?: (tema: Tema) => void
   tamanho?: 32 | 38
@@ -156,6 +162,13 @@ export function MenuUsuario({
                 <UserRound className="size-4 text-tinta-sussurro" aria-hidden />
                 Meu perfil
               </button>
+              {primeirosPassos?.perfilId && papelAtivo && guiaDoPapel(papelAtivo, primeirosPassos.rotas) && (
+                <BotaoLinha variante="linha" onClick={() => { reabrirPrimeirosPassos(primeirosPassos.perfilId!, papelAtivo); ir(primeirosPassos.inicio) }}
+                  className="min-h-11 items-center gap-2.5 rounded-controle border-0 px-2.5 py-2.5 text-controle text-tinta hover:bg-trilha">
+                  <Compass className="size-4 text-tinta-sussurro" aria-hidden />
+                  Primeiros passos
+                </BotaoLinha>
+              )}
               {papelAtivo === 'plantonista' && (
                 <button type="button" onClick={() => ir('/preferencias-prescricao')} className="flex min-h-11 items-center gap-2.5 rounded-controle px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha">
                   <SlidersHorizontal className="size-4 text-tinta-sussurro" aria-hidden />
