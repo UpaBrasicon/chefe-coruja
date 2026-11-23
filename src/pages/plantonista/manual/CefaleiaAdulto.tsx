@@ -17,6 +17,7 @@ import { textoCopia } from '@/domain/copiaCalculo'
 import { numero } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 
 const Ir = ({ para, children }: { para: string; children: ReactNode }) => <Link to={para} className="text-acao hover:underline">{children}</Link>
@@ -96,7 +97,10 @@ export function CefaleiaAdulto() {
 
       {Object.values(TRATAMENTO).map((t) => (
         <Bloco key={t.titulo} titulo={`${t.titulo} — tratamento da crise`}>
-          {t.itens.map((i) => <LinhaManual key={i.droga} nome={i.droga} texto={i.texto} pagina={i.pagina} />)}
+          {t.itens.map((i) => <LinhaManual key={i.droga} nome={i.droga} texto={i.texto} pagina={i.pagina}
+            // os números vêm do texto do item (teste em ampolas.test.ts): difenidramina 12,5 mg EV; dexametasona 10 mg EV
+            extra={i.droga === 'Difenidramina' ? <EscolhaDaAmpola chave="adulto-cefaleia:difenidramina" dose={[12.5, 12.5]} unidade="mg" />
+              : i.droga === 'Dexametasona' ? <EscolhaDaAmpola chave="adulto-cefaleia:dexametasona" dose={[10, 10]} unidade="mg" /> : undefined} />)}
         </Bloco>
       ))}
 
