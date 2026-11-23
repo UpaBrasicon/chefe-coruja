@@ -33,6 +33,7 @@ import { CONTENCAO_DOSES, CONTENCAO_QUIMICA, DELIRIUM_TABELA7 } from '../adulto/
 import { DOSES_ABSTINENCIA } from '../adulto/abstinenciaAlcoolica.ts'
 import { OPIOIDES } from '../adulto/dorAnalgesia.ts'
 import { ALCOOIS } from '../adulto/intoxicacoes.ts'
+import { DROGAS_CRISE_TIREOTOXICA } from '../adulto/endocrino.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -109,7 +110,11 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     'adulto-analgesia': new Set(OPIOIDES.map((o) => o.id)),
     'adulto-intox': new Set(['nac-ev', 'flumazenil', 'naloxona', 'atropina-bb', 'atropina-of', 'tiamina']),
     'adulto-fa': new Set(['esmolol', 'amiodarona', 'magnesio']),
-    'adulto-has': new Set(['esmolol', 'hidralazina']),
+    'adulto-has': new Set(['esmolol', 'hidralazina', 'metoprolol']),
+    'adulto-endocrino': new Set(['metoprolol', 'dexametasona']),
+    'adulto-ic': new Set(['furosemida']),
+    'adulto-anticoag': new Set(['enoxaparina']),
+    'adulto-reversao': new Set(['protamina']),
     'adulto-avc': new Set(['tranexamico']),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
@@ -123,7 +128,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-23.8')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.9')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -595,4 +600,22 @@ test('adulto A4, primeira parte (A4-1 a A4-4 = A do RT, 23/11/2026): esmolol 250
   // esmolol 0,5 mg/kg em 80 kg = 40 mg: 4 mL da 10 mg/mL ou 0,16 mL da 250 mg/mL (a aspirar e diluir)
   assert.deepEqual(volumeDaAmpola([40, 40], AMPOLAS['esmolol-mg'][0])?.ml, [4, 4])
   assert.deepEqual(volumeDaAmpola([40, 40], AMPOLAS['esmolol-mg'][1]), { ml: [0.16, 0.16], aspirar: true })
+})
+
+test('adulto A4, segunda parte: metoprolol e protamina pelas bulas, dexametasona, furosemida e enoxaparina', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  for (const c of ['adulto-has:metoprolol', 'adulto-endocrino:metoprolol']) assert.deepEqual(ids(c), [['metoprolol-1', 1]], c)
+  assert.deepEqual(ids('adulto-endocrino:dexametasona'), [['dexametasona-2', 2], ['dexametasona-4', 4]])
+  assert.deepEqual(ids('adulto-ic:furosemida'), [['furosemida-10', 10]])
+  assert.deepEqual(ids('adulto-anticoag:enoxaparina'), [['enoxaparina-100', 100]])
+  assert.equal(AMPOLAS.enoxaparina[0].seringa, true)
+  assert.deepEqual(ids('adulto-reversao:protamina'), [['protamina-10', 10]])
+  // a tela da crise tireotóxica passa 5 mg e 2–4 mg: os números vêm do texto dos itens (A4-2: via IV escrita)
+  const t = (d: string) => DROGAS_CRISE_TIREOTOXICA.find((x) => x.droga === d)!.texto
+  assert.match(t('Metoprolol'), /^5 mg IV /)
+  assert.match(t('Dexametasona'), /^2–4 mg EV/)
+  // protamina 50 mg = 5 mL (1 ampola); metoprolol 5 mg = 5 mL; enoxaparina 80 mg = 0,8 mL da seringa
+  assert.deepEqual(volumeDaAmpola([50, 50], AMPOLAS.protamina[0])?.ml, [5, 5])
+  assert.deepEqual(volumeDaAmpola([5, 5], AMPOLAS.metoprolol[0])?.ml, [5, 5])
+  assert.deepEqual(volumeDaAmpola([80, 80], AMPOLAS.enoxaparina[0])?.ml, [0.8, 0.8])
 })

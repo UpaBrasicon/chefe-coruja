@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Chip } from '@/components/monitor/Pagina'
@@ -140,7 +141,10 @@ export function ReversaoAnticoagulacaoAdulto() {
           ))}
         </div>
         {prot ? (
-          <p className="text-apoio"><strong>{faixa(prot.mg, 1)} mg</strong>{prot.limitadoAoTeto && ' (no teto de 50 mg)'} = {faixa(prot.ampolas, 2)} ampola(s) de 50 mg</p>
+          <>
+            <p className="text-apoio"><strong>{faixa(prot.mg, 1)} mg</strong>{prot.limitadoAoTeto && ' (no teto de 50 mg)'} = {faixa(prot.ampolas, 2)} ampola(s) de 50 mg</p>
+            <EscolhaDaAmpola chave="adulto-reversao:protamina" dose={prot.mg} unidade="mg" />
+          </>
         ) : <p className="text-apoio text-tinta-sussurro">Informe as unidades de heparina.</p>}
         <p className="text-apoio text-atencao"><Badge variant="warning" className="mr-1">errata</Badge>{PROTAMINA_REVERSAO.errata}</p>
       </Bloco>
