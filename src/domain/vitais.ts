@@ -33,6 +33,9 @@ export const VITAIS = [
  */
 export const MEDIDAS_EXTRAS = [
   { k: 'estatura', rotulo: 'Altura', un: 'cm', adulto: false, ped: false },
+  // Refinamento da UBS, RF3 (RT, 23/11/2026): só nos sinais vitais da UBS;
+  // conceito global 'circunferencia-abdominal' (migration 20270415000033)
+  { k: 'circunferencia-abdominal', rotulo: 'Circunferência abdominal', un: 'cm', adulto: false, ped: false },
 ] as const
 export type MedidaExtra = (typeof MEDIDAS_EXTRAS)[number]['k']
 

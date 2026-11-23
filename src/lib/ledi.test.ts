@@ -218,3 +218,19 @@ test('FV: registro anterior, condição maternal, BCG e o que retém', async () 
   assert.equal(esp.v[11] && new TextDecoder().decode(esp.v[11] as Uint8Array), '225125')
   assert.equal(new TextDecoder().decode(esp.v[12] as Uint8Array), 'D800')
 })
+
+// Refinamento da UBS, RF3 = A (RT, 23/11/2026): a circunferência abdominal vai
+// no campo 1 de MedicoesThrift (IDL oficial), em cm, com uma casa decimal, de
+// 0.0 a 99999 (dicionário da FAI, LEDI 8.7.0).
+test('RF3: circunferência abdominal no campo 1 das medições da FAI', async () => {
+  const { medicoes } = await import('../interop/ledi/fichas.ts')
+  const { double } = await import('../interop/ledi/thrift.ts')
+  const m = (valor: number) => [{ conceito: 'circunferencia-abdominal', loinc: '8280-0', valor, unidade: 'cm', aferido_em: '2026-11-23T12:50:00Z' }]
+  assert.deepEqual(medicoes(m(94.56))?.[1], double(94.6))
+  assert.equal(medicoes(m(-1)), undefined)
+  assert.equal(medicoes(m(100000)), undefined)
+  // a tela do técnico e da consulta da UBS pede o campo; a escuta inicial, não
+  const { readFileSync } = await import('node:fs')
+  assert.match(readFileSync('src/components/clinico/SinaisVitaisAps.tsx', 'utf8'), /extras=\{\['estatura', 'circunferencia-abdominal'\]\}/)
+  assert.match(readFileSync('src/pages/enfermagem/triagem/EscutaInicial.tsx', 'utf8'), /extras=\{\['estatura'\]\}/)
+})
