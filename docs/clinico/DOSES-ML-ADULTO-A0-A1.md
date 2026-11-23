@@ -1,6 +1,6 @@
 # Dose em mL no adulto, lotes A0 e A1: cadastro único, PCR e arritmias
 
-Data: 23/11/2026. Situação: decisões A1-1 a A1-4 = A (RT, 23/11/2026); implementado na branch fase-ml/adulto-a0-a1, menos KCl e aminofilina, que esperam as bulas (A1-3). Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A).
+Data: 23/11/2026. Situação: decisões A1-1 a A1-4 = A (RT, 23/11/2026); implementado na branch fase-ml/adulto-a0-a1, na produção pelo PR #1049; KCl e aminofilina pelas bulas lidas em 23/11/2026 (Farmace, Equiplex e Hipolabor), na branch fase-ml/adulto-a1-bulas. Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A).
 
 ## A0. Cadastro único
 
