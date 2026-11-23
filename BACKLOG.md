@@ -2677,15 +2677,17 @@ Origem: o RT testou a UBS na homologação em 13/11/2026 ("depois vamos mudar al
 
 Dado de teste: a escala da UBS Fase 5 na homologação foi estendida até 31/12/2026 (192 turnos de dias úteis, 23/11/2026).
 
+**Trilha concluída em 23/11/2026:** os sete itens com código estão na produção, todos com "ok produção" do RT (RF8, RF4 e RF7 em "ok produção os três"; RF1, RF3, RF6 e RF2 em "ok produção os quatro"). O RF5 ficou sem código.
+
 | Ordem | Item | O que fazer (decisão A) | Prioridade | Estado |
 |---|---|---|---|---|
 | 1 | RF8 | Gestor, Indicadores da UBS: "não aguardou (saiu antes)" e "não aguardou (fim do expediente)" no lugar de "fichas vencidas" | P1 | Concluído em 23/11/2026 (#1028, na produção; só tela; pacote conferido) |
 | 2 | RF4 | Pré-natal, hiperdia e puericultura começam fechados na consulta, numa linha de resumo com os itens perdidos | P1 | Concluído em 23/11/2026 (#1030, na produção; só tela; `BlocoRecolhivel`; pacote conferido) |
 | 3 | RF7 | Indicadores C1 a C7 em semáforo pelo conceito oficial: verde (ótimo e bom), amarelo (suficiente), vermelho (regular); o número em segundo plano | P1 | Concluído em 23/11/2026 (#1032, na produção; só tela; pacote conferido) |
-| 4 | RF1 | Fila do consultório em três faixas: vermelho e amarelo; agendados pela hora marcada; o resto da demanda espontânea | P1 | A fazer |
-| 5 | RF3 | Circunferência abdominal nos sinais vitais da UBS (técnico e consulta), com conceito novo e envio na FAI do SISAB | P1 | A fazer |
-| 6 | RF6 | Caderneta com o bloco "Em atraso" pelas faltas que o app já calcula (C2, C3, C6, C7), com a fonte | P1 | A fazer |
-| 7 | RF2 | A demanda espontânea aparece na agenda do dia do médico sem ocupar horário; o azul ganha a saída "Atender hoje" | P1 | A fazer |
+| 4 | RF1 | Fila do consultório em três faixas: vermelho e amarelo; agendados pela hora marcada; o resto da demanda espontânea | P1 | Concluído em 23/11/2026 (#1033, na produção; só tela; pacote conferido) |
+| 5 | RF3 | Circunferência abdominal nos sinais vitais da UBS (técnico e consulta), com conceito novo e envio na FAI do SISAB | P1 | Concluído em 23/11/2026 (#1036, na produção; migration 20270415000033 aplicada e conferida; campo 1 de MedicoesThrift, LEDI 8.7.0; pacote conferido) |
+| 6 | RF6 | Caderneta com o bloco "Em atraso" pelas faltas que o app já calcula (C2, C3, C6, C7), com a fonte | P1 | Concluído em 23/11/2026 (#1037, na produção; migration 20270415000034 aplicada, md5 igual à homologação; bloco "Em atraso ou a completar"; pacote conferido) |
+| 7 | RF2 | A demanda espontânea aparece na agenda do dia do médico sem ocupar horário; o azul ganha a saída "Atender hoje" | P1 | Concluído em 23/11/2026 (#1038, na produção; migration 20270415000035 aplicada, md5 das duas funções e das CHECK igual à homologação; rollback em `supabase/snippets/rf2_rollback.sql`; pacote conferido) |
 | — | RF5 | Consulta de 20 a 30 minutos: já é configurável por profissional; nada a programar | — | Sem código |
 
 ---
