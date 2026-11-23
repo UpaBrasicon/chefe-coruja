@@ -10,7 +10,7 @@ export function CampoSelecao({ className, tamanho = 'normal', ...props }: Compon
   return (
     <select
       className={cn(
-        'rounded-controle border border-fio bg-campo px-2 text-apoio text-tinta disabled:opacity-45 aria-invalid:border-critico',
+        'rounded-controle border border-controle bg-superficie px-2 text-apoio text-tinta disabled:opacity-45 aria-invalid:border-critico',
         tamanho === 'compacto' ? 'h-8' : 'h-9',
         className,
       )}
