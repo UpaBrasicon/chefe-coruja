@@ -32,6 +32,7 @@ import { ADJUVANTES_SAP } from '../adulto/sedacaoProcedimento.ts'
 import { CONTENCAO_DOSES, CONTENCAO_QUIMICA, DELIRIUM_TABELA7 } from '../adulto/agitacao.ts'
 import { DOSES_ABSTINENCIA } from '../adulto/abstinenciaAlcoolica.ts'
 import { OPIOIDES } from '../adulto/dorAnalgesia.ts'
+import { ALCOOIS } from '../adulto/intoxicacoes.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -106,6 +107,7 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     'adulto-agitacao': new Set([...CONTENCAO_DOSES.map((d) => d.id), 'quetamina', ...DELIRIUM_TABELA7.map((d) => `${d.id}-delirium`)]),
     'adulto-abstinencia': new Set(DOSES_ABSTINENCIA.map((d) => d.id)),
     'adulto-analgesia': new Set(OPIOIDES.map((o) => o.id)),
+    'adulto-intox': new Set(['nac-ev', 'flumazenil', 'naloxona', 'atropina-bb', 'atropina-of', 'tiamina']),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -118,7 +120,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-23.6')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.7')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -560,4 +562,19 @@ test('adulto A2, segunda parte: agitação, abstinência e analgesia pelas bulas
   assert.deepEqual(volumeDaAmpola([100, 100], AMPOLAS.tramadol[0])?.ml, [2, 2])
   assert.deepEqual(volumeDaAmpola([200, 200], AMPOLAS.tiamina[0])?.ml, [2, 2])
   assert.deepEqual(volumeDaAmpola([70, 70], AMPOLAS.petidina[0])?.ml, [1.4, 1.4])
+})
+
+test('adulto A3 (intoxicações e antídotos, 23/11/2026): ampolas de bula já lida', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  assert.deepEqual(ids('adulto-intox:nac-ev'), [['acetilcisteina-100', 100, true]])
+  assert.deepEqual(ids('adulto-intox:flumazenil'), [['flumazenil-0-1', 0.1, false]])
+  assert.deepEqual(ids('adulto-intox:naloxona'), [['naloxona-0-4', 0.4, false]])
+  for (const c of ['adulto-intox:atropina-bb', 'adulto-intox:atropina-of']) assert.deepEqual(ids(c).map((a) => a[1]), [0.25, 0.5], c)
+  assert.deepEqual(ids('adulto-intox:tiamina'), [['tiamina-100', 100, false]])
+  // a tela passa 100 mg de tiamina: o número vem do texto do item
+  assert.match(ALCOOIS.outros.find((i) => i.id === 'tiamina')!.texto, /^100 mg EV/)
+  // NAC 150 mg/kg em 70 kg = 10.500 mg = 105 mL a aspirar; naloxona 0,04 mg = 0,1 mL; atropina 5 mg = 10 mL da 0,5 mg/mL
+  assert.deepEqual(volumeDaAmpola([10500, 10500], AMPOLAS.acetilcisteina[0]), { ml: [105, 105], aspirar: true })
+  assert.ok(Math.abs(volumeDaAmpola([0.04, 0.04], AMPOLAS.naloxona[0])!.ml[0] - 0.1) < 1e-9)
+  assert.deepEqual(volumeDaAmpola([5, 5], AMPOLAS.atropina[1])?.ml, [10, 10])
 })

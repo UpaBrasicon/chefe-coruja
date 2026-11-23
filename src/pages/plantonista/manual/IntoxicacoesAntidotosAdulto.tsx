@@ -19,6 +19,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha } from './LoteAPecas'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
@@ -93,7 +94,8 @@ function Paracetamol({ peso }: { peso: number }) {
         conta={vo ? <>ataque <strong>{br(vo.ataqueMg, 0)} mg</strong> · manutenção <strong>{br(vo.manutencaoMg, 0)} mg</strong> 4/4 h (≈ {vo.doses} doses)</> : PESO} />
       <LinhaManual nome="NAC EV (3 fases)" texto={`${NAC.ev.quando}: 150 mg/kg em 60 min em 200–300 mL de SF ou SG 5%; 50 mg/kg em 4 h; 100 mg/kg em 16 h`}
         pagina={NAC.ev.pagina} errata={NAC.ev.errata}
-        conta={ev ? <>total <strong>{br(ev.totalMg, 0)} mg</strong> ({ev.totalMgKg} mg/kg em 21 h)</> : PESO} />
+        conta={ev ? <>total <strong>{br(ev.totalMg, 0)} mg</strong> ({ev.totalMgKg} mg/kg em 21 h)</> : PESO}
+        extra={ev ? <EscolhaDaAmpola chave="adulto-intox:nac-ev" unidade="mg" doses={ev.fases.map((f) => ({ rotulo: f.rotulo, dose: [f.mg, f.mg] as Faixa }))} /> : undefined} />
       {ev && (
         <ul className="grid gap-1 text-apoio md:grid-cols-3">
           {ev.fases.map((f) => (
@@ -114,10 +116,12 @@ function AntidotosFixos() {
   return (
     <Bloco titulo="Antídotos de dose fixa (cap. 98)">
       <p role="note" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">{NOTA_AHA_INTOXICACOES}</p>
-      <LinhaManual nome="Flumazenil" texto={FLUMAZENIL.texto} pagina={FLUMAZENIL.pagina} conta={<>até <strong>{flumazenilBolusMaximos()} bolus</strong> de 0,2 mg</>} nota={NOTAS_AHA.flumazenil} />
+      <LinhaManual nome="Flumazenil" texto={FLUMAZENIL.texto} pagina={FLUMAZENIL.pagina} conta={<>até <strong>{flumazenilBolusMaximos()} bolus</strong> de 0,2 mg</>} nota={NOTAS_AHA.flumazenil}
+        extra={<EscolhaDaAmpola chave="adulto-intox:flumazenil" dose={[FLUMAZENIL.bolusMg, FLUMAZENIL.bolusMg]} unidade="mg" />} />
       {NALOXONA.cenarios.map((c) => (
         <LinhaManual key={c.id} nome={`Naloxona — ${c.rotulo}`} texto={`${faixa(c.mg, 2)} mg IV; ${NALOXONA.alvo}`} pagina={NALOXONA.pagina}
-          nota={c.id === 'pcr' ? NOTAS_AHA.naloxonaPcr : undefined} />
+          nota={c.id === 'pcr' ? NOTAS_AHA.naloxonaPcr : undefined}
+          extra={<EscolhaDaAmpola chave="adulto-intox:naloxona" dose={c.mg} unidade="mg" />} />
       ))}
       <p className="text-apoio text-tinta-sussurro">Naloxona: {NALOXONA.reconsiderar}; {NALOXONA.alta} ({NALOXONA.pagina}).</p>
       <LinhaManual nome={FISOSTIGMINA.nome} texto={FISOSTIGMINA.texto} pagina={FISOSTIGMINA.pagina} nota={FISOSTIGMINA.nota} />
@@ -134,7 +138,8 @@ function Cardiotoxicos({ peso }: { peso: number }) {
     <>
       <Bloco titulo="Betabloqueador (p. 1317–1318)" descricao={b.sequencia}>
         <LinhaManual nome="Atropina" texto={`${b.atropina.mg} mg IV, até ${b.atropina.dosesMax} doses (com cristaloide)`} pagina={b.atropina.pagina}
-          conta={<>até <strong>{b.atropina.mg * b.atropina.dosesMax} mg</strong></>} />
+          conta={<>até <strong>{b.atropina.mg * b.atropina.dosesMax} mg</strong></>}
+          extra={<EscolhaDaAmpola chave="adulto-intox:atropina-bb" dose={[b.atropina.mg, b.atropina.mg]} unidade="mg" />} />
         <LinhaManual nome="1. Glucagon" texto={b.glucagon.texto} pagina={b.glucagon.pagina} />
         <LinhaManual nome="2. Gluconato de cálcio 10%" texto={b.calcio.texto} pagina={b.calcio.pagina} nota={NOTAS_AHA.bbCalcio} />
         <LinhaManual nome="3. Adrenalina" texto={b.adrenalina.texto} pagina={b.adrenalina.pagina} />
@@ -213,7 +218,9 @@ function Alcoois({ peso }: { peso: number }) {
       <LinhaManual nome="Etanol VO" texto={ALCOOIS.etanolVO.texto} pagina={ALCOOIS.etanolVO.pagina} errata={ALCOOIS.etanolVO.errata} />
       <LinhaManual nome="Ácido fólico (metanol)" texto={ALCOOIS.acidoFolico.texto} pagina={ALCOOIS.acidoFolico.pagina}
         conta={af !== null ? <strong>{br(af)} mg 4/4 h</strong> : PESO} />
-      {ALCOOIS.outros.map((i) => <LinhaManual key={i.id} nome={i.nome} texto={i.texto} pagina={i.pagina} nota={i.nota} />)}
+      {ALCOOIS.outros.map((i) => <LinhaManual key={i.id} nome={i.nome} texto={i.texto} pagina={i.pagina} nota={i.nota}
+        // tiamina 100 mg EV (p. 1328): o número vem do texto do item (teste em ampolas.test.ts)
+        extra={i.id === 'tiamina' ? <EscolhaDaAmpola chave="adulto-intox:tiamina" dose={[100, 100]} unidade="mg" /> : undefined} />)}
     </Bloco>
   )
 }
@@ -227,7 +234,11 @@ function Organofosforado({ peso }: { peso: number }) {
     <Bloco titulo="Organofosforados e carbamatos (p. 1333–1334)" descricao={`Prova terapêutica: atropina ${o.provaAtropinaMg} mg IV.`}>
       <Escolha label="Atropina: dose inicial" value={inicial} onChange={setInicial} opcoes={[{ value: '2', label: '2 mg' }, { value: '5', label: '5 mg' }]} />
       <LinhaManual nome="Atropina" texto={`2–5 mg IV; ${o.alvo}`} pagina="p. 1333"
-        conta={<>{seq.map((s, i) => <span key={i}>{i > 0 && ' → '}{br(s.dose)} mg</span>)} (acumulado {br(seq[seq.length - 1].acumulado)} mg)</>} nota={NOTAS_AHA.atropinaOrganofosforado} />
+        conta={<>{seq.map((s, i) => <span key={i}>{i > 0 && ' → '}{br(s.dose)} mg</span>)} (acumulado {br(seq[seq.length - 1].acumulado)} mg)</>} nota={NOTAS_AHA.atropinaOrganofosforado}
+        extra={<EscolhaDaAmpola chave="adulto-intox:atropina-of" unidade="mg" doses={[
+          { rotulo: 'Prova terapêutica', dose: [o.provaAtropinaMg, o.provaAtropinaMg] },
+          ...seq.map((x, i) => ({ rotulo: `${i + 1}ª dose`, dose: [x.dose, x.dose] as Faixa })),
+        ]} />} />
       <LinhaManual nome="Pralidoxima" texto={o.pralidoxima.texto} pagina="p. 1334"
         conta={pr ? <>bolus <strong>{br(pr.bolusMg, 0)} mg</strong> em 30 min · <strong>{br(pr.infusaoMgH, 0)} mg/h</strong></> : PESO} nota={NOTAS_AHA.pralidoxima} />
       <p className="text-apoio text-atencao">{NOTAS_AHA.organofosforadoIot}</p>
