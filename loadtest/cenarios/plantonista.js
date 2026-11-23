@@ -3,12 +3,12 @@
 // (em lote) não existem → tendencia_acuidade(p_paciente) e alergias_paciente(p_paciente),
 // por paciente.
 import { rpc } from '../lib/supa.js'
-import { DADOS, aleatorio } from '../lib/dados.js'
+import { DADOS, aleatorio, pacienteDoSetor } from '../lib/dados.js'
 import { pausa, ESCRITA } from '../lib/config.js'
 
 const TERMOS = ['car', 'pac', 'sil', 'san', 'oli', 'fer', 'rod', 'alm', 'cos', 'lim']
 
-export function plantonista(token) {
+export function plantonista(token, setor) {
   const u = DADOS.unidade
   rpc(token, 'meu_plantao_agora', {})
   rpc(token, 'minhas_notificacoes', { p_unidade: u })
@@ -18,10 +18,14 @@ export function plantonista(token) {
   rpc(token, 'painel_observacao', { p_unidade: u })
   pausa()
 
-  const pac = aleatorio(DADOS.pacientes)
-  rpc(token, 'tendencia_acuidade', { p_paciente: pac })
-  rpc(token, 'alergias_paciente', { p_paciente: pac })
-  rpc(token, 'prescricao_vigente', { p_paciente: pac })
+  // Paciente do setor em que o médico está escalado (as RPCs recusam os outros).
+  // alergias_paciente é tabela; a RPC da tela é alergias_do_paciente.
+  const pac = pacienteDoSetor(setor)
+  if (pac) {
+    rpc(token, 'tendencia_acuidade', { p_paciente: pac })
+    rpc(token, 'alergias_do_paciente', { p_paciente: pac })
+    rpc(token, 'prescricao_vigente', { p_paciente: pac })
+  }
   pausa()
 
   // Busca no catálogo, como a prescrição faz (PrescricaoEstruturada.tsx:440).
@@ -34,7 +38,7 @@ export function plantonista(token) {
   // registrar_prescricao_itens é legado e só a service_role executa (403 com JWT).
   // Item de cuidado: sem catálogo, sem idade e peso, sem a trava de dois "Agora".
   // ATENÇÃO: prescrição é só inserção (guarda de 20 anos); a massa de carga fica para sempre.
-  if (ESCRITA && Math.random() < 0.15) {
+  if (ESCRITA && pac && Math.random() < 0.15) {
     rpc(
       token,
       'prescrever',

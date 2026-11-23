@@ -6,7 +6,7 @@ import { pausa, ESCRITA } from '../lib/config.js'
 const TERMOS = ['car', 'pac', 'sil', 'san', 'oli', 'fer', 'rod', 'alm']
 
 export function recepcao(token) {
-  rpc(token, 'fila_da_porta', { p_setor: aleatorio(DADOS.setores) })
+  rpc(token, 'fila_da_porta', { p_setor: DADOS.setorPorta }) // a recepção está escalada na Porta
   pausa()
 
   rpc(token, 'buscar_pacientes', { p_unidade: DADOS.unidade, p_termo: aleatorio(TERMOS) })
@@ -23,7 +23,7 @@ export function recepcao(token) {
       token,
       'registrar_ficha',
       {
-        p_setor: DADOS.setor_porta,
+        p_setor: DADOS.setorPorta,
         p_queixa: 'LOADTEST queixa de carga',
         p_dados: { nome: `PACIENTE CARGA ${n}` },
         p_prioridades: [],

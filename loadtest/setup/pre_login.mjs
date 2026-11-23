@@ -25,6 +25,7 @@ for (const u of dados.usuarios) {
   tokens.push({
     papel: u.papel,
     email: u.email,
+    setor: u.setor ?? null,
     access_token: j.access_token,
     refresh_token: j.refresh_token,
     expires_at: Date.now() + j.expires_in * 1000,

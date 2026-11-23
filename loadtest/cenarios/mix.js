@@ -22,5 +22,5 @@ export function rodarPorPapel() {
   const vu = exec.vu.idInTest
   const papel = papelDoVU(vu)
   const usuario = usuarioDoVU(papel, vu)
-  FN[papel](usuario.access_token)
+  FN[papel](usuario.access_token, usuario.setor)
 }

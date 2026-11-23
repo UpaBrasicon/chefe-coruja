@@ -17,9 +17,8 @@ Roda no **VPS**, com o k6 e o Node pelo Docker, sem instalar nada no sistema. O 
 node setup/criar_massa.mjs     # cria usuários carga-*; grava dados.json
 node setup/pre_login.mjs       # gera .tokens.json (repetir se os tokens tiverem mais de 50 min)
 ```
-> ⚠️ `criar_massa.mjs` tem a parte de **usuários pronta**; a criação de unidade/setores/
-> pacientes/escala está como **TODO** (depende do schema — ver DESCOBERTA.md). Smoke só
-> roda com o domínio preenchido.
+> `criar_massa.mjs` é idempotente. Rode de novo antes de cada teste: ele semeia o check-in
+> dos plantões que já começaram, e sem check-in o plantão some 30 min depois do início.
 
 ## Rodar (um comando cada)
 

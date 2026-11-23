@@ -21,7 +21,7 @@ RPCs conferidas com assinatura real em `src/types/database.ts`:
 
 | Prompt | Realidade | O que fiz |
 |---|---|---|
-| `painel_gestor(p_unidade)` | **não existe** | usei `painel_organizacao(p_dias)` (escopo pelo JWT, sem p_unidade) |
+| `painel_gestor(p_unidade)` | existe (conferido em 23/11/2026) | o cenário usa `painel_gestor`; `painel_organizacao` só devolve linhas para admin |
 | `panorama_gestor`, `mapa_leitos_gestor` | **não existem** | cobertos por `painel_organizacao` + `ocupacao_setores` + `situacao_leitos` |
 | `acuidade_dos_pacientes(p_pacientes[])` | **não existe** (em lote) | `tendencia_acuidade(p_paciente)`, por paciente |
 | `alergias_dos_pacientes(p_pacientes[])` | **não existe** (em lote) | `alergias_paciente(p_paciente)`, por paciente |
@@ -31,7 +31,7 @@ RPCs conferidas com assinatura real em `src/types/database.ts`:
 ## 3. Pendências (TODO) antes de rodar de verdade
 
 1. **Estado da produção (B1):** bloqueado para mim — Ricardo confirma no dashboard que só há dados de teste.
-2. **`criar_massa.mjs` (domínio):** usuários prontos; unidade/setores/leitos/pacientes/escala/chat dependem do schema (~230 tabelas) e dos RPCs de criação do app, ainda não lidos. Cada passo está marcado com a tabela/RPC-alvo.
+2. **`criar_massa.mjs`: escrito em 23/11/2026, ainda não executado.** Cria organização, unidade UPA com coordenadas, 4 setores, 40 leitos, vínculos, escala de ontem a amanhã com check-in dos plantões já começados, 80 pacientes, 30 internações em observação e 3 conversas. Cada pessoa fica num setor fixo, e os cenários sorteiam só pacientes desse setor, porque as RPCs do plantonista e da enfermagem recusam os outros. Para com erro se a marca `ambiente_teste` estiver desligada (só a homologação a tem).
 3. **Escritas: conferido em 23/11/2026.** `registrar_prescricao_itens` é legado e só a service_role executa. A tela usa `prescrever(p_paciente, p_item)`, e o cenário manda um item de cuidado. A recepção usa `registrar_ficha` (paciente e episódio), não `salvar_cadastro_paciente`, e a chave `sem_documento` não existia. A busca de medicamento é a RPC `buscar_medicamento`, porque a tabela não tem coluna `nome`. Prescrição, paciente e episódio são só inserção: toda escrita de carga fica para sempre.
 4. **Realtime: conferido em 23/11/2026.** O supabase-js 2.106.2 usa vsn 2.0.0 com mensagens em array. O join copia a config do `channel('chat-global')` de `src/hooks/useChat.ts`.
 5. **`limpar_massa.mjs`: refeito em 23/11/2026.** Apaga só chat, notificações, presença, escala e vínculos. Unidade, setores, leitos e organização ficam com `ativo=false`, e os usuários `carga-*` ficam banidos, porque as tabelas clínicas e a auditoria apontam para eles sem ON DELETE.

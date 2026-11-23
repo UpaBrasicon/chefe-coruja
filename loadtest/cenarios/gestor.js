@@ -1,14 +1,12 @@
-// Jornada do gestor (10% dos VUs). Divergência importante vs. o prompt:
-// painel_gestor/panorama_gestor/mapa_leitos_gestor NÃO existem. O painel real do
-// gestor é painel_organizacao(p_dias) (escopo pelo JWT, sem p_unidade); o resto
-// usa ocupacao_setores, situacao_leitos, escala_mes_gestor, presencas_do_dia_gestor.
+// Jornada do gestor (10% dos VUs). painel_organizacao só devolve linhas para
+// admin (conferido em 23/11/2026); o painel do gestor é painel_gestor(p_unidade).
 import { rpc } from '../lib/supa.js'
 import { DADOS } from '../lib/dados.js'
 import { pausa } from '../lib/config.js'
 
 export function gestor(token) {
   const u = DADOS.unidade
-  rpc(token, 'painel_organizacao', { p_dias: 7 })
+  rpc(token, 'painel_gestor', { p_unidade: u })
   pausa()
 
   rpc(token, 'ocupacao_setores', { p_unidade: u })
