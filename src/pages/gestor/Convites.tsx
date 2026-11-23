@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
-import { Check, Copy, MailPlus, Ticket, TicketX } from 'lucide-react'
+import { Check, Copy, MailPlus, Ticket, TicketX, Users } from 'lucide-react'
 
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { ConvitesEmLote } from '@/components/gestor/ConvitesEmLote'
 import { useSetores } from '@/hooks/useDadosUnidade'
 import { useConvites, useGerarConvite, useRevogarConvite, type ConviteDaUnidade, type SituacaoConvite } from '@/hooks/useConvites'
 import { PAPEIS_REDE, PAPEL_DESCRIPTION, PAPEL_LABEL } from '@/lib/constants'
@@ -151,6 +152,7 @@ export default function Convites() {
   const [gerado, setGerado] = React.useState<{ codigo: string; expira_em: string } | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
   const [aRevogar, setARevogar] = React.useState<ConviteDaUnidade | null>(null)
+  const [lote, setLote] = React.useState(false)
 
   const lista = convites.data ?? []
   const abertos = lista.filter((c) => c.situacao === 'valido' || (c.situacao === 'expirado' && c.novo_pedido_em))
@@ -225,11 +227,22 @@ export default function Convites() {
             Cada código abre um acesso só, no papel escolhido. Gestão entra pelo contrato da rede.
           </p>
         </div>
-        <Button onClick={() => abrir()} disabled={!unidadeId}>
-          <Ticket />
-          Gerar convite
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {/* Fase 1, item 16b (CA2 = A do RT, 23/11/2026): vários convites de uma vez */}
+          <Button variant="outline" onClick={() => setLote(true)} disabled={!unidadeId}>
+            <Users />
+            Convites em lote
+          </Button>
+          <Button onClick={() => abrir()} disabled={!unidadeId}>
+            <Ticket />
+            Gerar convite
+          </Button>
+        </div>
       </div>
+      {unidadeId && (
+        <ConvitesEmLote unidadeId={unidadeId} unidadeNome={unidadeAtiva?.unidade.nome ?? ''} papeis={PAPEIS_CONVITE}
+          aberto={lote} onFechar={() => setLote(false)} />
+      )}
 
       {erro && !dialogo && <p role="alert" className="text-apoio text-critico">{erro}</p>}
 
