@@ -92,8 +92,12 @@ SELECT pg_temp.igual((SELECT situacao FROM public.telemedicina_na_unidade('21000
   'ausente', 'o plantonista vê que a telemedicina está ausente');
 
 -- ── 2. pedidos, salas e pendências ──────────────────────────────────────────
+-- LG8 (contrato, 23/11/2026): a solicitar_teleinterconsulta antiga não é mais do authenticated;
+-- a tela usa a _com_termo. O teste da regra antiga chama como dono, com o mesmo login nas claims.
+RESET ROLE;
 INSERT INTO t SELECT 't1', public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000096', 'Dúvida sobre anticoagulação na fibrilação atrial', 'obtido');
 INSERT INTO t SELECT 't2', public.solicitar_teleinterconsulta('23000000-0000-4000-8000-000000000095', 'Dúvida sobre a sedação para a transferência', 'obtido', 'urgente');
+SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000006');
 SELECT pg_temp.igual((SELECT (x ->> 'fila')::int >= 2 FROM pg_temp.sit() x)::text, 'true', 'o topo conta a fila da unidade');
 SELECT public.aceitar_teleinterconsulta(pg_temp.u('t1'));
