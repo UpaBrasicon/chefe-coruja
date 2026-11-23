@@ -35,7 +35,15 @@ export type ProfissionalDoDia = {
   fora_da_grade: Agendamento[]
 }
 
-export type AgendaDia = { data: string; profissionais: ProfissionalDoDia[] }
+/** Refinamento da UBS, RF2 (RT, 23/11/2026): ficha aberta hoje que não veio da
+ *  agenda; a agenda_dia de hoje devolve (migration 20270415000035). */
+export type DemandaEspontanea = {
+  episodio_id: string; paciente_id: string; nome: string; nome_social: string | null; data_nascimento: string | null
+  chegada_em: string; etapa: 'triagem' | 'atendimento'; cor_atual: string | null; prioridades_legais: string[]
+  tipo_atendimento_aps: string | null; em_atendimento: boolean
+}
+
+export type AgendaDia = { data: string; profissionais: ProfissionalDoDia[]; demanda_espontanea?: DemandaEspontanea[] }
 
 export type Periodo = 'manha' | 'tarde' | 'noite'
 export type HorarioConfig = { dia: number; periodo: Periodo; inicio: string; fim: string; duracao: number }

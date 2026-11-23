@@ -29,7 +29,7 @@ export function ForaDoExpediente() {
 
   if (verEscala) {
     return (
-      <div className="min-h-dvh bg-campo p-4">
+      <div className="min-h-dvh bg-pagina p-4">
         <div className="mx-auto flex max-w-6xl flex-col gap-3">
           <Button variant="ghost" size="sm" className="w-fit" onClick={() => setVerEscala(false)}>
             <ArrowLeft /> Voltar
@@ -41,7 +41,7 @@ export function ForaDoExpediente() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-campo p-4">
+    <div className="flex min-h-dvh items-center justify-center bg-pagina p-4">
       <section aria-labelledby="fora-titulo" className="w-full max-w-[460px] animate-cc-sobe rounded-cartao border border-fio bg-superficie p-6 shadow-repouso">
         <span className="grid size-[42px] place-items-center rounded-container bg-alerta-marca text-acao" aria-hidden>
           <CalendarClock className="size-[21px]" />

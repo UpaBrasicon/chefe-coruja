@@ -27,9 +27,9 @@ const PAG_FA = 'cap. 17 Fibrilação atrial, p. 243–256 (texto p. 248–251; T
 
 export const fichaFibrilacaoAtrialAdulto: Ficha = {
   ...fichaAdulto('adulto-fibrilacao-atrial', 'Fibrilação atrial — controle de frequência e de ritmo (adulto)', PAG_FA),
-  versao: '2026-09-28.1',
+  versao: '2026-11-23.1',
   fontes: [pagina(PAG_FA), ESC_FA_2024, SBC_FA_2025],
-  revisadoEm: '28/09/2026 (ESC 2024 e SBC 2025 lidas no texto; manual mantido como base)',
+  revisadoEm: '23/11/2026 (lote A4 da dose em mL: o bolus de magnésio passa a escrever a via, IV, conferida pelo RT no manual, p. 249; esmolol, amiodarona e magnésio com a escolha da ampola; sem mudança de dose; aguarda aprovação do RT); 28/09/2026 (ESC 2024 e SBC 2025 lidas no texto; manual mantido como base)',
 }
 
 export type JanelaFa2024 = 'ate-24h' | 'mais-de-24h-ou-indeterminada'

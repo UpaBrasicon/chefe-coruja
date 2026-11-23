@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 // Abas do Monitor de Cabeceira: sublinhado na cor da marca, texto em `acao`
 // com peso 600 na aba ativa; inativas em `tinta-sussurro`. O estado da aba
 // vive na URL (?aba=), via TabsPagina.
+// Contraste CT4 (RT, 23/11/2026): linha de base visível (fio-forte) e a aba
+// ativa com fundo destacado, além do sublinhado e do texto na cor da ação.
 
 function Tabs({
   className,
@@ -24,7 +26,7 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-full items-end gap-5 overflow-x-auto overflow-y-hidden border-b border-fio text-tinta-sussurro group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col group-data-vertical/tabs:border-b-0",
+  "group/tabs-list inline-flex w-full items-end gap-1 overflow-x-auto overflow-y-hidden border-b border-fio-forte text-tinta-sussurro group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col group-data-vertical/tabs:border-b-0",
   {
     variants: {
       variant: {
@@ -58,8 +60,8 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        "relative -mb-px inline-flex items-center gap-[7px] border-b-2 border-transparent px-0.5 pt-1 pb-2.5 text-apoio whitespace-nowrap text-tinta-sussurro transition-colors hover:text-acao disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "data-active:border-acao data-active:font-semibold data-active:text-acao",
+        "relative -mb-px inline-flex items-center gap-[7px] rounded-t-controle border-b-2 border-transparent px-3 pt-1.5 pb-2.5 text-apoio whitespace-nowrap text-tinta-sussurro transition-colors hover:text-acao disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "data-active:border-acao data-active:bg-alerta-marca data-active:font-semibold data-active:text-acao",
         "group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:border-b-0 group-data-vertical/tabs:border-l-2 group-data-vertical/tabs:py-1.5 group-data-vertical/tabs:pl-3",
         className
       )}

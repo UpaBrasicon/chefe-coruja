@@ -3,12 +3,39 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, fichaAmpolas, problemasDasAmpolas, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
+import { AMPOLAS, ITENS_COM_AMPOLA, ampolasDoItem, doseNaUnidadeDaAmpola, fichaAmpolas, problemasDasAmpolas, volumeAbaixoDe01, volumeDaAmpola, type Apresentacao } from './ampolas.ts'
 import { BOLUS } from './bolus.ts'
 import { DROGAS_RCP } from './rcp.ts'
 import { DOSES_SRI } from './viaAerea.ts'
 import { DOSES_DA_FITA } from './dosesDaFita.ts'
 import { DOSES_CRISE } from './criseEpileptica.ts'
+import { DOSES_ASMA } from './asma.ts'
+import { DOSES_ANAFILAXIA } from './anafilaxia.ts'
+import { DOMICILIAR, DOSES_SBP_2024, ESPECIAIS, HOSPITALAR } from './pneumoniaPed.ts'
+import { DOSES_ITU_ORAL, DOSES_ITU_PARENTERAL } from './ituPed.ts'
+import { DOSES_CRISE_ALGICA } from './falciformePed.ts'
+import { DOSES_IRA, DOSES_TABELA8 } from './injuriaRenalPed.ts'
+import { DOSES_HEMOSTASIA, DOSES_PTI } from './hemostasiaTromboPed.ts'
+import { DOSES_COMPRESSIVAS, DOSES_HEMATO_ONCO, DOSES_NEUTROPENIA, DOSES_SLT } from './oncologiaPed.ts'
+import { DOSES_NEFRITICA, DOSES_NEFROTICA, DOSES_SHU } from './glomerulopatiasPed.ts'
+import { DOSES_CAPITULO_INTOX } from './intoxicacaoPed.ts'
+import { DOSES_COMA } from './comaHicPed.ts'
+import { DOSES_HDA } from './digestivoHepaticoPed.ts'
+import { DOSES_PELE, DOSES_SCT } from './choqueToxicoPartesMolesPed.ts'
+import { DOSES_IC_ORAIS } from './insuficienciaCardiacaPed.ts'
+import { CLORETO_CA_TABELA7, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEMIA, HIPOCALCEMIA, HIPOMAGNESEMIA, K_IV, K_VO, calcularDose } from './eletrolitosPed.ts'
+import { calcularDoseLivro } from './fonteP4.ts'
+import { DOSES_MENINGITE, DOSES_PROFILAXIA } from './meningitePed.ts'
+import { DROGAS_PCR, OUTRAS_BRADI } from '../adulto/pcr.ts'
+import { SEGUNDA_LINHA_ANAFILAXIA } from '../adulto/anafilaxia.ts'
+import { ADJUVANTES_SAP } from '../adulto/sedacaoProcedimento.ts'
+import { CONTENCAO_DOSES, CONTENCAO_QUIMICA, DELIRIUM_TABELA7 } from '../adulto/agitacao.ts'
+import { DOSES_ABSTINENCIA } from '../adulto/abstinenciaAlcoolica.ts'
+import { OPIOIDES } from '../adulto/dorAnalgesia.ts'
+import { ALCOOIS } from '../adulto/intoxicacoes.ts'
+import { DROGAS_CRISE_TIREOTOXICA } from '../adulto/endocrino.ts'
+import { TRATAMENTO } from '../adulto/cefaleia.ts'
+import { ANALGESIA } from '../adulto/colicaRenal.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -61,6 +88,39 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     bolus: new Set(BOLUS.map((b) => b.id)), rcp: new Set(DROGAS_RCP.map((d) => d.id)), sri: new Set(DOSES_SRI.map((d) => d.id)),
     fita: new Set(DOSES_DA_FITA.map((d) => d.id)),
     crise: new Set(DOSES_CRISE.map((d) => d.id)),
+    asma: new Set(DOSES_ASMA.map((d) => d.id)), anafilaxia: new Set(DOSES_ANAFILAXIA.map((d) => d.id)),
+    pneumonia: new Set([...DOSES_SBP_2024, ...ESPECIAIS.flatMap((e) => e.doses),
+      ...Object.values(DOMICILIAR).flatMap((t) => [...t.inicial, ...t.falha]), ...Object.values(HOSPITALAR).flatMap((t) => [...t.inicial, ...t.falha])].map((d) => d.id)),
+    itu: new Set([...DOSES_ITU_ORAL, ...DOSES_ITU_PARENTERAL].map((d) => d.id)),
+    falciforme: new Set(DOSES_CRISE_ALGICA.map((d) => d.id)),
+    renal: new Set([...DOSES_IRA, ...DOSES_TABELA8].map((d) => d.id)),
+    hemostasia: new Set([...DOSES_HEMOSTASIA, ...DOSES_PTI].map((d) => d.id)),
+    oncologia: new Set([...DOSES_SLT, ...DOSES_HEMATO_ONCO, ...DOSES_NEUTROPENIA, ...DOSES_COMPRESSIVAS].map((d) => d.id)),
+    eletrolitos: new Set([...HIPERCALEMIA, CLORETO_CA_TABELA7, ...HIPOCALCEMIA, ...HIPERCALCEMIA, ...Object.values(HIPOMAGNESEMIA), ...HIPERMAGNESEMIA, ...FOSFORO, K_IV, K_VO].map((d) => d.id)),
+    glomerulo: new Set([...DOSES_NEFROTICA, ...DOSES_NEFRITICA, ...DOSES_SHU].map((d) => d.id)),
+    intoxicacao: new Set(DOSES_CAPITULO_INTOX.map((d) => d.id)), coma: new Set(DOSES_COMA.map((d) => d.id)),
+    hda: new Set(DOSES_HDA.map((d) => d.id)), pele: new Set([...DOSES_SCT, ...DOSES_PELE].map((d) => d.id)),
+    meningite: new Set([...DOSES_MENINGITE, ...DOSES_PROFILAXIA].map((d) => d.id)),
+    // adulto: a PCR tem lista de itens; bradicardia e taquiarritmias são blocos nomeados da tela
+    'adulto-pcr': new Set(DROGAS_PCR.map((d) => d.id)),
+    'adulto-bradi': new Set(['atropina', 'aminofilina']),
+    'adulto-taqui': new Set(['adenosina', 'amiodarona', 'lidocaina', 'magnesio']),
+    'adulto-anafilaxia': new Set(SEGUNDA_LINHA_ANAFILAXIA.map((d) => d.id)),
+    'adulto-sedacao': new Set([...ADJUVANTES_SAP.map((a) => a.id), 'flumazenil', 'naloxona']),
+    'adulto-agitacao': new Set([...CONTENCAO_DOSES.map((d) => d.id), 'quetamina', ...DELIRIUM_TABELA7.map((d) => `${d.id}-delirium`)]),
+    'adulto-abstinencia': new Set(DOSES_ABSTINENCIA.map((d) => d.id)),
+    'adulto-analgesia': new Set(OPIOIDES.map((o) => o.id)),
+    'adulto-intox': new Set(['nac-ev', 'flumazenil', 'naloxona', 'atropina-bb', 'atropina-of', 'tiamina']),
+    'adulto-fa': new Set(['esmolol', 'amiodarona', 'magnesio']),
+    'adulto-has': new Set(['esmolol', 'hidralazina', 'metoprolol']),
+    'adulto-endocrino': new Set(['metoprolol', 'dexametasona']),
+    'adulto-ic': new Set(['furosemida']),
+    'adulto-anticoag': new Set(['enoxaparina']),
+    'adulto-reversao': new Set(['protamina']),
+    'adulto-tetano': new Set(['metronidazol']),
+    'adulto-cefaleia': new Set(['difenidramina', 'dexametasona', 'sumatriptano']),
+    'adulto-colica': new Set(['morfina', 'quetamina', 'ondansetrona', 'cetorolaco']),
+    'adulto-avc': new Set(['tranexamico']),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -73,7 +133,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-20.2')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.11')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -93,6 +153,12 @@ test('guia de parada: ampola só onde a fita não traz mL (sem dois volumes na m
   for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith('rcp:'))) {
     const d = DROGAS_RCP.find((x) => x.id === chave.slice(4))!
     assert.ok(d.porMl === undefined && d.mlPorKg === undefined, `${chave} já tem mL`)
+  }
+  for (const [prefixo, lista] of [['asma:', DOSES_ASMA], ['anafilaxia:', DOSES_ANAFILAXIA]] as const) {
+    for (const chave of Object.keys(ITENS_COM_AMPOLA).filter((c) => c.startsWith(prefixo))) {
+      const d = lista.find((x) => x.id === chave.slice(prefixo.length))!
+      assert.ok(d.porMl === undefined && d.mlPorKg === undefined, `${chave} já tem mL`)
+    }
   }
 })
 
@@ -119,11 +185,11 @@ test('lote 2: concentrações das bulas aprovadas pelo RT (20/11/2026)', () => {
   assert.deepEqual(c('naloxona-ug'), [400])
 })
 
-test('lote 2: succinilcolina (pó) e morfina ficam sem mL; dexmedetomidina em ataque (infusão) também', () => {
-  for (const chave of ['sri:succinilcolina-menor10', 'sri:succinilcolina-maior10', 'fita:fita-succinilcolina-lactente', 'fita:fita-morfina-iv', 'bolus:dexmedetomidina-ataque']) {
+test('lote 2: succinilcolina (pó) e dexmedetomidina em ataque (infusão) ficam sem mL', () => {
+  for (const chave of ['sri:succinilcolina-menor10', 'sri:succinilcolina-maior10', 'fita:fita-succinilcolina-lactente', 'bolus:dexmedetomidina-ataque']) {
     assert.deepEqual(ampolasDoItem(chave), [], chave)
   }
-  assert.equal(AMPOLAS.morfina, undefined)
+  // a morfina ficou sem mL no lote 2 e entrou no lote 5 (L5-3)
 })
 
 test('lote 2: contas de exemplo', () => {
@@ -147,4 +213,442 @@ test('lote 3 (crise) e CMED: concentrações aprovadas pelo RT (20/11/2026)', ()
   // diazepam 0,3 mg/kg em 10 kg = 3 mg = 0,6 mL de 5 mg/mL; fenitoína 20 mg/kg em 10 kg = 200 mg = 4 mL a aspirar e diluir
   assert.deepEqual(volumeDaAmpola([3, 3], ampolasDoItem('crise:diazepam-iv')[0])?.ml, [0.6, 0.6])
   assert.deepEqual(volumeDaAmpola([200, 200], ampolasDoItem('crise:fenitoina')[0]), { ml: [4, 4], aspirar: true })
+})
+
+test('lote 4 (L4-3 do RT, 20/11/2026): magnésio 10% e 50% pela CMED, no sal, nenhuma marcada', () => {
+  assert.deepEqual(AMPOLAS.magnesio.map((a) => [a.porMl, a.base]), [[100, 'sal'], [500, 'sal']])
+  for (const c of ['asma:magnesio-tabela', 'asma:magnesio-texto', 'bolus:magnesio-asma', 'bolus:magnesio-torsades', 'fita:fita-magnesio-asma', 'fita:fita-magnesio-torsades']) {
+    assert.deepEqual(ampolasDoItem(c).map((a) => a.id), ['magnesio-100', 'magnesio-500'], c)
+  }
+  // a RCP do livro (Tabela 2) nomeia a 50%: fica como está
+  assert.deepEqual(ampolasDoItem('rcp:magnesio'), [])
+  // asma 50 mg/kg em 20 kg = 1.000 mg = 10 mL da 10% ou 2 mL da 50%
+  const [mg10, mg50] = AMPOLAS.magnesio
+  assert.deepEqual(volumeDaAmpola([1000, 1000], mg10, 'sal')?.ml, [10, 10])
+  assert.deepEqual(volumeDaAmpola([1000, 1000], mg50, 'sal')?.ml, [2, 2])
+  // sem ampola escolhida, nada de mL; dose em elemento não usa a ampola do sal (ML6)
+  assert.equal(volumeDaAmpola([1000, 1000], undefined), null)
+  assert.equal(volumeDaAmpola([100, 100], mg50, 'elemento'), null)
+})
+
+test('lote 8: dexametasona VO, IM ou IV (asma e crupe) com a ampola e o aviso de via mista', () => {
+  for (const c of ['asma:dexametasona', 'bolus:dexametasona-crupe', 'fita:fita-dexametasona-crupe']) {
+    assert.deepEqual(ampolasDoItem(c).map((a) => a.porMl), [2, 4], c)
+    assert.equal(ITENS_COM_AMPOLA[c].viaMista, true, c)
+  }
+})
+
+test('L4-5: aviso de volume abaixo de 0,1 mL', () => {
+  assert.equal(volumeAbaixoDe01([0.03, 0.06]), true)
+  assert.equal(volumeAbaixoDe01([0.05, 0.2]), true)
+  assert.equal(volumeAbaixoDe01([0.1, 0.1]), false)
+  assert.equal(volumeAbaixoDe01([0.3 / 3, 1]), false) // 0,1 com resto de ponto flutuante
+  assert.equal(volumeAbaixoDe01([0, 0]), false)
+  assert.equal(volumeAbaixoDe01(null), false)
+  assert.equal(volumeAbaixoDe01(undefined), false)
+})
+
+test('lote 5 (L5-1 a L5-6 do RT, 20/11/2026): concentrações da CMED, nenhuma marcada', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  assert.deepEqual(ids('bolus:flumazenil'), [['flumazenil-0-1', 0.1]])
+  assert.deepEqual(ids('bolus:hidralazina'), [['hidralazina-20', 20]])
+  assert.deepEqual(ids('bolus:terbutalina-ataque'), [['terbutalina-500', 500]]) // µg/mL
+  assert.deepEqual(ids('fita:fita-ondansetrona-iv'), [['ondansetrona-2', 2]])
+  assert.deepEqual(ids('bolus:octreotida-ataque'), [['octreotida-50', 50], ['octreotida-100', 100], ['octreotida-500', 500]]) // µg/mL (L5-4)
+  for (const c of ['bolus:neostigmina-0a2', 'bolus:neostigmina-maior2']) assert.deepEqual(ids(c), [['neostigmina-0-5', 0.5]], c) // L5-6
+  // L5-3: 1 e 10 mg/mL; 0,1 e 0,2 mg/mL entraram no lote 7 (a bula do Dimorf permite IV)
+  for (const c of ['bolus:morfina-menor6m', 'bolus:morfina-maior6m', 'fita:fita-morfina-iv']) assert.deepEqual(ids(c), [['morfina-0-1', 0.1], ['morfina-0-2', 0.2], ['morfina-1', 1], ['morfina-10', 10]], c)
+  // terbutalina 10 µg/kg em 20 kg = 200 µg = 0,4 mL
+  assert.deepEqual(volumeDaAmpola([200, 200], AMPOLAS.terbutalina[0])?.ml, [0.4, 0.4])
+  // morfina 0,1 mg/kg em 10 kg = 1 mg: 1 mL da 1 mg/mL ou 0,1 mL da 10 mg/mL
+  const morfina = (id: string) => AMPOLAS.morfina.find((a) => a.id === id)
+  assert.deepEqual(volumeDaAmpola([1, 1], morfina('morfina-1'))?.ml, [1, 1])
+  assert.deepEqual(volumeDaAmpola([1, 1], morfina('morfina-10'))?.ml, [0.1, 0.1])
+})
+
+test('lote 5, L5-5 e ML7: insulina só pelo preparo de 0,1 UI/mL do livro, nunca pelo frasco', () => {
+  const [prep] = ampolasDoItem('bolus:polarizante-insulina')
+  assert.equal(prep.porMl, 0.1)
+  assert.match(prep.rotulo, /50 UI em 500 mL/)
+  assert.ok(Object.values(AMPOLAS).flat().every((a) => !/insulina/i.test(a.id) || a.porMl < 100))
+  // 0,1 UI/kg em 20 kg = 2 UI = 20 mL do preparo (1 mL/kg)
+  assert.deepEqual(volumeDaAmpola([2, 2], prep)?.ml, [20, 20])
+})
+
+test('lote 5: vitamina K IV (bulas contraindicam a veia) e pralidoxima ficam sem mL (L5-2)', () => {
+  for (const c of ['bolus:vitamina-k', 'bolus:pralidoxima']) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+})
+
+test('lote 6a (L6-1 e L6-2 do RT, 20/11/2026): soluções prontas, dipirona e morfina da crise álgica', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.pronta ?? false])
+  assert.deepEqual(ids('pneumonia:sbp-levo-menor5'), [['levofloxacino-5', 5, true]])
+  assert.deepEqual(ids('pneumonia:sbp-levo-maior5'), [['levofloxacino-5', 5, true]])
+  assert.deepEqual(ids('pneumonia:sbp-metro'), [['metronidazol-5', 5, true]])
+  assert.deepEqual(ids('pneumonia:sbp-linez'), [['linezolida-2', 2, true]])
+  assert.deepEqual(ids('itu:cipro-iv'), [['ciprofloxacino-2', 2, true]])
+  assert.deepEqual(ids('falciforme:dipirona'), [['dipirona-500', 500, false]])
+  for (const c of ['falciforme:morfina-figura', 'falciforme:morfina-texto']) assert.deepEqual(ampolasDoItem(c).map((a) => a.porMl), [0.1, 0.2, 1, 10], c)
+  // solução pronta nunca é "aspirar e diluir"
+  assert.ok(Object.values(AMPOLAS).flat().every((a) => !(a.pronta && a.diluir)))
+  // L6-1: o mL sai da dose por tomada. Metronidazol 30 mg/kg/dia em 4 doses, 20 kg = 150 mg/dose = 30 mL
+  const metro = DOSES_SBP_2024.find((d) => d.id === 'sbp-metro')!
+  const r = calcularDoseLivro(metro, 20)!
+  assert.deepEqual(r.porDose, [150, 150])
+  assert.deepEqual(volumeDaAmpola(r.porDose!, AMPOLAS.metronidazol[0])?.ml, [30, 30])
+  // aminoglicosídeos da ITU são IV ou IM (lote 7): o aviso de diluir só vale na veia
+  assert.deepEqual(ampolasDoItem('itu:amicacina'), [])
+  assert.deepEqual(ampolasDoItem('itu:gentamicina'), [])
+})
+
+test('lote 6b (renal, hemostasia e oncologia, 20/11/2026): concentrações da CMED e do livro, nenhuma marcada', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  for (const c of ['renal:furosemida', 'renal:furo-k', 'oncologia:furo']) assert.deepEqual(ids(c), [['furosemida-10', 10]], c)
+  assert.deepEqual(ids('hemostasia:atx-iv'), [['acido-tranexamico-50', 50]])
+  assert.deepEqual(ids('oncologia:enoxa-svcs'), [['enoxaparina-100', 100]])
+  assert.equal(AMPOLAS.enoxaparina[0].seringa, true)
+  assert.deepEqual(ids('oncologia:manitol'), [['manitol-20', 0.2]])
+  assert.equal(AMPOLAS.manitol[0].pronta, true)
+  for (const c of ['renal:insulina', 'oncologia:insulina']) assert.deepEqual(ids(c), [['insulina-0-1', 0.1]], c)
+  for (const c of ['oncologia:midaz-iv', 'oncologia:midaz-im', 'oncologia:midaz-in']) assert.deepEqual(ampolasDoItem(c).map((a) => a.porMl), [1, 5], c)
+  for (const c of ['oncologia:fenitoina-ataque', 'oncologia:fenitoina-man']) assert.deepEqual(ids(c), [['fenitoina-50', 50]], c)
+  assert.deepEqual(ids('oncologia:linezolida'), [['linezolida-2', 2]])
+  assert.deepEqual(ids('oncologia:metronidazol'), [['metronidazol-5', 5]])
+  assert.deepEqual(ids('oncologia:cipro-iv'), [['ciprofloxacino-2', 2]])
+  assert.deepEqual(ids('oncologia:levo'), [['levofloxacino-5', 5]])
+})
+
+test('lote 6b: item sem via escrita, VO, por bula ou por decisão própria fica sem mL', () => {
+  // cálcio e bicarbonato da injúria renal e o gluconato da oncologia ganharam mL no lote 6c
+  for (const c of ['hemostasia:atx-vo', 'renal:beta2',
+    'renal:mg', 'renal:nac-contraste', 'renal:sorcal', 'oncologia:bic3',
+    'oncologia:cipro-vo', 'oncologia:nacl3-bolo']) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+})
+
+test('lote 6b: contas de exemplo, só da dose por tomada (L6-1)', () => {
+  const doItem = (lista: { id: string }[], id: string) => lista.find((d) => d.id === id) as (typeof DOSES_IRA)[number]
+  const furo = calcularDoseLivro(doItem(DOSES_IRA, 'furosemida'), 20)!
+  assert.deepEqual(volumeDaAmpola(furo.porDose!, AMPOLAS.furosemida[0])?.ml, [2, 3])
+  const atx = calcularDoseLivro(doItem(DOSES_HEMOSTASIA, 'atx-iv'), 20)!
+  assert.deepEqual(volumeDaAmpola(atx.porDose!, AMPOLAS['acido-tranexamico'][0])?.ml, [4, 4])
+  const manitol = calcularDoseLivro(doItem(DOSES_COMPRESSIVAS, 'manitol'), 20)!
+  assert.deepEqual(volumeDaAmpola(manitol.porDose!, AMPOLAS.manitol[0])?.ml.map((x) => Math.round(x * 1e6) / 1e6), [25, 100])
+  // fenitoína de manutenção: 4 a 8 mg/kg/dia em 2 doses, 20 kg = 40 a 80 mg por dose = 0,8 a 1,6 mL a aspirar
+  const fen = calcularDoseLivro(doItem(DOSES_COMPRESSIVAS, 'fenitoina-man'), 20)!
+  assert.deepEqual(volumeDaAmpola(fen.porDose!, AMPOLAS.fenitoina[0]), { ml: [0.8, 1.6], aspirar: true })
+  // enoxaparina no lactente de 3 kg: 3 a 4,5 mg = 0,03 a 0,045 mL, com o aviso de volume pequeno (L4-5)
+  const enoxa = calcularDoseLivro(doItem(DOSES_COMPRESSIVAS, 'enoxa-svcs'), 3)!
+  const v = volumeDaAmpola(enoxa.porDose!, AMPOLAS.enoxaparina[0])!
+  assert.deepEqual(v.ml.map((x) => Math.round(x * 1e6) / 1e6), [0.03, 0.045])
+  assert.equal(volumeAbaixoDe01(v.ml), true)
+  // insulina da hipercalemia (oncologia): 0,1 UI/kg, máx. 10 UI = 100 mL do preparo de 0,1 UI/mL
+  const ins = calcularDoseLivro(doItem(DOSES_SLT, 'insulina'), 150)!
+  assert.deepEqual(volumeDaAmpola(ins.porDose!, AMPOLAS['insulina-preparo'][0])?.ml.map((x) => Math.round(x * 1e6) / 1e6), [100, 100])
+})
+
+test('lote 6b: seringa preenchida não pode ser solução pronta nem "aspirar e diluir"', () => {
+  const p = problemasDasAmpolas({ x: [{ id: 'x-1', rotulo: 'x', porMl: 1, seringa: true, pronta: true, fonte: 'teste' }] }, {})
+  assert.ok(p.some((x) => /seringa preenchida/.test(x)))
+  assert.ok(Object.values(AMPOLAS).flat().every((a) => !(a.seringa && (a.pronta || a.diluir))))
+})
+
+test('lote 6c (eletrólitos; L6-6 e L6-7 do RT, 20/11/2026): bicarbonato e cálcio no sal, nenhum marcado', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, Math.round(a.porMl * 1000) / 1000])
+  for (const c of ['eletrolitos:bic', 'renal:bic']) assert.deepEqual(ids(c), [['bicarbonato-8-4', 1], ['bicarbonato-10', 1.19]], c)
+  for (const c of ['eletrolitos:cloreto-ca-mg', 'renal:cacl']) assert.deepEqual(ids(c), [['cloreto-sal-10', 100]], c)
+  for (const c of ['eletrolitos:gluconato-ca-mg', 'renal:gluconato', 'renal:gluconato-assint', 'oncologia:gluconato']) assert.deepEqual(ids(c), [['gluconato-sal-10', 100]], c)
+  // dose em sal nunca vê a concentração elementar (ML6), e o cloreto nunca vê o gluconato
+  for (const c of Object.keys(ITENS_COM_AMPOLA).filter((k) => ITENS_COM_AMPOLA[k].base === 'sal')) {
+    assert.ok(ampolasDoItem(c).every((a) => a.base === 'sal'), c)
+  }
+  assert.deepEqual(ampolasDoItem('rcp:calcio').map((a) => a.base), ['elemento', 'elemento'])
+  // magnésio grave: 10% e 50% no sal, sem o 10% fixo
+  assert.deepEqual(ids('eletrolitos:mg-grave'), [['magnesio-100', 100], ['magnesio-500', 500]])
+  assert.deepEqual(ids('eletrolitos:furosemida-k'), [['furosemida-10', 10]])
+  // revisão de 23/11/2026: furosemida-ca não escreve a via (item sem via fica sem mL)
+  assert.deepEqual(ids('eletrolitos:furosemida-ca'), [])
+  // magnésio 50%: o livro dá concentração máxima de 20% (p. 908), então a ampola pede diluição
+  assert.equal(ampolasDoItem('eletrolitos:mg-grave').find((a) => a.id === 'magnesio-500')?.diluir, true)
+  assert.deepEqual(ids('eletrolitos:insulina'), [['insulina-0-1', 0.1]])
+})
+
+test('lote 6c: glicose, 3%, magnésio elementar, dose por dia e itens já em mL ficam sem a escolha', () => {
+  for (const c of ['oncologia:bic3', 'renal:mg', 'eletrolitos:mg-moderada', 'eletrolitos:mg-leve',
+    'eletrolitos:k-iv', 'eletrolitos:p-ev', 'eletrolitos:gluconato-ca', 'eletrolitos:cloreto-ca', 'eletrolitos:cloreto-ca-tab7', 'eletrolitos:gluconato-rapido',
+    'eletrolitos:hidrocortisona-ca', 'eletrolitos:calcitonina']) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+})
+
+test('lote 6c: contas de exemplo', () => {
+  // bicarbonato 1 a 2 mEq/kg, 10 kg: 10 a 20 mL do 8,4%; 8,4 a 16,8 mL do 10%
+  const bic = calcularDose(HIPERCALEMIA.find((d) => d.id === 'bic')!, 10)!
+  assert.deepEqual(volumeDaAmpola(bic.faixa, AMPOLAS.bicarbonato[0])?.ml, [10, 20])
+  assert.deepEqual(volumeDaAmpola(bic.faixa, AMPOLAS.bicarbonato[1])?.ml.map((x) => Math.round(x * 100) / 100), [8.4, 16.8])
+  // cloreto de cálcio 20 mg/kg do sal, 10 kg = 200 mg = 2 mL (o livro: 0,2 mL/kg, p. 549)
+  const cacl = calcularDose(HIPERMAGNESEMIA.find((d) => d.id === 'cloreto-ca-mg')!, 10)!
+  assert.deepEqual(volumeDaAmpola(cacl.faixa, AMPOLAS['cloreto-de-calcio'][0], 'sal')?.ml, [2, 2])
+  // gluconato 100 mg/kg, máx. 3 g: 50 kg = 30 mL
+  const glu = calcularDose(HIPERMAGNESEMIA.find((d) => d.id === 'gluconato-ca-mg')!, 50)!
+  assert.deepEqual(volumeDaAmpola(glu.faixa, AMPOLAS['gluconato-de-calcio'][0], 'sal')?.ml, [30, 30])
+  // magnésio grave 25 a 50 mg/kg do sal, 20 kg = 500 a 1.000 mg: 5 a 10 mL do 10% e 1 a 2 mL do 50%
+  const mg = calcularDose(HIPOMAGNESEMIA.grave, 20)!
+  assert.deepEqual(volumeDaAmpola(mg.faixa, AMPOLAS.magnesio[0], 'sal')?.ml, [5, 10])
+  assert.deepEqual(volumeDaAmpola(mg.faixa, AMPOLAS.magnesio[1], 'sal')?.ml, [1, 2])
+})
+
+test('lote 6d: capítulos com princípio já cadastrado, sem princípio novo', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => a.id)
+  for (const c of ['glomerulo:furo-albumina', 'glomerulo:furo-hiper', 'glomerulo:furo-shu', 'intoxicacao:furosemida-iv']) assert.deepEqual(ids(c), ['furosemida-10'], c)
+  assert.deepEqual(ampolasDoItem('intoxicacao:atropina-cap').map((a) => a.porMl), [0.25, 0.5])
+  assert.deepEqual(ampolasDoItem('coma:midazolam').map((a) => a.porMl), [1, 5])
+  assert.deepEqual(ampolasDoItem('hda:octreotida-bolus').map((a) => a.porMl), [50, 100, 500])
+  assert.deepEqual(ids('pele:linezolida'), ['linezolida-2'])
+  assert.deepEqual(ids('pele:metronidazol'), ['metronidazol-5'])
+  // sem mL: VO, dose por dia sem número de doses, bula pendente e a lista oral da IC
+  for (const c of ['glomerulo:furo-gnpe', 'intoxicacao:furosemida-vo', 'intoxicacao:pralidoxima-im', 'pele:clindamicina', 'pele:doxi',
+    ...DOSES_IC_ORAIS.map((d) => `ic:${d.id}`)]) {
+    assert.deepEqual(ampolasDoItem(c), [], c)
+  }
+  // furosemida da SHU 2 a 5 mg/kg, 10 kg = 20 a 50 mg = 2 a 5 mL
+  const r = calcularDoseLivro(DOSES_SHU.find((d) => d.id === 'furo-shu')!, 10)!
+  assert.deepEqual(volumeDaAmpola(r.porDose!, AMPOLAS.furosemida[0])?.ml, [2, 5])
+})
+
+test('lote 6d: aviso de diluir no próprio item (infusão do livro), sem ampola marcada', () => {
+  assert.equal(ITENS_COM_AMPOLA['intoxicacao:bicarbonato-alcalina'].diluir, true)
+  assert.deepEqual(ampolasDoItem('intoxicacao:bicarbonato-alcalina').map((a) => a.id), ['bicarbonato-8-4', 'bicarbonato-10'])
+  // a ampola em si não pede diluição; o bolus da hipercalemia segue sem o aviso
+  assert.ok(AMPOLAS.bicarbonato.every((a) => !a.diluir))
+  assert.equal(ITENS_COM_AMPOLA['eletrolitos:bic'].diluir, undefined)
+  // a guarda acusa item para diluir com solução pronta
+  const p = problemasDasAmpolas({ s: [{ id: 's-1', rotulo: 's', porMl: 1, pronta: true, fonte: 'teste' }] }, { 'pele:x': { principio: 's', diluir: true } })
+  assert.ok(p.some((x) => /item para diluir/.test(x)))
+})
+
+test('lote 7 (L7-1 a L7-7 = A do RT, 23/11/2026): bulas lidas, nenhuma ampola marcada', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  for (const c of ['anafilaxia:difenidramina-tabela', 'anafilaxia:difenidramina-texto', 'bolus:difenidramina', 'fita:fita-difenidramina']) assert.deepEqual(ids(c), [['difenidramina-50', 50, false]], c)
+  // L7-1: rótulo do fosfato de dexametasona, só nos itens EV ou IV
+  for (const c of ['meningite:dexametasona', 'oncologia:dexa-sms', 'oncologia:dexa-cce-ataque', 'oncologia:dexa-cce-man', 'oncologia:dexa-hic-ataque', 'oncologia:dexa-hic-man']) {
+    assert.deepEqual(ids(c), [['dexametasona-2', 2, false], ['dexametasona-4', 4, false]], c)
+  }
+  for (const c of ['bolus:acetilcisteina-1', 'bolus:acetilcisteina-2', 'bolus:acetilcisteina-3']) assert.deepEqual(ids(c), [['acetilcisteina-100', 100, true]], c)
+  // µg/mL do cloridrato (L7-4); a de 250 mg/mL, à venda, entrou no A4-1, sempre a aspirar e diluir
+  assert.deepEqual(ids('bolus:esmolol-bolus'), [['esmolol-10000', 10000, false], ['esmolol-250000', 250000, true]])
+  assert.deepEqual(ids('bolus:milrinona-ataque'), [['milrinona-1000', 1000, false]]) // µg/mL (L7-2)
+  assert.deepEqual(ids('pele:clinda-iv'), [['clindamicina-150', 150, true]])
+  for (const c of ['pneumonia:amicacina', 'oncologia:amicacina']) assert.deepEqual(ids(c), [['amicacina-50', 50, true], ['amicacina-250', 250, true]], c)
+  assert.deepEqual(ids('itu:tobramicina'), [['tobramicina-50', 50, true]])
+  assert.deepEqual(ids('pneumonia:genta'), [['gentamicina-40', 40, true]]) // L7-3 = B: rótulo; sem a de 20 mg/mL
+  assert.deepEqual(ids('hemostasia:ddavp'), [['desmopressina-4', 4, true]]) // µg/mL do acetato (L7-5)
+  assert.deepEqual(ids('intoxicacao:vitk-sc'), [['vitamina-k-10', 10, false]]) // só SC (Eskavit e Hyvit K)
+  // L7-6: salbutamol injetável (uso adulto) fica sem mL; item sem via escrita ou de via mista também
+  for (const c of ['renal:beta2', 'coma:dexa-hic', 'pele:clindamicina']) assert.deepEqual(ampolasDoItem(c), [], c)
+})
+
+test('lote 7: contas de exemplo', () => {
+  // difenidramina 1 mg/kg em 10 kg = 10 mg = 0,2 mL
+  assert.deepEqual(volumeDaAmpola([10, 10], AMPOLAS.difenidramina[0])?.ml, [0.2, 0.2])
+  // esmolol 500 µg/kg em 20 kg = 10.000 µg = 1 mL do frasco de 10 mg/mL
+  assert.deepEqual(volumeDaAmpola([10000, 10000], AMPOLAS.esmolol[0])?.ml, [1, 1])
+  // milrinona 50 µg/kg em 10 kg = 500 µg = 0,5 mL
+  assert.deepEqual(volumeDaAmpola([500, 500], AMPOLAS.milrinona[0])?.ml, [0.5, 0.5])
+  // acetilcisteína 150 mg/kg em 20 kg = 3.000 mg = 30 mL a aspirar
+  assert.deepEqual(volumeDaAmpola([3000, 3000], AMPOLAS.acetilcisteina[0]), { ml: [30, 30], aspirar: true })
+  // desmopressina 0,3 µg/kg em 20 kg = 6 µg = 1,5 mL a aspirar
+  assert.deepEqual(volumeDaAmpola([6, 6], AMPOLAS.desmopressina[0]), { ml: [1.5, 1.5], aspirar: true })
+  // amicacina 250 mg: 5 mL da 50 mg/mL ou 1 mL da 250 mg/mL (5×, nenhuma marcada)
+  assert.deepEqual(AMPOLAS.amicacina.map((a) => volumeDaAmpola([250, 250], a)?.ml), [[5, 5], [1, 1]])
+})
+
+test('lote 8 (pendências do RT, 23/11/2026): via mista com aviso, tranexâmico da DVW, fenitoína profilática e SMX-TMP', () => {
+  for (const c of ['oncologia:linezolida', 'oncologia:metronidazol', 'oncologia:levo', 'pele:linezolida', 'falciforme:dipirona', 'hemostasia:atx-dvw', 'pele:smxtmp', 'oncologia:tmp']) {
+    assert.equal(ITENS_COM_AMPOLA[c].viaMista, true, c)
+    assert.ok(ampolasDoItem(c).length > 0, c)
+  }
+  assert.deepEqual(ampolasDoItem('hemostasia:atx-dvw').map((a) => a.porMl), [50])
+  assert.deepEqual(ampolasDoItem('oncologia:fenitoina-prof').map((a) => [a.porMl, a.diluir]), [[50, true]])
+  // SMX-TMP em trimetoprima (L6-5): 16 mg/mL, a aspirar e diluir
+  for (const c of ['pele:smxtmp', 'oncologia:tmp']) assert.deepEqual(ampolasDoItem(c).map((a) => [a.porMl, a.diluir]), [[16, true]], c)
+  // TMP 20 mg/kg/dia em 4 doses, 10 kg = 50 mg/dose = 3,125 mL
+  assert.deepEqual(volumeDaAmpola([50, 50], AMPOLAS['smx-tmp'][0])?.ml, [3.125, 3.125])
+})
+
+test('lote 8: glicose de 5% a 50%, nenhuma marcada, sem a de 75%', () => {
+  assert.deepEqual(AMPOLAS.glicose.map((a) => a.porMl), [0.05, 0.1, 0.25, 0.5])
+  assert.ok(AMPOLAS.glicose.every((a) => a.porMl < 0.75))
+  for (const c of ['renal:glicose', 'eletrolitos:glicose-polarizante', 'bolus:glicose-25', 'crise:glicose25', 'coma:glicose25', 'oncologia:glicose25']) {
+    assert.equal(ampolasDoItem(c).length, 4, c)
+  }
+  // a RCP já mostra o volume da glicose 25%: fica sem a escolha
+  assert.deepEqual(ampolasDoItem('rcp:glicose'), [])
+  // item em mL de glicose 25%: 2 mL/kg em 10 kg = 20 mL de 25% = 5 g = 10 mL da 50% ou 50 mL da 10%
+  const g = doseNaUnidadeDaAmpola([20, 20], 'bolus:glicose-25')
+  assert.deepEqual(g, [5, 5])
+  const por = (id: string) => AMPOLAS.glicose.find((a) => a.id === id)
+  assert.deepEqual(volumeDaAmpola(g, por('glicose-50'))?.ml, [10, 10])
+  assert.deepEqual(volumeDaAmpola(g, por('glicose-10'))?.ml, [50, 50])
+  assert.deepEqual(volumeDaAmpola(g, por('glicose-25'))?.ml, [20, 20])
+  // item já em g: sem conversão
+  assert.deepEqual(doseNaUnidadeDaAmpola([5, 10], 'renal:glicose'), [5, 10])
+})
+
+test('adulto A0 e A1 (MA1 a MA7 e A1-1 a A1-4 = A do RT, 23/11/2026): cadastro único, PCR e arritmias', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  assert.deepEqual(ids('adulto-bradi:atropina'), [['atropina-025', 0.25, false], ['atropina-05', 0.5, false]])
+  assert.deepEqual(ids('adulto-taqui:adenosina'), [['adenosina-3', 3, false]])
+  assert.deepEqual(ids('adulto-taqui:amiodarona'), [['amiodarona-50', 50, true]])
+  assert.deepEqual(ids('adulto-taqui:lidocaina').map((a) => a[1]), [10, 20])
+  assert.deepEqual(ids('adulto-taqui:magnesio'), [['magnesio-g-10', 0.1, false], ['magnesio-g-50', 0.5, false]])
+  assert.equal(ITENS_COM_AMPOLA['adulto-taqui:magnesio'].diluir, true) // 2 g em 15 min
+  assert.equal(ampolasDoItem('adulto-pcr:glicose-insulina').length, 4)
+  // contas: atropina 1 mg = 2 mL da 0,5 mg/mL; adenosina 12 mg = 4 mL; magnésio 2 g = 20 mL da 10% ou 4 mL da 50%
+  assert.deepEqual(volumeDaAmpola([1, 1], AMPOLAS.atropina[1])?.ml, [2, 2])
+  assert.deepEqual(volumeDaAmpola([12, 12], AMPOLAS.adenosina[0])?.ml, [4, 4])
+  assert.deepEqual(AMPOLAS['magnesio-g'].map((a) => volumeDaAmpola([2, 2], a)?.ml), [[20, 20], [4, 4]])
+  // glicose 25 g = 50 mL da 50% ou 100 mL da 25%
+  const g = (id: string) => AMPOLAS.glicose.find((a) => a.id === id)
+  assert.deepEqual(volumeDaAmpola([25, 25], g('glicose-50'))?.ml, [50, 50])
+  assert.deepEqual(volumeDaAmpola([25, 25], g('glicose-25'))?.ml, [100, 100])
+  // KCl (sempre diluído) e aminofilina pelas bulas (A1-2 e A1-3)
+  assert.deepEqual(ids('adulto-pcr:kcl'), [['kcl-10', 1.34, true], ['kcl-19-1', 2.56, true]])
+  assert.deepEqual(ids('adulto-bradi:aminofilina'), [['aminofilina-24', 24, false]])
+  // a tela passa 250 mg e 25 g: os números vêm do texto dos itens
+  assert.match(OUTRAS_BRADI.find((d) => d.id === 'aminofilina')!.dose, /^250 mg EV em bolus/)
+  assert.match(DROGAS_PCR.find((d) => d.id === 'glicose-insulina')!.dose, /^25 g de glicose/)
+  // KCl 20 mEq = 14,9 mL da 10% ou 7,8 mL da 19,1%; aminofilina 250 mg = 10,4 mL
+  assert.ok(Math.abs(volumeDaAmpola([20, 20], AMPOLAS['kcl-meq'][1])!.ml[0] - 7.8125) < 1e-9)
+  assert.ok(Math.abs(volumeDaAmpola([250, 250], AMPOLAS.aminofilina[0])!.ml[0] - 10.4167) < 1e-3)
+})
+
+test('adulto A2, primeira parte (A2-1 a A2-4 do RT, 23/11/2026): anafilaxia e sedação', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  assert.deepEqual(ids('adulto-anafilaxia:difenidramina'), [['difenidramina-50', 50, false]])
+  assert.deepEqual(ids('adulto-anafilaxia:magnesio').map((a) => a[1]), [0.1, 0.5])
+  assert.equal(ITENS_COM_AMPOLA['adulto-anafilaxia:magnesio'].diluir, true) // 2 g em 20 a 30 min
+  // o número da dose bate com o texto do manual (MA2)
+  for (const d of SEGUNDA_LINHA_ANAFILAXIA.filter((x) => x.doseNum)) {
+    assert.ok(d.dose.startsWith(d.doseNum![0] === d.doseNum![1] ? `${d.doseNum![0]} ${d.unidade}` : `${d.doseNum![0]} a ${d.doseNum![1]} ${d.unidade}`), d.id)
+  }
+  for (const c of ['adulto-sedacao:lidocaina', 'adulto-sedacao:lidocaina-diluida']) assert.deepEqual(ids(c).map((a) => a[1]), [10, 20], c)
+  for (const c of ['adulto-sedacao:midazolam-premed', 'adulto-sedacao:midazolam-emersao', 'adulto-sedacao:midazolam-mioclonia']) assert.deepEqual(ids(c).map((a) => a[1]), [1, 5], c)
+  assert.deepEqual(ids('adulto-sedacao:fentanil-teto'), [['fentanila-50', 50, false]])
+  assert.deepEqual(ids('adulto-sedacao:flumazenil'), [['flumazenil-0-1', 0.1, false]])
+  assert.deepEqual(ids('adulto-sedacao:naloxona'), [['naloxona-0-4', 0.4, false]])
+  // difenidramina 50 mg = 1 mL; flumazenil 0,2 mg = 2 mL
+  assert.deepEqual(volumeDaAmpola([50, 50], AMPOLAS.difenidramina[0])?.ml, [1, 1])
+  assert.deepEqual(volumeDaAmpola([0.2, 0.2], AMPOLAS.flumazenil[0])?.ml, [2, 2])
+})
+
+test('adulto A2, segunda parte: agitação, abstinência e analgesia pelas bulas lidas', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  assert.deepEqual(ids('adulto-sedacao:haloperidol-premed'), [['haloperidol-5', 5]])
+  assert.match(ADJUVANTES_SAP.find((a) => a.id === 'haloperidol-premed')!.texto, /^5 mg IM /) // A2-3
+  // Tabela 4: o número bate com o texto do nível
+  for (const d of CONTENCAO_DOSES) {
+    const n = CONTENCAO_QUIMICA.find((c) => c.nivel === d.nivel)!
+    assert.ok(`${n.escolha}, ${n.segundaLinha}`.toLowerCase().includes(d.nome.toLowerCase()), d.id)
+    assert.ok(ampolasDoItem(`adulto-agitacao:${d.id}`).length > 0, d.id)
+  }
+  // A2-1: escetamina com o aviso da cetamina racêmica; A2-2: haloperidol do delirium com via mista e aviso
+  assert.deepEqual(ids('adulto-agitacao:quetamina'), [['escetamina-50', 50]])
+  assert.match(ITENS_COM_AMPOLA['adulto-agitacao:quetamina'].aviso!, /cetamina racêmica/)
+  assert.equal(ITENS_COM_AMPOLA['adulto-agitacao:haloperidol-delirium'].viaMista, true)
+  assert.match(ITENS_COM_AMPOLA['adulto-agitacao:haloperidol-delirium'].aviso!, /registra só o uso IM/)
+  assert.deepEqual(ampolasDoItem('adulto-agitacao:lorazepam-delirium'), []) // sem injetável à venda
+  assert.deepEqual(ids('adulto-abstinencia:diazepam-ev'), [['diazepam-5', 5]])
+  assert.deepEqual(ids('adulto-abstinencia:haloperidol'), [['haloperidol-5', 5]])
+  assert.deepEqual(ids('adulto-abstinencia:tiamina-im'), [['tiamina-100', 100]])
+  assert.deepEqual(ampolasDoItem('adulto-abstinencia:olanzapina'), [])
+  assert.deepEqual(ids('adulto-analgesia:tramadol'), [['tramadol-50', 50]])
+  assert.equal(ITENS_COM_AMPOLA['adulto-analgesia:tramadol'].viaMista, true)
+  assert.deepEqual(ids('adulto-analgesia:meperidina'), [['petidina-50', 50]])
+  assert.deepEqual(ids('adulto-analgesia:fentanil'), [['fentanila-50', 50]])
+  // a morfina da analgesia já mostra o mL do preparo do livro (1 mg/mL): sem segunda escolha
+  assert.deepEqual(ampolasDoItem('adulto-analgesia:morfina'), [])
+  // o decanoato (depósito) nunca entra
+  assert.ok(AMPOLAS.haloperidol.every((a) => a.porMl === 5))
+  // tramadol 100 mg = 2 mL; tiamina 200 mg = 2 mL; meperidina 1 mg/kg em 70 kg = 70 mg = 1,4 mL
+  assert.deepEqual(volumeDaAmpola([100, 100], AMPOLAS.tramadol[0])?.ml, [2, 2])
+  assert.deepEqual(volumeDaAmpola([200, 200], AMPOLAS.tiamina[0])?.ml, [2, 2])
+  assert.deepEqual(volumeDaAmpola([70, 70], AMPOLAS.petidina[0])?.ml, [1.4, 1.4])
+})
+
+test('adulto A3 (intoxicações e antídotos, 23/11/2026): ampolas de bula já lida', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  assert.deepEqual(ids('adulto-intox:nac-ev'), [['acetilcisteina-100', 100, true]])
+  assert.deepEqual(ids('adulto-intox:flumazenil'), [['flumazenil-0-1', 0.1, false]])
+  assert.deepEqual(ids('adulto-intox:naloxona'), [['naloxona-0-4', 0.4, false]])
+  for (const c of ['adulto-intox:atropina-bb', 'adulto-intox:atropina-of']) assert.deepEqual(ids(c).map((a) => a[1]), [0.25, 0.5], c)
+  assert.deepEqual(ids('adulto-intox:tiamina'), [['tiamina-100', 100, false]])
+  // a tela passa 100 mg de tiamina: o número vem do texto do item
+  assert.match(ALCOOIS.outros.find((i) => i.id === 'tiamina')!.texto, /^100 mg EV/)
+  // NAC 150 mg/kg em 70 kg = 10.500 mg = 105 mL a aspirar; naloxona 0,04 mg = 0,1 mL; atropina 5 mg = 10 mL da 0,5 mg/mL
+  assert.deepEqual(volumeDaAmpola([10500, 10500], AMPOLAS.acetilcisteina[0]), { ml: [105, 105], aspirar: true })
+  assert.ok(Math.abs(volumeDaAmpola([0.04, 0.04], AMPOLAS.naloxona[0])!.ml[0] - 0.1) < 1e-9)
+  assert.deepEqual(volumeDaAmpola([5, 5], AMPOLAS.atropina[1])?.ml, [10, 10])
+})
+
+test('adulto A4, primeira parte (A4-1 a A4-4 = A do RT, 23/11/2026): esmolol 250 mg/mL, FA, emergência hipertensiva e AVC', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  for (const c of ['adulto-fa:esmolol', 'adulto-has:esmolol']) assert.deepEqual(ids(c), [['esmolol-mg-10', 10, false], ['esmolol-mg-250', 250, true]], c)
+  assert.deepEqual(ids('adulto-fa:amiodarona'), [['amiodarona-50', 50, true]])
+  assert.deepEqual(ids('adulto-fa:magnesio').map((a) => a[1]), [0.1, 0.5])
+  assert.deepEqual(ids('adulto-has:hidralazina'), [['hidralazina-20', 20, false]])
+  assert.deepEqual(ids('adulto-avc:tranexamico'), [['acido-tranexamico-50', 50, false]])
+  // nenhuma fonte diz mais que a de 250 mg/mL está sem venda
+  assert.ok(AMPOLAS.esmolol.concat(AMPOLAS['esmolol-mg']).every((a) => !/250 mg\/mL está sem venda/.test(a.fonte)))
+  // esmolol 0,5 mg/kg em 80 kg = 40 mg: 4 mL da 10 mg/mL ou 0,16 mL da 250 mg/mL (a aspirar e diluir)
+  assert.deepEqual(volumeDaAmpola([40, 40], AMPOLAS['esmolol-mg'][0])?.ml, [4, 4])
+  assert.deepEqual(volumeDaAmpola([40, 40], AMPOLAS['esmolol-mg'][1]), { ml: [0.16, 0.16], aspirar: true })
+})
+
+test('adulto A4, segunda parte: metoprolol e protamina pelas bulas, dexametasona, furosemida e enoxaparina', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  for (const c of ['adulto-has:metoprolol', 'adulto-endocrino:metoprolol']) assert.deepEqual(ids(c), [['metoprolol-1', 1]], c)
+  assert.deepEqual(ids('adulto-endocrino:dexametasona'), [['dexametasona-2', 2], ['dexametasona-4', 4]])
+  assert.deepEqual(ids('adulto-ic:furosemida'), [['furosemida-10', 10]])
+  assert.deepEqual(ids('adulto-anticoag:enoxaparina'), [['enoxaparina-100', 100]])
+  assert.equal(AMPOLAS.enoxaparina[0].seringa, true)
+  assert.deepEqual(ids('adulto-reversao:protamina'), [['protamina-10', 10]])
+  // a tela da crise tireotóxica passa 5 mg e 2–4 mg: os números vêm do texto dos itens (A4-2: via IV escrita)
+  const t = (d: string) => DROGAS_CRISE_TIREOTOXICA.find((x) => x.droga === d)!.texto
+  assert.match(t('Metoprolol'), /^5 mg IV /)
+  assert.match(t('Dexametasona'), /^2–4 mg EV/)
+  // protamina 50 mg = 5 mL (1 ampola); metoprolol 5 mg = 5 mL; enoxaparina 80 mg = 0,8 mL da seringa
+  assert.deepEqual(volumeDaAmpola([50, 50], AMPOLAS.protamina[0])?.ml, [5, 5])
+  assert.deepEqual(volumeDaAmpola([5, 5], AMPOLAS.metoprolol[0])?.ml, [5, 5])
+  assert.deepEqual(volumeDaAmpola([80, 80], AMPOLAS.enoxaparina[0])?.ml, [0.8, 0.8])
+})
+
+test('adulto A5 (último): metronidazol do tétano, cefaleia e cólica renal', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl])
+  assert.deepEqual(ids('adulto-tetano:metronidazol'), [['metronidazol-5', 5]])
+  assert.equal(AMPOLAS.metronidazol[0].pronta, true)
+  assert.deepEqual(ids('adulto-cefaleia:difenidramina'), [['difenidramina-50', 50]])
+  assert.deepEqual(ids('adulto-cefaleia:dexametasona'), [['dexametasona-2', 2], ['dexametasona-4', 4]])
+  assert.deepEqual(ampolasDoItem('adulto-colica:morfina').map((a) => a.porMl), [0.1, 0.2, 1, 10])
+  assert.deepEqual(ids('adulto-colica:ondansetrona'), [['ondansetrona-2', 2]])
+  assert.deepEqual(ids('adulto-colica:quetamina'), [['escetamina-50', 50]])
+  assert.match(ITENS_COM_AMPOLA['adulto-colica:quetamina'].aviso!, /cetamina racêmica/)
+  // os números passados pelas telas vêm do texto dos itens
+  const cef = Object.values(TRATAMENTO).flatMap((t) => t.itens)
+  assert.match(cef.find((i) => i.droga === 'Difenidramina')!.texto, /^12,5 mg EV/)
+  assert.match(cef.find((i) => i.droga === 'Dexametasona')!.texto, /^10 mg EV/)
+  assert.match(ANALGESIA.find((a) => a.droga === 'Morfina')!.dose, /^2 a 5 mg EV/)
+  assert.match(ANALGESIA.find((a) => a.droga === 'Ondansetrona')!.dose, /^4 a 8 mg EV/)
+  // cetorolaco e sumatriptano pelas bulas: 10 mg EV e 6 mg SC (a seringa inteira)
+  assert.deepEqual(ids('adulto-colica:cetorolaco'), [['cetorolaco-30', 30]])
+  assert.deepEqual(ids('adulto-cefaleia:sumatriptano'), [['sumatriptano-12', 12]])
+  assert.equal(AMPOLAS.sumatriptano[0].seringa, true)
+  assert.match(ANALGESIA.find((a) => a.droga.endsWith('cetorolaco'))!.dose, /^10 mg EV/)
+  assert.match(cef.find((i) => i.droga === 'Sumatriptano')!.texto, /^6 mg SC/)
+  assert.deepEqual(volumeDaAmpola([6, 6], AMPOLAS.sumatriptano[0])?.ml, [0.5, 0.5])
+  // metronidazol 500 mg = 100 mL da solução pronta; difenidramina 12,5 mg = 0,25 mL
+  assert.deepEqual(volumeDaAmpola([500, 500], AMPOLAS.metronidazol[0])?.ml, [100, 100])
+  assert.deepEqual(volumeDaAmpola([12.5, 12.5], AMPOLAS.difenidramina[0])?.ml, [0.25, 0.25])
 })

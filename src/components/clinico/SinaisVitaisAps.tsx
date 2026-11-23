@@ -44,7 +44,7 @@ export function SinaisVitaisAps({ episodioId, nascimento, chegadaEm, onRegistrad
   return (
     <section aria-label="Sinais vitais" className="flex flex-col gap-3 rounded-container border border-fio bg-superficie px-4 py-3">
       <span className="text-controle font-semibold text-tinta">Sinais vitais <span className="font-normal text-tinta-sussurro">(os que forem aferidos agora)</span></span>
-      <CamposVitais publico={publico} opcionais extras={['estatura']} prefixo={`sv-${episodioId}`} valores={valores}
+      <CamposVitais publico={publico} opcionais extras={['estatura', 'circunferencia-abdominal']} prefixo={`sv-${episodioId}`} valores={valores}
         onChange={(k, v) => { setAviso(null); setValores((s) => ({ ...s, [k]: v })) }} />
       <div className="flex flex-wrap items-center justify-end gap-2">
         {erro && <span role="alert" className="mr-auto text-apoio text-critico">{erro}</span>}

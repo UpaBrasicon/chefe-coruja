@@ -8,15 +8,35 @@ import { Award } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { TETO_NO_APP as TETO_HIPERDIA, pontosDoPaciente, type HiperdiaLinha } from '@/domain/hiperdia'
 import {
-  ROTULO_CONCEITO, TETO_APP, c7Ministerio, conceitoBoasPraticas, conceitoC1, conceitoNotaFinal, media, notaFinal,
-  type Conceito, type Indicador, type ResultadoApsBanco,
+  ROTULO_CONCEITO, SEMAFORO, TETO_APP, c7Ministerio, conceitoBoasPraticas, conceitoC1, conceitoNotaFinal, media, notaFinal,
+  type Conceito, type Indicador, type ResultadoApsBanco, type Semaforo,
 } from '@/domain/indicadoresAps'
 import { TETO_NO_APP as TETO_PRE_NATAL, pontosDa as pontosPreNatal, type PreNatalLinha } from '@/domain/preNatal'
 import { TETO_NO_APP as TETO_PUERICULTURA, pontosDa as pontosCrianca, type CriancaLinha } from '@/domain/puericultura'
 import { dataIso } from '@/lib/formato'
+import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 
 type Linha = { ind: Indicador; nome: string; app: string; ministerio: number | null; conceito: Conceito | null; fora: string; base: string }
+
+// classes inteiras, para o Tailwind achar
+const TOM_SEMAFORO: Record<Semaforo, { fundo: string; ponto: string; texto: string }> = {
+  verde: { fundo: 'bg-conforme/10', ponto: 'bg-conforme', texto: 'text-conforme' },
+  amarelo: { fundo: 'bg-atencao/10', ponto: 'bg-atencao', texto: 'text-atencao' },
+  vermelho: { fundo: 'bg-critico/10', ponto: 'bg-critico', texto: 'text-critico' },
+}
+
+/** Semáforo do conceito (RF7): a bolinha colorida e o nome do conceito. */
+function SinalConceito({ conceito }: { conceito: Conceito }) {
+  const tom = TOM_SEMAFORO[SEMAFORO[conceito]]
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 rounded-capsula px-2 py-0.5 text-apoio font-semibold', tom.fundo, tom.texto)}>
+      <span aria-hidden className={cn('size-2.5 rounded-capsula', tom.ponto)} />
+      {ROTULO_CONCEITO[conceito]}
+      <span className="sr-only">(sinal {SEMAFORO[conceito]})</span>
+    </span>
+  )
+}
 
 async function rpc<T>(nome: 'indicadores_aps' | 'puericultura_painel' | 'pre_natal_painel' | 'hiperdia_painel', unidadeId: string): Promise<T> {
   const { data, error } = await supabase.rpc(nome, { p_unidade: unidadeId })
@@ -77,7 +97,9 @@ export function IndicadoresAps({ unidadeId }: { unidadeId: string }) {
       <div className="flex flex-wrap items-center gap-2">
         <Award className="size-4 text-acao" aria-hidden />
         <span className="text-controle font-semibold text-tinta">Indicadores da APS (C1 a C7)</span>
-        <span className="ml-auto text-apoio text-tinta">Nota final estimada: <strong>{String(nota).replace('.', ',')}</strong> de 10 · {ROTULO_CONCEITO[conceitoNotaFinal(nota)]}</span>
+        <span className="ml-auto flex items-center gap-2 text-apoio text-tinta">
+          Nota final estimada: <strong>{String(nota).replace('.', ',')}</strong> de 10 <SinalConceito conceito={conceitoNotaFinal(nota)} />
+        </span>
       </div>
       <ul className="flex flex-col">
         {linhas.map((l) => (
@@ -88,8 +110,11 @@ export function IndicadoresAps({ unidadeId }: { unidadeId: string }) {
               <span className="block text-rotulo text-tinta-sussurro">{l.base}</span>
             </span>
             <span className="text-apoio text-tinta">
-              {l.ministerio === null ? 'sem dado' : `${String(l.ministerio).replace('.', ',')}${l.ind === 'C1' ? '%' : ''}`}
-              {l.conceito && <span className="block text-rotulo text-tinta-sussurro">{ROTULO_CONCEITO[l.conceito]}</span>}
+              {/* RF7 (RT, 23/11/2026): a cor e o conceito na frente; o número em segundo plano */}
+              {l.conceito ? <SinalConceito conceito={l.conceito} /> : <span className="text-tinta-sussurro">sem dado</span>}
+              {l.ministerio !== null && (
+                <span className="block text-rotulo tabular-nums text-tinta-sussurro">{String(l.ministerio).replace('.', ',')}{l.ind === 'C1' ? '%' : ''}</span>
+              )}
             </span>
           </li>
         ))}

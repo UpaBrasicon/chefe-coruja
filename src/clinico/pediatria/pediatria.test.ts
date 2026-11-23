@@ -70,7 +70,7 @@ test('volume só quando o livro dá a concentração (com página)', () => {
   assert.deepEqual(vol('bicarbonato-pcr', 10), [5, 10]) // 8,4% = 1 mEq/mL
   assert.deepEqual(vol('cetamina-iv', 10), [0.1, 0.4]) // 50 mg/mL
   assert.deepEqual(vol('manitol', 10), [12.5, 50]) // 20% = 0,2 g/mL
-  assert.deepEqual(vol('magnesio-asma', 20), [1, 3]) // 500 mg/mL
+  assert.equal(calcularBolus(b('magnesio-asma'), 20)!.volumeMl, null) // lote 4 (L4-3): mL pela ampola escolhida, 10% ou 50%
   assert.deepEqual(vol('gluconato-pcr', 10), [6, 10]) // 10% = 100 mg/mL
 })
 
@@ -210,7 +210,7 @@ test('divergências com o Anexo 2 do manual do adulto ficam só como nota', () =
 // ── Lote D11 (decisão do RT de 19/11/2026): itens 3, 8, 9, 11, 12 e 15 ──
 
 test('lote D11: doses por peso corrigidas pelas fontes abertas, com o valor do livro na nota', () => {
-  assert.equal(fichaBolusPediatrico.versao, '2026-11-19.2')
+  assert.ok(fichaBolusPediatrico.versao >= '2026-11-19.2')
   for (const f of [AHA_AAP_2025, AES_2016, ISPAD_HIPOGLICEMIA_2022, WAO_ANAFILAXIA_2020_PED, COREIA_PALS_2025, SBA_VIA_AEREA_PED_2024])
     assert.ok(fichaBolusPediatrico.fontes.includes(f), f.citacao)
   assert.match(fichaBolusPediatrico.revisadoEm, /19\/11\/2026 \(lote D11: itens 3, 8, 9, 11, 12 e 15/)

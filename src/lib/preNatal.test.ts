@@ -134,3 +134,17 @@ test('a consulta mostra o bloco e o painel usa as RPCs do pré-natal', () => {
   const app = readFileSync('src/App.tsx', 'utf8')
   assert.match(app, /path="\/pre-natal"/)
 })
+
+// Refinamento da UBS, RF4 = A (RT, 23/11/2026): os blocos de programa da
+// consulta começam fechados, com uma linha de resumo no cabeçalho.
+test('RF4: pré-natal, hiperdia e puericultura começam fechados na consulta', () => {
+  const bloco = readFileSync('src/components/clinico/BlocoRecolhivel.tsx', 'utf8')
+  assert.match(bloco, /inicioAberto = false/)
+  assert.match(bloco, /aria-expanded=\{aberto\}/)
+  for (const arq of ['src/components/preNatal/PreNatalNaConsulta.tsx', 'src/components/hiperdia/HiperdiaNaConsulta.tsx',
+    'src/components/puericultura/PuericulturaNaConsulta.tsx']) {
+    const c = readFileSync(arq, 'utf8')
+    assert.match(c, /<BlocoRecolhivel rotulo=/, arq)
+    assert.doesNotMatch(c, /inicioAberto/, arq)
+  }
+})

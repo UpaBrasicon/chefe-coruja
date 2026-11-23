@@ -60,7 +60,7 @@ export function AnafilaxiaPediatrica() {
                   : []),
               ])
             : []),
-          ...(fixa ? [`Epinefrina IM — dose fixa por idade (alternativa do livro): ${fixa.doses.join(' ou ')} (Livro ICr, cap. 6, p. 98 e 101, Tabela 3)`] : []),
+          ...(fixa ? [`Epinefrina IM — dose fixa por idade (alternativa do livro): ${fixa.doses.join(' ou ')} = ${fixa.volumes.join(' ou ')} da solução 1:1.000 (1 mg/mL) (Livro ICr, cap. 6, p. 98 e 101, Tabela 3)`] : []),
           'Sem cálculo por peso:',
           ...FIXOS_ANAFILAXIA.map((f) => `- ${f.nome}: ${f.dose} (cap. 6, ${f.pagina})`),
         ],
@@ -86,7 +86,7 @@ export function AnafilaxiaPediatrica() {
       {rn ? <AvisoRn /> : !pesoValido(peso) ? <PesoInvalido /> : (
         (Object.keys(LINHAS_ANAFILAXIA) as LinhaAnafilaxia[]).map((l) => (
           <Bloco key={l} titulo={LINHAS_ANAFILAXIA[l]}>
-            {DOSES_ANAFILAXIA.filter((d) => d.linha === l).map((d) => <LinhaDose key={d.id} d={d} peso={peso} />)}
+            {DOSES_ANAFILAXIA.filter((d) => d.linha === l).map((d) => <LinhaDose key={d.id} d={d} peso={peso} ampola={`anafilaxia:${d.id}`} />)}
             {l === 'segunda' && fen && (
               <div className="rounded-controle border px-3 py-2 text-apoio">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -111,6 +111,7 @@ export function AnafilaxiaPediatrica() {
       {fixa && (
         <Bloco titulo="Epinefrina IM — dose fixa por idade (alternativa do livro)">
           <p><strong>{fixa.doses.join(' ou ')}</strong></p>
+          <p className="tabular-nums">{fixa.volumes.join(' ou ')} da solução 1:1.000 (1 mg/mL)</p>
           {fixa.ambigua && <p className="text-atencao">Com 6 ou 12 anos completos o livro põe a idade nas duas faixas (“dos 6 meses aos 6 anos”, “dos 6 aos 12”); as duas doses aparecem.</p>}
           <p className="text-tinta-sussurro">&lt; 6 meses 0,1 a 0,15 mg; 6 meses a 6 anos 0,15 mg; 6 a 12 anos 0,3 mg; a partir de 12 anos 0,5 mg.</p>
           <p className="text-rotulo text-tinta-sussurro">Livro ICr, cap. 6, p. 98 e 101 (Tabela 3).</p>

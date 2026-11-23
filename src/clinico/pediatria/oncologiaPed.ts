@@ -36,9 +36,9 @@ const baseOncologia = fichaP4('ped-emergencias-oncologicas', 'Emergências oncol
 
 export const fichaOncologiaPed: Ficha = {
   ...baseOncologia,
-  versao: '2026-11-16.1',
+  versao: '2026-11-23.1',
   fontes: [...baseOncologia.fontes, IPFNG_2023, NF_SUSPENSAO_PRECOCE_2026],
-  revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota do ECR de suspensão precoce do antibiótico na neutropenia febril; revisão PubMed, itens médios; IPFNG 2023 lida no texto; livro do ICr mantido como base)',
+  revisadoEm: '23/11/2026 (lote 8 da dose em mL: via da fenitoína profilática escrita como IV, conferida pelo RT no livro, p. 720, com a ampola de 50 mg/mL a aspirar e diluir; linezolida, metronidazol, levofloxacino, dexametasona e SMX-TMP IV ou VO com o aviso de via mista; glicose 25% com a escolha de 5% a 50%; aguarda aprovação do RT); 20/11/2026 (lote 6b da dose em mL: furosemida 10 mg/mL, insulina pelo preparo de 0,1 UI/mL (L5-5), enoxaparina 100 mg/mL em seringa preenchida, manitol 20% como solução pronta, midazolam, fenitoína (ataque e manutenção) e linezolida, metronidazol, ciprofloxacino e levofloxacino como solução pronta, da ficha ped-ampolas, só da dose por tomada; fenitoína profilática sem via escrita fica sem mL; amicacina, SMX-TMP, dexametasona e bicarbonato esperam a bula ou decisão própria; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); 06/11/2026 (nota do ECR de suspensão precoce do antibiótico na neutropenia febril; revisão PubMed, itens médios; IPFNG 2023 lida no texto; livro do ICr mantido como base)',
 }
 
 export const IPFNG_ITENS: { codigo: string; texto: string; forca: string }[] = [
@@ -262,7 +262,7 @@ export const DOSES_COMPRESSIVAS: DoseLivro[] = [
   { id: 'fenitoina-ataque', nome: 'Fenitoína — tumor com convulsão, ataque', unidade: 'mg', porKgDose: [10, 15], maxDose: 1500, via: 'IV, até 50 mg/min', pagina: 'p. 720; Tabela 12',
     nota: 'A Tabela 12 escreve "máx. 1.500 mg/dia" para o ataque.' },
   { id: 'fenitoina-man', nome: 'Fenitoína — manutenção', unidade: 'mg', porKgDia: [4, 8], doses: [2, 2], via: 'IV de 12/12 h', pagina: 'p. 720' },
-  { id: 'fenitoina-prof', nome: 'Fenitoína — profilática (só se o especialista recomendar)', unidade: 'mg', porKgDose: [5, 5], maxDose: 300, via: 'máx. 300 mg/dia', pagina: 'p. 720' },
+  { id: 'fenitoina-prof', nome: 'Fenitoína — profilática (só se o especialista recomendar)', unidade: 'mg', porKgDose: [5, 5], maxDose: 300, via: 'IV; máx. 300 mg/dia', pagina: 'p. 720' },
   { id: 'midaz-iv', nome: 'Midazolam IV — crise estabelecida', unidade: 'mg', porKgDose: [0.05, 0.1], maxDose: 10, via: 'IV', pagina: 'p. 720; Tabela 12' },
   { id: 'midaz-im', nome: 'Midazolam IM', unidade: 'mg', porKgDose: [0.1, 0.2], maxDose: 5, via: 'IM', pagina: 'Tabela 12, p. 720' },
   { id: 'midaz-in', nome: 'Midazolam IN', unidade: 'mg', porKgDose: [0.2, 0.3], maxDose: 7.5, via: 'intranasal', pagina: 'Tabela 12, p. 720' },

@@ -22,9 +22,9 @@ const PAG_AGITACAO = 'cap. 76 O paciente agitado, p. 1005–1016 (Tabelas 3–5)
 
 export const fichaAgitacaoAdulto: Ficha = {
   ...fichaAdulto('adulto-agitacao', 'Paciente agitado, delirium e síndrome neuroléptica maligna — adulto', PAG_AGITACAO),
-  versao: '2026-09-28.1',
+  versao: '2026-11-23.1',
   fontes: [pagina(PAG_AGITACAO), ACEP_AGITACAO_2024],
-  revisadoEm: '28/09/2026 (ACEP 2024 lida no texto; manual mantido como base)',
+  revisadoEm: '23/11/2026 (lote A2 da dose em mL: midazolam e haloperidol da Tabela 4 ganham o número ao lado do texto, para a escolha da ampola; escetamina na quetamina com o aviso da cetamina racêmica (A2-1); haloperidol do delirium com o aviso de via mista e da bula (A2-2); texto e dose sem mudança; aguarda aprovação do RT); 28/09/2026 (ACEP 2024 lida no texto; manual mantido como base)',
 }
 
 export const ACEP_2024_RECOMENDACOES: { nivel: string; texto: string }[] = [
@@ -68,7 +68,8 @@ const NIVEIS_BARS = [
 ]
 
 export const bars: Escore = {
-  ficha: fichaAdulto('adulto-bars', 'BARS — escala de atividade comportamental (adulto)', 'cap. 76 O paciente agitado, p. 1005–1006 (Tabela 1)'),
+  // versão sobe só pela regra 1b do gate (o arquivo mudou no lote A2 da dose em mL); a escala não muda
+  ficha: { ...fichaAdulto('adulto-bars', 'BARS — escala de atividade comportamental (adulto)', 'cap. 76 O paciente agitado, p. 1005–1006 (Tabela 1)'), versao: '2026-11-23.1', revisadoEm: '23/11/2026 (versão sobe só porque o arquivo mudou no lote A2 da dose em mL; conteúdo sem mudança; aguarda aprovação do RT); 27/09/2026 (conferido no livro)' },
   descricao: 'Behavioral Activity Rating Scale, de 1 a 7, com a triagem pré-hospitalar da Tabela 1 do manual do HC.',
   itens: [
     { tipo: 'escolha', id: 'nivel', rotulo: 'Comportamento observado', opcoes: NIVEIS_BARS.map((n, i) => ({ rotulo: n.rotulo, valor: i + 1 })) },
@@ -112,6 +113,14 @@ export const CONTENCAO_QUIMICA: { nivel: NivelAgitacao; escolha: string; segunda
   { nivel: 'leve', escolha: 'Lorazepam 1-2 mg SL', segundaLinha: 'Antipsicóticos orais' },
   { nivel: 'moderada', escolha: 'Midazolam 2-5 mg IM', segundaLinha: 'Haloperidol 5-10 mg IM' },
   { nivel: 'grave', escolha: 'Quetamina 5 mg/kg IM', segundaLinha: 'Midazolam 5 mg IM, haloperidol 5 mg IM' },
+]
+
+/** As doses injetáveis da Tabela 4 em número (MA2, lote A2), na ordem do texto; o volume sai daqui. */
+export const CONTENCAO_DOSES: { nivel: NivelAgitacao; id: string; nome: string; mg: Faixa; via: 'IM' }[] = [
+  { nivel: 'moderada', id: 'midazolam-moderada', nome: 'Midazolam 2-5 mg IM', mg: [2, 5], via: 'IM' },
+  { nivel: 'moderada', id: 'haloperidol-moderada', nome: 'Haloperidol 5-10 mg IM', mg: [5, 10], via: 'IM' },
+  { nivel: 'grave', id: 'midazolam-grave', nome: 'Midazolam 5 mg IM', mg: [5, 5], via: 'IM' },
+  { nivel: 'grave', id: 'haloperidol-grave', nome: 'Haloperidol 5 mg IM', mg: [5, 5], via: 'IM' },
 ]
 
 export const COMBINACOES_AGITACAO = [

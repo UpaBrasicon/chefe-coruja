@@ -112,7 +112,7 @@ export function FalciformePed() {
       {calc && (
         <Bloco titulo="Analgesia pelo peso">
           {DOSES_CRISE_ALGICA.map((d) => (
-            <LinhaDoseLivro key={d.id} d={d} peso={p.peso} extra={d.id === 'paracetamol' && teto ? <p className="text-tinta-sussurro">Teto do dia (menor entre 75 mg/kg e 4 g): {br(teto, 0)} mg.</p> : undefined} />
+            <LinhaDoseLivro key={d.id} d={d} peso={p.peso} ampola={`falciforme:${d.id}`} extra={d.id === 'paracetamol' && teto ? <p className="text-tinta-sussurro">Teto do dia (menor entre 75 mg/kg e 4 g): {br(teto, 0)} mg.</p> : undefined} />
           ))}
           {cet && (
             <LinhaLivro nome="Cetamina subanestésica (refratários, internados)" conta={<strong>{faixaBr(cet, 1)} mg/h</strong>} texto="iniciar 0,1 a 0,3 mg/kg/hora, em centros com experiência" pagina="p. 668" />

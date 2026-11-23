@@ -16,9 +16,9 @@ import { fichaP2, type DosePeso } from './fonteP2.ts'
 const baseAsma = fichaP2('ped-asma-icr', 'Crise asmática — criança', 'cap. 8, p. 113–122')
 export const fichaAsmaPediatrica: Ficha = {
   ...baseAsma,
-  versao: '2026-11-19.1',
+  versao: '2026-11-20.1',
   fontes: [...baseAsma.fontes, INDINNIMEO_ASMA_2018],
-  revisadoEm: `19/11/2026 (lote D11: item 14, decisão do RT de 19/11/2026; aguarda aprovação do RT); ${baseAsma.revisadoEm}`,
+  revisadoEm: `20/11/2026 (lote 4 da dose em mL, L4-3 do RT: o magnésio da tela passa pela escolha da ampola, 10% ou 50%, da ficha ped-ampolas; dose sem mudança; aguarda aprovação do RT); 19/11/2026 (lote D11: item 14, decisão do RT de 19/11/2026; aguarda aprovação do RT); ${baseAsma.revisadoEm}`,
 }
 
 export const DOSES_ASMA: DosePeso[] = [

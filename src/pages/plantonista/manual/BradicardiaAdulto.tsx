@@ -10,6 +10,7 @@ import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
 import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -58,6 +59,10 @@ export function BradicardiaAdulto() {
           nome="Atropina"
           texto={`${br(ATROPINA.doseMg)} mg EV repetida a cada ${ATROPINA.intervaloMin} minutos até o máximo de ${ATROPINA.maximoMg} mg`}
           conta={<><strong>{at.doses} doses</strong> · máximo atingido em {at.minutosAteUltima} min</>}
+          extra={<EscolhaDaAmpola chave="adulto-bradi:atropina" unidade="mg" doses={[
+            { rotulo: `Manual (${br(ATROPINA.doseMg)} mg)`, dose: [ATROPINA.doseMg, ATROPINA.doseMg] },
+            { rotulo: `AHA 2025 (${br(BRADI_2025.aha.mg)} mg)`, dose: [BRADI_2025.aha.mg, BRADI_2025.aha.mg] },
+          ]} />}
           pagina={ATROPINA.pagina}
         />
         <LinhaManual
@@ -74,7 +79,9 @@ export function BradicardiaAdulto() {
           pagina={ADRENALINA_BRADI.pagina}
           errata={ADRENALINA_BRADI.errata}
         />
-        {OUTRAS_BRADI.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} pagina={d.pagina} />)}
+        {OUTRAS_BRADI.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={`${d.dose} — ${d.quando}`} pagina={d.pagina}
+          // aminofilina 250 mg EV em bolus (p. 229): o número vem do texto do item (teste em ampolas.test.ts)
+          extra={d.id === 'aminofilina' ? <EscolhaDaAmpola chave="adulto-bradi:aminofilina" dose={[250, 250]} unidade="mg" /> : undefined} />)}
       </Bloco>
       <Bloco titulo="ERC/RCUK 2025 e AHA 2025 — bradicardia, ao lado do manual" descricao={BRADI_2025.resumo}>
         <LinhaManual nome="Atropina (ERC/RCUK 2025)" texto={`${BRADI_2025.atropina.ug} µg IV, repetir a cada ${BRADI_2025.atropina.intervaloMin[0]}–${BRADI_2025.atropina.intervaloMin[1]} min até ${BRADI_2025.atropina.maximoMg} mg`} pagina="RCUK 2025 ALS" conta={<strong>até 6 doses de 0,5 mg</strong>} />

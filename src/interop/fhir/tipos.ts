@@ -93,7 +93,7 @@ export type EntidadeProcedimento = {
   codigo_sigtap: string
   realizado_em: string
   quantidade: number
-  /** BRFinanciamento (01 SUS federal, 07 SUS municipal…) */
+  /** BRFinanciamento (01 Federal SUS, 07 Municipal SUS…; nomes em src/lib/rnds.ts) */
   financiamento: string
 }
 

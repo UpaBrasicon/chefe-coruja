@@ -29,9 +29,9 @@ const basePneumonia = fichaP4('ped-pneumonia', 'Pneumonia adquirida na comunidad
 
 export const fichaPneumoniaPed: Ficha = {
   ...basePneumonia,
-  versao: '2026-09-28.1',
+  versao: '2026-11-20.1',
   fontes: [...basePneumonia.fontes, SBP_2024_PACC, IDSA_PIDS_2026_DERRAME],
-  revisadoEm: '28/09/2026 (SBP 2024 lida no PDF; IDSA/PIDS 2026 pelo resumo; livro do ICr mantido como base)',
+  revisadoEm: '20/11/2026 (lote 6a da dose em mL: levofloxacino, metronidazol e linezolida da SBP 2024 com o volume da solução pronta, da ficha ped-ampolas, só da dose por tomada; dose sem mudança; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 28/09/2026 (SBP 2024 lida no PDF; IDSA/PIDS 2026 pelo resumo; livro do ICr mantido como base)',
 }
 
 const SBP_Q2 = 'SBP 2024, Quadro 2 (p. 9–10)'

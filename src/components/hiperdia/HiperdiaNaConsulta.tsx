@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Footprints, HeartPulse, Plus, Ruler, X } from 'lucide-react'
 import * as React from 'react'
 
+import { BlocoRecolhivel } from '@/components/clinico/BlocoRecolhivel'
 import { Chip } from '@/components/monitor/Pagina'
 import { SeloPrograma } from '@/components/hiperdia/SeloPrograma'
 import { Button } from '@/components/ui/button'
@@ -54,10 +55,18 @@ export function HiperdiaNaConsulta({ pacienteId, episodioId }: { pacienteId: str
   const ativos = h.programas.map((p) => p.programa)
   const pendentes = ITENS.map((i) => ({ i, e: estadoDoItem(h, i.item, agora) })).filter(({ e }) => e === 'atrasado' || e === 'sem_registro')
 
+  // RF4 (RT, 23/11/2026): começa fechado, com os programas e as pendências no cabeçalho
   return (
-    <section aria-label="Hiperdia" className="flex flex-col gap-2.5 rounded-container border border-fio px-4 py-3">
+    <BlocoRecolhivel rotulo="Hiperdia"
+      titulo={<span className="flex items-center gap-1.5 text-controle font-semibold text-tinta"><HeartPulse className="size-4 text-acao" aria-hidden /> Hiperdia</span>}
+      resumo={<>
+        {h.programas.map((p) => <SeloPrograma key={p.id} programa={p.programa} />)}
+        {h.programas.length === 0 && <span className="text-apoio text-tinta-sussurro">fora do programa</span>}
+        {h.programas.length > 0 && (pendentes.length > 0
+          ? <span className="text-apoio font-medium text-atencao">{pendentes.length} {pendentes.length === 1 ? 'pendente' : 'pendentes'}</span>
+          : <span className="text-apoio text-conforme">em dia</span>)}
+      </>}>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="flex items-center gap-1.5 text-controle font-semibold text-tinta"><HeartPulse className="size-4 text-acao" aria-hidden /> Hiperdia</span>
         {h.programas.map((p) => (
           <span key={p.id} className="flex items-center gap-0.5">
             <SeloPrograma programa={p.programa} />
@@ -83,7 +92,7 @@ export function HiperdiaNaConsulta({ pacienteId, episodioId }: { pacienteId: str
       {h.programas.length > 0 && pendentes.some(({ i }) => i.item === 'peso_altura') && <PesoAltura pacienteId={pacienteId} onFeito={invalidar} />}
       {ativos.includes('diabetes') && <AvaliacaoPes episodioId={episodioId} ultima={h.ultima_avaliacao_pes} onFeito={invalidar} />}
       {retirar && <DialogoRetirar p={retirar} onFechar={() => setRetirar(null)} onFeito={invalidar} />}
-    </section>
+    </BlocoRecolhivel>
   )
 }
 

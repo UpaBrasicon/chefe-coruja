@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   ACEP_2024_RECOMENDACOES, COMBINACOES_AGITACAO, CONTENCAO_MECANICA, CONTENCAO_QUIMICA, CORTES_CAUSAS_ORGANICAS, DELIRIUM_TABELA7, DIFERENCAS_AGITACAO_2024, DOSES_ENSAIOS_ACEP,
-  ERRATA_AGITACAO, QUETAMINA_AGITACAO, SNM, TEMPOS_AGITACAO, TITULACAO_DELIRIUM, contaSnm, fichaAgitacaoAdulto, metadeDaDose, quetaminaAgitacao, restanteAteMaxima, shockIndex,
+  CONTENCAO_DOSES, ERRATA_AGITACAO, QUETAMINA_AGITACAO, SNM, TEMPOS_AGITACAO, TITULACAO_DELIRIUM, contaSnm, fichaAgitacaoAdulto, metadeDaDose, quetaminaAgitacao, restanteAteMaxima, shockIndex,
 } from '@/clinico/adulto/agitacao'
 import { textoFontes } from '@/clinico/ficha'
 import { passosDaFaixa } from '@/clinico/guia'
@@ -17,6 +17,7 @@ import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Erratas, Escolhas, ListaLivro } from './PecasLoteE7'
 import { br, faixa, lerNumero } from './loteE7Formato'
@@ -86,13 +87,21 @@ export function AgitacaoDeliriumAdulto() {
 
       <Bloco titulo="Contenção química — Tabela 4 (p. 1011)" descricao="Agitação de causa desconhecida. Via oral sempre preferível; em pacientes muito agitados, priorizar IM (p. 1010).">
         {CONTENCAO_QUIMICA.map((c) => (
-          <LinhaManual key={c.nivel} nome={`Agitação ${c.nivel}`} texto={`escolha: ${c.escolha}; segunda linha: ${c.segundaLinha}`} pagina="p. 1011" />
+          <LinhaManual key={c.nivel} nome={`Agitação ${c.nivel}`} texto={`escolha: ${c.escolha}; segunda linha: ${c.segundaLinha}`} pagina="p. 1011"
+            extra={CONTENCAO_DOSES.filter((d) => d.nivel === c.nivel).map((d) => (
+              <EscolhaDaAmpola key={d.id} chave={`adulto-agitacao:${d.id}`} unidade="mg" doses={[{ rotulo: d.nome, dose: d.mg }]} />
+            ))} />
         ))}
         <LinhaManual
           nome="Quetamina por peso"
           texto={`${QUETAMINA_AGITACAO.tabelaImMgKg} mg/kg IM na Tabela 4; no texto, 1-2 mg/kg IV (diluída para ${QUETAMINA_AGITACAO.diluicaoIvMl} mL, lenta) a 4-6 mg/kg IM; o livro não traz dose máxima`}
           conta={q ? <>IM tabela <strong>{br(q.tabelaImMg, 0)} mg</strong> · IM texto {faixa(q.imMg, 0)} mg · IV {faixa(q.ivMg, 0)} mg</> : 'informe o peso'}
           pagina={QUETAMINA_AGITACAO.pagina}
+          extra={q ? <EscolhaDaAmpola chave="adulto-agitacao:quetamina" unidade="mg" doses={[
+            { rotulo: 'IM (Tabela 4)', dose: [q.tabelaImMg, q.tabelaImMg] },
+            { rotulo: 'IM (texto)', dose: q.imMg },
+            { rotulo: 'IV', dose: q.ivMg },
+          ]} /> : undefined}
         />
         {COMBINACOES_AGITACAO.map((c) => <LinhaManual key={c.nome} nome={c.nome} texto={`${c.dose}: ${c.nota}`} pagina={c.pagina} />)}
         {TEMPOS_AGITACAO.map((t) => <p key={t.droga} className="text-apoio text-tinta-sussurro">{t.droga}: {t.texto} ({t.pagina}).</p>)}
@@ -120,7 +129,8 @@ export function AgitacaoDeliriumAdulto() {
 
       <Bloco titulo="Agitação no delirium — Tabela 7 (p. 136–138)" descricao={`Dose inicial baixa; doses adicionais a cada ${faixa(TITULACAO_DELIRIUM.repetirMin, 0)} min até o efeito; delirium prolongado pode pedir manutenção ${faixa(TITULACAO_DELIRIUM.manutencaoVezesDia, 0)} vezes ao dia (p. 138). ECG antes e depois: todos os antipsicóticos alargam o QT (p. 136).`}>
         {DELIRIUM_TABELA7.map((d) => (
-          <LinhaManual key={d.id} nome={d.nome} texto={`inicial ${faixa(d.inicialMg, 2)} mg; máxima ${br(d.maximaMg, 1)} mg; ${d.vias}`} pagina="p. 136–137" nota={d.nota} />
+          <LinhaManual key={d.id} nome={d.nome} texto={`inicial ${faixa(d.inicialMg, 2)} mg; máxima ${br(d.maximaMg, 1)} mg; ${d.vias}`} pagina="p. 136–137" nota={d.nota}
+            extra={<EscolhaDaAmpola chave={`adulto-agitacao:${d.id}-delirium`} unidade="mg" doses={[{ rotulo: 'Dose inicial', dose: d.inicialMg }]} />} />
         ))}
         <div className="grid gap-3 text-apoio md:grid-cols-2">
           <div className="flex flex-col gap-1.5">

@@ -49,7 +49,8 @@ export const CONDUTAS_APS: OpcaoAps[] = [
   { valor: 'retorno_consulta_agendada', rotulo: 'Retorno para consulta agendada', grupo: 'Retorno e agendamento' },
   { valor: 'retorno_cuidado_continuado', rotulo: 'Retorno para cuidado continuado/programado', grupo: 'Retorno e agendamento' },
   { valor: 'agendamento_grupos', rotulo: 'Agendamento para grupos', grupo: 'Retorno e agendamento' },
-  { valor: 'agendamento_nasf', rotulo: 'Agendamento para Nasf', grupo: 'Retorno e agendamento' },
+  // LP1 (RT, 23/11/2026): o LEDI 8.7.0 chama o código 14 de "Agendamento para eMulti"; o valor interno fica
+  { valor: 'agendamento_nasf', rotulo: 'Agendamento para eMulti', grupo: 'Retorno e agendamento' },
   { valor: 'alta_episodio', rotulo: 'Alta do episódio', grupo: 'Alta' },
   // `curto`: o rótulo debaixo do grupo "Encaminhamento" (aba Conduta)
   { valor: 'encaminhamento_interno', rotulo: 'Encaminhamento interno no dia', grupo: 'Encaminhamento', curto: 'Interno no dia' },
@@ -75,7 +76,7 @@ export const rotuloCondutaAps = (v: string | null | undefined) => rotuloDe(CONDU
 // Os códigos e as saídas são os do banco (registrar_escuta_aps e os CHECKs de
 // classificacoes_risco, migration 20270213000001_escuta_inicial_ubs.sql).
 export type CorCab28 = 'vermelho' | 'amarelo' | 'verde' | 'azul'
-export type SaidaEscuta = 'orientacao' | 'agendamento' | 'consulta'
+export type SaidaEscuta = 'orientacao' | 'agendamento' | 'atender_hoje' | 'consulta'
 
 export const CLASSIFICACAO_CAB28: { cor: CorCab28; rotulo: string; descricao: string; exemplos: string; aguda: boolean }[] = [
   { cor: 'vermelho', rotulo: 'Atendimento imediato', aguda: true,
@@ -94,8 +95,13 @@ export const CLASSIFICACAO_CAB28: { cor: CorCab28; rotulo: string; descricao: st
 
 export const SAIDAS_AZUL: { valor: Exclude<SaidaEscuta, 'consulta'>; rotulo: string }[] = [
   { valor: 'orientacao', rotulo: 'Orientação' },
-  { valor: 'agendamento', rotulo: 'Agendamento' },
+  // RF2 (RT, 23/11/2026): o azul pode ser atendido hoje, como demanda espontânea
+  { valor: 'atender_hoje', rotulo: 'Atender hoje' },
+  { valor: 'agendamento', rotulo: 'Agendar outro dia' },
 ]
+
+/** RF2: a saída do azul que vai à fila do médico (não encerra na escuta). */
+export const azulVaiAFila = (saida: SaidaEscuta | null | undefined) => saida === 'atender_hoje'
 
 /** Peso na fila do médico: o imediato e o prioritário (que "influencia na ordem
  *  de atendimento", CAB 28) passam à frente; o verde e quem não passou pela
@@ -106,4 +112,38 @@ export const pesoCab28 = (cor: string | null | undefined) => (cor === 'vermelho'
  *  prioridade legal e chegada. */
 export function ordemFilaUbs<T extends { prioridades_legais: string[]; chegada_em: string; cor_atual?: string | null }>(a: T, b: T): number {
   return pesoCab28(a.cor_atual) - pesoCab28(b.cor_atual) || ordemTriagem(a, b)
+}
+
+/** Refinamento da UBS, RF1 = A (RT, 23/11/2026): a fila do consultório da UBS
+ *  em três faixas.
+ *  - prioritário: vermelho e amarelo da escuta (CAB 28), nunca atrás de agendado;
+ *  - agendado: quem tem consulta marcada hoje, pela hora marcada;
+ *  - espontâneo: o resto da demanda espontânea, o verde antes de quem não
+ *    passou pela escuta, e cada um pela prioridade legal e pela chegada. */
+export type FaixaFilaUbs = 'prioritario' | 'agendado' | 'espontaneo'
+const TIPOS_AGENDADOS = new Set(['consulta_agendada', 'consulta_programada'])
+const ORDEM_FAIXA: Record<FaixaFilaUbs, number> = { prioritario: 0, agendado: 1, espontaneo: 2 }
+type NaFilaUbs = { prioridades_legais: string[]; chegada_em: string; cor_atual?: string | null; tipo_atendimento_aps?: string | null }
+
+/** A faixa de quem está na fila; `horaMarcada` é o início do agendamento de hoje, quando há. */
+export function faixaFilaUbs(e: NaFilaUbs, horaMarcada: string | null | undefined): FaixaFilaUbs {
+  if (pesoCab28(e.cor_atual) < 2) return 'prioritario'
+  if (horaMarcada || TIPOS_AGENDADOS.has(e.tipo_atendimento_aps ?? '')) return 'agendado'
+  return 'espontaneo'
+}
+
+/** Comparador da fila do consultório da UBS, com a hora marcada de cada um. */
+export function ordemFilaUbsComAgenda<T extends NaFilaUbs>(horaDe: (e: T) => string | null | undefined) {
+  return (a: T, b: T): number => {
+    const ha = horaDe(a), hb = horaDe(b)
+    const fa = faixaFilaUbs(a, ha), fb = faixaFilaUbs(b, hb)
+    if (fa !== fb) return ORDEM_FAIXA[fa] - ORDEM_FAIXA[fb]
+    if (fa === 'prioritario') return ordemFilaUbs(a, b)
+    if (fa === 'agendado') {
+      // sem a hora (agendamento de outro dia), depois de quem tem hora hoje
+      const porHora = ha && hb ? ha.localeCompare(hb) : ha ? -1 : hb ? 1 : 0
+      return porHora || a.chegada_em.localeCompare(b.chegada_em)
+    }
+    return (a.cor_atual ? 0 : 1) - (b.cor_atual ? 0 : 1) || ordemTriagem(a, b)
+  }
 }

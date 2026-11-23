@@ -35,3 +35,16 @@ test('U13: nota final da NT 8/2026 (pesos 1 e 2, total 10)', async () => {
   const painel = readFileSync('src/pages/gestor/PainelGestor.tsx', 'utf8')
   assert.match(painel, /unidadeAtiva\?\.unidade\.tipo === 'ubs' && <IndicadoresAps unidadeId=\{unidadeId\} \/>/)
 })
+
+// Refinamento da UBS, RF7 = A (RT, 23/11/2026): semáforo de três cores pelo
+// conceito oficial; o número fica em segundo plano.
+test('RF7: semáforo verde (ótimo e bom), amarelo (suficiente) e vermelho (regular)', async () => {
+  const { SEMAFORO, conceitoBoasPraticas, conceitoC1 } = await import('../domain/indicadoresAps.ts')
+  assert.deepEqual(SEMAFORO, { otimo: 'verde', bom: 'verde', suficiente: 'amarelo', regular: 'vermelho' })
+  assert.equal(SEMAFORO[conceitoBoasPraticas(60)], 'verde')
+  assert.equal(SEMAFORO[conceitoBoasPraticas(30)], 'amarelo')
+  assert.equal(SEMAFORO[conceitoC1(80)], 'vermelho')
+  const tela = readFileSync('src/components/gestor/IndicadoresAps.tsx', 'utf8')
+  assert.match(tela, /<SinalConceito conceito=\{l\.conceito\} \/>/)
+  assert.match(tela, /<SinalConceito conceito=\{conceitoNotaFinal\(nota\)\} \/>/)
+})

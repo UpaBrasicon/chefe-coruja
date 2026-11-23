@@ -5,6 +5,7 @@ import { ArrowLeft, Baby, ChevronRight } from 'lucide-react'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
+import { AVISO_VOLUME_PEQUENO, volumeAbaixoDe01 } from '@/clinico/pediatria/ampolas'
 import { BOLUS, GRUPOS, calcularBolus, type Bolus, type Grupo } from '@/clinico/pediatria/bolus'
 import { DOSES_CRISE, ETAPAS_CRISE, type EtapaCrise } from '@/clinico/pediatria/criseEpileptica'
 import { DOSES_ANAFILAXIA } from '@/clinico/pediatria/anafilaxia'
@@ -98,6 +99,7 @@ function CartaoDeBolso({ nome, porKg, dose, unidade, volume, ampola, via, maximo
           {faixa(volume.ml[0], volume.ml[1])} mL{volume.de && <span className="font-normal text-tinta-apoio"> de {volume.de}</span>}
         </span>
       )}
+      {volume && unidade !== 'mL' && volumeAbaixoDe01(volume.ml) && <span className="text-apoio font-semibold text-atencao">{AVISO_VOLUME_PEQUENO}</span>}
       {!volume && ampola && <EscolhaDaAmpola chave={ampola} dose={dose} unidade={unidade} grande />}
       <span className="text-apoio text-tinta-apoio">{via}</span>
       {(maximo !== undefined || condicao) && (
@@ -149,7 +151,7 @@ function cartaoDaDose(d: DosePeso, kg: number, lista: 'crise' | 'anafilaxia') {
   return (
     <CartaoDeBolso key={d.id} nome={d.nome} porKg={porKgTxt(d.porKg, d.unidade)}
       dose={r.dose} unidade={d.unidade} volume={r.volumeMl ? { ml: r.volumeMl, de: d.solucao } : null}
-      ampola={lista === 'crise' ? `crise:${d.id}` : undefined}
+      ampola={`${lista}:${d.id}`}
       via={d.via} maximo={d.maximo} noMaximo={r.noMaximo} nota={d.nota} fonte={`livro do ICr, ${d.pagina}`} />
   )
 }
