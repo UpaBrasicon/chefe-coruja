@@ -19,7 +19,8 @@ test('lote D adulto: fichas na versão .1 de 28/09 com o manual como primeira fo
     [fichaRaivaAdulto, /Nota Técnica nº 8\/2022/],
   ]
   for (const [f, re] of casos) {
-    assert.equal(f.versao, f === fichaInfusoesAdulto ? '2026-11-16.1' : '2026-09-28.1', f.id) // infusões: piloto das calculadoras (16/11/2026)
+    // infusões: piloto das calculadoras (16/11/2026); agitação: dose em mL, lote A2 (23/11/2026)
+    assert.equal(f.versao, f === fichaInfusoesAdulto ? '2026-11-16.1' : f === fichaAgitacaoAdulto ? '2026-11-23.1' : '2026-09-28.1', f.id)
     assert.match(f.fontes[0].citacao, /Manual de Medicina de Emergência/, f.id)
     assert.ok(f.fontes.some((x) => re.test(x.citacao)), f.id)
   }

@@ -17,6 +17,7 @@ import { textoCopia } from '@/domain/copiaCalculo'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Chip } from '@/components/monitor/Pagina'
@@ -153,7 +154,8 @@ export function Abstinencia() {
 
       <Bloco titulo="Doses do manual (p. 1031–1034)" descricao="O livro coloca os benzodiazepínicos como esteio do tratamento; a conta mostra só a dose diária do esquema citado.">
         {DOSES_ABSTINENCIA.map((d) => (
-          <LinhaManual key={d.id} nome={`${d.nome} — ${d.contexto}`} texto={d.texto} conta={contaDose(d)} pagina={d.pagina} nota={d.nota} />
+          <LinhaManual key={d.id} nome={`${d.nome} — ${d.contexto}`} texto={d.texto} conta={contaDose(d)} pagina={d.pagina} nota={d.nota}
+            extra={d.mg ? <EscolhaDaAmpola chave={`adulto-abstinencia:${d.id}`} dose={d.mg} unidade="mg" /> : undefined} />
         ))}
       </Bloco>
 

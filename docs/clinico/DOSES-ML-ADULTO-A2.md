@@ -1,6 +1,6 @@
 # Dose em mL no adulto, lote A2: anafilaxia, sedação, agitação, abstinência e analgesia
 
-Data: 23/11/2026. Situação: decisões do RT em 23/11/2026: A2-1 = B (escetamina com aviso), A2-2 = A, A2-3 = IM, A2-4 = A. Primeira parte (anafilaxia e sedação, sem bula nova) na branch fase-ml/adulto-a2; agitação, abstinência e analgesia esperam as 4 bulas. Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A) e o cadastro único do A0.
+Data: 23/11/2026. Situação: decisões do RT em 23/11/2026: A2-1 = B (escetamina com aviso), A2-2 = A, A2-3 = IM, A2-4 = A. As duas partes na branch fase-ml/adulto-a2 (PR #1057): anafilaxia e sedação, depois agitação, abstinência e analgesia pelas 4 bulas lidas em 23/11/2026 (Uni Haloper, Acesyl, Tramadon e Dolosal). A morfina da analgesia já mostra o mL do preparo do livro (1 mg/mL) e fica sem a segunda escolha. Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A) e o cadastro único do A0.
 
 ## Itens e ampolas
 
