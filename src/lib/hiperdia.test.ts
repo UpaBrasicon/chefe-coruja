@@ -67,7 +67,7 @@ test('J4: a avaliação dos pés sai da consulta da UBS para a RPC', () => {
 // Achado F5-T2 do portão da Fase 5: sem campo de altura do adulto, o item
 // "peso e altura" (C5 e C4) nunca fechava pela tela.
 test('F5-T2: a altura entra na escuta da UBS e no bloco do hiperdia da consulta', () => {
-  assert.deepEqual(MEDIDAS_EXTRAS.map((m) => [m.k, m.un]), [['estatura', 'cm']])
+  assert.deepEqual(MEDIDAS_EXTRAS.map((m) => [m.k, m.un]), [['estatura', 'cm'], ['circunferencia-abdominal', 'cm']])
   assert.equal(rotuloVital('estatura'), 'Altura')
   assert.deepEqual(paraNumeros({ peso: '82', estatura: '171,5' }), { peso: 82, estatura: 171.5 })
   assert.equal(textoVitais({ peso: 82, estatura: 172 }), 'Peso 82 kg · Altura 172 cm')
