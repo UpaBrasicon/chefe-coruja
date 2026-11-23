@@ -51,6 +51,8 @@ export function PcrAdulto() {
     ]} />,
     lidocaina: r ? <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.lidocaina} dose={r.lidocainaMg} unidade="mg" /> : null,
     magnesio: <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.magnesio} dose={DOSES_FIXAS_PCR_ADULTO.magnesioG} unidade="g" />,
+    // lote A1: glicose de 5% a 50% para os 25 g (a insulina fica sem mL, ML7)
+    'glicose-insulina': <EscolhaDaAmpola chave="adulto-pcr:glicose-insulina" dose={fixa(25)} unidade="g" />,
     bicarbonato: r ? <EscolhaDaAmpola ampolas={AMPOLAS_PCR_ADULTO.bicarbonato} unidade="mEq" doses={[
       { rotulo: 'Dose', dose: r.bicarbonatoMEq },
       { rotulo: 'Adicional', dose: r.bicarbonatoAdicionalMEq },

@@ -13,6 +13,8 @@ import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { textoCopia } from '@/domain/copiaCalculo'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
+
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -75,9 +77,11 @@ export function TaquiarritmiasAdulto() {
       <Bloco titulo="QRS estreito">
         <LinhaManual
           nome="Adenosina"
-          texto="6 mg em bolus rápido; sem resolução em 2 min, 12 mg em bolus rápido, que pode ser repetida uma vez; metade da dose por acesso central de cava superior"
+          texto="6 mg IV em bolus rápido; sem resolução em 2 min, 12 mg em bolus rápido, que pode ser repetida uma vez; metade da dose por acesso central de cava superior"
           conta={<strong>{doseAdenosina}</strong>}
           pagina="p. 265"
+          extra={<EscolhaDaAmpola chave="adulto-taqui:adenosina" unidade="mg"
+            doses={adenosina(central).map((d, i) => ({ rotulo: `${i + 1}ª dose`, dose: [d, d] as Faixa }))} />}
         />
         {BCC_EV.map((b) => (
           <LinhaManual key={b.id} nome={b.nome} texto={`${br(b.mgMin)} mg/min até o total de ${b.totalMg} mg`} conta={<>total em <strong>{br(b.minutosAteTotal, 0)} min</strong></>} pagina={b.pagina}
@@ -91,6 +95,7 @@ export function TaquiarritmiasAdulto() {
           texto="150 mg (1 ampola) em 10 min, 1 mg/min pelas próximas 6 h, 0,5 mg/min pelas 18 h subsequentes"
           conta={<>{ami.fases.map((f) => `${f.mg} mg`).join(' + ')} = <strong>{br(ami.total24hMg, 0)} mg em 24 h</strong></>}
           pagina="p. 265"
+          extra={<EscolhaDaAmpola chave="adulto-taqui:amiodarona" unidade="mg" doses={[{ rotulo: 'Ataque', dose: [ami.fases[0].mg, ami.fases[0].mg] }]} />}
         />
         <LinhaManual
           nome="Lidocaína"
@@ -102,11 +107,13 @@ export function TaquiarritmiasAdulto() {
             </>
           ) : 'informe o peso'}
           pagina={LIDOCAINA_TV.pagina}
+          extra={lido ? <EscolhaDaAmpola chave="adulto-taqui:lidocaina" unidade="mg" doses={[{ rotulo: 'Ataque', dose: lido.ataqueMg }]} /> : undefined}
         />
       </Bloco>
 
       <Bloco titulo="Torsades de pointes (paciente estável)">
-        <LinhaManual nome="Sulfato de magnésio" texto={`${MAGNESIO_TORSADES.g} g EV durante ${MAGNESIO_TORSADES.minutos} min, mesmo sem hipomagnesemia`} pagina={MAGNESIO_TORSADES.pagina} />
+        <LinhaManual nome="Sulfato de magnésio" texto={`${MAGNESIO_TORSADES.g} g EV durante ${MAGNESIO_TORSADES.minutos} min, mesmo sem hipomagnesemia`} pagina={MAGNESIO_TORSADES.pagina}
+          extra={<EscolhaDaAmpola chave="adulto-taqui:magnesio" dose={[MAGNESIO_TORSADES.g, MAGNESIO_TORSADES.g]} unidade="g" />} />
       </Bloco>
 
       <AbasResultado

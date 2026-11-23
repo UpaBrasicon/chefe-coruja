@@ -10,6 +10,7 @@ import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
 import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
 import { ToolLayout } from '@/components/plantonista/ToolLayout'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
@@ -58,6 +59,10 @@ export function BradicardiaAdulto() {
           nome="Atropina"
           texto={`${br(ATROPINA.doseMg)} mg EV repetida a cada ${ATROPINA.intervaloMin} minutos até o máximo de ${ATROPINA.maximoMg} mg`}
           conta={<><strong>{at.doses} doses</strong> · máximo atingido em {at.minutosAteUltima} min</>}
+          extra={<EscolhaDaAmpola chave="adulto-bradi:atropina" unidade="mg" doses={[
+            { rotulo: `Manual (${br(ATROPINA.doseMg)} mg)`, dose: [ATROPINA.doseMg, ATROPINA.doseMg] },
+            { rotulo: `AHA 2025 (${br(BRADI_2025.aha.mg)} mg)`, dose: [BRADI_2025.aha.mg, BRADI_2025.aha.mg] },
+          ]} />}
           pagina={ATROPINA.pagina}
         />
         <LinhaManual
