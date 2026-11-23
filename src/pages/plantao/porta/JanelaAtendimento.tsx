@@ -1,5 +1,5 @@
 // Janela do atendimento do Pronto-Socorro (protótipo, modal "atd"): cabeçalho
-// do paciente, "em atendimento há X min", "Prontuário completo", abas e o
+// do paciente, "atendimento iniciado às HH:MM" (LP2), "Prontuário completo", abas e o
 // rodapé "Salvar e fechar" / "Aguardar reavaliação" / "Finalizar atendimento".
 // Abrir a janela = iniciar o atendimento no servidor (marca médico e hora e
 // abre o prontuário, consulta registrada). Tudo o que grava é do servidor;
@@ -50,9 +50,10 @@ import { AbaExames } from './AbaExames'
 import { AbaPrescricao } from './AbaPrescricao'
 import { AbaReavaliacao } from './AbaReavaliacao'
 import {
-  DOCS_INICIAL, SOAP_VAZIO, hora, minutos, msg, nomeDe, soapVazio, useAgora, usePainelPS, useRecarregarAtendimento,
+  DOCS_INICIAL, SOAP_VAZIO, hora, msg, nomeDe, soapVazio, useAgora, usePainelPS, useRecarregarAtendimento,
   type EpFila, type EstadoDocs, type Soap,
 } from './comum'
+import { rotuloInicioAtendimento } from '@/domain/plantao'
 
 type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'termo' | 'docs' | 'proc' | 'fim' | 'conduta'
 const ESPERA_RASCUNHO_MS = 1500
@@ -222,7 +223,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           <span className="ml-auto flex flex-wrap items-center gap-2">
             {iniciado && (
               <span className="inline-flex items-center gap-1.5 text-apoio text-tinta-apoio tabular-nums">
-                <Clock className="size-3.5" aria-hidden /> Em atendimento há {minutos(iniciado, agora)}
+                <Clock className="size-3.5" aria-hidden /> {rotuloInicioAtendimento(hora(iniciado), (agora - Date.parse(iniciado)) / 60_000)}
               </span>
             )}
             {/* Fase 1, tarefa 8: resumo dos atendimentos encerrados para quem atende */}

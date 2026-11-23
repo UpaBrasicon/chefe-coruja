@@ -54,6 +54,15 @@ export function nivelDaObservacao(minutos: number): Nivel {
 }
 
 /** "3h05", "45 min" — para numeral com unidade separada, use `partesDuracao`. */
+/** Cabeçalho da consulta (limpeza do percurso da UBS, LP2 = A do RT em
+ *  23/11/2026): abrir a janela já inicia o atendimento, então em vez de "Em
+ *  atendimento há 0 min" mostra a hora do início e, a partir de 1 minuto, há
+ *  quanto tempo. */
+export function rotuloInicioAtendimento(horaInicio: string, minutosDesde: number): string {
+  const m = Math.floor(minutosDesde)
+  return `Atendimento iniciado às ${horaInicio}${m >= 1 ? ` · há ${formatarDuracao(m)}` : ''}`
+}
+
 export function formatarDuracao(minutos: number): string {
   const m = Math.max(0, Math.round(minutos))
   if (m < 60) return `${m} min`
