@@ -51,9 +51,15 @@ const DESATIVAR = [
   ['organizacoes', (q) => q.eq('id', ORG_LOADTEST)],
 ]
 
-const { data: lista, error: erroLista } = await admin.auth.admin.listUsers({ perPage: 1000 })
-if (erroLista) throw new Error(`listUsers: ${erroLista.message}`)
-const usuarios = (lista?.users ?? []).filter((u) => u.user_metadata?.loadtest === true && /@loadtest\.invalid$/.test(u.email ?? ''))
+// Os usuários carga-* saem de perfis, não de auth.admin.listUsers: na homologação
+// basta uma conta de fixture com token NULL em auth.users para o listUsers
+// devolver "Database error finding users" para todas (visto em 23/11/2026).
+const { data: lista, error: erroLista } = await admin
+  .from('perfis')
+  .select('id, email')
+  .like('email', 'carga-%@loadtest.invalid')
+if (erroLista) throw new Error(`perfis: ${erroLista.message}`)
+const usuarios = lista ?? []
 
 console.log(`Organização ${ORG_LOADTEST}: ${U.length} unidade(s), ${S.length} setor(es), ${C.length} conversa(s), ${usuarios.length} usuário(s) carga-*`)
 for (const [t, filtro] of APAGAVEIS) {
