@@ -149,7 +149,9 @@ function CentralCompleta() {
   const navigate = useNavigate()
   const { perfil } = useAuth()
   const { unidadeAtiva } = useUnidade()
-  const [consulta, setConsulta] = useState('')
+  // a busca do início do celular chega aqui com o texto em ?q= (item 6, RT em 23/11/2026)
+  const [params] = useSearchParams()
+  const [consulta, setConsulta] = useState(() => (params.get('q') ?? '').slice(0, 800))
   const { favoritos, usos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const paciente = usePacienteCentral()
   const unidadeId = unidadeAtiva?.unidade_id
@@ -160,6 +162,13 @@ function CentralCompleta() {
 
   const resultados = useMemo(() => buscarLocal(consulta), [consulta])
   const perguntavel = consulta.trim().length >= 3
+
+  // "Perguntar à IA" da barra de baixo (?ia=1) e a busca flutuante (?busca=1) abrem
+  // esta tela com o campo já em foco (item 6, CM1 e CM7).
+  const focarAoAbrir = params.get('ia') === '1' || params.get('busca') === '1'
+  useEffect(() => {
+    if (focarAoAbrir) campoBusca.current?.focus()
+  }, [focarAoAbrir])
 
   // Atalho "/" foca a busca (fora de campos de texto).
   useEffect(() => {

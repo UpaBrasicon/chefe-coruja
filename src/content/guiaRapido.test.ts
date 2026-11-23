@@ -29,8 +29,8 @@ test('criança só abre telas da pediatria; adulto, nenhuma da pediatria', () =>
   assert.ok(GUIA_ADULTO.flatMap(rotasDoCartao).every((r) => !r.startsWith('/plantonista/pediatria/')))
 })
 
-test('"Calculadoras e escores" leva à Central completa; a aba de baixo se chama Guia rápido', () => {
+test('"Todas as ferramentas" leva à Central completa; o primeiro item da barra de baixo é o Início (item 6)', () => {
   assert.equal(ROTA_TODAS_FERRAMENTAS, '/plantonista?todas=1')
   const nav = readFileSync('src/components/casca/navegacao.ts', 'utf8')
-  assert.match(nav, /\{ to: '\/plantonista', rotulo: 'Guia rápido', icone: Stethoscope \}/)
+  assert.match(nav, /\{ to: '\/plantonista', rotulo: 'Início', icone: House \}/)
 })

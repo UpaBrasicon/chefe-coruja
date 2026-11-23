@@ -1,6 +1,6 @@
 # Tela inicial do celular para o médico: diagnóstico
 
-Data: 23/11/2026. Item 6 do BACKLOG ("Pedidos do RT em 17/11/2026"), P1, depois da dose em mL (decisão do RT). Situação: decisões CM1 a CM8 = A (RT, 23/11/2026); próximo passo: protótipo navegável com 2 ou 3 opções (CM8).
+Data: 23/11/2026. Item 6 do BACKLOG ("Pedidos do RT em 17/11/2026"), P1, depois da dose em mL (decisão do RT). Situação: decisões CM1 a CM8 = A (RT, 23/11/2026); visual escolhido: mescla das opções A e B do protótipo (seção 5); lote 1 em homologação.
 
 Referência: os prints de um app do mercado mandados pelo RT em 23/11/2026, com as notas de disposição e espaçamento guardadas fora do repositório. Copiamos só a organização, a disposição e o espaçamento, nunca a marca nem as cores. As opções de desenho também saem de telas reais do Refero (Notion, Givingli, Pinterest, Ada), como manda a revisão visual.
 
@@ -54,3 +54,17 @@ Referência: os prints de um app do mercado mandados pelo RT em 23/11/2026, com 
 - Tirar o peso do início (CM2) muda o fluxo do guia de parada da criança, que hoje usa a cor da fita. O guia de parada continua pedindo peso ou cor dentro dele.
 - Barra embaixo (CM1) muda a navegação de todos os médicos: a troca é anunciada na tela por uma semana.
 - Categorias novas (CM5) exigem mapear as 233 ferramentas. Cada ferramenta continua com a ficha dela; nenhuma dose muda.
+
+## 5. Visual escolhido e lotes
+
+O protótipo teve três opções (A no molde dos prints, B com cartões grandes, C com seções recolhíveis). O RT pediu, em 23/11/2026, "uma mescla de a e b" e que não fosse cópia do app de referência; o grupo abre **na própria tela** (resposta do RT). Ficou assim:
+
+- cartões grandes e coloridos da opção B, em duas colunas, um por tipo de conteúdo;
+- o toque abre, logo abaixo da linha do cartão, a grade de duas colunas da opção A, com sigla, marcador e "Ver todas, com busca";
+- visual próprio: saudação sem foto, chave Adulto/Criança na largura toda e um bloco inteiro "Iniciar PCR" acima dos cartões, sem a faixa e as pílulas da referência. Sepse e CAD saíram do topo e ficam em Urgências e Calculadoras (RT, 23/11/2026, conferindo o lote 1 na homologação).
+
+Lotes, todos pela homologação:
+
+1. **Início novo** (`InicioCelular.tsx`, `src/content/inicioCelular.ts`): saudação, chave Adulto/Criança, busca (abre a Central completa com o texto), Central de Urgências e as categorias. "Urgências" reaproveita os cartões do Guia rápido; as outras listam as ferramentas mais usadas de cada tipo. CID fica de fora até existir a busca fora do atendimento (CM5).
+2. **Abas "Conteúdo" e "Meu plantão"** (CM4; no PR do lote 1, a pedido do RT em 23/11/2026; a aba fica no endereço, `?aba=plantao`): turno, próximo plantão, favoritos e mais usados. O marcador de cada item já grava o favorito desde o lote 1 (pedido do RT na conferência, 23/11/2026), com a mesma chave da Central completa.
+3. **Barra embaixo com 5 itens e botão flutuante de busca** (CM1 e CM7; RT aprovou o lote 2 e pediu o 3 em 23/11/2026): Início, Leitos, Perguntar à IA (abre a busca da Central com o campo em foco), Prontuários e Menu (Agenda e as outras telas). Numa UBS ficam Prontuários, Agenda e Menu. A busca flutuante aparece fora do início, acima das Mensagens. O aviso da troca fica uma semana no aparelho ou até "Entendi". As abas do topo saem, e os guias voltam por "← Início".
