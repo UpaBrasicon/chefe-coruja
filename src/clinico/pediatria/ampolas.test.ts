@@ -108,6 +108,9 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     'adulto-abstinencia': new Set(DOSES_ABSTINENCIA.map((d) => d.id)),
     'adulto-analgesia': new Set(OPIOIDES.map((o) => o.id)),
     'adulto-intox': new Set(['nac-ev', 'flumazenil', 'naloxona', 'atropina-bb', 'atropina-of', 'tiamina']),
+    'adulto-fa': new Set(['esmolol', 'amiodarona', 'magnesio']),
+    'adulto-has': new Set(['esmolol', 'hidralazina']),
+    'adulto-avc': new Set(['tranexamico']),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -120,7 +123,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-23.7')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.8')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -424,7 +427,8 @@ test('lote 7 (L7-1 a L7-7 = A do RT, 23/11/2026): bulas lidas, nenhuma ampola ma
     assert.deepEqual(ids(c), [['dexametasona-2', 2, false], ['dexametasona-4', 4, false]], c)
   }
   for (const c of ['bolus:acetilcisteina-1', 'bolus:acetilcisteina-2', 'bolus:acetilcisteina-3']) assert.deepEqual(ids(c), [['acetilcisteina-100', 100, true]], c)
-  assert.deepEqual(ids('bolus:esmolol-bolus'), [['esmolol-10000', 10000, false]]) // µg/mL do cloridrato (L7-4)
+  // µg/mL do cloridrato (L7-4); a de 250 mg/mL, à venda, entrou no A4-1, sempre a aspirar e diluir
+  assert.deepEqual(ids('bolus:esmolol-bolus'), [['esmolol-10000', 10000, false], ['esmolol-250000', 250000, true]])
   assert.deepEqual(ids('bolus:milrinona-ataque'), [['milrinona-1000', 1000, false]]) // µg/mL (L7-2)
   assert.deepEqual(ids('pele:clinda-iv'), [['clindamicina-150', 150, true]])
   for (const c of ['pneumonia:amicacina', 'oncologia:amicacina']) assert.deepEqual(ids(c), [['amicacina-50', 50, true], ['amicacina-250', 250, true]], c)
@@ -577,4 +581,18 @@ test('adulto A3 (intoxicações e antídotos, 23/11/2026): ampolas de bula já l
   assert.deepEqual(volumeDaAmpola([10500, 10500], AMPOLAS.acetilcisteina[0]), { ml: [105, 105], aspirar: true })
   assert.ok(Math.abs(volumeDaAmpola([0.04, 0.04], AMPOLAS.naloxona[0])!.ml[0] - 0.1) < 1e-9)
   assert.deepEqual(volumeDaAmpola([5, 5], AMPOLAS.atropina[1])?.ml, [10, 10])
+})
+
+test('adulto A4, primeira parte (A4-1 a A4-4 = A do RT, 23/11/2026): esmolol 250 mg/mL, FA, emergência hipertensiva e AVC', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  for (const c of ['adulto-fa:esmolol', 'adulto-has:esmolol']) assert.deepEqual(ids(c), [['esmolol-mg-10', 10, false], ['esmolol-mg-250', 250, true]], c)
+  assert.deepEqual(ids('adulto-fa:amiodarona'), [['amiodarona-50', 50, true]])
+  assert.deepEqual(ids('adulto-fa:magnesio').map((a) => a[1]), [0.1, 0.5])
+  assert.deepEqual(ids('adulto-has:hidralazina'), [['hidralazina-20', 20, false]])
+  assert.deepEqual(ids('adulto-avc:tranexamico'), [['acido-tranexamico-50', 50, false]])
+  // nenhuma fonte diz mais que a de 250 mg/mL está sem venda
+  assert.ok(AMPOLAS.esmolol.concat(AMPOLAS['esmolol-mg']).every((a) => !/250 mg\/mL está sem venda/.test(a.fonte)))
+  // esmolol 0,5 mg/kg em 80 kg = 40 mg: 4 mL da 10 mg/mL ou 0,16 mL da 250 mg/mL (a aspirar e diluir)
+  assert.deepEqual(volumeDaAmpola([40, 40], AMPOLAS['esmolol-mg'][0])?.ml, [4, 4])
+  assert.deepEqual(volumeDaAmpola([40, 40], AMPOLAS['esmolol-mg'][1]), { ml: [0.16, 0.16], aspirar: true })
 })
