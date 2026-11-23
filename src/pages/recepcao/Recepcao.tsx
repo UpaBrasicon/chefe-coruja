@@ -36,7 +36,7 @@ import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, 
 import { Aviso } from '@/components/ui/aviso'
 import { TituloCartao } from '@/components/monitor/Pagina'
 import { EscolherGestante, type Gestante } from '@/components/preNatal/EscolherGestante'
-import { diaMes, hora } from '@/lib/formato'
+import { dataIso, diaMes, hora } from '@/lib/formato'
 import { contagem as contagemAgenda, demandaEspontanea, linhasDoDia } from '@/domain/agenda'
 import { useAgendaDia } from '@/hooks/useAgenda'
 import { ListaDoDia } from '@/components/agenda/ListaDoDia'
@@ -436,6 +436,18 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
       return ((data ?? []) as Aberto[])[0] ?? null
     },
   })
+  // LP3 (RT, 23/11/2026): na UBS, de quando é o atendimento aberto e com quem
+  const abertoInfo = useQuery({
+    queryKey: ['recepcao-aberto-info', alvoAberto],
+    enabled: ubs && !!alvoAberto && !!aberto.data?.em_atendimento,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('atendimento_aberto_info', { p_paciente: alvoAberto! })
+      if (error) throw error
+      return data as unknown as { iniciado_em: string | null; quem_abriu: string | null } | null
+    },
+  })
+  const abertoDeOutroDia = !!abertoInfo.data?.iniciado_em
+    && dataIso(abertoInfo.data.iniciado_em) < hoje
 
   // sugere ao digitar: 3 letras (ou 4 números), com uma pausa curta
   React.useEffect(() => {
@@ -737,7 +749,9 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
                 {aberto.data
                   ? `Este paciente tem um atendimento sem desfecho desde ${diaHora(aberto.data.chegada_em)} no ${aberto.data.setor} (${ETAPA_ABERTA(aberto.data)}).`
                   : 'Este paciente tem um atendimento sem desfecho nesta unidade.'}{' '}
-                O desfecho é dado pelo médico ou pela equipe desse setor; se foi engano ou duplicidade, retire da fila.
+                {abertoDeOutroDia
+                  ? `O atendimento começou em ${diaHora(abertoInfo.data!.iniciado_em!)}${abertoInfo.data!.quem_abriu ? ` com ${abertoInfo.data!.quem_abriu}` : ''} e não foi encerrado. Na UBS, quem encerra atendimento de outro dia é o gestor.`
+                  : 'O desfecho é dado pelo médico ou pela equipe desse setor; se foi engano ou duplicidade, retire da fila.'}
               </span>
               {aberto.data?.na_minha_porta && ['triagem', 'atendimento'].includes(aberto.data.etapa) && !aberto.data.em_atendimento && (
                 <ExcluirDaFila episodioId={aberto.data.episodio_id} nome={existente?.nome_social || existente?.nome || 'O paciente'} />

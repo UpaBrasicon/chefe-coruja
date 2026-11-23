@@ -20,6 +20,7 @@ import { linhasDoDia } from '@/domain/agenda'
 import { useAgendaDia } from '@/hooks/useAgenda'
 import { gravidade, ordemMedica, type CorRisco } from '@/domain/risco'
 import { cn } from '@/lib/utils'
+import { dataIso, diaMes } from '@/lib/formato'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -57,6 +58,9 @@ const MOTIVO_EXCLUSAO: Record<string, string> = { evasao: 'evasão', duplicada: 
 
 const idadeDe = (p: { data_nascimento: string | null } | null) => (p?.data_nascimento ? rotuloIdade(p.data_nascimento, hoje()) : '')
 const minDesde = (iso: string | null | undefined, agora: number) => (iso ? Math.max(0, Math.round((agora - Date.parse(iso)) / 60_000)) : 0)
+// LP3: o dia (Brasília) de um instante, para comparar com hoje(); "21/11" para o aviso
+const diaSP = (iso: string) => dataIso(iso)
+const dataCurta = (iso: string) => diaMes(iso)
 const quando = (s: Saida) => Date.parse(s.desfecho_em ?? s.encerrado_em ?? '') || 0
 
 const Vazio = ({ children }: { children: React.ReactNode }) => <p className="px-5 py-5 text-controle text-tinta-sussurro">{children}</p>
@@ -225,6 +229,8 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   const aguardando = (fila.data ?? []).filter((e) => !e.atendimento_iniciado_em)
   if (ubs) aguardando.sort(ordemFilaUbsComAgenda<EpFila>((e) => horaMarcada.get(e.id)))
   const emAtendimento = (fila.data ?? []).filter((e) => e.atendimento_iniciado_em)
+  // LP3: na UBS, o atendimento iniciado antes de hoje e não encerrado
+  const naoEncerrados = ubs ? emAtendimento.filter((e) => diaSP(e.atendimento_iniciado_em!) < hoje()) : []
   // na UBS a espera conta da ficha (não há classificação) e não há alvo
   const esperaDesde = (e: EpFila) => (ubs ? e.chegada_em : e.classificado_em)
   const acimaDoAlvo = ubs ? 0 : aguardando.filter((e) => minDesde(e.classificado_em, agora) > alvoDe(e.cor_atual)).length
@@ -275,6 +281,25 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
       )}
 
       <BarraConsultorio setores={meusSetores} consultorio={consultorio} />
+
+      {/* LP3 (RT, 23/11/2026): atendimento de outro dia que não foi encerrado vem no topo, para retomar */}
+      {naoEncerrados.length > 0 && (
+        <section aria-label="Atendimentos de outros dias não encerrados" className="flex flex-col gap-2 rounded-container border border-atencao/30 bg-alerta-atencao px-4 py-3">
+          <span className="text-controle font-semibold text-atencao">
+            {naoEncerrados.length === 1 ? '1 atendimento de outro dia não encerrado' : `${naoEncerrados.length} atendimentos de outros dias não encerrados`}
+          </span>
+          <ul className="flex flex-col gap-1.5">
+            {naoEncerrados.map((e) => (
+              <li key={e.id} className="flex flex-wrap items-center gap-3 text-apoio text-tinta">
+                <span className="min-w-0 flex-1">
+                  <strong className="font-semibold">{nomeDe(e)}</strong>: atendimento de {dataCurta(e.atendimento_iniciado_em!)} não encerrado. Registre a conduta para encerrar.
+                </span>
+                <Button size="sm" variant="outline" onClick={() => onAbrir(e)}>Retomar</Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <Tabs value={aba} onValueChange={(v) => trocarAba(v as Aba)} className="gap-3">
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">

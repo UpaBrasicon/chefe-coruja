@@ -11171,6 +11171,10 @@ export type Database = {
       vacina_aplicar: { Args: { p_paciente: string; p_dados: Json }; Returns: string }
       vacina_registrar_anterior: { Args: { p_paciente: string; p_dados: Json }; Returns: string }
       vacina_caderneta: { Args: { p_paciente: string }; Returns: Json }
+      // LP3 (migration 20270415000036)
+      ubs_atendimentos_nao_encerrados: { Args: { p_unidade: string }; Returns: Json }
+      ubs_encerrar_nao_concluido: { Args: { p_episodio: string; p_motivo: string }; Returns: undefined }
+      atendimento_aberto_info: { Args: { p_paciente: string }; Returns: Json }
       vacina_cancelar: { Args: { p_vacinacao: string; p_motivo: string }; Returns: undefined }
       rnds_retomar: { Args: { p_unidade: string }; Returns: undefined }
       rnds_salvar_credencial: { Args: { p_credencial: string | null; p_nome: string; p_unidade_principal: string; p_identificador: string | null; p_unidades: string[] }; Returns: string }
