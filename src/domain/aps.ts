@@ -75,7 +75,7 @@ export const rotuloCondutaAps = (v: string | null | undefined) => rotuloDe(CONDU
 // Os códigos e as saídas são os do banco (registrar_escuta_aps e os CHECKs de
 // classificacoes_risco, migration 20270213000001_escuta_inicial_ubs.sql).
 export type CorCab28 = 'vermelho' | 'amarelo' | 'verde' | 'azul'
-export type SaidaEscuta = 'orientacao' | 'agendamento' | 'consulta'
+export type SaidaEscuta = 'orientacao' | 'agendamento' | 'atender_hoje' | 'consulta'
 
 export const CLASSIFICACAO_CAB28: { cor: CorCab28; rotulo: string; descricao: string; exemplos: string; aguda: boolean }[] = [
   { cor: 'vermelho', rotulo: 'Atendimento imediato', aguda: true,
@@ -94,8 +94,13 @@ export const CLASSIFICACAO_CAB28: { cor: CorCab28; rotulo: string; descricao: st
 
 export const SAIDAS_AZUL: { valor: Exclude<SaidaEscuta, 'consulta'>; rotulo: string }[] = [
   { valor: 'orientacao', rotulo: 'Orientação' },
-  { valor: 'agendamento', rotulo: 'Agendamento' },
+  // RF2 (RT, 23/11/2026): o azul pode ser atendido hoje, como demanda espontânea
+  { valor: 'atender_hoje', rotulo: 'Atender hoje' },
+  { valor: 'agendamento', rotulo: 'Agendar outro dia' },
 ]
+
+/** RF2: a saída do azul que vai à fila do médico (não encerra na escuta). */
+export const azulVaiAFila = (saida: SaidaEscuta | null | undefined) => saida === 'atender_hoje'
 
 /** Peso na fila do médico: o imediato e o prioritário (que "influencia na ordem
  *  de atendimento", CAB 28) passam à frente; o verde e quem não passou pela

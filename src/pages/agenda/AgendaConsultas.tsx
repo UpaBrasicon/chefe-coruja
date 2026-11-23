@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils'
 import { ConfiguracaoAgenda } from './ConfiguracaoAgenda'
 import { useAgendaDia, useAgora, useConfiguracaoAgenda } from '@/hooks/useAgenda'
 import { ListaDoDia } from '@/components/agenda/ListaDoDia'
+import { DemandaEspontaneaDoDia } from '@/components/agenda/DemandaEspontaneaDoDia'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Achado = { id: string; nome: string; nome_social: string | null; data_nascimento: string | null }
@@ -77,7 +78,11 @@ export default function AgendaConsultas() {
       )}
       {!unidadeId ? null : aba === 'configuracao' ? <ConfiguracaoAgenda unidadeId={unidadeId} /> : (
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <ListaDoDia unidadeId={unidadeId} dia={dia} hoje={hoje} />
+          <div className="flex min-w-0 flex-col gap-4">
+            <ListaDoDia unidadeId={unidadeId} dia={dia} hoje={hoje} />
+            {/* RF2 (RT, 23/11/2026): hoje, a demanda espontânea entra na agenda, sem horário */}
+            {dia === hoje && <DemandaEspontaneaDoDia unidadeId={unidadeId} hoje={hoje} />}
+          </div>
           <MarcarConsulta unidadeId={unidadeId} diaInicial={dia >= hoje ? dia : hoje} hoje={hoje}
             pacienteUrl={busca.get('paciente')} origemUrl={busca.get('origem')}
             tipoUrl={busca.get('consulta') === 'consulta_programada' ? 'consulta_programada' : 'consulta_agendada'} />
