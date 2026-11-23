@@ -2697,6 +2697,18 @@ Dado de teste: a escala da UBS Fase 5 na homologação foi estendida até 31/12/
 
 ---
 
+## Trilha — Portal do paciente, ideia do RT em 20/11/2026
+
+Origem: no meio da conferência da vacina (20/11/2026), o RT pediu para anotar a ideia de um portal simples do paciente, com as medicações, as condutas e as vacinas feitas na UBS, dentro da LGPD, para o paciente levar a outros serviços. Em 23/11/2026 o RT deu fase e prioridade: trilha própria, **P2**. Agora só o diagnóstico; **o código só começa depois da revisão do advogado nas peças da LGPD (LG1 a LG5)**, porque o portal é um serviço do controlador (o município) ao titular.
+
+| Ordem | Item | O que fazer | Prioridade | Estado |
+|---|---|---|---|---|
+| 1 | PP0 | Diagnóstico A/B em `docs/ubs/PORTAL-PACIENTE-DIAGNOSTICO.md` (PP1 a PP6: conteúdo, acesso, responsável legal, Meu SUS Digital, formato, registro e consentimento) | P2 | Diagnóstico pronto; espera as decisões do RT |
+| 2 | PP-legal | Texto de ciência e base legal com o advogado, junto com LG1 a LG5 | P2 | Espera o advogado |
+| 3 | PP-código | Plano em PRs depois das decisões e do advogado | P2 | Bloqueado pelo item 2 |
+
+---
+
 ## Trilha — UBS: envio à RNDS e ao SISAB, pedido do RT em 17/11/2026
 
 Origem: o RT pediu, "por fim e último", que o sistema da UBS transmita os dados para a RNDS e para o SISAB. Em 17/11/2026, ele confirmou que esta é a última trilha, depois da sepse, com prioridade P1.
