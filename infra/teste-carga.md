@@ -45,7 +45,9 @@ $NODE npm install --no-save @supabase/supabase-js
 # 5. segundo fator ligado na homologação só durante a carga (decisão do RT em 23/11/2026):
 #    configuracao_plataforma.exigir_segundo_fator = true antes, false no fim.
 #    O pre_login.mjs confirma cada sessão pelo dispositivo confiável da massa.
-# 6. massa e logins
+# 6. massa e logins. As contas carga-* nascem pelo banco, porque a API de admin
+#    do Auth é barrada pela regra de cadastro só por convite (setup/usuarios_sql.py,
+#    rodado da máquina com o CLI ligado à homologação; a senha entra pelo stdin).
 $NODE node setup/criar_massa.mjs
 $NODE node setup/pre_login.mjs      # repetir se os tokens tiverem mais de 50 min
 
