@@ -120,7 +120,7 @@ test('TEP: AHA/ACC 2026 nas fichas de PERC, HESTIA, PESI e fibrinolíticos, sem 
 
 test('taquiarritmias: AHA 2025 ao lado do manual; doses do manual não mudam', async () => {
   const m = await import('./pcr.ts')
-  assert.equal(m.fichaTaquiarritmiaAdulto.versao, '2026-11-19.1')
+  assert.equal(m.fichaTaquiarritmiaAdulto.versao, '2026-11-23.1')
   assert.ok(m.fichaTaquiarritmiaAdulto.fontes.includes(m.AHA_ALS_2025_TAQUI))
   assert.ok(m.fichaTaquiarritmiaAdulto.fontes.some((f) => /Manual de Medicina de Emergência/.test(f.citacao)))
   assert.match(m.AHA_ALS_2025_TAQUI.citacao, /PMID 41122884/)
