@@ -42,14 +42,17 @@ NODE="docker run --rm -i --user $(id -u) -v $PWD:/carga -w /carga node:22-slim"
 # 4. dependência dos scripts Node (uma vez)
 $NODE npm install --no-save @supabase/supabase-js
 
-# 5. massa e logins
+# 5. segundo fator ligado na homologação só durante a carga (decisão do RT em 23/11/2026):
+#    configuracao_plataforma.exigir_segundo_fator = true antes, false no fim.
+#    O pre_login.mjs confirma cada sessão pelo dispositivo confiável da massa.
+# 6. massa e logins
 $NODE node setup/criar_massa.mjs
 $NODE node setup/pre_login.mjs      # repetir se os tokens tiverem mais de 50 min
 
-# 6. smoke (obrigatório primeiro; precisa dar 0 erro)
+# 7. smoke (obrigatório primeiro; precisa dar 0 erro)
 $K6 run -e SUPABASE_URL -e SUPABASE_ANON_KEY testes/smoke.js
 
-# 7. carga média, com relatório HTML
+# 8. carga média, com relatório HTML
 $K6 run -e SUPABASE_URL -e SUPABASE_ANON_KEY \
   -e K6_WEB_DASHBOARD=true -e K6_WEB_DASHBOARD_EXPORT=resultados/carga_$(date +%Y%m%d_%H%M).html \
   --summary-export=resultados/carga.json testes/carga.js

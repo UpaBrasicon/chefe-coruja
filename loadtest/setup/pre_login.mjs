@@ -22,6 +22,20 @@ for (const u of dados.usuarios) {
     continue
   }
   const j = await res.json()
+  // Segundo fator: marca a sessão pelo dispositivo confiável criado pelo
+  // criar_massa.mjs (mesma RPC da tela). Sem isso, com exigir_segundo_fator
+  // ligado, toda RPC volta 403 SEGUNDO_FATOR.
+  if (!u.dispositivo) throw new Error('dados.json sem dispositivo — rode criar_massa.mjs de novo.')
+  const v = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/verificar_dispositivo_2fa`, {
+    method: 'POST',
+    headers: { apikey: env.SUPABASE_ANON_KEY, Authorization: `Bearer ${j.access_token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_token: u.dispositivo }),
+  })
+  if (!v.ok || (await v.json()) !== true) {
+    console.error(`FALHA segundo fator ${u.email}: ${v.status}`)
+    await sleep(ESPACO_MS)
+    continue
+  }
   tokens.push({
     papel: u.papel,
     email: u.email,

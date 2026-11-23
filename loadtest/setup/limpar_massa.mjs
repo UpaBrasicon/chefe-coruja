@@ -41,6 +41,7 @@ const APAGAVEIS = [
   ['escala_plantao', (q) => q.in('unidade_id', U)],
   ['historico_escala', (q) => q.in('unidade_id', U)],
   ['vinculos', (q) => q.in('unidade_id', U)],
+  ['dispositivos_confiaveis', (q) => q.eq('rotulo', 'LOADTEST k6')],
 ]
 // Ficam, com ativo=false.
 const DESATIVAR = [

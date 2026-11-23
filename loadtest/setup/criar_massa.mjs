@@ -14,6 +14,7 @@
 //   da própria escala: o dados.json leva o setor de cada usuário e os
 //   pacientes por setor;
 // - internação em 'em_observacao' para não abrir conta de faturamento.
+import { createHash, randomBytes } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { carregarEnv, ORG_LOADTEST, gravarDados } from './_lib.mjs'
 
@@ -51,7 +52,7 @@ async function conferirBanco() {
   const conf = Object.fromEntries(linhas.map((c) => [c.chave, c.valor]))
   if (conf.ambiente_teste !== true) throw new Error('A marca ambiente_teste não está ligada: este banco não é a homologação. Abortado.')
   if (conf.exigir_segundo_fator) {
-    console.warn('⚠️  exigir_segundo_fator está ligado: o login só por senha do pre_login.mjs será barrado em toda RPC (403 SEGUNDO_FATOR).')
+    console.log('exigir_segundo_fator ligado: o pre_login.mjs confirma cada sessão pelo dispositivo confiável da massa.')
   }
 }
 
@@ -83,6 +84,19 @@ async function criarDominio(usuarios) {
   const idPorEmail = Object.fromEntries(ok(await admin.from('perfis').select('id,email').in('email', emails), 'perfis').map((p) => [p.email, p.id]))
   const faltam = emails.filter((e) => !idPorEmail[e])
   if (faltam.length) throw new Error(`Sem perfil para: ${faltam.join(', ')}`)
+
+  // 1b. dispositivo confiável de cada usuário. Com exigir_segundo_fator ligado,
+  //     o pre_login.mjs marca a sessão por verificar_dispositivo_2fa, o mesmo
+  //     caminho da tela, sem e-mail. No banco fica só o hash; o token vai para
+  //     o dados.json, que não entra no git. Refeito a cada rodada.
+  const ROTULO_DISPOSITIVO = 'LOADTEST k6'
+  ok(await admin.from('dispositivos_confiaveis').delete().in('user_id', Object.values(idPorEmail)).eq('rotulo', ROTULO_DISPOSITIVO), 'dispositivos (limpar)')
+  const tokenPorEmail = Object.fromEntries(emails.map((e) => [e, randomBytes(32).toString('hex')]))
+  const expira = new Date(Date.now() + 7 * 864e5).toISOString()
+  ok(await admin.from('dispositivos_confiaveis').insert(emails.map((e) => ({
+    user_id: idPorEmail[e], token_hash: createHash('sha256').update(tokenPorEmail[e]).digest('hex'),
+    rotulo: ROTULO_DISPOSITIVO, expira_em: expira,
+  }))), 'dispositivos')
 
   // 2. organização e unidade
   ok(await admin.from('organizacoes').upsert({ id: ORG_LOADTEST, nome: 'LOADTEST k6 — NÃO USAR', ativo: true }), 'organizacao')
@@ -175,7 +189,7 @@ async function criarDominio(usuarios) {
     leitos: leitos.map((l) => l.id),
     pacientes: internados.map((x) => PAC(x.n)), pacientesPorSetor,
     conversas: CONVERSAS,
-    usuarios: us.map(({ email, papel, setor }) => ({ email, papel, setor })),
+    usuarios: us.map(({ email, papel, setor }) => ({ email, papel, setor, dispositivo: tokenPorEmail[email] })),
     checkins: comecados.length,
   }
 }
