@@ -18,6 +18,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha } from './LoteAPecas'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -124,7 +125,8 @@ export function TetanoProfilaxiaAdulto() {
       <Bloco titulo="Guia de Vigilância em Saúde 2024 — tratamento (Quadros 1–3, p. 328 e 331)">
         <LinhaManual nome="IGHAT" texto={gvs.ighat.texto} pagina={gvs.ighat.pagina} conta={<><strong>{gvs.ighat.terapeuticaUi} UI</strong> (terapêutica; até {numero(gvs.ighat.terapeuticaMaxUi)}) · profilática {gvs.ighat.profilaticaUi} UI</>} />
         <LinhaManual nome="SAT" texto={gvs.sat.texto} pagina={gvs.sat.pagina} conta={<><strong>{numero(gvs.sat.terapeuticaUi)} UI</strong> (terapêutico) · profilático {numero(gvs.sat.profilaticaUi)} UI</>} />
-        <LinhaManual nome="Antibiótico" texto={gvs.antibiotico.texto} pagina={gvs.antibiotico.pagina} conta={<>penicilina <strong>2.000.000 UI</strong> 4/4 h · ou metronidazol <strong>{gvs.antibiotico.metronidazolMg} mg</strong> 8/8 h · 7–10 dias</>} />
+        <LinhaManual nome="Antibiótico" texto={gvs.antibiotico.texto} pagina={gvs.antibiotico.pagina} conta={<>penicilina <strong>2.000.000 UI</strong> 4/4 h · ou metronidazol <strong>{gvs.antibiotico.metronidazolMg} mg</strong> 8/8 h · 7–10 dias</>}
+          extra={<EscolhaDaAmpola chave="adulto-tetano:metronidazol" dose={[gvs.antibiotico.metronidazolMg, gvs.antibiotico.metronidazolMg]} unidade="mg" />} />
         <LinhaManual nome="Sedativos (Quadro 1, como impresso)" texto={gvs.sedativos.texto} pagina={gvs.sedativos.pagina} errata={gvs.sedativos.errata} />
         <LinhaManual nome="Medidas gerais" texto={gvs.medidasGerais.texto} pagina={gvs.medidasGerais.pagina} errata={gvs.medidasGerais.errata} />
         <ul className="list-disc pl-5 text-apoio text-tinta-sussurro">{DIFERENCAS_TETANO_GVS.map((d) => <li key={d}>{d}</li>)}</ul>
