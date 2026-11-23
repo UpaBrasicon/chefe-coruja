@@ -26,12 +26,12 @@ const ICONES: Record<IconeCategoria, LucideIcon> = {
 
 // Classes por extenso para o Tailwind enxergá-las; só tokens do app.
 const TOM: Record<IconeCategoria, { cartao: string; aberto: string; icone: string; nome: string; painel: string; sigla: string }> = {
-  urgencias: { cartao: 'bg-critico/8', aberto: 'border-critico bg-critico/15', icone: 'bg-critico text-sobre-acao', nome: 'text-critico', painel: 'border-critico/25 bg-critico/5', sigla: 'bg-critico/10 text-critico' },
-  doses: { cartao: 'bg-secao-farmacia/8', aberto: 'border-secao-farmacia bg-secao-farmacia/15', icone: 'bg-secao-farmacia text-sobre-acao', nome: 'text-secao-farmacia', painel: 'border-secao-farmacia/25 bg-secao-farmacia/5', sigla: 'bg-secao-farmacia/10 text-secao-farmacia' },
-  calculadoras: { cartao: 'bg-secao-calculadoras/8', aberto: 'border-secao-calculadoras bg-secao-calculadoras/15', icone: 'bg-secao-calculadoras text-sobre-acao', nome: 'text-secao-calculadoras', painel: 'border-secao-calculadoras/25 bg-secao-calculadoras/5', sigla: 'bg-secao-calculadoras/10 text-secao-calculadoras' },
-  escores: { cartao: 'bg-secao-neurologia/8', aberto: 'border-secao-neurologia bg-secao-neurologia/15', icone: 'bg-secao-neurologia text-sobre-acao', nome: 'text-secao-neurologia', painel: 'border-secao-neurologia/25 bg-secao-neurologia/5', sigla: 'bg-secao-neurologia/10 text-secao-neurologia' },
-  intoxicacao: { cartao: 'bg-secao-toxicologia/8', aberto: 'border-secao-toxicologia bg-secao-toxicologia/15', icone: 'bg-secao-toxicologia text-sobre-acao', nome: 'text-secao-toxicologia', painel: 'border-secao-toxicologia/25 bg-secao-toxicologia/5', sigla: 'bg-secao-toxicologia/10 text-secao-toxicologia' },
-  todas: { cartao: 'bg-acao/8', aberto: 'border-acao bg-acao/15', icone: 'bg-acao text-sobre-acao', nome: 'text-acao', painel: 'border-acao/25 bg-acao/5', sigla: 'bg-acao/10 text-acao' },
+  urgencias: { cartao: 'border-critico/30 bg-critico/8 hover:border-critico/60', aberto: 'border-critico bg-critico/15', icone: 'bg-critico text-sobre-acao', nome: 'text-critico', painel: 'border-critico/25 bg-critico/5', sigla: 'bg-critico/10 text-critico' },
+  doses: { cartao: 'border-secao-farmacia/30 bg-secao-farmacia/8 hover:border-secao-farmacia/60', aberto: 'border-secao-farmacia bg-secao-farmacia/15', icone: 'bg-secao-farmacia text-sobre-acao', nome: 'text-secao-farmacia', painel: 'border-secao-farmacia/25 bg-secao-farmacia/5', sigla: 'bg-secao-farmacia/10 text-secao-farmacia' },
+  calculadoras: { cartao: 'border-secao-calculadoras/30 bg-secao-calculadoras/8 hover:border-secao-calculadoras/60', aberto: 'border-secao-calculadoras bg-secao-calculadoras/15', icone: 'bg-secao-calculadoras text-sobre-acao', nome: 'text-secao-calculadoras', painel: 'border-secao-calculadoras/25 bg-secao-calculadoras/5', sigla: 'bg-secao-calculadoras/10 text-secao-calculadoras' },
+  escores: { cartao: 'border-secao-neurologia/30 bg-secao-neurologia/8 hover:border-secao-neurologia/60', aberto: 'border-secao-neurologia bg-secao-neurologia/15', icone: 'bg-secao-neurologia text-sobre-acao', nome: 'text-secao-neurologia', painel: 'border-secao-neurologia/25 bg-secao-neurologia/5', sigla: 'bg-secao-neurologia/10 text-secao-neurologia' },
+  intoxicacao: { cartao: 'border-secao-toxicologia/30 bg-secao-toxicologia/8 hover:border-secao-toxicologia/60', aberto: 'border-secao-toxicologia bg-secao-toxicologia/15', icone: 'bg-secao-toxicologia text-sobre-acao', nome: 'text-secao-toxicologia', painel: 'border-secao-toxicologia/25 bg-secao-toxicologia/5', sigla: 'bg-secao-toxicologia/10 text-secao-toxicologia' },
+  todas: { cartao: 'border-acao/30 bg-acao/8 hover:border-acao/60', aberto: 'border-acao bg-acao/15', icone: 'bg-acao text-sobre-acao', nome: 'text-acao', painel: 'border-acao/25 bg-acao/5', sigla: 'bg-acao/10 text-acao' },
 }
 
 function saudacao(agora = new Date()) {
@@ -89,7 +89,7 @@ function CartaoCategoria({ c, aberta, aoTocar, idPainel }: { c: CategoriaInicio;
   return (
     <BotaoLinha onClick={aoTocar} aria-expanded={c.itens.length ? aberta : undefined} aria-controls={c.itens.length ? idPainel : undefined}
       className={cn('min-h-31 justify-between gap-3.5 rounded-cartao border-2 p-3.5',
-        aberta ? cn(t.aberto, 'hover:bg-superficie') : cn('border-transparent hover:border-transparent', t.cartao))}>
+        aberta ? cn(t.aberto, 'hover:bg-superficie') : t.cartao)}>
       <span className="flex w-full items-center justify-between">
         <span className={cn('flex size-10 items-center justify-center rounded-container', t.icone)}>
           <Icone className="size-5" aria-hidden />
@@ -116,7 +116,8 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
       <ul className="grid grid-cols-2 gap-2.5">
         {c.itens.map((i) => (
           <li key={i.rota}>
-            <BotaoLinha onClick={() => abrir(i.rota)} className="h-full min-h-22 w-full gap-2.5 p-3">
+            <BotaoLinha onClick={() => abrir(i.rota)}
+              className="h-full min-h-22 w-full gap-2.5 rounded-cartao border-fio-forte/45 p-3 shadow-repouso hover:border-acao hover:bg-superficie hover:shadow-halo">
               <span className="flex w-full items-start justify-between gap-1.5">
                 <span aria-hidden className={cn('inline-flex h-7 min-w-8 items-center justify-center rounded-container px-1.5 text-rotulo font-bold', t.sigla)}>{i.sigla}</span>
                 <Bookmark className="size-4 text-tinta-sussurro" aria-hidden />
@@ -127,7 +128,7 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
         ))}
         <li>
           <Link to="/plantonista?todas=1"
-            className="flex h-full min-h-22 items-center justify-center rounded-container border border-dashed border-fio-forte p-3 text-center text-apoio font-semibold text-acao no-underline">
+            className="flex h-full min-h-22 items-center justify-center rounded-cartao border border-dashed border-fio-forte p-3 text-center text-apoio font-semibold text-acao no-underline">
             Ver todas, com busca
           </Link>
         </li>
