@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 import { cn } from '@/lib/utils'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -206,7 +207,8 @@ export function TromboliseAvcAdulto() {
 
       <Bloco titulo={`Sangramento intracraniano nas 24 h da alteplase (${SANGRAMENTO_POS_ALTEPLASE.pagina})`} descricao={`Sinais de alarme: ${SANGRAMENTO_POS_ALTEPLASE.sinaisAlarme}.`}>
         <ul className="list-disc pl-5 text-apoio">{SANGRAMENTO_POS_ALTEPLASE.itens.map((i) => <li key={i}>{i}</li>)}</ul>
-        <LinhaManual nome="Ácido tranexâmico" texto="10–15 mg/kg EV em 20 min" conta={txa ? <strong>{faixa(txa, 0)} mg</strong> : 'informe o peso'} pagina="p. 528 (Tabela 6)" errata={SANGRAMENTO_POS_ALTEPLASE.errata} />
+        <LinhaManual nome="Ácido tranexâmico" texto="10–15 mg/kg EV em 20 min" conta={txa ? <strong>{faixa(txa, 0)} mg</strong> : 'informe o peso'} pagina="p. 528 (Tabela 6)" errata={SANGRAMENTO_POS_ALTEPLASE.errata}
+          extra={txa ? <EscolhaDaAmpola chave="adulto-avc:tranexamico" dose={txa} unidade="mg" /> : undefined} />
       </Bloco>
 
       <Bloco titulo={`Angioedema orolingual (${ANGIOEDEMA_POS_ALTEPLASE.pagina})`}>
