@@ -432,7 +432,7 @@ test('falciforme (cap. 80): SRLF/SFMU 2025 ao lado do manual; doses do manual ig
 
 test('sedação (cap. 10): ACEP 2026 ao lado do manual; doses do manual iguais', async () => {
   const s = await import('./sedacaoProcedimento.ts')
-  assert.equal(s.fichaSedacaoProcedimentoAdulto.versao, '2026-11-14.1')
+  assert.equal(s.fichaSedacaoProcedimentoAdulto.versao, '2026-11-23.1')
   assert.ok(s.fichaSedacaoProcedimentoAdulto.fontes.includes(s.ACEP_SEDACAO_2026))
   assert.deepEqual(s.DROGAS_SAP.find((d) => d.id === 'propofol')!.inicialPorKg, [0.5, 1])
   const nota = NOTAS_HCFMUSP_LOTE5.find((x) => x.ficha.id === 'nota-hcfmusp-cap10-sedacao')!
