@@ -39,6 +39,6 @@ Fase 1, item 13 (P2): "criar tour ou dicas nas telas críticas; incluir recepç�
 
 **B.** No perfil, no banco (migration e RPC, por causa da trava das colunas do próprio perfil do S1). Segue a pessoa em qualquer aparelho.
 
-## Perguntas ao RT
+## Decisões do RT
 
-1. OB1 a OB4: A ou B em cada um?
+23/11/2026, nas palavras dele: "Sim, todas A". OB1 a OB4 = A: cartão "Primeiros passos" na tela inicial do papel, com o conteúdo dos roteiros de treinamento, até completar ou esconder (volta pelo menu do usuário), guardado no aparelho por pessoa.
