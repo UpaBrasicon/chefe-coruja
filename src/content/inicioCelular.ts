@@ -10,7 +10,7 @@
 // todas", que abre a Central completa com a busca. Nenhuma dose muda: cada
 // item abre a tela de sempre, com a ficha dela. O teste confere as rotas.
 
-import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, type CartaoGuia } from './guiaRapido.ts'
+import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, cartaoDoGuia, type CartaoGuia } from './guiaRapido.ts'
 
 export type LadoInicio = 'adulto' | 'crianca'
 
@@ -176,6 +176,18 @@ export const ROTA_PCR: Record<LadoInicio, string> = {
 }
 
 export const categoriasDoInicio = (lado: LadoInicio) => (lado === 'crianca' ? INICIO_CRIANCA : INICIO_ADULTO)
+
+/**
+ * Chave de favorito (`secao/slug`, a mesma da Central completa) de um item do
+ * início. O guia de bolso favorita a ferramenta completa dele (ex.: parada do
+ * adulto = emergencias/pcr-adulto). Sem ferramenta, sem favorito.
+ */
+export function chaveDoItem(rota: string): string | null {
+  const guia = /^\/plantonista\?guia=([\w-]+)$/.exec(rota)
+  const alvo = guia ? cartaoDoGuia(guia[1])?.itens[0]?.rota : rota
+  const m = alvo ? /^\/plantonista\/([\w-]+)\/([\w-]+)$/.exec(alvo) : null
+  return m ? `${m[1]}/${m[2]}` : null
+}
 
 /** A busca do início abre a Central completa já com o texto digitado. */
 export const rotaDaBusca = (texto: string) =>

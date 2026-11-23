@@ -5,10 +5,12 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import { ROTA_PCR, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
+import { CHAVES_FERRAMENTAS } from '@/content/registry'
+import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useAuth } from '@/contexts/AuthContext'
 import { definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
+import { useFavoritos } from '@/lib/useFavoritos'
 import { cn } from '@/lib/utils'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -107,6 +109,7 @@ function CartaoCategoria({ c, aberta, aoTocar, idPainel }: { c: CategoriaInicio;
 function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: string; lado: LadoInicio; aoFechar: () => void }) {
   const t = TOM[c.icone]
   const abrir = useAbrir(lado)
+  const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   return (
     <div id={id} role="region" aria-label={c.nome} className={cn('flex flex-col gap-2.5 rounded-cartao border p-3', t.painel)}>
       <div className="flex items-center justify-between">
@@ -114,18 +117,25 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
         <Button type="button" variant="outline" size="sm" onClick={aoFechar}>Fechar</Button>
       </div>
       <ul className="grid grid-cols-2 gap-2.5">
-        {c.itens.map((i) => (
-          <li key={i.rota}>
-            <BotaoLinha onClick={() => abrir(i.rota)}
-              className="h-full min-h-22 w-full gap-2.5 rounded-cartao border-fio-forte/45 p-3 shadow-repouso hover:border-acao hover:bg-superficie hover:shadow-halo">
-              <span className="flex w-full items-start justify-between gap-1.5">
+        {c.itens.map((i) => {
+          const chave = chaveDoItem(i.rota)
+          const favorito = !!chave && favoritos.includes(chave)
+          return (
+            <li key={i.rota} className="relative">
+              <BotaoLinha onClick={() => abrir(i.rota)}
+                className="h-full min-h-22 w-full gap-2.5 rounded-cartao border-fio-forte/45 p-3 pr-10 shadow-repouso hover:border-acao hover:bg-superficie hover:shadow-halo">
                 <span aria-hidden className={cn('inline-flex h-7 min-w-8 items-center justify-center rounded-container px-1.5 text-rotulo font-bold', t.sigla)}>{i.sigla}</span>
-                <Bookmark className="size-4 text-tinta-sussurro" aria-hidden />
-              </span>
-              <span className="text-apoio leading-snug font-medium text-tinta">{i.nome}</span>
-            </BotaoLinha>
-          </li>
-        ))}
+                <span className="text-apoio leading-snug font-medium text-tinta">{i.nome}</span>
+              </BotaoLinha>
+              {chave && (
+                <Button type="button" variant="ghost" size="icon-sm" onClick={() => alternarFavorito(chave)} aria-pressed={favorito}
+                  aria-label={favorito ? `Tirar ${i.nome} dos favoritos` : `Favoritar ${i.nome}`} className="absolute top-1.5 right-1.5">
+                  <Bookmark className={cn('size-4.5', favorito ? 'fill-acao text-acao' : 'text-tinta-apoio')} />
+                </Button>
+              )}
+            </li>
+          )
+        })}
         <li>
           <Link to="/plantonista?todas=1"
             className="flex h-full min-h-22 items-center justify-center rounded-cartao border border-dashed border-fio-forte p-3 text-center text-apoio font-semibold text-acao no-underline">
