@@ -26,6 +26,7 @@ import { DOSES_IC_ORAIS } from './insuficienciaCardiacaPed.ts'
 import { CLORETO_CA_TABELA7, FOSFORO, HIPERCALCEMIA, HIPERCALEMIA, HIPERMAGNESEMIA, HIPOCALCEMIA, HIPOMAGNESEMIA, K_IV, K_VO, calcularDose } from './eletrolitosPed.ts'
 import { calcularDoseLivro } from './fonteP4.ts'
 import { DOSES_MENINGITE, DOSES_PROFILAXIA } from './meningitePed.ts'
+import { DROGAS_PCR } from '../adulto/pcr.ts'
 
 // dados de teste, não são concentrações para a tela
 const A3: Apresentacao = { id: 'x-3', rotulo: 'X 3 mg/mL', porMl: 3, fonte: 'teste' }
@@ -91,6 +92,10 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     intoxicacao: new Set(DOSES_CAPITULO_INTOX.map((d) => d.id)), coma: new Set(DOSES_COMA.map((d) => d.id)),
     hda: new Set(DOSES_HDA.map((d) => d.id)), pele: new Set([...DOSES_SCT, ...DOSES_PELE].map((d) => d.id)),
     meningite: new Set([...DOSES_MENINGITE, ...DOSES_PROFILAXIA].map((d) => d.id)),
+    // adulto: a PCR tem lista de itens; bradicardia e taquiarritmias são blocos nomeados da tela
+    'adulto-pcr': new Set(DROGAS_PCR.map((d) => d.id)),
+    'adulto-bradi': new Set(['atropina']),
+    'adulto-taqui': new Set(['adenosina', 'amiodarona', 'lidocaina', 'magnesio']),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
     const [lista, id] = chave.split(':')
@@ -103,7 +108,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-23.2')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.3')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -464,4 +469,25 @@ test('lote 8: glicose de 5% a 50%, nenhuma marcada, sem a de 75%', () => {
   assert.deepEqual(volumeDaAmpola(g, por('glicose-25'))?.ml, [20, 20])
   // item já em g: sem conversão
   assert.deepEqual(doseNaUnidadeDaAmpola([5, 10], 'renal:glicose'), [5, 10])
+})
+
+test('adulto A0 e A1 (MA1 a MA7 e A1-1 a A1-4 = A do RT, 23/11/2026): cadastro único, PCR e arritmias', () => {
+  const ids = (c: string) => ampolasDoItem(c).map((a) => [a.id, a.porMl, a.diluir ?? false])
+  assert.deepEqual(ids('adulto-bradi:atropina'), [['atropina-025', 0.25, false], ['atropina-05', 0.5, false]])
+  assert.deepEqual(ids('adulto-taqui:adenosina'), [['adenosina-3', 3, false]])
+  assert.deepEqual(ids('adulto-taqui:amiodarona'), [['amiodarona-50', 50, true]])
+  assert.deepEqual(ids('adulto-taqui:lidocaina').map((a) => a[1]), [10, 20])
+  assert.deepEqual(ids('adulto-taqui:magnesio'), [['magnesio-g-10', 0.1, false], ['magnesio-g-50', 0.5, false]])
+  assert.equal(ITENS_COM_AMPOLA['adulto-taqui:magnesio'].diluir, true) // 2 g em 15 min
+  assert.equal(ampolasDoItem('adulto-pcr:glicose-insulina').length, 4)
+  // contas: atropina 1 mg = 2 mL da 0,5 mg/mL; adenosina 12 mg = 4 mL; magnésio 2 g = 20 mL da 10% ou 4 mL da 50%
+  assert.deepEqual(volumeDaAmpola([1, 1], AMPOLAS.atropina[1])?.ml, [2, 2])
+  assert.deepEqual(volumeDaAmpola([12, 12], AMPOLAS.adenosina[0])?.ml, [4, 4])
+  assert.deepEqual(AMPOLAS['magnesio-g'].map((a) => volumeDaAmpola([2, 2], a)?.ml), [[20, 20], [4, 4]])
+  // glicose 25 g = 50 mL da 50% ou 100 mL da 25%
+  const g = (id: string) => AMPOLAS.glicose.find((a) => a.id === id)
+  assert.deepEqual(volumeDaAmpola([25, 25], g('glicose-50'))?.ml, [50, 50])
+  assert.deepEqual(volumeDaAmpola([25, 25], g('glicose-25'))?.ml, [100, 100])
+  // KCl e aminofilina esperam a bula (A1-3)
+  assert.equal(Object.keys(ITENS_COM_AMPOLA).some((c) => /kcl|aminofilina/.test(c)), false)
 })

@@ -107,11 +107,11 @@ export const EMULSAO_MAX_ML_KG = 12
 
 export const fichaPcrAdulto: Ficha = {
   ...fichaAdulto('adulto-pcr', 'Drogas e desfibrilação na PCR — adulto', PAG_PCR),
-  versao: '2026-11-19.1',
+  versao: '2026-11-23.1',
   // Lote D11: as fontes novas (AHA 2025 Part 10, Coreia 2025 Part 5, ERC 2021) ficam citadas no texto de
   // cada item; a lista abaixo não muda porque a nota do HCFMUSP (cap. 2) é montada a partir dela.
   fontes: [pagina(PAG_PCR), AHA_ALS_2025, IVIO_2025, PARAMEDIC3_2025, DOSE_VF_2022, BICARBONATO_PCR_IH_2026, ILCOR_COSTR_2026],
-  revisadoEm: '19/11/2026 (lote D11: itens 17, 18, 19 e 21, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras, com fonte; aguarda aprovação do RT); 13/11/2026 (CoSTR 2026 do ILCOR: trombolítico e volume de rotina, adrenalina IM, carga do desfibrilador, ventilação; lote 1 da revisão do HCFMUSP, sem mudança de dose); 06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
+  revisadoEm: '23/11/2026 (lote A1 da dose em mL: o KCl da hipocalemia passa a escrever a via, IV, conferida pelo RT no manual, p. 50; a glicose da hipercalemia ganha a escolha de 5% a 50%; aguarda aprovação do RT); 19/11/2026 (lote D11: itens 17, 18, 19 e 21, decisão do RT de 19/11/2026; aguarda aprovação do RT); 16/11/2026 (próximos passos do piloto das calculadoras, com fonte; aguarda aprovação do RT); 13/11/2026 (CoSTR 2026 do ILCOR: trombolítico e volume de rotina, adrenalina IM, carga do desfibrilador, ventilação; lote 1 da revisão do HCFMUSP, sem mudança de dose); 06/11/2026 (notas de IVIO, PARAMEDIC-3, DOSE VF e bicarbonato na PCR intra-hospitalar; revisão PubMed, itens médios); 25/10/2026 (lacunas da Central, lote 3: AHA 2025 Part 9 lida no texto integral; manual mantido como base)',
 }
 
 export const CHOQUE_PCR = { monofasicoJ: 360, bifasicoJ: 200, pagina: 'p. 48' }
@@ -125,7 +125,7 @@ export const DROGAS_PCR: ItemManual[] = [
     nota: `O livro dá a dose em mEq; o volume em mL não é calculado porque o capítulo não traz a concentração em mEq/mL. ${NOTA_HIPERCALEMIA_PCR_2B}` },
   { id: 'calcio', nome: 'Gluconato de cálcio 10%', dose: '20–30 mL IV a cada 2–5 minutos', quando: 'hipercalemia', pagina: 'p. 50',
     nota: NOTA_HIPERCALEMIA_PCR_2B },
-  { id: 'kcl', nome: 'KCl 19,1%', dose: '2 mEq/min durante 10 minutos (20 mEq); manutenção: 10 mmol (mEq) em 5 a 10 min, depois dos 2 mEq/min por 10 min (Coreia 2025, Part 5)', quando: 'hipocalemia', pagina: 'p. 50',
+  { id: 'kcl', nome: 'KCl 19,1%', dose: '2 mEq/min IV durante 10 minutos (20 mEq); manutenção: 10 mmol (mEq) em 5 a 10 min, depois dos 2 mEq/min por 10 min (Coreia 2025, Part 5)', quando: 'hipocalemia', pagina: 'p. 50',
     nota: 'O manual trazia a manutenção "0,5–1 mEq por mais 10 minutos" se PCR mantida, sem unidade de tempo (p. 50); a manutenção passou à da Coreia 2025, Part 5 (lote D11, decisão do RT de 19/11/2026).' },
   { id: 'alteplase', nome: 'Alteplase', dose: '50 mg IV em bolus, podendo ser repetido após 15 minutos; o consenso europeu orienta compressões por 60–90 min após', quando: 'TEP suspeito ou confirmado (não trombolisar IAM)', pagina: 'p. 50' },
   { id: 'emulsao', nome: 'Emulsão lipídica', dose: '1,5 mL/kg IV em 1 minuto e infusão de 0,25 mL/kg/min por 30–60 minutos; até 2 bolus a mais e máximo de 12 mL/kg (ERC 2021)', quando: 'intoxicação por anestésico local', pagina: 'p. 50',
@@ -216,9 +216,9 @@ const PAG_BRADI = 'cap. 15 Bradiarritmias, p. 229; preparo da adrenalina: Anexo 
 
 export const fichaBradicardiaAdulto: Ficha = {
   ...fichaAdulto('adulto-bradicardia', 'Bradicardia sintomática — adulto', PAG_BRADI),
-  versao: '2026-11-19.1',
+  versao: '2026-11-23.1',
   fontes: [pagina(PAG_BRADI), ERC_RCUK_2025_ALS, AHA_ALS_2025_BRADI],
-  revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 27/10/2026 (AHA 2025 lida no texto integral: seção 19 e Figura 8; ERC/RCUK 2025 no texto aberto; manual mantido como base)',
+  revisadoEm: '23/11/2026 (lote A1 da dose em mL: atropina com a escolha da ampola de 0,25 e 0,5 mg/mL, nenhuma marcada, para a dose do manual (0,5 mg) e a da AHA 2025 (1 mg); sem mudança de dose; aguarda aprovação do RT); 19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 27/10/2026 (AHA 2025 lida no texto integral: seção 19 e Figura 8; ERC/RCUK 2025 no texto aberto; manual mantido como base)',
 }
 
 /**
@@ -306,9 +306,9 @@ export const AHA_ALS_2025_TAQUI: Fonte = {
 
 export const fichaTaquiarritmiaAdulto: Ficha = {
   ...fichaAdulto('adulto-taquiarritmias', 'Taquiarritmias — drogas EV do adulto', PAG_TAQUI),
-  versao: '2026-11-19.1',
+  versao: '2026-11-23.1',
   fontes: [pagina(PAG_TAQUI), AHA_ALS_2025_TAQUI],
-  revisadoEm: '19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 14/11/2026 (AHA 2025, Part 9, seções de taquicardia lidas no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
+  revisadoEm: '23/11/2026 (lote A1 da dose em mL: a adenosina passa a escrever a via, IV, conferida pelo RT no manual, p. 265; adenosina, amiodarona (a aspirar e diluir), lidocaína e magnésio com a escolha da ampola; sem mudança de dose; aguarda aprovação do RT); 19/11/2026 (versão sobe só porque o arquivo mudou no lote D11; conteúdo sem mudança; aguarda aprovação do RT); 14/11/2026 (AHA 2025, Part 9, seções de taquicardia lidas no texto integral, ao lado do manual; lote 2 da revisão do HCFMUSP; aguarda aprovação do RT); 27/09/2026 (conferido no livro, com errata anotada)',
 }
 
 const SEM_ITEM_TAQUI = 'sem item do manual na ferramenta'

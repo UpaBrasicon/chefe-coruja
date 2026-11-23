@@ -27,7 +27,7 @@ test('PCR: doses fixas da Tabela 2 conferidas no texto (p. 49–51)', () => {
   const d = (id: string) => DROGAS_PCR.find((x) => x.id === id)!
   assert.match(d('adrenalina').dose, /^1 mg .*3 a 5 minutos/)
   assert.match(d('amiodarona').dose, /300 mg.*150 mg/)
-  assert.match(d('kcl').dose, /2 mEq\/min durante 10 minutos/)
+  assert.match(d('kcl').dose, /2 mEq\/min IV durante 10 minutos/) // via conferida pelo RT (A1-1)
   assert.equal(d('kcl').errata, undefined) // lote D11: a manutenção passou à da Coreia 2025; o texto do manual ficou na nota
   assert.match(d('kcl').nota!, /0,5–1 mEq por mais 10 minutos.*sem unidade de tempo/)
   assert.equal(KCL_ATAQUE_MEQ, 20)
@@ -134,12 +134,12 @@ test('CoSTR 2026 do ILCOR (lote 1, L2): fonte na ficha, sem dose nova, cada item
 
 test('lote D11: glicose com insulina, KCl, força 2b da hipercalemia e emulsão lipídica', () => {
   const d = (id: string) => DROGAS_PCR.find((x) => x.id === id)!
-  assert.equal(fichaPcrAdulto.versao, '2026-11-19.1')
+  assert.equal(fichaPcrAdulto.versao, '2026-11-23.1')
   // as fontes novas ficam no texto (a lista de fontes alimenta a nota do HCFMUSP, cap. 2)
   assert.match(DROGAS_PCR.find((x) => x.id === 'glicose-insulina')!.nota ?? '', /AHA 2025, Part 10/)
   assert.match(DROGAS_PCR.find((x) => x.id === 'kcl')!.dose, /Coreia 2025, Part 5/)
   assert.match(DROGAS_PCR.find((x) => x.id === 'emulsao')!.dose, /ERC 2021/)
-  assert.match(fichaPcrAdulto.revisadoEm, /^19\/11\/2026 \(lote D11: itens 17, 18, 19 e 21/)
+  assert.match(fichaPcrAdulto.revisadoEm, /19\/11\/2026 \(lote D11: itens 17, 18, 19 e 21/)
   // item 17: a dose do manual fica (25 g); a AHA 2025 (50 g) entra como nota
   assert.match(d('glicose-insulina').dose, /^25 g de glicose \+ 10 U/)
   assert.match(d('glicose-insulina').nota!, /AHA 2025, Part 10, Tabela 3: 50 g de glicose com 10 U de insulina; o manual dá 25 g/)
