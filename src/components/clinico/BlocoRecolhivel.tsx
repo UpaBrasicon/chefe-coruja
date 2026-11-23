@@ -5,6 +5,7 @@
 import { ChevronRight } from 'lucide-react'
 import * as React from 'react'
 
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { cn } from '@/lib/utils'
 
 export function BlocoRecolhivel({ rotulo, titulo, resumo, children, inicioAberto = false }: {
@@ -21,13 +22,13 @@ export function BlocoRecolhivel({ rotulo, titulo, resumo, children, inicioAberto
   const id = React.useId()
   return (
     <section aria-label={rotulo} className="flex flex-col gap-2.5 rounded-container border border-fio px-4 py-3">
-      <button type="button" aria-expanded={aberto} aria-controls={id} onClick={() => setAberto((a) => !a)}
-        className="-mx-1 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-controle px-1 text-left hover:bg-campo focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acao/40">
+      <BotaoLinha variante="linha" aria-expanded={aberto} aria-controls={id} onClick={() => setAberto((a) => !a)}
+        className="flex-wrap items-center gap-x-3 gap-y-1 rounded-controle border-0 px-1 py-0.5">
         <ChevronRight aria-hidden className={cn('size-4 shrink-0 text-tinta-sussurro transition-transform', aberto && 'rotate-90')} />
         {titulo}
         {resumo}
         <span className="ml-auto text-rotulo text-tinta-sussurro">{aberto ? 'fechar' : 'abrir'}</span>
-      </button>
+      </BotaoLinha>
       {aberto && <div id={id} className="flex flex-col gap-2.5">{children}</div>}
     </section>
   )
