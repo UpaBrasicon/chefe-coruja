@@ -24,7 +24,15 @@ export type RegistroVacina = {
 export type Caderneta = {
   paciente: { id: string; nome: string; nome_social: string | null; sexo: string | null; data_nascimento: string | null }
   pode_registrar: boolean; hoje: string; registros: RegistroVacina[]
+  /** RF6 (RT, 23/11/2026): em atraso ou a completar, pelas notas C2, C3, C6 e C7 da SAPS */
+  pendencias?: PendenciaVacina[]
 }
+
+/** Uma vacina em atraso ou a completar (private.vacina_pendencias, migration 20270415000034). */
+export type PendenciaVacina = { vacina: string; indicador: 'C2' | 'C3' | 'C6' | 'C7'; texto: string; fonte: string }
+
+/** "pentavalente" → "Pentavalente"; siglas (VIP, HPV, dTpa) ficam como estão. */
+export const rotuloPendencia = (vacina: string) => (/^[a-zà-ú]{4,}/.test(vacina) && vacina !== 'dTpa' ? vacina[0].toUpperCase() + vacina.slice(1) : vacina)
 
 /** Grupo "Faixa etária" do LEDI: o mais comum, vem marcado (pode trocar). */
 export const GRUPO_PADRAO = 121
