@@ -242,8 +242,8 @@ test('lote 5, L5-5 e ML7: insulina só pelo preparo de 0,1 UI/mL do livro, nunca
   assert.deepEqual(volumeDaAmpola([2, 2], prep)?.ml, [20, 20])
 })
 
-test('lote 5: vitamina K e pralidoxima sem apresentação à venda para a via do item (L5-2)', () => {
-  for (const c of ['bolus:vitamina-k', 'intoxicacao:vitk-sc', 'bolus:pralidoxima']) {
+test('lote 5: vitamina K IV (bulas contraindicam a veia) e pralidoxima ficam sem mL (L5-2)', () => {
+  for (const c of ['bolus:vitamina-k', 'bolus:pralidoxima']) {
     assert.deepEqual(ampolasDoItem(c), [], c)
   }
 })
@@ -413,6 +413,7 @@ test('lote 7 (L7-1 a L7-7 = A do RT, 23/11/2026): bulas lidas, nenhuma ampola ma
   for (const c of ['pneumonia:amicacina', 'oncologia:amicacina']) assert.deepEqual(ids(c), [['amicacina-50', 50, true], ['amicacina-250', 250, true]], c)
   assert.deepEqual(ids('itu:tobramicina'), [['tobramicina-50', 50, true]])
   assert.deepEqual(ids('hemostasia:ddavp'), [['desmopressina-4', 4, true]]) // µg/mL do acetato (L7-5)
+  assert.deepEqual(ids('intoxicacao:vitk-sc'), [['vitamina-k-10', 10, false]]) // só SC (Eskavit e Hyvit K)
   // L7-6: salbutamol injetável (uso adulto) fica sem mL; item sem via escrita ou de via mista também
   for (const c of ['renal:beta2', 'coma:dexa-hic', 'pele:clindamicina', 'pele:smxtmp', 'oncologia:tmp']) assert.deepEqual(ampolasDoItem(c), [], c)
 })

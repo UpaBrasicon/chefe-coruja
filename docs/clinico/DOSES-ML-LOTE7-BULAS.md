@@ -59,7 +59,10 @@ L7-1 a L7-7 = A. Implementado:
 - acetilcisteína 100 mg/mL, clindamicina 150 mg/mL (só a IV do choque tóxico), amicacina 50 e 250 mg/mL (pneumonia e oncologia), tobramicina 50 mg/mL e desmopressina 4 µg/mL, todas "aspirar e diluir";
 - esmolol 10 mg/mL (10.000 µg/mL) e milrinona 1 mg/mL (1.000 µg/mL);
 - morfina 0,1 e 0,2 mg/mL (Dimorf) ao lado de 1 e 10 mg/mL, nenhuma marcada.
+- vitamina K 10 mg/mL só na via SC da intoxicação (bulas Eskavit e Hyvit K, lidas em 23/11/2026: IM e SC).
 
-Ficam sem mL: gentamicina (espera a bula da Fresenius, L7-3), amicacina e gentamicina da ITU (IV ou IM; o aviso de diluir só vale na veia), salbutamol injetável (L7-6), vitamina K (nenhuma ampola à venda para a via do item; a SC espera as bulas de Hyvit K e Eskavit), SMX-TMP e clindamicina sem via só IV.
+Gentamicina: a bula da Fresenius não está no Bulário (nem nos dados abertos de 23/11/2026); a L7-3 A não tem como se cumprir e volta ao RT (B: 40 mg/mL pelo rótulo; C: sem mL).
+
+Ficam sem mL: gentamicina (espera a bula da Fresenius, L7-3), amicacina e gentamicina da ITU (IV ou IM; o aviso de diluir só vale na veia), salbutamol injetável (L7-6), vitamina K IV (as três bulas contraindicam a veia), SMX-TMP e clindamicina sem via só IV.
 
 Ficha `ped-ampolas` 2026-11-23.1; migration `20270416000023` na homologação (volta testada em transação desfeita).
