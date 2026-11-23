@@ -4,3 +4,6 @@
 dados.json
 resultados/*
 !resultados/.gitkeep
+node_modules/
+package-lock.json
+!.env.example

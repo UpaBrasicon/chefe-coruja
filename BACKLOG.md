@@ -2387,8 +2387,9 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 20 | HTML pronto no servidor | Não se aplica: app atrás do login; landing já é Next.js | Confirmado pelo RT em 08/11/2026 |
 | 23 | Virtualizar listas longas | Não se aplica se o 05 paginar | Confirmado pelo RT em 08/11/2026. Fechado com o resto do 05 em 16/11/2026 (D1 = A); reabrir se o Sentry (item 30) mostrar INP p75 acima de 200 ms ou LCP p75 acima de 2,5 s numa tela, ou se uma lista passar de 1.000 linhas numa unidade (`docs/desempenho/ITEM-30-MEDICAO-HOMOLOGACAO.md`) |
 | 28 | Várias instâncias | Não se aplica: Vercel e Supabase gerenciados | Confirmado pelo RT em 08/11/2026 |
+| 32 | Teste de carga (k6) | Fora do kit. Pedido do RT em 22/11/2026; entrou na trilha como P1 em 23/11/2026, com o k6 rodando no VPS | Suíte em `loadtest/` (branch `chore/teste-carga`, PR #1025): cenários por papel ancorados nas RPCs reais, testes de smoke, carga, stress, pico, resistência, ruptura e Realtime. Só na homologação, com trava de alvo; k6 só com a chave publicável; escrita desligada por padrão. Passo a passo e reversão em `infra/teste-carga.md`. Falta: massa da homologação (`criar_massa.mjs`), payloads de escrita, entrada no canal do chat e lista de limpeza. Depois, smoke e carga média no VPS, com o relatório no PR. Stress, pico e ruptura só com ok do RT; produção, nenhum sem ok teste por teste |
 
-Trilha fechada pelo RT em 09/11/2026 ("vamos fechar desempenho e começar o humanizer"). O resto do 05 (chat, chamados, pessoas, diluições), o 23 e o 26 esperam os números reais do item 30.
+Trilha fechada pelo RT em 09/11/2026 ("vamos fechar desempenho e começar o humanizer") e reaberta só para o item 32 em 23/11/2026. O resto do 05 (chat, chamados, pessoas, diluições), o 23 e o 26 esperam os números reais do item 30.
 
 ## Trilha — Humanizer (textos sem cara de IA), pedido do RT em 09/11/2026
 

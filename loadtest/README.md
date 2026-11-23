@@ -5,15 +5,17 @@ O k6 usa só a chave **anon** + JWT de usuário (R2). Comece pela **homologaçã
 
 ## Pré-requisitos
 
-1. Instalar o k6 (binário): `brew install k6` / `winget install k6 --source winget` / apt da Grafana. `k6 version` para registrar.
-2. `cp .env.example .env` e preencher (chaves da **homolog**). O `.env` é gitignored.
-3. Dependência dos scripts Node: `npm i @supabase/supabase-js` (dentro de `loadtest/`).
+Roda no **VPS**, com o k6 e o Node pelo Docker, sem instalar nada no sistema. O passo a passo completo, as chaves e a reversão estão em `infra/teste-carga.md`.
+
+1. `cp .env.example .env` e preencher com as chaves da **homologação**. O `.env` fica fora do git.
+2. Os scripts e o k6 recusam qualquer URL que não seja a da homologação (`kswurfyxxvfydpjfrivy`). Produção exige `LOADTEST_PRODUCAO=confirmo` e ok do RT.
+3. Dependência dos scripts Node: `npm install --no-save @supabase/supabase-js` (dentro de `loadtest/`).
 
 ## Preparar a massa (uma vez)
 
 ```bash
 node setup/criar_massa.mjs     # cria usuários carga-*; grava dados.json
-node setup/pre_login.mjs       # gera .tokens.json (reexecute se tokens >10 min)
+node setup/pre_login.mjs       # gera .tokens.json (repetir se os tokens tiverem mais de 50 min)
 ```
 > ⚠️ `criar_massa.mjs` tem a parte de **usuários pronta**; a criação de unidade/setores/
 > pacientes/escala está como **TODO** (depende do schema — ver DESCOBERTA.md). Smoke só

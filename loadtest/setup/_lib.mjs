@@ -18,7 +18,16 @@ export function carregarEnv() {
   const req = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'LOADTEST_SENHA']
   const faltam = req.filter((k) => !process.env[k])
   if (faltam.length) throw new Error(`Faltam no loadtest/.env: ${faltam.join(', ')}`)
+  conferirAlvo(process.env.SUPABASE_URL, process.env.LOADTEST_PRODUCAO)
   return process.env
+}
+
+// Trava de alvo: só a homologação. Produção exige LOADTEST_PRODUCAO=confirmo (e ok do RT).
+export const HOMOLOG_REF = 'kswurfyxxvfydpjfrivy'
+export function conferirAlvo(url, producao) {
+  if (String(url).includes(`${HOMOLOG_REF}.supabase.co`)) return
+  if (producao === 'confirmo') return
+  throw new Error(`Alvo recusado: ${url} não é a homologação (${HOMOLOG_REF}). Ver infra/teste-carga.md.`)
 }
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms))

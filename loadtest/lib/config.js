@@ -12,6 +12,10 @@ export const ESCRITA = __ENV.ESCRITA === '1'
 if (!URL || !ANON) {
   throw new Error('Defina SUPABASE_URL e SUPABASE_ANON_KEY (-e ... ou no ambiente).')
 }
+// Trava de alvo: só a homologação. Produção exige -e LOADTEST_PRODUCAO=confirmo (e ok do RT).
+if (!URL.includes('kswurfyxxvfydpjfrivy.supabase.co') && __ENV.LOADTEST_PRODUCAO !== 'confirmo') {
+  throw new Error(`Alvo recusado: ${URL} não é a homologação. Ver infra/teste-carga.md.`)
+}
 
 // Thresholds = critérios de aprovação (seção 8 do prompt).
 export const thresholds = {
