@@ -1,6 +1,6 @@
 # Dose em mL, lote 7: os itens que esperavam bula
 
-Data: 23/11/2026. Situação: plano; decisões L7-1 a L7-7 esperam o RT. Base: `docs/clinico/DOSES-ML-BULAS-PENDENTES.md` (lista única dos lotes 4 a 6), as decisões ML1 a ML11, L4 a L6 e a regra "CMED + bula, só à venda". As 25 bulas foram baixadas pelo RT no Bulário Eletrônico em 23/11/2026 e lidas pela sessão (texto extraído, sem cópia no repositório).
+Data: 23/11/2026. Situação: decisões L7-1 a L7-7 = A (RT, 23/11/2026); implementado na branch `fase-ml/lote7-bulas` (seção 5). Base: `docs/clinico/DOSES-ML-BULAS-PENDENTES.md` (lista única dos lotes 4 a 6), as decisões ML1 a ML11, L4 a L6 e a regra "CMED + bula, só à venda". As 25 bulas foram baixadas pelo RT no Bulário Eletrônico em 23/11/2026 e lidas pela sessão (texto extraído, sem cópia no repositório).
 
 ## 1. O que as bulas dizem
 
@@ -50,3 +50,16 @@ Data: 23/11/2026. Situação: plano; decisões L7-1 a L7-7 esperam o RT. Base: `
 - Gentamicina 20 × 40 mg/mL (2×) e base não escrita (L7-3).
 - Morfina de 0,1 a 10 mg/mL (100×): nenhuma marcada, como nas outras.
 - Salbutamol "uso adulto" (L7-6).
+
+## 5. Decisões do RT (23/11/2026) e andamento
+
+L7-1 a L7-7 = A. Implementado:
+- difenidramina 50 mg/mL na anafilaxia, nos bolus e no guia de parada;
+- dexametasona 2 e 4 mg/mL (rótulo do fosfato) só nos itens EV ou IV: meningite (a tela da meningite ganhou a escolha da ampola) e oncologia (compressão medular, compressão de vias aéreas e HIC); asma, crupe e coma/HIC (sem via escrita) ficam sem mL;
+- acetilcisteína 100 mg/mL, clindamicina 150 mg/mL (só a IV do choque tóxico), amicacina 50 e 250 mg/mL (pneumonia e oncologia), tobramicina 50 mg/mL e desmopressina 4 µg/mL, todas "aspirar e diluir";
+- esmolol 10 mg/mL (10.000 µg/mL) e milrinona 1 mg/mL (1.000 µg/mL);
+- morfina 0,1 e 0,2 mg/mL (Dimorf) ao lado de 1 e 10 mg/mL, nenhuma marcada.
+
+Ficam sem mL: gentamicina (espera a bula da Fresenius, L7-3), amicacina e gentamicina da ITU (IV ou IM; o aviso de diluir só vale na veia), salbutamol injetável (L7-6), vitamina K (nenhuma ampola à venda para a via do item; a SC espera as bulas de Hyvit K e Eskavit), SMX-TMP e clindamicina sem via só IV.
+
+Ficha `ped-ampolas` 2026-11-23.1; migration `20270416000023` na homologação (volta testada em transação desfeita).
