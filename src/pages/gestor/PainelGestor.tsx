@@ -14,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { hora as formatarHora, numero } from '@/lib/formato'
 import { IndicadoresAps } from '@/components/gestor/IndicadoresAps'
+import { AtendimentosNaoEncerrados } from '@/components/gestor/AtendimentosNaoEncerrados'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
@@ -289,6 +290,8 @@ export default function PainelGestor() {
       <Panorama unidadeId={unidadeId} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
       {/* U13: indicadores da APS (C1 a C7) só na UBS */}
       {unidadeAtiva?.unidade.tipo === 'ubs' && <IndicadoresAps unidadeId={unidadeId} />}
+      {/* LP3: atendimento de outro dia não encerrado, que trava a ficha nova do paciente */}
+      {unidadeAtiva?.unidade.tipo === 'ubs' && <AtendimentosNaoEncerrados unidadeId={unidadeId} />}
       <AuditoriaCheckin unidadeId={unidadeId} />
     </div>
   )
