@@ -68,7 +68,8 @@ const NIVEIS_BARS = [
 ]
 
 export const bars: Escore = {
-  ficha: fichaAdulto('adulto-bars', 'BARS — escala de atividade comportamental (adulto)', 'cap. 76 O paciente agitado, p. 1005–1006 (Tabela 1)'),
+  // versão sobe só pela regra 1b do gate (o arquivo mudou no lote A2 da dose em mL); a escala não muda
+  ficha: { ...fichaAdulto('adulto-bars', 'BARS — escala de atividade comportamental (adulto)', 'cap. 76 O paciente agitado, p. 1005–1006 (Tabela 1)'), versao: '2026-11-23.1', revisadoEm: '23/11/2026 (versão sobe só porque o arquivo mudou no lote A2 da dose em mL; conteúdo sem mudança; aguarda aprovação do RT); 27/09/2026 (conferido no livro)' },
   descricao: 'Behavioral Activity Rating Scale, de 1 a 7, com a triagem pré-hospitalar da Tabela 1 do manual do HC.',
   itens: [
     { tipo: 'escolha', id: 'nivel', rotulo: 'Comportamento observado', opcoes: NIVEIS_BARS.map((n, i) => ({ rotulo: n.rotulo, valor: i + 1 })) },
