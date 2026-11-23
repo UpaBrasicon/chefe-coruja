@@ -1,6 +1,6 @@
 # Dose em mL no adulto, lote A5 (último): antibióticos, cefaleia, cólica renal e o resto
 
-Data: 23/11/2026. Situação: confirmado pelo RT em 23/11/2026; implementado na branch fase-ml/adulto-a5, menos cetorolaco e sumatriptano, que esperam as bulas. Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A). Este lote junta o A5 e o A6 do diagnóstico, porque quase não há antibiótico em solução pronta.
+Data: 23/11/2026. Situação: confirmado pelo RT em 23/11/2026; implementado na branch fase-ml/adulto-a5, com cetorolaco (Blau, 30 mg/mL) e sumatriptano (Sumax, seringa de 0,5 mL com 6 mg) pelas bulas lidas em 23/11/2026. Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A). Este lote junta o A5 e o A6 do diagnóstico, porque quase não há antibiótico em solução pronta.
 
 ## Antibióticos (era o A5)
 
