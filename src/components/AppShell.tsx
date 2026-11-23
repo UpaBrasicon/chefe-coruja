@@ -404,7 +404,7 @@ function Casca() {
     return <PortaoSegundoFator fatorId={segundoFator.data.fatorId} onSair={() => void sair()} />
   }
   if (!chaveRascunhoPronta) {
-    return <div className="flex min-h-dvh items-center justify-center bg-campo"><Spinner /></div>
+    return <div className="flex min-h-dvh items-center justify-center bg-pagina"><Spinner /></div>
   }
 
   if (entraPorEscala) {
@@ -478,7 +478,7 @@ function Casca() {
   )
 
   return (
-    <div className={cn('cc-shell min-h-dvh bg-campo md:flex', compacto && 'cc-den')} data-densidade={compacto ? 'compacta' : 'normal'}>
+    <div className={cn('cc-shell min-h-dvh bg-pagina md:flex', compacto && 'cc-den')} data-densidade={compacto ? 'compacta' : 'normal'}>
       {!topoEstreito && (
         <Lateral
           itens={itens}

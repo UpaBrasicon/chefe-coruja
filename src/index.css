@@ -64,6 +64,8 @@
     --color-tinta: var(--cc-tinta);
     --color-tinta-apoio: var(--cc-tinta-apoio);
     --color-tinta-sussurro: var(--cc-tinta-sussurro);
+    /* contraste CT1 (RT, 23/11/2026): fundo da página mais escuro que o cartão, para os blocos aparecerem */
+    --color-pagina: var(--cc-pagina);
     --color-grafite: var(--cc-grafite);
     --color-superficie: var(--cc-superficie);
     --color-campo: var(--cc-campo);
@@ -252,6 +254,7 @@
     --cc-tinta: #1E293B;
     --cc-tinta-apoio: #475569;
     --cc-tinta-sussurro: #58677C;
+    --cc-pagina: #EEF2F6;
     --cc-grafite: #334155;
     --cc-superficie: #FFFFFF;
     --cc-campo: #F8FAFC;
@@ -382,6 +385,7 @@
     --cc-tinta: #E2E8F0;
     --cc-tinta-apoio: #CBD5E1;
     --cc-tinta-sussurro: #A8B5C7;
+    --cc-pagina: #0F172A;
     --cc-grafite: #CBD5E1;
     --cc-superficie: #1E293B;
     --cc-campo: #0F172A;
