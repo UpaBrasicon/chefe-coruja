@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Baby } from 'lucide-react'
 import * as React from 'react'
 
+import { BlocoRecolhivel } from '@/components/clinico/BlocoRecolhivel'
 import { PesoAltura } from '@/components/hiperdia/HiperdiaNaConsulta'
 import { CampoDum, DialogoDesfecho, DialogoDum, DialogoRetirar } from '@/components/preNatal/Dialogos'
 import { LinhaDoTempo } from '@/components/preNatal/LinhaDoTempo'
@@ -74,17 +75,20 @@ export function PreNatalNaConsulta({ pacienteId, episodioId, nomePaciente, marco
   const fase = faseDa(g, hoje)
   const { perdido, aFazer } = frasesDa(g, hoje)
   const pendePesoAltura = g.dum && fase !== 'puerperio' && estadoDoItem(g, 'peso_altura', hoje) === 'no_prazo'
+  // RF4 (RT, 23/11/2026): começa fechado, com o resumo no cabeçalho
   return (
-    <section aria-label="Pré-natal" className="flex flex-col gap-2.5 rounded-container border border-fio px-4 py-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="flex items-center gap-1.5 text-controle font-semibold text-tinta"><Baby className="size-4 text-acao" aria-hidden /> Pré-natal</span>
+    <BlocoRecolhivel rotulo="Pré-natal"
+      titulo={<span className="flex items-center gap-1.5 text-controle font-semibold text-tinta"><Baby className="size-4 text-acao" aria-hidden /> Pré-natal</span>}
+      resumo={<>
         <span className="rounded-capsula bg-alerta-marca px-2 py-0.5 text-rotulo font-medium text-marca-escura">
           {fase === 'puerperio' ? `Puerpério · dia ${diaDoPuerperio(g, hoje) ?? 0} de 42` : ROTULO_FASE[fase]}
         </span>
         {g.dum && fase !== 'puerperio' && <span className="text-apoio text-tinta-apoio">IG {rotuloIG(diasEntre(g.dum, hoje))} · DPP {dataBr(g.dpp!)}</span>}
         {g.desfecho === 'parto' && g.desfecho_em && <span className="text-apoio text-tinta-apoio">parto em {dataBr(g.desfecho_em)}</span>}
         {g.dum && <span className="text-apoio text-tinta-sussurro">{pontosDa(g, hoje)} de {TETO_NO_APP} pontos</span>}
-      </div>
+        {perdido.length > 0 && <span className="text-apoio font-medium text-critico">{perdido.length} {perdido.length === 1 ? 'prazo perdido' : 'prazos perdidos'}</span>}
+        {!g.dum && <span className="text-apoio text-atencao">sem a DUM</span>}
+      </>}>
       {g.dum ? (
         <>
           <LinhaDoTempo g={g} hoje={hoje} />
@@ -108,6 +112,6 @@ export function PreNatalNaConsulta({ pacienteId, episodioId, nomePaciente, marco
       {acao === 'dum' && <DialogoDum g={g} nome={nomePaciente} onFechar={() => setAcao(null)} />}
       {acao === 'desfecho' && <DialogoDesfecho g={g} nome={nomePaciente} onFechar={() => setAcao(null)} />}
       {acao === 'retirar' && <DialogoRetirar g={g} nome={nomePaciente} onFechar={() => setAcao(null)} />}
-    </section>
+    </BlocoRecolhivel>
   )
 }

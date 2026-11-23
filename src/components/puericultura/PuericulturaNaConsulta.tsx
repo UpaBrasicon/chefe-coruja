@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Sprout } from 'lucide-react'
 import * as React from 'react'
 
+import { BlocoRecolhivel } from '@/components/clinico/BlocoRecolhivel'
 import { PesoAltura } from '@/components/hiperdia/HiperdiaNaConsulta'
 import { BotaoDesfazerSaida, DialogoRetirarCrianca } from '@/components/puericultura/DialogosPuericultura'
 import { LinhaDoTempoCrianca } from '@/components/puericultura/LinhaDoTempoCrianca'
@@ -52,13 +53,14 @@ export function PuericulturaNaConsulta({ pacienteId, nomePaciente, marcouPuericu
   }
 
   const { perdido, aFazer } = frasesDa(c, hoje)
+  // RF4 (RT, 23/11/2026): começa fechado, com o resumo no cabeçalho
   return (
-    <section aria-label="Puericultura" className="flex flex-col gap-2.5 rounded-container border border-fio px-4 py-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        {titulo}
+    <BlocoRecolhivel rotulo="Puericultura" titulo={titulo}
+      resumo={<>
         <span className="text-apoio text-tinta-apoio">{rotuloIdadeCurta(c.data_nascimento, hoje)}</span>
         <span className="text-apoio text-tinta-sussurro">{pontosDa(c, hoje)} de {TETO_NO_APP} pontos</span>
-      </div>
+        {perdido.length > 0 && <span className="text-apoio font-medium text-critico">{perdido.length} {perdido.length === 1 ? 'prazo perdido' : 'prazos perdidos'}</span>}
+      </>}>
       <LinhaDoTempoCrianca c={c} hoje={hoje} />
       {perdido.length > 0 && <p className="text-apoio text-critico">{perdido.join(' · ')}</p>}
       {aFazer.length > 0 && <p className="text-apoio text-tinta-apoio"><span className="text-atencao">A fazer: </span>{aFazer.join(' · ')}</p>}
@@ -71,6 +73,6 @@ export function PuericulturaNaConsulta({ pacienteId, nomePaciente, marcouPuericu
       )}
       {podeEditar && <div><Button size="xs" variant="outline" onClick={() => setRetirar(true)}>Retirar da puericultura</Button></div>}
       {retirar && <DialogoRetirarCrianca pacienteId={pacienteId} nome={nomePaciente} onFechar={() => setRetirar(false)} />}
-    </section>
+    </BlocoRecolhivel>
   )
 }
