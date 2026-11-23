@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { numeroSemMilhar } from '@/lib/formato'
 import { cn } from '@/lib/utils'
 
-const ml = (x: number) => numeroSemMilhar(x, 2)
+// abaixo de 0,1 mL, 3 casas (0,006 mL não vira 0,01)
+const ml = (x: number) => numeroSemMilhar(x, x < 0.1 ? 3 : 2)
 const faixaMl = ([a, b]: [number, number]) => (Math.abs(a - b) < 1e-9 ? ml(a) : `${ml(a)}–${ml(b)}`)
 
 /**

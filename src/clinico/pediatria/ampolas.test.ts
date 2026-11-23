@@ -334,7 +334,11 @@ test('lote 6c (eletrólitos; L6-6 e L6-7 do RT, 20/11/2026): bicarbonato e cálc
   assert.deepEqual(ampolasDoItem('rcp:calcio').map((a) => a.base), ['elemento', 'elemento'])
   // magnésio grave: 10% e 50% no sal, sem o 10% fixo
   assert.deepEqual(ids('eletrolitos:mg-grave'), [['magnesio-100', 100], ['magnesio-500', 500]])
-  for (const c of ['eletrolitos:furosemida-k', 'eletrolitos:furosemida-ca']) assert.deepEqual(ids(c), [['furosemida-10', 10]], c)
+  assert.deepEqual(ids('eletrolitos:furosemida-k'), [['furosemida-10', 10]])
+  // revisão de 23/11/2026: furosemida-ca não escreve a via (item sem via fica sem mL)
+  assert.deepEqual(ids('eletrolitos:furosemida-ca'), [])
+  // magnésio 50%: o livro dá concentração máxima de 20% (p. 908), então a ampola pede diluição
+  assert.equal(ampolasDoItem('eletrolitos:mg-grave').find((a) => a.id === 'magnesio-500')?.diluir, true)
   assert.deepEqual(ids('eletrolitos:insulina'), [['insulina-0-1', 0.1]])
 })
 
