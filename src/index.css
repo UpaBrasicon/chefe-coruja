@@ -70,6 +70,8 @@
     --color-trilha: var(--cc-trilha);
     --color-fio: var(--cc-fio);
     --color-fio-forte: var(--cc-fio-forte);
+    /* contraste CT2 (RT, 23/11/2026): borda de campo e controle, 3:1 sobre o fundo (WCAG 1.4.11) */
+    --color-controle: var(--cc-controle);
 
     /* ── Classificação de risco (Manchester) ─────────────────── */
     --color-mts-vermelho: var(--cc-mts-vermelho);
@@ -258,6 +260,7 @@
     --cc-trilha: #F1F5F9;
     --cc-fio: #E2E8F0;
     --cc-fio-forte: #CBD5E1;
+    --cc-controle: #7B8799;
     --cc-mts-vermelho: #B91C1C;
     --cc-mts-laranja: #C2410C;
     --cc-mts-amarelo: #FACC15;
@@ -388,6 +391,7 @@
     --cc-trilha: #273449;
     --cc-fio: #334155;
     --cc-fio-forte: #64748B;
+    --cc-controle: #64748B;
     --cc-mts-vermelho: #B91C1C;
     --cc-mts-laranja: #C2410C;
     --cc-mts-amarelo: #FACC15;

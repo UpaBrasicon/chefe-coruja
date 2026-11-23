@@ -30,7 +30,7 @@ export function CaixaMarcar({ marcado, onChange, bloqueado = false, desabilitado
         aria-hidden
         // padrao-ok: caixa de 18 px; o canto de controle (10 px) a deixaria redonda
         className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-[5px] border',
-          bloqueado ? 'border-fio bg-trilha text-tinta-sussurro' : marcado ? 'border-acao bg-acao text-sobre-acao' : 'border-fio-forte bg-campo')}
+          bloqueado ? 'border-fio bg-trilha text-tinta-sussurro' : marcado ? 'border-acao bg-acao text-sobre-acao' : 'border-controle bg-superficie')}
       >
         {bloqueado ? <X className="size-3" strokeWidth={3} /> : marcado ? <Check className="size-3" strokeWidth={3} /> : null}
       </span>
