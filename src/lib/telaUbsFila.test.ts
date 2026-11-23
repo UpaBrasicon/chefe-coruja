@@ -97,3 +97,16 @@ test('U6, PR 3 do percurso da UBS: a janela da consulta de enfermagem tem só as
   assert.match(conduta, /\{urgencia && unidadeAtiva && !enfermagem && \(/)
   assert.match(conduta, /\{regulacao && !enfermagem && \(/)
 })
+
+// Limpeza do percurso da UBS, LP1 e LP2 = A (RT, 23/11/2026).
+test('LP1: o código 14 da conduta diz eMulti; LP2: a consulta mostra a hora do início, sem "há 0 min"', async () => {
+  const { CONDUTAS_APS } = await import('../domain/aps.ts')
+  assert.equal(CONDUTAS_APS.find((c) => c.valor === 'agendamento_nasf')?.rotulo, 'Agendamento para eMulti')
+  const { rotuloInicioAtendimento } = await import('../domain/plantao.ts')
+  assert.equal(rotuloInicioAtendimento('14:05', 0), 'Atendimento iniciado às 14:05')
+  assert.equal(rotuloInicioAtendimento('14:05', 0.9), 'Atendimento iniciado às 14:05')
+  assert.equal(rotuloInicioAtendimento('14:05', 3), 'Atendimento iniciado às 14:05 · há 3 min')
+  assert.equal(rotuloInicioAtendimento('14:05', 75), 'Atendimento iniciado às 14:05 · há 1h15')
+  const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
+  assert.doesNotMatch(janela, /Em atendimento há/)
+})

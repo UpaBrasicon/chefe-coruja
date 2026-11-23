@@ -49,7 +49,8 @@ export const CONDUTAS_APS: OpcaoAps[] = [
   { valor: 'retorno_consulta_agendada', rotulo: 'Retorno para consulta agendada', grupo: 'Retorno e agendamento' },
   { valor: 'retorno_cuidado_continuado', rotulo: 'Retorno para cuidado continuado/programado', grupo: 'Retorno e agendamento' },
   { valor: 'agendamento_grupos', rotulo: 'Agendamento para grupos', grupo: 'Retorno e agendamento' },
-  { valor: 'agendamento_nasf', rotulo: 'Agendamento para Nasf', grupo: 'Retorno e agendamento' },
+  // LP1 (RT, 23/11/2026): o LEDI 8.7.0 chama o código 14 de "Agendamento para eMulti"; o valor interno fica
+  { valor: 'agendamento_nasf', rotulo: 'Agendamento para eMulti', grupo: 'Retorno e agendamento' },
   { valor: 'alta_episodio', rotulo: 'Alta do episódio', grupo: 'Alta' },
   // `curto`: o rótulo debaixo do grupo "Encaminhamento" (aba Conduta)
   { valor: 'encaminhamento_interno', rotulo: 'Encaminhamento interno no dia', grupo: 'Encaminhamento', curto: 'Interno no dia' },
