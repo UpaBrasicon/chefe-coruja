@@ -23,7 +23,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
 import {
   ANTERIOR_VAZIO, APLICACAO_VAZIA, BCG, CONDICAO_MATERNAL, conferirAnterior, conferirAplicacao, dadosAnterior, dadosAplicacao,
-  dosesAnterior, dosesDe, ESTRATEGIA_ESPECIAL, estrategiasDe, locaisDe, pedeCondicaoMaternal,
+  dosesAnterior, dosesDe, ESTRATEGIA_ESPECIAL, estrategiasDe, locaisDe, pedeCondicaoMaternal, rotuloPendencia,
   type Caderneta, type FormAnterior, type FormAplicacao, type Referencias,
 } from '@/domain/salaVacina'
 import { lotesParaAplicar, type PainelLotes } from '@/domain/vacinaLotes'
@@ -138,6 +138,7 @@ function Paciente({ unidade, pacienteId, onFechar }: { unidade: string; paciente
         </p>
         <Button size="sm" variant="ghost" onClick={onFechar}><X aria-hidden /> Outro paciente</Button>
       </div>
+      <EmAtraso c={c} />
       {c.pode_registrar ? (
         <>
           <div role="radiogroup" aria-label="Registrar" className="flex flex-wrap gap-2">
@@ -326,6 +327,31 @@ function FormTranscrever({ c, r }: { c: Caderneta; r: Referencias }) {
           {salvar.isPending && <Spinner className="size-4" />} Registrar dose da caderneta
         </Button>
         {salvar.error && <MensagemErro texto={(salvar.error as Error).message} />}
+      </CardContent>
+    </Card>
+  )
+}
+
+// RF6 (RT, 23/11/2026): o que está em atraso ou a completar vem antes de tudo.
+// Só o que o app calcula pelas notas da SAPS; não é o calendário nacional completo.
+function EmAtraso({ c }: { c: Caderneta }) {
+  const lista = c.pendencias ?? []
+  if (lista.length === 0) return null
+  return (
+    <Card className="border-atencao/40" aria-label="Em atraso ou a completar">
+      <CardHeader>
+        <CardTitle className="text-corpo">Em atraso ou a completar</CardTitle>
+        <CardDescription>Pelo que o app calcula nas notas metodológicas C2, C3, C6 e C7 da SAPS; não é o calendário nacional completo.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col gap-2">
+          {lista.map((p) => (
+            <li key={`${p.indicador}-${p.vacina}`} className="text-apoio text-tinta">
+              <strong className="font-semibold text-atencao">{rotuloPendencia(p.vacina)}</strong>: {p.texto}
+              <span className="block text-rotulo text-tinta-sussurro">{p.indicador} · {p.fonte}</span>
+            </li>
+          ))}
+        </ul>
       </CardContent>
     </Card>
   )

@@ -80,3 +80,21 @@ test('U15 PR 4: Sala de vacina só na UBS, para o técnico e o enfermeiro', asyn
   const app = readFileSync('src/App.tsx', 'utf8')
   assert.match(app, /<Route path="\/vacina" element={<SalaVacina \/>} \/>/)
 })
+
+// Refinamento da UBS, RF6 = A (RT, 23/11/2026): a caderneta mostra primeiro o
+// que está em atraso ou a completar, só pelo que o app calcula nas notas da SAPS.
+test('RF6: bloco "Em atraso ou a completar" antes do registro, com a fonte de cada linha', async () => {
+  const { rotuloPendencia } = await import('../domain/salaVacina.ts')
+  assert.equal(rotuloPendencia('pentavalente'), 'Pentavalente')
+  assert.equal(rotuloPendencia('tríplice viral'), 'Tríplice viral')
+  assert.equal(rotuloPendencia('VIP'), 'VIP')
+  assert.equal(rotuloPendencia('dTpa'), 'dTpa')
+  assert.equal(rotuloPendencia('HPV'), 'HPV')
+  const tela = readFileSync('src/pages/vacina/SalaVacina.tsx', 'utf8')
+  assert.ok(tela.indexOf('<EmAtraso c={c} />') < tela.indexOf('{c.pode_registrar ? ('), 'o bloco vem antes do registro')
+  assert.match(tela, /\{p\.indicador\} · \{p\.fonte\}/)
+  const sql = readFileSync('supabase/migrations/20270415000034_ubs_rf6_caderneta_em_atraso.sql', 'utf8')
+  assert.match(sql, /'pendencias', private\.vacina_pendencias\(pa\)/)
+  assert.match(sql, /CONTINUE WHEN f = 'tríplice viral' AND v_meses < 12/)
+  assert.match(sql, /v_hoje BETWEEN pg\.dum \+ 140 AND pg\.dum \+ 294/)
+})
