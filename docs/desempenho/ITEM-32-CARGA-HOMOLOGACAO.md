@@ -47,6 +47,32 @@ Todas as 19 RPCs passaram 100% das vezes:
 - `painel_gestor`, `ocupacao_setores`, `escala_mes_gestor` e `presencas_do_dia_gestor`;
 - `fila_da_porta` e `buscar_pacientes`.
 
+## Carga média com escrita (ok do RT em 23/11/2026)
+
+Mesmo perfil, com `ESCRITA=1`, de 14:18 a 14:41 (horário de Brasília). Antes da carga, uma sonda chamou cada escrita uma vez: as três voltaram 200. O smoke também passou com 0 erro.
+
+- O médico prescreve em 15% das visitas, com `prescrever` e um item de cuidado.
+- O médico manda mensagem no chat em 10% das visitas, com `enviar_mensagem`.
+- A recepção faz a ficha da porta em 5% das visitas, com `registrar_ficha`, que cria o paciente e o episódio.
+
+Os resultados completos estão em `carga/carga_escrita_20261123_1704.html` e `.json`.
+
+| Medida | Resultado | Limite |
+|---|---|---|
+| Requisições | 19.986 (14,8 por segundo) | — |
+| Falhas | 0,00% | menos de 1% |
+| Checagens | 100% | mais de 99% |
+| Escrita: mediana | 38,6 ms | — |
+| Escrita: p95 | 78,2 ms | menos de 1.500 ms |
+| Escrita: máximo | 232 ms | — |
+| Leitura: mediana | 37,2 ms | — |
+| Leitura: p95 | 190 ms | menos de 800 ms |
+| Leitura: p99 | 347 ms | menos de 2.000 ms |
+
+O banco da homologação ficou com 214 itens de prescrição "LOADTEST cuidado de carga", 129 mensagens "LOADTEST ping" e 18 fichas novas "PACIENTE CARGA". São só de inclusão e ficam para sempre. No VPS, o k6 chegou a 26% de CPU e a biblioteca da produção a 0,5%. O hermes-app chegou a 60%, com picos dele que acontecem também sem o k6 (35% a 38% nas outras fases).
+
+Com escrita, o p95 da leitura subiu de 63 ms para 190 ms e continua longe do limite.
+
 ## O VPS durante a carga
 
 A CPU foi lida pelo `docker stats` a cada 30 s. O valor é o pico, e 100% equivale a 1 núcleo.
