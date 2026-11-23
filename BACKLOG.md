@@ -2387,8 +2387,9 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 | 20 | HTML pronto no servidor | Não se aplica: app atrás do login; landing já é Next.js | Confirmado pelo RT em 08/11/2026 |
 | 23 | Virtualizar listas longas | Não se aplica se o 05 paginar | Confirmado pelo RT em 08/11/2026. Fechado com o resto do 05 em 16/11/2026 (D1 = A); reabrir se o Sentry (item 30) mostrar INP p75 acima de 200 ms ou LCP p75 acima de 2,5 s numa tela, ou se uma lista passar de 1.000 linhas numa unidade (`docs/desempenho/ITEM-30-MEDICAO-HOMOLOGACAO.md`) |
 | 28 | Várias instâncias | Não se aplica: Vercel e Supabase gerenciados | Confirmado pelo RT em 08/11/2026 |
+| 32 | Teste de carga (k6) | Fora do kit. Pedido do RT em 22/11/2026; entrou na trilha como P1 em 23/11/2026, com o k6 rodando no VPS | Suíte em `loadtest/` (branch `chore/teste-carga`, PR #1025): cenários por papel ancorados nas RPCs reais, testes de smoke, carga, stress, pico, resistência, ruptura e Realtime. Só na homologação, com trava de alvo; k6 só com a chave publicável; escrita desligada por padrão. Passo a passo e reversão em `infra/teste-carga.md`. **Smoke e carga média rodados na homologação em 23/11/2026** (decisões do RT no mesmo dia: SSH pelo Claude, 2FA ligado só durante a carga, massa na homologação, login pelo link de admin por causa do CAPTCHA): 150 usuários, 19.646 leituras, 0% de falha, p95 62,8 ms e p99 200 ms; CPU da biblioteca da produção no VPS em 0,4% (`docs/desempenho/ITEM-32-CARGA-HOMOLOGACAO.md`, relatório em `docs/desempenho/carga/`). Com escrita (ok do RT no mesmo dia): 19.986 requisições, 0% de falha, p95 da escrita 78 ms e da leitura 190 ms. Falta, cada um com ok do RT: stress, pico, ruptura, resistência e Realtime; produção, nenhum sem ok teste por teste |
 
-Trilha fechada pelo RT em 09/11/2026 ("vamos fechar desempenho e começar o humanizer"). O resto do 05 (chat, chamados, pessoas, diluições), o 23 e o 26 esperam os números reais do item 30.
+Trilha fechada pelo RT em 09/11/2026 ("vamos fechar desempenho e começar o humanizer") e reaberta só para o item 32 em 23/11/2026. O resto do 05 (chat, chamados, pessoas, diluições), o 23 e o 26 esperam os números reais do item 30.
 
 ## Trilha — Humanizer (textos sem cara de IA), pedido do RT em 09/11/2026
 
@@ -2655,6 +2656,25 @@ Regras da trilha:
 | 10 | U15 | Transmissão dos dados da UBS ao SISAB (hoje SIAPS, pelo e-SUS APS) e à RNDS (registro de atendimento clínico, vacinação e resultado de exame). Pedido do RT em 17/11/2026: "por fim e último, o sistema da UBS tem que transmitir dados para a RNDS e o SISAB". Começa por diagnóstico A/B, reaproveitando a RNDS da Fase 3 (`docs/rnds/`) e o envio da Fase 5C | P1 | Em andamento: diagnóstico em `docs/ubs/U15-DIAGNOSTICO.md` (#964; V1–V5 = A em 18/11/2026). PR 1, RAC da UBS na RNDS (modalidade 01, caráter eletivo na consulta programada e agendada, ficha vencida fora, escolha app ou PEC pelo gestor), na produção em 18/11/2026 (#965; migration 20270415000021; envio segue desligado). PR 2, fila das fichas do LEDI (ledi_fila e ledi_config_unidade, carga da FAI e da Ficha de Procedimentos com retenção, conferência noturna; envio desligado), na produção em 18/11/2026 (#969; migration 20270415000022). PR 3, fichas FAI e Procedimentos no LEDI 8.7.0 (Thrift binário, `src/interop/ledi/`; nota com o que fica em aberto em `docs/ubs/U15-LEDI-FICHAS.md`), mesclado em 19/11/2026 (#972; sem migration). Faltam: serviço de envio ao PEC, aba SISAB e a vacina. Pendente com o RT: tradução da lista de problemas em CIAP2 (pede fonte oficial) |
 
 Dado criado no percurso: a grade da enfermeira na homologação (D1), de segunda a sexta, 07–11 e 13–17, de 30 em 30 minutos.
+
+---
+
+## Trilha — Refinamento da UBS, pedido do RT em 23/11/2026
+
+Origem: o RT testou a UBS na homologação em 13/11/2026 ("depois vamos mudar algumas coisas") e listou as mudanças em 23/11/2026. Diagnóstico em `docs/ubs/REFINAMENTO-UBS-DIAGNOSTICO.md`. O RT decidiu A em todas ("Sim, todas A"), com prioridade P1 e a ordem abaixo. Cada item tem branch e PR próprios; os que têm migration passam pela homologação, pelo CI verde e pelo "ok produção" do RT.
+
+Dado de teste: a escala da UBS Fase 5 na homologação foi estendida até 31/12/2026 (192 turnos de dias úteis, 23/11/2026).
+
+| Ordem | Item | O que fazer (decisão A) | Prioridade | Estado |
+|---|---|---|---|---|
+| 1 | RF8 | Gestor, Indicadores da UBS: "não aguardou (saiu antes)" e "não aguardou (fim do expediente)" no lugar de "fichas vencidas" | P1 | A fazer |
+| 2 | RF4 | Pré-natal, hiperdia e puericultura começam fechados na consulta, numa linha de resumo com os itens perdidos | P1 | A fazer |
+| 3 | RF7 | Indicadores C1 a C7 em semáforo pelo conceito oficial: verde (ótimo e bom), amarelo (suficiente), vermelho (regular); o número em segundo plano | P1 | A fazer |
+| 4 | RF1 | Fila do consultório em três faixas: vermelho e amarelo; agendados pela hora marcada; o resto da demanda espontânea | P1 | A fazer |
+| 5 | RF3 | Circunferência abdominal nos sinais vitais da UBS (técnico e consulta), com conceito novo e envio na FAI do SISAB | P1 | A fazer |
+| 6 | RF6 | Caderneta com o bloco "Em atraso" pelas faltas que o app já calcula (C2, C3, C6, C7), com a fonte | P1 | A fazer |
+| 7 | RF2 | A demanda espontânea aparece na agenda do dia do médico sem ocupar horário; o azul ganha a saída "Atender hoje" | P1 | A fazer |
+| — | RF5 | Consulta de 20 a 30 minutos: já é configurável por profissional; nada a programar | — | Sem código |
 
 ---
 

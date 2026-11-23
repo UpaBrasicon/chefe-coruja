@@ -9,6 +9,12 @@ export type Conceito = 'otimo' | 'bom' | 'suficiente' | 'regular'
 
 export const ROTULO_CONCEITO: Record<Conceito, string> = { otimo: 'Ótimo', bom: 'Bom', suficiente: 'Suficiente', regular: 'Regular' }
 
+/** Refinamento da UBS, RF7 = A (RT, 23/11/2026): semáforo de três cores pelo
+ *  conceito oficial — verde para ótimo e bom, amarelo para suficiente,
+ *  vermelho para regular. */
+export type Semaforo = 'verde' | 'amarelo' | 'vermelho'
+export const SEMAFORO: Record<Conceito, Semaforo> = { otimo: 'verde', bom: 'verde', suficiente: 'amarelo', regular: 'vermelho' }
+
 /** NT 8/2026: peso de cada indicador na nota final (total 10). */
 export const PESO: Record<Indicador, number> = { C1: 1, C2: 2, C3: 2, C4: 1, C5: 1, C6: 1, C7: 2 }
 /** NT 8/2026: valor de cada conceito. */

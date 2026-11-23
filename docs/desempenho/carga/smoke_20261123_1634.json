@@ -1,0 +1,220 @@
+{
+    "metrics": {
+        "http_req_connecting": {
+            "avg": 0.18629984210526318,
+            "min": 0,
+            "med": 0,
+            "max": 3.674894,
+            "p(90)": 0,
+            "p(95)": 0.5106749999999952
+        },
+        "http_req_waiting": {
+            "avg": 48.18621144736842,
+            "min": 29.183066,
+            "med": 46.019757999999996,
+            "max": 73.813244,
+            "p(90)": 64.58482070000002,
+            "p(95)": 67.9571441
+        },
+        "http_req_duration": {
+            "med": 47.885709500000004,
+            "max": 74.148004,
+            "p(90)": 65.64375000000001,
+            "p(95)": 68.31765655,
+            "avg": 49.16145763157895,
+            "min": 29.506769
+        },
+        "http_req_blocked": {
+            "max": 19.055805,
+            "p(90)": 0.0010547,
+            "p(95)": 2.8203310499999734,
+            "avg": 0.996793657894737,
+            "min": 0.00031,
+            "med": 0.0007565
+        },
+        "checks": {
+            "passes": 38,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.99": false
+            },
+            "value": 1
+        },
+        "vus": {
+            "value": 2,
+            "min": 2,
+            "max": 2
+        },
+        "http_reqs": {
+            "count": 38,
+            "rate": 0.25333069313604933
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 49.16145763157895,
+            "min": 29.506769,
+            "med": 47.885709500000004,
+            "max": 74.148004,
+            "p(90)": 65.64375000000001,
+            "p(95)": 68.31765655
+        },
+        "data_sent": {
+            "count": 18787,
+            "rate": 125.24536136702523
+        },
+        "http_req_duration{tipo:escrita}": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0,
+            "thresholds": {
+                "p(95)<1500": false
+            }
+        },
+        "vus_max": {
+            "value": 2,
+            "min": 2,
+            "max": 2
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0.5702098157894737,
+            "min": 0,
+            "med": 0,
+            "max": 10.881197,
+            "p(90)": 0,
+            "p(95)": 1.6180163999999846
+        },
+        "http_req_receiving": {
+            "avg": 0.6475989210526315,
+            "min": 0.045919,
+            "med": 0.102995,
+            "max": 6.785703,
+            "p(90)": 1.8536646000000003,
+            "p(95)": 3.2421910999999977
+        },
+        "http_req_duration{tipo:leitura}": {
+            "p(90)": 65.64375000000001,
+            "p(95)": 68.31765655,
+            "avg": 49.16145763157895,
+            "min": 29.506769,
+            "med": 47.885709500000004,
+            "max": 74.148004,
+            "thresholds": {
+                "p(95)<800": false,
+                "p(99)<2000": false
+            }
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 38,
+            "thresholds": {
+                "rate<0.01": false,
+                "rate<0.05": false
+            },
+            "value": 0
+        },
+        "http_req_sending": {
+            "avg": 0.32764726315789483,
+            "min": 0.116635,
+            "med": 0.249243,
+            "max": 1.192847,
+            "p(90)": 0.5599763000000002,
+            "p(95)": 0.8150048499999993
+        },
+        "data_received": {
+            "count": 552933,
+            "rate": 3686.181582836715
+        },
+        "iteration_duration": {
+            "avg": 75144.20270950001,
+            "min": 70556.940504,
+            "med": 75144.20270950001,
+            "max": 79731.464915,
+            "p(90)": 78814.0124739,
+            "p(95)": 79272.73869445
+        },
+        "iterations": {
+            "count": 2,
+            "rate": 0.013333194375581543
+        }
+    },
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "rpc:meu_plantao_agora 2xx": {
+                    "name": "rpc:meu_plantao_agora 2xx",
+                    "path": "::rpc:meu_plantao_agora 2xx",
+                    "id": "418184b9d3efa5e974e2ed02e2636917",
+                    "passes": 4,
+                    "fails": 0
+                },
+                "rpc:minhas_notificacoes 2xx": {
+                    "id": "5e7c76ee2738a19281bb1bb788eb51bc",
+                    "passes": 4,
+                    "fails": 0,
+                    "name": "rpc:minhas_notificacoes 2xx",
+                    "path": "::rpc:minhas_notificacoes 2xx"
+                },
+                "rpc:situacao_leitos 2xx": {
+                    "passes": 4,
+                    "fails": 0,
+                    "name": "rpc:situacao_leitos 2xx",
+                    "path": "::rpc:situacao_leitos 2xx",
+                    "id": "30d158c3d5d8d77c06a2e76e7e064d96"
+                },
+                "rpc:painel_observacao 2xx": {
+                    "fails": 0,
+                    "name": "rpc:painel_observacao 2xx",
+                    "path": "::rpc:painel_observacao 2xx",
+                    "id": "a860efe65704c35e27a9ae9c873d7572",
+                    "passes": 4
+                },
+                "rpc:tendencia_acuidade 2xx": {
+                    "fails": 0,
+                    "name": "rpc:tendencia_acuidade 2xx",
+                    "path": "::rpc:tendencia_acuidade 2xx",
+                    "id": "fc02ece0d4d0ef403f0e661f49ab2a72",
+                    "passes": 4
+                },
+                "rpc:alergias_do_paciente 2xx": {
+                    "path": "::rpc:alergias_do_paciente 2xx",
+                    "id": "17ce7ed2c8e693d456d7793c51cb5e0f",
+                    "passes": 4,
+                    "fails": 0,
+                    "name": "rpc:alergias_do_paciente 2xx"
+                },
+                "rpc:prescricao_vigente 2xx": {
+                    "passes": 4,
+                    "fails": 0,
+                    "name": "rpc:prescricao_vigente 2xx",
+                    "path": "::rpc:prescricao_vigente 2xx",
+                    "id": "20b8629dcf65dc38bcd7ebd4cd29ae7f"
+                },
+                "rpc:buscar_medicamento 2xx": {
+                    "name": "rpc:buscar_medicamento 2xx",
+                    "path": "::rpc:buscar_medicamento 2xx",
+                    "id": "19c1dc450654a0444e194fe7d06095f1",
+                    "passes": 4,
+                    "fails": 0
+                },
+                "rpc:escala_da_unidade 2xx": {
+                    "id": "9ab5fb99eeff210f06937ca69d8debbc",
+                    "passes": 4,
+                    "fails": 0,
+                    "name": "rpc:escala_da_unidade 2xx",
+                    "path": "::rpc:escala_da_unidade 2xx"
+                },
+                "rpc:contatos_chat 2xx": {
+                    "path": "::rpc:contatos_chat 2xx",
+                    "id": "39b4d599795f0a0579c32a006e7eac21",
+                    "passes": 2,
+                    "fails": 0,
+                    "name": "rpc:contatos_chat 2xx"
+                }
+            },
+        "name": ""
+    }
+}

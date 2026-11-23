@@ -1,0 +1,9 @@
+# Nunca versionar segredos, tokens nem resultados brutos (R6)
+.env
+.tokens.json
+dados.json
+resultados/*
+!resultados/.gitkeep
+node_modules/
+package-lock.json
+!.env.example
