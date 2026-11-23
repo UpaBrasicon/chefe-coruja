@@ -1121,6 +1121,39 @@
       ]
     },
     {
+      "id": "uso-do-app",
+      "nome": "Uso do aplicativo, agregado",
+      "papel": "controlador",
+      "finalidade": "Saber quais telas e ferramentas são usadas, por unidade e papel, para melhorar o produto (Fase 1, item 14).",
+      "base_legal": [
+        "art. 7º, IX (legítimo interesse)"
+      ],
+      "titulares": [
+        "profissionais (só em total, sem identificar a pessoa)"
+      ],
+      "dados": [
+        "contagem por dia, unidade, papel e evento (aba da Central, ferramenta aberta, censo), sem pessoa e sem paciente"
+      ],
+      "sensivel": false,
+      "acesso": [
+        "administrador geral da plataforma"
+      ],
+      "local": [
+        "Supabase (São Paulo)"
+      ],
+      "prazo": {
+        "guarda": "a definir com o advogado (proposta: 2 anos)",
+        "base": "proposta técnica; dado agregado, sem pessoa",
+        "descarte": "a definir com o advogado"
+      },
+      "seguranca": [
+        "a tabela não tem coluna de pessoa nem de paciente; o servidor só grava evento da lista e confere o vínculo"
+      ],
+      "tabelas": [
+        "public.uso_app_diario"
+      ]
+    },
+    {
       "id": "apoio-ia",
       "nome": "Apoio por IA: busca clínica e assistentes",
       "papel": "operador",

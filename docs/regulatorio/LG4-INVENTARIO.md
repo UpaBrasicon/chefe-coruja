@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-29 operações cobrem 326 tabelas.
+30 operações cobrem 327 tabelas.
 
 ## Papéis
 
@@ -46,6 +46,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Registro de acesso à aplicação (Marco Civil) | controlador | não | 6 meses | 2 |
 | Tecnovigilância do módulo clínico | controlador | não | 5 anos depois da conclusão | 3 |
 | Erros do aplicativo e vigilância técnica | controlador | não | a definir com o advogado (proposta: 1 ano) | 5 |
+| Uso do aplicativo, agregado | controlador | não | a definir com o advogado (proposta: 2 anos) | 1 |
 | Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
 | RNDS, SISAB, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 14 |
 | Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 8 |
@@ -877,6 +878,36 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Tabelas (5)**
 
 `public.erros_cliente`, `public.erros_cliente_resolvidos`, `public.cerbero_incidentes`, `public.cerbero_quarentena`, `public.cerbero_url_cache`
+
+### Uso do aplicativo, agregado
+
+`uso-do-app` · papel da Chefe Coruja: **controlador** · dado sensível: **não**
+
+**Finalidade.** Saber quais telas e ferramentas são usadas, por unidade e papel, para melhorar o produto (Fase 1, item 14).
+
+**Base legal (LGPD)**
+- art. 7º, IX (legítimo interesse)
+
+**Titulares**
+- profissionais (só em total, sem identificar a pessoa)
+
+**Dados**
+- contagem por dia, unidade, papel e evento (aba da Central, ferramenta aberta, censo), sem pessoa e sem paciente
+
+**Quem acessa**
+- administrador geral da plataforma
+
+**Onde fica**
+- Supabase (São Paulo)
+
+**Prazo.** a definir com o advogado (proposta: 2 anos) (proposta técnica; dado agregado, sem pessoa). Descarte: a definir com o advogado.
+
+**Medidas próprias**
+- a tabela não tem coluna de pessoa nem de paciente; o servidor só grava evento da lista e confere o vínculo
+
+**Tabelas (1)**
+
+`public.uso_app_diario`
 
 ### Apoio por IA: busca clínica e assistentes
 

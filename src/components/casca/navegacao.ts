@@ -24,7 +24,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
-import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
+import { BarChart3, BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren, Syringe } from 'lucide-react'
 import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, Package, Send, Sparkles, Sprout } from 'lucide-react'
@@ -267,6 +267,8 @@ const ITEM_TECNOVIGILANCIA: ItemNav = { to: '/tecnovigilancia', rotulo: 'Tecnovi
 // "Erros e alertas" é do administrador geral (RequireSuperAdmin em App.tsx):
 // o administrador da organização que não é super admin não vê o item
 const ITEM_ERROS_E_ALERTAS: ItemNav = { to: '/erros-e-alertas', rotulo: 'Erros e alertas', icone: TriangleAlert, exato: true }
+// Fase 1, item 14 (PH1 a PH3 = A, 23/11/2026): uso do app, agregado e sem pessoa
+const ITEM_USO_DO_APP: ItemNav = { to: '/uso-do-app', rotulo: 'Uso do app', icone: BarChart3, exato: true }
 // Fase 3, tarefa 7: chaves da API para integradores (o super admin cria; o gestor vê e revoga)
 const ITEM_INTEGRACOES: ItemNav = { to: '/integracoes', rotulo: 'Integrações (API)', curto: 'API', icone: KeyRound, exato: true }
 // Fase 3, tarefa 9: exportação estruturada (gestor e super admin)
@@ -334,7 +336,7 @@ function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdm
   const itens = [...POR_PAPEL[papel ?? 'plantonista']]
   if (papel === 'admin' && superAdmin) {
     const i = itens.findIndex((x) => x.to === '/servidores')
-    itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO, ITEM_MODULO_REDE)
+    itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_USO_DO_APP, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO, ITEM_MODULO_REDE)
   }
   if (papel === 'gestor') {
     itens.push({ ...ITEM_REGULACAO, grupo: 'Leitos' }, ...[ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO].map((i) => ({ ...i, grupo: 'Unidade' })))

@@ -8,6 +8,7 @@ import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { csvTransferencias } from '@/lib/exportacoesAntigas'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useLimitesUnidade } from '@/lib/limitesUnidade'
+import { useRegistrarUsoApp } from '@/lib/usoApp'
 import { Button } from '@/components/ui/button'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,6 +47,8 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
   const unidadeId = unidadeAtiva?.unidade_id
   // limite de atenção da unidade (Unidade › Configurações; padrão 85%)
   const { limites } = useLimitesUnidade(unidadeId)
+  // Fase 1, item 14: abertura do censo, contada por dia, unidade e papel
+  useRegistrarUsoApp('censo')
   const queryClient = useQueryClient()
 
   const [transferir, setTransferir] = React.useState<PacienteDaLista | null>(null)
