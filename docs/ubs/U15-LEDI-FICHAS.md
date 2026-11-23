@@ -23,7 +23,7 @@ Este PR monta as fichas que vão ao PEC e-SUS APS do município: a Ficha de Aten
 | Conduta | as 12 condutas do app têm código próprio na tabela CondutaEncaminhamento, sem repetir |
 | Problema/condição | toda CID (sem ponto) e toda CIAP2 do atendimento, e os 5 códigos AB que o LEDI 8.7.0 ainda tem: saúde sexual e reprodutiva, saúde mental, reabilitação, rastreamento do colo e rastreamento da mama |
 | Exames pedidos | código SIGTAP, situação "S" (solicitado) |
-| Medições | pressão (só com sistólica e diastólica juntas), frequências, temperatura, saturação, glicemia (tipo 3, "não especificado"), peso, altura e perímetro cefálico, nas faixas do dicionário |
+| Medições | pressão (só com sistólica e diastólica juntas), frequências, temperatura, saturação, glicemia (tipo 3, "não especificado"), peso, altura, perímetro cefálico e circunferência abdominal (RF3, 23/11/2026), nas faixas do dicionário |
 | Cidadão | CPF ou CNS, nunca os dois. Data de nascimento em Epoch ms, à meia-noite de Brasília. Sexo: M 0, F 1, os outros 4 |
 | Local e turno | local 1 (UBS). Turno pela hora de Brasília: manhã antes das 12, tarde até as 18, noite depois |
 | Procedimento (FP) | um código SIGTAP por ficha. O LEDI não repete o código: com quantidade maior que 1, a ficha leva o código uma vez e registra um aviso |

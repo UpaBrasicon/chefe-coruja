@@ -144,6 +144,8 @@ export function medicoes(lista_: MedicaoLedi[]): Struct | undefined {
   const v = (nome: string) => lista_.find((m) => m.conceito === nome)?.valor
   const umaCasa = (n: number) => Math.round(n * 10) / 10
   const s: Struct = {}
+  // RF3 (23/11/2026): circunferenciaAbdominal, em cm, uma casa, de 0.0 a 99999 (dicionário da FAI)
+  const ca = v('circunferencia-abdominal'); if (ca !== undefined && ca >= 0 && ca <= 99999) s[1] = double(umaCasa(ca))
   const pas = v('pressao-arterial-sistolica'), pad = v('pressao-arterial-diastolica')
   if (pas !== undefined && pad !== undefined) { s[3] = i32(Math.round(pas)); s[4] = i32(Math.round(pad)) }
   const fr = v('frequencia-respiratoria'); if (fr !== undefined) s[5] = i32(Math.round(fr))
