@@ -52,6 +52,18 @@ export type ItemComAmpola = {
    * aspirar, com o aviso de diluir, mesmo que a ampola não peça diluição (ML5)
    */
   diluir?: boolean
+  /**
+   * o item diz "IV ou VO" (ou VO, IM ou IV): o volume é da forma injetável, com o
+   * aviso de que a forma oral tem outra concentração (lote 8, decisão do RT de 23/11/2026)
+   */
+  viaMista?: boolean
+  /**
+   * a dose do item está noutra unidade que a da ampola: multiplica a dose antes
+   * da conta (ex.: mL de glicose 25% × 0,25 = g de glicose)
+   */
+  fatorDose?: number
+  /** unidade da concentração da ampola, quando difere da unidade da dose do item */
+  unidadeDaAmpola?: string
 }
 
 const BULARIO = (nome: string) => `https://consultas.anvisa.gov.br/#/bulario/q/?nomeProduto=${encodeURIComponent(nome)}`
@@ -176,6 +188,10 @@ export const BULA_DESMOPRESSINA: Fonte = {
 export const BULA_VITAMINA_K: Fonte = {
   citacao: 'Bulas do profissional, fitomenadiona 10 mg/mL: Eskavit (Hipolabor) e Hyvit K (Hypofarma), uso intramuscular e subcutâneo; Kavit (Cristália), uso intramuscular (Bulário Eletrônico da ANVISA, lidas em 23/11/2026). As três contraindicam a via intravenosa (risco de choque anafilático).',
   url: BULARIO('fitomenadiona'),
+}
+export const BULA_SMX_TMP: Fonte = {
+  citacao: 'Bula do profissional, Bac-Sulfitrin (sulfametoxazol + trimetoprima) 80 + 16 mg/mL, solução injetável, Brainfarma (Bulário Eletrônico da ANVISA, lida em 23/11/2026): as ampolas devem ser diluídas antes do uso.',
+  url: BULARIO('bac-sulfitrin'),
 }
 export const BULA_MORFINA_NEUROEIXO: Fonte = {
   citacao: 'Bula do profissional, Dimorf (sulfato de morfina) 0,1 e 0,2 mg/mL, Cristália (Bulário Eletrônico da ANVISA, lida em 20/11/2026): "uso intravenoso, intratecal e epidural" (decisão L5-3 do RT).',
@@ -376,6 +392,18 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
   'vitamina-k-sc': [
     { id: 'vitamina-k-10', rotulo: 'Vitamina K (fitomenadiona) 10 mg/mL, ampola de 1 mL (IM ou SC; não usar na veia)', porMl: 10, fonte: 'bulas Eskavit (Hipolabor) e Hyvit K (Hypofarma): IM e SC; CMED 09/11/2026: Hipolabor (113430129) e Hypofarma (103870075), à venda', url: BULA_VITAMINA_K.url },
   ],
+  // lote 8 (pendências do RT, 23/11/2026): glicose de 5% a 50%, nenhuma marcada;
+  // a de 75% fica fora (decisão do RT). Dose em g de glicose.
+  glicose: [
+    { id: 'glicose-5', rotulo: 'Glicose 5% (0,05 g/mL), frasco', porMl: 0.05, pronta: true, fonte: 'CMED 09/11/2026: Fresenius (100410107), B. Braun (100850024) e Farmarin (116880033), frascos, à venda', url: CMED_PMC_2026_11.url },
+    { id: 'glicose-10', rotulo: 'Glicose 10% (0,1 g/mL), frasco', porMl: 0.1, pronta: true, fonte: 'CMED 09/11/2026: Fresenius (100410107), B. Braun (100850024) e Farmarin (116880033), frascos, à venda', url: CMED_PMC_2026_11.url },
+    { id: 'glicose-25', rotulo: 'Glicose 25% (0,25 g/mL), ampola de 10 mL', porMl: 0.25, fonte: 'livro do ICr, p. 32; CMED 09/11/2026: Halex (103110167), Farmace (110850009), Equiplex (117720004) e Samtec (155920006), à venda', url: CMED_PMC_2026_11.url },
+    { id: 'glicose-50', rotulo: 'Glicose 50% (0,5 g/mL), ampola de 10 ou 20 mL', porMl: 0.5, fonte: 'CMED 09/11/2026: Fresenius (100410107), Halex (103110167) e Samtec (155920006), à venda; incluída a pedido do RT (23/11/2026)', url: CMED_PMC_2026_11.url },
+  ],
+  // SMX-TMP: as doses do livro estão em trimetoprima (L6-5): 16 mg/mL de TMP
+  'smx-tmp': [
+    { id: 'smx-tmp-16', rotulo: 'Sulfametoxazol + trimetoprima 80 + 16 mg/mL (16 mg/mL de trimetoprima)', porMl: 16, diluir: true, fonte: 'bula Bac-Sulfitrin, Brainfarma (as ampolas devem ser diluídas); dose em trimetoprima (Apêndice, p. 908)', url: BULA_SMX_TMP.url },
+  ],
   desmopressina: [
     { id: 'desmopressina-4', rotulo: 'Desmopressina 4 µg/mL (acetato, ampola de 1 mL)', porMl: 4, diluir: true, fonte: 'bula DDAVP injetável, Ferring; o livro manda em 50 mL de SF (p. 679, 682)', url: BULA_DESMOPRESSINA.url },
   ],
@@ -384,13 +412,13 @@ export const AMPOLAS: Record<string, Apresentacao[]> = {
 export const fichaAmpolas: Ficha = {
   id: 'ped-ampolas',
   titulo: 'Ampolas para a dose em mL (criança)',
-  versao: '2026-11-23.1',
+  versao: '2026-11-23.2',
   publico: 'pediatrico',
   fontes: [{ ...LIVRO_PS_PED, citacao: `${LIVRO_PS_PED.citacao} Tabela 11, p. 558–559 (cálcio elementar por mL); p. 88 (Ketamin S® 50 mg/mL); p. 32 (MgSO₄ 50% = 500 mg/mL; NaHCO₃ 8,4% = 1 mEq/mL); p. 549 e 583 (cálcio 10% = 100 mg do sal/mL); p. 521 (insulina regular 0,1 UI/mL: 50 UI em 500 mL de NaCl 0,9%); p. 720 e p. 179 (manitol 20% = 0,2 g/mL).` }, BULA_ADENOSINA, BULA_AMIODARONA, BULA_LIDOCAINA,
     BULA_FENTANILA, BULA_MIDAZOLAM, BULA_ESCETAMINA, BULA_ETOMIDATO, BULA_PROPOFOL, BULA_ROCURONIO, BULA_DEXMEDETOMIDINA, BULA_NALOXONA,
     CMED_PMC_2026_11, BULA_DIAZEPAM, BULA_DIFENIDRAMINA, BULA_DEXAMETASONA, BULA_ACETILCISTEINA, BULA_ESMOLOL, BULA_MILRINONA,
-    BULA_CLINDAMICINA, BULA_AMICACINA, BULA_GENTAMICINA, BULA_TOBRAMICINA, BULA_DESMOPRESSINA, BULA_MORFINA_NEUROEIXO, BULA_VITAMINA_K],
-  revisadoEm: '23/11/2026 (lote 7 da dose em mL: bulas baixadas pelo RT e lidas; difenidramina 50 mg/mL, dexametasona 2 e 4 mg/mL no rótulo do fosfato (L7-1, só nos itens EV ou IV: meningite e oncologia), acetilcisteína 100 mg/mL a aspirar e diluir, esmolol 10 mg/mL do cloridrato (L7-4), milrinona 1 mg/mL (L7-2), clindamicina 150 mg/mL a aspirar e diluir, amicacina 50 e 250 mg/mL nenhuma marcada, tobramicina 50 mg/mL e desmopressina 4 µg/mL do acetato (L7-5) a aspirar e diluir, morfina 0,1 e 0,2 mg/mL do Dimorf (L5-3); gentamicina 40 mg/mL pelo rótulo, a aspirar e diluir, só na pneumonia EV (L7-3 = B; a de 20 mg/mL não tem bula no Bulário); salbutamol injetável sem mL (uso adulto, L7-6); vitamina K 10 mg/mL só na via SC da intoxicação (Eskavit e Hyvit K; a IV fica sem mL, as bulas contraindicam); aguarda aprovação do RT); 20/11/2026 (lote 6d da dose em mL: capítulos com princípio já cadastrado — furosemida EV da síndrome nefrótica, da SHU e da diurese forçada, bicarbonato da diurese alcalina com o aviso de diluir no próprio item (infusão de 3 a 4 h), atropina e midazolam, bolus de octreotida, linezolida e metronidazol IV do choque tóxico e da pele; sem princípio novo; item sem via escrita e lista só oral (insuficiência cardíaca) ficam sem mL; aguarda aprovação do RT); 20/11/2026 (lote 6c da dose em mL: eletrólitos; bicarbonato 8,4% e 10% (L6-6), nenhum marcado; gluconato e cloreto de cálcio 10% em mg do sal pelo livro (L6-7), um princípio por sal; magnésio grave dos eletrólitos pela escolha de 10% e 50% (lote 4), sem o 10% fixo; furosemida e insulina; cálcio, bicarbonato da injúria renal e gluconato da oncologia ligados; glicose espera decisão do RT; fósforo e KCl seguem com o mL do livro; aguarda aprovação do RT); 20/11/2026 (lote 6b da dose em mL: injúria renal, hemostasia e emergências oncológicas; furosemida 10 mg/mL, ácido tranexâmico 50 mg/mL, enoxaparina 100 mg/mL em seringa preenchida e manitol 20% como solução pronta, pela CMED e pelo livro; insulina da hipercalemia pelo preparo de 0,1 UI/mL (L5-5); midazolam, fenitoína e antibióticos de solução pronta já cadastrados; item sem via escrita fica sem mL; só a dose por tomada; aguarda aprovação do RT); 20/11/2026 (lote 6a da dose em mL: pneumonia, ITU e crise álgica; levofloxacino, metronidazol, linezolida e ciprofloxacino como solução pronta, com o volume a infundir; dipirona 500 mg/mL; morfina da crise álgica pelas ampolas do lote 5; só a dose por tomada; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 20/11/2026 (lote 5 da dose em mL, primeira parte: flumazenil, hidralazina, terbutalina, ondansetrona IV, octreotida (3 concentrações), neostigmina e morfina 1 e 10 mg/mL pela CMED, nenhuma marcada; insulina só pelo preparo de 0,1 UI/mL do livro, p. 521; decisões L5-1 a L5-6 do RT; diluição, vitamina K, acetilcisteína, esmolol, milrinona e morfina 0,1 e 0,2 mg/mL esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 4 da dose em mL, primeira parte: magnésio 10% e 50% pela CMED na asma e na torsades, nenhuma marcada; aviso de volume abaixo de 0,1 mL; decisões L4-1 a L4-5 do RT; diluição do magnésio e difenidramina, dexametasona e azul de metileno esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
+    BULA_CLINDAMICINA, BULA_AMICACINA, BULA_GENTAMICINA, BULA_TOBRAMICINA, BULA_DESMOPRESSINA, BULA_MORFINA_NEUROEIXO, BULA_VITAMINA_K, BULA_SMX_TMP],
+  revisadoEm: '23/11/2026 (lote 8 da dose em mL, pendências decididas pelo RT: aviso de via mista nos itens IV ou VO (linezolida, metronidazol, levofloxacino, dipirona, dexametasona da asma e do crupe, tranexâmico da DVW, SMX-TMP em trimetoprima 16 mg/mL a aspirar e diluir); fenitoína profilática IV; glicose 5%, 10%, 25% e 50% nenhuma marcada, sem a de 75% (decisão do RT), nos itens em g e nos itens em mL de glicose 25% convertidos para g; enoxaparina do lactente mantém o volume com o aviso abaixo de 0,1 mL; aguarda aprovação do RT); 23/11/2026 (lote 7 da dose em mL: bulas baixadas pelo RT e lidas; difenidramina 50 mg/mL, dexametasona 2 e 4 mg/mL no rótulo do fosfato (L7-1, só nos itens EV ou IV: meningite e oncologia), acetilcisteína 100 mg/mL a aspirar e diluir, esmolol 10 mg/mL do cloridrato (L7-4), milrinona 1 mg/mL (L7-2), clindamicina 150 mg/mL a aspirar e diluir, amicacina 50 e 250 mg/mL nenhuma marcada, tobramicina 50 mg/mL e desmopressina 4 µg/mL do acetato (L7-5) a aspirar e diluir, morfina 0,1 e 0,2 mg/mL do Dimorf (L5-3); gentamicina 40 mg/mL pelo rótulo, a aspirar e diluir, só na pneumonia EV (L7-3 = B; a de 20 mg/mL não tem bula no Bulário); salbutamol injetável sem mL (uso adulto, L7-6); vitamina K 10 mg/mL só na via SC da intoxicação (Eskavit e Hyvit K; a IV fica sem mL, as bulas contraindicam); aguarda aprovação do RT); 20/11/2026 (lote 6d da dose em mL: capítulos com princípio já cadastrado — furosemida EV da síndrome nefrótica, da SHU e da diurese forçada, bicarbonato da diurese alcalina com o aviso de diluir no próprio item (infusão de 3 a 4 h), atropina e midazolam, bolus de octreotida, linezolida e metronidazol IV do choque tóxico e da pele; sem princípio novo; item sem via escrita e lista só oral (insuficiência cardíaca) ficam sem mL; aguarda aprovação do RT); 20/11/2026 (lote 6c da dose em mL: eletrólitos; bicarbonato 8,4% e 10% (L6-6), nenhum marcado; gluconato e cloreto de cálcio 10% em mg do sal pelo livro (L6-7), um princípio por sal; magnésio grave dos eletrólitos pela escolha de 10% e 50% (lote 4), sem o 10% fixo; furosemida e insulina; cálcio, bicarbonato da injúria renal e gluconato da oncologia ligados; glicose espera decisão do RT; fósforo e KCl seguem com o mL do livro; aguarda aprovação do RT); 20/11/2026 (lote 6b da dose em mL: injúria renal, hemostasia e emergências oncológicas; furosemida 10 mg/mL, ácido tranexâmico 50 mg/mL, enoxaparina 100 mg/mL em seringa preenchida e manitol 20% como solução pronta, pela CMED e pelo livro; insulina da hipercalemia pelo preparo de 0,1 UI/mL (L5-5); midazolam, fenitoína e antibióticos de solução pronta já cadastrados; item sem via escrita fica sem mL; só a dose por tomada; aguarda aprovação do RT); 20/11/2026 (lote 6a da dose em mL: pneumonia, ITU e crise álgica; levofloxacino, metronidazol, linezolida e ciprofloxacino como solução pronta, com o volume a infundir; dipirona 500 mg/mL; morfina da crise álgica pelas ampolas do lote 5; só a dose por tomada; decisões L6-1 a L6-9 do RT; aguarda aprovação do RT); 20/11/2026 (lote 5 da dose em mL, primeira parte: flumazenil, hidralazina, terbutalina, ondansetrona IV, octreotida (3 concentrações), neostigmina e morfina 1 e 10 mg/mL pela CMED, nenhuma marcada; insulina só pelo preparo de 0,1 UI/mL do livro, p. 521; decisões L5-1 a L5-6 do RT; diluição, vitamina K, acetilcisteína, esmolol, milrinona e morfina 0,1 e 0,2 mg/mL esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 4 da dose em mL, primeira parte: magnésio 10% e 50% pela CMED na asma e na torsades, nenhuma marcada; aviso de volume abaixo de 0,1 mL; decisões L4-1 a L4-5 do RT; diluição do magnésio e difenidramina, dexametasona e azul de metileno esperam a bula; aguarda aprovação do RT); 20/11/2026 (lote 3 da dose em mL: crise epiléptica; CMED como fonte ao lado da bula; atropina e lidocaína 1% pela CMED; tabela aprovada pelo RT; aguarda aprovação do RT); 20/11/2026 (lote 2 da dose em mL: intubação, sedação e antídotos; bulas lidas e tabela aprovada pelo RT; aguarda aprovação do RT); 19/11/2026 (lote 1 da dose em mL: RCP e arritmias; bulas do Bulário Eletrônico lidas e tabela aprovada pelo RT; decisões ML1–ML11; aguarda aprovação do RT)',
 }
 
 /**
@@ -498,7 +526,7 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'pneumonia:sbp-levo-maior5': { principio: 'levofloxacino' },
   'pneumonia:sbp-metro': { principio: 'metronidazol' },
   'itu:cipro-iv': { principio: 'ciprofloxacino' },
-  'falciforme:dipirona': { principio: 'dipirona' },
+  'falciforme:dipirona': { principio: 'dipirona', viaMista: true },
   'falciforme:morfina-figura': { principio: 'morfina' },
   'falciforme:morfina-texto': { principio: 'morfina' },
   // lote 6b: só a dose por tomada (L6-1); item sem via escrita (atx-dvw,
@@ -509,10 +537,10 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'hemostasia:atx-iv': { principio: 'acido-tranexamico' },
   'oncologia:insulina': { principio: 'insulina-preparo' },
   'oncologia:furo': { principio: 'furosemida' },
-  'oncologia:linezolida': { principio: 'linezolida' },
-  'oncologia:metronidazol': { principio: 'metronidazol' },
+  'oncologia:linezolida': { principio: 'linezolida', viaMista: true },
+  'oncologia:metronidazol': { principio: 'metronidazol', viaMista: true },
   'oncologia:cipro-iv': { principio: 'ciprofloxacino' },
-  'oncologia:levo': { principio: 'levofloxacino' },
+  'oncologia:levo': { principio: 'levofloxacino', viaMista: true },
   'oncologia:enoxa-svcs': { principio: 'enoxaparina' },
   'oncologia:manitol': { principio: 'manitol' },
   'oncologia:fenitoina-ataque': { principio: 'fenitoina' },
@@ -543,7 +571,7 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'intoxicacao:bicarbonato-alcalina': { principio: 'bicarbonato', diluir: true },
   'coma:midazolam': { principio: 'midazolam' },
   'hda:octreotida-bolus': { principio: 'octreotida' },
-  'pele:linezolida': { principio: 'linezolida' },
+  'pele:linezolida': { principio: 'linezolida', viaMista: true },
   'pele:metronidazol': { principio: 'metronidazol' },
   // lote 7: bulas lidas em 23/11/2026 (só a dose por tomada). Ficam sem mL: itu:amicacina e
   // itu:gentamicina (IV ou IM; o aviso de diluir só vale na veia), salbutamol injetável (bula "uso adulto", L7-6), vitamina K IV (as bulas
@@ -571,9 +599,28 @@ export const ITENS_COM_AMPOLA: Record<string, ItemComAmpola> = {
   'itu:tobramicina': { principio: 'tobramicina' },
   'hemostasia:ddavp': { principio: 'desmopressina' },
   'intoxicacao:vitk-sc': { principio: 'vitamina-k-sc' },
+  // lote 8 (pendências decididas pelo RT em 23/11/2026): via mista com aviso
+  // (a forma oral tem outra concentração); tranexâmico da DVW "IV ou VO" e
+  // fenitoína profilática IV pelo livro (p. 682 e 720); glicose de 5% a 50% (a RCP
+  // já mostra o volume da glicose 25% e fica sem a escolha: sem dois volumes na mesma dose).
+  'asma:dexametasona': { principio: 'dexametasona', viaMista: true },
+  'bolus:dexametasona-crupe': { principio: 'dexametasona', viaMista: true },
+  'fita:fita-dexametasona-crupe': { principio: 'dexametasona', viaMista: true },
+  'hemostasia:atx-dvw': { principio: 'acido-tranexamico', viaMista: true },
+  'oncologia:fenitoina-prof': { principio: 'fenitoina' },
+  'pele:smxtmp': { principio: 'smx-tmp', viaMista: true },
+  'oncologia:tmp': { principio: 'smx-tmp', viaMista: true },
+  'renal:glicose': { principio: 'glicose' },
+  'eletrolitos:glicose-polarizante': { principio: 'glicose' },
+  'bolus:glicose-25': { principio: 'glicose', fatorDose: 0.25, unidadeDaAmpola: 'g' },
+  'crise:glicose25': { principio: 'glicose', fatorDose: 0.25, unidadeDaAmpola: 'g' },
+  'coma:glicose25': { principio: 'glicose', fatorDose: 0.25, unidadeDaAmpola: 'g' },
+  'oncologia:glicose25': { principio: 'glicose', fatorDose: 0.25, unidadeDaAmpola: 'g' },
 }
 
 export const AVISO_DILUIR = 'Volume a aspirar da ampola. Diluir antes de administrar.'
+/** Lote 8 (RT, 23/11/2026): item "IV ou VO"; o volume é só da forma injetável. */
+export const AVISO_VIA_MISTA = 'Volume da forma injetável. Por via oral a concentração é outra: não use este volume.'
 export const PECA_A_AMPOLA = 'Escolha a ampola para ver o volume em mL.'
 /** L6-2: quando todas as opções são soluções prontas (bolsa ou frasco). */
 export const PECA_A_SOLUCAO = 'Escolha a solução para ver o volume a infundir em mL.'
@@ -594,6 +641,12 @@ export function ampolasDoItem(chave: string): Apresentacao[] {
 }
 
 export type VolumeDaAmpola = { ml: [number, number]; aspirar: boolean }
+
+/** Dose do item na unidade da ampola (fator do lote 8; sem fator, a própria dose). */
+export function doseNaUnidadeDaAmpola(dose: [number, number], chave?: string): [number, number] {
+  const f = chave ? ITENS_COM_AMPOLA[chave]?.fatorDose : undefined
+  return f ? [dose[0] * f, dose[1] * f] : dose
+}
 
 /** Volume da dose na ampola escolhida; sem ampola, ou com bases diferentes, não há volume. */
 export function volumeDaAmpola(dose: [number, number], ampola: Apresentacao | undefined, baseDaDose?: BaseDose): VolumeDaAmpola | null {
@@ -627,6 +680,7 @@ export function problemasDasAmpolas(ampolas: Record<string, Apresentacao[]> = AM
     const bases = new Set((ampolas[item.principio] ?? []).map((a) => a.base).filter(Boolean))
     if (bases.size > 1 && !item.base) p.push(`${chave}: ${item.principio} tem sal e elemento; o item precisa dizer a base (ML6)`)
     if (item.diluir && (ampolas[item.principio] ?? []).some((a) => a.pronta || a.seringa)) p.push(`${chave}: item para diluir com solução pronta ou seringa preenchida`)
+    if (item.fatorDose !== undefined && (!(item.fatorDose > 0) || !item.unidadeDaAmpola)) p.push(`${chave}: fator da dose sem unidade da ampola`)
   }
   return p
 }
