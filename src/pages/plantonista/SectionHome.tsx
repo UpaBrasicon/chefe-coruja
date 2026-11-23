@@ -7,6 +7,7 @@ import { GRUPOS_SECAO, idGrupo } from '@/content/gruposSecoes'
 import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
+import { useRegistrarUsoApp } from '@/lib/usoApp'
 import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +21,8 @@ export default function SectionHome() {
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const [filtro, setFiltro] = useState('')
   const { modo } = usePacienteCentral()
+  // Fase 1, item 14: troca de aba na Central, contada por dia, unidade e papel
+  useRegistrarUsoApp('central_aba', secao ? secao.slug : null)
 
   // Seções grandes vêm em grupos por especialidade; as demais, em lista única.
   const grupos = useMemo(() => {

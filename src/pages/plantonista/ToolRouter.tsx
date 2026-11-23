@@ -7,6 +7,7 @@ import { publicoDaFerramenta } from '@/content/publicoFerramentas'
 import { relacionadasDe } from '@/content/pilotoCalculadoras'
 import { RelacionadasContexto } from '@/components/plantonista/calc/contexto'
 import { chaveFerramenta, useFavoritos, useRegistrarUso } from '@/lib/useFavoritos'
+import { useRegistrarUsoApp } from '@/lib/usoApp'
 import { cn } from '@/lib/utils'
 import { Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
@@ -27,6 +28,8 @@ export function ToolRouter() {
   const { suprimir } = useModoNaFerramenta(publico)
 
   useRegistrarUso(chave)
+  // Fase 1, item 14: total do dia por unidade e papel, sem a pessoa
+  useRegistrarUsoApp('ferramenta', chave)
   // Relacionadas (piloto das calculadoras, F4): o ToolLayout desenha na coluna da direita.
   const relacionadas = (chave ? relacionadasDe(chave) : []).flatMap((c) => {
     const [secaoSlug, slug] = c.split('/')

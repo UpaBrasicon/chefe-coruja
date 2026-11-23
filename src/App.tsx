@@ -66,6 +66,7 @@ const Plataformas = lazy(() => import('@/pages/admin/Plataformas'))
 const PendenciasTecnicas = lazy(() => import('@/pages/admin/PendenciasTecnicas'))
 const Servidores = lazy(() => import('@/pages/admin/Servidores'))
 const ErrosEAlertas = lazy(() => import('@/pages/admin/ErrosEAlertas'))
+const UsoDoApp = lazy(() => import('@/pages/admin/UsoDoApp'))
 const Indicadores = lazy(() => import('@/pages/gestor/Indicadores'))
 const InternacaoPainel = lazy(() => import('@/pages/InternacaoPainel'))
 const Notificacoes = lazy(() => import('@/pages/Notificacoes'))
@@ -388,6 +389,7 @@ export default function App() {
                       {/* Administrador geral (super admin): erros do app e verificações da rede */}
                       <Route element={<RequireSuperAdmin />}>
                         <Route path="/erros-e-alertas" element={<ErrosEAlertas />} />
+                        <Route path="/uso-do-app" element={<UsoDoApp />} />
                       </Route>
 
                       {/* Fase 6: prontuário fora da escala — pedido ao gestor, 24 h, só leitura.
