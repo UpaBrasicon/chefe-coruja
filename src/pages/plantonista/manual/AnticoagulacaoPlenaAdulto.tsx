@@ -17,6 +17,7 @@ import { ToolLayout } from '@/components/plantonista/ToolLayout'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -123,6 +124,10 @@ export function AnticoagulacaoPlenaAdulto() {
             </>
           )}
           pagina={CONTEXTOS_ENOXAPARINA[ctx].pagina}
+          extra={enox && enox.doseMg !== null ? <EscolhaDaAmpola chave="adulto-anticoag:enoxaparina" unidade="mg" doses={[
+            ...(enox.bolusEvMg !== null ? [{ rotulo: 'Ataque EV', dose: [enox.bolusEvMg, enox.bolusEvMg] as [number, number] }] : []),
+            { rotulo: 'Dose SC', dose: [enox.doseMg, enox.doseMg] as [number, number] },
+          ]} /> : undefined}
         />
         {enox?.observacoes.map((o) => <p key={o} className="text-apoio text-tinta-sussurro">{o}</p>)}
         {!clcrInformado && <p className="text-apoio text-tinta-sussurro">Sem clearance informado, a conta não aplica ajuste renal.</p>}

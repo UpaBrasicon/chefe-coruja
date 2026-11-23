@@ -48,9 +48,9 @@ export const DIFERENCAS_TT: string[] = [
 const fichaTtLivro = fichaAdulto('adulto-crise-tireotoxica', 'Crise tireotóxica — adulto', 'cap. 70 Crise tireotóxica, p. 947–956')
 export const fichaCriseTireotoxica: Ficha = {
   ...fichaTtLivro,
-  versao: '2026-11-14.1',
+  versao: '2026-11-23.1',
   fontes: [...fichaTtLivro.fontes, ETA_TEMPESTADE_2026],
-  revisadoEm: '14/11/2026 (consenso ETA/BTA/SfE 2026 lido no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+  revisadoEm: '23/11/2026 (lote A4 da dose em mL: o metoprolol passa a escrever a via, IV, conferida pelo RT no manual, p. 954; metoprolol e dexametasona com a escolha da ampola; sem mudança de dose; aguarda aprovação do RT); 14/11/2026 (consenso ETA/BTA/SfE 2026 lido no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
 }
 // Lote 5 da revisão do HCFMUSP, P2 (decisão do RT de 14/11/2026), cap. 71: o
 // consenso conjunto de 2026 sobre coma mixedematoso (BTA, ETA, SfE e WEDS) foi
@@ -89,9 +89,9 @@ export const DIFERENCAS_MIXEDEMA: string[] = [
 const fichaMixedemaLivro = fichaAdulto('adulto-estado-mixedematoso', 'Estado mixedematoso — adulto', 'cap. 71 Estado mixedematoso, p. 958–963')
 export const fichaMixedema: Ficha = {
   ...fichaMixedemaLivro,
-  versao: '2026-11-14.1',
+  versao: '2026-11-23.1',
   fontes: [...fichaMixedemaLivro.fontes, CONSENSO_MIXEDEMA_2026],
-  revisadoEm: '14/11/2026 (consenso BTA/ETA/SfE/WEDS 2026 lido no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
+  revisadoEm: '23/11/2026 (versão sobe só porque o arquivo mudou no lote A4 da dose em mL; conteúdo sem mudança; aguarda aprovação do RT); 14/11/2026 (consenso BTA/ETA/SfE/WEDS 2026 lido no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
 }
 // Lote 4 da revisão do HCFMUSP, O2 (decisão do RT de 14/11/2026), cap. 72: a
 // diretriz da Endocrine Society de 2016 (insuficiência adrenal primária; GRADE),
@@ -140,16 +140,16 @@ export const DIFERENCAS_IA: string[] = [
 const fichaIaLivro = fichaAdulto('adulto-insuficiencia-adrenal', 'Insuficiência adrenal e crise adrenal — adulto', 'cap. 72 Insuficiência adrenal, p. 964–971')
 export const fichaInsuficienciaAdrenal: Ficha = {
   ...fichaIaLivro,
-  versao: '2026-11-14.1',
+  versao: '2026-11-23.1',
   fontes: [...fichaIaLivro.fontes, ES_IA_PRIMARIA_2016, SFE_CRISE_ADRENAL_2016, ESE_ES_IA_GLICOCORTICOIDE_2024],
-  revisadoEm: '14/11/2026 (Endocrine Society 2016, SfE 2016 e ESE/ES 2024 lidas no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
+  revisadoEm: '23/11/2026 (versão sobe só porque o arquivo mudou no lote A4 da dose em mL; conteúdo sem mudança; aguarda aprovação do RT); 14/11/2026 (Endocrine Society 2016, SfE 2016 e ESE/ES 2024 lidas no texto integral, ao lado do manual; lote 4 da revisão do HCFMUSP; aguarda aprovação do RT)',
 }
 // Burch-Wartofsky: decisão do RT de 16/11/2026 (A) — o total de 45 exato, sem
 // classe na Tabela 4 do manual ("> 45" e "25–44"), segue o consenso ETA/BTA/SfE
 // 2026 (≥ 45 muito sugestivo), com o mesmo texto e o mesmo estado do > 45.
 const fichaBwLivro = fichaAdulto('adulto-burch-wartofsky', 'Burch-Wartofsky — crise tireotóxica (adulto)', 'cap. 70, Tabela 4, p. 951–952')
-export const fichaBurchWartofsky: Ficha = { ...fichaBwLivro, versao: '2026-11-16.1', fontes: [...fichaBwLivro.fontes, ETA_TEMPESTADE_2026], revisadoEm: '16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaBwLivro.revisadoEm }
-export const fichaEscoreMixedema = fichaAdulto('adulto-escore-mixedema', 'Escore diagnóstico do estado mixedematoso (adulto)', 'cap. 71, Tabela 3, p. 960–961')
+export const fichaBurchWartofsky: Ficha = { ...fichaBwLivro, versao: '2026-11-23.1', fontes: [...fichaBwLivro.fontes, ETA_TEMPESTADE_2026], revisadoEm: '23/11/2026 (versão sobe só porque o arquivo mudou no lote A4 da dose em mL; conteúdo sem mudança; aguarda aprovação do RT); 16/11/2026 (achados das calculadoras, decisões do RT de 16/11/2026; aguarda aprovação do RT); ' + fichaBwLivro.revisadoEm }
+export const fichaEscoreMixedema = { ...fichaAdulto('adulto-escore-mixedema', 'Escore diagnóstico do estado mixedematoso (adulto)', 'cap. 71, Tabela 3, p. 960–961'), versao: '2026-11-23.1', revisadoEm: '23/11/2026 (versão sobe só porque o arquivo mudou no lote A4 da dose em mL; conteúdo sem mudança; aguarda aprovação do RT); 27/09/2026 (conferido no livro)' }
 
 export type Faixa = [number, number]
 export type Dose = { droga: string; texto: string; pagina: string; errata?: string }
@@ -214,7 +214,7 @@ export const DROGAS_CRISE_TIREOTOXICA: Dose[] = [
   { droga: 'Propranolol EV', texto: '0,5–1,0 mg a cada 15 minutos até controle da FC', pagina: 'cap. 70, p. 954' },
   { droga: 'Esmolol', texto: 'Bomba de infusão contínua 0,05–1,0 mg/kg/min', pagina: 'cap. 70, p. 954',
     errata: 'O inventário do projeto aponta o teto de 1,0 mg/kg/min como alto; não conferido fora do livro. Transcrito como está, sem preparo (sem mL/h).' },
-  { droga: 'Metoprolol', texto: '5 mg a cada 10–15 minutos até controle da FC', pagina: 'cap. 70, p. 954' },
+  { droga: 'Metoprolol', texto: '5 mg IV a cada 10–15 minutos até controle da FC', pagina: 'cap. 70, p. 954' },
   { droga: 'Hidrocortisona', texto: '100 mg EV a cada 6 horas', pagina: 'cap. 70, p. 954' },
   { droga: 'Dexametasona', texto: '2–4 mg EV 6/6 horas', pagina: 'cap. 70, p. 954' },
 ]

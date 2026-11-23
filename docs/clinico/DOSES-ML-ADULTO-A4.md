@@ -1,6 +1,6 @@
 # Dose em mL no adulto, lote A4: cardiologia, anticoagulação, endócrino e AVC
 
-Data: 23/11/2026. Situação: decisões A4-1 a A4-4 = A (RT, 23/11/2026). Primeira parte na branch fase-ml/adulto-a4: esmolol 250 mg/mL (criança e adulto), fibrilação atrial (magnésio IV), emergência hipertensiva e AVC. Metoprolol e protamina esperam as bulas; dexametasona do endócrino, furosemida da IC e enoxaparina da anticoagulação vêm na segunda parte. Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A).
+Data: 23/11/2026. Situação: decisões A4-1 a A4-4 = A (RT, 23/11/2026). Primeira parte na branch fase-ml/adulto-a4: esmolol 250 mg/mL (criança e adulto), fibrilação atrial (magnésio IV), emergência hipertensiva e AVC. Primeira parte na produção (PR #1066). Segunda parte na branch fase-ml/adulto-a4b: metoprolol (Betacris) e protamina (Protamina 1000) pelas bulas lidas em 23/11/2026, dexametasona do endócrino, furosemida da IC e enoxaparina; o metoprolol da crise tireotóxica passa a escrever IV (A4-2), e as outras 4 fichas do arquivo do endócrino sobem pela regra 1b. Base: `docs/clinico/DOSES-ML-ADULTO-DIAGNOSTICO.md` (MA1 a MA7 = A).
 
 ## Correção achada no levantamento
 

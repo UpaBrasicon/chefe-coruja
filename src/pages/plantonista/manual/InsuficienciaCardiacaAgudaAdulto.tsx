@@ -18,6 +18,7 @@ import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
 import { Escolha, Resultado, Trecho } from './LoteAPecas'
 import { br, faixaBr, informado } from './loteAFormato'
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -146,6 +147,7 @@ export function InsuficienciaCardiacaAgudaAdulto() {
           conta={furo ? <>dose <strong>{faixaBr(furo.doseMg, 0)} mg</strong> · dobrada {faixaBr(furo.dobradaMg, 0)} mg</> : pede}
           pagina="p. 296 e 298"
           errata={FUROSEMIDA_ICA.errata}
+          extra={furo ? <EscolhaDaAmpola chave="adulto-ic:furosemida" unidade="mg" doses={[{ rotulo: 'Dose', dose: furo.doseMg }, { rotulo: 'Dobrada', dose: furo.dobradaMg }]} /> : undefined}
         />
         {furo?.acimaDe240 && <p className="text-atencao">A dose dobrada passa de 240 mg, o máximo diário da p. 296.</p>}
         <p className="text-apoio text-tinta-sussurro">O capítulo não traz dose de furosemida conforme o uso prévio de diurético.</p>

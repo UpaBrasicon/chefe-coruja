@@ -290,7 +290,7 @@ test('lote 4, O1: nota do cap. 37 (VM) a partir da lista da ficha da SDRA, sem f
 
 test('insuficiência adrenal (cap. 72): três fontes ao lado do manual; doses do manual iguais', async () => {
   const e = await import('./endocrino.ts')
-  assert.equal(e.fichaInsuficienciaAdrenal.versao, '2026-11-14.1')
+  assert.equal(e.fichaInsuficienciaAdrenal.versao, '2026-11-23.1')
   for (const f of [e.ES_IA_PRIMARIA_2016, e.SFE_CRISE_ADRENAL_2016, e.ESE_ES_IA_GLICOCORTICOIDE_2024]) assert.ok(e.fichaInsuficienciaAdrenal.fontes.includes(f))
   assert.equal(e.CRISE_ADRENAL.hidrocortisonaAtaqueMg, 100)
   assert.deepEqual(e.CRISE_ADRENAL.hidrocortisonaManutencaoMg, [50, 100])
@@ -301,7 +301,7 @@ test('insuficiência adrenal (cap. 72): três fontes ao lado do manual; doses do
 
 test('crise tireotóxica (cap. 70): consenso ETA/BTA/SfE 2026 ao lado do manual; doses do manual iguais', async () => {
   const e = await import('./endocrino.ts')
-  assert.equal(e.fichaCriseTireotoxica.versao, '2026-11-14.1')
+  assert.equal(e.fichaCriseTireotoxica.versao, '2026-11-23.1')
   assert.ok(e.fichaCriseTireotoxica.fontes.includes(e.ETA_TEMPESTADE_2026))
   assert.match(e.ETA_TEMPESTADE_2026.citacao, /sem graduação/)
   assert.ok(e.DROGAS_CRISE_TIREOTOXICA.some((d) => d.droga === 'Metimazol' && /20 mg/.test(d.texto)))
@@ -410,7 +410,7 @@ test('lote 5, P1: notas dos cap. 27, 79, 82 e 102 a partir das fichas', async ()
 
 test('estado mixedematoso (cap. 71): consenso 2026 ao lado do manual; doses e escore do manual iguais', async () => {
   const e = await import('./endocrino.ts')
-  assert.equal(e.fichaMixedema.versao, '2026-11-14.1')
+  assert.equal(e.fichaMixedema.versao, '2026-11-23.1')
   assert.ok(e.fichaMixedema.fontes.includes(e.CONSENSO_MIXEDEMA_2026))
   assert.match(e.REPOSICAO_MIXEDEMA[0].texto, /200–500 µg EV/)
   assert.match(e.REPOSICAO_MIXEDEMA[4].texto, /100 mg EV 8\/8 horas/)
