@@ -23,7 +23,38 @@ test('na UBS a recepção não mostra painel; a fila da enfermagem é a escuta, 
   assert.match(abasUbs, /\{ \.\.\.ABAS\[1\], rotulo: 'Fila da enfermagem'/)
   // parte 2.4: a cor da escuta ordena; quem aguarda a escuta fica na fila da enfermagem
   assert.match(recepcao, /const todos = \(fila\.data \?\? \[\]\)\.filter\(\(e\) => e\.etapa !== 'triagem'\)/)
-  assert.match(recepcao, /return \[\.\.\.todos\.filter\(\(e\) => !e\.atendimento_iniciado_em\)\.sort\(ordemFilaUbs\)/)
+  // RF1 (23/11/2026): a ordem leva a hora marcada da agenda de hoje
+  assert.match(recepcao, /const ordem = ordemFilaUbsComAgenda<NaFila>\(\(e\) => horaMarcada\.get\(e\.episodio_id\)\)/)
+  assert.match(recepcao, /return \[\.\.\.todos\.filter\(\(e\) => !e\.atendimento_iniciado_em\)\.sort\(ordem\)/)
+})
+
+// Refinamento da UBS, RF1 = A (RT, 23/11/2026): a fila do consultório em três
+// faixas — vermelho e amarelo; agendados pela hora marcada; o resto.
+test('RF1: vermelho e amarelo, depois agendados pela hora marcada, depois a demanda espontânea', async () => {
+  const { faixaFilaUbs, ordemFilaUbsComAgenda } = await import('../domain/aps.ts')
+  type E = { id: string; prioridades_legais: string[]; chegada_em: string; cor_atual: string | null; tipo_atendimento_aps: string | null }
+  const e = (id: string, chegada: string, cor: string | null, tipo: string | null = 'consulta_no_dia', pri: string[] = []): E =>
+    ({ id, prioridades_legais: pri, chegada_em: `2026-11-23T${chegada}:00Z`, cor_atual: cor, tipo_atendimento_aps: tipo })
+  const marcada: Record<string, string> = { ag1: '2026-11-23T13:20:00Z', ag2: '2026-11-23T12:40:00Z', agVerm: '2026-11-23T12:00:00Z' }
+  const lista = [
+    e('semEscuta', '10:00', null),
+    e('verde', '10:30', 'verde'),
+    e('ag1', '09:00', null, 'consulta_agendada'),
+    e('ag2', '11:00', 'verde', 'consulta_agendada'),
+    e('amarelo', '11:30', 'amarelo'),
+    e('agVerm', '08:00', 'vermelho', 'consulta_agendada'),
+    e('verdeIdoso', '10:45', 'verde', 'consulta_no_dia', ['idoso_80']),
+  ]
+  const ordem = [...lista].sort(ordemFilaUbsComAgenda<E>((x) => marcada[x.id])).map((x) => x.id)
+  assert.deepEqual(ordem, ['agVerm', 'amarelo', 'ag2', 'ag1', 'verdeIdoso', 'verde', 'semEscuta'])
+  // agendado de outro dia (sem hora hoje) conta como agendado pelo tipo
+  assert.equal(faixaFilaUbs(e('x', '10:00', null, 'consulta_programada'), null), 'agendado')
+  assert.equal(faixaFilaUbs(e('y', '10:00', 'verde'), null), 'espontaneo')
+  assert.equal(faixaFilaUbs(e('z', '10:00', 'amarelo', 'consulta_agendada'), '2026-11-23T12:00:00Z'), 'prioritario')
+  // a fila do médico usa a mesma ordem e mostra a hora marcada
+  assert.match(fila, /if \(ubs\) aguardando\.sort\(ordemFilaUbsComAgenda<EpFila>\(\(e\) => horaMarcada\.get\(e\.id\)\)\)/)
+  assert.match(fila, /· marcada \{hora\(horaMarcada\.get\(e\.id\)!\)\}/)
+  assert.match(recepcao, /`Consulta marcada às \$\{hora\(e\.hora_marcada\)\}` : 'Demanda espontânea'/)
 })
 
 test('a fila do médico na UBS não tem cor nem alvo e mostra a conduta nas saídas', () => {
