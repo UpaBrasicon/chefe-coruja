@@ -33,6 +33,7 @@ import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
 import { usePaleta } from '@/components/casca/usePaleta'
 import { Lateral } from '@/components/casca/Lateral'
+import { PrimeirosPassos } from '@/components/casca/PrimeirosPassos'
 import { MenuUsuario } from '@/components/casca/MenuUsuario'
 import { DialogoSaida, SessaoEncerrada, VeuSaida } from '@/components/casca/Saida'
 import { TelaBloqueada } from '@/components/casca/Bloqueio'
@@ -299,7 +300,7 @@ function Casca() {
   const aposCheckin = React.useCallback(() => {
     setCheckinAberto(false)
     recarregarPlantao()
-  }, [recarregarPlantao])
+  }, [recarregarPlantao, setCheckinAberto])
 
   // Contexto da topbar por papel.
   const { data: painelGestor } = useQuery({
@@ -365,6 +366,7 @@ function Casca() {
       onTrocarPapel={trocarPapel}
       onSair={() => setSaidaAberta(true)}
       onBloquear={bloqueio.bloquear}
+      primeirosPassos={{ perfilId: perfil?.id, inicio, rotas: itens.map((i) => i.to) }}
       tema={ehTema(perfil?.tema) ? perfil.tema : 'automatico'}
       onTrocarTema={(t) => void definirTema(t)}
       tamanho={tamanho}
@@ -550,6 +552,8 @@ function Casca() {
                       </div>
                     }
                   >
+                    {/* Fase 1, item 13 (OB1–OB4 = A, 23/11/2026): primeiros passos na tela inicial do papel */}
+                    {location.pathname === inicio && <PrimeirosPassos rotasDoMenu={itens.map((i) => i.to)} perfilId={perfil?.id} papel={papelAtivo} />}
                     <Outlet />
                   </React.Suspense>
                 </FaixaDaPagina.Provider>
