@@ -112,10 +112,10 @@ export function MeningitePed() {
       ) : (
         <>
           <Bloco titulo="Tratamento (p. 410–411)" descricao={p.rn ? 'Recém-nascido: só as linhas com valor neonatal do livro calculam.' : undefined}>
-            {DOSES_MENINGITE.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {DOSES_MENINGITE.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`meningite:${d.id}`} />)}
           </Bloco>
           <Bloco titulo="Quimioprofilaxia de contatos (p. 412–413)">
-            {DOSES_PROFILAXIA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} />)}
+            {DOSES_PROFILAXIA.map((d) => <LinhaDoseLivro key={d.id} d={d} peso={p.peso} rn={p.rn} ampola={`meningite:${d.id}`} />)}
           </Bloco>
         </>
       )}
