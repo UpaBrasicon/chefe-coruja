@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { linkMarcarNaAgenda } from '@/domain/agenda'
-import { CLASSIFICACAO_CAB28, SAIDAS_AZUL, type CorCab28, type SaidaEscuta } from '@/domain/aps'
+import { CLASSIFICACAO_CAB28, SAIDAS_AZUL, azulVaiAFila, type CorCab28, type SaidaEscuta } from '@/domain/aps'
 import { ehPediatrico, idadeEm } from '@/domain/idade'
 import { paraNumeros, type Publico } from '@/domain/vitais'
 import { supabase } from '@/lib/supabase'
@@ -41,7 +41,7 @@ const SAIDA_TEXTO: Record<CorCab28, string> = {
   vermelho: 'vai para a fila do médico como atendimento imediato, à frente de todos.',
   amarelo: 'vai para a fila do médico como prioritário, à frente do verde e de quem não passou pela escuta.',
   verde: 'vai para a fila do médico no dia, pela prioridade legal e pela chegada.',
-  azul: 'a ficha encerra na escuta, com a orientação ou o agendamento escrito.',
+  azul: 'com orientação ou agendamento, a ficha encerra na escuta; com "atender hoje", vai para a fila do médico como demanda espontânea.',
 }
 
 function Cartao({ c, marcado, onEscolher, children }: {
@@ -88,8 +88,8 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
   const erroAtual = (() => {
     if (!publico) return 'Sem data de nascimento: escolha adulto ou pediatria.'
     if (!cor) return 'Escolha a classificação do CAB 28.'
-    if (cor === 'azul' && !saidaAzul) return 'Na situação não aguda, escolha orientação ou agendamento.'
-    if (cor === 'azul' && obs.trim().length < 10) return 'Escreva a orientação dada ou o agendamento (mínimo de 10 letras).'
+    if (cor === 'azul' && !saidaAzul) return 'Na situação não aguda, escolha orientação, atender hoje ou agendar outro dia.'
+    if (cor === 'azul' && !azulVaiAFila(saidaAzul) && obs.trim().length < 10) return 'Escreva a orientação dada ou o agendamento (mínimo de 10 letras).'
     try { paraNumeros(vitais) } catch (e) { return (e as Error).message }
     if (dum && dum > hoje) return 'DUM no futuro.'
     return null
@@ -118,7 +118,9 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
         navigate(linkMarcarNaAgenda(ep.paciente_id, ep.id))
         return
       }
-      onFim(cor === 'azul'
+      onFim(cor === 'azul' && azulVaiAFila(saidaAzul)
+        ? `${nomeDe(ep)}: escuta registrada (${rotulo}, atender hoje); foi para a fila do médico como demanda espontânea.`
+        : cor === 'azul'
         ? `${nomeDe(ep)}: escuta registrada (${saidaAzul === 'agendamento' ? 'agendamento' : 'orientação'}); a ficha foi encerrada.`
         : `${nomeDe(ep)}: escuta registrada (${rotulo}); foi para a fila do médico.`)
     },
@@ -168,7 +170,7 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
         <div className="grid gap-2.5 md:grid-cols-3">
           {agudas.map((c) => <Cartao key={c.cor} c={c} marcado={cor === c.cor} onEscolher={() => { setCor(c.cor); setSaidaAzul(null) }} />)}
         </div>
-        <span className="rotulo mt-1.5 text-tinta-sussurro">Situação não aguda · encerra na escuta</span>
+        <span className="rotulo mt-1.5 text-tinta-sussurro">Situação não aguda · encerra na escuta ou é atendida hoje</span>
         <Cartao c={azul} marcado={cor === 'azul'} onEscolher={() => setCor('azul')}>
           {cor === 'azul' && (
             <div role="radiogroup" aria-label="Saída da situação não aguda" className="flex flex-wrap gap-2 pt-1">
@@ -194,8 +196,8 @@ export function EscutaInicial({ ep, onFim }: { ep: NaFila; onFim: (msg: string |
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="escuta-obs">
-          {cor === 'azul' ? (saidaAzul === 'agendamento' ? 'Agendamento' : 'Orientação dada') : 'Observação'}{' '}
-          <span className="font-normal text-tinta-sussurro">{cor === 'azul' ? '(mínimo de 10 letras)' : '(opcional)'}</span>
+          {cor === 'azul' && !azulVaiAFila(saidaAzul) ? (saidaAzul === 'agendamento' ? 'Agendamento' : 'Orientação dada') : 'Observação'}{' '}
+          <span className="font-normal text-tinta-sussurro">{cor === 'azul' && !azulVaiAFila(saidaAzul) ? '(mínimo de 10 letras)' : '(opcional)'}</span>
         </Label>
         <Textarea id="escuta-obs" rows={2} value={obs} onChange={(e) => setObs(e.target.value)} />
       </div>

@@ -15,7 +15,7 @@ const atend = readFileSync('src/pages/plantao/porta/AbaAtendimento.tsx', 'utf8')
 test('as cores e as saídas da tela são as do banco (CAB 28, sem laranja)', () => {
   assert.deepEqual(CLASSIFICACAO_CAB28.map((c) => c.cor), ['vermelho', 'amarelo', 'verde', 'azul'])
   assert.match(migration, /p_cor NOT IN \('vermelho', 'amarelo', 'verde', 'azul'\)/)
-  assert.deepEqual(SAIDAS_AZUL.map((s) => s.valor), ['orientacao', 'agendamento'])
+  assert.deepEqual(SAIDAS_AZUL.map((s) => s.valor), ['orientacao', 'atender_hoje', 'agendamento'])
   assert.match(migration, /saida_escuta IN \('orientacao', 'agendamento', 'consulta'\)/)
   // só o azul não é agudo, e só ele encerra na escuta
   assert.deepEqual(CLASSIFICACAO_CAB28.filter((c) => !c.aguda).map((c) => c.cor), ['azul'])
@@ -49,4 +49,21 @@ test('na UBS a página da triagem é a escuta: sem alvo, sem reclassificar, sem 
   assert.match(espera, /\{!ubs && \(\s*<Button size="sm" variant="outline" onClick=\{\(\) => onReclassificar\(e\)\}>/)
   // o médico vê a escuta na janela
   assert.match(atend, /\{ubs && triagem && \(/)
+})
+
+// Refinamento da UBS, RF2 = A (RT, 23/11/2026): o azul pode ser atendido hoje,
+// e a demanda espontânea aparece na agenda do dia, sem horário.
+test('RF2: azul "atender hoje" vai à fila sem texto, e a agenda de hoje mostra a demanda espontânea', async () => {
+  const { azulVaiAFila } = await import('../domain/aps.ts')
+  assert.equal(azulVaiAFila('atender_hoje'), true)
+  assert.equal(azulVaiAFila('orientacao'), false)
+  assert.equal(azulVaiAFila('agendamento'), false)
+  const escuta = readFileSync('src/pages/enfermagem/triagem/EscutaInicial.tsx', 'utf8')
+  assert.match(escuta, /if \(cor === 'azul' && !azulVaiAFila\(saidaAzul\) && obs\.trim\(\)\.length < 10\)/)
+  assert.match(escuta, /foi para a fila do médico como demanda espontânea/)
+  const agenda = readFileSync('src/pages/agenda/AgendaConsultas.tsx', 'utf8')
+  assert.match(agenda, /\{dia === hoje && <DemandaEspontaneaDoDia unidadeId=\{unidadeId\} hoje=\{hoje\} \/>\}/)
+  const sql = readFileSync('supabase/migrations/20270415000035_ubs_rf2_demanda_espontanea.sql', 'utf8')
+  assert.match(sql, /IF p_cor = 'azul' AND p_saida <> 'atender_hoje' THEN/)
+  assert.match(sql, /'demanda_espontanea'/)
 })
