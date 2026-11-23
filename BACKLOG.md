@@ -1299,7 +1299,7 @@ certificados, aviso de vencimento, bloqueio por CBO e painel, com telas do Refer
 - Sem migration: usa as funções da 5.4a. Tela em `src/pages/admin/RndsAba.tsx`, regras em `src/lib/rnds.ts`.
 - Conferida na página de teste (dois temas, cinco cenários, diálogos, 390 px). A cifra feita no navegador abriu
   no Node com a chave privada.
-- Pendente: os nomes de 02 a 06 e 08 da tabela `BRFinanciamento`, que aparecem só pelo código.
+- Feito em 23/11/2026: os nomes de 01 a 08 da tabela `BRFinanciamento` vêm da tabela oficial (CodeSystem versão 201701A, pacote de definições do validador da RNDS), em `src/lib/rnds.ts`.
 
 **Banco da RNDS na produção em 29/10/2026** ("ok produção" do RT): as migrations `20270204000001`, `20270205000001`,
 `20270206000001` e `20270207000001`, em ordem, cada uma numa transação, com a versão registrada.

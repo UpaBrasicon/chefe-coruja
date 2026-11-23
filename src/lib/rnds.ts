@@ -59,14 +59,21 @@ export const ROTULO_TIPO: Record<TipoDocumento, string> = {
 }
 
 /**
- * BRFinanciamento (01–08, o que o banco aceita). Só 01 e 07 têm o nome
- * conferido (docs/rnds); os outros aparecem pelo código até a conferência com a
- * tabela oficial, sem nome inventado.
+ * BRFinanciamento (01–08, o que o banco aceita), com o nome da tabela oficial:
+ * CodeSystem http://www.saude.gov.br/fhir/r4/CodeSystem/BRFinanciamento,
+ * versão 201701A, do pacote de definições do validador da RNDS
+ * (definicoes-validador-sa.zip, sha256 f5116c43…, conferido em 23/11/2026).
+ * O 07 (municipal) vem primeiro porque é o padrão da UPA e da UBS.
  */
 export const FINANCIAMENTOS: { codigo: string; rotulo: string }[] = [
-  { codigo: '07', rotulo: '07 — SUS municipal' },
-  { codigo: '01', rotulo: '01 — SUS federal' },
-  ...['02', '03', '04', '05', '06', '08'].map((codigo) => ({ codigo, rotulo: `${codigo} — código da tabela BRFinanciamento` })),
+  { codigo: '07', rotulo: '07 — Municipal SUS' },
+  { codigo: '01', rotulo: '01 — Federal SUS' },
+  { codigo: '06', rotulo: '06 — Estadual SUS' },
+  { codigo: '08', rotulo: '08 — Programas e Projetos Federais' },
+  { codigo: '02', rotulo: '02 — Plano de Saúde Público' },
+  { codigo: '03', rotulo: '03 — Plano de Saúde Privado' },
+  { codigo: '04', rotulo: '04 — Particular' },
+  { codigo: '05', rotulo: '05 — Gratuidade' },
 ]
 
 const DIA_MS = 86_400_000

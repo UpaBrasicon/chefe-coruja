@@ -84,3 +84,14 @@ test('dias até a data', () => {
   assert.equal(diasAte('2026-10-30T12:00:00Z', AGORA), 1)
   assert.equal(diasAte('2026-10-28T12:00:00Z', AGORA), -1)
 })
+
+// Nomes da tabela oficial BRFinanciamento (CodeSystem versão 201701A, pacote de
+// definições do validador da RNDS; conferido em 23/11/2026).
+test('BRFinanciamento: os 8 códigos com o nome da tabela oficial, 07 primeiro', async () => {
+  const { FINANCIAMENTOS } = await import('./rnds.ts')
+  assert.equal(FINANCIAMENTOS[0].codigo, '07')
+  assert.deepEqual(Object.fromEntries(FINANCIAMENTOS.map((f) => [f.codigo, f.rotulo])), {
+    '01': '01 — Federal SUS', '02': '02 — Plano de Saúde Público', '03': '03 — Plano de Saúde Privado', '04': '04 — Particular',
+    '05': '05 — Gratuidade', '06': '06 — Estadual SUS', '07': '07 — Municipal SUS', '08': '08 — Programas e Projetos Federais',
+  })
+})
