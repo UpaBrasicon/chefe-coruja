@@ -2481,6 +2481,16 @@ Ordem técnica = a numeração. Cada lacuna começa por um diagnóstico com as o
 
 A API da ANVISA (credencial do RT) respondeu 403 e depois "Invalid client secret". O vigia (`scripts/anvisa/lista-cmed.mjs` e `.github/workflows/cmed-vigia.yml`, dias 1 e 16; `infra/anvisa-api.md`) usa a planilha pública e abre um aviso quando aparece uma concentração à venda fora do cadastro.
 
+**Lotes 4 a 6d da dose em mL na produção em 23/11/2026, PR #1026 (PR único, decisão do RT; substituiu os PRs empilhados #1017 e #1020 a #1024), ok do RT:**
+- lote 4, anafilaxia e asma: magnésio 10% e 50%, epinefrina por idade, volume abaixo de 0,1 mL com 3 casas;
+- lote 5, antídotos e cardiologia pela CMED; a insulina só aparece pelo preparo de 0,1 UI/mL;
+- lote 6a, pneumonia, infecção urinária e crise álgica, com o volume da solução pronta;
+- lote 6b, injúria renal, hemostasia e emergências oncológicas;
+- lote 6c, eletrólitos: bicarbonato 8,4% e 10%, cálcio na base do sal;
+- lote 6d, capítulos com princípio já cadastrado, com o aviso de diluir no próprio item.
+
+A revisão antes do PR corrigiu, pelas regras do RT: magnésio 50% passa a "aspirar e diluir" (o livro limita a 20%, p. 908); a furosemida dos eletrólitos fica sem mL, porque o item não escreve a via. Ficha `ped-ampolas` 2026-11-20.8 e 16 fichas 2026-11-20.1 aprovadas pelo RT na produção; migrations `20270416000016` a `20270416000022` (homologação e produção, fontes conferidas por md5). Planos e decisões em `docs/clinico/DOSES-ML-LOTE4-*`, `LOTE5-*` e `LOTE6-*`. Ficam para o RT decidir: itens de via mista com o volume da forma IV (linezolida, metronidazol e levofloxacino da oncologia, linezolida da pele, dipirona da crise álgica), glicose só 25% ou todas as concentrações, via do tranexâmico (p. 682) e da fenitoína profilática (p. 720), enoxaparina no lactente. As 25 bulas que faltavam (`docs/clinico/DOSES-ML-BULAS-PENDENTES.md`) foram baixadas pelo RT em 23/11/2026 e lidas; o lote 7 liga o mL delas, depois de 6 decisões sobre a base do valor (dexametasona, milrinona, gentamicina e amicacina 50 mg/mL da Hipolabor, esmolol, desmopressina e salbutamol injetável, que diz "uso adulto"). Sem injetável à venda: azul de metileno e vitamina K IV (as três fitomenadionas são IM ou SC).
+
 **Guias de bolso do hospital e da UPA (pedido do RT de 20/11/2026, pela organização do PedBook e do PedAjuda), PR #1015, na produção em 20/11/2026 com o ok do RT (1979d0e4):**
 - criança: doses por classe, crise epiléptica, anafilaxia e desidratação;
 - adulto: intubação, anafilaxia e crise epiléptica;
