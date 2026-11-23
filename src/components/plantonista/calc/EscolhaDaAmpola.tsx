@@ -68,6 +68,7 @@ export function EscolhaDaAmpola({ chave, ampolas: lista, dose, doses, unidade, b
           ))}
           {(algum.aspirar || diluirItem) && <p className="font-medium text-atencao">{AVISO_DILUIR}</p>}
           {item?.viaMista && <p className="font-medium text-atencao">{AVISO_VIA_MISTA}</p>}
+          {item?.aviso && <p className="font-medium text-atencao">{item.aviso}</p>}
           {linhas.some((l) => volumeAbaixoDe01(l.volume?.ml)) && <p className="font-medium text-atencao">{AVISO_VOLUME_PEQUENO}</p>}
           <p className="text-rotulo text-tinta-sussurro">Concentração: {ampola.fonte}.</p>
         </>

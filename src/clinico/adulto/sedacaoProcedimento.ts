@@ -48,9 +48,9 @@ const fichaSapLivro = fichaAdulto(
 )
 export const fichaSedacaoProcedimentoAdulto: Ficha = {
   ...fichaSapLivro,
-  versao: '2026-11-14.1',
+  versao: '2026-11-23.1',
   fontes: [...fichaSapLivro.fontes, ACEP_SEDACAO_2026],
-  revisadoEm: '14/11/2026 (consenso Delphi da ACEP 2026 lido no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
+  revisadoEm: '23/11/2026 (lote A2 da dose em mL: o haloperidol antes da quetamina passa a escrever a via, IM, conferida pelo RT no manual, p. 165; adjuvantes e reversores com a escolha da ampola; sem mudança de dose; aguarda aprovação do RT); 14/11/2026 (consenso Delphi da ACEP 2026 lido no texto integral, ao lado do manual; lote 5 da revisão do HCFMUSP; aguarda aprovação do RT)',
 }
 
 export type Faixa = [number, number]
@@ -194,7 +194,7 @@ export const ADJUVANTES_SAP: AdjuvanteSap[] = [
   { id: 'lidocaina', nome: 'Lidocaína antes de etomidato ou propofol', porKg: [0.5, 0.5], unidade: 'mg', texto: '0,5 mg/kg EV com torniquete por 30 a 120 s antes da droga (dor no sítio de infusão)', pagina: 'p. 162 e 164' },
   { id: 'lidocaina-diluida', nome: 'Lidocaína diluída no propofol', porKg: [0.5, 1], unidade: 'mg', texto: '0,5–1 mg/kg de lidocaína na dose inicial de propofol', pagina: 'p. 164' },
   { id: 'midazolam-premed', nome: 'Midazolam — pré-medicação da quetamina', porKg: [0.05, 0.05], unidade: 'mg', texto: '0,05 mg/kg antes da SAP com quetamina (reduz agitação de emersão; aumenta o tempo de recuperação)', pagina: 'p. 165' },
-  { id: 'haloperidol-premed', nome: 'Haloperidol — pré-medicação da quetamina', fixo: [5, 5], unidade: 'mg', texto: '5 mg antes da SAP com quetamina', pagina: 'p. 165' },
+  { id: 'haloperidol-premed', nome: 'Haloperidol — pré-medicação da quetamina', fixo: [5, 5], unidade: 'mg', texto: '5 mg IM antes da SAP com quetamina', pagina: 'p. 165' },
   { id: 'midazolam-emersao', nome: 'Midazolam — agitação de emersão', porKg: [0.03, 0.03], unidade: 'mg', texto: '0,03 mg/kg', pagina: 'p. 165' },
   { id: 'midazolam-mioclonia', nome: 'Midazolam — mioclonia grave pelo etomidato', fixo: [1, 2], unidade: 'mg', texto: '1–2 mg IV a cada 1 min até ceder (com IOT, segundo o livro)', pagina: 'p. 162' },
 ]

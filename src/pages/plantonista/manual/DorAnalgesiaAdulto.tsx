@@ -18,11 +18,18 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { numeroBr, textoCopia } from '@/domain/copiaCalculo'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
 const br = (x: number, casas = 1) => numero(Math.round(x * 10 ** casas) / 10 ** casas)
 const faixa = (f: Faixa, casas = 1) => (f[0] === f[1] ? br(f[0], casas) : `${br(f[0], casas)}–${br(f[1], casas)}`)
+
+/** Dose para o volume da ampola (lote A2): por peso quando o item é por kg; senão, a dose fixa do texto. */
+function doseParaAmpola(o: Opioide, peso: number): Faixa | null {
+  if (o.porKg) return opioidePorPeso(o, peso)
+  return o.dosesMg ? [o.dosesMg[0], o.dosesMg[o.dosesMg.length - 1]] : null
+}
 
 function contaOpioide(o: Opioide, peso: number) {
   const esquemas = esquemasOpioide(o)
@@ -120,7 +127,8 @@ export function DorAnalgesiaAdulto() {
 
       <Bloco titulo="Opioides (Tabela 3, p. 147–149)" descricao="O livro não traz tabela de equianalgesia: não há conversão entre opioides nesta tela.">
         {OPIOIDES.map((o) => (
-          <LinhaManual key={o.id} nome={`${o.nome} (${o.forca}; ${o.vias})`} texto={o.texto} conta={contaOpioide(o, peso)} pagina={o.pagina} errata={o.errata} nota={o.nota} />
+          <LinhaManual key={o.id} nome={`${o.nome} (${o.forca}; ${o.vias})`} texto={o.texto} conta={contaOpioide(o, peso)} pagina={o.pagina} errata={o.errata} nota={o.nota}
+            extra={doseParaAmpola(o, peso) ? <EscolhaDaAmpola chave={`adulto-analgesia:${o.id}`} dose={doseParaAmpola(o, peso)!} unidade={o.porKg?.unidade ?? 'mg'} /> : undefined} />
         ))}
       </Bloco>
 
