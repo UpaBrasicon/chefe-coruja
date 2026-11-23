@@ -2689,6 +2689,8 @@ Dado de teste: a escala da UBS Fase 5 na homologação foi estendida até 31/12/
 | 6 | RF6 | Caderneta com o bloco "Em atraso" pelas faltas que o app já calcula (C2, C3, C6, C7), com a fonte | P1 | Concluído em 23/11/2026 (#1037, na produção; migration 20270415000034 aplicada, md5 igual à homologação; bloco "Em atraso ou a completar"; pacote conferido) |
 | 7 | RF2 | A demanda espontânea aparece na agenda do dia do médico sem ocupar horário; o azul ganha a saída "Atender hoje" | P1 | Concluído em 23/11/2026 (#1038, na produção; migration 20270415000035 aplicada, md5 das duas funções e das CHECK igual à homologação; rollback em `supabase/snippets/rf2_rollback.sql`; pacote conferido) |
 | — | RF5 | Consulta de 20 a 30 minutos: já é configurável por profissional; nada a programar | — | Sem código |
+| 8 | LP1 + LP2 | Limpeza do percurso (diagnóstico em `docs/ubs/LIMPEZA-PERCURSO-DIAGNOSTICO.md`, RT: todas A em 23/11/2026): "Agendamento para Nasf" vira "Agendamento para eMulti" (LEDI 8.7.0, código 14); "Em atendimento há 0 min" vira "Atendimento iniciado às HH:MM" | P1 | A fazer |
+| 9 | LP3 | Ficha "em atendimento" de dias anteriores: aviso no topo da fila do médico com "Retomar"; o gestor encerra com motivo, pelo login dele, sem FAI; a recepção vê com quem o atendimento está aberto | P1 | A fazer |
 
 ---
 

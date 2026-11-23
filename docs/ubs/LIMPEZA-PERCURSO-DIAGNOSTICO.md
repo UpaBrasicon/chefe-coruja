@@ -53,7 +53,6 @@ Precisa de migration (RPC de encerramento pelo gestor e a lista).
 
 LP1 e LP2 juntos num PR só de tela (textos). Depois LP3, com migration, homologação, CI verde e "ok produção".
 
-## Perguntas ao RT
+## Decisões do RT
 
-1. LP1, LP2 e LP3: A ou B em cada um?
-2. Entram no BACKLOG como itens da trilha "Refinamento da UBS" (LP1 a LP3), P1?
+23/11/2026, nas palavras dele: "Sim, todas A". LP1, LP2 e LP3 = A. Entram no BACKLOG na trilha "Refinamento da UBS", P1, na ordem acima.
