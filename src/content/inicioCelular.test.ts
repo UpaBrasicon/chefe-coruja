@@ -4,7 +4,7 @@ import { test } from 'node:test'
 
 import { ROTA_DA_FICHA } from '../clinico/indice.ts'
 import { GUIA_ADULTO, GUIA_CRIANCA, ROTA_TODAS_FERRAMENTAS, cartaoDoGuia } from './guiaRapido.ts'
-import { INICIO_ADULTO, INICIO_CRIANCA, ROTA_PCR, categoriasDoInicio, rotaDaBusca } from './inicioCelular.ts'
+import { INICIO_ADULTO, INICIO_CRIANCA, ROTA_PCR, categoriasDoInicio, chaveDoItem, rotaDaBusca } from './inicioCelular.ts'
 
 // Início do celular (item 6; mescla A + B escolhida pelo RT em 23/11/2026).
 const rotas = new Set(Object.values(ROTA_DA_FICHA))
@@ -59,6 +59,19 @@ test('Sepse e CAD saíram do topo e estão em Urgências ou Calculadoras nos doi
   }
   assert.equal(ROTA_PCR.adulto, '/plantonista?guia=parada-adulto')
   assert.equal(ROTA_PCR.crianca, '/plantonista?guia=parada-crianca')
+})
+
+test('a bandeirinha favorita a ferramenta com a chave da Central (RT, 23/11/2026)', () => {
+  assert.equal(chaveDoItem('/plantonista/escores/heart'), 'escores/heart')
+  assert.equal(chaveDoItem('/plantonista?guia=parada-adulto'), 'emergencias/pcr-adulto')
+  assert.equal(chaveDoItem('/plantonista?guia=parada-crianca'), 'pediatria/rcp-pediatrica')
+  assert.equal(chaveDoItem('/plantonista?todas=1'), null)
+  // todo item do início tem chave de uma ferramenta do cadastro
+  for (const i of [...INICIO_ADULTO, ...INICIO_CRIANCA].flatMap((c) => c.itens)) {
+    const chave = chaveDoItem(i.rota)
+    assert.ok(chave, i.nome)
+    assert.ok(registro.includes(`t('${chave.split('/')[1]}'`), `${i.nome}: ${chave}`)
+  }
 })
 
 test('a busca abre a Central completa com o texto', () => {
