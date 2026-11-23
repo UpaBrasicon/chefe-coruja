@@ -8,7 +8,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card"
       className={cn(
         // Plano em repouso: a sombra é espessador de borda, não elevação.
-        "bg-superficie text-tinta flex flex-col gap-5 overflow-hidden rounded-cartao border border-fio py-5 shadow-repouso",
+        "bg-superficie text-tinta flex flex-col gap-5 overflow-hidden rounded-cartao border border-fio-forte py-5 shadow-repouso",
         className
       )}
       {...props}
