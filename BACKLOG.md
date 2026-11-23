@@ -2392,6 +2392,21 @@ Regras: só homologação e só dados fictícios. Nenhuma dose ou conduta vem de
 
 Trilha fechada pelo RT em 09/11/2026 ("vamos fechar desempenho e começar o humanizer") e reaberta só para o item 32 em 23/11/2026. O resto do 05 (chat, chamados, pessoas, diluições), o 23 e o 26 esperam os números reais do item 30.
 
+### Pedido avulso de 23/11/2026: latência de /plataformas
+
+**Origem:** o RT perguntou por que o cartão "Latência daqui" de `/plataformas` marcou 130 ms em 21/11 e 78 ms em 23/11, de Aparecida de Goiânia. Diagnóstico sem código em 23/11/2026:
+
+- O cartão (`useLatencia`, `src/lib/dadosAdmin.ts`) faz três leituras seguidas de `unidades` e mostra a do meio, a cada 60 s. A abertura da conexão só pesa na primeira leitura, que a mediana já descarta.
+- Produção e homologação estão em sa-east-1 (São Paulo). Não há região do Supabase mais perto de Goiás, então trocar de região não ajuda.
+- Medido do PC do RT, por cabo: ping de 25 ms até a borda do Cloudflare em São Paulo; pedido com a conexão já aberta com mediana de 44 a 49 ms na produção; servidor com 1 a 2 ms. Conexão nova: DNS de 5 a 48 ms, TCP +23 ms, TLS +30 ms, total de 120 a 230 ms.
+- Quase todo o tempo é rede. Os 130 ms de sábado cabem em Wi-Fi, outra rede ou operadora carregada. Os dois números estão abaixo do alvo de 250 ms.
+
+Opções levadas ao RT: A (texto explicativo no cartão), B (mediana de 7 com aquecimento e faixa) e C (`preconnect`). **Decisão do RT em 23/11/2026: só C, P2.** A e B ficam fora.
+
+| # | Item | Estado | Prioridade |
+|---|---|---|---|
+| 33 | `<link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin>` no `index.html`: o navegador abre DNS, TCP e TLS com o Supabase enquanto o JavaScript carrega. O Vite troca a variável no build, então a homologação aponta para o próprio projeto. Ganho esperado de 60 a 100 ms na primeira chamada ao abrir o app. Não muda o número do cartão. Só frontend | Feito na branch `desempenho/33-preconnect`: teste `src/lib/preconnectSupabase.test.ts` falha no master. Medido no PC do RT, build da homologação: primeira chamada ao Supabase 409 ms sem e 97 ms com o preconnect. Na homologação em 23/11/2026 (`72636790`, `index.html` com o endereço da homologação conferido). Evidência em `docs/desempenho/ITEM-33-PRECONNECT.md`. PR #1073 mesclado em 23/11/2026 com CI verde e ok do RT ("Sim, pode"); na produção em 23/11/2026 (`ad1a57e9`; `index.html` de www com o endereço da produção conferido). **Concluído.** | P2 |
+
 ## Trilha — Humanizer (textos sem cara de IA), pedido do RT em 09/11/2026
 
 Origem: o RT pediu em 09/11/2026 para deixar os textos "mais humanos, com menos AI slop", com a skill humanizer (github.com/blader/humanizer, MIT, instalada no usuário). Prioridade P1, logo depois da trilha de desempenho. O RT descartou o laya (classificador de texto) na mesma conversa.
