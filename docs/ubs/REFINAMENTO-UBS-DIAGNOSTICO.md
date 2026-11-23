@@ -94,7 +94,6 @@ Regra do projeto: dose e esquema só de fonte citada.
 
 Primeiro o que é só tela, um PR cada: RF8, RF4, RF7, RF1 (RF5 não pede código se ficar A). Depois o que tem migration, cada um com homologação, CI verde e "ok produção": RF3, RF6, RF2 (o RF2 depende do RF1).
 
-## Perguntas ao RT
+## Decisões do RT
 
-1. RF1 a RF8: A ou B em cada um?
-2. A trilha "Refinamento da UBS" (RF1 a RF8) entra no BACKLOG com prioridade P1 e a ordem acima?
+23/11/2026, nas palavras dele: "Sim, todas A". RF1 a RF8 = A. A trilha "Refinamento da UBS" entra no BACKLOG como P1, na ordem acima (RF8, RF4, RF7, RF1, RF3, RF6, RF2). O RF5 fica sem código.

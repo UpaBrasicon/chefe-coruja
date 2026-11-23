@@ -2651,6 +2651,25 @@ Dado criado no percurso: a grade da enfermeira na homologação (D1), de segunda
 
 ---
 
+## Trilha — Refinamento da UBS, pedido do RT em 23/11/2026
+
+Origem: o RT testou a UBS na homologação em 13/11/2026 ("depois vamos mudar algumas coisas") e listou as mudanças em 23/11/2026. Diagnóstico em `docs/ubs/REFINAMENTO-UBS-DIAGNOSTICO.md`. O RT decidiu A em todas ("Sim, todas A"), com prioridade P1 e a ordem abaixo. Cada item tem branch e PR próprios; os que têm migration passam pela homologação, pelo CI verde e pelo "ok produção" do RT.
+
+Dado de teste: a escala da UBS Fase 5 na homologação foi estendida até 31/12/2026 (192 turnos de dias úteis, 23/11/2026).
+
+| Ordem | Item | O que fazer (decisão A) | Prioridade | Estado |
+|---|---|---|---|---|
+| 1 | RF8 | Gestor, Indicadores da UBS: "não aguardou (saiu antes)" e "não aguardou (fim do expediente)" no lugar de "fichas vencidas" | P1 | A fazer |
+| 2 | RF4 | Pré-natal, hiperdia e puericultura começam fechados na consulta, numa linha de resumo com os itens perdidos | P1 | A fazer |
+| 3 | RF7 | Indicadores C1 a C7 em semáforo pelo conceito oficial: verde (ótimo e bom), amarelo (suficiente), vermelho (regular); o número em segundo plano | P1 | A fazer |
+| 4 | RF1 | Fila do consultório em três faixas: vermelho e amarelo; agendados pela hora marcada; o resto da demanda espontânea | P1 | A fazer |
+| 5 | RF3 | Circunferência abdominal nos sinais vitais da UBS (técnico e consulta), com conceito novo e envio na FAI do SISAB | P1 | A fazer |
+| 6 | RF6 | Caderneta com o bloco "Em atraso" pelas faltas que o app já calcula (C2, C3, C6, C7), com a fonte | P1 | A fazer |
+| 7 | RF2 | A demanda espontânea aparece na agenda do dia do médico sem ocupar horário; o azul ganha a saída "Atender hoje" | P1 | A fazer |
+| — | RF5 | Consulta de 20 a 30 minutos: já é configurável por profissional; nada a programar | — | Sem código |
+
+---
+
 ## Trilha — UBS: envio à RNDS e ao SISAB, pedido do RT em 17/11/2026
 
 Origem: o RT pediu, "por fim e último", que o sistema da UBS transmita os dados para a RNDS e para o SISAB. Em 17/11/2026, ele confirmou que esta é a última trilha, depois da sepse, com prioridade P1.
