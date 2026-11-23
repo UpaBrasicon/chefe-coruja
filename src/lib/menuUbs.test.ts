@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { abasEstreitasPlantonista, inicioDoPapel, itensDeNavegacao } from '../components/casca/navegacao.ts'
+import { barraMedicoCelular, inicioDoPapel, itensDeNavegacao, menuMedicoCelular } from '../components/casca/navegacao.ts'
 
 // 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
 // internação nem AIH; esses itens somem do menu. Numa UPA nada muda.
@@ -41,14 +41,17 @@ test('a tela inicial numa UBS é um item que cabe nela', () => {
   for (const papel of PAPEIS) {
     assert.ok(!FORA.includes(inicioDoPapel(papel, 'ubs')), `${papel} começa em ${inicioDoPapel(papel, 'ubs')}`)
   }
-  assert.ok(abasEstreitasPlantonista('ubs').every((a) => !a.to.startsWith('/plantao') && a.to !== '/plantonista'))
-  assert.equal(abasEstreitasPlantonista().length, 4)
+  // barra de baixo do médico (item 6): numa UBS sai o pronto atendimento e a Agenda volta para a barra
+  assert.ok(barraMedicoCelular('ubs').every((a) => !a.to.startsWith('/plantao') && !a.to.startsWith('/plantonista')))
+  assert.deepEqual(barraMedicoCelular('ubs').map((a) => a.rotulo), ['Prontuários', 'Agenda'])
+  assert.equal(barraMedicoCelular().length, 4)
+  assert.ok(!menuMedicoCelular(itensDeNavegacao('plantonista', false, false, 'ubs'), 'ubs').some((i) => i.to === '/agenda'))
 })
 
 test('a casca e a tela inicial passam o tipo da unidade ao menu', () => {
   const casca = readFileSync('src/components/AppShell.tsx', 'utf8')
   assert.match(casca, /itensDeNavegacao\(papelAtivo, ehRt, ehSuperAdmin, tipoUnidade\)/)
-  assert.match(casca, /abasEstreitasPlantonista\(tipoUnidade\)/)
+  assert.match(casca, /<BarraMedico itens=\{itens\} notas=\{notas\} tipoUnidade=\{tipoUnidade\} \/>/)
   assert.match(readFileSync('src/routes/RedirectHome.tsx', 'utf8'), /foraDoTipo\(inicial, tipo\)/)
 })
 

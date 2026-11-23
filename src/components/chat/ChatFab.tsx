@@ -1,6 +1,7 @@
 import { MessageSquare } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 // Botão flutuante de Mensagens (P/index.html .cc-chat-fab): sai da topbar e
 // fica no canto inferior direito. Fica sob o véu quando a gaveta abre (z 38,
@@ -8,7 +9,8 @@ import { Button } from '@/components/ui/button'
 // Alvo de 52px. O selo de não lidas é âmbar (o da observação), não vermelho:
 // mensagem é sinal, não alarme.
 
-export function ChatFab({ naoLidas, onAbrir }: { naoLidas: number; onAbrir: () => void }) {
+// acimaDaBarraAte1024: o médico tem a barra de baixo até 1023px (item 6), não só até 767px.
+export function ChatFab({ naoLidas, onAbrir, acimaDaBarraAte1024 = false }: { naoLidas: number; onAbrir: () => void; acimaDaBarraAte1024?: boolean }) {
   const selo = naoLidas > 99 ? '99+' : String(naoLidas)
   return (
     <Button
@@ -18,7 +20,8 @@ export function ChatFab({ naoLidas, onAbrir }: { naoLidas: number; onAbrir: () =
       aria-label="Mensagens"
       aria-describedby={naoLidas > 0 ? 'cc-chat-fab-selo' : undefined}
       title="Mensagens"
-      className="fixed right-6 bottom-6 z-[38] size-[52px] cursor-pointer rounded-capsula border-0 shadow-fab transition-[background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-acao active:scale-[0.96] motion-reduce:transition-none max-[767px]:right-4 max-[767px]:bottom-[calc(74px+env(safe-area-inset-bottom,0px))]"
+      className={cn('fixed right-6 bottom-6 z-[38] size-[52px] cursor-pointer rounded-capsula border-0 shadow-fab transition-[background-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-acao active:scale-[0.96] motion-reduce:transition-none max-[767px]:right-4 max-[767px]:bottom-[calc(74px+env(safe-area-inset-bottom,0px))]',
+        acimaDaBarraAte1024 && 'max-[1023px]:right-4 max-[1023px]:bottom-[calc(74px+env(safe-area-inset-bottom,0px))]')}
     >
       <MessageSquare className="size-[22px]" aria-hidden />
       {naoLidas > 0 && (

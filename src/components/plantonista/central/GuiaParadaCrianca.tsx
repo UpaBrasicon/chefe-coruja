@@ -192,7 +192,7 @@ export function GuiaParadaCrianca() {
   return (
     <div className="flex flex-col gap-4">
       <Link to="/plantonista" className="flex min-h-11 items-center gap-2 self-start text-controle font-semibold text-acao no-underline">
-        <ArrowLeft className="size-5" aria-hidden /> Guia rápido
+        <ArrowLeft className="size-5" aria-hidden /> Início
       </Link>
       <TituloPagina titulo="Parada e reanimação" descricao="Criança até 13 anos, 11 meses e 29 dias" className="mb-0" />
       {/* G3 (RT, 18/11/2026): o cronômetro abre por aqui na criança */}

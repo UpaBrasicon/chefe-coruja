@@ -110,8 +110,9 @@ export function TopoEstreito({
   plantao: { em: boolean; rotulo: string; to: string }
   avatar: ReactNode
   onSair: () => void
-  abas: ItemNav[]
-  notas: Partial<Record<ChaveNota, number>>
+  /** Desde o item 6 (RT, 23/11/2026) o médico usa a barra de baixo; as abas do topo ficam vazias. */
+  abas?: ItemNav[]
+  notas?: Partial<Record<ChaveNota, number>>
 }) {
   return (
     <header className="sticky top-0 z-10 flex flex-col border-b border-fio bg-superficie">
@@ -136,10 +137,10 @@ export function TopoEstreito({
           <LogOut className="size-[18px]" aria-hidden />
         </button>
       </div>
-      <nav aria-label="Navegação principal" className="flex gap-1.5 px-4 pb-2.5 min-[480px]:gap-2">
+      {!!abas?.length && <nav aria-label="Abas" className="flex gap-1.5 px-4 pb-2.5 min-[480px]:gap-2">
         {abas.map((a) => {
           const Icone = a.icone
-          const nota = a.nota ? notas[a.nota] : undefined
+          const nota = a.nota ? notas?.[a.nota] : undefined
           return (
             <NavLink
               key={a.to}
@@ -160,7 +161,7 @@ export function TopoEstreito({
             </NavLink>
           )
         })}
-      </nav>
+      </nav>}
     </header>
   )
 }

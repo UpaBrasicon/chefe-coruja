@@ -27,7 +27,7 @@ import {
 import { BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren, Syringe } from 'lucide-react'
-import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, Package, Send, Sprout } from 'lucide-react'
+import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, Package, Send, Sparkles, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -405,22 +405,36 @@ export function dividirBarraCelular(papel: Papel | null, itens: ItemNav[]): { fi
   return { fixos, mais: itens.filter((i) => !fixos.includes(i)) }
 }
 
+/** "Perguntar à IA" da barra do médico: a busca da Central completa, com o campo já em foco. */
+export const ROTA_PERGUNTAR_IA = '/plantonista?todas=1&ia=1'
+
 /**
- * As quatro abas do plantonista abaixo de 1024px (P/index.html, "DUAS abas no
- * celular" que viraram quatro em 29/08): ícone em cima do rótulo, e sobra
- * largura para o numeral da pendência.
+ * Barra de baixo do médico abaixo de 1024px (item 6, CM1 = A, RT em
+ * 23/11/2026): Início, Leitos, Perguntar à IA (no meio, em destaque),
+ * Prontuários e Menu. Substitui as quatro abas do topo; a Agenda e o resto
+ * vão para o Menu. Numa UBS saem as telas do pronto atendimento e a Agenda
+ * volta para a barra, para não ficar só Prontuários.
  */
-export const ABAS_ESTREITAS_PLANTONISTA: ItemNav[] = [
-  // Guia rápido no celular e no tablet (RT, 17/11/2026): a mesma rota da Central
-  { to: '/plantonista', rotulo: 'Guia rápido', icone: Stethoscope },
+export const BARRA_MEDICO_CELULAR: ItemNav[] = [
+  { to: '/plantonista', rotulo: 'Início', icone: House },
   { to: '/plantao/internacao/pacientes', rotulo: 'Leitos', icone: Users },
+  { to: ROTA_PERGUNTAR_IA, rotulo: 'Perguntar à IA', icone: Sparkles },
   { to: '/prontuarios', rotulo: 'Prontuários', icone: BookOpen },
   { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
 ]
 
-/** As abas estreitas do plantonista que cabem no tipo da unidade. */
-export function abasEstreitasPlantonista(tipoUnidade: TipoUnidade | null = null): ItemNav[] {
-  return ABAS_ESTREITAS_PLANTONISTA.filter((i) => !foraDoTipo(i.to, tipoUnidade))
+/** Os itens da barra do médico que cabem no tipo da unidade (no máximo quatro; o quinto lugar é o Menu). */
+export function barraMedicoCelular(tipoUnidade: TipoUnidade | null = null): ItemNav[] {
+  const cabem = BARRA_MEDICO_CELULAR.filter((i) => !foraDoTipo(i.to.split('?')[0], tipoUnidade))
+  return cabem.length > MAX_BARRA_CELULAR - 1 ? cabem.filter((i) => i.to !== '/agenda') : cabem
+}
+
+/** O Menu da barra do médico: a Agenda (se não coube) e as telas do menu que não estão na barra. */
+export function menuMedicoCelular(itens: ItemNav[], tipoUnidade: TipoUnidade | null = null): ItemNav[] {
+  const naBarra = new Set(barraMedicoCelular(tipoUnidade).map((i) => i.to.split('?')[0]))
+  const agenda = BARRA_MEDICO_CELULAR.find((i) => i.to === '/agenda')!
+  const resto = itens.filter((i) => !naBarra.has(i.to))
+  return naBarra.has('/agenda') || resto.some((i) => i.to === '/agenda') ? resto : [agenda, ...resto]
 }
 
 /** Página inicial do papel: o logotipo leva a ela. */
