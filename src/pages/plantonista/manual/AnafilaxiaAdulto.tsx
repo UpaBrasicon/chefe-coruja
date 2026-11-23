@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+import { EscolhaDaAmpola } from '@/components/plantonista/calc/EscolhaDaAmpola'
 import { Bloco, CampoPeso, LinhaManual } from './PecasLoteC'
 import { numero } from '@/lib/formato'
 
@@ -167,7 +168,8 @@ export function AnafilaxiaAdulto() {
       </Bloco>
 
       <Bloco titulo="Segunda linha" descricao="Doses de adulto do capítulo. As doses por kg que o capítulo dá para criança não entram nesta tela.">
-        {SEGUNDA_LINHA_ANAFILAXIA.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={d.dose} pagina={d.pagina} nota={d.nota} />)}
+        {SEGUNDA_LINHA_ANAFILAXIA.map((d) => <LinhaManual key={d.id} nome={d.nome} texto={d.dose} pagina={d.pagina} nota={d.nota}
+          extra={d.doseNum && d.unidade ? <EscolhaDaAmpola chave={`adulto-anafilaxia:${d.id}`} dose={d.doseNum} unidade={d.unidade} /> : undefined} />)}
       </Bloco>
       <AbasResultado
         aba={aba}
