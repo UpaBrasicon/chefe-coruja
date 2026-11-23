@@ -2677,9 +2677,9 @@ Dado de teste: a escala da UBS Fase 5 na homologação foi estendida até 31/12/
 
 | Ordem | Item | O que fazer (decisão A) | Prioridade | Estado |
 |---|---|---|---|---|
-| 1 | RF8 | Gestor, Indicadores da UBS: "não aguardou (saiu antes)" e "não aguardou (fim do expediente)" no lugar de "fichas vencidas" | P1 | A fazer |
-| 2 | RF4 | Pré-natal, hiperdia e puericultura começam fechados na consulta, numa linha de resumo com os itens perdidos | P1 | A fazer |
-| 3 | RF7 | Indicadores C1 a C7 em semáforo pelo conceito oficial: verde (ótimo e bom), amarelo (suficiente), vermelho (regular); o número em segundo plano | P1 | A fazer |
+| 1 | RF8 | Gestor, Indicadores da UBS: "não aguardou (saiu antes)" e "não aguardou (fim do expediente)" no lugar de "fichas vencidas" | P1 | Concluído em 23/11/2026 (#1028, na produção; só tela; pacote conferido) |
+| 2 | RF4 | Pré-natal, hiperdia e puericultura começam fechados na consulta, numa linha de resumo com os itens perdidos | P1 | Concluído em 23/11/2026 (#1030, na produção; só tela; `BlocoRecolhivel`; pacote conferido) |
+| 3 | RF7 | Indicadores C1 a C7 em semáforo pelo conceito oficial: verde (ótimo e bom), amarelo (suficiente), vermelho (regular); o número em segundo plano | P1 | Concluído em 23/11/2026 (#1032, na produção; só tela; pacote conferido) |
 | 4 | RF1 | Fila do consultório em três faixas: vermelho e amarelo; agendados pela hora marcada; o resto da demanda espontânea | P1 | A fazer |
 | 5 | RF3 | Circunferência abdominal nos sinais vitais da UBS (técnico e consulta), com conceito novo e envio na FAI do SISAB | P1 | A fazer |
 | 6 | RF6 | Caderneta com o bloco "Em atraso" pelas faltas que o app já calcula (C2, C3, C6, C7), com a fonte | P1 | A fazer |
