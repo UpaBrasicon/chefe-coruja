@@ -71,6 +71,7 @@ export function ColicaRenalAdulto() {
             conta={a.droga === 'Quetamina' ? (q ? <strong>{br(q[0])} a {br(q[1])} mg</strong> : 'informe o peso') : undefined}
             // os números vêm do texto do item (teste em ampolas.test.ts): morfina 2 a 5 mg EV; ondansetrona 4 a 8 mg EV
             extra={a.droga === 'Morfina' ? <EscolhaDaAmpola chave="adulto-colica:morfina" dose={[2, 5]} unidade="mg" />
+              : a.droga.endsWith('cetorolaco') ? <EscolhaDaAmpola chave="adulto-colica:cetorolaco" dose={[10, 10]} unidade="mg" />
               : a.droga === 'Ondansetrona' ? <EscolhaDaAmpola chave="adulto-colica:ondansetrona" dose={[4, 8]} unidade="mg" />
                 : a.droga === 'Quetamina' && q ? <EscolhaDaAmpola chave="adulto-colica:quetamina" dose={q} unidade="mg" /> : undefined}
           />

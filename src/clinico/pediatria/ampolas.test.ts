@@ -118,8 +118,8 @@ test('o cadastro real não tem problema e toda chave aponta para um item existen
     'adulto-anticoag': new Set(['enoxaparina']),
     'adulto-reversao': new Set(['protamina']),
     'adulto-tetano': new Set(['metronidazol']),
-    'adulto-cefaleia': new Set(['difenidramina', 'dexametasona']),
-    'adulto-colica': new Set(['morfina', 'quetamina', 'ondansetrona']),
+    'adulto-cefaleia': new Set(['difenidramina', 'dexametasona', 'sumatriptano']),
+    'adulto-colica': new Set(['morfina', 'quetamina', 'ondansetrona', 'cetorolaco']),
     'adulto-avc': new Set(['tranexamico']),
   }
   for (const chave of Object.keys(ITENS_COM_AMPOLA)) {
@@ -133,7 +133,7 @@ test('lote 1: concentrações das bulas aprovadas pelo RT', () => {
   assert.deepEqual(AMPOLAS.amiodarona.map((a) => [a.porMl, a.diluir]), [[50, true]])
   assert.deepEqual(AMPOLAS.lidocaina.map((a) => a.porMl), [10, 20])
   assert.deepEqual(AMPOLAS.calcio.map((a) => [a.porMl, a.base]), [[9, 'elemento'], [27, 'elemento']])
-  assert.equal(fichaAmpolas.versao, '2026-11-23.10')
+  assert.equal(fichaAmpolas.versao, '2026-11-23.11')
   assert.equal(fichaAmpolas.publico, 'pediatrico')
 })
 
@@ -641,8 +641,13 @@ test('adulto A5 (último): metronidazol do tétano, cefaleia e cólica renal', (
   assert.match(cef.find((i) => i.droga === 'Dexametasona')!.texto, /^10 mg EV/)
   assert.match(ANALGESIA.find((a) => a.droga === 'Morfina')!.dose, /^2 a 5 mg EV/)
   assert.match(ANALGESIA.find((a) => a.droga === 'Ondansetrona')!.dose, /^4 a 8 mg EV/)
-  // cetorolaco e sumatriptano esperam a bula
-  assert.equal(Object.keys(ITENS_COM_AMPOLA).some((c) => /cetorolaco|sumatriptano/.test(c)), false)
+  // cetorolaco e sumatriptano pelas bulas: 10 mg EV e 6 mg SC (a seringa inteira)
+  assert.deepEqual(ids('adulto-colica:cetorolaco'), [['cetorolaco-30', 30]])
+  assert.deepEqual(ids('adulto-cefaleia:sumatriptano'), [['sumatriptano-12', 12]])
+  assert.equal(AMPOLAS.sumatriptano[0].seringa, true)
+  assert.match(ANALGESIA.find((a) => a.droga.endsWith('cetorolaco'))!.dose, /^10 mg EV/)
+  assert.match(cef.find((i) => i.droga === 'Sumatriptano')!.texto, /^6 mg SC/)
+  assert.deepEqual(volumeDaAmpola([6, 6], AMPOLAS.sumatriptano[0])?.ml, [0.5, 0.5])
   // metronidazol 500 mg = 100 mL da solução pronta; difenidramina 12,5 mg = 0,25 mL
   assert.deepEqual(volumeDaAmpola([500, 500], AMPOLAS.metronidazol[0])?.ml, [100, 100])
   assert.deepEqual(volumeDaAmpola([12.5, 12.5], AMPOLAS.difenidramina[0])?.ml, [0.25, 0.25])
