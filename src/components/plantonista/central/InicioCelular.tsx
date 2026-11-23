@@ -5,7 +5,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import { URGENCIAS_RAPIDAS, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
+import { ROTA_PCR, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useAuth } from '@/contexts/AuthContext'
 import { definirModo, usePacienteCentral } from '@/lib/pacienteCentral'
@@ -66,27 +66,20 @@ function ChaveDoLado({ lado }: { lado: LadoInicio }) {
   )
 }
 
-function Urgencias({ lado }: { lado: LadoInicio }) {
-  const u = URGENCIAS_RAPIDAS[lado]
+// PCR em bloco inteiro acima dos cartões; Sepse e CAD ficam em Urgências e
+// Calculadoras (RT, 23/11/2026, conferindo o lote 1 na homologação).
+function IniciarPcr({ lado }: { lado: LadoInicio }) {
   const abrir = useAbrir(lado)
-  const menor = 'h-21 justify-between gap-0 rounded-cartao border-critico/30 p-3'
   return (
-    <section aria-label="Central de Urgências" className="grid grid-cols-[1.4fr_1fr_1fr] gap-2">
-      <BotaoLinha onClick={() => abrir(u.pcr)}
-        className="h-21 justify-between gap-0 rounded-cartao border-critico bg-critico p-3 text-sobre-acao hover:border-critico hover:bg-critico">
-        <HeartPulse className="size-5.5" aria-hidden />
-        <span className="flex flex-col">
-          <span className="text-corpo font-bold">Iniciar PCR</span>
-          <span className="text-rotulo opacity-90">{lado === 'crianca' ? 'Pelo peso ou fita' : 'Adulto'}</span>
-        </span>
-      </BotaoLinha>
-      {[u.sepse, u.cad].map((x) => (
-        <BotaoLinha key={x.nome} onClick={() => abrir(x.rota)} className={menor}>
-          <span className="text-rotulo font-semibold tracking-wide text-critico">URGÊNCIA</span>
-          <span className="text-corpo font-semibold text-tinta">{x.nome}</span>
-        </BotaoLinha>
-      ))}
-    </section>
+    <BotaoLinha onClick={() => abrir(ROTA_PCR[lado])}
+      className="min-h-18 w-full flex-row items-center gap-3 rounded-cartao border-critico bg-critico p-4 text-sobre-acao hover:border-critico hover:bg-critico">
+      <HeartPulse className="size-7 shrink-0" aria-hidden />
+      <span className="flex flex-1 flex-col">
+        <span className="text-secao font-bold">Iniciar PCR</span>
+        <span className="text-apoio opacity-90">{lado === 'crianca' ? 'Guia da parada pelo peso ou pela fita' : 'Cronômetro da parada do adulto'}</span>
+      </span>
+      <ArrowUpRight className="size-5 shrink-0" aria-hidden />
+    </BotaoLinha>
   )
 }
 
@@ -175,7 +168,8 @@ export function InicioCelular() {
         </Button>
       </form>
 
-      <Urgencias lado={lado} />
+
+      <IniciarPcr lado={lado} />
 
       <section aria-label="Conteúdo" className="flex flex-col gap-3">
         {linhas.map((par) => {

@@ -61,7 +61,7 @@ O protótipo teve três opções (A no molde dos prints, B com cartões grandes,
 
 - cartões grandes e coloridos da opção B, em duas colunas, um por tipo de conteúdo;
 - o toque abre, logo abaixo da linha do cartão, a grade de duas colunas da opção A, com sigla, marcador e "Ver todas, com busca";
-- visual próprio: saudação sem foto, chave Adulto/Criança na largura toda, Central de Urgências em três blocos ("Iniciar PCR" grande, Sepse e CAD), sem a faixa e as pílulas da referência.
+- visual próprio: saudação sem foto, chave Adulto/Criança na largura toda e um bloco inteiro "Iniciar PCR" acima dos cartões, sem a faixa e as pílulas da referência. Sepse e CAD saíram do topo e ficam em Urgências e Calculadoras (RT, 23/11/2026, conferindo o lote 1 na homologação).
 
 Lotes, todos pela homologação:
 
