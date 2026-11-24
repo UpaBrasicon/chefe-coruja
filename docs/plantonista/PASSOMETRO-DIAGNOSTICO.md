@@ -95,3 +95,8 @@ Pedido 8 da lista "Pedidos do RT em 17/11/2026" do BACKLOG. Saiu do item 6 (tela
 - **PS5 = A:** a enfermagem do setor e o gestor veem quem está descansando e quem está acordado, só para leitura.
 
 O que muda na seção 5: sai a janela fixa da unidade. A divisão é feita no plantão, com os quatro dados acima, e fica gravada para o turno (`descanso_plantao` com quem, início e fim de cada bloco, e os parâmetros usados). Refazer a divisão grava uma nova e guarda a anterior.
+
+## 7. Achado na implementação e entrega (23/11/2026)
+
+As pendências por paciente já existiam desde a Fase 3.1 (`public.pendencias`, com tipo, prazo, autor e quem resolveu; tela no leito e no prontuário). O PS2 reaproveita essa tabela e as RPCs dela (`registrar_pendencia`, `concluir_pendencia`, `desfazer_pendencia`), **sem tabela nova**. O passômetro só lê, pela RPC `passometro` (migration `20270419000001`), e a impressão grava no registro de acesso (`registrar_impressao_passometro`). O descanso (PS4 e PS5) entrou pela migration `20270419000002`. Os dois estão na produção com ok do RT: #1091 e #1093.
+
