@@ -11,6 +11,7 @@ import { LaudoDoGrupo } from '@/components/clinico/LaudoDoGrupo'
 import { ResultadoExame } from '@/components/clinico/ResultadoExame'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { examesDaLinha, linhasDaFicha } from '@/domain/examesEnfermagemUbs'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { botoesDeExame, codigoExameNaTela, GRUPOS_EXAME, itemDoPedidoPorta, jaPedido, type ExameBuscado, type GrupoExame, type ListaExamesUnidade, type Urgencia } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
@@ -112,11 +113,14 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar, protocoloEn
     },
   })
   const termo = outro.trim()
+  // pedido 3: a consulta espera a pessoa parar de digitar (300 ms); o campo e o
+  // "Pedir como texto livre" seguem com o que está digitado
+  const termoAdiado = useValorAdiado(termo)
   const busca = useQuery({
-    queryKey: ['buscar-exames', unidadeId, termo],
-    enabled: !!unidadeId && termo.length >= 3 && !protocoloEnfermagem,
+    queryKey: ['buscar-exames', unidadeId, termoAdiado],
+    enabled: !!unidadeId && termoAdiado.length >= 3 && !protocoloEnfermagem,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_exames', { p_unidade: unidadeId!, p_termo: termo })
+      const { data, error } = await supabase.rpc('buscar_exames', { p_unidade: unidadeId!, p_termo: termoAdiado })
       if (error) throw error
       return (data ?? []) as unknown as ExameBuscado[]
     },
@@ -216,7 +220,7 @@ export function AbaExames({ episodioId, pacienteId, exames, aoMudar, protocoloEn
               ))}
             </div>
           )}
-          {termo.length >= 3 && busca.isSuccess && (busca.data ?? []).length === 0 && (
+          {termoAdiado.length >= 3 && busca.isSuccess && (busca.data ?? []).length === 0 && (
             <span className="text-rotulo text-tinta-sussurro">Nada no catálogo com esse nome. Pode pedir como texto livre (sem código).</span>
           )}
         </div>}

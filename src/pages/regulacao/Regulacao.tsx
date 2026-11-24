@@ -48,6 +48,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso } from '@/lib/formato'
 import {
@@ -309,11 +310,13 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
   const [docsEscolhidos, setDocsEscolhidos] = React.useState<string[]>([])
   const set = <K extends keyof Formulario>(k: K, v: Formulario[K]) => setF((x) => ({ ...x, [k]: v }))
 
+  // pedido 3: a consulta espera a pessoa parar de digitar (300 ms)
+  const termoAdiado = useValorAdiado(termo)
   const busca = useQuery({
-    queryKey: ['regulacao-busca-paciente', unidadeId, termo],
-    enabled: termo.trim().length >= 3 && !paciente,
+    queryKey: ['regulacao-busca-paciente', unidadeId, termoAdiado],
+    enabled: termoAdiado.trim().length >= 3 && !paciente,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('buscar_pacientes', { p_unidade: unidadeId, p_termo: termo.trim() })
+      const { data, error } = await supabase.rpc('buscar_pacientes', { p_unidade: unidadeId, p_termo: termoAdiado.trim() })
       if (error) throw error
       return (data ?? []) as unknown as Paciente[]
     },
@@ -425,7 +428,7 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
                 ))}
               </ul>
             )}
-            {termo.trim().length >= 3 && !busca.isFetching && (busca.data ?? []).length === 0 && <span className="text-tinta-sussurro">Nenhum paciente com esse termo.</span>}
+            {termoAdiado.trim().length >= 3 && !busca.isFetching && (busca.data ?? []).length === 0 &&<span className="text-tinta-sussurro">Nenhum paciente com esse termo.</span>}
           </Campo>
         )}
 
