@@ -17,6 +17,7 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { INTENCOES, type Conversa, type IntencaoMensagem } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
@@ -59,11 +60,16 @@ export function ConversaRegulacao({ solicitacaoId, aoEnviar }: { solicitacaoId: 
   })
 
   const c = conversa.data
-  const central = c?.meu_lado === 'central'
+  // NI3 (RT, 24/11/2026): no perfil NIR a conversa é sempre com a central, mesmo
+  // para quem também é regulador; os textos seguem o perfil em foco. O lado da
+  // mensagem (e o tipo dela) continua o que o banco diz.
+  const { papelAtivo } = useUnidade()
+  const ladoCentral = c?.meu_lado === 'central'
+  const central = ladoCentral && papelAtivo !== 'nir'
   return (
     <section aria-label="Conversa com a regulação" className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3 text-apoio">
       <h4 className="flex items-center gap-2 font-medium text-tinta">
-        <MessageSquare className="size-4" aria-hidden /> Conversa com a {central ? 'unidade de origem' : 'regulação'}
+        <MessageSquare className="size-4" aria-hidden /> Conversa com a {central ? 'unidade de origem' : papelAtivo === 'nir' ? 'central' : 'regulação'}
       </h4>
       {conversa.isLoading ? <Spinner /> : conversa.error ? <MensagemErro texto={(conversa.error as Error).message} /> : (
         <>
@@ -94,7 +100,7 @@ export function ConversaRegulacao({ solicitacaoId, aoEnviar }: { solicitacaoId: 
               <Textarea id={`conversa-${solicitacaoId}`} value={texto} maxLength={4000} onChange={(e) => setTexto(e.target.value)}
                 placeholder={central ? 'Pergunte ou peça um dado ou exame à unidade' : 'Responda ou atualize a regulação'} />
               <div className="flex flex-wrap items-center gap-2">
-                {central && (
+                {ladoCentral && (
                   <CampoSelecao tamanho="compacto" aria-label="Tipo da mensagem" value={intencao} onChange={(e) => setIntencao(e.target.value as IntencaoMensagem)}>
                     {(Object.keys(INTENCOES) as IntencaoMensagem[]).map((k) => <option key={k} value={k}>{INTENCOES[k]}</option>)}
                   </CampoSelecao>

@@ -27,7 +27,7 @@ import { rotuloIdade } from '@/domain/idade'
 import { fmtDataHora } from '@/lib/datas'
 import { STATUS, resumoPedido } from '@/lib/regulacao'
 import {
-  emRegulacao, esperaAOrigem, mensagensNovas, meusPacientes, ordenarPorAcao, porSetor, sabeQuemEMeu, type PacienteRegulacao,
+  emRegulacao, esperaAOrigem, mensagensNovas, meusPacientes, ordenarPorAcao, pacientes, porSetor, sabeQuemEMeu, separarParaNir, type PacienteRegulacao,
 } from '@/lib/regulacaoPaciente'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
@@ -48,13 +48,28 @@ function usePacientesRegulacao(unidadeId: string) {
   })
 }
 
-export function PacientesRegulacao({ unidadeId, modo }: { unidadeId: string; modo: ModoLista }) {
+export function PacientesRegulacao({ unidadeId, modo, abrirPedido }: {
+  unidadeId: string; modo: ModoLista
+  /** NI1: o aviso do topo abre o paciente do pedido (vez muda a cada clique) */
+  abrirPedido?: { numero: number; vez: number } | null
+}) {
   const q = usePacientesRegulacao(unidadeId)
   // médico: só quem está em regulação; NIR e gestor: os internados, com o filtro
   const [so, setSo] = React.useState<'todos' | 'regulacao' | 'pendentes'>(modo === 'medico' ? 'regulacao' : 'todos')
   // médico: abre nos meus; NIR e gestor: a unidade toda
   const [escopo, setEscopo] = React.useState<'meus' | 'unidade'>(modo === 'medico' ? 'meus' : 'unidade')
   const [aberto, setAberto] = React.useState<string | null>(null)
+  const [semRegAberto, setSemRegAberto] = React.useState(false)
+  // o aviso pediu um pedido: abre o paciente dele (mostrando todos) e leva a tela até ele
+  const [pedidoVisto, setPedidoVisto] = React.useState(abrirPedido)
+  if (abrirPedido !== pedidoVisto && q.data) {
+    setPedidoVisto(abrirPedido)
+    const alvo = abrirPedido && q.data.find((l) => l.pedidos.some((x) => x.numero === abrirPedido.numero))
+    if (alvo) { setAberto(alvo.paciente.id); setSo('todos'); setEscopo('unidade') }
+  }
+  React.useEffect(() => {
+    if (aberto && abrirPedido) document.getElementById(`paciente-reg-${aberto}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }, [aberto, abrirPedido])
   if (q.isLoading) return <EsqueletoLinhas linhas={5} rotulo="Carregando os pacientes…" />
   if (q.error) return <MensagemErro texto={(q.error as Error).message} />
   const daUnidade = q.data ?? []
@@ -70,6 +85,9 @@ export function PacientesRegulacao({ unidadeId, modo }: { unidadeId: string; mod
       alternar={() => setAberto(aberto === l.paciente.id ? null : l.paciente.id)} unidadeId={unidadeId} />
   )
   const soMeus = comEscopo && escopo === 'meus'
+  // NI2 (RT, 24/11/2026): no NIR, quem está em regulação vem primeiro (prazo
+  // vencido no topo) e quem não tem regulação fica num grupo recolhido
+  const nir = modo === 'nir' ? separarParaNir(lista) : null
   return (
     <div className="flex flex-col gap-3 text-apoio">
       {comEscopo && (
@@ -86,7 +104,30 @@ export function PacientesRegulacao({ unidadeId, modo }: { unidadeId: string; mod
           <Chip radio ativo={so === 'pendentes'} contagem={pendentes.length} onClick={() => setSo('pendentes')}>A central espera a unidade</Chip>
         </Chips>
       )}
-      {lista.length === 0 ? (
+      {nir ? (
+        <>
+          {nir.emRegulacao.length === 0 ? <Vazio icone={Waypoints} titulo="Nenhum paciente em regulação" /> : (
+            <ul className="flex flex-col divide-y divide-fio rounded-cartao border border-fio bg-superficie">{nir.emRegulacao.map(linha)}</ul>
+          )}
+          {nir.semRegulacao.length > 0 && (
+            <section aria-label="Sem regulação" className="flex flex-col gap-2">
+              <button type="button" aria-expanded={semRegAberto} onClick={() => setSemRegAberto(!semRegAberto)}
+                className="flex items-center gap-2 self-start rounded-controle px-1 py-1 font-medium text-tinta-apoio hover:text-acao">
+                <ChevronDown className={cn('size-4 transition-transform', !semRegAberto && '-rotate-90')} aria-hidden />
+                Sem regulação ({nir.semRegulacao.length})
+              </button>
+              {semRegAberto && porSetor(nir.semRegulacao).map((g) => (
+                <section key={g.setor} aria-label={g.setor} className="flex flex-col gap-1">
+                  <h3 className="flex items-baseline gap-2 font-medium text-tinta">
+                    {g.setor} <span className="text-rotulo font-normal text-tinta-sussurro">{pacientes(g.pacientes.length)}</span>
+                  </h3>
+                  <ul className="flex flex-col divide-y divide-fio rounded-cartao border border-fio bg-superficie">{g.pacientes.map(linha)}</ul>
+                </section>
+              ))}
+            </section>
+          )}
+        </>
+      ) : lista.length === 0 ? (
         <Vazio icone={Waypoints}
           titulo={soMeus ? 'Nenhum paciente seu em regulação' : modo === 'medico' || so !== 'todos' ? 'Nenhum paciente em regulação' : 'Nenhum paciente internado'}
           texto={soMeus
@@ -98,7 +139,7 @@ export function PacientesRegulacao({ unidadeId, modo }: { unidadeId: string; mod
         porSetor(lista).map((g) => (
           <section key={g.setor} aria-label={g.setor} className="flex flex-col gap-1">
             <h3 className="flex items-baseline gap-2 font-medium text-tinta">
-              {g.setor} <span className="text-rotulo font-normal text-tinta-sussurro">{g.pacientes.length} paciente(s)</span>
+              {g.setor} <span className="text-rotulo font-normal text-tinta-sussurro">{pacientes(g.pacientes.length)}</span>
             </h3>
             <ul className="flex flex-col divide-y divide-fio rounded-cartao border border-fio bg-superficie">{g.pacientes.map(linha)}</ul>
           </section>
@@ -117,12 +158,12 @@ function LinhaPaciente({ l, modo, aberto, alternar, unidadeId }: {
   const idade = l.paciente.nascimento ? rotuloIdade(l.paciente.nascimento, dataIso()) : null
   const esperando = abertos.filter(esperaAOrigem)
   return (
-    <li>
+    <li id={`paciente-reg-${l.paciente.id}`} className="scroll-mt-4">
       <BotaoLinha variante="linha" aria-expanded={aberto} className="flex-wrap items-center gap-2 border-0 px-3 py-2 hover:bg-campo" onClick={alternar}>
         <span className="min-w-14 font-semibold text-acao">{l.leito ?? (l.internacao ? 'Sem leito' : 'Porta')}</span>
         <span className="font-medium text-tinta">{l.paciente.nome}</span>
         {idade && <span className="text-tinta-sussurro">{idade}</span>}
-        {modo === 'medico' && l.setor && <span className="text-tinta-sussurro">{l.setor.nome}</span>}
+        {(modo === 'medico' || (modo === 'nir' && p)) && l.setor && <span className="text-tinta-sussurro">{l.setor.nome}</span>}
         {p ? (
           <>
             <span className="text-tinta-apoio">{resumoPedido(p)}{abertos.length > 1 ? ` e mais ${abertos.length - 1}` : ''}</span>

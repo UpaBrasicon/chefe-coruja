@@ -92,3 +92,26 @@ export function ordenarPorAcao(lista: PacienteRegulacao[]): PacienteRegulacao[] 
 export function rotuloAguardando(a: Pick<Aguardando, 'intencao'>): string {
   return a.intencao === 'pergunta' ? 'Pergunta do regulador' : a.intencao === 'pedido' ? 'O regulador pede' : 'Mensagem do regulador'
 }
+
+// ── Internação do NIR (NI2 = A, RT 24/11/2026) ───────────────────────────────
+
+/** Algum pedido em aberto com prazo vencido (na origem, na central ou no destino). */
+export function prazoVencido(l: Pick<PacienteRegulacao, 'pedidos'>): boolean {
+  return l.pedidos.some((p) => p.em_aberto && !!p.sla && (p.sla.atrasado_origem || p.sla.atrasado_central || !!p.sla.atrasado_destino))
+}
+
+/**
+ * Lista do NIR: quem está em regulação vem primeiro — prazo vencido no topo,
+ * depois o que a central espera da unidade e a mensagem nova —; quem não tem
+ * regulação fica à parte, num grupo recolhido. Na mesma faixa, a ordem de antes.
+ */
+export function separarParaNir(lista: PacienteRegulacao[]): { emRegulacao: PacienteRegulacao[]; semRegulacao: PacienteRegulacao[] } {
+  const peso = (l: PacienteRegulacao) => (prazoVencido(l) ? 0 : l.pedidos.some(esperaAOrigem) ? 1 : mensagensNovas(l) > 0 ? 2 : 3)
+  const com = emRegulacao(lista).map((l, i) => ({ l, i })).sort((a, b) => peso(a.l) - peso(b.l) || a.i - b.i).map((x) => x.l)
+  const ids = new Set(com.map((l) => l.paciente.id))
+  return { emRegulacao: com, semRegulacao: lista.filter((l) => !ids.has(l.paciente.id)) }
+}
+
+/** "1 paciente", "3 pacientes". */
+export const pacientes = (n: number) => (n === 1 ? '1 paciente' : `${n} pacientes`)
+
