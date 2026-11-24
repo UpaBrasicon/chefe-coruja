@@ -5,7 +5,8 @@ import { UFS } from '@/lib/constants'
 import { CATEGORIAS, ESTADOS_CIVIS, RACAS_COR_CADASTRO, SEXOS } from '@/lib/cadastro'
 import { erroCns, erroCpf, erroNascimento, formatarCns, formatarCpf, soDigitos } from '@/lib/documentos'
 import { cn } from '@/lib/utils'
-import { ehPediatrico, idadeEm } from '@/domain/idade'
+import { ehPediatrico } from '@/domain/idade'
+import { menorDeIdade, mostraResponsavel } from '@/lib/cadastroRecepcao'
 import { Chip } from '@/components/monitor/Pagina'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
@@ -61,17 +62,27 @@ const SELECT = 'w-full min-w-0 px-2.5 text-controle outline-none focus-visible:b
  * O formulário. `identificacao=false` esconde nome, nascimento, sexo e mãe
  * (cadastro existente na ficha: só contato, documentos e dados do SUS).
  * `extras` entra depois do convênio (a porta põe peso e alergias ali).
+ * `omitir` tira campos que a tela já mostra em outro lugar (a Recepção põe o
+ * nome em cima, junto da queixa). `nascimento` é a data do cadastro existente,
+ * quando o campo não aparece, para a regra do responsável.
  */
-export function CamposCadastro({ prefixo, valores, onChange, identificacao = true, extras, hoje = hojeSP(), nascimentoObrigatorio = false }: {
+export function CamposCadastro({ prefixo, valores, onChange, identificacao = true, extras, hoje = hojeSP(), nascimentoObrigatorio = false, omitir = [], nascimento }: {
   prefixo: string
   valores: Cadastro
   onChange: (k: CampoCadastro, v: string) => void
   identificacao?: boolean
   extras?: ReactNode
   /** U11 (N2 = A): na UBS a data de nascimento é obrigatória */ nascimentoObrigatorio?: boolean; hoje?: string
+  omitir?: CampoCadastro[]
+  nascimento?: string | null
 }) {
   const [tocados, setTocados] = React.useState<Partial<Record<CampoCadastro, boolean>>>({})
   const tocar = (k: CampoCadastro) => () => setTocados((t) => ({ ...t, [k]: true }))
+  const mostra = (k: CampoCadastro) => !omitir.includes(k)
+  // CA2 (revisão do perfil Recepção, RT 24/11/2026): o bloco do responsável
+  // aparece para menor de 18 anos ou quando marcado "tem responsável"
+  const [temResponsavel, setTemResponsavel] = React.useState(false)
+  const nascRegra = valores.data_nascimento || nascimento || ''
   const id = (k: string) => `${prefixo}-${k}`
   const txt = (k: CampoCadastro) => ({
     id: id(k),
@@ -85,22 +96,27 @@ export function CamposCadastro({ prefixo, valores, onChange, identificacao = tru
   const eNasc = erroNascimento(valores.data_nascimento, hoje)
   const idade = idadeLegivel(valores.data_nascimento, hoje)
   const pediatrico = valores.data_nascimento && !eNasc ? ehPediatrico(valores.data_nascimento, hoje) : null
-  const menor = valores.data_nascimento && !eNasc ? (idadeEm(valores.data_nascimento, hoje)?.anos ?? 99) < 18 : false
+  const menor = !eNasc && menorDeIdade(nascRegra, hoje)
+  const blocoResponsavel = !eNasc ? mostraResponsavel(nascRegra, hoje, temResponsavel, valores) : temResponsavel
 
   return (
     <div className="flex flex-wrap gap-3">
       {identificacao && (
         <>
-          <Campo id={id('nome')} rotulo="Nome completo" className="basis-full">
-            <Input {...txt('nome')} autoComplete="off" />
-          </Campo>
+          {mostra('nome') && (
+            <Campo id={id('nome')} rotulo="Nome completo" className="basis-full">
+              <Input {...txt('nome')} autoComplete="off" />
+            </Campo>
+          )}
           <Campo id={id('nome_social')} rotulo="Nome social" className="flex-[1_1_240px]">
             <Input {...txt('nome_social')} autoComplete="off" />
           </Campo>
-          <Campo id={id('data_nascimento')} rotulo={nascimentoObrigatorio ? 'Data de nascimento *' : 'Data de nascimento'} erro={eNasc} className="flex-[1_1_180px]"
-            dica={idade ? `${idade}${pediatrico ? ' · pediátrico' : ''}` : undefined}>
-            <Input {...txt('data_nascimento')} type="date" max={hoje} aria-invalid={!!eNasc} aria-describedby={eNasc ? `${id('data_nascimento')}-erro` : undefined} />
-          </Campo>
+          {mostra('data_nascimento') && (
+            <Campo id={id('data_nascimento')} rotulo={nascimentoObrigatorio ? 'Data de nascimento *' : 'Data de nascimento'} erro={eNasc} className="flex-[1_1_180px]"
+              dica={idade ? `${idade}${pediatrico ? ' · pediátrico' : ''}` : undefined}>
+              <Input {...txt('data_nascimento')} type="date" max={hoje} aria-invalid={!!eNasc} aria-describedby={eNasc ? `${id('data_nascimento')}-erro` : undefined} />
+            </Campo>
+          )}
         </>
       )}
       <Campo id={id('cpf')} rotulo="CPF" erro={eCpf} className="flex-[1_1_180px]">
@@ -136,7 +152,7 @@ export function CamposCadastro({ prefixo, valores, onChange, identificacao = tru
       )}
       <Campo id={id('estado_civil')} rotulo="Estado civil" className="flex-[1_1_180px]">
         <CampoSelecao id={id('estado_civil')} className={SELECT} value={valores.estado_civil} onChange={(e) => onChange('estado_civil', e.target.value)}>
-          <option value="">—</option>
+          <option value="">Não informado</option>
           {/* valor antigo fora da lista continua visível */}
           {valores.estado_civil && !(ESTADOS_CIVIS as readonly string[]).includes(valores.estado_civil) && (
             <option value={valores.estado_civil}>{valores.estado_civil}</option>
@@ -160,25 +176,36 @@ export function CamposCadastro({ prefixo, valores, onChange, identificacao = tru
       <Campo id={id('municipio')} rotulo="Município" className="flex-[1_1_240px]">
         <Input {...txt('municipio')} autoComplete="off" />
       </Campo>
-      <Campo id={id('uf')} rotulo="UF" className="flex-[0_1_96px]">
+      <Campo id={id('uf')} rotulo="UF" className="flex-[0_1_144px]">
         <CampoSelecao id={id('uf')} className={SELECT} value={valores.uf} onChange={(e) => onChange('uf', e.target.value)}>
-          <option value="">—</option>
+          <option value="">Não informado</option>
           {UFS.map((u) => <option key={u} value={u}>{u}</option>)}
         </CampoSelecao>
       </Campo>
-      <Campo id={id('responsavel_nome')} rotulo="Nome do responsável" className="flex-[1_1_300px]"
-        dica={menor && !valores.responsavel_nome.trim() ? 'Menor sem responsável pode ser cadastrado (abrigo, escola, outro local).' : undefined}>
-        <Input {...txt('responsavel_nome')} autoComplete="off" />
-      </Campo>
-      <Campo id={id('responsavel_parentesco')} rotulo="Parentesco ou vínculo" className="flex-[1_1_180px]">
-        <Input {...txt('responsavel_parentesco')} autoComplete="off" />
-      </Campo>
-      <Campo id={id('responsavel_documento')} rotulo="Documento do responsável" className="flex-[1_1_180px]">
-        <Input {...txt('responsavel_documento')} autoComplete="off" />
-      </Campo>
-      <Campo id={id('responsavel_telefone')} rotulo="Telefone do responsável" className="flex-[1_1_180px]">
-        <Input {...txt('responsavel_telefone')} type="tel" inputMode="tel" autoComplete="off" />
-      </Campo>
+      {/* com dado do responsável já preenchido, o bloco fica e a caixa some */}
+      {!menor && (temResponsavel || !blocoResponsavel) && (
+        <label htmlFor={id('tem-responsavel')} className="flex basis-full items-center gap-2 text-apoio font-medium text-grafite">
+          <input id={id('tem-responsavel')} type="checkbox" checked={temResponsavel} onChange={(e) => setTemResponsavel(e.target.checked)} />
+          Tem responsável
+        </label>
+      )}
+      {blocoResponsavel && (
+        <>
+          <Campo id={id('responsavel_nome')} rotulo="Nome do responsável" className="flex-[1_1_300px]"
+            dica={menor && !valores.responsavel_nome.trim() ? 'Menor sem responsável pode ser cadastrado (abrigo, escola, outro local).' : undefined}>
+            <Input {...txt('responsavel_nome')} autoComplete="off" />
+          </Campo>
+          <Campo id={id('responsavel_parentesco')} rotulo="Parentesco ou vínculo" className="flex-[1_1_180px]">
+            <Input {...txt('responsavel_parentesco')} autoComplete="off" />
+          </Campo>
+          <Campo id={id('responsavel_documento')} rotulo="Documento do responsável" className="flex-[1_1_180px]">
+            <Input {...txt('responsavel_documento')} autoComplete="off" />
+          </Campo>
+          <Campo id={id('responsavel_telefone')} rotulo="Telefone do responsável" className="flex-[1_1_180px]">
+            <Input {...txt('responsavel_telefone')} type="tel" inputMode="tel" autoComplete="off" />
+          </Campo>
+        </>
+      )}
       {identificacao && (
         <Escolhas rotulo="Sexo" opcoes={SEXOS} valor={valores.sexo} onChange={(v) => onChange('sexo', v)} className="flex-[1_1_200px]" />
       )}

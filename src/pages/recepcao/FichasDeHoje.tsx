@@ -29,7 +29,8 @@ export type NomeNaFila = { episodio_id: string; nome: string; nome_social: strin
 const TOM: Record<TomEtapa, TomEstado> = { espera: 'cinza', andamento: 'teal', alta: 'verde', saida: 'cinza' }
 const INICIAIS = 8
 
-export const chaveFichasDeHoje = (setorId: string, hoje: string) => ['recepcao-fichas-hoje', setorId, hoje] as const
+// a Nova ficha invalida pelo prefixo 'recepcao-fichas-hoje' quando abre uma ficha
+const chaveFichasDeHoje = (setorId: string, hoje: string) => ['recepcao-fichas-hoje', setorId, hoje] as const
 
 export function FichasDeHoje({ setorId, hoje, ubs, naFila }: { setorId: string; hoje: string; ubs: boolean; naFila: NomeNaFila[] }) {
   const [todas, setTodas] = React.useState(false)
