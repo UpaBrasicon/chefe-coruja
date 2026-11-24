@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
 import { GestaoUbs } from '@/components/gestor/GestaoUbs'
+import { GraficoCenso } from '@/components/gestor/GraficoCenso'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { AtrasoChecagemIndicador } from '@/pages/gestor/AtrasoChecagemIndicador'
@@ -277,6 +278,8 @@ function IndicadoresHospital() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          {/* revisão do gestor (RT, 24/11/2026, M2): o censo em gráfico, antes dos números por setor */}
+          {!isLoading && agrupado.size > 0 && <GraficoCenso censo={censo ?? []} />}
           {isLoading ? (
             <div className="flex h-24 items-center justify-center">
               <Spinner />

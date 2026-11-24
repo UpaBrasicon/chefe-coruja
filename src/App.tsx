@@ -66,7 +66,8 @@ const PlantaoToolRouter = lazy(() => import('@/pages/plantao/PlantaoToolRouter')
 const RedirecionarFormulario = lazy(() => import('@/pages/plantao/secoes/FormularioInternacao'))
 
 // ── Telas que continuam avulsas ───────────────────────────────────────────────
-const GaviaoPainel = lazy(() => import('@/pages/admin/GaviaoPainel').then((m) => ({ default: m.GaviaoPainel })))
+// Um Gavião só para gestor e admin (revisão do gestor, RT 24/11/2026)
+const GaviaoGrupo = lazy(() => import('@/pages/grupos/GaviaoGrupo'))
 const Plataformas = lazy(() => import('@/pages/admin/Plataformas'))
 const PendenciasTecnicas = lazy(() => import('@/pages/admin/PendenciasTecnicas'))
 const Servidores = lazy(() => import('@/pages/admin/Servidores'))
@@ -85,7 +86,6 @@ const ProntuarioLeitura = lazy(() => import('@/pages/prontuario/ProntuarioLeitur
 const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
 const FarmaciaGestor = lazy(() => import('@/pages/gestor/FarmaciaGestor'))
 const ProtocolosGestor = lazy(() => import('@/pages/gestor/Protocolos'))
-const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
 const ExamesUnidade = lazy(() => import('@/pages/gestor/ExamesUnidade'))
 const PortaAgora = lazy(() => import('@/pages/gestor/PortaAgora'))
 const IntercorrenciasRelatorio = lazy(() => import('@/pages/gestor/IntercorrenciasRelatorio'))
@@ -390,7 +390,6 @@ export default function App() {
 
                       <Route element={<RequireRole papeis={['admin']} />}>
                         <Route path="/painel" element={<OrganizacaoGrupo />} />
-                        <Route path="/gaviao" element={<GaviaoPainel />} />
                         {/* Porte, onda 8: Plataformas, Pendências técnicas e Servidores */}
                         <Route path="/plataformas" element={<Plataformas />} />
                         <Route path="/pendencias-tecnicas" element={<PendenciasTecnicas />} />
@@ -443,7 +442,8 @@ export default function App() {
                         {/* Onda 8, gestor parte 2: farmácia (só leitura) e protocolos da unidade */}
                         <Route path="/gestao/farmacia" element={<FarmaciaGestor />} />
                         <Route path="/gestao/protocolos" element={<ProtocolosGestor />} />
-                        <Route path="/gestao/gaviao" element={<OlhoDeGaviao />} />
+                        {/* legado: o Gavião do gestor e o do admin viraram um só, em /gaviao */}
+                        <Route path="/gestao/gaviao" element={<Redirecionar para="/gaviao" />} />
                         {/* Fase 5C, etapa 1.1: exames da unidade */}
                         <Route path="/gestao/exames" element={<ExamesUnidade />} />
                         {/* Fase 1, tarefa 2: Dashboard PS/UPA */}
@@ -459,6 +459,7 @@ export default function App() {
                       <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
                         <Route path="/unidade" element={<UnidadeGrupo />} />
                         <Route path="/indicadores" element={<Indicadores />} />
+                        <Route path="/gaviao" element={<GaviaoGrupo />} />
                         {/* legado */}
                         <Route path="/setores" element={<Redirecionar para="/unidade?aba=setores" />} />
                         <Route

@@ -17,7 +17,6 @@ import * as React from 'react'
 
 import { Chip, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { ConfirmarSegundoFator, ConfirmarSegundoFatorEmail } from '@/components/seguranca/SegundoFator'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,6 +29,8 @@ import { dataIso } from '@/lib/formato'
 import { CONJUNTOS, erroPeriodo, montarArquivo, nomeArquivo, type Conjunto, type Formato } from '@/lib/exportacao'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { Abas } from '@/components/admin/ui'
+import { cn } from '@/lib/utils'
 
 type Registro = {
   id: string; conjunto: Conjunto; formato: Formato; desde: string | null; ate: string | null
@@ -285,34 +286,58 @@ export default function ExportarDados() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-corpo">Exportações desta unidade</CardTitle>
-          <CardDescription>As 50 mais recentes, de qualquer pessoa: quem pediu, quando, o quê e se saiu completa.</CardDescription>
-        </CardHeader>
-        <CardContent className="text-apoio">
-          {!unidadeId ? null : lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
-            <Vazio icone={FileDown} titulo="Nenhuma exportação" texto="As exportações desta unidade aparecem aqui." />
-          ) : (
-            <ul className="flex flex-col divide-y divide-fio">
-              {(lista.data ?? []).map((r) => (
-                <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
-                  <span className="font-medium text-tinta">{CONJUNTOS[r.conjunto]?.rotulo ?? r.conjunto}</span>
-                  <Badge variant="secondary">{r.formato.toUpperCase()}</Badge>
-                  <Badge variant={r.mascarado ? 'success' : 'warning'}>{r.mascarado ? 'mascarada' : 'completa'}</Badge>
-                  <span className="text-tinta-apoio">
-                    {r.desde && r.ate ? `${fmtData(r.desde)} a ${fmtData(r.ate)}` : 'situação no momento'} · {r.linhas === 1 ? '1 linha' : `${r.linhas} linhas`}
-                  </span>
-                  <span className="ml-auto text-tinta-sussurro">
-                    {r.solicitada_por ?? '—'} · {fmtDataHora(r.solicitada_em)}{r.concluida_em ? '' : ' · não concluída'}
-                  </span>
-                  {r.motivo && <span className="w-full text-rotulo text-tinta-sussurro">Motivo: {r.motivo}</span>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <HistoricoExportacoes unidadeId={unidadeId} lista={lista.data} carregando={lista.isLoading} erro={lista.error as Error | null} />
     </div>
+  )
+}
+
+// Histórico das exportações (revisão do admin e do gestor, RT 24/11/2026, M3):
+// o registro de auditoria de cada exportação, numa tabela; a completa (sem
+// máscara) fica destacada com o motivo, e há uma aba só para elas.
+function HistoricoExportacoes({ unidadeId, lista, carregando, erro }: {
+  unidadeId: string; lista: Registro[] | undefined; carregando: boolean; erro: Error | null
+}) {
+  const [aba, setAba] = React.useState<'todas' | 'completas'>('todas')
+  const todas = lista ?? []
+  const completas = todas.filter((r) => !r.mascarado)
+  const visiveis = aba === 'todas' ? todas : completas
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-corpo">Histórico de exportações</CardTitle>
+        <CardDescription>As 50 mais recentes desta unidade, de qualquer pessoa, como ficaram no registro de auditoria: quem pediu, quando, o quê e se saiu completa.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-apoio">
+        {!unidadeId ? null : carregando ? <Spinner /> : erro ? <MensagemErro texto={erro.message} /> : todas.length === 0 ? (
+          <Vazio icone={FileDown} titulo="Nenhuma exportação" texto="Cada exportação feita aqui entra neste histórico, com quem pediu, quando e o motivo da completa." />
+        ) : (
+          <>
+            <Abas rotulo="Exportações" valor={aba} onChange={setAba}
+              opcoes={[{ valor: 'todas', rotulo: 'Todas', contagem: todas.length }, { valor: 'completas', rotulo: 'Completas, sem máscara', contagem: completas.length }]} />
+            {visiveis.length === 0 ? (
+              <p className="text-tinta-sussurro">Nenhuma exportação completa entre as 50 mais recentes.</p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-fio">
+                {visiveis.map((r) => (
+                  <li key={r.id} className={cn('flex flex-col gap-1 py-2.5', !r.mascarado && 'border-l-2 border-atencao pl-3')}>
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                      <span className="font-medium text-tinta">{CONJUNTOS[r.conjunto]?.rotulo ?? r.conjunto}</span>
+                      <span className="text-tinta-apoio">
+                        {r.formato.toUpperCase()} · {r.mascarado ? 'mascarada' : 'completa'} · {r.desde && r.ate ? `${fmtData(r.desde)} a ${fmtData(r.ate)}` : 'situação no momento'} · {r.linhas === 1 ? '1 linha' : `${r.linhas} linhas`}
+                      </span>
+                      <span className="ml-auto text-tinta-sussurro">
+                        {r.solicitada_por ?? '—'} · {fmtDataHora(r.solicitada_em)}
+                      </span>
+                    </div>
+                    {!r.concluida_em && <span className="text-rotulo text-atencao">Não concluída: o arquivo não chegou a ser gerado.</span>}
+                    {r.motivo && <span className={cn('text-rotulo', r.mascarado ? 'text-tinta-sussurro' : 'text-tinta')}>Motivo: {r.motivo}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
 }

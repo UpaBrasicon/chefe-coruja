@@ -141,9 +141,11 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
   )
 }
 
-export default function OlhoDeGaviao() {
+// Um Gavião só (revisão do gestor, RT 24/11/2026, M3): o administrador vê este
+// mesmo modelo, unidade por unidade, em GaviaoUnico (a unidade vem por prop).
+export default function OlhoDeGaviao({ unidade }: { unidade?: string } = {}) {
   const { unidadeAtiva } = useUnidade()
-  const unidadeId = unidadeAtiva?.unidade_id
+  const unidadeId = unidade ?? unidadeAtiva?.unidade_id
   const qc = useQueryClient()
   const { fazer } = useDesfazer()
   const [pedindo, setPedindo] = React.useState<string | null>(null)

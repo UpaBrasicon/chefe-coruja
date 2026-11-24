@@ -11,6 +11,7 @@ import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cartao } from '@/components/admin/ui'
+import { GraficoBarras } from '@/components/monitor/GraficoBarras'
 import type { Papel } from '@/types/database'
 import {
   lerPainel, porUnidadePapel, ranking, totalEntradas, totalEvento, ROTULO_EVENTO,
@@ -109,6 +110,21 @@ export default function UsoDoApp() {
             <Numero titulo={ROTULO_EVENTO.ferramenta} valor={totalEvento(p.eventos, 'ferramenta')} />
             <Numero titulo={ROTULO_EVENTO.censo} valor={totalEvento(p.eventos, 'censo')} />
           </div>
+
+          {/* revisão do admin (RT, 24/11/2026): um gráfico principal, as entradas por dia no período */}
+          <section className="mb-7">
+            <TituloSecao>Entradas no app por dia</TituloSecao>
+            <div className={cn(cartao, 'px-4 py-3')}>
+              <GraficoBarras
+                rotulo={`Entradas no app por dia, últimos ${dias} dias`}
+                dados={[...p.entradas].sort((a, b) => a.dia.localeCompare(b.dia)).map((e) => ({
+                  rotulo: `${e.dia.slice(8, 10)}/${e.dia.slice(5, 7)}`, entradas: e.entradas, pessoas: e.pessoas,
+                }))}
+                series={[{ chave: 'entradas', nome: 'Entradas' }, { chave: 'pessoas', nome: 'Pessoas diferentes' }]}
+                vazio={`Nenhuma entrada nos últimos ${dias} dias. As entradas vêm dos registros de acesso: aparecem quando alguém entra no app.`}
+              />
+            </div>
+          </section>
 
           <section className="mb-7">
             <TituloSecao extra={`${linhas.length} ${linhas.length === 1 ? 'linha' : 'linhas'}`}>Por unidade e papel</TituloSecao>

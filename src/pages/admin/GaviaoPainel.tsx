@@ -63,7 +63,7 @@ const SEVERIDADE_COR: Record<string, string> = {
   informativo: 'bg-suprimento/10 text-suprimento',
 }
 
-export function GaviaoPainel() {
+export function GaviaoPainel({ embutido = false }: { embutido?: boolean } = {}) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['gaviao-painel'],
     queryFn: async (): Promise<Painel> => {
@@ -95,12 +95,14 @@ export function GaviaoPainel() {
 
   return (
     <div className="space-y-6">
-      <TituloPagina
-        icone={ShieldCheck}
-        titulo="Gavião"
-        descricao="Fiscal de segurança e integridade da plataforma. Dados que o Gavião considera pertinentes."
-        className="mb-0"
-      />
+      {!embutido && (
+        <TituloPagina
+          icone={ShieldCheck}
+          titulo="Gavião"
+          descricao="Fiscal de segurança e integridade da plataforma. Dados que o Gavião considera pertinentes."
+          className="mb-0"
+        />
+      )}
 
       {/* Resumo */}
       <div className="grid gap-4 sm:grid-cols-3">
