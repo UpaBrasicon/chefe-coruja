@@ -7,15 +7,18 @@
 // pergunta formal da central com a resposta; o histórico do pedido; anexar
 // exame; atualizar os dados clínicos para a central (evolução, médico e
 // gestor); e, embaixo, a conversa com o médico regulador.
+// "Novo pedido" (RT, 24/11/2026): o formulário abre aqui mesmo, com o
+// paciente já escolhido, e volta a esta aba com o pedido novo aberto; nada
+// daqui leva à página Regulação, que o médico não tem no menu.
 // Migration 20270421000040_regulacao_conversa_nir.sql.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronDown, Plus, Waypoints } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
 
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
 import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
+import { AvisoEnviado, NovoPedidoPaciente, type PedidoEnviado } from '@/components/regulacao/NovaSolicitacao'
 import { PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -72,17 +75,27 @@ export function AbaRegulacaoPaciente({ pacienteId, unidadeId: unidadeProp }: { p
   const primeiroAberto = pedidos.find((p) => p.em_aberto)?.id ?? null
   const [aberto, setAberto] = React.useState<string | null | undefined>(undefined)
   const atual = aberto === undefined ? primeiroAberto : aberto
+  const [novo, setNovo] = React.useState(false)
+  const [enviado, setEnviado] = React.useState<PedidoEnviado | null>(null)
+
+  if (novo) {
+    return (
+      <NovoPedidoPaciente pacienteId={pacienteId} unidadeId={unidadeId} aoFechar={() => setNovo(false)}
+        aoEnviar={(r) => { setNovo(false); setEnviado(r); setAberto(r.id) }} />
+    )
+  }
 
   return (
     <div className="flex flex-col gap-3 text-apoio">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="flex items-center gap-2 text-corpo font-medium text-tinta"><Waypoints className="size-4" aria-hidden /> Regulação</h3>
         {lista.data?.pode_solicitar && (
-          <Button size="sm" variant="outline" className="ml-auto" render={<Link to={`/regulacao?paciente=${pacienteId}`} />}>
+          <Button size="sm" variant="outline" className="ml-auto" onClick={() => { setEnviado(null); setNovo(true) }}>
             <Plus /> Novo pedido
           </Button>
         )}
       </div>
+      {enviado && <AvisoEnviado enviada={enviado} />}
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} />
         : pedidos.length === 0 ? (
           <p className="text-tinta-sussurro">Nenhum pedido de regulação deste paciente saiu desta unidade.</p>
