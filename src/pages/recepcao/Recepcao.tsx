@@ -14,6 +14,7 @@ import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
 import { ordemMedica, type CorRisco } from '@/domain/risco'
 import { acimaDoAlvo, alvoDaLinha, horaDaFicha, maiorEspera, tempoNaFila } from '@/lib/tempoFila'
+import { faltaNoCadastro } from '@/lib/cadastroRecepcao'
 import { VindoDaUbs } from '@/components/encaminhamento/VindoDaUbs'
 import { ordemFilaUbsComAgenda, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
 import { JUSTIFICATIVAS_SEM_CPF, pedeMotivoSemCpf } from '@/domain/justificativaCpf'
@@ -33,6 +34,7 @@ import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
 
 import { Campo, CamposCadastro } from '@/components/paciente/CamposCadastro'
 import { PropagandaPainel } from './PropagandaPainel'
+import { FichasDeHoje } from './FichasDeHoje'
 import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
 import { Aviso } from '@/components/ui/aviso'
 import { TituloCartao } from '@/components/monitor/Pagina'
@@ -288,8 +290,10 @@ export default function Recepcao() {
             porta={porta}
             ubs={ubs}
             unidadeId={unidadeId!}
+            naFila={fila.data ?? []}
             aoAbrir={() => {
               void queryClient.invalidateQueries({ queryKey: ['recepcao-fila'] })
+              void queryClient.invalidateQueries({ queryKey: ['recepcao-fichas-hoje'] })
               void queryClient.invalidateQueries({ queryKey: ['nota-fila-triagem'] })
             }}
           />
@@ -381,7 +385,7 @@ function HojeUbs({ unidadeId, fichas, carregando, erro, agora, filaEnfermagem, f
 
 // ── Nova ficha ───────────────────────────────────────────────────────────────
 
-function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: boolean; unidadeId: string; aoAbrir: () => void }) {
+function NovaFicha({ porta, ubs, unidadeId, naFila, aoAbrir }: { porta: Porta; ubs: boolean; unidadeId: string; naFila: NaFila[]; aoAbrir: () => void }) {
   const queryClient = useQueryClient()
   const [termo, setTermo] = React.useState('')
   const [buscado, setBuscado] = React.useState('')
@@ -665,24 +669,25 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
                   {a.documento_unificado && (
                     <span className="text-apoio text-observacao">Documento de cadastro unificado: o documento buscado é de um cadastro unificado a este.</span>
                   )}
+                  {/* RE3: só o que o cadastro tem; o que falta vira uma linha */}
                   <span className="text-apoio text-pretty text-tinta-sussurro">
                     {[
-                      `CPF ${a.cpf_final ?? '—'}`,
-                      `CNS ${a.cns_final ?? '—'}`,
-                      `Mãe: ${a.nome_mae ?? '—'}`,
+                      a.cpf_final ? `CPF ${a.cpf_final}` : null,
+                      a.cns_final ? `CNS ${a.cns_final}` : null,
+                      a.nome_mae?.trim() ? `Mãe: ${a.nome_mae}` : null,
                       a.data_nascimento ? `nasc. ${a.data_nascimento.split('-').reverse().join('/')}` : null,
                       a.prontuario ? `pront. ${a.prontuario}` : null,
                     ].filter(Boolean).join(' · ')}
                   </span>
-                </div>
-                {a.episodio_etapa ? (
-                  <>
+                  {faltaNoCadastro(a) && (
+                    <span className="text-apoio text-atencao">{faltaNoCadastro(a)} · completar cadastro</span>
+                  )}
+                  {a.episodio_etapa && (
                     <span className="text-apoio text-observacao">{SITUACAO[a.episodio_etapa] ?? 'Já está na unidade'}</span>
-                    <Button variant="outline" onClick={() => usarExistente(a)}>Ver situação</Button>
-                  </>
-                ) : (
-                  <Button variant="outline" onClick={() => usarExistente(a)}>Abrir ficha</Button>
-                )}
+                  )}
+                </div>
+                {/* o botão muda com a situação: quem já está na unidade não abre ficha nova */}
+                <Button variant="outline" onClick={() => usarExistente(a)}>{a.episodio_etapa ? 'Ver situação' : 'Abrir ficha'}</Button>
               </div>
             ))}
           </div>
@@ -834,6 +839,8 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
           {pulseira && !ubs && <BotaoPulseira pacienteId={pulseira.id} nome={pulseira.nome} className="shrink-0" />}
         </div>
       )}
+      {/* RE1: com o formulário fechado, as fichas de hoje e a etapa de cada uma */}
+      {modo === 'nenhum' && <FichasDeHoje setorId={porta.id} hoje={hoje} ubs={ubs} naFila={naFila} />}
       <Dialog open={rnAberto} onOpenChange={setRnAberto}>
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
