@@ -12,7 +12,8 @@ const sms = readFileSync('src/components/encaminhamento/EncaminhamentoSms003a.ts
 
 test('a janela da UBS troca o Desfecho pela Conduta e tira cor, reavaliação e procedimentos', () => {
   assert.match(janela, /const ubs = !!ep\.tipo_atendimento_aps/)
-  assert.match(janela, /ubs \? !\['reav', 'fim'\]\.includes\(a\.k\) : a\.k !== 'conduta'/)
+  // a aba Regulação (R1, 24/11/2026) é da porta: também sai na UBS
+  assert.match(janela, /ubs \? !\['reav', 'fim', 'reg'\]\.includes\(a\.k\) : a\.k !== 'conduta'/)
   assert.match(janela, /const ultimaCor = ubs \? null :/)
   assert.match(janela, /onClassificacao=\{ubs \? undefined :/)
   assert.match(janela, /<AbaConduta /)

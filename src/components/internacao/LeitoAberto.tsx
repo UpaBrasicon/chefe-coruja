@@ -26,6 +26,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { AbaRegulacaoPaciente } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { Contencao } from '@/components/prontuario/Contencao'
 import { AvisoValidadePrescricao } from '@/components/prescricao/ValidadeItem'
@@ -74,7 +75,7 @@ import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
-type IdAba = 'resumo' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'parecer' | 'termo' | 'paliativos' | 'escalas' | 'alta'
+type IdAba = 'resumo' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'regulacao' | 'parecer' | 'termo' | 'paliativos' | 'escalas' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
 const ABAS: [IdAba, string][] = [
@@ -86,6 +87,8 @@ const ABAS: [IdAba, string][] = [
   ['aih', 'AIH'],
   ['apac', 'APAC'],
   ['encaminhamento', 'Encaminhamento'],
+  // R1 (RT, 24/11/2026): a regulação do paciente, com a conversa com a central
+  ['regulacao', 'Regulação'],
   // ponto 15: Parecer, Termo de consentimento, Cuidados paliativos e Escalas (antes, "Parecer e termos")
   ['parecer', 'Parecer'],
   ['termo', 'Termo de consentimento'],
@@ -98,7 +101,7 @@ const ABAS: [IdAba, string][] = [
  * agora mora dentro de Evolução (ponto 9), que entra aqui em leitura. A
  * Classificação deixou de ser aba (ponto 8): a cor do cabeçalho abre a janela.
  */
-const ABAS_LEITURA: IdAba[] = ['resumo', 'evol', 'alta']
+const ABAS_LEITURA: IdAba[] = ['resumo', 'evol', 'regulacao', 'alta']
 
 const CHAVES_DO_LEITO = [
   'leito-aberto', 'acuidade', 'tendencia-acuidade', 'vitais-qsofa', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta',
@@ -543,6 +546,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {/* ponto 13: dentro da unidade ou para outra unidade (SMS003a ligado à internação) */}
         {atual === 'encaminhamento' && <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''} />}
+        {atual === 'regulacao' && <AbaRegulacaoPaciente pacienteId={pacienteId} />}
         {atual === 'parecer' && <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'termo' && <AbaTermoConsentimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'paliativos' && <AbaCuidadosPaliativos pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} podeRegistrar={escreve} />}

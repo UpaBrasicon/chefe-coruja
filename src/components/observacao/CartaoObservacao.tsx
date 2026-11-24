@@ -7,16 +7,18 @@
 // de largura inteira logo abaixo.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ClipboardList, Clock } from 'lucide-react'
+import { ClipboardList, Clock, Waypoints } from 'lucide-react'
 import * as React from 'react'
 
 import { loteAcuidade } from '@/lib/lotesPaciente'
 import { cn } from '@/lib/utils'
 import { faixaEtaria, rotuloIdade } from '@/domain/idade'
 import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
+import { AbaRegulacaoPaciente } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Estado } from '@/components/porta/Estado'
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { dataIso } from '@/lib/formato'
 
 import {
@@ -24,10 +26,10 @@ import {
   type Acao, type LinhaObservacao,
 } from './modelo'
 import {
-  BlocoPassagemBox, PainelDesfecho, PainelEscolherProtocolo, PainelPassar, PainelProtocoloAberto, PainelReavaliar,
+  BlocoPassagemBox, Painel, PainelDesfecho, PainelEscolherProtocolo, PainelPassar, PainelProtocoloAberto, PainelReavaliar,
 } from './PaineisCartao'
 
-type Aberto = '' | 'reav' | 'fim' | 'proto' | 'passar'
+type Aberto = '' | 'reav' | 'fim' | 'proto' | 'passar' | 'reg'
 const hoje = () => dataIso()
 const BANDA = ['text-conforme', 'text-observacao', 'text-critico']
 
@@ -73,6 +75,9 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
   abrirPrancheta: (l: LinhaObservacao) => void
 }) {
   const qc = useQueryClient()
+  const { papelAtivo } = useUnidade()
+  // a regulação do paciente: médico e gestor (o NIR a vê na Internação dele)
+  const veRegulacao = papelAtivo === 'plantonista' || papelAtivo === 'gestor'
   const [aberto, setAberto] = React.useState<Aberto>('')
   const [erro, setErro] = React.useState<string | null>(null)
   const abrir = (qual: Aberto) => { setErro(null); setAberto((a) => (a === qual ? '' : qual)) }
@@ -180,6 +185,10 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
             {!fim && (
               <Button size="sm" variant="outline" onClick={() => abrirPrancheta(linha)}><ClipboardList /> Prancheta</Button>
             )}
+            {/* R1 (RT, 24/11/2026): a regulação do paciente, com a conversa com a central */}
+            {veRegulacao && (
+              <Button size="sm" variant="outline" aria-expanded={aberto === 'reg'} onClick={() => abrir('reg')}><Waypoints /> Regulação</Button>
+            )}
           </div>
         </TableCell>
       </TableRow>
@@ -193,6 +202,7 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
             {aberto === 'proto' && !pr && <PainelEscolherProtocolo linha={linha} faixa={faixa} acao={acao} fechar={fechar} erro={erro} />}
             {aberto === 'proto' && pr && <PainelProtocoloAberto key={pr.id} linha={linha} acao={acao} fechar={fechar} erro={erro} />}
             {aberto === 'passar' && <PainelPassar linha={linha} acao={acao} fechar={fechar} erro={erro} />}
+            {aberto === 'reg' && <Painel><AbaRegulacaoPaciente pacienteId={linha.paciente_id} unidadeId={unidadeId} /></Painel>}
             {ps && !fim && (ps.situacao !== 'aceita' || ps.de_perfil === eu || ps.para_perfil === eu) && <BlocoPassagemBox linha={linha} />}
           </TableCell>
         </TableRow>
