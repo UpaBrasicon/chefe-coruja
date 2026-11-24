@@ -144,7 +144,7 @@ export function useFontesDoBanco(aberta: boolean): FontesDoBanco {
       for (const u of unidades.data ?? []) {
         e.push({
           id: `unidade:${u.unidade_id}`, grupo: 'Unidades', rotulo: u.unidade_nome,
-          detalhe: `${u.leitos_ocupados} de ${u.leitos} leitos`, to: '/painel', termos: u.unidade_nome, icone: Building2,
+          detalhe: `${u.leitos_ocupados} de ${u.leitos} leitos`, to: '/painel?aba=censo', termos: u.unidade_nome, icone: Building2,
         })
       }
     }

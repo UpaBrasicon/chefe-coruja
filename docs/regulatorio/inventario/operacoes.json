@@ -1316,6 +1316,7 @@
       "dados": [
         "nome e CNPJ do cliente",
         "unidades e configurações",
+        "secretarias de saúde da rede (nome, CNPJ, responsável e contato institucional)",
         "treinamentos e aceites da implantação"
       ],
       "sensivel": false,
@@ -1335,6 +1336,7 @@
       "tabelas": [
         "public.organizacoes",
         "public.unidades",
+        "public.secretarias",
         "public.implantacoes",
         "public.implantacao_itens",
         "public.implantacao_treinamentos",

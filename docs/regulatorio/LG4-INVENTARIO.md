@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-31 operações cobrem 328 tabelas.
+31 operações cobrem 329 tabelas.
 
 ## Papéis
 
@@ -50,7 +50,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Uso do aplicativo, agregado | controlador | não | a definir com o advogado (proposta: 2 anos) | 1 |
 | Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
 | RNDS, SISAB, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 14 |
-| Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 8 |
+| Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 9 |
 | Site comercial e pedido de demonstração | controlador | não | 2 anos | 1 |
 | Catálogos clínicos, terminologias e regras (sem dado de paciente) | controlador | não | enquanto estiver em uso; versões antigas das fichas ficam como histórico | 57 |
 | Testes automáticos da homologação | controlador | não | enquanto servir aos testes | 4 |
@@ -1040,6 +1040,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Dados**
 - nome e CNPJ do cliente
 - unidades e configurações
+- secretarias de saúde da rede (nome, CNPJ, responsável e contato institucional)
 - treinamentos e aceites da implantação
 
 **Quem acessa**
@@ -1051,9 +1052,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Prazo.** duração do contrato; depois, 5 anos (prazo civil e fiscal, a confirmar com o advogado). Descarte: a definir com o advogado.
 
-**Tabelas (8)**
+**Tabelas (9)**
 
-`public.organizacoes`, `public.unidades`, `public.implantacoes`, `public.implantacao_itens`, `public.implantacao_treinamentos`, `public.implantacao_aceites`, `public.configuracoes_unidade`, `public.configuracao_plataforma`
+`public.organizacoes`, `public.unidades`, `public.secretarias`, `public.implantacoes`, `public.implantacao_itens`, `public.implantacao_treinamentos`, `public.implantacao_aceites`, `public.configuracoes_unidade`, `public.configuracao_plataforma`
 
 ### Site comercial e pedido de demonstração
 
