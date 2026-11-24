@@ -26,22 +26,26 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Diluicoes from './Diluicoes'
 import { EnviarArquivo } from './EnviarArquivo'
-import { PainelFarmacia, type FaltaPriorizada } from './PainelFarmacia'
+import { AcoesFalta, PainelFarmacia, QuemFicaSem, RetornoAoPlantao, type FaltaPriorizada } from './PainelFarmacia'
+import { usePrescricoesVigentes, type ItemVigente } from '@/hooks/usePrescricoesVigentes'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
 import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 import { SeloControlado, SeloDoMedicamento } from '@/components/farmacia/SeloControlado'
 import { useControleDosItens } from '@/hooks/useControlados'
+import { AVISO_DOSE_NAO_INFORMADA, agruparPorPaciente, contarFila, doseNaoInformada, separarVencidos } from '@/lib/filaValidacao'
 import type { Controle } from '@/domain/controlados'
 import { comSinal, rotuloMovimento, type Movimento } from '@/lib/movimentosEstoque'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 
+// FA1 (revisão do perfil, RT 24/11/2026): a Central abre em "Pede você agora";
+// o número da fila é um só (contarFila), na aba Validação, no menu e no topo.
 const ABAS = [
-  ['painel', 'Painel'], ['disponibilidade', 'Disponibilidade'], ['diluicao', 'Diluição'],
-  ['faltas', 'Faltas'], ['validacao', 'Validação'],
+  ['painel', 'Pede você agora'], ['validacao', 'Validação'], ['disponibilidade', 'Disponibilidade'],
+  ['diluicao', 'Diluição'], ['faltas', 'Faltas'],
 ] as const
 type Aba = (typeof ABAS)[number][0]
 const hora = (iso: string | null) => (iso ? dataHora(iso) : '—')
@@ -57,11 +61,11 @@ export default function Farmacia() {
   const [aba, setAba] = React.useState<Aba>('painel')
   const { unidadeAtiva } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
-  const aConferir = useFilaValidacao(unidade).data?.length
+  const aConferir = contarFila(useFilaValidacao(unidade).data)
   return (
     <div className="flex w-full max-w-5xl flex-col">
       <TituloPagina icone={FlaskConical} titulo="Central do Farmacêutico"
-        descricao="O que existe na unidade, como se dilui e o que volta para correção" />
+        descricao="Prescrições a validar, faltas e estoque da unidade" />
       <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="mb-[18px]">
         <TabsList aria-label="Central do Farmacêutico">
           {ABAS.map(([k, r]) => (
@@ -109,6 +113,8 @@ function Disponibilidade({ unidade }: { unidade: string }) {
   const qc = useQueryClient()
   const [filtro, setFiltro] = React.useState('')
   const [soAv, setSoAv] = React.useState(false)
+  const [soSemSaldo, setSoSemSaldo] = React.useState(false)
+  const [informar, setInformar] = React.useState(false)
   const [escolhido, setEscolhido] = React.useState<string | null>(null)
   const [erro, setErro] = React.useState<string | null>(null)
   const lista = useQuery({
@@ -123,13 +129,36 @@ function Disponibilidade({ unidade }: { unidade: string }) {
     void qc.invalidateQueries({ queryKey: ['farmacia-estoque'] })
     void qc.invalidateQueries({ queryKey: ['disponibilidade'] })
     void qc.invalidateQueries({ queryKey: ['faltas'] })
+    void qc.invalidateQueries({ queryKey: ['extrato-estoque'] })
+    void qc.invalidateQueries({ queryKey: ['faixa-farmaceutico'] })
   }
   const termo = filtro.trim().toLowerCase()
   const todos = lista.data ?? []
-  const visiveis = todos.filter((d) => (!soAv || d.alta_vigilancia)
+  const semSaldo = todos.filter((d) => d.quantidade == null).length
+  const informados = todos.length - semSaldo
+  // DI1: enquanto nenhum saldo foi informado, a lista começa nos sem saldo
+  const filtrarSemSaldo = soSemSaldo || (informar && informados === 0)
+  const visiveis = todos.filter((d) => (!soAv || d.alta_vigilancia) && (!filtrarSemSaldo || d.quantidade == null)
     && (d.principio_ativo.toLowerCase().includes(termo) || (d.apresentacao ?? '').toLowerCase().includes(termo)))
-  const informados = todos.filter((d) => d.quantidade != null).length
   const sel = visiveis.find((d) => d.medicamento_id === escolhido) ?? visiveis[0]
+  // DI1 (revisão do perfil, RT 24/11/2026): sem nenhum saldo informado, um passo
+  // só no lugar das linhas vazias
+  if (lista.data && todos.length > 0 && informados === 0 && !informar) {
+    return (
+      <section aria-label="Primeiro passo da disponibilidade" className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-5 py-4">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-corpo font-semibold text-tinta">Envie a lista ou informe os saldos</h3>
+          <p className="text-apoio text-pretty text-tinta-sussurro">
+            Nenhum dos {todos.length} medicamentos da unidade tem saldo informado. A lista da farmácia central fica registrada como comprovante;
+            o saldo que vale é o que você informa, item a item, na própria linha.
+          </p>
+        </div>
+        <EnviarArquivo unidade={unidade} tipo="lista_medicacoes" icone={ClipboardPlus} rotulo="Enviar lista de medicações"
+          ajuda="Planilha, documento ou PDF da farmácia central." />
+        <div><Button size="sm" onClick={() => setInformar(true)}>Informar os saldos</Button></div>
+      </section>
+    )
+  }
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
@@ -143,6 +172,7 @@ function Disponibilidade({ unidade }: { unidade: string }) {
           <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-2.5">
             <span className="text-apoio text-tinta-sussurro">{informados} de {todos.length} com saldo · falta e crítico primeiro</span>
             <div className="ml-auto flex flex-wrap items-center gap-2">
+              {semSaldo > 0 && <Filtro ativo={filtrarSemSaldo} onClick={() => { setSoSemSaldo(!filtrarSemSaldo); setInformar(true) }}>Sem saldo informado ({semSaldo})</Filtro>}
               <label className="relative">
                 <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
                 <Input aria-label="Filtrar medicamento" className="h-8 w-48 pl-8" placeholder="Filtrar medicamento" value={filtro} onChange={(e) => setFiltro(e.target.value)} />
@@ -151,7 +181,7 @@ function Disponibilidade({ unidade }: { unidade: string }) {
             </div>
           </div>
           {lista.isLoading && <p className="px-4 py-4 text-apoio text-tinta-sussurro">Carregando…</p>}
-          {!lista.isLoading && visiveis.length === 0 && <p className="px-4 py-4 text-apoio text-tinta-sussurro">Nenhum medicamento com esse termo.</p>}
+          {!lista.isLoading && visiveis.length === 0 && <p className="px-4 py-4 text-apoio text-tinta-sussurro">{filtrarSemSaldo && !termo ? 'Todos os medicamentos têm saldo informado.' : 'Nenhum medicamento com esse termo.'}</p>}
           {visiveis.length > 0 && (
             <Table aria-label="Saldo por medicamento">
               <TableHeader>
@@ -172,8 +202,9 @@ function Disponibilidade({ unidade }: { unidade: string }) {
                         <span className="text-rotulo text-tinta-sussurro">{d.apresentacao ?? '—'}</span>
                       </BotaoLinha>
                     </TableCell>
-                    <TableCell className={cn('text-right font-semibold tabular-nums', d.situacao === 'falta' ? 'text-critico' : d.situacao === 'critico' ? 'text-atencao' : 'text-tinta')}>
-                      {fmt(d.quantidade)}
+                    <TableCell className="text-right">
+                      {/* DI1: contagem rápida na própria linha (ajuste de inventário, fica no extrato) */}
+                      <SaldoNaLinha key={`${d.medicamento_id}:${d.quantidade}`} d={d} unidade={unidade} aoErro={setErro} aoMudar={recarregar} />
                     </TableCell>
                     <TableCell className="pr-4"><SeloEstoque situacao={d.situacao} /></TableCell>
                   </TableRow>
@@ -190,6 +221,34 @@ function Disponibilidade({ unidade }: { unidade: string }) {
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * DI1: o saldo editável na linha. Grava pelo ajuste de inventário (ajustar_estoque,
+ * a mesma RPC da ficha), com o motivo dito: a primeira contagem ou a contagem
+ * rápida. Entrada com documento continua na ficha do item.
+ */
+function SaldoNaLinha({ d, unidade, aoErro, aoMudar }: { d: Estoque; unidade: string; aoErro: (m: string | null) => void; aoMudar: () => void }) {
+  const original = d.quantidade == null ? '' : String(d.quantidade).replace('.', ',')
+  const [v, setV] = React.useState(original)
+  const [salvando, setSalvando] = React.useState(false)
+  async function salvar() {
+    const q = num(v)
+    if (q == null || Number.isNaN(q) || q === d.quantidade) { setV(original); return }
+    if (q < 0) { aoErro('O saldo contado é zero ou mais.'); return }
+    setSalvando(true)
+    const { error } = await supabase.rpc('ajustar_estoque', { p_unidade: unidade, p_medicamento: d.medicamento_id, p_quantidade: q,
+      p_motivo: d.quantidade == null ? 'Contagem inicial na Disponibilidade' : 'Contagem rápida na Disponibilidade' })
+    setSalvando(false)
+    if (error) { aoErro(error.message); return }
+    aoErro(null); aoMudar()
+  }
+  return (
+    <Input aria-label={`Saldo de ${d.principio_ativo}`} inputMode="decimal" placeholder="—" value={v} disabled={salvando}
+      className={cn('ml-auto h-8 w-20 text-right font-semibold tabular-nums', d.situacao === 'falta' ? 'text-critico' : d.situacao === 'critico' ? 'text-atencao' : 'text-tinta')}
+      onClick={(e) => e.stopPropagation()} onChange={(e) => setV(e.target.value)} onBlur={() => void salvar()}
+      onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') { setV(original); aoErro(null) } }} />
   )
 }
 
@@ -421,12 +480,16 @@ function Faltas({ unidade }: { unidade: string }) {
       return (data ?? []) as unknown as Falta[]
     },
   })
-  const avancar = async (id: string, situacao: string) => {
-    const { error } = await supabase.rpc('avancar_falta', { p_falta: id, p_situacao: situacao })
-    if (error) return setErro(error.message)
+  // DI3: as mesmas ações do painel (AcoesFalta) e quem fica sem o medicamento
+  const chamar = async (p: PromiseLike<{ error: { message: string } | null }>) => {
+    const { error } = await p
+    if (error) { setErro(error.message); return false }
     setErro(null)
     for (const k of ['faltas', 'faltas-priorizadas', 'farmacia-estoque']) void qc.invalidateQueries({ queryKey: [k] })
+    return true
   }
+  const vigentes = usePrescricoesVigentes(unidade)
+  const pacientesDaFalta = (medicamentoId: string) => (vigentes.data ? vigentes.data.itens.filter((i) => i.medicamento_id === medicamentoId) : null)
   const abertasLista = abertas.data ?? []
   const porSituacao = (sit: string) => abertasLista.filter((f) => f.situacao === sit)
   const repostas = (lista.data ?? []).filter((f) => f.situacao === 'reposta')
@@ -463,7 +526,7 @@ function Faltas({ unidade }: { unidade: string }) {
           <TabsContent key={sit} value={sit}>
             <ListaFaltas vazio={sit === 'registrada' ? 'Nenhuma falta registrada esperando cotação.' : 'Nenhuma falta em cotação.'}>
               {porSituacao(sit).map((f) => (
-                <LinhaFaltaAberta key={f.id} f={f} agora={agora} avancar={avancar} />
+                <LinhaFaltaAberta key={f.id} f={f} agora={agora} chamar={chamar} pacientes={pacientesDaFalta(f.medicamento_id)} />
               ))}
             </ListaFaltas>
           </TabsContent>
@@ -575,8 +638,11 @@ function ListaFaltas({ vazio, children }: { vazio: string; children: React.React
   )
 }
 
-/** Uma falta aberta: o que falta, quem sinalizou, há quanto, quantos pacientes e a próxima etapa. */
-function LinhaFaltaAberta({ f, agora, avancar }: { f: FaltaPriorizada; agora: number; avancar: (id: string, situacao: string) => Promise<void> }) {
+/** Uma falta aberta: o que falta, quem sinalizou, há quanto, quem fica sem e as ações (as mesmas do painel). */
+function LinhaFaltaAberta({ f, agora, chamar, pacientes }: {
+  f: FaltaPriorizada; agora: number; chamar: (p: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>; pacientes: ItemVigente[] | null
+}) {
+  const [respondendo, setRespondendo] = React.useState(false)
   return (
     <li className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-b border-trilha px-5 py-2.5 last:border-b-0">
       <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-0.5">
@@ -590,14 +656,15 @@ function LinhaFaltaAberta({ f, agora, avancar }: { f: FaltaPriorizada; agora: nu
         {f.retorno && <span className="text-rotulo text-conforme">Retorno ao plantão: "{f.retorno.texto}"</span>}
       </div>
       <span className="w-24 text-apoio text-tinta-apoio tabular-nums">há {haQuanto(f.sinalizada_em, agora)}</span>
-      <span className="w-36 text-rotulo text-tinta-apoio">
-        {f.pacientes > 0 ? `${f.pacientes} ${f.pacientes === 1 ? 'paciente' : 'pacientes'} com prescrição` : 'sem paciente com prescrição'}
-        {f.setores.length > 0 && <span className="block text-tinta-sussurro">{f.setores.join(', ')}</span>}
-      </span>
-      <div className="flex gap-2">
-        {f.situacao === 'registrada' && <Button size="xs" variant="outline" onClick={() => void avancar(f.id, 'em_cotacao')}>Em cotação</Button>}
-        <Button size="xs" onClick={() => void avancar(f.id, 'reposta')}>Reposta</Button>
-      </div>
+      {!pacientes?.length && (
+        <span className="w-36 text-rotulo text-tinta-apoio">
+          {f.pacientes > 0 ? `${f.pacientes} ${f.pacientes === 1 ? 'paciente' : 'pacientes'} com prescrição` : 'sem paciente com prescrição'}
+          {f.setores.length > 0 && <span className="block text-tinta-sussurro">{f.setores.join(', ')}</span>}
+        </span>
+      )}
+      {!respondendo && <span className="ml-auto"><AcoesFalta f={f} chamar={chamar} responder={() => setRespondendo(true)} /></span>}
+      {pacientes && pacientes.length > 0 && <QuemFicaSem pacientes={pacientes} />}
+      {respondendo && <RetornoAoPlantao f={f} chamar={chamar} fechar={() => setRespondendo(false)} />}
     </li>
   )
 }
@@ -608,6 +675,8 @@ type ItemFila = {
   posologia: string | null; se_necessario: boolean; peso_kg: number | null; diluicao_versao: number | null; diluicao_texto: string | null
   diluicao_divergente: boolean; justificativa_divergencia: string | null; incompatibilidades: string[] | null
   alta_vigilancia: boolean; prescrito_por: string | null; prescrito_em: string; ultima_situacao: string | null; ultimo_motivo: string | null
+  /** Lacuna 6: validade do item, do servidor ('vencido', 'vence_logo', 'em_dia', 'sem_prazo'). */
+  valida_ate?: string | null; validade?: string | null
 }
 
 /** A fila de validação (a cada 60 s): a aba mostra quantos, a caixa de entrada mostra quais. */
@@ -624,18 +693,7 @@ function useFilaValidacao(unidade: string | undefined) {
   })
 }
 
-/** Itens da fila juntos por paciente, na ordem em que chegam do servidor. */
-type GrupoFila = { chave: string; local: string | null; paciente: string; itens: ItemFila[] }
-function agrupar(itens: ItemFila[]): GrupoFila[] {
-  const grupos = new Map<string, GrupoFila>()
-  for (const i of itens) {
-    const chave = `${i.local ?? ''}|${i.paciente_nome}`
-    const g = grupos.get(chave) ?? { chave, local: i.local, paciente: i.paciente_nome, itens: [] }
-    g.itens.push(i)
-    grupos.set(chave, g)
-  }
-  return [...grupos.values()]
-}
+type Interacao = { item_id: string; outro: string; efeito: string | null; gravidade: string | null; justificativa: string | null; por: string | null }
 
 /** "40min", "2h", "1h 55min", "1 dia", "3 dias" desde o instante. */
 function haQuanto(iso: string, agora: number) {
@@ -647,9 +705,11 @@ function haQuanto(iso: string, agora: number) {
 }
 
 // Revisão visual 3.7 (opção C do RT, 26/10/2026): a validação como caixa de
-// entrada. À esquerda, um paciente por linha, com quantos itens, há quanto tempo
-// e os sinais (alta vigilância, fora do padrão, devolvido); à direita, a
-// prescrição do paciente escolhido, com Confere e Devolver em cada item.
+// entrada. Revisão do perfil (VA1–VA3, RT 24/11/2026): um paciente por linha
+// (pelo id do paciente, não pelo local), a ordem dita na tela, o item de
+// prescrição vencida fora da validação e, ao lado dos itens, o que se sabe do
+// paciente: peso de referência, as outras prescrições vigentes e as interações
+// críticas registradas no conjunto.
 function Validacao({ unidade }: { unidade: string }) {
   const qc = useQueryClient()
   const [erro, setErro] = React.useState<string | null>(null)
@@ -661,66 +721,169 @@ function Validacao({ unidade }: { unidade: string }) {
     return () => window.clearInterval(t)
   }, [])
   const fila = useFilaValidacao(unidade)
+  const { aValidar, vencidos } = separarVencidos(fila.data ?? [])
   // lacuna 3: a lista de cada item controlado (o selo e o sinal do paciente)
-  const controles = useControleDosItens((fila.data ?? []).map((i) => i.item_id)).data
-  if (fila.data?.length === 0) return <Vazio icone={CheckCircle2} titulo="Nada para validar" texto="Itens novos de prescrição aparecem aqui até serem conferidos." />
-  const itens = fila.data ?? []
-  const grupos = agrupar(itens)
+  const controles = useControleDosItens(aValidar.map((i) => i.item_id)).data
+  const vigentes = usePrescricoesVigentes(unidade)
+  const pacienteDoItem = React.useMemo(() => new Map((vigentes.data?.itens ?? []).map((i) => [i.item_id, i.paciente_id])), [vigentes.data])
+  const controlados = React.useMemo(() => new Set(controles?.keys() ?? []), [controles])
+  const grupos = agruparPorPaciente(aValidar, controlados, pacienteDoItem)
   // o paciente escolhido some quando o último item dele é conferido: passa ao próximo
   const sel = grupos.find((g) => g.chave === escolhido) ?? grupos[0]
-  const fora = itens.filter((i) => i.diluicao_divergente).length
+  const fora = aValidar.filter((i) => i.diluicao_divergente).length
+  const vencidasBloco = vencidos.length > 0 && <ItensVencidos itens={vencidos} />
+  if (fila.data && aValidar.length === 0) {
+    return (
+      <div className="flex flex-col gap-3">
+        <Vazio icone={CheckCircle2} titulo="Nada para validar" texto="Itens novos de prescrição aparecem aqui até serem conferidos." />
+        {vencidasBloco}
+      </div>
+    )
+  }
   return (
     <div className="flex flex-col gap-3">
       <p className="text-apoio text-tinta-sussurro">
-        {itens.length} {itens.length === 1 ? 'item' : 'itens'} de {grupos.length} {grupos.length === 1 ? 'paciente' : 'pacientes'}
-        {fora > 0 && <span className="text-atencao"> · {fora} fora do padrão de diluição</span>} · o que não confere volta para quem prescreveu, com o motivo.
+        {aValidar.length} {aValidar.length === 1 ? 'item' : 'itens'} de {grupos.length} {grupos.length === 1 ? 'paciente' : 'pacientes'}
+        {fora > 0 && <span className="text-atencao"> · {fora} fora do padrão de diluição</span>}
+        {' · '}alta vigilância e controlado primeiro, depois o mais antigo
       </p>
       <MensagemErro texto={erro ?? (fila.error ? (fila.error as Error).message : null)} />
       {sel && (
-        <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[280px_minmax(0,1fr)]">
           <ul aria-label="Pacientes com itens a conferir" className="border-b border-fio md:border-r md:border-b-0">
-            {grupos.map((g) => {
-              const primeiro = g.itens[0]
-              return (
-                <li key={g.chave}>
-                  <BotaoLinha variante="linha" aria-current={g.chave === sel.chave ? 'true' : undefined} onClick={() => setEscolhido(g.chave)}
-                    className={cn('flex-col gap-0.5 px-4', g.chave === sel.chave && 'bg-alerta-marca')}>
-                    <span className="flex w-full items-baseline justify-between gap-2">
-                      <span className="text-apoio font-semibold text-tinta">{g.local && <span className="text-acao">{g.local} · </span>}{g.paciente}</span>
-                      <span className="shrink-0 text-rotulo text-tinta-sussurro tabular-nums">há {haQuanto(primeiro.prescrito_em, agora)}</span>
-                    </span>
-                    <span className="text-rotulo text-tinta-apoio">
-                      {g.itens.length} {g.itens.length === 1 ? 'item' : 'itens'} · {g.itens.map((i) => i.descricao).join(', ')}
-                    </span>
-                    <span className="flex flex-wrap gap-x-2 text-rotulo font-semibold empty:hidden">
-                      {g.itens.some((i) => i.alta_vigilancia) && <span className="text-atencao">alta vigilância</span>}
-                      {g.itens.some((i) => controles?.has(i.item_id)) && <span className="text-acao">controlado</span>}
-                      {g.itens.some((i) => i.diluicao_divergente) && <span className="text-atencao">fora do padrão</span>}
-                      {g.itens.some((i) => i.ultima_situacao === 'devolvido') && <span className="text-critico">devolvido</span>}
-                    </span>
-                  </BotaoLinha>
-                </li>
-              )
-            })}
+            {grupos.map((g) => (
+              <li key={g.chave}>
+                <BotaoLinha variante="linha" aria-current={g.chave === sel.chave ? 'true' : undefined} onClick={() => setEscolhido(g.chave)}
+                  className={cn('flex-col gap-1 px-4', g.chave === sel.chave && 'bg-alerta-marca')}>
+                  <span className="flex w-full items-baseline justify-between gap-2">
+                    <span className="text-apoio font-semibold text-tinta">{g.paciente}</span>
+                    <span className="shrink-0 text-rotulo text-tinta-sussurro tabular-nums">há {haQuanto(g.desde, agora)}</span>
+                  </span>
+                  {g.locais.length > 0 && <span className="text-rotulo text-tinta-apoio">{g.locais.join(', ')}</span>}
+                  <span className="text-rotulo text-tinta-apoio">
+                    {g.itens.length} {g.itens.length === 1 ? 'item' : 'itens'} · {g.itens.map((i) => i.descricao).join(', ')}
+                  </span>
+                  <span className="flex flex-wrap gap-x-2 text-rotulo font-medium empty:hidden">
+                    {g.itens.some((i) => i.alta_vigilancia) && <span className="text-atencao">alta vigilância</span>}
+                    {g.itens.some((i) => controlados.has(i.item_id)) && <span className="text-acao">controlado</span>}
+                    {g.itens.some((i) => i.diluicao_divergente) && <span className="text-atencao">fora do padrão</span>}
+                    {g.itens.some((i) => i.ultima_situacao === 'devolvido') && <span className="text-critico">devolvido</span>}
+                  </span>
+                </BotaoLinha>
+              </li>
+            ))}
           </ul>
           <section aria-label={`Prescrição de ${sel.paciente}`} className="flex min-w-0 flex-col">
-            <div className="border-b border-fio px-5 py-3.5">
-              <h3 className="text-corpo font-semibold text-tinta">{sel.local ? `${sel.local} · ` : ''}{sel.paciente}</h3>
+            <div className="border-b border-fio px-5 py-3">
+              <h3 className="text-corpo font-semibold text-tinta">{sel.paciente}</h3>
               <p className="text-apoio text-tinta-sussurro">
-                Prescrição de {sel.itens[0].prescrito_por ?? '—'} em {hora(sel.itens[0].prescrito_em)} · há {haQuanto(sel.itens[0].prescrito_em, agora)}
-                {sel.itens[0].peso_kg ? ` · peso de referência ${sel.itens[0].peso_kg} kg` : ''} · {sel.itens.length} {sel.itens.length === 1 ? 'item a conferir' : 'itens a conferir'}
+                {[sel.locais.join(', '), `prescrição de ${sel.itens[0].prescrito_por ?? '—'} em ${hora(sel.itens[0].prescrito_em)}`,
+                  `${sel.itens.length} ${sel.itens.length === 1 ? 'item a conferir' : 'itens a conferir'}`].filter(Boolean).join(' · ')}
               </p>
             </div>
-            {sel.itens.map((i) => (
-              <LinhaValidacao key={i.item_id} i={i} controle={controles?.get(i.item_id) ?? null} aoErro={setErro} aoMudar={() => {
-                void qc.invalidateQueries({ queryKey: ['fila-validacao'] })
-                void qc.invalidateQueries({ queryKey: ['nota-fila-validacao'] })
-              }} />
-            ))}
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_232px]">
+              <div className="flex min-w-0 flex-col">
+                {sel.itens.map((i) => (
+                  <LinhaValidacao key={i.item_id} i={i} controle={controles?.get(i.item_id) ?? null} aoErro={setErro} aoMudar={() => {
+                    void qc.invalidateQueries({ queryKey: ['fila-validacao'] })
+                    void qc.invalidateQueries({ queryKey: ['nota-fila-validacao'] })
+                    void qc.invalidateQueries({ queryKey: ['faixa-farmaceutico'] })
+                  }} />
+                ))}
+              </div>
+              <PainelPaciente key={sel.chave} itens={sel.itens} pacienteId={pacienteDoItem.get(sel.itens[0].item_id) ?? null}
+                vigentes={vigentes.data?.itens ?? null} vigentesErro={!!vigentes.error} />
+            </div>
           </section>
         </div>
       )}
+      {vencidasBloco}
     </div>
+  )
+}
+
+/** VA2: o item de prescrição vencida sai da validação e espera a renovação. */
+function ItensVencidos({ itens }: { itens: ItemFila[] }) {
+  return (
+    <details className="rounded-cartao border border-fio bg-superficie px-5 py-3 text-apoio">
+      <summary className="cursor-pointer text-tinta-apoio">
+        {itens.length} {itens.length === 1 ? 'item de prescrição vencida aguarda' : 'itens de prescrição vencida aguardam'} renovação
+      </summary>
+      <ul className="mt-2 flex flex-col">
+        {itens.map((i) => (
+          <li key={i.item_id} className="flex flex-wrap items-baseline gap-x-2 border-t border-trilha py-2">
+            <span className="font-medium text-tinta">{i.descricao}</span>
+            <span className="text-tinta-sussurro">{[i.paciente_nome, i.local, i.valida_ate ? `vencida em ${hora(i.valida_ate)}` : 'vencida'].filter(Boolean).join(' · ')}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 text-rotulo text-tinta-sussurro">A validação volta quando quem prescreveu renovar o item.</p>
+    </details>
+  )
+}
+
+/**
+ * VA1: ao lado dos itens, o que o farmacêutico já lê do paciente. Idade,
+ * alergias e exames renais não chegam à farmácia hoje (fila_validacao não os
+ * traz e a RLS de pacientes e alergias não abre ao farmacêutico): ficam fora.
+ */
+function PainelPaciente({ itens, pacienteId, vigentes, vigentesErro }: {
+  itens: ItemFila[]; pacienteId: string | null; vigentes: ItemVigente[] | null; vigentesErro: boolean
+}) {
+  const naFila = new Set(itens.map((i) => i.item_id))
+  const outras = pacienteId ? (vigentes ?? []).filter((v) => v.paciente_id === pacienteId && !naFila.has(v.item_id)) : []
+  const ids = [...naFila, ...outras.map((o) => o.item_id)].sort()
+  const interacoes = useQuery({
+    queryKey: ['interacoes-justificadas', ...ids],
+    enabled: ids.length > 0,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('interacoes_justificadas', { p_itens: ids })
+      if (error) throw error
+      return (data ?? []) as unknown as Interacao[]
+    },
+  })
+  const peso = itens.find((i) => i.peso_kg)?.peso_kg
+  const descricao = new Map([...itens.map((i) => [i.item_id, i.descricao] as const), ...outras.map((o) => [o.item_id, o.medicamento] as const)])
+  return (
+    <aside aria-label="Paciente" className="order-first flex flex-col gap-3 border-b border-fio bg-campo px-4 py-3 text-apoio lg:order-none lg:border-b-0 lg:border-l">
+      <div className="flex flex-col gap-1">
+        <span className="text-rotulo text-tinta-sussurro">Peso de referência</span>
+        <span className="text-tinta tabular-nums">{peso ? `${numero(peso)} kg` : 'não informado na prescrição'}</span>
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-rotulo text-tinta-sussurro">Outras prescrições vigentes</span>
+        {vigentesErro || !pacienteId ? <span className="text-tinta-sussurro">não foi possível ler</span>
+          : outras.length === 0 ? <span className="text-tinta-sussurro">nenhuma</span>
+          : (
+            <ul className="flex flex-col gap-1">
+              {outras.map((o) => (
+                <li key={o.item_id} className="text-tinta">
+                  {o.medicamento}
+                  <span className="text-tinta-sussurro">{[o.dose, o.via, o.posologia].filter(Boolean).length ? ` · ${[o.dose, o.via, o.posologia].filter(Boolean).join(' · ')}` : ''}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-rotulo text-tinta-sussurro">Interações críticas no conjunto</span>
+        {interacoes.error ? <span className="text-tinta-sussurro">não foi possível ler</span>
+          : (interacoes.data ?? []).length === 0 ? <span className="text-tinta-sussurro">{interacoes.isLoading ? 'lendo…' : 'nenhuma registrada'}</span>
+          : (
+            <ul className="flex flex-col gap-1">
+              {(interacoes.data ?? []).map((x, k) => (
+                <li key={k} className="text-tinta">
+                  <span className="text-atencao">{descricao.get(x.item_id) ?? 'item'} × {x.outro}</span>
+                  {x.efeito && <span className="block text-tinta-apoio">{x.efeito}</span>}
+                  {x.justificativa && <span className="block text-tinta-sussurro">Justificada{x.por ? ` por ${x.por}` : ''}: "{x.justificativa}"</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+      </div>
+      <p className="text-rotulo text-tinta-sussurro">Idade, alergias e função renal ainda não chegam à farmácia.</p>
+    </aside>
   )
 }
 
@@ -734,16 +897,33 @@ function LinhaValidacao({ i, controle, aoErro, aoMudar }: {
     if (error) return aoErro(error.message)
     aoErro(null); setMotivo(''); setDevolvendo(false); aoMudar()
   }
+  // VA3: dose, via e frequência em destaque; sem dose explícita, só o aviso (nada se calcula)
+  const semDose = doseNaoInformada(i.dose)
+  const frequencia = [i.posologia, i.se_necessario ? 'se necessário' : null].filter(Boolean).join(' · ')
   return (
-    <div className="flex flex-col gap-2 border-b border-trilha px-5 py-3.5 last:border-b-0">
+    <div className="flex flex-col gap-2 border-b border-trilha px-5 py-3 last:border-b-0">
       <div className="flex flex-wrap items-start gap-x-5 gap-y-2">
-        <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-1">
+        <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-2">
           <span className="flex flex-wrap items-baseline gap-2">
             <span className="text-corpo font-semibold text-tinta">{i.descricao}</span>
             {i.alta_vigilancia && <SeloAltaVigilancia />}
             {controle && <SeloControlado controle={controle} />}
           </span>
-          <span className="text-apoio text-tinta">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
+          <dl className="flex flex-wrap gap-x-5 gap-y-1">
+            <div className="flex min-w-0 flex-col">
+              <dt className="text-rotulo text-tinta-sussurro">Dose</dt>
+              <dd className={cn('text-pretty', semDose ? 'text-apoio text-tinta-apoio' : 'text-corpo font-semibold text-tinta tabular-nums')}>{i.dose?.trim() || '—'}</dd>
+            </div>
+            <div className="flex flex-col">
+              <dt className="text-rotulo text-tinta-sussurro">Via</dt>
+              <dd className="text-corpo font-semibold text-tinta">{i.via || '—'}</dd>
+            </div>
+            <div className="flex flex-col">
+              <dt className="text-rotulo text-tinta-sussurro">Frequência</dt>
+              <dd className="text-corpo font-semibold text-tinta">{frequencia || '—'}</dd>
+            </div>
+          </dl>
+          {semDose && <span className="text-apoio text-atencao">{AVISO_DOSE_NAO_INFORMADA}</span>}
           {i.diluicao_texto && (
             <span className={cn('text-apoio', i.diluicao_divergente ? 'text-atencao' : 'text-tinta-apoio')}>
               {i.diluicao_divergente ? `Fora do padrão: ${i.diluicao_texto} — ${i.justificativa_divergencia}` : `Padrão v${i.diluicao_versao}: ${i.diluicao_texto}`}

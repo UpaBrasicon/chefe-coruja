@@ -50,5 +50,7 @@ export function usePrimeirosPassos(perfilId: string | undefined, papel: string |
     if (chave && !progresso.feitos.includes(id)) gravar(chave, { ...progresso, feitos: [...progresso.feitos, id] })
   }
   const esconder = () => { if (chave) gravar(chave, { ...progresso, escondido: true }) }
-  return { progresso, marcar, esconder }
+  // EN3: a primeira visita marca o cartão como visto; nas próximas ele abre recolhido
+  const marcarVisto = () => { if (chave && !progresso.visto) gravar(chave, { ...progresso, visto: true }) }
+  return { progresso, marcar, esconder, marcarVisto }
 }

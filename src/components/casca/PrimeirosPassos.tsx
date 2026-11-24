@@ -2,7 +2,7 @@
 // OB1–OB4 = A do RT, 23/11/2026). Tarefas e regras dos roteiros de
 // treinamento; cada tarefa leva à tela; "Já sei" marca; "Esconder" some com o
 // cartão, que volta pelo menu do usuário.
-import { Check, ChevronDown, ChevronRight, Compass, X } from 'lucide-react'
+import { Check, ChevronRight, Compass, X } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -12,25 +12,46 @@ import { usePrimeirosPassos } from '@/hooks/usePrimeirosPassos'
 import { cn } from '@/lib/utils'
 
 export function PrimeirosPassos({ rotasDoMenu, perfilId, papel }: { rotasDoMenu: string[]; perfilId: string | undefined; papel: string | null }) {
-  const { progresso, marcar, esconder } = usePrimeirosPassos(perfilId, papel)
+  const { progresso, marcar, esconder, marcarVisto } = usePrimeirosPassos(perfilId, papel)
   const guia = guiaDoPapel(papel, rotasDoMenu)
-  // revisão do gestor (RT, 24/11/2026, M1): no gestor e no administrador o cartão abre recolhido
-  const [recolhido, setRecolhido] = React.useState(papel === 'gestor' || papel === 'admin')
-  if (!guia || !mostrarCartao(guia, progresso)) return null
+  const mostrar = mostrarCartao(guia, progresso)
+  // EN3 (revisão do perfil Enfermeiro, RT 24/11/2026): aberto só na primeira
+  // visita; depois, uma linha recolhida com "Ver passos". A visita fica guardada
+  // na primeira vez que o cartão aparece para a pessoa e o papel.
+  // Revisão do gestor (RT, 24/11/2026, M1): no gestor e no administrador o
+  // cartão abre recolhido sempre.
+  const sempreRecolhido = papel === 'gestor' || papel === 'admin'
+  const jaVisto = !!progresso.visto
+  const abertoAoEntrar = !jaVisto && !sempreRecolhido
+  const chave = perfilId && papel ? `${perfilId}:${papel}` : null
+  const [estado, setEstado] = React.useState<{ chave: string; aberto: boolean } | null>(null)
+  if (mostrar && chave && estado?.chave !== chave) setEstado({ chave, aberto: abertoAoEntrar })
+  const setAberto = (aberto: boolean) => { if (chave) setEstado({ chave, aberto }) }
+  React.useEffect(() => {
+    if (mostrar && chave && !jaVisto) marcarVisto()
+  }, [mostrar, chave, jaVisto, marcarVisto])
+  if (!guia || !mostrar) return null
   const feitos = guia.passos.filter((x) => progresso.feitos.includes(x.id)).length
   const total = guia.passos.length
+  if (!(estado?.aberto ?? abertoAoEntrar)) {
+    return (
+      <section aria-label="Primeiros passos" className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-cartao border border-fio bg-superficie px-4 py-2">
+        <Compass className="size-4 text-acao" aria-hidden />
+        <span className="text-apoio text-tinta">Primeiros passos · {guia.titulo}</span>
+        <span className="text-apoio tabular-nums text-tinta-sussurro">{feitos} de {total}</span>
+        <Button variant="ghost" size="xs" className="ml-auto" aria-expanded={false} onClick={() => setAberto(true)}>Ver passos</Button>
+      </section>
+    )
+  }
   return (
     <section aria-label="Primeiros passos" className="mb-5 flex flex-col gap-3 rounded-cartao border border-fio-forte bg-superficie px-4 py-3.5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Compass className="size-4 text-acao" aria-hidden />
         <span className="text-controle font-semibold text-tinta">Primeiros passos · {guia.titulo}</span>
         <span className="text-apoio tabular-nums text-tinta-sussurro">{feitos} de {total}</span>
-        <Button variant="ghost" size="xs" className="ml-auto" aria-expanded={!recolhido} onClick={() => setRecolhido((x) => !x)}>
-          <ChevronDown className={cn('transition-transform', recolhido && '-rotate-90')} /> {recolhido ? 'Ver passos' : 'Recolher'}
-        </Button>
+        <Button variant="ghost" size="xs" className="ml-auto" aria-expanded onClick={() => setAberto(false)}>Recolher</Button>
         <Button variant="outline" size="xs" onClick={esconder}><X /> Esconder</Button>
       </div>
-      {!recolhido && <>
       <div className="h-1.5 overflow-hidden rounded-capsula bg-trilha" aria-hidden>
         <div className="h-full rounded-capsula bg-acao" style={{ width: `${Math.round((feitos / total) * 100)}%` }} />
       </div>
@@ -56,7 +77,6 @@ export function PrimeirosPassos({ rotasDoMenu, perfilId, papel }: { rotasDoMenu:
           {guia.regras.map((r) => <li key={r}>• {r}</li>)}
         </ul>
       )}
-      </>}
     </section>
   )
 }

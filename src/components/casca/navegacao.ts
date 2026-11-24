@@ -229,16 +229,19 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
     ITEM_ESCALA,
   ],
+  // FA2 (revisão do perfil Farmacêutico, RT 24/11/2026): o menu em grupos,
+  // Trabalho, Segurança, Estoque e Equipe.
   farmaceutico: [
-    { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },
-    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
+    { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia', grupo: 'Trabalho' },
+    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true, grupo: 'Trabalho' },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true, grupo: 'Segurança' },
+    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true, grupo: 'Segurança' },
     // Fase 5B, etapa 3.1: unidade de consumo (vale para todas as unidades)
-    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
-    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
-    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
+    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true, grupo: 'Estoque' },
     // ajustes da revisão, item 4 (RT, 24/11/2026): a farmácia cadastra os materiais
-    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true },
-    ITEM_ESCALA,
+    // (migration 20270421000073)
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true, grupo: 'Estoque' },
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
     // Sem Prontuários (RT, 27/10/2026): o que o farmacêutico precisa do
     // paciente chega pela validação e pela dispensação.
   ],
@@ -422,6 +425,10 @@ export function agruparNavegacao(itens: ItemNav[]): { grupo: string | null; iten
 export const ICONE_GRUPO: Record<string, LucideIcon> = {
   Porta: DoorOpen,
   Leitos: BedDouble,
+  // grupos do farmacêutico (FA2)
+  Trabalho: FlaskConical,
+  'Segurança': ShieldAlert,
+  Estoque: PackageCheck,
   Cadastro: GitMerge,
   Rede: Waypoints,
   'Farmácia': FlaskConical,

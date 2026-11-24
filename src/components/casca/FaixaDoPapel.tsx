@@ -5,7 +5,8 @@ import { BedDouble, Building2, ClipboardList, Clock, DoorOpen, FlaskConical, Hou
 import { supabase } from '@/lib/supabase'
 import { meuPlantaoAgora } from '@/lib/rpcCasca'
 import { formatarDuracao, nivelDoTurno } from '@/domain/plantao'
-import { FaixaParametros, Parametro, type Nivel } from '@/components/monitor/Parametros'
+import { FaixaParametros, Parametro, ResumoParametros, type Nivel } from '@/components/monitor/Parametros'
+import { separarVencidos } from '@/lib/filaValidacao'
 import { LIMITES_PADRAO } from '@/lib/limitesUnidade'
 import type { Papel } from '@/types/database'
 import { data, hora } from '@/lib/formato'
@@ -32,7 +33,7 @@ async function horaServidor(): Promise<Date> {
 }
 
 // ── farmacêutico ────────────────────────────────────────────────────────────
-type ItemFila = { alta_vigilancia: boolean; diluicao_divergente: boolean; prescrito_em: string }
+type ItemFila = { alta_vigilancia: boolean; diluicao_divergente: boolean; prescrito_em: string; validade?: string | null }
 type Disp = { principio_ativo: string; situacao: string }
 
 function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
@@ -58,7 +59,10 @@ function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
       }
     },
   })
-  const fila = d?.fila ?? []
+  // FA1 (revisão do perfil, RT 24/11/2026): a fila conta o mesmo que a aba
+  // Validação e o menu (sem os itens de prescrição vencida); o que está zerado
+  // vira uma linha cinza só, e só o que tem número ganha linha.
+  const fila = separarVencidos(d?.fila ?? []).aValidar
   const informados = (d?.disp ?? []).filter((x) => x.situacao !== 'nao_informado')
   const emFalta = informados.filter((x) => x.situacao === 'falta')
   const criticos = informados.filter((x) => x.situacao === 'critico')
@@ -66,42 +70,57 @@ function FaixaFarmaceutico({ unidadeId }: { unidadeId: string }) {
   const divergentes = fila.filter((i) => i.diluicao_divergente).length
   const altaVig = fila.filter((i) => i.alta_vigilancia).length
   const maisAntigo = d && fila.length ? Math.max(...fila.map((i) => minutosDesde(i.prescrito_em, d.agora))) : null
-  const nivelEstoque: Nivel = emFalta.length ? 'critico' : criticos.length ? 'atencao' : 'ok'
-  return (
-    <FaixaParametros rotulo="Parâmetros da farmácia">
-      <Parametro
-        grandeza="suprimento" icone={FlaskConical} rotulo="Abaixo do mínimo"
-        valor={d ? abaixo : '—'} unidade={d ? `de ${informados.length} ${informados.length === 1 ? 'item informado' : 'itens informados'}` : undefined}
-        estado={!d ? 'Carregando' : emFalta.length ? `${emFalta[0].principio_ativo} em falta` : criticos.length ? `${criticos[0].principio_ativo} no limite crítico` : informados.length ? 'Estoque informado acima dos limites' : 'Nenhum estoque informado ainda'}
-        nivel={nivelEstoque} pct={informados.length ? abaixo / informados.length : undefined}
-      />
-      <Parametro
-        grandeza="observacao" icone={ClipboardList} rotulo="Prescrições a conferir"
-        valor={d ? fila.length : '—'} unidade="na fila"
-        estado={!d ? 'Carregando' : !fila.length ? 'Nada para validar' : [
+  const nivelEstoque: Nivel = emFalta.length ? 'critico' : 'atencao'
+  if (!d) return <FaixaParametros rotulo="Parâmetros da farmácia"><Parametro grandeza="observacao" icone={ClipboardList} rotulo="Prescrições a validar" valor="—" estado="Carregando" nivel="ok" /></FaixaParametros>
+  const quietos = [
+    !fila.length && 'nada para validar',
+    !abaixo && (informados.length ? 'estoque informado acima dos limites' : 'estoque não informado'),
+    !d.semLiberacao && 'nenhuma administração sem liberação',
+    !d.faltasAbertas && 'nenhuma falta em aberto',
+  ].filter((x): x is string => !!x)
+  const linhas = [
+    fila.length > 0 && (
+      <Parametro key="fila"
+        grandeza="observacao" icone={ClipboardList} rotulo="Prescrições a validar"
+        valor={fila.length} unidade="na fila"
+        estado={[
           divergentes && `${divergentes} fora do padrão de diluição`, altaVig && `${altaVig} de alta vigilância`,
           maisAntigo !== null && `mais antigo há ${formatarDuracao(maisAntigo)}`,
         ].filter(Boolean).join(' · ')}
-        nivel={divergentes || altaVig ? 'atencao' : 'ok'}
+        nivel="atencao"
       />
-      {/* Fase 2: alta vigilância administrada sem a liberação da farmácia
-          (com justificativa) entra no lugar do "item mais antigo", que passou
-          para o estado da fila; a Central não repete estes números */}
-      <Parametro
+    ),
+    abaixo > 0 && (
+      <Parametro key="estoque"
+        grandeza="suprimento" icone={FlaskConical} rotulo="Abaixo do mínimo"
+        valor={abaixo} unidade={`de ${informados.length} ${informados.length === 1 ? 'item informado' : 'itens informados'}`}
+        estado={emFalta.length ? `${emFalta[0].principio_ativo} em falta` : `${criticos[0].principio_ativo} no limite crítico`}
+        nivel={nivelEstoque} pct={abaixo / informados.length}
+      />
+    ),
+    // Fase 2: alta vigilância administrada sem a liberação da farmácia (com justificativa)
+    d.semLiberacao > 0 && (
+      <Parametro key="semlib"
         grandeza="turno" icone={ShieldAlert} rotulo="Administradas sem liberação"
-        valor={d ? d.semLiberacao : '—'} unidade="alta vigilância"
-        estado={!d ? 'Carregando' : d.semLiberacao ? 'Conferir e liberar o item' : 'Nada para conferir'}
-        nivel={d?.semLiberacao ? 'atencao' : 'ok'}
+        valor={d.semLiberacao} unidade="alta vigilância" estado="Conferir e liberar o item" nivel="atencao"
         onClick={() => navigate('/alta-vigilancia')} acao="Conferir alta vigilância"
       />
-      <Parametro
+    ),
+    d.faltasAbertas > 0 && (
+      <Parametro key="faltas"
         grandeza="leitos" icone={PackageX} rotulo="Faltas sinalizadas em aberto"
-        valor={d ? d.faltasAbertas : '—'} unidade={d?.faltasAbertas === 1 ? 'falta' : 'faltas'}
-        estado={!d ? 'Carregando' : d.faltasAbertas ? 'Registradas ou em cotação' : 'Nenhuma em aberto'}
-        nivel={d?.faltasAbertas ? 'atencao' : 'ok'}
-        onClick={() => navigate('/farmacia')} acao="Ver faltas"
+        valor={d.faltasAbertas} unidade={d.faltasAbertas === 1 ? 'falta' : 'faltas'} estado="Registradas ou em cotação" nivel="atencao"
       />
-    </FaixaParametros>
+    ),
+  ].filter(Boolean)
+  const linhaCinza = quietos.length > 0 && (
+    <p className="bg-campo px-5 py-2.5 text-controle text-tinta-sussurro">{quietos.map((q, k) => (k === 0 ? q[0].toUpperCase() + q.slice(1) : q)).join(' · ')}</p>
+  )
+  return (
+    <section aria-label="Parâmetros da farmácia" className="mb-[22px] overflow-hidden rounded-container border border-fio bg-superficie">
+      {linhas.length > 0 && <ResumoParametros>{linhas}</ResumoParametros>}
+      {linhaCinza}
+    </section>
   )
 }
 

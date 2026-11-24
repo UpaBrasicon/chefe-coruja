@@ -15,6 +15,8 @@ import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 import { SeloControlado } from '@/components/farmacia/SeloControlado'
 import { useControladosDoCatalogo, useControleDosItens } from '@/hooks/useControlados'
 import type { Controle } from '@/domain/controlados'
+import { separarVencidos } from '@/lib/filaValidacao'
+import { usePrescricoesVigentes, type ItemVigente } from '@/hooks/usePrescricoesVigentes'
 
 // Painel da farmácia (Fase 2, tarefa 9; migration 20261031000008). Junta o
 // que é crítico: faltas abertas priorizadas (alta vigilância, pacientes
@@ -45,6 +47,7 @@ type SemLiberacao = {
 type ItemValidacao = {
   item_id: string; paciente_nome: string; local: string | null; descricao: string; dose: string | null; via: string | null
   alta_vigilancia: boolean; prescrito_por: string | null; prescrito_em: string; ultima_situacao: string | null
+  validade?: string | null
 }
 const SIT: Record<string, string> = { registrada: 'Registrada', em_cotacao: 'Em cotação', reposta: 'Reposta' }
 const juntar = (...partes: (string | null | undefined | false)[]) => partes.filter(Boolean).join(' · ')
@@ -116,6 +119,9 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
   const idsItens = [...(validacao.data ?? []).filter((i) => !i.ultima_situacao).map((i) => i.item_id), ...(semLiberacao.data ?? []).map((s) => s.item_id)]
   const controles = useControleDosItens(idsItens).data
   const controladosCatalogo = useControladosDoCatalogo().data
+  // DI3: quem fica sem o medicamento em falta (só para quem age; o gestor não lê a dispensação)
+  const vigentes = usePrescricoesVigentes(unidade, podeAgir)
+  const pacientesDaFalta = (medicamentoId: string) => (vigentes.data ? vigentes.data.itens.filter((i) => i.medicamento_id === medicamentoId) : null)
 
   const listaFaltas = faltas.data ?? []
   const semRetorno = listaFaltas.filter((f) => !f.retorno)
@@ -130,16 +136,20 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
     .sort((a, b) => Number(b.situacao === 'falta') - Number(a.situacao === 'falta') || Number(b.alta_vigilancia) - Number(a.alta_vigilancia))
   const semContagem = listaEstoque.filter((e) => e.situacao === 'nao_informado').length
   const listaSemLib = semLiberacao.data ?? []
-  const listaValidacao = (validacao.data ?? []).filter((i) => (i.alta_vigilancia || controles?.has(i.item_id)) && !i.ultima_situacao)
-    .sort((a, b) => a.prescrito_em.localeCompare(b.prescrito_em))
-  const total = listaSemLib.length + listaValidacao.length + semRetorno.length + controladoNegativo.length + estoqueSemFalta.length
+  // FA1: a validação entra numa linha só, com o mesmo número da aba, do menu e do
+  // topo (contarFila: sem os itens de prescrição vencida)
+  const aValidar = separarVencidos(validacao.data ?? []).aValidar
+  const prioritarios = aValidar.filter((i) => i.alta_vigilancia || controles?.has(i.item_id))
+  const maisAntigo = aValidar.reduce<string | null>((m, i) => (!m || i.prescrito_em < m ? i.prescrito_em : m), null)
+  const pacientesValidacao = new Set(aValidar.map((i) => i.paciente_nome)).size
+  const total = listaSemLib.length + (aValidar.length ? 1 : 0) + semRetorno.length + controladoNegativo.length + estoqueSemFalta.length
   const falha = faltas.error ?? estoque.error ?? validacao.error ?? semLiberacao.error
 
   if (faltas.isLoading || estoque.isLoading) return <Spinner />
 
+  const semContagemTexto = semContagem > 0 && `${semContagem} ${semContagem === 1 ? 'item' : 'itens'} sem contagem`
   const fora = [
     comRetorno.length > 0 && `${comRetorno.length} ${comRetorno.length === 1 ? 'falta já com retorno' : 'faltas já com retorno'} ao plantão (${comRetorno.map((f) => f.principio_ativo).join(', ')})`,
-    semContagem > 0 && `${semContagem} ${semContagem === 1 ? 'item' : 'itens'} sem contagem`,
   ].filter(Boolean)
 
   return (
@@ -147,14 +157,13 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
       <MensagemErro texto={erro ?? (falha ? (falha as Error).message : null)} />
       {total === 0 ? (
         <Vazio icone={CheckCircle2} titulo={podeAgir ? 'Nada pede você agora' : 'Nada pede a farmácia agora'}
-          texto="Nenhuma administração sem liberação, nenhuma validação de alta vigilância ou de controlado pendente, nenhuma falta sem retorno, nenhum controlado com saldo negativo e nenhum estoque crítico sem falta registrada." />
+          texto="Nenhuma administração sem liberação, nenhuma prescrição a validar, nenhuma falta sem retorno, nenhum controlado com saldo negativo e nenhum estoque crítico sem falta registrada." />
       ) : (
         <>
+          {/* no farmacêutico, a aba já se chama "Pede você agora": fica só a ordem */}
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h3 className="text-corpo font-semibold text-tinta">
-              {podeAgir ? 'Pede você agora' : 'Pede a farmácia agora'} <span className="text-critico tabular-nums">{total}</span>
-            </h3>
-            <span className="text-rotulo text-tinta-sussurro">sem liberação, depois validação de alta vigilância e controlado, depois faltas sem retorno, depois estoque</span>
+            {!podeAgir && <h3 className="text-corpo font-semibold text-tinta">Pede a farmácia agora</h3>}
+            <span className="text-rotulo text-tinta-sussurro">Sem liberação, depois validação, depois faltas sem retorno, depois estoque</span>
           </div>
           <ul className="overflow-hidden rounded-cartao border border-fio bg-superficie">
             {listaSemLib.map((s) => (
@@ -164,14 +173,14 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
                 contexto={juntar(s.paciente, s.local, s.administrado_por && `administrado por ${s.administrado_por}`, s.justificativa && `"${s.justificativa}"`)}
                 acao={<Button size="xs" variant="outline" onClick={() => navegar('/alta-vigilancia')}>Ver</Button>} />
             ))}
-            {listaValidacao.map((v) => (
-              <Linha key={`v${v.item_id}`} tipo="Validação" tom="vermelho" av={v.alta_vigilancia} controle={controles?.get(v.item_id)}
-                desde={v.prescrito_em} agora={agora}
-                titulo={nome(v.descricao, v.dose, v.via)}
-                contexto={juntar(v.paciente_nome, v.local, v.prescrito_por)}
+            {aValidar.length > 0 && (
+              <Linha key="validacao" tipo="Validação" tom={prioritarios.length ? 'vermelho' : 'ambar'}
+                desde={maisAntigo} agora={agora}
+                titulo={`${aValidar.length} ${aValidar.length === 1 ? 'item a validar' : 'itens a validar'} de ${pacientesValidacao} ${pacientesValidacao === 1 ? 'paciente' : 'pacientes'}`}
+                contexto={prioritarios.length ? `${prioritarios.length} de alta vigilância ou controlado` : 'nenhum de alta vigilância ou controlado'}
                 acao={irPara && <Button size="xs" onClick={() => irPara('validacao')}>Validar</Button>} />
-            ))}
-            {semRetorno.map((f) => <LinhaFalta key={`f${f.id}`} f={f} agora={agora} podeAgir={podeAgir} chamar={chamar} />)}
+            )}
+            {semRetorno.map((f) => <LinhaFalta key={`f${f.id}`} f={f} agora={agora} podeAgir={podeAgir} chamar={chamar} pacientes={pacientesDaFalta(f.medicamento_id)} />)}
             {controladoNegativo.map((e) => (
               <Linha key={`n${e.medicamento_id}`} tipo="Saldo negativo" tom="vermelho" av={e.alta_vigilancia} controle={controladosCatalogo?.get(e.medicamento_id)}
                 desde={e.atualizado_em} agora={agora} titulo={nome(e.principio_ativo, e.apresentacao)}
@@ -192,7 +201,15 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
           </ul>
         </>
       )}
-      {fora.length > 0 && <p className="text-rotulo text-tinta-sussurro">Fora da fila: {fora.join(' · ')}.</p>}
+      {(fora.length > 0 || semContagemTexto) && (
+        <p className="text-rotulo text-tinta-sussurro">
+          Fora da fila: {fora.join(' · ')}{fora.length > 0 && semContagemTexto ? ' · ' : ''}
+          {/* FA1: os itens sem contagem levam à Disponibilidade */}
+          {semContagemTexto && (irPara
+            ? <Button variant="link" size="xs" className="h-auto min-h-0 px-0 text-rotulo" onClick={() => irPara('disponibilidade')}>{semContagemTexto}</Button>
+            : semContagemTexto)}
+        </p>
+      )}
     </div>
   )
 }
@@ -210,35 +227,81 @@ function Linha({ tipo, tom, av, controle, titulo, contexto, desde, agora, acao, 
         <span className="text-rotulo text-tinta-sussurro">{contexto}</span>
       </span>
       <span className="w-20 text-tinta-apoio tabular-nums">{desde ? tempoDecorrido(desde, agora) : '—'}</span>
-      {acao && <span className="flex w-40 justify-end">{acao}</span>}
+      {acao && <span className="ml-auto flex min-w-40 justify-end">{acao}</span>}
       {children}
     </li>
   )
 }
 
-/** Falta sem retorno: "Responder ao plantão" abre o campo na própria linha. */
-function LinhaFalta({ f, agora, podeAgir, chamar }: {
+/** Falta sem retorno, com quem fica sem o medicamento e as ações da falta. */
+function LinhaFalta({ f, agora, podeAgir, chamar, pacientes }: {
   f: FaltaPriorizada; agora: number; podeAgir: boolean
   chamar: (p: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>
+  pacientes: ItemVigente[] | null
 }) {
-  const [aberto, setAberto] = React.useState(false)
-  const [texto, setTexto] = React.useState('')
-  const pacientes = f.pacientes > 0 ? `${f.pacientes} ${f.pacientes === 1 ? 'paciente' : 'pacientes'}${f.setores.length ? ` (${f.setores.join(', ')})` : ''}` : 'sem paciente com prescrição'
+  const [respondendo, setRespondendo] = React.useState(false)
+  const contagem = f.pacientes > 0 ? `${f.pacientes} ${f.pacientes === 1 ? 'paciente' : 'pacientes'}${f.setores.length ? ` (${f.setores.join(', ')})` : ''}` : 'sem paciente com prescrição'
   return (
     <Linha tipo="Falta" tom={f.situacao === 'em_cotacao' ? 'ambar' : 'vermelho'} av={f.alta_vigilancia} desde={f.sinalizada_em} agora={agora}
       titulo={nome(f.principio_ativo, f.apresentacao)}
-      contexto={juntar(SIT[f.situacao] ?? f.situacao, pacientes, f.observacao, 'plantão sem retorno')}
-      acao={podeAgir && !aberto && <Button size="xs" variant="outline" onClick={() => setAberto(true)}>Responder ao plantão</Button>}>
-      {aberto && (
-        <div className="flex w-full flex-wrap items-center gap-2 pb-1">
-          <Input className="h-8 min-w-56 flex-1" placeholder="Retorno ao plantão: substituto, previsão ou conduta" value={texto} onChange={(e) => setTexto(e.target.value)} autoFocus />
-          <Button size="xs" disabled={texto.trim().length < 5}
-            onClick={() => void chamar(supabase.rpc('registrar_retorno_falta', { p_falta: f.id, p_texto: texto.trim() })).then((ok) => { if (ok) { setTexto(''); setAberto(false) } })}>
-            Enviar retorno
-          </Button>
-          <Button size="xs" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
-        </div>
-      )}
+      contexto={juntar(SIT[f.situacao] ?? f.situacao, pacientes?.length ? null : contagem, f.observacao, 'plantão sem retorno')}
+      acao={podeAgir && !respondendo && <AcoesFalta f={f} chamar={chamar} responder={() => setRespondendo(true)} />}>
+      {pacientes && pacientes.length > 0 && <QuemFicaSem pacientes={pacientes} />}
+      {respondendo && <RetornoAoPlantao f={f} chamar={chamar} fechar={() => setRespondendo(false)} />}
     </Linha>
+  )
+}
+
+/**
+ * DI3 (revisão do perfil, RT 24/11/2026): as mesmas ações da falta no painel e
+ * na aba Faltas — Responder ao plantão (enquanto não houver retorno), Em cotação
+ * (da registrada) e Reposta.
+ */
+export function AcoesFalta({ f, chamar, responder }: {
+  f: Pick<FaltaPriorizada, 'id' | 'situacao' | 'retorno'>
+  chamar: (p: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>
+  responder: () => void
+}) {
+  return (
+    <span className="flex flex-wrap justify-end gap-2">
+      {!f.retorno && <Button size="xs" variant="outline" onClick={responder}>Responder ao plantão</Button>}
+      {f.situacao === 'registrada' && <Button size="xs" variant="outline" onClick={() => void chamar(supabase.rpc('avancar_falta', { p_falta: f.id, p_situacao: 'em_cotacao' }))}>Em cotação</Button>}
+      <Button size="xs" variant="outline" onClick={() => void chamar(supabase.rpc('avancar_falta', { p_falta: f.id, p_situacao: 'reposta' }))}>Reposta</Button>
+    </span>
+  )
+}
+
+/** O campo do retorno ao plantão, na própria linha da falta. */
+export function RetornoAoPlantao({ f, chamar, fechar }: {
+  f: Pick<FaltaPriorizada, 'id'>; chamar: (p: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>; fechar: () => void
+}) {
+  const [texto, setTexto] = React.useState('')
+  return (
+    <div className="flex w-full flex-wrap items-center gap-2 pb-1">
+      <Input className="h-8 min-w-56 flex-1" placeholder="Retorno ao plantão: substituto, previsão ou conduta" value={texto} onChange={(e) => setTexto(e.target.value)} autoFocus />
+      <Button size="xs" disabled={texto.trim().length < 5}
+        onClick={() => void chamar(supabase.rpc('registrar_retorno_falta', { p_falta: f.id, p_texto: texto.trim() })).then((ok) => { if (ok) { setTexto(''); fechar() } })}>
+        Enviar retorno
+      </Button>
+      <Button size="xs" variant="ghost" onClick={fechar}>Cancelar</Button>
+    </div>
+  )
+}
+
+/**
+ * DI3: quem fica sem o medicamento — paciente, setor e a frequência prescrita.
+ * Leito e próximo horário não chegam à farmácia (itens_para_dispensar traz o
+ * setor, não o leito nem o aprazamento).
+ */
+export function QuemFicaSem({ pacientes }: { pacientes: ItemVigente[] }) {
+  return (
+    <ul aria-label="Pacientes com o medicamento prescrito" className="flex w-full flex-col gap-1 pb-1 text-rotulo text-tinta-apoio">
+      {pacientes.map((p) => (
+        <li key={p.item_id}>
+          <span className="font-medium text-tinta">{p.paciente}</span>
+          {[p.setor, [p.dose, p.posologia].filter(Boolean).join(' ') || null, p.se_necessario ? 'se necessário' : null].filter(Boolean).map((x) => ` · ${x}`).join('')}
+        </li>
+      ))}
+    </ul>
   )
 }

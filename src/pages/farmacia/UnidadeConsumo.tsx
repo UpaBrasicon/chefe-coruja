@@ -39,6 +39,9 @@ export default function UnidadeConsumoPagina() {
   const { unidadeAtiva } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
   const [aConferir, setAConferir] = React.useState(true)
+  // FM2 (revisão do perfil Farmacêutico, RT 24/11/2026): "sem forma" sai de cada
+  // linha e vira contagem e filtro no topo
+  const [soSemForma, setSoSemForma] = React.useState(false)
   const [novo, setNovo] = React.useState(false)
   const [termo, setTermo] = React.useState('')
   const [busca, setBusca] = React.useState('')
@@ -67,15 +70,17 @@ export default function UnidadeConsumoPagina() {
         <Chips rotulo="Quais medicamentos">
           <Chip ativo={aConferir} onClick={() => setAConferir(true)} contagem={lista.data?.a_conferir}>a conferir</Chip>
           <Chip ativo={!aConferir} onClick={() => setAConferir(false)}>todos</Chip>
+          {((lista.data?.sem_forma ?? 0) > 0 || soSemForma) && <Chip ativo={soSemForma} onClick={() => setSoSemForma(!soSemForma)}>{lista.data?.sem_forma ?? 0} sem forma</Chip>}
         </Chips>
         {unidade && !novo && <Button size="sm" onClick={() => setNovo(true)}><Plus /> Novo medicamento</Button>}
       </div>
       {unidade && novo && <NovoMedicamento unidade={unidade} fechar={() => setNovo(false)} />}
       <Input className="max-w-md" aria-label="Buscar medicamento" placeholder="Buscar pelo nome ou pela apresentação" value={termo} onChange={(e) => setTermo(e.target.value)} />
-      {/* Revisão de perfis (Gestor, item 13, M3): o progresso no topo, numa faixa só. */}
+      {/* Revisão de perfis (Gestor, item 13, M3): o progresso no topo, numa faixa só.
+          FM2: "sem forma" conta no filtro do topo, não se repete aqui. */}
       {lista.data && (
         <Aviso tom={lista.data.a_conferir === 0 ? 'conforme' : 'informacao'}
-          titulo={lista.data.a_conferir === 0 ? 'Tudo conferido' : `${lista.data.a_conferir} a conferir · ${lista.data.sem_unidade} sem unidade · ${lista.data.sem_forma} sem forma`}>
+          titulo={lista.data.a_conferir === 0 ? 'Tudo conferido' : `${lista.data.a_conferir} a conferir · ${lista.data.sem_unidade} sem unidade`}>
           {lista.data.a_conferir === 0
             ? 'Todas as formas e unidades de consumo já foram conferidas.'
             : 'A unidade veio sugerida pela apresentação. Confirme cada grupo de uma vez e abra só a linha que for exceção para corrigir.'}
@@ -97,8 +102,8 @@ export default function UnidadeConsumoPagina() {
             </TableHeader>
             <TableBody>
               {aConferir
-                ? porSugestao(lista.data!.itens).map(([chave, itens]) => <Grupo key={chave} chave={chave} itens={itens} unidade={unidade} />)
-                : lista.data!.itens.map((m) => <Linha key={m.id} m={m} unidade={unidade} />)}
+                ? porSugestao(lista.data!.itens.filter((m) => !soSemForma || !m.forma_farmaceutica)).map(([chave, itens]) => <Grupo key={chave} chave={chave} itens={itens} unidade={unidade} />)
+                : lista.data!.itens.filter((m) => !soSemForma || !m.forma_farmaceutica).map((m) => <Linha key={m.id} m={m} unidade={unidade} />)}
             </TableBody>
           </Table>
         </div>
@@ -360,7 +365,8 @@ function Linha({ m, unidade }: { m: MedicamentoUnidade; unidade: string | undefi
         {!editando ? (
           <>
             <TableCell className="px-3 py-2 align-top whitespace-normal">
-              <span className={m.forma_farmaceutica ? 'text-tinta' : 'text-atencao'}>{rotuloForma(m.forma_farmaceutica, m.forma_farmaceutica_outra)}</span>
+              {/* FM2: sem forma, um traço cinza; a contagem e o filtro ficam no topo */}
+              {m.forma_farmaceutica ? <span className="text-tinta">{rotuloForma(m.forma_farmaceutica, m.forma_farmaceutica_outra)}</span> : <span className="text-tinta-sussurro">—</span>}
             </TableCell>
             <TableCell className="px-3 py-2 align-top whitespace-normal">
               <div className="flex flex-wrap items-center gap-2">
@@ -401,7 +407,8 @@ function Linha({ m, unidade }: { m: MedicamentoUnidade; unidade: string | undefi
         </>
         )}
         <TableCell className="px-3 py-2 align-top whitespace-normal text-tinta-apoio">
-          {m.conferida_em ? `${rotuloUnidade(m.unidade_consumo, m.unidade_consumo_outra)} · ${m.conferida_por ?? '—'}, ${fmtDataHora(m.conferida_em)}` : 'sugerida, a conferir'}
+          {/* FM2: o "a conferir" repetido sai da linha; a contagem fica no filtro do topo */}
+          {m.conferida_em ? `${rotuloUnidade(m.unidade_consumo, m.unidade_consumo_outra)} · ${m.conferida_por ?? '—'}, ${fmtDataHora(m.conferida_em)}` : <span className="text-tinta-sussurro">—</span>}
         </TableCell>
       </TableRow>
       {ficha && (
