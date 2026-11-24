@@ -24,7 +24,7 @@ import { dataIso, diaMes } from '@/lib/formato'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { BarraConsultorio } from '@/components/porta/BarraConsultorio'
 import { BotaoChamar } from '@/components/porta/Chamada'
@@ -319,7 +319,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
 
         <TabsContent value="aguardando">
           <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-            {carregando && <div className="px-5 py-4"><Spinner /></div>}
+            {carregando && <EsqueletoLinhas linhas={4} rotulo="Carregando a fila…" />}
             {!carregando && aguardando.length === 0 && <Vazio>{ubs ? 'Ninguém aguardando a consulta.' : 'Nenhum paciente triado aguardando.'}</Vazio>}
             {aguardando.length > 0 && (
               <Table aria-label="Aguardando atendimento">

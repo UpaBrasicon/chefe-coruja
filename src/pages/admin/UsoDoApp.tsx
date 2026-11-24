@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { dataPura, numero } from '@/lib/formato'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { acharSecao } from '@/content/registry'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cartao } from '@/components/admin/ui'
@@ -98,7 +98,7 @@ export default function UsoDoApp() {
         {p?.desde && <span className="ml-2">desde {dataPura(p.desde)}</span>}
       </div>
 
-      {painel.isLoading && <div className="py-6"><Spinner /></div>}
+      {painel.isLoading && <EsqueletoLinhas linhas={4} rotulo="Carregando o uso do app…" className="px-0" />}
       {painel.error && <p role="alert" className="mb-5 text-apoio text-critico">{(painel.error as Error).message}</p>}
 
       {p && (

@@ -18,7 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { diaMesHora } from '@/lib/formato'
@@ -55,7 +55,7 @@ export function SisabAba() {
     refetchInterval: 60_000,
   })
   if (!unidade) return <Vazio icone={Send} titulo="Escolha a unidade" texto="O envio ao SISAB é configurado por UBS." />
-  if (!painel.data) return painel.error ? <MensagemErro texto={(painel.error as Error).message} /> : <Spinner />
+  if (!painel.data) return painel.error ? <MensagemErro texto={(painel.error as Error).message} /> : <EsqueletoLinhas linhas={4} rotulo="Carregando o envio ao SISAB…" className="px-0" />
   const p = painel.data
   return (
     <div className="flex flex-col gap-4">
@@ -193,7 +193,7 @@ function SecaoFila({ unidade }: { unidade: string }) {
       <Chips rotulo="Filtrar a fila">
         {FILTROS.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => setFiltro(f)}>{f === 'todos' ? 'Todas' : ROTULO_STATUS[f]}</Chip>)}
       </Chips>
-      {itens.isLoading ? <Spinner /> : itens.error ? <MensagemErro texto={(itens.error as Error).message} /> : lista.length === 0 ? (
+      {itens.isLoading ? <EsqueletoLinhas linhas={4} rotulo="Carregando a fila…" className="px-0" /> : itens.error ? <MensagemErro texto={(itens.error as Error).message} /> : lista.length === 0 ? (
         <Vazio icone={Send} titulo="Nenhuma ficha nesta situação" />
       ) : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">

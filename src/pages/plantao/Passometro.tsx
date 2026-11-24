@@ -13,7 +13,7 @@ import { diasDesde, htmlFolha, porSetor, vencidas, type PacientePassometro } fro
 import { CHAVE_PASSOMETRO, usePassometro } from '@/hooks/usePassometro'
 import { TituloPagina, TituloSecao, Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { BlocoPendencias } from '@/components/internacao/caderno/Pendencias'
 import { type Acao, msg } from '@/components/internacao/caderno/comum'
 
@@ -127,7 +127,7 @@ export default function Passometro() {
 
       {erro && <p role="alert" className="mb-4 rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
       {aviso && <p role="status" className="mb-4 rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{aviso}</p>}
-      {lista.isLoading && <div className="py-6"><Spinner /></div>}
+      {lista.isLoading && <EsqueletoLinhas linhas={4} rotulo="Carregando o passômetro…" className="px-0" />}
       {lista.error && <p role="alert" className="text-apoio text-critico">{msg(lista.error)}</p>}
 
       {lista.data && pacientes.length === 0 && (

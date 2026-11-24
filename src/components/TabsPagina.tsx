@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { type LucideIcon } from 'lucide-react'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { FaixaDaPagina } from '@/components/monitor/faixaDaPagina'
 
@@ -82,11 +82,7 @@ export function TabsPagina({
             {/* Só a aba ativa monta — evita disparar as queries das outras. */}
             {a.valor === ativa && (
               <React.Suspense
-                fallback={
-                  <div className="flex h-40 items-center justify-center">
-                    <Spinner />
-                  </div>
-                }
+                fallback={<EsqueletoLinhas linhas={4} className="px-0" />}
               >
                 {/* A faixa da página já saiu sob o título acima; a tela da aba não a repete. */}
                 <FaixaDaPagina.Provider value={null}>{a.conteudo()}</FaixaDaPagina.Provider>

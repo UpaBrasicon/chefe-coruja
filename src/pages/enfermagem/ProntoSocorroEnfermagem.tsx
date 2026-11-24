@@ -21,7 +21,7 @@ import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 import type { LinhaObservacao } from '@/components/observacao/modelo'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 import { Bloco, BotaoCuidados, PilulaAtraso, PilulaContencao, PilulaValidade } from './Pecas'
 import { LeitosParaLiberar } from './LeitosParaLiberar'
@@ -105,7 +105,7 @@ export default function ProntoSocorroEnfermagem() {
             </Link>
           )}
           <Bloco titulo="Triados no Pronto-Socorro">
-            {carregando && <div className="px-5 py-4"><Spinner /></div>}
+            {carregando && <EsqueletoLinhas linhas={3} rotulo="Carregando os triados…" />}
             {!carregando && lista.length === 0 && <p className="px-5 py-[18px] text-controle text-tinta-sussurro">Nenhum paciente triado agora.</p>}
             {lista.map((e) => {
               const nome = e.paciente?.nome_social || e.paciente?.nome || 'Paciente'
@@ -145,7 +145,7 @@ export default function ProntoSocorroEnfermagem() {
           </Bloco>
 
           <Bloco titulo="Em observação">
-            {carregando && <div className="px-5 py-4"><Spinner /></div>}
+            {carregando && <EsqueletoLinhas linhas={2} rotulo="Carregando a observação…" />}
             {!carregando && emObservacao.length === 0 && <p className="px-5 py-[18px] text-controle text-tinta-sussurro">Ninguém em observação nos setores da sua escala.</p>}
             {emObservacao.map((o) => (
               <div key={o.internacao_id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0">
