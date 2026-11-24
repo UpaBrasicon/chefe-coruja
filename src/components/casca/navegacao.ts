@@ -132,7 +132,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true, grupo: 'Unidade' },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true, grupo: 'Unidade' },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true, grupo: 'Unidade' },
-    { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true, grupo: 'Unidade' },
+    { to: '/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true, grupo: 'Unidade' },
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos', grupo: 'Unidade' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true, grupo: 'Unidade' },
     { ...ITEM_LOTES_VACINA, grupo: 'Unidade' },
