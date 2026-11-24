@@ -21,6 +21,7 @@ import { textoCopia } from '@/domain/copiaCalculo'
 
 import { Bloco, LinhaManual } from '../manual/PecasLoteC'
 import { numero } from '@/lib/formato'
+import { pacienteDaCentral } from '@/lib/pacienteCentral'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const n = (x: number, c = 0) => numero(Math.round(x * 10 ** c) / 10 ** c)
@@ -49,7 +50,10 @@ function Lista({ itens }: { itens: string[] }) {
 /** Dengue no adulto pelo manual do MS (6ª ed., 2024). */
 export function ClassificacaoDengue() {
   const [paciente, setPaciente] = useState<'adulto' | 'crianca'>('adulto')
-  const [peso, setPeso] = useState(70)
+  // Nunca um peso suposto (achado da revisão de 24/11/2026: abria com 70 kg e
+  // calculava volumes e hemocomponentes sem o médico digitar): abre com o peso
+  // do adulto informado na Central ou vazio, como as outras ferramentas.
+  const [peso, setPeso] = useState(() => pacienteDaCentral('adulto').pesoKg ?? 0)
   const [sangramentoPele, setSangramentoPele] = useState(false)
   const [especial, setEspecial] = useState(false)
   const [alarme, setAlarme] = useState<Set<string>>(new Set())
