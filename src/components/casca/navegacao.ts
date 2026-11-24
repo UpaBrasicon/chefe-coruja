@@ -30,6 +30,7 @@ import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldA
 import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, MessageCircleQuestion, Package, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
+import { ABA_NO_PLANTAO } from '../plantao/rotasMedico.ts'
 
 /** Chave da nota numérica (contagem em âmbar ao lado do item). */
 export type ChaveNota = 'avisos' | 'triagem' | 'farmacia' | 'pedidos' | 'tele' | 'revisao' | 'fila_medica' | 'plataformas' | 'chamados'
@@ -85,11 +86,13 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
     // a Farmácia tem item próprio: nela a Central não acende junto (revisão da Farmácia do médico, RT 24/11/2026)
     { to: '/plantonista', rotulo: 'Central do Médico', curto: 'Central', icone: Stethoscope, exceto: ['/plantonista/farmacia'] },
-    { to: '/plantao', rotulo: 'Plantão', icone: Activity },
-    // pedido 8 (PS1 a PS3 = A, RT 23/11/2026): os pacientes do plantão com as pendências
-    { to: '/passometro', rotulo: 'Passômetro', icone: ClipboardList, exato: true },
-    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
+    // RT, 24/11/2026: o Plantão tem as abas Meu turno, Minha agenda e Prontuários; a
+    // Internação, item próprio, tem Internação, Observação e Passômetro (o leito aberto
+    // também acende a Internação, não o Plantão). A Evolução clínica saiu.
+    { to: '/plantao', rotulo: 'Plantão', icone: Activity, exceto: ['/plantao/internacao'] },
+    { to: '/plantao/internacao', rotulo: 'Internação', icone: Hospital },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
+    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
@@ -99,6 +102,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/plantonista/farmacia', rotulo: 'Farmácia', icone: FlaskConical },
+    // só na UBS (SO_NA_UBS_NO_PAPEL): fora dela, Minha agenda e Prontuários são abas do Plantão
     { to: '/agenda', rotulo: 'Minha agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
@@ -307,7 +311,7 @@ const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede da Secretaria', c
 // 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
 // internação nem AIH; os itens dessas telas somem do menu.
 const FORA_DA_UBS = new Set([
-  '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/passometro', '/contingencia',
+  '/plantonista', '/plantao', '/plantao/internacao', '/plantao/internacao/pacientes', '/passometro', '/contingencia',
   '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/nir/internacao', '/aih', '/apac',
   '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
   '/recepcao/painel',
@@ -335,6 +339,11 @@ const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
 // "Leitos" só a regulação (U5, achado GE7).
 const GRUPO_NA_UBS: Record<string, string> = { Porta: 'Cadastro', Leitos: 'Rede' }
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
+// e o que, num papel, só fica no menu da UBS: fora dela, Minha agenda e
+// Prontuários do médico são abas do Plantão (RT, 24/11/2026)
+const SO_NA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
+  plantonista: new Set(['/agenda', '/prontuarios']),
+}
 const SO_NA_UBS = new Set(['/recepcao/hoje', '/escuta', '/consultorio-enfermagem', '/sinais-vitais', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura', '/vacina/lotes', '/vacina'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
@@ -351,7 +360,10 @@ export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefin
 export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false,
   tipoUnidade: TipoUnidade | null = null): ItemNav[] {
   const itens = itensDoPapel(papel, responsavelTecnico, superAdmin).filter((i) => !foraDoTipo(i.to, tipoUnidade))
-  if (tipoUnidade !== 'ubs') return itens
+  if (tipoUnidade !== 'ubs') {
+    const soNaUbs = SO_NA_UBS_NO_PAPEL[papel ?? 'plantonista'] ?? null
+    return soNaUbs ? itens.filter((i) => !soNaUbs.has(i.to)) : itens
+  }
   const fora = (papel && FORA_DA_UBS_NO_PAPEL[papel]) || null
   if (papel === 'plantonista') itens.push(ITEM_REGULACAO)
   return itens
@@ -446,9 +458,10 @@ export const ROTA_PERGUNTAR_IA = '/plantonista?todas=1&ia=1'
 /**
  * Barra de baixo do médico abaixo de 1024px (item 6, CM1 = A, RT em
  * 23/11/2026): Início, Leitos, Perguntar à IA (no meio, em destaque),
- * Prontuários e Menu. Substitui as quatro abas do topo; a Agenda e o resto
- * vão para o Menu. Numa UBS saem as telas do pronto atendimento e a Agenda
- * volta para a barra, para não ficar só Prontuários.
+ * Prontuários e Menu. Substitui as quatro abas do topo; o resto vai para o
+ * Menu, e a Agenda é aba do Plantão (RT, 24/11/2026). Numa UBS saem as telas
+ * do pronto atendimento e a Agenda volta para a barra, para não ficar só
+ * Prontuários.
  */
 export const BARRA_MEDICO_CELULAR: ItemNav[] = [
   { to: '/plantonista', rotulo: 'Início', icone: House },
@@ -458,18 +471,21 @@ export const BARRA_MEDICO_CELULAR: ItemNav[] = [
   { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
 ]
 
-/** Os itens da barra do médico que cabem no tipo da unidade (no máximo quatro; o quinto lugar é o Menu). */
+/**
+ * Os itens da barra do médico que cabem no tipo da unidade (no máximo quatro; o
+ * quinto lugar é o Menu). Fora da UBS, Prontuários leva à aba do Plantão (RT,
+ * 24/11/2026) e a Agenda, que não cabe, fica na aba Minha agenda do Plantão.
+ */
 export function barraMedicoCelular(tipoUnidade: TipoUnidade | null = null): ItemNav[] {
   const cabem = BARRA_MEDICO_CELULAR.filter((i) => !foraDoTipo(i.to.split('?')[0], tipoUnidade))
-  return cabem.length > MAX_BARRA_CELULAR - 1 ? cabem.filter((i) => i.to !== '/agenda') : cabem
+  const barra = cabem.length > MAX_BARRA_CELULAR - 1 ? cabem.filter((i) => i.to !== '/agenda') : cabem
+  return tipoUnidade === 'ubs' ? barra : barra.map((i) => (ABA_NO_PLANTAO[i.to] ? { ...i, to: ABA_NO_PLANTAO[i.to] } : i))
 }
 
-/** O Menu da barra do médico: a Agenda (se não coube) e as telas do menu que não estão na barra. */
+/** O Menu da barra do médico: as telas do menu que não estão na barra (a Agenda mora no Plantão, ou na barra na UBS). */
 export function menuMedicoCelular(itens: ItemNav[], tipoUnidade: TipoUnidade | null = null): ItemNav[] {
   const naBarra = new Set(barraMedicoCelular(tipoUnidade).map((i) => i.to.split('?')[0]))
-  const agenda = BARRA_MEDICO_CELULAR.find((i) => i.to === '/agenda')!
-  const resto = itens.filter((i) => !naBarra.has(i.to))
-  return naBarra.has('/agenda') || resto.some((i) => i.to === '/agenda') ? resto : [agenda, ...resto]
+  return itens.filter((i) => !naBarra.has(i.to))
 }
 
 /** Página inicial do papel: o logotipo leva a ela. */

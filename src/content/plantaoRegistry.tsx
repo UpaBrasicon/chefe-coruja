@@ -1,14 +1,17 @@
 import { lazy, type ComponentType } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Activity, DoorOpen, Eye, Hospital, MapPin, type LucideIcon } from 'lucide-react'
+import { DoorOpen, MapPin, type LucideIcon } from 'lucide-react'
 
 /**
  * Registry da Central de Plantão — mesmo padrão de `content/registry.tsx`
  * (Central do Plantonista): seções → ferramentas, tudo declarativo e sob demanda.
  *
- * Regra de navegação: **seção com uma única ferramenta é a própria ferramenta**.
- * `/plantao/evolucao` renderiza a evolução direto, sem página intermediária de
- * um card só — e o `?paciente=` da URL sobrevive.
+ * Regra de navegação: **seção com uma única ferramenta é a própria ferramenta**,
+ * sem página intermediária de um card só.
+ *
+ * Internação, Observação e Passômetro saíram daqui para a Internação do médico
+ * (`pages/plantao/AreaInternacao.tsx`), e a Evolução clínica saiu do app: a
+ * evolução mora no caderno do leito (RT, 24/11/2026).
  *
  * Seção `semCartao` (pontos 3 e 4 do plantonista, RT 29/10/2026) continua com
  * rota (outros lugares levam a ela), mas não aparece como cartão no Plantão.
@@ -115,50 +118,6 @@ export const SECOES_PLANTAO: SecaoPlantao[] = [
         'Pedido de exames',
         'Solicitação de exames.',
         sobDemanda(() => import('@/pages/plantao/atendimento/PedidoExames'), 'PedidoExames')
-      ),
-    ],
-  },
-  {
-    // ponto 5: só a lista (seção direta). Pendências e impressão de prontuário
-    // têm rota própria; a impressão abre pelo leito e por Prontuários.
-    slug: 'internacao',
-    label: 'Internação',
-    description: 'Pacientes internados: o leito aberto tem o caderno com evolução, prescrição e documentos.',
-    icon: Hospital,
-    tools: [
-      f(
-        'pacientes',
-        'Pacientes internados',
-        'Enfermarias e sala vermelha dos setores da sua escala.',
-        sobDemanda(() => import('@/pages/plantao/secoes/PacientesInternados'), 'PacientesInternados')
-      ),
-    ],
-  },
-  {
-    slug: 'observacao',
-    label: 'Observação',
-    description: 'Pacientes em observação, por no máximo 6 horas.',
-    icon: Eye,
-    tools: [
-      f(
-        'pacientes',
-        'Pacientes em observação',
-        'Permanência máxima de 6 h, com alerta de fim de turno.',
-        sobDemanda(() => import('@/pages/plantao/secoes/PacientesObservacao'), 'PacientesObservacao')
-      ),
-    ],
-  },
-  {
-    slug: 'evolucao',
-    label: 'Evolução clínica',
-    description: 'Gráfico de evolução, flowsheet e registro de sinais vitais.',
-    icon: Activity,
-    tools: [
-      f(
-        'evolucao',
-        'Evolução clínica',
-        'Gráfico multi-conceito, flowsheet e sinais vitais.',
-        sobDemanda(() => import('@/pages/plantao/secoes/EvolucaoTool'), 'EvolucaoTool')
       ),
     ],
   },

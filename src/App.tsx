@@ -11,6 +11,7 @@ import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
 import { destinoEscala } from '@/lib/rotaEscala'
 import { ROTA_SOBRE_MODULO } from '@/content/rotaSobreModulo'
+import { ABA_NO_PLANTAO, ROTA_INTERNADOS, ROTA_OBSERVACAO_MEDICO, ROTA_PASSOMETRO } from '@/components/plantao/rotasMedico'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { ErroForcado } from '@/components/ErroForcado'
 import { Spinner } from '@/components/ui/spinner'
@@ -65,6 +66,8 @@ const AgendaGrupo = lazy(() => import('@/pages/grupos/AgendaGrupo'))
 const PlantaoHome = lazy(() => import('@/pages/plantao/PlantaoHome'))
 const PlantaoSectionHome = lazy(() => import('@/pages/plantao/PlantaoSectionHome'))
 const PlantaoToolRouter = lazy(() => import('@/pages/plantao/PlantaoToolRouter'))
+const PlantaoAba = lazy(() => import('@/pages/plantao/PlantaoAba'))
+const AreaInternacao = lazy(() => import('@/pages/plantao/AreaInternacao'))
 const RedirecionarFormulario = lazy(() => import('@/pages/plantao/secoes/FormularioInternacao'))
 
 // ── Telas que continuam avulsas ───────────────────────────────────────────────
@@ -118,7 +121,6 @@ const Telemedicina = lazy(() => import('@/pages/telemedicina/Telemedicina'))
 const EscalaEquipe = lazy(() => import('@/pages/EscalaEquipe'))
 const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
-const Passometro = lazy(() => import('@/pages/plantao/Passometro'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
 const SobreModuloClinico = lazy(() => import('@/pages/plantonista/SobreModuloClinico'))
@@ -172,6 +174,17 @@ function PorPapel({ plantonista, gestao }: { plantonista: ReactNode; gestao: Rea
   const { papeisDaUnidade } = useUnidade()
   const ehGestao = papeisDaUnidade.includes('gestor') || papeisDaUnidade.includes('admin')
   return <>{ehGestao ? gestao : plantonista}</>
+}
+
+/**
+ * Minha agenda e Prontuários viraram abas do Plantão do médico (RT, 24/11/2026):
+ * fora da UBS, o médico que abre o endereço antigo cai na aba. Na UBS (sem
+ * Plantão) e nos outros papéis, a tela avulsa continua.
+ */
+function AbaDoPlantao({ antiga, tela }: { antiga: string; tela: ReactNode }) {
+  const { papelAtivo, unidadeAtiva } = useUnidade()
+  const naAba = papelAtivo === 'plantonista' && !!unidadeAtiva && unidadeAtiva.unidade.tipo !== 'ubs'
+  return naAba ? <Redirecionar para={ABA_NO_PLANTAO[antiga]} /> : <>{tela}</>
 }
 
 /** `/escala` pelo papel ativo, não pela lista de papéis (ver `destinoEscala`). */
@@ -413,7 +426,7 @@ export default function App() {
                       {/* Fase 6: prontuário fora da escala — pedido ao gestor, 24 h, só leitura.
                           O farmacêutico não pede (RT, 27/10/2026; migration 20270105000001). */}
                       <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem']} />}>
-                        <Route path="/prontuarios" element={<PedidosProntuario />} />
+                        <Route path="/prontuarios" element={<AbaDoPlantao antiga="/prontuarios" tela={<PedidosProntuario />} />} />
                       </Route>
                       <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'gestor']} />}>
                         <Route path="/prontuarios/:pacienteId" element={<ProntuarioLeitura />} />
@@ -514,7 +527,7 @@ export default function App() {
                         <Route path="/plantonista/dengue/manual-dengue" element={<Redirecionar para="/plantonista/pediatria/dengue-ped" />} />
                         <Route path="/plantonista/ventilacao-mecanica/manobra-recrutamento" element={<Redirecionar para="/plantonista/emergencias/sdra-ventilacao-adulto" />} />
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
-                        <Route path="/agenda" element={<AgendaGrupo />} />
+                        <Route path="/agenda" element={<AbaDoPlantao antiga="/agenda" tela={<AgendaGrupo />} />} />
 
                         <Route
                           path="/internacao"
@@ -529,7 +542,7 @@ export default function App() {
                           path="/observacao"
                           element={
                             <PorPapel
-                              plantonista={<Redirecionar para="/plantao/observacao" />}
+                              plantonista={<Redirecionar para={ROTA_OBSERVACAO_MEDICO} />}
                               gestao={<InternacaoPainel modo="observacao" />}
                             />
                           }
@@ -564,9 +577,23 @@ export default function App() {
 
                       {/* ── Plantonista exclusivo ──────────────────────── */}
                       <Route element={<RequireRole papeis={['plantonista']} />}>
-                        {/* pedido 8 (PS1 a PS3 = A, RT 23/11/2026): passômetro do médico */}
-                        <Route path="/passometro" element={<Passometro />} />
                         <Route path="/plantao" element={<PlantaoHome />} />
+                        {/* Plantão = Meu turno, Minha agenda e Prontuários; Internação = Internação,
+                            Observação e Passômetro (RT, 24/11/2026). As rotas antigas levam à aba. */}
+                        <Route path="/plantao/agenda" element={<PlantaoAba aba="agenda" />} />
+                        <Route path="/plantao/prontuarios" element={<PlantaoAba aba="prontuarios" />} />
+                        <Route path="/plantao/internacao" element={<Redirecionar para={ROTA_INTERNADOS} />} />
+                        <Route path={ROTA_INTERNADOS} element={<AreaInternacao aba="internacao" />} />
+                        <Route path={ROTA_OBSERVACAO_MEDICO} element={<AreaInternacao aba="observacao" />} />
+                        {/* pedido 8 (PS1 a PS3 = A, RT 23/11/2026): passômetro do médico, agora aba da Internação */}
+                        <Route path={ROTA_PASSOMETRO} element={<AreaInternacao aba="passometro" />} />
+                        <Route path="/passometro" element={<Redirecionar para={ROTA_PASSOMETRO} />} />
+                        <Route path="/plantao/observacao" element={<Redirecionar para={ROTA_OBSERVACAO_MEDICO} />} />
+                        <Route path="/plantao/observacao/pacientes" element={<Redirecionar para={ROTA_OBSERVACAO_MEDICO} />} />
+                        {/* a Evolução clínica saiu (RT, 24/11/2026): a evolução mora no caderno do leito;
+                            com ?paciente= o endereço antigo abre o leito do paciente */}
+                        <Route path="/plantao/evolucao" element={<Redirecionar para={ROTA_INTERNADOS} />} />
+                        <Route path="/plantao/evolucao/evolucao" element={<Redirecionar para={ROTA_INTERNADOS} />} />
                         <Route path="/plantao/:secao" element={<PlantaoSectionHome />} />
                         {/* formulário de internação antigo retirado (parte 4.7a): o endereço leva ao leito aberto */}
                         <Route path="/plantao/internacao/formulario" element={<RedirecionarFormulario />} />

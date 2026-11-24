@@ -13,9 +13,10 @@ export const FONTES_SEM_CONEXAO = [
   'src/pages/enfermagem/ProntoSocorroEnfermagem.tsx',
   'src/pages/enfermagem/InternacaoEnfermagem.tsx',
   'src/pages/enfermagem/Checagem.tsx',
-  // a evolução abre pela ferramenta do plantão (plantaoRegistry, sob demanda)
-  'src/pages/plantao/PlantaoToolRouter.tsx',
-  'src/pages/plantao/secoes/EvolucaoTool.tsx',
+  // a evolução do médico mora no caderno do leito, na Internação (RT, 24/11/2026:
+  // saiu a Evolução clínica do Plantão); a lista e o caderno vêm sob demanda
+  'src/pages/plantao/AreaInternacao.tsx',
+  'src/pages/plantao/secoes/PacientesInternados.tsx',
 ]
 
 type Chunk = {

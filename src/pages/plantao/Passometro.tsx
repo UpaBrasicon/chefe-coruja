@@ -16,7 +16,7 @@ import {
 import { CHAVE_PASSOMETRO, usePassometro } from '@/hooks/usePassometro'
 import type { SituacaoCheckin } from '@/hooks/usePlantao'
 import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
-import { Chip, TituloPagina, TituloSecao, Trilha, Vazio, VazioLinha } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina, TituloSecao, Vazio, VazioLinha } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
@@ -217,7 +217,6 @@ export default function Passometro() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col">
-      <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: 'Passômetro' }]} />
       <TituloPagina
         icone={ClipboardList}
         titulo="Passômetro"
