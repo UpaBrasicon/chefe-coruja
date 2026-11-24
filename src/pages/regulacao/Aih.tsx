@@ -12,6 +12,7 @@ import { FileText } from 'lucide-react'
 import * as React from 'react'
 
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { InternadosSemLaudo } from '@/components/regulacao/InternadosSemLaudo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,10 +37,27 @@ export default function Aih() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
   const regulador = papelAtivo === 'regulador'
+  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a decisão dele
   const [filtro, setFiltroBase] = React.useState<Filtro>('solicitada')
   // item 05 do kit de desempenho: páginas de 50, com "Ver mais"
   const [limite, setLimite] = React.useState(PAGINA)
   const setFiltro = (f: Filtro) => { setFiltroBase(f); setLimite(PAGINA) }
+  // contagem por aba e as internações que já têm AIH (página larga, até 200)
+  const resumo = useQuery({
+    queryKey: ['aihs-da-unidade', unidade, 'resumo'],
+    enabled: !!unidade,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('aihs_da_unidade_pagina', { p_unidade: unidade!, p_limite: 200 })
+      if (error) throw error
+      return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: AihFila[] }
+    },
+  })
+  const completo = !!resumo.data && resumo.data.total <= resumo.data.itens.length
+  const contas = completo
+    ? Object.fromEntries((['solicitada', 'aprovada', 'rejeitada', 'cancelada'] as StatusAih[]).map((s) => [s, resumo.data!.itens.filter((a) => a.status === s).length])) as Record<StatusAih, number>
+    : null
+  const abas = ABAS.map(([k, r]) => [k, r, k === 'todas' ? resumo.data?.total : contas?.[k as StatusAih]] as const)
   const lista = useQuery({
     queryKey: ['aihs-da-unidade', unidade, filtro, limite],
     placeholderData: (anterior) => anterior,
@@ -59,9 +77,14 @@ export default function Aih() {
         descricao={regulador
           ? 'Laudos de AIH emitidos na unidade. Aprove com o número da AIH e a competência, ou rejeite com o motivo.'
           : 'Acompanhamento das AIHs da unidade. Quem decide é o médico regulador.'} />
-      <Abas abas={ABAS} valor={filtro} onChange={setFiltro} rotulo="Situação da AIH" />
+      {/* MR3 (RT, 24/11/2026): para o regulador, os internados sem laudo são uma linha neutra com leito e tempo */}
+      {regulador && unidade && completo && (
+        <InternadosSemLaudo unidade={unidade} tom="neutro"
+          comAih={new Set(resumo.data!.itens.filter((a) => a.status === 'solicitada' || a.status === 'aprovada').map((a) => a.internacao_id).filter((x): x is string => !!x))} />
+      )}
+      <Abas abas={abas} valor={filtro} onChange={setFiltro} rotulo="Situação da AIH" />
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data?.itens ?? []).length === 0 ? (
-        <Vazio icone={FileText} titulo="Nenhuma AIH aqui" texto="Quando o médico emitir o laudo de AIH, ele aparece em Solicitadas." />
+        <Vazio icone={FileText} titulo={filtro === 'solicitada' ? 'Nenhum laudo esperando decisão' : 'Nenhuma AIH aqui'} texto="Quando o médico emitir o laudo de AIH, ele aparece em Solicitadas." />
       ) : (
         <div className="flex flex-col gap-3">
           {(lista.data?.itens ?? []).map((a) => <CartaoAih key={a.id} a={a} regulador={regulador} />)}
@@ -99,6 +122,7 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
       setAcao(null); setMotivo(''); setNumero('')
       void qc.invalidateQueries({ queryKey: ['aihs-da-unidade'] })
       void qc.invalidateQueries({ queryKey: ['eventos-aih', a.id] })
+      void qc.invalidateQueries({ queryKey: ['nota-aih'] })
     },
   })
 

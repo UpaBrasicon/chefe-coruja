@@ -42,10 +42,26 @@ export default function Apac() {
   const unidade = unidadeAtiva?.unidade_id
   const regulador = papelAtivo === 'regulador'
   const faturamento = papelAtivo === 'faturamento' || papelAtivo === 'gestor'
-  const abas: (readonly [Aba, string])[] = [
-    ['solicitada', 'Solicitadas'], ['autorizada', 'Autorizadas'], ['rejeitada', 'Rejeitadas'], ['cancelada', 'Canceladas'], ['todas', 'Todas'],
-    ...(faturamento ? [['arquivo', 'Arquivo do APAC Magnético'] as const] : []),
+  // contagem por aba, de uma página larga (até 200)
+  const resumo = useQuery({
+    queryKey: ['apacs-da-unidade', unidade, 'resumo'],
+    enabled: !!unidade,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('apacs_da_unidade_pagina', { p_unidade: unidade!, p_limite: 200 })
+      if (error) throw error
+      return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: Apac[] }
+    },
+  })
+  const contas = resumo.data && resumo.data.total <= resumo.data.itens.length
+    ? Object.fromEntries((['solicitada', 'autorizada', 'rejeitada', 'cancelada'] as StatusApac[]).map((s) => [s, resumo.data!.itens.filter((a) => a.status === s).length])) as Record<StatusApac, number>
+    : null
+  const abas: (readonly [Aba, string, number | undefined])[] = [
+    ['solicitada', 'Solicitadas', contas?.solicitada], ['autorizada', 'Autorizadas', contas?.autorizada], ['rejeitada', 'Rejeitadas', contas?.rejeitada],
+    ['cancelada', 'Canceladas', contas?.cancelada], ['todas', 'Todas', resumo.data?.total],
+    ...(faturamento ? [['arquivo', 'Arquivo do APAC Magnético', undefined] as const] : []),
   ]
+  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a decisão dele;
+  // o faturamento, em Autorizadas
   const [aba, setAbaBase] = React.useState<Aba>(regulador ? 'solicitada' : 'autorizada')
   // item 05 do kit de desempenho: páginas de 50, com "Ver mais"
   const [limite, setLimite] = React.useState(PAGINA)
@@ -86,6 +102,7 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
   const invalidar = () => {
     void qc.invalidateQueries({ queryKey: ['apacs-da-unidade', unidade] })
     void qc.invalidateQueries({ queryKey: ['eventos-apac', a.id] })
+    void qc.invalidateQueries({ queryKey: ['nota-apac'] })
   }
   const eventos = useQuery({
     queryKey: ['eventos-apac', a.id],

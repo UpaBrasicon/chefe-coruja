@@ -820,6 +820,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
     void qc.invalidateQueries({ queryKey: ['regulacao-fila', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['regulacao-sla', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['regulacao-destino', unidadeId] })
+    void qc.invalidateQueries({ queryKey: ['nota-regulacao'] })
   }
   const priorizar = useMutation({
     mutationFn: async () => {
