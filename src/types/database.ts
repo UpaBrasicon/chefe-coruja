@@ -11053,6 +11053,8 @@ export type Database = {
       regulacao_definir_unidades_central: { Args: { p_central: string; p_unidades: string[] }; Returns: Json }
       regulacao_salvar_capacidades: { Args: { p_itens: Json; p_unidade: string }; Returns: number }
       regulacao_definir_prazos_tipo: { Args: { p_central: string; p_prazos: Json }; Returns: Json }
+      // o que as unidades reguladas têm, para o regulador (migration 20270421000012)
+      regulacao_capacidades_reguladas: { Args: { p_central: string }; Returns: Json }
       regulacao_detalhe: { Args: { p_id: string }; Returns: Json }
       regulacao_lista: { Args: { p_unidade: string }; Returns: Json }
       regulacao_assumir: { Args: { p_id: string }; Returns: Json }

@@ -16,6 +16,7 @@ import * as React from 'react'
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { Abas, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha, OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -90,14 +91,14 @@ function Rede({ org, superAdmin }: { org: OrganizacaoReg; superAdmin: boolean })
             <ul className="flex flex-col gap-1" aria-label="Centrais da rede">
               {org.centrais.map((c) => (
                 <li key={c.id}>
-                  <button type="button" aria-current={central?.id === c.id ? 'true' : undefined} onClick={() => setCentralId(c.id)}
-                    className={cn('flex w-full flex-col items-start gap-0.5 rounded-controle border px-3 py-2 text-left',
-                      central?.id === c.id ? 'border-acao bg-acao/5' : 'border-transparent hover:bg-campo')}>
+                  <BotaoLinha aria-current={central?.id === c.id ? 'true' : undefined} onClick={() => setCentralId(c.id)}
+                    className={cn('w-full rounded-controle px-3 py-2',
+                      central?.id === c.id ? 'border-acao bg-acao/5 hover:bg-acao/5' : 'border-transparent bg-transparent hover:border-transparent hover:bg-campo')}>
                     <span className="font-medium text-tinta">{c.nome}</span>
                     <span className="text-rotulo text-tinta-sussurro">
                       {c.unidades.length} {c.unidades.length === 1 ? 'unidade' : 'unidades'}{c.principal ? ' · recebe os pedidos' : ''}
                     </span>
-                  </button>
+                  </BotaoLinha>
                 </li>
               ))}
             </ul>
@@ -133,7 +134,7 @@ function NovaCentral({ org, aoCriar }: { org: OrganizacaoReg; aoCriar: (id: stri
       <span className="text-rotulo text-tinta-apoio">Qual unidade vira central? Os médicos reguladores ficam vinculados a ela.</span>
       <BuscaSelecao id="nova-central" rotulo="Buscar unidade" opcoes={opcoes} escolhidos={[]} onEscolher={(id) => criar.mutate(id)} />
       <MensagemErro erro={criar.error} acao="cadastrar a central" />
-      <Button size="xs" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
+      <Button size="xs" variant="outline" onClick={() => setAberto(false)}>Cancelar</Button>
     </div>
   )
 }
@@ -268,12 +269,12 @@ function AbaCapacidades({ org, central, nomeDe }: { org: OrganizacaoReg; central
       <ul className="flex flex-col gap-1" aria-label="Unidades reguladas">
         {unidades.map((x) => (
           <li key={x.id}>
-            <button type="button" aria-current={u.id === x.id ? 'true' : undefined} onClick={() => setAberta(x.id)}
-              className={cn('flex w-full flex-col items-start gap-0.5 rounded-controle border px-2.5 py-1.5 text-left',
-                u.id === x.id ? 'border-acao bg-acao/5' : 'border-transparent hover:bg-campo')}>
+            <BotaoLinha aria-current={u.id === x.id ? 'true' : undefined} onClick={() => setAberta(x.id)}
+              className={cn('w-full rounded-controle px-2.5 py-1.5',
+                u.id === x.id ? 'border-acao bg-acao/5 hover:bg-acao/5' : 'border-transparent bg-transparent hover:border-transparent hover:bg-campo')}>
               <span className="font-medium text-tinta">{nomeDe.get(x.id) ?? x.nome}</span>
               <span className="text-rotulo text-tinta-sussurro">{resumoCapacidades(x.capacidades)}</span>
-            </button>
+            </BotaoLinha>
           </li>
         ))}
       </ul>
@@ -429,12 +430,12 @@ function AbaPrazos({ central }: { central: CentralReg }) {
 // ── peças ───────────────────────────────────────────────────────────────────
 function Ficha({ rotulo, detalhe, onRemover }: { rotulo: string; detalhe?: string; onRemover: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-fio bg-campo py-0.5 pr-1 pl-2.5 text-tinta">
+    <span className="inline-flex items-center gap-1 rounded-capsula border border-fio bg-campo py-0.5 pr-1 pl-2.5 text-tinta">
       {rotulo}{detalhe && <span className="text-rotulo text-tinta-sussurro">· {detalhe}</span>}
-      <button type="button" aria-label={`Tirar ${rotulo}`} onClick={onRemover}
-        className="inline-flex size-5 items-center justify-center rounded-full text-tinta-sussurro hover:text-critico">
+      <Button type="button" variant="ghost" size="icon-xs" aria-label={`Tirar ${rotulo}`} onClick={onRemover}
+        className="size-5 min-h-0 rounded-capsula p-0 text-tinta-sussurro hover:text-critico">
         <X className="size-3" aria-hidden />
-      </button>
+      </Button>
     </span>
   )
 }
@@ -475,22 +476,22 @@ function BuscaSelecao({ id, rotulo, opcoes, escolhidos, onEscolher, livre = fals
           }
         }} />
       {aberto && (achados.length > 0 || podeLivre) && (
-        <ul id={listaId} className="z-10 flex max-h-64 flex-col overflow-auto rounded-controle border border-fio bg-superficie py-1 shadow-sm">
+        <ul id={listaId} role="listbox" aria-label={rotulo} className="z-10 flex max-h-64 flex-col overflow-auto rounded-controle border border-fio bg-superficie py-1 shadow-sm">
           {achados.map((o) => (
             <li key={o.id}>
-              <button type="button" disabled={!!o.desabilitada} onMouseDown={(e) => e.preventDefault()} onClick={() => escolher(o.id)}
-                className="flex w-full flex-wrap items-baseline gap-x-2 px-3 py-1.5 text-left hover:bg-campo disabled:cursor-not-allowed disabled:opacity-60">
+              <OpcaoLista disabled={!!o.desabilitada} aria-disabled={!!o.desabilitada || undefined} onClick={() => escolher(o.id)}
+                className="flex-wrap items-baseline gap-x-2 gap-y-0 border-0 px-3 py-1.5 hover:bg-campo disabled:cursor-not-allowed disabled:opacity-60">
                 <span className="text-tinta">{o.nome}</span>
                 {(o.desabilitada ?? o.detalhe) && <span className="text-rotulo text-tinta-sussurro">{o.desabilitada ?? o.detalhe}</span>}
-              </button>
+              </OpcaoLista>
             </li>
           ))}
           {podeLivre && (
             <li>
-              <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => escolher(codigoNovo, novo)}
-                className="flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-acao hover:bg-campo">
+              <OpcaoLista onClick={() => escolher(codigoNovo, novo)}
+                className="items-center gap-1.5 border-0 px-3 py-1.5 text-acao hover:bg-campo">
                 <Plus className="size-3.5" aria-hidden /> Adicionar “{novo}”
-              </button>
+              </OpcaoLista>
             </li>
           )}
         </ul>

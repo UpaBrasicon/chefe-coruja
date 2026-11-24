@@ -2,7 +2,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
-  capacidadesParaEnvio, codigoDe, filtrarOpcoes, opcoesDaCategoria, prazoEmMinutos, prazoLegivel, prazoParaTela, resumoCapacidades,
+  capacidadeCombina, capacidadesParaEnvio, categoriaDoPedido, codigoDe, filtrarOpcoes, opcoesDaCategoria, ordenarParaPedido,
+  prazoEmMinutos, prazoLegivel, prazoParaTela, resumoCapacidades, resumoPrazosTipo, type UnidadeRegulada,
 } from './regulamentacaoCentrais.ts'
 
 test('regulamentação: código sem acento, no formato do banco', () => {
@@ -48,4 +49,31 @@ test('regulamentação: lista do que a unidade tem', () => {
   ])
   assert.equal(resumoCapacidades(lista), '1 tipo de leito (10 leitos) · 1 exame · 0 especialidades')
   assert.equal(resumoCapacidades([]), 'nada informado')
+})
+
+test('regulamentação: prazos por tipo em uma linha', () => {
+  assert.equal(resumoPrazosTipo({ exame: 10080, leito: 120 }), 'Internação (leito) 2 h · Exame 7 dias')
+  assert.equal(resumoPrazosTipo({}), '')
+  assert.equal(resumoPrazosTipo(null), '')
+})
+
+test('regulamentação: o que a unidade regulada tem para o pedido', () => {
+  const uti = { categoria: 'leito', codigo: 'uti_adulto', nome: 'UTI adulto', quantidade: 10, observacao: null } as const
+  const cardio = { categoria: 'especialidade', codigo: 'cardiologia', nome: 'Cardiologia', quantidade: null, observacao: null } as const
+  const tomo = { categoria: 'exame', codigo: 'tomografia', nome: 'Tomografia', quantidade: null, observacao: null } as const
+  assert.equal(categoriaDoPedido('transferencia'), 'leito')
+  assert.equal(categoriaDoPedido('consulta'), 'especialidade')
+  assert.equal(capacidadeCombina(uti, { tipo: 'leito', tipo_leito: 'uti_adulto' }), true)
+  assert.equal(capacidadeCombina(uti, { tipo: 'transferencia', tipo_leito: 'uti_adulto' }), true)
+  assert.equal(capacidadeCombina(uti, { tipo: 'leito', tipo_leito: 'clinico' }), false)
+  assert.equal(capacidadeCombina(uti, { tipo: 'leito' }), false)
+  assert.equal(capacidadeCombina(cardio, { tipo: 'consulta', especialidade: 'cardiologia pediátrica' }), true)
+  assert.equal(capacidadeCombina(cardio, { tipo: 'consulta', especialidade: '' }), false)
+  assert.equal(capacidadeCombina(cardio, { tipo: 'leito', tipo_leito: 'uti_adulto' }), false)
+  assert.equal(capacidadeCombina(tomo, { tipo: 'exame' }), false)
+  const u = (nome: string, capacidades: UnidadeRegulada['capacidades']): UnidadeRegulada =>
+    ({ id: nome, nome, tipo: 'hospital', vinculada: true, capacidades, atualizado_em: null })
+  const lista = [u('Álvaro', [cardio]), u('Hospital Sul', [uti]), u('Beta', [])]
+  assert.deepEqual(ordenarParaPedido(lista, { tipo: 'leito', tipo_leito: 'uti_adulto' }).map((x) => x.nome), ['Hospital Sul', 'Álvaro', 'Beta'])
+  assert.deepEqual(ordenarParaPedido(lista, null).map((x) => x.nome), ['Álvaro', 'Beta', 'Hospital Sul'])
 })

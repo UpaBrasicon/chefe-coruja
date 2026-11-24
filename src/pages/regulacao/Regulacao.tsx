@@ -26,6 +26,10 @@
 //   (src/components/regulacao/DestinoRegulacao.tsx).
 // • Indicadores (tarefa 10): aba para a central e para o gestor da unidade
 //   (src/components/regulacao/IndicadoresRegulacao.tsx).
+// • Central certa (RT, 24/11/2026; migration 20270421000012): o pedido vai à
+//   central que regula a unidade (sem vínculo, à principal); cada central vê os
+//   pedidos dela; o regulador consulta o que as unidades reguladas têm ao
+//   decidir o destino (src/components/regulacao/CapacidadesReguladas.tsx).
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -43,6 +47,7 @@ import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrig
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
 import { PainelSla, PrazosCentral, PrazosDoPedido, PrioridadeCalma, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { RegulamentacaoCentrais } from '@/components/regulacao/RegulamentacaoCentrais'
+import { CapacidadesReguladas } from '@/components/regulacao/CapacidadesReguladas'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
@@ -165,8 +170,8 @@ export default function Regulacao() {
     <div className="flex w-full max-w-5xl flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
       <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
-          ? 'Solicitações recebidas pela Central de Regulação da rede.'
-          : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'} />
+          ? `Solicitações recebidas pela ${c.central?.nome ?? 'Central de Regulação'}.`
+          : `Pedidos de consulta, exame, leito ou transferência para a ${c?.central?.nome ?? 'Central de Regulação da rede'}.`} />
       {c?.sou_super_admin && focoConfig && <Centrais />}
       {/* Indicadores (tarefa 10): central (rede) e gestor da unidade (origem e destino) */}
       {c && (c.sou_central || (c.central && souGestorDaUnidade)) && (
@@ -188,6 +193,7 @@ export default function Regulacao() {
             <PainelSla unidadeId={unidadeId} central
               detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central podeRegistrarExterno={c.sou_regulador} />} />
             <MapaVagas unidadeId={unidadeId} />
+            <CapacidadesReguladas centralId={unidadeId} />
             <PrazosCentral unidadeId={unidadeId} editavel />
             <Criterios unidadeId={unidadeId} editavel />
           </>
@@ -1210,6 +1216,7 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
   const [texto, setTexto] = React.useState('')
   const [motivo, setMotivo] = React.useState<MotivoNegacao | ''>('')
   const [verMapa, setVerMapa] = React.useState(false)
+  const [verCapacidades, setVerCapacidades] = React.useState(false)
   const decidir = useMutation({
     mutationFn: async () => {
       const r = acao === 'autorizar'
@@ -1272,9 +1279,20 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
           <Campo id={`aut-obs-${s.id}`} rotulo="Observação (opcional)">
             <Input id={`aut-obs-${s.id}`} className="h-8" value={texto} onChange={(e) => setTexto(e.target.value)} />
           </Campo>
-          <div className="sm:col-span-3">
-            <Button size="xs" variant="outline" onClick={() => setVerMapa(!verMapa)}>{verMapa ? 'Esconder o mapa de vagas' : 'Ver o mapa de vagas'}</Button>
+          <div className="flex flex-col gap-2 sm:col-span-3">
+            <div className="flex flex-wrap gap-2">
+              <Button size="xs" variant="outline" onClick={() => setVerMapa(!verMapa)}>{verMapa ? 'Esconder o mapa de vagas' : 'Ver o mapa de vagas'}</Button>
+              {/* RT, 24/11/2026: o que as unidades reguladas têm, como consulta ao decidir o destino */}
+              <Button size="xs" variant="outline" onClick={() => setVerCapacidades(!verCapacidades)}>
+                {verCapacidades ? 'Esconder o que as unidades têm' : 'Ver o que as unidades têm'}
+              </Button>
+            </div>
             {verMapa && <MapaVagas unidadeId={centralId} compacto />}
+            {verCapacidades && (
+              <CapacidadesReguladas centralId={centralId} compacto
+                pedido={{ tipo: s.tipo, tipo_leito: s.tipo_leito, especialidade: s.especialidade }}
+                origemId={s.origem.id} aoEscolher={(id) => { setDestinoTipo('rede'); setDestinoUnidade(id) }} />
+            )}
           </div>
         </div>
       )}
