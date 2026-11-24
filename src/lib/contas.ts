@@ -56,18 +56,22 @@ export const SITUACAO_DOCUMENTO: Record<AihConta['status'] | ApacConta['status']
 }
 export const TIPO_APAC: Record<ApacConta['tipo'], string> = { '1': 'inicial', '2': 'continuidade', '3': 'única' }
 
-/** Pendências da 5B, L4: material lançado à mão na conta, sem valor (migration 20270226000001). */
+/** Pendências da 5B, L4: material lançado à mão na conta (migration 20270226000001). */
 export type MaterialConta = {
   id: string; material_id: string; material: string; unidade_consumo: string
   procedimento: string | null; procedimento_nome: string | null
   quantidade: number; observacao: string | null; lancado_por: string | null; lancado_em: string
   retirado_em: string | null; motivo_retirada: string | null; retirado_por: string | null
+  /** Custo unitário congelado no lançamento e quantidade × custo (migration 20270421000090); nulo = sem custo. */
+  custo_unitario?: number | null; valor?: number | null
 }
 
 /** Material do cadastro da unidade (materiais_da_unidade). */
 export type MaterialUnidade = {
   id: string; nome: string; unidade_consumo: string; procedimento: string | null; procedimento_nome: string | null
   ativo: boolean; lancamentos: number
+  /** Custo unitário de hoje em R$ (migration 20270421000090); nulo = sem custo. */
+  custo_unitario?: number | null
 }
 
 /** Quantidade do material: maior que zero, até 2 casas (aceita vírgula). */
@@ -99,6 +103,8 @@ export type ContaDetalhe = Conta & {
   medicamentos_com_aviso: number
   /** Pendências da 5B, L4; ausente no banco anterior à 20270226000001. */
   materiais?: MaterialConta[]
+  /** Soma de quantidade × custo dos materiais não retirados (20270421000090); nulo = nenhum com custo. */
+  materiais_total?: number | null
   documentos_sus: DocumentosSus
   pendencias: Pendencia[]
   /** Falso na conta fechada antes da pré-auditoria (nada foi guardado). */
