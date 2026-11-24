@@ -33,6 +33,7 @@ import type { Papel, TipoUnidade } from '@/types/database'
 
 /** Chave da nota numérica (contagem em âmbar ao lado do item). */
 export type ChaveNota = 'avisos' | 'triagem' | 'farmacia' | 'pedidos' | 'tele' | 'revisao' | 'fila_medica' | 'plataformas' | 'chamados'
+  | 'regulacao' | 'aih' | 'apac'
 
 export type ItemNav = {
   to: string
@@ -199,10 +200,13 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_ESCALA,
   ],
   // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
-  // competência, ou rejeita com motivo)
+  // competência, ou rejeita com motivo). Revisão do perfil (MR1 = A, RT
+  // 24/11/2026): abre na Regulação; Regulação, AIH, APAC e Escala, cada um com
+  // o número do que espera decisão.
   regulador: [
-    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
-    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
+    { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true, nota: 'regulacao' },
+    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true, nota: 'aih' },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, nota: 'apac' },
     ITEM_ESCALA,
   ],
   // Fase 3, tarefa 3: faturamento (sem escala) — conferência e fechamento do
@@ -343,7 +347,8 @@ function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdm
   if (papel === 'gestor') {
     itens.push({ ...ITEM_REGULACAO, grupo: 'Leitos' }, ...[ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO].map((i) => ({ ...i, grupo: 'Unidade' })))
   }
-  if (papel === 'plantonista' || papel === 'regulador') itens.push(ITEM_REGULACAO)
+  // o regulador já tem a Regulação no topo da lista dele (MR1)
+  if (papel === 'plantonista') itens.push(ITEM_REGULACAO)
   if (responsavelTecnico) {
     // o gestor já tem o item; o responsável técnico o ganha com a nota da fila
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)
