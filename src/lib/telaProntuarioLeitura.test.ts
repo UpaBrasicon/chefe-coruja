@@ -35,7 +35,9 @@ test('sem dado do paciente: estado próprio, com "Voltar aos pedidos" como açã
   assert.match(tela, /O pedido pode ter vencido ou ainda não foi aprovado\./)
   assert.match(tela, /if \(!pac\.data\) throw new SemAcesso\(\)/)
   // a ação principal é o botão cheio (sem variant)
-  assert.match(tela, /<Button nativeButton=\{false\} render=\{<Link to="\/prontuarios" \/>\}>Voltar aos pedidos<\/Button>/)
+  // PT1 (RT, 24/11/2026): no perfil Telemedicina não há pedido, e o botão diz "Voltar aos prontuários"
+  assert.match(tela, /<Button nativeButton=\{false\} render=\{<Link to="\/prontuarios" \/>\}>\{voltar\}<\/Button>/)
+  assert.match(tela, /const voltar = papelAtivo === 'telemedicina' \? 'Voltar aos prontuários' : 'Voltar aos pedidos'/)
 })
 
 test('falha de rede ou de servidor tem "Tentar de novo", também ao carregar mais', () => {

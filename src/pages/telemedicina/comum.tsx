@@ -3,14 +3,16 @@
 // da teleinterconsulta, a lista da unidade e a disponibilidade no topo
 // (Disponível / Ausente / Em consulta), gravada no banco
 // (migration 20261009000002).
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
 import { TituloSecao } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/AuthContext'
+import { useAgora } from '@/hooks/useAgora'
 import { fmtData, fmtDataHora } from '@/lib/datas'
-import { hora } from '@/lib/formato'
+import { dataIso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -136,31 +138,148 @@ export function PontoSituacao({ estado }: { estado: Situacao['estado'] }) {
   return <span aria-hidden className={cn('size-[7px] shrink-0 rounded-capsula', PONTO[estado])} />
 }
 
-/** O seletor de disponibilidade e a situação do plantão remoto. */
-export function TopoTele({ unidadeId }: { unidadeId: string }) {
+/** O banco responde "Acesso negado." a quem não está no plantão da unidade (sem check-in). */
+export const semPlantaoTele = (e: unknown) => !!e && /^Acesso negado/.test((e as Error).message ?? '')
+
+type PlantaoEscala = { id: string; perfil_id: string; papel: string | null; setor_id: string; inicio: string; duracao_min: number }
+
+/**
+ * O plantão remoto de agora, tirado da escala e do check-in (CH2, RT 24/11/2026).
+ * `minha_situacao_tele.de_plantao` vem de plantoes_agora(), que depois da
+ * tolerância só conta com check-in; por isso a escala é lida aqui à parte. O
+ * plantão presencial de quem também é Médico (categoria plantonista) não conta.
+ */
+export function usePlantaoRemoto(unidadeId: string) {
+  const { perfil } = useAuth()
   const qc = useQueryClient()
+  const agora = useAgora(30_000)
+  const hoje = dataIso(agora)
+  const ontem = dataIso(agora - 86_400_000)
+  const escala = useQuery({
+    queryKey: ['tele-escala-hoje', unidadeId, ontem, hoje],
+    enabled: !!perfil,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('escala_da_unidade', { p_unidade: unidadeId, p_de: ontem, p_ate: hoje })
+      if (error) throw error
+      return ((data ?? []) as PlantaoEscala[]).filter((p) => p.perfil_id === perfil!.id && p.papel !== 'plantonista')
+    },
+  })
+  const setores = useQuery({
+    queryKey: ['escala-setores', unidadeId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('setores').select('id, nome').eq('unidade_id', unidadeId).eq('ativo', true).order('ordem', { ascending: true })
+      if (error) throw error
+      return data ?? []
+    },
+  })
+  const presenca = useQuery({
+    queryKey: ['presenca-remota', unidadeId, perfil?.id],
+    enabled: !!perfil,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('presenca_plantonista').select('id, checkin_em, checkout_em')
+        .eq('unidade_id', unidadeId).eq('perfil_id', perfil!.id).not('checkin_em', 'is', null).is('checkout_em', null)
+        .order('checkin_em', { ascending: false }).limit(1)
+      if (error) throw error
+      return data?.[0] ?? null
+    },
+  })
+  const invalidar = () => {
+    for (const k of ['presenca-remota', 'situacao-tele', 'teleinterconsultas', 'tele-escala-hoje', 'tele-outras', 'nota-tele']) void qc.invalidateQueries({ queryKey: [k] })
+  }
+  const entrar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('registrar_checkin', { p_unidade: unidadeId })
+      if (error) throw error
+    },
+    onSuccess: invalidar,
+  })
+  const sair = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc('registrar_checkout', { p_registro: id })
+      if (error) throw error
+    },
+    onSuccess: invalidar,
+  })
+  const fim = (p: PlantaoEscala) => new Date(p.inicio).getTime() + p.duracao_min * 60_000
+  const turno = (escala.data ?? []).find((p) => new Date(p.inicio).getTime() <= agora && agora < fim(p)) ?? null
+  const setor = turno ? setores.data?.find((s) => s.id === turno.setor_id)?.nome ?? null : null
+  return {
+    carregando: escala.isLoading || presenca.isLoading,
+    turno: turno ? { inicio: turno.inicio, fim: new Date(fim(turno)).toISOString(), setor } : null,
+    checkin: presenca.data ?? null,
+    entrar, sair,
+  }
+}
+
+/** Botão "Fazer check-in" do plantão remoto (sem localização: telemedicina). */
+export function BotaoCheckinTele({ unidadeId, variante = 'default' }: { unidadeId: string; variante?: 'default' | 'outline' }) {
+  const { entrar } = usePlantaoRemoto(unidadeId)
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <Button size="sm" variant={variante} onClick={() => entrar.mutate()} disabled={entrar.isPending}>Fazer check-in</Button>
+      {entrar.error && <span role="alert" className="text-apoio text-critico">{(entrar.error as Error).message}</span>}
+    </span>
+  )
+}
+
+/**
+ * Um selo só de situação no topo dos Chamados (CH2): tirado da escala e do
+ * check-in, com a ação que cabe (check-in, ficar ausente, encerrar). Substitui
+ * os três selos de antes ("Fora do plantão", "Fora da escala agora" e
+ * "Disponível"), que se contradiziam.
+ */
+export function SituacaoTele({ unidadeId }: { unidadeId: string }) {
+  const qc = useQueryClient()
+  const r = usePlantaoRemoto(unidadeId)
   const s = useSituacaoTele(unidadeId)
   const [erro, setErro] = React.useState<string | null>(null)
+  if (r.carregando) return null
   const d = s.data
-  if (!d) return null
   const alternar = async () => {
+    if (!d) return
     const { error } = await supabase.rpc('definir_minha_disponibilidade_tele', { p_estado: d.escolhido === 'disponivel' ? 'ausente' : 'disponivel' })
     if (error) return setErro(error.message)
     setErro(null); void qc.invalidateQueries({ queryKey: ['situacao-tele'] })
   }
+  const ate = r.turno ? ` até ${hhmm(r.turno.fim)}` : ''
+  const setor = r.turno?.setor ? ` · ${r.turno.setor}` : ''
+  let tom: 'conforme' | 'atencao' | 'neutro' = 'neutro'
+  let texto: string
+  if (r.turno && r.checkin) {
+    tom = 'conforme'
+    texto = d?.estado === 'em_consulta' ? `Em atendimento · de plantão${ate}${setor}`
+      : d?.estado === 'ausente' ? `De plantão${ate}${setor} · ausente` : `De plantão${ate}${setor}`
+  } else if (r.turno) {
+    tom = 'atencao'
+    texto = `Na escala${ate}${setor} · falta check-in`
+  } else if (r.checkin) {
+    texto = `Check-in aberto desde ${hhmm(r.checkin.checkin_em)} · fora da escala`
+  } else {
+    texto = 'Fora da escala agora'
+  }
+  const pilula = {
+    conforme: 'border-conforme/30 bg-alerta-conforme text-conforme',
+    atencao: 'border-atencao/30 bg-alerta-atencao text-atencao',
+    neutro: 'border-fio bg-trilha text-tinta-apoio',
+  }[tom]
+  const erroAcao = r.entrar.error ?? r.sair.error
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      <span className="text-rotulo text-tinta-sussurro">
-        {d.de_plantao ? `De plantão até ${hhmm(d.plantao_fim)}${d.setor ? ` · ${d.setor}` : ''}` : 'Fora da escala agora'}
+    <div className="flex flex-wrap items-center gap-2">
+      <span role="status" className={cn('inline-flex items-center gap-2 rounded-capsula border px-3 py-1 text-apoio font-medium', pilula)}>
+        <span aria-hidden className={cn('size-2 shrink-0 rounded-capsula', tom === 'conforme' ? 'bg-conforme' : tom === 'atencao' ? 'bg-atencao' : 'bg-tinta-sussurro')} />
+        {texto}
       </span>
-      <Button type="button" variant="outline" size="sm" onClick={() => void alternar()} disabled={d.estado === 'em_consulta'}
-        title={d.estado === 'em_consulta' ? 'Em consulta enquanto houver teleinterconsulta aceita sem parecer' : 'Alternar disponibilidade'}
-        className={cn('min-h-0 gap-[7px] rounded-capsula py-1 pr-[11px] pl-[9px] font-medium disabled:opacity-100', COR_SITUACAO[d.estado],
-          d.estado !== 'em_consulta' && 'cursor-pointer hover:opacity-85')}>
-        <PontoSituacao estado={d.estado} />
-        {ROTULO_SITUACAO[d.estado]}
-      </Button>
-      {erro && <span role="alert" className="basis-full text-right text-rotulo text-critico">{erro}</span>}
+      {r.turno && !r.checkin && (
+        <Button size="sm" onClick={() => r.entrar.mutate()} disabled={r.entrar.isPending}>Fazer check-in</Button>
+      )}
+      {r.turno && r.checkin && d && d.estado !== 'em_consulta' && (
+        <Button size="sm" variant="ghost" onClick={() => void alternar()}>{d.escolhido === 'disponivel' ? 'Ficar ausente' : 'Ficar disponível'}</Button>
+      )}
+      {r.checkin && (
+        <Button size="sm" variant="outline" onClick={() => r.sair.mutate(r.checkin!.id)} disabled={r.sair.isPending}>Encerrar plantão remoto</Button>
+      )}
+      {(erro || erroAcao) && <span role="alert" className="basis-full text-apoio text-critico">{erro ?? (erroAcao as Error).message}</span>}
     </div>
   )
 }
