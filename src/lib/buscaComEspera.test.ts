@@ -27,7 +27,7 @@ const BUSCAS: [arquivo: string, chave: string][] = [
   // pedido 3 do checklist de desempenho (F4): as quatro que ficaram fora do #511
   ['src/pages/plantao/porta/AbaExames.tsx', 'buscar-exames'],
   ['src/pages/regulacao/Regulacao.tsx', 'regulacao-busca-paciente'],
-  ['src/pages/PreferenciasPrescricao.tsx', 'busca-medicamento'],
+  ['src/pages/PreferenciasPrescricao.tsx', 'busca-medicamento-favoritos'],
   ['src/pages/ReferenciaDiluicao.tsx', 'medicamento-catalogo'],
 ]
 
