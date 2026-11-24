@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-31 operações cobrem 330 tabelas.
+31 operações cobrem 329 tabelas.
 
 ## Papéis
 
@@ -31,14 +31,14 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Prescrição, checagem e administração de medicamentos | operador | sim | 20 anos a partir do último registro | 16 |
 | Cuidado de enfermagem | operador | sim | 20 anos a partir do último registro | 7 |
 | Internação, leitos e transferência | operador | sim | 20 anos a partir do último registro | 11 |
-| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 15 |
+| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 13 |
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
 | Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 11 |
 | Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 7 |
 | Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 9 |
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
 | Faturamento SUS e contas | operador | sim | 5 anos | 20 |
-| Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 15 |
+| Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 16 |
 | Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 21 |
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
 | Anotações pessoais do médico | operador | não | 30 dias depois da última mudança | 1 |
@@ -369,7 +369,6 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - pedido de vaga, quadro clínico e anexos
 - respostas dos destinos e da central
 - tempos de cada etapa
-- conversa da unidade com o médico regulador e quem leu
 
 **Quem acessa**
 - médico
@@ -385,9 +384,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Medidas próprias**
 - anexo só abre para quem a unidade liberou
 
-**Tabelas (15)**
+**Tabelas (13)**
 
-`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`, `public.regulacao_mensagens`, `public.regulacao_conversa_leitura`
+`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`
 
 ### Rede entre unidades e acesso ao prontuário de outra unidade
 
@@ -637,9 +636,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Prazo.** 5 anos (prazo trabalhista (V3)). Descarte: rotina com registro, depois do prazo (V3).
 
-**Tabelas (15)**
+**Tabelas (16)**
 
-`public.escala_plantao`, `public.escala_fixa`, `public.escala_vagas`, `public.escala_publicacoes`, `public.historico_escala`, `public.candidaturas_escala`, `public.solicitacoes_escala`, `public.trocas_plantao`, `public.presenca_plantonista`, `public.remuneracoes_plantao`, `public.plantao_versoes_erp`, `public.chronos_alertas_escala`, `public.liberacao_pos_plantao`, `public.disponibilidade_telemedicina`, `public.descanso_divisoes`
+`public.escala_plantao`, `public.escala_fixa`, `public.escala_vagas`, `public.escala_publicacoes`, `public.historico_escala`, `public.candidaturas_escala`, `public.solicitacoes_escala`, `public.trocas_plantao`, `public.presenca_plantonista`, `public.remuneracoes_plantao`, `public.plantao_versoes_erp`, `public.chronos_alertas_escala`, `public.liberacao_pos_plantao`, `public.disponibilidade_telemedicina`, `public.descanso_divisoes`, `public.turnos_unidade`
 
 ### Conta do profissional, login e permissões
 

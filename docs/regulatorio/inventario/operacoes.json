@@ -822,7 +822,8 @@
         "public.chronos_alertas_escala",
         "public.liberacao_pos_plantao",
         "public.disponibilidade_telemedicina",
-        "public.descanso_divisoes"
+        "public.descanso_divisoes",
+        "public.turnos_unidade"
       ]
     },
     {
