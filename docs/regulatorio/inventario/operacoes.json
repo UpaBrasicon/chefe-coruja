@@ -780,13 +780,15 @@
       "dados": [
         "plantões, vagas, candidaturas e trocas",
         "presença e horários",
-        "valores de remuneração"
+        "valores de remuneração",
+        "divisão do descanso dos médicos no plantão (horários de cada um)"
       ],
       "sensivel": false,
       "acesso": [
         "o próprio profissional",
         "gestor da escala",
-        "gestor da unidade"
+        "gestor da unidade",
+        "médicos, enfermagem e gestor da unidade (quem está descansando no plantão)"
       ],
       "local": [
         "Supabase (São Paulo)",
@@ -812,7 +814,8 @@
         "public.plantao_versoes_erp",
         "public.chronos_alertas_escala",
         "public.liberacao_pos_plantao",
-        "public.disponibilidade_telemedicina"
+        "public.disponibilidade_telemedicina",
+        "public.descanso_divisoes"
       ]
     },
     {
