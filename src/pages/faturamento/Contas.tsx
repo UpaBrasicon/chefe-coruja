@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
@@ -64,10 +65,15 @@ export default function Contas() {
   const totais = lista.data?.totais
   // Fase 5B, tarefa 5 (4a): filtro pelo resumo de pendências que vem com a lista
   const [filtroPend, setFiltroPend] = React.useState<'todas' | 'com' | 'bloqueante'>('todas')
+  // Revisão de perfis (Gestor, item 15, M2): bloqueante primeiro, depois aviso.
   const contas = (lista.data?.contas ?? []).filter((c) =>
     filtroPend === 'todas' ? true
       : filtroPend === 'bloqueante' ? (c.pendencias?.bloqueantes ?? 0) > 0
         : (c.pendencias?.bloqueantes ?? 0) + (c.pendencias?.avisos ?? 0) > 0)
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => (b.c.pendencias?.bloqueantes ?? 0) - (a.c.pendencias?.bloqueantes ?? 0) || (b.c.pendencias?.avisos ?? 0) - (a.c.pendencias?.avisos ?? 0) || a.i - b.i)
+    .map((x) => x.c)
+  const filtrosAtivos = [tipo && TIPO[tipo], filtroPend === 'com' ? 'com pendência' : filtroPend === 'bloqueante' ? 'com bloqueante' : null].filter(Boolean)
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -76,21 +82,33 @@ export default function Contas() {
         titulo="Contas do atendimento"
         descricao="Cada atendimento na porta abre uma conta (BPA); a internação abre outra (AIH), ligada à da porta. O faturamento confere e fecha; o gestor reabre com motivo."
       />
-      <Chips rotulo="Etapa da conta">
-        {(['aberta', 'em_conferencia', 'fechada', 'faturada'] as const).map((e) => (
-          <Chip key={e} ativo={etapa === e} onClick={() => setEtapa(e)} contagem={totais?.[e]}>{ETAPA[e]}</Chip>
-        ))}
-        <Chip ativo={etapa === null} onClick={() => setEtapa(null)}>todas</Chip>
-      </Chips>
-      <Chips rotulo="Tipo de conta">
-        <Chip ativo={tipo === null} onClick={() => setTipo(null)}>porta e internação</Chip>
-        {(['ambulatorial', 'internacao'] as const).map((t) => <Chip key={t} ativo={tipo === t} onClick={() => setTipo(t)}>{TIPO[t]}</Chip>)}
-      </Chips>
-      <Chips rotulo="Pendências">
-        <Chip ativo={filtroPend === 'todas'} onClick={() => setFiltroPend('todas')}>todas</Chip>
-        <Chip ativo={filtroPend === 'com'} onClick={() => setFiltroPend('com')}>com pendência</Chip>
-        <Chip ativo={filtroPend === 'bloqueante'} onClick={() => setFiltroPend('bloqueante')}>com bloqueante</Chip>
-      </Chips>
+      {/* M1: a etapa em abas; tipo e pendência num menu recolhido */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <Tabs value={etapa ?? 'todas'} onValueChange={(v) => setEtapa(v === 'todas' ? null : v as EtapaConta)}>
+          <TabsList aria-label="Etapa da conta" className="gap-5">
+            {(['aberta', 'em_conferencia', 'fechada', 'faturada'] as const).map((e) => (
+              <TabsTrigger key={e} value={e}>{ETAPA[e]} {totais && <span className="text-rotulo font-semibold text-acao tabular-nums">{totais[e]}</span>}</TabsTrigger>
+            ))}
+            <TabsTrigger value="todas">todas</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <details className="group relative">
+          <summary className="cursor-pointer list-none rounded-controle border border-fio bg-superficie px-3 py-1.5 text-apoio text-tinta-apoio hover:border-acao">
+            Filtros{filtrosAtivos.length > 0 ? `: ${filtrosAtivos.join(', ')}` : ''}
+          </summary>
+          <div className="absolute right-0 z-10 mt-1 flex w-72 flex-col gap-2 rounded-container border border-fio bg-superficie p-3 shadow-repouso">
+            <Chips rotulo="Tipo de conta">
+              <Chip ativo={tipo === null} onClick={() => setTipo(null)}>porta e internação</Chip>
+              {(['ambulatorial', 'internacao'] as const).map((t) => <Chip key={t} ativo={tipo === t} onClick={() => setTipo(t)}>{TIPO[t]}</Chip>)}
+            </Chips>
+            <Chips rotulo="Pendências">
+              <Chip ativo={filtroPend === 'todas'} onClick={() => setFiltroPend('todas')}>todas</Chip>
+              <Chip ativo={filtroPend === 'com'} onClick={() => setFiltroPend('com')}>com pendência</Chip>
+              <Chip ativo={filtroPend === 'bloqueante'} onClick={() => setFiltroPend('bloqueante')}>com bloqueante</Chip>
+            </Chips>
+          </div>
+        </details>
+      </div>
       <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
       {lista.isLoading ? <Spinner /> : contas.length === 0 ? (
         <Vazio icone={Wallet} titulo={filtroPend === 'todas' ? 'Nenhuma conta nesta etapa' : 'Nenhuma conta com pendência neste filtro'}
@@ -101,7 +119,7 @@ export default function Contas() {
             <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
               <TableRow>
                 <TableHead className="px-3 py-2 font-medium">Conta</TableHead><TableHead className="px-3 py-2 font-medium">Paciente</TableHead>
-                <TableHead className="px-3 py-2 font-medium">Tipo</TableHead><TableHead className="px-3 py-2 font-medium">Atendimento</TableHead>
+                <TableHead className="px-3 py-2 font-medium">Atendimento</TableHead>
                 <TableHead className="px-3 py-2 font-medium">Pagador</TableHead><TableHead className="px-3 py-2 font-medium">Etapa</TableHead>
                 <TableHead className="px-3 py-2 font-medium">Pendências</TableHead>
               </TableRow>
@@ -112,9 +130,9 @@ export default function Contas() {
                   <TableCell className="whitespace-nowrap px-3 py-2 font-medium text-tinta">
                     {c.numero}
                     {(c.origem || c.derivadas.length > 0) && <Link2 className="ml-1 inline size-3.5 text-tinta-sussurro" aria-label="conta ligada" />}
+                    <span className="block text-rotulo font-normal text-tinta-sussurro">{TIPO[c.tipo]}</span>
                   </TableCell>
                   <TableCell className="px-3 py-2">{c.paciente.nome}<span className="text-tinta-sussurro"> · {c.paciente.prontuario ?? '—'}</span></TableCell>
-                  <TableCell className="px-3 py-2">{TIPO[c.tipo]}</TableCell>
                   <TableCell className="px-3 py-2 text-tinta-apoio">
                     {c.atendimento?.inicio ? fmtDataHora(c.atendimento.inicio) : '—'}
                     {c.atendimento_terminou ? (c.atendimento?.fim ? ` até ${fmtDataHora(c.atendimento.fim)}` : '') : ' · em andamento'}
@@ -373,7 +391,10 @@ function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void 
   const pend = c.pendencias ?? []
   const aberta = c.status === 'aberta' || c.status === 'em_conferencia'
   const liberadas = new Set((c.liberacao?.pendencias ?? []).map((p) => p.chave))
+  // M2: grupos com bloqueante primeiro e, dentro do grupo, a bloqueante antes do aviso
+  const peso = (p: (typeof pend)[number]) => (p.bloqueante && !liberadas.has(p.chave) ? 0 : p.bloqueante ? 1 : 2)
   const grupos = (Object.keys(GRUPO_PENDENCIA) as GrupoPendencia[]).filter((g) => pend.some((p) => p.grupo === g))
+    .sort((a, b) => Math.min(...pend.filter((p) => p.grupo === a).map(peso)) - Math.min(...pend.filter((p) => p.grupo === b).map(peso)))
   const bloqueantes = pend.filter((p) => p.bloqueante).length
   return (
     <section className="flex flex-col gap-2">
@@ -395,7 +416,7 @@ function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void 
             {grupos.map((g) => (
               <div key={g} className="flex flex-col gap-1 px-3 py-2">
                 <span className="text-rotulo font-medium text-tinta-sussurro">{GRUPO_PENDENCIA[g]}</span>
-                {pend.filter((p) => p.grupo === g).map((p) => (
+                {pend.filter((p) => p.grupo === g).sort((a, b) => peso(a) - peso(b)).map((p) => (
                   <div key={p.chave} className="flex flex-col">
                     <span className="flex flex-wrap items-center gap-1.5">
                       <Badge variant={p.bloqueante ? (liberadas.has(p.chave) ? 'secondary' : 'destructive') : 'warning'}>

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftRight, ChevronLeft, ChevronRight, Download } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { Chip, Chips, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { TabsPagina } from '@/components/TabsPagina'
@@ -33,6 +34,55 @@ const MINIMO_MOTIVO = 10
 const caixa = 'overflow-x-auto rounded-container border border-fio bg-superficie'
 const th = 'px-3 py-2 font-medium'
 const td = 'px-3 py-2.5'
+
+const ORDEM_SITUACAO: SituacaoErp[] = ['divergente', 'estornar', 'aguardando', 'conciliada', 'substituida', 'estornada']
+
+type ChaveApi = { id: string; nome: string; ambiente: 'live' | 'test'; unidades: { id: string }[]; recursos: string[]; vencida: boolean; revogada_em: string | null; ultimo_uso_em: string | null }
+
+/**
+ * Revisão de perfis (Gestor, item 20, M1): o estado da ligação com o ERP no
+ * topo, a partir das chaves da API que já existem (recurso Financeiro). A
+ * lista de chaves é do gestor; para os outros papéis a faixa não aparece.
+ */
+function EstadoLigacao({ unidadeId }: { unidadeId: string }) {
+  const { ehGestor, ehSuperAdmin } = useUnidade()
+  const chaves = useQuery({
+    queryKey: ['api-chaves'],
+    enabled: ehGestor || ehSuperAdmin,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('api_chaves_lista')
+      if (error) throw error
+      return (data ?? []) as unknown as ChaveApi[]
+    },
+  })
+  if (!chaves.data) return null
+  const doErp = chaves.data.filter((c) => c.recursos.includes('financeiro') && c.unidades.some((u) => u.id === unidadeId))
+  const ativas = doErp.filter((c) => !c.revogada_em && !c.vencida)
+  const producao = ativas.filter((c) => c.ambiente === 'live')
+  const caminho = <Link to="/integracoes" className="text-acao underline-offset-2 hover:underline">Integrações</Link>
+  if (producao.length > 0) {
+    const c = producao[0]
+    return (
+      <Aviso tom="conforme" titulo="Ligação com o ERP ativa">
+        Chave {c.nome}{c.ultimo_uso_em ? `, último acesso em ${diaMesHora(c.ultimo_uso_em)}` : ', ainda sem acesso do ERP'}.
+      </Aviso>
+    )
+  }
+  if (ativas.length > 0) {
+    return (
+      <Aviso tom="informacao" titulo="Ligação com o ERP só de teste">
+        A chave ativa ({ativas[0].nome}) é de teste: o ERP de produção ainda não busca as contas. A chave de produção é criada em {caminho}.
+      </Aviso>
+    )
+  }
+  return (
+    <Aviso tom="atencao" titulo="Nenhuma chave do ERP ativa">
+      {doErp.length > 0 ? 'As chaves do ERP desta unidade foram revogadas ou venceram' : 'Nenhuma chave da API tem o recurso Financeiro (ERP) nesta unidade'}:
+      o ERP não busca as contas nem responde o lançamento. Veja em {caminho}.
+    </Aviso>
+  )
+}
 
 function Situacao({ s }: { s: SituacaoErp }) {
   return <Badge variant={VARIANTE_SITUACAO[s]}>{ROTULO_SITUACAO[s]}</Badge>
@@ -76,12 +126,25 @@ function AbaContas({ unidadeId, unidadeNome }: { unidadeId: string; unidadeNome:
 
   const versoes = lista.data ?? []
   const n = contarSituacoes(versoes)
-  const linhas = filtro ? versoes.filter((v) => situacaoErp(v) === filtro) : versoes
+  // Revisão de perfis (Gestor, item 20, M2): divergente e estornar primeiro, na lista e nos filtros.
+  const linhas = (filtro ? versoes.filter((v) => situacaoErp(v) === filtro) : versoes)
+    .map((v, i) => ({ v, i, o: ORDEM_SITUACAO.indexOf(situacaoErp(v)) }))
+    .sort((a, b) => a.o - b.o || a.i - b.i).map((x) => x.v)
+  const pedemAcao = (n.divergente ?? 0) + (n.estornar ?? 0)
   return (
     <div className="flex flex-col gap-3">
+      <EstadoLigacao unidadeId={unidadeId} />
+      {pedemAcao > 0 && (
+        <Aviso tom="critico" titulo={`${pedemAcao} ${pedemAcao === 1 ? 'versão pede' : 'versões pedem'} ação no ERP`}
+          acao={filtro === null ? undefined : <Button size="xs" variant="outline" onClick={() => setFiltro(null)}>Ver todas</Button>}>
+          {[(n.divergente ?? 0) > 0 && `${n.divergente} divergente${(n.divergente ?? 0) > 1 ? 's' : ''}: o valor lançado não bate com o total`,
+            (n.estornar ?? 0) > 0 && `${n.estornar} a estornar: a conta foi reaberta e a versão não vale mais`].filter(Boolean).join(' · ')}.
+          Abra a linha para ver a conta e o ERP lado a lado.
+        </Aviso>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <Chips rotulo="Situação no ERP">
-          {FILTROS_SITUACAO.map((s) => (
+          {[...FILTROS_SITUACAO].sort((a, b) => ORDEM_SITUACAO.indexOf(a) - ORDEM_SITUACAO.indexOf(b)).map((s) => (
             <Chip key={s} ativo={filtro === s} onClick={() => setFiltro(s)} contagem={n[s] ?? 0} tom={s === 'divergente' ? 'critico' : 'acao'}>
               {ROTULO_FILTRO[s]}
             </Chip>
@@ -168,6 +231,22 @@ function GavetaConta({ v, todas, onFechar }: { v: VersaoConta | null; todas: Ver
           />
           <div className="flex flex-col gap-4 px-[22px] py-4 text-apoio">
             <AvisoDaVersao v={v} />
+            {/* M3: conciliação lado a lado, a conta e o que o ERP lançou */}
+            {v.retorno && (
+              <dl className="grid grid-cols-3 overflow-hidden rounded-container border border-fio text-apoio">
+                {[
+                  ['Na conta', moeda(v.total), ''],
+                  ['No ERP', v.retorno.valor_lancado == null ? '—' : moeda(v.retorno.valor_lancado), v.retorno.erp_id ?? ''],
+                  ['Diferença', v.retorno.valor_lancado == null ? '—' : moeda(v.retorno.valor_lancado - v.total), ''],
+                ].map(([r, val, extra], i) => (
+                  <div key={r} className={cn('flex flex-col gap-0.5 px-3 py-2', i > 0 && 'border-l border-fio')}>
+                    <dt className="text-rotulo text-tinta-sussurro">{r}</dt>
+                    <dd className={cn('tabular font-semibold text-tinta', r === 'Diferença' && v.retorno?.valor_lancado != null && v.retorno.valor_lancado !== v.total && 'text-critico')}>{val}</dd>
+                    {extra && <dd className="text-rotulo text-tinta-sussurro">{extra}</dd>}
+                  </div>
+                ))}
+              </dl>
+            )}
             <section>
               <TituloSecao>Versões</TituloSecao>
               <ol className="flex flex-col gap-2">

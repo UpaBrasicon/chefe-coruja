@@ -8,14 +8,16 @@
 // vem de farmacia_do_gestor (migration 20261007000001); aqui não se grava.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
-import { Check, Copy, FlaskConical, Megaphone } from 'lucide-react'
+import { Check, Copy, FlaskConical, Info, Megaphone } from 'lucide-react'
 import * as React from 'react'
 
 import { dataHora, numero } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { EtapasEmPassos } from '@/components/gestor/EtapasEmPassos'
 import { TituloCartao, TituloPagina } from '@/components/monitor/Pagina'
+import { Aviso } from '@/components/ui/aviso'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { PainelFarmacia } from '@/pages/farmacia/PainelFarmacia'
@@ -32,7 +34,7 @@ type Estoque = {
 
 const SIT_FALTA = { registrada: 'Registrada', em_cotacao: 'Em cotação', reposta: 'Reposta' } as const
 const SIT_ESTOQUE = { falta: 'Em falta', critico: 'Crítico', ok: 'Adequado' } as const
-const SELO = 'inline-flex items-center whitespace-nowrap rounded-capsula px-2 py-[3px] text-rotulo font-semibold uppercase tracking-[0.03em]'
+const SELO = 'inline-flex items-center whitespace-nowrap rounded-capsula px-2 py-[3px] text-rotulo font-semibold'
 const quando = (iso: string | null) => (iso ? dataHora(iso) : '—')
 const num = (n: number | null) => (n == null ? '—' : numero(n))
 
@@ -72,9 +74,29 @@ export default function FarmaciaGestor() {
     } catch { /* sem área de transferência: nada a fazer */ }
   }
 
+  // Revisão de perfis (Gestor, item 9): faixa de resumo coerente. A falta
+  // sinalizada é o aviso do farmacêutico; o estoque é a contagem informada. Um
+  // número não contradiz o outro: a faixa diz de onde vem cada um.
+  const abertas = faltas.filter((f) => f.situacao !== 'reposta')
+  const nomesNoEstoque = new Set(estoque.filter((e) => e.situacao !== 'ok').map((e) => e.medicamento))
+  const faltaSemContagem = abertas.filter((f) => !nomesNoEstoque.has(f.medicamento)).length
+
   return (
     <div className="mx-auto w-full max-w-[896px]">
-      <TituloPagina icone={FlaskConical} titulo="Farmácia" />
+      <TituloPagina icone={FlaskConical} titulo="Farmácia da unidade"
+        descricao={<span className="inline-flex flex-wrap items-center gap-1">O que falta, o que já está em reposição e o estoque que o farmacêutico informou. O gestor acompanha; quem age é a farmácia.
+          <span title="O selo do estoque compara o saldo informado com o limite do item ou, sem ele, com o padrão da unidade. Validação de prescrição e diluição padrão são da farmácia." className="inline-flex cursor-help items-center text-tinta-sussurro">
+            <Info className="size-3.5" aria-label="Regra do selo de estoque" />
+          </span></span>} />
+      {!dados.isLoading && dados.data && (
+        <Aviso className="mb-4" tom={abertas.length + emFalta + criticos > 0 ? 'atencao' : 'conforme'}
+          titulo={`${abertas.length} ${abertas.length === 1 ? 'falta sinalizada' : 'faltas sinalizadas'} · ${emFalta} em falta no estoque · ${criticos} ${criticos === 1 ? 'crítico' : 'críticos'}`}>
+          {abertas.length === 0 && emFalta + criticos === 0
+            ? 'Nada em falta: nenhuma falta aberta e o estoque informado está acima dos limites.'
+            : <>A falta sinalizada é o aviso do farmacêutico; em falta e crítico vêm da contagem do estoque.
+                {faltaSemContagem > 0 && ` ${faltaSemContagem === 1 ? '1 falta sinalizada não aparece' : `${faltaSemContagem} faltas sinalizadas não aparecem`} no estoque abaixo do limite: o item está sem contagem ou a contagem ainda não foi atualizada.`}</>}
+        </Aviso>
+      )}
       {/* Fase 2, tarefa 9: o gestor vê o painel de críticos e faltas (a ação é do farmacêutico) */}
       {unidadeId && <div className="mb-6"><PainelFarmacia unidade={unidadeId} podeAgir={false} /></div>}
       {dados.error && <p className="mb-3 text-apoio text-critico">{(dados.error as Error).message}</p>}
@@ -95,8 +117,10 @@ export default function FarmaciaGestor() {
                 <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-0.5">
                   <span className="text-corpo font-medium text-tinta">{f.medicamento}{f.apresentacao && <span className="font-normal text-tinta-sussurro"> · {f.apresentacao}</span>}</span>
                   {f.observacao && <span className="text-apoio text-pretty text-tinta-sussurro">{f.observacao}</span>}
+                  {/* M1: a etapa da reposição em passos (as etapas que a farmácia registra hoje) */}
+                  <EtapasEmPassos rotulo={`Reposição de ${f.medicamento}`} passos={['registrada', 'em cotação', 'reposta']}
+                    atual={f.situacao === 'registrada' ? 0 : f.situacao === 'em_cotacao' ? 1 : 3} />
                 </div>
-                <span className={cn(SELO, f.situacao === 'reposta' ? 'bg-alerta-conforme text-conforme' : 'bg-alerta-atencao text-atencao')}>{SIT_FALTA[f.situacao]}</span>
                 <span className="text-apoio whitespace-nowrap text-tinta-sussurro">
                   {f.sinalizada_por ?? '—'} · {quando(f.sinalizada_em)}
                 </span>
@@ -118,7 +142,7 @@ export default function FarmaciaGestor() {
               </Button>
             </div>
             {estoque.length > 0 && (
-              <div className="flex items-center gap-3 border-b border-fio bg-campo px-5 py-[11px] text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase">
+              <div className="flex items-center gap-3 border-b border-fio bg-campo px-5 py-[11px] text-rotulo font-medium text-tinta-sussurro">
                 <span className="min-w-0 flex-1">Item</span>
                 <span className="w-[120px] shrink-0">Situação</span>
                 <span className="w-[104px] shrink-0 text-right">Saldo</span>

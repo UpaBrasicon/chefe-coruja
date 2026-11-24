@@ -13,8 +13,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileX } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
-import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -22,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { competenciaNaTela, lerCompetencia } from '@/lib/aih'
@@ -35,23 +37,32 @@ import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 
 const MINIMO_MOTIVO = 10
+const diasDesde = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000))
 const VARIANTE: Record<EtapaGlosa, 'destructive' | 'warning' | 'success' | 'secondary'> = {
   aberta: 'destructive', em_recurso: 'warning', recuperada: 'success', perdida: 'secondary',
 }
 
+// Revisão de perfis (Gestor, item 19, M1): os quatro cartões viram abas com os
+// mesmos nomes; "Em andamento" junta aberta e em recurso, abertas primeiro.
+type AbaGlosa = 'glosado' | 'andamento' | 'recuperado' | 'perdido'
+const NA_ABA: Record<AbaGlosa, EtapaGlosa[] | null> = {
+  glosado: null, andamento: ['aberta', 'em_recurso'], recuperado: ['recuperada'], perdido: ['perdida'],
+}
+const ORDEM_ETAPA: EtapaGlosa[] = ['aberta', 'em_recurso', 'recuperada', 'perdida']
+
 export default function Glosas() {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
-  const [etapa, setEtapa] = React.useState<EtapaGlosa | null>(null)
+  const [aba, setAba] = React.useState<AbaGlosa | null>(null)
   const [competencia, setCompetencia] = React.useState<string | null>(null)
   const qc = useQueryClient()
 
   const painel = useQuery({
-    queryKey: ['glosas', unidadeId, etapa, competencia],
+    queryKey: ['glosas', unidadeId, competencia],
     enabled: !!unidadeId,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('glosas_da_unidade', {
-        p_unidade: unidadeId!, p_status: etapa ?? undefined, p_competencia: competencia ?? undefined,
+        p_unidade: unidadeId!, p_competencia: competencia ?? undefined,
       })
       if (error) throw error
       return data as unknown as PainelGlosas
@@ -59,6 +70,13 @@ export default function Glosas() {
   })
   const p = painel.data
   const recarregar = () => { void qc.invalidateQueries({ queryKey: ['glosas'] }); void qc.invalidateQueries({ queryKey: ['conta'] }) }
+  // abre em "Em andamento" quando há glosa pedindo recurso
+  const abaAtiva: AbaGlosa = aba ?? (p && p.totais.em_andamento > 0 ? 'andamento' : 'glosado')
+  const etapas = NA_ABA[abaAtiva]
+  const glosas = (p?.glosas ?? [])
+    .filter((g) => !etapas || etapas.includes(g.status))
+    .map((g, i) => ({ g, i })).sort((a, b) => ORDEM_ETAPA.indexOf(a.g.status) - ORDEM_ETAPA.indexOf(b.g.status) || a.i - b.i).map((x) => x.g)
+  const taxa = p && p.totais.glosado > 0 ? Math.round((p.totais.recuperado / p.totais.glosado) * 100) : null
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -70,14 +88,18 @@ export default function Glosas() {
       <MensagemErro texto={painel.error ? (painel.error as Error).message : null} />
       {painel.isLoading || !p ? <Spinner /> : (
         <>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {([['Glosado', p.totais.glosado], ['Em andamento', p.totais.em_andamento], ['Recuperado', p.totais.recuperado], ['Perdido', p.totais.perdido]] as const).map(([r, v]) => (
-              <div key={r} className="rounded-container border border-fio bg-superficie px-3 py-2">
-                <span className="block text-rotulo text-tinta-sussurro">{r}{competencia ? ` · ${competenciaNaTela(competencia)}` : ''}</span>
-                <span className="text-dialogo font-semibold text-tinta">{reais(v)}</span>
-              </div>
-            ))}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-apoio text-tinta-apoio">
+            <span>{competencia ? `Competência ${competenciaNaTela(competencia)}` : 'Todas as competências'}</span>
+            {competencia && <Button size="xs" variant="ghost" onClick={() => setCompetencia(null)}>Ver todas</Button>}
+            {taxa !== null && <span>Taxa de recuperação: <b className="text-tinta tabular-nums">{taxa}%</b> do glosado ({reais(p.totais.recuperado)} de {reais(p.totais.glosado)})</span>}
           </div>
+          <Tabs value={abaAtiva} onValueChange={(v) => setAba(v as AbaGlosa)}>
+            <TabsList aria-label="Glosas por etapa" className="gap-5">
+              {([['glosado', 'Glosado', p.totais.glosado], ['andamento', 'Em andamento', p.totais.em_andamento], ['recuperado', 'Recuperado', p.totais.recuperado], ['perdido', 'Perdido', p.totais.perdido]] as const).map(([k, r, v]) => (
+                <TabsTrigger key={k} value={k}>{r} <span className={`text-rotulo font-semibold tabular-nums ${k === 'andamento' && v > 0 ? 'text-atencao' : 'text-acao'}`}>{reais(v)}</span></TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
           {p.por_competencia.length > 0 && (
             <section className="flex flex-col gap-2">
@@ -120,17 +142,15 @@ export default function Glosas() {
             </section>
           )}
 
-          <Chips rotulo="Etapa da glosa">
-            <Chip ativo={etapa === null} onClick={() => setEtapa(null)}>todas</Chip>
-            {(['aberta', 'em_recurso', 'recuperada', 'perdida'] as const).map((e) => (
-              <Chip key={e} ativo={etapa === e} onClick={() => setEtapa(e)}>{ETAPA_GLOSA[e]}</Chip>
-            ))}
-          </Chips>
-          {p.glosas.length === 0 ? (
-            <Vazio icone={FileX} titulo="Nenhuma glosa neste filtro" texto="A glosa é registrada na conta fechada, a partir do relatório de rejeição." />
+          {glosas.length === 0 ? (
+            <Vazio icone={FileX} titulo={p.totais.quantidade === 0 ? 'Nenhuma glosa registrada' : 'Nenhuma glosa nesta aba'}
+              texto={p.totais.quantidade === 0
+                ? <>Quando chegar o relatório de rejeição do SIA/SIH ou do gestor municipal, abra a conta fechada em{' '}
+                    <Link to="/faturamento/contas" className="text-acao underline-offset-2 hover:underline">Contas do atendimento</Link> e use Registrar glosa.</>
+                : 'As glosas das outras etapas estão nas outras abas.'} />
           ) : (
             <ul className="flex flex-col gap-2">
-              {p.glosas.map((g) => (
+              {glosas.map((g) => (
                 <li key={g.id}><CartaoGlosa g={g} mostrarConta quem={{ pode_conduzir: p.pode_conduzir, pode_perder: p.pode_perder }} aoMudar={recarregar} /></li>
               ))}
             </ul>
@@ -170,11 +190,20 @@ export function CartaoGlosa({ g, quem, aoMudar, mostrarConta = false }: {
         <span className="font-medium text-tinta">{g.item_rotulo}</span>
         <span className="text-tinta-apoio">· {reais(g.valor)}</span>
         {g.status === 'recuperada' && <span className="text-conforme">· recuperado {reais(g.valor_recuperado)}</span>}
+        {/* M3: o prazo em destaque: há quanto tempo está aberta e em que competência vai o recurso */}
+        {g.status === 'aberta' && (
+          <span className="ml-auto rounded-capsula bg-alerta-critico px-2 text-rotulo font-medium text-critico">
+            aberta há {diasDesde(g.registrada_em)} {diasDesde(g.registrada_em) === 1 ? 'dia' : 'dias'}: sem recurso
+          </span>
+        )}
+        {g.status === 'em_recurso' && g.competencia_recurso && (
+          <span className="ml-auto rounded-capsula bg-alerta-atencao px-2 text-rotulo font-medium text-atencao">recurso na competência {competenciaNaTela(g.competencia_recurso)}</span>
+        )}
       </span>
       <span className="text-rotulo text-tinta-apoio">
         {mostrarConta ? `Conta ${g.conta_numero}${g.paciente ? ` · ${g.paciente}` : ''} · ` : ''}
         competência {competenciaNaTela(g.competencia)} · {MOTIVO_GLOSA[g.motivo_codigo]}{g.motivo_texto ? `: "${g.motivo_texto}"` : ''}
-        {g.competencia_recurso ? ` · recurso em ${competenciaNaTela(g.competencia_recurso)}` : ''}
+        {g.competencia_recurso && g.status !== 'em_recurso' ? ` · recurso em ${competenciaNaTela(g.competencia_recurso)}` : ''}
       </span>
       <Button type="button" variant="link" size="xs" className="min-h-0 self-start px-0 underline" onClick={() => setHistorico(!historico)}>
         {historico ? 'Esconder histórico' : `Histórico (${g.eventos.length})`}

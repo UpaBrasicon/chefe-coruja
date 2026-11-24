@@ -19,6 +19,7 @@ import * as React from 'react'
 
 import { Chip, Chips, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Estado } from '@/components/porta/Estado'
+import { Aviso } from '@/components/ui/aviso'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
@@ -71,18 +72,21 @@ export default function UnidadeConsumoPagina() {
       </div>
       {unidade && novo && <NovoMedicamento unidade={unidade} fechar={() => setNovo(false)} />}
       <Input className="max-w-md" aria-label="Buscar medicamento" placeholder="Buscar pelo nome ou pela apresentação" value={termo} onChange={(e) => setTermo(e.target.value)} />
-      {(lista.data?.sem_unidade ?? 0) > 0 && (
-        <p className="text-apoio text-atencao">{lista.data!.sem_unidade} medicamento(s) sem unidade: a apresentação não diz a forma. Escolha na lista.</p>
-      )}
-      {(lista.data?.sem_forma ?? 0) > 0 && (
-        <p className="text-apoio text-tinta-sussurro">{lista.data!.sem_forma} medicamento(s) sem forma farmacêutica: escolha na coluna Forma.</p>
+      {/* Revisão de perfis (Gestor, item 13, M3): o progresso no topo, numa faixa só. */}
+      {lista.data && (
+        <Aviso tom={lista.data.a_conferir === 0 ? 'conforme' : 'informacao'}
+          titulo={lista.data.a_conferir === 0 ? 'Tudo conferido' : `${lista.data.a_conferir} a conferir · ${lista.data.sem_unidade} sem unidade · ${lista.data.sem_forma} sem forma`}>
+          {lista.data.a_conferir === 0
+            ? 'Todas as formas e unidades de consumo já foram conferidas.'
+            : 'A unidade veio sugerida pela apresentação. Confirme cada grupo de uma vez e abra só a linha que for exceção para corrigir.'}
+        </Aviso>
       )}
       <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
       {lista.isLoading ? <Spinner /> : (lista.data?.itens ?? []).length === 0 ? (
         <Vazio icone={PackageCheck} titulo={aConferir ? 'Nada a conferir' : 'Nenhum medicamento'} texto={aConferir ? 'Todas as formas e unidades de consumo já foram conferidas.' : undefined} />
       ) : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
-          <Table className="min-w-[820px] text-apoio">
+          <Table className="min-w-[720px] text-apoio">
             <TableHeader className="bg-transparent">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="px-3 py-2 text-rotulo font-medium tracking-normal normal-case">Medicamento</TableHead>
@@ -92,12 +96,66 @@ export default function UnidadeConsumoPagina() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {lista.data!.itens.map((m) => <Linha key={m.id} m={m} unidade={unidade} />)}
+              {aConferir
+                ? porSugestao(lista.data!.itens).map(([chave, itens]) => <Grupo key={chave} chave={chave} itens={itens} unidade={unidade} />)
+                : lista.data!.itens.map((m) => <Linha key={m.id} m={m} unidade={unidade} />)}
             </TableBody>
           </Table>
         </div>
       )}
     </div>
+  )
+}
+
+/** M1: agrupa os itens a conferir pela unidade sugerida; os sem sugestão vão por último. */
+function porSugestao(itens: MedicamentoUnidade[]): [string, MedicamentoUnidade[]][] {
+  const mapa = new Map<string, MedicamentoUnidade[]>()
+  for (const m of itens) {
+    const k = m.unidade_consumo ? (m.unidade_consumo === 'outra' ? `outra:${m.unidade_consumo_outra ?? ''}` : m.unidade_consumo) : ''
+    mapa.set(k, [...(mapa.get(k) ?? []), m])
+  }
+  return [...mapa.entries()].sort(([a, x], [b, y]) => Number(a === '') - Number(b === '') || y.length - x.length)
+}
+
+/** Grupo de itens com a mesma unidade sugerida: confirma todos de uma vez; a exceção se corrige na linha. */
+function Grupo({ chave, itens, unidade }: { chave: string; itens: MedicamentoUnidade[]; unidade: string | undefined }) {
+  const qc = useQueryClient()
+  const [feitos, setFeitos] = React.useState(0)
+  const pendentes = itens.filter((m) => !m.conferida_em && m.unidade_consumo)
+  const rotulo = chave === '' ? 'sem unidade sugerida' : rotuloUnidade(itens[0].unidade_consumo, itens[0].unidade_consumo_outra)
+  const confirmar = useMutation({
+    mutationFn: async () => {
+      setFeitos(0)
+      for (const m of pendentes) {
+        const { error } = await supabase.rpc('definir_unidade_consumo', {
+          p_medicamento: m.id, p_unidade: m.unidade_consumo as UnidadeConsumo,
+          p_outra: m.unidade_consumo === 'outra' ? (m.unidade_consumo_outra ?? '').trim() : undefined,
+        })
+        if (error) throw error
+        setFeitos((n) => n + 1)
+      }
+    },
+    onSettled: () => void qc.invalidateQueries({ queryKey: ['unidade-consumo'] }),
+  })
+  return (
+    <>
+      <TableRow className="bg-trilha hover:bg-trilha">
+        <TableCell colSpan={4} className="px-3 py-2 whitespace-normal">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="font-semibold text-tinta">{rotulo}</span>
+            <span className="text-tinta-sussurro tabular-nums">{itens.length} {itens.length === 1 ? 'item' : 'itens'}</span>
+            {chave === '' && <span className="text-atencao">a apresentação não diz a forma: abra cada linha e escolha</span>}
+            {chave !== '' && pendentes.length > 0 && (
+              <Button size="xs" className="ml-auto" disabled={confirmar.isPending} onClick={() => confirmar.mutate()}>
+                <Check /> {confirmar.isPending ? `Confirmando ${feitos} de ${pendentes.length}…` : `Confirmar ${pendentes.length === 1 ? 'o item' : `os ${pendentes.length}`} como ${rotulo.toLocaleLowerCase('pt-BR')}`}
+              </Button>
+            )}
+          </div>
+          {confirmar.error && <span role="alert" className="block text-rotulo text-critico">{(confirmar.error as Error).message}</span>}
+        </TableCell>
+      </TableRow>
+      {itens.map((m) => <Linha key={m.id} m={m} unidade={unidade} />)}
+    </>
   )
 }
 
@@ -253,6 +311,8 @@ function Linha({ m, unidade }: { m: MedicamentoUnidade; unidade: string | undefi
   const [forma, setForma] = React.useState(m.forma_farmaceutica ?? '')
   const [formaOutra, setFormaOutra] = React.useState(m.forma_farmaceutica_outra ?? '')
   const [ficha, setFicha] = React.useState<'corrigir' | 'inativar' | null>(null)
+  // M2: a linha é de leitura; os campos abrem ao clicar em Corrigir.
+  const [editando, setEditando] = React.useState(false)
   const recarregar = () => void qc.invalidateQueries({ queryKey: ['unidade-consumo'] })
   const salvar = useMutation({
     mutationFn: async () => {
@@ -297,6 +357,20 @@ function Linha({ m, unidade }: { m: MedicamentoUnidade; unidade: string | undefi
             </span>
           )}
         </TableCell>
+        {!editando ? (
+          <>
+            <TableCell className="px-3 py-2 align-top whitespace-normal">
+              <span className={m.forma_farmaceutica ? 'text-tinta' : 'text-atencao'}>{rotuloForma(m.forma_farmaceutica, m.forma_farmaceutica_outra)}</span>
+            </TableCell>
+            <TableCell className="px-3 py-2 align-top whitespace-normal">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={m.unidade_consumo ? 'text-tinta' : 'text-atencao'}>{rotuloUnidade(m.unidade_consumo, m.unidade_consumo_outra)}</span>
+                <Button size="xs" variant="ghost" aria-label={`Corrigir forma e unidade de ${m.principio_ativo}`} onClick={() => setEditando(true)}>Corrigir</Button>
+              </div>
+            </TableCell>
+          </>
+        ) : (
+        <>
         <TableCell className="px-3 py-2 align-top whitespace-normal">
           <div className="flex flex-wrap items-center gap-2">
             <CampoForma id={`forma-${m.id}`} forma={forma} outra={formaOutra} aoMudar={(f, o) => { setForma(f); setFormaOutra(o) }} />
@@ -320,9 +394,12 @@ function Linha({ m, unidade }: { m: MedicamentoUnidade; unidade: string | undefi
               onClick={() => salvar.mutate()}>
               <Check /> {mudou ? 'Salvar' : 'Confirmar'}
             </Button>
+            <Button size="xs" variant="ghost" onClick={() => setEditando(false)}>Fechar</Button>
           </div>
           {salvar.error && <span role="alert" className="block text-rotulo text-critico">{(salvar.error as Error).message}</span>}
         </TableCell>
+        </>
+        )}
         <TableCell className="px-3 py-2 align-top whitespace-normal text-tinta-apoio">
           {m.conferida_em ? `${rotuloUnidade(m.unidade_consumo, m.unidade_consumo_outra)} · ${m.conferida_por ?? '—'}, ${fmtDataHora(m.conferida_em)}` : 'sugerida, a conferir'}
         </TableCell>
