@@ -245,6 +245,8 @@ DECLARE
   t record;
   def text;
   atual text;
+  ant text;
+  nov text;
   mudou boolean := false;
 BEGIN
   FOR t IN SELECT * FROM (VALUES
@@ -322,15 +324,18 @@ BEGIN
       def := pg_get_functiondef(t.fn::regprocedure);
       mudou := false;
     END IF;
-    -- parte das funções está no banco com fim de linha CRLF: o trecho de
-    -- várias linhas é procurado dos dois jeitos
-    IF position(t.novo IN def) > 0 OR position(replace(t.novo, E'\n', E'\r\n') IN def) > 0 THEN
+    -- parte das funções está no banco com fim de linha CRLF, e este arquivo
+    -- pode chegar com CRLF (checkout no Windows): o trecho de várias linhas
+    -- é procurado dos dois jeitos
+    ant := replace(t.antigo, E'\r', '');
+    nov := replace(t.novo, E'\r', '');
+    IF position(nov IN def) > 0 OR position(replace(nov, E'\n', E'\r\n') IN def) > 0 THEN
       NULL;   -- já trocado
-    ELSIF position(t.antigo IN def) > 0 THEN
-      def := replace(def, t.antigo, t.novo);
+    ELSIF position(ant IN def) > 0 THEN
+      def := replace(def, ant, nov);
       mudou := true;
-    ELSIF position(replace(t.antigo, E'\n', E'\r\n') IN def) > 0 THEN
-      def := replace(def, replace(t.antigo, E'\n', E'\r\n'), replace(t.novo, E'\n', E'\r\n'));
+    ELSIF position(replace(ant, E'\n', E'\r\n') IN def) > 0 THEN
+      def := replace(def, replace(ant, E'\n', E'\r\n'), replace(nov, E'\n', E'\r\n'));
       mudou := true;
     ELSE
       RAISE EXCEPTION 'turnos avisos: trecho não encontrado em %: %', t.fn, t.antigo;
