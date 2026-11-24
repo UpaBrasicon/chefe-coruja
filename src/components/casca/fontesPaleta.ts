@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 
-import { SECOES, secaoExibida } from '@/content/registry'
+import { naCentral, SECOES, secaoExibida } from '@/content/registry'
 import { SECOES_PLANTAO } from '@/content/plantaoRegistry'
 import { fuzzyMatch, normalizar } from '@/lib/search'
 
@@ -48,7 +48,7 @@ export function fontesEstaticas({
   if (comFerramentas) {
     for (const s of SECOES) {
       const rotulo = secaoExibida(s.slug)?.label ?? s.label
-      for (const f of s.tools) {
+      for (const f of s.tools.filter((x) => naCentral(s.slug, x.slug))) {
         e.push({
           id: `tool:${s.slug}/${f.slug}`, grupo: 'Ferramentas', rotulo: f.label, detalhe: rotulo,
           to: `/plantonista/${s.slug}/${f.slug}`, termos: `${f.label} ${rotulo} ${f.description} ${(f.tags ?? []).join(' ')}`,

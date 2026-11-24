@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Fuse from 'fuse.js'
 import { History, Search, Sparkles, Star, Stethoscope } from 'lucide-react'
 
-import { CHAVES_FERRAMENTAS, SECOES, SECOES_EXIBIDAS, SECOES_JUNTAS, secaoExibida, type SecaoExibida } from '@/content/registry'
+import { CHAVES_FERRAMENTAS, naCentral, SECOES, SECOES_EXIBIDAS, SECOES_JUNTAS, secaoExibida, type SecaoExibida } from '@/content/registry'
 import { GRUPOS_SECAO } from '@/content/gruposSecoes'
 import { coresDaSecao } from '@/content/coresSecao'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
@@ -46,7 +46,7 @@ const CATEGORIA: Record<string, string> = {}
 for (const [secao, grupos] of Object.entries(GRUPOS_SECAO)) for (const g of grupos) for (const s of g.slugs) CATEGORIA[`${secao}/${s}`] = g.rotulo
 
 const TODAS: Ferramenta[] = SECOES.flatMap((s) =>
-  s.tools.map((t) => {
+  s.tools.filter((t) => naCentral(s.slug, t.slug)).map((t) => {
     const publico = publicoDaFerramenta(s.slug, t.slug, t.publico)
     return {
       chave: chaveFerramenta(s.slug, t.slug),
