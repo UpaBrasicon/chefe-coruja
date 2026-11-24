@@ -269,6 +269,26 @@ function Rodape({ erro, pronto, ocupado, rotulo, aoFechar, aoConfirmar }: {
   )
 }
 
+/**
+ * "Iniciar contenção mecânica" como item de menu (gaveta da enfermagem, CU2,
+ * RT 24/11/2026): só para quem pode iniciar e sem contenção ativa. A janela
+ * fica montada aqui, então o menu deve esconder o item sem desmontá-lo.
+ */
+export function BotaoIniciarContencao({ pacienteId, className }: { pacienteId: string; className?: string }) {
+  const tela = useTelaContencao(pacienteId)
+  const [aberto, setAberto] = React.useState(false)
+  const t = tela.data
+  if (!t || t.ativa || !t.pode_iniciar) return null
+  return (
+    <>
+      <button type="button" role="menuitem" className={className} onClick={() => setAberto(true)}>
+        <ShieldAlert className="size-4" aria-hidden /> Iniciar contenção mecânica
+      </button>
+      {aberto && <DialogoIniciar pacienteId={pacienteId} pediatrico={t.pediatrico} aoFechar={() => setAberto(false)} />}
+    </>
+  )
+}
+
 function DialogoIniciar({ pacienteId, pediatrico, aoFechar }: { pacienteId: string; pediatrico: boolean; aoFechar: () => void }) {
   const atualizar = useAtualizar(pacienteId)
   const [motivo, setMotivo] = React.useState('')

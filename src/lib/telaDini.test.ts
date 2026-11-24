@@ -31,9 +31,10 @@ test('cartão: RPCs do Dini, por domínio, com a nota D6 e a citação', () => {
 
 test('lista de leitos: selo do Dini só na criança; consultas guardadas sem rede', () => {
   assert.match(lista, /supabase\.rpc\('dini_de_hoje'/)
-  assert.match(lista, /dini\.data && ehAdulto\(l\.data_nascimento\) === false/)
-  assert.match(lista, /Dini de hoje pendente/)
-  assert.match(lista, /fugulin\.data && ehAdulto\(l\.data_nascimento\) !== false/)
+  // IN3 (RT 24/11/2026): a pendência do dia vai para a faixa e para a linha; Dini só na criança, Fugulin no resto
+  assert.match(lista, /if \(ehAdulto\(l\.data_nascimento\) === false\) return dini\.data && !dini\.data\[l\.internacao_id\] \? 'Dini' : null/)
+  assert.match(lista, /return fugulin\.data && !fugulin\.data\[l\.internacao_id\] \? 'Fugulin' : null/)
+  assert.match(ler('src/lib/pendenciasEnfermagem.ts'), /\$\{p\.escala\} de hoje pendente/)
   assert.match(guardadas, /'dini', 'dini-hoje'/)
 })
 

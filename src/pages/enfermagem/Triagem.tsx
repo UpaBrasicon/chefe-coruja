@@ -7,13 +7,13 @@ import { formatarDuracao } from '@/domain/plantao'
 import { supabase } from '@/lib/supabase'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { imprimirRelatorio } from '@/lib/prontuario'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
 import { ordemFilaUbs } from '@/domain/aps'
-import { ordemTriagem, rotulosPrioridade } from '@/domain/prioridade'
+import { rotulosPrioridade } from '@/domain/prioridade'
+import { chaveFilaTriagem, lerFilaTriagem } from '@/lib/filaTriagem'
 import { ordemMedica, rotuloCor, type CorRisco } from '@/domain/risco'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { TituloPagina } from '@/components/monitor/Pagina'
@@ -60,23 +60,12 @@ export default function Triagem() {
   // o aviso da última classificação leva o episódio, para o "Imprimir resumo"
   const [aviso, setAviso] = React.useState<{ texto: string; episodioId: string } | null>(null)
 
+  // EN2: a mesma leitura (e a mesma chave) do número do menu
   const fila = useQuery({
-    queryKey: ['triagem-fila', unidadeAtiva?.unidade_id],
+    queryKey: chaveFilaTriagem(unidadeAtiva?.unidade_id),
     enabled: !!unidadeAtiva,
     refetchInterval: 20_000,
-    queryFn: async () => {
-      const { data: ids, error: e1 } = await setoresNaEscalaAgora()
-      if (e1) throw e1
-      const setores = (Array.isArray(ids) ? ids : []) as string[]
-      if (setores.length === 0) return []
-      const { data, error } = await supabase
-        .from('episodios')
-        .select('id, paciente_id, setor_id, chegada_em, queixa, prioridades_legais, paciente:pacientes(nome, nome_social, data_nascimento, prontuario, nome_mae, responsavel_nome, sexo, identidade_desconhecida, sinais_identificacao)')
-        .in('setor_id', setores)
-        .eq('etapa', 'triagem')
-      if (error) throw error
-      return ((data ?? []) as unknown as NaFila[]).sort(ordemTriagem)
-    },
+    queryFn: () => lerFilaTriagem<NaFila>(),
   })
 
   const espera = useQuery({
@@ -133,24 +122,19 @@ export default function Triagem() {
         </div>
       )}
       <div className="mb-3 empty:hidden"><BarraSalaTriagem sala={sala} /></div>
+      {/* EN3: o que pede atenção fica dentro da aba a que se refere */}
       <Tabs value={aba} onValueChange={(v) => trocarAba(v as Aba)} className="gap-3">
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
-          <TabsList aria-label="Triagem" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
-            {(ubs ? ABAS_UBS : ABAS).map((a) => (
-              <TabsTrigger key={a.valor} value={a.valor}>
-                {a.rotulo}
-                <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem[a.valor]}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {/* o que pede atenção aparece em qualquer aba */}
-          <span className="pb-2.5 text-apoio text-tinta-sussurro">
-            {contagem.triagem > 0 && <>maior espera {ubs ? 'na escuta' : 'na triagem'} {formatarDuracao(maiorEspera)}{!ubs && ' · '}</>}
-            {!ubs && <span className={cn(acima > 0 && 'font-medium text-critico')}>{acima} acima do alvo da cor</span>}
-          </span>
-        </div>
+        <TabsList aria-label="Triagem" className="gap-5">
+          {(ubs ? ABAS_UBS : ABAS).map((a) => (
+            <TabsTrigger key={a.valor} value={a.valor}>
+              {a.rotulo}
+              <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem[a.valor]}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
         <TabsContent value="triagem">
           <FilaTriagem
+            maiorEspera={contagem.triagem > 0 ? formatarDuracao(maiorEspera) : null}
             fila={fila.data ?? []}
             carregando={fila.isLoading}
             erro={fila.error as Error | null}
@@ -161,6 +145,7 @@ export default function Triagem() {
         </TabsContent>
         <TabsContent value="medico">
           <EsperaMedico
+            acima={acima}
             lista={espera.data ?? []}
             carregando={espera.isLoading}
             erro={espera.error as Error | null}

@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { fmtData } from '@/lib/datas'
 import { normalizar } from '@/lib/search'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { supabase } from '@/lib/supabase'
 
 export type PacienteBusca = {
@@ -26,8 +27,11 @@ export type PacienteBusca = {
 const STATUS_ATIVOS = ['admitido', 'em_observacao', 'internado']
 
 /**
- * Pacientes que o banco deixa ver agora (setores do plantão em curso), com o
- * leito atual quando internado ou em observação. É a mesma consulta da paleta.
+ * Pacientes dos setores da escala em curso, com o leito atual quando internado
+ * ou em observação. SH3 (revisão do perfil Enfermeiro, RT 24/11/2026): a RLS
+ * deixa ver os pacientes da unidade, não só os do plantão; o recorte é pelos
+ * setores_na_escala_agora, para "do seu plantão" dizer a verdade. Vale para
+ * todo perfil que usa esta busca; outro paciente, pelo pedido de acesso.
  */
 export function usePacientesDoPlantao(unidadeId?: string) {
   return useQuery({
@@ -35,10 +39,14 @@ export function usePacientesDoPlantao(unidadeId?: string) {
     enabled: !!unidadeId,
     staleTime: 30_000,
     queryFn: async (): Promise<PacienteBusca[]> => {
+      const { data: ids, error: e1 } = await setoresNaEscalaAgora()
+      if (e1) throw e1
+      const setores = (Array.isArray(ids) ? ids : []) as string[]
+      if (setores.length === 0) return []
       const [p, l] = await Promise.all([
         supabase.from('pacientes')
           .select('id, nome, nome_social, data_nascimento, setores!pacientes_setor_id_fkey(nome)')
-          .eq('unidade_id', unidadeId!).eq('ativo', true).not('setor_id', 'is', null).order('nome').limit(300),
+          .eq('unidade_id', unidadeId!).eq('ativo', true).in('setor_id', setores).order('nome').limit(300),
         supabase.from('internacoes')
           .select('paciente_id, leitos!internacoes_leito_atual_id_fkey(identificador)')
           .eq('unidade_id', unidadeId!).in('status', STATUS_ATIVOS),

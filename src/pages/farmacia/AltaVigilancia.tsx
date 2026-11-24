@@ -19,6 +19,8 @@ import { Estado } from '@/components/porta/Estado'
 import { SeloControlado } from '@/components/farmacia/SeloControlado'
 import { useControleDosItens } from '@/hooks/useControlados'
 
+import { AltaVigilanciaNosPacientes } from './AltaVigilanciaPacientes'
+
 // Alta vigilância (Fase 2, tarefa 1, revista pelo RT em 09/10/2026). Três abas:
 //  • sem liberação — a enfermagem administrou com justificativa, sem a
 //    liberação da farmácia; o farmacêutico confere e libera o item;
@@ -35,7 +37,12 @@ import { useControleDosItens } from '@/hooks/useControlados'
 // "sem liberação" traz o controlado administrado com justificativa, com o selo
 // "Controlado · B1". A lista de controlados é da RDC e não se ajusta aqui.
 
-type Aba = 'sem' | 'exige' | 'ajustes'
+// AV1–AV2 (revisão do perfil Enfermeiro, RT 24/11/2026): no Enfermeiro a tela
+// abre em "Nos seus pacientes agora" e o catálogo vira "Lista da unidade";
+// "Ajustes da unidade" é só da farmácia e do gestor; o catálogo sem a coluna
+// que repetia a origem (vai para a ficha), e a ficha abre ao clicar.
+
+type Aba = 'pacientes' | 'sem' | 'exige' | 'ajustes'
 
 export default function AltaVigilancia() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -49,12 +56,13 @@ export default function AltaVigilancia() {
         titulo="Alta vigilância"
         descricao="Medicamentos que a farmácia libera antes da administração, com os controlados da Portaria 344. Sem liberação, a enfermagem administra com justificativa e o farmacêutico confere depois."
       />
-      {unidadeId && <Telas key={unidadeId} unidadeId={unidadeId} veSemLiberacao={daFarmacia} podeLiberar={papelAtivo === 'farmaceutico'} podeAjustar={daFarmacia} />}
+      {unidadeId && <Telas key={unidadeId} unidadeId={unidadeId} veSemLiberacao={daFarmacia} podeLiberar={papelAtivo === 'farmaceutico'} podeAjustar={daFarmacia}
+        daEnfermagem={papelAtivo === 'enfermeiro'} />}
     </div>
   )
 }
 
-function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidadeId: string; veSemLiberacao: boolean; podeLiberar: boolean; podeAjustar: boolean }) {
+function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar, daEnfermagem }: { unidadeId: string; veSemLiberacao: boolean; podeLiberar: boolean; podeAjustar: boolean; daEnfermagem: boolean }) {
   const qc = useQueryClient()
   const [aba, setAba] = React.useState<Aba | null>(null)
   const [escolhido, setEscolhido] = React.useState<string | null>(null)
@@ -84,7 +92,7 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
   const controles = useControleDosItens(semLib.map((a) => a.item_id)).data
   const exige = (lista.data ?? []).filter((i) => i.exige)
   const ajustes = (lista.data ?? []).filter((i) => i.ajuste)
-  const abaAtual: Aba = aba ?? (veSemLiberacao && semLib.length > 0 ? 'sem' : 'exige')
+  const abaAtual: Aba = aba ?? (daEnfermagem ? 'pacientes' : veSemLiberacao && semLib.length > 0 ? 'sem' : 'exige')
   const trocarAba = (a: Aba) => { setAba(a); setEscolhido(null); setAdicionando(false) }
   const escolher = (id: string) => { setEscolhido(id); setAdicionando(false) }
   const itens = abaAtual === 'ajustes' ? ajustes : termo ? achados.data ?? [] : exige
@@ -98,7 +106,8 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
   const erro = (abaAtual === 'sem' ? sem.error : (achados.error ?? lista.error)) as Error | null
 
   const selSem = abaAtual === 'sem' ? semLib.find((a) => a.id === escolhido) ?? semLib[0] : undefined
-  const selItem = abaAtual !== 'sem' ? itens.find((i) => i.id === escolhido) ?? agrupados[0]?.[1][0] : undefined
+  // AV2: a ficha do catálogo abre ao clicar
+  const selItem = abaAtual !== 'sem' ? itens.find((i) => i.id === escolhido) : undefined
   const aoAjustar = (id: string) => {
     void qc.invalidateQueries({ queryKey: ['alta-vigilancia', unidadeId] })
     setAba('ajustes'); setEscolhido(id); setAdicionando(false)
@@ -109,11 +118,12 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
       <div className="flex flex-wrap items-end justify-between gap-2">
       <Tabs value={abaAtual} onValueChange={(v) => trocarAba(v as Aba)}>
         <TabsList aria-label="Alta vigilância" className="gap-5">
+          {daEnfermagem && <TabsTrigger value="pacientes">Nos seus pacientes agora</TabsTrigger>}
           {veSemLiberacao && (
             <TabsTrigger value="sem">Sem liberação <span className={cn('text-rotulo font-semibold tabular-nums', semLib.length ? 'text-atencao' : 'text-acao')}>{semLib.length}</span></TabsTrigger>
           )}
-          <TabsTrigger value="exige">Exige liberação <span className="text-rotulo font-semibold text-acao tabular-nums">{exige.length}</span></TabsTrigger>
-          <TabsTrigger value="ajustes">Ajustes da unidade <span className="text-rotulo font-semibold text-acao tabular-nums">{ajustes.length}</span></TabsTrigger>
+          <TabsTrigger value="exige">{daEnfermagem ? 'Lista da unidade' : 'Exige liberação'} <span className="text-rotulo font-semibold text-acao tabular-nums">{exige.length}</span></TabsTrigger>
+          {podeAjustar && <TabsTrigger value="ajustes">Ajustes da unidade <span className="text-rotulo font-semibold text-acao tabular-nums">{ajustes.length}</span></TabsTrigger>}
         </TabsList>
       </Tabs>
         {podeAjustar && (
@@ -124,10 +134,10 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
       </div>
       <MensagemErro texto={erro ? erro.message : null} />
 
-      {abaAtual === 'sem' && !carregando && semLib.length === 0 ? (
+      {abaAtual === 'pacientes' ? <AltaVigilanciaNosPacientes /> : abaAtual === 'sem' && !carregando && semLib.length === 0 ? (
         <Vazio icone={ShieldAlert} titulo="Nada para conferir" texto="Quando a enfermagem administrar alta vigilância sem a liberação da farmácia, com justificativa, aparece aqui." />
       ) : (
-        <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_320px]">
+        <div className={cn('grid overflow-hidden rounded-cartao border border-fio bg-superficie', (abaAtual === 'sem' || selItem || adicionando) && 'md:grid-cols-[minmax(0,1fr)_320px]')}>
           <section aria-label={abaAtual === 'sem' ? 'Administradas sem liberação' : 'Medicamentos'} className="flex min-w-0 flex-col border-fio md:border-r">
             <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-2.5">
               <span className="text-apoio text-tinta-sussurro">
@@ -182,13 +192,13 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
             {!carregando && abaAtual !== 'sem' && itens.length > 0 && (
               <Table aria-label="Medicamentos de alta vigilância">
                 <TableHeader><TableRow className="hover:bg-transparent">
-                  <TableHead className="pl-4">Medicamento</TableHead><TableHead className="pr-4">Por que</TableHead>
+                  <TableHead className="px-4">Medicamento</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {agrupados.flatMap(([classe, doGrupo]) => [
                     ...(agrupar ? [
                       <TableRow key={`c-${classe}`} className="bg-trilha hover:bg-trilha">
-                        <TableCell colSpan={2} className="pl-4 py-1.5 font-semibold text-tinta whitespace-normal">{classe} <span className="font-normal text-tinta-sussurro tabular-nums">{doGrupo.length}</span></TableCell>
+                        <TableCell className="pl-4 py-1.5 font-semibold text-tinta whitespace-normal">{classe} <span className="font-normal text-tinta-sussurro tabular-nums">{doGrupo.length}</span></TableCell>
                       </TableRow>,
                     ] : []),
                     ...doGrupo.map((i) => (
@@ -200,10 +210,11 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                             <span className="font-medium text-tinta">{i.principio_ativo}</span>
                             <span className="text-rotulo text-tinta-sussurro">{apresentacao(i)}</span>
                           </span>
-                          <ChevronRight className="ml-auto size-4 shrink-0 text-tinta-sussurro" aria-hidden />
+                          {/* AV2: a origem só fora dos grupos e quando não é a lista do ISMP */}
+                          {!agrupar && (i.ajuste || !i.exige || !i.regra) && <span className="ml-auto text-tinta-apoio"><PorQue i={i} /></span>}
+                          <ChevronRight className={cn('size-4 shrink-0 text-tinta-sussurro', (agrupar || !(i.ajuste || !i.exige || !i.regra)) && 'ml-auto')} aria-hidden />
                         </BotaoLinha>
                       </TableCell>
-                      <TableCell className="pr-4 whitespace-normal text-tinta-apoio"><PorQue i={i} /></TableCell>
                     </TableRow>
                     )),
                   ])}
@@ -211,16 +222,15 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
               </Table>
             )}
           </section>
-          <div className="order-first min-w-0 border-b border-fio md:order-none md:border-b-0">
+          {(abaAtual === 'sem' || selItem || adicionando) && <div className="order-first min-w-0 border-b border-fio md:order-none md:border-b-0">
             {adicionando && <FichaAdicionar unidadeId={unidadeId} aoMarcar={aoAjustar} fechar={() => setAdicionando(false)} />}
             {!adicionando && selSem && <FichaSemLiberacao key={selSem.id} a={selSem} unidadeId={unidadeId} podeLiberar={podeLiberar} />}
             {!adicionando && selItem && <FichaItem key={`${selItem.id}:${selItem.exige}`} i={selItem} unidadeId={unidadeId} podeAjustar={podeAjustar} aoMudar={() => aoAjustar(selItem.id)} />}
-            {!adicionando && !selSem && !selItem && !carregando && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Escolha um item na lista.</p>}
-          </div>
+          </div>}
         </div>
       )}
       {/* M3: a fonte em (i), sem ocupar a tela */}
-      {abaAtual !== 'sem' && (
+      {abaAtual !== 'sem' && abaAtual !== 'pacientes' && (
         <p className="flex items-center gap-1 text-rotulo text-tinta-sussurro">
           <span title={'Base: ISMP Brasil, “Medicamentos potencialmente perigosos de uso hospitalar — lista atualizada 2019” (Boletim v. 8, n. 1, fev. 2019), aplicada por regra ao cadastro. Vias epidural/intratecal e antineoplásicos dependem da marcação da farmácia. Os controlados seguem a Portaria 344.'}
             className="inline-flex cursor-help items-center gap-1">

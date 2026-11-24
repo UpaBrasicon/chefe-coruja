@@ -4,7 +4,6 @@ import * as React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
-import { BuscaPaciente, usePacientesDoPlantao } from '@/components/paciente/BuscaPacienteDoPlantao'
 import type { SituacaoPedido } from '@/components/prontuario/StatusPedido'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +27,11 @@ import { cn } from '@/lib/utils'
 // direto (M1, mesma consulta da paleta); o pedido em passos visíveis com um
 // campo só de busca (M2) — nome ainda pede a data de nascimento, regra do
 // banco; "Meus pedidos" com a situação e abrir direto quando aprovado (M3).
+//
+// Regra do RT (24/11/2026, revisão do perfil Enfermeiro): Prontuários serve
+// para quem já esteve na unidade e saiu; quem está internado agora fica na
+// Internação (e no Pronto-Socorro da enfermagem). Sai o bloco "Pacientes do seu
+// plantão"; fica uma linha com o caminho.
 //
 // Urgência, a quebra de vidro (ajustes da revisão, item 6, RT em 24/11/2026;
 // migration 20270421000075): o médico abre na hora, sem o gestor, com
@@ -104,7 +108,10 @@ export default function PedidosProntuario() {
   // prontuário, CPF e CNS têm número; nome não tem e pede a data de nascimento
   const ehDocumento = /\d/.test(termo)
 
-  const doPlantao = usePacientesDoPlantao(unidadeId)
+  // onde ficam os pacientes de agora, pelo perfil em uso
+  const agora: [string, string][] = papelAtivo === 'enfermeiro' || papelAtivo === 'tecnico_enfermagem'
+    ? [['/enfermagem/internacao', 'Internação'], ['/enfermagem/pronto-socorro', 'Pronto-Socorro']]
+    : papelAtivo === 'plantonista' ? [['/plantao/internacao/pacientes', 'Internação']] : []
 
   const busca = useMutation({
     mutationFn: async () => {
@@ -174,25 +181,22 @@ export default function PedidosProntuario() {
         icone={FolderSearch}
         titulo="Prontuários"
         descricao={medico
-          ? `Os pacientes do seu plantão abrem direto. Para um paciente fora do plantão, peça ao gestor da unidade: aprovado, o acesso vale 24 horas e é só de leitura. Em urgência, você abre na hora, só leitura, por ${HORAS_URGENCIA} horas, com justificativa; o gestor é avisado.`
-          : 'Os pacientes do seu plantão abrem direto. Para um paciente fora do plantão, peça ao gestor da unidade: aprovado, o acesso vale 24 horas e é só de leitura.'}
+          ? `Pacientes que já tiveram alta ou saíram da unidade: peça o acesso ao gestor; aprovado, vale 24 horas e é só de leitura. Em urgência, você abre na hora, só leitura, por ${HORAS_URGENCIA} horas, com justificativa; o gestor é avisado.`
+          : 'Pacientes que já tiveram alta ou saíram da unidade: peça o acesso ao gestor; aprovado, vale 24 horas e é só de leitura.'}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-corpo">Pacientes do seu plantão</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BuscaPaciente id="pront-plantao" rotulo="Abrir prontuário" pacientes={doPlantao.data ?? []} carregando={doPlantao.isLoading}
-            escolhido={null} onEscolher={(id) => { if (id) void navigate(`/prontuarios/${id}`) }}
-            vazio="Nenhum paciente nos setores do seu plantão agora (o acesso direto vale com o check-in). Para outro paciente, peça acesso abaixo." />
-          {doPlantao.error && <p className="mt-2 text-apoio text-critico">{(doPlantao.error as Error).message}</p>}
-        </CardContent>
-      </Card>
+      {agora.length > 0 && (
+        <p className="text-apoio text-tinta-sussurro">
+          Quem está na unidade agora fica na{' '}
+          {agora.map(([to, rotulo], k) => (
+            <React.Fragment key={to}>{k > 0 && ' e no '}<Link to={to} className="text-acao hover:underline">{rotulo}</Link></React.Fragment>
+          ))}.
+        </p>
+      )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-corpo">Pedir acesso a paciente fora do plantão</CardTitle>
+          <CardTitle className="text-corpo">Pedir acesso ao prontuário</CardTitle>
           <CardDescription><Passos atual={passo} /></CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

@@ -11,6 +11,7 @@ import { useDesfazer } from '@/contexts/DesfazerContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { agruparAvisos, type Categoria, type GrupoAvisos } from '@/lib/avisos'
 import { dataHora, diaMes } from '@/lib/formato'
+import { separarPorPerfil } from '@/lib/avisosPerfil'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { MinhaNotificacao } from '@/types/database'
@@ -170,8 +171,10 @@ export default function Notificacoes() {
   const filtroValido = filtro === 'Todas' || categorias.includes(filtro)
 
   const lista = daAba.filter((g) => !filtroValido || filtro === 'Todas' || g.categoria === filtro)
-  const comAcao = lista.filter((g) => g.acao)
-  const informativos = lista.filter((g) => !g.acao)
+  // SH1 (revisão do perfil Enfermeiro, RT 24/11/2026): os avisos seguem o perfil em uso; os de outros perfis ficam recolhidos
+  const { doPerfil, outros } = separarPorPerfil(lista, papelAtivo)
+  const comAcao = doPerfil.filter((g) => g.acao)
+  const informativos = doPerfil.filter((g) => !g.acao)
   const marcarGrupo = (ids: string[]) => { if (ids.length) marcar.mutate(ids) }
 
   return (
@@ -209,9 +212,9 @@ export default function Notificacoes() {
 
       {isLoading ? (
         <div className="flex h-24 items-center justify-center rounded-cartao border border-fio bg-superficie"><Spinner /></div>
-      ) : lista.length === 0 ? (
+      ) : doPerfil.length === 0 ? (
         <div className="rounded-cartao border border-fio bg-superficie px-5 py-[26px] text-center text-apoio text-tinta-sussurro">
-          {aba === 'nao-lidos' ? 'Nenhum aviso por ler. Os já lidos ficam em Todos.' : 'Nenhum aviso nesse filtro.'}
+          {outros.length > 0 ? 'Nenhum aviso deste perfil.' : aba === 'nao-lidos' ? 'Nenhum aviso por ler. Os já lidos ficam em Todos.' : 'Nenhum aviso nesse filtro.'}
         </div>
       ) : (
         <div className="flex flex-col gap-5">
@@ -232,6 +235,17 @@ export default function Notificacoes() {
             </section>
           )}
         </div>
+      )}
+      {!isLoading && outros.length > 0 && (
+        <details className="group mt-4">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-apoio text-tinta-sussurro hover:text-acao">
+            De outros perfis ({outros.length})
+            <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
+          </summary>
+          <div className="mt-2 overflow-hidden rounded-cartao border border-fio bg-superficie">
+            {outros.map((g) => <LinhaAviso key={g.chave} g={g} rotas={rotas} marcar={marcarGrupo} marcando={marcar.isPending} />)}
+          </div>
+        </details>
       )}
     </div>
   )

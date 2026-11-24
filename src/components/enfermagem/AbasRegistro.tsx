@@ -170,11 +170,16 @@ function AnotacaoDaInternacao({ ctx, dados, internacaoId }: { ctx: Contexto; dad
 // ── escalas (Braden e Morse; NIPS e FLACC na criança) ───────────────────────
 const COR_TOM: Record<Tom, string> = { conforme: 'text-conforme', atencao: 'text-observacao', alerta: 'text-mts-laranja', critico: 'text-critico' }
 
-export function AbaEscalas({ ctx, dados, publico }: { ctx: Contexto; dados: Cuidados; publico: Publico | null }) {
+export function AbaEscalas({ ctx, dados, publico, somenteLeitura = false }: {
+  ctx: Contexto; dados: Cuidados; publico: Publico | null
+  /** TE2 (perfil Técnico): as escalas de avaliação são parte da Avaliação do enfermeiro (COFEN 736/2024, art. 4º, § 1º, e art. 8º) */
+  somenteLeitura?: boolean
+}) {
   const q = useAvaliacoes(ctx.pacienteId)
   const escalas = escalasDoPublico(publico)
   return (
     <div className="flex flex-col gap-3">
+      {somenteLeitura && <Nota>As escalas de avaliação são do enfermeiro: aqui ficam só para leitura.</Nota>}
       {publico === null && (
         <Nota>Sem data de nascimento no cadastro: as escalas dependem da idade (Braden e Morse no adulto; NIPS e FLACC na criança).</Nota>
       )}
@@ -182,7 +187,7 @@ export function AbaEscalas({ ctx, dados, publico }: { ctx: Contexto; dados: Cuid
         <Nota>Braden e Morse são escalas do adulto: na criança não se usam. Aqui ficam as de dor da pediatria.</Nota>
       )}
       {escalas.map((e) => (
-        <CartaoEscala key={e} escala={e} ctx={ctx} dados={dados}
+        <CartaoEscala key={e} escala={e} ctx={ctx} dados={somenteLeitura ? { ...dados, pode_registrar: false } : dados}
           ultima={(q.data ?? []).find((a) => a.escala === e && !a.cancelada_em) ?? null} />
       ))}
       {q.error && <p className="text-apoio text-critico">{msg(q.error)}</p>}

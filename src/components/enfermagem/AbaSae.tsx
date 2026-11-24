@@ -60,7 +60,7 @@ export function AbaSae({ ctx, dados }: { ctx: Contexto; dados: Cuidados }) {
     <div className="flex flex-col gap-3">
       <Nota>
         Processo de enfermagem em cinco etapas (COFEN 736/2024). Códigos e títulos vêm da licença NANDA-I, NOC e NIC da unidade; o sistema não sugere diagnósticos.
-        {!pode && ' Só o enfermeiro de plantão edita.'}
+        {!pode && ' A SAE é do enfermeiro: aqui fica só para leitura.'}
       </Nota>
       {ETAPAS_SAE.map((e) => (
         <Cartao key={e.id} titulo={<span className="flex flex-col gap-0.5">{e.titulo}<span className="text-rotulo font-normal text-tinta-sussurro">{e.sub}</span></span>}>

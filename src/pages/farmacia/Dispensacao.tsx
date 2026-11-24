@@ -14,7 +14,7 @@
 // Lacuna 3 (Portaria 344): o controlado leva o selo "Controlado · B1".
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { PackageOpen } from 'lucide-react'
+import { Info, PackageOpen } from 'lucide-react'
 import * as React from 'react'
 
 import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
@@ -28,7 +28,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
-import { porPaciente, type Dispensacao, type ItemParaDispensar } from '@/lib/dispensacao'
+import { justificativaRetirada, MOTIVOS_RETIRADA, notasUnicas, porPaciente, situacaoParaDispensar, type Dispensacao, type ItemParaDispensar } from '@/lib/dispensacao'
+import type { Liberacao } from '@/lib/duplaChecagem'
+import { useControladosDoCatalogo } from '@/hooks/useControlados'
 import { PERIODOS_REGISTRO } from '@/lib/movimentosEstoque'
 import { normalizarMedicamento } from '@/lib/search'
 import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
@@ -51,17 +53,17 @@ export default function DispensacaoPagina() {
   const [aba, setAba] = React.useState<Aba>(papelAtivo === 'gestor' ? 'registro' : 'prescricoes')
   const abas: readonly (readonly [Aba, string])[] = papelAtivo === 'gestor'
     ? [['registro', 'Registro']]
-    : farmacia ? [['prescricoes', 'Prescrições'], ['avulsa', 'Avulsa'], ['registro', 'Registro']] : [['prescricoes', 'Retirada sem farmacêutico']]
+    : farmacia ? [['prescricoes', 'Prescrições'], ['avulsa', 'Avulsa'], ['registro', 'Registro']] : []
   return (
     <div className="flex w-full max-w-5xl flex-col">
-      <TituloPagina icone={PackageOpen} titulo="Dispensação"
+      {/* RS2: o mesmo nome do menu (na enfermagem, "Retirada sem farmacêutico") */}
+      <TituloPagina icone={PackageOpen} titulo={farmacia ? 'Dispensação' : 'Retirada sem farmacêutico'}
         descricao={farmacia
           ? 'O que sai da farmácia para o paciente, em unidades de consumo. O sistema sugere a quantidade; quem dispensa define. Dispensar baixa o estoque.'
           : unidadeAtiva?.unidade.tipo === 'ubs'
             // percurso da UBS (U14, E6): a farmácia da UBS tem horário
-            ? 'Fora do horário da farmácia: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'
-            : 'Farmácia fechada: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'} />
-      {/* Revisão de perfis (Gestor, item 10, M1): sem aba solitária */}
+            ? 'Fora do horário da farmácia, retire o medicamento do paciente sob seus cuidados. O farmacêutico confere depois.'
+            : 'Com a farmácia fechada, retire o medicamento do paciente sob seus cuidados. O farmacêutico confere depois.'} />
       {abas.length > 1 && (
         <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="mb-[18px]">
           <TabsList aria-label="Dispensação">
@@ -76,7 +78,12 @@ export default function DispensacaoPagina() {
   )
 }
 
+type LinhaFila = { item_id: string; paciente_id: string; local: string | null; ultima_situacao: string | null; validade: string | null }
+
 function Prescricoes({ unidade }: { unidade: string }) {
+  const { papelAtivo } = useUnidade()
+  const enfermagem = papelAtivo === 'enfermeiro' || papelAtivo === 'tecnico_enfermagem'
+  const tecnico = papelAtivo === 'tecnico_enfermagem'
   const [termo, setTermo] = React.useState('')
   const [busca, setBusca] = React.useState('')
   React.useEffect(() => { const t = setTimeout(() => setBusca(termo.trim()), 300); return () => clearTimeout(t) }, [termo])
@@ -88,23 +95,88 @@ function Prescricoes({ unidade }: { unidade: string }) {
       return data as unknown as { farmaceutico: boolean; itens: ItemParaDispensar[] }
     },
   })
-  const grupos = porPaciente(lista.data?.itens ?? [])
+  // RS1/RS2 (enfermagem): a mesma fila da Checagem dá a última checagem, a validade, o leito atual e o recorte da escala
+  const fila = useQuery({
+    queryKey: ['fila-checagem'],
+    enabled: enfermagem,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('fila_checagem')
+      if (error) throw error
+      return (data ?? []) as unknown as LinhaFila[]
+    },
+  })
+  const daFila = new Map((fila.data ?? []).map((l) => [l.item_id, l]))
+  const pacientesDaEscala = new Set((fila.data ?? []).map((l) => l.paciente_id))
+  const localDe = new Map((fila.data ?? []).map((l) => [l.paciente_id, l.local]))
+  const itensTodos = (lista.data?.itens ?? [])
+    // RS2: na enfermagem, só os pacientes da escala em curso (os da fila da Checagem)
+    .filter((i) => !enfermagem || !fila.data || pacientesDaEscala.has(i.paciente_id))
+    // RS2: o local atual (leito ou box) no lugar do setor de entrada, quando a enfermagem tem
+    .map((i) => ({ ...i, setor: localDe.get(i.paciente_id) ?? i.setor }))
+  const grupos = porPaciente(itensTodos)
   const [escolhido, setEscolhido] = React.useState<string | null>(null)
   const sel = grupos.find((g) => g.paciente_id === escolhido) ?? grupos[0]
+  // RS1/FM1: a validade de cada item da prescrição vigente do paciente escolhido
+  const vigente = useQuery({
+    queryKey: ['prescricao-vigente-dispensa', sel?.paciente_id],
+    enabled: !!sel,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('prescricao_vigente', { p_paciente: sel!.paciente_id })
+      if (error) throw error
+      return new Map((data ?? []).map((x) => [x.id, x.validade]))
+    },
+  })
+  const situacao = (i: ItemParaDispensar) => situacaoParaDispensar(i, {
+    validade: daFila.get(i.item_id)?.validade ?? vigente.data?.get(i.item_id) ?? null,
+    ultimaSituacao: daFila.get(i.item_id)?.ultima_situacao ?? null,
+  })
+  const itensSel = (sel?.itens ?? []).filter((i) => situacao(i) !== 'dose_unica_feita')
+  // TE5 (perfil Técnico, RT 24/11/2026): controlado (Portaria 344) e alta vigilância ficam com o enfermeiro
+  const controlados = useControladosDoCatalogo()
+  const ids = itensSel.map((i) => i.item_id)
+  const liberacao = useQuery({
+    queryKey: ['liberacao-farmacia', ids.join(',')],
+    enabled: tecnico && ids.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('liberacao_farmacia', { p_itens: ids })
+      if (error) throw error
+      return new Map(((data ?? []) as unknown as Liberacao[]).map((e) => [e.item_id, e]))
+    },
+  })
+  const soEnfermeiro = (i: ItemParaDispensar) => tecnico
+    && (!!controlados.data?.get(i.medicamento_id) || (() => { const l = liberacao.data?.get(i.item_id); return !!l && l.alta_vigilancia !== false })())
+  // RS3: o motivo da retirada, escolhido uma vez
+  const [motivo, setMotivo] = React.useState('')
+  const [complemento, setComplemento] = React.useState('')
+  const justificativa = justificativaRetirada(motivo, complemento)
+  const farmaceutico = !!lista.data?.farmaceutico
+  const notas = notasUnicas(itensSel)
   const zerado = (i: ItemParaDispensar) => i.saldo_estoque != null && i.saldo_estoque <= 0
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-apoio text-tinta-sussurro">
           {grupos.length > 0
-            ? `${(lista.data?.itens ?? []).length} ${(lista.data?.itens ?? []).length === 1 ? 'item' : 'itens'} de ${grupos.length} ${grupos.length === 1 ? 'paciente' : 'pacientes'} nas prescrições vigentes · a quantidade vem sugerida para as próximas 24 h`
+            ? `${grupos.length} ${grupos.length === 1 ? 'paciente' : 'pacientes'} com medicamento na prescrição vigente · a quantidade vem sugerida para as próximas 24 h`
             : 'Itens de medicamento das prescrições vigentes.'}
         </p>
         <Input className="h-8 w-64" aria-label="Buscar paciente ou medicamento" placeholder="Buscar paciente ou medicamento" value={termo} onChange={(e) => setTermo(e.target.value)} />
       </div>
+      {!farmaceutico && !lista.isLoading && grupos.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-container border border-fio bg-superficie px-4 py-3">
+          <span className="text-apoio font-medium text-tinta">Motivo da retirada</span>
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Motivo da retirada">
+            {MOTIVOS_RETIRADA.map((m) => <Chip key={m} ativo={motivo === m} onClick={() => setMotivo(motivo === m ? '' : m)}>{m}</Chip>)}
+          </div>
+          <Input className="h-8" aria-label="Complemento do motivo" placeholder="Complemento (opcional)" value={complemento} onChange={(e) => setComplemento(e.target.value)} />
+          {tecnico && <span className="text-apoio text-tinta-sussurro">Controlados e alta vigilância: retirada pelo enfermeiro.</span>}
+        </div>
+      )}
       <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
       {lista.isLoading ? <Spinner /> : !sel ? (
-        <Vazio icone={PackageOpen} titulo="Nenhum medicamento prescrito" texto="Itens de medicamento das prescrições vigentes aparecem aqui." />
+        <Vazio icone={PackageOpen} titulo="Nenhum medicamento prescrito"
+          texto={enfermagem ? 'Itens de medicamento das prescrições vigentes dos pacientes da sua escala aparecem aqui.' : 'Itens de medicamento das prescrições vigentes aparecem aqui.'} />
       ) : (
         <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[280px_minmax(0,1fr)]">
           <ul aria-label="Pacientes com itens a dispensar" className="border-b border-fio md:border-r md:border-b-0">
@@ -114,10 +186,9 @@ function Prescricoes({ unidade }: { unidade: string }) {
                   className={cn('flex-col gap-0.5 px-4', g.paciente_id === sel.paciente_id && 'bg-alerta-marca')}>
                   <span className="text-apoio font-semibold text-tinta">{g.paciente}</span>
                   <span className="text-rotulo text-tinta-sussurro">{[g.setor, g.prontuario ? `pront. ${g.prontuario}` : null].filter(Boolean).join(' · ') || '—'}</span>
-                  <span className="text-rotulo text-tinta-apoio">{g.itens.length} {g.itens.length === 1 ? 'item' : 'itens'} a dispensar</span>
-                  <span className="flex flex-wrap gap-x-2 text-rotulo font-semibold empty:hidden">
-                    {g.itens.some(zerado) && <span className="text-atencao">estoque zerado</span>}
-                    {g.itens.some((i) => i.validacao === 'devolvido') && <span className="text-critico">devolvido para correção</span>}
+                  <span className="flex flex-wrap gap-x-2 text-rotulo empty:hidden">
+                    {g.itens.some((i) => i.validacao === 'devolvido') ? <span className="font-semibold text-critico">devolvido para correção</span>
+                      : g.itens.some(zerado) ? <span className="font-semibold text-atencao">estoque zerado</span> : null}
                   </span>
                 </BotaoLinha>
               </li>
@@ -128,7 +199,18 @@ function Prescricoes({ unidade }: { unidade: string }) {
               <h3 className="text-corpo font-semibold text-tinta">{sel.paciente}</h3>
               <p className="text-apoio text-tinta-sussurro">{[sel.setor, sel.prontuario ? `prontuário ${sel.prontuario}` : null].filter(Boolean).join(' · ') || '—'}</p>
             </div>
-            {sel.itens.map((i) => <LinhaItem key={i.item_id} i={i} farmaceutico={!!lista.data?.farmaceutico} />)}
+            {/* RS3: a nota da comparação de dose uma vez, no topo; no item, só o ícone */}
+            {notas.length > 0 && (
+              <div role="note" className="flex items-start gap-2 border-b border-trilha bg-alerta-atencao px-5 py-2.5 text-apoio text-atencao">
+                <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+                <span className="flex flex-col gap-0.5">{notas.map((n) => <span key={n}>{n}</span>)}</span>
+              </div>
+            )}
+            {itensSel.length === 0 && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Nada a dispensar para este paciente agora.</p>}
+            {itensSel.map((i) => (
+              <LinhaItem key={i.item_id} i={i} farmaceutico={farmaceutico} vencido={situacao(i) === 'vencido'}
+                soEnfermeiro={soEnfermeiro(i)} justificativa={justificativa} />
+            ))}
           </section>
         </div>
       )}
@@ -136,26 +218,31 @@ function Prescricoes({ unidade }: { unidade: string }) {
   )
 }
 
-function LinhaItem({ i, farmaceutico }: { i: ItemParaDispensar; farmaceutico: boolean }) {
+function LinhaItem({ i, farmaceutico, vencido, soEnfermeiro, justificativa }: {
+  i: ItemParaDispensar; farmaceutico: boolean; vencido: boolean
+  /** TE5: no perfil Técnico, controlado e alta vigilância não se retiram */
+  soEnfermeiro: boolean
+  /** RS3: o motivo escolhido no topo */
+  justificativa: string
+}) {
   const qc = useQueryClient()
   const [qtd, setQtd] = React.useState(i.sugestao.quantidade != null ? String(i.sugestao.quantidade) : '')
-  const [just, setJust] = React.useState('')
   const [aviso, setAviso] = React.useState<string | null>(null)
   const unidade = rotuloUnidade(i.unidade_consumo, i.unidade_consumo_outra).toLowerCase()
   const dispensar = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc('dispensar_item', { p_item: i.item_id, p_quantidade: Number(qtd), p_justificativa: farmaceutico ? undefined : just.trim() })
+      const { data, error } = await supabase.rpc('dispensar_item', { p_item: i.item_id, p_quantidade: Number(qtd), p_justificativa: farmaceutico ? undefined : justificativa })
       if (error) throw error
       return data as unknown as { saldo: number; estoque_negativo: boolean }
     },
     onSuccess: (r) => {
       setAviso(r.estoque_negativo ? `Dispensado. Saldo do estoque ficou ${r.saldo}: confira o saldo da farmácia.` : `Dispensado. Saldo: ${r.saldo}.`)
-      setJust('')
       for (const k of ['itens-para-dispensar', 'dispensacoes']) void qc.invalidateQueries({ queryKey: [k] })
     },
   })
-  const pronto = Number(qtd) >= 1 && (farmaceutico || just.trim().length >= MINIMO)
+  const pronto = Number(qtd) >= 1 && (farmaceutico || justificativa.trim().length >= MINIMO)
   const zerado = i.saldo_estoque != null && i.saldo_estoque <= 0
+  const podeAgir = !vencido && !soEnfermeiro
   return (
     <div className="flex flex-col gap-2 border-b border-trilha px-5 py-3 text-apoio last:border-b-0">
       <div className="flex flex-wrap items-start gap-x-5 gap-y-2">
@@ -165,28 +252,28 @@ function LinhaItem({ i, farmaceutico }: { i: ItemParaDispensar; farmaceutico: bo
             <SeloDoMedicamento id={i.medicamento_id} />
             {i.validacao === 'confere' && <Estado tom="verde">validado</Estado>}
             {i.validacao === 'devolvido' && <Estado tom="vermelho">devolvido para correção</Estado>}
+            {i.sugestao.notas.length > 0 && <span title={i.sugestao.notas.join(' ')} className="text-atencao"><Info className="size-3.5" aria-label="Conferir a dose (nota no topo)" /></span>}
           </span>
           <span className="text-tinta">{[i.dose, i.via, i.posologia].filter(Boolean).join(' · ')}{i.se_necessario ? ' · se necessário' : ''}</span>
           <span className="text-rotulo text-tinta-sussurro">
             Sugestão {i.sugestao.quantidade != null ? `${i.sugestao.quantidade} ${unidade}` : 'sem sugestão'}{i.sugestao.explicacao ? ` (${i.sugestao.explicacao})` : ''}
-            {' · '}nas últimas 24 h {i.dispensado_24h} · estoque <span className={cn(zerado && 'font-semibold text-critico')}>{i.saldo_estoque ?? '—'}</span>
+            {' · '}nas últimas 24 h {i.dispensado_24h}
+            {i.saldo_estoque != null && <> · estoque <span className={cn(zerado && 'font-semibold text-critico')}>{i.saldo_estoque}</span></>}
           </span>
-          {i.sugestao.notas.map((n) => <span key={n} className="text-rotulo text-atencao">{n}</span>)}
         </div>
-        <div className="flex items-center gap-2">
-          <Input id={`qtd-${i.item_id}`} aria-label={`Quantidade de ${i.medicamento} (${unidade})`} className="h-8 w-20 tabular-nums" inputMode="numeric" value={qtd} onChange={(e) => setQtd(e.target.value.replace(/\D/g, ''))} />
-          <span className="text-rotulo text-tinta-sussurro">{unidade}</span>
-          {farmaceutico && <Button size="sm" disabled={!pronto || dispensar.isPending} onClick={() => dispensar.mutate()}>Dispensar</Button>}
-        </div>
+        {vencido ? (
+          // RS1: a mesma regra da Checagem; vencido não se administra nem se retira
+          <Estado tom="vermelho">Vencido · peça renovação</Estado>
+        ) : soEnfermeiro ? null : (
+          <div className="flex items-center gap-2">
+            <Input id={`qtd-${i.item_id}`} aria-label={`Quantidade de ${i.medicamento} (${unidade})`} className="h-8 w-20 tabular-nums" inputMode="numeric" value={qtd} onChange={(e) => setQtd(e.target.value.replace(/\D/g, ''))} />
+            <span className="text-rotulo text-tinta-sussurro">{unidade}</span>
+            <Button size="sm" disabled={!pronto || dispensar.isPending} title={!farmaceutico && !pronto ? 'Escolha o motivo da retirada no topo' : undefined}
+              onClick={() => dispensar.mutate()}>{farmaceutico ? 'Dispensar' : 'Retirar'}</Button>
+          </div>
+        )}
       </div>
-      {!farmaceutico && (
-        <div className="flex flex-wrap items-end gap-2">
-          <Textarea aria-label="Justificativa da retirada sem farmacêutico" rows={1} className="min-w-[240px] flex-1"
-            placeholder="Por que retira sem farmacêutico (mínimo de 10 letras)" value={just} onChange={(e) => setJust(e.target.value)} />
-          <Button size="sm" disabled={!pronto || dispensar.isPending} onClick={() => dispensar.mutate()}>Retirar sem farmacêutico</Button>
-        </div>
-      )}
-      {dispensar.error && <p role="alert" className="text-critico">{(dispensar.error as Error).message}</p>}
+      {podeAgir && dispensar.error && <p role="alert" className="text-critico">{(dispensar.error as Error).message}</p>}
       {aviso && <p role="status" className="text-conforme">{aviso}</p>}
     </div>
   )

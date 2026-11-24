@@ -161,40 +161,44 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/consultorio-enfermagem', rotulo: 'Consultório de enfermagem', curto: 'Consultório', icone: DoorOpen, exato: true },
     ITEM_SINAIS_VITAIS,
     ITEM_SALA_VACINA,
-    { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
     ITEM_PUERICULTURA,
     ITEM_LOTES_VACINA,
-    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
-    { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
-    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
-    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    // EN1 (revisão do perfil Enfermeiro, RT 24/11/2026): grupos pelo momento do
+    // cuidado. Na UBS os grupos saem (itensDeNavegacao) e o menu segue em lista.
+    { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem', grupo: 'Porta' },
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true, grupo: 'Porta' },
+    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true, grupo: 'Leitos' },
+    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true, grupo: 'Medicação' },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true, grupo: 'Medicação' },
     // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
-    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
-    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
-    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
-    ITEM_AVISOS,
-    ITEM_PRONTUARIOS,
-    ITEM_ESCALA,
+    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true, grupo: 'Medicação' },
+    { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true, grupo: 'Registros' },
+    { ...ITEM_PRONTUARIOS, grupo: 'Registros' },
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
+    { ...ITEM_AVISOS, grupo: 'Equipe' },
+    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true, grupo: 'Equipe' },
   ],
+  // TE1 (revisão do perfil Técnico, RT 24/11/2026): os grupos do enfermeiro com
+  // o que existe para o técnico. Na UBS os grupos saem, como no enfermeiro.
   tecnico_enfermagem: [
     ITEM_SINAIS_VITAIS,
     ITEM_SALA_VACINA,
-    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
-    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
-    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
-    // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
-    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
     ITEM_AGENDA_CONSULTAS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
     ITEM_PUERICULTURA,
-    ITEM_AVISOS,
-    ITEM_PRONTUARIOS,
-    ITEM_ESCALA,
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true, grupo: 'Porta' },
+    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true, grupo: 'Leitos' },
+    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true, grupo: 'Medicação' },
+    // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
+    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true, grupo: 'Medicação' },
+    { ...ITEM_PRONTUARIOS, grupo: 'Registros' },
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
+    { ...ITEM_AVISOS, grupo: 'Equipe' },
   ],
   // Recepção (P/index.html 32220–32224), com a contagem das duas filas.
   // RE2 (revisão do perfil Recepção, RT 24/11/2026): em grupos — Entrada,
@@ -370,9 +374,12 @@ export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false
   }
   const fora = (papel && FORA_DA_UBS_NO_PAPEL[papel]) || null
   if (papel === 'plantonista') itens.push(ITEM_REGULACAO)
+  // EN1/TE1: os grupos da enfermagem são da porta e dos leitos; na UBS o menu segue em lista
+  const semGrupo = papel === 'enfermeiro' || papel === 'tecnico_enfermagem'
   return itens
     .filter((i) => !fora?.has(i.to))
     .map((i) => ({ ...i, ...NOME_NA_UBS[i.to], ...(i.grupo && GRUPO_NA_UBS[i.grupo] ? { grupo: GRUPO_NA_UBS[i.grupo] } : {}) }))
+    .map((i) => (semGrupo ? { ...i, grupo: undefined } : i))
 }
 
 function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdmin: boolean): ItemNav[] {
@@ -440,6 +447,10 @@ export const ICONE_GRUPO: Record<string, LucideIcon> = {
   Exames: TestTube,
   Faturamento: Receipt,
   Unidade: Building2,
+  // grupos do enfermeiro (EN1)
+  'Medicação': Pill,
+  Registros: FolderSearch,
+  Equipe: Users,
 }
 
 /**

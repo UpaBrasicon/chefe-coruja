@@ -62,7 +62,7 @@ function tempoRestante(c: Caso, agora: number) {
 }
 
 export default function NotificacaoCompulsoria() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
   const [params, setParams] = useSearchParams()
@@ -121,6 +121,9 @@ export default function NotificacaoCompulsoria() {
   }
 
   const faltaConferir = conferencia.data && (conferencia.data.itens > 0 || conferencia.data.regras > 0)
+  // SH2 (revisão do perfil Enfermeiro, RT 24/11/2026): a faixa do catálogo sem
+  // conferência é tarefa do gestor e da vigilância; nos outros perfis, uma nota no pé
+  const veFaixaCatalogo = papelAtivo === 'gestor' || papelAtivo === 'admin'
 
   return (
     <>
@@ -129,7 +132,7 @@ export default function NotificacaoCompulsoria() {
         acoes={<Button onClick={() => { setErro(null); setJanelaAcidente(true) }}><HardHat aria-hidden /> Notificar acidente de trabalho</Button>} />
 
       {/* M2: o aviso do catálogo numa linha; a explicação abre ao clicar */}
-      {faltaConferir && (
+      {faltaConferir && veFaixaCatalogo && (
         <details className="mb-3 rounded-controle border border-nota bg-alerta-atencao px-3.5 py-2 text-apoio text-atencao">
           <summary className="flex cursor-pointer items-center gap-2">
             <ShieldAlert className="size-4 shrink-0" aria-hidden />
@@ -224,6 +227,11 @@ export default function NotificacaoCompulsoria() {
 
       <JanelaAcidenteTrabalho aberta={janelaAcidente} unidadeId={unidadeId} onFechar={() => setJanelaAcidente(false)}
         aoAbrir={(id) => { setJanelaAcidente(false); abrirFicha(id) }} />
+      {faltaConferir && !veFaixaCatalogo && (
+        <p className="mt-4 text-rotulo text-pretty text-tinta-sussurro">
+          O catálogo ainda aguarda a conferência da vigilância: a lista só sugere e nada é notificado sozinho.
+        </p>
+      )}
     </>
   )
 }

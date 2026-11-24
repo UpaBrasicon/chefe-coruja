@@ -18,15 +18,21 @@ import { erroDeLeitura } from '@/lib/offline/erroDeLeitura'
 // visual 3.4 (opção B do RT): tabela na segunda aba da triagem; a espera desde a
 // classificação passa ao vermelho acima do alvo da cor, como na fila do PS.
 
-export function EsperaMedico({ lista, carregando, erro, onReclassificar, ubs = false }: {
+export function EsperaMedico({ lista, carregando, erro, onReclassificar, ubs = false, acima = 0 }: {
   lista: NaEspera[]; carregando: boolean; erro: Error | null; onReclassificar: (ep: NaEspera) => void
   /** escuta da UBS (5A, parte 2.4): o CAB 28 não tem tempo-alvo, e a UBS não reclassifica */
   ubs?: boolean
+  /** quantos passaram do alvo da cor (EN3: o número mora nesta aba) */
+  acima?: number
 }) {
   const iguais = homonimos(lista)
   return (
+    <>
+    <p className="mb-2 text-apoio text-tinta-sussurro">
+      {ubs ? 'Na ordem da fila do médico: imediato, prioritário, depois prioridade legal e chegada' : 'Na ordem da fila médica · reclassifique se o quadro mudou na espera'}
+      {!ubs && lista.length > 0 && <> · <span className={cn(acima > 0 && 'font-medium text-critico')}>{acima} acima do alvo da cor</span></>}
+    </p>
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-      <p className="border-b border-trilha px-5 py-2.5 text-apoio text-tinta-sussurro">{ubs ? 'Na ordem da fila do médico: imediato, prioritário, depois prioridade legal e chegada' : 'Na ordem da fila médica · reclassifique se o quadro mudou na espera'}</p>
       {carregando && <p className="px-5 py-5 text-controle text-tinta-sussurro">Carregando…</p>}
       {erroDeLeitura(erro, lista.length > 0) && <p className="px-5 py-5 text-controle text-critico">{erroDeLeitura(erro, lista.length > 0)}</p>}
       {!carregando && !erro && lista.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">{ubs ? 'Ninguém escutado aguardando o médico.' : 'Ninguém classificado aguardando o médico.'}</p>}
@@ -69,5 +75,6 @@ export function EsperaMedico({ lista, carregando, erro, onReclassificar, ubs = f
         </Table>
       )}
     </section>
+    </>
   )
 }
