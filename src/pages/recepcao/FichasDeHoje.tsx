@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
+import { TituloCartao } from '@/components/monitor/Pagina'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -56,9 +57,7 @@ export function FichasDeHoje({ setorId, hoje, ubs, naFila }: { setorId: string; 
 
   return (
     <section aria-labelledby="rec-fichas-hoje" className="mt-6 flex flex-col">
-      <h2 id="rec-fichas-hoje" className="mb-2 text-controle font-semibold text-tinta">
-        Fichas de hoje{data ? <span className="font-medium text-tinta-sussurro tabular-nums"> ({fichas.length})</span> : null}
-      </h2>
+      <TituloCartao id="rec-fichas-hoje">Fichas de hoje{data ? ` (${fichas.length})` : ''}</TituloCartao>
       <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
         {isLoading && <div className="px-5 py-4"><Spinner /></div>}
         {error && <p className="px-5 py-4 text-apoio text-critico">{(error as Error).message}</p>}
@@ -76,7 +75,7 @@ export function FichasDeHoje({ setorId, hoje, ubs, naFila }: { setorId: string; 
         })}
         {fichas.length > INICIAIS && (
           <div className="border-t border-trilha px-3 py-2">
-            <Button variant="ghost" size="sm" onClick={() => setTodas((v) => !v)}>
+            <Button variant="outline" size="sm" onClick={() => setTodas((v) => !v)}>
               {todas ? 'Mostrar menos' : `Ver as ${fichas.length}`}
             </Button>
           </div>

@@ -5,6 +5,7 @@ import * as React from 'react'
 import { supabase } from '@/lib/supabase'
 import { reduzirImagem } from '@/lib/reduzirImagem'
 import { cn } from '@/lib/utils'
+import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
@@ -125,12 +126,12 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
   return (
     <section className={cn(cartao, 'mt-4')} aria-labelledby="propaganda-titulo">
       <h3>
-        <button
-          type="button"
+        <BotaoLinha
+          variante="linha"
           aria-expanded={aberto}
           aria-controls="propaganda-conteudo"
           onClick={() => setAberto((v) => !v)}
-          className={cn('flex w-full flex-wrap items-center gap-2.5 px-5 py-3 text-left hover:bg-trilha/60', aberto && 'border-b border-trilha')}
+          className={cn('flex-wrap items-center gap-3 px-5', !aberto && 'border-0')}
         >
           <Megaphone className="size-4 text-tinta-sussurro" aria-hidden />
           <span id="propaganda-titulo" className="text-controle leading-[1.3] font-semibold text-tinta">Artes da TV</span>
@@ -138,7 +139,7 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
             {data ? `${ativos} ${ativos === 1 ? 'arte no ar' : 'artes no ar'} · ${data.segundos} s cada` : ''}
           </span>
           <ChevronDown className={cn('size-4 text-tinta-sussurro transition-transform', aberto && 'rotate-180')} aria-hidden />
-        </button>
+        </BotaoLinha>
       </h3>
       {aberto && isLoading && <div className="px-5 py-4"><Spinner /></div>}
       {aberto && error && <p className="px-5 py-4 text-apoio text-critico">{(error as Error).message}</p>}
