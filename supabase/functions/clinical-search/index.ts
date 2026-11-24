@@ -14,13 +14,19 @@
 //   deixa uma linha em ia_gateway_log (contagens, tipos e hash, nunca o texto).
 // - Limite: 30 perguntas "ask" por usuário por hora.
 // - Repassa o stream NDJSON da biblioteca sem armazenar a resposta.
+// - IA1 (RT, 24/11/2026): no modo "ask", aceita `historico` com as últimas
+//   trocas da conversa (no máximo 2; ver historico.ts). Elas passam pela mesma
+//   máscara da pergunta (liberarHistorico) e vão à biblioteca já limpas; nada
+//   delas é gravado. A primeira linha do stream avisa a tela de que a Edge
+//   aceita seguimento.
 import { createClient } from 'npm:@supabase/supabase-js@2.106.2'
 
 import { type Conhecido, type Contagem } from '../_shared/desidentificacao.ts'
 import { comCors } from '../_shared/cors.ts'
 import { chavePublica, chaveSecreta } from '../_shared/chaves.ts'
 import { comRelato, relatarErro } from '../_shared/sentry.ts'
-import { hashEntrada, liberarPergunta, TIPO_NOME_NER, type PerguntaLiberada } from './liberar.ts'
+import { hashEntrada, liberarHistorico, liberarPergunta, TIPO_NOME_NER, type PerguntaLiberada, type TrocaLiberada } from './liberar.ts'
+import { comAbertura, LINHA_SEGUIMENTO, lerHistorico } from './historico.ts'
 import { semLinhaDeUso } from './uso.ts'
 import { segundoFatorFalta } from './segundo.ts'
 
@@ -91,7 +97,7 @@ async function tratar(req: Request): Promise<Response> {
   const { data: sf } = await userClient.rpc('segundo_fator_status')
   if (segundoFatorFalta(sf)) return erro(403, 'SEGUNDO_FATOR: confirme o segundo fator')
 
-  let corpo: { q?: unknown; mode?: unknown; unidade_id?: unknown; publico?: unknown }
+  let corpo: { q?: unknown; mode?: unknown; unidade_id?: unknown; publico?: unknown; historico?: unknown }
   try {
     corpo = await req.json()
   } catch {
@@ -103,6 +109,8 @@ async function tratar(req: Request): Promise<Response> {
   // modo do paciente na Central (R2-13): pergunta de criança só busca em fonte pediátrica
   const publico = corpo.publico === 'pediatrico' || corpo.publico === 'adulto' ? corpo.publico : undefined
   if (q.length < 2 || q.length > 800 || !mode || !/^[0-9a-f-]{36}$/i.test(unidadeId)) return erro(400, 'pedido inválido')
+  // IA1: só a pergunta ao modelo leva a conversa anterior
+  const trocas = mode === 'ask' ? lerHistorico(corpo.historico) : []
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, chaveSecreta())
 
@@ -128,14 +136,20 @@ async function tratar(req: Request): Promise<Response> {
   // Gateway (ADR 0006; E2 da trilha Hermes / Evidências): a pergunta só sai
   // liberada. Ver liberar.ts.
   const hash = await hashEntrada(q)
-  const liberacao = await liberarPergunta(q, await nomesConhecidos(admin, unidadeId, user.id), mode, (texto) =>
+  const consultarDeid = (texto: string) =>
     fetch(`${base}/v1/deid`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ texto }),
       // a busca simples espera menos: sem o NER ela segue, só sem registro do texto
       signal: AbortSignal.timeout(mode === 'ask' ? 8_000 : 3_000),
-    }).then((r) => (r.ok ? r.json() : null)))
+    }).then((r) => (r.ok ? r.json() : null))
+  const conhecidos = await nomesConhecidos(admin, unidadeId, user.id)
+  // IA1: a pergunta e a conversa anterior passam pela máscara ao mesmo tempo
+  const [liberacao, libHistorico] = await Promise.all([
+    liberarPergunta(q, conhecidos, mode, consultarDeid),
+    trocas.length ? liberarHistorico(trocas, conhecidos, consultarDeid) : Promise.resolve(null),
+  ])
 
   if (liberacao.tipo !== 'ok') {
     const status = liberacao.tipo === 'bloqueada' ? 422 : 503
@@ -161,8 +175,22 @@ async function tratar(req: Request): Promise<Response> {
       '). Tire o dado e pergunte de novo: a busca não envia identificação para a IA.')
   }
 
+  // IA1: a conversa anterior sem o NER não sai (falha fechada, como a pergunta)
+  if (libHistorico?.tipo === 'indisponivel') {
+    await admin.from('clinical_search_logs').insert({
+      request_id, user_id: user.id, unidade_id: unidadeId, mode, query_redacted: '[não enviada]', status: 503, latency_ms: Date.now() - t0,
+    })
+    await registrarGateway(admin, {
+      perfilId: user.id, bloqueado: true, contagem: liberacao.contagem, hash, residuos: 0,
+      erro: `desidentificação do histórico indisponível: ${libHistorico.motivo}`,
+    })
+    relatarErro('clinical-search', 'deid_indisponivel', libHistorico.motivo)
+    return erro(503, 'A conferência de identificação está fora do ar, e a pergunta não foi enviada. Tente de novo em instantes.')
+  }
+  const historico = libHistorico?.tipo === 'ok' ? libHistorico.trocas : []
+
   const qRed = liberacao.registro === null ? '[não registrada]' : redact(liberacao.registro)
-  const upstream = await chamarBiblioteca(base, chave, mode, liberacao.texto, { tenant_id: unidadeId, request_id, publico })
+  const upstream = await chamarBiblioteca(base, chave, mode, liberacao.texto, historico, { tenant_id: unidadeId, request_id, publico })
 
   await admin.from('clinical_search_logs').insert({
     request_id, user_id: user.id, unidade_id: unidadeId, mode, query_redacted: qRed,
@@ -182,7 +210,7 @@ async function tratar(req: Request): Promise<Response> {
     ? upstream.body.pipeThrough(semLinhaDeUso(async (uso) => {
       const { error } = await admin.from('clinical_search_logs').update(uso).eq('request_id', request_id)
       if (error) relatarErro('clinical-search', 'uso_tokens', error.message)
-    }))
+    })).pipeThrough(comAbertura(LINHA_SEGUIMENTO))
     : upstream.body
   return new Response(resposta, {
     status: 200,
@@ -203,13 +231,17 @@ async function tratar(req: Request): Promise<Response> {
 
 /** A única chamada à biblioteca: só aceita a pergunta liberada (liberar.ts). */
 function chamarBiblioteca(
-  base: string, chave: string, mode: 'ask' | 'search', pergunta: PerguntaLiberada,
+  base: string, chave: string, mode: 'ask' | 'search', pergunta: PerguntaLiberada, historico: TrocaLiberada[],
   extra: { tenant_id: string; request_id: string; publico?: string },
 ): Promise<Response | null> {
+  // IA1: a conversa anterior só vai quando existe (a biblioteca antiga ignora o campo)
+  const conversa = historico.length
+    ? { historico: historico.map((t) => ({ pergunta: redact(t.pergunta), resposta: redact(t.resposta) })) }
+    : {}
   return fetch(`${base}/v1/${mode}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ q: redact(pergunta), ...extra }),
+    body: JSON.stringify({ q: redact(pergunta), ...conversa, ...extra }),
     signal: AbortSignal.timeout(mode === 'ask' ? 120_000 : 45_000),
   }).catch((e: unknown) => {
     console.error('biblioteca indisponível', extra.request_id, e instanceof Error ? e.message : String(e))

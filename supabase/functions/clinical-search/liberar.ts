@@ -101,6 +101,62 @@ export async function liberarPergunta(
   return { tipo: 'ok', texto: texto as PerguntaLiberada, registro: motivoSemNer ? null : texto, contagem }
 }
 
+/** Troca da conversa que passou pela mesma máscara da pergunta (IA1). */
+export type TrocaLiberada = { readonly pergunta: PerguntaLiberada; readonly resposta: PerguntaLiberada }
+
+export type LiberacaoHistorico =
+  | { tipo: 'ok'; trocas: TrocaLiberada[]; contagem: Contagem }
+  | { tipo: 'indisponivel'; motivo: string; contagem: Contagem }
+
+/**
+ * IA1 (RT, 24/11/2026): o histórico da conversa passa pela mesma máscara da
+ * pergunta antes de sair. Nomes conhecidos viram pseudônimos; uma troca com
+ * resíduo de identificador sai inteira do histórico (a pergunta atual segue);
+ * o NER confere tudo numa consulta só e o nome achado vira [PESSOA] (não
+ * bloqueia: a resposta anterior vem do material e pode citar epônimos). NER
+ * fora do ar: falha fechada, como a pergunta ao modelo.
+ */
+export async function liberarHistorico(
+  trocas: { pergunta: string; resposta: string }[],
+  conhecidos: Conhecido[],
+  consultarDeid: ConsultarDeid,
+): Promise<LiberacaoHistorico> {
+  const cofre = criarCofre()
+  const contagem: Contagem = {}
+  const somar = (c: Contagem) => {
+    for (const [k, v] of Object.entries(c) as [keyof Contagem, number][]) contagem[k] = (contagem[k] ?? 0) + v
+  }
+  const limpas: { pergunta: string; resposta: string }[] = []
+  for (const t of trocas) {
+    const p = desidentificar(t.pergunta, cofre, conhecidos)
+    const r = desidentificar(t.resposta, cofre, conhecidos)
+    somar(p.contagem); somar(r.contagem)
+    if (residuos(p.texto).length || residuos(r.texto).length) continue
+    limpas.push({ pergunta: p.texto, resposta: r.texto })
+  }
+  if (!limpas.length) return { tipo: 'ok', trocas: [], contagem }
+
+  let resposta: unknown
+  try {
+    resposta = await consultarDeid(limpas.flatMap((t) => [t.pergunta, t.resposta]).filter(Boolean).join('\n\n'))
+  } catch (e) {
+    const nome = e instanceof Error ? e.name : ''
+    return { tipo: 'indisponivel', motivo: nome === 'TimeoutError' || nome === 'AbortError' ? 'timeout' : 'rede', contagem }
+  }
+  const deid = lerDeid(resposta)
+  if (!deid) return { tipo: 'indisponivel', motivo: 'resposta_invalida', contagem }
+  if (!deid.ner_ativo) return { tipo: 'indisponivel', motivo: 'ner_inativo', contagem }
+  const nomes = deid.found.filter(nomeAlemDoPseudonimo)
+  return {
+    tipo: 'ok',
+    contagem,
+    trocas: limpas.map((t) => ({
+      pergunta: mascararNomes(t.pergunta, nomes) as PerguntaLiberada,
+      resposta: mascararNomes(t.resposta, nomes) as PerguntaLiberada,
+    })),
+  }
+}
+
 /** Troca cada nome achado pelo NER por [PESSOA], do mais longo para o mais curto. */
 export function mascararNomes(texto: string, nomes: string[]): string {
   let t = texto
