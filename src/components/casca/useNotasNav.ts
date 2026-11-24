@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { MinhaNotificacao, Papel } from '@/types/database'
 import { avaliarUnidade, type ChamadoTecnico, type UnidadeRede } from '@/lib/dadosAdmin'
+import { chaveFilaTriagem, lerFilaTriagem } from '@/lib/filaTriagem'
 
 import type { ChaveNota } from './navegacao'
 
@@ -25,9 +26,18 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     },
   })
 
+  // EN2 (RT 24/11/2026): no enfermeiro o número sai da mesma leitura e da
+  // mesma chave de cache da lista da Triagem (setores da escala em curso)
+  const triagemEnfermagem = useQuery({
+    queryKey: chaveFilaTriagem(unidadeId),
+    enabled: ativo && papel === 'enfermeiro',
+    refetchInterval: 20_000,
+    queryFn: lerFilaTriagem,
+  })
+
   const triagem = useQuery({
     queryKey: ['nota-fila-triagem', unidadeId],
-    enabled: ativo && (papel === 'enfermeiro' || papel === 'recepcao'),
+    enabled: ativo && papel === 'recepcao',
     refetchInterval: 20_000,
     queryFn: async () => {
       const { count, error } = await supabase
@@ -123,7 +133,7 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     plataformas: unidadesRede.data?.filter((u) => avaliarUnidade(u, unidadesRede.dataUpdatedAt).estado > 0).length,
     chamados: chamados.data?.length,
     avisos: (avisos.data ?? []).filter((n) => !n.lida).length,
-    triagem: triagem.data,
+    triagem: papel === 'enfermeiro' ? triagemEnfermagem.data?.length : triagem.data,
     farmacia: farmacia.data,
     pedidos: pedidos.data?.pedidos_acesso_pendentes,
     tele: tele.data,
