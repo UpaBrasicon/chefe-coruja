@@ -6,7 +6,7 @@
 import { categoriaCobranca } from './nir.ts'
 
 export type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Prescrição' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura'
-  | 'Mensagem' | 'Regulação' | 'Encaminhamento' | 'Retorno' | 'AIH' | 'APAC' | 'Exames' | 'RNDS' | 'Outros'
+  | 'Mensagem' | 'Regulação' | 'Encaminhamento' | 'Retorno' | 'AIH' | 'APAC' | 'Exames' | 'RNDS' | 'Reunião' | 'Outros'
 
 export type Aviso = { id: string; tipo: string; mensagem: string; lida: boolean; created_at: string }
 
@@ -32,6 +32,8 @@ export function categoria(tipo: string, mensagem = ''): Categoria {
   if (tipo.startsWith('exame_')) return 'Exames'
   // certificado, credencial e bloqueio da RNDS (Fase 5C, etapa 5.4)
   if (tipo.startsWith('rnds_')) return 'RNDS'
+  // convite, mudança e cancelamento de reunião da agenda do administrador (RT, 24/11/2026)
+  if (tipo.startsWith('reuniao_')) return 'Reunião'
   // cobranças do NIR (Fase 4, tarefa 11): a categoria é o assunto
   const nir = categoriaCobranca(tipo)
   if (nir) return nir

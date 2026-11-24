@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Ambulance, BedDouble, Bell, CalendarClock, ChevronDown, ChevronUp, Clock, CornerDownLeft, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
+import { Ambulance, BedDouble, Bell, CalendarClock, ChevronDown, ChevronUp, Clock, CornerDownLeft, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Video, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -50,6 +50,7 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | 
   Exames: { icone: FlaskConical, cor: 'text-critico bg-critico/10', acao: [
     { to: '/atendimento', rotulo: 'Abrir atendimento' }, { to: '/plantao/internacao/pacientes', rotulo: 'Abrir leitos' }, { to: '/enfermagem/internacao', rotulo: 'Abrir internação' }] },
   RNDS: { icone: Send, cor: 'text-atencao bg-atencao/10', acao: { to: '/integracoes?aba=rnds', rotulo: 'Abrir RNDS' } },
+  Reunião: { icone: Video, cor: 'text-acao bg-acao/10', acao: { to: '/agenda-admin', rotulo: 'Abrir agenda' } },
   Outros: { icone: Bell, cor: 'text-tinta-apoio bg-trilha' },
 }
 

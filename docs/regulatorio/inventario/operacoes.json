@@ -956,6 +956,44 @@
       ]
     },
     {
+      "id": "agenda-reunioes",
+      "nome": "Agenda de reuniões do administrador",
+      "papel": "operador",
+      "finalidade": "Organizar o dia a dia e as reuniões da administração da rede (pedido do RT de 24/11/2026), com o link colado da plataforma de vídeo.",
+      "base_legal": [
+        "art. 7º, V (execução de contrato)"
+      ],
+      "titulares": [
+        "profissionais"
+      ],
+      "dados": [
+        "título, dia, horário, link e pauta curta da reunião",
+        "quem marcou e quem foi convidado (pessoas da organização)"
+      ],
+      "sensivel": false,
+      "acesso": [
+        "quem marcou a reunião (administrador da organização)",
+        "os convidados da mesma reunião"
+      ],
+      "local": [
+        "Supabase (São Paulo)"
+      ],
+      "prazo": {
+        "guarda": "enquanto durar o contrato com a organização",
+        "base": "registro administrativo da rede, sem dado de paciente",
+        "descarte": "apagado com a organização ou a pedido do RT"
+      },
+      "seguranca": [
+        "RLS: só quem marcou e os convidados leem; escrita só por funções que conferem o papel de administrador",
+        "o link só aceita https://; sem integração com Google ou Microsoft (v1)",
+        "a pauta é curta (até 2.000 letras) e a tela não pede dado de paciente"
+      ],
+      "tabelas": [
+        "public.reunioes",
+        "public.reuniao_convidados"
+      ]
+    },
+    {
       "id": "comunicacao",
       "nome": "Comunicação interna da equipe",
       "papel": "operador",
