@@ -208,7 +208,8 @@ function LateralAreas({ itens, notas, papelTexto, inicio, unidadeId, ehGestor, o
           <nav aria-label="Áreas" className="flex flex-col items-center gap-1">
             {areas.map((a) => {
               const rotulo = a.grupo ?? a.itens[0].rotulo
-              const Icone = (a.grupo && ICONE_GRUPO[a.grupo]) || a.itens[0].icone
+              // área de uma tela só leva o ícone da tela (Cadastro do faturamento = Materiais)
+              const Icone = (a.itens.length > 1 && a.grupo && ICONE_GRUPO[a.grupo]) || a.itens[0].icone
               const eh = a === atual
               const nota = somaNotas(a.itens, notas)
               return (
