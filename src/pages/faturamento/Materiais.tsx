@@ -3,11 +3,14 @@
 // opção A da tela, RT em 05/11/2026, ref. Dock e Lemon Squeezy).
 //
 // Cadastro simples para lançar na conta: nome, unidade de consumo e o código
-// SIGTAP do grupo 07 (opcional). Sem valor e sem estoque. Desativar tira da
+// SIGTAP do grupo 07 (opcional). Sem estoque. Desativar tira da
 // lista de lançamento sem apagar o histórico. Cadastram a farmácia e o gestor
 // (ajustes da revisão, item 4, RT em 24/11/2026; migration 20270421000073); o
 // faturamento só lê e lança na conta (Contas do atendimento).
 // Migration 20270226000001_materiais.sql.
+// Custo unitário em R$ (RT, 24/11/2026; migration 20270422000090): definem a
+// farmácia, o gestor e o administrador geral; os demais só veem. Vazio é "Sem
+// custo". A conta congela o custo do momento do lançamento.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Package, Plus } from 'lucide-react'
@@ -27,6 +30,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { codigoSigtapNaTela } from '@/lib/bpa'
 import { type MaterialUnidade } from '@/lib/contas'
+import { custoNaTela, custoParaCampo, lerCusto, podeDefinirCusto } from '@/lib/custoMaterial'
 import { filtrarMateriais, podeCadastrarMaterial } from '@/lib/materiais'
 import { supabase } from '@/lib/supabase'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
@@ -90,7 +94,7 @@ export default function Materiais() {
   const podeCadastrar = podeCadastrarMaterial(papelAtivo)
   const [busca, setBusca] = React.useState('')
   const [ativos, setAtivos] = React.useState(true)
-  const [editando, setEditando] = React.useState<Editando | null>(null)
+  const [editando, setEditando] = React.useState<EditandoComCusto | null>(null)
   const lista = useQuery({
     queryKey: ['materiais', unidadeId],
     enabled: !!unidadeId,
@@ -107,7 +111,7 @@ export default function Materiais() {
 
   return (
     <>
-      <TituloPagina titulo="Materiais" descricao="Cadastro da unidade para lançar na conta do atendimento, sem valor e sem estoque."
+      <TituloPagina titulo="Materiais" descricao="Cadastro da unidade para lançar na conta do atendimento, com o custo unitário e sem estoque."
         acoes={unidadeId && !lista.error && podeCadastrar ? <Button size="sm" onClick={() => setEditando(NOVO)}><Plus /> Novo material</Button> : undefined} />
       {unidadeId && lista.data && podeCadastrar && <div className="mb-3"><ListaBasica unidadeId={unidadeId} existentes={todos} /></div>}
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} />
@@ -131,6 +135,7 @@ export default function Materiais() {
                   <TableRow>
                     <TableHead>Material</TableHead>
                     <TableHead>Unidade</TableHead>
+                    <TableHead className="text-right">Custo unitário</TableHead>
                     <TableHead>SIGTAP</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Uso na conta</TableHead>
@@ -142,6 +147,7 @@ export default function Materiais() {
                     <TableRow key={m.id} className={m.ativo ? undefined : 'text-tinta-sussurro'}>
                       <TableCell><strong className={m.ativo ? 'text-tinta' : 'font-normal'}>{m.nome}</strong>{!m.ativo && <Badge variant="outline" className="ml-1.5">desativado</Badge>}</TableCell>
                       <TableCell>{m.unidade_consumo}</TableCell>
+                      <TableCell className={`whitespace-nowrap text-right tabular-nums${m.custo_unitario == null ? ' text-tinta-sussurro' : ''}`}>{custoNaTela(m.custo_unitario)}</TableCell>
                       <TableCell>
                         {m.procedimento
                           ? <span title={m.procedimento_nome ?? undefined}>{codigoSigtapNaTela(m.procedimento)}</span>
@@ -168,9 +174,19 @@ export default function Materiais() {
   )
 }
 
-function PainelMaterial({ unidadeId, inicial, onFechar }: { unidadeId: string; inicial: Editando; onFechar: () => void }) {
+type EditandoComCusto = Editando & { custo_unitario?: number | null }
+
+function PainelMaterial({ unidadeId, inicial, onFechar }: { unidadeId: string; inicial: EditandoComCusto; onFechar: () => void }) {
   const qc = useQueryClient()
+  const { papeisDaUnidade, ehSuperAdmin } = useUnidade()
+  const custoEditavel = podeDefinirCusto(papeisDaUnidade, ehSuperAdmin)
   const [m, setM] = React.useState<Editando>(inicial)
+  const custoAntes = inicial.custo_unitario == null ? null : Number(inicial.custo_unitario)
+  const [custoTexto, setCustoTexto] = React.useState(custoParaCampo(inicial.custo_unitario))
+  const custo = lerCusto(custoTexto)
+  const custoMudou = custoEditavel && custo.valido && custo.valor !== custoAntes
+  const cadastroMudou = !m.id || m.nome !== inicial.nome || m.unidade_consumo !== inicial.unidade_consumo
+    || m.procedimento !== inicial.procedimento || m.ativo !== inicial.ativo
   const [termo, setTermo] = React.useState('')
   const t = useValorAdiado(termo.trim())
   const busca = useQuery({
@@ -185,15 +201,28 @@ function PainelMaterial({ unidadeId, inicial, onFechar }: { unidadeId: string; i
   })
   const salvar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('material_salvar', {
-        p_unidade: unidadeId, p_id: m.id, p_nome: m.nome.trim(), p_unidade_consumo: m.unidade_consumo.trim(),
-        p_procedimento: m.procedimento ?? undefined, p_ativo: m.ativo,
-      })
-      if (error) throw error
+      let id = m.id
+      if (cadastroMudou) {
+        const { data, error } = await supabase.rpc('material_salvar', {
+          p_unidade: unidadeId, p_id: m.id, p_nome: m.nome.trim(), p_unidade_consumo: m.unidade_consumo.trim(),
+          p_procedimento: m.procedimento ?? undefined, p_ativo: m.ativo,
+        })
+        if (error) throw error
+        id = data
+        // se o custo falhar, o material novo já existe: salvar de novo altera, não duplica
+        if (!m.id) setM((x) => ({ ...x, id: data }))
+      }
+      // o custo vai por RPC própria (farmácia, gestor ou administrador geral)
+      if (custoMudou && id && custo.valido) {
+        const { error } = await supabase.rpc('material_definir_custo', { p_material: id, p_custo: custo.valor })
+        if (error) throw error
+      }
     },
-    onSuccess: () => { void qc.invalidateQueries({ queryKey: ['materiais'] }); onFechar() },
+    onSuccess: () => onFechar(),
+    onSettled: () => void qc.invalidateQueries({ queryKey: ['materiais'] }),
   })
   const valido = m.nome.trim().length >= 3 && m.nome.trim().length <= 120 && m.unidade_consumo.trim().length >= 1 && m.unidade_consumo.trim().length <= 20
+    && custo.valido && (cadastroMudou || custoMudou)
 
   return (
     <Gaveta aberta onAbertaChange={(v) => { if (!v) onFechar() }} rotulo={m.id ? 'Editar material' : 'Novo material'}>
@@ -234,6 +263,25 @@ function PainelMaterial({ unidadeId, inicial, onFechar }: { unidadeId: string; i
             </>
           )}
         </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor={custoEditavel ? 'mat-custo' : undefined}>Custo unitário (R$)</Label>
+          {custoEditavel ? (
+            <>
+              <Input id="mat-custo" className="w-40 tabular-nums" inputMode="decimal" autoComplete="off" placeholder="Ex.: 2,50"
+                value={custoTexto} onChange={(e) => setCustoTexto(e.target.value)} aria-describedby="mat-custo-ajuda" />
+              <span id="mat-custo-ajuda" className={`text-rotulo ${custo.valido ? 'text-tinta-sussurro' : 'text-critico'}`}>
+                {custo.valido
+                  ? `Por ${m.unidade_consumo.trim() || 'unidade de consumo'}. Vazio fica sem custo. O novo custo vale para os próximos lançamentos; o que já está na conta não muda.`
+                  : 'Custo de 0 a 99.999.999, com até 2 casas decimais (ex.: 2,50).'}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className={`tabular-nums ${custoAntes == null ? 'text-tinta-sussurro' : 'text-tinta'}`}>{custoNaTela(custoAntes)}</span>
+              <span className="text-rotulo text-tinta-sussurro">Quem define o custo é a farmácia ou o gestor da unidade.</span>
+            </>
+          )}
+        </div>
         <CaixaMarcar marcado={m.ativo} onChange={(v) => setM({ ...m, ativo: v })}>Ativo (aparece no lançamento da conta)</CaixaMarcar>
         <MensagemErro texto={salvar.error ? (salvar.error as Error).message : null} />
         <div className="flex justify-end gap-2">
@@ -241,7 +289,7 @@ function PainelMaterial({ unidadeId, inicial, onFechar }: { unidadeId: string; i
           <Button disabled={!valido || salvar.isPending} onClick={() => salvar.mutate()}>Salvar</Button>
         </div>
       </div>
-      <GavetaPe>Sem valor e sem estoque. Desativar tira da lista de lançamento; o que já foi lançado nas contas continua lá.</GavetaPe>
+      <GavetaPe>Sem estoque. Desativar tira da lista de lançamento; o que já foi lançado nas contas continua lá, com o custo do dia do lançamento.</GavetaPe>
     </Gaveta>
   )
 }

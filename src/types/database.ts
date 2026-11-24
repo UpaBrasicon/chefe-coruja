@@ -10760,6 +10760,7 @@ export type Database = {
       conta_lancar_material: { Args: { p_conta: string; p_material: string; p_observacao?: string; p_quantidade: number }; Returns: Json }
       conta_retirar_material: { Args: { p_lancamento: string; p_motivo: string }; Returns: Json }
       materiais_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      material_definir_custo: { Args: { p_custo: number | null; p_material: string }; Returns: Json }
       material_salvar: {
         Args: { p_ativo?: boolean; p_id: string | null; p_nome: string; p_procedimento?: string; p_unidade: string; p_unidade_consumo: string }
         Returns: string
