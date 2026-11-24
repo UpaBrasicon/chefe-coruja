@@ -15,7 +15,7 @@ export default function SecretariaGrupo() {
       <TituloPagina
         icone={Network}
         titulo="Rede da secretaria"
-        descricao="As unidades da sua secretaria. Abra uma unidade para ver a ficha, configurar setores e leitos, as vagas da escala e convidar pessoas."
+        descricao="As unidades da sua secretaria. Abra uma unidade para ver a ficha, configurar setores e leitos, montar a escala e cuidar das pessoas."
         className="mb-0"
       />
       <RedeSecretaria modo="secretaria" />

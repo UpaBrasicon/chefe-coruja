@@ -60,6 +60,7 @@ const OrganizacaoGrupo = lazy(() => import('@/pages/grupos/OrganizacaoGrupo'))
 const UnidadeGrupo = lazy(() => import('@/pages/grupos/UnidadeGrupo'))
 const EscalaGrupo = lazy(() => import('@/pages/grupos/EscalaGrupo'))
 const SecretariaGrupo = lazy(() => import('@/pages/grupos/SecretariaGrupo'))
+const IndicadoresSecretaria = lazy(() => import('@/pages/secretaria/IndicadoresSecretaria'))
 const AgendaGrupo = lazy(() => import('@/pages/grupos/AgendaGrupo'))
 const PlantaoHome = lazy(() => import('@/pages/plantao/PlantaoHome'))
 const PlantaoSectionHome = lazy(() => import('@/pages/plantao/PlantaoSectionHome'))
@@ -464,6 +465,7 @@ export default function App() {
                           unidades da secretaria e as vagas da escala (o banco confere a secretaria). */}
                       <Route element={<RequireRole papeis={['gestor_secretaria']} />}>
                         <Route path="/secretaria" element={<SecretariaGrupo />} />
+                        <Route path="/secretaria/indicadores" element={<IndicadoresSecretaria />} />
                       </Route>
                       <Route element={<RequireRole papeis={['gestor', 'admin', 'gestor_secretaria']} />}>
                         <Route path="/unidade" element={<UnidadeGrupo />} />

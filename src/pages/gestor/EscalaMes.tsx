@@ -70,6 +70,10 @@ export function EscalaMes() {
   const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const ehGestor = papelAtivo === 'gestor'
+  // perfil Gestor da secretaria (RT, 24/11/2026): monta o mês da unidade dele,
+  // escala com nome, marca vaga e publica (o banco confere secretaria_gere_unidade).
+  // Os pedidos e os plantões sem categoria seguem do gestor da unidade.
+  const podeMontar = ehGestor || papelAtivo === 'gestor_secretaria'
   const qc = useQueryClient()
   const [, setSearchParams] = useSearchParams()
   const hoje = hojeSP()
@@ -96,7 +100,7 @@ export function EscalaMes() {
     // prefixo 'escala-plantao-mes': a Escala também invalida essa chave ao
     // escalar, remover ou gerar o mês da fixa, e o calendário acompanha
     queryKey: ['escala-plantao-mes', 'gestor', unidadeId, mes],
-    enabled: !!unidadeId && ehGestor,
+    enabled: !!unidadeId && podeMontar,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('escala_mes_gestor', { p_unidade: unidadeId!, p_ano: ano, p_mes: mesNum })
       if (error) throw error
@@ -105,7 +109,7 @@ export function EscalaMes() {
   })
   const profissionais = useQuery({
     queryKey: ['escala-profissionais', unidadeId],
-    enabled: !!unidadeId && ehGestor && !!escalar && modo === 'escalar',
+    enabled: !!unidadeId && podeMontar && !!escalar && modo === 'escalar',
     queryFn: async () => {
       const { data, error } = await supabase.rpc('profissionais_da_unidade', { p_unidade: unidadeId! })
       if (error) throw error
@@ -117,7 +121,7 @@ export function EscalaMes() {
   const solicitacoes = useSolicitacoesEscala(unidadeId, ehGestor)
   const candidaturas = useCandidaturasEscala(unidadeId, ehGestor)
   const trocas = useTrocasEscala(unidadeId, ehGestor)
-  if (!ehGestor) return null
+  if (!podeMontar) return null
   const FAIXA = (codigo: string): [string, string] => {
     const t = turnos.todos.find((x) => x.codigo === codigo) ?? TURNOS_PADRAO.find((x) => x.codigo === codigo)
     return [rotuloTurno(codigo, turnos.todos), t ? horarioDoTurno(t) : '']
@@ -225,7 +229,7 @@ export function EscalaMes() {
         </div>
       )}
       {/* M7: plantões do mês sem categoria, com o atalho para definir */}
-      {unidadeId && <SemCategoria unidadeId={unidadeId} grupos={agruparSemCategoria(m?.faixas ?? [])} onFeito={recarregar} />}
+      {unidadeId && ehGestor && <SemCategoria unidadeId={unidadeId} grupos={agruparSemCategoria(m?.faixas ?? [])} onFeito={recarregar} />}
 
       <section aria-label="Escala do mês" className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex min-w-0 flex-col border-fio md:border-r">

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { PaginaComLista, type SecaoDef } from '@/components/monitor/PaginaComLista'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import type { QuemMuda } from '@/lib/secretariaCompleta'
 
 const Setores = lazy(() => import('@/pages/Setores').then((m) => ({ default: m.Setores })))
 const Configuracao = lazy(() => import('@/pages/Configuracao'))
@@ -14,6 +15,7 @@ const Convites = lazy(() => import('@/pages/gestor/Convites'))
 const SegurancaEquipe = lazy(() => import('@/pages/gestor/SegurancaEquipe'))
 const ModelosTermoUnidade = lazy(() => import('@/components/termo/ModelosTermoUnidade'))
 const LiberacaoRede = lazy(() => import('@/components/rede/LiberacaoRede'))
+const PessoasDaUnidade = lazy(() => import('@/pages/gestor/PessoasDaUnidade'))
 
 /**
  * Unidade — a configuração da unidade.
@@ -34,8 +36,18 @@ export default function UnidadeGrupo() {
   // que mostra paciente), convites e configurações da unidade escolhida no topo.
   // Quem também é gestor da unidade fica com as seções do gestor.
   const daSecretaria = papelAtivo === 'gestor_secretaria' && !gestor
+  // Pessoas da unidade (RT, 24/11/2026): trocar, pôr e tirar papel sem convite
+  // novo; o banco confere quem pode (definir_papeis_na_unidade)
+  const quemMuda: QuemMuda | null = daSecretaria ? 'secretaria'
+    : papeisDaUnidade.includes('admin') ? 'admin'
+    : gestor ? 'gestor'
+    : null
+  const secaoPessoas: SecaoDef[] = quemMuda
+    ? [{ valor: 'pessoas', rotulo: 'Pessoas', grupo: 'Equipe', conteudo: () => <PessoasDaUnidade quem={quemMuda} /> }]
+    : []
   const secoes: SecaoDef[] = daSecretaria ? [
     { valor: 'setores', rotulo: 'Setores e leitos', grupo: 'Leitos', conteudo: () => <Setores embutido /> },
+    ...secaoPessoas,
     { valor: 'convites', rotulo: 'Convites', grupo: 'Equipe', conteudo: () => <Convites /> },
     { valor: 'configuracoes', rotulo: 'Configurações', grupo: 'Atendimento', conteudo: () => <Configuracao embutido /> },
   ] : [
@@ -53,6 +65,7 @@ export default function UnidadeGrupo() {
           ),
         }]
       : []),
+    ...secaoPessoas,
     // Convites do primeiro acesso: gestor da unidade e admin da rede (o banco confere).
     ...(gestor || papeisDaUnidade.includes('admin')
       ? [{ valor: 'convites', rotulo: 'Convites', grupo: 'Equipe', conteudo: () => <Convites /> }]

@@ -269,6 +269,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/secretaria', rotulo: 'Rede', icone: Network, exato: true },
     { to: '/unidade', rotulo: 'Unidades', icone: Building2, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
+    // as unidades da secretaria lado a lado (migration 20270421000024)
+    { to: '/secretaria/indicadores', rotulo: 'Indicadores', icone: BarChart3, exato: true },
   ],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: Building2, exato: true },

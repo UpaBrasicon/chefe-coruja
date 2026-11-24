@@ -657,7 +657,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Dados**
 - nome, e-mail, conselho e registro
 - papel em cada unidade
-- designação para uma secretaria de saúde (e-mail e quem designou)
+- designação para uma secretaria de saúde (e-mail, quem designou e quando o aviso por e-mail saiu)
 - eventos do segundo fator e dispositivos confiáveis
 - convites e aceite dos termos
 - endereço profissional do médico (LG8)

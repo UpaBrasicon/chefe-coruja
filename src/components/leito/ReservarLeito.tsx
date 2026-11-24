@@ -25,16 +25,18 @@ const HORAS_RESERVA = [1, 2, 4, 8] as const
 
 type Achado = { id: string; nome: string; nome_social: string | null; data_nascimento: string | null }
 
-export function ReservarLeito({ aberto, onFechar, leitoId, identificador, unidadeId, invalidar }: {
+export function ReservarLeito({ aberto, onFechar, leitoId, identificador, unidadeId, invalidar, soPorMotivo = false }: {
   aberto: boolean
   onFechar: () => void
   leitoId: string
   identificador: string
   unidadeId: string
   invalidar: unknown[][]
+  /** perfil Gestor da secretaria (sem paciente): só a reserva por motivo */
+  soPorMotivo?: boolean
 }) {
   const queryClient = useQueryClient()
-  const [modo, setModo] = React.useState<'paciente' | 'motivo'>('paciente')
+  const [modo, setModo] = React.useState<'paciente' | 'motivo'>(soPorMotivo ? 'motivo' : 'paciente')
   const [busca, setBusca] = React.useState('')
   const [paciente, setPaciente] = React.useState<Achado | null>(null)
   const [motivo, setMotivo] = React.useState('')
@@ -79,10 +81,12 @@ export function ReservarLeito({ aberto, onFechar, leitoId, identificador, unidad
             O leito fica guardado e só o paciente da reserva pode ocupá-lo. Passado o prazo, a reserva expira e o leito volta a livre.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex gap-2">
-          <Button size="sm" variant={modo === 'paciente' ? 'default' : 'outline'} onClick={() => { setModo('paciente'); setErro(null) }}>Para um paciente</Button>
-          <Button size="sm" variant={modo === 'motivo' ? 'default' : 'outline'} onClick={() => { setModo('motivo'); setErro(null) }}>Por motivo</Button>
-        </div>
+        {!soPorMotivo && (
+          <div className="flex gap-2">
+            <Button size="sm" variant={modo === 'paciente' ? 'default' : 'outline'} onClick={() => { setModo('paciente'); setErro(null) }}>Para um paciente</Button>
+            <Button size="sm" variant={modo === 'motivo' ? 'default' : 'outline'} onClick={() => { setModo('motivo'); setErro(null) }}>Por motivo</Button>
+          </div>
+        )}
         {modo === 'paciente' ? (
           paciente ? (
             <div className="flex items-center justify-between rounded-controle border border-fio px-3 py-2 text-apoio">
