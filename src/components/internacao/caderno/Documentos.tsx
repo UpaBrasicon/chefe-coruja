@@ -4,7 +4,9 @@
 import * as React from 'react'
 
 import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { GavetaAlergias, SeloAlergia } from '@/components/paciente/AlergiasEventos'
+import { negaVigente, useAlergias } from '@/components/paciente/useAlergias'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { PedidoExamesLeito } from '@/components/internacao/documentos/PedidoExamesLeito'
 import { FichaAdmissao } from '@/components/internacao/documentos/FichaAdmissao'
@@ -25,27 +27,39 @@ type Doc = ReturnType<typeof useDocumentosLeito>
  * agora é gravado (o mesmo que a prescrição exige); antes era rascunho do
  * navegador, e o médico escrevia aqui e a prescrição dizia "falta peso".
  */
-function PesoDieta({ doc }: { doc: Doc }) {
+function PesoDieta({ doc, nome }: { doc: Doc; nome: string }) {
   const pacienteId = doc.dadosPaciente.paciente_id
   const peso = useFaltaParaPrescrever(pacienteId)
+  const alergias = useAlergias(pacienteId)
   const [erro, setErro] = React.useState<string | null>(null)
+  const [pesando, setPesando] = React.useState(false)
+  const [gaveta, setGaveta] = React.useState(false)
+  // PR2 (RT, 24/11/2026): alergias, peso (com a origem e a hora) e dieta numa linha, sempre à vista ao rolar
+  const semRegistro = alergias.isSuccess && alergias.data?.estado !== 'tem' && alergias.data?.estado !== 'nega' && !negaVigente(alergias.data)
   return (
-    <div className="flex flex-col gap-2 rounded-container border border-fio bg-campo px-4 py-3">
-      <div className="flex flex-wrap items-end gap-3">
-        {pacienteId && <CampoPeso id="leito-peso" pacienteId={pacienteId} aoErro={setErro} aoGravar={() => undefined} />}
-        <div className="flex min-w-48 flex-col gap-1">
-          <Label htmlFor="leito-dieta">Dieta</Label>
-          <CampoSelecao id="leito-dieta" value={doc.dados.dieta} onChange={(e) => doc.atualizar({ dieta: e.target.value })}
-            className="bg-superficie text-controle">
+    <div className="sticky top-0 z-20 flex flex-col gap-2 rounded-container border border-fio bg-superficie px-3 py-2 shadow-sm">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {pacienteId && (
+          <span className="flex items-center gap-2">
+            <SeloAlergia pacienteId={pacienteId} onClick={() => setGaveta(true)} />
+            {semRegistro && <Button size="xs" variant="outline" onClick={() => setGaveta(true)}>Registrar</Button>}
+          </span>
+        )}
+        <span className="flex items-center gap-2 text-apoio text-tinta-apoio">
+          {textoDoPeso(peso.data) ?? 'Sem peso deste atendimento.'}
+          <Button size="xs" variant="outline" aria-expanded={pesando} onClick={() => setPesando(!pesando)}>{pesando ? 'Fechar' : 'Registrar peso'}</Button>
+        </span>
+        <label className="ml-auto flex items-center gap-2 text-apoio text-tinta-apoio">
+          Dieta
+          <CampoSelecao id="leito-dieta" tamanho="compacto" value={doc.dados.dieta} onChange={(e) => doc.atualizar({ dieta: e.target.value })}
+            className="bg-superficie" title={`Rascunho deste leito${doc.salvoEm ? `, salvo às ${doc.salvoEm}` : ''}: só neste navegador, por 12 horas.`}>
             {DIETAS.map((d) => <option key={d} value={d}>{d}</option>)}
           </CampoSelecao>
-        </div>
+        </label>
       </div>
-      <span className="text-apoio text-tinta-apoio">{textoDoPeso(peso.data) ?? 'Sem peso registrado neste atendimento.'}</span>
+      {pesando && pacienteId && <CampoPeso id="leito-peso" pacienteId={pacienteId} aoErro={setErro} aoGravar={() => setPesando(false)} />}
       {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
-      <span className="text-rotulo text-tinta-sussurro">
-        Dieta: {doc.salvoEm ? `rascunho deste leito salvo às ${doc.salvoEm}` : 'rascunho deste leito'} · só neste navegador, por 12 horas.
-      </span>
+      {pacienteId && <GavetaAlergias pacienteId={pacienteId} nome={nome} aberta={gaveta} onAbertaChange={setGaveta} />}
     </div>
   )
 }
@@ -57,7 +71,7 @@ export function AbaAdmissao({ doc, internacaoId }: { doc: Doc; internacaoId: str
 export function AbaPrescricao({ doc }: { doc: Doc }) {
   return (
     <div className="flex flex-col gap-3">
-      <PesoDieta doc={doc} />
+      <PesoDieta doc={doc} nome={doc.dadosPaciente.nome} />
       <PrescricaoTab dados={doc.dadosPaciente} pacienteId={doc.dadosPaciente.paciente_id} />
     </div>
   )
