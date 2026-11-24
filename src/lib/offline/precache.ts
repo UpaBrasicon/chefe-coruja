@@ -5,6 +5,9 @@
 
 export const FONTES_SEM_CONEXAO = [
   'src/pages/Login.tsx',
+  // F1 (Desempenho): a casca logada saiu do pacote de entrada e virou pedaço
+  // próprio; sem ela na lista, a recarga sem conexão das telas abaixo quebraria
+  'src/components/AppShell.tsx',
   'src/pages/enfermagem/InicioEnfermagem.tsx',
   'src/pages/enfermagem/Triagem.tsx',
   'src/pages/enfermagem/ProntoSocorroEnfermagem.tsx',

@@ -10,15 +10,20 @@ import { RequireSuperAdmin } from '@/routes/RequireSuperAdmin'
 import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
 import { destinoEscala } from '@/lib/rotaEscala'
-import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
-import { AppShell } from '@/components/AppShell'
+import { ROTA_SOBRE_MODULO } from '@/content/rotaSobreModulo'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { ErroForcado } from '@/components/ErroForcado'
 import { Spinner } from '@/components/ui/spinner'
 import { ligarConsultasSemConexao } from '@/lib/offline/ligarConsultas'
 
+// F1 (Desempenho, pedidos 31, 6 e 10): a casca logada (com o catálogo da
+// Central, o chat e a escala) não entra mais no pacote de entrada, que todo
+// mundo baixa, inclusive no login. O vite.config.ts deixa o pedaço dela em
+// prefetch no index.html, para quem já está logado não esperar uma ida a mais.
+const AppShell = lazy(() => import('@/components/AppShell').then((m) => ({ default: m.AppShell })))
+
 // ── Telas fora do shell: carregadas sob demanda ───────────────────────────────
-const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
+const Login =lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })))
 const RecuperarSenha = lazy(() => import('@/pages/RecuperarSenha'))
 const Cadastro = lazy(() => import('@/pages/Cadastro').then((m) => ({ default: m.Cadastro })))
 const PapelEmPreparo = lazy(() => import('@/pages/PapelEmPreparo'))

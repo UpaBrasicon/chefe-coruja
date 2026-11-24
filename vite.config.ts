@@ -5,6 +5,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { listaPrecache } from './src/lib/offline/precache'
+import { tagsPreCarga } from './src/lib/preCargaLogin'
 
 // Rótulo de versão para o relato de erros do cliente (onda 12): commit curto do
 // deploy, ou a versão do package.json quando não houver git. Tudo protegido —
@@ -46,6 +47,23 @@ function precacheSemConexao(): Plugin {
   }
 }
 
+// F1 da trilha Desempenho (pedidos 31, 6 e 10; P2 = A): o pedaço do Login e a
+// fonte do texto descem junto com o pacote de entrada; a casca logada fica em
+// prefetch (src/lib/preCargaLogin.ts). Só muda o <head>, nada na tela.
+function preCargaLogin(): Plugin {
+  return {
+    name: 'pre-carga-login',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_, ctx) {
+        if (!ctx.bundle) return []
+        return tagsPreCarga(ctx.bundle as unknown as Parameters<typeof tagsPreCarga>[0])
+      },
+    },
+  }
+}
+
 function cspDoAmbiente(mode: string): Plugin {
   return {
     name: 'csp-do-ambiente',
@@ -77,7 +95,7 @@ export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSAO__: JSON.stringify(versaoApp()),
   },
-  plugins: [react(), tailwindcss(), cspDoAmbiente(mode), precacheSemConexao()],
+  plugins: [react(), tailwindcss(), cspDoAmbiente(mode), precacheSemConexao(), preCargaLogin()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -103,7 +121,6 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@base-ui')) return 'vendor-base-ui'
           if (id.includes('node_modules/cmdk')) return 'vendor-cmdk'
           if (id.includes('node_modules/lucide-react')) return 'vendor-lucide'
-          if (id.includes('node_modules/framer-motion')) return 'vendor-motion'
           if (id.includes('node_modules/react-hook-form')) return 'vendor-forms'
           if (id.includes('node_modules/zod')) return 'vendor-zod'
           if (id.includes('node_modules/@hookform')) return 'vendor-forms'
