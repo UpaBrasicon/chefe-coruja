@@ -88,6 +88,17 @@ export const FORMULARIO_VAZIO: Formulario = {
   quadro_clinico: '', tempo_evolucao: '', sinais_vitais: '', exames: '', medicacoes: '', hipotese: '', telefone_contato: '',
 }
 
+/**
+ * RG1 (revisão da Internação, RT 24/11/2026): o caráter vem da prioridade
+ * proposta — 1 e 2 são urgência, 3 e 4 eletivo. Sem classificação, o
+ * solicitante escolhe (null).
+ */
+export function caraterDaPrioridade(p: Prioridade | '' | null | undefined): Carater | null {
+  if (p === 'emergencia' || p === 'urgencia') return 'urgencia'
+  if (p === 'prioritaria' || p === 'eletiva') return 'eletivo'
+  return null
+}
+
 /** O que falta preencher, na ordem do formulário (vazio = pode enviar). */
 export function faltasFormulario(f: Formulario, ctx: { neonato?: boolean; semDocumento?: boolean; naoIdentificado?: boolean } = {}): string[] {
   const faltas: string[] = []

@@ -542,7 +542,13 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {/* ponto 13: dentro da unidade ou para outra unidade (SMS003a ligado à internação) */}
         {atual === 'encaminhamento' && <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''} />}
-        {atual === 'regulacao' && <AbaRegulacaoPaciente pacienteId={pacienteId} />}
+        {atual === 'regulacao' && (
+          <>
+            <AbaRegulacaoPaciente pacienteId={pacienteId} />
+            {/* Fase 4, tarefa 5: as regulações do paciente na rede (antes, a sub-aba Regulações do Resumo) */}
+            <GrupoRecolhido titulo="Regulações deste paciente na rede"><HistoricoRegulacao pacienteId={pacienteId} /></GrupoRecolhido>
+          </>
+        )}
         {atual === 'parecer' && <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'termo' && <AbaTermoConsentimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'paliativos' && <AbaCuidadosPaliativos pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} podeRegistrar={escreve} />}
