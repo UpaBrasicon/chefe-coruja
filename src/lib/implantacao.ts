@@ -65,3 +65,23 @@ export function faltamParaAceite(itens: Item[], etapa: 'virada' | 'encerramento'
   const fases: Fase[] = etapa === 'virada' ? ['preparacao', 'virada'] : ['preparacao', 'virada', 'assistida', 'encerramento']
   return itens.filter((i) => i.obrigatorio && !i.ok && fases.includes(i.fase))
 }
+
+/**
+ * Fase em que a unidade está pelo calendário (revisão do admin e do gestor,
+ * RT 24/11/2026, faixa de fases): antes do D0 é preparação; no D0, virada;
+ * de D+1 a D+14, operação assistida; depois, encerramento. Implantação
+ * encerrada fica no encerramento.
+ */
+export function faseDoDia(d0: string, hoje: string, encerrada = false): Fase {
+  if (encerrada) return 'encerramento'
+  const n = diasEntre(d0, hoje)
+  return n < 0 ? 'preparacao' : n === 0 ? 'virada' : n <= 14 ? 'assistida' : 'encerramento'
+}
+
+/** "faltam 12 dias para a virada", "a virada é hoje", "virada há 3 dias". */
+export function contagemVirada(d0: string, hoje: string): string {
+  const n = diasEntre(hoje, d0)
+  if (n === 0) return 'a virada é hoje'
+  if (n > 0) return n === 1 ? 'falta 1 dia para a virada' : `faltam ${n} dias para a virada`
+  return -n === 1 ? 'virada foi ontem' : `virada há ${-n} dias`
+}

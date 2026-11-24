@@ -33,3 +33,16 @@ test('implantação: resumo por fase e o que falta para o aceite', () => {
   assert.deepEqual(faltamParaAceite(itens, 'virada').map((i) => i.codigo), ['P02', 'V01'])
   assert.deepEqual(faltamParaAceite(itens, 'encerramento').map((i) => i.codigo), ['P02', 'V01', 'E01'])
 })
+
+test('fase do dia pelo calendário e a contagem até a virada', async () => {
+  const { faseDoDia, contagemVirada } = await import('./implantacao.ts')
+  assert.equal(faseDoDia('2026-12-10', '2026-12-01'), 'preparacao')
+  assert.equal(faseDoDia('2026-12-10', '2026-12-10'), 'virada')
+  assert.equal(faseDoDia('2026-12-10', '2026-12-24'), 'assistida')
+  assert.equal(faseDoDia('2026-12-10', '2026-12-25'), 'encerramento')
+  assert.equal(faseDoDia('2026-12-10', '2026-12-01', true), 'encerramento')
+  assert.equal(contagemVirada('2026-12-10', '2026-12-01'), 'faltam 9 dias para a virada')
+  assert.equal(contagemVirada('2026-12-10', '2026-12-09'), 'falta 1 dia para a virada')
+  assert.equal(contagemVirada('2026-12-10', '2026-12-10'), 'a virada é hoje')
+  assert.equal(contagemVirada('2026-12-10', '2026-12-13'), 'virada há 3 dias')
+})

@@ -29,6 +29,7 @@ import {
 } from '@/lib/implantacao'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { FaixaFasesImplantacao } from '@/components/gestor/FaixaFasesImplantacao'
 
 type Painel = {
   sou_implantador: boolean
@@ -95,6 +96,8 @@ export default function Implantacao() {
       ) : (
         <>
           <Cabecalho p={p as Required<Painel>} unidadeId={unidadeId} />
+          {/* revisão (RT, 24/11/2026, M1): a faixa de fases com o progresso, no topo */}
+          <FaixaFasesImplantacao itens={(p as Required<Painel>).itens} d0={imp.d0} hoje={hoje()} encerrada={imp.situacao === 'encerrada'} />
           {FASES.map((f) => <FaseCard key={f.fase} fase={f} p={p as Required<Painel>} unidadeId={unidadeId} />)}
           <Treinamento p={p as Required<Painel>} unidadeId={unidadeId} />
           <Aceites p={p as Required<Painel>} unidadeId={unidadeId} />
@@ -203,7 +206,7 @@ function FaseCard({ fase, p, unidadeId }: { fase: (typeof FASES)[number]; p: Req
   const r = resumoFase(p.itens, fase.fase)
   const imp = p.implantacao!
   return (
-    <Card>
+    <Card id={`fase-${fase.fase}`} className="scroll-mt-4">
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           {fase.rotulo} <span className="text-apoio font-normal text-tinta-sussurro">{fase.janela}</span>
