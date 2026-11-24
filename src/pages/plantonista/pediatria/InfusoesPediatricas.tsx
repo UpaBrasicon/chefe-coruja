@@ -104,7 +104,7 @@ export function InfusoesPediatricas() {
           <NumberField id="inf-ped-peso" label="Peso" unit="kg" value={peso} onChange={setPeso} min={0} step={0.1} />
           <NumberField id="inf-ped-anos" label="Idade (opcional)" unit="anos completos" value={anos} onChange={setAnos} min={0} step={1} />
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="inf-ped-droga">Medicamento</Label>
+            <Label htmlFor="inf-ped-droga" className="flex-1 items-end leading-snug">Medicamento</Label>
             <CampoSelecao
               id="inf-ped-droga"
               value={i.id}
@@ -153,12 +153,12 @@ export function InfusoesPediatricas() {
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="inf-ped-dose">Dose ({u}) → velocidade</Label>
+                    <Label htmlFor="inf-ped-dose" className="flex-1 items-end leading-snug">Dose ({u}) → velocidade</Label>
                     <Input id="inf-ped-dose" inputMode="decimal" value={dose} onChange={(e) => setDose(e.target.value)} />
                     <p className="tabular-nums">{falta ?? (vel === null ? '—' : <strong>{br(vel)} mL/h</strong>)}</p>
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="inf-ped-mlh">Velocidade na bomba (mL/h) → dose</Label>
+                    <Label htmlFor="inf-ped-mlh" className="flex-1 items-end leading-snug">Velocidade na bomba (mL/h) → dose</Label>
                     <Input id="inf-ped-mlh" inputMode="decimal" value={mlh} onChange={(e) => setMlh(e.target.value)} />
                     <p className="tabular-nums">{falta ?? (doseDaBomba === null ? '—' : <strong>{br(doseDaBomba, 3)} {u}</strong>)}</p>
                   </div>

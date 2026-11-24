@@ -105,7 +105,7 @@ export function AcessosCalibresAdulto() {
 
       <CampoPeso id="ace-peso" peso={peso} onChange={setPeso}>
         <div className="flex flex-col gap-1.5">
-          <Label>Tecido subcutâneo</Label>
+          <Label className="flex-1 items-end leading-snug">Tecido subcutâneo</Label>
           <Escolhas valor={subcut} opcoes={[['normal', 'Normal'], ['excesso', 'Em excesso']] as const} onChange={setSubcut} />
         </div>
       </CampoPeso>

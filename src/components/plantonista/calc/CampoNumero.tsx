@@ -52,9 +52,11 @@ export function CampoNumero({
   const invalido = lerNumeroDigitado(texto) === null
 
   return (
+    // rótulo (e selo) crescem e encostam embaixo: na grade, as caixas da mesma linha
+    // ficam na mesma altura mesmo com rótulo de duas linhas ou com o selo "da Central"
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <div className="flex flex-wrap items-center gap-2">
-        <Label htmlFor={idCampo}>{rotulo}</Label>
+      <div className="flex flex-1 flex-wrap items-end gap-2">
+        <Label htmlFor={idCampo} className="leading-snug">{rotulo}</Label>
         {selo}
       </div>
       <div className="relative">

@@ -393,7 +393,7 @@ export function secaoExibida(slug: string): SecaoExibida | undefined {
   const absorvidas = SECOES.filter((s) => SECOES_JUNTAS[s.slug] === base.slug)
   return {
     ...base,
-    tools: [base, ...absorvidas].flatMap((s) => s.tools.map((t) => ({ ...t, secao: s.slug }))),
+    tools: [base, ...absorvidas].flatMap((s) => s.tools.filter((t) => naCentral(s.slug, t.slug)).map((t) => ({ ...t, secao: s.slug }))),
   }
 }
 
@@ -407,3 +407,13 @@ export const SECOES_EXIBIDAS: SecaoExibida[] = (() => {
     return [secaoExibida(alvo)!]
   })
 })()
+
+/**
+ * Fora da Central do Médico (F6, RT em 24/11/2026): Decanulação e Mobilidade
+ * funcional são de fisioterapia e enfermagem e estão sem fonte declarada. Saem
+ * das listas, da busca e da página da seção; o código, o endereço
+ * (/plantonista/<seção>/<ferramenta>) e a chave de favorito continuam.
+ */
+export function naCentral(secao: string, slug: string): boolean {
+  return !['protocolos/decanulacao', 'ventilacao-mecanica/mobilidade-funcional'].includes(chaveFerramenta(secao, slug))
+}

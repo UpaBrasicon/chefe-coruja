@@ -58,7 +58,7 @@ export function HipoglicemiaAdulto() {
         <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
           <NumberField id="hipog-glic" label="Glicemia" unit="mg/dL" value={glic} onChange={setGlic} />
           <div className="flex flex-col gap-1.5">
-            <Label>Diabetes melito</Label>
+            <Label className="flex-1 items-end leading-snug">Diabetes melito</Label>
             <div className="flex gap-2">
               <Button type="button" size="sm" variant={dm ? 'default' : 'outline'} onClick={() => setDm(true)}>Com DM</Button>
               <Button type="button" size="sm" variant={!dm ? 'default' : 'outline'} onClick={() => setDm(false)}>Sem DM</Button>

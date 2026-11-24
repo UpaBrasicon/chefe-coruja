@@ -17,7 +17,7 @@ import { idadePediatrica, type Paciente } from './formatoIcr'
 export function Opcoes<T extends string | number | boolean>({ label, valor, opcoes, onChange }: { label: string; valor: T; opcoes: [T, string][]; onChange: (v: T) => void }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+      <Label className="flex-1 items-end leading-snug">{label}</Label>
       <div className="flex flex-wrap gap-2">
         {opcoes.map(([v, t]) => (
           <Button key={t} type="button" size="sm" variant={valor === v ? 'default' : 'outline'} onClick={() => onChange(v)}>

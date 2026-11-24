@@ -140,13 +140,13 @@ export function AnafilaxiaAdulto() {
         />
         <div className="grid gap-3 text-apoio md:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ana-mlmin">Velocidade do manual (mL/min) → bomba</Label>
+            <Label htmlFor="ana-mlmin" className="flex-1 items-end leading-snug">Velocidade do manual (mL/min) → bomba</Label>
             <Input id="ana-mlmin" inputMode="decimal" value={mlMin} onChange={(e) => setMlMin(e.target.value)} />
             <p className="tabular-nums">{porMin ? <><strong>{br(porMin.mlH)} mL/h</strong> · {br(porMin.ugMin)} µg/min</> : '—'}</p>
             {porMin?.foraDaFaixa && <p className="text-atencao">Fora da faixa de 0,5–2 mL/min do manual.</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ana-mlh">Velocidade na bomba (mL/h) → dose</Label>
+            <Label htmlFor="ana-mlh" className="flex-1 items-end leading-snug">Velocidade na bomba (mL/h) → dose</Label>
             <Input id="ana-mlh" inputMode="decimal" value={mlH} onChange={(e) => setMlH(e.target.value)} />
             <p className="tabular-nums">{porHora ? <><strong>{br(porHora.ugMin)} µg/min</strong> · {br(porHora.mlMin, 2)} mL/min</> : '—'}</p>
             {porHora?.foraDaFaixa && <p className="text-atencao">Fora da faixa de 30–120 mL/h (0,5–2 mL/min) do manual.</p>}

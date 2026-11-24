@@ -80,7 +80,7 @@ export function AgitacaoDeliriumAdulto() {
     >
       <CampoPeso id="agi-peso" peso={peso} onChange={setPeso}>
         <div className="flex flex-col gap-1.5">
-          <Label>Idoso</Label>
+          <Label className="flex-1 items-end leading-snug">Idoso</Label>
           <Escolhas valor={idoso} opcoes={[['nao', 'Não'], ['sim', 'Sim']] as const} onChange={setIdoso} />
         </div>
       </CampoPeso>
@@ -134,11 +134,11 @@ export function AgitacaoDeliriumAdulto() {
         ))}
         <div className="grid gap-3 text-apoio md:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <Label>Droga</Label>
+            <Label className="flex-1 items-end leading-snug">Droga</Label>
             <Escolhas valor={droga} opcoes={DELIRIUM_TABELA7.map((d) => [d.id, d.nome] as const)} onChange={setDroga} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="agi-doses">Doses já feitas (mg, separadas por espaço)</Label>
+            <Label htmlFor="agi-doses" className="flex-1 items-end leading-snug">Doses já feitas (mg, separadas por espaço)</Label>
             <Input id="agi-doses" inputMode="decimal" value={doses} onChange={(e) => setDoses(e.target.value)} />
             <p className="tabular-nums">
               {soma ? <>Somadas <strong>{br(soma.somaMg, 2)} mg</strong> · faltam {br(soma.restanteMg, 2)} mg para a máxima da Tabela 7</> : '—'}

@@ -37,7 +37,7 @@ export function Trecho({ texto, pagina, errata, recolher }: { texto: string; pag
 export function Escolha<T extends string>({ label, value, onChange, opcoes }: { label: string; value: T; onChange: (v: T) => void; opcoes: { value: T; label: string }[] }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+      <Label className="flex-1 items-end leading-snug">{label}</Label>
       <div className="flex flex-wrap gap-2">
         {opcoes.map((o) => (
           <Button key={o.value} type="button" size="sm" variant={value === o.value ? 'default' : 'outline'} aria-pressed={value === o.value} onClick={() => onChange(o.value)}>

@@ -11,7 +11,10 @@ import {
 import { textoFontes } from '@/clinico/ficha'
 import { passosDaFaixa } from '@/clinico/guia'
 import { guiaDa } from '@/clinico/guias'
+import { Chip } from '@/components/monitor/Pagina'
 import { NumberField } from '@/components/plantonista/NumberField'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { AbasResultado } from '@/components/plantonista/calc/AbasResultado'
 import { ID_ABAS_RESULTADO, type IdAba } from '@/components/plantonista/calc/contexto'
 import { ResumoFlutuante } from '@/components/plantonista/calc/ResumoFlutuante'
@@ -291,6 +294,51 @@ const ERRATAS_INTOXICACOES: string[] = [
 ]
 
 /**
+ * Escolha do agente (F3, RT em 24/11/2026): a página era longa demais. Os nomes
+ * são os títulos dos blocos; a busca também acha pelos nomes das linhas de cada
+ * bloco. Só organiza a tela: as linhas, as contas e o "Copiar" não mudam.
+ */
+type IdAgente = 'carvao' | 'paracetamol' | 'antidotos-fixos' | 'cardiotoxicos' | 'digoxina' | 'bicarbonato' | 'alcoois' | 'organofosforado' | 'metemoglobinemia' | 'cianeto'
+
+const AGENTES: { id: IdAgente; nome: string; busca: string[] }[] = [
+  { id: 'carvao', nome: 'Carvão ativado', busca: CARVAO_INDICACAO.map((i) => i.nome) },
+  { id: 'paracetamol', nome: 'Paracetamol e N-acetilcisteína', busca: ['NAC', 'acetilcisteína', KINGS_COLLEGE.nome] },
+  { id: 'antidotos-fixos', nome: 'Antídotos de dose fixa', busca: ['Flumazenil', 'Naloxona', FISOSTIGMINA.nome] },
+  { id: 'cardiotoxicos', nome: 'Betabloqueador e bloqueador de canal de cálcio', busca: ['cardiotóxicos', 'insulina em alta dose', 'cálcio'] },
+  { id: 'digoxina', nome: 'Digoxina — anticorpo antidigoxina', busca: [] },
+  { id: 'bicarbonato', nome: 'Bicarbonato de sódio 8,4%', busca: [...BICARBONATO_USOS.map((u) => u.nome), 'Lítio'] },
+  { id: 'alcoois', nome: 'Metanol e etilenoglicol', busca: ['álcoois tóxicos', 'fomepizol', 'etanol'] },
+  { id: 'organofosforado', nome: 'Organofosforados e carbamatos', busca: ['atropina', 'pralidoxima'] },
+  { id: 'metemoglobinemia', nome: 'Metemoglobinemia: azul de metileno', busca: [] },
+  { id: 'cianeto', nome: 'Cianeto e monóxido de carbono', busca: [MONOXIDO.nome, 'hidroxocobalamina', 'tiossulfato', 'nitrito'] },
+]
+
+const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+function EscolhaDoAgente({ agente, onAgente }: { agente: IdAgente | 'todos' | null; onAgente: (a: IdAgente | 'todos' | null) => void }) {
+  const [busca, setBusca] = useState('')
+  const q = semAcento(busca.trim())
+  const lista = q ? AGENTES.filter((a) => semAcento([a.nome, ...a.busca].join(' ')).includes(q)) : AGENTES
+  return (
+    <section aria-label="Agente da intoxicação" className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-4 py-4">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="intox-agente">Agente</Label>
+        <Input id="intox-agente" placeholder="Buscar: paracetamol, naloxona, tricíclicos, metanol…" value={busca}
+          onChange={(e) => setBusca(e.target.value)} className="max-w-md" />
+      </div>
+      <div role="radiogroup" aria-label="Agente" className="flex flex-wrap gap-2">
+        {lista.map((a) => (
+          <Chip key={a.id} variante="opcao" radio ativo={agente === a.id} onClick={() => onAgente(agente === a.id ? null : a.id)}>{a.nome}</Chip>
+        ))}
+        <Chip variante="opcao" radio ativo={agente === 'todos'} onClick={() => onAgente(agente === 'todos' ? null : 'todos')}>Ver todos</Chip>
+      </div>
+      {lista.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum agente com esse nome nesta ferramenta.</p>}
+      {agente === null && <p className="text-apoio text-tinta-sussurro">Escolha o agente para ver só o bloco dele, ou "Ver todos" para a página inteira.</p>}
+    </section>
+  )
+}
+
+/**
  * As contas por peso que as linhas mostram, em texto, para o "Copiar" (C3 = A).
  * As que dependem de outro dado da tela (massa ingerida, digoxinemia, atropina,
  * hidroxocobalamina já feita) ficam só na tela. Os valores pediátricos que o
@@ -355,6 +403,9 @@ function linhasDoPeso(peso: number): string[] {
 export function IntoxicacoesAntidotosAdulto() {
   const [peso, setPeso] = useState(0)
   const [aba, setAba] = useState<IdAba>('proximos')
+  // F3 (RT, 24/11/2026): o agente primeiro; "Ver todos" mostra a página inteira, como antes.
+  const [agente, setAgente] = useState<IdAgente | 'todos' | null>(null)
+  const mostra = (id: IdAgente) => agente === 'todos' || agente === id
   const guia = guiaDa(fichaIntoxicacoesAdulto.id)
   const temPeso = Number.isFinite(peso) && peso > 0
 
@@ -380,16 +431,17 @@ export function IntoxicacoesAntidotosAdulto() {
       ficha={fichaIntoxicacoesAdulto}
     >
       <CampoPeso id="intox-peso" peso={peso} onChange={setPeso} />
-      <Carvao peso={peso} />
-      <Paracetamol peso={peso} />
-      <AntidotosFixos />
-      <Cardiotoxicos peso={peso} />
-      <Digoxina peso={peso} />
-      <Bicarbonato peso={peso} />
-      <Alcoois peso={peso} />
-      <Organofosforado peso={peso} />
-      <Metemoglobinemia peso={peso} />
-      <Cianeto />
+      <EscolhaDoAgente agente={agente} onAgente={setAgente} />
+      {mostra('carvao') && <Carvao peso={peso} />}
+      {mostra('paracetamol') && <Paracetamol peso={peso} />}
+      {mostra('antidotos-fixos') && <AntidotosFixos />}
+      {mostra('cardiotoxicos') && <Cardiotoxicos peso={peso} />}
+      {mostra('digoxina') && <Digoxina peso={peso} />}
+      {mostra('bicarbonato') && <Bicarbonato peso={peso} />}
+      {mostra('alcoois') && <Alcoois peso={peso} />}
+      {mostra('organofosforado') && <Organofosforado peso={peso} />}
+      {mostra('metemoglobinemia') && <Metemoglobinemia peso={peso} />}
+      {mostra('cianeto') && <Cianeto />}
 
       <AbasResultado
         aba={aba}

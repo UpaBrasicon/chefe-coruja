@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 export function NumberField({
   id,
@@ -13,6 +14,7 @@ export function NumberField({
   normalMin,
   normalMax,
   normalLabel,
+  className,
 }: {
   id: string
   label: string
@@ -25,6 +27,7 @@ export function NumberField({
   normalMin?: number
   normalMax?: number
   normalLabel?: string
+  className?: string
 }) {
   const fora =
     value !== 0 &&
@@ -34,9 +37,14 @@ export function NumberField({
     (value < normalMin || value > normalMax)
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>
-        {label} {unit && <span className="text-rotulo text-tinta-sussurro">({unit})</span>}
+    // Campos desalinhados (RT, 24/11/2026): na grade, o rótulo cresce e encosta
+    // embaixo, então rótulo de uma ou de duas linhas deixa as caixas da mesma
+    // linha na mesma altura. A unidade não quebra no meio.
+    <div className={cn('flex flex-col gap-1.5', className)}>
+      <Label htmlFor={id} className="flex-1 items-end leading-snug">
+        <span>
+          {label} {unit && <span className="whitespace-nowrap text-rotulo text-tinta-sussurro">({unit})</span>}
+        </span>
       </Label>
       <Input
         id={id}

@@ -124,7 +124,7 @@ export function CadEhhAvaliacao() {
           <NumberField id="cad-hco3" label="Bicarbonato" unit="mEq/L" value={hco3} onChange={setHco3} step={0.1} />
           <NumberField id="cad-ph" label="pH (venoso ou arterial)" value={ph} onChange={setPh} step={0.01} />
           <div className="flex flex-col gap-1.5">
-            <Label>Cetonúria 2+ ou mais (se não tiver o β-hidroxibutirato)</Label>
+            <Label className="flex-1 items-end leading-snug">Cetonúria 2+ ou mais (se não tiver o β-hidroxibutirato)</Label>
             <div className="flex flex-wrap gap-2">
               {([[true, 'Positiva'], [false, 'Negativa'], [null, 'Não informada']] as const).map(([v, t]) => (
                 <Button key={t} type="button" size="sm" variant={cetose === v ? 'default' : 'outline'} onClick={() => setCetose(v)}>{t}</Button>
@@ -132,7 +132,7 @@ export function CadEhhAvaliacao() {
             </div>
           </div>
           <NumberField id="cad-bhb" label="β-hidroxibutirato (preferido)" unit="mmol/L" value={bhb} onChange={setBhb} step={0.1} />
-          <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={dmPrevio} onChange={(e) => setDmPrevio(e.target.checked)} /> Diabetes prévio</label>
+          <label className="flex min-h-9 items-center gap-2 self-end text-apoio"><input type="checkbox" className="size-4" checked={dmPrevio} onChange={(e) => setDmPrevio(e.target.checked)} /> Diabetes prévio</label>
         </CardContent>
       </Card>
 
