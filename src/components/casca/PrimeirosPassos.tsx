@@ -18,17 +18,18 @@ export function PrimeirosPassos({ rotasDoMenu, perfilId, papel }: { rotasDoMenu:
   // EN3 (revisão do perfil Enfermeiro, RT 24/11/2026): aberto só na primeira
   // visita; depois, uma linha recolhida com "Abrir". A visita fica guardada na
   // primeira vez que o cartão aparece para a pessoa e o papel.
-  const [aberto, setAberto] = React.useState<boolean | null>(null)
   const jaVisto = !!progresso.visto
+  const chave = perfilId && papel ? `${perfilId}:${papel}` : null
+  const [estado, setEstado] = React.useState<{ chave: string; aberto: boolean } | null>(null)
+  if (mostrar && chave && estado?.chave !== chave) setEstado({ chave, aberto: !jaVisto })
+  const setAberto = (aberto: boolean) => { if (chave) setEstado({ chave, aberto }) }
   React.useEffect(() => {
-    if (!mostrar || !perfilId || !papel || aberto !== null) return
-    setAberto(!jaVisto)
-    marcarVisto()
-  }, [mostrar, perfilId, papel, aberto, jaVisto, marcarVisto])
+    if (mostrar && chave && !jaVisto) marcarVisto()
+  }, [mostrar, chave, jaVisto, marcarVisto])
   if (!guia || !mostrar) return null
   const feitos = guia.passos.filter((x) => progresso.feitos.includes(x.id)).length
   const total = guia.passos.length
-  if (!(aberto ?? !jaVisto)) {
+  if (!(estado?.aberto ?? !jaVisto)) {
     return (
       <section aria-label="Primeiros passos" className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-cartao border border-fio bg-superficie px-4 py-2">
         <Compass className="size-4 text-acao" aria-hidden />

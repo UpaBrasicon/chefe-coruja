@@ -65,7 +65,7 @@ export default function Triagem() {
     queryKey: chaveFilaTriagem(unidadeAtiva?.unidade_id),
     enabled: !!unidadeAtiva,
     refetchInterval: 20_000,
-    queryFn: lerFilaTriagem,
+    queryFn: () => lerFilaTriagem<NaFila>(),
   })
 
   const espera = useQuery({

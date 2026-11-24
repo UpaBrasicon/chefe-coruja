@@ -4,7 +4,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { textoFontes } from '@/clinico/ficha'
 import { dppPelaDum, ehGestante, fichaNaegele, igPelaDum, TIPOS_GESTACAO, type Gestacao } from '@/clinico/triagem/gestacao'
-import { TituloCartao } from '@/components/monitor/Pagina'
 
 // Gestação na triagem: não entra no protocolo de classificação; vai junto do
 // registro. Com a DUM, IG e DPP saem pela regra de Naegele (o servidor refaz).
@@ -23,11 +22,9 @@ export function BlocoGestacao({ g, hoje, onChange }: { g: Gestacao; hoje: string
   )
 
   return (
-    <section className="flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px]">
-      <div className="flex flex-wrap items-baseline gap-2.5">
-        <TituloCartao className="mb-0">Avaliação · dados da gestação</TituloCartao>
-        <span className="text-rotulo text-tinta-sussurro">Não entra no protocolo de classificação; vai junto do registro da triagem.</span>
-      </div>
+    // TR1 (RT 24/11/2026): passo do formulário da classificação, antes da prioridade; o título é do passo
+    <div className="flex flex-col gap-3.5">
+      <span className="text-rotulo text-tinta-sussurro">Não entra no protocolo de classificação; vai junto do registro da triagem.</span>
       <div className="flex flex-wrap gap-[7px]" role="group" aria-label="Gestação">
         {TIPOS_GESTACAO.map((t) => (
           <Chip key={t.id} ativo={g.tipo === t.id} onClick={() => onChange({ tipo: g.tipo === t.id ? null : t.id })}>{t.rotulo}</Chip>
@@ -93,6 +90,6 @@ export function BlocoGestacao({ g, hoje, onChange }: { g: Gestacao; hoje: string
           <Textarea id="gest-obs" rows={2} value={g.observacao} onChange={(e) => onChange({ observacao: e.target.value })} />
         </div>
       )}
-    </section>
+    </div>
   )
 }

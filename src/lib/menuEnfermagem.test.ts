@@ -40,7 +40,7 @@ test('EN2: o número da Triagem e a lista saem da mesma leitura e da mesma chave
   const tela = readFileSync('src/pages/enfermagem/Triagem.tsx', 'utf8')
   for (const f of [notas, tela]) {
     assert.match(f, /queryKey: chaveFilaTriagem\(/)
-    assert.match(f, /queryFn: lerFilaTriagem/)
+    assert.match(f, /queryFn: (\(\) => )?lerFilaTriagem/)
   }
 })
 

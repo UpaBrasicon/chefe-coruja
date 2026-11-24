@@ -6,12 +6,14 @@
 import { ordemTriagem } from '@/domain/prioridade'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { supabase } from '@/lib/supabase'
-import type { NaFila } from '@/pages/enfermagem/triagem/comum'
+
+/** O mínimo que a ordem da fila usa; a tela tipa a linha inteira (NaFila). */
+type LinhaFila = { prioridades_legais: string[]; chegada_em: string }
 
 export const chaveFilaTriagem = (unidadeId: string | undefined) => ['triagem-fila', unidadeId] as const
 
 /** Quem espera triagem nos setores da escala em curso, na ordem da fila. */
-export async function lerFilaTriagem(): Promise<NaFila[]> {
+export async function lerFilaTriagem<T extends LinhaFila = LinhaFila>(): Promise<T[]> {
   const { data: ids, error: e1 } = await setoresNaEscalaAgora()
   if (e1) throw e1
   const setores = (Array.isArray(ids) ? ids : []) as string[]
@@ -22,5 +24,5 @@ export async function lerFilaTriagem(): Promise<NaFila[]> {
     .in('setor_id', setores)
     .eq('etapa', 'triagem')
   if (error) throw error
-  return ((data ?? []) as unknown as NaFila[]).sort(ordemTriagem)
+  return ((data ?? []) as unknown as T[]).sort(ordemTriagem)
 }

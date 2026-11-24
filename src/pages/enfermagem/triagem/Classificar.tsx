@@ -25,6 +25,7 @@ import { buscarFluxogramas, normalizar } from '@/clinico/triagem/buscaFluxograma
 import { ESCALAS_DOR, escalaPelaIdade, notaNumerica, registroDor, totalDor, type EscalaDor, type ItensDor } from '@/clinico/triagem/dor'
 import { erroGestacao, GESTACAO_VAZIA, registroGestacao, type Gestacao } from '@/clinico/triagem/gestacao'
 import { NOTA_SUBTRIAGEM_IDOSO } from '@/clinico/triagem/subtriagemIdoso'
+import { idDoPasso, notaIdosoVisivel, passosTriagem, type PassoTriagem } from '@/lib/triagemPassos'
 import { BlocoDor } from './Dor'
 import { BlocoGestacao } from './Gestacao'
 import { HistoricoClassificacoes } from './Historico'
@@ -65,6 +66,23 @@ const Secao = ({ children, className }: { children: React.ReactNode; className?:
   <section className={cn('flex flex-col gap-3.5 rounded-cartao border border-fio bg-superficie px-5 py-[18px]', className)}>{children}</section>
 )
 const Rotulo = ({ children }: { children: React.ReactNode }) => <span className="text-apoio font-medium text-grafite">{children}</span>
+
+// TR1/TR3 (revisão do perfil Enfermeiro, RT 24/11/2026): cada passo com o
+// número à esquerda; o número fica vermelho quando é ali que falta algo.
+function Passo({ passo, falta, children }: { passo: { id: PassoTriagem; n: number; titulo: string }; falta: string | null; children: React.ReactNode }) {
+  const id = idDoPasso(passo.id)
+  return (
+    <section id={id} aria-labelledby={`${id}-t`} className="flex scroll-mt-4 gap-3 border-t border-trilha pt-4 first:border-0 first:pt-0">
+      <span aria-hidden className={cn('grid size-6 shrink-0 place-items-center rounded-capsula border text-rotulo font-semibold tabular-nums',
+        falta ? 'border-critico bg-critico text-sobre-acao' : 'border-fio-forte text-tinta-apoio')}>{passo.n}</span>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <h3 id={`${id}-t`} className="pt-0.5 text-controle font-semibold text-tinta">{passo.titulo}</h3>
+        {falta && <p className="text-apoio text-pretty text-critico">{falta}</p>}
+        {children}
+      </div>
+    </section>
+  )
+}
 
 export function Classificar({ ep, onFim, corAtual = null }: {
   ep: NaFila; onFim: (aviso: string | null) => void
@@ -190,34 +208,42 @@ export function Classificar({ ep, onFim, corAtual = null }: {
     ? `Queixa respiratória: registre ${[semGlasgow ? 'Glasgow' : '', semGlicemia ? 'glicemia capilar' : ''].filter(Boolean).join(' e ')}. É lembrete, não impede salvar.`
     : ''
 
-  function erro(): string {
-    if (!cor) return 'Escolha a prioridade.'
-    if (!queixa.trim()) return 'Informe a queixa principal.'
-    if (!publico) return 'Sem data de nascimento: escolha adulto ou pediatria.'
-    if (!fluxo || !disc.trim()) return 'Escolha o fluxograma e o discriminador do protocolo.'
-    if (discLivre && disc.trim().length < 3) return 'Escreva o discriminador (mínimo de 3 letras).'
+  // as mesmas regras de antes, conferidas na ordem dos passos (TR1); cada uma diz o passo (TR3)
+  function erro(): { msg: string; passo: PassoTriagem } | null {
+    const em = (passo: PassoTriagem, msg: string) => ({ msg, passo })
+    if (!queixa.trim()) return em('queixa', 'Informe a queixa principal.')
+    if (!publico) return em('fluxograma', 'Sem data de nascimento: escolha adulto ou pediatria.')
+    if (!fluxo) return em('fluxograma', 'Escolha o fluxograma e o discriminador do protocolo.')
+    if (!disc.trim()) return em('discriminador', 'Escolha o fluxograma e o discriminador do protocolo.')
+    if (discLivre && disc.trim().length < 3) return em('discriminador', 'Escreva o discriminador (mínimo de 3 letras).')
     const falta = faltandoVitais(vitaisEfetivos, publico)
     if (falta.length) {
       const def = ESCALAS_DOR[escala]
-      return `Sinais vitais novos são obrigatórios. Falta: ${falta.map((v) => (v.k === VITAL_DOR && def.itens.length ? `dor (marque os ${def.itens.length} itens da ${def.nome})` : v.rotulo)).join(', ')}.`
+      return em('vitais', `Sinais vitais novos são obrigatórios. Falta: ${falta.map((v) => (v.k === VITAL_DOR && def.itens.length ? `dor (marque os ${def.itens.length} itens da ${def.nome})` : v.rotulo)).join(', ')}.`)
     }
-    if (escala === 'numerica' && notaNumerica(vitais[VITAL_DOR] ?? '') === null) return 'Dor pela escala numérica: número inteiro de 0 a 10.'
+    if (escala === 'numerica' && notaNumerica(vitais[VITAL_DOR] ?? '') === null) return em('vitais', 'Dor pela escala numérica: número inteiro de 0 a 10.')
     try {
       paraNumeros(vitaisEfetivos)
     } catch (e) {
-      return (e as Error).message
+      return em('vitais', (e as Error).message)
     }
-    if (aval.glasgow.trim() && !(/^\d{1,2}$/.test(aval.glasgow.trim()) && +aval.glasgow >= 3 && +aval.glasgow <= 15)) return 'Glasgow vai de 3 a 15.'
-    if (modoO2 === 'o2_suplementar' && litros.trim() && !(Number(litros.replace(',', '.')) > 0)) return 'Fluxo de O₂ deve ser um número maior que zero.'
+    if (aval.glasgow.trim() && !(/^\d{1,2}$/.test(aval.glasgow.trim()) && +aval.glasgow >= 3 && +aval.glasgow <= 15)) return em('vitais', 'Glasgow vai de 3 a 15.')
+    if (modoO2 === 'o2_suplementar' && litros.trim() && !(Number(litros.replace(',', '.')) > 0)) return em('vitais', 'Fluxo de O₂ deve ser um número maior que zero.')
     if (feminino) {
       const eg = erroGestacao(gest, hoje)
-      if (eg) return eg
+      if (eg) return em('gestacao', eg)
     }
-    if (reclass && motivo.trim().length < 10) return 'Informe o motivo da reclassificação (mínimo de 10 letras).'
-    if (baixou && justificativa.trim().length < 20) return 'Baixar a prioridade exige justificativa (mínimo de 20 letras).'
-    return ''
+    if (!cor) return em('prioridade', 'Escolha a prioridade.')
+    if (reclass && motivo.trim().length < 10) return em('prioridade', 'Informe o motivo da reclassificação (mínimo de 10 letras).')
+    if (baixou && justificativa.trim().length < 20) return em('prioridade', 'Baixar a prioridade exige justificativa (mínimo de 20 letras).')
+    return null
   }
   const erroAtual = erro()
+  const falta = tentou ? erroAtual : null
+  const passos = passosTriagem(feminino)
+  const passo = (id: PassoTriagem) => passos.find((p) => p.id === id)!
+  const faltaEm = (id: PassoTriagem) => (falta?.passo === id ? falta.msg : null)
+  const mostrarNotaIdoso = notaIdosoVisivel(anos)
 
   const salvar = useMutation({
     mutationFn: async () => {
@@ -254,7 +280,11 @@ export function Classificar({ ep, onFim, corAtual = null }: {
 
   const registrar = () => {
     setTentou(true)
-    if (!erroAtual) salvar.mutate()
+    if (!erroAtual) { salvar.mutate(); return }
+    // TR3: a tela vai até o passo que falta e põe o foco no primeiro campo dele
+    const el = document.getElementById(idDoPasso(erroAtual.passo))
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    el?.querySelector<HTMLElement>('input:not([readonly]), textarea, [role=radio], button')?.focus({ preventScroll: true })
   }
 
   const prios = rotulosPrioridade(ep.prioridades_legais)
@@ -262,8 +292,8 @@ export function Classificar({ ep, onFim, corAtual = null }: {
   return (
     <div className="flex flex-col gap-3.5">
       {recuperado && (
-        <div className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-[9px] text-apoio text-pretty text-atencao" role="status">
-          <AlertTriangle className="size-[15px] shrink-0" aria-hidden />
+        <div className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio text-pretty text-atencao" role="status">
+          <AlertTriangle className="size-4 shrink-0" aria-hidden />
           <span className="min-w-0 flex-1">
             Rascunho das {hora(new Date(recuperado.salvoEm).toISOString())} recuperado. Confira os sinais vitais antes de registrar.
           </span>
@@ -287,56 +317,32 @@ export function Classificar({ ep, onFim, corAtual = null }: {
             {prios.length > 0 && <span className="text-apoio text-tinta-apoio">Prioridade legal: {prios.join(', ')}</span>}
           </div>
         </div>
-        <p className="text-rotulo text-pretty text-tinta-sussurro">
-          {FONTE_CORES}. Fluxograma e discriminador: {fonteProtocolo ?? 'protocolo de classificação de risco da unidade'}. A classificação é da enfermagem; na espera, a enfermagem reclassifica; no atendimento, o médico.
-        </p>
       </Secao>
 
-      <Secao>
+      {/* TR1: o formulário na ordem do protocolo; a prioridade vem por último e nunca pré-selecionada */}
+      <Secao className="pb-0">
         <TituloCartao className="mb-0">{reclass ? 'Reclassificação na espera · enfermagem' : 'Classificação inicial · enfermagem'}</TituloCartao>
 
-        {/* prioridade: nunca pré-selecionada */}
-        <div className="flex flex-col gap-2">
-          <Rotulo>Prioridade *</Rotulo>
-          <div className="flex flex-wrap gap-[7px]" role="radiogroup" aria-label="Prioridade">
-            {CORES_RISCO.map((c) => (
-              // padrao-ok: escolha da cor da classificação, com as cores do protocolo; o Chip não tem esses tons
-              <button
-                key={c}
-                type="button"
-                role="radio"
-                aria-checked={cor === c}
-                data-on={cor === c}
-                onClick={() => setCor(c)}
-                className={cn('rounded-capsula border-2 bg-superficie px-[13px] py-1.5 text-apoio whitespace-nowrap text-grafite data-[on=true]:font-semibold', COR_BOTAO[c])}
-              >
-                {rotuloCor(c)} · {NIVEL_RISCO[c]}
-              </button>
-            ))}
+        <Passo passo={passo('queixa')} falta={faltaEm('queixa')}>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="t-queixa">Queixa principal *</Label>
+            <Input id="t-queixa" value={queixa} onChange={(e) => setQueixa(e.target.value)} />
+            {queixa.trim() !== ep.queixa.trim() && <span className="text-rotulo text-tinta-sussurro">Na recepção: {ep.queixa}</span>}
           </div>
-        </div>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5">
+              <Label htmlFor="t-com">Comorbidades</Label>
+              <Input id="t-com" placeholder="Hipertensão, diabetes…" value={aval.comorbidades} onChange={(e) => setAval((a) => ({ ...a, comorbidades: e.target.value }))} />
+            </div>
+            <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5">
+              <Label htmlFor="t-med">Medicações em uso contínuo</Label>
+              <Input id="t-med" placeholder="Losartana…" value={aval.medicacoes} onChange={(e) => setAval((a) => ({ ...a, medicacoes: e.target.value }))} />
+            </div>
+          </div>
+        </Passo>
 
-        {/* queixa e contexto */}
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="t-queixa">Queixa principal *</Label>
-          <Input id="t-queixa" value={queixa} onChange={(e) => setQueixa(e.target.value)} />
-          {queixa.trim() !== ep.queixa.trim() && <span className="text-rotulo text-tinta-sussurro">Na recepção: {ep.queixa}</span>}
-        </div>
-        <div className="flex flex-wrap gap-4">
-          <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5">
-            <Label htmlFor="t-com">Comorbidades</Label>
-            <Input id="t-com" placeholder="Hipertensão, diabetes…" value={aval.comorbidades} onChange={(e) => setAval((a) => ({ ...a, comorbidades: e.target.value }))} />
-          </div>
-          <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5">
-            <Label htmlFor="t-med">Medicações em uso contínuo</Label>
-            <Input id="t-med" placeholder="Losartana…" value={aval.medicacoes} onChange={(e) => setAval((a) => ({ ...a, medicacoes: e.target.value }))} />
-          </div>
-        </div>
-
-        {/* grupo e fluxograma */}
-        <div className="flex flex-col gap-2.5">
+        <Passo passo={passo('fluxograma')} falta={faltaEm('fluxograma')}>
           <div className="flex flex-wrap items-center gap-2.5">
-            <Rotulo>Fluxograma</Rotulo>
             <div className="flex flex-wrap gap-1.5" role="group" aria-label="Grupo do protocolo">
               <Chip ativo={publico === 'adulto'} onClick={() => trocarGrupo('adulto')}>Adulto</Chip>
               <Chip ativo={publico === 'pediatrico'} onClick={() => trocarGrupo('pediatrico')}>Pediatria</Chip>
@@ -368,107 +374,95 @@ export function Classificar({ ep, onFim, corAtual = null }: {
                       key={f.id}
                       aria-selected={f.id === fluxoId}
                       onClick={() => { if (f.id !== fluxoId) setDisc(''); setFluxoId(f.id); setBusca(f.nome); setListaAberta(false) }}
-                      className="flex w-full flex-col items-start gap-0.5 border-b border-trilha px-3.5 py-[9px] text-left last:border-b-0 hover:bg-campo"
+                      className="flex w-full flex-col items-start gap-0.5 border-b border-trilha px-3.5 py-2 text-left last:border-b-0 hover:bg-campo"
                     >
                       <span className="text-controle font-medium text-tinta">{f.nome}</span>
                       {f.inclui && <span className="text-rotulo text-pretty text-tinta-sussurro">Inclui: {f.inclui}</span>}
                     </OpcaoLista>
                   ))}
-                  {encontrados.length === 0 && <div className="px-3.5 py-[11px] text-apoio text-tinta-sussurro">Nenhum fluxograma com esse termo.</div>}
+                  {encontrados.length === 0 && <div className="px-3.5 py-3 text-apoio text-tinta-sussurro">Nenhum fluxograma com esse termo.</div>}
                 </div>
               )}
             </div>
           )}
-        </div>
+        </Passo>
 
-        {/* discriminador */}
-        {fluxo && (
-          <div className="flex flex-col gap-2.5">
-            <div className="flex flex-col gap-0.5">
-              <Rotulo>Discriminador · {fluxo.nome}</Rotulo>
-              {fluxo.inclui && <span className="text-rotulo text-pretty text-tinta-sussurro">Inclui: {fluxo.inclui}</span>}
-            </div>
-            <div className="overflow-hidden rounded-container border border-fio">
-              {CORES_RISCO.filter((c) => fluxo.discriminadores[c]?.length).map((c) => (
-                <div key={c}>
-                  <div className={cn('px-3.5 py-[7px] text-rotulo font-semibold', COR_CABECALHO[c])}>
-                    {rotuloCor(c)} · {NIVEL_RISCO[c]} · {textoAlvo(c)}
-                  </div>
-                  {fluxo.discriminadores[c]!.map(([texto, exp]) => {
-                    const on = disc.trim() === texto
-                    return (
-                      <BotaoLinha
-                        key={texto}
-                        variante="linha"
-                        aria-pressed={on}
-                        onClick={() => setDisc(texto)}
-                        className={cn('py-2.5', on ? 'bg-acao/10' : 'bg-superficie hover:bg-campo')}
-                      >
-                        {/* padrao-ok: marca de 18 px; o canto de controle a deixaria redonda */}
-                        <span className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-micro border', on ? 'border-acao bg-acao text-sobre-acao' : 'border-fio-forte bg-superficie text-transparent')}>
-                          <Check className="size-3" aria-hidden />
-                        </span>
-                        <span className="flex min-w-0 flex-col gap-0.5">
-                          <span className="text-controle font-medium text-tinta">{texto}</span>
-                          {exp && <span className="text-apoio leading-[1.45] text-pretty text-tinta-apoio">{exp.charAt(0).toUpperCase() + exp.slice(1)}</span>}
-                        </span>
-                      </BotaoLinha>
-                    )
-                  })}
-                </div>
-              ))}
-            </div>
-            <div className="relative flex flex-col gap-1.5">
-              <Label htmlFor="t-disc">Discriminador registrado *</Label>
-              <Input
-                id="t-disc"
-                placeholder="Da lista acima ou escrito pelo enfermeiro"
-                value={disc}
-                onFocus={() => setSugAberta(true)}
-                onBlur={() => setTimeout(() => setSugAberta(false), 150)}
-                onChange={(e) => { setDisc(e.target.value); setSugAberta(true) }}
-              />
-              {sugAberta && sugestoes.length > 0 && (
-                <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-1 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
-                  {sugestoes.map((s) => (
-                    <OpcaoLista key={s.texto}
-                      onClick={() => { setDisc(s.texto); setSugAberta(false) }}
-                      className="items-baseline gap-2.5 hover:bg-campo">
-                      <span className="text-controle text-tinta">{s.texto}</span>
-                      <span className="text-rotulo text-tinta-sussurro">{rotuloCor(s.cor)}</span>
-                    </OpcaoLista>
-                  ))}
-                </div>
-              )}
-              {discLivre && (
-                <span className="text-rotulo text-pretty text-tinta-sussurro">
-                  Escrito pelo enfermeiro: fica registrado como discriminador livre, sem cor de referência do protocolo.
-                </span>
-              )}
-            </div>
-            {discDaLista && (
-              <div className="flex items-start gap-2 rounded-controle bg-campo px-3 py-[9px] text-apoio text-pretty text-tinta-apoio">
-                <BookOpen className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                <span>
-                  Referência do protocolo para “{discDaLista.texto}”: {rotuloCor(discDaLista.cor)} · {NIVEL_RISCO[discDaLista.cor]}. A prioridade é decisão do enfermeiro.
-                </span>
+        <Passo passo={passo('discriminador')} falta={faltaEm('discriminador')}>
+          {!fluxo && <span className="text-apoio text-tinta-sussurro">Escolha o fluxograma para ver os discriminadores.</span>}
+          {fluxo && (
+            <>
+              <div className="flex flex-col gap-0.5">
+                <Rotulo>{fluxo.nome}</Rotulo>
+                {fluxo.inclui && <span className="text-rotulo text-pretty text-tinta-sussurro">Inclui: {fluxo.inclui}</span>}
               </div>
-            )}
-          </div>
-        )}
-        <span className="text-rotulo text-pretty text-tinta-sussurro">
-          Protocolo de apoio: {fonteProtocolo ?? 'protocolo de classificação de risco da unidade'}. O sistema não define a cor; a prioridade marcada é a do enfermeiro.
-        </span>
-        {/* nota fixa da revisão PubMed (H18): alerta, sem sugerir cor */}
-        <p role="note" className="rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-[9px] text-apoio text-pretty text-atencao">{NOTA_SUBTRIAGEM_IDOSO}</p>
+              <div className="overflow-hidden rounded-container border border-fio">
+                {CORES_RISCO.filter((c) => fluxo.discriminadores[c]?.length).map((c) => (
+                  <div key={c}>
+                    <div className={cn('px-3.5 py-2 text-rotulo font-semibold', COR_CABECALHO[c])}>
+                      {rotuloCor(c)} · {NIVEL_RISCO[c]} · {textoAlvo(c)}
+                    </div>
+                    {fluxo.discriminadores[c]!.map(([texto, exp]) => {
+                      const on = disc.trim() === texto
+                      return (
+                        <BotaoLinha
+                          key={texto}
+                          variante="linha"
+                          aria-pressed={on}
+                          onClick={() => setDisc(texto)}
+                          className={cn('py-2.5', on ? 'bg-acao/10' : 'bg-superficie hover:bg-campo')}
+                        >
+                          {/* padrao-ok: marca de 18 px; o canto de controle a deixaria redonda */}
+                          <span className={cn('mt-px grid size-[18px] shrink-0 place-items-center rounded-micro border', on ? 'border-acao bg-acao text-sobre-acao' : 'border-fio-forte bg-superficie text-transparent')}>
+                            <Check className="size-3" aria-hidden />
+                          </span>
+                          <span className="flex min-w-0 flex-col gap-0.5">
+                            <span className="text-controle font-medium text-tinta">{texto}</span>
+                            {exp && <span className="text-apoio leading-[1.45] text-pretty text-tinta-apoio">{exp.charAt(0).toUpperCase() + exp.slice(1)}</span>}
+                          </span>
+                        </BotaoLinha>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+              <div className="relative flex flex-col gap-1.5">
+                <Label htmlFor="t-disc">Discriminador registrado *</Label>
+                <Input
+                  id="t-disc"
+                  placeholder="Da lista acima ou escrito pelo enfermeiro"
+                  value={disc}
+                  onFocus={() => setSugAberta(true)}
+                  onBlur={() => setTimeout(() => setSugAberta(false), 150)}
+                  onChange={(e) => { setDisc(e.target.value); setSugAberta(true) }}
+                />
+                {sugAberta && sugestoes.length > 0 && (
+                  <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-1 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
+                    {sugestoes.map((s) => (
+                      <OpcaoLista key={s.texto}
+                        onClick={() => { setDisc(s.texto); setSugAberta(false) }}
+                        className="items-baseline gap-2.5 hover:bg-campo">
+                        <span className="text-controle text-tinta">{s.texto}</span>
+                        <span className="text-rotulo text-tinta-sussurro">{rotuloCor(s.cor)}</span>
+                      </OpcaoLista>
+                    ))}
+                  </div>
+                )}
+                {discLivre && (
+                  <span className="text-rotulo text-pretty text-tinta-sussurro">
+                    Escrito pelo enfermeiro: fica registrado como discriminador livre, sem cor de referência do protocolo.
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </Passo>
 
-        {/* sinais vitais */}
-        <div className="flex flex-col gap-2">
-          <Rotulo>
+        <Passo passo={passo('vitais')} falta={faltaEm('vitais')}>
+          <span className="text-rotulo text-tinta-sussurro">
             {publico === 'pediatrico'
-              ? 'Sinais vitais novos · obrigatórios, exceto glicemia, peso e PA (pediatria)'
-              : 'Sinais vitais novos · obrigatórios, exceto glicemia e peso'}
-          </Rotulo>
+              ? 'Sinais vitais novos, obrigatórios, exceto glicemia, peso e PA (pediatria)'
+              : 'Sinais vitais novos, obrigatórios, exceto glicemia e peso'}
+          </span>
           <CamposVitais
             publico={publico}
             valores={vitaisEfetivos}
@@ -506,10 +500,7 @@ export function Classificar({ ep, onFim, corAtual = null }: {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* SpO₂: onde foi medida */}
-        <div className="flex flex-col gap-3">
+          {/* SpO₂: onde foi medida */}
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex flex-col gap-1.5">
               <span className="text-rotulo text-tinta-apoio">SpO₂ medida em</span>
@@ -526,31 +517,74 @@ export function Classificar({ ep, onFim, corAtual = null }: {
             )}
           </div>
           {lembrete && (
-            <div className="flex items-start gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-[9px] text-apoio text-pretty text-atencao" role="note">
-              <AlertTriangle className="mt-0.5 size-[15px] shrink-0" aria-hidden />
+            <div className="flex items-start gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio text-pretty text-atencao" role="note">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
               <span>{lembrete}</span>
             </div>
           )}
-        </div>
+        </Passo>
 
-        {reclass && (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="t-motivo">Motivo da reclassificação *</Label>
-              <Textarea id="t-motivo" rows={2} placeholder="O que mudou na espera (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
-            </div>
-            {baixou && (
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="t-just" className="text-atencao">Baixar a prioridade: justificativa *</Label>
-                <Textarea id="t-just" rows={2} placeholder="Mínimo de 20 letras" value={justificativa} onChange={(e) => setJustificativa(e.target.value)} />
-              </div>
-            )}
-          </div>
+        {feminino && (
+          <Passo passo={passo('gestacao')} falta={faltaEm('gestacao')}>
+            <BlocoGestacao g={gest} hoje={hoje} onChange={(p) => setGest((g) => ({ ...g, ...p }))} />
+          </Passo>
         )}
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <Passo passo={passo('prioridade')} falta={faltaEm('prioridade')}>
+          {discDaLista && (
+            <div className="flex items-start gap-2 rounded-controle bg-campo px-3 py-2 text-apoio text-pretty text-tinta-apoio">
+              <BookOpen className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <span>
+                Referência do protocolo para “{discDaLista.texto}”: {rotuloCor(discDaLista.cor)} · {NIVEL_RISCO[discDaLista.cor]}. A prioridade é decisão do enfermeiro.
+              </span>
+            </div>
+          )}
+          {/* TR2: a nota do idoso, com o mesmo texto, só para 65 anos ou mais (H18; alerta, sem sugerir cor) */}
+          {mostrarNotaIdoso && (
+            <p role="note" className="rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio text-pretty text-atencao">{NOTA_SUBTRIAGEM_IDOSO}</p>
+          )}
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Prioridade">
+            {CORES_RISCO.map((c) => (
+              // padrao-ok: escolha da cor da classificação, com as cores do protocolo; o Chip não tem esses tons
+              <button
+                key={c}
+                type="button"
+                role="radio"
+                aria-checked={cor === c}
+                data-on={cor === c}
+                onClick={() => setCor(c)}
+                className={cn('rounded-capsula border-2 bg-superficie px-3 py-1.5 text-apoio whitespace-nowrap text-grafite data-[on=true]:font-semibold', COR_BOTAO[c])}
+              >
+                {rotuloCor(c)} · {NIVEL_RISCO[c]}
+              </button>
+            ))}
+          </div>
+          {!discDaLista && <span className="text-rotulo text-tinta-sussurro">O sistema não define a cor; a prioridade marcada é a do enfermeiro.</span>}
+          {reclass && (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="t-motivo">Motivo da reclassificação *</Label>
+                <Textarea id="t-motivo" rows={2} placeholder="O que mudou na espera (mínimo de 10 letras)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+              </div>
+              {baixou && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="t-just" className="text-atencao">Baixar a prioridade: justificativa *</Label>
+                  <Textarea id="t-just" rows={2} placeholder="Mínimo de 20 letras" value={justificativa} onChange={(e) => setJustificativa(e.target.value)} />
+                </div>
+              )}
+            </div>
+          )}
+        </Passo>
+
+        {/* TR2: as fontes numa linha só, no pé do formulário */}
+        <p className="text-rotulo text-pretty text-tinta-sussurro">
+          {FONTE_CORES}. Fluxograma e discriminador: {fonteProtocolo ?? 'protocolo de classificação de risco da unidade'}.
+        </p>
+
+        {/* TR3: Registrar fixo no pé; o que falta leva ao passo */}
+        <div className="sticky bottom-0 z-10 -mx-5 flex flex-wrap items-center gap-2.5 rounded-b-cartao border-t border-fio bg-superficie px-5 py-3">
           <span className="min-w-0 flex-[1_1_240px] text-apoio text-pretty text-critico" role="alert">
-            {tentou && erroAtual ? erroAtual : salvar.error ? (salvar.error as Error).message : ''}
+            {falta ? `Passo ${passo(falta.passo).n}, ${passo(falta.passo).titulo.toLowerCase()}: ${falta.msg}` : salvar.error ? (salvar.error as Error).message : ''}
           </span>
           <Button variant="outline" onClick={() => onFim(null)}>Cancelar</Button>
           <Button onClick={registrar} disabled={salvar.isPending}>
@@ -558,8 +592,6 @@ export function Classificar({ ep, onFim, corAtual = null }: {
           </Button>
         </div>
       </Secao>
-
-      {feminino && <BlocoGestacao g={gest} hoje={hoje} onChange={(p) => setGest((g) => ({ ...g, ...p }))} />}
 
       <HistoricoClassificacoes episodioId={ep.id} />
     </div>
