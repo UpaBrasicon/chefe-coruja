@@ -37,11 +37,14 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | 
   Farmácia: { icone: Pill, cor: 'text-critico bg-critico/10', acao: [
     { to: '/plantao/internacao/pacientes', rotulo: 'Abrir leitos' }, { to: '/atendimento', rotulo: 'Abrir atendimento' }] },
   Leitos: { icone: BedDouble, cor: 'text-conforme bg-conforme/10', acao: [
-    { to: '/nir', rotulo: 'Abrir NIR' }, { to: '/enfermagem/internacao', rotulo: 'Abrir internação' }, { to: '/internacao', rotulo: 'Abrir internação' }] },
+    { to: '/nir', rotulo: 'Abrir NIR' }, { to: '/nir/internacao', rotulo: 'Abrir internação' }, { to: '/enfermagem/internacao', rotulo: 'Abrir internação' }, { to: '/internacao', rotulo: 'Abrir internação' }] },
   Escala: { icone: CalendarClock, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver escala' } },
   Candidatura: { icone: Users, cor: 'text-tinta-apoio bg-trilha', acao: { to: '/agenda', rotulo: 'Ver vagas' } },
   Mensagem: { icone: MessageSquare, cor: 'text-tinta-apoio bg-trilha' },
-  Regulação: { icone: Waypoints, cor: 'text-acao bg-acao/10', acao: { to: '/regulacao', rotulo: 'Abrir Regulação' } },
+  // R2 (RT, 24/11/2026): o médico acompanha a regulação no Atendimento; o NIR, na Internação dele
+  Regulação: { icone: Waypoints, cor: 'text-acao bg-acao/10', acao: [
+    { to: '/regulacao', rotulo: 'Abrir Regulação' }, { to: '/atendimento?aba=regulacao', rotulo: 'Abrir regulação' },
+    { to: '/nir/internacao', rotulo: 'Abrir internação' }] },
   Encaminhamento: { icone: Ambulance, cor: 'text-atencao bg-atencao/10', acao: [
     { to: '/encaminhados', rotulo: 'Abrir Encaminhados' }, { to: '/recepcao', rotulo: 'Abrir recepção' }, { to: '/atendimento', rotulo: 'Abrir atendimento' }] },
   Retorno: { icone: CornerDownLeft, cor: 'text-acao bg-acao/10', acao: { to: '/encaminhados?aba=retornos', rotulo: 'Abrir Retornos' } },

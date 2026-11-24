@@ -107,6 +107,7 @@ const Implantacao = lazy(() => import('@/pages/gestor/Implantacao'))
 const Regulacao = lazy(() => import('@/pages/regulacao/Regulacao'))
 const Rede = lazy(() => import('@/pages/rede/Rede'))
 const Nir = lazy(() => import('@/pages/nir/Nir'))
+const NirInternacao = lazy(() => import('@/pages/nir/NirInternacao'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -324,6 +325,10 @@ export default function App() {
                       {/* NIR: pendências da unidade (NIR e gestor; Fase 4, tarefa 11) */}
                       <Route element={<RequireRole papeis={['nir', 'gestor']} />}>
                         <Route path="/nir" element={<Nir />} />
+                      </Route>
+                      {/* NIR (RT, 24/11/2026): Internação, com o resumo e a regulação de cada paciente */}
+                      <Route element={<RequireRole papeis={['nir']} />}>
+                        <Route path="/nir/internacao" element={<NirInternacao />} />
                       </Route>
                       {/* Papéis de rede: Secretaria, Regulação regional, Faturamento da secretaria; módulo pelo super admin (Fase 4, tarefa 12) */}
                       <Route element={<RequireRole papeis={['secretaria', 'regulacao_regional', 'faturamento_rede', 'admin']} />}>

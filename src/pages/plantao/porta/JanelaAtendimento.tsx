@@ -35,6 +35,7 @@ import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCres
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { EnviosDoPaciente } from '@/components/encaminhamento/EnviosDoPaciente'
 import { RetornosDoPaciente } from '@/components/encaminhamento/RetornosDoPaciente'
+import { AbaRegulacaoPaciente } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
@@ -57,7 +58,7 @@ import {
 } from './comum'
 import { rotuloInicioAtendimento } from '@/domain/plantao'
 
-type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'termo' | 'docs' | 'proc' | 'fim' | 'conduta'
+type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'reg' | 'termo' | 'docs' | 'proc' | 'fim' | 'conduta'
 const ESPERA_RASCUNHO_MS = 1500
 // M4 (RT, 24/11/2026): as partes de todo atendimento ficam na linha; o resto vai para "Mais"
 const ABAS_PRINCIPAIS: Aba[] = ['atend', 'presc', 'exames', 'reav', 'docs', 'fim', 'conduta']
@@ -204,6 +205,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     { k: 'par', rotulo: 'Parecer' },
     { k: 'aval', rotulo: 'Avaliação' },
     { k: 'enc', rotulo: 'Encaminhar' },
+    // R1 (RT, 24/11/2026): a regulação do paciente, com a conversa com a central (só na porta)
+    { k: 'reg', rotulo: 'Regulação' },
     { k: 'termo', rotulo: 'Termo' },
     { k: 'docs', rotulo: consultaEnfermagem ? 'Receita' : 'Atestado e receita', n: ((docs.atEmitidoEm ? 1 : 0) + (docs.rxEmitidaEm ? 1 : 0)) || undefined },
     // Fase 3, tarefa 3: procedimentos realizados (BPA) e endereço do SUS
@@ -214,7 +217,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   // U7, PR 5: na UBS a aba Procedimentos é a dos procedimentos da UBS (com o resultado dos testes)
   // U6 (P1 = A): o enfermeiro pede exames da lista do protocolo
   const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'exames', 'proc', 'docs', 'conduta'].includes(a.k)
-    : ubs ? !['reav', 'fim'].includes(a.k) : a.k !== 'conduta'))
+    : ubs ? !['reav', 'fim', 'reg'].includes(a.k) : a.k !== 'conduta'))
 
   return (
     <div className="flex flex-col overflow-clip rounded-cartao border border-fio bg-campo">
@@ -324,6 +327,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
               )
                 : <AbaEncaminhamentoInterno pacienteId={ep.paciente_id} episodioId={ep.id} />}
             </TabsContent>
+            <TabsContent value="reg"><AbaRegulacaoPaciente pacienteId={ep.paciente_id} /></TabsContent>
             <TabsContent value="termo"><AbaTermoConsentimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
             <TabsContent value="docs">
               {consultaEnfermagem ? (

@@ -100,7 +100,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   secretaria: '/rede',
   regulacao_regional: '/rede',
   faturamento_rede: '/rede',
-  nir: '/nir',
+  nir: '/nir/internacao',
 }
 
 export const ORDEM_PAPEL: Record<Papel, number> = {

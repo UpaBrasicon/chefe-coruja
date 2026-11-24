@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-32 operações cobrem 330 tabelas.
+31 operações cobrem 330 tabelas.
 
 ## Papéis
 
@@ -31,7 +31,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Prescrição, checagem e administração de medicamentos | operador | sim | 20 anos a partir do último registro | 16 |
 | Cuidado de enfermagem | operador | sim | 20 anos a partir do último registro | 7 |
 | Internação, leitos e transferência | operador | sim | 20 anos a partir do último registro | 11 |
-| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 13 |
+| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 15 |
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
 | Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 11 |
 | Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 7 |
@@ -42,7 +42,6 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 21 |
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
 | Anotações pessoais do médico | operador | não | 30 dias depois da última mudança | 1 |
-| Agenda de reuniões do administrador | operador | não | enquanto durar o contrato com a organização | 2 |
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
 | Auditoria e registro de acesso ao prontuário | operador | sim | 20 anos | 3 |
 | Registro de acesso à aplicação (Marco Civil) | controlador | não | 6 meses | 2 |
@@ -370,6 +369,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - pedido de vaga, quadro clínico e anexos
 - respostas dos destinos e da central
 - tempos de cada etapa
+- conversa da unidade com o médico regulador e quem leu
 
 **Quem acessa**
 - médico
@@ -385,9 +385,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Medidas próprias**
 - anexo só abre para quem a unidade liberou
 
-**Tabelas (13)**
+**Tabelas (15)**
 
-`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`
+`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`, `public.regulacao_mensagens`, `public.regulacao_conversa_leitura`
 
 ### Rede entre unidades e acesso ao prontuário de outra unidade
 
@@ -739,40 +739,6 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Tabelas (1)**
 
 `public.anotacoes_medico`
-
-### Agenda de reuniões do administrador
-
-`agenda-reunioes` · papel da Chefe Coruja: **operador** · dado sensível: **não**
-
-**Finalidade.** Organizar o dia a dia e as reuniões da administração da rede (pedido do RT de 24/11/2026), com o link colado da plataforma de vídeo.
-
-**Base legal (LGPD)**
-- art. 7º, V (execução de contrato)
-
-**Titulares**
-- profissionais
-
-**Dados**
-- título, dia, horário, link e pauta curta da reunião
-- quem marcou e quem foi convidado (pessoas da organização)
-
-**Quem acessa**
-- quem marcou a reunião (administrador da organização)
-- os convidados da mesma reunião
-
-**Onde fica**
-- Supabase (São Paulo)
-
-**Prazo.** enquanto durar o contrato com a organização (registro administrativo da rede, sem dado de paciente). Descarte: apagado com a organização ou a pedido do RT.
-
-**Medidas próprias**
-- RLS: só quem marcou e os convidados leem; escrita só por funções que conferem o papel de administrador
-- o link só aceita https://; sem integração com Google ou Microsoft (v1)
-- a pauta é curta (até 2.000 letras) e a tela não pede dado de paciente
-
-**Tabelas (2)**
-
-`public.reunioes`, `public.reuniao_convidados`
 
 ### Comunicação interna da equipe
 
