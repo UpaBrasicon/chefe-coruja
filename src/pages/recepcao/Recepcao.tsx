@@ -722,7 +722,7 @@ function NovaFicha({ porta, ubs, unidadeId, naFila, aoAbrir }: { porta: Porta; u
       )}
 
       {modo !== 'nenhum' && (
-        <section className={cn(cartao, 'flex flex-col gap-3.5 px-5 py-[18px]')} aria-label="Ficha">
+        <section className={cn(cartao, 'flex flex-col gap-4 px-5 py-5')} aria-label="Ficha">
           <TituloCartao
             className="mb-0 items-center"
             extra={<Button variant="ghost" size="icon-sm" onClick={limpar} aria-label="Fechar"><X aria-hidden /></Button>}
@@ -880,7 +880,7 @@ function NovaFicha({ porta, ubs, unidadeId, naFila, aoAbrir }: { porta: Porta; u
       )}
 
       {aviso && (
-        <div role="status" className="mt-3.5 flex flex-wrap items-center gap-2.5 rounded-container border border-acao/20 bg-alerta-marca px-[15px] py-3">
+        <div role="status" className="mt-4 flex flex-wrap items-center gap-3 rounded-container border border-acao/20 bg-alerta-marca px-4 py-3">
           <Check className="size-4 shrink-0 text-acao" aria-hidden />
           <span className="min-w-0 flex-1 text-controle text-acao">{aviso}</span>
           {pulseira && !ubs && <BotaoPulseira pacienteId={pulseira.id} nome={pulseira.nome} className="shrink-0" />}
@@ -929,7 +929,7 @@ function ListaFila({ grupos, carregando, erro, vazia, agora, ubs = false }: {
     <div className={cn(cartao, 'overflow-hidden')}>
       {carregando && <div className="px-5 py-5"><Spinner /></div>}
       {erro && <p className="px-5 py-4 text-apoio text-critico">{erro.message}</p>}
-      {!carregando && !erro && visiveis.length === 0 && <p className="px-5 py-[22px] text-controle text-tinta-sussurro">{vazia}</p>}
+      {!carregando && !erro && visiveis.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">{vazia}</p>}
       {visiveis.map((g) => (
         <section key={g.titulo} aria-label={`${g.titulo}: ${g.itens.length}`}>
           <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 border-b border-trilha bg-campo px-5 py-2.5">
@@ -989,7 +989,7 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
   ].filter(Boolean).join(' · ')
 
   return (
-    <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0">
+    <div className="flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-3 last:border-0">
       {ubs ? (
         e.etapa === 'triagem'
           ? <span className={cn(pilula, 'min-w-[76px] justify-center bg-trilha text-tinta-sussurro')}>Aguarda escuta</span>
@@ -1014,7 +1014,7 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
         {tempo.tipo === 'atendimento' ? `há ${formatarDuracao(tempo.minutos)}` : `espera ${formatarDuracao(tempo.minutos)}`}
         {alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
       </span>
-      <span className={cn('flex min-w-0 items-center gap-[7px] text-apoio', textoStatus)}>
+      <span className={cn('flex min-w-0 items-center gap-2 text-apoio', textoStatus)}>
         <span aria-hidden className={cn('size-2.5 shrink-0 rounded-capsula border-2', ponto)} />
         {status}
       </span>
