@@ -66,7 +66,7 @@ jobs:
           REDOCLY_TELEMETRY: 'off'
       # Fase 3, tarefa 7: rotas, parâmetros e erros da Edge Function `api`
       - name: Edge Function da API (regras)
-        run: node --experimental-strip-types --test supabase/functions/api/contrato.test.ts supabase/functions/api/fhir.test.ts supabase/functions/api/financeiro.test.ts supabase/functions/webhooks/assinatura.test.ts supabase/functions/pedir-demonstracao/regras.test.ts supabase/functions/clinical-search/liberar.test.ts supabase/functions/clinical-search/uso.test.ts supabase/functions/clinical-search/segundo.test.ts supabase/functions/_shared/borda.test.ts supabase/functions/avisar-tecnovigilancia/regras.test.ts
+        run: node --experimental-strip-types --test supabase/functions/api/contrato.test.ts supabase/functions/api/fhir.test.ts supabase/functions/api/financeiro.test.ts supabase/functions/webhooks/assinatura.test.ts supabase/functions/pedir-demonstracao/regras.test.ts supabase/functions/clinical-search/liberar.test.ts supabase/functions/clinical-search/uso.test.ts supabase/functions/clinical-search/segundo.test.ts supabase/functions/_shared/borda.test.ts supabase/functions/avisar-tecnovigilancia/regras.test.ts supabase/functions/avisar-reuniao/regras.test.ts
       - name: Testes clínicos
         run: npm run test:clinico
       # LG10 (docs/regulatorio/LG10-GATE-APROVACAO-DIAGNOSTICO.md): guarda de
@@ -139,7 +139,7 @@ jobs:
         # dependências dele no lock; as funções não usam package.json
         env:
           DENO_NO_PACKAGE_JSON: '1'
-        run: deno cache --lock=deno.lock --frozen api/index.ts avisar-tecnovigilancia/index.ts clinical-search/index.ts enviar-codigo-2fa/index.ts folha/index.ts pedir-demonstracao/index.ts webhooks/index.ts
+        run: deno cache --lock=deno.lock --frozen api/index.ts avisar-reuniao/index.ts avisar-tecnovigilancia/index.ts clinical-search/index.ts enviar-codigo-2fa/index.ts folha/index.ts pedir-demonstracao/index.ts webhooks/index.ts
       # Fase 0, item 14: migration nova não apaga nem renomeia o que a versão anterior usa
       - name: Expand/contract nas migrations
         run: |

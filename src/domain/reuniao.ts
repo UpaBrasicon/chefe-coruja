@@ -60,6 +60,23 @@ export function problemaDaReuniao(f: FormReuniao): string | null {
   return null
 }
 
+/** Resposta da Edge Function avisar-reuniao (só contagens; o e-mail não volta). */
+export type RespostaEmail = { enviados?: number; sem_email?: number; falhas?: number; erro?: string }
+
+/**
+ * Aviso discreto depois de salvar ou cancelar: o e-mail aos convidados não
+ * trava a gravação, e o aviso no app já chegou. null = nada a dizer.
+ */
+export function avisoDoEmail(r: RespostaEmail | null, falhou: boolean): string | null {
+  if (falhou) {
+    const motivo = r?.erro?.replace(/^e-mail não enviado:\s*/i, '').trim()
+    return `E-mail não enviado${motivo ? ` (${motivo})` : ''}. Os convidados têm o aviso no app.`
+  }
+  const sem = r?.sem_email ?? 0
+  if (sem > 0) return sem === 1 ? 'Um convidado está sem e-mail na conta: só o aviso no app.' : `${sem} convidados estão sem e-mail na conta: só o aviso no app.`
+  return null
+}
+
 /** "14:30" → 870 */
 export function minutos(hhmm: string): number {
   const [h, m] = hhmm.split(':').map(Number)
