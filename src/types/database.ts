@@ -9453,6 +9453,75 @@ export type Database = {
           },
         ]
       }
+      secretarias: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          cnpj: string | null
+          criado_em: string
+          criado_por: string | null
+          email: string | null
+          endereco: string | null
+          esfera: string
+          id: string
+          municipio: string | null
+          nome: string
+          organizacao_id: string
+          responsavel: string | null
+          telefone: string | null
+          uf: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          cnpj?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          email?: string | null
+          endereco?: string | null
+          esfera?: string
+          id?: string
+          municipio?: string | null
+          nome: string
+          organizacao_id: string
+          responsavel?: string | null
+          telefone?: string | null
+          uf?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          cnpj?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          email?: string | null
+          endereco?: string | null
+          esfera?: string
+          id?: string
+          municipio?: string | null
+          nome?: string
+          organizacao_id?: string
+          responsavel?: string | null
+          telefone?: string | null
+          uf?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secretarias_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretarias_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       setores: {
         Row: {
           ativo: boolean
@@ -10293,6 +10362,8 @@ export type Database = {
           organizacao_id: string
           protocolo_classificacao_id: string | null
           raio_metros: number
+          ramo_rede: string | null
+          secretaria_id: string | null
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf: string | null
           updated_at: string
@@ -10313,6 +10384,8 @@ export type Database = {
           organizacao_id: string
           protocolo_classificacao_id?: string | null
           raio_metros?: number
+          ramo_rede?: string | null
+          secretaria_id?: string | null
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
           updated_at?: string
@@ -10333,6 +10406,8 @@ export type Database = {
           organizacao_id?: string
           protocolo_classificacao_id?: string | null
           raio_metros?: number
+          ramo_rede?: string | null
+          secretaria_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
           updated_at?: string
@@ -10803,6 +10878,28 @@ export type Database = {
           p_uf?: string
           p_unidade: string
         }
+        Returns: undefined
+      }
+      admin_rede_arvore: { Args: never; Returns: Json }
+      admin_salvar_secretaria: {
+        Args: {
+          p_ativo?: boolean
+          p_cnpj?: string
+          p_email?: string
+          p_endereco?: string
+          p_esfera?: string
+          p_id: string | null
+          p_municipio?: string
+          p_nome: string
+          p_organizacao: string | null
+          p_responsavel?: string
+          p_telefone?: string
+          p_uf?: string
+        }
+        Returns: string
+      }
+      admin_unidade_na_rede: {
+        Args: { p_ramo?: string; p_secretaria: string | null; p_unidade: string }
         Returns: undefined
       }
       marcar_sempre_bpa_c: { Args: { p_id: string; p_sempre: boolean }; Returns: undefined }
