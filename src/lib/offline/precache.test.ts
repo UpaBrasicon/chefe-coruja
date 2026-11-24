@@ -35,6 +35,11 @@ test('N5: login, triagem, enfermagem, checagem e evolução estão na lista', ()
   }
 })
 
+test('F1: a casca logada, que virou pedaço próprio, continua guardada para a recarga sem conexão', () => {
+  assert.ok(FONTES_SEM_CONEXAO.includes('src/components/AppShell.tsx'))
+  readFileSync('src/components/AppShell.tsx')
+})
+
 test('o build gera precache.json e o service worker guarda a lista quando a página pede', () => {
   assert.match(readFileSync('vite.config.ts', 'utf8'), /precacheSemConexao\(/)
   const sw = readFileSync('public/sw.js', 'utf8')

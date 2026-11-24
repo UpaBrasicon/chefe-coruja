@@ -2,7 +2,8 @@
 // Texto aprovado pelo RT como está em docs/regulatorio/LG11-SOBRE-MODULO-CLINICO-TEXTO.md.
 // Mudar este texto pede novo ok do RT.
 
-export const ROTA_SOBRE_MODULO = '/plantonista/sobre-modulo-clinico'
+// A rota mora em rotaSobreModulo.ts (o App.tsx importa só ela, sem o texto).
+export { ROTA_SOBRE_MODULO } from './rotaSobreModulo.ts'
 
 export type ParteSobre = {
   titulo: string
