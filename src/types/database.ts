@@ -13928,6 +13928,8 @@ export type Database = {
         Returns: string
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
+      passometro: { Args: { p_unidade: string }; Returns: Json }
+      registrar_impressao_passometro: { Args: { p_unidade: string }; Returns: Json }
       registrar_uso_app: {
         Args: { p_unidade: string; p_papel: string; p_evento: string; p_detalhe?: string }
         Returns: undefined

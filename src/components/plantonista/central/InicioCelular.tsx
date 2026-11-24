@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Baby, Bookmark, ChevronRight, History, HeartPulse, Search, User } from 'lucide-react'
+import { Baby, Bookmark, ChevronRight, ClipboardList, History, HeartPulse, Search, User, type LucideIcon } from 'lucide-react'
 
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
@@ -138,12 +138,12 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
 // Nome e endereço de cada ferramenta pela chave de favorito (secao/slug).
 const FERRAMENTA_POR_CHAVE = new Map<string, { nome: string; rota: string }>(SECOES.flatMap((sec) => sec.tools.map((t) => [`${sec.slug}/${t.slug}`, { nome: t.label, rota: `/plantonista/${sec.slug}/${t.slug}` }] as const)))
 
-function LinhaAtalho({ nome, rota, favorito, vezes }: { nome: string; rota: string; favorito?: boolean; vezes?: number }) {
+function LinhaAtalho({ nome, rota, favorito, vezes, icone: Icone }: { nome: string; rota: string; favorito?: boolean; vezes?: number; icone?: LucideIcon }) {
   return (
     <li>
       <Link to={rota}
         className="flex min-h-12 items-center gap-2.5 rounded-cartao border border-fio bg-superficie px-4 py-2.5 text-tinta no-underline hover:border-fio-forte active:bg-trilha">
-        {favorito ? <Bookmark className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className="size-4 shrink-0 text-tinta-apoio" aria-hidden />}
+        {Icone ? <Icone className="size-4 shrink-0 text-acao" aria-hidden /> : favorito ? <Bookmark className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className="size-4 shrink-0 text-tinta-apoio" aria-hidden />}
         <span className="min-w-0 flex-1 text-controle font-medium">{nome}</span>
         {!!vezes && <span className="text-rotulo tabular-nums text-tinta-sussurro" title={`Aberta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por você`}>{vezes}×</span>}
         <ChevronRight className="size-4 shrink-0 text-tinta-apoio" aria-hidden />
@@ -167,6 +167,10 @@ function MeuPlantao() {
   return (
     <div className="flex flex-col gap-4">
       <CartaoTurno unidadeId={unidadeAtiva?.unidade_id} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
+      {/* pedido 8 (PS1 a PS3 = A): os pacientes do plantão com as pendências; a UBS não tem leito */}
+      {unidadeAtiva?.unidade.tipo !== 'ubs' && (
+        <ul aria-label="Passômetro"><LinhaAtalho nome="Passômetro: meus pacientes e pendências" rota="/passometro" icone={ClipboardList} /></ul>
+      )}
       <SessaoAssinatura />
       <section aria-label="Favoritos" className="flex flex-col gap-2">
         <TituloSecao className="mb-0">Favoritos</TituloSecao>
