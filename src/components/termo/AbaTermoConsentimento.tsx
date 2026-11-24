@@ -85,6 +85,11 @@ function Campo({ rotulo, dica, children }: { rotulo: string; dica?: string; chil
   )
 }
 
+/** Falta de modelo numa linha, com quem resolve (MA2). */
+function SemModelo({ texto }: { texto: string }) {
+  return <p className="text-apoio text-tinta-apoio">{texto} · quem cadastra: Gestor › Termos de consentimento.</p>
+}
+
 function Aviso({ children, tom = 'atencao' }: { children: React.ReactNode; tom?: 'atencao' | 'critico' }) {
   return (
     <p className={cn('rounded-controle px-3 py-2 text-apoio leading-[1.45] [text-wrap:pretty]',
@@ -276,16 +281,12 @@ export function AbaTermoConsentimento({ pacienteId, episodioId, internacaoId, ca
             O termo é gerado pelo médico de plantão no setor do paciente. Aqui você vê os termos já registrados.
           </p>
         ) : paliativo && p.modelos.length === 0 && !f.retifica ? (
-          <Aviso>
-            A unidade ainda não cadastrou modelo de termo de cuidados paliativos (Unidade › Termos de consentimento, categoria
-            "Cuidados paliativos"). O termo paliativo sai só do modelo da unidade, com o que o médico e o paciente ou o responsável decidiram.
-          </Aviso>
+          // MA2 (RT, 24/11/2026): uma linha, com quem resolve
+          <SemModelo texto="Sem modelo de termo de cuidados paliativos na unidade" />
         ) : (
           <>
             {p.modelos.length === 0 ? (
-              <Aviso>
-                A unidade ainda não cadastrou modelos de termo (Unidade › Termos de consentimento). Dá para escrever o procedimento e as informações abaixo.
-              </Aviso>
+              <SemModelo texto="Sem modelo de termo na unidade: escreva o procedimento e as informações abaixo" />
             ) : (
               <>
                 <Input value={f.busca} onChange={(e) => mudar({ busca: e.target.value })}

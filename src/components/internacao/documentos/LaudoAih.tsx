@@ -24,7 +24,7 @@ import { BuscaCid, BuscaProcedimento } from '@/components/documentos/busca'
 import { AIH_EXEMPLO, CLINICAS_AIH, VINCULOS_PREVIDENCIA } from '@/components/documentos/catalogos'
 import { cadastroFaltaAih, useIdentificacao } from '@/components/documentos/identificacao'
 import { SeletorPaciente } from '@/components/documentos/SeletorPaciente'
-import { AnexosLaudo, Aviso, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
+import { AnexosLaudo, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { data as dataBr } from '@/lib/formato'
@@ -36,6 +36,9 @@ import {
 import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
 import { janelaEmBranco } from '@/lib/abrirEmJanela'
+import { MARCA_PRONTUARIO, linhasDiagnostico, textoExames, textoVitais } from '@/lib/doProntuario'
+import { GavetaCompletarCadastro } from '@/components/documentos/CompletarCadastro'
+import { useDoProntuario } from '@/components/internacao/caderno/useDoProntuario'
 
 type Conferencia = { avisos: { campo: string; texto: string }[]; criticas?: CriticaAih[]; competencia: string | null; nota: string }
 
@@ -109,6 +112,27 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
   })
 
   const falta = ident.pac ? cadastroFaltaAih(ident.pac) : []
+  // MA3 (RT, 24/11/2026): completar o cadastro numa gaveta, sem sair do laudo
+  const [completar, setCompletar] = React.useState(false)
+  // MA3: dentro do leito, o laudo em branco começa com o que o caderno já sabe —
+  // sinais e vitais crus com a hora, a justificativa da última evolução, exames
+  // com data e o diagnóstico da lista de problemas —, marcado para revisão
+  const dp = useDoProntuario(fixo ? pacienteId : null, fixo ? internacaoId : null)
+  const [doProntuario, setDoProntuario] = React.useState(false)
+  const preenchido = React.useRef(false)
+  React.useEffect(() => {
+    if (preenchido.current || !dp.pronto) return
+    preenchido.current = true
+    if (aihTemAlgo(form)) return
+    const principal = dp.diagnosticos.filter((d) => !d.encerrado_em).find((d) => d.tipo === 'primario')
+    const sinais = [dp.evolucao?.s?.trim() ?? '', textoVitais(dp.sv) ? `Sinais vitais: ${textoVitais(dp.sv)}` : ''].filter(Boolean).join('\n')
+    const novo: Partial<FormAih> = {
+      sinais, condicoes: dp.evolucao?.a?.trim() ?? '', provas: textoExames(dp.exames),
+      diagnostico: linhasDiagnostico(dp.diagnosticos).split('\n')[0] ?? '',
+      ...(principal ? { cid: principal.cid, cidOk: true } : {}),
+    }
+    if (Object.values(novo).some((x) => typeof x === 'string' && x.trim())) { set(novo); setDoProntuario(true) }
+  }, [dp, form, set])
   const pendencias = pendenciasAih({ form, pacienteId, cadastroFalta: falta, avisosSigtap: avisos.length, bloqueantes: bloqueantes.map((c) => c.texto) })
   const temAlgo = aihTemAlgo(form)
   const conteudo = conteudoAih({
@@ -178,7 +202,21 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
           </Button>
         </>}>
           {falta.length > 0 && (
-            <Aviso>O cadastro deste paciente está incompleto para o laudo: {falta.join(', ')}. Use "Completar ou corrigir cadastro" acima.</Aviso>
+            <div className="flex flex-wrap items-center gap-2 rounded-controle bg-alerta-atencao px-3 py-2 text-apoio text-atencao">
+              <span className="min-w-0 flex-1">O cadastro está incompleto para o laudo: {falta.join(', ')}.</span>
+              <Button size="sm" variant="outline" onClick={() => setCompletar(true)}>Completar cadastro</Button>
+            </div>
+          )}
+          {pacienteId && (
+            <GavetaCompletarCadastro pacienteId={pacienteId} nome={ident.cab.nome} faltam={falta} aberta={completar} onAbertaChange={setCompletar} />
+          )}
+          {doProntuario && (
+            <div role="status" className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-atencao">
+              <span className="min-w-0 flex-1">
+                Sinais e sintomas, condições que justificam, provas diagnósticas, diagnóstico e CID vieram do prontuário: {MARCA_PRONTUARIO}.
+              </span>
+              <Button size="sm" variant="outline" onClick={() => setDoProntuario(false)}>Revisei</Button>
+            </div>
           )}
 
           <Bloco num="1" titulo="Identificação do estabelecimento de saúde"

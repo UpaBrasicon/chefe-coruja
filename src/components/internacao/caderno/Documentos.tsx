@@ -63,8 +63,8 @@ function PesoDieta({ doc, nome }: { doc: Doc; nome: string }) {
   )
 }
 
-export function AbaAdmissao({ doc, internacaoId }: { doc: Doc; internacaoId: string; unidadeId?: string }) {
-  return <FichaAdmissao pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} leito={doc.dadosPaciente.leito} fixo />
+export function AbaAdmissao({ doc, internacaoId, admissaoEm }: { doc: Doc; internacaoId: string; unidadeId?: string; admissaoEm?: string | null }) {
+  return <FichaAdmissao pacienteId={doc.dadosPaciente.paciente_id} internacaoId={internacaoId} leito={doc.dadosPaciente.leito} fixo admissaoEm={admissaoEm} />
 }
 
 export function AbaPrescricao({ doc }: { doc: Doc }) {

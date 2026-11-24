@@ -21,7 +21,7 @@
 // internação ativa; a aba Classificação saiu — a cor abre o histórico numa janela.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { PenLine, Printer } from 'lucide-react'
+import { ArrowLeft, PenLine, Printer } from 'lucide-react'
 import * as React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -35,6 +35,9 @@ import { ReentradaContingencia } from '@/components/prontuario/ReentradaContinge
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
 import { abaDoEndereco, acoesDoLeito } from '@/lib/acoesLeito'
+import { ehItemMais, rotuloMais } from '@/lib/maisLeito'
+import { dataIso } from '@/lib/formato'
+import { ehPediatrico } from '@/domain/idade'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
@@ -51,8 +54,8 @@ import { AbaCuidadosPaliativos } from '@/components/paliativo/AbaCuidadosPaliati
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Estado } from '@/components/porta/Estado'
 import { Button } from '@/components/ui/button'
-import { Tabs } from '@/components/ui/tabs'
-import { AbasComMais, MenuMais, type ItemMenu } from '@/components/plantao/MenuMais'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MenuMais, type ItemMenu } from '@/components/plantao/MenuMais'
 import { Spinner } from '@/components/ui/spinner'
 
 import { BlocoAcuidade } from './caderno/Acuidade'
@@ -72,6 +75,7 @@ import { BlocoPassagem, DialogoPassagem } from './caderno/Passagem'
 import { BlocoPendencias } from './caderno/Pendencias'
 import { BlocoSepse } from './caderno/Sepse'
 import { type DestinoResumo, GrupoRecolhido, ResumoLeito } from './caderno/ResumoLeito'
+import { MaisDocumentos } from './caderno/MaisDocumentos'
 import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
@@ -103,8 +107,18 @@ const ABAS: [IdAba, string][] = [
  * Classificação deixou de ser aba (ponto 8): a cor do cabeçalho abre a janela.
  */
 const ABAS_LEITURA: IdAba[] = ['resumo', 'evol', 'regulacao', 'alta']
-/** As abas que ficam na linha (M2, RT 24/11/2026); as demais vão para "Mais". */
-const ABAS_PRINCIPAIS: IdAba[] = ['resumo', 'evol', 'receituario', 'exames', 'regulacao', 'alta']
+/**
+ * MA1 (RT, 24/11/2026): as abas fixas na linha, sempre na mesma ordem; o
+ * resto abre dentro da aba "Mais" ("Documentos e pedidos"), com o nome do item
+ * no botão, sem mudar a ordem. A Admissão não está no Mais: abre pelo Resumo
+ * (enquanto não feita) e pelo Histórico de evoluções.
+ */
+const ABAS_LINHA: [IdAba | 'mais', string][] = [
+  ['resumo', 'Resumo'], ['evol', 'Evolução'], ['receituario', 'Prescrição'], ['exames', 'Exames'],
+  ['regulacao', 'Regulação'], ['alta', 'Alta e documentos'], ['mais', 'Mais'],
+]
+/** A aba da linha que fica marcada para cada parte aberta. */
+const abaDaLinha = (a: IdAba | 'mais'): IdAba | 'mais' => (a === 'mais' || ehItemMais(a) ? 'mais' : a === 'admissao' ? 'resumo' : a)
 
 const CHAVES_DO_LEITO = [
   'leito-aberto', 'acuidade', 'tendencia-acuidade', 'vitais-qsofa', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta',
@@ -438,7 +452,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
   const [docsAlta, setDocsAlta] = React.useState<EstadoDocs>(DOCS_INICIAL)
   // link antigo para a aba Classificação abre o Resumo com a janela (ponto 8)
   const endereco = abaDoEndereco(abaInicial)
-  const [aba, setAba] = React.useState<IdAba>(() => (ABAS.some(([id]) => id === endereco.aba) ? endereco.aba as IdAba : 'resumo'))
+  const [aba, setAba] = React.useState<IdAba | 'mais'>(() => (endereco.aba === 'mais' ? 'mais' : ABAS.some(([id]) => id === endereco.aba) ? endereco.aba as IdAba : 'resumo'))
   const [janela, setJanela] = React.useState<'classificacao' | 'passar' | 'intercorrencia' | null>(endereco.classificacao ? 'classificacao' : null)
 
   const diagnosticos = useDiagnosticos(i.id)
@@ -452,8 +466,21 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
   })
 
   const escreve = ativa && !ehGestor
-  const disponiveis = ABAS.filter(([id]) => escreve || ABAS_LEITURA.includes(id))
-  const atual: IdAba = disponiveis.some(([id]) => id === aba) ? aba : 'resumo'
+  const pode = (id: IdAba | 'mais') => escreve || (id !== 'mais' && ABAS_LEITURA.includes(id))
+  const atual: IdAba | 'mais' = pode(aba) ? aba : 'resumo'
+  const linha = abaDaLinha(atual)
+  // idade pelo cadastro (mesma chave do cabeçalho): adulto não recebe pediatria (MA2)
+  const cadastro = useQuery({
+    queryKey: ['cabecalho-paciente', pacienteId],
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes').select('nome, nome_social, data_nascimento, sexo').eq('id', pacienteId).maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+  const nasc = cadastro.data?.data_nascimento?.slice(0, 10)
+  const pediatrico = nasc ? ehPediatrico(nasc, dataIso()) : null
   // CID da alta (decisão do usuário, 29/09/2026): o quadro muda ao longo da
   // internação. Desde o ponto 9 (RT, 28/10/2026) o diagnóstico muda só na
   // subaba Diagnóstico, e a evolução grava o retrato dele: vale o primário
@@ -514,16 +541,33 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
     <div className="flex flex-col gap-3.5 border-t border-fio pt-3.5 text-apoio">
       {cabecalho(() => setJanela('classificacao'), true, acoesTopo)}
 
-      {/* M2 (revisão do médico, RT 24/11/2026): as abas do dia a dia na linha; as outras em "Mais" */}
-      <Tabs value={atual} onValueChange={(v) => setAba(v as IdAba)}>
-        <AbasComMais rotulo="Documentos do leito" valor={atual} principais={ABAS_PRINCIPAIS}
-          onTrocar={(k) => setAba(k as IdAba)} abas={disponiveis.map(([id, rotulo]) => ({ k: id, rotulo }))} />
+      {/* MA1 (RT, 24/11/2026): abas fixas, sempre na mesma ordem; o item aberto do Mais dá o nome ao botão */}
+      <Tabs value={linha} onValueChange={(v) => setAba(v as IdAba | 'mais')}>
+        <TabsList aria-label="Partes do leito" className="w-full gap-3.5">
+          {ABAS_LINHA.filter(([id]) => pode(id)).map(([id, rotulo]) => (
+            <TabsTrigger key={id} value={id} className="shrink-0">
+              {id === 'mais' && ehItemMais(atual) ? `Mais · ${rotuloMais(atual)}` : rotulo}
+            </TabsTrigger>
+          ))}
+        </TabsList>
       </Tabs>
 
       {avisos}
 
       {/* RS1 e MA3: sem o painel Paciente repetido à direita; a aba usa a largura toda */}
       <div id={`caderno-${atual}`} role="tabpanel" className="flex min-w-0 flex-col gap-4">
+        {/* MA1: "Documentos e pedidos", agrupado e com a situação de cada item */}
+        {atual === 'mais' && <MaisDocumentos pacienteId={pacienteId} internacaoId={i.id} pediatrico={pediatrico} onAbrir={(id) => setAba(id)} />}
+        {ehItemMais(atual) && (
+          <Button size="sm" variant="outline" className="self-start" onClick={() => setAba('mais')}>
+            <ArrowLeft aria-hidden /> Documentos e pedidos
+          </Button>
+        )}
+        {atual === 'admissao' && (
+          <Button size="sm" variant="outline" className="self-start" onClick={() => setAba('resumo')}>
+            <ArrowLeft aria-hidden /> Resumo
+          </Button>
+        )}
         {atual === 'resumo' && <ResumoCaderno p={pp} irPara={(a) => setAba(a)} />}
         {atual === 'evol' && (
           <AbaEvolucao pacienteId={pacienteId} internacaoId={i.id} somenteLeitura={!escreve}
@@ -533,7 +577,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
         {atual === 'admissao' && (
           <>
             <ChecklistAdmissao pacienteId={pacienteId} unidadeId={unidadeAtiva?.unidade_id} prontuarioAberto={p.prontuarioAberto} />
-            <AbaAdmissao doc={doc} internacaoId={i.id} unidadeId={unidadeAtiva?.unidade_id} />
+            <AbaAdmissao doc={doc} internacaoId={i.id} unidadeId={unidadeAtiva?.unidade_id} admissaoEm={i.internado_em ?? i.data_admissao} />
           </>
         )}
         {atual === 'receituario' && <AbaPrescricao doc={doc} />}
@@ -541,7 +585,11 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
         {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {/* ponto 13: dentro da unidade ou para outra unidade (SMS003a ligado à internação) */}
-        {atual === 'encaminhamento' && <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''} />}
+        {/* MA2: dentro da unidade (especialidade ou equipe); para outra unidade, a Regulação */}
+        {atual === 'encaminhamento' && (
+          <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''}
+            onIrRegulacao={() => setAba('regulacao')} adulto={pediatrico === false} />
+        )}
         {atual === 'regulacao' && (
           <>
             <AbaRegulacaoPaciente pacienteId={pacienteId} />
