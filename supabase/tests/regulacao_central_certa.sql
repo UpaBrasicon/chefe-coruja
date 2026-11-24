@@ -7,8 +7,8 @@
 -- - o regulador de cada central vê a fila, os recebidos e o painel dela e não
 --   os da outra; não assume pedido da outra; ajusta prazos e critérios da
 --   central dele (não só a principal); mapa de vagas e indicadores abrem;
--- - prazo por tipo vale no relógio da fila (prazo_por = tipo) e ganha do prazo
---   por prioridade; sem prazo por tipo, continua o por prioridade;
+-- - no relógio da fila vale o MENOR entre o prazo do tipo e o por prioridade
+--   (prazo_por diz qual); sem prazo por tipo, continua o por prioridade;
 -- - capacidades: o regulador e o gestor da central veem as unidades que ela
 --   regula (a principal, as sem vínculo; sem as centrais); médico, regulador
 --   de outra central e de outra rede não veem; o anônimo não chama.
@@ -132,14 +132,20 @@ SELECT pg_temp.falha(format('SELECT public.regulacao_assumir(%L)', pg_temp.v('le
   'o regulador da Sul não assume pedido da principal');
 SELECT public.regulacao_assumir(pg_temp.v('sul')::uuid);
 
--- prazo por tipo no painel: leito na Sul = 120 min, mesmo com prazo por prioridade
+-- prazo da fila = o MENOR entre o do tipo (leito na Sul = 120 min) e o por
+-- prioridade (RT, 24/11/2026): urgência 30 min ganha do tipo...
 SELECT public.regulacao_definir_prazos('ac200000-0000-4000-8000-000000000002', '{"fila": {"urgencia": 30}}');
 SELECT pg_temp.igual((SELECT (p->'sla'->'fila'->>'prazo_min') || ':' || (p->'sla'->'fila'->>'prazo_por')
                         FROM pg_temp.pedido(public.regulacao_sla_painel('ac200000-0000-4000-8000-000000000002')->'dados', pg_temp.v('sul')) p),
-  '120:tipo', 'o painel usa o prazo da central para o tipo do pedido');
+  '30:prioridade', 'prioridade mais curta que o tipo: vale a prioridade');
+-- ...e com urgência 300 min, o tipo (120) é o menor
+SELECT public.regulacao_definir_prazos('ac200000-0000-4000-8000-000000000002', '{"fila": {"urgencia": 300}}');
+SELECT pg_temp.igual((SELECT (p->'sla'->'fila'->>'prazo_min') || ':' || (p->'sla'->'fila'->>'prazo_por')
+                        FROM pg_temp.pedido(public.regulacao_sla_painel('ac200000-0000-4000-8000-000000000002')->'dados', pg_temp.v('sul')) p),
+  '120:tipo', 'tipo mais curto que a prioridade: vale o tipo');
 SELECT pg_temp.igual((SELECT (x->'prazos'->'por_tipo'->>'leito') || ':' || (x->'prazos'->'fila'->>'urgencia') || ':' || (x->'resumo'->>'fila_prazo_tipo')
                         FROM public.regulacao_sla_painel('ac200000-0000-4000-8000-000000000002') x),
-  '120:30:1', 'o painel traz os prazos por tipo e por prioridade da Central Sul');
+  '120:300:1', 'o painel traz os prazos por tipo e por prioridade da Central Sul');
 SELECT public.regulacao_definir_criterio('ac200000-0000-4000-8000-000000000002', 'urgencia', 'Critério da Central Sul para urgência.');
 SELECT pg_temp.igual((SELECT count(*)::text FROM jsonb_object_keys(public.regulacao_criterios('ac200000-0000-4000-8000-000000000002'))),
   '1', 'a Central Sul escreve os próprios critérios');
