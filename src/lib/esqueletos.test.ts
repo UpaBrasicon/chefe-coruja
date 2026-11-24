@@ -74,8 +74,29 @@ test('o /plantao só mostra o estado do check-in e os cartões depois de carrega
   assert.ok(carga < fonte.indexOf('Check-in pendente'), '"Check-in pendente" fora do ramo que confere o fim da carga')
   assert.match(fonte.slice(carga, fonte.indexOf(') : emPlantao ? (')), /<Skeleton\b/)
   // os horários e o botão também esperam a carga
-  assert.match(fonte, /\{!carregandoPresenca && \(\s*<>\s*<span className="text-apoio text-tinta-apoio tabular">/)
+  assert.match(fonte, /\{!carregandoPresenca && !erroPresenca && \(\s*<>\s*<span className="text-apoio text-tinta-apoio tabular">/)
   // os dois cartões recebem o estado da faixa e trocam número e texto por esqueleto
   assert.equal(fonte.match(/carregando=\{faixa\.isLoading\}/g)?.length, 2)
   assert.match(fonte, /\{carregando \? \([\s\S]{0,500}<Skeleton\b[\s\S]{0,300}\) : \(/)
+})
+
+// Item 34 do BACKLOG (pergunta do #1103, aprovado pelo RT em 24/11/2026): se a
+// leitura do check-in falha, a tela dizia "Check-in pendente" e oferecia "Fazer
+// check-in", e a pessoa não sabe se já fez. No erro: aviso e "Tentar de novo".
+test('o /plantao mostra o erro da leitura do check-in com "Tentar de novo" e sem "Fazer check-in"', () => {
+  const fonte = readFileSync('src/pages/plantao/PlantaoHome.tsx', 'utf8')
+  assert.match(fonte, /isError: erroPresenca/)
+  assert.match(fonte, /refetch: lerPresencaDeNovo/)
+  // o ramo de erro vem logo depois da carga e antes de qualquer selo do check-in
+  const inicio = fonte.indexOf(') : erroPresenca ? (')
+  const fim = fonte.indexOf(') : emPlantao ? (')
+  assert.ok(inicio > fonte.indexOf('{carregandoPresenca ? ('), 'falta o ramo de erro depois da carga')
+  assert.ok(inicio < fim && fim < fonte.indexOf('<Badge variant="warning">Check-in pendente'), 'o ramo de erro tem de vir antes dos selos')
+  const ramo = fonte.slice(inicio, fim)
+  assert.match(ramo, /<MensagemErro\b[^>]*acao="ler o seu check-in"/)
+  assert.match(ramo, /onClick=\{\(\) => void lerPresencaDeNovo\(\)\}/)
+  assert.match(ramo, /'Tentar de novo'/)
+  assert.doesNotMatch(ramo, /Fazer check-in|Check-in pendente/)
+  // os horários e o botão "Fazer check-in" ficam fora no erro
+  assert.match(fonte, /\{!carregandoPresenca && !erroPresenca && \(/)
 })
