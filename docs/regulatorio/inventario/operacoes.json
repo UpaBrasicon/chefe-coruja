@@ -833,6 +833,7 @@
       "dados": [
         "nome, e-mail, conselho e registro",
         "papel em cada unidade",
+    "designação para uma secretaria de saúde (e-mail e quem designou)",
         "eventos do segundo fator e dispositivos confiáveis",
         "convites e aceite dos termos",
         "endereço profissional do médico (LG8)"
@@ -859,6 +860,7 @@
       "tabelas": [
         "public.perfis",
         "public.vinculos",
+    "public.secretaria_pessoas",
         "public.acessos_plantonista",
         "public.super_admins",
         "public.convites",

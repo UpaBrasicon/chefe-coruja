@@ -1,0 +1,24 @@
+-- ════════════════════════════════════════════════════════════════════════════
+-- Perfil Secretaria (pedido do RT, 24/11/2026): "quem tem login como perfil de
+-- secretaria consegue editar tudo, desde quantidade de médicos a leitos em
+-- cada unidade" das unidades da secretaria dele. Parte 1 de 2: o nome do
+-- perfil.
+--
+-- Por que um valor novo e não o 'secretaria' que já existe: o 'secretaria' da
+-- Fase 4 (tarefa 12, migration 20261116000002) é outro perfil. Ele é vínculo
+-- na unidade administrativa da rede, entra pela escala e só lê agregados.
+-- O perfil novo fica ligado a uma secretaria (public.secretarias), não a uma
+-- unidade, e edita a configuração das unidades dela.
+--
+-- 'gestor_secretaria' nunca vai para public.vinculos (a parte 2 põe uma regra
+-- que barra). Ele só dá nome ao perfil na casca do app: a ligação da pessoa com
+-- a secretaria fica em public.secretaria_pessoas (parte 2).
+--
+-- ADD VALUE é aditivo (não apaga nem renomeia nada). Fica num arquivo só dele
+-- porque o valor novo não pode ser usado na mesma transação em que nasce.
+--
+-- Parte 2: 20270421000023_secretaria_perfil_acesso.sql
+-- Rollback: docs/rede/ROLLBACK-20270421000022.sql
+-- ════════════════════════════════════════════════════════════════════════════
+
+ALTER TYPE public.papel ADD VALUE IF NOT EXISTS 'gestor_secretaria';

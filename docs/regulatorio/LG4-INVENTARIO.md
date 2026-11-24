@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-31 operações cobrem 329 tabelas.
+31 operações cobrem 330 tabelas.
 
 ## Papéis
 
@@ -39,7 +39,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
 | Faturamento SUS e contas | operador | sim | 5 anos | 20 |
 | Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 15 |
-| Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 21 |
+| Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 22 |
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
 | Anotações pessoais do médico | operador | não | 30 dias depois da última mudança | 1 |
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
@@ -657,6 +657,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Dados**
 - nome, e-mail, conselho e registro
 - papel em cada unidade
+- designação para uma secretaria de saúde (e-mail e quem designou)
 - eventos do segundo fator e dispositivos confiáveis
 - convites e aceite dos termos
 - endereço profissional do médico (LG8)
@@ -676,9 +677,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - segredos guardados só como hash
 - tentativas limitadas por tempo
 
-**Tabelas (21)**
+**Tabelas (22)**
 
-`public.perfis`, `public.vinculos`, `public.acessos_plantonista`, `public.super_admins`, `public.convites`, `private.tentativas_convite_conta`, `private.tentativas_primeiro_acesso`, `private.primeiro_acesso_pendente`, `private.segundo_fator_eventos`, `private.segundo_fator_recuperacao`, `private.segundo_fator_recuperacao_falhas`, `private.segundo_fator_tentativas`, `private.segundo_fator_email_codigo`, `private.segundo_fator_sessao_ok`, `private.totp_confiavel`, `public.dispositivos_confiaveis`, `private.chave_fila`, `public.responsaveis_tecnicos`, `public.especialidades_perfil`, `public.aceites_termo`, `public.adesoes_contrato`
+`public.perfis`, `public.vinculos`, `public.secretaria_pessoas`, `public.acessos_plantonista`, `public.super_admins`, `public.convites`, `private.tentativas_convite_conta`, `private.tentativas_primeiro_acesso`, `private.primeiro_acesso_pendente`, `private.segundo_fator_eventos`, `private.segundo_fator_recuperacao`, `private.segundo_fator_recuperacao_falhas`, `private.segundo_fator_tentativas`, `private.segundo_fator_email_codigo`, `private.segundo_fator_sessao_ok`, `private.totp_confiavel`, `public.dispositivos_confiaveis`, `private.chave_fila`, `public.responsaveis_tecnicos`, `public.especialidades_perfil`, `public.aceites_termo`, `public.adesoes_contrato`
 
 ### Preferências e avisos ao profissional
 
