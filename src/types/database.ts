@@ -5389,6 +5389,18 @@ export type Database = {
         Update: { id?: string; perfil_id?: string; texto?: string; feita?: boolean; fixada?: boolean; criada_em?: string; alterada_em?: string }
         Relationships: []
       }
+      reunioes: {
+        Row: { id: string; organizacao_id: string; criado_por: string; titulo: string; inicio: string; fim: string; link: string | null; pauta: string | null; cancelada_em: string | null; criada_em: string; alterada_em: string }
+        Insert: { id?: string; organizacao_id: string; criado_por: string; titulo: string; inicio: string; fim: string; link?: string | null; pauta?: string | null; cancelada_em?: string | null; criada_em?: string; alterada_em?: string }
+        Update: { id?: string; organizacao_id?: string; criado_por?: string; titulo?: string; inicio?: string; fim?: string; link?: string | null; pauta?: string | null; cancelada_em?: string | null; criada_em?: string; alterada_em?: string }
+        Relationships: []
+      }
+      reuniao_convidados: {
+        Row: { reuniao_id: string; perfil_id: string; convidado_em: string }
+        Insert: { reuniao_id: string; perfil_id: string; convidado_em?: string }
+        Update: { reuniao_id?: string; perfil_id?: string; convidado_em?: string }
+        Relationships: []
+      }
       ferramenta_uso: {
         Row: {
           chave: string
@@ -13935,6 +13947,25 @@ export type Database = {
       salvar_anotacao: { Args: { p_id: string | null; p_texto: string }; Returns: string }
       marcar_anotacao: { Args: { p_id: string; p_feita?: boolean; p_fixada?: boolean }; Returns: undefined }
       apagar_anotacao: { Args: { p_id: string }; Returns: undefined }
+      salvar_reuniao: {
+        Args: {
+          p_id: string | null; p_unidade: string | null; p_titulo: string; p_data: string; p_inicio: string; p_fim: string
+          p_link: string | null; p_pauta: string | null; p_convidados: string[]
+        }
+        Returns: string
+      }
+      cancelar_reuniao: { Args: { p_id: string }; Returns: undefined }
+      minhas_reunioes: {
+        Args: { p_de: string; p_ate: string }
+        Returns: {
+          id: string; titulo: string; inicio: string; fim: string; link: string | null; plataforma: string | null
+          pauta: string | null; cancelada: boolean; sou_criador: boolean; criador_nome: string; convidados: Json
+        }[]
+      }
+      pessoas_para_reuniao: {
+        Args: { p_unidade: string; p_busca: string }
+        Returns: { perfil_id: string; nome: string; papeis: string[]; unidades: string[] }[]
+      }
       passometro: { Args: { p_unidade: string }; Returns: Json }
       registrar_impressao_passometro: { Args: { p_unidade: string }; Returns: Json }
       medicos_para_descanso: {
