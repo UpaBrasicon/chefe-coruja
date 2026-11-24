@@ -9,6 +9,9 @@
 //   Só alerta: nada é cancelado pelo sistema.
 // • Prazos da central: o regulador ou o gestor da central ajusta.
 // • Atualizar evolução: a origem escreve a evolução e o relógio recomeça.
+// • Prazo por tipo (RT, 24/11/2026; migration 20270421000012): quando a central
+//   do pedido tem prazo para o tipo (definido pelo administrador), o relógio da
+//   fila usa esse prazo; sem ele, o prazo por prioridade.
 // Migration 20261113000001_sla_regulacao.sql.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -28,6 +31,7 @@ import {
   NIVEIS_FILA, PRIORIDADES, STATUS, TIPOS, alertasSla, errosPrazos, formatarEspera, prazosParaEnvio, prazosParaForm, resumoPedido,
   type FormPrazos, type Prazos, type Prioridade, type Sla, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
+import { resumoPrazosTipo } from '@/lib/regulamentacaoCentrais'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -86,6 +90,9 @@ export function PainelSla({ unidadeId, central, detalhe }: {
             ? 'Pedidos da rede esperando decisão. O prazo da fila conta só o tempo com a central; com a origem, pausa.'
             : 'Pedidos da unidade esperando decisão: responder à central e atualizar a evolução no prazo.'}
           {' '}Só alerta: o sistema não cancela nada. Atualiza a cada minuto.
+          {r?.prazos && resumoPrazosTipo(r.prazos.por_tipo) && (
+            <> Prazo da fila por tipo de pedido{central ? '' : ' (da central que recebe os pedidos da unidade)'}: {resumoPrazosTipo(r.prazos.por_tipo)}; nos outros tipos, o prazo por prioridade.</>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
@@ -180,10 +187,16 @@ export function PrazosCentral({ unidadeId, editavel }: { unidadeId: string; edit
         <CardTitle className="text-corpo">Prazos da central</CardTitle>
         <CardDescription>
           Prazo da fila por prioridade, em minutos (vazio = sem prazo; não há regra nacional). Relógios da origem, em horas: partem de
-          12 h, 3 h e 72 h (Nota Técnica SES-MG 15/2008; Deliberação CIB-SP 35/2022). Valem para a rede inteira; só alertam.
+          12 h, 3 h e 72 h (Nota Técnica SES-MG 15/2008; Deliberação CIB-SP 35/2022). Valem para os pedidos desta central; só alertam.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
+        {resumoPrazosTipo(p.por_tipo) && (
+          <p className="rounded-controle border border-fio bg-superficie px-3 py-2 text-rotulo text-tinta-apoio">
+            <span className="font-medium text-tinta">Prazo da fila por tipo de pedido</span> (definido pelo administrador da rede):{' '}
+            {resumoPrazosTipo(p.por_tipo)}. Nesses tipos ele vale no lugar do prazo por prioridade.
+          </p>
+        )}
         <div className="flex flex-wrap gap-3">
           {NIVEIS_FILA.map((k) => (
             <div key={k} className="flex flex-col gap-1">

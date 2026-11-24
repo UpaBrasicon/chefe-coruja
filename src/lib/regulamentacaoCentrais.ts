@@ -99,6 +99,13 @@ export function prazoLegivel(minutos: number | null | undefined): string {
   return `${valor} min`
 }
 
+/** Prazos por tipo em uma linha ("Internação (leito) 2 h · Exame 7 dias"); vazio quando não há. */
+export function resumoPrazosTipo(porTipo: Partial<Record<TipoPedido, number>> | null | undefined): string {
+  if (!porTipo) return ''
+  return TIPOS_PEDIDO.filter(({ tipo }) => porTipo[tipo] != null)
+    .map(({ tipo, rotulo }) => `${rotulo} ${prazoLegivel(porTipo[tipo])}`).join(' · ')
+}
+
 // ── capacidades ─────────────────────────────────────────────────────────────
 /** A lista que vai ao banco: sem repetidos, quantidade só no leito. */
 export function capacidadesParaEnvio(itens: Capacidade[]): Capacidade[] {
@@ -115,6 +122,41 @@ export function capacidadesParaEnvio(itens: Capacidade[]): Capacidade[] {
     })
   }
   return saida
+}
+
+// ── consulta do regulador (migration 20270421000012) ────────────────────────
+/** Unidade regulada pela central, com o que ela tem (regulacao_capacidades_reguladas). */
+export type UnidadeRegulada = {
+  id: string; nome: string; tipo: string; vinculada: boolean; capacidades: Capacidade[]; atualizado_em: string | null
+}
+/** O que o pedido procura, para destacar nas capacidades. */
+export type PedidoProcura = { tipo: TipoPedido; tipo_leito?: string | null; especialidade?: string | null }
+
+/** Categoria de capacidade que responde ao tipo do pedido. */
+export function categoriaDoPedido(tipo: TipoPedido): CategoriaCapacidade {
+  return tipo === 'exame' ? 'exame' : tipo === 'consulta' ? 'especialidade' : 'leito'
+}
+
+/**
+ * A capacidade atende ao pedido? Leito e transferência: o mesmo tipo de leito.
+ * Consulta: a especialidade pelo nome (sem acento, um contém o outro).
+ * Exame: o pedido traz o procedimento SIGTAP, não o nome do exame; só a
+ * categoria é destacada (nunca "combina").
+ */
+export function capacidadeCombina(c: Capacidade, p: PedidoProcura): boolean {
+  if (c.categoria !== categoriaDoPedido(p.tipo)) return false
+  if (c.categoria === 'leito') return !!p.tipo_leito && c.codigo === p.tipo_leito
+  if (c.categoria === 'especialidade') {
+    const a = semAcento(c.nome), b = semAcento(p.especialidade ?? '')
+    return !!a && !!b && (a.includes(b) || b.includes(a))
+  }
+  return false
+}
+
+/** Unidades que têm o que o pedido procura primeiro; depois por nome. */
+export function ordenarParaPedido(unidades: UnidadeRegulada[], p: PedidoProcura | null): UnidadeRegulada[] {
+  const tem = (u: UnidadeRegulada) => (p && u.capacidades.some((c) => capacidadeCombina(c, p)) ? 0 : 1)
+  return [...unidades].sort((x, y) => tem(x) - tem(y) || x.nome.localeCompare(y.nome, 'pt-BR'))
 }
 
 /** Resumo curto do que a unidade tem, para a lista. */
