@@ -991,21 +991,21 @@ function PainelChamada({ porta, chamadas, carregando, erro }: {
 
   return (
     <div className="flex flex-col">
-      <div className="mb-[18px] flex flex-wrap gap-2.5">
-        <Button className="min-h-9 px-[15px]" onClick={() => void abrirPainel()}>
-          <Monitor /> Abrir painel em nova janela
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <Button className="min-h-9 px-4" onClick={() => void abrirPainel()}>
+          <Monitor /> Abrir na TV
         </Button>
-        <span className="self-center text-apoio text-pretty text-tinta-sussurro">
-          Na janela nova, clique em Ativar som uma vez e deixe em tela cheia (F11). Abrir de novo gera outro link e desliga o anterior.
+        <span className="min-w-0 flex-[1_1_280px] text-apoio text-pretty text-tinta-sussurro">
+          Na janela nova, clique em Ativar som e use tela cheia (F11). Abrir de novo desliga o link anterior.
         </span>
       </div>
       {erroPainel && <p role="alert" className="mb-3 text-apoio text-critico">{erroPainel}</p>}
       <div className={cn(cartao, 'overflow-hidden')}>
-        <div className="border-b border-trilha px-5 py-[13px] text-apoio font-semibold text-tinta">Últimas chamadas</div>
+        <div className="border-b border-trilha px-5 py-3 text-controle font-semibold text-tinta">Últimas chamadas</div>
         {carregando && <div className="px-5 py-4"><Spinner /></div>}
         {erro && <p className="px-5 py-4 text-apoio text-critico">{erro.message}</p>}
         {chamadas?.map((c) => (
-          <div key={c.id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[11px] last:border-0">
+          <div key={c.id} className="flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-3 last:border-0">
             <span className="min-w-12 text-apoio tabular-nums text-tinta-sussurro">{hora(c.criado_em)}</span>
             <span className="min-w-0 flex-[1_1_200px] text-corpo font-medium text-tinta">{c.nome}</span>
             <span className="text-controle font-semibold text-acao">{c.sala}</span>
@@ -1013,7 +1013,7 @@ function PainelChamada({ porta, chamadas, carregando, erro }: {
             <span className="text-apoio text-tinta-sussurro">{c.quem ?? '—'}</span>
           </div>
         ))}
-        {chamadas && chamadas.length === 0 && <p className="px-5 py-[18px] text-apoio text-tinta-sussurro">Nenhuma chamada ainda.</p>}
+        {chamadas && chamadas.length === 0 && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Nenhuma chamada nas últimas 12 horas.</p>}
       </div>
     </div>
   )

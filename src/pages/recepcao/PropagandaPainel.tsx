@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, Eye, EyeOff, ImagePlus, Megaphone, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, Eye, EyeOff, ImagePlus, Megaphone, Trash2 } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Campo } from '@/components/documentos/ui'
-import { TituloCartao } from '@/components/monitor/Pagina'
 
 // Propaganda do painel da TV (P/Painel de Chamada.dc.html: artes 16:9 em
 // rodízio, com o rótulo "Informe da Prefeitura" e o tempo de cada uma). No
 // protótipo eram espaços de imagem no próprio arquivo; aqui é conteúdo da
 // unidade (painel_config e painel_propagandas, migration 20261008000001),
 // cadastrado pelo gestor. A Recepção vê o que está no ar.
+// RF3 (revisão do perfil Recepção, RT 24/11/2026): no Painel de chamada as
+// artes são configuração; o cartão abre recolhido, abaixo das chamadas.
 
 type Item = { id: string; caminho: string; titulo: string; ativo: boolean; ordem: number }
 type Propaganda = { rotulo: string; segundos: number; posso_editar: boolean; itens: Item[] }
@@ -35,6 +36,7 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
       return data as unknown as Propaganda
     },
   })
+  const [aberto, setAberto] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
   const invalidar = () => queryClient.invalidateQueries({ queryKey: chave })
   const aoErro = (e: Error) => setErro(e.message)
@@ -121,18 +123,27 @@ export function PropagandaPainel({ unidadeId }: { unidadeId: string }) {
   const ativos = data?.itens.filter((i) => i.ativo).length ?? 0
 
   return (
-    <section className={cn(cartao, 'mt-[18px]')} aria-labelledby="propaganda-titulo">
-      <div className="flex flex-wrap items-center gap-2.5 border-b border-trilha px-5 py-[13px]">
-        <Megaphone className="size-4 text-acao" aria-hidden />
-        <TituloCartao id="propaganda-titulo" className="mb-0">Propaganda na TV</TituloCartao>
-        <span className="ml-auto text-apoio text-tinta-sussurro">
-          {data ? `${ativos} ${ativos === 1 ? 'arte no ar' : 'artes no ar'} · ${data.segundos} s cada` : ''}
-        </span>
-      </div>
-      {isLoading && <div className="px-5 py-4"><Spinner /></div>}
-      {error && <p className="px-5 py-4 text-apoio text-critico">{(error as Error).message}</p>}
-      {data && (
-        <div className="flex flex-col gap-4 px-5 py-[18px]">
+    <section className={cn(cartao, 'mt-4')} aria-labelledby="propaganda-titulo">
+      <h3>
+        <button
+          type="button"
+          aria-expanded={aberto}
+          aria-controls="propaganda-conteudo"
+          onClick={() => setAberto((v) => !v)}
+          className={cn('flex w-full flex-wrap items-center gap-2.5 px-5 py-3 text-left hover:bg-trilha/60', aberto && 'border-b border-trilha')}
+        >
+          <Megaphone className="size-4 text-tinta-sussurro" aria-hidden />
+          <span id="propaganda-titulo" className="text-controle leading-[1.3] font-semibold text-tinta">Artes da TV</span>
+          <span className="ml-auto text-apoio font-normal text-tinta-sussurro">
+            {data ? `${ativos} ${ativos === 1 ? 'arte no ar' : 'artes no ar'} · ${data.segundos} s cada` : ''}
+          </span>
+          <ChevronDown className={cn('size-4 text-tinta-sussurro transition-transform', aberto && 'rotate-180')} aria-hidden />
+        </button>
+      </h3>
+      {aberto && isLoading && <div className="px-5 py-4"><Spinner /></div>}
+      {aberto && error && <p className="px-5 py-4 text-apoio text-critico">{(error as Error).message}</p>}
+      {aberto && data && (
+        <div id="propaganda-conteudo" className="flex flex-col gap-4 px-5 py-4">
           <p className="text-apoio text-pretty text-tinta-sussurro">
             {editar
               ? 'As artes ativas passam em rodízio ao lado das chamadas. Quando alguém é chamado, o nome ocupa a tela toda por 9 segundos. Use arte 16:9, sem dado de paciente.'
