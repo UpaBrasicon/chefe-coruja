@@ -59,6 +59,7 @@ const SeletorUnidade = lazy(() =>
 const OrganizacaoGrupo = lazy(() => import('@/pages/grupos/OrganizacaoGrupo'))
 const UnidadeGrupo = lazy(() => import('@/pages/grupos/UnidadeGrupo'))
 const EscalaGrupo = lazy(() => import('@/pages/grupos/EscalaGrupo'))
+const SecretariaGrupo = lazy(() => import('@/pages/grupos/SecretariaGrupo'))
 const AgendaGrupo = lazy(() => import('@/pages/grupos/AgendaGrupo'))
 const PlantaoHome = lazy(() => import('@/pages/plantao/PlantaoHome'))
 const PlantaoSectionHome = lazy(() => import('@/pages/plantao/PlantaoSectionHome'))
@@ -448,8 +449,19 @@ export default function App() {
                       </Route>
 
                       {/* ── Gestor (e admin, com abas filtradas) ───────── */}
-                      <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
+                      {/* Perfil Gestor da secretaria (RT, 24/11/2026): a rede dele, a configuração das
+                          unidades da secretaria e as vagas da escala (o banco confere a secretaria). */}
+                      <Route element={<RequireRole papeis={['gestor_secretaria']} />}>
+                        <Route path="/secretaria" element={<SecretariaGrupo />} />
+                      </Route>
+                      <Route element={<RequireRole papeis={['gestor', 'admin', 'gestor_secretaria']} />}>
                         <Route path="/unidade" element={<UnidadeGrupo />} />
+                      </Route>
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin', 'gestor_secretaria']} />}>
+                        <Route path="/escala" element={<RotaEscala />} />
+                      </Route>
+
+                      <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
                         <Route path="/indicadores" element={<Indicadores />} />
                         {/* legado */}
                         <Route path="/setores" element={<Redirecionar para="/unidade?aba=setores" />} />
@@ -488,7 +500,6 @@ export default function App() {
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
                         <Route path="/agenda" element={<AgendaGrupo />} />
 
-                        <Route path="/escala" element={<RotaEscala />} />
                         <Route
                           path="/internacao"
                           element={

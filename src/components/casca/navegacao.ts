@@ -252,6 +252,14 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_AVISOS,
     ITEM_ESCALA,
   ],
+  // Perfil Secretaria (RT, 24/11/2026): a rede da secretaria, a configuração de
+  // cada unidade dela (a unidade se escolhe no topo, como nos outros perfis) e as
+  // vagas da escala. Sem tela de paciente.
+  gestor_secretaria: [
+    { to: '/secretaria', rotulo: 'Rede', icone: Network, exato: true },
+    { to: '/unidade', rotulo: 'Unidades', icone: Building2, exato: true },
+    { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
+  ],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: Building2, exato: true },
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },

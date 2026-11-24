@@ -25,9 +25,17 @@ const LiberacaoRede = lazy(() => import('@/components/rede/LiberacaoRede'))
  * permissão de ninguém.
  */
 export default function UnidadeGrupo() {
-  const { papeisDaUnidade } = useUnidade()
+  const { papeisDaUnidade, papelAtivo } = useUnidade()
 
-  const abas: AbaDef[] = [
+  // Perfil Gestor da secretaria (RT, 24/11/2026): setores e leitos (sem o mapa,
+  // que mostra paciente), convites e configurações da unidade escolhida no topo.
+  // Quem também é gestor da unidade fica com as abas do gestor.
+  const daSecretaria = papelAtivo === 'gestor_secretaria' && !papeisDaUnidade.includes('gestor')
+  const abas: AbaDef[] = daSecretaria ? [
+    { valor: 'setores', rotulo: 'Setores e leitos', conteudo: () => <Setores embutido /> },
+    { valor: 'convites', rotulo: 'Convites', conteudo: () => <Convites /> },
+    { valor: 'configuracoes', rotulo: 'Configurações', conteudo: () => <Configuracao embutido /> },
+  ] : [
     ...(papeisDaUnidade.includes('gestor')
       ? [{
           valor: 'setores', rotulo: 'Setores e leitos',

@@ -26,6 +26,10 @@ const abas = (gestor: boolean): AbaDef[] => [
  * Escala do gestor/admin — o mês, os pedidos, a carga horária, a escala fixa,
  * as presenças do dia (check-ins) e o histórico de alterações.
  */
+// Perfil Gestor da secretaria (RT, 24/11/2026): o mês da unidade, para marcar e
+// retirar vagas e publicar. Pedidos, carga, presenças e histórico seguem do gestor.
+const ABAS_SECRETARIA: AbaDef[] = [{ valor: 'mensal', rotulo: 'Mensal', conteudo: () => <EscalaMes /> }]
+
 export default function EscalaGrupo() {
   const { papelAtivo } = useUnidade()
   return (
@@ -33,7 +37,7 @@ export default function EscalaGrupo() {
       titulo="Escala"
       descricao="Montagem da escala, pedidos, presenças do dia (check-ins) e histórico de alterações."
       icone={CalendarClock}
-      abas={abas(papelAtivo === 'gestor')}
+      abas={papelAtivo === 'gestor_secretaria' ? ABAS_SECRETARIA : abas(papelAtivo === 'gestor')}
     />
   )
 }

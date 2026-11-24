@@ -68,9 +68,13 @@ const leitosSchema = z.object({
 type LeitosForm = z.infer<typeof leitosSchema>
 
 export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo, papeisDaUnidade } = useUnidade()
   const queryClient = useQueryClient()
   const unidadeId = unidadeAtiva?.unidade_id
+  // perfil Gestor da secretaria (RT, 24/11/2026): cria e muda setores e leitos e
+  // bloqueia ou desbloqueia leito; a rotina do leito (higienizar, reservar,
+  // liberar) segue da unidade
+  const soCadastro = papelAtivo === 'gestor_secretaria' && !papeisDaUnidade.includes('gestor')
 
   const [setorSelecionadoId, setSetorSelecionadoId] = React.useState<string | null>(null)
   const [dialogSetorAberto, setDialogSetorAberto] = React.useState(false)
@@ -315,11 +319,11 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                           leitoId={leito.id}
                           identificador={leito.identificador}
                           status={leito.status}
-                          podeHigienizar
+                          podeHigienizar={!soCadastro}
                           podeBloquear
-                          podeLiberarSemPaciente={!leito.obito_aguardando_id}
-                          podeReservar
-                          podeCancelarReserva
+                          podeLiberarSemPaciente={!soCadastro && !leito.obito_aguardando_id}
+                          podeReservar={!soCadastro}
+                          podeCancelarReserva={!soCadastro}
                           unidadeId={unidadeId}
                           compacto
                           invalidar={[['leitos'], ['situacao-leitos'], ['mapa-leitos-gestor'], ['censo']]}
