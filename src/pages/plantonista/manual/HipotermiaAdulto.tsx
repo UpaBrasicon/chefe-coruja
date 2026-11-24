@@ -33,7 +33,7 @@ const ERRATAS_HIPOTERMIA = [
 function CampoTemp({ id, rotulo, valor, onChange }: { id: string; rotulo: string; valor: string; onChange: (v: string) => void }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>{rotulo}</Label>
+      <Label htmlFor={id} className="flex-1 items-end leading-snug">{rotulo}</Label>
       <Input id={id} inputMode="decimal" value={valor} onChange={(e) => onChange(e.target.value)} className="max-w-40" />
     </div>
   )
@@ -104,7 +104,7 @@ export function HipotermiaAdulto() {
         <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
           <CampoTemp id="hip-t" rotulo="Temperatura central (°C)" valor={temp} onChange={setTemp} />
           <div className="flex flex-col gap-1.5">
-            <Label>Sinais vitais presentes?</Label>
+            <Label className="flex-1 items-end leading-snug">Sinais vitais presentes?</Label>
             <Escolhas valor={sinais} opcoes={[['sim', 'Sim'], ['nao', 'Não (sem sinais vitais)']] as const} onChange={setSinais} />
           </div>
         </CardContent>
@@ -143,7 +143,7 @@ export function HipotermiaAdulto() {
           <CampoTemp id="hip-fc" rotulo="FC (/min)" valor={fc} onChange={setFc} />
           <CampoTemp id="hip-pas" rotulo="PAS (mmHg)" valor={pas} onChange={setPas} />
           <div className="flex flex-col gap-1.5">
-            <Label>Arritmia ventricular?</Label>
+            <Label className="flex-1 items-end leading-snug">Arritmia ventricular?</Label>
             <Escolhas valor={arritmia} opcoes={[['nao', 'Não'], ['sim', 'Sim']] as const} onChange={setArritmia} />
           </div>
         </div>

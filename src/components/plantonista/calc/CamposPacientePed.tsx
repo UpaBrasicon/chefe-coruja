@@ -44,7 +44,7 @@ export function CamposPacientePed({
       <CampoNumero id={`${idBase}-meses`} rotulo="e meses" unidade="0 a 11" valor={meses} onChange={onMeses} />
       {onRn && (
         <div className="flex flex-col gap-1.5">
-          <span id={`${idBase}-rn`} className="text-apoio font-medium text-tinta">Recém-nascido?</span>
+          <span id={`${idBase}-rn`} className="flex flex-1 items-end text-apoio leading-snug font-medium text-tinta">Recém-nascido?</span>
           <div role="radiogroup" aria-labelledby={`${idBase}-rn`} className="flex flex-wrap gap-2">
             <Chip variante="opcao" radio ativo={rn === false} onClick={() => onRn(false)}>Não</Chip>
             <Chip variante="opcao" radio ativo={rn === true} onClick={() => onRn(true)}>Sim</Chip>
