@@ -33,6 +33,7 @@ const MINIMO_MOTIVO = 10
 const caixa = 'overflow-x-auto rounded-container border border-fio bg-superficie'
 const th = 'px-3 py-2 font-medium'
 const td = 'px-3 py-2.5'
+const primeiraMaiuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
 
 function Situacao({ s }: { s: SituacaoErp }) {
   return <Badge variant={VARIANTE_SITUACAO[s]}>{ROTULO_SITUACAO[s]}</Badge>
@@ -79,18 +80,21 @@ function AbaContas({ unidadeId, unidadeNome }: { unidadeId: string; unidadeNome:
   const linhas = filtro ? versoes.filter((v) => situacaoErp(v) === filtro) : versoes
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <Chips rotulo="Situação no ERP">
-          {FILTROS_SITUACAO.map((s) => (
-            <Chip key={s} ativo={filtro === s} onClick={() => setFiltro(s)} contagem={n[s] ?? 0} tom={s === 'divergente' ? 'critico' : 'acao'}>
-              {ROTULO_FILTRO[s]}
-            </Chip>
-          ))}
-          <Chip ativo={filtro === null} onClick={() => setFiltro(null)} contagem={versoes.length}>todas</Chip>
-        </Chips>
-        <BotoesBaixar onBaixar={(f) => baixar.mutate(f)} pendente={baixar.isPending} desabilitado={versoes.length === 0}
-          titulo={versoes.length === 0 ? 'Nenhuma versão para baixar' : 'Baixa o mesmo conteúdo que o ERP recebe (fica na auditoria)'} />
-      </div>
+      {/* CT2 (revisão do perfil Faturamento, RT 24/11/2026): sem versão nenhuma, nem filtros zerados nem CSV/JSON */}
+      {versoes.length > 0 && (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <Chips rotulo="Situação no ERP">
+            {FILTROS_SITUACAO.map((s) => (
+              <Chip key={s} ativo={filtro === s} onClick={() => setFiltro(s)} contagem={n[s] ?? 0} tom={s === 'divergente' ? 'critico' : 'acao'}>
+                {primeiraMaiuscula(ROTULO_FILTRO[s] ?? s)}
+              </Chip>
+            ))}
+            <Chip ativo={filtro === null} onClick={() => setFiltro(null)} contagem={versoes.length}>Todas</Chip>
+          </Chips>
+          <BotoesBaixar onBaixar={(f) => baixar.mutate(f)} pendente={baixar.isPending}
+            titulo="Baixa o mesmo conteúdo que o ERP recebe (fica na auditoria)" />
+        </div>
+      )}
       <MensagemErro texto={((lista.error ?? baixar.error) as Error | null)?.message ?? null} />
       {lista.isLoading ? <Spinner /> : linhas.length === 0 ? (
         <Vazio icone={ArrowLeftRight} titulo={filtro ? 'Nenhuma versão nesta situação' : 'Nenhuma conta foi para o ERP ainda'}

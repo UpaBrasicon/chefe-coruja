@@ -13,6 +13,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileX } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
@@ -59,6 +60,8 @@ export default function Glosas() {
   })
   const p = painel.data
   const recarregar = () => { void qc.invalidateQueries({ queryKey: ['glosas'] }); void qc.invalidateQueries({ queryKey: ['conta'] }) }
+  // CT2 (revisão do perfil Faturamento, RT 24/11/2026): sem glosa nenhuma, só o vazio, sem os totais em R$ 0,00
+  const semNenhuma = !!p && etapa === null && competencia === null && p.totais.quantidade === 0
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -68,7 +71,11 @@ export default function Glosas() {
         descricao="Produção recusada pelo SIA/SIH ou pelo gestor municipal, registrada a partir do relatório de rejeição. O faturamento acompanha o recurso; só o gestor marca como perdida."
       />
       <MensagemErro texto={painel.error ? (painel.error as Error).message : null} />
-      {painel.isLoading || !p ? <Spinner /> : (
+      {painel.isLoading || !p ? <Spinner /> : semNenhuma ? (
+        <Vazio icone={FileX} titulo="Nenhuma glosa registrada"
+          texto={<>Quando chegar o relatório de rejeição do SIA/SIH ou do gestor municipal, abra a conta fechada em{' '}
+            <Link to="/faturamento/contas" className="text-acao underline-offset-2 hover:underline">Contas do atendimento</Link> e use Registrar glosa.</>} />
+      ) : (
         <>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {([['Glosado', p.totais.glosado], ['Em andamento', p.totais.em_andamento], ['Recuperado', p.totais.recuperado], ['Perdido', p.totais.perdido]] as const).map(([r, v]) => (
@@ -113,7 +120,7 @@ export default function Glosas() {
               <ul className="flex flex-col gap-0.5">
                 {p.por_motivo.map((m) => (
                   <li key={m.motivo} className="text-tinta-apoio">
-                    {MOTIVO_GLOSA[m.motivo]}: {m.quantidade} glosa(s), {reais(m.glosado)} glosado, {reais(m.recuperado)} recuperado
+                    {MOTIVO_GLOSA[m.motivo]}: {m.quantidade} {m.quantidade === 1 ? 'glosa' : 'glosas'}, {reais(m.glosado)} glosado, {reais(m.recuperado)} recuperado
                   </li>
                 ))}
               </ul>
@@ -121,9 +128,9 @@ export default function Glosas() {
           )}
 
           <Chips rotulo="Etapa da glosa">
-            <Chip ativo={etapa === null} onClick={() => setEtapa(null)}>todas</Chip>
+            <Chip ativo={etapa === null} onClick={() => setEtapa(null)}>Todas</Chip>
             {(['aberta', 'em_recurso', 'recuperada', 'perdida'] as const).map((e) => (
-              <Chip key={e} ativo={etapa === e} onClick={() => setEtapa(e)}>{ETAPA_GLOSA[e]}</Chip>
+              <Chip key={e} ativo={etapa === e} onClick={() => setEtapa(e)}>{ETAPA_GLOSA[e].charAt(0).toUpperCase() + ETAPA_GLOSA[e].slice(1)}</Chip>
             ))}
           </Chips>
           {p.glosas.length === 0 ? (

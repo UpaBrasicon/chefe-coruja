@@ -209,13 +209,14 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   // de procedimentos e códigos SIGTAP da unidade. Revisão do perfil (FT1 = A,
   // RT 24/11/2026): na ordem do trabalho, da conta à produção, à glosa e ao
   // envio. A AIH entra em Produção quando o banco abrir aihs_da_unidade ao
-  // faturamento (hoje a função aceita só regulador e gestor).
+  // faturamento (hoje a função aceita só regulador e gestor). Os grupos são os
+  // nomes curtos do trilho; itens seguidos sem grupo viram uma área só.
   faturamento: [
-    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
+    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true, grupo: 'Contas' },
     { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true, grupo: 'Produção' },
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, grupo: 'Produção' },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
-    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true },
+    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true, grupo: 'ERP' },
     // pendências da 5B, L4: cadastro de materiais (opção A do RT)
     { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true, grupo: 'Cadastro' },
     ITEM_ESCALA,

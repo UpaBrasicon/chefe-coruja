@@ -60,13 +60,28 @@ export default function Apac() {
       return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: Apac[] }
     },
   })
+  // CT2 (revisão do perfil Faturamento, RT 24/11/2026): até a primeira APAC, só o vazio, sem abas zeradas
+  const existe = useQuery({
+    queryKey: ['apacs-da-unidade', unidade, 'existe'],
+    enabled: !!unidade,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('apacs_da_unidade_pagina', { p_unidade: unidade!, p_limite: 1 })
+      if (error) throw error
+      return ((data ?? { total: 0 }) as unknown as { total: number }).total
+    },
+  })
+  const semNenhuma = existe.data === 0
   return (
     <div className="flex w-full max-w-5xl flex-col">
       <TituloPagina icone={FileCheck} titulo="APAC da unidade"
         descricao={regulador ? 'Autorize com o número e a validade, ou rejeite com o motivo.'
           : 'Registre a execução de cada competência e gere o arquivo do APAC Magnético. Quem autoriza é o médico regulador.'} />
-      <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />
-      {!unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
+      {semNenhuma ? (
+        <Vazio icone={FileCheck} titulo="Nenhuma APAC na unidade ainda"
+          texto={regulador ? 'Quando o médico solicitar uma APAC, ela aparece aqui para você autorizar.'
+            : 'Quando o médico solicitar uma APAC e o regulador autorizar, a execução e o arquivo do APAC Magnético ficam aqui.'} />
+      ) : <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />}
+      {semNenhuma ? null : !unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
         : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data?.itens ?? []).length === 0 ? (
           <Vazio icone={FileCheck} titulo="Nenhuma APAC aqui" texto="Quando o médico solicitar uma APAC, ela aparece em Solicitadas." />
         ) : (
