@@ -10177,6 +10177,24 @@ export type Database = {
           },
         ]
       }
+      turnos_unidade: {
+        Row: {
+          id: string; unidade_id: string; codigo: string; nome: string; inicio: string; fim: string; duracao_min: number
+          cobre: 'todos' | 'medico' | 'enfermagem'; sobreaviso: boolean; padrao: boolean; ordem: number; ativo: boolean
+          criado_por: string | null; criado_em: string; atualizado_em: string
+        }
+        Insert: {
+          id?: string; unidade_id: string; codigo: string; nome: string; inicio: string; fim: string; duracao_min: number
+          cobre?: 'todos' | 'medico' | 'enfermagem'; sobreaviso?: boolean; padrao?: boolean; ordem?: number; ativo?: boolean
+          criado_por?: string | null; criado_em?: string; atualizado_em?: string
+        }
+        Update: {
+          id?: string; unidade_id?: string; codigo?: string; nome?: string; inicio?: string; fim?: string; duracao_min?: number
+          cobre?: 'todos' | 'medico' | 'enfermagem'; sobreaviso?: boolean; padrao?: boolean; ordem?: number; ativo?: boolean
+          criado_por?: string | null; criado_em?: string; atualizado_em?: string
+        }
+        Relationships: []
+      }
       trocas_plantao: {
         Row: {
           aceito_em: string | null
@@ -11004,6 +11022,7 @@ export type Database = {
       }
       recusar_passagem: { Args: { p_motivo?: string; p_solicitacao: string }; Returns: undefined }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
+      ativar_turno_unidade: { Args: { p_id: string; p_ativo: boolean }; Returns: undefined }
       atendimento_aberto_do_paciente: {
         Args: { p_paciente: string }
         Returns: {
@@ -13933,6 +13952,13 @@ export type Database = {
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
       salvar_anotacao: { Args: { p_id: string | null; p_texto: string }; Returns: string }
+      salvar_turno_unidade: {
+        Args: {
+          p_unidade: string; p_id: string | null; p_nome: string; p_inicio: string; p_fim: string
+          p_cobre?: string; p_sobreaviso?: boolean; p_ordem?: number
+        }
+        Returns: string
+      }
       marcar_anotacao: { Args: { p_id: string; p_feita?: boolean; p_fixada?: boolean }; Returns: undefined }
       apagar_anotacao: { Args: { p_id: string }; Returns: undefined }
       passometro: { Args: { p_unidade: string }; Returns: Json }
@@ -14970,6 +14996,7 @@ export type EscalaPlantao = Database['public']['Tables']['escala_plantao']['Row'
 export type EscalaPlantaoInsert = Database['public']['Tables']['escala_plantao']['Insert']
 export type EscalaFixa = Database['public']['Tables']['escala_fixa']['Row']
 export type EscalaFixaInsert = Database['public']['Tables']['escala_fixa']['Insert']
+export type TurnoUnidade = Database['public']['Tables']['turnos_unidade']['Row']
 export type SolicitacaoEscala = Database['public']['Tables']['solicitacoes_escala']['Row']
 export type SolicitacaoEscalaInsert = Database['public']['Tables']['solicitacoes_escala']['Insert']
 export type CandidaturaEscala = Database['public']['Tables']['candidaturas_escala']['Row']
