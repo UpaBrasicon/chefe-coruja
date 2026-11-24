@@ -18,6 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, Receipt } from 'lucide-react'
 import * as React from 'react'
 
+import { AntesDeFechar, ExplicaProcessamento, ParaCorrigirBpa, ResumoBpa } from '@/components/faturamento/ConferenciaBpa'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { EnderecoSus } from '@/components/paciente/EnderecoSus'
 import { ProcedimentosRealizados } from '@/components/paciente/ProcedimentosRealizados'
@@ -31,9 +32,10 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { competenciaDaData, competenciaNaTela, lerCompetencia } from '@/lib/aih'
+import { motivoFecharDesligado } from '@/lib/bpaResumo'
 import {
-  codigoSigtapNaTela, competenciasNaJanela, CRITICA_BPA, DESTINO_BPA, INSTRUMENTO_SIGTAP, ORIGEM_BPA, SUGESTAO_SIGTAP, USO_PROCEDIMENTO, foraDaJanela,
-  type AtendimentoParaFaturar, type Conferencia, type ConfigBpa, type FechamentoBpa, type OrigemBpa,
+  codigoSigtapNaTela, competenciasNaJanela, INSTRUMENTO_SIGTAP, SUGESTAO_SIGTAP, USO_PROCEDIMENTO, foraDaJanela,
+  type AtendimentoParaFaturar, type Conferencia, type ConfigBpa, type FechamentoBpa,
   type ProfissionalParaFaturar, type UsoProcedimento,
 } from '@/lib/bpa'
 import { fmtDataHora } from '@/lib/datas'
@@ -80,7 +82,10 @@ export default function Bpa() {
           {(aba === 'competencia' || aba === 'lancar') && (
             <SeletorCompetencia atual={atual} valor={competencia} onChange={setCompetencia} />
           )}
-          {aba === 'competencia' && <AbaCompetencia unidade={unidade} competencia={competencia} atual={atual} />}
+          {aba === 'competencia' && (
+            <AbaCompetencia unidade={unidade} unidadeNome={unidadeAtiva?.unidade?.nome ?? ''} competencia={competencia} atual={atual}
+              onConfigurar={() => setAba('configuracao')} />
+          )}
           {aba === 'lancar' && <AbaLancar key={competencia} unidade={unidade} competencia={competencia} />}
           {aba === 'configuracao' && <AbaConfiguracao unidade={unidade} />}
           {aba === 'historico' && <AbaHistorico unidade={unidade} />}
@@ -109,7 +114,9 @@ function SeletorCompetencia({ atual, valor, onChange }: { atual: string; valor: 
 }
 
 // ── competência ─────────────────────────────────────────────────────────────
-function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; competencia: string; atual: string }) {
+function AbaCompetencia({ unidade, unidadeNome, competencia, atual, onConfigurar }: {
+  unidade: string; unidadeNome: string; competencia: string; atual: string; onConfigurar: () => void
+}) {
   const qc = useQueryClient()
   const conf = useQuery({
     queryKey: ['bpa-conferencia', unidade, competencia],
@@ -148,28 +155,16 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
   if (conf.error) return <MensagemErro texto={(conf.error as Error).message} />
   const c = conf.data!
   const bloqueios = c.globais.filter((g) => g.tipo === 'bloqueio')
-  const avisos = c.globais.filter((g) => g.tipo === 'aviso')
   const fechada = c.fechamento?.situacao === 'fechada'
+  // FT2: o botão diz por que está desligado
+  const desligado = motivoFecharDesligado({ bloqueios: bloqueios.length, prontas: c.prontas, processamentoValido: !!lerCompetencia(processamento) })
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-2 sm:grid-cols-4">
-        <Numero rotulo="Linhas na competência" valor={c.total} />
-        <Numero rotulo={c.bpa_c !== undefined ? `Prontas (BPA-I ${c.bpa_i ?? 0} · BPA-C ${c.bpa_c})` : 'Prontas para o arquivo'} valor={c.prontas} />
-        <Numero rotulo="Com crítica (ficam fora)" valor={c.com_critica} tom={c.com_critica > 0 ? 'critico' : undefined} />
-        <Numero rotulo="Com aviso (vão com campo vazio)" valor={c.com_aviso} tom={c.com_aviso > 0 ? 'atencao' : undefined} />
-      </div>
-      <div className="flex flex-wrap gap-2 text-rotulo text-tinta-apoio">
-        {(Object.keys(ORIGEM_BPA) as OrigemBpa[]).map((o) => (
-          <span key={o} className="rounded-capsula border border-fio px-2.5 py-1">{ORIGEM_BPA[o]}: {c.por_origem[o] ?? 0}</span>
-        ))}
-      </div>
-      {(bloqueios.length > 0 || avisos.length > 0) && (
-        <ul className="flex flex-col gap-1 text-apoio">
-          {bloqueios.map((g) => <li key={g.codigo} className="text-critico">Impede o fechamento: {g.texto}</li>)}
-          {avisos.map((g) => <li key={g.codigo} className="text-atencao">Aviso: {g.texto}</li>)}
-        </ul>
-      )}
+      {/* FT4: os números numa frase, com o detalhe por tipo abaixo */}
+      <ResumoBpa c={c} />
+      {/* FT2: o que impede o fechamento primeiro, com o caminho; avisos recolhidos */}
+      {!fechada && <AntesDeFechar globais={c.globais} onConfigurar={onConfigurar} />}
 
       <Card>
         <CardHeader>
@@ -201,65 +196,27 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
               )}
             </div>
           ) : (
-            <div className="flex flex-wrap items-end gap-2">
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="bpa-proc" className="text-rotulo">Competência de processamento</Label>
-                <Input id="bpa-proc" className="h-8 w-28" value={processamento} onChange={(e) => setProcessamento(e.target.value)} placeholder="MM/AAAA" />
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="bpa-proc" className="text-rotulo">Competência de processamento</Label>
+                  <Input id="bpa-proc" className="h-8 w-28" value={processamento} onChange={(e) => setProcessamento(e.target.value)} placeholder="MM/AAAA" />
+                </div>
+                <Button size="sm" disabled={!!desligado || fechar.isPending} aria-describedby={desligado ? 'bpa-fechar-por-que' : undefined}
+                  onClick={() => fechar.mutate()}>
+                  Fechar {competenciaNaTela(competencia)} e gerar o arquivo ({c.prontas === 1 ? '1 linha' : `${c.prontas} linhas`})
+                </Button>
+                {desligado && <span id="bpa-fechar-por-que" className="self-center text-rotulo text-tinta-apoio">{desligado}</span>}
               </div>
-              <Button size="sm" disabled={bloqueios.length > 0 || c.prontas === 0 || !lerCompetencia(processamento) || fechar.isPending}
-                onClick={() => fechar.mutate()}>
-                Fechar {competenciaNaTela(competencia)} e gerar o arquivo ({c.prontas} linhas)
-              </Button>
+              <ExplicaProcessamento competencia={competencia} />
             </div>
           )}
           {[fechar.error, reabrir.error, download.error].filter(Boolean).map((e, i) => <MensagemErro key={i} texto={(e as Error).message} />)}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-corpo">Para corrigir</CardTitle>
-          <CardDescription>Linha com crítica fica fora do arquivo; com aviso, vai com o campo vazio. O que não fecha no BPA-I e o procedimento aceita no consolidado vai para o BPA-C, com o motivo. Até 500 linhas, as com crítica primeiro.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-apoio">
-          {Object.keys(c.por_critica).length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {Object.entries(c.por_critica).map(([k, n]) => (
-                <Badge key={k} variant="secondary">{CRITICA_BPA[k] ?? k}: {n}</Badge>
-              ))}
-            </div>
-          )}
-          {c.linhas.length === 0 ? (
-            <p className="text-tinta-sussurro">Nada para corrigir nesta competência.</p>
-          ) : (
-            <ul className="flex flex-col gap-1.5">
-              {c.linhas.map((l) => (
-                <li key={`${l.origem}-${l.origem_id}`} className="flex flex-col gap-0.5 rounded-controle border border-fio px-3 py-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium text-tinta">{l.paciente}</span>
-                    {l.destino && <Badge variant={l.destino === 'fora' ? 'destructive' : l.destino === 'bpa_c' ? 'info' : 'secondary'}>{DESTINO_BPA[l.destino]}</Badge>}
-                    <span className="text-rotulo text-tinta-sussurro">
-                      {ORIGEM_BPA[l.origem]} · {codigoSigtapNaTela(l.procedimento)}{l.quantidade > 1 ? ` × ${l.quantidade}` : ''} · {fmtDataHora(l.em)} · {l.profissional ?? '—'}
-                    </span>
-                  </div>
-                  {l.destino === 'bpa_c' && l.motivo_c && <span className="text-rotulo text-tinta-apoio">Vai no BPA-C: {l.motivo_c}</span>}
-                  {l.destino !== 'bpa_c' && l.criticas.map((k) => <span key={k.codigo} className="text-rotulo text-critico">{k.texto}</span>)}
-                  {l.avisos.map((k) => <span key={k.codigo} className="text-rotulo text-atencao">{k.texto}</span>)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-function Numero({ rotulo, valor, tom }: { rotulo: string; valor: number; tom?: 'critico' | 'atencao' }) {
-  return (
-    <div className="rounded-container border border-fio bg-superficie px-3 py-2.5">
-      <p className="text-rotulo text-tinta-sussurro">{rotulo}</p>
-      <p className={`text-dialogo font-semibold ${tom === 'critico' ? 'text-critico' : tom === 'atencao' ? 'text-atencao' : 'text-tinta'}`}>{valor}</p>
+      {/* FT3: por causa, com os pacientes e a lista para a recepção */}
+      <ParaCorrigirBpa c={c} competencia={competencia} unidadeNome={unidadeNome} onConfigurar={onConfigurar} />
     </div>
   )
 }
