@@ -53,3 +53,54 @@ export function documentosDivergentes(cadastros: Pick<Cadastro, 'cpf' | 'cns'>[]
 
 /** Motivo mínimo do pedido: 30 letras com documento diferente, 10 sem. */
 export const motivoMinimo = (divergencias: string[]) => (divergencias.length > 0 ? 30 : 10)
+
+/**
+ * Por que o sistema sugere este cadastro como o que fica (revisão do gestor,
+ * RT 24/11/2026, M3): a mesma ordem de sugerirPrincipal, em português.
+ */
+export function porQueSugerido(cadastros: Cadastro[]): string {
+  const id = sugerirPrincipal(cadastros)
+  const c = cadastros.find((x) => x.id === id)!
+  const outros = cadastros.filter((x) => x.id !== id)
+  if (c.aberto && outros.every((o) => !o.aberto)) return 'tem atendimento aberto agora; é nele que a equipe está trabalhando'
+  if (outros.every((o) => c.atendimentos > o.atendimentos)) {
+    return `tem mais atendimentos (${c.atendimentos} contra ${outros.map((o) => o.atendimentos).join(', ')})`
+  }
+  return 'é o cadastro mais antigo'
+}
+
+export type SituacaoCampo = 'igual' | 'diferente' | 'so_um' | 'vazio'
+export type LinhaComparacao = { chave: string; rotulo: string; a: string | null; b: string | null; situacao: SituacaoCampo }
+type CamposComparados = Partial<Pick<Cadastro, 'data_nascimento' | 'nome_mae' | 'cpf' | 'cns' | 'prontuario'>> & Pick<Cadastro, 'nome'>
+
+const semAcento = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+
+/**
+ * Comparação campo a campo de dois cadastros (revisão do gestor, RT
+ * 24/11/2026, M1): nome e mãe sem diferença de acento, caixa ou espaço; CPF e
+ * CNS só pelos dígitos. O valor volta cru; a tela formata. Campo que não veio
+ * da consulta (o pedido não traz CPF) fica de fora.
+ */
+export function compararCampos(a: CamposComparados, b: CamposComparados): LinhaComparacao[] {
+  const campos: { chave: keyof CamposComparados; rotulo: string; norm: (v: string) => string }[] = [
+    { chave: 'nome', rotulo: 'Nome', norm: semAcento },
+    { chave: 'data_nascimento', rotulo: 'Nascimento', norm: (v) => v.slice(0, 10) },
+    { chave: 'nome_mae', rotulo: 'Mãe', norm: semAcento },
+    { chave: 'cpf', rotulo: 'CPF', norm: digitos },
+    { chave: 'cns', rotulo: 'CNS', norm: digitos },
+    { chave: 'prontuario', rotulo: 'Prontuário', norm: (v) => v.trim() },
+  ]
+  return campos
+    .filter((c) => c.chave in a || c.chave in b)
+    .map((c) => {
+      const va = a[c.chave] == null || a[c.chave] === '' ? null : String(a[c.chave])
+      const vb = b[c.chave] == null || b[c.chave] === '' ? null : String(b[c.chave])
+      const situacao: SituacaoCampo = va === null && vb === null ? 'vazio'
+        : va === null || vb === null ? 'so_um'
+        : c.norm(va) === c.norm(vb) ? 'igual' : 'diferente'
+      return { chave: c.chave, rotulo: c.rotulo, a: va, b: vb, situacao }
+    })
+}
+
+/** Chave do par, na mesma forma para o candidato e para o pedido. */
+export const chavePar = (ids: string[]) => [...ids].sort().join('|')
