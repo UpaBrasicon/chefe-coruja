@@ -90,19 +90,23 @@ type Dialogo = { tipo: 'iniciar' } | { tipo: 'revisar'; retifica: RevisaoContenc
  * a ativa (selos, ordem médica, revisões, família) com as ações de quem pode,
  * e as anteriores. Sem contenção e sem poder iniciar, não aparece.
  */
-export function Contencao({ pacienteId }: { pacienteId: string }) {
+export function Contencao({ pacienteId, semBotao = false }: {
+  pacienteId: string
+  /** Gaveta da enfermagem (CU2): o "Iniciar" fica no menu de ações do cabeçalho (BotaoIniciarContencao). */
+  semBotao?: boolean
+}) {
   const tela = useTelaContencao(pacienteId)
   const [dialogo, setDialogo] = React.useState<Dialogo | null>(null)
   const [verAnteriores, setVerAnteriores] = React.useState(false)
   const t = tela.data
-  if (!t || (!t.ativa && !t.anteriores.length && !t.pode_iniciar)) return null
+  if (!t || (!t.ativa && !t.anteriores.length && (!t.pode_iniciar || semBotao))) return null
   const c = t.ativa
 
   return (
     <section aria-label="Contenção mecânica" className="flex flex-col gap-1.5">
       {c ? (
         <CartaoContencao c={c} tela={t} aoDialogo={setDialogo} />
-      ) : t.pode_iniciar ? (
+      ) : t.pode_iniciar && !semBotao ? (
         <div>
           <Button size="sm" variant="outline" onClick={() => setDialogo({ tipo: 'iniciar' })}><ShieldAlert /> Iniciar contenção mecânica</Button>
         </div>
@@ -264,6 +268,26 @@ function Rodape({ erro, pronto, ocupado, rotulo, aoFechar, aoConfirmar }: {
         <Button variant="outline" onClick={aoFechar}>Cancelar</Button>
         <Button disabled={!pronto || ocupado} onClick={aoConfirmar}>{rotulo}</Button>
       </div>
+    </>
+  )
+}
+
+/**
+ * "Iniciar contenção mecânica" como item de menu (gaveta da enfermagem, CU2,
+ * RT 24/11/2026): só para quem pode iniciar e sem contenção ativa. A janela
+ * fica montada aqui, então o menu deve esconder o item sem desmontá-lo.
+ */
+export function BotaoIniciarContencao({ pacienteId, className }: { pacienteId: string; className?: string }) {
+  const tela = useTelaContencao(pacienteId)
+  const [aberto, setAberto] = React.useState(false)
+  const t = tela.data
+  if (!t || t.ativa || !t.pode_iniciar) return null
+  return (
+    <>
+      <button type="button" role="menuitem" className={className} onClick={() => setAberto(true)}>
+        <ShieldAlert className="size-4" aria-hidden /> Iniciar contenção mecânica
+      </button>
+      {aberto && <DialogoIniciar pacienteId={pacienteId} pediatrico={t.pediatrico} aoFechar={() => setAberto(false)} />}
     </>
   )
 }
