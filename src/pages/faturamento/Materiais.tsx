@@ -7,7 +7,7 @@
 // lista de lançamento sem apagar o histórico. Cadastram o faturamento e o
 // gestor; o lançamento na conta é do faturamento (Contas do atendimento).
 // Migration 20270226000001_materiais.sql.
-// Custo unitário em R$ (RT, 24/11/2026; migration 20270421000090): definem a
+// Custo unitário em R$ (RT, 24/11/2026; migration 20270422000090): definem a
 // farmácia, o gestor e o administrador geral; os demais só veem. Vazio é "Sem
 // custo". A conta congela o custo do momento do lançamento.
 // ─────────────────────────────────────────────────────────────────────────────

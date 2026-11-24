@@ -28,7 +28,7 @@
 -- homologação, com ou sem a 073, que só troca a checagem de acesso de
 -- material_salvar e materiais_da_unidade); se o trecho não existir, para.
 -- Reaplicável. Teste: supabase/tests/materiais_custo_unitario.sql
--- ROLLBACK: docs/banco/ROLLBACK-20270421000090.sql
+-- ROLLBACK: docs/banco/ROLLBACK-20270422000090.sql
 -- ════════════════════════════════════════════════════════════════════════════
 
 ALTER TABLE public.materiais_unidade

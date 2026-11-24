@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 
 import { custoNaTela, custoParaCampo, lerCusto, podeDefinirCusto, SEM_CUSTO, totalMateriais, valorDaLinha } from './custoMaterial.ts'
 
-// Custo unitário dos materiais (RT, 24/11/2026; migration 20270421000090).
+// Custo unitário dos materiais (RT, 24/11/2026; migration 20270422000090).
 const semEspacoFixo = (s: string) => s.replace(/\s/g, ' ')
 
 test('custo na tela: real brasileiro; sem custo não vira R$ 0,00', () => {

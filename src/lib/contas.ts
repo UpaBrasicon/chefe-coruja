@@ -62,7 +62,7 @@ export type MaterialConta = {
   procedimento: string | null; procedimento_nome: string | null
   quantidade: number; observacao: string | null; lancado_por: string | null; lancado_em: string
   retirado_em: string | null; motivo_retirada: string | null; retirado_por: string | null
-  /** Custo unitário congelado no lançamento e quantidade × custo (migration 20270421000090); nulo = sem custo. */
+  /** Custo unitário congelado no lançamento e quantidade × custo (migration 20270422000090); nulo = sem custo. */
   custo_unitario?: number | null; valor?: number | null
 }
 
@@ -70,7 +70,7 @@ export type MaterialConta = {
 export type MaterialUnidade = {
   id: string; nome: string; unidade_consumo: string; procedimento: string | null; procedimento_nome: string | null
   ativo: boolean; lancamentos: number
-  /** Custo unitário de hoje em R$ (migration 20270421000090); nulo = sem custo. */
+  /** Custo unitário de hoje em R$ (migration 20270422000090); nulo = sem custo. */
   custo_unitario?: number | null
 }
 
@@ -103,7 +103,7 @@ export type ContaDetalhe = Conta & {
   medicamentos_com_aviso: number
   /** Pendências da 5B, L4; ausente no banco anterior à 20270226000001. */
   materiais?: MaterialConta[]
-  /** Soma de quantidade × custo dos materiais não retirados (20270421000090); nulo = nenhum com custo. */
+  /** Soma de quantidade × custo dos materiais não retirados (20270422000090); nulo = nenhum com custo. */
   materiais_total?: number | null
   documentos_sus: DocumentosSus
   pendencias: Pendencia[]

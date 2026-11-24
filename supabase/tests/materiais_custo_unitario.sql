@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════════════════════
--- Testes da migration 20270421000090_materiais_custo_unitario.sql (custo
+-- Testes da migration 20270422000090_materiais_custo_unitario.sql (custo
 -- unitário dos materiais, RT em 24/11/2026). Tudo em transação com ROLLBACK;
 -- o cenário é criado aqui. Vale com ou sem a 20270421000073 (o gestor cadastra
 -- nos dois casos).

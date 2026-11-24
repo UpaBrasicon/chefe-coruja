@@ -1,4 +1,4 @@
-// Custo unitário dos materiais (RT, 24/11/2026; migration 20270421000090).
+// Custo unitário dos materiais (RT, 24/11/2026; migration 20270422000090).
 // O cadastro guarda o custo de hoje; o lançamento na conta congela o custo do
 // momento. Sem custo é "Sem custo", nunca R$ 0,00 (zero é um custo de verdade).
 import { moeda } from './formato.ts'

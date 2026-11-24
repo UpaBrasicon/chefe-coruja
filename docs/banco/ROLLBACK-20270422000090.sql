@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════════════════════
--- ROLLBACK da migration 20270421000090_materiais_custo_unitario.sql (custo
+-- ROLLBACK da migration 20270422000090_materiais_custo_unitario.sql (custo
 -- unitário dos materiais, RT em 24/11/2026). Rodar numa transação, primeiro na
 -- homologação.
 --
