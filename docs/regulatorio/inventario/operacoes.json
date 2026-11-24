@@ -465,7 +465,11 @@
         "public.regulacao_servicos",
         "public.regulacao_servicos_historico",
         "public.regulacao_criterios",
-        "public.centrais_regulacao"
+        "public.centrais_regulacao",
+        "public.regulacao_centrais_cadastro",
+        "public.regulacao_central_unidades",
+        "public.regulacao_unidade_capacidades",
+        "public.regulacao_prazos_tipo"
       ]
     },
     {

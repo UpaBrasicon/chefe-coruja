@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-31 operações cobrem 329 tabelas.
+31 operações cobrem 332 tabelas.
 
 ## Papéis
 
@@ -31,7 +31,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Prescrição, checagem e administração de medicamentos | operador | sim | 20 anos a partir do último registro | 16 |
 | Cuidado de enfermagem | operador | sim | 20 anos a partir do último registro | 7 |
 | Internação, leitos e transferência | operador | sim | 20 anos a partir do último registro | 11 |
-| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 13 |
+| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 17 |
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
 | Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 11 |
 | Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 7 |
@@ -50,7 +50,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Uso do aplicativo, agregado | controlador | não | a definir com o advogado (proposta: 2 anos) | 1 |
 | Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
 | RNDS, SISAB, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 14 |
-| Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 9 |
+| Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 8 |
 | Site comercial e pedido de demonstração | controlador | não | 2 anos | 1 |
 | Catálogos clínicos, terminologias e regras (sem dado de paciente) | controlador | não | enquanto estiver em uso; versões antigas das fichas ficam como histórico | 57 |
 | Testes automáticos da homologação | controlador | não | enquanto servir aos testes | 4 |
@@ -384,9 +384,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Medidas próprias**
 - anexo só abre para quem a unidade liberou
 
-**Tabelas (13)**
+**Tabelas (17)**
 
-`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`
+`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`, `public.regulacao_centrais_cadastro`, `public.regulacao_central_unidades`, `public.regulacao_unidade_capacidades`, `public.regulacao_prazos_tipo`
 
 ### Rede entre unidades e acesso ao prontuário de outra unidade
 
@@ -1040,7 +1040,6 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Dados**
 - nome e CNPJ do cliente
 - unidades e configurações
-- secretarias de saúde da rede (nome, CNPJ, responsável e contato institucional)
 - treinamentos e aceites da implantação
 
 **Quem acessa**
@@ -1052,9 +1051,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Prazo.** duração do contrato; depois, 5 anos (prazo civil e fiscal, a confirmar com o advogado). Descarte: a definir com o advogado.
 
-**Tabelas (9)**
+**Tabelas (8)**
 
-`public.organizacoes`, `public.unidades`, `public.secretarias`, `public.implantacoes`, `public.implantacao_itens`, `public.implantacao_treinamentos`, `public.implantacao_aceites`, `public.configuracoes_unidade`, `public.configuracao_plataforma`
+`public.organizacoes`, `public.unidades`, `public.implantacoes`, `public.implantacao_itens`, `public.implantacao_treinamentos`, `public.implantacao_aceites`, `public.configuracoes_unidade`, `public.configuracao_plataforma`
 
 ### Site comercial e pedido de demonstração
 

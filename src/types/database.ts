@@ -10953,6 +10953,13 @@ export type Database = {
       regulacao_centrais: { Args: never; Returns: Json }
       regulacao_contexto: { Args: { p_unidade: string }; Returns: Json }
       regulacao_definir_central: { Args: { p_unidade: string }; Returns: undefined }
+      // regulamentação das centrais pelo administrador (migration 20270421000010)
+      regulacao_regulamentacao: { Args: never; Returns: Json }
+      regulacao_cadastrar_central: { Args: { p_unidade: string }; Returns: undefined }
+      regulacao_retirar_central: { Args: { p_central: string }; Returns: undefined }
+      regulacao_definir_unidades_central: { Args: { p_central: string; p_unidades: string[] }; Returns: Json }
+      regulacao_salvar_capacidades: { Args: { p_itens: Json; p_unidade: string }; Returns: number }
+      regulacao_definir_prazos_tipo: { Args: { p_central: string; p_prazos: Json }; Returns: Json }
       regulacao_detalhe: { Args: { p_id: string }; Returns: Json }
       regulacao_lista: { Args: { p_unidade: string }; Returns: Json }
       regulacao_assumir: { Args: { p_id: string }; Returns: Json }

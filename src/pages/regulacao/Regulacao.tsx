@@ -3,6 +3,9 @@
 // 11/10/2026 depois da pesquisa dos sistemas de regulação).
 //
 // • Super admin: define a Central de Regulação de cada organização.
+// • Perfil Administrador (RT, 24/11/2026): só a regulamentação das centrais —
+//   unidades reguladas, capacidades e prazos por tipo
+//   (src/components/regulacao/RegulamentacaoCentrais.tsx).
 // • Unidade de origem (médico ou gestor): abre a solicitação (consulta, exame,
 //   leito, transferência) com os campos do MIRA — procedimento SIGTAP, caráter,
 //   CID-10, CBO na consulta —, prioridade (4 níveis ou não classificada) e o
@@ -37,6 +40,7 @@ import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulaca
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
 import { PainelSla, PrazosCentral, PrazosDoPedido, PrioridadeCalma, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
+import { RegulamentacaoCentrais } from '@/components/regulacao/RegulamentacaoCentrais'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
@@ -113,8 +117,11 @@ const docMae = (m?: { nome: string; cns: string | null; cpf: string | null } | n
   m ? ` · mãe: ${m.nome}${m.cns ? ` · CNS ${m.cns}` : m.cpf ? ` · CPF ${m.cpf}` : ' · sem documento'}` : ''
 
 export default function Regulacao() {
-  const { unidadeAtiva, papeisDaUnidade, papelAtivo } = useUnidade()
-  const unidadeId = unidadeAtiva?.unidade_id ?? ''
+  const { unidadeAtiva, papeisDaUnidade, papelAtivo, ehSuperAdmin } = useUnidade()
+  // RT, 24/11/2026: no perfil Administrador a página é só a regulamentação das
+  // centrais (src/components/regulacao/RegulamentacaoCentrais.tsx)
+  const modoAdmin = papelAtivo === 'admin'
+  const unidadeId = modoAdmin ? '' : unidadeAtiva?.unidade_id ?? ''
   const souGestorDaUnidade = papeisDaUnidade.includes('gestor')
   // Revisão do perfil Médico (RT 24/11/2026, M1): a configuração (centrais,
   // setores ofertados, serviços do mapa) fica com o admin e o gestor. No perfil
@@ -127,7 +134,7 @@ export default function Regulacao() {
   const pacienteUrl = busca.get('paciente')
   const daUrl = useQuery({
     queryKey: ['regulacao-paciente-url', pacienteUrl],
-    enabled: !!pacienteUrl,
+    enabled: !!pacienteUrl && !modoAdmin,
     queryFn: async () => {
       const { data, error } = await supabase.from('pacientes').select('id, nome, nome_social, data_nascimento, prontuario').eq('id', pacienteUrl!).maybeSingle()
       if (error) throw error
@@ -150,6 +157,7 @@ export default function Regulacao() {
     },
   })
   const c = ctx.data
+  if (modoAdmin) return <RegulamentacaoCentrais superAdmin={ehSuperAdmin} />
   return (
     // fichas calmas (M3 da revisão): sem caixa alta nesta página
     <div className="flex w-full max-w-5xl flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
