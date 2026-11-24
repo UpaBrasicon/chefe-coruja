@@ -4,6 +4,7 @@ import {
   ArrowUpRight, Baby, Bookmark, ChevronRight, History, Calculator, ChartColumn, FlaskConical, HeartPulse, LayoutGrid, Search, Siren, Skull, Sparkles, User, X,
   type LucideIcon,
 } from 'lucide-react'
+import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
@@ -182,6 +183,8 @@ function MeuPlantao() {
   return (
     <div className="flex flex-col gap-4">
       <CartaoTurno unidadeId={unidadeAtiva?.unidade_id} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
+      {/* pedido 8 (PS4): o médico divide o descanso do plantão; a UBS não tem plantão noturno */}
+      {unidadeAtiva?.unidade.tipo !== 'ubs' && <DescansoDoPlantao unidadeId={unidadeAtiva?.unidade_id} podeDividir />}
       <SessaoAssinatura />
       <section aria-label="Favoritos" className="flex flex-col gap-2">
         <TituloSecao className="mb-0">Favoritos</TituloSecao>

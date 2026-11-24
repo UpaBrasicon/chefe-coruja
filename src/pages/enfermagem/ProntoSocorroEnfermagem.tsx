@@ -19,6 +19,7 @@ import { rotulosPrioridade } from '@/domain/prioridade'
 import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
 import { PilulaRisco } from '@/components/clinico/PilulaRisco'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 import type { LinhaObservacao } from '@/components/observacao/modelo'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -96,6 +97,8 @@ export default function ProntoSocorroEnfermagem() {
           texto="Aparecem aqui os pacientes dos setores em que você está de plantão agora." />
       ) : (
         <div className="flex flex-col gap-3">
+          {/* pedido 8 (PS5 = A): quem dos médicos está descansando e quem está acordado */}
+          <DescansoDoPlantao unidadeId={unidadeAtiva?.unidade_id} podeDividir={false} />
           {temInternacao && (
             <Link to="/enfermagem/internacao" className="flex items-center gap-2 rounded-container border border-fio bg-alerta-marca px-4 py-3 text-apoio text-acao hover:underline">
               <Users className="size-4" aria-hidden /> Sua escala também tem setor de internação: os internados estão na Internação da enfermagem.

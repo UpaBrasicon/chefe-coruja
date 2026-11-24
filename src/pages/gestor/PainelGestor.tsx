@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 import { hora as formatarHora, numero } from '@/lib/formato'
 import { IndicadoresAps } from '@/components/gestor/IndicadoresAps'
 import { AtendimentosNaoEncerrados } from '@/components/gestor/AtendimentosNaoEncerrados'
@@ -292,6 +293,8 @@ export default function PainelGestor() {
       {unidadeAtiva?.unidade.tipo === 'ubs' && <IndicadoresAps unidadeId={unidadeId} />}
       {/* LP3: atendimento de outro dia não encerrado, que trava a ficha nova do paciente */}
       {unidadeAtiva?.unidade.tipo === 'ubs' && <AtendimentosNaoEncerrados unidadeId={unidadeId} />}
+      {/* pedido 8 (PS5 = A): o gestor vê, só para leitura, quem está descansando */}
+      {unidadeAtiva?.unidade.tipo !== 'ubs' && <DescansoDoPlantao unidadeId={unidadeId} podeDividir={false} />}
       <AuditoriaCheckin unidadeId={unidadeId} />
     </div>
   )

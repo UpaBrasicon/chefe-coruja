@@ -7,6 +7,7 @@ import { dataHoraCarimbo, hora } from '@/lib/formato'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { obterPosicao } from '@/lib/geolocalizacao'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,7 +42,7 @@ type UnidadeComGeo = {
 }
 
 export default function MeuPlantao({ embutido = false }: { embutido?: boolean } = {}) {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
 
@@ -153,6 +154,9 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
       {sucesso && <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{sucesso}</div>}
 
       <PassagensDoPlantao />
+
+      {/* pedido 8 (PS4 = divisão igual do RT): o médico de plantão divide o descanso */}
+      {unidadeAtiva?.unidade.tipo !== 'ubs' && <DescansoDoPlantao unidadeId={unidadeId} podeDividir={papelAtivo === 'plantonista'} />}
 
       <Card>
         <CardHeader>
