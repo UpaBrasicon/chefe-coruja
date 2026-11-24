@@ -32,6 +32,8 @@ type Props = {
   podeLiberarSemPaciente?: boolean
   /** reserva (item 12): plantonista, enfermeiro e gestor reservam; a unidade é para a busca de paciente */
   podeReservar?: boolean
+  /** perfil Gestor da secretaria: reserva só por motivo, sem buscar paciente */
+  reservaSoPorMotivo?: boolean
   podeCancelarReserva?: boolean
   unidadeId?: string
   /** cartão pequeno (Setores): só ícones */
@@ -41,7 +43,7 @@ type Props = {
   onErro?: (mensagem: string) => void
 }
 
-export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, podeBloquear, podeLiberarSemPaciente, podeReservar, podeCancelarReserva, unidadeId, compacto, invalidar, onErro }: Props) {
+export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, podeBloquear, podeLiberarSemPaciente, podeReservar, reservaSoPorMotivo, podeCancelarReserva, unidadeId, compacto, invalidar, onErro }: Props) {
   const queryClient = useQueryClient()
   const [ocupado, setOcupado] = React.useState(false)
   const [dialogo, setDialogo] = React.useState<'bloquear' | 'liberar' | 'reservar' | 'cancelar-reserva' | null>(null)
@@ -167,7 +169,7 @@ export function AcoesLeito({ leitoId, identificador, status, podeHigienizar, pod
         </Button>
       )}
       {unidadeId && dialogo === 'reservar' && (
-        <ReservarLeito aberto onFechar={() => setDialogo(null)} leitoId={leitoId} identificador={identificador} unidadeId={unidadeId} invalidar={invalidar} />
+        <ReservarLeito aberto onFechar={() => setDialogo(null)} leitoId={leitoId} identificador={identificador} unidadeId={unidadeId} invalidar={invalidar} soPorMotivo={reservaSoPorMotivo} />
       )}
       <Dialog open={dialogo === 'cancelar-reserva'} onOpenChange={(o) => { if (!o) setDialogo(null) }}>
         <DialogContent>

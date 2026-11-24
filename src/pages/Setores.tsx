@@ -72,8 +72,8 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
   const queryClient = useQueryClient()
   const unidadeId = unidadeAtiva?.unidade_id
   // perfil Gestor da secretaria (RT, 24/11/2026): cria e muda setores e leitos e
-  // bloqueia ou desbloqueia leito; a rotina do leito (higienizar, reservar,
-  // liberar) segue da unidade
+  // faz a rotina do leito (higienizar, bloquear, reservar, liberar; migration
+  // 20270421000024). Sem paciente: a reserva é só por motivo.
   const soCadastro = papelAtivo === 'gestor_secretaria' && !papeisDaUnidade.includes('gestor')
 
   const [setorSelecionadoId, setSetorSelecionadoId] = React.useState<string | null>(null)
@@ -319,11 +319,12 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                           leitoId={leito.id}
                           identificador={leito.identificador}
                           status={leito.status}
-                          podeHigienizar={!soCadastro}
+                          podeHigienizar
                           podeBloquear
-                          podeLiberarSemPaciente={!soCadastro && !leito.obito_aguardando_id}
-                          podeReservar={!soCadastro}
-                          podeCancelarReserva={!soCadastro}
+                          podeLiberarSemPaciente={!leito.obito_aguardando_id}
+                          podeReservar
+                          reservaSoPorMotivo={soCadastro}
+                          podeCancelarReserva
                           unidadeId={unidadeId}
                           compacto
                           invalidar={[['leitos'], ['situacao-leitos'], ['mapa-leitos-gestor'], ['censo']]}

@@ -34,7 +34,7 @@ export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   regulacao_regional: 'Acompanha os pedidos de regulação das unidades liberadas (só leitura)',
   faturamento_rede: 'Produção e arquivos fechados das unidades liberadas (só leitura)',
   nir: 'Núcleo Interno de Regulação: acompanha regulações, AIH e APAC da unidade e cobra os responsáveis',
-  gestor_secretaria: 'Unidades da secretaria: dados, setores e leitos, vagas da escala e pessoas (sem identidade de paciente)',
+  gestor_secretaria: 'Unidades da secretaria: dados, setores e leitos, escala, pessoas e indicadores (sem identidade de paciente)',
 }
 
 export const TIPO_UNIDADE_LABEL: Record<TipoUnidade, string> = {

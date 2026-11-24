@@ -3,6 +3,7 @@ import { Building2 } from 'lucide-react'
 
 import { TabsPagina, type AbaDef } from '@/components/TabsPagina'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import type { QuemMuda } from '@/lib/secretariaCompleta'
 
 const MapaLeitos = lazy(() => import('@/pages/gestor/MapaLeitos').then((m) => ({ default: m.MapaLeitos })))
 const Setores = lazy(() => import('@/pages/Setores').then((m) => ({ default: m.Setores })))
@@ -11,6 +12,7 @@ const Banners = lazy(() => import('@/pages/gestor/Banners').then((m) => ({ defau
 const RevisaoSemConexao = lazy(() => import('@/pages/gestor/RevisaoSemConexao'))
 const FerramentasUnidade = lazy(() => import('@/pages/gestor/FerramentasUnidade'))
 const Convites = lazy(() => import('@/pages/gestor/Convites'))
+const PessoasDaUnidade = lazy(() => import('@/pages/gestor/PessoasDaUnidade'))
 const SegurancaEquipe = lazy(() => import('@/pages/gestor/SegurancaEquipe'))
 const ModelosTermoUnidade = lazy(() => import('@/components/termo/ModelosTermoUnidade'))
 const LiberacaoRede = lazy(() => import('@/components/rede/LiberacaoRede'))
@@ -31,8 +33,18 @@ export default function UnidadeGrupo() {
   // que mostra paciente), convites e configurações da unidade escolhida no topo.
   // Quem também é gestor da unidade fica com as abas do gestor.
   const daSecretaria = papelAtivo === 'gestor_secretaria' && !papeisDaUnidade.includes('gestor')
+  // Pessoas da unidade (RT, 24/11/2026): trocar, pôr e tirar papel sem convite
+  // novo; o banco confere quem pode (definir_papeis_na_unidade)
+  const quemMuda: QuemMuda | null = daSecretaria ? 'secretaria'
+    : papeisDaUnidade.includes('admin') ? 'admin'
+    : papeisDaUnidade.includes('gestor') ? 'gestor'
+    : null
+  const abaPessoas: AbaDef[] = quemMuda
+    ? [{ valor: 'pessoas', rotulo: 'Pessoas', conteudo: () => <PessoasDaUnidade quem={quemMuda} /> }]
+    : []
   const abas: AbaDef[] = daSecretaria ? [
     { valor: 'setores', rotulo: 'Setores e leitos', conteudo: () => <Setores embutido /> },
+    ...abaPessoas,
     { valor: 'convites', rotulo: 'Convites', conteudo: () => <Convites /> },
     { valor: 'configuracoes', rotulo: 'Configurações', conteudo: () => <Configuracao embutido /> },
   ] : [
@@ -44,6 +56,7 @@ export default function UnidadeGrupo() {
           conteudo: () => <><MapaLeitos /><Setores embutido /></>,
         }]
       : []),
+    ...abaPessoas,
     // Convites do primeiro acesso: gestor da unidade e admin da rede (o banco confere).
     ...(papeisDaUnidade.includes('gestor') || papeisDaUnidade.includes('admin')
       ? [{ valor: 'convites', rotulo: 'Convites', conteudo: () => <Convites /> }]
@@ -67,7 +80,7 @@ export default function UnidadeGrupo() {
   return (
     <TabsPagina
       titulo="Unidade"
-      descricao="Setores e leitos, convites de primeiro acesso, configurações de comunicação e check-in, e o quadro de imagens."
+      descricao="Setores e leitos, pessoas e papéis, convites de primeiro acesso, configurações de comunicação e check-in, e o quadro de imagens."
       icone={Building2}
       abas={abas}
     />

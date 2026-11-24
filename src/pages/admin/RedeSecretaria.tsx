@@ -523,13 +523,26 @@ function PessoasSecretaria({ secretaria }: { secretaria: SecretariaRede }) {
     },
   })
   const recarregar = () => { void qc.invalidateQueries({ queryKey: ['admin-unidades'] }) }
+  // e-mail da designação (avisar-secretaria, migration 20270421000024): sai em
+  // segundo plano; a designação fica gravada mesmo se o e-mail falhar
+  const [avisoEmail, setEmailAviso] = React.useState<'enviando' | 'enviado' | 'falhou' | null>(null)
+  const avisar = (designacao: string) => {
+    setEmailAviso('enviando')
+    void supabase.functions.invoke('avisar-secretaria', { body: { designacao } })
+      .then(({ error }) => setEmailAviso(error ? 'falhou' : 'enviado'))
+      .catch(() => setEmailAviso('falhou'))
+  }
   const designar = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.rpc('admin_designar_secretaria', { p_secretaria: secretaria.id, p_email: email.trim() })
       if (error) throw error
-      return data as unknown as { pendente: boolean }
+      return data as unknown as { id: string; pendente: boolean }
     },
-    onSuccess: () => { setEmail(''); recarregar() },
+    onSuccess: (r) => {
+      setEmail('')
+      recarregar()
+      if (r?.id) avisar(r.id)
+    },
   })
   const retirar = useMutation({
     mutationFn: async (id: string) => {
@@ -543,7 +556,7 @@ function PessoasSecretaria({ secretaria }: { secretaria: SecretariaRede }) {
   return (
     <div className="flex flex-col gap-3 text-apoio">
       <p className="text-tinta-apoio">
-        Quem é designado aqui entra com o perfil Gestor da secretaria e cuida das unidades dela: dados, setores e leitos, vagas da escala e convites das pessoas.
+        Quem é designado aqui entra com o perfil Gestor da secretaria e cuida das unidades dela: dados, setores e leitos, escala, pessoas e indicadores. A pessoa recebe um e-mail de aviso.
       </p>
       {lista.isLoading && <Spinner />}
       {lista.error && <MensagemErro erro={lista.error} acao="carregar as pessoas da secretaria" />}
@@ -582,6 +595,13 @@ function PessoasSecretaria({ secretaria }: { secretaria: SecretariaRede }) {
       )}
       {designar.data?.pendente && (
         <p className="text-rotulo text-tinta-sussurro">Ainda não há conta confirmada com esse e-mail. A designação vale quando a pessoa entrar com ele.</p>
+      )}
+      {avisoEmail && (
+        <p role="status" className={cn('text-rotulo', avisoEmail === 'falhou' ? 'text-atencao' : 'text-tinta-sussurro')}>
+          {avisoEmail === 'enviando' && 'Enviando o e-mail de aviso…'}
+          {avisoEmail === 'enviado' && 'A pessoa recebeu o e-mail de aviso.'}
+          {avisoEmail === 'falhou' && 'E-mail não enviado. A designação está gravada; avise a pessoa por outro meio.'}
+        </p>
       )}
       {designar.error && <MensagemErro erro={designar.error} acao="designar a pessoa" />}
     </div>
@@ -680,6 +700,7 @@ function AcoesDaSecretaria({ unidade }: { unidade: UnidadeNaRede }) {
   if (!naCasca) return <span className="text-rotulo text-tinta-sussurro">Unidade inativa: sem configuração.</span>
   return (
     <>
+      <Button size="sm" variant="outline" onClick={() => ir('/unidade?aba=pessoas')}>Pessoas</Button>
       <Button size="sm" variant="outline" onClick={() => ir('/unidade?aba=convites')}>Convidar pessoas</Button>
       <Button size="sm" variant="outline" onClick={() => ir('/escala')}>Escala</Button>
       <Button size="sm" onClick={() => ir('/unidade?aba=setores')}>Configurar unidade</Button>
