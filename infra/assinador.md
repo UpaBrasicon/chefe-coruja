@@ -9,6 +9,7 @@ Serviço do VPS que assina os documentos médicos com o certificado em nuvem do 
 - O CMS AD-RB, montado no assinador. O provedor só assina o hash.
 - A gravação no banco pelo papel `assinador_app` (migrations 090 e 091).
 - A conferência pública em `/v`, no formato do VALIDAR do ITI, e o PDF em `/pdf`.
+- Prazo nas chamadas de fora (pedido 18): 15 s em cada chamada ao provedor, 10 s ao Supabase e 20 s à Edge `folha` (`services/assinador/src/prazo.ts`). Estourou, o assinador responde 504 com o motivo em português e registra no log. Só a consulta (lista de certificados e leituras GET do Supabase) tenta de novo, uma vez; a troca do código, a folha e a assinatura do hash nunca repetem. O navegador espera 20 s nas chamadas da sessão e 90 s na assinatura, que não trava a emissão.
 
 ## O que não cobre
 

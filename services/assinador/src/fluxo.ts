@@ -6,6 +6,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { dadosDoCertificado } from './certificado.ts'
 import { atributosAssinados, conferirCms, hashParaAssinar, montarCms } from './cms.ts'
 import { assinarHash, certificados, pkce, trocarCodigo, urlAutorizacao, type Fetch, type Provedor } from './docicp17.ts'
+import { ErroAssinador } from './erros.ts'
 import { bytesCobertos, fecharByteRange, gravarCms, prepararPdf, type MetadadosSaude } from './pades.ts'
 import { Pendentes, Sessoes } from './sessoes.ts'
 
@@ -42,13 +43,7 @@ export type Dependencias = {
   agora?: () => Date
 }
 
-export class ErroAssinador extends Error {
-  status: number
-  constructor(status: number, mensagem: string) {
-    super(mensagem)
-    this.status = status
-  }
-}
+export { ErroAssinador }
 
 const MAX_SESSAO_MS = 12 * 3600_000
 // tipo do documento clínico → tipo de documento de saúde do VALIDAR (A1: o que sai para o paciente ou outro serviço)

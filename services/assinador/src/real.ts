@@ -6,24 +6,42 @@ import { chromium, type Browser } from 'playwright-core'
 
 import type { Dependencias, Documento, Medico } from './fluxo.ts'
 import { ErroAssinador } from './fluxo.ts'
+import { comNovaTentativa, comPrazo, PRAZO_FOLHA_MS, PRAZO_SUPABASE_MS, STATUS_TRANSITORIOS } from './prazo.ts'
 import { comRodape, htmlDoRodape } from './rodape.ts'
 
 type Fetch = (url: string, init?: RequestInit) => Promise<Response>
 
-export function supabaseDoMedico(url: string, chavePublica: string, f: Fetch = fetch) {
+// o que o médico lê quando o Supabase não responde dentro do prazo (o servidor devolve 504)
+export const SUPABASE_SEM_RESPOSTA = 'O sistema demorou a responder. Tente de novo em instantes.'
+export const CONFERENCIA_SEM_RESPOSTA = 'Conferência indisponível no momento. Tente de novo em instantes.'
+
+/** `o` só para os testes: prazo e espera curtos */
+export function supabaseDoMedico(url: string, chavePublica: string, f: Fetch = fetch, o: { prazoMs?: number; esperaMs?: number } = {}) {
+  const prazo = o.prazoMs ?? PRAZO_SUPABASE_MS
   const cab = (jwt: string, extra: Record<string, string> = {}) => ({ apikey: chavePublica, Authorization: `Bearer ${jwt}`, ...extra })
-  async function pedir(jwt: string, caminho: string, init: RequestInit = {}) {
-    const r = await f(`${url}${caminho}`, { ...init, headers: { ...cab(jwt), ...(init.headers as Record<string, string> | undefined) } })
-    if (r.status === 401 || r.status === 403) throw new ErroAssinador(401, 'Sessão inválida. Entre de novo no sistema.')
-    if (!r.ok) throw new ErroAssinador(502, `Supabase: HTTP ${r.status} em ${caminho.split('?')[0]}`)
-    return r
+  /** chama com prazo e lê a resposta dentro dele; só consulta (GET) tenta de novo em falha passageira */
+  async function pedir<T>(jwt: string, caminho: string, ler: (r: Response) => Promise<T>, init: RequestInit = {}, ms = prazo): Promise<T> {
+    const uma = () => comPrazo(ms, SUPABASE_SEM_RESPOSTA, async (signal) => {
+      const r = await f(`${url}${caminho}`, { ...init, headers: { ...cab(jwt), ...(init.headers as Record<string, string> | undefined) }, signal })
+      if (r.status === 401 || r.status === 403) throw new ErroAssinador(401, 'Sessão inválida. Entre de novo no sistema.')
+      if (!r.ok) throw new ErroAssinador(502, `Supabase: HTTP ${r.status} em ${caminho.split('?')[0]}`, STATUS_TRANSITORIOS.has(r.status))
+      return ler(r)
+    })
+    return (init.method ?? 'GET') === 'GET' ? comNovaTentativa(uma, { esperaMs: o.esperaMs }) : uma()
   }
+  /** chamada anônima (conferência pública): POST de leitura, com prazo e sem nova tentativa */
+  const anonima = <T>(rpc: string, corpo: unknown, ler: (r: Response) => Promise<T>) =>
+    comPrazo(prazo, CONFERENCIA_SEM_RESPOSTA, async (signal) => {
+      const r = await f(`${url}/rest/v1/rpc/${rpc}`, { method: 'POST', headers: { apikey: chavePublica, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo), signal })
+      if (!r.ok) throw new ErroAssinador(502, 'Conferência indisponível')
+      return ler(r)
+    })
   return {
     async quemE(jwt: string): Promise<Medico> {
-      const u = (await (await pedir(jwt, '/auth/v1/user')).json()) as { id?: string }
+      const u: { id?: string } = await pedir(jwt, '/auth/v1/user', (r) => r.json())
       if (!u.id) throw new ErroAssinador(401, 'Sessão inválida')
       const sel = 'id,nome_completo,cpf,conselho,registro_numero,registro_uf,crm,uf_crm'
-      const [p] = (await (await pedir(jwt, `/rest/v1/perfis?id=eq.${encodeURIComponent(u.id)}&select=${sel}`)).json()) as Array<Record<string, string | null>>
+      const [p]: Array<Record<string, string | null>> = await pedir(jwt, `/rest/v1/perfis?id=eq.${encodeURIComponent(u.id)}&select=${sel}`, (r) => r.json())
       if (!p) throw new ErroAssinador(403, 'Perfil não encontrado')
       const cpf = (p.cpf ?? '').replace(/\D/g, '')
       return {
@@ -33,13 +51,13 @@ export function supabaseDoMedico(url: string, chavePublica: string, f: Fetch = f
       }
     },
     async fimDoPlantao(jwt: string): Promise<Date | null> {
-      const linhas = (await (await pedir(jwt, '/rest/v1/rpc/meu_plantao_agora', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).json()) as Array<{ fim: string }>
+      const linhas: Array<{ fim: string }> = await pedir(jwt, '/rest/v1/rpc/meu_plantao_agora', (r) => r.json(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
       const fins = linhas.map((l) => new Date(l.fim).getTime()).filter((n) => Number.isFinite(n))
       return fins.length ? new Date(Math.max(...fins)) : null
     },
     async documento(jwt: string, id: string): Promise<Documento | null> {
       const sel = 'id,tipo_documento,numero,estado,autor_id,assinado_em,unidade_id,paciente_id,unidades(nome)'
-      const [d] = (await (await pedir(jwt, `/rest/v1/documentos_clinicos?id=eq.${encodeURIComponent(id)}&select=${sel}`)).json()) as Array<Record<string, unknown>>
+      const [d]: Array<Record<string, unknown>> = await pedir(jwt, `/rest/v1/documentos_clinicos?id=eq.${encodeURIComponent(id)}&select=${sel}`, (r) => r.json())
       if (!d) return null
       return {
         id: String(d.id), tipo: String(d.tipo_documento), numero: (d.numero as string | null) ?? null, estado: String(d.estado),
@@ -48,21 +66,16 @@ export function supabaseDoMedico(url: string, chavePublica: string, f: Fetch = f
         unidadeNome: String((d.unidades as { nome?: string } | null)?.nome ?? ''),
       }
     },
-    /** HTML da folha montado no servidor pela Edge `folha` (registra a impressão, como hoje) */
+    /** HTML da folha montado no servidor pela Edge `folha` (registra a impressão, como hoje: sem nova tentativa) */
     async folhaHtml(jwt: string, documentoId: string): Promise<string> {
-      const r = await pedir(jwt, '/functions/v1/folha', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ documento_id: documentoId }) })
-      return r.text()
+      return pedir(jwt, '/functions/v1/folha', (r) => r.text(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ documento_id: documentoId }) }, o.prazoMs ?? PRAZO_FOLHA_MS)
     },
     /** chamadas anônimas da conferência pública (QR code) */
     async conferir(codigo: string): Promise<{ encontrada: boolean } & Record<string, unknown>> {
-      const r = await f(`${url}/rest/v1/rpc/conferir_assinatura`, { method: 'POST', headers: { apikey: chavePublica, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_codigo: codigo }) })
-      if (!r.ok) throw new ErroAssinador(502, 'Conferência indisponível')
-      return r.json()
+      return anonima('conferir_assinatura', { p_codigo: codigo }, (r) => r.json())
     },
     async pdfAssinado(codigo: string): Promise<Uint8Array | null> {
-      const r = await f(`${url}/rest/v1/rpc/pdf_assinado`, { method: 'POST', headers: { apikey: chavePublica, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_codigo: codigo }) })
-      if (!r.ok) throw new ErroAssinador(502, 'Conferência indisponível')
-      const v = (await r.json()) as string | null
+      const v: string | null = await anonima('pdf_assinado', { p_codigo: codigo }, (r) => r.json())
       if (!v) return null
       return Buffer.from(v.replace(/^\\x/, ''), 'hex') // bytea vem como \x… em hexadecimal
     },
