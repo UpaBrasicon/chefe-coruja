@@ -18,6 +18,7 @@ import { PackageOpen } from 'lucide-react'
 import * as React from 'react'
 
 import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { Aviso } from '@/components/ui/aviso'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,11 +61,14 @@ export default function DispensacaoPagina() {
             // percurso da UBS (U14, E6): a farmácia da UBS tem horário
             ? 'Fora do horário da farmácia: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'
             : 'Farmácia fechada: retire o medicamento do paciente sob seus cuidados com justificativa. O farmacêutico confere depois.'} />
-      <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="mb-[18px]">
-        <TabsList aria-label="Dispensação">
-          {abas.map(([k, r]) => <TabsTrigger key={k} value={k}>{r}</TabsTrigger>)}
-        </TabsList>
-      </Tabs>
+      {/* Revisão de perfis (Gestor, item 10, M1): sem aba solitária */}
+      {abas.length > 1 && (
+        <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="mb-[18px]">
+          <TabsList aria-label="Dispensação">
+            {abas.map(([k, r]) => <TabsTrigger key={k} value={k}>{r}</TabsTrigger>)}
+          </TabsList>
+        </Tabs>
+      )}
       {unidade && aba === 'prescricoes' && <Prescricoes unidade={unidade} />}
       {unidade && aba === 'avulsa' && <Avulsa unidade={unidade} />}
       {unidade && aba === 'registro' && <Registro unidade={unidade} podeAgir={papelAtivo === 'farmaceutico'} />}
@@ -289,20 +293,43 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
     onSuccess: () => { setDevolvendo(null); setMotivo(''); setQtd('1'); recarregar() },
   })
   const d = lista.data
+  // M2: resumo do consumo no período e retiradas sem farmacêutico primeiro
+  const registros = [...(d?.dispensacoes ?? [])].map((x, i) => ({ x, i }))
+    .sort((a, b) => Number(b.x.sem_farmaceutico && !b.x.conferida_em) - Number(a.x.sem_farmaceutico && !a.x.conferida_em) || a.i - b.i).map((r) => r.x)
+  const consumo = new Map<string, { qtd: number; un: string }>()
+  for (const x of d?.dispensacoes ?? []) {
+    const atual = consumo.get(x.medicamento) ?? { qtd: 0, un: rotuloUnidade(x.unidade_consumo).toLowerCase() }
+    consumo.set(x.medicamento, { ...atual, qtd: atual.qtd + x.quantidade - x.devolvido })
+  }
+  const maisUsados = [...consumo.entries()].sort(([, a], [, b]) => b.qtd - a.qtd).slice(0, 5)
+  const periodo = PERIODOS_REGISTRO.find(([h]) => h === horas)?.[1] ?? `${horas} h`
   return (
     <div className="flex flex-col gap-3 text-apoio">
       <MensagemErro texto={(lista.error ?? conferir.error ?? devolver.error) ? ((lista.error ?? conferir.error ?? devolver.error) as Error).message : null} />
+      {d && d.a_conferir > 0 && (
+        <Aviso tom="atencao" titulo={d.a_conferir === 1 ? '1 retirada sem farmacêutico a conferir' : `${d.a_conferir} retiradas sem farmacêutico a conferir`}>
+          Feitas pela enfermagem com a farmácia fechada; aparecem primeiro na lista. Quem confere é o farmacêutico.
+        </Aviso>
+      )}
+      {d && d.dispensacoes.length > 0 && (
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-container border border-fio bg-superficie px-3.5 py-2.5">
+          <span className="font-medium text-tinta">{d.dispensacoes.length} {d.dispensacoes.length === 1 ? 'dispensação' : 'dispensações'} · {consumo.size} {consumo.size === 1 ? 'medicamento' : 'medicamentos'}</span>
+          <span className="text-tinta-apoio">Mais dispensados: {maisUsados.map(([m, c]) => `${m} (${c.qtd} ${c.un})`).join(' · ')}</span>
+        </div>
+      )}
       {(d?.estoque_negativo.length ?? 0) > 0 && (
         <div role="alert" className="rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2">
           <span className="font-medium text-tinta">Saldo negativo: confira o estoque destes medicamentos.</span>
           <ul className="list-disc pl-5 text-tinta-apoio">{d!.estoque_negativo.map((e) => <li key={e.medicamento}>{e.medicamento}: {e.saldo}</li>)}</ul>
         </div>
       )}
-      <TituloSecao extra={d && d.a_conferir > 0 ? `${d.a_conferir} retirada(s) sem farmacêutico a conferir` : `últimas ${PERIODOS_REGISTRO.find(([h]) => h === horas)?.[1] ?? `${horas} h`}`}>Dispensações</TituloSecao>
-      <Chips rotulo="Período">
-        {PERIODOS_REGISTRO.map(([h, rotulo]) => <Chip key={h} ativo={horas === h} onClick={() => setHoras(h)}>{rotulo}</Chip>)}
-      </Chips>
-      {lista.isLoading ? <Spinner /> : (d?.dispensacoes ?? []).length === 0 ? <p className="text-tinta-sussurro">Nenhuma dispensação nas últimas {PERIODOS_REGISTRO.find(([h]) => h === horas)?.[1] ?? `${horas} h`}.</p> : (
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <TituloSecao className="mb-0">Dispensações</TituloSecao>
+        <Chips rotulo="Período">
+          {PERIODOS_REGISTRO.map(([h, rotulo]) => <Chip key={h} ativo={horas === h} onClick={() => setHoras(h)}>{rotulo}</Chip>)}
+        </Chips>
+      </div>
+      {lista.isLoading ? <Spinner /> : (d?.dispensacoes ?? []).length === 0 ? <p className="text-tinta-sussurro">Nenhuma dispensação nas últimas {periodo}.</p> : (
         <div className="overflow-x-auto rounded-container border border-fio bg-superficie">
           <Table className="min-w-[640px] text-apoio">
             <TableHeader className="bg-transparent">
@@ -315,8 +342,8 @@ function Registro({ unidade, podeAgir }: { unidade: string; podeAgir: boolean })
               </TableRow>
             </TableHeader>
             <TableBody>
-              {d!.dispensacoes.map((x) => (
-                <TableRow key={x.id} className="align-top hover:bg-transparent">
+              {registros.map((x) => (
+                <TableRow key={x.id} className={cn('align-top hover:bg-transparent', x.sem_farmaceutico && !x.conferida_em && 'bg-alerta-atencao hover:bg-alerta-atencao')}>
                   <TableCell className="px-3 py-2 align-top whitespace-normal">{x.medicamento}</TableCell>
                   <TableCell className="px-3 py-2 align-top whitespace-normal">{x.paciente ?? `Avulsa: ${x.destino}`}{x.motivo ? <span className="block text-rotulo text-tinta-sussurro">"{x.motivo}"</span> : null}</TableCell>
                   <TableCell className="px-3 py-2 align-top whitespace-normal">{x.quantidade}{x.devolvido > 0 ? ` (voltou ${x.devolvido})` : ''} {rotuloUnidade(x.unidade_consumo).toLowerCase()}</TableCell>

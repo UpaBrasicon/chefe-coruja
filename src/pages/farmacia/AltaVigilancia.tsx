@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, Plus, Search, ShieldAlert } from 'lucide-react'
+import { ChevronRight, Info, Plus, Search, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -88,11 +88,17 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
   const trocarAba = (a: Aba) => { setAba(a); setEscolhido(null); setAdicionando(false) }
   const escolher = (id: string) => { setEscolhido(id); setAdicionando(false) }
   const itens = abaAtual === 'ajustes' ? ajustes : termo ? achados.data ?? [] : exige
+  // M2: na lista da unidade (sem busca), agrupada por classe com contagem
+  const agrupar = abaAtual === 'exige' && !termo
+  const agrupados: [string, ItemAltaVigilancia[]][] = agrupar
+    ? [...itens.reduce((m, i) => m.set(classeDe(i), [...(m.get(classeDe(i)) ?? []), i]), new Map<string, ItemAltaVigilancia[]>())]
+      .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
+    : [['', itens]]
   const carregando = abaAtual === 'sem' ? sem.isLoading : termo && abaAtual === 'exige' ? achados.isLoading : lista.isLoading
   const erro = (abaAtual === 'sem' ? sem.error : (achados.error ?? lista.error)) as Error | null
 
   const selSem = abaAtual === 'sem' ? semLib.find((a) => a.id === escolhido) ?? semLib[0] : undefined
-  const selItem = abaAtual !== 'sem' ? itens.find((i) => i.id === escolhido) ?? itens[0] : undefined
+  const selItem = abaAtual !== 'sem' ? itens.find((i) => i.id === escolhido) ?? agrupados[0]?.[1][0] : undefined
   const aoAjustar = (id: string) => {
     void qc.invalidateQueries({ queryKey: ['alta-vigilancia', unidadeId] })
     setAba('ajustes'); setEscolhido(id); setAdicionando(false)
@@ -179,7 +185,13 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                   <TableHead className="pl-4">Medicamento</TableHead><TableHead className="pr-4">Por que</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
-                  {itens.map((i) => (
+                  {agrupados.flatMap(([classe, doGrupo]) => [
+                    ...(agrupar ? [
+                      <TableRow key={`c-${classe}`} className="bg-trilha hover:bg-trilha">
+                        <TableCell colSpan={2} className="pl-4 py-1.5 font-semibold text-tinta whitespace-normal">{classe} <span className="font-normal text-tinta-sussurro tabular-nums">{doGrupo.length}</span></TableCell>
+                      </TableRow>,
+                    ] : []),
+                    ...doGrupo.map((i) => (
                     <TableRow key={i.id} aria-selected={i.id === selItem?.id} onClick={() => escolher(i.id)}
                       className={cn('cursor-pointer', i.id === selItem?.id && 'bg-alerta-marca hover:bg-alerta-marca')}>
                       <TableCell className="pl-4 whitespace-normal">
@@ -193,7 +205,8 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
                       </TableCell>
                       <TableCell className="pr-4 whitespace-normal text-tinta-apoio"><PorQue i={i} /></TableCell>
                     </TableRow>
-                  ))}
+                    )),
+                  ])}
                 </TableBody>
               </Table>
             )}
@@ -206,10 +219,13 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
           </div>
         </div>
       )}
+      {/* M3: a fonte em (i), sem ocupar a tela */}
       {abaAtual !== 'sem' && (
-        <p className="text-rotulo text-tinta-sussurro">
-          Base: ISMP Brasil, “Medicamentos potencialmente perigosos de uso hospitalar — lista atualizada 2019” (Boletim v. 8, n. 1, fev. 2019),
-          aplicada por regra ao cadastro. Vias epidural/intratecal e antineoplásicos dependem da marcação da farmácia.
+        <p className="flex items-center gap-1 text-rotulo text-tinta-sussurro">
+          <span title={'Base: ISMP Brasil, “Medicamentos potencialmente perigosos de uso hospitalar — lista atualizada 2019” (Boletim v. 8, n. 1, fev. 2019), aplicada por regra ao cadastro. Vias epidural/intratecal e antineoplásicos dependem da marcação da farmácia. Os controlados seguem a Portaria 344.'}
+            className="inline-flex cursor-help items-center gap-1">
+            <Info className="size-3.5" aria-hidden /> Fonte: ISMP Brasil 2019, ajustes da farmácia e Portaria 344
+          </span>
         </p>
       )}
     </div>
@@ -218,11 +234,17 @@ function Telas({ unidadeId, veSemLiberacao, podeLiberar, podeAjustar }: { unidad
 
 const apresentacao = (i: ItemAltaVigilancia) => `${i.apresentacao}${i.concentracao && !i.apresentacao.includes(i.concentracao) ? ` · ${i.concentracao}` : ''}`
 
+// Revisão de perfis (Gestor, item 11, M1): o "por que" diz a origem (ISMP,
+// farmácia da unidade ou cadastro). Só apresentação: a regra não muda.
 function PorQue({ i }: { i: ItemAltaVigilancia }) {
-  if (i.ajuste) return <Estado tom={i.ajuste.exige ? 'teal' : 'cinza'}>{i.ajuste.exige ? 'marcado pela unidade' : 'desmarcado pela unidade'}</Estado>
+  if (i.ajuste) return <span className="flex flex-wrap items-center gap-1.5"><Estado tom={i.ajuste.exige ? 'teal' : 'cinza'}>farmácia</Estado>{i.ajuste.exige ? 'marcado pela unidade' : 'desmarcado pela unidade'}</span>
   if (!i.exige) return <Estado tom="cinza">não exige</Estado>
-  return <>{i.regra ?? 'marcado no cadastro'}</>
+  if (i.regra) return <span className="flex flex-wrap items-center gap-1.5"><Estado tom="cinza">ISMP 2019</Estado>{i.regra}</span>
+  return <span className="flex flex-wrap items-center gap-1.5"><Estado tom="cinza">cadastro</Estado>marcado no cadastro</span>
 }
+
+/** M2: classe do item para agrupar a lista (a regra do ISMP, o ajuste ou o cadastro). */
+const classeDe = (i: ItemAltaVigilancia) => (i.ajuste ? 'Ajustes da unidade' : i.regra ?? 'Marcados no cadastro')
 
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (
