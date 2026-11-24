@@ -21,6 +21,8 @@ export type PedidoResumo = {
   pendencia_pergunta: string | null; pendencia_em: string | null; motivo_devolucao: string | null
   sla: Sla | null
   conversa: { total: number; novas: number; aguardando: Aguardando[] }
+  /** Eu abri o pedido (migration 20270421000041; só na lista da unidade). */
+  sou_solicitante?: boolean
 }
 
 export type PacienteRegulacao = {
@@ -28,6 +30,8 @@ export type PacienteRegulacao = {
   internacao: { id: string; tipo: string; admissao: string; episodio_id: string | null } | null
   setor: { id: string; nome: string } | null
   leito: string | null
+  /** O setor atual da internação é de um plantão meu agora (migration 20270421000041). */
+  no_meu_plantao?: boolean
   pedidos: PedidoResumo[]
 }
 
@@ -50,6 +54,19 @@ export function mensagensNovas(l: Pick<PacienteRegulacao, 'pedidos'>): number {
 /** Só quem tem pedido de regulação em aberto (a lista do médico). */
 export function emRegulacao(lista: PacienteRegulacao[]): PacienteRegulacao[] {
   return lista.filter((l) => l.pedidos.some((p) => p.em_aberto))
+}
+
+/**
+ * "Meus" na lista do médico (RT, 24/11/2026): os pedidos em aberto que eu fiz
+ * ou os pacientes dos setores do meu plantão agora.
+ */
+export function meusPacientes(lista: PacienteRegulacao[]): PacienteRegulacao[] {
+  return lista.filter((l) => l.no_meu_plantao === true || l.pedidos.some((p) => p.em_aberto && p.sou_solicitante === true))
+}
+
+/** A RPC já diz quem é meu? (sem a migration 20270421000041 a tela mostra a unidade toda) */
+export function sabeQuemEMeu(lista: PacienteRegulacao[]): boolean {
+  return lista.some((l) => typeof l.no_meu_plantao === 'boolean')
 }
 
 /** Grupos por setor, na ordem do nome; quem está sem leito (porta) fica no fim. */

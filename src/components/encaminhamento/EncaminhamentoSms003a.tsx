@@ -16,7 +16,7 @@
 // digita vale por cima). Sem gravar no rascunho: abrir a folha não deixa rastro.
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowUpRight, Waypoints } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
 
 import { abrirImpressao } from '@/lib/prontuario'
 import { useRascunhoServidor } from '@/hooks/useRascunhoServidor'
@@ -30,6 +30,7 @@ import { SeletorPaciente, usePacienteDoDocumento } from '@/components/documentos
 import { textoVitaisTriagem, useTriagemRecente } from '@/components/documentos/triagem'
 import { AnexosLaudo, Bloco, BotaoAnexar, Campo, Cartao, Leitura, Pendencias, Pilulas, Rodape, Texto } from '@/components/documentos/ui'
 import { useLeituraLaudo } from '@/components/documentos/useLeituraLaudo'
+import { AvisoEnviado, NovoPedidoPaciente, type PedidoEnviado } from '@/components/regulacao/NovaSolicitacao'
 import { carregarEnvelope, useRascunho } from '@/lib/rascunho'
 import { Button } from '@/components/ui/button'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -262,14 +263,7 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '', 
       />
 
       {pacienteFixo && avisoRegulacao && (
-        <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio">
-          <Waypoints className="size-4 shrink-0 text-atencao" aria-hidden />
-          <span className="flex-1">
-            Transferir o paciente internado para outra unidade é <strong>regulação</strong> (pedido à central), não encaminhamento.
-            O encaminhamento é a referência para consulta ou serviço de outra unidade.
-          </span>
-          <Button size="xs" variant="outline" render={<Link to="/regulacao" />}>Abrir regulação</Button>
-        </div>
+        <LembreteRegulacao pacienteId={pacienteFixo} unidadeId={unidadeId} />
       )}
 
       <SeletorPaciente pacienteId={pacienteId} onEscolher={escolherPaciente} pac={pac} unidadeId={unidadeId} perfilId={perfilId} fixo={!!pacienteFixo} />
@@ -354,6 +348,37 @@ export function Encaminhamento({ unidadeId, perfilId, pacienteFixo, leito = '', 
       <Rodape pendencias={pendencias} mensagem={mensagem} salvoEm={salvoEm} servidorSalvoEm={servidor.salvoEm}>
         {null}
       </Rodape>
+    </div>
+  )
+}
+
+/**
+ * Transferir o internado é regulação: o pedido abre aqui mesmo, com o paciente
+ * já escolhido (RT, 24/11/2026: nada do paciente leva à página Regulação, que
+ * o médico não tem no menu). O pedido enviado fica na aba Regulação do paciente.
+ */
+function LembreteRegulacao({ pacienteId, unidadeId: unidadeProp }: { pacienteId: string; unidadeId?: string }) {
+  const { unidadeAtiva } = useUnidade()
+  const unidadeId = unidadeProp ?? unidadeAtiva?.unidade_id ?? ''
+  const [novo, setNovo] = useState(false)
+  const [enviado, setEnviado] = useState<PedidoEnviado | null>(null)
+  return (
+    <div className="flex flex-col gap-2">
+      <div role="note" className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-apoio">
+        <Waypoints className="size-4 shrink-0 text-atencao" aria-hidden />
+        <span className="flex-1">
+          Transferir o paciente internado para outra unidade é <strong>regulação</strong> (pedido à central), não encaminhamento.
+          O encaminhamento é a referência para consulta ou serviço de outra unidade.
+        </span>
+        {!novo && unidadeId && (
+          <Button size="xs" variant="outline" onClick={() => { setEnviado(null); setNovo(true) }}>Novo pedido de regulação</Button>
+        )}
+      </div>
+      {enviado && <div className="text-apoio"><AvisoEnviado enviada={enviado} onde="Acompanhe na aba Regulação do paciente." /></div>}
+      {novo && (
+        <NovoPedidoPaciente pacienteId={pacienteId} unidadeId={unidadeId} aoFechar={() => setNovo(false)}
+          aoEnviar={(r) => { setNovo(false); setEnviado(r) }} />
+      )}
     </div>
   )
 }
