@@ -22,6 +22,19 @@ END $$;
 
 -- @@ITENS_SEGUINTES@@
 
+-- ── 073: materiais voltam a ser do faturamento e do gestor ──────────────────
+SELECT pg_temp.trocar_uma_vez('public.material_salvar(uuid, uuid, text, text, text, boolean)'::regprocedure,
+  $new$  IF NOT private.pode_cadastrar_material(p_unidade) THEN
+    RAISE EXCEPTION 'Acesso negado: o cadastro de materiais é da farmácia e do gestor da unidade.' USING ERRCODE = 'insufficient_privilege';$new$,
+  $old$  IF NOT private.pode_ver_contas(p_unidade) THEN
+    RAISE EXCEPTION 'Acesso negado: os materiais são do faturamento e do gestor da unidade.' USING ERRCODE = 'insufficient_privilege';$old$);
+SELECT pg_temp.trocar_uma_vez('public.materiais_da_unidade(uuid)'::regprocedure,
+  $new$  IF NOT (private.pode_ver_contas(p_unidade) OR private.pode_cadastrar_material(p_unidade)) THEN
+    RAISE EXCEPTION 'Acesso negado: os materiais são da farmácia, do faturamento e do gestor da unidade.' USING ERRCODE = 'insufficient_privilege';$new$,
+  $old$  IF NOT private.pode_ver_contas(p_unidade) THEN
+    RAISE EXCEPTION 'Acesso negado: os materiais são do faturamento e do gestor da unidade.' USING ERRCODE = 'insufficient_privilege';$old$);
+DROP FUNCTION IF EXISTS private.pode_cadastrar_material(uuid);
+
 -- ── 072: função nova, sem corpo anterior ─────────────────────────────────────
 DROP FUNCTION IF EXISTS public.contingencia_atendimentos(uuid);
 

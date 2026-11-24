@@ -321,7 +321,8 @@ SELECT e2e.c('c04_item1', 'C04.02.item1', 'C04.18.checar1', 304, 'f5_enf_upa', '
 SELECT CASE WHEN EXISTS (SELECT 1 FROM public.materiais_unidade WHERE unidade_id = 'f5100000-0000-4000-8000-000000000002' AND ativo AND nome = e2e.v('c04_material_nome'))
   THEN e2e.c_banco('C04.19.material', 304, 'Material já cadastrado numa rodada anterior: reaproveitado',
          format($q$SELECT id::text FROM public.materiais_unidade WHERE unidade_id = 'f5100000-0000-4000-8000-000000000002' AND ativo AND nome = %L LIMIT 1$q$, e2e.v('c04_material_nome')), 'c04_material')
-  ELSE e2e.passo('C04.19.material', 304, 'f5_fat', '/faturamento/materiais', 'Faturamento cadastra "Gaze estéril 7,5 cm (teste C04)", unidade de consumo pacote, sem SIGTAP',
+  -- ajustes da revisão, item 4 (RT, 24/11/2026): quem cadastra material é a farmácia
+  ELSE e2e.passo('C04.19.material', 304, 'f5_farm', '/faturamento/materiais', 'Farmacêutico cadastra "Gaze estéril 7,5 cm (teste C04)", unidade de consumo pacote, sem SIGTAP',
          format($q$SELECT public.material_salvar(%L::uuid, NULL, %L, 'pacote', NULL, true)::text$q$, 'f5100000-0000-4000-8000-000000000002', e2e.v('c04_material_nome')), 'ok', 'c04_material') END;
 SELECT e2e.c('c04_material', 'C04.19.material', 'C04.20.lancar_errado', 304, 'f5_fat', '/faturamento/contas (Lançar material)', 'Lança 1 pacote por engano (para provar a retirada)',
   format($q$SELECT public.conta_lancar_material(%L::uuid, %L::uuid, 1, 'lançado por engano (teste C04)')::text$q$, e2e.u('c04_conta'), e2e.u('c04_material')));

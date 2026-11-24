@@ -600,7 +600,8 @@ function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMex
 }
 
 // Pendências da 5B, L4 (decisão do RT em 05/11/2026): materiais lançados à mão
-// pelo faturamento, sem valor e sem estoque; o cadastro fica em /faturamento/materiais.
+// pelo faturamento, sem valor e sem estoque; o cadastro fica em /faturamento/materiais,
+// com a farmácia e o gestor (ajustes da revisão, item 4, RT em 24/11/2026).
 function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer: boolean; aoMudar: () => void }) {
   const [retirar, setRetirar] = React.useState<MaterialConta | null>(null)
   const [motivo, setMotivo] = React.useState('')
@@ -706,7 +707,7 @@ function LancarMaterial({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void }
     <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
       {lista.isSuccess && lista.data.length === 0 ? (
         <span className="text-tinta-sussurro">
-          Nenhum material ativo na unidade. Cadastre em <Link to="/faturamento/materiais" className="font-medium text-acao underline">Faturamento → Materiais</Link>.
+          Nenhum material ativo na unidade. Quem cadastra é a farmácia, em <Link to="/faturamento/materiais" className="font-medium text-acao underline">Materiais</Link>.
         </span>
       ) : (
         <div className="flex flex-wrap items-end gap-2">

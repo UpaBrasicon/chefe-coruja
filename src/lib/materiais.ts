@@ -10,3 +10,12 @@ export function filtrarMateriais(lista: MaterialUnidade[], busca: string, ativos
   return lista.filter((m) => m.ativo === ativos
     && (!b || semAcento(m.nome).includes(b) || (digitos.length >= 2 && (m.procedimento ?? '').includes(digitos))))
 }
+
+/**
+ * Quem cadastra e altera material na tela: a farmácia e o gestor (ajustes da
+ * revisão, item 4, RT em 24/11/2026). O faturamento só lê e lança na conta.
+ * O banco confere de novo (material_salvar, migration 20270421000073).
+ */
+export function podeCadastrarMaterial(papel: string | null | undefined): boolean {
+  return papel === 'farmaceutico' || papel === 'gestor'
+}

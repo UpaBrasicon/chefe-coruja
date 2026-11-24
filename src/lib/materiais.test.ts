@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { GRUPO_PENDENCIA, lerQuantidade, motivoDoEvento, ondeCorrigir, quantidadeNaTela, EVENTO, type MaterialUnidade } from './contas.ts'
-import { filtrarMateriais } from './materiais.ts'
+import { filtrarMateriais, podeCadastrarMaterial } from './materiais.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
 // Pendências da 5B, L4 (decisão L4 = A e opção A da tela, RT em 05/11/2026):
@@ -51,11 +51,17 @@ test('pendência do grupo "material" aparece na conta e diz onde corrigir', () =
   assert.equal(EVENTO.material_retirado, 'Material retirado')
 })
 
-test('a tela de materiais é do faturamento e do gestor', () => {
-  assert.ok(itensDeNavegacao('faturamento', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
+// Ajustes da revisão, item 4 (RT, 24/11/2026): o cadastro passa à farmácia;
+// o faturamento só lança na conta
+test('a tela de materiais é da farmácia e do gestor; o faturamento não cadastra', () => {
+  assert.ok(itensDeNavegacao('farmaceutico', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
   assert.ok(itensDeNavegacao('gestor', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
+  assert.ok(!itensDeNavegacao('faturamento', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
   assert.ok(!itensDeNavegacao('recepcao', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
-  assert.match(readFileSync('src/App.tsx', 'utf8'), /path="\/faturamento\/materiais"/)
+  assert.ok(!itensDeNavegacao('farmaceutico', false, false, 'ubs').some((i) => i.to === '/faturamento/materiais'))
+  assert.match(readFileSync('src/App.tsx', 'utf8'), /RequireRole papeis=\{\['farmaceutico', 'gestor', 'faturamento'\]\} \/>\}>\s*<Route path="\/faturamento\/materiais"/)
+  assert.ok(podeCadastrarMaterial('farmaceutico') && podeCadastrarMaterial('gestor'))
+  assert.ok(!podeCadastrarMaterial('faturamento') && !podeCadastrarMaterial(null))
 })
 
 test('as telas usam as RPCs da migration 20270226000001', () => {
