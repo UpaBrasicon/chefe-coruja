@@ -20,6 +20,8 @@ import { Input } from '@/components/ui/input'
 import { fmtDataHora } from '@/lib/datas'
 import { ANEXO_LIMITE_BYTES, ANEXO_TIPOS, caminhoAnexo, erroArquivo } from '@/lib/regulacao'
 import { abrirEmJanela } from '@/lib/abrirEmJanela'
+import { ROTULO_DOCUMENTO, rotuloDocumento } from '@/components/documento/documentos'
+import { nomeAnexoLegivel } from '@/lib/regulacaoLinhaTempo'
 import { supabase } from '@/lib/supabase'
 
 type Anexo = { id: string; tipo: 'arquivo' | 'documento'; nome: string; tamanho: number | null; enviado_em: string; enviado_por: string | null }
@@ -132,7 +134,7 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
           {l.anexos.map((a) => (
             <li key={a.id} className="flex flex-wrap items-center gap-2">
               <Button variant="link" className="h-auto min-h-0 p-0 text-corpo underline-offset-2" onClick={() => void abrir(a)}>
-                {a.tipo === 'documento' && <FileText className="size-3.5" aria-hidden />}{a.nome}
+                {a.tipo === 'documento' && <FileText className="size-3.5" aria-hidden />}{a.tipo === 'documento' ? nomeAnexoLegivel(a.nome, ROTULO_DOCUMENTO) : a.nome}
               </Button>
               <span className="text-rotulo text-tinta-sussurro">{kb(a.tamanho)} · {a.enviado_por ?? '—'} · {fmtDataHora(a.enviado_em)}</span>
               {l.pode_anexar && retirando !== a.id && (
@@ -188,7 +190,7 @@ function EscolherDocumento({ solicitacaoId, aoFim }: { solicitacaoId: string; ao
         docs.data!.map((d) => (
           <BotaoLinha key={d.id} variante="linha" className="flex-wrap items-center gap-2 rounded-controle border-0 px-2 py-1 hover:bg-campo"
             onClick={() => anexar.mutate(d.id)} disabled={anexar.isPending}>
-            <span className="font-medium text-tinta">{d.tipo.replace(/_/g, ' ')}{d.numero ? ` nº ${d.numero}` : ''}</span>
+            <span className="font-medium text-tinta">{rotuloDocumento(d.tipo)}{d.numero ? ` nº ${d.numero}` : ''}</span>
             <span className="text-rotulo text-tinta-sussurro">versão {d.versao} · {d.autor ?? '—'} · {fmtDataHora(d.emitido_em)}</span>
           </BotaoLinha>
         ))

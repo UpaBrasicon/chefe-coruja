@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import {
-  ESPERANDO_DECISAO, esperandoDecisao, montarLinhaDoTempo, rotuloEvento, temposComAtual, textoDoEvento, textoTempos,
+  ESPERANDO_DECISAO, esperandoDecisao, montarLinhaDoTempo, nomeAnexoLegivel, rotuloEvento, temposComAtual, textoDoEvento, textoTempos,
 } from './regulacaoLinhaTempo.ts'
 import { avisoPeriodoVazio, dataCurta, diasDoPeriodo, secoesComDados, type Indicadores } from './indicadoresRegulacao.ts'
 
@@ -65,6 +65,16 @@ test('RD2: uma situação atual só, a do pedido', () => {
   assert.deepEqual(temposComAtual(tempos, 'cancelada').map((t) => t.atual), [false, false])
   // sem a situação do pedido, fica só a última que veio marcada
   assert.deepEqual(temposComAtual(tempos).map((t) => t.atual), [false, true])
+})
+
+test('NI3: o nome do anexo do prontuário sai com o rótulo do tipo, com acento', () => {
+  const rotulos = { evolucao: 'Evolução', evolucao_enfermagem: 'Evolução de enfermagem', pedido_exames: 'Pedido de exames', prescricao: 'Prescrição' }
+  assert.equal(nomeAnexoLegivel('Evolucao (versão 1)', rotulos), 'Evolução (versão 1)')
+  assert.equal(nomeAnexoLegivel('Evolucao Enfermagem (versão 2)', rotulos), 'Evolução de enfermagem (versão 2)')
+  assert.equal(nomeAnexoLegivel('Pedido Exames nº 2026/000005 (versão 1)', rotulos), 'Pedido de exames nº 2026/000005 (versão 1)')
+  // arquivo enviado: o nome fica como veio
+  assert.equal(nomeAnexoLegivel('Evolucao_scan.pdf', rotulos), 'Evolucao_scan.pdf')
+  assert.equal(nomeAnexoLegivel('raio-x.pdf', rotulos), 'raio-x.pdf')
 })
 
 test('MR2: esperando decisão são os mesmos do painel de prazos', () => {

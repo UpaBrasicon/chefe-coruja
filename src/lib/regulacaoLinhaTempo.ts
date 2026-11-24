@@ -106,6 +106,21 @@ export function temposComAtual<T extends TempoStatus>(tempos: T[], statusAtual?:
   return tempos.map((t, k) => ({ ...t, atual: k === alvo }))
 }
 
+/**
+ * Nome do anexo que veio do prontuário (NI3, RT 24/11/2026). O banco monta o
+ * nome com o tipo sem acento ("Evolucao (versão 1)", "Pedido Exames nº 3");
+ * a tela troca o começo pelo rótulo do tipo ("Evolução", "Pedido de exames").
+ * `rotulos` é o mapa tipo → rótulo dos documentos.
+ */
+export function nomeAnexoLegivel(nome: string, rotulos: Record<string, string>): string {
+  const iniciais = (t: string) => t.split('_').map((p) => (p ? p[0].toUpperCase() + p.slice(1) : p)).join(' ')
+  const candidatos = Object.keys(rotulos).map((t) => [iniciais(t), rotulos[t]] as const).sort((a, b) => b[0].length - a[0].length)
+  for (const [cru, rotulo] of candidatos) {
+    if (nome === cru || nome.startsWith(`${cru} nº`) || nome.startsWith(`${cru} (versão`)) return rotulo + nome.slice(cru.length)
+  }
+  return nome
+}
+
 /** "Tempo em cada status" em texto, com a situação atual marcada uma vez só. */
 export function textoTempos(tempos: TempoStatus[], statusAtual?: StatusRegulacao): string {
   return temposComAtual(tempos, statusAtual).map((t) => {
