@@ -50,7 +50,8 @@ import { AbaCuidadosPaliativos } from '@/components/paliativo/AbaCuidadosPaliati
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Estado } from '@/components/porta/Estado'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs } from '@/components/ui/tabs'
+import { AbasComMais } from '@/components/plantao/MenuMais'
 import { Spinner } from '@/components/ui/spinner'
 
 import { BlocoAcuidade } from './caderno/Acuidade'
@@ -99,6 +100,8 @@ const ABAS: [IdAba, string][] = [
  * Classificação deixou de ser aba (ponto 8): a cor do cabeçalho abre a janela.
  */
 const ABAS_LEITURA: IdAba[] = ['resumo', 'evol', 'alta']
+/** As abas que ficam na linha (M2, RT 24/11/2026); as demais vão para "Mais". */
+const ABAS_PRINCIPAIS: IdAba[] = ['resumo', 'evol', 'receituario', 'exames', 'alta']
 
 const CHAVES_DO_LEITO = [
   'leito-aberto', 'acuidade', 'tendencia-acuidade', 'vitais-qsofa', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta',
@@ -512,13 +515,10 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
     <div className="flex flex-col gap-3.5 border-t border-fio pt-3.5 text-apoio">
       {cabecalho(() => setJanela('classificacao'), true, acoesTopo.length > 0 ? acoesTopo : undefined)}
 
-      {/* abas numa linha só; na tela estreita a linha rola para o lado */}
+      {/* M2 (revisão do médico, RT 24/11/2026): as abas do dia a dia na linha; as outras em "Mais" */}
       <Tabs value={atual} onValueChange={(v) => setAba(v as IdAba)}>
-        <TabsList aria-label="Documentos do leito" className="gap-3.5">
-          {disponiveis.map(([id, rotulo]) => (
-            <TabsTrigger key={id} value={id} className="shrink-0">{rotulo}</TabsTrigger>
-          ))}
-        </TabsList>
+        <AbasComMais rotulo="Documentos do leito" valor={atual} principais={ABAS_PRINCIPAIS}
+          onTrocar={(k) => setAba(k as IdAba)} abas={disponiveis.map(([id, rotulo]) => ({ k: id, rotulo }))} />
       </Tabs>
 
       {avisos}

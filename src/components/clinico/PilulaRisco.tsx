@@ -11,6 +11,25 @@ const ESTILO: Record<CorRisco, string> = {
   azul: 'bg-mts-azul text-mts-texto',
 }
 
+// Forma calma para listas (revisão do médico, RT 24/11/2026): ponto na cor da
+// enfermagem + o nome da cor em texto normal. As cores são as mesmas da pílula.
+const PONTO: Record<CorRisco, string> = {
+  vermelho: 'bg-mts-vermelho',
+  laranja: 'bg-mts-laranja',
+  amarelo: 'bg-mts-amarelo',
+  verde: 'bg-mts-verde',
+  azul: 'bg-mts-azul',
+}
+
+export function PontoRisco({ cor, className }: { cor?: CorRisco | null; className?: string }) {
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 text-apoio whitespace-nowrap', cor ? 'text-tinta' : 'text-tinta-sussurro', className)}>
+      <span aria-hidden className={cn('size-2.5 shrink-0 rounded-capsula', cor ? PONTO[cor] : 'ring-1 ring-fio-forte')} />
+      <span className="capitalize">{cor ?? 'sem classificação'}</span>
+    </span>
+  )
+}
+
 export function PilulaRisco({ cor, className, detalhe = false }: { cor?: CorRisco | null; className?: string; detalhe?: boolean }) {
   return (
     <span

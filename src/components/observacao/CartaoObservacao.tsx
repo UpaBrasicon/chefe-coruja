@@ -17,10 +17,12 @@ import { SeloAlergia } from '@/components/paciente/AlergiasEventos'
 import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Estado } from '@/components/porta/Estado'
+import { MenuMais } from '@/components/plantao/MenuMais'
+import { PrazoSeisHoras } from './PrazoSeisHoras'
 import { dataIso } from '@/lib/formato'
 
 import {
-  ESTADOS, ROTULO_DESFECHO, TOM_TEXTO, hhmm, msgErro, relogioEspera, relogioPermanencia, rpc, textoReavaliacao,
+  ESTADOS, ROTULO_DESFECHO, hhmm, msgErro, relogioEspera, relogioPermanencia, rpc, textoReavaliacao,
   type Acao, type LinhaObservacao,
 } from './modelo'
 import {
@@ -104,15 +106,21 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
   const aguardandoPassagem = ps?.situacao === 'aguardando'
 
   // ações por estado (protótipo, 31408–31430)
-  const acoes: { rotulo: string; primaria?: boolean; onClick: () => void }[] = []
+  const acoes: { rotulo: string; primaria?: boolean; conduta?: boolean; onClick: () => void }[] = []
   if (podeAgir && !fim) {
     if (ehMedico && linha.estado === 'nao') acoes.push({ rotulo: 'Atender', primaria: true, onClick: () => void acao(() => rpc('observacao_atender', { p_internacao: linha.internacao_id })) })
     if (ehMedico && (linha.estado === 'atendimento' || linha.estado === 'encaminhado')) acoes.push({ rotulo: 'Reavaliar às…', onClick: () => abrir('reav') })
     if (ehMedico && linha.estado === 'reavaliacao') acoes.push({ rotulo: 'Reavaliado', primaria: true, onClick: () => void acao(() => rpc('observacao_reavaliado', { p_internacao: linha.internacao_id })) })
-    if (ehMedico && linha.estado !== 'nao') acoes.push({ rotulo: 'Finalizar', onClick: () => abrir('fim') })
+    if (ehMedico && linha.estado !== 'nao') acoes.push({ rotulo: 'Definir conduta', conduta: true, onClick: () => abrir('fim') })
     if (ehMedico || pr) acoes.push({ rotulo: pr ? `Protocolo ${pr.sigla}` : 'Protocolo', onClick: () => abrir('proto') })
     if (!aguardandoPassagem) acoes.push({ rotulo: ps?.situacao === 'recusada' ? 'Reenviar passagem' : 'Passar plantão', onClick: () => abrir('passar') })
   }
+
+  // M3 da revisão do médico (RT, 24/11/2026): um botão na linha (o passo do estado ou "Definir conduta");
+  // o resto, prancheta inclusive, no menu "…"
+  if (!fim) acoes.push({ rotulo: 'Prancheta', onClick: () => abrirPrancheta(linha) })
+  const principal = acoes.find((a) => a.primaria) ?? acoes.find((a) => a.conduta) ?? (acoes.length === 1 ? acoes[0] : undefined)
+  const noMenu = acoes.filter((a) => a !== principal)
 
   const painel = aberto || (ps && !fim && (ps.situacao !== 'aceita' || ps.de_perfil === eu || ps.para_perfil === eu)) || (erro && !aberto)
 
@@ -161,25 +169,19 @@ export function CartaoObservacao({ linha, agora, eu, unidadeId, podeAgir, ehMedi
           {fim ? (
             <span className="flex items-center gap-1 text-rotulo text-tinta-sussurro"><Clock className="size-3" aria-hidden /> Encerrada às {hhmm(linha.finalizado_em)}</span>
           ) : (
-            <>
-              <span className={cn('flex items-center gap-1 font-semibold', TOM_TEXTO[rel.tom])}>
-                <Clock className="size-3" aria-hidden /> {rel.contagem}
-              </span>
-              <div className={cn('text-rotulo', rel.acima ? 'text-observacao' : 'text-tinta-sussurro')}>
-                {rel.acima ? 'Definir conduta ou internar' : `até ${hhmm(linha.prazo)}`}
-              </div>
-            </>
+            <PrazoSeisHoras entrada={linha.entrada} prazo={linha.prazo} agora={agora} />
           )}
         </TableCell>
 
         <TableCell className="pr-5">
-          <div className="flex flex-wrap justify-end gap-[7px]">
-            {acoes.map((a) => (
-              <Button key={a.rotulo} size="sm" variant={a.primaria ? 'default' : 'outline'} onClick={a.onClick}>{a.rotulo}</Button>
-            ))}
-            {!fim && (
-              <Button size="sm" variant="outline" onClick={() => abrirPrancheta(linha)}><ClipboardList /> Prancheta</Button>
+          <div className="flex flex-nowrap justify-end gap-[7px]">
+            {principal && (
+              <Button size="sm" variant={principal.primaria || principal.conduta ? 'default' : 'outline'} onClick={principal.onClick}>
+                {principal.rotulo === 'Prancheta' && <ClipboardList />} {principal.rotulo}
+              </Button>
             )}
+            <MenuMais icone rotuloAcessivel={`Mais ações para ${linha.nome}`}
+              itens={noMenu.map((a) => ({ chave: a.rotulo, rotulo: a.rotulo, onSelecionar: a.onClick }))} />
           </div>
         </TableCell>
       </TableRow>

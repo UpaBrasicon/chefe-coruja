@@ -3,8 +3,8 @@
 // atendimento" (com o estado "em reavaliação"); "Saídas do plantão" com os
 // finalizados e excluídos do dia. A cor manda; 80+ e prioridade legal só
 // desempatam dentro da mesma cor.
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, RotateCcw, Stethoscope } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, Megaphone, RotateCcw, Stethoscope } from 'lucide-react'
 import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -25,7 +25,8 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
-import { PilulaRisco } from '@/components/clinico/PilulaRisco'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { PontoRisco } from '@/components/clinico/PilulaRisco'
 import { BarraConsultorio } from '@/components/porta/BarraConsultorio'
 import { BotaoChamar } from '@/components/porta/Chamada'
 import { SeloHomonimo } from '@/components/porta/SeloHomonimo'
@@ -62,6 +63,9 @@ const minDesde = (iso: string | null | undefined, agora: number) => (iso ? Math.
 const diaSP = (iso: string) => dataIso(iso)
 const dataCurta = (iso: string) => diaMes(iso)
 const quando = (s: Saida) => Date.parse(s.desfecho_em ?? s.encerrado_em ?? '') || 0
+
+// M1 (RT, 24/11/2026): Chamar e Abrir presos à direita, mesmo com a tabela rolando para o lado
+const FIXA_DIREITA = 'sticky right-0 z-[1] bg-superficie shadow-[-10px_0_10px_-10px_rgb(0_0_0/0.12)]'
 
 const Vazio = ({ children }: { children: React.ReactNode }) => <p className="px-5 py-5 text-controle text-tinta-sussurro">{children}</p>
 const Nada = () => <span className="text-tinta-sussurro">—</span>
@@ -239,6 +243,24 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
   const setoresDaFila = [...new Set((fila.data ?? []).map((e) => e.setor_id))]
   const chamadas = useChamadasPorEpisodio(setoresDaFila, 'atendimento')
 
+  // M3: o próximo é o primeiro da ordem de sempre (cor, 80+, prioridade legal, espera)
+  const proximo = aguardando[0] ?? null
+  const salaDoProximo = proximo ? consultorio.salas[proximo.setor_id] ?? null : null
+  const [chamadoAgora, setChamadoAgora] = React.useState<string | null>(null)
+  const chamarProximo = useMutation({
+    mutationFn: async (e: EpFila) => {
+      const sala = consultorio.salas[e.setor_id]
+      if (!sala) throw new Error('Escolha seu consultório no topo da fila.')
+      const { error } = await supabase.rpc('chamar_paciente', { p_episodio: e.id, p_sala: sala })
+      if (error) throw error
+      return nomeDe(e)
+    },
+    onSuccess: (nome) => {
+      setChamadoAgora(nome)
+      void qc.invalidateQueries({ queryKey: ['chamadas-contagem'] })
+    },
+  })
+
   const carregando = setores.isLoading || fila.isLoading
   const erro = setores.error ?? fila.error
   // "cor": mais grave primeiro na ordem decrescente
@@ -315,7 +337,22 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
           <span className={cn('pb-2.5 text-apoio', acimaDoAlvo ? 'font-medium text-critico' : 'text-tinta-sussurro')}>
             {ubs ? 'imediato e prioritário da escuta, depois prioridade legal e chegada' : acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
           </span>
+          {/* M3 (RT, 24/11/2026): chama o primeiro da fila na ordem de sempre, no consultório escolhido no topo */}
+          {proximo && (
+            <Button size="sm" className="mb-1.5 ml-auto" disabled={chamarProximo.isPending || !salaDoProximo}
+              title={!salaDoProximo ? 'Escolha seu consultório no topo da fila' : `Chama ${nomeDe(proximo)}`}
+              onClick={() => chamarProximo.mutate(proximo)}>
+              <Megaphone /> Chamar o próximo
+            </Button>
+          )}
         </div>
+        {proximo && !salaDoProximo && (
+          <p className="-mt-1 text-rotulo text-tinta-sussurro">Para chamar o próximo, escolha seu consultório acima.</p>
+        )}
+        <MensagemErro formato="linha" erro={chamarProximo.error} acao="chamar o próximo" className="mt-0" />
+        {chamadoAgora && (
+          <p role="status" className="-mt-1 text-apoio text-acao">Chamado no painel: {chamadoAgora}.</p>
+        )}
 
         <TabsContent value="aguardando">
           <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
@@ -328,10 +365,9 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     {!ubs && <Cabeca col="cor" ordem={ordemAg} alternar={alternarAg}>Cor</Cabeca>}
                     <Cabeca>Paciente</Cabeca>
                     <Cabeca>Queixa</Cabeca>
-                    <Cabeca col="espera" ordem={ordemAg} alternar={alternarAg}>Espera</Cabeca>
-                    <Cabeca>{ubs ? 'Tipo' : 'Alvo'}</Cabeca>
-                    <Cabeca>Situação</Cabeca>
-                    <Cabeca className="text-right"><span className="sr-only">Ações</span></Cabeca>
+                    <Cabeca col="espera" ordem={ordemAg} alternar={alternarAg}>{ubs ? 'Espera' : 'Espera e alvo'}</Cabeca>
+                    {ubs && <Cabeca>Tipo</Cabeca>}
+                    <Cabeca className={cn('text-right', FIXA_DIREITA, 'bg-campo')}><span className="sr-only">Ações</span></Cabeca>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -340,26 +376,29 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     const n = chamadas.data?.get(e.id) ?? 0
                     return (
                       <TableRow key={e.id}>
-                        {!ubs && <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>}
+                        {!ubs && <TableCell><PontoRisco cor={e.cor_atual} /></TableCell>}
                         <TableCell><Paciente e={e} iguais={iguais} /></TableCell>
                         <Queixa texto={e.queixa} />
-                        <TableCell className={cn('tabular-nums', acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{minutos(esperaDesde(e), agora)}</TableCell>
-                        {ubs
-                          ? (
-                            <TableCell className="whitespace-nowrap text-tinta-apoio" title={rotuloTipoAps(e.tipo_atendimento_aps)}>
-                              {/* a cor da escuta inicial (CAB 28), quando houve */}
-                              {e.cor_atual && <PilulaRisco cor={e.cor_atual} className="mr-2" />}
-                              {rotuloTipoApsCurto(e.tipo_atendimento_aps) || <Nada />}
-                              {horaMarcada.has(e.id) && <span className="ml-1 tabular-nums">· marcada {hora(horaMarcada.get(e.id)!)}</span>}
-                            </TableCell>
-                          )
-                          : <TableCell className="tabular-nums text-tinta-sussurro">{alvoDe(e.cor_atual)} min</TableCell>}
-                        <TableCell>
-                          {n === 0 ? <Estado tom="cinza">Aguardando</Estado>
-                            : <Estado tom={n >= 3 ? 'vermelho' : 'ambar'}>Chamado {n} {n === 1 ? 'vez' : 'vezes'}</Estado>}
+                        {/* M1 (RT, 24/11/2026): espera e alvo juntos; a coluna Situação saiu e a chamada vem aqui embaixo */}
+                        <TableCell className="whitespace-nowrap tabular-nums">
+                          <span className={cn(acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{minutos(esperaDesde(e), agora)}</span>
+                          {!ubs && <span className="text-tinta-sussurro"> · alvo {alvoDe(e.cor_atual)} min</span>}
+                          {n > 0 && (
+                            <span className={cn('block text-rotulo', n >= 3 ? 'font-semibold text-critico' : 'text-atencao')}>
+                              chamado {n} {n === 1 ? 'vez' : 'vezes'}
+                            </span>
+                          )}
                         </TableCell>
-                        <TableCell>
-                          {/* chamar e abrir numa linha só (o consultório vem da barra do topo) */}
+                        {ubs && (
+                          <TableCell className="whitespace-nowrap text-tinta-apoio" title={rotuloTipoAps(e.tipo_atendimento_aps)}>
+                            {/* a cor da escuta inicial (CAB 28), quando houve */}
+                            {e.cor_atual && <PontoRisco cor={e.cor_atual} className="mr-2" />}
+                            {rotuloTipoApsCurto(e.tipo_atendimento_aps) || <Nada />}
+                            {horaMarcada.has(e.id) && <span className="ml-1 tabular-nums">· marcada {hora(horaMarcada.get(e.id)!)}</span>}
+                          </TableCell>
+                        )}
+                        <TableCell className={FIXA_DIREITA}>
+                          {/* chamar e abrir numa linha só, presos à direita (o consultório vem da barra do topo) */}
                           <div className="flex items-center justify-end gap-2 [&>div]:flex-nowrap">
                             <BotaoChamar episodioId={e.id} setorId={e.setor_id} etapa="atendimento" chamadas={n} semContagem salaFixa={consultorio.salas[e.setor_id] ?? null} />
                             <BotaoPulseira pacienteId={e.paciente_id} nome={nomeDe(e)} reimpressao compacto variant="ghost" />
@@ -398,7 +437,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     const reaberto = rotuloReaberto(ultimaReabertura(e.reaberturas))
                     return (
                       <TableRow key={e.id}>
-                        {!ubs && <TableCell><PilulaRisco cor={e.cor_atual} /></TableCell>}
+                        {!ubs && <TableCell><PontoRisco cor={e.cor_atual} /></TableCell>}
                         <TableCell><Paciente e={e} iguais={iguais} /></TableCell>
                         <Queixa texto={e.queixa} />
                         <TableCell className="tabular-nums text-tinta-apoio">{minutos(e.atendimento_iniciado_em, agora)}</TableCell>
@@ -453,7 +492,7 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
                     const podeReabrir = !ubs && !excluido && podeVerReabrir(s, { perfilId: perfil?.id, ehGestor }, agora)
                     return (
                       <TableRow key={s.id}>
-                        {!ubs && <TableCell><PilulaRisco cor={s.cor_atual} /></TableCell>}
+                        {!ubs && <TableCell><PontoRisco cor={s.cor_atual} /></TableCell>}
                         <TableCell><Paciente e={s} /></TableCell>
                         <TableCell>
                           <div className="flex flex-col items-start gap-0.5">

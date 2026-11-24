@@ -12,21 +12,32 @@ import { AlertTriangle, Eye, Shield } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
-import { mostraSecao } from '@/lib/observacoesQueAbri'
+import { mostraSecao, semDuplicar, type ObservacaoQueAbri } from '@/lib/observacoesQueAbri'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { LeitoAberto } from '@/components/internacao/LeitoAberto'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 import { CartaoObservacao } from './CartaoObservacao'
-import { ObservacoesQueAbri } from './ObservacoesQueAbri'
+import { LinhaQueAbri } from './ObservacoesQueAbri'
 import { duracao, msgErro, relogioPermanencia, type LinhaObservacao } from './modelo'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 type Aba = 'ativas' | 'finalizadas'
+
+/** Cabeçalho de grupo da lista única (M1 da revisão do médico): "Que abri" e "Do meu setor". */
+function Grupo({ titulo, n }: { titulo: string; n: number }) {
+  return (
+    <TableRow className="bg-campo hover:bg-campo">
+      <TableCell colSpan={6} className="py-2 pl-5 text-apoio font-semibold text-tinta">
+        {titulo} <span className="font-normal text-tinta-sussurro tabular-nums">· {n}</span>
+      </TableCell>
+    </TableRow>
+  )
+}
 
 export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
   const { unidadeAtiva, papelAtivo } = useUnidade()
@@ -68,15 +79,34 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
 
   const linhas = React.useMemo(() => painel.data ?? [], [painel.data])
   const ativas = linhas.filter((l) => l.estado !== 'finalizado')
-  const acima = ativas.filter((l) => relogioPermanencia(l.entrada, l.prazo, agora).acima)
-  const maior = ativas.reduce((m, l) => Math.max(m, relogioPermanencia(l.entrada, l.prazo, agora).decorridoMin), 0)
+
+  // médico da porta: as observações que ele abriu (RT, 06/11/2026). M1 da revisão do médico (RT, 24/11/2026):
+  // entram na mesma lista, no grupo "Que abri", e a contagem da aba soma os dois grupos
+  const ehMedico = mostraSecao(papelAtivo)
+  const queAbri = useQuery({
+    queryKey: ['observacoes-que-abri', unidadeId],
+    enabled: !!unidadeId && ehMedico,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('observacoes_que_abri', { p_unidade: unidadeId! })
+      // função ausente (banco sem a 20270305000002 ou rollback): o grupo some
+      if (error?.code === 'PGRST202') return []
+      if (error) throw error
+      return (data ?? []) as unknown as ObservacaoQueAbri[]
+    },
+  })
+  const minhas = ehMedico ? semDuplicar(queAbri.data ?? [], linhas.map((l) => l.internacao_id)) : []
+  const relogios = [...ativas, ...minhas].map((l) => relogioPermanencia(l.entrada, l.prazo, agora))
+  const acima = relogios.filter((r) => r.acima)
+  const maior = relogios.reduce((m, r) => Math.max(m, r.decorridoMin), 0)
+  const emObservacao = ativas.length + minhas.length
   const setores = [...new Set(linhas.map((l) => l.setor_nome))].join(', ')
 
   const finalizadas = linhas.filter((l) => l.estado === 'finalizado')
 
-  const tabela = (lista: LinhaObservacao[], vazio: string) => (
+  const tabela = (lista: LinhaObservacao[], vazio: string, queAbriLista: ObservacaoQueAbri[] = []) => (
     <section className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-      {lista.length === 0 ? (
+      {lista.length === 0 && queAbriLista.length === 0 ? (
         <p className="px-5 py-5 text-controle text-tinta-sussurro">{vazio}</p>
       ) : (
         <Table aria-label="Pacientes em observação">
@@ -91,6 +121,18 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {queAbriLista.length > 0 && (
+              <>
+                <Grupo titulo="Que abri" n={queAbriLista.length} />
+                {queAbriLista.map((o) => <LinhaQueAbri key={o.internacao_id} o={o} agora={agora} unidadeId={unidadeId!} />)}
+                <Grupo titulo="Do meu setor" n={lista.length} />
+                {lista.length === 0 && (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={6} className="pl-5 text-apoio text-tinta-sussurro">Ninguém em observação nos setores da sua escala agora.</TableCell>
+                  </TableRow>
+                )}
+              </>
+            )}
             {lista.map((l) => (
               <CartaoObservacao key={l.internacao_id} linha={l} agora={agora} eu={perfil?.id} unidadeId={unidadeId!}
                 podeAgir={!ehGestor} ehMedico={papelAtivo === 'plantonista'} abrirPrancheta={setPrancheta} />
@@ -109,10 +151,7 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
     <p className="rounded-container border border-critico/30 bg-alerta-critico px-4 py-3 text-apoio text-critico">{msgErro(painel.error)}</p>
   ) : (
     <div className="flex flex-col gap-3">
-      {/* médico da porta: as observações que ele abriu, só para encerrar (RT, 06/11/2026) */}
-      {mostraSecao(papelAtivo) && (
-        <ObservacoesQueAbri unidadeId={unidadeId} agora={agora} noPainel={linhas.map((l) => l.internacao_id)} />
-      )}
+      {queAbri.error && <p className="rounded-container border border-critico/30 bg-alerta-critico px-4 py-3 text-apoio text-critico">{msgErro(queAbri.error)}</p>}
       {acima.length > 0 && (
         <div role="alert" className="flex items-center gap-[9px] rounded-container border border-nota bg-nota/50 px-4 py-3">
           <AlertTriangle className="size-4 shrink-0 text-observacao" aria-hidden />
@@ -125,19 +164,19 @@ export function PainelObservacao({ embutido = false }: { embutido?: boolean }) {
       <Tabs value={aba} onValueChange={(v) => setAba(v as Aba)} className="gap-3">
         <div className="flex flex-wrap items-end gap-x-4 gap-y-1 border-b border-fio">
           <TabsList aria-label="Observação" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
-            <TabsTrigger value="ativas">Em observação <span className="text-rotulo font-semibold text-acao tabular-nums">{ativas.length}</span></TabsTrigger>
+            <TabsTrigger value="ativas">Em observação <span className="text-rotulo font-semibold text-acao tabular-nums">{emObservacao}</span></TabsTrigger>
             <TabsTrigger value="finalizadas">
               {ehGestor ? 'Finalizados em 12 horas' : 'Finalizados no plantão'} <span className="text-rotulo font-semibold text-acao tabular-nums">{finalizadas.length}</span>
             </TabsTrigger>
           </TabsList>
           {/* quem passou do prazo aparece em qualquer aba: não some ao olhar a outra */}
           <span className="pb-2.5 text-apoio text-tinta-sussurro">
-            {ativas.length > 0 ? `maior permanência ${duracao(maior)}` : 'ninguém em observação agora'}
+            {emObservacao > 0 ? `maior permanência ${duracao(maior)}` : 'ninguém em observação agora'}
             {acima.length > 0 && <span className="font-medium text-critico"> · {acima.length} acima de 6 horas</span>}
           </span>
         </div>
 
-        <TabsContent value="ativas">{tabela(ativas, 'Nenhum paciente em observação agora.')}</TabsContent>
+        <TabsContent value="ativas">{tabela(ativas, 'Nenhum paciente em observação agora.', minhas)}</TabsContent>
         <TabsContent value="finalizadas">{tabela(finalizadas, ehGestor ? 'Nada terminou nas últimas 12 horas.' : 'Nada terminou neste plantão.')}</TabsContent>
       </Tabs>
 
