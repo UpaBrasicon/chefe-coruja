@@ -44,6 +44,7 @@ import { BotaoRnDaMae } from '@/components/paciente/CadastroRn'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
+import { ResumoClinico } from '@/components/evolucao/ResumoClinico'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { AbaCuidadosPaliativos } from '@/components/paliativo/AbaCuidadosPaliativos'
@@ -474,7 +475,11 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
       return cid || null
     },
   }).data
-  const pp: PartesLeito = { ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal }
+  const pp: PartesLeito = {
+    ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal,
+    // EV1: o resumo do caso (antibióticos, medicações, eletrólitos, condutas) mora no Resumo do leito
+    resumoCaso: <ResumoClinico pacienteId={pacienteId} internacaoId={i.id} />,
+  }
 
   // RS3 (RT, 24/11/2026): "Evoluir" é a ação principal; transferir, passar,
   // intercorrência, contenção, prancheta e impressão ficam juntos no menu Ações
@@ -520,7 +525,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
         {atual === 'resumo' && <ResumoCaderno p={pp} irPara={(a) => setAba(a)} />}
         {atual === 'evol' && (
           <AbaEvolucao pacienteId={pacienteId} internacaoId={i.id} somenteLeitura={!escreve}
-            subInicial={abaInicial === 'diag' ? 'diagnostico' : undefined}
+            subInicial={abaInicial === 'diag' ? 'hoje' : undefined} onAbrirAdmissao={() => setAba('admissao')}
             diagnostico={{ podeEditar: escreve, acao: p.acao, onAbrirNotificacao: irNotificacao }} />
         )}
         {atual === 'admissao' && (

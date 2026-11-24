@@ -59,7 +59,9 @@ function CampoCid({ id, valor, mudar, desabilitado, placeholder, rotulo }: {
   )
 }
 
-export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotificacao }: {
+export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotificacao, compacto = false }: {
+  /** EV3 (RT, 24/11/2026): dentro do formulário da evolução, sem título e com o histórico recolhido */
+  compacto?: boolean
   internacaoId: string
   podeEditar: boolean
   acao: Acao
@@ -84,14 +86,16 @@ export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotifica
   const itemTxt = (x: (typeof itens)[number]) => `${x.cid} · ${x.agravo}${x.item ? ` (item ${x.item})` : ''}`
 
   return (
-    <div className="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="flex min-w-0 flex-col gap-3.5 rounded-container border border-fio bg-superficie p-4">
-        <div className="flex flex-wrap items-baseline gap-2.5">
-          <span className="flex items-center gap-[7px] text-corpo font-semibold text-tinta">
-            <ClipboardList className="size-[15px] text-acao" aria-hidden /> Diagnóstico
-          </span>
-          <span className="text-apoio text-tinta-sussurro">CID-10 · português · um primário, secundários opcionais</span>
-        </div>
+    <div className={compacto ? 'flex flex-col gap-3' : 'grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_320px]'}>
+      <div className={compacto ? 'flex min-w-0 flex-col gap-3.5' : 'flex min-w-0 flex-col gap-3.5 rounded-container border border-fio bg-superficie p-4'}>
+        {!compacto && (
+          <div className="flex flex-wrap items-baseline gap-2.5">
+            <span className="flex items-center gap-[7px] text-corpo font-semibold text-tinta">
+              <ClipboardList className="size-[15px] text-acao" aria-hidden /> Diagnóstico
+            </span>
+            <span className="text-apoio text-tinta-sussurro">CID-10 · português · um primário, secundários opcionais</span>
+          </div>
+        )}
 
         {imediatas.length > 0 && (
           <div role="alert" className="flex items-start gap-2 rounded-controle border border-critico/30 bg-alerta-critico px-3 py-2.5">
@@ -155,7 +159,12 @@ export function AbaDiagnostico({ internacaoId, podeEditar, acao, onAbrirNotifica
         )}
       </div>
 
-      <Historico linhas={linhas} />
+      {compacto ? (
+        <details className="text-apoio">
+          <summary className="cursor-pointer text-tinta-apoio">Histórico do diagnóstico ({linhas.length})</summary>
+          <div className="mt-2"><Historico linhas={linhas} /></div>
+        </details>
+      ) : <Historico linhas={linhas} />}
     </div>
   )
 }
