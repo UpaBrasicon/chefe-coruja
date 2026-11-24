@@ -11227,6 +11227,8 @@ export type Database = {
         Returns: Json
       }
       itens_para_dispensar: { Args: { p_busca?: string; p_unidade: string }; Returns: Json }
+      contexto_paciente_farmacia: { Args: { p_paciente: string; p_unidade: string }; Returns: Json }
+      pacientes_das_faltas: { Args: { p_unidade: string }; Returns: Json }
       definir_unidade_consumo: {
         Args: { p_medicamento: string; p_outra?: string; p_unidade: string }
         Returns: Json
