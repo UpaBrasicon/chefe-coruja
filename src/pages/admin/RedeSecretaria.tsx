@@ -23,6 +23,7 @@ import {
   ESFERAS, montarArvore, normalizar, quemDesigna, RAMO_ROTULO, RAMO_SINGULAR, RAMOS, resumoRamos, tipoDoRamo, totalPessoas,
   type Esfera, type GalhoSecretaria, type OrganizacaoRede, type Ramo, type SecretariaRede, type UnidadeNaRede,
 } from '@/lib/redeSecretaria'
+import { pessoasDaUnidade, resumoEstado, type EstadoUnidade } from '@/lib/secretariaCompleta'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Papel, TipoUnidade } from '@/types/database'
@@ -73,9 +74,28 @@ function useArvore(modo: ModoRede) {
   })
 }
 
+// Perfil Gestor da secretaria (SE1 e SE2, RT 24/11/2026): o estado de cada
+// unidade agora, com as pessoas contadas uma vez (secretaria_estado_unidades,
+// migration 20270421000080). Sem a função no banco, a árvore segue como antes.
+const EstadosDaRede = React.createContext<Map<string, EstadoUnidade> | null>(null)
+
+function useEstados(ligado: boolean) {
+  return useQuery({
+    queryKey: ['secretaria-estado-unidades'],
+    enabled: ligado,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('secretaria_estado_unidades')
+      if (error) throw error
+      return new Map(((data ?? []) as unknown as EstadoUnidade[]).map((e) => [e.id, e]))
+    },
+  })
+}
+
 export function RedeSecretaria({ modo = 'admin' }: { modo?: ModoRede } = {}) {
   const admin = modo === 'admin'
   const arvore = useArvore(modo)
+  const estados = useEstados(!admin)
   const orgs = React.useMemo(() => arvore.data ?? [], [arvore.data])
   const [busca, setBusca] = React.useState('')
   const galhos = React.useMemo(() => montarArvore(orgs, busca).filter((g) => admin || g.secretaria), [orgs, busca, admin])
@@ -87,6 +107,7 @@ export function RedeSecretaria({ modo = 'admin' }: { modo?: ModoRede } = {}) {
   const variasOrgs = orgs.length > 1
 
   return (
+    <EstadosDaRede.Provider value={estados.data ?? null}>
     <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-center gap-2.5">
         <div className="relative min-w-[220px] flex-1">
@@ -165,6 +186,7 @@ export function RedeSecretaria({ modo = 'admin' }: { modo?: ModoRede } = {}) {
         </>
       )}
     </div>
+    </EstadosDaRede.Provider>
   )
 }
 
@@ -177,6 +199,7 @@ function Galho({ galho, escolha, admin, onEscolher, onNovaUnidade, abertoSempre 
   // abre tudo aberto: secretaria e grupos (RT, 24/11/2026)
   const [aberto, setAberto] = React.useState(true)
   const [fechados, setFechados] = React.useState<Set<Ramo>>(new Set())
+  const estados = React.useContext(EstadosDaRede)
   const s = galho.secretaria
   const ativo = s ? escolha?.tipo === 'secretaria' && escolha.id === s.id : escolha?.tipo === 'sem' && escolha.org === galho.organizacao.id
   const mostra = aberto || abertoSempre
@@ -243,7 +266,9 @@ function Galho({ galho, escolha, admin, onEscolher, onNovaUnidade, abertoSempre 
             </div>
             {!fechado && r.unidades.map((u) => {
               const sel = escolha?.tipo === 'unidade' && escolha.id === u.id
-              const pessoas = totalPessoas(u)
+              const estado = estados?.get(u.id)
+              // SE2: a pessoa uma vez (como nos Indicadores), quando a secretaria tem a conta
+              const pessoas = pessoasDaUnidade(estado, totalPessoas(u))
               return (
                 <BotaoLinha
                   key={u.id}
@@ -255,10 +280,26 @@ function Galho({ galho, escolha, admin, onEscolher, onNovaUnidade, abertoSempre 
                     sel ? 'bg-acao/10 font-medium text-acao' : u.ativo ? 'text-tinta' : 'text-tinta-sussurro',
                   )}
                 >
-                  <span className="min-w-0 flex-1 truncate">{u.nome}</span>
-                  <span className="hidden shrink-0 text-rotulo text-tinta-sussurro sm:inline">{lugarDe(u)}</span>
-                  <span className="shrink-0 text-rotulo text-tinta-sussurro tabular-nums">{pessoas} {pessoas === 1 ? 'pessoa' : 'pessoas'}</span>
-                  {!u.ativo && <span className="shrink-0 text-rotulo">inativa</span>}
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="min-w-0 flex-1 truncate">{u.nome}</span>
+                      <span className="hidden shrink-0 text-rotulo text-tinta-sussurro sm:inline">{lugarDe(u)}</span>
+                      <span className="shrink-0 text-rotulo text-tinta-sussurro tabular-nums">{pessoas} {pessoas === 1 ? 'pessoa' : 'pessoas'}</span>
+                      {!u.ativo && <span className="shrink-0 text-rotulo">inativa</span>}
+                    </span>
+                    {/* SE1: o estado da unidade agora, em uma linha */}
+                    {estado && u.ativo && (
+                      <span className="text-rotulo font-normal text-tinta-sussurro">
+                        {resumoEstado(estado).map((p, i) => (
+                          <React.Fragment key={p.texto}>
+                            {i > 0 && ' · '}
+                            <span className={p.atencao ? 'text-atencao' : undefined}>{p.texto}</span>
+                          </React.Fragment>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                  {!admin && <ChevronRight className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />}
                 </BotaoLinha>
               )
             })}
@@ -344,7 +385,8 @@ function FichaSecretaria({ s, org, modo, onEscolher, onEditarSecretaria, onNovaU
   const admin = modo === 'admin'
   const ligadas = org.unidades.filter((u) => u.secretaria_id === s.id)
   const ramos = RAMOS.map((r) => ({ ramo: r.valor, unidades: ligadas.filter((u) => u.ramo === r.valor) })).filter((g) => g.unidades.length > 0)
-  const pessoas = ligadas.reduce((n, u) => n + totalPessoas(u), 0)
+  const estados = React.useContext(EstadosDaRede)
+  const pessoas = ligadas.reduce((n, u) => n + pessoasDaUnidade(estados?.get(u.id), totalPessoas(u)), 0)
   const tirar = useNaRede()
   return (
     <>
@@ -625,6 +667,9 @@ function FichaUnidade({ u, org, modo, onEscolher, onEditarUnidade }: { u: Unidad
   const admin = modo === 'admin'
   const sec = org.secretarias.find((s) => s.id === u.secretaria_id)
   const papeis = Object.entries(u.pessoas).sort((a, b) => b[1] - a[1])
+  const estado = React.useContext(EstadosDaRede)?.get(u.id)
+  const vinculos = totalPessoas(u)
+  const pessoas = pessoasDaUnidade(estado, vinculos)
   const cadastro: UnidadeCadastro = {
     id: u.id, nome: u.nome, tipo: u.tipo as TipoUnidade, cnes: u.cnes, municipio: u.municipio, uf: u.uf,
     endereco: u.endereco, ativo: u.ativo, organizacao_id: org.id,
@@ -663,7 +708,7 @@ function FichaUnidade({ u, org, modo, onEscolher, onEditarUnidade }: { u: Unidad
           <Dado rotulo="WhatsApp" valor={u.whatsapp} />
         </dl>
       </Bloco>
-      <Bloco titulo={`Pessoas (${totalPessoas(u)})`}>
+      <Bloco titulo={`Pessoas (${pessoas})`}>
         {papeis.length === 0 ? (
           <p className="text-apoio text-tinta-sussurro">Nenhum vínculo ativo.</p>
         ) : (
@@ -672,6 +717,9 @@ function FichaUnidade({ u, org, modo, onEscolher, onEditarUnidade }: { u: Unidad
               <li key={p}><Badge variant="secondary" className={SELO}>{PAPEL_LABEL[p as Papel] ?? p} <span className="ml-1 tabular-nums">{n}</span></Badge></li>
             ))}
           </ul>
+        )}
+        {estado && vinculos !== pessoas && (
+          <p className="mt-1.5 text-rotulo text-tinta-sussurro">Quem tem dois papéis conta nos dois; o total conta a pessoa uma vez.</p>
         )}
         <p className="mt-2.5 text-apoio text-tinta-apoio">{quemDesigna(u.gestores, (sec?.gestao ?? []).filter((p) => !p.pendente).map((p) => p.nome), sec?.nome ?? null)}</p>
         {admin && <p className="mt-1 text-rotulo text-tinta-sussurro">Os nomes, os vínculos e os convites ficam na aba Pessoas.</p>}

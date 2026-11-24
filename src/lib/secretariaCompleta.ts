@@ -73,6 +73,51 @@ export function papeisComGente(p: Partial<Record<Papel, number>>): [Papel, numbe
   return (Object.entries(p) as [Papel, number][]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
 }
 
+// ── Rede: a linha de cada unidade (SE1 e SE2, RT 24/11/2026) ─────────────
+
+/** O que secretaria_estado_unidades devolve (migration 20270421000080). */
+export type EstadoUnidade = {
+  id: string
+  leitos: number
+  /** 1 a 4 volta vazio (ADR 0002) */
+  ocupados: number | null
+  ocupacao: number | null
+  hoje: { plantoes: number; cobertas: number; com_vaga: number; vagas: number }
+  vagas_ate_fim_do_mes: number
+  /** 1 a 4 volta vazio (ADR 0002) */
+  regulacoes_vencidas: number | null
+  /** cada pessoa uma vez, não cada vínculo */
+  pessoas: number
+}
+
+export type PedacoEstado = { texto: string; atencao?: boolean }
+
+/** A linha da unidade na Rede: ocupação, escala de hoje, vagas do mês e regulações vencidas. */
+export function resumoEstado(e: EstadoUnidade): PedacoEstado[] {
+  const p: PedacoEstado[] = []
+  if (e.leitos === 0) p.push({ texto: 'sem leito' })
+  else if (e.ocupacao === null) p.push({ texto: `menos de 5 de ${e.leitos} leitos ocupados` })
+  else p.push({ texto: `ocupação ${porcento(e.ocupacao)} (${e.ocupados} de ${e.leitos})` })
+
+  const turnos = e.hoje.cobertas + e.hoje.com_vaga
+  if (turnos === 0) p.push({ texto: 'sem escala hoje' })
+  else p.push({ texto: `escala de hoje ${e.hoje.cobertas} de ${turnos} ${turnos === 1 ? 'turno coberto' : 'turnos cobertos'}`, atencao: e.hoje.com_vaga > 0 })
+
+  const v = e.vagas_ate_fim_do_mes
+  p.push(v === 0 ? { texto: 'sem vaga aberta no mês' } : { texto: `${v} ${v === 1 ? 'vaga aberta' : 'vagas abertas'} no mês`, atencao: true })
+
+  const r = e.regulacoes_vencidas
+  if (r === null) p.push({ texto: 'menos de 5 regulações vencidas', atencao: true })
+  else if (r === 0) p.push({ texto: 'nenhuma regulação vencida' })
+  else p.push({ texto: `${r} regulações vencidas`, atencao: true })
+  return p
+}
+
+/** Pessoas da unidade: a conta da secretaria (pessoa uma vez) quando há; senão, a da árvore. */
+export function pessoasDaUnidade(estado: Pick<EstadoUnidade, 'pessoas'> | undefined, daArvore: number): number {
+  return estado ? estado.pessoas : daArvore
+}
+
 // ── Pessoas da unidade ───────────────────────────────────────────────────
 
 export type QuemMuda = 'gestor' | 'secretaria' | 'admin'

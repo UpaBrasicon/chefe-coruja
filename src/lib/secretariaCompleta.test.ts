@@ -2,8 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  avisoDeRegistro, cobertura, contagem, diferenca, papeisComGente, papeisOferecidos, podeMexer, porcento, totalDaSecretaria,
-  type IndicadorUnidade,
+  avisoDeRegistro, cobertura, contagem, diferenca, papeisComGente, papeisOferecidos, pessoasDaUnidade, podeMexer, porcento,
+  resumoEstado, totalDaSecretaria, type EstadoUnidade, type IndicadorUnidade,
 } from './secretariaCompleta.ts'
 
 // Perfil Gestor da secretaria, o que ficou de fora (pedido do RT, 24/11/2026).
@@ -81,4 +81,26 @@ test('quem mexe em quem', () => {
 test('diferença entre a lista atual e a nova', () => {
   assert.deepEqual(diferenca(['recepcao'], ['gestor']), { entram: ['gestor'], saem: ['recepcao'] })
   assert.deepEqual(diferenca(['plantonista'], ['plantonista', 'telemedicina']), { entram: ['telemedicina'], saem: [] })
+})
+
+// Rede da secretaria: a linha de cada unidade (SE1) e a pessoa uma vez (SE2), RT 24/11/2026.
+const estado = (p: Partial<EstadoUnidade> = {}): EstadoUnidade => ({
+  id: 'u', leitos: 18, ocupados: 13, ocupacao: 72.2, hoje: { plantoes: 5, cobertas: 4, com_vaga: 1, vagas: 1 },
+  vagas_ate_fim_do_mes: 3, regulacoes_vencidas: 0, pessoas: 11, ...p,
+})
+
+test('linha da unidade na Rede: ocupação, escala de hoje, vagas e regulações', () => {
+  assert.deepEqual(resumoEstado(estado()).map((x) => x.texto), [
+    'ocupação 72,2% (13 de 18)', 'escala de hoje 4 de 5 turnos cobertos', '3 vagas abertas no mês', 'nenhuma regulação vencida',
+  ])
+  const vazia = resumoEstado(estado({ leitos: 0, ocupados: 0, ocupacao: null, hoje: { plantoes: 0, cobertas: 0, com_vaga: 0, vagas: 0 }, vagas_ate_fim_do_mes: 0, regulacoes_vencidas: null }))
+  assert.deepEqual(vazia.map((x) => x.texto), ['sem leito', 'sem escala hoje', 'sem vaga aberta no mês', 'menos de 5 regulações vencidas'])
+  assert.equal(resumoEstado(estado({ ocupados: null, ocupacao: null })).at(0)?.texto, 'menos de 5 de 18 leitos ocupados')
+  assert.deepEqual(resumoEstado(estado()).map((x) => !!x.atencao), [false, true, true, false])
+  assert.equal(resumoEstado(estado({ regulacoes_vencidas: 7, vagas_ate_fim_do_mes: 1 }))[2].texto, '1 vaga aberta no mês')
+})
+
+test('pessoas: a conta da secretaria (pessoa uma vez) vence a soma de vínculos', () => {
+  assert.equal(pessoasDaUnidade({ pessoas: 1 }, 11), 1)
+  assert.equal(pessoasDaUnidade(undefined, 11), 11)
 })
