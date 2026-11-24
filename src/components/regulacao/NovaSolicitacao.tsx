@@ -36,7 +36,10 @@ import {
   marcadoresPelaIdade,
   type Carater, type Formulario, type Prioridade, type TipoSolicitacao, type Vulnerabilidade,
 } from '@/lib/regulacao'
+import { FALTA_CID_COMPATIVEL } from '@/lib/cidProcedimento'
 import { supabase } from '@/lib/supabase'
+import { CampoCidDoProcedimento } from './CampoCidDoProcedimento'
+import { useConflitoCid } from './useCidsDoProcedimento'
 
 import { useCriterios } from './useCriterios'
 
@@ -246,6 +249,10 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
       // a aba do paciente e a lista "Em regulação" mostram o pedido novo
       void qc.invalidateQueries({ queryKey: ['regulacao-pacientes'] })
+      // o pedido entra em regulação na hora: Esperando decisão, o número do menu e a lista do NIR
+      void qc.invalidateQueries({ queryKey: ['regulacao-sla', unidadeId] })
+      void qc.invalidateQueries({ queryKey: ['nota-regulacao'] })
+      void qc.invalidateQueries({ queryKey: ['minhas-notificacoes', unidadeId] })
       const enviado: PedidoEnviado = { id: r.id, numero: r.numero, duplicidade: r.aviso_duplicidade, anexos: r.anexos, falhas: r.falhas }
       // dentro do paciente quem chamou fecha o formulário e dá o aviso
       if (!pacienteFixo) {
@@ -256,7 +263,11 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       aoEnviar(enviado)
     },
   })
-  const faltas = [...faltasFormulario(f, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado }),
+  // regra do RT (24/11/2026): o CID precisa estar na lista do procedimento no SIGTAP, quando ela existe
+  const { conflito: conflitoCidProc } = useConflitoCid(f.procedimento, f.cid)
+  // o destino é sempre da regulação: "unidade de destino" não entra no que falta
+  const faltas = [...faltasFormulario({ ...f, destino_tipo: 'a_definir' }, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado }),
+    ...(conflitoCidProc ? [FALTA_CID_COMPATIVEL] : []),
     ...(souNir && !medico ? ['médico assistente'] : [])]
   const leitoOuTransf = f.tipo === 'leito' || f.tipo === 'transferencia'
   // RG1: o caráter vem da prioridade (1 e 2 urgência, 3 e 4 eletivo); sem classificação, escolhe-se
@@ -419,7 +430,8 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
           Os campos marcados vieram do prontuário (última evolução, sinais vitais da enfermagem, exames, prescrição e lista de problemas). Revise e edite antes de enviar.
         </p>
       )}
-      <CampoTerminologia tipo="cid10" escolhido={cidRotulo} rotulo={<>CID-10<Marca ligada={doProntuario.has('cid')} /></>}
+      <CampoCidDoProcedimento procedimento={f.procedimento} escolhido={cidRotulo} conflito={conflitoCidProc}
+        rotulo={<>CID-10<Marca ligada={doProntuario.has('cid')} /></>}
         onEscolher={(c, r) => { set('cid', c); setCidRotulo(r) }} onLimpar={() => { set('cid', ''); setCidRotulo('') }} />
       <Campo id="reg-quadro" rotulo={<>Quadro clínico (obrigatório)<Marca ligada={doProntuario.has('quadro_clinico')} /></>}>
         <textarea id="reg-quadro" rows={5} className="rounded-controle border border-fio bg-campo px-2 py-1.5"
@@ -509,7 +521,7 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       <span className="text-tinta-apoio">Destino: definido pela regulação</span>
       <span className="text-tinta-apoio">{f.prioridade ? PRIORIDADES[f.prioridade].rotulo : 'Prioridade não escolhida'}{f.carater ? ` · ${CARATER[f.carater]}` : ''}</span>
       {vulnerabilidades.length > 0 && <span className="text-tinta-apoio">{vulnerabilidades.map((k) => VULNERABILIDADES[k]).join(', ')}</span>}
-      <span className="text-tinta-apoio">CID: {cidRotulo || 'falta'}</span>
+      <span className={conflitoCidProc ? 'text-critico' : 'text-tinta-apoio'}>CID: {cidRotulo || 'falta'}{conflitoCidProc ? ' · não é compatível com o procedimento' : ''}</span>
       <span className="text-tinta-apoio">Anexos: {totalAnexos}</span>
       {faltas.length > 0
         ? <span className="text-atencao">Falta: {faltas.join(', ')}.</span>
@@ -586,7 +598,10 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
                 {passo === 3 && revisar}
                 <div className="flex flex-wrap gap-2 border-t border-trilha pt-3">
                   {passo > 1 && <Button size="sm" variant="outline" onClick={() => setPasso((passo - 1) as Passo)}><ArrowLeft /> Voltar</Button>}
-                  {passo < 3 && <Button size="sm" onClick={() => setPasso((passo + 1) as Passo)}>Próximo: {PASSOS[passo].rotulo}</Button>}
+                  {passo < 3 && (
+                    <Button size="sm" disabled={passo === 2 && !!conflitoCidProc} onClick={() => setPasso((passo + 1) as Passo)}>Próximo: {PASSOS[passo].rotulo}</Button>
+                  )}
+                  {passo === 2 && conflitoCidProc && <span className="self-center text-rotulo text-critico">Troque o CID ou o procedimento para seguir.</span>}
                 </div>
               </div>
               {resumo}
