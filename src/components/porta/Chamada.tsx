@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Megaphone, Trash2, UserX } from 'lucide-react'
+import { LogOut, Megaphone, UserX } from 'lucide-react'
 import * as React from 'react'
 
 import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
@@ -162,9 +162,10 @@ export function RetirarDaFila({ episodioId, aviso }: { episodioId: string; aviso
 }
 
 /**
- * Lixeira da fila com o diálogo "Excluir da fila" (protótipo, excl.*): motivo,
- * justificativa de 15 caracteres ou mais, e o registro fica no histórico com
- * o motivo e quem excluiu (retirar_da_fila).
+ * Botão "Retirar da fila" com o diálogo de motivo e justificativa de 15
+ * caracteres ou mais; o registro fica no histórico com o motivo e quem retirou
+ * (retirar_da_fila). RF2 (revisão do perfil Recepção, RT 24/11/2026): era uma
+ * lixeira com "Excluir", que sugeria apagar; a ficha não é apagada.
  */
 export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: string }) {
   const [aberto, setAberto] = React.useState(false)
@@ -192,19 +193,18 @@ export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: 
       <Button
         type="button"
         variant="outline"
-        size="icon-lg"
-        title="Excluir da fila com justificativa"
-        aria-label={`Excluir ${nome} da fila`}
-        className="text-tinta-sussurro hover:border-critico hover:bg-alerta-critico hover:text-critico"
+        size="sm"
+        aria-label={`Retirar ${nome} da fila`}
+        className="text-tinta-apoio"
         onClick={() => abrir(true)}
       >
-        <Trash2 />
+        <LogOut /> Retirar da fila
       </Button>
       <DialogContent className="sm:max-w-[480px]" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle className="text-dialogo">Excluir da fila</DialogTitle>
+          <DialogTitle className="text-dialogo">Retirar da fila</DialogTitle>
           <DialogDescription className="text-controle">
-            {nome} sai da fila e o registro fica no histórico do plantão com o motivo e quem excluiu.
+            {nome} sai da fila e o registro fica no histórico do plantão com o motivo e quem retirou.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-[7px]">
@@ -242,7 +242,7 @@ export function ExcluirDaFila({ episodioId, nome }: { episodioId: string; nome: 
               if (!curta && !faltaMotivo) retirar.mutate({ motivo, just: just.trim(), motivoEvasao })
             }}
           >
-            <Trash2 /> Excluir da fila
+            <LogOut /> Retirar da fila
           </Button>
         </div>
       </DialogContent>
