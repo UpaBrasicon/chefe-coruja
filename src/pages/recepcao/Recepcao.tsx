@@ -12,7 +12,8 @@ import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
-import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
+import { ordemMedica, type CorRisco } from '@/domain/risco'
+import { acimaDoAlvo, alvoDaLinha, horaDaFicha, maiorEspera, tempoNaFila } from '@/lib/tempoFila'
 import { VindoDaUbs } from '@/components/encaminhamento/VindoDaUbs'
 import { ordemFilaUbsComAgenda, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
 import { JUSTIFICATIVAS_SEM_CPF, pedeMotivoSemCpf } from '@/domain/justificativaCpf'
@@ -114,23 +115,8 @@ const ABAS_UBS: typeof ABAS = [
 
 const ROTA: Record<Aba, string> = { hoje: 'hoje', ficha: '', triagem: 'fila-triagem', medica: 'fila-medica', painel: 'painel' }
 
-/** Maior espera de quem ainda não foi atendido (desde a ficha ou a classificação). */
-function maiorEspera(itens: NaFila[], agora: number): string {
-  const esperando = itens.filter((e) => !e.atendimento_iniciado_em)
-  if (!esperando.length) return '—'
-  const desde = Math.min(...esperando.map((e) => new Date(e.etapa === 'atendimento' ? (e.classificado_em ?? e.chegada_em) : e.chegada_em).getTime()))
-  const min = Math.max(0, Math.round((agora - desde) / 60_000))
-  return formatarDuracao(min)
-}
-
 /** Quem da fila médica, ainda sem atendimento, já passou do alvo da cor. */
-function acimaDoAlvo(itens: NaFila[], agora: number): number {
-  return itens.filter((e) => {
-    if (e.atendimento_iniciado_em || !e.cor_atual) return false
-    const desde = new Date(e.classificado_em ?? e.chegada_em).getTime()
-    return Math.round((agora - desde) / 60_000) > ALVO_MIN[e.cor_atual]
-  }).length
-}
+const quantosAcimaDoAlvo = (itens: NaFila[], agora: number) => itens.filter((e) => acimaDoAlvo(e, agora)).length
 
 const diaHora = (iso: string) => `${diaMes(iso)} ${hora(iso)}`
 const ETAPA_ABERTA = (a: Aberto) =>
@@ -333,8 +319,8 @@ export default function Recepcao() {
             {
               titulo: 'Aguardando o médico',
               itens: filaMedica.filter((e) => !e.atendimento_iniciado_em),
-              maiorEspera: maiorEspera(filaMedica, agora),
-              acimaDoAlvo: ubs ? undefined : acimaDoAlvo(filaMedica, agora),
+              maiorEspera: maiorEspera(filaMedica, agora, ubs),
+              acimaDoAlvo: ubs ? undefined : quantosAcimaDoAlvo(filaMedica, agora),
             },
             { titulo: 'Em atendimento', itens: filaMedica.filter((e) => e.atendimento_iniciado_em) },
           ]}
@@ -386,7 +372,7 @@ function HojeUbs({ unidadeId, fichas, carregando, erro, agora, filaEnfermagem, f
       <TituloCartao>Fila do consultório</TituloCartao>
       <ListaFila carregando={carregando} erro={erro} vazia="Ninguém aguardando a consulta." agora={agora} ubs
         grupos={[
-          { titulo: 'Aguardando a consulta', itens: aguardandoConsulta, maiorEspera: maiorEspera(filaConsultorio, agora) },
+          { titulo: 'Aguardando a consulta', itens: aguardandoConsulta, maiorEspera: maiorEspera(filaConsultorio, agora, true) },
           { titulo: 'Em atendimento', itens: filaConsultorio.filter((e) => e.atendimento_iniciado_em) },
         ]} />
     </div>
@@ -912,13 +898,12 @@ function ListaFila({ grupos, carregando, erro, vazia, agora, ubs = false }: {
 }
 
 function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: string; ubs: boolean }) {
-  // na UBS não há classificação: a espera conta da ficha, sem cor nem alvo
+  // na UBS não há classificação: a espera conta da ficha, sem cor nem alvo.
+  // RF1: quem está em atendimento conta desde o início do atendimento (lib/tempoFila).
   const medica = e.etapa === 'atendimento' && !ubs
-  const desde = medica ? (e.classificado_em ?? e.chegada_em) : e.chegada_em
-  const ate = e.atendimento_iniciado_em ? new Date(e.atendimento_iniciado_em).getTime() : agora
-  const espera = Math.max(0, Math.round((ate - new Date(desde).getTime()) / 60_000))
-  const alvo = medica && e.cor_atual ? ALVO_MIN[e.cor_atual] : null
-  const estourou = alvo !== null && !e.atendimento_iniciado_em && espera > alvo
+  const tempo = tempoNaFila(e, agora, ubs)
+  const alvo = alvoDaLinha(e, ubs)
+  const estourou = acimaDoAlvo(e, agora, ubs)
 
   // Status em ponto + texto (opção "B"): o ponto vazio é quem aguarda, o
   // contornado em âmbar foi chamado, o cheio na cor da ação está em atendimento.
@@ -946,7 +931,7 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
     prioridades.length ? `Prioridade: ${prioridades.join(', ')}` : '',
     // RF1: na fila do consultório da UBS, quem tem consulta marcada e quem veio sem marcar
     ubs && e.etapa === 'atendimento' ? (e.hora_marcada ? `Consulta marcada às ${hora(e.hora_marcada)}` : 'Demanda espontânea') : '',
-    `Ficha às ${hora(e.chegada_em)}`,
+    horaDaFicha(e.chegada_em, hoje),
   ].filter(Boolean).join(' · ')
 
   return (
@@ -969,9 +954,11 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
       </div>
       <span
         className={cn('text-apoio whitespace-nowrap tabular-nums', estourou ? 'font-semibold text-critico' : 'text-tinta-apoio')}
-        title={medica ? 'Espera desde a classificação' : 'Espera desde a ficha'}
+        title={tempo.tipo === 'atendimento' ? `Em atendimento desde ${diaHora(tempo.desde)}`
+          : medica ? 'Espera desde a classificação' : 'Espera desde a ficha'}
       >
-        {formatarDuracao(espera)}{alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
+        {tempo.tipo === 'atendimento' ? `há ${formatarDuracao(tempo.minutos)}` : `espera ${formatarDuracao(tempo.minutos)}`}
+        {alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
       </span>
       <span className={cn('flex min-w-0 items-center gap-[7px] text-apoio', textoStatus)}>
         <span aria-hidden className={cn('size-2.5 shrink-0 rounded-capsula border-2', ponto)} />
