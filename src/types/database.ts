@@ -11714,6 +11714,7 @@ export type Database = {
       contexto_evolucao: { Args: { p_internacao: string }; Returns: Json }
       por_que_nao_evoluo: { Args: { p_internacao: string }; Returns: Json }
       contexto_sem_conexao: { Args: never; Returns: Json }
+      contingencia_atendimentos: { Args: { p_contingencia: string }; Returns: Json }
       contingencias_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       convites_da_unidade: {
         Args: { p_unidade: string }

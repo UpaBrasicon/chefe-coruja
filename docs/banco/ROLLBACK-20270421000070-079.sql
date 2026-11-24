@@ -22,6 +22,9 @@ END $$;
 
 -- @@ITENS_SEGUINTES@@
 
+-- ── 072: função nova, sem corpo anterior ─────────────────────────────────────
+DROP FUNCTION IF EXISTS public.contingencia_atendimentos(uuid);
+
 -- ── 071: regulacao_mapa_vagas volta a recusar o médico e o NIR ──────────────
 SELECT pg_temp.trocar_uma_vez('public.regulacao_mapa_vagas(uuid)'::regprocedure,
   $new$    'agora', now(),

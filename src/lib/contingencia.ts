@@ -6,6 +6,26 @@ export type Contingencia = {
   reentradas: number; atendimentos_no_periodo: number
 }
 
+/** Atendimentos do período de uma contingência (RPC contingencia_atendimentos, migration 20270421000072). */
+export type AtendimentoContingencia = {
+  episodio_id: string; paciente_id: string; paciente_nome: string | null
+  chegada_em: string; encerrado_em: string | null
+  reentrada_em: string | null; reentrada_por: string | null
+}
+export type AtendimentosContingencia = {
+  atendimentos: AtendimentoContingencia[]
+  /** Atendimentos de pacientes fora do acesso de quem pergunta: só a contagem. */
+  fora_do_seu_acesso: number
+  pendentes_fora: number
+}
+
+/** "2 atendimentos fora do seu acesso, 1 sem reentrada" (vazio quando não há). */
+export function textoForaDoAcesso(fora: number, pendentes: number): string {
+  if (!fora) return ''
+  const base = `${fora} ${fora === 1 ? 'atendimento' : 'atendimentos'} de pacientes fora do seu acesso`
+  return pendentes ? `${base}, ${pendentes} sem reentrada` : base
+}
+
 export type Reentrada = { id: string; descricao: string; registrado_em: string; registrado_por: string | null; inicio: string; fim: string }
 
 /** 95 min → "1 h 35 min no papel". */
