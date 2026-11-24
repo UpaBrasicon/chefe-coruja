@@ -12,10 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 
 import { Secao } from './caixas'
-import { type Acao, hora, type Internacao, msg, type Passagem, rpc } from './comum'
+import { type Acao, hora, type Internacao, msg, type Passagem, type Pendencia, rpc } from './comum'
+import { textoPassagem } from '@/domain/passometro'
 
 /** Situação da passagem; com `semBotao` (caderno), o pedido de passar fica no cabeçalho. */
-export function BlocoPassagem({ i, lista, eu, acao, semBotao = false }: { i: Internacao; lista: Passagem[]; eu?: string; acao: Acao; semBotao?: boolean }) {
+export function BlocoPassagem({ i, lista, eu, acao, semBotao = false, pendencias }: { i: Internacao; lista: Passagem[]; eu?: string; acao: Acao; semBotao?: boolean; pendencias?: Pendencia[] }) {
   const [aberto, setAberto] = React.useState(false)
   const aguardando = lista.find((p) => p.situacao === 'aguardando')
   const ultima = lista[0]
@@ -40,7 +41,7 @@ export function BlocoPassagem({ i, lista, eu, acao, semBotao = false }: { i: Int
               <ArrowRightLeft /> {ultima ? 'Passar de novo' : 'Passar este paciente'}
             </Button>
           ) : (
-            <FormPassagem i={i} acao={acao} aoFechar={() => setAberto(false)} />
+            <FormPassagem i={i} acao={acao} aoFechar={() => setAberto(false)} pendencias={pendencias} />
           )}
         </>
       )}
@@ -49,7 +50,7 @@ export function BlocoPassagem({ i, lista, eu, acao, semBotao = false }: { i: Int
 }
 
 /** O formulário de passar numa janela (cabeçalho do caderno). */
-export function DialogoPassagem({ i, acao, aoFechar }: { i: Internacao; acao: Acao; aoFechar: () => void }) {
+export function DialogoPassagem({ i, acao, aoFechar, pendencias }: { i: Internacao; acao: Acao; aoFechar: () => void; pendencias?: Pendencia[] }) {
   return (
     <Dialog open onOpenChange={(v) => { if (!v) aoFechar() }}>
       <DialogContent className="sm:max-w-[560px]">
@@ -57,15 +58,16 @@ export function DialogoPassagem({ i, acao, aoFechar }: { i: Internacao; acao: Ac
           <DialogTitle className="text-dialogo">Passar este paciente</DialogTitle>
           <DialogDescription className="text-controle">O colega recebe e aceita. Até o aceite, o seu check-out fica bloqueado.</DialogDescription>
         </DialogHeader>
-        <FormPassagem i={i} acao={acao} aoFechar={aoFechar} />
+        <FormPassagem i={i} acao={acao} aoFechar={aoFechar} pendencias={pendencias} />
       </DialogContent>
     </Dialog>
   )
 }
 
-function FormPassagem({ i, acao, aoFechar }: { i: Internacao; acao: Acao; aoFechar: () => void }) {
+function FormPassagem({ i, acao, aoFechar, pendencias }: { i: Internacao; acao: Acao; aoFechar: () => void; pendencias?: Pendencia[] }) {
   const [para, setPara] = React.useState('')
-  const [resumo, setResumo] = React.useState('')
+  // passômetro (PS2 = A, RT 23/11/2026): o resumo já começa com as pendências abertas
+  const [resumo, setResumo] = React.useState(() => textoPassagem(pendencias ?? []))
   // na janela, o erro aparece aqui também (o aviso do leito fica atrás dela)
   const [erro, setErro] = React.useState<string | null>(null)
   const colegas = useQuery({
