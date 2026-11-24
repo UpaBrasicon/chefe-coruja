@@ -101,7 +101,7 @@ function Marca({ ligada }: { ligada: boolean }) {
   return <span className="ml-1.5 text-rotulo font-normal text-atencao">· {MARCA_PRONTUARIO}</span>
 }
 
-export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFixo = false, aoFechar }: {
+export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFixo = false, aoFechar, emPassos = false }: {
   unidadeId: string; ctx: ContextoSolicitacao; aoEnviar: (r: PedidoEnviado) => void
   /** 5A, tarefa 5 (H2): a solicitação aberta da consulta da UBS vem preenchida; o médico confere e completa */
   inicial?: InicialSolicitacao
@@ -109,6 +109,8 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
   pacienteFixo?: boolean
   /** Botão "Voltar" no topo (dentro do paciente). */
   aoFechar?: () => void
+  /** MR2 (revisão do regulador, RT 24/11/2026): na página Regulação o pedido também vai nos três passos do RG1. */
+  emPassos?: boolean
 }) {
   const qc = useQueryClient()
   // quem é médico e gestor na unidade solicita como médico (o banco decide igual)
@@ -138,8 +140,10 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
   // anexos escolhidos antes do envio; sobem logo depois que o pedido é criado
   const [arquivos, setArquivos] = React.useState<File[]>([])
   const [docsEscolhidos, setDocsEscolhidos] = React.useState<string[]>([])
-  // RG1: dentro do paciente, o pedido vai em três passos com o resumo ao lado
-  const passos = pacienteFixo
+  // RG1: dentro do paciente, o pedido vai em três passos com o resumo ao lado;
+  // na página Regulação também, quando quem chama pede (MR2). O quadro vindo do
+  // caderno (RG2) continua só dentro do paciente.
+  const passos = pacienteFixo || emPassos
   const [passo, setPasso] = React.useState<Passo>(1)
   // RG2: o que veio do caderno fica marcado até o médico mexer no campo
   const [doProntuario, setDoProntuario] = React.useState<Set<CampoQuadro>>(new Set())
@@ -246,7 +250,7 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       if (!pacienteFixo) {
         setEnviada(enviado)
         setF(FORMULARIO_VAZIO); setCidRotulo(''); setProcRotulo(''); setCboRotulo(''); setPaciente(null); setTermo(''); setMedico('')
-        setNaoIdentificado(false); setVulnerabilidades([]); setArquivos([]); setDocsEscolhidos([])
+        setNaoIdentificado(false); setVulnerabilidades([]); setArquivos([]); setDocsEscolhidos([]); setPasso(1)
       }
       aoEnviar(enviado)
     },
