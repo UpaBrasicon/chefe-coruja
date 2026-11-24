@@ -19,9 +19,12 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useTerminologia } from '@/hooks/useTerminologia'
-import { Chip, Chips, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
+import { BuscaPaciente, useLeitosDosPacientes, type PacienteBusca } from '@/components/paciente/BuscaPacienteDoPlantao'
 import { OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -32,6 +35,7 @@ import { FichaSinan } from './FichaSinan'
 
 type Filtro = 'pendentes' | 'notificados' | 'todos'
 const FILTROS: [Filtro, string][] = [['pendentes', 'Pendentes'], ['notificados', 'Notificados'], ['todos', 'Todos']]
+type Periodo = '7' | '30' | '90' | 'outro'
 
 const TOM_SITUACAO: Record<Caso['situacao'], string> = {
   sugerido: 'bg-atencao/10 text-atencao',
@@ -42,6 +46,19 @@ const TOM_SITUACAO: Record<Caso['situacao'], string> = {
 }
 const pilula = 'rounded-capsula px-2.5 py-[3px] text-apoio font-semibold whitespace-nowrap'
 const caixa = 'rounded-cartao border border-fio bg-superficie shadow-repouso'
+const DIA_MS = 24 * 3600_000
+
+/** Notificação imediata: até 24 h. O relógio conta da data do atendimento. */
+function tempoRestante(c: Caso, agora: number) {
+  const resta = new Date(c.atendimento_em).getTime() + DIA_MS - agora
+  const fmt = (ms: number) => {
+    const min = Math.round(Math.abs(ms) / 60_000)
+    if (min < 60) return `${min} min`
+    const h = Math.floor(min / 60)
+    return h < 48 ? `${h} h` : `${Math.floor(h / 24)} dias`
+  }
+  return resta > 0 ? { texto: `faltam ${fmt(resta)}`, vencido: false } : { texto: `prazo vencido há ${fmt(resta)}`, vencido: true }
+}
 
 export default function NotificacaoCompulsoria() {
   const { unidadeAtiva } = useUnidade()
@@ -52,11 +69,14 @@ export default function NotificacaoCompulsoria() {
   const abrirFicha = (id: string | null) => setParams(id ? { ficha: id } : {}, { replace: false })
 
   const hoje = hojeSP()
+  const [periodo, setPeriodo] = React.useState<Periodo>('30')
   const [de, setDe] = React.useState(somarDias(hoje, -30))
   const [ate, setAte] = React.useState(hoje)
   const [cids, setCids] = React.useState<string[]>([])
   const [filtro, setFiltro] = React.useState<Filtro>('pendentes')
   const [erro, setErro] = React.useState<string | null>(null)
+  const [janelaAcidente, setJanelaAcidente] = React.useState(false)
+  const [agora] = React.useState(() => Date.now())
   const casos = useCasos(unidadeId, de, ate, cids)
   const conferencia = useConferencia()
 
@@ -65,6 +85,15 @@ export default function NotificacaoCompulsoria() {
     filtro === 'todos' || (filtro === 'pendentes' ? PENDENTE.includes(c.situacao) : c.situacao === 'notificado'))
   const nPend = todos.filter((c) => PENDENTE.includes(c.situacao)).length
   const nImed = todos.filter((c) => PENDENTE.includes(c.situacao) && c.imediata).length
+  // M3: imediatas no topo (a que vence primeiro antes), depois as semanais
+  const imediatas = visiveis.filter((c) => c.imediata)
+    .sort((a, b) => Number(!PENDENTE.includes(a.situacao)) - Number(!PENDENTE.includes(b.situacao)) || a.atendimento_em.localeCompare(b.atendimento_em))
+  const semanais = visiveis.filter((c) => !c.imediata)
+
+  function mudarPeriodo(p: Periodo) {
+    setPeriodo(p)
+    if (p !== 'outro') { setDe(somarDias(hoje, -Number(p))); setAte(hoje) }
+  }
 
   async function abrirNotificacao(c: Caso) {
     if (c.agravo_id) return abrirFicha(c.agravo_id)
@@ -92,53 +121,56 @@ export default function NotificacaoCompulsoria() {
   return (
     <>
       <TituloPagina icone={Shield} titulo="Notificação compulsória"
-        descricao={`Os casos entram quando o atendimento registra CID de notificação compulsória (LNNC, ${FONTE_LNNC}). A ficha individual do SINAN é preenchida aqui; a digitação no SINAN é feita à parte.`} />
+        descricao={`Os casos entram quando o atendimento registra CID de notificação compulsória (LNNC, ${FONTE_LNNC}). O período é o da data do atendimento. A ficha individual do SINAN é preenchida aqui; a digitação no SINAN é feita à parte.`}
+        acoes={<Button onClick={() => { setErro(null); setJanelaAcidente(true) }}><HardHat aria-hidden /> Notificar acidente de trabalho</Button>} />
 
+      {/* M2: o aviso do catálogo numa linha; a explicação abre ao clicar */}
       {faltaConferir && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-controle border border-nota bg-alerta-atencao px-3.5 py-3">
-          <ShieldAlert className="mt-0.5 size-4 shrink-0 text-atencao" aria-hidden />
-          <span className="text-apoio leading-[1.5] text-pretty text-atencao">
-            O catálogo aguarda a conferência da vigilância: a portaria não traz CID, e o mapeamento CID → agravo foi montado pela equipe do sistema
-            ({conferencia.data!.itens} de 70 agravos e {conferencia.data!.regras} faixas de CID sem conferência). Por isso a lista só
-            sugere: nada é notificado sozinho. Confira na lista do Ministério da Saúde antes de descartar um caso.
-          </span>
-        </div>
+        <details className="mb-3 rounded-controle border border-nota bg-alerta-atencao px-3.5 py-2 text-apoio text-atencao">
+          <summary className="flex cursor-pointer items-center gap-2">
+            <ShieldAlert className="size-4 shrink-0" aria-hidden />
+            Catálogo sem conferência da vigilância: {conferencia.data!.itens} de 70 agravos e {conferencia.data!.regras} faixas de CID. A lista só sugere.
+          </summary>
+          <p className="mt-1.5 leading-[1.5] text-pretty">
+            A portaria não traz CID, e o mapeamento CID → agravo foi montado pela equipe do sistema. Por isso nada é notificado sozinho.
+            Confira na lista do Ministério da Saúde antes de descartar um caso.
+          </p>
+        </details>
       )}
 
-      <div className={cn(caixa, 'mb-4 flex flex-col gap-3.5 p-4 sm:px-5')}>
-        <span className="text-controle leading-[1.5] text-pretty text-tinta-apoio">
-          Atendimentos cujo diagnóstico tem CID de notificação compulsória. O período é o da data do atendimento, não o do registro do CID.
-        </span>
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-[0_1_160px] flex-col gap-1 text-apoio font-medium text-grafite">
-            Atendimento de
-            <Input type="date" value={de} max={ate || hoje} onChange={(e) => setDe(e.target.value)} />
-          </label>
-          <label className="flex flex-[0_1_160px] flex-col gap-1 text-apoio font-medium text-grafite">
-            Até
-            <Input type="date" value={ate} min={de || undefined} max={hoje} onChange={(e) => setAte(e.target.value)} />
-          </label>
-          <IncluirCid cids={cids} incluir={(c) => setCids((x) => (x.includes(c) ? x : [...x, c]))} />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-apoio font-medium text-grafite">CIDs considerados:</span>
-          {cids.length === 0 && <span className="text-apoio text-tinta-sussurro">todos os notificáveis</span>}
-          {cids.map((c) => (
-            <span key={c} className="inline-flex items-center gap-1.5 rounded-capsula border border-acao/40 bg-acao/10 py-1 pr-1.5 pl-[11px] text-apoio font-medium text-acao">
-              {c}
-              <Button variant="ghost" size="icon-xs" aria-label={`Excluir ${c}`} onClick={() => setCids((x) => x.filter((y) => y !== c))}
-                className="size-auto p-0.5 text-acao hover:text-acao-pressionada">
-                <X className="size-3.5" aria-hidden />
-              </Button>
-            </span>
-          ))}
-        </div>
+      {/* M2: filtros numa linha */}
+      <div className={cn(caixa, 'mb-4 flex flex-wrap items-center gap-2 px-4 py-2.5')}>
+        <CampoSelecao aria-label="Período do atendimento" tamanho="compacto" className="w-auto" value={periodo} onChange={(e) => mudarPeriodo(e.target.value as Periodo)}>
+          <option value="7">Últimos 7 dias</option>
+          <option value="30">Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+          <option value="outro">Escolher datas</option>
+        </CampoSelecao>
+        {periodo === 'outro' && (
+          <span className="flex items-center gap-1.5 text-apoio text-tinta-apoio">
+            <Input type="date" aria-label="Atendimento de" className="h-8 w-auto" value={de} max={ate || hoje} onChange={(e) => setDe(e.target.value)} />
+            até
+            <Input type="date" aria-label="Até" className="h-8 w-auto" value={ate} min={de || undefined} max={hoje} onChange={(e) => setAte(e.target.value)} />
+          </span>
+        )}
+        <span aria-hidden className="text-tinta-sussurro">·</span>
+        {cids.length === 0 && <span className="text-apoio text-tinta-apoio">Todos os CIDs notificáveis</span>}
+        {cids.map((c) => (
+          <span key={c} className="inline-flex items-center gap-1.5 rounded-capsula border border-acao/40 bg-acao/10 py-0.5 pr-1.5 pl-[11px] text-apoio font-medium text-acao">
+            {c}
+            <Button variant="ghost" size="icon-xs" aria-label={`Excluir ${c}`} onClick={() => setCids((x) => x.filter((y) => y !== c))}
+              className="size-auto p-0.5 text-acao hover:text-acao-pressionada">
+              <X className="size-3.5" aria-hidden />
+            </Button>
+          </span>
+        ))}
+        <IncluirCid cids={cids} incluir={(c) => setCids((x) => (x.includes(c) ? x : [...x, c]))} />
       </div>
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <Chips rotulo="Filtrar casos">
+        <div role="group" aria-label="Filtrar casos" className="flex flex-wrap gap-2">
           {FILTROS.map(([k, r]) => <Chip key={k} ativo={filtro === k} onClick={() => setFiltro(k)}>{r}</Chip>)}
-        </Chips>
+        </div>
         <span className="text-apoio text-tinta-sussurro">
           {todos.length} {todos.length === 1 ? 'caso' : 'casos'} · {nPend} sem notificação registrada{nImed ? ` · ${nImed} de notificação imediata` : ''}
         </span>
@@ -160,18 +192,35 @@ export default function NotificacaoCompulsoria() {
         <Vazio icone={Shield} titulo={filtro === 'pendentes' ? 'Nenhuma notificação pendente' : 'Nenhum atendimento notificável com esses filtros'}
           texto="Mude o período, os CIDs ou o filtro." />
       ) : (
-        <div className={cn(caixa, 'overflow-hidden')}>
-          {visiveis.map((c) => <LinhaCaso key={c.chave} c={c} abrir={() => void abrirNotificacao(c)} />)}
+        <div className="flex flex-col gap-4">
+          {imediatas.length > 0 && (
+            <section aria-label="Notificação imediata">
+              <TituloSecao extra={`${imediatas.length}`}>Imediata (até 24 h)</TituloSecao>
+              <div className={cn(caixa, 'overflow-hidden')}>
+                {imediatas.map((c) => <LinhaCaso key={c.chave} c={c} agora={agora} abrir={() => void abrirNotificacao(c)} />)}
+              </div>
+            </section>
+          )}
+          {semanais.length > 0 && (
+            <section aria-label="Notificação semanal">
+              <TituloSecao extra={`${semanais.length}`}>Semanal</TituloSecao>
+              <div className={cn(caixa, 'overflow-hidden')}>
+                {semanais.map((c) => <LinhaCaso key={c.chave} c={c} agora={agora} abrir={() => void abrirNotificacao(c)} />)}
+              </div>
+            </section>
+          )}
         </div>
       )}
 
-      <AcidenteTrabalho unidadeId={unidadeId} aoAbrir={abrirFicha} aoErro={setErro} />
+      <JanelaAcidenteTrabalho aberta={janelaAcidente} unidadeId={unidadeId} onFechar={() => setJanelaAcidente(false)}
+        aoAbrir={(id) => { setJanelaAcidente(false); abrirFicha(id) }} />
     </>
   )
 }
 
-function LinhaCaso({ c, abrir }: { c: Caso; abrir: () => void }) {
+function LinhaCaso({ c, abrir, agora }: { c: Caso; abrir: () => void; agora: number }) {
   const falta = (c.situacao === 'a_registrar' || c.situacao === 'reaberto') ? c.pendencias ?? [] : []
+  const relogio = c.imediata && PENDENTE.includes(c.situacao) ? tempoRestante(c, agora) : null
   return (
     <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3 last:border-b-0 hover:bg-campo">
       <span className="w-12 shrink-0 text-controle font-semibold text-tinta tabular-nums">{ddmm(c.atendimento_em)}</span>
@@ -187,7 +236,11 @@ function LinhaCaso({ c, abrir }: { c: Caso; abrir: () => void }) {
         {falta.length > 0 && <span className="text-apoio text-critico">Falta para registrar: {falta.map((t) => t.split(':')[0]).join(', ')}</span>}
         {c.situacao === 'reaberto' && c.motivo_reabertura && <span className="text-apoio text-atencao">Reaberto: {c.motivo_reabertura}</span>}
       </div>
-      <span className={cn(pilula, c.imediata ? 'bg-critico/10 text-critico' : 'bg-trilha text-tinta-apoio')}>{prazo(c)}</span>
+      {relogio ? (
+        <span className={cn(pilula, 'bg-critico/10 text-critico')} title="Contado a partir do atendimento">{relogio.texto}</span>
+      ) : (
+        <span className={cn(pilula, 'bg-trilha text-tinta-apoio')}>{prazo(c)}</span>
+      )}
       <span className={cn(pilula, TOM_SITUACAO[c.situacao])}
         title={c.situacao === 'notificado' ? [c.registrado_por, c.numero_sinan && `SINAN ${c.numero_sinan}`].filter(Boolean).join(' · ') : undefined}>
         {ROTULO_SITUACAO[c.situacao]}{c.situacao === 'notificado' && c.numero_sinan ? ` · ${c.numero_sinan}` : ''}
@@ -240,13 +293,12 @@ function IncluirCid({ cids, incluir }: { cids: string[]; incluir: (c: string) =>
   }
 
   return (
-    <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-1">
-      <label htmlFor="notif-cid" className="text-apoio font-medium text-grafite">Incluir CID notificável</label>
-      <div className="relative flex flex-wrap gap-2">
-        <Input id="notif-cid" className="min-w-0 flex-[1_1_200px]" placeholder="Código ou nome, ex.: A90" autoComplete="off" value={texto}
+    <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-1">
+      <div className="relative flex gap-2">
+        <Input id="notif-cid" aria-label="Incluir CID notificável" className="h-8 min-w-0 flex-1" placeholder="Incluir CID, ex.: A90" autoComplete="off" value={texto}
           onChange={(e) => { setTexto(e.target.value); setAviso('') }} onFocus={() => setFoco(true)} onBlur={() => setTimeout(() => setFoco(false), 150)}
           onKeyDown={(e) => { if (e.key === 'Enter') void conferirEIncluir(texto) }} />
-        <Button variant="outline" disabled={!codigoCid(texto)} onClick={() => void conferirEIncluir(texto)}>Incluir</Button>
+        <Button variant="outline" size="sm" disabled={!codigoCid(texto)} onClick={() => void conferirEIncluir(texto)}>Incluir</Button>
         {lista.length > 0 && (
           <div role="listbox" className="absolute top-full right-0 left-0 z-30 mt-0.5 max-h-[280px] overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
             {lista.map((r) => (
@@ -267,60 +319,81 @@ function IncluirCid({ cids, incluir }: { cids: string[]; incluir: (c: string) =>
  * Acidente de trabalho (LNNC 1a e 1b) não tem CID próprio no atendimento: a
  * notificação é aberta aqui, para paciente com atendimento aberto nos setores
  * do seu plantão (protótipo, "Abrir notificação de acidente de trabalho").
+ * Revisão do perfil Médico (RT 24/11/2026, M1): janela com busca do paciente
+ * (leito + nome) no lugar da parede de fichas.
  */
-function AcidenteTrabalho({ unidadeId, aoAbrir, aoErro }: { unidadeId: string | undefined; aoAbrir: (id: string) => void; aoErro: (m: string | null) => void }) {
+function JanelaAcidenteTrabalho({ aberta, unidadeId, onFechar, aoAbrir }: {
+  aberta: boolean; unidadeId: string | undefined; onFechar: () => void; aoAbrir: (id: string) => void
+}) {
   const qc = useQueryClient()
   const [paciente, setPaciente] = React.useState<string | null>(null)
   const [tipo, setTipo] = React.useState<'1a' | '1b' | null>(null)
+  const [erro, setErro] = React.useState<string | null>(null)
+  const [abrindo, setAbrindo] = React.useState(false)
   const pacientes = useQuery({
     queryKey: ['notificacao-pacientes-plantao', unidadeId],
-    enabled: !!unidadeId,
+    enabled: !!unidadeId && aberta,
     queryFn: async () => {
-      const { data, error } = await supabase.from('episodios').select('paciente_id, pacientes(nome)')
+      const { data, error } = await supabase.from('episodios').select('paciente_id, pacientes(nome, nome_social, data_nascimento), setores(nome)')
         .eq('unidade_id', unidadeId!).neq('etapa', 'encerrado').order('chegada_em', { ascending: false }).limit(60)
       if (error) throw error
-      const vistos = new Map<string, string>()
+      const vistos = new Map<string, PacienteBusca>()
       for (const e of data ?? []) {
-        const nome = (e.pacientes as { nome: string } | null)?.nome
-        if (nome && !vistos.has(e.paciente_id)) vistos.set(e.paciente_id, nome)
+        const p = e.pacientes as { nome: string; nome_social: string | null; data_nascimento: string | null } | null
+        if (p?.nome && !vistos.has(e.paciente_id)) {
+          vistos.set(e.paciente_id, { id: e.paciente_id, nome: p.nome, nome_social: p.nome_social, nascimento: p.data_nascimento,
+            setor: (e.setores as { nome: string } | null)?.nome ?? null })
+        }
       }
-      return [...vistos.entries()].map(([id, nome]) => ({ id, nome }))
+      return [...vistos.values()]
     },
   })
-  const lista = pacientes.data ?? []
+  const leitos = useLeitosDosPacientes(aberta ? unidadeId : undefined)
+  const lista = (pacientes.data ?? []).map((p) => ({ ...p, leito: leitos.data?.get(p.id) ?? null }))
+
+  function fechar() {
+    setPaciente(null); setTipo(null); setErro(null)
+    onFechar()
+  }
 
   async function abrir() {
     if (!paciente || !tipo) return
-    aoErro(null)
+    setErro(null)
+    setAbrindo(true)
     const { data, error } = await supabase.rpc('abrir_notificacao', { p_paciente: paciente, p_item: tipo })
-    if (error) return aoErro(error.message)
+    setAbrindo(false)
+    if (error) return setErro(error.message)
     void qc.invalidateQueries({ queryKey: chaveLista })
-    setPaciente(null)
-    setTipo(null)
+    setPaciente(null); setTipo(null)
     aoAbrir(data as string)
   }
 
+  const falta = [!paciente && 'o paciente', !tipo && 'o tipo'].filter(Boolean).join(' e ')
+
   return (
-    <section className={cn(caixa, 'mt-4 flex flex-col gap-3 p-4 sm:px-5')} aria-label="Abrir notificação de acidente de trabalho">
-      <TituloSecao className="mb-0">
-        <span className="flex items-center gap-2"><HardHat className="size-4 text-acao" aria-hidden /> Abrir notificação de acidente de trabalho</span>
-      </TituloSecao>
-      <span className="text-apoio leading-[1.5] text-pretty text-tinta-sussurro">
-        Acidente de trabalho não tem CID próprio no atendimento. Escolha o paciente do plantão e o tipo; a ficha abre em seguida.
-      </span>
-      <span className="text-apoio font-medium text-grafite">Paciente</span>
-      <div role="group" aria-label="Paciente" className="flex flex-wrap gap-1.5">
-        {lista.map((p) => <Chip key={p.id} ativo={paciente === p.id} onClick={() => setPaciente(paciente === p.id ? null : p.id)}>{p.nome}</Chip>)}
-        {!pacientes.isLoading && lista.length === 0 && <span className="text-apoio text-tinta-sussurro">Nenhum paciente com atendimento aberto no seu plantão.</span>}
-      </div>
-      <span className="text-apoio font-medium text-grafite">Tipo</span>
-      <div role="group" aria-label="Tipo" className="flex flex-wrap gap-1.5">
-        <Chip ativo={tipo === '1a'} onClick={() => setTipo('1a')}>Acidente de trabalho com exposição a material biológico</Chip>
-        <Chip ativo={tipo === '1b'} onClick={() => setTipo('1b')}>Acidente de trabalho</Chip>
-      </div>
-      <div className="flex justify-end">
-        <Button disabled={!paciente || !tipo} onClick={() => void abrir()}><Shield aria-hidden /> Abrir ficha</Button>
-      </div>
-    </section>
+    <Dialog open={aberta} onOpenChange={(o) => { if (!o) fechar() }}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><HardHat className="size-4 text-acao" aria-hidden /> Notificar acidente de trabalho</DialogTitle>
+          <DialogDescription>Acidente de trabalho não tem CID próprio no atendimento. Escolha o paciente do plantão e o tipo; a ficha abre em seguida.</DialogDescription>
+        </DialogHeader>
+        <BuscaPaciente id="acidente-pac" pacientes={lista} carregando={pacientes.isLoading} escolhido={paciente} onEscolher={setPaciente}
+          vazio="Nenhum paciente com atendimento aberto no seu plantão." />
+        {pacientes.error && <p role="alert" className="text-apoio text-critico">{(pacientes.error as Error).message}</p>}
+        <div className="grid gap-1.5">
+          <span className="text-apoio font-medium text-grafite">Tipo</span>
+          <div role="radiogroup" aria-label="Tipo" className="flex flex-col gap-1.5">
+            <Chip radio variante="opcao" ativo={tipo === '1a'} onClick={() => setTipo('1a')}>Acidente de trabalho com exposição a material biológico</Chip>
+            <Chip radio variante="opcao" ativo={tipo === '1b'} onClick={() => setTipo('1b')}>Acidente de trabalho</Chip>
+          </div>
+        </div>
+        {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
+        <DialogFooter className="items-center">
+          {falta && <span className="mr-auto text-apoio text-tinta-sussurro">Falta: {falta}.</span>}
+          <Button variant="ghost" onClick={fechar}>Cancelar</Button>
+          <Button disabled={!paciente || !tipo || abrindo} onClick={() => void abrir()}><Shield aria-hidden /> Abrir ficha</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -43,7 +43,8 @@ type Servico = {
 type UnidadeMapa = { id: string; nome: string; cnes: string | null; leitos: Leitos[]; servicos: Servico[]; editavel: boolean; minha: boolean }
 type Mapa = { unidades: UnidadeMapa[]; totais: { tipo_leito: string; livre: number; higienizacao: number; total: number }[]; agora: string }
 
-export function MapaVagas({ unidadeId, compacto = false }: { unidadeId: string; compacto?: boolean }) {
+/** `consulta`: só leitura (perfil em foco Médico), sem "Novo serviço" nem edição. */
+export function MapaVagas({ unidadeId, compacto = false, consulta = false }: { unidadeId: string; compacto?: boolean; consulta?: boolean }) {
   const mapa = useQuery({
     queryKey: ['regulacao-mapa', unidadeId],
     refetchInterval: 60_000,
@@ -70,7 +71,7 @@ export function MapaVagas({ unidadeId, compacto = false }: { unidadeId: string; 
           ))}
         </div>
       )}
-      {m.unidades.map((u) => <UnidadeDoMapa key={u.id} u={u} unidadeConsulta={unidadeId} compacto={compacto} />)}
+      {m.unidades.map((u) => <UnidadeDoMapa key={u.id} u={u} unidadeConsulta={unidadeId} compacto={compacto || consulta} />)}
       <span className="text-rotulo text-tinta-sussurro">Leitos atualizados a cada minuto, sem dado de paciente.</span>
     </div>
   )

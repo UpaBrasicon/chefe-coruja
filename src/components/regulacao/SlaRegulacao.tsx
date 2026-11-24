@@ -34,12 +34,29 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 
 const TOM = { critico: 'destructive', atencao: 'warning', neutro: 'secondary' } as const
 
+// Fichas calmas (revisão do perfil Médico, RT 24/11/2026, M3): só o risco de
+// cancelamento fica em vermelho; o resto vencido fica em âmbar.
+const tomCalmo = (a: { texto: string; tom: keyof typeof TOM }) =>
+  /risco de cancelamento/.test(a.texto) ? 'destructive' : a.tom === 'critico' ? 'warning' : TOM[a.tom]
+
 /** Selos dos relógios do pedido. */
 export function SeloSla({ sla }: { sla: Sla | null | undefined }) {
   const [agora] = React.useState(() => Date.now())
   const alertas = alertasSla(sla, agora)
   if (alertas.length === 0) return null
-  return <>{alertas.map((a) => <Badge key={a.texto} variant={TOM[a.tom]}>{a.texto}</Badge>)}</>
+  return <>{alertas.map((a) => <Badge key={a.texto} variant={tomCalmo(a)}>{a.texto}</Badge>)}</>
+}
+
+const PONTO_PRIORIDADE = { critico: 'bg-critico', atencao: 'bg-atencao', info: 'bg-suprimento', neutro: 'bg-tinta-sussurro' } as const
+
+/** Prioridade como ponto de cor e texto normal (sem ficha). */
+export function PrioridadeCalma({ p }: { p: Prioridade }) {
+  const pr = PRIORIDADES[p]
+  return (
+    <span className="inline-flex items-center gap-1.5 text-apoio text-tinta" title={pr.descricao}>
+      <span aria-hidden className={`size-2 shrink-0 rounded-capsula ${PONTO_PRIORIDADE[pr.tom]}`} />{pr.rotulo}
+    </span>
+  )
 }
 
 type ItemPainel = {
@@ -75,11 +92,11 @@ export function PainelSla({ unidadeId, central, detalhe }: {
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           <Timer className="size-4" aria-hidden /> Prazos da regulação
-          {res && res.fila_atrasada > 0 && <Badge variant="destructive">Fila vencida: {res.fila_atrasada}</Badge>}
-          {res && res.pendencia_atrasada > 0 && <Badge variant="destructive">Pendência vencida: {res.pendencia_atrasada}</Badge>}
+          {res && res.fila_atrasada > 0 && <Badge variant="warning">Fila vencida: {res.fila_atrasada}</Badge>}
+          {res && res.pendencia_atrasada > 0 && <Badge variant="warning">Pendência vencida: {res.pendencia_atrasada}</Badge>}
           {res && res.evolucao_atrasada > 0 && <Badge variant="warning">Evolução vencida: {res.evolucao_atrasada}</Badge>}
           {res && res.risco_cancelamento > 0 && <Badge variant="destructive">Risco de cancelamento: {res.risco_cancelamento}</Badge>}
-          {res && (res.destino_atrasado ?? 0) > 0 && <Badge variant="destructive">Destino sem resposta: {res.destino_atrasado}</Badge>}
+          {res && (res.destino_atrasado ?? 0) > 0 && <Badge variant="warning">Destino sem resposta: {res.destino_atrasado}</Badge>}
         </CardTitle>
         <CardDescription>
           {central
@@ -117,9 +134,7 @@ export function PainelSla({ unidadeId, central, detalhe }: {
                     className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
                     onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                     {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
-                    <Badge variant={PRIORIDADES[ef].tom === 'critico' ? 'destructive' : PRIORIDADES[ef].tom === 'atencao' ? 'warning' : PRIORIDADES[ef].tom === 'info' ? 'info' : 'secondary'}>
-                      {PRIORIDADES[ef].rotulo}
-                    </Badge>
+                    <PrioridadeCalma p={ef} />
                     <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                     <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                     <span className="text-tinta-sussurro">nº {s.numero}{central ? ` · de ${s.origem.nome}` : ''}{s.assumida_por ? ` · com ${s.assumida_por}` : ''}</span>
