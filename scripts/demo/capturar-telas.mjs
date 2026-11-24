@@ -15,6 +15,11 @@
 //     node scripts/demo/capturar-telas.mjs [pasta-de-saída]
 // Variáveis opcionais: SUPABASE_SERVICE_ROLE_KEY (senão lê pelo CLI do Supabase,
 // sem imprimir) e NAVEGADOR (caminho do Edge ou do Chrome).
+//
+// A página pública usa WebP (public/landing/telas/*.webp, pedido 5 do
+// diagnóstico de desempenho). Para trocar as telas, converta o JPG daqui, por
+// exemplo com o Pillow do Python:
+//   python -c "from PIL import Image; Image.open('porta.jpg').save('porta.webp', quality=85, method=6)"
 import { execSync } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'

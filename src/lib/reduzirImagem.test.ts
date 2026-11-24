@@ -42,5 +42,6 @@ test('banner, foto do perfil e arte do painel passam pela redução antes de sub
   assert.match(readFileSync('src/pages/recepcao/PropagandaPainel.tsx', 'utf8'), /reduzirImagem\(\w+, 1920\)/)
   // o ícone do aplicativo não pode voltar a ter megabytes (era 5,9 MB, 2048 px)
   assert.ok(statSync('public/logo.png').size < 600_000)
-  assert.ok(statSync('public/logo-192.png').size < 150_000)
+  // logo-192 recomprimido em paleta de 256 cores (pedido 5, F9): 66 KB → 13 KB
+  assert.ok(statSync('public/logo-192.png').size < 20_000)
 })

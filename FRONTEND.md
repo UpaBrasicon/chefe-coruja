@@ -611,9 +611,14 @@ com bloco `dark` via `@custom-variant dark (&:is(.dark *))`.
 
 ### Assets (`public/`)
 
-`logo.png` (512 px) · `logo-192.png` · `favicon.svg` · `icons.svg` ·
-`login-img-1..4.svg` · `manifest.webmanifest` · `sw.js` · `plantao/background.png` ·
-`plantao/MODELO_EXAMES.png`
+`logo.png` (512 px) · `logo-192.png` (paleta de 256 cores, 13 KB) · `favicon.svg` ·
+`manifest.webmanifest` · `sw.js` · `landing/coruja.webp` ·
+`landing/telas/{porta,painel,escala}.webp` (capturas da página pública, 1424 × 749).
+
+Todo arquivo de `public/` tem de ser usado por `src/`, `index.html`, `sw.js`, o
+manifesto ou o `vercel.json` (`src/lib/publicSemOrfaos.test.ts`). Em 23/11/2026
+saíram `icons.svg`, `login-img-1..4.svg`, `plantao/background.png` e
+`plantao/MODELO_EXAMES.png`, que nada usava.
 
 ---
 
@@ -831,7 +836,7 @@ chefe-coruja/
 ├── eslint.config.js
 ├── components.json             # config shadcn
 ├── vercel.json                 # SPA rewrite
-├── public/                     # 12 assets + manifest + service worker
+├── public/                     # 7 assets + manifest + service worker
 └── src/
     ├── main.tsx, App.tsx, index.css, vite-env.d.ts
     ├── routes/                 # RequireAuth, RequireRole, RedirectHome, Redirecionar
