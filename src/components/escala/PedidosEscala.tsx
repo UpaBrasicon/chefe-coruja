@@ -37,10 +37,12 @@ type Janela = { tipo: 'trocar' | 'passar' | 'falta'; plantao: PlantaoEquipe }
  * plantão que já passou, só a falta, com a explicação e o atalho para o próximo
  * (ajuste da E4, opção A do RT em 28/10/2026: as ações à vista).
  */
-export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor, pendente, irParaProximo }: {
+export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor, pendente, irParaProximo, explicar = true }: {
   unidadeId: string; plantao: PlantaoEquipe; equipe: PlantaoEquipe[]
   faixa: (p: PlantaoEquipe) => string; nomeSetor: (id: string) => string
   pendente: boolean; irParaProximo?: { rotulo: string; ir: () => void }
+  /** false: o painel do dia já explica uma vez no alto que o plantão passou (ES2). */
+  explicar?: boolean
 }) {
   const [janela, setJanela] = React.useState<Janela | null>(null)
   const [aviso, setAviso] = React.useState<string | null>(null)
@@ -56,10 +58,12 @@ export function AcoesDoPlantao({ unidadeId, plantao: p, equipe, faixa, nomeSetor
         <span className="text-rotulo text-atencao">Há um pedido deste plantão em andamento (o colega ou a coordenação ainda vão responder).</span>
       ) : passou ? (
         <>
-          <span className="flex items-start gap-1.5 text-rotulo text-pretty text-tinta-sussurro">
-            <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-            Este plantão já passou: só dá para justificar falta. Trocar e passar valem para os próximos.
-          </span>
+          {explicar && (
+            <span className="flex items-start gap-1.5 text-rotulo text-pretty text-tinta-sussurro">
+              <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              Este plantão já passou: só dá para justificar falta. Trocar e passar valem para os próximos.
+            </span>
+          )}
           <Button size="sm" variant="outline" className="w-fit" onClick={() => abrir('falta')}><FileText /> Justificar falta</Button>
           {irParaProximo && (
             <Button variant="link" className="h-auto min-h-0 w-fit p-0 text-rotulo" onClick={irParaProximo.ir}>{irParaProximo.rotulo}</Button>
@@ -96,17 +100,29 @@ export function SeuPlantao({ unidadeId, meusDoDia, equipe, faixa, horario, nomeS
   faixa: (p: PlantaoEquipe) => string; horario: (p: PlantaoEquipe) => string; nomeSetor: (id: string) => string
   pendentes: Set<string>; irParaProximo?: { rotulo: string; ir: () => void }
 }) {
+  const [agora] = React.useState(() => Date.now())
   if (meusDoDia.length === 0) return null
+  // ES2 (RT, 24/11/2026): "Este plantão já passou" uma vez só, no alto do painel do dia
+  const passou = meusDoDia.some((p) => !pendentes.has(p.id) && new Date(p.inicio).getTime() + p.duracao_min * 60_000 <= agora)
   return (
     <div className="flex flex-col gap-2 border-b border-trilha bg-alerta-marca/40 px-4 py-3">
-      <span className="text-rotulo font-semibold text-tinta-sussurro">Seu plantão</span>
+      <span className="text-rotulo font-semibold text-tinta-sussurro">{meusDoDia.length > 1 ? 'Seus plantões' : 'Seu plantão'}</span>
+      {passou && (
+        <div className="flex flex-col items-start gap-1">
+          <span className="flex items-start gap-1.5 text-rotulo text-pretty text-tinta-sussurro">
+            <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+            {meusDoDia.length > 1 ? 'Plantão que já passou' : 'Este plantão já passou'}: só dá para justificar falta. Trocar e passar valem para os próximos.
+          </span>
+          {irParaProximo && <Button variant="link" className="h-auto min-h-0 w-fit p-0 text-rotulo" onClick={irParaProximo.ir}>{irParaProximo.rotulo}</Button>}
+        </div>
+      )}
       {meusDoDia.map((p) => (
         <div key={p.id} className="flex flex-col gap-2">
           <span className="text-corpo font-medium text-tinta">
             {faixa(p)} · {nomeSetor(p.setor_id)} <span className="text-apoio font-normal text-tinta-sussurro tabular-nums">{horario(p)}</span>
           </span>
           <AcoesDoPlantao unidadeId={unidadeId} plantao={p} equipe={equipe} faixa={faixa} nomeSetor={nomeSetor}
-            pendente={pendentes.has(p.id)} irParaProximo={irParaProximo} />
+            pendente={pendentes.has(p.id)} explicar={false} />
         </div>
       ))}
     </div>
