@@ -2,10 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { etapaDoEvento, type EtapaIa } from '@/lib/etapaIa'
+import { lerSugestoes, proximoHistorico, trocaDaResposta, type Troca } from '@/lib/conversaIa'
 
 // "Perguntar à IA" da Central: chama a Edge Function clinical-search (que
 // confere o vínculo com a unidade, mascara dados e repassa o stream NDJSON da
 // biblioteca no VPS). Nada da pergunta ou da resposta vai para localStorage.
+// IA1/IA2 (RT, 24/11/2026): a conversa de seguimento fica só na memória deste
+// hook (some ao fechar a resposta ou sair da tela) e só aparece quando a Edge e
+// a biblioteca avisam que aceitam; com o servidor antigo, a pergunta é única.
 
 export type Fonte = {
   n: number
@@ -35,12 +39,16 @@ export type ConfiancaIa = 'alta' | 'moderada' | 'baixa'
 export type StatusIa = 'idle' | 'loading' | 'streaming' | 'done' | 'blocked' | 'error' | 'limite' | 'indisponivel' | 'identificacao' | 'segundo_fator'
 
 type Evento =
-  | { type: 'meta'; request_id: string; gate: boolean; publico?: 'adulto' | 'pediatrico'; ferramentas: ToolHit[]; fontes: Fonte[]; confianca?: ConfiancaIa }
+  | { type: 'meta'; request_id: string; gate: boolean; publico?: 'adulto' | 'pediatrico'; ferramentas: ToolHit[]; fontes: Fonte[]; confianca?: ConfiancaIa; seguimento?: boolean }
   | { type: 'delta'; text: string }
   | { type: 'done'; citacoes_invalidas?: number[]; sem_citacao?: boolean; calculo_suspeito?: boolean; nao_encontrou?: boolean; recusa?: boolean }
   | { type: 'error'; text: string }
   | { type: 'pubmed'; origem: string; busca: string; artigos: ArtigoPubmed[] }
   | { type: 'etapa'; etapa: string }
+  /** IA1: a Edge aceita a conversa de seguimento (primeira linha do stream) */
+  | { type: 'seguimento'; aceita?: boolean }
+  /** IA2: próximas perguntas sugeridas, depois do fim da resposta */
+  | { type: 'sugestoes'; itens?: unknown }
 
 const URL_FUNCAO = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/clinical-search`
 
@@ -87,6 +95,11 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
   const [pubmed, setPubmed] = useState<ArtigoPubmed[]>([])
   // pedido do RT (17/11/2026): etapa da espera, mostrada com as bolinhas
   const [etapa, setEtapa] = useState<EtapaIa | null>(null)
+  // IA1/IA2: conversa só em memória; as perguntas anteriores vão para a tela
+  const [seguimento, setSeguimento] = useState(false)
+  const [sugestoes, setSugestoes] = useState<string[]>([])
+  const [anteriores, setAnteriores] = useState<string[]>([])
+  const historico = useRef<Troca[]>([])
   const controle = useRef<AbortController | null>(null)
 
   useEffect(() => () => controle.current?.abort(), [])
@@ -94,22 +107,27 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
   const limpar = useCallback(() => {
     controle.current?.abort()
     setPergunta(''); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([]); setEtapa(null)
+    historico.current = []; setSeguimento(false); setSugestoes([]); setAnteriores([])
     setStatus('idle')
   }, [])
 
-  const ask = useCallback(async (q: string) => {
+  /** `seguir`: a pergunta leva as últimas trocas da conversa (IA1); sem ele, começa conversa nova. */
+  const ask = useCallback(async (q: string, opcoes?: { seguir?: boolean }) => {
     if (!unidadeId) { setStatus('error'); return }
     controle.current?.abort()
     const ac = new AbortController()
     controle.current = ac
+    if (!opcoes?.seguir) historico.current = []
+    const conversa = historico.current
     setPergunta(q); setTexto(''); setFontes([]); setFerramentas([]); setAlerta(null); setRequestId(null); setPublico(null); setConfianca(null); setPubmed([]); setEtapa('lendo')
+    setSeguimento(false); setSugestoes([]); setAnteriores(conversa.map((t) => t.pergunta))
     setStatus('loading')
     let res: Response
     try {
       res = await fetch(URL_FUNCAO, {
         method: 'POST',
         headers: await cabecalhos(),
-        body: JSON.stringify({ q, mode: 'ask', unidade_id: unidadeId, publico: modo ?? undefined }),
+        body: JSON.stringify({ q, mode: 'ask', unidade_id: unidadeId, publico: modo ?? undefined, ...(conversa.length ? { historico: conversa } : {}) }),
         signal: ac.signal,
       })
     } catch {
@@ -132,6 +150,9 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     const dec = new TextDecoder()
     let buf = ''
     let bloqueado = false
+    // IA1: o seguimento só aparece se a Edge e a biblioteca avisarem
+    let edgeAceita = false
+    let acumulado = ''
     try {
       while (true) {
         const { value, done } = await reader.read()
@@ -143,7 +164,11 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
           if (!l.trim()) continue
           let ev: Evento
           try { ev = JSON.parse(l) as Evento } catch { continue }
-          if (ev.type === 'etapa') {
+          if (ev.type === 'seguimento') {
+            edgeAceita = ev.aceita === true
+          } else if (ev.type === 'sugestoes') {
+            setSugestoes(lerSugestoes(ev.itens))
+          } else if (ev.type === 'etapa') {
             const e = etapaDoEvento(ev.etapa)
             if (e) setEtapa(e)
           } else if (ev.type === 'meta') {
@@ -153,9 +178,10 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
             setPublico(ev.publico ?? null)
             setConfianca(ev.confianca ?? null)
             bloqueado = !ev.gate
+            setSeguimento(edgeAceita && ev.seguimento === true)
             setStatus(ev.gate ? 'streaming' : 'blocked')
           } else if (ev.type === 'delta') {
-            if (!bloqueado) setTexto((t) => t + ev.text)
+            if (!bloqueado) { acumulado += ev.text; setTexto((t) => t + ev.text) }
           } else if (ev.type === 'pubmed') {
             setPubmed(Array.isArray(ev.artigos) ? ev.artigos : [])
           } else if (ev.type === 'error') {
@@ -166,7 +192,11 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
             // R2-17: "não encontrei" mostra só a frase, sem alerta de cálculo
             if (ev.calculo_suspeito && !ev.nao_encontrou) setAlerta('A resposta pode trazer um número calculado para o paciente. A IA não deve calcular: use a ferramenta indicada e confira a dose de referência na fonte.')
             else if (ev.sem_citacao || ev.citacoes_invalidas?.length) setAlerta('Resposta com citação incompleta: confira as fontes.')
-            if (!bloqueado) setStatus('done')
+            if (!bloqueado) {
+              setStatus('done')
+              // IA1: a troca entra na conversa para a próxima pergunta de seguimento
+              historico.current = proximoHistorico(conversa, trocaDaResposta(q, acumulado, !!ev.nao_encontrou))
+            }
           }
         }
       }
@@ -175,5 +205,8 @@ export function useClinicalAsk(unidadeId?: string, modo?: ModoIa) {
     }
   }, [unidadeId, modo])
 
-  return { ask, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed, etapa }
+  /** IA1/IA2: pergunta de seguimento (campo "Perguntar mais sobre isto" ou sugestão clicada). */
+  const seguir = useCallback((q: string) => { void ask(q, { seguir: true }) }, [ask])
+
+  return { ask, seguir, limpar, pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed, etapa, seguimento, sugestoes, anteriores }
 }
