@@ -152,7 +152,7 @@ function NovoFavorito({ aoSalvar }: { aoSalvar: () => void }) {
   // pedido 3: a consulta espera a pessoa parar de digitar (300 ms)
   const buscaAdiada = useValorAdiado(busca)
   const resultados = useQuery({
-    queryKey: ['busca-medicamento', buscaAdiada, unidadeBusca],
+    queryKey: ['busca-medicamento-favoritos', buscaAdiada, unidadeBusca],
     enabled: buscaAdiada.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase
