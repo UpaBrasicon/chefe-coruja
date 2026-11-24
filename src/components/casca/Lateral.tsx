@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
 import { Marca } from './Marca'
-import { agruparNavegacao, ICONE_GRUPO, type ChaveNota, type ItemNav } from './navegacao'
+import { agruparNavegacao, foraDoItem, ICONE_GRUPO, type ChaveNota, type ItemNav } from './navegacao'
 import { diaMes as fmtData } from '@/lib/formato'
 
 // A lateral da casca (P/index.html 895–973). Desde o contraste CT3 (RT,
@@ -22,10 +22,11 @@ import { diaMes as fmtData } from '@/lib/formato'
 
 function ItemLateral({ item, nota }: { item: ItemNav; nota?: number }) {
   const Icone = item.icone
+  const { pathname } = useLocation()
   return (
     <NavLink
       to={item.to}
-      end={item.exato}
+      end={item.exato || foraDoItem(item, pathname)}
       title={item.rotulo}
       className={({ isActive }) =>
         cn(
@@ -194,7 +195,7 @@ const somaNotas = (itens: ItemNav[], notas: Partial<Record<ChaveNota, number>>) 
  */
 function LateralAreas({ itens, notas, papelTexto, inicio, unidadeId, ehGestor, onSair }: PropsLateral) {
   const { pathname } = useLocation()
-  const ativo = (i: ItemNav) => !!matchPath({ path: i.to, end: !!i.exato }, pathname)
+  const ativo = (i: ItemNav) => !!matchPath({ path: i.to, end: !!i.exato }, pathname) && !foraDoItem(i, pathname)
   const areas = agruparNavegacao(itens)
   const atual = areas.find((a) => a.itens.some(ativo))
 

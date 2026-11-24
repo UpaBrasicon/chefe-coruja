@@ -55,3 +55,47 @@ export function textoConfianca(confianca: string | null | undefined): string | n
   if (confianca === 'moderada') return 'Confiança moderada: só uma fonte do material trata do assunto. Confira na fonte antes de seguir.'
   return null
 }
+
+/** IA3 (RT, 24/11/2026): a numeração na tela segue a ordem em que o texto cita
+ *  (1, 2, 3...), não o número do trecho na biblioteca. Chave: número da
+ *  biblioteca; valor: número na tela. */
+export function numeracaoNaTela(texto: string): Map<number, number> {
+  const mapa = new Map<number, number>()
+  for (const m of texto.matchAll(/\[(\d+(?:,\s*\d+)*)\]/g)) {
+    for (const n of m[1].split(/,\s*/)) if (!mapa.has(Number(n))) mapa.set(Number(n), mapa.size + 1)
+  }
+  return mapa
+}
+
+/** As fontes na ordem da tela, cada uma com o número da tela (`na`). Sem
+ *  citação no texto, ficam todas na ordem em que vieram. */
+export function fontesNaTela<T extends { n: number }>(texto: string, fontes: T[]): (T & { na: number })[] {
+  const mapa = numeracaoNaTela(texto)
+  if (!mapa.size) return fontes.map((f, i) => ({ ...f, na: i + 1 }))
+  return fontes
+    .filter((f) => mapa.has(f.n))
+    .map((f) => ({ ...f, na: mapa.get(f.n)! }))
+    .sort((a, b) => a.na - b.na)
+}
+
+/** Caminho cru de ferramenta que o modelo às vezes escreve no texto. */
+export const ROTA_NO_TEXTO = /\(?\/plantonista\/[a-z0-9-]+(?:\/[a-z0-9-]+)*\)?/g
+
+type FonteCopia = { n: number; titulo: string; editor: string; ano: number; secao: string; pagina: number | null }
+
+/** IA6: resposta em texto simples para colar na evolução, com as fontes numeradas como na tela. */
+export function textoParaCopiar(pergunta: string, texto: string, fontes: FonteCopia[]): string {
+  const mapa = numeracaoNaTela(texto)
+  const corpo = texto
+    .replace(/\r/g, '')
+    .replace(ROTA_NO_TEXTO, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/^\s*#{1,4}\s+/gm, '')
+    .replace(/\[(\d+(?:,\s*\d+)*)\]/g, (_, ns: string) => `[${ns.split(/,\s*/).map((n) => mapa.get(Number(n)) ?? n).join(', ')}]`)
+    .replace(/[ \t]+([.,;:])/g, '$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  const lista = fontesNaTela(texto, fontes).map((f) =>
+    `${f.na}. ${f.titulo} — ${f.editor}, ${f.ano}${f.secao ? `, ${f.secao}` : ''}${f.pagina ? `, p. ${f.pagina}` : ''}`)
+  return [`Pergunta: ${pergunta}`, '', corpo, ...(lista.length ? ['', 'Fontes:', ...lista] : [])].join('\n')
+}

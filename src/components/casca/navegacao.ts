@@ -46,6 +46,13 @@ export type ItemNav = {
   nota?: ChaveNota
   /** Grupo do item no menu (por enquanto só no gestor, parte 4.11). */
   grupo?: string
+  /** Rotas de baixo que têm item próprio no menu: nelas este item não acende (um ativo só). */
+  exceto?: string[]
+}
+
+/** O item não vale para esta rota porque ela tem item próprio no menu (campo `exceto`). */
+export function foraDoItem(item: ItemNav, pathname: string): boolean {
+  return !!item.exceto?.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 }
 
 // Navegação por papel (P/index.html ~32220). Um papel por vez: quem tem mais
@@ -76,7 +83,8 @@ const ITEM_SALA_VACINA: ItemNav = { to: '/vacina', rotulo: 'Sala de vacina', cur
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
-    { to: '/plantonista', rotulo: 'Central do Médico', curto: 'Central', icone: Stethoscope },
+    // a Farmácia tem item próprio: nela a Central não acende junto (revisão da Farmácia do médico, RT 24/11/2026)
+    { to: '/plantonista', rotulo: 'Central do Médico', curto: 'Central', icone: Stethoscope, exceto: ['/plantonista/farmacia'] },
     { to: '/plantao', rotulo: 'Plantão', icone: Activity },
     // pedido 8 (PS1 a PS3 = A, RT 23/11/2026): os pacientes do plantão com as pendências
     { to: '/passometro', rotulo: 'Passômetro', icone: ClipboardList, exato: true },

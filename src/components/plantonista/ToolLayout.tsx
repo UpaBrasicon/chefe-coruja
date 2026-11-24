@@ -9,11 +9,14 @@ import { Link } from 'react-router-dom'
 import { RelatarProblema } from '@/components/clinico/RelatarProblema'
 import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { useRelacionadas, type Relacionada } from '@/components/plantonista/calc/contexto'
+import { Button } from '@/components/ui/button'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { useSituacaoFerramenta, type SituacaoFerramenta } from '@/hooks/useFerramentaClinica'
 import { textoRevisaoPendente } from '@/lib/comiteClinico'
 import { data } from '@/lib/formato'
+import { ehSoPagina, semPaginas } from '@/lib/paginasFonte'
 import { cn } from '@/lib/utils'
 
 // Casco visual das ferramentas clínicas (design_handoff/telas/20). A ressalva
@@ -49,6 +52,8 @@ export function ToolLayout({
   const revisado = ficha ? ficha.revisadoEm : revisadoEm
   const corpo = useRef<HTMLDivElement>(null)
   const indice = useIndice(corpo)
+  // 14c (RT, 24/11/2026): páginas da fonte fora do texto corrido, com botão para mostrar
+  const paginas = usePaginasDaFonte(corpo)
   // Relacionadas (piloto das calculadoras): coluna da direita na tela larga, no fim nas outras.
   const relacionadas = useRelacionadas()
   const temLado = indice.length >= 3 || relacionadas.length > 0
@@ -58,6 +63,12 @@ export function ToolLayout({
     <div className={cn('flex flex-col gap-[22px]', className)}>
       <TituloPagina titulo={title} descricao={topo?.resumo ?? description} className="mb-0"
         acoes={ficha && <RelatarProblema ferramentaId={ficha.id} versao={ficha.versao} />} />
+      {paginas.existem && (
+        <Button variant="link" size="xs" onClick={paginas.alternar} aria-pressed={paginas.mostrar}
+          className="-mt-3 self-start px-0 text-apoio font-normal text-tinta-sussurro">
+          {paginas.mostrar ? 'Esconder páginas da fonte' : 'Mostrar páginas da fonte'}
+        </Button>
+      )}
       {topo && <CabecalhoTopo topo={topo} />}
       {ficha && situacao && <FaixaSituacao situacao={situacao} versao={ficha.versao} />}
       {semFonte && (
@@ -151,6 +162,95 @@ function useIndice(ref: React.RefObject<HTMLDivElement | null>) {
     return () => obs.disconnect()
   }, [ref])
   return itens
+}
+
+const CHAVE_PAGINAS = 'chefe-coruja:paginas-da-fonte'
+
+function lerMostrarPaginas(perfilId: string | undefined): boolean {
+  try {
+    return window.localStorage.getItem(`${CHAVE_PAGINAS}:${perfilId ?? 'anonimo'}`) === 'mostrar'
+  } catch {
+    return false
+  }
+}
+
+/** Trechos de texto que a camada não toca (campos, código). */
+const FORA = 'textarea, input, script, style, code, [contenteditable="true"]'
+
+function textosDe(raiz: HTMLElement): Text[] {
+  const lista: Text[] = []
+  const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT)
+  for (let n = w.nextNode(); n; n = w.nextNode()) {
+    const t = n as Text
+    if (!t.parentElement?.closest(FORA)) lista.push(t)
+  }
+  return lista
+}
+
+/**
+ * Esconde as citações de página do corpo da ferramenta sem trocar nenhum nó
+ * do React: só o valor do texto muda, e o original fica guardado. Quando o
+ * React reescreve um texto (resultado que muda com os campos), o observador
+ * esconde de novo; "Mostrar páginas da fonte" devolve os originais. O "Copiar
+ * resultado" usa o texto do componente, não o da tela, e não muda.
+ */
+function usePaginasDaFonte(ref: React.RefObject<HTMLDivElement | null>) {
+  const { perfil } = useAuth()
+  // a escolha feita nesta tela vale sobre a guardada; sem escolha, a guardada da pessoa
+  const [escolha, setEscolha] = useState<boolean | null>(null)
+  const mostrar = escolha ?? lerMostrarPaginas(perfil?.id)
+  const [existem, setExistem] = useState(false)
+
+  useEffect(() => {
+    const raiz = ref.current
+    if (!raiz) return
+    const originais = new WeakMap<Text, string>()
+    const postos = new WeakMap<Text, string>()
+    const tocados: Text[] = []
+    const definir = (t: Text, valor: string) => {
+      if (postos.get(t) !== t.nodeValue) { originais.set(t, t.nodeValue ?? ''); tocados.push(t) }
+      if (t.nodeValue !== valor) t.nodeValue = valor
+      postos.set(t, valor)
+    }
+    const varrer = () => {
+      let achou = false
+      for (const t of textosDe(raiz)) {
+        // texto que já escondemos e o React não mudou: segue como está
+        const original = postos.get(t) === t.nodeValue ? originais.get(t) ?? '' : t.nodeValue ?? ''
+        if (semPaginas(original) === original) continue
+        achou = true
+        if (mostrar) continue
+        definir(t, semPaginas(original))
+        if (ehSoPagina(original)) {
+          // "(" + "p. 41" + ")" em pedaços: os parênteses ao lado saem junto
+          const antes = t.previousSibling
+          const depois = t.nextSibling
+          if (antes instanceof Text && /\s*\($/.test(antes.nodeValue ?? '')) definir(antes, (antes.nodeValue ?? '').replace(/\s*\($/, ''))
+          if (depois instanceof Text && /^\)/.test(depois.nodeValue ?? '')) definir(depois, (depois.nodeValue ?? '').replace(/^\)/, ''))
+        }
+      }
+      setExistem((e) => e || achou)
+    }
+    const obs = new MutationObserver(() => {
+      obs.disconnect()
+      varrer()
+      obs.observe(raiz, { childList: true, subtree: true, characterData: true })
+    })
+    varrer()
+    obs.observe(raiz, { childList: true, subtree: true, characterData: true })
+    return () => {
+      obs.disconnect()
+      // devolve o texto original de tudo que ainda está como deixamos
+      for (const t of tocados) if (postos.get(t) === t.nodeValue && originais.has(t)) t.nodeValue = originais.get(t)!
+    }
+  }, [ref, mostrar])
+
+  const alternar = () => {
+    const novo = !mostrar
+    setEscolha(novo)
+    try { window.localStorage.setItem(`${CHAVE_PAGINAS}:${perfil?.id ?? 'anonimo'}`, novo ? 'mostrar' : 'esconder') } catch { /* sem armazenamento: vale só nesta tela */ }
+  }
+  return { mostrar, existem, alternar }
 }
 
 const dataBr = (iso: string | null) => (iso ? data(iso) : '')

@@ -59,8 +59,9 @@ export default function SectionHome() {
     return (
       <div key={tool.slug} className="flex items-baseline gap-x-4 border-b border-trilha px-5 py-2.5 last:border-0">
         <div className="grid min-w-0 flex-1 gap-x-6 gap-y-0.5 md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
-          <Link to={`/plantonista/${tool.secao}/${tool.slug}`} className="text-controle font-medium text-acao hover:underline">{tool.label}</Link>
-          <span className="text-apoio text-tinta-apoio">
+          {/* nome escuro e descrição apagada (revisão de 24/11/2026: o nome em cinza parecia desligado) */}
+          <Link to={`/plantonista/${tool.secao}/${tool.slug}`} className="text-controle font-medium text-tinta underline-offset-4 hover:text-acao hover:underline">{tool.label}</Link>
+          <span className="text-apoio text-tinta-sussurro">
             {tool.description}
             {a && <span className="text-atencao"> · {a}</span>}
           </span>
