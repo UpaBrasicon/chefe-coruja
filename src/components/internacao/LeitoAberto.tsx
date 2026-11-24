@@ -28,7 +28,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
 import { AbaRegulacaoPaciente } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
-import { Contencao, DialogoIniciarContencao, usePodeIniciarContencao } from '@/components/prontuario/Contencao'
+import { Contencao, DialogoIniciarContencao } from '@/components/prontuario/Contencao'
+import { usePodeIniciarContencao } from '@/components/prontuario/useContencao'
 import { AvisoValidadePrescricao } from '@/components/prescricao/ValidadeItem'
 import { DialogoIntercorrencia, Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
@@ -126,7 +127,9 @@ const CHAVES_DO_LEITO = [
   'ocupacao-setores', 'pendencias-observacao', 'alertas-sepse',
 ]
 
-export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', onTransferir, onPrancheta, abaInicial }: {
+export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', onTransferir, onPrancheta, abaInicial, conteudoAlta }: {
+  /** OB3 (RT, 24/11/2026): na observação, a aba Alta e documentos é o desfecho da observação */
+  conteudoAlta?: React.ReactNode
   pacienteId: string
   pacienteNome: string
   ehGestor: boolean
@@ -317,7 +320,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       </div>
     )
   }
-  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} abaInicial={abaInicial} onTransferir={onTransferir} onPrancheta={onPrancheta} />
+  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} abaInicial={abaInicial} onTransferir={onTransferir} onPrancheta={onPrancheta} conteudoAlta={conteudoAlta} />
 }
 
 type PartesLeito = {
@@ -436,7 +439,8 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
   )
 }
 
-function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }: {
+function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta, conteudoAlta }: {
+  conteudoAlta?: React.ReactNode
   onPrancheta?: () => void
   abaInicial?: string
   p: PartesLeito
@@ -603,7 +607,8 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
         {/* a própria aba escolhe as escalas pela idade (NIPS/FLACC ou Braden/Morse; sem nascimento, avisa) */}
         {atual === 'escalas' && <AbaAvaliacaoCrescimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {/* pontos 14 e 16: receita para casa, atestado, orientações e alta, em passos */}
-        {atual === 'alta' && (
+        {atual === 'alta' && conteudoAlta}
+        {atual === 'alta' && !conteudoAlta && (
           <PassosAlta i={i} pacienteId={pacienteId} pacienteNome={p.pacienteNome} ativa={ativa} altaRecente={pp.altaRecente} ehGestor={ehGestor}
             eu={p.eu ?? null} acao={p.acao} impeditivos={p.impeditivos} pacotes={p.pacotes} cidSugerido={pp.cidSugerido ?? null}
             leito={i.leito?.identificador ?? ''} diagnostico={textoPrimario} estado={docsAlta} setEstado={setDocsAlta} onIr={(a) => setAba(a)} />

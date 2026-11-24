@@ -191,22 +191,20 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
   // RG2: quadro clínico a partir do caderno (última evolução, vitais crus com a hora,
   // exames com resultado e data, prescrição vigente e CID da lista de problemas)
   const dp = useDoProntuario(pacienteFixo ? paciente?.id : null, pacienteFixo ? v?.internacao?.id : null)
-  const aplicado = React.useRef(false)
-  React.useEffect(() => {
-    if (aplicado.current || !dp.pronto) return
-    aplicado.current = true
+  // uma vez, quando o caderno terminou de ler (ajuste de estado no render, sem efeito)
+  const [aplicado, setAplicado] = React.useState(false)
+  if (!aplicado && dp.pronto) {
+    setAplicado(true)
     const q = quadroParaRegulacao(dp)
     const marcados = new Set<CampoQuadro>()
-    setF((x) => {
-      const n = { ...x }
-      for (const k of ['cid', 'hipotese', 'quadro_clinico', 'sinais_vitais', 'exames', 'medicacoes'] as const) {
-        if (!x[k].trim() && q[k].trim()) { n[k] = q[k]; marcados.add(k) }
-      }
-      return n
-    })
+    const n = { ...f }
+    for (const k of ['cid', 'hipotese', 'quadro_clinico', 'sinais_vitais', 'exames', 'medicacoes'] as const) {
+      if (!f[k].trim() && q[k].trim()) { n[k] = q[k]; marcados.add(k) }
+    }
+    setF(n)
     if (q.cid && !cidRotulo) setCidRotulo(q.cid)
     setDoProntuario(marcados)
-  }, [dp, cidRotulo])
+  }
 
   const totalAnexos = arquivos.length + docsEscolhidos.length
   const enviar = useMutation({

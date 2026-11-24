@@ -119,20 +119,21 @@ export function LaudoAih({ pacienteId, internacaoId = null, leito = '', fixo = f
   // com data e o diagnóstico da lista de problemas —, marcado para revisão
   const dp = useDoProntuario(fixo ? pacienteId : null, fixo ? internacaoId : null)
   const [doProntuario, setDoProntuario] = React.useState(false)
-  const preenchido = React.useRef(false)
-  React.useEffect(() => {
-    if (preenchido.current || !dp.pronto) return
-    preenchido.current = true
-    if (aihTemAlgo(form)) return
-    const principal = dp.diagnosticos.filter((d) => !d.encerrado_em).find((d) => d.tipo === 'primario')
-    const sinais = [dp.evolucao?.s?.trim() ?? '', textoVitais(dp.sv) ? `Sinais vitais: ${textoVitais(dp.sv)}` : ''].filter(Boolean).join('\n')
-    const novo: Partial<FormAih> = {
-      sinais, condicoes: dp.evolucao?.a?.trim() ?? '', provas: textoExames(dp.exames),
-      diagnostico: linhasDiagnostico(dp.diagnosticos).split('\n')[0] ?? '',
-      ...(principal ? { cid: principal.cid, cidOk: true } : {}),
+  // uma vez, quando o caderno terminou de ler (ajuste de estado no render, sem efeito)
+  const [preenchido, setPreenchido] = React.useState(false)
+  if (!preenchido && dp.pronto) {
+    setPreenchido(true)
+    if (!aihTemAlgo(form)) {
+      const principal = dp.diagnosticos.filter((d) => !d.encerrado_em).find((d) => d.tipo === 'primario')
+      const sinais = [dp.evolucao?.s?.trim() ?? '', textoVitais(dp.sv) ? `Sinais vitais: ${textoVitais(dp.sv)}` : ''].filter(Boolean).join('\n')
+      const novo: Partial<FormAih> = {
+        sinais, condicoes: dp.evolucao?.a?.trim() ?? '', provas: textoExames(dp.exames),
+        diagnostico: linhasDiagnostico(dp.diagnosticos).split('\n')[0] ?? '',
+        ...(principal ? { cid: principal.cid, cidOk: true } : {}),
+      }
+      if (Object.values(novo).some((x) => typeof x === 'string' && x.trim())) { set(novo); setDoProntuario(true) }
     }
-    if (Object.values(novo).some((x) => typeof x === 'string' && x.trim())) { set(novo); setDoProntuario(true) }
-  }, [dp, form, set])
+  }
   const pendencias = pendenciasAih({ form, pacienteId, cadastroFalta: falta, avisosSigtap: avisos.length, bloqueantes: bloqueantes.map((c) => c.texto) })
   const temAlgo = aihTemAlgo(form)
   const conteudo = conteudoAih({

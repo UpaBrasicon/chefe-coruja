@@ -24,6 +24,7 @@ import { vigentes, type Intercorrencia } from '@/lib/intercorrencia'
 import { imprimirRelatorio } from '@/lib/prontuario'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { useTelaContencao } from './useContencao'
 
 // Contenção mecânica (lacuna 4; RT 10/11/2026, A em K1 a K10; migration
 // 20270325000001). Enfermeiro ou médico inicia; enfermeiro e técnico revisam
@@ -51,17 +52,6 @@ function useAgora() {
 const paraIso = (local: string) => (local ? new Date(local).toISOString() : null)
 const msg = (e: unknown) => (e as { message?: string })?.message ?? String(e)
 
-function useTelaContencao(pacienteId: string) {
-  return useQuery({
-    queryKey: ['contencao', pacienteId],
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('contencao_do_paciente', { p_paciente: pacienteId })
-      if (error) throw error
-      return data as unknown as TelaContencao
-    },
-  })
-}
 
 function useAtualizar(pacienteId: string) {
   const qc = useQueryClient()
@@ -128,12 +118,6 @@ export function Contencao({ pacienteId, semIniciar = false }: {
       {c && dialogo?.tipo === 'familia' && <DialogoFamilia pacienteId={pacienteId} c={c} aoFechar={() => setDialogo(null)} />}
     </section>
   )
-}
-
-/** Pode iniciar agora (sem contenção ativa): o item "Iniciar contenção mecânica" do menu Ações do leito. */
-export function usePodeIniciarContencao(pacienteId: string): boolean {
-  const t = useTelaContencao(pacienteId).data
-  return !!t && !t.ativa && t.pode_iniciar
 }
 
 /** A janela de iniciar, aberta pelo menu Ações do caderno do leito. */
