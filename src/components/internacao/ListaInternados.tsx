@@ -60,7 +60,7 @@ type Filtro = (typeof FILTROS)[number]
 
 const hojeSP = () => dataIso()
 
-export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes, carregando, ehGestor, podeDarAlta, alertasSepse, onTransferir }: {
+export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes, carregando, ehGestor, podeDarAlta, alertasSepse, onTransferir, onAbrirLeito }: {
   unidadeId?: string
   setores: { id: string; nome: string }[]
   /** Setores da escala do médico agora (ids); undefined = ainda lendo. Só muda o texto do topo. */
@@ -72,12 +72,14 @@ export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes
   podeDarAlta: boolean
   alertasSepse?: Map<string, Alerta>
   onTransferir: (p: PacienteDaLista) => void
+  /** gestor (RT, 24/11/2026): "Abrir leito" abre o painel lateral da página, não o caderno na linha */
+  onAbrirLeito?: (p: PacienteDaLista) => void
 }) {
   const [filtro, setFiltro] = React.useState<Filtro>('Todos')
   const [setor, setSetor] = React.useState<string | null>(null)
   // ?paciente=X abre o leito dele; ?aba=Y abre o caderno nessa aba (rotaDoLeito)
   const [params] = useSearchParams()
-  const [aberto, setAberto] = React.useState<string | null>(() => params.get('paciente'))
+  const [aberto, setAberto] = React.useState<string | null>(() => (onAbrirLeito ? null : params.get('paciente')))
   const [prancheta, setPrancheta] = React.useState<PacienteDaLista | null>(null)
   const [agora, setAgora] = React.useState(() => Date.now())
   React.useEffect(() => {
@@ -286,7 +288,7 @@ export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes
                   <div className="flex shrink-0 gap-[7px]">
                     {/* lacuna 2: reimprimir a pulseira (pede o motivo) */}
                     <BotaoPulseira pacienteId={p.id} nome={p.nome} reimpressao compacto />
-                    <Button variant="outline" size="sm" className="font-medium" onClick={() => { setAberto(p.id); window.scrollTo({ top: 0 }) }}>
+                    <Button variant="outline" size="sm" className="font-medium" onClick={() => { if (onAbrirLeito) onAbrirLeito(p); else { setAberto(p.id); window.scrollTo({ top: 0 }) } }}>
                       Abrir leito
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setPrancheta(p)}
