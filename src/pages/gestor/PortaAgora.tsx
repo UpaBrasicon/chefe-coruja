@@ -12,6 +12,7 @@ import type { CorRisco } from '@/domain/risco'
 import { taxa } from '@/lib/evasao'
 import { hora as fmtHora } from '@/lib/formato'
 import { gargalo, tempo, type EtapaChave, type Paciente, type Porta } from '@/lib/portaAgora'
+import { agruparPorEtapa, faixaDaFila } from '@/lib/portaFila'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -36,6 +37,61 @@ const ROTULO_ETAPA: Record<Paciente['etapa'], string> = {
   triagem: 'Aguardando triagem', aguardando_medico: 'Aguardando médico', em_atendimento: 'Em atendimento', observacao: 'Em observação',
 }
 const CORES: CorRisco[] = ['vermelho', 'laranja', 'amarelo', 'verde', 'azul']
+
+// Revisão do gestor (RT, 24/11/2026): M1 a fila numa faixa só, da triagem à
+// observação, com a contagem de cada etapa; M2 a lista agrupada pela mesma
+// etapa, com a cor discreta (ponto e nome; a cor é da enfermagem, só exibida).
+const TOM_ETAPA: Record<Paciente['etapa'], string> = {
+  triagem: 'bg-tinta-sussurro', aguardando_medico: 'bg-acao', em_atendimento: 'bg-suprimento', observacao: 'bg-observacao',
+}
+const PONTO_COR: Record<CorRisco, string> = {
+  vermelho: 'bg-mts-vermelho', laranja: 'bg-mts-laranja', amarelo: 'bg-mts-amarelo', verde: 'bg-mts-verde', azul: 'bg-mts-azul',
+}
+function CorDiscreta({ cor }: { cor: CorRisco | null }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-tinta-apoio">
+      <span className={cn('size-2.5 rounded-capsula', cor ? PONTO_COR[cor] : 'bg-campo ring-1 ring-fio')} aria-hidden />
+      {cor ? cor : 'sem classificação'}
+    </span>
+  )
+}
+
+function FaixaFila({ data, gargaloChave, critico }: { data: Porta; gargaloChave: EtapaChave | null; critico: boolean }) {
+  const faixa = faixaDaFila(data)
+  const total = faixa.reduce((a, s) => a + s.n, 0)
+  return (
+    <section aria-label="Fila por etapa" className="flex flex-col gap-3 rounded-container border border-fio bg-superficie px-4 py-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <span className="text-apoio font-semibold text-tinta">Fila agora</span>
+        <span className="text-apoio text-tinta-sussurro">
+          {total} {total === 1 ? 'paciente' : 'pacientes'} na porta · {data.etapas.medicacao_pendente.n} com medicação sem checagem · {data.etapas.altas_hoje.n} {data.etapas.altas_hoje.n === 1 ? 'alta' : 'altas'} hoje
+        </span>
+      </div>
+      <div className="flex h-2.5 overflow-hidden rounded-capsula bg-trilha" aria-hidden>
+        {faixa.filter((s) => s.n > 0).map((s) => (
+          <span key={s.chave} className={cn('h-full border-r-2 border-superficie last:border-r-0', TOM_ETAPA[s.chave])} style={{ width: `${s.parte * 100}%` }} />
+        ))}
+      </div>
+      <ol className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4">
+        {faixa.map((s) => {
+          const destaque = gargaloChave === s.chave
+          return (
+            <li key={s.chave} className={cn('flex flex-col gap-0.5 border-l-2 pl-2.5', destaque ? (critico ? 'border-critico' : 'border-atencao') : 'border-trilha')}>
+              <span className="flex items-center gap-1.5 text-rotulo text-tinta-apoio">
+                <span className={cn('size-2 rounded-capsula', TOM_ETAPA[s.chave])} aria-hidden />{s.rotulo}
+              </span>
+              <span className="text-titulo leading-none font-semibold tabular text-tinta">{s.n}</span>
+              <span className="text-rotulo text-tinta-sussurro">{s.esperaMaxMin != null ? `mais antiga: ${tempo(s.esperaMaxMin)}` : s.n ? '' : 'ninguém'}</span>
+              {s.atrasados > 0 && (
+                <span className="text-rotulo font-medium text-critico">{s.atrasados} {s.chave === 'observacao' ? 'acima de 6 h' : 'fora do alvo'}</span>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </section>
+  )
+}
 const FILTROS = ['Todos', 'Atrasados', 'Medicação pendente'] as const
 
 function Agora() {
@@ -82,28 +138,7 @@ function Agora() {
             </div>
           )}
 
-          <section aria-label="Etapas da porta" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-            {ETAPAS.map((et) => {
-              const v = data.etapas[et.chave]
-              const destaque = g?.chave === et.chave
-              return (
-                <div key={et.chave} className={cn('flex flex-col gap-1 rounded-container border bg-superficie px-4 py-3',
-                  destaque ? (g?.critico ? 'border-critico ring-1 ring-critico/40' : 'border-atencao ring-1 ring-atencao/40') : 'border-fio')}>
-                  <span className="text-rotulo font-medium text-tinta-apoio">{et.rotulo}</span>
-                  <span className="text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-tinta">{v.n}</span>
-                  <span className="text-rotulo text-tinta-sussurro">
-                    {v.espera_max_min != null ? `mais antiga: ${tempo(v.espera_max_min)}` : et.desde}
-                  </span>
-                  {et.chave === 'aguardando_medico' && (v.fora_alvo ?? 0) > 0 && (
-                    <span className="text-rotulo font-medium text-critico">{v.fora_alvo} fora do alvo</span>
-                  )}
-                  {et.chave === 'observacao' && (v.acima_6h ?? 0) > 0 && (
-                    <span className="text-rotulo font-medium text-critico">{v.acima_6h} acima de 6 h</span>
-                  )}
-                </div>
-              )
-            })}
-          </section>
+          <FaixaFila data={data} gargaloChave={g?.chave ?? null} critico={!!g?.critico} />
 
           {data.hoje && (
             <p className="text-apoio text-tinta-apoio">
@@ -150,7 +185,6 @@ function Agora() {
                   <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
                     <TableRow>
                       <TableHead className="px-4 py-2 font-medium">Paciente</TableHead>
-                      <TableHead className="px-3 py-2 font-medium">Etapa</TableHead>
                       <TableHead className="px-3 py-2 font-medium">Cor</TableHead>
                       <TableHead className="px-3 py-2 font-medium">Setor</TableHead>
                       <TableHead className="px-3 py-2 font-medium">Leito / poltrona</TableHead>
@@ -158,8 +192,17 @@ function Agora() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {lista.map((p, i) => (
-                      <TableRow key={i} className="border-b border-trilha last:border-0">
+                    {agruparPorEtapa(lista).flatMap((grupo) => [
+                      <TableRow key={grupo.chave} className="border-b border-trilha bg-campo">
+                        <TableCell colSpan={5} className="px-4 py-1.5 text-rotulo font-medium text-tinta-apoio">
+                          <span className="inline-flex items-center gap-1.5">
+                            <span className={cn('size-2 rounded-capsula', TOM_ETAPA[grupo.chave])} aria-hidden />
+                            {ROTULO_ETAPA[grupo.chave]} · {grupo.pacientes.length}
+                          </span>
+                        </TableCell>
+                      </TableRow>,
+                      ...grupo.pacientes.map((p, i) => (
+                      <TableRow key={`${grupo.chave}-${i}`} className="border-b border-trilha last:border-0">
                         <TableCell className="px-4 py-2 font-medium text-tinta">
                           {p.nome}
                           {p.medicacao_pendente && (
@@ -168,15 +211,15 @@ function Agora() {
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="px-3 py-2 text-tinta-apoio">{ROTULO_ETAPA[p.etapa]}</TableCell>
-                        <TableCell className="px-3 py-2"><PilulaRisco cor={p.cor} /></TableCell>
+                        <TableCell className="px-3 py-2"><CorDiscreta cor={p.cor} /></TableCell>
                         <TableCell className="px-3 py-2 text-tinta-apoio">{p.setor ?? '—'}</TableCell>
                         <TableCell className="px-3 py-2 text-tinta-apoio">{p.leito ?? '—'}</TableCell>
                         <TableCell className={cn('px-3 py-2 text-right tabular', p.fora_alvo ? 'font-semibold text-critico' : 'text-tinta')}>
                           {tempo(p.espera_min)}{p.fora_alvo && <span className="sr-only"> (fora do alvo)</span>}
                         </TableCell>
                       </TableRow>
-                    ))}
+                      )),
+                    ])}
                   </TableBody>
                 </Table>
               </div>
