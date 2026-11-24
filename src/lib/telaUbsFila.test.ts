@@ -66,7 +66,8 @@ test('a fila do médico na UBS não tem cor nem alvo e mostra a conduta nas saí
 })
 
 test('U2 do percurso da UBS: as filas mostram a espera pelo formatarDuracao, nunca minutos crus', () => {
-  assert.match(recepcao, /\{formatarDuracao\(espera\)\}/)
+  // RF1 (revisão do perfil Recepção): a conta mora em lib/tempoFila; a tela só formata
+  assert.match(recepcao, /formatarDuracao\(tempo\.minutos\)/)
   assert.doesNotMatch(recepcao, /\{espera\} min/)
   const fila = readFileSync('src/pages/enfermagem/triagem/Fila.tsx', 'utf8')
   assert.match(fila, /\{esperaTexto\(e\.chegada_em\)\}/)
