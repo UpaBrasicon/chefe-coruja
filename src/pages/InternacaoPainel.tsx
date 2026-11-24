@@ -98,12 +98,13 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transferencias_paciente')
-        .select('*, pacientes(id, nome), setores_internacao:setor_destino_id(id, nome)')
+        // Pedido 27 do desempenho: só o que a lista e o CSV mostram (a junção do setor de destino não aparecia)
+        .select('id, created_at, motivo, pacientes(id, nome)')
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(30)
       if (error) throw error
-      return (data ?? []) as unknown as (TransferenciaPaciente & {
+      return (data ?? []) as unknown as (Pick<TransferenciaPaciente, 'id' | 'created_at' | 'motivo'> & {
         pacientes: { id: string; nome: string } | null
       })[]
     },

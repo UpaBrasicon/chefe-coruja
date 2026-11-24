@@ -8,14 +8,23 @@ import type { CandidaturaEscala, Papel, SolicitacaoEscala } from '@/types/databa
 // consultas servem à Escala (aba Pedidos), ao calendário do mês (a linha
 // "pedidos aguardando você") e ao plantonista (as candidaturas dele); por isso
 // moram aqui, com a mesma chave e o mesmo select em todos os lugares.
+//
+// Pedido 27 do desempenho: só as colunas que as telas usam. O tipo é um Pick
+// das mesmas colunas do select, então usar uma coluna que não veio quebra o
+// typecheck em vez de chegar vazia na tela.
 
-export type SolicitacaoComExtra = SolicitacaoEscala & {
+type ColunaSolicitacao = 'id' | 'tipo' | 'status' | 'tipo_falta' | 'justificativa' | 'anexo_url' | 'aceito_em'
+  | 'created_at' | 'perfil_id' | 'destino_perfil_id' | 'escala_plantao_id'
+
+type ColunaCandidatura = 'id' | 'status' | 'data' | 'turno' | 'setor_id' | 'perfil_id' | 'vaga_id' | 'created_at'
+
+export type SolicitacaoComExtra = Pick<SolicitacaoEscala, ColunaSolicitacao> & {
   escala_plantao: { setor_id: string; data: string; turno: string; papel: Papel | null } | null
   solicitante: { nome_completo: string } | null
   destino: { nome_completo: string } | null
 }
 
-export type CandidaturaComExtra = CandidaturaEscala & {
+export type CandidaturaComExtra = Pick<CandidaturaEscala, ColunaCandidatura> & {
   setores: { nome: string } | null
   perfis: { id: string; nome_completo: string; crm: string | null } | null
 }
@@ -27,7 +36,7 @@ export function useSolicitacoesEscala(unidadeId: string | undefined, habilitado:
     queryFn: async () => {
       const { data, error } = await supabase
         .from('solicitacoes_escala')
-        .select('*, escala_plantao(setor_id, data, turno, papel), solicitante:perfis!solicitacoes_escala_perfil_id_fkey(nome_completo), destino:perfis!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
+        .select('id, tipo, status, tipo_falta, justificativa, anexo_url, aceito_em, created_at, perfil_id, destino_perfil_id, escala_plantao_id, escala_plantao(setor_id, data, turno, papel), solicitante:perfis!solicitacoes_escala_perfil_id_fkey(nome_completo), destino:perfis!solicitacoes_escala_destino_perfil_id_fkey(nome_completo)')
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(100)
@@ -44,7 +53,7 @@ export function useCandidaturasEscala(unidadeId: string | undefined, habilitado:
     queryFn: async () => {
       const { data, error } = await supabase
         .from('candidaturas_escala')
-        .select('*, setores(nome), perfis!candidaturas_escala_perfil_id_fkey(id, nome_completo, crm)')
+        .select('id, status, data, turno, setor_id, perfil_id, vaga_id, created_at, setores(nome), perfis!candidaturas_escala_perfil_id_fkey(id, nome_completo, crm)')
         .eq('unidade_id', unidadeId!)
         .order('created_at', { ascending: false })
         .limit(200)
