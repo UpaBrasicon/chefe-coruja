@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 
+import { contarNaoLidos } from '@/lib/avisos'
 import { diaMesHora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -29,7 +30,8 @@ export function SinoAvisos({ unidadeId, habilitado }: { unidadeId?: string; habi
   })
 
   const lista = (notificacoes ?? []).slice(0, 5)
-  const pendentes = (notificacoes ?? []).filter((n) => !n.lida).length
+  // repetidos contam uma vez, como na tela de Avisos
+  const pendentes = contarNaoLidos(notificacoes ?? [])
 
   return (
     <PopoverPrimitive.Root>

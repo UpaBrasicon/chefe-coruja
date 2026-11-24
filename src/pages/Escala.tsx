@@ -11,6 +11,7 @@ import {
   Plus,
   RefreshCcw,
   Trash2,
+  TriangleAlert,
   UserCheck,
   X,
 } from 'lucide-react'
@@ -35,6 +36,8 @@ import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { ACCEPT_ANEXO_CLINICO, tipoDoArquivo } from '@/lib/anexo'
 import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
+import { ProximosPlantoes } from '@/components/escala/ProximosPlantoes'
+import { blocosAcimaDoLimite, LIMITE_HORAS_SEGUIDAS } from '@/lib/escalaSeguida'
 import { dataHora, dataIso, hora } from '@/lib/formato'
 import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { csvEscala } from '@/lib/exportacoesAntigas'
@@ -590,6 +593,16 @@ export default function Escala({
     return { horas, diurnos, noturnos, dias }
   }, [meusPlantoes])
 
+  // Revisão de Minha escala (M2): dia que faz parte de mais de 24 h seguidas ganha o sinal de alerta
+  const blocosLongos = React.useMemo(() => blocosAcimaDoLimite(meusPlantoes), [meusPlantoes])
+  const horasSeguidasPorDia = React.useMemo(() => {
+    const m = new Map<string, number>()
+    for (const b of blocosLongos) for (const d of b.datas) m.set(d, Math.max(m.get(d) ?? 0, b.horas))
+    return m
+  }, [blocosLongos])
+  const nomeSetor = (id: string) => (setores ?? []).find((s) => s.id === id)?.nome ?? ''
+  const hh = (v: number | string) => hora(v).replace(':00', 'h')
+
   const plantoesDoDia = (diaISO: string) => meusPlantoes.filter((p) => p.data === diaISO)
   // Dia com mais de um turno: as ações (sair do fixo, passar, fracionar,
   // justificar falta) valem para o turno escolhido nos chips, nunca para o
@@ -859,6 +872,19 @@ export default function Escala({
       {ehPlantonista ? (
         abaPlantonista === 'minha' ? (
         <>
+          {/* Revisão de Minha escala (M1): próximo plantão e os próximos 7 dias */}
+          <ProximosPlantoes perfilId={perfil?.id} unidadeId={unidadeId} />
+
+          {blocosLongos.length > 0 && !diaSelecionado && (
+            <p role="note" className="-mt-3 flex items-start gap-2 text-apoio text-atencao">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>
+                {blocosLongos.map((b) => `${fmtDiaBR(b.datas[0])}${b.datas.length > 1 ? ` a ${fmtDiaBR(b.datas[b.datas.length - 1])}` : ''}: ${b.horas} h seguidas`).join('; ')}.
+                {' '}Passa de {LIMITE_HORAS_SEGUIDAS} h sem descanso; confira com a coordenação.
+              </span>
+            </p>
+          )}
+
           {/* CALENDÁRIO MENSAL — contexto geral do mês */}
           <Card>
             <CardHeader className="flex-row items-start justify-between space-y-0">
@@ -1000,7 +1026,7 @@ export default function Escala({
                       <div className="rounded-controle border border-atencao/30 bg-alerta-atencao p-3 text-apoio text-atencao">
                         <strong>Aviso prévio:</strong> a saída do plantão fixo deve ser comunicada com{' '}
                         <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
-                        <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
+                        <strong>{contagem(Math.max(0, diasPara(diaSelecionado)), 'dia', 'dias')}</strong> para este plantão.
                       </div>
                       <p className="mt-2 text-apoio text-pretty text-tinta-sussurro">
                         Vale para plantão da escala fixa. Aprovado, você sai da fixa nos próximos meses; os plantões já gerados ficam até a coordenação decidir cada um.
@@ -1216,8 +1242,8 @@ export default function Escala({
                   {DIAS_SEMANA.map((d, idx) => (
                     <div
                       key={d}
-                      className={`py-1 text-rotulo font-semibold uppercase tracking-wide ${
-                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-tinta-sussurro'
+                      className={`py-1 text-rotulo font-medium ${
+                        idx === 0 || idx === 6 ? 'text-tinta-apoio' : 'text-tinta-sussurro'
                       }`}
                     >
                       {d}
@@ -1225,47 +1251,54 @@ export default function Escala({
                   ))}
                   {diasDoMes.map((c, i) => {
                     if (c.fora) return <div key={`v-${i}`} />
-                    const plantoes = plantoesDoDia(c.iso)
-                    const turnos = [...new Set(plantoes.map((p) => p.turno))]
+                    // Revisão de Minha escala (M2): calendário calmo. O plantão é uma ficha pequena com
+                    // horário e setor (cor só no ponto), o dia que passou fica apagado e o dia dentro de
+                    // mais de 24 h seguidas ganha o sinal de alerta.
+                    const plantoes = [...plantoesDoDia(c.iso)].sort((a, b) => a.inicio.localeCompare(b.inicio))
                     const eHoje = ehHoje(c.iso)
+                    const passou = c.iso < hojeISO()
                     const selecionado = diaSelecionado === c.iso
                     const dow = new Date(c.iso + 'T12:00:00').getDay()
                     const fimSemana = dow === 0 || dow === 6
+                    const seguidas = horasSeguidasPorDia.get(c.iso)
                     return (
                       // padrao-ok: célula do calendário mensal da escala (cor por plantão/fim de semana/hoje; nenhuma peça cobre)
                       <button
                         key={c.iso}
                         type="button"
                         onClick={() => (plantoes.length ? abrirDia(c.iso) : undefined)}
-                        className={`flex min-h-[76px] min-w-0 flex-col gap-1 rounded-controle border p-1.5 text-left transition-all duration-200 ${
-                          plantoes.length
-                            ? 'border-conforme/30 bg-leitos text-sobre-acao shadow-md hover:bg-leitos hover:shadow-lg'
-                            : fimSemana
-                              ? 'border-atencao/30 bg-alerta-atencao hover:bg-atencao/10'
-                              : 'border-fio bg-superficie hover:bg-trilha'
-                        } ${selecionado ? 'ring-2 ring-acao ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-acao/60' : ''}`}
+                        aria-label={plantoes.length ? `${fmtDiaBR(c.iso)}: ${plantoes.length} ${plantoes.length === 1 ? 'plantão' : 'plantões'}${seguidas ? `, ${seguidas} h seguidas` : ''}` : undefined}
+                        className={cn(
+                          'flex min-h-[76px] min-w-0 flex-col gap-1 rounded-controle border p-1.5 text-left transition-colors duration-200',
+                          plantoes.length ? 'border-fio bg-superficie hover:border-acao hover:bg-alerta-marca'
+                            : fimSemana ? 'cursor-default border-trilha bg-trilha/40' : 'cursor-default border-trilha bg-superficie',
+                          passou && !eHoje && 'opacity-55',
+                          selecionado && 'ring-2 ring-acao ring-offset-2',
+                          eHoje && 'ring-2 ring-acao/60',
+                        )}
                       >
-                        <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-capsula text-apoio font-semibold ${
-                            plantoes.length
-                              ? 'bg-tinta/15 text-sobre-acao'
-                              : eHoje
-                                ? 'bg-acao text-sobre-acao'
-                                : fimSemana
-                                  ? 'bg-atencao/20 text-atencao'
-                                  : 'bg-trilha text-tinta'
-                          }`}
-                        >
-                          {c.dia}
-                        </span>
-                        {turnos.map((t) => (
+                        <span className="flex items-center justify-between gap-1">
                           <span
-                            key={t}
-                            className={`truncate rounded-capsula px-1.5 py-0.5 text-rotulo leading-none font-semibold ${
-                              plantoes.length ? 'bg-tinta/15 text-sobre-acao' : 'bg-trilha text-tinta-apoio'
-                            }`}
+                            className={cn(
+                              'flex h-6 w-6 items-center justify-center rounded-capsula text-apoio font-semibold',
+                              eHoje ? 'bg-acao text-sobre-acao' : 'text-tinta',
+                            )}
                           >
-                            {TURNO_LABEL[t]}
+                            {c.dia}
+                          </span>
+                          {seguidas && (
+                            <span title={`${seguidas} h seguidas de plantão`} className="text-atencao">
+                              <TriangleAlert className="size-3.5" aria-hidden />
+                            </span>
+                          )}
+                        </span>
+                        {plantoes.map((p) => (
+                          <span key={p.id} className="flex min-w-0 flex-col text-rotulo leading-tight">
+                            <span className="flex items-center gap-1 font-medium text-tinta tabular">
+                              <span className="size-1.5 shrink-0 rounded-capsula bg-acao" aria-hidden />
+                              <span className="truncate">{hh(p.inicio)}–{hh(new Date(p.inicio).getTime() + p.duracao_min * 60_000)}</span>
+                            </span>
+                            <span className="truncate pl-2.5 text-tinta-sussurro">{nomeSetor(p.setor_id) || p.rotulo?.trim() || TURNO_LABEL[p.turno]}</span>
                           </span>
                         ))}
                       </button>
@@ -1357,30 +1390,26 @@ export default function Escala({
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-1 flex-col rounded-container border bg-trilha/40 p-4">
-                    <span className="text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
-                      Horas no mês
-                    </span>
-                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.horas}h</span>
+                  {/* Revisão de Minha escala (M3): rótulos normais, plural certo e cartões sem cor.
+                      Horas contra a carga contratada ficam para quando o cadastro tiver esse dado. */}
+                  <div className="flex flex-1 flex-col rounded-container border border-fio bg-superficie p-4">
+                    <span className="text-apoio font-medium text-tinta-apoio">Horas no mês</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.horas} h</span>
                     <span className="text-rotulo text-tinta-sussurro">
-                      {resumo.dias} dia(s) escalado(s) em {fmtMesBR(mesInicio)}
+                      {contagem(resumo.dias, 'dia', 'dias')} de plantão em {fmtMesBR(mesInicio)}
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-container border bg-suprimento/10 p-4">
-                    <span className="text-rotulo font-semibold uppercase tracking-wide text-suprimento">
-                      Diurnos (manhã + tarde = 12h)
-                    </span>
-                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.diurnos}</span>
-                    <span className="text-rotulo text-suprimento">
-                      {resumo.diurnos * 12}h · manhã e tarde juntas contam como diurno
+                  <div className="flex flex-1 flex-col rounded-container border border-fio bg-superficie p-4">
+                    <span className="text-apoio font-medium text-tinta-apoio">Diurnos</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.diurnos}</span>
+                    <span className="text-rotulo text-tinta-sussurro">
+                      {resumo.diurnos * 12} h · manhã e tarde juntas contam como um diurno de 12 h
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-container border bg-suprimento/10 p-4">
-                    <span className="text-rotulo font-semibold uppercase tracking-wide text-suprimento">
-                      Noturnos (noite = 12h)
-                    </span>
-                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.noturnos}</span>
-                    <span className="text-rotulo text-suprimento">{resumo.noturnos * 12}h</span>
+                  <div className="flex flex-1 flex-col rounded-container border border-fio bg-superficie p-4">
+                    <span className="text-apoio font-medium text-tinta-apoio">Noturnos</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.noturnos}</span>
+                    <span className="text-rotulo text-tinta-sussurro">{resumo.noturnos * 12} h · noite de 12 h</span>
                   </div>
                 </>
               )}
