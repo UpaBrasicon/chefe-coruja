@@ -77,6 +77,8 @@ export default function Glosas() {
     .filter((g) => !etapas || etapas.includes(g.status))
     .map((g, i) => ({ g, i })).sort((a, b) => ORDEM_ETAPA.indexOf(a.g.status) - ORDEM_ETAPA.indexOf(b.g.status) || a.i - b.i).map((x) => x.g)
   const taxa = p && p.totais.glosado > 0 ? Math.round((p.totais.recuperado / p.totais.glosado) * 100) : null
+  // CT2 (revisão do perfil Faturamento, RT 24/11/2026): sem glosa nenhuma, só o vazio, sem as abas em R$ 0,00
+  const semNenhuma = !!p && competencia === null && p.totais.quantidade === 0
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -86,7 +88,11 @@ export default function Glosas() {
         descricao="Produção recusada pelo SIA/SIH ou pelo gestor municipal, registrada a partir do relatório de rejeição. O faturamento acompanha o recurso; só o gestor marca como perdida."
       />
       <MensagemErro texto={painel.error ? (painel.error as Error).message : null} />
-      {painel.isLoading || !p ? <Spinner /> : (
+      {painel.isLoading || !p ? <Spinner /> : semNenhuma ? (
+        <Vazio icone={FileX} titulo="Nenhuma glosa registrada"
+          texto={<>Quando chegar o relatório de rejeição do SIA/SIH ou do gestor municipal, abra a conta fechada em{' '}
+            <Link to="/faturamento/contas" className="text-acao underline-offset-2 hover:underline">Contas do atendimento</Link> e use Registrar glosa.</>} />
+      ) : (
         <>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-apoio text-tinta-apoio">
             <span>{competencia ? `Competência ${competenciaNaTela(competencia)}` : 'Todas as competências'}</span>
@@ -135,7 +141,7 @@ export default function Glosas() {
               <ul className="flex flex-col gap-0.5">
                 {p.por_motivo.map((m) => (
                   <li key={m.motivo} className="text-tinta-apoio">
-                    {MOTIVO_GLOSA[m.motivo]}: {m.quantidade} glosa(s), {reais(m.glosado)} glosado, {reais(m.recuperado)} recuperado
+                    {MOTIVO_GLOSA[m.motivo]}: {m.quantidade} {m.quantidade === 1 ? 'glosa' : 'glosas'}, {reais(m.glosado)} glosado, {reais(m.recuperado)} recuperado
                   </li>
                 ))}
               </ul>
@@ -143,11 +149,8 @@ export default function Glosas() {
           )}
 
           {glosas.length === 0 ? (
-            <Vazio icone={FileX} titulo={p.totais.quantidade === 0 ? 'Nenhuma glosa registrada' : 'Nenhuma glosa nesta aba'}
-              texto={p.totais.quantidade === 0
-                ? <>Quando chegar o relatório de rejeição do SIA/SIH ou do gestor municipal, abra a conta fechada em{' '}
-                    <Link to="/faturamento/contas" className="text-acao underline-offset-2 hover:underline">Contas do atendimento</Link> e use Registrar glosa.</>
-                : 'As glosas das outras etapas estão nas outras abas.'} />
+            <Vazio icone={FileX} titulo={p.totais.quantidade === 0 ? 'Nenhuma glosa nesta competência' : 'Nenhuma glosa nesta aba'}
+              texto={p.totais.quantidade === 0 ? 'Escolha outra competência ou veja todas.' : 'As glosas das outras etapas estão nas outras abas.'} />
           ) : (
             <ul className="flex flex-col gap-2">
               {glosas.map((g) => (

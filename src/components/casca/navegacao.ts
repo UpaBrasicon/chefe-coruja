@@ -223,16 +223,21 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
     ITEM_ESCALA,
   ],
-  // Fase 3, tarefa 3: faturamento (sem escala) — conferência e fechamento do
-  // BPA, lançamento de procedimentos e códigos SIGTAP da unidade
+  // Fase 3, tarefa 3: faturamento — conferência e fechamento do BPA, lançamento
+  // de procedimentos e códigos SIGTAP da unidade. Revisão do perfil (FT1 = A,
+  // RT 24/11/2026): na ordem do trabalho, da conta à produção, à glosa e ao
+  // envio. A AIH entra em Produção quando o banco abrir aihs_da_unidade ao
+  // faturamento (hoje a função aceita só regulador e gestor). Os grupos são os
+  // nomes curtos do trilho; itens seguidos sem grupo viram uma área só.
   faturamento: [
-    { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true },
-    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
+    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true, grupo: 'Contas' },
+    { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true, grupo: 'Produção' },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, grupo: 'Produção' },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
-    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true },
-    // o cadastro de materiais passou à farmácia; o faturamento só lança na conta
-    // (ajustes da revisão, item 4, RT em 24/11/2026)
-    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
+    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true, grupo: 'ERP' },
+    // o cadastro de materiais passou à farmácia (ajustes da revisão, item 4, RT em
+    // 24/11/2026); o faturamento consulta a lista em Cadastro (FT1)
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true, grupo: 'Cadastro' },
     ITEM_ESCALA,
   ],
   // FA2 (revisão do perfil Farmacêutico, RT 24/11/2026): o menu em grupos,

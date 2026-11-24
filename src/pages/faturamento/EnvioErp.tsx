@@ -21,6 +21,7 @@ import {
   type Formato, type PreviaPlantoes, type SituacaoErp, type VersaoConta, type VersaoPlantoes,
 } from '@/lib/erp'
 import { dataHora, dataIso, diaMesHora, mesAno, moeda } from '@/lib/formato'
+import { podeAbrirIntegracoes, QUEM_ATIVA_CHAVE_ERP, semChaveErp } from '@/lib/erpLigacao'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +35,7 @@ const MINIMO_MOTIVO = 10
 const caixa = 'overflow-x-auto rounded-container border border-fio bg-superficie'
 const th = 'px-3 py-2 font-medium'
 const td = 'px-3 py-2.5'
+const primeiraMaiuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
 
 const ORDEM_SITUACAO: SituacaoErp[] = ['divergente', 'estornar', 'aguardando', 'conciliada', 'substituida', 'estornada']
 
@@ -43,9 +45,11 @@ type ChaveApi = { id: string; nome: string; ambiente: 'live' | 'test'; unidades:
  * Revisão de perfis (Gestor, item 20, M1): o estado da ligação com o ERP no
  * topo, a partir das chaves da API que já existem (recurso Financeiro). A
  * lista de chaves é do gestor; para os outros papéis a faixa não aparece.
+ * CT3 (revisão do perfil Faturamento, RT 24/11/2026): sem chave ativa, o aviso
+ * diz quem resolve, e o caminho para Integrações só aparece no perfil que a abre.
  */
 function EstadoLigacao({ unidadeId }: { unidadeId: string }) {
-  const { ehGestor, ehSuperAdmin } = useUnidade()
+  const { ehGestor, ehSuperAdmin, papelAtivo } = useUnidade()
   const chaves = useQuery({
     queryKey: ['api-chaves'],
     enabled: ehGestor || ehSuperAdmin,
@@ -61,6 +65,7 @@ function EstadoLigacao({ unidadeId }: { unidadeId: string }) {
   const ativas = doErp.filter((c) => !c.revogada_em && !c.vencida)
   const producao = ativas.filter((c) => c.ambiente === 'live')
   const caminho = <Link to="/integracoes" className="text-acao underline-offset-2 hover:underline">Integrações</Link>
+  const abre = podeAbrirIntegracoes(papelAtivo)
   if (producao.length > 0) {
     const c = producao[0]
     return (
@@ -72,14 +77,15 @@ function EstadoLigacao({ unidadeId }: { unidadeId: string }) {
   if (ativas.length > 0) {
     return (
       <Aviso tom="informacao" titulo="Ligação com o ERP só de teste">
-        A chave ativa ({ativas[0].nome}) é de teste: o ERP de produção ainda não busca as contas. A chave de produção é criada em {caminho}.
+        A chave ativa ({ativas[0].nome}) é de teste: o ERP de produção ainda não busca as contas.{' '}
+        {abre ? <>O administrador cria a chave de produção em {caminho}.</> : 'O administrador cria a chave de produção em Integrações.'}
       </Aviso>
     )
   }
   return (
     <Aviso tom="atencao" titulo="Nenhuma chave do ERP ativa">
-      {doErp.length > 0 ? 'As chaves do ERP desta unidade foram revogadas ou venceram' : 'Nenhuma chave da API tem o recurso Financeiro (ERP) nesta unidade'}:
-      o ERP não busca as contas nem responde o lançamento. Veja em {caminho}.
+      {semChaveErp(doErp.length)}{' '}
+      {abre ? <>O administrador ativa a chave do ERP em {caminho}.</> : QUEM_ATIVA_CHAVE_ERP}
     </Aviso>
   )
 }
@@ -142,18 +148,21 @@ function AbaContas({ unidadeId, unidadeNome }: { unidadeId: string; unidadeNome:
           Abra a linha para ver a conta e o ERP lado a lado.
         </Aviso>
       )}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <Chips rotulo="Situação no ERP">
-          {[...FILTROS_SITUACAO].sort((a, b) => ORDEM_SITUACAO.indexOf(a) - ORDEM_SITUACAO.indexOf(b)).map((s) => (
-            <Chip key={s} ativo={filtro === s} onClick={() => setFiltro(s)} contagem={n[s] ?? 0} tom={s === 'divergente' ? 'critico' : 'acao'}>
-              {ROTULO_FILTRO[s]}
-            </Chip>
-          ))}
-          <Chip ativo={filtro === null} onClick={() => setFiltro(null)} contagem={versoes.length}>todas</Chip>
-        </Chips>
-        <BotoesBaixar onBaixar={(f) => baixar.mutate(f)} pendente={baixar.isPending} desabilitado={versoes.length === 0}
-          titulo={versoes.length === 0 ? 'Nenhuma versão para baixar' : 'Baixa o mesmo conteúdo que o ERP recebe (fica na auditoria)'} />
-      </div>
+      {/* CT2 (revisão do perfil Faturamento, RT 24/11/2026): sem versão nenhuma, nem filtros zerados nem CSV/JSON */}
+      {versoes.length > 0 && (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <Chips rotulo="Situação no ERP">
+            {[...FILTROS_SITUACAO].sort((a, b) => ORDEM_SITUACAO.indexOf(a) - ORDEM_SITUACAO.indexOf(b)).map((s) => (
+              <Chip key={s} ativo={filtro === s} onClick={() => setFiltro(s)} contagem={n[s] ?? 0} tom={s === 'divergente' ? 'critico' : 'acao'}>
+                {primeiraMaiuscula(ROTULO_FILTRO[s] ?? s)}
+              </Chip>
+            ))}
+            <Chip ativo={filtro === null} onClick={() => setFiltro(null)} contagem={versoes.length}>Todas</Chip>
+          </Chips>
+          <BotoesBaixar onBaixar={(f) => baixar.mutate(f)} pendente={baixar.isPending}
+            titulo="Baixa o mesmo conteúdo que o ERP recebe (fica na auditoria)" />
+        </div>
+      )}
       <MensagemErro texto={((lista.error ?? baixar.error) as Error | null)?.message ?? null} />
       {lista.isLoading ? <Spinner /> : linhas.length === 0 ? (
         <Vazio icone={ArrowLeftRight} titulo={filtro ? 'Nenhuma versão nesta situação' : 'Nenhuma conta foi para o ERP ainda'}

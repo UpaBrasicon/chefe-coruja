@@ -33,6 +33,7 @@ import {
   type Pagador, type TipoConta,
 } from '@/lib/contas'
 import { competenciaNaTela } from '@/lib/aih'
+import { abertaHa, etapaNaTela, ordenarContas, pendenciasNaTela } from '@/lib/contasLista'
 import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { codigoSigtapNaTela, type ProfissionalParaFaturar } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
@@ -65,14 +66,12 @@ export default function Contas() {
   const totais = lista.data?.totais
   // Fase 5B, tarefa 5 (4a): filtro pelo resumo de pendências que vem com a lista
   const [filtroPend, setFiltroPend] = React.useState<'todas' | 'com' | 'bloqueante'>('todas')
-  // Revisão de perfis (Gestor, item 15, M2): bloqueante primeiro, depois aviso.
-  const contas = (lista.data?.contas ?? []).filter((c) =>
+  // Revisão de perfis (Gestor, item 15, M2): bloqueante primeiro. CT1 (revisão do
+  // perfil Faturamento, RT 24/11/2026): depois, a conta mais antiga.
+  const contas = ordenarContas((lista.data?.contas ?? []).filter((c) =>
     filtroPend === 'todas' ? true
       : filtroPend === 'bloqueante' ? (c.pendencias?.bloqueantes ?? 0) > 0
-        : (c.pendencias?.bloqueantes ?? 0) + (c.pendencias?.avisos ?? 0) > 0)
-    .map((c, i) => ({ c, i }))
-    .sort((a, b) => (b.c.pendencias?.bloqueantes ?? 0) - (a.c.pendencias?.bloqueantes ?? 0) || (b.c.pendencias?.avisos ?? 0) - (a.c.pendencias?.avisos ?? 0) || a.i - b.i)
-    .map((x) => x.c)
+        : (c.pendencias?.bloqueantes ?? 0) + (c.pendencias?.avisos ?? 0) > 0))
   const filtrosAtivos = [tipo && TIPO[tipo], filtroPend === 'com' ? 'com pendência' : filtroPend === 'bloqueante' ? 'com bloqueante' : null].filter(Boolean)
 
   return (
@@ -82,14 +81,14 @@ export default function Contas() {
         titulo="Contas do atendimento"
         descricao="Cada atendimento na porta abre uma conta (BPA); a internação abre outra (AIH), ligada à da porta. O faturamento confere e fecha; o gestor reabre com motivo."
       />
-      {/* M1: a etapa em abas; tipo e pendência num menu recolhido */}
+      {/* M1: a etapa em abas; tipo e pendência num menu recolhido. CT1: caixa normal */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <Tabs value={etapa ?? 'todas'} onValueChange={(v) => setEtapa(v === 'todas' ? null : v as EtapaConta)}>
           <TabsList aria-label="Etapa da conta" className="gap-5">
             {(['aberta', 'em_conferencia', 'fechada', 'faturada'] as const).map((e) => (
-              <TabsTrigger key={e} value={e}>{ETAPA[e]} {totais && <span className="text-rotulo font-semibold text-acao tabular-nums">{totais[e]}</span>}</TabsTrigger>
+              <TabsTrigger key={e} value={e}>{etapaNaTela(e)} {totais && <span className="text-rotulo font-semibold text-acao tabular-nums">{totais[e]}</span>}</TabsTrigger>
             ))}
-            <TabsTrigger value="todas">todas</TabsTrigger>
+            <TabsTrigger value="todas">Todas</TabsTrigger>
           </TabsList>
         </Tabs>
         <details className="group relative">
@@ -98,13 +97,13 @@ export default function Contas() {
           </summary>
           <div className="absolute right-0 z-10 mt-1 flex w-72 flex-col gap-2 rounded-container border border-fio bg-superficie p-3 shadow-repouso">
             <Chips rotulo="Tipo de conta">
-              <Chip ativo={tipo === null} onClick={() => setTipo(null)}>porta e internação</Chip>
+              <Chip ativo={tipo === null} onClick={() => setTipo(null)}>Porta e internação</Chip>
               {(['ambulatorial', 'internacao'] as const).map((t) => <Chip key={t} ativo={tipo === t} onClick={() => setTipo(t)}>{TIPO[t]}</Chip>)}
             </Chips>
             <Chips rotulo="Pendências">
-              <Chip ativo={filtroPend === 'todas'} onClick={() => setFiltroPend('todas')}>todas</Chip>
-              <Chip ativo={filtroPend === 'com'} onClick={() => setFiltroPend('com')}>com pendência</Chip>
-              <Chip ativo={filtroPend === 'bloqueante'} onClick={() => setFiltroPend('bloqueante')}>com bloqueante</Chip>
+              <Chip ativo={filtroPend === 'todas'} onClick={() => setFiltroPend('todas')}>Todas</Chip>
+              <Chip ativo={filtroPend === 'com'} onClick={() => setFiltroPend('com')}>Com pendência</Chip>
+              <Chip ativo={filtroPend === 'bloqueante'} onClick={() => setFiltroPend('bloqueante')}>Com bloqueante</Chip>
             </Chips>
           </div>
         </details>
@@ -138,11 +137,14 @@ export default function Contas() {
                     {c.atendimento_terminou ? (c.atendimento?.fim ? ` até ${fmtDataHora(c.atendimento.fim)}` : '') : ' · em andamento'}
                   </TableCell>
                   <TableCell className="px-3 py-2">{PAGADOR[c.pagador]}</TableCell>
-                  <TableCell className="px-3 py-2"><Badge variant={VARIANTE[c.status]}>{ETAPA[c.status]}</Badge></TableCell>
+                  <TableCell className="px-3 py-2">
+                    <span className="text-tinta">{etapaNaTela(c.status)}</span>
+                    <span className="block text-rotulo text-tinta-sussurro">{abertaHa(c.aberta_em)}</span>
+                  </TableCell>
                   <TableCell className="whitespace-nowrap px-3 py-2">
-                    {(c.pendencias?.bloqueantes ?? 0) > 0 && <Badge variant="destructive">{c.pendencias!.bloqueantes} bloqueante(s)</Badge>}
-                    {(c.pendencias?.avisos ?? 0) > 0 && <span className="ml-1 text-rotulo text-atencao">{c.pendencias!.avisos} aviso(s)</span>}
-                    {!(c.pendencias?.bloqueantes || c.pendencias?.avisos) && <span className="text-tinta-sussurro">—</span>}
+                    {pendenciasNaTela(c.pendencias)
+                      ? <span className={(c.pendencias?.bloqueantes ?? 0) > 0 ? 'font-medium text-critico' : 'text-atencao'}>{pendenciasNaTela(c.pendencias)}</span>
+                      : <span className="text-tinta-sussurro">—</span>}
                   </TableCell>
                 </TableRow>
               ))}
@@ -408,8 +410,8 @@ function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void 
       ) : (
         <>
           <p className="text-rotulo text-tinta-apoio">
-            {bloqueantes > 0 ? `${bloqueantes} bloqueante(s)` : 'Nenhuma bloqueante'}
-            {pend.length - bloqueantes > 0 ? ` e ${pend.length - bloqueantes} aviso(s)` : ''}.
+            {bloqueantes > 0 ? pendenciasNaTela({ bloqueantes, avisos: 0 }) : 'Nenhuma bloqueante'}
+            {pend.length - bloqueantes > 0 ? ` e ${pendenciasNaTela({ bloqueantes: 0, avisos: pend.length - bloqueantes })}` : ''}.
             {aberta && bloqueantes > 0 && c.bloqueantes_sem_liberacao === 0 ? ' As bloqueantes estão liberadas pelo gestor.' : ''}
           </p>
           <div className="flex flex-col divide-y divide-trilha rounded-controle border border-fio">
@@ -441,7 +443,7 @@ function PendenciasConta({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void 
       {c.pode_liberar && c.status === 'em_conferencia' && c.bloqueantes_sem_liberacao > 0 && (
         liberando ? (
           <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-3">
-            <Label htmlFor="liberar-motivo">Liberar o fechamento com {c.bloqueantes_sem_liberacao} pendência(s) bloqueante(s): justificativa</Label>
+            <Label htmlFor="liberar-motivo">Liberar o fechamento com {c.bloqueantes_sem_liberacao} {c.bloqueantes_sem_liberacao === 1 ? 'pendência bloqueante' : 'pendências bloqueantes'}: justificativa</Label>
             <Textarea id="liberar-motivo" rows={2} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
             {liberar.error && <p role="alert" className="text-critico">{(liberar.error as Error).message}</p>}
             <div className="flex justify-end gap-2">
@@ -596,7 +598,7 @@ function MedicamentosConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMex
               <TableRow className="border-t border-fio">
                 <TableCell colSpan={4} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
                   Quantidade em unidade de consumo, já sem o que voltou à farmácia. Sem valor: entra no custeio ou no pacote.
-                  {c.medicamentos_com_aviso > 0 ? ` ${c.medicamentos_com_aviso} medicamento(s) com aviso; o aviso não impede o fechamento.` : ''}
+                  {c.medicamentos_com_aviso > 0 ? ` ${c.medicamentos_com_aviso} ${c.medicamentos_com_aviso === 1 ? 'medicamento' : 'medicamentos'} com aviso; o aviso não impede o fechamento.` : ''}
                 </TableCell>
               </TableRow>
             </TableFooter>

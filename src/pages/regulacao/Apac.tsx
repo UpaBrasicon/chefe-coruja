@@ -79,13 +79,20 @@ export default function Apac() {
       return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: Apac[] }
     },
   })
+  // CT2 (revisão do perfil Faturamento, RT 24/11/2026): até a primeira APAC, só o
+  // vazio, sem abas zeradas (o total vem do resumo das abas)
+  const semNenhuma = resumo.data?.total === 0
   return (
     <div className="flex w-full max-w-5xl flex-col">
       <TituloPagina icone={FileCheck} titulo="APAC da unidade"
         descricao={regulador ? 'Autorize com o número e a validade, ou rejeite com o motivo.'
           : 'Registre a execução de cada competência e gere o arquivo do APAC Magnético. Quem autoriza é o médico regulador.'} />
-      <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />
-      {!unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
+      {semNenhuma ? (
+        <Vazio icone={FileCheck} titulo="Nenhuma APAC na unidade ainda"
+          texto={regulador ? 'Quando o médico solicitar uma APAC, ela aparece aqui para você autorizar.'
+            : 'Quando o médico solicitar uma APAC e o regulador autorizar, a execução e o arquivo do APAC Magnético ficam aqui.'} />
+      ) : <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />}
+      {semNenhuma ? null : !unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
         : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data?.itens ?? []).length === 0 ? (
           <Vazio icone={FileCheck} titulo="Nenhuma APAC aqui" texto="Quando o médico solicitar uma APAC, ela aparece em Solicitadas." />
         ) : (

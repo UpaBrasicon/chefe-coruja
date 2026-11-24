@@ -52,11 +52,12 @@ test('pendência do grupo "material" aparece na conta e diz onde corrigir', () =
 })
 
 // Ajustes da revisão, item 4 (RT, 24/11/2026): o cadastro passa à farmácia;
-// o faturamento só lança na conta
-test('a tela de materiais é da farmácia e do gestor; o faturamento não cadastra', () => {
+// o faturamento só lança na conta. Revisão do perfil Faturamento (FT1, RT
+// 24/11/2026): a lista volta ao menu do faturamento, em Cadastro, para consulta.
+test('a tela de materiais é da farmácia e do gestor; o faturamento consulta e não cadastra', () => {
   assert.ok(itensDeNavegacao('farmaceutico', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
   assert.ok(itensDeNavegacao('gestor', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
-  assert.ok(!itensDeNavegacao('faturamento', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
+  assert.ok(itensDeNavegacao('faturamento', false, false, 'upa').some((i) => i.to === '/faturamento/materiais' && i.grupo === 'Cadastro'))
   assert.ok(!itensDeNavegacao('recepcao', false, false, 'upa').some((i) => i.to === '/faturamento/materiais'))
   assert.ok(!itensDeNavegacao('farmaceutico', false, false, 'ubs').some((i) => i.to === '/faturamento/materiais'))
   assert.match(readFileSync('src/App.tsx', 'utf8'), /RequireRole papeis=\{\['farmaceutico', 'gestor', 'faturamento'\]\} \/>\}>\s*<Route path="\/faturamento\/materiais"/)
