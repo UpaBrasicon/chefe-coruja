@@ -50,7 +50,9 @@ const SITUACAO = {
 const hoje = () => dataIso()
 
 export default function Implantacao() {
-  const { ehSuperAdmin, unidadeAtiva } = useUnidade()
+  const { ehSuperAdmin: superAdmin, papelAtivo, unidadeAtiva } = useUnidade()
+  // RT, 24/11/2026: no perfil gestor a unidade é fixa na dele (vale também para a conta super admin)
+  const ehSuperAdmin = superAdmin && papelAtivo === 'admin'
   const todas = useQuery({
     queryKey: ['implantacao-unidades'],
     enabled: ehSuperAdmin,
@@ -78,6 +80,7 @@ export default function Implantacao() {
     <div className="flex w-full max-w-5xl flex-col gap-4">
       <TituloPagina icone={Rocket} titulo="Implantação"
         descricao="Roteiro da unidade: preparação, virada, operação assistida e encerramento. O que o sistema confere sozinho já aparece marcado." />
+      {!ehSuperAdmin && unidadeAtiva && <span className="text-apoio text-tinta-apoio">Unidade: <span className="text-tinta">{unidadeAtiva.unidade.nome}</span></span>}
       {ehSuperAdmin && (
         <div className="flex max-w-sm flex-col gap-1 text-apoio">
           <Label htmlFor="imp-unidade" className="text-rotulo">Unidade</Label>
@@ -298,7 +301,7 @@ function Treinamento({ p, unidadeId }: { p: Required<Painel>; unidadeId: string 
             {p.pessoas.length - faltam} de {p.pessoas.length} treinados
           </Badge>
         </CardTitle>
-        <CardDescription>Roteiro de cada papel em docs/implantacao/treinamento. O acesso não depende do registro.</CardDescription>
+        <CardDescription>Cada papel tem o seu roteiro de treinamento, entregue pela equipe Chefe Coruja. O acesso não depende do registro.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex items-end gap-2">

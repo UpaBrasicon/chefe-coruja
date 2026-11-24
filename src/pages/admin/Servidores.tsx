@@ -23,6 +23,7 @@ const ROTULO = ['Operando', 'Degradado', 'Fora do ar'] as const
 const DIA_MS = 24 * 60 * 60 * 1000
 const NOME_BUCKET: Record<string, string> = { atendimento: 'anexos do atendimento', banners: 'avisos da unidade', painel: 'propaganda do painel', receitas: 'receitas', fotos: 'fotos' }
 
+const pl = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
 type Servico = { servico: string; medida: string; nota: string; estado: Estado }
 
 export default function Servidores() {
@@ -57,13 +58,13 @@ export default function Servidores() {
     servicos.push(
       {
         servico: 'Sessões e acesso',
-        medida: String(d.sessoes),
-        nota: d.sessoes === 1 ? 'pessoa com sessão em uso nos últimos 30 minutos' : 'pessoas com sessão em uso nos últimos 30 minutos',
+        medida: pl(d.sessoes, 'pessoa', 'pessoas'),
+        nota: 'com sessão em uso nos últimos 30 minutos',
         estado: 0,
       },
       {
         servico: 'Fila da RNDS',
-        medida: String(d.rnds.pendentes + d.rnds.erro),
+        medida: `${d.rnds.pendentes + d.rnds.erro} na fila`,
         nota: [
           d.rnds.erro ? `${d.rnds.erro} com erro` : 'nenhum com erro',
           `${d.rnds.enviados_24h} enviados em 24 horas`,
@@ -81,14 +82,15 @@ export default function Servidores() {
       },
       {
         servico: 'Avisos no aparelho (push)',
-        medida: String(d.push),
-        nota: 'aparelhos inscritos; a entrega não é medida',
+        // revisão do admin (RT, 24/11/2026): zero aparelho é "sem uso", não um número solto
+        medida: d.push ? pl(d.push, 'aparelho', 'aparelhos') : 'Sem uso',
+        nota: d.push ? 'aparelhos inscritos; a entrega não é medida' : 'nenhum aparelho inscrito para receber avisos',
         estado: 0,
       },
       {
         servico: 'Registro de auditoria',
-        medida: String(d.auditoria.registros_24h),
-        nota: `registros em 24 horas · último ${haQuanto(d.auditoria.ultima_em, agora)}`,
+        medida: pl(d.auditoria.registros_24h, 'registro', 'registros'),
+        nota: `em 24 horas · último ${haQuanto(d.auditoria.ultima_em, agora)}`,
         estado: 0,
       },
     )
@@ -97,6 +99,11 @@ export default function Servidores() {
     const l = linhaCustoIa(custo.data)
     servicos.push({ servico: 'IA da busca clínica', medida: l.medida, nota: l.nota, estado: 0 })
   }
+
+  // M1: o que tem problema sobe; os outros mantêm a ordem
+  const ordenados = servicos.map((v, i) => ({ v, i })).sort((a, b) => b.v.estado - a.v.estado || a.i - b.i).map((x) => x.v)
+  const ruins = servicos.filter((v) => v.estado > 0).length
+  const resumo = !d ? null : ruins === 0 ? 'Tudo operando' : `${ruins} ${ruins === 1 ? 'serviço pede' : 'serviços pedem'} atenção`
 
   function medirDeNovo() {
     void queryClient.invalidateQueries({ queryKey: ['admin-servidores'] })
@@ -109,7 +116,7 @@ export default function Servidores() {
       <TituloPagina
         icone={Gauge}
         titulo="Servidores"
-        descricao={d ? `Saúde da plataforma medida às ${hora(d.servidor)}` : 'Saúde da plataforma medida agora'}
+        descricao={d ? `${resumo} · medido às ${hora(d.servidor)}` : 'Saúde da plataforma medida agora'}
         acoes={
           <Button variant="outline" onClick={medirDeNovo} disabled={s.isFetching || lat.isFetching}>
             {s.isFetching || lat.isFetching ? <Spinner className="size-4" /> : <RefreshCw />} Medir de novo
@@ -119,7 +126,7 @@ export default function Servidores() {
 
       <div className={cartao}>
         {s.error && <p className="border-b border-trilha px-5 py-4 text-apoio text-critico">{(s.error as Error).message}</p>}
-        {servicos.map((v) => (
+        {ordenados.map((v) => (
           <div key={v.servico} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3.5 hover:bg-campo">
             <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-[3px]">
               <span className="text-corpo font-medium text-tinta">{v.servico}</span>
@@ -129,7 +136,7 @@ export default function Servidores() {
               v.estado === 2 ? 'text-critico' : v.estado === 1 ? 'text-atencao' : 'text-tinta')}>
               {v.medida}
             </span>
-            <span className={cn(selo, SELO_ESTADO[v.estado])}>{ROTULO[v.estado]}</span>
+            {v.estado > 0 && <span className={cn(selo, SELO_ESTADO[v.estado])}>{ROTULO[v.estado]}</span>}
           </div>
         ))}
         {s.isLoading && <div className="border-b border-trilha px-5 py-5"><Spinner /></div>}

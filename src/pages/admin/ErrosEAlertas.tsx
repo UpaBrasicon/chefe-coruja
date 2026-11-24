@@ -1,20 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  Bug, CalendarClock, CircleCheck, RotateCcw, ShieldCheck, Siren,
+  Bug, CalendarClock, ChevronDown, CircleCheck, RotateCcw, ShieldCheck, Siren,
   TriangleAlert, UserX, type LucideIcon,
 } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
-import { Button } from '@/components/ui/button'
-import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { diaMesHora } from '@/lib/formato'
 import type { Database } from '@/types/database'
 
 import { haQuanto, selo } from '@/lib/dadosAdmin'
-import { cartao } from '@/components/admin/ui'
+import { Abas, cartao } from '@/components/admin/ui'
 
 // Onda 12 — "Erros e alertas do sistema" do administrador geral. Duas partes:
 //  • Erros do aplicativo: os defeitos capturados no navegador (erros_cliente),
@@ -110,9 +111,9 @@ function BlocoErros() {
 
   return (
     <section className="mb-7">
-      <TituloSecao extra={erros.data ? `${lista.length} ${lista.length === 1 ? 'grupo' : 'grupos'}` : undefined}>
-        Erros do aplicativo
-      </TituloSecao>
+      <p className="mb-3 text-apoio text-pretty text-tinta-sussurro">
+        Defeitos capturados no navegador, agrupados pela mesma causa ({lista.length} {lista.length === 1 ? 'grupo' : 'grupos'}). Área técnica, para quem mantém o software.
+      </p>
       <div className={cartao}>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-fio px-5 py-3">
           <div role="group" aria-label="Período" className="flex items-center gap-1.5 text-apoio text-tinta-sussurro">
@@ -306,74 +307,121 @@ function LinhaChecagem({ checagem }: { checagem: Checagem }) {
   )
 }
 
-function BlocoVerificacoes() {
-  const v = useVerificacoes()
+/** Achados em aberto nas verificações (a cadeia rompida conta como um). */
+function contarAlertas(v: Verificacoes): number {
+  const nos = temas(v).reduce((t, g) => t + g.checagens.reduce((u, c) => u + c.itens.length, 0), 0)
+  return nos + (v.seguranca.cadeia_auditoria === null ? 0 : 1)
+}
+
+// Revisão do admin (RT, 24/11/2026, M1 e M3): segurança primeiro, depois o que
+// tem achado; o que está em ordem fica recolhido numa linha.
+const ORDEM_TEMAS = ['Segurança e auditoria', 'Escala e plantão', 'Cadastro', 'Operação']
+
+function CadeiaAuditoria({ rompidaEm }: { rompidaEm: number | null }) {
+  if (rompidaEm === null) {
+    return (
+      <div className={cn(cartao, 'mb-3.5 flex items-center gap-3 px-5 py-3.5')}>
+        <CircleCheck className="size-5 shrink-0 text-conforme" aria-hidden />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="text-corpo text-tinta">Cadeia de auditoria íntegra</span>
+          <span className="text-apoio text-tinta-sussurro">Nenhuma linha do registro de auditoria foi alterada.</span>
+        </div>
+      </div>
+    )
+  }
+  const titulo = `Cadeia de auditoria rompida a partir da linha #${rompidaEm}`
+  return (
+    <div role="alert" className="mb-3.5 flex flex-wrap items-center gap-3 rounded-cartao border border-critico/40 bg-critico/5 px-5 py-4">
+      <TriangleAlert className="size-5 shrink-0 text-critico" aria-hidden />
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-corpo font-semibold text-critico">{titulo}</span>
+        <span className="text-apoio text-pretty text-tinta-apoio">
+          Uma linha do registro de auditoria não confere com a anterior: pode ter sido alterada fora do app. Abra um chamado de
+          segurança para conferir a linha e guardar a prova antes de qualquer correção.
+        </span>
+      </div>
+      <Link to={`/pendencias-tecnicas?novo=&titulo=${encodeURIComponent(titulo)}`} className={cn(buttonVariants({ size: 'sm' }), 'hover:text-sobre-acao')}>
+        Abrir chamado
+      </Link>
+    </div>
+  )
+}
+
+function BlocoVerificacoes({ v }: { v: ReturnType<typeof useVerificacoes> }) {
+  const [verEmOrdem, setVerEmOrdem] = React.useState(false)
+  if (v.isLoading) return <div className={cn(cartao, 'px-5 py-5')}><Spinner /></div>
+  if (v.error) return <p className={cn(cartao, 'px-5 py-4 text-apoio text-critico')}>{(v.error as Error).message}</p>
+  if (!v.data) return null
+  const grupos = temas(v.data).sort((a, b) => ORDEM_TEMAS.indexOf(a.tema) - ORDEM_TEMAS.indexOf(b.tema))
+  const comAchado = grupos
+    .map((g) => ({ ...g, checagens: g.checagens.filter((c) => c.itens.length > 0) }))
+    .filter((g) => g.checagens.length > 0)
+  const emOrdem = grupos.flatMap((g) => g.checagens.filter((c) => c.itens.length === 0))
 
   return (
     <section>
-      <TituloSecao extra={v.data ? `verificado ${haQuanto(v.data.gerado_em)}` : undefined}>
-        Verificações do sistema
-      </TituloSecao>
-
-      {v.isLoading && <div className={cn(cartao, 'px-5 py-5')}><Spinner /></div>}
-      {v.error && <p className={cn(cartao, 'px-5 py-4 text-apoio text-critico')}>{(v.error as Error).message}</p>}
-
-      {v.data && (
-        <>
-          {/* cadeia de auditoria: resultado escalar, destaque próprio */}
-          <div className={cn(cartao, 'mb-3.5 flex items-center gap-3 px-5 py-3.5')}>
-            {v.data.seguranca.cadeia_auditoria === null
-              ? <CircleCheck className="size-5 shrink-0 text-conforme" aria-hidden />
-              : <TriangleAlert className="size-5 shrink-0 text-critico" aria-hidden />}
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="text-corpo text-tinta">Cadeia de auditoria</span>
-              <span className="text-apoio text-tinta-sussurro">
-                {v.data.seguranca.cadeia_auditoria === null
-                  ? 'Íntegra: nenhuma linha adulterada.'
-                  : `Rompida a partir da linha #${v.data.seguranca.cadeia_auditoria}.`}
-              </span>
+      <p className="mb-3 text-apoio text-tinta-sussurro">
+        Verificações de lógica da rede (segurança, escala, cadastro e operação) · verificado {haQuanto(v.data.gerado_em)}
+      </p>
+      <CadeiaAuditoria rompidaEm={v.data.seguranca.cadeia_auditoria} />
+      <div className="flex flex-col gap-3.5">
+        {comAchado.map((grupo) => (
+          <div key={grupo.tema} className={cartao}>
+            <div className="flex items-center gap-2 border-b border-fio px-5 py-3">
+              <grupo.icone className="size-4 text-tinta-sussurro" aria-hidden />
+              <h3 className="text-apoio font-semibold text-tinta-apoio">{grupo.tema}</h3>
             </div>
-            <span className={cn(selo, v.data.seguranca.cadeia_auditoria === null ? 'text-conforme bg-conforme/10' : 'text-critico bg-critico/10')}>
-              {v.data.seguranca.cadeia_auditoria === null ? 'ok' : 'alerta'}
-            </span>
+            {grupo.checagens.map((ch) => <LinhaChecagem key={ch.titulo} checagem={ch} />)}
           </div>
-
-          <div className="flex flex-col gap-3.5">
-            {temas(v.data).map((grupo) => (
-              <div key={grupo.tema} className={cartao}>
-                <div className="flex items-center gap-2 border-b border-fio px-5 py-3">
-                  <grupo.icone className="size-4 text-tinta-sussurro" aria-hidden />
-                  <h3 className="text-apoio font-semibold tracking-[0.03em] text-tinta-apoio uppercase">{grupo.tema}</h3>
-                </div>
-                {grupo.checagens.map((ch) => <LinhaChecagem key={ch.titulo} checagem={ch} />)}
-              </div>
-            ))}
+        ))}
+        {comAchado.length === 0 && (
+          <div className={cn(cartao, 'flex flex-col items-center gap-1.5 px-5 py-[30px] text-center')}>
+            <CircleCheck className="size-6 text-conforme" aria-hidden />
+            <p className="text-corpo font-semibold text-tinta">Nenhum alerta na rede agora</p>
           </div>
-        </>
-      )}
+        )}
+        {emOrdem.length > 0 && (
+          <div className={cartao}>
+            <Button type="button" variant="ghost" onClick={() => setVerEmOrdem((x) => !x)} aria-expanded={verEmOrdem}
+              className="w-full justify-start gap-2 rounded-none px-5 py-3 text-apoio text-tinta-apoio">
+              <ChevronDown className={cn('size-4 transition-transform', !verEmOrdem && '-rotate-90')} aria-hidden />
+              Em ordem: {emOrdem.length} {emOrdem.length === 1 ? 'verificação' : 'verificações'} sem achado
+            </Button>
+            {verEmOrdem && emOrdem.map((ch) => <LinhaChecagem key={ch.titulo} checagem={ch} />)}
+          </div>
+        )}
+      </div>
     </section>
   )
 }
 
 // ── página ───────────────────────────────────────────────────────────────────
 
+type Aba = 'alertas' | 'erros'
+
 export default function ErrosEAlertas() {
   const erros = useErros(7, false)
+  const v = useVerificacoes()
   const abertos = (erros.data ?? []).length
+  const alertas = v.data ? contarAlertas(v.data) : undefined
+  // RT, 24/11/2026 (M4): alertas da rede (o que o admin age) separados dos erros do aplicativo (quem mantém o software)
+  const [aba, setAba] = React.useState<Aba>('alertas')
+  const resumo = [
+    alertas === undefined ? null : alertas === 0 ? 'Nenhum alerta na rede' : `${alertas} ${alertas === 1 ? 'alerta na rede' : 'alertas na rede'}`,
+    !erros.data ? null : abertos === 0 ? 'nenhum erro do aplicativo em aberto' : `${abertos} ${abertos === 1 ? 'erro do aplicativo' : 'erros do aplicativo'} em aberto (7 dias)`,
+  ].filter(Boolean).join(' · ')
 
   return (
     <div className="mx-auto flex w-full max-w-[896px] flex-col">
-      <TituloPagina
-        icone={Bug}
-        titulo="Erros e alertas"
-        descricao={erros.data
-          ? abertos === 0
-            ? 'Nenhum erro em aberto nos últimos 7 dias · verificações de lógica da rede'
-            : `${abertos} ${abertos === 1 ? 'erro em aberto' : 'erros em aberto'} nos últimos 7 dias · verificações de lógica da rede`
-          : 'Defeitos do navegador e verificações de lógica da rede'}
-      />
-      <BlocoErros />
-      <BlocoVerificacoes />
+      <TituloPagina icone={Bug} titulo="Erros e alertas" descricao={resumo || 'Alertas da rede e erros do aplicativo'} />
+      <div className="mb-5">
+        <Abas rotulo="Área" valor={aba} onChange={setAba}
+          opcoes={[
+            { valor: 'alertas' as Aba, rotulo: 'Alertas da rede', contagem: alertas },
+            { valor: 'erros' as Aba, rotulo: 'Erros do aplicativo', contagem: erros.data ? abertos : undefined },
+          ]} />
+      </div>
+      {aba === 'alertas' ? <BlocoVerificacoes v={v} /> : <BlocoErros />}
     </div>
   )
 }

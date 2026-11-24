@@ -255,7 +255,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: Building2, exato: true },
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },
-    { to: '/pendencias-tecnicas', rotulo: 'Pendências', icone: ClipboardList, exato: true, nota: 'chamados' },
+    { to: '/pendencias-tecnicas', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: ClipboardList, exato: true, nota: 'chamados' },
     { to: '/servidores', rotulo: 'Servidores', icone: Gauge, exato: true },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
     { to: '/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: ShieldCheck, exato: true },
@@ -280,7 +280,7 @@ const ITEM_IMPLANTACAO: ItemNav = { to: '/implantacao', rotulo: 'Implantação',
 // Fase 4, tarefa 1: regulação da rede (origem, central e super admin)
 const ITEM_REGULACAO: ItemNav = { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true }
 // Fase 4, tarefa 12: módulo de papéis de rede (o super admin liga por organização)
-const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede', curto: 'Rede', icone: Network, exato: true }
+const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede da Secretaria', curto: 'Secretaria', icone: Network, exato: true }
 
 // 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
 // internação nem AIH; os itens dessas telas somem do menu.

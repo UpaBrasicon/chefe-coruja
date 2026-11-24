@@ -15,7 +15,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, FileDown, ShieldCheck } from 'lucide-react'
 import * as React from 'react'
 
-import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { ConfirmarSegundoFator, ConfirmarSegundoFatorEmail } from '@/components/seguranca/SegundoFator'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -40,6 +40,21 @@ type Registro = {
 const hoje = () => dataIso()
 const diasAtras = (n: number) => dataIso(Date.now() - n * 86_400_000)
 
+// revisão do admin (RT, 24/11/2026, M2): atalhos de período; a competência SUS é o mês fechado
+const doisDig = (n: number) => String(n).padStart(2, '0')
+function mesDe(iso: string, deslocamento: number): { desde: string; ate: string } {
+  const [a, m] = iso.split('-').map(Number)
+  const ini = new Date(Date.UTC(a, m - 1 + deslocamento, 1))
+  const fim = new Date(Date.UTC(ini.getUTCFullYear(), ini.getUTCMonth() + 1, 0))
+  const fmt = (d: Date) => `${d.getUTCFullYear()}-${doisDig(d.getUTCMonth() + 1)}-${doisDig(d.getUTCDate())}`
+  return { desde: fmt(ini), ate: deslocamento === 0 ? iso : fmt(fim) }
+}
+const ATALHOS: { rotulo: string; periodo: () => { desde: string; ate: string } }[] = [
+  { rotulo: 'Últimos 30 dias', periodo: () => ({ desde: diasAtras(30), ate: hoje() }) },
+  { rotulo: 'Este mês', periodo: () => mesDe(hoje(), 0) },
+  { rotulo: 'Competência anterior', periodo: () => mesDe(hoje(), -1) },
+]
+
 function baixar(nome: string, conteudo: string, formato: Formato) {
   const tipo = formato === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8'
   const url = URL.createObjectURL(new Blob([conteudo], { type: tipo }))
@@ -51,7 +66,9 @@ function baixar(nome: string, conteudo: string, formato: Formato) {
 }
 
 export default function ExportarDados() {
-  const { ehSuperAdmin, unidadeAtiva } = useUnidade()
+  const { ehSuperAdmin: superAdmin, papelAtivo, unidadeAtiva } = useUnidade()
+  // RT, 24/11/2026: no perfil gestor a unidade é fixa na dele (vale também para a conta super admin)
+  const ehSuperAdmin = superAdmin && papelAtivo === 'admin'
   const qc = useQueryClient()
   const todas = useQuery({
     queryKey: ['exportar-unidades'],
@@ -156,7 +173,7 @@ export default function ExportarDados() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-apoio">
           <div className="grid gap-3 sm:grid-cols-3">
-            {ehSuperAdmin && (
+            {ehSuperAdmin ? (
               <div className="flex flex-col gap-1">
                 <Label htmlFor="exp-unidade" className="text-rotulo">Unidade</Label>
                 <CampoSelecao id="exp-unidade" tamanho="compacto" value={unidadeId}
@@ -164,6 +181,11 @@ export default function ExportarDados() {
                   <option value="">Escolha…</option>
                   {(todas.data ?? []).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
                 </CampoSelecao>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <span className="text-rotulo text-tinta-apoio">Unidade</span>
+                <span className="flex h-8 items-center text-tinta">{unidadeNome}</span>
               </div>
             )}
             <div className="flex flex-col gap-1">
@@ -183,6 +205,17 @@ export default function ExportarDados() {
             </div>
           </div>
 
+          {c.comPeriodo && (
+            <div role="group" aria-label="Atalhos de período" className="flex flex-wrap gap-1.5">
+              {ATALHOS.map((x) => {
+                const p = x.periodo()
+                return (
+                  <Chip key={x.rotulo} ativo={p.desde === desde && p.ate === ate} desabilitado={ocupado}
+                    onClick={() => { setDesde(p.desde); setAte(p.ate) }}>{x.rotulo}</Chip>
+                )
+              })}
+            </div>
+          )}
           {c.comPeriodo ? (
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex flex-col gap-1">

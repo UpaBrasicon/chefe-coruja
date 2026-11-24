@@ -78,7 +78,8 @@ function Classificacao() {
       <div className="flex flex-col gap-1 border-b border-trilha px-5 py-4">
         <TituloCartao className="mb-0">Classificação de risco</TituloCartao>
         <span className="text-apoio text-pretty text-tinta-sussurro">
-          {dados.data?.protocolo ? `${dados.data.protocolo.fonte}. ` : ''}O protocolo é apoio ao enfermeiro; a cor é sempre dele. A unidade mantém ou muda cada fluxograma, citando o documento dela.
+          {/* RT, 24/11/2026: a fonte (documento e ano) segue registrada no banco, mas não vai à tela */}
+          {dados.data?.protocolo && /manchester/i.test(`${dados.data.protocolo.fonte} ${dados.data.protocolo.codigo}`) ? 'Baseado no protocolo Manchester. ' : ''}O protocolo é apoio ao enfermeiro; a cor é sempre dele. A unidade mantém ou muda cada fluxograma, citando o documento dela.
         </span>
       </div>
       <div className="flex flex-col gap-1 border-b border-trilha px-5 py-3.5">

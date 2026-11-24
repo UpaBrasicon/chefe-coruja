@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  Bird, CalendarClock, ClipboardList, Clock, Hourglass, MapPin, Minus, ShieldCheck, Stethoscope, TriangleAlert, TrendingUp,
+  Bird, CalendarClock, ClipboardList, Clock, Ellipsis, Hourglass, MapPin, Minus, ShieldCheck, Stethoscope, TriangleAlert, TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
 import * as React from 'react'
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
 
 import { useLimitesUnidade } from '@/lib/limitesUnidade'
+import { textoComTempoLegivel } from '@/lib/tempoLegivel'
 
 // Olho de Gavião do gestor (P/index.html 7023–7117): os apontamentos da
 // varredura da unidade (sobrecarga, descanso, presença, documentação,
@@ -53,6 +54,17 @@ const DECISAO: Record<Decisao, { rotulo: string; cor: string; icone: LucideIcon 
 }
 const FILTROS_REG = ['Todas', 'Tratadas', 'Silenciadas', 'Descartadas'] as const
 
+// Revisão do gestor (RT, 24/11/2026, M1): tempo legível ("44 dias", não "64707 min")
+// e contagem coerente com a lista: na ausência, um dia com dois setores vira
+// dois plantões, então o título diz também em quantos dias.
+function titulo(a: Apontamento): string {
+  const t = textoComTempoLegivel(a.titulo)
+  if (!a.chave.startsWith('ausencia:')) return t
+  const dias = new Set(a.evidencia.match(/\b\d{2}\/\d{2}\b/g) ?? []).size
+  const emDias = dias === 1 ? '1 dia' : `${dias} dias`
+  return dias > 0 && !t.includes(' dia') ? t.replace(/ sem check-in no mês$/, ` em ${emDias} sem check-in no mês`) : t
+}
+
 const quando = (iso: string) => diaMesHora(iso).replace(',', ' ·')
 const dia = (iso: string) => diaMes(iso)
 
@@ -62,6 +74,7 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
   const sev = SEV[a.severidade as keyof typeof SEV] ?? SEV.baixa
   const Icone = ICONE[a.icone] ?? TriangleAlert
   const dec = a.decisao ? DECISAO[a.decisao as Decisao] : null
+  const [mais, setMais] = React.useState(false)
   return (
     <article className={cn('flex gap-[13px] rounded-cartao border border-fio px-5 py-[17px] shadow-repouso', dec ? 'bg-campo' : 'bg-superficie')}>
       <span className={cn('grid size-[34px] shrink-0 place-items-center rounded-controle', dec ? 'bg-trilha text-tinta-sussurro' : cn(sev.fundo, sev.cor))} aria-hidden>
@@ -69,13 +82,13 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={cn('rounded-capsula px-[7px] py-0.5 text-rotulo font-semibold tracking-[0.04em] uppercase', dec ? 'bg-trilha text-tinta-sussurro' : cn(sev.fundo, sev.cor))}>
+          <span className={cn('rounded-capsula px-[7px] py-0.5 text-rotulo font-semibold', dec ? 'bg-trilha text-tinta-sussurro' : cn(sev.fundo, sev.cor))}>
             {sev.rotulo}
           </span>
-          <span className="text-rotulo font-semibold tracking-[0.04em] text-tinta-sussurro uppercase">{a.tipo}</span>
+          <span className="text-rotulo font-semibold text-tinta-sussurro">{a.tipo}</span>
         </div>
-        <h3 className="text-corpo leading-[1.3] font-semibold tracking-[-0.01em] text-tinta">{a.titulo}</h3>
-        <p className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">{a.evidencia}</p>
+        <h3 className="text-corpo leading-[1.3] font-semibold tracking-[-0.01em] text-tinta">{titulo(a)}</h3>
+        <p className="text-apoio leading-[1.5] text-pretty text-tinta-apoio">{textoComTempoLegivel(a.evidencia)}</p>
         <div className="flex items-start gap-[7px] rounded-controle border border-fio bg-campo px-3 py-2.5">
           <ShieldCheck className="mt-px size-[15px] shrink-0 text-acao" aria-hidden />
           <span className="text-apoio leading-[1.45] text-pretty text-grafite">{a.recomendacao}</span>
@@ -106,12 +119,21 @@ function Cartao({ a, pedindo, onPedir, onDecidir, ocupado }: {
             <Button disabled={ocupado} onClick={() => onDecidir('tratado')}>
               <ShieldCheck className="size-3.5" aria-hidden /> Tratado
             </Button>
-            <Button variant="outline" disabled={ocupado} onClick={() => onDecidir('silenciado')}>
-              Silenciar 7 dias
-            </Button>
-            <Button variant="outline" disabled={ocupado} onClick={() => onPedir(true)}>
-              Não procede
-            </Button>
+            {/* revisão do gestor (RT, 24/11/2026, M2): Tratado é a ação principal; o resto fica no "…" */}
+            {mais ? (
+              <>
+                <Button variant="outline" disabled={ocupado} onClick={() => onDecidir('silenciado')}>
+                  Silenciar 7 dias
+                </Button>
+                <Button variant="outline" disabled={ocupado} onClick={() => onPedir(true)}>
+                  Não procede
+                </Button>
+              </>
+            ) : (
+              <Button variant="ghost" size="icon-sm" aria-label="Mais ações" title="Mais ações" onClick={() => setMais(true)}>
+                <Ellipsis className="size-4" aria-hidden />
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -192,8 +214,8 @@ export default function OlhoDeGaviao() {
         titulo="Olho de Gavião"
         descricao={`Alertas de escala, carga horária e presença na unidade · varredura às ${varredura} · ${abertos.length === 1 ? '1 apontamento aberto' : `${abertos.length} apontamentos abertos`}`}
         acoes={
-          <span className="flex items-center gap-1.5 rounded-capsula bg-acao/10 px-2 py-[3px] text-rotulo font-semibold tracking-[0.04em] text-acao uppercase">
-            <span className="size-1.5 rounded-capsula bg-acao" aria-hidden /> Varredura ativa
+          <span className="flex items-center gap-1.5 rounded-capsula bg-acao/10 px-2 py-[3px] text-rotulo font-semibold text-acao">
+            <span className="size-1.5 rounded-capsula bg-acao" aria-hidden /> varredura ativa
           </span>
         }
       />
@@ -201,7 +223,7 @@ export default function OlhoDeGaviao() {
       <div className="mb-5 flex flex-wrap overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
         {(['alta', 'media', 'baixa'] as const).map((s, k) => (
           <div key={s} className={cn('flex min-w-[120px] flex-1 flex-col gap-0.5 px-5 py-[15px]', k > 0 && 'border-l border-trilha')}>
-            <span className="text-rotulo font-semibold tracking-[0.06em] text-tinta-sussurro uppercase">Severidade {SEV[s].rotulo}</span>
+            <span className="text-rotulo font-semibold text-tinta-sussurro">Severidade {SEV[s].rotulo.toLowerCase()}</span>
             <span className={cn('text-titulo font-semibold tabular', SEV[s].cor)}>{cont(s)}</span>
           </div>
         ))}
@@ -244,7 +266,7 @@ export default function OlhoDeGaviao() {
                   {r.meu ? 'Você' : r.autor_nome}{r.desfeita_em ? ` · desfeita às ${quando(r.desfeita_em)}` : ''}
                 </span>
               </div>
-              <span className={cn('justify-self-start rounded-capsula px-2 py-[3px] text-rotulo leading-[1.3] font-semibold tracking-[0.03em] whitespace-nowrap uppercase sm:justify-self-end',
+              <span className={cn('justify-self-start rounded-capsula px-2 py-[3px] text-rotulo leading-[1.3] font-semibold whitespace-nowrap sm:justify-self-end',
                 d?.cor, r.decisao === 'tratado' ? 'bg-conforme/10' : r.decisao === 'descartado' ? 'bg-atencao/10' : 'bg-trilha')}>
                 {d?.rotulo ?? r.decisao}
               </span>

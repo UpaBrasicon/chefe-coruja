@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { LifeBuoy, Plus } from 'lucide-react'
 import * as React from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -39,7 +40,14 @@ export default function ChamadosTecnicos() {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const [resolvidos, setResolvidos] = React.useState(false)
-  const [criando, setCriando] = React.useState(false)
+  // ?novo=&titulo=… chega de outra tela (ex.: cadeia de auditoria quebrada) com o chamado pré-preenchido
+  const [params, setParams] = useSearchParams()
+  const [criando, setCriando] = React.useState(params.get('novo') !== null)
+  const tituloInicial = params.get('titulo') ?? ''
+  const fecharNovo = () => {
+    setCriando(false)
+    if (params.get('novo') !== null) setParams((p) => { const n = new URLSearchParams(p); n.delete('novo'); n.delete('titulo'); return n }, { replace: true })
+  }
   const [aberto, setAberto] = React.useState<Chamado | null>(null)
 
   const chamados = useQuery({
@@ -97,21 +105,25 @@ export default function ChamadosTecnicos() {
           </div>
         ))}
         {chamados.data && lista.length === 0 && (
-          <p className="px-5 py-[34px] text-center text-corpo text-tinta-sussurro">
-            {resolvidos ? 'Nenhum chamado técnico desta unidade.' : 'Nenhum chamado técnico aberto nesta unidade.'}
-          </p>
+          <div className="flex flex-col items-center gap-1.5 px-5 py-[34px] text-center">
+            <span className="text-corpo text-tinta-apoio">{resolvidos ? 'Nenhum chamado técnico desta unidade.' : 'Nenhum chamado técnico aberto nesta unidade.'}</span>
+            <span className="max-w-[520px] text-apoio text-pretty text-tinta-sussurro">
+              Use o chamado para problema de sistema, equipamento ou integração. Ele vai para a administração da rede, que atende e
+              registra o andamento aqui. Para dúvida de escala ou de paciente, fale com a equipe da unidade.
+            </span>
+          </div>
         )}
       </div>
 
-      {unidadeId && <NovoChamado aberta={criando} onFechar={() => setCriando(false)} unidadeId={unidadeId} />}
+      {unidadeId && <NovoChamado aberta={criando} onFechar={fecharNovo} unidadeId={unidadeId} tituloInicial={tituloInicial} />}
       {aberto && <DetalheChamado chamado={aberto} onFechar={() => setAberto(null)} />}
     </div>
   )
 }
 
-function NovoChamado({ aberta, onFechar, unidadeId }: { aberta: boolean; onFechar: () => void; unidadeId: string }) {
+function NovoChamado({ aberta, onFechar, unidadeId, tituloInicial = '' }: { aberta: boolean; onFechar: () => void; unidadeId: string; tituloInicial?: string }) {
   const queryClient = useQueryClient()
-  const [titulo, setTitulo] = React.useState('')
+  const [titulo, setTitulo] = React.useState(tituloInicial)
   const [categoria, setCategoria] = React.useState<Categoria | ''>('')
   const [severidade, setSeveridade] = React.useState<Severidade | ''>('')
   const [descricao, setDescricao] = React.useState('')
