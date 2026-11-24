@@ -87,3 +87,17 @@ Auditoria da sessão principal na homologação, com o plugin unslop em modo pol
   10. dois "fechar";
   11. sombra no passar do mouse, inútil no celular.
 - **Mantido:** "Iniciar PCR" vermelho como único bloco de cor forte, as siglas e a barra de baixo.
+
+## 7. Cartões visuais (Refero), 23/11/2026
+
+O RT pediu cartões mais visuais, usando o Refero. Foram três opções, tiradas de telas reais: o objeto grande no cartão (Vocabulary), a vitrine com a faixa do nome (Target) e a lista com medalhão (Chance AI).
+
+O RT escolheu a **opção 2**, mantendo o topo de hoje e tirando a etiqueta da sigla dos cartões. Cada grupo ganhou um objeto do pronto-socorro desenhado no próprio app (`ObjetoDoGrupo.tsx`):
+
+- Urgências: monitor com ECG;
+- Diluições e doses: ampola e seringa;
+- Calculadoras: calculadora;
+- Escores: medidor;
+- Intoxicação: frasco de antídoto e gota.
+
+O traço usa a tinta do app e a cor do grupo entra só num detalhe. São só tokens, sem imagem de terceiros. Os itens do grupo aberto continuam com a sigla.
