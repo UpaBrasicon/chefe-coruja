@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Eye, Hospital } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 
 import { AbasInternacao } from '@/components/plantao/AbasPlantao'
 import { TituloPagina } from '@/components/monitor/Pagina'
@@ -15,10 +16,14 @@ const Passometro = lazy(() => import('@/pages/plantao/Passometro'))
 export type AbaInternacao = 'internacao' | 'observacao' | 'passometro'
 
 export default function AreaInternacao({ aba }: { aba: AbaInternacao }) {
+  // RS1 (RT, 24/11/2026): com um leito aberto (?paciente=), o leito ocupa a tela
+  // inteira; as abas e o título da Internação voltam ao fechar o leito
+  const [params] = useSearchParams()
+  const leitoAberto = aba === 'internacao' && !!params.get('paciente')
   return (
     <>
-      <AbasInternacao />
-      {aba === 'internacao' && (
+      {!leitoAberto && <AbasInternacao />}
+      {aba === 'internacao' && !leitoAberto && (
         <TituloPagina icone={Hospital} titulo="Internação"
           descricao="Pacientes internados: o leito aberto tem o caderno com resumo, evoluções, prescrição e documentos." />
       )}

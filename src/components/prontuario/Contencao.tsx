@@ -90,19 +90,23 @@ type Dialogo = { tipo: 'iniciar' } | { tipo: 'revisar'; retifica: RevisaoContenc
  * a ativa (selos, ordem médica, revisões, família) com as ações de quem pode,
  * e as anteriores. Sem contenção e sem poder iniciar, não aparece.
  */
-export function Contencao({ pacienteId }: { pacienteId: string }) {
+export function Contencao({ pacienteId, semIniciar = false }: {
+  pacienteId: string
+  /** Caderno do leito (RS3, RT 24/11/2026): iniciar fica no menu Ações; aqui só a ativa e as anteriores. */
+  semIniciar?: boolean
+}) {
   const tela = useTelaContencao(pacienteId)
   const [dialogo, setDialogo] = React.useState<Dialogo | null>(null)
   const [verAnteriores, setVerAnteriores] = React.useState(false)
   const t = tela.data
-  if (!t || (!t.ativa && !t.anteriores.length && !t.pode_iniciar)) return null
+  if (!t || (!t.ativa && !t.anteriores.length && (semIniciar || !t.pode_iniciar))) return null
   const c = t.ativa
 
   return (
     <section aria-label="Contenção mecânica" className="flex flex-col gap-1.5">
       {c ? (
         <CartaoContencao c={c} tela={t} aoDialogo={setDialogo} />
-      ) : t.pode_iniciar ? (
+      ) : t.pode_iniciar && !semIniciar ? (
         <div>
           <Button size="sm" variant="outline" onClick={() => setDialogo({ tipo: 'iniciar' })}><ShieldAlert /> Iniciar contenção mecânica</Button>
         </div>
@@ -124,6 +128,19 @@ export function Contencao({ pacienteId }: { pacienteId: string }) {
       {c && dialogo?.tipo === 'familia' && <DialogoFamilia pacienteId={pacienteId} c={c} aoFechar={() => setDialogo(null)} />}
     </section>
   )
+}
+
+/** Pode iniciar agora (sem contenção ativa): o item "Iniciar contenção mecânica" do menu Ações do leito. */
+export function usePodeIniciarContencao(pacienteId: string): boolean {
+  const t = useTelaContencao(pacienteId).data
+  return !!t && !t.ativa && t.pode_iniciar
+}
+
+/** A janela de iniciar, aberta pelo menu Ações do caderno do leito. */
+export function DialogoIniciarContencao({ pacienteId, aoFechar }: { pacienteId: string; aoFechar: () => void }) {
+  const t = useTelaContencao(pacienteId).data
+  if (!t) return null
+  return <DialogoIniciar pacienteId={pacienteId} pediatrico={t.pediatrico} aoFechar={aoFechar} />
 }
 
 function Linha({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {

@@ -167,6 +167,8 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
   const location = useLocation()
   const navigate = useNavigate()
   const chaveLeito = veMapa ? params.get('leito') : null
+  // RS1 (RT, 24/11/2026): com o leito aberto (médico), a página some em volta dele
+  const leitoAberto = !veMapa && !!params.get('paciente')
   // endereço do leito de antes (?paciente=, rotaDoLeito): para o gestor, vira a gaveta
   React.useEffect(() => {
     if (!veMapa || !params.get('paciente')) return
@@ -252,7 +254,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-      {!embutido && (
+      {!embutido && !leitoAberto && (
         <div>
           <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: titulo }]} />
           <TituloPagina icone={BedDouble} titulo={titulo} descricao={unidadeAtiva?.unidade.nome ?? 'Unidade'} className="mb-0" />
@@ -268,7 +270,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
       {veMapa && <PainelLeito alvo={alvoLeito} unidadeId={unidadeId} abaInicial={params.get('aba') ?? undefined} aoFechar={fecharLeito} />}
 
       {/* I2/I3: ocupação por setor + alerta de superlotação (o gestor já vê no mapa acima) */}
-      {!(ehGestor || ehAdmin) && (ocupacao ?? []).length > 0 && (
+      {!(ehGestor || ehAdmin) && !leitoAberto && (ocupacao ?? []).length > 0 && (
         <div className="flex flex-wrap gap-2">
           {(ocupacao ?? []).map((o) => {
             const lotado = o.limite > 0 && o.internados >= o.limite
@@ -401,10 +403,13 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
         </DialogContent>
       </Dialog>
 
-      <p className="flex items-center gap-1.5 text-rotulo text-tinta-sussurro">
-        <UserPlus className="size-3.5" /> Para internar um paciente, use o desfecho do atendimento na porta (internação) e
-        direcione-o para o setor. Transferências entre setores são registradas em auditoria.
-      </p>
+      {/* RS1: o rodapé é da lista, não do leito aberto */}
+      {!leitoAberto && (
+        <p className="flex items-center gap-1.5 text-rotulo text-tinta-sussurro">
+          <UserPlus className="size-3.5" /> Para internar um paciente, use o desfecho do atendimento na porta (internação) e
+          direcione-o para o setor. Transferências entre setores são registradas em auditoria.
+        </p>
+      )}
     </div>
   )
 }
