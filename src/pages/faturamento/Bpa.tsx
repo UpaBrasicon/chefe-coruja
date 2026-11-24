@@ -18,6 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, Receipt } from 'lucide-react'
 import * as React from 'react'
 
+import { EtapasEmPassos } from '@/components/gestor/EtapasEmPassos'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { EnderecoSus } from '@/components/paciente/EnderecoSus'
 import { ProcedimentosRealizados } from '@/components/paciente/ProcedimentosRealizados'
@@ -43,6 +44,18 @@ import { Abas } from '@/components/monitor/Pagina'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Aba = 'competencia' | 'lancar' | 'configuracao' | 'historico'
+// Onde se corrige cada causa (revisão de perfis do Gestor, item 16, M2). Só
+// orientação na tela: a regra da crítica é a do banco e não muda aqui.
+const PACIENTE = 'no cadastro do paciente (recepção)'
+const PROFISSIONAL = 'no cadastro do profissional na unidade (CNS e CBO)'
+const ONDE_CORRIGIR: Record<string, string> = {
+  sem_codigo: 'aba Configuração: código SIGTAP da fonte', procedimento_sigtap: 'aba Configuração: troque o código ou carregue o SIGTAP da competência',
+  instrumento: 'aba Configuração: o procedimento não aceita BPA no SIGTAP',
+  cns_profissional: PROFISSIONAL, cbo: PROFISSIONAL, cbo_enfermagem: PROFISSIONAL, cbo_nao_aceito: PROFISSIONAL,
+  raca: PACIENTE, etnia: PACIENTE, sexo: PACIENTE, nascimento: PACIENTE, documento: PACIENTE, endereco: PACIENTE, nacionalidade: PACIENTE,
+  quantidade_maxima: 'no registro do procedimento (quantidade)',
+}
+
 const ABAS: readonly (readonly [Aba, string])[] = [
   ['competencia', 'Competência'], ['lancar', 'Lançar procedimento'], ['configuracao', 'Configuração'], ['historico', 'Histórico'],
 ]
@@ -151,11 +164,21 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
   const avisos = c.globais.filter((g) => g.tipo === 'aviso')
   const fechada = c.fechamento?.situacao === 'fechada'
 
+  // Revisão de perfis (Gestor, item 16, M2): os problemas por causa, com a
+  // contagem e onde corrigir, em vez do mesmo motivo repetido linha a linha.
+  const causas = Object.entries(c.por_critica).sort(([, a], [, b]) => b - a)
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-2 sm:grid-cols-4">
+      {/* M1: o fechamento em passos, no topo */}
+      <EtapasEmPassos rotulo="Fechamento da competência" passos={['linhas na competência', 'corrigir as críticas', 'fechar a competência', 'baixar o arquivo']}
+        atual={fechada ? 3 : c.total === 0 ? 0 : (bloqueios.length > 0 || c.com_critica > 0) ? 1 : 2} />
+      <div className="grid gap-2 sm:grid-cols-5">
         <Numero rotulo="Linhas na competência" valor={c.total} />
-        <Numero rotulo={c.bpa_c !== undefined ? `Prontas (BPA-I ${c.bpa_i ?? 0} · BPA-C ${c.bpa_c})` : 'Prontas para o arquivo'} valor={c.prontas} />
+        {/* M3: BPA-I em destaque, separado do consolidado */}
+        <Numero rotulo={c.bpa_c !== undefined ? 'Prontas no BPA-I (individualizado)' : 'Prontas para o arquivo'} valor={c.bpa_c !== undefined ? (c.bpa_i ?? 0) : c.prontas}
+          tom={c.bpa_c !== undefined && (c.bpa_i ?? 0) === 0 && c.total > 0 ? 'atencao' : undefined} />
+        {c.bpa_c !== undefined && <Numero rotulo="Prontas no BPA-C (consolidado)" valor={c.bpa_c} />}
         <Numero rotulo="Com crítica (ficam fora)" valor={c.com_critica} tom={c.com_critica > 0 ? 'critico' : undefined} />
         <Numero rotulo="Com aviso (vão com campo vazio)" valor={c.com_aviso} tom={c.com_aviso > 0 ? 'atencao' : undefined} />
       </div>
@@ -222,17 +245,23 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
           <CardDescription>Linha com crítica fica fora do arquivo; com aviso, vai com o campo vazio. O que não fecha no BPA-I e o procedimento aceita no consolidado vai para o BPA-C, com o motivo. Até 500 linhas, as com crítica primeiro.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-apoio">
-          {Object.keys(c.por_critica).length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {Object.entries(c.por_critica).map(([k, n]) => (
-                <Badge key={k} variant="secondary">{CRITICA_BPA[k] ?? k}: {n}</Badge>
+          {causas.length > 0 && (
+            <ul aria-label="Problemas por causa" className="flex flex-col divide-y divide-trilha rounded-controle border border-fio">
+              {causas.map(([k, n]) => (
+                <li key={k} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-3 py-2">
+                  <span className="font-medium text-tinta">{CRITICA_BPA[k] ?? k}</span>
+                  <span className="text-critico tabular-nums">{n === 1 ? '1 linha' : `${n} linhas`}</span>
+                  {ONDE_CORRIGIR[k] && <span className="basis-full text-rotulo text-tinta-sussurro">Onde corrigir: {ONDE_CORRIGIR[k]}</span>}
+                </li>
               ))}
-            </div>
+            </ul>
           )}
           {c.linhas.length === 0 ? (
             <p className="text-tinta-sussurro">Nada para corrigir nesta competência.</p>
           ) : (
-            <ul className="flex flex-col gap-1.5">
+            <details open={causas.length === 0}>
+            <summary className="cursor-pointer text-tinta-apoio">Ver linha a linha ({c.linhas.length})</summary>
+            <ul className="mt-2 flex flex-col gap-1.5">
               {c.linhas.map((l) => (
                 <li key={`${l.origem}-${l.origem_id}`} className="flex flex-col gap-0.5 rounded-controle border border-fio px-3 py-2">
                   <div className="flex flex-wrap items-center gap-2">
@@ -248,6 +277,7 @@ function AbaCompetencia({ unidade, competencia, atual }: { unidade: string; comp
                 </li>
               ))}
             </ul>
+            </details>
           )}
         </CardContent>
       </Card>
