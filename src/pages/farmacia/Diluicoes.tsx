@@ -144,18 +144,52 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
   const selLinha = aba === 'valendo' ? linhas.find((l) => l.id === selecionada) ?? linhas[0] : undefined
   const selDil = aba !== 'valendo' && !nova ? daAba.find((d) => d.id === selecionada) ?? daAba[0] : undefined
   const erroLista = (valendo.error ?? tabela.error) as Error | null
+  // DI2 (revisão do perfil Farmacêutico, RT 24/11/2026): sem nenhuma diluição, um
+  // vazio só com as duas ações; abas zeradas e a ficha à direita só com item.
+  const contagem: Record<AbaDil, number> = { valendo: (valendo.data ?? []).length, rascunho: rascunhos.length, substituido: substituidas.length }
+  const vazioTotal = !!valendo.data && !!tabela.data && contagem.valendo + contagem.rascunho + contagem.substituido === 0
+  const padraoUnidade = (
+    <EnviarArquivo compacto unidade={unidade} tipo="padrao_diluicao" icone={FlaskConical} rotulo="Enviar padrão da unidade"
+      ajuda="O padrão de diluição da unidade no formato em que a farmácia já mantém. Fica registrado como comprovante; o que chega ao prescritor é o que você publica linha a linha." />
+  )
+  if (vazioTotal) {
+    return (
+      <div className="flex flex-col gap-3">
+        <MensagemErro texto={erro ?? (erroLista ? erroLista.message : null)} />
+        {nova ? (
+          <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+            <div className="flex justify-end border-b border-trilha px-5 py-2"><Button size="xs" variant="ghost" onClick={() => setNova(false)}>Voltar</Button></div>
+            <NovaDiluicao unidade={unidade} aoCriar={(id) => { recarregar(); setNova(false); setAba('rascunho'); setSelecionada(id) }}
+              aoPublicar={() => { recarregar(); setNova(false); setAba('valendo'); setSelecionada(null) }} aoErro={setErro} />
+          </div>
+        ) : (
+          <section aria-label="Nenhuma diluição" className="flex flex-col gap-3 rounded-cartao border border-dashed border-fio bg-superficie px-5 py-6">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-corpo font-semibold text-tinta">Nenhuma diluição na unidade ainda</h3>
+              <p className="text-apoio text-pretty text-tinta-sussurro">Envie o padrão que a farmácia já mantém, como comprovante, e publique as linhas que chegam ao prescritor; ou comece por uma diluição nova.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {padraoUnidade}
+              <Button size="sm" onClick={abrirNova}><Plus aria-hidden /> Nova diluição</Button>
+            </div>
+          </section>
+        )}
+      </div>
+    )
+  }
+  const abasVisiveis = (['valendo', 'rascunho', 'substituido'] as const).filter((k) => contagem[k] > 0 || k === aba)
+  const temItem = (aba === 'valendo' ? linhas.length : daAba.length) > 0
 
   return (
     <div className="flex flex-col gap-3">
-      <EnviarArquivo compacto unidade={unidade} tipo="padrao_diluicao" icone={FlaskConical} rotulo="Enviar padrão da unidade"
-        ajuda="O padrão de diluição da unidade no formato em que a farmácia já mantém. Fica registrado como comprovante; o que chega ao prescritor é o que você publica linha a linha." />
+      {padraoUnidade}
       <MensagemErro texto={erro ?? (erroLista ? erroLista.message : null)} />
       <Tabs value={aba} onValueChange={(v) => trocarAba(v as AbaDil)} className="gap-3">
         <div className="flex flex-wrap items-end gap-x-4 gap-y-2 border-b border-fio">
           <TabsList aria-label="Diluição" className="w-auto max-w-full flex-[1_0_auto] gap-5 border-b-0">
-            <TabsTrigger value="valendo">Valendo na unidade <span className="text-rotulo font-semibold text-acao tabular-nums">{(valendo.data ?? []).length}</span></TabsTrigger>
-            <TabsTrigger value="rascunho">Rascunhos <span className={cn('text-rotulo font-semibold tabular-nums', rascunhos.length ? 'text-atencao' : 'text-acao')}>{rascunhos.length}</span></TabsTrigger>
-            <TabsTrigger value="substituido">Substituídas <span className="text-rotulo font-semibold text-acao tabular-nums">{substituidas.length}</span></TabsTrigger>
+            {abasVisiveis.includes('valendo') && <TabsTrigger value="valendo">Valendo na unidade <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem.valendo}</span></TabsTrigger>}
+            {abasVisiveis.includes('rascunho') && <TabsTrigger value="rascunho">Rascunhos <span className={cn('text-rotulo font-semibold tabular-nums', rascunhos.length ? 'text-atencao' : 'text-acao')}>{contagem.rascunho}</span></TabsTrigger>}
+            {abasVisiveis.includes('substituido') && <TabsTrigger value="substituido">Substituídas <span className="text-rotulo font-semibold text-acao tabular-nums">{contagem.substituido}</span></TabsTrigger>}
           </TabsList>
           <div className="flex flex-wrap items-center gap-2 pb-2">
             <label className="relative">
@@ -169,7 +203,7 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
         </div>
       </Tabs>
 
-      <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[280px_minmax(0,1fr)]">
+      <div className={cn('grid overflow-hidden rounded-cartao border border-fio bg-superficie', (temItem || nova) && 'md:grid-cols-[280px_minmax(0,1fr)]')}>
         <div className="flex max-h-[70vh] flex-col overflow-y-auto border-b border-fio md:border-r md:border-b-0">
           {aba === 'valendo' && linhas.map((l) => (
             <BotaoLinha key={l.id} variante="linha" aria-current={l.id === selLinha?.id ? 'true' : undefined} onClick={() => { setSelecionada(l.id); setErro(null) }}
@@ -205,7 +239,7 @@ export default function Diluicoes({ unidade, selecionadaInicial = null }: { unid
             aoMudar={(novoId) => { recarregar(); if (novoId) setSelecionada(novoId) }} />}
           {aba === 'rascunho' && (nova || !selDil) && <NovaDiluicao unidade={unidade} aoCriar={(id) => { recarregar(); setNova(false); setSelecionada(id) }}
             aoPublicar={() => { recarregar(); setNova(false); setAba('valendo'); setSelecionada(null) }} aoErro={setErro} />}
-          {((aba === 'valendo' && !selLinha) || (aba === 'substituido' && !selDil)) && (
+          {temItem && ((aba === 'valendo' && !selLinha) || (aba === 'substituido' && !selDil)) && (
             <p className="px-5 py-4 text-apoio text-tinta-sussurro">Escolha uma linha na lista.</p>
           )}
         </div>
