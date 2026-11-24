@@ -7469,6 +7469,67 @@ export type Database = {
           },
         ]
       }
+      pacientes_pessoas_diferentes: {
+        Row: {
+          decidido_em: string
+          decidido_por: string
+          desfeito_em: string | null
+          desfeito_por: string | null
+          id: string
+          motivo: string
+          organizacao_id: string | null
+          paciente_a: string
+          paciente_b: string
+          unidade_id: string
+        }
+        Insert: {
+          decidido_em?: string
+          decidido_por: string
+          desfeito_em?: string | null
+          desfeito_por?: string | null
+          id?: string
+          motivo: string
+          organizacao_id?: string | null
+          paciente_a: string
+          paciente_b: string
+          unidade_id: string
+        }
+        Update: {
+          decidido_em?: string
+          decidido_por?: string
+          desfeito_em?: string | null
+          desfeito_por?: string | null
+          id?: string
+          motivo?: string
+          organizacao_id?: string | null
+          paciente_a?: string
+          paciente_b?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pacientes_pessoas_diferentes_paciente_a_fkey"
+            columns: ["paciente_a"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacientes_pessoas_diferentes_paciente_b_fkey"
+            columns: ["paciente_b"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacientes_pessoas_diferentes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pacotes_alta: {
         Row: {
           codigo_hash: string
@@ -12017,6 +12078,7 @@ export type Database = {
       descartar_rascunho: { Args: { p_rascunho: string }; Returns: undefined }
       desfazer_decisao_gaviao: { Args: { p_id: string }; Returns: undefined }
       desfazer_pendencia: { Args: { p_pendencia: string }; Returns: undefined }
+      desfazer_pessoas_diferentes: { Args: { p_marca: string }; Returns: undefined }
       desfazer_unificacao: { Args: { p_motivo: string; p_pedido: string }; Returns: undefined }
       diagnosticos_do_leito: {
         Args: { p_internacao: string }
@@ -13106,6 +13168,10 @@ export type Database = {
         Args: { p_motivo: string; p_paciente: string; p_tipo: string }
         Returns: string
       }
+      marcar_pessoas_diferentes: {
+        Args: { p_motivo: string; p_paciente_a: string; p_paciente_b: string }
+        Returns: string
+      }
       marcar_suspeita_infeccao: {
         Args: { p_ativa: boolean; p_paciente: string }
         Returns: undefined
@@ -13522,6 +13588,7 @@ export type Database = {
         Returns: string[]
       }
       pendencias_pep: { Args: { p_unidade: string }; Returns: Json }
+      pessoas_diferentes_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       perguntar_gestao: {
         Args: { p_pergunta: string; p_unidade: string }
         Returns: Json

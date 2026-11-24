@@ -54,6 +54,7 @@
       "tabelas": [
         "public.pacientes",
         "public.pacientes_identidade_provisoria",
+        "public.pacientes_pessoas_diferentes",
         "public.pedidos_unificacao",
         "public.revisoes_cadastro",
         "public.alergias_paciente",
