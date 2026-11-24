@@ -70,6 +70,8 @@ const GaviaoPainel = lazy(() => import('@/pages/admin/GaviaoPainel').then((m) =>
 const Plataformas = lazy(() => import('@/pages/admin/Plataformas'))
 const PendenciasTecnicas = lazy(() => import('@/pages/admin/PendenciasTecnicas'))
 const Servidores = lazy(() => import('@/pages/admin/Servidores'))
+// RT, 24/11/2026: a agenda do administrador (reuniões com o link colado) no lugar da Escala
+const AgendaAdmin = lazy(() => import('@/pages/admin/AgendaAdmin'))
 const ErrosEAlertas = lazy(() => import('@/pages/admin/ErrosEAlertas'))
 const UsoDoApp = lazy(() => import('@/pages/admin/UsoDoApp'))
 const Indicadores = lazy(() => import('@/pages/gestor/Indicadores'))
@@ -388,6 +390,7 @@ export default function App() {
                         <Route path="/plataformas" element={<Plataformas />} />
                         <Route path="/pendencias-tecnicas" element={<PendenciasTecnicas />} />
                         <Route path="/servidores" element={<Servidores />} />
+                        <Route path="/agenda-admin" element={<AgendaAdmin />} />
                         {/* legado */}
                         <Route path="/pessoas" element={<Redirecionar para="/painel?aba=pessoas" />} />
                       </Route>

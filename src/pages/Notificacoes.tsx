@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Ambulance, BedDouble, Bell, CalendarClock, Clock, CornerDownLeft, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
+import { Ambulance, BedDouble, Bell, CalendarClock, Clock, CornerDownLeft, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Video, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -19,7 +19,7 @@ import type { MinhaNotificacao } from '@/types/database'
 // por aviso e "Marcar todas como lidas", com desfazer que volta no servidor
 // (marcar_avisos_lidos / reabrir_avisos). A categoria sai do tipo do aviso.
 
-type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'Encaminhamento' | 'Retorno' | 'AIH' | 'APAC' | 'Exames' | 'RNDS' | 'Outros'
+type Categoria = 'Turno' | 'Observação' | 'Triagem' | 'Farmácia' | 'Leitos' | 'Escala' | 'Candidatura' | 'Mensagem' | 'Regulação' | 'Encaminhamento' | 'Retorno' | 'AIH' | 'APAC' | 'Exames' | 'RNDS' | 'Reunião' | 'Outros'
 
 function categoria(tipo: string): Categoria {
   if (/^(noite|manha|tarde|turno)_/.test(tipo)) return 'Turno'
@@ -41,6 +41,8 @@ function categoria(tipo: string): Categoria {
   if (tipo.startsWith('exame_')) return 'Exames'
   // certificado, credencial e bloqueio da RNDS (Fase 5C, etapa 5.4)
   if (tipo.startsWith('rnds_')) return 'RNDS'
+  // convite, mudança e cancelamento de reunião da agenda do administrador (RT, 24/11/2026)
+  if (tipo.startsWith('reuniao_')) return 'Reunião'
   // cobranças do NIR (Fase 4, tarefa 11): a categoria é o assunto
   const nir = categoriaCobranca(tipo)
   if (nir) return nir
@@ -71,11 +73,12 @@ const VISUAL: Record<Categoria, { icone: LucideIcon; cor: string; acao?: Acao | 
   Exames: { icone: FlaskConical, cor: 'text-critico bg-critico/10', acao: [
     { to: '/atendimento', rotulo: 'Abrir atendimento' }, { to: '/plantao/internacao/pacientes', rotulo: 'Abrir leitos' }, { to: '/enfermagem/internacao', rotulo: 'Abrir internação' }] },
   RNDS: { icone: Send, cor: 'text-atencao bg-atencao/10', acao: { to: '/integracoes?aba=rnds', rotulo: 'Abrir RNDS' } },
+  Reunião: { icone: Video, cor: 'text-acao bg-acao/10', acao: { to: '/agenda-admin', rotulo: 'Abrir agenda' } },
   Outros: { icone: Bell, cor: 'text-tinta-apoio bg-trilha' },
 }
 const FILTROS = ['Todos', 'Não lidos', 'Turno', 'Observação', 'Escala', 'Candidatura', 'Regulação', 'AIH', 'APAC', 'Exames'] as const
 // categorias que só aparecem no filtro quando há aviso delas
-const FILTROS_SE_HOUVER = ['Triagem', 'Farmácia', 'Leitos', 'Encaminhamento', 'Retorno', 'Mensagem', 'RNDS', 'Outros'] as const
+const FILTROS_SE_HOUVER = ['Triagem', 'Farmácia', 'Leitos', 'Encaminhamento', 'Retorno', 'Mensagem', 'RNDS', 'Reunião', 'Outros'] as const
 
 function haQuanto(iso: string) {
   const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)

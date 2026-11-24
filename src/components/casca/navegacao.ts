@@ -257,7 +257,9 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },
     { to: '/pendencias-tecnicas', rotulo: 'Pendências', icone: ClipboardList, exato: true, nota: 'chamados' },
     { to: '/servidores', rotulo: 'Servidores', icone: Gauge, exato: true },
-    { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
+    // RT, 24/11/2026: o administrador não monta escala; a aba vira a agenda do
+    // dia a dia e das reuniões (link colado do Meet, Zoom ou Teams)
+    { to: '/agenda-admin', rotulo: 'Agenda', icone: CalendarDays, exato: true },
     { to: '/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: ShieldCheck, exato: true },
   ],
 }
