@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-30 operações cobrem 327 tabelas.
+31 operações cobrem 328 tabelas.
 
 ## Papéis
 
@@ -41,6 +41,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 15 |
 | Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 21 |
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
+| Anotações pessoais do médico | operador | não | 30 dias depois da última mudança | 1 |
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
 | Auditoria e registro de acesso ao prontuário | operador | sim | 20 anos | 3 |
 | Registro de acesso à aplicação (Marco Civil) | controlador | não | 6 meses | 2 |
@@ -707,6 +708,36 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Tabelas (5)**
 
 `public.preferencias_aviso`, `public.panorama_preferencias`, `public.push_subscriptions`, `public.notificacoes_plantonista`, `public.ferramenta_uso`
+
+### Anotações pessoais do médico
+
+`anotacoes-medico` · papel da Chefe Coruja: **operador** · dado sensível: **não**
+
+**Finalidade.** Lembretes do próprio médico durante o plantão (pedido 7), sem dado de paciente.
+
+**Base legal (LGPD)**
+- art. 7º, V (execução de contrato)
+
+**Titulares**
+- profissionais
+
+**Dados**
+- texto curto do lembrete, marcado como feito ou fixado
+
+**Quem acessa**
+- o próprio médico
+
+**Onde fica**
+- Supabase (São Paulo)
+
+**Prazo.** 30 dias depois da última mudança (decisão do RT de 23/11/2026 (AN3 = A), minimização). Descarte: rotina diária apaga o que venceu.
+
+**Medidas próprias**
+- a tela avisa e pede confirmação quando o texto parece ter CPF, Cartão SUS ou data de nascimento
+
+**Tabelas (1)**
+
+`public.anotacoes_medico`
 
 ### Comunicação interna da equipe
 

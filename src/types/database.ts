@@ -5383,6 +5383,12 @@ export type Database = {
           },
         ]
       }
+      anotacoes_medico: {
+        Row: { id: string; perfil_id: string; texto: string; feita: boolean; fixada: boolean; criada_em: string; alterada_em: string }
+        Insert: { id?: string; perfil_id: string; texto: string; feita?: boolean; fixada?: boolean; criada_em?: string; alterada_em?: string }
+        Update: { id?: string; perfil_id?: string; texto?: string; feita?: boolean; fixada?: boolean; criada_em?: string; alterada_em?: string }
+        Relationships: []
+      }
       ferramenta_uso: {
         Row: {
           chave: string
@@ -13926,6 +13932,9 @@ export type Database = {
         Returns: string
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
+      salvar_anotacao: { Args: { p_id: string | null; p_texto: string }; Returns: string }
+      marcar_anotacao: { Args: { p_id: string; p_feita?: boolean; p_fixada?: boolean }; Returns: undefined }
+      apagar_anotacao: { Args: { p_id: string }; Returns: undefined }
       passometro: { Args: { p_unidade: string }; Returns: Json }
       registrar_impressao_passometro: { Args: { p_unidade: string }; Returns: Json }
       medicos_para_descanso: {
