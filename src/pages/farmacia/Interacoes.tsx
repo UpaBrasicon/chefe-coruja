@@ -3,7 +3,6 @@ import { Pill, Plus } from 'lucide-react'
 import * as React from 'react'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -38,9 +37,12 @@ const SITUACAO: Record<Situacao, { rotulo: string; variante: 'success' | 'outlin
   proposta: { rotulo: 'proposta: não alerta', variante: 'warning' },
   inativa: { rotulo: 'inativa', variante: 'outline' },
 }
+// FM2 (revisão do perfil Farmacêutico, RT 24/11/2026): quase todo par é
+// contraindicado; a gravidade só aparece quando não é, e a cor forte fica para
+// o que pede ação (propostas e grupos sem fármaco).
 const DICA: Record<Aba, string> = {
-  ativa: 'Travam a prescrição até o médico justificar',
-  proposta: 'Ainda não alertam: preencha os grupos e ative',
+  ativa: 'Travam a prescrição até o médico justificar · contraindicadas, salvo as marcadas como grave',
+  proposta: 'Ainda não alertam: preencha os grupos e ative · contraindicadas, salvo as marcadas como grave',
   inativa: 'Não alertam',
   grupos: 'Um medicamento entra no grupo quando o princípio ativo contém o termo inteiro',
 }
@@ -56,6 +58,8 @@ export default function Interacoes() {
   const [aba, setAba] = React.useState<Aba>('ativa')
   const [escolhido, setEscolhido] = React.useState<string | null>(null)
   const [novo, setNovo] = React.useState(false)
+  // FM3: "Preencher os grupos" abre a sequência dos grupos sem fármaco
+  const [sequencia, setSequencia] = React.useState<string[] | null>(null)
   const lista = useQuery({
     queryKey: ['lista-interacoes', unidadeId],
     enabled: !!unidadeId,
@@ -73,6 +77,7 @@ export default function Interacoes() {
   const grupos = l?.grupos ?? []
   const selPar = aba !== 'grupos' && !novo ? pares.find((p) => p.id === escolhido) ?? pares[0] : undefined
   const selGrupo = aba === 'grupos' && !novo ? grupos.find((g) => g.id === escolhido) ?? grupos[0] : undefined
+  const vazios = grupos.filter((g) => g.membros.length === 0)
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -87,8 +92,17 @@ export default function Interacoes() {
             <TabsTrigger value="grupos">Grupos <span className="text-rotulo font-semibold text-acao tabular-nums">{grupos.length}</span></TabsTrigger>
           </TabsList>
         </Tabs>
+        {l?.pode_editar && vazios.length > 0 && !sequencia && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-apoio">
+            <span className="text-atencao">{vazios.length} {vazios.length === 1 ? 'grupo sem fármaco deixa' : 'grupos sem fármaco deixam'} os pares que os usam sem alerta</span>
+            <Button size="xs" variant="outline" onClick={() => setSequencia(vazios.map((g) => g.id))}>Preencher os grupos</Button>
+          </div>
+        )}
         <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
-        {unidadeId && (
+        {unidadeId && l && sequencia && (
+          <PreencherGrupos ids={sequencia} grupos={grupos} pares={l.pares} unidadeId={unidadeId} aoFechar={() => setSequencia(null)} />
+        )}
+        {unidadeId && !sequencia && (
           <div className="grid overflow-hidden rounded-cartao border border-fio bg-superficie md:grid-cols-[minmax(0,1fr)_320px]">
             <section aria-label={aba === 'grupos' ? 'Grupos de fármacos' : 'Pares'} className="flex min-w-0 flex-col border-fio md:border-r">
               <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-2.5">
@@ -105,7 +119,7 @@ export default function Interacoes() {
                 : (
                   <Table aria-label="Pares de interação">
                     <TableHeader><TableRow className="hover:bg-transparent">
-                      <TableHead className="pl-4">Par</TableHead><TableHead className="pr-4">Gravidade</TableHead>
+                      <TableHead className="px-4">Par</TableHead>
                     </TableRow></TableHeader>
                     <TableBody>
                       {pares.map((p) => {
@@ -113,13 +127,15 @@ export default function Interacoes() {
                         return (
                           <TableRow key={p.id} aria-selected={p.id === selPar?.id} onClick={() => { setEscolhido(p.id); setNovo(false) }}
                             className={cn('cursor-pointer', p.id === selPar?.id && 'bg-alerta-marca hover:bg-alerta-marca')}>
-                            <TableCell className="pl-4 whitespace-normal">
+                            <TableCell className="px-4 whitespace-normal">
                               <BotaoLinha variante="linha" className="flex-col gap-0.5 border-0 p-0 hover:bg-transparent" onClick={() => { setEscolhido(p.id); setNovo(false) }}>
-                                <span className="font-medium text-tinta">{p.grupo_a} <span className="text-tinta-sussurro">×</span> {p.grupo_b}</span>
+                                <span className="flex flex-wrap items-baseline gap-x-2 font-medium text-tinta">
+                                  <span>{p.grupo_a} <span className="text-tinta-sussurro">×</span> {p.grupo_b}</span>
+                                  <Gravidade g={p.gravidade} />
+                                </span>
                                 {faltam.length > 0 && <span className="text-rotulo text-atencao">{faltam.map((g) => g.nome).join(' e ')} sem fármaco</span>}
                               </BotaoLinha>
                             </TableCell>
-                            <TableCell className="pr-4"><Gravidade g={p.gravidade} /></TableCell>
                           </TableRow>
                         )
                       })}
@@ -166,8 +182,56 @@ export default function Interacoes() {
   )
 }
 
+/** FM2: na lista, só a gravidade que não é a contraindicada, sem cor de alarme. */
 function Gravidade({ g }: { g: ParInteracao['gravidade'] }) {
-  return <Badge variant={g === 'contraindicada' ? 'destructive' : 'warning'} className="tracking-normal normal-case">{g}</Badge>
+  if (g === 'contraindicada') return null
+  return <span className="text-rotulo font-normal text-tinta-apoio">{g}</span>
+}
+
+/**
+ * FM3: os grupos sem fármaco um a um (grupo 1 de N, Salvar e próximo), com o
+ * mesmo salvar_grupo_interacao da ficha do grupo.
+ */
+function PreencherGrupos({ ids, grupos, pares, unidadeId, aoFechar }: {
+  ids: string[]; grupos: GrupoInteracao[]; pares: ParInteracao[]; unidadeId: string; aoFechar: () => void
+}) {
+  const recarregar = useRecarregar(unidadeId)
+  const [k, setK] = React.useState(0)
+  const [membros, setMembros] = React.useState('')
+  const g = grupos.find((x) => x.id === ids[k])
+  const ultimo = k + 1 >= ids.length
+  const proximo = () => { if (ultimo) aoFechar(); else { setK(k + 1); setMembros('') } }
+  const salvar = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('salvar_grupo_interacao', { p_unidade: unidadeId, p_nome: g!.nome, p_principios: lerPrincipios(membros) })
+      if (error) throw error
+    },
+    onSuccess: () => { recarregar(); proximo() },
+  })
+  if (!g) return null
+  const usos = pares.filter((p) => p.grupo_a_id === g.id || p.grupo_b_id === g.id)
+  return (
+    <section aria-label="Preencher os grupos sem fármaco" className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-5 py-4">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className="text-apoio text-tinta-sussurro tabular-nums">Grupo {k + 1} de {ids.length}</span>
+        <h3 className="text-corpo font-semibold text-tinta">{g.nome}</h3>
+        <Button size="xs" variant="ghost" className="ml-auto" onClick={aoFechar}>Sair</Button>
+      </div>
+      {usos.length > 0 && (
+        <p className="text-apoio text-tinta-sussurro">Nos pares: {usos.map((p) => `${p.grupo_a} × ${p.grupo_b}`).join(', ')}</p>
+      )}
+      <Textarea key={g.id} aria-label={`Princípios ativos de ${g.nome}`} rows={3} autoFocus value={membros} onChange={(e) => setMembros(e.target.value)}
+        placeholder="Princípios ativos, separados por vírgula (ex.: fluoxetina, sertralina)" />
+      <span className="text-rotulo text-tinta-sussurro">Princípios ativos como no cadastro (sem acento não importa).</span>
+      <MensagemErro texto={salvar.error ? (salvar.error as Error).message : null} />
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={lerPrincipios(membros).length === 0 || salvar.isPending} onClick={() => salvar.mutate()}>
+          {ultimo ? 'Salvar e concluir' : 'Salvar e próximo'}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={proximo}>{ultimo ? 'Concluir sem salvar' : 'Pular'}</Button>
+      </div>
+    </section>
+  )
 }
 
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
@@ -207,7 +271,7 @@ function FichaPar({ p, grupos, unidadeId, podeEditar, irAoGrupo, aoSalvar }: {
     <section aria-label={`Par ${p.grupo_a} e ${p.grupo_b}`} className="flex flex-col gap-4 px-5 py-4">
       <div className="flex flex-col gap-1.5">
         <h3 className="text-corpo font-semibold text-tinta">{p.grupo_a} <span className="text-tinta-sussurro">×</span> {p.grupo_b}</h3>
-        <div className="flex flex-wrap items-center gap-2"><Gravidade g={p.gravidade} /><Estado tom={tomDaVariante(st.variante)}>{st.rotulo}</Estado></div>
+        <div className="flex flex-wrap items-center gap-2"><span className="text-apoio text-tinta-apoio">{p.gravidade}</span><Estado tom={tomDaVariante(st.variante)}>{st.rotulo}</Estado></div>
       </div>
       <dl className="flex flex-col">
         <Campo rotulo="Efeito">{frase(p.efeito)}</Campo>
