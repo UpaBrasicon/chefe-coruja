@@ -19,7 +19,8 @@ export default function AreaInternacao({ aba }: { aba: AbaInternacao }) {
   // RS1 (RT, 24/11/2026): com um leito aberto (?paciente=), o leito ocupa a tela
   // inteira; as abas e o título da Internação voltam ao fechar o leito
   const [params] = useSearchParams()
-  const leitoAberto = aba === 'internacao' && !!params.get('paciente')
+  // OB3: na Observação, o paciente aberto também ocupa a tela inteira
+  const leitoAberto = (aba === 'internacao' || aba === 'observacao') && !!params.get('paciente')
   return (
     <>
       {!leitoAberto && <AbasInternacao />}
@@ -27,7 +28,7 @@ export default function AreaInternacao({ aba }: { aba: AbaInternacao }) {
         <TituloPagina icone={Hospital} titulo="Internação"
           descricao="Pacientes internados: o leito aberto tem o caderno com resumo, evoluções, prescrição e documentos." />
       )}
-      {aba === 'observacao' && (
+      {aba === 'observacao' && !leitoAberto && (
         <TituloPagina icone={Eye} titulo="Observação" descricao="Pacientes em observação, por no máximo 6 horas." />
       )}
       <Suspense fallback={<div className="flex h-40 items-center justify-center"><Spinner /></div>}>

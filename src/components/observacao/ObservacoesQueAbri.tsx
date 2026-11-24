@@ -21,14 +21,14 @@ import { dataIso } from '@/lib/formato'
 import { nomeExibido, type ObservacaoQueAbri } from '@/lib/observacoesQueAbri'
 import { rotuloIdade } from '@/domain/idade'
 import { Button } from '@/components/ui/button'
-import { TableCell, TableRow } from '@/components/ui/table'
+import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
+import { tempoNaObservacao } from '@/lib/observacaoLista'
 import { Estado } from '@/components/porta/Estado'
 import { AlergiasEventos, SeloAlergia } from '@/components/paciente/AlergiasEventos'
 import { MenuMais } from '@/components/plantao/MenuMais'
 
-import { hhmm, msgErro, relogioPermanencia, type Acao } from './modelo'
+import { TOM_BARRA, msgErro, relogioPermanencia, type Acao } from './modelo'
 import { Painel, PainelDesfecho, PainelReavaliar } from './PaineisCartao'
-import { PrazoSeisHoras } from './PrazoSeisHoras'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 
 type PainelQueAbri = 'desfecho' | 'reavaliar' | 'parecer' | 'alergias'
@@ -55,62 +55,62 @@ export function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; ag
   }
 
   const rel = relogioPermanencia(o.entrada, o.prazo, agora)
+  const tempo = tempoNaObservacao(o.entrada, agora)
   const idade = o.data_nascimento ? rotuloIdade(o.data_nascimento, dataIso()) : null
+  const TITULO: Record<PainelQueAbri, string> = { desfecho: 'Definir conduta', reavaliar: 'Reavaliar', parecer: 'Pedir parecer', alergias: 'Alergias' }
 
+  // OB1 e OO1 (RT, 24/11/2026): a mesma linha da lista, sem tabela; as ações numa gaveta lateral
   return (
-    <>
-      <TableRow className={cn('align-top', aberto && 'border-b-0')}>
-        <TableCell className="pl-5 font-semibold text-acao">{o.box ?? 'Sem box'}</TableCell>
-        <TableCell className="whitespace-normal">
-          <div className="flex min-w-[200px] flex-col gap-1">
-            <span className="text-corpo font-medium text-tinta">
-              {nomeExibido(o)} {idade && <span className="text-apoio font-normal text-tinta-sussurro">{idade}</span>}
-            </span>
-            <span className="text-apoio text-tinta-sussurro">{o.setor_nome}</span>
-            <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1"><SeloAlergia pacienteId={o.paciente_id} /></span>
+    <div className="border-b border-trilha last:border-b-0">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
+        <span className="w-[64px] shrink-0 text-apoio font-semibold text-acao">{o.box ?? 'Sem box'}</span>
+        <div className="flex min-w-0 flex-[2_1_220px] flex-col gap-0.5">
+          <span className="text-corpo font-medium text-tinta">
+            {nomeExibido(o)} {idade && <span className="text-apoio font-normal text-tinta-sussurro">{idade}</span>}
+          </span>
+          <span className="text-apoio text-tinta-sussurro">{o.setor_nome}</span>
+          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1"><SeloAlergia pacienteId={o.paciente_id} /></span>
+        </div>
+        <div className="flex min-w-0 flex-[1_1_200px] flex-col items-start gap-0.5">
+          <Estado tom="cinza">Com a equipe do setor</Estado>
+          <span className="pl-[17px] text-rotulo text-tinta-sussurro">Você abriu esta observação pela porta</span>
+        </div>
+        <div className="flex w-[150px] shrink-0 flex-col gap-1 tabular-nums">
+          <span className={cn('text-apoio', rel.acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{tempo.ha}</span>
+          <div role="meter" aria-label="Prazo de 6 horas" aria-valuemin={0} aria-valuemax={100} aria-valuenow={rel.pct}
+            title={rel.contagem} className="h-1.5 w-full overflow-hidden rounded-capsula bg-trilha">
+            <div className={cn('h-full rounded-capsula', TOM_BARRA[rel.tom])} style={{ width: `${rel.pct}%` }} />
           </div>
-        </TableCell>
-        <TableCell className="whitespace-normal">
-          <div className="flex min-w-[160px] flex-col items-start gap-0.5">
-            <Estado tom="cinza">Com a equipe do setor</Estado>
-            <span className="pl-[17px] text-rotulo text-tinta-sussurro">Você abriu esta observação pela porta</span>
-          </div>
-        </TableCell>
-        <TableCell className="tabular-nums">
-          <span className={cn(rel.acima ? 'font-semibold text-observacao' : 'text-tinta-apoio')}>{rel.permanencia}</span>
-          <div className="text-rotulo text-tinta-sussurro">desde {hhmm(o.entrada)}</div>
-        </TableCell>
-        <TableCell className="tabular-nums"><PrazoSeisHoras entrada={o.entrada} prazo={o.prazo} agora={agora} /></TableCell>
-        <TableCell className="pr-5">
-          <div className="flex flex-nowrap justify-end gap-[7px]">
-            <Button size="sm" aria-expanded={painel === 'desfecho'} onClick={() => alternar('desfecho')}>Definir conduta</Button>
-            <MenuMais icone rotuloAcessivel={`Mais ações para ${nomeExibido(o)}`} itens={[
-              { chave: 'reavaliar', rotulo: 'Reavaliar', ativo: painel === 'reavaliar', onSelecionar: () => alternar('reavaliar') },
-              { chave: 'parecer', rotulo: 'Pedir parecer', ativo: painel === 'parecer', onSelecionar: () => alternar('parecer') },
-              { chave: 'alergias', rotulo: 'Alergias', ativo: painel === 'alergias', onSelecionar: () => alternar('alergias') },
-            ]} />
-          </div>
-        </TableCell>
-      </TableRow>
-      {aberto && (
-        <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={6} className="px-0 pt-0 pb-0 whitespace-normal">
-            {painel === 'desfecho' && <PainelDesfecho linha={o} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
-            {painel === 'reavaliar' && <PainelReavaliar linha={o} acao={acao} fechar={fechar} erro={erro} />}
-            {painel === 'parecer' && (
-              <Painel titulo="Parecer">
-                <AbaParecer pacienteId={o.paciente_id} internacaoId={o.internacao_id} />
-              </Painel>
-            )}
-            {/* quem abriu registra alergia enquanto a observação está aberta (RT, 08/11/2026) */}
-            {painel === 'alergias' && (
-              <Painel titulo="Alergias e eventos adversos">
-                <AlergiasEventos pacienteId={o.paciente_id} />
-              </Painel>
-            )}
-          </TableCell>
-        </TableRow>
-      )}
-    </>
+          <span className="text-rotulo text-tinta-sussurro">{tempo.desde}</span>
+        </div>
+        <div className="ml-auto flex shrink-0 items-center gap-[7px]">
+          <Button size="sm" onClick={() => alternar('desfecho')}>Definir conduta</Button>
+          <MenuMais icone rotuloAcessivel={`Mais ações para ${nomeExibido(o)}`} itens={[
+            { chave: 'reavaliar', rotulo: 'Reavaliar', onSelecionar: () => alternar('reavaliar') },
+            { chave: 'parecer', rotulo: 'Pedir parecer', onSelecionar: () => alternar('parecer') },
+            { chave: 'alergias', rotulo: 'Alergias', onSelecionar: () => alternar('alergias') },
+          ]} />
+        </div>
+      </div>
+      <Gaveta aberta={aberto} onAbertaChange={(v) => { if (!v) fechar() }} rotulo={`${painel ? TITULO[painel] : ''} · ${nomeExibido(o)}`}
+        className={painel === 'desfecho' || painel === 'parecer' ? 'max-w-[680px]' : undefined}>
+        {painel && <GavetaCabeca sobre={TITULO[painel]} titulo={nomeExibido(o)} detalhe={[o.box, o.setor_nome].filter(Boolean).join(' · ')} />}
+        <div className="flex flex-col gap-2 py-3">
+          {painel === 'desfecho' && <PainelDesfecho linha={{ ...o, nome: nomeExibido(o) }} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
+          {painel === 'reavaliar' && <PainelReavaliar linha={o} acao={acao} fechar={fechar} erro={erro} />}
+          {painel === 'parecer' && (
+            <Painel titulo="Parecer">
+              <AbaParecer pacienteId={o.paciente_id} internacaoId={o.internacao_id} />
+            </Painel>
+          )}
+          {/* quem abriu registra alergia enquanto a observação está aberta (RT, 08/11/2026) */}
+          {painel === 'alergias' && (
+            <Painel titulo="Alergias e eventos adversos">
+              <AlergiasEventos pacienteId={o.paciente_id} />
+            </Painel>
+          )}
+        </div>
+      </Gaveta>
+    </div>
   )
 }
