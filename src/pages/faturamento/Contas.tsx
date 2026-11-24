@@ -35,6 +35,7 @@ import { competenciaNaTela } from '@/lib/aih'
 import { rotuloUnidade } from '@/lib/unidadeConsumo'
 import { codigoSigtapNaTela, type ProfissionalParaFaturar } from '@/lib/bpa'
 import { fmtData, fmtDataHora } from '@/lib/datas'
+import { custoNaTela, totalMateriais, valorDaLinha } from '@/lib/custoMaterial'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { CartaoGlosa, RegistrarGlosa } from '@/pages/faturamento/Glosas'
@@ -612,6 +613,8 @@ function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer:
     onSuccess: () => { setRetirar(null); setMotivo(''); aoMudar() },
   })
   const mats = c.materiais ?? []
+  // custo unitário (RT, 24/11/2026): quantidade × custo congelado no lançamento
+  const total = totalMateriais(mats)
   return (
     <section className="flex flex-col gap-2">
       <TituloSecao className="mb-0" extra={c.congelada_em ? `congelados no fechamento, ${fmtDataHora(c.congelada_em)}` : 'lançados à mão pelo faturamento'}>
@@ -619,9 +622,10 @@ function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer:
       </TituloSecao>
       {mats.length === 0 ? <p className="text-tinta-sussurro">Nenhum material lançado nesta conta.</p> : (
         <div className="overflow-x-auto rounded-controle border border-fio">
-          <Table variante="referencia" className="w-full min-w-[520px] text-apoio">
+          <Table variante="referencia" className="w-full min-w-[720px] text-apoio">
             <TableHeader className="border-b border-fio text-left text-rotulo text-tinta-sussurro">
               <TableRow><TableHead className="px-2 py-1.5 font-medium">Material</TableHead><TableHead className="px-2 py-1.5 font-medium">Quantidade</TableHead>
+                <TableHead className="px-2 py-1.5 text-right font-medium">Custo unitário</TableHead><TableHead className="px-2 py-1.5 text-right font-medium">Valor</TableHead>
                 <TableHead className="px-2 py-1.5 font-medium">Lançado</TableHead><TableHead /></TableRow>
             </TableHeader>
             <TableBody>
@@ -639,6 +643,12 @@ function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer:
                     )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap px-2 py-1.5">{quantidadeNaTela(m.quantidade)} {m.unidade_consumo}</TableCell>
+                  <TableCell className={`whitespace-nowrap px-2 py-1.5 text-right tabular-nums${m.custo_unitario == null ? ' text-tinta-sussurro' : ''}`}>
+                    {custoNaTela(m.custo_unitario)}
+                  </TableCell>
+                  <TableCell className={`whitespace-nowrap px-2 py-1.5 text-right tabular-nums${m.retirado_em ? ' line-through' : ' font-medium text-tinta'}`}>
+                    {m.custo_unitario == null ? <span className="font-normal text-tinta-sussurro">—</span> : custoNaTela(m.valor ?? valorDaLinha(m.quantidade, m.custo_unitario))}
+                  </TableCell>
                   <TableCell className="whitespace-nowrap px-2 py-1.5 text-tinta-sussurro">{fmtDataHora(m.lancado_em)}{m.lancado_por ? ` · ${m.lancado_por}` : ''}</TableCell>
                   <TableCell className="px-2 py-1.5 text-right">
                     {podeMexer && !m.retirado_em && (
@@ -650,8 +660,17 @@ function MateriaisConta({ c, podeMexer, aoMudar }: { c: ContaDetalhe; podeMexer:
             </TableBody>
             <TableFooter className="border-t-0 bg-transparent font-normal">
               <TableRow className="border-t border-fio">
-                <TableCell colSpan={4} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
-                  Sem valor e sem baixa de estoque: o consumo fica registrado na conta. Material sem código SIGTAP só gera aviso.
+                <TableCell colSpan={3} className="px-2 py-1.5 font-medium text-tinta">Total dos materiais</TableCell>
+                <TableCell className={`whitespace-nowrap px-2 py-1.5 text-right tabular-nums${total.total == null ? ' text-tinta-sussurro' : ' font-medium text-tinta'}`}>
+                  {custoNaTela(total.total)}
+                </TableCell>
+                <TableCell colSpan={2} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
+                  {total.semCusto > 0 ? (total.semCusto === 1 ? '1 material sem custo fica fora do total' : `${total.semCusto} materiais sem custo ficam fora do total`) : null}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan={6} className="px-2 py-1.5 text-rotulo text-tinta-sussurro">
+                  O custo é o do dia do lançamento; mudar o cadastro depois não muda esta conta. Sem baixa de estoque. Material sem código SIGTAP só gera aviso.
                 </TableCell>
               </TableRow>
             </TableFooter>
@@ -728,6 +747,13 @@ function LancarMaterial({ c, aoMudar }: { c: ContaDetalhe; aoMudar: () => void }
         <Input id="mat-obs" className="h-8" maxLength={300} value={obs} onChange={(e) => setObs(e.target.value)} />
       </div>
       {quantidade.trim() !== '' && qtd === null && <span className="text-rotulo text-critico">Quantidade maior que zero, com até 2 casas decimais.</span>}
+      {escolhido && (
+        <span className="text-rotulo text-tinta-sussurro">
+          {escolhido.custo_unitario == null
+            ? 'Este material está sem custo no cadastro; entra na conta sem valor.'
+            : `Custo unitário de hoje: ${custoNaTela(escolhido.custo_unitario)}${qtd !== null ? ` · valor na conta: ${custoNaTela(valorDaLinha(qtd, escolhido.custo_unitario))}` : ''}`}
+        </span>
+      )}
       {lancar.error && <p role="alert" className="text-critico">{(lancar.error as Error).message}</p>}
       <div className="flex justify-end gap-2">
         <Button size="sm" variant="ghost" onClick={() => setAberto(false)}>Cancelar</Button>
