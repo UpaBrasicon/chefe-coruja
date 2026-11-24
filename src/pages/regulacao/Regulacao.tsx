@@ -35,6 +35,8 @@ import { useSearchParams } from 'react-router-dom'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
+import { PacientesRegulacao } from '@/components/regulacao/PacientesRegulacao'
 import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
@@ -124,7 +126,7 @@ export default function Regulacao() {
   const unidadeId = modoAdmin ? '' : unidadeAtiva?.unidade_id ?? ''
   const souGestorDaUnidade = papeisDaUnidade.includes('gestor')
   const [recemEnviada, setRecemEnviada] = React.useState<string | null>(null)
-  const [aba, setAba] = React.useState<'pedidos' | 'indicadores'>('pedidos')
+  const [aba, setAba] = React.useState<'pedidos' | 'indicadores' | 'pacientes'>('pedidos')
   // 5A, tarefa 5 (H2): vindo da consulta da UBS, o formulário abre preenchido
   const [busca] = useSearchParams()
   const pacienteUrl = busca.get('paciente')
@@ -165,10 +167,14 @@ export default function Regulacao() {
       {c && (c.sou_central || (c.central && souGestorDaUnidade)) && (
         <div className="flex gap-1.5" role="tablist" aria-label="Regulação">
           <Button size="sm" role="tab" aria-selected={aba === 'pedidos'} variant={aba === 'pedidos' ? 'default' : 'outline'} onClick={() => setAba('pedidos')}>Pedidos</Button>
+          {/* gestor da unidade (RT, 24/11/2026): os internados por setor, o que está pendente e o que o regulador pergunta */}
+          {!c.sou_central && <Button size="sm" role="tab" aria-selected={aba === 'pacientes'} variant={aba === 'pacientes' ? 'default' : 'outline'} onClick={() => setAba('pacientes')}>Pacientes por setor</Button>}
           <Button size="sm" role="tab" aria-selected={aba === 'indicadores'} variant={aba === 'indicadores' ? 'default' : 'outline'} onClick={() => setAba('indicadores')}>Indicadores</Button>
         </div>
       )}
-      {c && aba === 'indicadores' && (c.sou_central || (c.central && souGestorDaUnidade)) ? (
+      {c && aba === 'pacientes' && !c.sou_central && c.central && souGestorDaUnidade ? (
+        <PacientesRegulacao unidadeId={unidadeId} modo="gestor" />
+      ) : c && aba === 'indicadores' && (c.sou_central || (c.central && souGestorDaUnidade)) ? (
         <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
       ) : !unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <MensagemErro texto={(ctx.error as Error).message} /> : !c ? null
         : c.sou_central ? (
@@ -816,6 +822,8 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       <PrazosDoPedido id={s.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
         podeEvoluir={!central && !!s.pode_evoluir} aoFim={recarregar} />
       <AnexosRegulacao solicitacaoId={s.id} />
+      {/* R3 (RT, 24/11/2026): a conversa da origem com o médico regulador */}
+      <ConversaRegulacao solicitacaoId={s.id} aoEnviar={recarregar} />
       {/* lacuna 7 (T9): o documento de transferência da origem (origem, central, NIR e destino na rede) */}
       {(s.tipo === 'transferencia' || s.tipo === 'leito') && <LeituraTransferencia solicitacaoId={s.id} />}
       {!central && (s.origem_pode_responder || (souNir && s.origem.id === unidadeId)) && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
