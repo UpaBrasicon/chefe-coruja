@@ -24,6 +24,11 @@ const BUSCAS: [arquivo: string, chave: string][] = [
   ['src/components/prescricao/PrescricaoEstruturada.tsx', 'busca-medicamento'],
   ['src/components/documentos/AtestadoReceita.tsx', 'busca-medicamento-receita'],
   ['src/pages/farmacia/Dispensacao.tsx', 'busca-medicamento-avulsa'],
+  // pedido 3 do checklist de desempenho (F4): as quatro que ficaram fora do #511
+  ['src/pages/plantao/porta/AbaExames.tsx', 'buscar-exames'],
+  ['src/pages/regulacao/Regulacao.tsx', 'regulacao-busca-paciente'],
+  ['src/pages/PreferenciasPrescricao.tsx', 'busca-medicamento'],
+  ['src/pages/ReferenciaDiluicao.tsx', 'medicamento-catalogo'],
 ]
 
 test('cada busca usa um valor adiado na chave da consulta', () => {
