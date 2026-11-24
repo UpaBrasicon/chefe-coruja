@@ -37,7 +37,8 @@
         "recepção",
         "enfermagem",
         "médico",
-        "gestor da unidade"
+        "gestor da unidade",
+        "farmácia (só idade e alergias, do paciente com item a validar ou dispensar)"
       ],
       "local": [
         "Supabase (São Paulo)",
@@ -678,7 +679,9 @@
         "dispensações e devoluções",
         "movimentos de estoque",
         "faltas e respostas",
-        "arquivos da farmácia"
+        "arquivos da farmácia",
+        "idade, alergias ativas e peso da prescrição do paciente com item a validar ou dispensar (decisão do RT de 24/11/2026)",
+        "leito e próximo horário aprazado de quem fica sem o medicamento em falta"
       ],
       "sensivel": true,
       "acesso": [
@@ -694,7 +697,10 @@
         "base": "Lei 13.787/2018; prazo fiscal",
         "descarte": "rotina com registro, depois do prazo (V3)"
       },
-      "seguranca": [],
+      "seguranca": [
+        "idade e alergias só pela função contexto_paciente_farmacia: farmacêutico da unidade e só do paciente com item de medicamento ativo; sem nome, CPF, CNS ou data de nascimento; cada leitura entra em log_acesso_prontuario (motivo validacao_farmacia)",
+        "leito e próximo horário só pela função pacientes_das_faltas, com o mesmo acesso da dispensação e só dos itens com falta aberta"
+      ],
       "tabelas": [
         "public.estoque_medicamento",
         "public.movimentos_estoque",
