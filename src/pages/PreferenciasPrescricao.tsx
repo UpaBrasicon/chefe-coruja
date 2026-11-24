@@ -28,6 +28,7 @@ import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
 import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Medicamento = { id: string; principio_ativo: string; apresentacao: string | null; concentracao: string | null }
 type Favorito = {
@@ -148,15 +149,17 @@ function NovoFavorito({ aoSalvar }: { aoSalvar: () => void }) {
   const [f, setF] = React.useState(FORM_VAZIO)
 
   const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
+  // pedido 3: a consulta espera a pessoa parar de digitar (300 ms)
+  const buscaAdiada = useValorAdiado(busca)
   const resultados = useQuery({
-    queryKey: ['busca-medicamento', busca, unidadeBusca],
-    enabled: busca.trim().length >= 3 && !med,
+    queryKey: ['busca-medicamento', buscaAdiada, unidadeBusca],
+    enabled: buscaAdiada.trim().length >= 3 && !med,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('medicamento')
         .select('id, principio_ativo, apresentacao, concentracao')
         .eq('ativo', true).or(filtroDaUnidade(unidadeBusca))
-        .ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`)
+        .ilike('principio_ativo_norm', `%${normalizarMedicamento(buscaAdiada.trim())}%`)
         .order('principio_ativo')
         .limit(15)
       if (error) throw error

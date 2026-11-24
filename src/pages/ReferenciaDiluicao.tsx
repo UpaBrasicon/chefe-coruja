@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
 import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { dataPura } from '@/lib/formato'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
@@ -65,8 +66,11 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
   const [busca, setBusca] = React.useState('')
 
   const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
+  // pedido 3: a consulta espera a pessoa parar de digitar (300 ms); sem termo,
+  // a lista inicial sai na hora como antes
+  const buscaAdiada = useValorAdiado(busca)
   const { data: medicamentos, isLoading } = useQuery({
-    queryKey: ['medicamento-catalogo', busca, unidadeBusca],
+    queryKey: ['medicamento-catalogo', buscaAdiada, unidadeBusca],
     enabled: true,
     queryFn: async () => {
       let query = supabase
@@ -75,8 +79,8 @@ export default function ReferenciaDiluicao({ embutido = false }: { embutido?: bo
         .eq('ativo', true).or(filtroDaUnidade(unidadeBusca))
         .order('principio_ativo')
         .limit(200)
-      if (busca.trim().length >= 2) {
-        query = query.ilike('principio_ativo_norm', `%${normalizarMedicamento(busca.trim())}%`)
+      if (buscaAdiada.trim().length >= 2) {
+        query = query.ilike('principio_ativo_norm', `%${normalizarMedicamento(buscaAdiada.trim())}%`)
       }
       const { data, error } = await query
       if (error) throw error
