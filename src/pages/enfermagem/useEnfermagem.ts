@@ -5,7 +5,8 @@ import { useQuery } from '@tanstack/react-query'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
-import { ativasPorPaciente, type ContencaoAtiva } from '@/lib/contencao'
+import { ativasPorPaciente, selosDaContencao, type ContencaoAtiva } from '@/lib/contencao'
+import { SEM_PENDENCIA, type PendenciasPaciente } from '@/lib/pendenciasEnfermagem'
 import { resumoValidade } from '@/lib/validadePrescricao'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -78,23 +79,65 @@ export function useSetoresDaEscala() {
 /** Tipos de setor que contam como internação (fora da porta e da observação). */
 export const TIPOS_INTERNACAO = ['internacao', 'uti', 'isolamento']
 
-/** Setores da escala agora com o tipo, para saber se há internação entre eles. */
-export function useTiposDaEscala() {
+export type SetorDaEscala = { id: string; nome: string; tipo: string }
+
+/**
+ * Setores da escala agora com o nome e o tipo. TE3 (RT 24/11/2026): o
+ * Pronto-Socorro da enfermagem fica com os setores de porta e observação; a
+ * Internação, com os de internação (TIPOS_INTERNACAO).
+ */
+export function useSetoresComTipo() {
   const setores = useSetoresDaEscala()
   const meus = setores.data ?? []
-  const tipos = useQuery({
-    queryKey: ['setores-tipos', meus],
+  const q = useQuery({
+    queryKey: ['setores-da-escala-tipos', meus],
     enabled: meus.length > 0,
     staleTime: 10 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from('setores').select('id, tipo').in('id', meus)
+      const { data, error } = await supabase.from('setores').select('id, nome, tipo').in('id', meus).order('nome')
       if (error) throw error
-      return (data ?? []).map((s) => s.tipo as string)
+      return (data ?? []) as SetorDaEscala[]
     },
   })
+  const lista = q.data ?? []
   return {
-    carregando: setores.isLoading || (meus.length > 0 && tipos.isLoading),
-    tipos: tipos.data ?? [],
+    carregando: setores.isLoading || (meus.length > 0 && q.isLoading),
+    erro: setores.error ?? q.error,
+    /** a escala agora tem algum setor (antes de saber os tipos) */
+    naEscala: meus.length > 0,
+    internacao: lista.filter((s) => TIPOS_INTERNACAO.includes(s.tipo)),
+    porta: lista.filter((s) => !TIPOS_INTERNACAO.includes(s.tipo)),
+  }
+}
+
+/** Setores da escala agora com o tipo, para saber se há internação entre eles. */
+export function useTiposDaEscala() {
+  const s = useSetoresComTipo()
+  return { carregando: s.carregando, tipos: [...s.internacao, ...s.porta].map((x) => x.tipo) }
+}
+
+/**
+ * As pendências do plantão por paciente (PS1, IN3): aprazamentos atrasados,
+ * validade da prescrição e contenção ativa. Fugulin e Dini entram pela tela
+ * da Internação, que lê a classificação de hoje.
+ */
+export function usePendenciasPorPaciente(agora: number) {
+  const pendencias = usePendenciasEnfermagem()
+  const atrasados = atrasadosPorPaciente(pendencias.data)
+  const contencoes = useContencoesAtivas()
+  const validade = useValidadePorPaciente(agora)
+  return (pacienteId: string, extra?: Partial<PendenciasPaciente>): PendenciasPaciente => {
+    const v = validade.get(pacienteId)
+    const c = contencoes.get(pacienteId)
+    const selo = c ? selosDaContencao(c)[0] : undefined
+    return {
+      ...SEM_PENDENCIA,
+      vencidos: v?.vencidos ?? 0,
+      vencendo: v?.vencendo ?? 0,
+      atrasados: atrasados.get(pacienteId) ?? 0,
+      contencao: c ? { texto: selo?.texto ?? 'Em contenção mecânica', critico: selo?.tom === 'critico' } : null,
+      ...extra,
+    }
   }
 }
 
@@ -150,6 +193,27 @@ export function useValidadePorPaciente(agora: number) {
     porPaciente.set(l.paciente_id, [...(porPaciente.get(l.paciente_id) ?? []), l])
   }
   return new Map([...porPaciente].map(([id, itens]) => [id, resumoValidade(itens, agora)]))
+}
+
+export type SituacaoLeito = Fn['situacao_leitos']['Returns'][number]
+
+// lacuna 5 (O5): o leito do óbito segue ocupado, com o corpo, até a liberação
+export const situacaoDoLeito = (l: { status: string; motivo: string | null }) => (l.status === 'ocupado' && l.motivo === 'aguardando_corpo' ? 'aguardando_corpo' : l.status)
+/** Leito sem paciente na lista da enfermagem: livre, reservado, em higienização, bloqueado ou com o corpo. */
+export const leitoSemPaciente = (l: SituacaoLeito) => l.status !== 'ocupado' || situacaoDoLeito(l) === 'aguardando_corpo'
+
+/** A situação dos leitos da unidade (situacao_leitos), a mesma chave em todas as telas. */
+export function useSituacaoLeitos(unidadeId: string | undefined, ativo = true) {
+  return useQuery({
+    queryKey: ['situacao-leitos', unidadeId],
+    enabled: !!unidadeId && ativo,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('situacao_leitos', { p_unidade: unidadeId! })
+      if (error) throw error
+      return (data ?? []) as SituacaoLeito[]
+    },
+  })
 }
 
 /** Contagem de atrasados por paciente. */

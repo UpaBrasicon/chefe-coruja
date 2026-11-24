@@ -7,6 +7,9 @@
 // geral (material em falta, intercorrências do setor). O banco guarda junto,
 // em cada leito, o retrato das pendências do turno (aprazamentos atrasados);
 // quem assume o setor RECEBE, dando ciência. Nada se apaga nem se reescreve.
+// IN2 (revisão do perfil Enfermeiro, RT 24/11/2026): a passagem fica no topo
+// de cada setor, com o progresso e o "Receber" à vista; o leito a leito abre
+// em "Escrever passagem".
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronDown, Inbox } from 'lucide-react'
@@ -16,24 +19,21 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { Chip, Chips } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
 import { PILULA, hora, msgErro, quando, usePendenciasEnfermagem, type PassagemEnfermagem as Passagem } from './useEnfermagem'
-import { TituloCartao } from '@/components/monitor/Pagina'
 import { Estado } from '@/components/porta/Estado'
 
 const TURNO: Record<string, string> = { manha: 'manhã', tarde: 'tarde', noite: 'noite', diurno: 'diurno', noturno: 'noturno' }
 type PacienteDoSetor = { paciente_id: string; nome: string; local: string | null }
 
-export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: string }[] }) {
+export function PassagemEnfermagem({ setor }: { setor: { id: string; nome: string } }) {
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
-  const [setorSel, setSetorSel] = React.useState<string | null>(null)
-  const setor = setores.find((s) => s.id === setorSel) ?? setores[0] ?? null
+  const [aberta, setAberta] = React.useState(false)
   // texto de cada leito, pela chave do paciente
   const [notas, setNotas] = React.useState<Record<string, string>>({})
   const [geral, setGeral] = React.useState('')
@@ -51,18 +51,16 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
     },
   })
   const pacientes = useQuery({
-    queryKey: ['enfermagem-pacientes-do-setor', setor?.id],
-    enabled: !!setor,
+    queryKey: ['enfermagem-pacientes-do-setor', setor.id],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('enfermagem_pacientes_do_setor', { p_setor: setor!.id })
+      const { data, error } = await supabase.rpc('enfermagem_pacientes_do_setor', { p_setor: setor.id })
       if (error) throw error
       return (data ?? []) as PacienteDoSetor[]
     },
   })
   const pendencias = usePendenciasEnfermagem()
 
-  if (!setor) return null
   const doSetor = (passagens.data ?? []).filter((p) => p.setor_id === setor.id)
   const aReceber = doSetor.filter((p) => !p.recebida_em && p.entregue_por !== perfil?.id)
   const historico = doSetor.filter((p) => !aReceber.includes(p)).slice(0, 6)
@@ -77,7 +75,7 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
   }
 
   async function entregar() {
-    if (!pronta || !setor) return
+    if (!pronta) return
     setEnviando(true)
     const { error } = await supabase.rpc('entregar_passagem_enfermagem', {
       p_setor: setor.id,
@@ -86,7 +84,7 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
     })
     setEnviando(false)
     if (error) { recarregar(); return setErro(msgErro(error)) }
-    setErro(null); setNotas({}); setGeral(''); recarregar()
+    setErro(null); setNotas({}); setGeral(''); setAberta(false); recarregar()
   }
 
   async function receber(id: string) {
@@ -96,13 +94,16 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie px-5 py-[18px]">
-      <TituloCartao className="mb-0">Passagem de plantão da enfermagem</TituloCartao>
-      {setores.length > 1 && (
-        <Chips rotulo="Setor da passagem">
-          {setores.map((s) => <Chip key={s.id} ativo={s.id === setor.id} onClick={() => setSetorSel(s.id)}>{s.nome}</Chip>)}
-        </Chips>
-      )}
+    <section aria-label={`Passagem do plantão · ${setor.nome}`} className="flex flex-col gap-3 border-b border-trilha bg-campo px-5 py-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span className="text-apoio font-semibold text-tinta">Passagem do plantão</span>
+        <span className="text-apoio tabular-nums text-tinta-sussurro">
+          {leitos.length > 0 ? `${escritos} de ${leitos.length} ${leitos.length === 1 ? 'leito escrito' : 'leitos escritos'}` : 'nenhum paciente no setor'}
+        </span>
+        <Button size="sm" variant={aberta ? 'default' : 'outline'} className="ml-auto" aria-expanded={aberta} onClick={() => setAberta((v) => !v)}>
+          {aberta ? 'Fechar' : 'Escrever passagem'}
+        </Button>
+      </div>
       {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
 
       {aReceber.map((p) => (
@@ -121,8 +122,9 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
         </div>
       ))}
 
+      {aberta && <>
       <div className="flex flex-col">
-        <span className="rotulo text-tinta-sussurro">Leito a leito</span>
+        <span className="text-apoio font-medium text-tinta-apoio">Leito a leito</span>
         {!pacientes.isLoading && leitos.length === 0 && (
           <span className="py-2 text-apoio text-tinta-sussurro">Nenhum paciente no setor agora: registre a observação geral.</span>
         )}
@@ -154,8 +156,9 @@ export function PassagemEnfermagem({ setores }: { setores: { id: string; nome: s
         </span>
         <Button size="sm" disabled={!pronta || enviando} onClick={() => void entregar()}><Check /> Registrar passagem</Button>
       </div>
+      </>}
 
-      {historico.map((p) => (
+      {aberta && historico.map((p) => (
         <details key={p.id} className="group border-t border-trilha py-2.5">
           <summary className="flex cursor-pointer list-none flex-col gap-1">
             <span className="flex items-center gap-1 text-rotulo text-tinta-sussurro">
@@ -202,7 +205,7 @@ function LeitosDaPassagem({ p }: { p: Passagem }) {
       ))}
       {p.texto && (
         <div className="flex flex-col gap-0.5">
-          {p.leitos.length > 0 && <span className="rotulo text-tinta-sussurro">Geral do setor</span>}
+          {p.leitos.length > 0 && <span className="text-apoio font-medium text-tinta-sussurro">Geral do setor</span>}
           <span className="text-controle leading-[1.5] text-tinta [text-wrap:pretty]">{p.texto}</span>
         </div>
       )}
