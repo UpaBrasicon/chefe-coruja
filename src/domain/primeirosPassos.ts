@@ -100,7 +100,8 @@ export function guiaDoPapel(papel: string | null | undefined, rotasDoMenu: strin
   return passos.length ? { ...g, passos } : null
 }
 
-export type Progresso = { feitos: string[]; escondido: boolean }
+/** `visto`: a pessoa já viu o cartão aberto uma vez; dali em diante ele abre recolhido numa linha (EN3). */
+export type Progresso = { feitos: string[]; escondido: boolean; visto?: boolean }
 export const PROGRESSO_VAZIO: Progresso = { feitos: [], escondido: false }
 
 /** Chave no aparelho, separada por pessoa e papel (OB4 = A). */
@@ -110,7 +111,8 @@ export function lerProgresso(texto: string | null): Progresso {
   if (!texto) return PROGRESSO_VAZIO
   try {
     const p = JSON.parse(texto) as Partial<Progresso>
-    return { feitos: Array.isArray(p.feitos) ? p.feitos.filter((x): x is string => typeof x === 'string') : [], escondido: p.escondido === true }
+    const feitos = Array.isArray(p.feitos) ? p.feitos.filter((x): x is string => typeof x === 'string') : []
+    return p.visto === true ? { feitos, escondido: p.escondido === true, visto: true } : { feitos, escondido: p.escondido === true }
   } catch {
     return PROGRESSO_VAZIO
   }

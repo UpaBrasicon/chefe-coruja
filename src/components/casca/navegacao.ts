@@ -217,14 +217,18 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
     ITEM_ESCALA,
   ],
+  // FA2 (revisão do perfil Farmacêutico, RT 24/11/2026): o menu em grupos,
+  // Trabalho, Segurança, Estoque e Equipe.
   farmaceutico: [
-    { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },
-    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
+    { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia', grupo: 'Trabalho' },
+    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true, grupo: 'Trabalho' },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true, grupo: 'Segurança' },
+    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true, grupo: 'Segurança' },
     // Fase 5B, etapa 3.1: unidade de consumo (vale para todas as unidades)
-    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
-    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
-    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
-    ITEM_ESCALA,
+    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true, grupo: 'Estoque' },
+    // os materiais da conta (a leitura do farmacêutico vem da migration 20270421000073)
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true, grupo: 'Estoque' },
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
     // Sem Prontuários (RT, 27/10/2026): o que o farmacêutico precisa do
     // paciente chega pela validação e pela dispensação.
   ],
@@ -302,6 +306,8 @@ const FORA_DA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
   // materiais) sai do gestor da UBS; a produção da UBS vai ao SISAB (U15). Fica o
   // Envio ao ERP, que leva os plantões do mês.
   gestor: new Set(['/faturamento/contas', '/faturamento', '/faturamento/glosas', '/faturamento/materiais']),
+  // os materiais são da conta da porta e da internação: fora da UBS também para a farmácia
+  farmaceutico: new Set(['/faturamento/materiais']),
 }
 // e o que muda de nome nela: na UBS a "triagem" é a escuta da enfermagem (R9)
 const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
@@ -380,6 +386,10 @@ export function agruparNavegacao(itens: ItemNav[]): { grupo: string | null; iten
 export const ICONE_GRUPO: Record<string, LucideIcon> = {
   Porta: DoorOpen,
   Leitos: BedDouble,
+  // grupos do farmacêutico (FA2)
+  Trabalho: FlaskConical,
+  'Segurança': ShieldAlert,
+  Estoque: PackageCheck,
   Cadastro: GitMerge,
   Rede: Waypoints,
   'Farmácia': FlaskConical,

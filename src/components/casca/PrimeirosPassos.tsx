@@ -3,6 +3,7 @@
 // treinamento; cada tarefa leva à tela; "Já sei" marca; "Esconder" some com o
 // cartão, que volta pelo menu do usuário.
 import { Check, ChevronRight, Compass, X } from 'lucide-react'
+import * as React from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
@@ -11,18 +12,41 @@ import { usePrimeirosPassos } from '@/hooks/usePrimeirosPassos'
 import { cn } from '@/lib/utils'
 
 export function PrimeirosPassos({ rotasDoMenu, perfilId, papel }: { rotasDoMenu: string[]; perfilId: string | undefined; papel: string | null }) {
-  const { progresso, marcar, esconder } = usePrimeirosPassos(perfilId, papel)
+  const { progresso, marcar, esconder, marcarVisto } = usePrimeirosPassos(perfilId, papel)
   const guia = guiaDoPapel(papel, rotasDoMenu)
-  if (!guia || !mostrarCartao(guia, progresso)) return null
+  const mostrar = mostrarCartao(guia, progresso)
+  // EN3 (revisão do perfil Enfermeiro, RT 24/11/2026): aberto só na primeira
+  // visita; depois, uma linha recolhida com "Abrir". A visita fica guardada na
+  // primeira vez que o cartão aparece para a pessoa e o papel.
+  const jaVisto = !!progresso.visto
+  const chave = perfilId && papel ? `${perfilId}:${papel}` : null
+  const [estado, setEstado] = React.useState<{ chave: string; aberto: boolean } | null>(null)
+  if (mostrar && chave && estado?.chave !== chave) setEstado({ chave, aberto: !jaVisto })
+  const setAberto = (aberto: boolean) => { if (chave) setEstado({ chave, aberto }) }
+  React.useEffect(() => {
+    if (mostrar && chave && !jaVisto) marcarVisto()
+  }, [mostrar, chave, jaVisto, marcarVisto])
+  if (!guia || !mostrar) return null
   const feitos = guia.passos.filter((x) => progresso.feitos.includes(x.id)).length
   const total = guia.passos.length
+  if (!(estado?.aberto ?? !jaVisto)) {
+    return (
+      <section aria-label="Primeiros passos" className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-cartao border border-fio bg-superficie px-4 py-2">
+        <Compass className="size-4 text-acao" aria-hidden />
+        <span className="text-apoio text-tinta">Primeiros passos · {guia.titulo}</span>
+        <span className="text-apoio tabular-nums text-tinta-sussurro">{feitos} de {total}</span>
+        <Button variant="ghost" size="xs" className="ml-auto" onClick={() => setAberto(true)}>Abrir</Button>
+      </section>
+    )
+  }
   return (
     <section aria-label="Primeiros passos" className="mb-5 flex flex-col gap-3 rounded-cartao border border-fio-forte bg-superficie px-4 py-3.5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Compass className="size-4 text-acao" aria-hidden />
         <span className="text-controle font-semibold text-tinta">Primeiros passos · {guia.titulo}</span>
         <span className="text-apoio tabular-nums text-tinta-sussurro">{feitos} de {total}</span>
-        <Button variant="outline" size="xs" className="ml-auto" onClick={esconder}><X /> Esconder</Button>
+        <Button variant="ghost" size="xs" className="ml-auto" onClick={() => setAberto(false)}>Recolher</Button>
+        <Button variant="outline" size="xs" onClick={esconder}><X /> Esconder</Button>
       </div>
       <div className="h-1.5 overflow-hidden rounded-capsula bg-trilha" aria-hidden>
         <div className="h-full rounded-capsula bg-acao" style={{ width: `${Math.round((feitos / total) * 100)}%` }} />
