@@ -7,8 +7,9 @@
 //   higienização, bloqueado e ocupado.
 // • Serviços informados pelo gestor da unidade: situação, vagas, observação;
 //   "desatualizado" depois de 12 h sem confirmar.
-// • Veem a rede: regulador e gestor da central, gestor das unidades. Edita só
-//   o gestor da própria unidade. Só consulta: reserva e aceite são da tarefa 9.
+// • Veem a rede: regulador e gestor da central, gestor das unidades; médico e
+//   NIR da unidade só consultam (RT, 24/11/2026, migration 20270421000071).
+//   Edita só o gestor da própria unidade. Só consulta: reserva e aceite são da tarefa 9.
 // Migration 20261114000001_mapa_vagas.sql.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -41,7 +42,7 @@ type Servico = {
   atualizado_em: string; atualizado_por: string | null; confirmado_em: string; desatualizado: boolean
 }
 type UnidadeMapa = { id: string; nome: string; cnes: string | null; leitos: Leitos[]; servicos: Servico[]; editavel: boolean; minha: boolean }
-type Mapa = { unidades: UnidadeMapa[]; totais: { tipo_leito: string; livre: number; higienizacao: number; total: number }[]; agora: string }
+type Mapa = { unidades: UnidadeMapa[]; totais: { tipo_leito: string; livre: number; higienizacao: number; total: number }[]; agora: string; so_consulta?: boolean }
 
 export function MapaVagas({ unidadeId, compacto = false }: { unidadeId: string; compacto?: boolean }) {
   const mapa = useQuery({
@@ -71,7 +72,9 @@ export function MapaVagas({ unidadeId, compacto = false }: { unidadeId: string; 
         </div>
       )}
       {m.unidades.map((u) => <UnidadeDoMapa key={u.id} u={u} unidadeConsulta={unidadeId} compacto={compacto} />)}
-      <span className="text-rotulo text-tinta-sussurro">Leitos atualizados a cada minuto, sem dado de paciente.</span>
+      <span className="text-rotulo text-tinta-sussurro">
+        Leitos atualizados a cada minuto, sem dado de paciente.{m.so_consulta ? ' Só consulta: quem informa a oferta e os serviços é o gestor de cada unidade.' : ''}
+      </span>
     </div>
   )
   if (compacto) return <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3 text-apoio">{conteudo}</div>

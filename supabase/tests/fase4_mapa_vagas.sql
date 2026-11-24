@@ -132,8 +132,12 @@ SELECT pg_temp.ok(pg_temp.un(public.regulacao_mapa_vagas('21000000-0000-4000-800
   'regulador da central vê o mapa');
 SELECT pg_temp.falha($$SELECT public.regulacao_mapa_vagas('21000000-0000-4000-8000-0000000009f2')$$, 'Acesso negado',
   'regulador não vê pelo hospital, onde não tem papel');
+-- ajustes da revisão, item 2 (RT, 24/11/2026; migration 20270421000071): o
+-- médico da unidade consulta o mapa, sem editar
 SELECT pg_temp.como('10000000-0000-4000-8000-000000000002');
-SELECT pg_temp.falha($$SELECT public.regulacao_mapa_vagas('21000000-0000-4000-8000-0000000009f2')$$, 'Acesso negado', 'médico não vê o mapa');
+SELECT pg_temp.ok((public.regulacao_mapa_vagas('21000000-0000-4000-8000-0000000009f2')->>'so_consulta')::boolean
+              AND NOT (pg_temp.un(public.regulacao_mapa_vagas('21000000-0000-4000-8000-0000000009f2'), '21000000-0000-4000-8000-0000000009f2')->>'editavel')::boolean,
+  'médico consulta o mapa, sem editar');
 
 -- ── 5. desatualizado, confirmar, desativar, histórico ───────────────────────
 RESET ROLE;

@@ -22,6 +22,30 @@ END $$;
 
 -- @@ITENS_SEGUINTES@@
 
+-- ── 071: regulacao_mapa_vagas volta a recusar o médico e o NIR ──────────────
+SELECT pg_temp.trocar_uma_vez('public.regulacao_mapa_vagas(uuid)'::regprocedure,
+  $new$    'agora', now(),
+    'so_consulta', v_consulta);$new$,
+  $old$    'agora', now());$old$);
+SELECT pg_temp.trocar_uma_vez('public.regulacao_mapa_vagas(uuid)'::regprocedure,
+  $new$          OR (p_unidade = v_central AND private.tenho_papel(p_unidade, 'regulador'))) THEN
+    -- médico e NIR da unidade: só consulta, sem dado de paciente (RT, 24/11/2026)
+    IF private.tenho_papel(p_unidade, 'plantonista') IS TRUE OR private.tenho_papel(p_unidade, 'nir') IS TRUE THEN
+      v_consulta := true;
+    ELSE
+      RAISE EXCEPTION 'Acesso negado.' USING ERRCODE = 'insufficient_privilege';
+    END IF;
+  END IF;$new$,
+  $old$          OR (p_unidade = v_central AND private.tenho_papel(p_unidade, 'regulador'))) THEN
+    RAISE EXCEPTION 'Acesso negado.' USING ERRCODE = 'insufficient_privilege';
+  END IF;$old$);
+SELECT pg_temp.trocar_uma_vez('public.regulacao_mapa_vagas(uuid)'::regprocedure,
+  -- com o BEGIN junto: a linha antiga é começo da nova
+  $new$DECLARE v_org uuid; v_central uuid; v_rede boolean := false; v_consulta boolean := false;
+BEGIN$new$,
+  $old$DECLARE v_org uuid; v_central uuid; v_rede boolean := false;
+BEGIN$old$);
+
 -- ── 070: painel_observacao volta a decidir o gestor por papel_na_unidade ─────
 SELECT pg_temp.trocar_uma_vez('public.painel_observacao(uuid)'::regprocedure,
   $new$  -- conta com vários papéis (admin e gestor, por exemplo): vale o papel gestor (RT, 24/11/2026)
