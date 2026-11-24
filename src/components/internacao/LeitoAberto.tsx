@@ -197,7 +197,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
     queryFn: async () => {
       const { data, error } = await supabase.rpc('impeditivos_alta', { p_internacao: i!.id })
       if (error) throw error
-      return (data ?? []) as unknown as { tipo: string; descricao: string }[]
+      return (data ?? []) as unknown as { tipo: string; descricao: string; id?: string }[]
     },
   })
   const pacotes = useQuery({
@@ -319,7 +319,7 @@ type PartesLeito = {
   acuidadeCarregando: boolean
   pendencias: Pendencia[]
   passagens: Passagem[]
-  impeditivos: { tipo: string; descricao: string }[]
+  impeditivos: { tipo: string; descricao: string; id?: string }[]
   pacotes: Pacote[]
   prontuarioAberto: boolean
   aoGravarVitais: () => void
@@ -558,7 +558,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
         {atual === 'alta' && (
           <PassosAlta i={i} pacienteId={pacienteId} pacienteNome={p.pacienteNome} ativa={ativa} altaRecente={pp.altaRecente} ehGestor={ehGestor}
             eu={p.eu ?? null} acao={p.acao} impeditivos={p.impeditivos} pacotes={p.pacotes} cidSugerido={pp.cidSugerido ?? null}
-            leito={i.leito?.identificador ?? ''} diagnostico={textoPrimario} estado={docsAlta} setEstado={setDocsAlta} />
+            leito={i.leito?.identificador ?? ''} diagnostico={textoPrimario} estado={docsAlta} setEstado={setDocsAlta} onIr={(a) => setAba(a)} />
         )}
       </div>
 

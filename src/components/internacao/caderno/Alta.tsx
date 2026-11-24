@@ -45,15 +45,22 @@ const impedeSaida = (tipo: string, x: { tipo: string }) =>
 // o campo datetime-local mostra e devolve a hora de Brasília, não a do aparelho
 const doCampo = (v: string) => new Date(`${v}:00-03:00`)
 
-export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
+export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido, tipoFixo, rotuloBotao, semListaImpeditivos = false }: {
   i: Internacao; impeditivos: { tipo: string; descricao: string }[]; acao: Acao
   /** paciente da internação: a regulação da transferência externa (S4) */
   pacienteId?: string
   /** o diagnóstico primário vigente: vem preenchido, o médico confirma ou troca */
   cidSugerido?: string | null
+  /** AL1 (RT, 24/11/2026): o tipo de saída escolhido no topo da aba; aqui não se troca */
+  tipoFixo?: string
+  /** AL3: "Dar alta (2 pendências)" */
+  rotuloBotao?: string
+  /** AL3: as travas já aparecem agrupadas acima */
+  semListaImpeditivos?: boolean
 }) {
   const [aberto, setAberto] = React.useState(false)
-  const [tipo, setTipo] = React.useState('alta_melhorada')
+  const [tipoLocal, setTipo] = React.useState('alta_melhorada')
+  const tipo = tipoFixo ?? tipoLocal
   const [cid, setCid] = React.useState('')
   const [quando, setQuando] = React.useState('')
   const [justificativa, setJustificativa] = React.useState('')
@@ -76,18 +83,18 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
   if (!aberto) {
     return (
       <Secao titulo="Alta">
-        {impeditivos.length > 0 && (
+        {!semListaImpeditivos && impeditivos.length > 0 && (
           <ul className="flex flex-col gap-1 text-atencao">
             {impeditivos.map((x, k) => <li key={k} className="flex gap-1.5"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" />{x.descricao}</li>)}
           </ul>
         )}
-        {impeditivos.length > 0 && !impeditivos.some((x) => x.tipo === 'agravo') && (
+        {!semListaImpeditivos && impeditivos.length > 0 && !impeditivos.some((x) => x.tipo === 'agravo') && (
           <p className="text-tinta-sussurro">Óbito e transferência externa podem ser registrados mesmo assim: o que está em aberto é cancelado com o motivo.</p>
         )}
-        <Button size="xs" variant="outline" className="self-start"
+        <Button size="sm" className="self-start"
           disabled={impeditivos.some((x) => x.tipo === 'agravo')}
           onClick={() => { setQuando(dataHoraInput()); setObito(obitoVazio(dataHoraInput())); if (!cid && cidSugerido) setCid(cidSugerido); setAberto(true) }}>
-          <DoorOpen /> Dar alta
+          <DoorOpen /> {rotuloBotao ?? 'Dar alta'}
         </Button>
       </Secao>
     )
@@ -100,13 +107,15 @@ export function BlocoAlta({ i, pacienteId, impeditivos, acao, cidSugerido }: {
   return (
     <Secao titulo="Dados da alta">
       <div className="grid gap-2 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <Label>Motivo</Label>
-          <Select items={Object.fromEntries(TIPO_ALTA)} value={tipo} onValueChange={(x) => setTipo(x ?? 'alta_melhorada')}>
-            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>{TIPO_ALTA.map(([k, r]) => <SelectItem key={k} value={k}>{r}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
+        {!tipoFixo && (
+          <div className="flex flex-col gap-1">
+            <Label>Motivo</Label>
+            <Select items={Object.fromEntries(TIPO_ALTA)} value={tipo} onValueChange={(x) => setTipo(x ?? 'alta_melhorada')}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>{TIPO_ALTA.map(([k, r]) => <SelectItem key={k} value={k}>{r}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="flex flex-col gap-1">
           <Label htmlFor="alta-cid">CID de alta{tipo === 'alta_evasao' ? ' · opcional na evasão' : ' *'}</Label>
           <Input id="alta-cid" value={cid} onChange={(e) => setCid(e.target.value.toUpperCase())} placeholder="Ex.: J18.9" />

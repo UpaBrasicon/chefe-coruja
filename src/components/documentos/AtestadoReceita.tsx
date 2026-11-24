@@ -29,6 +29,7 @@ import { TEXTO_PEDIATRICO, TEXTO_SEM_NASCIMENTO, nomeMed, type EstadoDocs, type 
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { useDestinoNaReceita } from '@/hooks/useControlados'
 import { SeloControlado } from '@/components/farmacia/SeloControlado'
+import { MenuMais } from '@/components/plantao/MenuMais'
 
 const hora = (iso: string | null | undefined) => (iso ? horaFmt(iso) : '—')
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -78,12 +79,19 @@ export function CartaoAtestado({ estado, setEstado, cid, onEmitir }: {
   )
 }
 
-export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Receita de alta', sugestoes = [] }: {
+export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Receita de alta', sugestoes = [], deCasa }: {
   faixa: FaixaEtaria; estado: EstadoDocs; setEstado: (f: (s: EstadoDocs) => EstadoDocs) => void; onEmitir: () => void
   titulo?: string
   /** Medicamentos para escolher com um clique (o leito: os da prescrição vigente). Só o nome entra; "como tomar" é do médico. */
   sugestoes?: Med[]
+  /** AL2 (RT, 24/11/2026): o que faz sentido em casa (oral, tópica, inalatória…); os outros ficam atrás de "mostrar todos". */
+  deCasa?: (m: Med) => boolean
 }) {
+  const [todasSugestoes, setTodasSugestoes] = React.useState(false)
+  const [salvando, setSalvando] = React.useState(false)
+  const sugestoesCasa = deCasa ? sugestoes.filter(deCasa) : sugestoes
+  const sugestoesVistas = todasSugestoes ? sugestoes : sugestoesCasa
+  const escondidas = sugestoes.length - sugestoesCasa.length
   const adulto = ofereceConteudoAdulto(faixa)
   const [busca, setBusca] = React.useState('')
   const [med, setMed] = React.useState<Med | null>(null)
@@ -195,19 +203,33 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
           <span className="text-apoio text-tinta-sussurro">nenhuma ainda. <Link to="/preferencias-prescricao" className="text-acao underline-offset-2 hover:underline">Preferências de prescrição</Link></span>
         )}
         <span className="ml-auto flex flex-wrap items-center gap-1.5">
-          <Input className="h-8 w-52" aria-label="Nome da receita padrão" placeholder="Nome para salvar como padrão" value={nomePadrao} onChange={(e) => setNomePadrao(e.target.value)} />
-          <Button size="sm" variant="outline" disabled={nomePadrao.trim().length < 2 || !estado.receita.some((r) => r.medicamento_id)} onClick={() => void salvarPadrao()}>
-            Salvar como padrão
-          </Button>
           {estado.rxEmitidaEm && <Button size="sm" variant="outline" onClick={() => setEstado((s) => ({ ...s, rxEmitidaEm: null }))}>Reabrir</Button>}
+          {/* AL2: "Salvar como padrão" saiu do meio do fluxo para o menu da receita */}
+          <MenuMais icone rotuloAcessivel="Mais da receita" itens={[{
+            chave: 'padrao', rotulo: 'Salvar como padrão…', desabilitado: !estado.receita.some((r) => r.medicamento_id), onSelecionar: () => setSalvando(true),
+          }]} />
         </span>
+        {salvando && (
+          <span className="flex w-full flex-wrap items-center gap-1.5">
+            <Input className="h-8 w-52" aria-label="Nome da receita padrão" placeholder="Nome do padrão" value={nomePadrao} onChange={(e) => setNomePadrao(e.target.value)} />
+            <Button size="sm" variant="outline" disabled={nomePadrao.trim().length < 2 || !estado.receita.some((r) => r.medicamento_id)}
+              onClick={() => void salvarPadrao().then(() => setSalvando(false))}>Salvar</Button>
+            <Button size="sm" variant="outline" onClick={() => setSalvando(false)}>Cancelar</Button>
+          </span>
+        )}
       </div>}
       {sugestoes.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 border-b border-trilha px-4 py-3">
           <span className="text-apoio text-tinta-sussurro">Da prescrição (escolha e escreva como tomar):</span>
-          {sugestoes.map((m) => (
+          {sugestoesVistas.map((m) => (
             <Chip key={m.id} ativo={med?.id === m.id} onClick={() => { setMed(m); setBusca('') }}>{nomeMed(m)}</Chip>
           ))}
+          {sugestoesVistas.length === 0 && <span className="text-apoio text-tinta-sussurro">nenhum de uso em casa.</span>}
+          {escondidas > 0 && (
+            <Button size="xs" variant="outline" onClick={() => setTodasSugestoes(!todasSugestoes)}>
+              {todasSugestoes ? 'Só os de casa' : `Mostrar todos (+${escondidas} injetáveis e outros)`}
+            </Button>
+          )}
         </div>
       )}
       {estado.receita.map((r, i) => {
@@ -243,7 +265,7 @@ export function ReceitaAlta({ faixa, estado, setEstado, onEmitir, titulo = 'Rece
               <Button size="xs" variant="outline" className="ml-auto" onClick={() => setMed(null)}>Trocar</Button>
             </div>
           ) : (
-            <Input id="rx-med" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Do cadastro (3 letras) ou livre" autoComplete="off" />
+            <Input id="rx-med" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar ou escrever" title="Do cadastro (a partir de 3 letras) ou escrito livre" autoComplete="off" />
           )}
           {!med && (resultados.data ?? []).length > 0 && (
             <div role="listbox" className="absolute top-full right-0 left-0 z-20 mt-1 max-h-56 overflow-y-auto rounded-controle border border-fio bg-superficie shadow-popover">
