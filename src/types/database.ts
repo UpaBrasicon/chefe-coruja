@@ -14034,6 +14034,20 @@ export type Database = {
           uteis: number
         }[]
       }
+      resumo_carga_horaria: {
+        Args: { p_fim: string; p_inicio: string; p_unidade: string }
+        Returns: {
+          categorias: string | null
+          dias: number
+          dias_sobreaviso: number
+          diurnos: number
+          horas: number
+          horas_sobreaviso: number
+          nome: string
+          noturnos: number
+          perfil_id: string
+        }[]
+      }
       resumo_carga_plantonistas: {
         Args: { p_fim: string; p_inicio: string; p_unidade: string }
         Returns: {
@@ -15014,6 +15028,8 @@ export type PlantonistaDaUnidade = Database['public']['Functions']['plantonistas
 export type SetorInternacao = Database['public']['Functions']['setores_internacao']['Returns'][number]
 export type SetorObservacao = Database['public']['Functions']['setores_observacao']['Returns'][number]
 export type ResumoCargaPlantonista = Database['public']['Functions']['resumo_carga_plantonistas']['Returns'][number]
+/** Carga horária com o sobreaviso à parte (migration 20270421000052). */
+export type ResumoCargaHoraria = Database['public']['Functions']['resumo_carga_horaria']['Returns'][number]
 export type OcupacaoSetor = Database['public']['Functions']['ocupacao_setores']['Returns'][number]
 export type MinhaNotificacao = Database['public']['Functions']['minhas_notificacoes']['Returns'][number]
 export type MeuPlantaoAgora = Database['public']['Functions']['meu_plantao_agora']['Returns'][number]
