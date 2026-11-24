@@ -77,3 +77,43 @@ Tem que vir **404 da origem** (Vercel/Caddy), não **301 do Cloudflare**. Se vie
 No teste da Fase 1 (tarefa 4) a homologação voltou a bloquear o responsável com o Ctrl+Shift+R, mesmo com as exceções do antivírus. Os eventos mostraram pedidos de robô (user agent `Chrome/154` fixo também no teste pelo Edge, `GET /`, HTTP/1.1, sem referer) saindo da Amazon em Virgínia, Oregon e Paris — as regiões da Vercel —, e a **produção nunca bloqueou** no mesmo teste. A diferença é a proteção de login da Vercel, que só a homologação tem: a causa provável são pedidos da própria Vercel, não o antivírus (a explicação anterior, do antivírus, não se confirmou).
 
 Decisão: **tirar `homolog.chefecoruja.com.br` da regra**. A homologação continua protegida pelo login da Vercel (só o time entra) e pelo login do sistema com segundo fator, e só tem dado fictício. Produção, `www` e Hermes seguem com a regra.
+
+## Desempenho na borda (pedidos 10 e 14 do diagnóstico de 23/11/2026, item F6)
+
+Duas mudanças que só se fazem no painel da Cloudflare, pelo RT. Nenhum código depende delas; o PR do F6 só registra o roteiro. A parte de código do F6 (pedido 7) foi tirar o Google Fonts da CSP do `vercel.json`, que o app não usa (a fonte Geist vem do pacote `@fontsource-variable/geist`, servida pelo próprio site); a guarda é `src/lib/cspSemTerceirosSemUso.test.ts`.
+
+Estado conferido em 23/11/2026 com `curl` (só leitura):
+
+| O quê | Hoje | Esperado depois |
+|---|---|---|
+| `curl -sI https://www.chefecoruja.com.br/sw.js` | `Cache-Control: max-age=14400`, `cf-cache-status: REVALIDATED` | `Cache-Control: no-cache` (o da Vercel) e `cf-cache-status: DYNAMIC` ou `BYPASS` |
+| `curl` do `/login` com user agent de navegador | o HTML traz `static.cloudflareinsights.com/beacon.min.js` | sem `cloudflareinsights` |
+
+### 1. Web Analytics injetado (pergunta P4 — recomendação: desligar)
+
+A Cloudflare injeta no HTML o script do Web Analytics (`static.cloudflareinsights.com/beacon.min.js`). A CSP do site não libera esse domínio, então o navegador bloqueia o script em toda página: não mede nada e gera um erro no console e uma tentativa de rede a cada carga.
+
+- **Opção A (recomendada): desligar.** Painel → **Analytics & Logs → Web Analytics** → site `chefecoruja.com.br` → **Manage site** → desligar a injeção automática (*Automatic setup* / *Enable* desligado) ou remover o site. Não precisa mexer no código.
+- **Opção B: usar.** Liberar na CSP do `vercel.json` `https://static.cloudflareinsights.com` no `script-src` e `https://cloudflareinsights.com` no `connect-src`, nas duas CSPs, e registrar a operação no inventário da LGPD (LG4, `operacoes.json`): é mais um terceiro recebendo dado de navegação. Vira PR próprio.
+
+Como conferir: o `curl` do `/login` acima sem `cloudflareinsights`, e o console do navegador sem o erro de CSP do `beacon.min.js`.
+
+Como reverter: religar a injeção no mesmo lugar.
+
+### 2. `/sw.js` sem cache na borda
+
+A Vercel manda `Cache-Control: no-cache` no `/sw.js` (`vercel.json`), mas a Cloudflare reescreve para `max-age=14400` (4 h, o padrão do *Browser Cache TTL*). Com isso, uma versão nova do app pode levar até 4 h para chegar a quem já tem o service worker instalado.
+
+1. Painel → **Caching → Cache Rules → Create rule**. Nome: `sw.js sem cache`.
+2. Quando: *Custom filter expression* →
+   ```
+   (http.host in {"chefecoruja.com.br" "www.chefecoruja.com.br" "homolog.chefecoruja.com.br"} and http.request.uri.path eq "/sw.js")
+   ```
+3. Então: **Cache eligibility → Bypass cache**; e em **Browser TTL → Respect origin TTL** (sem isso a borda continua reescrevendo o `Cache-Control` para o navegador).
+4. Salvar e expurgar o arquivo: **Caching → Configuration → Purge Cache → Custom Purge → URL**: `https://www.chefecoruja.com.br/sw.js` e `https://chefecoruja.com.br/sw.js`.
+
+Como conferir: o `curl -sI` do `/sw.js` acima com `no-cache` e `DYNAMIC`/`BYPASS`.
+
+Como reverter: desligar ou apagar a regra `sw.js sem cache` (volta ao comportamento de hoje, sem risco para o app).
+
+Chaves envolvidas: nenhuma.
