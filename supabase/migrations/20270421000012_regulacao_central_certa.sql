@@ -428,9 +428,10 @@ BEGIN
   p := private.regulacao_prazos_de(s.central_id);
   SELECT coalesce(sum(extract(epoch FROM coalesce(t.fim, now()) - t.inicio)), 0)::bigint INTO v_central_seg
     FROM public.regulacao_status_tempos t WHERE t.solicitacao_id = s.id AND t.status IN ('enviada', 'em_analise');
-  -- prazo da central para o tipo do pedido; sem ele, o prazo por prioridade
+  -- prazo da central para o tipo do pedido e prazo por prioridade: vale o MENOR
+  -- dos dois (RT, 24/11/2026), para a emergência nunca ganhar mais tempo pelo tipo
   v_prazo_tipo := private.regulacao_prazo_tipo(s.central_id, s.tipo);
-  v_prazo := coalesce(v_prazo_tipo,
+  v_prazo := least(v_prazo_tipo,
                CASE v_ef WHEN 'emergencia' THEN p.fila_emergencia_min WHEN 'urgencia' THEN p.fila_urgencia_min
                          WHEN 'prioritaria' THEN p.fila_prioritaria_min WHEN 'eletiva' THEN p.fila_eletiva_min END);
   v_fila_atrasada := v_prazo IS NOT NULL AND v_central_seg > v_prazo * 60;
@@ -462,7 +463,7 @@ BEGIN
 
   RETURN jsonb_build_object(
     'fila', jsonb_build_object('prazo_min', v_prazo, 'central_seg', v_central_seg, 'correndo', v_correndo, 'atrasado', v_fila_atrasada,
-                               'prazo_por', CASE WHEN v_prazo_tipo IS NOT NULL THEN 'tipo' WHEN v_prazo IS NOT NULL THEN 'prioridade' END),
+                               'prazo_por', CASE WHEN v_prazo_tipo IS NOT NULL AND v_prazo = v_prazo_tipo THEN 'tipo' WHEN v_prazo IS NOT NULL THEN 'prioridade' END),
     'pendencia', v_pend, 'evolucao', v_evol, 'destino', v_dest,
     'atrasado_central', v_correndo AND v_fila_atrasada,
     'atrasado_origem', coalesce((v_pend->>'atrasada')::boolean, false) OR coalesce((v_evol->>'atrasada')::boolean, false),
@@ -646,8 +647,8 @@ BEGIN
            CASE WHEN s.destino_resposta = 'aceita' AND s.destino_enviado_em IS NOT NULL
              THEN extract(epoch FROM s.destino_respondido_em - s.destino_enviado_em) END AS aceite_seg,
            CASE WHEN s.status = 'realizada' AND s.realizada_em IS NOT NULL THEN extract(epoch FROM s.realizada_em - s.criada_em) END AS chegada_seg,
-           -- prazo da central do pedido para o tipo; sem ele, por prioridade (como o relógio)
-           coalesce(private.regulacao_prazo_tipo(s.central_id, s.tipo),
+           -- o menor entre o prazo do tipo e o por prioridade (como o relógio; RT, 24/11/2026)
+           least(private.regulacao_prazo_tipo(s.central_id, s.tipo),
            CASE coalesce(s.prioridade_regulador, s.prioridade) WHEN 'emergencia' THEN p.fila_emergencia_min WHEN 'urgencia' THEN p.fila_urgencia_min
                 WHEN 'prioritaria' THEN p.fila_prioritaria_min WHEN 'eletiva' THEN p.fila_eletiva_min END) AS prazo_fila_min,
            -- evolução: maior intervalo entre evoluções enquanto esperava decisão (leito e transferência)
