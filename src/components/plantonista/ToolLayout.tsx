@@ -1,8 +1,9 @@
 import { BadgeCheck, Building2, CircleSlash, Clock, TriangleAlert } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { textoFontes, type Ficha } from '@/clinico/ficha'
 import { textoRef, type ItemGuia } from '@/clinico/guia'
+import { LugarDoResumoContexto, type LugarDoResumo } from '@/components/plantonista/calc/contexto'
 import { topoDa, type Topo } from '@/clinico/topos'
 import { Link } from 'react-router-dom'
 
@@ -51,7 +52,9 @@ export function ToolLayout({
   const indice = useIndice(corpo)
   // Relacionadas (piloto das calculadoras): coluna da direita na tela larga, no fim nas outras.
   const relacionadas = useRelacionadas()
-  const temLado = indice.length >= 3 || relacionadas.length > 0
+  // Resumo do cálculo (F5): coluna fixa da direita na tela larga; espaço reservado no fim no celular.
+  const { presente: comResumo, lugar: lugarDoResumo, setLado: ladoDoResumo, reserva: reservaDoResumo } = useLugarDoResumoNoLayout()
+  const temLado = indice.length >= 3 || relacionadas.length > 0 || comResumo
   // Textos do topo (modelo das calculadoras, RT 16/11/2026): frase-resumo no lugar da descrição.
   const topo = ficha ? topoDa(ficha.id) : undefined
   return (
@@ -83,9 +86,12 @@ export function ToolLayout({
         // Leitura de manual (revisão visual 3.8, opção C): com três partes ou
         // mais, "Nesta página" à direita leva a cada uma (tela larga).
         <div className={cn('grid items-start gap-x-10', temLado && 'xl:grid-cols-[minmax(0,1fr)_220px]')}>
-          <div ref={corpo} className="cc-leitura flex min-w-0 flex-col gap-[22px]">{children}</div>
+          <div ref={corpo} className="cc-leitura flex min-w-0 flex-col gap-[22px]">
+            <LugarDoResumoContexto.Provider value={lugarDoResumo}>{children}</LugarDoResumoContexto.Provider>
+          </div>
           {temLado && (
             <div className="sticky top-4 hidden flex-col gap-6 border-l border-fio pl-4 xl:flex">
+              {comResumo && <div ref={ladoDoResumo} />}
               {indice.length >= 3 && (
                 <nav aria-label="Nesta página" className="flex flex-col gap-1.5">
                   <span className="text-rotulo font-semibold text-tinta-apoio">Nesta página</span>
@@ -118,8 +124,19 @@ export function ToolLayout({
           {ficha && <p className="text-rotulo text-tinta-sussurro">Versão da regra: {ficha.versao}</p>}
         </section>
       )}
+      {/* celular: espaço da barra do resumo no fim da página, para ela não cobrir a fonte */}
+      {reservaDoResumo > 0 && <div aria-hidden className="shrink-0 md:hidden" style={{ height: reservaDoResumo }} />}
     </div>
   )
+}
+
+/** Estado do lugar do resumo do cálculo (F5), fornecido às ferramentas pelo contexto. */
+function useLugarDoResumoNoLayout() {
+  const [presente, setPresente] = useState(false)
+  const [lado, setLado] = useState<HTMLDivElement | null>(null)
+  const [reserva, setReserva] = useState(0)
+  const lugar = useMemo<LugarDoResumo>(() => ({ lado, avisar: setPresente, reservar: setReserva }), [lado])
+  return { presente, lugar, setLado, reserva }
 }
 
 type ItemIndice = { id: string; texto: string }
