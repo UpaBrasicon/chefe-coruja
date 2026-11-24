@@ -35,6 +35,8 @@ export const GRUPOS_SECAO: Record<string, Grupo[]> = {
     { rotulo: 'Eletrólitos, ácido-base e endócrino', slugs: ['hiponatremia', 'hipernatremia', 'hipocalemia-reposicao-potassio', 'hipomagnesemia-reposicao-magnesio', 'hipocalcemia-reposicao-calcio', 'hipercalcemia', 'hipofosfatemia-reposicao-fosforo', 'gasometria-acidobase', 'bicarbonato-de-sodio', 'cad-ehh-criterios', 'cad-ehh-tratamento', 'hipoglicemia-adulto', 'crise-tireotoxica-adulto', 'burch-wartofsky', 'estado-mixedematoso-adulto', 'escore-mixedema', 'insuficiencia-adrenal-adulto'] },
     // grupo novo por decisão do RT (27/10/2026): a ITU sai de "Digestivo, fígado e rim"
     { rotulo: 'Infecções', slugs: ['itu-adulto'] },
+    // a seção Dengue entrou nas condutas (revisão da Central, M2, RT em 24/11/2026)
+    { rotulo: 'Dengue', slugs: ['classificacao-conduta-hidratacao'] },
     { rotulo: 'Digestivo, fígado e rim', slugs: ['colica-renal-adulto', 'hemorragia-digestiva-adulto', 'oakland-hdb', 'ascite-pbe-hepatorrenal-adulto', 'encefalopatia-hepatites-graves-adulto', 'maddrey', 'lesao-renal-aguda-adulto', 'rabdomiolise-adulto', 'mcmahon-rabdomiolise'] },
     { rotulo: 'Trauma e ambientais', slugs: ['trauma-inicial-adulto', 'nexus-coluna-cervical', 'regra-canadense-coluna-cervical', 'mgap-trauma', 'triage-rts-trauma', 'szpilman-afogamento', 'hipotermia-adulto', 'intermacao-adulto', 'queimadura-adulto'] },
     { rotulo: 'Toxicologia e profilaxias', slugs: ['intoxicacoes-antidotos-adulto', 'animais-peconhentos-adulto', 'pep-hiv-adulto', 'tetano-profilaxia-adulto', 'raiva-pos-exposicao-adulto', 'hepatite-b-pos-exposicao-adulto'] },

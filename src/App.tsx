@@ -476,6 +476,8 @@ export default function App() {
                         <Route path="/plantonista" element={<PlantonistaHome />} />
                         {/* LG11, C5: rotulagem mínima do módulo clínico (antes de :section) */}
                         <Route path={ROTA_SOBRE_MODULO} element={<SobreModuloClinico />} />
+                        {/* Farmácia do médico abre direto na consulta (revisão de 24/11/2026: sai a tela de entrada de 2 itens) */}
+                        <Route path="/plantonista/farmacia" element={<Redirecionar para="/plantonista/farmacia/consulta-medicamentos" />} />
                         <Route path="/plantonista/:section" element={<SectionHome />} />
                         {/* Entradas que saíram da Central (RT, 23/10/2026): abriam a mesma tela de outra. */}
                         <Route path="/plantonista/calculadoras/drogas-vasoativas" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=vasoativo" />} />

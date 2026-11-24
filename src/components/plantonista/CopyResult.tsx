@@ -19,7 +19,7 @@ export function CopyResult({ texto, rotulo = 'Copiar' }: { texto: string; rotulo
   return (
     <Button variant="outline" size="sm" onClick={copiar}>
       {copiado ? <Check className="text-conforme" /> : <Copy />}
-      {copiado ? 'Copiado!' : rotulo}
+      {copiado ? 'Copiado' : rotulo}
     </Button>
   )
 }

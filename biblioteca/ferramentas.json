@@ -1,7 +1,7 @@
 [
  {
   "id": "iot",
-  "nome": "Intubação Orotraqueal (sequência rápida)",
+  "nome": "Intubação em sequência rápida — adulto",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
@@ -53,7 +53,7 @@
  },
  {
   "id": "heparinizacao-venosa",
-  "nome": "Heparina não fracionada EV — dose e ajuste pelo TTPa",
+  "nome": "Heparina não fracionada EV — adulto",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
@@ -72,7 +72,7 @@
  },
  {
   "id": "hiponatremia",
-  "nome": "Hiponatremia",
+  "nome": "Hiponatremia — NaCl 3% pelo manual",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
@@ -88,7 +88,7 @@
  },
  {
   "id": "hipernatremia",
-  "nome": "Hipernatremia",
+  "nome": "Hipernatremia — água livre e Adrogué-Madias",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
@@ -104,7 +104,7 @@
  },
  {
   "id": "hidantalizacao",
-  "nome": "Estado de mal epiléptico",
+  "nome": "Estado de mal epiléptico — adulto",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
@@ -122,7 +122,7 @@
  },
  {
   "id": "profilaxia-tev",
-  "nome": "Profilaxia de TEV",
+  "nome": "Profilaxia de TEV — doses pelo manual (adulto)",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
@@ -140,7 +140,7 @@
  },
  {
   "id": "acesso-venoso",
-  "nome": "Escolha de Acesso Venoso",
+  "nome": "Escolha do Acesso Venoso",
   "tipo": "calculadora",
   "secao": "Calculadoras",
   "categoria": "Calculadoras",
@@ -179,7 +179,7 @@
  },
  {
   "id": "bolus",
-  "nome": "Doses por peso",
+  "nome": "Doses pediátricas por peso",
   "tipo": "conduta",
   "secao": "Pediatria",
   "categoria": "Doses e infusões",
@@ -197,7 +197,7 @@
  },
  {
   "id": "infusoes",
-  "nome": "Infusões contínuas",
+  "nome": "Infusões contínuas pediátricas",
   "tipo": "conduta",
   "secao": "Pediatria",
   "categoria": "Doses e infusões",
@@ -546,7 +546,7 @@
  },
  {
   "id": "phoenix",
-  "nome": "Escore de Phoenix — sepse (criança)",
+  "nome": "Escore de Phoenix — sepse e choque séptico (criança)",
   "tipo": "conduta",
   "secao": "Pediatria",
   "categoria": "Triagem e escores",
@@ -580,7 +580,7 @@
  },
  {
   "id": "desidratacao-diarreia-ped",
-  "nome": "Diarreia aguda — desidratação e planos",
+  "nome": "Diarreia aguda — desidratação e planos de hidratação",
   "tipo": "conduta",
   "secao": "Pediatria",
   "categoria": "Hidratação, eletrólitos e metabólico",
@@ -696,7 +696,7 @@
  },
  {
   "id": "reanimacao-neonatal",
-  "nome": "Reanimação do RN ≥ 34 semanas em sala de parto (SBP 2026)",
+  "nome": "Reanimação do RN ≥ 34 semanas em sala de parto",
   "tipo": "conduta",
   "secao": "Pediatria",
   "categoria": "Neonato",
@@ -718,7 +718,7 @@
  },
  {
   "id": "ictericia-neonatal",
-  "nome": "Icterícia neonatal ≥ 35 semanas — fototerapia (AAP 2022)",
+  "nome": "Icterícia neonatal ≥ 35 semanas — fototerapia e escalonamento",
   "tipo": "conduta",
   "secao": "Pediatria",
   "categoria": "Neonato",
@@ -858,7 +858,7 @@
  },
  {
   "id": "bronquiolite-ped",
-  "nome": "Bronquiolite — internação, CNAF e palivizumabe",
+  "nome": "Bronquiolite — internação, CNAF e nirsevimabe",
   "tipo": "conduta",
   "secao": "Pediatria",
   "categoria": "Respiratório",
@@ -1289,7 +1289,7 @@
  },
  {
   "id": "hipocalemia-reposicao-potassio",
-  "nome": "Hipocalemia — potássio",
+  "nome": "Hipocalemia — reposição de potássio",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1305,7 +1305,7 @@
  },
  {
   "id": "hipomagnesemia-reposicao-magnesio",
-  "nome": "Hipomagnesemia — magnésio",
+  "nome": "Hipomagnesemia — reposição de magnésio",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1320,7 +1320,7 @@
  },
  {
   "id": "hipocalcemia-reposicao-calcio",
-  "nome": "Hipocalcemia — cálcio",
+  "nome": "Hipocalcemia — cálcio corrigido e reposição",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1335,7 +1335,7 @@
  },
  {
   "id": "hipercalcemia",
-  "nome": "Hipercalcemia",
+  "nome": "Hipercalcemia — cálcio corrigido, FECa e tratamento agudo",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1351,7 +1351,7 @@
  },
  {
   "id": "hipofosfatemia-reposicao-fosforo",
-  "nome": "Hipofosfatemia — fósforo",
+  "nome": "Hipofosfatemia — reposição de fósforo",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1366,7 +1366,7 @@
  },
  {
   "id": "gasometria-acidobase",
-  "nome": "Gasometria e distúrbios acidobásicos",
+  "nome": "Distúrbios acidobásicos — análise da gasometria",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1383,7 +1383,7 @@
  },
  {
   "id": "bicarbonato-de-sodio",
-  "nome": "Bicarbonato de sódio",
+  "nome": "Bicarbonato de sódio — déficit e esquemas",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1398,7 +1398,7 @@
  },
  {
   "id": "cad-ehh-criterios",
-  "nome": "CAD e EHH — critérios e fórmulas",
+  "nome": "Cetoacidose e estado hiperosmolar — critérios e fórmulas",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1414,7 +1414,7 @@
  },
  {
   "id": "cad-ehh-tratamento",
-  "nome": "CAD e EHH — tratamento",
+  "nome": "Cetoacidose e estado hiperosmolar — tratamento",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1431,7 +1431,7 @@
  },
  {
   "id": "hipoglicemia-adulto",
-  "nome": "Hipoglicemia",
+  "nome": "Hipoglicemia — limiar e doses",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Eletrólitos, ácido-base e endócrino",
@@ -1446,7 +1446,7 @@
  },
  {
   "id": "pcr-adulto",
-  "nome": "PCR — drogas e desfibrilação",
+  "nome": "PCR — drogas e desfibrilação (adulto)",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
@@ -1463,7 +1463,7 @@
  },
  {
   "id": "bradicardia-adulto",
-  "nome": "Bradicardia sintomática",
+  "nome": "Bradicardia sintomática — adulto",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
@@ -1479,7 +1479,7 @@
  },
  {
   "id": "taquiarritmias-adulto",
-  "nome": "Taquiarritmias — drogas EV",
+  "nome": "Taquiarritmias — drogas EV (adulto)",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
@@ -1495,7 +1495,7 @@
  },
  {
   "id": "anafilaxia-adulto",
-  "nome": "Anafilaxia",
+  "nome": "Anafilaxia — adulto",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Parada, ritmo e choque",
@@ -1510,7 +1510,7 @@
  },
  {
   "id": "anticoagulacao-plena-adulto",
-  "nome": "Anticoagulação plena por peso",
+  "nome": "Anticoagulação plena por peso — adulto",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Anticoagulação e hemoterapia",
@@ -1555,7 +1555,7 @@
  },
  {
   "id": "itu-adulto",
-  "nome": "ITU — cistite, pielonefrite e sonda vesical",
+  "nome": "ITU — adulto",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Infecções",
@@ -1603,7 +1603,7 @@
  },
  {
   "id": "cefaleia-adulto",
-  "nome": "Cefaleia aguda — sinais de alarme e tratamento",
+  "nome": "Cefaleia aguda",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Neurológico",
@@ -1689,7 +1689,7 @@
  },
  {
   "id": "queimadura-adulto",
-  "nome": "Queimadura — superfície queimada e reposição (adulto)",
+  "nome": "Queimadura — superfície queimada e reposição inicial (adulto)",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Trauma e ambientais",
@@ -1711,7 +1711,7 @@
  },
  {
   "id": "fibrinoliticos-adulto",
-  "nome": "Fibrinolíticos",
+  "nome": "Fibrinolíticos — adulto",
   "tipo": "conduta",
   "secao": "Condutas e cálculos — adulto",
   "categoria": "Anticoagulação e hemoterapia",
@@ -4119,7 +4119,7 @@
  },
  {
   "id": "hda-lamg",
-  "nome": "Profilaxia de úlcera de estresse",
+  "nome": "Profilaxia de úlcera de estresse e gastroproteção — adulto",
   "tipo": "protocolo",
   "secao": "Protocolos",
   "categoria": "Protocolos",
@@ -4135,7 +4135,7 @@
  },
  {
   "id": "hiperpotassemia",
-  "nome": "Hiperpotassemia",
+  "nome": "Hiperpotassemia — conduta por nível e por ECG",
   "tipo": "protocolo",
   "secao": "Protocolos",
   "categoria": "Protocolos",
@@ -4152,7 +4152,7 @@
  },
  {
   "id": "abstinencia",
-  "nome": "Abstinência alcoólica",
+  "nome": "Síndrome de abstinência alcoólica — adulto",
   "tipo": "protocolo",
   "secao": "Protocolos",
   "categoria": "Protocolos",
@@ -4223,7 +4223,7 @@
  },
  {
   "id": "classificacao-conduta-hidratacao",
-  "nome": "Classificação, Conduta e Hidratação",
+  "nome": "Dengue — classificação, conduta e hidratação (MS 2024)",
   "tipo": "protocolo",
   "secao": "Dengue",
   "categoria": "Dengue",
@@ -4240,7 +4240,7 @@
  },
  {
   "id": "vm-cinco-passos",
-  "nome": "Ventilação mecânica em cinco passos",
+  "nome": "Ventilação mecânica em cinco passos (adulto)",
   "tipo": "calculadora",
   "secao": "Ventilação Mecânica",
   "categoria": "Ventilação Mecânica",
@@ -4260,7 +4260,7 @@
  },
  {
   "id": "vni-cinco-passos",
-  "nome": "VNI em cinco passos",
+  "nome": "Ventilação não invasiva em cinco passos (adulto)",
   "tipo": "calculadora",
   "secao": "Ventilação Mecânica",
   "categoria": "Ventilação Mecânica",

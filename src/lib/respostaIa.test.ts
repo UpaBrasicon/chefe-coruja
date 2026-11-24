@@ -1,7 +1,25 @@
 // node --experimental-strip-types --test src/lib/respostaIa.test.ts
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { citacoes, fontesCitadas, NAO_ENCONTREI, SEM_PEDIATRIA, semResposta, textoConfianca, confiancaDasCitadas, mostrarPubmed } from './respostaIa.ts'
+import { citacoes, fontesCitadas, NAO_ENCONTREI, SEM_PEDIATRIA, semResposta, textoConfianca, confiancaDasCitadas, mostrarPubmed, numeracaoNaTela, fontesNaTela, textoParaCopiar } from './respostaIa.ts'
+
+test('IA3: numeração na ordem em que o texto cita', () => {
+  const t = 'Amiodarona [3]. Cardioversão [5, 3]. Anticoagular [4].'
+  assert.deepEqual([...numeracaoNaTela(t)], [[3, 1], [5, 2], [4, 3]])
+  const fontes = [1, 2, 3, 4, 5].map((n) => ({ n }))
+  assert.deepEqual(fontesNaTela(t, fontes).map((f) => [f.n, f.na]), [[3, 1], [5, 2], [4, 3]])
+  assert.deepEqual(fontesNaTela('Sem citação.', fontes.slice(0, 2)).map((f) => f.na), [1, 2])
+})
+
+test('IA6: texto para colar com as fontes numeradas como na tela e sem caminho cru', () => {
+  const t = '**Dose** de ataque [3] (/plantonista/emergencias/fibrilacao-atrial-adulto).\nVer [5].'
+  const fontes = [
+    { n: 3, titulo: 'Manual HC', editor: 'HCFMUSP', ano: 2024, secao: 'FA', pagina: 210 },
+    { n: 5, titulo: 'Ficha', editor: 'Central', ano: 2026, secao: '', pagina: null },
+  ]
+  assert.equal(textoParaCopiar('dose de amiodarona', t, fontes),
+    'Pergunta: dose de amiodarona\n\nDose de ataque [1].\nVer [2].\n\nFontes:\n1. Manual HC — HCFMUSP, 2024, FA, p. 210\n2. Ficha — Central, 2026')
+})
 
 test('sem resposta: fica só a frase, sem a lista de assuntos que o modelo acrescenta', () => {
   const t = 'Não encontrei isso no material de referência.\n\nOs trechos disponíveis tratam de Maddrey [1]; Child-Pugh [2].'
