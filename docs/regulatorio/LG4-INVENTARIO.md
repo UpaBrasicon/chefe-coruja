@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-32 operações cobrem 330 tabelas.
+32 operações cobrem 331 tabelas.
 
 ## Papéis
 
@@ -42,7 +42,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 21 |
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
 | Anotações pessoais do médico | operador | não | 30 dias depois da última mudança | 1 |
-| Agenda de reuniões do administrador | operador | não | enquanto durar o contrato com a organização | 2 |
+| Agenda de reuniões do administrador | operador | não | enquanto durar o contrato com a organização | 3 |
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
 | Auditoria e registro de acesso ao prontuário | operador | sim | 20 anos | 3 |
 | Registro de acesso à aplicação (Marco Civil) | controlador | não | 6 meses | 2 |
@@ -755,6 +755,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Dados**
 - título, dia, horário, link e pauta curta da reunião
 - quem marcou e quem foi convidado (pessoas da organização)
+- e-mail do convidado, lido da conta na hora do envio (no e-mail, pela Resend)
 
 **Quem acessa**
 - quem marcou a reunião (administrador da organização)
@@ -762,6 +763,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Onde fica**
 - Supabase (São Paulo)
+- Resend (EUA, e-mail aos convidados: título, dia, hora, link, pauta curta e quem marcou)
 
 **Prazo.** enquanto durar o contrato com a organização (registro administrativo da rede, sem dado de paciente). Descarte: apagado com a organização ou a pedido do RT.
 
@@ -769,10 +771,11 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - RLS: só quem marcou e os convidados leem; escrita só por funções que conferem o papel de administrador
 - o link só aceita https://; sem integração com Google ou Microsoft (v1)
 - a pauta é curta (até 2.000 letras) e a tela não pede dado de paciente
+- e-mail: a fila (private.reuniao_emails) guarda só ids, evento e situação; o endereço sai do banco só para a Edge Function avisar-reuniao, nunca para o navegador; uma mensagem por destinatário
 
-**Tabelas (2)**
+**Tabelas (3)**
 
-`public.reunioes`, `public.reuniao_convidados`
+`public.reunioes`, `public.reuniao_convidados`, `private.reuniao_emails`
 
 ### Comunicação interna da equipe
 
