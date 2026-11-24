@@ -7,6 +7,7 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import type { Periodo } from '@/lib/esperaTriagem'
 import { dataIso } from '@/lib/formato'
+import { horarioDoTurno } from '@/lib/turnos'
 import type { useFiltrosBI } from './useFiltrosBI'
 
 // Barra única de filtros da tela Indicadores (Fase 1, tarefa 7 do BACKLOG):
@@ -61,9 +62,8 @@ export function BarraFiltrosBI({ ctx }: { ctx: ReturnType<typeof useFiltrosBI> }
         </CampoSelecao>
         <CampoSelecao aria-label="Turno" value={f.turno} onChange={(e) => definir({ turno: e.target.value })} className={seletor}>
           <option value="">Todos os turnos</option>
-          <option value="manha">Manhã (07–13)</option>
-          <option value="tarde">Tarde (13–19)</option>
-          <option value="noite">Noite (19–07)</option>
+          {/* os turnos da unidade (sem cadastro, manhã, tarde e noite) */}
+          {opcoes.turnos.map((t) => <option key={t.codigo} value={t.codigo}>{t.nome} ({horarioDoTurno(t)})</option>)}
         </CampoSelecao>
         <CampoSelecao aria-label="Grupo" value={f.grupo} onChange={(e) => definir({ grupo: e.target.value })} className={seletor}>
           <option value="">Adulto e pediátrico</option>

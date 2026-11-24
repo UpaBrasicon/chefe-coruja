@@ -13,11 +13,13 @@ import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useTurnosUnidade } from '@/hooks/useTurnosUnidade'
 import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 import { hora as formatarHora, numero } from '@/lib/formato'
 import { IndicadoresAps } from '@/components/gestor/IndicadoresAps'
 import { AtendimentosNaoEncerrados } from '@/components/gestor/AtendimentosNaoEncerrados'
 import { supabase } from '@/lib/supabase'
+import { rotuloTurno } from '@/lib/turnos'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/database'
 
@@ -194,9 +196,10 @@ const SITUACAO: Record<string, { rotulo: string; tom: TomEstado }> = {
   sem_escala: { rotulo: 'check-in sem plantão na escala', tom: 'ambar' },
   aguardando: { rotulo: 'aguardando (na tolerância)', tom: 'cinza' },
   a_comecar: { rotulo: 'a começar', tom: 'cinza' },
+  // turno de sobreaviso não exige check-in presencial (migration 20270421000052)
+  sobreaviso: { rotulo: 'sobreaviso (sem check-in obrigatório)', tom: 'cinza' },
 }
 const FILTROS = ['Todos', 'Divergências', 'Em conformidade'] as const
-const TURNO: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite', madrugada: 'Madrugada' }
 
 function local(l: LinhaCheckin) {
   if (!l.realizado) return null
@@ -207,6 +210,7 @@ function local(l: LinhaCheckin) {
 
 function AuditoriaCheckin({ unidadeId }: { unidadeId: string }) {
   const [filtro, setFiltro] = React.useState<(typeof FILTROS)[number]>('Todos')
+  const turnos = useTurnosUnidade(unidadeId)
   const { data, isLoading, error } = useQuery({
     queryKey: ['auditoria-checkin', unidadeId],
     refetchInterval: 60_000,
@@ -254,7 +258,7 @@ function AuditoriaCheckin({ unidadeId }: { unidadeId: string }) {
                 <TableRow key={`${l.plantao_id ?? 'x'}-${l.presenca_id ?? 'y'}`}>
                   <TableCell className="pl-4 whitespace-normal">
                     <span className="font-medium text-tinta">{l.nome}</span>
-                    <span className="block text-rotulo text-tinta-sussurro">{[l.setor, TURNO[l.turno] ?? l.turno].filter(Boolean).join(' · ')}</span>
+                    <span className="block text-rotulo text-tinta-sussurro">{[l.setor, rotuloTurno(l.turno, turnos.todos)].filter(Boolean).join(' · ')}</span>
                   </TableCell>
                   <TableCell className="text-tinta-apoio tabular">{hora(l.previsto)}</TableCell>
                   <TableCell className="tabular">

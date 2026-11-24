@@ -16,6 +16,8 @@ export type FiltrosBi = {
 const PERIODOS: Periodo[] = ['hoje', '7d', '30d', 'intervalo']
 const CORES = ['vermelho', 'laranja', 'amarelo', 'verde', 'azul']
 const TURNOS = ['manha', 'tarde', 'noite']
+/** Turno cadastrado pela unidade (migration 20270421000050): 't' + 10 letras hexa. */
+const TURNO_DA_UNIDADE = /^t[0-9a-f]{10}$/
 const GRUPOS = ['adulto', 'pediatrico']
 const DIA = /^\d{4}-\d{2}-\d{2}$/
 const UUID = /^[0-9a-f-]{36}$/i
@@ -30,7 +32,7 @@ export function lerFiltros(q: URLSearchParams, hoje: string): FiltrosBi {
     periodo, de, ate,
     setor: UUID.test(q.get('setor') ?? '') ? q.get('setor')! : '',
     cor: so(q.get('cor'), CORES),
-    turno: so(q.get('turno'), TURNOS),
+    turno: TURNO_DA_UNIDADE.test(q.get('turno') ?? '') ? q.get('turno')! : so(q.get('turno'), TURNOS),
     grupo: so(q.get('grupo'), GRUPOS),
     medico: UUID.test(q.get('medico') ?? '') ? q.get('medico')! : '',
   }
@@ -59,11 +61,11 @@ export function argsFiltros(f: FiltrosBi, hoje: string) {
 }
 
 /** Texto dos filtros para o cabeçalho do CSV. */
-export function descreverFiltros(f: FiltrosBi, nomes: { setor?: string; medico?: string }): string {
+export function descreverFiltros(f: FiltrosBi, nomes: { setor?: string; medico?: string; turno?: string }): string {
   const partes: string[] = []
   if (f.setor) partes.push(`setor ${nomes.setor ?? f.setor}`)
   if (f.cor) partes.push(`cor ${f.cor}`)
-  if (f.turno) partes.push(`turno ${f.turno === 'manha' ? 'manhã' : f.turno}`)
+  if (f.turno) partes.push(`turno ${nomes.turno ?? (f.turno === 'manha' ? 'manhã' : f.turno)}`)
   if (f.grupo) partes.push(f.grupo === 'pediatrico' ? 'pediátrico' : 'adulto')
   if (f.medico) partes.push(`médico ${nomes.medico ?? f.medico}`)
   return partes.length ? partes.join(', ') : 'sem filtro'
