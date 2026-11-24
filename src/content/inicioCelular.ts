@@ -22,6 +22,8 @@ export type ItemInicio = { nome: string; sigla: string; rota: string }
 export type CategoriaInicio = {
   id: string
   nome: string
+  /** Etiqueta do cartão (assinatura do polimento de 23/11/2026: a sigla como etiqueta de ampola). */
+  sigla: string
   exemplos: string
   icone: IconeCategoria
   /** Sem itens: o cartão leva direto à rota (ex.: todas as ferramentas). */
@@ -66,13 +68,13 @@ export const itemDoGuia = (c: CartaoGuia): ItemInicio => ({
 })
 
 const TODAS: CategoriaInicio = {
-  id: 'todas', nome: 'Todas as ferramentas', exemplos: 'Busca, grupos e favoritos', icone: 'todas', itens: [], rota: ROTA_TODAS_FERRAMENTAS,
+  id: 'todas', nome: 'Todas as ferramentas', sigla: '', exemplos: 'Busca, grupos e favoritos', icone: 'todas', itens: [], rota: ROTA_TODAS_FERRAMENTAS,
 }
 
 export const INICIO_ADULTO: CategoriaInicio[] = [
-  { id: 'urgencias', nome: 'Urgências', exemplos: 'Parada, intubação, sepse, AVC', icone: 'urgencias', itens: GUIA_ADULTO.map(itemDoGuia) },
+  { id: 'urgencias', sigla: 'UR', nome: 'Urgências', exemplos: 'Parada, intubação, sepse, AVC', icone: 'urgencias', itens: GUIA_ADULTO.map(itemDoGuia) },
   {
-    id: 'doses', nome: 'Diluições e doses', exemplos: 'Infusões, diluição, medicamentos', icone: 'doses',
+    id: 'doses', sigla: 'mL', nome: 'Diluições e doses', exemplos: 'Infusões, diluição, medicamentos', icone: 'doses',
     itens: [
       { nome: 'Infusões contínuas', sigla: 'mL/h', rota: p('calculadoras/infusoes-adulto') },
       { nome: 'Sequência rápida (IOT)', sigla: 'IOT', rota: p('calculadoras/iot') },
@@ -82,7 +84,7 @@ export const INICIO_ADULTO: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'calculadoras', nome: 'Calculadoras', exemplos: 'Sepse, CAD, sódio, potássio', icone: 'calculadoras',
+    id: 'calculadoras', sigla: 'CA', nome: 'Calculadoras', exemplos: 'Sepse, CAD, sódio, potássio', icone: 'calculadoras',
     itens: [
       { nome: 'Sepse', sigla: 'SP', rota: p('escores/sepse-adulto') },
       { nome: 'Cetoacidose e EHH', sigla: 'CAD', rota: p('emergencias/cad-ehh-tratamento') },
@@ -99,7 +101,7 @@ export const INICIO_ADULTO: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'escores', nome: 'Escores', exemplos: 'HEART, NEWS2, Glasgow, Wells', icone: 'escores',
+    id: 'escores', sigla: 'ES', nome: 'Escores', exemplos: 'HEART, NEWS2, Glasgow, Wells', icone: 'escores',
     itens: [
       { nome: 'HEART', sigla: 'HE', rota: p('escores/heart') },
       { nome: 'CHA₂DS₂-VA', sigla: 'CHA', rota: p('escores/cha2ds2-va') },
@@ -112,7 +114,7 @@ export const INICIO_ADULTO: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'intoxicacao', nome: 'Intoxicação', exemplos: 'Antídotos, peçonhentos, abstinência', icone: 'intoxicacao',
+    id: 'intoxicacao', sigla: 'TX', nome: 'Intoxicação', exemplos: 'Antídotos, peçonhentos, abstinência', icone: 'intoxicacao',
     itens: [
       { nome: 'Intoxicações e antídotos', sigla: 'TX', rota: p('emergencias/intoxicacoes-antidotos-adulto') },
       { nome: 'Animais peçonhentos', sigla: 'AP', rota: p('emergencias/animais-peconhentos-adulto') },
@@ -123,9 +125,9 @@ export const INICIO_ADULTO: CategoriaInicio[] = [
 ]
 
 export const INICIO_CRIANCA: CategoriaInicio[] = [
-  { id: 'urgencias', nome: 'Urgências', exemplos: 'Parada, via aérea, crise, anafilaxia', icone: 'urgencias', itens: GUIA_CRIANCA.map(itemDoGuia) },
+  { id: 'urgencias', sigla: 'UR', nome: 'Urgências', exemplos: 'Parada, via aérea, crise, anafilaxia', icone: 'urgencias', itens: GUIA_CRIANCA.map(itemDoGuia) },
   {
-    id: 'doses', nome: 'Diluições e doses', exemplos: 'Doses por peso, infusões, sedação', icone: 'doses',
+    id: 'doses', sigla: 'mL', nome: 'Diluições e doses', exemplos: 'Doses por peso, infusões, sedação', icone: 'doses',
     itens: [
       { nome: 'Doses por peso', sigla: 'DS', rota: p('pediatria/bolus') },
       { nome: 'Infusões contínuas', sigla: 'mL/h', rota: p('pediatria/infusoes') },
@@ -133,7 +135,7 @@ export const INICIO_CRIANCA: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'calculadoras', nome: 'Calculadoras', exemplos: 'Sepse, CAD, hidratação, sódio', icone: 'calculadoras',
+    id: 'calculadoras', sigla: 'CA', nome: 'Calculadoras', exemplos: 'Sepse, CAD, hidratação, sódio', icone: 'calculadoras',
     itens: [
       { nome: 'Sepse (Phoenix)', sigla: 'SP', rota: p('pediatria/phoenix') },
       { nome: 'Cetoacidose e EHH', sigla: 'CAD', rota: p('pediatria/cad-ehh-ped') },
@@ -146,7 +148,7 @@ export const INICIO_CRIANCA: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'escores', nome: 'Escores', exemplos: 'Glasgow, PRAM, Phoenix, PECARN', icone: 'escores',
+    id: 'escores', sigla: 'ES', nome: 'Escores', exemplos: 'Glasgow, PRAM, Phoenix, PECARN', icone: 'escores',
     itens: [
       { nome: 'Glasgow pediátrico', sigla: 'GCS', rota: p('pediatria/glasgow-pediatrico') },
       { nome: 'PRAM', sigla: 'PR', rota: p('pediatria/pram') },
@@ -159,7 +161,7 @@ export const INICIO_CRIANCA: CategoriaInicio[] = [
     ],
   },
   {
-    id: 'intoxicacao', nome: 'Intoxicação', exemplos: 'Antídotos, escorpião e aranhas', icone: 'intoxicacao',
+    id: 'intoxicacao', sigla: 'TX', nome: 'Intoxicação', exemplos: 'Antídotos, escorpião e aranhas', icone: 'intoxicacao',
     itens: [
       { nome: 'Intoxicações', sigla: 'TX', rota: p('pediatria/intoxicacoes-ped') },
       { nome: 'Escorpião e aranhas', sigla: 'EA', rota: p('pediatria/escorpiao-aranhas-ped') },

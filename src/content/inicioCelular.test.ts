@@ -79,3 +79,14 @@ test('a busca abre a Central completa com o texto', () => {
   assert.equal(rotaDaBusca(' noradrenalina '), '/plantonista?todas=1&q=noradrenalina')
   assert.equal(rotaDaBusca('K+ & Na'), '/plantonista?todas=1&q=K%2B%20%26%20Na')
 })
+
+test('polimento (unslop, RT em 23/11/2026): etiqueta em cada grupo, sem negrito, maiúsculas, setas ou estrelinhas', () => {
+  for (const c of [...INICIO_ADULTO, ...INICIO_CRIANCA]) {
+    if (c.itens.length) assert.ok(c.sigla.length > 0 && c.sigla.length <= 3, `${c.nome}: ${c.sigla}`)
+  }
+  const tela = readFileSync('src/components/plantonista/central/InicioCelular.tsx', 'utf8')
+  for (const proibido of ['font-bold', 'uppercase', 'ArrowUpRight', 'Sparkles', 'shadow-halo', 'Boa noite']) {
+    assert.ok(!tela.includes(proibido), proibido)
+  }
+  assert.match(tela, /titulo="Central do Médico"/)
+})
