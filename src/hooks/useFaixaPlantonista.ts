@@ -18,6 +18,8 @@ export type DadosFaixa = {
   leitos: number
   /** Minutos da permanência mais longa em observação que o plantonista vê; null = ninguém. */
   maiorObservacaoMin: number | null
+  /** Quantos pacientes em observação o plantonista vê (o cartão conta pacientes, não horas). */
+  emObservacao: number
 }
 
 export function useFaixaPlantonista(unidadeId?: string) {
@@ -71,6 +73,7 @@ export function useFaixaPlantonista(unidadeId?: string) {
         pacientes,
         leitos,
         maiorObservacaoMin,
+        emObservacao: (obs.data ?? []).length,
       }
     },
   })

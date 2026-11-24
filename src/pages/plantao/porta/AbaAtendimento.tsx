@@ -93,6 +93,8 @@ export function AbaAtendimento({
 }) {
   const triagem = classificacoes.find((c) => !c.reclassificacao) ?? classificacoes[0]
   const comSinais = classificacoes.find((c) => c.sinais && Object.keys(c.sinais).length > 0)
+  // a mais nova (a lista vem da mais antiga para a mais nova)
+  const ultima = classificacoes.at(-1)
   const sinais = textoVitais(comSinais?.sinais)
   const muda = (k: keyof Soap) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setSoap({ ...soap, [k]: k === 'cid' ? e.target.value.toUpperCase() : e.target.value })
@@ -116,10 +118,23 @@ export function AbaAtendimento({
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="soap-o">Objetivo · exame físico</Label>
+          {/* M6 (RT, 24/11/2026): classificação e sinais da triagem no topo do Objetivo, só para ler.
+              A cor é a da enfermagem; os sinais aparecem como foram registrados. */}
+          <div className="flex flex-col gap-1 rounded-controle border border-fio bg-campo px-3 py-2 text-rotulo text-tinta-apoio [text-wrap:pretty]">
+            {!ubs && ultima && (
+              <span className="flex flex-wrap items-center gap-2">
+                <PilulaRisco cor={ultima.cor} />
+                <span>
+                  {ultima.reclassificacao ? `Reclassificado: ${ultima.motivo ?? ''}` : [ultima.fluxograma_nome, ultima.discriminador].filter(Boolean).join(' · ') || 'Classificação da enfermagem'}
+                  <span className="text-tinta-sussurro"> · {hora(ultima.criado_em)}</span>
+                </span>
+              </span>
+            )}
+            <span className="tabular-nums">
+              {sinais ? <>Sinais {ubs ? 'da escuta' : 'da triagem'}{comSinais ? ` (${hora(comSinais.criado_em)})` : ''}: <span className="text-tinta">{sinais}</span></> : ubs ? 'Sem sinais vitais registrados antes da consulta.' : 'Sem sinais vitais da triagem.'}
+            </span>
+          </div>
           <Textarea id="soap-o" rows={6} value={soap.o} onChange={muda('o')} />
-          <span className="text-rotulo text-tinta-sussurro [text-wrap:pretty]">
-            {sinais ? <>Sinais {ubs ? 'da escuta' : 'da triagem'}{comSinais ? ` (${hora(comSinais.criado_em)})` : ''}: {sinais}</> : ubs ? 'Sem sinais vitais registrados antes da consulta.' : 'Sem sinais vitais da triagem.'}
-          </span>
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_200px]">

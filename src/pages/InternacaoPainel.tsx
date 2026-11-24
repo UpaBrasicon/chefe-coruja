@@ -3,6 +3,7 @@ import { ArrowRightLeft, BedDouble, UserPlus } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { data as dataDoInstante, dataHora, dataIso } from '@/lib/formato'
 import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { csvTransferencias } from '@/lib/exportacoesAntigas'
@@ -72,6 +73,18 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
       const { data, error } = await supabase.rpc('setores_internacao', { p_unidade: unidadeId! })
       if (error) throw error
       return (data ?? []) as Setor[]
+    },
+  })
+
+  // M3 da revisão do médico (RT, 24/11/2026): o texto do topo diz os setores da escala real
+  const { data: setoresDaEscala } = useQuery({
+    queryKey: ['setores-na-escala', unidadeId],
+    enabled: !!unidadeId && ehPlantonista,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await setoresNaEscalaAgora()
+      if (error) throw error
+      return (Array.isArray(data) ? data : []) as string[]
     },
   })
 
@@ -226,6 +239,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
       <ListaInternados
         unidadeId={unidadeId}
         setores={setores ?? []}
+        setoresDaEscala={setoresDaEscala}
         pacientes={pacientes ?? []}
         carregando={carregandoSetores || carregandoPacientes}
         ehGestor={ehGestor || ehAdmin}

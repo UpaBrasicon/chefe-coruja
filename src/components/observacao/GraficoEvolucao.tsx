@@ -21,12 +21,17 @@ import { cn } from '@/lib/utils'
 import { VazioLinha } from '@/components/monitor/Pagina'
 import { diaDaInternacao } from '@/lib/diaInternacao'
 import { diaMes } from '@/lib/formato'
+import { rotuloConceito } from '@/lib/conceitosRotulos'
 
 type Props = {
   series: SerieObservacao[]
   /** Data de admissão p/ eixo em dias de internação (ex.: "D+1"). */
   dataAdmissao?: string
   className?: string
+  /** Gráfico pequeno de um conceito só (M2 da revisão do médico): sem os títulos dos eixos. */
+  compacto?: boolean
+  /** O que dizer quando não há ponto para desenhar. */
+  vazio?: string
 }
 
 type DadoGrafico = {
@@ -42,9 +47,9 @@ function diaInternacao(aferidoEm: string, dataAdmissao?: string): string {
   return diaDaInternacao(aferidoEm, dataAdmissao)
 }
 
-export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
-  if (series.length === 0) {
-    return <VazioLinha>Nenhuma observação para exibir.</VazioLinha>
+export function GraficoEvolucao({ series, dataAdmissao, className, compacto = false, vazio }: Props) {
+  if (series.length === 0 || series.every((s) => s.pontos.every((p) => p.valor_num == null))) {
+    return <VazioLinha>{vazio ?? 'Nenhuma observação para exibir.'}</VazioLinha>
   }
 
   // mescla pontos por rótulo de tempo (dia de internação ou data/hora)
@@ -65,7 +70,7 @@ export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
   const yMax = ref?.ref_max != null ? ref.ref_max + Math.abs(ref.ref_max) * 0.3 : undefined
 
   return (
-    <div className={cn('h-64 w-full', className)}>
+    <div className={cn(compacto ? 'h-36 w-full' : 'h-64 w-full', className)}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={dados} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -73,18 +78,18 @@ export function GraficoEvolucao({ series, dataAdmissao, className }: Props) {
             dataKey="rotulo"
             tick={{ fontSize: 11 }}
             tickLine={false}
-            label={{ value: 'Dia de internação', position: 'insideBottom', offset: -2, fontSize: 11 }}
+            label={compacto ? undefined : { value: 'Dia de internação', position: 'insideBottom', offset: -2, fontSize: 11 }}
           />
           <YAxis
             tick={{ fontSize: 11 }}
             tickLine={false}
             width={44}
             domain={[yMin ?? 'auto', yMax ?? 'auto']}
-            label={{ value: ref?.unidade_padrao ?? '', angle: -90, position: 'insideLeft', fontSize: 11 }}
+            label={compacto ? undefined : { value: ref?.unidade_padrao ?? '', angle: -90, position: 'insideLeft', fontSize: 11 }}
           />
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 8 }}
-            formatter={(v, nome) => [`${String(v ?? '')}`, String(nome)]}
+            formatter={(v, nome) => [`${String(v ?? '')}`, rotuloConceito(String(nome))]}
           />
           {ref && (ref.ref_min != null || ref.ref_max != null) && (
             <ReferenceArea

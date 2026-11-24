@@ -9,6 +9,7 @@ import { ToolCard } from '@/components/plantonista/cards'
 import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
 import { rotaDoLeito } from '@/components/internacao/rotas'
+import { AbasPlantao } from '@/components/plantao/AbasPlantao'
 
 /**
  * Página de uma seção do Plantão. Com várias ferramentas, lista; com uma só,
@@ -30,7 +31,13 @@ export default function PlantaoSectionHome() {
     return <Navigate to={rotaDoLeito(searchParams.get('paciente'))} replace />
   }
 
-  const trilha = <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: secao.label }]} />
+  // M1 da revisão do médico (RT, 24/11/2026): as seções do plantão como abas, no topo de cada seção
+  const trilha = (
+    <>
+      <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: secao.label }]} />
+      {!secao.semCartao && <AbasPlantao />}
+    </>
+  )
 
   if (ehSecaoDireta(secao)) {
     const Ferramenta = secao.tools[0].component

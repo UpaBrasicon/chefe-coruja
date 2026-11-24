@@ -1,4 +1,7 @@
 import { MapPin } from 'lucide-react'
+import * as React from 'react'
+
+import { Button } from '@/components/ui/button'
 
 import { Chip } from '@/components/monitor/Pagina'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
@@ -13,6 +16,7 @@ type Consultorio = ReturnType<typeof useConsultorioDoPlantao>
 
 function LinhaDaPorta({ setor, consultorio, varias }: { setor: string; consultorio: Consultorio; varias: boolean }) {
   const { data: salas } = useSalas(setor)
+  const [trocando, setTrocando] = React.useState(false)
   const consultorios = (salas ?? []).filter((s) => s.tipo !== 'triagem')
   if (!salas) return null
   if (consultorios.length === 0) {
@@ -23,6 +27,18 @@ function LinhaDaPorta({ setor, consultorio, varias }: { setor: string; consultor
     )
   }
   const atual = consultorios.find((s) => s.id === consultorio.salas[setor])
+  // M2 (revisão do médico, RT 24/11/2026): escolhido, o consultório vira uma linha; as opções só voltam em "Trocar"
+  if (atual && !trocando) {
+    return (
+      <div className="flex flex-wrap items-center gap-2.5 text-apoio">
+        <MapPin className="size-[15px] text-acao" aria-hidden />
+        <span className="font-medium text-grafite">{varias && 'Nesta porta · '}Seu consultório: {atual.nome}</span>
+        {consultorios.length > 1 && (
+          <Button variant="link" size="sm" className="h-auto px-0" onClick={() => setTrocando(true)}>Trocar</Button>
+        )}
+      </div>
+    )
+  }
   return (
     <div className="flex flex-wrap items-center gap-2.5">
       <MapPin className="size-[15px] text-acao" aria-hidden />
@@ -33,7 +49,7 @@ function LinhaDaPorta({ setor, consultorio, varias }: { setor: string; consultor
       <div className="flex flex-wrap gap-1.5" role="group" aria-label="Consultório do plantão">
         {consultorios.map((s) => (
           <Chip key={s.id} ativo={s.id === atual?.id} desabilitado={consultorio.escolher.isPending}
-            onClick={() => consultorio.escolher.mutate({ setor, sala: s.id })}>
+            onClick={() => consultorio.escolher.mutate({ setor, sala: s.id }, { onSuccess: () => setTrocando(false) })}>
             {s.nome}
           </Chip>
         ))}
