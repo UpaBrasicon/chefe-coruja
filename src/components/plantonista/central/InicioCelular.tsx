@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { Abas, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { SessaoAssinatura } from '@/components/assinatura/SessaoAssinatura'
 import { CartaoTurno } from './CartaoTurno'
+import { VitrineDoGrupo } from './ObjetoDoGrupo'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 
@@ -87,14 +88,15 @@ function IniciarPcr({ lado }: { lado: LadoInicio }) {
 
 function CartaoCategoria({ c, aberta, aoTocar, idPainel, largo }: { c: CategoriaInicio; aberta: boolean; aoTocar: () => void; idPainel: string; largo?: boolean }) {
   return (
+    // vitrine (opção 2 dos cartões visuais, RT em 23/11/2026): o objeto do grupo
+    // sobre a cor do grupo bem diluída e, embaixo, a faixa com o nome; sem etiqueta
     <BotaoLinha onClick={aoTocar} aria-expanded={aberta} aria-controls={idPainel}
-      className={cn('gap-3 rounded-cartao p-4 hover:bg-superficie active:bg-trilha',
-        largo ? 'min-h-18 flex-row items-center' : 'min-h-28',
-        aberta ? 'border-acao bg-trilha hover:border-acao hover:bg-trilha' : 'border-fio hover:border-fio-forte')}>
-      <Etiqueta texto={c.sigla} icone={c.icone} />
-      <span className="flex min-w-0 flex-col gap-0.5">
+      className={cn('gap-0 overflow-hidden rounded-cartao p-0 hover:bg-superficie active:bg-trilha',
+        aberta ? 'border-acao ring-1 ring-acao hover:border-acao' : 'border-fio hover:border-fio-forte')}>
+      <VitrineDoGrupo icone={c.icone} largo={largo} />
+      <span className="flex w-full flex-col gap-0.5 border-t border-fio px-3 py-2.5">
         <span className="text-corpo leading-tight font-medium text-tinta">{c.nome}</span>
-        <span className="text-apoio leading-snug text-tinta-apoio">{c.exemplos}</span>
+        {largo && <span className="text-apoio leading-snug text-tinta-apoio">{c.exemplos}</span>}
       </span>
     </BotaoLinha>
   )
