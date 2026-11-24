@@ -78,6 +78,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
     { to: '/plantonista', rotulo: 'Central do Médico', curto: 'Central', icone: Stethoscope },
     { to: '/plantao', rotulo: 'Plantão', icone: Activity },
+    // pedido 8 (PS1 a PS3 = A, RT 23/11/2026): os pacientes do plantão com as pendências
+    { to: '/passometro', rotulo: 'Passômetro', icone: ClipboardList, exato: true },
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
     ITEM_AGENDA_CONSULTAS,
@@ -283,7 +285,7 @@ const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede', curto: 'Rede', 
 // 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
 // internação nem AIH; os itens dessas telas somem do menu.
 const FORA_DA_UBS = new Set([
-  '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/contingencia',
+  '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/passometro', '/contingencia',
   '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/aih', '/apac',
   '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
   '/recepcao/painel',

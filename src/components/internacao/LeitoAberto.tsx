@@ -333,7 +333,7 @@ function Resumo({ p }: { p: PartesLeito }) {
         <BlocoSepse a={p.acuidade} pacienteId={p.pacienteId} podeMarcar={!ehGestor} acao={p.acao} />
       )}
       <BlocoPendencias internacaoId={i.id} ativa={ativa} lista={p.pendencias} eu={p.eu} acao={p.acao} />
-      {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} />}
+      {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} pendencias={p.pendencias} />}
       {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
       {/* lacuna 6 (V6): prescrição vencida ou vencendo */}
       {ativa && <AvisoValidadePrescricao pacienteId={p.pacienteId} />}
@@ -562,7 +562,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
       {janela === 'classificacao' && (
         <DialogoClassificacao internacaoId={i.id} prontuarioAberto={p.prontuarioAberto} aoFechar={() => setJanela(null)} />
       )}
-      {janela === 'passar' && <DialogoPassagem i={i} acao={p.acao} aoFechar={() => setJanela(null)} />}
+      {janela === 'passar' && <DialogoPassagem i={i} acao={p.acao} aoFechar={() => setJanela(null)} pendencias={p.pendencias} />}
       {janela === 'intercorrencia' && (
         <DialogoIntercorrencia pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} retifica={null} aoFechar={() => setJanela(null)} />
       )}
