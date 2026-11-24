@@ -19,16 +19,34 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { codigoExameNaTela, loincValido, tipoDoCodigo, type ExameBuscado, type ExameUnidade, type ListaExamesUnidade } from '@/lib/exames'
+import { codigoExameNaTela, loincValido, type ExameBuscado, type ExameUnidade, type ListaExamesUnidade } from '@/lib/exames'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 
 type Rascunho = { procedimento: string; nome_sigtap: string | null; nome_curto: string; loinc: string; botao: boolean; ordem: string }
 
+// Revisão de perfis (Gestor, item 14, M1): grupo do exame na tela pelo
+// subgrupo do SIGTAP. Só a exibição: o ECG (02.11, métodos gráficos) deixa de
+// aparecer como "imagem"; a regra de tipoDoCodigo (pedido, laudo) não muda.
+const GRUPOS_NA_TELA = [
+  ['laboratorio', 'Laboratório'], ['citopatologia', 'Citopatológico'], ['imagem', 'Imagem'], ['grafico', 'Métodos gráficos'], ['outro', 'Outros'],
+] as const
+type GrupoNaTela = (typeof GRUPOS_NA_TELA)[number][0]
+function grupoNaTela(codigo: string): GrupoNaTela {
+  const sub = codigo.replace(/\D/g, '').slice(0, 4)
+  if (sub === '0202') return 'laboratorio'
+  if (sub === '0203') return 'citopatologia'
+  if (['0204', '0205', '0206', '0207'].includes(sub)) return 'imagem'
+  if (sub === '0211') return 'grafico'
+  return 'outro'
+}
+
 export default function ExamesUnidade() {
+  const [aba, setAba] = React.useState<'exames' | 'pacs'>('exames')
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
@@ -78,6 +96,8 @@ export default function ExamesUnidade() {
   const exames = lista.data?.exames ?? []
   const pode = !!lista.data?.pode_definir
   const naLista = new Set(exames.map((e) => e.procedimento))
+  const comLoinc = exames.filter((e) => !!e.loinc).length
+  const botoes = exames.filter((e) => e.botao).sort((a, b) => a.ordem - b.ordem || a.nome_curto.localeCompare(b.nome_curto, 'pt-BR'))
   const abrir = (e: ExameUnidade) =>
     setEditando({ procedimento: e.procedimento, nome_sigtap: e.nome_sigtap, nome_curto: e.nome_curto, loinc: e.loinc ?? '', botao: e.botao, ordem: String(e.ordem) })
 
@@ -89,6 +109,36 @@ export default function ExamesUnidade() {
         descricao="Exames que a unidade oferece, do SIGTAP: laboratório (02.02), imagem (02.04 a 02.07) e métodos gráficos como o ECG (02.11), com o nome que aparece no pedido. Os marcados como botão aparecem no pedido rápido do atendimento. Sem lista, o pedido busca nesses grupos inteiros."
       />
       <MensagemErro texto={(lista.error ?? salvar.error ?? retirar.error) ? ((lista.error ?? salvar.error ?? retirar.error) as Error).message : null} />
+
+      {/* M3: o PACS em aba própria */}
+      <Tabs value={aba} onValueChange={(v) => setAba(v as 'exames' | 'pacs')}>
+        <TabsList aria-label="Exames da unidade" className="gap-5">
+          <TabsTrigger value="exames">Exames <span className="text-rotulo font-semibold text-acao tabular-nums">{exames.length}</span></TabsTrigger>
+          <TabsTrigger value="pacs">Visualizador de imagem (PACS)</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      {aba === 'pacs' && unidadeId && <DominiosImagem unidadeId={unidadeId} pode={pode} />}
+      {aba === 'exames' && <>
+
+      {exames.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-container border border-fio bg-superficie p-3 text-apoio">
+          {/* M3: LOINC como progresso, com o porquê do vazio */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="font-medium text-tinta">LOINC em {comLoinc} de {exames.length}</span>
+            <span className="h-1.5 w-32 overflow-hidden rounded-capsula bg-trilha" aria-hidden>
+              <span className="block h-full bg-acao" style={{ width: `${Math.round((comLoinc / exames.length) * 100)}%` }} />
+            </span>
+            <span className="text-rotulo text-tinta-sussurro">O LOINC é preenchido na implantação, quando o laboratório (LIS) pedir; o sistema não deduz o código. Vazio não impede o pedido.</span>
+          </div>
+          {/* M2 (versão mínima): prévia do pedido rápido na ordem em que aparece; a ordem muda em Editar */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-rotulo text-tinta-sussurro">Pedido rápido:</span>
+            {botoes.length === 0
+              ? <span className="text-rotulo text-tinta-sussurro">nenhum exame marcado como botão; o atendimento mostra os botões padrão.</span>
+              : botoes.map((e) => <span key={e.id} className="rounded-capsula border border-fio px-2 text-rotulo text-tinta">{e.nome_curto}</span>)}
+          </div>
+        </div>
+      )}
 
       {pode && !editando && (
         <section className="flex flex-col gap-2 rounded-container border border-fio bg-superficie p-3">
@@ -149,24 +199,31 @@ export default function ExamesUnidade() {
                 <TableHead className="px-3 py-2 font-medium">LOINC</TableHead><TableHead className="px-3 py-2 font-medium">Botão</TableHead><TableHead /></TableRow>
             </TableHeader>
             <TableBody>
-              {exames.map((e) => (
+              {GRUPOS_NA_TELA.flatMap(([g, rotulo]) => {
+                const doGrupo = exames.filter((e) => grupoNaTela(e.procedimento) === g)
+                if (doGrupo.length === 0) return []
+                return [
+                  <TableRow key={`g-${g}`} className="bg-trilha hover:bg-trilha">
+                    <TableCell colSpan={5} className="px-3 py-1.5 font-semibold text-tinta">{rotulo} <span className="font-normal text-tinta-sussurro tabular-nums">{doGrupo.length}</span></TableCell>
+                  </TableRow>,
+                  ...doGrupo.map((e) => (
                 <TableRow key={e.id} className="border-b border-trilha align-top last:border-0">
-                  <TableCell className="px-3 py-2 font-medium text-tinta">{e.nome_curto}
-                    <Badge variant={tipoDoCodigo(e.procedimento) === 'imagem' ? 'secondary' : 'outline'} className="ml-1.5">{tipoDoCodigo(e.procedimento) === 'imagem' ? 'imagem' : tipoDoCodigo(e.procedimento) === 'citopatologia' ? 'citopatológico' : 'laboratório'}</Badge>
-                  </TableCell>
+                  <TableCell className="px-3 py-2 font-medium text-tinta">{e.nome_curto}</TableCell>
                   <TableCell className="px-3 py-2">{codigoExameNaTela(e.procedimento)}<span className="block text-rotulo text-tinta-sussurro">{e.nome_sigtap ?? ''}</span></TableCell>
-                  <TableCell className="px-3 py-2">{e.loinc ?? <span className="text-tinta-sussurro">—</span>}</TableCell>
+                  <TableCell className="px-3 py-2">{e.loinc ?? <span className="text-tinta-sussurro">a preencher na implantação</span>}</TableCell>
                   <TableCell className="px-3 py-2">{e.botao ? <Badge variant="info">botão · {e.ordem}</Badge> : <span className="text-tinta-sussurro">—</span>}</TableCell>
                   <TableCell className="whitespace-nowrap px-3 py-2 text-right">
                     {pode && (
                       <>
-                        <Button size="xs" variant="outline" onClick={() => abrir(e)}>Editar</Button>
-                        <Button size="xs" variant="outline" onClick={() => { setRetirando(e); setMotivo('') }}>Retirar</Button>
+                        <Button size="xs" variant="ghost" onClick={() => abrir(e)}>Editar</Button>
+                        <Button size="xs" variant="ghost" onClick={() => { setRetirando(e); setMotivo('') }}>Retirar</Button>
                       </>
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+                  )),
+                ]
+              })}
             </TableBody>
           </Table>
         </div>
@@ -182,8 +239,7 @@ export default function ExamesUnidade() {
           </div>
         </div>
       )}
-
-      {unidadeId && <DominiosImagem unidadeId={unidadeId} pode={pode} />}
+      </>}
     </div>
   )
 }
