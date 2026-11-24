@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { contarFila } from '@/lib/filaValidacao'
 
 import { supabase } from '@/lib/supabase'
 import type { MinhaNotificacao, Papel } from '@/types/database'
@@ -47,7 +48,8 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     queryFn: async () => {
       const { data, error } = await supabase.rpc('fila_validacao', { p_unidade: unidadeId! })
       if (error) throw error
-      return (data ?? []).length
+      // FA1: o mesmo número da aba Validação e do topo (sem os itens de prescrição vencida)
+      return contarFila(data)
     },
   })
 
