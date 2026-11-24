@@ -56,7 +56,10 @@ O risco é virar um prontuário paralelo: nome, diagnóstico ou conduta de pacie
 - **Tela:** um cartão "Minhas anotações" no "Meu plantão", no celular e no computador, com o aviso do AN1. Ganha teste do aviso de dado de paciente (CPF, Cartão SUS e data de nascimento).
 - **Ordem:** banco → tela → homologação → PR → seu ok → produção.
 
-## 6. Perguntas ao RT
+## 6. Decisões do RT
 
-1. AN1 a AN4: A ou B em cada um?
-2. Se AN3 = A: 30 dias está bom ou prefere outro prazo?
+23/11/2026, nas palavras dele: "Sim, todas A". AN1 a AN4 = A:
+- só lembretes do médico, sem dado de paciente, com aviso fixo e confirmação quando o texto parece ter CPF, Cartão SUS ou data de nascimento;
+- guardadas no banco, por pessoa, e só ele lê;
+- apagam sozinhas 30 dias depois da última mudança;
+- lista de notas curtas, com feito, fixar e apagar.
