@@ -89,7 +89,7 @@ export function AbaRegulacaoPaciente({ pacienteId, unidadeId: unidadeProp }: { p
     <div className="flex flex-col gap-3 text-apoio">
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="flex items-center gap-2 text-corpo font-medium text-tinta"><Waypoints className="size-4" aria-hidden /> Regulação</h3>
-        {lista.data?.pode_solicitar && (
+        {lista.data?.pode_solicitar && pedidos.length > 0 && (
           <Button size="sm" variant="outline" className="ml-auto" onClick={() => { setEnviado(null); setNovo(true) }}>
             <Plus /> Novo pedido
           </Button>
@@ -98,7 +98,18 @@ export function AbaRegulacaoPaciente({ pacienteId, unidadeId: unidadeProp }: { p
       {enviado && <AvisoEnviado enviada={enviado} />}
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} />
         : pedidos.length === 0 ? (
-          <p className="text-tinta-sussurro">Nenhum pedido de regulação deste paciente saiu desta unidade.</p>
+          // RG3 (RT, 24/11/2026): o vazio diz quando pedir e o que o pedido leva
+          <div className="flex flex-col gap-2 rounded-controle border border-fio bg-campo px-4 py-3">
+            <span className="text-controle font-medium text-tinta">Nenhum pedido de regulação deste paciente saiu desta unidade.</span>
+            <span className="text-tinta-apoio">
+              Peça quando o paciente precisar de um leito, exame ou consulta que a unidade não oferece: UTI ou UCI, leito de outra
+              especialidade, cirurgia, hemodinâmica, exame de imagem que a unidade não faz, avaliação de especialista.
+            </span>
+            <span className="text-tinta-apoio">O pedido já leva o quadro do prontuário (última evolução, sinais vitais, exames e prescrição) para você revisar.</span>
+            {lista.data?.pode_solicitar && (
+              <Button size="sm" className="self-start" onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Novo pedido</Button>
+            )}
+          </div>
         ) : (
           <ul className="flex flex-col gap-2">
             {pedidos.map((p) => (
@@ -160,24 +171,26 @@ function PedidoAberto({ p }: { p: PedidoResumo }) {
       {/* situação e prazo no topo */}
       {esperaAOrigem(p) && <EsperaDaCentral p={p} />}
       {p.status === 'pendencia' && <ResponderPergunta id={p.id} aoFim={recarregar} />}
+      {/* RG3 (RT, 24/11/2026): a linha do tempo do pedido e a conversa com o regulador no topo */}
+      {s && (s.eventos ?? []).length > 0 && (
+        <ol aria-label="Linha do tempo do pedido" className="flex flex-col gap-1 border-l-2 border-fio pl-3">
+          {(s.eventos ?? []).map((e, i) => (
+            <li key={i} className="text-apoio">
+              <span className="text-tinta">{EVENTOS[e.evento] ?? e.evento.replace(/_/g, ' ')}</span>
+              <span className="text-rotulo text-tinta-sussurro"> · {fmtDataHora(e.em)} · {e.por ?? '—'}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <ConversaRegulacao solicitacaoId={p.id} aoEnviar={recarregar} />
       {d.isLoading ? <Spinner /> : d.error ? <MensagemErro texto={(d.error as Error).message} /> : s && (
         <>
           {/* atualizar os dados clínicos para a central (evolução) e os prazos */}
           <PrazosDoPedido id={p.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
             podeEvoluir={!!s.pode_evoluir} aoFim={recarregar} />
           <AnexosRegulacao solicitacaoId={p.id} />
-          <details className="text-rotulo text-tinta-sussurro">
-            <summary className="cursor-pointer text-apoio text-tinta-apoio">Histórico do pedido</summary>
-            <ul className="mt-1 flex flex-col gap-0.5">
-              {(s.eventos ?? []).map((e, i) => (
-                <li key={i}>{fmtDataHora(e.em)} · {EVENTOS[e.evento] ?? e.evento.replace(/_/g, ' ')} · {e.por ?? '—'}</li>
-              ))}
-            </ul>
-          </details>
         </>
       )}
-      {/* conversa com o regulador embaixo */}
-      <ConversaRegulacao solicitacaoId={p.id} aoEnviar={recarregar} />
     </div>
   )
 }

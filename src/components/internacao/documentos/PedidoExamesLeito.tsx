@@ -1,36 +1,36 @@
-// Pedido de exames do leito (ponto 12 do plantonista; o RT aprovou em
-// 28/10/2026 três pedidos e a tela A). Laboratório, imagem e ECG em três
-// seções lado a lado, cada uma com o seu "Pedir": um pedido por grupo,
-// ligado à internação (pedir_exames_internacao). Os botões vêm da lista de
-// exames da unidade; sem lista no grupo, os de texto livre. O texto livre
-// fica no grupo da seção. A regra (um grupo por pedido, quem pede) é do
-// servidor; aqui só se marca e se pede.
+// Pedido de exames do leito. EX1 (revisão da Internação, RT 24/11/2026): uma
+// busca só no topo, para todos os tipos; abaixo, os pedidos frequentes da
+// unidade (a lista que o gestor marca), sem o citopatológico para quem não é
+// do sexo feminino; o que já foi pedido aparece como texto cinza com a data,
+// não como ficha escura. Os escolhidos vão para a cesta "N exames para pedir",
+// com um botão "Pedir". O servidor continua com um pedido por grupo
+// (pedir_exames_internacao): o botão faz um pedido de cada grupo da cesta.
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, FlaskConical, Microscope, ScanLine, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { diaMes } from '@/lib/formato'
 import {
-  GRUPOS_EXAME, botoesDoGrupo, codigoExameNaTela, grupoDoCodigo, jaPedido,
+  GRUPOS_EXAME, botoesDoGrupo, codigoExameNaTela, grupoDoCodigo,
   type ExameBuscado, type GrupoExame, type ListaExamesUnidade, type Urgencia,
 } from '@/lib/exames'
+import { exameCabeParaSexo, pedidoEm } from '@/lib/examesLeito'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { OpcaoLista } from '@/components/ui/botao-linha'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Chip } from '@/components/monitor/Pagina'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 
-type Item = { rotulo: string; procedimento: string | null }
-type Pedido = { exame: string; procedimento: string | null; situacao: string }
+type Item = { rotulo: string; procedimento: string | null; grupo: GrupoExame }
+type Pedido = { exame: string; procedimento: string | null; situacao: string; pedido_em: string | null }
 
-const ICONE: Record<GrupoExame, React.ReactNode> = {
-  laboratorio: <FlaskConical className="size-4 text-acao" aria-hidden />,
-  imagem: <ScanLine className="size-4 text-acao" aria-hidden />,
-  grafico: <Activity className="size-4 text-acao" aria-hidden />,
-  citopatologia: <Microscope className="size-4 text-acao" aria-hidden />,
-}
+const ROTULO_GRUPO = Object.fromEntries(GRUPOS_EXAME.map((g) => [g.id, g.rotulo])) as Record<GrupoExame, string>
 
-export function PedidoExamesLeito({ internacaoId }: { internacaoId: string }) {
+export function PedidoExamesLeito({ internacaoId, pacienteId }: { internacaoId: string; pacienteId?: string }) {
+  const qc = useQueryClient()
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const lista = useQuery({
@@ -45,26 +45,25 @@ export function PedidoExamesLeito({ internacaoId }: { internacaoId: string }) {
   const pedidos = useQuery({
     queryKey: ['exames-da-internacao', internacaoId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('exames_pedidos').select('exame, procedimento, situacao').eq('internacao_id', internacaoId)
+      const { data, error } = await supabase.from('exames_pedidos').select('exame, procedimento, situacao, pedido_em').eq('internacao_id', internacaoId)
       if (error) throw error
       return (data ?? []) as Pedido[]
     },
   })
-  return (
-    <div className="grid gap-3 lg:grid-cols-3">
-      {GRUPOS_EXAME.map((g) => (
-        <SecaoGrupo key={g.id} grupo={g.id} rotulo={g.rotulo} internacaoId={internacaoId} unidadeId={unidadeId}
-          botoes={botoesDoGrupo(lista.data?.exames, g.id)} pedidos={pedidos.data ?? []} />
-      ))}
-    </div>
-  )
-}
+  // mesma chave e colunas do cabeçalho do paciente: uma leitura só
+  const paciente = useQuery({
+    queryKey: ['cabecalho-paciente', pacienteId],
+    enabled: !!pacienteId,
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes').select('nome, nome_social, data_nascimento, sexo').eq('id', pacienteId!).maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+  const sexo = paciente.data?.sexo ?? null
 
-function SecaoGrupo({ grupo, rotulo, internacaoId, unidadeId, botoes, pedidos }: {
-  grupo: GrupoExame; rotulo: string; internacaoId: string; unidadeId: string | undefined; botoes: Item[]; pedidos: Pedido[]
-}) {
-  const qc = useQueryClient()
-  const [marcados, setMarcados] = React.useState<Item[]>([])
+  const [cesta, setCesta] = React.useState<Item[]>([])
   const [termo, setTermo] = React.useState('')
   const [urgencia, setUrgencia] = React.useState<Urgencia>('rotina')
   const [observacao, setObservacao] = React.useState('')
@@ -80,71 +79,107 @@ function SecaoGrupo({ grupo, rotulo, internacaoId, unidadeId, botoes, pedidos }:
       return (data ?? []) as unknown as ExameBuscado[]
     },
   })
-  const achados = (busca.data ?? []).filter((x) => grupoDoCodigo(x.procedimento) === grupo)
+  const achados: Item[] = (busca.data ?? []).flatMap((x) => {
+    const grupo = grupoDoCodigo(x.procedimento)
+    return grupo && exameCabeParaSexo(grupo, sexo) ? [{ rotulo: x.nome, procedimento: x.procedimento as string | null, grupo }] : []
+  })
+  const frequentes: Item[] = GRUPOS_EXAME.filter((g) => exameCabeParaSexo(g.id, sexo))
+    .flatMap((g) => botoesDoGrupo(lista.data?.exames, g.id).map((b) => ({ ...b, grupo: g.id })))
+
   const igual = (a: Item, b: Item) => (a.procedimento ? a.procedimento === b.procedimento : a.rotulo.toLowerCase() === b.rotulo.toLowerCase())
-  const marcado = (b: Item) => marcados.some((m) => igual(m, b))
-  const alternar = (b: Item) => setMarcados((xs) => (xs.some((m) => igual(m, b)) ? xs.filter((m) => !igual(m, b)) : [...xs, b]))
+  const naCesta = (b: Item) => cesta.some((m) => igual(m, b))
+  const alternar = (b: Item) => setCesta((xs) => (xs.some((m) => igual(m, b)) ? xs.filter((m) => !igual(m, b)) : [...xs, b]))
+  const trocarGrupo = (b: Item, grupo: GrupoExame) => setCesta((xs) => xs.map((m) => (igual(m, b) ? { ...m, grupo } : m)))
 
   async function pedir() {
     setPedindo(true)
-    const { data, error } = await supabase.rpc('pedir_exames_internacao', {
-      p_internacao: internacaoId, p_grupo: grupo, p_urgencia: urgencia, p_observacao: observacao.trim() || undefined,
-      p_itens: marcados.map((m) => (m.procedimento ? { procedimento: m.procedimento } : { nome: m.rotulo })),
-    })
+    const grupos = [...new Set(cesta.map((m) => m.grupo))]
+    const feitos: string[] = []
+    const falhas: string[] = []
+    for (const g of grupos) {
+      const itens = cesta.filter((m) => m.grupo === g)
+      const { error } = await supabase.rpc('pedir_exames_internacao', {
+        p_internacao: internacaoId, p_grupo: g, p_urgencia: urgencia, p_observacao: observacao.trim() || undefined,
+        p_itens: itens.map((m) => (m.procedimento ? { procedimento: m.procedimento } : { nome: m.rotulo })),
+      })
+      if (error) falhas.push(`${ROTULO_GRUPO[g]}: ${error.message}`)
+      else feitos.push(...itens.map((m) => m.rotulo))
+    }
     setPedindo(false)
-    if (error) return setAviso({ erro: true, texto: error.message })
-    const n = (data as { pedidos?: number } | null)?.pedidos ?? marcados.length
-    setAviso({ erro: false, texto: `Pedido de ${rotulo.toLowerCase()} feito: ${n} exame${n === 1 ? '' : 's'}. Fica pendente até o resultado.` })
-    setMarcados([]); setObservacao(''); setUrgencia('rotina')
-    // a lista do leito (ExamesEAgravos) e os impeditivos de alta leem os exames pedidos
+    setCesta((xs) => xs.filter((m) => !feitos.includes(m.rotulo)))
+    if (feitos.length) { setObservacao(''); setUrgencia('rotina') }
+    setAviso(falhas.length
+      ? { erro: true, texto: `${feitos.length ? `Pedidos: ${feitos.join(', ')}. ` : ''}Não foi: ${falhas.join('; ')}` }
+      : { erro: false, texto: `Pedido feito: ${feitos.length} exame${feitos.length === 1 ? '' : 's'}. Fica aguardando até o resultado.` })
+    // a lista do leito e os impeditivos de alta leem os exames pedidos
     for (const k of [['exames-da-internacao', internacaoId], ['exames-pedidos'], ['impeditivos']]) void qc.invalidateQueries({ queryKey: k })
   }
 
+  const ja = (b: Item) => pedidoEm(b, pedidos.data ?? [])
+
   return (
-    <section aria-label={`Pedido de ${rotulo}`} className="flex flex-col overflow-hidden rounded-cartao border border-fio bg-superficie">
-      <div className="flex items-center gap-2 border-b border-trilha px-3.5 py-2.5">
-        {ICONE[grupo]}
-        <span className="text-controle font-semibold text-tinta">{rotulo}</span>
-        <span className="ml-auto text-rotulo text-tinta-sussurro">um pedido só de {rotulo.toLowerCase()}</span>
-      </div>
-      <div className="flex flex-wrap gap-1.5 px-3.5 py-3">
-        {botoes.map((b) => {
-          const ja = jaPedido(b, pedidos)
-          return (
-            <Chip key={b.rotulo + (b.procedimento ?? '')} ativo={marcado(b) || ja} desabilitado={ja || pedindo} onClick={() => alternar(b)}
-              titulo={ja ? 'Já pedido nesta internação' : b.procedimento ? `Marcar ${b.rotulo}` : `Marcar ${b.rotulo} (sem código)`}>
-              {b.rotulo}
-            </Chip>
-          )
-        })}
-      </div>
-      <div className="flex flex-col gap-2 border-t border-trilha px-3.5 py-3">
-        <div className="flex gap-2">
-          <Input className="h-8 min-w-0 flex-1" aria-label={`Buscar exame de ${rotulo}`} placeholder={`Buscar exame de ${rotulo.toLowerCase()}`}
+    <section aria-label="Pedir exames" className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie p-4">
+      <div className="flex flex-col gap-1.5">
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+          <Input className="pl-9" aria-label="Buscar exame" placeholder="Pedir exame: buscar por nome (laboratório, imagem, ECG)"
             value={termo} onChange={(e) => setTermo(e.target.value)} />
-          <Button size="sm" variant="outline" disabled={t.length < 2 || pedindo} title="Sem código: não vai ao serviço integrado"
-            onClick={() => { alternar({ rotulo: t, procedimento: null }); setTermo('') }}>Texto livre</Button>
         </div>
-        {achados.length > 0 && (
-          <div className="flex max-h-40 flex-col overflow-y-auto rounded-controle border border-fio">
-            {achados.map((x) => (
-              <Button key={x.procedimento} type="button" variant="ghost" size="sm" className="justify-start"
-                onClick={() => { alternar({ rotulo: x.nome, procedimento: x.procedimento }); setTermo('') }}>
-                {x.nome}<span className="ml-1 text-rotulo text-tinta-sussurro">{codigoExameNaTela(x.procedimento)}</span>
-              </Button>
-            ))}
+        {t.length >= 3 && (
+          <div role="listbox" aria-label="Exames achados" className="flex max-h-56 flex-col overflow-y-auto rounded-controle border border-fio">
+            {achados.map((x) => {
+              const quando = ja(x)
+              return (
+                <OpcaoLista key={x.procedimento ?? x.rotulo} onClick={() => { if (!naCesta(x)) alternar(x); setTermo('') }}
+                  className="flex-wrap items-baseline gap-2">
+                  <span className="text-tinta">{x.rotulo}</span>
+                  <span className="text-rotulo text-tinta-sussurro">{ROTULO_GRUPO[x.grupo]} · {x.procedimento ? codigoExameNaTela(x.procedimento) : 'sem código'}</span>
+                  {quando !== null && <span className="text-rotulo text-tinta-sussurro">· pedido {quando ? diaMes(quando) : 'nesta internação'}</span>}
+                </OpcaoLista>
+              )
+            })}
+            {busca.isSuccess && achados.length === 0 && <span className="px-3 py-2 text-rotulo text-tinta-sussurro">Nada no catálogo com esse nome.</span>}
+            <OpcaoLista onClick={() => { alternar({ rotulo: t, procedimento: null, grupo: 'laboratorio' }); setTermo('') }} className="border-t border-trilha">
+              <span className="text-tinta-apoio">Pedir “{t}” em texto livre</span>
+              <span className="text-rotulo text-tinta-sussurro"> · sem código: não vai ao serviço integrado</span>
+            </OpcaoLista>
           </div>
         )}
-        {t.length >= 3 && busca.isSuccess && achados.length === 0 && (
-          <span className="text-rotulo text-tinta-sussurro">Nada de {rotulo.toLowerCase()} com esse nome. Pode marcar como texto livre.</span>
-        )}
       </div>
-      {marcados.length > 0 && (
-        <div className="flex flex-col gap-2 border-t border-trilha bg-campo px-3.5 py-3">
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-rotulo font-semibold text-tinta-sussurro">Pedidos frequentes da unidade</span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {frequentes.map((b) => {
+            const quando = ja(b)
+            return quando !== null && !naCesta(b) ? (
+              <span key={b.grupo + b.rotulo} className="px-1 text-apoio text-tinta-sussurro" title="Já pedido nesta internação">
+                {b.rotulo} · pedido {quando ? diaMes(quando) : ''}
+              </span>
+            ) : (
+              <Chip key={b.grupo + b.rotulo} ativo={naCesta(b)} desabilitado={pedindo} onClick={() => alternar(b)}
+                titulo={b.procedimento ? `Pôr ${b.rotulo} na cesta` : `Pôr ${b.rotulo} na cesta (sem código)`}>
+                {b.rotulo}
+              </Chip>
+            )
+          })}
+        </div>
+      </div>
+
+      {cesta.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-controle border border-fio bg-campo px-3 py-3">
+          <span className="text-controle font-semibold text-tinta">{cesta.length} {cesta.length === 1 ? 'exame para pedir' : 'exames para pedir'}</span>
           <div className="flex flex-wrap gap-1.5">
-            {marcados.map((m) => (
+            {cesta.map((m) => (
               <span key={m.rotulo + (m.procedimento ?? '')} className="inline-flex items-center gap-1 rounded-controle border border-fio bg-superficie px-2 py-0.5 text-rotulo text-tinta">
-                {m.rotulo}{!m.procedimento && <span className="text-tinta-sussurro"> (sem código)</span>}
+                {m.rotulo}
+                {m.procedimento ? <span className="text-tinta-sussurro"> · {ROTULO_GRUPO[m.grupo]}</span> : (
+                  // texto livre: o grupo é escolhido aqui (laboratório, imagem ou ECG)
+                  <CampoSelecao tamanho="compacto" aria-label={`Grupo de ${m.rotulo}`} value={m.grupo} onChange={(e) => trocarGrupo(m, e.target.value as GrupoExame)}
+                    className="text-rotulo">
+                    {GRUPOS_EXAME.filter((g) => exameCabeParaSexo(g.id, sexo)).map((g) => <option key={g.id} value={g.id}>{g.rotulo}</option>)}
+                  </CampoSelecao>
+                )}
                 <Button type="button" variant="ghost" size="icon-xs" aria-label={`Tirar ${m.rotulo}`} onClick={() => alternar(m)}>
                   <X aria-hidden />
                 </Button>
@@ -153,20 +188,18 @@ function SecaoGrupo({ grupo, rotulo, internacaoId, unidadeId, botoes, pedidos }:
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             {(['rotina', 'urgente'] as const).map((u) => (
-              <Chip key={u} ativo={urgencia === u} onClick={() => setUrgencia(u)} tom={u === 'urgente' ? 'critico' : 'acao'}>{u}</Chip>
+              <Chip key={u} ativo={urgencia === u} onClick={() => setUrgencia(u)} tom={u === 'urgente' ? 'critico' : 'acao'}>{u === 'rotina' ? 'Rotina' : 'Urgente'}</Chip>
             ))}
-            <Input className="h-8 min-w-0 flex-1" aria-label={`Observação do pedido de ${rotulo}`} placeholder="Observação (opcional)" maxLength={300}
+            <Input className="h-8 min-w-0 flex-1" aria-label="Observação do pedido" placeholder="Observação (opcional)" maxLength={300}
               value={observacao} onChange={(e) => setObservacao(e.target.value)} />
           </div>
           <Button size="sm" className="self-start" disabled={pedindo} onClick={() => void pedir()}>
-            Pedir {marcados.length} exame{marcados.length === 1 ? '' : 's'} de {rotulo.toLowerCase()}
+            Pedir {cesta.length} exame{cesta.length === 1 ? '' : 's'}
           </Button>
         </div>
       )}
       {aviso && (
-        <p role={aviso.erro ? 'alert' : 'status'} className={`border-t border-trilha px-3.5 py-2 text-apoio ${aviso.erro ? 'text-critico' : 'text-conforme'}`}>
-          {aviso.texto}
-        </p>
+        <p role={aviso.erro ? 'alert' : 'status'} className={`text-apoio ${aviso.erro ? 'text-critico' : 'text-conforme'}`}>{aviso.texto}</p>
       )}
     </section>
   )

@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { agruparTravas, tituloGrupo } from '@/lib/travasAlta'
 
 import {
   ESPECIALIDADES, ROTULO_ESTADO, SERVICOS, SERVICOS_UBS, msg, normalizar, quando,
@@ -29,7 +30,13 @@ import {
 } from './useEncaminhamentos'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
 
-export type AbaEncaminhamentoInternoProps = { pacienteId: string; episodioId?: string | null; internacaoId?: string | null }
+export type AbaEncaminhamentoInternoProps = {
+  pacienteId: string; episodioId?: string | null; internacaoId?: string | null
+  /** MA2 (RT, 24/11/2026): adulto (14 anos ou mais) não recebe serviços nem especialidades de pediatria */
+  adulto?: boolean
+}
+
+const PEDIATRICOS = ['Pediatria', 'Cirurgia pediátrica']
 
 const TOM_ESTADO: Record<EstadoEncaminhamento, TomEstado> = {
   pendente: 'ambar',
@@ -41,7 +48,7 @@ const TOM_ESTADO: Record<EstadoEncaminhamento, TomEstado> = {
 
 const vazio = { esp: '', espOk: false, medico: '', servico: '', just: '' }
 
-export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId }: AbaEncaminhamentoInternoProps) {
+export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId, adulto = false }: AbaEncaminhamentoInternoProps) {
   const lista = useEncaminhamentos(pacienteId)
   const pend = usePendenciasEncaminhar(pacienteId, episodioId, internacaoId)
   const medicos = useMedicosParaEncaminhar(pacienteId)
@@ -55,7 +62,8 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
   const [cancelando, setCancelando] = React.useState<string | null>(null)
   const [motivo, setMotivo] = React.useState('')
   const { unidadeAtiva } = useUnidade()
-  const servicos = unidadeAtiva?.unidade.tipo === 'ubs' ? SERVICOS_UBS : SERVICOS
+  const servicos = (unidadeAtiva?.unidade.tipo === 'ubs' ? SERVICOS_UBS : SERVICOS).filter((s) => !adulto || !PEDIATRICOS.includes(s))
+  const especialidades = ESPECIALIDADES.filter((e) => !adulto || !PEDIATRICOS.includes(e))
 
   const executar = async (fn: () => PromiseLike<{ error: unknown }>, ok: string) => {
     setOcupado(true)
@@ -71,10 +79,10 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
   const pendencias = pend.data ?? []
   const termo = normalizar(f.esp)
   const sugestoes = focado && !f.espOk && termo
-    ? ESPECIALIDADES.filter((e) => normalizar(e).includes(termo) && normalizar(e) !== termo).slice(0, 8)
+    ? especialidades.filter((e) => normalizar(e).includes(termo) && normalizar(e) !== termo).slice(0, 8)
     : []
   const ok = f.esp.trim().length >= 3 && f.just.trim().length >= 10 && pendencias.length === 0 && !aberto && !pend.isLoading && !ocupado
-  const especialidades = Array.from(new Set(hist.map((e) => e.especialidade)))
+  const espHist = Array.from(new Set(hist.map((e) => e.especialidade)))
   const visiveis = hist.filter((e) => !filtro || e.especialidade === filtro)
 
   async function encaminhar() {
@@ -153,7 +161,10 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
       {pendencias.length > 0 && (
         <div role="alert" className="flex flex-col gap-0.5 text-apoio text-critico">
           <span className="flex items-center gap-1.5 font-semibold"><AlertTriangle className="size-3.5" aria-hidden /> Pendências em aberto impedem o encaminhamento:</span>
-          {pendencias.map((p) => <span key={p}>{p}</span>)}
+          {/* MA2: a mesma lista agrupada das travas de alta ("9 exames sem resultado") */}
+          {agruparTravas(pendencias).map((g) => (
+            <span key={g.chave} title={g.itens.join(' · ') || undefined}>{tituloGrupo(g)}{g.itens.length ? `: ${g.itens.slice(0, 3).join(', ')}${g.itens.length > 3 ? '…' : ''}` : ''}</span>
+          ))}
         </div>
       )}
       {pend.error && <p className="text-apoio text-critico">{msg(pend.error)}</p>}
@@ -171,10 +182,10 @@ export function AbaEncaminhamentoInterno({ pacienteId, episodioId, internacaoId 
       {/* histórico */}
       <div className="flex flex-wrap items-center gap-1.5 border-t border-trilha pt-2.5">
         <span className="mr-1 text-apoio font-semibold text-grafite">Histórico de encaminhamentos</span>
-        {especialidades.length > 1 && (
+        {espHist.length > 1 && (
           <>
             <Chip ativo={!filtro} onClick={() => setFiltro('')}>Todas</Chip>
-            {especialidades.map((e) => <Chip key={e} ativo={filtro === e} onClick={() => setFiltro(e)}>{e}</Chip>)}
+            {espHist.map((e) => <Chip key={e} ativo={filtro === e} onClick={() => setFiltro(e)}>{e}</Chip>)}
           </>
         )}
         {/* folha "Encaminhamento interno" (montarEncIntHtml do protótipo): os que estão na lista */}

@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { data as dataDoInstante, dataIso, dataPura, diaMes, diaMesHora } from '@/lib/formato'
 import { abrirProntuarioDaInternacao } from '@/lib/prontuario'
+import { temTermoVago } from '@/lib/evolucaoCopia'
 import type { Json } from '@/types/database'
 
 // ── tipos do histórico (protótipo, EVOL_TIPOS, na ordem do manual 3.4) ──────
@@ -90,7 +91,7 @@ export const CAMPOS_EF: { k: keyof FormEvolucao['exame_fisico']; rotulo: string 
 ]
 
 /** Avisos antes de registrar (protótipo: evolAvisos). Não impedem o registro. */
-export function avisosEvolucao(f: FormEvolucao): string[] {
+export function avisosEvolucao(f: FormEvolucao, nProblemas?: number): string[] {
   const A: string[] = []
   const vazio = (s: string) => !s.trim()
   const svF = (['pa', 'fc', 'fr', 'temp', 'spo2'] as const).filter((k) => vazio(f.sv[k])).map((k) => CAMPOS_SV.find((c) => c.k === k)!.rotulo)
@@ -99,9 +100,10 @@ export function avisosEvolucao(f: FormEvolucao): string[] {
   const nomesEf: Record<string, string> = { geral: 'estado geral', acv: 'ACV', ar: 'AR', abdome: 'abdome', extremidades: 'extremidades', neuro: 'neurológico' }
   const efF = CAMPOS_EF.filter((c) => vazio(f.exame_fisico[c.k])).map((c) => nomesEf[c.k])
   if (efF.length) A.push(`Exame físico em branco: ${efF.join(', ')}.`)
-  if (vazio(f.problemas)) A.push('Lista de problemas vazia.')
-  const txt = [f.s, f.a, f.p, f.outros_achados, ...Object.values(f.exame_fisico)].join(' ')
-  if ([/paciente bem/i, /quadro est[aá]vel/i, /sem altera[cç][oõ]es/i, /\bBEG\b/].some((r) => r.test(txt)))
+  // EV3: a lista de problemas é a do diagnóstico (CID por linha), quando a tela a conhece
+  if (nProblemas !== undefined ? nProblemas === 0 : vazio(f.problemas)) A.push('Lista de problemas vazia.')
+  // EV2: o atalho "sem alterações" exato do exame físico não conta como termo vago
+  if (temTermoVago([f.s, f.a, f.p, f.outros_achados], Object.values(f.exame_fisico)))
     A.push('Termo vago no texto ("paciente bem", "quadro estável", "sem alterações", "BEG"). Descreva o achado objetivo.')
   return A
 }

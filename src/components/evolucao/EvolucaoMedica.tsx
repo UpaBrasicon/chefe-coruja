@@ -10,12 +10,21 @@
 // acrescentar um complemento (texto livre, entra como documento próprio ligado
 // à evolução do dia). O texto do documento é montado pelo servidor a partir do
 // JSON, então o que se lê no histórico é sempre o que foi preenchido.
+//
+// "Evoluir hoje" (EV2 e EV3, RT 24/11/2026): os sinais vitais vêm da última
+// aferição da enfermagem (crus, com a hora, editáveis); "Copiar da evolução
+// anterior" por bloco, e o bloco copiado fica marcado até o médico editar ou
+// confirmar (não se registra com bloco copiado sem revisão); "sem alterações"
+// por sistema; a última evolução ao lado, em leitura; o diagnóstico mora num
+// lugar só, a lista de problemas com CID por busca, dentro do formulário; o
+// que falta preencher numa lista curta ao lado do botão.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQueryClient } from '@tanstack/react-query'
-import { ClipboardCheck, FileText, Plus, ShieldAlert, Stethoscope, X } from 'lucide-react'
+import { Check, ClipboardCheck, Copy, FileText, Plus, ShieldAlert, Stethoscope, X } from 'lucide-react'
 import * as React from 'react'
 
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
 import { useAlergias, ativas, negaVigente } from '@/components/paciente/useAlergias'
@@ -29,20 +38,29 @@ import {
 } from './dados'
 import { FONTE_LNNC as LNNC_FONTE, useNotificacaoCompulsoria } from '@/components/internacao/caderno/notificacao'
 import { type DiagnosticoLinha, useDiagnosticos } from '@/components/internacao/caderno/diagnosticos'
+import { AbaDiagnostico } from '@/components/internacao/caderno/Diagnostico'
+import type { Acao } from '@/components/internacao/caderno/comum'
 import { carregarEnvelope, salvarEnvelope } from '@/lib/rascunho'
+import {
+  BLOCOS_COPIAVEIS, SEM_ALTERACOES, copiadosSemRevisao, copiarBloco, temNoAnterior, vitaisDaEnfermagem, type BlocoCopiavel,
+} from '@/lib/evolucaoCopia'
 import { Bloco, CampoTexto, ChipEscolha, Mensagem, RotuloSecao, Selo, type Aviso } from './pecas'
 
 type Modo = 'nova' | 'corrigir' | 'complemento'
+
+/** O que o formulário precisa para mostrar e mudar o diagnóstico ali mesmo (EV3). */
+export type DiagnosticoNaEvolucao = { podeEditar: boolean; acao: Acao; onAbrirNotificacao: () => void }
 
 // prefixo dos rascunhos clínicos (shared/rascunho.ts): some ao sair, na
 // abertura sem sessão e por TTL de 12 h (envelope) — dado de paciente não
 // fica no computador do posto entre plantões (LGPD).
 const chaveRascunho = (internacaoId: string) => `cc:rascunho:evol:${internacaoId}`
-function lerRascunho(internacaoId: string): FormEvolucao | null {
-  const c = carregarEnvelope<Partial<FormEvolucao>>(chaveRascunho(internacaoId))
-  return c ? ({ ...FORM_VAZIO, ...c.dados } as FormEvolucao) : null
+type Rascunho = FormEvolucao & { copiados?: BlocoCopiavel[] }
+function lerRascunho(internacaoId: string): Rascunho | null {
+  const c = carregarEnvelope<Partial<Rascunho>>(chaveRascunho(internacaoId))
+  return c ? ({ ...FORM_VAZIO, ...c.dados } as Rascunho) : null
 }
-function gravarRascunho(internacaoId: string, f: FormEvolucao | null) {
+function gravarRascunho(internacaoId: string, f: Rascunho | null) {
   try {
     if (f) salvarEnvelope(chaveRascunho(internacaoId), f)
     else localStorage.removeItem(chaveRascunho(internacaoId))
@@ -51,15 +69,52 @@ function gravarRascunho(internacaoId: string, f: FormEvolucao | null) {
   }
 }
 
-export function EvolucaoMedica({ pacienteId, internacaoId, onMudarDiagnostico }: {
+export function EvolucaoMedica({ pacienteId, internacaoId, diagnostico }: {
   pacienteId: string; internacaoId: string
-  /** Abre a subaba Diagnóstico (o diagnóstico mora lá; ponto 9). */
-  onMudarDiagnostico?: () => void
+  /** O diagnóstico (lista de problemas com CID) fica dentro do formulário (EV3). */
+  diagnostico: DiagnosticoNaEvolucao
 }) {
   const ctx = useContextoEvolucao(internacaoId)
   if (ctx.isLoading) return <Bloco><span className="flex items-center gap-2 text-apoio text-tinta-sussurro"><Spinner /> Carregando a evolução…</span></Bloco>
   if (ctx.error || !ctx.data) return <Bloco><Mensagem aviso={{ erro: true, texto: 'Não foi possível abrir a evolução: ' + mensagemErro(ctx.error) }} /></Bloco>
-  return <Formulario key={internacaoId} ctx={ctx.data} pacienteId={pacienteId} internacaoId={internacaoId} onMudarDiagnostico={onMudarDiagnostico} />
+  return (
+    <div className="flex flex-wrap items-start gap-3.5">
+      <div className="min-w-0 flex-[3_1_520px]">
+        <Formulario key={internacaoId} ctx={ctx.data} pacienteId={pacienteId} internacaoId={internacaoId} diagnostico={diagnostico} />
+      </div>
+      {/* EV2: a última evolução ao lado, em leitura */}
+      <div className="min-w-0 flex-[1_1_260px]">
+        <UltimaEvolucao ctx={ctx.data} />
+      </div>
+    </div>
+  )
+}
+
+/** A última evolução médica estruturada, só para ler ao lado do formulário. */
+function UltimaEvolucao({ ctx }: { ctx: ContextoEvolucao }) {
+  const u = ctx.ultima_estruturada
+  const d = u?.dados
+  const linha = (rotulo: string, texto: string | undefined) => (texto?.trim()
+    ? <div className="flex flex-col gap-0.5"><RotuloSecao>{rotulo}</RotuloSecao><span className="text-apoio leading-[1.45] whitespace-pre-wrap text-grafite">{texto}</span></div>
+    : null)
+  const ef = d?.exame_fisico ? CAMPOS_EF.filter((c) => d.exame_fisico?.[c.k]?.trim()).map((c) => `${c.rotulo}: ${d.exame_fisico![c.k]}`).join('\n') : ''
+  const sv = d?.sv ? CAMPOS_SV.filter((c) => d.sv?.[c.k]?.trim()).map((c) => `${c.rotulo} ${d.sv![c.k]}${c.unidade ? ` ${c.unidade}` : ''}`).join(' · ') : ''
+  return (
+    <aside aria-label="Última evolução" className="flex min-w-0 flex-col gap-2.5 rounded-container border border-fio bg-campo p-3.5">
+      <span className="flex items-center gap-[7px] text-controle font-semibold text-tinta"><FileText className="size-[15px] text-acao" aria-hidden /> Última evolução</span>
+      {!u ? <span className="text-apoio text-tinta-sussurro">Nenhuma evolução médica estruturada nesta internação ainda.</span> : (
+        <>
+          <span className="text-rotulo text-tinta-sussurro">{diaHora(u.criado_em)} · leitura</span>
+          {linha('Subjetivo', d?.s)}
+          {linha('Sinais vitais', sv)}
+          {linha('Exame físico', ef)}
+          {linha('Exames', d?.exames)}
+          {linha('Avaliação', d?.a)}
+          {linha('Plano', d?.p)}
+        </>
+      )}
+    </aside>
+  )
 }
 
 /**
@@ -91,28 +146,88 @@ function PorQueNaoEvoluo({ internacaoId, aoMudar }: { internacaoId: string; aoMu
   )
 }
 
-function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
-  ctx: ContextoEvolucao; pacienteId: string; internacaoId: string; onMudarDiagnostico?: () => void
+/**
+ * Marca de cópia de um bloco (EV2): "Copiar da evolução anterior" quando a
+ * anterior tem texto; copiado, a faixa âmbar com "Confirmar" até o médico
+ * revisar (editar o campo também tira a marca).
+ */
+function MarcaCopia({ bloco, copiado, podeCopiar, dataAnterior, aoCopiar, aoConfirmar }: {
+  bloco: string; copiado: boolean; podeCopiar: boolean; dataAnterior: string; aoCopiar: () => void; aoConfirmar: () => void
+}) {
+  if (copiado) {
+    return (
+      <div role="status" className="flex flex-wrap items-center gap-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-2.5 py-1.5">
+        <Copy className="size-3.5 shrink-0 text-atencao" aria-hidden />
+        <span className="text-apoio text-atencao">{bloco}: veio da evolução de {dataAnterior}. Revise antes de registrar.</span>
+        <Button size="xs" variant="outline" className="ml-auto" onClick={aoConfirmar}><Check aria-hidden /> Revisei</Button>
+      </div>
+    )
+  }
+  if (!podeCopiar) return null
+  return (
+    <Button size="xs" variant="ghost" className="self-start px-1.5 text-acao" onClick={aoCopiar}>
+      <Copy aria-hidden /> Copiar da evolução de {dataAnterior}
+    </Button>
+  )
+}
+
+function Formulario({ ctx, pacienteId, internacaoId, diagnostico }: {
+  ctx: ContextoEvolucao; pacienteId: string; internacaoId: string; diagnostico: DiagnosticoNaEvolucao
 }) {
   const jaTem = ctx.minha_do_dia
   const recarregar = useRecarregarEvolucao(internacaoId, pacienteId)
   const alergiasQ = useAlergias(pacienteId)
+  const sv = ctx.sv_enfermagem
+  const anterior = ctx.ultima_estruturada
+  const dataAnterior = anterior ? diaHora(anterior.criado_em) : ''
   const [modo, setModo] = React.useState<Modo>('nova')
-  const [f, setF] = React.useState<FormEvolucao>(() => lerRascunho(internacaoId) ?? herdarDaUltima(ctx.ultima_estruturada?.dados))
+  // EV2: os vitais da última aferição da enfermagem entram crus, nos campos vazios
+  const [inicio] = React.useState(() => {
+    const r = lerRascunho(internacaoId)
+    const base: FormEvolucao = r ?? herdarDaUltima(anterior?.dados)
+    if (!sv || jaTem) return { f: base, copiados: r?.copiados ?? [], trouxe: [] as string[] }
+    const v = vitaisDaEnfermagem(base.sv, base.sv_condicao, sv)
+    return { f: { ...base, sv: v.sv, sv_condicao: v.sv_condicao }, copiados: r?.copiados ?? [], trouxe: v.trouxe }
+  })
+  const [f, setF] = React.useState<FormEvolucao>(inicio.f)
+  const [copiados, setCopiados] = React.useState<Set<BlocoCopiavel>>(() => new Set(inicio.copiados))
+  const [svTrazidos, setSvTrazidos] = React.useState<string[]>(inicio.trouxe)
   const [justificativa, setJustificativa] = React.useState('')
   const [complemento, setComplemento] = React.useState('')
   const [novoAtb, setNovoAtb] = React.useState({ nome: '', inicio: '' })
   const [salvando, setSalvando] = React.useState(false)
   const [aviso, setAviso] = React.useState<Aviso>(null)
 
-  // o rascunho da evolução nova fica no navegador até ser registrada
+  // o rascunho da evolução nova fica no navegador até ser registrada (com as marcas de cópia)
   React.useEffect(() => {
-    if (modo === 'nova' && !jaTem) gravarRascunho(internacaoId, f)
-  }, [f, modo, jaTem, internacaoId])
+    if (modo === 'nova' && !jaTem) gravarRascunho(internacaoId, { ...f, copiados: [...copiados] })
+  }, [f, copiados, modo, jaTem, internacaoId])
 
-  const set = (p: Partial<FormEvolucao>) => setF((x) => ({ ...x, ...p }))
+  const revisado = (b: BlocoCopiavel) => setCopiados((x) => {
+    if (!x.has(b)) return x
+    const n = new Set(x)
+    n.delete(b)
+    return n
+  })
+  const set = (p: Partial<FormEvolucao>) => {
+    for (const k of Object.keys(p)) if (BLOCOS_COPIAVEIS.some((b) => b.k === k)) revisado(k as BlocoCopiavel)
+    setF((x) => ({ ...x, ...p }))
+  }
   const setSv = (k: keyof FormEvolucao['sv'], v: string) => setF((x) => ({ ...x, sv: { ...x.sv, [k]: v } }))
-  const setEf = (k: keyof FormEvolucao['exame_fisico'], v: string) => setF((x) => ({ ...x, exame_fisico: { ...x.exame_fisico, [k]: v } }))
+  const setEf = (k: keyof FormEvolucao['exame_fisico'], v: string) => {
+    revisado('exame_fisico')
+    setF((x) => ({ ...x, exame_fisico: { ...x.exame_fisico, [k]: v } }))
+  }
+  const copiar = (b: BlocoCopiavel) => {
+    if (!anterior) return
+    setF((x) => copiarBloco(x, anterior.dados, b))
+    setCopiados((x) => new Set(x).add(b))
+  }
+  const marca = (b: BlocoCopiavel, rotulo: string) => (
+    <MarcaCopia bloco={rotulo} copiado={copiados.has(b)} podeCopiar={temNoAnterior(anterior?.dados, b)} dataAnterior={dataAnterior}
+      aoCopiar={() => copiar(b)} aoConfirmar={() => revisado(b)} />
+  )
+  const moldura = (b: BlocoCopiavel) => cn('flex flex-col gap-1.5', copiados.has(b) && 'rounded-controle border-l-4 border-atencao pl-2.5')
 
   const painel = alergiasQ.data
   const alergias = painel?.estado === 'tem'
@@ -121,22 +236,28 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
     : painel?.estado === 'desconhece' ? 'Alergia não informada (não soube)' : 'Alergias não registradas'
   const tomAlergia = painel?.estado === 'tem' ? 'critico' : painel?.estado === 'nega' ? 'conforme' : 'atencao'
 
-  const avisos = avisosEvolucao(f)
-  // LNNC do banco (notificacao_compulsoria_dos_cids): só sugere, o médico marca
-  // ponto 9 (RT, 28/10/2026): o diagnóstico tem um lugar só, a subaba
-  // Diagnóstico; a evolução grava o retrato do primário vigente
+  // EV3 (RT, 24/11/2026): o diagnóstico tem um lugar só — a lista de problemas
+  // com CID, aqui dentro; a evolução grava o retrato dela
   const diagnosticos = useDiagnosticos(internacaoId)
   const vigentes = (diagnosticos.data ?? []).filter((d) => !d.encerrado_em)
   const primario = vigentes.find((d) => d.tipo === 'primario')
   const cidAtual: FormEvolucao['cid'] = primario
     ? { codigo: primario.cid, descricao: primario.descricao ?? '', estado: primario.status }
     : { codigo: '', descricao: '', estado: 'hipotese' }
+  const problemas = textoProblemas(vigentes)
+  const avisos = avisosEvolucao(f, diagnosticos.isSuccess ? vigentes.length : undefined)
+  // LNNC do banco (notificacao_compulsoria_dos_cids): só sugere, o médico marca
   const lnnc = useNotificacaoCompulsoria(cidAtual.codigo ? [cidAtual.codigo] : [])
   const itemLnnc = lnnc.data?.itens[0]
   const notificavel = itemLnnc ? { nome: itemLnnc.agravo, imediata: itemLnnc.imediata } : null
-  const sv = ctx.sv_enfermagem
   const editavel = ctx.pode_registrar && (modo !== 'nova' || !jaTem)
   const temTexto = (f.s + f.a + f.p).trim().length >= 10
+  const semRevisao = copiadosSemRevisao(copiados)
+  const falta = [
+    ...(temTexto ? [] : ['escrever S, A ou P (mínimo de 10 letras)']),
+    ...semRevisao.map((b) => `revisar o bloco copiado: ${b}`),
+    ...(modo === 'corrigir' && justificativa.trim().length < 10 ? ['justificativa da correção'] : []),
+  ]
 
   function trazerSv() {
     if (!sv) return
@@ -145,12 +266,20 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
       sv: { ...x.sv, pa: sv.pa ?? x.sv.pa, fc: sv.fc ?? x.sv.fc, fr: sv.fr ?? x.sv.fr, temp: sv.temp ?? x.sv.temp, spo2: sv.spo2 ?? x.sv.spo2, glic: sv.glic ?? x.sv.glic },
       sv_condicao: sv.condicao ?? x.sv_condicao,
     }))
+    setSvTrazidos(['pa', 'fc', 'fr', 'temp', 'spo2', 'glic'].filter((k) => sv[k as 'pa'] != null))
+  }
+
+  function recomecar() {
+    setF(herdarDaUltima(anterior?.dados))
+    setCopiados(new Set())
+    setSvTrazidos([])
   }
 
   async function registrar() {
+    if (falta.length) return
     setSalvando(true)
     setAviso(null)
-    const estruturado = paraEstruturado({ ...f, cid: cidAtual }, ctx, alergias)
+    const estruturado = paraEstruturado({ ...f, problemas, cid: cidAtual }, ctx, alergias)
     const { error } = modo === 'corrigir' && jaTem
       ? await supabase.rpc('corrigir_evolucao', {
           p_documento: jaTem.documento_id, p_conteudo: '', p_justificativa: justificativa, p_estruturado: estruturado,
@@ -160,8 +289,10 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
         })
     setSalvando(false)
     if (error) return setAviso({ erro: true, texto: error.message })
-    // o dia seguinte herda lista de problemas, antimicrobianos incluídos à mão e CID
+    // o dia seguinte herda antimicrobianos incluídos à mão e CID; o resto se copia por bloco
     setF(herdarDaUltima(estruturado as DadosEstruturados))
+    setCopiados(new Set())
+    setSvTrazidos([])
     setAviso({ erro: false, texto: modo === 'corrigir' ? 'Correção registrada: nova versão, com a justificativa; a anterior fica guardada.' : 'Evolução do dia registrada no prontuário.' })
     setModo('nova')
     setJustificativa('')
@@ -183,7 +314,7 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
   async function marcarAgravo() {
     if (!notificavel) return
     const { error } = await supabase.rpc('marcar_agravo', { p_paciente: pacienteId, p_agravo: notificavel.nome, p_cid: cidAtual.codigo })
-    setAviso(error ? { erro: true, texto: error.message } : { erro: false, texto: 'Agravo marcado como suspeito: a notificação aparece em Exames e agravos e impede a alta até ser registrada ou descartada.' })
+    setAviso(error ? { erro: true, texto: error.message } : { erro: false, texto: 'Agravo marcado como suspeito: a notificação aparece no Resumo e impede a alta até ser registrada ou descartada.' })
   }
 
   return (
@@ -209,7 +340,7 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
           </span>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" disabled={!jaTem.estruturada}
-              onClick={() => { setF(deEstruturado(jaTem.dados)); setModo('corrigir'); setAviso(null) }}>
+              onClick={() => { setF(deEstruturado(jaTem.dados)); setCopiados(new Set()); setModo('corrigir'); setAviso(null) }}>
               Corrigir a evolução de hoje
             </Button>
             <Button variant="outline" size="sm" onClick={() => { setModo('complemento'); setAviso(null) }}>
@@ -243,8 +374,12 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
             <Selo tom={tomAlergia}>{alergias}</Selo>
           </div>
 
-          <CampoTexto id="evol-problemas" rotulo="Diagnósticos / lista de problemas" dica="(um por linha)" valor={f.problemas}
-            onValor={(v) => set({ problemas: v })} placeholder={'Pneumonia adquirida na comunidade (J18.9)\nHipertensão arterial sistêmica'} />
+          {/* EV3: a lista de problemas é o diagnóstico (CID por busca, um por linha), num lugar só */}
+          <div className="flex flex-col gap-2 rounded-controle border border-fio bg-campo px-3 py-2.5">
+            <span className="text-apoio font-medium text-grafite">Diagnósticos / lista de problemas <span className="font-normal text-tinta-sussurro">· CID-10, um principal e os secundários</span></span>
+            <AbaDiagnostico internacaoId={internacaoId} podeEditar={diagnostico.podeEditar} acao={diagnostico.acao}
+              onAbrirNotificacao={diagnostico.onAbrirNotificacao} compacto />
+          </div>
 
           <div className="flex flex-wrap gap-3">
             <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-2">
@@ -282,8 +417,11 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
             </div>
           </div>
 
-          <CampoTexto id="evol-s" rotulo="S · Subjetivo" valor={f.s} onValor={(v) => set({ s: v })}
-            placeholder="Queixas, sono, aceitação da dieta, relato das últimas 24 h" />
+          <div className={moldura('s')}>
+            {marca('s', 'Subjetivo')}
+            <CampoTexto id="evol-s" rotulo="S · Subjetivo" valor={f.s} onValor={(v) => set({ s: v })}
+              placeholder="Queixas, sono, aceitação da dieta, relato das últimas 24 h" />
+          </div>
 
           <div className="flex flex-col gap-2.5 border-t border-trilha pt-3">
             <div className="flex flex-wrap items-center gap-2.5">
@@ -294,11 +432,17 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
                 </Button>
               )}
             </div>
+            {sv && svTrazidos.length > 0 && (
+              <span className="text-rotulo text-tinta-apoio">
+                Sinais vitais da enfermagem de {diaHora(sv.aferido_em)}{sv.por ? ` (${sv.por})` : ''}, como foram registrados: veio do prontuário, revise. Corrija se aferiu de novo.
+              </span>
+            )}
             <div className="flex flex-wrap gap-2.5">
               {CAMPOS_SV.map((c) => (
                 <label key={c.k} className={`flex min-w-0 flex-col gap-1 ${c.unidade ? 'flex-[1_1_90px]' : 'flex-[1_1_180px]'}`}>
                   <span className="text-rotulo font-medium text-grafite">{c.rotulo}{c.unidade ? ` (${c.unidade})` : ''}</span>
-                  <Input value={f.sv[c.k]} onChange={(e) => setSv(c.k, e.target.value)} inputMode={c.unidade ? 'decimal' : undefined} />
+                  <Input value={f.sv[c.k]} onChange={(e) => { setSv(c.k, e.target.value); setSvTrazidos((x) => x.filter((k) => k !== c.k)) }}
+                    inputMode={c.unidade ? 'decimal' : undefined} className={cn(svTrazidos.includes(c.k) && 'border-atencao/50')} />
                 </label>
               ))}
             </div>
@@ -310,31 +454,40 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
                 <Input className="w-[90px]" placeholder="L/min" aria-label="Fluxo de O₂" value={f.o2_litros} onChange={(e) => set({ o2_litros: e.target.value })} />
               )}
             </div>
-            <div className="flex flex-col gap-2">
+            <div className={moldura('exame_fisico')}>
+              {marca('exame_fisico', 'Exame físico')}
               {CAMPOS_EF.map((c) => (
                 <div key={c.k} className="flex flex-wrap items-start gap-2.5">
                   <label htmlFor={`evol-ef-${c.k}`} className="flex-[0_0_96px] pt-2 text-apoio font-medium text-grafite">{c.rotulo}</label>
                   <Textarea id={`evol-ef-${c.k}`} rows={1} className="min-h-0 w-auto flex-[1_1_240px] leading-[1.5]"
                     value={f.exame_fisico[c.k]} onChange={(e) => setEf(c.k, e.target.value)} />
+                  {/* EV2: atalho por sistema; o texto fica no campo e pode ser editado */}
+                  {!f.exame_fisico[c.k].trim() && (
+                    <Button size="xs" variant="outline" className="mt-1.5" onClick={() => setEf(c.k, SEM_ALTERACOES)}>Sem alterações</Button>
+                  )}
                 </div>
               ))}
             </div>
-            <CampoTexto id="evol-outros" rotulo="Outros achados" linhas={1} valor={f.outros_achados} onValor={(v) => set({ outros_achados: v })} />
-            <CampoTexto id="evol-exames" rotulo="Exames complementares" valor={f.exames} onValor={(v) => set({ exames: v })} placeholder="Resultados do dia, com data" />
+            <div className={moldura('outros_achados')}>
+              {marca('outros_achados', 'Outros achados')}
+              <CampoTexto id="evol-outros" rotulo="Outros achados" linhas={1} valor={f.outros_achados} onValor={(v) => set({ outros_achados: v })} />
+            </div>
+            <div className={moldura('exames')}>
+              {marca('exames', 'Exames complementares')}
+              <CampoTexto id="evol-exames" rotulo="Exames complementares" valor={f.exames} onValor={(v) => set({ exames: v })} placeholder="Resultados do dia, com data" />
+            </div>
           </div>
 
-          <CampoTexto id="evol-a" rotulo="A · Avaliação / impressão" valor={f.a} onValor={(v) => set({ a: v })}
-            placeholder="Evolução do quadro e hipóteses, com achados objetivos" />
-          <CampoTexto id="evol-p" rotulo="P · Conduta / plano" valor={f.p} onValor={(v) => set({ p: v })}
-            placeholder="Condutas, metas e critérios de alta" />
-
-          {avisos.length > 0 && (
-            <div className="flex flex-col gap-1 rounded-controle border border-nota bg-alerta-atencao px-3 py-2.5">
-              {avisos.map((a) => <span key={a} className="text-apoio leading-[1.45] text-atencao">{a}</span>)}
-            </div>
-          )}
-
-          <DiagnosticoVigente vigentes={vigentes} carregando={diagnosticos.isLoading} onMudar={onMudarDiagnostico} />
+          <div className={moldura('a')}>
+            {marca('a', 'Avaliação')}
+            <CampoTexto id="evol-a" rotulo="A · Avaliação / impressão" valor={f.a} onValor={(v) => set({ a: v })}
+              placeholder="Evolução do quadro e hipóteses, com achados objetivos" />
+          </div>
+          <div className={moldura('p')}>
+            {marca('p', 'Conduta / plano')}
+            <CampoTexto id="evol-p" rotulo="P · Conduta / plano" valor={f.p} onValor={(v) => set({ p: v })}
+              placeholder="Condutas, metas e critérios de alta" />
+          </div>
 
           {notificavel && (
             <div className="flex flex-wrap items-start gap-2 text-apoio leading-[1.45] text-atencao">
@@ -350,12 +503,19 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
           {modo === 'corrigir' && (
             <Input placeholder="Justificativa da correção (mínimo de 10 letras)" value={justificativa} onChange={(e) => setJustificativa(e.target.value)} />
           )}
-          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-trilha pt-3">
-            {modo === 'corrigir' && <Button variant="ghost" onClick={() => { setModo('nova'); setF(herdarDaUltima(ctx.ultima_estruturada?.dados)) }}>Cancelar</Button>}
-            {modo === 'nova' && (
-              <Button variant="ghost" onClick={() => setF(herdarDaUltima(ctx.ultima_estruturada?.dados))}>Limpar o dia</Button>
+          <div className="flex flex-wrap items-start justify-end gap-3 border-t border-trilha pt-3">
+            {/* EV3: o que falta e os avisos numa lista curta ao lado do botão */}
+            {(falta.length > 0 || avisos.length > 0) && (
+              <ul aria-label="Falta preencher" className="mr-auto flex min-w-0 flex-[1_1_260px] flex-col gap-0.5 text-apoio leading-[1.4]">
+                {falta.map((x) => <li key={x} className="text-critico">Falta {x}.</li>)}
+                {avisos.map((x) => <li key={x} className="text-atencao">{x}</li>)}
+              </ul>
             )}
-            <Button onClick={() => void registrar()} disabled={salvando || !temTexto || (modo === 'corrigir' && justificativa.trim().length < 10)}>
+            {modo === 'corrigir' && <Button variant="ghost" onClick={() => { setModo('nova'); recomecar() }}>Cancelar</Button>}
+            {modo === 'nova' && (
+              <Button variant="ghost" onClick={recomecar}>Limpar o dia</Button>
+            )}
+            <Button onClick={() => void registrar()} disabled={salvando || falta.length > 0}>
               {salvando && <Spinner />} {modo === 'corrigir' ? 'Salvar correção' : 'Registrar evolução do dia'}
             </Button>
           </div>
@@ -365,34 +525,15 @@ function Formulario({ ctx, pacienteId, internacaoId, onMudarDiagnostico }: {
   )
 }
 
+/** A lista de problemas como texto (o JSON da evolução guarda o retrato): uma linha por diagnóstico vigente. */
+function textoProblemas(vigentes: DiagnosticoLinha[]): string {
+  return [...vigentes].sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === 'primario' ? -1 : 1))
+    .map((d) => `${d.descricao ?? d.cid} (${d.cid})${d.status === 'hipotese' ? ' — hipótese' : ''}`).join('\n')
+}
+
 function diaDeUso(inicio: string, hoje: string): string {
   const a = Date.parse(`${inicio}T12:00:00Z`), b = Date.parse(`${hoje}T12:00:00Z`)
   if (Number.isNaN(a) || Number.isNaN(b)) return '?'
   const n = Math.round((b - a) / 86_400_000) + 1
   return n >= 1 ? String(n) : '?'
-}
-
-/**
- * O diagnóstico vigente, só para leitura (ponto 9): ele se registra e se muda
- * na subaba Diagnóstico, com histórico; a evolução grava o retrato do primário.
- */
-function DiagnosticoVigente({ vigentes, carregando, onMudar }: { vigentes: DiagnosticoLinha[]; carregando: boolean; onMudar?: () => void }) {
-  const primario = vigentes.find((d) => d.tipo === 'primario')
-  const secundarios = vigentes.filter((d) => d.tipo === 'secundario')
-  const linha = (d: DiagnosticoLinha) => `${d.cid}${d.descricao ? ' — ' + d.descricao : ''} (${d.status === 'confirmado' ? 'confirmado' : 'hipótese'})`
-  return (
-    <div className="flex flex-wrap items-start gap-3 rounded-controle border border-fio bg-campo px-3 py-2.5">
-      <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-1">
-        <span className="text-apoio font-medium text-grafite">Diagnóstico · CID-10</span>
-        {carregando ? <span className="text-apoio text-tinta-sussurro">Carregando…</span>
-          : primario ? (
-            <>
-              <span className="text-controle text-tinta">{linha(primario)}</span>
-              {secundarios.map((d) => <span key={d.id} className="text-apoio text-tinta-apoio">Secundário: {linha(d)}</span>)}
-            </>
-          ) : <span className="text-apoio text-atencao">Sem diagnóstico registrado. Registre na subaba Diagnóstico.</span>}
-      </div>
-      {onMudar && <Button variant="outline" size="sm" onClick={onMudar}>{primario ? 'Mudar diagnóstico' : 'Registrar diagnóstico'}</Button>}
-    </div>
-  )
 }

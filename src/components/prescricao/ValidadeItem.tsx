@@ -36,7 +36,9 @@ export function SeloValidadeItem({ item, agora }: { item: ComValidade; agora?: n
   const s = seloValidade(item, agora ?? relogio)
   if (!s) return null
   return (
-    <Badge variant={s.tom === 'critico' ? 'destructive' : 'warning'} title={s.titulo}>
+    // PR1 (RT, 24/11/2026): o selo em caixa normal
+    <Badge variant={s.tom === 'critico' ? 'destructive' : 'warning'} title={s.titulo} className="tracking-normal normal-case">
+
       <CalendarClock aria-hidden /> {s.texto}
     </Badge>
   )
@@ -113,10 +115,15 @@ const ACOES: { v: AcaoRenovacao; rotulo: string }[] = [
  * aprazamento e a validação da farmácia continuam); alterar e suspender pedem
  * o motivo. O servidor confere tudo e grava numa transação só.
  */
-export function RenovarPrescricao({ pacienteId, itens, aoMudar }: { pacienteId: string; itens: ItemParaRenovar[]; aoMudar: () => void }) {
+export function RenovarPrescricao({ pacienteId, itens, aoMudar, embutido = false, aoFechar }: {
+  pacienteId: string; itens: ItemParaRenovar[]; aoMudar: () => void
+  /** PR1 (RT, 24/11/2026): dentro do grupo Vencidos da lista do leito, sem cartão e já aberto */
+  embutido?: boolean
+  aoFechar?: () => void
+}) {
   const agora = useAgora()
   const lista = paraRenovar(itens, agora)
-  const [aberto, setAberto] = React.useState(false)
+  const [aberto, setAberto] = React.useState(embutido)
   const [decisoes, setDecisoes] = React.useState<Record<string, DecisaoRenovacao>>({})
   const [erro, setErro] = React.useState<string | null>(null)
   const [gravando, setGravando] = React.useState(false)
@@ -134,20 +141,12 @@ export function RenovarPrescricao({ pacienteId, itens, aoMudar }: { pacienteId: 
     })
     setGravando(false)
     if (error) return setErro(error.message)
-    setErro(null); setDecisoes({}); setAberto(false); aoMudar()
+    setErro(null); setDecisoes({}); setAberto(false); aoMudar(); aoFechar?.()
   }
+  const voltar = () => { setAberto(false); setErro(null); aoFechar?.() }
 
-  return (
-    <Card className={vencidos ? 'border-critico/40' : 'border-atencao/40'}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-corpo"><RefreshCw className="size-4" aria-hidden /> Renovar prescrição</CardTitle>
-        <CardDescription>
-          {vencidos ? `${vencidos} ${vencidos === 1 ? 'item vencido' : 'itens vencidos'}` : 'Nenhum item vencido'}
-          {lista.length > vencidos ? `, ${lista.length - vencidos} vencendo em até 2 horas` : ''}. Cada item vale 24 horas; vencido, a
-          enfermagem não administra. {FONTE_VALIDADE}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-apoio">
+  const conteudo = (
+    <>
         {!aberto ? (
           <div>
             <Button size="sm" onClick={() => setAberto(true)}><RefreshCw /> Revisar e renovar</Button>
@@ -203,11 +202,25 @@ export function RenovarPrescricao({ pacienteId, itens, aoMudar }: { pacienteId: 
             {erro && <p role="alert" className="text-apoio text-critico">{erro}</p>}
             <div className="flex flex-wrap gap-2">
               <Button size="sm" disabled={falta.length > 0 || gravando} onClick={() => void confirmar()}>Confirmar renovação</Button>
-              <Button size="sm" variant="ghost" onClick={() => { setAberto(false); setErro(null) }}>Voltar</Button>
+              <Button size="sm" variant="ghost" onClick={voltar}>Voltar</Button>
             </div>
           </>
         )}
-      </CardContent>
+    </>
+  )
+  if (embutido) return <div className="flex flex-col gap-3 rounded-controle border border-fio bg-campo p-3 text-apoio">{conteudo}</div>
+  return (
+    <Card className={vencidos ? 'border-critico/40' : 'border-atencao/40'}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-corpo"><RefreshCw className="size-4" aria-hidden /> Renovar prescrição</CardTitle>
+        <CardDescription>
+          {vencidos ? `${vencidos} ${vencidos === 1 ? 'item vencido' : 'itens vencidos'}` : 'Nenhum item vencido'}
+          {lista.length > vencidos ? `, ${lista.length - vencidos} vencendo em até 2 horas` : ''}. Cada item vale 24 horas; vencido, a
+          enfermagem não administra. {FONTE_VALIDADE}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-apoio">{conteudo}</CardContent>
     </Card>
   )
 }
+

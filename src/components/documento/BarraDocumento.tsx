@@ -149,7 +149,7 @@ export function BarraDocumento({
   return (
     <section aria-label={`Documento: ${rot}`} className={cn('flex flex-col gap-2.5 rounded-cartao border border-fio bg-superficie px-4 py-3 shadow-repouso', className)}>
       <div className="flex flex-wrap items-center gap-2.5">
-        <Badge variant={COR_ESTADO[estado]}>{NOME_ESTADO[estado]}</Badge>
+        <Badge variant={COR_ESTADO[estado]} className="tracking-normal normal-case">{NOME_ESTADO[estado]}</Badge>
         {atual?.assinado_em && <Badge variant="success">Assinado ICP-Brasil</Badge>}
         <span className="min-w-0 flex-[1_1_240px] text-apoio text-pretty text-tinta-apoio">{texto}</span>
       </div>
@@ -244,7 +244,7 @@ export function BarraDocumento({
                     {tituloDe(d)}
                   </span>
                   {d.assinado_em && <Badge variant="success">ICP-Brasil</Badge>}
-                  <Badge variant={COR_ESTADO[e]}>{NOME_ESTADO[e]}</Badge>
+                  <Badge variant={COR_ESTADO[e]} className="tracking-normal normal-case">{NOME_ESTADO[e]}</Badge>
                 </div>
                 <span className="text-rotulo text-tinta-sussurro">{metaDe(d)}</span>
               </div>

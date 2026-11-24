@@ -27,7 +27,7 @@ import { LeitoAberto } from './LeitoAberto'
 import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
 import { BotaoPulseira } from '@/components/paciente/Pulseira'
 import { ATIVO, diaHora, hora, msg, ROTULO_ALTA, rpc, tempoDesde } from './caderno/comum'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useValidadeDosPacientes } from '@/hooks/useValidadePrescricao'
 
 export type PacienteDaLista = {
@@ -77,9 +77,31 @@ export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes
 }) {
   const [filtro, setFiltro] = React.useState<Filtro>('Todos')
   const [setor, setSetor] = React.useState<string | null>(null)
-  // ?paciente=X abre o leito dele; ?aba=Y abre o caderno nessa aba (rotaDoLeito)
-  const [params] = useSearchParams()
-  const [aberto, setAberto] = React.useState<string | null>(() => (onAbrirLeito ? null : params.get('paciente')))
+  // ?paciente=X abre o leito dele; ?aba=Y abre o caderno nessa aba (rotaDoLeito).
+  // RS1 (RT, 24/11/2026): o leito aberto mora no endereço, assim a página em volta
+  // (título, abas da Internação, chips do censo) sai e o voltar do navegador fecha.
+  const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const aberto = onAbrirLeito ? null : params.get('paciente')
+  const setAberto = (id: string | null) => {
+    if (id) {
+      setParams((q) => {
+        const n = new URLSearchParams(q)
+        n.set('paciente', id)
+        n.delete('aba')
+        return n
+      }, { state: { leitoAberto: true } })
+      return
+    }
+    if ((location.state as { leitoAberto?: boolean } | null)?.leitoAberto) { navigate(-1); return }
+    setParams((q) => {
+      const n = new URLSearchParams(q)
+      n.delete('paciente')
+      n.delete('aba')
+      return n
+    }, { replace: true })
+  }
   const [prancheta, setPrancheta] = React.useState<PacienteDaLista | null>(null)
   const [agora, setAgora] = React.useState(() => Date.now())
   React.useEffect(() => {
@@ -168,7 +190,20 @@ export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes
       ? `Internados dos setores da sua escala agora: ${daEscala.map((s) => s.nome).join(', ')}.`
       : `Sua escala agora não inclui setor de internação.${comPaciente.length ? ` Aparecem os internados que o seu acesso alcança: ${comPaciente.join(', ')}.` : ''}`
 
-  // M1 (revisão do médico, RT 24/11/2026): o leito abre em tela inteira, com o caminho de volta à lista
+  // endereço com um paciente que não está nesta lista (alta, outro setor): volta à lista
+  const sumiu = !!aberto && !carregando && pacientes.length > 0 && !abertoLinha
+  React.useEffect(() => {
+    if (!sumiu) return
+    setParams((q) => {
+      const n = new URLSearchParams(q)
+      n.delete('paciente')
+      n.delete('aba')
+      return n
+    }, { replace: true })
+  }, [sumiu, setParams])
+
+  // M1 e RS1 (revisão do médico, RT 24/11/2026): o leito abre em tela inteira, só com o caminho
+  // de volta à lista; a prancheta e as outras ações ficam no menu Ações do caderno (RS3)
   if (abertoLinha) {
     const leito = leitoDe(abertoLinha)
     return (
@@ -180,13 +215,11 @@ export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes
           <span className="text-apoio text-tinta-sussurro">{leito ? `Leito ${leito}` : abertoLinha.setores?.nome ?? 'Sem leito'} · {abertoLinha.nome}</span>
           <span className="ml-auto flex gap-[7px]">
             <BotaoPulseira pacienteId={abertoLinha.id} nome={abertoLinha.nome} reimpressao compacto />
-            <Button variant="outline" size="sm" onClick={() => setPrancheta(abertoLinha)}>
-              <ClipboardList className="size-3.5" aria-hidden /> Prancheta
-            </Button>
           </span>
         </div>
-        <LeitoAberto modo="caderno" abaInicial={abertoLinha.id === params.get('paciente') ? params.get('aba') ?? undefined : undefined} pacienteId={abertoLinha.id}
-          pacienteNome={abertoLinha.nome} ehGestor={ehGestor} onTransferir={() => onTransferir(abertoLinha)} />
+        <LeitoAberto modo="caderno" abaInicial={params.get('aba') ?? undefined} pacienteId={abertoLinha.id}
+          pacienteNome={abertoLinha.nome} ehGestor={ehGestor} onTransferir={() => onTransferir(abertoLinha)}
+          onPrancheta={() => setPrancheta(abertoLinha)} />
         {prancheta && (
           <Prancheta paciente={prancheta} leito={leitoDe(prancheta)} unidadeId={unidadeId} perfilId={perfil?.id}
             aoFechar={() => setPrancheta(null)} />
@@ -207,9 +240,9 @@ export function ListaInternados({ unidadeId, setores, setoresDaEscala, pacientes
 
       <div className="flex flex-wrap items-center justify-between gap-3.5">
         <Chips rotulo="Filtrar internados">
-          {FILTROS.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => { setFiltro(f); setAberto(null) }}>{f}</Chip>)}
+          {FILTROS.map((f) => <Chip key={f} ativo={filtro === f} onClick={() => setFiltro(f)}>{f}</Chip>)}
           {setores.length > 1 && setores.map((s) => (
-            <Chip key={s.id} ativo={setor === s.id} onClick={() => { setSetor(setor === s.id ? null : s.id); setAberto(null) }}>{s.nome}</Chip>
+            <Chip key={s.id} ativo={setor === s.id} onClick={() => setSetor(setor === s.id ? null : s.id)}>{s.nome}</Chip>
           ))}
         </Chips>
         <span className="text-apoio text-tinta-sussurro">

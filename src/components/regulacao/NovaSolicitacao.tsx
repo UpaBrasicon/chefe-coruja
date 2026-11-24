@@ -7,7 +7,7 @@
 // (NovoPedidoPaciente, abaixo).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, FileText, Paperclip, Send } from 'lucide-react'
+import { ArrowLeft, Check, FileText, Paperclip, Send, X } from 'lucide-react'
 import * as React from 'react'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
@@ -25,9 +25,13 @@ import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { fmtData, fmtDataHora } from '@/lib/datas'
-import { dataIso } from '@/lib/formato'
+import { dataIso, diaMes } from '@/lib/formato'
+import { MARCA_PRONTUARIO, quadroParaRegulacao } from '@/lib/doProntuario'
+import { Chip } from '@/components/monitor/Pagina'
+import { rotuloDocumento } from '@/components/documento/documentos'
+import { useDoProntuario } from '@/components/internacao/caderno/useDoProntuario'
 import {
-  ANEXO_LIMITE_BYTES, ANEXO_TIPOS, CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, TIPOS,
+  ANEXO_LIMITE_BYTES, ANEXO_TIPOS, CARATER, FORMULARIO_VAZIO, caraterDaPrioridade, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, TIPOS,
   TIPOS_LEITO, TRANSPORTES, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, ehNeonato, erroArquivo, faltasFormulario,
   marcadoresPelaIdade,
   type Carater, type DestinoTipo, type Formulario, type Prioridade, type TipoSolicitacao, type Vulnerabilidade,
@@ -84,6 +88,19 @@ type DocumentoProntuario = { id: string; tipo: string; numero: string | null; ve
 
 export type InicialSolicitacao = { paciente: Paciente; tipo?: 'consulta' | 'exame' | 'leito'; cid?: string; quadro?: string; hipotese?: string }
 
+type Passo = 1 | 2 | 3
+const PASSOS: { n: Passo; rotulo: string }[] = [
+  { n: 1, rotulo: 'O que pedir' }, { n: 2, rotulo: 'Quadro clínico' }, { n: 3, rotulo: 'Revisar e enviar' },
+]
+/** Campos do quadro clínico que o caderno do leito preenche (RG2). */
+type CampoQuadro = 'cid' | 'hipotese' | 'quadro_clinico' | 'sinais_vitais' | 'exames' | 'medicacoes'
+
+/** "veio do prontuário, revise" ao lado do rótulo; some quando o médico edita o campo. */
+function Marca({ ligada }: { ligada: boolean }) {
+  if (!ligada) return null
+  return <span className="ml-1.5 text-rotulo font-normal text-atencao">· {MARCA_PRONTUARIO}</span>
+}
+
 export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFixo = false, aoFechar }: {
   unidadeId: string; ctx: ContextoSolicitacao; aoEnviar: (r: PedidoEnviado) => void
   /** 5A, tarefa 5 (H2): a solicitação aberta da consulta da UBS vem preenchida; o médico confere e completa */
@@ -102,9 +119,12 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
   const [termo, setTermo] = React.useState('')
   const [paciente, setPaciente] = React.useState<Paciente | null>(inicial?.paciente ?? null)
   const [ligar, setLigar] = React.useState<'episodio' | 'internacao' | 'nenhum'>('nenhum')
+  // RG1: "Ligar a" vem escolhido (internação aberta, senão o atendimento) e só aparece em "trocar"
+  const [trocarLigar, setTrocarLigar] = React.useState(false)
   const [medico, setMedico] = React.useState('')
   const [naoIdentificado, setNaoIdentificado] = React.useState(false)
   const [vulnerabilidades, setVulnerabilidades] = React.useState<Vulnerabilidade[]>([])
+  const [buscaVul, setBuscaVul] = React.useState('')
   const criterios = useCriterios(unidadeId)
   const [f, setF] = React.useState<Formulario>(() => ({
     ...FORMULARIO_VAZIO,
@@ -118,7 +138,20 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
   // anexos escolhidos antes do envio; sobem logo depois que o pedido é criado
   const [arquivos, setArquivos] = React.useState<File[]>([])
   const [docsEscolhidos, setDocsEscolhidos] = React.useState<string[]>([])
-  const set = <K extends keyof Formulario>(k: K, v: Formulario[K]) => setF((x) => ({ ...x, [k]: v }))
+  // RG1: dentro do paciente, o pedido vai em três passos com o resumo ao lado
+  const passos = pacienteFixo
+  const [passo, setPasso] = React.useState<Passo>(1)
+  // RG2: o que veio do caderno fica marcado até o médico mexer no campo
+  const [doProntuario, setDoProntuario] = React.useState<Set<CampoQuadro>>(new Set())
+  const set = <K extends keyof Formulario>(k: K, v: Formulario[K]) => {
+    setF((x) => ({ ...x, [k]: v }))
+    setDoProntuario((x) => {
+      if (!x.has(k as CampoQuadro)) return x
+      const n = new Set(x)
+      n.delete(k as CampoQuadro)
+      return n
+    })
+  }
 
   // pedido 3: a consulta espera a pessoa parar de digitar (300 ms)
   const termoAdiado = useValorAdiado(termo)
@@ -154,6 +187,25 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       return (data ?? []) as unknown as DocumentoProntuario[]
     },
   })
+
+  // RG2: quadro clínico a partir do caderno (última evolução, vitais crus com a hora,
+  // exames com resultado e data, prescrição vigente e CID da lista de problemas)
+  const dp = useDoProntuario(pacienteFixo ? paciente?.id : null, pacienteFixo ? v?.internacao?.id : null)
+  // uma vez, quando o caderno terminou de ler (ajuste de estado no render, sem efeito)
+  const [aplicado, setAplicado] = React.useState(false)
+  if (!aplicado && dp.pronto) {
+    setAplicado(true)
+    const q = quadroParaRegulacao(dp)
+    const marcados = new Set<CampoQuadro>()
+    const n = { ...f }
+    for (const k of ['cid', 'hipotese', 'quadro_clinico', 'sinais_vitais', 'exames', 'medicacoes'] as const) {
+      if (!f[k].trim() && q[k].trim()) { n[k] = q[k]; marcados.add(k) }
+    }
+    setF(n)
+    if (q.cid && !cidRotulo) setCidRotulo(q.cid)
+    setDoProntuario(marcados)
+  }
+
   const totalAnexos = arquivos.length + docsEscolhidos.length
   const enviar = useMutation({
     mutationFn: async () => {
@@ -202,6 +254,285 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
   const faltas = [...faltasFormulario(f, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado }),
     ...(souNir && !medico ? ['médico assistente'] : [])]
   const leitoOuTransf = f.tipo === 'leito' || f.tipo === 'transferencia'
+  // RG1: o caráter vem da prioridade (1 e 2 urgência, 3 e 4 eletivo); sem classificação, escolhe-se
+  const caraterDerivado = caraterDaPrioridade(f.prioridade || null)
+  const escolherPrioridade = (k: Prioridade) => {
+    set('prioridade', k)
+    const c = caraterDaPrioridade(k)
+    if (c) set('carater', c)
+  }
+  const termoVul = buscaVul.trim().toLowerCase()
+  const vulOpcoes = (Object.keys(VULNERABILIDADES) as Vulnerabilidade[])
+    .filter((k) => !vulnerabilidades.includes(k) && (!termoVul || VULNERABILIDADES[k].toLowerCase().includes(termoVul)))
+  const nomeDocumento = (d: DocumentoProntuario) => `${rotuloDocumento(d.tipo)} ${diaMes(d.emitido_em)}`
+
+  const blocoLigar = (v?.episodio || v?.internacao) && (
+    <div className="flex flex-wrap items-center gap-2 text-tinta-apoio">
+      <span>
+        Ligado a {ligar === 'internacao' && v?.internacao ? `internação aberta${v.internacao.leito ? `, leito ${v.internacao.leito}` : ''} (desde ${fmtDataHora(v.internacao.admissao_em)})`
+          : ligar === 'episodio' && v?.episodio ? `atendimento aberto (chegada ${fmtDataHora(v.episodio.chegada_em)})` : 'só ao paciente'}
+      </span>
+      {!trocarLigar && <Button size="xs" variant="outline" onClick={() => setTrocarLigar(true)}>Trocar</Button>}
+      {trocarLigar && (
+        <span className="flex flex-wrap gap-1.5">
+          {v?.internacao && <Chip variante="opcao" radio ativo={ligar === 'internacao'} onClick={() => setLigar('internacao')}>Internação</Chip>}
+          {v?.episodio && <Chip variante="opcao" radio ativo={ligar === 'episodio'} onClick={() => setLigar('episodio')}>Atendimento</Chip>}
+          <Chip variante="opcao" radio ativo={ligar === 'nenhum'} onClick={() => setLigar('nenhum')}>Só ao paciente</Chip>
+        </span>
+      )}
+    </div>
+  )
+
+  const oQuePedir = paciente && v && (
+    <>
+      {!v.tem_documento && (
+        <label className="flex items-start gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-atencao">
+          <input type="checkbox" className="mt-0.5 size-4" checked={naoIdentificado} onChange={(e) => setNaoIdentificado(e.target.checked)} />
+          O paciente está sem CNS e sem CPF válidos. Complete o cadastro, ou marque aqui para enviar como paciente não identificado.
+        </label>
+      )}
+      {blocoLigar}
+
+      {/* o que se pede */}
+      <Campo id="reg-tipo" rotulo="Tipo" className="sm:max-w-xs">
+        <CampoSelecao id="reg-tipo" tamanho="compacto" value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoSolicitacao)}>
+          {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
+        </CampoSelecao>
+      </Campo>
+      <CampoTerminologia tipo="sigtap_procedimento" escolhido={procRotulo}
+        rotulo={<>Procedimento (SIGTAP){f.tipo === 'leito' && ' — o da internação'}</>}
+        onEscolher={(c, r) => { set('procedimento', c); setProcRotulo(r) }} onLimpar={() => { set('procedimento', ''); setProcRotulo('') }} />
+      {f.tipo === 'consulta' && (
+        <>
+          <Campo id="reg-esp" rotulo="Especialidade" className="sm:max-w-md">
+            <Input id="reg-esp" className="h-8" list="reg-especialidades" value={f.especialidade} onChange={(e) => set('especialidade', e.target.value)} />
+            <datalist id="reg-especialidades">{ESPECIALIDADES.map((e) => <option key={e} value={e} />)}</datalist>
+          </Campo>
+          <CampoTerminologia tipo="cbo" escolhido={cboRotulo} rotulo="CBO da especialidade"
+            onEscolher={(c, r) => { set('cbo', c); setCboRotulo(r) }} onLimpar={() => { set('cbo', ''); setCboRotulo('') }} />
+        </>
+      )}
+      {leitoOuTransf && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Campo id="reg-leito" rotulo={f.tipo === 'leito' ? 'Tipo de leito' : 'Leito no destino (se for internar)'}>
+            <CampoSelecao id="reg-leito" tamanho="compacto" value={f.tipo_leito} onChange={(e) => set('tipo_leito', e.target.value)}>
+              <option value="">{f.tipo === 'leito' ? 'Escolha…' : 'Não se aplica'}</option>
+              {Object.entries(TIPOS_LEITO).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
+            </CampoSelecao>
+          </Campo>
+          {f.tipo_leito === 'psiquiatrico' && (
+            <Campo id="reg-psiq" rotulo="Internação psiquiátrica">
+              <CampoSelecao id="reg-psiq" tamanho="compacto" value={f.internacao_psiquiatrica} onChange={(e) => set('internacao_psiquiatrica', e.target.value)}>
+                <option value="">Escolha…</option>
+                {Object.entries(INTERNACAO_PSIQUIATRICA).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
+              </CampoSelecao>
+            </Campo>
+          )}
+          {f.tipo === 'transferencia' && (
+            <Campo id="reg-transp" rotulo="Transporte solicitado (a central define o final)">
+              <CampoSelecao id="reg-transp" tamanho="compacto" value={f.transporte} onChange={(e) => set('transporte', e.target.value)}>
+                <option value="">Escolha…</option>
+                {Object.entries(TRANSPORTES).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
+              </CampoSelecao>
+            </Campo>
+          )}
+          {f.tipo === 'transferencia' && neonato && (
+            <Campo id="reg-incub" rotulo="Incubadora">
+              <CampoSelecao id="reg-incub" tamanho="compacto" value={f.incubadora} onChange={(e) => set('incubadora', e.target.value as Formulario['incubadora'])}>
+                <option value="">Escolha…</option><option value="sim">Sim</option><option value="nao">Não</option>
+              </CampoSelecao>
+            </Campo>
+          )}
+        </div>
+      )}
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={f.isolamento} onChange={(e) => set('isolamento', e.target.checked)} />
+          Precisa de isolamento</label>
+        {f.isolamento && (
+          <CampoSelecao aria-label="Tipo de isolamento" tamanho="compacto" value={f.isolamento_tipo} onChange={(e) => set('isolamento_tipo', e.target.value)}>
+            <option value="">Tipo…</option>
+            {Object.entries(ISOLAMENTOS).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
+          </CampoSelecao>
+        )}
+      </div>
+
+      {/* destino */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Campo id="reg-destino" rotulo="Destino">
+          <CampoSelecao id="reg-destino" tamanho="compacto" value={f.destino_tipo} onChange={(e) => set('destino_tipo', e.target.value as DestinoTipo)}>
+            <option value="a_definir">A definir pela regulação</option>
+            <option value="rede">Unidade da rede</option>
+            <option value="externo">Serviço fora da rede</option>
+          </CampoSelecao>
+        </Campo>
+        {f.destino_tipo === 'rede' && (
+          <Campo id="reg-dest-un" rotulo="Unidade" className="sm:col-span-2">
+            <CampoSelecao id="reg-dest-un" tamanho="compacto" value={f.destino_unidade_id} onChange={(e) => set('destino_unidade_id', e.target.value)}>
+              <option value="">Escolha…</option>
+              {ctx.unidades_rede.filter((u) => u.id !== unidadeId).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
+            </CampoSelecao>
+          </Campo>
+        )}
+        {f.destino_tipo === 'externo' && (
+          <Campo id="reg-dest-ext" rotulo="Serviço (nome e município)" className="sm:col-span-2">
+            <Input id="reg-dest-ext" className="h-8" value={f.destino_externo} onChange={(e) => set('destino_externo', e.target.value)} />
+          </Campo>
+        )}
+      </div>
+
+      {/* prioridade (o caráter vem dela) */}
+      <fieldset className="flex flex-col gap-1">
+        <legend className="text-rotulo text-tinta-apoio">Prioridade proposta (o regulador da central revisa)</legend>
+        <div role="radiogroup" aria-label="Prioridade proposta" className="flex flex-wrap gap-1.5">
+          {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => (
+            <Chip key={k} variante="opcao" radio ativo={f.prioridade === k} onClick={() => escolherPrioridade(k)}
+              titulo={criterios.data?.[k]?.texto ?? PRIORIDADES[k].descricao}>{PRIORIDADES[k].rotulo}</Chip>
+          ))}
+        </div>
+        {f.prioridade && f.prioridade !== 'nao_classificada' && criterios.data?.[f.prioridade]?.texto && (
+          <span className="text-rotulo text-tinta-apoio">Critério da central: {criterios.data[f.prioridade]!.texto}</span>
+        )}
+        {caraterDerivado && <span className="text-rotulo text-tinta-sussurro">Caráter: {CARATER[caraterDerivado]} (pela prioridade)</span>}
+      </fieldset>
+      {!caraterDerivado && f.prioridade && (
+        <Campo id="reg-carater" rotulo="Caráter" className="sm:max-w-xs">
+          <CampoSelecao id="reg-carater" tamanho="compacto" value={f.carater} onChange={(e) => set('carater', e.target.value as Carater)}>
+            <option value="">Escolha…</option>
+            {(Object.keys(CARATER) as Carater[]).map((k) => <option key={k} value={k}>{CARATER[k]}</option>)}
+          </CampoSelecao>
+        </Campo>
+      )}
+
+      {/* vulnerabilidade: selos, sem pontuação; a idade já marca idoso ou criança; busca em vez de parede de caixas */}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-rotulo text-tinta-apoio">Vulnerabilidade (aparece como selo para o regulador; a idade já sugere)</span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {vulnerabilidades.map((k) => (
+            <span key={k} className="inline-flex items-center gap-1 rounded-capsula border border-acao/35 bg-acao/10 px-2.5 py-0.5 text-apoio text-acao">
+              {VULNERABILIDADES[k]}
+              <Button variant="ghost" size="icon-xs" aria-label={`Tirar ${VULNERABILIDADES[k]}`} onClick={() => setVulnerabilidades((x) => x.filter((y) => y !== k))}><X aria-hidden /></Button>
+            </span>
+          ))}
+          <Input className="h-8 w-56" aria-label="Acrescentar vulnerabilidade" placeholder="Acrescentar: gestante, situação de rua…"
+            value={buscaVul} onChange={(e) => setBuscaVul(e.target.value)} />
+        </div>
+        {termoVul && (
+          <div className="flex flex-wrap gap-1.5">
+            {vulOpcoes.map((k) => (
+              <Chip key={k} ativo={false} onClick={() => { setVulnerabilidades((x) => [...x, k]); setBuscaVul('') }}>{VULNERABILIDADES[k]}</Chip>
+            ))}
+            {vulOpcoes.length === 0 && <span className="text-rotulo text-tinta-sussurro">Nada com esse nome.</span>}
+          </div>
+        )}
+      </div>
+    </>
+  )
+
+  const quadro = paciente && v && (
+    <>
+      {doProntuario.size > 0 && (
+        <p role="status" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-atencao">
+          Os campos marcados vieram do prontuário (última evolução, sinais vitais da enfermagem, exames, prescrição e lista de problemas). Revise e edite antes de enviar.
+        </p>
+      )}
+      <CampoTerminologia tipo="cid10" escolhido={cidRotulo} rotulo={<>CID-10<Marca ligada={doProntuario.has('cid')} /></>}
+        onEscolher={(c, r) => { set('cid', c); setCidRotulo(r) }} onLimpar={() => { set('cid', ''); setCidRotulo('') }} />
+      <Campo id="reg-quadro" rotulo={<>Quadro clínico (obrigatório)<Marca ligada={doProntuario.has('quadro_clinico')} /></>}>
+        <textarea id="reg-quadro" rows={5} className="rounded-controle border border-fio bg-campo px-2 py-1.5"
+          value={f.quadro_clinico} onChange={(e) => set('quadro_clinico', e.target.value)} />
+      </Campo>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Campo id="reg-evol" rotulo="Tempo de evolução"><Input id="reg-evol" className="h-8" value={f.tempo_evolucao} onChange={(e) => set('tempo_evolucao', e.target.value)} /></Campo>
+        <Campo id="reg-sv" rotulo={<>Sinais vitais, com a hora<Marca ligada={doProntuario.has('sinais_vitais')} /></>}>
+          <Input id="reg-sv" className="h-8" placeholder="PA, FC, FR, SpO₂, Tax, às hh:mm (PA não obrigatória na criança)" value={f.sinais_vitais} onChange={(e) => set('sinais_vitais', e.target.value)} />
+        </Campo>
+        <Campo id="reg-exames" rotulo={<>Exames realizados, com a data<Marca ligada={doProntuario.has('exames')} /></>}>
+          <textarea id="reg-exames" rows={2} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={f.exames} onChange={(e) => set('exames', e.target.value)} />
+        </Campo>
+        <Campo id="reg-meds" rotulo={<>Tratamento feito e medicações em uso<Marca ligada={doProntuario.has('medicacoes')} /></>}>
+          <textarea id="reg-meds" rows={2} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={f.medicacoes} onChange={(e) => set('medicacoes', e.target.value)} />
+        </Campo>
+        <Campo id="reg-hip" rotulo={<>Hipótese diagnóstica<Marca ligada={doProntuario.has('hipotese')} /></>}>
+          <Input id="reg-hip" className="h-8" value={f.hipotese} onChange={(e) => set('hipotese', e.target.value)} />
+        </Campo>
+        <Campo id="reg-tel" rotulo="Telefone de contato da origem"><Input id="reg-tel" className="h-8" value={f.telefone_contato} onChange={(e) => set('telefone_contato', e.target.value)} /></Campo>
+      </div>
+    </>
+  )
+
+  const revisar = paciente && v && (
+    <>
+      {/* anexos: escolhidos aqui, enviados junto com o pedido */}
+      <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
+        <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
+        {(documentos.data ?? []).length > 0 && (
+          <div className="flex flex-col gap-1">
+            <span className="flex items-center gap-1.5 text-rotulo text-tinta-apoio"><FileText className="size-3.5" aria-hidden /> Documentos do prontuário deste paciente</span>
+            {/* RG2: nome legível e "Anexar" por item, sem parede de caixas */}
+            {documentos.data!.map((d) => {
+              const vai = docsEscolhidos.includes(d.id)
+              return (
+                <div key={d.id} className="flex flex-wrap items-center gap-2 border-t border-trilha py-1 first:border-0">
+                  <span className="text-tinta">{nomeDocumento(d)}</span>
+                  <span className="text-rotulo text-tinta-sussurro">{d.numero ? `nº ${d.numero} · ` : ''}{d.autor ?? '—'}</span>
+                  <Button size="xs" variant={vai ? 'default' : 'outline'} className="ml-auto" aria-pressed={vai}
+                    onClick={() => setDocsEscolhidos((x) => (vai ? x.filter((y) => y !== d.id) : [...x, d.id]))}>
+                    {vai ? <><Check aria-hidden /> Vai junto</> : 'Anexar'}
+                  </Button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        <AreaDeAnexo
+          id="reg-anexos"
+          multiple
+          descricao="PDF, JPG ou PNG, até 10 MB cada"
+          accept={ANEXO_TIPOS.join(',')}
+          maxBytes={ANEXO_LIMITE_BYTES}
+          validar={erroArquivo}
+          valor={arquivos}
+          onArquivos={(novos) => setArquivos((x) => [...x, ...novos])}
+          onRemover={(i) => setArquivos((x) => x.filter((_, j) => j !== i))}
+        />
+      </div>
+
+      {(souGestor || souNir) && (
+        <Campo id="reg-medico" rotulo={souNir ? 'Médico assistente (obrigatório: o NIR abre em nome dele)' : 'Médico assistente (fica informado)'} className="max-w-sm">
+          <CampoSelecao id="reg-medico" tamanho="compacto" value={medico} onChange={(e) => setMedico(e.target.value)}>
+            <option value="">{souNir ? 'Escolha…' : 'Não informar'}</option>
+            {v.medicos.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
+          </CampoSelecao>
+        </Campo>
+      )}
+
+      <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
+      <div className="flex flex-wrap items-center gap-3">
+        <Button onClick={() => enviar.mutate()} disabled={faltas.length > 0 || enviar.isPending}>
+          {enviar.isPending ? <Spinner /> : <Send className="size-4" />} Enviar à central
+        </Button>
+        {faltas.length > 0 && <span className="text-atencao">Falta: {faltas.join(', ')}.</span>}
+      </div>
+    </>
+  )
+
+  const resumo = paciente && v && (
+    <aside aria-label="Resumo do pedido" className="flex flex-col gap-1.5 self-start rounded-controle border border-fio bg-campo p-3 text-apoio lg:sticky lg:top-2">
+      <span className="text-controle font-semibold text-tinta">Resumo do pedido</span>
+      <span className="text-tinta">{paciente.nome_social ?? paciente.nome}</span>
+      <span className="text-tinta-apoio">{TIPOS[f.tipo]}{f.tipo_leito ? ` · ${TIPOS_LEITO[f.tipo_leito]}` : ''}</span>
+      {procRotulo && <span className="text-tinta-apoio">{procRotulo}</span>}
+      <span className="text-tinta-apoio">Destino: {f.destino_tipo === 'a_definir' ? 'a definir pela regulação' : f.destino_tipo === 'rede'
+        ? ctx.unidades_rede.find((u) => u.id === f.destino_unidade_id)?.nome ?? 'unidade da rede' : f.destino_externo || 'fora da rede'}</span>
+      <span className="text-tinta-apoio">{f.prioridade ? PRIORIDADES[f.prioridade].rotulo : 'Prioridade não escolhida'}{f.carater ? ` · ${CARATER[f.carater]}` : ''}</span>
+      {vulnerabilidades.length > 0 && <span className="text-tinta-apoio">{vulnerabilidades.map((k) => VULNERABILIDADES[k]).join(', ')}</span>}
+      <span className="text-tinta-apoio">CID: {cidRotulo || 'falta'}</span>
+      <span className="text-tinta-apoio">Anexos: {totalAnexos}</span>
+      {faltas.length > 0
+        ? <span className="text-atencao">Falta: {faltas.join(', ')}.</span>
+        : <span className="text-conforme">Pronto para enviar.</span>}
+    </aside>
+  )
 
   return (
     <Card>
@@ -247,219 +578,35 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
           </Campo>
         )}
 
-        {paciente && v && (
+        {paciente && v && !passos && (
           <>
-            {!v.tem_documento && (
-              <label className="flex items-start gap-2 rounded-controle border border-atencao/30 bg-alerta-atencao px-3 py-2 text-atencao">
-                <input type="checkbox" className="mt-0.5 size-4" checked={naoIdentificado} onChange={(e) => setNaoIdentificado(e.target.checked)} />
-                O paciente está sem CNS e sem CPF válidos. Complete o cadastro, ou marque aqui para enviar como paciente não identificado.
-              </label>
-            )}
-            {(v.episodio || v.internacao) && (
-              <fieldset className="flex flex-col gap-1">
-                <legend className="text-rotulo text-tinta-apoio">Ligar a</legend>
-                {v.internacao && (
-                  <label className="flex items-center gap-2"><input type="radio" className="size-4" checked={ligar === 'internacao'} onChange={() => setLigar('internacao')} />
-                    Internação aberta{v.internacao.leito ? `, leito ${v.internacao.leito}` : ''} (desde {fmtDataHora(v.internacao.admissao_em)})</label>
-                )}
-                {v.episodio && (
-                  <label className="flex items-center gap-2"><input type="radio" className="size-4" checked={ligar === 'episodio'} onChange={() => setLigar('episodio')} />
-                    Atendimento aberto (chegada {fmtDataHora(v.episodio.chegada_em)})</label>
-                )}
-                <label className="flex items-center gap-2"><input type="radio" className="size-4" checked={ligar === 'nenhum'} onChange={() => setLigar('nenhum')} />
-                  Só ao paciente</label>
-              </fieldset>
-            )}
+            {oQuePedir}
+            {quadro}
+            {revisar}
+          </>
+        )}
 
-            {/* o que se pede */}
-            <Campo id="reg-tipo" rotulo="Tipo" className="sm:max-w-xs">
-              <CampoSelecao id="reg-tipo" tamanho="compacto" value={f.tipo} onChange={(e) => set('tipo', e.target.value as TipoSolicitacao)}>
-                {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
-              </CampoSelecao>
-            </Campo>
-            <CampoTerminologia tipo="sigtap_procedimento" escolhido={procRotulo}
-              rotulo={<>Procedimento (SIGTAP){f.tipo === 'leito' && ' — o da internação'}</>}
-              onEscolher={(c, r) => { set('procedimento', c); setProcRotulo(r) }} onLimpar={() => { set('procedimento', ''); setProcRotulo('') }} />
-            {f.tipo === 'consulta' && (
-              <>
-                <Campo id="reg-esp" rotulo="Especialidade" className="sm:max-w-md">
-                  <Input id="reg-esp" className="h-8" list="reg-especialidades" value={f.especialidade} onChange={(e) => set('especialidade', e.target.value)} />
-                  <datalist id="reg-especialidades">{ESPECIALIDADES.map((e) => <option key={e} value={e} />)}</datalist>
-                </Campo>
-                <CampoTerminologia tipo="cbo" escolhido={cboRotulo} rotulo="CBO da especialidade"
-                  onEscolher={(c, r) => { set('cbo', c); setCboRotulo(r) }} onLimpar={() => { set('cbo', ''); setCboRotulo('') }} />
-              </>
-            )}
-            {leitoOuTransf && (
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Campo id="reg-leito" rotulo={f.tipo === 'leito' ? 'Tipo de leito' : 'Leito no destino (se for internar)'}>
-                  <CampoSelecao id="reg-leito" tamanho="compacto" value={f.tipo_leito} onChange={(e) => set('tipo_leito', e.target.value)}>
-                    <option value="">{f.tipo === 'leito' ? 'Escolha…' : 'Não se aplica'}</option>
-                    {Object.entries(TIPOS_LEITO).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                  </CampoSelecao>
-                </Campo>
-                {f.tipo_leito === 'psiquiatrico' && (
-                  <Campo id="reg-psiq" rotulo="Internação psiquiátrica">
-                    <CampoSelecao id="reg-psiq" tamanho="compacto" value={f.internacao_psiquiatrica} onChange={(e) => set('internacao_psiquiatrica', e.target.value)}>
-                      <option value="">Escolha…</option>
-                      {Object.entries(INTERNACAO_PSIQUIATRICA).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                    </CampoSelecao>
-                  </Campo>
-                )}
-                {f.tipo === 'transferencia' && (
-                  <Campo id="reg-transp" rotulo="Transporte solicitado (a central define o final)">
-                    <CampoSelecao id="reg-transp" tamanho="compacto" value={f.transporte} onChange={(e) => set('transporte', e.target.value)}>
-                      <option value="">Escolha…</option>
-                      {Object.entries(TRANSPORTES).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                    </CampoSelecao>
-                  </Campo>
-                )}
-                {f.tipo === 'transferencia' && neonato && (
-                  <Campo id="reg-incub" rotulo="Incubadora">
-                    <CampoSelecao id="reg-incub" tamanho="compacto" value={f.incubadora} onChange={(e) => set('incubadora', e.target.value as Formulario['incubadora'])}>
-                      <option value="">Escolha…</option><option value="sim">Sim</option><option value="nao">Não</option>
-                    </CampoSelecao>
-                  </Campo>
-                )}
-              </div>
-            )}
-            <div className="flex flex-wrap items-end gap-3">
-              <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={f.isolamento} onChange={(e) => set('isolamento', e.target.checked)} />
-                Precisa de isolamento</label>
-              {f.isolamento && (
-                <CampoSelecao aria-label="Tipo de isolamento" tamanho="compacto" value={f.isolamento_tipo} onChange={(e) => set('isolamento_tipo', e.target.value)}>
-                  <option value="">Tipo…</option>
-                  {Object.entries(ISOLAMENTOS).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-                </CampoSelecao>
-              )}
-            </div>
-
-            {/* destino */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Campo id="reg-destino" rotulo="Destino">
-                <CampoSelecao id="reg-destino" tamanho="compacto" value={f.destino_tipo} onChange={(e) => set('destino_tipo', e.target.value as DestinoTipo)}>
-                  <option value="a_definir">A definir pela regulação</option>
-                  <option value="rede">Unidade da rede</option>
-                  <option value="externo">Serviço fora da rede</option>
-                </CampoSelecao>
-              </Campo>
-              {f.destino_tipo === 'rede' && (
-                <Campo id="reg-dest-un" rotulo="Unidade" className="sm:col-span-2">
-                  <CampoSelecao id="reg-dest-un" tamanho="compacto" value={f.destino_unidade_id} onChange={(e) => set('destino_unidade_id', e.target.value)}>
-                    <option value="">Escolha…</option>
-                    {ctx.unidades_rede.filter((u) => u.id !== unidadeId).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-                  </CampoSelecao>
-                </Campo>
-              )}
-              {f.destino_tipo === 'externo' && (
-                <Campo id="reg-dest-ext" rotulo="Serviço (nome e município)" className="sm:col-span-2">
-                  <Input id="reg-dest-ext" className="h-8" value={f.destino_externo} onChange={(e) => set('destino_externo', e.target.value)} />
-                </Campo>
-              )}
-            </div>
-
-            {/* caráter e prioridade */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Campo id="reg-carater" rotulo="Caráter">
-                <CampoSelecao id="reg-carater" tamanho="compacto" value={f.carater} onChange={(e) => set('carater', e.target.value as Carater)}>
-                  <option value="">Escolha…</option>
-                  {(Object.keys(CARATER) as Carater[]).map((k) => <option key={k} value={k}>{CARATER[k]}</option>)}
-                </CampoSelecao>
-              </Campo>
-              <fieldset className="flex flex-col gap-1 sm:col-span-2">
-                <legend className="text-rotulo text-tinta-apoio">Prioridade proposta (o regulador da central revisa)</legend>
-                <div className="flex flex-wrap gap-3">
-                  {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => (
-                    <label key={k} className="flex items-center gap-1.5" title={criterios.data?.[k]?.texto ?? PRIORIDADES[k].descricao}>
-                      <input type="radio" name="reg-prioridade" className="size-4" checked={f.prioridade === k} onChange={() => set('prioridade', k)} />
-                      {PRIORIDADES[k].rotulo}
-                    </label>
-                  ))}
+        {/* RG1: três passos, o aberto à esquerda e o resumo fixo à direita */}
+        {paciente && v && passos && (
+          <>
+            <ol aria-label="Passos do pedido" className="flex flex-wrap gap-1.5">
+              {PASSOS.map((p) => (
+                <li key={p.n}>
+                  <Chip variante="opcao" radio ativo={passo === p.n} onClick={() => setPasso(p.n)}>{p.n}. {p.rotulo}</Chip>
+                </li>
+              ))}
+            </ol>
+            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+              <div className="flex min-w-0 flex-col gap-3">
+                {passo === 1 && oQuePedir}
+                {passo === 2 && quadro}
+                {passo === 3 && revisar}
+                <div className="flex flex-wrap gap-2 border-t border-trilha pt-3">
+                  {passo > 1 && <Button size="sm" variant="outline" onClick={() => setPasso((passo - 1) as Passo)}><ArrowLeft /> Voltar</Button>}
+                  {passo < 3 && <Button size="sm" onClick={() => setPasso((passo + 1) as Passo)}>Próximo: {PASSOS[passo].rotulo}</Button>}
                 </div>
-                {f.prioridade && f.prioridade !== 'nao_classificada' && criterios.data?.[f.prioridade]?.texto && (
-                  <span className="text-rotulo text-tinta-apoio">Critério da central: {criterios.data[f.prioridade]!.texto}</span>
-                )}
-              </fieldset>
-            </div>
-
-            {/* vulnerabilidade: selos, sem pontuação; a idade já marca idoso ou criança */}
-            <fieldset className="flex flex-col gap-1">
-              <legend className="text-rotulo text-tinta-apoio">Vulnerabilidade (aparece como selo para o regulador)</legend>
-              <div className="flex flex-wrap gap-3">
-                {(Object.keys(VULNERABILIDADES) as Vulnerabilidade[]).map((k) => (
-                  <label key={k} className="flex items-center gap-1.5">
-                    <input type="checkbox" className="size-4" checked={vulnerabilidades.includes(k)}
-                      onChange={(e) => setVulnerabilidades((x) => e.target.checked ? [...x, k] : x.filter((y) => y !== k))} />
-                    {VULNERABILIDADES[k]}
-                  </label>
-                ))}
               </div>
-            </fieldset>
-
-            {/* justificativa em blocos */}
-            <CampoTerminologia tipo="cid10" escolhido={cidRotulo} rotulo="CID-10"
-              onEscolher={(c, r) => { set('cid', c); setCidRotulo(r) }} onLimpar={() => { set('cid', ''); setCidRotulo('') }} />
-            <Campo id="reg-quadro" rotulo="Quadro clínico (obrigatório)">
-              <textarea id="reg-quadro" rows={4} className="rounded-controle border border-fio bg-campo px-2 py-1.5"
-                value={f.quadro_clinico} onChange={(e) => set('quadro_clinico', e.target.value)} />
-            </Campo>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Campo id="reg-evol" rotulo="Tempo de evolução"><Input id="reg-evol" className="h-8" value={f.tempo_evolucao} onChange={(e) => set('tempo_evolucao', e.target.value)} /></Campo>
-              <Campo id="reg-sv" rotulo="Sinais vitais, com a hora">
-                <Input id="reg-sv" className="h-8" placeholder="PA, FC, FR, SpO₂, Tax, às hh:mm (PA não obrigatória na criança)" value={f.sinais_vitais} onChange={(e) => set('sinais_vitais', e.target.value)} />
-              </Campo>
-              <Campo id="reg-exames" rotulo="Exames realizados, com a data"><Input id="reg-exames" className="h-8" value={f.exames} onChange={(e) => set('exames', e.target.value)} /></Campo>
-              <Campo id="reg-meds" rotulo="Tratamento feito e medicações em uso"><Input id="reg-meds" className="h-8" value={f.medicacoes} onChange={(e) => set('medicacoes', e.target.value)} /></Campo>
-              <Campo id="reg-hip" rotulo="Hipótese diagnóstica"><Input id="reg-hip" className="h-8" value={f.hipotese} onChange={(e) => set('hipotese', e.target.value)} /></Campo>
-              <Campo id="reg-tel" rotulo="Telefone de contato da origem"><Input id="reg-tel" className="h-8" value={f.telefone_contato} onChange={(e) => set('telefone_contato', e.target.value)} /></Campo>
-            </div>
-
-            {/* anexos: escolhidos aqui, enviados junto com o pedido */}
-            <div className="flex flex-col gap-2 rounded-controle border border-fio p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="flex items-center gap-1.5 font-medium text-tinta"><Paperclip className="size-4" aria-hidden /> Anexos (opcional){totalAnexos > 0 ? ` · ${totalAnexos}` : ''}</span>
-              </div>
-              <AreaDeAnexo
-                id="reg-anexos"
-                multiple
-                descricao="PDF, JPG ou PNG, até 10 MB cada"
-                accept={ANEXO_TIPOS.join(',')}
-                maxBytes={ANEXO_LIMITE_BYTES}
-                validar={erroArquivo}
-                valor={arquivos}
-                onArquivos={(novos) => setArquivos((x) => [...x, ...novos])}
-                onRemover={(i) => setArquivos((x) => x.filter((_, j) => j !== i))}
-              />
-              {(documentos.data ?? []).length > 0 && (
-                <fieldset className="flex flex-col gap-1">
-                  <legend className="flex items-center gap-1.5 text-rotulo text-tinta-apoio"><FileText className="size-3.5" aria-hidden /> Documentos do prontuário deste paciente</legend>
-                  {documentos.data!.map((d) => (
-                    <label key={d.id} className="flex flex-wrap items-center gap-2">
-                      <input type="checkbox" className="size-4" checked={docsEscolhidos.includes(d.id)}
-                        onChange={(e) => setDocsEscolhidos((x) => e.target.checked ? [...x, d.id] : x.filter((y) => y !== d.id))} />
-                      <span className="text-tinta">{d.tipo.replace(/_/g, ' ')}{d.numero ? ` nº ${d.numero}` : ''}</span>
-                      <span className="text-rotulo text-tinta-sussurro">versão {d.versao} · {d.autor ?? '—'} · {fmtDataHora(d.emitido_em)}</span>
-                    </label>
-                  ))}
-                </fieldset>
-              )}
-            </div>
-
-            {(souGestor || souNir) && (
-              <Campo id="reg-medico" rotulo={souNir ? 'Médico assistente (obrigatório: o NIR abre em nome dele)' : 'Médico assistente (fica informado)'} className="max-w-sm">
-                <CampoSelecao id="reg-medico" tamanho="compacto" value={medico} onChange={(e) => setMedico(e.target.value)}>
-                  <option value="">{souNir ? 'Escolha…' : 'Não informar'}</option>
-                  {v.medicos.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
-                </CampoSelecao>
-              </Campo>
-            )}
-
-            <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
-            <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={() => enviar.mutate()} disabled={faltas.length > 0 || enviar.isPending}>
-                {enviar.isPending ? <Spinner /> : <Send className="size-4" />} Enviar à central
-              </Button>
-              {faltas.length > 0 && <span className="text-atencao">Falta: {faltas.join(', ')}.</span>}
+              {resumo}
             </div>
           </>
         )}

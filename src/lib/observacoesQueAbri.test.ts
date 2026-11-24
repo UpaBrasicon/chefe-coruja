@@ -33,9 +33,10 @@ test('nome social na frente; seção só do médico', () => {
 // entram na lista única, no grupo "Que abri", e a aba conta os dois grupos.
 test('o painel mostra o grupo "Que abri" ao médico e tira o que já está nele', () => {
   assert.match(painel, /const ehMedico = mostraSecao\(papelAtivo\)/)
-  assert.match(painel, /const minhas = ehMedico \? semDuplicar\(queAbri\.data \?\? \[\], linhas\.map\(\(l\) => l\.internacao_id\)\) : \[\]/)
-  assert.match(painel, /<Grupo titulo="Que abri" n=\{queAbriLista\.length\} \/>/)
-  assert.match(painel, /<Grupo titulo="Do meu setor" n=\{lista\.length\} \/>/)
+  // OB2 (RT, 24/11/2026): vencidos primeiro, nos dois grupos
+  assert.match(painel, /const minhas = ehMedico \? ordenarObservacao\(semDuplicar\(queAbri\.data \?\? \[\], linhas\.map\(\(l\) => l\.internacao_id\)\), agora\) : \[\]/)
+  assert.match(painel, /<Grupo titulo="Que abri" n=\{visMinhas\.length\} \/>/)
+  assert.match(painel, /<Grupo titulo="Do meu setor" n=\{vis\.length\} \/>/)
   assert.match(painel, /<LinhaQueAbri key=\{o\.internacao_id\} o=\{o\} agora=\{agora\} unidadeId=\{unidadeId!\} \/>/)
   // o contador da aba soma os dois grupos: não diz 3 e 0 ao mesmo tempo
   assert.match(painel, /const emObservacao = ativas\.length \+ minhas\.length/)
@@ -60,12 +61,14 @@ test('cada linha tem "Definir conduta" e, no menu, "Reavaliar", "Pedir parecer" 
   assert.equal((secao.match(/<Button\b/g) ?? []).length, 1)
   const botoes = [...secao.matchAll(/>([^<>]+)<\/Button>/g)].map((m) => m[1].trim())
   assert.deepEqual(botoes, ['Definir conduta'])
-  assert.match(secao, /<Button size="sm" aria-expanded=\{painel === 'desfecho'\} onClick=\{\(\) => alternar\('desfecho'\)\}>/)
+  // OO1 (RT, 24/11/2026): as ações abrem numa gaveta lateral, uma por vez
+  assert.match(secao, /<Button size="sm" onClick=\{\(\) => alternar\('desfecho'\)\}>/)
+  assert.match(secao, /<Gaveta aberta=\{aberto\}/)
   const menu = [...secao.matchAll(/\{ chave: '(\w+)', rotulo: '([^']+)'/g)].map((m) => m[2])
   assert.deepEqual(menu, ['Reavaliar', 'Pedir parecer', 'Alergias'])
   assert.match(secao, /<SeloAlergia pacienteId=\{o\.paciente_id\} \/>/)
   assert.match(secao, /<AlergiasEventos pacienteId=\{o\.paciente_id\} \/>/)
-  assert.match(secao, /<PainelDesfecho linha=\{o\} unidadeId=\{unidadeId\} acao=\{acao\} fechar=\{fechar\} erro=\{erro\} \/>/)
+  assert.match(secao, /<PainelDesfecho linha=\{\{ \.\.\.o, nome: nomeExibido\(o\) \}\} unidadeId=\{unidadeId\} acao=\{acao\} fechar=\{fechar\} erro=\{erro\} \/>/)
   assert.match(secao, /<PainelReavaliar linha=\{o\} acao=\{acao\} fechar=\{fechar\} erro=\{erro\} \/>/)
   assert.match(secao, /<AbaParecer pacienteId=\{o\.paciente_id\} internacaoId=\{o\.internacao_id\} \/>/)
   // nada de atender, reavaliado, protocolo, passagem, prancheta, prescrever, evoluir ou acuidade
@@ -74,7 +77,7 @@ test('cada linha tem "Definir conduta" e, no menu, "Reavaliar", "Pedir parecer" 
     assert.ok(!codigo.includes(proibido), `a seção não deve ter ${proibido}`)
   }
   // o desfecho só precisa da internação e do paciente; a reavaliação, só da internação
-  assert.match(paineis, /linha: Pick<LinhaObservacao, 'internacao_id' \| 'paciente_id'>; unidadeId: string/)
+  assert.match(paineis, /linha: Pick<LinhaObservacao, 'internacao_id' \| 'paciente_id'> & \{ nome\?: string \| null; data_nascimento\?: string \| null \}\n\s*unidadeId: string/)
   assert.match(paineis, /export function PainelReavaliar\(\{ linha, acao, fechar, erro \}: \{ linha: Pick<LinhaObservacao, 'internacao_id'>;/)
 })
 
