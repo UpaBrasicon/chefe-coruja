@@ -10768,6 +10768,7 @@ export type Database = {
       criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
       definir_meu_cbo: { Args: { p_cbo: string }; Returns: Json }
+      definir_ia_teto_mensal: { Args: { p_usd: number | null }; Returns: undefined }
       definir_categoria_plantoes: { Args: { p_papel: Database['public']['Enums']['papel']; p_plantoes: string[] }; Returns: number }
       definir_sala_do_plantao: { Args: { p_sala: string; p_setor: string }; Returns: Json }
       minhas_salas_do_plantao: { Args: never; Returns: Json }
@@ -12788,6 +12789,7 @@ export type Database = {
       }
       historico_encerrado: { Args: { p_paciente: string }; Returns: Json }
       // lacuna 1 (RT 10/11/2026): paciente não identificado
+      ia_teto_mensal: { Args: never; Returns: { definido_em: string; definido_por: string | null; usd: number }[] }
       ia_custo_busca_mes: {
         Args: { p_mes?: string }
         Returns: {

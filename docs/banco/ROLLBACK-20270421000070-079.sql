@@ -22,6 +22,11 @@ END $$;
 
 -- @@ITENS_SEGUINTES@@
 
+-- ── 074: tabela e funções novas, sem corpo anterior (o teto definido se perde)
+DROP FUNCTION IF EXISTS public.definir_ia_teto_mensal(numeric);
+DROP FUNCTION IF EXISTS public.ia_teto_mensal();
+DROP TABLE IF EXISTS private.ia_teto_mensal;
+
 -- ── 073: materiais voltam a ser do faturamento e do gestor ──────────────────
 SELECT pg_temp.trocar_uma_vez('public.material_salvar(uuid, uuid, text, text, text, boolean)'::regprocedure,
   $new$  IF NOT private.pode_cadastrar_material(p_unidade) THEN
