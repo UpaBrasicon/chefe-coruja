@@ -348,16 +348,18 @@ BEGIN
            lead(ev.em) OVER (PARTITION BY ev.internacao_id ORDER BY ev.seq) AS proximo
       FROM ev
   ), seg2 AS (
-    -- a alta, o óbito e a saída para fora não abrem passagem
+    -- a alta, o óbito e a saída para fora não abrem passagem; evento sem setor
+    -- (retificação) também não: a passagem do mesmo setor se junta adiante
     SELECT s.internacao_id, s.seq, s.setor_id, s.inicio,
            CASE WHEN s.proximo IS NULL AND it.data_alta IS NULL THEN NULL
                 ELSE least(coalesce(s.proximo, 'infinity'::timestamptz), coalesce(it.data_alta, 'infinity'::timestamptz)) END AS fim
       FROM seg s JOIN it ON it.id = s.internacao_id
      WHERE s.tipo_evento NOT IN ('alta_melhorada', 'alta_pedido', 'alta_evasao', 'transferencia_externa', 'obito')
+       AND s.setor_id IS NOT NULL
     UNION ALL
-    -- internação sem evento: inteira no setor atual
+    -- internação sem evento com setor: inteira no setor atual
     SELECT it.id, 0, it.setor_atual_id, it.data_admissao, it.data_alta
-      FROM it WHERE NOT EXISTS (SELECT 1 FROM ev WHERE ev.internacao_id = it.id)
+      FROM it WHERE NOT EXISTS (SELECT 1 FROM ev WHERE ev.internacao_id = it.id AND ev.setor_id IS NOT NULL)
   ), ilhas AS (
     SELECT x.*, sum(x.muda) OVER (PARTITION BY x.internacao_id ORDER BY x.seq) AS grupo
       FROM (SELECT seg2.*,
