@@ -53,6 +53,12 @@ jobs:
         run: npm run typecheck
       - name: Build (tsc + vite)
         run: npm run build
+      # F1 da trilha Desempenho: orçamento do JavaScript inicial (gzip). Base
+      # medida depois do F1 (23/11/2026); acima de +5% o passo só AVISA, por
+      # decisão provisória (pergunta P7 ao RT: A = pôr --falhar, B = só avisar).
+      # Se o pacote crescer de propósito, suba a base aqui no mesmo PR.
+      - name: Orçamento do pacote inicial
+        run: node --experimental-strip-types scripts/orcamento-pacote.mjs dist --base 272948
       # Fase 3, tarefa 6: contrato da API pública (OpenAPI 3.1)
       - name: Contrato da API (OpenAPI)
         run: npm run api:lint
