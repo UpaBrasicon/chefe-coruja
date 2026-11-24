@@ -83,6 +83,44 @@ export function vencidas(p: { pendencias: PendenciaPassometro[] }, agora: number
   return abertas(p).filter((x) => !!x.prazo && Date.parse(x.prazo) < agora)
 }
 
+/** Abertas e vencidas de um paciente (revisão do Passômetro, M2). */
+export function contagemPendencias(p: { pendencias: PendenciaPassometro[] }, agora: number): { abertas: number; vencidas: number } {
+  return { abertas: abertas(p).length, vencidas: vencidas(p, agora).length }
+}
+
+/** Faixa do topo (M3): "12 pacientes · 5 abertas · 1 vencida". */
+export function resumoPassometro(pacientes: PacientePassometro[], agora: number): { pacientes: number; abertas: number; vencidas: number } {
+  let ab = 0
+  let ve = 0
+  for (const p of pacientes) {
+    const c = contagemPendencias(p, agora)
+    ab += c.abertas
+    ve += c.vencidas
+  }
+  return { pacientes: pacientes.length, abertas: ab, vencidas: ve }
+}
+
+/**
+ * Ordem dentro do setor (M3): quem tem pendência vencida primeiro, depois quem
+ * tem mais abertas; no empate, a ordem do banco (leito, nome).
+ */
+export function ordenarPorUrgencia(pacientes: PacientePassometro[], agora: number): PacientePassometro[] {
+  return pacientes
+    .map((p, i) => ({ p, i, c: contagemPendencias(p, agora) }))
+    .sort((a, b) => b.c.vencidas - a.c.vencidas || b.c.abertas - a.c.abertas || a.i - b.i)
+    .map((x) => x.p)
+}
+
+/** Por que o passômetro está vazio (M1), pela situação do check-in no servidor. */
+export type MotivoVazio = 'sem_escala' | 'sem_checkin' | 'checkout' | 'sem_pacientes' | 'indefinido'
+
+export function motivoVazio(s: { na_janela?: boolean; liberado?: boolean; pendente?: unknown } | null | undefined): MotivoVazio {
+  if (!s) return 'indefinido'
+  if (s.liberado) return 'sem_pacientes'
+  if (s.na_janela) return s.pendente ? 'sem_checkin' : 'checkout'
+  return 'sem_escala'
+}
+
 /** Dias inteiros desde a entrada no setor (0 = hoje). */
 export function diasDesde(iso: string | null, agora: number): number | null {
   if (!iso) return null

@@ -34,6 +34,21 @@ test('lê o passômetro, agrupa por setor e conta as vencidas', async () => {
   assert.deepEqual(lerPassometro(null), [])
 })
 
+test('revisão de tela: resumo do topo, vencidas primeiro e motivo do vazio', async () => {
+  const { lerPassometro, resumoPassometro, ordenarPorUrgencia, contagemPendencias, motivoVazio } = await import('../domain/passometro.ts')
+  const l = lerPassometro(json)
+  const agora = Date.parse('2026-11-23T22:00:00Z')
+  assert.deepEqual(contagemPendencias(l[0], agora), { abertas: 3, vencidas: 1 })
+  assert.deepEqual(resumoPassometro(l, agora), { pacientes: 2, abertas: 3, vencidas: 1 })
+  assert.deepEqual(ordenarPorUrgencia([l[1], l[0]], agora).map((p) => p.internacao_id), ['i1', 'i2'], 'quem tem vencida sobe')
+  assert.deepEqual(ordenarPorUrgencia([l[1], l[0]], Date.parse('2026-11-23T10:00:00Z')).map((p) => p.internacao_id), ['i1', 'i2'], 'depois, mais abertas')
+  assert.equal(motivoVazio(null), 'indefinido')
+  assert.equal(motivoVazio({ na_janela: false, liberado: false, pendente: null }), 'sem_escala')
+  assert.equal(motivoVazio({ na_janela: true, liberado: false, pendente: { setor_nome: 'PS' } }), 'sem_checkin')
+  assert.equal(motivoVazio({ na_janela: true, liberado: false, pendente: null }), 'checkout')
+  assert.equal(motivoVazio({ na_janela: true, liberado: true, pendente: null }), 'sem_pacientes')
+})
+
 test('o resumo da passagem começa com as pendências abertas, sem a observação', async () => {
   const { lerPassometro, textoPassagem } = await import('../domain/passometro.ts')
   const [p] = lerPassometro(json)
