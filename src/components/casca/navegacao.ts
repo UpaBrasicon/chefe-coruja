@@ -339,6 +339,9 @@ function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdm
   if (papel === 'admin' && superAdmin) {
     const i = itens.findIndex((x) => x.to === '/servidores')
     itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_USO_DO_APP, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO, ITEM_MODULO_REDE)
+  } else if (papel === 'admin') {
+    // RT, 24/11/2026: o administrador da organização regulamenta as centrais da rede
+    itens.push(ITEM_REGULACAO)
   }
   if (papel === 'gestor') {
     itens.push({ ...ITEM_REGULACAO, grupo: 'Leitos' }, ...[ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO].map((i) => ({ ...i, grupo: 'Unidade' })))
