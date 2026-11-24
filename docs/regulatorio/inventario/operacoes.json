@@ -432,7 +432,8 @@
       "dados": [
         "pedido de vaga, quadro clínico e anexos",
         "respostas dos destinos e da central",
-        "tempos de cada etapa"
+        "tempos de cada etapa",
+        "conversa da unidade com o médico regulador e quem leu"
       ],
       "sensivel": true,
       "acesso": [
@@ -465,7 +466,9 @@
         "public.regulacao_servicos",
         "public.regulacao_servicos_historico",
         "public.regulacao_criterios",
-        "public.centrais_regulacao"
+        "public.centrais_regulacao",
+        "public.regulacao_mensagens",
+        "public.regulacao_conversa_leitura"
       ]
     },
     {

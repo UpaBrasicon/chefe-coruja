@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-31 operações cobrem 328 tabelas.
+31 operações cobrem 330 tabelas.
 
 ## Papéis
 
@@ -31,7 +31,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Prescrição, checagem e administração de medicamentos | operador | sim | 20 anos a partir do último registro | 16 |
 | Cuidado de enfermagem | operador | sim | 20 anos a partir do último registro | 7 |
 | Internação, leitos e transferência | operador | sim | 20 anos a partir do último registro | 11 |
-| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 13 |
+| Regulação de vagas | operador | sim | 20 anos a partir do último registro | 15 |
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
 | Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 11 |
 | Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 7 |
@@ -369,6 +369,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - pedido de vaga, quadro clínico e anexos
 - respostas dos destinos e da central
 - tempos de cada etapa
+- conversa da unidade com o médico regulador e quem leu
 
 **Quem acessa**
 - médico
@@ -384,9 +385,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Medidas próprias**
 - anexo só abre para quem a unidade liberou
 
-**Tabelas (13)**
+**Tabelas (15)**
 
-`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`
+`public.regulacao_solicitacoes`, `public.regulacao_evolucoes`, `public.regulacao_eventos`, `public.regulacao_anexos`, `private.regulacao_anexo_liberacao`, `public.regulacao_destino_respostas`, `public.regulacao_status_tempos`, `public.regulacao_prazos`, `public.regulacao_prazos_historico`, `public.regulacao_servicos`, `public.regulacao_servicos_historico`, `public.regulacao_criterios`, `public.centrais_regulacao`, `public.regulacao_mensagens`, `public.regulacao_conversa_leitura`
 
 ### Rede entre unidades e acesso ao prontuário de outra unidade
 
