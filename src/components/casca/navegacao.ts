@@ -245,11 +245,11 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   secretaria: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS, ITEM_ESCALA],
   regulacao_regional: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS, ITEM_ESCALA],
   faturamento_rede: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_ESCALA],
-  // Fase 4, tarefa 11: NIR — pendências da unidade e a regulação (sem ato médico)
+  // Perfil NIR (RT, 24/11/2026): "aba de Internação, em que vê só o resumo e o
+  // que está acontecendo na regulação e consegue anexar exames, e aba de
+  // Escala, e só". Os avisos do NIR aparecem no topo da Internação.
   nir: [
-    { to: '/nir', rotulo: 'Pendências do NIR', curto: 'NIR', icone: ClipboardList, exato: true },
-    { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true },
-    ITEM_AVISOS,
+    { to: '/nir/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
     ITEM_ESCALA,
   ],
   admin: [
@@ -286,7 +286,7 @@ const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede', curto: 'Rede', 
 // internação nem AIH; os itens dessas telas somem do menu.
 const FORA_DA_UBS = new Set([
   '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/passometro', '/contingencia',
-  '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/aih', '/apac',
+  '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/nir/internacao', '/aih', '/apac',
   '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
   '/recepcao/painel',
 ])
@@ -329,6 +329,7 @@ export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false
   const itens = itensDoPapel(papel, responsavelTecnico, superAdmin).filter((i) => !foraDoTipo(i.to, tipoUnidade))
   if (tipoUnidade !== 'ubs') return itens
   const fora = (papel && FORA_DA_UBS_NO_PAPEL[papel]) || null
+  if (papel === 'plantonista') itens.push(ITEM_REGULACAO)
   return itens
     .filter((i) => !fora?.has(i.to))
     .map((i) => ({ ...i, ...NOME_NA_UBS[i.to], ...(i.grupo && GRUPO_NA_UBS[i.grupo] ? { grupo: GRUPO_NA_UBS[i.grupo] } : {}) }))
@@ -343,7 +344,10 @@ function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdm
   if (papel === 'gestor') {
     itens.push({ ...ITEM_REGULACAO, grupo: 'Leitos' }, ...[ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO].map((i) => ({ ...i, grupo: 'Unidade' })))
   }
-  if (papel === 'plantonista' || papel === 'regulador') itens.push(ITEM_REGULACAO)
+  // R2 (RT, 24/11/2026): a Regulação do médico mora dentro de Atendimento, na
+  // aba "Em regulação"; o item volta só na UBS (itensDeNavegacao), onde o
+  // Atendimento é o consultório e a regulação sai das consultas.
+  if (papel === 'regulador') itens.push(ITEM_REGULACAO)
   if (responsavelTecnico) {
     // o gestor já tem o item; o responsável técnico o ganha com a nota da fila
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)
