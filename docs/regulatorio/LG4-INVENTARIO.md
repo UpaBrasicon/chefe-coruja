@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-30 operações cobrem 326 tabelas.
+30 operações cobrem 327 tabelas.
 
 ## Papéis
 
@@ -38,7 +38,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 9 |
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
 | Faturamento SUS e contas | operador | sim | 5 anos | 20 |
-| Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 14 |
+| Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 15 |
 | Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 21 |
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
@@ -621,11 +621,13 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - plantões, vagas, candidaturas e trocas
 - presença e horários
 - valores de remuneração
+- divisão do descanso dos médicos no plantão (horários de cada um)
 
 **Quem acessa**
 - o próprio profissional
 - gestor da escala
 - gestor da unidade
+- médicos, enfermagem e gestor da unidade (quem está descansando no plantão)
 
 **Onde fica**
 - Supabase (São Paulo)
@@ -633,9 +635,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Prazo.** 5 anos (prazo trabalhista (V3)). Descarte: rotina com registro, depois do prazo (V3).
 
-**Tabelas (14)**
+**Tabelas (15)**
 
-`public.escala_plantao`, `public.escala_fixa`, `public.escala_vagas`, `public.escala_publicacoes`, `public.historico_escala`, `public.candidaturas_escala`, `public.solicitacoes_escala`, `public.trocas_plantao`, `public.presenca_plantonista`, `public.remuneracoes_plantao`, `public.plantao_versoes_erp`, `public.chronos_alertas_escala`, `public.liberacao_pos_plantao`, `public.disponibilidade_telemedicina`
+`public.escala_plantao`, `public.escala_fixa`, `public.escala_vagas`, `public.escala_publicacoes`, `public.historico_escala`, `public.candidaturas_escala`, `public.solicitacoes_escala`, `public.trocas_plantao`, `public.presenca_plantonista`, `public.remuneracoes_plantao`, `public.plantao_versoes_erp`, `public.chronos_alertas_escala`, `public.liberacao_pos_plantao`, `public.disponibilidade_telemedicina`, `public.descanso_divisoes`
 
 ### Conta do profissional, login e permissões
 
