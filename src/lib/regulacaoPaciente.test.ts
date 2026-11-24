@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { emRegulacao, esperaAOrigem, mensagensNovas, ordenarPorAcao, porSetor, rotuloAguardando, SEM_SETOR,
+import { emRegulacao, esperaAOrigem, meusPacientes, mensagensNovas, sabeQuemEMeu, ordenarPorAcao, porSetor, rotuloAguardando, SEM_SETOR,
   type PacienteRegulacao, type PedidoResumo } from './regulacaoPaciente.ts'
 
 const pedido = (x: Partial<PedidoResumo> = {}): PedidoResumo => ({
@@ -47,4 +47,17 @@ test('rótulo do que o regulador espera', () => {
   assert.equal(rotuloAguardando({ intencao: 'pergunta' }), 'Pergunta do regulador')
   assert.equal(rotuloAguardando({ intencao: 'pedido' }), 'O regulador pede')
   assert.equal(rotuloAguardando({ intencao: 'mensagem' }), 'Mensagem do regulador')
+})
+
+test('Meus: pedido aberto que eu fiz ou paciente do setor do meu plantão', () => {
+  const meuPedido = paciente('A', 'UTI', [pedido({ sou_solicitante: true })])
+  const meuFechado = paciente('B', 'UTI', [pedido({ sou_solicitante: true, em_aberto: false })])
+  const doPlantao = { ...paciente('C', 'Enfermaria', [pedido({ sou_solicitante: false })]), no_meu_plantao: true }
+  const deOutro = { ...paciente('D', 'Enfermaria', [pedido({ sou_solicitante: false })]), no_meu_plantao: false }
+  assert.deepEqual(meusPacientes([meuPedido, meuFechado, doPlantao, deOutro]).map((l) => l.paciente.nome), ['A', 'C'])
+})
+
+test('sem os campos novos da RPC a tela não sabe quem é meu', () => {
+  assert.equal(sabeQuemEMeu([paciente('A', null)]), false)
+  assert.equal(sabeQuemEMeu([{ ...paciente('A', null), no_meu_plantao: false }]), true)
 })

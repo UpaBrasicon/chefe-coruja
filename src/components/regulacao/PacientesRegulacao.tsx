@@ -2,7 +2,10 @@
 // Pacientes e a regulação (pedidos do RT de 24/11/2026):
 // • R2, médico: dentro de Atendimento, a lista de quem está em regulação
 //   (leito, paciente, tipo, situação, prazo e aviso de mensagem nova do
-//   regulador); o clique abre a aba Regulação do paciente.
+//   regulador); o clique abre a aba Regulação do paciente. Abre em "Meus"
+//   (os pedidos que fiz e os pacientes dos setores do meu plantão agora),
+//   com "Toda a unidade" ao lado (RT, 24/11/2026; migration 20270421000041).
+// • NIR e gestor abrem na unidade toda (é a função deles).
 // • NIR: a Internação — os internados por setor e quem está em regulação, só o
 //   resumo e o que acontece na regulação, com anexar exames pela aba.
 // • Gestor: todos os internados separados por setor, com o que está pendente
@@ -23,7 +26,9 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { rotuloIdade } from '@/domain/idade'
 import { fmtDataHora } from '@/lib/datas'
 import { STATUS, resumoPedido } from '@/lib/regulacao'
-import { emRegulacao, esperaAOrigem, mensagensNovas, ordenarPorAcao, porSetor, type PacienteRegulacao } from '@/lib/regulacaoPaciente'
+import {
+  emRegulacao, esperaAOrigem, mensagensNovas, meusPacientes, ordenarPorAcao, porSetor, sabeQuemEMeu, type PacienteRegulacao,
+} from '@/lib/regulacaoPaciente'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -47,10 +52,16 @@ export function PacientesRegulacao({ unidadeId, modo }: { unidadeId: string; mod
   const q = usePacientesRegulacao(unidadeId)
   // médico: só quem está em regulação; NIR e gestor: os internados, com o filtro
   const [so, setSo] = React.useState<'todos' | 'regulacao' | 'pendentes'>(modo === 'medico' ? 'regulacao' : 'todos')
+  // médico: abre nos meus; NIR e gestor: a unidade toda
+  const [escopo, setEscopo] = React.useState<'meus' | 'unidade'>(modo === 'medico' ? 'meus' : 'unidade')
   const [aberto, setAberto] = React.useState<string | null>(null)
   if (q.isLoading) return <EsqueletoLinhas linhas={5} rotulo="Carregando os pacientes…" />
   if (q.error) return <MensagemErro texto={(q.error as Error).message} />
-  const todos = q.data ?? []
+  const daUnidade = q.data ?? []
+  // sem os campos da migration 20270421000041 não dá para separar: mostra a unidade
+  const comEscopo = modo === 'medico' && sabeQuemEMeu(daUnidade)
+  const meus = meusPacientes(daUnidade)
+  const todos = comEscopo && escopo === 'meus' ? meus : daUnidade
   const emReg = emRegulacao(todos)
   const pendentes = emReg.filter((l) => l.pedidos.some(esperaAOrigem))
   const lista = so === 'regulacao' ? emReg : so === 'pendentes' ? pendentes : todos
@@ -58,8 +69,16 @@ export function PacientesRegulacao({ unidadeId, modo }: { unidadeId: string; mod
     <LinhaPaciente key={l.paciente.id} l={l} modo={modo} aberto={aberto === l.paciente.id}
       alternar={() => setAberto(aberto === l.paciente.id ? null : l.paciente.id)} unidadeId={unidadeId} />
   )
+  const soMeus = comEscopo && escopo === 'meus'
   return (
     <div className="flex flex-col gap-3 text-apoio">
+      {comEscopo && (
+        <Chips rotulo="De quem">
+          <Chip radio ativo={escopo === 'meus'} contagem={emRegulacao(meus).length} onClick={() => setEscopo('meus')}
+            titulo="Os pedidos que você fez e os pacientes dos setores do seu plantão agora">Meus</Chip>
+          <Chip radio ativo={escopo === 'unidade'} contagem={emRegulacao(daUnidade).length} onClick={() => setEscopo('unidade')}>Toda a unidade</Chip>
+        </Chips>
+      )}
       {modo !== 'medico' && (
         <Chips rotulo="Mostrar">
           <Chip radio ativo={so === 'todos'} contagem={todos.length} onClick={() => setSo('todos')}>Todos</Chip>
@@ -68,8 +87,11 @@ export function PacientesRegulacao({ unidadeId, modo }: { unidadeId: string; mod
         </Chips>
       )}
       {lista.length === 0 ? (
-        <Vazio icone={Waypoints} titulo={modo === 'medico' || so !== 'todos' ? 'Nenhum paciente em regulação' : 'Nenhum paciente internado'}
-          texto={modo === 'medico' ? 'Os pacientes com pedido de regulação aberto nesta unidade aparecem aqui.' : undefined} />
+        <Vazio icone={Waypoints}
+          titulo={soMeus ? 'Nenhum paciente seu em regulação' : modo === 'medico' || so !== 'todos' ? 'Nenhum paciente em regulação' : 'Nenhum paciente internado'}
+          texto={soMeus
+            ? 'Aparecem aqui os pedidos que você fez e os pacientes dos setores do seu plantão agora. Os outros estão em Toda a unidade.'
+            : modo === 'medico' ? 'Os pacientes com pedido de regulação aberto nesta unidade aparecem aqui.' : undefined} />
       ) : modo === 'medico' ? (
         <ul className="flex flex-col divide-y divide-fio rounded-cartao border border-fio bg-superficie">{ordenarPorAcao(lista).map(linha)}</ul>
       ) : (
