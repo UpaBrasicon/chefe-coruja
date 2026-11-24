@@ -10592,6 +10592,7 @@ export type Database = {
         Args: { p_destinatario_id: string }
         Returns: string
       }
+      abrir_acesso_urgencia: { Args: { p_justificativa: string; p_paciente: string }; Returns: string }
       abrir_conversa_suporte: { Args: never; Returns: string }
       abrir_historico_encerrado: {
         Args: { p_motivo: string; p_paciente: string }

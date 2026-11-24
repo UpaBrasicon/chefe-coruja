@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FolderSearch, Search } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { StatusPedido, type SituacaoPedido } from '@/components/prontuario/StatusPedido'
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { HORAS_URGENCIA, letrasDaJustificativa, MIN_LETRAS_URGENCIA, podeAbrirUrgencia } from '@/lib/acessoUrgencia'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 
@@ -19,6 +20,10 @@ import { supabase } from '@/lib/supabase'
 // Fora da escala o profissional não lista pacientes: identifica por documento
 // exato, ou por nome com data de nascimento. O gestor aprova; vale 24 horas,
 // só leitura.
+// Urgência, a quebra de vidro (ajustes da revisão, item 6, RT em 24/11/2026;
+// migration 20270421000075): o médico abre na hora, sem o gestor, com
+// justificativa de 20 letras ou mais; só leitura, por 2 horas; vai à auditoria
+// e o gestor da unidade recebe aviso.
 
 type Achado = {
   paciente_id: string
@@ -43,15 +48,18 @@ type MeuPedido = {
 }
 
 export default function PedidosProntuario() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
+  const navigate = useNavigate()
+  const medico = podeAbrirUrgencia(papelAtivo)
 
   const [documento, setDocumento] = React.useState('')
   const [nome, setNome] = React.useState('')
   const [nascimento, setNascimento] = React.useState('')
   const [escolhido, setEscolhido] = React.useState<Achado | null>(null)
   const [motivo, setMotivo] = React.useState('')
+  const [modo, setModo] = React.useState<'pedido' | 'urgencia'>('pedido')
 
   const busca = useMutation({
     mutationFn: async () => {
@@ -91,6 +99,18 @@ export default function PedidosProntuario() {
     },
   })
 
+  const urgencia = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('abrir_acesso_urgencia', { p_paciente: escolhido!.paciente_id, p_justificativa: motivo.trim() })
+      if (error) throw error
+      return escolhido!.paciente_id
+    },
+    onSuccess: (pacienteId) => {
+      void qc.invalidateQueries({ queryKey: ['meus-pedidos-acesso'] })
+      navigate(`/prontuarios/${pacienteId}`)
+    },
+  })
+
   const cancelar = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.rpc('cancelar_pedido_acesso', { p_pedido: id })
@@ -106,7 +126,9 @@ export default function PedidosProntuario() {
       <TituloPagina
         icone={FolderSearch}
         titulo="Prontuários fora do plantão"
-        descricao="Para ler o prontuário de um paciente que não está nos setores do seu plantão, peça ao gestor da unidade. Aprovado, o acesso vale 24 horas e é só de leitura."
+        descricao={medico
+          ? `Para ler o prontuário de um paciente que não está nos setores do seu plantão, peça ao gestor da unidade. Aprovado, o acesso vale 24 horas e é só de leitura. Em urgência, você abre na hora, só leitura, por ${HORAS_URGENCIA} horas, com justificativa; o gestor é avisado.`
+          : 'Para ler o prontuário de um paciente que não está nos setores do seu plantão, peça ao gestor da unidade. Aprovado, o acesso vale 24 horas e é só de leitura.'}
       />
 
       <Card>
@@ -155,9 +177,18 @@ export default function PedidosProntuario() {
                   {a.tem_acesso ? (
                     <Button variant="outline" size="sm" render={<Link to={`/prontuarios/${a.paciente_id}`} />}>Ler prontuário</Button>
                   ) : (
-                    <Button variant={escolhido?.paciente_id === a.paciente_id ? 'default' : 'outline'} size="sm" onClick={() => setEscolhido(a)}>
-                      Pedir acesso
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant={escolhido?.paciente_id === a.paciente_id && modo === 'pedido' ? 'default' : 'outline'} size="sm"
+                        onClick={() => { setEscolhido(a); setModo('pedido') }}>
+                        Pedir acesso
+                      </Button>
+                      {medico && (
+                        <Button variant={escolhido?.paciente_id === a.paciente_id && modo === 'urgencia' ? 'default' : 'outline'} size="sm"
+                          onClick={() => { setEscolhido(a); setModo('urgencia') }}>
+                          Abrir em urgência
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </li>
               ))}
@@ -166,7 +197,30 @@ export default function PedidosProntuario() {
         </CardContent>
       </Card>
 
-      {escolhido && (
+      {escolhido && modo === 'urgencia' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-corpo">2. Acesso de urgência — {escolhido.nome}</CardTitle>
+            <CardDescription>
+              Abre agora, sem esperar o gestor: só leitura, por {HORAS_URGENCIA} horas. A justificativa fica na auditoria da unidade e o gestor recebe aviso.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            <Textarea aria-label="Justificativa da urgência" value={motivo} onChange={(e) => setMotivo(e.target.value)} rows={3}
+              placeholder="Ex.: paciente chegou em parada e preciso das alergias e do último atendimento." />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button onClick={() => urgencia.mutate()} disabled={letrasDaJustificativa(motivo) < MIN_LETRAS_URGENCIA || urgencia.isPending}>Abrir agora</Button>
+              <Button variant="ghost" onClick={() => setEscolhido(null)}>Cancelar</Button>
+              {letrasDaJustificativa(motivo) < MIN_LETRAS_URGENCIA && (
+                <span className="text-rotulo text-tinta-sussurro">Pelo menos {MIN_LETRAS_URGENCIA} letras ({letrasDaJustificativa(motivo)} até agora).</span>
+              )}
+            </div>
+            {urgencia.error && <p className="text-apoio text-critico">{(urgencia.error as Error).message}</p>}
+          </CardContent>
+        </Card>
+      )}
+
+      {escolhido && modo === 'pedido' && (
         <Card>
           <CardHeader>
             <CardTitle className="text-corpo">2. Motivo do pedido — {escolhido.nome}</CardTitle>
@@ -199,11 +253,11 @@ export default function PedidosProntuario() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium">{p.paciente_nome}</span>
-                      <StatusPedido status={p.status} vigente={p.status === 'aprovado' ? p.vigente : undefined} />
+                      <StatusPedido status={p.status} vigente={p.status === 'aprovado' || p.status === 'urgencia' ? p.vigente : undefined} />
                     </div>
                     <div className="mt-0.5 text-rotulo text-tinta-sussurro">
-                      Pedido em {fmtDataHora(p.criado_em)}
-                      {p.status === 'aprovado' && p.valido_ate ? ' · vale até ' + fmtDataHora(p.valido_ate) : ''}
+                      {p.status === 'urgencia' ? 'Aberto em urgência em ' : 'Pedido em '}{fmtDataHora(p.criado_em)}
+                      {(p.status === 'aprovado' || p.status === 'urgencia') && p.valido_ate ? ' · vale até ' + fmtDataHora(p.valido_ate) : ''}
                     </div>
                     <p className="mt-1 text-apoio">{p.motivo}</p>
                     {p.status === 'recusado' && p.motivo_decisao && <p className="mt-1 text-apoio text-critico">Motivo da recusa: {p.motivo_decisao}</p>}

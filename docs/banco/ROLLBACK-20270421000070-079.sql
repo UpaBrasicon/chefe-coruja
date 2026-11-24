@@ -20,7 +20,77 @@ BEGIN
   EXECUTE replace(def, v_antigo, v_novo);
 END $$;
 
--- @@ITENS_SEGUINTES@@
+-- 076 a 079: não usadas.
+
+-- ── 075: acesso de urgência ao prontuário ───────────────────────────────────
+DROP FUNCTION IF EXISTS public.abrir_acesso_urgencia(uuid, text);
+
+-- corpo anterior (20270105000001)
+CREATE OR REPLACE FUNCTION private.acesso_encerrado_vigente(p_paciente uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.pedidos_acesso_prontuario pd
+    WHERE pd.paciente_id IN (SELECT private.familia_paciente(p_paciente))
+      AND pd.solicitante_id = private.meu_perfil_id()
+      AND pd.status = 'aprovado'
+      AND pd.valido_ate > now()
+      -- o vínculo precisa continuar ativo na unidade, num papel que pede
+      AND private.papel_pode_pedir_acesso(private.papel_na_unidade(pd.unidade_id))
+  ) OR EXISTS (
+    -- Fase 1, tarefa 8: detalhe aberto com motivo por quem cuida do paciente
+    SELECT 1 FROM private.acessos_historico ah
+    WHERE ah.paciente_id IN (SELECT private.familia_paciente(p_paciente))
+      AND ah.perfil_id = private.meu_perfil_id()
+      AND ah.valido_ate > now()
+      AND private.papel_na_unidade(ah.unidade_id) <> ''
+  );
+$$;
+REVOKE ALL ON FUNCTION private.acesso_encerrado_vigente(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.acesso_encerrado_vigente(uuid) TO authenticated;
+
+-- corpo anterior (20261001000001)
+CREATE OR REPLACE FUNCTION public.meus_pedidos_acesso(p_unidade uuid)
+RETURNS TABLE(id uuid, paciente_id uuid, paciente_nome text, motivo text, status text, criado_em timestamp with time zone,
+              decidido_em timestamp with time zone, motivo_decisao text, valido_ate timestamp with time zone, vigente boolean)
+LANGUAGE sql
+STABLE SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT pd.id, pd.paciente_id, pa.nome, pd.motivo, pd.status, pd.criado_em, pd.decidido_em, pd.motivo_decisao,
+         pd.valido_ate, (pd.status = 'aprovado' AND pd.valido_ate > now())
+  FROM public.pedidos_acesso_prontuario pd
+  JOIN public.pacientes pa ON pa.id = pd.paciente_id
+  WHERE pd.solicitante_id = private.meu_perfil_id()
+    AND pd.unidade_id = p_unidade
+    AND pd.criado_em > now() - interval '30 days'
+  ORDER BY pd.criado_em DESC;
+$$;
+
+-- as urgências já gravadas viram 'cancelado' (fica o registro; o DELETE é
+-- barrado pela guarda), com linha na auditoria; depois voltam as CHECK antigas
+DO $$
+DECLARE r public.pedidos_acesso_prontuario;
+BEGIN
+  FOR r IN
+    UPDATE public.pedidos_acesso_prontuario SET status = 'cancelado' WHERE status = 'urgencia' RETURNING *
+  LOOP
+    PERFORM private.registrar_auditoria('cancelar_pedido_acesso', 'pedidos_acesso_prontuario', r.id, r.unidade_id,
+      jsonb_build_object('status', 'cancelado', 'papel', r.papel));
+  END LOOP;
+END $$;
+ALTER TABLE public.pedidos_acesso_prontuario DROP CONSTRAINT IF EXISTS pedido_decisao_coerente;
+ALTER TABLE public.pedidos_acesso_prontuario ADD CONSTRAINT pedido_decisao_coerente CHECK (
+     (status = 'pendente' AND decidido_por IS NULL AND valido_ate IS NULL)
+  OR (status = 'aprovado' AND decidido_por IS NOT NULL AND valido_ate IS NOT NULL)
+  OR (status = 'recusado' AND decidido_por IS NOT NULL AND length(btrim(coalesce(motivo_decisao, ''))) >= 5)
+  OR (status = 'cancelado'));
+ALTER TABLE public.pedidos_acesso_prontuario DROP CONSTRAINT IF EXISTS pedidos_acesso_prontuario_status_check;
+ALTER TABLE public.pedidos_acesso_prontuario ADD CONSTRAINT pedidos_acesso_prontuario_status_check
+  CHECK (status = ANY (ARRAY['pendente', 'aprovado', 'recusado', 'cancelado']));
 
 -- ── 074: tabela e funções novas, sem corpo anterior (o teto definido se perde)
 DROP FUNCTION IF EXISTS public.definir_ia_teto_mensal(numeric);

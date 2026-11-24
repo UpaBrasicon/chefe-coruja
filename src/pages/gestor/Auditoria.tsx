@@ -14,7 +14,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso } from '@/lib/formato'
-import { StatusPedido } from '@/components/prontuario/StatusPedido'
+import { StatusPedido, type SituacaoPedido } from '@/components/prontuario/StatusPedido'
 
 // Auditoria da unidade (fase 6): pedidos de acesso ao prontuário encerrado,
 // acessos ao prontuário (log_acesso_prontuario) e trilha de ações
@@ -27,7 +27,7 @@ type Pedido = {
   solicitante_nome: string
   papel: string
   motivo: string
-  status: 'pendente' | 'aprovado' | 'recusado' | 'cancelado'
+  status: SituacaoPedido
   criado_em: string
   decidido_por_nome: string | null
   decidido_em: string | null
@@ -82,7 +82,7 @@ function PedidosAcesso() {
       const { data, error } = await supabase.rpc('pedidos_acesso_da_unidade', { p_unidade: unidadeId!, p_dias: 30 })
       if (error) throw error
       const agora = Date.now()
-      return ((data ?? []) as Pedido[]).map((p) => ({ ...p, vigente: p.status === 'aprovado' && !!p.valido_ate && Date.parse(p.valido_ate) > agora }))
+      return ((data ?? []) as Pedido[]).map((p) => ({ ...p, vigente: (p.status === 'aprovado' || p.status === 'urgencia') && !!p.valido_ate && Date.parse(p.valido_ate) > agora }))
     },
   })
 
@@ -147,10 +147,10 @@ function PedidosAcesso() {
                     <span className="font-medium">{p.solicitante_nome}</span>
                     <span className="text-tinta-sussurro">→</span>
                     <span>{p.paciente_nome}</span>
-                    <StatusPedido status={p.status} vigente={p.status === 'aprovado' ? p.vigente : undefined} />
+                    <StatusPedido status={p.status} vigente={p.status === 'aprovado' || p.status === 'urgencia' ? p.vigente : undefined} />
                   </div>
                   <div className="text-rotulo text-tinta-sussurro">
-                    Pedido {fmtDataHora(p.criado_em)}
+                    {p.status === 'urgencia' ? 'Aberto em urgência pelo médico, sem pedido' : 'Pedido'} {fmtDataHora(p.criado_em)}
                     {p.decidido_em ? ` · decidido por ${p.decidido_por_nome ?? '—'} em ${fmtDataHora(p.decidido_em)}` : ''}
                     {p.valido_ate ? ` · vale até ${fmtDataHora(p.valido_ate)}` : ''}
                   </div>
