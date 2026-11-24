@@ -69,3 +69,36 @@ export function linhasCsvIndicadores(ind: Indicadores, rotulos: { tempo: Record<
   for (const o of ind.gargalos.por_destino) linhas.push(['Gargalos', 'Recusas por destino', o.unidade, o.recusas])
   return linhas
 }
+
+// ── período sem pedido (revisão do perfil Médico regulador, RD3 = A, RT 24/11/2026) ──
+
+/** Quais seções têm o que mostrar: as vazias somem da tela. */
+export function secoesComDados(d: Indicadores) {
+  const comTempo = (['decisao', 'aceite', 'chegada'] as const).some((k) => (d.tempos[k].geral?.n ?? 0) > 0)
+  return {
+    tempos: comTempo,
+    fila: Object.keys(d.fila_atual.por_tipo).length > 0,
+    desfechos: d.total > 0,
+    prazos: Object.values(d.prazos).some((c) => c.n > 0),
+    gargalos: d.gargalos.por_origem.length + d.gargalos.por_destino.length + d.gargalos.por_tipo_leito.length > 0,
+    volume: d.volume.por_dia.length > 0,
+  }
+}
+
+/** Data AAAA-MM-DD em DD/MM, com o ano quando é outro que o de referência. */
+export function dataCurta(iso: string, anoRef?: string): string {
+  const [a, m, d] = iso.slice(0, 10).split('-')
+  return anoRef && a !== anoRef ? `${d}/${m}/${a}` : `${d}/${m}`
+}
+
+/** "Nenhum pedido entre 26/10 e 24/11; o último foi em 11/10." Com filtro, sem o último (ele não sabe dos filtros). */
+export function avisoPeriodoVazio(de: string, ate: string, ultimo: string | null, comFiltro = false): string {
+  const ano = ate.slice(0, 4)
+  const base = `Nenhum pedido${comFiltro ? ' com esses filtros' : ''} entre ${dataCurta(de, ano)} e ${dataCurta(ate, ano)}`
+  return ultimo && !comFiltro ? `${base}; o último foi em ${dataCurta(ultimo, ano)}.` : `${base}.`
+}
+
+/** Dias do período, contando o primeiro e o último. */
+export function diasDoPeriodo(de: string, ate: string): number {
+  return Math.round((Date.parse(`${ate}T00:00:00Z`) - Date.parse(`${de}T00:00:00Z`)) / 86_400_000) + 1
+}
