@@ -41,3 +41,13 @@ test('descrição para o CSV', () => {
   assert.equal(descreverFiltros(f, { medico: 'Dra. Ana' }), 'cor verde, turno manhã, médico Dra. Ana')
   assert.equal(descreverFiltros(lerFiltros(new URLSearchParams(''), HOJE), {}), 'sem filtro')
 })
+
+test('turno cadastrado pela unidade vai ao endereço e à RPC; o nome vai ao CSV', () => {
+  const f = lerFiltros(new URLSearchParams('turno=ta1b2c3d4e5'), HOJE)
+  assert.equal(f.turno, 'ta1b2c3d4e5')
+  assert.equal(escreverFiltros(f).toString(), 'turno=ta1b2c3d4e5')
+  assert.equal(argsFiltros(f, HOJE).args.p_turno, 'ta1b2c3d4e5')
+  assert.equal(descreverFiltros(f, { turno: 'Diarista' }), 'turno Diarista')
+  // código fora do formato continua barrado
+  assert.equal(lerFiltros(new URLSearchParams('turno=tXYZ'), HOJE).turno, '')
+})

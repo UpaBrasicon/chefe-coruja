@@ -10,6 +10,8 @@ export type NotificacaoTurno = Pick<NotificacaoPlantonista, 'id' | 'tipo' | 'men
  * atual, conforme o relógio do servidor:
  *   • Noite (19h–07h): 19:30 e 20:00
  *   • Manhã (07h–13h): 07:30 e 08:00
+ *   • Turno cadastrado pela unidade: 30 min e 1 h depois do início, com o
+ *     nome do turno (migration 20270421000052); sobreaviso não recebe
  * Reavalia a cada 30s. Só quem está na escala recebe.
  */
 export function useNotificacoesTurno(unidadeId: string | undefined, habilitado: boolean) {

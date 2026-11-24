@@ -39,7 +39,7 @@ import { dataHora, dataIso, hora } from '@/lib/formato'
 import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { csvEscala } from '@/lib/exportacoesAntigas'
 import { cn } from '@/lib/utils'
-import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
+import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaHoraria } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { ehRetroativo } from '@/lib/retroativo'
 import { horarioDoTurno, inicioDoCodigo, rotuloTurno, TURNOS_PADRAO } from '@/lib/turnos'
@@ -374,20 +374,23 @@ export default function Escala({
     },
   })
 
-  // E1: resumo de carga horária dos plantonistas (gestor/admin)
+  // E1: resumo de carga horária dos plantonistas (gestor/admin); o sobreaviso
+  // conta à parte (migration 20270421000052, resumo_carga_horaria)
   const { data: resumoCarga, isLoading: carregandoCarga } = useQuery({
     queryKey: ['resumo-carga', unidadeId, mesInicio, mesFim],
     enabled: !!unidadeId && (ehGestor || ehAdmin),
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('resumo_carga_plantonistas', {
+      const { data, error } = await supabase.rpc('resumo_carga_horaria', {
         p_unidade: unidadeId!,
         p_inicio: mesInicio,
         p_fim: mesFim,
       })
       if (error) throw error
-      return (data ?? []) as ResumoCargaPlantonista[]
+      return (data ?? []) as ResumoCargaHoraria[]
     },
   })
+
+  const temSobreaviso = (resumoCarga ?? []).some((r) => Number(r.horas_sobreaviso) > 0)
 
   function exportarEscalaCSV() {
     if (!setores || !escalaMes) return
@@ -1793,7 +1796,8 @@ export default function Escala({
                       <TableHead className="text-right">Diurnos</TableHead>
                       <TableHead className="text-right">Noturnos</TableHead>
                       <TableHead className="text-right">Horas</TableHead>
-                      <TableHead className="pr-4 text-right">Dias</TableHead>
+                      <TableHead className={cn('text-right', !temSobreaviso && 'pr-4')}>Dias</TableHead>
+                      {temSobreaviso && <TableHead className="pr-4 text-right">Sobreaviso</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1805,13 +1809,18 @@ export default function Escala({
                         <TableCell className="text-right tabular">{r.diurnos}</TableCell>
                         <TableCell className="text-right tabular">{r.noturnos}</TableCell>
                         <TableCell className="text-right font-semibold tabular">{r.horas} h</TableCell>
-                        <TableCell className="pr-4 text-right tabular">{r.dias}</TableCell>
+                        <TableCell className={cn('text-right tabular', !temSobreaviso && 'pr-4')}>{r.dias}</TableCell>
+                        {temSobreaviso && (
+                          <TableCell className="pr-4 text-right tabular text-tinta-apoio">
+                            {Number(r.horas_sobreaviso) > 0 ? `${r.horas_sobreaviso} h · ${r.dias_sobreaviso} ${r.dias_sobreaviso === 1 ? 'dia' : 'dias'}` : '—'}
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               )}
-              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por profissional no mês, contados da escala; as horas são as do turno de cada plantão (manhã e tarde, 6 h; noite, 12 h; os turnos da unidade, as horas cadastradas).</p>
+              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por profissional no mês, contados da escala; as horas são as do turno de cada plantão (manhã e tarde, 6 h; noite, 12 h; os turnos da unidade, as horas cadastradas). O sobreaviso não entra nas horas de plantão: tem coluna própria.</p>
             </section>
           )}
 
