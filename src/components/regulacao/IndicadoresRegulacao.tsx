@@ -11,7 +11,6 @@ import { useQuery } from '@tanstack/react-query'
 import { Download, LineChart } from 'lucide-react'
 import * as React from 'react'
 
-import { Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,7 +21,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { dataIso } from '@/lib/formato'
 import {
-  filtrosIndicadoresParaEnvio, linhasCsvIndicadores, taxa, tempo,
+  avisoPeriodoVazio, diasDoPeriodo, filtrosIndicadoresParaEnvio, linhasCsvIndicadores, secoesComDados, taxa, tempo,
   type BlocoTempo, type FiltrosIndicadores, type Indicadores,
 } from '@/lib/indicadoresRegulacao'
 import { MOTIVOS_NEGACAO, MOTIVOS_RECUSA_DESTINO, PRIORIDADES, TIPOS, TIPOS_LEITO, type Prioridade, type TipoSolicitacao } from '@/lib/regulacao'
@@ -62,12 +61,30 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
     baixarCsv(nomeArquivoCsv('indicadores_regulacao', hoje()), csv)
   }
   const d = ind.data
+  // RD3 (RT, 24/11/2026): sem pedido no período, uma linha diz o período e
+  // quando foi o último, com "Ampliar para 90 dias"; as seções vazias somem.
+  // O último sai da lista da unidade (a mesma chave da aba Enviados).
+  const semPedido = !!d && d.total === 0
+  const comFiltro = !!(filtros.tipo || filtros.prioridade || filtros.origem_id || filtros.destino_id)
+  const lista = useQuery({
+    queryKey: ['regulacao-lista', unidadeId],
+    enabled: semPedido && !comFiltro,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_lista', { p_unidade: unidadeId })
+      if (error) throw error
+      return (data ?? []) as unknown as { criada_em: string }[]
+    },
+  })
+  const ultimoEm = (lista.data ?? []).reduce<string | null>((m, x) => (!m || x.criada_em > m ? x.criada_em : m), null)
+  const ultimo = ultimoEm ? dataIso(Date.parse(ultimoEm)) : null
+  const tem = d ? secoesComDados(d) : null
+  const ampliar = diasDoPeriodo(filtros.de, filtros.ate) < 90
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           <LineChart className="size-4" aria-hidden /> Indicadores de regulação
-          {d && <Badge variant="secondary">{d.total} pedidos no período</Badge>}
+          {d && d.total > 0 && <span className="text-apoio font-normal text-tinta-apoio">{d.total === 1 ? '1 pedido' : `${d.total} pedidos`} no período</span>}
           {d && <Button size="xs" variant="outline" className="ml-auto" onClick={exportar}><Download className="size-3.5" /> Exportar CSV</Button>}
         </CardTitle>
         <CardDescription>
@@ -109,17 +126,21 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
         </div>
 
         {ind.isLoading ? <Spinner /> : ind.error ? <p role="alert" className="text-critico">{(ind.error as Error).message}</p> : !d ? null
-          : d.total === 0 && Object.keys(d.fila_atual.por_tipo).length === 0 ? (
-            <Vazio icone={LineChart} titulo="Nenhum pedido com esses filtros" />
-          ) : (
+          : (
             <>
-              <Secao titulo="Tempos">
+              {semPedido && (
+                <div className="flex flex-wrap items-center gap-3 rounded-controle border border-fio bg-campo px-3 py-2 text-tinta">
+                  <span>{avisoPeriodoVazio(filtros.de, filtros.ate, ultimo, comFiltro)}</span>
+                  {ampliar && <Button size="xs" variant="outline" onClick={() => setFiltros((x) => ({ ...x, de: diasAtras(89), ate: hoje() }))}>Ampliar para 90 dias</Button>}
+                </div>
+              )}
+              {tem?.tempos && <Secao titulo="Tempos">
                 <div className="grid gap-3 md:grid-cols-3">
                   {(Object.keys(ROTULO_TEMPO) as (keyof typeof ROTULO_TEMPO)[]).map((k) => <Tempo key={k} titulo={ROTULO_TEMPO[k]} b={d.tempos[k]} />)}
                 </div>
-              </Secao>
+              </Secao>}
 
-              <Secao titulo="Fila agora">
+              {tem?.fila && <Secao titulo="Fila agora">
                 <div className="flex flex-wrap gap-1.5">
                   {Object.keys(d.fila_atual.por_tipo).length === 0 ? <span className="text-tinta-sussurro">Nada esperando decisão.</span> : (
                     <>
@@ -128,9 +149,9 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
                     </>
                   )}
                 </div>
-              </Secao>
+              </Secao>}
 
-              <Secao titulo="Desfechos">
+              {tem?.desfechos && <Secao titulo="Desfechos">
                 <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-3">
                   <Item rotulo="Autorizadas" valor={`${d.desfechos.autorizadas} (${taxa(d.desfechos.autorizadas, d.total)})`} />
                   <Item rotulo="Negadas" valor={`${d.desfechos.negadas} (${taxa(d.desfechos.negadas, d.total)})`} />
@@ -141,29 +162,29 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
                 </dl>
                 <Motivos titulo="Negação por motivo" m={d.desfechos.negacao_por_motivo} rotulo={(k) => MOTIVOS_NEGACAO[k as keyof typeof MOTIVOS_NEGACAO] ?? k} />
                 <Motivos titulo="Recusa do destino por motivo" m={d.desfechos.recusa_por_motivo} rotulo={(k) => MOTIVOS_RECUSA_DESTINO[k as keyof typeof MOTIVOS_RECUSA_DESTINO] ?? k} />
-              </Secao>
+              </Secao>}
 
-              <Secao titulo="Cumprimento dos prazos">
+              {tem?.prazos && <Secao titulo="Cumprimento dos prazos">
                 <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
                   {(Object.keys(ROTULO_PRAZO) as (keyof typeof ROTULO_PRAZO)[]).map((k) => (
                     <Item key={k} rotulo={ROTULO_PRAZO[k]}
                       valor={d.prazos[k].n ? `${taxa(d.prazos[k].no_prazo, d.prazos[k].n)} no prazo (${d.prazos[k].no_prazo} de ${d.prazos[k].n})` : 'sem casos (ou sem prazo cadastrado)'} />
                   ))}
                 </dl>
-              </Secao>
+              </Secao>}
 
-              <Secao titulo="Gargalos">
+              {tem?.gargalos && <Secao titulo="Gargalos">
                 <Tabela cab={['Origem', 'Pedidos', 'Mediana da decisão', 'Devolvidas', 'Negadas']}
                   linhas={d.gargalos.por_origem.map((o) => [o.unidade, o.n, tempo(o.decisao_mediana), o.devolvidas, o.negadas])} />
                 <Tabela cab={['Destino', 'Respostas', 'Recusas', 'Mediana do aceite']}
                   linhas={d.gargalos.por_destino.map((o) => [o.unidade, o.respostas, o.recusas, tempo(o.aceite_mediana)])} />
                 <Tabela cab={['Tipo de leito', 'Pedidos', 'Mediana da decisão', 'Recusas']}
                   linhas={d.gargalos.por_tipo_leito.map((o) => [TIPOS_LEITO[o.tipo_leito] ?? o.tipo_leito, o.n, tempo(o.decisao_mediana), o.recusas])} />
-              </Secao>
+              </Secao>}
 
-              <Secao titulo="Volume por dia">
+              {tem?.volume && <Secao titulo="Volume por dia">
                 <PorDia dias={d.volume.por_dia} />
-              </Secao>
+              </Secao>}
             </>
           )}
       </CardContent>
