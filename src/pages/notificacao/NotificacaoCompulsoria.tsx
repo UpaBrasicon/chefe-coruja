@@ -29,6 +29,7 @@ import {
   type Caso, chaveLista, codigoCid, ddmm, FONTE_LNNC, hojeSP, PENDENTE, prazo, ROTULO_SITUACAO, somarDias, useCasos, useConferencia,
 } from './dados'
 import { FichaSinan } from './FichaSinan'
+import { useMeusAtendimentos } from './meusAtendimentos'
 
 type Filtro = 'pendentes' | 'notificados' | 'todos'
 const FILTROS: [Filtro, string][] = [['pendentes', 'Pendentes'], ['notificados', 'Notificados'], ['todos', 'Todos']]
@@ -59,8 +60,11 @@ export default function NotificacaoCompulsoria() {
   const [erro, setErro] = React.useState<string | null>(null)
   const casos = useCasos(unidadeId, de, ate, cids)
   const conferencia = useConferencia()
+  // revisão do médico (RT, 24/11/2026, M3): "Meus atendimentos" × "Da unidade"
+  const [quem, setQuem] = React.useState<'unidade' | 'meus'>('unidade')
+  const meus = useMeusAtendimentos(casos.data)
 
-  const todos = casos.data ?? []
+  const todos = (casos.data ?? []).filter((c) => quem === 'unidade' || !!meus.data?.has(c.chave))
   const visiveis = todos.filter((c) =>
     filtro === 'todos' || (filtro === 'pendentes' ? PENDENTE.includes(c.situacao) : c.situacao === 'notificado'))
   const nPend = todos.filter((c) => PENDENTE.includes(c.situacao)).length
@@ -133,6 +137,12 @@ export default function NotificacaoCompulsoria() {
             </span>
           ))}
         </div>
+      </div>
+      <div role="radiogroup" aria-label="De quem são os atendimentos" className="mb-3 flex flex-wrap items-center gap-1.5">
+        <Chip radio ativo={quem === 'unidade'} onClick={() => setQuem('unidade')} contagem={(casos.data ?? []).length}>Da unidade</Chip>
+        <Chip radio ativo={quem === 'meus'} onClick={() => setQuem('meus')} contagem={meus.data?.size ?? 0}>Meus atendimentos</Chip>
+        {quem === 'meus' && meus.isLoading && <Spinner />}
+        {quem === 'meus' && <span className="text-apoio text-tinta-sussurro">em que você foi o médico do atendimento, registrou o desfecho ou deu a alta</span>}
       </div>
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
