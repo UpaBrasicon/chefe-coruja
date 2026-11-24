@@ -95,14 +95,19 @@ export function montarLinhaDoTempo({ eventos = [], evolucoes = [], mensagens }: 
 
 export type TempoStatus = { status: StatusRegulacao; segundos: number; vezes: number; atual: boolean }
 
-/** Só a situação de agora (a do pedido) fica como atual; pedido encerrado não tem atual. */
-export function temposComAtual<T extends TempoStatus>(tempos: T[], statusAtual: StatusRegulacao): T[] {
-  const alvo = tempos.findIndex((t) => t.status === statusAtual)
+/**
+ * Só a situação de agora fica como atual. Com a situação do pedido, é ela (e
+ * pedido encerrado não tem atual); sem ela, a última que o banco marcou.
+ */
+export function temposComAtual<T extends TempoStatus>(tempos: T[], statusAtual?: StatusRegulacao): T[] {
+  let alvo = -1
+  if (statusAtual) alvo = tempos.findIndex((t) => t.status === statusAtual)
+  else tempos.forEach((t, k) => { if (t.atual) alvo = k })
   return tempos.map((t, k) => ({ ...t, atual: k === alvo }))
 }
 
 /** "Tempo em cada status" em texto, com a situação atual marcada uma vez só. */
-export function textoTempos(tempos: TempoStatus[], statusAtual: StatusRegulacao): string {
+export function textoTempos(tempos: TempoStatus[], statusAtual?: StatusRegulacao): string {
   return temposComAtual(tempos, statusAtual).map((t) => {
     const quanto = t.segundos < 60 ? 'menos de 1 min' : formatarEspera(t.segundos)
     return `${STATUS[t.status]} ${quanto}${t.vezes > 1 ? ` (${t.vezes}×)` : ''}${t.atual ? ', atual' : ''}`

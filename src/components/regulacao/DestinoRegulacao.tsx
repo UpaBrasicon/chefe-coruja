@@ -27,6 +27,7 @@ import {
   type MeioConfirmacao, type MotivoRecusaDestino, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 
 
@@ -342,8 +343,14 @@ type Recebido = PedidoDestino & {
 }
 
 /** Pedidos que a central mandou para esta unidade. */
-export function RecebidosDestino({ unidadeId, detalhe }: { unidadeId: string; detalhe: (id: string) => React.ReactNode }) {
-  const [aberta, setAberta] = React.useState<string | null>(null)
+export function RecebidosDestino({ unidadeId, detalhe, selecionado, aoSelecionar }: {
+  unidadeId: string; detalhe?: (id: string) => React.ReactNode
+  /** Painel ao lado (RD1): o clique escolhe o pedido e o detalhe abre fora da lista. */
+  selecionado?: string | null; aoSelecionar?: (id: string | null) => void
+}) {
+  const [abertaLocal, setAbertaLocal] = React.useState<string | null>(null)
+  const aberta = aoSelecionar ? selecionado ?? null : abertaLocal
+  const setAberta = aoSelecionar ?? setAbertaLocal
   const lista = useQuery({
     queryKey: ['regulacao-destino', unidadeId],
     refetchInterval: 60_000,
@@ -373,18 +380,18 @@ export function RecebidosDestino({ unidadeId, detalhe }: { unidadeId: string; de
                 const ef = s.prioridade_regulador ?? s.prioridade
                 return (
                   <li key={s.id} className="py-2">
-                    <BotaoLinha variante="linha" aria-expanded={aberta === s.id}
-                      className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
+                    <BotaoLinha variante="linha" aria-expanded={aoSelecionar ? undefined : aberta === s.id} aria-current={aoSelecionar && aberta === s.id ? 'true' : undefined}
+                      className={cn('flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo', aoSelecionar && aberta === s.id && 'bg-campo')}
                       onClick={() => setAberta(aberta === s.id ? null : s.id)}>
-                      {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
+                      {aoSelecionar ? null : aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
                       <Badge variant={PRIORIDADES[ef].tom === 'critico' ? 'destructive' : PRIORIDADES[ef].tom === 'atencao' ? 'warning' : 'secondary'}>{PRIORIDADES[ef].rotulo}</Badge>
                       <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                       <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                       <span className="text-tinta-sussurro">nº {s.numero} · de {s.origem.nome}</span>
                       <Badge variant={s.status === 'aguardando_destino' ? 'warning' : 'info'}>{STATUS[s.status]}</Badge>
-                      <span className="ml-auto text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
+                      {!aoSelecionar && <span className="ml-auto text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>}
                     </BotaoLinha>
-                    {aberta === s.id && detalhe(s.id)}
+                    {!aoSelecionar && aberta === s.id && detalhe?.(s.id)}
                   </li>
                 )
               })}
