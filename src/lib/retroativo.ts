@@ -1,11 +1,13 @@
 /**
  * Início do turno no horário de Brasília (UTC−3, sem horário de verão), igual a
  * `private.inicio_do_turno`: manhã 07 h, tarde 13 h, noite 19 h, madrugada 01 h.
+ * Turno cadastrado pela unidade (migration 20270421000050): a tela passa a hora
+ * de início do cadastro em `inicio` ('HH:MM').
  */
 const HORA_DO_TURNO: Record<string, string> = { manha: '07:00', tarde: '13:00', noite: '19:00', madrugada: '01:00' }
 
-export function inicioDoTurno(data: string, turno: string): Date {
-  return new Date(`${data}T${HORA_DO_TURNO[turno] ?? '07:00'}:00-03:00`)
+export function inicioDoTurno(data: string, turno: string, inicio?: string): Date {
+  return new Date(`${data}T${(inicio ?? HORA_DO_TURNO[turno] ?? '07:00').slice(0, 5)}:00-03:00`)
 }
 
 /**
@@ -13,6 +15,6 @@ export function inicioDoTurno(data: string, turno: string): Date {
  * começou vale, só pelo gestor, e fica como acerto retroativo no histórico
  * (`adicionar_plantao_escala`). A tela avisa antes de confirmar.
  */
-export function ehRetroativo(data: string, turno: string, agora: number): boolean {
-  return inicioDoTurno(data, turno).getTime() <= agora
+export function ehRetroativo(data: string, turno: string, agora: number, inicio?: string): boolean {
+  return inicioDoTurno(data, turno, inicio).getTime() <= agora
 }

@@ -35,6 +35,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Spinner } from '@/components/ui/spinner'
 import type { Papel } from '@/types/database'
 import { ehRetroativo } from '@/lib/retroativo'
+import { horarioDoTurno, inicioDoCodigo, rotuloHoras, rotuloTurno, TURNOS_PADRAO } from '@/lib/turnos'
+import { useTurnosUnidade } from '@/hooks/useTurnosUnidade'
 
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala } from '@/hooks/usePedidosEscala'
 import { SemCategoria } from '@/components/escala/SemCategoria'
@@ -44,7 +46,7 @@ type Escalado = { plantao_id: string; perfil_id: string; nome: string; turno: st
 // o que falta na faixa, categoria por categoria: vaga marcada (vaga_id) ou prevista pela fixa
 type Aberta = { papel: Papel | null; vaga_id: string | null; obs: string | null }
 type Faixa = {
-  data: string; setor_id: string; turno: 'manha' | 'tarde' | 'noite'; escalados: Escalado[]; previsto: boolean
+  data: string; setor_id: string; turno: string; escalados: Escalado[]; previsto: boolean
   vaga_id: string | null; vaga_obs: string | null; abertas: Aberta[]; situacao: 'coberto' | 'vaga' | 'sem_plantao'
 }
 type Publicacao = { versao: number; publicada_em: string; publicada_por: string | null; plantoes: number; vagas: number; alteracoes_depois: number }
@@ -53,11 +55,9 @@ type Profissional = { perfil_id: string; nome_completo: string; crm: string | nu
 
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-const FAIXA: Record<Faixa['turno'], [string, string]> = { manha: ['Manhã', '07h–13h'], tarde: ['Tarde', '13h–19h'], noite: ['Noite', '19h–07h'] }
 
 const hojeSP = () => dataIso()
 const quando = (iso: string) => dataHora(iso)
-const ORDEM_FAIXA: Faixa['turno'][] = ['manha', 'tarde', 'noite']
 const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
 const SIGLA: Partial<Record<Papel, string>> = {
   plantonista: 'Méd', telemedicina: 'Tele', enfermeiro: 'Enf', tecnico_enfermagem: 'Téc', recepcao: 'Rec', farmaceutico: 'Farm',
@@ -112,10 +112,20 @@ export function EscalaMes() {
       return (data ?? []) as Profissional[]
     },
   })
+  // as faixas são os turnos da unidade (migration 20270421000050), na ordem do cadastro
+  const turnos = useTurnosUnidade(unidadeId)
   const solicitacoes = useSolicitacoesEscala(unidadeId, ehGestor)
   const candidaturas = useCandidaturasEscala(unidadeId, ehGestor)
   const trocas = useTrocasEscala(unidadeId, ehGestor)
   if (!ehGestor) return null
+  const FAIXA = (codigo: string): [string, string] => {
+    const t = turnos.todos.find((x) => x.codigo === codigo) ?? TURNOS_PADRAO.find((x) => x.codigo === codigo)
+    return [rotuloTurno(codigo, turnos.todos), t ? horarioDoTurno(t) : '']
+  }
+  const ordemFaixa = (codigo: string) => {
+    const i = turnos.ativos.findIndex((t) => t.codigo === codigo)
+    return i < 0 ? 999 : i
+  }
 
   const pedidos = contarPedidos(solicitacoes.data, candidaturas.data, trocas.data)
   const recarregar = () => {
@@ -292,22 +302,22 @@ export function EscalaMes() {
               </span>
             </div>
             {setores.map((s) => {
-              const fs = doDia.filter((f) => f.setor_id === s.id).sort((x, y) => ORDEM_FAIXA.indexOf(x.turno) - ORDEM_FAIXA.indexOf(y.turno))
+              const fs = doDia.filter((f) => f.setor_id === s.id).sort((x, y) => ordemFaixa(x.turno) - ordemFaixa(y.turno))
               return (
                 <div key={s.id} className="flex flex-col gap-2 border-b border-trilha px-4 py-2.5 last:border-b-0">
                   <span className="text-rotulo font-semibold text-tinta-sussurro">{s.nome}</span>
                   {fs.map((f) => (
-                    <div key={f.turno} className="grid grid-cols-[52px_minmax(0,1fr)] gap-x-2 text-apoio">
-                      <span className="text-tinta-sussurro" title={FAIXA[f.turno][1]}>{FAIXA[f.turno][0]}</span>
+                    <div key={f.turno} className="grid grid-cols-[76px_minmax(0,1fr)] gap-x-2 text-apoio">
+                      <span className="truncate text-tinta-sussurro" title={`${FAIXA(f.turno)[0]} · ${FAIXA(f.turno)[1]}`}>{FAIXA(f.turno)[0]}</span>
                       <div className="flex min-w-0 flex-col gap-0.5">
                         {f.escalados.map((e) => (
                           <span key={e.plantao_id} className="flex items-baseline gap-1.5">
                             <span className="min-w-0 truncate text-tinta">{e.nome}</span>
                             {e.papel && <span title={PAPEL_LABEL[e.papel]} className="shrink-0 rounded-controle bg-campo px-1.5 text-rotulo text-tinta-sussurro">{sigla(e.papel)}</span>}
                             <span className="shrink-0 text-rotulo text-tinta-sussurro">
-                              {e.duracao_min === 720 ? '12 h' : '6 h'}{e.quinzenal ? ' · 15/15' : ''}{e.rotulo ? ` · ${e.rotulo}` : ''}
+                              {e.duracao_min === 720 ? '12 h' : e.duracao_min === 360 ? '6 h' : rotuloHoras(e.duracao_min)}{e.quinzenal ? ' · 15/15' : ''}{e.rotulo ? ` · ${e.rotulo}` : ''}
                             </span>
-                            <Button variant="link" onClick={() => void remover(e)} aria-label={`Remover ${e.nome} de ${s.nome}, ${FAIXA[f.turno][0].toLowerCase()}`}
+                            <Button variant="link" onClick={() => void remover(e)} aria-label={`Remover ${e.nome} de ${s.nome}, ${FAIXA(f.turno)[0].toLowerCase()}`}
                               className="ml-auto h-auto min-h-0 shrink-0 p-0 text-rotulo underline hover:text-critico">Remover</Button>
                           </span>
                         ))}
@@ -347,7 +357,7 @@ export function EscalaMes() {
           <DialogHeader>
             <DialogTitle>{modo === 'vaga' ? 'Marcar vaga' : 'Escalar'}</DialogTitle>
             <DialogDescription>
-              {escalar && `${nomeSetor(escalar.setor_id)} · ${dataPorExtenso(`${escalar.data}T12:00:00Z`)} · ${FAIXA[escalar.turno][0]} (${FAIXA[escalar.turno][1]})`}
+              {escalar && `${nomeSetor(escalar.setor_id)} · ${dataPorExtenso(`${escalar.data}T12:00:00Z`)} · ${FAIXA(escalar.turno)[0]} (${FAIXA(escalar.turno)[1]})`}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">
@@ -385,7 +395,7 @@ export function EscalaMes() {
                   <input type="checkbox" className="size-4 accent-primary" checked={quinzenal} onChange={(e) => setQuinzenal(e.target.checked)} />
                   Escala quinzenal (15/15)
                 </label>
-                {escalar && ehRetroativo(escalar.data, escalar.turno, abertaEm) && (
+                {escalar && ehRetroativo(escalar.data, escalar.turno, abertaEm, inicioDoCodigo(escalar.turno, turnos.todos)) && (
                   <p role="status" className="text-apoio text-pretty text-atencao">Este plantão já começou: fica como acerto retroativo no histórico da escala.</p>
                 )}
               </>
