@@ -430,7 +430,8 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
     mutationFn: async () => {
       const { data, error } = await supabase.rpc('regulacao_solicitar', {
         p_unidade: unidadeId, p_paciente: paciente!.id,
-        p_dados: { ...dadosParaEnvio(f, {
+        // o destino vai sempre "a definir": quem decide é a central (RT, 24/11/2026)
+        p_dados: { ...dadosParaEnvio({ ...f, destino_tipo: 'a_definir', destino_unidade_id: '', destino_externo: '' }, {
           episodio_id: ligar === 'episodio' ? v?.episodio?.id : null,
           internacao_id: ligar === 'internacao' ? v?.internacao?.id : null,
           medico_assistente_id: souGestor || souNir ? medico || null : null,
@@ -600,29 +601,8 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
               )}
             </div>
 
-            {/* destino */}
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Campo id="reg-destino" rotulo="Destino">
-                <CampoSelecao id="reg-destino" tamanho="compacto" value={f.destino_tipo} onChange={(e) => set('destino_tipo', e.target.value as DestinoTipo)}>
-                  <option value="a_definir">A definir pela regulação</option>
-                  <option value="rede">Unidade da rede</option>
-                  <option value="externo">Serviço fora da rede</option>
-                </CampoSelecao>
-              </Campo>
-              {f.destino_tipo === 'rede' && (
-                <Campo id="reg-dest-un" rotulo="Unidade" className="sm:col-span-2">
-                  <CampoSelecao id="reg-dest-un" tamanho="compacto" value={f.destino_unidade_id} onChange={(e) => set('destino_unidade_id', e.target.value)}>
-                    <option value="">Escolha…</option>
-                    {ctx.unidades_rede.filter((u) => u.id !== unidadeId).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-                  </CampoSelecao>
-                </Campo>
-              )}
-              {f.destino_tipo === 'externo' && (
-                <Campo id="reg-dest-ext" rotulo="Serviço (nome e município)" className="sm:col-span-2">
-                  <Input id="reg-dest-ext" className="h-8" value={f.destino_externo} onChange={(e) => set('destino_externo', e.target.value)} />
-                </Campo>
-              )}
-            </div>
+            {/* destino: sempre a definir pela regulação; quem pede não escolhe (RT, 24/11/2026) */}
+            <p className="text-tinta-apoio"><span className="text-tinta-sussurro">Destino:</span> definido pela regulação</p>
 
             {/* caráter e prioridade */}
             <div className="grid gap-3 sm:grid-cols-3">
