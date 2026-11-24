@@ -20,6 +20,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { ListaInternados, type PacienteDaLista } from '@/components/internacao/ListaInternados'
 import { PainelObservacao } from '@/components/observacao/PainelObservacao'
+import { MapaLeitos } from '@/components/leito/MapaLeitos'
 import type { OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
 
 type PacienteComSetor = PacienteDaLista & { cpf: string | null; created_at: string }
@@ -198,8 +199,12 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
 
       {sucesso && <p className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{sucesso}</p>}
 
-      {/* I2/I3: ocupação por setor + alerta de superlotação */}
-      {(ocupacao ?? []).length > 0 && (
+      {/* Revisão do gestor (RT, 24/11/2026): o mapa de leitos por setor é a visão principal da
+          internação do gestor, com o censo num resumo próprio; a lista por setor vem depois */}
+      {(ehGestor || ehAdmin) && <MapaLeitos secoes={['censo', 'ocupacao', 'alertas', 'mapa']} />}
+
+      {/* I2/I3: ocupação por setor + alerta de superlotação (o gestor já vê no mapa acima) */}
+      {!(ehGestor || ehAdmin) && (ocupacao ?? []).length > 0 && (
         <div className="flex flex-wrap gap-2">
           {(ocupacao ?? []).map((o) => {
             const lotado = o.limite > 0 && o.internados >= o.limite
