@@ -179,7 +179,7 @@ export default function UsoDoApp() {
               )}
             </div>
             <p className="mt-2 text-apoio text-tinta-sussurro">
-              Lidas dos registros de acesso (LG9). A troca de unidade ou de papel não conta como entrada.
+              Lidas dos registros de acesso. A troca de unidade ou de papel não conta como entrada.
             </p>
           </section>
         </>

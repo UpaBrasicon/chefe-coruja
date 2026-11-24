@@ -34,7 +34,8 @@ interface UnidadeContextValue {
   papeisDaUnidade: Papel[]
   unidades: VinculoComUnidade[]
   unidadeAtiva: VinculoComUnidade | null
-  setUnidadeAtivaId: (id: string) => void
+  /** Troca a unidade; com o papel, abre já nesse perfil (o seletor mostra unidade e papel juntos). */
+  setUnidadeAtivaId: (id: string, papel?: Papel) => void
   papelAtivo: Papel | null
   /** Troca o perfil em foco (menu do usuário). A navegação mostra só o dele. */
   setPapelAtivo: (papel: Papel) => void
@@ -196,7 +197,21 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
       papeisDaUnidade,
       unidades,
       unidadeAtiva,
-      setUnidadeAtivaId: (id) => setUnidadeAtivaIdState(id),
+      setUnidadeAtivaId: (id, papel) => {
+        setUnidadeAtivaIdState(id)
+        // revisão do admin (24/11/2026): o seletor dizia "Administrador" e o app abria no perfil Médico
+        if (papel) {
+          setPapelEscolhido((m) => {
+            const novo = { ...m, [id]: papel }
+            try {
+              window.localStorage.setItem(STORAGE_PAPEL, JSON.stringify(novo))
+            } catch {
+              /* sem storage: vale só nesta sessão */
+            }
+            return novo
+          })
+        }
+      },
       papelAtivo,
       setPapelAtivo,
       ehAdmin,

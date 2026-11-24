@@ -1,6 +1,6 @@
 import { AlertTriangle, Info, LayoutDashboard } from 'lucide-react'
 import * as React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,9 @@ import { cartao, Metricas } from '@/components/admin/ui'
 // navegador até o banco. O que não tem fonte aparece dito, não inventado.
 
 const ROTULO_ESTADO = ['Estável', 'Atenção', 'Crítico'] as const
+// revisão do admin (RT, 24/11/2026): ordem pelo atraso do envio mais antigo
+const desde = (u: { rnds_mais_antigo: string | null }) => (u.rnds_mais_antigo ? new Date(u.rnds_mais_antigo).getTime() : Number.MAX_SAFE_INTEGER)
+const soRnds = (motivos: string[]) => motivos.length > 0 && motivos.every((m) => m.includes('RNDS'))
 
 export default function Plataformas() {
   const navigate = useNavigate()
@@ -28,10 +31,13 @@ export default function Plataformas() {
   const agora = unidades.dataUpdatedAt
 
   const linhas = React.useMemo(
-    () => (unidades.data ?? []).map((u) => ({ u, ...avaliarUnidade(u, agora) })).sort((a, b) => b.estado - a.estado || a.u.nome.localeCompare(b.u.nome)),
+    () => (unidades.data ?? []).map((u) => ({ u, ...avaliarUnidade(u, agora) })).sort((a, b) => b.estado - a.estado || desde(a.u) - desde(b.u) || a.u.nome.localeCompare(b.u.nome)),
     [unidades.data, agora],
   )
   const atencao = linhas.filter((l) => l.estado > 0)
+  // M1: a mesma causa (RNDS parada) vira uma linha só, com as unidades dentro
+  const atencaoRnds = atencao.filter((l) => soRnds(l.motivos))
+  const atencaoOutras = atencao.filter((l) => !soRnds(l.motivos))
   const lat = latencia.data
   const rnds = servidores.data?.rnds
 
@@ -81,7 +87,20 @@ export default function Plataformas() {
         </div>
         {unidades.isLoading && <div className="px-5 py-5"><Spinner /></div>}
         {unidades.error && <p className="px-5 py-4 text-apoio text-critico">{(unidades.error as Error).message}</p>}
-        {atencao.map(({ u, estado, motivos }) => (
+        {atencaoRnds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0 hover:bg-campo">
+            <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
+              <span className="text-corpo font-medium text-tinta">
+                Envio à RNDS parado em {atencaoRnds.length} {atencaoRnds.length === 1 ? 'unidade' : 'unidades'}
+              </span>
+              <span className="text-apoio text-pretty text-tinta-sussurro">
+                Sem credencial e certificado, a fila guarda e não envia. {atencaoRnds.map((l) => l.u.nome).join(', ')}.
+              </span>
+            </div>
+            <Link to="/integracoes?aba=rnds" className="text-apoio font-medium text-acao hover:underline">Ver a RNDS</Link>
+          </div>
+        )}
+        {atencaoOutras.map(({ u, estado, motivos }) => (
           <div key={u.unidade_id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0 hover:bg-campo">
             <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
               <span className="text-corpo font-medium text-tinta">{u.nome}</span>
@@ -104,11 +123,11 @@ export default function Plataformas() {
       </section>
 
       <section className={cn(cartao, 'mb-[22px]')} aria-label="Unidades">
-        <div className="hidden items-center gap-3 border-b border-fio bg-campo px-5 py-[11px] text-rotulo font-semibold tracking-[0.05em] text-tinta-sussurro uppercase sm:flex">
+        <div className="hidden items-center gap-3 border-b border-fio bg-campo px-5 py-[11px] text-rotulo font-semibold text-tinta-sussurro sm:flex">
           <span className="min-w-0 flex-1">Unidade</span>
-          <span className="w-[88px] text-right">Conectadas</span>
-          <span className="w-[88px] text-right">RNDS</span>
-          <span className="w-[88px] text-right">Chamados</span>
+          <span className="w-[88px] text-right" title="Pessoas com sessão nos últimos 30 minutos">Conectadas</span>
+          <span className="w-[88px] text-right" title="Envios à RNDS na fila (pendentes e com erro)">Fila RNDS</span>
+          <span className="w-[88px] text-right" title="Chamados técnicos abertos">Chamados</span>
         </div>
         {linhas.map(({ u, estado }) => (
           <div key={u.unidade_id} className="flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-[13px] last:border-0 hover:bg-campo">
@@ -116,14 +135,14 @@ export default function Plataformas() {
               <span className="text-corpo font-medium text-tinta">{u.nome}</span>
               <span className="text-apoio text-tinta-sussurro">{[lugar(u) || null, `último uso ${haQuanto(u.ultimo_uso, agora)}`].filter(Boolean).join(' · ')}</span>
             </div>
-            <span className="w-[88px] text-right text-controle tabular-nums text-tinta-apoio" title="Pessoas com vínculo na unidade e sessão renovada nos últimos 30 minutos">
+            <span className={cn('w-[88px] text-right text-controle tabular-nums', u.sessoes_ativas ? 'text-tinta-apoio' : 'text-tinta-sussurro')} title="Pessoas com vínculo na unidade e sessão renovada nos últimos 30 minutos">
               <span className="sm:hidden">Conectadas </span>{u.sessoes_ativas}
             </span>
-            <span className={cn('w-[88px] text-right text-controle font-semibold tabular-nums', u.rnds_erro ? 'text-critico' : u.rnds_pendentes ? 'text-atencao' : 'text-tinta')}
+            <span className={cn('w-[88px] text-right text-controle font-semibold tabular-nums', u.rnds_erro ? 'text-critico' : u.rnds_pendentes ? 'text-atencao' : 'font-normal text-tinta-sussurro')}
               title="Envios à RNDS pendentes (e com erro)">
               <span className="font-normal sm:hidden">RNDS </span>{u.rnds_pendentes + u.rnds_erro}{u.rnds_erro ? ` (${u.rnds_erro} erro)` : ''}
             </span>
-            <span className={cn('w-[88px] text-right text-controle tabular-nums', estado === 2 ? 'font-semibold text-critico' : u.chamados_abertos ? 'text-atencao' : 'text-tinta-apoio')}>
+            <span className={cn('w-[88px] text-right text-controle tabular-nums', estado === 2 ? 'font-semibold text-critico' : u.chamados_abertos ? 'text-atencao' : 'text-tinta-sussurro')}>
               <span className="sm:hidden">Chamados </span>{u.chamados_abertos}
             </span>
           </div>
@@ -131,14 +150,16 @@ export default function Plataformas() {
         {unidades.data && linhas.length === 0 && <p className="px-5 py-[18px] text-apoio text-tinta-sussurro">Nenhuma unidade ativa na sua organização.</p>}
       </section>
 
-      <div className="flex items-start gap-2.5 rounded-container border border-fio bg-campo px-4 py-3.5 text-apoio text-pretty text-tinta-apoio">
-        <Info className="mt-0.5 size-4 shrink-0 text-tinta-sussurro" aria-hidden />
-        <span>
-          <strong className="font-semibold text-tinta">Sem fonte no app:</strong> versão por unidade, uptime, espaço de backup e latência de cada
+      <details className="rounded-container border border-fio bg-campo px-4 py-3 text-apoio text-pretty text-tinta-apoio">
+        <summary className="flex cursor-pointer items-center gap-2 text-tinta-sussurro">
+          <Info className="size-4 shrink-0" aria-hidden /> Por que não há versão, uptime e backup por unidade
+        </summary>
+        <span className="mt-2 block">
+          Sem fonte no app: versão por unidade, uptime, espaço de backup e latência de cada
           unidade. O Chefe Coruja é uma só publicação para toda a rede, e uptime e backup ficam no painel do Supabase. Trazê-los para cá
           exige a chave de gestão do projeto, que não pode ir ao navegador. A latência acima é a deste navegador.
         </span>
-      </div>
+      </details>
     </div>
   )
 }

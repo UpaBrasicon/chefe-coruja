@@ -17,7 +17,7 @@ export function Metricas({ itens, className }: { itens: Metrica[]; className?: s
     <div className={cn(cartao, 'mb-3.5 flex flex-wrap', className)}>
       {itens.map((m, i) => (
         <div key={m.rotulo} className={cn('flex min-w-[150px] flex-1 flex-col gap-0.5 px-5 py-[15px]', i > 0 && 'border-l border-trilha')}>
-          <span className={cn('text-rotulo font-semibold tracking-[0.06em] uppercase', m.tom === 'atencao' ? 'text-atencao' : m.tom === 'critico' ? 'text-critico' : 'text-tinta-sussurro')}>
+          <span className={cn('text-rotulo font-semibold', m.tom === 'atencao' ? 'text-atencao' : m.tom === 'critico' ? 'text-critico' : 'text-tinta-sussurro')}>
             {m.rotulo}
           </span>
           <span className={cn('text-numeral-compacto leading-[1.15] font-semibold tracking-[-0.02em] tabular-nums',

@@ -95,7 +95,7 @@ export function PresencasDoDia() {
   })
 
   const feitos = (presencas ?? []).filter((p) => p.checkin_em && !p.checkout_em)
-  const pendentes = (presencas ?? []).filter((p) => !p.checkin_em)
+  const pendentes = (presencas ?? []).filter((p) => !p.checkin_em && p.em_escala)
   const concluidos = (presencas ?? []).filter((p) => p.checkout_em)
 
   if (error) {
@@ -134,52 +134,86 @@ export function PresencasDoDia() {
           {(presencas ?? []).length === 0 ? (
             <p className="text-apoio text-tinta-sussurro">Nenhum profissional vinculado nesta unidade.</p>
           ) : (
-            (presencas ?? []).map((p) => (
-              <div
-                key={p.perfil_id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-controle border p-3 text-apoio"
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="truncate font-medium">{p.nome}</span>
-                  {!p.em_escala && <Badge variant="outline">fora da escala hoje</Badge>}
-                  {p.checkin_dentro === true && <Badge variant="success">dentro do raio</Badge>}
-                  {p.checkin_dentro === false && (<Badge variant="destructive">fora do raio{p.checkin_distancia_m != null ? ` · ${p.checkin_distancia_m} m` : ""}</Badge>)}
-                </div>
-                <div className="flex items-center gap-2 text-rotulo text-tinta-sussurro">
-                  {p.checkin_em ? (
-                    <span className="flex items-center gap-1">
-                      <LogIn className="size-3.5" />
-                      {hhmm(p.checkin_em)}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 font-medium text-atencao">
-                      <Clock className="size-3.5" /> aguardando
-                    </span>
-                  )}
-                  {p.checkout_em && (
-                    <span className="flex items-center gap-1 text-tinta-sussurro">
-                      → {hhmm(p.checkout_em)}{p.checkout_automatico && ' (automático)'}
-                    </span>
-                  )}
-                </div>
-                {p.checkin_justificativa && (
-                  <p className="w-full text-rotulo text-tinta-apoio">
-                    Justificativa do check-in: "{p.checkin_justificativa}"
-                  </p>
-                )}
-                {p.liberado_pos_ate && (
-                  <Badge variant="info" className="w-full justify-start">Liberado para continuar até {hhmm(p.liberado_pos_ate)}</Badge>
-                )}
-                {unidadeId && !p.liberado_pos_ate && (
-                  <div className="w-full">
-                    <LiberarPosPlantao unidadeId={unidadeId} perfilId={p.perfil_id} nome={p.nome} />
-                  </div>
-                )}
-              </div>
-            ))
+            // revisão do gestor (RT, 24/11/2026, N2): uma linha por pessoa, em grupos
+            // pela situação; primeiro quem ainda não chegou, fora da escala recolhido
+            <>
+              {GRUPOS.map((g) => {
+                const lista = (presencas ?? []).filter((p) => situacao(p) === g.chave)
+                if (lista.length === 0) return null
+                const linhas = lista.map((p) => <LinhaPresenca key={p.perfil_id} p={p} unidadeId={unidadeId} />)
+                return g.recolhido ? (
+                  <details key={g.chave} className="rounded-controle border border-fio">
+                    <summary className="cursor-pointer px-3 py-2 text-apoio text-tinta-apoio">{g.rotulo} · {lista.length}</summary>
+                    <div className="flex flex-col gap-2 p-2">{linhas}</div>
+                  </details>
+                ) : (
+                  <section key={g.chave} className="flex flex-col gap-2">
+                    <h3 className={`text-apoio font-semibold ${g.cor}`}>{g.rotulo} · {lista.length}</h3>
+                    {linhas}
+                  </section>
+                )
+              })}
+            </>
           )}
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+type Situacao = 'sem_checkin' | 'expediente' | 'concluido' | 'fora'
+const GRUPOS: { chave: Situacao; rotulo: string; cor: string; recolhido?: boolean }[] = [
+  { chave: 'sem_checkin', rotulo: 'Na escala, sem check-in', cor: 'text-atencao' },
+  { chave: 'expediente', rotulo: 'Em expediente', cor: 'text-conforme' },
+  { chave: 'concluido', rotulo: 'Concluídos', cor: 'text-tinta-apoio' },
+  { chave: 'fora', rotulo: 'Fora da escala hoje', cor: 'text-tinta-sussurro', recolhido: true },
+]
+function situacao(p: PresencaDia): Situacao {
+  if (p.checkout_em) return 'concluido'
+  if (p.checkin_em) return 'expediente'
+  return p.em_escala ? 'sem_checkin' : 'fora'
+}
+
+function LinhaPresenca({ p, unidadeId }: { p: PresencaDia; unidadeId: string | undefined }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-controle border p-3 text-apoio">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="truncate font-medium">{p.nome}</span>
+        {p.checkin_em && !p.em_escala && <Badge variant="outline">fora da escala hoje</Badge>}
+        {p.checkin_dentro === true && <Badge variant="success">dentro do raio</Badge>}
+        {p.checkin_dentro === false && (<Badge variant="destructive">fora do raio{p.checkin_distancia_m != null ? ` · ${p.checkin_distancia_m} m` : ''}</Badge>)}
+      </div>
+      <div className="flex items-center gap-2 text-rotulo text-tinta-sussurro">
+        {p.checkin_em ? (
+          <span className="flex items-center gap-1">
+            <LogIn className="size-3.5" />
+            {hhmm(p.checkin_em)}
+          </span>
+        ) : p.em_escala ? (
+          <span className="flex items-center gap-1 font-medium text-atencao">
+            <Clock className="size-3.5" /> aguardando
+          </span>
+        ) : null}
+        {p.checkout_em && (
+          <span className="flex items-center gap-1 text-tinta-sussurro">
+            → {hhmm(p.checkout_em)}{p.checkout_automatico && ' (automático)'}
+          </span>
+        )}
+      </div>
+      {p.checkin_justificativa && (
+        <p className="w-full text-rotulo text-tinta-apoio">
+          Justificativa do check-in: "{p.checkin_justificativa}"
+        </p>
+      )}
+      {p.liberado_pos_ate && (
+        <Badge variant="info" className="w-full justify-start">Liberado para continuar até {hhmm(p.liberado_pos_ate)}</Badge>
+      )}
+      {/* liberar depois do plantão só faz sentido para quem fez check-in */}
+      {unidadeId && p.checkin_em && !p.liberado_pos_ate && (
+        <div className="w-full">
+          <LiberarPosPlantao unidadeId={unidadeId} perfilId={p.perfil_id} nome={p.nome} />
+        </div>
+      )}
     </div>
   )
 }

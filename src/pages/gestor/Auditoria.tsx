@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ScrollText, ShieldCheck, ShieldAlert, X } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { TabsPagina, type AbaDef } from '@/components/TabsPagina'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -270,11 +272,18 @@ function TrilhaUnidade() {
   return (
     <div className="flex flex-col gap-4">
       {i && (
-        <div className={`flex items-center gap-2 rounded-controle border p-3 text-apoio ${i.integra ? 'border-conforme/30 bg-alerta-conforme' : 'border-critico/40 bg-alerta-critico text-critico'}`}>
+        <div className={`flex flex-wrap items-center gap-2 rounded-controle border p-3 text-apoio ${i.integra ? 'border-conforme/30 bg-alerta-conforme' : 'border-critico/40 bg-alerta-critico text-critico'}`}>
           {i.integra ? <ShieldCheck className="size-4 text-conforme" /> : <ShieldAlert className="size-4" />}
           {i.integra
             ? `Cadeia de auditoria íntegra: ${i.registros} registros conferidos em ${fmtDataHora(i.conferido_em)}.`
-            : `Cadeia de auditoria QUEBRADA no registro ${i.quebra_seq}. Algum registro foi alterado fora do sistema: acione o suporte e preserve o banco.`}
+            : <span className="flex-1">Cadeia de auditoria quebrada no registro {i.quebra_seq}. Algum registro foi alterado fora do sistema: abra um chamado técnico e não mexa no banco até a conferência.</span>}
+          {/* revisão do gestor (RT, 24/11/2026, M2): a quebra vem com a ação, o chamado já preenchido */}
+          {!i.integra && (
+            <Link to={`/gestao/chamados?novo=&titulo=${encodeURIComponent(`Cadeia de auditoria quebrada no registro ${i.quebra_seq}`)}`}
+              className={cn(buttonVariants({ size: 'sm' }), 'shrink-0 hover:text-sobre-acao')}>
+              Abrir chamado
+            </Link>
+          )}
         </div>
       )}
       {cobertura.data && (
@@ -291,8 +300,11 @@ function TrilhaUnidade() {
               {(cobertura.data.eventos ?? []).map((e) => (
                 <div key={e.evento} className="flex items-center justify-between gap-3 border-b border-trilha py-1">
                   <span className="text-tinta">{e.evento}</span>
-                  <span className={e.sem_trilha > 0 ? 'font-medium text-critico' : 'text-conforme'}>
-                    {e.registros} {e.sem_trilha > 0 ? `· ${e.sem_trilha} sem trilha` : '· todos na trilha'}
+                  {/* M1: cobertura honesta; sem registro no período é cinza, não verde */}
+                  <span className={e.sem_trilha > 0 ? 'font-medium text-critico' : e.registros === 0 ? 'text-tinta-sussurro' : 'text-conforme'}>
+                    {e.registros === 0 ? 'sem registros no período'
+                      : e.sem_trilha > 0 ? `${e.sem_trilha} de ${e.registros} sem trilha`
+                      : `${e.registros} de ${e.registros} na trilha`}
                   </span>
                 </div>
               ))}

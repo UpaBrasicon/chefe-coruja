@@ -178,7 +178,8 @@ export default function Escala({
 
   const [turno, setTurno] = React.useState<'manha' | 'tarde' | 'noite'>('manha')
   const [mes, setMes] = React.useState(() => hojeISO().slice(0, 7))
-  const [semana, setSemana] = React.useState(() => hojeISO())
+  // revisão do gestor (RT, 24/11/2026, N1): a semana da mensal começa no domingo, na ordem da fixa
+  const [semana, setSemana] = React.useState(() => { const h = hojeISO(); return somaDias(h, -new Date(h + 'T12:00:00').getDay()) })
   const [abaGestorLocal, setAbaGestor] = React.useState<'fixa' | 'mensal' | 'pedidos' | 'carga'>('mensal')
   const [abaPlantonistaLocal, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
   const abaGestor = abaGestorFixa ?? abaGestorLocal
@@ -1602,7 +1603,7 @@ export default function Escala({
                           <span className="text-rotulo font-semibold text-conforme">Tudo livre</span>
                         ) : (
                           <span className="text-rotulo font-semibold text-tinta-sussurro">
-                            {plantoesDia.length} plantão(ões)
+                            {plantoesDia.length} {plantoesDia.length === 1 ? 'plantão' : 'plantões'}
                           </span>
                         )}
                         {temMinhaCand && (
@@ -1859,8 +1860,8 @@ export default function Escala({
                         <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold text-tinta-sussurro">
                           Setor
                         </TableHead>
-                        {DIAS_SEMANA.map((d) => (
-                          <TableHead key={d} className="border-b border-r p-2 text-center text-rotulo font-semibold">
+                        {DIAS_SEMANA.map((d, i) => (
+                          <TableHead key={d} className={`border-b border-r p-2 text-center text-rotulo font-semibold ${i === 0 || i === 6 ? 'bg-trilha/60 text-tinta-apoio' : ''}`}>
                             {d}
                           </TableHead>
                         ))}
@@ -1878,9 +1879,9 @@ export default function Escala({
                                 <button
                                   type="button"
                                   onClick={() => abrirCelulaFixa(s.id, i)}
-                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
+                                  className="group/cel flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
                                 >
-                                  {fixas.length === 0 && <span className="text-rotulo text-acao">+ adicionar</span>}
+                                  {fixas.length === 0 && <CelulaVazia />}
                                   {fixas.map((f) => (
                                     <span key={f.id} className="group flex items-center gap-1">
                                       <span className="block flex-1 rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
@@ -1913,7 +1914,7 @@ export default function Escala({
                 {vagasGeracao.length > 0 && (
                   <div role="alert" className="flex flex-col gap-1 rounded-controle border border-atencao/30 bg-alerta-atencao p-3 text-apoio">
                     <span className="font-medium text-tinta">
-                      {vagasGeracao.length} plantão(ões) viraram vaga aberta: a pessoa já estava escalada em outro lugar no mesmo horário.
+                      {vagasGeracao.length === 1 ? '1 plantão virou vaga aberta' : `${vagasGeracao.length} plantões viraram vaga aberta`}: a pessoa já estava escalada em outro lugar no mesmo horário.
                     </span>
                     <ul className="list-disc pl-5 text-tinta-apoio">
                       {vagasGeracao.map((v) => (
@@ -1956,7 +1957,7 @@ export default function Escala({
                         <TableHead
                           key={d}
                           className={`border-b p-2 text-center text-rotulo font-semibold ${
-                            [0, 6].includes(new Date(d + 'T12:00:00').getDay()) ? 'border-r border-r-atencao/30 bg-alerta-atencao text-atencao' : 'border-r'
+                            [0, 6].includes(new Date(d + 'T12:00:00').getDay()) ? 'border-r bg-trilha/60 text-tinta-apoio' : 'border-r'
                           }`}
                         >
                           {DIAS_SEMANA[new Date(d + 'T12:00:00').getDay()]}
@@ -1977,11 +1978,9 @@ export default function Escala({
                               <button
                                 type="button"
                                 onClick={() => abrirCelula(s.id, d)}
-                                className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
+                                className="group/cel flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
                               >
-                                {plantoes.length === 0 && (
-                                  <span className="text-rotulo text-acao">+ adicionar</span>
-                                )}
+                                {plantoes.length === 0 && <CelulaVazia />}
                                 {plantoes.map((p) => (
                                   <span key={p.id} className="block">
                                     <span className="block rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
@@ -2152,3 +2151,13 @@ export default function Escala({
   )
 }
 
+
+/** Célula sem ninguém: "vago" à vista; "+ adicionar" só ao passar o mouse ou com o foco (RT, 24/11/2026). */
+function CelulaVazia() {
+  return (
+    <>
+      <span className="text-rotulo text-tinta-sussurro group-hover/cel:hidden group-focus-visible/cel:hidden">vago</span>
+      <span className="hidden text-rotulo text-acao group-hover/cel:inline group-focus-visible/cel:inline">+ adicionar</span>
+    </>
+  )
+}
