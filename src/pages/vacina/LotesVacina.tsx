@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -48,7 +49,7 @@ export default function LotesVacina() {
       <TituloPagina icone={Syringe} titulo="Lotes de vacina"
         descricao="Os lotes que a UBS recebe. Na sala de vacina, o lote é escolhido desta lista, e o vencido ou desativado não aparece." />
       {!unidade && <Vazio icone={Syringe} titulo="Escolha a unidade" texto="Os lotes são cadastrados por UBS." />}
-      {painel.isLoading && <Spinner />}
+      {painel.isLoading && <EsqueletoLinhas linhas={3} rotulo="Carregando os lotes…" className="px-0" />}
       {painel.error && <MensagemErro texto={(painel.error as Error).message} />}
       {painel.data && unidade && (
         <>

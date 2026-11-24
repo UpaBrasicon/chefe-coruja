@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useUnidade } from '@/contexts/UnidadeContext'
@@ -125,7 +126,7 @@ function Paciente({ unidade, pacienteId, onFechar }: { unidade: string; paciente
   })
   const erro = cad.error ?? refs.error ?? lotes.error
   if (erro) return <MensagemErro texto={(erro as Error).message} />
-  if (!cad.data || !refs.data || !lotes.data) return <Spinner />
+  if (!cad.data || !refs.data || !lotes.data) return <EsqueletoLinhas linhas={4} rotulo="Carregando a caderneta…" className="px-0" />
   const c = cad.data
   return (
     <div className="flex flex-col gap-4">

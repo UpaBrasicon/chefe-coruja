@@ -21,7 +21,7 @@ import { Chip, Chips, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { dataIso } from '@/lib/formato'
 import { Gaveta, GavetaCabeca, GavetaPe } from '@/components/ui/gaveta'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 import { LeitoAberto } from './LeitoAberto'
 import { SeloNaoIdentificado } from '@/components/porta/SeloNaoIdentificado'
@@ -179,7 +179,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
       {podeDarAlta && unidadeId && <AltasRecentes unidadeId={unidadeId} />}
 
       {carregando ? (
-        <div className="flex h-32 items-center justify-center"><Spinner /></div>
+        <EsqueletoLinhas linhas={4} rotulo="Carregando os internados…" className="rounded-cartao border border-fio bg-superficie" />
       ) : visiveis.length === 0 ? (
         <Vazio icone={Hospital}
           titulo={doSetor.length === 0 ? 'Nenhum paciente internado' : filtro === 'Com pendência' ? 'Nenhum leito com pendência agora' : 'Nenhum leito neste filtro'}
