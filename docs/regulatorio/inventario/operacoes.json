@@ -973,7 +973,8 @@
       ],
       "dados": [
         "título, dia, horário, link e pauta curta da reunião",
-        "quem marcou e quem foi convidado (pessoas da organização)"
+        "quem marcou e quem foi convidado (pessoas da organização)",
+        "e-mail do convidado, lido da conta na hora do envio (no e-mail, pela Resend)"
       ],
       "sensivel": false,
       "acesso": [
@@ -981,7 +982,8 @@
         "os convidados da mesma reunião"
       ],
       "local": [
-        "Supabase (São Paulo)"
+        "Supabase (São Paulo)",
+        "Resend (EUA, e-mail aos convidados: título, dia, hora, link, pauta curta e quem marcou)"
       ],
       "prazo": {
         "guarda": "enquanto durar o contrato com a organização",
@@ -991,11 +993,13 @@
       "seguranca": [
         "RLS: só quem marcou e os convidados leem; escrita só por funções que conferem o papel de administrador",
         "o link só aceita https://; sem integração com Google ou Microsoft (v1)",
-        "a pauta é curta (até 2.000 letras) e a tela não pede dado de paciente"
+        "a pauta é curta (até 2.000 letras) e a tela não pede dado de paciente",
+        "e-mail: a fila (private.reuniao_emails) guarda só ids, evento e situação; o endereço sai do banco só para a Edge Function avisar-reuniao, nunca para o navegador; uma mensagem por destinatário"
       ],
       "tabelas": [
         "public.reunioes",
-        "public.reuniao_convidados"
+        "public.reuniao_convidados",
+        "private.reuniao_emails"
       ]
     },
     {

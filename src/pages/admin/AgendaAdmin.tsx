@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CalendarDays, ChevronLeft, ChevronRight, Copy, Plus, Search, Users, Video, X } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, Copy, Mail, Plus, Search, Users, Video, X } from 'lucide-react'
 import * as React from 'react'
 
 import { cartao } from '@/components/admin/ui'
@@ -13,8 +13,8 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import {
-  diasDaSemana, LIMITE_PAUTA, plataformaDoLink, problemaDaReuniao, somarDias,
-  type Convidado, type FormReuniao, type Reuniao,
+  avisoDoEmail, diasDaSemana, LIMITE_PAUTA, plataformaDoLink, problemaDaReuniao, somarDias,
+  type Convidado, type FormReuniao, type Reuniao, type RespostaEmail,
 } from '@/domain/reuniao'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { dataIso, dataPorExtenso, dataPura, diaMes, hora, semanaCurta, dia as diaDoMes } from '@/lib/formato'
@@ -25,12 +25,29 @@ import type { Papel } from '@/types/database'
 // Agenda do administrador (pedido do RT, 24/11/2026): no lugar da Escala, o
 // dia a dia e as reuniões. Desenho aprovado (Refero: Cron, Amie): o dia ou a
 // semana com os compromissos e o detalhe ao lado. v1: o link é colado (Meet,
-// Zoom, Teams ou outra); os convidados recebem o aviso no app. Tudo no
-// horário de Brasília.
+// Zoom, Teams ou outra); os convidados recebem o aviso no app e por e-mail
+// (Edge Function avisar-reuniao, chamada depois de gravar, sem travar a
+// gravação). Tudo no horário de Brasília.
 
 type Visao = 'dia' | 'semana'
 
 const meioDia = (iso: string) => `${iso}T12:00:00-03:00`
+
+/** E-mail aos convidados: devolve o aviso discreto (ou null). Nunca lança. */
+async function avisarPorEmail(reuniao: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('avisar-reuniao', { body: { reuniao } })
+    if (!error) return avisoDoEmail(data as RespostaEmail, false)
+    let corpo: RespostaEmail | null = null
+    try {
+      const ctx = (error as { context?: Response }).context
+      if (ctx) corpo = (await ctx.json()) as RespostaEmail
+    } catch { /* corpo não-JSON */ }
+    return avisoDoEmail(corpo, true)
+  } catch {
+    return avisoDoEmail(null, true)
+  }
+}
 
 function useReunioes(de: string, ate: string) {
   return useQuery({
@@ -48,6 +65,12 @@ export default function AgendaAdmin() {
   const [dia, setDia] = React.useState(() => dataIso())
   const [escolhida, setEscolhida] = React.useState<string | null>(null)
   const [editando, setEditando] = React.useState<Reuniao | 'nova' | null>(null)
+  const [avisoEmail, setAvisoEmail] = React.useState<string | null>(null)
+  // depois de gravar: o e-mail sai em segundo plano; a falha vira só um aviso
+  const avisarEmail = React.useCallback((id: string) => {
+    setAvisoEmail(null)
+    void avisarPorEmail(id).then(setAvisoEmail)
+  }, [])
 
   const semana = diasDaSemana(dia)
   const reunioes = useReunioes(semana[0], semana[6])
@@ -88,6 +111,13 @@ export default function AgendaAdmin() {
           </Button>
         </div>
         <span className="basis-full text-corpo font-medium text-tinta" aria-live="polite">{periodo}</span>
+        {avisoEmail && (
+          <p role="status" className="flex basis-full items-center gap-1.5 text-apoio text-tinta-apoio">
+            <Mail className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />
+            <span className="min-w-0">{avisoEmail}</span>
+            <Button variant="ghost" size="icon-xs" aria-label="Fechar o aviso do e-mail" onClick={() => setAvisoEmail(null)}><X /></Button>
+          </p>
+        )}
       </div>
 
       <div className="grid items-start gap-3.5 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -128,7 +158,7 @@ export default function AgendaAdmin() {
 
         <aside className="lg:sticky lg:top-4" aria-label="Detalhe da reunião">
           {atual ? (
-            <Detalhe r={atual} agora={reunioes.dataUpdatedAt} onEditar={() => setEditando(atual)} onFechar={() => setEscolhida(null)} />
+            <Detalhe r={atual} agora={reunioes.dataUpdatedAt} onEditar={() => setEditando(atual)} onFechar={() => setEscolhida(null)} onCancelada={avisarEmail} />
           ) : (
             <Vazio icone={Video} titulo="Escolha uma reunião" texto="O detalhe aparece aqui: horário, link para entrar, pauta e convidados." />
           )}
@@ -140,7 +170,7 @@ export default function AgendaAdmin() {
           reuniao={editando === 'nova' ? null : editando}
           diaInicial={dia < hoje ? hoje : dia}
           onFechar={() => setEditando(null)}
-          onSalva={(id) => { setEscolhida(id); setEditando(null) }}
+          onSalva={(id) => { setEscolhida(id); setEditando(null); avisarEmail(id) }}
         />
       )}
     </div>
@@ -185,7 +215,9 @@ function CartaoReuniao({ r, ativa, compacto, onClick }: { r: Reuniao; ativa: boo
 
 // ── detalhe ──────────────────────────────────────────────────────────────────
 
-function Detalhe({ r, agora, onEditar, onFechar }: { r: Reuniao; agora: number; onEditar: () => void; onFechar: () => void }) {
+function Detalhe({ r, agora, onEditar, onFechar, onCancelada }: {
+  r: Reuniao; agora: number; onEditar: () => void; onFechar: () => void; onCancelada: (id: string) => void
+}) {
   const qc = useQueryClient()
   // o estado vale para a reunião em que foi ligado (trocar de reunião desliga)
   const [confirmarId, setConfirmarId] = React.useState<string | null>(null)
@@ -199,7 +231,7 @@ function Detalhe({ r, agora, onEditar, onFechar }: { r: Reuniao; agora: number; 
       const { error } = await supabase.rpc('cancelar_reuniao', { p_id: r.id })
       if (error) throw error
     },
-    onSuccess: () => { setConfirmar(false); void qc.invalidateQueries({ queryKey: ['reunioes'] }) },
+    onSuccess: () => { setConfirmar(false); void qc.invalidateQueries({ queryKey: ['reunioes'] }); onCancelada(r.id) },
   })
   const terminou = new Date(r.fim).getTime() < agora
 
@@ -334,7 +366,7 @@ function FormularioReuniao({ reuniao, diaInicial, onFechar, onSalva }: {
       <GavetaCabeca
         sobre="Agenda"
         titulo={reuniao ? 'Editar reunião' : 'Nova reunião'}
-        detalhe="Os convidados recebem o aviso no app. Horário de Brasília."
+        detalhe="Os convidados recebem o aviso no app e por e-mail. Horário de Brasília."
       />
       <div className="flex flex-col gap-4 px-[22px] py-5">
         <Texto id="re-titulo" rotulo="Título" valor={titulo} onChange={setTitulo} dica="Ex.: reunião da rede, escala de dezembro" largura="cheio" />

@@ -61,3 +61,23 @@ test('no menu do administrador a Escala vira Agenda; o gestor e o médico não m
   assert.ok(itensDeNavegacao('gestor').some((i) => i.to === '/escala' && i.rotulo === 'Escala'))
   assert.ok(itensDeNavegacao('plantonista').some((i) => i.to === '/agenda' && i.rotulo === 'Minha agenda'))
 })
+
+test('e-mail aos convidados: aviso discreto só quando falha ou falta e-mail', async () => {
+  const { avisoDoEmail } = await import('../domain/reuniao.ts')
+  assert.equal(avisoDoEmail({ enviados: 3, sem_email: 0, falhas: 0 }, false), null)
+  assert.equal(avisoDoEmail({ enviados: 0, sem_email: 0, falhas: 0 }, false), null, 'fila vazia (nada mudou para os convidados)')
+  assert.match(avisoDoEmail({ enviados: 1, sem_email: 1 }, false) ?? '', /^Um convidado está sem e-mail/)
+  assert.match(avisoDoEmail({ sem_email: 2 }, false) ?? '', /^2 convidados/)
+  assert.equal(avisoDoEmail(null, true), 'E-mail não enviado. Os convidados têm o aviso no app.')
+  assert.equal(avisoDoEmail({ erro: 'e-mail não enviado: o envio demorou' }, true),
+    'E-mail não enviado (o envio demorou). Os convidados têm o aviso no app.')
+})
+
+test('a tela chama o e-mail depois de gravar e o banco põe o e-mail na fila', () => {
+  const tela = readFileSync(new URL('../pages/admin/AgendaAdmin.tsx', import.meta.url), 'utf8')
+  assert.match(tela, /functions\.invoke\('avisar-reuniao'/)
+  const sql = readFileSync(new URL('../../supabase/migrations/20270421000031_agenda_email.sql', import.meta.url), 'utf8')
+  assert.match(sql, /INSERT INTO private\.reuniao_emails/)
+  assert.match(sql, /GRANT EXECUTE ON FUNCTION public\.reuniao_emails_reservar\(uuid, uuid, text\), public\.reuniao_emails_concluir\(bigint\[\], text\)\s+TO service_role;/)
+  assert.doesNotMatch(sql, /TO authenticated/, 'o e-mail dos convidados não sai para o navegador')
+})

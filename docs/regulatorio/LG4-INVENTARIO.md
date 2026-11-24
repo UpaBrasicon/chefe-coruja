@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-31 operações cobrem 329 tabelas.
+32 operações cobrem 331 tabelas.
 
 ## Papéis
 
@@ -23,7 +23,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 | Operação | Papel | Dado sensível | Prazo de guarda | Tabelas |
 |---|---|---|---|---|
-| Cadastro e identificação do paciente | operador | sim | 20 anos a partir do último registro | 10 |
+| Cadastro e identificação do paciente | operador | sim | 20 anos a partir do último registro | 9 |
 | Recepção, classificação de risco e chamada | operador | sim | 20 anos a partir do último registro | 12 |
 | Atendimento médico, evolução e alta | operador | sim | 20 anos a partir do último registro | 23 |
 | Observação e protocolos de cuidado | operador | sim | 20 anos a partir do último registro | 4 |
@@ -38,17 +38,18 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 9 |
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
 | Faturamento SUS e contas | operador | sim | 5 anos | 20 |
-| Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 16 |
+| Escala, presença e remuneração dos profissionais | operador | não | 5 anos | 15 |
 | Conta do profissional, login e permissões | operador | não | enquanto durar o vínculo; depois, 5 anos | 21 |
 | Preferências e avisos ao profissional | operador | não | enquanto durar a conta | 5 |
 | Anotações pessoais do médico | operador | não | 30 dias depois da última mudança | 1 |
+| Agenda de reuniões do administrador | operador | não | enquanto durar o contrato com a organização | 3 |
 | Comunicação interna da equipe | operador | não | a definir com o advogado | 9 |
 | Auditoria e registro de acesso ao prontuário | operador | sim | 20 anos | 3 |
 | Registro de acesso à aplicação (Marco Civil) | controlador | não | 6 meses | 2 |
 | Tecnovigilância do módulo clínico | controlador | não | 5 anos depois da conclusão | 3 |
 | Erros do aplicativo e vigilância técnica | controlador | não | a definir com o advogado (proposta: 1 ano) | 5 |
 | Uso do aplicativo, agregado | controlador | não | a definir com o advogado (proposta: 2 anos) | 1 |
-| Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 13 |
+| Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
 | RNDS, SISAB, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 14 |
 | Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 8 |
 | Site comercial e pedido de demonstração | controlador | não | 2 anos | 1 |
@@ -92,9 +93,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Medidas próprias**
 - unificação de cadastro só com decisão registrada
 
-**Tabelas (10)**
+**Tabelas (9)**
 
-`public.pacientes`, `public.pacientes_identidade_provisoria`, `public.pacientes_pessoas_diferentes`, `public.pedidos_unificacao`, `public.revisoes_cadastro`, `public.alergias_paciente`, `public.alergias_negacoes`, `public.isolamentos_paciente`, `public.impressoes_pulseira`, `private.prontuario_sequencia`
+`public.pacientes`, `public.pacientes_identidade_provisoria`, `public.pedidos_unificacao`, `public.revisoes_cadastro`, `public.alergias_paciente`, `public.alergias_negacoes`, `public.isolamentos_paciente`, `public.impressoes_pulseira`, `private.prontuario_sequencia`
 
 ### Recepção, classificação de risco e chamada
 
@@ -636,9 +637,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Prazo.** 5 anos (prazo trabalhista (V3)). Descarte: rotina com registro, depois do prazo (V3).
 
-**Tabelas (16)**
+**Tabelas (15)**
 
-`public.escala_plantao`, `public.escala_fixa`, `public.escala_vagas`, `public.escala_publicacoes`, `public.historico_escala`, `public.candidaturas_escala`, `public.solicitacoes_escala`, `public.trocas_plantao`, `public.presenca_plantonista`, `public.remuneracoes_plantao`, `public.plantao_versoes_erp`, `public.chronos_alertas_escala`, `public.liberacao_pos_plantao`, `public.disponibilidade_telemedicina`, `public.descanso_divisoes`, `public.turnos_unidade`
+`public.escala_plantao`, `public.escala_fixa`, `public.escala_vagas`, `public.escala_publicacoes`, `public.historico_escala`, `public.candidaturas_escala`, `public.solicitacoes_escala`, `public.trocas_plantao`, `public.presenca_plantonista`, `public.remuneracoes_plantao`, `public.plantao_versoes_erp`, `public.chronos_alertas_escala`, `public.liberacao_pos_plantao`, `public.disponibilidade_telemedicina`, `public.descanso_divisoes`
 
 ### Conta do profissional, login e permissões
 
@@ -738,6 +739,43 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Tabelas (1)**
 
 `public.anotacoes_medico`
+
+### Agenda de reuniões do administrador
+
+`agenda-reunioes` · papel da Chefe Coruja: **operador** · dado sensível: **não**
+
+**Finalidade.** Organizar o dia a dia e as reuniões da administração da rede (pedido do RT de 24/11/2026), com o link colado da plataforma de vídeo.
+
+**Base legal (LGPD)**
+- art. 7º, V (execução de contrato)
+
+**Titulares**
+- profissionais
+
+**Dados**
+- título, dia, horário, link e pauta curta da reunião
+- quem marcou e quem foi convidado (pessoas da organização)
+- e-mail do convidado, lido da conta na hora do envio (no e-mail, pela Resend)
+
+**Quem acessa**
+- quem marcou a reunião (administrador da organização)
+- os convidados da mesma reunião
+
+**Onde fica**
+- Supabase (São Paulo)
+- Resend (EUA, e-mail aos convidados: título, dia, hora, link, pauta curta e quem marcou)
+
+**Prazo.** enquanto durar o contrato com a organização (registro administrativo da rede, sem dado de paciente). Descarte: apagado com a organização ou a pedido do RT.
+
+**Medidas próprias**
+- RLS: só quem marcou e os convidados leem; escrita só por funções que conferem o papel de administrador
+- o link só aceita https://; sem integração com Google ou Microsoft (v1)
+- a pauta é curta (até 2.000 letras) e a tela não pede dado de paciente
+- e-mail: a fila (private.reuniao_emails) guarda só ids, evento e situação; o endereço sai do banco só para a Edge Function avisar-reuniao, nunca para o navegador; uma mensagem por destinatário
+
+**Tabelas (3)**
+
+`public.reunioes`, `public.reuniao_convidados`, `private.reuniao_emails`
 
 ### Comunicação interna da equipe
 
@@ -979,9 +1017,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - lembrete de não escrever dado do paciente
 - auditoria guarda hash, não o texto
 
-**Tabelas (13)**
+**Tabelas (12)**
 
-`public.clinical_search_logs`, `public.clinical_search_feedback`, `public.ia_gateway_log`, `private.ia_preco_modelo`, `private.ia_teto_mensal`, `public.hermes_sessions`, `public.hermes_identidades`, `private.hermes_codigos_vinculo`, `public.hermes_almanaque`, `public.hermes_resumo_unidade`, `public.hermes_audit_log`, `public.gaviao_relatorios_semanais`, `public.gaviao_decisoes`
+`public.clinical_search_logs`, `public.clinical_search_feedback`, `public.ia_gateway_log`, `private.ia_preco_modelo`, `public.hermes_sessions`, `public.hermes_identidades`, `private.hermes_codigos_vinculo`, `public.hermes_almanaque`, `public.hermes_resumo_unidade`, `public.hermes_audit_log`, `public.gaviao_relatorios_semanais`, `public.gaviao_decisoes`
 
 ### RNDS, SISAB, API e integrações com outros sistemas
 
