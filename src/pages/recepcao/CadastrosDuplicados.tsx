@@ -15,8 +15,9 @@ import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 import {
-  chavePar, compararCampos, documentosDivergentes, motivoMinimo, porQueSugerido, ROTULO_REGRA, sugerirPrincipal,
-  type Cadastro, type Candidato, type LinhaComparacao, type PedidoUnificacao,
+  chavePar, compararCampos, documentosDivergentes, juntarHistorico, MOTIVO_MINIMO_SEPARADOS, motivoMinimo, porQueSugerido,
+  ROTULO_REGRA, sugerirPrincipal,
+  type Cadastro, type Candidato, type LinhaComparacao, type MarcaPessoasDiferentes, type PedidoUnificacao,
 } from '@/lib/unificacao'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +38,9 @@ import { cn } from '@/lib/utils'
 // private.gestor_da_unidade); "Manter este" fica na própria comparação; o
 // próprio pedido pode ser cancelado ou refeito com o outro cadastro ficando;
 // toda ação confirma antes e avisa o resultado.
+// "Deixar separados" grava "são pessoas diferentes" com motivo curto, quem e
+// quando (20270421000076): o par não volta a ser sugerido; o histórico mostra a
+// marca com Desfazer (recepção, gestor ou administrador geral da unidade).
 
 function AlertaDocumentos({ divergencias }: { divergencias: string[] }) {
   if (divergencias.length === 0) return null
@@ -174,6 +178,25 @@ function Opcao({ titulo, texto, recomendada, children }: { titulo: string; texto
   )
 }
 
+// "Pessoas diferentes" no histórico: quem, quando, motivo; Desfazer enquanto ativa
+function LinhaMarca({ m, desfazer }: { m: MarcaPessoasDiferentes; desfazer: () => void }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
+      <Situacao tom={m.desfeito_em ? 'calmo' : 'acao'}>{m.desfeito_em ? 'Pessoas diferentes, desfeito' : 'Pessoas diferentes'}</Situacao>
+      <span className="text-tinta">{m.a.nome} ({m.a.prontuario ?? '—'}) × {m.b.nome} ({m.b.prontuario ?? '—'})</span>
+      <span className="text-rotulo text-tinta-sussurro">
+        {m.decidido_por ? `por ${m.decidido_por} ` : ''}em {fmtDataHora(m.decidido_em)} · "{m.motivo}"
+        {m.desfeito_em ? ` · desfeito${m.desfeito_por ? ` por ${m.desfeito_por}` : ''} em ${fmtDataHora(m.desfeito_em)}` : ''}
+      </span>
+      {!m.desfeito_em && (
+        <Button size="sm" variant="outline" className="ml-auto" onClick={desfazer}>
+          <Undo2 /> Desfazer
+        </Button>
+      )}
+    </div>
+  )
+}
+
 type Par =
   | { chave: string; tipo: 'pedido'; pedido: PedidoUnificacao; candidato: Candidato | null }
   | { chave: string; tipo: 'candidato'; candidato: Candidato }
@@ -211,6 +234,10 @@ export default function CadastrosDuplicados() {
   const [motivoDecisao, setMotivoDecisao] = React.useState('')
   const [confirmoDecisao, setConfirmoDecisao] = React.useState(false)
   const [aviso, setAviso] = React.useState<string | null>(null)
+  // "Deixar separados": o par que vai ser marcado e o motivo curto; ou a marca a desfazer
+  const [separando, setSeparando] = React.useState<Candidato | null>(null)
+  const [motivoSeparar, setMotivoSeparar] = React.useState('')
+  const [desfazendoMarca, setDesfazendoMarca] = React.useState<MarcaPessoasDiferentes | null>(null)
 
   const candidatos = useQuery({
     queryKey: ['candidatos-duplicados', unidadeId],
@@ -230,10 +257,47 @@ export default function CadastrosDuplicados() {
       return data as unknown as PedidoUnificacao[]
     },
   })
+  const marcas = useQuery({
+    queryKey: ['pessoas-diferentes', unidadeId],
+    enabled: !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('pessoas_diferentes_da_unidade', { p_unidade: unidadeId! })
+      if (error) throw error
+      return data as unknown as MarcaPessoasDiferentes[]
+    },
+  })
   const recarregar = () => {
     void queryClient.invalidateQueries({ queryKey: ['candidatos-duplicados', unidadeId] })
     void queryClient.invalidateQueries({ queryKey: ['pedidos-unificacao', unidadeId] })
+    void queryClient.invalidateQueries({ queryKey: ['pessoas-diferentes', unidadeId] })
   }
+
+  // "São pessoas diferentes" fica gravado: o par sai da lista e não volta a ser sugerido
+  const separar = useMutation({
+    mutationFn: async (c: Candidato) => {
+      const [a, b] = c.cadastros
+      const { error } = await supabase.rpc('marcar_pessoas_diferentes', {
+        p_paciente_a: a.id, p_paciente_b: b.id, p_motivo: motivoSeparar.trim(),
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      setSeparando(null); setMotivoSeparar(''); setAberto('')
+      setAviso('Marcados como pessoas diferentes: o par saiu da lista e não volta a ser sugerido. Dá para desfazer no histórico.')
+      recarregar()
+    },
+  })
+  const desfazerMarca = useMutation({
+    mutationFn: async (m: MarcaPessoasDiferentes) => {
+      const { error } = await supabase.rpc('desfazer_pessoas_diferentes', { p_marca: m.id })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      setDesfazendoMarca(null)
+      setAviso('Marca desfeita: se os dados continuarem parecidos, o par volta à lista para conferir.')
+      recarregar()
+    },
+  })
 
   // Pedir; refazer o próprio pedido com o outro cadastro ficando = cancelar e pedir de novo
   const pedir = useMutation({
@@ -282,7 +346,7 @@ export default function CadastrosDuplicados() {
   })
 
   const pendentes = (pedidos.data ?? []).filter((p) => p.status === 'pendente')
-  const historico = (pedidos.data ?? []).filter((p) => p.status !== 'pendente')
+  const historico = React.useMemo(() => juntarHistorico(pedidos.data ?? [], marcas.data ?? []), [pedidos.data, marcas.data])
   const divergenciasPedido = pedindo ? documentosDivergentes(pedindo.candidato.cadastros) : []
   const divergenciasDecisao = decidindo?.p.divergencias ?? []
   const precisaMotivo = decidindo?.acao === 'recusar' || decidindo?.acao === 'desfazer'
@@ -306,6 +370,12 @@ export default function CadastrosDuplicados() {
     setPedindo({ candidato: c, principal, substitui })
     setMotivo(substitui?.motivo ?? ''); setConfirmoPedido(substitui?.confirmado_no_pedido ?? false)
     pedir.reset(); setAviso(null)
+  }
+  function abrirSeparar(c: Candidato) {
+    setSeparando(c); setMotivoSeparar(''); separar.reset(); setAviso(null)
+  }
+  function abrirDesfazerMarca(m: MarcaPessoasDiferentes) {
+    setDesfazendoMarca(m); desfazerMarca.reset(); setAviso(null)
   }
   function abrirDecisao(acao: Decisao['acao'], p: PedidoUnificacao) {
     setDecidindo({ acao, p }); setMotivoDecisao(''); setConfirmoDecisao(false); decidir.reset(); setAviso(null)
@@ -343,8 +413,8 @@ export default function CadastrosDuplicados() {
                 </Button>
               </Opcao>
               <Opcao titulo="São pessoas diferentes" recomendada={div.length > 0}
-                texto="Não peça a unificação: os dois cadastros continuam separados como estão. O par segue nesta lista enquanto os dados forem parecidos.">
-                <Button size="sm" variant="outline" onClick={() => setAberto('')}><X /> Deixar separados</Button>
+                texto="Grava que são pessoas diferentes, com um motivo curto: os dois cadastros continuam como estão, o par sai desta lista e não volta a ser sugerido. Dá para desfazer no histórico.">
+                <Button size="sm" variant="outline" onClick={() => abrirSeparar(c)}><X /> Deixar separados</Button>
               </Opcao>
             </div>
           )}
@@ -462,24 +532,86 @@ export default function CadastrosDuplicados() {
       {historico.length > 0 && (
         <section className="flex flex-col gap-2">
           <TituloSecao>Histórico</TituloSecao>
-          {historico.map((p) => (
-            <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
-              <Situacao tom={STATUS[p.status].tom}>{STATUS[p.status].rotulo}</Situacao>
-              <span className="text-tinta">{p.absorvido.nome} ({p.absorvido.prontuario}) → {p.principal.nome} ({p.principal.prontuario})</span>
-              {(p.divergencias ?? []).length > 0 && <span className="text-rotulo text-tinta-apoio">documentos diferentes ({p.divergencias.join(' e ')}), confirmado</span>}
-              <span className="text-rotulo text-tinta-sussurro">
-                {p.decidido_por ? `por ${p.decidido_por}` : ''}{p.decidido_em ? ` em ${fmtDataHora(p.decidido_em)}` : ''}
-                {p.motivo_decisao ? ` · "${p.motivo_decisao}"` : ''}{p.motivo_desfazer ? ` · desfeito: "${p.motivo_desfazer}"` : ''}
-              </span>
-              {podeDecidir && p.status === 'aprovado' && (
-                <Button size="sm" variant="outline" className="ml-auto" onClick={() => abrirDecisao('desfazer', p)}>
-                  <Undo2 /> Desfazer
-                </Button>
-              )}
-            </div>
-          ))}
+          {marcas.error && <p role="alert" className="text-apoio text-critico">{(marcas.error as Error).message}</p>}
+          {historico.map((item) => {
+            if (item.tipo === 'marca') {
+              return <LinhaMarca key={`marca-${item.marca.id}`} m={item.marca} desfazer={() => abrirDesfazerMarca(item.marca)} />
+            }
+            const p = item.pedido
+            return (
+              <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
+                <Situacao tom={STATUS[p.status].tom}>{STATUS[p.status].rotulo}</Situacao>
+                <span className="text-tinta">{p.absorvido.nome} ({p.absorvido.prontuario}) → {p.principal.nome} ({p.principal.prontuario})</span>
+                {(p.divergencias ?? []).length > 0 && <span className="text-rotulo text-tinta-apoio">documentos diferentes ({p.divergencias.join(' e ')}), confirmado</span>}
+                <span className="text-rotulo text-tinta-sussurro">
+                  {p.decidido_por ? `por ${p.decidido_por}` : ''}{p.decidido_em ? ` em ${fmtDataHora(p.decidido_em)}` : ''}
+                  {p.motivo_decisao ? ` · "${p.motivo_decisao}"` : ''}{p.motivo_desfazer ? ` · desfeito: "${p.motivo_desfazer}"` : ''}
+                </span>
+                {podeDecidir && p.status === 'aprovado' && (
+                  <Button size="sm" variant="outline" className="ml-auto" onClick={() => abrirDecisao('desfazer', p)}>
+                    <Undo2 /> Desfazer
+                  </Button>
+                )}
+              </div>
+            )
+          })}
         </section>
       )}
+
+      <Dialog open={!!separando} onOpenChange={(v) => !v && setSeparando(null)}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="text-dialogo">São pessoas diferentes</DialogTitle>
+            <DialogDescription className="text-controle">
+              Os dois cadastros continuam como estão. Fica gravado quem decidiu, quando e o motivo, e o par não volta a ser
+              sugerido como duplicado. Dá para desfazer no histórico.
+            </DialogDescription>
+          </DialogHeader>
+          {separando && (
+            <span className="text-apoio text-tinta">
+              {separando.cadastros.map((k) => `${k.nome} (${pront(k)})`).join(' × ')}
+            </span>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="motivo-separar">Motivo</Label>
+            <Textarea id="motivo-separar" rows={2} maxLength={500} value={motivoSeparar} onChange={(e) => setMotivoSeparar(e.target.value)}
+              placeholder="Ex.: mães diferentes no documento" />
+            <span className="text-rotulo text-tinta-sussurro">Mínimo de {MOTIVO_MINIMO_SEPARADOS} letras.</span>
+          </div>
+          {separar.error && <p role="alert" className="text-apoio text-critico">{(separar.error as Error).message}</p>}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setSeparando(null)}>Voltar</Button>
+            <Button disabled={separar.isPending || !separando || motivoSeparar.trim().length < MOTIVO_MINIMO_SEPARADOS}
+              onClick={() => separando && separar.mutate(separando)}>
+              <X /> Deixar separados
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!desfazendoMarca} onOpenChange={(v) => !v && setDesfazendoMarca(null)}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="text-dialogo">Desfazer "pessoas diferentes"</DialogTitle>
+            <DialogDescription className="text-controle">
+              A marca sai, mas fica no histórico. Se os dados continuarem parecidos, o par volta à lista para conferir.
+            </DialogDescription>
+          </DialogHeader>
+          {desfazendoMarca && (
+            <span className="text-apoio text-tinta">
+              {desfazendoMarca.a.nome} ({pront(desfazendoMarca.a)}) × {desfazendoMarca.b.nome} ({pront(desfazendoMarca.b)}) · "{desfazendoMarca.motivo}"
+            </span>
+          )}
+          {desfazerMarca.error && <p role="alert" className="text-apoio text-critico">{(desfazerMarca.error as Error).message}</p>}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDesfazendoMarca(null)}>Voltar</Button>
+            <Button variant="destructive" disabled={desfazerMarca.isPending || !desfazendoMarca}
+              onClick={() => desfazendoMarca && desfazerMarca.mutate(desfazendoMarca)}>
+              <Undo2 /> Desfazer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!pedindo} onOpenChange={(v) => !v && setPedindo(null)}>
         <DialogContent className="sm:max-w-[560px]">

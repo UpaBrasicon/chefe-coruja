@@ -4,7 +4,7 @@
 
 Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento (LGPD, art. 37). Não é parecer jurídico. Prazos e bases legais são propostas para o advogado confirmar.
 
-31 operações cobrem 328 tabelas.
+31 operações cobrem 329 tabelas.
 
 ## Papéis
 
@@ -23,7 +23,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 | Operação | Papel | Dado sensível | Prazo de guarda | Tabelas |
 |---|---|---|---|---|
-| Cadastro e identificação do paciente | operador | sim | 20 anos a partir do último registro | 9 |
+| Cadastro e identificação do paciente | operador | sim | 20 anos a partir do último registro | 10 |
 | Recepção, classificação de risco e chamada | operador | sim | 20 anos a partir do último registro | 12 |
 | Atendimento médico, evolução e alta | operador | sim | 20 anos a partir do último registro | 23 |
 | Observação e protocolos de cuidado | operador | sim | 20 anos a partir do último registro | 4 |
@@ -92,9 +92,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Medidas próprias**
 - unificação de cadastro só com decisão registrada
 
-**Tabelas (9)**
+**Tabelas (10)**
 
-`public.pacientes`, `public.pacientes_identidade_provisoria`, `public.pedidos_unificacao`, `public.revisoes_cadastro`, `public.alergias_paciente`, `public.alergias_negacoes`, `public.isolamentos_paciente`, `public.impressoes_pulseira`, `private.prontuario_sequencia`
+`public.pacientes`, `public.pacientes_identidade_provisoria`, `public.pacientes_pessoas_diferentes`, `public.pedidos_unificacao`, `public.revisoes_cadastro`, `public.alergias_paciente`, `public.alergias_negacoes`, `public.isolamentos_paciente`, `public.impressoes_pulseira`, `private.prontuario_sequencia`
 
 ### Recepção, classificação de risco e chamada
 

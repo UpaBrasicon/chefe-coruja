@@ -19,6 +19,19 @@ export type PedidoUnificacao = {
   principal: Resumo; absorvido: Resumo
 }
 
+/**
+ * "São pessoas diferentes" gravado (migration 20270421000076): o par não volta
+ * a ser sugerido enquanto a marca estiver ativa (desfeito_em nulo).
+ */
+export type MarcaPessoasDiferentes = {
+  id: string; motivo: string
+  decidido_por: string | null; decidido_em: string
+  desfeito_por: string | null; desfeito_em: string | null
+  a: Resumo; b: Resumo
+}
+/** Motivo curto de "Deixar separados" (o servidor confere o mesmo mínimo). */
+export const MOTIVO_MINIMO_SEPARADOS = 5
+
 export const ROTULO_REGRA: Record<Candidato['regras'][number], string> = {
   nome_nascimento: 'mesmo nome e nascimento',
   mae_nascimento: 'mesma mãe e nascimento',
@@ -104,3 +117,20 @@ export function compararCampos(a: CamposComparados, b: CamposComparados): LinhaC
 
 /** Chave do par, na mesma forma para o candidato e para o pedido. */
 export const chavePar = (ids: string[]) => [...ids].sort().join('|')
+
+export type ItemHistorico =
+  | { tipo: 'pedido'; em: string; pedido: PedidoUnificacao }
+  | { tipo: 'marca'; em: string; marca: MarcaPessoasDiferentes }
+
+/**
+ * Histórico da tela: pedidos já decididos e marcas de "pessoas diferentes" numa
+ * lista só, do mais recente para o mais antigo (a data é a da última mudança).
+ */
+export function juntarHistorico(pedidos: PedidoUnificacao[], marcas: MarcaPessoasDiferentes[]): ItemHistorico[] {
+  const itens: ItemHistorico[] = [
+    ...pedidos.filter((p) => p.status !== 'pendente')
+      .map((p) => ({ tipo: 'pedido' as const, em: p.desfeito_em ?? p.decidido_em ?? p.pedido_em, pedido: p })),
+    ...marcas.map((m) => ({ tipo: 'marca' as const, em: m.desfeito_em ?? m.decidido_em, marca: m })),
+  ]
+  return itens.sort((x, y) => new Date(y.em).getTime() - new Date(x.em).getTime())
+}

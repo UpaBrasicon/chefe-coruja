@@ -2,7 +2,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
-  chavePar, compararCampos, documentosDivergentes, motivoMinimo, porQueSugerido, sugerirPrincipal, type Cadastro,
+  chavePar, compararCampos, documentosDivergentes, juntarHistorico, motivoMinimo, porQueSugerido, sugerirPrincipal, type Cadastro,
+  type MarcaPessoasDiferentes, type PedidoUnificacao,
 } from './unificacao.ts'
 
 const base = (id: string, p: Partial<Cadastro>): Cadastro => ({
@@ -56,4 +57,21 @@ test('por que sugerido: explica a regra que decidiu', () => {
 
 test('chave do par não depende da ordem', () => {
   assert.equal(chavePar(['b', 'a']), chavePar(['a', 'b']))
+})
+
+test('histórico: pedidos decididos e marcas de pessoas diferentes, do mais recente ao mais antigo', () => {
+  const r = { id: 'x', nome: 'X', prontuario: null, data_nascimento: null, nome_mae: null }
+  const pedido = (id: string, status: PedidoUnificacao['status'], pedido_em: string, decidido_em: string | null): PedidoUnificacao => ({
+    id, status, motivo: 'm', pedido_em, pedido_por: null, meu: false, decidido_por: null, decidido_em, motivo_decisao: null,
+    desfeito_em: null, motivo_desfazer: null, divergencias: [], confirmado_no_pedido: false, confirmado_na_decisao: false,
+    principal: r, absorvido: r,
+  })
+  const marca = (id: string, decidido_em: string, desfeito_em: string | null): MarcaPessoasDiferentes => ({
+    id, motivo: 'mães diferentes', decidido_por: null, decidido_em, desfeito_por: null, desfeito_em, a: r, b: r,
+  })
+  const h = juntarHistorico(
+    [pedido('pend', 'pendente', '2026-11-24T10:00:00Z', null), pedido('rec', 'recusado', '2026-11-20T10:00:00Z', '2026-11-22T10:00:00Z')],
+    [marca('ativa', '2026-11-23T10:00:00Z', null), marca('desfeita', '2026-11-01T10:00:00Z', '2026-11-24T09:00:00Z')],
+  )
+  assert.deepEqual(h.map((i) => (i.tipo === 'pedido' ? i.pedido.id : i.marca.id)), ['desfeita', 'ativa', 'rec'])
 })
