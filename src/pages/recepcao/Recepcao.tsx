@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Baby, CalendarCheck, Check, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, UserRoundSearch, X } from 'lucide-react'
+import { ArrowRight, Baby, CalendarCheck, Check, ChevronDown, ClipboardList, ClipboardPlus, Hourglass, Monitor, Search, Stethoscope, TriangleAlert, UserRoundSearch, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -8,11 +8,14 @@ import { formatarDuracao } from '@/domain/plantao'
 import { supabase } from '@/lib/supabase'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { soDigitos } from '@/lib/documentos'
+import { UFS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { ehPediatrico, rotuloIdade } from '@/domain/idade'
 import { ordemTriagem, PRIORIDADE_ROTULO, PRIORIDADES_INFORMADAS, rotulosPrioridade, type PrioridadeLegal } from '@/domain/prioridade'
-import { ALVO_MIN, ordemMedica, type CorRisco } from '@/domain/risco'
+import { ordemMedica, type CorRisco } from '@/domain/risco'
+import { acimaDoAlvo, alvoDaLinha, horaDaFicha, maiorEspera, tempoNaFila } from '@/lib/tempoFila'
+import { faltaNoCadastro } from '@/lib/cadastroRecepcao'
 import { VindoDaUbs } from '@/components/encaminhamento/VindoDaUbs'
 import { ordemFilaUbsComAgenda, TIPOS_ATENDIMENTO_APS } from '@/domain/aps'
 import { JUSTIFICATIVAS_SEM_CPF, pedeMotivoSemCpf } from '@/domain/justificativaCpf'
@@ -32,7 +35,8 @@ import { ObitosPendentes } from '@/components/obito/ObitosPendentes'
 
 import { Campo, CamposCadastro } from '@/components/paciente/CamposCadastro'
 import { PropagandaPainel } from './PropagandaPainel'
-import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
+import { FichasDeHoje } from './FichasDeHoje'
+import { CADASTRO_VAZIO, errosCadastro, hojeSP, IDENTIDADE, idadeLegivel, normalizarCadastro, type Cadastro, type CampoCadastro } from '@/lib/cadastroPaciente'
 import { Aviso } from '@/components/ui/aviso'
 import { TituloCartao } from '@/components/monitor/Pagina'
 import { EscolherGestante, type Gestante } from '@/components/preNatal/EscolherGestante'
@@ -114,23 +118,8 @@ const ABAS_UBS: typeof ABAS = [
 
 const ROTA: Record<Aba, string> = { hoje: 'hoje', ficha: '', triagem: 'fila-triagem', medica: 'fila-medica', painel: 'painel' }
 
-/** Maior espera de quem ainda não foi atendido (desde a ficha ou a classificação). */
-function maiorEspera(itens: NaFila[], agora: number): string {
-  const esperando = itens.filter((e) => !e.atendimento_iniciado_em)
-  if (!esperando.length) return '—'
-  const desde = Math.min(...esperando.map((e) => new Date(e.etapa === 'atendimento' ? (e.classificado_em ?? e.chegada_em) : e.chegada_em).getTime()))
-  const min = Math.max(0, Math.round((agora - desde) / 60_000))
-  return formatarDuracao(min)
-}
-
 /** Quem da fila médica, ainda sem atendimento, já passou do alvo da cor. */
-function acimaDoAlvo(itens: NaFila[], agora: number): number {
-  return itens.filter((e) => {
-    if (e.atendimento_iniciado_em || !e.cor_atual) return false
-    const desde = new Date(e.classificado_em ?? e.chegada_em).getTime()
-    return Math.round((agora - desde) / 60_000) > ALVO_MIN[e.cor_atual]
-  }).length
-}
+const quantosAcimaDoAlvo = (itens: NaFila[], agora: number) => itens.filter((e) => acimaDoAlvo(e, agora)).length
 
 const diaHora = (iso: string) => `${diaMes(iso)} ${hora(iso)}`
 const ETAPA_ABERTA = (a: Aberto) =>
@@ -302,8 +291,10 @@ export default function Recepcao() {
             porta={porta}
             ubs={ubs}
             unidadeId={unidadeId!}
+            naFila={fila.data ?? []}
             aoAbrir={() => {
               void queryClient.invalidateQueries({ queryKey: ['recepcao-fila'] })
+              void queryClient.invalidateQueries({ queryKey: ['recepcao-fichas-hoje'] })
               void queryClient.invalidateQueries({ queryKey: ['nota-fila-triagem'] })
             }}
           />
@@ -333,8 +324,8 @@ export default function Recepcao() {
             {
               titulo: 'Aguardando o médico',
               itens: filaMedica.filter((e) => !e.atendimento_iniciado_em),
-              maiorEspera: maiorEspera(filaMedica, agora),
-              acimaDoAlvo: ubs ? undefined : acimaDoAlvo(filaMedica, agora),
+              maiorEspera: maiorEspera(filaMedica, agora, ubs),
+              acimaDoAlvo: ubs ? undefined : quantosAcimaDoAlvo(filaMedica, agora),
             },
             { titulo: 'Em atendimento', itens: filaMedica.filter((e) => e.atendimento_iniciado_em) },
           ]}
@@ -386,7 +377,7 @@ function HojeUbs({ unidadeId, fichas, carregando, erro, agora, filaEnfermagem, f
       <TituloCartao>Fila do consultório</TituloCartao>
       <ListaFila carregando={carregando} erro={erro} vazia="Ninguém aguardando a consulta." agora={agora} ubs
         grupos={[
-          { titulo: 'Aguardando a consulta', itens: aguardandoConsulta, maiorEspera: maiorEspera(filaConsultorio, agora) },
+          { titulo: 'Aguardando a consulta', itens: aguardandoConsulta, maiorEspera: maiorEspera(filaConsultorio, agora, true) },
           { titulo: 'Em atendimento', itens: filaConsultorio.filter((e) => e.atendimento_iniciado_em) },
         ]} />
     </div>
@@ -395,7 +386,7 @@ function HojeUbs({ unidadeId, fichas, carregando, erro, agora, filaEnfermagem, f
 
 // ── Nova ficha ───────────────────────────────────────────────────────────────
 
-function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: boolean; unidadeId: string; aoAbrir: () => void }) {
+function NovaFicha({ porta, ubs, unidadeId, naFila, aoAbrir }: { porta: Porta; ubs: boolean; unidadeId: string; naFila: NaFila[]; aoAbrir: () => void }) {
   const queryClient = useQueryClient()
   const [termo, setTermo] = React.useState('')
   const [buscado, setBuscado] = React.useState('')
@@ -422,10 +413,25 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
   // lacuna 1 (RT 10/11/2026): paciente sem identificação, nome provisório do servidor
   const [niAberto, setNiAberto] = React.useState(false)
   const [erroLocal, setErroLocal] = React.useState<string | null>(null)
+  // CA1: o resto do cadastro fica recolhido em "Mais dados"
+  const [maisAberto, setMaisAberto] = React.useState(false)
   // paciente com episódio aberto: avisa na seleção (busca) ou quando a RPC recusa
   const [alvoAberto, setAlvoAberto] = React.useState<string | null>(null)
   const [recusouAberto, setRecusouAberto] = React.useState(false)
   const hoje = hojeSP()
+
+  // CA3 (revisão do perfil Recepção, RT 24/11/2026): o cadastro novo já vem
+  // com o município e a UF da unidade, quando a unidade os tem
+  const localUnidade = useQuery({
+    queryKey: ['recepcao-local-unidade', unidadeId],
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('unidades').select('municipio, uf').eq('id', unidadeId).maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+  const faltaExistente = modo === 'existente' && existente ? faltaNoCadastro(existente) : ''
 
   const aberto = useQuery({
     queryKey: ['recepcao-aberto', alvoAberto],
@@ -484,6 +490,7 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     setMotivoCpf('')
     setDuplicata(null)
     setErroLocal(null)
+    setMaisAberto(false)
     setAlvoAberto(null)
     setRecusouAberto(false)
     registrar.reset()
@@ -525,6 +532,9 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
       nome: /\d/.test(t) ? '' : t,
       cpf: d.length === 11 ? d : '',
       cns: d.length === 15 ? d : '',
+      // CA3: município e UF da unidade, editáveis (só no cadastro novo)
+      municipio: localUnidade.data?.municipio?.trim() ?? '',
+      uf: localUnidade.data?.uf && (UFS as readonly string[]).includes(localUnidade.data.uf.toUpperCase()) ? localUnidade.data.uf.toUpperCase() : '',
     })
     setModo('novo')
     setAviso(null)
@@ -601,7 +611,11 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
     if (modo === 'novo' && dados.nome.trim().length < 3) return setErroLocal('Nome é obrigatório.')
     const erros = errosCadastro(dados, hoje)
     const primeiro = Object.values(erros)[0]
-    if (primeiro) return setErroLocal(primeiro)
+    if (primeiro) {
+      // o campo com erro pode estar em "Mais dados": abre para a pessoa ver
+      if (Object.keys(erros).some((k) => !(ubs && k === 'data_nascimento'))) setMaisAberto(true)
+      return setErroLocal(primeiro)
+    }
     if (queixa.trim().length < 3) return setErroLocal('Escreva a queixa referida.')
     if (ubs && !tipoAps) return setErroLocal('Escolha o tipo de atendimento.')
     // U11 (N2 = A): na UBS a ficha exige a data de nascimento
@@ -679,24 +693,25 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
                   {a.documento_unificado && (
                     <span className="text-apoio text-observacao">Documento de cadastro unificado: o documento buscado é de um cadastro unificado a este.</span>
                   )}
+                  {/* RE3: só o que o cadastro tem; o que falta vira uma linha */}
                   <span className="text-apoio text-pretty text-tinta-sussurro">
                     {[
-                      `CPF ${a.cpf_final ?? '—'}`,
-                      `CNS ${a.cns_final ?? '—'}`,
-                      `Mãe: ${a.nome_mae ?? '—'}`,
+                      a.cpf_final ? `CPF ${a.cpf_final}` : null,
+                      a.cns_final ? `CNS ${a.cns_final}` : null,
+                      a.nome_mae?.trim() ? `Mãe: ${a.nome_mae}` : null,
                       a.data_nascimento ? `nasc. ${a.data_nascimento.split('-').reverse().join('/')}` : null,
                       a.prontuario ? `pront. ${a.prontuario}` : null,
                     ].filter(Boolean).join(' · ')}
                   </span>
-                </div>
-                {a.episodio_etapa ? (
-                  <>
+                  {faltaNoCadastro(a) && (
+                    <span className="text-apoio text-atencao">{faltaNoCadastro(a)} · completar cadastro</span>
+                  )}
+                  {a.episodio_etapa && (
                     <span className="text-apoio text-observacao">{SITUACAO[a.episodio_etapa] ?? 'Já está na unidade'}</span>
-                    <Button variant="outline" onClick={() => usarExistente(a)}>Ver situação</Button>
-                  </>
-                ) : (
-                  <Button variant="outline" onClick={() => usarExistente(a)}>Abrir ficha</Button>
-                )}
+                  )}
+                </div>
+                {/* o botão muda com a situação: quem já está na unidade não abre ficha nova */}
+                <Button variant="outline" onClick={() => usarExistente(a)}>{a.episodio_etapa ? 'Ver situação' : 'Abrir ficha'}</Button>
               </div>
             ))}
           </div>
@@ -707,22 +722,15 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
       )}
 
       {modo !== 'nenhum' && (
-        <section className={cn(cartao, 'flex flex-col gap-3.5 px-5 py-[18px]')} aria-label="Ficha">
+        <section className={cn(cartao, 'flex flex-col gap-4 px-5 py-5')} aria-label="Ficha">
           <TituloCartao
             className="mb-0 items-center"
             extra={<Button variant="ghost" size="icon-sm" onClick={limpar} aria-label="Fechar"><X aria-hidden /></Button>}
           >
             {modo === 'existente' ? `Ficha de ${existente ? nomeExibicao(existente.nome, existente.nome_social) : ''}` : 'Novo cadastro'}
           </TituloCartao>
-          {modo === 'existente' && (
-            <p className="-mt-2 text-apoio text-tinta-sussurro">
-              Prontuário {existente?.prontuario ?? '—'}. Preencha só o que mudou ou faltava (telefone, endereço, responsável, raça/cor).
-            </p>
-          )}
-          {modo === 'novo' && (
-            <p className="-mt-2 text-apoio text-tinta-sussurro">
-              Nome e queixa são obrigatórios. Para paciente sem identificação, use Não identificado.
-            </p>
+          {modo === 'existente' && existente?.prontuario && (
+            <p className="-mt-2 text-apoio text-tinta-sussurro">Prontuário {existente.prontuario}</p>
           )}
 
           {duplicata && (
@@ -759,7 +767,20 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
             </div>
           )}
 
-          <CamposCadastro prefixo="rec" valores={dados} onChange={mudar} identificacao={modo === 'novo'} hoje={hoje} nascimentoObrigatorio={ubs} />
+          {/* CA1 (revisão do perfil Recepção, RT 24/11/2026): o que a ficha pede
+              fica em cima, com o envio logo abaixo; o resto vai em "Mais dados" */}
+          {modo === 'novo' && (
+            <Campo id="rec-nome" rotulo="Nome completo">
+              <Input id="rec-nome" value={dados.nome} onChange={(e) => mudar('nome', e.target.value)} autoComplete="off" autoFocus={!dados.nome} />
+            </Campo>
+          )}
+          {/* U11 (N2 = A): na UBS a data de nascimento é obrigatória, então fica em cima */}
+          {ubs && modo === 'novo' && (
+            <Campo id="rec-nasc" rotulo="Data de nascimento *" className="max-w-xs" erro={errosCadastro(dados, hoje).data_nascimento}
+              dica={dados.data_nascimento ? idadeLegivel(dados.data_nascimento, hoje) : undefined}>
+              <Input id="rec-nasc" type="date" max={hoje} value={dados.data_nascimento} onChange={(e) => mudar('data_nascimento', e.target.value)} />
+            </Campo>
+          )}
           {semNascimento && (
             <Campo id="rec-nasc-existente" rotulo="Data de nascimento *" className="max-w-xs"
               dica="O cadastro está sem a data. Na UBS ela é obrigatória para abrir a ficha.">
@@ -767,6 +788,31 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
                 onChange={(e) => { mudar('data_nascimento', e.target.value); setErroLocal(null) }} />
             </Campo>
           )}
+
+          <Campo id="rec-queixa" rotulo="Queixa referida pelo paciente">
+            <Input id="rec-queixa" value={queixa} onChange={(e) => { setQueixa(e.target.value); setErroLocal(null) }} placeholder="Nas palavras do paciente ou do acompanhante" />
+          </Campo>
+
+          {/* CA2: as prioridades legais junto da queixa */}
+          <div className="flex flex-col gap-2">
+            <span className="text-apoio font-medium text-grafite">Atendimento prioritário (Lei 10.048/2000)</span>
+            <div role="group" aria-label="Atendimento prioritário" className="flex flex-wrap gap-2">
+              {PRIORIDADES_INFORMADAS.map((p) => {
+                const on = prioridades.includes(p)
+                return (
+                  <Chip
+                    key={p}
+                    variante="opcao"
+                    ativo={on}
+                    onClick={() => setPrioridades((l) => (l.includes(p) ? l.filter((x) => x !== p) : [...l, p]))}
+                  >
+                    {PRIORIDADE_ROTULO[p]}
+                  </Chip>
+                )
+              })}
+            </div>
+            <span className="text-rotulo text-tinta-sussurro">60 anos ou mais e 80 anos ou mais entram sozinhos, pela data de nascimento.</span>
+          </div>
 
           {pedeMotivo && (
             <Campo id="rec-motivo-cpf" rotulo="Sem CPF: motivo *" className="max-w-md"
@@ -776,14 +822,6 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
                 {JUSTIFICATIVAS_SEM_CPF.map((j) => <option key={j.codigo} value={j.codigo}>{j.rotulo}</option>)}
               </CampoSelecao>
             </Campo>
-          )}
-
-          {/* Fase 3, tarefa 3: endereço do SUS (BPA), sem travar a ficha */}
-          {modo === 'existente' && existente && (
-            <details className="rounded-container border border-fio px-3.5 py-2.5">
-              <summary className="cursor-pointer text-apoio text-tinta-apoio">Endereço e dados do SUS (para o BPA; não obrigatório)</summary>
-              <div className="pt-2"><EnderecoSus pacienteId={existente.id} titulo={false} /></div>
-            </details>
           )}
 
           {foraDaPorta && <p className="text-apoio text-atencao">{foraDaPorta}</p>}
@@ -807,30 +845,6 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
             </div>
           )}
 
-          <Campo id="rec-queixa" rotulo="Queixa referida pelo paciente">
-            <Input id="rec-queixa" value={queixa} onChange={(e) => { setQueixa(e.target.value); setErroLocal(null) }} placeholder="Nas palavras do paciente ou do acompanhante" />
-          </Campo>
-
-          <div className="flex flex-col gap-2">
-            <span className="text-apoio font-medium text-grafite">Atendimento prioritário (Lei 10.048/2000)</span>
-            <div role="group" aria-label="Atendimento prioritário" className="flex flex-wrap gap-[7px]">
-              {PRIORIDADES_INFORMADAS.map((p) => {
-                const on = prioridades.includes(p)
-                return (
-                  <Chip
-                    key={p}
-                    variante="opcao"
-                    ativo={on}
-                    onClick={() => setPrioridades((l) => (l.includes(p) ? l.filter((x) => x !== p) : [...l, p]))}
-                  >
-                    {PRIORIDADE_ROTULO[p]}
-                  </Chip>
-                )
-              })}
-            </div>
-            <span className="text-rotulo text-tinta-sussurro">60 anos ou mais e 80 anos ou mais entram sozinhos, pela data de nascimento.</span>
-          </div>
-
           <div className="flex flex-wrap items-center gap-2.5">
             <span role={erro ? 'alert' : undefined} className="min-w-0 flex-[1_1_240px] text-apoio text-critico">{erro}</span>
             <Button variant="outline" onClick={limpar}>Cancelar</Button>
@@ -838,16 +852,42 @@ function NovaFicha({ porta, ubs, unidadeId, aoAbrir }: { porta: Porta; ubs: bool
               {registrar.isPending ? <Spinner className="size-4" /> : <ArrowRight />} {ubs ? 'Enviar para o consultório' : 'Enviar para a triagem'}
             </Button>
           </div>
+
+          {/* CA1: o resto do cadastro, que a recepção completa agora ou depois */}
+          <div className="border-t border-trilha pt-3">
+            <Button variant="ghost" size="sm" className="-ml-2.5" aria-expanded={maisAberto} aria-controls="rec-mais-dados" onClick={() => setMaisAberto((v) => !v)}>
+              <ChevronDown className={cn('transition-transform', maisAberto && 'rotate-180')} aria-hidden />
+              {modo === 'existente' ? 'Completar o cadastro' : 'Mais dados'}
+              <span className="font-normal text-tinta-sussurro">
+                {modo === 'existente' && faltaExistente ? `· ${faltaExistente.toLowerCase()}` : '· documentos, contato e endereço'}
+              </span>
+            </Button>
+            <div id="rec-mais-dados" hidden={!maisAberto}>
+              <div className="flex flex-col gap-3.5 pt-3">
+                <CamposCadastro prefixo="rec" valores={dados} onChange={mudar} identificacao={modo === 'novo'} hoje={hoje} nascimentoObrigatorio={ubs}
+                  omitir={ubs ? ['nome', 'data_nascimento'] : ['nome']} nascimento={existente?.data_nascimento} />
+                {/* Fase 3, tarefa 3: endereço do SUS (BPA), sem travar a ficha */}
+                {modo === 'existente' && existente && (
+                  <details className="rounded-container border border-fio px-3.5 py-2.5">
+                    <summary className="cursor-pointer text-apoio text-tinta-apoio">Endereço e dados do SUS (para o BPA; não obrigatório)</summary>
+                    <div className="pt-2"><EnderecoSus pacienteId={existente.id} titulo={false} /></div>
+                  </details>
+                )}
+              </div>
+            </div>
+          </div>
         </section>
       )}
 
       {aviso && (
-        <div role="status" className="mt-3.5 flex flex-wrap items-center gap-2.5 rounded-container border border-acao/20 bg-alerta-marca px-[15px] py-3">
+        <div role="status" className="mt-4 flex flex-wrap items-center gap-3 rounded-container border border-acao/20 bg-alerta-marca px-4 py-3">
           <Check className="size-4 shrink-0 text-acao" aria-hidden />
           <span className="min-w-0 flex-1 text-controle text-acao">{aviso}</span>
           {pulseira && !ubs && <BotaoPulseira pacienteId={pulseira.id} nome={pulseira.nome} className="shrink-0" />}
         </div>
       )}
+      {/* RE1: com o formulário fechado, as fichas de hoje e a etapa de cada uma */}
+      {modo === 'nenhum' && <FichasDeHoje setorId={porta.id} hoje={hoje} ubs={ubs} naFila={naFila} />}
       <Dialog open={rnAberto} onOpenChange={setRnAberto}>
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
@@ -889,7 +929,7 @@ function ListaFila({ grupos, carregando, erro, vazia, agora, ubs = false }: {
     <div className={cn(cartao, 'overflow-hidden')}>
       {carregando && <div className="px-5 py-5"><Spinner /></div>}
       {erro && <p className="px-5 py-4 text-apoio text-critico">{erro.message}</p>}
-      {!carregando && !erro && visiveis.length === 0 && <p className="px-5 py-[22px] text-controle text-tinta-sussurro">{vazia}</p>}
+      {!carregando && !erro && visiveis.length === 0 && <p className="px-5 py-5 text-controle text-tinta-sussurro">{vazia}</p>}
       {visiveis.map((g) => (
         <section key={g.titulo} aria-label={`${g.titulo}: ${g.itens.length}`}>
           <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 border-b border-trilha bg-campo px-5 py-2.5">
@@ -912,13 +952,12 @@ function ListaFila({ grupos, carregando, erro, vazia, agora, ubs = false }: {
 }
 
 function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: string; ubs: boolean }) {
-  // na UBS não há classificação: a espera conta da ficha, sem cor nem alvo
+  // na UBS não há classificação: a espera conta da ficha, sem cor nem alvo.
+  // RF1: quem está em atendimento conta desde o início do atendimento (lib/tempoFila).
   const medica = e.etapa === 'atendimento' && !ubs
-  const desde = medica ? (e.classificado_em ?? e.chegada_em) : e.chegada_em
-  const ate = e.atendimento_iniciado_em ? new Date(e.atendimento_iniciado_em).getTime() : agora
-  const espera = Math.max(0, Math.round((ate - new Date(desde).getTime()) / 60_000))
-  const alvo = medica && e.cor_atual ? ALVO_MIN[e.cor_atual] : null
-  const estourou = alvo !== null && !e.atendimento_iniciado_em && espera > alvo
+  const tempo = tempoNaFila(e, agora, ubs)
+  const alvo = alvoDaLinha(e, ubs)
+  const estourou = acimaDoAlvo(e, agora, ubs)
 
   // Status em ponto + texto (opção "B"): o ponto vazio é quem aguarda, o
   // contornado em âmbar foi chamado, o cheio na cor da ação está em atendimento.
@@ -946,11 +985,11 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
     prioridades.length ? `Prioridade: ${prioridades.join(', ')}` : '',
     // RF1: na fila do consultório da UBS, quem tem consulta marcada e quem veio sem marcar
     ubs && e.etapa === 'atendimento' ? (e.hora_marcada ? `Consulta marcada às ${hora(e.hora_marcada)}` : 'Demanda espontânea') : '',
-    `Ficha às ${hora(e.chegada_em)}`,
+    horaDaFicha(e.chegada_em, hoje),
   ].filter(Boolean).join(' · ')
 
   return (
-    <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[13px] last:border-0">
+    <div className="flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-3 last:border-0">
       {ubs ? (
         e.etapa === 'triagem'
           ? <span className={cn(pilula, 'min-w-[76px] justify-center bg-trilha text-tinta-sussurro')}>Aguarda escuta</span>
@@ -969,11 +1008,13 @@ function LinhaFila({ e, agora, hoje, ubs }: { e: NaFila; agora: number; hoje: st
       </div>
       <span
         className={cn('text-apoio whitespace-nowrap tabular-nums', estourou ? 'font-semibold text-critico' : 'text-tinta-apoio')}
-        title={medica ? 'Espera desde a classificação' : 'Espera desde a ficha'}
+        title={tempo.tipo === 'atendimento' ? `Em atendimento desde ${diaHora(tempo.desde)}`
+          : medica ? 'Espera desde a classificação' : 'Espera desde a ficha'}
       >
-        {formatarDuracao(espera)}{alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
+        {tempo.tipo === 'atendimento' ? `há ${formatarDuracao(tempo.minutos)}` : `espera ${formatarDuracao(tempo.minutos)}`}
+        {alvo !== null ? ` · alvo ${alvo ? `${alvo} min` : 'imediato'}` : ''}
       </span>
-      <span className={cn('flex min-w-0 items-center gap-[7px] text-apoio', textoStatus)}>
+      <span className={cn('flex min-w-0 items-center gap-2 text-apoio', textoStatus)}>
         <span aria-hidden className={cn('size-2.5 shrink-0 rounded-capsula border-2', ponto)} />
         {status}
       </span>
@@ -1004,21 +1045,21 @@ function PainelChamada({ porta, chamadas, carregando, erro }: {
 
   return (
     <div className="flex flex-col">
-      <div className="mb-[18px] flex flex-wrap gap-2.5">
-        <Button className="min-h-9 px-[15px]" onClick={() => void abrirPainel()}>
-          <Monitor /> Abrir painel em nova janela
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <Button className="min-h-9 px-4" onClick={() => void abrirPainel()}>
+          <Monitor /> Abrir na TV
         </Button>
-        <span className="self-center text-apoio text-pretty text-tinta-sussurro">
-          Na janela nova, clique em Ativar som uma vez e deixe em tela cheia (F11). Abrir de novo gera outro link e desliga o anterior.
+        <span className="min-w-0 flex-[1_1_280px] text-apoio text-pretty text-tinta-sussurro">
+          Na janela nova, clique em Ativar som e use tela cheia (F11). Abrir de novo desliga o link anterior.
         </span>
       </div>
       {erroPainel && <p role="alert" className="mb-3 text-apoio text-critico">{erroPainel}</p>}
       <div className={cn(cartao, 'overflow-hidden')}>
-        <div className="border-b border-trilha px-5 py-[13px] text-apoio font-semibold text-tinta">Últimas chamadas</div>
+        <div className="border-b border-trilha px-5 py-3 text-controle font-semibold text-tinta">Últimas chamadas</div>
         {carregando && <div className="px-5 py-4"><Spinner /></div>}
         {erro && <p className="px-5 py-4 text-apoio text-critico">{erro.message}</p>}
         {chamadas?.map((c) => (
-          <div key={c.id} className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-[11px] last:border-0">
+          <div key={c.id} className="flex flex-wrap items-center gap-3 border-b border-trilha px-5 py-3 last:border-0">
             <span className="min-w-12 text-apoio tabular-nums text-tinta-sussurro">{hora(c.criado_em)}</span>
             <span className="min-w-0 flex-[1_1_200px] text-corpo font-medium text-tinta">{c.nome}</span>
             <span className="text-controle font-semibold text-acao">{c.sala}</span>
@@ -1026,7 +1067,7 @@ function PainelChamada({ porta, chamadas, carregando, erro }: {
             <span className="text-apoio text-tinta-sussurro">{c.quem ?? '—'}</span>
           </div>
         ))}
-        {chamadas && chamadas.length === 0 && <p className="px-5 py-[18px] text-apoio text-tinta-sussurro">Nenhuma chamada ainda.</p>}
+        {chamadas && chamadas.length === 0 && <p className="px-5 py-4 text-apoio text-tinta-sussurro">Nenhuma chamada nas últimas 12 horas.</p>}
       </div>
     </div>
   )

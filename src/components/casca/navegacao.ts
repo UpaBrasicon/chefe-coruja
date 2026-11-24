@@ -196,19 +196,21 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     ITEM_PRONTUARIOS,
     ITEM_ESCALA,
   ],
-  // Recepção (P/index.html 32220–32224): as quatro telas na lateral, com a
-  // contagem das duas filas.
+  // Recepção (P/index.html 32220–32224), com a contagem das duas filas.
+  // RE2 (revisão do perfil Recepção, RT 24/11/2026): em grupos — Entrada,
+  // Filas e Equipe. A Agenda de consultas (só na UBS) fica na Entrada.
   recepcao: [
     // percurso da UBS, U4: a tela "Hoje" (só na UBS) abre a recepção
     { to: '/recepcao/hoje', rotulo: 'Hoje', curto: 'Hoje', icone: CalendarCheck, exato: true },
-    { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true },
-    ITEM_AGENDA_CONSULTAS,
+    { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true, grupo: 'Entrada' },
+    { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true, grupo: 'Entrada' },
+    { ...ITEM_AGENDA_CONSULTAS, grupo: 'Entrada' },
+    { to: '/recepcao/fila-triagem', rotulo: 'Fila da triagem', curto: 'Triagem', icone: Hourglass, exato: true, nota: 'triagem', grupo: 'Filas' },
+    { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica', grupo: 'Filas' },
+    { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true, grupo: 'Filas' },
+    // Encaminhados sai do menu da recepção na UBS (R8) e só existe nela: fica fora dos grupos
     ITEM_ENCAMINHADOS,
-    { to: '/recepcao/fila-triagem', rotulo: 'Fila da triagem', curto: 'Triagem', icone: Hourglass, exato: true, nota: 'triagem' },
-    { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica' },
-    { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
-    { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true },
-    ITEM_ESCALA,
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
   ],
   // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
   // competência, ou rejeita com motivo)
@@ -431,6 +433,9 @@ export const ICONE_GRUPO: Record<string, LucideIcon> = {
   Estoque: PackageCheck,
   Cadastro: GitMerge,
   Rede: Waypoints,
+  // grupos da recepção (RE2)
+  Entrada: ClipboardPlus,
+  Filas: Hourglass,
   'Farmácia': FlaskConical,
   Exames: TestTube,
   Faturamento: Receipt,
