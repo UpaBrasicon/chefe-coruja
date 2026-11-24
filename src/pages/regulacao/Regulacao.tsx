@@ -36,7 +36,7 @@ import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransf
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
-import { PainelSla, PrazosCentral, PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
+import { PainelSla, PrazosCentral, PrazosDoPedido, PrioridadeCalma, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
 import { AreaDeAnexo } from '@/components/ui/area-de-anexo'
@@ -113,9 +113,13 @@ const docMae = (m?: { nome: string; cns: string | null; cpf: string | null } | n
   m ? ` · mãe: ${m.nome}${m.cns ? ` · CNS ${m.cns}` : m.cpf ? ` · CPF ${m.cpf}` : ' · sem documento'}` : ''
 
 export default function Regulacao() {
-  const { unidadeAtiva, papeisDaUnidade } = useUnidade()
+  const { unidadeAtiva, papeisDaUnidade, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id ?? ''
   const souGestorDaUnidade = papeisDaUnidade.includes('gestor')
+  // Revisão do perfil Médico (RT 24/11/2026, M1): a configuração (centrais,
+  // setores ofertados, serviços do mapa) fica com o admin e o gestor. No perfil
+  // em foco Médico o mapa é só consulta, mesmo para quem também é gestor.
+  const focoConfig = papelAtivo === 'admin' || papelAtivo === 'gestor'
   const [recemEnviada, setRecemEnviada] = React.useState<string | null>(null)
   const [aba, setAba] = React.useState<'pedidos' | 'indicadores'>('pedidos')
   // 5A, tarefa 5 (H2): vindo da consulta da UBS, o formulário abre preenchido
@@ -147,12 +151,13 @@ export default function Regulacao() {
   })
   const c = ctx.data
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-4">
+    // fichas calmas (M3 da revisão): sem caixa alta nesta página
+    <div className="flex w-full max-w-5xl flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
       <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
           ? 'Solicitações recebidas pela Central de Regulação da rede.'
           : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'} />
-      {c?.sou_super_admin && <Centrais />}
+      {c?.sou_super_admin && focoConfig && <Centrais />}
       {/* Indicadores (tarefa 10): central (rede) e gestor da unidade (origem e destino) */}
       {c && (c.sou_central || (c.central && souGestorDaUnidade)) && (
         <div className="flex gap-1.5" role="tablist" aria-label="Regulação">
@@ -186,8 +191,8 @@ export default function Regulacao() {
               detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
             {souGestorDaUnidade && (
               <>
-                <MapaVagas unidadeId={unidadeId} />
-                <OfertaSetores unidadeId={unidadeId} />
+                <MapaVagas unidadeId={unidadeId} consulta={!focoConfig} />
+                {focoConfig && <OfertaSetores unidadeId={unidadeId} />}
               </>
             )}
           </>
@@ -854,7 +859,7 @@ function SeloPrioridade({ s }: { s: Pick<Solicitacao, 'prioridade' | 'prioridade
   const ef = prioridadeEfetiva(s)
   return (
     <>
-      <Badge variant={TOM[PRIORIDADES[ef].tom]}>{PRIORIDADES[ef].rotulo}</Badge>
+      <PrioridadeCalma p={ef} />
       {s.prioridade_regulador && s.prioridade_regulador !== s.prioridade && (
         <span className="text-rotulo text-tinta-sussurro">regulador · proposta {PRIORIDADES[s.prioridade].rotulo}</span>
       )}
