@@ -59,7 +59,7 @@ type Filtro = (typeof FILTROS)[number]
 
 const hojeSP = () => dataIso()
 
-export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehGestor, podeDarAlta, alertasSepse, onTransferir }: {
+export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehGestor, podeDarAlta, alertasSepse, onTransferir, onAbrirLeito }: {
   unidadeId?: string
   setores: { id: string; nome: string }[]
   pacientes: PacienteDaLista[]
@@ -69,12 +69,14 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
   podeDarAlta: boolean
   alertasSepse?: Map<string, Alerta>
   onTransferir: (p: PacienteDaLista) => void
+  /** gestor (RT, 24/11/2026): "Abrir leito" abre o painel lateral da página, não o caderno na linha */
+  onAbrirLeito?: (p: PacienteDaLista) => void
 }) {
   const [filtro, setFiltro] = React.useState<Filtro>('Todos')
   const [setor, setSetor] = React.useState<string | null>(null)
   // ?paciente=X abre o leito dele; ?aba=Y abre o caderno nessa aba (rotaDoLeito)
   const [params] = useSearchParams()
-  const [aberto, setAberto] = React.useState<string | null>(() => params.get('paciente'))
+  const [aberto, setAberto] = React.useState<string | null>(() => (onAbrirLeito ? null : params.get('paciente')))
   const [prancheta, setPrancheta] = React.useState<PacienteDaLista | null>(null)
   const [agora, setAgora] = React.useState(() => Date.now())
   React.useEffect(() => {
@@ -238,7 +240,7 @@ export function ListaInternados({ unidadeId, setores, pacientes, carregando, ehG
                   <div className="flex shrink-0 gap-[7px]">
                     {/* lacuna 2: reimprimir a pulseira (pede o motivo) */}
                     <BotaoPulseira pacienteId={p.id} nome={p.nome} reimpressao compacto />
-                    <Button variant="outline" size="sm" onClick={() => setAberto(eAberto ? null : p.id)} aria-expanded={eAberto}
+                    <Button variant="outline" size="sm" onClick={() => (onAbrirLeito ? onAbrirLeito(p) : setAberto(eAberto ? null : p.id))} aria-expanded={onAbrirLeito ? undefined : eAberto}
                       className={cn('font-medium', eAberto && 'border-acao/35 bg-acao/10 text-acao')}>
                       <ChevronRight className={cn('size-3.5 transition-transform duration-200', eAberto ? '-rotate-90' : 'rotate-90')} aria-hidden />
                       {eAberto ? 'Fechar' : 'Abrir leito'}

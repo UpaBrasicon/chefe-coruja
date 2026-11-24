@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRightLeft, BedDouble, UserPlus } from 'lucide-react'
 import * as React from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { data as dataDoInstante, dataHora, dataIso } from '@/lib/formato'
@@ -21,6 +22,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { ListaInternados, type PacienteDaLista } from '@/components/internacao/ListaInternados'
 import { PainelObservacao } from '@/components/observacao/PainelObservacao'
 import { MapaLeitos } from '@/components/leito/MapaLeitos'
+import { useMapaLeitos } from '@/components/leito/mapaDados'
+import { PainelLeito, type AlvoPainelLeito } from '@/components/leito/PainelLeito'
 import type { OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
 
 type PacienteComSetor = PacienteDaLista & { cpf: string | null; created_at: string }
@@ -143,6 +146,52 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     },
   })
 
+  // Revisão do gestor (RT, 24/11/2026): o leito abre numa gaveta, sem sair da
+  // página. ?leito= guarda o aberto (o paciente do leito ou, sem paciente, o
+  // leito): o voltar do navegador fecha a gaveta.
+  const veMapa = ehGestor || ehAdmin
+  const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const chaveLeito = veMapa ? params.get('leito') : null
+  // endereço do leito de antes (?paciente=, rotaDoLeito): para o gestor, vira a gaveta
+  React.useEffect(() => {
+    if (!veMapa || !params.get('paciente')) return
+    setParams((q) => {
+      const n = new URLSearchParams(q)
+      n.set('leito', n.get('paciente') ?? '')
+      n.delete('paciente')
+      return n
+    }, { replace: true })
+  }, [veMapa, params, setParams])
+  const abrirLeito = (chave: string) => setParams((q) => {
+    const n = new URLSearchParams(q)
+    n.set('leito', chave)
+    n.delete('aba')
+    return n
+  }, { state: { painelLeito: true } })
+  const fecharLeito = () => {
+    if ((location.state as { painelLeito?: boolean } | null)?.painelLeito) { navigate(-1); return }
+    setParams((q) => {
+      const n = new URLSearchParams(q)
+      n.delete('leito')
+      n.delete('aba')
+      return n
+    }, { replace: true })
+  }
+  const mapa = useMapaLeitos(veMapa ? unidadeId : undefined)
+  const alvoLeito = React.useMemo((): AlvoPainelLeito | null => {
+    if (!chaveLeito || !mapa.dados) return null
+    const nomeDe = (id: string) => (pacientes ?? []).find((p) => p.id === id)?.nome ?? null
+    for (const s of mapa.dados.setores) {
+      const l = s.leitos.find((x) => x.id === chaveLeito || x.paciente_id === chaveLeito)
+      if (l) return { leito: l, setorNome: s.nome, peloStatus: s.pelo_status, paciente: l.paciente_id ? { id: l.paciente_id, nome: nomeDe(l.paciente_id) } : null }
+    }
+    // paciente ainda sem leito (está na lista, não no mapa)
+    const p = (pacientes ?? []).find((x) => x.id === chaveLeito)
+    return p ? { leito: null, setorNome: p.setores?.nome ?? null, paciente: { id: p.id, nome: p.nome } } : null
+  }, [chaveLeito, mapa.dados, pacientes])
+
   const invalidar = () => {
     for (const k of ['pacientes-internados', 'transferencias-paciente', 'ocupacao-setores', 'internados-leitos', 'leito-aberto', 'historico-paciente'])
       void queryClient.invalidateQueries({ queryKey: [k] })
@@ -200,8 +249,10 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
       {sucesso && <p className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{sucesso}</p>}
 
       {/* Revisão do gestor (RT, 24/11/2026): o mapa de leitos por setor é a visão principal da
-          internação do gestor, com o censo num resumo próprio; a lista por setor vem depois */}
-      {(ehGestor || ehAdmin) && <MapaLeitos secoes={['censo', 'ocupacao', 'alertas', 'mapa']} />}
+          internação do gestor, com os números do censo no mesmo bloco; depois os alertas e a lista.
+          Clicar no leito abre a gaveta, sem sair da página */}
+      {veMapa && <MapaLeitos unidadeId={unidadeId} secoes={['leitos', 'alertas']} onAbrir={abrirLeito} />}
+      {veMapa && <PainelLeito alvo={alvoLeito} unidadeId={unidadeId} abaInicial={params.get('aba') ?? undefined} aoFechar={fecharLeito} />}
 
       {/* I2/I3: ocupação por setor + alerta de superlotação (o gestor já vê no mapa acima) */}
       {!(ehGestor || ehAdmin) && (ocupacao ?? []).length > 0 && (
@@ -237,6 +288,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
         podeDarAlta={ehPlantonista}
         alertasSepse={alertasSepse}
         onTransferir={(p) => { setErro(null); setTransferir(p) }}
+        onAbrirLeito={veMapa ? (p) => abrirLeito(p.id) : undefined}
       />
 
       {/* Auditoria (gestor/admin) */}
