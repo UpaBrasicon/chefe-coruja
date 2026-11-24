@@ -72,7 +72,26 @@ Pedido 8 da lista "Pedidos do RT em 17/11/2026" do BACKLOG. Saiu do item 6 (tela
   - faixa do descanso no "Meu plantão" e, só de leitura, na enfermagem e no gestor.
 - **Ordem:** banco das pendências → passômetro e pendências → folha A4 → descanso. Cada parte vai em PR próprio, passa pela homologação e só vai à produção com o seu ok.
 
-## 6. Perguntas ao RT
+## 6. Decisões do RT
 
-1. PS1 a PS5: A ou B em cada um? (No PS4 há também a C.)
-2. Se PS4 = A ou B: qual é a janela de descanso padrão da madrugada (ex.: 00h às 06h) e o tamanho de cada janela (ex.: 2 horas)? Cada unidade pode mudar depois.
+23/11/2026, respondendo uma a uma:
+
+- **PS1 = A:** a lista sai do prontuário, com os pacientes que o médico cuida.
+- **PS2 = A:** as pendências seguem com o paciente, com autor e hora.
+- **PS3 = A:** tela e folha A4, com o acesso registrado.
+- **PS4: opção nova do RT**, nas palavras dele: "da uma opção com quantos plantonistas, que horas começa a divisão, quantos em cada horário pelo menos e seja uma divisão igualitária". Detalhado com ele:
+  - **Quantos plantonistas:** vem da escala do turno, com os nomes, e quem divide pode ajustar se alguém faltou ou chegou outro.
+  - **Início e fim:** digitados por quem divide (ex.: 00h às 06h).
+  - **Quantos em cada horário pelo menos:** é o mínimo de médicos **acordados**; os outros descansam.
+  - **Divisão igual:** cada médico tem o mesmo tempo de descanso. O app calcula e mostra a grade. Exemplo: 3 médicos, das 00h às 06h, pelo menos 1 acordado. Descansam 2 por vez, e cada um tem 4 horas.
+
+    ```
+              00h  02h  04h  06h
+    Dr. A     ████ ████ ····
+    Dr. B     ████ ···· ████
+    Dr. C     ···· ████ ████
+    ```
+
+- **PS5 = A:** a enfermagem do setor e o gestor veem quem está descansando e quem está acordado, só para leitura.
+
+O que muda na seção 5: sai a janela fixa da unidade. A divisão é feita no plantão, com os quatro dados acima, e fica gravada para o turno (`descanso_plantao` com quem, início e fim de cada bloco, e os parâmetros usados). Refazer a divisão grava uma nova e guarda a anterior.
