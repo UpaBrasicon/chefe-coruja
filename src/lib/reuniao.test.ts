@@ -59,7 +59,9 @@ test('no menu do administrador a Escala vira Agenda; o gestor e o médico não m
   assert.ok(admin.some((i) => i.to === '/agenda-admin' && i.rotulo === 'Agenda'))
   assert.ok(!admin.some((i) => i.to === '/escala'), 'o administrador não tem mais a Escala no menu')
   assert.ok(itensDeNavegacao('gestor').some((i) => i.to === '/escala' && i.rotulo === 'Escala'))
-  assert.ok(itensDeNavegacao('plantonista').some((i) => i.to === '/agenda' && i.rotulo === 'Minha agenda'))
+  // o médico: Minha agenda é aba do Plantão fora da UBS (RT, 24/11/2026) e item do menu na UBS
+  assert.ok(itensDeNavegacao('plantonista').some((i) => i.to === '/plantao' && i.rotulo === 'Plantão'))
+  assert.ok(itensDeNavegacao('plantonista', false, false, 'ubs').some((i) => i.to === '/agenda' && i.rotulo === 'Minha agenda'))
 })
 
 test('e-mail aos convidados: aviso discreto só quando falha ou falta e-mail', async () => {

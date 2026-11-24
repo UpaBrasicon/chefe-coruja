@@ -360,7 +360,7 @@ ${obs.trim() ? `<tr><th>Observação</th><td>${esc(obs.trim())}</td></tr>` : ''}
 
   return (
     <div className="flex w-full max-w-4xl flex-col gap-4">
-      <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: 'Internação', to: '/plantao/internacao' }, { rotulo: 'Impressão de prontuário' }]} />
+      <Trilha niveis={[{ rotulo: 'Internação', to: '/plantao/internacao' }, { rotulo: 'Impressão de prontuário' }]} />
       <TituloPagina icone={Printer} titulo="Impressão de prontuário"
         descricao="Cópia do prontuário com autorização e declaração de recebimento; cada cópia fica registrada." />
 

@@ -17,12 +17,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AbasPlantao } from '@/components/plantao/AbasPlantao'
+import { ROTA_INTERNADOS, ROTA_OBSERVACAO_MEDICO } from '@/components/plantao/rotasMedico'
 import { dataHora, hora as horaFmt } from '@/lib/formato'
 
 // Plantão (design_handoff/telas/02): sem faixa — ela é só da página inicial.
 // Revisão do médico (RT, 24/11/2026): M1 o quadro do meu turno (pacientes por
-// setor e pendências) e as seções como abas; M2 os números contam pacientes;
-// M3 o estado do check-in conversa com a escala de agora.
+// setor e pendências); M2 os números contam pacientes; M3 o estado do check-in
+// conversa com a escala de agora. Depois, no mesmo dia: o Plantão tem as abas
+// Meu turno (esta), Minha agenda e Prontuários; Internação e Observação foram
+// para a Internação do médico, item próprio do menu.
 
 const hora = (iso: string | null) => (iso ? horaFmt(iso) : null)
 // tolerância para o check-in feito um pouco antes do início do plantão
@@ -163,12 +166,13 @@ export default function PlantaoHome() {
   const pendencias = linhas.reduce((t, l) => t + l.pendencias, 0)
   const semSetor = !!d && d.setores.length === 0
 
-  const irDoSetor = (l: LinhaQuadro) => navigate(l.porta ? '/atendimento' : l.observacao ? '/plantao/observacao' : '/plantao/internacao')
+  const irDoSetor = (l: LinhaQuadro) => navigate(l.porta ? '/atendimento' : l.observacao ? ROTA_OBSERVACAO_MEDICO : ROTA_INTERNADOS)
 
   return (
     <>
-      <TituloPagina icone={Activity} titulo="Plantão" descricao="O seu turno: pacientes por setor, pendências e o caminho para cada seção." />
+      {/* RT, 24/11/2026: abas Meu turno, Minha agenda e Prontuários, no topo como nas outras abas */}
       <AbasPlantao />
+      <TituloPagina icone={Activity} titulo="Plantão" descricao="O seu turno: pacientes por setor e pendências." />
 
       <section aria-label="Meu plantão" className="mb-[22px] flex flex-wrap items-center gap-x-5 gap-y-2 rounded-container border border-fio bg-superficie px-4 py-3">
         <span className="rotulo flex items-center gap-1.5 text-turno"><MapPin className="size-3" aria-hidden />Meu plantão</span>
@@ -226,7 +230,7 @@ export default function PlantaoHome() {
           detalhe={semSetor ? 'Sem setor na escala agora' : pendencias > 0 ? `${plural(pendencias, 'pendência aberta', 'pendências abertas')} nos setores da sua escala` : 'nos setores da sua escala agora'}
           cor="text-leitos"
           carregando={faixa.isLoading || quadro.isLoading}
-          onClick={() => navigate('/plantao/internacao/pacientes')}
+          onClick={() => navigate(ROTA_INTERNADOS)}
         />
         <CartaoResumo
           icone={Hourglass}
@@ -235,7 +239,7 @@ export default function PlantaoHome() {
           detalhe={obs === null ? 'Ninguém em observação no seu acesso' : `maior permanência ${formatarDuracao(obs)}${nivelDaObservacao(obs) === 'critico' ? ' · acima de 6 h' : ''}`}
           cor="text-observacao"
           carregando={faixa.isLoading}
-          onClick={() => navigate('/plantao/observacao')}
+          onClick={() => navigate(ROTA_OBSERVACAO_MEDICO)}
         />
       </div>
 

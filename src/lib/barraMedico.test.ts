@@ -12,10 +12,17 @@ test('cinco lugares: Início, Leitos, Perguntar à IA no meio, Prontuários e Me
   assert.equal(BARRA_MEDICO_CELULAR.length, 5)
 })
 
-test('a Agenda e as telas fora da barra vão para o Menu, sem repetir o que está na barra', () => {
+test('fora da UBS, Prontuários da barra leva à aba do Plantão (RT, 24/11/2026)', () => {
+  assert.equal(barraMedicoCelular().find((i) => i.rotulo === 'Prontuários')?.to, '/plantao/prontuarios')
+  assert.equal(barraMedicoCelular('ubs').find((i) => i.rotulo === 'Prontuários')?.to, '/prontuarios')
+})
+
+test('as telas fora da barra vão para o Menu, sem repetir o que está na barra; a Agenda mora no Plantão', () => {
   const itens = itensDeNavegacao('plantonista', false, false, null)
   const menu = menuMedicoCelular(itens, null)
-  assert.ok(menu.some((i) => i.to === '/agenda'), 'agenda no menu')
+  assert.ok(menu.some((i) => i.to === '/plantao'), 'Plantão (com a aba Minha agenda) no menu')
+  assert.ok(menu.some((i) => i.to === '/plantao/internacao'), 'Internação no menu')
+  assert.ok(!menu.some((i) => i.to === '/agenda'), 'a Agenda não é item solto')
   const naBarra = barraMedicoCelular().map((i) => i.to.split('?')[0])
   assert.ok(menu.every((i) => !naBarra.includes(i.to)))
   assert.equal(new Set(menu.map((i) => i.to)).size, menu.length)

@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Baby, Bookmark, ChevronRight, ClipboardList, History, HeartPulse, Search, User, type LucideIcon } from 'lucide-react'
 import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 import { MinhasAnotacoes } from '@/components/plantao/MinhasAnotacoes'
+import { ROTA_PASSOMETRO } from '@/components/plantao/rotasMedico'
 
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
@@ -166,7 +167,7 @@ function MeuPlantao() {
       <CartaoTurno unidadeId={unidadeAtiva?.unidade_id} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
       {/* pedido 8 (PS1 a PS3 = A): os pacientes do plantão com as pendências; a UBS não tem leito */}
       {unidadeAtiva?.unidade.tipo !== 'ubs' && (
-        <ul aria-label="Passômetro"><LinhaAtalho nome="Passômetro: meus pacientes e pendências" rota="/passometro" icone={ClipboardList} /></ul>
+        <ul aria-label="Passômetro"><LinhaAtalho nome="Passômetro: meus pacientes e pendências" rota={ROTA_PASSOMETRO} icone={ClipboardList} /></ul>
       )}
       {/* pedido 8 (PS4): o médico divide o descanso do plantão; a UBS não tem plantão noturno */}
       {unidadeAtiva?.unidade.tipo !== 'ubs' && <DescansoDoPlantao unidadeId={unidadeAtiva?.unidade_id} podeDividir />}
