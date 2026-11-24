@@ -183,7 +183,8 @@ export default function Regulacao() {
     <ListaComPainel lista={lista} aberto={aberto} painel={painel} aoFechar={() => setAberto(null)} rotulo="Pedido de regulação aberto" />
   )
   return (
-    <div className={cn('flex w-full flex-col gap-4', aberto ? 'max-w-7xl' : 'max-w-5xl')}>
+    // fichas em caixa normal (unslop da revisão do regulador): a página e o painel
+    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case', aberto ? 'max-w-7xl' : 'max-w-5xl')}>
       <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
           ? 'Solicitações recebidas pela Central de Regulação da rede.'
@@ -854,7 +855,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
   const podeEvoluir = !central && !!s.pode_evoluir
   const linhaDoTempo = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes: s.evolucoes ?? [] })
   return (
-    <article aria-label={`Pedido nº ${s.numero}`} className="flex flex-col text-apoio">
+    <article aria-label={`Pedido nº ${s.numero}`} className="flex flex-col text-apoio [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
       <header className="sticky top-0 z-10 flex flex-col gap-2 border-b border-fio bg-superficie px-4 py-3">
         <div className="flex items-start gap-2">
           <div className="flex min-w-0 flex-1 flex-col gap-1">

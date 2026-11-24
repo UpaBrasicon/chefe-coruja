@@ -24,6 +24,7 @@ import {
 } from '@/lib/aih'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
 import { PAGINA, VerMais } from '@/components/ui/ver-mais'
@@ -72,7 +73,8 @@ export default function Aih() {
   })
 
   return (
-    <div className="flex w-full max-w-5xl flex-col">
+    // no perfil regulador, fichas em caixa normal (unslop da revisão do perfil)
+    <div className={cn('flex w-full max-w-5xl flex-col', regulador && '[&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case')}>
       <TituloPagina icone={FileText} titulo={regulador ? 'Pedidos de AIH' : 'AIH da unidade'}
         descricao={regulador
           ? 'Laudos de AIH emitidos na unidade. Aprove com o número da AIH e a competência, ou rejeite com o motivo.'

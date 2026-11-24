@@ -30,6 +30,7 @@ import { codigoSigtapNaTela, competenciasNaJanela, type ProfissionalParaFaturar 
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -77,7 +78,8 @@ export default function Apac() {
     },
   })
   return (
-    <div className="flex w-full max-w-5xl flex-col">
+    // no perfil regulador, fichas em caixa normal (unslop da revisão do perfil)
+    <div className={cn('flex w-full max-w-5xl flex-col', regulador && '[&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case')}>
       <TituloPagina icone={FileCheck} titulo="APAC da unidade"
         descricao={regulador ? 'Autorize com o número e a validade, ou rejeite com o motivo.'
           : 'Registre a execução de cada competência e gere o arquivo do APAC Magnético. Quem autoriza é o médico regulador.'} />
