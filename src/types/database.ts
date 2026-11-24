@@ -9457,6 +9457,8 @@ export type Database = {
         Row: {
           aceito_em: string | null
           ativo: boolean
+          avisado_em: string | null
+          aviso_tentado_em: string | null
           designado_em: string
           designado_por: string
           email: string
@@ -9469,6 +9471,8 @@ export type Database = {
         Insert: {
           aceito_em?: string | null
           ativo?: boolean
+          avisado_em?: string | null
+          aviso_tentado_em?: string | null
           designado_em?: string
           designado_por: string
           email: string
@@ -9481,6 +9485,8 @@ export type Database = {
         Update: {
           aceito_em?: string | null
           ativo?: boolean
+          avisado_em?: string | null
+          aviso_tentado_em?: string | null
           designado_em?: string
           designado_por?: string
           email?: string
@@ -12335,6 +12341,14 @@ export type Database = {
         Args: { p_internacao: string; p_para: string; p_resumo: string }
         Returns: string
       }
+      definir_papeis_na_unidade: {
+        Args: {
+          p_papeis: Database["public"]["Enums"]["papel"][]
+          p_perfil: string
+          p_unidade: string
+        }
+        Returns: Json
+      }
       equipe_segundo_fator: {
         Args: { p_unidade: string }
         Returns: {
@@ -13532,6 +13546,18 @@ export type Database = {
         Args: { p_painel?: string; p_texto: string; p_unidade: string }
         Returns: string
       }
+      pessoas_da_unidade: {
+        Args: { p_unidade: string }
+        Returns: {
+          conselho: string
+          email: string
+          nome: string
+          papeis: string[]
+          papeis_retirados: string[]
+          perfil_id: string
+          registro: string
+        }[]
+      }
       pedir_novo_convite: {
         Args: { p_codigo: string }
         Returns: {
@@ -14408,6 +14434,18 @@ export type Database = {
           p_versao?: string
         }
         Returns: string
+      }
+      secretaria_aviso_concluir: {
+        Args: { p_designacao: string; p_enviado: boolean }
+        Returns: undefined
+      }
+      secretaria_aviso_reservar: {
+        Args: { p_designacao: string }
+        Returns: Json
+      }
+      secretaria_indicadores: {
+        Args: { p_ano: number; p_mes: number; p_secretaria?: string }
+        Returns: Json
       }
       segundo_fator_status: {
         Args: never
