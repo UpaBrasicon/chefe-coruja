@@ -100,3 +100,11 @@ test('cartões visuais (opção 2, RT em 23/11/2026): vitrine com o objeto do gr
   for (const id of ['urgencias', 'doses', 'calculadoras', 'escores', 'intoxicacao']) assert.match(objetos, new RegExp(`${id}: `))
   assert.ok(!/#[0-9a-fA-F]{6}/.test(objetos), 'só tokens, nenhuma cor fixa')
 })
+
+test('itens do grupo (Itens 2, RT em 23/11/2026): faixa com a sigla grande e textos centralizados', () => {
+  const tela = readFileSync('src/components/plantonista/central/InicioCelular.tsx', 'utf8')
+  const painel = tela.slice(tela.indexOf('function PainelCategoria('), tela.indexOf('// Nome e endereço de cada ferramenta'))
+  assert.match(painel, /TOM_ITEM\[c\.icone\]/)
+  assert.match(painel, /text-center/)
+  assert.ok(!tela.includes('<Etiqueta'), 'a etiqueta saiu da tela')
+})

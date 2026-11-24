@@ -101,3 +101,5 @@ O RT escolheu a **opção 2**, mantendo o topo de hoje e tirando a etiqueta da s
 - Intoxicação: frasco de antídoto e gota.
 
 O traço usa a tinta do app e a cor do grupo entra só num detalhe. São só tokens, sem imagem de terceiros. Os itens do grupo aberto continuam com a sigla.
+
+Itens do grupo aberto (RT, 23/11/2026, opção "Itens 2" de três): faixa no alto com a cor do grupo bem diluída e a sigla grande na cor do grupo; o nome fica embaixo e a bandeirinha no canto. O RT pediu textos centralizados nos cartões e nos itens; a etiqueta da sigla saiu da tela.
