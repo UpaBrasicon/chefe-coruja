@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { TIPO_UNIDADE_LABEL } from '@/lib/constants'
 import type { UnidadeCadastro } from '@/lib/dadosAdmin'
+import { ramoParaGravar, RAMO_ROTULO, type Ramo } from '@/lib/redeSecretaria'
 import type { TipoUnidade } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -16,6 +17,18 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 // da unidade numa janela, pelas RPCs admin_criar_unidade e
 // admin_editar_unidade. O CNES entra no cadastro; depois é do gestor
 // (definir_cnes_unidade, em Configuração).
+//
+// Rede por secretaria (RT, 24/11/2026): o "Nova unidade" da árvore abre esta
+// mesma janela com a organização, a secretaria e o tipo já escolhidos; depois
+// de criar, liga a unidade à secretaria (admin_unidade_na_rede).
+
+/** O que o "Nova unidade" da árvore da rede já traz escolhido. */
+export type NovaUnidadeInicial = {
+  organizacao_id: string
+  tipo: TipoUnidade | ''
+  secretaria: { id: string; nome: string } | null
+  ramo: Ramo | null
+}
 
 const TIPOS = Object.keys(TIPO_UNIDADE_LABEL) as TipoUnidade[]
 
@@ -33,23 +46,25 @@ function Linha({ id, rotulo, nota, children }: { id: string; rotulo: string; not
 }
 
 /** `unidade` nula com `aberto` = nova unidade. */
-export function JanelaUnidade({ aberto, unidade, onFechar }: { aberto: boolean; unidade: UnidadeCadastro | null; onFechar: () => void }) {
+export function JanelaUnidade({ aberto, unidade, inicial, onFechar }: {
+  aberto: boolean; unidade: UnidadeCadastro | null; inicial?: NovaUnidadeInicial | null; onFechar: () => void
+}) {
   return (
     <Dialog open={aberto} onOpenChange={(o) => { if (!o) onFechar() }}>
       <DialogContent className="sm:max-w-xl">
         {/* a chave refaz o formulário com os dados da unidade escolhida (ou em branco) */}
-        {aberto && <FormUnidade key={unidade?.id ?? 'nova'} unidade={unidade} onFechar={onFechar} />}
+        {aberto && <FormUnidade key={unidade?.id ?? 'nova'} unidade={unidade} inicial={unidade ? null : inicial ?? null} onFechar={onFechar} />}
       </DialogContent>
     </Dialog>
   )
 }
 
-function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; onFechar: () => void }) {
+function FormUnidade({ unidade, inicial, onFechar }: { unidade: UnidadeCadastro | null; inicial: NovaUnidadeInicial | null; onFechar: () => void }) {
   const qc = useQueryClient()
   const nova = !unidade
-  const [orgId, setOrgId] = React.useState(unidade?.organizacao_id ?? '')
+  const [orgId, setOrgId] = React.useState(unidade?.organizacao_id ?? inicial?.organizacao_id ?? '')
   const [nome, setNome] = React.useState(unidade?.nome ?? '')
-  const [tipo, setTipo] = React.useState<TipoUnidade | ''>(unidade?.tipo ?? '')
+  const [tipo, setTipo] = React.useState<TipoUnidade | ''>(unidade?.tipo ?? inicial?.tipo ?? '')
   const [cnes, setCnes] = React.useState(unidade?.cnes ?? '')
   const [municipio, setMunicipio] = React.useState(unidade?.municipio ?? '')
   const [uf, setUf] = React.useState(unidade?.uf ?? '')
@@ -66,16 +81,23 @@ function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; o
     },
   })
   const listaOrgs = orgs.data ?? []
-  const org = nova ? (listaOrgs.length === 1 ? listaOrgs[0].id : orgId) : unidade.organizacao_id
+  const org = nova ? (inicial?.organizacao_id ?? (listaOrgs.length === 1 ? listaOrgs[0].id : orgId)) : unidade.organizacao_id
 
   const salvar = useMutation({
     mutationFn: async () => {
       if (nova) {
-        const { error } = await supabase.rpc('admin_criar_unidade', {
+        const { data: id, error } = await supabase.rpc('admin_criar_unidade', {
           p_organizacao: org, p_nome: nome.trim(), p_tipo: tipo as TipoUnidade,
           p_cnes: cnes.trim() || undefined, p_municipio: municipio.trim() || undefined, p_uf: uf.trim() || undefined,
         })
         if (error) throw error
+        // criada a partir da árvore: já entra na secretaria
+        if (inicial?.secretaria && id) {
+          const r = await supabase.rpc('admin_unidade_na_rede', {
+            p_unidade: id, p_secretaria: inicial.secretaria.id, p_ramo: ramoParaGravar(inicial.ramo) ?? undefined,
+          })
+          if (r.error) throw new Error(`A unidade foi criada, mas não entrou na secretaria: ${r.error.message}`)
+        }
       } else {
         const { error } = await supabase.rpc('admin_editar_unidade', {
           p_unidade: unidade.id, p_nome: nome.trim(), p_tipo: tipo as TipoUnidade, p_ativo: ativo,
@@ -117,7 +139,12 @@ function FormUnidade({ unidade, onFechar }: { unidade: UnidadeCadastro | null; o
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-3.5 text-apoio">
-        {nova && listaOrgs.length > 1 && (
+        {nova && inicial?.secretaria && (
+          <p className="rounded-controle bg-campo px-3 py-2 text-tinta-apoio">
+            Entra em {inicial.secretaria.nome}{inicial.ramo ? `, no grupo ${RAMO_ROTULO[inicial.ramo]}` : ''}.
+          </p>
+        )}
+        {nova && !inicial && listaOrgs.length > 1 && (
           <Linha id="un-org" rotulo="Organização">
             <CampoSelecao id="un-org" value={orgId} onChange={(e) => setOrgId(e.target.value)}>
               <option value="">Escolha a organização</option>

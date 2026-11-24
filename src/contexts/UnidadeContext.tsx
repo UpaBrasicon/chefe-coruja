@@ -38,12 +38,25 @@ interface UnidadeContextValue {
   setUnidadeAtivaId: (id: string, papel?: Papel) => void
   papelAtivo: Papel | null
   /** Troca o perfil em foco (menu do usuário). A navegação mostra só o dele. */
-  setPapelAtivo: (papel: Papel) => void
+  setPapelAtivo: (papel: Papel, unidadeId?: string) => void
   ehAdmin: boolean
   ehGestor: boolean
   ehPlantonista: boolean
   ehSuperAdmin: boolean
   reload: () => void
+}
+
+type SecretariaDaPessoa = {
+  id: string
+  nome: string
+  unidades: { id: string; nome: string; tipo: TipoUnidade; organizacao_id: string; usa_pulseira?: boolean }[]
+}
+
+/** As unidades da secretaria como vínculos da casca (id próprio, sem linha em vinculos). */
+function vinculosDaSecretaria(secretarias: SecretariaDaPessoa[] | null): VinculoComUnidade[] {
+  return (secretarias ?? []).flatMap((s) =>
+    s.unidades.map((u) => ({ id: `secretaria:${s.id}:${u.id}`, papel: 'gestor_secretaria' as Papel, unidade_id: u.id, unidade: u })),
+  )
 }
 
 const STORAGE_KEY = 'chefe-coruja:unidade-ativa'
@@ -55,7 +68,7 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
   const { perfil } = useAuth()
 
   const {
-    data: vinculos,
+    data: vinculosDoBanco,
     isLoading,
     refetch,
   } = useQuery({
@@ -84,6 +97,28 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
       }))
     },
   })
+
+  // Perfil Gestor da secretaria (RT, 24/11/2026): a pessoa fica ligada à
+  // secretaria, não a uma unidade. Cada unidade ativa da secretaria entra aqui
+  // como um vínculo da casca com o papel 'gestor_secretaria' (o banco nunca
+  // grava esse papel em vinculos; quem confere é secretaria_gere_unidade).
+  // Sem a função no banco (ou sem rede), a casca segue só com os vínculos.
+  const { data: daSecretaria, isLoading: carregandoSecretaria } = useQuery({
+    queryKey: ['minhas-secretarias', perfil?.id],
+    enabled: !!perfil,
+    retry: false,
+    queryFn: async (): Promise<VinculoComUnidade[]> => {
+      const { data, error } = await supabase.rpc('minhas_secretarias')
+      if (error) return []
+      return vinculosDaSecretaria(data as unknown as SecretariaDaPessoa[] | null)
+    },
+  })
+
+  const vinculos = React.useMemo<VinculoComUnidade[] | undefined>(() => {
+    if (!vinculosDoBanco) return undefined
+    const extra = (daSecretaria ?? []).filter((d) => !vinculosDoBanco.some((v) => v.id === d.id))
+    return extra.length ? [...vinculosDoBanco, ...extra] : vinculosDoBanco
+  }, [vinculosDoBanco, daSecretaria])
 
   const { data: isSuper } = useQuery({
     queryKey: ['super_admin', perfil?.id],
@@ -163,10 +198,12 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
     definirContextoErro({ unidadeId: unidadeAtiva?.unidade_id ?? null, papel: papelAtivo })
   }, [unidadeAtiva?.unidade_id, papelAtivo])
   const setPapelAtivo = React.useCallback(
-    (papel: Papel) => {
-      if (!unidadeAtivaId_) return
+    (papel: Papel, unidadeId?: string) => {
+      // a unidade pode vir junto: a Rede da secretaria troca de unidade e de perfil no mesmo clique
+      const alvo = unidadeId ?? unidadeAtivaId_
+      if (!alvo) return
       setPapelEscolhido((m) => {
-        const novo = { ...m, [unidadeAtivaId_]: papel }
+        const novo = { ...m, [alvo]: papel }
         try {
           window.localStorage.setItem(STORAGE_PAPEL, JSON.stringify(novo))
         } catch {
@@ -184,7 +221,7 @@ export function UnidadeProvider({ children }: { children: React.ReactNode }) {
 
   const status: UnidadeContextValue['status'] = !perfil
     ? 'carregando'
-    : isLoading
+    : isLoading || carregandoSecretaria
       ? 'carregando'
       : unidades.length === 0
         ? 'pendente'

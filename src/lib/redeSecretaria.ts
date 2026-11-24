@@ -37,6 +37,8 @@ export type SecretariaRede = {
   endereco: string | null
   ativo: boolean
   atualizado_em: string
+  /** Quem o administrador designou para a secretaria (perfil Gestor da secretaria). */
+  gestao?: { nome: string; pendente: boolean }[]
 }
 
 export type UnidadeNaRede = {
@@ -118,6 +120,40 @@ export function montarArvore(orgs: OrganizacaoRede[], busca = ''): GalhoSecretar
 /** Total de vínculos ativos da unidade. */
 export function totalPessoas(u: Pick<UnidadeNaRede, 'pessoas'>): number {
   return Object.values(u.pessoas).reduce((s, n) => s + n, 0)
+}
+
+/**
+ * "Nova unidade" a partir de um grupo da árvore (pedido do RT, 24/11/2026): o
+ * tipo que o cadastro já traz escolhido. Ambulatório entra como clínica; a
+ * central de regulação não tem tipo próprio, quem cadastra escolhe.
+ */
+export function tipoDoRamo(ramo: Ramo | null): 'hospital' | 'upa' | 'ubs' | 'clinica' | '' {
+  if (ramo === 'ambulatorio') return 'clinica'
+  if (ramo === null || ramo === 'central_regulacao') return ''
+  return ramo
+}
+
+/**
+ * Ramo que se grava na unidade nova: só os que não saem do tipo (ambulatório e
+ * central de regulação). Hospital, UPA, UBS e clínica seguem o tipo, para a
+ * unidade não ficar no grupo errado quando quem cadastra muda o tipo.
+ */
+export function ramoParaGravar(ramo: Ramo | null): Ramo | null {
+  return ramo === 'ambulatorio' || ramo === 'central_regulacao' ? ramo : null
+}
+
+/**
+ * Quem cuida das pessoas da unidade (pedido do RT, 24/11/2026): "quem atualiza é
+ * o gestor de cada unidade ou o gestor geral da secretaria".
+ */
+export function quemDesigna(gestores: string[], gestaoDaSecretaria: string[], secretaria: string | null): string {
+  const lista = (n: string[]) => (n.length <= 1 ? n.join('') : `${n.slice(0, -1).join(', ')} e ${n[n.length - 1]}`)
+  const daUnidade = gestores.length ? `o gestor da unidade (${lista(gestores)})` : 'o gestor da unidade (hoje sem gestor ativo)'
+  if (!secretaria) return `Quem convida e muda as pessoas desta unidade: ${daUnidade} e o administrador.`
+  const daSecretaria = gestaoDaSecretaria.length
+    ? `a gestão de ${secretaria} (${lista(gestaoDaSecretaria)})`
+    : `a gestão de ${secretaria} (ainda sem pessoa designada)`
+  return `Quem convida e muda as pessoas desta unidade: ${daUnidade}, ${daSecretaria} e o administrador.`
 }
 
 /** Resumo do galho: "1 hospital, 2 UBS". */

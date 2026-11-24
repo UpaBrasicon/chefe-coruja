@@ -9526,6 +9526,74 @@ export type Database = {
           },
         ]
       }
+      secretaria_pessoas: {
+        Row: {
+          aceito_em: string | null
+          ativo: boolean
+          designado_em: string
+          designado_por: string
+          email: string
+          id: string
+          perfil_id: string | null
+          retirado_em: string | null
+          retirado_por: string | null
+          secretaria_id: string
+        }
+        Insert: {
+          aceito_em?: string | null
+          ativo?: boolean
+          designado_em?: string
+          designado_por: string
+          email: string
+          id?: string
+          perfil_id?: string | null
+          retirado_em?: string | null
+          retirado_por?: string | null
+          secretaria_id: string
+        }
+        Update: {
+          aceito_em?: string | null
+          ativo?: boolean
+          designado_em?: string
+          designado_por?: string
+          email?: string
+          id?: string
+          perfil_id?: string | null
+          retirado_em?: string | null
+          retirado_por?: string | null
+          secretaria_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secretaria_pessoas_secretaria_id_fkey"
+            columns: ["secretaria_id"]
+            isOneToOne: false
+            referencedRelation: "secretarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretaria_pessoas_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretaria_pessoas_designado_por_fkey"
+            columns: ["designado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretaria_pessoas_retirado_por_fkey"
+            columns: ["retirado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       secretarias: {
         Row: {
           ativo: boolean
@@ -10974,6 +11042,11 @@ export type Database = {
         Returns: undefined
       }
       admin_rede_arvore: { Args: never; Returns: Json }
+      admin_designar_secretaria: {
+        Args: { p_email: string; p_secretaria: string }
+        Returns: Json
+      }
+      admin_retirar_secretaria: { Args: { p_id: string }; Returns: undefined }
       admin_salvar_secretaria: {
         Args: {
           p_ativo?: boolean
@@ -10991,6 +11064,7 @@ export type Database = {
         }
         Returns: string
       }
+      admin_secretaria_pessoas: { Args: { p_secretaria: string }; Returns: Json }
       admin_unidade_na_rede: {
         Args: { p_ramo?: string; p_secretaria: string | null; p_unidade: string }
         Returns: undefined
@@ -11099,6 +11173,7 @@ export type Database = {
       regulacao_marcar_saida: { Args: { p_id: string }; Returns: Json }
       regulacao_registrar_resposta_externa: { Args: { p_aceita: boolean; p_id: string; p_meio: string; p_motivo?: string | null; p_quem: string; p_texto?: string | null }; Returns: Json }
       rede_baixar_arquivo: { Args: { p_fechamento: string; p_tipo: string; p_unidade: string }; Returns: Json }
+      rede_arvore_da_secretaria: { Args: never; Returns: Json }
       rede_contexto: { Args: { p_unidade: string }; Returns: Json }
       rede_definir_modulo: { Args: { p_ativo: boolean; p_org: string; p_secretaria: string | null }; Returns: undefined }
       rede_faturamento: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
@@ -13188,6 +13263,7 @@ export type Database = {
         }
         Returns: string
       }
+      minhas_secretarias: { Args: never; Returns: Json }
       medicos_para_encaminhar: { Args: { p_paciente: string }; Returns: Json }
       medidas_pedidas_da_unidade: {
         Args: { p_unidade: string }
@@ -14819,6 +14895,7 @@ export type Database = {
         | "regulacao_regional"
         | "faturamento_rede"
         | "nir"
+        | "gestor_secretaria"
       status_leito:
         | "livre"
         | "ocupado"
@@ -15189,6 +15266,7 @@ export const Constants = {
         "regulacao_regional",
         "faturamento_rede",
         "nir",
+        "gestor_secretaria",
       ],
       status_leito: [
         "livre",

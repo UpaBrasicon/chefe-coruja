@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { montarArvore, normalizar, resumoRamos, totalPessoas, type OrganizacaoRede, type UnidadeNaRede } from './redeSecretaria.ts'
+import {
+  montarArvore, normalizar, quemDesigna, ramoParaGravar, resumoRamos, tipoDoRamo, totalPessoas, type OrganizacaoRede, type UnidadeNaRede,
+} from './redeSecretaria.ts'
 
 // Rede a partir da Secretaria (pedido do RT, 24/11/2026).
 
@@ -70,6 +72,29 @@ test('resumo, total de pessoas e normalização', () => {
   assert.equal(resumoRamos(montarArvore([org])[0].ramos), '1 hospital, 1 UPA, 1 UBS')
   assert.equal(totalPessoas(org.unidades[2]), 4)
   assert.equal(normalizar('  Clínica ÁGUA '), 'clinica agua')
+})
+
+// Nova unidade a partir do grupo da árvore (RT, 24/11/2026)
+test('o grupo da árvore já traz o tipo; só ambulatório e central gravam o ramo', () => {
+  assert.equal(tipoDoRamo('hospital'), 'hospital')
+  assert.equal(tipoDoRamo('ubs'), 'ubs')
+  assert.equal(tipoDoRamo('ambulatorio'), 'clinica')
+  assert.equal(tipoDoRamo('central_regulacao'), '')
+  assert.equal(tipoDoRamo(null), '')
+  assert.equal(ramoParaGravar('hospital'), null)
+  assert.equal(ramoParaGravar('ambulatorio'), 'ambulatorio')
+  assert.equal(ramoParaGravar('central_regulacao'), 'central_regulacao')
+  assert.equal(ramoParaGravar(null), null)
+})
+
+// Pessoas: o gestor da unidade ou a gestão da secretaria (RT, 24/11/2026)
+test('quem designa as pessoas da unidade', () => {
+  assert.equal(quemDesigna(['Ana'], ['Bia', 'Caio'], 'SMS'),
+    'Quem convida e muda as pessoas desta unidade: o gestor da unidade (Ana), a gestão de SMS (Bia e Caio) e o administrador.')
+  assert.equal(quemDesigna([], [], 'SMS'),
+    'Quem convida e muda as pessoas desta unidade: o gestor da unidade (hoje sem gestor ativo), a gestão de SMS (ainda sem pessoa designada) e o administrador.')
+  assert.equal(quemDesigna(['Ana', 'Davi', 'Eva'], [], null),
+    'Quem convida e muda as pessoas desta unidade: o gestor da unidade (Ana, Davi e Eva) e o administrador.')
 })
 
 // A tela fica só no perfil Administrador (a rota /painel) e grava só pelas RPCs.

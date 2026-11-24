@@ -15,6 +15,8 @@ export const PAPEL_LABEL: Record<Papel, string> = {
   regulacao_regional: 'Regulação regional',
   faturamento_rede: 'Faturamento da secretaria',
   nir: 'NIR',
+  // perfil Secretaria (RT, 24/11/2026): ligado à secretaria, não a uma unidade
+  gestor_secretaria: 'Gestor da secretaria',
 }
 
 export const PAPEL_DESCRIPTION: Record<Papel, string> = {
@@ -32,6 +34,7 @@ export const PAPEL_DESCRIPTION: Record<Papel, string> = {
   regulacao_regional: 'Acompanha os pedidos de regulação das unidades liberadas (só leitura)',
   faturamento_rede: 'Produção e arquivos fechados das unidades liberadas (só leitura)',
   nir: 'Núcleo Interno de Regulação: acompanha regulações, AIH e APAC da unidade e cobra os responsáveis',
+  gestor_secretaria: 'Unidades da secretaria: dados, setores e leitos, vagas da escala e pessoas (sem identidade de paciente)',
 }
 
 export const TIPO_UNIDADE_LABEL: Record<TipoUnidade, string> = {
@@ -101,6 +104,7 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   regulacao_regional: '/rede',
   faturamento_rede: '/rede',
   nir: '/nir/internacao',
+  gestor_secretaria: '/secretaria',
 }
 
 export const ORDEM_PAPEL: Record<Papel, number> = {
@@ -118,6 +122,9 @@ export const ORDEM_PAPEL: Record<Papel, number> = {
   regulacao_regional: 11,
   faturamento_rede: 12,
   nir: 13,
+  // logo depois do gestor: quem é da secretaria e também atende na unidade abre
+  // pela secretaria e troca no menu do usuário
+  gestor_secretaria: 1.5,
 }
 
 /** Papéis que só entram com plantão na escala agora (ADR 0003). */
