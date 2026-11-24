@@ -6,6 +6,7 @@ import { ArrowRight, History, Pill, Search, Sparkles, Star, Stethoscope } from '
 
 import { CHAVES_FERRAMENTAS, SECOES, SECOES_EXIBIDAS, SECOES_JUNTAS, secaoExibida, type SecaoExibida } from '@/content/registry'
 import { GRUPOS_SECAO } from '@/content/gruposSecoes'
+import { coresDaSecao } from '@/content/coresSecao'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useAuth } from '@/contexts/AuthContext'
@@ -19,7 +20,8 @@ import { buscarSemantico, useClinicalAsk, type ToolHit } from '@/lib/useClinical
 import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
 import { cn } from '@/lib/utils'
-import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { Canal, Canais } from '@/components/monitor/Canais'
+import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
@@ -40,11 +42,11 @@ import { useLarguraAte } from '@/hooks/useLarguraAte'
 // funciona com a biblioteca fora do ar; "Perguntar à IA" e as sugestões por
 // significado passam pela Edge Function clinical-search.
 //
-// Revisão da Central (RT, 24/11/2026): M2 as seções numa lista à esquerda,
-// ícones numa cor só; M3 a busca no centro com Recentes, Favoritos e Mais
-// usados em abas; IA3 a resposta da IA em painel próprio (à direita na tela
-// bem larga, por cima de tudo no celular); IA4 o remédio digitado mostra a
-// ficha do medicamento antes das condutas.
+// Revisão da Central (RT, 24/11/2026): IA3 a resposta da IA em painel próprio
+// logo abaixo da busca (por cima de tudo no celular); IA4 o remédio digitado
+// mostra a ficha do medicamento antes das condutas. A lista lateral de seções
+// e as abas da busca voltaram atrás a pedido do RT: o desenho da página é o de
+// antes (seções clínicas em linhas, embaixo).
 
 type Ferramenta = {
   chave: string; secao: string; secaoLabel: string; slug: string; label: string; description: string; tags: string[]; categoria: string
@@ -211,22 +213,20 @@ function CartaoFerramenta({ f, favorito, onFavoritar, destacado, aviso }: { f: F
   )
 }
 
-/** Atalho de recente, favorito ou mais usado: ícone, nome e a seção. */
+/** Atalho de favorito / mais usado: ícone, nome e "N×" (P/index.html 1497–1509). */
 function Atalho({ f, vezes, favorito }: { f: Ferramenta; vezes: number; favorito?: boolean }) {
   const navigate = useNavigate()
   return (
     <BotaoLinha
       onClick={() => navigate(`/plantonista/${f.secao}/${f.slug}`)}
-      className="flex-row items-center gap-[9px] border-0 border-b border-trilha px-4 py-[11px] last:border-0 hover:bg-campo"
+      className="flex-row items-center gap-[9px] px-5 py-[13px] hover:border-acao hover:bg-superficie"
     >
-      {favorito ? <Star className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />}
+      {favorito ? <Star className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className={cn('size-4 shrink-0', coresDaSecao(f.secao).texto)} aria-hidden />}
       <span className="min-w-0 flex-1 text-apoio font-medium text-tinta">{f.label}</span>
-      <span className="hidden truncate text-rotulo text-tinta-sussurro sm:block" title={vezes > 0 ? `Aberta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por você` : undefined}>{f.secaoLabel}</span>
+      {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title={`Aberta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por você`}>{vezes}×</span>}
     </BotaoLinha>
   )
 }
-
-type Aba = 'recentes' | 'favoritos' | 'usados'
 
 // Celular e tablet (abaixo de 1024 px, a mesma largura da barra de baixo): o
 // Guia rápido (F4, RT em 17/11/2026). "Calculadoras e escores" abre esta mesma
@@ -245,17 +245,14 @@ function CentralCompleta() {
   // a busca do início do celular chega aqui com o texto em ?q= (item 6, RT em 23/11/2026)
   const [params] = useSearchParams()
   const [consulta, setConsulta] = useState(() => (params.get('q') ?? '').slice(0, 800))
-  const { favoritos, usos, lista, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
+  const { favoritos, usos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   const paciente = usePacienteCentral()
   const unidadeId = unidadeAtiva?.unidade_id
   const ia = useClinicalAsk(unidadeId, paciente.modo)
   const campoBusca = useRef<HTMLInputElement>(null)
   const [destacado, setDestacado] = useState(-1)
   const [sugestoes, setSugestoes] = useState<ToolHit[] | null>(null)
-  const [aba, setAba] = useState<Aba | null>(null)
   const estreito = useLarguraAte(1023)
-  // IA3: o painel da resposta vai para a direita só quando cabe ao lado da busca
-  const painelAoLado = !useLarguraAte(1399)
 
   const resultados = useMemo(() => buscarLocal(consulta), [consulta])
   const medicamentos = useMedicamentosDaBusca(consulta, unidadeId)
@@ -323,25 +320,13 @@ function CentralCompleta() {
 
   const porChave = (c: string) => TODAS.find((f) => f.chave === c)
   const favoritosCards = favoritos.map(porChave).filter((f): f is Ferramenta => !!f)
-  // Recentes: as últimas abertas por você (o banco guarda a data do último uso)
-  const recentes = lista
-    .filter((u) => u.ultimo_uso_em)
-    .sort((a, b) => (b.ultimo_uso_em ?? '').localeCompare(a.ultimo_uso_em ?? ''))
-    .map((u) => porChave(u.chave))
-    .filter((f): f is Ferramenta => !!f)
-    .slice(0, 8)
+  // "Mais usados por você": as quatro mais abertas que não são favoritas.
   const maisUsados = Object.entries(usos)
-    .filter(([, n]) => n > 0)
+    .filter(([c, n]) => n > 0 && !favoritos.includes(c))
     .sort((a, b) => b[1] - a[1])
     .map(([c]) => porChave(c))
     .filter((f): f is Ferramenta => !!f)
-    .slice(0, 8)
-  const abas = ([
-    ['recentes', 'Recentes', recentes],
-    ['favoritos', 'Favoritos', favoritosCards],
-    ['usados', 'Mais usados', maisUsados],
-  ] as const).filter(([, , itens]) => itens.length > 0)
-  const abaAtual = abas.find(([id]) => id === aba) ?? abas[0]
+    .slice(0, 4)
 
   // Grade do celular: sem paciente, ou com o peso que falta, os blocos ficam
   // inertes (P/index.html 32366–32395); no pediátrico conta quantas da seção
@@ -371,178 +356,182 @@ function CentralCompleta() {
       pubmed={ia.pubmed}
       etapa={ia.etapa}
       onFechar={ia.limpar}
-      className={estreito ? 'h-full rounded-none border-0' : painelAoLado ? 'max-h-[calc(100dvh-2rem)]' : 'mb-[22px]'}
+      className={estreito ? 'h-full rounded-none border-0' : 'mb-[22px]'}
     />
   )
 
   return (
-    <div className="min-w-0">
-      <TituloPagina
-        icone={Stethoscope}
-        titulo="Central do Médico"
-        descricao={
-          <>
-            {unidadeAtiva && `${unidadeAtiva.unidade.nome} · ${TODAS.length} ferramentas clínicas · `}
-            <Link to={ROTA_SOBRE_MODULO} className="text-acao underline-offset-4 hover:underline">Sobre o módulo clínico</Link>
-          </>
-        }
-      />
+    <div className="grid gap-6">
+      <div className="min-w-0">
+        <TituloPagina
+          icone={Stethoscope}
+          titulo="Central do Médico"
+          descricao={
+            <>
+              {unidadeAtiva && `${unidadeAtiva.unidade.nome} · ${TODAS.length} ferramentas clínicas · `}
+              <Link to={ROTA_SOBRE_MODULO} className="text-acao underline-offset-4 hover:underline">Sobre o módulo clínico</Link>
+            </>
+          }
+        />
 
-      {/* Adulto ou pediátrico só no celular (pedido do RT de 23/10/2026): na
-          tela larga cada ferramenta pergunta o paciente na própria tela. */}
-      <div className="lg:hidden"><ModoPaciente /></div>
-      <CartaoTurno unidadeId={unidadeId} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
-      {/* LG7: sessão de assinatura ICP-Brasil (some enquanto o assinador estiver desligado) */}
-      <SessaoAssinatura />
+        {/* Adulto ou pediátrico só no celular (pedido do RT de 23/10/2026): na
+            tela larga cada ferramenta pergunta o paciente na própria tela. */}
+        <div className="lg:hidden"><ModoPaciente /></div>
+        <CartaoTurno unidadeId={unidadeId} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
+        {/* LG7: sessão de assinatura ICP-Brasil (some enquanto o assinador estiver desligado) */}
+        <SessaoAssinatura />
 
-      <div className={cn('grid items-start gap-x-8 gap-y-6 lg:grid-cols-[220px_minmax(0,1fr)]', iaAberta && painelAoLado && !estreito && 'lg:grid-cols-[200px_minmax(0,1fr)_minmax(380px,440px)]')}>
-        {/* M2: seções clínicas como lista à esquerda, ícones numa cor só */}
-        <nav aria-label="Seções clínicas" className="sticky top-4 hidden flex-col gap-0.5 lg:flex">
-          <span className="rotulo mb-1.5 px-2.5 text-tinta-sussurro">Seções clínicas</span>
-          {secoes.map((s) => {
-            const Icone = s.icon
-            return (
-              <Link key={s.slug} to={`/plantonista/${s.slug}`} title={paciente.modo ? contagemModo(s).texto : `${s.tools.length} ferramentas`}
-                className="flex items-center gap-2.5 rounded-controle px-2.5 py-2 text-apoio text-tinta no-underline hover:bg-campo hover:text-acao">
-                <Icone className="size-4 shrink-0 text-tinta-sussurro" aria-hidden />
-                <span className="min-w-0 flex-1 leading-tight">{s.label}</span>
-                <span className="text-rotulo text-tinta-sussurro tabular">{s.tools.length}</span>
-              </Link>
-            )
-          })}
-        </nav>
-
-        <div className="min-w-0">
-          <div className="mb-[22px]">
-            <div className="relative">
-              <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
-              <input
-                ref={campoBusca}
-                type="search"
-                value={consulta}
-                onChange={(e) => aoDigitar(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder="Buscar por droga, escore ou conduta… ou pergunte à IA"
-                aria-label="Buscar ferramenta ou perguntar à IA"
-                aria-keyshortcuts="/"
-                autoComplete="off"
-                maxLength={800}
-                className="h-12 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:shadow-anel-campo"
-              />
-            </div>
-            {consulta.trim() && (
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  onClick={perguntar}
-                  disabled={!perguntavel || !unidadeId || ia.status === 'loading' || ia.status === 'streaming'}
-                  className="gap-1.5 rounded-container px-3 py-1.5 text-left font-medium whitespace-normal text-tinta hover:text-tinta"
-                >
-                  <Sparkles className="size-4 text-acao" aria-hidden />
-                  Perguntar à IA: "{consulta.trim()}"
-                </Button>
-                <span className="text-apoio text-tinta-sussurro">Não digite nome, CPF ou dados identificáveis do paciente. Enter pergunta; ↑↓ escolhem uma ferramenta.</span>
-              </div>
-            )}
+        <div className="mb-[22px]">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+            <input
+              ref={campoBusca}
+              type="search"
+              value={consulta}
+              onChange={(e) => aoDigitar(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Buscar por droga, escore ou conduta… ou pergunte à IA"
+              aria-label="Buscar ferramenta ou perguntar à IA"
+              aria-keyshortcuts="/"
+              autoComplete="off"
+              maxLength={800}
+              className="h-11 w-full rounded-container border border-fio bg-superficie pr-3 pl-10 text-corpo text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:shadow-anel-campo"
+            />
           </div>
-
-          {iaAberta && !painelAoLado && !estreito && resposta}
-
-          {consulta.trim() ? (
-            <>
-              <FichaMedicamentos achados={medicamentos} />
-              <section aria-live="polite">
-                <TituloSecao extra={`${resultados.length} ${resultados.length === 1 ? 'ferramenta' : 'ferramentas'}`}>
-                  {medicamentos.length ? 'Condutas e ferramentas' : `Resultados para "${consulta.trim()}"`}
-                </TituloSecao>
-                {resultados.length ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {resultados.map((f, i) => (
-                      <CartaoFerramenta key={f.chave} f={f} aviso={avisoModo(f)} favorito={favoritos.includes(f.chave)} onFavoritar={() => alternarFavorito(f.chave)} destacado={i === destacado} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-6 text-center text-apoio text-tinta-sussurro">
-                    <p>Nenhuma ferramenta com esse nome para "{consulta.trim()}".</p>
-                    {sugestoes && sugestoes.length > 0 && (
-                      <div className="mt-4 text-left">
-                        <TituloSecao>Sugestões por significado</TituloSecao>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {sugestoes.map((s) => {
-                            const f = TODAS.find((x) => `/plantonista/${x.secao}/${x.slug}` === s.rota)
-                            return f ? <CartaoFerramenta key={f.chave} f={f} aviso={avisoModo(f)} favorito={favoritos.includes(f.chave)} onFavoritar={() => alternarFavorito(f.chave)} /> : null
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
-            </>
-          ) : (
-            <>
-              {/* M3: recentes, favoritos e mais usados em abas, embaixo da busca */}
-              {abaAtual && (
-                <section className="mb-[26px]" aria-label="Suas ferramentas">
-                  <div role="radiogroup" aria-label="Suas ferramentas" className="mb-2.5 flex flex-wrap gap-2">
-                    {abas.map(([id, rotulo, itens]) => (
-                      <Chip key={id} radio ativo={abaAtual[0] === id} onClick={() => setAba(id)} contagem={itens.length}>{rotulo}</Chip>
-                    ))}
-                  </div>
-                  <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-                    {abaAtual[2].map((f) => <Atalho key={f.chave} f={f} vezes={usos[f.chave] ?? 0} favorito={abaAtual[0] === 'favoritos'} />)}
-                  </div>
-                </section>
-              )}
-              {!abaAtual && (
-                <p className="mb-[26px] flex items-center gap-2 text-apoio text-tinta-sussurro">
-                  <History className="size-4" aria-hidden />
-                  As ferramentas que você abrir e as favoritas aparecem aqui.
-                </p>
-              )}
-              {/* Celular e tablet: as seções em lista, uma linha por seção (o ícone numa cor só) */}
-              <section className="lg:hidden">
-                <TituloSecao>Seções clínicas</TituloSecao>
-                <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-                  {secoes.map((s) => {
-                    const m = contagemModo(s)
-                    const inerte = faltaPaciente || m.n === 0
-                    const Icone = s.icon
-                    return (
-                      <BotaoLinha
-                        key={s.slug}
-                        variante="linha"
-                        disabled={inerte}
-                        onClick={() => navigate(`/plantonista/${s.slug}`)}
-                        className={cn('items-center', inerte && 'opacity-60')}
-                      >
-                        <Icone className="size-[18px] shrink-0 text-tinta-sussurro" aria-hidden />
-                        <span className="flex min-w-0 flex-1 flex-col">
-                          <span className="text-controle font-medium text-tinta">{s.label}</span>
-                          <span className="text-apoio text-tinta-sussurro">
-                            {!paciente.modo ? 'Escolha adulto ou pediátrico' : !paciente.leitura.completo ? 'Aguardando os dados do paciente' : m.texto}
-                          </span>
-                        </span>
-                        <span className="text-apoio tabular-nums text-tinta-sussurro">{s.tools.length}</span>
-                      </BotaoLinha>
-                    )
-                  })}
-                </div>
-              </section>
-            </>
+          {consulta.trim() && (
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                onClick={perguntar}
+                disabled={!perguntavel || !unidadeId || ia.status === 'loading' || ia.status === 'streaming'}
+                className="gap-1.5 rounded-container px-3 py-1.5 text-left font-medium whitespace-normal text-tinta hover:text-tinta"
+              >
+                <Sparkles className="size-4 text-acao" aria-hidden />
+                Perguntar à IA: "{consulta.trim()}"
+              </Button>
+              <span className="text-apoio text-tinta-sussurro">Não digite nome, CPF ou dados identificáveis do paciente. Enter pergunta; ↑↓ escolhem uma ferramenta.</span>
+            </div>
           )}
         </div>
 
-        {iaAberta && painelAoLado && !estreito && <div className="sticky top-4">{resposta}</div>}
-      </div>
+        {/* IA3: no computador a resposta fica aqui, logo abaixo da busca; no
+            celular e no tablet cobre a tela, com o fechar no topo. */}
+        {iaAberta && !estreito && resposta}
+        {iaAberta && estreito && (
+          <div role="dialog" aria-modal="true" aria-label="Resposta da IA" className="fixed inset-0 z-50 flex flex-col bg-superficie pb-[env(safe-area-inset-bottom)]">
+            {resposta}
+          </div>
+        )}
 
-      {/* IA3 no celular e no tablet: a resposta cobre a tela, com o fechar no topo */}
-      {iaAberta && estreito && (
-        <div role="dialog" aria-modal="true" aria-label="Resposta da IA" className="fixed inset-0 z-50 flex flex-col bg-superficie pb-[env(safe-area-inset-bottom)]">
-          {resposta}
-        </div>
-      )}
+        {consulta.trim() && <FichaMedicamentos achados={medicamentos} />}
+
+        {consulta.trim() ? (
+          <section aria-live="polite">
+            <TituloSecao extra={`${resultados.length} ${resultados.length === 1 ? 'ferramenta' : 'ferramentas'}`}>
+              {medicamentos.length ? 'Condutas e ferramentas' : `Resultados para "${consulta.trim()}"`}
+            </TituloSecao>
+            {resultados.length ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {resultados.map((f, i) => (
+                  <CartaoFerramenta key={f.chave} f={f} aviso={avisoModo(f)} favorito={favoritos.includes(f.chave)} onFavoritar={() => alternarFavorito(f.chave)} destacado={i === destacado} />
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 text-center text-apoio text-tinta-sussurro">
+                <p>Nenhuma ferramenta com esse nome para "{consulta.trim()}".</p>
+                {sugestoes && sugestoes.length > 0 && (
+                  <div className="mt-4 text-left">
+                    <TituloSecao>Sugestões por significado</TituloSecao>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {sugestoes.map((s) => {
+                        const f = TODAS.find((x) => `/plantonista/${x.secao}/${x.slug}` === s.rota)
+                        return f ? <CartaoFerramenta key={f.chave} f={f} aviso={avisoModo(f)} favorito={favoritos.includes(f.chave)} onFavoritar={() => alternarFavorito(f.chave)} /> : null
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        ) : (
+          <>
+            {favoritosCards.length > 0 && (
+              <section className="mb-[26px]">
+                <TituloSecao className="mb-2.5">
+                  <span className="flex items-center gap-1.5">
+                    <Star className="size-4 fill-acao text-acao" aria-hidden />
+                    Favoritos
+                  </span>
+                </TituloSecao>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(258px,1fr))] gap-3.5">
+                  {favoritosCards.map((f) => <Atalho key={f.chave} f={f} vezes={usos[f.chave] ?? 0} favorito />)}
+                </div>
+              </section>
+            )}
+            {maisUsados.length >= 2 && (
+              <section className="mb-[26px]">
+                <TituloSecao className="mb-2.5">
+                  <span className="flex items-center gap-1.5">
+                    <History className="size-4 text-tinta-sussurro" aria-hidden />
+                    Mais usados por você
+                  </span>
+                </TituloSecao>
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(258px,1fr))] gap-3.5">
+                  {maisUsados.map((f) => <Atalho key={f.chave} f={f} vezes={usos[f.chave] ?? 0} />)}
+                </div>
+              </section>
+            )}
+            <section>
+              <TituloSecao>Seções clínicas</TituloSecao>
+              {/* Celular e tablet: lista, uma linha por seção, o ícone na cor da seção
+                  (revisão visual 3.8: sai a grade de blocos tintados com ícone em quadrado). */}
+              <div className="overflow-hidden rounded-cartao border border-fio bg-superficie lg:hidden">
+                {secoes.map((s) => {
+                  const c = coresDaSecao(s.slug)
+                  const m = contagemModo(s)
+                  const inerte = faltaPaciente || m.n === 0
+                  const Icone = s.icon
+                  return (
+                    <BotaoLinha
+                      key={s.slug}
+                      variante="linha"
+                      disabled={inerte}
+                      onClick={() => navigate(`/plantonista/${s.slug}`)}
+                      className={cn('items-center', inerte && 'opacity-60')}
+                    >
+                      <Icone className={cn('size-[18px] shrink-0', inerte ? 'text-tinta-sussurro' : c.texto)} aria-hidden />
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="text-controle font-medium text-tinta">{s.label}</span>
+                        <span className="text-apoio text-tinta-sussurro">
+                          {!paciente.modo ? 'Escolha adulto ou pediátrico' : !paciente.leitura.completo ? 'Aguardando os dados do paciente' : m.texto}
+                        </span>
+                      </span>
+                      <span className="text-apoio tabular-nums text-tinta-sussurro">{s.tools.length}</span>
+                    </BotaoLinha>
+                  )
+                })}
+              </div>
+              {/* Largo: canais, a marca de cada seção na sua matiz; a lista não trava. */}
+              <div className="hidden lg:block">
+                <Canais rotulo="Seções clínicas">
+                  {secoes.map((s) => (
+                    <Canal
+                      key={s.slug}
+                      icone={s.icon}
+                      nome={s.label}
+                      exemplos={paciente.modo ? contagemModo(s).texto : s.tools.map((t) => t.label).join(' · ')}
+                      contagem={s.tools.length}
+                      unidade="ferr."
+                      corIcone={coresDaSecao(s.slug).texto}
+                      onClick={() => navigate(`/plantonista/${s.slug}`)}
+                    />
+                  ))}
+                </Canais>
+              </div>
+            </section>
+          </>
+        )}
+      </div>
     </div>
   )
 }
-
