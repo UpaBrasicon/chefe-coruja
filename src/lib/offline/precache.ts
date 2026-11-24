@@ -21,6 +21,7 @@ type Chunk = {
   facadeModuleId: string | null
   isEntry: boolean
   imports: string[]
+  code?: string
   viteMetadata?: { importedCss: Set<string> }
 }
 type Item = Chunk | { type: 'asset'; fileName: string }
@@ -30,9 +31,14 @@ export function listaPrecache(bundle: Record<string, Item>, fontes: string[] = F
   const chunks = Object.values(bundle).filter((c): c is Chunk => c.type === 'chunk')
   const porArquivo = new Map(chunks.map((c) => [c.fileName, c]))
   const arquivos = new Set<string>()
+  const vistos = new Set<string>()
   const visitar = (c: Chunk) => {
-    if (arquivos.has(c.fileName)) return
-    arquivos.add(c.fileName)
+    if (vistos.has(c.fileName)) return
+    vistos.add(c.fileName)
+    // Pedaço só de CSS (ex.: a fonte geist-mono): chega aqui com o código vazio
+    // e o Vite o apaga depois deste passo, então o .js não existe no dist e
+    // pedia um 404 a cada abertura. Fica só o CSS que ele traz.
+    if (c.code === undefined || c.code.trim() !== '') arquivos.add(c.fileName)
     for (const css of c.viteMetadata?.importedCss ?? []) arquivos.add(css)
     for (const i of c.imports) {
       const d = porArquivo.get(i)
