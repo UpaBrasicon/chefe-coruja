@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { MinhaNotificacao, Papel } from '@/types/database'
 import { avaliarUnidade, type ChamadoTecnico, type UnidadeRede } from '@/lib/dadosAdmin'
+import { contarNaoLidos } from '@/lib/avisos'
 
 import type { ChaveNota } from './navegacao'
 
@@ -122,7 +123,8 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     fila_medica: filaMedica.data,
     plataformas: unidadesRede.data?.filter((u) => avaliarUnidade(u, unidadesRede.dataUpdatedAt).estado > 0).length,
     chamados: chamados.data?.length,
-    avisos: (avisos.data ?? []).filter((n) => !n.lida).length,
+    // repetidos contam uma vez (revisão de Avisos, M1): o mesmo número da tela
+    avisos: contarNaoLidos(avisos.data ?? []),
     triagem: triagem.data,
     farmacia: farmacia.data,
     pedidos: pedidos.data?.pedidos_acesso_pendentes,
