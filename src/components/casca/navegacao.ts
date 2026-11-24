@@ -27,7 +27,7 @@ import {
 import { BarChart3, BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
 import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren, Syringe } from 'lucide-react'
-import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, Package, Send, Sparkles, Sprout } from 'lucide-react'
+import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, MessageCircleQuestion, Package, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
 
@@ -420,7 +420,7 @@ export const ROTA_PERGUNTAR_IA = '/plantonista?todas=1&ia=1'
 export const BARRA_MEDICO_CELULAR: ItemNav[] = [
   { to: '/plantonista', rotulo: 'Início', icone: House },
   { to: '/plantao/internacao/pacientes', rotulo: 'Leitos', icone: Users },
-  { to: ROTA_PERGUNTAR_IA, rotulo: 'Perguntar à IA', icone: Sparkles },
+  { to: ROTA_PERGUNTAR_IA, rotulo: 'Perguntar à IA', icone: MessageCircleQuestion },
   { to: '/prontuarios', rotulo: 'Prontuários', icone: BookOpen },
   { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
 ]
