@@ -3,14 +3,35 @@
 // Recarga sem conexão, parte 2, N5 = A (RT, 05/11/2026): login, casca e as
 // telas da enfermagem ficam guardadas de antemão pelo service worker.
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 import { FONTES_SEM_CONEXAO, listaPrecache } from './precache.ts'
 
-const ch = (fileName: string, o: { id?: string; isEntry?: boolean; imports?: string[]; css?: string[] } = {}) => ({
+const ch = (fileName: string, o: { id?: string; isEntry?: boolean; imports?: string[]; css?: string[]; code?: string } = {}) => ({
   type: 'chunk' as const, fileName, facadeModuleId: o.id ?? null, isEntry: !!o.isEntry, imports: o.imports ?? [],
+  ...(o.code !== undefined ? { code: o.code } : {}),
   viteMetadata: { importedCss: new Set(o.css ?? []) },
+})
+
+test('pedaço só de CSS (código vazio): o .js fica de fora, o .css entra', () => {
+  // F5 do desempenho: o Vite apaga o .js desse pedaço depois do generateBundle;
+  // na lista ele virava um 404 a cada abertura (/assets/geist-mono-….js)
+  const bundle = {
+    a: ch('assets/index-1.js', { id: 'C:\\app\\index.html', isEntry: true, imports: ['assets/LadoMarca-2.js'], code: 'import "./x"' }),
+    b: ch('assets/LadoMarca-2.js', { imports: ['assets/geist-mono-3.js'], code: 'export const a = 1' }),
+    c: ch('assets/geist-mono-3.js', { css: ['assets/geist-mono-4.css'], code: '' }),
+  }
+  assert.deepEqual(listaPrecache(bundle, []), [
+    '/assets/LadoMarca-2.js', '/assets/geist-mono-4.css', '/assets/index-1.js',
+  ])
+})
+
+test('depois do build, todo caminho do dist/precache.json existe no dist', (t) => {
+  if (!existsSync('dist/precache.json')) return t.skip('sem dist/ (rode npm run build antes)')
+  const lista = JSON.parse(readFileSync('dist/precache.json', 'utf8')) as string[]
+  assert.ok(lista.length > 0)
+  assert.deepEqual(lista.filter((p) => !existsSync(`dist${p}`)), [])
 })
 
 test('entrada, telas escolhidas e o que elas importam; o resto fica de fora', () => {
