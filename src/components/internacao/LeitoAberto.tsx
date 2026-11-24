@@ -38,7 +38,7 @@ import { abaDoEndereco, acoesDoLeito } from '@/lib/acoesLeito'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
-import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
+import { AgravosNotificacao, ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { BotaoRnDaMae } from '@/components/paciente/CadastroRn'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
@@ -479,6 +479,8 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
     ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal,
     // EV1: o resumo do caso (antibióticos, medicações, eletrólitos, condutas) mora no Resumo do leito
     resumoCaso: <ResumoClinico pacienteId={pacienteId} internacaoId={i.id} />,
+    // EX3: os agravos de notificação saem da lista de exames para um bloco próprio no Resumo
+    agravos: <AgravosNotificacao pacienteId={pacienteId} medico={escreve} />,
   }
 
   // RS3 (RT, 24/11/2026): "Evoluir" é a ação principal; transferir, passar,
@@ -504,7 +506,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta }
     </span>
   ) : undefined
   const irNotificacao = () => {
-    setAba('exames')
+    setAba('resumo')
     window.setTimeout(() => document.getElementById('caderno-agravos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
   }
 

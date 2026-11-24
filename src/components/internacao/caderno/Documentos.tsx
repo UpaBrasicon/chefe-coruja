@@ -3,7 +3,7 @@
 // (fixo). Admissão e AIH no desenho do protótipo, com a identificação do cadastro.
 import * as React from 'react'
 
-import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
+import { ListaExamesLeito } from '@/components/clinico/ExamesEAgravos'
 import { Button } from '@/components/ui/button'
 import { GavetaAlergias, SeloAlergia } from '@/components/paciente/AlergiasEventos'
 import { negaVigente, useAlergias } from '@/components/paciente/useAlergias'
@@ -17,7 +17,6 @@ import { CampoPeso } from '@/components/prescricao/PrescricaoEstruturada'
 import { textoDoPeso, useFaltaParaPrescrever } from '@/components/prescricao/pesoAtendimento'
 import { DIETAS } from '@/lib/rascunho'
 
-import { Secao } from './caixas'
 import type { useDocumentosLeito } from './rascunhoLeito'
 
 type Doc = ReturnType<typeof useDocumentosLeito>
@@ -80,13 +79,10 @@ export function AbaPrescricao({ doc }: { doc: Doc }) {
 export function AbaExames({ internacaoId, pacienteId, medico }: { internacaoId: string; pacienteId: string; medico: boolean }) {
   return (
     <div className="flex flex-col gap-4">
-      {/* ponto 12: um pedido por grupo (laboratório, imagem, ECG), ligado à internação */}
-      {medico && <PedidoExamesLeito internacaoId={internacaoId} />}
-      <div id="caderno-agravos">
-        <Secao titulo="Exames pedidos e agravos de notificação">
-          <ExamesEAgravos pacienteId={pacienteId} medico={medico} />
-        </Secao>
-      </div>
+      {/* EX1: pedir por uma busca só, com os frequentes da unidade e a cesta (um pedido por grupo no servidor) */}
+      {medico && <PedidoExamesLeito internacaoId={internacaoId} pacienteId={pacienteId} />}
+      {/* EX2: com resultado, aguardando e cancelados; os agravos foram para o Resumo e a Alta (EX3) */}
+      <ListaExamesLeito pacienteId={pacienteId} medico={medico} />
     </div>
   )
 }
