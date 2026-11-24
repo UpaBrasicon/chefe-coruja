@@ -10,6 +10,8 @@
 // confirmado na documentação pública vem marcado "conferir na homologação".
 import { createHash, randomBytes } from 'node:crypto'
 
+import { comNovaTentativa, comPrazo, FalhaTransitoria, PRAZO_PROVEDOR_MS, STATUS_TRANSITORIOS } from './prazo.ts'
+
 export type Provedor = {
   id: 'vidaas' | 'birdid' | 'neoid' | 'safeid' | 'remoteid' | 'outro'
   nome: string
@@ -20,9 +22,16 @@ export type Provedor = {
   redirectUri: string
   /** como o hash vai no corpo da assinatura; o DOC-ICP-17 usa base64 (conferir por provedor) */
   hashEm: 'base64' | 'hex'
+  /** prazo de cada chamada, em ms (padrão PRAZO_PROVEDOR_MS; os testes usam um curto) */
+  prazoMs?: number
 }
 
 export type Fetch = (url: string, init?: RequestInit) => Promise<Response>
+
+// o que o médico lê quando o provedor não responde dentro do prazo (o servidor devolve 504)
+export const PROVEDOR_SEM_RESPOSTA_SESSAO = 'O provedor do certificado não respondeu a tempo. Volte ao sistema e abra a sessão de assinatura de novo.'
+export const PROVEDOR_SEM_RESPOSTA_ASSINATURA = 'O provedor do certificado não respondeu a tempo. O documento continua emitido, mas ficou sem a assinatura ICP-Brasil.'
+const prazo = (p: Provedor) => p.prazoMs ?? PRAZO_PROVEDOR_MS
 
 const b64url = (b: Buffer) => b.toString('base64url')
 
@@ -64,12 +73,13 @@ export async function trocarCodigo(p: Provedor, codigo: string, verifier: string
     redirect_uri: p.redirectUri,
     code_verifier: verifier,
   })
-  const r = await f(new URL(p.caminhos.token, p.base).toString(), {
+  // sem nova tentativa: o código OAuth vale uma vez só
+  const j = await comPrazo(prazo(p), PROVEDOR_SEM_RESPOSTA_SESSAO, async (signal) => json(await f(new URL(p.caminhos.token, p.base).toString(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
     body: corpo,
-  })
-  const j = await json(r, 'token')
+    signal,
+  }), 'token'))
   if (typeof j.access_token !== 'string') throw new Error('token: sem access_token')
   return { token: j.access_token, expiraEmSeg: Number(j.expires_in ?? 0) }
 }
@@ -78,10 +88,18 @@ export type CertificadoNuvem = { alias: string; certificadoDer: Uint8Array; cade
 
 /** Lista os certificados do titular. Aceita o certificado em base64 (DER) ou PEM. */
 export async function certificados(p: Provedor, token: string, f: Fetch = fetch): Promise<CertificadoNuvem[]> {
-  const r = await f(new URL(p.caminhos.certificados, p.base).toString(), {
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-  })
-  const j = await json(r, 'certificados')
+  // consulta: pode tentar de novo se o provedor demorar ou cair (502/503/504)
+  const j = await comNovaTentativa(() => comPrazo(prazo(p), PROVEDOR_SEM_RESPOSTA_SESSAO, async (signal) => {
+    const r = await f(new URL(p.caminhos.certificados, p.base).toString(), {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      signal,
+    })
+    if (STATUS_TRANSITORIOS.has(r.status)) {
+      r.body?.cancel().catch(() => {})
+      throw new FalhaTransitoria(`certificados: HTTP ${r.status}`)
+    }
+    return json(r, 'certificados')
+  }))
   const lista = (Array.isArray(j) ? j : j.certificates ?? []) as Array<Record<string, unknown>>
   const der = (v: unknown) => Buffer.from(String(v ?? '').replace(/-----[^-]+-----|\s/g, ''), 'base64')
   return lista.map((c) => ({
@@ -94,15 +112,16 @@ export async function certificados(p: Provedor, token: string, f: Fetch = fetch)
 /** Assina um hash SHA-256 (RAW). Devolve a assinatura PKCS#1 v1.5. */
 export async function assinarHash(p: Provedor, token: string, alias: string, hash: Uint8Array, rotulo: string, f: Fetch = fetch): Promise<Uint8Array> {
   const h = Buffer.from(hash)
-  const r = await f(new URL(p.caminhos.assinar, p.base).toString(), {
+  // sem nova tentativa: assinar duas vezes não é inofensivo
+  const j = await comPrazo(prazo(p), PROVEDOR_SEM_RESPOSTA_ASSINATURA, async (signal) => json(await f(new URL(p.caminhos.assinar, p.base).toString(), {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
       certificate_alias: alias,
       hashes: [{ id: '1', alias: rotulo, hash: p.hashEm === 'hex' ? h.toString('hex') : h.toString('base64'), hash_algorithm: '2.16.840.1.101.3.4.2.1', signature_format: 'RAW' }],
     }),
-  })
-  const j = await json(r, 'assinatura')
+    signal,
+  }), 'assinatura'))
   const s = (j.signatures ?? [])[0]
   const valor = s?.raw_signature ?? s?.signature
   if (typeof valor !== 'string') throw new Error('assinatura: resposta sem assinatura')

@@ -36,3 +36,40 @@ test('LG7: texto da sessão', async () => {
   assert.match(textoDaSessao({ ativa: true, valida_ate: '2026-11-18T22:00:00Z' }, new Date('2026-11-18T15:00:00Z')), /ativa até as 19:00/)
   assert.match(textoDaSessao({ ativa: true, valida_ate: '2026-11-18T10:00:00Z' }, new Date('2026-11-18T15:00:00Z')), /terminou/)
 })
+
+// Pedido 18 (F7): o navegador não espera o assinador para sempre.
+test('LG7: assinador travado: erro 504 com texto claro no prazo, sem nova tentativa', async () => {
+  const { pedirAoAssinador, ASSINADOR_SEM_RESPOSTA } = await import('./assinadorPuro.ts')
+  let chamadas = 0
+  const travado = ((_url: string, init?: RequestInit) => {
+    chamadas++
+    // como o fetch do navegador: só rejeita quando o sinal aborta
+    return new Promise<Response>((_, rejeitar) => init?.signal?.addEventListener('abort', () => rejeitar(init.signal?.reason)))
+  }) as typeof fetch
+  const vivo = setInterval(() => {}, 1000) // o timer do AbortSignal.timeout não segura o Node
+  try {
+    const inicio = Date.now()
+    await assert.rejects(pedirAoAssinador(travado, 'https://assina.teste/assinar', { method: 'POST' }, 50),
+      (e: unknown) => (e as Error).message === ASSINADOR_SEM_RESPOSTA && (e as { status?: number }).status === 504)
+    assert.ok(Date.now() - inicio < 2000)
+    assert.equal(chamadas, 1)
+  } finally {
+    clearInterval(vivo)
+  }
+})
+
+test('LG7: resposta do assinador: 204, erro com status e corpo', async () => {
+  const { pedirAoAssinador } = await import('./assinadorPuro.ts')
+  const com = (r: Response) => (async () => r) as unknown as typeof fetch
+  assert.equal(await pedirAoAssinador(com(new Response(null, { status: 204 })), 'u', {}, 1000), undefined)
+  await assert.rejects(pedirAoAssinador(com(new Response(JSON.stringify({ erro: 'Sem sessão de assinatura.' }), { status: 409 })), 'u', {}, 1000),
+    (e: unknown) => (e as Error).message === 'Sem sessão de assinatura.' && (e as { status?: number }).status === 409)
+  assert.deepEqual(await pedirAoAssinador(com(new Response(JSON.stringify({ assinatura_id: 'a1' }))), 'u', {}, 1000), { assinatura_id: 'a1' })
+})
+
+test('LG7: toda chamada ao assinador passa pelo prazo (AbortSignal.timeout)', () => {
+  assert.match(puro, /signal = AbortSignal\.timeout\(prazoMs\)/)
+  assert.doesNotMatch(fonte, /await fetch\(/, 'nada de fetch direto sem prazo')
+  assert.match(fonte, /pedirAoAssinador<T>\(fetch,/)
+  assert.match(fonte, /chamar\('\/assinar', \{[^\n]+\}, PRAZO_ASSINAR_MS\)/)
+})

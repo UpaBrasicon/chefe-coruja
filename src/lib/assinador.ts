@@ -3,25 +3,21 @@
 // nada aparece e nada é chamado. O médico abre a sessão uma vez por plantão;
 // cada documento emitido dos tipos abaixo é assinado em seguida.
 import { supabase } from '@/lib/supabase'
-import { bytesDoBytea, TIPOS_ASSINAVEIS, type SessaoAssinatura } from '@/lib/assinadorPuro'
+import { bytesDoBytea, pedirAoAssinador, PRAZO_ASSINADOR_MS, PRAZO_ASSINAR_MS, TIPOS_ASSINAVEIS, type SessaoAssinatura } from '@/lib/assinadorPuro'
 
 export { TIPOS_ASSINAVEIS, textoDaSessao, type SessaoAssinatura } from '@/lib/assinadorPuro'
 
 export const URL_ASSINADOR = String(import.meta.env.VITE_ASSINADOR_URL ?? '').replace(/\/$/, '')
 export const assinaturaLigada = () => URL_ASSINADOR.length > 0
 
-async function chamar<T>(caminho: string, init: RequestInit = {}): Promise<T> {
+async function chamar<T>(caminho: string, init: RequestInit = {}, prazoMs = PRAZO_ASSINADOR_MS): Promise<T> {
   const { data } = await supabase.auth.getSession()
   const jwt = data.session?.access_token
   if (!jwt) throw new Error('Sessão do sistema expirada. Entre de novo.')
-  const r = await fetch(`${URL_ASSINADOR}${caminho}`, {
+  return pedirAoAssinador<T>(fetch, `${URL_ASSINADOR}${caminho}`, {
     ...init,
     headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json', ...(init.headers as Record<string, string> | undefined) },
-  })
-  if (r.status === 204) return undefined as T
-  const corpo = (await r.json().catch(() => ({}))) as { erro?: string }
-  if (!r.ok) throw Object.assign(new Error(corpo.erro ?? `Assinador: HTTP ${r.status}`), { status: r.status })
-  return corpo as T
+  }, prazoMs)
 }
 
 export const minhaSessaoAssinatura = () => chamar<SessaoAssinatura>('/sessao')
@@ -43,7 +39,7 @@ export type ResultadoAssinatura = 'assinado' | 'sem-sessao' | 'nao-se-aplica' | 
 export async function assinarSeDer(doc: { id: string; tipo: string }): Promise<ResultadoAssinatura> {
   if (!assinaturaLigada() || !TIPOS_ASSINAVEIS.has(doc.tipo)) return 'nao-se-aplica'
   try {
-    await chamar('/assinar', { method: 'POST', body: JSON.stringify({ documento_id: doc.id }) })
+    await chamar('/assinar', { method: 'POST', body: JSON.stringify({ documento_id: doc.id }) }, PRAZO_ASSINAR_MS)
     window.dispatchEvent(new CustomEvent('cc-documento-assinado', { detail: doc.id }))
     return 'assinado'
   } catch (e) {

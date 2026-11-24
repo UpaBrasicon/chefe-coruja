@@ -16,6 +16,38 @@ export type SessaoAssinatura = {
   provedores: { id: string; nome: string }[]
 }
 
+/** Quanto o navegador espera o assinador (pedido 18, F7): as chamadas da sessão. */
+export const PRAZO_ASSINADOR_MS = 20_000
+/**
+ * A assinatura espera o assinador inteiro (Supabase, folha em PDF e provedor,
+ * cada um com prazo próprio lá dentro); a emissão não espera por ela.
+ */
+export const PRAZO_ASSINAR_MS = 90_000
+export const ASSINADOR_SEM_RESPOSTA = 'O assinador não respondeu a tempo. Tente de novo em instantes.'
+
+/**
+ * Chama o assinador com prazo. Estourou: erro com status 504 e texto claro.
+ * Sem nova tentativa: quem chama decide (a assinatura nunca repete sozinha).
+ */
+export async function pedirAoAssinador<T>(f: typeof fetch, url: string, init: RequestInit, prazoMs: number): Promise<T> {
+  const signal = AbortSignal.timeout(prazoMs)
+  const semResposta = () => Object.assign(new Error(ASSINADOR_SEM_RESPOSTA), { status: 504 })
+  let r: Response
+  try {
+    r = await f(url, { ...init, signal })
+  } catch (e) {
+    if (signal.aborted) throw semResposta()
+    throw e
+  }
+  if (r.status === 204) return undefined as T
+  const corpo = (await r.json().catch(() => {
+    if (signal.aborted) throw semResposta()
+    return {}
+  })) as { erro?: string }
+  if (!r.ok) throw Object.assign(new Error(corpo.erro ?? `Assinador: HTTP ${r.status}`), { status: r.status })
+  return corpo as T
+}
+
 /** bytea do PostgREST (\x… em hexadecimal) → bytes. */
 export function bytesDoBytea(v: string): Uint8Array {
   const hex = v.startsWith('\\x') ? v.slice(2) : v
