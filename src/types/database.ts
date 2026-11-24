@@ -13926,6 +13926,8 @@ export type Database = {
         Returns: string
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
+      passometro: { Args: { p_unidade: string }; Returns: Json }
+      registrar_impressao_passometro: { Args: { p_unidade: string }; Returns: Json }
       medicos_para_descanso: {
         Args: { p_unidade: string }
         Returns: { perfil_id: string; nome: string; na_escala: boolean }[]

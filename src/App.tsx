@@ -108,6 +108,7 @@ const Telemedicina = lazy(() => import('@/pages/telemedicina/Telemedicina'))
 const EscalaEquipe = lazy(() => import('@/pages/EscalaEquipe'))
 const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
+const Passometro = lazy(() => import('@/pages/plantao/Passometro'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
 const SobreModuloClinico = lazy(() => import('@/pages/plantonista/SobreModuloClinico'))
@@ -531,6 +532,8 @@ export default function App() {
 
                       {/* ── Plantonista exclusivo ──────────────────────── */}
                       <Route element={<RequireRole papeis={['plantonista']} />}>
+                        {/* pedido 8 (PS1 a PS3 = A, RT 23/11/2026): passômetro do médico */}
+                        <Route path="/passometro" element={<Passometro />} />
                         <Route path="/plantao" element={<PlantaoHome />} />
                         <Route path="/plantao/:secao" element={<PlantaoSectionHome />} />
                         {/* formulário de internação antigo retirado (parte 4.7a): o endereço leva ao leito aberto */}
