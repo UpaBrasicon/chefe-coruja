@@ -1,5 +1,5 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
-import { Building2, Compass, Lock, LogOut, Monitor, Moon, Repeat, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
+import { Building2, Compass, Lock, LogOut, Monitor, Moon, Repeat, ShieldCheck, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -168,6 +168,13 @@ export function MenuUsuario({
                   <Compass className="size-4 text-tinta-sussurro" aria-hidden />
                   Primeiros passos
                 </BotaoLinha>
+              )}
+              {/* TM2 (RT, 24/11/2026): as credenciais da telemedicina moram aqui, não no menu da tela */}
+              {papelAtivo === 'telemedicina' && (
+                <button type="button" onClick={() => ir('/telemedicina/credenciais')} className="flex min-h-11 items-center gap-2.5 rounded-controle px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha">
+                  <ShieldCheck className="size-4 text-tinta-sussurro" aria-hidden />
+                  Unidades e credenciais
+                </button>
               )}
               {papelAtivo === 'plantonista' && (
                 <button type="button" onClick={() => ir('/preferencias-prescricao')} className="flex min-h-11 items-center gap-2.5 rounded-controle px-2.5 py-2.5 text-left text-controle text-tinta hover:bg-trilha">

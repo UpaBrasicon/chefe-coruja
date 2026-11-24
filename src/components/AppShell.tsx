@@ -444,25 +444,10 @@ function Casca() {
     <ContextoTopo>{`${escaladosAgora} em plantão agora`}</ContextoTopo>
   ) : ehAdmin && rede ? (
     <ContextoTopo icone={Building2}>{`${rede.length} unidade${rede.length === 1 ? '' : 's'} · ${plantaoRede === null ? '< 5' : plantaoRede} em plantão`}</ContextoTopo>
-  ) : ehTele ? (
-    <NavLink
-      to="/teleinterconsulta"
-      title="Plantão remoto"
-      className={cn(
-        'flex h-8 items-center gap-2 rounded-capsula border px-3 text-apoio font-medium whitespace-nowrap',
-        emPlantao ? 'border-conforme/30 bg-alerta-conforme text-conforme' : 'border-fio text-tinta-sussurro',
-      )}
-    >
-      <span className={cn('size-2 rounded-capsula', emPlantao ? 'bg-conforme' : 'bg-fio-forte')} aria-hidden />
-      {emPlantao ? 'Em plantão' : 'Fora do plantão'}
-      {fimTurno && (
-        <>
-          <span className="h-3 w-px bg-fio-forte" aria-hidden />
-          <span className="tabular">até {fimTurno}</span>
-        </>
-      )}
-    </NavLink>
   ) : null
+  // Telemedicina (CH2, RT 24/11/2026): sem selo de plantão na barra. A situação
+  // (escala e check-in) é um selo só, no topo dos Chamados; o "Fora do plantão"
+  // daqui contradizia a escala.
 
   const pilulaFila = (!fila.online || fila.pendentes > 0 || fila.recusados > 0) && (
     <span

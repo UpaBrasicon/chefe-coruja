@@ -25,7 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { BarChart3, BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
-import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
+import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren, Syringe } from 'lucide-react'
 import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, MessageCircleQuestion, Package, Send, Sprout } from 'lucide-react'
 
@@ -242,15 +242,14 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     // Sem Prontuários (RT, 27/10/2026): o que o farmacêutico precisa do
     // paciente chega pela validação e pela dispensação.
   ],
+  // Revisão do perfil Telemedicina (TM2, RT 24/11/2026): Chamados (fila, salas e
+  // assinaturas em abas), Escala (com a Cobertura dos setores), Histórico e
+  // Prontuários. As Credenciais foram para o menu do usuário.
   telemedicina: [
-    { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: Hourglass, exato: true, nota: 'tele' },
-    { to: '/telemedicina/salas', rotulo: 'Salas em andamento', curto: 'Salas', icone: Video, exato: true },
+    { to: '/teleinterconsulta', rotulo: 'Chamados', icone: Hourglass, exato: true, nota: 'tele' },
     // E3 da aba Escala (RT, 27/10/2026): a "Minha agenda" vira a Escala comum, com o extrato numa aba
     ITEM_ESCALA,
-    { to: '/telemedicina/telemonitoramento', rotulo: 'Telemonitoramento', curto: 'Monitor', icone: Activity, exato: true },
-    { to: '/telemedicina/assinaturas', rotulo: 'Assinaturas pendentes', curto: 'Assinar', icone: FileText, exato: true },
-    { to: '/telemedicina/historico', rotulo: 'Histórico e auditoria', curto: 'Histórico', icone: History, exato: true },
-    { to: '/telemedicina/credenciais', rotulo: 'Unidades e credenciais', curto: 'Credenciais', icone: ShieldCheck, exato: true },
+    { to: '/telemedicina/historico', rotulo: 'Histórico', icone: History, exato: true },
     ITEM_PRONTUARIOS,
   ],
   // Administrador (P/index.html 32242–32246): Rede, Plataformas, Pendências e

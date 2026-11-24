@@ -59,9 +59,16 @@ function motivoSemAcesso(erro: unknown): string | null {
 
 const SEXO: Record<string, string> = { F: 'feminino', M: 'masculino', I: 'sexo ignorado' }
 
-export default function ProntuarioLeitura() {
+/**
+ * `pacienteId` e `naGaveta`: a sala do chamado da telemedicina abre o prontuário
+ * numa gaveta, sem sair da sala (SA1, RT 24/11/2026). Sem eles, o paciente vem da rota.
+ */
+export default function ProntuarioLeitura({ pacienteId: idGaveta, naGaveta = false }: { pacienteId?: string; naGaveta?: boolean } = {}) {
   const { papelAtivo } = useUnidade()
-  const { pacienteId } = useParams<{ pacienteId: string }>()
+  const { pacienteId: idRota } = useParams<{ pacienteId: string }>()
+  const pacienteId = idGaveta ?? idRota
+  // a telemedicina não pede acesso: o prontuário abre pela teleinterconsulta aceita (PT1)
+  const voltar = papelAtivo === 'telemedicina' ? 'Voltar aos prontuários' : 'Voltar aos pedidos'
   const [fichaAberta, setFichaAberta] = useState(false)
   const [folga, setFolga] = useState(false)
   const idDetalhes = useId()
@@ -155,21 +162,21 @@ export default function ProntuarioLeitura() {
       // sem dado do paciente: estado próprio, a saída é voltar aos pedidos
       return (
         <div className="flex max-w-2xl flex-col items-start">
-          <Trilha niveis={[{ rotulo: 'Prontuários', to: '/prontuarios' }, { rotulo: SEM_ACESSO }]} />
+          {!naGaveta && <Trilha niveis={[{ rotulo: 'Prontuários', to: '/prontuarios' }, { rotulo: SEM_ACESSO }]} />}
           <TituloPagina titulo={SEM_ACESSO} descricao={motivo} className="mb-base" />
-          <Button nativeButton={false} render={<Link to="/prontuarios" />}>Voltar aos pedidos</Button>
+          {!naGaveta && <Button nativeButton={false} render={<Link to="/prontuarios" />}>{voltar}</Button>}
         </div>
       )
     }
     return (
       <div className="flex max-w-2xl flex-col gap-3">
-        <Trilha niveis={[{ rotulo: 'Prontuários', to: '/prontuarios' }, { rotulo: 'Prontuário' }]} />
+        {!naGaveta && <Trilha niveis={[{ rotulo: 'Prontuários', to: '/prontuarios' }, { rotulo: 'Prontuário' }]} />}
         <MensagemErro erro={abertura.error} acao="abrir o prontuário" />
         <div className="flex flex-wrap gap-2">
           <Button disabled={abertura.isFetching} onClick={() => void abertura.refetch()}>
             <RotateCw aria-hidden className={cn(abertura.isFetching && 'animate-spin')} /> {abertura.isFetching ? 'Tentando…' : 'Tentar de novo'}
           </Button>
-          <Button variant="outline" nativeButton={false} render={<Link to="/prontuarios" />}>Voltar aos pedidos</Button>
+          {!naGaveta && <Button variant="outline" nativeButton={false} render={<Link to="/prontuarios" />}>{voltar}</Button>}
         </div>
       </div>
     )
@@ -185,7 +192,7 @@ export default function ProntuarioLeitura() {
 
   return (
     <div className="w-full max-w-6xl">
-      <Trilha niveis={[{ rotulo: 'Prontuários', to: '/prontuarios' }, { rotulo: paciente.nome_social || paciente.nome }]} />
+      {!naGaveta && <Trilha niveis={[{ rotulo: 'Prontuários', to: '/prontuarios' }, { rotulo: paciente.nome_social || paciente.nome }]} />}
       <div className="grid items-start gap-secao lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
         {/* ficha: um painel só (maquete A); no celular fica em cima, curta */}
         <aside

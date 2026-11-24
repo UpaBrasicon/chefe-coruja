@@ -14,7 +14,7 @@
 // a explicação com o atalho para o próximo plantão.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight, Hourglass } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Hourglass, MonitorSmartphone } from 'lucide-react'
 import * as React from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -23,12 +23,13 @@ import { categoriaDaTela, daCategoria } from '@/lib/categoriaEscala'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { dataIso, dataPorExtenso, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import { contagemRemotos, siglaSetor } from '@/lib/telemedicinaPerfil'
 import { cn } from '@/lib/utils'
 import { ProximoPlantao } from '@/components/casca/ProximoPlantao'
 import { AcoesDoPlantao, SeuPlantao, SeusPedidos, VagasDoDia } from '@/components/escala/PedidosEscala'
 import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
 import { type PlantaoEquipe, usePedidosDaEquipe } from '@/hooks/usePedidosDaEquipe'
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
@@ -58,6 +59,8 @@ function TeleTodasUnidades({ de, ate }: { de: string; ate: string }) {
   // a hora em que a tela abriu, como no resto da aba
   const [agora] = React.useState(() => Date.now())
   const proximos = (lista.data ?? []).filter((p) => new Date(p.fim).getTime() > agora)
+  // ES2 (RT, 24/11/2026): um vazio só; o "nenhum plantão" já está no Próximo plantão do alto
+  if (lista.data && proximos.length === 0) return null
   return (
     <section aria-label="Seus plantões em todas as unidades" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
       <div className="flex items-center gap-2 border-b border-trilha px-4 py-2.5">
@@ -66,7 +69,6 @@ function TeleTodasUnidades({ de, ate }: { de: string; ate: string }) {
       </div>
       {lista.isLoading && <div className="flex justify-center py-4"><Spinner /></div>}
       {lista.error && <MensagemErro className="m-3" texto={(lista.error as Error).message} />}
-      {lista.data && proximos.length === 0 && <p className="px-4 py-3 text-apoio text-tinta-sussurro">Nenhum plantão nos próximos 60 dias.</p>}
       <ul className="flex flex-col">
         {proximos.map((p) => (
           <li key={p.escala_id} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 border-b border-trilha px-4 py-2 text-apoio last:border-b-0">
@@ -82,7 +84,9 @@ function TeleTodasUnidades({ de, ate }: { de: string; ate: string }) {
 }
 // a faixa do plantão: o diurno de 12 h é "Dia"
 const faixa = (p: Plantao) => (p.turno === 'noite' ? 'Noite' : p.duracao_min >= 720 ? 'Dia' : p.turno === 'tarde' ? 'Tarde' : 'Manhã')
-const horario = (p: Plantao) => `${hora(p.inicio)}–${hora(new Date(new Date(p.inicio).getTime() + p.duracao_min * 60_000))}`
+// ES1: o plantão remoto é o escalado na categoria telemedicina (migration 20270202000002)
+const remoto = (p: Plantao) => p.papel === 'telemedicina'
+const horario = (p: Plantao) =>`${hora(p.inicio)}–${hora(new Date(new Date(p.inicio).getTime() + p.duracao_min * 60_000))}`
 
 export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
   const { unidadeAtiva, papeisDaUnidade, papelAtivo } = useUnidade()
@@ -136,20 +140,30 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
   const equipe = categoria ? PAPEL_LABEL[categoria] : 'Sua categoria'
   const plantoes = escala.data ?? []
   const meus = plantoes.filter((p) => p.perfil_id === perfil?.id)
+  // ES1 (RT, 24/11/2026): no perfil Telemedicina, o plantão remoto (categoria
+  // telemedicina) tem marca própria e o filtro "Só telemedicina" vem ligado;
+  // os plantões presenciais de quem também é Médico saem do mês e do dia
+  const tele = papelAtivo === 'telemedicina'
+  const [soRemotos, setSoRemotos] = React.useState(true)
+  const filtrar = tele && soRemotos
+  const visivel = (p: Plantao) => !filtrar || remoto(p)
+  const meusRemotos = meus.filter(remoto)
+  const meusVisiveis = meus.filter(visivel)
   const meuNoDia = new Map<string, Plantao[]>()
-  for (const p of meus) meuNoDia.set(p.data, [...(meuNoDia.get(p.data) ?? []), p])
+  for (const p of meusVisiveis) meuNoDia.set(p.data, [...(meuNoDia.get(p.data) ?? []), p])
   const primeiro = new Date(ano, mesNum - 1, 1).getDay()
   const celulas: (string | null)[] = [...Array(primeiro).fill(null),
     ...Array.from({ length: diasNoMes }, (_, i) => `${mes}-${String(i + 1).padStart(2, '0')}`)]
   while (celulas.length % 7) celulas.push(null)
+  const semanasComFicha = new Set(celulas.flatMap((d, i) => (d && ((meuNoDia.get(d)?.length ?? 0) > 0 || vagasNoDia(d).length > 0) ? [Math.floor(i / 7)] : [])))
   const diaSel = dia ?? (hoje.startsWith(mes) ? hoje : de)
-  const doDia = plantoes.filter((p) => p.data === diaSel && (p.perfil_id === perfil?.id || daCategoria(p.papel, categoria))).sort((a, b) => a.inicio.localeCompare(b.inicio))
+  const doDia = plantoes.filter((p) => p.data === diaSel && (p.perfil_id === perfil?.id ? visivel(p) : daCategoria(p.papel, categoria))).sort((a, b) => a.inicio.localeCompare(b.inicio))
   const nomeSetor = (id: string) => setores.data?.find((s) => s.id === id)?.nome ?? 'Setor'
   const setoresDoDia = [...new Set(doDia.map((p) => p.setor_id))]
     .sort((a, b) => (setores.data ?? []).findIndex((s) => s.id === a) - (setores.data ?? []).findIndex((s) => s.id === b))
   // o meu próximo plantão nesta unidade (o que ainda não terminou)
   const meuProximo = (proximos.data ?? [])
-    .filter((p) => p.perfil_id === perfil?.id && new Date(p.inicio).getTime() + p.duracao_min * 60_000 > agora)
+    .filter((p) => p.perfil_id === perfil?.id && visivel(p) && new Date(p.inicio).getTime() + p.duracao_min * 60_000 > agora)
     .sort((a, b) => a.inicio.localeCompare(b.inicio))[0]
   const irParaProximo = meuProximo
     ? { rotulo: `Ir para o próximo plantão (${meuProximo.data.slice(8, 10)}/${meuProximo.data.slice(5, 7)})`, ir: () => { setMes(meuProximo.data.slice(0, 7)); setDia(meuProximo.data) } }
@@ -184,7 +198,12 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
               <span className="min-w-[140px] text-center text-apoio font-semibold text-tinta">{MESES[mesNum - 1][0].toUpperCase() + MESES[mesNum - 1].slice(1)} de {ano}</span>
               <Button variant="outline" size="icon-sm" aria-label="Próximo mês" onClick={() => mudarMes(1)}><ChevronRight /></Button>
             </div>
-            {escala.data && <span className="text-rotulo text-tinta-sussurro">{plural(meus.length, 'plantão seu', 'plantões seus')} no mês</span>}
+            {escala.data && tele ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-apoio text-tinta-sussurro">{contagemRemotos(meusRemotos.length, meus.length)} no mês</span>
+                <Chip ativo={soRemotos} onClick={() => setSoRemotos((v) => !v)}>Só telemedicina</Chip>
+              </div>
+            ) : escala.data && <span className="text-rotulo text-tinta-sussurro">{plural(meus.length, 'plantão seu', 'plantões seus')} no mês</span>}
           </div>
           {escala.isLoading && <div className="flex justify-center py-8"><Spinner /></div>}
           {escala.error && <MensagemErro className="m-3" texto={(escala.error as Error).message} />}
@@ -194,10 +213,12 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
               {celulas.map((d, i) => {
                 if (!d) return <span key={i} className="bg-superficie" />
                 const meusDia = meuNoDia.get(d) ?? []
+                // ES2: semana sem plantão nem vaga encolhe
+                const semanaCheia = semanasComFicha.has(Math.floor(i / 7))
                 return (
                   <BotaoLinha key={d} variante="linha" onClick={() => setDia(d)} aria-pressed={d === diaSel}
-                    aria-label={`${Number(d.slice(8))} de ${MESES[mesNum - 1]}: ${meusDia.length ? meusDia.map((p) => `${faixa(p)} no ${nomeSetor(p.setor_id)}`).join(', ') : 'sem plantão seu'}`}
-                    className={cn('min-h-[68px] flex-col items-stretch gap-1 rounded-none border-0 bg-superficie px-1.5 py-1.5 sm:px-2',
+                    aria-label={`${Number(d.slice(8))} de ${MESES[mesNum - 1]}: ${meusDia.length ? meusDia.map((p) => `${faixa(p)} no ${nomeSetor(p.setor_id)}${tele && remoto(p) ? ', remoto' : ''}`).join(', ') : 'sem plantão seu'}`}
+                    className={cn('flex-col items-stretch gap-1 rounded-none border-0 bg-superficie px-1.5 py-1.5 sm:px-2', semanaCheia ? 'min-h-[68px]' : 'min-h-11',
                       d === diaSel && 'bg-alerta-marca ring-2 ring-acao ring-inset hover:bg-alerta-marca', d < hoje && d !== diaSel && 'text-tinta-sussurro')}>
                     <span className="flex items-center justify-between text-apoio tabular-nums">
                       <span className={cn(d === hoje ? 'font-semibold text-tinta' : 'text-tinta')}>{Number(d.slice(8))}</span>
@@ -205,10 +226,15 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
                     </span>
                     <span className="mt-auto flex min-w-0 flex-col gap-0.5">
                       {meusDia.map((p) => (
-                        <span key={p.id} className="flex min-w-0 items-center gap-1 rounded-controle bg-acao/10 px-1.5 text-rotulo font-medium text-acao">
+                        // ES2: turno e sigla do setor, que não cortam; o nome inteiro fica no painel do dia.
+                        // O próximo plantão leva o fundo cheio.
+                        <span key={p.id} title={`${faixa(p)} · ${nomeSetor(p.setor_id)}${tele && remoto(p) ? ' · remoto' : ''}`}
+                          className={cn('flex min-w-0 items-center gap-1 rounded-controle px-1.5 text-rotulo font-medium whitespace-nowrap',
+                            p.id === meuProximo?.id ? 'bg-acao text-sobre-acao' : 'bg-acao/10 text-acao')}>
                           {pedidos.pendentes.has(p.id) && <Hourglass className="size-3 shrink-0" aria-label="pedido aguardando" />}
+                          {tele && remoto(p) && <MonitorSmartphone className="size-3 shrink-0" aria-hidden />}
                           <span className="sm:hidden">{faixa(p)[0]}</span>
-                          <span className="hidden truncate sm:inline">{faixa(p)} · {nomeSetor(p.setor_id)}</span>
+                          <span className="hidden sm:inline">{faixa(p)} · {siglaSetor(nomeSetor(p.setor_id))}</span>
                         </span>
                       ))}
                       {vagasNoDia(d).length > 0 && (
@@ -245,7 +271,8 @@ export function EscalaEquipe({ titulo = true }: { titulo?: boolean }) {
                     <span className="text-tinta-sussurro">{faixa(p)}</span>
                     <span className={cn('truncate text-tinta', p.perfil_id === perfil?.id && 'font-semibold')}>
                       {p.nome_completo ?? 'Profissional'}
-                      {p.perfil_id === perfil?.id && <span className="ml-1.5 text-rotulo font-normal text-acao">você</span>}
+                      {p.perfil_id === perfil?.id && <>{' '}<span className="ml-1 text-rotulo font-normal text-acao">você</span></>}
+                      {tele && remoto(p) && <span className="ml-1 text-rotulo font-normal text-tinta-sussurro">remoto</span>}
                     </span>
                     <span className="text-rotulo tabular-nums text-tinta-sussurro">{horario(p)}</span>
                   </span>
