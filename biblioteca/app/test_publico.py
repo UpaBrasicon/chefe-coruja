@@ -15,7 +15,7 @@ from unittest import mock
 
 for k, v in {"BIBLIOTECA_API_KEY": "t", "QDRANT_URL": "http://qdrant.invalido", "OLLAMA_URL": "http://ollama.invalido",
              "EMBED_MODEL": "x", "DEEPSEEK_API_KEY": "x", "DEEPSEEK_BASE_URL": "http://llm.invalido",
-             "REESCRITA": "0"}.items():
+             "REESCRITA": "0", "SUGESTOES": "0"}.items():
     os.environ.setdefault(k, v)
 
 import main  # noqa: E402

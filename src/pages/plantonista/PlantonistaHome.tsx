@@ -355,6 +355,9 @@ function CentralCompleta() {
       confianca={ia.confianca}
       pubmed={ia.pubmed}
       etapa={ia.etapa}
+      anteriores={ia.anteriores}
+      sugestoes={ia.sugestoes}
+      onSeguir={ia.seguimento ? ia.seguir : undefined}
       onFechar={ia.limpar}
       className={estreito ? 'h-full rounded-none border-0' : 'mb-[22px]'}
     />

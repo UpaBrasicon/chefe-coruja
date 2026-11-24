@@ -4,6 +4,8 @@ import { ArrowRight, BookOpen, ChevronRight, ExternalLink, Globe, Sparkles, Thum
 
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { MAX_PERGUNTA, seguimentoValido } from '@/lib/conversaIa'
 import { CopyResult } from '@/components/plantonista/CopyResult'
 import { supabase } from '@/lib/supabase'
 import { confiancaDasCitadas, fontesNaTela, mostrarPubmed, numeracaoNaTela, SEM_PEDIATRIA, semResposta, textoConfianca, textoParaCopiar } from '@/lib/respostaIa'
@@ -38,8 +40,61 @@ type Props = {
   pubmed?: ArtigoPubmed[]
   /** Etapa da espera (lendo, procurando, escrevendo), mostrada com as bolinhas. */
   etapa?: EtapaIa | null
+  /** IA1: perguntas anteriores desta conversa (só na memória da página). */
+  anteriores?: string[]
+  /** IA2: próximas perguntas sugeridas pela biblioteca. */
+  sugestoes?: string[]
+  /** IA1: envia a pergunta de seguimento. Sem ela (servidor antigo), a pergunta é única. */
+  onSeguir?: (pergunta: string) => void
   onFechar: () => void
   className?: string
+}
+
+/**
+ * IA1 e IA2 (RT, 24/11/2026): embaixo da resposta, as próximas perguntas
+ * sugeridas e o campo "Perguntar mais sobre isto". A pergunta nova leva a
+ * anterior e a resposta junto; a máscara de dados pessoais vale para cada uma.
+ */
+function Seguimento({ sugestoes, onSeguir }: { sugestoes: string[]; onSeguir: (pergunta: string) => void }) {
+  const [texto, setTexto] = useState('')
+  const enviar = () => {
+    if (!seguimentoValido(texto)) return
+    onSeguir(texto.trim())
+    setTexto('')
+  }
+  return (
+    <div className="space-y-2 border-t border-fio pt-3" data-seguimento>
+      {sugestoes.length > 0 && (
+        <div>
+          <p className="rotulo mb-1.5 text-tinta-sussurro">Perguntas para seguir</p>
+          <div className="flex flex-wrap gap-1.5">
+            {sugestoes.map((s) => (
+              <Button key={s} variant="outline" size="xs" onClick={() => onSeguir(s)} className="h-auto min-h-7 whitespace-normal py-1 text-left">
+                {s}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+      <form
+        className="flex items-center gap-2"
+        onSubmit={(e) => { e.preventDefault(); enviar() }}
+      >
+        <Input
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          maxLength={MAX_PERGUNTA}
+          placeholder="Perguntar mais sobre isto"
+          aria-label="Perguntar mais sobre isto"
+          className="min-w-0 flex-1"
+        />
+        <Button type="submit" size="sm" disabled={!seguimentoValido(texto)} className="shrink-0 gap-1">
+          Perguntar <ArrowRight className="size-3.5" aria-hidden />
+        </Button>
+      </form>
+      <p className="text-apoio text-tinta-sussurro">Leva a pergunta e a resposta anteriores junto. Não escreva nome ou dado do paciente.</p>
+    </div>
+  )
 }
 
 /**
@@ -234,7 +289,7 @@ function ListaFontes({ fontes, aberta, onAlternar }: { fontes: (Fonte & { na: nu
   )
 }
 
-export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed = [], etapa = null, onFechar, className }: Props) {
+export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alerta, requestId, publico, confianca, pubmed = [], etapa = null, anteriores = [], sugestoes = [], onSeguir, onFechar, className }: Props) {
   const [fontesAbertas, setFontesAbertas] = useState(false)
   if (status === 'idle') return null
   const curto = status === 'streaming' || status === 'done' ? semResposta(texto) : null
@@ -263,6 +318,11 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
       <header className="flex items-start justify-between gap-3 border-b border-fio px-4 py-3">
         <div className="min-w-0">
           <p className="rotulo flex items-center gap-1.5 text-tinta-sussurro"><Sparkles className="size-3.5 text-acao" aria-hidden /> Resposta da IA</p>
+          {anteriores.length > 0 && (
+            <p className="truncate text-apoio text-tinta-sussurro" title={anteriores.join(' · ')}>
+              Seguindo: "{anteriores[anteriores.length - 1]}"
+            </p>
+          )}
           <p className="text-corpo font-semibold text-tinta">"{pergunta}"</p>
           {publico === 'pediatrico' && <p className="text-apoio text-tinta-sussurro">Pergunta de criança: só fontes pediátricas.</p>}
         </div>
@@ -297,6 +357,8 @@ export function RespostaIa({ pergunta, texto, fontes, ferramentas, status, alert
             )}
           </div>
         )}
+
+        {status === 'done' && !curto && texto.trim() && onSeguir && <Seguimento sugestoes={sugestoes} onSeguir={onSeguir} />}
       </div>
 
       <footer className="border-t border-fio px-4 py-2 text-apoio text-tinta-sussurro">{AVISO_RESPONSABILIDADE}</footer>
