@@ -67,7 +67,7 @@ export function AntesDeFechar({ globais, onConfigurar }: { globais: GlobalBpa[];
         </Aviso>
       )}
       {avisos.length > 0 && (
-        <details className="group rounded-container border border-fio bg-superficie px-3.5 py-2 text-apoio">
+        <details className="group rounded-container border border-fio bg-superficie px-3 py-2 text-apoio">
           <summary className="flex cursor-pointer list-none items-center gap-2 text-atencao">
             <ChevronRight className="size-4 transition-transform group-open:rotate-90" aria-hidden />
             {plural(avisos.length, 'aviso', 'avisos')}
@@ -154,7 +154,7 @@ function GrupoParaCorrigir({ g, onConfigurar }: { g: GrupoCorrigir; onConfigurar
   return (
     <li>
       <details className="group">
-        <summary className="flex cursor-pointer list-none flex-wrap items-baseline gap-x-2 gap-y-0.5 px-3 py-2">
+        <summary className="flex cursor-pointer list-none flex-wrap items-baseline gap-x-2 gap-y-1 px-3 py-2">
           <ChevronRight className="size-4 shrink-0 self-center text-tinta-sussurro transition-transform group-open:rotate-90" aria-hidden />
           <span className="font-medium text-tinta">{g.rotulo}</span>
           <span className="tabular-nums text-tinta-apoio">{quantos}</span>
@@ -198,7 +198,7 @@ function PacienteParaCorrigir({ p }: { p: PacienteCorrigir }) {
   const podeAqui = p.falta.some((k) => COMPLETA_AQUI.has(k))
   return (
     <li className="flex flex-col gap-1.5 rounded-controle border border-fio px-3 py-2">
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="font-medium text-tinta">{p.paciente}</span>
         <span className="text-tinta-apoio">falta {faltaNaTela(p.falta)}</span>
         <span className="text-rotulo text-tinta-sussurro">atendido em {p.atendimentos.map((e) => diaMes(e)).join(', ')}</span>
