@@ -82,6 +82,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - enfermagem
 - médico
 - gestor da unidade
+- farmácia (só idade e alergias, do paciente com item a validar ou dispensar)
 
 **Onde fica**
 - Supabase (São Paulo)
@@ -557,6 +558,8 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - movimentos de estoque
 - faltas e respostas
 - arquivos da farmácia
+- idade, alergias ativas e peso da prescrição do paciente com item a validar ou dispensar (decisão do RT de 24/11/2026)
+- leito e próximo horário aprazado de quem fica sem o medicamento em falta
 
 **Quem acessa**
 - farmácia
@@ -567,6 +570,10 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - Supabase (São Paulo, banco e arquivos)
 
 **Prazo.** 20 anos para o que compõe o prontuário; 5 anos para estoque (Lei 13.787/2018; prazo fiscal). Descarte: rotina com registro, depois do prazo (V3).
+
+**Medidas próprias**
+- idade e alergias só pela função contexto_paciente_farmacia: farmacêutico da unidade e só do paciente com item de medicamento ativo; sem nome, CPF, CNS ou data de nascimento; cada leitura entra em log_acesso_prontuario (motivo validacao_farmacia)
+- leito e próximo horário só pela função pacientes_das_faltas, com o mesmo acesso da dispensação e só dos itens com falta aberta
 
 **Tabelas (10)**
 

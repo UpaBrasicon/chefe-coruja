@@ -28,6 +28,9 @@ import Diluicoes from './Diluicoes'
 import { EnviarArquivo } from './EnviarArquivo'
 import { AcoesFalta, PainelFarmacia, QuemFicaSem, RetornoAoPlantao, type FaltaPriorizada } from './PainelFarmacia'
 import { usePrescricoesVigentes, type ItemVigente } from '@/hooks/usePrescricoesVigentes'
+import { usePacientesDasFaltas } from '@/hooks/useContextoPacienteFarmacia'
+import { ContextoPacienteFarmacia } from '@/components/farmacia/ContextoPacienteFarmacia'
+import type { HorarioFalta } from '@/lib/contextoPacienteFarmacia'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Estado } from '@/components/porta/Estado'
 import { tomDaVariante } from '@/components/porta/tomEstado'
@@ -490,6 +493,8 @@ function Faltas({ unidade }: { unidade: string }) {
   }
   const vigentes = usePrescricoesVigentes(unidade)
   const pacientesDaFalta = (medicamentoId: string) => (vigentes.data ? vigentes.data.itens.filter((i) => i.medicamento_id === medicamentoId) : null)
+  // DI3: leito e próximo horário de cada item em falta (pacientes_das_faltas)
+  const horariosFalta = usePacientesDasFaltas(unidade).data ?? null
   const abertasLista = abertas.data ?? []
   const porSituacao = (sit: string) => abertasLista.filter((f) => f.situacao === sit)
   const repostas = (lista.data ?? []).filter((f) => f.situacao === 'reposta')
@@ -526,7 +531,7 @@ function Faltas({ unidade }: { unidade: string }) {
           <TabsContent key={sit} value={sit}>
             <ListaFaltas vazio={sit === 'registrada' ? 'Nenhuma falta registrada esperando cotação.' : 'Nenhuma falta em cotação.'}>
               {porSituacao(sit).map((f) => (
-                <LinhaFaltaAberta key={f.id} f={f} agora={agora} chamar={chamar} pacientes={pacientesDaFalta(f.medicamento_id)} />
+                <LinhaFaltaAberta key={f.id} f={f} agora={agora} chamar={chamar} pacientes={pacientesDaFalta(f.medicamento_id)} horarios={horariosFalta} />
               ))}
             </ListaFaltas>
           </TabsContent>
@@ -639,8 +644,9 @@ function ListaFaltas({ vazio, children }: { vazio: string; children: React.React
 }
 
 /** Uma falta aberta: o que falta, quem sinalizou, há quanto, quem fica sem e as ações (as mesmas do painel). */
-function LinhaFaltaAberta({ f, agora, chamar, pacientes }: {
+function LinhaFaltaAberta({ f, agora, chamar, pacientes, horarios }: {
   f: FaltaPriorizada; agora: number; chamar: (p: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>; pacientes: ItemVigente[] | null
+  horarios: HorarioFalta[] | null
 }) {
   const [respondendo, setRespondendo] = React.useState(false)
   return (
@@ -663,7 +669,7 @@ function LinhaFaltaAberta({ f, agora, chamar, pacientes }: {
         </span>
       )}
       {!respondendo && <span className="ml-auto"><AcoesFalta f={f} chamar={chamar} responder={() => setRespondendo(true)} /></span>}
-      {pacientes && pacientes.length > 0 && <QuemFicaSem pacientes={pacientes} />}
+      {pacientes && pacientes.length > 0 && <QuemFicaSem pacientes={pacientes} horarios={horarios} agora={agora} />}
       {respondendo && <RetornoAoPlantao f={f} chamar={chamar} fechar={() => setRespondendo(false)} />}
     </li>
   )
@@ -791,7 +797,7 @@ function Validacao({ unidade }: { unidade: string }) {
                   }} />
                 ))}
               </div>
-              <PainelPaciente key={sel.chave} itens={sel.itens} pacienteId={pacienteDoItem.get(sel.itens[0].item_id) ?? null}
+              <PainelPaciente key={sel.chave} unidade={unidade} itens={sel.itens} pacienteId={pacienteDoItem.get(sel.itens[0].item_id) ?? null}
                 vigentes={vigentes.data?.itens ?? null} vigentesErro={!!vigentes.error} />
             </div>
           </section>
@@ -823,12 +829,13 @@ function ItensVencidos({ itens }: { itens: ItemFila[] }) {
 }
 
 /**
- * VA1: ao lado dos itens, o que o farmacêutico já lê do paciente. Idade,
- * alergias e exames renais não chegam à farmácia hoje (fila_validacao não os
- * traz e a RLS de pacientes e alergias não abre ao farmacêutico): ficam fora.
+ * VA1: ao lado dos itens, o que o farmacêutico lê do paciente. Idade e
+ * alergias vêm de contexto_paciente_farmacia (decisão do RT de 24/11/2026,
+ * com registro de acesso a cada leitura); a alergia ativa fica no topo, em
+ * destaque. Exames renais ainda não chegam à farmácia.
  */
-function PainelPaciente({ itens, pacienteId, vigentes, vigentesErro }: {
-  itens: ItemFila[]; pacienteId: string | null; vigentes: ItemVigente[] | null; vigentesErro: boolean
+function PainelPaciente({ unidade, itens, pacienteId, vigentes, vigentesErro }: {
+  unidade: string; itens: ItemFila[]; pacienteId: string | null; vigentes: ItemVigente[] | null; vigentesErro: boolean
 }) {
   const naFila = new Set(itens.map((i) => i.item_id))
   const outras = pacienteId ? (vigentes ?? []).filter((v) => v.paciente_id === pacienteId && !naFila.has(v.item_id)) : []
@@ -847,6 +854,7 @@ function PainelPaciente({ itens, pacienteId, vigentes, vigentesErro }: {
   const descricao = new Map([...itens.map((i) => [i.item_id, i.descricao] as const), ...outras.map((o) => [o.item_id, o.medicamento] as const)])
   return (
     <aside aria-label="Paciente" className="order-first flex flex-col gap-3 border-b border-fio bg-campo px-4 py-3 text-apoio lg:order-none lg:border-b-0 lg:border-l">
+      <ContextoPacienteFarmacia pacienteId={pacienteId} unidade={unidade} />
       <div className="flex flex-col gap-1">
         <span className="text-rotulo text-tinta-sussurro">Peso de referência</span>
         <span className="text-tinta tabular-nums">{peso ? `${numero(peso)} kg` : 'não informado na prescrição'}</span>
@@ -882,7 +890,7 @@ function PainelPaciente({ itens, pacienteId, vigentes, vigentesErro }: {
             </ul>
           )}
       </div>
-      <p className="text-rotulo text-tinta-sussurro">Idade, alergias e função renal ainda não chegam à farmácia.</p>
+      <p className="text-rotulo text-tinta-sussurro">Função renal ainda não chega à farmácia.</p>
     </aside>
   )
 }

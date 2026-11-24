@@ -17,6 +17,8 @@ import { useControladosDoCatalogo, useControleDosItens } from '@/hooks/useContro
 import type { Controle } from '@/domain/controlados'
 import { separarVencidos } from '@/lib/filaValidacao'
 import { usePrescricoesVigentes, type ItemVigente } from '@/hooks/usePrescricoesVigentes'
+import { usePacientesDasFaltas } from '@/hooks/useContextoPacienteFarmacia'
+import { ordenarQuemFicaSem, textoProximoHorario, type HorarioFalta } from '@/lib/contextoPacienteFarmacia'
 
 // Painel da farmácia (Fase 2, tarefa 9; migration 20261031000008). Junta o
 // que é crítico: faltas abertas priorizadas (alta vigilância, pacientes
@@ -121,6 +123,8 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
   const controladosCatalogo = useControladosDoCatalogo().data
   // DI3: quem fica sem o medicamento em falta (só para quem age; o gestor não lê a dispensação)
   const vigentes = usePrescricoesVigentes(unidade, podeAgir)
+  // DI3: leito e próximo horário de cada item em falta (pacientes_das_faltas)
+  const horariosFalta = usePacientesDasFaltas(unidade, podeAgir).data ?? null
   const pacientesDaFalta = (medicamentoId: string) => (vigentes.data ? vigentes.data.itens.filter((i) => i.medicamento_id === medicamentoId) : null)
 
   const listaFaltas = faltas.data ?? []
@@ -180,7 +184,7 @@ export function PainelFarmacia({ unidade, podeAgir, irPara }: {
                 contexto={prioritarios.length ? `${prioritarios.length} de alta vigilância ou controlado` : 'nenhum de alta vigilância ou controlado'}
                 acao={irPara && <Button size="xs" onClick={() => irPara('validacao')}>Validar</Button>} />
             )}
-            {semRetorno.map((f) => <LinhaFalta key={`f${f.id}`} f={f} agora={agora} podeAgir={podeAgir} chamar={chamar} pacientes={pacientesDaFalta(f.medicamento_id)} />)}
+            {semRetorno.map((f) => <LinhaFalta key={`f${f.id}`} f={f} agora={agora} podeAgir={podeAgir} chamar={chamar} pacientes={pacientesDaFalta(f.medicamento_id)} horarios={horariosFalta} />)}
             {controladoNegativo.map((e) => (
               <Linha key={`n${e.medicamento_id}`} tipo="Saldo negativo" tom="vermelho" av={e.alta_vigilancia} controle={controladosCatalogo?.get(e.medicamento_id)}
                 desde={e.atualizado_em} agora={agora} titulo={nome(e.principio_ativo, e.apresentacao)}
@@ -234,10 +238,10 @@ function Linha({ tipo, tom, av, controle, titulo, contexto, desde, agora, acao, 
 }
 
 /** Falta sem retorno, com quem fica sem o medicamento e as ações da falta. */
-function LinhaFalta({ f, agora, podeAgir, chamar, pacientes }: {
+function LinhaFalta({ f, agora, podeAgir, chamar, pacientes, horarios }: {
   f: FaltaPriorizada; agora: number; podeAgir: boolean
   chamar: (p: PromiseLike<{ error: { message: string } | null }>) => Promise<boolean>
-  pacientes: ItemVigente[] | null
+  pacientes: ItemVigente[] | null; horarios: HorarioFalta[] | null
 }) {
   const [respondendo, setRespondendo] = React.useState(false)
   const contagem = f.pacientes > 0 ? `${f.pacientes} ${f.pacientes === 1 ? 'paciente' : 'pacientes'}${f.setores.length ? ` (${f.setores.join(', ')})` : ''}` : 'sem paciente com prescrição'
@@ -246,7 +250,7 @@ function LinhaFalta({ f, agora, podeAgir, chamar, pacientes }: {
       titulo={nome(f.principio_ativo, f.apresentacao)}
       contexto={juntar(SIT[f.situacao] ?? f.situacao, pacientes?.length ? null : contagem, f.observacao, 'plantão sem retorno')}
       acao={podeAgir && !respondendo && <AcoesFalta f={f} chamar={chamar} responder={() => setRespondendo(true)} />}>
-      {pacientes && pacientes.length > 0 && <QuemFicaSem pacientes={pacientes} />}
+      {pacientes && pacientes.length > 0 && <QuemFicaSem pacientes={pacientes} horarios={horarios} agora={agora} />}
       {respondendo && <RetornoAoPlantao f={f} chamar={chamar} fechar={() => setRespondendo(false)} />}
     </Linha>
   )
@@ -289,19 +293,25 @@ export function RetornoAoPlantao({ f, chamar, fechar }: {
 }
 
 /**
- * DI3: quem fica sem o medicamento — paciente, setor e a frequência prescrita.
- * Leito e próximo horário não chegam à farmácia (itens_para_dispensar traz o
- * setor, não o leito nem o aprazamento).
+ * DI3: quem fica sem o medicamento — paciente, leito (ou setor), a frequência
+ * prescrita e o próximo horário aprazado, a dose mais próxima primeiro
+ * (pacientes_das_faltas, RT 24/11/2026). Sem a leitura dos horários, fica o
+ * setor da prescrição e a ordem pelo nome.
  */
-export function QuemFicaSem({ pacientes }: { pacientes: ItemVigente[] }) {
+export function QuemFicaSem({ pacientes, horarios, agora }: { pacientes: ItemVigente[]; horarios?: HorarioFalta[] | null; agora?: number }) {
   return (
-    <ul aria-label="Pacientes com o medicamento prescrito" className="flex w-full flex-col gap-1 pb-1 text-rotulo text-tinta-apoio">
-      {pacientes.map((p) => (
-        <li key={p.item_id}>
-          <span className="font-medium text-tinta">{p.paciente}</span>
-          {[p.setor, [p.dose, p.posologia].filter(Boolean).join(' ') || null, p.se_necessario ? 'se necessário' : null].filter(Boolean).map((x) => ` · ${x}`).join('')}
-        </li>
-      ))}
+    <ul aria-label="Pacientes com o medicamento prescrito, a dose mais próxima primeiro" className="flex w-full flex-col gap-1 pb-1 text-rotulo text-tinta-apoio">
+      {ordenarQuemFicaSem(pacientes, horarios).map((p) => {
+        const proxima = textoProximoHorario(p.horario, agora)
+        return (
+          <li key={p.item_id}>
+            <span className="font-medium text-tinta">{p.paciente}</span>
+            {[p.horario?.local ?? p.setor, [p.dose, p.posologia].filter(Boolean).join(' ') || null, p.se_necessario && !proxima ? 'se necessário' : null]
+              .filter(Boolean).map((x) => ` · ${x}`).join('')}
+            {proxima && <span className={p.horario?.proximo_em ? 'font-medium text-tinta' : undefined}> · {proxima}</span>}
+          </li>
+        )
+      })}
     </ul>
   )
 }
