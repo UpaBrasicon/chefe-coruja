@@ -21,6 +21,7 @@ INSERT INTO ids VALUES
   ('fat',  '00000000-0000-4000-8000-0000000064b1'),
   ('ges',  '00000000-0000-4000-8000-0000000064b2'),
   ('rec',  '00000000-0000-4000-8000-0000000064b3'),
+  ('far',  '00000000-0000-4000-8000-0000000064b4'),
   ('pac',  '00000000-0000-4000-8000-0000000064c1'),
   ('ep',   '00000000-0000-4000-8000-0000000064c2');
 GRANT ALL ON ids TO authenticated;
@@ -56,8 +57,8 @@ GRANT EXECUTE ON FUNCTION pg_temp.v(text) TO authenticated;
 CREATE FUNCTION pg_temp.opm() RETURNS text LANGUAGE sql AS $$ SELECT min(codigo) FROM terminologia.sigtap_procedimento WHERE codigo LIKE '07%' $$;
 GRANT EXECUTE ON FUNCTION pg_temp.opm() TO authenticated;
 
-INSERT INTO auth.users (id, email) SELECT id, nome || '@5bmat.local' FROM ids WHERE nome IN ('fat', 'ges', 'rec');
-INSERT INTO public.perfis (id, nome_completo) SELECT id, 'Pessoa ' || nome FROM ids WHERE nome IN ('fat', 'ges', 'rec')
+INSERT INTO auth.users (id, email) SELECT id, nome || '@5bmat.local' FROM ids WHERE nome IN ('fat', 'ges', 'rec', 'far');
+INSERT INTO public.perfis (id, nome_completo) SELECT id, 'Pessoa ' || nome FROM ids WHERE nome IN ('fat', 'ges', 'rec', 'far')
 ON CONFLICT (id) DO UPDATE SET nome_completo = EXCLUDED.nome_completo;
 INSERT INTO public.organizacoes (id, nome) VALUES (pg_temp.id('org'), 'Rede dos materiais');
 INSERT INTO public.unidades (id, organizacao_id, nome, tipo, cnes) VALUES
@@ -66,7 +67,7 @@ INSERT INTO public.unidades (id, organizacao_id, nome, tipo, cnes) VALUES
 INSERT INTO public.setores (id, unidade_id, nome, tipo) VALUES (pg_temp.id('setor'), pg_temp.id('upa'), 'Porta', 'emergencia');
 INSERT INTO public.vinculos (perfil_id, unidade_id, papel) VALUES
   (pg_temp.id('fat'), pg_temp.id('upa'), 'faturamento'), (pg_temp.id('ges'), pg_temp.id('upa'), 'gestor'),
-  (pg_temp.id('rec'), pg_temp.id('upa'), 'recepcao');
+  (pg_temp.id('rec'), pg_temp.id('upa'), 'recepcao'), (pg_temp.id('far'), pg_temp.id('upa'), 'farmaceutico');
 INSERT INTO public.pacientes (id, unidade_id, nome, data_nascimento, sexo) VALUES
   (pg_temp.id('pac'), pg_temp.id('upa'), 'Paciente dos materiais', '1980-01-01', 'F');
 INSERT INTO public.episodios (id, unidade_id, paciente_id, setor_id, etapa, queixa, aberto_por, chegada_em)
@@ -78,10 +79,15 @@ SET LOCAL ROLE authenticated;
 -- ── 1. cadastro ─────────────────────────────────────────────────────────────
 SELECT pg_temp.como('rec');
 SELECT pg_temp.falha(format('SELECT public.material_salvar(%L, NULL, %L, %L)', pg_temp.id('upa'), 'Gaze estéril', 'pacote'),
-  'Acesso negado: os materiais', 'recepção não cadastra');
+  'Acesso negado: o cadastro de materiais', 'recepção não cadastra');
+-- ajustes da revisão, item 4 (RT, 24/11/2026; migration 20270421000073): o
+-- cadastro é da farmácia e do gestor; o faturamento só lança na conta
+SELECT pg_temp.como('fat');
+SELECT pg_temp.falha(format('SELECT public.material_salvar(%L, NULL, %L, %L)', pg_temp.id('upa'), 'Gaze estéril', 'pacote'),
+  'Acesso negado: o cadastro de materiais', 'faturamento não cadastra');
 SELECT pg_temp.como('ges');
 INSERT INTO v SELECT 'gaze', public.material_salvar(pg_temp.id('upa'), NULL, 'Gaze estéril', 'pacote');
-SELECT pg_temp.como('fat');
+SELECT pg_temp.como('far');
 INSERT INTO v SELECT 'fio', public.material_salvar(pg_temp.id('upa'), NULL, 'Fio de sutura', 'unidade', pg_temp.opm());
 SELECT pg_temp.falha(format('SELECT public.material_salvar(%L, NULL, %L, %L)', pg_temp.id('upa'), 'gaze estéril ', 'pacote'),
   'Já existe um material ativo', 'nome repetido recusado');
@@ -92,7 +98,12 @@ SELECT public.material_salvar(pg_temp.id('upa'), pg_temp.v('luva'), 'Luva de pro
 SELECT pg_temp.ok(jsonb_array_length(public.materiais_da_unidade(pg_temp.id('upa'))) = 3
                   AND (SELECT (m ->> 'ativo')::boolean FROM jsonb_array_elements(public.materiais_da_unidade(pg_temp.id('upa'))) m
                         WHERE (m ->> 'id')::uuid = pg_temp.v('luva')) IS FALSE,
-  'faturamento e gestor cadastram; a luva fica desativada');
+  'farmácia e gestor cadastram; a luva fica desativada');
+SELECT pg_temp.como('fat');
+SELECT pg_temp.ok(jsonb_array_length(public.materiais_da_unidade(pg_temp.id('upa'))) = 3, 'o faturamento lê a lista para lançar na conta');
+SELECT pg_temp.como('rec');
+SELECT pg_temp.falha(format('SELECT public.materiais_da_unidade(%L)', pg_temp.id('upa')),
+  'Acesso negado: os materiais', 'recepção não lê a lista');
 
 -- ── 2. lançamento ───────────────────────────────────────────────────────────
 SELECT pg_temp.como('ges');

@@ -1280,6 +1280,7 @@
         "public.clinical_search_feedback",
         "public.ia_gateway_log",
         "private.ia_preco_modelo",
+        "private.ia_teto_mensal",
         "public.hermes_sessions",
         "public.hermes_identidades",
         "private.hermes_codigos_vinculo",

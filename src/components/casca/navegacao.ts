@@ -220,8 +220,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
     { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true },
-    // pendências da 5B, L4: cadastro de materiais (opção A do RT)
-    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true },
+    // o cadastro de materiais passou à farmácia; o faturamento só lança na conta
+    // (ajustes da revisão, item 4, RT em 24/11/2026)
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
     ITEM_ESCALA,
   ],
@@ -232,6 +232,8 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
     { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
     { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
+    // ajustes da revisão, item 4 (RT, 24/11/2026): a farmácia cadastra os materiais
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true },
     ITEM_ESCALA,
     // Sem Prontuários (RT, 27/10/2026): o que o farmacêutico precisa do
     // paciente chega pela validação e pela dispensação.
@@ -312,6 +314,8 @@ const FORA_DA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
   // materiais) sai do gestor da UBS; a produção da UBS vai ao SISAB (U15). Fica o
   // Envio ao ERP, que leva os plantões do mês.
   gestor: new Set(['/faturamento/contas', '/faturamento', '/faturamento/glosas', '/faturamento/materiais']),
+  // os materiais são da conta da porta e da internação: fora da UBS também para a farmácia
+  farmaceutico: new Set(['/faturamento/materiais']),
 }
 // e o que muda de nome nela: na UBS a "triagem" é a escuta da enfermagem (R9)
 const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {

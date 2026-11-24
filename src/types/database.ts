@@ -10697,6 +10697,7 @@ export type Database = {
         Args: { p_destinatario_id: string }
         Returns: string
       }
+      abrir_acesso_urgencia: { Args: { p_justificativa: string; p_paciente: string }; Returns: string }
       abrir_conversa_suporte: { Args: never; Returns: string }
       abrir_historico_encerrado: {
         Args: { p_motivo: string; p_paciente: string }
@@ -10873,6 +10874,7 @@ export type Database = {
       criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
       definir_meu_cbo: { Args: { p_cbo: string }; Returns: Json }
+      definir_ia_teto_mensal: { Args: { p_usd: number | null }; Returns: undefined }
       definir_categoria_plantoes: { Args: { p_papel: Database['public']['Enums']['papel']; p_plantoes: string[] }; Returns: number }
       definir_sala_do_plantao: { Args: { p_sala: string; p_setor: string }; Returns: Json }
       minhas_salas_do_plantao: { Args: never; Returns: Json }
@@ -11854,6 +11856,7 @@ export type Database = {
       contexto_evolucao: { Args: { p_internacao: string }; Returns: Json }
       por_que_nao_evoluo: { Args: { p_internacao: string }; Returns: Json }
       contexto_sem_conexao: { Args: never; Returns: Json }
+      contingencia_atendimentos: { Args: { p_contingencia: string }; Returns: Json }
       contingencias_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       convites_da_unidade: {
         Args: { p_unidade: string }
@@ -12929,6 +12932,7 @@ export type Database = {
       }
       historico_encerrado: { Args: { p_paciente: string }; Returns: Json }
       // lacuna 1 (RT 10/11/2026): paciente não identificado
+      ia_teto_mensal: { Args: never; Returns: { definido_em: string; definido_por: string | null; usd: number }[] }
       ia_custo_busca_mes: {
         Args: { p_mes?: string }
         Returns: {

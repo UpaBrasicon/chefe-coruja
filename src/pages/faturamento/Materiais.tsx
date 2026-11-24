@@ -4,8 +4,9 @@
 //
 // Cadastro simples para lançar na conta: nome, unidade de consumo e o código
 // SIGTAP do grupo 07 (opcional). Sem valor e sem estoque. Desativar tira da
-// lista de lançamento sem apagar o histórico. Cadastram o faturamento e o
-// gestor; o lançamento na conta é do faturamento (Contas do atendimento).
+// lista de lançamento sem apagar o histórico. Cadastram a farmácia e o gestor
+// (ajustes da revisão, item 4, RT em 24/11/2026; migration 20270421000073); o
+// faturamento só lê e lança na conta (Contas do atendimento).
 // Migration 20270226000001_materiais.sql.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -26,7 +27,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { codigoSigtapNaTela } from '@/lib/bpa'
 import { type MaterialUnidade } from '@/lib/contas'
-import { filtrarMateriais } from '@/lib/materiais'
+import { filtrarMateriais, podeCadastrarMaterial } from '@/lib/materiais'
 import { supabase } from '@/lib/supabase'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 
@@ -84,8 +85,9 @@ function ListaBasica({ unidadeId, existentes }: { unidadeId: string; existentes:
   )
 }
 export default function Materiais() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
+  const podeCadastrar = podeCadastrarMaterial(papelAtivo)
   const [busca, setBusca] = React.useState('')
   const [ativos, setAtivos] = React.useState(true)
   const [editando, setEditando] = React.useState<Editando | null>(null)
@@ -106,12 +108,14 @@ export default function Materiais() {
   return (
     <>
       <TituloPagina titulo="Materiais" descricao="Cadastro da unidade para lançar na conta do atendimento, sem valor e sem estoque."
-        acoes={unidadeId && !lista.error ? <Button size="sm" onClick={() => setEditando(NOVO)}><Plus /> Novo material</Button> : undefined} />
-      {unidadeId && lista.data && <div className="mb-3"><ListaBasica unidadeId={unidadeId} existentes={todos} /></div>}
+        acoes={unidadeId && !lista.error && podeCadastrar ? <Button size="sm" onClick={() => setEditando(NOVO)}><Plus /> Novo material</Button> : undefined} />
+      {unidadeId && lista.data && podeCadastrar && <div className="mb-3"><ListaBasica unidadeId={unidadeId} existentes={todos} /></div>}
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} />
         : todos.length === 0 ? (
           <Vazio icone={Package} titulo="Nenhum material cadastrado"
-            texto="Comece pela lista básica acima ou cadastre os materiais que o faturamento lança à mão na conta. O código SIGTAP do grupo 07 é opcional." />
+            texto={podeCadastrar
+              ? 'Comece pela lista básica acima ou cadastre os materiais que o faturamento lança à mão na conta. O código SIGTAP do grupo 07 é opcional.'
+              : 'Quem cadastra os materiais é a farmácia da unidade. Depois de cadastrados, eles aparecem aqui e no lançamento da conta.'} />
         ) : (
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -146,7 +150,7 @@ export default function Materiais() {
                       <TableCell className="text-apoio text-tinta-apoio">{categoria(m.procedimento)}</TableCell>
                       <TableCell className="text-apoio text-tinta-apoio">{m.lancamentos === 0 ? 'ainda não usado' : m.lancamentos === 1 ? '1 lançamento' : `${m.lancamentos} lançamentos`}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="xs" variant="outline" onClick={() => setEditando({ ...m })}>Editar</Button>
+                        {podeCadastrar && <Button size="xs" variant="outline" onClick={() => setEditando({ ...m })}>Editar</Button>}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -154,7 +158,7 @@ export default function Materiais() {
               </Table>
               {visiveis.length === 0 && <p className="px-4 py-6 text-center text-apoio text-tinta-sussurro">Nenhum material neste filtro.</p>}
               <p className="border-t border-fio bg-campo px-4 py-2.5 text-rotulo text-tinta-sussurro">
-                Material sem código SIGTAP gera só um aviso na pré-auditoria; não trava o fechamento. Lançar na conta é do faturamento, em Contas do atendimento.
+                Material sem código SIGTAP gera só um aviso na pré-auditoria; não trava o fechamento. Cadastram a farmácia e o gestor; lançar na conta é do faturamento, em Contas do atendimento.
               </p>
             </div>
           </div>

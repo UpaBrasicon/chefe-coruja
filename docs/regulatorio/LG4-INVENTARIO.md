@@ -48,7 +48,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Tecnovigilância do módulo clínico | controlador | não | 5 anos depois da conclusão | 3 |
 | Erros do aplicativo e vigilância técnica | controlador | não | a definir com o advogado (proposta: 1 ano) | 5 |
 | Uso do aplicativo, agregado | controlador | não | a definir com o advogado (proposta: 2 anos) | 1 |
-| Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 12 |
+| Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 13 |
 | RNDS, SISAB, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 14 |
 | Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 8 |
 | Site comercial e pedido de demonstração | controlador | não | 2 anos | 1 |
@@ -979,9 +979,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - lembrete de não escrever dado do paciente
 - auditoria guarda hash, não o texto
 
-**Tabelas (12)**
+**Tabelas (13)**
 
-`public.clinical_search_logs`, `public.clinical_search_feedback`, `public.ia_gateway_log`, `private.ia_preco_modelo`, `public.hermes_sessions`, `public.hermes_identidades`, `private.hermes_codigos_vinculo`, `public.hermes_almanaque`, `public.hermes_resumo_unidade`, `public.hermes_audit_log`, `public.gaviao_relatorios_semanais`, `public.gaviao_decisoes`
+`public.clinical_search_logs`, `public.clinical_search_feedback`, `public.ia_gateway_log`, `private.ia_preco_modelo`, `private.ia_teto_mensal`, `public.hermes_sessions`, `public.hermes_identidades`, `private.hermes_codigos_vinculo`, `public.hermes_almanaque`, `public.hermes_resumo_unidade`, `public.hermes_audit_log`, `public.gaviao_relatorios_semanais`, `public.gaviao_decisoes`
 
 ### RNDS, SISAB, API e integrações com outros sistemas
 

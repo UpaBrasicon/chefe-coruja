@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { HORAS_URGENCIA, letrasDaJustificativa, MIN_LETRAS_URGENCIA, podeAbrirUrgencia } from '@/lib/acessoUrgencia'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso, diaMesHora, hora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
@@ -27,6 +28,11 @@ import { cn } from '@/lib/utils'
 // direto (M1, mesma consulta da paleta); o pedido em passos visíveis com um
 // campo só de busca (M2) — nome ainda pede a data de nascimento, regra do
 // banco; "Meus pedidos" com a situação e abrir direto quando aprovado (M3).
+//
+// Urgência, a quebra de vidro (ajustes da revisão, item 6, RT em 24/11/2026;
+// migration 20270421000075): o médico abre na hora, sem o gestor, com
+// justificativa de 20 letras ou mais; só leitura, por 2 horas; vai à auditoria
+// e o gestor da unidade recebe aviso.
 
 type Achado = {
   paciente_id: string
@@ -67,11 +73,16 @@ function Passos({ atual }: { atual: number }) {
   )
 }
 
-/** Situação do pedido em texto: pendente, aprovado até HH:MM, recusado, expirado. */
+/** Situação do pedido em texto: pendente, aprovado até HH:MM, urgência até HH:MM, recusado, expirado. */
 function situacao(p: MeuPedido): { texto: string; tom: string } {
   if (p.status === 'pendente') return { texto: 'Pendente com o gestor', tom: 'bg-atencao/10 text-atencao' }
   if (p.status === 'recusado') return { texto: 'Recusado', tom: 'bg-critico/10 text-critico' }
   if (p.status === 'cancelado') return { texto: 'Cancelado', tom: 'bg-trilha text-tinta-apoio' }
+  if (p.status === 'urgencia') {
+    if (!p.vigente || !p.valido_ate) return { texto: 'Urgência · vencida', tom: 'bg-trilha text-tinta-apoio' }
+    const ate = p.valido_ate
+    return { texto: dataIso(ate) === dataIso() ? `Urgência até ${hora(ate)}` : `Urgência até ${diaMesHora(ate)}`, tom: 'bg-atencao/10 text-atencao' }
+  }
   if (!p.vigente) return { texto: 'Expirado', tom: 'bg-trilha text-tinta-apoio' }
   const ate = p.valido_ate
   const texto = !ate ? 'Aprovado' : dataIso(ate) === dataIso() ? `Aprovado até ${hora(ate)}` : `Aprovado até ${diaMesHora(ate)}`
@@ -79,15 +90,17 @@ function situacao(p: MeuPedido): { texto: string; tom: string } {
 }
 
 export default function PedidosProntuario() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
   const navigate = useNavigate()
+  const medico = podeAbrirUrgencia(papelAtivo)
 
   const [termo, setTermo] = React.useState('')
   const [nascimento, setNascimento] = React.useState('')
   const [escolhido, setEscolhido] = React.useState<Achado | null>(null)
   const [motivo, setMotivo] = React.useState('')
+  const [modo, setModo] = React.useState<'pedido' | 'urgencia'>('pedido')
   // prontuário, CPF e CNS têm número; nome não tem e pede a data de nascimento
   const ehDocumento = /\d/.test(termo)
 
@@ -131,6 +144,18 @@ export default function PedidosProntuario() {
     },
   })
 
+  const urgencia = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('abrir_acesso_urgencia', { p_paciente: escolhido!.paciente_id, p_justificativa: motivo.trim() })
+      if (error) throw error
+      return escolhido!.paciente_id
+    },
+    onSuccess: (pacienteId) => {
+      void qc.invalidateQueries({ queryKey: ['meus-pedidos-acesso'] })
+      navigate(`/prontuarios/${pacienteId}`)
+    },
+  })
+
   const cancelar = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.rpc('cancelar_pedido_acesso', { p_pedido: id })
@@ -148,7 +173,9 @@ export default function PedidosProntuario() {
       <TituloPagina
         icone={FolderSearch}
         titulo="Prontuários"
-        descricao="Os pacientes do seu plantão abrem direto. Para um paciente fora do plantão, peça ao gestor da unidade: aprovado, o acesso vale 24 horas e é só de leitura."
+        descricao={medico
+          ? `Os pacientes do seu plantão abrem direto. Para um paciente fora do plantão, peça ao gestor da unidade: aprovado, o acesso vale 24 horas e é só de leitura. Em urgência, você abre na hora, só leitura, por ${HORAS_URGENCIA} horas, com justificativa; o gestor é avisado.`
+          : 'Os pacientes do seu plantão abrem direto. Para um paciente fora do plantão, peça ao gestor da unidade: aprovado, o acesso vale 24 horas e é só de leitura.'}
       />
 
       <Card>
@@ -211,16 +238,42 @@ export default function PedidosProntuario() {
                   {a.tem_acesso ? (
                     <Button variant="outline" size="sm" render={<Link to={`/prontuarios/${a.paciente_id}`} />}>Abrir prontuário</Button>
                   ) : (
-                    <Button variant={escolhido?.paciente_id === a.paciente_id ? 'default' : 'outline'} size="sm" onClick={() => setEscolhido(a)}>
-                      Pedir acesso
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant={escolhido?.paciente_id === a.paciente_id && modo === 'pedido' ? 'default' : 'outline'} size="sm"
+                        onClick={() => { setEscolhido(a); setModo('pedido') }}>
+                        Pedir acesso
+                      </Button>
+                      {medico && (
+                        <Button variant={escolhido?.paciente_id === a.paciente_id && modo === 'urgencia' ? 'default' : 'outline'} size="sm"
+                          onClick={() => { setEscolhido(a); setModo('urgencia') }}>
+                          Abrir em urgência
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </li>
               ))}
             </ul>
           )}
 
-          {escolhido && (
+          {escolhido && modo === 'urgencia' && (
+            <div className="grid gap-3 rounded-controle border border-atencao/40 bg-campo p-3">
+              <Label htmlFor="pront-urgencia">Justificativa da urgência · {escolhido.nome}</Label>
+              <Textarea id="pront-urgencia" value={motivo} onChange={(e) => setMotivo(e.target.value)} rows={3}
+                placeholder="Ex.: paciente chegou em parada e preciso das alergias e do último atendimento." />
+              <p className="text-rotulo text-tinta-sussurro">Abre agora, sem esperar o gestor: só leitura, por {HORAS_URGENCIA} horas. A justificativa fica na auditoria da unidade e o gestor recebe aviso.</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button onClick={() => urgencia.mutate()} disabled={letrasDaJustificativa(motivo) < MIN_LETRAS_URGENCIA || urgencia.isPending}>Abrir agora</Button>
+                <Button variant="ghost" onClick={() => setEscolhido(null)}>Cancelar</Button>
+                {letrasDaJustificativa(motivo) < MIN_LETRAS_URGENCIA && (
+                  <span className="text-rotulo text-tinta-sussurro">Falta: a justificativa, com pelo menos {MIN_LETRAS_URGENCIA} letras ({letrasDaJustificativa(motivo)} até agora).</span>
+                )}
+              </div>
+              {urgencia.error && <p className="text-apoio text-critico">{(urgencia.error as Error).message}</p>}
+            </div>
+          )}
+
+          {escolhido && modo === 'pedido' && (
             <div className="grid gap-3 rounded-controle border border-fio bg-campo p-3">
               <Label htmlFor="pront-motivo">Motivo do pedido · {escolhido.nome}</Label>
               <Textarea id="pront-motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} rows={3}
@@ -258,7 +311,7 @@ export default function PedidosProntuario() {
                           : <span className="font-medium">{p.paciente_nome}</span>}
                         <span className={cn('rounded-capsula px-2.5 py-[3px] text-apoio font-medium whitespace-nowrap', s.tom)}>{s.texto}</span>
                       </div>
-                      <div className="mt-0.5 text-rotulo text-tinta-sussurro">Pedido em {fmtDataHora(p.criado_em)}</div>
+                      <div className="mt-0.5 text-rotulo text-tinta-sussurro">{p.status === 'urgencia' ? 'Aberto em urgência em ' : 'Pedido em '}{fmtDataHora(p.criado_em)}</div>
                       <p className="mt-1 text-apoio">{p.motivo}</p>
                       {p.status === 'recusado' && p.motivo_decisao && <p className="mt-1 text-apoio text-critico">Motivo da recusa: {p.motivo_decisao}</p>}
                     </div>

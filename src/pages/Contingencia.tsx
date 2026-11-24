@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileWarning, Plus, Save, X } from 'lucide-react'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 import { TituloPagina, TituloSecao, Vazio } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
@@ -12,7 +13,8 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import { dataHoraInput } from '@/lib/formato'
 import {
-  duracaoContingencia, faltaParaRegistrar, instanteDoCampo, MOTIVO_MINIMO, ultimaContingencia, type Contingencia as Linha,
+  duracaoContingencia, faltaParaRegistrar, instanteDoCampo, MOTIVO_MINIMO, textoForaDoAcesso, ultimaContingencia,
+  type AtendimentosContingencia, type Contingencia as Linha,
 } from '@/lib/contingencia'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -23,8 +25,8 @@ import { cn } from '@/lib/utils'
 // daquele período recebe, na tela do atendimento, a marca de reentrada.
 // Plano e formulários: produto/docs/contingencia/ (migration 20261030000006).
 // Revisão de tela (RT 24/11/2026): estado no topo e formulário só quando
-// pedido (M1); reentrada como barra "X de Y" (M2, versão mínima: a RPC só traz
-// as contagens, não a lista dos atendimentos do período).
+// pedido (M1); reentrada como barra "X de Y" (M2), com "Ver atendimentos"
+// abrindo a lista do período (contingencia_atendimentos, ajustes da revisão).
 
 function BarraReentrada({ feitas, total }: { feitas: number; total: number }) {
   if (total === 0) return <span className="text-apoio text-tinta-sussurro">Nenhum atendimento no período</span>
@@ -52,6 +54,7 @@ export default function Contingencia() {
   const [fim, setFim] = React.useState('')
   const [motivo, setMotivo] = React.useState('')
   const [registrado, setRegistrado] = React.useState(false)
+  const [aberta, setAberta] = React.useState<string | null>(null)
 
   const lista = useQuery({
     queryKey: ['contingencias', unidadeId],
@@ -177,10 +180,62 @@ export default function Contingencia() {
               <span className="ml-auto text-rotulo text-tinta-sussurro">registrado por {c.registrado_por ?? '—'}</span>
             </div>
             <span className="text-tinta-apoio">{c.motivo}</span>
-            <BarraReentrada feitas={c.reentradas} total={c.atendimentos_no_periodo} />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <BarraReentrada feitas={c.reentradas} total={c.atendimentos_no_periodo} />
+              {c.atendimentos_no_periodo > 0 && (
+                <Button size="xs" variant="outline" aria-expanded={aberta === c.id}
+                  onClick={() => setAberta(aberta === c.id ? null : c.id)}>
+                  {aberta === c.id ? 'Esconder atendimentos' : 'Ver atendimentos'}
+                </Button>
+              )}
+            </div>
+            {aberta === c.id && <AtendimentosDaContingencia contingenciaId={c.id} />}
           </div>
         ))}
       </section>
+    </div>
+  )
+}
+
+// Ajustes da revisão, item 3 (RT, 24/11/2026; migration 20270421000072): os
+// atendimentos do período, com a reentrada feita ou pendente. O paciente fora
+// do acesso de quem olha entra só na contagem.
+function AtendimentosDaContingencia({ contingenciaId }: { contingenciaId: string }) {
+  const q = useQuery({
+    queryKey: ['contingencia-atendimentos', contingenciaId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('contingencia_atendimentos', { p_contingencia: contingenciaId })
+      if (error) throw error
+      return data as unknown as AtendimentosContingencia
+    },
+  })
+  if (q.isLoading) return <Spinner />
+  if (q.error) return <p role="alert" className="text-apoio text-critico">{(q.error as Error).message}</p>
+  const d = q.data
+  if (!d) return null
+  const fora = textoForaDoAcesso(d.fora_do_seu_acesso, d.pendentes_fora)
+  return (
+    <div className="flex flex-col gap-1.5 border-t border-fio pt-2">
+      {d.atendimentos.length > 0 && (
+        <ul className="flex flex-col divide-y divide-fio" aria-label="Atendimentos do período">
+          {d.atendimentos.map((a) => (
+            <li key={a.episodio_id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-1.5">
+              <Link to={`/prontuarios/${a.paciente_id}`} className="font-medium text-acao hover:text-acao-pressionada">
+                {a.paciente_nome ?? 'Paciente sem nome'}
+              </Link>
+              <span className="text-tinta-apoio">chegou {fmtDataHora(a.chegada_em)}</span>
+              {a.reentrada_em ? (
+                <span className="text-conforme">reentrada feita em {fmtDataHora(a.reentrada_em)}{a.reentrada_por ? ` por ${a.reentrada_por}` : ''}</span>
+              ) : (
+                <span className="text-atencao">reentrada pendente</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {d.atendimentos.length === 0 && !fora && <span className="text-tinta-sussurro">Nenhum atendimento no período.</span>}
+      {fora && <span className="text-rotulo text-tinta-sussurro">{fora}. A reentrada deles é de quem cuida do paciente ou do gestor.</span>}
+      <span className="text-rotulo text-tinta-sussurro">A reentrada se marca na tela do atendimento, depois de anexar as folhas.</span>
     </div>
   )
 }

@@ -303,7 +303,10 @@ export default function App() {
                         <Route path="/faturamento/glosas" element={<FaturamentoGlosas />} />
                         {/* Fase 5C, tarefa 3: envio ao ERP (contas; plantões do mês só o gestor) */}
                         <Route path="/faturamento/erp" element={<FaturamentoEnvioErp />} />
-                        {/* pendências da 5B, L4: materiais da unidade */}
+                      </Route>
+                      {/* pendências da 5B, L4: materiais da unidade. Cadastram a farmácia e o gestor;
+                          o faturamento só lê (ajustes da revisão, item 4, RT em 24/11/2026) */}
+                      <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'faturamento']} />}>
                         <Route path="/faturamento/materiais" element={<FaturamentoMateriais />} />
                       </Route>
                       {/* APAC: o regulador autoriza; o faturamento registra a execução e gera o arquivo (Fase 3, tarefa 5) */}
