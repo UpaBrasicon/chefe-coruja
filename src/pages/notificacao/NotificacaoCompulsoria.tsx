@@ -44,7 +44,7 @@ const pilula = 'rounded-capsula px-2.5 py-[3px] text-apoio font-semibold whitesp
 const caixa = 'rounded-cartao border border-fio bg-superficie shadow-repouso'
 
 export default function NotificacaoCompulsoria() {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const qc = useQueryClient()
   const [params, setParams] = useSearchParams()
@@ -88,13 +88,16 @@ export default function NotificacaoCompulsoria() {
   }
 
   const faltaConferir = conferencia.data && (conferencia.data.itens > 0 || conferencia.data.regras > 0)
+  // SH2 (revisão do perfil Enfermeiro, RT 24/11/2026): a faixa do catálogo sem
+  // conferência é tarefa do gestor e da vigilância; nos outros perfis, uma nota no pé
+  const veFaixaCatalogo = papelAtivo === 'gestor' || papelAtivo === 'admin'
 
   return (
     <>
       <TituloPagina icone={Shield} titulo="Notificação compulsória"
         descricao={`Os casos entram quando o atendimento registra CID de notificação compulsória (LNNC, ${FONTE_LNNC}). A ficha individual do SINAN é preenchida aqui; a digitação no SINAN é feita à parte.`} />
 
-      {faltaConferir && (
+      {faltaConferir && veFaixaCatalogo && (
         <div className="mb-4 flex items-start gap-2.5 rounded-controle border border-nota bg-alerta-atencao px-3.5 py-3">
           <ShieldAlert className="mt-0.5 size-4 shrink-0 text-atencao" aria-hidden />
           <span className="text-apoio leading-[1.5] text-pretty text-atencao">
@@ -166,6 +169,11 @@ export default function NotificacaoCompulsoria() {
       )}
 
       <AcidenteTrabalho unidadeId={unidadeId} aoAbrir={abrirFicha} aoErro={setErro} />
+      {faltaConferir && !veFaixaCatalogo && (
+        <p className="mt-4 text-rotulo text-pretty text-tinta-sussurro">
+          O catálogo ainda aguarda a conferência da vigilância: a lista só sugere e nada é notificado sozinho.
+        </p>
+      )}
     </>
   )
 }

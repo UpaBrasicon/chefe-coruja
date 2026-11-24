@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Ambulance, BedDouble, Bell, CalendarClock, Clock, CornerDownLeft, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
+import { Ambulance, BedDouble, Bell, CalendarClock, ChevronDown, Clock, CornerDownLeft, FileCheck, FileText, FlaskConical, MessageSquare, Pill, Send, ShieldCheck, TriangleAlert, Users, Waypoints, type LucideIcon } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useDesfazer } from '@/contexts/DesfazerContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { dataHora, diaMes } from '@/lib/formato'
+import { separarPorPerfil } from '@/lib/avisosPerfil'
 import { categoriaCobranca } from '@/lib/nir'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -130,6 +131,44 @@ export default function Notificacoes() {
   const filtros = [...FILTROS, ...FILTROS_SE_HOUVER.filter((c) => categorias.has(c))]
   const lista = todos.filter((n) => filtro === 'Todos' || (filtro === 'Não lidos' ? !n.lida : categoria(n.tipo) === filtro))
   const naoLidos = todos.filter((n) => !n.lida).length
+  // SH1 (revisão do perfil Enfermeiro, RT 24/11/2026): os avisos seguem o perfil em uso
+  const { doPerfil, outros } = separarPorPerfil(lista, papelAtivo)
+
+  const linha = (n: MinhaNotificacao) => {
+    const cat = categoria(n.tipo)
+    const v = VISUAL[cat]
+    const acao = (v.acao ? [v.acao].flat() : []).find((a) => rotas.has(a.to.split('?')[0])) ?? null
+    return (
+      <div key={n.id} className={cn('flex items-start gap-3 border-b border-trilha px-5 py-4 last:border-0', !n.lida && 'bg-alerta-marca')}>
+        <span className={cn('mt-2 size-[7px] shrink-0 rounded-capsula', n.lida ? 'bg-transparent' : 'bg-acao')} aria-hidden />
+        <span className={cn('grid size-[34px] shrink-0 place-items-center rounded-controle', v.cor)} aria-hidden>
+          <v.icone className="size-[17px]" />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="text-rotulo font-medium text-tinta-sussurro">{cat}</span>
+          <span className={cn('text-corpo text-pretty text-tinta', n.lida ? 'font-normal' : 'font-semibold')}>{n.mensagem}</span>
+          {(acao || !n.lida) && (
+            <div className="mt-0.5 flex flex-wrap items-center gap-3.5">
+              {acao && (
+                <Link to={acao.to} onClick={() => { if (!n.lida) marcar.mutate([n.id]) }} className="text-apoio font-medium text-acao hover:underline">
+                  {acao.rotulo}
+                </Link>
+              )}
+              {!n.lida && (
+                <Button variant="link" disabled={marcar.isPending} onClick={() => marcar.mutate([n.id])}
+                  className="min-h-0 px-0 py-0 underline underline-offset-4">
+                  Marcar como lido
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+        <span className="shrink-0 text-apoio whitespace-nowrap text-tinta-sussurro" title={dataHora(n.created_at)}>
+          {haQuanto(n.created_at)}
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-[896px] flex-col">
@@ -151,44 +190,19 @@ export default function Notificacoes() {
       <div className="overflow-hidden rounded-cartao border border-fio bg-superficie shadow-repouso">
         {isLoading ? (
           <div className="flex h-24 items-center justify-center"><Spinner /></div>
-        ) : lista.length === 0 ? (
-          <div className="px-5 py-[26px] text-center text-apoio text-tinta-sussurro">Nenhum aviso nesse filtro.</div>
-        ) : lista.map((n) => {
-          const cat = categoria(n.tipo)
-          const v = VISUAL[cat]
-          const acao = (v.acao ? [v.acao].flat() : []).find((a) => rotas.has(a.to.split('?')[0])) ?? null
-          return (
-            <div key={n.id} className={cn('flex items-start gap-[13px] border-b border-trilha px-5 py-[15px] last:border-0', !n.lida && 'bg-alerta-marca')}>
-              <span className={cn('mt-[7px] size-[7px] shrink-0 rounded-capsula', n.lida ? 'bg-transparent' : 'bg-acao')} aria-hidden />
-              <span className={cn('grid size-[34px] shrink-0 place-items-center rounded-controle', v.cor)} aria-hidden>
-                <v.icone className="size-[17px]" />
-              </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-rotulo font-semibold tracking-[0.04em] text-tinta-sussurro uppercase">{cat}</span>
-                <span className={cn('text-corpo text-pretty text-tinta', n.lida ? 'font-normal' : 'font-semibold')}>{n.mensagem}</span>
-                {(acao || !n.lida) && (
-                  <div className="mt-0.5 flex flex-wrap items-center gap-3.5">
-                    {acao && (
-                      <Link to={acao.to} onClick={() => { if (!n.lida) marcar.mutate([n.id]) }} className="text-apoio font-medium text-acao hover:underline">
-                        {acao.rotulo}
-                      </Link>
-                    )}
-                    {!n.lida && (
-                      <Button variant="link" disabled={marcar.isPending} onClick={() => marcar.mutate([n.id])}
-                        className="min-h-0 px-0 py-0 underline underline-offset-4">
-                        Marcar como lido
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-              <span className="shrink-0 text-apoio whitespace-nowrap text-tinta-sussurro" title={dataHora(n.created_at)}>
-                {haQuanto(n.created_at)}
-              </span>
-            </div>
-          )
-        })}
+        ) : doPerfil.length === 0 ? (
+          <div className="px-5 py-6 text-center text-apoio text-tinta-sussurro">{outros.length ? 'Nenhum aviso deste perfil nesse filtro.' : 'Nenhum aviso nesse filtro.'}</div>
+        ) : doPerfil.map(linha)}
       </div>
+      {outros.length > 0 && (
+        <details className="group mt-4">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-apoio text-tinta-sussurro hover:text-acao">
+            De outros perfis ({outros.length})
+            <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden />
+          </summary>
+          <div className="mt-2 overflow-hidden rounded-cartao border border-fio bg-superficie">{outros.map(linha)}</div>
+        </details>
+      )}
     </div>
   )
 }
