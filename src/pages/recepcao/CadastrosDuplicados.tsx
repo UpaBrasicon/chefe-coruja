@@ -32,6 +32,11 @@ import { cn } from '@/lib/utils'
 // Revisão do gestor (RT, 24/11/2026): M1 comparação campo a campo com a
 // diferença marcada, M2 uma lista só por par com a situação, M3 decisão com as
 // opções explicadas e a recomendada marcada.
+// Ações no par aberto (RT, 24/11/2026: "ficam apenas os campos"): decide quem
+// está com gestor em foco ou o administrador geral (o servidor aceita os dois,
+// private.gestor_da_unidade); "Manter este" fica na própria comparação; o
+// próprio pedido pode ser cancelado ou refeito com o outro cadastro ficando;
+// toda ação confirma antes e avisa o resultado.
 
 function AlertaDocumentos({ divergencias }: { divergencias: string[] }) {
   if (divergencias.length === 0) return null
@@ -96,8 +101,10 @@ function LinhaCadastro({ c, destaque }: { c: Cadastro | PedidoUnificacao['princi
 const valorCampo = (l: LinhaComparacao, v: string | null) => (v == null ? '—' : l.chave === 'data_nascimento' ? fmtData(v) : v)
 
 // M1: os dois cadastros lado a lado, campo a campo; a diferença fica marcada
-function Comparacao({ a, b, rotuloA, rotuloB }: {
+function Comparacao({ a, b, rotuloA, rotuloB, acaoA, acaoB }: {
   a: Cadastro | PedidoUnificacao['principal']; b: Cadastro | PedidoUnificacao['principal']; rotuloA: string; rotuloB: string
+  /** escolha de qual cadastro fica, embaixo de cada coluna */
+  acaoA?: React.ReactNode; acaoB?: React.ReactNode
 }) {
   const linhas = compararCampos(a, b)
   const ka = a as Partial<Cadastro>
@@ -138,6 +145,13 @@ function Comparacao({ a, b, rotuloA, rotuloB }: {
                 <TableCell className="text-tinta-apoio">{uso(kb)}</TableCell>
               </TableRow>
             )}
+            {(acaoA || acaoB) && (
+              <TableRow>
+                <TableCell className="text-tinta-apoio">Qual fica</TableCell>
+                <TableCell>{acaoA}</TableCell>
+                <TableCell>{acaoB}</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
@@ -148,14 +162,14 @@ function Comparacao({ a, b, rotuloA, rotuloB }: {
 // M3: cada opção com o que acontece; a recomendada vem marcada
 function Opcao({ titulo, texto, recomendada, children }: { titulo: string; texto: string; recomendada?: boolean; children: React.ReactNode }) {
   return (
-    <div className={cn('flex flex-col gap-2 rounded-controle border px-3 py-2.5 sm:flex-row sm:items-center', recomendada ? 'border-acao/50 bg-alerta-marca' : 'border-fio')}>
+    <div className={cn('flex flex-col gap-2 rounded-controle border px-3 py-2.5', recomendada ? 'border-acao/50 bg-alerta-marca' : 'border-fio bg-superficie')}>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-controle font-medium text-tinta">
           {titulo}{recomendada && <span className="ml-2 text-rotulo font-medium text-acao">recomendado</span>}
         </span>
         <span className="text-apoio text-tinta-apoio">{texto}</span>
       </div>
-      <div className="flex shrink-0 flex-wrap items-center gap-2">{children}</div>
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
   )
 }
@@ -164,20 +178,39 @@ type Par =
   | { chave: string; tipo: 'pedido'; pedido: PedidoUnificacao; candidato: Candidato | null }
   | { chave: string; tipo: 'candidato'; candidato: Candidato }
 
+type Decisao = { acao: 'aprovar' | 'recusar' | 'cancelar' | 'desfazer'; p: PedidoUnificacao }
+type Pedindo = { candidato: Candidato; principal: string; substitui: PedidoUnificacao | null }
+
+// o resultado de cada ação, dito no topo da tela
+const AVISO: Record<Decisao['acao'], string> = {
+  aprovar: 'Unificação aprovada: o par saiu da lista e está no histórico.',
+  recusar: 'Pedido recusado: os dois cadastros continuam separados e o par está no histórico.',
+  cancelar: 'Pedido cancelado: o par voltou a ficar sem pedido.',
+  desfazer: 'Unificação desfeita: os dois cadastros voltaram a ficar separados.',
+}
+const TITULO_DECISAO: Record<Decisao['acao'], string> = {
+  aprovar: 'Aprovar a unificação',
+  recusar: 'Recusar a unificação',
+  cancelar: 'Cancelar o pedido',
+  desfazer: 'Desfazer a unificação',
+}
+const pront = (k: { prontuario: string | null }) => `pront. ${k.prontuario ?? '—'}`
+
 export default function CadastrosDuplicados() {
-  const { unidadeAtiva, papelAtivo } = useUnidade()
+  const { unidadeAtiva, papelAtivo, ehSuperAdmin } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
-  const ehGestor = papelAtivo === 'gestor'
+  // Decide a unificação quem está com gestor em foco ou o administrador geral
+  // em foco de administrador: o servidor aceita os dois (private.gestor_da_unidade).
+  const podeDecidir = papelAtivo === 'gestor' || (ehSuperAdmin && papelAtivo === 'admin')
   const queryClient = useQueryClient()
   const [aberto, setAberto] = React.useState<string | null>(null)
-  const [pedindo, setPedindo] = React.useState<Candidato | null>(null)
-  const [principal, setPrincipal] = React.useState('')
+  const [pedindo, setPedindo] = React.useState<Pedindo | null>(null)
   const [motivo, setMotivo] = React.useState('')
-  const [decidindo, setDecidindo] = React.useState<{ p: PedidoUnificacao; acao: 'recusar' | 'desfazer' } | null>(null)
-  const [motivoDecisao, setMotivoDecisao] = React.useState('')
   const [confirmoPedido, setConfirmoPedido] = React.useState(false)
-  // pedidos pendentes com documento diferente que o gestor confirmou
-  const [confirmados, setConfirmados] = React.useState<Record<string, boolean>>({})
+  const [decidindo, setDecidindo] = React.useState<Decisao | null>(null)
+  const [motivoDecisao, setMotivoDecisao] = React.useState('')
+  const [confirmoDecisao, setConfirmoDecisao] = React.useState(false)
+  const [aviso, setAviso] = React.useState<string | null>(null)
 
   const candidatos = useQuery({
     queryKey: ['candidatos-duplicados', unidadeId],
@@ -202,44 +235,57 @@ export default function CadastrosDuplicados() {
     void queryClient.invalidateQueries({ queryKey: ['pedidos-unificacao', unidadeId] })
   }
 
+  // Pedir; refazer o próprio pedido com o outro cadastro ficando = cancelar e pedir de novo
   const pedir = useMutation({
-    mutationFn: async () => {
-      const absorvido = pedindo!.cadastros.find((c) => c.id !== principal)!.id
+    mutationFn: async (x: Pedindo) => {
+      let cancelou = false
+      if (x.substitui) {
+        const { error } = await supabase.rpc('cancelar_unificacao', { p_pedido: x.substitui.id })
+        if (error) throw error
+        cancelou = true
+      }
+      const absorvido = x.candidato.cadastros.find((c) => c.id !== x.principal)!.id
       const { error } = await supabase.rpc('pedir_unificacao', {
-        p_principal: principal, p_absorvido: absorvido, p_motivo: motivo.trim(), p_confirmo: confirmoPedido,
+        p_principal: x.principal, p_absorvido: absorvido, p_motivo: motivo.trim(), p_confirmo: confirmoPedido,
       })
-      if (error) throw error
+      if (error) {
+        throw Object.assign(new Error(cancelou ? `O pedido antigo foi cancelado, mas o novo não foi enviado: ${error.message}` : error.message), { cancelou })
+      }
+      return x
     },
-    onSuccess: () => { setPedindo(null); setMotivo(''); setConfirmoPedido(false); recarregar() },
+    onSuccess: (x) => {
+      setPedindo(null); setMotivo(''); setConfirmoPedido(false)
+      setAviso(x.substitui
+        ? 'Pedido refeito com o outro cadastro ficando. O par continua aguardando o gestor.'
+        : 'Pedido enviado. O par fica aguardando o gestor; nada muda nos cadastros até ele aprovar.')
+      recarregar()
+    },
+    onError: (e) => {
+      // o antigo já saiu: tentar de novo é um pedido novo
+      if ((e as { cancelou?: boolean }).cancelou) setPedindo((p) => p && { ...p, substitui: null })
+      recarregar()
+    },
   })
   const decidir = useMutation({
-    mutationFn: async ({ id, aprovar, m, confirmo }: { id: string; aprovar: boolean; m?: string; confirmo?: boolean }) => {
-      const { error } = await supabase.rpc('decidir_unificacao', {
-        p_pedido: id, p_aprovar: aprovar, p_motivo: m || undefined, p_confirmo: confirmo ?? false,
-      })
+    mutationFn: async ({ acao, p, m, confirmo }: Decisao & { m: string; confirmo: boolean }) => {
+      const { error } = acao === 'aprovar'
+        ? await supabase.rpc('decidir_unificacao', { p_pedido: p.id, p_aprovar: true, p_confirmo: confirmo })
+        : acao === 'recusar'
+          ? await supabase.rpc('decidir_unificacao', { p_pedido: p.id, p_aprovar: false, p_motivo: m, p_confirmo: false })
+          : acao === 'cancelar'
+            ? await supabase.rpc('cancelar_unificacao', { p_pedido: p.id })
+            : await supabase.rpc('desfazer_unificacao', { p_pedido: p.id, p_motivo: m })
       if (error) throw error
+      return acao
     },
-    onSuccess: () => { setDecidindo(null); setMotivoDecisao(''); recarregar() },
-  })
-  const desfazer = useMutation({
-    mutationFn: async ({ id, m }: { id: string; m: string }) => {
-      const { error } = await supabase.rpc('desfazer_unificacao', { p_pedido: id, p_motivo: m })
-      if (error) throw error
-    },
-    onSuccess: () => { setDecidindo(null); setMotivoDecisao(''); recarregar() },
-  })
-  const cancelar = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('cancelar_unificacao', { p_pedido: id })
-      if (error) throw error
-    },
-    onSuccess: recarregar,
+    onSuccess: (acao) => { setDecidindo(null); setMotivoDecisao(''); setConfirmoDecisao(false); setAviso(AVISO[acao]); recarregar() },
   })
 
   const pendentes = (pedidos.data ?? []).filter((p) => p.status === 'pendente')
   const historico = (pedidos.data ?? []).filter((p) => p.status !== 'pendente')
-  const erroAcao = (decidir.error ?? desfazer.error ?? cancelar.error) as Error | null
-  const divergenciasPedido = pedindo ? documentosDivergentes(pedindo.cadastros) : []
+  const divergenciasPedido = pedindo ? documentosDivergentes(pedindo.candidato.cadastros) : []
+  const divergenciasDecisao = decidindo?.p.divergencias ?? []
+  const precisaMotivo = decidindo?.acao === 'recusar' || decidindo?.acao === 'desfazer'
 
   // M2: uma lista só, um par por linha: primeiro o que espera o gestor, depois o que ninguém pediu
   const pares = React.useMemo<Par[]>(() => {
@@ -256,8 +302,13 @@ export default function CadastrosDuplicados() {
   // a primeira linha abre sozinha; '' = todas fechadas
   const chaveAberta = aberto === null ? (pares[0]?.chave ?? null) : aberto
 
-  function abrirPedido(c: Candidato) {
-    setPedindo(c); setPrincipal(sugerirPrincipal(c.cadastros)); setMotivo(''); setConfirmoPedido(false); pedir.reset()
+  function abrirPedido(c: Candidato, principal: string, substitui: PedidoUnificacao | null = null) {
+    setPedindo({ candidato: c, principal, substitui })
+    setMotivo(substitui?.motivo ?? ''); setConfirmoPedido(substitui?.confirmado_no_pedido ?? false)
+    pedir.reset(); setAviso(null)
+  }
+  function abrirDecisao(acao: Decisao['acao'], p: PedidoUnificacao) {
+    setDecidindo({ acao, p }); setMotivoDecisao(''); setConfirmoDecisao(false); decidir.reset(); setAviso(null)
   }
 
   function detalhe(par: Par) {
@@ -266,56 +317,91 @@ export default function CadastrosDuplicados() {
       const [a, b] = c.cadastros
       const div = documentosDivergentes(c.cadastros)
       const sugerido = sugerirPrincipal(c.cadastros)
+      // "Manter este" na própria comparação: abre o pedido com esse cadastro ficando
+      const manter = (k: Cadastro) => (c.pedido_pendente ? undefined : (
+        <Button size="sm" variant={k.id === sugerido && div.length === 0 ? 'default' : 'outline'} onClick={() => abrirPedido(c, k.id)}>
+          <Check /> Manter este
+        </Button>
+      ))
       return (
         <div className="flex flex-col gap-3 border-t border-trilha bg-campo px-4 py-3">
-          <Comparacao a={a} b={b} rotuloA={`Cadastro 1${a.id === sugerido ? ' · sugerido para ficar' : ''}`} rotuloB={`Cadastro 2${b.id === sugerido ? ' · sugerido para ficar' : ''}`} />
+          <Comparacao a={a} b={b} acaoA={manter(a)} acaoB={manter(b)}
+            rotuloA={`Cadastro 1${a.id === sugerido ? ' · sugerido para ficar' : ''}`} rotuloB={`Cadastro 2${b.id === sugerido ? ' · sugerido para ficar' : ''}`} />
           <AlertaDocumentos divergencias={div} />
           {c.pedido_pendente ? (
-            <span className="text-apoio text-tinta-apoio">Já há um pedido aguardando o gestor para este par.</span>
+            <span className="text-apoio text-tinta-apoio">
+              Já há um pedido aguardando o gestor para este par. O pedido aparece para quem pediu e para o gestor da unidade.
+            </span>
           ) : (
-            <Opcao titulo="Pedir unificação" recomendada={div.length === 0}
-              texto={div.length === 0
-                ? 'Os dados batem o bastante para ser a mesma pessoa. O pedido vai para o gestor com o seu motivo; nada muda até ele aprovar.'
-                : 'Os documentos não batem: confira o documento com o paciente antes de pedir. O motivo precisa de 30 letras.'}>
-              <Button size="sm" variant="outline" onClick={() => abrirPedido(c)}><GitMerge /> Pedir unificação</Button>
-            </Opcao>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Opcao titulo="Unificar" recomendada={div.length === 0}
+                texto={div.length === 0
+                  ? `Os dados batem o bastante para ser a mesma pessoa. Fica o sugerido (${porQueSugerido(c.cadastros)}), ou use "Manter este" na coluna do outro. O pedido vai para o gestor; nada muda até ele aprovar.`
+                  : 'Os documentos não batem: confira o documento com o paciente antes de pedir. O motivo precisa de 30 letras.'}>
+                <Button size="sm" variant={div.length === 0 ? 'default' : 'outline'} onClick={() => abrirPedido(c, sugerido)}>
+                  <GitMerge /> Pedir unificação
+                </Button>
+              </Opcao>
+              <Opcao titulo="São pessoas diferentes" recomendada={div.length > 0}
+                texto="Não peça a unificação: os dois cadastros continuam separados como estão. O par segue nesta lista enquanto os dados forem parecidos.">
+                <Button size="sm" variant="outline" onClick={() => setAberto('')}><X /> Deixar separados</Button>
+              </Opcao>
+            </div>
           )}
         </div>
       )
     }
     const p = par.pedido
     const div = p.divergencias ?? []
-    const cad = par.candidato?.cadastros
-    const fica = cad?.find((k) => k.id === p.principal.id) ?? p.principal
-    const sai = cad?.find((k) => k.id === p.absorvido.id) ?? p.absorvido
+    const cad = par.candidato
+    const fica = cad?.cadastros.find((k) => k.id === p.principal.id) ?? p.principal
+    const sai = cad?.cadastros.find((k) => k.id === p.absorvido.id) ?? p.absorvido
+    // o próprio pedido pode ser refeito com o outro cadastro ficando (precisa dos dois ativos)
+    const podeTrocar = p.meu && !!cad
     return (
       <div className="flex flex-col gap-3 border-t border-trilha bg-campo px-4 py-3">
-        <Comparacao a={fica} b={sai} rotuloA="Fica (principal)" rotuloB="É absorvido" />
+        <Comparacao a={fica} b={sai} rotuloA="Fica (principal)" rotuloB="É absorvido"
+          acaoA={podeTrocar ? <span className="text-rotulo font-medium text-acao">fica neste pedido</span> : undefined}
+          acaoB={podeTrocar ? (
+            <Button size="sm" variant="outline" onClick={() => abrirPedido(cad, p.absorvido.id, p)}><Check /> Manter este</Button>
+          ) : undefined} />
         <span className="text-rotulo text-tinta-apoio">
           Pedido por {p.pedido_por ?? '—'} em {fmtDataHora(p.pedido_em)} · "{p.motivo}"
           {p.confirmado_no_pedido ? ' · quem pediu confirmou que é a mesma pessoa' : ''}
         </span>
         <AlertaDocumentos divergencias={div} />
-        {ehGestor && !p.meu && (
-          <div className="flex flex-col gap-2">
+        {podeDecidir && !p.meu ? (
+          <div className="grid gap-2 sm:grid-cols-2">
             <Opcao titulo="Aprovar" recomendada={div.length === 0}
-              texto={`${p.principal.nome} fica; o outro cadastro fica inativo e passa a aparecer junto dele. Nenhum registro clínico muda de paciente, e dá para desfazer depois.`}>
-              {div.length > 0 && (
-                <Confirmo id={`confirmo-${p.id}`} marcado={!!confirmados[p.id]} mudar={(v) => setConfirmados((x) => ({ ...x, [p.id]: v }))} />
-              )}
-              <Button size="sm" disabled={decidir.isPending || (div.length > 0 && !confirmados[p.id])}
-                onClick={() => decidir.mutate({ id: p.id, aprovar: true, confirmo: !!confirmados[p.id] })}><Check /> Aprovar</Button>
+              texto={`${p.principal.nome} (${pront(p.principal)}) fica; o outro cadastro fica inativo e passa a aparecer junto dele. Nenhum registro clínico muda de paciente, e dá para desfazer depois.`}>
+              <Button size="sm" variant={div.length === 0 ? 'default' : 'outline'} onClick={() => abrirDecisao('aprovar', p)}><Check /> Aprovar</Button>
             </Opcao>
             <Opcao titulo="Recusar" recomendada={div.length > 0}
               texto="Os dois cadastros continuam separados. Use quando forem pessoas diferentes ou quando o documento não puder ser conferido.">
-              <Button size="sm" variant="outline" onClick={() => { setDecidindo({ p, acao: 'recusar' }); setMotivoDecisao('') }}><X /> Recusar</Button>
+              <Button size="sm" variant={div.length > 0 ? 'default' : 'outline'} onClick={() => abrirDecisao('recusar', p)}><X /> Recusar</Button>
             </Opcao>
           </div>
-        )}
-        {ehGestor && p.meu && <span className="text-apoio text-tinta-sussurro">Você pediu: outro gestor da unidade decide.</span>}
-        {!ehGestor && !p.meu && <span className="text-apoio text-tinta-sussurro">O gestor da unidade decide este pedido.</span>}
-        {p.meu && (
-          <div><Button size="sm" variant="outline" disabled={cancelar.isPending} onClick={() => cancelar.mutate(p.id)}>Cancelar meu pedido</Button></div>
+        ) : p.meu ? (
+          <div className="flex flex-col gap-2">
+            <span className="text-apoio text-tinta-apoio">
+              {podeDecidir
+                ? 'Você pediu esta unificação, e quem pede não aprova o próprio pedido: decide outro gestor da unidade ou o administrador geral.'
+                : 'Você pediu esta unificação: o gestor da unidade decide.'}
+            </span>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {podeTrocar && (
+                <Opcao titulo="Trocar o cadastro que fica"
+                  texto={`Refaz o pedido com o cadastro de ${pront(p.absorvido)} ficando e o de ${pront(p.principal)} absorvido. O motivo vem preenchido.`}>
+                  <Button size="sm" variant="outline" onClick={() => abrirPedido(cad, p.absorvido.id, p)}><GitMerge /> Manter o outro</Button>
+                </Opcao>
+              )}
+              <Opcao titulo="Cancelar o pedido" texto="O pedido sai da fila do gestor e os dois cadastros continuam separados. Use se pediu por engano.">
+                <Button size="sm" variant="outline" onClick={() => abrirDecisao('cancelar', p)}><X /> Cancelar o pedido</Button>
+              </Opcao>
+            </div>
+          </div>
+        ) : (
+          <span className="text-apoio text-tinta-sussurro">O gestor da unidade decide este pedido.</span>
         )}
       </div>
     )
@@ -328,7 +414,13 @@ export default function CadastrosDuplicados() {
         titulo="Cadastros duplicados"
         descricao="A recepção pede a unificação com motivo; o gestor aprova. Unificar vincula os cadastros: nenhum registro clínico muda de paciente, e o gestor pode desfazer."
       />
-      {erroAcao && <p role="alert" className="text-apoio text-critico">{erroAcao.message}</p>}
+      {aviso && (
+        <p role="status" className="flex items-start gap-2 rounded-controle border border-conforme/30 bg-alerta-conforme px-3 py-2 text-apoio text-tinta">
+          <Check className="mt-0.5 size-4 shrink-0 text-conforme" aria-hidden />
+          {aviso}
+        </p>
+      )}
+      {pedidos.error && <p role="alert" className="text-apoio text-critico">{(pedidos.error as Error).message}</p>}
 
       <section className="flex flex-col gap-2">
         <TituloSecao extra={pares.length ? `${pendentes.length} aguardando o gestor · ${pares.length - pendentes.length} sem pedido` : undefined}>
@@ -356,7 +448,7 @@ export default function CadastrosDuplicados() {
                     </span>
                     {div.length > 0 && <Situacao tom="critico">documentos diferentes</Situacao>}
                     {par.tipo === 'pedido'
-                      ? <Situacao tom="acao">aguardando o gestor</Situacao>
+                      ? <Situacao tom="acao">{par.pedido.meu ? 'seu pedido, aguardando o gestor' : 'aguardando o gestor'}</Situacao>
                       : par.candidato.pedido_pendente ? <Situacao tom="acao">aguardando o gestor</Situacao> : <Situacao tom="calmo">sem pedido</Situacao>}
                   </BotaoLinha>
                   {estaAberto && detalhe(par)}
@@ -379,8 +471,8 @@ export default function CadastrosDuplicados() {
                 {p.decidido_por ? `por ${p.decidido_por}` : ''}{p.decidido_em ? ` em ${fmtDataHora(p.decidido_em)}` : ''}
                 {p.motivo_decisao ? ` · "${p.motivo_decisao}"` : ''}{p.motivo_desfazer ? ` · desfeito: "${p.motivo_desfazer}"` : ''}
               </span>
-              {ehGestor && p.status === 'aprovado' && (
-                <Button size="sm" variant="outline" className="ml-auto" onClick={() => { setDecidindo({ p, acao: 'desfazer' }); setMotivoDecisao('') }}>
+              {podeDecidir && p.status === 'aprovado' && (
+                <Button size="sm" variant="outline" className="ml-auto" onClick={() => abrirDecisao('desfazer', p)}>
                   <Undo2 /> Desfazer
                 </Button>
               )}
@@ -392,21 +484,25 @@ export default function CadastrosDuplicados() {
       <Dialog open={!!pedindo} onOpenChange={(v) => !v && setPedindo(null)}>
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
-            <DialogTitle className="text-dialogo">Pedir unificação</DialogTitle>
+            <DialogTitle className="text-dialogo">{pedindo?.substitui ? 'Refazer o pedido' : 'Pedir unificação'}</DialogTitle>
             <DialogDescription className="text-controle">
-              Escolha o cadastro que fica. O outro fica inativo e passa a aparecer junto do principal; nada é apagado e o gestor pode desfazer.
+              {pedindo?.substitui
+                ? 'O pedido atual é cancelado e um novo vai para o gestor com o cadastro escolhido ficando. '
+                : ''}
+              Confira o cadastro que fica. O outro fica inativo e passa a aparecer junto do principal; nada é apagado e o gestor pode desfazer.
             </DialogDescription>
           </DialogHeader>
           <div role="radiogroup" aria-label="Cadastro que fica" className="flex flex-col gap-2">
-            {pedindo?.cadastros.map((k) => {
-              const sugerido = sugerirPrincipal(pedindo.cadastros) === k.id
+            {pedindo?.candidato.cadastros.map((k) => {
+              const sugerido = sugerirPrincipal(pedindo.candidato.cadastros) === k.id
+              const escolhido = pedindo.principal === k.id
               return (
                 // padrao-ok: cartão selecionável do par de cadastros (radio); não há peça de base para cartão
-                <button key={k.id} type="button" role="radio" aria-checked={principal === k.id} onClick={() => setPrincipal(k.id)}
-                  className={cn('flex flex-col rounded-controle border text-left', principal === k.id ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
-                  <LinhaCadastro c={k} destaque={principal === k.id ? 'fica' : undefined} />
+                <button key={k.id} type="button" role="radio" aria-checked={escolhido} onClick={() => setPedindo({ ...pedindo, principal: k.id })}
+                  className={cn('flex flex-col rounded-controle border text-left', escolhido ? 'border-acao ring-1 ring-acao' : 'border-fio')}>
+                  <LinhaCadastro c={k} destaque={escolhido ? 'fica' : undefined} />
                   {sugerido && (
-                    <span className="px-3 pb-2 text-rotulo text-acao">recomendado: {porQueSugerido(pedindo.cadastros)}</span>
+                    <span className="px-3 pb-2 text-rotulo text-acao">recomendado: {porQueSugerido(pedindo.candidato.cadastros)}</span>
                   )}
                 </button>
               )
@@ -421,9 +517,11 @@ export default function CadastrosDuplicados() {
           {divergenciasPedido.length > 0 && <Confirmo id="confirmo-pedido" marcado={confirmoPedido} mudar={setConfirmoPedido} />}
           {pedir.error && <p role="alert" className="text-apoio text-critico">{(pedir.error as Error).message}</p>}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setPedindo(null)}>Cancelar</Button>
-            <Button disabled={pedir.isPending || motivo.trim().length < motivoMinimo(divergenciasPedido) || !principal
-              || (divergenciasPedido.length > 0 && !confirmoPedido)} onClick={() => pedir.mutate()}><GitMerge /> Pedir</Button>
+            <Button variant="outline" onClick={() => setPedindo(null)}>Voltar</Button>
+            <Button disabled={pedir.isPending || !pedindo || motivo.trim().length < motivoMinimo(divergenciasPedido)
+              || (divergenciasPedido.length > 0 && !confirmoPedido)} onClick={() => pedindo && pedir.mutate(pedindo)}>
+              <GitMerge /> {pedindo?.substitui ? 'Refazer o pedido' : 'Pedir'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -431,24 +529,39 @@ export default function CadastrosDuplicados() {
       <Dialog open={!!decidindo} onOpenChange={(v) => !v && setDecidindo(null)}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle className="text-dialogo">{decidindo?.acao === 'recusar' ? 'Recusar a unificação' : 'Desfazer a unificação'}</DialogTitle>
+            <DialogTitle className="text-dialogo">{decidindo ? TITULO_DECISAO[decidindo.acao] : ''}</DialogTitle>
             <DialogDescription className="text-controle">
-              {decidindo?.acao === 'recusar' ? 'Os dois cadastros continuam separados.' : 'O cadastro absorvido volta a ficar ativo e separado; CPF/CNS que tinham passado ao principal voltam.'}
+              {decidindo?.acao === 'aprovar'
+                ? `${decidindo.p.principal.nome} (${pront(decidindo.p.principal)}) fica; o cadastro de ${pront(decidindo.p.absorvido)} fica inativo e passa a aparecer junto dele. Nenhum registro clínico muda de paciente, e dá para desfazer depois.`
+                : decidindo?.acao === 'recusar' ? 'Os dois cadastros continuam separados.'
+                  : decidindo?.acao === 'cancelar' ? 'O pedido sai da fila do gestor e os dois cadastros continuam separados.'
+                    : 'O cadastro absorvido volta a ficar ativo e separado; CPF/CNS que tinham passado ao principal voltam.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="motivo-dec">Motivo</Label>
-            <Textarea id="motivo-dec" rows={2} value={motivoDecisao} onChange={(e) => setMotivoDecisao(e.target.value)} />
-            <span className="text-rotulo text-tinta-sussurro">Mínimo de 10 letras.</span>
-          </div>
-          {(decidir.error || desfazer.error) && <p role="alert" className="text-apoio text-critico">{((decidir.error ?? desfazer.error) as Error).message}</p>}
+          {decidindo?.acao === 'aprovar' && divergenciasDecisao.length > 0 && (
+            <>
+              <AlertaDocumentos divergencias={divergenciasDecisao} />
+              <Confirmo id="confirmo-decisao" marcado={confirmoDecisao} mudar={setConfirmoDecisao} />
+            </>
+          )}
+          {precisaMotivo && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="motivo-dec">Motivo</Label>
+              <Textarea id="motivo-dec" rows={2} value={motivoDecisao} onChange={(e) => setMotivoDecisao(e.target.value)} />
+              <span className="text-rotulo text-tinta-sussurro">Mínimo de 10 letras.</span>
+            </div>
+          )}
+          {decidir.error && <p role="alert" className="text-apoio text-critico">{(decidir.error as Error).message}</p>}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setDecidindo(null)}>Voltar</Button>
-            <Button variant="destructive" disabled={motivoDecisao.trim().length < 10 || decidir.isPending || desfazer.isPending}
-              onClick={() => decidindo && (decidindo.acao === 'recusar'
-                ? decidir.mutate({ id: decidindo.p.id, aprovar: false, m: motivoDecisao.trim() })
-                : desfazer.mutate({ id: decidindo.p.id, m: motivoDecisao.trim() }))}>
-              {decidindo?.acao === 'recusar' ? <><X /> Recusar</> : <><Undo2 /> Desfazer</>}
+            <Button variant={decidindo?.acao === 'aprovar' ? 'default' : 'destructive'}
+              disabled={decidir.isPending || (precisaMotivo && motivoDecisao.trim().length < 10)
+                || (decidindo?.acao === 'aprovar' && divergenciasDecisao.length > 0 && !confirmoDecisao)}
+              onClick={() => decidindo && decidir.mutate({ ...decidindo, m: motivoDecisao.trim(), confirmo: confirmoDecisao })}>
+              {decidindo?.acao === 'aprovar' ? <><Check /> Aprovar</>
+                : decidindo?.acao === 'recusar' ? <><X /> Recusar</>
+                  : decidindo?.acao === 'cancelar' ? <><X /> Cancelar o pedido</>
+                    : <><Undo2 /> Desfazer</>}
             </Button>
           </div>
         </DialogContent>
