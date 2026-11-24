@@ -28,20 +28,12 @@ import { Button } from '@/components/ui/button'
 // borda fina; a cor do grupo fica só na etiqueta da sigla, como a faixa de uma
 // etiqueta de ampola. O "Iniciar PCR" é o único bloco de cor forte.
 // Classes por extenso para o Tailwind enxergá-las; só tokens do app.
-const FAIXA: Record<IconeCategoria, string> = {
-  urgencias: 'bg-critico', doses: 'bg-secao-farmacia', calculadoras: 'bg-secao-calculadoras',
-  escores: 'bg-secao-neurologia', intoxicacao: 'bg-secao-toxicologia', todas: 'bg-acao',
-}
-
-/** A sigla como etiqueta de ampola: fundo branco, borda fina e a faixa na cor do grupo. */
-function Etiqueta({ texto, icone, pequena }: { texto: string; icone: IconeCategoria; pequena?: boolean }) {
-  return (
-    <span aria-hidden className={cn('inline-flex shrink-0 items-stretch overflow-hidden rounded-controle border border-fio-forte bg-superficie font-mono font-medium text-tinta tabular-nums',
-      pequena ? 'h-6 text-rotulo' : 'h-7 text-apoio')}>
-      <span className={cn('w-1', FAIXA[icone])} />
-      <span className={cn('flex items-center', pequena ? 'px-1.5' : 'px-2')}>{texto}</span>
-    </span>
-  )
+// Itens do grupo aberto (opção "Itens 2", RT em 23/11/2026): faixa no alto com a
+// cor do grupo bem diluída e a sigla grande na cor do grupo; nome embaixo, centralizado.
+const TOM_ITEM: Record<IconeCategoria, string> = {
+  urgencias: 'bg-critico/7 text-critico', doses: 'bg-secao-farmacia/7 text-secao-farmacia',
+  calculadoras: 'bg-secao-calculadoras/7 text-secao-calculadoras', escores: 'bg-secao-neurologia/7 text-secao-neurologia',
+  intoxicacao: 'bg-secao-toxicologia/7 text-secao-toxicologia', todas: 'bg-acao/7 text-acao',
 }
 
 /** Ao abrir uma tela pelo início, o lado escolhido vira o paciente da Central desta aba. */
@@ -95,7 +87,7 @@ function CartaoCategoria({ c, aberta, aoTocar, idPainel, largo }: { c: Categoria
       className={cn('gap-0 overflow-hidden rounded-cartao p-0 hover:bg-superficie active:bg-trilha',
         aberta ? 'border-acao ring-1 ring-acao hover:border-acao' : 'border-fio hover:border-fio-forte')}>
       <VitrineDoGrupo icone={c.icone} largo={largo} />
-      <span className="flex w-full flex-col gap-0.5 border-t border-fio px-3 py-2.5">
+      <span className="flex w-full flex-col items-center gap-0.5 border-t border-fio px-3 py-2.5 text-center">
         <span className="text-corpo leading-tight font-medium text-tinta">{c.nome}</span>
         {largo && <span className="text-apoio leading-snug text-tinta-apoio">{c.exemplos}</span>}
       </span>
@@ -108,9 +100,10 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   return (
     <div id={id} role="region" aria-label={c.nome} className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie p-3">
-      <div className="flex items-center justify-between">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+        <span aria-hidden />
         <span className="text-apoio font-medium text-tinta-apoio">{c.nome}</span>
-        <Button type="button" variant="outline" size="sm" onClick={aoFechar}>Fechar</Button>
+        <Button type="button" variant="outline" size="sm" onClick={aoFechar} className="justify-self-end">Fechar</Button>
       </div>
       <ul className="grid grid-cols-2 gap-2">
         {c.itens.map((i) => {
@@ -119,13 +112,13 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
           return (
             <li key={i.rota} className="relative">
               <BotaoLinha onClick={() => abrir(i.rota)}
-                className="h-full min-h-21 w-full gap-2 rounded-container border-fio bg-campo p-3 pr-10 hover:border-fio-forte hover:bg-campo active:bg-trilha">
-                <Etiqueta texto={i.sigla} icone={c.icone} pequena />
-                <span className="text-controle leading-snug font-medium text-tinta">{i.nome}</span>
+                className="h-full w-full items-stretch gap-0 overflow-hidden rounded-container border-fio p-0 hover:border-fio-forte hover:bg-superficie active:bg-trilha">
+                <span className={cn('flex h-10 items-center justify-center px-9 font-mono text-secao font-medium tabular-nums', TOM_ITEM[c.icone])}>{i.sigla}</span>
+                <span className="flex min-h-10 flex-1 items-center justify-center px-3 py-2.5 text-center text-controle leading-snug font-medium text-tinta">{i.nome}</span>
               </BotaoLinha>
               {chave && (
                 <Button type="button" variant="ghost" size="icon-sm" onClick={() => alternarFavorito(chave)} aria-pressed={favorito}
-                  aria-label={favorito ? `Tirar ${i.nome} dos favoritos` : `Favoritar ${i.nome}`} className="absolute top-1.5 right-1.5">
+                  aria-label={favorito ? `Tirar ${i.nome} dos favoritos` : `Favoritar ${i.nome}`} className="absolute top-1.25 right-1">
                   <Bookmark className={cn('size-4', favorito ? 'fill-acao text-acao' : 'text-tinta-sussurro')} strokeWidth={1.75} />
                 </Button>
               )}
@@ -133,7 +126,7 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
           )
         })}
       </ul>
-      <Link to="/plantonista?todas=1" className="self-start py-1 text-apoio font-medium text-acao no-underline hover:underline">Ver todas, com busca</Link>
+      <Link to="/plantonista?todas=1" className="self-center py-1 text-apoio font-medium text-acao no-underline hover:underline">Ver todas, com busca</Link>
     </div>
   )
 }
