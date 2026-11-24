@@ -68,3 +68,22 @@ Lotes, todos pela homologação:
 1. **Início novo** (`InicioCelular.tsx`, `src/content/inicioCelular.ts`): saudação, chave Adulto/Criança, busca (abre a Central completa com o texto), Central de Urgências e as categorias. "Urgências" reaproveita os cartões do Guia rápido; as outras listam as ferramentas mais usadas de cada tipo. CID fica de fora até existir a busca fora do atendimento (CM5).
 2. **Abas "Conteúdo" e "Meu plantão"** (CM4; no PR do lote 1, a pedido do RT em 23/11/2026; a aba fica no endereço, `?aba=plantao`): turno, próximo plantão, favoritos e mais usados. O marcador de cada item já grava o favorito desde o lote 1 (pedido do RT na conferência, 23/11/2026), com a mesma chave da Central completa.
 3. **Barra embaixo com 5 itens e botão flutuante de busca** (CM1 e CM7; RT aprovou o lote 2 e pediu o 3 em 23/11/2026): Início, Leitos, Perguntar à IA (abre a busca da Central com o campo em foco), Prontuários e Menu (Agenda e as outras telas). Numa UBS ficam Prontuários, Agenda e Menu. A busca flutuante aparece fora do início, acima das Mensagens. O aviso da troca fica uma semana no aparelho ou até "Entendi". As abas do topo saem, e os guias voltam por "← Início".
+
+## 6. Polimento visual (unslop), 23/11/2026
+
+Auditoria da sessão principal na homologação, com o plugin unslop em modo polimento. A marca e os tokens ficam; nenhuma paleta nova. O RT aprovou a direção e o protótipo com o antes e o depois.
+
+- **Direção:** ferramentas clínicas de bolso para o médico de plantão; caráter sereno, exato, de prontidão; o mundo é o pronto-socorro de madrugada (prontuário, monitor, etiqueta de ampola). Os momentos são o "Iniciar PCR" e as siglas. A assinatura é a sigla como etiqueta de ampola, com a cor do grupo só nela.
+- **Corrigido:**
+  1. saudação no título;
+  2. arco-íris de cartões;
+  3. grade 2×3 sem ritmo;
+  4. setas em todo cartão;
+  5. rótulo em maiúsculas;
+  6. negrito em tudo;
+  7. estrelinhas de IA;
+  8. contraste da aba ativa;
+  9. botão de Mensagens cobrindo os cartões;
+  10. dois "fechar";
+  11. sombra no passar do mouse, inútil no celular.
+- **Mantido:** "Iniciar PCR" vermelho como único bloco de cor forte, as siglas e a barra de baixo.

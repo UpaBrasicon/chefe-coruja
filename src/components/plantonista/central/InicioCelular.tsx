@@ -1,9 +1,6 @@
 import { useId, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import {
-  ArrowUpRight, Baby, Bookmark, ChevronRight, History, Calculator, ChartColumn, FlaskConical, HeartPulse, LayoutGrid, Search, Siren, Skull, Sparkles, User, X,
-  type LucideIcon,
-} from 'lucide-react'
+import { Baby, Bookmark, ChevronRight, History, HeartPulse, Search, User } from 'lucide-react'
 
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
@@ -25,23 +22,24 @@ import { Button } from '@/components/ui/button'
 // do grupo. Adulto primeiro (CM2 = A): o peso e a idade saem do início e são
 // pedidos dentro de cada guia ou ferramenta.
 
-const ICONES: Record<IconeCategoria, LucideIcon> = {
-  urgencias: Siren, doses: FlaskConical, calculadoras: Calculator, escores: ChartColumn, intoxicacao: Skull, todas: LayoutGrid,
-}
-
+// Polimento de 23/11/2026 (unslop, aprovado pelo RT): superfícies neutras com
+// borda fina; a cor do grupo fica só na etiqueta da sigla, como a faixa de uma
+// etiqueta de ampola. O "Iniciar PCR" é o único bloco de cor forte.
 // Classes por extenso para o Tailwind enxergá-las; só tokens do app.
-const TOM: Record<IconeCategoria, { cartao: string; aberto: string; icone: string; nome: string; painel: string; sigla: string }> = {
-  urgencias: { cartao: 'border-critico/30 bg-critico/8 hover:border-critico/60', aberto: 'border-critico bg-critico/15', icone: 'bg-critico text-sobre-acao', nome: 'text-critico', painel: 'border-critico/25 bg-critico/5', sigla: 'bg-critico/10 text-critico' },
-  doses: { cartao: 'border-secao-farmacia/30 bg-secao-farmacia/8 hover:border-secao-farmacia/60', aberto: 'border-secao-farmacia bg-secao-farmacia/15', icone: 'bg-secao-farmacia text-sobre-acao', nome: 'text-secao-farmacia', painel: 'border-secao-farmacia/25 bg-secao-farmacia/5', sigla: 'bg-secao-farmacia/10 text-secao-farmacia' },
-  calculadoras: { cartao: 'border-secao-calculadoras/30 bg-secao-calculadoras/8 hover:border-secao-calculadoras/60', aberto: 'border-secao-calculadoras bg-secao-calculadoras/15', icone: 'bg-secao-calculadoras text-sobre-acao', nome: 'text-secao-calculadoras', painel: 'border-secao-calculadoras/25 bg-secao-calculadoras/5', sigla: 'bg-secao-calculadoras/10 text-secao-calculadoras' },
-  escores: { cartao: 'border-secao-neurologia/30 bg-secao-neurologia/8 hover:border-secao-neurologia/60', aberto: 'border-secao-neurologia bg-secao-neurologia/15', icone: 'bg-secao-neurologia text-sobre-acao', nome: 'text-secao-neurologia', painel: 'border-secao-neurologia/25 bg-secao-neurologia/5', sigla: 'bg-secao-neurologia/10 text-secao-neurologia' },
-  intoxicacao: { cartao: 'border-secao-toxicologia/30 bg-secao-toxicologia/8 hover:border-secao-toxicologia/60', aberto: 'border-secao-toxicologia bg-secao-toxicologia/15', icone: 'bg-secao-toxicologia text-sobre-acao', nome: 'text-secao-toxicologia', painel: 'border-secao-toxicologia/25 bg-secao-toxicologia/5', sigla: 'bg-secao-toxicologia/10 text-secao-toxicologia' },
-  todas: { cartao: 'border-acao/30 bg-acao/8 hover:border-acao/60', aberto: 'border-acao bg-acao/15', icone: 'bg-acao text-sobre-acao', nome: 'text-acao', painel: 'border-acao/25 bg-acao/5', sigla: 'bg-acao/10 text-acao' },
+const FAIXA: Record<IconeCategoria, string> = {
+  urgencias: 'bg-critico', doses: 'bg-secao-farmacia', calculadoras: 'bg-secao-calculadoras',
+  escores: 'bg-secao-neurologia', intoxicacao: 'bg-secao-toxicologia', todas: 'bg-acao',
 }
 
-function saudacao(agora = new Date()) {
-  const h = agora.getHours()
-  return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'
+/** A sigla como etiqueta de ampola: fundo branco, borda fina e a faixa na cor do grupo. */
+function Etiqueta({ texto, icone, pequena }: { texto: string; icone: IconeCategoria; pequena?: boolean }) {
+  return (
+    <span aria-hidden className={cn('inline-flex shrink-0 items-stretch overflow-hidden rounded-controle border border-fio-forte bg-superficie font-mono font-medium text-tinta tabular-nums',
+      pequena ? 'h-6 text-rotulo' : 'h-7 text-apoio')}>
+      <span className={cn('w-1', FAIXA[icone])} />
+      <span className={cn('flex items-center', pequena ? 'px-1.5' : 'px-2')}>{texto}</span>
+    </span>
+  )
 }
 
 /** Ao abrir uma tela pelo início, o lado escolhido vira o paciente da Central desta aba. */
@@ -60,11 +58,11 @@ function ChaveDoLado({ lado }: { lado: LadoInicio }) {
   return (
     <div role="group" aria-label="Paciente: adulto ou criança" className="grid grid-cols-2 gap-1 rounded-container bg-trilha p-1">
       <Button type="button" variant="ghost" aria-pressed={lado === 'adulto'} onClick={() => { if (lado !== 'adulto') definirModo('adulto') }}
-        className={cn(botao, lado === 'adulto' ? 'bg-superficie font-semibold text-acao shadow-sm hover:bg-superficie hover:text-acao' : 'font-medium text-tinta-apoio')}>
+        className={cn(botao, lado === 'adulto' ? 'bg-superficie font-medium text-acao ring-1 ring-fio hover:bg-superficie hover:text-acao' : 'font-normal text-tinta-apoio')}>
         <User className="size-4.5" aria-hidden /> Adulto
       </Button>
       <Button type="button" variant="ghost" aria-pressed={lado === 'crianca'} onClick={() => { if (lado !== 'crianca') definirModo('pediatrico') }}
-        className={cn(botao, lado === 'crianca' ? 'bg-superficie font-semibold text-pediatria shadow-sm hover:bg-superficie hover:text-pediatria' : 'font-medium text-tinta-apoio')}>
+        className={cn(botao, lado === 'crianca' ? 'bg-superficie font-medium text-pediatria ring-1 ring-fio hover:bg-superficie hover:text-pediatria' : 'font-normal text-tinta-apoio')}>
         <Baby className="size-4.5" aria-hidden /> Criança · até 13a 11m
       </Button>
     </div>
@@ -77,75 +75,62 @@ function IniciarPcr({ lado }: { lado: LadoInicio }) {
   const abrir = useAbrir(lado)
   return (
     <BotaoLinha onClick={() => abrir(ROTA_PCR[lado])}
-      className="min-h-18 w-full flex-row items-center gap-3 rounded-cartao border-critico bg-critico p-4 text-sobre-acao hover:border-critico hover:bg-critico">
-      <HeartPulse className="size-7 shrink-0" aria-hidden />
-      <span className="flex flex-1 flex-col">
-        <span className="text-secao font-bold">Iniciar PCR</span>
+      className="min-h-16 w-full flex-row items-center gap-3 rounded-cartao border-critico bg-critico px-4 py-3 text-sobre-acao hover:border-critico hover:bg-critico active:scale-[0.99]">
+      <HeartPulse className="size-6 shrink-0" strokeWidth={1.75} aria-hidden />
+      <span className="flex flex-1 flex-col gap-0.5">
+        <span className="text-secao font-semibold">Iniciar PCR</span>
         <span className="text-apoio opacity-90">{lado === 'crianca' ? 'Guia da parada pelo peso ou pela fita' : 'Cronômetro da parada do adulto'}</span>
       </span>
-      <ArrowUpRight className="size-5 shrink-0" aria-hidden />
     </BotaoLinha>
   )
 }
 
-function CartaoCategoria({ c, aberta, aoTocar, idPainel }: { c: CategoriaInicio; aberta: boolean; aoTocar: () => void; idPainel: string }) {
-  const t = TOM[c.icone]
-  const Icone = ICONES[c.icone]
+function CartaoCategoria({ c, aberta, aoTocar, idPainel, largo }: { c: CategoriaInicio; aberta: boolean; aoTocar: () => void; idPainel: string; largo?: boolean }) {
   return (
-    <BotaoLinha onClick={aoTocar} aria-expanded={c.itens.length ? aberta : undefined} aria-controls={c.itens.length ? idPainel : undefined}
-      className={cn('min-h-31 justify-between gap-3.5 rounded-cartao border-2 p-3.5',
-        aberta ? cn(t.aberto, 'hover:bg-superficie') : t.cartao)}>
-      <span className="flex w-full items-center justify-between">
-        <span className={cn('flex size-10 items-center justify-center rounded-container', t.icone)}>
-          <Icone className="size-5" aria-hidden />
-        </span>
-        {aberta ? <X className="size-4.5 text-tinta" aria-hidden /> : <ArrowUpRight className="size-4.5 text-tinta-apoio" aria-hidden />}
-      </span>
-      <span className="flex flex-col gap-0.5">
-        <span className={cn('text-secao leading-tight font-bold', t.nome)}>{c.nome}</span>
-        <span className="text-rotulo leading-snug text-tinta-apoio">{c.exemplos}</span>
+    <BotaoLinha onClick={aoTocar} aria-expanded={aberta} aria-controls={idPainel}
+      className={cn('gap-3 rounded-cartao p-4 hover:bg-superficie active:bg-trilha',
+        largo ? 'min-h-18 flex-row items-center' : 'min-h-28',
+        aberta ? 'border-acao bg-trilha hover:border-acao hover:bg-trilha' : 'border-fio hover:border-fio-forte')}>
+      <Etiqueta texto={c.sigla} icone={c.icone} />
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-corpo leading-tight font-medium text-tinta">{c.nome}</span>
+        <span className="text-apoio leading-snug text-tinta-apoio">{c.exemplos}</span>
       </span>
     </BotaoLinha>
   )
 }
 
 function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: string; lado: LadoInicio; aoFechar: () => void }) {
-  const t = TOM[c.icone]
   const abrir = useAbrir(lado)
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   return (
-    <div id={id} role="region" aria-label={c.nome} className={cn('flex flex-col gap-2.5 rounded-cartao border p-3', t.painel)}>
+    <div id={id} role="region" aria-label={c.nome} className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie p-3">
       <div className="flex items-center justify-between">
-        <span className="text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">{c.nome}</span>
+        <span className="text-apoio font-medium text-tinta-apoio">{c.nome}</span>
         <Button type="button" variant="outline" size="sm" onClick={aoFechar}>Fechar</Button>
       </div>
-      <ul className="grid grid-cols-2 gap-2.5">
+      <ul className="grid grid-cols-2 gap-2">
         {c.itens.map((i) => {
           const chave = chaveDoItem(i.rota)
           const favorito = !!chave && favoritos.includes(chave)
           return (
             <li key={i.rota} className="relative">
               <BotaoLinha onClick={() => abrir(i.rota)}
-                className="h-full min-h-22 w-full gap-2.5 rounded-cartao border-fio-forte/45 p-3 pr-10 shadow-repouso hover:border-acao hover:bg-superficie hover:shadow-halo">
-                <span aria-hidden className={cn('inline-flex h-7 min-w-8 items-center justify-center rounded-container px-1.5 text-rotulo font-bold', t.sigla)}>{i.sigla}</span>
-                <span className="text-apoio leading-snug font-medium text-tinta">{i.nome}</span>
+                className="h-full min-h-21 w-full gap-2 rounded-container border-fio bg-campo p-3 pr-10 hover:border-fio-forte hover:bg-campo active:bg-trilha">
+                <Etiqueta texto={i.sigla} icone={c.icone} pequena />
+                <span className="text-controle leading-snug font-medium text-tinta">{i.nome}</span>
               </BotaoLinha>
               {chave && (
                 <Button type="button" variant="ghost" size="icon-sm" onClick={() => alternarFavorito(chave)} aria-pressed={favorito}
                   aria-label={favorito ? `Tirar ${i.nome} dos favoritos` : `Favoritar ${i.nome}`} className="absolute top-1.5 right-1.5">
-                  <Bookmark className={cn('size-4.5', favorito ? 'fill-acao text-acao' : 'text-tinta-apoio')} />
+                  <Bookmark className={cn('size-4', favorito ? 'fill-acao text-acao' : 'text-tinta-sussurro')} strokeWidth={1.75} />
                 </Button>
               )}
             </li>
           )
         })}
-        <li>
-          <Link to="/plantonista?todas=1"
-            className="flex h-full min-h-22 items-center justify-center rounded-cartao border border-dashed border-fio-forte p-3 text-center text-apoio font-semibold text-acao no-underline">
-            Ver todas, com busca
-          </Link>
-        </li>
       </ul>
+      <Link to="/plantonista?todas=1" className="self-start py-1 text-apoio font-medium text-acao no-underline hover:underline">Ver todas, com busca</Link>
     </div>
   )
 }
@@ -157,7 +142,7 @@ function LinhaAtalho({ nome, rota, favorito, vezes }: { nome: string; rota: stri
   return (
     <li>
       <Link to={rota}
-        className="flex min-h-13 items-center gap-2.5 rounded-cartao border border-fio-forte/45 bg-superficie px-3.5 py-2.5 text-tinta no-underline shadow-repouso hover:border-acao">
+        className="flex min-h-12 items-center gap-2.5 rounded-cartao border border-fio bg-superficie px-4 py-2.5 text-tinta no-underline hover:border-fio-forte active:bg-trilha">
         {favorito ? <Bookmark className="size-4 shrink-0 fill-acao text-acao" aria-hidden /> : <History className="size-4 shrink-0 text-tinta-apoio" aria-hidden />}
         <span className="min-w-0 flex-1 text-controle font-medium">{nome}</span>
         {!!vezes && <span className="text-rotulo tabular-nums text-tinta-sussurro" title={`Aberta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por você`}>{vezes}×</span>}
@@ -204,7 +189,7 @@ function MeuPlantao() {
 type AbaInicio = 'conteudo' | 'plantao'
 
 export function InicioCelular() {
-  const { perfil } = useAuth()
+  const { unidadeAtiva } = useUnidade()
   const p = usePacienteCentral()
   const navigate = useNavigate()
   const lado: LadoInicio = p.modo === 'pediatrico' ? 'crianca' : 'adulto'
@@ -216,51 +201,60 @@ export function InicioCelular() {
   const trocarAba = (k: AbaInicio) => setParams((p) => { const n = new URLSearchParams(p); if (k === 'plantao') n.set('aba', 'plantao'); else n.delete('aba'); return n }, { replace: true })
   const [busca, setBusca] = useState('')
   const base = useId()
-  const primeiroNome = perfil?.nome_completo?.trim().split(/\s+/)[0]
-
-  const linhas: CategoriaInicio[][] = []
-  for (let i = 0; i < categorias.length; i += 2) linhas.push(categorias.slice(i, i + 2))
+  // ritmo da grade (polimento): Urgências na linha inteira, os outros grupos em pares,
+  // e "Todas as ferramentas" como uma linha simples no fim
+  const grupos = categorias.filter((c) => c.itens.length)
+  const todas = categorias.find((c) => !c.itens.length && c.rota)
+  const linhas: CategoriaInicio[][] = [grupos.slice(0, 1)]
+  for (let i = 1; i < grupos.length; i += 2) linhas.push(grupos.slice(i, i + 2))
 
   return (
-    <div className="flex flex-col gap-4.5">
+    // pb-20: o fim da lista passa acima do botão de Mensagens
+    <div className="flex flex-col gap-4 pb-20">
       <div className="flex flex-col gap-3">
-        <TituloPagina titulo={`${saudacao()}${primeiroNome ? `, ${primeiroNome}` : ''}`} className="mb-0" />
+        <TituloPagina titulo="Central do Médico" descricao={unidadeAtiva?.unidade.nome} className="mb-0" />
         <ChaveDoLado lado={lado} />
       </div>
 
       <form role="search" onSubmit={(e) => { e.preventDefault(); navigate(rotaDaBusca(busca)) }}
-        className="flex h-12 items-center gap-2.5 rounded-cartao border border-fio-forte bg-superficie pr-1.5 pl-3.5 focus-within:border-acao">
-        <Search className="size-5 shrink-0 text-tinta-sussurro" aria-hidden />
+        className="flex h-12 items-center gap-2 rounded-cartao border border-fio-forte bg-superficie pr-1 pl-3 focus-within:border-acao">
+        <Search className="size-4.5 shrink-0 text-tinta-sussurro" strokeWidth={1.75} aria-hidden />
         <input type="search" value={busca} onChange={(e) => setBusca(e.target.value)} maxLength={800}
           aria-label="Buscar droga, conduta, escore ou perguntar à IA" placeholder="Droga, conduta ou escore" autoComplete="off"
           className="min-w-0 flex-1 bg-transparent text-corpo text-tinta outline-none placeholder:text-tinta-sussurro" />
-        <Button type="submit" variant="ghost" size="sm" className="gap-1 bg-acao/10 text-acao">
-          <Sparkles className="size-3.5" aria-hidden /> Buscar
-        </Button>
+        <Button type="submit" variant="outline" size="sm" className="border-0 font-medium text-acao">Buscar</Button>
       </form>
-
 
       <IniciarPcr lado={lado} />
 
-      <Abas<AbaInicio> rotulo="Início" valor={aba} onChange={trocarAba} className="mb-0 [&>button]:min-h-11 [&>button]:px-4 [&>button]:text-controle"
+      {/* abas sublinhadas (polimento): texto escuro na aba ativa, contraste pleno */}
+      <Abas<AbaInicio> rotulo="Início" valor={aba} onChange={trocarAba}
+        className="mb-0 flex-nowrap gap-1 border-b border-fio [&>button]:-mb-px [&>button]:min-h-11 [&>button]:rounded-none [&>button]:border-0 [&>button]:border-b-2 [&>button]:border-transparent [&>button]:bg-transparent [&>button]:px-3 [&>button]:text-corpo [&>button]:text-tinta-apoio [&>button[aria-selected=true]]:border-acao [&>button[aria-selected=true]]:bg-transparent [&>button[aria-selected=true]]:font-medium [&>button[aria-selected=true]]:text-tinta"
         abas={[['conteudo', 'Conteúdo'], ['plantao', 'Meu plantão']]} />
 
       {aba === 'plantao' ? <MeuPlantao /> : (
       <section aria-label="Conteúdo" className="flex flex-col gap-3">
         {linhas.map((par) => {
-          const aberto = par.find((c) => c.id === aberta && c.itens.length)
+          const aberto = par.find((c) => c.id === aberta)
           return (
             <div key={par.map((c) => c.id).join('-')} className="flex flex-col gap-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className={cn('grid gap-3', par.length > 1 && 'grid-cols-2')}>
                 {par.map((c) => (
-                  <CartaoCategoria key={c.id} c={c} aberta={aberta === c.id} idPainel={`${base}-${c.id}`}
-                    aoTocar={() => (c.rota ? navigate(c.rota) : setAberta(aberta === c.id ? null : c.id))} />
+                  <CartaoCategoria key={c.id} c={c} largo={par.length === 1} aberta={aberta === c.id} idPainel={`${base}-${c.id}`}
+                    aoTocar={() => setAberta(aberta === c.id ? null : c.id)} />
                 ))}
               </div>
               {aberto && <PainelCategoria c={aberto} id={`${base}-${aberto.id}`} lado={lado} aoFechar={() => setAberta(null)} />}
             </div>
           )
         })}
+        {todas?.rota && (
+          <Link to={todas.rota}
+            className="flex min-h-12 items-center justify-between rounded-cartao border border-fio bg-superficie px-4 text-corpo text-tinta no-underline hover:border-fio-forte active:bg-trilha">
+            Todas as ferramentas, com busca
+            <ChevronRight className="size-4 text-tinta-sussurro" strokeWidth={1.75} aria-hidden />
+          </Link>
+        )}
       </section>
       )}
 
