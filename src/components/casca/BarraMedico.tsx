@@ -31,8 +31,8 @@ function ItemDaBarra({ item, nota }: { item: ItemNav; nota?: number }) {
   const Icone = item.icone
   if (item.to === ROTA_PERGUNTAR_IA) {
     return (
-      <Link to={item.to} aria-current={marcado ? 'page' : undefined} className={cn(BASE_ITEM, 'font-semibold text-acao')}>
-        <span className={cn('flex h-8 w-12 items-center justify-center rounded-container border', marcado ? 'border-acao bg-acao text-sobre-acao' : 'border-acao/40 bg-acao/10')}>
+      <Link to={item.to} aria-current={marcado ? 'page' : undefined} className={cn(BASE_ITEM, 'font-medium text-acao')}>
+        <span className={cn('flex h-7 w-11 items-center justify-center rounded-controle border border-acao', marcado ? 'bg-acao text-sobre-acao' : 'bg-superficie')}>
           <Icone className="size-5" aria-hidden />
         </span>
         <span className="truncate text-center">{item.rotulo}</span>
@@ -41,7 +41,7 @@ function ItemDaBarra({ item, nota }: { item: ItemNav; nota?: number }) {
   }
   return (
     <Link to={item.to} aria-current={marcado ? 'page' : undefined}
-      className={cn(BASE_ITEM, marcado ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta-apoio')}>
+      className={cn(BASE_ITEM, marcado ? 'bg-acao/10 font-medium text-acao' : 'text-tinta-apoio')}>
       <Icone className="size-5" aria-hidden />
       <span className="truncate text-center">{item.curto ?? item.rotulo}</span>
       {!!nota && <span className="absolute top-0.5 right-1.5 rounded-capsula bg-nota px-1.5 text-rotulo leading-4 font-semibold text-atencao">{nota}</span>}
