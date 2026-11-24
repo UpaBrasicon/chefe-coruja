@@ -9,18 +9,21 @@ import { ALTURA_TELA, LARGURA_TELA, TELAS } from './telas.ts'
 
 const PUBLICO = join(import.meta.dirname, '..', '..', '..', 'public')
 
-/** Largura e altura de um JPEG, lidas do primeiro marcador SOF. */
-function tamanhoJpeg(dados: Buffer): { largura: number; altura: number } {
-  let i = 2
-  while (i < dados.length) {
-    const marcador = dados[i + 1]
-    const comprimento = dados.readUInt16BE(i + 2)
-    if (marcador >= 0xc0 && marcador <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marcador)) {
-      return { altura: dados.readUInt16BE(i + 5), largura: dados.readUInt16BE(i + 7) }
-    }
-    i += 2 + comprimento
+/** Largura e altura de um WebP (RIFF … WEBP), lidas do primeiro bloco. */
+function tamanhoWebp(dados: Buffer): { largura: number; altura: number } {
+  if (dados.toString('ascii', 0, 4) !== 'RIFF' || dados.toString('ascii', 8, 12) !== 'WEBP') {
+    throw new Error('não é WebP')
   }
-  throw new Error('JPEG sem marcador SOF')
+  const bloco = dados.toString('ascii', 12, 16)
+  if (bloco === 'VP8 ') {
+    // com perda: assinatura 9d 01 2a e, em seguida, largura e altura de 14 bits
+    return { largura: dados.readUInt16LE(26) & 0x3fff, altura: dados.readUInt16LE(28) & 0x3fff }
+  }
+  if (bloco === 'VP8X') {
+    // estendido: tela de 24 bits, guardada como valor − 1
+    return { largura: dados.readUIntLE(24, 3) + 1, altura: dados.readUIntLE(27, 3) + 1 }
+  }
+  throw new Error(`bloco WebP não esperado: ${bloco}`)
 }
 
 test('são três telas, com id e rótulo únicos', () => {
@@ -30,12 +33,11 @@ test('são três telas, com id e rótulo únicos', () => {
 })
 
 for (const tela of TELAS) {
-  test(`${tela.id}: JPG de ${LARGURA_TELA} × ${ALTURA_TELA}, abaixo de 250 KB`, () => {
+  test(`${tela.id}: WebP de ${LARGURA_TELA} × ${ALTURA_TELA}, abaixo de 100 KB`, () => {
+    assert.match(tela.arquivo, /\.webp$/)
     const caminho = join(PUBLICO, tela.arquivo)
-    assert.ok(statSync(caminho).size < 250 * 1024)
-    const dados = readFileSync(caminho)
-    assert.equal(dados.readUInt16BE(0), 0xffd8)
-    assert.deepEqual(tamanhoJpeg(dados), { largura: LARGURA_TELA, altura: ALTURA_TELA })
+    assert.ok(statSync(caminho).size < 100 * 1024)
+    assert.deepEqual(tamanhoWebp(readFileSync(caminho)), { largura: LARGURA_TELA, altura: ALTURA_TELA })
   })
 
   test(`${tela.id}: texto alternativo descreve a tela, sem marca de teste`, () => {
