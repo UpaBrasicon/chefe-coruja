@@ -90,23 +90,23 @@ type Dialogo = { tipo: 'iniciar' } | { tipo: 'revisar'; retifica: RevisaoContenc
  * a ativa (selos, ordem médica, revisões, família) com as ações de quem pode,
  * e as anteriores. Sem contenção e sem poder iniciar, não aparece.
  */
-export function Contencao({ pacienteId, semBotao = false }: {
+export function Contencao({ pacienteId, semIniciar = false }: {
   pacienteId: string
   /** Gaveta da enfermagem (CU2): o "Iniciar" fica no menu de ações do cabeçalho (BotaoIniciarContencao). */
-  semBotao?: boolean
+  semIniciar?: boolean
 }) {
   const tela = useTelaContencao(pacienteId)
   const [dialogo, setDialogo] = React.useState<Dialogo | null>(null)
   const [verAnteriores, setVerAnteriores] = React.useState(false)
   const t = tela.data
-  if (!t || (!t.ativa && !t.anteriores.length && (!t.pode_iniciar || semBotao))) return null
+  if (!t || (!t.ativa && !t.anteriores.length && (semIniciar || !t.pode_iniciar))) return null
   const c = t.ativa
 
   return (
     <section aria-label="Contenção mecânica" className="flex flex-col gap-1.5">
       {c ? (
         <CartaoContencao c={c} tela={t} aoDialogo={setDialogo} />
-      ) : t.pode_iniciar && !semBotao ? (
+      ) : t.pode_iniciar && !semIniciar ? (
         <div>
           <Button size="sm" variant="outline" onClick={() => setDialogo({ tipo: 'iniciar' })}><ShieldAlert /> Iniciar contenção mecânica</Button>
         </div>

@@ -59,7 +59,7 @@ export function AbaAgora({ ctx, dados, publico, onIr }: {
 
   return (
     <div className="flex flex-col gap-5">
-      <Contencao pacienteId={ctx.pacienteId} semBotao />
+      <Contencao pacienteId={ctx.pacienteId} semIniciar />
       <Intercorrencias pacienteId={ctx.pacienteId} episodioId={episodioId} internacaoId={internacaoId} semBotao />
 
       <Secao titulo="Medicação">
