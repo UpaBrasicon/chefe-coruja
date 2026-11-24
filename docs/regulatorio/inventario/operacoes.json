@@ -1318,7 +1318,8 @@
         "nome e CNPJ do cliente",
         "unidades e configurações",
         "secretarias de saúde da rede (nome, CNPJ, responsável e contato institucional)",
-        "treinamentos e aceites da implantação"
+        "treinamentos e aceites da implantação",
+        "metas do contrato de gestão de cada unidade (indicador, meta, peso e vigência; sem dado de paciente)"
       ],
       "sensivel": false,
       "acesso": [
@@ -1343,7 +1344,8 @@
         "public.implantacao_treinamentos",
         "public.implantacao_aceites",
         "public.configuracoes_unidade",
-        "public.configuracao_plataforma"
+        "public.configuracao_plataforma",
+        "public.metas_contrato"
       ]
     },
     {
