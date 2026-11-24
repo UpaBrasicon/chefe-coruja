@@ -8,6 +8,7 @@ import { Parametro, ResumoParametros } from '@/components/monitor/Parametros'
 import { Estado, type TomEstado } from '@/components/porta/Estado'
 import { Button } from '@/components/ui/button'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -71,7 +72,7 @@ function Panorama({ unidadeId, ubs = false }: { unidadeId: string; ubs?: boolean
 
   const fora = React.useMemo(() => new Set(data?.fora ?? []), [data?.fora])
   if (error) return <MensagemErro texto={`Falha ao carregar o panorama: ${(error as Error).message}`} />
-  if (isLoading || !data) return <div className="flex h-40 items-center justify-center rounded-cartao border border-fio bg-superficie"><Spinner /></div>
+  if (isLoading || !data) return <EsqueletoLinhas linhas={4} rotulo="Carregando o panorama…" className="rounded-cartao border border-fio bg-superficie" />
 
   const paineis = PAINEIS.filter((p) => !fora.has(chavePainel(p.chave)) && !(ubs && PAINEIS_FORA_DA_UBS.has(p.chave))).map((p) => {
     const medidas = p.medidas(data.n).filter((m) => !fora.has(chaveMedida(p.chave, m.chave)) && !(ubs && m.chave === 'ocupacao'))

@@ -14,6 +14,7 @@ import { Canal, Canais } from '@/components/monitor/Canais'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { BotaoLinha } from '@/components/ui/botao-linha'
+import { Skeleton } from '@/components/ui/skeleton'
 import { hora as horaFmt } from '@/lib/formato'
 
 // Plantão (design_handoff/telas/02): sem faixa — ela é só da página inicial.
@@ -21,8 +22,8 @@ import { hora as horaFmt } from '@/lib/formato'
 
 const hora = (iso: string | null) => (iso ? horaFmt(iso) : null)
 
-function CartaoResumo({ icone: Icone, rotulo, valor, detalhe, cor, onClick }: {
-  icone: typeof BedDouble; rotulo: string; valor: string; detalhe: string; cor: string; onClick: () => void
+function CartaoResumo({ icone: Icone, rotulo, valor, detalhe, cor, carregando, onClick }: {
+  icone: typeof BedDouble; rotulo: string; valor: string; detalhe: string; cor: string; carregando: boolean; onClick: () => void
 }) {
   // Nenhum número de risco sem caminho: o cartão inteiro é o link.
   return (
@@ -31,8 +32,21 @@ function CartaoResumo({ icone: Icone, rotulo, valor, detalhe, cor, onClick }: {
         <Icone className="size-3" aria-hidden />
         {rotulo}
       </span>
-      <span className="mt-1.5 block text-numeral-ok leading-none font-semibold tracking-[-0.03em] text-ok tabular">{valor}</span>
-      <span className="mt-1 block text-rotulo text-tinta-apoio">{detalhe}</span>
+      {carregando ? (
+        // Pedido 1 do desempenho: enquanto a faixa carrega, faixas cinza no lugar do número e do texto
+        // (antes aparecia "—" e "Sem setor na escala agora", que é informação errada nesse instante).
+        // O cartão é um botão: sem região viva aqui; o leitor de tela ouve "Carregando…" no nome do cartão.
+        <span className="block">
+          <span className="sr-only">Carregando…</span>
+          <Skeleton className="mt-1.5 h-[30px] w-16" />
+          <Skeleton className="mt-1 h-3.5 w-2/3" />
+        </span>
+      ) : (
+        <>
+          <span className="mt-1.5 block text-numeral-ok leading-none font-semibold tracking-[-0.03em] text-ok tabular">{valor}</span>
+          <span className="mt-1 block text-rotulo text-tinta-apoio">{detalhe}</span>
+        </>
+      )}
     </BotaoLinha>
   )
 }
@@ -43,7 +57,7 @@ export default function PlantaoHome() {
   const { unidadeAtiva } = useUnidade()
   const faixa = useFaixaPlantonista(unidadeAtiva?.unidade_id)
 
-  const { data: presenca } = useQuery({
+  const { data: presenca, isLoading: carregandoPresenca } = useQuery({
     queryKey: ['plantao-presenca', unidadeAtiva?.unidade_id, perfil?.id],
     enabled: !!unidadeAtiva?.unidade_id && !!perfil,
     queryFn: async () => {
@@ -70,21 +84,34 @@ export default function PlantaoHome() {
 
       <section aria-label="Meu plantão" className="mb-[22px] flex flex-wrap items-center gap-x-5 gap-y-2 rounded-container border border-fio bg-superficie px-4 py-3">
         <span className="rotulo flex items-center gap-1.5 text-turno"><MapPin className="size-3" aria-hidden />Meu plantão</span>
-        {emPlantao ? (
+        {carregandoPresenca ? (
+          // Pedido 1 do desempenho: o selo, os horários e o botão só depois de o banco responder
+          // (antes aparecia "Check-in pendente" e "Fazer check-in" enquanto a presença carregava).
+          <span role="status" className="flex flex-1 items-center gap-x-5">
+            <span className="sr-only">Carregando o check-in…</span>
+            <Skeleton className="h-[22px] w-28 rounded-capsula" />
+            <Skeleton className="h-3.5 w-48" />
+            <Skeleton className="ml-auto h-4 w-24" />
+          </span>
+        ) : emPlantao ? (
           <Badge variant="success">Acesso liberado</Badge>
         ) : presenca?.checkout_em ? (
           <Badge variant="secondary">Plantão encerrado</Badge>
         ) : (
           <Badge variant="warning">Check-in pendente</Badge>
         )}
-        <span className="text-apoio text-tinta-apoio tabular">
-          Check-in {hora(presenca?.checkin_em ?? null) ?? '—'}
-          {presenca?.checkin_em && presenca.checkin_dentro === false && ' · fora do raio'}
-          {' · '}Check-out {hora(presenca?.checkout_em ?? null) ?? '—'}
-        </span>
-        <Button variant="link" size="sm" onClick={() => navigate('/plantao/check-in')} className="ml-auto px-0 font-medium">
-          {emPlantao ? 'Fazer check-out' : 'Fazer check-in'}
-        </Button>
+        {!carregandoPresenca && (
+          <>
+            <span className="text-apoio text-tinta-apoio tabular">
+              Check-in {hora(presenca?.checkin_em ?? null) ?? '—'}
+              {presenca?.checkin_em && presenca.checkin_dentro === false && ' · fora do raio'}
+              {' · '}Check-out {hora(presenca?.checkout_em ?? null) ?? '—'}
+            </span>
+            <Button variant="link" size="sm" onClick={() => navigate('/plantao/check-in')} className="ml-auto px-0 font-medium">
+              {emPlantao ? 'Fazer check-out' : 'Fazer check-in'}
+            </Button>
+          </>
+        )}
       </section>
 
       <div className="mb-[22px] grid gap-3 sm:grid-cols-2">
@@ -94,6 +121,7 @@ export default function PlantaoHome() {
           valor={d ? String(d.pacientes) : '—'}
           detalhe={d?.setores.length ? `nos setores da sua escala agora` : 'Sem setor na escala agora'}
           cor="text-leitos"
+          carregando={faixa.isLoading}
           onClick={() => navigate('/plantao/internacao/pacientes')}
         />
         <CartaoResumo
@@ -102,6 +130,7 @@ export default function PlantaoHome() {
           valor={obs === null ? '—' : formatarDuracao(obs)}
           detalhe={obs === null ? 'Ninguém em observação no seu acesso' : nivelDaObservacao(obs) === 'critico' ? 'maior permanência · acima de 6 h' : 'maior permanência'}
           cor="text-observacao"
+          carregando={faixa.isLoading}
           onClick={() => navigate('/plantao/observacao')}
         />
       </div>

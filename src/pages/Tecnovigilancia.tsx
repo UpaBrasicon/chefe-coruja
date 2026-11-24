@@ -2,7 +2,7 @@ import { Flag } from 'lucide-react'
 
 import { FilaTecnovigilancia, RelatosDaUnidade } from '@/components/clinico/FilaTecnovigilancia'
 import { TituloPagina } from '@/components/monitor/Pagina'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 
@@ -18,7 +18,7 @@ export default function Tecnovigilancia() {
   const rt = papeis?.some((p) => p.tipo === 'medico') ?? false
   const ehGestor = papeisDaUnidade.includes('gestor')
 
-  if (isLoading) return <div className="flex justify-center py-8"><Spinner /></div>
+  if (isLoading) return <EsqueletoLinhas linhas={3} rotulo="Carregando a tecnovigilância…" />
   if (!rt && !ehGestor) {
     return (
       <p className="text-corpo text-tinta-sussurro">

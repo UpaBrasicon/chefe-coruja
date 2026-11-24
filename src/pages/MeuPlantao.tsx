@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { FormularioCheckin } from '@/components/checkin/FormularioCheckin'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { AvisoRascunhosCheckout } from '@/components/documento/AvisoRascunhosCheckout'
@@ -222,9 +222,7 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex h-20 items-center justify-center">
-              <Spinner />
-            </div>
+            <EsqueletoLinhas linhas={3} rotulo="Carregando os registros…" className="px-0 py-0" />
           ) : (presencas ?? []).length === 0 ? (
             <p className="text-apoio text-tinta-sussurro">Nenhum registro de presença ainda.</p>
           ) : (

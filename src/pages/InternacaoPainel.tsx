@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { ListaInternados, type PacienteDaLista } from '@/components/internacao/ListaInternados'
@@ -251,9 +252,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
           <CardContent className="flex flex-col gap-2">
             {erroExportar && <p className="text-apoio text-critico">{erroExportar}</p>}
             {carregandoTransf ? (
-              <div className="flex h-16 items-center justify-center">
-                <Spinner />
-              </div>
+              <EsqueletoLinhas linhas={3} rotulo="Carregando as transferências…" className="px-0 py-0" />
             ) : (transferencias ?? []).length === 0 ? (
               <p className="text-apoio text-tinta-sussurro">Nenhuma transferência registrada.</p>
             ) : (

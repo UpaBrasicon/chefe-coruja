@@ -9,7 +9,7 @@ import { ProcedimentosAps } from '@/components/clinico/ProcedimentosAps'
 import { SinaisVitaisAps } from '@/components/clinico/SinaisVitaisAps'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { rotuloIdade } from '@/domain/idade'
 import { formatarDuracao } from '@/domain/plantao'
@@ -53,7 +53,7 @@ export default function SinaisVitaisUbs() {
     <div className="flex w-full max-w-4xl flex-col gap-4">
       <TituloPagina icone={HeartPulse} titulo="Sinais vitais"
         descricao="Fichas abertas dos consultórios do seu plantão: sinais vitais e procedimentos. O que é registrado aqui entra no prontuário, no hiperdia e no pré-natal." />
-      {fichas.isLoading && <Spinner />}
+      {fichas.isLoading && <EsqueletoLinhas linhas={3} rotulo="Carregando as fichas…" className="px-0" />}
       {fichas.error && <p role="alert" className="text-apoio text-critico">{(fichas.error as Error).message}</p>}
       {fichas.data === null && <Vazio icone={HeartPulse} titulo="Sem plantão agora" texto="Você não está na escala de nenhum consultório agora." />}
       {fichas.data && fichas.data.length === 0 && <Vazio icone={HeartPulse} titulo="Nenhuma ficha aberta" texto="Nenhuma ficha aberta nos consultórios do seu plantão." />}

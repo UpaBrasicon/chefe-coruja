@@ -7,13 +7,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { Navigate } from 'react-router-dom'
 
-import { Spinner } from '@/components/ui/spinner'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 
 import { TIPOS_INTERNACAO, useTiposDaEscala } from './useEnfermagem'
 
 export default function InicioEnfermagem() {
   const { carregando, tipos } = useTiposDaEscala()
-  if (carregando) return <div className="flex justify-center py-10"><Spinner /></div>
+  if (carregando) return <EsqueletoLinhas linhas={4} rotulo="Carregando a sua escala…" />
   const soInternacao = tipos.length > 0 && tipos.every((t) => TIPOS_INTERNACAO.includes(t))
   return <Navigate to={soInternacao ? '/enfermagem/internacao' : '/enfermagem/pronto-socorro'} replace />
 }
