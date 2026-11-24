@@ -61,7 +61,7 @@ function Passo({ n, titulo, feito, aberto, onAlternar, children }: {
 }
 
 /** AL3: um grupo de travas com o que fazer (abrir, cancelar em lote com motivo, notificar ou descartar). */
-function GrupoTrava({ g, pacienteId, onIr }: { g: GrupoTravas; pacienteId: string; onIr?: (aba: 'exames' | 'resumo') => void }) {
+export function GrupoTrava({ g, pacienteId, onIr }: { g: GrupoTravas; pacienteId: string; onIr?: (aba: 'exames' | 'resumo') => void }) {
   const qc = useQueryClient()
   const [aberto, setAberto] = React.useState(false)
   const [motivo, setMotivo] = React.useState('')

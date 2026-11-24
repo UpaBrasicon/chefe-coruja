@@ -3,14 +3,26 @@
 // reavaliar às, desfecho da observação, protocolo e passagem de plantão.
 // Toda regra mora no servidor (migration 20261004000007); aqui só se pede.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useQuery } from '@tanstack/react-query'
+import { useQueries, useQuery } from '@tanstack/react-query'
+import { ChevronDown } from 'lucide-react'
 import * as React from 'react'
 
 import { SeletorMotivoEvasao } from '@/components/porta/MotivoEvasao'
 import type { MotivoEvasao } from '@/lib/evasao'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { publicosDeProtocolo, type FaixaEtaria } from '@/domain/idade'
+import { faixaEtaria, publicosDeProtocolo, type FaixaEtaria } from '@/domain/idade'
+import { dataIso } from '@/lib/formato'
+import { DOCS_INICIAL, type EstadoDocs } from '@/lib/documentosAlta'
+import { horaMais } from '@/lib/observacaoLista'
+import { agruparTravas } from '@/lib/travasAlta'
+import { CartaoAtestado, ReceitaAlta } from '@/components/documentos/AtestadoReceita'
+import { useEmissaoAtestadoReceita } from '@/components/documentos/emissaoAtestadoReceita'
+import { BlocoPacote } from '@/components/internacao/caderno/Alta'
+import { GrupoTrava } from '@/components/internacao/caderno/PassosAlta'
+import { useDiagnosticos } from '@/components/internacao/caderno/diagnosticos'
+import type { Acao as AcaoLeito, Internacao, Pacote } from '@/components/internacao/caderno/comum'
+import { CampoTerminologia } from '@/components/regulacao/NovaSolicitacao'
 import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,8 +72,16 @@ function horaDoDia(hm: string, sentido: 'futuro' | 'passado') {
 // ── reavaliar às ────────────────────────────────────────────────────────────
 export function PainelReavaliar({ linha, acao, fechar, erro }: { linha: Pick<LinhaObservacao, 'internacao_id'>; acao: Acao; fechar: () => void; erro: string | null }) {
   const [hora, setHora] = React.useState('')
+  const agora = useAgora()
   return (
     <Painel erro={erro}>
+      {/* OO1 (RT, 24/11/2026): atalhos, e a hora final escrita */}
+      <div role="group" aria-label="Atalhos da reavaliação" className="flex flex-wrap items-center gap-1.5">
+        {([['+30 min', 30], ['+1 h', 60], ['+2 h', 120]] as const).map(([r, m]) => (
+          <Opcao key={r} ativa={hora === horaMais(agora, m)} onClick={() => setHora(horaMais(agora, m))}>{r}</Opcao>
+        ))}
+        {hora && <span className="text-apoio text-tinta-apoio">reavaliar às {hora}</span>}
+      </div>
       <div className="flex flex-wrap items-end gap-2.5">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor={`reav-${linha.internacao_id}`}>Reavaliar às</Label>
@@ -79,11 +99,63 @@ export function PainelReavaliar({ linha, acao, fechar, erro }: { linha: Pick<Lin
 
 // ── desfecho da observação ──────────────────────────────────────────────────
 // Só usa a internação e o paciente: abre também em "Observações que você abriu".
-export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
-  linha: Pick<LinhaObservacao, 'internacao_id' | 'paciente_id'>; unidadeId: string; acao: Acao; fechar: () => void; erro: string | null
+// OO2 (RT, 24/11/2026), igual ao AL1/AL3 da Internação: o tipo de saída
+// primeiro; as pendências agrupadas com ação; o CID por busca, sugerido da
+// lista de problemas; na alta para casa, receita, atestado e orientações no
+// mesmo passo; na internação, os setores com os leitos livres e, sem nenhum,
+// "Pedir leito na regulação". A chamada continua finalizar_observacao.
+const PARA_CASA: Desfecho[] = ['alta_medica', 'alta_apos_medicacao', 'alta_a_pedido']
+
+/** Receita, atestado e orientações da alta para casa, no mesmo passo do desfecho. */
+function DocumentosParaCasa({ linha, cid }: { linha: Pick<LinhaObservacao, 'internacao_id' | 'paciente_id'> & { nome?: string | null; data_nascimento?: string | null }; cid: string }) {
+  const [estado, setEstado] = React.useState<EstadoDocs>(DOCS_INICIAL)
+  const [aberto, setAberto] = React.useState<'' | 'receita' | 'atestado' | 'orientacoes'>('')
+  const nascimento = linha.data_nascimento ? linha.data_nascimento.slice(0, 10) : null
+  const { erro, emitirAtestado, emitirReceita } = useEmissaoAtestadoReceita({
+    pacienteId: linha.paciente_id, nome: linha.nome ?? '', nascimento, ondePreencherCid: 'escolha o CID de alta acima', estado, setEstado,
+  })
+  const pacotes = useQuery({
+    queryKey: ['pacotes-alta', linha.internacao_id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacotes_alta').select('id, situacao, criado_em, expira_em, tentativas').eq('internacao_id', linha.internacao_id).order('criado_em', { ascending: false })
+      if (error) throw error
+      return (data ?? []) as Pacote[]
+    },
+  })
+  const acaoPacote: AcaoLeito = <T,>(fn: () => Promise<T>) => fn().then((r) => { void pacotes.refetch(); return r }).catch(() => null)
+  const parte = (id: typeof aberto, titulo: string, conteudo: React.ReactNode) => (
+    <div className="flex flex-col gap-2">
+      <Button size="sm" variant="outline" className="self-start" aria-expanded={aberto === id} onClick={() => setAberto(aberto === id ? '' : id)}>
+        <ChevronDown className={cn('transition-transform', aberto === id && 'rotate-180')} aria-hidden /> {titulo}
+      </Button>
+      {aberto === id && conteudo}
+    </div>
+  )
+  return (
+    <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
+      <span className="text-apoio font-semibold text-grafite">Para casa</span>
+      {erro && <span role="alert" className="text-apoio text-critico">{erro}</span>}
+      {parte('receita', 'Receita para casa', (
+        <ReceitaAlta titulo="Receita para casa" faixa={faixaEtaria(nascimento, dataIso())} estado={estado} setEstado={setEstado} onEmitir={() => void emitirReceita()} />
+      ))}
+      {parte('atestado', 'Atestado', <CartaoAtestado estado={estado} setEstado={setEstado} cid={cid} onEmitir={() => void emitirAtestado(cid)} />)}
+      {parte('orientacoes', 'Orientações', (
+        <BlocoPacote i={{ id: linha.internacao_id } as Internacao} pacienteId={linha.paciente_id} pacienteNome={linha.nome ?? ''}
+          lista={pacotes.data ?? []} podeGerar acao={acaoPacote} />
+      ))}
+    </div>
+  )
+}
+
+export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro, irRegulacao }: {
+  linha: Pick<LinhaObservacao, 'internacao_id' | 'paciente_id'> & { nome?: string | null; data_nascimento?: string | null }
+  unidadeId: string; acao: Acao; fechar: () => void; erro: string | null
+  /** OO2: sem leito livre, "Pedir leito na regulação" leva à regulação do paciente */
+  irRegulacao?: () => void
 }) {
   const [desfecho, setDesfecho] = React.useState<Desfecho | ''>('')
-  const [cid, setCid] = React.useState('')
+  // o CID escolhido pelo médico; undefined = ainda não mexeu (vale a sugestão da lista de problemas)
+  const [cidEscolhido, setCidEscolhido] = React.useState<{ codigo: string; rotulo: string } | null | undefined>(undefined)
   const [destino, setDestino] = React.useState('')
   // S4 (A01 P2-2): a regulação desta transferência (undefined = ainda não escolhida)
   const [regulacao, setRegulacao] = React.useState<RegulacaoDoHistorico | null | undefined>(undefined)
@@ -98,27 +170,45 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
   const [leito, setLeito] = React.useState('')
   const [falta, setFalta] = React.useState<string | null>(null)
 
+  // OO2: o CID sugerido da lista de problemas (o principal vigente); o médico confirma ou troca
+  const diagnosticos = useDiagnosticos(linha.internacao_id)
+  const principal = (diagnosticos.data ?? []).find((d) => !d.encerrado_em && d.tipo === 'primario')
+  const sugestao = principal ? { codigo: principal.cid, rotulo: `${principal.cid}${principal.descricao ? ` ${principal.descricao}` : ''}` } : null
+  const cidAtual = cidEscolhido === undefined ? sugestao : cidEscolhido
+  const cid = cidAtual?.codigo ?? ''
+  const cidRotulo = cidAtual?.rotulo ?? ''
+  const cidSugerido = cidEscolhido === undefined && !!sugestao
+
+  const impeditivos = useQuery({
+    queryKey: ['impeditivos', linha.internacao_id],
+    queryFn: async () => (await rpc('impeditivos_alta', { p_internacao: linha.internacao_id })) as { tipo: string; descricao: string; id?: string }[] | null,
+  })
+  const grupos = agruparTravas(impeditivos.data ?? [])
+
   const setores = useQuery({
     queryKey: ['setores-internacao', unidadeId],
     enabled: desfecho === 'internacao',
     queryFn: async () => (await rpc('setores_internacao', { p_unidade: unidadeId })) as { id: string; nome: string }[],
   })
-  const leitos = useQuery({
-    queryKey: ['leitos-livres', setor, linha.paciente_id],
-    enabled: desfecho === 'internacao' && !!setor,
-    queryFn: async () => {
-      // livres + reservados para este paciente (item 12 da Fase 0)
-      const { data, error } = await supabase.rpc('leitos_para_ocupar', { p_setor: setor, p_paciente: linha.paciente_id })
-      if (error) throw error
-      return (data ?? []).map((l) => ({ id: l.id, identificador: l.reservado ? `${l.identificador} (reservado)` : l.identificador }))
-    },
+  // OO2: os leitos livres (e reservados para este paciente) de cada setor
+  const livres = useQueries({
+    queries: (setores.data ?? []).map((s) => ({
+      queryKey: ['leitos-livres', s.id, linha.paciente_id],
+      queryFn: async () => {
+        const { data, error } = await supabase.rpc('leitos_para_ocupar', { p_setor: s.id, p_paciente: linha.paciente_id })
+        if (error) throw error
+        return (data ?? []).map((l) => ({ id: l.id, identificador: l.reservado ? `${l.identificador} (reservado)` : l.identificador }))
+      },
+    })),
   })
+  const leitosDo = (id: string) => livres[(setores.data ?? []).findIndex((s) => s.id === id)]?.data ?? []
+  const nenhumLivre = !!setores.data && setores.data.length > 0 && livres.every((q) => q.isSuccess && (q.data ?? []).length === 0)
 
   const pedeRelato = desfecho ? RELATO_DESFECHO[desfecho] : undefined
   const ehAlta = !!desfecho && desfecho !== 'internacao'
 
   function confirmar() {
-    if (!desfecho) return setFalta('Escolha o desfecho.')
+    if (!desfecho) return setFalta('Escolha o tipo de saída.')
     if (ehAlta && desfecho !== 'evasao' && cid.trim().length < 3) return setFalta('Informe o CID de alta.')
     if (desfecho === 'transferencia' && !regulacao && destino.trim().length < 3) return setFalta('Informe o serviço de destino.')
     if (desfecho === 'transferencia' && !docTransferencia) return setFalta('Emita o documento de transferência antes de transferir.')
@@ -142,36 +232,56 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
   }
 
   return (
-    <Painel titulo="Desfecho da observação" erro={falta ?? erro}>
-      <div className="flex flex-wrap gap-[7px]">
+    <Painel titulo="Tipo de saída" erro={falta ?? erro}>
+      <div role="radiogroup" aria-label="Tipo de saída" className="flex flex-wrap gap-[7px]">
         {DESFECHOS.map(([k, r]) => <Opcao key={k} ativa={desfecho === k} onClick={() => { setDesfecho(k); setFalta(null) }}>{r}</Opcao>)}
       </div>
+
+      {grupos.length > 0 && (
+        <div className="flex flex-col gap-1 rounded-controle border border-atencao/40 bg-superficie px-3 py-2">
+          <span className="text-apoio font-semibold text-tinta">Pendências</span>
+          <ul className="flex flex-col">{grupos.map((g) => <GrupoTrava key={g.chave} g={g} pacienteId={linha.paciente_id} />)}</ul>
+          {(desfecho === 'obito' || desfecho === 'transferencia') && (
+            <span className="text-rotulo text-tinta-apoio">No óbito e na transferência, o que está em aberto é cancelado com o motivo; agravo suspeito precisa da notificação antes.</span>
+          )}
+        </div>
+      )}
+
       {desfecho === 'evasao' && <SeletorMotivoEvasao valor={motivoEvasao} onChange={(v) => { setMotivoEvasao(v); setFalta(null) }} />}
       {desfecho === 'internacao' && (
-        <div className="grid max-w-[520px] gap-2.5 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label>Setor de internação</Label>
-            <Select items={Object.fromEntries((setores.data ?? []).map((s) => [s.id, s.nome]))} value={setor || null} onValueChange={(v) => { setSetor(v ?? ''); setLeito('') }}>
-              <SelectTrigger className="w-full"><SelectValue placeholder={setores.isLoading ? 'Carregando…' : 'Escolha o setor'} /></SelectTrigger>
-              <SelectContent>{(setores.data ?? []).map((s) => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}</SelectContent>
-            </Select>
+        <div className="flex flex-col gap-2">
+          <span className="text-apoio font-medium text-grafite">Setor de internação</span>
+          <div role="radiogroup" aria-label="Setor de internação" className="flex flex-wrap gap-1.5">
+            {(setores.data ?? []).map((s) => {
+              const n = leitosDo(s.id).length
+              return <Opcao key={s.id} ativa={setor === s.id} onClick={() => { setSetor(s.id); setLeito('') }}>{s.nome} · {n ? `${n} livre${n === 1 ? '' : 's'}` : 'sem leito livre'}</Opcao>
+            })}
+            {setores.isLoading && <span className="text-apoio text-tinta-sussurro">Carregando os setores…</span>}
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>Leito (opcional)</Label>
-            <Select items={Object.fromEntries((leitos.data ?? []).map((l) => [l.id, l.identificador]))} value={leito || null} onValueChange={(v) => setLeito(v ?? '')}>
-              <SelectTrigger className="w-full" disabled={!setor}><SelectValue placeholder={setor && leitos.data?.length === 0 ? 'Sem leito livre' : 'Sem leito ainda'} /></SelectTrigger>
-              <SelectContent>{(leitos.data ?? []).map((l) => <SelectItem key={l.id} value={l.id}>{l.identificador}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <span className="text-apoio text-tinta-apoio sm:col-span-2">O box é liberado e o paciente passa ao setor escolhido; o laudo de AIH é feito no documento de internação.</span>
+          {nenhumLivre && (
+            <div className="flex flex-wrap items-center gap-2 text-apoio text-atencao">
+              Nenhum setor com leito livre agora.
+              {irRegulacao && <Button size="sm" variant="outline" onClick={irRegulacao}>Pedir leito na regulação</Button>}
+            </div>
+          )}
+          {setor && leitosDo(setor).length > 0 && (
+            <div role="radiogroup" aria-label="Leito" className="flex flex-wrap items-center gap-1.5">
+              <span className="text-apoio text-tinta-apoio">Leito:</span>
+              {leitosDo(setor).map((l) => <Opcao key={l.id} ativa={leito === l.id} onClick={() => setLeito(leito === l.id ? '' : l.id)}>{l.identificador}</Opcao>)}
+              <span className="text-rotulo text-tinta-sussurro">(opcional: sem escolher, entra sem leito)</span>
+            </div>
+          )}
+          <span className="text-apoio text-tinta-apoio">O box é liberado e o paciente passa ao setor escolhido; o laudo de AIH é feito no paciente, em Mais.</span>
         </div>
       )}
       {ehAlta && (
-        <div className="flex max-w-[170px] flex-col gap-1.5">
-          <Label htmlFor={`cid-${linha.internacao_id}`}>CID de alta{desfecho === 'evasao' ? ' · opcional' : ''}</Label>
-          <Input id={`cid-${linha.internacao_id}`} value={cid} onChange={(e) => setCid(e.target.value.toUpperCase())} placeholder="Ex.: A90" />
+        <div className="flex max-w-[460px] flex-col gap-1">
+          <CampoTerminologia tipo="cid10" escolhido={cidRotulo}
+            rotulo={<>CID de alta{desfecho === 'evasao' ? ' · opcional' : ''}{cidSugerido && <span className="ml-1.5 text-rotulo font-normal text-atencao">· sugerido da lista de problemas, confira</span>}</>}
+            onEscolher={(c, r) => setCidEscolhido({ codigo: c, rotulo: r })} onLimpar={() => setCidEscolhido(null)} />
         </div>
       )}
+      {desfecho && PARA_CASA.includes(desfecho) && <DocumentosParaCasa linha={linha} cid={cid} />}
       {desfecho === 'transferencia' && (
         <RegulacaoDaAlta pacienteId={linha.paciente_id} valor={regulacao} aoEscolher={setRegulacao} />
       )}
@@ -184,11 +294,6 @@ export function PainelDesfecho({ linha, unidadeId, acao, fechar, erro }: {
       {desfecho === 'transferencia' && <PainelTransferencia pacienteId={linha.paciente_id} aoMudar={setDocTransferencia} />}
       {desfecho === 'obito' && (
         <DadosObito id={`ob-${linha.internacao_id}`} valor={obito} onChange={(v) => { setObito(v); setFalta(null) }} agora={agora} />
-      )}
-      {(desfecho === 'obito' || desfecho === 'transferencia') && (
-        <span className="text-apoio text-tinta-apoio">
-          Exames sem resultado, pareceres, passagens de plantão e pendências em aberto são cancelados com o motivo. Agravo suspeito precisa da notificação antes.
-        </span>
       )}
       {pedeRelato && (
         <div className="flex flex-col gap-1.5">
@@ -221,9 +326,21 @@ export function PainelEscolherProtocolo({ linha, faixa, acao, fechar, erro }: {
   })
   // sem data de nascimento, só os de público "todos" (nem adulto nem pediátrico)
   const publicos = publicosDeProtocolo(faixa)
-  const opcoes = (catalogo.data ?? []).filter((p) => publicos.includes(p.publico))
+  // OO3 (RT, 24/11/2026): busca, e uma linha com quantos há e quem cadastra
+  const [busca, setBusca] = React.useState('')
+  const termo = busca.trim().toLowerCase()
+  const daIdade = (catalogo.data ?? []).filter((p) => publicos.includes(p.publico))
+  const opcoes = daIdade.filter((p) => !termo || `${p.sigla} ${p.nome}`.toLowerCase().includes(termo))
   return (
     <Painel titulo="Inserir no protocolo" erro={erro}>
+      {catalogo.data && (
+        <span className="text-rotulo text-tinta-sussurro">
+          {daIdade.length} {daIdade.length === 1 ? 'protocolo' : 'protocolos'} com fonte na unidade para esta idade · quem cadastra: Gestor › Protocolos
+        </span>
+      )}
+      {daIdade.length > 3 && (
+        <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar protocolo pela sigla ou pelo nome" aria-label="Buscar protocolo" />
+      )}
       <div className="flex flex-wrap gap-[7px]">
         {opcoes.map((p) => (
           <Opcao key={p.sigla} ativa={false} onClick={() => void acao(() => rpc('observacao_iniciar_protocolo', { p_internacao: linha.internacao_id, p_sigla: p.sigla }))}>
