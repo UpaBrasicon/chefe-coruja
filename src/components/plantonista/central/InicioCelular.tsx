@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Baby, Bookmark, ChevronRight, ClipboardList, History, HeartPulse, Search, User, type LucideIcon } from 'lucide-react'
 import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
+import { MinhasAnotacoes } from '@/components/plantao/MinhasAnotacoes'
 
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
@@ -169,6 +170,8 @@ function MeuPlantao() {
       )}
       {/* pedido 8 (PS4): o médico divide o descanso do plantão; a UBS não tem plantão noturno */}
       {unidadeAtiva?.unidade.tipo !== 'ubs' && <DescansoDoPlantao unidadeId={unidadeAtiva?.unidade_id} podeDividir />}
+      {/* pedido 7 (AN1 a AN4 = A): lembretes do médico, sem dado de paciente */}
+      <MinhasAnotacoes />
       <SessaoAssinatura />
       <section aria-label="Favoritos" className="flex flex-col gap-2">
         <TituloSecao className="mb-0">Favoritos</TituloSecao>

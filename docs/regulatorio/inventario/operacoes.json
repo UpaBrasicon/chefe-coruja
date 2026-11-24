@@ -919,6 +919,39 @@
       ]
     },
     {
+      "id": "anotacoes-medico",
+      "nome": "Anotações pessoais do médico",
+      "papel": "operador",
+      "finalidade": "Lembretes do próprio médico durante o plantão (pedido 7), sem dado de paciente.",
+      "base_legal": [
+        "art. 7º, V (execução de contrato)"
+      ],
+      "titulares": [
+        "profissionais"
+      ],
+      "dados": [
+        "texto curto do lembrete, marcado como feito ou fixado"
+      ],
+      "sensivel": false,
+      "acesso": [
+        "o próprio médico"
+      ],
+      "local": [
+        "Supabase (São Paulo)"
+      ],
+      "prazo": {
+        "guarda": "30 dias depois da última mudança",
+        "base": "decisão do RT de 23/11/2026 (AN3 = A), minimização",
+        "descarte": "rotina diária apaga o que venceu"
+      },
+      "seguranca": [
+        "a tela avisa e pede confirmação quando o texto parece ter CPF, Cartão SUS ou data de nascimento"
+      ],
+      "tabelas": [
+        "public.anotacoes_medico"
+      ]
+    },
+    {
       "id": "comunicacao",
       "nome": "Comunicação interna da equipe",
       "papel": "operador",

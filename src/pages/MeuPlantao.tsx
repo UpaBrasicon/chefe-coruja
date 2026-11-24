@@ -8,6 +8,7 @@ import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { obterPosicao } from '@/lib/geolocalizacao'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
+import { MinhasAnotacoes } from '@/components/plantao/MinhasAnotacoes'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -154,6 +155,9 @@ export default function MeuPlantao({ embutido = false }: { embutido?: boolean } 
       {sucesso && <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{sucesso}</div>}
 
       <PassagensDoPlantao />
+
+      {/* pedido 7 (AN1 a AN4 = A, RT 23/11/2026): lembretes do médico, sem dado de paciente */}
+      {(papelAtivo === 'plantonista' || papelAtivo === 'telemedicina') && <MinhasAnotacoes />}
 
       {/* pedido 8 (PS4 = divisão igual do RT): o médico de plantão divide o descanso */}
       {unidadeAtiva?.unidade.tipo !== 'ubs' && <DescansoDoPlantao unidadeId={unidadeId} podeDividir={papelAtivo === 'plantonista'} />}
