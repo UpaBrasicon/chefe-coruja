@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Activity, BedDouble, Hourglass, MapPin } from 'lucide-react'
+import { Activity, BedDouble, Hourglass, MapPin, RotateCw } from 'lucide-react'
 
 import { ehSecaoDireta, SECOES_PLANTAO } from '@/content/plantaoRegistry'
 import { useAuth } from '@/contexts/AuthContext'
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Canal, Canais } from '@/components/monitor/Canais'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Skeleton } from '@/components/ui/skeleton'
 import { hora as horaFmt } from '@/lib/formato'
@@ -57,7 +58,14 @@ export default function PlantaoHome() {
   const { unidadeAtiva } = useUnidade()
   const faixa = useFaixaPlantonista(unidadeAtiva?.unidade_id)
 
-  const { data: presenca, isLoading: carregandoPresenca } = useQuery({
+  const {
+    data: presenca,
+    isLoading: carregandoPresenca,
+    isError: erroPresenca,
+    error: falhaPresenca,
+    isFetching: lendoPresenca,
+    refetch: lerPresencaDeNovo,
+  } = useQuery({
     queryKey: ['plantao-presenca', unidadeAtiva?.unidade_id, perfil?.id],
     enabled: !!unidadeAtiva?.unidade_id && !!perfil,
     queryFn: async () => {
@@ -93,6 +101,15 @@ export default function PlantaoHome() {
             <Skeleton className="h-3.5 w-48" />
             <Skeleton className="ml-auto h-4 w-24" />
           </span>
+        ) : erroPresenca ? (
+          // Item 34 do BACKLOG (pergunta do #1103): se a leitura falhou, a pessoa não sabe se já
+          // fez o check-in. Nada de selo de pendente nem de botão de check-in: o aviso e "Tentar de novo".
+          <>
+            <MensagemErro formato="linha" erro={falhaPresenca} acao="ler o seu check-in" className="mt-0 text-apoio" />
+            <Button variant="link" size="sm" disabled={lendoPresenca} onClick={() => void lerPresencaDeNovo()} className="ml-auto px-0 font-medium">
+              <RotateCw aria-hidden className={cn(lendoPresenca && 'animate-spin')} /> {lendoPresenca ? 'Tentando…' : 'Tentar de novo'}
+            </Button>
+          </>
         ) : emPlantao ? (
           <Badge variant="success">Acesso liberado</Badge>
         ) : presenca?.checkout_em ? (
@@ -100,7 +117,7 @@ export default function PlantaoHome() {
         ) : (
           <Badge variant="warning">Check-in pendente</Badge>
         )}
-        {!carregandoPresenca && (
+        {!carregandoPresenca && !erroPresenca && (
           <>
             <span className="text-apoio text-tinta-apoio tabular">
               Check-in {hora(presenca?.checkin_em ?? null) ?? '—'}
