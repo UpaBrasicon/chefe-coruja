@@ -2415,16 +2415,18 @@ Resultado do diagnóstico: as guardas de novembro passam (744/744), uma regress�
 
 | # | Item | PR | Estado | Prioridade |
 |---|---|---|---|---|
-| 34.F1 | Login mais rápido no 4G: casca sob demanda, pré-carga do Login e da fonte, orçamento do pacote no CI (pedidos 31, 6 e 10). JS de entrada de 358 para 273 KB gzip | #1104 | Na homologação, CI verde; espera ok produção | P2 |
-| 34.F2 | Esqueletos no lugar do "Carregando…"; o `/plantao` deixa de mostrar "Check-in pendente" enquanto carrega (pedido 1) | #1103 | Na homologação, CI verde; espera ok produção | P2 |
-| 34.F3 | Colunas explícitas no lugar de `select('*, …')` e guarda mais rígida (pedido 27) | #1099 | Na homologação, CI verde; espera ok produção | P3 |
-| 34.F4 | Espera de 300 ms nas quatro buscas que faltavam (pedido 3) | #1097 | Na homologação, CI verde; espera ok produção | P3 |
-| 34.F5 | `precache.json` sem arquivo inexistente (um 404 a cada abertura) | #1100 | Na homologação, CI verde; espera ok produção | P3 |
-| 34.F6 | CSP sem Google Fonts e roteiro da borda em `infra/cloudflare.md` (pedidos 7, 10 e 14). Painel da Cloudflare: ação do RT | #1098 | Na homologação, CI verde; espera ok produção | P3 |
-| 34.F7 | Tempo-limite e nova tentativa só em consulta no assinador ICP-Brasil (pedido 18) | #1101 | Na homologação, CI verde; espera ok produção | P2 antes de ligar a LG7 |
-| 34.F8 | Índices das tabelas do aviso de sepse (pedido 26), migration `20270419000020` | #1096 | Migration aplicada na homologação, CI verde; produção espera ok produção da migration | P3 |
-| 34.F9 | Sete arquivos órfãos fora de `public/`, telas da página pública em WebP e ícone menor (pedidos 11 e 5) | #1102 | Na homologação, CI verde; espera ok produção | P3 |
-| 34.F10 | `meta description` na página `/` (pedido 22, opção conservadora) | #1105 | Na homologação, CI verde; espera ok produção | P3 |
+| 34.F1 | Login mais rápido no 4G: casca sob demanda, pré-carga do Login e da fonte, orçamento do pacote no CI (pedidos 31, 6 e 10). JS de entrada de 358 para 273 KB gzip | #1104 | Na produção em 24/11/2026 (ok do RT) | P2 |
+| 34.F2 | Esqueletos no lugar do "Carregando…"; o `/plantao` deixa de mostrar "Check-in pendente" enquanto carrega (pedido 1) | #1103 | Na produção em 24/11/2026 (ok do RT) | P2 |
+| 34.F3 | Colunas explícitas no lugar de `select('*, …')` e guarda mais rígida (pedido 27) | #1099 | Na produção em 24/11/2026 (ok do RT) | P3 |
+| 34.F4 | Espera de 300 ms nas quatro buscas que faltavam (pedido 3) | #1097 | Na produção em 24/11/2026 (ok do RT) | P3 |
+| 34.F5 | `precache.json` sem arquivo inexistente (um 404 a cada abertura) | #1100 | Na produção em 24/11/2026 (ok do RT) | P3 |
+| 34.F6 | CSP sem Google Fonts e roteiro da borda em `infra/cloudflare.md` (pedidos 7, 10 e 14). Painel da Cloudflare: ação do RT | #1098 | Na produção em 24/11/2026 (ok do RT) | P3 |
+| 34.F7 | Tempo-limite e nova tentativa só em consulta no assinador ICP-Brasil (pedido 18) | #1101 | Na produção em 24/11/2026 (ok do RT) | P2 antes de ligar a LG7 |
+| 34.F8 | Índices das tabelas do aviso de sepse (pedido 26), migration `20270419000020` | #1096 | Na produção em 24/11/2026 (ok do RT): migration aplicada antes do merge | P3 |
+| 34.F9 | Sete arquivos órfãos fora de `public/`, telas da página pública em WebP e ícone menor (pedidos 11 e 5) | #1102 | Na produção em 24/11/2026 (ok do RT) | P3 |
+| 34.F10 | `meta description` na página `/` (pedido 22, opção conservadora) | #1105 | Na produção em 24/11/2026 (ok do RT) | P3 |
+
+**Concluído em 24/11/2026:** ok produção do RT para os dez; migration 20270419000020 aplicada na produção e PRs mesclados (#1099, #1103, #1104, #1100, #1096, #1097, #1098, #1101, #1102, #1105). Fica com o RT: as duas ações no painel da Cloudflare (F6) e as perguntas abaixo, todas feitas na opção conservadora.
 
 Perguntas para o RT (opções e recomendação em cada PR e no ITEM-34): P2 pré-carga do Login (feito A); P3 página `/` pré-desenhada (feito B, só meta); P4 Web Analytics da Cloudflare (recomendado desligar no painel); P5 cancelar a busca anterior (feito A, só espera); P6 gatilho dos itens 8, 9 e resto do 16; P7 orçamento do pacote (hoje só avisa; A = falhar acima de +5%); texto da `meta description`; prazos do assinador; erro de leitura do check-in no `/plantao` (recomendado mensagem e "tentar de novo" em PR à parte); chave de cache da busca de medicamento compartilhada entre favoritos e Receituário (recomendado renomear em PR à parte).
 
