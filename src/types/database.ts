@@ -13926,6 +13926,11 @@ export type Database = {
         Returns: string
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
+      registrar_uso_app: {
+        Args: { p_unidade: string; p_papel: string; p_evento: string; p_detalhe?: string }
+        Returns: undefined
+      }
+      uso_app_painel: { Args: { p_dias?: number }; Returns: Json }
       relatorio_intercorrencias: { Args: { p_ate: string; p_de: string; p_unidade: string }; Returns: Json }
       relatorio_contencoes: { Args: { p_ate: string; p_de: string; p_unidade: string }; Returns: Json }
       remover_fracionamento: { Args: { p_plantao: string }; Returns: undefined }
