@@ -74,6 +74,8 @@ test('folha: única com um grupo por setor, ou uma folha por setor', () => {
   assert.equal(u.pedido.indicacao, 'Febre')
   assert.equal(u.pedido.cid, 'A41.9')
   assert.equal('texto' in u.pedido, false)
+  // o servidor recusa o documento sem `itens` ("Marcar ao menos um exame")
+  assert.deepEqual(u.pedido.itens, ['Hemograma', 'ECG'])
   const s = conteudoDaFolha(ex, 'setor', { urgente: false, indicacao: 'Dor', cid: null, obs: ' sem contraste ' })
   assert.equal(s.pedido.folhas.length, 2)
   assert.equal(s.pedido.folhas[1].documento, 'Solicitação de métodos gráficos (ECG)')
