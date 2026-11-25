@@ -169,3 +169,16 @@ test('painel da recepção: aguardando à vista, já registrados recolhidos', ()
   assert.deepEqual(r.aguardando.map((e) => e.id), ['b', 'c'])
   assert.deepEqual(r.resolvidos.map((e) => e.id), ['a', 'd', 'e'])
 })
+
+// RT, 25/11/2026 (teste de fluxo A, A-10): a recepção vê a ficha do envio
+// (identificação, origem, hora); o resumo clínico é da enfermagem e do médico.
+test('o resumo clínico do envio não vai para a recepção', () => {
+  const painel = readFileSync('src/components/encaminhamento/VindoDaUbs.tsx', 'utf8')
+  assert.doesNotMatch(painel, /e\.motivo|resumo\.soap|resumo\.sinais|resumo\.queixa|cor_escuta/)
+  const sql = readFileSync('supabase/migrations/20270426000011_envio_upa_resumo_so_clinico.sql', 'utf8').replace(/\r/g, '')
+  assert.match(sql, /unnest\(ARRAY\['enfermeiro', 'tecnico_enfermagem', 'plantonista'\]\)/)
+  assert.match(sql, /'motivo', CASE WHEN q\.clinico THEN x\.motivo END/)
+  assert.match(sql, /ELSE jsonb_build_object\('paciente', x\.resumo -> 'paciente'\) END/)
+  // a ficha da UPA só mostra o bloco quando o resumo veio
+  assert.match(readFileSync('src/components/encaminhamento/ResumoDaUbs.tsx', 'utf8'), /e\.resumo_clinico === false/)
+})

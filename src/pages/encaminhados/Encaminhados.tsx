@@ -183,14 +183,15 @@ function DetalheEnvio({ e }: { e: EnvioUpa }) {
     <section aria-label="Rastreio do envio" className="flex flex-col gap-3 px-5 py-4">
       <span className="rotulo flex items-center gap-1.5 text-tinta-sussurro"><Ambulance className="size-3.5" aria-hidden /> Envio à UPA nº {e.numero}</span>
       <TituloSecao className="mb-0" extra={p.data_nascimento ? rotuloIdade(p.data_nascimento, dataIso()) : undefined}>{nomeDoEnvio(e)}</TituloSecao>
-      <p className="text-controle text-tinta-apoio">{e.motivo} · <span className="text-tinta-sussurro">{e.unidade_destino}</span></p>
+      <p className="text-controle text-tinta-apoio">{e.motivo ? `${e.motivo} · ` : ''}<span className="text-tinta-sussurro">{e.unidade_destino}</span></p>
       <Trilha etapas={etapasDoEnvio(e, diaMesHora)} />
-      <div className="rounded-container border border-fio px-3.5 py-2.5 text-apoio text-tinta-apoio">
+      {/* RT, 25/11/2026: o resumo clínico só para enfermagem e médico; os demais veem o rastreio */}
+      {e.resumo_clinico !== false && <div className="rounded-container border border-fio px-3.5 py-2.5 text-apoio text-tinta-apoio">
         <span className="rotulo text-tinta-sussurro">Resumo enviado</span>
         {soap?.avaliacao && <p><strong className="text-tinta">A</strong> {soap.avaliacao}{soap.cid ? ` · CID ${soap.cid}` : ''}</p>}
         {soap?.objetivo && <p><strong className="text-tinta">O</strong> {soap.objetivo}</p>}
         {!soap && <p>{e.resumo.queixa ?? 'Sem SOAP registrado no envio (veio da escuta inicial).'}</p>}
-      </div>
+      </div>}
       {e.situacao === 'enviado' && (
         <div><Button size="sm" variant="outline" onClick={() => setCancelar(true)}><X /> Cancelar o envio</Button></div>
       )}
