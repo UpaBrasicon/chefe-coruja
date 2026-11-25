@@ -55,12 +55,14 @@ export default function ProntoSocorroEnfermagem() {
 
   const triados = useQuery({
     queryKey: ['enfermagem-ps-triados', unidadeId, meusSetores],
-    enabled: meusSetores.length > 0,
+    enabled: !!unidadeId && meusSetores.length > 0,
     refetchInterval: 20_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('episodios')
         .select('id, paciente_id, setor_id, cor_atual, classificado_em, queixa, publico, prioridades_legais, atendimento_iniciado_em, reavaliar_em, paciente:pacientes(nome, nome_social, data_nascimento)')
+        // só a unidade ativa: a escala pode ter setor de outra unidade da pessoa (teste de fluxo, 25/11/2026)
+        .eq('unidade_id', unidadeId!)
         .in('setor_id', meusSetores)
         .eq('etapa', 'atendimento')
       if (error) throw error
