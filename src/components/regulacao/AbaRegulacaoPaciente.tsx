@@ -10,6 +10,9 @@
 // "Novo pedido" (RT, 24/11/2026): o formulário abre aqui mesmo, com o
 // paciente já escolhido, e volta a esta aba com o pedido novo aberto; nada
 // daqui leva à página Regulação, que o médico não tem no menu.
+// Fora do plantão (decisão do RT de 25/11/2026, B-07): o servidor recusa as
+// ações do médico e do NIR da origem; a aba avisa antes, com a frase do
+// servidor, e desliga os botões (regulacao_por_que_nao_ajo, 20270426000020).
 // Migration 20270421000040_regulacao_conversa_nir.sql.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -17,9 +20,11 @@ import { ChevronDown, Plus, Waypoints } from 'lucide-react'
 import * as React from 'react'
 
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { AvisoPlantao, AvisoPlantaoOrigem, PlantaoOrigem } from '@/components/regulacao/AvisoPlantao'
 import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
 import { AvisoEnviado, NovoPedidoPaciente, type PedidoEnviado } from '@/components/regulacao/NovaSolicitacao'
 import { PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -62,6 +67,16 @@ const EVENTOS: Record<string, string> = {
 export function AbaRegulacaoPaciente({ pacienteId, unidadeId: unidadeProp }: { pacienteId: string; unidadeId?: string }) {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeProp ?? unidadeAtiva?.unidade_id ?? ''
+  return (
+    <PlantaoOrigem unidadeId={unidadeId} pacienteId={pacienteId}>
+      <RegulacaoDoPaciente pacienteId={pacienteId} unidadeId={unidadeId} />
+    </PlantaoOrigem>
+  )
+}
+
+function RegulacaoDoPaciente({ pacienteId, unidadeId }: { pacienteId: string; unidadeId: string }) {
+  // B-07: nulo = pode agir; senão, a frase do servidor
+  const { motivo: foraDoPlantao } = usePlantaoOrigem()
   const lista = useQuery({
     queryKey: ['regulacao-pacientes', 'paciente', unidadeId, pacienteId],
     enabled: !!unidadeId && !!pacienteId,
@@ -91,11 +106,12 @@ export function AbaRegulacaoPaciente({ pacienteId, unidadeId: unidadeProp }: { p
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="flex items-center gap-2 text-corpo font-medium text-tinta"><Waypoints className="size-4" aria-hidden /> Regulação</h3>
         {lista.data?.pode_solicitar && pedidos.length > 0 && (
-          <Button size="sm" variant="outline" className="ml-auto" onClick={() => { setEnviado(null); setNovo(true) }}>
+          <Button size="sm" variant="outline" className="ml-auto" disabled={!!foraDoPlantao} title={foraDoPlantao ?? undefined} onClick={() => { setEnviado(null); setNovo(true) }}>
             <Plus /> Novo pedido
           </Button>
         )}
       </div>
+      <AvisoPlantaoOrigem />
       {enviado && <AvisoEnviado enviada={enviado} />}
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} />
         : pedidos.length === 0 ? (
@@ -108,7 +124,7 @@ export function AbaRegulacaoPaciente({ pacienteId, unidadeId: unidadeProp }: { p
             </span>
             <span className="text-tinta-apoio">O pedido já leva o quadro do prontuário (última evolução, sinais vitais, exames e prescrição) para você revisar.</span>
             {lista.data?.pode_solicitar && (
-              <Button size="sm" className="self-start" onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Novo pedido</Button>
+              <Button size="sm" className="self-start" disabled={!!foraDoPlantao} title={foraDoPlantao ?? undefined} onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Novo pedido</Button>
             )}
           </div>
         ) : (
@@ -207,14 +223,18 @@ export function ResponderPergunta({ id, aoFim }: { id: string; aoFim: () => void
     },
     onSuccess: () => { setResposta(''); aoFim() },
   })
+  // B-07 (RT, 25/11/2026): fora do plantão a origem não responde; a recusa do servidor vira aviso
+  const plantao = usePlantaoOrigem(enviar.error)
+  const pode = !enviar.isPending && resposta.trim().length >= 5 && !plantao.motivo
   return (
-    <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); enviar.mutate() }}>
+    <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); if (pode) enviar.mutate() }}>
       <label htmlFor={`resp-aba-${id}`} className="font-medium text-tinta-apoio">Resposta à pergunta da central</label>
       <Textarea id={`resp-aba-${id}`} value={resposta} onChange={(e) => setResposta(e.target.value)} />
       <div className="flex items-center gap-2">
-        <Button type="submit" size="sm" disabled={enviar.isPending || resposta.trim().length < 5}>Responder</Button>
-        <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
+        <Button type="submit" size="sm" disabled={!pode} title={plantao.motivo ?? undefined}>Responder</Button>
+        <MensagemErro texto={enviar.error && !plantao.recusa ? (enviar.error as Error).message : null} />
       </div>
+      <AvisoPlantao texto={plantao.recusa} />
     </form>
   )
 }

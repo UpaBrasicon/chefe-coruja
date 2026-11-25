@@ -21,6 +21,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { useMotivoPlantaoOrigem, usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
@@ -215,6 +217,9 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
   }
 
   const totalAnexos = arquivos.length + docsEscolhidos.length
+  // B-07 (RT, 25/11/2026): fora do plantão o servidor recusa o pedido do médico e do NIR;
+  // o formulário avisa antes, com a frase do servidor, e desliga o envio
+  const foraDoPlantao = useMotivoPlantaoOrigem(unidadeId, paciente?.id)
   const enviar = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.rpc('regulacao_solicitar', {
@@ -270,6 +275,7 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       aoEnviar(enviado)
     },
   })
+  const { recusa: recusaPlantao } = usePlantaoOrigem(enviar.error)
   // regra do RT (24/11/2026): o CID precisa estar na lista do procedimento no SIGTAP, quando ela existe
   const { conflito: conflitoCidProc } = useConflitoCid(f.procedimento, f.cid)
   // o destino é sempre da regulação: "unidade de destino" não entra no que falta
@@ -510,9 +516,10 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
         </Campo>
       )}
 
-      <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
+      <AvisoPlantao texto={foraDoPlantao ?? recusaPlantao} />
+      <MensagemErro texto={enviar.error && !recusaPlantao ? (enviar.error as Error).message : null} />
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={() => enviar.mutate()} disabled={faltas.length > 0 || enviar.isPending}>
+        <Button onClick={() => enviar.mutate()} disabled={faltas.length > 0 || enviar.isPending || !!foraDoPlantao} title={foraDoPlantao ?? undefined}>
           {enviar.isPending ? <Spinner /> : <Send className="size-4" />} Enviar à central
         </Button>
         {faltas.length > 0 && <span className="text-atencao">Falta: {faltas.join(', ')}.</span>}
@@ -552,6 +559,7 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         {enviada && <AvisoEnviado enviada={enviada} />}
+        <AvisoPlantao texto={foraDoPlantao} />
 
         {/* paciente */}
         {paciente ? (
