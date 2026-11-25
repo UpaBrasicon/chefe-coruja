@@ -27,7 +27,8 @@ import { AnexosRegulacao, EscolherDocumento } from '@/components/regulacao/Anexo
 import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
 import { BlocoDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { AvisoEnviado, NovoPedidoPaciente, type PedidoEnviado } from '@/components/regulacao/NovaSolicitacao'
-import { PrazosDoPedido, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
+import { EvolucaoPedidoNir, type EvolucaoNir } from '@/components/nir/EvolucaoPedidoNir'
+import { SeloSla } from '@/components/regulacao/SlaRegulacao'
 import { ROTULO_DOCUMENTO } from '@/components/documento/documentos'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -41,7 +42,7 @@ import {
   type ContextoLeito, type MotivoPendencia, type PendenciaUnidade,
 } from '@/lib/nirPainel'
 import { CARATER, PRIORIDADES, STATUS, TIPOS_LEITO, TRANSPORTES, prioridadeEfetiva, resumoPedido, type Sla, type StatusRegulacao } from '@/lib/regulacao'
-import { montarLinhaDoTempo, temposComAtual, type EventoPedido } from '@/lib/regulacaoLinhaTempo'
+import { montarLinhaDoTempo, temposComAtual, type EventoPedido, type TempoStatus } from '@/lib/regulacaoLinhaTempo'
 import { esperaAOrigem, type PacienteRegulacao, type PedidoResumo } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -49,8 +50,8 @@ import { cn } from '@/lib/utils'
 type Detalhe = PedidoDestino & {
   status: StatusRegulacao; sla: Sla | null
   eventos?: EventoPedido[]
-  tempos?: React.ComponentProps<typeof PrazosDoPedido>['tempos']
-  evolucoes?: Evolucao[]; pode_evoluir?: boolean
+  tempos?: TempoStatus[]
+  evolucoes?: EvolucaoNir[]; pode_evoluir?: boolean
   quadro_clinico?: string | null; cid_descricao?: string | null; isolamento_tipo?: string | null
   vulnerabilidades?: string[] | null; medico_assistente?: string | null; solicitante?: string | null
 }
@@ -297,7 +298,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
               </dl>
             </section>
             {d.isLoading ? <Spinner /> : s && (
-              <PrazosDoPedido id={p.id} sla={s.sla} tempos={temposComAtual(s.tempos ?? [], s.status)} evolucoes={s.evolucoes ?? []}
+              <EvolucaoPedidoNir id={p.id} sla={s.sla} status={s.status} tempos={temposComAtual(s.tempos ?? [], s.status)} evolucoes={s.evolucoes ?? []}
                 podeEvoluir={podeEvoluir} aoFim={() => recarregar(p.id)} pedirEvolucao={pedirEvolucao} />
             )}
           </>
