@@ -52,10 +52,10 @@ export function AbasConsole<K extends string>({ abas, valor, onChange, direita }
 }) {
   return (
     <div className="flex flex-wrap items-end gap-x-3 gap-y-2 border-b border-fio">
-      <div role="tablist" aria-label="Regulação" className="flex min-w-0 flex-1 flex-wrap gap-x-1">
+      <div role="tablist" aria-label="Regulação" className="flex min-w-0 flex-1 gap-x-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {abas.map((a) => (
           <BotaoLinha key={a.chave} variante="linha" role="tab" aria-selected={valor === a.chave} onClick={() => onChange(a.chave)}
-            className={cn('-mb-px w-auto items-center gap-1.5 border-b-2 px-3 py-2 text-apoio last:border-b-2 hover:bg-campo',
+            className={cn('-mb-px w-auto shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-2 text-apoio last:border-b-2 hover:bg-campo',
               valor === a.chave ? 'border-b-acao font-medium text-tinta' : 'border-b-transparent text-tinta-apoio')}>
             {a.rotulo}
             {a.contagem !== undefined && (
