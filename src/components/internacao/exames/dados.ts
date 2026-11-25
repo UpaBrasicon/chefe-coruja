@@ -43,5 +43,23 @@ export function useExamesDaInternacao(internacaoId: string) {
   return { pedidos, resultados, recarregar }
 }
 
+/**
+ * Quem lança valores na planilha (decisão do RT de 25/11/2026, B-09): o médico
+ * com o paciente no plantão e o NIR de plantão na unidade. A resposta é do
+ * servidor (posso_lancar_planilha); enquanto não chega, ou se falhar, o botão
+ * não aparece.
+ */
+export function usePodeLancarPlanilha(internacaoId: string): boolean {
+  const q = useQuery({
+    queryKey: ['posso-lancar-planilha', internacaoId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('posso_lancar_planilha', { p_internacao: internacaoId })
+      if (error) throw error
+      return data === true
+    },
+  })
+  return q.data === true
+}
+
 export const PENDENTES = ['pedido', 'coletado', 'em_analise', 'realizado']
 export const pendente = (p: { situacao: string }) => PENDENTES.includes(p.situacao)

@@ -6,7 +6,7 @@
 import { Printer } from 'lucide-react'
 import * as React from 'react'
 
-import { useExamesDaInternacao, pendente } from '@/components/internacao/exames/dados'
+import { useExamesDaInternacao, usePodeLancarPlanilha, pendente } from '@/components/internacao/exames/dados'
 import { AnexarExamesLeito } from '@/components/internacao/exames/AnexarExamesLeito'
 import { ImprimirPedidoExames, type PedidoParaImprimir } from '@/components/internacao/exames/ImprimirPedidoExames'
 import { PlanilhaExamesLeito } from '@/components/internacao/exames/PlanilhaExamesLeito'
@@ -20,6 +20,8 @@ type Vista = 'solicitar' | 'anexar' | 'planilha'
 
 export function AbaExamesLeito({ internacaoId, pacienteId }: { internacaoId: string; pacienteId: string }) {
   const { pedidos, resultados, recarregar } = useExamesDaInternacao(internacaoId)
+  // B-09 (RT, 25/11/2026): o médico sem o paciente no plantão vê a planilha, sem o botão de lançar
+  const podeLancar = usePodeLancarPlanilha(internacaoId)
   const [vista, setVista] = React.useState<Vista>('solicitar')
   const [imprimir, setImprimir] = React.useState<PedidoParaImprimir | null>(null)
   const lista = pedidos.data ?? []
@@ -53,7 +55,7 @@ export function AbaExamesLeito({ internacaoId, pacienteId }: { internacaoId: str
         <PedidoExamesLeito internacaoId={internacaoId} pacienteId={pacienteId} pedidos={lista} recarregar={recarregar} aoImprimir={setImprimir} />
       )}
       {vista === 'anexar' && <AnexarExamesLeito pedidos={lista} resultados={res} medico recarregar={recarregar} />}
-      {vista === 'planilha' && <PlanilhaExamesLeito pedidos={lista} resultados={res} medico recarregar={recarregar} />}
+      {vista === 'planilha' && <PlanilhaExamesLeito pedidos={lista} resultados={res} podeLancar={podeLancar} recarregar={recarregar} />}
 
       {imprimir && <ImprimirPedidoExames pedido={imprimir} pacienteId={pacienteId} internacaoId={internacaoId} onFechar={() => setImprimir(null)} />}
     </div>
