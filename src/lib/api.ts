@@ -154,6 +154,24 @@ export async function excluirLeito(id: string, unidadeId: string) {
   })
 }
 
+/**
+ * RG3 (modelo da Regulação, 25/11/2026): marca o leito de isolamento com
+ * pressão negativa. Quem pode é quem já edita o leito (política leitos_update);
+ * o mapa de vagas e as vagas compatíveis da regulação contam a marca.
+ */
+export async function marcarPressaoNegativa(id: string, unidadeId: string, valor: boolean) {
+  const { error } = await supabase.from('leitos').update({ pressao_negativa: valor }).eq('id', id)
+  if (error) throw error
+
+  await registrarAuditoria({
+    acao: 'leito_pressao_negativa',
+    entidade: 'leitos',
+    entidade_id: id,
+    unidade_id: unidadeId,
+    payload: { pressao_negativa: valor },
+  })
+}
+
 // ── Banners (gestor da unidade) ──────────────────────────────────────────────
 export type BannerInput = {
   unidade_id: string

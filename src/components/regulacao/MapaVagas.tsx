@@ -35,7 +35,9 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 
 const TOM_SITUACAO = { sucesso: 'success', atencao: 'warning', critico: 'destructive' } as const
 
-type Leitos = { tipo_leito: string; livre: number; reservado: number; higienizacao: number; bloqueado: number; ocupado: number; total: number }
+type Leitos = { tipo_leito: string; livre: number; reservado: number; higienizacao: number; bloqueado: number; ocupado: number; total: number
+  /** RG3 (migration 20270425000020): livres de isolamento comum e com pressão negativa */
+  livre_isolamento?: number; livre_pressao_negativa?: number }
 type Servico = {
   id: string; nome: string; tipo: TipoServico; procedimento: string | null; procedimento_nome: string | null
   situacao: SituacaoServico; vagas: number | null; observacao: string | null
@@ -101,15 +103,16 @@ function UnidadeDoMapa({ u, unidadeConsulta, compacto }: { u: UnidadeMapa; unida
         {u.editavel && !compacto && !novo && <Button size="xs" variant="outline" className="ml-auto" onClick={() => setNovo(true)}>Novo serviço</Button>}
       </div>
       {u.leitos.length > 0 ? (
-        <Table variante="referencia" className="w-full min-w-[30rem] text-left">
+        <Table variante="referencia" className="w-full min-w-[36rem] text-left">
           <TableHeader className="text-rotulo text-tinta-sussurro">
-            <TableRow><TableHead className="py-1 font-normal">Leito</TableHead><TableHead className="font-normal">Livre</TableHead><TableHead className="font-normal">Reservado</TableHead><TableHead className="font-normal">Higienização</TableHead><TableHead className="font-normal">Bloqueado</TableHead><TableHead className="font-normal">Ocupado</TableHead><TableHead className="font-normal">Total</TableHead></TableRow>
+            <TableRow><TableHead className="py-1 font-normal">Leito</TableHead><TableHead className="font-normal">Livre</TableHead><TableHead className="font-normal" title="Livres de isolamento comum (sem pressão negativa)">Isol. livre</TableHead><TableHead className="font-normal" title="Livres de isolamento com pressão negativa">P. neg. livre</TableHead><TableHead className="font-normal">Reservado</TableHead><TableHead className="font-normal">Higienização</TableHead><TableHead className="font-normal">Bloqueado</TableHead><TableHead className="font-normal">Ocupado</TableHead><TableHead className="font-normal">Total</TableHead></TableRow>
           </TableHeader>
           <TableBody className="tabular-nums">
             {u.leitos.map((l) => (
               <TableRow key={l.tipo_leito} className="border-t border-fio">
                 <TableCell className="py-1 text-tinta">{TIPOS_LEITO[l.tipo_leito] ?? l.tipo_leito}</TableCell>
                 <TableCell className={l.livre > 0 ? 'font-semibold text-conforme' : 'text-tinta-sussurro'}>{l.livre}</TableCell>
+                <TableCell>{l.livre_isolamento ?? '—'}</TableCell><TableCell>{l.livre_pressao_negativa ?? '—'}</TableCell>
                 <TableCell>{l.reservado}</TableCell><TableCell>{l.higienizacao}</TableCell><TableCell>{l.bloqueado}</TableCell><TableCell>{l.ocupado}</TableCell><TableCell>{l.total}</TableCell>
               </TableRow>
             ))}

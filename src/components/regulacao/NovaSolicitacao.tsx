@@ -31,9 +31,9 @@ import { Chip } from '@/components/monitor/Pagina'
 import { rotuloDocumento } from '@/components/documento/documentos'
 import { useDoProntuario } from '@/components/internacao/caderno/useDoProntuario'
 import {
-  ANEXO_LIMITE_BYTES, ANEXO_TIPOS, CARATER, FORMULARIO_VAZIO, caraterDaPrioridade, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, TIPOS,
+  ANEXO_LIMITE_BYTES, ANEXO_TIPOS, CARATER, FORMULARIO_VAZIO, caraterDaPrioridade, INTERNACAO_PSIQUIATRICA, PRIORIDADES, TIPOS,
   TIPOS_LEITO, TRANSPORTES, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, ehNeonato, erroArquivo, faltasFormulario,
-  marcadoresPelaIdade,
+  isolamentoParaDefinir, marcadoresPelaIdade,
   type Carater, type Formulario, type Prioridade, type TipoSolicitacao, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { FALTA_CID_COMPATIVEL } from '@/lib/cidProcedimento'
@@ -42,6 +42,7 @@ import { CampoCidDoProcedimento } from './CampoCidDoProcedimento'
 import { useConflitoCid } from './useCidsDoProcedimento'
 
 import { useCriterios } from './useCriterios'
+import { CampoIsolamento } from './IsolamentoRegulacao'
 
 type Ref = { id: string; nome: string }
 /** O que o formulário usa do regulacao_contexto: a central e as unidades da rede. */
@@ -230,6 +231,12 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
       const r = data as unknown as { id: string; numero: number; aviso_duplicidade: boolean }
       // o pedido já existe: sobem os anexos; o que falhar fica avisado e pode ir pelo detalhe
       const falhas: string[] = []
+      // RG2 (modelo da Regulação, RT 25/11/2026): situação e agente do isolamento (o tipo já foi com o pedido)
+      const iso = isolamentoParaDefinir(f)
+      if (iso) {
+        const { error: e } = await supabase.rpc('regulacao_definir_isolamento', { p_id: r.id, ...iso })
+        if (e) falhas.push(`situação e agente do isolamento (${e.message})`)
+      }
       let anexos = 0
       for (const arquivo of arquivos) {
         const caminho = caminhoAnexo(r.id, arquivo.name, Date.now())
@@ -361,14 +368,15 @@ export function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial, pacienteFix
           )}
         </div>
       )}
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={f.isolamento} onChange={(e) => set('isolamento', e.target.checked)} />
+      {/* RG2: tipo, situação (suspeito ou confirmado) e agente ou motivo */}
+      <div className="flex flex-col gap-2">
+        <label className="flex items-center gap-2"><input type="checkbox" className="size-4" checked={f.isolamento}
+          onChange={(e) => setF((x) => ({ ...x, isolamento: e.target.checked, ...(e.target.checked ? {} : { isolamento_tipo: '', isolamento_situacao: '' as const, isolamento_agente: '' }) }))} />
           Precisa de isolamento</label>
         {f.isolamento && (
-          <CampoSelecao aria-label="Tipo de isolamento" tamanho="compacto" value={f.isolamento_tipo} onChange={(e) => set('isolamento_tipo', e.target.value)}>
-            <option value="">Tipo…</option>
-            {Object.entries(ISOLAMENTOS).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-          </CampoSelecao>
+          <CampoIsolamento id="reg-iso" semVazio
+            valor={{ tipo: f.isolamento_tipo, situacao: f.isolamento_situacao, agente: f.isolamento_agente }}
+            onChange={(v) => setF((x) => ({ ...x, isolamento_tipo: v.tipo, isolamento_situacao: v.situacao, isolamento_agente: v.agente }))} />
         )}
       </div>
 

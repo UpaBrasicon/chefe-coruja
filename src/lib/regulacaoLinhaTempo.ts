@@ -39,6 +39,7 @@ export const ROTULO_EVENTO: Record<string, string> = {
   pendencia_unidade: 'pendência da unidade registrada',
   pendencia_unidade_reaviso: 'aviso ao médico reenviado',
   pendencia_unidade_resolvida: 'pendência da unidade resolvida',
+  isolamento_alterado: 'isolamento do pedido alterado',
 }
 
 /** Rótulo do evento; o que não está no mapa sai sem os sublinhados. */

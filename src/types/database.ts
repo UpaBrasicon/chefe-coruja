@@ -6152,6 +6152,7 @@ export type Database = {
           id: string
           identificador: string
           obito_aguardando_id: string | null
+          pressao_negativa: boolean
           setor_id: string
           status: Database["public"]["Enums"]["status_leito"]
           tipo: Database["public"]["Enums"]["tipo_leito"]
@@ -6162,6 +6163,7 @@ export type Database = {
           created_at?: string
           id?: string
           identificador: string
+          pressao_negativa?: boolean
           setor_id: string
           status?: Database["public"]["Enums"]["status_leito"]
           tipo?: Database["public"]["Enums"]["tipo_leito"]
@@ -6172,6 +6174,7 @@ export type Database = {
           created_at?: string
           id?: string
           identificador?: string
+          pressao_negativa?: boolean
           setor_id?: string
           status?: Database["public"]["Enums"]["status_leito"]
           tipo?: Database["public"]["Enums"]["tipo_leito"]
@@ -11195,6 +11198,9 @@ export type Database = {
       regulacao_lista: { Args: { p_unidade: string }; Returns: Json }
       regulacao_assumir: { Args: { p_id: string }; Returns: Json }
       regulacao_fila: { Args: { p_central: string; p_filtros?: Json }; Returns: Json }
+      regulacao_fila_extras: { Args: { p_central: string }; Returns: Json }
+      regulacao_vagas_compativeis: { Args: { p_central: string }; Returns: Json }
+      regulacao_definir_isolamento: { Args: { p_id: string; p_tipo: string | null; p_situacao: string | null; p_agente: string | null }; Returns: Json }
       regulacao_soltar: { Args: { p_id: string; p_motivo?: string | null }; Returns: undefined }
       regulacao_criterios: { Args: { p_unidade: string }; Returns: Json }
       regulacao_definir_criterio: { Args: { p_central: string; p_prioridade: string; p_texto: string }; Returns: undefined }

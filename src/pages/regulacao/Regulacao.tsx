@@ -32,6 +32,11 @@
 //   decidir o destino (src/components/regulacao/CapacidadesReguladas.tsx).
 // • Nova solicitação: src/components/regulacao/NovaSolicitacao.tsx (também
 //   dentro do paciente, sem sair da tela; RT, 24/11/2026).
+// • Modelo do RT (25/11/2026, RG1–RG8): na central, a fila em duas colunas com
+//   o dossiê (src/components/regulacao/ConsoleRegulador.tsx e
+//   DossieRegulador.tsx), vagas compatíveis, isolamento com situação e agente,
+//   aba Por município / origem e os indicadores da fila
+//   (migration 20270425000020).
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -49,6 +54,9 @@ import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransf
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
+import { AtualizadoEm, ConsoleRegulador, IndicadoresFila, PorMunicipio } from '@/components/regulacao/ConsoleRegulador'
+import type { ConversaSlot, ControleDecisao } from '@/components/regulacao/DossieRegulador'
+import { useFilaCentral, useVagasCentral } from '@/components/regulacao/useRegulacaoCentral'
 import { FormEvolucao, PainelSla, PrazosCentral, PrioridadeCalma, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
 import { LinhaDoTempoPedido } from '@/components/regulacao/LinhaDoTempoPedido'
 import { DialogoMotivo, ListaComPainel, MenuAcoesPedido } from '@/components/regulacao/PainelPedido'
@@ -65,16 +73,16 @@ import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
 import {
-  CARATER, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
+  CARATER, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS_LEITO, TRANSPORTES,
   MOTIVOS_NEGACAO, VULNERABILIDADES, dataHoraLocalParaIso, emDecisao,
-  filtrosParaEnvio, formatarEspera, novosDesde, prioridadeEfetiva, resumoPedido,
-  type Carater, type DestinoTipo, type FiltrosFila, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
+  prioridadeEfetiva, resumoPedido,
+  type Carater, type DestinoTipo, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
   type MotivoNegacao, type Sla, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { esperandoDecisao, montarLinhaDoTempo } from '@/lib/regulacaoLinhaTempo'
+import type { Conversa } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import type { Json } from '@/types/database'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
@@ -116,9 +124,6 @@ type Solicitacao = Omit<PedidoDestino, 'destino_tipo' | 'destino_unidade' | 'des
   evolucoes?: Evolucao[]; pode_evoluir?: boolean
 }
 
-const TOM: Record<string, 'destructive' | 'warning' | 'info' | 'secondary'> = {
-  critico: 'destructive', atencao: 'warning', info: 'info', neutro: 'secondary',
-}
 
 // RN vinculado à mãe: a regulação o identifica pelo CNS/CPF da mãe (Portão 2, tarefa 5)
 const docMae = (m?: { nome: string; cns: string | null; cpf: string | null } | null) =>
@@ -131,7 +136,7 @@ const docMae = (m?: { nome: string; cns: string | null; cpf: string | null } | n
  * Prazos e critérios. Indicadores para a central e o gestor; Pacientes por
  * setor para o gestor da unidade.
  */
-type AbaQuadro = 'esperando' | 'enviados' | 'recebidos' | 'mapa' | 'pacientes' | 'config' | 'indicadores'
+type AbaQuadro = 'esperando' | 'enviados' | 'recebidos' | 'mapa' | 'pacientes' | 'municipios' | 'config' | 'indicadores'
 
 export default function Regulacao() {
   const { unidadeAtiva, papeisDaUnidade, papelAtivo, ehSuperAdmin } = useUnidade()
@@ -184,8 +189,12 @@ export default function Regulacao() {
   const comIndicadores = !!c && (c.sou_central || (!!c.central && souGestorDaUnidade))
   const origem = !!c && !c.sou_central && !!c.central && c.pode_solicitar
   const contas = useContasQuadro(unidadeId, !!c && (c.sou_central || origem), origem)
+  // RG7/RG8 (modelo do RT, 25/11/2026): contagens da central e "Atualizado hh:mm"
+  const central = useContasCentral(unidadeId, !!c?.sou_central)
+  const [filtroMunicipio, setFiltroMunicipio] = React.useState('')
   const abas: [AbaQuadro, string, number | undefined][] = !c ? [] : c.sou_central ? [
-    ['esperando', 'Esperando decisão', contas.esperando], ['mapa', 'Mapa de vagas', undefined], ['config', 'Prazos e critérios', undefined],
+    ['esperando', 'Fila de regulação', central.fila], ['mapa', 'Mapa de vagas', central.livres],
+    ['municipios', 'Por município / origem', central.municipios], ['config', 'Prazos e critérios', undefined],
   ] : origem ? [
     ['esperando', 'Esperando decisão', contas.esperando], ['enviados', 'Enviados', contas.enviados], ['recebidos', 'Recebidos da central', contas.recebidos],
     // gestor da unidade (RT, 24/11/2026): o mapa e os internados por setor, com o que está pendente e o que o regulador pergunta
@@ -204,12 +213,13 @@ export default function Regulacao() {
   if (modoAdmin) return <RegulamentacaoCentrais superAdmin={ehSuperAdmin} />
   return (
     // fichas calmas (M3 da revisão do Médico e unslop do regulador): a página e o painel
-    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case', aberto ? 'max-w-7xl' : 'max-w-5xl')}>
+    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case', aberto || c?.sou_central ? 'max-w-7xl' : 'max-w-5xl')}>
       <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
           ? `Solicitações recebidas pela ${c.central?.nome ?? 'Central de Regulação'}.`
           : `Pedidos de consulta, exame, leito ou transferência para a ${c?.central?.nome ?? 'Central de Regulação da rede'}.`}
-        acoes={origem && !novaAberta && !inicial ? <Button onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button> : undefined} />
+        acoes={origem && !novaAberta && !inicial ? <Button onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button>
+          : c?.sou_central ? <AtualizadoEm em={central.atualizadoEm} /> : undefined} />
       {c?.sou_super_admin && focoConfig && <Centrais />}
       {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <MensagemErro texto={(ctx.error as Error).message} /> : !c ? null
         : !c.sou_central && !c.central ? (
@@ -225,9 +235,14 @@ export default function Regulacao() {
             )}
             <Abas abas={abas} valor={abaVale} onChange={trocarAba} rotulo="Regulação" className="mb-0" />
             {abaVale === 'indicadores' ? (
-              <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
+              <>
+                <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
+                {c.sou_central && <IndicadoresFila centralId={unidadeId} />}
+              </>
             ) : abaVale === 'pacientes' ? (
               <PacientesRegulacao unidadeId={unidadeId} modo="gestor" />
+            ) : abaVale === 'municipios' ? (
+              <PorMunicipio centralId={unidadeId} aoFiltrar={(m) => { setFiltroMunicipio(m); trocarAba('esperando') }} />
             ) : abaVale === 'mapa' ? (
               <>
                 <MapaVagas unidadeId={unidadeId} consulta={!c.sou_central && !focoConfig} />
@@ -239,8 +254,11 @@ export default function Regulacao() {
                 <PrazosCentral unidadeId={unidadeId} editavel />
                 <Criterios unidadeId={unidadeId} editavel />
               </>
-            ) : c.sou_central ? comPainel(
-              <Fila centralId={unidadeId} souRegulador={c.sou_regulador} selecionado={aberto} aoSelecionar={setAberto} />,
+            ) : c.sou_central ? (
+              <ConsoleRegulador key={filtroMunicipio} centralId={unidadeId} souRegulador={c.sou_regulador} selecionado={aberto} aoSelecionar={setAberto}
+                municipioInicial={filtroMunicipio || undefined}
+                conversa={CONVERSA_CENTRAL}
+                decisao={(id, ctrl, aoFim) => <DecisaoCentral id={id} centralId={unidadeId} podeDecidir={c.sou_regulador} ctrl={ctrl} aoFim={aoFim} />} />
             ) : abaVale === 'enviados' ? comPainel(
               <Lista unidadeId={unidadeId} central={false} selecionado={aberto} aoSelecionar={setAberto} />,
             ) : abaVale === 'recebidos' ? comPainel(
@@ -285,6 +303,18 @@ function useContasQuadro(unidadeId: string, ativo: boolean, origem: boolean) {
     esperando: sla.data?.resumo.abertos,
     enviados: lista.data ? lista.data.filter((s) => !esperandoDecisao(s.status)).length : undefined,
     recebidos: destino.data?.length,
+  }
+}
+
+/** Central: pedidos na fila, livres no mapa e municípios de origem (mesmas chaves de cache das abas). */
+function useContasCentral(centralId: string, ativo: boolean) {
+  const { fila, itens, atualizadoEm } = useFilaCentral(ativo ? centralId : '')
+  const vagas = useVagasCentral(centralId, ativo)
+  return {
+    fila: fila.data ? itens.length : undefined,
+    livres: vagas.data ? vagas.data.unidades.reduce((t, u) => t + u.leitos.reduce((a, l) => a + l.livre, 0), 0) : undefined,
+    municipios: fila.data ? new Set(itens.map((s) => s.municipio ?? '')).size : undefined,
+    atualizadoEm,
   }
 }
 
@@ -631,162 +661,90 @@ function Criterios({ unidadeId, editavel }: { unidadeId: string; editavel: boole
   )
 }
 
-// ── Fila regulada (Fase 4, tarefa 2) ──────────────────────────────────────────
-type ItemFila = Solicitacao & {
-  assumida_por: string | null; assumida_por_mim: boolean; assumida_em: string | null; espera_segundos: number
-}
-type RespostaFila = { dados: ItemFila[]; resumo: Partial<Record<Prioridade, number>>; origens: Ref[]; agora: string }
-
-function Fila({ centralId, souRegulador, selecionado, aoSelecionar }: {
-  centralId: string; souRegulador: boolean
-  /** RD1: o pedido escolhido abre no painel ao lado da fila */
-  selecionado: string | null; aoSelecionar: (id: string | null) => void
-}) {
-  const qc = useQueryClient()
-  const [filtros, setFiltros] = React.useState<FiltrosFila>({})
-  const [busca, setBusca] = React.useState('')
-  // o painel de prazos saiu da central (era a mesma lista): o filtro dos atrasados veio para a fila
-  const [soAtrasados, setSoAtrasados] = React.useState(false)
-  const aberta = selecionado
-  const [novos, setNovos] = React.useState<Set<string>>(new Set())
-  const vistos = React.useRef<Set<string> | null>(null)
-  const [lidoEm, setLidoEm] = React.useState(() => Date.now())
-  const [agora, setAgora] = React.useState(() => Date.now())
-  // o tempo de espera corre na tela entre uma leitura e outra
-  React.useEffect(() => {
-    const id = window.setInterval(() => setAgora(Date.now()), 30_000)
-    return () => window.clearInterval(id)
-  }, [])
-  const fila = useQuery({
-    queryKey: ['regulacao-fila', centralId, filtros],
-    refetchInterval: 30_000,
+// ── conversa no dossiê (R3 + modelo do RT, 25/11/2026) ───────────────────────
+function useContagemConversa(solicitacaoId: string): number | undefined {
+  const q = useQuery({
+    queryKey: ['regulacao-conversa', solicitacaoId],
+    refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('regulacao_fila', { p_central: centralId, p_filtros: filtrosParaEnvio(filtros) as unknown as Json })
+      const { data, error } = await supabase.rpc('regulacao_conversa', { p_solicitacao: solicitacaoId })
       if (error) throw error
-      const r = data as unknown as RespostaFila
-      const ids = r.dados.map((d) => d.id)
-      setNovos(novosDesde(vistos.current, ids))
-      vistos.current = new Set([...(vistos.current ?? []), ...ids])
-      setLidoEm(Date.now()); setAgora(Date.now())
-      return r
+      return data as unknown as Conversa
     },
   })
-  const recarregar = () => {
-    void qc.invalidateQueries({ queryKey: ['regulacao-fila', centralId] })
-    if (aberta) void qc.invalidateQueries({ queryKey: ['regulacao-detalhe', aberta] })
-  }
-  const assumir = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('regulacao_assumir', { p_id: id })
+  return q.data?.mensagens.length
+}
+
+/** A conversa com a origem no dossiê; "Cobrar na conversa" manda a mensagem pronta como pedido (RG7). */
+const CONVERSA_CENTRAL: ConversaSlot = {
+  Painel: ({ solicitacaoId, aoEnviar }) => <ConversaRegulacao solicitacaoId={solicitacaoId} aoEnviar={aoEnviar} />,
+  useContagem: useContagemConversa,
+  cobrar: async (solicitacaoId, texto) => {
+    const { error } = await supabase.rpc('regulacao_conversa_enviar', { p_solicitacao: solicitacaoId, p_texto: texto, p_intencao: 'pedido' })
+    if (error) throw error
+  },
+}
+
+// ── decisão no dossiê do regulador (modelo do RT, 25/11/2026) ─────────────────
+/**
+ * O que a central decide e registra no dossiê: a decisão (com a ação vinda do
+ * menu ou de "Reservar vaga"), o destino, o destino de fora e a regulação
+ * externa. Os mesmos blocos do detalhe; nenhuma regra nova.
+ */
+function DecisaoCentral({ id, centralId, podeDecidir, ctrl, aoFim }: {
+  id: string; centralId: string; podeDecidir: boolean; ctrl: ControleDecisao; aoFim: () => void
+}) {
+  const d = useQuery({
+    queryKey: ['regulacao-detalhe', id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_detalhe', { p_id: id })
       if (error) throw error
+      return data as unknown as Solicitacao
     },
-    onSuccess: recarregar,
   })
-  const soltar = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.rpc('regulacao_soltar', { p_id: id })
-      if (error) throw error
-    },
-    onSuccess: recarregar,
-  })
-  const setF = <K extends keyof FiltrosFila>(k: K, v: FiltrosFila[K] | '') =>
-    setFiltros((x) => { const n = { ...x }; if (v === '' || v === undefined) delete n[k]; else n[k] = v as FiltrosFila[K]; return n })
-  const r = fila.data
-  const decorrido = Math.floor((agora - lidoEm) / 1000)
-  const resumo = r?.resumo ?? {}
-  const dados = (r?.dados ?? []).filter((s) => !soAtrasados || !!(s.sla?.atrasado_central || s.sla?.atrasado_origem || s.sla?.atrasado_destino))
+  const s = d.data
+  if (!s) return null
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
-          Fila da central
-          {(Object.keys(PRIORIDADES) as Prioridade[]).filter((p) => resumo[p]).map((p) => (
-            <Badge key={p} variant={TOM[PRIORIDADES[p].tom]}>{PRIORIDADES[p].rotulo}: {resumo[p]}</Badge>
-          ))}
-        </CardTitle>
-        <CardDescription>
-          Não classificadas no topo; depois por prioridade e, em cada nível, quem espera há mais tempo. Atualiza a cada 30 segundos.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-apoio">
-        <div className="grid gap-2 sm:grid-cols-4">
-          <CampoSelecao aria-label="Tipo" tamanho="compacto" value={filtros.tipo ?? ''} onChange={(e) => setF('tipo', e.target.value as TipoSolicitacao | '')}>
-            <option value="">Todos os tipos</option>
-            {(Object.keys(TIPOS) as TipoSolicitacao[]).map((k) => <option key={k} value={k}>{TIPOS[k]}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Prioridade" tamanho="compacto" value={filtros.prioridade ?? ''} onChange={(e) => setF('prioridade', e.target.value as Prioridade | '')}>
-            <option value="">Todas as prioridades</option>
-            {(Object.keys(PRIORIDADES) as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Unidade de origem" tamanho="compacto" value={filtros.unidade_origem_id ?? ''} onChange={(e) => setF('unidade_origem_id', e.target.value)}>
-            <option value="">Todas as unidades</option>
-            {(r?.origens ?? []).map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Status" tamanho="compacto" value={filtros.status?.[0] ?? ''}
-            onChange={(e) => setF('status', e.target.value ? [e.target.value as StatusRegulacao] : '')}>
-            <option value="">Em aberto (em regulação, em análise, pendência)</option>
-            {(Object.keys(STATUS) as StatusRegulacao[]).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Caráter" tamanho="compacto" value={filtros.carater ?? ''} onChange={(e) => setF('carater', e.target.value as Carater | '')}>
-            <option value="">Eletivo e urgência</option>
-            {(Object.keys(CARATER) as Carater[]).map((k) => <option key={k} value={k}>{CARATER[k]}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Tipo de leito" tamanho="compacto" value={filtros.tipo_leito ?? ''} onChange={(e) => setF('tipo_leito', e.target.value)}>
-            <option value="">Todos os leitos</option>
-            {Object.entries(TIPOS_LEITO).map(([k, x]) => <option key={k} value={k}>{x}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Isolamento" tamanho="compacto" value={filtros.isolamento === undefined ? '' : String(filtros.isolamento)}
-            onChange={(e) => setF('isolamento', e.target.value === '' ? '' : e.target.value === 'true')}>
-            <option value="">Com e sem isolamento</option>
-            <option value="true">Só com isolamento</option>
-            <option value="false">Sem isolamento</option>
-          </CampoSelecao>
-          <form className="flex gap-1" onSubmit={(e) => { e.preventDefault(); setF('busca', busca) }}>
-            <Input aria-label="Buscar" className="h-8" placeholder="Paciente, nº ou protocolo" value={busca} onChange={(e) => setBusca(e.target.value)} />
-            <Button size="sm" variant="outline" type="submit">Buscar</Button>
-          </form>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" className="size-4" checked={soAtrasados} onChange={(e) => setSoAtrasados(e.target.checked)} />
-            Só com prazo vencido
-          </label>
-        </div>
-        <MensagemErro texto={(fila.error ?? assumir.error ?? soltar.error) ? ((fila.error ?? assumir.error ?? soltar.error) as Error).message : null} />
-        {fila.isLoading ? <Spinner /> : dados.length === 0 ? (
-          <Vazio icone={Waypoints} titulo="Fila vazia" texto="Nenhuma solicitação com esses filtros." />
-        ) : (
-          <ul className="flex flex-col divide-y divide-fio">
-            {dados.map((s) => (
-              <li key={s.id} className={`py-2 ${novos.has(s.id) ? 'rounded-controle bg-alerta-atencao/40 px-2' : ''}`}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <BotaoLinha variante="linha" aria-current={aberta === s.id ? 'true' : undefined} className={cn('w-auto min-w-0 flex-1 flex-wrap items-center gap-2 rounded-controle border-0 px-2 py-1.5', aberta === s.id && 'bg-campo')} onClick={() => aoSelecionar(aberta === s.id ? null : s.id)}>
-                    <SeloPrioridade s={s} />
-                    {novos.has(s.id) && <Badge variant="warning">novo</Badge>}
-                    <span className="font-semibold tabular-nums text-tinta">{formatarEspera(s.espera_segundos + decorrido)}</span>
-                    <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}{docMae(s.paciente.mae)}</span>
-                    <span className="text-tinta-apoio">{resumoPedido(s)}</span>
-                    {s.isolamento && <Badge variant="destructive">isolamento</Badge>}
-                    <SeloSla sla={s.sla} />
-                    {(s.vulnerabilidades ?? []).map((v) => <Badge key={v} variant="secondary">{VULNERABILIDADES[v]}</Badge>)}
-                    <span className="text-tinta-sussurro">{CARATER[s.carater]} · de {s.origem.nome} · nº {s.numero}</span>
-                  </BotaoLinha>
-                  <Badge variant="info">{STATUS[s.status]}</Badge>
-                  {s.assumida_por && !s.assumida_por_mim && <span className="text-tinta-sussurro">com {s.assumida_por}</span>}
-                  {souRegulador && !s.assumida_por && (
-                    <Button size="xs" onClick={() => assumir.mutate(s.id)} disabled={assumir.isPending}>Assumir</Button>
-                  )}
-                  {s.assumida_por_mim && (
-                    <>
-                      <span className="text-sucesso">com você</span>
-                      <Button size="xs" variant="outline" onClick={() => soltar.mutate(s.id)} disabled={soltar.isPending}>Devolver à fila</Button>
-                    </>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+    <>
+      {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
+      <BlocosDecisao s={s} />
+      {podeDecidir && emDecisao(s.status) && (
+        <PainelDecisao key={ctrl.chave} s={s} centralId={centralId} aoFim={aoFim} acaoInicial={ctrl.acao} destinoInicial={ctrl.destinoUnidade} />
+      )}
+      <BlocoDestino s={s} />
+      {podeDecidir && <DestinoExterno s={s} aoFim={aoFim} />}
+      {podeDecidir && <RegistroExterno s={s} aoFim={aoFim} />}
+    </>
+  )
+}
+
+/** Regulação externa (SISREG, e-SUS Regulação…): sistema, protocolo e a prioridade como veio. */
+function RegistroExterno({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
+  const [sistema, setSistema] = React.useState('')
+  const [protocolo, setProtocolo] = React.useState('')
+  const [prioridadeCentral, setPrioridadeCentral] = React.useState('')
+  const externo = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('regulacao_registrar_externo', {
+        p_id: s.id, p_sistema: sistema.trim(), p_protocolo: protocolo.trim(), p_prioridade_central: prioridadeCentral.trim() || null,
+      })
+      if (error) throw error
+    },
+    onSuccess: aoFim,
+  })
+  return (
+    <details className="rounded-controle border border-fio px-3 py-2">
+      <summary className="cursor-pointer text-tinta">
+        Regulação externa{s.externo_protocolo ? `: ${s.externo_sistema} · ${s.externo_protocolo}` : ''}
+      </summary>
+      <div className="mt-2 flex flex-wrap items-end gap-2">
+        <Campo id={`ext-sis-${s.id}`} rotulo="Sistema externo"><Input id={`ext-sis-${s.id}`} className="h-8" placeholder="SISREG, e-SUS Regulação, GERINT…" value={sistema} onChange={(e) => setSistema(e.target.value)} /></Campo>
+        <Campo id={`ext-prot-${s.id}`} rotulo="Nº do protocolo"><Input id={`ext-prot-${s.id}`} className="h-8" value={protocolo} onChange={(e) => setProtocolo(e.target.value)} /></Campo>
+        <Campo id={`ext-pri-${s.id}`} rotulo="Prioridade da central (como veio)"><Input id={`ext-pri-${s.id}`} className="h-8" placeholder="ex.: Vermelho (P0)" value={prioridadeCentral} onChange={(e) => setPrioridadeCentral(e.target.value)} /></Campo>
+        <Button size="sm" variant="outline" onClick={() => externo.mutate()} disabled={externo.isPending || sistema.trim().length < 2 || protocolo.trim().length < 3}>Registrar</Button>
+      </div>
+      <MensagemErro texto={externo.error ? (externo.error as Error).message : null} />
+    </details>
   )
 }
 
@@ -889,7 +847,11 @@ function Reenviar({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
 }
 
 type Acao = 'autorizar' | 'negar' | 'devolver' | 'pendencia'
-function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: string; aoFim: () => void }) {
+function PainelDecisao({ s, centralId, aoFim, acaoInicial = null, destinoInicial }: {
+  s: Solicitacao; centralId: string; aoFim: () => void
+  /** modelo do RT (25/11/2026): o dossiê abre a decisão já na ação; "Reservar vaga" já com a unidade */
+  acaoInicial?: Acao | null; destinoInicial?: string
+}) {
   const ctx = useQuery({
     queryKey: ['regulacao-contexto', centralId],
     queryFn: async () => {
@@ -898,9 +860,9 @@ function PainelDecisao({ s, centralId, aoFim }: { s: Solicitacao; centralId: str
       return data as unknown as Contexto
     },
   })
-  const [acao, setAcao] = React.useState<Acao | null>(null)
-  const [destinoTipo, setDestinoTipo] = React.useState<'rede' | 'externo'>(s.destino_tipo === 'externo' ? 'externo' : 'rede')
-  const [destinoUnidade, setDestinoUnidade] = React.useState(s.destino_unidade?.id ?? '')
+  const [acao, setAcao] = React.useState<Acao | null>(acaoInicial)
+  const [destinoTipo, setDestinoTipo] = React.useState<'rede' | 'externo'>(destinoInicial ? 'rede' : s.destino_tipo === 'externo' ? 'externo' : 'rede')
+  const [destinoUnidade, setDestinoUnidade] = React.useState(destinoInicial ?? s.destino_unidade?.id ?? '')
   const [destinoExterno, setDestinoExterno] = React.useState(s.destino_externo ?? '')
   const [transporte, setTransporte] = React.useState('')
   const [dataPrevista, setDataPrevista] = React.useState('')
