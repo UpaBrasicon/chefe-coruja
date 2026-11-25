@@ -1,5 +1,6 @@
 // Perfis em todas as unidades (RT, 25/11/2026): o menu "Trocar perfil" agrupa
 // os papéis por unidade, a ativa primeiro.
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -56,6 +57,16 @@ test('sem unidade ativa conhecida, só ordena pelo nome', () => {
   assert.ok(grupos.every((g) => !g.ativa))
   assert.equal(grupos[0].nome, 'Central de Regulação')
   assert.deepEqual(agruparPerfisPorUnidade([], null), [])
+})
+
+test('a troca de outra unidade muda unidade e rota na mesma transição (super admin caía em /painel)', () => {
+  // O BrowserRouter troca a rota em startTransition; a unidade trocada fora
+  // dela chegava antes e o RequireRole da rota antiga redirecionava.
+  const casca = readFileSync('src/components/AppShell.tsx', 'utf8')
+  assert.match(
+    casca,
+    /React\.startTransition\(\(\) => \{\s*setUnidadeAtivaId\(unidadeDoPapel, p\)\s*navigate\(telaAoEntrar\(p, grupo\?\.tipo \?\? null\)\)\s*\}\)/,
+  )
 })
 
 test('recolhe as outras unidades quando a lista fica longa', () => {
