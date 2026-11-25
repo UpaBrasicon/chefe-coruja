@@ -13,10 +13,10 @@ export function AbasLinha<K extends string>({ abas, valor, onChange, rotulo, cla
 }) {
   return (
     <Tabs value={valor} onValueChange={(v) => onChange(v as K)} className="gap-0">
-      <TabsList aria-label={rotulo} className={cn('gap-0 border-b-0', className)}>
+      <TabsList aria-label={rotulo} className={cn('gap-0 border-b-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden', className)}>
         {abas.map((a) => (
           <TabsTrigger key={a.valor} value={a.valor}
-            className={cn('rounded-none data-active:bg-transparent', tamanho === 'compacto' ? 'px-2 pt-1.5 pb-1.5 text-rotulo' : 'px-3 pt-3 pb-2.5')}>
+            className={cn('rounded-none data-active:bg-transparent', tamanho === 'compacto' ? 'shrink-0 px-1.5 pt-1.5 pb-1.5 text-rotulo' : 'px-3 pt-3 pb-2.5')}>
             {a.rotulo}
             {a.contagem !== undefined && (
               <span className={cn('font-mono text-rotulo tabular-nums',
