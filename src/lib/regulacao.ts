@@ -50,7 +50,7 @@ export const TRANSPORTES: Record<string, string> = {
 }
 
 export const STATUS: Record<StatusRegulacao, string> = {
-  rascunho: 'Rascunho', enviada: 'Enviada', em_analise: 'Em análise', pendencia: 'Pendência', devolvida: 'Devolvida',
+  rascunho: 'Rascunho', enviada: 'Em regulação', em_analise: 'Em análise', pendencia: 'Pendência', devolvida: 'Devolvida',
   aguardando_destino: 'Aguardando o destino', autorizada: 'Autorizada', agendada: 'Agendada', em_transito: 'Em trânsito', realizada: 'Realizada', falta: 'Falta',
   negada: 'Negada', cancelada: 'Cancelada', excluida: 'Excluída',
 }

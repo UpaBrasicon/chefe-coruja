@@ -60,7 +60,7 @@ test('RD2: uma situação atual só, a do pedido', () => {
   ]
   const marcados = temposComAtual(tempos, 'em_analise')
   assert.deepEqual(marcados.map((t) => t.atual), [false, true])
-  assert.equal(textoTempos(tempos, 'em_analise'), 'Enviada 44 d 3 h (2×) · Em análise menos de 1 min, atual')
+  assert.equal(textoTempos(tempos, 'em_analise'), 'Em regulação 44 d 3 h (2×) · Em análise menos de 1 min, atual')
   // pedido encerrado: nenhuma situação antiga fica como atual
   assert.deepEqual(temposComAtual(tempos, 'cancelada').map((t) => t.atual), [false, false])
   // sem a situação do pedido, fica só a última que veio marcada

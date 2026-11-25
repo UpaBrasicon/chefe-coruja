@@ -462,10 +462,14 @@ function NovaSolicitacao({ unidadeId, ctx, aoEnviar, inicial }: {
       setF(FORMULARIO_VAZIO); setCidRotulo(''); setProcRotulo(''); setCboRotulo(''); setPaciente(null); setTermo(''); setMedico('')
       setNaoIdentificado(false); setVulnerabilidades([]); setArquivos([]); setDocsEscolhidos([])
       void qc.invalidateQueries({ queryKey: ['regulacao-lista', unidadeId] })
+      // o pedido entra em regulação na hora: Esperando decisão e o número do menu
+      void qc.invalidateQueries({ queryKey: ['regulacao-sla', unidadeId] })
+      void qc.invalidateQueries({ queryKey: ['nota-regulacao'] })
       aoEnviar(r.id)
     },
   })
-  const faltas = [...faltasFormulario(f, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado }),
+  // o destino é sempre da regulação: "unidade de destino" não entra no que falta
+  const faltas = [...faltasFormulario({ ...f, destino_tipo: 'a_definir' }, { neonato, semDocumento: v ? !v.tem_documento : false, naoIdentificado }),
     ...(souNir && !medico ? ['médico assistente'] : [])]
   const leitoOuTransf = f.tipo === 'leito' || f.tipo === 'transferencia'
 
@@ -1107,7 +1111,7 @@ function Fila({ centralId, souRegulador, selecionado, aoSelecionar }: {
           </CampoSelecao>
           <CampoSelecao aria-label="Status" tamanho="compacto" value={filtros.status?.[0] ?? ''}
             onChange={(e) => setF('status', e.target.value ? [e.target.value as StatusRegulacao] : '')}>
-            <option value="">Em aberto (enviada, em análise, pendência)</option>
+            <option value="">Em aberto (em regulação, em análise, pendência)</option>
             {(Object.keys(STATUS) as StatusRegulacao[]).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
           </CampoSelecao>
           <CampoSelecao aria-label="Caráter" tamanho="compacto" value={filtros.carater ?? ''} onChange={(e) => setF('carater', e.target.value as Carater | '')}>

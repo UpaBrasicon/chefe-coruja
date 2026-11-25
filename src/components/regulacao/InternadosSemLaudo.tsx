@@ -18,6 +18,29 @@ type Internado = {
   paciente: { nome: string; nome_social: string | null } | null
   leito: { identificador: string } | null
 }
+/** O que aih_internados_sem_laudo devolve (migration 20270423000010): o nome só para o gestor. */
+type SemLaudo = { id: string; leito: string | null; desde: string; paciente: string | null }
+type ComRpcLivre = { rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null }> }
+const rpcAusente = (e: { code?: string; message?: string }) => e.code === 'PGRST202' || /could not find the function/i.test(e.message ?? '')
+
+/**
+ * A lista vem da RPC aih_internados_sem_laudo, que o regulador pode chamar sem
+ * ler a tabela de internações. Enquanto a RPC não estiver no banco, lê a
+ * tabela como antes (só o gestor e quem está na escala do setor veem).
+ */
+async function lerSemLaudo(unidade: string): Promise<SemLaudo[]> {
+  const rpc = await (supabase as unknown as ComRpcLivre).rpc('aih_internados_sem_laudo', { p_unidade: unidade })
+  if (!rpc.error) return (rpc.data ?? []) as SemLaudo[]
+  if (!rpcAusente(rpc.error)) throw new Error(rpc.error.message ?? 'Não foi possível ler os internados sem laudo.')
+  const { data, error } = await supabase.from('internacoes')
+    .select('id, status, data_admissao, internado_em, paciente:pacientes!internacoes_paciente_id_fkey(nome, nome_social), leito:leitos!internacoes_leito_atual_id_fkey(identificador)')
+    .eq('unidade_id', unidade).in('status', ['admitido', 'internado'])
+  if (error) throw error
+  return ((data ?? []) as unknown as Internado[]).map((i) => ({
+    id: i.id, leito: i.leito?.identificador ?? null, desde: i.internado_em ?? i.data_admissao,
+    paciente: i.paciente?.nome_social || i.paciente?.nome || null,
+  }))
+}
 
 const tempo = (dias: number) => (dias === 0 ? 'hoje' : dias === 1 ? 'há 1 dia' : `há ${dias} dias`)
 
@@ -31,13 +54,9 @@ export function InternadosSemLaudo({ unidade, comAih, tom = 'alerta' }: {
     queryKey: ['internados-sem-laudo-aih', unidade],
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from('internacoes')
-        .select('id, status, data_admissao, internado_em, paciente:pacientes!internacoes_paciente_id_fkey(nome, nome_social), leito:leitos!internacoes_leito_atual_id_fkey(identificador)')
-        .eq('unidade_id', unidade).in('status', ['admitido', 'internado'])
-      if (error) throw error
+      const lista = await lerSemLaudo(unidade)
       const agora = Date.now()
-      return ((data ?? []) as unknown as Internado[])
-        .map((i) => ({ ...i, dias: Math.max(0, Math.floor((agora - new Date(i.internado_em ?? i.data_admissao).getTime()) / 86_400_000)) }))
+      return lista.map((i) => ({ ...i, dias: Math.max(0, Math.floor((agora - new Date(i.desde).getTime()) / 86_400_000)) }))
     },
   })
   const sem = (internados.data ?? []).filter((i) => !comAih.has(i.id)).sort((a, b) => b.dias - a.dias)
@@ -53,7 +72,7 @@ export function InternadosSemLaudo({ unidade, comAih, tom = 'alerta' }: {
           {sem.map((i, k) => (
             <span key={i.id}>
               {k > 0 && ' · '}
-              {i.leito ? `leito ${i.leito.identificador}` : 'sem leito'}, <span className="tabular-nums">{tempo(i.dias)}</span>
+              {i.leito ? `leito ${i.leito}` : 'sem leito'}, <span className="tabular-nums">{tempo(i.dias)}</span>
             </span>
           ))}
           .
@@ -68,8 +87,8 @@ export function InternadosSemLaudo({ unidade, comAih, tom = 'alerta' }: {
       <ul className="flex flex-col gap-1">
         {sem.map((i) => (
           <li key={i.id} className="flex flex-wrap items-baseline gap-x-3 text-tinta">
-            <span className="font-medium">{i.paciente?.nome_social || i.paciente?.nome || 'Paciente'}</span>
-            {i.leito && <span className="text-tinta-apoio">leito {i.leito.identificador}</span>}
+            <span className="font-medium">{i.paciente || 'Paciente'}</span>
+            {i.leito && <span className="text-tinta-apoio">leito {i.leito}</span>}
             <span className="tabular-nums text-critico">{tempo(i.dias)}</span>
           </li>
         ))}
