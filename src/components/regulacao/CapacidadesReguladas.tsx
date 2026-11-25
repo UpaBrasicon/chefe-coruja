@@ -7,9 +7,13 @@
 // Administrador › Regulação). Para a vaga de agora, o mapa de vagas.
 // No pedido, as unidades que têm o que ele procura vêm primeiro, destacadas.
 // Migration 20270421000012_regulacao_central_certa.sql.
+// RC4 da revisão unslop (RT, 25/11/2026): a observação do cadastro abre com
+// clique ou toque (o "passe o mouse" não funciona no celular).
 // ─────────────────────────────────────────────────────────────────────────────
+import { Popover } from '@base-ui/react/popover'
 import { useQuery } from '@tanstack/react-query'
-import { Building2 } from 'lucide-react'
+import { Building2, Info } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import { Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
@@ -77,12 +81,16 @@ export function CapacidadesReguladas({ centralId, pedido = null, compacto = fals
                     <div key={categoria} className={cn('contents', destaque && destaque !== categoria && compacto && 'hidden')}>
                       <dt className={cn('text-rotulo text-tinta-apoio', destaque === categoria && 'font-medium text-tinta')}>{rotulo}</dt>
                       <dd className="flex flex-wrap gap-1">
-                        {itens.length === 0 ? <span className="text-rotulo text-tinta-sussurro">{vazio}</span> : itens.map((c) => (
-                          <Badge key={c.codigo} title={c.observacao ?? undefined}
-                            variant={pedido && capacidadeCombina(c, pedido) ? 'success' : destaque === categoria ? 'info' : 'secondary'}>
-                            {c.nome}{c.categoria === 'leito' && c.quantidade != null ? ` · ${c.quantidade}` : ''}{c.observacao ? ' *' : ''}
-                          </Badge>
-                        ))}
+                        {itens.length === 0 ? <span className="text-rotulo text-tinta-sussurro">{vazio}</span> : itens.map((c) => {
+                          const ficha = (
+                            <Badge variant={pedido && capacidadeCombina(c, pedido) ? 'success' : destaque === categoria ? 'info' : 'secondary'}>
+                              {c.nome}{c.categoria === 'leito' && c.quantidade != null ? ` · ${c.quantidade}` : ''}
+                              {c.observacao && <Info className="size-3" aria-hidden />}
+                            </Badge>
+                          )
+                          return c.observacao ? <Observacao key={c.codigo} nome={c.nome} texto={c.observacao}>{ficha}</Observacao>
+                            : <span key={c.codigo}>{ficha}</span>
+                        })}
                       </dd>
                     </div>
                   )
@@ -95,7 +103,7 @@ export function CapacidadesReguladas({ centralId, pedido = null, compacto = fals
     </ul>
   )
 
-  const nota = 'Cadastro do administrador da rede: o que cada unidade tem, não a vaga de agora (essa está no mapa de vagas). * tem observação; passe o mouse para ler.'
+  const nota = 'Cadastro do administrador da rede: o que cada unidade tem, não a vaga de agora (essa está no mapa de vagas). Item com ⓘ tem observação: toque para ler.'
   if (compacto) {
     return (
       <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3 text-apoio">
@@ -112,5 +120,24 @@ export function CapacidadesReguladas({ centralId, pedido = null, compacto = fals
       </CardHeader>
       <CardContent className="text-apoio">{conteudo}</CardContent>
     </Card>
+  )
+}
+
+/** Observação do cadastro: abre com clique ou toque. */
+function Observacao({ nome, texto, children }: { nome: string; texto: string; children: ReactNode }) {
+  return (
+    <Popover.Root>
+      <Popover.Trigger aria-label={`${nome}: ver a observação`} className="rounded-controle outline-none focus-visible:ring-2 focus-visible:ring-acao/40">
+        {children}
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner side="bottom" align="start" sideOffset={4} className="z-[80]">
+          <Popover.Popup className="max-w-72 rounded-container border border-fio bg-superficie px-3 py-2 text-apoio text-tinta shadow-popover outline-none">
+            <span className="block text-rotulo text-tinta-sussurro">{nome}</span>
+            {texto}
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
   )
 }

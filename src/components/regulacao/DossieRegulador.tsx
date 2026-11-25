@@ -11,6 +11,19 @@
 // externa vêm de quem monta a página (`decisao`), para não repetir o painel
 // de decisão. A conversa com a origem também (`conversa`): onde ela existe, a
 // aba aparece e "Cobrar na conversa" envia a mensagem pronta pela RPC dela.
+//
+// Revisão unslop (RT, 25/11/2026):
+// • RC3: ordem quadro → isolamento → vagas compatíveis → decisão; os botões
+//   da decisão ficam fixos no pé do dossiê (Autorizar como ação principal; a
+//   pergunta, a devolução e a negação como secundárias). "Reservar vaga" abre
+//   a mesma autorização com a unidade. Ações do cabeçalho numa linha.
+// • RC6: o isolamento aparece uma vez (a faixa); solicitante e médico
+//   assistente, um nome só quando é a mesma pessoa.
+// • RC7: sinais vitais com rótulos legíveis; os valores, crus, como vieram.
+// • RO2: na origem, a pergunta da central ainda sem resposta fica no topo,
+//   com "Responder", que leva ao campo da resposta.
+// • RO3: a situação e o agente do isolamento vêm do pedido
+//   (regulacao_detalhe, migration 20270426000044), iguais na central e na origem.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, FileText, X } from 'lucide-react'
@@ -35,9 +48,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { fmtDataHora } from '@/lib/datas'
-import { textoIsolamento, tiposDoIsolamento } from '@/lib/isolamentoPedido'
+import { tiposDoIsolamento } from '@/lib/isolamentoPedido'
 import {
-  CARATER, ISOLAMENTOS, PRIORIDADES, SITUACOES_ISOLAMENTO, STATUS, TIPOS_LEITO, VULNERABILIDADES, emDecisao, formatarEspera, prioridadeEfetiva,
+  CARATER, PRIORIDADES, STATUS, TIPOS_LEITO, VULNERABILIDADES, emDecisao, formatarEspera, prioridadeEfetiva, textoSolicitante,
   type Carater, type Prioridade, type Sla, type SituacaoIsolamento, type StatusRegulacao, type TipoSolicitacao, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { horasSemEvolucao, mensagemCobrarEvolucao, nivelEvolucao } from '@/lib/regulacaoFila'
@@ -45,6 +58,7 @@ import { montarLinhaDoTempo } from '@/lib/regulacaoLinhaTempo'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
+import { rotularSinaisVitais } from '@/lib/vitaisLegiveis'
 
 /** Campos do regulacao_detalhe que o dossiê lê. */
 export type PedidoDossie = {
@@ -69,6 +83,12 @@ export type PedidoDossie = {
   evolucoes?: Evolucao[]; pode_evoluir?: boolean
   /** quem pede pode responder, cancelar e mudar o isolamento */
   origem_pode_responder?: boolean
+  pendencia_pergunta?: string | null; pendencia_em?: string | null; pendencia_por?: string | null; pendencia_resposta?: string | null
+}
+
+/** A evolução mais recente pela data (o banco manda da mais nova para a mais antiga; não depende da ordem). */
+function maisRecente(evolucoes: Evolucao[]): Evolucao | null {
+  return evolucoes.reduce<Evolucao | null>((a, e) => (!a || Date.parse(e.em) > Date.parse(a.em) ? e : a), null)
 }
 
 /** O que a fila sabe do pedido e o detalhe não traz. */
@@ -197,7 +217,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
   const aberto = emDecisao(s.status) || s.status === 'devolvida'
   const decide = souRegulador && emDecisao(s.status) && !(fila?.assumida_por && !fila.assumida_por_mim)
   const evolucoes = s.evolucoes ?? []
-  const ultima = evolucoes.length ? evolucoes[evolucoes.length - 1] : null
+  const ultima = maisRecente(evolucoes)
   const situacao = s.isolamento_situacao ?? fila?.situacao ?? null
   const agente = s.isolamento_agente ?? fila?.agente ?? null
   const linha = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes, rotulosDocumento: ROTULO_DOCUMENTO })
@@ -211,14 +231,24 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
     && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
   // isolamento: o regulador da central ou quem pede (a RPC confere)
   const mudaIsolamento = aberto && ((central && souRegulador) || origemResponde)
+  // RO2: a pergunta da central sem resposta, no topo do dossiê da origem
+  const perguntaAberta = !central && s.status === 'pendencia' && !!s.pendencia_pergunta && !s.pendencia_resposta
+  const responder = () => {
+    decisaoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    requestAnimationFrame(() => (document.getElementById(`resp-${s.id}`) as HTMLTextAreaElement | null)?.focus({ preventScroll: true }))
+  }
+  const solicitante = textoSolicitante(s.solicitante, s.medico_assistente)
+  // RC3: os botões da decisão no pé; o "…" fica com o resto
+  const pe: [AcaoDecisao, string][] = decide ? [
+    ['autorizar', 'Autorizar'],
+    ...(s.status !== 'pendencia' ? [['pendencia', 'Pergunta à origem'] as [AcaoDecisao, string]] : []),
+    ['devolver', 'Devolver à origem'], ['negar', 'Negar'],
+  ] : []
 
   const menu: AcaoMenu[] = [
-    ...(decide ? [{ chave: 'pendencia', rotulo: 'Pergunta à origem (pendência)', onSelecionar: () => abrirDecisao('pendencia') }] : []),
     ...(souRegulador && aberto ? [{ chave: 'prioridade', rotulo: 'Reclassificar prioridade', onSelecionar: () => setPainel('prioridade') }] : []),
     ...(mudaIsolamento ? [{ chave: 'isolamento', rotulo: s.isolamento ? 'Alterar isolamento' : 'Definir isolamento', desligado: foraDoPlantao, onSelecionar: () => setPainel('isolamento') }] : []),
     ...(fila?.assumida_por_mim ? [{ chave: 'soltar', rotulo: 'Devolver à fila (deixar de assumir)', onSelecionar: () => assumir.mutate('regulacao_soltar') }] : []),
-    ...(decide ? [{ chave: 'devolver', rotulo: 'Devolver à origem', perigo: true, onSelecionar: () => abrirDecisao('devolver') },
-      { chave: 'negar', rotulo: 'Negar', perigo: true, onSelecionar: () => abrirDecisao('negar') }] : []),
     ...(cancelavel ? [{ chave: 'cancelar', rotulo: 'Cancelar solicitação', perigo: true, desligado: foraDoPlantao, onSelecionar: () => abrirDecisao('cancelar') }] : []),
   ]
   const abas: [AbaDossie, string, number | undefined][] = [
@@ -239,21 +269,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
           <span className="text-tinta-apoio">Pedido nº {s.numero}</span>
           {s.tipo_leito && <Badge variant="secondary">{TIPOS_LEITO[s.tipo_leito] ?? s.tipo_leito}</Badge>}
           {judicial && <Badge variant="destructive">Mandado judicial</Badge>}
-          <span className="ml-auto flex flex-wrap items-center gap-1.5">
-            {souRegulador && emDecisao(s.status) && fila && !fila.assumida_por && (
-              <Button size="xs" onClick={() => assumir.mutate('regulacao_assumir')} disabled={assumir.isPending}>Assumir</Button>
-            )}
-            {central && conversa && s.sla?.evolucao && aberto && (
-              <Button size="xs" variant={nivel === 'em_dia' ? 'outline' : 'default'} disabled={cobrar.isPending}
-                onClick={() => cobrar.mutate(mensagemCobrarEvolucao(s, Date.now()))}>Cobrar evolução</Button>
-            )}
-            {s.pode_evoluir && <Button size="xs" variant="outline" {...desligado} onClick={() => setPainel('evolucao')}>Atualizar evolução</Button>}
-            {leitoOuTransf && (
-              <Button size="xs" variant="outline" aria-expanded={verDocumento} onClick={() => setVerDocumento((v) => !v)}><FileText /> Documento de transferência</Button>
-            )}
-            <MenuAcoesPedido itens={menu} />
-            {aoFechar && <Button size="icon-sm" variant="ghost" aria-label="Fechar o pedido" className="hidden lg:inline-flex" onClick={aoFechar}><X /></Button>}
-          </span>
+          {aoFechar && <Button size="icon-sm" variant="ghost" aria-label="Fechar o pedido" className="ml-auto hidden lg:inline-flex" onClick={aoFechar}><X /></Button>}
         </div>
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h3 className="text-corpo font-semibold text-tinta">
@@ -264,12 +280,35 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
           {fila?.assumida_por && <span className="text-tinta-sussurro">{fila.assumida_por_mim ? 'com você' : `com ${fila.assumida_por}`}</span>}
         </div>
         <span className="text-tinta-apoio">{[fila?.municipio, s.origem.nome].filter(Boolean).join(' · ')} <span className="text-tinta-sussurro">(CNES {s.cnes_solicitante})</span></span>
+        <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {souRegulador && emDecisao(s.status) && fila && !fila.assumida_por && (
+            <Button size="xs" className="shrink-0" onClick={() => assumir.mutate('regulacao_assumir')} disabled={assumir.isPending}>Assumir</Button>
+          )}
+          {central && conversa && s.sla?.evolucao && aberto && (
+            <Button size="xs" className="shrink-0" variant={nivel === 'em_dia' ? 'outline' : 'default'} disabled={cobrar.isPending}
+              onClick={() => cobrar.mutate(mensagemCobrarEvolucao(s, Date.now()))}>Cobrar evolução</Button>
+          )}
+          {s.pode_evoluir && <Button size="xs" className="shrink-0" variant="outline" {...desligado} onClick={() => setPainel('evolucao')}>Atualizar evolução</Button>}
+          {leitoOuTransf && (
+            <Button size="xs" className="shrink-0" variant="outline" aria-expanded={verDocumento} title="Documento de transferência" onClick={() => setVerDocumento((v) => !v)}><FileText /> Documento</Button>
+          )}
+          <MenuAcoesPedido itens={menu} />
+        </div>
       </header>
 
       <div className="flex flex-col gap-3 p-4">
         <MensagemErro texto={(assumir.error ?? cobrar.error) ? ((assumir.error ?? cobrar.error) as Error).message : null} />
         {aviso && <p role="status" className="text-sucesso">{aviso}</p>}
         <AvisoPlantao texto={foraDoPlantao} />
+        {perguntaAberta && (
+          <section aria-label="Pergunta da central" className="flex flex-wrap items-start gap-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2">
+            <p className="min-w-0 flex-1 text-tinta">
+              <b>A central perguntou</b>
+              <span className="text-tinta-apoio"> ({s.pendencia_por ?? '—'}{s.pendencia_em ? `, ${fmtDataHora(s.pendencia_em)}` : ''})</span>: {s.pendencia_pergunta}
+            </p>
+            {origemResponde && <Button size="xs" {...desligado} onClick={responder}>Responder</Button>}
+          </section>
+        )}
         {nivel !== 'em_dia' && s.sla?.evolucao && (
           <div className={cn('flex flex-wrap items-center gap-2 rounded-controle border px-3 py-2',
             nivel === 'risco' ? 'border-critico/40 bg-alerta-critico' : 'border-atencao/40 bg-alerta-atencao')}>
@@ -308,14 +347,10 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
           <Item rotulo="Vulnerabilidade">{(s.vulnerabilidades ?? []).map((v) => VULNERABILIDADES[v]).join(', ') || 'Nenhuma'}</Item>
           <Item rotulo="Leito solicitado">{s.tipo_leito ? TIPOS_LEITO[s.tipo_leito] ?? s.tipo_leito : '—'}</Item>
           <Item rotulo="CID-10" className="sm:col-span-2">{s.cid} {s.cid_descricao ?? ''}</Item>
-          <Item rotulo="Isolamento">
-            {s.isolamento && s.isolamento_tipo ? `${textoIsolamento(s) ?? ISOLAMENTOS[s.isolamento_tipo] ?? s.isolamento_tipo}${situacao ? ` · ${SITUACOES_ISOLAMENTO[situacao as SituacaoIsolamento] ?? situacao}` : ''}` : 'Precaução padrão'}
-          </Item>
           <Item rotulo="Destino" className="sm:col-span-2">{destino}</Item>
           <Item rotulo="Origem (CNES)">{s.origem.nome} · {s.cnes_solicitante}</Item>
-          <Item rotulo="Solicitante / médico assistente" className="sm:col-span-3">
-            {s.solicitante ?? '—'}{s.medico_assistente ? ` · assistente: ${s.medico_assistente}` : ''}
-          </Item>
+          {!s.isolamento && <Item rotulo="Isolamento">Precaução padrão</Item>}
+          <Item rotulo={solicitante.rotulo} className="sm:col-span-3">{solicitante.texto}</Item>
         </dl>
 
         <section aria-label="Quadro clínico" className="flex flex-col gap-1 rounded-controle border border-fio bg-campo px-3 py-2">
@@ -324,28 +359,37 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
             <span className="text-rotulo text-tinta-sussurro">Evolução v{evolucoes.length + 1}</span>
           </div>
           <p className="whitespace-pre-wrap text-tinta">{s.quadro_clinico}</p>
+          {s.sinais_vitais && <p className="text-tinta-apoio">Sinais vitais: {rotularSinaisVitais(s.sinais_vitais)}</p>}
           {s.hipotese && <p className="text-tinta-apoio">Hipótese: {s.hipotese}</p>}
           {ultima && (
             <div className="mt-1 border-t border-fio pt-1">
               <span className="text-rotulo text-tinta-sussurro">Última evolução · {ultima.autor ?? '—'} · {fmtDataHora(ultima.em)}</span>
               <p className="whitespace-pre-wrap text-tinta">{ultima.texto}</p>
-              {ultima.sinais_vitais && <p className="text-tinta-apoio">Sinais vitais: {ultima.sinais_vitais}</p>}
+              {ultima.sinais_vitais && <p className="text-tinta-apoio">Sinais vitais: {rotularSinaisVitais(ultima.sinais_vitais)}</p>}
             </div>
           )}
         </section>
-
-        <div ref={decisaoRef} className="flex flex-col gap-3">{decisao(s.id, ctrl, recarregar)}</div>
 
         {central && leitoOuTransf && aberto && (
           <MatchVagas centralId={centralId} podeReservar={decide} aoReservar={(u) => abrirDecisao('autorizar', u)}
             pedido={{ tipo_leito: s.tipo_leito, isolamento_tipo: s.isolamento ? s.isolamento_tipo : null, isolamento_tipos: s.isolamento ? s.isolamento_tipos : null, origem_id: s.origem.id, origem: fila?.origem_coord }} />
         )}
 
+        <div ref={decisaoRef} className="flex scroll-mt-28 flex-col gap-3">{decisao(s.id, ctrl, recarregar)}</div>
+
         <Abas abas={abas} valor={abas.some(([k]) => k === aba) ? aba : abas[0][0]} onChange={setAba} rotulo="Do pedido" className="mb-0" />
         {aba === 'conversa' && conversa ? <conversa.Painel solicitacaoId={s.id} aoEnviar={recarregar} />
           : aba === 'anexos' ? <AnexosRegulacao solicitacaoId={s.id} />
           : <LinhaDoTempoPedido itens={linha} tempos={s.tempos ?? []} statusAtual={s.status} />}
       </div>
+      {pe.length > 0 && (
+        <footer aria-label="Decisão da central" className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-fio bg-superficie px-4 py-2">
+          {pe.map(([a, rotulo], i) => (
+            <Button key={a} size="sm" variant={i === 0 ? 'default' : 'outline'} aria-pressed={ctrl.acao === a}
+              className={cn(a === 'negar' && 'text-critico hover:text-critico', i === 1 && 'ml-auto')} onClick={() => abrirDecisao(a)}>{rotulo}</Button>
+          ))}
+        </footer>
+      )}
     </article>
     </ContextoPlantaoOrigem.Provider>
   )

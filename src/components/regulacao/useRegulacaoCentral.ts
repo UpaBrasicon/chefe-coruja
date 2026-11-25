@@ -61,7 +61,11 @@ export function useVagasCentral(centralId: string, ativo = true) {
 
 export type AbaOrigem = 'esperando' | 'enviados' | 'recebidos'
 
-type PedidoDaLista = Omit<ItemConsole, 'espera_segundos' | 'assumida_por' | 'assumida_por_mim'> & { criada_em: string }
+type PedidoDaLista = Omit<ItemConsole, 'espera_segundos' | 'assumida_por' | 'assumida_por_mim'> & {
+  criada_em: string
+  /** RO3 (migration 20270426000044): o mesmo isolamento que a central lê do extra da fila */
+  isolamento_situacao?: string | null; isolamento_agente?: string | null
+}
 type PedidoRecebido = {
   id: string; numero: number; status: StatusRegulacao; prioridade: Prioridade; prioridade_regulador: Prioridade | null
   tipo_leito: string | null; paciente: { nome: string }; origem: { nome: string }
@@ -106,7 +110,10 @@ export function useFilaOrigem(unidadeId: string, aba: AbaOrigem) {
       }))
     : (lista.data ?? [])
         .filter((s) => (aba === 'esperando') === esperandoDecisao(s.status))
-        .map((s) => ({ ...s, espera_segundos: seg(s.criada_em), assumida_por: null, assumida_por_mim: false }))
+        .map((s) => ({
+          ...s, espera_segundos: seg(s.criada_em), assumida_por: null, assumida_por_mim: false,
+          situacao: s.isolamento_situacao ?? null, agente: s.isolamento_agente ?? null,
+        }))
   return { itens, carregando: q.isLoading, erro: q.error, atualizadoEm: agora }
 }
 

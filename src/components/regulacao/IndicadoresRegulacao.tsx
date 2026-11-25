@@ -6,6 +6,10 @@
 // e gargalos. A central e os papéis de rede veem a rede; o gestor vê a
 // unidade dele como origem e como destino. Só números; exporta CSV.
 // Migration 20261118000001_indicadores_regulacao.sql.
+// RC5 da revisão unslop (RT, 25/11/2026): faixa com os três tempos (mediana
+// grande, p90 pequeno) e uma tabela única com o desdobramento por prioridade
+// e por tipo; "0 min" em vez de "agora"; plural certo; fila agora na ordem
+// 1 → 4; volume por dia só como barras quando há mais de um dia.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery } from '@tanstack/react-query'
 import { Download, LineChart } from 'lucide-react'
@@ -21,8 +25,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { baixarCsv, gerarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { dataIso } from '@/lib/formato'
 import {
-  avisoPeriodoVazio, diasDoPeriodo, filtrosIndicadoresParaEnvio, linhasCsvIndicadores, secoesComDados, taxa, tempo,
-  type BlocoTempo, type FiltrosIndicadores, type Indicadores,
+  avisoPeriodoVazio, dataCurta, desdobramento, diasDoPeriodo, emOrdem, filtrosIndicadoresParaEnvio, linhasCsvIndicadores, plural, secoesComDados, taxa, tempo,
+  type Estat, type FiltrosIndicadores, type Indicadores,
 } from '@/lib/indicadoresRegulacao'
 import { MOTIVOS_NEGACAO, MOTIVOS_RECUSA_DESTINO, PRIORIDADES, TIPOS, TIPOS_LEITO, type Prioridade, type TipoSolicitacao } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
@@ -84,7 +88,7 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           <LineChart className="size-4" aria-hidden /> Indicadores de regulação
-          {d && d.total > 0 && <span className="text-apoio font-normal text-tinta-apoio">{d.total === 1 ? '1 pedido' : `${d.total} pedidos`} no período</span>}
+          {d && d.total > 0 && <span className="text-apoio font-normal text-tinta-apoio">{plural(d.total, 'pedido')} no período</span>}
           {d && <Button size="xs" variant="outline" className="ml-auto" onClick={exportar}><Download className="size-3.5" /> Exportar CSV</Button>}
         </CardTitle>
         <CardDescription>
@@ -135,17 +139,18 @@ export function IndicadoresRegulacao({ unidadeId, unidades = [] }: { unidadeId: 
                 </div>
               )}
               {tem?.tempos && <Secao titulo="Tempos">
-                <div className="grid gap-3 md:grid-cols-3">
-                  {(Object.keys(ROTULO_TEMPO) as (keyof typeof ROTULO_TEMPO)[]).map((k) => <Tempo key={k} titulo={ROTULO_TEMPO[k]} b={d.tempos[k]} />)}
-                </div>
+                <dl className="grid grid-cols-1 divide-y divide-fio rounded-controle border border-fio sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                  {(Object.keys(ROTULO_TEMPO) as (keyof typeof ROTULO_TEMPO)[]).map((k) => <Tempo key={k} titulo={ROTULO_TEMPO[k]} e={d.tempos[k].geral} />)}
+                </dl>
+                <Desdobramento t={d.tempos} />
               </Secao>}
 
               {tem?.fila && <Secao titulo="Fila agora">
                 <div className="flex flex-wrap gap-1.5">
                   {Object.keys(d.fila_atual.por_tipo).length === 0 ? <span className="text-tinta-sussurro">Nada esperando decisão.</span> : (
                     <>
+                      {emOrdem(d.fila_atual.por_prioridade).map(([k, n]) => <Badge key={k} variant="secondary">{rotuloGrupo(k)}: {n}</Badge>)}
                       {Object.entries(d.fila_atual.por_tipo).map(([k, n]) => <Badge key={k} variant="info">{rotuloGrupo(k)}: {n}</Badge>)}
-                      {Object.entries(d.fila_atual.por_prioridade).map(([k, n]) => <Badge key={k} variant="secondary">{rotuloGrupo(k)}: {n}</Badge>)}
                     </>
                   )}
                 </div>
@@ -204,20 +209,46 @@ function Item({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
   return <div><dt className="inline text-tinta-sussurro">{rotulo}: </dt><dd className="inline tabular-nums text-tinta">{valor}</dd></div>
 }
 
-function Tempo({ titulo, b }: { titulo: string; b: BlocoTempo }) {
-  const grupos = [...b.por_prioridade, ...b.por_tipo]
+/** Um tempo da faixa: mediana grande, p90 e o número de pedidos abaixo. */
+function Tempo({ titulo, e }: { titulo: string; e: Estat | null }) {
   return (
-    <div className="flex flex-col gap-1 rounded-controle border border-fio p-3">
-      <span className="text-rotulo text-tinta-sussurro">{titulo}</span>
-      {b.geral && b.geral.n > 0 ? (
+    <div className="flex flex-col gap-0.5 px-3 py-2.5">
+      <dt className="text-rotulo text-tinta-sussurro">{titulo}</dt>
+      {e && e.n > 0 ? (
         <>
-          <span className="text-secao font-semibold tabular-nums text-tinta">{tempo(b.geral.mediana)}</span>
-          <span className="text-rotulo text-tinta-apoio">p90 {tempo(b.geral.p90)} · {b.geral.n} pedido(s)</span>
-          <ul className="mt-1 text-rotulo text-tinta-apoio">
-            {grupos.map((g) => <li key={g.grupo}>{rotuloGrupo(g.grupo)}: {tempo(g.mediana)} (p90 {tempo(g.p90)}, {g.n})</li>)}
-          </ul>
+          <dd className="text-secao font-semibold tabular-nums text-tinta">{tempo(e.mediana)}</dd>
+          <dd className="text-rotulo tabular-nums text-tinta-apoio">p90 {tempo(e.p90)} · {plural(e.n, 'pedido')}</dd>
         </>
-      ) : <span className="text-tinta-sussurro">Sem casos no período.</span>}
+      ) : <dd className="text-tinta-sussurro">Sem casos no período.</dd>}
+    </div>
+  )
+}
+
+/** Os três tempos por prioridade (1 → 4) e por tipo, numa tabela só. */
+function Desdobramento({ t }: { t: Indicadores['tempos'] }) {
+  const linhas = desdobramento(t)
+  if (linhas.length === 0) return null
+  const celula = (e: Estat | null) => (e && e.n > 0 ? (
+    <>{tempo(e.mediana)} <span className="text-rotulo text-tinta-sussurro">p90 {tempo(e.p90)} · {e.n}</span></>
+  ) : <span className="text-tinta-sussurro">—</span>)
+  return (
+    <div className="overflow-x-auto">
+      <Table variante="referencia" className="w-full min-w-[34rem] text-left">
+        <TableHeader className="text-rotulo text-tinta-sussurro">
+          <TableRow>
+            <TableHead className="py-1 font-normal">Grupo</TableHead>
+            {(Object.keys(ROTULO_TEMPO) as (keyof typeof ROTULO_TEMPO)[]).map((k) => <TableHead key={k} className="font-normal">{ROTULO_TEMPO[k]}</TableHead>)}
+          </TableRow>
+        </TableHeader>
+        <TableBody className="tabular-nums">
+          {linhas.map((l, i) => (
+            <TableRow key={`${l.tipo}:${l.grupo}`} className={i > 0 && l.tipo !== linhas[i - 1].tipo ? 'border-t-2 border-fio' : 'border-t border-fio'}>
+              <TableCell className="py-1 text-tinta">{rotuloGrupo(l.grupo)}</TableCell>
+              <TableCell>{celula(l.decisao)}</TableCell><TableCell>{celula(l.aceite)}</TableCell><TableCell>{celula(l.chegada)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }
@@ -242,6 +273,8 @@ function Tabela({ cab, linhas }: { cab: string[]; linhas: (string | number)[][] 
 
 function PorDia({ dias }: { dias: { dia: string; n: number }[] }) {
   if (dias.length === 0) return <span className="text-tinta-sussurro">Sem pedidos no período.</span>
+  // uma barra só não compara nada: um dia vira uma frase
+  if (dias.length === 1) return <span className="text-tinta">{plural(dias[0].n, 'pedido')} em {dataCurta(dias[0].dia)}; nenhum nos outros dias do período.</span>
   const max = Math.max(...dias.map((x) => x.n))
   return (
     <ul className="flex flex-col gap-0.5">

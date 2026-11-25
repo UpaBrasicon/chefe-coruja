@@ -6,7 +6,7 @@ import { FORMULARIO_VAZIO, isolamentoParaDefinir, type Sla } from './regulacao.t
 import {
   agrupar, comExtras, compatibilidade, contarAtalhos, demandaIsolamento, distanciaKm, distribuicaoPrioridade, esperaPorLeito,
   filtrarLocal, horasSemEvolucao, idsVisiveis, matchVagas, mensagemCobrarEvolucao, nivelEvolucao, ordenar, porMunicipio,
-  saldoDoTipo, vizinho, type PedidoFila, type UnidadeVagas,
+  saldoDoTipo, vizinho, ATALHOS_ORIGEM, seloIsolamento, type PedidoFila, type UnidadeVagas,
 } from './regulacaoFila.ts'
 
 const AGORA = Date.parse('2026-11-25T12:00:00Z')
@@ -143,4 +143,12 @@ test('RG2: situação e agente só vão quando há isolamento e algo preenchido'
   assert.equal(isolamentoParaDefinir({ ...FORMULARIO_VAZIO, isolamento: true, isolamento_tipo: 'contato' }), null)
   assert.deepEqual(isolamentoParaDefinir({ ...FORMULARIO_VAZIO, isolamento: true, isolamento_tipo: 'reverso', isolamento_situacao: 'confirmado', isolamento_agente: ' neutropenia ' }),
     { p_tipo: 'reverso', p_situacao: 'confirmado', p_agente: 'neutropenia' })
+})
+
+test('RO2 e RO3: atalhos da origem e selo do isolamento com a situação', () => {
+  const itens = [p({ status: 'pendencia' }), p({ status: 'devolvida', sla: sla(30) }), p({})]
+  assert.deepEqual(contarAtalhos(itens, ATALHOS_ORIGEM), { perguntou: 1, evolucao_vencida: 1, devolvido: 1, risco: 0 })
+  assert.equal(filtrarLocal(itens, { atalhos: ['perguntou'] }).length, 1)
+  assert.equal(seloIsolamento({ isolamento_tipo: 'goticula', situacao: 'suspeito' }), 'Gotícula · suspeito')
+  assert.equal(seloIsolamento({ isolamento_tipo: 'goticula', situacao: null }), 'Gotícula')
 })

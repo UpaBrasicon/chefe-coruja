@@ -34,9 +34,48 @@ export function taxa(parte: number, total: number): string {
   return `${Math.round((parte / total) * 100)}%`
 }
 
-/** Tempo em segundos para leitura ("—" sem dado). */
+/**
+ * Tempo em segundos para leitura ("—" sem dado). Indicador é duração, não
+ * relógio: menos de um minuto é "0 min", nunca "agora" (RC5 da revisão unslop).
+ */
 export function tempo(seg: number | null | undefined): string {
-  return seg == null ? '—' : formatarEspera(seg)
+  if (seg == null) return '—'
+  return seg < 60 ? '0 min' : formatarEspera(seg)
+}
+
+/** "1 pedido", "3 pedidos" (em vez de "pedido(s)"). */
+export function plural(n: number, um: string, varios = `${um}s`): string {
+  return `${n} ${n === 1 ? um : varios}`
+}
+
+const PESO_PRIORIDADE: Record<string, number> = { nao_classificada: 0, emergencia: 1, urgencia: 2, prioritaria: 3, eletiva: 4 }
+const pesoGrupo = (g: string) => PESO_PRIORIDADE[g] ?? 10
+
+/** Contagens por grupo na ordem da prioridade (1 → 4); o que não é prioridade, depois, como veio. */
+export function emOrdem(m: Record<string, number>): [string, number][] {
+  return Object.entries(m).sort((a, b) => pesoGrupo(a[0]) - pesoGrupo(b[0]))
+}
+
+export type LinhaDesdobramento = { grupo: string; tipo: 'prioridade' | 'tipo'; decisao: Estat | null; aceite: Estat | null; chegada: Estat | null }
+
+/**
+ * RC5: uma tabela com os três tempos por grupo (prioridade 1 → 4, depois o
+ * tipo do pedido), em vez de três cartões com listas. Grupo sem caso num
+ * tempo fica null nesse tempo.
+ */
+export function desdobramento(t: Indicadores['tempos']): LinhaDesdobramento[] {
+  const linhas = new Map<string, LinhaDesdobramento>()
+  for (const chave of ['decisao', 'aceite', 'chegada'] as const) {
+    for (const [tipo, lista] of [['prioridade', t[chave].por_prioridade], ['tipo', t[chave].por_tipo]] as const) {
+      for (const g of lista) {
+        const k = `${tipo}:${g.grupo}`
+        if (!linhas.has(k)) linhas.set(k, { grupo: g.grupo, tipo, decisao: null, aceite: null, chegada: null })
+        linhas.get(k)![chave] = { n: g.n, mediana: g.mediana, p90: g.p90 }
+      }
+    }
+  }
+  return [...linhas.values()].sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === 'prioridade' ? -1 : 1)
+    || (a.tipo === 'prioridade' ? pesoGrupo(a.grupo) - pesoGrupo(b.grupo) : 0))
 }
 
 /** Filtros sem os campos vazios. */

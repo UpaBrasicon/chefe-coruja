@@ -455,3 +455,9 @@ export function duplicataDaChegada(mensagem: string | null | undefined): { id: s
   const m = /CHEGADA_DUPLICATA_PROVAVEL:([0-9a-f-]{36})\s*(.*)$/i.exec(mensagem ?? '')
   return m ? { id: m[1], texto: m[2].trim() } : null
 }
+
+/** RC6 (revisão unslop, RT 25/11/2026): um nome quando solicitante e médico assistente são a mesma pessoa. */
+export function textoSolicitante(solicitante: string | null, assistente: string | null): { rotulo: string; texto: string } {
+  if (!assistente || assistente === solicitante) return { rotulo: assistente ? 'Solicitante e médico assistente' : 'Solicitante', texto: solicitante ?? '—' }
+  return { rotulo: 'Solicitante / médico assistente', texto: `${solicitante ?? '—'} · assistente: ${assistente}` }
+}

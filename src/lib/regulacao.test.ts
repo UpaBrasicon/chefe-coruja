@@ -172,3 +172,10 @@ test('chegada regulada interna: quando interna, reserva válida e duplicata (R1 
     { id: '0d479e47-0ab9-4f08-ab9c-f15b77f69d81', texto: 'Já existe cadastro com o mesmo nome e nascimento nesta unidade.' })
   assert.equal(duplicataDaChegada('Leito não encontrado nesta unidade.'), null)
 })
+
+test('RC6: solicitante e médico assistente sem repetir o nome', async () => {
+  const { textoSolicitante } = await import('./regulacao.ts')
+  assert.deepEqual(textoSolicitante('Ana', 'Ana'), { rotulo: 'Solicitante e médico assistente', texto: 'Ana' })
+  assert.deepEqual(textoSolicitante('Ana', null), { rotulo: 'Solicitante', texto: 'Ana' })
+  assert.deepEqual(textoSolicitante('Ana', 'Bia'), { rotulo: 'Solicitante / médico assistente', texto: 'Ana · assistente: Bia' })
+})
