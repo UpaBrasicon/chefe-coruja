@@ -29,8 +29,9 @@ test('sem perfil escolhido tudo é do perfil; a separação mantém a ordem', ()
 })
 
 test('E1: o número de não lidos (tela e menu) conta só os avisos do perfil em uso', () => {
-  assert.ok(readFileSync('src/pages/Notificacoes.tsx', 'utf8').includes('naoLidos = separarPorPerfil(todos, papelAtivo).doPerfil'))
-  assert.ok(readFileSync('src/components/casca/useNotasNav.ts', 'utf8').includes('avisos: separarPorPerfil(avisos.data ?? [], papel).doPerfil'))
+  // a lista simples (master) ou a agrupada (homologação): o número vem do que é do perfil
+  assert.match(readFileSync('src/pages/Notificacoes.tsx', 'utf8'), /separarPorPerfil\((todos|grupos), papelAtivo\)\.doPerfil/)
+  assert.ok(readFileSync('src/components/casca/useNotasNav.ts', 'utf8').includes('separarPorPerfil(avisos.data ?? [], papel).doPerfil'))
 })
 
 test('TE-a: no Técnico a classificação do dia aparece sem o botão das escalas', () => {
