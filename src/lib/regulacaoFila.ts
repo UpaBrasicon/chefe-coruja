@@ -6,6 +6,7 @@
 // aqui inventa valor.
 
 import { ISOLAMENTOS, PRIORIDADES, TIPOS_LEITO, prioridadeEfetiva, type Prioridade, type Sla, type StatusRegulacao, type Vulnerabilidade } from './regulacao.ts'
+import { tempoSemEvolucao } from './tempoSemEvolucao.ts'
 
 /** O que a fila precisa de cada pedido (JSON da regulacao_fila + regulacao_fila_extras). */
 export type PedidoFila = {
@@ -57,7 +58,7 @@ export function mensagemCobrarEvolucao(s: { numero: number; sla: Sla | null }, a
   const h = horasSemEvolucao(s.sla, agoraMs)
   const e = s.sla?.evolucao
   const prazo = e ? (e.risco_cancelamento ? `${e.limite_h} h, prazo de cancelamento da central` : `${e.prazo_h} h, prazo da central`) : null
-  return `Pedido nº ${s.numero}: a evolução clínica está vencida${h != null ? ` (${h} h sem evolução${prazo ? `; ${prazo}` : ''})` : ''}. `
+  return `Pedido nº ${s.numero}: a evolução clínica está vencida${h != null ? ` (${tempoSemEvolucao(h)} sem evolução${prazo ? `; ${prazo}` : ''})` : ''}. `
     + 'Por favor, atualize a evolução no pedido (quadro atual, sinais vitais, suporte em uso e se o leito ainda é necessário).'
 }
 

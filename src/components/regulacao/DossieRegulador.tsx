@@ -41,6 +41,7 @@ import { horasSemEvolucao, mensagemCobrarEvolucao, nivelEvolucao } from '@/lib/r
 import { montarLinhaDoTempo } from '@/lib/regulacaoLinhaTempo'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
 
 /** Campos do regulacao_detalhe que o dossiê lê. */
 export type PedidoDossie = {
@@ -244,7 +245,7 @@ export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, co
           <div className={cn('flex flex-wrap items-center gap-2 rounded-controle border px-3 py-2',
             nivel === 'risco' ? 'border-critico/40 bg-alerta-critico' : 'border-atencao/40 bg-alerta-atencao')}>
             <span className="text-tinta">
-              <b className="tabular-nums">{horas} h</b> sem evolução: {nivel === 'risco'
+              <b className="tabular-nums">{tempoSemEvolucao(horas)}</b> sem evolução: {nivel === 'risco'
                 ? `prazo de cancelamento da central (${s.sla.evolucao.limite_h} h)`
                 : `evolução vencida (prazo da central: ${s.sla.evolucao.prazo_h} h)`}
             </span>
