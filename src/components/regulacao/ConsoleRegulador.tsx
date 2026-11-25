@@ -1,22 +1,27 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Fila do médico regulador no modelo do RT (25/11/2026), RG1, RG6–RG8 e os
-// indicadores da fila agora. Duas colunas: a fila densa à esquerda (nº,
-// paciente, tipo de leito, município · unidade, tempo na fila, horas sem
-// evolução em âmbar/vermelho pelos prazos reais da central, isolamento e
-// agente, borda pela prioridade) e o dossiê à direita (DossieRegulador). No
-// celular, uma coisa por vez, com "Voltar à fila".
-// Barra: busca ("/"), Agrupar por, Ordenar, selects e atalhos com contagem;
-// J/K e as setas navegam. Dados: regulacao_fila (a mesma da tela anterior) e
-// regulacao_fila_extras (migration 20270425000020). Lógica em
-// src/lib/regulacaoFila.ts.
+// Console do médico regulador no modelo do RT (25/11/2026; "manter a ideia
+// inicial", mesmo dia), RG1, RG6–RG8 e os indicadores da fila agora.
+// • Abas do topo no estilo do modelo (AbasConsole), com a contagem e, à
+//   direita, "Atualizado" e "Nova solicitação".
+// • Barra de filtros em largura cheia: busca ("/"), Agrupar por em
+//   segmentos e Ordenar na mesma linha; selects e atalhos com contagem.
+// • Fila densa (~410 px) à esquerda e dossiê no resto, as duas colunas com a
+//   altura da janela e rolagem própria; grupos em caixa ("1 · EMERGÊNCIA 6");
+//   linha com #nº, nome, etiqueta do leito, município · unidade, tempo na fila
+//   e "evol." à direita, isolamento com agente. No celular, uma coisa por vez,
+//   com "Voltar à fila". J/K e as setas navegam.
+// • FilaDensa é a mesma na central (ConsoleRegulador: regulacao_fila +
+//   regulacao_fila_extras) e, no perfil Médico regulador numa unidade de
+//   origem, nas abas Esperando decisão / Enviados / Recebidos (ConsoleOrigem),
+//   com as ações e regras do lado da origem no dossiê.
+// Lógica em src/lib/regulacaoFila.ts; migration 20270425000020.
 // ─────────────────────────────────────────────────────────────────────────────
 import { ChevronDown, ChevronRight, Search, Waypoints } from 'lucide-react'
 import * as React from 'react'
 
 import { DossieRegulador, PontoPrioridade, type ControleDecisao, type ConversaSlot } from '@/components/regulacao/DossieRegulador'
-import { useFilaCentral, useVagasCentral, type ItemConsole } from '@/components/regulacao/useRegulacaoCentral'
+import { useFilaCentral, useFilaOrigem, useVagasCentral, type AbaOrigem, type ItemConsole } from '@/components/regulacao/useRegulacaoCentral'
 import { Chip, Vazio } from '@/components/monitor/Pagina'
-import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,30 +43,66 @@ import {
 import { cn } from '@/lib/utils'
 import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
 
+// ── abas do topo ────────────────────────────────────────────────────────────
+export type AbaConsole<K extends string> = { chave: K; rotulo: string; contagem?: number | string }
+
+/** Abas do topo do modelo: sublinhado na ativa, contagem em etiqueta, ações à direita. */
+export function AbasConsole<K extends string>({ abas, valor, onChange, direita }: {
+  abas: AbaConsole<K>[]; valor: K; onChange: (k: K) => void; direita?: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-wrap items-end gap-x-3 gap-y-2 border-b border-fio">
+      <div role="tablist" aria-label="Regulação" className="flex min-w-0 flex-1 flex-wrap gap-x-1">
+        {abas.map((a) => (
+          <BotaoLinha key={a.chave} variante="linha" role="tab" aria-selected={valor === a.chave} onClick={() => onChange(a.chave)}
+            className={cn('-mb-px w-auto items-center gap-1.5 border-b-2 px-3 py-2 text-apoio last:border-b-2 hover:bg-campo',
+              valor === a.chave ? 'border-b-acao font-medium text-tinta' : 'border-b-transparent text-tinta-apoio')}>
+            {a.rotulo}
+            {a.contagem !== undefined && (
+              <span className="rounded-controle border border-fio bg-campo px-1.5 font-mono text-rotulo tabular-nums text-tinta-apoio">{a.contagem}</span>
+            )}
+          </BotaoLinha>
+        ))}
+      </div>
+      {direita && <div className="flex items-center gap-2 pb-1.5">{direita}</div>}
+    </div>
+  )
+}
+
+/** "Atualizado hh:mm" da fila (RG8). */
+export function AtualizadoEm({ em }: { em: number }) {
+  if (!em) return null
+  return <span className="text-rotulo text-tinta-sussurro">Atualizado {hora(new Date(em).toISOString())}</span>
+}
+
+// ── linha e grupo ───────────────────────────────────────────────────────────
 const BORDA: Record<string, string> = { critico: 'border-l-critico', atencao: 'border-l-atencao', info: 'border-l-acao', neutro: 'border-l-fio' }
 const COR_EVOL = { em_dia: 'text-tinta-sussurro', vencida: 'text-atencao font-medium', risco: 'text-critico font-medium' } as const
+const ETIQUETA = 'shrink-0 rounded-controle border px-1 font-mono text-rotulo leading-snug'
 
-function LinhaFila({ s, selecionado, agora, onClick }: { s: ItemConsole; selecionado: boolean; agora: number; onClick: () => void }) {
+function LinhaFila({ s, selecionado, agora, comMunicipio, onClick }: {
+  s: ItemConsole; selecionado: boolean; agora: number; comMunicipio: boolean; onClick: () => void
+}) {
   const p = PRIORIDADES[prioridadeEfetiva(s)]
   const h = horasSemEvolucao(s.sla, agora)
   const nivel = nivelEvolucao(s.sla)
   return (
     <BotaoLinha variante="linha" role="option" aria-selected={selecionado} data-id={s.id} onClick={onClick}
-      className={cn('flex-col gap-0.5 border-l-4 px-3 py-2 text-apoio', BORDA[p.tom], selecionado && 'bg-campo')}>
-      <span className="flex items-center gap-2">
-        <span className="tabular-nums text-tinta-sussurro">{s.numero}</span>
+      className={cn('flex-col gap-0.5 border-b-fio border-l-[3px] px-3 py-1.5 text-apoio hover:bg-campo', BORDA[p.tom], selecionado && 'bg-alerta-marca')}>
+      <span className="flex w-full items-center gap-2">
+        <span className="shrink-0 font-mono text-rotulo tabular-nums text-tinta-sussurro">#{s.numero}</span>
         <span className="min-w-0 flex-1 truncate font-medium text-tinta">{s.paciente.nome}</span>
-        {ehJudicial(s) && <Badge variant="destructive" title="Mandado judicial">Judicial</Badge>}
-        {s.tipo_leito && <span className="shrink-0 text-rotulo text-tinta-apoio">{TIPOS_LEITO[s.tipo_leito] ?? s.tipo_leito}</span>}
+        {ehJudicial(s) && <span className={cn(ETIQUETA, 'border-critico/40 text-critico')} title="Mandado judicial">JUD</span>}
+        {s.tipo_leito && <span className={cn(ETIQUETA, 'border-fio text-tinta-apoio')}>{TIPOS_LEITO[s.tipo_leito] ?? s.tipo_leito}</span>}
       </span>
-      <span className="flex items-center gap-2 text-rotulo">
-        <span className="min-w-0 flex-1 truncate text-tinta-apoio">{[s.municipio, s.origem.nome].filter(Boolean).join(' · ')}</span>
-        <span className="shrink-0 tabular-nums text-tinta-apoio">{formatarEspera(s.espera_segundos)}</span>
-        {h != null && <span className={cn('shrink-0 tabular-nums', COR_EVOL[nivel])} title="Horas sem evolução">{tempoSemEvolucao(h)} s/ evol.</span>}
+      <span className="flex w-full items-center gap-2 text-rotulo">
+        <span className="min-w-0 flex-1 truncate text-tinta-apoio">{(comMunicipio ? [s.municipio, s.origem.nome] : [s.origem.nome]).filter(Boolean).join(' · ')}</span>
+        <span className="shrink-0 font-mono tabular-nums text-tinta-apoio" title="Tempo na fila">{formatarEspera(s.espera_segundos)}</span>
+        {h != null && <span className={cn('shrink-0 font-mono tabular-nums', COR_EVOL[nivel])} title="Tempo sem evolução">evol. {tempoSemEvolucao(h)}</span>}
       </span>
       {temIsolamento(s) && (
-        <span className="flex items-center gap-2 text-rotulo">
-          <Badge variant="warning">{rotuloIsolamento(s.isolamento_tipo)}</Badge>
+        <span className="flex w-full items-center gap-2 text-rotulo">
+          <span className={cn(ETIQUETA, 'border-atencao/50 bg-alerta-atencao text-atencao')}>{rotuloIsolamento(s.isolamento_tipo)}</span>
           {s.agente && <span className="min-w-0 truncate text-tinta-apoio" title={s.agente}>{s.agente}</span>}
         </span>
       )}
@@ -69,16 +110,35 @@ function LinhaFila({ s, selecionado, agora, onClick }: { s: ItemConsole; selecio
   )
 }
 
-export function ConsoleRegulador({ centralId, souRegulador, selecionado, aoSelecionar, decisao, conversa, municipioInicial }: {
-  centralId: string; souRegulador: boolean
+/** Segmentos (Agrupar por), um de cada vez. */
+function Segmentos<K extends string>({ rotulo, opcoes, valor, onChange }: { rotulo: string; opcoes: [K, string][]; valor: K; onChange: (k: K) => void }) {
+  return (
+    <div role="radiogroup" aria-label={rotulo} className="inline-flex flex-wrap rounded-controle border border-fio bg-campo p-0.5">
+      {opcoes.map(([k, r]) => (
+        <BotaoLinha key={k} variante="linha" role="radio" aria-checked={valor === k} onClick={() => onChange(k)}
+          className={cn('w-auto items-center rounded-controle border-0 px-2 py-0.5 text-rotulo',
+            valor === k ? 'bg-superficie font-medium text-tinta shadow-xs hover:bg-superficie' : 'text-tinta-apoio hover:bg-superficie')}>
+          {r}
+        </BotaoLinha>
+      ))}
+    </div>
+  )
+}
+
+// ── fila densa + dossiê ─────────────────────────────────────────────────────
+type FiltroStatus = { valor: StatusRegulacao | ''; onChange: (v: StatusRegulacao | '') => void; rotuloVazio: string }
+
+export function FilaDensa({ itens, carregando, erro, atualizadoEm, selecionado, aoSelecionar, painel, municipioInicial, status, comMunicipio, vazio }: {
+  itens: ItemConsole[]; carregando: boolean; erro: unknown; atualizadoEm: number
   selecionado: string | null; aoSelecionar: (id: string | null) => void
-  decisao: (id: string, ctrl: ControleDecisao, aoFim: () => void) => React.ReactNode
-  conversa?: ConversaSlot
-  /** "Filtrar fila" da aba Por município (quem monta remonta a fila com key) */
+  painel: (id: string, item: ItemConsole | null) => React.ReactNode
   municipioInicial?: string
+  /** select de status (a central lê do banco por status) */
+  status?: FiltroStatus
+  /** município da unidade que pede: só na central */
+  comMunicipio: boolean
+  vazio: string
 }) {
-  const [status, setStatus] = React.useState<StatusRegulacao | ''>('')
-  const { fila, extras, itens, atualizadoEm } = useFilaCentral(centralId, status)
   const [busca, setBusca] = React.useState('')
   const [agruparPor, setAgruparPor] = React.useState<Agrupamento>('prioridade')
   const [ordem, setOrdem] = React.useState<Ordem>('gravidade')
@@ -91,18 +151,19 @@ export function ConsoleRegulador({ centralId, souRegulador, selecionado, aoSelec
   const [recolhidos, setRecolhidos] = React.useState<Set<string>>(new Set())
   const buscaRef = React.useRef<HTMLInputElement>(null)
   const listaRef = React.useRef<HTMLDivElement>(null)
-  // horas sem evolução contadas da hora da leitura da fila (relê a cada 30 s)
+  // horas sem evolução contadas da hora da leitura (a lista relê sozinha)
   const agora = atualizadoEm
 
-  const base = itens.filter((s) => (!prioridade || prioridadeEfetiva(s) === prioridade) && (!leito || s.tipo_leito === leito) && (!unidade || s.origem.id === unidade))
+  const base = itens.filter((s) => (!prioridade || prioridadeEfetiva(s) === prioridade) && (!leito || s.tipo_leito === leito) && (!unidade || s.origem.nome === unidade))
   const contagens = contarAtalhos(filtrarLocal(base, { busca, isolamento, municipio }))
   const filtrados = filtrarLocal(base, { busca, isolamento, municipio, atalhos })
+  const agrupamentos = (Object.keys(AGRUPAMENTOS) as Agrupamento[]).filter((k) => comMunicipio || k !== 'municipio')
   const grupos = agrupar(ordenar(filtrados, ordem), agruparPor)
   const ids = idsVisiveis(grupos, recolhidos)
   const municipios = [...new Set(itens.map((s) => s.municipio).filter((m): m is string => !!m))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
-  const unidades = [...new Map(itens.map((s) => [s.origem.id, s.origem.nome])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
-  const temFiltro = !!(busca || prioridade || leito || isolamento || municipio || unidade || status || atalhos.length)
-  const limpar = () => { setBusca(''); setPrioridade(''); setLeito(''); setIsolamento(''); setMunicipio(''); setUnidade(''); setStatus(''); setAtalhos([]) }
+  const unidades = [...new Set(itens.map((s) => s.origem.nome).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+  const temFiltro = !!(busca || prioridade || leito || isolamento || municipio || unidade || status?.valor || atalhos.length)
+  const limpar = () => { setBusca(''); setPrioridade(''); setLeito(''); setIsolamento(''); setMunicipio(''); setUnidade(''); status?.onChange(''); setAtalhos([]) }
   const item = itens.find((s) => s.id === selecionado) ?? null
 
   // "/" busca; J/K e setas navegam (fora de campos de texto)
@@ -128,23 +189,24 @@ export function ConsoleRegulador({ centralId, souRegulador, selecionado, aoSelec
     return () => window.removeEventListener('keydown', tecla)
   }, [aoSelecionar])
 
-  const erro = fila.error ?? extras.error
   return (
-    <div className="flex flex-col gap-3">
-      <section aria-label="Filtros e agrupamento" className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie p-3">
+    <div className="flex min-w-0 flex-col gap-2">
+      <section aria-label="Filtros e agrupamento" className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie px-3 py-2">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-56 flex-1">
+          <div className="relative min-w-56 flex-1 lg:max-w-xl">
             <Search className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
             <Input ref={buscaRef} aria-label="Buscar na fila" className="h-8 pl-7" value={busca} onChange={(e) => setBusca(e.target.value)}
-              placeholder="Paciente, nº, CID, município, unidade ou agente" />
-            <kbd className="absolute top-1/2 right-2 -translate-y-1/2 rounded-controle border border-fio px-1 text-rotulo text-tinta-sussurro">/</kbd>
+              placeholder={comMunicipio ? 'Buscar paciente, nº, CID, município, unidade ou agente' : 'Buscar paciente, nº, CID, unidade ou agente'} />
+            <kbd className="absolute top-1/2 right-2 -translate-y-1/2 rounded-controle border border-fio px-1 font-mono text-rotulo text-tinta-sussurro">/</kbd>
           </div>
-          <CampoSelecao aria-label="Agrupar por" tamanho="compacto" value={agruparPor} onChange={(e) => setAgruparPor(e.target.value as Agrupamento)}>
-            {(Object.keys(AGRUPAMENTOS) as Agrupamento[]).map((k) => <option key={k} value={k}>Agrupar: {AGRUPAMENTOS[k]}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Ordenar" tamanho="compacto" value={ordem} onChange={(e) => setOrdem(e.target.value as Ordem)}>
-            {(Object.keys(ORDENS) as Ordem[]).map((k) => <option key={k} value={k}>Ordenar: {ORDENS[k]}</option>)}
-          </CampoSelecao>
+          <span className="text-rotulo text-tinta-sussurro">Agrupar por</span>
+          <Segmentos rotulo="Agrupar por" opcoes={agrupamentos.map((k) => [k, AGRUPAMENTOS[k]])} valor={agruparPor} onChange={setAgruparPor} />
+          <span className="ml-auto inline-flex items-center gap-1.5">
+            <span className="text-rotulo text-tinta-sussurro">Ordenar</span>
+            <CampoSelecao aria-label="Ordenar" tamanho="compacto" value={ordem} onChange={(e) => setOrdem(e.target.value as Ordem)}>
+              {(Object.keys(ORDENS) as Ordem[]).map((k) => <option key={k} value={k}>{ORDENS[k]}</option>)}
+            </CampoSelecao>
+          </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <CampoSelecao aria-label="Prioridade" tamanho="compacto" value={prioridade} onChange={(e) => setPrioridade(e.target.value as Prioridade | '')}>
@@ -161,66 +223,65 @@ export function ConsoleRegulador({ centralId, souRegulador, selecionado, aoSelec
             <option value="nenhum">Sem isolamento</option>
             {Object.entries(ISOLAMENTOS).map(([k, r]) => <option key={k} value={k}>{r}</option>)}
           </CampoSelecao>
-          <CampoSelecao aria-label="Município" tamanho="compacto" value={municipio} onChange={(e) => setMunicipio(e.target.value)}>
-            <option value="">Município: todos</option>
-            {municipios.map((m) => <option key={m} value={m}>{m}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Unidade de origem" tamanho="compacto" value={unidade} onChange={(e) => setUnidade(e.target.value)}>
-            <option value="">Unidade: todas</option>
-            {unidades.map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
-          </CampoSelecao>
-          <CampoSelecao aria-label="Status" tamanho="compacto" value={status} onChange={(e) => setStatus(e.target.value as StatusRegulacao | '')}>
-            <option value="">Status: em aberto</option>
-            {(Object.keys(STATUS) as StatusRegulacao[]).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
-          </CampoSelecao>
-        </div>
-        <div role="group" aria-label="Atalhos" className="flex flex-wrap items-center gap-2">
-          {ATALHOS.map(([a, r]) => (
-            <Chip key={a} ativo={atalhos.includes(a)} contagem={contagens[a]} tom={a === 'risco' ? 'critico' : 'acao'}
-              onClick={() => setAtalhos((x) => (x.includes(a) ? x.filter((y) => y !== a) : [...x, a]))}>{r}</Chip>
-          ))}
+          {comMunicipio && (
+            <CampoSelecao aria-label="Município" tamanho="compacto" value={municipio} onChange={(e) => setMunicipio(e.target.value)}>
+              <option value="">Município: todos</option>
+              {municipios.map((m) => <option key={m} value={m}>{m}</option>)}
+            </CampoSelecao>
+          )}
+          {unidades.length > 1 && (
+            <CampoSelecao aria-label="Unidade de origem" tamanho="compacto" value={unidade} onChange={(e) => setUnidade(e.target.value)}>
+              <option value="">Unidade: todas</option>
+              {unidades.map((u) => <option key={u} value={u}>{u}</option>)}
+            </CampoSelecao>
+          )}
+          {status && (
+            <CampoSelecao aria-label="Status" tamanho="compacto" value={status.valor} onChange={(e) => status.onChange(e.target.value as StatusRegulacao | '')}>
+              <option value="">{status.rotuloVazio}</option>
+              {(Object.keys(STATUS) as StatusRegulacao[]).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
+            </CampoSelecao>
+          )}
+          <span aria-hidden className="mx-1 hidden h-5 w-px bg-fio sm:block" />
+          <div role="group" aria-label="Atalhos" className="flex flex-wrap items-center gap-1.5">
+            {ATALHOS.map(([a, r]) => (
+              <Chip key={a} ativo={atalhos.includes(a)} contagem={contagens[a]} tom={a === 'risco' ? 'critico' : 'acao'}
+                onClick={() => setAtalhos((x) => (x.includes(a) ? x.filter((y) => y !== a) : [...x, a]))}>{r}</Chip>
+            ))}
+          </div>
           {temFiltro && <Button size="xs" variant="outline" className="ml-auto" onClick={limpar}>Limpar filtros</Button>}
         </div>
       </section>
       <MensagemErro texto={erro ? (erro as Error).message : null} />
 
-      <div className={cn('grid items-start gap-4', 'lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)]')}>
-        <aside aria-label="Fila da central" className={cn('flex flex-col overflow-hidden rounded-cartao border border-fio bg-superficie', selecionado && 'hidden lg:flex')}>
-          <div className="flex items-center justify-between gap-2 border-b border-fio px-3 py-1.5 text-rotulo text-tinta-sussurro">
+      <div className="grid min-w-0 items-stretch overflow-hidden rounded-cartao border border-fio bg-superficie lg:h-[calc(100dvh-15rem)] lg:min-h-[480px] lg:grid-cols-[410px_minmax(0,1fr)]">
+        <aside aria-label="Fila" className={cn('flex min-h-0 flex-col lg:border-r lg:border-fio', selecionado && 'hidden lg:flex')}>
+          <div className="flex items-center justify-between gap-2 border-b border-fio bg-campo px-3 py-1 text-rotulo text-tinta-sussurro">
             <span className="tabular-nums">Mostrando {filtrados.length} de {itens.length}</span>
-            <span className="hidden lg:inline">J/K navegam · / busca</span>
+            <span className="hidden font-mono lg:inline">J/K navegar · / buscar</span>
           </div>
-          <div ref={listaRef} role="listbox" aria-label="Pedidos na fila" className="max-h-[calc(100dvh-280px)] min-h-40 overflow-y-auto">
-            {fila.isLoading ? <div className="p-3"><EsqueletoLinhas linhas={6} rotulo="Carregando a fila…" /></div>
-              : filtrados.length === 0 ? <div className="p-3"><Vazio icone={Waypoints} titulo="Fila vazia" texto={temFiltro ? 'Nenhum pedido com esses filtros.' : 'Nenhum pedido esperando decisão.'} /></div>
+          <div ref={listaRef} role="listbox" aria-label="Pedidos" className="min-h-40 flex-1 overflow-y-auto">
+            {carregando ? <div className="p-3"><EsqueletoLinhas linhas={6} rotulo="Carregando…" /></div>
+              : filtrados.length === 0 ? <div className="p-3"><Vazio icone={Waypoints} titulo="Nada aqui" texto={temFiltro ? 'Nenhum pedido com esses filtros.' : vazio} /></div>
               : grupos.map((g) => (
                 <div key={g.chave || 'sem'} role="group" aria-label={g.rotulo}>
                   {agruparPor !== 'nenhum' && (
                     <BotaoLinha variante="linha" aria-expanded={!recolhidos.has(g.chave)}
                       onClick={() => setRecolhidos((r) => { const n = new Set(r); if (n.has(g.chave)) n.delete(g.chave); else n.add(g.chave); return n })}
-                      className="items-center gap-1.5 bg-campo px-3 py-1 text-rotulo font-medium text-tinta-apoio">
+                      className="sticky top-0 z-[1] items-center gap-1.5 border-b border-fio bg-campo px-3 py-1 text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase hover:bg-trilha">
                       {recolhidos.has(g.chave) ? <ChevronRight className="size-3.5" aria-hidden /> : <ChevronDown className="size-3.5" aria-hidden />}
                       {agruparPor === 'prioridade' ? <PontoPrioridade p={g.chave as Prioridade} /> : g.rotulo}
-                      <span className="ml-auto tabular-nums">{g.itens.length}</span>
+                      <span className="ml-auto font-mono tabular-nums">{g.itens.length}</span>
                     </BotaoLinha>
                   )}
                   {!recolhidos.has(g.chave) && g.itens.map((s) => (
-                    <LinhaFila key={s.id} s={s} agora={agora} selecionado={s.id === selecionado} onClick={() => aoSelecionar(s.id)} />
+                    <LinhaFila key={s.id} s={s} agora={agora} comMunicipio={comMunicipio} selecionado={s.id === selecionado} onClick={() => aoSelecionar(s.id)} />
                   ))}
                 </div>
               ))}
           </div>
         </aside>
-        <section aria-label="Dossiê do pedido" className={cn('min-w-0 rounded-cartao border border-fio bg-superficie', !selecionado && 'hidden lg:block')}>
-          {selecionado ? (
-            <DossieRegulador key={selecionado} id={selecionado} centralId={centralId} souRegulador={souRegulador} decisao={decisao} conversa={conversa}
-              aoVoltar={() => aoSelecionar(null)} aoFechar={() => aoSelecionar(null)}
-              fila={item ? {
-                espera_segundos: item.espera_segundos, assumida_por: item.assumida_por, assumida_por_mim: item.assumida_por_mim,
-                municipio: item.municipio, situacao: item.situacao, agente: item.agente,
-                origem_coord: { latitude: item.origem_latitude ?? null, longitude: item.origem_longitude ?? null },
-              } : null} />
-          ) : (
+        <section aria-label="Dossiê do pedido" className={cn('min-h-0 min-w-0 overflow-y-auto', !selecionado && 'hidden lg:block')}>
+          {selecionado ? painel(selecionado, item) : (
             <p className="p-6 text-center text-tinta-sussurro">Escolha um pedido na fila para abrir o dossiê.</p>
           )}
         </section>
@@ -229,10 +290,56 @@ export function ConsoleRegulador({ centralId, souRegulador, selecionado, aoSelec
   )
 }
 
-/** "Atualizado hh:mm" da fila (RG8). */
-export function AtualizadoEm({ em }: { em: number }) {
-  if (!em) return null
-  return <span className="text-rotulo text-tinta-sussurro">Atualizado {hora(new Date(em).toISOString())}</span>
+// ── central ─────────────────────────────────────────────────────────────────
+export function ConsoleRegulador({ centralId, souRegulador, selecionado, aoSelecionar, decisao, conversa, municipioInicial }: {
+  centralId: string; souRegulador: boolean
+  selecionado: string | null; aoSelecionar: (id: string | null) => void
+  decisao: (id: string, ctrl: ControleDecisao, aoFim: () => void) => React.ReactNode
+  conversa?: ConversaSlot
+  /** "Filtrar fila" da aba Por município (quem monta remonta a fila com key) */
+  municipioInicial?: string
+}) {
+  const [status, setStatus] = React.useState<StatusRegulacao | ''>('')
+  const { fila, extras, itens, atualizadoEm } = useFilaCentral(centralId, status)
+  return (
+    <FilaDensa itens={itens} carregando={fila.isLoading} erro={fila.error ?? extras.error} atualizadoEm={atualizadoEm}
+      selecionado={selecionado} aoSelecionar={aoSelecionar} municipioInicial={municipioInicial} comMunicipio
+      status={{ valor: status, onChange: setStatus, rotuloVazio: 'Status: em aberto' }} vazio="Nenhum pedido esperando decisão."
+      painel={(id, item) => (
+        <DossieRegulador key={id} id={id} lado="central" centralId={centralId} souRegulador={souRegulador} decisao={decisao} conversa={conversa}
+          aoVoltar={() => aoSelecionar(null)} aoFechar={() => aoSelecionar(null)}
+          fila={item ? {
+            espera_segundos: item.espera_segundos, assumida_por: item.assumida_por, assumida_por_mim: item.assumida_por_mim,
+            municipio: item.municipio, situacao: item.situacao, agente: item.agente,
+            origem_coord: { latitude: item.origem_latitude ?? null, longitude: item.origem_longitude ?? null },
+          } : null} />
+      )} />
+  )
+}
+
+// ── unidade de origem, perfil Médico regulador ──────────────────────────────
+/**
+ * Esperando decisão, Enviados e Recebidos da central no leiaute do console.
+ * O dossiê fica no lado da origem: as ações e as regras de sempre (cancelar,
+ * responder, reenviar, saída, aceite do destino), sem decidir nem reservar.
+ */
+export function ConsoleOrigem({ unidadeId, aba, selecionado, aoSelecionar, decisao, conversa }: {
+  unidadeId: string; aba: AbaOrigem
+  selecionado: string | null; aoSelecionar: (id: string | null) => void
+  decisao: (id: string, ctrl: ControleDecisao, aoFim: () => void) => React.ReactNode
+  conversa?: ConversaSlot
+}) {
+  const { itens, carregando, erro, atualizadoEm } = useFilaOrigem(unidadeId, aba)
+  return (
+    <FilaDensa key={aba} itens={itens} carregando={carregando} erro={erro} atualizadoEm={atualizadoEm}
+      selecionado={selecionado} aoSelecionar={aoSelecionar} comMunicipio={false}
+      vazio={aba === 'esperando' ? 'Nenhum pedido da unidade esperando decisão.' : aba === 'enviados' ? 'Quando a central decidir um pedido da unidade, ele passa para cá.' : 'Nenhum pedido mandado pela central para esta unidade.'}
+      painel={(id, item) => (
+        <DossieRegulador key={id} id={id} lado="origem" unidadeId={unidadeId} centralId="" souRegulador={false} decisao={decisao} conversa={conversa}
+          aoVoltar={() => aoSelecionar(null)} aoFechar={() => aoSelecionar(null)}
+          fila={item ? { espera_segundos: item.espera_segundos, assumida_por: null, assumida_por_mim: false } : null} />
+      )} />
+  )
 }
 
 /** RG6: demanda por município de origem, com "Filtrar fila". */

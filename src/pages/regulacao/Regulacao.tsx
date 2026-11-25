@@ -42,8 +42,9 @@ import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransf
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
-import { AtualizadoEm, ConsoleRegulador, IndicadoresFila, PorMunicipio } from '@/components/regulacao/ConsoleRegulador'
+import { AbasConsole, AtualizadoEm, ConsoleOrigem, ConsoleRegulador, IndicadoresFila, PorMunicipio } from '@/components/regulacao/ConsoleRegulador'
 import type { ControleDecisao } from '@/components/regulacao/DossieRegulador'
+import type { LeitosTipo } from '@/lib/regulacaoFila'
 import { CampoIsolamento } from '@/components/regulacao/IsolamentoRegulacao'
 import { useFilaCentral, useVagasCentral } from '@/components/regulacao/useRegulacaoCentral'
 import { FormEvolucao, PainelSla, PrazosCentral, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
@@ -187,6 +188,16 @@ export default function Regulacao() {
   ] : []
   if (comIndicadores) abas.push(['indicadores', 'Indicadores', undefined])
   const abaVale = abas.some(([k]) => k === aba) ? aba : 'esperando'
+  // Modelo do RT ("manter a ideia inicial", 25/11/2026): a central e o perfil
+  // Médico regulador numa unidade de origem usam o console — abas no topo,
+  // largura cheia, fila densa e dossiê.
+  const consoleRegulador = !!c && (c.sou_central || (origem && papelAtivo === 'regulador'))
+  const abasConsole = abas.map(([chave, rotulo, n]) => ({
+    chave, rotulo, contagem: c?.sou_central && chave === 'mapa' ? central.livresTexto : n,
+  }))
+  const decisaoOrigem = (id: string, ctrl: ControleDecisao, aoFim: () => void) => (
+    <DecisaoOrigem key={ctrl.chave} id={id} unidadeId={unidadeId} ctrl={ctrl} aoFim={aoFim} />
+  )
   // o detalhe é o mesmo nas abas; muda só o lado de quem vê
   const painel = (id: string) => (
     <Detalhe key={id} id={id} unidadeId={unidadeId} central={!!c?.sou_central} podeRegistrarExterno={!!c?.sou_central && !!c?.sou_regulador}
@@ -197,13 +208,13 @@ export default function Regulacao() {
   )
   return (
     // fichas em caixa normal (unslop da revisão do regulador): a página e o painel
-    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case', aberto || c?.sou_central ? 'max-w-7xl' : 'max-w-5xl')}>
-      <TituloPagina icone={Waypoints} titulo="Regulação"
+    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case',
+      consoleRegulador ? 'gap-3' : aberto ? 'max-w-7xl' : 'max-w-5xl')}>
+      {!consoleRegulador && <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
           ? 'Solicitações recebidas pela Central de Regulação da rede.'
           : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'}
-        acoes={origem && !novaAberta && !inicial ? <Button onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button>
-          : c?.sou_central ? <AtualizadoEm em={central.atualizadoEm} /> : undefined} />
+        acoes={origem && !novaAberta && !inicial ? <Button onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button> : undefined} />}
       {c?.sou_super_admin && <Centrais />}
       {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <MensagemErro texto={(ctx.error as Error).message} /> : !c ? null
         : !c.sou_central && !c.central ? (
@@ -219,7 +230,13 @@ export default function Regulacao() {
                 {!inicial && <Button variant="ghost" size="sm" className="self-start" onClick={() => setNovaAberta(false)}>Fechar a nova solicitação</Button>}
               </div>
             )}
-            <Abas abas={abas} valor={abaVale} onChange={trocarAba} rotulo="Regulação" className="mb-0" />
+            {consoleRegulador ? (
+              <AbasConsole abas={abasConsole} valor={abaVale} onChange={trocarAba}
+                direita={<>
+                  <AtualizadoEm em={c.sou_central ? central.atualizadoEm : contas.atualizadoEm} />
+                  {origem && !novaAberta && !inicial && <Button size="sm" onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button>}
+                </>} />
+            ) : <Abas abas={abas} valor={abaVale} onChange={trocarAba} rotulo="Regulação" className="mb-0" />}
             {abaVale === 'indicadores' ? (
               <>
                 <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
@@ -241,6 +258,8 @@ export default function Regulacao() {
               <ConsoleRegulador key={filtroMunicipio} centralId={unidadeId} souRegulador={c.sou_regulador} selecionado={aberto} aoSelecionar={setAberto}
                 municipioInicial={filtroMunicipio || undefined}
                 decisao={(id, ctrl, aoFim) => <DecisaoCentral id={id} centralId={unidadeId} podeDecidir={c.sou_regulador} ctrl={ctrl} aoFim={aoFim} />} />
+            ) : consoleRegulador && (abaVale === 'esperando' || abaVale === 'enviados' || abaVale === 'recebidos') ? (
+              <ConsoleOrigem unidadeId={unidadeId} aba={abaVale} selecionado={aberto} aoSelecionar={setAberto} decisao={decisaoOrigem} />
             ) : abaVale === 'enviados' ? comPainel(
               <Lista unidadeId={unidadeId} central={false} selecionado={aberto} aoSelecionar={setAberto} />,
             ) : abaVale === 'recebidos' ? comPainel(
@@ -285,6 +304,7 @@ function useContasQuadro(unidadeId: string, ativo: boolean, origem: boolean) {
     esperando: sla.data?.resumo.abertos,
     enviados: lista.data ? lista.data.filter((s) => !esperandoDecisao(s.status)).length : undefined,
     recebidos: destino.data?.length,
+    atualizadoEm: Math.max(sla.dataUpdatedAt, lista.dataUpdatedAt),
   }
 }
 
@@ -292,9 +312,12 @@ function useContasQuadro(unidadeId: string, ativo: boolean, origem: boolean) {
 function useContasCentral(centralId: string, ativo: boolean) {
   const { fila, itens, atualizadoEm } = useFilaCentral(ativo ? centralId : '')
   const vagas = useVagasCentral(centralId, ativo)
+  const soma = (f: (l: LeitosTipo) => number) => (vagas.data?.unidades ?? []).reduce((t, u) => t + u.leitos.reduce((a, l) => a + f(l), 0), 0)
   return {
     fila: fila.data ? itens.length : undefined,
-    livres: vagas.data ? vagas.data.unidades.reduce((t, u) => t + u.leitos.reduce((a, l) => a + l.livre, 0), 0) : undefined,
+    livres: vagas.data ? soma((l) => l.livre) : undefined,
+    // "N · N iso · N p.neg" na aba do mapa (modelo do RT)
+    livresTexto: vagas.data ? `${soma((l) => l.livre)} · ${soma((l) => l.livre_isolamento ?? 0)} iso · ${soma((l) => l.livre_pressao_negativa ?? 0)} p.neg` : undefined,
     municipios: fila.data ? new Set(itens.map((s) => s.municipio ?? '')).size : undefined,
     atualizadoEm,
   }
@@ -1082,11 +1105,55 @@ function DecisaoCentral({ id, centralId, podeDecidir, ctrl, aoFim }: {
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
       <BlocosDecisao s={s} />
       {podeDecidir && emDecisao(s.status) && (
-        <PainelDecisao key={ctrl.chave} s={s} centralId={centralId} aoFim={aoFim} acaoInicial={ctrl.acao} destinoInicial={ctrl.destinoUnidade} />
+        <PainelDecisao key={ctrl.chave} s={s} centralId={centralId} aoFim={aoFim} acaoInicial={ctrl.acao === 'cancelar' ? null : ctrl.acao} destinoInicial={ctrl.destinoUnidade} />
       )}
       <BlocoDestino s={s} />
       {podeDecidir && <DestinoExterno s={s} aoFim={aoFim} />}
       {podeDecidir && <RegistroExterno s={s} aoFim={aoFim} />}
+    </>
+  )
+}
+
+/**
+ * O que a origem (ou o destino, nos recebidos) faz no dossiê: as mesmas peças
+ * do detalhe — responder à pendência, corrigir e reenviar, o destino, a saída
+ * e o aceite do destino — e o cancelamento com motivo pelo menu "…".
+ */
+function DecisaoOrigem({ id, unidadeId, ctrl, aoFim }: { id: string; unidadeId: string; ctrl: ControleDecisao; aoFim: () => void }) {
+  const { papeisDaUnidade } = useUnidade()
+  const souNir = papeisDaUnidade.includes('nir')
+  const d = useQuery({
+    queryKey: ['regulacao-detalhe', id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_detalhe', { p_id: id })
+      if (error) throw error
+      return data as unknown as Solicitacao
+    },
+  })
+  const [cancelando, setCancelando] = React.useState(ctrl.acao === 'cancelar')
+  const cancelar = useMutation({
+    mutationFn: async (motivo: string) => {
+      const { error } = await supabase.rpc('regulacao_cancelar', { p_id: id, p_motivo: motivo })
+      if (error) throw error
+    },
+    onSuccess: () => { setCancelando(false); aoFim() },
+  })
+  const s = d.data
+  if (!s) return null
+  const origemDaqui = s.origem.id === unidadeId
+  return (
+    <>
+      {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
+      <BlocosDecisao s={s} />
+      {(s.origem_pode_responder || (souNir && origemDaqui)) && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={aoFim} />}
+      {s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={aoFim} />}
+      <BlocoDestino s={s} />
+      <AcoesDestino s={s} aoFim={aoFim} nir={souNir && s.destino_unidade?.id === unidadeId} />
+      {origemDaqui && <SaidaOrigem s={s} aoFim={aoFim} nir={souNir} />}
+      <DialogoMotivo aberto={cancelando} aoFechar={() => { setCancelando(false); cancelar.reset() }}
+        titulo={`Cancelar a solicitação nº ${s.numero}`}
+        rotulo="Motivo do cancelamento" confirmar="Cancelar solicitação" ocupado={cancelar.isPending} erro={cancelar.error}
+        aoConfirmar={(m) => cancelar.mutate(m)} />
     </>
   )
 }

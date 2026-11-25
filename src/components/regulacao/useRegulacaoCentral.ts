@@ -1,10 +1,12 @@
 // Consultas da central para a fila do regulador (modelo do RT, 25/11/2026):
-// a fila com os extras e as vagas compatíveis. Mesmas chaves de cache nas
-// abas, no dossiê e nas contagens. Migration 20270425000020.
+// a fila com os extras, as vagas compatíveis e as listas do lado da origem.
+// Mesmas chaves de cache nas abas, no dossiê e nas contagens. Migration
+// 20270425000020.
 import { useQuery } from '@tanstack/react-query'
 
-import type { StatusRegulacao } from '@/lib/regulacao'
+import type { Prioridade, StatusRegulacao } from '@/lib/regulacao'
 import { comExtras, type Extra, type PedidoFila, type UnidadeVagas } from '@/lib/regulacaoFila'
+import { esperandoDecisao } from '@/lib/regulacaoLinhaTempo'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
 
@@ -55,5 +57,56 @@ export function useVagasCentral(centralId: string, ativo = true) {
       return data as unknown as { unidades: UnidadeVagas[]; agora: string }
     },
   })
+}
+
+export type AbaOrigem = 'esperando' | 'enviados' | 'recebidos'
+
+type PedidoDaLista = Omit<ItemConsole, 'espera_segundos' | 'assumida_por' | 'assumida_por_mim'> & { criada_em: string }
+type PedidoRecebido = {
+  id: string; numero: number; status: StatusRegulacao; prioridade: Prioridade; prioridade_regulador: Prioridade | null
+  tipo_leito: string | null; paciente: { nome: string }; origem: { nome: string }
+  destino_enviado_em?: string | null
+}
+
+/**
+ * Lado da origem no console (perfil Médico regulador numa unidade que pede):
+ * Esperando decisão e Enviados vêm da regulacao_lista (a mesma chave de cache
+ * da página); Recebidos, da regulacao_destino_lista. O tempo na fila conta da
+ * criação do pedido (no recebido, de quando a central mandou ao destino).
+ */
+export function useFilaOrigem(unidadeId: string, aba: AbaOrigem) {
+  const lista = useQuery({
+    queryKey: ['regulacao-lista', unidadeId],
+    enabled: !!unidadeId && aba !== 'recebidos',
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_lista', { p_unidade: unidadeId })
+      if (error) throw error
+      return (data ?? []) as unknown as PedidoDaLista[]
+    },
+  })
+  const destino = useQuery({
+    queryKey: ['regulacao-destino', unidadeId],
+    enabled: !!unidadeId && aba === 'recebidos',
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_destino_lista', { p_unidade: unidadeId })
+      if (error) throw error
+      return (data ?? []) as unknown as PedidoRecebido[]
+    },
+  })
+  const q = aba === 'recebidos' ? destino : lista
+  const agora = q.dataUpdatedAt
+  const seg = (iso: string | null | undefined) => (iso && agora ? Math.max(0, Math.floor((agora - Date.parse(iso)) / 1000)) : 0)
+  const itens: ItemConsole[] = aba === 'recebidos'
+    ? (destino.data ?? []).map((s) => ({
+        id: s.id, numero: s.numero, status: s.status, prioridade: s.prioridade, prioridade_regulador: s.prioridade_regulador,
+        tipo_leito: s.tipo_leito, isolamento: false, isolamento_tipo: null, vulnerabilidades: [], sla: null,
+        origem: { id: '', nome: s.origem.nome }, paciente: s.paciente,
+        espera_segundos: seg(s.destino_enviado_em), assumida_por: null, assumida_por_mim: false,
+      }))
+    : (lista.data ?? [])
+        .filter((s) => (aba === 'esperando') === esperandoDecisao(s.status))
+        .map((s) => ({ ...s, espera_segundos: seg(s.criada_em), assumida_por: null, assumida_por_mim: false }))
+  return { itens, carregando: q.isLoading, erro: q.error, atualizadoEm: agora }
 }
 
