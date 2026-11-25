@@ -160,8 +160,12 @@ SELECT pg_temp.ok((SELECT count(*) = 1 FROM public.notificacoes_plantonista WHER
                      AND mensagem LIKE '%não registrou a chegada em 12 horas%'), 'quem enviou é avisado do prazo');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.como('recu');
-SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('x2'), true, NULL, 'Chegou de ambulância, ficha aberta depois');
-SELECT pg_temp.ok(pg_temp.sit('x2') = 'chegou', 'a UPA corrige o não chegou automático');
+-- 20270426000010 (RT, 25/11/2026): "chegou" exige a ficha, sempre; a ficha aberta depois corrige o "não chegou"
+SELECT pg_temp.falha($$SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('x2'), true, NULL, 'Chegou de ambulância, ficha aberta depois')$$,
+  'Abra a ficha do paciente', 'chegou sem ficha não registra');
+INSERT INTO v SELECT 'epu2', (public.registrar_ficha(pg_temp.id('porta'), 'Dispneia (vindo da UBS)', NULL,
+  '{"nome":"Paciente Envio Dois","data_nascimento":"1970-04-04"}') ->> 'episodio_id')::uuid;
+SELECT pg_temp.ok(pg_temp.sit('x2') = 'chegou', 'a ficha aberta depois corrige o não chegou');
 
 -- ── 5. cancelamento e listas ────────────────────────────────────────────────
 SELECT pg_temp.como('med');

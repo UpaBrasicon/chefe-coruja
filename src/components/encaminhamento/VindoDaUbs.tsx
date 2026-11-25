@@ -83,6 +83,8 @@ export function VindoDaUbs({ unidadeId, fichas }: { unidadeId: string; fichas: F
                 </span>
                 <span className="text-rotulo text-tinta-sussurro">{e.chegada_em ? `registrado às ${hora(e.chegada_em)}` : e.cancelado_em ? `cancelado às ${hora(e.cancelado_em)}` : `enviado às ${hora(e.enviado_em)}`}</span>
                 <Estado tom={SITUACAO_ENVIO[e.situacao].tom}>{SITUACAO_ENVIO[e.situacao].rotulo}</Estado>
+                {/* RT, 25/11/2026: o "não chegou" só volta com a ficha aberta do paciente */}
+                {e.situacao === 'nao_chegou' && <Button size="xs" variant="outline" onClick={() => setChegada(e)}><LogIn /> Chegou depois</Button>}
               </li>
             ))}
           </ul>
