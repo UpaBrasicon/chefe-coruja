@@ -16,7 +16,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { fmtDataHora } from '@/lib/datas'
-import { caminhoLaudo, erroLaudo, LAUDO_MAX_BYTES, PENDENTE, rotuloVersaoResultado, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
+import { caminhoLaudo, erroLaudo, LAUDO_ACEITA, LAUDO_MAX_BYTES, laudoEhImagem, PENDENTE, rotuloVersaoResultado, SITUACAO_EXAME, type ExameDetalhe, type OrigemResultado, type VersaoResultado } from '@/lib/exames'
 import { abrirEmJanela } from '@/lib/abrirEmJanela'
 import { supabase } from '@/lib/supabase'
 
@@ -84,6 +84,15 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
     onSuccess: recarregar,
     onError: (e) => setErro((e as Error).message),
   })
+  // RT, 25/11/2026: o médico marca "alterado" (com autor e hora); o crítico continua só do laboratório
+  const alterado = useMutation({
+    mutationFn: async (v: boolean) => {
+      const { error } = await supabase.rpc('marcar_resultado_alterado', { p_exame: exameId, p_alterado: v })
+      if (error) throw error
+    },
+    onSuccess: recarregar,
+    onError: (e) => setErro((e as Error).message),
+  })
 
   if (detalhe.isLoading) return <Spinner />
   if (detalhe.error) return <p className="text-apoio text-critico">{(detalhe.error as Error).message}</p>
@@ -134,6 +143,11 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
         {d.pode_registrar && d.situacao === 'resultado' && !registrando && (
           <Button size="sm" variant="outline" onClick={() => setRegistrando('retificar')}>Retificar</Button>
         )}
+        {vigente && d.pode_marcar_alterado && (
+          <Button size="sm" variant="outline" disabled={alterado.isPending} onClick={() => alterado.mutate(!vigente.alterado_em)}>
+            {vigente.alterado_em ? 'Tirar "alterado"' : 'Marcar alterado'}
+          </Button>
+        )}
       </div>
       {editandoLink && (
         <div className="flex flex-wrap items-end gap-2 rounded-controle border border-fio p-2.5">
@@ -148,7 +162,8 @@ export function ResultadoExame({ exameId, aoMudar }: { exameId: string; aoMudar?
         </div>
       )}
       {registrando && (
-        <RegistrarResultado exameId={exameId} aceitaFoto={d.tipo === 'imagem'} retificar={registrando === 'retificar'}
+        // RT, 25/11/2026: laudo em PDF ou imagem em qualquer exame (antes, foto só nos de imagem)
+        <RegistrarResultado exameId={exameId} aceitaFoto retificar={registrando === 'retificar'}
           aoFechar={() => setRegistrando(null)} aoGravar={() => { setRegistrando(null); recarregar() }} />
       )}
     </div>
@@ -177,6 +192,8 @@ function Versao({ v }: { v: VersaoResultado }) {
         <Badge variant={v.origem === 'manual' ? 'secondary' : 'info'}>{ORIGEM[v.origem]}</Badge>
         {v.critico && <Badge variant="destructive">crítico ({ORIGEM[v.origem]})</Badge>}
         {!v.vigente && <Badge variant="outline">retificada</Badge>}
+        {v.alterado_em && <Badge variant="outline">alterado · {v.alterado_por ?? 'médico'} · {fmtDataHora(v.alterado_em)}</Badge>}
+        {v.coleta_em && <span>coleta {fmtDataHora(v.coleta_em)}</span>}
         <span>{rotuloVersaoResultado(v.origem, fmtDataHora(v.liberado_em), v.registrado_por)}</span>
       </span>
       {v.itens.length > 0 && (
@@ -200,7 +217,7 @@ function Versao({ v }: { v: VersaoResultado }) {
       {v.texto && <p className="whitespace-pre-wrap text-tinta">{v.texto}</p>}
       {v.tem_pdf && (
         <Button size="xs" variant="outline" className="self-start" onClick={() => void abrirLaudo()}>
-          <FileText /> {/\.(jpe?g|png)$/i.test(v.pdf_nome ?? '') ? 'Traçado / imagem' : 'Laudo em PDF'}{v.pdf_nome ? ` (${v.pdf_nome})` : ''}
+          <FileText /> {laudoEhImagem(v.pdf_nome) ? 'Traçado / imagem' : 'Laudo em PDF'}{v.pdf_nome ? ` (${v.pdf_nome})` : ''}
         </Button>
       )}
       {v.cientes.length > 0 && <span className="text-rotulo text-tinta-sussurro">Ciente: {v.cientes.map((c) => `${c.por} (${fmtDataHora(c.em)})`).join(', ')}</span>}
@@ -249,8 +266,8 @@ function RegistrarResultado({ exameId, retificar, aceitaFoto, aoFechar, aoGravar
       <AreaDeAnexo
         id={`res-laudo-${exameId}`}
         rotulo={aceitaFoto ? 'Laudo ou traçado (opcional)' : 'Laudo (opcional)'}
-        descricao={aceitaFoto ? 'PDF, JPG ou PNG, até 10 MB' : 'PDF até 10 MB'}
-        accept={aceitaFoto ? 'application/pdf,image/jpeg,image/png' : 'application/pdf'}
+        descricao={aceitaFoto ? 'PDF, JPG, PNG ou WEBP, até 10 MB' : 'PDF até 10 MB'}
+        accept={aceitaFoto ? LAUDO_ACEITA : 'application/pdf'}
         maxBytes={LAUDO_MAX_BYTES}
         validar={(f) => erroLaudo(f, aceitaFoto)}
         disabled={gravando}
