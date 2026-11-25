@@ -1,5 +1,5 @@
 // Etiquetas densas da Internação do NIR (modelo do RT, 25/11/2026): o código
-// do leito e o isolamento, em mono, na lista, no dossiê e no mapa.
+// do leito (mono) e o isolamento, na lista, no dossiê e no mapa.
 import type * as React from 'react'
 
 import { etiquetaIsolamento } from '@/lib/nirPainel'
@@ -13,9 +13,9 @@ export function CodigoLeito({ children, livre = false }: { children: React.React
   )
 }
 
-/** Etiqueta de isolamento (mono, âmbar): "ISO · CONTATO". */
+/** Isolamento em texto discreto, caixa de frase (NI1, revisão unslop): "Isolamento: contato". */
 export function EtiquetaIso({ tipos }: { tipos: readonly string[] | null | undefined }) {
   const t = etiquetaIsolamento(tipos)
   if (!t) return null
-  return <span className="shrink-0 rounded-controle border border-atencao/30 bg-atencao/10 px-1 font-mono text-rotulo font-semibold text-atencao">{t}</span>
+  return <span className="shrink-0 text-rotulo font-medium text-atencao">{t}</span>
 }

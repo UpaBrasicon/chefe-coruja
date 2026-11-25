@@ -4,7 +4,8 @@
 // (versão N)" que a central lê e que reinicia o prazo), com autor = login; não
 // é a evolução médica do prontuário. A lista mostra quem atualizou: "Evolução
 // (versão 3) — atualizada pelo NIR, <nome>" (regulacao_evolucoes.autor_papel,
-// migration 20270425000031). O formulário também abre pela barra de ações.
+// migration 20270425000031). O formulário abre pela faixa ou pela barra de
+// ações do dossiê (NI2: o botão não se repete aqui).
 // Peça própria do NIR para não mexer no PrazosDoPedido da regulação, que a
 // tela do regulador usa.
 import { useMutation } from '@tanstack/react-query'
@@ -12,7 +13,6 @@ import { Timer } from 'lucide-react'
 import * as React from 'react'
 
 import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
-import { SeloSla } from '@/components/regulacao/SlaRegulacao'
 import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,10 +52,10 @@ export function EvolucaoPedidoNir({ id, sla, status, tempos, evolucoes, podeEvol
   const plantao = usePlantaoOrigem(evoluir.error)
   return (
     <section aria-label="Prazos e evolução do pedido" className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
+      {/* NI2 (revisão unslop, RT 25/11/2026): o prazo e "Atualizar evolução" ficam na faixa/barra do pedido, não repetem aqui */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 font-medium text-tinta"><Timer className="size-4" aria-hidden /> Prazos e evolução do pedido</span>
-        <SeloSla sla={sla} />
-        {podeEvoluir && !abrir && <Button size="xs" variant="outline" className="ml-auto" disabled={!!plantao.motivo} title={plantao.motivo ?? undefined} onClick={() => setAbrir(true)}>Atualizar evolução</Button>}
+        {sla?.evolucao && <span className="text-rotulo text-tinta-sussurro">prazo {sla.evolucao.prazo_h} h · última em {dataHora(sla.evolucao.ultima_em)}</span>}
       </div>
       {tempos.length > 0 && <p className="text-rotulo text-tinta-apoio">Tempo em cada status: {textoTempos(tempos, status)}</p>}
       {abrir && (

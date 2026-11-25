@@ -15,9 +15,9 @@ import { BotaoLinha } from '@/components/ui/botao-linha'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { rotuloIdade } from '@/domain/idade'
-import { dataIso, tempoDecorrido } from '@/lib/formato'
+import { dataIso } from '@/lib/formato'
 import {
-  FILTROS, contagens, contextoDoLeito, idsNavegaveis, listaNir, pedidoPrincipal, pendenciasAbertas, sinalPrincipal, vizinho,
+  FILTROS, contagens, contextoDoLeito, idsNavegaveis, listaNir, pedidoPrincipal, pendenciasAbertas, sinalPrincipal, tempoDesde, vizinho,
   type FiltroNir, type MapaLeitos, type PendenciaUnidade, type Tom,
 } from '@/lib/nirPainel'
 import { PRIORIDADES, TIPOS_LEITO, prioridadeEfetiva } from '@/lib/regulacao'
@@ -123,10 +123,10 @@ export function PainelNir({ unidadeId, lista, pend, mapa, agora, selecionado, se
             {grupos.comRegulacao.map(linhaDaLista)}
             {grupos.semRegulacao.length > 0 && filtro !== 'sem_regulacao' && grupos.comRegulacao.length > 0 && (
               <BotaoLinha variante="linha" aria-expanded={semRegVisivel} onClick={() => setSemRegAberto(!semRegAberto)}
-                className="items-center gap-1.5 bg-campo px-3 py-1.5 text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">
+                className="items-center gap-1.5 bg-campo px-3 py-1.5 text-rotulo font-semibold text-tinta-apoio">
                 <ChevronDown className={cn('size-3.5 transition-transform', !semRegVisivel && '-rotate-90')} aria-hidden />
                 Sem regulação ({grupos.semRegulacao.length})
-                <span className="ml-auto font-normal">Internados na unidade</span>
+                <span className="ml-auto font-normal text-tinta-sussurro">Internados na unidade</span>
               </BotaoLinha>
             )}
             {semRegVisivel && grupos.semRegulacao.map(linhaDaLista)}
@@ -174,7 +174,7 @@ function LinhaNir({ l, pend, agora, selecionado, isolamento, onClick }: {
         <span className={cn('min-w-0 truncate', COR[sinal.tom], sinal.tom !== 'neutro' && 'font-medium')} title={sinal.texto}>{sinal.texto}</span>
         {avisado && (
           <span className="shrink-0 rounded-controle bg-atencao/10 px-1 text-atencao">
-            Médico avisado{avisado.avisado_em ? ` · ${tempoDecorrido(avisado.avisado_em, agora).replace(/^há /, '')}` : ''}
+            Médico avisado{avisado.avisado_em ? ` · ${tempoDesde(avisado.avisado_em, agora)}` : ''}
           </span>
         )}
       </span>

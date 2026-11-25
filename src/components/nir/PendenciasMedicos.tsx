@@ -1,8 +1,11 @@
 // Aba "Pendências com médicos" da Internação do NIR (NIR3, modelo do RT de
 // 25/11/2026): indicadores (abertas, médicos avisados, risco 72 h, resolvidas
-// no turno), filtro de setor, Pendentes / Resolvidas e a tabela com leito,
-// paciente, nº, pendência, responsável e setor, avisado há, situação e as
-// ações (reenviar aviso, marcar resolvida, abrir o paciente no painel).
+// nas últimas 24 h), filtro de setor, Pendentes / Resolvidas e a tabela com
+// leito, paciente, nº, pendência, responsável e setor, avisado há, situação e
+// as ações. NI4 (revisão unslop, RT 25/11/2026): números numa faixa neutra
+// (só o risco em vermelho), a mesma janela de 24 h no número e no filtro,
+// "Marcar resolvida" na linha e Reenviar aviso / Abrir paciente no "…",
+// tempos como "4 h 42 min".
 // "Copiar resumo do plantão" leva leito, setor, nº e a pendência, SEM o nome
 // do paciente (LGPD). RPC regulacao_pendencias_da_unidade (20270425000030).
 import { ClipboardList, Copy } from 'lucide-react'
@@ -11,6 +14,7 @@ import * as React from 'react'
 import { Chip, TituloCartao, Vazio } from '@/components/monitor/Pagina'
 import { tomStatus, useAcoesPendencia } from '@/components/nir/dadosNir'
 import { CodigoLeito } from '@/components/nir/Etiquetas'
+import { MenuMais } from '@/components/plantao/MenuMais'
 import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
 import { useMotivosPlantaoOrigem, usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Badge } from '@/components/ui/badge'
@@ -19,8 +23,8 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { rotuloIdade } from '@/domain/idade'
-import { dataHora, dataIso, tempoDecorrido } from '@/lib/formato'
-import { HORAS_TURNO, STATUS_PENDENCIA, indicadoresPendencias, resumoDoPlantao, type PendenciaUnidade } from '@/lib/nirPainel'
+import { dataHora, dataIso } from '@/lib/formato'
+import { HORAS_RESOLVIDAS, STATUS_PENDENCIA, indicadoresPendencias, resumoDoPlantao, tempoDesde, type PendenciaUnidade } from '@/lib/nirPainel'
 import type { PacienteRegulacao } from '@/lib/regulacaoPaciente'
 import { cn } from '@/lib/utils'
 
@@ -53,12 +57,12 @@ export function PendenciasMedicos({ unidadeId, pend, lista, agora, abrirPaciente
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicador rotulo="Pendências abertas com médicos" valor={ind.abertas} tom={ind.abertas > 0 ? 'atencao' : undefined} />
-        <Indicador rotulo="Médicos já avisados" valor={ind.avisados} />
-        <Indicador rotulo="Risco de cancelamento (72 h)" valor={ind.risco72h} tom={ind.risco72h > 0 ? 'critico' : undefined} />
-        <Indicador rotulo={`Resolvidas nas últimas ${HORAS_TURNO} h`} valor={ind.resolvidasTurno} tom="conforme" />
-      </div>
+      <FaixaNumeros rotulo="Números das pendências com médicos" itens={[
+        { rotulo: 'Abertas com médicos', valor: ind.abertas },
+        { rotulo: 'Médicos já avisados', valor: ind.avisados },
+        { rotulo: 'Risco de cancelamento (72 h)', valor: ind.risco72h, critico: ind.risco72h > 0 },
+        { rotulo: `Resolvidas nas últimas ${HORAS_RESOLVIDAS} h`, valor: ind.resolvidas },
+      ]} />
       <section aria-label="Pendências com médicos" className="rounded-cartao border border-fio bg-superficie p-3">
         <TituloCartao>Pendências com médicos</TituloCartao>
         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -68,7 +72,7 @@ export function PendenciasMedicos({ unidadeId, pend, lista, agora, abrirPaciente
           </CampoSelecao>
           <div role="radiogroup" aria-label="Situação" className="flex gap-1.5">
             <Chip radio ativo={ver === 'pendentes'} contagem={ind.abertas} onClick={() => setVer('pendentes')}>Pendentes</Chip>
-            <Chip radio ativo={ver === 'resolvidas'} onClick={() => setVer('resolvidas')}>Resolvidas (24 h)</Chip>
+            <Chip radio ativo={ver === 'resolvidas'} contagem={ind.resolvidas} onClick={() => setVer('resolvidas')}>Resolvidas ({HORAS_RESOLVIDAS} h)</Chip>
           </div>
           <Button className="ml-auto" onClick={copiarResumo}><Copy /> Copiar resumo do plantão</Button>
         </div>
@@ -77,59 +81,62 @@ export function PendenciasMedicos({ unidadeId, pend, lista, agora, abrirPaciente
         <AvisoPlantao texto={plantao.recusa} className="mb-2" />
         {erro && !plantao.recusa && <MensagemErro texto={erro.message} />}
         {linhas.length === 0 ? (
-          <Vazio icone={ClipboardList} titulo={ver === 'pendentes' ? 'Nenhuma pendência aberta com médicos' : 'Nenhuma pendência resolvida nas últimas 24 h'} />
+          <Vazio icone={ClipboardList} titulo={ver === 'pendentes' ? 'Nenhuma pendência aberta com médicos' : `Nenhuma pendência resolvida nas últimas ${HORAS_RESOLVIDAS} h`} />
         ) : (
+          // NI4: a coluna Pendência fica com a largura; Responsável e Avisado encolhem; uma ação na linha e o resto no "…"
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Leito</TableHead>
                 <TableHead>Paciente</TableHead>
                 <TableHead>Regulação</TableHead>
-                <TableHead>Pendência</TableHead>
-                <TableHead>Responsável / setor</TableHead>
+                <TableHead className="w-full min-w-64">Pendência</TableHead>
+                <TableHead>Responsável</TableHead>
                 <TableHead>Avisado</TableHead>
                 <TableHead>Situação</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="text-right"><span className="sr-only">Ações</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {linhas.map((x) => (
-                <TableRow key={x.id}>
-                  <TableCell><CodigoLeito>{x.leito ?? '—'}</CodigoLeito></TableCell>
-                  <TableCell>
-                    <span className="font-medium text-tinta">{x.paciente.nome}</span>
-                    {x.paciente.nascimento && <span className="ml-1 text-rotulo text-tinta-sussurro">{rotuloIdade(x.paciente.nascimento, dataIso())}</span>}
-                  </TableCell>
-                  <TableCell>nº {x.numero}</TableCell>
-                  <TableCell className="max-w-72 whitespace-normal">
-                    {x.titulo}
-                    {x.urgencia === 'alta' && <Badge variant="destructive" className="ml-1.5">Urgente</Badge>}
-                  </TableCell>
-                  <TableCell className="whitespace-normal">
-                    <span className="block">{x.responsaveis.map((r) => r.nome).join(', ') || 'Médico de plantão'}</span>
-                    <span className="text-rotulo text-tinta-sussurro">{x.setor?.nome ?? '—'}</span>
-                  </TableCell>
-                  <TableCell className="text-tinta-apoio">
-                    {x.status === 'resolvida' ? `resolvida ${x.resolvida_em ? tempoDecorrido(x.resolvida_em) : ''}` : x.avisado_em ? tempoDecorrido(x.avisado_em) : 'não avisado'}
-                    {x.avisos > 1 && <span className="block text-rotulo text-tinta-sussurro">{x.avisos} avisos</span>}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={tomStatus(x.status)}>{STATUS_PENDENCIA[x.status]}</Badge>
-                    {x.status === 'resolvida' && <span className="block text-rotulo text-tinta-sussurro">{x.resolvida_por ?? '—'}</span>}
-                  </TableCell>
-                  <TableCell className={cn('text-right whitespace-nowrap')}>
-                    <span className="inline-flex flex-wrap justify-end gap-1.5">
-                      {x.status !== 'resolvida' && (
-                        <>
-                          <Button size="xs" variant="outline" disabled={reavisar.isPending || !!motivoDaLinha(x)} title={motivoDaLinha(x) ?? undefined} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>
-                          <Button size="xs" disabled={resolver.isPending || !!motivoDaLinha(x)} title={motivoDaLinha(x) ?? undefined} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
-                        </>
-                      )}
-                      <Button size="xs" variant="outline" onClick={() => abrirPaciente(x.paciente.id)}>Abrir paciente</Button>
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {linhas.map((x) => {
+                const aberta = x.status !== 'resolvida'
+                const motivo = motivoDaLinha(x)
+                return (
+                  <TableRow key={x.id}>
+                    <TableCell><CodigoLeito>{x.leito ?? '—'}</CodigoLeito></TableCell>
+                    <TableCell>
+                      <span className="font-medium text-tinta">{x.paciente.nome}</span>
+                      {x.paciente.nascimento && <span className="ml-1 text-rotulo text-tinta-sussurro">{rotuloIdade(x.paciente.nascimento, dataIso())}</span>}
+                    </TableCell>
+                    <TableCell className="font-mono text-rotulo">nº {x.numero}</TableCell>
+                    <TableCell className="min-w-64 whitespace-normal">
+                      {x.titulo}
+                      {x.urgencia === 'alta' && <Badge variant="destructive" className="ml-1.5">Urgente</Badge>}
+                    </TableCell>
+                    <TableCell className="max-w-40 text-rotulo whitespace-normal">
+                      <span className="block text-tinta">{x.responsaveis.map((r) => r.nome).join(', ') || 'Médico de plantão'}</span>
+                      <span className="text-tinta-sussurro">{x.setor?.nome ?? '—'}</span>
+                    </TableCell>
+                    <TableCell className="text-rotulo text-tinta-apoio">
+                      {!aberta ? (x.resolvida_em ? `resolvida há ${tempoDesde(x.resolvida_em, agora)}` : 'resolvida') : x.avisado_em ? `há ${tempoDesde(x.avisado_em, agora)}` : 'não avisado'}
+                      {x.avisos > 1 && <span className="block text-tinta-sussurro">{x.avisos} avisos</span>}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={tomStatus(x.status)}>{STATUS_PENDENCIA[x.status]}</Badge>
+                      {!aberta && <span className="block text-rotulo text-tinta-sussurro">{x.resolvida_por ?? '—'}</span>}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <span className="inline-flex items-center justify-end gap-1.5">
+                        {aberta && <Button size="xs" disabled={resolver.isPending || !!motivo} title={motivo ?? undefined} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>}
+                        <MenuMais icone className="size-7" rotuloAcessivel={`Mais ações da pendência do leito ${x.leito ?? 'sem leito'}`} itens={[
+                          ...(aberta ? [{ chave: 'reavisar', rotulo: 'Reenviar aviso', desabilitado: reavisar.isPending || !!motivo, onSelecionar: () => reavisar.mutate(x.id) }] : []),
+                          { chave: 'abrir', rotulo: 'Abrir paciente', onSelecionar: () => abrirPaciente(x.paciente.id) },
+                        ]} />
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         )}
@@ -138,12 +145,22 @@ export function PendenciasMedicos({ unidadeId, pend, lista, agora, abrirPaciente
   )
 }
 
-export function Indicador({ rotulo, valor, apoio, tom }: { rotulo: string; valor: React.ReactNode; apoio?: string; tom?: 'atencao' | 'critico' | 'conforme' }) {
+export type NumeroFaixa = { rotulo: string; valor: React.ReactNode; apoio?: string; critico?: boolean }
+
+/**
+ * NI4/NI5 (revisão unslop, RT 25/11/2026): os números numa faixa só, em cor
+ * neutra; só o que é risco (ex.: cancelamento > 0) fica vermelho.
+ */
+export function FaixaNumeros({ itens, rotulo }: { itens: NumeroFaixa[]; rotulo: string }) {
   return (
-    <div className="flex flex-col gap-0.5 rounded-cartao border border-fio bg-superficie px-3 py-2">
-      <span className="text-rotulo text-tinta-sussurro">{rotulo}</span>
-      <span className={cn('text-numeral-compacto font-semibold tabular-nums', tom === 'atencao' ? 'text-atencao' : tom === 'critico' ? 'text-critico' : tom === 'conforme' ? 'text-conforme' : 'text-tinta')}>{valor}</span>
-      {apoio && <span className="text-rotulo text-tinta-sussurro">{apoio}</span>}
-    </div>
+    <dl aria-label={rotulo} className="grid grid-cols-2 divide-fio rounded-cartao border border-fio bg-superficie lg:grid-cols-4 lg:divide-x">
+      {itens.map((i) => (
+        <div key={i.rotulo} className="flex flex-col gap-0.5 px-3 py-2">
+          <dt className="text-rotulo text-tinta-sussurro">{i.rotulo}</dt>
+          <dd className={cn('text-numeral-compacto font-semibold tabular-nums', i.critico ? 'text-critico' : 'text-tinta')}>{i.valor}</dd>
+          {i.apoio && <dd className="text-rotulo text-tinta-sussurro">{i.apoio}</dd>}
+        </div>
+      ))}
+    </dl>
   )
 }

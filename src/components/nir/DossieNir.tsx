@@ -6,9 +6,14 @@
 //   anexar do prontuário que já existe), "Atualizar evolução" do pedido (o NIR
 //   também atualiza, decisão do RT de 25/11/2026: é a atualização do pedido,
 //   autor = login, não a evolução médica do prontuário) e "Gerenciar remoção /
-//   saída" quando há vaga com destino. A faixa do prazo repete as ações.
-// • Abas: Pendências & resumo, Conversa com a central (mensagens prontas de 1
-//   clique), Anexos & exames, Planilha de exames e Linha do tempo.
+//   saída" quando há vaga com destino.
+// • NI2/NI3 (revisão unslop, RT 25/11/2026): uma linha de ações por pedido,
+//   sem repetir botão nem aviso: com vaga, central esperando ou evolução
+//   vencida, é a faixa (com o tempo real sem evolução e as duas ações dela);
+//   sem, a barra com Avisar médico e Atualizar evolução; o resto no "…".
+// • Abas: Pendências e resumo, Conversa com a central (mensagens prontas de 1
+//   clique), Anexos e exames, Planilha de exames e Linha do tempo (rótulos
+//   curtos na tela, descendo de linha sem rolagem lateral).
 // • Planilha de exames (decisão do RT de 25/11/2026, B-09: na planilha só o
 //   médico e o NIR lançam valores): a mesma planilha do leito, com a
 //   internação do paciente. O NIR não abre o leito; lança daqui. Aparece
@@ -44,10 +49,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Spinner } from '@/components/ui/spinner'
 import { rotuloIdade } from '@/domain/idade'
-import { dataHora, dataIso, tempoDecorrido } from '@/lib/formato'
+import { MenuMais, type ItemMenu } from '@/components/plantao/MenuMais'
+import { dataHora, dataIso } from '@/lib/formato'
 import { textoIsolamento } from '@/lib/isolamentoPedido'
 import {
-  MENSAGENS_PRONTAS, STATUS_PENDENCIA, STATUS_VAGA, horasSemEvolucao, pedidosAbertos, rotuloIsolamento, textoParaWhatsApp,
+  MENSAGENS_PRONTAS, STATUS_PENDENCIA, STATUS_VAGA, horasSemEvolucao, pedidosAbertos, rotuloIsolamento, tempoDesde, textoParaWhatsApp,
   type ContextoLeito, type MotivoPendencia, type PendenciaUnidade,
 } from '@/lib/nirPainel'
 import { CARATER, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS_LEITO, TRANSPORTES, prioridadeEfetiva, resumoPedido, type Sla, type StatusRegulacao } from '@/lib/regulacao'
@@ -75,7 +81,8 @@ const TOM_PRIORIDADE: Record<string, 'destructive' | 'warning' | 'info' | 'secon
 
 type Aba = 'pendencias' | 'conversa' | 'anexos' | 'planilha' | 'tempo'
 
-
+/** NI2: a faixa do pedido é a da evolução vencida (não há vaga nem a central esperando a unidade). */
+const evolucaoNaFaixa = (p: PedidoResumo) => !STATUS_VAGA.includes(p.status) && !esperaAOrigem(p) && !!p.sla?.evolucao?.atrasada
 
 type PropsDossie = {
   unidadeId: string; linha: PacienteRegulacao; pend: PendenciaUnidade[]; contexto: ContextoLeito; agora: number
@@ -123,7 +130,7 @@ function DossieDoPaciente({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
         {linha.setor && <span>{linha.setor.nome}</span>}
         <span aria-hidden>·</span>
         <span>Médico: <b className="font-semibold text-tinta">{medicos || 'sem escala no setor'}</b></span>
-        {linha.internacao && <><span aria-hidden>·</span><span className="font-mono">Internado {tempoDecorrido(linha.internacao.admissao, agora)}</span></>}
+        {linha.internacao && <><span aria-hidden>·</span><span>Internado há {tempoDesde(linha.internacao.admissao, agora)}</span></>}
         <EtiquetaIso tipos={contexto.isolamento} />
       </div>
       <div className="flex flex-wrap items-baseline gap-x-2">
@@ -137,7 +144,11 @@ function DossieDoPaciente({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
           <Badge variant={STATUS_VAGA.includes(p.status) ? 'success' : esperaAOrigem(p) ? 'info' : 'default'}>{STATUS[p.status]}</Badge>
           <Badge variant={TOM_PRIORIDADE[PRIORIDADES[prioridadeEfetiva(p)].tom]}>{PRIORIDADES[prioridadeEfetiva(p)].rotulo}</Badge>
           <Badge variant="outline">{resumoPedido(p)}</Badge>
-          <SeloSla sla={p.sla} />
+          {/* NI2: a evolução vencida fica num aviso só (a faixa, com o tempo real); aqui, só quando a faixa é outra */}
+          <SeloSla sla={p.sla?.evolucao?.atrasada ? { ...p.sla, evolucao: null } : p.sla} />
+          {p.sla?.evolucao?.atrasada && !evolucaoNaFaixa(p) && (
+            <Badge variant={p.sla.evolucao.risco_cancelamento ? 'destructive' : 'warning'}>{tempoSemEvolucao(horasSemEvolucao(p, agora))} sem evolução</Badge>
+          )}
           {abertos.length > 1 && (
             <span role="radiogroup" aria-label="Pedido" className="ml-auto flex gap-1">
               {abertos.map((x) => (
@@ -185,7 +196,7 @@ function DossieDoPaciente({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
           </div>
           {linha.internacao && (
             <section aria-label="Planilha de exames" className="flex flex-col gap-1.5">
-              <h3 className="text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">Planilha de exames</h3>
+              <h3 className="text-rotulo font-semibold text-tinta-apoio">Planilha de exames</h3>
               <PlanilhaDaInternacao internacaoId={linha.internacao.id} />
             </section>
           )}
@@ -198,7 +209,7 @@ function DossieDoPaciente({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
     novoPedido={() => { setEnviado(null); setNovo(true) }} />
 }
 
-/** Grade compacta de 3 colunas com rótulos pequenos em caixa. */
+/** Grade compacta de 3 colunas com rótulos pequenos (caixa de frase, NI1). */
 function Resumo({ children }: { children: React.ReactNode }) {
   return <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-controle border border-fio bg-campo px-3 py-2.5 sm:grid-cols-3">{children}</dl>
 }
@@ -206,7 +217,7 @@ function Resumo({ children }: { children: React.ReactNode }) {
 function Item({ rotulo, children, className }: { rotulo: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={cn('flex min-w-0 flex-col', className)}>
-      <dt className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">{rotulo}</dt>
+      <dt className="text-rotulo text-tinta-sussurro">{rotulo}</dt>
       <dd className="text-tinta">{children}</dd>
     </div>
   )
@@ -254,30 +265,55 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
   const h = horasSemEvolucao(p, agora)
   const recarregarTudo = () => { recarregar(p.id); void qc.invalidateQueries({ queryKey: ['regulacao-anexos', p.id] }) }
 
-  // faixa do prazo: o que pede ação agora
-  let faixa: React.ReactNode = null
+  // NI2/NI3 (revisão unslop, RT 25/11/2026): uma linha de ações por pedido. Com
+  // prazo ou vaga, é a faixa (o aviso com o tempo real e as duas ações dele);
+  // sem, a barra com Avisar médico e Atualizar evolução. O resto vai no "…".
+  // Nenhuma ação aparece duas vezes.
+  const botaoAvisar = (motivo: MotivoPendencia | undefined, principal = false) => (
+    <Button size="xs" variant={principal ? 'default' : 'outline'} {...desligado} onClick={() => avisar(motivo)}><Bell /> Avisar médico</Button>
+  )
+  const botaoEvoluir = <Button size="xs" {...desligado} onClick={evoluir}><PenLine /> Atualizar evolução</Button>
+  const botaoPuxar = <Button size="xs" onClick={() => setPuxar(true)}><FileText /> Puxar exame do prontuário</Button>
+  const itemPuxar: ItemMenu = { chave: 'puxar', rotulo: <><FileText className="size-4" aria-hidden /> Puxar exame do prontuário</>, onSelecionar: () => setPuxar(true) }
+  const itemEvoluir: ItemMenu = { chave: 'evoluir', rotulo: <><PenLine className="size-4" aria-hidden /> Atualizar evolução</>, onSelecionar: evoluir, desabilitado: !!foraDoPlantao }
+  const itemNovo: ItemMenu = { chave: 'novo', rotulo: <><Plus className="size-4" aria-hidden /> Novo pedido</>, onSelecionar: novoPedido, desabilitado: !!foraDoPlantao }
+  const mais = (itens: ItemMenu[]) => <MenuMais icone itens={itens} className="size-7" rotuloAcessivel="Mais ações do pedido" />
+
+  let acoes: React.ReactNode
   if (vaga) {
-    faixa = (
+    acoes = (
       <Faixa tom="sucesso" titulo={`Vaga: ${p.destino ?? 'destino a confirmar'}`}
         texto={p.status === 'em_transito' ? 'Paciente saiu da origem' : p.transporte ? TRANSPORTES[p.transporte] ?? p.transporte : 'Transporte a acionar'}>
         <Button size="xs" onClick={() => setRemocao(!remocao)} aria-expanded={remocao}><Truck /> Gerenciar remoção / saída</Button>
+        {botaoAvisar(undefined)}
+        {mais([itemPuxar, ...(podeEvoluir ? [itemEvoluir] : []), itemNovo])}
       </Faixa>
     )
   } else if (esperaAOrigem(p)) {
-    faixa = (
+    acoes = (
       <Faixa tom="info" titulo="A central espera a unidade" texto={p.sla?.pendencia ? `responder até ${dataHora(p.sla.pendencia.vence_em)}` : null}>
-        <Button size="xs" onClick={() => setPuxar(true)}><FileText /> Puxar exame do prontuário</Button>
-        <Button size="xs" variant="outline" {...desligado} onClick={() => avisar('duvida')}><Bell /> Avisar médico</Button>
+        {botaoPuxar}
+        {botaoAvisar('duvida')}
+        {mais([...(podeEvoluir ? [itemEvoluir] : []), itemNovo])}
       </Faixa>
     )
   } else if (p.sla?.evolucao?.atrasada) {
     const risco = p.sla.evolucao.risco_cancelamento
-    faixa = (
+    acoes = (
       <Faixa tom={risco ? 'critico' : 'atencao'} titulo={`${tempoSemEvolucao(h)} sem evolução${risco ? ': risco de cancelamento' : ' (vencida)'}`}
-        texto={`última em ${dataHora(p.sla.evolucao.ultima_em)} · prazo de ${p.sla.evolucao.prazo_h} h`}>
-        <Button size="xs" variant={podeEvoluir ? 'outline' : 'default'} {...desligado} onClick={() => avisar('evolucao')}><Bell /> Avisar médico</Button>
-        {podeEvoluir && <Button size="xs" {...desligado} onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
+        texto={`última em ${dataHora(p.sla.evolucao.ultima_em)} · prazo ${p.sla.evolucao.prazo_h} h`}>
+        {botaoAvisar('evolucao', !podeEvoluir)}
+        {podeEvoluir && botaoEvoluir}
+        {mais([itemPuxar, itemNovo])}
       </Faixa>
+    )
+  } else {
+    acoes = (
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-fio bg-campo px-4 py-1.5">
+        {botaoAvisar(undefined)}
+        {podeEvoluir && <Button size="xs" variant="outline" {...desligado} onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
+        <span className="ml-auto">{mais([itemPuxar, itemNovo])}</span>
+      </div>
     )
   }
 
@@ -287,14 +323,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
   return (
     <div className="flex flex-col">
       {cabecalho}
-      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-fio bg-campo px-4 py-1.5">
-        <Button size="xs" variant="outline" {...desligado} onClick={() => avisar(p.sla?.evolucao?.atrasada ? 'evolucao' : undefined)}><Bell /> Avisar médico</Button>
-        <Button size="xs" variant="outline" onClick={() => setPuxar(true)}><FileText /> Puxar exame do prontuário</Button>
-        {podeEvoluir && <Button size="xs" variant="outline" {...desligado} onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
-        {vaga && <Button size="xs" onClick={() => setRemocao(!remocao)} aria-expanded={remocao}><Truck /> Gerenciar remoção / saída</Button>}
-        <Button size="xs" variant="outline" className="ml-auto" {...desligado} onClick={novoPedido}><Plus /> Novo pedido</Button>
-      </div>
-      {faixa}
+      {acoes}
       {remocao && vaga && (
         <section aria-label="Remoção e saída" className="flex flex-col gap-1.5 border-b border-fio bg-alerta-conforme px-4 py-2">
           {!s ? <Spinner /> : (
@@ -310,11 +339,12 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
         </section>
       )}
       {enviado && <div className="px-4 pt-2"><AvisoEnviado enviada={enviado} onde="Ele está aberto aqui." /></div>}
-      <AbasLinha rotulo="Dossiê do pedido" tamanho="compacto" className="border-b border-fio px-2.5" valor={aba} onChange={setAba} abas={[
-        { valor: 'pendencias', rotulo: 'Pendências & resumo', contagem: abertas.length },
-        { valor: 'conversa', rotulo: 'Conversa com a central', contagem: p.conversa.total },
-        { valor: 'anexos', rotulo: 'Anexos & exames', contagem: anexos.data?.anexos.length },
-        ...(linha.internacao ? [{ valor: 'planilha' as const, rotulo: 'Planilha de exames' }] : []),
+      {/* NI3: rótulos curtos com a contagem, sem "&", descendo de linha em vez de rolar de lado */}
+      <AbasLinha rotulo="Dossiê do pedido" tamanho="compacto" quebrar className="border-b border-fio px-2.5" valor={aba} onChange={setAba} abas={[
+        { valor: 'pendencias', rotulo: 'Pendências', contagem: abertas.length },
+        { valor: 'conversa', rotulo: 'Conversa', contagem: p.conversa.total },
+        { valor: 'anexos', rotulo: 'Anexos e exames', contagem: anexos.data?.anexos.length },
+        ...(linha.internacao ? [{ valor: 'planilha' as const, rotulo: 'Planilha' }] : []),
         { valor: 'tempo', rotulo: 'Linha do tempo', contagem: linhaDoTempo.length },
       ]} />
       <div className="flex flex-col gap-3 px-4 py-3">
@@ -323,9 +353,9 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
           <>
             {esperaAOrigem(p) && <div className="rounded-controle border border-fio"><EsperaDaCentral p={p} /></div>}
             {p.status === 'pendencia' && <ResponderPergunta id={p.id} aoFim={() => recarregar(p.id)} />}
-            <ListaPendencias pend={doPedido} aoMudar={() => recarregar(p.id)} />
+            <ListaPendencias pend={doPedido} agora={agora} aoMudar={() => recarregar(p.id)} />
             <section aria-label="Resumo da regulação" className="flex flex-col gap-1.5">
-              <h3 className="text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">Resumo da regulação</h3>
+              <h3 className="text-rotulo font-semibold text-tinta-apoio">Resumo da regulação</h3>
               <Resumo>
                 <Item rotulo="Procedimento" className="col-span-2"><span className="font-mono text-rotulo">{p.procedimento ?? ''}</span> {p.procedimento_nome ?? resumoPedido(p)}</Item>
                 <Item rotulo="Caráter">{CARATER[p.carater]}</Item>
@@ -390,29 +420,29 @@ function Faixa({ tom, titulo, texto, children }: { tom: 'sucesso' | 'info' | 'at
     }[tom])}>
       <b className={cn('font-semibold', { sucesso: 'text-conforme', info: 'text-suprimento', atencao: 'text-atencao', critico: 'text-critico' }[tom])}>{titulo}</b>
       {texto && <span className="font-mono text-rotulo text-tinta-apoio">· {texto}</span>}
-      <span className="ml-auto flex flex-wrap gap-1.5">{children}</span>
+      <span className="ml-auto flex flex-wrap items-center gap-1.5">{children}</span>
     </div>
   )
 }
 
 /** Pendências da unidade neste pedido: reenviar o aviso, copiar a cobrança (sem o nome) e marcar resolvida. */
-function ListaPendencias({ pend, aoMudar }: { pend: PendenciaUnidade[]; aoMudar: () => void }) {
+function ListaPendencias({ pend, agora, aoMudar }: { pend: PendenciaUnidade[]; agora: number; aoMudar: () => void }) {
   const abertas = pend.filter((x) => x.status !== 'resolvida').length
   return (
     <section aria-label="Pendências da unidade" className="flex flex-col gap-1.5">
-      <h3 className="flex items-baseline justify-between text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">
-        Pendências (central ↔ médico ↔ NIR) <span className="font-mono font-normal normal-case">{abertas === 1 ? '1 aberta' : `${abertas} abertas`}</span>
+      <h3 className="flex items-baseline justify-between text-rotulo font-semibold text-tinta-apoio">
+        Pendências entre central, médico e NIR <span className="font-mono font-normal">{abertas === 1 ? '1 aberta' : `${abertas} abertas`}</span>
       </h3>
       {pend.length === 0 ? <VazioLinha className="py-1">Nenhuma pendência neste pedido.</VazioLinha> : (
         <ul className="flex flex-col divide-y divide-fio rounded-controle border border-fio bg-superficie">
-          {pend.map((x) => <LinhaPendencia key={x.id} x={x} aoMudar={aoMudar} />)}
+          {pend.map((x) => <LinhaPendencia key={x.id} x={x} agora={agora} aoMudar={aoMudar} />)}
         </ul>
       )}
     </section>
   )
 }
 
-function LinhaPendencia({ x, aoMudar }: { x: PendenciaUnidade; aoMudar: () => void }) {
+function LinhaPendencia({ x, agora, aoMudar }: { x: PendenciaUnidade; agora: number; aoMudar: () => void }) {
   const { reavisar, resolver, erro } = useAcoesPendencia(aoMudar)
   const plantao = usePlantaoOrigem(reavisar.error, resolver.error)
   const [copiado, setCopiado] = React.useState(false)
@@ -423,7 +453,7 @@ function LinhaPendencia({ x, aoMudar }: { x: PendenciaUnidade; aoMudar: () => vo
         <span className="truncate font-medium text-tinta" title={x.titulo}>{x.titulo}</span>
         <span className="flex flex-wrap items-center gap-1 text-rotulo text-tinta-sussurro">
           <Badge variant={x.dono === 'medico' ? 'warning' : 'info'}>Dono: {x.dono === 'medico' ? 'Médico' : 'NIR'}</Badge>
-          <Badge variant={tomStatus(x.status)}>{STATUS_PENDENCIA[x.status]}{x.status === 'medico_avisado' && x.avisado_em ? ` · ${tempoDecorrido(x.avisado_em).replace(/^há /, '')}` : ''}</Badge>
+          <Badge variant={tomStatus(x.status)}>{STATUS_PENDENCIA[x.status]}{x.status === 'medico_avisado' && x.avisado_em ? ` · ${tempoDesde(x.avisado_em, agora)}` : ''}</Badge>
           {x.urgencia === 'alta' && <Badge variant="destructive">Urgente</Badge>}
           {x.responsaveis.length > 0 && <span>{x.responsaveis.map((r) => r.nome).join(', ')}</span>}
           <span className="font-mono">· {dataHora(x.criada_em)}</span>

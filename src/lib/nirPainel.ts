@@ -199,7 +199,11 @@ export function resumoDoPlantao(pend: readonly PendenciaUnidade[], quando: strin
 
 // ── indicadores ─────────────────────────────────────────────────────────────
 
-export const HORAS_TURNO = 12
+/**
+ * NI4 (revisão unslop, RT 25/11/2026): a janela das resolvidas é a mesma no
+ * número e no filtro, a da RPC regulacao_pendencias_da_unidade (24 h).
+ */
+export const HORAS_RESOLVIDAS = 24
 
 export function indicadoresPendencias(pend: readonly PendenciaUnidade[], lista: PacienteRegulacao[], agora: number) {
   const doMedico = pend.filter((x) => x.dono === 'medico')
@@ -207,9 +211,23 @@ export function indicadoresPendencias(pend: readonly PendenciaUnidade[], lista: 
     abertas: doMedico.filter((x) => x.status !== 'resolvida').length,
     avisados: doMedico.filter((x) => x.status === 'medico_avisado').length,
     risco72h: lista.filter(emRisco72h).length,
-    resolvidasTurno: doMedico.filter((x) => x.status === 'resolvida' && !!x.resolvida_em
-      && agora - Date.parse(x.resolvida_em) <= HORAS_TURNO * 3_600_000).length,
+    resolvidas: doMedico.filter((x) => x.status === 'resolvida' && !!x.resolvida_em
+      && agora - Date.parse(x.resolvida_em) <= HORAS_RESOLVIDAS * 3_600_000).length,
   }
+}
+
+/**
+ * NI4: tempo desde um instante no mesmo formato da tela inteira: "42 min",
+ * "4 h 42 min", "2 d 3 h" (no lugar de "há 4h42").
+ */
+export function tempoDesde(desde: string, agora: number): string {
+  const min = Math.max(0, Math.floor((agora - Date.parse(desde)) / 60_000))
+  if (!Number.isFinite(min)) return '—'
+  if (min < 1) return 'menos de 1 min'
+  if (min < 60) return `${min} min`
+  const h = Math.floor(min / 60)
+  if (h < 48) return min % 60 ? `${h} h ${min % 60} min` : `${h} h`
+  return tempoSemEvolucao(h)
 }
 
 export type LinhaMapa = { setor: SetorMapa; leito: LeitoMapa; paciente: PacienteRegulacao | null }
@@ -225,16 +243,33 @@ export function linhasDoMapa(mapa: MapaLeitos, lista: PacienteRegulacao[]): Linh
   })))
 }
 
-export function indicadoresMapa(linhas: LinhaMapa[]) {
+/**
+ * Indicadores do mapa. NI5 (revisão unslop, RT 25/11/2026): "em regulação" e
+ * "sem regulação" contam PACIENTES, os mesmos do painel: os dos leitos e os
+ * internados sem leito (internação ativa sem leito_atual_id: o painel lista,
+ * o mapa não tem onde pôr; eram 2 na UPA Homologação em 25/11). `semLeito`
+ * diz quantos são. Leito marcado como ocupado sem internado conta na
+ * ocupação, não como paciente.
+ */
+export function indicadoresMapa(linhas: LinhaMapa[], lista: readonly PacienteRegulacao[] = []) {
   const ocupados = linhas.filter(leitoOcupado)
   const livres = linhas.filter((x) => !leitoOcupado(x) && x.leito.status === 'livre').length
-  const emReg = ocupados.filter((x) => x.paciente && !semRegulacao(x.paciente)).length
+  const noLeito = new Set(linhas.flatMap((x) => (x.paciente ? [x.paciente.paciente.id] : [])))
+  const pacientes = [...linhas.flatMap((x) => (x.paciente ? [x.paciente] : [])), ...lista.filter((l) => !noLeito.has(l.paciente.id))]
+  const emReg = pacientes.filter((l) => !semRegulacao(l)).length
   return {
     total: linhas.length, ocupados: ocupados.length, livres,
     ocupacao: linhas.length ? Math.round((ocupados.length / linhas.length) * 100) : 0,
-    emRegulacao: emReg, semRegulacao: ocupados.length - emReg,
-    comVaga: ocupados.filter((x) => x.paciente && temVaga(x.paciente)).length,
+    emRegulacao: emReg, semRegulacao: pacientes.length - emReg,
+    comVaga: pacientes.filter(temVaga).length,
+    semLeito: pacientes.length - noLeito.size,
   }
+}
+
+/** NI5: o estado do leito, na coluna Leito do mapa (Ocupado, Higienização, Livre, Bloqueado…). */
+export function estadoDoLeito(x: Pick<LinhaMapa, 'leito' | 'paciente'>): string {
+  if (leitoOcupado(x)) return 'Ocupado'
+  return ROTULO_LEITO[x.leito.status] ?? x.leito.status
 }
 
 /** O que o mapa diz do leito do paciente: médicos de plantão no setor, isolamento ativo e sexo. */
@@ -257,10 +292,10 @@ export function rotuloIsolamento(tipos: readonly string[] | null | undefined): s
   return `Isolamento: ${txt}`
 }
 
-/** Etiqueta curta da lista: "ISO · CONTATO", "ISO · AEROSSOL + GOTÍCULA". */
+/** Etiqueta curta da lista, em caixa de frase (NI1): "Isolamento: contato", "Isolamento: aerossol + gotícula". */
 export function etiquetaIsolamento(tipos: readonly string[] | null | undefined): string | null {
   if (!tipos || tipos.length === 0) return null
-  return `ISO · ${tipos.map((t) => (t === 'goticula' ? 'gotícula' : t).toUpperCase()).join(' + ')}`
+  return `Isolamento: ${tipos.map((t) => (t === 'goticula' ? 'gotícula' : t)).join(' + ')}`
 }
 
 /** Rótulo da evolução do pedido: "Evolução (versão 3) — atualizada pelo NIR, Fulana". */
