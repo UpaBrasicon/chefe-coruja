@@ -31,7 +31,7 @@ import { tomStatus, useAcoesPendencia, useRecarregarNir } from '@/components/nir
 import { CodigoLeito, EtiquetaIso } from '@/components/nir/Etiquetas'
 import { EsperaDaCentral, ResponderPergunta } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { AnexosRegulacao, EscolherDocumento } from '@/components/regulacao/AnexosRegulacao'
-import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { AvisoPlantao, PlantaoOrigem } from '@/components/regulacao/AvisoPlantao'
 import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
 import { BlocoDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { AvisoEnviado, NovoPedidoPaciente, type PedidoEnviado } from '@/components/regulacao/NovaSolicitacao'
@@ -77,12 +77,30 @@ type Aba = 'pendencias' | 'conversa' | 'anexos' | 'planilha' | 'tempo'
 
 
 
-export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, voltar }: {
+type PropsDossie = {
   unidadeId: string; linha: PacienteRegulacao; pend: PendenciaUnidade[]; contexto: ContextoLeito; agora: number
   /** O "Novo pedido" do topo pediu o formulário para este paciente; muda a cada clique. */
   abrirNovo?: number
   voltar: () => void
-}) {
+}
+
+/**
+ * Decisão do RT de 25/11/2026 (NIR por setor, migration 20270426000026): para o
+ * NIR, "de plantão" conta o setor da escala ativa. O dossiê é de um paciente:
+ * pergunta com ele e vale para tudo o que está dentro (avisar médico, evolução,
+ * pendências, puxar exame, conversa, saída e o pedido novo deste paciente).
+ */
+export function DossieNir(props: PropsDossie) {
+  // o motivo da página (pela unidade) já está no aviso do topo
+  const { motivo: motivoDaUnidade } = usePlantaoOrigem()
+  return (
+    <PlantaoOrigem unidadeId={props.unidadeId} pacienteId={props.linha.paciente.id}>
+      <DossieDoPaciente {...props} motivoDaUnidade={motivoDaUnidade} />
+    </PlantaoOrigem>
+  )
+}
+
+function DossieDoPaciente({ unidadeId, linha, pend, contexto, agora, abrirNovo, voltar, motivoDaUnidade }: PropsDossie & { motivoDaUnidade: string | null }) {
   const abertos = pedidosAbertos(linha)
   const [pedidoId, setPedidoId] = React.useState<string | null>(abertos[0]?.id ?? null)
   const p = abertos.find((x) => x.id === pedidoId) ?? abertos[0] ?? null
@@ -91,13 +109,13 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
   if (abrirNovo !== novoVisto) { setNovoVisto(abrirNovo); if (abrirNovo) setNovo(true) }
   const [enviado, setEnviado] = React.useState<PedidoEnviado | null>(null)
   const recarregar = useRecarregarNir(unidadeId)
-  // B-07 (RT, 25/11/2026): fora do plantão, o aviso fica no topo da página e os botões desligam
+  // B-07 (RT, 25/11/2026): fora do plantão os botões desligam; o motivo aqui é o deste paciente
   const { motivo: foraDoPlantao } = usePlantaoOrigem()
   const desligado = { disabled: !!foraDoPlantao, title: foraDoPlantao ?? undefined }
-  const idade = linha.paciente.nascimento ? rotuloIdade(linha.paciente.nascimento, dataIso()) : null
+  const idade =linha.paciente.nascimento ? rotuloIdade(linha.paciente.nascimento, dataIso()) : null
   const medicos = contexto.medicos.map((m) => m.nome).join(', ')
 
-  const cabecalho = (
+  const topo = (
     <header className="flex flex-col gap-1 border-b border-fio px-4 pt-2.5 pb-2">
       <Button size="xs" variant="outline" className="self-start lg:hidden" onClick={voltar}><ArrowLeft /> Voltar aos leitos</Button>
       <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-rotulo text-tinta-apoio">
@@ -132,11 +150,16 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
       )}
     </header>
   )
+  // o aviso do paciente (setor fora do plantão) só quando não é o mesmo do topo da página
+  const cabecalho = foraDoPlantao && foraDoPlantao !== motivoDaUnidade
+    ? <>{topo}<div className="px-4 pt-2"><AvisoPlantao texto={foraDoPlantao} /></div></>
+    : topo
 
   if (novo) {
     return (
       <div className="flex flex-col">
-        {cabecalho}
+        {/* o formulário mostra o aviso dele, com este paciente */}
+        {topo}
         <div className="p-4">
           <NovoPedidoPaciente pacienteId={linha.paciente.id} unidadeId={unidadeId} aoFechar={() => setNovo(false)}
             aoEnviar={(r) => { setNovo(false); setEnviado(r); setPedidoId(r.id); recarregar(r.id) }} />
