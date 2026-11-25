@@ -11,6 +11,8 @@ import * as React from 'react'
 import { Chip, TituloCartao, Vazio } from '@/components/monitor/Pagina'
 import { tomStatus, useAcoesPendencia } from '@/components/nir/dadosNir'
 import { CodigoLeito } from '@/components/nir/Etiquetas'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { useMotivosPlantaoOrigem, usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -22,17 +24,26 @@ import { HORAS_TURNO, STATUS_PENDENCIA, indicadoresPendencias, resumoDoPlantao, 
 import type { PacienteRegulacao } from '@/lib/regulacaoPaciente'
 import { cn } from '@/lib/utils'
 
-export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }: {
-  pend: PendenciaUnidade[]; lista: PacienteRegulacao[]; agora: number; abrirPaciente: (pacienteId: string) => void; aoMudar: () => void
+export function PendenciasMedicos({ unidadeId, pend, lista, agora, abrirPaciente, aoMudar }: {
+  unidadeId: string; pend: PendenciaUnidade[]; lista: PacienteRegulacao[]; agora: number; abrirPaciente: (pacienteId: string) => void; aoMudar: () => void
 }) {
   const [setor, setSetor] = React.useState('')
   const [ver, setVer] = React.useState<'pendentes' | 'resolvidas'>('pendentes')
   const [copiado, setCopiado] = React.useState<string | null>(null)
   const { reavisar, resolver, erro } = useAcoesPendencia(aoMudar)
+  // B-07 (RT, 25/11/2026): fora do plantão o NIR não reenvia nem resolve; a recusa do servidor vira aviso
+  const plantao = usePlantaoOrigem(reavisar.error, resolver.error)
   const doMedico = pend.filter((x) => x.dono === 'medico')
   const ind = indicadoresPendencias(pend, lista, agora)
   const setores = [...new Map(doMedico.filter((x) => x.setor).map((x) => [x.setor!.id, x.setor!.nome])).entries()]
   const linhas = doMedico.filter((x) => (!setor || x.setor?.id === setor) && (ver === 'pendentes' ? x.status !== 'resolvida' : x.status === 'resolvida'))
+  // Decisão do RT de 25/11/2026 (NIR por setor, migration 20270426000026): cada linha é de um paciente e o
+  // plantão do NIR conta pelo setor dele. Uma pergunta por paciente distinto com pendência aberta, na mesma
+  // chave de cache do dossiê; o motivo da página (pela unidade) vale para todas as linhas.
+  const porPaciente = useMotivosPlantaoOrigem(unidadeId, plantao.motivo ? [] : doMedico.filter((x) => x.status !== 'resolvida').map((x) => x.paciente.id))
+  const motivoDaLinha = (x: PendenciaUnidade) => plantao.motivo ?? porPaciente.get(x.paciente.id) ?? null
+  // a frase do servidor para as linhas desligadas pelo setor (o aviso da unidade já está no topo da página)
+  const avisosDeSetor = plantao.motivo ? [] : [...new Set(linhas.filter((x) => x.status !== 'resolvida').map((x) => porPaciente.get(x.paciente.id)).filter((m): m is string => !!m))]
 
   function copiarResumo() {
     const t = resumoDoPlantao(pend, dataHora(new Date()))
@@ -62,7 +73,9 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
           <Button className="ml-auto" onClick={copiarResumo}><Copy /> Copiar resumo do plantão</Button>
         </div>
         {copiado && <p role="status" className="mb-2 text-rotulo text-tinta-sussurro">{copiado}</p>}
-        {erro && <MensagemErro texto={erro.message} />}
+        {avisosDeSetor.map((m) => <AvisoPlantao key={m} texto={m} className="mb-2" />)}
+        <AvisoPlantao texto={plantao.recusa} className="mb-2" />
+        {erro && !plantao.recusa && <MensagemErro texto={erro.message} />}
         {linhas.length === 0 ? (
           <Vazio icone={ClipboardList} titulo={ver === 'pendentes' ? 'Nenhuma pendência aberta com médicos' : 'Nenhuma pendência resolvida nas últimas 24 h'} />
         ) : (
@@ -108,8 +121,8 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
                     <span className="inline-flex flex-wrap justify-end gap-1.5">
                       {x.status !== 'resolvida' && (
                         <>
-                          <Button size="xs" variant="outline" disabled={reavisar.isPending} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>
-                          <Button size="xs" disabled={resolver.isPending} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
+                          <Button size="xs" variant="outline" disabled={reavisar.isPending || !!motivoDaLinha(x)} title={motivoDaLinha(x) ?? undefined} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>
+                          <Button size="xs" disabled={resolver.isPending || !!motivoDaLinha(x)} title={motivoDaLinha(x) ?? undefined} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
                         </>
                       )}
                       <Button size="xs" variant="outline" onClick={() => abrirPaciente(x.paciente.id)}>Abrir paciente</Button>

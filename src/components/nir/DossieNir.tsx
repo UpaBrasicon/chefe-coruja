@@ -26,6 +26,7 @@ import { tomStatus, useAcoesPendencia, useRecarregarNir } from '@/components/nir
 import { CodigoLeito, EtiquetaIso } from '@/components/nir/Etiquetas'
 import { EsperaDaCentral, ResponderPergunta } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { AnexosRegulacao, EscolherDocumento } from '@/components/regulacao/AnexosRegulacao'
+import { AvisoPlantao, PlantaoOrigem } from '@/components/regulacao/AvisoPlantao'
 import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
 import { BlocoDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { AvisoEnviado, NovoPedidoPaciente, type PedidoEnviado } from '@/components/regulacao/NovaSolicitacao'
@@ -47,6 +48,7 @@ import { CARATER, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS_LEITO, TRANSPORTES, pr
 import { montarLinhaDoTempo, temposComAtual, type EventoPedido, type TempoStatus } from '@/lib/regulacaoLinhaTempo'
 import { esperaAOrigem, type PacienteRegulacao, type PedidoResumo } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { cn } from '@/lib/utils'
 import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
 
@@ -67,12 +69,30 @@ type Aba = 'pendencias' | 'conversa' | 'anexos' | 'tempo'
 
 
 
-export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, voltar }: {
+type PropsDossie = {
   unidadeId: string; linha: PacienteRegulacao; pend: PendenciaUnidade[]; contexto: ContextoLeito; agora: number
   /** O "Novo pedido" do topo pediu o formulário para este paciente; muda a cada clique. */
   abrirNovo?: number
   voltar: () => void
-}) {
+}
+
+/**
+ * Decisão do RT de 25/11/2026 (NIR por setor, migration 20270426000026): para o
+ * NIR, "de plantão" conta o setor da escala ativa. O dossiê é de um paciente:
+ * pergunta com ele e vale para tudo o que está dentro (avisar médico, evolução,
+ * pendências, puxar exame, conversa, saída e o pedido novo deste paciente).
+ */
+export function DossieNir(props: PropsDossie) {
+  // o motivo da página (pela unidade) já está no aviso do topo
+  const { motivo: motivoDaUnidade } = usePlantaoOrigem()
+  return (
+    <PlantaoOrigem unidadeId={props.unidadeId} pacienteId={props.linha.paciente.id}>
+      <DossieDoPaciente {...props} motivoDaUnidade={motivoDaUnidade} />
+    </PlantaoOrigem>
+  )
+}
+
+function DossieDoPaciente({ unidadeId, linha, pend, contexto, agora, abrirNovo, voltar, motivoDaUnidade }: PropsDossie & { motivoDaUnidade: string | null }) {
   const abertos = pedidosAbertos(linha)
   const [pedidoId, setPedidoId] = React.useState<string | null>(abertos[0]?.id ?? null)
   const p = abertos.find((x) => x.id === pedidoId) ?? abertos[0] ?? null
@@ -81,10 +101,13 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
   if (abrirNovo !== novoVisto) { setNovoVisto(abrirNovo); if (abrirNovo) setNovo(true) }
   const [enviado, setEnviado] = React.useState<PedidoEnviado | null>(null)
   const recarregar = useRecarregarNir(unidadeId)
-  const idade = linha.paciente.nascimento ? rotuloIdade(linha.paciente.nascimento, dataIso()) : null
+  // B-07 (RT, 25/11/2026): fora do plantão os botões desligam; o motivo aqui é o deste paciente
+  const { motivo: foraDoPlantao } = usePlantaoOrigem()
+  const desligado = { disabled: !!foraDoPlantao, title: foraDoPlantao ?? undefined }
+  const idade =linha.paciente.nascimento ? rotuloIdade(linha.paciente.nascimento, dataIso()) : null
   const medicos = contexto.medicos.map((m) => m.nome).join(', ')
 
-  const cabecalho = (
+  const topo = (
     <header className="flex flex-col gap-1 border-b border-fio px-4 pt-2.5 pb-2">
       <Button size="xs" variant="outline" className="self-start lg:hidden" onClick={voltar}><ArrowLeft /> Voltar aos leitos</Button>
       <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-rotulo text-tinta-apoio">
@@ -119,11 +142,16 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
       )}
     </header>
   )
+  // o aviso do paciente (setor fora do plantão) só quando não é o mesmo do topo da página
+  const cabecalho = foraDoPlantao && foraDoPlantao !== motivoDaUnidade
+    ? <>{topo}<div className="px-4 pt-2"><AvisoPlantao texto={foraDoPlantao} /></div></>
+    : topo
 
   if (novo) {
     return (
       <div className="flex flex-col">
-        {cabecalho}
+        {/* o formulário mostra o aviso dele, com este paciente */}
+        {topo}
         <div className="p-4">
           <NovoPedidoPaciente pacienteId={linha.paciente.id} unidadeId={unidadeId} aoFechar={() => setNovo(false)}
             aoEnviar={(r) => { setNovo(false); setEnviado(r); setPedidoId(r.id); recarregar(r.id) }} />
@@ -145,7 +173,7 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
           </Resumo>
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-controle border border-fio bg-campo px-3 py-2">
             <span className="font-medium text-tinta">Sem pedido de regulação em aberto</span>
-            <Button size="sm" onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Abrir pedido de regulação</Button>
+            <Button size="sm" {...desligado} onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Abrir pedido de regulação</Button>
           </div>
         </div>
       </div>
@@ -176,6 +204,9 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
 }) {
   const qc = useQueryClient()
   const recarregar = useRecarregarNir(unidadeId)
+  // B-07 (RT, 25/11/2026): fora do plantão, o aviso fica no topo da página e os botões desligam
+  const { motivo: foraDoPlantao } = usePlantaoOrigem()
+  const desligado = { disabled: !!foraDoPlantao, title: foraDoPlantao ?? undefined }
   const d = useQuery({
     queryKey: ['regulacao-detalhe', p.id],
     queryFn: async () => {
@@ -222,7 +253,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
     faixa = (
       <Faixa tom="info" titulo="A central espera a unidade" texto={p.sla?.pendencia ? `responder até ${dataHora(p.sla.pendencia.vence_em)}` : null}>
         <Button size="xs" onClick={() => setPuxar(true)}><FileText /> Puxar exame do prontuário</Button>
-        <Button size="xs" variant="outline" onClick={() => avisar('duvida')}><Bell /> Avisar médico</Button>
+        <Button size="xs" variant="outline" {...desligado} onClick={() => avisar('duvida')}><Bell /> Avisar médico</Button>
       </Faixa>
     )
   } else if (p.sla?.evolucao?.atrasada) {
@@ -230,8 +261,8 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
     faixa = (
       <Faixa tom={risco ? 'critico' : 'atencao'} titulo={`${tempoSemEvolucao(h)} sem evolução${risco ? ': risco de cancelamento' : ' (vencida)'}`}
         texto={`última em ${dataHora(p.sla.evolucao.ultima_em)} · prazo de ${p.sla.evolucao.prazo_h} h`}>
-        <Button size="xs" variant={podeEvoluir ? 'outline' : 'default'} onClick={() => avisar('evolucao')}><Bell /> Avisar médico</Button>
-        {podeEvoluir && <Button size="xs" onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
+        <Button size="xs" variant={podeEvoluir ? 'outline' : 'default'} {...desligado} onClick={() => avisar('evolucao')}><Bell /> Avisar médico</Button>
+        {podeEvoluir && <Button size="xs" {...desligado} onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
       </Faixa>
     )
   }
@@ -243,11 +274,11 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
     <div className="flex flex-col">
       {cabecalho}
       <div className="flex items-center gap-1.5 overflow-x-auto border-b border-fio bg-campo px-4 py-1.5">
-        <Button size="xs" variant="outline" onClick={() => avisar(p.sla?.evolucao?.atrasada ? 'evolucao' : undefined)}><Bell /> Avisar médico</Button>
+        <Button size="xs" variant="outline" {...desligado} onClick={() => avisar(p.sla?.evolucao?.atrasada ? 'evolucao' : undefined)}><Bell /> Avisar médico</Button>
         <Button size="xs" variant="outline" onClick={() => setPuxar(true)}><FileText /> Puxar exame do prontuário</Button>
-        {podeEvoluir && <Button size="xs" variant="outline" onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
+        {podeEvoluir && <Button size="xs" variant="outline" {...desligado} onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
         {vaga && <Button size="xs" onClick={() => setRemocao(!remocao)} aria-expanded={remocao}><Truck /> Gerenciar remoção / saída</Button>}
-        <Button size="xs" variant="outline" className="ml-auto" onClick={novoPedido}><Plus /> Novo pedido</Button>
+        <Button size="xs" variant="outline" className="ml-auto" {...desligado} onClick={novoPedido}><Plus /> Novo pedido</Button>
       </div>
       {faixa}
       {remocao && vaga && (
@@ -367,6 +398,7 @@ function ListaPendencias({ pend, aoMudar }: { pend: PendenciaUnidade[]; aoMudar:
 
 function LinhaPendencia({ x, aoMudar }: { x: PendenciaUnidade; aoMudar: () => void }) {
   const { reavisar, resolver, erro } = useAcoesPendencia(aoMudar)
+  const plantao = usePlantaoOrigem(reavisar.error, resolver.error)
   const [copiado, setCopiado] = React.useState(false)
   const aberta = x.status !== 'resolvida'
   return (
@@ -382,17 +414,18 @@ function LinhaPendencia({ x, aoMudar }: { x: PendenciaUnidade; aoMudar: () => vo
           {x.avisos > 1 && <span>· {x.avisos} avisos</span>}
           {!aberta && <span>· resolvida por {x.resolvida_por ?? '—'}{x.resolvida_em ? `, ${dataHora(x.resolvida_em)}` : ''}</span>}
         </span>
-        {erro && <MensagemErro texto={erro.message} />}
+        <AvisoPlantao texto={plantao.recusa} className="mt-1" />
+        {erro && !plantao.recusa && <MensagemErro texto={erro.message} />}
       </span>
       {aberta && (
         <span className="flex shrink-0 flex-wrap justify-end gap-1">
-          {x.dono === 'medico' && <Button size="xs" variant="outline" disabled={reavisar.isPending} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>}
+          {x.dono === 'medico' && <Button size="xs" variant="outline" disabled={reavisar.isPending || !!plantao.motivo} title={plantao.motivo ?? undefined} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>}
           <Button size="xs" variant="outline"
             onClick={() => navigator.clipboard.writeText(textoParaWhatsApp({ leito: x.leito, numero: x.numero, setor: x.setor?.nome ?? null, pendencia: x.titulo,
               medico: x.responsaveis.map((r) => r.nome).join(', ') || null })).then(() => setCopiado(true), () => setCopiado(false))}>
             {copiado ? 'Copiado' : 'Copiar cobrança'}
           </Button>
-          <Button size="xs" disabled={resolver.isPending} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
+          <Button size="xs" disabled={resolver.isPending || !!plantao.motivo} title={plantao.motivo ?? undefined} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
         </span>
       )}
     </li>
@@ -409,9 +442,11 @@ function PuxarDoProntuario({ aberto, p, linha, examesAbertos, aoFechar, aoFim }:
 }) {
   const [resolver, setResolver] = React.useState(true)
   const [erro, setErro] = React.useState<string | null>(null)
+  // B-07: fora do plantão o anexo segue valendo; resolver a pendência junto, não
+  const { motivo: foraDoPlantao } = usePlantaoOrigem()
   async function depois() {
     setErro(null)
-    if (resolver) {
+    if (resolver && !foraDoPlantao) {
       for (const x of examesAbertos) {
         const { error } = await supabase.rpc('regulacao_pendencia_unidade_resolver', { p_id: x.id, p_nota: 'Exame anexado do prontuário' })
         if (error) { setErro(error.message); break }
@@ -428,7 +463,7 @@ function PuxarDoProntuario({ aberto, p, linha, examesAbertos, aoFechar, aoFim }:
           <DialogDescription>{linha.leito ?? 'Sem leito'} · {linha.paciente.nome} · Regulação nº {p.numero}. Clique no documento para anexar ao pedido.</DialogDescription>
         </DialogHeader>
         {examesAbertos.length > 0 && (
-          <Chip variante="opcao" ativo={resolver} onClick={() => setResolver(!resolver)}>
+          <Chip variante="opcao" ativo={resolver && !foraDoPlantao} desabilitado={!!foraDoPlantao} titulo={foraDoPlantao ?? undefined} onClick={() => setResolver(!resolver)}>
             Resolver a pendência de exame aberta ({examesAbertos.length})
           </Chip>
         )}

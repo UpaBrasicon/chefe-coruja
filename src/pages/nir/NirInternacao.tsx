@@ -13,6 +13,9 @@
 // • O NIR avisa o médico (pendência com aviso) e também atualiza a evolução do
 //   pedido de regulação (decisão do RT de 25/11/2026), com autor = login; não
 //   escreve a evolução médica do prontuário.
+// • Fora do plantão (decisão do RT de 25/11/2026, B-07): o servidor recusa as
+//   ações do NIR no pedido; a tela avisa antes, com a frase do servidor, e
+//   desliga os botões (regulacao_por_que_nao_ajo, migration 20270426000020).
 // RPCs regulacao_pacientes (20270421000040) e as da 20270425000030.
 // ─────────────────────────────────────────────────────────────────────────────
 import { Plus } from 'lucide-react'
@@ -24,6 +27,8 @@ import { MapaLeitosNir } from '@/components/nir/MapaLeitosNir'
 import { PainelNir } from '@/components/nir/PainelNir'
 import { PendenciasMedicos } from '@/components/nir/PendenciasMedicos'
 import { useMapaLeitos, usePacientesNir, usePendenciasNir, useRecarregarNir } from '@/components/nir/dadosNir'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { ContextoPlantaoOrigem, useMotivoPlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -43,6 +48,8 @@ export default function NirInternacao() {
   const pendencias = usePendenciasNir(unidadeId)
   const mapa = useMapaLeitos(unidadeId)
   const recarregar = useRecarregarNir(unidadeId)
+  // B-07: nulo = pode agir; senão, a frase do servidor (o gestor nunca é barrado)
+  const foraDoPlantao = useMotivoPlantaoOrigem(unidadeId)
   const [aba, setAba] = React.useState<AbaNir>('painel')
   const [selecionado, setSelecionado] = React.useState<string | null>(null)
   const [abrirNovo, setAbrirNovo] = React.useState<{ pacienteId: string; vez: number } | null>(null)
@@ -72,12 +79,13 @@ export default function NirInternacao() {
         ]} />
         <span className="ml-auto flex gap-2 py-1.5">
           {unidadeId && <AvisosNirBotao unidadeId={unidadeId} abrirPedido={abrirPedido} />}
-          <Button size="sm" onClick={() => setEscolherNovo(true)} disabled={lista.length === 0}><Plus /> Novo pedido</Button>
+          <Button size="sm" onClick={() => setEscolherNovo(true)} disabled={lista.length === 0 || !!foraDoPlantao} title={foraDoPlantao ?? undefined}><Plus /> Novo pedido</Button>
         </span>
       </div>
       {!unidadeId ? null : pacientes.isLoading ? <div className="p-4"><EsqueletoLinhas linhas={6} rotulo="Carregando os pacientes…" /></div>
         : pacientes.error ? <div className="p-4"><MensagemErro texto={(pacientes.error as Error).message} /></div> : (
-          <>
+          <ContextoPlantaoOrigem.Provider value={foraDoPlantao}>
+            {foraDoPlantao && <div className="shrink-0 px-4 pt-2"><AvisoPlantao texto={foraDoPlantao} /></div>}
             {pendencias.error && <div className="px-4 pt-2"><MensagemErro texto={`Pendências: ${(pendencias.error as Error).message}`} /></div>}
             {aba === 'painel' && (
               <PainelNir unidadeId={unidadeId} lista={lista} pend={pend} mapa={mapa.data} agora={agora} selecionado={selecionado}
@@ -86,7 +94,7 @@ export default function NirInternacao() {
             {aba !== 'painel' && (
               <div className="min-h-0 flex-1 overflow-y-auto p-4">
                 {aba === 'pendencias' && (
-                  <PendenciasMedicos pend={pend} lista={lista} agora={agora} abrirPaciente={abrirPaciente} aoMudar={() => recarregar()} />
+                  <PendenciasMedicos unidadeId={unidadeId} pend={pend} lista={lista} agora={agora} abrirPaciente={abrirPaciente} aoMudar={() => recarregar()} />
                 )}
                 {aba === 'mapa' && (
                   mapa.isLoading ? <EsqueletoLinhas linhas={6} rotulo="Carregando os leitos…" />
@@ -95,7 +103,7 @@ export default function NirInternacao() {
                 )}
               </div>
             )}
-          </>
+          </ContextoPlantaoOrigem.Provider>
         )}
       <EscolherPaciente aberto={escolherNovo} lista={lista} aoFechar={() => setEscolherNovo(false)}
         aoEscolher={(id) => {
