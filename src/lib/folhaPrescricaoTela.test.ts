@@ -25,6 +25,15 @@ test('PM1: folha numerada — 01 dieta, itens a partir de 02, "PS" da porta e a 
   assert.doesNotMatch(documentos, /function PesoDieta/)
 })
 
+test('linha PS: ações sempre à vista; "Agora" sem botão de Manter no leito (renovar_prescricao recusa)', () => {
+  assert.match(estruturada, /const podeManter = daPorta && !!i\.valida_ate && i\.tipo !== 'contencao'/)
+  assert.match(estruturada, /\{daPorta && !podeManter && \(\s*<span[^>]*>\{semManterNoLeito\(i\.tipo\)\}/)
+  assert.match(estruturada, /cn\('flex items-center gap-1', !daPorta && ACOES_AO_PASSAR\)/)
+  // o servidor recusa o "Agora" na renovação: a tela não oferece o botão
+  const sql = ler('supabase/migrations/20270327000001_prescricao_vencida.sql')
+  assert.match(sql, /IF it\.valida_ate IS NULL THEN RAISE EXCEPTION '%: item "Agora" \(dose única\) não vence\.'/)
+})
+
 test('PM1: as mesmas RPCs e travas de antes', () => {
   for (const rpc of ['prescricao_vigente', 'prescricao_porta_ativa', 'interacoes_justificadas', 'alteracoes_de_itens', 'horarios_dos_itens',
     'buscar_medicamento', 'falta_do_medicamento', 'diluicao_vigente', 'sinalizar_falta', 'prescrever', 'suspender_item', 'registrar_idade_estimada']) {

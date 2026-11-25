@@ -42,6 +42,15 @@ export function linhaPosologia(i: ItemDaLinha): string {
   return partes.map((p) => (p ?? '').trim()).filter(Boolean).join(' · ')
 }
 
+/**
+ * Item da porta que não segue para o leito pelo "Manter no leito": a
+ * renovar_prescricao recusa o "Agora" (dose única, sem validade) e a contenção
+ * (renova pela própria ordem). A linha mostra o porquê, sem botão.
+ */
+export function semManterNoLeito(tipo: string): string {
+  return tipo === 'contencao' ? 'contenção: prescreva de novo para manter' : 'dose única: não segue para o leito'
+}
+
 /** Etiqueta do tipo na linha: medicamento não leva etiqueta. */
 export function etiquetaTipo(tipo: string): string | null {
   if (tipo === 'cuidado') return 'Cuidado'

@@ -57,7 +57,8 @@ import { alterarItemPrescricao, renovarItem } from '@/components/prescricao/reno
 import { ehRenovacao, resumoValidade, textoValidoAte } from '@/lib/validadePrescricao'
 import { gruposDaPrescricao, opcoesSemMedicamento, textoDiluicao } from '@/lib/prescricaoLeito'
 import {
-  ehAtalhoPrescrever, etiquetaTipo, etiquetaValidade, faixaVencidos, indiceNovaLinha, linhaPosologia, numeroLinha, ultimaAtualizacao,
+  ehAtalhoPrescrever, etiquetaTipo, etiquetaValidade, faixaVencidos, indiceNovaLinha, linhaPosologia, numeroLinha, semManterNoLeito,
+  ultimaAtualizacao,
 } from '@/lib/folhaPrescricao'
 import { useAgora } from '@/hooks/useAgora'
 
@@ -456,12 +457,17 @@ function LinhaItem({ i, indice, daPorta, renovavel, pacienteId, horarios, justif
               <Button size="xs" variant="outline" disabled={ocupado} onClick={() => void renovar()}><RefreshCw aria-hidden /> Renovar</Button>
             )}
             {podeManter && (
-              <Button size="xs" variant="outline" disabled={ocupado} className={renovavel ? undefined : ACOES_AO_PASSAR}
+              <Button size="xs" variant="outline" disabled={ocupado}
                 title="Renova o item e o traz para a prescrição do leito, como está" onClick={() => void renovar()}>
                 <RefreshCw aria-hidden /> Manter no leito
               </Button>
             )}
-            <span className={cn('flex items-center gap-1', ACOES_AO_PASSAR)}>
+            {/* renovar_prescricao recusa o "Agora" (dose única, sem validade) e a contenção: texto, nunca um botão que falha */}
+            {daPorta && !podeManter && (
+              <span className="text-rotulo text-tinta-sussurro">{semManterNoLeito(i.tipo)}</span>
+            )}
+            {/* RT (24/11/2026): na linha PS as ações ficam sempre à vista */}
+            <span className={cn('flex items-center gap-1', !daPorta && ACOES_AO_PASSAR)}>
               {/* Fase 2, tarefa 6: alteração versionada (só medicamento), na linha do novo item (PM4) */}
               {i.tipo === 'medicamento' && (
                 <Button size="xs" variant="ghost" disabled={emEdicao} onClick={() => aoAlterar(i)}><Pencil aria-hidden /> Alterar</Button>
