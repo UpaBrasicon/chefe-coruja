@@ -161,3 +161,15 @@ export function resumoRamos(ramos: GrupoRamo[]): string {
   const nomes = Object.fromEntries(RAMOS.map((r) => [r.valor, r]))
   return ramos.map((g) => `${g.unidades.length} ${g.unidades.length === 1 ? nomes[g.ramo].um : nomes[g.ramo].varios}`).join(', ')
 }
+
+/**
+ * Termo da busca de conta no "Designar gestor" (RT, 25/11/2026): o e-mail
+ * inteiro, ou ao menos 3 letras do nome. Devolve o termo pronto para a RPC
+ * secretaria_buscar_contas, ou null enquanto não dá para buscar (pedaço de
+ * e-mail não busca: a busca por nome não lista contas de fora da rede).
+ */
+export function termoDeBuscaDeConta(texto: string): string | null {
+  const t = texto.trim().replace(/\s+/g, ' ')
+  if (t.includes('@')) return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t) ? t.toLowerCase() : null
+  return t.length >= 3 ? t : null
+}

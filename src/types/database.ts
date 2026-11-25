@@ -10960,6 +10960,14 @@ export type Database = {
         Returns: Json
       }
       admin_retirar_secretaria: { Args: { p_id: string }; Returns: undefined }
+      secretaria_buscar_contas: {
+        Args: { p_termo: string; p_unidade: string }
+        Returns: { email: string | null; ja_gestor: boolean; nome: string; perfil_id: string }[]
+      }
+      secretaria_designar_gestor: {
+        Args: { p_perfil: string; p_unidade: string }
+        Returns: Json
+      }
       admin_salvar_secretaria: {
         Args: {
           p_ativo?: boolean
