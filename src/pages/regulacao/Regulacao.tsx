@@ -64,6 +64,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso } from '@/lib/formato'
+import { textoIsolamento } from '@/lib/isolamentoPedido'
 import {
   CARATER, FORMULARIO_VAZIO, INTERNACAO_PSIQUIATRICA, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS, TIPOS_LEITO, TRANSPORTES,
   ANEXO_LIMITE_BYTES, ANEXO_TIPOS, MOTIVOS_NEGACAO, VULNERABILIDADES, caminhoAnexo, dadosParaEnvio, dataHoraLocalParaIso, ehNeonato, emDecisao, faltasFormulario,
@@ -97,6 +98,8 @@ type Solicitacao = Omit<PedidoDestino, 'destino_tipo' | 'destino_unidade' | 'des
   origem_pode_responder: boolean
   procedimento: string; procedimento_nome: string | null; especialidade: string | null; cbo: string | null
   tipo_leito: string | null; internacao_psiquiatrica: string | null; isolamento: boolean; isolamento_tipo: string | null
+  /** B-04 (RT, 25/11/2026): todos os tipos do pedido; vazio ou ausente = só o principal */
+  isolamento_tipos?: string[] | null
   transporte: string | null; transporte_central: string | null; incubadora: boolean | null
   destino_tipo: DestinoTipo; destino_unidade: Ref | null; destino_externo: string | null
   cid: string; cid_descricao: string | null
@@ -951,7 +954,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
           {(s.vulnerabilidades ?? []).length > 0 && <Linha rotulo="Vulnerabilidade" valor={s.vulnerabilidades.map((v) => VULNERABILIDADES[v]).join(', ')} />}
           <Linha rotulo="Prioridade da central" valor={s.prioridade_central} />
           {s.tipo_leito && <Linha rotulo="Leito" valor={TIPOS_LEITO[s.tipo_leito] + (s.internacao_psiquiatrica ? ` · ${INTERNACAO_PSIQUIATRICA[s.internacao_psiquiatrica]}` : '')} />}
-          {s.isolamento && <Linha rotulo="Isolamento" valor={s.isolamento_tipo ? ISOLAMENTOS[s.isolamento_tipo] : 'sim'} />}
+          {s.isolamento && <Linha rotulo="Isolamento" valor={textoIsolamento(s) ?? (s.isolamento_tipo ? ISOLAMENTOS[s.isolamento_tipo] : 'sim')} />}
           {s.incubadora != null && <Linha rotulo="Incubadora" valor={s.incubadora ? 'sim' : 'não'} />}
           <Linha rotulo="Destino" valor={destino} />
           <Linha rotulo="CID" valor={`${s.cid} ${s.cid_descricao ?? ''}`} />

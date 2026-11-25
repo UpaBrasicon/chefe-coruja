@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { hora } from '@/lib/formato'
+import { textoIsolamento } from '@/lib/isolamentoPedido'
 import {
   ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS_LEITO, formatarEspera, prioridadeEfetiva,
   type Prioridade, type StatusRegulacao,
@@ -102,7 +103,7 @@ function LinhaFila({ s, selecionado, agora, comMunicipio, onClick }: {
       </span>
       {temIsolamento(s) && (
         <span className="flex w-full items-center gap-2 text-rotulo">
-          <span className={cn(ETIQUETA, 'border-atencao/50 bg-alerta-atencao text-atencao')}>{rotuloIsolamento(s.isolamento_tipo)}</span>
+          <span className={cn(ETIQUETA, 'border-atencao/50 bg-alerta-atencao text-atencao')}>{textoIsolamento(s) ?? rotuloIsolamento(s.isolamento_tipo)}</span>
           {s.agente && <span className="min-w-0 truncate text-tinta-apoio" title={s.agente}>{s.agente}</span>}
         </span>
       )}
