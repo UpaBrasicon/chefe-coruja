@@ -13,6 +13,8 @@ import { invalidarDocumentos } from '@/components/documento/documentos'
 import { Chip } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { conteudoDaFolha, NOME_SETOR, type ExameParaFolha, type ModoFolha } from '@/lib/examesAba'
 import { abrirImpressao } from '@/lib/prontuario'
 
@@ -25,7 +27,11 @@ export function ImprimirPedidoExames({ pedido, pacienteId, internacaoId, onFecha
   const setores = [...new Set(pedido.exames.map((e) => e.grupo ?? 'laboratorio'))]
   const [modo, setModo] = React.useState<ModoFolha>(setores.length > 1 ? 'setor' : 'unica')
   const [imprimindo, setImprimindo] = React.useState(false)
-  const conteudo = conteudoDaFolha(pedido.exames, modo, pedido.geral)
+  // o servidor só emite o pedido com indicação clínica (regra do documento): pedido
+  // feito sem indicação ganha o campo aqui, em vez de falhar na janela de impressão
+  const semIndicacao = !conteudoDaFolha(pedido.exames, modo, pedido.geral).pedido.indicacao
+  const [indicacao, setIndicacao] = React.useState('')
+  const conteudo = conteudoDaFolha(pedido.exames, modo, semIndicacao ? { ...pedido.geral, indicacao } : pedido.geral)
   const n = pedido.exames.length
 
   // a janela abre no clique (abrirImpressao): o bloqueador de pop-up barra a que abre depois
@@ -79,12 +85,19 @@ export function ImprimirPedidoExames({ pedido, pacienteId, internacaoId, onFecha
           )}
           {conteudo.pedido.obs_pedido && <span className="text-rotulo text-tinta-apoio">Observação do pedido: {conteudo.pedido.obs_pedido}</span>}
         </div>
+        {semIndicacao && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="imp-indicacao">Indicação clínica</Label>
+            <Input id="imp-indicacao" value={indicacao} maxLength={500} onChange={(e) => setIndicacao(e.target.value)} />
+            <span className="text-rotulo text-tinta-sussurro">Este pedido foi feito sem indicação, e a folha do pedido não sai sem ela.</span>
+          </div>
+        )}
         <p className="text-rotulo text-tinta-sussurro">
           A impressão fica registrada no prontuário como documento de pedido de exames. {setores.length > 1 ? `Setores: ${setores.map((s) => NOME_SETOR[s]).join(', ')}.` : ''}
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onFechar}>Voltar</Button>
-          <Button disabled={imprimindo || n === 0} onClick={() => void imprimir()}><Printer aria-hidden /> Imprimir</Button>
+          <Button disabled={imprimindo || n === 0 || !conteudo.pedido.indicacao} onClick={() => void imprimir()}><Printer aria-hidden /> Imprimir</Button>
         </div>
       </DialogContent>
     </Dialog>
