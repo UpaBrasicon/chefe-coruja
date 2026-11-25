@@ -159,14 +159,21 @@ export default function Recepcao() {
   const unidadeId = unidadeAtiva?.unidade_id
   const ehGestor = papeisDaUnidade.includes('gestor')
   const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
+  // B-08 (RT, 25/11/2026): só a recepção e o médico abrem ficha (o servidor recusa os
+  // demais). Quem chega aqui sem um dos dois papéis na unidade (o gestor) não vê a
+  // Nova ficha; as filas e o painel continuam.
+  const podeAbrirFicha = papeisDaUnidade.includes('recepcao') || papeisDaUnidade.includes('plantonista')
   const abas = ubs ? ABAS_UBS : ABAS
+  const abasVisiveis = abas.filter((a) => podeAbrirFicha || a.aba !== 'ficha')
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { tela } = useParams()
   const [params] = useSearchParams()
   // /recepcao/fila-triagem, /fila-medica e /painel (itens da lateral); ?aba= continua valendo
-  const aba: Aba = (Object.entries(ROTA) as [Aba, string][]).find(([, r]) => r === tela)?.[0]
+  const abaPedida: Aba = (Object.entries(ROTA) as [Aba, string][]).find(([, r]) => r === tela)?.[0]
     ?? (['hoje', 'ficha', 'triagem', 'medica', 'painel'] as const).find((a) => a === params.get('aba')) ?? 'ficha'
+  // sem poder abrir ficha, /recepcao abre na primeira tela que a pessoa tem
+  const aba: Aba = abaPedida === 'ficha' && !podeAbrirFicha ? abasVisiveis[0].aba : abaPedida
   const irPara = (a: Aba) => navigate(a === 'ficha' ? '/recepcao' : `/recepcao/${ROTA[a]}`, { replace: true })
   // a Recepção troca de tela pela lateral; quem abre ficha por outro papel usa as abas
   const mostrarAbas = papelAtivo !== 'recepcao'
@@ -242,7 +249,7 @@ export default function Recepcao() {
   })
 
   const contagem: Partial<Record<Aba, number>> = { triagem: filaTriagem.length, medica: filaMedica.filter((e) => !e.atendimento_iniciado_em).length }
-  const atual = abas.find((a) => a.aba === aba) ?? abas[0]
+  const atual = abasVisiveis.find((a) => a.aba === aba) ?? abasVisiveis[0]
 
   return (
     <div className="flex w-full max-w-5xl flex-col">
@@ -252,7 +259,7 @@ export default function Recepcao() {
 
       {mostrarAbas && (
         <Chips rotulo="Telas da Recepção">
-          {abas.map((a) => (
+          {abasVisiveis.map((a) => (
             <Chip key={a.aba} ativo={aba === a.aba} onClick={() => irPara(a.aba)} contagem={porta && contagem[a.aba] ? contagem[a.aba] : undefined}>
               <a.icone className="size-3.5" aria-hidden /> {a.rotulo}
             </Chip>
