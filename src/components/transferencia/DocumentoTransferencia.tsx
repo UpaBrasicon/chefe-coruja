@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, CircleAlert, FileText, Printer } from 'lucide-react'
 import * as React from 'react'
 
+import { fontesDaPrecaucao, precaucaoDoTipo } from '@/clinico/isolamento/precaucoes'
 import { Chip } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -97,6 +98,17 @@ export function FotografiaLeitura({ dados }: { dados: FotografiaTransferencia })
       </div>
       <Linha rotulo="Dispositivos">{lista((dados.dispositivos ?? []).map((d) => [d.tipo, d.local, d.calibre].filter(Boolean).join(' · ')), 'Nenhum')}</Linha>
       <Linha rotulo="Isolamento">{lista((dados.isolamento ?? []).map((s) => s.tipo), 'Nenhum')}</Linha>
+      {/* RG5 (modelo da Regulação, 25/11/2026): precauções do isolamento marcado, com a fonte */}
+      {[...new Set((dados.isolamento ?? []).map((s) => s.tipo))].map((t) => precaucaoDoTipo(t)).filter((p) => !!p).map((p) => (
+        <div key={p!.tipo} className="sm:col-span-2">
+          <Linha rotulo={`Precauções: ${p!.rotulo}`}>
+            <span className="block">Quarto / leito: {p!.quarto.map((i) => i.texto).join(' ')}</span>
+            <span className="block">Paramentação: {p!.paramentacao.map((i) => i.texto).join(' ')}</span>
+            <span className="block">Transporte: {p!.transporte.map((i) => i.texto).join(' ')}</span>
+            <span className="block text-rotulo text-tinta-sussurro">Fonte: {fontesDaPrecaucao(p!).map((f) => f.titulo).join('; ')}</span>
+          </Linha>
+        </div>
+      ))}
       <Linha rotulo="Contenção mecânica">{lista((dados.contencao ?? []).map((k) => `desde ${dataHora(k.desde)}`), 'Nenhuma')}</Linha>
       <Linha rotulo="Controlados em uso">{lista((dados.controlados ?? []).map((c) => `${c.descricao} (lista ${c.lista})`), 'Nenhum')}</Linha>
     </dl>

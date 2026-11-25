@@ -824,6 +824,71 @@ export const ITENS_TRANSFERENCIA: { item: string; rotulo: string; quem: 'medico'
   { item: 'isolamento_informado', rotulo: 'Isolamento informado ao destino', quem: 'enfermagem', fonte: 'Portaria 2.048/2002, 3.1 e' },
   { item: 'incubadora', rotulo: 'Incubadora de transporte (recém-nascido)', quem: 'enfermagem', fonte: 'Res. CFM 1.672/2003, Art. 1º, IX; Portaria 2.048/2002, 3.3 d' },
 ]
+// Precauções do isolamento marcado (RG5 do modelo da Regulação, decisão do RT
+// de 25/11/2026): requisito do quarto, paramentação e transporte, só o que a
+// fonte diz, com a fonte. Cópia de src/clinico/isolamento/precaucoes.ts (este
+// arquivo não importa nada); src/lib/folhas.test.ts confere que é igual.
+export type PrecaucaoFolha = { rotulo: string; quarto: string[]; paramentacao: string[]; transporte: string[]; fontes: string[] }
+export const PRECAUCOES_FOLHA: Record<string, PrecaucaoFolha> = {
+  'contato': {
+    'rotulo': 'Precaução de contato',
+    'quarto': [
+      'Quarto privativo, com a porta sempre fechada. Sem quarto privativo, distância mínima de um metro entre dois leitos. Para multirresistente, banheiro de uso exclusivo ou cadeira sanitária. (Anvisa, Quadro 5 (7.2.3), p. 20; Quadro 2, item h, p. 17)'
+    ],
+    'paramentacao': [
+      'Luvas e avental de manga longa descartáveis, exclusivos do paciente: colocar imediatamente antes do contato, dentro do quarto, e retirar logo após o uso, com higiene das mãos. Termômetro, esfigmomanômetro e estetoscópio de uso exclusivo do paciente. (Anvisa, Quadro 2 (7.2.1), itens e–f, p. 17; cartaz Precauções)'
+    ],
+    'transporte': [
+      'Evitar o transporte. Quando necessário, o profissional usa luvas e avental descartáveis para o contato com o paciente e não toca superfícies com as mãos enluvadas; informar o destino sobre a precaução. Para multirresistente, a equipe usa avental e luvas durante todo o transporte e o veículo passa por limpeza terminal. (Anvisa, Quadro 2, item g, p. 17; 6.4 c, p. 14; Quadro 7 (7.2.5), p. 22)'
+    ],
+    'fontes': [
+      'Anvisa — Protocolo de Precauções e Isolamento em Serviços de Saúde, versão 1 (2025): https://www.gov.br/anvisa/pt-br/assuntos/servicosdesaude/prevencao-e-controle-de-infeccao-e-resistencia-microbiana/prevencao-das-principais-iras/precaucao-e-isolamento/protocolo-5-medidas-de-precaucao-e-isolamento-final.pdf'
+    ]
+  },
+  'goticula': {
+    'rotulo': 'Precaução para gotículas',
+    'quarto': [
+      'Quarto privativo, com a porta sempre fechada; se possível, janelas abertas. Sem quarto privativo, pode ficar com outros pacientes infectados pelo mesmo microrganismo, a no mínimo um metro entre leitos. (Anvisa, Quadro 5, p. 20)'
+    ],
+    'paramentacao': [
+      'Máscara cirúrgica de uso obrigatório para todas as pessoas que tiverem acesso ao quarto. (Anvisa, Quadro 2, gotículas, item b, p. 18; cartaz Precauções)'
+    ],
+    'transporte': [
+      'Evitar o transporte. Quando necessário, o paciente usa máscara cirúrgica durante toda a permanência fora do quarto. (Anvisa, Quadro 2, gotículas, itens b–c, p. 18)'
+    ],
+    'fontes': [
+      'Anvisa — Protocolo de Precauções e Isolamento em Serviços de Saúde, versão 1 (2025): https://www.gov.br/anvisa/pt-br/assuntos/servicosdesaude/prevencao-e-controle-de-infeccao-e-resistencia-microbiana/prevencao-das-principais-iras/precaucao-e-isolamento/protocolo-5-medidas-de-precaucao-e-isolamento-final.pdf'
+    ]
+  },
+  'aerossol': {
+    'rotulo': 'Precaução para aerossóis',
+    'quarto': [
+      'Quarto privativo, com a porta sempre fechada. Se possível, pressão negativa, filtro HEPA e antecâmara; sem isso, se possível, janelas abertas. Sem quarto privativo, coorte só com o mesmo microrganismo; suspeita de tuberculose resistente não divide quarto com outros pacientes com tuberculose. (Anvisa, Quadro 5, p. 20)',
+      'Quarto de isolamento para aerossóis com pressão negativa monitorada em relação à área ao redor; pelo menos 6 trocas de ar por hora em prédio existente (12 em obra nova ou reforma); ar para fora ou recirculado só por filtro HEPA; porta fechada. (CDC/HICPAC, V.D.2.a, p. 91; III.B.3, p. 74)'
+    ],
+    'paramentacao': [
+      'Máscara N95 ou PFF2 de uso obrigatório pelo profissional durante todo o tempo no quarto: colocar antes de entrar e retirar só ao sair. (Anvisa, Quadro 2, aerossóis, item b, p. 18; cartaz Precauções)'
+    ],
+    'transporte': [
+      'Evitar o transporte. Quando necessário, o paciente usa máscara cirúrgica durante toda a permanência fora do quarto. (Anvisa, Quadro 2, aerossóis, itens b–c, p. 18)'
+    ],
+    'fontes': [
+      'Anvisa — Protocolo de Precauções e Isolamento em Serviços de Saúde, versão 1 (2025): https://www.gov.br/anvisa/pt-br/assuntos/servicosdesaude/prevencao-e-controle-de-infeccao-e-resistencia-microbiana/prevencao-das-principais-iras/precaucao-e-isolamento/protocolo-5-medidas-de-precaucao-e-isolamento-final.pdf',
+      'CDC/HICPAC — Guideline for Isolation Precautions (Siegel et al.) (2007): https://www.cdc.gov/infection-control/media/pdfs/Guideline-Isolation-H.pdf'
+    ]
+  }
+}
+
+/** Bloco das precauções dos tipos marcados (texto preto, legível em preto e branco). */
+function precaucoesFolha(tipos: string[]): string {
+  const ps = [...new Set(tipos)].map((t) => PRECAUCOES_FOLHA[t]).filter((p): p is PrecaucaoFolha => !!p)
+  if (ps.length === 0) return ''
+  const itens = (rot: string, xs: string[]) => `<p><b>${esc(rot)}:</b> ${xs.map(esc).join(' ')}</p>`
+  return bloco('Precauções de isolamento (fonte citada)', ps.map((p) =>
+    `<p><b>${esc(p.rotulo)}</b></p>` + itens('Quarto / leito', p.quarto) + itens('Paramentação', p.paramentacao) + itens('Transporte', p.transporte)
+    + `<p class="meta">Fonte: ${p.fontes.map(esc).join('; ')}</p>`).join(''))
+}
+
 export const ROTULO_TRANSPORTE: Record<string, string> = {
   transporte_sanitario: 'Transporte sanitário (tipo A)', ambulancia_basica: 'Ambulância de suporte básico (tipo B)',
   ambulancia_avancada: 'Ambulância de suporte avançado (tipo D)', aereo: 'Aeronave (tipo E)', embarcacao: 'Embarcação (tipo F)',
@@ -905,6 +970,7 @@ function documentoTransferencia(d: Json, ctx: ContextoFolha): string {
       lin('Isolamento', lista(x.isolamento).map((s) => s.tipo).join(', ') || 'Nenhum', 3) +
       lin('Contenção mecânica', lista(x.contencao).length ? lista(x.contencao).map((k) => `desde ${dataHoraBr(k.desde)}`).join('; ') : 'Nenhuma', 3) +
       lin('Controlados em uso', lista(x.controlados).map((c) => `${c.descricao} (lista ${c.lista})`).join('; ') || 'Nenhum', 12)) +
+    precaucoesFolha(lista(x.isolamento).map((s) => String(s.tipo))) +
     bloco(`Checklist da transferência (${lista(d.checklist_atual).length ? 'situação na impressão' : 'situação na emissão'})`,
       `<table class="tab"><colgroup><col style="width:36%"><col><col style="width:26%"></colgroup><thead><tr><th>Item</th><th>Situação</th><th>Quem · quando</th></tr></thead><tbody>${linhasCk}</tbody></table>`) +
     `<p class="meta"><b>${esc(pri(d.aviso, 'O médico que transfere responde pelo paciente até ele ser recebido.'))}</b></p>` +
