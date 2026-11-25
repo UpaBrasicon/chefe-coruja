@@ -173,3 +173,21 @@ export function termoDeBuscaDeConta(texto: string): string | null {
   if (t.includes('@')) return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t) ? t.toLowerCase() : null
   return t.length >= 3 ? t : null
 }
+
+/**
+ * BT2 (revisão das telas novas, RT 25/11/2026): a unidade pode ter mais de um
+ * gestor e designar soma, não substitui (secretaria_designar_gestor só dá o
+ * vínculo novo). A confirmação diz o que muda antes de gravar.
+ */
+export function confirmacaoDeGestor(nome: string, gestoresAtuais: readonly string[]): string {
+  const outros = gestoresAtuais.filter((g) => g !== nome)
+  const continua = outros.length === 0 ? 'Hoje a unidade não tem outro gestor.'
+    : outros.length === 1 ? `${outros[0]} continua gestor.`
+      : `${outros.slice(0, -1).join(', ')} e ${outros[outros.length - 1]} continuam gestores.`
+  return `${nome} passa a convidar e mudar as pessoas desta unidade. ${continua} Ninguém sai da gestão.`
+}
+
+/** Resultado da busca: quem ainda não é gestor primeiro, na ordem que veio (o banco já põe a rede na frente). */
+export function ordemDaBusca<T extends { ja_gestor: boolean }>(contas: readonly T[]): T[] {
+  return [...contas.filter((c) => !c.ja_gestor), ...contas.filter((c) => c.ja_gestor)]
+}

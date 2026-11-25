@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 
 import {
   montarArvore, normalizar, quemDesigna, ramoParaGravar, resumoRamos, tipoDoRamo, totalPessoas, type OrganizacaoRede, type UnidadeNaRede,
-  termoDeBuscaDeConta,
+  termoDeBuscaDeConta, confirmacaoDeGestor, ordemDaBusca,
 } from './redeSecretaria.ts'
 
 // Rede a partir da Secretaria (pedido do RT, 24/11/2026).
@@ -105,7 +105,7 @@ test('Designar gestor: busca por e-mail inteiro ou 3 letras do nome; só o perfi
   assert.equal(termoDeBuscaDeConta('Maria@Rede.gov.br'), 'maria@rede.gov.br')
   assert.equal(termoDeBuscaDeConta('maria@'), null, 'pedaço de e-mail não busca')
   const tela = readFileSync('src/pages/admin/RedeSecretaria.tsx', 'utf8')
-  assert.match(tela, /\{!admin && u\.ativo && !u\.eh_sede_rede && <DesignarGestor /)
+  assert.match(tela, /\{!admin && u\.ativo && !u\.eh_sede_rede && \(\s*<DesignarGestor /)
   const janela = readFileSync('src/pages/admin/DesignarGestor.tsx', 'utf8')
   assert.match(janela, /rpc\('secretaria_buscar_contas'/)
   assert.match(janela, /rpc\('secretaria_designar_gestor'/)
@@ -124,4 +124,17 @@ test('a aba Secretarias escreve só pelas RPCs do administrador', () => {
   const grupo = readFileSync('src/pages/grupos/OrganizacaoGrupo.tsx', 'utf8')
   assert.match(grupo, /valor: 'secretarias'/)
   assert.match(grupo, /valor: 'censo'/)
+})
+
+// BT2 (revisão das telas novas, RT 25/11/2026): mais de um gestor; designar soma
+test('BT2: a confirmação diz quem entra e que os gestores atuais continuam', () => {
+  assert.equal(confirmacaoDeGestor('Ana', []), 'Ana passa a convidar e mudar as pessoas desta unidade. Hoje a unidade não tem outro gestor. Ninguém sai da gestão.')
+  assert.equal(confirmacaoDeGestor('Ana', ['Bia']), 'Ana passa a convidar e mudar as pessoas desta unidade. Bia continua gestor. Ninguém sai da gestão.')
+  assert.equal(confirmacaoDeGestor('Ana', ['Bia', 'Caio', 'Ana']), 'Ana passa a convidar e mudar as pessoas desta unidade. Bia e Caio continuam gestores. Ninguém sai da gestão.')
+  assert.deepEqual(ordemDaBusca([{ id: 1, ja_gestor: true }, { id: 2, ja_gestor: false }, { id: 3, ja_gestor: false }]).map((c) => c.id), [2, 3, 1])
+  const sql = readFileSync('supabase/migrations/20270426000015_secretaria_designar_gestor.sql', 'utf8')
+  // designar soma: o banco só insere ou reativa o vínculo da pessoa escolhida, sem desligar os outros gestores
+  assert.doesNotMatch(sql, /UPDATE public\.vinculos[\s\S]*ativo = false/)
+  const tela = readFileSync('src/pages/admin/DesignarGestor.tsx', 'utf8')
+  assert.doesNotMatch(tela, /<Dialog/, 'sem janela por cima da gaveta')
 })

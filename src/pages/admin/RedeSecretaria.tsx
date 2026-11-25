@@ -704,14 +704,26 @@ function FichaUnidade({ u, org, modo, onEscolher, onEditarUnidade }: { u: Unidad
           {u.eh_sede_rede && <Dado rotulo="Papéis de rede" valor="Unidade administrativa da Secretaria (módulo de rede)" />}
         </dl>
       </Bloco>
+      {/* BT2 (revisão das telas novas, RT 25/11/2026): Gestão em seção própria, acima de Contatos,
+          com os gestores atuais; a unidade pode ter mais de um e designar acrescenta */}
+      <Bloco titulo={u.gestores.length > 1 ? `Gestão (${u.gestores.length})` : 'Gestão'}>
+        {u.gestores.length === 0 ? (
+          <p className="text-apoio text-tinta-sussurro">Esta unidade ainda não tem gestor.</p>
+        ) : (
+          <ul aria-label="Gestores da unidade" className="flex flex-col gap-1">
+            {u.gestores.map((g) => <li key={g} className="text-apoio text-tinta">{g}</li>)}
+          </ul>
+        )}
+        {/* RT, 25/11/2026: o gestor da unidade é designado pela gestão da secretaria (o banco confere) */}
+        {!admin && u.ativo && !u.eh_sede_rede && (
+          <DesignarGestor unidadeId={u.id} unidadeNome={u.nome} gestoresAtuais={u.gestores}
+            onDesignado={() => { void qc.invalidateQueries({ queryKey: CHAVE }) }} />
+        )}
+      </Bloco>
       <Bloco titulo="Contatos">
         <dl>
-          <Dado rotulo="Gestão" valor={u.gestores.length ? u.gestores.join(', ') : null} />
           <Dado rotulo="WhatsApp" valor={u.whatsapp} />
         </dl>
-        {/* RT, 25/11/2026: o gestor da unidade é designado pela gestão da secretaria (o banco confere) */}
-        {!admin && u.ativo && !u.eh_sede_rede && <DesignarGestor unidadeId={u.id} unidadeNome={u.nome} onDesignado={() => { void qc.invalidateQueries({ queryKey: CHAVE }) }} />}
-        {!admin && u.ativo && !u.eh_sede_rede && u.gestores.length === 0 && <p className="mt-1.5 text-rotulo text-tinta-sussurro">Esta unidade ainda não tem gestor.</p>}
       </Bloco>
       <Bloco titulo={`Pessoas (${pessoas})`}>
         {papeis.length === 0 ? (
