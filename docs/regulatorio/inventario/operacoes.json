@@ -613,6 +613,7 @@
         "public.exame_cientes",
         "private.exame_laudo_liberacao",
         "public.exames_unidade",
+        "public.exames_combos",
         "public.exames_referencia_sepse",
         "public.imagem_dominios"
       ]

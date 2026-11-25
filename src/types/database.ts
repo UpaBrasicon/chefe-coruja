@@ -5055,6 +5055,10 @@ export type Database = {
           resultado: string | null
           situacao: string
           unidade_id: string
+          // ponto 12 (20270203000004) e aba Exames do modelo do RT (20270425000010)
+          grupo: string | null
+          indicacao: string | null
+          cid: string | null
         }
         Insert: {
           documento_id?: string | null
@@ -11667,6 +11671,31 @@ export type Database = {
       }
       pedir_exames_internacao: {
         Args: { p_grupo: string; p_internacao: string; p_itens: Json; p_observacao?: string; p_urgencia?: string }
+        Returns: Json
+      }
+      // aba Exames do leito no modelo do RT (25/11/2026, migrations 20270425000011 e 012)
+      combos_exames_unidade: {
+        Args: { p_unidade: string }
+        Returns: Json
+      }
+      definir_combo_exames: {
+        Args: { p_combo?: string; p_nome: string; p_ordem?: number; p_procedimentos: string[]; p_unidade: string }
+        Returns: Json
+      }
+      retirar_combo_exames: {
+        Args: { p_combo: string; p_motivo: string }
+        Returns: Json
+      }
+      marcar_resultado_alterado: {
+        Args: { p_alterado: boolean; p_exame: string }
+        Returns: Json
+      }
+      registrar_resultado_estruturado: {
+        Args: { p_coleta_em: string; p_exame: string; p_itens: Json; p_texto?: string }
+        Returns: Json
+      }
+      resultados_da_internacao: {
+        Args: { p_internacao: string }
         Returns: Json
       }
       pedir_exames: {
