@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { conteudoDaFolha, NOME_SETOR, type ExameParaFolha, type ModoFolha } from '@/lib/examesAba'
 import { abrirImpressao } from '@/lib/prontuario'
 
-export type PedidoParaImprimir = { exames: ExameParaFolha[]; geral?: { indicacao?: string; cid?: string | null; urgente?: boolean } }
+export type PedidoParaImprimir = { exames: ExameParaFolha[]; geral?: { indicacao?: string; cid?: string | null; urgente?: boolean; obs?: string } }
 
 export function ImprimirPedidoExames({ pedido, pacienteId, internacaoId, onFechar }: {
   pedido: PedidoParaImprimir; pacienteId: string; internacaoId: string; onFechar: () => void
@@ -77,6 +77,7 @@ export function ImprimirPedidoExames({ pedido, pacienteId, internacaoId, onFecha
               {conteudo.pedido.cid ? `CID-10 ${conteudo.pedido.cid}` : ''}
             </span>
           )}
+          {conteudo.pedido.obs_pedido && <span className="text-rotulo text-tinta-apoio">Observação do pedido: {conteudo.pedido.obs_pedido}</span>}
         </div>
         <p className="text-rotulo text-tinta-sussurro">
           A impressão fica registrada no prontuário como documento de pedido de exames. {setores.length > 1 ? `Setores: ${setores.map((s) => NOME_SETOR[s]).join(', ')}.` : ''}

@@ -6,10 +6,13 @@
 // ECG) e, sem achar no catálogo, o exame avulso em texto livre com o setor
 // escolhido. Combos da unidade (o gestor monta; sem combo, a linha some). Os
 // frequentes da unidade em grade por setor, com "2× · 27/10" quando já pedido.
-// Cesta: observação por exame (EXM4), indicação clínica e CID-10 opcionais
+// Cesta: lista compacta (setor, nome, tirar), uma observação para o pedido todo
+// (RT, 25/11/2026: não uma por exame), indicação clínica e CID-10 opcionais
 // (EXM3), prioridade Rotina ou Urgente. "Solicitar e imprimir" abre a folha
 // depois do pedido; "Apenas solicitar" só pede. O servidor continua com um
-// pedido por setor (pedir_exames_internacao).
+// pedido por setor (pedir_exames_internacao). Fora do plantão no setor do
+// leito, a cesta avisa antes e não deixa pedir (a regra é do servidor; a
+// tela lê o mesmo motivo da evolução, por_que_nao_evoluo).
 // Pedidos já feitos: tabela com seleção para imprimir ou cancelar (cancelar
 // pede motivo, como antes); cada linha abre o resultado do exame.
 import { useQuery } from '@tanstack/react-query'
@@ -17,6 +20,7 @@ import { ChevronDown, Plus, Search, X } from 'lucide-react'
 import * as React from 'react'
 
 import { ResultadoExame } from '@/components/clinico/ResultadoExame'
+import { useMotivoEvolucao } from '@/components/evolucao/dados'
 import { useCombosExames } from '@/components/exames/combos'
 import { pendente, type PedidoLeito } from '@/components/internacao/exames/dados'
 import type { PedidoParaImprimir } from '@/components/internacao/exames/ImprimirPedidoExames'
@@ -39,8 +43,9 @@ import { exameCabeParaSexo } from '@/lib/examesLeito'
 import { dataHora, diaMes } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
-type Item = Omit<ItemCesta, 'obs'>
+type Item = ItemCesta
 const SETORES_AVULSO: GrupoExame[] = ['laboratorio', 'imagem', 'grafico']
+const AVISO_SEM_PLANTAO = 'Você não está de plantão neste setor agora: faça o check-in para pedir exames.'
 
 /** Etiqueta do setor (LAB, IMG, ECG), em texto: a cor não carrega sentido aqui. */
 export function EtiquetaSetor({ grupo }: { grupo: GrupoExame | null }) {
@@ -96,6 +101,12 @@ export function PedidoExamesLeito({ internacaoId, pacienteId, pedidos, recarrega
   const [setorAvulso, setSetorAvulso] = React.useState<GrupoExame | null>(null)
   const [urgencia, setUrgencia] = React.useState<Urgencia>('rotina')
   const [indicacao, setIndicacao] = React.useState('')
+  const [observacao, setObservacao] = React.useState('')
+  // a mesma regra do servidor (evoluo_internacao): de plantão no setor do leito, agora
+  const motivo = useMotivoEvolucao(internacaoId, true)
+  const foraDoPlantao = !!motivo.data && !motivo.data.pode && motivo.data.motivo !== 'encerrada'
+  const encerrada = motivo.data?.motivo === 'encerrada'
+  const bloqueado = foraDoPlantao || encerrada
   const [cid, setCid] = React.useState<string | null>(null)
   const [pedindo, setPedindo] = React.useState(false)
   const [aviso, setAviso] = React.useState<{ erro: boolean; texto: string } | null>(null)
@@ -137,7 +148,7 @@ export function PedidoExamesLeito({ internacaoId, pacienteId, pedidos, recarrega
   const listaCombos = (combos.data?.combos ?? []).filter((c) => c.itens.length > 0)
 
   const naCesta = (b: Item) => cesta.some((m) => mesmoExame(m, b))
-  const alternar = (b: Item) => setCesta((xs) => (xs.some((m) => mesmoExame(m, b)) ? xs.filter((m) => !mesmoExame(m, b)) : [...xs, { ...b, obs: '' }]))
+  const alternar = (b: Item) => setCesta((xs) => (xs.some((m) => mesmoExame(m, b)) ? xs.filter((m) => !mesmoExame(m, b)) : [...xs, { ...b }]))
   const mudar = (b: Item, d: Partial<ItemCesta>) => setCesta((xs) => xs.map((m) => (mesmoExame(m, b) ? { ...m, ...d } : m)))
   const ja = (b: Item) => {
     const r = resumoJaPedido(b, pedidos)
@@ -178,23 +189,29 @@ export function PedidoExamesLeito({ internacaoId, pacienteId, pedidos, recarrega
     setPedindo(true)
     const feitos: ItemCesta[] = []
     const falhas: string[] = []
+    const obs = observacao.trim()
+    let semPlantao = false
     for (const p of pedidosDaCesta(cesta, { indicacao, cid: cidNormal })) {
+      // a observação do pedido vai no parâmetro do pedido: a mesma para todos os itens
       const { error } = await supabase.rpc('pedir_exames_internacao', {
-        p_internacao: internacaoId, p_grupo: p.grupo, p_urgencia: urgencia, p_itens: p.itens,
+        p_internacao: internacaoId, p_grupo: p.grupo, p_urgencia: urgencia, p_itens: p.itens, p_observacao: obs || undefined,
       })
-      if (error) falhas.push(`${GRUPOS_EXAME.find((g) => g.id === p.grupo)?.rotulo}: ${error.message}`)
+      if (error && /médico de plantão com o paciente/.test(error.message)) semPlantao = true
+      else if (error) falhas.push(`${GRUPOS_EXAME.find((g) => g.id === p.grupo)?.rotulo}: ${error.message}`)
       else feitos.push(...cesta.filter((m) => m.grupo === p.grupo))
     }
+    if (semPlantao) falhas.unshift(AVISO_SEM_PLANTAO)
     setPedindo(false)
     setCesta((xs) => xs.filter((m) => !feitos.some((f) => mesmoExame(f, m))))
     recarregar()
+    if (semPlantao) void motivo.refetch()
     if (feitos.length && imprimir) {
       aoImprimir({
-        exames: feitos.map((m) => ({ exame: m.rotulo, grupo: m.grupo, obs: m.obs, urgencia, indicacao, cid: cidNormal })),
-        geral: { indicacao, cid: cidNormal, urgente: urgencia === 'urgente' },
+        exames: feitos.map((m) => ({ exame: m.rotulo, grupo: m.grupo, obs, urgencia, indicacao, cid: cidNormal })),
+        geral: { indicacao, cid: cidNormal, urgente: urgencia === 'urgente', obs },
       })
     }
-    if (feitos.length) { setIndicacao(''); setUrgencia('rotina') }
+    if (feitos.length) { setIndicacao(''); setObservacao(''); setUrgencia('rotina') }
     setAviso(falhas.length
       ? { erro: true, texto: `${feitos.length ? `Solicitados: ${feitos.map((m) => m.rotulo).join(', ')}. ` : ''}Não foi: ${falhas.join('; ')}` }
       : { erro: false, texto: `${feitos.length} ${feitos.length === 1 ? 'exame solicitado' : 'exames solicitados'}. Fica aguardando até o resultado.` })
@@ -291,20 +308,16 @@ export function PedidoExamesLeito({ internacaoId, pacienteId, pedidos, recarrega
         ) : (
           <ul className="flex flex-col divide-y divide-trilha rounded-controle border border-fio">
             {cesta.map((m) => (
-              <li key={m.grupo + m.rotulo + (m.procedimento ?? '')} className="flex flex-col gap-1.5 px-3 py-2">
-                <div className="flex items-center gap-2">
-                  {m.procedimento ? <EtiquetaSetor grupo={m.grupo} /> : (
-                    // avulso: o setor é escolhido aqui
-                    <CampoSelecao tamanho="compacto" aria-label={`Setor de ${m.rotulo}`} value={m.grupo} onChange={(e) => mudar(m, { grupo: e.target.value as GrupoExame })}
-                      className="w-auto text-rotulo">
-                      {SETORES_AVULSO.map((g) => <option key={g} value={g}>{ROTULO_SETOR[g]}</option>)}
-                    </CampoSelecao>
-                  )}
-                  <span className="min-w-0 flex-1 truncate text-apoio font-medium text-tinta" title={m.rotulo}>{m.rotulo}</span>
-                  <Button type="button" variant="ghost" size="icon-xs" aria-label={`Tirar ${m.rotulo}`} onClick={() => alternar(m)}><X aria-hidden /></Button>
-                </div>
-                <Input className="h-7 text-rotulo" aria-label={`Observação de ${m.rotulo}`} maxLength={300} placeholder="Observação (ex.: jejum, sem contraste)"
-                  value={m.obs} onChange={(e) => mudar(m, { obs: e.target.value })} />
+              <li key={m.grupo + m.rotulo + (m.procedimento ?? '')} className="flex items-center gap-2 px-3 py-1.5">
+                {m.procedimento ? <EtiquetaSetor grupo={m.grupo} /> : (
+                  // avulso: o setor é escolhido aqui
+                  <CampoSelecao tamanho="compacto" aria-label={`Setor de ${m.rotulo}`} value={m.grupo} onChange={(e) => mudar(m, { grupo: e.target.value as GrupoExame })}
+                    className="w-auto text-rotulo">
+                    {SETORES_AVULSO.map((g) => <option key={g} value={g}>{ROTULO_SETOR[g]}</option>)}
+                  </CampoSelecao>
+                )}
+                <span className="min-w-0 flex-1 truncate text-apoio text-tinta" title={m.rotulo}>{m.rotulo}</span>
+                <Button type="button" variant="ghost" size="icon-xs" aria-label={`Tirar ${m.rotulo}`} onClick={() => alternar(m)}><X aria-hidden /></Button>
               </li>
             ))}
           </ul>
@@ -326,9 +339,18 @@ export function PedidoExamesLeito({ internacaoId, pacienteId, pedidos, recarrega
         </div>
         {cidNormal === undefined && <span className="text-rotulo text-critico">CID-10 no formato A41 ou A41.9, ou em branco.</span>}
         {internacao.data?.cid_principal && cid === null && <span className="text-rotulo text-tinta-sussurro">CID da internação; troque ou apague se não for o do pedido.</span>}
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="pedido-observacao">Observação do pedido (opcional)</Label>
+          <Input id="pedido-observacao" maxLength={300} value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex.: jejum, sem contraste" />
+        </div>
+        {bloqueado && (
+          <p role="status" className="rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2 text-apoio text-tinta">
+            {encerrada ? 'Internação encerrada: não recebe pedido de exames.' : AVISO_SEM_PLANTAO}
+          </p>
+        )}
         <div className="flex flex-col gap-2 border-t border-trilha pt-3">
-          <Button disabled={pedindo || cesta.length === 0} onClick={() => void solicitar(true)}>Solicitar e imprimir</Button>
-          <Button variant="outline" disabled={pedindo || cesta.length === 0} onClick={() => void solicitar(false)}>Apenas solicitar</Button>
+          <Button disabled={pedindo || bloqueado || cesta.length === 0} onClick={() => void solicitar(true)}>Solicitar e imprimir</Button>
+          <Button variant="outline" disabled={pedindo || bloqueado || cesta.length === 0} onClick={() => void solicitar(false)}>Apenas solicitar</Button>
         </div>
         {aviso && <p role={aviso.erro ? 'alert' : 'status'} className={`text-apoio ${aviso.erro ? 'text-critico' : 'text-conforme'}`}>{aviso.texto}</p>}
       </aside>
