@@ -35,6 +35,7 @@ export const ROTULO_EVENTO: Record<string, string> = {
   anexo_retirado: 'anexo retirado',
   anexo_aberto: 'anexo aberto',
   mensagem: 'mensagem na conversa',
+  isolamento_alterado: 'isolamento do pedido alterado',
 }
 
 /** Rótulo do evento; o que não está no mapa sai sem os sublinhados. */

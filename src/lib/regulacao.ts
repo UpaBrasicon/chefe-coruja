@@ -40,7 +40,14 @@ export const INTERNACAO_PSIQUIATRICA: Record<string, string> = {
   voluntaria: 'Voluntária', involuntaria: 'Involuntária', compulsoria: 'Compulsória',
 }
 
-export const ISOLAMENTOS: Record<string, string> = { contato: 'Contato', goticula: 'Gotícula', aerossol: 'Aerossol' }
+/** RG2 (modelo da Regulação, RT 25/11/2026): reverso e o combinado contato + aerossol. */
+export const ISOLAMENTOS: Record<string, string> = {
+  contato: 'Contato', goticula: 'Gotícula', aerossol: 'Aerossol', reverso: 'Reverso (protetor)', contato_aerossol: 'Contato + aerossol',
+}
+export type SituacaoIsolamento = 'suspeito' | 'confirmado'
+export const SITUACOES_ISOLAMENTO: Record<SituacaoIsolamento, string> = { suspeito: 'Suspeito', confirmado: 'Confirmado' }
+/** Agente ou motivo do isolamento: texto curto (o banco aceita até 120 letras). */
+export const AGENTE_ISOLAMENTO_MAX = 120
 
 /** Portaria 2.048/2002: A sanitário, B básica, D avançada ("UTI móvel"), E aéreo, F embarcação. */
 export const TRANSPORTES: Record<string, string> = {
@@ -64,6 +71,9 @@ export type Formulario = {
   internacao_psiquiatrica: string
   isolamento: boolean
   isolamento_tipo: string
+  /** RG2: gravados depois do envio por regulacao_definir_isolamento */
+  isolamento_situacao: SituacaoIsolamento | ''
+  isolamento_agente: string
   transporte: string
   incubadora: '' | 'sim' | 'nao'
   destino_tipo: DestinoTipo
@@ -83,7 +93,7 @@ export type Formulario = {
 
 export const FORMULARIO_VAZIO: Formulario = {
   tipo: 'leito', procedimento: '', especialidade: '', cbo: '', tipo_leito: '', internacao_psiquiatrica: '',
-  isolamento: false, isolamento_tipo: '', transporte: '', incubadora: '',
+  isolamento: false, isolamento_tipo: '', isolamento_situacao: '', isolamento_agente: '', transporte: '', incubadora: '',
   destino_tipo: 'a_definir', destino_unidade_id: '', destino_externo: '', carater: '', prioridade: '', cid: '',
   quadro_clinico: '', tempo_evolucao: '', sinais_vitais: '', exames: '', medicacoes: '', hipotese: '', telefone_contato: '',
 }
@@ -97,6 +107,7 @@ export function faltasFormulario(f: Formulario, ctx: { neonato?: boolean; semDoc
   if (f.tipo === 'leito' && !f.tipo_leito) faltas.push('tipo de leito')
   if (f.tipo_leito === 'psiquiatrico' && !f.internacao_psiquiatrica) faltas.push('tipo de internação psiquiátrica')
   if (f.isolamento && !f.isolamento_tipo) faltas.push('tipo de isolamento')
+  if (f.isolamento && f.isolamento_agente.trim().length > AGENTE_ISOLAMENTO_MAX) faltas.push(`agente do isolamento (até ${AGENTE_ISOLAMENTO_MAX} letras)`)
   if (f.tipo === 'transferencia' && !f.transporte) faltas.push('transporte')
   if (f.tipo === 'transferencia' && ctx.neonato && !f.incubadora) faltas.push('incubadora (recém-nascido)')
   if (f.destino_tipo === 'rede' && !f.destino_unidade_id) faltas.push('unidade de destino')
@@ -142,6 +153,19 @@ export function dadosParaEnvio(f: Formulario, extra: { episodio_id?: string | nu
     medico_assistente_id: extra.medico_assistente_id ?? null,
     paciente_nao_identificado: extra.paciente_nao_identificado ?? false,
   }
+}
+
+/**
+ * RG2: situação e agente do isolamento vão por regulacao_definir_isolamento
+ * logo depois do envio (o pedido já existe). Sem isolamento ou sem os dois
+ * campos, não há o que gravar (null).
+ */
+export function isolamentoParaDefinir(f: Pick<Formulario, 'isolamento' | 'isolamento_tipo' | 'isolamento_situacao' | 'isolamento_agente'>):
+  { p_tipo: string; p_situacao: string | null; p_agente: string | null } | null {
+  if (!f.isolamento || !f.isolamento_tipo) return null
+  const agente = f.isolamento_agente.trim()
+  if (!f.isolamento_situacao && !agente) return null
+  return { p_tipo: f.isolamento_tipo, p_situacao: f.isolamento_situacao || null, p_agente: agente || null }
 }
 
 /** "Leito · UTI adulto", "Exame · 0206010079 TOMOGRAFIA…", "Consulta · Cardiologia". */
