@@ -6,8 +6,8 @@
 // Blocos: diagnóstico e plano da última evolução médica; sinais vitais com o
 // NEWS2/PEWS e a tendência (os números como foram aferidos); prescrição ativa e
 // vencida; exames aguardando e resultados novos; pendências; regulação. Abaixo,
-// o resumo do caso, a passagem, a contenção ativa, as intercorrências e, num
-// grupo recolhido, o histórico na unidade. A admissão médica ainda não
+// a passagem, a contenção ativa e as intercorrências (o resumo do caso, os
+// agravos e o histórico na unidade saíram em 24/11/2026). A admissão médica ainda não
 // registrada aparece no topo, com o atalho para registrar (MA1).
 // Só leitura do que já existe: toda regra continua no servidor.
 // ─────────────────────────────────────────────────────────────────────────────

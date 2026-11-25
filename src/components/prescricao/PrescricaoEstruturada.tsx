@@ -9,9 +9,16 @@
 // registrada trava o item. O item guarda a diluição padrão vigente (publicada
 // pelo farmacêutico); diluir diferente só com justificativa. Toda regra é do
 // servidor; aqui só se mostra e se pede.
+//
+// Leito (modelo do RT, 24/11/2026, PM1 a PM5): uma folha só, com linhas
+// numeradas — 01 a dieta, 02 em diante os itens vigentes, "PS" os vindos da
+// porta e, por último, a linha em branco do novo item (abas Medicamento ·
+// Cuidado · Contenção mecânica; Ctrl+Enter prescreve; "ED" quando altera um
+// item). Cabeçalho com peso e alergias, faixa dos vencidos com a revisão item
+// a item, painel do paciente à direita. Mesmas RPCs e mesmas travas de antes.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Ban, ChevronDown, Pill, Printer, Plus, RefreshCw, Star, X } from 'lucide-react'
+import { AlertTriangle, Ban, CalendarClock, ChevronDown, Pencil, Plus, RefreshCw, Star, X } from 'lucide-react'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 
@@ -22,7 +29,6 @@ import { FREQUENCIAS_PORTA, OUTRA, aprazamentoImpresso } from '@/lib/frequenciaP
 import { deFavoritoParaPorta } from '@/lib/favoritoPorta'
 import { abrirImpressao } from '@/lib/prontuario'
 import { cn } from '@/lib/utils'
-import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,10 +38,13 @@ import { Chip, TituloCartao } from '@/components/monitor/Pagina'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { AlterarItem } from '@/components/prescricao/AlterarItem'
+import { CabecalhoFolha } from '@/components/prescricao/CabecalhoFolha'
+import { CampoPeso } from '@/components/prescricao/CampoPeso'
 import { NovoItemContencao } from '@/components/prescricao/ItemContencao'
-import { METODOS_PESO, gravarPeso, textoDoPeso, useFaltaParaPrescrever, type MetodoPeso } from '@/components/prescricao/pesoAtendimento'
+import { PainelPacienteFolha, type ContextoPacienteFolha } from '@/components/prescricao/PainelPacienteFolha'
+import { textoDoPeso, useFaltaParaPrescrever } from '@/components/prescricao/pesoAtendimento'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
 import { useTravas } from '@/components/paciente/useTravas'
 import { frase, interacoesDoErro, semPontoFinal, type InteracaoJustificada, type InteracaoNaPrescricao } from '@/lib/interacoes'
@@ -43,10 +52,13 @@ import { resumoMudanca, type Alteracao } from '@/lib/alteracaoPrescricao'
 import { jaPrescritos, textoJaPrescrito } from '@/lib/jaPrescrito'
 import { useValorAdiado } from '@/hooks/useValorAdiado'
 import { SeloDoMedicamento } from '@/components/farmacia/SeloControlado'
-import { PedidoDeRenovacao, RenovarPrescricao, SeloValidadeItem } from '@/components/prescricao/ValidadeItem'
-import { renovarItem } from '@/components/prescricao/renovarItem'
-import { FONTE_VALIDADE, ehRenovacao, textoValidoAte, validadeDoItem } from '@/lib/validadePrescricao'
-import { gruposDaPrescricao, opcoesSemMedicamento, textoDiluicao, tituloRenovacao } from '@/lib/prescricaoLeito'
+import { PedidoDeRenovacao, RenovarPrescricao } from '@/components/prescricao/ValidadeItem'
+import { alterarItemPrescricao, renovarItem } from '@/components/prescricao/renovarItem'
+import { ehRenovacao, resumoValidade, textoValidoAte } from '@/lib/validadePrescricao'
+import { gruposDaPrescricao, opcoesSemMedicamento, textoDiluicao } from '@/lib/prescricaoLeito'
+import {
+  ehAtalhoPrescrever, etiquetaTipo, etiquetaValidade, faixaVencidos, indiceNovaLinha, linhaPosologia, numeroLinha, ultimaAtualizacao,
+} from '@/lib/folhaPrescricao'
 import { useAgora } from '@/hooks/useAgora'
 
 type ItemVigente = {
@@ -69,6 +81,8 @@ type Favorito = {
 
 export type PacientePrescricao = { nome: string; dataAtual?: string; leito?: string; diagnostico?: string }
 export type PesoAtual = { valor_num: number; aferido_em: string; metodo: string | null }
+/** Dieta da linha 01 da folha: o rascunho do leito (só neste navegador), como já era. */
+export type DietaFolha = { valor: string; opcoes: readonly string[]; mudar: (v: string) => void; dica?: string }
 
 const VIAS = ['VO', 'EV', 'IM', 'SC', 'SL', 'INAL', 'TÓPICA', 'RETAL', 'SNE', 'OCULAR']
 const VIAS_COM_DILUICAO = ['EV', 'IM', 'SC']
@@ -78,14 +92,29 @@ const CUIDADOS = ['Dieta', 'Cabeceira elevada', 'Precaução padrão', 'Vigilân
 
 const hora = (iso: string) => dataHora(iso)
 
-export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: string; paciente: PacientePrescricao }) {
+/** Grade da linha da folha: índice, conteúdo e, à direita, autor e ações. */
+const GRADE_LINHA = 'grid grid-cols-[32px_minmax(0,1fr)] gap-x-3 gap-y-1.5 px-4 py-2.5 sm:grid-cols-[32px_minmax(0,1fr)_auto]'
+/** Ações da linha: no computador aparecem ao passar o mouse (ou com o foco); no toque, sempre. */
+const ACOES_AO_PASSAR = 'transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:group-focus-within:opacity-100'
+
+export function PrescricaoEstruturada({ pacienteId, paciente, dieta, contexto }: {
+  pacienteId: string; paciente: PacientePrescricao
+  /** PM1: a dieta na linha 01 (rascunho do leito). */
+  dieta?: DietaFolha
+  /** PM5: o painel do paciente à direita (leito, situação, datas, classificação, diagnóstico). */
+  contexto?: ContextoPacienteFolha
+}) {
   const qc = useQueryClient()
-  const { perfil } = useAuth()
   const [erro, setErro] = React.useState<string | null>(null)
   const agora = useAgora()
   const [renovando, setRenovando] = React.useState(false)
+  // PM4: "Alterar" leva o item para a linha do novo item ("ED")
+  const [editando, setEditando] = React.useState<ItemVigente | null>(null)
+  const novaLinha = React.useRef<HTMLDivElement>(null)
   const recarregar = () => {
-    for (const k of ['prescricao-vigente', 'prescricao-porta-ativa', 'alergias', 'peso-atual', 'falta-prescrever']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
+    for (const k of ['prescricao-vigente', 'prescricao-porta-ativa', 'alergias', 'peso-atual', 'falta-prescrever', 'prescricao-suspensos']) {
+      void qc.invalidateQueries({ queryKey: [k, pacienteId] })
+    }
     void qc.invalidateQueries({ queryKey: ['alteracoes-itens'] })
   }
 
@@ -134,6 +163,8 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
         conteudo: JSON.stringify({
           paciente: {
             ...paciente,
+            // PM5: a dieta da linha 01 sai na folha (a folha já tinha o campo)
+            ...(dieta ? { dieta: dieta.valor } : {}),
             // lista vazia não é "nega": só imprime NEGA quando há o registro explícito
             alergias: !alergias.data ? 'NÃO VERIFICADA'
               : alergias.data.estado === 'tem' ? ativas(alergias.data).map((a) => a.substancia).join(', ')
@@ -184,83 +215,123 @@ export function PrescricaoEstruturada({ pacienteId, paciente }: { pacienteId: st
       return new Map(((data ?? []) as unknown as Alteracao[]).map((e) => [e.item_id, e]))
     },
   })
-  // PR1 (RT, 24/11/2026): uma lista só, agrupada pela situação
+  // PM3: os vencidos e vencendo (leito e porta) vão para a revisão item a item
   const g = gruposDaPrescricao(lista, porta, agora)
-  const vencidosN = g.vencidos.filter((i) => validadeDoItem(i, agora) === 'vencido').length
-  const linha = (i: ItemVigente | ItemDaPorta, extra?: React.ReactNode) => (
-    <LinhaItem key={i.id} i={i} horarios={'horarios' in i ? i.horarios : undefined} justificadas={(justificadas.data ?? []).filter((j) => j.item_id === i.id)}
-      alteracao={alteracoes.data?.get(i.id)} aoMudar={recarregar} aoErro={setErro} extra={extra} />
+  const renovaveis = new Set(g.vencidos.map((i) => i.id))
+  const r = resumoValidade([...lista, ...porta], agora)
+  const faixa = faixaVencidos(r.vencidos, r.vencendo)
+  const alterar = (i: ItemVigente) => {
+    setEditando(i)
+    requestAnimationFrame(() => novaLinha.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }))
+  }
+  const linha = (i: ItemVigente | ItemDaPorta, indice: string, deOndeVem: 'leito' | 'porta') => (
+    <LinhaItem key={i.id} i={i} indice={indice} daPorta={deOndeVem === 'porta'} renovavel={renovaveis.has(i.id)} pacienteId={pacienteId}
+      horarios={'horarios' in i ? i.horarios : undefined} justificadas={(justificadas.data ?? []).filter((j) => j.item_id === i.id)}
+      alteracao={alteracoes.data?.get(i.id)} emEdicao={editando?.id === i.id} aoAlterar={alterar} aoMudar={recarregar} aoErro={setErro} />
   )
   return (
-    <div className="flex flex-col gap-4">
-      {erro && <p className="rounded-controle border border-critico/30 bg-alerta-critico p-3 text-apoio text-critico">{erro}</p>}
-      {/* PR3: o "Novo item" no topo, numa busca só (remédio, cuidado ou contenção) */}
-      <NovoItem pacienteId={pacienteId} peso={peso.data} aoMudar={recarregar} aoErro={setErro} />
+    <div className={cn('grid items-start gap-4', contexto && 'lg:grid-cols-[minmax(0,1fr)_260px]')}>
+      <section aria-label="Prescrição médica" className="flex min-w-0 flex-col overflow-hidden rounded-cartao border border-fio bg-superficie text-apoio">
+        <CabecalhoFolha pacienteId={pacienteId} nome={paciente.nome} nVigentes={lista.length + porta.length}
+          ultima={ultimaAtualizacao([...lista, ...porta])} aoImprimir={() => void imprimir()} podeImprimir={lista.length > 0} />
+        {erro && <p role="alert" className="border-b border-critico/30 bg-alerta-critico px-4 py-2 text-critico">{erro}</p>}
 
-      <section aria-label="Prescrição" className="flex flex-col gap-3 rounded-cartao border border-fio bg-superficie p-4 text-apoio">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-2 text-corpo font-semibold text-tinta"><Pill className="size-4" aria-hidden /> Prescrição</span>
-          <span className="text-tinta-sussurro">{lista.length + porta.length} {lista.length + porta.length === 1 ? 'item ativo' : 'itens ativos'}</span>
-          <Button size="sm" variant="outline" className="ml-auto" onClick={() => void imprimir()} disabled={lista.length === 0}><Printer /> Imprimir prescrição</Button>
-        </div>
-        {lista.length + porta.length === 0 && <p className="text-tinta-sussurro">Nenhum item prescrito.</p>}
+        {/* PM3: faixa dos vencidos; "Revisar e renovar" abre a revisão item a item (manter, alterar ou suspender) */}
+        {faixa && (
+          <div role="status" className={cn('flex flex-wrap items-center gap-2 border-b px-4 py-2',
+            faixa.tom === 'critico' ? 'border-critico/30 bg-alerta-critico text-critico' : 'border-atencao/40 bg-alerta-atencao text-atencao')}>
+            <CalendarClock className="size-4 shrink-0" aria-hidden />
+            <span className="flex-[1_1_240px] font-medium text-pretty">{faixa.texto}</span>
+            {!renovando && <Button size="xs" variant="outline" onClick={() => setRenovando(true)}><RefreshCw aria-hidden /> Revisar e renovar</Button>}
+          </div>
+        )}
+        {renovando && (
+          <div className="border-b border-fio px-4 py-3">
+            <RenovarPrescricao embutido pacienteId={pacienteId} aoMudar={recarregar} itens={g.vencidos} aoFechar={() => setRenovando(false)} />
+          </div>
+        )}
 
-        {/* lacuna 6 (V4, V8) dentro do grupo: renovar os N (cada um marcado) ou por linha */}
-        {g.vencidos.length > 0 && (
-          <GrupoItens titulo={tituloRenovacao(vencidosN, g.vencidos.length)} n={g.vencidos.length} tom={vencidosN ? 'critico' : 'atencao'}
-            acao={!renovando && <Button size="xs" onClick={() => setRenovando(true)}><RefreshCw aria-hidden /> Renovar os {g.vencidos.length}</Button>}
-            nota={<>Cada item vale 24 horas; vencido, a enfermagem não administra. <details className="inline"><summary className="inline cursor-pointer text-acao">saiba mais</summary> {FONTE_VALIDADE}</details></>}>
-            {renovando
-              ? <RenovarPrescricao embutido pacienteId={pacienteId} aoMudar={recarregar} itens={g.vencidos} aoFechar={() => setRenovando(false)} />
-              : g.vencidos.map((i) => linha(i, (
-                <>
-                  {i.daPorta && <span className="text-rotulo text-tinta-sussurro">da porta</span>}
-                  <Button size="xs" variant="outline" onClick={async () => {
-                    const e = await renovarItem(pacienteId, i.id)
-                    setErro(e)
-                    if (!e) recarregar()
-                  }}><RefreshCw aria-hidden /> Renovar</Button>
-                </>
-              )))}
-          </GrupoItens>
-        )}
-        {g.ativos.length > 0 && (
-          <GrupoItens titulo="Ativos" n={g.ativos.length}>{g.ativos.map((i) => linha(i))}</GrupoItens>
-        )}
+        {/* PM1: a folha numerada — 01 dieta, depois os itens vigentes do leito */}
+        <ol aria-label="Itens da prescrição" className="flex flex-col divide-y divide-trilha">
+          <LinhaDieta dieta={dieta} />
+          {lista.map((i, k) => linha(i, numeroLinha(k + 2), 'leito'))}
+        </ol>
+
         {/* F4 da frequência na porta: o que a porta prescreveu e segue correndo */}
-        {g.porta.length > 0 && (
-          <GrupoItens titulo="Vindos da porta" n={g.porta.length}
-            nota="Seguem ativos e na checagem da enfermagem. Suspenda, ou altere: a nova versão entra na prescrição do leito.">
-            {g.porta.map((i) => linha(i))}
-          </GrupoItens>
+        {porta.length > 0 && (
+          <section aria-label="Vindos da porta" className="flex flex-col border-t border-fio">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 bg-campo px-4 py-2">
+              <span className="text-controle font-semibold text-tinta">Vindos da porta</span>
+              <span className="text-rotulo font-semibold text-tinta-sussurro tabular-nums">{porta.length}</span>
+              <span className="w-full text-rotulo text-tinta-apoio sm:w-auto">
+                Seguem ativos e na checagem da enfermagem. Mantenha no leito, altere ou suspenda: a nova versão entra na prescrição do leito.
+              </span>
+            </div>
+            <ol aria-label="Itens vindos da porta" className="flex flex-col divide-y divide-trilha border-t border-trilha">
+              {porta.map((i) => linha(i, 'PS', 'porta'))}
+            </ol>
+          </section>
         )}
+
+        {/* PM4: a linha em branco do novo item; alterando um item, a mesma linha vira "ED" */}
+        <div ref={novaLinha} className="border-t border-dashed border-fio-forte">
+          {editando && <EdicaoNaFolha key={editando.id} item={editando} aoFechar={() => setEditando(null)} aoMudar={recarregar} />}
+          <div className={editando ? 'hidden' : undefined}>
+            <NovoItem pacienteId={pacienteId} peso={peso.data} aoMudar={recarregar} aoErro={setErro} folha={{ indice: indiceNovaLinha(lista.length, false) }} />
+          </div>
+        </div>
+
         <Suspensos pacienteId={pacienteId} />
-        {perfil && <span className="text-rotulo text-tinta-sussurro">Autor de cada item: quem prescreveu (login). Suspender deixa o item no histórico.</span>}
+        <p className="border-t border-trilha px-4 py-2 text-rotulo text-tinta-sussurro">
+          Autor de cada item: quem prescreveu (login). Suspender deixa o item no histórico.
+        </p>
       </section>
+      {contexto && <PainelPacienteFolha contexto={contexto} />}
     </div>
   )
 }
 
-/** Grupo da lista da prescrição: título com a contagem, ação do grupo e as linhas. */
-function GrupoItens({ titulo, n, tom, acao, nota, children }: {
-  titulo: string; n: number; tom?: 'critico' | 'atencao'; acao?: React.ReactNode; nota?: React.ReactNode; children: React.ReactNode
-}) {
+/** Linha 01: a dieta (o rascunho do leito, como já era; não vai ao banco). */
+function LinhaDieta({ dieta }: { dieta?: DietaFolha }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2 border-b border-trilha pb-1.5">
-        <span className={cn('text-controle font-semibold', tom === 'critico' ? 'text-critico' : tom === 'atencao' ? 'text-atencao' : 'text-tinta')}>{titulo}</span>
-        <span className="text-rotulo font-semibold text-tinta-sussurro tabular-nums">{n}</span>
-        {acao && <span className="ml-auto">{acao}</span>}
+    <li className={GRADE_LINHA}>
+      <span className="pt-1.5 text-rotulo font-semibold text-tinta-sussurro tabular-nums">01</span>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="font-medium text-tinta">Dieta</span>
+        {dieta ? (
+          <CampoSelecao id="folha-dieta" aria-label="Dieta" tamanho="compacto" value={dieta.valor} onChange={(e) => dieta.mudar(e.target.value)}
+            className="min-w-0 max-w-64" title={dieta.dica}>
+            {dieta.opcoes.map((d) => <option key={d} value={d}>{d}</option>)}
+          </CampoSelecao>
+        ) : <span className="text-tinta-sussurro">Sem dieta neste leito.</span>}
+        {dieta?.dica && <span className="w-full text-rotulo text-tinta-sussurro">{dieta.dica}</span>}
       </div>
-      {nota && <p className="text-rotulo text-tinta-apoio">{nota}</p>}
-      {children}
-    </div>
+    </li>
   )
 }
 
-/** Suspensos, recolhidos: só são lidos quando o médico abre o grupo. */
+/** Etiqueta da linha em caixa normal (tipo, validade). */
+function Etiqueta({ tom = 'neutro', titulo, children }: { tom?: 'neutro' | 'critico' | 'atencao'; titulo?: string; children: React.ReactNode }) {
+  return (
+    <Badge variant={tom === 'critico' ? 'destructive' : tom === 'atencao' ? 'warning' : 'secondary'} title={titulo} className="tracking-normal normal-case">
+      {children}
+    </Badge>
+  )
+}
+
+/** Itens suspensos e o histórico: a contagem sempre; a lista só é lida quando o médico abre. */
 function Suspensos({ pacienteId }: { pacienteId: string }) {
   const [aberto, setAberto] = React.useState(false)
+  const n = useQuery({
+    queryKey: ['prescricao-suspensos', pacienteId, 'n'],
+    queryFn: async () => {
+      const { count, error } = await supabase.from('prescricao_itens')
+        .select('id, prescricoes!inner(paciente_id)', { count: 'exact', head: true })
+        .eq('prescricoes.paciente_id', pacienteId).not('suspenso_em', 'is', null)
+      if (error) throw error
+      return count ?? 0
+    },
+  })
   const q = useQuery({
     queryKey: ['prescricao-suspensos', pacienteId],
     enabled: aberto,
@@ -274,86 +345,192 @@ function Suspensos({ pacienteId }: { pacienteId: string }) {
     },
   })
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5 border-t border-fio px-4 py-2">
       <Button size="sm" variant="ghost" aria-expanded={aberto} onClick={() => setAberto(!aberto)} className="self-start px-0 text-tinta-apoio hover:bg-transparent">
-        <ChevronDown className={cn('transition-transform', aberto && 'rotate-180')} aria-hidden /> Suspensos
+        <ChevronDown className={cn('transition-transform', aberto && 'rotate-180')} aria-hidden /> Itens suspensos / histórico
+        {n.data !== undefined && <span className="tabular-nums">({n.data})</span>}
       </Button>
       {aberto && (q.isLoading ? <p className="text-tinta-sussurro">Carregando…</p>
         : q.error ? <p className="text-critico">Não foi possível ler os suspensos: {(q.error as Error).message}</p>
           : (q.data ?? []).length === 0 ? <p className="text-tinta-sussurro">Nenhum item suspenso.</p>
-            : (q.data ?? []).map((s) => (
-              <p key={s.id} className="text-rotulo text-tinta-sussurro">
-                <span className="text-tinta-apoio line-through decoration-tinta-sussurro">{s.descricao}{s.dose ? ` ${s.dose}` : ''}{s.via ? ` · ${s.via}` : ''}{s.posologia ? ` · ${s.posologia}` : ''}</span>
-                {' '}· suspenso {hora(s.suspenso_em)}{s.motivo_suspensao ? ` · ${s.motivo_suspensao}` : ''}
-              </p>
-            )))}
+            : (
+              <ul className="flex flex-col gap-1">
+                {(q.data ?? []).map((s) => (
+                  <li key={s.id} className="text-rotulo text-tinta-sussurro">
+                    <span className="text-tinta-apoio line-through decoration-tinta-sussurro">{s.descricao}{s.dose ? ` ${s.dose}` : ''}{s.via ? ` · ${s.via}` : ''}{s.posologia ? ` · ${s.posologia}` : ''}</span>
+                    {' '}· suspenso <span className="tabular-nums">{hora(s.suspenso_em)}</span>{s.motivo_suspensao ? ` · ${s.motivo_suspensao}` : ''}
+                  </li>
+                ))}
+                {(n.data ?? 0) > (q.data ?? []).length && <li className="text-rotulo text-tinta-sussurro">Os 30 mais recentes.</li>}
+              </ul>
+            ))}
     </div>
   )
 }
 
-function LinhaItem({ i, horarios, justificadas, alteracao, aoMudar, aoErro, extra }: {
-  i: ItemVigente; justificadas: InteracaoJustificada[]; alteracao: Alteracao | undefined; aoMudar: () => void; aoErro: (m: string | null) => void
+function LinhaItem({ i, indice, daPorta, renovavel, pacienteId, horarios, justificadas, alteracao, emEdicao, aoAlterar, aoMudar, aoErro }: {
+  i: ItemVigente; indice: string; daPorta: boolean
+  /** vencido ou vencendo (e não contenção): "Renovar" (leito) ou "Manter no leito" (porta) à vista */
+  renovavel: boolean
+  pacienteId: string
+  justificadas: InteracaoJustificada[]; alteracao: Alteracao | undefined
+  emEdicao: boolean; aoAlterar: (i: ItemVigente) => void; aoMudar: () => void; aoErro: (m: string | null) => void
   /** Horários aprazados (itens vindos da porta). */
   horarios?: string[]
-  /** Ação própria do grupo (Renovar, no grupo dos vencidos). */
-  extra?: React.ReactNode
 }) {
+  const agora = useAgora()
   const [suspendendo, setSuspendendo] = React.useState(false)
   const [motivo, setMotivo] = React.useState('')
+  const [ocupado, setOcupado] = React.useState(false)
   const dil = i.tipo === 'medicamento' && VIAS_COM_DILUICAO.includes(i.via ?? '') ? textoDiluicao(i) : null
+  const tipo = etiquetaTipo(i.tipo)
+  const val = etiquetaValidade(i, agora)
+  const pos = linhaPosologia(i)
+  // porta: "Manter no leito" é a renovação do item (a versão nova entra na prescrição do leito); "Agora" não vence
+  const podeManter = daPorta && !!i.valida_ate && i.tipo !== 'contencao'
+  async function renovar() {
+    setOcupado(true)
+    const e = await renovarItem(pacienteId, i.id)
+    setOcupado(false)
+    aoErro(e)
+    if (!e) aoMudar()
+  }
+  async function suspender() {
+    setOcupado(true)
+    const { error } = await supabase.rpc('suspender_item', { p_item: i.id, p_motivo: motivo })
+    setOcupado(false)
+    if (error) return aoErro(error.message)
+    aoErro(null); setSuspendendo(false); setMotivo(''); aoMudar()
+  }
   return (
-    <div className="flex flex-col gap-1 rounded-controle border border-fio px-3 py-2">
-      <div className="flex flex-wrap items-baseline gap-2">
-        <span className="font-medium text-tinta">{i.descricao}</span>
-        {i.tipo === 'medicamento' && <span>{i.dose} · {i.via} · {i.posologia}{i.se_necessario ? ' · se necessário' : ''}</span>}
-        {i.vasoativo && <Badge variant="warning">vasoativo</Badge>}
-        {/* lacuna 3: controlado da Portaria 344 (a farmácia libera antes de administrar) */}
-        <SeloDoMedicamento id={i.medicamento_id} />
-        {i.peso_kg && <span className="text-rotulo text-tinta-sussurro">peso ref. {i.peso_kg} kg</span>}
-        {/* lacuna 6 (V6): vence em / vencido */}
-        <SeloValidadeItem item={i} />
-        <span className="ml-auto text-rotulo text-tinta-sussurro">{i.autor} · {hora(i.criado_em)}</span>
+    <li className={cn('group', GRADE_LINHA, emEdicao && 'bg-alerta-marca')}>
+      <span className="pt-px text-rotulo font-semibold text-tinta-sussurro tabular-nums">{indice}</span>
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-medium text-tinta">{i.descricao}</span>
+          {tipo && <Etiqueta>{tipo}</Etiqueta>}
+          {/* lacuna 6 (V6): vencido ou vencendo */}
+          {val && <Etiqueta tom={val.tom} titulo={val.titulo}>{val.texto}</Etiqueta>}
+          {i.vasoativo && <Etiqueta tom="atencao">Vasoativo</Etiqueta>}
+          {/* lacuna 3: controlado da Portaria 344 (a farmácia libera antes de administrar) */}
+          <SeloDoMedicamento id={i.medicamento_id} />
+        </div>
+        {pos && <span className="text-tinta-apoio tabular-nums">{pos}</span>}
+        {/* PR3: a diluição só aparece quando existe */}
+        {dil && <p className={`text-rotulo ${dil.fora ? 'text-atencao' : 'text-tinta-apoio'}`}>{dil.texto}</p>}
+        {i.observacao && <p className="text-rotulo text-tinta-sussurro">{i.observacao}</p>}
+        <PedidoDeRenovacao em={i.renovacao_pedida_em} />
+        {!!horarios?.length && <p className="text-rotulo text-tinta-apoio tabular-nums">Aprazado: {aprazamentoImpresso(horarios)}</p>}
+        {alteracao && ehRenovacao(alteracao.motivo) && (
+          <p className="text-rotulo text-tinta-apoio">Renovada sem mudança por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}.</p>
+        )}
+        {alteracao && !ehRenovacao(alteracao.motivo) && (
+          <p className="text-rotulo text-atencao">
+            Versão {alteracao.versao}, alterada por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
+            {resumoMudanca(alteracao.anterior, { dose: i.dose, via: i.via, posologia: i.posologia, se_necessario: i.se_necessario }) || 'observação'}
+            {alteracao.motivo ? ` — "${alteracao.motivo}"` : ''}
+          </p>
+        )}
+        {justificadas.map((j) => (
+          <p key={j.outro + j.em} className="text-rotulo text-critico">
+            Interação {j.gravidade} com {j.outro} ({semPontoFinal(j.efeito)}) — justificada por {j.por ?? '—'}: "{j.justificativa}"
+          </p>
+        ))}
+        {i.validacao === 'devolvido' && <p className="text-rotulo text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
+        {i.validacao === 'confere' && <p className="text-rotulo text-conforme">Conferido pela farmácia.</p>}
+        {suspendendo && (
+          <div className="mt-1 flex flex-wrap gap-2">
+            <Input className="h-8 min-w-48 flex-1" aria-label={`Por que suspende ${i.descricao}`} placeholder="Por que suspende" autoFocus
+              value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+            <Button size="sm" variant="outline" disabled={ocupado || motivo.trim().length < 5} onClick={() => void suspender()}><Ban aria-hidden /> Suspender</Button>
+            <Button size="sm" variant="ghost" onClick={() => setSuspendendo(false)}><X aria-hidden /> Voltar</Button>
+          </div>
+        )}
       </div>
-      <PedidoDeRenovacao em={i.renovacao_pedida_em} />
-      {!!horarios?.length && <p className="text-rotulo text-tinta-apoio">Aprazado: {aprazamentoImpresso(horarios)}</p>}
-      {/* PR3: a diluição só aparece quando existe */}
-      {dil && <p className={`text-rotulo ${dil.fora ? 'text-atencao' : 'text-tinta-apoio'}`}>{dil.texto}</p>}
-      {alteracao && ehRenovacao(alteracao.motivo) && (
-        <p className="text-rotulo text-tinta-apoio">Renovada sem mudança por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}.</p>
-      )}
-      {alteracao && !ehRenovacao(alteracao.motivo) && (
-        <p className="text-rotulo text-atencao">
-          Versão {alteracao.versao}, alterada por {alteracao.alterado_por ?? '—'}, {hora(alteracao.alterado_em)}:{' '}
-          {resumoMudanca(alteracao.anterior, { dose: i.dose, via: i.via, posologia: i.posologia, se_necessario: i.se_necessario }) || 'observação'}
-          {alteracao.motivo ? ` — "${alteracao.motivo}"` : ''}
-        </p>
-      )}
-      {i.observacao && <p className="text-rotulo text-tinta-sussurro">{i.observacao}</p>}
-      {justificadas.map((j) => (
-        <p key={j.outro + j.em} className="text-rotulo text-critico">
-          Interação {j.gravidade} com {j.outro} ({semPontoFinal(j.efeito)}) — justificada por {j.por ?? '—'}: "{j.justificativa}"
-        </p>
-      ))}
-      {i.validacao === 'devolvido' && <p className="text-rotulo text-critico">Farmácia devolveu para correção: {i.validacao_motivo}</p>}
-      {i.validacao === 'confere' && <p className="text-rotulo text-conforme">Conferido pela farmácia.</p>}
-      {suspendendo ? (
-        <div className="flex gap-2">
-          <Input className="h-8" placeholder="Por que suspende" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
-          <Button size="sm" variant="outline" disabled={motivo.trim().length < 5} onClick={async () => {
-            const { error } = await supabase.rpc('suspender_item', { p_item: i.id, p_motivo: motivo })
-            if (error) return aoErro(error.message)
-            aoErro(null); setSuspendendo(false); aoMudar()
-          }}>Suspender</Button>
-          <Button size="sm" variant="ghost" onClick={() => setSuspendendo(false)}>Voltar</Button>
+      <div className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 sm:col-start-3 sm:max-w-72 sm:flex-col sm:items-end">
+        <span className="text-rotulo text-tinta-sussurro tabular-nums">{i.autor ?? '—'} · {hora(i.criado_em)}</span>
+        {!suspendendo && (
+          <span className="flex flex-wrap items-center gap-1 sm:justify-end">
+            {/* lacuna 6 (V4, V8): renovar por linha, a mesma renovar_prescricao com "manter" deste item */}
+            {!daPorta && renovavel && (
+              <Button size="xs" variant="outline" disabled={ocupado} onClick={() => void renovar()}><RefreshCw aria-hidden /> Renovar</Button>
+            )}
+            {podeManter && (
+              <Button size="xs" variant="outline" disabled={ocupado} className={renovavel ? undefined : ACOES_AO_PASSAR}
+                title="Renova o item e o traz para a prescrição do leito, como está" onClick={() => void renovar()}>
+                <RefreshCw aria-hidden /> Manter no leito
+              </Button>
+            )}
+            <span className={cn('flex items-center gap-1', ACOES_AO_PASSAR)}>
+              {/* Fase 2, tarefa 6: alteração versionada (só medicamento), na linha do novo item (PM4) */}
+              {i.tipo === 'medicamento' && (
+                <Button size="xs" variant="ghost" disabled={emEdicao} onClick={() => aoAlterar(i)}><Pencil aria-hidden /> Alterar</Button>
+              )}
+              <Button size="xs" variant="ghost" onClick={() => setSuspendendo(true)}><Ban aria-hidden /> Suspender</Button>
+            </span>
+          </span>
+        )}
+      </div>
+    </li>
+  )
+}
+
+/**
+ * PM4: alterar um item na linha do novo item ("ED"). Dose, via, frequência e
+ * "se necessário", com o motivo; a mesma alterar_item_prescricao do
+ * AlterarItem (a versão anterior fica guardada e a nova passa pelas travas).
+ */
+function EdicaoNaFolha({ item, aoFechar, aoMudar }: { item: ItemVigente; aoFechar: () => void; aoMudar: () => void }) {
+  const [f, setF] = React.useState({ dose: item.dose ?? '', via: item.via ?? '', posologia: item.posologia ?? '', se_necessario: item.se_necessario })
+  const [motivo, setMotivo] = React.useState('')
+  const [erro, setErro] = React.useState<string | null>(null)
+  const [salvando, setSalvando] = React.useState(false)
+  const mudanca = resumoMudanca(item, f)
+  const pronto = !!mudanca && motivo.trim().length >= 5 && !salvando
+  async function salvar() {
+    if (!pronto) return
+    setSalvando(true)
+    const e = await alterarItemPrescricao(item.id, motivo, f)
+    setSalvando(false)
+    if (e) return setErro(e)
+    aoMudar(); aoFechar()
+  }
+  return (
+    <div className={GRADE_LINHA} onKeyDown={(e) => { if (ehAtalhoPrescrever(e)) { e.preventDefault(); void salvar() } }}>
+      <span className="pt-1 text-rotulo font-semibold text-acao tabular-nums">ED</span>
+      <div className="flex min-w-0 flex-col gap-3 sm:col-span-2">
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-controle border border-acao/30 bg-alerta-marca px-3 py-2">
+          <Pencil className="size-3.5 shrink-0 text-acao" aria-hidden />
+          <span className="flex-1 text-tinta">Alterando prescrição: <b className="font-semibold">{item.descricao}</b></span>
+          <Button size="xs" variant="outline" onClick={aoFechar}><X aria-hidden /> Cancelar edição</Button>
         </div>
-      ) : (
-        <div className="flex flex-wrap items-center gap-1">
-          {extra}
-          <Button size="xs" variant="ghost" onClick={() => setSuspendendo(true)}><Ban /> Suspender</Button>
-          {/* Fase 2, tarefa 6: alteração versionada (só medicamento) */}
-          {i.tipo === 'medicamento' && <AlterarItem itemId={i.id} atual={i} aoMudar={aoMudar} />}
+        <div className="grid gap-2 sm:grid-cols-[1fr_8rem_1fr]">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="ed-dose">Dose *</Label>
+            <Input id="ed-dose" className="tabular-nums" autoFocus value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="ed-via">Via *</Label>
+            <CampoSelecao id="ed-via" tamanho="compacto" value={f.via} onChange={(e) => setF({ ...f, via: e.target.value })}>
+              {[...new Set([f.via, ...VIAS])].filter(Boolean).map((v) => <option key={v}>{v}</option>)}
+            </CampoSelecao>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="ed-freq">Frequência *</Label>
+            <Input id="ed-freq" className="tabular-nums" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })} />
+          </div>
         </div>
-      )}
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> Se necessário
+        </label>
+        <Input aria-label="Motivo da alteração" placeholder="Motivo da alteração (obrigatório)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+        {mudanca && <span className="text-rotulo text-tinta-apoio">Muda: {mudanca}. A versão anterior fica guardada.</span>}
+        {erro && <p role="alert" className="text-critico">{erro}</p>}
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" disabled={!pronto} onClick={() => void salvar()}>Salvar alteração</Button>
+          <Button size="sm" variant="ghost" onClick={aoFechar}><X aria-hidden /> Cancelar edição</Button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -419,50 +596,16 @@ function Achado({ texto, termo }: { texto: string; termo: string }) {
   return <>{trechosAchados(texto, termo).map((p, i) => (p.achou ? <b key={i} className="font-semibold text-tinta">{p.t}</b> : p.t))}</>
 }
 
-/**
- * Campo do peso deste atendimento, com o modo de obtenção. Usado no "Novo
- * item" e no topo da aba Prescrição do leito (ponto 11: o campo de lá era só
- * rascunho do navegador e não gravava).
- */
-export function CampoPeso({ pacienteId, motivo, aoGravar, aoErro, id = 'peso-novo' }: {
-  pacienteId: string; motivo?: string; aoGravar: () => void; aoErro: (m: string | null) => void; id?: string
-}) {
-  const { perfil } = useAuth()
-  const qc = useQueryClient()
-  const [valor, setValor] = React.useState('')
-  const [metodo, setMetodo] = React.useState<MetodoPeso>('aferido')
-  const [gravando, setGravando] = React.useState(false)
-  async function registrar() {
-    setGravando(true)
-    const erro = await gravarPeso(perfil?.id, pacienteId, valor, metodo)
-    setGravando(false)
-    if (erro) return aoErro(erro)
-    setValor(''); setMetodo('aferido'); aoErro(null)
-    for (const k of ['falta-prescrever', 'peso-atual']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
-    aoGravar()
-  }
-  return (
-    <div className="flex flex-wrap items-end gap-2">
-      {motivo && <span className="w-full text-rotulo text-atencao">{motivo}</span>}
-      <div className="flex flex-col gap-1">
-        <Label htmlFor={id}>Peso deste atendimento (kg)</Label>
-        <Input id={id} className="h-8 w-28" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void registrar() } }} />
-      </div>
-      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Como o peso foi obtido">
-        {METODOS_PESO.map((m) => <ChipPorta key={m.v} ativo={metodo === m.v} onClick={() => setMetodo(m.v)}>{m.rotulo}</ChipPorta>)}
-      </div>
-      <Button size="sm" disabled={gravando || !valor.trim()} onClick={() => void registrar()}>Registrar peso</Button>
-    </div>
-  )
-}
+const ROTULO_TIPO = { medicamento: 'Medicamento', cuidado: 'Cuidado', contencao: 'Contenção mecânica' } as const
 
-export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false }: {
+export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, pediatrico = false, folha }: {
   pacienteId: string; peso?: PesoAtual | null; aoMudar: () => void; aoErro: (m: string | null) => void
   /** Modo do Pronto-Socorro: chips de via e de "quando" (Agora, Se necessário, intervalo ou Outra). */
   porta?: boolean
   /** Criança: mostra o campo do peso desde o início. */
   pediatrico?: boolean
+  /** PM4 (leito): o novo item como a próxima linha da folha, com o índice dela. */
+  folha?: { indice: string }
 }) {
   const qc = useQueryClient()
   const [tipo, setTipo] = React.useState<'medicamento' | 'cuidado' | 'contencao'>('medicamento')
@@ -494,6 +637,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
   const avisar = (m: string | null) => { setErroItem(m); aoErro(null) }
   const [opcaoAtiva, setOpcaoAtiva] = React.useState(0)
   const doseRef = React.useRef<HTMLInputElement>(null)
+  const caixa = React.useRef<HTMLDivElement>(null)
   const { unidadeAtiva } = useUnidade()
 
   // ponto 11: busca do servidor — sinônimo (AAS, SF 0,9%), várias palavras em
@@ -526,7 +670,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
     if (achados.length === 0) return
     if (e.key === 'ArrowDown') { e.preventDefault(); setOpcaoAtiva((i) => (i + 1) % achados.length) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setOpcaoAtiva((i) => (i - 1 + achados.length) % achados.length) }
-    else if (e.key === 'Enter') { e.preventDefault(); escolher(achados[Math.min(opcaoAtiva, achados.length - 1)]) }
+    else if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); escolher(achados[Math.min(opcaoAtiva, achados.length - 1)]) }
   }
   // Fase 2, tarefa 9: medicamento em falta na farmácia e o retorno dela
   const falta = useQuery({
@@ -644,23 +788,26 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
     setPedeIdade(false); setAnos(''); avisar(null); aoMudar()
     for (const k of ['idade-paciente', 'cabecalho-paciente', 'falta-prescrever']) void qc.invalidateQueries({ queryKey: [k, pacienteId] })
   }
+  /** PM4: Ctrl+Enter (⌘+Enter) com o foco no novo item aperta o botão de prescrever que estiver valendo. */
+  function atalho(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!ehAtalhoPrescrever(e)) return
+    e.preventDefault()
+    caixa.current?.querySelector<HTMLButtonElement>('[data-atalho="prescrever"]:not(:disabled)')?.click()
+  }
 
-  return (
+  const corpo = (
     <>
-    {porta && !pediatrico && (
-      <FavoritosPorta favs={favs} carregado={favoritos.isSuccess} travas={travas} aoEscolher={usarFavorito} />
-    )}
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-corpo"><Plus className="size-4" /> Novo item</CardTitle>
-        <CardDescription>Dose, via e frequência são escritas por você: o sistema não sugere dose.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex flex-wrap gap-2">
-          {/* PR3 (RT, 24/11/2026): no leito, uma busca só escolhe remédio, cuidado ou contenção */}
-          {porta ? (['medicamento', 'cuidado', 'contencao'] as const).map((t) => (
+          {/* PM4 (leito): abas sublinhadas Medicamento · Cuidado · Contenção mecânica */}
+          {folha ? (
+            <Tabs value={tipo} onValueChange={(v) => { setTipo(v as typeof tipo); avisar(null) }} className="w-full">
+              <TabsList aria-label="Tipo do novo item" className="gap-1">
+                {(['medicamento', 'cuidado', 'contencao'] as const).map((t) => <TabsTrigger key={t} value={t}>{ROTULO_TIPO[t]}</TabsTrigger>)}
+              </TabsList>
+            </Tabs>
+          ) : porta ? (['medicamento', 'cuidado', 'contencao'] as const).map((t) => (
             <Button key={t} size="sm" variant={tipo === t ? 'default' : 'outline'} onClick={() => setTipo(t)}>
-              {t === 'medicamento' ? 'Medicamento' : t === 'cuidado' ? 'Cuidado' : 'Contenção mecânica'}
+              {ROTULO_TIPO[t]}
             </Button>
           )) : tipo !== 'medicamento' && (
             <Button size="sm" variant="outline" onClick={() => { setTipo('medicamento'); setF({ ...f, descricao: '' }) }}>
@@ -681,8 +828,8 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               })}
             </div>
           )}
-          {/* ponto 11: o peso que o servidor aceita (deste atendimento); o "último peso" de qualquer época confundia */}
-          {textoPeso && <span className="ml-auto self-center text-rotulo text-tinta-sussurro">{textoPeso}</span>}
+          {/* ponto 11: o peso que o servidor aceita (deste atendimento); na folha do leito ele está no cabeçalho (PM2) */}
+          {!folha && textoPeso && <span className="ml-auto self-center text-rotulo text-tinta-sussurro">{textoPeso}</span>}
         </div>
 
         {tipo === 'medicamento' && (pedeIdade || semIdade || faltaPaciente.includes('idade')) && (
@@ -714,8 +861,8 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 <Button key={c} size="xs" variant="outline" onClick={() => setF({ ...f, descricao: c })}>{c}</Button>
               ))}
             </div>
-            <Input placeholder="Descreva o cuidado" value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} />
-            <Button size="sm" className="self-start" disabled={f.descricao.trim().length < 3}
+            <Input placeholder="Descreva o cuidado" aria-label="Cuidado" value={f.descricao} onChange={(e) => setF({ ...f, descricao: e.target.value })} />
+            <Button size="sm" className="self-start" disabled={f.descricao.trim().length < 3} data-atalho="prescrever"
               onClick={() => void prescrever({ tipo: 'cuidado', descricao: f.descricao })}>Prescrever cuidado</Button>
           </>
         ) : (
@@ -744,9 +891,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               // ponto 11 (opção A do RT): lista logo abaixo do campo, com teclado
               // (↑ ↓ Enter), o texto achado destacado e o sinônimo que achou o item
               <div className="flex flex-col gap-1">
-                <Input placeholder={porta ? 'Buscar medicamento: nome, sigla ou apresentação (ex.: AAS, SF 0,9%, dipirona gotas)'
+                <Input placeholder={porta || folha ? 'Buscar medicamento: nome, sigla ou apresentação (ex.: AAS, SF 0,9%, dipirona gotas)'
                   : 'Novo item: buscar remédio, cuidado ou contenção (ex.: dipirona, cabeceira elevada)'}
-                  aria-label={porta ? 'Buscar medicamento' : 'Novo item'} role="combobox" aria-expanded={achados.length > 0} aria-controls="lista-medicamentos"
+                  aria-label={porta || folha ? 'Buscar medicamento' : 'Novo item'} role="combobox" aria-expanded={achados.length > 0} aria-controls="lista-medicamentos"
                   value={busca} onChange={(e) => { setBusca(e.target.value); setOpcaoAtiva(0) }} onKeyDown={teclaNaBusca} />
                 {termo.length >= 2 && (
                   <div id="lista-medicamentos" role="listbox" aria-label="Medicamentos do cadastro"
@@ -772,6 +919,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                     {resultados.isSuccess && achados.length === 0 && (
                       <p className="px-3 py-2 text-rotulo text-tinta-sussurro">Nenhum medicamento no cadastro com esse nome. Peça o cadastro ao farmacêutico.</p>
                     )}
+                    {/* PR3: no leito, cuidado e contenção também saem da busca (e abrem a aba deles) */}
                     {!porta && opcoesSemMedicamento(busca, CUIDADOS).map((o) => (
                       <OpcaoLista key={o.tipo + o.rotulo} onClick={() => {
                         setTipo(o.tipo); setBusca('')
@@ -818,10 +966,11 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 </div>
               </>
             ) : (
-            <div className="grid gap-2 sm:grid-cols-3">
+            // PM4: Dose · Via · Frequência · Se necessário numa linha
+            <div className="grid items-end gap-2 sm:grid-cols-[1fr_8rem_1fr_auto]">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-dose">Dose *</Label>
-                <Input id="item-dose" ref={doseRef} value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
+                <Input id="item-dose" ref={doseRef} className="tabular-nums" value={f.dose} onChange={(e) => setF({ ...f, dose: e.target.value })} placeholder="escrita pelo médico" />
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-via">Via *</Label>
@@ -833,17 +982,15 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
               </div>
               <div className="flex flex-col gap-1">
                 <Label htmlFor="item-freq">Frequência *</Label>
-                <Input id="item-freq" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })} placeholder="ex.: 8/8h" />
+                <Input id="item-freq" className="tabular-nums" value={f.posologia} onChange={(e) => setF({ ...f, posologia: e.target.value })} placeholder="ex.: 8/8h" />
               </div>
+              <label className="flex min-h-8 items-center gap-2">
+                <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> Se necessário
+              </label>
             </div>
             )}
             {avisoJaPrescrito && (
               <p role="status" className="flex items-center gap-1.5 text-atencao"><AlertTriangle className="size-3.5 shrink-0" /> {avisoJaPrescrito}</p>
-            )}
-            {!porta && (
-              <label className="flex items-center gap-2">
-                <input type="checkbox" checked={f.se_necessario} onChange={(e) => setF({ ...f, se_necessario: e.target.checked })} /> Se necessário
-              </label>
             )}
             {med && VIAS_COM_DILUICAO.includes(f.via) && (
               <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-2">
@@ -867,8 +1014,9 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 )}
               </div>
             )}
-            <Input placeholder="Observação (opcional)" value={f.observacao} onChange={(e) => setF({ ...f, observacao: e.target.value })} />
+            <Input placeholder="Observação (opcional)" aria-label="Observação" value={f.observacao} onChange={(e) => setF({ ...f, observacao: e.target.value })} />
             <Button size="sm" className="self-start" disabled={!med || !f.dose.trim() || !f.via || faltaFrequencia}
+              data-atalho={interacao ? undefined : 'prescrever'}
               onClick={() => void prescrever({
                 tipo: 'medicamento', medicamento_id: med!.id, dose: f.dose, via: f.via, posologia,
                 se_necessario: f.se_necessario, observacao: f.observacao,
@@ -892,7 +1040,7 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
                 <Textarea placeholder="Por que prescrever mesmo assim (mínimo de 10 letras; fica no prontuário e na auditoria)" value={justInteracao}
                   onChange={(e) => setJustInteracao(e.target.value)} />
                 <div className="flex gap-2">
-                  <Button size="sm" variant="destructive" disabled={justInteracao.trim().length < 10}
+                  <Button size="sm" variant="destructive" disabled={justInteracao.trim().length < 10} data-atalho="prescrever"
                     onClick={() => void prescrever({ ...interacao.item, justificativa_interacao: justInteracao.trim() })}>Prescrever com justificativa</Button>
                   <Button size="sm" variant="ghost" onClick={() => { setInteracao(null); setJustInteracao('') }}>Não prescrever</Button>
                 </div>
@@ -900,7 +1048,32 @@ export function NovoItem({ pacienteId, peso, aoMudar, aoErro, porta = false, ped
             )}
           </>
         )}
-      </CardContent>
+    </>
+  )
+
+  if (folha) {
+    // PM4: a próxima linha em branco da folha, com o número dela
+    return (
+      <div ref={caixa} className={GRADE_LINHA} onKeyDown={atalho}>
+        <span className="pt-2 text-rotulo font-semibold text-acao tabular-nums" title="Próxima linha da prescrição">{folha.indice}</span>
+        <div className="flex min-w-0 flex-col gap-3 sm:col-span-2" role="group" aria-label="Novo item da prescrição">
+          {corpo}
+          <p className="text-rotulo text-tinta-sussurro">Dose, via e frequência são escritas por você: o sistema não sugere dose.</p>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <>
+    {porta && !pediatrico && (
+      <FavoritosPorta favs={favs} carregado={favoritos.isSuccess} travas={travas} aoEscolher={usarFavorito} />
+    )}
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-corpo"><Plus className="size-4" /> Novo item</CardTitle>
+        <CardDescription>Dose, via e frequência são escritas por você: o sistema não sugere dose.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 text-apoio">{corpo}</CardContent>
     </Card>
     </>
   )
