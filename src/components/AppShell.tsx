@@ -360,8 +360,16 @@ function Casca() {
       return
     }
     const grupo = gruposDePerfis.find((g) => g.unidadeId === unidadeDoPapel)
-    setUnidadeAtivaId(unidadeDoPapel, p)
-    navigate(telaAoEntrar(p, grupo?.tipo ?? null))
+    // A unidade nova e a rota nova têm de chegar na MESMA renderização. O
+    // BrowserRouter troca a rota dentro de startTransition; trocada fora dele,
+    // a unidade chegava antes, com a rota antiga na tela (ex.: /nir/internacao),
+    // e o RequireRole da rota antiga mandava para a tela inicial do primeiro
+    // papel da unidade nova (o super admin caía em /painel, conferência do RT
+    // de 25/11/2026). Na mesma transição, as duas mudanças entram juntas.
+    React.startTransition(() => {
+      setUnidadeAtivaId(unidadeDoPapel, p)
+      navigate(telaAoEntrar(p, grupo?.tipo ?? null))
+    })
   }
 
   const papelTexto = papelAtivo ? PAPEL_LABEL[papelAtivo] : ''
