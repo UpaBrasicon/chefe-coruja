@@ -27,8 +27,8 @@ export function ImprimirPedidoExames({ pedido, pacienteId, internacaoId, onFecha
   const setores = [...new Set(pedido.exames.map((e) => e.grupo ?? 'laboratorio'))]
   const [modo, setModo] = React.useState<ModoFolha>(setores.length > 1 ? 'setor' : 'unica')
   const [imprimindo, setImprimindo] = React.useState(false)
-  // o servidor só emite o pedido com indicação clínica (regra do documento): pedido
-  // feito sem indicação ganha o campo aqui, em vez de falhar na janela de impressão
+  // a indicação clínica é opcional na folha (RT, 25/11/2026): pedido feito sem ela
+  // ganha o campo aqui, para quem quiser escrever antes de imprimir
   const semIndicacao = !conteudoDaFolha(pedido.exames, modo, pedido.geral).pedido.indicacao
   const [indicacao, setIndicacao] = React.useState('')
   const conteudo = conteudoDaFolha(pedido.exames, modo, semIndicacao ? { ...pedido.geral, indicacao } : pedido.geral)
@@ -87,9 +87,9 @@ export function ImprimirPedidoExames({ pedido, pacienteId, internacaoId, onFecha
         </div>
         {semIndicacao && (
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="imp-indicacao">Indicação clínica</Label>
+            <Label htmlFor="imp-indicacao">Indicação clínica (opcional)</Label>
             <Input id="imp-indicacao" value={indicacao} maxLength={500} onChange={(e) => setIndicacao(e.target.value)} />
-            <span className="text-rotulo text-tinta-sussurro">Este pedido foi feito sem indicação, e a folha do pedido não sai sem ela.</span>
+            <span className="text-rotulo text-tinta-sussurro">Este pedido foi feito sem indicação. Se escrever aqui, ela sai na folha.</span>
           </div>
         )}
         <p className="text-rotulo text-tinta-sussurro">
@@ -97,7 +97,7 @@ export function ImprimirPedidoExames({ pedido, pacienteId, internacaoId, onFecha
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onFechar}>Voltar</Button>
-          <Button disabled={imprimindo || n === 0 || !conteudo.pedido.indicacao} onClick={() => void imprimir()}><Printer aria-hidden /> Imprimir</Button>
+          <Button disabled={imprimindo || n === 0} onClick={() => void imprimir()}><Printer aria-hidden /> Imprimir</Button>
         </div>
       </DialogContent>
     </Dialog>
