@@ -141,13 +141,17 @@ export function PontoSituacao({ estado }: { estado: Situacao['estado'] }) {
 /** O banco responde "Acesso negado." a quem não está no plantão da unidade (sem check-in). */
 export const semPlantaoTele = (e: unknown) => !!e && /^Acesso negado/.test((e as Error).message ?? '')
 
-type PlantaoEscala = { id: string; perfil_id: string; papel: string | null; setor_id: string; inicio: string; duracao_min: number }
+type PlantaoEscala = { id: string; perfil_id: string; papel: string | null; setor_id: string; data: string; turno: string; inicio: string; duracao_min: number }
+type Presenca = { id: string; checkin_em: string | null; checkout_em: string | null; escala_plantao_id: string | null; data: string; turno: string }
 
 /**
  * O plantão remoto de agora, tirado da escala e do check-in (CH2, RT 24/11/2026).
  * `minha_situacao_tele.de_plantao` vem de plantoes_agora(), que depois da
- * tolerância só conta com check-in; por isso a escala é lida aqui à parte. O
- * plantão presencial de quem também é Médico (categoria plantonista) não conta.
+ * tolerância só conta com check-in; por isso a escala é lida aqui à parte. Só
+ * conta o plantão escalado na categoria telemedicina (conferência do RT na
+ * homologação, 24/11/2026: um plantão de outra categoria no mesmo setor, com
+ * check-in, aparecia como "De plantão"), e só o check-in desse plantão, casado
+ * como em plantoes_agora(): pelo plantão, pelo dia e turno, ou pela hora.
  */
 export function usePlantaoRemoto(unidadeId: string) {
   const { perfil } = useAuth()
@@ -162,7 +166,7 @@ export function usePlantaoRemoto(unidadeId: string) {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('escala_da_unidade', { p_unidade: unidadeId, p_de: ontem, p_ate: hoje })
       if (error) throw error
-      return ((data ?? []) as PlantaoEscala[]).filter((p) => p.perfil_id === perfil!.id && p.papel !== 'plantonista')
+      return ((data ?? []) as PlantaoEscala[]).filter((p) => p.perfil_id === perfil!.id && p.papel === 'telemedicina')
     },
   })
   const setores = useQuery({
@@ -177,11 +181,11 @@ export function usePlantaoRemoto(unidadeId: string) {
     queryKey: ['presenca-remota', unidadeId, perfil?.id],
     enabled: !!perfil,
     queryFn: async () => {
-      const { data, error } = await supabase.from('presenca_plantonista').select('id, checkin_em, checkout_em')
+      const { data, error } = await supabase.from('presenca_plantonista').select('id, checkin_em, checkout_em, escala_plantao_id, data, turno')
         .eq('unidade_id', unidadeId).eq('perfil_id', perfil!.id).not('checkin_em', 'is', null).is('checkout_em', null)
-        .order('checkin_em', { ascending: false }).limit(1)
+        .order('checkin_em', { ascending: false }).limit(10)
       if (error) throw error
-      return data?.[0] ?? null
+      return (data ?? []) as Presenca[]
     },
   })
   const invalidar = () => {
@@ -204,10 +208,14 @@ export function usePlantaoRemoto(unidadeId: string) {
   const fim = (p: PlantaoEscala) => new Date(p.inicio).getTime() + p.duracao_min * 60_000
   const turno = (escala.data ?? []).find((p) => new Date(p.inicio).getTime() <= agora && agora < fim(p)) ?? null
   const setor = turno ? setores.data?.find((s) => s.id === turno.setor_id)?.nome ?? null : null
+  // o check-in aberto deste plantão remoto; o de outro plantão (outra categoria) não conta
+  const checkin = turno ? (presenca.data ?? []).find((x) => x.escala_plantao_id === turno.id
+    || (x.data === turno.data && x.turno === turno.turno)
+    || (!!x.checkin_em && new Date(x.checkin_em).getTime() >= new Date(turno.inicio).getTime() && new Date(x.checkin_em).getTime() < fim(turno))) ?? null : null
   return {
     carregando: escala.isLoading || presenca.isLoading,
     turno: turno ? { inicio: turno.inicio, fim: new Date(fim(turno)).toISOString(), setor } : null,
-    checkin: presenca.data ?? null,
+    checkin,
     entrar, sair,
   }
 }
@@ -253,8 +261,6 @@ export function SituacaoTele({ unidadeId }: { unidadeId: string }) {
   } else if (r.turno) {
     tom = 'atencao'
     texto = `Na escala${ate}${setor} · falta check-in`
-  } else if (r.checkin) {
-    texto = `Check-in aberto desde ${hhmm(r.checkin.checkin_em)} · fora da escala`
   } else {
     texto = 'Fora da escala agora'
   }
@@ -276,7 +282,7 @@ export function SituacaoTele({ unidadeId }: { unidadeId: string }) {
       {r.turno && r.checkin && d && d.estado !== 'em_consulta' && (
         <Button size="sm" variant="ghost" onClick={() => void alternar()}>{d.escolhido === 'disponivel' ? 'Ficar ausente' : 'Ficar disponível'}</Button>
       )}
-      {r.checkin && (
+      {r.turno && r.checkin && (
         <Button size="sm" variant="outline" onClick={() => r.sair.mutate(r.checkin!.id)} disabled={r.sair.isPending}>Encerrar plantão remoto</Button>
       )}
       {(erro || erroAcao) && <span role="alert" className="basis-full text-apoio text-critico">{erro ?? (erroAcao as Error).message}</span>}
