@@ -34,7 +34,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Regulação de vagas | operador | sim | 20 anos a partir do último registro | 19 |
 | Rede entre unidades e acesso ao prontuário de outra unidade | operador | sim | 20 anos a partir do último registro | 7 |
 | Atenção primária: agenda e programas da UBS | operador | sim | 20 anos a partir do último registro | 11 |
-| Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 8 |
+| Pedido e resultado de exames | operador | sim | 20 anos a partir do último registro | 9 |
 | Documentos, termos, anexos e destinação do prontuário | operador | sim | 20 anos a partir do último registro | 9 |
 | Farmácia e estoque | operador | sim | 20 anos para o que compõe o prontuário; 5 anos para estoque | 10 |
 | Faturamento SUS e contas | operador | sim | 5 anos | 20 |
@@ -51,7 +51,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 | Uso do aplicativo, agregado | controlador | não | a definir com o advogado (proposta: 2 anos) | 1 |
 | Apoio por IA: busca clínica e assistentes | operador | sim | 30 dias para o texto; registro técnico sem texto por 20 anos | 13 |
 | RNDS, SISAB, API e integrações com outros sistemas | operador | sim | 20 anos para o que compõe o prontuário; registro de acesso da API por 20 anos | 14 |
-| Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 10 |
+| Cliente, unidades e implantação | controlador | não | duração do contrato; depois, 5 anos | 9 |
 | Site comercial e pedido de demonstração | controlador | não | 2 anos | 1 |
 | Catálogos clínicos, terminologias e regras (sem dado de paciente) | controlador | não | enquanto estiver em uso; versões antigas das fichas ficam como histórico | 57 |
 | Testes automáticos da homologação | controlador | não | enquanto servir aos testes | 4 |
@@ -494,9 +494,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - laudo só aparece depois de liberado
 - imagem externa só de domínio cadastrado pela unidade
 
-**Tabelas (8)**
+**Tabelas (9)**
 
-`public.exames_pedidos`, `public.exame_resultados`, `public.exame_resultado_itens`, `public.exame_cientes`, `private.exame_laudo_liberacao`, `public.exames_unidade`, `public.exames_referencia_sepse`, `public.imagem_dominios`
+`public.exames_pedidos`, `public.exame_resultados`, `public.exame_resultado_itens`, `public.exame_cientes`, `private.exame_laudo_liberacao`, `public.exames_unidade`, `public.exames_combos`, `public.exames_referencia_sepse`, `public.imagem_dominios`
 
 ### Documentos, termos, anexos e destinação do prontuário
 
@@ -659,7 +659,7 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 **Dados**
 - nome, e-mail, conselho e registro
 - papel em cada unidade
-- designação para uma secretaria de saúde (e-mail, quem designou e quando o aviso por e-mail saiu)
+- designação para uma secretaria de saúde (e-mail e quem designou)
 - eventos do segundo fator e dispositivos confiáveis
 - convites e aceite dos termos
 - endereço profissional do médico (LG8)
@@ -1082,7 +1082,6 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 - unidades e configurações
 - secretarias de saúde da rede (nome, CNPJ, responsável e contato institucional)
 - treinamentos e aceites da implantação
-- metas do contrato de gestão de cada unidade (indicador, meta, peso e vigência; sem dado de paciente)
 
 **Quem acessa**
 - equipe de implantação da Chefe Coruja
@@ -1093,9 +1092,9 @@ Versão 2026-11-17. Rascunho técnico do registro das operações de tratamento 
 
 **Prazo.** duração do contrato; depois, 5 anos (prazo civil e fiscal, a confirmar com o advogado). Descarte: a definir com o advogado.
 
-**Tabelas (10)**
+**Tabelas (9)**
 
-`public.organizacoes`, `public.unidades`, `public.secretarias`, `public.implantacoes`, `public.implantacao_itens`, `public.implantacao_treinamentos`, `public.implantacao_aceites`, `public.configuracoes_unidade`, `public.configuracao_plataforma`, `public.metas_contrato`
+`public.organizacoes`, `public.unidades`, `public.secretarias`, `public.implantacoes`, `public.implantacao_itens`, `public.implantacao_treinamentos`, `public.implantacao_aceites`, `public.configuracoes_unidade`, `public.configuracao_plataforma`
 
 ### Site comercial e pedido de demonstração
 

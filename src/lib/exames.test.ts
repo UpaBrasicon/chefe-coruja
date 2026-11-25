@@ -51,6 +51,13 @@ test('5C-2: com exame de imagem na lista, RX e ECG em texto livre saem dos botõ
   assert.equal(caminhoLaudo('ex-1', 'traçado.PNG', 5), 'ex-1/5-tracado.PNG')
 })
 
+// RT, 25/11/2026: na aba Exames, laudo em PDF ou imagem (JPG, PNG, WEBP), até 10 MB
+test('laudo em imagem WEBP', () => {
+  assert.equal(erroLaudo({ name: 'laudo.webp', type: 'image/webp', size: 10 }, true), null)
+  assert.equal(erroLaudo({ name: 'laudo.gif', type: 'image/gif', size: 10 }, true), 'O arquivo precisa ser PDF, JPG, PNG ou WEBP.')
+  assert.equal(caminhoLaudo('ex-1', 'foto laudo.webp', 5), 'ex-1/5-foto-laudo.webp')
+})
+
 // ponto 12: laboratório, imagem e ECG em pedidos separados
 test('grupo pelo código SIGTAP: 02.02, 02.04-02.07 e 02.11', () => {
   assert.equal(grupoDoCodigo('0202010473'), 'laboratorio')

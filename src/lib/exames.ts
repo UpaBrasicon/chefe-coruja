@@ -114,6 +114,10 @@ export type VersaoResultado = {
   critico: boolean; liberado_em: string; registrado_por: string | null; vigente: boolean
   retificado_em: string | null; motivo_retificacao: string | null
   itens: ItemResultado[]; cientes: { por: string; em: string }[]
+  /** o médico marcou "alterado" (não é o crítico, que é só do laboratório; RT, 25/11/2026) */
+  alterado_em?: string | null; alterado_por?: string | null
+  /** coleta informada no lançamento à mão estruturado */
+  coleta_em?: string | null
 }
 export type ExameDetalhe = {
   id: string; exame: string; procedimento: string | null; tipo: TipoExame | null; situacao: SituacaoExame; urgencia: Urgencia; observacao: string | null
@@ -122,20 +126,30 @@ export type ExameDetalhe = {
   critico: boolean; origem: OrigemResultado | null; visto_em: string | null; visto_por: string | null
   versoes: VersaoResultado[]
   pode_registrar: boolean; pode_coletar: boolean; pode_realizar: boolean; pode_dar_ciencia: boolean; ja_ciente: boolean
+  pode_marcar_alterado?: boolean
 }
 
 export const LAUDO_MAX_BYTES = 10 * 1024 * 1024
-/** 4a: laudo em PDF, até 10 MB; em exame de imagem (ECG, RX) também foto JPG ou PNG do traçado (5C-2, 6a). */
+/** O seletor de arquivo do laudo em PDF ou imagem (RT, 25/11/2026). */
+export const LAUDO_ACEITA = 'application/pdf,image/jpeg,image/png,image/webp'
+/** O arquivo gravado é imagem (JPG, PNG ou WEBP), pelo nome. */
+export const laudoEhImagem = (nome: string | null | undefined) => /\.(jpe?g|png|webp)$/i.test(nome ?? '')
+/**
+ * 4a: laudo em PDF, até 10 MB. Com `aceitaFoto`, também imagem JPG, PNG ou WEBP:
+ * o traçado do ECG e o laudo de imagem (5C-2, 6a) e, desde a decisão do RT de
+ * 25/11/2026, o laudo de qualquer exame na aba Exames.
+ */
 export function erroLaudo(arquivo: { name: string; type: string; size: number }, aceitaFoto = false): string | null {
   const nome = arquivo.name.toLowerCase()
   const pdf = arquivo.type === 'application/pdf' && nome.endsWith('.pdf')
   const foto = (arquivo.type === 'image/jpeg' && /\.jpe?g$/.test(nome)) || (arquivo.type === 'image/png' && nome.endsWith('.png'))
-  if (!pdf && !(aceitaFoto && foto)) return aceitaFoto ? 'O arquivo precisa ser PDF, JPG ou PNG.' : 'O laudo precisa ser PDF.'
+    || (arquivo.type === 'image/webp' && nome.endsWith('.webp'))
+  if (!pdf && !(aceitaFoto && foto)) return aceitaFoto ? 'O arquivo precisa ser PDF, JPG, PNG ou WEBP.' : 'O laudo precisa ser PDF.'
   if (arquivo.size > LAUDO_MAX_BYTES) return 'O laudo passa de 10 MB.'
   return null
 }
 /** Caminho do laudo na área privada: <exame>/<marca de tempo>-<nome limpo>.pdf */
 export function caminhoLaudo(exameId: string, nome: string, agora: number): string {
   const limpo = nome.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-').slice(-80)
-  return `${exameId}/${agora}-${/\.(pdf|jpe?g|png)$/i.test(limpo) ? limpo : `${limpo}.pdf`}`
+  return `${exameId}/${agora}-${/\.(pdf|jpe?g|png|webp)$/i.test(limpo) ? limpo : `${limpo}.pdf`}`
 }

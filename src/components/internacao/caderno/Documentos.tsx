@@ -2,7 +2,7 @@
 // os mesmos documentos do formulário de internação, já com o paciente do leito
 // (fixo). Admissão e AIH no desenho do protótipo, com a identificação do cadastro.
 import { ListaExamesLeito } from '@/components/clinico/ExamesEAgravos'
-import { PedidoExamesLeito } from '@/components/internacao/documentos/PedidoExamesLeito'
+import { AbaExamesLeito } from '@/components/internacao/exames/AbaExamesLeito'
 import { FichaAdmissao } from '@/components/internacao/documentos/FichaAdmissao'
 import { LaudoAih } from '@/components/internacao/documentos/LaudoAih'
 import { SolicitarApac } from '@/components/apac/SolicitarApac'
@@ -34,12 +34,16 @@ export function AbaPrescricao({ doc, contexto }: { doc: Doc; contexto?: Contexto
   )
 }
 
+/**
+ * Modelo do RT (25/11/2026, EXM1): o médico tem as três vistas (solicitar,
+ * anexar, planilha) e o "Imprimir pedido". Enfermagem e gestor continuam com a
+ * lista de antes: com resultado, aguardando e cancelados (EX2); os agravos
+ * ficaram no Resumo e na Alta (EX3).
+ */
 export function AbaExames({ internacaoId, pacienteId, medico }: { internacaoId: string; pacienteId: string; medico: boolean }) {
+  if (medico) return <AbaExamesLeito internacaoId={internacaoId} pacienteId={pacienteId} />
   return (
     <div className="flex flex-col gap-4">
-      {/* EX1: pedir por uma busca só, com os frequentes da unidade e a cesta (um pedido por grupo no servidor) */}
-      {medico && <PedidoExamesLeito internacaoId={internacaoId} pacienteId={pacienteId} />}
-      {/* EX2: com resultado, aguardando e cancelados; os agravos foram para o Resumo e a Alta (EX3) */}
       <ListaExamesLeito pacienteId={pacienteId} medico={medico} />
     </div>
   )

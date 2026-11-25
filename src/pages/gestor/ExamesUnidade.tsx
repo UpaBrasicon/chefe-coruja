@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TestTube } from 'lucide-react'
 import * as React from 'react'
 
+import { CombosExames } from '@/components/exames/CombosExames'
 import { TituloCartao, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -240,8 +241,8 @@ export default function ExamesUnidade() {
                   <TableCell className="whitespace-nowrap px-3 py-2 text-right">
                     {pode && (
                       <>
-                        <Button size="xs" variant="ghost" onClick={() => abrir(e)}>Editar</Button>
-                        <Button size="xs" variant="ghost" onClick={() => { setRetirando(e); setMotivo('') }}>Retirar</Button>
+                        <Button size="xs" variant="outline" onClick={() => abrir(e)}>Editar</Button>
+                        <Button size="xs" variant="outline" onClick={() => { setRetirando(e); setMotivo('') }}>Retirar</Button>
                       </>
                     )}
                   </TableCell>
@@ -253,6 +254,9 @@ export default function ExamesUnidade() {
           </Table>
         </div>
       )}
+
+      {/* EXM2 (RT, 25/11/2026): os combos do pedido do leito, montados pelo gestor ao lado dos frequentes */}
+      {unidadeId && <CombosExames unidadeId={unidadeId} exames={exames} />}
 
       {retirando && (
         <div className="flex flex-col gap-1.5 rounded-controle border border-fio bg-superficie p-3">
