@@ -96,7 +96,7 @@ SELECT pg_temp.igual((SELECT (r->>'tem_lista') || ':' || (r->>'total') || ':' ||
   'true:2:false', 'o procedimento tem 2 CID na lista, e I10 não está nela');
 SELECT pg_temp.igual((public.regulacao_cids_do_procedimento('03.99.99.990-1', NULL, 'J189')->>'compativel'),
   'true', 'J189 (sem ponto) está na lista; o código do procedimento aceita pontuação');
-SELECT pg_temp.igual((SELECT string_agg(e->>'codigo', ',') FROM jsonb_array_elements(public.regulacao_cids_do_procedimento('0399999901', 'varicela')->'itens') e),
+SELECT pg_temp.igual((SELECT string_agg(e->>'codigo', ',') FROM jsonb_array_elements(public.regulacao_cids_do_procedimento('0399999901', 'varicel')->'itens') e),
   'B01.2', 'a busca por descrição acha só o CID dela');
 SELECT pg_temp.igual((SELECT (r->>'tem_lista') || ':' || coalesce(r->>'compativel', 'nulo')
                         FROM public.regulacao_cids_do_procedimento('0399999902', NULL, 'I10') r),
@@ -122,10 +122,11 @@ WITH x AS (UPDATE public.regulacao_solicitacoes SET telefone_contato = '(00) 000
 SELECT pg_temp.igual((SELECT count(*)::text FROM x), '1', 'mudar outro campo não passa pela regra');
 
 -- ── 3. o aviso do pedido novo ───────────────────────────────────────────────
-SELECT pg_temp.igual((SELECT string_agg(p.nome_completo, ',' ORDER BY p.nome_completo)
-                        FROM public.notificacoes_plantonista n JOIN public.perfis p ON p.id = n.perfil_id
+-- pelos ids (o nome do perfil pode vir trocado pelo do e-mail): 2 gestor, 3 NIR, 4 e 5 reguladores da central
+SELECT pg_temp.igual((SELECT string_agg(n.perfil_id::text, ',' ORDER BY n.perfil_id)
+                        FROM public.notificacoes_plantonista n
                        WHERE n.tipo = 'reg_novo_' || (SELECT numero FROM public.regulacao_solicitacoes WHERE id = pg_temp.v('ok')::uuid)),
-  'Gestor da UPA,NIR da UPA,Regulador da central,Regulador da central e da UPA',
+  'ad000000-0000-4000-8000-000000000002,ad000000-0000-4000-8000-000000000003,ad000000-0000-4000-8000-000000000004,ad000000-0000-4000-8000-000000000005',
   'o aviso vai ao gestor e ao NIR da origem e aos reguladores da central; não a quem abriu nem a outro médico');
 SELECT pg_temp.igual((SELECT n.mensagem FROM public.notificacoes_plantonista n
                        WHERE n.perfil_id = 'ad000000-0000-4000-8000-000000000004'

@@ -73,15 +73,20 @@ export function textoDoEvento(e: Pick<EventoPedido, 'evento' | 'detalhes'>): str
  * mais antiga. "Anexo aberto" é registro de acesso e fica fora. Quando as
  * evoluções e as mensagens vêm com o texto, o evento repetido delas sai.
  */
-export function montarLinhaDoTempo({ eventos = [], evolucoes = [], mensagens }: {
+export function montarLinhaDoTempo({ eventos = [], evolucoes = [], mensagens, rotulosDocumento }: {
   eventos?: EventoPedido[]; evolucoes?: EvolucaoPedido[]; mensagens?: MensagemPedido[]
+  /** Mapa tipo → rótulo dos documentos: o anexo do prontuário sai com o nome acentuado, como na lista de anexos. */
+  rotulosDocumento?: Record<string, string>
 }): ItemLinhaDoTempo[] {
   const itens: ItemLinhaDoTempo[] = []
   eventos.forEach((e, i) => {
     if (e.evento === 'anexo_aberto') return
     if (e.evento === 'evolucao_atualizada' && evolucoes.length > 0) return
     if (e.evento === 'mensagem' && mensagens) return
-    itens.push({ chave: `e${i}`, em: e.em, tipo: tipoDoEvento(e.evento), titulo: rotuloEvento(e.evento), texto: textoDoEvento(e), por: e.por })
+    const nome = e.detalhes?.nome
+    const ev = rotulosDocumento && e.evento.startsWith('anexo_') && typeof nome === 'string'
+      ? { ...e, detalhes: { ...e.detalhes, nome: nomeAnexoLegivel(nome, rotulosDocumento) } } : e
+    itens.push({ chave: `e${i}`, em: e.em, tipo: tipoDoEvento(e.evento), titulo: rotuloEvento(e.evento), texto: textoDoEvento(ev), por: e.por })
   })
   evolucoes.forEach((v, i) => {
     const texto = v.sinais_vitais ? `${v.texto}\nSinais vitais: ${v.sinais_vitais}` : v.texto

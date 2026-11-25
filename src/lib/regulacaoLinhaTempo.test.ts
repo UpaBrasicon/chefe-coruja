@@ -77,6 +77,18 @@ test('NI3: o nome do anexo do prontuário sai com o rótulo do tipo, com acento'
   assert.equal(nomeAnexoLegivel('raio-x.pdf', rotulos), 'raio-x.pdf')
 })
 
+test('RD2: na linha do tempo, o anexo do prontuário também sai acentuado', () => {
+  const eventos = [
+    { evento: 'anexo_incluido', por: 'A', em: '2026-11-24T10:00:00Z', detalhes: { nome: 'Evolucao (versão 1)' } },
+    { evento: 'anexo_incluido', por: 'A', em: '2026-11-24T10:01:00Z', detalhes: { nome: 'raio-x.pdf' } },
+    { evento: 'pendencia', por: 'B', em: '2026-11-24T10:02:00Z', detalhes: { pergunta: 'Evolucao (versão 1)?' } },
+  ]
+  const itens = montarLinhaDoTempo({ eventos, rotulosDocumento: { evolucao: 'Evolução' } })
+  assert.deepEqual(itens.map((i) => i.texto), ['Evolucao (versão 1)?', 'raio-x.pdf', 'Evolução (versão 1)'])
+  // sem o mapa, o nome fica como veio
+  assert.equal(montarLinhaDoTempo({ eventos: [eventos[0]] })[0].texto, 'Evolucao (versão 1)')
+})
+
 test('MR2: esperando decisão são os mesmos do painel de prazos', () => {
   assert.deepEqual([...ESPERANDO_DECISAO], ['enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino'])
   assert.ok(esperandoDecisao('pendencia'))
