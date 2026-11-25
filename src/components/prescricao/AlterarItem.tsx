@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { resumoMudanca, type CamposItem } from '@/lib/alteracaoPrescricao'
-import { supabase } from '@/lib/supabase'
+import { alterarItemPrescricao } from '@/components/prescricao/renovarItem'
 
 // Alterar item de medicamento (Fase 2, tarefa 6; migration 20261031000004).
 // Só o médico; com motivo. A versão anterior fica guardada (suspensa, com as
@@ -26,12 +26,9 @@ export function AlterarItem({ itemId, atual, aoMudar }: { itemId: string; atual:
 
   async function salvar() {
     setSalvando(true)
-    const { error } = await supabase.rpc('alterar_item_prescricao', {
-      p_item: itemId, p_motivo: motivo.trim(),
-      p_mudancas: { dose: f.dose.trim(), via: f.via, posologia: f.posologia.trim(), se_necessario: f.se_necessario },
-    })
+    const e = await alterarItemPrescricao(itemId, motivo, f)
     setSalvando(false)
-    if (error) return setErro(error.message)
+    if (e) return setErro(e)
     setErro(null); setAberto(false); setMotivo(''); aoMudar()
   }
 

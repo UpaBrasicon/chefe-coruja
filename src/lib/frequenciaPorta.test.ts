@@ -95,10 +95,13 @@ test('F4: a prescrição do leito mostra "Vindos da porta" com suspender e alter
   assert.match(aba_leito, /<PrescricaoEstruturada/)
   assert.match(estruturada, /rpc\('prescricao_porta_ativa', \{ p_paciente: pacienteId \}\)/)
   assert.match(estruturada, /Vindos da porta/)
-  // PR1 (RT, 24/11/2026): um grupo da lista única, com as mesmas linhas (suspender e alterar)
-  const bloco = estruturada.slice(estruturada.indexOf('Vindos da porta'))
-  assert.match(bloco, /g\.porta\.map\(\(i\) => linha\(i\)\)/)
+  // PM1 (folha do RT, 24/11/2026): seção da folha com o índice "PS" e as mesmas linhas
+  // (manter no leito, alterar, suspender)
+  const bloco = estruturada.slice(estruturada.indexOf('aria-label="Vindos da porta"'))
+  assert.match(bloco, /porta\.map\(\(i\) => linha\(i, 'PS', 'porta'\)\)/)
   assert.match(estruturada, /<LinhaItem key=\{i\.id\}/)
+  assert.match(estruturada, /Manter no leito/)
+  assert.match(estruturada, /rpc\('suspender_item'/)
 })
 
 test('F6: a folha impressa do leito leva os horários aprazados', () => {

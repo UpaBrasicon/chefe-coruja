@@ -56,7 +56,8 @@ export function NovoItemContencao({ aoPrescrever }: { aoPrescrever: (item: ItemC
         <Label htmlFor="cont-criterios">Critérios de retirada *</Label>
         <Textarea id="cont-criterios" rows={2} value={criterios} onChange={(e) => setCriterios(e.target.value)} />
       </div>
-      <Button size="sm" className="self-start" disabled={!pronto || ocupado} onClick={() => void prescrever()}>Prescrever contenção</Button>
+      {/* data-atalho: Ctrl+Enter na linha do novo item da folha do leito (PM4) */}
+      <Button size="sm" className="self-start" disabled={!pronto || ocupado} data-atalho="prescrever" onClick={() => void prescrever()}>Prescrever contenção</Button>
     </div>
   )
 }

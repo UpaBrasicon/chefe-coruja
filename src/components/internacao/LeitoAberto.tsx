@@ -42,13 +42,13 @@ import { ehPediatrico } from '@/domain/idade'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
-import { AgravosNotificacao, ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
+import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { BotaoRnDaMae } from '@/components/paciente/CadastroRn'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
-import { ResumoClinico } from '@/components/evolucao/ResumoClinico'
+import type { ContextoPacienteFolha } from '@/components/prescricao/PainelPacienteFolha'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { AbaCuidadosPaliativos } from '@/components/paliativo/AbaCuidadosPaliativos'
@@ -77,7 +77,7 @@ import { BlocoPendencias } from './caderno/Pendencias'
 import { BlocoSepse } from './caderno/Sepse'
 import { type DestinoResumo, GrupoRecolhido, ResumoLeito } from './caderno/ResumoLeito'
 import { MaisDocumentos } from './caderno/MaisDocumentos'
-import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
+import { ChecklistAdmissao } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
@@ -342,10 +342,6 @@ type PartesLeito = {
   aoGravarVitais: () => void
   aoErro: (m: string) => void
   cidSugerido?: string | null
-  /** Resumo do caso (EV1: veio da Evolução para o Resumo) */
-  resumoCaso?: React.ReactNode
-  /** Notificação de agravo (EX3: saiu de Exames para o Resumo) */
-  agravos?: React.ReactNode
 }
 
 /** Aba Resumo (e o corpo do modo simples): acuidade, sepse, pendências, passagem. */
@@ -401,8 +397,9 @@ function ResumoCaderno({ p, irPara }: { p: PartesLeito; irPara: (aba: DestinoRes
       pendencias={<BlocoPendencias internacaoId={i.id} ativa={ativa} lista={p.pendencias} eu={p.eu} acao={p.acao} />}
       depois={
         <>
-          {p.resumoCaso}
-          {p.agravos}
+          {/* RT (24/11/2026): o "Resumo do caso", a linha dos agravos ("Marcar suspeita") e o "Histórico na
+              unidade" saíram do Resumo do leito. A suspeita segue na Notificação compulsória e no passo da
+              alta; o histórico, em Prontuários. */}
           {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} semBotao />}
           {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
           {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
@@ -411,11 +408,6 @@ function ResumoCaderno({ p, irPara }: { p: PartesLeito; irPara: (aba: DestinoRes
           <Contencao pacienteId={p.pacienteId} semIniciar />
           {/* registrar é pelo menu Ações (ponto 7); aqui a lista e o Retificar */}
           <Intercorrencias pacienteId={p.pacienteId} internacaoId={ativa ? i.id : null} episodioId={ativa ? i.episodio_id : null} semBotao />
-          <GrupoRecolhido titulo="Histórico na unidade" inicial={!ativa}>
-            <TrilhaEpisodio pacienteId={p.pacienteId} />
-            {/* Fase 1, tarefa 8: atendimentos encerrados do paciente, para quem cuida */}
-            {ativa && <HistoricoEncerrado pacienteId={p.pacienteId} />}
-          </GrupoRecolhido>
         </>
       } />
   )
@@ -506,12 +498,15 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta, 
       return cid || null
     },
   }).data
-  const pp: PartesLeito = {
-    ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal,
-    // EV1: o resumo do caso (antibióticos, medicações, eletrólitos, condutas) mora no Resumo do leito
-    resumoCaso: <ResumoClinico pacienteId={pacienteId} internacaoId={i.id} />,
-    // EX3: os agravos de notificação saem da lista de exames para um bloco próprio no Resumo
-    agravos: <AgravosNotificacao pacienteId={pacienteId} medico={escreve} />,
+  const pp: PartesLeito = { ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal }
+  // PM5 (RT, 24/11/2026): o painel do paciente ao lado da folha de prescrição, com o que o leito já leu
+  const contextoFolha: ContextoPacienteFolha = {
+    leito: i.leito?.identificador ?? null,
+    situacao: i.status === 'em_observacao' ? 'Em observação' : ativa ? 'Internado' : `Alta ${diaHora(i.data_alta)}`,
+    internadoEm: i.status === 'em_observacao' ? null : i.internado_em ?? i.data_admissao,
+    naUnidadeDesde: i.data_admissao,
+    cor: (i.episodio?.cor_atual as CorRisco | null | undefined) ?? null,
+    diagnostico: textoPrimario,
   }
 
   // RS3 (RT, 24/11/2026): "Evoluir" é a ação principal; transferir, passar,
@@ -536,10 +531,8 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta, 
       <MenuMais rotulo="Ações" itens={itensAcoes} />
     </span>
   ) : undefined
-  const irNotificacao = () => {
-    setAba('resumo')
-    window.setTimeout(() => document.getElementById('caderno-agravos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
-  }
+  // RT (24/11/2026): a notificação saiu do Resumo do leito; abre a Notificação compulsória
+  const irNotificacao = () => navigate('/notificacao-compulsoria')
 
   return (
     <div className="flex flex-col gap-3.5 border-t border-fio pt-3.5 text-apoio">
@@ -584,7 +577,7 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta, 
             <AbaAdmissao doc={doc} internacaoId={i.id} unidadeId={unidadeAtiva?.unidade_id} admissaoEm={i.internado_em ?? i.data_admissao} />
           </>
         )}
-        {atual === 'receituario' && <AbaPrescricao doc={doc} />}
+        {atual === 'receituario' && <AbaPrescricao doc={doc} contexto={contextoFolha} />}
         {atual === 'exames' && <AbaExames internacaoId={i.id} pacienteId={pacienteId} medico={!ehGestor} />}
         {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
