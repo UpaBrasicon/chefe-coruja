@@ -8,7 +8,11 @@
 //   autor = login, não a evolução médica do prontuário) e "Gerenciar remoção /
 //   saída" quando há vaga com destino. A faixa do prazo repete as ações.
 // • Abas: Pendências & resumo, Conversa com a central (mensagens prontas de 1
-//   clique), Anexos & exames e Linha do tempo.
+//   clique), Anexos & exames, Planilha de exames e Linha do tempo.
+// • Planilha de exames (decisão do RT de 25/11/2026, B-09: na planilha só o
+//   médico e o NIR lançam valores): a mesma planilha do leito, com a
+//   internação do paciente. O NIR não abre o leito; lança daqui. Aparece
+//   também no paciente internado sem pedido em aberto.
 // • Remoção (NIR5): mostra o destino, a reserva e "Paciente saiu"
 //   (regulacao_marcar_saida, que o NIR já pode). A alta por transferência,
 //   que libera o leito, é do médico (dar_alta); "transporte acionado" ainda
@@ -19,6 +23,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Bell, FileText, PenLine, Plus, Truck } from 'lucide-react'
 import * as React from 'react'
 
+import { PlanilhaDaInternacao } from '@/components/internacao/exames/PlanilhaDaInternacao'
 import { Chip, VazioLinha } from '@/components/monitor/Pagina'
 import { AbasLinha } from '@/components/nir/AbasLinha'
 import { AvisarMedico, type AlvoAviso } from '@/components/nir/AvisarMedico'
@@ -63,7 +68,7 @@ const TOM_PRIORIDADE: Record<string, 'destructive' | 'warning' | 'info' | 'secon
   critico: 'destructive', atencao: 'warning', info: 'info', neutro: 'secondary',
 }
 
-type Aba = 'pendencias' | 'conversa' | 'anexos' | 'tempo'
+type Aba = 'pendencias' | 'conversa' | 'anexos' | 'planilha' | 'tempo'
 
 
 
@@ -147,6 +152,12 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
             <span className="font-medium text-tinta">Sem pedido de regulação em aberto</span>
             <Button size="sm" onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Abrir pedido de regulação</Button>
           </div>
+          {linha.internacao && (
+            <section aria-label="Planilha de exames" className="flex flex-col gap-1.5">
+              <h3 className="text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">Planilha de exames</h3>
+              <PlanilhaDaInternacao internacaoId={linha.internacao.id} />
+            </section>
+          )}
         </div>
       </div>
     )
@@ -269,6 +280,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
         { valor: 'pendencias', rotulo: 'Pendências & resumo', contagem: abertas.length },
         { valor: 'conversa', rotulo: 'Conversa com a central', contagem: p.conversa.total },
         { valor: 'anexos', rotulo: 'Anexos & exames', contagem: anexos.data?.anexos.length },
+        ...(linha.internacao ? [{ valor: 'planilha' as const, rotulo: 'Planilha de exames' }] : []),
         { valor: 'tempo', rotulo: 'Linha do tempo', contagem: linhaDoTempo.length },
       ]} />
       <div className="flex flex-col gap-3 px-4 py-3">
@@ -313,6 +325,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
           </>
         )}
         {aba === 'anexos' && <AnexosRegulacao solicitacaoId={p.id} />}
+        {aba === 'planilha' && linha.internacao && <PlanilhaDaInternacao internacaoId={linha.internacao.id} />}
         {aba === 'tempo' && (
           linhaDoTempo.length === 0 ? <VazioLinha>Nada registrado ainda.</VazioLinha> : (
             <ol aria-label="Linha do tempo do pedido" className="flex flex-col gap-2 border-l-2 border-fio pl-3">
