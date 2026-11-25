@@ -18,7 +18,9 @@ import * as React from 'react'
 
 import { ROTULO_DOCUMENTO } from '@/components/documento/documentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
 import { EditarIsolamento, FaixaIsolamento } from '@/components/regulacao/IsolamentoRegulacao'
+import { ContextoPlantaoOrigem, useMotivoPlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { LinhaDoTempoPedido } from '@/components/regulacao/LinhaDoTempoPedido'
 import { MatchVagas } from '@/components/regulacao/MatchVagas'
 import { MenuAcoesPedido, type AcaoMenu } from '@/components/regulacao/PainelPedido'
@@ -176,6 +178,11 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
     mutationFn: async (texto: string) => { await conversa!.cobrar(id, texto) },
     onSuccess: () => { setAviso('Cobrança enviada na conversa.'); setAba('conversa'); recarregar() },
   })
+  // B-07 (RT, 25/11/2026): no lado da origem, fora do plantão o servidor recusa as ações do médico e do NIR;
+  // o dossiê avisa antes, com a frase do servidor, e desliga os botões. Na central nada muda.
+  const foraDoPlantao = useMotivoPlantaoOrigem(unidadeId, d.data?.paciente.id,
+    lado === 'origem' && !!unidadeId && d.data?.origem.id === unidadeId)
+  const desligado = { disabled: !!foraDoPlantao, title: foraDoPlantao ?? undefined }
 
   if (d.isLoading) return <div className="p-4"><EsqueletoLinhas linhas={6} rotulo="Carregando o pedido…" /></div>
   if (d.error || !d.data) return <div className="p-4"><MensagemErro texto={d.error ? (d.error as Error).message : 'Não encontrado.'} /></div>
@@ -205,11 +212,11 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
   const menu: AcaoMenu[] = [
     ...(decide ? [{ chave: 'pendencia', rotulo: 'Pergunta à origem (pendência)', onSelecionar: () => abrirDecisao('pendencia') }] : []),
     ...(souRegulador && aberto ? [{ chave: 'prioridade', rotulo: 'Reclassificar prioridade', onSelecionar: () => setPainel('prioridade') }] : []),
-    ...(mudaIsolamento ? [{ chave: 'isolamento', rotulo: s.isolamento ? 'Alterar isolamento' : 'Definir isolamento', onSelecionar: () => setPainel('isolamento') }] : []),
+    ...(mudaIsolamento ? [{ chave: 'isolamento', rotulo: s.isolamento ? 'Alterar isolamento' : 'Definir isolamento', desligado: foraDoPlantao, onSelecionar: () => setPainel('isolamento') }] : []),
     ...(fila?.assumida_por_mim ? [{ chave: 'soltar', rotulo: 'Devolver à fila (deixar de assumir)', onSelecionar: () => assumir.mutate('regulacao_soltar') }] : []),
     ...(decide ? [{ chave: 'devolver', rotulo: 'Devolver à origem', perigo: true, onSelecionar: () => abrirDecisao('devolver') },
       { chave: 'negar', rotulo: 'Negar', perigo: true, onSelecionar: () => abrirDecisao('negar') }] : []),
-    ...(cancelavel ? [{ chave: 'cancelar', rotulo: 'Cancelar solicitação', perigo: true, onSelecionar: () => abrirDecisao('cancelar') }] : []),
+    ...(cancelavel ? [{ chave: 'cancelar', rotulo: 'Cancelar solicitação', perigo: true, desligado: foraDoPlantao, onSelecionar: () => abrirDecisao('cancelar') }] : []),
   ]
   const abas: [AbaDossie, string, number | undefined][] = [
     ...(conversa ? [['conversa', 'Conversa', nConversa] as [AbaDossie, string, number | undefined]] : []),
@@ -217,6 +224,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
   ]
 
   return (
+    <ContextoPlantaoOrigem.Provider value={foraDoPlantao}>
     <article aria-label={`Pedido nº ${s.numero}`} className="flex flex-col text-apoio">
       <header className="sticky top-0 z-10 flex flex-col gap-2 border-b border-fio bg-superficie px-4 py-3">
         {aoVoltar && (
@@ -236,7 +244,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
               <Button size="xs" variant={nivel === 'em_dia' ? 'outline' : 'default'} disabled={cobrar.isPending}
                 onClick={() => cobrar.mutate(mensagemCobrarEvolucao(s, Date.now()))}>Cobrar evolução</Button>
             )}
-            {s.pode_evoluir && <Button size="xs" variant="outline" onClick={() => setPainel('evolucao')}>Atualizar evolução</Button>}
+            {s.pode_evoluir && <Button size="xs" variant="outline" {...desligado} onClick={() => setPainel('evolucao')}>Atualizar evolução</Button>}
             {leitoOuTransf && (
               <Button size="xs" variant="outline" aria-expanded={verDocumento} onClick={() => setVerDocumento((v) => !v)}><FileText /> Documento de transferência</Button>
             )}
@@ -258,6 +266,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
       <div className="flex flex-col gap-3 p-4">
         <MensagemErro texto={(assumir.error ?? cobrar.error) ? ((assumir.error ?? cobrar.error) as Error).message : null} />
         {aviso && <p role="status" className="text-sucesso">{aviso}</p>}
+        <AvisoPlantao texto={foraDoPlantao} />
         {nivel !== 'em_dia' && s.sla?.evolucao && (
           <div className={cn('flex flex-wrap items-center gap-2 rounded-controle border px-3 py-2',
             nivel === 'risco' ? 'border-critico/40 bg-alerta-critico' : 'border-atencao/40 bg-alerta-atencao')}>
@@ -270,13 +279,13 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
               {central && conversa && aberto && (
                 <Button size="xs" variant="outline" disabled={cobrar.isPending} onClick={() => cobrar.mutate(mensagemCobrarEvolucao(s, Date.now()))}>Cobrar na conversa</Button>
               )}
-              {s.pode_evoluir && <Button size="xs" onClick={() => setPainel('evolucao')}>Atualizar evolução</Button>}
+              {s.pode_evoluir && <Button size="xs" {...desligado} onClick={() => setPainel('evolucao')}>Atualizar evolução</Button>}
             </span>
           </div>
         )}
         {s.isolamento && s.isolamento_tipo && (
           <FaixaIsolamento tipo={s.isolamento_tipo} situacao={situacao} agente={agente}
-            acao={mudaIsolamento ? <Button size="xs" variant="outline" onClick={() => setPainel('isolamento')}>Alterar isolamento</Button> : undefined} />
+            acao={mudaIsolamento ? <Button size="xs" variant="outline" {...desligado} onClick={() => setPainel('isolamento')}>Alterar isolamento</Button> : undefined} />
         )}
         {painel === 'isolamento' && (
           <EditarIsolamento solicitacaoId={s.id} aoCancelar={() => setPainel(null)} aoFim={() => { setPainel(null); recarregar() }}
@@ -335,6 +344,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
           : <LinhaDoTempoPedido itens={linha} tempos={s.tempos ?? []} statusAtual={s.status} />}
       </div>
     </article>
+    </ContextoPlantaoOrigem.Provider>
   )
 }
 

@@ -10904,6 +10904,8 @@ export type Database = {
       regulacao_leitos_destino: { Args: { p_id: string }; Returns: Json }
       regulacao_marcar_chegada: { Args: { p_chegou: boolean; p_id: string; p_observacao?: string | null }; Returns: Json }
       regulacao_marcar_saida: { Args: { p_id: string }; Returns: Json }
+      // fora do plantão a origem não age no pedido; nulo = pode agir (B-07, migration 20270426000020)
+      regulacao_por_que_nao_ajo: { Args: { p_paciente?: string; p_unidade: string }; Returns: string | null }
       regulacao_registrar_resposta_externa: { Args: { p_aceita: boolean; p_id: string; p_meio: string; p_motivo?: string | null; p_quem: string; p_texto?: string | null }; Returns: Json }
       rede_baixar_arquivo: { Args: { p_fechamento: string; p_tipo: string; p_unidade: string }; Returns: Json }
       rede_contexto: { Args: { p_unidade: string }; Returns: Json }

@@ -37,6 +37,8 @@ import { useSearchParams } from 'react-router-dom'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { ContextoPlantaoOrigem, useMotivoPlantaoOrigem, usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { ROTULO_DOCUMENTO } from '@/components/documento/documentos'
 import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
@@ -175,6 +177,10 @@ export default function Regulacao() {
   const c = ctx.data
   const comIndicadores = !!c && (c.sou_central || (!!c.central && souGestorDaUnidade))
   const origem = !!c && !c.sou_central && !!c.central && c.pode_solicitar
+  // B-07 (RT, 25/11/2026): fora do plantão o servidor recusa o pedido novo do médico e do NIR da origem;
+  // a página avisa antes, com a frase do servidor, e desliga "Nova solicitação". Na central nada muda.
+  const foraDoPlantao = useMotivoPlantaoOrigem(unidadeId, null, origem)
+  const novaDesligada = { disabled: !!foraDoPlantao, title: foraDoPlantao ?? undefined }
   const contas = useContasQuadro(unidadeId, !!c && (c.sou_central || origem), origem)
   // RG7/RG8 (modelo do RT, 25/11/2026): contagens da central e "Atualizado hh:mm"
   const central = useContasCentral(unidadeId, !!c?.sou_central)
@@ -214,7 +220,7 @@ export default function Regulacao() {
         descricao={c?.sou_central
           ? 'Solicitações recebidas pela Central de Regulação da rede.'
           : 'Pedidos de consulta, exame, leito ou transferência para a Central de Regulação da rede.'}
-        acoes={origem && !novaAberta && !inicial ? <Button onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button> : undefined} />}
+        acoes={origem && !novaAberta && !inicial ? <Button {...novaDesligada} onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button> : undefined} />}
       {c?.sou_super_admin && <Centrais />}
       {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <MensagemErro texto={(ctx.error as Error).message} /> : !c ? null
         : !c.sou_central && !c.central ? (
@@ -224,6 +230,8 @@ export default function Regulacao() {
           <Vazio icone={Waypoints} titulo="Sem acesso à regulação nesta unidade" texto="Solicitam o médico e o gestor da unidade; quem regula é a central da rede." />
         ) : (
           <>
+            {/* com o formulário aberto, o aviso é o dele (com o paciente escolhido) */}
+            {origem && !(novaAberta || inicial) && <AvisoPlantao texto={foraDoPlantao} />}
             {origem && (novaAberta || inicial) && (
               <div className="flex flex-col gap-2">
                 <NovaSolicitacao key={inicial?.paciente.id ?? 'nova'} unidadeId={unidadeId} ctx={c} aoEnviar={abrirEnviada} inicial={inicial} />
@@ -234,7 +242,7 @@ export default function Regulacao() {
               <AbasConsole abas={abasConsole} valor={abaVale} onChange={trocarAba}
                 direita={<>
                   <AtualizadoEm em={c.sou_central ? central.atualizadoEm : contas.atualizadoEm} />
-                  {origem && !novaAberta && !inicial && <Button size="sm" onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button>}
+                  {origem && !novaAberta && !inicial && <Button size="sm" {...novaDesligada} onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button>}
                 </>} />
             ) : <Abas abas={abas} valor={abaVale} onChange={trocarAba} rotulo="Regulação" className="mb-0" />}
             {abaVale === 'indicadores' ? (
@@ -855,6 +863,8 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
       return data as unknown as Solicitacao
     },
   })
+  // B-07: só para a origem do pedido; a central e o destino não passam por isso
+  const foraDoPlantao = useMotivoPlantaoOrigem(unidadeId, d.data?.paciente.id, !central && d.data?.origem.id === unidadeId)
   const [cancelando, setCancelando] = React.useState(false)
   const [evoluindo, setEvoluindo] = React.useState(false)
   const [sistema, setSistema] = React.useState('')
@@ -902,6 +912,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
   const podeEvoluir = !central && !!s.pode_evoluir
   const linhaDoTempo = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes: s.evolucoes ?? [], rotulosDocumento: ROTULO_DOCUMENTO })
   return (
+    <ContextoPlantaoOrigem.Provider value={foraDoPlantao}>
     <article aria-label={`Pedido nº ${s.numero}`} className="flex flex-col text-apoio [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
       <header className="sticky top-0 z-10 flex flex-col gap-2 border-b border-fio bg-superficie px-4 py-3">
         <div className="flex items-start gap-2">
@@ -915,7 +926,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
               {s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}{docMae(s.paciente.mae)}{central ? ` · de ${s.origem.nome}` : ''}
             </span>
           </div>
-          <MenuAcoesPedido itens={cancelavel ? [{ chave: 'cancelar', rotulo: 'Cancelar solicitação', perigo: true, onSelecionar: () => setCancelando(true) }] : []} />
+          <MenuAcoesPedido itens={cancelavel ? [{ chave: 'cancelar', rotulo: 'Cancelar solicitação', perigo: true, desligado: foraDoPlantao, onSelecionar: () => setCancelando(true) }] : []} />
           {aoFechar && (
             <Button size="icon-sm" variant="ghost" aria-label="Fechar o pedido" onClick={aoFechar}><X /></Button>
           )}
@@ -923,12 +934,13 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
         {(podeEvoluir || s.sla) && (
           <div className="flex flex-wrap items-center gap-2">
             <SeloSla sla={s.sla} />
-            {podeEvoluir && !evoluindo && <Button size="xs" className="ml-auto" onClick={() => setEvoluindo(true)}>Atualizar evolução</Button>}
+            {podeEvoluir && !evoluindo && <Button size="xs" className="ml-auto" disabled={!!foraDoPlantao} title={foraDoPlantao ?? undefined} onClick={() => setEvoluindo(true)}>Atualizar evolução</Button>}
           </div>
         )}
       </header>
 
       <div className="flex flex-col gap-4 p-4">
+        <AvisoPlantao texto={foraDoPlantao} />
         {evoluindo && <FormEvolucao id={s.id} aoFim={recarregar} aoVoltar={() => setEvoluindo(false)} />}
         {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
         <BlocosDecisao s={s} />
@@ -1005,6 +1017,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
         rotulo="Motivo do cancelamento" confirmar="Cancelar solicitação" ocupado={cancelar.isPending} erro={cancelar.error}
         aoConfirmar={(m) => cancelar.mutate(m)} />
     </article>
+    </ContextoPlantaoOrigem.Provider>
   )
 }
 
@@ -1234,13 +1247,16 @@ function ResponderPendencia({ s, aoFim }: { s: Solicitacao; aoFim: () => void })
     },
     onSuccess: () => { setResposta(''); aoFim() },
   })
+  // B-07: fora do plantão a origem não responde; a recusa do servidor vira aviso
+  const plantao = usePlantaoOrigem(enviar.error)
   return (
     <div className="flex flex-wrap items-end gap-2">
       <Campo id={`resp-${s.id}`} rotulo="Resposta à central" className="min-w-60 flex-1">
         <textarea id={`resp-${s.id}`} rows={2} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={resposta} onChange={(e) => setResposta(e.target.value)} />
       </Campo>
-      <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || resposta.trim().length < 5}>Responder</Button>
-      <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
+      <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || resposta.trim().length < 5 || !!plantao.motivo} title={plantao.motivo ?? undefined}>Responder</Button>
+      <AvisoPlantao texto={plantao.recusa} className="w-full" />
+      <MensagemErro texto={enviar.error && !plantao.recusa ? (enviar.error as Error).message : null} />
     </div>
   )
 }
@@ -1261,6 +1277,8 @@ function Reenviar({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
     },
     onSuccess: aoFim,
   })
+  // B-07: fora do plantão a origem não reenvia; a recusa do servidor vira aviso
+  const plantao = usePlantaoOrigem(enviar.error)
   return (
     <div className="flex flex-col gap-2 rounded-controle border border-atencao/30 p-3">
       <span className="font-medium text-tinta">Corrigir e reenviar</span>
@@ -1277,10 +1295,11 @@ function Reenviar({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
         <Campo id={`re-hip-${s.id}`} rotulo="Hipótese"><Input id={`re-hip-${s.id}`} className="h-8" value={d.hipotese} onChange={(e) => set('hipotese', e.target.value)} /></Campo>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || !cid || d.quadro_clinico.trim().length < 20}>
+        <Button size="sm" onClick={() => enviar.mutate()} disabled={enviar.isPending || !cid || d.quadro_clinico.trim().length < 20 || !!plantao.motivo} title={plantao.motivo ?? undefined}>
           <Send className="size-4" /> Reenviar à central
         </Button>
-        <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
+        <AvisoPlantao texto={plantao.recusa} className="w-full" />
+        <MensagemErro texto={enviar.error && !plantao.recusa ? (enviar.error as Error).message : null} />
       </div>
     </div>
   )

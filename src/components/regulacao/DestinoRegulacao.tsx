@@ -16,6 +16,8 @@ import * as React from 'react'
 import { Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -241,12 +243,15 @@ export function SaidaOrigem({ s, aoFim, nir = false }: { s: PedidoDestino; aoFim
     },
     onSuccess: aoFim,
   })
+  // B-07 (RT, 25/11/2026): fora do plantão a origem não marca a saída; a recusa do servidor vira aviso
+  const plantao = usePlantaoOrigem(sair.error)
   if (!(s.origem_pode_responder || nir) || !(s.status === 'autorizada' || s.status === 'agendada')) return null
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button size="sm" onClick={() => sair.mutate()} disabled={sair.isPending}>Paciente saiu</Button>
+      <Button size="sm" onClick={() => sair.mutate()} disabled={sair.isPending || !!plantao.motivo} title={plantao.motivo ?? undefined}>Paciente saiu</Button>
       <span className="text-rotulo text-tinta-sussurro">Avisa o destino que o paciente está a caminho.</span>
-      {sair.error && <span role="alert" className="text-rotulo text-critico">{(sair.error as Error).message}</span>}
+      {sair.error && !plantao.recusa && <span role="alert" className="text-rotulo text-critico">{(sair.error as Error).message}</span>}
+      <AvisoPlantao texto={plantao.recusa} className="w-full" />
     </div>
   )
 }
