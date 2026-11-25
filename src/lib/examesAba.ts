@@ -90,6 +90,71 @@ export function textoJaPedido(r: { vezes: number } | null, data: string): string
   return r.vezes > 1 ? `${r.vezes}× · ${data}` : data
 }
 
+// ── pedidos já feitos, agrupados (EX1 da revisão unslop, 25/11/2026) ────────
+
+/** Itens gravados em até 2 min um do outro, com a mesma prioridade, são o mesmo pedido (a cesta vira um pedido por setor, em chamadas seguidas). */
+const JANELA_PEDIDO_MS = 2 * 60_000
+
+export type GrupoDePedido<T> = { chave: string; pedido_em: string; urgencia: string; observacao: string | null; itens: T[] }
+
+/**
+ * Os exames já pedidos, agrupados pelo pedido que os criou: o banco não guarda
+ * o número do pedido, então junta os itens da mesma prioridade gravados em até
+ * 2 minutos um do outro. Grupos do mais recente ao mais antigo; dentro do
+ * grupo, por setor (LAB, IMG, ECG) e nome. A observação do grupo é a comum a
+ * todos os itens (a cesta manda uma só); se diferem, fica no item.
+ */
+export function agruparPedidos<T extends { id: string; exame: string; pedido_em: string; urgencia: string; grupo: GrupoExame | null; observacao: string | null }>(
+  pedidos: readonly T[],
+): GrupoDePedido<T>[] {
+  const ordem = [...pedidos].sort((a, b) => Date.parse(b.pedido_em) - Date.parse(a.pedido_em))
+  const grupos: { itens: T[]; ultimo: number }[] = []
+  for (const p of ordem) {
+    const t = Date.parse(p.pedido_em)
+    const g = grupos.find((x) => x.itens[0].urgencia === p.urgencia && x.ultimo - t <= JANELA_PEDIDO_MS && x.ultimo - t >= 0)
+    if (g) { g.itens.push(p); g.ultimo = t } else grupos.push({ itens: [p], ultimo: t })
+  }
+  const setor = (x: T) => ORDEM_SETOR.indexOf(x.grupo ?? 'laboratorio')
+  return grupos.map(({ itens }) => {
+    const obs = new Set(itens.map((x) => (x.observacao ?? '').trim()))
+    const inicio = itens[itens.length - 1]
+    return {
+      chave: inicio.id,
+      pedido_em: inicio.pedido_em,
+      urgencia: inicio.urgencia,
+      observacao: obs.size === 1 ? [...obs][0] || null : null,
+      itens: [...itens].sort((a, b) => setor(a) - setor(b) || a.exame.localeCompare(b.exame, 'pt-BR')),
+    }
+  })
+}
+
+/** "9 aguardando resultado, de 2 pedidos": o que o botão de imprimir vai pôr na folha. */
+export function resumoParaImprimir(n: number, pedidos: number, o_que: string): string {
+  return `${n} ${o_que}, de ${pedidos} ${pedidos === 1 ? 'pedido' : 'pedidos'}`
+}
+
+/** Nomes repetidos somados, na ordem em que aparecem: ["Hemograma", "Hemograma", "PCR"] → Hemograma ×2, PCR. */
+export function somarRepetidos(nomes: readonly string[]): { nome: string; vezes: number }[] {
+  const saida: { nome: string; vezes: number }[] = []
+  for (const n of nomes) {
+    const igual = saida.find((x) => x.nome.trim().toLowerCase() === n.trim().toLowerCase())
+    if (igual) igual.vezes++
+    else saida.push({ nome: n.trim(), vezes: 1 })
+  }
+  return saida
+}
+
+const SETOR_UNICO: Record<GrupoExame, string> = {
+  laboratorio: 'todos do laboratório', imagem: 'todos de imagem', grafico: 'todos de ECG', citopatologia: 'todos do citopatológico',
+}
+
+/** Por que a folha por setor não se aplica: só um setor no pedido (null quando há mais de um). */
+export function motivoFolhaUnica(setores: readonly GrupoExame[]): string | null {
+  const s = [...new Set(setores)]
+  if (s.length > 1) return null
+  return s.length === 1 ? `Um setor só: ${SETOR_UNICO[s[0]]}.` : 'Nenhum exame no pedido.'
+}
+
 // ── folha A4 ────────────────────────────────────────────────────────────────
 
 export type ExameParaFolha = { exame: string; grupo: GrupoExame | null; obs?: string | null; urgencia?: Urgencia | string | null; indicacao?: string | null; cid?: string | null }

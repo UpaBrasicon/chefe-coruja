@@ -2,8 +2,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
-  analitosConhecidos, cidDoCampo, conteudoDaFolha, envioPorSetor, instanteDoCampo, itensDoLancamento, montarPlanilha, pedidosDaCesta, porNaCesta,
-  resumoJaPedido, setorSugerido, textoJaPedido, type ResultadoLido,
+  agruparPedidos, analitosConhecidos, cidDoCampo, conteudoDaFolha, envioPorSetor, instanteDoCampo, itensDoLancamento, montarPlanilha, motivoFolhaUnica,
+  pedidosDaCesta, porNaCesta, resumoJaPedido, resumoParaImprimir, setorSugerido, somarRepetidos, textoJaPedido, type ResultadoLido,
 } from './examesAba.ts'
 import { montarFolha } from './folhas.ts'
 
@@ -148,4 +148,33 @@ test('hora da coleta do campo, no fuso de Brasília', () => {
 test('um arquivo para vários exames: um envio por setor', () => {
   const e = [{ id: 'a', grupo: 'laboratorio' as const }, { id: 'b', grupo: 'imagem' as const }, { id: 'c', grupo: 'laboratorio' as const }]
   assert.deepEqual(envioPorSetor(e), [{ grupo: 'laboratorio', ids: ['a', 'c'] }, { grupo: 'imagem', ids: ['b'] }])
+})
+
+// EX1 (revisão unslop, 25/11/2026): a lista dos já pedidos agrupada pelo pedido
+test('pedidos já feitos: agrupados pelo pedido (mesma prioridade, até 2 min)', () => {
+  type G = 'laboratorio' | 'imagem' | 'grafico' | null
+  const p = (id: string, exame: string, quando: string, extra: { urgencia?: string; grupo?: G; observacao?: string | null } = {}) =>
+    ({ id, exame, pedido_em: quando, urgencia: 'rotina', grupo: 'laboratorio' as G, observacao: 'jejum' as string | null, ...extra })
+  const g = agruparPedidos([
+    p('1', 'PCR', '2026-10-27T22:00:10Z'),
+    p('2', 'Radiografia de tórax', '2026-10-27T22:00:40Z', { grupo: 'imagem' }),
+    p('3', 'Hemograma', '2026-10-27T22:00:10Z'),
+    p('4', 'Lactato', '2026-10-27T22:01:00Z', { urgencia: 'urgente', observacao: null }),
+    p('5', 'Hemograma', '2026-10-26T08:00:00Z', { observacao: 'outra' }),
+    p('6', 'Sódio', '2026-10-26T08:00:00Z', { observacao: null }),
+  ])
+  assert.deepEqual(g.map((x) => x.itens.map((i) => i.id)), [['4'], ['3', '1', '2'], ['5', '6']])
+  assert.equal(g[1].pedido_em, '2026-10-27T22:00:10Z')
+  assert.equal(g[1].observacao, 'jejum')
+  assert.equal(g[2].observacao, null) // diferem: fica no item
+  assert.deepEqual(agruparPedidos([]), [])
+})
+
+test('impressão: resumo, repetidos somados e motivo da folha única', () => {
+  assert.equal(resumoParaImprimir(9, 2, 'aguardando resultado'), '9 aguardando resultado, de 2 pedidos')
+  assert.equal(resumoParaImprimir(1, 1, 'selecionado'), '1 selecionado, de 1 pedido')
+  assert.deepEqual(somarRepetidos(['Hemograma completo', 'PCR', 'hemograma completo ']), [{ nome: 'Hemograma completo', vezes: 2 }, { nome: 'PCR', vezes: 1 }])
+  assert.equal(motivoFolhaUnica(['laboratorio', 'laboratorio']), 'Um setor só: todos do laboratório.')
+  assert.equal(motivoFolhaUnica(['grafico']), 'Um setor só: todos de ECG.')
+  assert.equal(motivoFolhaUnica(['laboratorio', 'imagem']), null)
 })
