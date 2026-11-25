@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { useUnidade, type VinculoComUnidade } from '@/contexts/UnidadeContext'
 import { PAPEL_LABEL, ROTA_INICIAL } from '@/lib/constants'
+import { foraDoTipo, inicioDoPapel } from '@/components/casca/navegacao'
 import { PaginaEntrada } from '@/components/entrada/LadoMarca'
 
 export function SeletorUnidade() {
@@ -11,7 +12,15 @@ export function SeletorUnidade() {
 
   function escolher(unidade: VinculoComUnidade) {
     setUnidadeAtivaId(unidade.unidade_id)
-    navigate(ROTA_INICIAL[unidade.papel], { replace: true })
+    // A mesma regra da tela inicial (RedirectHome): numa UBS a tela de porta ou
+    // de leito dá lugar ao primeiro item do menu do papel, e a recepção abre em
+    // "Hoje". Sem isso, escolher uma UBS aqui caía no Pronto-Socorro da
+    // enfermagem ou na Triagem, telas que a UBS não tem (teste de fluxo, 25/11/2026).
+    const tipo = unidade.unidade.tipo ?? null
+    const inicial = ROTA_INICIAL[unidade.papel]
+    const alvo = tipo === 'ubs' && unidade.papel === 'recepcao' ? '/recepcao/hoje'
+      : foraDoTipo(inicial, tipo) ? inicioDoPapel(unidade.papel, tipo) : inicial
+    navigate(alvo, { replace: true })
   }
 
   return (

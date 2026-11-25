@@ -53,6 +53,10 @@ test('a casca e a tela inicial passam o tipo da unidade ao menu', () => {
   assert.match(casca, /itensDeNavegacao\(papelAtivo, ehRt, ehSuperAdmin, tipoUnidade\)/)
   assert.match(casca, /<BarraMedico itens=\{itens\} notas=\{notas\} tipoUnidade=\{tipoUnidade\} \/>/)
   assert.match(readFileSync('src/routes/RedirectHome.tsx', 'utf8'), /foraDoTipo\(inicial, tipo\)/)
+  // "Trocar unidade" segue a mesma regra: escolher uma UBS não cai em tela de porta
+  const seletor = readFileSync('src/pages/SeletorUnidade.tsx', 'utf8')
+  assert.match(seletor, /foraDoTipo\(inicial, tipo\) \? inicioDoPapel\(unidade\.papel, tipo\)/)
+  assert.match(seletor, /tipo === 'ubs' && unidade\.papel === 'recepcao' \? '\/recepcao\/hoje'/)
 })
 
 test('5A, parte 2.4: a escuta inicial só existe na UBS e é o começo do enfermeiro nela', () => {
