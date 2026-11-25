@@ -44,5 +44,6 @@ test('alerta da temperatura: hipotermia abaixo de 35, febre acima de 37,5, sem i
   const sql = readFileSync('supabase/migrations/20270426000016_sinais_vitais_limites_rt.sql', 'utf8')
   for (const m of ['Temperatura impossível: o registro aceita de 25 a 45 °C.', 'Saturação impossível: vai de 0 a 100 %%.', 'Frequência cardíaca impossível: o registro aceita de 0 a 300 bpm.']) assert.ok(sql.includes(m), m)
   // o alerta é só da tela: o servidor não grava marca nem faixa no sinal vital
-  assert.doesNotMatch(sql, /hipotermia|febre/i)
+  const semComentario = sql.split(/\r?\n/).filter((l) => !l.trimStart().startsWith('--')).join(' ')
+  assert.doesNotMatch(semComentario, /hipotermia|febre/i)
 })
