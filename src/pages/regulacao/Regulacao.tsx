@@ -40,6 +40,7 @@ import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { ROTULO_DOCUMENTO } from '@/components/documento/documentos'
 import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
 import { PacientesRegulacao } from '@/components/regulacao/PacientesRegulacao'
 import { Campo, CampoTerminologia, NovaSolicitacao, type InicialSolicitacao, type Paciente, type PedidoEnviado } from '@/components/regulacao/NovaSolicitacao'
@@ -460,7 +461,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
     && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
   const podeEvoluir = !central && !!s.pode_evoluir
   // as mensagens aparecem inteiras na conversa, logo acima: o evento "mensagem" sai da linha do tempo
-  const linhaDoTempo = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes: s.evolucoes ?? [], mensagens: [] })
+  const linhaDoTempo = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes: s.evolucoes ?? [], mensagens: [], rotulosDocumento: ROTULO_DOCUMENTO })
   return (
     <article aria-label={`Pedido nº ${s.numero}`} className="flex flex-col text-apoio [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
       <header className="sticky top-0 z-10 flex flex-col gap-2 border-b border-fio bg-superficie px-4 py-3">
