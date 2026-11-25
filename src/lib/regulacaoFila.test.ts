@@ -6,7 +6,7 @@ import { FORMULARIO_VAZIO, isolamentoParaDefinir, type Sla } from './regulacao.t
 import {
   agrupar, comExtras, compatibilidade, contarAtalhos, demandaIsolamento, distanciaKm, distribuicaoPrioridade, esperaPorLeito,
   filtrarLocal, horasSemEvolucao, idsVisiveis, matchVagas, mensagemCobrarEvolucao, nivelEvolucao, ordenar, porMunicipio,
-  saldoDoTipo, vizinho, ATALHOS_ORIGEM, seloIsolamento, type PedidoFila, type UnidadeVagas,
+  saldoDoTipo, vizinho, ATALHOS_ORIGEM, centralEsperaResposta, seloIsolamento, type PedidoFila, type UnidadeVagas,
 } from './regulacaoFila.ts'
 
 const AGORA = Date.parse('2026-11-25T12:00:00Z')
@@ -149,6 +149,11 @@ test('RO2 e RO3: atalhos da origem e selo do isolamento com a situação', () =>
   const itens = [p({ status: 'pendencia' }), p({ status: 'devolvida', sla: sla(30) }), p({})]
   assert.deepEqual(contarAtalhos(itens, ATALHOS_ORIGEM), { perguntou: 1, evolucao_vencida: 1, devolvido: 1, risco: 0 })
   assert.equal(filtrarLocal(itens, { atalhos: ['perguntou'] }).length, 1)
+  // pedido 414 (conferência com login): em análise, com pergunta e pedido de exame da central na conversa, sem resposta
+  const conversa = p({ status: 'em_analise', conversa: { aguardando: [{ intencao: 'pergunta' }, { intencao: 'pedido' }] } })
+  assert.equal(centralEsperaResposta(conversa), true)
+  assert.equal(centralEsperaResposta(p({ status: 'em_analise', conversa: { aguardando: [] } })), false)
+  assert.equal(contarAtalhos([...itens, conversa], ATALHOS_ORIGEM).perguntou, 2)
   assert.equal(seloIsolamento({ isolamento_tipo: 'goticula', situacao: 'suspeito' }), 'Gotícula · suspeito')
   assert.equal(seloIsolamento({ isolamento_tipo: 'goticula', situacao: null }), 'Gotícula')
 })

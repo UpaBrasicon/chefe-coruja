@@ -20,8 +20,10 @@
 // • RC6: o isolamento aparece uma vez (a faixa); solicitante e médico
 //   assistente, um nome só quando é a mesma pessoa.
 // • RC7: sinais vitais com rótulos legíveis; os valores, crus, como vieram.
-// • RO2: na origem, a pergunta da central ainda sem resposta fica no topo,
-//   com "Responder", que leva ao campo da resposta.
+// • RO2: na origem, o que a central espera fica no topo, com "Responder": a
+//   pergunta formal (leva ao campo da resposta) e as mensagens da central na
+//   conversa depois da última da origem (abre a conversa no campo); a mesma
+//   regra do NIR e do atalho "A central perguntou" (migration 20270426000045).
 // • RO3: a situação e o agente do isolamento vêm do pedido
 //   (regulacao_detalhe, migration 20270426000044), iguais na central e na origem.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -59,6 +61,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
 import { rotularSinaisVitais } from '@/lib/vitaisLegiveis'
+import { rotuloAguardando, type Aguardando } from '@/lib/regulacaoPaciente'
 
 /** Campos do regulacao_detalhe que o dossiê lê. */
 export type PedidoDossie = {
@@ -84,6 +87,8 @@ export type PedidoDossie = {
   /** quem pede pode responder, cancelar e mudar o isolamento */
   origem_pode_responder?: boolean
   pendencia_pergunta?: string | null; pendencia_em?: string | null; pendencia_por?: string | null; pendencia_resposta?: string | null
+  /** estado da conversa (migration 20270426000045): mensagens da central depois da última da origem */
+  conversa?: { aguardando?: Aguardando[] | null } | null
 }
 
 /** A evolução mais recente pela data (o banco manda da mais nova para a mais antiga; não depende da ordem). */
@@ -231,11 +236,26 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
     && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
   // isolamento: o regulador da central ou quem pede (a RPC confere)
   const mudaIsolamento = aberto && ((central && souRegulador) || origemResponde)
-  // RO2: a pergunta da central sem resposta, no topo do dossiê da origem
+  // RO2: o que a central espera da origem, no topo do dossiê da origem. A mesma
+  // regra do NIR e da lista do médico (centralEsperaResposta): a pergunta formal
+  // (pendência) e as mensagens da central na conversa depois da última da origem
+  // (pergunta, pedido de dado ou exame).
   const perguntaAberta = !central && s.status === 'pendencia' && !!s.pendencia_pergunta && !s.pendencia_resposta
+  const aguardando = !central ? s.conversa?.aguardando ?? [] : []
   const responder = () => {
     decisaoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     requestAnimationFrame(() => (document.getElementById(`resp-${s.id}`) as HTMLTextAreaElement | null)?.focus({ preventScroll: true }))
+  }
+  // a resposta à mensagem da conversa é na própria conversa: abre a aba e põe o foco no campo (ele chega depois da leitura)
+  const responderNaConversa = () => {
+    setAba('conversa')
+    let tentativas = 0
+    const focar = () => {
+      const campo = document.getElementById(`conversa-${s.id}`) as HTMLTextAreaElement | null
+      if (campo) { campo.scrollIntoView({ behavior: 'smooth', block: 'center' }); campo.focus({ preventScroll: true }); return }
+      if (++tentativas < 20) setTimeout(focar, 100)
+    }
+    setTimeout(focar, 0)
   }
   const solicitante = textoSolicitante(s.solicitante, s.medico_assistente)
   // RC3: os botões da decisão no pé; o "…" fica com o resto
@@ -307,6 +327,19 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
               <span className="text-tinta-apoio"> ({s.pendencia_por ?? '—'}{s.pendencia_em ? `, ${fmtDataHora(s.pendencia_em)}` : ''})</span>: {s.pendencia_pergunta}
             </p>
             {origemResponde && <Button size="xs" {...desligado} onClick={responder}>Responder</Button>}
+          </section>
+        )}
+        {aguardando.length > 0 && (
+          <section aria-label="A central espera resposta na conversa" className="flex flex-wrap items-start gap-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2">
+            <ul className="flex min-w-0 flex-1 flex-col gap-1 text-tinta">
+              {aguardando.map((a, i) => (
+                <li key={i}>
+                  <b>{rotuloAguardando(a)}</b>
+                  <span className="text-tinta-apoio"> ({a.autor ?? '—'}, {fmtDataHora(a.em)})</span>: {a.texto}
+                </li>
+              ))}
+            </ul>
+            {souOrigem && conversa && <Button size="xs" {...desligado} onClick={responderNaConversa}>Responder</Button>}
           </section>
         )}
         {nivel !== 'em_dia' && s.sla?.evolucao && (

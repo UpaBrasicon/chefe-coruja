@@ -23,6 +23,18 @@ export type PedidoFila = {
   cid?: string | null; cid_descricao?: string | null; externo_protocolo?: string | null
   /** de regulacao_fila_extras */
   municipio?: string | null; agente?: string | null; situacao?: string | null
+  /** estado da conversa (regulacao_json, migration 20270426000045): o que a central espera da origem */
+  conversa?: { aguardando?: { intencao: string }[] | null } | null
+}
+
+/**
+ * A central espera resposta da origem: a pergunta formal (pendência) ou
+ * mensagem da central na conversa depois da última da origem (pergunta,
+ * pedido de dado ou exame). É a mesma regra do NIR e da lista do médico
+ * (esperaAOrigem em regulacaoPaciente.ts, sem o devolvido, que tem atalho próprio).
+ */
+export function centralEsperaResposta(s: Pick<PedidoFila, 'status' | 'conversa'>): boolean {
+  return s.status === 'pendencia' || (s.conversa?.aguardando?.length ?? 0) > 0
 }
 
 export type Extra = {
@@ -106,8 +118,7 @@ export function casaAtalho(s: PedidoFila, a: Atalho): boolean {
     case 'risco': return nivelEvolucao(s.sla) === 'risco'
     case 'judicial': return ehJudicial(s)
     case 'vulnerabilidade': return temVulnerabilidade(s)
-    // a pergunta da central sem resposta deixa o pedido em pendência
-    case 'perguntou': return s.status === 'pendencia'
+    case 'perguntou': return centralEsperaResposta(s)
     case 'devolvido': return s.status === 'devolvida'
   }
 }
