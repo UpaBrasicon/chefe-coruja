@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MEDIDAS_EXTRAS, obrigatorio, VITAIS, type MedidaExtra, type Publico } from '@/domain/vitais'
+import { alertaTemperatura, MEDIDAS_EXTRAS, obrigatorio, VITAIS, type MedidaExtra, type Publico } from '@/domain/vitais'
 
 export function CamposVitais({
   publico,
@@ -57,6 +57,12 @@ export function CamposVitais({
               className={leitura ? 'bg-trilha' : undefined}
               onChange={(e) => onChange(v.k, e.target.value)}
             />
+            {/* RT, 25/11/2026: alerta só em texto; não impede o registro nem mexe na cor da classificação */}
+            {v.k === 'temperatura' && alertaTemperatura(valores[v.k]) && (
+              <span role="status" className="text-rotulo text-atencao">
+                {alertaTemperatura(valores[v.k]) === 'hipotermia' ? 'Hipotermia (abaixo de 35 °C)' : 'Febre (acima de 37,5 °C)'}
+              </span>
+            )}
           </div>
         )
       })}
