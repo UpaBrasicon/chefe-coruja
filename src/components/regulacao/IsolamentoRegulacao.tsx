@@ -7,6 +7,8 @@
 // • RG5: a faixa do dossiê mostra o tipo, a situação, o agente e as precauções
 //   (quarto, paramentação, transporte) com a fonte de cada item
 //   (src/clinico/isolamento/precaucoes.ts).
+// • B-04 (decisão do RT de 25/11/2026: os isolamentos se somam): com mais de um
+//   tipo no pedido, a faixa mostra todos e o bloco de precauções de cada um.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation } from '@tanstack/react-query'
 import { ShieldAlert } from 'lucide-react'
@@ -17,7 +19,8 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
-import { FONTES_PRECAUCAO, fontesDaPrecaucao, precaucaoDoTipo, type ItemPrecaucao } from '@/clinico/isolamento/precaucoes'
+import { FONTES_PRECAUCAO, fontesDaPrecaucao, precaucaoDoTipo, type ItemPrecaucao, type Precaucao } from '@/clinico/isolamento/precaucoes'
+import { textoIsolamento } from '@/lib/isolamentoPedido'
 import { AGENTE_ISOLAMENTO_MAX, ISOLAMENTOS, SITUACOES_ISOLAMENTO, type SituacaoIsolamento } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 
@@ -98,37 +101,46 @@ function ItensPrecaucao({ titulo, itens }: { titulo: string; itens: ItemPrecauca
   )
 }
 
-/** Faixa do dossiê: tipo, situação, agente e as precauções da fonte. */
-export function FaixaIsolamento({ tipo, situacao, agente, acao }: {
-  tipo: string; situacao?: string | null; agente?: string | null; acao?: React.ReactNode
+/**
+ * Faixa do dossiê: tipo, situação, agente e as precauções da fonte. Com
+ * `tipos` (tiposDoIsolamento), mostra todos e as precauções de cada um.
+ */
+export function FaixaIsolamento({ tipo, tipos, situacao, agente, acao }: {
+  tipo: string; tipos?: string[]; situacao?: string | null; agente?: string | null; acao?: React.ReactNode
 }) {
-  const p = precaucaoDoTipo(tipo)
+  const todos = tipos && tipos.length > 0 ? tipos : [tipo]
+  const ps = todos.map(precaucaoDoTipo).filter((p): p is Precaucao => !!p)
   return (
     <section aria-label="Isolamento" className="flex flex-col gap-2 rounded-controle border border-atencao/40 bg-alerta-atencao px-3 py-2">
       <div className="flex flex-wrap items-center gap-2">
         <ShieldAlert className="size-4 text-atencao" aria-hidden />
-        <span className="font-medium text-tinta">Isolamento: {ISOLAMENTOS[tipo] ?? tipo}</span>
+        <span className="font-medium text-tinta">Isolamento: {textoIsolamento({ isolamento_tipo: tipo, isolamento_tipos: todos }) ?? ISOLAMENTOS[tipo] ?? tipo}</span>
         <span className="text-tinta-apoio">· {situacao ? SITUACOES_ISOLAMENTO[situacao as SituacaoIsolamento] ?? situacao : 'situação não informada'}</span>
         {agente && <span className="text-tinta">· {agente}</span>}
         {acao && <span className="ml-auto">{acao}</span>}
       </div>
-      {p && (
+      {ps.length > 0 && (
         <details className="group">
           <summary className="cursor-pointer text-rotulo text-acao">Precauções: quarto, paramentação e transporte</summary>
-          <dl className="mt-2 flex flex-col gap-2">
-            <ItensPrecaucao titulo="Quarto / leito" itens={p.quarto} />
-            <ItensPrecaucao titulo="Paramentação" itens={p.paramentacao} />
-            <ItensPrecaucao titulo="Transporte" itens={p.transporte} />
-          </dl>
-          <p className="mt-2 text-rotulo text-tinta-sussurro">
-            Fonte:{' '}
-            {fontesDaPrecaucao(p).map((f, i) => (
-              <React.Fragment key={f.id}>
-                {i > 0 && '; '}
-                <a href={f.link} target="_blank" rel="noreferrer" className="underline">{f.titulo}{f.ano ? ` (${f.ano})` : ''}</a>
-              </React.Fragment>
-            ))}.
-          </p>
+          {ps.map((p) => (
+            <div key={p.tipo} className="mt-2 flex flex-col">
+              {ps.length > 1 && <span className="font-medium text-tinta">{p.rotulo}</span>}
+              <dl className={ps.length > 1 ? 'mt-1 flex flex-col gap-2' : 'flex flex-col gap-2'}>
+                <ItensPrecaucao titulo="Quarto / leito" itens={p.quarto} />
+                <ItensPrecaucao titulo="Paramentação" itens={p.paramentacao} />
+                <ItensPrecaucao titulo="Transporte" itens={p.transporte} />
+              </dl>
+              <p className="mt-2 text-rotulo text-tinta-sussurro">
+                Fonte:{' '}
+                {fontesDaPrecaucao(p).map((f, i) => (
+                  <React.Fragment key={f.id}>
+                    {i > 0 && '; '}
+                    <a href={f.link} target="_blank" rel="noreferrer" className="underline">{f.titulo}{f.ano ? ` (${f.ano})` : ''}</a>
+                  </React.Fragment>
+                ))}.
+              </p>
+            </div>
+          ))}
         </details>
       )}
     </section>

@@ -13,6 +13,8 @@ export type PedidoFila = {
   id: string; numero: number; status: StatusRegulacao
   prioridade: Prioridade; prioridade_regulador?: Prioridade | null
   tipo_leito: string | null; isolamento: boolean; isolamento_tipo: string | null
+  /** B-04 (RT, 25/11/2026): todos os tipos do pedido (regulacao_json); vazio ou ausente = só o principal */
+  isolamento_tipos?: string[] | null
   vulnerabilidades?: Vulnerabilidade[] | null
   espera_segundos: number; sla: Sla | null
   origem: { id: string; nome: string }

@@ -13,13 +13,14 @@ import { Button } from '@/components/ui/button'
 import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { textoIsolamento } from '@/lib/isolamentoPedido'
 import { ISOLAMENTOS, TIPOS_LEITO } from '@/lib/regulacao'
 import { matchVagas } from '@/lib/regulacaoFila'
 import { useVagasCentral } from './useRegulacaoCentral'
 
 export function MatchVagas({ centralId, pedido, podeReservar, aoReservar }: {
   centralId: string
-  pedido: { tipo_leito: string | null; isolamento_tipo: string | null; origem_id: string; origem?: { latitude: number | null; longitude: number | null } | null }
+  pedido: { tipo_leito: string | null; isolamento_tipo: string | null; isolamento_tipos?: string[] | null; origem_id: string; origem?: { latitude: number | null; longitude: number | null } | null }
   podeReservar: boolean
   aoReservar: (unidadeId: string) => void
 }) {
@@ -35,7 +36,7 @@ export function MatchVagas({ centralId, pedido, podeReservar, aoReservar }: {
         <h3 className="font-medium text-tinta">Vagas compatíveis</h3>
         {pedido.tipo_leito && <Badge variant="secondary">{TIPOS_LEITO[pedido.tipo_leito] ?? pedido.tipo_leito}</Badge>}
         <Badge variant={pedido.isolamento_tipo ? 'warning' : 'secondary'}>
-          {pedido.isolamento_tipo ? `Isolamento: ${ISOLAMENTOS[pedido.isolamento_tipo] ?? pedido.isolamento_tipo}` : 'Qualquer vaga livre'}
+          {pedido.isolamento_tipo ? `Isolamento: ${textoIsolamento(pedido) ?? ISOLAMENTOS[pedido.isolamento_tipo] ?? pedido.isolamento_tipo}` : 'Qualquer vaga livre'}
         </Badge>
         {incompativeis > 0 && (
           <Button size="xs" variant="outline" className="ml-auto" onClick={() => setVerIncompativeis((v) => !v)}>
