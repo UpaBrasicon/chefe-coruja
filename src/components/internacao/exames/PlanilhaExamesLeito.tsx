@@ -4,7 +4,9 @@
 // Unidade, faixa e marca só quando vêm do laboratório; o app não calcula faixa,
 // seta nem "limítrofe" e não traz faixa fixa. O crítico é o do laboratório.
 //
-// "Lançar resultado" (médico): gaveta com o exame aguardando, a data e a hora
+// "Lançar resultado" (só o médico com o paciente no plantão e o NIR de plantão,
+// decisão do RT de 25/11/2026, B-09; quem decide é o servidor, em
+// posso_lancar_planilha): gaveta com o exame aguardando, a data e a hora
 // da coleta e os valores (nome e valor, como estão no papel). Grava como
 // resultado à mão, sem marca (registrar_resultado_estruturado). Sem botão de
 // "evolução de exemplo" (EXM11).
@@ -24,8 +26,11 @@ import { analitosConhecidos, instanteDoCampo, itensDoLancamento, montarPlanilha,
 import { dataHoraInput, diaMesHora } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
-export function PlanilhaExamesLeito({ pedidos, resultados, medico, recarregar }: {
-  pedidos: PedidoLeito[]; resultados: ResultadoLido[]; medico: boolean; recarregar: () => void
+export function PlanilhaExamesLeito({ pedidos, resultados, podeLancar, recarregar }: {
+  pedidos: PedidoLeito[]; resultados: ResultadoLido[]
+  /** O servidor disse que quem está na tela lança valores (usePodeLancarPlanilha). */
+  podeLancar: boolean
+  recarregar: () => void
 }) {
   const planilha = montarPlanilha(resultados)
   const [filtro, setFiltro] = React.useState<string | null>(null)
@@ -44,7 +49,7 @@ export function PlanilhaExamesLeito({ pedidos, resultados, medico, recarregar }:
             {planilha.grupos.map((g) => <Chip key={g.exame} radio ativo={filtro === g.exame} onClick={() => setFiltro(g.exame)}>{g.exame}</Chip>)}
           </div>
         )}
-        {medico && (
+        {podeLancar && (
           <Button size="sm" className="ml-auto" disabled={aguardando.length === 0} onClick={() => setLancando(true)}
             title={aguardando.length === 0 ? 'Nenhum exame aguardando resultado para lançar' : undefined}>
             <Plus aria-hidden /> Lançar resultado
@@ -54,7 +59,7 @@ export function PlanilhaExamesLeito({ pedidos, resultados, medico, recarregar }:
 
       {planilha.colunas.length === 0 ? (
         <Vazio icone={FlaskConical} titulo="Nenhum valor de exame ainda"
-          texto={medico ? 'Os valores aparecem aqui quando o laboratório manda o resultado ou quando você lança à mão um exame aguardando.' : 'Os valores aparecem aqui quando o laboratório manda o resultado.'} />
+          texto={podeLancar ? 'Os valores aparecem aqui quando o laboratório manda o resultado ou quando você lança à mão um exame aguardando.' : 'Os valores aparecem aqui quando o laboratório manda o resultado.'} />
       ) : (
         <>
           <Table className="min-w-[480px]">
@@ -104,7 +109,7 @@ export function PlanilhaExamesLeito({ pedidos, resultados, medico, recarregar }:
         </>
       )}
 
-      {lancando && <LancarResultado aguardando={aguardando} resultados={resultados} aoFechar={() => setLancando(false)} aoGravar={() => { setLancando(false); recarregar() }} />}
+      {podeLancar && lancando && <LancarResultado aguardando={aguardando} resultados={resultados} aoFechar={() => setLancando(false)} aoGravar={() => { setLancando(false); recarregar() }} />}
     </section>
   )
 }

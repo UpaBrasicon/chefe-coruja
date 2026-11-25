@@ -11698,6 +11698,11 @@ export type Database = {
         Args: { p_internacao: string }
         Returns: Json
       }
+      // B-09 (RT, 25/11/2026, migration 20270426000023): quem lança valores na planilha
+      posso_lancar_planilha: {
+        Args: { p_internacao: string }
+        Returns: boolean
+      }
       pedir_exames: {
         Args: { p_episodio: string; p_itens: Json; p_observacao?: string; p_urgencia?: string }
         Returns: number
