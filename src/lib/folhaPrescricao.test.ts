@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
   ehAtalhoPrescrever, etiquetaTipo, etiquetaValidade, faixaVencidos, indiceNovaLinha, linhaPosologia, numeroLinha, seloAlergiaFolha,
-  teclasDoAtalho, textoItensVigentes, ultimaAtualizacao,
+  semManterNoLeito, teclasDoAtalho, textoItensVigentes, ultimaAtualizacao,
 } from './folhaPrescricao.ts'
 
 const agora = Date.parse('2026-11-24T12:00:00Z')
@@ -33,6 +33,11 @@ test('segunda linha: o que o médico escreveu, como está, sem cálculo', () => 
   // cuidado e contenção não têm dose nem peso de referência
   assert.equal(linhaPosologia({ tipo: 'cuidado', dose: null, via: null, posologia: null, se_necessario: false, peso_kg: 70 }), '')
   assert.equal(linhaPosologia({ tipo: 'cuidado', dose: null, via: null, posologia: null, se_necessario: true, peso_kg: null }), 'se necessário')
+})
+
+test('porta sem "Manter no leito": o porquê, em texto', () => {
+  assert.equal(semManterNoLeito('medicamento'), 'dose única: não segue para o leito')
+  assert.equal(semManterNoLeito('contencao'), 'contenção: prescreva de novo para manter')
 })
 
 test('etiquetas: tipo e validade em caixa normal', () => {
