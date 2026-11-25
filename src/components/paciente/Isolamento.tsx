@@ -2,15 +2,21 @@
 // Isolamento do paciente (Correções do Portão 2, tarefa 1; R2-01).
 //
 // Selo no cabeçalho único do paciente (porta e leito): vermelho quando há
-// isolamento ativo (aerossol, gotícula, contato), discreto quando não há.
-// A gaveta marca e retira, sempre com motivo; médico ou enfermeiro (o banco
-// confere). A marca vale para o atendimento atual e sai sozinha na alta. Com
-// isolamento ativo, o banco só aceita leito do tipo isolamento.
+// isolamento ativo (aerossol, gotícula, contato, reverso), discreto quando não
+// há. A gaveta marca e retira, sempre com motivo (o banco confere). A marca
+// vale para o atendimento atual e sai sozinha na alta. Com isolamento ativo, o
+// banco só aceita leito do tipo isolamento.
+//
+// Decisões do RT de 25/11/2026 (teste de fluxo B, achados B-03 e B-04): os
+// isolamentos se somam e a marca aceita "reverso (protetor)"; médico ou
+// enfermeiro marca, e só o médico retira, dizendo o porquê (o botão de retirar
+// só aparece no perfil Médico).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 
+import { useUnidade } from '@/contexts/UnidadeContext'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { diaMesHora } from '@/lib/formato'
@@ -20,11 +26,14 @@ import { SeloAcao } from '@/components/ui/selo-acao'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 
-export type TipoIsolamento = 'contato' | 'goticula' | 'aerossol'
+export type TipoIsolamento = 'contato' | 'goticula' | 'aerossol' | 'reverso'
 export type Isolamento = { id: string; tipo: TipoIsolamento; motivo: string; marcado_em: string; marcado_por: string | null }
 
-const ROTULO_ISOLAMENTO: Record<TipoIsolamento, string> = { aerossol: 'Aerossol', goticula: 'Gotícula', contato: 'Contato' }
-const EXEMPLO: Record<TipoIsolamento, string> = {
+const ROTULO_ISOLAMENTO: Record<TipoIsolamento, string> = { aerossol: 'Aerossol', goticula: 'Gotícula', contato: 'Contato', reverso: 'Reverso (protetor)' }
+/** Tipo que a tela ainda não conhece sai como veio do banco, sem quebrar o selo. */
+const rotuloTipo = (t: string) => ROTULO_ISOLAMENTO[t as TipoIsolamento] ?? t
+// exemplos só dos tipos de transmissão; o reverso fica sem exemplo (nenhum texto clínico novo)
+const EXEMPLO: Partial<Record<TipoIsolamento, string>> = {
   aerossol: 'tuberculose, sarampo, varicela',
   goticula: 'meningite meningocócica, coqueluche, influenza',
   contato: 'germe multirresistente, diarreia infecciosa, escabiose',
@@ -56,7 +65,7 @@ export function SeloIsolamento({ pacienteId, onClick }: { pacienteId: string; on
       </SeloAcao>
     )
   }
-  const tipos = lista.map((i) => ROTULO_ISOLAMENTO[i.tipo].toLowerCase()).join(' e ')
+  const tipos = lista.map((i) => rotuloTipo(i.tipo).toLowerCase()).join(' e ')
   return (
     <SeloAcao tom="critico" onClick={onClick} title={`Isolamento por ${tipos}: só leito de isolamento. Abrir isolamento.`}>
       <ShieldAlert className="size-3.5 shrink-0" aria-hidden /> Isolamento · {tipos}
@@ -69,6 +78,8 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
 }) {
   const qc = useQueryClient()
   const q = useIsolamento(pacienteId)
+  // B-03 (RT, 25/11/2026): só o médico retira o isolamento (o servidor recusa os demais)
+  const medico = useUnidade().papelAtivo === 'plantonista'
   const [tipo, setTipo] = React.useState<TipoIsolamento | null>(null)
   const [motivo, setMotivo] = React.useState('')
   const [retirando, setRetirando] = React.useState<string | null>(null)
@@ -97,7 +108,7 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
   })
 
   const ativos = q.data ?? []
-  const livres = (['aerossol', 'goticula', 'contato'] as TipoIsolamento[]).filter((t) => !ativos.some((a) => a.tipo === t))
+  const livres = (['aerossol', 'goticula', 'contato', 'reverso'] as TipoIsolamento[]).filter((t) => !ativos.some((a) => a.tipo === t))
 
   return (
     <Gaveta aberta={aberta} onAbertaChange={onAbertaChange} rotulo="Isolamento">
@@ -113,11 +124,11 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
           {ativos.map((i) => (
             <div key={i.id} className="flex flex-col gap-2 rounded-controle border border-critico/40 px-3 py-2">
               <div className="flex flex-wrap items-baseline gap-x-2">
-                <span className="text-corpo font-semibold text-critico">{ROTULO_ISOLAMENTO[i.tipo]}</span>
+                <span className="text-corpo font-semibold text-critico">{rotuloTipo(i.tipo)}</span>
                 <span className="text-apoio text-tinta-sussurro">{quando(i.marcado_em)}{i.marcado_por ? ` · ${i.marcado_por}` : ''}</span>
               </div>
               <p className="text-apoio text-tinta">{i.motivo}</p>
-              {retirando === i.id ? (
+              {!medico ? null : retirando === i.id ? (
                 <div className="flex flex-col gap-2">
                   <Textarea aria-label="Motivo da retirada" placeholder="Por que o isolamento sai (ex.: baciloscopias negativas)"
                     value={motivoRetirada} onChange={(e) => setMotivoRetirada(e.target.value)} rows={2} />
@@ -144,7 +155,7 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
                   <input type="radio" name="tipo-isolamento" className="mt-1" checked={tipo === t} onChange={() => setTipo(t)} />
                   <span className="flex flex-col">
                     <span className="text-corpo font-medium text-tinta">{ROTULO_ISOLAMENTO[t]}</span>
-                    <span className="text-apoio text-tinta-sussurro">{EXEMPLO[t]}</span>
+                    {EXEMPLO[t] && <span className="text-apoio text-tinta-sussurro">{EXEMPLO[t]}</span>}
                   </span>
                 </label>
               ))}
@@ -157,7 +168,7 @@ export function GavetaIsolamento({ pacienteId, nome, aberta, onAbertaChange }: {
           </section>
         )}
       </div>
-      <GavetaPe>Médico ou enfermeiro marca e retira, sempre com motivo, e cada mudança fica na auditoria.</GavetaPe>
+      <GavetaPe>Médico ou enfermeiro marca, sempre com motivo. Só o médico retira, dizendo o porquê. Cada mudança fica na auditoria.</GavetaPe>
     </Gaveta>
   )
 }
