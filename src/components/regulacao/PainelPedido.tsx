@@ -9,6 +9,8 @@ import { Menu } from '@base-ui/react/menu'
 import { Ellipsis } from 'lucide-react'
 import * as React from 'react'
 
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Gaveta } from '@/components/ui/gaveta'
@@ -50,7 +52,11 @@ export function ListaComPainel({ lista, aberto, painel, aoFechar, rotulo }: {
   )
 }
 
-export type AcaoMenu = { chave: string; rotulo: string; onSelecionar: () => void; perigo?: boolean }
+export type AcaoMenu = {
+  chave: string; rotulo: string; onSelecionar: () => void; perigo?: boolean
+  /** Com texto, o item fica desligado e o texto diz por quê (B-07: fora do plantão). */
+  desligado?: string | null
+}
 
 /** Menu "…" do cabeçalho do pedido. */
 export function MenuAcoesPedido({ itens, rotulo = 'Mais ações do pedido' }: { itens: AcaoMenu[]; rotulo?: string }) {
@@ -65,8 +71,8 @@ export function MenuAcoesPedido({ itens, rotulo = 'Mais ações do pedido' }: { 
         <Menu.Positioner side="bottom" align="end" sideOffset={4} className="z-[80]">
           <Menu.Popup className="flex min-w-[200px] flex-col overflow-hidden rounded-container border border-fio bg-superficie py-1 text-tinta shadow-popover outline-none">
             {itens.map((i) => (
-              <Menu.Item key={i.chave} onClick={i.onSelecionar}
-                className={cn('flex cursor-default items-center px-4 py-2 text-apoio outline-none select-none data-highlighted:bg-campo', i.perigo && 'text-critico')}>
+              <Menu.Item key={i.chave} onClick={i.onSelecionar} disabled={!!i.desligado} title={i.desligado ?? undefined}
+                className={cn('flex cursor-default items-center px-4 py-2 text-apoio outline-none select-none data-disabled:opacity-50 data-highlighted:bg-campo', i.perigo && 'text-critico')}>
                 {i.rotulo}
               </Menu.Item>
             ))}
@@ -87,6 +93,8 @@ export function DialogoMotivo({ aberto, aoFechar, titulo, descricao, rotulo, con
   const [motivo, setMotivo] = React.useState('')
   const id = React.useId()
   const fechar = (v: boolean) => { if (!v) { setMotivo(''); aoFechar() } }
+  // B-07 (RT, 25/11/2026): a recusa de plantão do servidor aparece como aviso, com a frase dele
+  const plantao = usePlantaoOrigem(erro)
   return (
     <Dialog open={aberto} onOpenChange={fechar}>
       <DialogContent>
@@ -99,7 +107,8 @@ export function DialogoMotivo({ aberto, aoFechar, titulo, descricao, rotulo, con
           <Textarea id={id} rows={3} value={motivo} onChange={(e) => setMotivo(e.target.value)} />
           <span className="text-rotulo text-tinta-sussurro">Pelo menos {minimo} letras. Fica no histórico do pedido.</span>
         </div>
-        <MensagemErro erro={erro} acao={confirmar.toLowerCase()} />
+        <AvisoPlantao texto={plantao.recusa} />
+        {!plantao.recusa && <MensagemErro erro={erro} acao={confirmar.toLowerCase()} />}
         <DialogFooter>
           <Button variant="ghost" onClick={() => fechar(false)}>Voltar</Button>
           <Button variant="destructive" disabled={ocupado || motivo.trim().length < minimo} onClick={() => aoConfirmar(motivo.trim())}>{confirmar}</Button>

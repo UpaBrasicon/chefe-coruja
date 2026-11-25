@@ -14,6 +14,8 @@ import { useMutation } from '@tanstack/react-query'
 import { ShieldAlert } from 'lucide-react'
 import * as React from 'react'
 
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
@@ -74,14 +76,17 @@ export function EditarIsolamento({ solicitacaoId, inicial, aoFim, aoCancelar }: 
     },
     onSuccess: aoFim,
   })
+  // B-07 (RT, 25/11/2026): fora do plantão a origem não muda o isolamento do pedido (o regulador da central não passa por isso)
+  const plantao = usePlantaoOrigem(salvar.error)
   return (
     <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
       <span className="font-medium text-tinta">Isolamento do pedido</span>
       <CampoIsolamento id={`iso-${solicitacaoId}`} valor={v} onChange={setV} />
       <span className="text-rotulo text-tinta-sussurro">Fica na linha do tempo do pedido e muda as vagas compatíveis.</span>
-      <MensagemErro texto={salvar.error ? (salvar.error as Error).message : null} />
+      <AvisoPlantao texto={plantao.recusa} />
+      <MensagemErro texto={salvar.error && !plantao.recusa ? (salvar.error as Error).message : null} />
       <div className="flex flex-wrap gap-2">
-        <Button size="xs" onClick={() => salvar.mutate()} disabled={salvar.isPending}>Salvar isolamento</Button>
+        <Button size="xs" onClick={() => salvar.mutate()} disabled={salvar.isPending || !!plantao.motivo} title={plantao.motivo ?? undefined}>Salvar isolamento</Button>
         <Button size="xs" variant="outline" onClick={aoCancelar}>Cancelar</Button>
       </div>
     </div>

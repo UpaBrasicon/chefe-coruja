@@ -21,6 +21,8 @@ import * as React from 'react'
 import { Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -263,6 +265,8 @@ export function FormEvolucao({ id, aoFim, aoVoltar }: { id: string; aoFim: () =>
     },
     onSuccess: () => { setTexto(''); setSinais(''); aoVoltar(); aoFim() },
   })
+  // B-07 (RT, 25/11/2026): fora do plantão a origem não atualiza a evolução; a recusa do servidor vira aviso
+  const plantao = usePlantaoOrigem(evoluir.error)
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={`evol-${id}`} className="text-rotulo">Evolução do paciente (a central vê; o relógio recomeça)</Label>
@@ -270,10 +274,11 @@ export function FormEvolucao({ id, aoFim, aoVoltar }: { id: string; aoFim: () =>
       <Label htmlFor={`evol-sv-${id}`} className="text-rotulo">Sinais vitais, com hora (opcional)</Label>
       <Input id={`evol-sv-${id}`} className="h-8" value={sinais} onChange={(e) => setSinais(e.target.value)} />
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => evoluir.mutate()} disabled={evoluir.isPending || texto.trim().length < 10}>Registrar evolução</Button>
+        <Button size="sm" onClick={() => evoluir.mutate()} disabled={evoluir.isPending || texto.trim().length < 10 || !!plantao.motivo} title={plantao.motivo ?? undefined}>Registrar evolução</Button>
         <Button size="sm" variant="ghost" onClick={aoVoltar}>Voltar</Button>
       </div>
-      {evoluir.error && <p role="alert" className="text-rotulo text-critico">{(evoluir.error as Error).message}</p>}
+      <AvisoPlantao texto={plantao.recusa} />
+      {evoluir.error && !plantao.recusa && <p role="alert" className="text-rotulo text-critico">{(evoluir.error as Error).message}</p>}
     </div>
   )
 }
@@ -285,12 +290,13 @@ export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim,
   statusAtual?: StatusRegulacao
 }) {
   const [abrir, setAbrir] = React.useState(false)
+  const { motivo: foraDoPlantao } = usePlantaoOrigem()
   return (
     <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 font-medium text-tinta"><Timer className="size-4" aria-hidden /> Prazos</span>
         <SeloSla sla={sla} />
-        {podeEvoluir && !abrir && <Button size="xs" variant="outline" className="ml-auto" onClick={() => setAbrir(true)}>Atualizar evolução</Button>}
+        {podeEvoluir && !abrir && <Button size="xs" variant="outline" className="ml-auto" disabled={!!foraDoPlantao} title={foraDoPlantao ?? undefined} onClick={() => setAbrir(true)}>Atualizar evolução</Button>}
       </div>
       {tempos.length > 0 && (
         <p className="text-rotulo text-tinta-apoio">Tempo em cada status: {textoTempos(tempos, statusAtual)}</p>
