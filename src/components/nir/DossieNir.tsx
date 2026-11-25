@@ -46,6 +46,7 @@ import { montarLinhaDoTempo, temposComAtual, type EventoPedido, type TempoStatus
 import { esperaAOrigem, type PacienteRegulacao, type PedidoResumo } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
 
 type Detalhe = PedidoDestino & {
   status: StatusRegulacao; sla: Sla | null
@@ -231,7 +232,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
   } else if (p.sla?.evolucao?.atrasada) {
     const risco = p.sla.evolucao.risco_cancelamento
     faixa = (
-      <Faixa tom={risco ? 'critico' : 'atencao'} titulo={`${h ?? '—'} h sem evolução${risco ? ': risco de cancelamento' : ' (vencida)'}`}
+      <Faixa tom={risco ? 'critico' : 'atencao'} titulo={`${tempoSemEvolucao(h)} sem evolução${risco ? ': risco de cancelamento' : ' (vencida)'}`}
         texto={`última em ${dataHora(p.sla.evolucao.ultima_em)}; a central pede a cada ${p.sla.evolucao.prazo_h} h`}>
         <Button size="xs" variant={podeEvoluir ? 'outline' : 'default'} onClick={() => avisar('evolucao')}><Bell /> Avisar médico</Button>
         {podeEvoluir && <Button size="xs" onClick={evoluir}><PenLine /> Atualizar evolução</Button>}

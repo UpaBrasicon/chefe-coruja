@@ -89,7 +89,7 @@ test('NIR1: sinal principal da linha', () => {
   assert.deepEqual(sinalPrincipal(pac('c', 'C', [pedido('r1', { status: 'pendencia', pendencia_pergunta: 'Tem troponina?' })]), [], AGORA),
     { texto: 'Pergunta da central: Tem troponina?', tom: 'info' })
   assert.deepEqual(sinalPrincipal(pac('d', 'D', [pedido('r1', { sla: sla({ atrasada: true, risco_cancelamento: true, ultima_em: horasAtras(73) }) })]), [], AGORA),
-    { texto: '73 h sem evolução · risco de cancelamento', tom: 'critico' })
+    { texto: '3 d 1 h sem evolução · risco de cancelamento', tom: 'critico' })
   assert.deepEqual(sinalPrincipal(pac('e', 'E', [pedido('r1', { sla: sla({ atrasada: true, ultima_em: horasAtras(26) }) })]), [], AGORA),
     { texto: '26 h sem evolução (vencida)', tom: 'atencao' })
   assert.deepEqual(sinalPrincipal(pac('f', 'F', [pedido('r1')]), [], AGORA), { texto: 'Em regulação', tom: 'neutro' })
