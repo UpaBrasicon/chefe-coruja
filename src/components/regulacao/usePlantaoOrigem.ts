@@ -5,7 +5,9 @@
 // regulacao_por_que_nao_ajo (nulo = pode agir; senão, a frase do motivo) e
 // mostra a frase como veio. O gestor da unidade nunca é barrado e o regulador
 // da central não passa por aqui: sem o contexto, nada é desligado.
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+// Com o paciente, a resposta é a do setor dele (médico e, desde a migration
+// 20270426000026, também o NIR); sem paciente, vale a escala na unidade.
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
 import { primeiraRecusaDePlantao } from '@/lib/regulacaoPlantao'
@@ -22,17 +24,40 @@ export const ContextoPlantaoOrigem = React.createContext<string | null>(null)
  * quem decide de verdade é a RPC da ação.
  */
 export function useMotivoPlantaoOrigem(unidadeId: string | null | undefined, pacienteId?: string | null, ligado = true): string | null {
-  const q = useQuery({
+  const q = useQuery(pergunta(unidadeId, pacienteId, ligado))
+  return ligado ? q.data ?? null : null
+}
+
+/** A mesma pergunta, na mesma chave de cache, para um ou vários pacientes. */
+function pergunta(unidadeId: string | null | undefined, pacienteId: string | null | undefined, ligado: boolean) {
+  return {
     queryKey: [CHAVE, unidadeId ?? '', pacienteId ?? null],
     enabled: ligado && !!unidadeId,
     refetchInterval: 60_000,
-    queryFn: async () => {
+    queryFn: async (): Promise<string | null> => {
       const { data, error } = await supabase.rpc('regulacao_por_que_nao_ajo', { p_unidade: unidadeId!, p_paciente: pacienteId ?? undefined })
       if (error) throw error
       return data ?? null
     },
+  }
+}
+
+/**
+ * O motivo por paciente, para a lista em que cada linha é de um paciente
+ * (decisão do RT de 25/11/2026: para o NIR, "de plantão" conta o setor da
+ * escala ativa; migration 20270426000026). Uma pergunta por paciente distinto,
+ * na chave de cache da pergunta do dossiê; paciente sem resposta = pode agir.
+ */
+export function useMotivosPlantaoOrigem(unidadeId: string | null | undefined, pacienteIds: string[]): Map<string, string> {
+  const ids = [...new Set(pacienteIds)].sort()
+  return useQueries({
+    queries: ids.map((id) => pergunta(unidadeId, id, true)),
+    combine: (rs) => {
+      const m = new Map<string, string>()
+      rs.forEach((r, i) => { if (r.data) m.set(ids[i], r.data) })
+      return m
+    },
   })
-  return ligado ? q.data ?? null : null
 }
 
 /**

@@ -94,7 +94,7 @@ export default function NirInternacao() {
             {aba !== 'painel' && (
               <div className="min-h-0 flex-1 overflow-y-auto p-4">
                 {aba === 'pendencias' && (
-                  <PendenciasMedicos pend={pend} lista={lista} agora={agora} abrirPaciente={abrirPaciente} aoMudar={() => recarregar()} />
+                  <PendenciasMedicos unidadeId={unidadeId} pend={pend} lista={lista} agora={agora} abrirPaciente={abrirPaciente} aoMudar={() => recarregar()} />
                 )}
                 {aba === 'mapa' && (
                   mapa.isLoading ? <EsqueletoLinhas linhas={6} rotulo="Carregando os leitos…" />
