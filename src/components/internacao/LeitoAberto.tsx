@@ -21,29 +21,34 @@
 // internação ativa; a aba Classificação saiu — a cor abre o histórico numa janela.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, ArrowRightLeft, Handshake, History, ListTodo, Printer, Siren, Waypoints } from 'lucide-react'
+import { ArrowLeft, PenLine, Printer } from 'lucide-react'
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { HistoricoEncerrado } from '@/components/prontuario/HistoricoEncerrado'
+import { AbaRegulacaoPaciente } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
-import { Contencao } from '@/components/prontuario/Contencao'
+import { Contencao, DialogoIniciarContencao } from '@/components/prontuario/Contencao'
+import { usePodeIniciarContencao } from '@/components/prontuario/useContencao'
 import { AvisoValidadePrescricao } from '@/components/prescricao/ValidadeItem'
 import { DialogoIntercorrencia, Intercorrencias } from '@/components/prontuario/Intercorrencias'
 import { ReentradaContingencia } from '@/components/prontuario/ReentradaContingencia'
 import { supabase } from '@/lib/supabase'
 import { abrirProntuario } from '@/lib/prontuario'
-import { abaDoEndereco, type AcaoLeito, acoesDoLeito, rotuloPendencias, type SubResumo, subResumoInicial } from '@/lib/acoesLeito'
-import { cn } from '@/lib/utils'
+import { abaDoEndereco, acoesDoLeito } from '@/lib/acoesLeito'
+import { ehItemMais, rotuloMais } from '@/lib/maisLeito'
+import { dataIso } from '@/lib/formato'
+import { ehPediatrico } from '@/domain/idade'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import type { CorRisco } from '@/domain/risco'
-import { ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
+import { AgravosNotificacao, ExamesEAgravos } from '@/components/clinico/ExamesEAgravos'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { BotaoRnDaMae } from '@/components/paciente/CadastroRn'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { AbaEvolucao } from '@/components/evolucao/AbaEvolucao'
+import { ResumoClinico } from '@/components/evolucao/ResumoClinico'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
 import { AbaCuidadosPaliativos } from '@/components/paliativo/AbaCuidadosPaliativos'
@@ -51,6 +56,7 @@ import { PassagensDoPlantao } from '@/components/internacao/PassagensDoPlantao'
 import { Estado } from '@/components/porta/Estado'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MenuMais, type ItemMenu } from '@/components/plantao/MenuMais'
 import { Spinner } from '@/components/ui/spinner'
 
 import { BlocoAcuidade } from './caderno/Acuidade'
@@ -66,15 +72,16 @@ import { AbaAdmissao, AbaAih, AbaApac, AbaExames, AbaPrescricao } from './cadern
 import { PassosAlta } from './caderno/PassosAlta'
 import { DOCS_INICIAL, type EstadoDocs } from '@/lib/documentosAlta'
 import { useDocumentosLeito } from './caderno/rascunhoLeito'
-import { PainelPaciente } from './caderno/PainelPaciente'
 import { BlocoPassagem, DialogoPassagem } from './caderno/Passagem'
 import { BlocoPendencias } from './caderno/Pendencias'
 import { BlocoSepse } from './caderno/Sepse'
+import { type DestinoResumo, GrupoRecolhido, ResumoLeito } from './caderno/ResumoLeito'
+import { MaisDocumentos } from './caderno/MaisDocumentos'
 import { ChecklistAdmissao, TrilhaEpisodio } from './caderno/Trilha'
 
 export { SepsePorta } from './caderno/Sepse'
 
-type IdAba = 'resumo' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'parecer' | 'termo' | 'paliativos' | 'escalas' | 'alta'
+type IdAba = 'resumo' | 'evol' | 'admissao' | 'receituario' | 'exames' | 'aih' | 'apac' | 'encaminhamento' | 'regulacao' | 'parecer' | 'termo' | 'paliativos' | 'escalas' | 'alta'
 
 // LEITO_ABAS do protótipo (index.html ~21611), na mesma ordem.
 const ABAS: [IdAba, string][] = [
@@ -86,6 +93,8 @@ const ABAS: [IdAba, string][] = [
   ['aih', 'AIH'],
   ['apac', 'APAC'],
   ['encaminhamento', 'Encaminhamento'],
+  // R1 (RT, 24/11/2026): a regulação do paciente, com a conversa com a central
+  ['regulacao', 'Regulação'],
   // ponto 15: Parecer, Termo de consentimento, Cuidados paliativos e Escalas (antes, "Parecer e termos")
   ['parecer', 'Parecer'],
   ['termo', 'Termo de consentimento'],
@@ -98,7 +107,19 @@ const ABAS: [IdAba, string][] = [
  * agora mora dentro de Evolução (ponto 9), que entra aqui em leitura. A
  * Classificação deixou de ser aba (ponto 8): a cor do cabeçalho abre a janela.
  */
-const ABAS_LEITURA: IdAba[] = ['resumo', 'evol', 'alta']
+const ABAS_LEITURA: IdAba[] = ['resumo', 'evol', 'regulacao', 'alta']
+/**
+ * MA1 (RT, 24/11/2026): as abas fixas na linha, sempre na mesma ordem; o
+ * resto abre dentro da aba "Mais" ("Documentos e pedidos"), com o nome do item
+ * no botão, sem mudar a ordem. A Admissão não está no Mais: abre pelo Resumo
+ * (enquanto não feita) e pelo Histórico de evoluções.
+ */
+const ABAS_LINHA: [IdAba | 'mais', string][] = [
+  ['resumo', 'Resumo'], ['evol', 'Evolução'], ['receituario', 'Prescrição'], ['exames', 'Exames'],
+  ['regulacao', 'Regulação'], ['alta', 'Alta e documentos'], ['mais', 'Mais'],
+]
+/** A aba da linha que fica marcada para cada parte aberta. */
+const abaDaLinha = (a: IdAba | 'mais'): IdAba | 'mais' => (a === 'mais' || ehItemMais(a) ? 'mais' : a === 'admissao' ? 'resumo' : a)
 
 const CHAVES_DO_LEITO = [
   'leito-aberto', 'acuidade', 'tendencia-acuidade', 'vitais-qsofa', 'pendencias', 'passagens', 'impeditivos', 'pacotes-alta',
@@ -106,14 +127,18 @@ const CHAVES_DO_LEITO = [
   'ocupacao-setores', 'pendencias-observacao', 'alertas-sepse',
 ]
 
-export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', onTransferir, abaInicial }: {
+export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simples', onTransferir, onPrancheta, abaInicial, conteudoAlta }: {
+  /** OB3 (RT, 24/11/2026): na observação, a aba Alta e documentos é o desfecho da observação */
+  conteudoAlta?: React.ReactNode
   pacienteId: string
   pacienteNome: string
   ehGestor: boolean
   /** "caderno": as 12 abas do protótipo; "simples": o leito sem abas (observação). */
   modo?: 'simples' | 'caderno'
-  /** Transferir de setor (a lista de internados sabe); o botão fica no cabeçalho do caderno. */
+  /** Transferir de setor (a lista de internados sabe); fica no menu Ações do caderno (RS3). */
   onTransferir?: () => void
+  /** Prancheta de anotações do médico (a lista de internados guarda); fica no menu Ações (RS3). */
+  onPrancheta?: () => void
   /** Aba do caderno que abre primeiro (endereço do leito com ?aba=). */
   abaInicial?: string
 }) {
@@ -189,7 +214,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
     queryFn: async () => {
       const { data, error } = await supabase.rpc('impeditivos_alta', { p_internacao: i!.id })
       if (error) throw error
-      return (data ?? []) as unknown as { tipo: string; descricao: string }[]
+      return (data ?? []) as unknown as { tipo: string; descricao: string; id?: string }[]
     },
   })
   const pacotes = useQuery({
@@ -256,8 +281,8 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
           </Estado>
           {/* Portão 2, tarefa 5: recém-nascido cadastrado a partir do leito da mãe */}
           {ativa && <BotaoRnDaMae maeId={pacienteId} maeNome={pacienteNome} />}
-          {/* ponto 5: a impressão de prontuário abre daqui, com o paciente escolhido */}
-          {!ehGestor && (
+          {/* ponto 5: a impressão de prontuário abre daqui, com o paciente escolhido (no caderno, pelo menu Ações) */}
+          {!ehGestor && !compacto && (
             <Button size="sm" variant="outline" render={<Link to={`/impressao-prontuario?paciente=${pacienteId}`} />}>
               <Printer /> Imprimir prontuário
             </Button>
@@ -295,7 +320,7 @@ export function LeitoAberto({ pacienteId, pacienteNome, ehGestor, modo = 'simple
       </div>
     )
   }
-  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} abaInicial={abaInicial} onTransferir={onTransferir} />
+  return <Caderno p={p} cabecalho={cabecalho} avisos={avisos} abaInicial={abaInicial} onTransferir={onTransferir} onPrancheta={onPrancheta} conteudoAlta={conteudoAlta} />
 }
 
 type PartesLeito = {
@@ -311,12 +336,16 @@ type PartesLeito = {
   acuidadeCarregando: boolean
   pendencias: Pendencia[]
   passagens: Passagem[]
-  impeditivos: { tipo: string; descricao: string }[]
+  impeditivos: { tipo: string; descricao: string; id?: string }[]
   pacotes: Pacote[]
   prontuarioAberto: boolean
   aoGravarVitais: () => void
   aoErro: (m: string) => void
   cidSugerido?: string | null
+  /** Resumo do caso (EV1: veio da Evolução para o Resumo) */
+  resumoCaso?: React.ReactNode
+  /** Notificação de agravo (EX3: saiu de Exames para o Resumo) */
+  agravos?: React.ReactNode
 }
 
 /** Aba Resumo (e o corpo do modo simples): acuidade, sepse, pendências, passagem. */
@@ -351,76 +380,47 @@ function Resumo({ p }: { p: PartesLeito }) {
   )
 }
 
-const SUBS_RESUMO: { id: SubResumo; Icone: typeof Activity }[] = [
-  { id: 'agora', Icone: Activity },
-  { id: 'pendencias', Icone: ListTodo },
-  { id: 'historico', Icone: History },
-  { id: 'regulacoes', Icone: Waypoints },
-]
-
 /**
- * Aba Resumo do caderno em sub-abas (ponto 6, opção A do RT): Agora (o que muda
- * no plantão), Pendências, Histórico na unidade (a trilha desta internação e os
- * atendimentos anteriores) e Regulações. O modo simples segue com o Resumo inteiro.
+ * Aba Resumo do caderno como painel em blocos (RS2, RT 24/11/2026): sem
+ * sub-abas; cada bloco com a contagem e o atalho para a aba que resolve. A
+ * regulação tem a aba própria (as "Regulações" daqui repetiam). O modo simples
+ * segue com o Resumo inteiro.
  */
-function ResumoEmAbas({ p }: { p: PartesLeito }) {
+function ResumoCaderno({ p, irPara }: { p: PartesLeito; irPara: (aba: DestinoResumo) => void }) {
   const { i, ativa, ehGestor } = p
   const unidadeResumo = useUnidade().unidadeAtiva?.unidade_id
-  const [sub, setSub] = React.useState<SubResumo>(() => subResumoInicial(ativa))
-  const rotulo: Record<SubResumo, string> = {
-    agora: 'Agora', pendencias: rotuloPendencias(p.pendencias), historico: 'Histórico na unidade', regulacoes: 'Regulações',
-  }
   return (
-    <div className="flex flex-col">
-      <div role="tablist" aria-label="Resumo" className="mb-3.5 flex flex-wrap gap-1.5">
-        {SUBS_RESUMO.map(({ id, Icone }) => (
-          // a mesma subaba da Evolução: o Button no papel de aba
-          <Button key={id} role="tab" aria-selected={sub === id} onClick={() => setSub(id)}
-            variant={sub === id ? 'default' : 'outline'}
-            className={cn('min-h-10 px-3.5 py-2 text-controle', sub === id && 'border-acao')}>
-            <Icone className="size-[15px]" aria-hidden /> {rotulo[id]}
-          </Button>
-        ))}
-      </div>
-      <div role="tabpanel" className="flex min-w-0 flex-col gap-4">
-        {sub === 'agora' && (
-          <>
-            {!ativa && <p className="text-apoio text-tinta-sussurro">Internação encerrada: aqui ficam só as intercorrências registradas.</p>}
-            {ativa && (
-              <BlocoAcuidade a={p.acuidade} carregando={p.acuidadeCarregando} pacienteId={p.pacienteId} internacaoId={i.id}
-                podeLancar={!ehGestor} prontuarioAberto={p.prontuarioAberto} perfilId={p.eu} aoGravar={p.aoGravarVitais} aoErro={p.aoErro} />
-            )}
-            {ativa && p.acuidade?.escala === 'PEWS' && (
-              <BlocoSepse a={p.acuidade} pacienteId={p.pacienteId} podeMarcar={!ehGestor} acao={p.acao} />
-            )}
-            {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} semBotao />}
-            {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
-            {/* lacuna 6 (V6): prescrição vencida ou vencendo */}
-            {ativa && <AvisoValidadePrescricao pacienteId={p.pacienteId} />}
-            {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
-            {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
-            {/* lacuna 4: contenção mecânica, com os selos de revisão e de prescrição */}
-            <Contencao pacienteId={p.pacienteId} />
-            {/* registrar é pelo cabeçalho (ponto 7); aqui a lista e o Retificar */}
-            <Intercorrencias pacienteId={p.pacienteId} internacaoId={ativa ? i.id : null} episodioId={ativa ? i.episodio_id : null} semBotao />
-          </>
-        )}
-        {sub === 'pendencias' && <BlocoPendencias internacaoId={i.id} ativa={ativa} lista={p.pendencias} eu={p.eu} acao={p.acao} />}
-        {sub === 'historico' && (
-          <>
+    <ResumoLeito pacienteId={p.pacienteId} internacaoId={i.id} unidadeId={unidadeResumo} ativa={ativa} escreve={ativa && !ehGestor} irPara={irPara}
+      vitais={ativa ? (
+        <div className="flex flex-col gap-3">
+          <BlocoAcuidade a={p.acuidade} carregando={p.acuidadeCarregando} pacienteId={p.pacienteId} internacaoId={i.id}
+            podeLancar={!ehGestor} prontuarioAberto={p.prontuarioAberto} perfilId={p.eu} aoGravar={p.aoGravarVitais} aoErro={p.aoErro} />
+          {p.acuidade?.escala === 'PEWS' && <BlocoSepse a={p.acuidade} pacienteId={p.pacienteId} podeMarcar={!ehGestor} acao={p.acao} />}
+        </div>
+      ) : undefined}
+      pendencias={<BlocoPendencias internacaoId={i.id} ativa={ativa} lista={p.pendencias} eu={p.eu} acao={p.acao} />}
+      depois={
+        <>
+          {p.resumoCaso}
+          {p.agravos}
+          {ativa && !ehGestor && <BlocoPassagem i={i} lista={p.passagens} eu={p.eu} acao={p.acao} semBotao />}
+          {ativa && <PassagensDoPlantao pacienteId={p.pacienteId} />}
+          {/* Fase 1, tarefa 12: reentrada de contingência do atendimento que gerou a internação */}
+          {unidadeResumo && i.episodio_id && <ReentradaContingencia unidadeId={unidadeResumo} episodioId={i.episodio_id} chegadaEm={i.data_admissao} />}
+          {/* lacuna 4: a contenção ativa e as anteriores; iniciar é pelo menu Ações (RS3) */}
+          <Contencao pacienteId={p.pacienteId} semIniciar />
+          {/* registrar é pelo menu Ações (ponto 7); aqui a lista e o Retificar */}
+          <Intercorrencias pacienteId={p.pacienteId} internacaoId={ativa ? i.id : null} episodioId={ativa ? i.episodio_id : null} semBotao />
+          <GrupoRecolhido titulo="Histórico na unidade" inicial={!ativa}>
             <TrilhaEpisodio pacienteId={p.pacienteId} />
             {/* Fase 1, tarefa 8: atendimentos encerrados do paciente, para quem cuida */}
             {ativa && <HistoricoEncerrado pacienteId={p.pacienteId} />}
-          </>
-        )}
-        {/* Fase 4, tarefa 5: regulações do paciente na rede (médico e gestor) */}
-        {sub === 'regulacoes' && <HistoricoRegulacao pacienteId={p.pacienteId} />}
-      </div>
-    </div>
+          </GrupoRecolhido>
+        </>
+      } />
   )
 }
 
-const ICONE_ACAO: Record<AcaoLeito, typeof Activity> = { transferir: ArrowRightLeft, passar: Handshake, intercorrencia: Siren }
 
 /** Aba Alta e documentos (e o fim do modo simples). */
 function AltaEDocumentos({ p }: { p: PartesLeito }) {
@@ -439,7 +439,9 @@ function AltaEDocumentos({ p }: { p: PartesLeito }) {
   )
 }
 
-function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
+function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir, onPrancheta, conteudoAlta }: {
+  conteudoAlta?: React.ReactNode
+  onPrancheta?: () => void
   abaInicial?: string
   p: PartesLeito
   cabecalho: (onClassificacao?: () => void, compacto?: boolean, acoes?: React.ReactNode) => React.ReactNode
@@ -448,12 +450,13 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
 }) {
   const { i, ativa, ehGestor, pacienteId } = p
   const { unidadeAtiva } = useUnidade()
+  const navigate = useNavigate()
   // link antigo para a aba Diagnóstico abre Evolução › Diagnóstico (ponto 9)
   // receita e atestado em curso na Alta e documentos: ficam enquanto o leito está aberto
   const [docsAlta, setDocsAlta] = React.useState<EstadoDocs>(DOCS_INICIAL)
   // link antigo para a aba Classificação abre o Resumo com a janela (ponto 8)
   const endereco = abaDoEndereco(abaInicial)
-  const [aba, setAba] = React.useState<IdAba>(() => (ABAS.some(([id]) => id === endereco.aba) ? endereco.aba as IdAba : 'resumo'))
+  const [aba, setAba] = React.useState<IdAba | 'mais'>(() => (endereco.aba === 'mais' ? 'mais' : ABAS.some(([id]) => id === endereco.aba) ? endereco.aba as IdAba : 'resumo'))
   const [janela, setJanela] = React.useState<'classificacao' | 'passar' | 'intercorrencia' | null>(endereco.classificacao ? 'classificacao' : null)
 
   const diagnosticos = useDiagnosticos(i.id)
@@ -467,8 +470,21 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
   })
 
   const escreve = ativa && !ehGestor
-  const disponiveis = ABAS.filter(([id]) => escreve || ABAS_LEITURA.includes(id))
-  const atual: IdAba = disponiveis.some(([id]) => id === aba) ? aba : 'resumo'
+  const pode = (id: IdAba | 'mais') => escreve || (id !== 'mais' && ABAS_LEITURA.includes(id))
+  const atual: IdAba | 'mais' = pode(aba) ? aba : 'resumo'
+  const linha = abaDaLinha(atual)
+  // idade pelo cadastro (mesma chave do cabeçalho): adulto não recebe pediatria (MA2)
+  const cadastro = useQuery({
+    queryKey: ['cabecalho-paciente', pacienteId],
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('pacientes').select('nome, nome_social, data_nascimento, sexo').eq('id', pacienteId).maybeSingle()
+      if (error) throw error
+      return data
+    },
+  })
+  const nasc = cadastro.data?.data_nascimento?.slice(0, 10)
+  const pediatrico = nasc ? ehPediatrico(nasc, dataIso()) : null
   // CID da alta (decisão do usuário, 29/09/2026): o quadro muda ao longo da
   // internação. Desde o ponto 9 (RT, 28/10/2026) o diagnóstico muda só na
   // subaba Diagnóstico, e a evolução grava o retrato dele: vale o primário
@@ -490,51 +506,82 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
       return cid || null
     },
   }).data
-  const pp: PartesLeito = { ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal }
+  const pp: PartesLeito = {
+    ...p, cidSugerido: primario?.cid ?? cidUltimaEvolucao ?? i.cid_principal,
+    // EV1: o resumo do caso (antibióticos, medicações, eletrólitos, condutas) mora no Resumo do leito
+    resumoCaso: <ResumoClinico pacienteId={pacienteId} internacaoId={i.id} />,
+    // EX3: os agravos de notificação saem da lista de exames para um bloco próprio no Resumo
+    agravos: <AgravosNotificacao pacienteId={pacienteId} medico={escreve} />,
+  }
 
-  // ponto 7: transferir, passar e intercorrência juntos no cabeçalho
-  const acoesTopo = acoesDoLeito({ ativa, ehGestor, podeTransferir: !!onTransferir, passagens: p.passagens }).map((a) => {
-    const Icone = ICONE_ACAO[a.id]
-    return (
-      <Button key={a.id} size="xs" variant="outline" disabled={!!a.bloqueio} title={a.bloqueio ?? undefined}
-        onClick={() => (a.id === 'transferir' ? onTransferir?.() : setJanela(a.id))}>
-        <Icone /> {a.rotulo}
-      </Button>
-    )
-  })
-
+  // RS3 (RT, 24/11/2026): "Evoluir" é a ação principal; transferir, passar,
+  // intercorrência, contenção, prancheta e impressão ficam juntos no menu Ações
+  const podeContencao = usePodeIniciarContencao(pacienteId)
+  const [contencao, setContencao] = React.useState(false)
+  const itensAcoes: ItemMenu[] = [
+    ...acoesDoLeito({ ativa, ehGestor, podeTransferir: !!onTransferir, passagens: p.passagens }).map((a) => ({
+      chave: a.id, desabilitado: !!a.bloqueio,
+      rotulo: <span title={a.bloqueio ?? undefined}>{a.rotulo}</span>,
+      onSelecionar: () => (a.id === 'transferir' ? onTransferir?.() : setJanela(a.id)),
+    })),
+    ...(escreve && podeContencao ? [{ chave: 'contencao', rotulo: 'Iniciar contenção mecânica', onSelecionar: () => setContencao(true) }] : []),
+    ...(onPrancheta ? [{ chave: 'prancheta', rotulo: 'Prancheta de anotações', onSelecionar: onPrancheta }] : []),
+    ...(!ehGestor ? [{ chave: 'imprimir', rotulo: 'Imprimir prontuário', onSelecionar: () => navigate(`/impressao-prontuario?paciente=${pacienteId}`) }] : []),
+  ]
+  const acoesTopo = (escreve || itensAcoes.length > 0) ? (
+    <span className="flex items-center gap-2">
+      {escreve && (
+        <Button size="sm" onClick={() => setAba('evol')}><PenLine aria-hidden /> Evoluir</Button>
+      )}
+      <MenuMais rotulo="Ações" itens={itensAcoes} />
+    </span>
+  ) : undefined
   const irNotificacao = () => {
-    setAba('exames')
+    setAba('resumo')
     window.setTimeout(() => document.getElementById('caderno-agravos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
   }
 
   return (
     <div className="flex flex-col gap-3.5 border-t border-fio pt-3.5 text-apoio">
-      {cabecalho(() => setJanela('classificacao'), true, acoesTopo.length > 0 ? acoesTopo : undefined)}
+      {cabecalho(() => setJanela('classificacao'), true, acoesTopo)}
 
-      {/* abas numa linha só; na tela estreita a linha rola para o lado */}
-      <Tabs value={atual} onValueChange={(v) => setAba(v as IdAba)}>
-        <TabsList aria-label="Documentos do leito" className="gap-3.5">
-          {disponiveis.map(([id, rotulo]) => (
-            <TabsTrigger key={id} value={id} className="shrink-0">{rotulo}</TabsTrigger>
+      {/* MA1 (RT, 24/11/2026): abas fixas, sempre na mesma ordem; o item aberto do Mais dá o nome ao botão */}
+      <Tabs value={linha} onValueChange={(v) => setAba(v as IdAba | 'mais')}>
+        <TabsList aria-label="Partes do leito" className="w-full gap-3.5">
+          {ABAS_LINHA.filter(([id]) => pode(id)).map(([id, rotulo]) => (
+            <TabsTrigger key={id} value={id} className="shrink-0">
+              {id === 'mais' && ehItemMais(atual) ? `Mais · ${rotuloMais(atual)}` : rotulo}
+            </TabsTrigger>
           ))}
         </TabsList>
       </Tabs>
 
       {avisos}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+      {/* RS1 e MA3: sem o painel Paciente repetido à direita; a aba usa a largura toda */}
       <div id={`caderno-${atual}`} role="tabpanel" className="flex min-w-0 flex-col gap-4">
-        {atual === 'resumo' && <ResumoEmAbas p={pp} />}
+        {/* MA1: "Documentos e pedidos", agrupado e com a situação de cada item */}
+        {atual === 'mais' && <MaisDocumentos pacienteId={pacienteId} internacaoId={i.id} pediatrico={pediatrico} onAbrir={(id) => setAba(id)} />}
+        {ehItemMais(atual) && (
+          <Button size="sm" variant="outline" className="self-start" onClick={() => setAba('mais')}>
+            <ArrowLeft aria-hidden /> Documentos e pedidos
+          </Button>
+        )}
+        {atual === 'admissao' && (
+          <Button size="sm" variant="outline" className="self-start" onClick={() => setAba('resumo')}>
+            <ArrowLeft aria-hidden /> Resumo
+          </Button>
+        )}
+        {atual === 'resumo' && <ResumoCaderno p={pp} irPara={(a) => setAba(a)} />}
         {atual === 'evol' && (
           <AbaEvolucao pacienteId={pacienteId} internacaoId={i.id} somenteLeitura={!escreve}
-            subInicial={abaInicial === 'diag' ? 'diagnostico' : undefined}
+            subInicial={abaInicial === 'diag' ? 'hoje' : undefined} onAbrirAdmissao={() => setAba('admissao')}
             diagnostico={{ podeEditar: escreve, acao: p.acao, onAbrirNotificacao: irNotificacao }} />
         )}
         {atual === 'admissao' && (
           <>
             <ChecklistAdmissao pacienteId={pacienteId} unidadeId={unidadeAtiva?.unidade_id} prontuarioAberto={p.prontuarioAberto} />
-            <AbaAdmissao doc={doc} internacaoId={i.id} unidadeId={unidadeAtiva?.unidade_id} />
+            <AbaAdmissao doc={doc} internacaoId={i.id} unidadeId={unidadeAtiva?.unidade_id} admissaoEm={i.internado_em ?? i.data_admissao} />
           </>
         )}
         {atual === 'receituario' && <AbaPrescricao doc={doc} />}
@@ -542,26 +589,36 @@ function Caderno({ p, cabecalho, avisos, abaInicial, onTransferir }: {
         {atual === 'aih' && <AbaAih doc={doc} internacaoId={i.id} />}
         {atual === 'apac' && <AbaApac doc={doc} internacaoId={i.id} />}
         {/* ponto 13: dentro da unidade ou para outra unidade (SMS003a ligado à internação) */}
-        {atual === 'encaminhamento' && <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''} />}
+        {/* MA2: dentro da unidade (especialidade ou equipe); para outra unidade, a Regulação */}
+        {atual === 'encaminhamento' && (
+          <AbaEncaminhamento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} leito={i.leito?.identificador ?? ''}
+            onIrRegulacao={() => setAba('regulacao')} adulto={pediatrico === false} />
+        )}
+        {atual === 'regulacao' && (
+          <>
+            <AbaRegulacaoPaciente pacienteId={pacienteId} />
+            {/* Fase 4, tarefa 5: as regulações do paciente na rede (antes, a sub-aba Regulações do Resumo) */}
+            <GrupoRecolhido titulo="Regulações deste paciente na rede"><HistoricoRegulacao pacienteId={pacienteId} /></GrupoRecolhido>
+          </>
+        )}
         {atual === 'parecer' && <AbaParecer pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'termo' && <AbaTermoConsentimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {atual === 'paliativos' && <AbaCuidadosPaliativos pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} podeRegistrar={escreve} />}
         {/* a própria aba escolhe as escalas pela idade (NIPS/FLACC ou Braden/Morse; sem nascimento, avisa) */}
         {atual === 'escalas' && <AbaAvaliacaoCrescimento pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} />}
         {/* pontos 14 e 16: receita para casa, atestado, orientações e alta, em passos */}
-        {atual === 'alta' && (
+        {atual === 'alta' && conteudoAlta}
+        {atual === 'alta' && !conteudoAlta && (
           <PassosAlta i={i} pacienteId={pacienteId} pacienteNome={p.pacienteNome} ativa={ativa} altaRecente={pp.altaRecente} ehGestor={ehGestor}
             eu={p.eu ?? null} acao={p.acao} impeditivos={p.impeditivos} pacotes={p.pacotes} cidSugerido={pp.cidSugerido ?? null}
-            leito={i.leito?.identificador ?? ''} diagnostico={textoPrimario} estado={docsAlta} setEstado={setDocsAlta} />
+            leito={i.leito?.identificador ?? ''} diagnostico={textoPrimario} estado={docsAlta} setEstado={setDocsAlta} onIr={(a) => setAba(a)} />
         )}
-      </div>
-      <PainelPaciente i={i} ativa={ativa} acuidade={p.acuidade} diagnostico={textoPrimario} onClassificacao={() => setJanela('classificacao')}
-        acoes={ativa ? <BotaoRnDaMae maeId={pacienteId} maeNome={p.pacienteNome} /> : undefined} />
       </div>
 
       {janela === 'classificacao' && (
         <DialogoClassificacao internacaoId={i.id} prontuarioAberto={p.prontuarioAberto} aoFechar={() => setJanela(null)} />
       )}
+      {contencao && <DialogoIniciarContencao pacienteId={pacienteId} aoFechar={() => setContencao(false)} />}
       {janela === 'passar' && <DialogoPassagem i={i} acao={p.acao} aoFechar={() => setJanela(null)} pendencias={p.pendencias} />}
       {janela === 'intercorrencia' && (
         <DialogoIntercorrencia pacienteId={pacienteId} episodioId={i.episodio_id} internacaoId={i.id} retifica={null} aoFechar={() => setJanela(null)} />

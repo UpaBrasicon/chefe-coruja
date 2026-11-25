@@ -71,11 +71,9 @@ export function RedeCompleta() {
         ]}
       />
 
-      <div className="mb-3 flex justify-end">
-        <Button size="sm" onClick={() => setJanela({ unidade: null })}><Plus className="size-4" aria-hidden />Nova unidade</Button>
-      </div>
-
       <div className={cn(cartao, 'mb-3.5')}>
+        {/* revisão do admin (RT, 24/11/2026): Nova unidade junto das abas */}
+        <div className="flex flex-wrap items-end justify-between gap-2 border-b border-fio [&>[role=tablist]]:border-b-0">
         <Abas
           rotulo="Filtrar unidades"
           valor={filtro}
@@ -86,6 +84,8 @@ export function RedeCompleta() {
             { valor: 'em_dia', rotulo: 'Em dia' },
           ]}
         />
+        <Button size="sm" className="mr-3 mb-1.5" onClick={() => setJanela({ unidade: null })}><Plus className="size-4" aria-hidden />Nova unidade</Button>
+        </div>
         {unidades.isLoading && <div className="px-5 py-5"><Spinner /></div>}
         {visiveis.map(({ u, estado, motivos }) => (
           <LinhaUnidade key={u.unidade_id} u={u} estado={estado} motivos={motivos} agora={agora} onEditar={editar} />
@@ -126,7 +126,7 @@ function LinhaUnidade({ u, estado, motivos, agora, onEditar }: { u: UnidadeRede;
   return (
     <div className="flex flex-wrap items-center gap-3.5 border-b border-trilha px-5 py-3.5 last:border-0 hover:bg-campo">
       <div className="flex min-w-0 flex-[1_1_230px] flex-col gap-[3px]">
-        <Button variant="link" className="h-auto justify-start p-0 text-corpo font-medium underline underline-offset-4" title="Editar a unidade" onClick={() => onEditar(u.unidade_id)}>{u.nome}</Button>
+        <Button variant="link" className="h-auto justify-start p-0 text-corpo font-medium no-underline hover:underline" title="Editar a unidade" onClick={() => onEditar(u.unidade_id)}>{u.nome}</Button>
         <span className="text-apoio text-tinta-sussurro">{resumo}</span>
         {motivos.length > 0 && <span className={cn('text-apoio text-pretty', estado === 2 ? 'text-critico' : 'text-atencao')}>{motivos.join(' · ')}</span>}
       </div>

@@ -139,7 +139,7 @@ export function SdraVentilacaoAdulto() {
         <div className="grid gap-4 sm:grid-cols-3">
           <NumberField id="sd-spo2" label="SpO2 (para a S/F)" unit="%" value={spo2} onChange={setSpo2} step={1} max={100} />
           <Escolha label="Suporte respiratório" value={suporte} onChange={setSuporte} opcoes={SUPORTES} />
-          <label className="flex items-center gap-2 text-apoio"><input type="checkbox" className="size-4" checked={limitado} onChange={(e) => setLimitado(e.target.checked)} /> Recursos limitados (sem PEEP/fluxo exigidos)</label>
+          <label className="flex min-h-9 items-center gap-2 self-end text-apoio"><input type="checkbox" className="size-4" checked={limitado} onChange={(e) => setLimitado(e.target.checked)} /> Recursos limitados (sem PEEP/fluxo exigidos)</label>
         </div>
         {sf !== null && <Resultado rotulo="S/F" valor={`${br(sf, 0)}`} />}
         {g24 ? (

@@ -5389,6 +5389,18 @@ export type Database = {
         Update: { id?: string; perfil_id?: string; texto?: string; feita?: boolean; fixada?: boolean; criada_em?: string; alterada_em?: string }
         Relationships: []
       }
+      reunioes: {
+        Row: { id: string; organizacao_id: string; criado_por: string; titulo: string; inicio: string; fim: string; link: string | null; pauta: string | null; cancelada_em: string | null; criada_em: string; alterada_em: string }
+        Insert: { id?: string; organizacao_id: string; criado_por: string; titulo: string; inicio: string; fim: string; link?: string | null; pauta?: string | null; cancelada_em?: string | null; criada_em?: string; alterada_em?: string }
+        Update: { id?: string; organizacao_id?: string; criado_por?: string; titulo?: string; inicio?: string; fim?: string; link?: string | null; pauta?: string | null; cancelada_em?: string | null; criada_em?: string; alterada_em?: string }
+        Relationships: []
+      }
+      reuniao_convidados: {
+        Row: { reuniao_id: string; perfil_id: string; convidado_em: string }
+        Insert: { reuniao_id: string; perfil_id: string; convidado_em?: string }
+        Update: { reuniao_id?: string; perfil_id?: string; convidado_em?: string }
+        Relationships: []
+      }
       ferramenta_uso: {
         Row: {
           chave: string
@@ -7460,6 +7472,67 @@ export type Database = {
           },
         ]
       }
+      pacientes_pessoas_diferentes: {
+        Row: {
+          decidido_em: string
+          decidido_por: string
+          desfeito_em: string | null
+          desfeito_por: string | null
+          id: string
+          motivo: string
+          organizacao_id: string | null
+          paciente_a: string
+          paciente_b: string
+          unidade_id: string
+        }
+        Insert: {
+          decidido_em?: string
+          decidido_por: string
+          desfeito_em?: string | null
+          desfeito_por?: string | null
+          id?: string
+          motivo: string
+          organizacao_id?: string | null
+          paciente_a: string
+          paciente_b: string
+          unidade_id: string
+        }
+        Update: {
+          decidido_em?: string
+          decidido_por?: string
+          desfeito_em?: string | null
+          desfeito_por?: string | null
+          id?: string
+          motivo?: string
+          organizacao_id?: string | null
+          paciente_a?: string
+          paciente_b?: string
+          unidade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pacientes_pessoas_diferentes_paciente_a_fkey"
+            columns: ["paciente_a"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacientes_pessoas_diferentes_paciente_b_fkey"
+            columns: ["paciente_b"]
+            isOneToOne: false
+            referencedRelation: "pacientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pacientes_pessoas_diferentes_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pacotes_alta: {
         Row: {
           codigo_hash: string
@@ -9456,6 +9529,143 @@ export type Database = {
           },
         ]
       }
+      secretaria_pessoas: {
+        Row: {
+          aceito_em: string | null
+          ativo: boolean
+          designado_em: string
+          designado_por: string
+          email: string
+          id: string
+          perfil_id: string | null
+          retirado_em: string | null
+          retirado_por: string | null
+          secretaria_id: string
+        }
+        Insert: {
+          aceito_em?: string | null
+          ativo?: boolean
+          designado_em?: string
+          designado_por: string
+          email: string
+          id?: string
+          perfil_id?: string | null
+          retirado_em?: string | null
+          retirado_por?: string | null
+          secretaria_id: string
+        }
+        Update: {
+          aceito_em?: string | null
+          ativo?: boolean
+          designado_em?: string
+          designado_por?: string
+          email?: string
+          id?: string
+          perfil_id?: string | null
+          retirado_em?: string | null
+          retirado_por?: string | null
+          secretaria_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secretaria_pessoas_secretaria_id_fkey"
+            columns: ["secretaria_id"]
+            isOneToOne: false
+            referencedRelation: "secretarias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretaria_pessoas_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretaria_pessoas_designado_por_fkey"
+            columns: ["designado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretaria_pessoas_retirado_por_fkey"
+            columns: ["retirado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      secretarias: {
+        Row: {
+          ativo: boolean
+          atualizado_em: string
+          cnpj: string | null
+          criado_em: string
+          criado_por: string | null
+          email: string | null
+          endereco: string | null
+          esfera: string
+          id: string
+          municipio: string | null
+          nome: string
+          organizacao_id: string
+          responsavel: string | null
+          telefone: string | null
+          uf: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          atualizado_em?: string
+          cnpj?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          email?: string | null
+          endereco?: string | null
+          esfera?: string
+          id?: string
+          municipio?: string | null
+          nome: string
+          organizacao_id: string
+          responsavel?: string | null
+          telefone?: string | null
+          uf?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          atualizado_em?: string
+          cnpj?: string | null
+          criado_em?: string
+          criado_por?: string | null
+          email?: string | null
+          endereco?: string | null
+          esfera?: string
+          id?: string
+          municipio?: string | null
+          nome?: string
+          organizacao_id?: string
+          responsavel?: string | null
+          telefone?: string | null
+          uf?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "secretarias_organizacao_id_fkey"
+            columns: ["organizacao_id"]
+            isOneToOne: false
+            referencedRelation: "organizacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "secretarias_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       setores: {
         Row: {
           ativo: boolean
@@ -10180,6 +10390,24 @@ export type Database = {
           },
         ]
       }
+      turnos_unidade: {
+        Row: {
+          id: string; unidade_id: string; codigo: string; nome: string; inicio: string; fim: string; duracao_min: number
+          cobre: 'todos' | 'medico' | 'enfermagem'; sobreaviso: boolean; padrao: boolean; ordem: number; ativo: boolean
+          criado_por: string | null; criado_em: string; atualizado_em: string
+        }
+        Insert: {
+          id?: string; unidade_id: string; codigo: string; nome: string; inicio: string; fim: string; duracao_min: number
+          cobre?: 'todos' | 'medico' | 'enfermagem'; sobreaviso?: boolean; padrao?: boolean; ordem?: number; ativo?: boolean
+          criado_por?: string | null; criado_em?: string; atualizado_em?: string
+        }
+        Update: {
+          id?: string; unidade_id?: string; codigo?: string; nome?: string; inicio?: string; fim?: string; duracao_min?: number
+          cobre?: 'todos' | 'medico' | 'enfermagem'; sobreaviso?: boolean; padrao?: boolean; ordem?: number; ativo?: boolean
+          criado_por?: string | null; criado_em?: string; atualizado_em?: string
+        }
+        Relationships: []
+      }
       trocas_plantao: {
         Row: {
           aceito_em: string | null
@@ -10296,6 +10524,8 @@ export type Database = {
           organizacao_id: string
           protocolo_classificacao_id: string | null
           raio_metros: number
+          ramo_rede: string | null
+          secretaria_id: string | null
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf: string | null
           updated_at: string
@@ -10316,6 +10546,8 @@ export type Database = {
           organizacao_id: string
           protocolo_classificacao_id?: string | null
           raio_metros?: number
+          ramo_rede?: string | null
+          secretaria_id?: string | null
           tipo: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
           updated_at?: string
@@ -10336,6 +10568,8 @@ export type Database = {
           organizacao_id?: string
           protocolo_classificacao_id?: string | null
           raio_metros?: number
+          ramo_rede?: string | null
+          secretaria_id?: string | null
           tipo?: Database["public"]["Enums"]["tipo_unidade"]
           uf?: string | null
           updated_at?: string
@@ -10595,6 +10829,7 @@ export type Database = {
         Args: { p_destinatario_id: string }
         Returns: string
       }
+      abrir_acesso_urgencia: { Args: { p_justificativa: string; p_paciente: string }; Returns: string }
       abrir_conversa_suporte: { Args: never; Returns: string }
       abrir_historico_encerrado: {
         Args: { p_motivo: string; p_paciente: string }
@@ -10771,6 +11006,7 @@ export type Database = {
       criticas_aih_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       definir_critica_aih: { Args: { p_bloqueante: boolean; p_critica: string; p_motivo: string; p_unidade: string }; Returns: undefined }
       definir_meu_cbo: { Args: { p_cbo: string }; Returns: Json }
+      definir_ia_teto_mensal: { Args: { p_usd: number | null }; Returns: undefined }
       definir_categoria_plantoes: { Args: { p_papel: Database['public']['Enums']['papel']; p_plantoes: string[] }; Returns: number }
       definir_sala_do_plantao: { Args: { p_sala: string; p_setor: string }; Returns: Json }
       minhas_salas_do_plantao: { Args: never; Returns: Json }
@@ -10806,6 +11042,34 @@ export type Database = {
           p_uf?: string
           p_unidade: string
         }
+        Returns: undefined
+      }
+      admin_rede_arvore: { Args: never; Returns: Json }
+      admin_designar_secretaria: {
+        Args: { p_email: string; p_secretaria: string }
+        Returns: Json
+      }
+      admin_retirar_secretaria: { Args: { p_id: string }; Returns: undefined }
+      admin_salvar_secretaria: {
+        Args: {
+          p_ativo?: boolean
+          p_cnpj?: string
+          p_email?: string
+          p_endereco?: string
+          p_esfera?: string
+          p_id: string | null
+          p_municipio?: string
+          p_nome: string
+          p_organizacao: string | null
+          p_responsavel?: string
+          p_telefone?: string
+          p_uf?: string
+        }
+        Returns: string
+      }
+      admin_secretaria_pessoas: { Args: { p_secretaria: string }; Returns: Json }
+      admin_unidade_na_rede: {
+        Args: { p_ramo?: string; p_secretaria: string | null; p_unidade: string }
         Returns: undefined
       }
       marcar_sempre_bpa_c: { Args: { p_id: string; p_sempre: boolean }; Returns: undefined }
@@ -10859,6 +11123,15 @@ export type Database = {
       regulacao_centrais: { Args: never; Returns: Json }
       regulacao_contexto: { Args: { p_unidade: string }; Returns: Json }
       regulacao_definir_central: { Args: { p_unidade: string }; Returns: undefined }
+      // regulamentação das centrais pelo administrador (migration 20270421000010)
+      regulacao_regulamentacao: { Args: never; Returns: Json }
+      regulacao_cadastrar_central: { Args: { p_unidade: string }; Returns: undefined }
+      regulacao_retirar_central: { Args: { p_central: string }; Returns: undefined }
+      regulacao_definir_unidades_central: { Args: { p_central: string; p_unidades: string[] }; Returns: Json }
+      regulacao_salvar_capacidades: { Args: { p_itens: Json; p_unidade: string }; Returns: number }
+      regulacao_definir_prazos_tipo: { Args: { p_central: string; p_prazos: Json }; Returns: Json }
+      // o que as unidades reguladas têm, para o regulador (migration 20270421000012)
+      regulacao_capacidades_reguladas: { Args: { p_central: string }; Returns: Json }
       regulacao_detalhe: { Args: { p_id: string }; Returns: Json }
       regulacao_lista: { Args: { p_unidade: string }; Returns: Json }
       regulacao_assumir: { Args: { p_id: string }; Returns: Json }
@@ -10908,6 +11181,7 @@ export type Database = {
       regulacao_por_que_nao_ajo: { Args: { p_paciente?: string; p_unidade: string }; Returns: string | null }
       regulacao_registrar_resposta_externa: { Args: { p_aceita: boolean; p_id: string; p_meio: string; p_motivo?: string | null; p_quem: string; p_texto?: string | null }; Returns: Json }
       rede_baixar_arquivo: { Args: { p_fechamento: string; p_tipo: string; p_unidade: string }; Returns: Json }
+      rede_arvore_da_secretaria: { Args: never; Returns: Json }
       rede_contexto: { Args: { p_unidade: string }; Returns: Json }
       rede_definir_modulo: { Args: { p_ativo: boolean; p_org: string; p_secretaria: string | null }; Returns: undefined }
       rede_faturamento: { Args: { p_competencia: string; p_unidade: string }; Returns: Json }
@@ -10919,6 +11193,18 @@ export type Database = {
       rede_regulacoes: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       nir_cobrar: { Args: { p_ref: string; p_tipo: string; p_unidade: string }; Returns: number }
       nir_pendencias: { Args: { p_unidade: string }; Returns: Json }
+      // Internação do NIR pelo modelo do RT (migration 20270425000030)
+      regulacao_pendencia_unidade_criar: { Args: { p_dono?: string; p_medicos?: string[] | null; p_motivo: string; p_solicitacao: string; p_titulo: string; p_urgencia?: string }; Returns: string }
+      regulacao_pendencia_unidade_reavisar: { Args: { p_id: string }; Returns: number }
+      regulacao_pendencia_unidade_resolver: { Args: { p_id: string; p_nota?: string | null }; Returns: undefined }
+      regulacao_pendencias_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      nir_medicos_do_setor: { Args: { p_setor?: string | null; p_unidade: string }; Returns: Json }
+      nir_mapa_leitos: { Args: { p_unidade: string }; Returns: Json }
+      // regulação dentro do paciente, conversa com a central e NIR (migration 20270421000040)
+      regulacao_conversa: { Args: { p_solicitacao: string }; Returns: Json }
+      regulacao_conversa_enviar: { Args: { p_intencao?: string; p_solicitacao: string; p_texto: string }; Returns: string }
+      regulacao_pacientes: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_do_paciente: { Args: { p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_indicadores: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }
@@ -11012,6 +11298,7 @@ export type Database = {
       }
       recusar_passagem: { Args: { p_motivo?: string; p_solicitacao: string }; Returns: undefined }
       aprovar_troca: { Args: { p_troca: string }; Returns: undefined }
+      ativar_turno_unidade: { Args: { p_id: string; p_ativo: boolean }; Returns: undefined }
       atendimento_aberto_do_paciente: {
         Args: { p_paciente: string }
         Returns: {
@@ -11722,6 +12009,7 @@ export type Database = {
       contexto_evolucao: { Args: { p_internacao: string }; Returns: Json }
       por_que_nao_evoluo: { Args: { p_internacao: string }; Returns: Json }
       contexto_sem_conexao: { Args: never; Returns: Json }
+      contingencia_atendimentos: { Args: { p_contingencia: string }; Returns: Json }
       contingencias_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       convites_da_unidade: {
         Args: { p_unidade: string }
@@ -11882,6 +12170,7 @@ export type Database = {
       descartar_rascunho: { Args: { p_rascunho: string }; Returns: undefined }
       desfazer_decisao_gaviao: { Args: { p_id: string }; Returns: undefined }
       desfazer_pendencia: { Args: { p_pendencia: string }; Returns: undefined }
+      desfazer_pessoas_diferentes: { Args: { p_marca: string }; Returns: undefined }
       desfazer_unificacao: { Args: { p_motivo: string; p_pedido: string }; Returns: undefined }
       diagnosticos_do_leito: {
         Args: { p_internacao: string }
@@ -12348,6 +12637,8 @@ export type Database = {
       casos_revisao_alerta_sepse: { Args: { p_meses: number; p_motivo: string; p_unidade: string }; Returns: Json }
       desempenho_alerta_sepse: { Args: { p_meses?: number; p_unidade: string }; Returns: Json }
       registrar_alerta_sepse_internacao: { Args: { p_paciente: string; p_unidade: string }; Returns: boolean }
+      aplicar_exames_sepse: { Args: { p_unidade: string }; Returns: Json }
+      recusas_laboratorio_sem_pedido: { Args: { p_semanas?: number; p_unidade: string }; Returns: Json }
       fila_revisao_ferramentas: {
         Args: { p_tipo: string }
         Returns: {
@@ -12795,6 +13086,7 @@ export type Database = {
       }
       historico_encerrado: { Args: { p_paciente: string }; Returns: Json }
       // lacuna 1 (RT 10/11/2026): paciente não identificado
+      ia_teto_mensal: { Args: never; Returns: { definido_em: string; definido_por: string | null; usd: number }[] }
       ia_custo_busca_mes: {
         Args: { p_mes?: string }
         Returns: {
@@ -12968,6 +13260,10 @@ export type Database = {
         Args: { p_motivo: string; p_paciente: string; p_tipo: string }
         Returns: string
       }
+      marcar_pessoas_diferentes: {
+        Args: { p_motivo: string; p_paciente_a: string; p_paciente_b: string }
+        Returns: string
+      }
       marcar_suspeita_infeccao: {
         Args: { p_ativa: boolean; p_paciente: string }
         Returns: undefined
@@ -12982,6 +13278,7 @@ export type Database = {
         }
         Returns: string
       }
+      minhas_secretarias: { Args: never; Returns: Json }
       medicos_para_encaminhar: { Args: { p_paciente: string }; Returns: Json }
       medidas_pedidas_da_unidade: {
         Args: { p_unidade: string }
@@ -13384,6 +13681,7 @@ export type Database = {
         Returns: string[]
       }
       pendencias_pep: { Args: { p_unidade: string }; Returns: Json }
+      pessoas_diferentes_da_unidade: { Args: { p_unidade: string }; Returns: Json }
       perguntar_gestao: {
         Args: { p_pergunta: string; p_unidade: string }
         Returns: Json
@@ -13941,8 +14239,34 @@ export type Database = {
       }
       registrar_uso_ferramenta: { Args: { p_chave: string }; Returns: number }
       salvar_anotacao: { Args: { p_id: string | null; p_texto: string }; Returns: string }
+      salvar_turno_unidade: {
+        Args: {
+          p_unidade: string; p_id: string | null; p_nome: string; p_inicio: string; p_fim: string
+          p_cobre?: string; p_sobreaviso?: boolean; p_ordem?: number
+        }
+        Returns: string
+      }
       marcar_anotacao: { Args: { p_id: string; p_feita?: boolean; p_fixada?: boolean }; Returns: undefined }
       apagar_anotacao: { Args: { p_id: string }; Returns: undefined }
+      salvar_reuniao: {
+        Args: {
+          p_id: string | null; p_unidade: string | null; p_titulo: string; p_data: string; p_inicio: string; p_fim: string
+          p_link: string | null; p_pauta: string | null; p_convidados: string[]
+        }
+        Returns: string
+      }
+      cancelar_reuniao: { Args: { p_id: string }; Returns: undefined }
+      minhas_reunioes: {
+        Args: { p_de: string; p_ate: string }
+        Returns: {
+          id: string; titulo: string; inicio: string; fim: string; link: string | null; plataforma: string | null
+          pauta: string | null; cancelada: boolean; sou_criador: boolean; criador_nome: string; convidados: Json
+        }[]
+      }
+      pessoas_para_reuniao: {
+        Args: { p_unidade: string; p_busca: string }
+        Returns: { perfil_id: string; nome: string; papeis: string[]; unidades: string[] }[]
+      }
       passometro: { Args: { p_unidade: string }; Returns: Json }
       registrar_impressao_passometro: { Args: { p_unidade: string }; Returns: Json }
       medicos_para_descanso: {
@@ -14014,6 +14338,20 @@ export type Database = {
           nao_uteis: number
           perguntas_ia: number
           uteis: number
+        }[]
+      }
+      resumo_carga_horaria: {
+        Args: { p_fim: string; p_inicio: string; p_unidade: string }
+        Returns: {
+          categorias: string | null
+          dias: number
+          dias_sobreaviso: number
+          diurnos: number
+          horas: number
+          horas_sobreaviso: number
+          nome: string
+          noturnos: number
+          perfil_id: string
         }[]
       }
       resumo_carga_plantonistas: {
@@ -14572,6 +14910,7 @@ export type Database = {
         | "regulacao_regional"
         | "faturamento_rede"
         | "nir"
+        | "gestor_secretaria"
       status_leito:
         | "livre"
         | "ocupado"
@@ -14942,6 +15281,7 @@ export const Constants = {
         "regulacao_regional",
         "faturamento_rede",
         "nir",
+        "gestor_secretaria",
       ],
       status_leito: [
         "livre",
@@ -14978,6 +15318,7 @@ export type EscalaPlantao = Database['public']['Tables']['escala_plantao']['Row'
 export type EscalaPlantaoInsert = Database['public']['Tables']['escala_plantao']['Insert']
 export type EscalaFixa = Database['public']['Tables']['escala_fixa']['Row']
 export type EscalaFixaInsert = Database['public']['Tables']['escala_fixa']['Insert']
+export type TurnoUnidade = Database['public']['Tables']['turnos_unidade']['Row']
 export type SolicitacaoEscala = Database['public']['Tables']['solicitacoes_escala']['Row']
 export type SolicitacaoEscalaInsert = Database['public']['Tables']['solicitacoes_escala']['Insert']
 export type CandidaturaEscala = Database['public']['Tables']['candidaturas_escala']['Row']
@@ -14995,6 +15336,8 @@ export type PlantonistaDaUnidade = Database['public']['Functions']['plantonistas
 export type SetorInternacao = Database['public']['Functions']['setores_internacao']['Returns'][number]
 export type SetorObservacao = Database['public']['Functions']['setores_observacao']['Returns'][number]
 export type ResumoCargaPlantonista = Database['public']['Functions']['resumo_carga_plantonistas']['Returns'][number]
+/** Carga horária com o sobreaviso à parte (migration 20270421000052). */
+export type ResumoCargaHoraria = Database['public']['Functions']['resumo_carga_horaria']['Returns'][number]
 export type OcupacaoSetor = Database['public']['Functions']['ocupacao_setores']['Returns'][number]
 export type MinhaNotificacao = Database['public']['Functions']['minhas_notificacoes']['Returns'][number]
 export type MeuPlantaoAgora = Database['public']['Functions']['meu_plantao_agora']['Returns'][number]

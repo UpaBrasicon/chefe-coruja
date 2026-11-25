@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { cn } from '@/lib/utils'
 import type { TipoUnidade } from '@/types/database'
-import { ROTA_PERGUNTAR_IA, agruparNavegacao, barraMedicoCelular, menuMedicoCelular, type ChaveNota, type ItemNav } from './navegacao'
+import { ROTA_PERGUNTAR_IA, agruparNavegacao, barraMedicoCelular, foraDoItem, menuMedicoCelular, type ChaveNota, type ItemNav } from './navegacao'
 
 // Barra de baixo do médico abaixo de 1024px (item 6 do BACKLOG; CM1 e CM7 = A,
 // RT em 23/11/2026): Início, Leitos, Perguntar à IA no meio e em destaque,
@@ -19,7 +19,8 @@ const ROTA_BUSCA = '/plantonista?todas=1&busca=1'
 function ativo(item: ItemNav, pathname: string, search: string): boolean {
   const ia = new URLSearchParams(search).get('ia') === '1'
   if (item.to === ROTA_PERGUNTAR_IA) return pathname === '/plantonista' && ia
-  if (item.to === '/plantonista') return pathname.startsWith('/plantonista') && !ia
+  // a Farmácia tem item próprio no Menu: nela o Início não acende junto (um ativo só)
+  if (item.to === '/plantonista') return pathname.startsWith('/plantonista') && !pathname.startsWith('/plantonista/farmacia') && !ia
   return pathname === item.to || pathname.startsWith(`${item.to}/`)
 }
 
@@ -72,7 +73,7 @@ function MenuDaBarra({ itens, notas }: { itens: ItemNav[]; notas: Partial<Record
                 const Icone = item.icone
                 const nota = item.nota ? notas[item.nota] : undefined
                 return (
-                  <NavLink key={item.to} to={item.to} end={item.exato} onClick={() => setAberta(false)}
+                  <NavLink key={item.to} to={item.to} end={item.exato || foraDoItem(item, pathname)} onClick={() => setAberta(false)}
                     className={({ isActive }) => cn('flex min-h-12 items-center gap-3 rounded-container px-3.5 text-controle no-underline',
                       isActive ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta')}>
                     <Icone className="size-5 shrink-0" aria-hidden />

@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronLeft, MessageSquare, Printer } from 'lucide-react'
+import { Check, ChevronLeft, MessageSquare, Printer, Search, X } from 'lucide-react'
 import * as React from 'react'
 
-import { Chip, Chips, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { Abas, Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import {
   RESPOSTA_MIN, STATUS_PARECER, mensagem, prioridade, useEspecialidades,
   type PrioridadeParecer, type StatusParecer,
 } from '@/components/parecer/comum'
 import { Badge } from '@/components/ui/badge'
+import { BotaoLinha, OpcaoLista } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/AuthContext'
@@ -16,7 +18,9 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { diaMesHora } from '@/lib/formato'
 import { imprimirRelatorio } from '@/lib/prontuario'
+import { normalizar } from '@/lib/search'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 // Tela Pareceres (protótipo: Plantão › Internação › Parecer médico, 2400–2464,
 // parecerVals). Fila dos pedidos da unidade nas especialidades que eu declarei,
@@ -59,58 +63,83 @@ type DadosPaciente = {
 const CARTAO = 'rounded-container border border-fio bg-superficie shadow-[0_1px_2px_rgba(15,23,42,0.04)]'
 
 // ── minhas especialidades ───────────────────────────────────────────────────
-function MinhasEspecialidades({ perfilId }: { perfilId: string }) {
-  const qc = useQueryClient()
-  const todas = useEspecialidades()
-  const [editando, setEditando] = React.useState(false)
-  const [marcadas, setMarcadas] = React.useState<string[]>([])
-  const minhas = useQuery({
+// Revisão do perfil Médico (RT 24/11/2026, M1): busca com seleção múltipla
+// em fichas, sem a parede das 41 especialidades. No perfil Médico só as
+// especialidades médicas; as multiprofissionais ficam para os outros perfis.
+const NAO_MEDICAS = new Set(['fisioterapia', 'fonoaudiologia', 'nutricao', 'psicologia', 'servico social',
+  'enfermagem', 'farmacia', 'terapia ocupacional', 'odontologia'])
+const ehMedica = (e: string) => !NAO_MEDICAS.has(normalizar(e).trim())
+
+function useMinhasEspecialidades(perfilId: string) {
+  return useQuery({
     queryKey: ['pareceres', 'minhas-especialidades', perfilId],
+    enabled: !!perfilId,
     queryFn: async () => {
       const { data, error } = await supabase.from('especialidades_perfil').select('especialidade').eq('perfil_id', perfilId)
       if (error) throw error
       return (data ?? []).map((e) => e.especialidade)
     },
   })
+}
+
+function EditarEspecialidades({ atuais, soMedicas, fechar }: { atuais: string[]; soMedicas: boolean; fechar: () => void }) {
+  const qc = useQueryClient()
+  const todas = useEspecialidades()
+  const [marcadas, setMarcadas] = React.useState<string[]>(atuais)
+  const [termo, setTermo] = React.useState('')
   const salvar = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('definir_minhas_especialidades', { p_especialidades: marcadas })
       if (error) throw error
     },
     onSuccess: () => {
-      setEditando(false)
+      fechar()
       void qc.invalidateQueries({ queryKey: ['pareceres'] })
     },
   })
-  const lista = minhas.data ?? []
-  const alternar = (e: string) => setMarcadas((m) => (m.includes(e) ? m.filter((x) => x !== e) : [...m, e]))
+  const opcoes = (todas.data ?? []).filter((e) => (!soMedicas || ehMedica(e)) && !marcadas.includes(e))
+  const t = normalizar(termo.trim())
+  const achadas = t ? opcoes.filter((e) => normalizar(e).includes(t)).slice(0, 8) : []
 
   return (
-    <div className={`${CARTAO} flex flex-col gap-2.5 px-5 py-3.5`}>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-apoio font-medium text-tinta">Especialidades que respondo:</span>
-        {minhas.isLoading && <Spinner />}
-        {!minhas.isLoading && lista.length === 0 && <span className="text-apoio text-atencao">nenhuma declarada: a fila fica vazia até você declarar.</span>}
-        {lista.map((e) => <Badge key={e} variant="default">{e}</Badge>)}
-        {!editando && (
-          <Button size="sm" variant="outline" className="ml-auto" onClick={() => { setMarcadas(lista); setEditando(true) }}>Alterar</Button>
-        )}
-      </div>
-      {editando && (
-        <>
-          <p className="text-apoio text-tinta-sussurro">
-            Marque as especialidades em que você responde parecer nesta rede. A declaração fica registrada na auditoria.
-          </p>
-          <div role="group" aria-label="Especialidades" className="flex flex-wrap gap-1.5">
-            {(todas.data ?? []).map((e) => <Chip key={e} ativo={marcadas.includes(e)} onClick={() => alternar(e)}>{e}</Chip>)}
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {salvar.error && <span className="mr-auto text-apoio text-critico">{mensagem(salvar.error)}</span>}
-            <Button size="sm" variant="ghost" onClick={() => setEditando(false)}>Voltar</Button>
-            <Button size="sm" onClick={() => salvar.mutate()} disabled={salvar.isPending}>Salvar especialidades</Button>
-          </div>
-        </>
+    <div className="flex flex-col gap-2.5">
+      <p className="text-apoio text-tinta-sussurro">
+        Busque e escolha as especialidades em que você responde parecer nesta rede. A declaração fica registrada na auditoria.
+      </p>
+      {marcadas.length > 0 && (
+        <div className="flex flex-wrap gap-1.5" aria-label="Especialidades escolhidas">
+          {marcadas.map((e) => (
+            <span key={e} className="inline-flex items-center gap-1.5 rounded-capsula border border-acao/40 bg-acao/10 py-1 pr-1.5 pl-[11px] text-apoio font-medium text-acao">
+              {e}
+              <Button variant="ghost" size="icon-xs" aria-label={`Tirar ${e}`} onClick={() => setMarcadas((m) => m.filter((x) => x !== e))}
+                className="size-auto p-0.5 text-acao hover:text-acao-pressionada">
+                <X className="size-3.5" aria-hidden />
+              </Button>
+            </span>
+          ))}
+        </div>
       )}
+      <div className="relative">
+        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+        <Input aria-label="Buscar especialidade" className="pl-9" placeholder="Buscar especialidade, ex.: cardio" autoComplete="off"
+          value={termo} onChange={(e) => setTermo(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && achadas.length > 0) { e.preventDefault(); setMarcadas((m) => [...m, achadas[0]]); setTermo('') }
+          }} />
+      </div>
+      {achadas.length > 0 && (
+        <div role="listbox" aria-label="Especialidades encontradas" className="overflow-hidden rounded-controle border border-fio bg-superficie">
+          {achadas.map((e) => (
+            <OpcaoLista key={e} onClick={() => { setMarcadas((m) => [...m, e]); setTermo('') }} className="text-controle text-tinta hover:bg-campo">{e}</OpcaoLista>
+          ))}
+        </div>
+      )}
+      {t && achadas.length === 0 && <span className="text-apoio text-tinta-sussurro">Nenhuma especialidade com esse nome{soMedicas ? ' entre as médicas' : ''}.</span>}
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {salvar.error && <span className="mr-auto text-apoio text-critico">{mensagem(salvar.error)}</span>}
+        <Button size="sm" variant="ghost" onClick={fechar}>Voltar</Button>
+        <Button size="sm" onClick={() => salvar.mutate()} disabled={salvar.isPending}>Salvar especialidades</Button>
+      </div>
     </div>
   )
 }
@@ -304,12 +333,130 @@ function Linha({ p, abrir }: { p: ItemFila; abrir: () => void }) {
   )
 }
 
+// ── que eu pedi (M2) ────────────────────────────────────────────────────────
+// Os pedidos de parecer feitos por mim nesta unidade (a RLS de
+// pareceres_medicos já deixa o solicitante ler os dele), 30 dias.
+type MeuPedido = {
+  id: string
+  paciente_id: string
+  especialidade: string
+  prestador: string | null
+  prioridade: string
+  pergunta: string
+  status: StatusParecer
+  solicitado_em: string
+  analise_iniciada_em: string | null
+  respondido_em: string | null
+  resposta: string | null
+  cancelado_em: string | null
+  motivo_cancelamento: string | null
+  pacientes: { nome: string } | null
+}
+
+function useQueEuPedi(unidadeId: string | undefined, perfilId: string | undefined) {
+  return useQuery({
+    queryKey: ['pareceres', 'que-eu-pedi', unidadeId, perfilId],
+    enabled: !!unidadeId && !!perfilId,
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const desde = new Date(Date.now() - 30 * 24 * 3600_000).toISOString()
+      const { data, error } = await supabase.from('pareceres_medicos')
+        .select('id, paciente_id, especialidade, prestador, prioridade, pergunta, status, solicitado_em, analise_iniciada_em, respondido_em, resposta, cancelado_em, motivo_cancelamento, pacientes!pareceres_medicos_paciente_id_fkey(nome)')
+        .eq('unidade_id', unidadeId!).eq('solicitante_id', perfilId!).gte('solicitado_em', desde)
+        .order('solicitado_em', { ascending: false }).limit(100)
+      if (error) throw error
+      return (data ?? []) as unknown as MeuPedido[]
+    },
+  })
+}
+
+const ETAPAS_PARECER: [StatusParecer, string, keyof MeuPedido][] = [
+  ['solicitado', 'Aguardando', 'solicitado_em'], ['em_analise', 'Em análise', 'analise_iniciada_em'], ['realizado', 'Respondido', 'respondido_em'],
+]
+
+function EtapasParecer({ p }: { p: MeuPedido }) {
+  if (p.status === 'cancelado') {
+    return <p className="text-apoio text-tinta-sussurro">Cancelado{p.cancelado_em ? ` em ${fmtDataHora(p.cancelado_em)}` : ''}{p.motivo_cancelamento ? `: ${p.motivo_cancelamento}` : '.'}</p>
+  }
+  const atual = ETAPAS_PARECER.findIndex(([k]) => k === p.status)
+  return (
+    <ol aria-label="Etapa do parecer" className="flex flex-wrap items-center gap-x-2 gap-y-1 text-apoio">
+      {ETAPAS_PARECER.map(([k, r, campo], i) => {
+        const quando = p[campo] as string | null
+        return (
+          <li key={k} className="flex items-center gap-2" aria-current={i === atual ? 'step' : undefined}>
+            {i > 0 && <span aria-hidden className="text-tinta-sussurro">→</span>}
+            <span aria-hidden className={cn('size-2 rounded-capsula', i <= atual ? 'bg-acao' : 'border border-fio-forte bg-superficie')} />
+            <span className={i <= atual ? 'font-medium text-tinta' : 'text-tinta-sussurro'}>{r}{i <= atual && quando ? ` · ${diaMesHora(quando)}` : ''}</span>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+function QueEuPedi({ pedidos }: { pedidos: ReturnType<typeof useQueEuPedi> }) {
+  const [abertoId, setAbertoId] = React.useState<string | null>(null)
+  const lista = pedidos.data ?? []
+  const aberto = lista.find((p) => p.id === abertoId) ?? lista[0] ?? null
+  if (pedidos.isLoading) return <div className={`${CARTAO} px-5 py-4`}><Spinner /></div>
+  if (pedidos.error) return <p className="text-apoio text-critico">{mensagem(pedidos.error)}</p>
+  if (lista.length === 0) {
+    return (
+      <div className={`${CARTAO} px-5 py-4 text-apoio text-tinta-sussurro`}>
+        Nenhum parecer pedido por você nos últimos 30 dias. O pedido é feito no prontuário do paciente, na aba Parecer.
+      </div>
+    )
+  }
+  return (
+    <div className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-start">
+      <ul className={`${CARTAO} overflow-hidden`}>
+        {lista.map((p) => (
+          <li key={p.id}>
+            <BotaoLinha variante="linha" aria-current={aberto?.id === p.id ? 'true' : undefined}
+              className={cn('flex-col gap-0.5', aberto?.id === p.id && 'bg-alerta-marca')} onClick={() => setAbertoId(p.id)}>
+              <span className="flex w-full items-baseline gap-2">
+                <span className="min-w-0 truncate text-controle font-medium text-tinta">{p.pacientes?.nome ?? 'Paciente'}</span>
+                <span className="ml-auto shrink-0 text-rotulo text-tinta-sussurro tabular-nums">{diaMesHora(p.solicitado_em)}</span>
+              </span>
+              <span className="text-apoio text-tinta-apoio">{p.especialidade} · {STATUS_PARECER[p.status].rotulo}</span>
+            </BotaoLinha>
+          </li>
+        ))}
+      </ul>
+      {aberto && (
+        <div className={`${CARTAO} flex flex-col gap-2.5 px-5 py-4`}>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-corpo font-semibold text-tinta">{aberto.pacientes?.nome ?? 'Paciente'}</span>
+            <span className="text-apoio text-tinta-apoio">{aberto.especialidade}{aberto.prestador ? ` · para ${aberto.prestador}` : ''} · {prioridade(aberto.prioridade).rotulo}</span>
+          </div>
+          <EtapasParecer p={aberto} />
+          <p className="text-controle leading-relaxed whitespace-pre-wrap text-pretty text-tinta">{aberto.pergunta}</p>
+          {aberto.status === 'realizado' && aberto.resposta && (
+            <div className="rounded-controle border border-conforme/30 bg-alerta-conforme p-2.5">
+              <p className="text-rotulo text-tinta-sussurro">Parecer em {aberto.respondido_em ? fmtDataHora(aberto.respondido_em) : ''}</p>
+              <p className="mt-1 text-apoio whitespace-pre-wrap text-tinta">{aberto.resposta}</p>
+              <Button size="sm" variant="outline" className="mt-2"
+                onClick={() => void imprimirRelatorio({ tipo: 'pareceres', pacienteId: aberto.paciente_id, ids: [aberto.id] })}>
+                <Printer className="size-3.5" />Imprimir
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Pareceres() {
   const { perfil } = useAuth()
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
+  const soMedicas = papelAtivo === 'plantonista' || papelAtivo === 'telemedicina'
+  const [aba, setAba] = React.useState<'responder' | 'pedi'>('responder')
   const [filtro, setFiltro] = React.useState('')
   const [abertoId, setAbertoId] = React.useState<string | null>(null)
+  const [editando, setEditando] = React.useState(false)
 
   const fila = useQuery({
     queryKey: ['pareceres', 'fila', unidadeId],
@@ -321,6 +468,8 @@ export default function Pareceres() {
       return (data ?? []) as unknown as ItemFila[]
     },
   })
+  const minhas = useMinhasEspecialidades(perfil?.id ?? '')
+  const pedidos = useQueEuPedi(unidadeId, perfil?.id)
 
   if (!unidadeId || !perfil) return <Spinner />
   const todos = fila.data ?? []
@@ -330,40 +479,76 @@ export default function Pareceres() {
   const f = esps.includes(filtro) ? filtro : ''
   const vis = ativos.filter((p) => !f || p.especialidade === f)
   const aberto = todos.find((p) => p.id === abertoId) ?? null
+  const declaradas = minhas.data ?? []
+  const semDeclarar = !minhas.isLoading && !minhas.error && declaradas.length === 0
+  const pedidosAbertos = (pedidos.data ?? []).filter((p) => p.status === 'solicitado' || p.status === 'em_analise').length
 
   return (
     <div className="flex w-full max-w-5xl flex-col gap-4">
       <TituloPagina icone={MessageSquare} titulo="Pareceres"
-        descricao="Pedidos de parecer às especialidades que você responde. O parecer entra no prontuário como documento numerado seu." />
+        descricao="Pedidos de parecer às especialidades que você responde e os que você pediu. O parecer entra no prontuário como documento numerado." />
       {aberto ? (
         <ParecerAberto key={aberto.id} p={aberto} voltar={() => setAbertoId(null)} />
       ) : (
         <>
-          <MinhasEspecialidades perfilId={perfil.id} />
-          <div className={`${CARTAO} flex flex-col gap-2.5 px-5 py-3.5`}>
-            <span className="text-apoio text-tinta-apoio">
-              {vis.length} {vis.length === 1 ? 'parecer' : 'pareceres'} {f ? `de ${f}` : 'aguardando'} · ordem por prioridade
-            </span>
-            <Chips rotulo="Filtrar por especialidade">
-              <Chip ativo={!f} onClick={() => setFiltro('')}>Todas</Chip>
-              {esps.map((e) => <Chip key={e} ativo={f === e} onClick={() => setFiltro(e)}>{e}</Chip>)}
-            </Chips>
-          </div>
-          <div className={`${CARTAO} overflow-hidden`}>
-            {fila.isLoading && <div className="px-5 py-4"><Spinner /></div>}
-            {fila.error && <p className="px-5 py-4 text-apoio text-critico">{mensagem(fila.error)}</p>}
-            {vis.map((p) => <Linha key={p.id} p={p} abrir={() => setAbertoId(p.id)} />)}
-            {!fila.isLoading && !fila.error && vis.length === 0 && (
-              <span className="block px-5 py-4 text-controle text-tinta-sussurro">Nenhum parecer aguardando resposta.</span>
-            )}
-          </div>
-          {feitos.length > 0 && (
-            <div>
-              <TituloSecao extra="7 dias">Respondidos</TituloSecao>
+          <Abas rotulo="Pareceres" className="mb-0" valor={aba} onChange={setAba}
+            abas={[['responder', 'Para eu responder', ativos.length], ['pedi', 'Que eu pedi', pedidosAbertos || undefined]]} />
+          {aba === 'pedi' ? <QueEuPedi pedidos={pedidos} /> : (
+            <>
+              {/* M3: um bloco só — especialidades, convite e fila */}
               <div className={`${CARTAO} overflow-hidden`}>
-                {feitos.map((p) => <Linha key={p.id} p={p} abrir={() => setAbertoId(p.id)} />)}
+                <div className="flex flex-col gap-2.5 px-5 py-3.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-apoio font-medium text-tinta">Especialidades que respondo:</span>
+                    {minhas.isLoading && <Spinner />}
+                    {minhas.error && <span className="text-apoio text-critico">{mensagem(minhas.error)}</span>}
+                    {semDeclarar && <span className="text-apoio text-tinta-sussurro">nenhuma declarada</span>}
+                    {declaradas.length > 0 && <span className="text-apoio text-tinta-apoio">{declaradas.join(' · ')}</span>}
+                    {!editando && declaradas.length > 0 && (
+                      <Button size="sm" variant="outline" className="ml-auto" onClick={() => setEditando(true)}>Alterar</Button>
+                    )}
+                  </div>
+                  {editando && <EditarEspecialidades atuais={declaradas} soMedicas={soMedicas} fechar={() => setEditando(false)} />}
+                  {semDeclarar && !editando && (
+                    <div className="flex flex-wrap items-center gap-3 rounded-controle border border-dashed border-fio px-4 py-3">
+                      <span className="flex-1 text-apoio text-tinta-apoio">
+                        Declare as especialidades em que você responde parecer. A fila mostra os pedidos dessas especialidades nesta unidade.
+                      </span>
+                      <Button size="sm" onClick={() => setEditando(true)}>Declarar especialidades</Button>
+                    </div>
+                  )}
+                </div>
+                {!semDeclarar && (
+                  <div className="border-t border-trilha">
+                    <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-5 py-2.5">
+                      <span className="text-apoio text-tinta-apoio">
+                        {vis.length} {vis.length === 1 ? 'parecer' : 'pareceres'} {f ? `de ${f}` : 'aguardando'} · ordem por prioridade
+                      </span>
+                      {esps.length > 1 && (
+                        <div role="group" aria-label="Filtrar por especialidade" className="ml-auto flex flex-wrap gap-1.5">
+                          <Chip ativo={!f} onClick={() => setFiltro('')}>Todas</Chip>
+                          {esps.map((e) => <Chip key={e} ativo={f === e} onClick={() => setFiltro(e)}>{e}</Chip>)}
+                        </div>
+                      )}
+                    </div>
+                    {fila.isLoading && <div className="px-5 py-4"><Spinner /></div>}
+                    {fila.error && <p className="px-5 py-4 text-apoio text-critico">{mensagem(fila.error)}</p>}
+                    {vis.map((p) => <Linha key={p.id} p={p} abrir={() => setAbertoId(p.id)} />)}
+                    {!fila.isLoading && !fila.error && vis.length === 0 && (
+                      <span className="block px-5 py-4 text-controle text-tinta-sussurro">Nenhum parecer aguardando resposta.</span>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+              {feitos.length > 0 && (
+                <div>
+                  <TituloSecao extra="7 dias">Respondidos</TituloSecao>
+                  <div className={`${CARTAO} overflow-hidden`}>
+                    {feitos.map((p) => <Linha key={p.id} p={p} abrir={() => setAbertoId(p.id)} />)}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

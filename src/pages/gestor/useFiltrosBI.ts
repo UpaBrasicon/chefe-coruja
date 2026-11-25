@@ -1,26 +1,31 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 
+import { useTurnosUnidade } from '@/hooks/useTurnosUnidade'
 import { argsFiltros, escreverFiltros, lerFiltros, type FiltrosBi } from '@/lib/filtrosBi'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import type { Turno } from '@/lib/turnos'
 
 // Estado da barra de filtros da tela Indicadores (Fase 1, tarefa 7): lê e grava
-// no endereço da página; as opções (setores, médicos) vêm de opcoes_filtros_bi.
+// no endereço da página; as opções (setores, médicos) vêm de opcoes_filtros_bi
+// e os turnos são os da unidade (migration 20270421000052: o banco filtra a
+// chegada pela janela do turno cadastrado).
 
 export type ContextoFiltros = {
   filtros: FiltrosBi
   faixa: { de: string; ate: string }
   args: ReturnType<typeof argsFiltros>['args']
   /** nomes para o cabeçalho do CSV */
-  nomes: { setor?: string; medico?: string }
+  nomes: { setor?: string; medico?: string; turno?: string }
 }
 
-export function useFiltrosBI(unidadeId: string | undefined): ContextoFiltros & { definir: (p: Partial<FiltrosBi>) => void; limpar: () => void; opcoes: { setores: { id: string; nome: string }[]; medicos: { id: string; nome: string }[] } } {
+export function useFiltrosBI(unidadeId: string | undefined): ContextoFiltros & { definir: (p: Partial<FiltrosBi>) => void; limpar: () => void; opcoes: { setores: { id: string; nome: string }[]; medicos: { id: string; nome: string }[]; turnos: Turno[] } } {
   const [q, setQ] = useSearchParams()
   const hoje = dataIso()
   const filtros = lerFiltros(q, hoje)
   const { faixa, args } = argsFiltros(filtros, hoje)
+  const turnosUnidade = useTurnosUnidade(unidadeId)
 
   const opcoes = useQuery({
     queryKey: ['opcoes-filtros-bi', unidadeId, faixa.de, faixa.ate],
@@ -33,12 +38,21 @@ export function useFiltrosBI(unidadeId: string | undefined): ContextoFiltros & {
     },
   })
   const ops = opcoes.data ?? { setores: [], medicos: [] }
+  // os ativos; o desativado só aparece se já está escolhido no endereço
+  const escolhido = turnosUnidade.todos.find((t) => t.codigo === filtros.turno)
+  const turnos = escolhido && !turnosUnidade.ativos.some((t) => t.codigo === escolhido.codigo)
+    ? [...turnosUnidade.ativos, escolhido]
+    : turnosUnidade.ativos
 
   return {
-    filtros, faixa, args, opcoes: ops,
-    nomes: { setor: ops.setores.find((s) => s.id === filtros.setor)?.nome, medico: ops.medicos.find((m) => m.id === filtros.medico)?.nome },
+    filtros, faixa, args, opcoes: { ...ops, turnos },
+    nomes: {
+      setor: ops.setores.find((s) => s.id === filtros.setor)?.nome,
+      medico: ops.medicos.find((m) => m.id === filtros.medico)?.nome,
+      // manhã, tarde e noite saem como antes; o turno cadastrado, pelo nome
+      turno: escolhido && !escolhido.padrao ? escolhido.nome : undefined,
+    },
     definir: (p) => setQ(escreverFiltros({ ...filtros, ...p }), { replace: true }),
     limpar: () => setQ(new URLSearchParams(), { replace: true }),
   }
 }
-

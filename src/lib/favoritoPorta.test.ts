@@ -87,8 +87,10 @@ const receituario = readFileSync('src/pages/plantao/atendimento/ReceituarioMedic
 test('G1/G5: "Meus favoritos" só na porta e nunca para o paciente pediátrico', () => {
   assert.match(estruturada, /\{porta && !pediatrico && \([\s\S]{0,200}<FavoritosPorta/)
   assert.match(estruturada, /Meus favoritos/)
-  assert.match(estruturada, /enabled: porta && !pediatrico/)
+  // PR3 (RT, 24/11/2026): o leito também lê os favoritos, só com remédio e via; criança nunca
+  assert.match(estruturada, /enabled: !pediatrico/)
   assert.match(estruturada, /const favs = pediatrico \? \[\] :/)
+  assert.match(estruturada, /const favsLeito = pediatrico \|\| porta \? \[\] :/)
   assert.match(estruturada, /to="\/preferencias-prescricao"[^>]*>Editar</)
   assert.match(estruturada, /Nenhum favorito ainda\./)
 })

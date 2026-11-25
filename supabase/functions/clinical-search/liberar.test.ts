@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { hashEntrada, liberarPergunta, mascararNomes, nomeAlemDoPseudonimo, TIPO_NOME_NER } from './liberar.ts'
+import { hashEntrada, liberarHistorico, liberarPergunta, mascararNomes, nomeAlemDoPseudonimo, TIPO_NOME_NER } from './liberar.ts'
 
 const nerLimpo = async () => ({ found: [], ner_ativo: true })
 const naoChamar = async () => { throw new Error('não devia consultar o NER') }
@@ -86,6 +86,50 @@ test('pseudônimo e nome do sistema não contam como nome', () => {
   assert.equal(nomeAlemDoPseudonimo('[PESSOA_2] da'), false)
   assert.equal(nomeAlemDoPseudonimo('Corujinha'), false)
   assert.equal(nomeAlemDoPseudonimo('Joana [PESSOA_1]'), true)
+})
+
+// IA1 (RT, 24/11/2026): a conversa anterior passa pela mesma máscara.
+test('histórico: nome conhecido vira pseudônimo na pergunta e na resposta', async () => {
+  let enviado = ''
+  const r = await liberarHistorico(
+    [{ pergunta: 'Maria Lima com FA instável, dose de amiodarona', resposta: 'Para Maria Lima, 150 mg em 10 min.' }],
+    [{ valor: 'Maria Lima', categoria: 'PACIENTE' }],
+    async (t) => { enviado = t; return { found: [], ner_ativo: true } })
+  assert.equal(r.tipo, 'ok')
+  assert.ok(!enviado.includes('Maria'))
+  if (r.tipo === 'ok') {
+    assert.equal(r.trocas.length, 1)
+    assert.ok(!r.trocas[0].pergunta.includes('Maria') && !r.trocas[0].resposta.includes('Maria'))
+    assert.equal(r.contagem.PACIENTE, 2)
+  }
+})
+
+test('histórico: nome achado pelo NER vira [PESSOA], sem bloquear', async () => {
+  const r = await liberarHistorico([{ pergunta: 'febre na Joana Prado', resposta: 'Conduta da febre.' }], [],
+    async () => ({ found: ['Joana Prado'], ner_ativo: true }))
+  assert.equal(r.tipo, 'ok')
+  if (r.tipo === 'ok') assert.equal(r.trocas[0].pergunta, 'febre na [PESSOA]')
+})
+
+test('histórico: troca com resíduo de identificador sai inteira', async () => {
+  const r = await liberarHistorico([
+    { pergunta: 'cartão 123 456 789 01 com febre', resposta: '' },
+    { pergunta: 'dose de dipirona', resposta: '1 g IV.' },
+  ], [], nerLimpo)
+  assert.equal(r.tipo, 'ok')
+  if (r.tipo === 'ok') assert.deepEqual(r.trocas.map((t) => t.pergunta), ['dose de dipirona'])
+})
+
+test('histórico: NER fora do ar não deixa sair (falha fechada)', async () => {
+  const r = await liberarHistorico([{ pergunta: 'dose de dipirona', resposta: '' }], [], async () => ({ found: [], ner_ativo: false }))
+  assert.equal(r.tipo, 'indisponivel')
+  const r2 = await liberarHistorico([{ pergunta: 'dose de dipirona', resposta: '' }], [], async () => { throw new Error('rede') })
+  assert.equal(r2.tipo, 'indisponivel')
+})
+
+test('histórico vazio não consulta o NER', async () => {
+  const r = await liberarHistorico([], [], naoChamar)
+  assert.deepEqual(r.tipo === 'ok' && r.trocas, [])
 })
 
 test('hash da entrada é sha256 em hexadecimal e não contém o texto', async () => {

@@ -89,35 +89,7 @@ O pico do hermes-app foi o mesmo sem o k6: 38% na fase de login. A biblioteca da
 
 - A medida é do Supabase da homologação. Compare o plano e o tamanho de máquina com os da produção antes de levar o número para lá.
 - A latência é a do VPS ao Supabase, os dois no Brasil. O navegador de cada usuário soma a rede dele.
-- Na carga média não houve escrita. A escrita e os testes de limite estão nas seções abaixo, cada um rodado com o ok do RT.
-
-## Bateria de limite (ok do RT em 23/11/2026, 14:51 a 17:28 de Brasília)
-
-O RT pediu stress, pico, ruptura, resistência e Realtime em sequência, com escrita ligada, e mandou não parar o teste para proteger a biblioteca: "teste ao máximo para entendermos todas nossas adversidades". A trava de 80% de CPU saiu do script. Antes de cada bloco, a massa e os logins foram refeitos, porque o token vale 1 hora. Os relatórios estão em `carga/<teste>_20261123_1751.html` e `.json`.
-
-| Teste | Forma | Requisições | Falha | p95 | Máximo |
-|---|---|---|---|---|---|
-| Stress | 150, 225, 300 e 450 usuários, 5 min por degrau, com pausas reais | 35.005 (28/s) | 0% | 276 ms (escrita 121 ms) | 4,1 s |
-| Pico da troca de plantão | 50 para 300 usuários em 30 s, 5 min em 300, **sem pausa**: cada um bate ponto e abre o mapa de leitos sem parar | 89.910 (230/s) | 0% | 3,7 s | 14,6 s |
-| Ruptura | taxa de jornadas subindo de 38/s até 1.200/s em 18 min, até 900 usuários | 54.652 (49/s) | 0,48% | 31 s | 60 s |
-| Realtime | 200 e depois 500 conexões abertas ao mesmo tempo, 1 min cada | 2.854 sessões, 11.262 mensagens recebidas | 0 | conexão em 172 ms | 0,5 s |
-| Resistência | 90 usuários por 45 min, com pausas reais e escrita | 28.512 (10/s) | 0% | 217 ms (escrita 68 ms) | 1,3 s |
-
-O que cada um mostrou:
-
-1. **Stress.** Com 450 usuários usando o app como na vida real, nada falhou e o p95 ficou abaixo de 300 ms. É o triplo da carga média.
-2. **Pico.** É o caso extremo, com 300 pessoas apertando o botão sem parar por 5 minutos, e não a troca de plantão real, em que cada pessoa bate o ponto uma vez. Nada falhou, mas a resposta ficou lenta: p95 de 3,7 s contra a meta de 800 ms. Por isso o teste saiu com código 99 (meta de tempo estourada, sem erro). O gerador também chegou ao teto: o contêiner do k6 usou os 2 núcleos do VPS (206%). Parte da lentidão é do próprio VPS, e o número real do Supabase é melhor do que esse.
-3. **Ruptura.** O Supabase da homologação satura por lentidão, não por erro. Com jornadas chegando cada vez mais rápido, as respostas foram para 9 s de média e 31 s no p95, e 480 mil jornadas nem começaram por falta de usuário livre no gerador. Só 0,48% falhou, e a trava de 5% não disparou. Aqui o k6 ficou em 72% de CPU, então a saturação foi do banco, não do VPS.
-4. **Realtime.** As 500 conexões simultâneas, o limite do plano, abriram em 172 ms no p95, sem falha.
-5. **Resistência.** Em 45 minutos seguidos não houve falha nem piora com o tempo: o p95 de 217 ms ficou na faixa da carga média.
-
-Leitura para a operação: o uso real (150 usuários) gera cerca de 13 requisições por segundo, e o stress mostrou folga até 28 por segundo sem perder tempo de resposta. A lentidão começa perto de 230 por segundo sem pausa, uns 17 vezes o uso real. O limite medido é o da máquina da homologação, e o plano da produção precisa ser comparado antes de levar o número para lá.
-
-**VPS durante a bateria.** A biblioteca da produção chegou a 1% de CPU no máximo. O hermes-app teve picos de 51%, o mesmo tipo de pico que já tinha sem o k6 (38% na fase de login da carga média). O k6 chegou a 206% só no pico.
-
-**Achado à parte.** A limpeza parou no `auth.admin.listUsers`, que devolveu "Database error finding users". Na homologação, uma conta de fixture (`…e505`, de 28/10/2026, criada por SQL) tem colunas de token em NULL, e isso derruba a listagem do Auth para todas as contas. O `limpar_massa.mjs` agora busca as contas `carga-*` em `perfis`. A fixture ficou como estava.
-
-**Limpeza (ok do RT em 23/11/2026).** Apagados: 882 mensagens de chat, 129 participantes, 3 conversas, 6 notificações, 305 presenças, 549 linhas de escala e 549 de histórico, 64 vínculos e 64 dispositivos confiáveis. Ficaram inativos 40 leitos, 4 setores, a unidade e a organização de carga. As 64 contas `carga-*` estão banidas e com perfil inativo. Pacientes, episódios, internações, prescrições e auditoria ficaram, porque são só inserção. O segundo fator da homologação voltou a `false`, e os tokens foram apagados do VPS.
+- Não houve escrita. Stress, pico, ruptura, resistência, Realtime e escrita continuam esperando o ok do RT, um de cada vez.
 
 ## Correções que a rodada exigiu (no mesmo PR)
 

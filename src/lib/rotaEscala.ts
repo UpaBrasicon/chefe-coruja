@@ -12,7 +12,8 @@ import type { Papel } from '@/types/database'
  * `null` = fica em `/escala` (a tela do gestor).
  */
 export function destinoEscala(papelAtivo: Papel | null): string | null {
-  if (papelAtivo === 'gestor' || papelAtivo === 'admin') return null
+  // o perfil Gestor da secretaria marca as vagas na tela do gestor (RT, 24/11/2026)
+  if (papelAtivo === 'gestor' || papelAtivo === 'admin' || papelAtivo === 'gestor_secretaria') return null
   if (papelAtivo === 'plantonista') return '/agenda?aba=escala'
   return '/minha-escala'
 }

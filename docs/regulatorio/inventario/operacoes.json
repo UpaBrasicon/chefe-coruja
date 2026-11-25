@@ -54,6 +54,7 @@
       "tabelas": [
         "public.pacientes",
         "public.pacientes_identidade_provisoria",
+        "public.pacientes_pessoas_diferentes",
         "public.pedidos_unificacao",
         "public.revisoes_cadastro",
         "public.alergias_paciente",
@@ -432,7 +433,9 @@
       "dados": [
         "pedido de vaga, quadro clínico e anexos",
         "respostas dos destinos e da central",
-        "tempos de cada etapa"
+        "tempos de cada etapa",
+        "conversa da unidade com o médico regulador e quem leu",
+        "pendências da unidade no pedido (aviso do NIR ao médico, quem avisou e quem resolveu)"
       ],
       "sensivel": true,
       "acesso": [
@@ -465,7 +468,14 @@
         "public.regulacao_servicos",
         "public.regulacao_servicos_historico",
         "public.regulacao_criterios",
-        "public.centrais_regulacao"
+        "public.centrais_regulacao",
+        "public.regulacao_mensagens",
+        "public.regulacao_conversa_leitura",
+        "public.regulacao_centrais_cadastro",
+        "public.regulacao_central_unidades",
+        "public.regulacao_unidade_capacidades",
+        "public.regulacao_prazos_tipo",
+        "public.regulacao_pendencias_unidade"
       ]
     },
     {
@@ -605,6 +615,7 @@
         "public.exame_cientes",
         "private.exame_laudo_liberacao",
         "public.exames_unidade",
+        "public.exames_referencia_sepse",
         "public.imagem_dominios"
       ]
     },
@@ -814,7 +825,8 @@
         "public.chronos_alertas_escala",
         "public.liberacao_pos_plantao",
         "public.disponibilidade_telemedicina",
-        "public.descanso_divisoes"
+        "public.descanso_divisoes",
+        "public.turnos_unidade"
       ]
     },
     {
@@ -833,6 +845,7 @@
       "dados": [
         "nome, e-mail, conselho e registro",
         "papel em cada unidade",
+    "designação para uma secretaria de saúde (e-mail e quem designou)",
         "eventos do segundo fator e dispositivos confiáveis",
         "convites e aceite dos termos",
         "endereço profissional do médico (LG8)"
@@ -859,6 +872,7 @@
       "tabelas": [
         "public.perfis",
         "public.vinculos",
+    "public.secretaria_pessoas",
         "public.acessos_plantonista",
         "public.super_admins",
         "public.convites",
@@ -948,6 +962,48 @@
       ],
       "tabelas": [
         "public.anotacoes_medico"
+      ]
+    },
+    {
+      "id": "agenda-reunioes",
+      "nome": "Agenda de reuniões do administrador",
+      "papel": "operador",
+      "finalidade": "Organizar o dia a dia e as reuniões da administração da rede (pedido do RT de 24/11/2026), com o link colado da plataforma de vídeo.",
+      "base_legal": [
+        "art. 7º, V (execução de contrato)"
+      ],
+      "titulares": [
+        "profissionais"
+      ],
+      "dados": [
+        "título, dia, horário, link e pauta curta da reunião",
+        "quem marcou e quem foi convidado (pessoas da organização)",
+        "e-mail do convidado, lido da conta na hora do envio (no e-mail, pela Resend)"
+      ],
+      "sensivel": false,
+      "acesso": [
+        "quem marcou a reunião (administrador da organização)",
+        "os convidados da mesma reunião"
+      ],
+      "local": [
+        "Supabase (São Paulo)",
+        "Resend (EUA, e-mail aos convidados: título, dia, hora, link, pauta curta e quem marcou)"
+      ],
+      "prazo": {
+        "guarda": "enquanto durar o contrato com a organização",
+        "base": "registro administrativo da rede, sem dado de paciente",
+        "descarte": "apagado com a organização ou a pedido do RT"
+      },
+      "seguranca": [
+        "RLS: só quem marcou e os convidados leem; escrita só por funções que conferem o papel de administrador",
+        "o link só aceita https://; sem integração com Google ou Microsoft (v1)",
+        "a pauta é curta (até 2.000 letras) e a tela não pede dado de paciente",
+        "e-mail: a fila (private.reuniao_emails) guarda só ids, evento e situação; o endereço sai do banco só para a Edge Function avisar-reuniao, nunca para o navegador; uma mensagem por destinatário"
+      ],
+      "tabelas": [
+        "public.reunioes",
+        "public.reuniao_convidados",
+        "private.reuniao_emails"
       ]
     },
     {
@@ -1233,6 +1289,7 @@
         "public.clinical_search_feedback",
         "public.ia_gateway_log",
         "private.ia_preco_modelo",
+        "private.ia_teto_mensal",
         "public.hermes_sessions",
         "public.hermes_identidades",
         "private.hermes_codigos_vinculo",
@@ -1315,6 +1372,7 @@
       "dados": [
         "nome e CNPJ do cliente",
         "unidades e configurações",
+        "secretarias de saúde da rede (nome, CNPJ, responsável e contato institucional)",
         "treinamentos e aceites da implantação"
       ],
       "sensivel": false,
@@ -1334,6 +1392,7 @@
       "tabelas": [
         "public.organizacoes",
         "public.unidades",
+        "public.secretarias",
         "public.implantacoes",
         "public.implantacao_itens",
         "public.implantacao_treinamentos",

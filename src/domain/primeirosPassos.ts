@@ -48,7 +48,8 @@ export const GUIAS: Record<string, Guia> = {
   plantonista: {
     titulo: 'Médico',
     passos: [
-      { id: 'plantao', texto: 'Veja o seu plantão e a passagem de plantão', to: '/plantao' },
+      { id: 'plantao', texto: 'Veja o seu turno, a agenda e os prontuários no Plantão', to: '/plantao' },
+      { id: 'internacao', texto: 'Acompanhe internação, observação e passômetro', to: '/plantao/internacao' },
       { id: 'atendimento', texto: 'Atenda um paciente classificado da fila', to: '/atendimento' },
       { id: 'central', texto: 'Conheça as ferramentas da Central do Médico', to: '/plantonista' },
       { id: 'agenda', texto: 'Veja a agenda de consultas (UBS)', to: '/agenda-consultas' },

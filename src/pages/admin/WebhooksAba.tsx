@@ -199,7 +199,7 @@ function GavetaDestino({ d, onFechar }: { d: DestinoWebhook; onFechar: () => voi
           <dt className="text-tinta-sussurro">Cadastro</dt><dd>{d.criado_por ?? '—'}, {dataHora(d.criado_em)}</dd>
         </dl>
         <section className="flex flex-col gap-2">
-          <h3 className="text-rotulo font-semibold uppercase tracking-[0.04em] text-tinta-sussurro">Entregas recentes</h3>
+          <h3 className="text-rotulo font-semibold text-tinta-sussurro">Entregas recentes</h3>
           {entregas.isLoading ? <Spinner /> : entregas.error ? <MensagemErro texto={(entregas.error as Error).message} /> : (entregas.data ?? []).length === 0 ? (
             <span className="text-tinta-sussurro">Nenhum aviso ainda.</span>
           ) : (

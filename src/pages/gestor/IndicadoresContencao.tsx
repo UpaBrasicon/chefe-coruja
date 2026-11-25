@@ -6,6 +6,9 @@ import { percentual, type RelatorioContencoes } from '@/lib/contencao'
 import { numero } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
 
+// revisão do gestor (RT, 24/11/2026): plural certo, sem "(s)"
+const pl = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
+
 // Indicadores de contenção mecânica do gestor (lacuna 4, K8; migration
 // 20270325000001), os da Nota Técnica ANVISA GVIMS/GGTES/DIRE5 nº 07/2026:
 // taxa de uso, tempo médio, revisões no prazo e eventos adversos. Contam as
@@ -35,14 +38,14 @@ export function IndicadoresContencao({ unidadeId, de, ate }: { unidadeId: string
             <Indicador rotulo="Taxa de uso" valor={percentual(r.pacientes, r.pacientes_atendidos) ?? '—'}
               nota={`${r.pacientes} de ${r.pacientes_atendidos} pacientes atendidos ou internados`} />
             <Indicador rotulo="Tempo médio em contenção" valor={r.tempo_medio_h != null ? `${numero(r.tempo_medio_h, 1)} h` : '—'}
-              nota={`${r.encerradas} encerrada(s)${r.em_curso ? `, ${r.em_curso} em curso` : ''}`} />
+              nota={`${pl(r.encerradas, 'encerrada', 'encerradas')}${r.em_curso ? `, ${r.em_curso} em curso` : ''}`} />
             <Indicador rotulo="Revisões no prazo (até 1 h)" valor={percentual(r.revisoes_no_prazo, r.revisoes_previstas) ?? '—'}
               nota={`${r.revisoes_no_prazo} de ${r.revisoes_previstas} previstas`} />
             <Indicador rotulo="Eventos adversos" valor={percentual(r.pacientes_com_evento, r.pacientes) ?? '—'}
-              nota={`${r.eventos_adversos} intercorrência(s) ligada(s), ${r.pacientes_com_evento} paciente(s)`} />
+              nota={`${pl(r.eventos_adversos, 'intercorrência ligada', 'intercorrências ligadas')}, ${pl(r.pacientes_com_evento, 'paciente', 'pacientes')}`} />
           </div>
           <span className="text-rotulo text-tinta-sussurro">
-            {r.contencoes} contenção(ões) em {r.pacientes} paciente(s){r.pediatricas ? `, ${r.pediatricas} pediátrica(s)` : ''}.
+            {pl(r.contencoes, 'contenção', 'contenções')} em {pl(r.pacientes, 'paciente', 'pacientes')}{r.pediatricas ? `, ${pl(r.pediatricas, 'pediátrica', 'pediátricas')}` : ''}.
             {' '}Iniciadas antes da prescrição: {r.iniciadas_sem_prescricao}; nunca prescritas: {r.nunca_prescritas}.
             {r.por_setor.length > 0 && ` Por setor: ${r.por_setor.map((s) => `${s.setor} ${s.total}`).join(' · ')}.`}
           </span>

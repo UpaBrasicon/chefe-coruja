@@ -1,7 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
 
-import { SECOES, secaoExibida } from '@/content/registry'
+import { naCentral, SECOES, secaoExibida } from '@/content/registry'
 import { SECOES_PLANTAO } from '@/content/plantaoRegistry'
+import { ABAS_INTERNACAO, ABAS_PLANTAO, ROTA_INTERNACAO_MEDICO, ROTA_PLANTAO } from '@/components/plantao/rotasMedico'
 import { fuzzyMatch, normalizar } from '@/lib/search'
 
 import type { ItemNav } from './navegacao'
@@ -35,6 +36,16 @@ export function fontesEstaticas({
   const e: EntradaPaleta[] = telas.map((t) => ({
     id: `tela:${t.to}`, grupo: GRUPO_TELAS, rotulo: t.rotulo, to: t.to, termos: `${t.rotulo} ${t.curto ?? ''}`, icone: t.icone,
   }))
+  // As abas do Plantão e da Internação do médico (RT, 24/11/2026) também são telas:
+  // Minha agenda, Prontuários, Observação e Passômetro saíram do menu, não da busca.
+  for (const [base, abas] of [[ROTA_PLANTAO, ABAS_PLANTAO], [ROTA_INTERNACAO_MEDICO, ABAS_INTERNACAO]] as const) {
+    const area = telas.find((t) => t.to === base)
+    if (!area) continue
+    for (const a of abas) {
+      if (a.to === base || telas.some((t) => t.rotulo === a.rotulo)) continue
+      e.push({ id: `tela:${a.to}`, grupo: GRUPO_TELAS, rotulo: a.rotulo, detalhe: area.rotulo, to: a.to, termos: `${a.rotulo} ${area.rotulo}`, icone: area.icone })
+    }
+  }
   if (comPlantao) {
     for (const s of SECOES_PLANTAO) {
       for (const f of s.tools) {
@@ -48,7 +59,7 @@ export function fontesEstaticas({
   if (comFerramentas) {
     for (const s of SECOES) {
       const rotulo = secaoExibida(s.slug)?.label ?? s.label
-      for (const f of s.tools) {
+      for (const f of s.tools.filter((x) => naCentral(s.slug, x.slug))) {
         e.push({
           id: `tool:${s.slug}/${f.slug}`, grupo: 'Ferramentas', rotulo: f.label, detalhe: rotulo,
           to: `/plantonista/${s.slug}/${f.slug}`, termos: `${f.label} ${rotulo} ${f.description} ${(f.tags ?? []).join(' ')}`,

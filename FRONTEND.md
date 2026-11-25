@@ -442,9 +442,14 @@ URL: `/plantao/{secao}` e `/plantao/{secao}/{tool}`
 |---|---|---|---:|
 | Meu Plantão | `check-in` | `MapPin` | 1 |
 | Atendimento Porta | `atendimento-porta` | `DoorOpen` | 4 |
-| Internação | `internacao` | `Hospital` | 2 |
-| Observação | `observacao` | `Eye` | 1 |
-| Evolução Clínica | `evolucao` | `Activity` | 1 |
+
+> RT, 24/11/2026: Internação e Observação saíram do registro e a Evolução clínica saiu do app.
+> O médico tem o **Plantão** (abas Meu turno, Minha agenda e Prontuários: `/plantao`,
+> `/plantao/agenda`, `/plantao/prontuarios`) e a **Internação** (abas Internação, Observação e
+> Passômetro: `/plantao/internacao/pacientes`, `/plantao/internacao/observacao`,
+> `/plantao/internacao/passometro`), em `pages/plantao/PlantaoAba.tsx` e
+> `pages/plantao/AreaInternacao.tsx`, com as rotas em `components/plantao/rotasMedico.ts`. A
+> evolução mora no caderno do leito. Os endereços antigos redirecionam para a aba (App.tsx).
 
 | Seção | Slug da ferramenta | Label | Componente |
 |---|---|---|---|
@@ -456,7 +461,6 @@ URL: `/plantao/{secao}` e `/plantao/{secao}/{tool}`
 | `internacao` | `pacientes` | Pacientes Internados | `plantao/secoes/PacientesInternados.tsx` → `InternacaoPainel` |
 | `internacao` | `formulario` | Formulário de Internação | `plantao/secoes/FormularioInternacao.tsx` → `Internacao` (5 abas) |
 | `observacao` | `pacientes` | Pacientes em Observação | `plantao/secoes/PacientesObservacao.tsx` → aviso 6 h + `InternacaoPainel` |
-| `evolucao` | `evolucao` | Evolução Clínica | `plantao/secoes/EvolucaoTool.tsx` → `EvolucaoClinica` |
 
 **Regra da seção direta:** seção com uma única ferramenta *é* a ferramenta.
 `/plantao/evolucao` renderiza a evolução clínica direto, sem uma página intermediária
@@ -743,7 +747,8 @@ src/pages/plantao/secoes/CheckIn.tsx
 src/pages/plantao/secoes/PacientesInternados.tsx
 src/pages/plantao/secoes/PacientesObservacao.tsx
 src/pages/plantao/secoes/FormularioInternacao.tsx
-src/pages/plantao/secoes/EvolucaoTool.tsx
+src/pages/plantao/PlantaoAba.tsx                     abas Minha agenda e Prontuários do Plantão
+src/pages/plantao/AreaInternacao.tsx                 Internação do médico (Internação, Observação, Passômetro)
 
 src/pages/plantonista/farmacia/ConsultaMedicamentos.tsx
 src/pages/plantonista/farmacia/ReferenciaDiluicaoTool.tsx

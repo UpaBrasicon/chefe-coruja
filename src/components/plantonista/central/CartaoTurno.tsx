@@ -12,6 +12,7 @@ import { esperaPorCor } from '@/domain/esperaPorta'
 import { formatarDuracao, JANELA_OBSERVACAO_MIN, nivelDaObservacao, tempoDaJanela } from '@/domain/plantao'
 import { ALVO_MIN, NIVEL_RISCO, rotuloCor, type CorRisco } from '@/domain/risco'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ROTA_OBSERVACAO_MEDICO } from '@/components/plantao/rotasMedico'
 
 // Cartão de turno da Central (P/index.html 1419–1486): substitui a faixa de
 // parâmetros do plantonista (decisão de 19–20/09 no protótipo). Setor e turno
@@ -203,9 +204,18 @@ export function CartaoTurno({ unidadeId, perfilId, ubs = false }: { unidadeId?: 
         )}
       </div>
 
+      {/* M1 da revisão da Central (RT, 24/11/2026): a observação longa é uma linha discreta, não um botão vermelho */}
+      {!ubs && nivelObs && nivelObs !== 'ok' && obsMin !== null && (
+        <Link to={ROTA_OBSERVACAO_MEDICO} className={cn('flex items-center gap-2 border-b border-fio px-5 py-2.5 text-apoio no-underline hover:underline underline-offset-4', nivelObs === 'critico' ? 'text-critico' : 'text-atencao')}>
+          <TriangleAlert className="size-3.5 shrink-0" aria-hidden />
+          Observação: maior permanência {formatarDuracao(obsMin)} (janela de {JANELA_OBSERVACAO_MIN / 60} h)
+          <ArrowRight className="size-3.5 shrink-0" aria-hidden />
+        </Link>
+      )}
+
       {emCurso && faixa.data && obsMin === null && espera.length > 0 && espera.every((e) => e.aguardando === 0) && (
-        <div className="flex items-center gap-[9px] border-b border-fio bg-alerta-conforme px-5 py-3 text-apoio text-conforme">
-          <ShieldCheck className="size-4 shrink-0" aria-hidden />
+        <div className="flex items-center gap-[9px] border-b border-fio px-5 py-2.5 text-apoio text-tinta-apoio">
+          <ShieldCheck className="size-4 shrink-0 text-conforme" aria-hidden />
           {abertasPorMim > 0
             ? `Ninguém aguardando o médico na porta. ${abertasPorMim === 1 ? '1 observação que você abriu segue aberta' : `${abertasPorMim} observações que você abriu seguem abertas`}.`
             : 'Ninguém aguardando o médico na porta e ninguém em observação no seu acesso.'}
@@ -248,14 +258,11 @@ export function CartaoTurno({ unidadeId, perfilId, ubs = false }: { unidadeId?: 
             Abrir plantão
           </Link>
           <Link
-            to="/plantao/observacao"
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-controle border px-3.5 py-[7px] text-apoio whitespace-nowrap',
-              nivelObs === 'critico' ? 'border-critico bg-critico font-medium text-sobre-acao hover:text-sobre-acao' : nivelObs === 'atencao' ? 'border-atencao/40 bg-alerta-atencao font-medium text-atencao' : 'border-fio bg-superficie text-tinta-apoio hover:border-acao hover:text-acao',
-            )}
+            to={ROTA_OBSERVACAO_MEDICO}
+            className="inline-flex items-center gap-1.5 rounded-controle border border-fio bg-superficie px-3.5 py-[7px] text-apoio whitespace-nowrap text-tinta-apoio hover:border-acao hover:text-acao"
             title={obsMin === null ? (abertasPorMim > 0 ? 'Observações que você abriu pela porta' : 'Ninguém em observação no seu acesso') : `Maior permanência em observação: ${formatarDuracao(obsMin)} (janela de ${JANELA_OBSERVACAO_MIN / 60} h)`}
           >
-            {obsMin === null ? 'Ver observação' : `Observação · maior ${formatarDuracao(obsMin)}`}
+            Ver observação
             <ArrowRight className="size-[15px]" aria-hidden />
           </Link>
           </>)}

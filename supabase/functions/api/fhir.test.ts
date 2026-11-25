@@ -63,13 +63,13 @@ test('ImagingStudy: pedido, situação, hora e link do visualizador no Endpoint 
   assert.ok('erro' in lerImagingStudy({ resourceType: 'DiagnosticReport' }))
 })
 
-test('DiagnosticReport: analitos como vieram; crítico só com a marca do laboratório; PDF', () => {
+test('DiagnosticReport: analitos como vieram (número do JSON com vírgula decimal, SP2 L3); crítico só com a marca do laboratório; PDF', () => {
   const l = lerDiagnosticReport(laudo)
   assert.ok(!('erro' in l))
   if ('erro' in l) return
   assert.equal(l.exame_id, ID)
   assert.equal(l.identificador, 'LAB-9')
-  assert.deepEqual(l.itens[0], { analito: 'Hemoglobina', loinc: '718-7', valor: '6.9', unidade: 'g/dL', referencia: '12 a 16 g/dL', marca: 'LL', critico: true })
+  assert.deepEqual(l.itens[0], { analito: 'Hemoglobina', loinc: '718-7', valor: '6,9', unidade: 'g/dL', referencia: '12 a 16 g/dL', marca: 'LL', critico: true })
   assert.deepEqual(l.itens[1], { analito: 'Leucócitos', loinc: null, valor: '>50000', unidade: '/mm³', referencia: '4.000 a 11.000', marca: 'H', critico: false })
   assert.equal(l.pdf?.nome, 'laudo.pdf')
 })

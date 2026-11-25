@@ -50,7 +50,7 @@ function principal() {
   run('scp', ['-q', 'biblioteca/ferramentas.json', 'biblioteca/fontes.yaml', 'biblioteca/vocabulario-clinico.txt', `${VPS}:/srv/biblioteca/`])
   run('scp', ['-q', '-r', 'biblioteca/corpus', 'biblioteca/referencias', 'biblioteca/abertas-cc-by', 'biblioteca/abertas-cc-by-nc', `${VPS}:/srv/biblioteca/`])
   run('scp', ['-q', 'biblioteca/app/main.py', 'biblioteca/app/pii.py', 'biblioteca/app/publico.py', 'biblioteca/app/siglas.py', 'biblioteca/app/armadilhas.py', 'biblioteca/app/orfaos.py', 'biblioteca/app/pubmed.py', 'biblioteca/app/chaves.py',
-    'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py',
+    'biblioteca/app/seguimento.py', 'biblioteca/app/ingest.py', 'biblioteca/app/index_tools.py',
     'biblioteca/app/Dockerfile', 'biblioteca/app/requirements.txt', `${VPS}:/srv/biblioteca/app/`])
   run('scp', ['-q', 'biblioteca/evals/perguntas.yaml', 'biblioteca/evals/run.py', `${VPS}:/srv/biblioteca/evals/`])
   // referencias/: fichas-resumo de obras com direitos reservados (só citação e resumo da equipe);

@@ -111,8 +111,8 @@ function Droga({ i, peso, onLinha }: { i: InfusaoAdulto; peso: number; onLinha: 
         </div>
         {servico && (
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5"><Label htmlFor={`${i.id}-massa`}>{unMassa} na solução</Label><Input id={`${i.id}-massa`} inputMode="decimal" value={massa} onChange={(e) => setMassa(e.target.value)} /></div>
-            <div className="flex flex-col gap-1.5"><Label htmlFor={`${i.id}-vol`}>Volume final (mL)</Label><Input id={`${i.id}-vol`} inputMode="decimal" value={volume} onChange={(e) => setVolume(e.target.value)} /></div>
+            <div className="flex flex-col gap-1.5"><Label htmlFor={`${i.id}-massa`} className="flex-1 items-end leading-snug">{unMassa} na solução</Label><Input id={`${i.id}-massa`} inputMode="decimal" value={massa} onChange={(e) => setMassa(e.target.value)} /></div>
+            <div className="flex flex-col gap-1.5"><Label htmlFor={`${i.id}-vol`} className="flex-1 items-end leading-snug">Volume final (mL)</Label><Input id={`${i.id}-vol`} inputMode="decimal" value={volume} onChange={(e) => setVolume(e.target.value)} /></div>
             <p className={cn('text-apoio sm:col-span-2', concServico ? 'text-tinta-apoio' : 'text-atencao')}>
               {concServico ? `Concentração digitada agora: ${br(conc, 2)} ${unConc}. Confira com o rótulo do preparo.` : 'Informe massa e volume finais para a tela calcular a concentração.'}
             </p>
@@ -195,7 +195,7 @@ export function InfusoesAdulto({ grupo }: { grupo?: Grupo }) {
       <div className="grid gap-4 rounded-container border border-fio bg-card p-4 sm:grid-cols-2">
         <CampoPesoAdulto id="inf-peso" estado={pesoAdulto} />
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="inf-busca">Buscar droga</Label>
+          <Label htmlFor="inf-busca" className="flex-1 items-end leading-snug">Buscar droga</Label>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
             <Input id="inf-busca" className="pl-9" placeholder="noradrenalina, fentanil…" value={busca} onChange={(e) => setBusca(e.target.value)} />

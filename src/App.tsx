@@ -11,6 +11,7 @@ import { RedirectHome } from '@/routes/RedirectHome'
 import { Redirecionar } from '@/routes/Redirecionar'
 import { destinoEscala } from '@/lib/rotaEscala'
 import { ROTA_SOBRE_MODULO } from '@/content/rotaSobreModulo'
+import { ABA_NO_PLANTAO, ROTA_INTERNADOS, ROTA_OBSERVACAO_MEDICO, ROTA_PASSOMETRO } from '@/components/plantao/rotasMedico'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { ErroForcado } from '@/components/ErroForcado'
 import { Spinner } from '@/components/ui/spinner'
@@ -59,17 +60,23 @@ const SeletorUnidade = lazy(() =>
 const OrganizacaoGrupo = lazy(() => import('@/pages/grupos/OrganizacaoGrupo'))
 const UnidadeGrupo = lazy(() => import('@/pages/grupos/UnidadeGrupo'))
 const EscalaGrupo = lazy(() => import('@/pages/grupos/EscalaGrupo'))
+const SecretariaGrupo = lazy(() => import('@/pages/grupos/SecretariaGrupo'))
 const AgendaGrupo = lazy(() => import('@/pages/grupos/AgendaGrupo'))
 const PlantaoHome = lazy(() => import('@/pages/plantao/PlantaoHome'))
 const PlantaoSectionHome = lazy(() => import('@/pages/plantao/PlantaoSectionHome'))
 const PlantaoToolRouter = lazy(() => import('@/pages/plantao/PlantaoToolRouter'))
+const PlantaoAba = lazy(() => import('@/pages/plantao/PlantaoAba'))
+const AreaInternacao = lazy(() => import('@/pages/plantao/AreaInternacao'))
 const RedirecionarFormulario = lazy(() => import('@/pages/plantao/secoes/FormularioInternacao'))
 
 // ── Telas que continuam avulsas ───────────────────────────────────────────────
-const GaviaoPainel = lazy(() => import('@/pages/admin/GaviaoPainel').then((m) => ({ default: m.GaviaoPainel })))
+// Um Gavião só para gestor e admin (revisão do gestor, RT 24/11/2026)
+const GaviaoGrupo = lazy(() => import('@/pages/grupos/GaviaoGrupo'))
 const Plataformas = lazy(() => import('@/pages/admin/Plataformas'))
 const PendenciasTecnicas = lazy(() => import('@/pages/admin/PendenciasTecnicas'))
 const Servidores = lazy(() => import('@/pages/admin/Servidores'))
+// RT, 24/11/2026: a agenda do administrador (reuniões com o link colado) no lugar da Escala
+const AgendaAdmin = lazy(() => import('@/pages/admin/AgendaAdmin'))
 const ErrosEAlertas = lazy(() => import('@/pages/admin/ErrosEAlertas'))
 const UsoDoApp = lazy(() => import('@/pages/admin/UsoDoApp'))
 const Indicadores = lazy(() => import('@/pages/gestor/Indicadores'))
@@ -83,7 +90,6 @@ const ProntuarioLeitura = lazy(() => import('@/pages/prontuario/ProntuarioLeitur
 const PainelGestor = lazy(() => import('@/pages/gestor/PainelGestor'))
 const FarmaciaGestor = lazy(() => import('@/pages/gestor/FarmaciaGestor'))
 const ProtocolosGestor = lazy(() => import('@/pages/gestor/Protocolos'))
-const OlhoDeGaviao = lazy(() => import('@/pages/gestor/OlhoDeGaviao'))
 const ExamesUnidade = lazy(() => import('@/pages/gestor/ExamesUnidade'))
 const PortaAgora = lazy(() => import('@/pages/gestor/PortaAgora'))
 const IntercorrenciasRelatorio = lazy(() => import('@/pages/gestor/IntercorrenciasRelatorio'))
@@ -105,6 +111,7 @@ const Implantacao = lazy(() => import('@/pages/gestor/Implantacao'))
 const Regulacao = lazy(() => import('@/pages/regulacao/Regulacao'))
 const Rede = lazy(() => import('@/pages/rede/Rede'))
 const Nir = lazy(() => import('@/pages/nir/Nir'))
+const NirInternacao = lazy(() => import('@/pages/nir/NirInternacao'))
 const Interacoes = lazy(() => import('@/pages/farmacia/Interacoes'))
 const ChamadosTecnicosGestor = lazy(() => import('@/pages/gestor/ChamadosTecnicos'))
 const Auditoria = lazy(() => import('@/pages/gestor/Auditoria'))
@@ -113,7 +120,6 @@ const Telemedicina = lazy(() => import('@/pages/telemedicina/Telemedicina'))
 const EscalaEquipe = lazy(() => import('@/pages/EscalaEquipe'))
 const Pareceres = lazy(() => import('@/pages/parecer/Pareceres'))
 const MeuPlantao = lazy(() => import('@/pages/MeuPlantao'))
-const Passometro = lazy(() => import('@/pages/plantao/Passometro'))
 const PlantonistaHome = lazy(() => import('@/pages/plantonista/PlantonistaHome'))
 const SectionHome = lazy(() => import('@/pages/plantonista/SectionHome'))
 const SobreModuloClinico = lazy(() => import('@/pages/plantonista/SobreModuloClinico'))
@@ -167,6 +173,17 @@ function PorPapel({ plantonista, gestao }: { plantonista: ReactNode; gestao: Rea
   const { papeisDaUnidade } = useUnidade()
   const ehGestao = papeisDaUnidade.includes('gestor') || papeisDaUnidade.includes('admin')
   return <>{ehGestao ? gestao : plantonista}</>
+}
+
+/**
+ * Minha agenda e Prontuários viraram abas do Plantão do médico (RT, 24/11/2026):
+ * fora da UBS, o médico que abre o endereço antigo cai na aba. Na UBS (sem
+ * Plantão) e nos outros papéis, a tela avulsa continua.
+ */
+function AbaDoPlantao({ antiga, tela }: { antiga: string; tela: ReactNode }) {
+  const { papelAtivo, unidadeAtiva } = useUnidade()
+  const naAba = papelAtivo === 'plantonista' && !!unidadeAtiva && unidadeAtiva.unidade.tipo !== 'ubs'
+  return naAba ? <Redirecionar para={ABA_NO_PLANTAO[antiga]} /> : <>{tela}</>
 }
 
 /** `/escala` pelo papel ativo, não pela lista de papéis (ver `destinoEscala`). */
@@ -300,7 +317,10 @@ export default function App() {
                         <Route path="/faturamento/glosas" element={<FaturamentoGlosas />} />
                         {/* Fase 5C, tarefa 3: envio ao ERP (contas; plantões do mês só o gestor) */}
                         <Route path="/faturamento/erp" element={<FaturamentoEnvioErp />} />
-                        {/* pendências da 5B, L4: materiais da unidade */}
+                      </Route>
+                      {/* pendências da 5B, L4: materiais da unidade. Cadastram a farmácia e o gestor;
+                          o faturamento só lê (ajustes da revisão, item 4, RT em 24/11/2026) */}
+                      <Route element={<RequireRole papeis={['farmaceutico', 'gestor', 'faturamento']} />}>
                         <Route path="/faturamento/materiais" element={<FaturamentoMateriais />} />
                       </Route>
                       {/* APAC: o regulador autoriza; o faturamento registra a execução e gera o arquivo (Fase 3, tarefa 5) */}
@@ -322,6 +342,10 @@ export default function App() {
                       {/* NIR: pendências da unidade (NIR e gestor; Fase 4, tarefa 11) */}
                       <Route element={<RequireRole papeis={['nir', 'gestor']} />}>
                         <Route path="/nir" element={<Nir />} />
+                      </Route>
+                      {/* NIR (RT, 24/11/2026): Internação, com o resumo e a regulação de cada paciente */}
+                      <Route element={<RequireRole papeis={['nir']} />}>
+                        <Route path="/nir/internacao" element={<NirInternacao />} />
                       </Route>
                       {/* Papéis de rede: Secretaria, Regulação regional, Faturamento da secretaria; módulo pelo super admin (Fase 4, tarefa 12) */}
                       <Route element={<RequireRole papeis={['secretaria', 'regulacao_regional', 'faturamento_rede', 'admin']} />}>
@@ -383,11 +407,11 @@ export default function App() {
 
                       <Route element={<RequireRole papeis={['admin']} />}>
                         <Route path="/painel" element={<OrganizacaoGrupo />} />
-                        <Route path="/gaviao" element={<GaviaoPainel />} />
                         {/* Porte, onda 8: Plataformas, Pendências técnicas e Servidores */}
                         <Route path="/plataformas" element={<Plataformas />} />
                         <Route path="/pendencias-tecnicas" element={<PendenciasTecnicas />} />
                         <Route path="/servidores" element={<Servidores />} />
+                        <Route path="/agenda-admin" element={<AgendaAdmin />} />
                         {/* legado */}
                         <Route path="/pessoas" element={<Redirecionar para="/painel?aba=pessoas" />} />
                       </Route>
@@ -401,7 +425,7 @@ export default function App() {
                       {/* Fase 6: prontuário fora da escala — pedido ao gestor, 24 h, só leitura.
                           O farmacêutico não pede (RT, 27/10/2026; migration 20270105000001). */}
                       <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem']} />}>
-                        <Route path="/prontuarios" element={<PedidosProntuario />} />
+                        <Route path="/prontuarios" element={<AbaDoPlantao antiga="/prontuarios" tela={<PedidosProntuario />} />} />
                       </Route>
                       <Route element={<RequireRole papeis={['plantonista', 'telemedicina', 'enfermeiro', 'tecnico_enfermagem', 'gestor']} />}>
                         <Route path="/prontuarios/:pacienteId" element={<ProntuarioLeitura />} />
@@ -435,7 +459,8 @@ export default function App() {
                         {/* Onda 8, gestor parte 2: farmácia (só leitura) e protocolos da unidade */}
                         <Route path="/gestao/farmacia" element={<FarmaciaGestor />} />
                         <Route path="/gestao/protocolos" element={<ProtocolosGestor />} />
-                        <Route path="/gestao/gaviao" element={<OlhoDeGaviao />} />
+                        {/* legado: o Gavião do gestor e o do admin viraram um só, em /gaviao */}
+                        <Route path="/gestao/gaviao" element={<Redirecionar para="/gaviao" />} />
                         {/* Fase 5C, etapa 1.1: exames da unidade */}
                         <Route path="/gestao/exames" element={<ExamesUnidade />} />
                         {/* Fase 1, tarefa 2: Dashboard PS/UPA */}
@@ -448,9 +473,21 @@ export default function App() {
                       </Route>
 
                       {/* ── Gestor (e admin, com abas filtradas) ───────── */}
-                      <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
+                      {/* Perfil Gestor da secretaria (RT, 24/11/2026): a rede dele, a configuração das
+                          unidades da secretaria e as vagas da escala (o banco confere a secretaria). */}
+                      <Route element={<RequireRole papeis={['gestor_secretaria']} />}>
+                        <Route path="/secretaria" element={<SecretariaGrupo />} />
+                      </Route>
+                      <Route element={<RequireRole papeis={['gestor', 'admin', 'gestor_secretaria']} />}>
                         <Route path="/unidade" element={<UnidadeGrupo />} />
+                      </Route>
+                      <Route element={<RequireRole papeis={['plantonista', 'gestor', 'admin', 'gestor_secretaria']} />}>
+                        <Route path="/escala" element={<RotaEscala />} />
+                      </Route>
+
+                      <Route element={<RequireRole papeis={['gestor', 'admin']} />}>
                         <Route path="/indicadores" element={<Indicadores />} />
+                        <Route path="/gaviao" element={<GaviaoGrupo />} />
                         {/* legado */}
                         <Route path="/setores" element={<Redirecionar para="/unidade?aba=setores" />} />
                         <Route
@@ -476,6 +513,8 @@ export default function App() {
                         <Route path="/plantonista" element={<PlantonistaHome />} />
                         {/* LG11, C5: rotulagem mínima do módulo clínico (antes de :section) */}
                         <Route path={ROTA_SOBRE_MODULO} element={<SobreModuloClinico />} />
+                        {/* Farmácia do médico abre direto na consulta (revisão de 24/11/2026: sai a tela de entrada de 2 itens) */}
+                        <Route path="/plantonista/farmacia" element={<Redirecionar para="/plantonista/farmacia/consulta-medicamentos" />} />
                         <Route path="/plantonista/:section" element={<SectionHome />} />
                         {/* Entradas que saíram da Central (RT, 23/10/2026): abriam a mesma tela de outra. */}
                         <Route path="/plantonista/calculadoras/drogas-vasoativas" element={<Redirecionar para="/plantonista/calculadoras/infusoes-adulto?classe=vasoativo" />} />
@@ -486,9 +525,8 @@ export default function App() {
                         <Route path="/plantonista/dengue/manual-dengue" element={<Redirecionar para="/plantonista/pediatria/dengue-ped" />} />
                         <Route path="/plantonista/ventilacao-mecanica/manobra-recrutamento" element={<Redirecionar para="/plantonista/emergencias/sdra-ventilacao-adulto" />} />
                         <Route path="/plantonista/:section/:tool" element={<ToolRouter />} />
-                        <Route path="/agenda" element={<AgendaGrupo />} />
+                        <Route path="/agenda" element={<AbaDoPlantao antiga="/agenda" tela={<AgendaGrupo />} />} />
 
-                        <Route path="/escala" element={<RotaEscala />} />
                         <Route
                           path="/internacao"
                           element={
@@ -502,7 +540,7 @@ export default function App() {
                           path="/observacao"
                           element={
                             <PorPapel
-                              plantonista={<Redirecionar para="/plantao/observacao" />}
+                              plantonista={<Redirecionar para={ROTA_OBSERVACAO_MEDICO} />}
                               gestao={<InternacaoPainel modo="observacao" />}
                             />
                           }
@@ -537,9 +575,23 @@ export default function App() {
 
                       {/* ── Plantonista exclusivo ──────────────────────── */}
                       <Route element={<RequireRole papeis={['plantonista']} />}>
-                        {/* pedido 8 (PS1 a PS3 = A, RT 23/11/2026): passômetro do médico */}
-                        <Route path="/passometro" element={<Passometro />} />
                         <Route path="/plantao" element={<PlantaoHome />} />
+                        {/* Plantão = Meu turno, Minha agenda e Prontuários; Internação = Internação,
+                            Observação e Passômetro (RT, 24/11/2026). As rotas antigas levam à aba. */}
+                        <Route path="/plantao/agenda" element={<PlantaoAba aba="agenda" />} />
+                        <Route path="/plantao/prontuarios" element={<PlantaoAba aba="prontuarios" />} />
+                        <Route path="/plantao/internacao" element={<Redirecionar para={ROTA_INTERNADOS} />} />
+                        <Route path={ROTA_INTERNADOS} element={<AreaInternacao aba="internacao" />} />
+                        <Route path={ROTA_OBSERVACAO_MEDICO} element={<AreaInternacao aba="observacao" />} />
+                        {/* pedido 8 (PS1 a PS3 = A, RT 23/11/2026): passômetro do médico, agora aba da Internação */}
+                        <Route path={ROTA_PASSOMETRO} element={<AreaInternacao aba="passometro" />} />
+                        <Route path="/passometro" element={<Redirecionar para={ROTA_PASSOMETRO} />} />
+                        <Route path="/plantao/observacao" element={<Redirecionar para={ROTA_OBSERVACAO_MEDICO} />} />
+                        <Route path="/plantao/observacao/pacientes" element={<Redirecionar para={ROTA_OBSERVACAO_MEDICO} />} />
+                        {/* a Evolução clínica saiu (RT, 24/11/2026): a evolução mora no caderno do leito;
+                            com ?paciente= o endereço antigo abre o leito do paciente */}
+                        <Route path="/plantao/evolucao" element={<Redirecionar para={ROTA_INTERNADOS} />} />
+                        <Route path="/plantao/evolucao/evolucao" element={<Redirecionar para={ROTA_INTERNADOS} />} />
                         <Route path="/plantao/:secao" element={<PlantaoSectionHome />} />
                         {/* formulário de internação antigo retirado (parte 4.7a): o endereço leva ao leito aberto */}
                         <Route path="/plantao/internacao/formulario" element={<RedirecionarFormulario />} />

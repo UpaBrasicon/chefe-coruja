@@ -26,3 +26,21 @@ export const SecaoDaFerramentaContexto = createContext<string | null>(null)
 export function useSecaoDaFerramenta() {
   return useContext(SecaoDaFerramentaContexto)
 }
+
+/**
+ * Lugar do resumo do cálculo (F5, RT em 24/11/2026). O ToolLayout fornece: na
+ * tela larga (1280 px ou mais) o resumo vai para a coluna fixa da direita
+ * (`lado`); no celular a barra fica presa ao pé e o ToolLayout reserva no fim
+ * da página o espaço dela (`reservar`), para não cobrir o último conteúdo.
+ */
+export type LugarDoResumo = {
+  lado: HTMLElement | null
+  avisar: (presente: boolean) => void
+  reservar: (altura: number) => void
+}
+
+export const LugarDoResumoContexto = createContext<LugarDoResumo | null>(null)
+
+export function useLugarDoResumo() {
+  return useContext(LugarDoResumoContexto)
+}

@@ -32,7 +32,7 @@ export function FilaTecnovigilancia() {
     <section aria-label="Fila de tecnovigilância" className="flex flex-col gap-3">
       <SuspensoesVigentes />
       <TituloSecao className="mb-0">Relatos abertos</TituloSecao>
-      {abertos.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum relato aberto.</p>}
+      {abertos.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum relato aberto. Os relatos chegam do botão Relatar problema das ferramentas clínicas.</p>}
       {abertos.map((r) => <CartaoRelato key={r.id} r={r} rt />)}
       {concluidos.length > 0 && (
         <details className="text-apoio text-tinta-apoio">
@@ -59,7 +59,7 @@ export function RelatosDaUnidade({ unidadeId }: { unidadeId: string }) {
       <p className="text-apoio text-tinta-apoio">
         Cópia para a gestão. Quem investiga é o responsável técnico da Chefe Coruja. Se o problema chegou ao paciente, o Núcleo de Segurança do Paciente da unidade avalia a notificação no Notivisa.
       </p>
-      {data && data.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum relato da unidade.</p>}
+      {data && data.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhum relato da unidade. O relato nasce do botão Relatar problema, no topo de cada ferramenta do módulo clínico, quando alguém da equipe vê um resultado errado ou estranho. O andamento da investigação aparece aqui.</p>}
       {(data ?? []).map((r) => <CartaoRelato key={r.id} r={r} rt={false} />)}
     </section>
   )

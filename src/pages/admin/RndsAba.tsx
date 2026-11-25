@@ -76,6 +76,13 @@ export function RndsAba() {
       <p className="max-w-2xl text-apoio text-tinta-apoio">
         Os atendimentos da porta, os sumários de alta e as regulações saem para a RNDS do Ministério da Saúde, assinados com o certificado A1 da unidade.
       </p>
+      {/* revisão do admin (RT, 24/11/2026, M3): dizer de uma vez por que a fila não anda */}
+      {!p.credencial && (
+        <p className="max-w-2xl rounded-container border border-fio bg-campo px-3.5 py-2.5 text-apoio text-pretty text-tinta-apoio">
+          Sem credencial, a fila não envia nada. Os documentos ficam guardados abaixo e saem sozinhos quando a credencial e o
+          certificado A1 da unidade estiverem prontos. Por isso a contagem em Plataformas e em Servidores aparece parada.
+        </p>
+      )}
       <Faixa p={p} unidade={unidade} onAgir={agir} />
       {p.credencial && <Numeros p={p} />}
       <SecaoCredencial p={p} onDialogo={setDialogo} />

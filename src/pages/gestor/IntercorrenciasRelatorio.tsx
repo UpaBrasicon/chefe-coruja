@@ -47,7 +47,7 @@ export default function IntercorrenciasRelatorio() {
       {rel.isLoading ? <Spinner /> : rel.error ? (
         <p role="alert" className="text-apoio text-critico">{(rel.error as Error).message}</p>
       ) : !r || r.total === 0 ? (
-        <Vazio icone={Siren} titulo="Nenhuma intercorrência no período" />
+        <Vazio icone={Siren} titulo="Nenhuma intercorrência no período" texto="A intercorrência é registrada pela equipe no leito do paciente, na internação e na observação. Ela aparece aqui por tipo e por setor, com as graves destacadas." />
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-4">
@@ -60,7 +60,7 @@ export default function IntercorrenciasRelatorio() {
               {r.por_tipo.map((t) => (
                 <div key={t.tipo} className="flex items-center justify-between gap-3 rounded-controle border border-fio bg-superficie px-3 py-2 text-apoio">
                   <span className="text-tinta">{t.tipo}</span>
-                  <span className="text-tinta-apoio">{t.total}{t.graves ? <span className="text-critico"> · {t.graves} grave(s)</span> : null}</span>
+                  <span className="text-tinta-apoio">{t.total}{t.graves ? <span className="text-critico"> · {t.graves} {t.graves === 1 ? 'grave' : 'graves'}</span> : null}</span>
                 </div>
               ))}
             </section>

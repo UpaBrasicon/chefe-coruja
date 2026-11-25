@@ -1,12 +1,4 @@
-# Dose em mL: bulas que faltavam (lista única dos lotes 4, 5 e 6) — CONCLUÍDO
-
-> **Situação: concluído em 23/11/2026.** Não há bula pendente. As bulas foram lidas no lote 7 (#1035, `DOSES-ML-LOTE7-BULAS.md`) e as decisões que sobraram foram fechadas no lote 8 (#1043, `DOSES-ML-LOTE8-PENDENCIAS.md`). A dose em mL está concluída na criança (lotes 0 a 8) e no adulto (A0 a A5), com as fichas aprovadas pelo RT. A lista abaixo fica como registro histórico.
->
-> Desfecho de cada item da seção 1:
-> - Com mL pela bula: difenidramina, dexametasona (2 e 4 mg/mL, valor em fosfato, L7-1), acetilcisteína, esmolol (10 e 250 mg/mL), milrinona, clindamicina (só a IV), amicacina (50 e 250 mg/mL), gentamicina 40 mg/mL (pelo rótulo, L7-3 = B), tobramicina, desmopressina, morfina 0,1 e 0,2 mg/mL ao lado de 1 e 10 mg/mL, e vitamina K na via SC.
-> - Sem mL, por regra ou por decisão: vitamina K IV (as três bulas contraindicam a veia); salbutamol injetável (a única ampola à venda diz "uso adulto", L7-6); itens sem via escrita ou com IV ou IM (aminoglicosídeos da ITU, clindamicina e SMX-TMP sem via só IV).
-> - Azul de metileno: não há injetável na CMED nem no Bulário; segue a solução a 1% do livro (p. 102).
-> - Seções 2 e 3: avisos de diluir conferidos no lote 7; glicose de 5% a 50%, sem a de 75%; tranexâmico da DVW "IV ou VO" e fenitoína profilática "IV" com o aviso de via mista; enoxaparina do lactente com o aviso de seringa de 1 mL (lote 8).
+# Dose em mL: bulas que faltam (lista única dos lotes 4, 5 e 6)
 
 Data: 20/11/2026. Para o RT baixar de uma vez no Bulário Eletrônico da ANVISA (bula do **profissional**; o site pede a verificação "sou humano", por isso a sessão não baixa sozinha). Decisões que pedem a bula: L4-1, L5-1 e L6-3. Fonte da concentração enquanto a bula não chega: CMED de 09/11/2026 ou o livro do ICr.
 

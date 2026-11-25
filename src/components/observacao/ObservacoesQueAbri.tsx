@@ -8,78 +8,32 @@
 // cuidado segue com a equipe escalada.
 // O servidor decide quem vê (observacoes_que_abri); quem já vê o paciente no
 // painel normal não ganha um cartão repetido.
+//
+// M1 da revisão do médico (RT, 24/11/2026): a linha entra na lista única da
+// observação, no grupo "Que abri"; "Definir conduta" é o botão da linha e o
+// resto fica no menu "…"; a alergia aparece como ficha no nome.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Clock } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import * as React from 'react'
 
-import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { dataIso } from '@/lib/formato'
-import { nomeExibido, semDuplicar, type ObservacaoQueAbri } from '@/lib/observacoesQueAbri'
+import { nomeExibido, type ObservacaoQueAbri } from '@/lib/observacoesQueAbri'
 import { rotuloIdade } from '@/domain/idade'
-import { TituloSecao } from '@/components/monitor/Pagina'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
+import { tempoNaObservacao } from '@/lib/observacaoLista'
+import { Estado } from '@/components/porta/Estado'
+import { AlergiasEventos, SeloAlergia } from '@/components/paciente/AlergiasEventos'
+import { MenuMais } from '@/components/plantao/MenuMais'
 
-import { TOM_TEXTO, hhmm, msgErro, relogioPermanencia, type Acao } from './modelo'
+import { TOM_BARRA, msgErro, relogioPermanencia, type Acao } from './modelo'
 import { Painel, PainelDesfecho, PainelReavaliar } from './PaineisCartao'
 import { AbaParecer } from '@/components/parecer/AbaParecer'
-import { AlergiasEventos } from '@/components/paciente/AlergiasEventos'
-
-export function ObservacoesQueAbri({ unidadeId, agora, noPainel }: {
-  unidadeId: string
-  agora: number
-  /** internações que já aparecem no painel normal (não repetir o cartão) */
-  noPainel: string[]
-}) {
-  const lista = useQuery({
-    queryKey: ['observacoes-que-abri', unidadeId],
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('observacoes_que_abri', { p_unidade: unidadeId })
-      // função ausente (banco sem a 20270305000002 ou rollback): a seção some
-      if (error?.code === 'PGRST202') return []
-      if (error) throw error
-      return (data ?? []) as unknown as ObservacaoQueAbri[]
-    },
-  })
-
-  const minhas = semDuplicar(lista.data ?? [], noPainel)
-  if (lista.error) {
-    return <p className="rounded-container border border-critico/30 bg-alerta-critico px-4 py-3 text-apoio text-critico">{msgErro(lista.error)}</p>
-  }
-  if (minhas.length === 0) return null
-
-  return (
-    <section aria-label="Observações que você abriu" className="flex flex-col">
-      <TituloSecao className="mb-1" extra={minhas.length === 1 ? '1 paciente' : `${minhas.length} pacientes`}>Observações que você abriu</TituloSecao>
-      <p className="mb-2.5 text-apoio text-tinta-sussurro">
-        Você pôs estes pacientes em observação pela porta. Aqui você pede parecer, marca a reavaliação e encerra a observação; o cuidado segue com a equipe escalada no setor.
-      </p>
-      <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
-        <Table aria-label="Observações que você abriu">
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="pl-5">Box</TableHead>
-              <TableHead>Paciente</TableHead>
-              <TableHead>Na observação</TableHead>
-              <TableHead>Prazo de 6 h</TableHead>
-              <TableHead className="pr-5 text-right"><span className="sr-only">Ações</span></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {minhas.map((o) => <LinhaQueAbri key={o.internacao_id} o={o} agora={agora} unidadeId={unidadeId} />)}
-          </TableBody>
-        </Table>
-      </div>
-    </section>
-  )
-}
 
 type PainelQueAbri = 'desfecho' | 'reavaliar' | 'parecer' | 'alergias'
 
-function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: number; unidadeId: string }) {
+export function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: number; unidadeId: string }) {
   const qc = useQueryClient()
   const [painel, setPainel] = React.useState<PainelQueAbri | null>(null)
   const aberto = painel !== null
@@ -101,60 +55,62 @@ function LinhaQueAbri({ o, agora, unidadeId }: { o: ObservacaoQueAbri; agora: nu
   }
 
   const rel = relogioPermanencia(o.entrada, o.prazo, agora)
+  const tempo = tempoNaObservacao(o.entrada, agora)
   const idade = o.data_nascimento ? rotuloIdade(o.data_nascimento, dataIso()) : null
+  const TITULO: Record<PainelQueAbri, string> = { desfecho: 'Definir conduta', reavaliar: 'Reavaliar', parecer: 'Pedir parecer', alergias: 'Alergias' }
 
+  // OB1 e OO1 (RT, 24/11/2026): a mesma linha da lista, sem tabela; as ações numa gaveta lateral
   return (
-    <>
-      <TableRow className={cn('align-top', aberto && 'border-b-0')}>
-        <TableCell className="pl-5 font-semibold text-acao">{o.box ?? 'Sem box'}</TableCell>
-        <TableCell className="whitespace-normal">
-          <div className="flex min-w-[200px] flex-col gap-1">
-            <span className="text-corpo font-medium text-tinta">
-              {nomeExibido(o)} {idade && <span className="text-apoio font-normal text-tinta-sussurro">{idade}</span>}
-            </span>
-            <span className="text-apoio text-tinta-sussurro">{o.setor_nome}</span>
-          </div>
-        </TableCell>
-        <TableCell className="tabular-nums">
-          <span className={cn(rel.acima ? 'font-semibold text-observacao' : 'text-tinta-apoio')}>{rel.permanencia}</span>
-          <div className="text-rotulo text-tinta-sussurro">desde {hhmm(o.entrada)}</div>
-        </TableCell>
-        <TableCell className="tabular-nums">
-          <span className={cn('flex items-center gap-1 font-semibold', TOM_TEXTO[rel.tom])}>
-            <Clock className="size-3" aria-hidden /> {rel.contagem}
+    <div className="border-b border-trilha last:border-b-0">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
+        <span className="w-[64px] shrink-0 text-apoio font-semibold text-acao">{o.box ?? 'Sem box'}</span>
+        <div className="flex min-w-0 flex-[2_1_220px] flex-col gap-0.5">
+          <span className="text-corpo font-medium text-tinta">
+            {nomeExibido(o)} {idade && <span className="text-apoio font-normal text-tinta-sussurro">{idade}</span>}
           </span>
-          <div className={cn('text-rotulo', rel.acima ? 'text-observacao' : 'text-tinta-sussurro')}>
-            {rel.acima ? 'Definir conduta ou internar' : `até ${hhmm(o.prazo)}`}
+          <span className="text-apoio text-tinta-sussurro">{o.setor_nome}</span>
+          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1"><SeloAlergia pacienteId={o.paciente_id} /></span>
+        </div>
+        <div className="flex min-w-0 flex-[1_1_200px] flex-col items-start gap-0.5">
+          <Estado tom="cinza">Com a equipe do setor</Estado>
+          <span className="pl-[17px] text-rotulo text-tinta-sussurro">Você abriu esta observação pela porta</span>
+        </div>
+        <div className="flex w-[150px] shrink-0 flex-col gap-1 tabular-nums">
+          <span className={cn('text-apoio', rel.acima ? 'font-semibold text-critico' : 'text-tinta-apoio')}>{tempo.ha}</span>
+          <div role="meter" aria-label="Prazo de 6 horas" aria-valuemin={0} aria-valuemax={100} aria-valuenow={rel.pct}
+            title={rel.contagem} className="h-1.5 w-full overflow-hidden rounded-capsula bg-trilha">
+            <div className={cn('h-full rounded-capsula', TOM_BARRA[rel.tom])} style={{ width: `${rel.pct}%` }} />
           </div>
-        </TableCell>
-        <TableCell className="pr-5">
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button size="sm" variant="outline" aria-expanded={painel === 'reavaliar'} onClick={() => alternar('reavaliar')}>Reavaliar</Button>
-            <Button size="sm" variant="outline" aria-expanded={painel === 'parecer'} onClick={() => alternar('parecer')}>Pedir parecer</Button>
-            <Button size="sm" variant="outline" aria-expanded={painel === 'alergias'} onClick={() => alternar('alergias')}>Alergias</Button>
-            <Button size="sm" variant="outline" aria-expanded={painel === 'desfecho'} onClick={() => alternar('desfecho')}>Encerrar observação</Button>
-          </div>
-        </TableCell>
-      </TableRow>
-      {aberto && (
-        <TableRow className="hover:bg-transparent">
-          <TableCell colSpan={5} className="px-0 pt-0 pb-0 whitespace-normal">
-            {painel === 'desfecho' && <PainelDesfecho linha={o} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
-            {painel === 'reavaliar' && <PainelReavaliar linha={o} acao={acao} fechar={fechar} erro={erro} />}
-            {painel === 'parecer' && (
-              <Painel titulo="Parecer">
-                <AbaParecer pacienteId={o.paciente_id} internacaoId={o.internacao_id} />
-              </Painel>
-            )}
-            {/* quem abriu registra alergia enquanto a observação está aberta (RT, 08/11/2026) */}
-            {painel === 'alergias' && (
-              <Painel titulo="Alergias e eventos adversos">
-                <AlergiasEventos pacienteId={o.paciente_id} />
-              </Painel>
-            )}
-          </TableCell>
-        </TableRow>
-      )}
-    </>
+          <span className="text-rotulo text-tinta-sussurro">{tempo.desde}</span>
+        </div>
+        <div className="ml-auto flex shrink-0 items-center gap-[7px]">
+          <Button size="sm" onClick={() => alternar('desfecho')}>Definir conduta</Button>
+          <MenuMais icone rotuloAcessivel={`Mais ações para ${nomeExibido(o)}`} itens={[
+            { chave: 'reavaliar', rotulo: 'Reavaliar', onSelecionar: () => alternar('reavaliar') },
+            { chave: 'parecer', rotulo: 'Pedir parecer', onSelecionar: () => alternar('parecer') },
+            { chave: 'alergias', rotulo: 'Alergias', onSelecionar: () => alternar('alergias') },
+          ]} />
+        </div>
+      </div>
+      <Gaveta aberta={aberto} onAbertaChange={(v) => { if (!v) fechar() }} rotulo={`${painel ? TITULO[painel] : ''} · ${nomeExibido(o)}`}
+        className={painel === 'desfecho' || painel === 'parecer' ? 'max-w-[680px]' : undefined}>
+        {painel && <GavetaCabeca sobre={TITULO[painel]} titulo={nomeExibido(o)} detalhe={[o.box, o.setor_nome].filter(Boolean).join(' · ')} />}
+        <div className="flex flex-col gap-2 py-3">
+          {painel === 'desfecho' && <PainelDesfecho linha={{ ...o, nome: nomeExibido(o) }} unidadeId={unidadeId} acao={acao} fechar={fechar} erro={erro} />}
+          {painel === 'reavaliar' && <PainelReavaliar linha={o} acao={acao} fechar={fechar} erro={erro} />}
+          {painel === 'parecer' && (
+            <Painel titulo="Parecer">
+              <AbaParecer pacienteId={o.paciente_id} internacaoId={o.internacao_id} />
+            </Painel>
+          )}
+          {/* quem abriu registra alergia enquanto a observação está aberta (RT, 08/11/2026) */}
+          {painel === 'alergias' && (
+            <Painel titulo="Alergias e eventos adversos">
+              <AlergiasEventos pacienteId={o.paciente_id} />
+            </Painel>
+          )}
+        </div>
+      </Gaveta>
+    </div>
   )
 }

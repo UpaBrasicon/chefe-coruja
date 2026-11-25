@@ -51,11 +51,15 @@ export function ToolRouter() {
       {exibida && <LateralSecao secao={exibida} atual={{ secao: secao.slug, slug: def.slug }} />}
       <div className="min-w-0">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <Trilha niveis={[{ rotulo: 'Central do Médico', to: '/plantonista' }, { rotulo: exibida?.label ?? secao.label, to: `/plantonista/${exibida?.slug ?? secao.slug}` }, { rotulo: def.label }]} />
+          {/* a Farmácia é item próprio do menu (revisão de 24/11/2026): a trilha começa nela */}
+          <Trilha niveis={secao.slug === 'farmacia'
+            ? [{ rotulo: 'Farmácia' }, { rotulo: def.label }]
+            : [{ rotulo: 'Central do Médico', to: '/plantonista' }, { rotulo: exibida?.label ?? secao.label, to: `/plantonista/${exibida?.slug ?? secao.slug}` }, { rotulo: def.label }]} />
           <div className="flex flex-wrap items-center gap-2">
             <SeloSemReferenciaPediatrica publico={publico} />
-            {vezes > 0 && <span className="text-rotulo text-tinta-sussurro tabular" title="Quantas vezes você abriu esta ferramenta">{vezes}×</span>}
-            <Button variant="ghost" size="sm" aria-pressed={ehFavorito} onClick={() => alternarFavorito(chave)}>
+            {/* o "3×" solto saiu da tela (revisão de 24/11/2026); a contagem fica no título do favorito */}
+            <Button variant="ghost" size="sm" aria-pressed={ehFavorito} onClick={() => alternarFavorito(chave)}
+              title={vezes > 0 ? `Você abriu esta ferramenta ${vezes} ${vezes === 1 ? 'vez' : 'vezes'}` : undefined}>
               <Star className={cn(ehFavorito && 'fill-acao text-acao')} />
               {ehFavorito ? 'Favorita' : 'Favoritar'}
             </Button>

@@ -16,7 +16,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Copy, KeyRound } from 'lucide-react'
 import * as React from 'react'
 
-import { Vazio } from '@/components/monitor/Pagina'
+import { Chip, Vazio } from '@/components/monitor/Pagina'
+import { BuscaMultipla } from '@/components/ui/busca-multipla'
 import { TabsPagina } from '@/components/TabsPagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { dataPura } from '@/lib/formato'
 import { fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
@@ -58,7 +60,8 @@ type Chave = {
 type Acesso = { recurso: string; unidade: string | null; status: number; ip: string | null; requisicao: string | null; em: string }
 
 export default function Integracoes() {
-  const { ehSuperAdmin, unidadeAtiva } = useUnidade()
+  const { ehSuperAdmin: superAdmin, papelAtivo, unidadeAtiva } = useUnidade()
+  const ehSuperAdmin = superAdmin && papelAtivo === 'admin'
   const ubs = unidadeAtiva?.unidade.tipo === 'ubs'
   // na UBS, a página também cuida do envio ao SISAB (aba SISAB)
   const envio = ubs ? 'o envio à RNDS e ao SISAB' : 'o envio à RNDS'
@@ -76,11 +79,15 @@ export default function Integracoes() {
 }
 
 function ChavesAba() {
-  const { ehSuperAdmin } = useUnidade()
+  const { ehSuperAdmin, papelAtivo } = useUnidade()
+  // Só o super admin, no perfil de administrador, cria chave (RT, 24/11/2026):
+  // no perfil gestor a conta dele vê o mesmo que o gestor comum.
+  const criaChave = ehSuperAdmin && papelAtivo === 'admin'
+  const [verRevogadas, setVerRevogadas] = React.useState(false)
   // o super admin escolhe entre todas as unidades ativas da plataforma
   const unidades = useQuery({
     queryKey: ['api-unidades-ativas'],
-    enabled: ehSuperAdmin,
+    enabled: criaChave,
     queryFn: async () => {
       const { data, error } = await supabase.from('unidades').select('id, nome').eq('ativo', true).order('nome')
       if (error) throw error
@@ -96,6 +103,7 @@ function ChavesAba() {
     },
   })
   const ativas = (lista.data ?? []).filter((c) => !c.revogada_em)
+  const revogadas = (lista.data ?? []).filter((c) => c.revogada_em)
   const vencendo = ativas.filter((c) => !c.vencida && c.vence_em_dias <= 30)
   return (
     <div className="flex flex-col gap-4">
@@ -105,20 +113,46 @@ function ChavesAba() {
           A renovação é uma chave nova, criada pela administração da plataforma.
         </p>
       )}
-      {ehSuperAdmin && <NovaChave unidades={unidades.data ?? []} />}
+      {criaChave && <NovaChave unidades={unidades.data ?? []} />}
+      <RecusasLaboratorio />
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
-        <Vazio icone={KeyRound} titulo="Nenhuma chave" texto="Nenhum integrador tem chave para as suas unidades." />
+        <Vazio icone={KeyRound} titulo="Nenhuma chave" texto={criaChave
+          ? 'Nenhum integrador tem chave ainda. Crie a primeira em Nova chave, de preferência em homologação.'
+          : 'Nenhum integrador tem chave para a sua unidade. A chave é criada pela administração da plataforma.'} />
       ) : (
-        <div className="flex flex-col gap-3">{(lista.data ?? []).map((c) => <CartaoChave key={c.id} c={c} />)}</div>
+        <div className="flex flex-col gap-3">
+          {ativas.length === 0 && <p className="text-apoio text-tinta-sussurro">Nenhuma chave ativa.</p>}
+          {ativas.map((c) => <CartaoChave key={c.id} c={c} />)}
+          {revogadas.length > 0 && (
+            <Button size="xs" variant="outline" className="self-start" aria-expanded={verRevogadas} onClick={() => setVerRevogadas((x) => !x)}>
+              {verRevogadas ? 'Esconder' : 'Ver'} {revogadas.length === 1 ? '1 chave revogada' : `${revogadas.length} chaves revogadas`}
+            </Button>
+          )}
+          {verRevogadas && revogadas.map((c) => <CartaoChave key={c.id} c={c} />)}
+        </div>
       )}
     </div>
   )
 }
 
+// Revisão do admin (RT, 24/11/2026): recursos por modelo pronto, com
+// "personalizar" recolhido; unidades por busca (sem parede de checkbox).
+const MODELOS: { nome: string; recursos: Recurso[] }[] = [
+  { nome: 'Laboratório', recursos: ['laboratorio'] },
+  { nome: 'Imagem (RIS/PACS)', recursos: ['imagem'] },
+  { nome: 'Power BI', recursos: ['atendimentos', 'leitos', 'producao'] },
+  { nome: 'ERP', recursos: ['financeiro'] },
+  { nome: 'Regulação', recursos: ['regulacao', 'leitos'] },
+]
+const mesmoConjunto = (a: Recurso[], b: Recurso[]) => a.length === b.length && a.every((x) => b.includes(x))
+
 function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
   const qc = useQueryClient()
+  const [aberta, setAberta] = React.useState(false)
+  const [personalizar, setPersonalizar] = React.useState(false)
   const [nome, setNome] = React.useState('')
-  const [ambiente, setAmbiente] = React.useState<'live' | 'test'>('live')
+  // ambiente sem padrão Produção: a chave nasce de teste e vira produção por escolha
+  const [ambiente, setAmbiente] = React.useState<'live' | 'test'>('test')
   const [sel, setSel] = React.useState<string[]>([])
   const [rec, setRec] = React.useState<Recurso[]>([])
   const [ips, setIps] = React.useState('')
@@ -139,11 +173,23 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
     },
   })
   const alternar = <T,>(lista: T[], v: T) => (lista.includes(v) ? lista.filter((x) => x !== v) : [...lista, v])
+  if (!aberta && !criada) {
+    return (
+      <div className="flex justify-end">
+        <Button size="sm" onClick={() => setAberta(true)}><KeyRound className="size-3.5" /> Nova chave</Button>
+      </div>
+    )
+  }
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-corpo">Nova chave</CardTitle>
-        <CardDescription>Validade de 12 meses. Libere só as unidades e os recursos de que o integrador precisa.</CardDescription>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="text-corpo">Nova chave</CardTitle>
+            <CardDescription>Validade de 12 meses. Libere só as unidades e os recursos de que o integrador precisa.</CardDescription>
+          </div>
+          <Button size="xs" variant="outline" onClick={() => { setAberta(false); setCriada(null) }}>Fechar</Button>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         {criada && (
@@ -164,31 +210,37 @@ function NovaChave({ unidades }: { unidades: { id: string; nome: string }[] }) {
           <div className="flex flex-col gap-1">
             <Label htmlFor="api-amb" className="text-rotulo">Ambiente</Label>
             <CampoSelecao id="api-amb" tamanho="compacto" value={ambiente} onChange={(e) => setAmbiente(e.target.value as 'live' | 'test')}>
-              <option value="live">Produção (cc_live_)</option>
               <option value="test">Homologação (cc_test_)</option>
+              <option value="live">Produção (cc_live_)</option>
             </CampoSelecao>
           </div>
         </div>
-        <fieldset className="flex flex-col gap-1">
-          <legend className="text-rotulo text-tinta-apoio">Unidades</legend>
-          <div className="flex flex-wrap gap-3">
-            {unidades.map((u) => (
-              <label key={u.id} className="flex items-center gap-1.5">
-                <input type="checkbox" checked={sel.includes(u.id)} onChange={() => setSel((v) => alternar(v, u.id))} /> {u.nome}
-              </label>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="api-unidades" className="text-rotulo">Unidades</Label>
+          <BuscaMultipla id="api-unidades" opcoes={unidades} selecionados={sel} onChange={setSel}
+            placeholder="Buscar unidade pelo nome" vazio="Nenhuma unidade com esse nome." />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <span className="text-rotulo text-tinta-apoio">Recursos</span>
+          <div className="flex flex-wrap gap-1.5">
+            {MODELOS.map((m) => (
+              <Chip key={m.nome} ativo={mesmoConjunto(rec, m.recursos)} onClick={() => setRec(m.recursos)}>{m.nome}</Chip>
             ))}
+            <Chip ativo={personalizar} onClick={() => setPersonalizar((x) => !x)}>Personalizar</Chip>
           </div>
-        </fieldset>
-        <fieldset className="flex flex-col gap-1">
-          <legend className="text-rotulo text-tinta-apoio">Recursos</legend>
-          <div className="flex flex-wrap gap-3">
-            {(Object.keys(RECURSOS) as Recurso[]).map((r) => (
-              <label key={r} className="flex items-center gap-1.5">
-                <input type="checkbox" checked={rec.includes(r)} onChange={() => setRec((v) => alternar(v, r))} /> {RECURSOS[r]}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+          {rec.length > 0 && !personalizar && (
+            <span className="text-rotulo text-pretty text-tinta-sussurro">Libera: {rec.map((r) => RECURSOS[r]).join('; ')}</span>
+          )}
+          {personalizar && (
+            <div className="flex flex-col gap-1.5 rounded-controle border border-fio p-2.5">
+              {(Object.keys(RECURSOS) as Recurso[]).map((r) => (
+                <label key={r} className="flex items-center gap-1.5">
+                  <input type="checkbox" checked={rec.includes(r)} onChange={() => setRec((v) => alternar(v, r))} /> {RECURSOS[r]}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="flex flex-col gap-1 sm:col-span-2">
             <Label htmlFor="api-ips" className="text-rotulo">IPs de origem (opcional; vazio aceita qualquer IP)</Label>
@@ -292,5 +344,29 @@ function CartaoChave({ c }: { c: Chave }) {
         ))}
       </CardContent>
     </Card>
+  )
+}
+
+// SP2 (L4 = A): laudo do laboratório sem pedido no sistema continua recusado;
+// o gestor vê quantos foram recusados por semana para decidir se muda a regra.
+function RecusasLaboratorio() {
+  const { unidadeAtiva, papeisDaUnidade, ehSuperAdmin } = useUnidade()
+  const unidadeId = unidadeAtiva?.unidade_id
+  const pode = !!unidadeId && (ehSuperAdmin || papeisDaUnidade.includes('gestor'))
+  const { data } = useQuery({
+    queryKey: ['recusas-laboratorio', unidadeId],
+    enabled: pode,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('recusas_laboratorio_sem_pedido', { p_unidade: unidadeId!, p_semanas: 8 })
+      if (error) throw error
+      return (data ?? []) as unknown as { semana: string; recusas: number }[]
+    },
+  })
+  if (!pode || !data?.length) return null
+  return (
+    <p className="rounded-container border border-fio bg-superficie px-3.5 py-2.5 text-apoio text-tinta-apoio">
+      Laudos do laboratório recusados porque o pedido não está no sistema (últimas 8 semanas, nesta unidade):{' '}
+      {data.map((s) => `semana de ${dataPura(s.semana)}: ${s.recusas}`).join('; ')}. O exame precisa ser pedido no Chefe Coruja para o laudo entrar.
+    </p>
   )
 }

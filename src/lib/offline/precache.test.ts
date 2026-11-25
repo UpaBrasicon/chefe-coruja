@@ -50,7 +50,7 @@ test('entrada, telas escolhidas e o que elas importam; o resto fica de fora', ()
 
 test('N5: login, triagem, enfermagem, checagem e evolução estão na lista', () => {
   for (const f of ['src/pages/Login.tsx', 'src/pages/enfermagem/Triagem.tsx', 'src/pages/enfermagem/InternacaoEnfermagem.tsx',
-    'src/pages/enfermagem/ProntoSocorroEnfermagem.tsx', 'src/pages/enfermagem/Checagem.tsx', 'src/pages/plantao/PlantaoToolRouter.tsx', 'src/pages/plantao/secoes/EvolucaoTool.tsx']) {
+    'src/pages/enfermagem/ProntoSocorroEnfermagem.tsx', 'src/pages/enfermagem/Checagem.tsx', 'src/pages/plantao/AreaInternacao.tsx', 'src/pages/plantao/secoes/PacientesInternados.tsx']) {
     assert.ok(FONTES_SEM_CONEXAO.includes(f), f)
     readFileSync(f) // o arquivo existe
   }

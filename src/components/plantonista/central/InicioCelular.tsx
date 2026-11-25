@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Baby, Bookmark, ChevronRight, ClipboardList, History, HeartPulse, Search, User, type LucideIcon } from 'lucide-react'
 import { DescansoDoPlantao } from '@/components/plantao/DescansoDoPlantao'
 import { MinhasAnotacoes } from '@/components/plantao/MinhasAnotacoes'
+import { ROTA_PASSOMETRO } from '@/components/plantao/rotasMedico'
 
 import { CHAVES_FERRAMENTAS, SECOES } from '@/content/registry'
 import { ROTA_PCR, chaveDoItem, categoriasDoInicio, rotaDaBusca, type CategoriaInicio, type IconeCategoria, type LadoInicio } from '@/content/inicioCelular'
@@ -15,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { Abas, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { SessaoAssinatura } from '@/components/assinatura/SessaoAssinatura'
 import { CartaoTurno } from './CartaoTurno'
+import { VitrineDoGrupo } from './ObjetoDoGrupo'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 
@@ -28,20 +30,12 @@ import { Button } from '@/components/ui/button'
 // borda fina; a cor do grupo fica só na etiqueta da sigla, como a faixa de uma
 // etiqueta de ampola. O "Iniciar PCR" é o único bloco de cor forte.
 // Classes por extenso para o Tailwind enxergá-las; só tokens do app.
-const FAIXA: Record<IconeCategoria, string> = {
-  urgencias: 'bg-critico', doses: 'bg-secao-farmacia', calculadoras: 'bg-secao-calculadoras',
-  escores: 'bg-secao-neurologia', intoxicacao: 'bg-secao-toxicologia', todas: 'bg-acao',
-}
-
-/** A sigla como etiqueta de ampola: fundo branco, borda fina e a faixa na cor do grupo. */
-function Etiqueta({ texto, icone, pequena }: { texto: string; icone: IconeCategoria; pequena?: boolean }) {
-  return (
-    <span aria-hidden className={cn('inline-flex shrink-0 items-stretch overflow-hidden rounded-controle border border-fio-forte bg-superficie font-mono font-medium text-tinta tabular-nums',
-      pequena ? 'h-6 text-rotulo' : 'h-7 text-apoio')}>
-      <span className={cn('w-1', FAIXA[icone])} />
-      <span className={cn('flex items-center', pequena ? 'px-1.5' : 'px-2')}>{texto}</span>
-    </span>
-  )
+// Itens do grupo aberto (opção "Itens 2", RT em 23/11/2026): faixa no alto com a
+// cor do grupo bem diluída e a sigla grande na cor do grupo; nome embaixo, centralizado.
+const TOM_ITEM: Record<IconeCategoria, string> = {
+  urgencias: 'bg-critico/7 text-critico', doses: 'bg-secao-farmacia/7 text-secao-farmacia',
+  calculadoras: 'bg-secao-calculadoras/7 text-secao-calculadoras', escores: 'bg-secao-neurologia/7 text-secao-neurologia',
+  intoxicacao: 'bg-secao-toxicologia/7 text-secao-toxicologia', todas: 'bg-acao/7 text-acao',
 }
 
 /** Ao abrir uma tela pelo início, o lado escolhido vira o paciente da Central desta aba. */
@@ -89,14 +83,15 @@ function IniciarPcr({ lado }: { lado: LadoInicio }) {
 
 function CartaoCategoria({ c, aberta, aoTocar, idPainel, largo }: { c: CategoriaInicio; aberta: boolean; aoTocar: () => void; idPainel: string; largo?: boolean }) {
   return (
+    // vitrine (opção 2 dos cartões visuais, RT em 23/11/2026): o objeto do grupo
+    // sobre a cor do grupo bem diluída e, embaixo, a faixa com o nome; sem etiqueta
     <BotaoLinha onClick={aoTocar} aria-expanded={aberta} aria-controls={idPainel}
-      className={cn('gap-3 rounded-cartao p-4 hover:bg-superficie active:bg-trilha',
-        largo ? 'min-h-18 flex-row items-center' : 'min-h-28',
-        aberta ? 'border-acao bg-trilha hover:border-acao hover:bg-trilha' : 'border-fio hover:border-fio-forte')}>
-      <Etiqueta texto={c.sigla} icone={c.icone} />
-      <span className="flex min-w-0 flex-col gap-0.5">
+      className={cn('gap-0 overflow-hidden rounded-cartao p-0 hover:bg-superficie active:bg-trilha',
+        aberta ? 'border-acao ring-1 ring-acao hover:border-acao' : 'border-fio hover:border-fio-forte')}>
+      <VitrineDoGrupo icone={c.icone} largo={largo} />
+      <span className="flex w-full flex-col items-center gap-0.5 border-t border-fio px-3 py-2.5 text-center">
         <span className="text-corpo leading-tight font-medium text-tinta">{c.nome}</span>
-        <span className="text-apoio leading-snug text-tinta-apoio">{c.exemplos}</span>
+        {largo && <span className="text-apoio leading-snug text-tinta-apoio">{c.exemplos}</span>}
       </span>
     </BotaoLinha>
   )
@@ -107,9 +102,10 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
   const { favoritos, alternarFavorito } = useFavoritos(CHAVES_FERRAMENTAS)
   return (
     <div id={id} role="region" aria-label={c.nome} className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie p-3">
-      <div className="flex items-center justify-between">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+        <span aria-hidden />
         <span className="text-apoio font-medium text-tinta-apoio">{c.nome}</span>
-        <Button type="button" variant="outline" size="sm" onClick={aoFechar}>Fechar</Button>
+        <Button type="button" variant="outline" size="sm" onClick={aoFechar} className="justify-self-end">Fechar</Button>
       </div>
       <ul className="grid grid-cols-2 gap-2">
         {c.itens.map((i) => {
@@ -118,13 +114,13 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
           return (
             <li key={i.rota} className="relative">
               <BotaoLinha onClick={() => abrir(i.rota)}
-                className="h-full min-h-21 w-full gap-2 rounded-container border-fio bg-campo p-3 pr-10 hover:border-fio-forte hover:bg-campo active:bg-trilha">
-                <Etiqueta texto={i.sigla} icone={c.icone} pequena />
-                <span className="text-controle leading-snug font-medium text-tinta">{i.nome}</span>
+                className="h-full w-full items-stretch gap-0 overflow-hidden rounded-container border-fio p-0 hover:border-fio-forte hover:bg-superficie active:bg-trilha">
+                <span className={cn('flex h-10 items-center justify-center px-9 font-mono text-secao font-medium tabular-nums', TOM_ITEM[c.icone])}>{i.sigla}</span>
+                <span className="flex min-h-10 flex-1 items-center justify-center px-3 py-2.5 text-center text-controle leading-snug font-medium text-tinta">{i.nome}</span>
               </BotaoLinha>
               {chave && (
                 <Button type="button" variant="ghost" size="icon-sm" onClick={() => alternarFavorito(chave)} aria-pressed={favorito}
-                  aria-label={favorito ? `Tirar ${i.nome} dos favoritos` : `Favoritar ${i.nome}`} className="absolute top-1.5 right-1.5">
+                  aria-label={favorito ? `Tirar ${i.nome} dos favoritos` : `Favoritar ${i.nome}`} className="absolute top-1.25 right-1">
                   <Bookmark className={cn('size-4', favorito ? 'fill-acao text-acao' : 'text-tinta-sussurro')} strokeWidth={1.75} />
                 </Button>
               )}
@@ -132,7 +128,7 @@ function PainelCategoria({ c, id, lado, aoFechar }: { c: CategoriaInicio; id: st
           )
         })}
       </ul>
-      <Link to="/plantonista?todas=1" className="self-start py-1 text-apoio font-medium text-acao no-underline hover:underline">Ver todas, com busca</Link>
+      <Link to="/plantonista?todas=1" className="self-center py-1 text-apoio font-medium text-acao no-underline hover:underline">Ver todas, com busca</Link>
     </div>
   )
 }
@@ -171,7 +167,7 @@ function MeuPlantao() {
       <CartaoTurno unidadeId={unidadeAtiva?.unidade_id} perfilId={perfil?.id} ubs={unidadeAtiva?.unidade.tipo === 'ubs'} />
       {/* pedido 8 (PS1 a PS3 = A): os pacientes do plantão com as pendências; a UBS não tem leito */}
       {unidadeAtiva?.unidade.tipo !== 'ubs' && (
-        <ul aria-label="Passômetro"><LinhaAtalho nome="Passômetro: meus pacientes e pendências" rota="/passometro" icone={ClipboardList} /></ul>
+        <ul aria-label="Passômetro"><LinhaAtalho nome="Passômetro: meus pacientes e pendências" rota={ROTA_PASSOMETRO} icone={ClipboardList} /></ul>
       )}
       {/* pedido 8 (PS4): o médico divide o descanso do plantão; a UBS não tem plantão noturno */}
       {unidadeAtiva?.unidade.tipo !== 'ubs' && <DescansoDoPlantao unidadeId={unidadeAtiva?.unidade_id} podeDividir />}

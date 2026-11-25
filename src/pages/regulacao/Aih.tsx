@@ -11,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileText } from 'lucide-react'
 import * as React from 'react'
 
+import { EtapasEmPassos } from '@/components/gestor/EtapasEmPassos'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { InternadosSemLaudo } from '@/components/regulacao/InternadosSemLaudo'
 import { Badge } from '@/components/ui/badge'
@@ -35,15 +36,15 @@ const ABAS: readonly (readonly [Filtro, string])[] = [
 ]
 
 export default function Aih() {
-  const { unidadeAtiva, papelAtivo } = useUnidade()
+  const { unidadeAtiva, papelAtivo, ehGestor } = useUnidade()
   const unidade = unidadeAtiva?.unidade_id
   const regulador = papelAtivo === 'regulador'
-  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a decisão dele
-  const [filtro, setFiltroBase] = React.useState<Filtro>('solicitada')
+  const [filtroEscolhido, setFiltroBase] = React.useState<Filtro | null>(null)
   // item 05 do kit de desempenho: páginas de 50, com "Ver mais"
   const [limite, setLimite] = React.useState(PAGINA)
   const setFiltro = (f: Filtro) => { setFiltroBase(f); setLimite(PAGINA) }
-  // contagem por aba e as internações que já têm AIH (página larga, até 200)
+  // Revisão de perfis (Gestor, item 17, M2): contagem por aba a partir de uma
+  // página larga (até 200); a tela abre na primeira aba que tem algo.
   const resumo = useQuery({
     queryKey: ['aihs-da-unidade', unidade, 'resumo'],
     enabled: !!unidade,
@@ -58,6 +59,9 @@ export default function Aih() {
   const contas = completo
     ? Object.fromEntries((['solicitada', 'aprovada', 'rejeitada', 'cancelada'] as StatusAih[]).map((s) => [s, resumo.data!.itens.filter((a) => a.status === s).length])) as Record<StatusAih, number>
     : null
+  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a decisão dele
+  const filtro: Filtro = filtroEscolhido ?? (regulador ? 'solicitada'
+    : contas ? (ABAS.find(([k]) => k !== 'todas' && contas[k as StatusAih] > 0)?.[0] ?? 'todas') : 'solicitada')
   const abas = ABAS.map(([k, r]) => [k, r, k === 'todas' ? resumo.data?.total : contas?.[k as StatusAih]] as const)
   const lista = useQuery({
     queryKey: ['aihs-da-unidade', unidade, filtro, limite],
@@ -79,9 +83,9 @@ export default function Aih() {
         descricao={regulador
           ? 'Laudos de AIH emitidos na unidade. Aprove com o número da AIH e a competência, ou rejeite com o motivo.'
           : 'Acompanhamento das AIHs da unidade. Quem decide é o médico regulador.'} />
-      {/* MR3 (RT, 24/11/2026): para o regulador, os internados sem laudo são uma linha neutra com leito e tempo */}
-      {regulador && unidade && completo && (
-        <InternadosSemLaudo unidade={unidade} tom="neutro"
+      {/* gestor: faixa de alerta (item 17, M1); regulador: linha neutra com leito e tempo (MR3, RT 24/11/2026) */}
+      {(ehGestor || regulador) && unidade && completo && (
+        <InternadosSemLaudo unidade={unidade} tom={regulador ? 'neutro' : 'alerta'}
           comAih={new Set(resumo.data!.itens.filter((a) => a.status === 'solicitada' || a.status === 'aprovada').map((a) => a.internacao_id).filter((x): x is string => !!x))} />
       )}
       <Abas abas={abas} valor={filtro} onChange={setFiltro} rotulo="Situação da AIH" />
@@ -95,6 +99,14 @@ export default function Aih() {
       )}
     </div>
   )
+}
+
+/** M3: a etapa da AIH em passos. */
+function passosDaAih(a: AihFila): { atual: number; parou?: string } {
+  if (a.status === 'aprovada') return { atual: 3 }
+  if (a.status === 'rejeitada') return { atual: 1, parou: 'rejeitada' }
+  if (a.status === 'cancelada') return { atual: a.numero ? 2 : 1, parou: 'cancelada' }
+  return { atual: 1 }
 }
 
 type Acao = 'aprovar' | 'rejeitar' | 'competencia' | 'cancelar' | null
@@ -146,6 +158,7 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
         {a.alerta_competencia && <Badge variant="destructive">competência além de 3 meses da alta</Badge>}
         <Badge variant={st.variante} className="ml-auto">{st.rotulo}</Badge>
       </div>
+      <EtapasEmPassos rotulo="Etapa da AIH" passos={['laudo emitido', 'decisão do regulador', 'número e competência']} {...passosDaAih(a)} />
       <div className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
         <span><span className="text-tinta-sussurro">Procedimento: </span>{a.proc_cod ?? '—'} {a.proc_desc ? `· ${a.proc_desc}` : ''}</span>
         <span><span className="text-tinta-sussurro">CID principal: </span>{a.cid ?? '—'}{a.cid_sec ? ` · secundário ${a.cid_sec}` : ''}</span>

@@ -104,7 +104,7 @@ export function AnticoagulacaoPlenaAdulto() {
 
       <Bloco titulo="Enoxaparina">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="acp-ctx">Contexto do capítulo</Label>
+          <Label htmlFor="acp-ctx" className="flex-1 items-end leading-snug">Contexto do capítulo</Label>
           <CampoSelecao id="acp-ctx" className="bg-transparent" value={ctx} onChange={(e) => setCtx(e.target.value as ContextoEnoxaparina)}>
             {(Object.keys(CONTEXTOS_ENOXAPARINA) as ContextoEnoxaparina[]).map((k) => <option key={k} value={k}>{CONTEXTOS_ENOXAPARINA[k].rotulo}</option>)}
           </CampoSelecao>

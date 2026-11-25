@@ -25,6 +25,7 @@ import {
 import { STATUS_LEITO_LABEL, STATUS_LEITO_VARIANT, TIPO_LEITO_LABEL, TIPO_SETOR_LABEL } from '@/lib/constants'
 import type { TipoLeito, TipoSetor } from '@/types/database'
 import { AcoesLeito } from '@/components/leito/AcoesLeito'
+import { BarraLote } from '@/components/leito/LoteLeitos'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -69,14 +70,20 @@ const leitosSchema = z.object({
 type LeitosForm = z.infer<typeof leitosSchema>
 
 export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
-  const { unidadeAtiva } = useUnidade()
+  const { unidadeAtiva, papelAtivo, papeisDaUnidade } = useUnidade()
   const queryClient = useQueryClient()
   const unidadeId = unidadeAtiva?.unidade_id
+  // perfil Gestor da secretaria (RT, 24/11/2026): cria e muda setores e leitos e
+  // bloqueia ou desbloqueia leito; a rotina do leito (higienizar, reservar,
+  // liberar) segue da unidade
+  const soCadastro = papelAtivo === 'gestor_secretaria' && !papeisDaUnidade.includes('gestor')
 
   const [setorSelecionadoId, setSetorSelecionadoId] = React.useState<string | null>(null)
   const [dialogSetorAberto, setDialogSetorAberto] = React.useState(false)
   const [dialogLeitosAberto, setDialogLeitosAberto] = React.useState(false)
   const [erro, setErro] = React.useState<string | null>(null)
+  // revisão do gestor (RT, 24/11/2026, M3): leitos escolhidos para a ação em lote (null = fora da seleção)
+  const [lote, setLote] = React.useState<Set<string> | null>(null)
 
   const setoresQuery = useSetores(unidadeId)
   const setores = setoresQuery.data ?? []
@@ -222,7 +229,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
               >
                 <BotaoLinha
                   className="min-w-0 flex-1 gap-0 rounded-none border-0 bg-transparent p-0 hover:bg-transparent"
-                  onClick={() => setSetorSelecionadoId(s.id)}
+                  onClick={() => { setSetorSelecionadoId(s.id); setLote(null) }}
                 >
                   <span className="text-apoio font-medium">{s.nome}</span>
                   <span className="text-rotulo text-tinta-sussurro">
@@ -280,10 +287,15 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
               {setorSelecionado ? setorSelecionado.nome : 'Selecione um setor'}
             </CardTitle>
             {setorSelecionado && (
-              <Button size="sm" onClick={() => setDialogLeitosAberto(true)}>
-                <Plus />
-                Adicionar leitos
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                {(leitosQuery.data ?? []).length > 1 && lote === null && (
+                  <Button size="sm" variant="outline" onClick={() => setLote(new Set())}>Escolher vários</Button>
+                )}
+                <Button size="sm" onClick={() => setDialogLeitosAberto(true)}>
+                  <Plus />
+                  Adicionar leitos
+                </Button>
+              </div>
             )}
           </CardHeader>
           <CardContent>
@@ -299,9 +311,36 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
               </div>
             )}
 
+            {setorSelecionado && !leitosQuery.isLoading && lote !== null && (
+              <BarraLote
+                leitos={leitosQuery.data ?? []}
+                selecionados={lote}
+                unidadeId={unidadeId}
+                onLimpar={() => setLote(null)}
+                onTodos={() => setLote(new Set((leitosQuery.data ?? []).map((l) => l.id)))}
+              />
+            )}
+
             {setorSelecionado && !leitosQuery.isLoading && (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                {(leitosQuery.data ?? []).map((leito) => (
+                {(leitosQuery.data ?? []).map((leito) => lote !== null ? (
+                  <BotaoLinha
+                    key={leito.id}
+                    aria-pressed={lote.has(leito.id)}
+                    onClick={() => setLote((x) => {
+                      const n = new Set(x)
+                      if (n.has(leito.id)) n.delete(leito.id)
+                      else n.add(leito.id)
+                      return n
+                    })}
+                    className={cn('w-full gap-1 p-3', lote.has(leito.id) && 'border-acao bg-alerta-marca ring-1 ring-acao')}
+                  >
+                    <span className="text-apoio font-semibold">{leito.identificador}</span>
+                    <span className="text-rotulo text-tinta-sussurro">
+                      {leito.obito_aguardando_id ? 'Aguardando liberação do corpo' : STATUS_LEITO_LABEL[leito.status]} · {TIPO_LEITO_LABEL[leito.tipo]}
+                    </span>
+                  </BotaoLinha>
+                ) : (
                   <div
                     key={leito.id}
                     className="flex flex-col gap-2 rounded-controle border p-3"
@@ -322,11 +361,11 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                           leitoId={leito.id}
                           identificador={leito.identificador}
                           status={leito.status}
-                          podeHigienizar
+                          podeHigienizar={!soCadastro}
                           podeBloquear
-                          podeLiberarSemPaciente={!leito.obito_aguardando_id}
-                          podeReservar
-                          podeCancelarReserva
+                          podeLiberarSemPaciente={!soCadastro && !leito.obito_aguardando_id}
+                          podeReservar={!soCadastro}
+                          podeCancelarReserva={!soCadastro}
                           unidadeId={unidadeId}
                           compacto
                           invalidar={[['leitos'], ['situacao-leitos'], ['mapa-leitos-gestor'], ['censo']]}
@@ -399,7 +438,8 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 control={setorForm.control}
                 name="tipo"
                 render={({ field }) => (
-                  <Select value={field.value || null} onValueChange={field.onChange}>
+                  // items: o campo mostra o nome ("Observação"), não o código cru ("observacao")
+                  <Select items={TIPO_SETOR_LABEL} value={field.value || null} onValueChange={field.onChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
@@ -473,7 +513,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                 control={leitosForm.control}
                 name="tipo"
                 render={({ field }) => (
-                  <Select value={field.value || null} onValueChange={field.onChange}>
+                  <Select items={TIPO_LEITO_LABEL} value={field.value || null} onValueChange={field.onChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>

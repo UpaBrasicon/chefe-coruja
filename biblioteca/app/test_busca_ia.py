@@ -15,12 +15,13 @@ from unittest import mock
 
 for k, v in {"BIBLIOTECA_API_KEY": "t", "QDRANT_URL": "http://qdrant.invalido", "OLLAMA_URL": "http://ollama.invalido",
              "EMBED_MODEL": "x", "DEEPSEEK_API_KEY": "x", "DEEPSEEK_BASE_URL": "http://llm.invalido",
-             "REESCRITA": "0"}.items():
+             "REESCRITA": "0", "SUGESTOES": "0"}.items():
     os.environ.setdefault(k, v)
 
 import armadilhas as arm  # noqa: E402
 import main  # noqa: E402
 import publico as pub  # noqa: E402
+import seguimento as seg  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 
@@ -233,6 +234,86 @@ class TestRespostaComTrecho(unittest.TestCase):
         mock.patch.object(main, "reescrever", return_value="intoxicação exógena, criança").start()
         perguntar(self.cliente, "Criança de 3 anos ingeriu anlodipino. O que faço agora?")
         self.assertEqual(b.call_args.args[3], "intoxicação exógena, criança")
+
+
+class TestSeguimento(unittest.TestCase):
+    """IA1 e IA2 (RT, 24/11/2026): conversa de seguimento e perguntas sugeridas."""
+
+    def setUp(self):
+        main._cache.clear()
+        self.cliente = TestClient(main.app)
+        self.enviado = {}
+        mock.patch.object(main, "passa_gate", return_value=True).start()
+        mock.patch.object(main.FONTES, "mapa", return_value={"adu1": pub.ADULTO}).start()
+        self.buscar = mock.patch.object(main, "buscar", return_value=([], [ponto("adu1", "cardioversão sincronizada 120 J")], 0.9, True)).start()
+
+        def falso(**kw):
+            self.enviado.update(kw)
+            yield SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="Cardioversão sincronizada [1]."))])
+        mock.patch.object(main.llm.chat.completions, "create", side_effect=falso).start()
+
+    def tearDown(self):
+        mock.patch.stopall()
+
+    def perguntar(self, q, historico=None):
+        corpo = {"q": q, "tenant_id": "global", "request_id": "r1"}
+        if historico is not None:
+            corpo["historico"] = historico
+        r = self.cliente.post("/v1/ask", headers={"Authorization": "Bearer t"}, json=corpo)
+        self.assertEqual(r.status_code, 200, r.text)
+        return [json.loads(l) for l in r.text.splitlines() if l.strip()]
+
+    def test_meta_avisa_que_aceita_seguimento(self):
+        ev = self.perguntar("cardioversão na FA instável")
+        self.assertTrue(next(e for e in ev if e["type"] == "meta")["seguimento"])
+
+    def test_conversa_vai_ao_modelo_e_a_busca(self):
+        hist = [{"pergunta": "dose de ataque de amiodarona na FA com instabilidade", "resposta": "Amiodarona 150 mg [1]."}]
+        self.perguntar("e a carga da cardioversão?", hist)
+        usuario = self.enviado["messages"][1]["content"]
+        self.assertIn("CONVERSA ANTERIOR", usuario)
+        self.assertIn("amiodarona na FA", usuario)
+        self.assertNotIn("150 mg [1]", usuario)  # os [n] da resposta anterior saem
+        self.assertIn("continua a CONVERSA ANTERIOR", usuario)
+        self.assertIn("amiodarona", self.buscar.call_args.args[0])
+
+    def test_sem_historico_o_pedido_e_o_de_antes(self):
+        self.perguntar("cardioversão na FA instável")
+        self.assertNotIn("CONVERSA ANTERIOR", self.enviado["messages"][1]["content"])
+        self.assertEqual(self.buscar.call_args.args[0], "cardioversão na FA instável")
+
+    def test_seguimento_nao_usa_a_memoria(self):
+        hist = [{"pergunta": "amiodarona na FA", "resposta": ""}]
+        self.perguntar("carga da cardioversão", hist)
+        self.perguntar("carga da cardioversão", hist)
+        self.assertEqual(self.buscar.call_count, 2)
+
+    def test_mais_de_duas_trocas_recusado(self):
+        hist = [{"pergunta": f"pergunta {i}", "resposta": ""} for i in range(3)]
+        r = self.cliente.post("/v1/ask", headers={"Authorization": "Bearer t"},
+                              json={"q": "carga", "tenant_id": "global", "request_id": "r1", "historico": hist})
+        self.assertEqual(r.status_code, 422)
+
+    def test_sugestoes_depois_do_fim(self):
+        linha = seg.evento(["Dose na FA estável", "Interação com anticoagulante"])
+        with mock.patch.object(main, "sugerir", return_value=(linha, None)) as s:
+            ev = self.perguntar("cardioversão na FA instável")
+        tipos = [e["type"] for e in ev]
+        self.assertLess(tipos.index("done"), tipos.index("sugestoes"))
+        self.assertEqual(ev[tipos.index("sugestoes")]["itens"][0], "Dose na FA estável")
+        s.assert_called_once()
+
+    def test_sem_sugestoes_quando_nao_encontrou(self):
+        def falso(**kw):
+            yield SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="Não encontrei isso no material de referência."))])
+        mock.patch.object(main.llm.chat.completions, "create", side_effect=falso).start()
+        with mock.patch.object(main, "sugerir") as s, mock.patch.object(main, "pubmed_ao_vivo", return_value=(None, None)):
+            self.perguntar("cardioversão na FA instável")
+        s.assert_not_called()
+
+    def test_sugerir_desligado(self):
+        with mock.patch.object(main, "SUGESTOES", False):
+            self.assertEqual(main.sugerir("q", "r", []), (None, None))
 
 
 class TestPublicoPelaReescrita(unittest.TestCase):

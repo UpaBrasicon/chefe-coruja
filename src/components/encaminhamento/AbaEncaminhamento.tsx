@@ -20,15 +20,31 @@ const OPCOES: { id: Opcao; rotulo: string; Icone: typeof ArrowUpRight }[] = [
   { id: 'fora', rotulo: 'Para outra unidade', Icone: ArrowUpRight },
 ]
 
-export function AbaEncaminhamento({ pacienteId, episodioId, internacaoId, leito }: {
+export function AbaEncaminhamento({ pacienteId, episodioId, internacaoId, leito, onIrRegulacao, adulto }: {
   pacienteId: string
   episodioId?: string | null
   internacaoId?: string | null
   leito?: string
+  /** MA2 (RT, 24/11/2026): no leito, "para outra unidade" é a Regulação; aqui fica só dentro da unidade */
+  onIrRegulacao?: () => void
+  /** adulto (14 anos ou mais): sem serviços nem especialidades de pediatria */
+  adulto?: boolean
 }) {
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const [opcao, setOpcao] = React.useState<Opcao>('dentro')
+  if (onIrRegulacao) {
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2 rounded-controle border border-fio bg-campo px-3 py-2 text-apoio text-tinta-apoio">
+          <ArrowUpRight className="size-4 shrink-0 text-acao" aria-hidden />
+          <span className="min-w-0 flex-1">Para outra unidade (leito, exame, consulta ou transferência), o pedido é pela Regulação.</span>
+          <Button size="sm" variant="outline" onClick={onIrRegulacao}>Abrir regulação</Button>
+        </div>
+        <AbaEncaminhamentoInterno pacienteId={pacienteId} episodioId={episodioId} internacaoId={internacaoId} adulto={adulto} />
+      </div>
+    )
+  }
   return (
     <div className="flex flex-col">
       <div role="tablist" aria-label="Encaminhamento" className="mb-3.5 flex flex-wrap gap-1.5">

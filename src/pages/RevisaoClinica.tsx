@@ -10,6 +10,7 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { data as dataBr } from '@/lib/formato'
 import { DesempenhoAlertaSepse } from '@/components/clinico/DesempenhoAlertaSepse'
 import { Chip, TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
+import { Abas } from '@/components/admin/ui'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -48,6 +49,9 @@ export default function RevisaoClinica() {
   const revisores = (papeis ?? []).filter((p) => p.tipo !== 'medico')
   const revisor = revisores[0]
   const ehGestor = papeisDaUnidade.includes('gestor')
+  // revisão do gestor (RT, 24/11/2026, M1): conferência e sepse em abas separadas
+  const [aba, setAba] = useState<'conferencia' | 'sepse'>('conferencia')
+  const temSepse = (!!rt || ehGestor) && !!unidadeAtiva
 
   if (isLoading) return <div className="flex justify-center py-8"><Spinner /></div>
   if (!rt && !revisor && !ehGestor) {
@@ -66,12 +70,18 @@ export default function RevisaoClinica() {
           : revisor
             ? `Fichas que pedem a revisão do ${NOME_REVISOR[revisor.tipo]} do comitê clínico. Sua revisão fica registrada com o seu nome e ${revisor.conselho} ${revisor.registro}/${revisor.uf}.`
             : 'Toda ferramenta da Central carrega a ressalva de referência geral até o responsável técnico conferir. A conferência tira a ressalva da tela de quem prescreve; a correção apontada a troca por um aviso vermelho. A decisão é do responsável técnico nomeado pela rede; aqui o gestor acompanha.'} />
-      {rt && <FilaRT />}
-      {revisores.map((r) => <FilaRevisor key={r.tipo} papel={r} />)}
-      {(rt || ehGestor) && unidadeAtiva && (
+      {temSepse && (
+        <Abas rotulo="Revisão clínica" valor={aba} onChange={setAba}
+          opcoes={[{ valor: 'conferencia' as const, rotulo: 'Conferência das ferramentas' }, { valor: 'sepse' as const, rotulo: 'Alerta de sepse' }]} />
+      )}
+      {(!temSepse || aba === 'conferencia') && <>
+        {rt && <FilaRT />}
+        {revisores.map((r) => <FilaRevisor key={r.tipo} papel={r} />)}
+        <Panorama />
+      </>}
+      {temSepse && aba === 'sepse' && unidadeAtiva && (
         <DesempenhoAlertaSepse unidadeId={unidadeAtiva.unidade_id} unidadeNome={unidadeAtiva.unidade?.nome ?? 'unidade'} rt={!!rt} />
       )}
-      <Panorama />
     </div>
   )
 }

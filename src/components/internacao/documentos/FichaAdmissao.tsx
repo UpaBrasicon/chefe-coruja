@@ -64,7 +64,9 @@ function roteiroDe({ aberto, onAlternar, titulo, itens, onUsar }: {
   ) }
 }
 
-export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = false, onEscolherPaciente }: {
+export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = false, onEscolherPaciente, admissaoEm }: {
+  /** MA2 (RT, 24/11/2026): no leito, a data e a hora da admissão são as da internação, não as de agora */
+  admissaoEm?: string | null
   pacienteId: string | null | undefined
   internacaoId: string | null | undefined
   leito?: string
@@ -77,6 +79,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const ident = useIdentificacao(pacienteId, leito)
+  const momentoAdmissao = admissaoEm ? new Date(admissaoEm) : new Date()
   const { dados: form, atualizar: set, limpar, salvoEm } = useRascunho<FormAdm>(`adm:${pacienteId ?? 'sem-paciente'}`, unidadeId, perfil?.id, carregar)
   const [roteiro, setRoteiro] = React.useState<'subjetivo' | 'objetivo' | null>(null)
   const [esquemaSel, setEsquemaSel] = React.useState('')
@@ -155,7 +158,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
     escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Registrando a admissão…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     setRegistrando(true)
     try {
-      const f = fichaAdm({ a, setor, regulacao, pacienteAntigo: ident.pacienteAntigo({ diagnostico: v('cid') }), pac: ident.pac, agora: new Date() })
+      const f = fichaAdm({ a, setor, regulacao, pacienteAntigo: ident.pacienteAntigo({ diagnostico: v('cid') }), pac: ident.pac, agora: momentoAdmissao })
       const { data, error } = await supabase.rpc('registrar_admissao', { p_internacao: internacaoId, p_conteudo: textoAdm(f), p_ficha: f as unknown as Json })
       if (error) return falha(`Não foi possível registrar a admissão: ${error.message}. Nada foi impresso.`)
       limpar()
@@ -196,7 +199,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
     escrever('<p style="font:15px system-ui,sans-serif;padding:24px;color:#475569">Gravando a correção…</p>') // padrao-ok: mensagem escrita na janela de impressão, que não lê os tokens do app
     setRegistrando(true)
     try {
-      const f = fichaAdm({ a, setor, regulacao, pacienteAntigo: ident.pacienteAntigo({ diagnostico: v('cid') }), pac: ident.pac, agora: new Date() })
+      const f = fichaAdm({ a, setor, regulacao, pacienteAntigo: ident.pacienteAntigo({ diagnostico: v('cid') }), pac: ident.pac, agora: momentoAdmissao })
       // a data e a hora da admissão não mudam com a correção
       const original = ficha.data
       if (typeof original.data === 'string') f.data = original.data
@@ -310,7 +313,7 @@ export function FichaAdmissao({ pacienteId, internacaoId, leito = '', fixo = fal
             <Leitura rotulo="Nascimento / idade" valor={nasc} />
             <Leitura rotulo="Prontuário" valor={pac?.prontuario} />
             <Leitura rotulo="Setor de destino" valor={setor} />
-            <Leitura rotulo="Data / hora da admissão" valor={corrigindo && registrada ? diaHora(registrada.criado_em) : agora} />
+            <Leitura rotulo="Data / hora da admissão" valor={corrigindo && registrada ? diaHora(registrada.criado_em) : admissaoEm ? diaHora(admissaoEm) : agora} />
             <BuscaLista id="adm-procedencia" rotulo="Procedência" largura="medio" opcoes={PROCEDENCIAS} valor={v('procedencia')}
               dica="Clique para ver as procedências ou digite" onDigitar={(x) => set({ procedencia: x })} onEscolher={(x) => set({ procedencia: x })} />
             <Texto id="adm-acompanhante" rotulo="Acompanhante" dica="Quem veio com o paciente e o vínculo" valor={v('acompanhante')}

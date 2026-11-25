@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Download, FileCheck } from 'lucide-react'
 import * as React from 'react'
 
+import { EtapasEmPassos } from '@/components/gestor/EtapasEmPassos'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -43,7 +44,8 @@ export default function Apac() {
   const unidade = unidadeAtiva?.unidade_id
   const regulador = papelAtivo === 'regulador'
   const faturamento = papelAtivo === 'faturamento' || papelAtivo === 'gestor'
-  // contagem por aba, de uma página larga (até 200)
+  // Revisão de perfis (Gestor, item 18, M1): abas com contagem (de uma página
+  // larga, até 200) e a tela abre na primeira que tem algo.
   const resumo = useQuery({
     queryKey: ['apacs-da-unidade', unidade, 'resumo'],
     enabled: !!unidade,
@@ -61,9 +63,13 @@ export default function Apac() {
     ['cancelada', 'Canceladas', contas?.cancelada], ['todas', 'Todas', resumo.data?.total],
     ...(faturamento ? [['arquivo', 'Arquivo do APAC Magnético', undefined] as const] : []),
   ]
-  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a decisão dele;
-  // o faturamento, em Autorizadas
-  const [aba, setAbaBase] = React.useState<Aba>(regulador ? 'solicitada' : 'autorizada')
+  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a
+  // decisão dele; os outros perfis abrem na primeira que tem algo
+  const ordem: StatusApac[] = ['autorizada', 'solicitada']
+  const inicial: Aba = regulador ? 'solicitada'
+    : contas ? (ordem.find((s) => contas[s] > 0) ?? (resumo.data!.total > 0 ? 'todas' : ordem[0])) : ordem[0]
+  const [abaEscolhida, setAbaBase] = React.useState<Aba | null>(null)
+  const aba: Aba = abaEscolhida ?? inicial
   // item 05 do kit de desempenho: páginas de 50, com "Ver mais"
   const [limite, setLimite] = React.useState(PAGINA)
   const setAba = (a: Aba) => { setAbaBase(a); setLimite(PAGINA) }
@@ -77,14 +83,21 @@ export default function Apac() {
       return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: Apac[] }
     },
   })
+  // CT2 (revisão do perfil Faturamento, RT 24/11/2026): até a primeira APAC, só o
+  // vazio, sem abas zeradas (o total vem do resumo das abas)
+  const semNenhuma = resumo.data?.total === 0
   return (
     // no perfil regulador, fichas em caixa normal (unslop da revisão do perfil)
     <div className={cn('flex w-full max-w-5xl flex-col', regulador && '[&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case')}>
       <TituloPagina icone={FileCheck} titulo="APAC da unidade"
         descricao={regulador ? 'Autorize com o número e a validade, ou rejeite com o motivo.'
           : 'Registre a execução de cada competência e gere o arquivo do APAC Magnético. Quem autoriza é o médico regulador.'} />
-      <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />
-      {!unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
+      {semNenhuma ? (
+        <Vazio icone={FileCheck} titulo="Nenhuma APAC na unidade ainda"
+          texto={regulador ? 'Quando o médico solicitar uma APAC, ela aparece aqui para você autorizar.'
+            : 'Quando o médico solicitar uma APAC e o regulador autorizar, a execução e o arquivo do APAC Magnético ficam aqui.'} />
+      ) : <Abas abas={abas} valor={aba} onChange={setAba} rotulo="APAC" />}
+      {semNenhuma ? null : !unidade ? <Spinner /> : aba === 'arquivo' ? <AbaArquivo unidade={unidade} /> : lista.isLoading ? <Spinner />
         : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data?.itens ?? []).length === 0 ? (
           <Vazio icone={FileCheck} titulo="Nenhuma APAC aqui" texto="Quando o médico solicitar uma APAC, ela aparece em Solicitadas." />
         ) : (
@@ -135,7 +148,22 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
           Solicitada por {a.solicitada_por ?? '—'}, {fmtDataHora(a.solicitada_em)}
           {a.decidida_em && <> · decidida por {a.decidida_por ?? '—'}, {fmtDataHora(a.decidida_em)}</>}
         </span>
+        <EtapasEmPassos rotulo="Etapa da APAC" passos={['solicitada', 'autorização do regulador', 'execução por competência']}
+          atual={a.status === 'autorizada' ? 2 : 1} parou={a.status === 'rejeitada' ? 'rejeitada' : a.status === 'cancelada' ? 'cancelada' : undefined} />
         {a.numero && <span className="text-tinta">APAC nº {a.numero} · validade {fmtData(a.validade_inicio!)} a {fmtData(a.validade_fim!)}</span>}
+        {/* M3: as competências da autorização numa faixa, com a execução de cada uma */}
+        {a.status === 'autorizada' && competenciasDaValidade(a.validade_inicio, a.validade_fim).length > 0 && (
+          <ol aria-label="Competências da autorização" className="flex flex-wrap gap-1.5 text-rotulo">
+            {competenciasDaValidade(a.validade_inicio, a.validade_fim).map((c) => {
+              const feita = a.execucoes.some((e) => e.competencia === c)
+              return (
+                <li key={c} className={feita ? 'rounded-capsula border border-conforme/30 bg-alerta-conforme px-2 text-conforme' : 'rounded-capsula border border-fio px-2 text-tinta-apoio'}>
+                  {competenciaNaTela(c)} · {feita ? 'executada' : 'sem execução'}
+                </li>
+              )
+            })}
+          </ol>
+        )}
         {a.motivo && <span className="text-tinta-apoio">Motivo: {a.motivo}</span>}
         {a.execucoes.length > 0 && (
           <ul className="flex flex-col gap-1">
@@ -427,6 +455,9 @@ function AbaArquivo({ unidade }: { unidade: string }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 text-apoio">
+            {/* M2: o fechamento em passos, como no BPA */}
+            <EtapasEmPassos rotulo="Fechamento da competência" passos={['execuções registradas', 'críticas resolvidas', 'competência fechada', 'baixar o arquivo']}
+              atual={fechada ? 3 : c.linhas.length === 0 ? 0 : (bloqueios.length > 0 || prontas < c.linhas.length) ? 1 : 2} />
             {bloqueios.map((g) => <span key={g.codigo} className="text-critico">Impede o fechamento: {g.texto}</span>)}
             <span>{c.linhas.length} APAC com execução · {prontas} prontas · {c.linhas.length - prontas} com crítica</span>
             {c.linhas.filter((l) => l.criticas.length > 0).map((l) => (

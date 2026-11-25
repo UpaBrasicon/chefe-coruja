@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ClipboardList, Plus } from 'lucide-react'
 import * as React from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -60,7 +60,7 @@ export default function PendenciasTecnicas() {
     <div className="mx-auto flex w-full max-w-[896px] flex-col">
       <TituloPagina
         icone={ClipboardList}
-        titulo="Pendências técnicas"
+        titulo="Chamados técnicos"
         descricao={chamados.data
           ? `${abertos.length} ${abertos.length === 1 ? 'chamado aberto' : 'chamados abertos'} na rede · ${altas} de severidade alta`
           : 'Chamados técnicos da rede'}
@@ -73,7 +73,10 @@ export default function PendenciasTecnicas() {
             rotulo="Categoria"
             valor={filtro}
             onChange={setFiltro}
-            opcoes={[{ valor: 'todos' as Filtro, rotulo: 'Todos' }, ...CATEGORIAS.map((c) => ({ valor: c as Filtro, rotulo: CATEGORIA[c] }))]}
+            // revisão do admin (RT, 24/11/2026): só aparece a aba que tem chamado
+            opcoes={[{ valor: 'todos' as Filtro, rotulo: 'Todos', contagem: lista.length },
+              ...CATEGORIAS.map((c) => ({ valor: c as Filtro, rotulo: CATEGORIA[c], contagem: lista.filter((x) => x.categoria === c).length }))
+                .filter((o) => o.contagem > 0 || o.valor === filtro)]}
           />
           <label className="ml-auto flex items-center gap-2 px-5 py-[11px] text-apoio text-tinta-apoio">
             <input type="checkbox" checked={resolvidos} onChange={(e) => setResolvidos(e.target.checked)} className="size-4 accent-[var(--color-acao)]" />
@@ -103,9 +106,18 @@ export default function PendenciasTecnicas() {
           </div>
         ))}
         {chamados.data && visiveis.length === 0 && (
-          <p className="px-5 py-[34px] text-center text-corpo text-tinta-sussurro">
-            {lista.length === 0 ? 'Nenhum chamado técnico aberto na rede.' : 'Nenhum chamado nessa categoria.'}
-          </p>
+          lista.length === 0 ? (
+            <div className="flex flex-col items-center gap-1.5 px-5 py-[34px] text-center">
+              <span className="text-corpo text-tinta-apoio">Nenhum chamado técnico {resolvidos ? 'na rede' : 'aberto na rede'}.</span>
+              <span className="max-w-[560px] text-apoio text-pretty text-tinta-sussurro">
+                Chamado é o problema de software ou de infraestrutura que alguém precisa resolver. Ele nasce de um aviso
+                em <Link to="/plataformas" className="text-acao hover:underline">Plataformas</Link> (botão Abrir chamado), do pedido de um gestor
+                ou do botão Novo chamado acima.
+              </span>
+            </div>
+          ) : (
+            <p className="px-5 py-[34px] text-center text-corpo text-tinta-sussurro">Nenhum chamado nessa categoria.</p>
+          )
         )}
       </div>
 
@@ -164,7 +176,7 @@ function NovoChamado({ aberta, onFechar, unidadeInicial, tituloInicial }: {
 
   return (
     <Gaveta aberta={aberta} onAbertaChange={(v) => { if (!v) onFechar() }} rotulo="Novo chamado técnico">
-      <GavetaCabeca sobre="Pendências técnicas" titulo="Novo chamado" detalhe="Fica na lista da rede até ser resolvido, com o andamento registrado." />
+      <GavetaCabeca sobre="Chamados técnicos" titulo="Novo chamado" detalhe="Fica na lista da rede até ser resolvido, com o andamento registrado." />
       <div className="flex flex-col gap-4 px-[22px] py-5">
         <Campo rotulo="Unidade" largura="cheio">
           <Pilulas opcoes={opcoesUnidade} valor={unidade} onChange={setUnidade} rotulos={rotulosUnidade} rotuloAria="Unidade" />

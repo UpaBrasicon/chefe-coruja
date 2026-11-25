@@ -51,6 +51,9 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
   const ehGestor = papeisDaUnidade.includes('gestor')
+  // o perfil Gestor da secretaria edita a identificação e os limites da unidade
+  // (RT, 24/11/2026; o banco confere secretaria_gere_unidade)
+  const podeEditar = ehGestor || papeisDaUnidade.includes('gestor_secretaria')
 
   const { data: unidade, isLoading } = useQuery({
     queryKey: ['unidade-config', unidadeId],
@@ -155,13 +158,13 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
 
       {/* Identificação (protótipo: nome, CNES e tipo); o cadastro é da rede, mas o CNES é do gestor (RT, 10/10/2026) */}
       <div className="grid gap-4 rounded-cartao border border-fio bg-superficie px-5 py-4 shadow-repouso sm:grid-cols-3">
-        {ehGestor && unidadeId && <CnesUnidade key={`cnes-${unidadeId}`} unidadeId={unidadeId} atual={unidade.cnes} />}
-        {ehGestor && unidadeId && unidade.tipo !== 'ubs' && (
+        {podeEditar && unidadeId && <CnesUnidade key={`cnes-${unidadeId}`} unidadeId={unidadeId} atual={unidade.cnes} />}
+        {podeEditar && unidadeId && unidade.tipo !== 'ubs' && (
           <PulseiraUnidade key={`pulseira-${unidadeId}`} unidadeId={unidadeId} atual={unidade.usa_pulseira} />
         )}
         {[
           ['Nome da unidade', unidade.nome],
-          ...(ehGestor ? [] : [['CNES', unidade.cnes ?? 'não informado']]),
+          ...(podeEditar ? [] : [['CNES', unidade.cnes ?? 'não informado']]),
           ['Tipo', TIPO_UNIDADE[unidade.tipo] ?? unidade.tipo],
         ].map(([r, v]) => (
           <div key={r} className="flex min-w-0 flex-col gap-[3px]">
@@ -178,7 +181,7 @@ export default function Configuracao({ embutido = false }: { embutido?: boolean 
       <FormUnidade key={`unidade-${unidade.id}`} unidade={unidade} unidadeId={unidadeId} />
 
       {limites.data && (
-        <FormLimites key={`limites-${unidadeId}`} inicial={limites.data} unidadeId={unidadeId} podeEditar={ehGestor} />
+        <FormLimites key={`limites-${unidadeId}`} inicial={limites.data} unidadeId={unidadeId} podeEditar={podeEditar} />
       )}
 
       {/* Fase 2, tarefa 2: grade de aprazamento sugerida à enfermagem */}

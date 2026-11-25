@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 
 import type { EntradaPaleta } from './fontesPaleta'
 import { rotaDoLeito } from '@/components/internacao/rotas'
+import { ROTA_OBSERVACAO_MEDICO } from '@/components/plantao/rotasMedico'
 
 // Fontes da paleta que vêm do banco, por papel na unidade ativa (protótipo:
 // fontesBusca). Tudo passa pela RLS de quem está logado; as consultas só
@@ -144,7 +145,7 @@ export function useFontesDoBanco(aberta: boolean): FontesDoBanco {
       for (const u of unidades.data ?? []) {
         e.push({
           id: `unidade:${u.unidade_id}`, grupo: 'Unidades', rotulo: u.unidade_nome,
-          detalhe: `${u.leitos_ocupados} de ${u.leitos} leitos`, to: '/painel', termos: u.unidade_nome, icone: Building2,
+          detalhe: `${u.leitos_ocupados} de ${u.leitos} leitos`, to: '/painel?aba=censo', termos: u.unidade_nome, icone: Building2,
         })
       }
     }
@@ -184,7 +185,7 @@ export function useFontesDoBanco(aberta: boolean): FontesDoBanco {
           id: `paciente:${p.id}`, grupo: obs ? 'Em observação' : 'Internados', rotulo: p.nome,
           detalhe: [onde, setor].filter(Boolean).join(' · '),
           // Internado: o leito aberto na lista; em observação: o painel da observação.
-          to: obs ? '/plantao/observacao' : rotaDoLeito(p.id),
+          to: obs ? ROTA_OBSERVACAO_MEDICO : rotaDoLeito(p.id),
           termos: `${p.nome} ${p.nome_social ?? ''} ${onde} ${leito ?? ''} ${setor}`,
           icone: obs ? Hourglass : Stethoscope, paciente: true,
         })

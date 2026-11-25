@@ -1,18 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, Pill, Plus, Search, ShieldAlert, Trash2 } from 'lucide-react'
+import { ArrowRight, Loader2, Pill, Search, ShieldAlert } from 'lucide-react'
 import * as React from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { normalizarMedicamento } from '@/lib/search'
 import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { cn } from '@/lib/utils'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
+import { useTerminologia } from '@/hooks/useTerminologia'
 import { TituloPagina, Trilha } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { BuscaTerminologia } from '@/components/terminologia/BuscaTerminologia'
+import { DiluicoesPublicadas } from '@/components/farmacia/DiluicaoPublicada'
+import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
+
+// Consulta de medicamentos do médico. Revisão da Farmácia do médico (RT,
+// 24/11/2026): uma busca só, nos medicamentos da unidade e na tabela CMED
+// juntos, com a fonte marcada em cada resultado; o resultado abre a ficha ao
+// lado (apresentação e diluição publicada). Saiu o cartão "Itens da
+// prescrição": esta tela é só consulta; prescrever é na prescrição do paciente.
 
 type Medicamento = {
   id: string
@@ -23,47 +30,24 @@ type Medicamento = {
   alta_vigilancia: boolean
 }
 
-type DiluicaoPublicada = {
-  id: string
-  via: string
-  reconstituicao_diluente: string | null
-  reconstituicao_volume_ml: number | null
-  diluicao_solucao: string[] | null
-  diluicao_volume_min_ml: number | null
-  concentracao_maxima: string | null
-  tempo_infusao_min: number | null
-  velocidade_max: string | null
-  observacoes: string | null
-  fonte: string
-  revisor_crf: string | null
-}
+type Escolha =
+  | { fonte: 'unidade'; medicamento: Medicamento }
+  | { fonte: 'cmed'; codigo: string; descricao: string }
 
-type ItemPrescricao = {
-  id: string
-  medicamento: Medicamento
-  dose: string
-  posologia: string
-  diluicaoEditada: string
-  diluicaoPublicada: boolean
-}
+const DESCRICAO = 'Busque pelo nome. Para prescrever, abra a prescrição do paciente: lá o sistema confere alergia, idade e peso deste atendimento.'
 
 export default function PrescricaoTeste({ embutido = false }: { embutido?: boolean } = {}) {
-  const [busca, setBusca] = React.useState('')
-  const [focada, setFocada] = React.useState(false)
-  const [buscaDeb, setBuscaDeb] = React.useState('')
-  const [itens, setItens] = React.useState<ItemPrescricao[]>([])
-
-  React.useEffect(() => {
-    const t = setTimeout(() => setBuscaDeb(busca), 350)
-    return () => clearTimeout(t)
-  }, [busca])
+  const [params] = useSearchParams()
+  const [busca, setBusca] = React.useState(() => (params.get('q') ?? '').slice(0, 80))
+  const [escolha, setEscolha] = React.useState<Escolha | null>(null)
+  const buscaAdiada = useValorAdiado(busca)
+  const termo = buscaAdiada.trim()
 
   const unidadeBusca = useUnidade().unidadeAtiva?.unidade_id
-  const { data: resultados, isFetching: buscando } = useQuery({
-    queryKey: ['buscar-medicamentos-canonico', buscaDeb, unidadeBusca],
-    enabled: buscaDeb.trim().length >= 2,
+  const { data: daUnidade, isFetching: buscandoUnidade } = useQuery({
+    queryKey: ['buscar-medicamentos-canonico', buscaAdiada, unidadeBusca],
+    enabled: termo.length >= 2,
     queryFn: async () => {
-      const termo = buscaDeb.trim()
       const { data, error } = await supabase
         .from('medicamento')
         .select('id, principio_ativo, concentracao, apresentacao, rxcui, alta_vigilancia')
@@ -76,244 +60,117 @@ export default function PrescricaoTeste({ embutido = false }: { embutido?: boole
     },
     staleTime: 60_000,
   })
+  const cmed = useTerminologia('medicamento_cmed', busca)
 
-  // monta texto legível da diluição publicada (API que filtra status='publicado')
-  function formatarDiluicao(d: DiluicaoPublicada): string {
-    const partes: string[] = []
-    if (d.diluicao_solucao?.length) {
-      let sol = d.diluicao_solucao.join(' + ')
-      if (d.diluicao_volume_min_ml) sol += ` · ${d.diluicao_volume_min_ml} mL`
-      partes.push(`Diluir em ${sol}`)
-    }
-    if (d.reconstituicao_diluente) {
-      let rec = d.reconstituicao_diluente
-      if (d.reconstituicao_volume_ml) rec += ` · ${d.reconstituicao_volume_ml} mL`
-      partes.push(`Reconstituir com ${rec}`)
-    }
-    if (d.concentracao_maxima) partes.push(`Concentração máx.: ${d.concentracao_maxima}`)
-    if (d.tempo_infusao_min) partes.push(`Infundir em ${d.tempo_infusao_min} min`)
-    if (d.velocidade_max) partes.push(`Velocidade: ${d.velocidade_max}`)
-    if (d.observacoes) partes.push(d.observacoes)
-    return partes.join('. ')
-  }
-
-  // busca a diluição publicada ao adicionar o item
-  async function buscarDiluicao(m: Medicamento): Promise<string> {
-    try {
-      const { data, error } = await supabase.rpc('diluicao_publicada', { p_medicamento: m.id })
-      if (error || !data || data.length === 0) return ''
-      const d = (Array.isArray(data) ? data : [data]) as unknown as DiluicaoPublicada[]
-      return d.map(formatarDiluicao).filter(Boolean).join('\n')
-    } catch {
-      return ''
-    }
-  }
-
-  async function adicionar(m: Medicamento) {
-    if (itens.some((i) => i.medicamento.id === m.id)) return
-    const dil = await buscarDiluicao(m)
-    setItens((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        medicamento: m,
-        dose: '',
-        posologia: '',
-        diluicaoEditada: dil,
-        diluicaoPublicada: dil !== '',
-      },
-    ])
-    setBusca('')
-    setFocada(false)
-  }
-
-  // adiciona um medicamento da CMED (terminologia) como item livre
-  function adicionarDaCmed(descricao: string, codigo: string) {
-    const m: Medicamento = {
-      id: `cmed-${codigo}`,
-      principio_ativo: descricao,
-      concentracao: null,
-      apresentacao: null,
-      rxcui: null,
-      alta_vigilancia: false,
-    }
-    if (itens.some((i) => i.medicamento.id === m.id)) return
-    setItens((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), medicamento: m, dose: '', posologia: '', diluicaoEditada: '', diluicaoPublicada: false },
-    ])
-  }
-
-  function atualizarItem(id: string, campo: 'dose' | 'posologia' | 'diluicaoEditada', valor: string) {
-    setItens((prev) => prev.map((i) => (i.id === id ? { ...i, [campo]: valor } : i)))
-  }
-
-  function removerItem(id: string) {
-    setItens((prev) => prev.filter((i) => i.id !== id))
-  }
-
+  const buscando = buscandoUnidade || cmed.isFetching
+  const unidade = termo.length >= 2 ? daUnidade ?? [] : []
+  const daCmed = busca.trim().length >= 2 ? cmed.data ?? [] : []
+  const semNada = termo.length >= 2 && !buscando && unidade.length === 0 && daCmed.length === 0
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      {!embutido && (
+    <div className="flex w-full flex-col gap-4">
+      {embutido ? (
+        <TituloPagina icone={Pill} titulo="Consulta de medicamentos" descricao={DESCRICAO} className="mb-0" />
+      ) : (
         <div>
-          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Prescrição teste' }]} />
-          <TituloPagina
-            icone={Pill}
-            titulo="Consulta de medicamentos"
-            descricao="Comece a digitar o nome (ou parte) do medicamento para ver as sugestões, incluindo a diluição quando necessária."
-            className="mb-0"
-          />
+          <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: 'Consulta de medicamentos' }]} />
+          <TituloPagina icone={Pill} titulo="Consulta de medicamentos" descricao={DESCRICAO} className="mb-0" />
         </div>
       )}
 
-      <p className="rounded-controle border border-fio bg-trilha/50 p-3 text-apoio text-tinta-apoio">
-        Esta tela é só consulta de medicamento e diluição. Para prescrever, abra a prescrição do paciente: lá o sistema
-        confere alergia, idade e peso deste atendimento (Portão 2, tarefa 2).
-      </p>
+      <div className="relative max-w-2xl">
+        <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-tinta-sussurro" aria-hidden />
+        <input
+          type="search"
+          value={busca}
+          onChange={(e) => { setBusca(e.target.value); setEscolha(null) }}
+          placeholder="Ex.: dipirona, ceftriaxona, omeprazol…"
+          aria-label="Buscar medicamento nos medicamentos da unidade e na tabela CMED"
+          autoComplete="off"
+          maxLength={80}
+          className="h-11 w-full rounded-container border border-fio bg-superficie pr-10 pl-10 text-corpo text-tinta outline-none placeholder:text-tinta-sussurro focus-visible:border-acao focus-visible:shadow-anel-campo"
+        />
+        {buscando && <Loader2 className="absolute top-1/2 right-3.5 size-4 -translate-y-1/2 animate-spin text-tinta-sussurro" aria-label="Buscando" />}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-corpo">
-            <Search className="size-4 text-tinta-sussurro" />
-            Buscar medicamento
-          </CardTitle>
-          <CardDescription>Digite ao menos 2 letras para ver sugestões.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <span className="text-rotulo font-medium text-tinta-sussurro">Base canônica (com diluição publicada)</span>
-            <div className="relative">
-              <Input
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                onFocus={() => setFocada(true)}
-                placeholder="Ex.: dipirona, soro, ceftriaxona, omeprazol…"
-              />
-              {buscando && (
-                <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-tinta-sussurro" />
-              )}
-              {focada && busca.trim().length >= 2 && (resultados ?? []).length > 0 && (
-                <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-controle border bg-superficie shadow-lg">
-                  {(resultados ?? []).map((m) => (
-                    <BotaoLinha
-                      key={m.id}
-                      variante="linha"
-                      className="flex-col gap-0.5 px-3 py-2 hover:bg-trilha"
-                      onClick={() => adicionar(m)}
-                    >
-                      <span className="flex items-center gap-2 text-apoio font-medium">
-                        <Pill className="size-3.5 text-tinta-sussurro" />
-                        {m.principio_ativo}
-                        {m.concentracao && <span className="text-rotulo font-normal text-tinta-sussurro">{m.concentracao}</span>}
-                        {m.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
+      {busca.trim().length < 2 ? (
+        <p className="text-apoio text-tinta-sussurro">Digite ao menos 2 letras. A busca olha os medicamentos da unidade (com diluição publicada) e a tabela CMED (preço e registro).</p>
+      ) : (
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <section aria-label="Resultados" aria-live="polite" className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+            {semNada && <p className="p-3 text-apoio text-tinta-sussurro">Nenhum medicamento encontrado para "{busca.trim()}".</p>}
+            <ul>
+              {unidade.map((m) => {
+                const ativo = escolha?.fonte === 'unidade' && escolha.medicamento.id === m.id
+                return (
+                  <li key={m.id}>
+                    <BotaoLinha variante="linha" onClick={() => setEscolha({ fonte: 'unidade', medicamento: m })} aria-current={ativo ? 'true' : undefined}
+                      className={cn('gap-3 px-3 py-2 last:border-b hover:bg-campo', ativo && 'bg-acao/10 hover:bg-acao/10')}>
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className={cn('flex items-center gap-1.5 text-apoio font-medium', ativo ? 'text-acao' : 'text-tinta')}>
+                          {m.principio_ativo}
+                          {m.alta_vigilancia && <ShieldAlert className="size-3.5 shrink-0 text-atencao" aria-label="alta vigilância" />}
+                        </span>
+                        <span className="text-rotulo text-tinta-sussurro">{[m.concentracao, m.apresentacao].filter(Boolean).join(' · ') || 'sem apresentação cadastrada'}</span>
                       </span>
-                      <span className="text-rotulo text-tinta-sussurro">
-                        {m.apresentacao ?? '—'}
-                        {m.rxcui ? ` · rxcui ${m.rxcui}` : ''}
-                      </span>
+                      <span className="shrink-0 text-rotulo text-tinta-sussurro">Unidade</span>
                     </BotaoLinha>
-                  ))}
-                </div>
-              )}
-              {focada && busca.trim().length >= 2 && (resultados ?? []).length === 0 && !buscando && (
-                <div className="absolute z-20 mt-1 w-full rounded-controle border bg-superficie px-3 py-2 text-apoio text-tinta-sussurro shadow-lg">
-                  Nenhum medicamento encontrado.
-                </div>
-              )}
-            </div>
-          </div>
+                  </li>
+                )
+              })}
+              {daCmed.map((r) => {
+                const ativo = escolha?.fonte === 'cmed' && escolha.codigo === r.codigo
+                return (
+                  <li key={`cmed-${r.codigo}`}>
+                    <BotaoLinha variante="linha" onClick={() => setEscolha({ fonte: 'cmed', codigo: r.codigo, descricao: r.descricao })} aria-current={ativo ? 'true' : undefined}
+                      className={cn('gap-3 px-3 py-2 last:border-b hover:bg-campo', ativo && 'bg-acao/10 hover:bg-acao/10')}>
+                      <span className={cn('min-w-0 flex-1 text-apoio', ativo ? 'text-acao' : 'text-tinta')}>{r.descricao}</span>
+                      <span className="shrink-0 text-rotulo text-tinta-sussurro">CMED</span>
+                    </BotaoLinha>
+                  </li>
+                )
+              })}
+            </ul>
+            {(unidade.length > 0 || daCmed.length > 0) && (
+              <p className="px-3 py-1.5 text-rotulo text-tinta-sussurro">
+                Unidade = medicamentos da unidade, com diluição publicada · CMED = tabela da ANVISA, preço e registro
+              </p>
+            )}
+          </section>
 
-          <div className="flex flex-col gap-1.5">
-            <span className="text-rotulo font-medium text-tinta-sussurro">Tabela CMED (ANVISA — referência de preços/registro)</span>
-            <BuscaTerminologia
-              tipo="medicamento_cmed"
-              onSelecionar={(r) => adicionarDaCmed(r.descricao, r.codigo)}
-              placeholder="Ex.: dipirona, soro, omeprazol…"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-corpo">
-            <Plus className="size-4 text-tinta-sussurro" />
-            Itens da prescrição
-          </CardTitle>
-          <CardDescription>
-            {itens.length === 0
-              ? 'Nenhum item adicionado ainda.'
-              : `${itens.length} item(ns) — preencha dose e posologia.`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          {itens.map((item) => (
-            <div key={item.id} className="rounded-controle border p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex flex-col">
-                  <span className="flex flex-wrap items-center gap-2 text-apoio font-semibold">
-                    {item.medicamento.principio_ativo}
-                    {item.medicamento.concentracao && (
-                      <span className="font-normal text-tinta-sussurro">{item.medicamento.concentracao}</span>
-                    )}
-                    {item.medicamento.alta_vigilancia && <ShieldAlert className="size-3.5 text-atencao" />}
-                    {item.diluicaoPublicada && <Badge variant="success">Diluição publicada</Badge>}
-                  </span>
-                  <span className="text-rotulo text-tinta-sussurro">
-                    {item.medicamento.apresentacao ?? '—'}
-                    {item.medicamento.rxcui ? ` · rxcui ${item.medicamento.rxcui}` : ''}
-                  </span>
+          <section aria-label="Ficha do medicamento" className="rounded-cartao border border-fio bg-superficie p-4">
+            {!escolha ? (
+              <p className="text-apoio text-tinta-sussurro">Escolha um resultado para ver a ficha.</p>
+            ) : escolha.fonte === 'unidade' ? (
+              <div className="flex flex-col gap-3">
+                <div>
+                  <h3 className="flex flex-wrap items-center gap-2 text-secao font-semibold text-tinta">
+                    {escolha.medicamento.principio_ativo}
+                    {escolha.medicamento.alta_vigilancia && <SeloAltaVigilancia />}
+                  </h3>
+                  <p className="text-apoio text-tinta-sussurro">
+                    {[escolha.medicamento.concentracao, escolha.medicamento.apresentacao].filter(Boolean).join(' · ') || 'sem apresentação cadastrada'}
+                    {' · medicamento da unidade'}
+                  </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => removerItem(item.id)}>
-                  <Trash2 />
-                </Button>
+                <DiluicoesPublicadas medicamentoId={escolha.medicamento.id} />
+                <Link to={`/plantonista/farmacia/referencia-diluicao?m=${encodeURIComponent(escolha.medicamento.id)}`}
+                  className="inline-flex items-center gap-1 self-start text-apoio text-acao underline-offset-4 hover:underline">
+                  Abrir na referência de diluição <ArrowRight className="size-3.5" aria-hidden />
+                </Link>
               </div>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="flex flex-col gap-1">
-                  <label className="text-rotulo font-medium text-tinta-sussurro">Dose</label>
-                  <Input
-                    value={item.dose}
-                    onChange={(e) => atualizarItem(item.id, 'dose', e.target.value)}
-                    placeholder="Ex.: 500 mg, 2 mL, 1 comp"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-rotulo font-medium text-tinta-sussurro">Posologia</label>
-                  <Input
-                    value={item.posologia}
-                    onChange={(e) => atualizarItem(item.id, 'posologia', e.target.value)}
-                    placeholder="Ex.: 6/6h, 8/8h, 1x ao dia"
-                  />
-                </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <h3 className="text-secao font-semibold text-tinta">{escolha.descricao}</h3>
+                <p className="text-apoio text-tinta-sussurro">Tabela CMED · código {escolha.codigo}</p>
+                <p className="text-apoio text-tinta">
+                  A tabela CMED da ANVISA traz preço e registro. Diluição publicada só existe para os medicamentos da unidade.
+                </p>
               </div>
-              <div className="mt-2 flex flex-col gap-1">
-                <label className="text-rotulo font-medium text-suprimento">
-                  {item.diluicaoPublicada ? 'Diluição (publicada pelo farmacêutico)' : 'Diluição (editável)'}
-                </label>
-                <Input
-                  value={item.diluicaoEditada}
-                  onChange={(e) => atualizarItem(item.id, 'diluicaoEditada', e.target.value)}
-                  placeholder={
-                    item.diluicaoPublicada
-                      ? 'Diluição preenchida da referência publicada…'
-                      : 'Sem diluição publicada — preencha se necessário…'
-                  }
-                />
-              </div>
-            </div>
-          ))}
-
-
-          {itens.length > 0 && (
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setItens([])}>
-                Limpar
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   )
 }

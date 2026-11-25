@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { VazioLinha } from '@/components/monitor/Pagina'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { hora } from '@/lib/formato'
+import { rotuloConceito } from '@/lib/conceitosRotulos'
 
 type Props = {
   internacaoId: string
@@ -47,7 +48,7 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
     <div className={cn('overflow-x-auto rounded-controle border', className)}>
       <Table className="min-w-[560px] text-apoio">
         <TableHeader>
-          <TableRow className="text-left text-rotulo uppercase tracking-wide text-tinta-sussurro">
+          <TableRow className="text-left text-rotulo text-tinta-sussurro">
             <TableHead className="h-auto px-3 py-2 font-medium">Conceito</TableHead>
             <TableHead className="h-auto px-3 py-2 text-right font-medium">Último</TableHead>
             <TableHead className="h-auto px-3 py-2 text-right font-medium">Hora</TableHead>
@@ -59,7 +60,7 @@ export function PainelObservacoes({ internacaoId, className }: Props) {
           {itens.map((item) => (
             <TableRow key={item.conceito_id}>
               <TableCell className="px-3 py-1.5">
-                <span className="font-medium capitalize">{item.nome.replace(/-/g, ' ')}</span>
+                <span className="font-medium">{rotuloConceito(item.nome)}</span>
                 {item.unidade && <span className="ml-1 text-rotulo text-tinta-sussurro">{item.unidade}</span>}
               </TableCell>
               <TableCell className="px-3 py-1.5 text-right">

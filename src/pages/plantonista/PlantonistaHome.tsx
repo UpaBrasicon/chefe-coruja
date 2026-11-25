@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import Fuse from 'fuse.js'
-import { History, Search, Sparkles, Star, Stethoscope } from 'lucide-react'
+import { ArrowRight, History, Pill, Search, Sparkles, Star, Stethoscope } from 'lucide-react'
 
-import { CHAVES_FERRAMENTAS, SECOES, SECOES_EXIBIDAS, SECOES_JUNTAS, secaoExibida, type SecaoExibida } from '@/content/registry'
+import { CHAVES_FERRAMENTAS, naCentral, SECOES, SECOES_EXIBIDAS, SECOES_JUNTAS, secaoExibida, type SecaoExibida } from '@/content/registry'
 import { GRUPOS_SECAO } from '@/content/gruposSecoes'
 import { coresDaSecao } from '@/content/coresSecao'
 import { publicoDaFerramenta, valeEmAdulto, valeEmCrianca } from '@/content/publicoFerramentas'
 import { ROTA_SOBRE_MODULO } from '@/content/sobreModuloClinico'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { normalizar } from '@/lib/search'
+import { useValorAdiado } from '@/hooks/useValorAdiado'
+import { filtroDaUnidade } from '@/lib/medicamentoCadastro'
+import { normalizar, normalizarMedicamento } from '@/lib/search'
 import { expandirSiglas } from '@/lib/siglas'
+import { supabase } from '@/lib/supabase'
 import { buscarSemantico, useClinicalAsk, type ToolHit } from '@/lib/useClinicalAsk'
 import { chaveFerramenta, useFavoritos } from '@/lib/useFavoritos'
 import { usePacienteCentral } from '@/lib/pacienteCentral'
@@ -20,6 +24,7 @@ import { Canal, Canais } from '@/components/monitor/Canais'
 import { TituloPagina, TituloSecao } from '@/components/monitor/Pagina'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
+import { SeloAltaVigilancia } from '@/components/farmacia/SeloAltaVigilancia'
 import { RespostaIa } from '@/components/plantonista/RespostaIa'
 import { CartaoTurno } from '@/components/plantonista/central/CartaoTurno'
 import { SessaoAssinatura } from '@/components/assinatura/SessaoAssinatura'
@@ -36,6 +41,12 @@ import { useLarguraAte } from '@/hooks/useLarguraAte'
 // busca local (Fuse.js sobre nome, sinônimos e categoria) não usa rede e
 // funciona com a biblioteca fora do ar; "Perguntar à IA" e as sugestões por
 // significado passam pela Edge Function clinical-search.
+//
+// Revisão da Central (RT, 24/11/2026): IA3 a resposta da IA em painel próprio
+// logo abaixo da busca (por cima de tudo no celular); IA4 o remédio digitado
+// mostra a ficha do medicamento antes das condutas. A lista lateral de seções
+// e as abas da busca voltaram atrás a pedido do RT: o desenho da página é o de
+// antes (seções clínicas em linhas, embaixo).
 
 type Ferramenta = {
   chave: string; secao: string; secaoLabel: string; slug: string; label: string; description: string; tags: string[]; categoria: string
@@ -46,7 +57,7 @@ const CATEGORIA: Record<string, string> = {}
 for (const [secao, grupos] of Object.entries(GRUPOS_SECAO)) for (const g of grupos) for (const s of g.slugs) CATEGORIA[`${secao}/${s}`] = g.rotulo
 
 const TODAS: Ferramenta[] = SECOES.flatMap((s) =>
-  s.tools.map((t) => {
+  s.tools.filter((t) => naCentral(s.slug, t.slug)).map((t) => {
     const publico = publicoDaFerramenta(s.slug, t.slug, t.publico)
     return {
       chave: chaveFerramenta(s.slug, t.slug),
@@ -92,6 +103,88 @@ function buscarLocal(consulta: string): Ferramenta[] {
     }
   }
   return saida
+}
+
+type Medicamento = { id: string; principio_ativo: string; concentracao: string | null; apresentacao: string | null; alta_vigilancia: boolean }
+type MedicamentoAchado = { nome: string; ids: string[]; altaVigilancia: boolean; apresentacoes: string[] }
+
+/**
+ * IA4: o texto digitado bate com um medicamento do cadastro da unidade (o
+ * mesmo da Referência de diluição)? Casa pelo começo de uma palavra do nome,
+ * ou pelo nome inteiro dentro da pergunta ("dose de amiodarona na FA").
+ */
+function useMedicamentosDaBusca(consulta: string, unidadeId: string | undefined) {
+  const adiada = normalizarMedicamento(useValorAdiado(consulta.trim()).slice(0, 120))
+  // só letras e números (normalizarMedicamento), então cabem no filtro do PostgREST
+  const palavras = [...new Set(adiada.split(' ').filter((p) => p.length >= 4 && !COMUNS.has(p)))].slice(0, 6)
+  const chave = palavras.join(' ')
+  const { data } = useQuery({
+    queryKey: ['central-medicamento', chave, unidadeId],
+    enabled: palavras.length > 0,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('medicamento')
+        .select('id, principio_ativo, concentracao, apresentacao, alta_vigilancia')
+        .eq('ativo', true).or(filtroDaUnidade(unidadeId))
+        .or(palavras.map((p) => `principio_ativo_norm.ilike.%${p}%`).join(','))
+        .order('principio_ativo')
+        .limit(20)
+      if (error) throw error
+      return (data ?? []) as Medicamento[]
+    },
+  })
+  return useMemo(() => {
+    const ps = chave ? chave.split(' ') : []
+    if (!ps.length || !data?.length) return []
+    const porNome = new Map<string, MedicamentoAchado>()
+    for (const m of data) {
+      const nome = normalizarMedicamento(m.principio_ativo)
+      const casa = nome.split(' ').some((w) => w.length >= 4 && ps.some((p) => w.startsWith(p))) || (nome.length >= 4 && adiada.includes(nome))
+      if (!casa) continue
+      const ja = porNome.get(m.principio_ativo) ?? { nome: m.principio_ativo, ids: [], altaVigilancia: false, apresentacoes: [] }
+      ja.ids.push(m.id)
+      ja.altaVigilancia ||= m.alta_vigilancia
+      const ap = [m.concentracao, m.apresentacao].filter(Boolean).join(' ')
+      if (ap && !ja.apresentacoes.includes(ap)) ja.apresentacoes.push(ap)
+      porNome.set(m.principio_ativo, ja)
+    }
+    return [...porNome.values()].slice(0, 3)
+  }, [data, chave, adiada])
+}
+
+/** Palavras da pergunta que não são nome de remédio (não vão à busca do cadastro). */
+const COMUNS = new Set(['dose', 'doses', 'ataque', 'manutencao', 'qual', 'como', 'quando', 'para', 'com', 'sem', 'crianca', 'adulto', 'paciente', 'diluicao', 'diluir', 'infusao', 'conduta', 'tratamento', 'escore', 'calculo', 'instabilidade', 'insuficiencia', 'aguda', 'cronica', 'grave'])
+
+function FichaMedicamentos({ achados }: { achados: MedicamentoAchado[] }) {
+  if (!achados.length) return null
+  return (
+    <section aria-label="Medicamento" className="mb-5">
+      <TituloSecao className="mb-2.5">
+        <span className="flex items-center gap-1.5"><Pill className="size-4 text-tinta-sussurro" aria-hidden /> Medicamento</span>
+      </TituloSecao>
+      <div className="overflow-hidden rounded-cartao border border-fio bg-superficie">
+        {achados.map((m) => (
+          <div key={m.nome} className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-trilha px-4 py-3 last:border-0">
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center gap-2 text-corpo font-semibold text-tinta">
+                {m.nome}
+                {m.altaVigilancia && <SeloAltaVigilancia />}
+              </p>
+              <p className="truncate text-apoio text-tinta-sussurro" title={m.apresentacoes.join(' · ')}>
+                {m.apresentacoes.length ? m.apresentacoes.slice(0, 3).join(' · ') : 'sem apresentação cadastrada'}
+                {m.apresentacoes.length > 3 ? ` · mais ${m.apresentacoes.length - 3}` : ''}
+              </p>
+            </div>
+            <Link to={`/plantonista/farmacia/referencia-diluicao?m=${encodeURIComponent(m.ids[0])}&q=${encodeURIComponent(m.nome)}`}
+              className="inline-flex items-center gap-1 text-apoio font-medium text-acao underline-offset-4 hover:underline">
+              Ver diluição <ArrowRight className="size-3.5" aria-hidden />
+            </Link>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
 }
 
 function CartaoFerramenta({ f, favorito, onFavoritar, destacado, aviso }: { f: Ferramenta; favorito: boolean; onFavoritar: () => void; destacado?: boolean; aviso?: string }) {
@@ -159,8 +252,10 @@ function CentralCompleta() {
   const campoBusca = useRef<HTMLInputElement>(null)
   const [destacado, setDestacado] = useState(-1)
   const [sugestoes, setSugestoes] = useState<ToolHit[] | null>(null)
+  const estreito = useLarguraAte(1023)
 
   const resultados = useMemo(() => buscarLocal(consulta), [consulta])
+  const medicamentos = useMedicamentosDaBusca(consulta, unidadeId)
   const perguntavel = consulta.trim().length >= 3
 
   // "Perguntar à IA" da barra de baixo (?ia=1) e a busca flutuante (?busca=1) abrem
@@ -245,6 +340,29 @@ function CentralCompleta() {
     return { n: fs.length, texto: `${fs.length} ${fs.length === 1 ? 'ferramenta' : 'ferramentas'}` }
   }
 
+  const iaAberta = ia.status !== 'idle'
+  const resposta = (
+    <RespostaIa
+      key={ia.pergunta}
+      pergunta={ia.pergunta}
+      texto={ia.texto}
+      fontes={ia.fontes}
+      ferramentas={ia.ferramentas}
+      status={ia.status}
+      alerta={ia.alerta}
+      requestId={ia.requestId}
+      publico={ia.publico}
+      confianca={ia.confianca}
+      pubmed={ia.pubmed}
+      etapa={ia.etapa}
+      anteriores={ia.anteriores}
+      sugestoes={ia.sugestoes}
+      onSeguir={ia.seguimento ? ia.seguir : undefined}
+      onFechar={ia.limpar}
+      className={estreito ? 'h-full rounded-none border-0' : 'mb-[22px]'}
+    />
+  )
+
   return (
     <div className="grid gap-6">
       <div className="min-w-0">
@@ -299,25 +417,21 @@ function CentralCompleta() {
           )}
         </div>
 
-        <RespostaIa
-          pergunta={ia.pergunta}
-          texto={ia.texto}
-          fontes={ia.fontes}
-          ferramentas={ia.ferramentas}
-          status={ia.status}
-          alerta={ia.alerta}
-          requestId={ia.requestId}
-          publico={ia.publico}
-          confianca={ia.confianca}
-          pubmed={ia.pubmed}
-          etapa={ia.etapa}
-          onFechar={ia.limpar}
-        />
+        {/* IA3: no computador a resposta fica aqui, logo abaixo da busca; no
+            celular e no tablet cobre a tela, com o fechar no topo. */}
+        {iaAberta && !estreito && resposta}
+        {iaAberta && estreito && (
+          <div role="dialog" aria-modal="true" aria-label="Resposta da IA" className="fixed inset-0 z-50 flex flex-col bg-superficie pb-[env(safe-area-inset-bottom)]">
+            {resposta}
+          </div>
+        )}
+
+        {consulta.trim() && <FichaMedicamentos achados={medicamentos} />}
 
         {consulta.trim() ? (
           <section aria-live="polite">
             <TituloSecao extra={`${resultados.length} ${resultados.length === 1 ? 'ferramenta' : 'ferramentas'}`}>
-              Resultados para "{consulta.trim()}"
+              {medicamentos.length ? 'Condutas e ferramentas' : `Resultados para "${consulta.trim()}"`}
             </TituloSecao>
             {resultados.length ? (
               <div className="grid gap-3 sm:grid-cols-2">

@@ -25,11 +25,13 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { BarChart3, BedDouble, ClipboardPlus, Gauge, Hourglass, Monitor, TriangleAlert } from 'lucide-react'
-import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Video, Wallet, Waypoints } from 'lucide-react'
+import { FileCheck, FileDown, FileText, FileX, TestTube, History, KeyRound, Receipt, Rocket, PackageCheck, PackageOpen, Wallet, Waypoints } from 'lucide-react'
 import { ArrowLeftRight, FileWarning, GitMerge, LifeBuoy, Network, Pill, ShieldAlert, Siren, Syringe } from 'lucide-react'
 import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, MessageCircleQuestion, Package, Send, Sprout } from 'lucide-react'
 
 import type { Papel, TipoUnidade } from '@/types/database'
+import { ABA_NO_PLANTAO } from '../plantao/rotasMedico.ts'
+import { ROTA_INICIAL } from '../../lib/constants.ts'
 
 /** Chave da nota numérica (contagem em âmbar ao lado do item). */
 export type ChaveNota = 'avisos' | 'triagem' | 'farmacia' | 'pedidos' | 'tele' | 'revisao' | 'fila_medica' | 'plataformas' | 'chamados'
@@ -47,6 +49,13 @@ export type ItemNav = {
   nota?: ChaveNota
   /** Grupo do item no menu (por enquanto só no gestor, parte 4.11). */
   grupo?: string
+  /** Rotas de baixo que têm item próprio no menu: nelas este item não acende (um ativo só). */
+  exceto?: string[]
+}
+
+/** O item não vale para esta rota porque ela tem item próprio no menu (campo `exceto`). */
+export function foraDoItem(item: ItemNav, pathname: string): boolean {
+  return !!item.exceto?.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 }
 
 // Navegação por papel (P/index.html ~32220). Um papel por vez: quem tem mais
@@ -77,12 +86,15 @@ const ITEM_SALA_VACINA: ItemNav = { to: '/vacina', rotulo: 'Sala de vacina', cur
 
 const POR_PAPEL: Record<Papel, ItemNav[]> = {
   plantonista: [
-    { to: '/plantonista', rotulo: 'Central do Médico', curto: 'Central', icone: Stethoscope },
-    { to: '/plantao', rotulo: 'Plantão', icone: Activity },
-    // pedido 8 (PS1 a PS3 = A, RT 23/11/2026): os pacientes do plantão com as pendências
-    { to: '/passometro', rotulo: 'Passômetro', icone: ClipboardList, exato: true },
-    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
+    // a Farmácia tem item próprio: nela a Central não acende junto (revisão da Farmácia do médico, RT 24/11/2026)
+    { to: '/plantonista', rotulo: 'Central do Médico', curto: 'Central', icone: Stethoscope, exceto: ['/plantonista/farmacia'] },
+    // RT, 24/11/2026: o Plantão tem as abas Meu turno, Minha agenda e Prontuários; a
+    // Internação, item próprio, tem Internação, Observação e Passômetro (o leito aberto
+    // também acende a Internação, não o Plantão). A Evolução clínica saiu.
+    { to: '/plantao', rotulo: 'Plantão', icone: Activity, exceto: ['/plantao/internacao'] },
+    { to: '/plantao/internacao', rotulo: 'Internação', icone: Hospital },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
+    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
@@ -92,6 +104,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/pareceres', rotulo: 'Pareceres', icone: MessageSquare, exato: true },
     { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
     { to: '/plantonista/farmacia', rotulo: 'Farmácia', icone: FlaskConical },
+    // só na UBS (SO_NA_UBS_NO_PAPEL): fora dela, Minha agenda e Prontuários são abas do Plantão
     { to: '/agenda', rotulo: 'Minha agenda', curto: 'Agenda', icone: CalendarClock, exato: true },
     ITEM_AVISOS,
     ITEM_PRONTUARIOS,
@@ -133,7 +146,7 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/unidade', rotulo: 'Unidade', icone: Building2, exato: true, grupo: 'Unidade' },
     { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true, grupo: 'Unidade' },
     { to: '/indicadores', rotulo: 'Indicadores', icone: LineChart, exato: true, grupo: 'Unidade' },
-    { to: '/gestao/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true, grupo: 'Unidade' },
+    { to: '/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: Bird, exato: true, grupo: 'Unidade' },
     { to: '/auditoria', rotulo: 'Auditoria', icone: ScrollText, exato: true, nota: 'pedidos', grupo: 'Unidade' },
     { to: '/gestao/protocolos', rotulo: 'Protocolos', icone: ClipboardPlus, exato: true, grupo: 'Unidade' },
     { ...ITEM_LOTES_VACINA, grupo: 'Unidade' },
@@ -150,54 +163,60 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/consultorio-enfermagem', rotulo: 'Consultório de enfermagem', curto: 'Consultório', icone: DoorOpen, exato: true },
     ITEM_SINAIS_VITAIS,
     ITEM_SALA_VACINA,
-    { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem' },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
     ITEM_PUERICULTURA,
     ITEM_LOTES_VACINA,
-    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
-    { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true },
-    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
-    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
+    // EN1 (revisão do perfil Enfermeiro, RT 24/11/2026): grupos pelo momento do
+    // cuidado. Na UBS os grupos saem (itensDeNavegacao) e o menu segue em lista.
+    { to: '/triagem', rotulo: 'Triagem', icone: Activity, exato: true, nota: 'triagem', grupo: 'Porta' },
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true, grupo: 'Porta' },
+    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true, grupo: 'Leitos' },
+    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true, grupo: 'Medicação' },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true, grupo: 'Medicação' },
     // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
-    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
-    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
-    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
-    ITEM_AVISOS,
-    ITEM_PRONTUARIOS,
-    ITEM_ESCALA,
+    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true, grupo: 'Medicação' },
+    { to: '/notificacao-compulsoria', rotulo: 'Notificação compulsória', curto: 'Notificação', icone: Shield, exato: true, grupo: 'Registros' },
+    { ...ITEM_PRONTUARIOS, grupo: 'Registros' },
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
+    { ...ITEM_AVISOS, grupo: 'Equipe' },
+    { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true, grupo: 'Equipe' },
   ],
+  // TE1 (revisão do perfil Técnico, RT 24/11/2026): os grupos do enfermeiro com
+  // o que existe para o técnico. Na UBS os grupos saem, como no enfermeiro.
   tecnico_enfermagem: [
     ITEM_SINAIS_VITAIS,
     ITEM_SALA_VACINA,
-    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true },
-    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true },
-    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true },
-    // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
-    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true },
     ITEM_AGENDA_CONSULTAS,
     ITEM_HIPERDIA,
     ITEM_PRE_NATAL,
     ITEM_PUERICULTURA,
-    ITEM_AVISOS,
-    ITEM_PRONTUARIOS,
-    ITEM_ESCALA,
+    { to: '/enfermagem/pronto-socorro', rotulo: 'Pronto-Socorro', curto: 'PS', icone: Stethoscope, exato: true, grupo: 'Porta' },
+    { to: '/enfermagem/internacao', rotulo: 'Internação', icone: Users, exato: true, grupo: 'Leitos' },
+    { to: '/checagem', rotulo: 'Checagem', icone: ClipboardCheck, exato: true, grupo: 'Medicação' },
+    // Fase 5B, etapa 3.2: retirada sem farmacêutico (farmácia fechada)
+    { to: '/dispensacao', rotulo: 'Retirada sem farmacêutico', curto: 'Retirada', icone: PackageOpen, exato: true, grupo: 'Medicação' },
+    { ...ITEM_PRONTUARIOS, grupo: 'Registros' },
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
+    { ...ITEM_AVISOS, grupo: 'Equipe' },
   ],
-  // Recepção (P/index.html 32220–32224): as quatro telas na lateral, com a
-  // contagem das duas filas.
+  // Recepção (P/index.html 32220–32224), com a contagem das duas filas.
+  // RE2 (revisão do perfil Recepção, RT 24/11/2026): em grupos — Entrada,
+  // Filas e Equipe. A Agenda de consultas (só na UBS) fica na Entrada.
   recepcao: [
     // percurso da UBS, U4: a tela "Hoje" (só na UBS) abre a recepção
     { to: '/recepcao/hoje', rotulo: 'Hoje', curto: 'Hoje', icone: CalendarCheck, exato: true },
-    { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true },
-    ITEM_AGENDA_CONSULTAS,
+    { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true, grupo: 'Entrada' },
+    { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true, grupo: 'Entrada' },
+    { ...ITEM_AGENDA_CONSULTAS, grupo: 'Entrada' },
+    { to: '/recepcao/fila-triagem', rotulo: 'Fila da triagem', curto: 'Triagem', icone: Hourglass, exato: true, nota: 'triagem', grupo: 'Filas' },
+    { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica', grupo: 'Filas' },
+    { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true, grupo: 'Filas' },
+    // Encaminhados sai do menu da recepção na UBS (R8) e só existe nela: fica fora dos grupos
     ITEM_ENCAMINHADOS,
-    { to: '/recepcao/fila-triagem', rotulo: 'Fila da triagem', curto: 'Triagem', icone: Hourglass, exato: true, nota: 'triagem' },
-    { to: '/recepcao/fila-medica', rotulo: 'Fila médica', curto: 'Médica', icone: Stethoscope, exato: true, nota: 'fila_medica' },
-    { to: '/recepcao/painel', rotulo: 'Painel de chamada', curto: 'Painel', icone: Monitor, exato: true },
-    { to: '/cadastros-duplicados', rotulo: 'Cadastros duplicados', curto: 'Duplicados', icone: GitMerge, exato: true },
-    ITEM_ESCALA,
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
   ],
   // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
   // competência, ou rejeita com motivo). Revisão do perfil (MR1 = A, RT
@@ -209,38 +228,47 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, nota: 'apac' },
     ITEM_ESCALA,
   ],
-  // Fase 3, tarefa 3: faturamento (sem escala) — conferência e fechamento do
-  // BPA, lançamento de procedimentos e códigos SIGTAP da unidade
+  // Fase 3, tarefa 3: faturamento — conferência e fechamento do BPA, lançamento
+  // de procedimentos e códigos SIGTAP da unidade. Revisão do perfil (FT1 = A,
+  // RT 24/11/2026): na ordem do trabalho, da conta à produção, à glosa e ao
+  // envio. A AIH entra em Produção quando o banco abrir aihs_da_unidade ao
+  // faturamento (hoje a função aceita só regulador e gestor). Os grupos são os
+  // nomes curtos do trilho; itens seguidos sem grupo viram uma área só.
   faturamento: [
-    { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true },
-    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true },
+    { to: '/faturamento/contas', rotulo: 'Contas do atendimento', curto: 'Contas', icone: Wallet, exato: true, grupo: 'Contas' },
+    { to: '/faturamento', rotulo: 'BPA', icone: Receipt, exato: true, grupo: 'Produção' },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, grupo: 'Produção' },
     { to: '/faturamento/glosas', rotulo: 'Glosas', icone: FileX, exato: true },
-    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true },
-    // pendências da 5B, L4: cadastro de materiais (opção A do RT)
-    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true },
-    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
+    { to: '/faturamento/erp', rotulo: 'Envio ao ERP', curto: 'ERP', icone: ArrowLeftRight, exato: true, grupo: 'ERP' },
+    // o cadastro de materiais passou à farmácia (ajustes da revisão, item 4, RT em
+    // 24/11/2026); o faturamento consulta a lista em Cadastro (FT1)
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true, grupo: 'Cadastro' },
     ITEM_ESCALA,
   ],
+  // FA2 (revisão do perfil Farmacêutico, RT 24/11/2026): o menu em grupos,
+  // Trabalho, Segurança, Estoque e Equipe.
   farmaceutico: [
-    { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia' },
-    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true },
+    { to: '/farmacia', rotulo: 'Central do Farmacêutico', curto: 'Farmácia', icone: FlaskConical, exato: true, nota: 'farmacia', grupo: 'Trabalho' },
+    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true, grupo: 'Trabalho' },
+    { to: '/alta-vigilancia', rotulo: 'Alta vigilância', curto: 'Alta vig.', icone: ShieldAlert, exato: true, grupo: 'Segurança' },
+    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true, grupo: 'Segurança' },
     // Fase 5B, etapa 3.1: unidade de consumo (vale para todas as unidades)
-    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true },
-    { to: '/dispensacao', rotulo: 'Dispensação', icone: PackageOpen, exato: true },
-    { to: '/interacoes', rotulo: 'Interações críticas', curto: 'Interações', icone: Pill, exato: true },
-    ITEM_ESCALA,
+    { to: '/unidade-consumo', rotulo: 'Unidade de consumo', curto: 'Unid. consumo', icone: PackageCheck, exato: true, grupo: 'Estoque' },
+    // ajustes da revisão, item 4 (RT, 24/11/2026): a farmácia cadastra os materiais
+    // (migration 20270421000073)
+    { to: '/faturamento/materiais', rotulo: 'Materiais', icone: Package, exato: true, grupo: 'Estoque' },
+    { ...ITEM_ESCALA, grupo: 'Equipe' },
     // Sem Prontuários (RT, 27/10/2026): o que o farmacêutico precisa do
     // paciente chega pela validação e pela dispensação.
   ],
+  // Revisão do perfil Telemedicina (TM2, RT 24/11/2026): Chamados (fila, salas e
+  // assinaturas em abas), Escala (com a Cobertura dos setores), Histórico e
+  // Prontuários. As Credenciais foram para o menu do usuário.
   telemedicina: [
-    { to: '/teleinterconsulta', rotulo: 'Telemedicina', curto: 'Tele', icone: Hourglass, exato: true, nota: 'tele' },
-    { to: '/telemedicina/salas', rotulo: 'Salas em andamento', curto: 'Salas', icone: Video, exato: true },
+    { to: '/teleinterconsulta', rotulo: 'Chamados', icone: Hourglass, exato: true, nota: 'tele' },
     // E3 da aba Escala (RT, 27/10/2026): a "Minha agenda" vira a Escala comum, com o extrato numa aba
     ITEM_ESCALA,
-    { to: '/telemedicina/telemonitoramento', rotulo: 'Telemonitoramento', curto: 'Monitor', icone: Activity, exato: true },
-    { to: '/telemedicina/assinaturas', rotulo: 'Assinaturas pendentes', curto: 'Assinar', icone: FileText, exato: true },
-    { to: '/telemedicina/historico', rotulo: 'Histórico e auditoria', curto: 'Histórico', icone: History, exato: true },
-    { to: '/telemedicina/credenciais', rotulo: 'Unidades e credenciais', curto: 'Credenciais', icone: ShieldCheck, exato: true },
+    { to: '/telemedicina/historico', rotulo: 'Histórico', icone: History, exato: true },
     ITEM_PRONTUARIOS,
   ],
   // Administrador (P/index.html 32242–32246): Rede, Plataformas, Pendências e
@@ -249,19 +277,31 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
   secretaria: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS, ITEM_ESCALA],
   regulacao_regional: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_AVISOS, ITEM_ESCALA],
   faturamento_rede: [{ to: '/rede', rotulo: 'Rede', icone: Network, exato: true }, ITEM_ESCALA],
-  // Fase 4, tarefa 11: NIR — pendências da unidade e a regulação (sem ato médico)
+  // Perfil NIR (RT, 24/11/2026): "aba de Internação, em que vê só o resumo e o
+  // que está acontecendo na regulação e consegue anexar exames, e aba de
+  // Escala, e só". Os avisos do NIR aparecem no topo da Internação.
   nir: [
-    { to: '/nir', rotulo: 'Pendências do NIR', curto: 'NIR', icone: ClipboardList, exato: true },
-    { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true },
-    ITEM_AVISOS,
+    { to: '/nir/internacao', rotulo: 'Internação', icone: Hospital, exato: true },
     ITEM_ESCALA,
+  ],
+  // Perfil Secretaria (RT, 24/11/2026): a rede da secretaria, a configuração de
+  // cada unidade dela (a unidade se escolhe no topo, como nos outros perfis) e as
+  // vagas da escala. Sem tela de paciente.
+  gestor_secretaria: [
+    { to: '/secretaria', rotulo: 'Rede', icone: Network, exato: true },
+    { to: '/unidade', rotulo: 'Unidades', icone: Building2, exato: true },
+    { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
+    // as unidades da secretaria lado a lado (migration 20270421000024)
+    { to: '/secretaria/indicadores', rotulo: 'Indicadores', icone: BarChart3, exato: true },
   ],
   admin: [
     { to: '/painel', rotulo: 'Rede', icone: Building2, exato: true },
     { to: '/plataformas', rotulo: 'Plataformas', icone: LayoutDashboard, exato: true, nota: 'plataformas' },
-    { to: '/pendencias-tecnicas', rotulo: 'Pendências', icone: ClipboardList, exato: true, nota: 'chamados' },
+    { to: '/pendencias-tecnicas', rotulo: 'Chamados técnicos', curto: 'Chamados', icone: ClipboardList, exato: true, nota: 'chamados' },
     { to: '/servidores', rotulo: 'Servidores', icone: Gauge, exato: true },
-    { to: '/escala', rotulo: 'Escala', icone: CalendarClock, exato: true },
+    // RT, 24/11/2026: o administrador não monta escala; a aba vira a agenda do
+    // dia a dia e das reuniões (link colado do Meet, Zoom ou Teams)
+    { to: '/agenda-admin', rotulo: 'Agenda', icone: CalendarDays, exato: true },
     { to: '/gaviao', rotulo: 'Olho de Gavião', curto: 'Gavião', icone: ShieldCheck, exato: true },
   ],
 }
@@ -284,13 +324,13 @@ const ITEM_IMPLANTACAO: ItemNav = { to: '/implantacao', rotulo: 'Implantação',
 // Fase 4, tarefa 1: regulação da rede (origem, central e super admin)
 const ITEM_REGULACAO: ItemNav = { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true }
 // Fase 4, tarefa 12: módulo de papéis de rede (o super admin liga por organização)
-const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede', curto: 'Rede', icone: Network, exato: true }
+const ITEM_MODULO_REDE: ItemNav = { to: '/rede', rotulo: 'Rede da Secretaria', curto: 'Secretaria', icone: Network, exato: true }
 
 // 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
 // internação nem AIH; os itens dessas telas somem do menu.
 const FORA_DA_UBS = new Set([
-  '/plantonista', '/plantao', '/plantao/internacao/pacientes', '/passometro', '/contingencia',
-  '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/aih', '/apac',
+  '/plantonista', '/plantao', '/plantao/internacao', '/plantao/internacao/pacientes', '/passometro', '/contingencia',
+  '/gestao/porta', '/gestao/intercorrencias', '/internacao', '/observacao', '/nir', '/nir/internacao', '/aih', '/apac',
   '/triagem', '/enfermagem', '/enfermagem/pronto-socorro', '/enfermagem/internacao',
   '/recepcao/painel',
 ])
@@ -306,6 +346,8 @@ const FORA_DA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
   // materiais) sai do gestor da UBS; a produção da UBS vai ao SISAB (U15). Fica o
   // Envio ao ERP, que leva os plantões do mês.
   gestor: new Set(['/faturamento/contas', '/faturamento', '/faturamento/glosas', '/faturamento/materiais']),
+  // os materiais são da conta da porta e da internação: fora da UBS também para a farmácia
+  farmaceutico: new Set(['/faturamento/materiais']),
 }
 // e o que muda de nome nela: na UBS a "triagem" é a escuta da enfermagem (R9)
 const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
@@ -315,6 +357,11 @@ const NOME_NA_UBS: Record<string, Pick<ItemNav, 'rotulo' | 'curto'>> = {
 // "Leitos" só a regulação (U5, achado GE7).
 const GRUPO_NA_UBS: Record<string, string> = { Porta: 'Cadastro', Leitos: 'Rede' }
 // e o que só existe nela (5A, tarefa 2, parte 2.4: a escuta inicial)
+// e o que, num papel, só fica no menu da UBS: fora dela, Minha agenda e
+// Prontuários do médico são abas do Plantão (RT, 24/11/2026)
+const SO_NA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
+  plantonista: new Set(['/agenda', '/prontuarios']),
+}
 const SO_NA_UBS = new Set(['/recepcao/hoje', '/escuta', '/consultorio-enfermagem', '/sinais-vitais', '/agenda-consultas', '/encaminhados', '/hiperdia', '/pre-natal', '/puericultura', '/vacina/lotes', '/vacina'])
 
 /** A tela não cabe numa unidade deste tipo (e não entra no menu). */
@@ -331,11 +378,18 @@ export function foraDoTipo(to: string, tipoUnidade: TipoUnidade | null | undefin
 export function itensDeNavegacao(papel: Papel | null, responsavelTecnico = false, superAdmin = false,
   tipoUnidade: TipoUnidade | null = null): ItemNav[] {
   const itens = itensDoPapel(papel, responsavelTecnico, superAdmin).filter((i) => !foraDoTipo(i.to, tipoUnidade))
-  if (tipoUnidade !== 'ubs') return itens
+  if (tipoUnidade !== 'ubs') {
+    const soNaUbs = SO_NA_UBS_NO_PAPEL[papel ?? 'plantonista'] ?? null
+    return soNaUbs ? itens.filter((i) => !soNaUbs.has(i.to)) : itens
+  }
   const fora = (papel && FORA_DA_UBS_NO_PAPEL[papel]) || null
+  if (papel === 'plantonista') itens.push(ITEM_REGULACAO)
+  // EN1/TE1: os grupos da enfermagem são da porta e dos leitos; na UBS o menu segue em lista
+  const semGrupo = papel === 'enfermeiro' || papel === 'tecnico_enfermagem'
   return itens
     .filter((i) => !fora?.has(i.to))
     .map((i) => ({ ...i, ...NOME_NA_UBS[i.to], ...(i.grupo && GRUPO_NA_UBS[i.grupo] ? { grupo: GRUPO_NA_UBS[i.grupo] } : {}) }))
+    .map((i) => (semGrupo ? { ...i, grupo: undefined } : i))
 }
 
 function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdmin: boolean): ItemNav[] {
@@ -343,12 +397,17 @@ function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdm
   if (papel === 'admin' && superAdmin) {
     const i = itens.findIndex((x) => x.to === '/servidores')
     itens.splice(i >= 0 ? i + 1 : itens.length, 0, ITEM_ERROS_E_ALERTAS, ITEM_USO_DO_APP, ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO, ITEM_REGULACAO, ITEM_MODULO_REDE)
+  } else if (papel === 'admin') {
+    // RT, 24/11/2026: o administrador da organização regulamenta as centrais da rede
+    itens.push(ITEM_REGULACAO)
   }
   if (papel === 'gestor') {
     itens.push({ ...ITEM_REGULACAO, grupo: 'Leitos' }, ...[ITEM_INTEGRACOES, ITEM_EXPORTAR, ITEM_IMPLANTACAO].map((i) => ({ ...i, grupo: 'Unidade' })))
   }
-  // o regulador já tem a Regulação no topo da lista dele (MR1)
-  if (papel === 'plantonista') itens.push(ITEM_REGULACAO)
+  // R2 (RT, 24/11/2026): a Regulação do médico mora dentro de Atendimento, na
+  // aba "Em regulação"; o item volta só na UBS (itensDeNavegacao), onde o
+  // Atendimento é o consultório e a regulação sai das consultas. O regulador já
+  // tem a Regulação no topo da lista dele (MR1).
   if (responsavelTecnico) {
     // o gestor já tem o item; o responsável técnico o ganha com a nota da fila
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)
@@ -385,12 +444,23 @@ export function agruparNavegacao(itens: ItemNav[]): { grupo: string | null; iten
 export const ICONE_GRUPO: Record<string, LucideIcon> = {
   Porta: DoorOpen,
   Leitos: BedDouble,
+  // grupos do farmacêutico (FA2)
+  Trabalho: FlaskConical,
+  'Segurança': ShieldAlert,
+  Estoque: PackageCheck,
   Cadastro: GitMerge,
   Rede: Waypoints,
+  // grupos da recepção (RE2)
+  Entrada: ClipboardPlus,
+  Filas: Hourglass,
   'Farmácia': FlaskConical,
   Exames: TestTube,
   Faturamento: Receipt,
   Unidade: Building2,
+  // grupos do enfermeiro (EN1)
+  'Medicação': Pill,
+  Registros: FolderSearch,
+  Equipe: Users,
 }
 
 /**
@@ -420,9 +490,10 @@ export const ROTA_PERGUNTAR_IA = '/plantonista?todas=1&ia=1'
 /**
  * Barra de baixo do médico abaixo de 1024px (item 6, CM1 = A, RT em
  * 23/11/2026): Início, Leitos, Perguntar à IA (no meio, em destaque),
- * Prontuários e Menu. Substitui as quatro abas do topo; a Agenda e o resto
- * vão para o Menu. Numa UBS saem as telas do pronto atendimento e a Agenda
- * volta para a barra, para não ficar só Prontuários.
+ * Prontuários e Menu. Substitui as quatro abas do topo; o resto vai para o
+ * Menu, e a Agenda é aba do Plantão (RT, 24/11/2026). Numa UBS saem as telas
+ * do pronto atendimento e a Agenda volta para a barra, para não ficar só
+ * Prontuários.
  */
 export const BARRA_MEDICO_CELULAR: ItemNav[] = [
   { to: '/plantonista', rotulo: 'Início', icone: House },
@@ -432,18 +503,32 @@ export const BARRA_MEDICO_CELULAR: ItemNav[] = [
   { to: '/agenda', rotulo: 'Agenda', icone: CalendarClock },
 ]
 
-/** Os itens da barra do médico que cabem no tipo da unidade (no máximo quatro; o quinto lugar é o Menu). */
+/**
+ * Os itens da barra do médico que cabem no tipo da unidade (no máximo quatro; o
+ * quinto lugar é o Menu). Fora da UBS, Prontuários leva à aba do Plantão (RT,
+ * 24/11/2026) e a Agenda, que não cabe, fica na aba Minha agenda do Plantão.
+ */
 export function barraMedicoCelular(tipoUnidade: TipoUnidade | null = null): ItemNav[] {
   const cabem = BARRA_MEDICO_CELULAR.filter((i) => !foraDoTipo(i.to.split('?')[0], tipoUnidade))
-  return cabem.length > MAX_BARRA_CELULAR - 1 ? cabem.filter((i) => i.to !== '/agenda') : cabem
+  const barra = cabem.length > MAX_BARRA_CELULAR - 1 ? cabem.filter((i) => i.to !== '/agenda') : cabem
+  return tipoUnidade === 'ubs' ? barra : barra.map((i) => (ABA_NO_PLANTAO[i.to] ? { ...i, to: ABA_NO_PLANTAO[i.to] } : i))
 }
 
-/** O Menu da barra do médico: a Agenda (se não coube) e as telas do menu que não estão na barra. */
+/** O Menu da barra do médico: as telas do menu que não estão na barra (a Agenda mora no Plantão, ou na barra na UBS). */
 export function menuMedicoCelular(itens: ItemNav[], tipoUnidade: TipoUnidade | null = null): ItemNav[] {
   const naBarra = new Set(barraMedicoCelular(tipoUnidade).map((i) => i.to.split('?')[0]))
-  const agenda = BARRA_MEDICO_CELULAR.find((i) => i.to === '/agenda')!
-  const resto = itens.filter((i) => !naBarra.has(i.to))
-  return naBarra.has('/agenda') || resto.some((i) => i.to === '/agenda') ? resto : [agenda, ...resto]
+  return itens.filter((i) => !naBarra.has(i.to))
+}
+
+/**
+ * Tela em que o papel abre ao entrar numa unidade (seletor e troca de perfil
+ * de outra unidade): a rota inicial do papel; numa UBS a tela de porta ou de
+ * leito dá lugar ao primeiro item do menu, e a recepção abre em "Hoje" (U4).
+ */
+export function telaAoEntrar(papel: Papel, tipoUnidade: TipoUnidade | null = null): string {
+  if (tipoUnidade === 'ubs' && papel === 'recepcao') return '/recepcao/hoje'
+  const inicial = ROTA_INICIAL[papel]
+  return !inicial || foraDoTipo(inicial, tipoUnidade) ? inicioDoPapel(papel, tipoUnidade) : inicial
 }
 
 /** Página inicial do papel: o logotipo leva a ela. */

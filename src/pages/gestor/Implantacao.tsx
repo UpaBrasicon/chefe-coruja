@@ -29,6 +29,7 @@ import {
 } from '@/lib/implantacao'
 import { supabase } from '@/lib/supabase'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
+import { FaixaFasesImplantacao } from '@/components/gestor/FaixaFasesImplantacao'
 
 type Painel = {
   sou_implantador: boolean
@@ -50,7 +51,9 @@ const SITUACAO = {
 const hoje = () => dataIso()
 
 export default function Implantacao() {
-  const { ehSuperAdmin, unidadeAtiva } = useUnidade()
+  const { ehSuperAdmin: superAdmin, papelAtivo, unidadeAtiva } = useUnidade()
+  // RT, 24/11/2026: no perfil gestor a unidade é fixa na dele (vale também para a conta super admin)
+  const ehSuperAdmin = superAdmin && papelAtivo === 'admin'
   const todas = useQuery({
     queryKey: ['implantacao-unidades'],
     enabled: ehSuperAdmin,
@@ -78,6 +81,7 @@ export default function Implantacao() {
     <div className="flex w-full max-w-5xl flex-col gap-4">
       <TituloPagina icone={Rocket} titulo="Implantação"
         descricao="Roteiro da unidade: preparação, virada, operação assistida e encerramento. O que o sistema confere sozinho já aparece marcado." />
+      {!ehSuperAdmin && unidadeAtiva && <span className="text-apoio text-tinta-apoio">Unidade: <span className="text-tinta">{unidadeAtiva.unidade.nome}</span></span>}
       {ehSuperAdmin && (
         <div className="flex max-w-sm flex-col gap-1 text-apoio">
           <Label htmlFor="imp-unidade" className="text-rotulo">Unidade</Label>
@@ -95,6 +99,8 @@ export default function Implantacao() {
       ) : (
         <>
           <Cabecalho p={p as Required<Painel>} unidadeId={unidadeId} />
+          {/* revisão (RT, 24/11/2026, M1): a faixa de fases com o progresso, no topo */}
+          <FaixaFasesImplantacao itens={(p as Required<Painel>).itens} d0={imp.d0} hoje={hoje()} encerrada={imp.situacao === 'encerrada'} />
           {FASES.map((f) => <FaseCard key={f.fase} fase={f} p={p as Required<Painel>} unidadeId={unidadeId} />)}
           <Treinamento p={p as Required<Painel>} unidadeId={unidadeId} />
           <Aceites p={p as Required<Painel>} unidadeId={unidadeId} />
@@ -203,7 +209,7 @@ function FaseCard({ fase, p, unidadeId }: { fase: (typeof FASES)[number]; p: Req
   const r = resumoFase(p.itens, fase.fase)
   const imp = p.implantacao!
   return (
-    <Card>
+    <Card id={`fase-${fase.fase}`} className="scroll-mt-4">
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-corpo">
           {fase.rotulo} <span className="text-apoio font-normal text-tinta-sussurro">{fase.janela}</span>
@@ -298,7 +304,7 @@ function Treinamento({ p, unidadeId }: { p: Required<Painel>; unidadeId: string 
             {p.pessoas.length - faltam} de {p.pessoas.length} treinados
           </Badge>
         </CardTitle>
-        <CardDescription>Roteiro de cada papel em docs/implantacao/treinamento. O acesso não depende do registro.</CardDescription>
+        <CardDescription>Cada papel tem o seu roteiro de treinamento, entregue pela equipe Chefe Coruja. O acesso não depende do registro.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-apoio">
         <div className="flex items-end gap-2">

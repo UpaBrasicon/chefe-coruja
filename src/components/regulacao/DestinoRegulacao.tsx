@@ -25,12 +25,13 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { fmtDataHora } from '@/lib/datas'
 import {
-  MEIOS_CONFIRMACAO, MOTIVOS_RECUSA_DESTINO, PRIORIDADES, STATUS, chegadaInterna, duplicataDaChegada, esperandoChegada, reservaValida, resumoPedido,
+  MEIOS_CONFIRMACAO, MOTIVOS_RECUSA_DESTINO, STATUS, chegadaInterna, duplicataDaChegada, esperandoChegada, reservaValida, resumoPedido,
   type MeioConfirmacao, type MotivoRecusaDestino, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { PrioridadeCalma } from './SlaRegulacao'
 
 
 /** Campos do pedido que o destino e a chegada usam. */
@@ -389,7 +390,7 @@ export function RecebidosDestino({ unidadeId, detalhe, selecionado, aoSelecionar
                       className={cn('flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo', aoSelecionar && aberta === s.id && 'bg-campo')}
                       onClick={() => setAberta(aberta === s.id ? null : s.id)}>
                       {aoSelecionar ? null : aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
-                      <Badge variant={PRIORIDADES[ef].tom === 'critico' ? 'destructive' : PRIORIDADES[ef].tom === 'atencao' ? 'warning' : 'secondary'}>{PRIORIDADES[ef].rotulo}</Badge>
+                      <PrioridadeCalma p={ef} />
                       <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                       <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                       <span className="text-tinta-sussurro">nº {s.numero} · de {s.origem.nome}</span>

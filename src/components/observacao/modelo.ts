@@ -82,7 +82,11 @@ export const hhmm = (iso: string | null | undefined) => (iso ? hora(iso) : '—'
 export function duracao(min: number) {
   const m = Math.max(0, Math.round(min))
   if (m < 60) return `${m}min`
-  return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}min`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ${String(m % 60).padStart(2, '0')}min`
+  // M2 da revisão do médico (RT, 24/11/2026): passou de um dia, conta em dias e horas (não "1084h")
+  const d = Math.floor(h / 24)
+  return `${d} ${d === 1 ? 'dia' : 'dias'}${h % 24 ? ` e ${h % 24}h` : ''}`
 }
 
 export type Tom = 'conforme' | 'atencao' | 'critico'

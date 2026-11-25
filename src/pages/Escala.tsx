@@ -11,6 +11,7 @@ import {
   Plus,
   RefreshCcw,
   Trash2,
+  TriangleAlert,
   UserCheck,
   X,
 } from 'lucide-react'
@@ -35,24 +36,21 @@ import { Abas, Chip, TituloPagina } from '@/components/monitor/Pagina'
 import { ACCEPT_ANEXO_CLINICO, tipoDoArquivo } from '@/lib/anexo'
 import { BUCKET_JUSTIFICATIVA, caminhoDoAnexo, caminhoNovoAnexo } from '@/lib/anexoJustificativa'
 import { PedidosParaVoce } from '@/components/escala/PedidosParaVoce'
+import { ProximosPlantoes } from '@/components/escala/ProximosPlantoes'
+import { blocosAcimaDoLimite, LIMITE_HORAS_SEGUIDAS } from '@/lib/escalaSeguida'
 import { dataHora, dataIso, hora } from '@/lib/formato'
 import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { csvEscala } from '@/lib/exportacoesAntigas'
 import { cn } from '@/lib/utils'
-import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaPlantonista } from '@/types/database'
+import type { EscalaFixa, EscalaPlantao, Papel, PlantonistaDaUnidade, ResumoCargaHoraria } from '@/types/database'
 import { PAPEL_LABEL } from '@/lib/constants'
 import { ehRetroativo } from '@/lib/retroativo'
+import { horarioDoTurno, inicioDoCodigo, rotuloTurno, TURNOS_PADRAO } from '@/lib/turnos'
+import { useTurnosUnidade } from '@/hooks/useTurnosUnidade'
 import { Estado } from '@/components/porta/Estado'
 import { contarPedidos, useCandidaturasEscala, useSolicitacoesEscala, useTrocasEscala, type SolicitacaoComExtra } from '@/hooks/usePedidosEscala'
 
-const TURNOS = [
-  { id: 'manha', label: 'Manhã', horario: '07h–13h' },
-  { id: 'tarde', label: 'Tarde', horario: '13h–19h' },
-  { id: 'noite', label: 'Noite', horario: '19h–07h' },
-] as const
-
 const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-const TURNO_LABEL: Record<string, string> = { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
 
 const TIPO_SOLICITACAO_LABEL: Record<string, string> = {
@@ -173,9 +171,21 @@ export default function Escala({
   const unidadeId = unidadeAtiva?.unidade_id
   const queryClient = useQueryClient()
 
-  const [turno, setTurno] = React.useState<'manha' | 'tarde' | 'noite'>('manha')
+  // Turnos da unidade (migration 20270421000050): as grades usam os ativos; o
+  // nome de qualquer código (também de turno desativado) sai do cadastro.
+  const turnosUnidade = useTurnosUnidade(unidadeId)
+  const turnosGrade = turnosUnidade.ativos
+  const nomeTurno = (codigo: string) => rotuloTurno(codigo, turnosUnidade.todos)
+  const horarioDe = (codigo: string) => {
+    const t = turnosUnidade.todos.find((x) => x.codigo === codigo) ?? TURNOS_PADRAO.find((x) => x.codigo === codigo)
+    return t ? horarioDoTurno(t) : ''
+  }
+  const [turnoGrade, setTurno] = React.useState<string>('manha')
+  // turno escolhido que a unidade desativou: a grade abre no primeiro ativo
+  const turno = turnosGrade.some((t) => t.codigo === turnoGrade) ? turnoGrade : (turnosGrade[0]?.codigo ?? 'manha')
   const [mes, setMes] = React.useState(() => hojeISO().slice(0, 7))
-  const [semana, setSemana] = React.useState(() => hojeISO())
+  // revisão do gestor (RT, 24/11/2026, N1): a semana da mensal começa no domingo, na ordem da fixa
+  const [semana, setSemana] = React.useState(() => { const h = hojeISO(); return somaDias(h, -new Date(h + 'T12:00:00').getDay()) })
   const [abaGestorLocal, setAbaGestor] = React.useState<'fixa' | 'mensal' | 'pedidos' | 'carga'>('mensal')
   const [abaPlantonistaLocal, setAbaPlantonista] = React.useState<'minha' | 'geral'>('minha')
   const abaGestor = abaGestorFixa ?? abaGestorLocal
@@ -368,27 +378,30 @@ export default function Escala({
     },
   })
 
-  // E1: resumo de carga horária dos plantonistas (gestor/admin)
+  // E1: resumo de carga horária dos plantonistas (gestor/admin); o sobreaviso
+  // conta à parte (migration 20270421000052, resumo_carga_horaria)
   const { data: resumoCarga, isLoading: carregandoCarga } = useQuery({
     queryKey: ['resumo-carga', unidadeId, mesInicio, mesFim],
     enabled: !!unidadeId && (ehGestor || ehAdmin),
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('resumo_carga_plantonistas', {
+      const { data, error } = await supabase.rpc('resumo_carga_horaria', {
         p_unidade: unidadeId!,
         p_inicio: mesInicio,
         p_fim: mesFim,
       })
       if (error) throw error
-      return (data ?? []) as ResumoCargaPlantonista[]
+      return (data ?? []) as ResumoCargaHoraria[]
     },
   })
+
+  const temSobreaviso = (resumoCarga ?? []).some((r) => Number(r.horas_sobreaviso) > 0)
 
   function exportarEscalaCSV() {
     if (!setores || !escalaMes) return
     // pela csv.ts: ";" no nome do setor n\u00E3o desalinha e "=" n\u00E3o vira f\u00F3rmula (achado de 07/10/2026)
     const linhas = setores.flatMap((s) => escalaMes
       .filter((e) => e.setor_id === s.id)
-      .map((e) => ({ setor: s.nome, data: e.data, turno: TURNO_LABEL[e.turno], plantonista: e.perfis?.nome_completo ?? null, quinzenal: !!e.quinzenal })))
+      .map((e) => ({ setor: s.nome, data: e.data, turno: nomeTurno(e.turno), plantonista: e.perfis?.nome_completo ?? null, quinzenal: !!e.quinzenal })))
     baixarCsv(nomeArquivoCsv('escala', mesInicio.slice(0, 7)), csvEscala(unidadeAtiva?.unidade.nome ?? '', fmtMesBR(mesInicio), linhas))
   }
 
@@ -560,14 +573,23 @@ export default function Escala({
 
   const resumo = React.useMemo(() => {
     const porDia = new Map<string, Set<string>>()
+    let horas = 0
+    let diurnos = 0
+    let noturnos = 0
+    let horasDiurnas = 0
+    let horasNoturnas = 0
     for (const p of meusPlantoes) {
       const set = porDia.get(p.data) ?? new Set()
       set.add(p.turno)
       porDia.set(p.data, set)
+      // turno cadastrado pela unidade: as horas do plantão; diurno se começa das 07h às 18h59 (como o banco)
+      if (!['manha', 'tarde', 'noite', 'madrugada'].includes(p.turno)) {
+        const h = (p.duracao_min ?? 0) / 60
+        const horaInicio = Number(hora(p.inicio).slice(0, 2)) % 24
+        horas += h
+        if (horaInicio >= 7 && horaInicio < 19) { diurnos++; horasDiurnas += h } else { noturnos++; horasNoturnas += h }
+      }
     }
-    let horas = 0
-    let diurnos = 0
-    let noturnos = 0
     let dias = 0
     for (const turnos of porDia.values()) {
       dias++
@@ -577,6 +599,7 @@ export default function Escala({
       if (temManha && temTarde) {
         diurnos++
         horas += 12
+        horasDiurnas += 12
       } else if (temManha) {
         horas += 6
       } else if (temTarde) {
@@ -585,10 +608,21 @@ export default function Escala({
       if (temNoite) {
         noturnos++
         horas += 12
+        horasNoturnas += 12
       }
     }
-    return { horas, diurnos, noturnos, dias }
+    return { horas, diurnos, noturnos, dias, horasDiurnas, horasNoturnas }
   }, [meusPlantoes])
+
+  // Revisão de Minha escala (M2): dia que faz parte de mais de 24 h seguidas ganha o sinal de alerta
+  const blocosLongos = React.useMemo(() => blocosAcimaDoLimite(meusPlantoes), [meusPlantoes])
+  const horasSeguidasPorDia = React.useMemo(() => {
+    const m = new Map<string, number>()
+    for (const b of blocosLongos) for (const d of b.datas) m.set(d, Math.max(m.get(d) ?? 0, b.horas))
+    return m
+  }, [blocosLongos])
+  const nomeSetor = (id: string) => (setores ?? []).find((s) => s.id === id)?.nome ?? ''
+  const hh = (v: number | string) => hora(v).replace(':00', 'h')
 
   const plantoesDoDia = (diaISO: string) => meusPlantoes.filter((p) => p.data === diaISO)
   // Dia com mais de um turno: as ações (sair do fixo, passar, fracionar,
@@ -859,6 +893,19 @@ export default function Escala({
       {ehPlantonista ? (
         abaPlantonista === 'minha' ? (
         <>
+          {/* Revisão de Minha escala (M1): próximo plantão e os próximos 7 dias */}
+          <ProximosPlantoes perfilId={perfil?.id} unidadeId={unidadeId} />
+
+          {blocosLongos.length > 0 && !diaSelecionado && (
+            <p role="note" className="-mt-3 flex items-start gap-2 text-apoio text-atencao">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>
+                {blocosLongos.map((b) => `${fmtDiaBR(b.datas[0])}${b.datas.length > 1 ? ` a ${fmtDiaBR(b.datas[b.datas.length - 1])}` : ''}: ${b.horas} h seguidas`).join('; ')}.
+                {' '}Passa de {LIMITE_HORAS_SEGUIDAS} h sem descanso; confira com a coordenação.
+              </span>
+            </p>
+          )}
+
           {/* CALENDÁRIO MENSAL — contexto geral do mês */}
           <Card>
             <CardHeader className="flex-row items-start justify-between space-y-0">
@@ -919,9 +966,9 @@ export default function Escala({
                               : 'border-conforme/30 bg-leitos hover:bg-leitos',
                         )}
                       >
-                        {TURNO_LABEL[p.turno]}
+                        {nomeTurno(p.turno)}
                         <span className="font-normal text-sobre-acao">
-                          {TURNOS.find((t) => t.id === p.turno)?.horario}
+                          {horarioDe(p.turno)}
                         </span>
                         {p.quinzenal && <span className="text-rotulo font-semibold text-sobre-acao">15/15</span>}
                       </Button>
@@ -1000,7 +1047,7 @@ export default function Escala({
                       <div className="rounded-controle border border-atencao/30 bg-alerta-atencao p-3 text-apoio text-atencao">
                         <strong>Aviso prévio:</strong> a saída do plantão fixo deve ser comunicada com{' '}
                         <strong>pelo menos 15 dias de antecedência</strong>. Faltam{' '}
-                        <strong>{Math.max(0, diasPara(diaSelecionado))} dia(s)</strong> para este plantão.
+                        <strong>{contagem(Math.max(0, diasPara(diaSelecionado)), 'dia', 'dias')}</strong> para este plantão.
                       </div>
                       <p className="mt-2 text-apoio text-pretty text-tinta-sussurro">
                         Vale para plantão da escala fixa. Aprovado, você sai da fixa nos próximos meses; os plantões já gerados ficam até a coordenação decidir cada um.
@@ -1029,14 +1076,14 @@ export default function Escala({
                     <div className="animate-in fade-in-0 zoom-in-95 mt-4 duration-300 ease-out origin-center">
                       <div className="flex flex-col gap-1.5">
                         <Label>Meu plantão (que quero trocar)</Label>
-                        <Select items={Object.fromEntries(meusPlantoesTroca.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno}`]))} value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
+                        <Select items={Object.fromEntries(meusPlantoesTroca.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${nomeTurno(p.turno)}`]))} value={meuPlantaoTroca || null} onValueChange={(v) => setMeuPlantaoTroca(v ?? '')}>
                           <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione um dos meus plantões" />
                           </SelectTrigger>
                           <SelectContent>
                             {meusPlantoesTroca.map((p) => (
                               <SelectItem key={p.id} value={p.id}>
-                                {fmtDiaBR(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno}
+                                {fmtDiaBR(p.data)} · {nomeTurno(p.turno)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1044,14 +1091,14 @@ export default function Escala({
                       </div>
                       <div className="mt-3 flex flex-col gap-1.5">
                         <Label>Plantão de outro médico (que quero assumir)</Label>
-                        <Select items={Object.fromEntries(outrosPlantoesTroca.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${TURNO_LABEL[p.turno] ?? p.turno} · ${p.perfis?.nome_completo ?? '?'}`]))} value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
+                        <Select items={Object.fromEntries(outrosPlantoesTroca.map((p) => [p.id, `${fmtDiaBR(p.data)} · ${nomeTurno(p.turno)} · ${p.perfis?.nome_completo ?? '?'}`]))} value={outroPlantaoTroca || null} onValueChange={(v) => setOutroPlantaoTroca(v ?? '')}>
                           <SelectTrigger className="w-full bg-superficie">
                             <SelectValue placeholder="Selecione o plantão do outro" />
                           </SelectTrigger>
                           <SelectContent>
                             {outrosPlantoesTroca.map((p) => (
                               <SelectItem key={p.id} value={p.id}>
-                                {fmtDiaBR(p.data)} · {TURNO_LABEL[p.turno] ?? p.turno} ·{' '}
+                                {fmtDiaBR(p.data)} · {nomeTurno(p.turno)} ·{' '}
                                 {p.perfis?.nome_completo ?? '?'}
                               </SelectItem>
                             ))}
@@ -1216,8 +1263,8 @@ export default function Escala({
                   {DIAS_SEMANA.map((d, idx) => (
                     <div
                       key={d}
-                      className={`py-1 text-rotulo font-semibold uppercase tracking-wide ${
-                        idx === 0 || idx === 6 ? 'text-atencao' : 'text-tinta-sussurro'
+                      className={`py-1 text-rotulo font-medium ${
+                        idx === 0 || idx === 6 ? 'text-tinta-apoio' : 'text-tinta-sussurro'
                       }`}
                     >
                       {d}
@@ -1225,47 +1272,54 @@ export default function Escala({
                   ))}
                   {diasDoMes.map((c, i) => {
                     if (c.fora) return <div key={`v-${i}`} />
-                    const plantoes = plantoesDoDia(c.iso)
-                    const turnos = [...new Set(plantoes.map((p) => p.turno))]
+                    // Revisão de Minha escala (M2): calendário calmo. O plantão é uma ficha pequena com
+                    // horário e setor (cor só no ponto), o dia que passou fica apagado e o dia dentro de
+                    // mais de 24 h seguidas ganha o sinal de alerta.
+                    const plantoes = [...plantoesDoDia(c.iso)].sort((a, b) => a.inicio.localeCompare(b.inicio))
                     const eHoje = ehHoje(c.iso)
+                    const passou = c.iso < hojeISO()
                     const selecionado = diaSelecionado === c.iso
                     const dow = new Date(c.iso + 'T12:00:00').getDay()
                     const fimSemana = dow === 0 || dow === 6
+                    const seguidas = horasSeguidasPorDia.get(c.iso)
                     return (
                       // padrao-ok: célula do calendário mensal da escala (cor por plantão/fim de semana/hoje; nenhuma peça cobre)
                       <button
                         key={c.iso}
                         type="button"
                         onClick={() => (plantoes.length ? abrirDia(c.iso) : undefined)}
-                        className={`flex min-h-[76px] min-w-0 flex-col gap-1 rounded-controle border p-1.5 text-left transition-all duration-200 ${
-                          plantoes.length
-                            ? 'border-conforme/30 bg-leitos text-sobre-acao shadow-md hover:bg-leitos hover:shadow-lg'
-                            : fimSemana
-                              ? 'border-atencao/30 bg-alerta-atencao hover:bg-atencao/10'
-                              : 'border-fio bg-superficie hover:bg-trilha'
-                        } ${selecionado ? 'ring-2 ring-acao ring-offset-2' : ''} ${eHoje ? 'ring-2 ring-acao/60' : ''}`}
+                        aria-label={plantoes.length ? `${fmtDiaBR(c.iso)}: ${plantoes.length} ${plantoes.length === 1 ? 'plantão' : 'plantões'}${seguidas ? `, ${seguidas} h seguidas` : ''}` : undefined}
+                        className={cn(
+                          'flex min-h-[76px] min-w-0 flex-col gap-1 rounded-controle border p-1.5 text-left transition-colors duration-200',
+                          plantoes.length ? 'border-fio bg-superficie hover:border-acao hover:bg-alerta-marca'
+                            : fimSemana ? 'cursor-default border-trilha bg-trilha/40' : 'cursor-default border-trilha bg-superficie',
+                          passou && !eHoje && 'opacity-55',
+                          selecionado && 'ring-2 ring-acao ring-offset-2',
+                          eHoje && 'ring-2 ring-acao/60',
+                        )}
                       >
-                        <span
-                          className={`flex h-6 w-6 items-center justify-center rounded-capsula text-apoio font-semibold ${
-                            plantoes.length
-                              ? 'bg-tinta/15 text-sobre-acao'
-                              : eHoje
-                                ? 'bg-acao text-sobre-acao'
-                                : fimSemana
-                                  ? 'bg-atencao/20 text-atencao'
-                                  : 'bg-trilha text-tinta'
-                          }`}
-                        >
-                          {c.dia}
-                        </span>
-                        {turnos.map((t) => (
+                        <span className="flex items-center justify-between gap-1">
                           <span
-                            key={t}
-                            className={`truncate rounded-capsula px-1.5 py-0.5 text-rotulo leading-none font-semibold ${
-                              plantoes.length ? 'bg-tinta/15 text-sobre-acao' : 'bg-trilha text-tinta-apoio'
-                            }`}
+                            className={cn(
+                              'flex h-6 w-6 items-center justify-center rounded-capsula text-apoio font-semibold',
+                              eHoje ? 'bg-acao text-sobre-acao' : 'text-tinta',
+                            )}
                           >
-                            {TURNO_LABEL[t]}
+                            {c.dia}
+                          </span>
+                          {seguidas && (
+                            <span title={`${seguidas} h seguidas de plantão`} className="text-atencao">
+                              <TriangleAlert className="size-3.5" aria-hidden />
+                            </span>
+                          )}
+                        </span>
+                        {plantoes.map((p) => (
+                          <span key={p.id} className="flex min-w-0 flex-col text-rotulo leading-tight">
+                            <span className="flex items-center gap-1 font-medium text-tinta tabular">
+                              <span className="size-1.5 shrink-0 rounded-capsula bg-acao" aria-hidden />
+                              <span className="truncate">{hh(p.inicio)}–{hh(new Date(p.inicio).getTime() + p.duracao_min * 60_000)}</span>
+                            </span>
+                            <span className="truncate pl-2.5 text-tinta-sussurro">{nomeSetor(p.setor_id) || p.rotulo?.trim() || nomeTurno(p.turno)}</span>
                           </span>
                         ))}
                       </button>
@@ -1357,30 +1411,26 @@ export default function Escala({
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-1 flex-col rounded-container border bg-trilha/40 p-4">
-                    <span className="text-rotulo font-semibold uppercase tracking-wide text-tinta-sussurro">
-                      Horas no mês
-                    </span>
-                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.horas}h</span>
+                  {/* Revisão de Minha escala (M3): rótulos normais, plural certo e cartões sem cor.
+                      Horas contra a carga contratada ficam para quando o cadastro tiver esse dado. */}
+                  <div className="flex flex-1 flex-col rounded-container border border-fio bg-superficie p-4">
+                    <span className="text-apoio font-medium text-tinta-apoio">Horas no mês</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.horas} h</span>
                     <span className="text-rotulo text-tinta-sussurro">
-                      {resumo.dias} dia(s) escalado(s) em {fmtMesBR(mesInicio)}
+                      {contagem(resumo.dias, 'dia', 'dias')} de plantão em {fmtMesBR(mesInicio)}
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-container border bg-suprimento/10 p-4">
-                    <span className="text-rotulo font-semibold uppercase tracking-wide text-suprimento">
-                      Diurnos (manhã + tarde = 12h)
-                    </span>
-                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.diurnos}</span>
-                    <span className="text-rotulo text-suprimento">
-                      {resumo.diurnos * 12}h · manhã e tarde juntas contam como diurno
+                  <div className="flex flex-1 flex-col rounded-container border border-fio bg-superficie p-4">
+                    <span className="text-apoio font-medium text-tinta-apoio">Diurnos</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.diurnos}</span>
+                    <span className="text-rotulo text-tinta-sussurro">
+                      {resumo.horasDiurnas} h · manhã e tarde juntas contam como um diurno
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col rounded-container border bg-suprimento/10 p-4">
-                    <span className="text-rotulo font-semibold uppercase tracking-wide text-suprimento">
-                      Noturnos (noite = 12h)
-                    </span>
-                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular text-suprimento">{resumo.noturnos}</span>
-                    <span className="text-rotulo text-suprimento">{resumo.noturnos * 12}h</span>
+                  <div className="flex flex-1 flex-col rounded-container border border-fio bg-superficie p-4">
+                    <span className="text-apoio font-medium text-tinta-apoio">Noturnos</span>
+                    <span className="mt-1 text-numeral-ok leading-none font-semibold tracking-[-0.03em] tabular">{resumo.noturnos}</span>
+                    <span className="text-rotulo text-tinta-sussurro">{resumo.horasNoturnas} h</span>
                   </div>
                 </>
               )}
@@ -1436,24 +1486,24 @@ export default function Escala({
                       <div key={s.id} className="rounded-container border">
                         <div className="rounded-t-container bg-trilha/50 px-3 py-1.5 text-apoio font-semibold">{s.nome}</div>
                         <div className="grid gap-1 p-2 sm:grid-cols-3">
-                          {TURNOS.map((t) => {
+                          {turnosGrade.filter((t) => t.cobre !== 'enfermagem').map((t) => {
                             const ocupados = (escalaMes ?? []).filter(
-                              (e) => e.setor_id === s.id && e.data === diaGeral && e.turno === t.id
+                              (e) => e.setor_id === s.id && e.data === diaGeral && e.turno === t.codigo
                             )
                             const jaCand = (candidaturas ?? []).some(
                               (c) =>
-                                c.setor_id === s.id && c.data === diaGeral && c.turno === t.id && c.perfil_id === perfil?.id
+                                c.setor_id === s.id && c.data === diaGeral && c.turno === t.codigo && c.perfil_id === perfil?.id
                             )
                             const livre = ocupados.length === 0
                             return (
                               <div
-                                key={`${s.id}-${t.id}`}
+                                key={`${s.id}-${t.codigo}`}
                                 className={`rounded-controle border p-2 ${
                                   livre ? 'border-dashed border-conforme/30 bg-alerta-conforme' : 'bg-trilha/40'
                                 }`}
                               >
                                 <div className="mb-1 flex items-center justify-between">
-                                  <span className="text-rotulo font-semibold text-tinta-sussurro">{t.label}</span>
+                                  <span className="text-rotulo font-semibold text-tinta-sussurro">{t.nome} · {horarioDoTurno(t)}</span>
                                   <Badge variant={livre ? 'success' : 'secondary'} className="text-rotulo">
                                     {livre ? 'Livre' : 'Ocupado'}
                                   </Badge>
@@ -1461,7 +1511,7 @@ export default function Escala({
                                 {livre ? (
                                   <Button
                                     disabled={jaCand || candidatar.isPending}
-                                    onClick={() => candidatar.mutate({ setor_id: s.id, data: diaGeral, turno: t.id })}
+                                    onClick={() => candidatar.mutate({ setor_id: s.id, data: diaGeral, turno: t.codigo })}
                                     className={cn(
                                       'min-h-0 w-full px-2 py-1.5 text-rotulo font-semibold disabled:opacity-100',
                                       jaCand
@@ -1510,7 +1560,7 @@ export default function Escala({
                           <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-controle border p-2 text-apoio">
                             <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
                             <span className="text-rotulo text-tinta-sussurro">
-                              {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
+                              {fmtDiaBR(c.data)} · {nomeTurno(c.turno)}{janelaDaVaga(c.vaga_id)}
                             </span>
                             <Badge
                               variant={
@@ -1573,7 +1623,7 @@ export default function Escala({
                           <span className="text-rotulo font-semibold text-conforme">Tudo livre</span>
                         ) : (
                           <span className="text-rotulo font-semibold text-tinta-sussurro">
-                            {plantoesDia.length} plantão(ões)
+                            {plantoesDia.length} {plantoesDia.length === 1 ? 'plantão' : 'plantões'}
                           </span>
                         )}
                         {temMinhaCand && (
@@ -1602,7 +1652,7 @@ export default function Escala({
                         <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-controle border p-2 text-apoio">
                           <span className="font-medium">{c.setores?.nome ?? 'Setor'}</span>
                           <span className="text-rotulo text-tinta-sussurro">
-                            {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}
+                            {fmtDiaBR(c.data)} · {nomeTurno(c.turno)}{janelaDaVaga(c.vaga_id)}
                           </span>
                           <Badge
                             variant={
@@ -1656,7 +1706,7 @@ export default function Escala({
                         <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
                           <span className="text-tinta"><b className="font-medium">{s.solicitante?.nome_completo ?? 'Profissional'}</b>{s.escala_plantao?.papel && <span className="text-tinta-sussurro"> ({PAPEL_LABEL[s.escala_plantao.papel]})</span>} · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}</span>
                           <span className="text-rotulo text-tinta-sussurro">
-                            {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'Plantão removido'}
+                            {s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${nomeTurno(s.escala_plantao.turno)}` : 'Plantão removido'}
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
                             {s.tipo_falta && ` · ${TIPO_FALTA_LABEL[s.tipo_falta]}`}
                             {s.justificativa && ` · ${s.justificativa}`}
@@ -1684,9 +1734,9 @@ export default function Escala({
                         <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
                           <span className="text-tinta"><b className="font-medium">{t.pedinte?.nome_completo ?? 'Profissional'}</b> · troca com <b className="font-medium">{t.colega?.nome_completo ?? 'colega'}</b></span>
                           <span className="text-rotulo text-tinta-sussurro">
-                            {t.plantao_a ? `${fmtDiaBR(t.plantao_a.data)} · ${TURNO_LABEL[t.plantao_a.turno]}` : 'Plantão removido'}
+                            {t.plantao_a ? `${fmtDiaBR(t.plantao_a.data)} · ${nomeTurno(t.plantao_a.turno)}` : 'Plantão removido'}
                             {' ⇄ '}
-                            {t.plantao_b ? `${fmtDiaBR(t.plantao_b.data)} · ${TURNO_LABEL[t.plantao_b.turno]}` : 'Plantão removido'}
+                            {t.plantao_b ? `${fmtDiaBR(t.plantao_b.data)} · ${nomeTurno(t.plantao_b.turno)}` : 'Plantão removido'}
                             {t.mensagem && ` · ${t.mensagem}`}
                             {perfil && (t.perfil_a_id === perfil.id || t.perfil_b_id === perfil.id) && ' · pedido seu: aprovar pede o 2º fator e fica registrado'}
                           </span>
@@ -1705,7 +1755,7 @@ export default function Escala({
                       <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-trilha px-4 py-2.5 text-apoio last:border-b-0">
                         <span className="flex min-w-0 flex-[1_1_280px] flex-col gap-0.5">
                           <span className="text-tinta"><b className="font-medium">{c.perfis?.nome_completo ?? 'Profissional'}</b> · candidatura a plantão livre</span>
-                          <span className="text-rotulo text-tinta-sussurro">{c.setores?.nome ?? 'Setor'} · {fmtDiaBR(c.data)} · {TURNO_LABEL[c.turno]}{janelaDaVaga(c.vaga_id)}</span>
+                          <span className="text-rotulo text-tinta-sussurro">{c.setores?.nome ?? 'Setor'} · {fmtDiaBR(c.data)} · {nomeTurno(c.turno)}{janelaDaVaga(c.vaga_id)}</span>
                         </span>
                         <span className="flex gap-1.5">
                           <Button size="xs" disabled={aprovarCandidatura.isPending} onClick={() => aprovarCandidatura.mutate(c.id)}>Aprovar</Button>
@@ -1730,7 +1780,7 @@ export default function Escala({
                         <span className="min-w-0 flex-[1_1_280px] text-tinta">
                           <b className="font-medium">{s.solicitante?.nome_completo ?? 'Profissional'}</b>{s.escala_plantao?.papel && <span className="text-tinta-sussurro"> ({PAPEL_LABEL[s.escala_plantao.papel]})</span>} · {(TIPO_SOLICITACAO_LABEL[s.tipo] ?? 'Falta').toLowerCase()}
                           <span className="text-rotulo text-tinta-sussurro">
-                            {' · '}{s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${TURNO_LABEL[s.escala_plantao.turno]}` : 'plantão removido'}
+                            {' · '}{s.escala_plantao ? `${fmtDiaBR(s.escala_plantao.data)} · ${nomeTurno(s.escala_plantao.turno)}` : 'plantão removido'}
                             {s.tipo === 'passar_plantao' && s.destino && ` · para ${s.destino.nome_completo}`}
                           </span>
                         </span>
@@ -1776,7 +1826,8 @@ export default function Escala({
                       <TableHead className="text-right">Diurnos</TableHead>
                       <TableHead className="text-right">Noturnos</TableHead>
                       <TableHead className="text-right">Horas</TableHead>
-                      <TableHead className="pr-4 text-right">Dias</TableHead>
+                      <TableHead className={cn('text-right', !temSobreaviso && 'pr-4')}>Dias</TableHead>
+                      {temSobreaviso && <TableHead className="pr-4 text-right">Sobreaviso</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1788,21 +1839,26 @@ export default function Escala({
                         <TableCell className="text-right tabular">{r.diurnos}</TableCell>
                         <TableCell className="text-right tabular">{r.noturnos}</TableCell>
                         <TableCell className="text-right font-semibold tabular">{r.horas} h</TableCell>
-                        <TableCell className="pr-4 text-right tabular">{r.dias}</TableCell>
+                        <TableCell className={cn('text-right tabular', !temSobreaviso && 'pr-4')}>{r.dias}</TableCell>
+                        {temSobreaviso && (
+                          <TableCell className="pr-4 text-right tabular text-tinta-apoio">
+                            {Number(r.horas_sobreaviso) > 0 ? `${r.horas_sobreaviso} h · ${r.dias_sobreaviso} ${r.dias_sobreaviso === 1 ? 'dia' : 'dias'}` : '—'}
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               )}
-              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por profissional no mês, contados da escala; as horas são as dos plantões (manhã e tarde, 6 h; noite, 12 h).</p>
+              <p className="border-t border-trilha bg-campo px-4 py-2 text-rotulo text-tinta-sussurro">Diurnos, noturnos e horas por profissional no mês, contados da escala; as horas são as do turno de cada plantão (manhã e tarde, 6 h; noite, 12 h; os turnos da unidade, as horas cadastradas). O sobreaviso não entra nas horas de plantão: tem coluna própria.</p>
             </section>
           )}
 
           {/* Turnos (gestor/admin): só nas grades */}
           {(abaGestor === 'fixa' || abaGestor === 'mensal') && <div role="radiogroup" aria-label="Turno" className="flex flex-wrap gap-2">
-            {TURNOS.map((t) => (
-              <Chip key={t.id} radio ativo={turno === t.id} onClick={() => setTurno(t.id)}>
-                {t.label} <span className="opacity-70">· {t.horario}</span>
+            {turnosGrade.map((t) => (
+              <Chip key={t.codigo} radio ativo={turno === t.codigo} onClick={() => setTurno(t.codigo)}>
+                {t.nome} <span className="opacity-70">· {horarioDoTurno(t)}{t.sobreaviso ? ' · sobreaviso' : ''}</span>
               </Chip>
             ))}
           </div>}
@@ -1811,7 +1867,7 @@ export default function Escala({
             <Card>
               <CardHeader>
                 <CardTitle className="text-corpo">
-                  Escala fixa · {TURNO_LABEL[turno]}
+                  Escala fixa · {nomeTurno(turno)}
                 </CardTitle>
                 <CardDescription>
                   Template que não muda (ex.: 15/15). Clique numa célula para adicionar. Gere o mês
@@ -1830,8 +1886,8 @@ export default function Escala({
                         <TableHead className="w-40 border-b border-r bg-trilha/50 p-2 text-left text-rotulo font-semibold text-tinta-sussurro">
                           Setor
                         </TableHead>
-                        {DIAS_SEMANA.map((d) => (
-                          <TableHead key={d} className="border-b border-r p-2 text-center text-rotulo font-semibold">
+                        {DIAS_SEMANA.map((d, i) => (
+                          <TableHead key={d} className={`border-b border-r p-2 text-center text-rotulo font-semibold ${i === 0 || i === 6 ? 'bg-trilha/60 text-tinta-apoio' : ''}`}>
                             {d}
                           </TableHead>
                         ))}
@@ -1849,9 +1905,9 @@ export default function Escala({
                                 <button
                                   type="button"
                                   onClick={() => abrirCelulaFixa(s.id, i)}
-                                  className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
+                                  className="group/cel flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
                                 >
-                                  {fixas.length === 0 && <span className="text-rotulo text-acao">+ adicionar</span>}
+                                  {fixas.length === 0 && <CelulaVazia />}
                                   {fixas.map((f) => (
                                     <span key={f.id} className="group flex items-center gap-1">
                                       <span className="block flex-1 rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
@@ -1884,12 +1940,12 @@ export default function Escala({
                 {vagasGeracao.length > 0 && (
                   <div role="alert" className="flex flex-col gap-1 rounded-controle border border-atencao/30 bg-alerta-atencao p-3 text-apoio">
                     <span className="font-medium text-tinta">
-                      {vagasGeracao.length} plantão(ões) viraram vaga aberta: a pessoa já estava escalada em outro lugar no mesmo horário.
+                      {vagasGeracao.length === 1 ? '1 plantão virou vaga aberta' : `${vagasGeracao.length} plantões viraram vaga aberta`}: a pessoa já estava escalada em outro lugar no mesmo horário.
                     </span>
                     <ul className="list-disc pl-5 text-tinta-apoio">
                       {vagasGeracao.map((v) => (
                         <li key={`${v.data}-${v.turno}-${v.setor}-${v.profissional}`}>
-                          {v.data.split('-').reverse().join('/')} · {v.turno} · {v.setor ?? 'setor'}: {v.profissional ?? 'profissional'} já estava {v.conflito}
+                          {v.data.split('-').reverse().join('/')} · {nomeTurno(v.turno)} · {v.setor ?? 'setor'}: {v.profissional ?? 'profissional'} já estava {v.conflito}
                         </li>
                       ))}
                     </ul>
@@ -1912,7 +1968,7 @@ export default function Escala({
             <Card>
               <CardHeader>
                 <CardTitle className="text-corpo">
-                  {TURNO_LABEL[turno]} · semana de {fmtDiaBR(dataInicio)}
+                  {nomeTurno(turno)} · semana de {fmtDiaBR(dataInicio)}
                 </CardTitle>
                 <CardDescription>Clique em uma célula para adicionar ou remover profissionais.</CardDescription>
               </CardHeader>
@@ -1927,7 +1983,7 @@ export default function Escala({
                         <TableHead
                           key={d}
                           className={`border-b p-2 text-center text-rotulo font-semibold ${
-                            [0, 6].includes(new Date(d + 'T12:00:00').getDay()) ? 'border-r border-r-atencao/30 bg-alerta-atencao text-atencao' : 'border-r'
+                            [0, 6].includes(new Date(d + 'T12:00:00').getDay()) ? 'border-r bg-trilha/60 text-tinta-apoio' : 'border-r'
                           }`}
                         >
                           {DIAS_SEMANA[new Date(d + 'T12:00:00').getDay()]}
@@ -1948,11 +2004,9 @@ export default function Escala({
                               <button
                                 type="button"
                                 onClick={() => abrirCelula(s.id, d)}
-                                className="flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
+                                className="group/cel flex min-h-[52px] w-full flex-col gap-1 rounded-controle border border-trilha p-1 text-left transition-colors hover:border-acao hover:bg-acao/5"
                               >
-                                {plantoes.length === 0 && (
-                                  <span className="text-rotulo text-acao">+ adicionar</span>
-                                )}
+                                {plantoes.length === 0 && <CelulaVazia />}
                                 {plantoes.map((p) => (
                                   <span key={p.id} className="block">
                                     <span className="block rounded-controle bg-trilha px-1.5 py-0.5 text-rotulo leading-tight">
@@ -1982,7 +2036,7 @@ export default function Escala({
               <CardHeader>
                 <CardTitle className="text-corpo">
                   {setores?.find((s) => s.id === celula.setor_id)?.nome} · {fmtDiaBR(celula.data)} ·{' '}
-                  {TURNO_LABEL[turno]}
+                  {nomeTurno(turno)}
                 </CardTitle>
                 <CardDescription>Profissionais escalados neste plantão.</CardDescription>
               </CardHeader>
@@ -2028,7 +2082,7 @@ export default function Escala({
                 : celula
                   ? ` · ${fmtDiaBR(celula.data)}`
                   : ''}{' '}
-              · {TURNO_LABEL[turno]}
+              · {nomeTurno(turno)}
             </DialogDescription>
           </DialogHeader>
 
@@ -2094,7 +2148,7 @@ export default function Escala({
               />
               Escala quinzenal (15/15)
             </label>
-            {abaGestor !== 'fixa' && celula && ehRetroativo(celula.data, turno, abertaEm) && (
+            {abaGestor !== 'fixa' && celula && ehRetroativo(celula.data, turno, abertaEm, inicioDoCodigo(turno, turnosUnidade.todos)) && (
               <p role="status" className="text-apoio text-pretty text-atencao">Este plantão já começou: fica como acerto retroativo no histórico da escala.</p>
             )}
           </div>
@@ -2123,3 +2177,13 @@ export default function Escala({
   )
 }
 
+
+/** Célula sem ninguém: "vago" à vista; "+ adicionar" só ao passar o mouse ou com o foco (RT, 24/11/2026). */
+function CelulaVazia() {
+  return (
+    <>
+      <span className="text-rotulo text-tinta-sussurro group-hover/cel:hidden group-focus-visible/cel:hidden">vago</span>
+      <span className="hidden text-rotulo text-acao group-hover/cel:inline group-focus-visible/cel:inline">+ adicionar</span>
+    </>
+  )
+}

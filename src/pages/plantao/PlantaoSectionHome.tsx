@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { FolderSearch } from 'lucide-react'
 
 import { acharSecaoPlantao, ehSecaoDireta } from '@/content/plantaoRegistry'
@@ -8,7 +8,6 @@ import { useUnidade } from '@/contexts/UnidadeContext'
 import { ToolCard } from '@/components/plantonista/cards'
 import { TituloPagina, Trilha, Vazio } from '@/components/monitor/Pagina'
 import { Spinner } from '@/components/ui/spinner'
-import { rotaDoLeito } from '@/components/internacao/rotas'
 
 /**
  * Página de uma seção do Plantão. Com várias ferramentas, lista; com uma só,
@@ -16,7 +15,6 @@ import { rotaDoLeito } from '@/components/internacao/rotas'
  */
 export default function PlantaoSectionHome() {
   const { secao: slugSecao } = useParams()
-  const [searchParams] = useSearchParams()
   const { unidadeAtiva } = useUnidade()
   const { perfil } = useAuth()
   const secao = acharSecaoPlantao(slugSecao ?? '')
@@ -25,11 +23,8 @@ export default function PlantaoSectionHome() {
     return <Vazio icone={FolderSearch} titulo="Seção não encontrada" texto="O endereço não corresponde a nenhuma seção do Plantão." />
   }
 
-  // Link antigo `/plantao/internacao?paciente=X` (era o formulário): leito aberto do paciente.
-  if (secao.slug === 'internacao' && searchParams.get('paciente')) {
-    return <Navigate to={rotaDoLeito(searchParams.get('paciente'))} replace />
-  }
-
+  // As abas do Plantão (Meu turno, Minha agenda, Prontuários) não incluem as seções;
+  // Internação e Observação moram na Internação do médico (RT, 24/11/2026).
   const trilha = <Trilha niveis={[{ rotulo: 'Plantão', to: '/plantao' }, { rotulo: secao.label }]} />
 
   if (ehSecaoDireta(secao)) {

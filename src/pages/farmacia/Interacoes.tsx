@@ -3,6 +3,7 @@ import { Pill, Plus } from 'lucide-react'
 import * as React from 'react'
 
 import { TituloPagina } from '@/components/monitor/Pagina'
+import { Aviso } from '@/components/ui/aviso'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -53,9 +54,10 @@ function semFarmaco(p: ParInteracao, grupos: GrupoInteracao[]): GrupoInteracao[]
 
 export default function Interacoes() {
   const unidadeId = useUnidade().unidadeAtiva?.unidade_id
-  const [aba, setAba] = React.useState<Aba>('ativa')
+  const [abaEscolhida, setAba] = React.useState<Aba | null>(null)
   const [escolhido, setEscolhido] = React.useState<string | null>(null)
   const [novo, setNovo] = React.useState(false)
+  const [buscaGrupo, setBuscaGrupo] = React.useState('')
   const lista = useQuery({
     queryKey: ['lista-interacoes', unidadeId],
     enabled: !!unidadeId,
@@ -68,23 +70,45 @@ export default function Interacoes() {
   const l = lista.data
   const ir = (a: Aba, id: string | null = null) => { setAba(a); setEscolhido(id); setNovo(false) }
 
-  const pares = (l?.pares ?? []).filter((p) => p.situacao === aba)
   const conta = (s: Situacao) => (l?.pares ?? []).filter((p) => p.situacao === s).length
-  const grupos = l?.grupos ?? []
+  // Revisão de perfis (Gestor, item 12, M1): sem par ativo e com propostas, a
+  // tela abre em Propostas, que é onde está o trabalho.
+  const aba: Aba = abaEscolhida ?? (l && conta('ativa') === 0 && conta('proposta') > 0 ? 'proposta' : 'ativa')
+  const pares = (l?.pares ?? []).filter((p) => p.situacao === aba)
+  const todosGrupos = l?.grupos ?? []
+  const vazios = todosGrupos.filter((g) => g.membros.length === 0)
+  // M3: grupos sem fármaco primeiro e busca por nome ou princípio ativo.
+  const termo = buscaGrupo.trim().toLocaleLowerCase('pt-BR')
+  const grupos = [...todosGrupos]
+    .filter((g) => !termo || g.nome.toLocaleLowerCase('pt-BR').includes(termo) || g.membros.some((m) => m.toLocaleLowerCase('pt-BR').includes(termo)))
+    .sort((a, b) => Number(a.membros.length > 0) - Number(b.membros.length > 0) || a.nome.localeCompare(b.nome, 'pt-BR'))
   const selPar = aba !== 'grupos' && !novo ? pares.find((p) => p.id === escolhido) ?? pares[0] : undefined
   const selGrupo = aba === 'grupos' && !novo ? grupos.find((g) => g.id === escolhido) ?? grupos[0] : undefined
+  const travadas = (l?.pares ?? []).filter((p) => p.situacao === 'proposta' && semFarmaco(p, todosGrupos).length > 0).length
 
   return (
     <div className="flex w-full flex-col gap-6">
       <TituloPagina icone={Pill} titulo="Interações críticas"
         descricao="Pares de grupos de fármacos que travam a prescrição até o médico justificar. A lista é da unidade e quem cuida dela é a farmácia." />
       <div className="flex flex-col gap-3">
+        {l && (
+          <Aviso tom={conta('ativa') === 0 ? 'atencao' : vazios.length ? 'informacao' : 'conforme'}
+            titulo={`${conta('ativa')} ativas · ${conta('proposta')} propostas · ${vazios.length} grupos sem fármaco`}
+            acao={vazios.length > 0 && l.pode_editar
+              ? <Button size="xs" variant="outline" onClick={() => ir('grupos', vazios[0].id)}>Preencher os grupos</Button>
+              : conta('proposta') > 0 && aba !== 'proposta' ? <Button size="xs" variant="outline" onClick={() => ir('proposta')}>Ver as propostas</Button> : undefined}>
+            {conta('ativa') === 0
+              ? <span>Nenhum alerta de interação funciona na unidade agora. {travadas > 0 ? `${travadas} propostas esperam grupos sem fármaco: preencha os grupos e depois ative cada par.` : 'Ative as propostas para que passem a travar a prescrição.'}</span>
+              : <span>Os pares ativos travam a prescrição até o médico justificar.{vazios.length > 0 ? ' Grupos sem fármaco deixam os pares que os usam sem alerta.' : ''}</span>}
+          </Aviso>
+        )}
         <Tabs value={aba} onValueChange={(v) => ir(v as Aba)}>
           <TabsList aria-label="Interações" className="gap-5">
-            <TabsTrigger value="ativa">Ativas <span className="text-rotulo font-semibold text-acao tabular-nums">{conta('ativa')}</span></TabsTrigger>
             <TabsTrigger value="proposta">Propostas <span className={cn('text-rotulo font-semibold tabular-nums', conta('proposta') ? 'text-atencao' : 'text-acao')}>{conta('proposta')}</span></TabsTrigger>
+            <TabsTrigger value="ativa">Ativas <span className="text-rotulo font-semibold text-acao tabular-nums">{conta('ativa')}</span></TabsTrigger>
+            <TabsTrigger value="grupos">Grupos <span className="text-rotulo font-semibold text-acao tabular-nums">{todosGrupos.length}</span>
+              {vazios.length > 0 && <span className="text-rotulo text-atencao tabular-nums">{vazios.length} sem fármaco</span>}</TabsTrigger>
             <TabsTrigger value="inativa">Inativas <span className="text-rotulo font-semibold text-acao tabular-nums">{conta('inativa')}</span></TabsTrigger>
-            <TabsTrigger value="grupos">Grupos <span className="text-rotulo font-semibold text-acao tabular-nums">{grupos.length}</span></TabsTrigger>
           </TabsList>
         </Tabs>
         <MensagemErro texto={lista.error ? (lista.error as Error).message : null} />
@@ -93,6 +117,10 @@ export default function Interacoes() {
             <section aria-label={aba === 'grupos' ? 'Grupos de fármacos' : 'Pares'} className="flex min-w-0 flex-col border-fio md:border-r">
               <div className="flex flex-wrap items-center gap-2 border-b border-trilha px-4 py-2.5">
                 <span className="text-apoio text-tinta-sussurro">{DICA[aba]}</span>
+                {aba === 'grupos' && (
+                  <Input aria-label="Buscar grupo ou princípio ativo" placeholder="Buscar grupo ou princípio ativo" className="h-8 w-full sm:w-64"
+                    value={buscaGrupo} onChange={(e) => setBuscaGrupo(e.target.value)} />
+                )}
                 {l?.pode_editar && (
                   <Button size="xs" variant="outline" className="ml-auto" onClick={() => { setNovo(true); setEscolhido(null) }}>
                     <Plus /> {aba === 'grupos' ? 'Novo grupo' : 'Novo par'}
@@ -126,7 +154,10 @@ export default function Interacoes() {
                     </TableBody>
                   </Table>
                 ))}
-              {l && aba === 'grupos' && (
+              {l && aba === 'grupos' && grupos.length === 0 && (
+                <p className="px-4 py-4 text-apoio text-tinta-sussurro">{termo ? 'Nenhum grupo com esse nome ou princípio ativo.' : 'Nenhum grupo cadastrado.'}</p>
+              )}
+              {l && aba === 'grupos' && grupos.length > 0 && (
                 <Table aria-label="Grupos de fármacos">
                   <TableHeader><TableRow className="hover:bg-transparent">
                     <TableHead className="pl-4">Grupo</TableHead><TableHead className="pr-4 text-right">No cadastro</TableHead>

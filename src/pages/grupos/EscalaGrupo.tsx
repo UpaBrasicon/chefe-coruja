@@ -8,6 +8,7 @@ import { PresencasDoDia } from '@/pages/gestor/PresencasDoDia'
 const Escala = lazy(() => import('@/pages/Escala'))
 const EscalaMes = lazy(() => import('@/pages/gestor/EscalaMes').then((m) => ({ default: m.EscalaMes })))
 const HistoricoEscala = lazy(() => import('@/pages/HistoricoEscala'))
+const TurnosUnidade = lazy(() => import('@/components/escala/TurnosUnidade').then((m) => ({ default: m.TurnosUnidade })))
 
 // Revisão visual 3.9 (27/10/2026, opção A do RT): o gestor monta o mês no
 // calendário com o dia ao lado (EscalaMes); os pedidos e a carga horária ganham
@@ -18,14 +19,20 @@ const abas = (gestor: boolean): AbaDef[] => [
   { valor: 'pedidos', rotulo: 'Pedidos', conteudo: () => <Escala embutido abaGestorFixa="pedidos" /> },
   { valor: 'carga', rotulo: 'Carga horária', conteudo: () => <Escala embutido abaGestorFixa="carga" /> },
   { valor: 'fixa', rotulo: 'Fixa', conteudo: () => <Escala embutido abaGestorFixa="fixa" /> },
+  // turnos configuráveis por unidade (pedido do RT, 24/11/2026)
+  { valor: 'turnos', rotulo: 'Turnos', conteudo: () => <TurnosUnidade /> },
   { valor: 'presencas', rotulo: 'Presenças', conteudo: () => <PresencasDoDia /> },
   { valor: 'historico', rotulo: 'Histórico', conteudo: () => <HistoricoEscala embutido /> },
 ]
 
 /**
- * Escala do gestor/admin — o mês, os pedidos, a carga horária, a escala fixa,
+ * Escala do gestor/admin — o mês, os pedidos, a carga horária, a escala fixa, os turnos,
  * as presenças do dia (check-ins) e o histórico de alterações.
  */
+// Perfil Gestor da secretaria (RT, 24/11/2026): o mês da unidade, para marcar e
+// retirar vagas e publicar. Pedidos, carga, presenças e histórico seguem do gestor.
+const ABAS_SECRETARIA: AbaDef[] = [{ valor: 'mensal', rotulo: 'Mensal', conteudo: () => <EscalaMes /> }]
+
 export default function EscalaGrupo() {
   const { papelAtivo } = useUnidade()
   return (
@@ -33,7 +40,7 @@ export default function EscalaGrupo() {
       titulo="Escala"
       descricao="Montagem da escala, pedidos, presenças do dia (check-ins) e histórico de alterações."
       icone={CalendarClock}
-      abas={abas(papelAtivo === 'gestor')}
+      abas={papelAtivo === 'gestor_secretaria' ? ABAS_SECRETARIA : abas(papelAtivo === 'gestor')}
     />
   )
 }

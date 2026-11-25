@@ -134,10 +134,10 @@ export function ResumoClinico({ pacienteId, internacaoId }: { pacienteId: string
 
 function Casca({ children, contexto }: { children: React.ReactNode; contexto?: string }) {
   return (
-    <section aria-label="Resumo evoluções" className="overflow-hidden rounded-container border border-fio bg-campo">
+    <section aria-label="Resumo do caso" className="overflow-hidden rounded-container border border-fio bg-campo">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-fio px-4 py-3">
         <span className="flex items-center gap-2 text-apoio font-semibold text-tinta-sussurro">
-          <Activity className="size-[15px] text-acao" aria-hidden /> Resumo evoluções
+          <Activity className="size-[15px] text-acao" aria-hidden /> Resumo do caso
         </span>
         {contexto && <span className="text-apoio text-tinta-apoio">{contexto}</span>}
       </div>

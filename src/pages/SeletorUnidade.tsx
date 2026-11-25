@@ -10,7 +10,7 @@ export function SeletorUnidade() {
   const navigate = useNavigate()
 
   function escolher(unidade: VinculoComUnidade) {
-    setUnidadeAtivaId(unidade.unidade_id)
+    setUnidadeAtivaId(unidade.unidade_id, unidade.papel)
     navigate(ROTA_INICIAL[unidade.papel], { replace: true })
   }
 

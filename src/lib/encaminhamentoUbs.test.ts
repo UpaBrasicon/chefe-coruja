@@ -73,7 +73,8 @@ test('H1/H3: a conduta, a escuta vermelha, a recepção da UPA e a janela levam 
   assert.match(recepcao, /\{!ubs && <VindoDaUbs /)
   const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
   assert.match(janela, /<EnviosDoPaciente pacienteId=\{ep\.paciente_id\} \/>/)
-  const notif = readFileSync('src/pages/Notificacoes.tsx', 'utf8')
+  // a categoria dos Avisos mora em src/lib/avisos.ts desde a revisão de tela de 24/11/2026
+  const notif = readFileSync('src/lib/avisos.ts', 'utf8')
   assert.match(notif, /if \(tipo\.startsWith\('ubs_upa_'\)\) return 'Encaminhamento'/)
   assert.match(migration, /p_tipo \|\| '_' \|\| x\.numero/)
 })
@@ -114,9 +115,8 @@ test('I4: "Agendar retorno" marca pelo paciente da UBS, sem episódio de origem'
   assert.match(pagina, /busca\.get\('aba'\) === 'retornos'/)
   const janela = readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8')
   assert.match(janela, /<RetornosDoPaciente pacienteId=\{ep\.paciente_id\} \/>/)
-  const notif = readFileSync('src/pages/Notificacoes.tsx', 'utf8')
-  assert.match(notif, /if \(tipo\.startsWith\('ubs_retorno_'\)\) return 'Retorno'/)
-  assert.match(notif, /to: '\/encaminhados\?aba=retornos'/)
+  assert.match(readFileSync('src/lib/avisos.ts', 'utf8'), /if \(tipo\.startsWith\('ubs_retorno_'\)\) return 'Retorno'/)
+  assert.match(readFileSync('src/pages/Notificacoes.tsx', 'utf8'), /to: '\/encaminhados\?aba=retornos'/)
   assert.match(migRetorno, /'ubs_retorno_' \|\| x\.numero/)
 })
 

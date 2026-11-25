@@ -90,3 +90,21 @@ test('polimento (unslop, RT em 23/11/2026): etiqueta em cada grupo, sem negrito,
   }
   assert.match(tela, /titulo="Central do Médico"/)
 })
+
+test('cartões visuais (opção 2, RT em 23/11/2026): vitrine com o objeto do grupo, sem a etiqueta no cartão', () => {
+  const tela = readFileSync('src/components/plantonista/central/InicioCelular.tsx', 'utf8')
+  const cartao = tela.slice(tela.indexOf('function CartaoCategoria('), tela.indexOf('function PainelCategoria('))
+  assert.match(cartao, /<VitrineDoGrupo icone=\{c\.icone\}/)
+  assert.ok(!cartao.includes('<Etiqueta'), 'o cartão não leva a etiqueta da sigla')
+  const objetos = readFileSync('src/components/plantonista/central/ObjetoDoGrupo.tsx', 'utf8')
+  for (const id of ['urgencias', 'doses', 'calculadoras', 'escores', 'intoxicacao']) assert.match(objetos, new RegExp(`${id}: `))
+  assert.ok(!/#[0-9a-fA-F]{6}/.test(objetos), 'só tokens, nenhuma cor fixa')
+})
+
+test('itens do grupo (Itens 2, RT em 23/11/2026): faixa com a sigla grande e textos centralizados', () => {
+  const tela = readFileSync('src/components/plantonista/central/InicioCelular.tsx', 'utf8')
+  const painel = tela.slice(tela.indexOf('function PainelCategoria('), tela.indexOf('// Nome e endereço de cada ferramenta'))
+  assert.match(painel, /TOM_ITEM\[c\.icone\]/)
+  assert.match(painel, /text-center/)
+  assert.ok(!tela.includes('<Etiqueta'), 'a etiqueta saiu da tela')
+})

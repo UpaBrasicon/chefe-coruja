@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
 import { GestaoUbs } from '@/components/gestor/GestaoUbs'
+import { GraficoCenso } from '@/components/gestor/GraficoCenso'
 import { TituloPagina } from '@/components/monitor/Pagina'
 import { Parametro, type Nivel } from '@/components/monitor/Parametros'
 import { AtrasoChecagemIndicador } from '@/pages/gestor/AtrasoChecagemIndicador'
@@ -22,6 +23,13 @@ import { BarraFiltrosBI } from '@/pages/gestor/FiltrosBI'
 import { PanoramaConfig } from '@/pages/gestor/PanoramaConfig'
 import { useFiltrosBI } from '@/pages/gestor/useFiltrosBI'
 import { useLimitesUnidade } from '@/lib/limitesUnidade'
+import { Abas } from '@/components/admin/ui'
+
+// revisão do gestor (RT, 24/11/2026): permanência em dias e decimal com vírgula
+const dias = (h: number | null) => (h == null ? '—' : `${numeroAte(Number(h) / 24, 1)} d`)
+const pctBr = (p: number | null) => (p == null ? '—' : `${numeroAte(Number(p), 1)}%`)
+
+type AbaInd = 'leitos' | 'porta' | 'panorama'
 
 type CensoLinha = {
   data: string
@@ -79,6 +87,9 @@ function IndicadoresHospital() {
   const { limites } = useLimitesUnidade(unidadeId)
   // Fase 1, tarefa 7: uma barra de filtros para os indicadores da porta, no endereço da página
   const filtrosBI = useFiltrosBI(papelAtivo === 'gestor' ? unidadeId : undefined)
+  // M1: abas por tema; os filtros da porta ficam no topo da aba deles
+  const [aba, setAba] = React.useState<AbaInd>('leitos')
+  const comAbas = papelAtivo === 'gestor' && !!unidadeId
 
   const { data: censo, isLoading } = useQuery({
     queryKey: ['censo-recente', unidadeId],
@@ -204,6 +215,11 @@ function IndicadoresHospital() {
         }
       />
 
+      {comAbas && (
+        <Abas rotulo="Tema" valor={aba} onChange={setAba}
+          opcoes={[{ valor: 'leitos' as AbaInd, rotulo: 'Leitos' }, { valor: 'porta' as AbaInd, rotulo: 'Porta' }, { valor: 'panorama' as AbaInd, rotulo: 'Panorama' }]} />
+      )}
+      {(!comAbas || aba === 'leitos') && <>
       {/* O painel "Agora": a mesma gramática da faixa de parâmetros. */}
       <section aria-label="Agora" className="grid overflow-hidden rounded-container border border-fio bg-superficie grid-cols-2 lg:grid-cols-4 [&>*]:border-trilha [&>*:nth-child(n+3)]:border-t lg:[&>*:nth-child(n+3)]:border-t-0 [&>*:nth-child(even)]:border-l lg:[&>*+*]:border-l">
         <Parametro
@@ -211,12 +227,12 @@ function IndicadoresHospital() {
           icone={BedDouble}
           rotulo="Internados agora"
           valor={aoVivo.internados}
-          unidade={aoVivo.leitos ? `de ${aoVivo.leitos} leitos` : undefined}
-          estado={nivelOcupacao === 'critico' ? 'Acima do limite' : nivelOcupacao === 'atencao' ? 'Perto do limite' : 'Dentro da capacidade'}
+          unidade={aoVivo.leitos ? `de ${aoVivo.leitos}` : undefined}
+          // o limite saiu da linha do número: na célula estreita ele encavalava no rótulo
+          estado={`${nivelOcupacao === 'critico' ? 'Acima do limite' : nivelOcupacao === 'atencao' ? 'Perto do limite' : 'Dentro da capacidade'}${taxaAoVivo === null ? '' : ` · limite ${limites.ocupacao_pct}%`}`}
           nivel={nivelOcupacao}
           pct={taxaAoVivo ?? undefined}
           limite={taxaAoVivo === null ? undefined : lim}
-          limiteTexto={taxaAoVivo === null ? undefined : `limite ${limites.ocupacao_pct}%`}
         />
         <Parametro
           grandeza="leitos"
@@ -258,10 +274,12 @@ function IndicadoresHospital() {
             </Button>
           </div>
           <CardDescription>
-            Internados, taxa de ocupação, permanência média (h) e giro de leito.
+            Internados, taxa de ocupação, permanência média (dias) e giro de leito.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          {/* revisão do gestor (RT, 24/11/2026, M2): o censo em gráfico, antes dos números por setor */}
+          {!isLoading && agrupado.size > 0 && <GraficoCenso censo={censo ?? []} />}
           {isLoading ? (
             <div className="flex h-24 items-center justify-center">
               <Spinner />
@@ -280,7 +298,7 @@ function IndicadoresHospital() {
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-apoio font-semibold">{nome}</span>
                     <span className={`text-apoio font-semibold ${corTaxa(ultimo.taxa_ocupacao, limites.ocupacao_pct)}`}>
-                      {ultimo.taxa_ocupacao != null ? `${ultimo.taxa_ocupacao}%` : '—'} ocupação
+                      {pctBr(ultimo.taxa_ocupacao)} ocupação
                     </span>
                   </div>
                   <div className="grid grid-cols-7 gap-1.5">
@@ -289,9 +307,9 @@ function IndicadoresHospital() {
                         <div className="text-rotulo font-medium text-tinta-sussurro">{fmtDia(c.data)}</div>
                         <div className="text-apoio font-semibold">{c.internados}</div>
                         <div className="text-rotulo text-tinta-sussurro">
-                          {c.permanencia_media_h != null ? `${c.permanencia_media_h}h` : '—'}
+                          {dias(c.permanencia_media_h)}
                         </div>
-                        <div className="text-rotulo text-tinta-sussurro">giro {c.giro_leito ?? '—'}</div>
+                        <div className="text-rotulo text-tinta-sussurro">giro {c.giro_leito == null ? '—' : numeroAte(Number(c.giro_leito), 1)}</div>
                       </div>
                     ))}
                   </div>
@@ -338,8 +356,10 @@ function IndicadoresHospital() {
         </CardContent>
       </Card>
 
+      </>}
+
       {/* Fase 1, tarefas 3 a 7: indicadores da porta no período, com a barra única de filtros (gestor) */}
-      {papelAtivo === 'gestor' && unidadeId && (
+      {comAbas && aba === 'porta' && unidadeId && (
         <section aria-label="Indicadores da porta" className="flex flex-col gap-4">
           <BarraFiltrosBI ctx={filtrosBI} />
           <EsperaTriagem unidadeId={unidadeId} nomeUnidade={nomeUnidade} ctx={filtrosBI} />
@@ -353,7 +373,7 @@ function IndicadoresHospital() {
         </section>
       )}
 
-      {papelAtivo === 'gestor' && unidadeId && <PanoramaConfig unidadeId={unidadeId} />}
+      {comAbas && aba === 'panorama' && unidadeId && <PanoramaConfig unidadeId={unidadeId} />}
     </div>
   )
 }

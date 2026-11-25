@@ -16,6 +16,8 @@ test('tempo: minutos e horas por extenso', () => {
   assert.equal(tempo(59), '59 min')
   assert.equal(tempo(60), '1 h')
   assert.equal(tempo(135), '2 h 15 min')
+  assert.equal(tempo(1440), '1 dia')
+  assert.equal(tempo(64707), '44 dias 22 h')
 })
 
 test('gargalo: atraso vence a fila maior e é crítico', () => {

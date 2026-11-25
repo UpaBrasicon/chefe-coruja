@@ -112,6 +112,8 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
   )
 
   const nomeDe = (perfilId: string) => perfis.find((p) => p.id === perfilId)
+  const porPessoa = [...vinculosAtivos.reduce((m, v) => m.set(v.perfil_id, [...(m.get(v.perfil_id) ?? []), v]), new Map<string, typeof vinculosAtivos>())]
+    .sort((a, b) => (nomeDe(a[0])?.nome_completo ?? '').localeCompare(nomeDe(b[0])?.nome_completo ?? '', 'pt-BR'))
   const unidadeDe = (unidadeId: string) => unidades.find((u) => u.id === unidadeId)
 
   return (
@@ -136,46 +138,53 @@ export function Pessoas({ embutido = false }: { embutido?: boolean } = {}) {
       <Card>
         <CardHeader>
           <CardTitle>Vínculos ativos</CardTitle>
-          <CardDescription>Pessoas vinculadas a unidades da sua organização.</CardDescription>
+          <CardDescription>Pessoas vinculadas a unidades da sua organização, uma linha por pessoa.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Pessoa</TableHead>
-                <TableHead>Unidade</TableHead>
-                <TableHead>Papel</TableHead>
+                <TableHead>Unidades e papéis</TableHead>
                 <TableHead className="text-right">Ação</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {vinculosAtivos.map((v) => {
-                const pessoa = nomeDe(v.perfil_id)
-                const unidade = unidadeDe(v.unidade_id)
+              {/* revisão do admin (RT, 24/11/2026, M4): uma linha por pessoa; os vínculos dela ficam juntos */}
+              {porPessoa.map(([perfilId, vs]) => {
+                const pessoa = nomeDe(perfilId)
                 return (
-                  <TableRow key={v.id}>
-                    <TableCell>
+                  <TableRow key={perfilId}>
+                    <TableCell className="align-top">
                       <div className="font-medium">{pessoa?.nome_completo ?? '—'}</div>
                       <div className="text-rotulo text-tinta-sussurro">{pessoa?.email}</div>
                     </TableCell>
-                    <TableCell>{unidade?.nome ?? '—'}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{PAPEL_LABEL[v.papel]}</Badge>
+                    <TableCell className="align-top">
+                      <div className="flex flex-col gap-1">
+                        {vs.map((v) => (
+                          <div key={v.id} className="flex flex-wrap items-center gap-2">
+                            <span>{unidadeDe(v.unidade_id)?.nome ?? '—'}</span>
+                            <Badge variant="secondary">{PAPEL_LABEL[v.papel]}</Badge>
+                            {v.perfil_id !== perfil?.id && (
+                              <Button
+                                variant="link"
+                                size="xs"
+                                className="min-h-0 px-0 text-tinta-sussurro hover:text-critico"
+                                disabled={revogarMutation.isPending}
+                                title={`Revogar o vínculo de ${PAPEL_LABEL[v.papel]} em ${unidadeDe(v.unidade_id)?.nome ?? 'unidade'}`}
+                                onClick={() => revogarMutation.mutate(v.id)}
+                              >
+                                <UserRoundX className="size-3" />
+                                revogar
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right align-top">
                       {pessoa && pessoa.id !== perfil?.id && (
                         <ZerarSegundoFator perfilId={pessoa.id} nome={pessoa.nome_completo} />
-                      )}
-                      {v.perfil_id !== perfil?.id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={revogarMutation.isPending}
-                          onClick={() => revogarMutation.mutate(v.id)}
-                        >
-                          <UserRoundX />
-                          Revogar
-                        </Button>
                       )}
                     </TableCell>
                   </TableRow>

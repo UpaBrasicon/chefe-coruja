@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRightLeft, BedDouble, UserPlus } from 'lucide-react'
 import * as React from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
+import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
 import { data as dataDoInstante, dataHora, dataIso } from '@/lib/formato'
 import { baixarCsv, nomeArquivoCsv } from '@/lib/csv'
 import { csvTransferencias } from '@/lib/exportacoesAntigas'
@@ -20,6 +22,9 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { ListaInternados, type PacienteDaLista } from '@/components/internacao/ListaInternados'
 import { PainelObservacao } from '@/components/observacao/PainelObservacao'
+import { MapaLeitos } from '@/components/leito/MapaLeitos'
+import { useMapaLeitos } from '@/components/leito/mapaDados'
+import { PainelLeito, type AlvoPainelLeito } from '@/components/leito/PainelLeito'
 import type { OcupacaoSetor, TransferenciaPaciente } from '@/types/database'
 
 type PacienteComSetor = PacienteDaLista & { cpf: string | null; created_at: string }
@@ -72,6 +77,18 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
       const { data, error } = await supabase.rpc('setores_internacao', { p_unidade: unidadeId! })
       if (error) throw error
       return (data ?? []) as Setor[]
+    },
+  })
+
+  // M3 da revisão do médico (RT, 24/11/2026): o texto do topo diz os setores da escala real
+  const { data: setoresDaEscala } = useQuery({
+    queryKey: ['setores-na-escala', unidadeId],
+    enabled: !!unidadeId && ehPlantonista,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await setoresNaEscalaAgora()
+      if (error) throw error
+      return (Array.isArray(data) ? data : []) as string[]
     },
   })
 
@@ -142,6 +159,54 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
     },
   })
 
+  // Revisão do gestor (RT, 24/11/2026): o leito abre numa gaveta, sem sair da
+  // página. ?leito= guarda o aberto (o paciente do leito ou, sem paciente, o
+  // leito): o voltar do navegador fecha a gaveta.
+  const veMapa = ehGestor || ehAdmin
+  const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const chaveLeito = veMapa ? params.get('leito') : null
+  // RS1 (RT, 24/11/2026): com o leito aberto (médico), a página some em volta dele
+  const leitoAberto = !veMapa && !!params.get('paciente')
+  // endereço do leito de antes (?paciente=, rotaDoLeito): para o gestor, vira a gaveta
+  React.useEffect(() => {
+    if (!veMapa || !params.get('paciente')) return
+    setParams((q) => {
+      const n = new URLSearchParams(q)
+      n.set('leito', n.get('paciente') ?? '')
+      n.delete('paciente')
+      return n
+    }, { replace: true })
+  }, [veMapa, params, setParams])
+  const abrirLeito = (chave: string) => setParams((q) => {
+    const n = new URLSearchParams(q)
+    n.set('leito', chave)
+    n.delete('aba')
+    return n
+  }, { state: { painelLeito: true } })
+  const fecharLeito = () => {
+    if ((location.state as { painelLeito?: boolean } | null)?.painelLeito) { navigate(-1); return }
+    setParams((q) => {
+      const n = new URLSearchParams(q)
+      n.delete('leito')
+      n.delete('aba')
+      return n
+    }, { replace: true })
+  }
+  const mapa = useMapaLeitos(veMapa ? unidadeId : undefined)
+  const alvoLeito = React.useMemo((): AlvoPainelLeito | null => {
+    if (!chaveLeito || !mapa.dados) return null
+    const nomeDe = (id: string) => (pacientes ?? []).find((p) => p.id === id)?.nome ?? null
+    for (const s of mapa.dados.setores) {
+      const l = s.leitos.find((x) => x.id === chaveLeito || x.paciente_id === chaveLeito)
+      if (l) return { leito: l, setorNome: s.nome, peloStatus: s.pelo_status, paciente: l.paciente_id ? { id: l.paciente_id, nome: nomeDe(l.paciente_id) } : null }
+    }
+    // paciente ainda sem leito (está na lista, não no mapa)
+    const p = (pacientes ?? []).find((x) => x.id === chaveLeito)
+    return p ? { leito: null, setorNome: p.setores?.nome ?? null, paciente: { id: p.id, nome: p.nome } } : null
+  }, [chaveLeito, mapa.dados, pacientes])
+
   const invalidar = () => {
     for (const k of ['pacientes-internados', 'transferencias-paciente', 'ocupacao-setores', 'internados-leitos', 'leito-aberto', 'historico-paciente'])
       void queryClient.invalidateQueries({ queryKey: [k] })
@@ -189,7 +254,7 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-      {!embutido && (
+      {!embutido && !leitoAberto && (
         <div>
           <Trilha niveis={[{ rotulo: 'Início', to: '/' }, { rotulo: titulo }]} />
           <TituloPagina icone={BedDouble} titulo={titulo} descricao={unidadeAtiva?.unidade.nome ?? 'Unidade'} className="mb-0" />
@@ -198,8 +263,14 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
 
       {sucesso && <p className="rounded-controle border border-conforme/30 bg-alerta-conforme p-3 text-apoio text-conforme">{sucesso}</p>}
 
-      {/* I2/I3: ocupação por setor + alerta de superlotação */}
-      {(ocupacao ?? []).length > 0 && (
+      {/* Revisão do gestor (RT, 24/11/2026): o mapa de leitos por setor é a visão principal da
+          internação do gestor, com os números do censo no mesmo bloco; depois os alertas e a lista.
+          Clicar no leito abre a gaveta, sem sair da página */}
+      {veMapa && <MapaLeitos unidadeId={unidadeId} secoes={['leitos', 'alertas']} onAbrir={abrirLeito} />}
+      {veMapa && <PainelLeito alvo={alvoLeito} unidadeId={unidadeId} abaInicial={params.get('aba') ?? undefined} aoFechar={fecharLeito} />}
+
+      {/* I2/I3: ocupação por setor + alerta de superlotação (o gestor já vê no mapa acima) */}
+      {!(ehGestor || ehAdmin) && !leitoAberto && (ocupacao ?? []).length > 0 && (
         <div className="flex flex-wrap gap-2">
           {(ocupacao ?? []).map((o) => {
             const lotado = o.limite > 0 && o.internados >= o.limite
@@ -226,12 +297,14 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
       <ListaInternados
         unidadeId={unidadeId}
         setores={setores ?? []}
+        setoresDaEscala={setoresDaEscala}
         pacientes={pacientes ?? []}
         carregando={carregandoSetores || carregandoPacientes}
         ehGestor={ehGestor || ehAdmin}
         podeDarAlta={ehPlantonista}
         alertasSepse={alertasSepse}
         onTransferir={(p) => { setErro(null); setTransferir(p) }}
+        onAbrirLeito={veMapa ? (p) => abrirLeito(p.id) : undefined}
       />
 
       {/* Auditoria (gestor/admin) */}
@@ -330,10 +403,13 @@ function PainelInternacao({ embutido = false }: { modo?: 'internacao' | 'observa
         </DialogContent>
       </Dialog>
 
-      <p className="flex items-center gap-1.5 text-rotulo text-tinta-sussurro">
-        <UserPlus className="size-3.5" /> Para internar um paciente, use o desfecho do atendimento na porta (internação) e
-        direcione-o para o setor. Transferências entre setores são registradas em auditoria.
-      </p>
+      {/* RS1: o rodapé é da lista, não do leito aberto */}
+      {!leitoAberto && (
+        <p className="flex items-center gap-1.5 text-rotulo text-tinta-sussurro">
+          <UserPlus className="size-3.5" /> Para internar um paciente, use o desfecho do atendimento na porta (internação) e
+          direcione-o para o setor. Transferências entre setores são registradas em auditoria.
+        </p>
+      )}
     </div>
   )
 }

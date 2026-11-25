@@ -91,7 +91,8 @@ export function AbaAvaliacaoCrescimento({ pacienteId, episodioId, internacaoId }
     <div className="flex flex-col gap-3.5">
       <SecaoAvaliacao pacienteId={pacienteId} episodioId={episodioId} internacaoId={internacaoId}
         publico={ped === null ? null : ped ? 'pediatrico' : 'adulto'} />
-      <SecaoCurva pacienteId={pacienteId} episodioId={episodioId} internacaoId={internacaoId} nascimento={nascimento} sexo={sexo} />
+      {/* MA2 (RT, 24/11/2026): a curva é da pediatria (até 13 anos, 11 meses e 29 dias); a partir de 14 anos ela não aparece */}
+      {ped !== false && <SecaoCurva pacienteId={pacienteId} episodioId={episodioId} internacaoId={internacaoId} nascimento={nascimento} sexo={sexo} />}
     </div>
   )
 }

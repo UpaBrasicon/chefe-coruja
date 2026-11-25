@@ -25,7 +25,8 @@ import { rotulosPrioridade } from '@/domain/prioridade'
 import { rotuloTipoAps } from '@/domain/aps'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
+import { AbasComMais } from '@/components/plantao/MenuMais'
 import { CabecalhoPaciente } from '@/components/paciente/CabecalhoPaciente'
 import { AlergiasEventos } from '@/components/paciente/AlergiasEventos'
 import { ativas, useAlergias } from '@/components/paciente/useAlergias'
@@ -34,6 +35,7 @@ import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCres
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { EnviosDoPaciente } from '@/components/encaminhamento/EnviosDoPaciente'
 import { RetornosDoPaciente } from '@/components/encaminhamento/RetornosDoPaciente'
+import { AbaRegulacaoPaciente } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
 import { AbaTermoConsentimento } from '@/components/termo/AbaTermoConsentimento'
@@ -49,14 +51,17 @@ import { AbaDesfecho } from './AbaDesfecho'
 import { AbaExames } from './AbaExames'
 import { AbaPrescricao } from './AbaPrescricao'
 import { AbaReavaliacao } from './AbaReavaliacao'
+import { PainelPacientePorta } from './PainelPacientePorta'
 import {
   DOCS_INICIAL, SOAP_VAZIO, hora, msg, nomeDe, soapVazio, useAgora, usePainelPS, useRecarregarAtendimento,
   type EpFila, type EstadoDocs, type Soap,
 } from './comum'
 import { rotuloInicioAtendimento } from '@/domain/plantao'
 
-type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'termo' | 'docs' | 'proc' | 'fim' | 'conduta'
+type Aba = 'atend' | 'presc' | 'exames' | 'reav' | 'alg' | 'par' | 'aval' | 'enc' | 'reg' | 'termo' | 'docs' | 'proc' | 'fim' | 'conduta'
 const ESPERA_RASCUNHO_MS = 1500
+// M4 (RT, 24/11/2026): as partes de todo atendimento ficam na linha; o resto vai para "Mais"
+const ABAS_PRINCIPAIS: Aba[] = ['atend', 'presc', 'exames', 'reav', 'docs', 'fim', 'conduta']
 
 export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (aviso?: string) => void }) {
   const agora = useAgora(30_000)
@@ -200,6 +205,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
     { k: 'par', rotulo: 'Parecer' },
     { k: 'aval', rotulo: 'Avaliação' },
     { k: 'enc', rotulo: 'Encaminhar' },
+    // R1 (RT, 24/11/2026): a regulação do paciente, com a conversa com a central (só na porta)
+    { k: 'reg', rotulo: 'Regulação' },
     { k: 'termo', rotulo: 'Termo' },
     { k: 'docs', rotulo: consultaEnfermagem ? 'Receita' : 'Atestado e receita', n: ((docs.atEmitidoEm ? 1 : 0) + (docs.rxEmitidaEm ? 1 : 0)) || undefined },
     // Fase 3, tarefa 3: procedimentos realizados (BPA) e endereço do SUS
@@ -210,10 +217,10 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
   // U7, PR 5: na UBS a aba Procedimentos é a dos procedimentos da UBS (com o resultado dos testes)
   // U6 (P1 = A): o enfermeiro pede exames da lista do protocolo
   const abas = todas.filter((a) => (consultaEnfermagem ? ['atend', 'alg', 'aval', 'exames', 'proc', 'docs', 'conduta'].includes(a.k)
-    : ubs ? !['reav', 'fim'].includes(a.k) : a.k !== 'conduta'))
+    : ubs ? !['reav', 'fim', 'reg'].includes(a.k) : a.k !== 'conduta'))
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-cartao border border-fio bg-campo">
+    <div className="flex flex-col overflow-clip rounded-cartao border border-fio bg-campo">
       {/* cabeçalho */}
       <div className="flex flex-col gap-3 border-b border-fio bg-superficie px-5 pt-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -268,20 +275,19 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             <span>Sem data de nascimento no cadastro: o paciente não é tratado como adulto. Sem receita padrão nem favoritos de adulto, PA opcional e dose digitada por você, pelo peso. Cadastre a data de nascimento ou, na Prescrição, a idade estimada.</span>
           </div>
         )}
+        {/* M4 (revisão do médico, RT 24/11/2026): as abas do dia a dia na linha; as outras em "Mais" */}
         <Tabs value={aba} onValueChange={(v) => { setAba(v as Aba); setErro(null) }}>
-          <TabsList aria-label="Partes do atendimento" className="gap-4">
-            {abas.map((a) => (
-              <TabsTrigger key={a.k} value={a.k} disabled={!aberto && a.k !== 'atend'}>
-                {a.rotulo}
-                {a.n !== undefined && <span className="text-rotulo font-semibold text-acao tabular-nums">{a.n}</span>}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <AbasComMais rotulo="Partes do atendimento" valor={aba} principais={ABAS_PRINCIPAIS}
+            onTrocar={(k) => { setAba(k as Aba); setErro(null) }}
+            abas={abas.map((a) => ({ k: a.k, rotulo: a.rotulo, n: a.n, desabilitado: !aberto && a.k !== 'atend' }))}
+            className="border-fio" />
         </Tabs>
       </div>
 
+      {/* M5: a aba no centro e os dados do paciente fixos à direita (tela larga) */}
+      <div className="grid items-start xl:grid-cols-[minmax(0,1fr)_300px]">
       {/* conteúdo da aba */}
-      <div className="flex flex-col gap-4 px-5 py-5">
+      <div className="flex min-w-0 flex-col gap-4 px-5 py-5">
         {abrir.isPending && <Spinner />}
         {abrir.error && <p className="text-apoio text-critico">{msg(abrir.error)}</p>}
         {dados.error && <p className="text-apoio text-critico">{msg(dados.error)}</p>}
@@ -321,6 +327,7 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
               )
                 : <AbaEncaminhamentoInterno pacienteId={ep.paciente_id} episodioId={ep.id} />}
             </TabsContent>
+            <TabsContent value="reg"><AbaRegulacaoPaciente pacienteId={ep.paciente_id} /></TabsContent>
             <TabsContent value="termo"><AbaTermoConsentimento pacienteId={ep.paciente_id} episodioId={ep.id} /></TabsContent>
             <TabsContent value="docs">
               {consultaEnfermagem ? (
@@ -354,6 +361,9 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
             <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden /> {erro}
           </p>
         )}
+      </div>
+      <PainelPacientePorta ep={ep} queixa={queixa} faixa={faixa} ubs={ubs} classificacoes={cls} painel={p}
+        alergias={ativas(alergias.data)} estadoAlergia={alergias.data?.estado} />
       </div>
 
       {/* rodapé */}

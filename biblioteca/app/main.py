@@ -25,6 +25,7 @@ from publico import ADULTO, AMBOS, MSG_SEM_PEDIATRIA, PED, Fontes, ferramenta_se
 from siglas import expandir_siglas
 import chaves
 import pubmed
+import seguimento
 
 E = os.environ
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -55,11 +56,20 @@ FERRAMENTA_MIN = float(E.get("FERRAMENTA_MIN_SCORE", 0.55))
 REESCRITA = E.get("REESCRITA", "1") != "0"
 REESCRITA_TIMEOUT_S = float(E.get("REESCRITA_TIMEOUT_S", 8))
 REESCRITA_MAX_TOKENS = int(E.get("REESCRITA_MAX_TOKENS", 600))
+# IA2 (RT, 24/11/2026): 3 perguntas sugeridas depois da resposta. SUGESTOES=0 desliga.
+SUGESTOES = E.get("SUGESTOES", "1") != "0"
+SUGESTOES_TIMEOUT_S = float(E.get("SUGESTOES_TIMEOUT_S", 8))
+SUGESTOES_MAX_TOKENS = int(E.get("SUGESTOES_MAX_TOKENS", 400))
 
 STOP = set("""a o os as um uma uns umas de do da dos das em no na nos nas por para com sem sob sobre e ou que qual quais
 como quando onde quanto quantos qual é são ser está estão foi ao aos à às se não sim mais menos muito pouco já ainda
 paciente pacientes caso casos conduta manejo tratamento dose doses qual devo posso fazer usar uso deve pode anos ano
 meses idade kg peso""".split())
+
+
+class Troca(BaseModel):
+    pergunta: str = Field(min_length=2, max_length=800)
+    resposta: str = Field(default="", max_length=2000)
 
 
 class Req(BaseModel):
@@ -68,6 +78,8 @@ class Req(BaseModel):
     request_id: str = Field(min_length=1, max_length=80)
     # modo do paciente na tela da Central; o texto da pergunta também conta
     publico: Literal["adulto", "pediatrico"] | None = None
+    # IA1 (RT, 24/11/2026): últimas trocas da conversa, já mascaradas pela Edge
+    historico: list[Troca] = Field(default_factory=list, max_length=seguimento.MAX_TROCAS)
 
 
 def auth(h: str | None):
@@ -149,6 +161,23 @@ def pubmed_ao_vivo(q: str, publico: str):
         return None, uso
     artigos = pubmed.buscar(termos, publico == PED)
     return (pubmed.evento(artigos, termos) if artigos else None), uso
+
+
+def sugerir(q: str, resposta: str, trechos: list):
+    """IA2: (linha do stream ou None, uso). Falha ou demora: sem sugestões, a resposta não muda."""
+    if not SUGESTOES:
+        return None, None
+    try:
+        r = llm.with_options(timeout=SUGESTOES_TIMEOUT_S, max_retries=0).chat.completions.create(
+            model=MODELO, temperature=0.2, max_tokens=SUGESTOES_MAX_TOKENS, extra_body=EXTRA_LLM,
+            messages=[{"role": "system", "content": seguimento.SYSTEM_SUGESTOES},
+                      {"role": "user", "content": seguimento.pedido_sugestoes(q, resposta, trechos)}])
+        texto = r.choices[0].message.content or ""
+        uso = (getattr(r, "model", None) or MODELO, getattr(r, "usage", None))
+    except Exception as e:  # noqa: BLE001 — sem sugestões a resposta continua
+        log.warning(json.dumps({"sugestoes": type(e).__name__}))
+        return None, None
+    return seguimento.evento(seguimento.ler_sugestoes(texto, q)), uso
 
 
 def uso_da_reescrita():
@@ -462,11 +491,17 @@ def ask(r: Req, authorization: str | None = Header(None)):
     # E2 (12/11/2026): a pergunta ao modelo exige o NER. Sem ele, não sai.
     try:
         pq = pseudonimizar(r.q, estrito=True)
+        # IA1: a conversa anterior também é pseudonimizada de novo aqui
+        historico = [{"pergunta": pseudonimizar(t.pergunta, estrito=True),
+                      "resposta": pseudonimizar(t.resposta, estrito=True) if t.resposta else ""} for t in r.historico]
     except NerIndisponivel as e:
         log.warning(json.dumps({"rid": r.request_id, "ner_indisponivel": str(e)}))
         raise HTTPException(503, "verificação de identificação indisponível")
     q = expandir_siglas(pq)
-    tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b", q, re.I))
+    # IA1: no seguimento, a busca leva a pergunta anterior junto ("e na criança?")
+    q_busca = expandir_siglas(seguimento.pergunta_de_busca(pq, historico)) if historico else q
+    tem_peso = bool(re.search(r"\d+[,.]?\d*\s*(kg|quilos?|anos?|meses)\b",
+                              " ".join([q] + [t["pergunta"] for t in historico]), re.I))
     tipo = armadilha(q)
     if tipo:
         return resposta_fixa(r, publico_da_pergunta(q, r.publico), tipo, t0)
@@ -477,14 +512,15 @@ def ask(r: Req, authorization: str | None = Header(None)):
     def fluxo():
         yield json.dumps({"type": "etapa", "etapa": "lendo"}) + "\n"
         _uso_reescrita.valor = None
-        termos = reescrever(q)
+        termos = reescrever(seguimento.para_reescrita(q, historico))
         uso_reescrita = uso_da_reescrita()
         t_reescrita = int((time.time() - t0) * 1000)
         # pergunta sem idade sobre doença da criança ("bronquiolite precisa de
         # corticoide"): os termos da reescrita levam à pediatria (avaliação de 14/10)
-        publico = publico_com_termos(q, termos, r.publico)
+        publico = publico_com_termos(q_busca, termos, r.publico)
         chave = _chave_cache(f"{r.tenant_id}|{publico}", pq)
-        guardada = None if tem_peso else cache_ler(chave)
+        # IA1: o seguimento depende da conversa, então não usa nem grava a memória
+        guardada = None if tem_peso or historico else cache_ler(chave)
         if guardada is not None:
             def repetir():
                 # o request_id da meta é o da pergunta atual
@@ -498,7 +534,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
             yield from repetir()
             return
         yield json.dumps({"type": "etapa", "etapa": "procurando"}) + "\n"
-        tools, trechos, melhor, com_lexico = buscar(q, r.tenant_id, publico, termos)
+        tools, trechos, melhor, com_lexico = buscar(q_busca, r.tenant_id, publico, termos)
         t_busca = int((time.time() - t0) * 1000)
         # E4: a tela recalcula a confiança só com as fontes que a resposta cita
         corte = GATE_MIN if com_lexico else GATE_SEM_LEXICO
@@ -514,14 +550,16 @@ def ask(r: Req, authorization: str | None = Header(None)):
             t_primeiro = None
             meta = json.dumps({"type": "meta", "request_id": r.request_id, "gate": gate_ok, "melhor_score": round(melhor, 3),
                                "confianca": confianca(trechos, com_lexico, gate_ok),
-                               "publico": publico, "termos": termos, "ferramentas": ferramentas, "fontes": fontes if gate_ok else []},
+                               "publico": publico, "termos": termos, "ferramentas": ferramentas, "fontes": fontes if gate_ok else [],
+                               # IA1: esta biblioteca aceita a conversa de seguimento
+                               "seguimento": True},
                               ensure_ascii=False) + "\n"
             linhas.append(meta)
             yield meta
             if not gate_ok:
                 yield json.dumps({"type": "delta", "text": sem_resposta}, ensure_ascii=False) + "\n"
                 # E5: sem material, a lista do PubMed ao vivo (antes do "done", que encerra a tela)
-                linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
+                linha_pubmed, uso_pubmed = pubmed_ao_vivo(seguimento.pergunta_de_busca(pq, historico), publico)
                 if linha_pubmed:
                     yield linha_pubmed
                 yield json.dumps({"type": "done", "citacoes_invalidas": [], "sem_citacao": False, "nao_encontrou": True}) + "\n"
@@ -550,6 +588,8 @@ def ask(r: Req, authorization: str | None = Header(None)):
                 lembrete += (" A pergunta é de CRIANÇA (pediatria até 13 anos e 11 meses): use só o que o trecho afirma para criança;"
                              " em trecho de adulto e criança, só a parte pediátrica. Se nenhum trecho para criança tratar do assunto, diga exatamente:"
                              f' "{MSG_SEM_PEDIATRIA}" e pare; se tratarem de parte, responda essa parte.')
+            if historico:
+                lembrete += seguimento.LEMBRETE_SEGUIMENTO
             texto = ""
             uso_resposta = None
             try:
@@ -559,7 +599,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
                     model=MODELO, temperature=0.1, stream=True, max_tokens=MAX_TOKENS, extra_body=EXTRA_LLM,
                     stream_options={"include_usage": True},
                     messages=[{"role": "system", "content": SYSTEM + (REGRA_PED if publico == PED else "")},
-                              {"role": "user", "content": f"TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}{lembrete}"}])
+                              {"role": "user", "content": f"{seguimento.bloco_da_conversa(historico)}TRECHOS:\n{contexto}\n\nFERRAMENTAS DA CENTRAL:\n{lista_tools}\n\nPERGUNTA: {q}{lembrete}"}])
                 for ch in stream:
                     if getattr(ch, "usage", None):  # E6: o último pedaço traz o uso
                         uso_resposta = (getattr(ch, "model", None) or MODELO, ch.usage)
@@ -595,7 +635,7 @@ def ask(r: Req, authorization: str | None = Header(None)):
             # E5: o modelo disse que o material não traz: a lista do PubMed ao vivo
             uso_pubmed = None
             if nao_encontrou:
-                linha_pubmed, uso_pubmed = pubmed_ao_vivo(pq, publico)
+                linha_pubmed, uso_pubmed = pubmed_ao_vivo(seguimento.pergunta_de_busca(pq, historico), publico)
                 if linha_pubmed:
                     yield linha_pubmed
             fim = json.dumps({"type": "done", "citacoes_invalidas": invalidas,
@@ -603,12 +643,20 @@ def ask(r: Req, authorization: str | None = Header(None)):
                               "calculo_suspeito": calculo_suspeito, "nao_encontrou": nao_encontrou}) + "\n"
             linhas.append(fim)
             yield fim
+            # IA2: depois do fim (a tela já mostra a resposta), as próximas perguntas.
+            # Só com resposta citada e limpa; entram na memória junto da resposta.
+            uso_sugestoes = None
+            if citadas and not nao_encontrou and not invalidas:
+                linha_sug, uso_sugestoes = sugerir(q, texto, trechos)
+                if linha_sug:
+                    linhas.append(linha_sug)
+                    yield linha_sug
             # E6: o uso vai depois do fim e fora de `linhas`: a resposta guardada na
             # memória não repete o custo quando é servida de novo
-            uso = somar_uso(uso_reescrita, uso_resposta, uso_pubmed)
+            uso = somar_uso(uso_reescrita, uso_resposta, uso_pubmed, uso_sugestoes)
             if uso:
                 yield json.dumps(uso) + "\n"
-            if not tem_peso and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
+            if not tem_peso and not historico and not nao_encontrou and not invalidas and not calculo_suspeito and citadas:
                 cache_gravar(chave, linhas)
             log.info(json.dumps({"rid": r.request_id, "tenant": r.tenant_id, "publico": publico, "gate": True, "top": round(melhor, 3),
                                  "fontes": [f["titulo"] for f in fontes], "reescrita": termos is not None, "ms_reescrita": t_reescrita, "ms_busca": t_busca, "ms_1o_trecho": t_primeiro,

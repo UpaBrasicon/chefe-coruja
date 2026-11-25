@@ -147,7 +147,7 @@ export function ClassificacaoDengue() {
       <Card>
         <CardContent className="grid gap-4 pt-6 md:grid-cols-3">
           <div className="flex flex-col gap-2">
-            <Label>Paciente</Label>
+            <Label className="flex-1 items-end leading-snug">Paciente</Label>
             <div role="radiogroup" aria-label="Paciente" className="flex flex-wrap gap-2">
               {([['adulto', 'Adulto (14 anos ou mais)'], ['crianca', 'Criança (menos de 14 anos)']] as const).map(([v, rotulo]) => (
                 <Chip key={v} variante="opcao" radio ativo={paciente === v} onClick={() => setPaciente(v)}>

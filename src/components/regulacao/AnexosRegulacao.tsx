@@ -167,7 +167,8 @@ export function AnexosRegulacao({ solicitacaoId }: { solicitacaoId: string }) {
   )
 }
 
-function EscolherDocumento({ solicitacaoId, aoFim }: { solicitacaoId: string; aoFim: () => void }) {
+/** Documentos já emitidos no prontuário do paciente, para anexar ao pedido (também o "Puxar exame do prontuário" do NIR). */
+export function EscolherDocumento({ solicitacaoId, aoFim }: { solicitacaoId: string; aoFim: () => void }) {
   const docs = useQuery({
     queryKey: ['regulacao-docs-anexaveis', solicitacaoId],
     queryFn: async () => {
