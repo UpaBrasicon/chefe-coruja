@@ -79,12 +79,12 @@ export function papeisComGente(p: Partial<Record<Papel, number>>): [Papel, numbe
 export type EstadoUnidade = {
   id: string
   leitos: number
-  /** 1 a 4 volta vazio (ADR 0002) */
+  /** número exato desde a migration 20270422000095 (RT, 25/11/2026); vazio só no banco antigo */
   ocupados: number | null
   ocupacao: number | null
   hoje: { plantoes: number; cobertas: number; com_vaga: number; vagas: number }
   vagas_ate_fim_do_mes: number
-  /** 1 a 4 volta vazio (ADR 0002) */
+  /** número exato desde a migration 20270422000095 (RT, 25/11/2026); vazio só no banco antigo */
   regulacoes_vencidas: number | null
   /** cada pessoa uma vez, não cada vínculo */
   pessoas: number
@@ -109,7 +109,7 @@ export function resumoEstado(e: EstadoUnidade): PedacoEstado[] {
   const r = e.regulacoes_vencidas
   if (r === null) p.push({ texto: 'menos de 5 regulações vencidas', atencao: true })
   else if (r === 0) p.push({ texto: 'nenhuma regulação vencida' })
-  else p.push({ texto: `${r} regulações vencidas`, atencao: true })
+  else p.push({ texto: `${r} ${r === 1 ? 'regulação vencida' : 'regulações vencidas'}`, atencao: true })
   return p
 }
 

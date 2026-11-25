@@ -98,6 +98,10 @@ test('linha da unidade na Rede: ocupação, escala de hoje, vagas e regulações
   assert.equal(resumoEstado(estado({ ocupados: null, ocupacao: null })).at(0)?.texto, 'menos de 5 de 18 leitos ocupados')
   assert.deepEqual(resumoEstado(estado()).map((x) => !!x.atencao), [false, true, true, false])
   assert.equal(resumoEstado(estado({ regulacoes_vencidas: 7, vagas_ate_fim_do_mes: 1 }))[2].texto, '1 vaga aberta no mês')
+  // número exato desde a migration 20270422000095 (RT, 25/11/2026)
+  const poucos = resumoEstado(estado({ ocupados: 1, ocupacao: 5.6, regulacoes_vencidas: 1 }))
+  assert.equal(poucos[0].texto, 'ocupação 5,6% (1 de 18)')
+  assert.equal(poucos[3].texto, '1 regulação vencida')
 })
 
 test('pessoas: a conta da secretaria (pessoa uma vez) vence a soma de vínculos', () => {
