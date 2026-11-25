@@ -19,6 +19,7 @@ import {
   criarSetor,
   excluirLeito,
   excluirSetor,
+  marcarPressaoNegativa,
   salvarOrdemSetores,
 } from '@/lib/api'
 import { STATUS_LEITO_LABEL, STATUS_LEITO_VARIANT, TIPO_LEITO_LABEL, TIPO_SETOR_LABEL } from '@/lib/constants'
@@ -142,6 +143,12 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
       setDialogLeitosAberto(false)
       leitosForm.reset({ prefixo: '', quantidade: 1, tipo: 'clinico' })
     },
+    onError: (e) => setErro(e.message),
+  })
+
+  const pressaoMutation = useMutation({
+    mutationFn: (l: { id: string; valor: boolean }) => marcarPressaoNegativa(l.id, unidadeId!, l.valor),
+    onSuccess: invalidar,
     onError: (e) => setErro(e.message),
   })
 
@@ -307,7 +314,7 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-rotulo text-tinta-sussurro">
-                        {TIPO_LEITO_LABEL[leito.tipo]}
+                        {TIPO_LEITO_LABEL[leito.tipo]}{leito.pressao_negativa ? ' · pressão negativa' : ''}
                       </span>
                       <div className="flex items-center gap-0.5">
                         {/* status só pelas RPCs (o banco confere papel e transição) */}
@@ -340,6 +347,14 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
                         </Button>
                       </div>
                     </div>
+                    {/* RG3: leito de isolamento com pressão negativa (conta nas vagas da regulação) */}
+                    {leito.tipo === 'isolamento' && (
+                      <label className="flex items-center gap-1.5 text-rotulo text-tinta-apoio">
+                        <input type="checkbox" className="size-4" checked={!!leito.pressao_negativa} disabled={pressaoMutation.isPending}
+                          onChange={(e) => pressaoMutation.mutate({ id: leito.id, valor: e.target.checked })} />
+                        Pressão negativa
+                      </label>
+                    )}
                   </div>
                 ))}
 
