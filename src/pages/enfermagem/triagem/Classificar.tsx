@@ -31,6 +31,7 @@ import { BlocoGestacao } from './Gestacao'
 import { HistoricoClassificacoes } from './Historico'
 import { ReferenciaSinal } from './ReferenciaSinal'
 import { dataSP, ehFeminino, esperaTexto, hora, nomeDe, type Fluxograma, type NaFila } from './comum'
+import { ResumoDaUbs } from '@/components/encaminhamento/ResumoDaUbs'
 import { TituloCartao } from '@/components/monitor/Pagina'
 import { BotaoLinha, OpcaoLista } from '@/components/ui/botao-linha'
 
@@ -300,6 +301,8 @@ export function Classificar({ ep, onFim, corAtual = null }: {
           <Button size="sm" variant="outline" onClick={descartarRascunho}>Descartar rascunho</Button>
         </div>
       )}
+      {/* o que a UBS mandou com o paciente (motivo, escuta, sinais, SOAP) */}
+      <ResumoDaUbs unidadeId={unidadeAtiva?.unidade_id} episodioId={ep.id} />
       {/* situação */}
       <Secao>
         <div className="flex flex-wrap items-center gap-3.5">

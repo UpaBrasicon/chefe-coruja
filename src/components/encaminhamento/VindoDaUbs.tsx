@@ -13,9 +13,10 @@ import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { SITUACAO_ENVIO, nomeDoEnvio, type EnvioUpa } from '@/domain/encaminhamento'
+import { SITUACAO_ENVIO, nomeDoEnvio, separarEnviosDaRecepcao, type EnvioUpa } from '@/domain/encaminhamento'
 import { rotuloIdade } from '@/domain/idade'
 import { dataIso, hora } from '@/lib/formato'
+import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String((e as { message?: string })?.message ?? e))
@@ -36,13 +37,19 @@ export function VindoDaUbs({ unidadeId, fichas }: { unidadeId: string; fichas: F
   const envios = lista.data ?? []
   if (envios.length === 0) return null
   const hoje = dataIso()
+  // quem espera a chegada fica à vista; o que já foi registrado fica recolhido,
+  // para a busca da Nova ficha não sair da tela (teste de fluxo, 25/11/2026)
+  const { aguardando, resolvidos } = separarEnviosDaRecepcao(envios)
   return (
-    <section aria-label="Vindo da UBS" className="mb-4 flex flex-col gap-2 rounded-cartao border border-atencao/30 bg-alerta-atencao/40 px-4 py-3">
-      <span className="flex items-center gap-2 text-controle font-semibold text-tinta"><Ambulance className="size-4 text-atencao" aria-hidden /> Vindo da UBS</span>
+    <section aria-label="Vindo da UBS" className={cn('mb-4 flex flex-col gap-2 rounded-cartao border px-4 py-3', aguardando.length > 0 ? 'border-atencao/30 bg-alerta-atencao/40' : 'border-fio bg-superficie')}>
+      <span className="flex items-center gap-2 text-controle font-semibold text-tinta">
+        <Ambulance className={cn('size-4', aguardando.length > 0 ? 'text-atencao' : 'text-tinta-sussurro')} aria-hidden /> Vindo da UBS
+        <span className="font-normal text-apoio text-tinta-sussurro">{aguardando.length > 0 ? `${aguardando.length} aguardando a chegada` : 'ninguém aguardando a chegada'}</span>
+      </span>
+      {aguardando.length > 0 && (
       <ul className="flex flex-col divide-y divide-fio">
-        {envios.map((e) => {
+        {aguardando.map((e) => {
           const p = e.resumo.paciente
-          const aguarda = e.situacao === 'enviado' || (e.situacao === 'nao_chegou' && !e.chegada_por)
           return (
             <li key={e.id} className="flex flex-wrap items-start gap-x-3 gap-y-1.5 py-2">
               <div className="flex min-w-0 flex-[1_1_260px] flex-col">
@@ -55,17 +62,33 @@ export function VindoDaUbs({ unidadeId, fichas }: { unidadeId: string; fichas: F
                 <span className="text-rotulo text-tinta-sussurro">Enviado às {hora(e.enviado_em)}{e.enviado_por ? ` por ${e.enviado_por}` : ''}</span>
               </div>
               <Estado tom={SITUACAO_ENVIO[e.situacao].tom}>{SITUACAO_ENVIO[e.situacao].rotulo}</Estado>
-              {aguarda && (
-                <div className="flex gap-1.5">
-                  <Button size="sm" onClick={() => setChegada(e)}><LogIn /> Chegou</Button>
-                  {e.situacao === 'enviado' && <Button size="sm" variant="outline" onClick={() => setNaoChegou(e)}><UserX /> Não chegou</Button>}
-                </div>
-              )}
+              <div className="flex gap-1.5">
+                <Button size="sm" onClick={() => setChegada(e)}><LogIn /> Chegou</Button>
+                {e.situacao === 'enviado' && <Button size="sm" variant="outline" onClick={() => setNaoChegou(e)}><UserX /> Não chegou</Button>}
+              </div>
             </li>
           )
         })}
       </ul>
-      {chegada && <DialogoChegou e={chegada} fichas={fichas} onFechar={() => setChegada(null)} />}
+      )}
+      {resolvidos.length > 0 && (
+        <details className="text-apoio text-tinta-apoio">
+          <summary className="cursor-pointer select-none text-apoio text-tinta-apoio">Já registrados nas últimas 24 horas ({resolvidos.length})</summary>
+          <ul className="mt-1.5 flex flex-col divide-y divide-fio">
+            {resolvidos.map((e) => (
+              <li key={e.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1.5">
+                <span className="min-w-0 flex-[1_1_260px] text-apoio text-tinta">
+                  <strong className="font-semibold">{nomeDoEnvio(e)}</strong>
+                  <span className="text-tinta-sussurro">{e.resumo.paciente.data_nascimento ? ` · ${rotuloIdade(e.resumo.paciente.data_nascimento, hoje)}` : ''} · {e.unidade_origem} · {e.motivo}</span>
+                </span>
+                <span className="text-rotulo text-tinta-sussurro">{e.chegada_em ? `registrado às ${hora(e.chegada_em)}` : e.cancelado_em ? `cancelado às ${hora(e.cancelado_em)}` : `enviado às ${hora(e.enviado_em)}`}</span>
+                <Estado tom={SITUACAO_ENVIO[e.situacao].tom}>{SITUACAO_ENVIO[e.situacao].rotulo}</Estado>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      {chegada &&<DialogoChegou e={chegada} fichas={fichas} onFechar={() => setChegada(null)} />}
       {naoChegou && <DialogoNaoChegou e={naoChegou} onFechar={() => setNaoChegou(null)} />}
     </section>
   )
