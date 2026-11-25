@@ -71,12 +71,34 @@ export function textoVitais(sinais: Record<string, number> | null | undefined): 
  * Os limites que a triagem já conferia (classificar_risco e a tela Triar): dor
  * de 0 a 10 e Glasgow de 3 a 15, inteiros. Valem em todo registro de sinal
  * vital, na tela e no servidor (RT, 25/11/2026; migration 20270426000013). As
- * mensagens são as do servidor. Não há outro limite: os demais sinais entram crus.
+ * mensagens são as do servidor.
+ *
+ * Limites do possível, definidos pelo RT em 25/11/2026 (migration
+ * 20270426000016): temperatura de 25 a 45 °C, saturação de 0 a 100 % e
+ * frequência cardíaca de 0 a 300 bpm. Fora disso o registro é recusado. Os
+ * demais sinais continuam entrando crus.
  */
 export function erroDeLimite(k: string, n: number): string | null {
   if (k === VITAL_DOR && (!Number.isInteger(n) || n < 0 || n > 10)) return 'Dor pela escala numérica vai de 0 a 10.'
   if (k === 'glasgow' && (!Number.isInteger(n) || n < 3 || n > 15)) return 'Glasgow vai de 3 a 15.'
+  if (k === 'temperatura' && (n < 25 || n > 45)) return 'Temperatura impossível: o registro aceita de 25 a 45 °C.'
+  if (k === 'saturacao-o2' && (n < 0 || n > 100)) return 'Saturação impossível: vai de 0 a 100 %.'
+  if (k === 'frequencia-cardiaca' && (n < 0 || n > 300)) return 'Frequência cardíaca impossível: o registro aceita de 0 a 300 bpm.'
   return null
+}
+
+/**
+ * Alerta da temperatura, só texto na tela (RT, 25/11/2026): faixa normal de
+ * 36,5 a 37,5 °C; abaixo de 35 °C "hipotermia"; acima de 37,5 °C "febre". Não
+ * impede o registro (hipotermia grave real tem de poder ser registrada) e não
+ * mexe na cor da classificação, que é da enfermagem.
+ */
+export function alertaTemperatura(texto: string | null | undefined): 'hipotermia' | 'febre' | null {
+  const t = (texto ?? '').trim()
+  if (t === '') return null
+  const n = Number(t.replace(',', '.'))
+  if (Number.isNaN(n) || n < 25 || n > 45) return null
+  return n < 35 ? 'hipotermia' : n > 37.5 ? 'febre' : null
 }
 
 /** Texto do formulário → números para o servidor. Lança erro com o rótulo do campo. */
