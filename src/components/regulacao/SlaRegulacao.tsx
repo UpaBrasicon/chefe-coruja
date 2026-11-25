@@ -32,6 +32,7 @@ import {
   type FormPrazos, type Prazos, type Prioridade, type Sla, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
 import { resumoPrazosTipo } from '@/lib/regulamentacaoCentrais'
+import { rotuloEvolucao } from '@/lib/nirPainel'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -245,15 +246,27 @@ export function PrazosCentral({ unidadeId, editavel }: { unidadeId: string; edit
 }
 
 type Tempo = { status: StatusRegulacao; segundos: number; vezes: number; atual: boolean }
-export type Evolucao = { texto: string; sinais_vitais: string | null; em: string; autor: string | null }
+/** papel (migration 20270425000031): quem atualizou — medico, gestor ou nir; ausente nas evoluções antigas. */
+export type Evolucao = { texto: string; sinais_vitais: string | null; em: string; autor: string | null; papel?: string | null }
 
-/** Tempo em cada status, evoluções e, para a origem, "Atualizar evolução". */
-export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim }: {
+/**
+ * Tempo em cada status, evoluções e, para a origem, "Atualizar evolução".
+ * O NIR também atualiza a evolução do pedido (decisão do RT de 25/11/2026): a
+ * lista mostra "Evolução (versão N) — atualizada pelo NIR, <nome>".
+ */
+export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim, pedirEvolucao }: {
   id: string; sla: Sla | null; tempos: Tempo[]; evolucoes: Evolucao[]; podeEvoluir: boolean; aoFim: () => void
+  /** Abre o formulário de fora (a barra de ações do NIR); muda a cada clique. */
+  pedirEvolucao?: number
 }) {
   const [texto, setTexto] = React.useState('')
   const [sinais, setSinais] = React.useState('')
-  const [abrir, setAbrir] = React.useState(false)
+  const [abrir, setAbrir] = React.useState(!!pedirEvolucao && podeEvoluir)
+  const [pedidoVisto, setPedidoVisto] = React.useState(pedirEvolucao)
+  if (pedirEvolucao !== pedidoVisto) {
+    setPedidoVisto(pedirEvolucao)
+    if (pedirEvolucao && podeEvoluir) setAbrir(true)
+  }
   const evoluir = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('regulacao_atualizar_evolucao', { p_id: id, p_texto: texto.trim(), p_sinais_vitais: sinais.trim() || undefined })
@@ -290,7 +303,7 @@ export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim 
         <ul className="flex flex-col gap-1.5">
           {evolucoes.map((e, i) => (
             <li key={i} className="text-tinta">
-              <span className="text-rotulo text-tinta-sussurro">{fmtDataHora(e.em)} · {e.autor ?? '—'}</span>
+              <span className="text-rotulo text-tinta-sussurro">{rotuloEvolucao(evolucoes.length - i, e.papel, e.autor)} · {fmtDataHora(e.em)}</span>
               <p className="whitespace-pre-wrap">{e.texto}</p>
               {e.sinais_vitais && <p className="text-tinta-apoio">Sinais vitais: {e.sinais_vitais}</p>}
             </li>

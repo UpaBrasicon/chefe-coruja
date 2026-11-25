@@ -1,100 +1,138 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Internação do NIR (perfil NIR, pedido do RT de 24/11/2026): "equipe
 // responsável por olhar as regulações de todos os pacientes (observação,
-// encaminhamento, exames ou internação)". O menu do NIR fica só com esta tela
-// e a Escala.
+// encaminhamento, exames ou internação)". O menu do NIR fica com esta tela e
+// a Escala.
 //
-// • Os internados da unidade e quem está em regulação, só o resumo e o que
-//   acontece na regulação; o clique abre a aba Regulação do paciente, onde o
-//   NIR anexa exames, conversa com a central e abre pedido novo.
-// • Os avisos do NIR (mensagem do regulador, cobrança) ficam no topo, porque o
-//   menu não tem mais a tela de Avisos.
-// • Revisão do perfil (NI1 a NI3 = A, RT 24/11/2026): os avisos repetidos viram
-//   uma linha por pedido, com a ação e "Marcar como lidos" do grupo; quem está
-//   em regulação vem primeiro (prazo vencido no topo) e o resto fica recolhido
-//   em "Sem regulação"; fichas em caixa normal.
-// RPCs regulacao_pacientes e regulacao_do_paciente (migration 20270421000040).
+// Reconstruída pelo modelo do RT de 25/11/2026 (NIR1 a NIR5):
+// • Abas no topo: Painel NIR, Pendências com médicos (N) e Mapa de leitos;
+//   "Avisos" (não lidos) abre a lista, uma linha por pedido, no lugar do
+//   cartão de avisos; "Novo pedido" escolhe o paciente e abre o formulário
+//   que já existe.
+// • Painel NIR: lista por leito com filtros e o dossiê ao lado (PainelNir).
+// • O NIR avisa o médico (pendência com aviso) e também atualiza a evolução do
+//   pedido de regulação (decisão do RT de 25/11/2026), com autor = login; não
+//   escreve a evolução médica do prontuário.
+// RPCs regulacao_pacientes (20270421000040) e as da 20270425000030.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, Hospital } from 'lucide-react'
+import { Hospital, Plus } from 'lucide-react'
 import * as React from 'react'
 
-import { TituloPagina } from '@/components/monitor/Pagina'
-import { PacientesRegulacao } from '@/components/regulacao/PacientesRegulacao'
+import { Abas, TituloPagina } from '@/components/monitor/Pagina'
+import { AvisosNirBotao } from '@/components/nir/AvisosNirBotao'
+import { MapaLeitosNir } from '@/components/nir/MapaLeitosNir'
+import { PainelNir } from '@/components/nir/PainelNir'
+import { PendenciasMedicos } from '@/components/nir/PendenciasMedicos'
+import { useMapaLeitos, usePacientesNir, usePendenciasNir, useRecarregarNir } from '@/components/nir/dadosNir'
 import { Button } from '@/components/ui/button'
+import { CampoSelecao } from '@/components/ui/campo-selecao'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
+import { Label } from '@/components/ui/label'
+import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { ROTULO_ACAO, linhasDeAvisos } from '@/lib/avisosNir'
-import { dataCurta } from '@/lib/indicadoresRegulacao'
-import { dataIso } from '@/lib/formato'
-import { supabase } from '@/lib/supabase'
-import type { MinhaNotificacao } from '@/types/database'
+import { pedidosAbertos } from '@/lib/nirPainel'
+import type { PacienteRegulacao } from '@/lib/regulacaoPaciente'
+
+type AbaNir = 'painel' | 'pendencias' | 'mapa'
 
 export default function NirInternacao() {
   const { unidadeAtiva } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id ?? ''
-  // o aviso abre o paciente do pedido na lista de baixo
-  const [abrirPedido, setAbrirPedido] = React.useState<{ numero: number; vez: number } | null>(null)
-  const abrir = (numero: number) => setAbrirPedido((x) => ({ numero, vez: (x?.vez ?? 0) + 1 }))
+  const pacientes = usePacientesNir(unidadeId)
+  const pendencias = usePendenciasNir(unidadeId)
+  const mapa = useMapaLeitos(unidadeId)
+  const recarregar = useRecarregarNir(unidadeId)
+  const [aba, setAba] = React.useState<AbaNir>('painel')
+  const [selecionado, setSelecionado] = React.useState<string | null>(null)
+  const [abrirNovo, setAbrirNovo] = React.useState<{ pacienteId: string; vez: number } | null>(null)
+  const [escolherNovo, setEscolherNovo] = React.useState(false)
+  // "agora" das contas de horas: a hora da última leitura da lista (relê a cada minuto)
+  const agora = pacientes.dataUpdatedAt
+
+  const lista = pacientes.data ?? []
+  const pend = pendencias.data ?? []
+  const abertasMedico = pend.filter((x) => x.dono === 'medico' && x.status !== 'resolvida').length
+  const abrirPaciente = (id: string) => { setSelecionado(id); setAba('painel') }
+  // o aviso abre o paciente do pedido no painel
+  const abrirPedido = (numero: number) => {
+    const alvo = lista.find((l) => l.pedidos.some((p) => p.numero === numero))
+    if (alvo) abrirPaciente(alvo.paciente.id)
+  }
+
   return (
-    <div className="flex w-full max-w-5xl flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
+    <div className="flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
       <TituloPagina icone={Hospital} titulo="Internação"
-        descricao="Pacientes da unidade e o que acontece na regulação de cada um. Clique no paciente para ver a regulação, anexar exames, conversar com a central ou abrir um pedido." />
-      {unidadeId && <AvisosNir unidadeId={unidadeId} abrir={abrir} />}
-      {unidadeId && <PacientesRegulacao unidadeId={unidadeId} modo="nir" abrirPedido={abrirPedido} />}
+        descricao="Os pacientes da unidade por leito e o que acontece na regulação de cada um: o que a central espera, quem cobrar e quem já tem vaga." />
+      <div className="flex flex-wrap items-center gap-2">
+        <Abas rotulo="Internação do NIR" valor={aba} onChange={setAba} className="mb-0" abas={[
+          ['painel', 'Painel NIR'], ['pendencias', 'Pendências com médicos', abertasMedico], ['mapa', 'Mapa de leitos'],
+        ]} />
+        <span className="ml-auto flex flex-wrap gap-2">
+          {unidadeId && <AvisosNirBotao unidadeId={unidadeId} abrirPedido={abrirPedido} />}
+          <Button onClick={() => setEscolherNovo(true)} disabled={lista.length === 0}><Plus /> Novo pedido</Button>
+        </span>
+      </div>
+      {!unidadeId ? null : pacientes.isLoading ? <EsqueletoLinhas linhas={6} rotulo="Carregando os pacientes…" />
+        : pacientes.error ? <MensagemErro texto={(pacientes.error as Error).message} /> : (
+          <>
+            {pendencias.error && <MensagemErro texto={`Pendências: ${(pendencias.error as Error).message}`} />}
+            {aba === 'painel' && (
+              <PainelNir unidadeId={unidadeId} lista={lista} pend={pend} mapa={mapa.data} agora={agora} selecionado={selecionado}
+                selecionar={setSelecionado} abrirNovo={abrirNovo} />
+            )}
+            {aba === 'pendencias' && (
+              <PendenciasMedicos pend={pend} lista={lista} agora={agora} abrirPaciente={abrirPaciente} aoMudar={() => recarregar()} />
+            )}
+            {aba === 'mapa' && (
+              mapa.isLoading ? <EsqueletoLinhas linhas={6} rotulo="Carregando os leitos…" />
+                : mapa.error ? <MensagemErro texto={(mapa.error as Error).message} />
+                  : mapa.data && <MapaLeitosNir mapa={mapa.data} lista={lista} pend={pend} agora={agora} abrirPaciente={abrirPaciente} />
+            )}
+          </>
+        )}
+      <EscolherPaciente aberto={escolherNovo} lista={lista} aoFechar={() => setEscolherNovo(false)}
+        aoEscolher={(id) => {
+          setEscolherNovo(false)
+          abrirPaciente(id)
+          setAbrirNovo((x) => ({ pacienteId: id, vez: (x?.vez ?? 0) + 1 }))
+        }} />
     </div>
   )
 }
 
-const vezes = (n: number) => (n === 1 ? '1 aviso' : `${n} avisos`)
-
-function AvisosNir({ unidadeId, abrir }: { unidadeId: string; abrir: (numero: number) => void }) {
-  const qc = useQueryClient()
-  const chave = ['minhas-notificacoes', unidadeId]
-  const avisos = useQuery({
-    queryKey: chave,
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('minhas_notificacoes', { p_unidade: unidadeId })
-      if (error) throw error
-      return (data ?? []) as MinhaNotificacao[]
-    },
-  })
-  const marcar = useMutation({
-    mutationFn: async (ids: string[]) => {
-      const { error } = await supabase.rpc('marcar_avisos_lidos', { p_unidade: unidadeId, p_ids: ids })
-      if (error) throw error
-    },
-    onSuccess: () => void qc.invalidateQueries({ queryKey: chave }),
-  })
-  const linhas = linhasDeAvisos(avisos.data ?? [])
-  if (linhas.length === 0) return null
-  const ano = dataIso().slice(0, 4)
+/** "Novo pedido" do topo: escolhe o internado; o formulário abre no dossiê dele. */
+function EscolherPaciente({ aberto, lista, aoFechar, aoEscolher }: {
+  aberto: boolean; lista: PacienteRegulacao[]; aoFechar: () => void; aoEscolher: (pacienteId: string) => void
+}) {
+  const [id, setId] = React.useState('')
+  const ordenada = [...lista].sort((a, b) => Number(pedidosAbertos(a).length > 0) - Number(pedidosAbertos(b).length > 0)
+    || (a.leito ?? '').localeCompare(b.leito ?? '', 'pt-BR'))
   return (
-    <section aria-label="Avisos" className="flex flex-col gap-2 rounded-cartao border border-fio bg-superficie px-4 py-3 text-apoio">
-      <div className="flex flex-wrap items-center gap-2">
-        <Bell className="size-4 text-atencao" aria-hidden />
-        <span className="font-medium text-tinta">Avisos</span>
-        {linhas.length > 1 && (
-          <Button size="xs" variant="ghost" className="ml-auto" disabled={marcar.isPending}
-            onClick={() => marcar.mutate(linhas.flatMap((l) => l.naoLidos))}>Marcar todos como lidos</Button>
-        )}
-      </div>
-      <ul className="flex flex-col divide-y divide-trilha">
-        {linhas.map((l) => (
-          <li key={l.chave} className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2">
-            {l.numero != null && <span className="font-medium text-tinta">Regulação nº {l.numero}</span>}
-            {l.numero != null && <span aria-hidden className="text-tinta-sussurro">·</span>}
-            <span className={l.acao === 'evolucao' || l.acao === 'responder' ? 'text-atencao' : 'text-tinta'}>{l.motivo}</span>
-            <span className="text-tinta-sussurro">
-              · {l.vezes > 1 ? `${vezes(l.vezes)} desde ${dataCurta(dataIso(Date.parse(l.desde)), ano)}` : dataCurta(dataIso(Date.parse(l.ultimo)), ano)}
-            </span>
-            <span className="ml-auto flex gap-2">
-              {l.numero != null && l.acao && <Button size="xs" variant="outline" onClick={() => abrir(l.numero!)}>{ROTULO_ACAO[l.acao]}</Button>}
-              <Button size="xs" variant="ghost" disabled={marcar.isPending} onClick={() => marcar.mutate(l.naoLidos)}>Marcar como lidos</Button>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <Dialog open={aberto} onOpenChange={(o) => { if (!o) aoFechar() }}>
+      <DialogContent>
+        <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); if (id) aoEscolher(id) }}>
+          <DialogHeader>
+            <DialogTitle>Novo pedido de regulação</DialogTitle>
+            <DialogDescription>Escolha o paciente internado; o formulário abre no dossiê dele, já com o quadro do prontuário.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="nir-novo-paciente">Paciente</Label>
+            <CampoSelecao id="nir-novo-paciente" value={id} onChange={(e) => setId(e.target.value)}>
+              <option value="">Escolha…</option>
+              {ordenada.map((l) => (
+                <option key={l.paciente.id} value={l.paciente.id}>
+                  {l.leito ?? 'Sem leito'} · {l.paciente.nome}{l.setor ? ` · ${l.setor.nome}` : ''}{pedidosAbertos(l).length > 0 ? ' · já em regulação' : ''}
+                </option>
+              ))}
+            </CampoSelecao>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={aoFechar}>Cancelar</Button>
+            <Button type="submit" disabled={!id}>Abrir o formulário</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

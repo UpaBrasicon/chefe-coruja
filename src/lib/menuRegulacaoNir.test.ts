@@ -38,8 +38,14 @@ test('as telas ligam a aba Regulação do paciente e a lista', () => {
   assert.match(readFileSync('src/pages/plantao/porta/JanelaAtendimento.tsx', 'utf8'), /<AbaRegulacaoPaciente pacienteId=\{ep\.paciente_id\} \/>/)
   assert.match(readFileSync('src/components/observacao/CartaoObservacao.tsx', 'utf8'), /<AbaRegulacaoPaciente pacienteId=\{linha\.paciente_id\}/)
   assert.match(readFileSync('src/pages/plantao/AtendimentoPorta.tsx', 'utf8'), /<PacientesRegulacao unidadeId=\{unidadeAtiva\.unidade_id\} modo="medico" \/>/)
-  // NI1: o aviso do topo abre o paciente do pedido (abrirPedido)
-  assert.match(readFileSync('src/pages/nir/NirInternacao.tsx', 'utf8'), /<PacientesRegulacao unidadeId=\{unidadeId\} modo="nir" abrirPedido=\{abrirPedido\} \/>/)
+  // NI1 e NIR1 (modelo do RT, 25/11/2026): o aviso do topo abre o paciente do
+  // pedido no Painel NIR; o dossiê traz a conversa e os anexos do pedido
+  const nir = readFileSync('src/pages/nir/NirInternacao.tsx', 'utf8')
+  assert.match(nir, /<AvisosNirBotao unidadeId=\{unidadeId\} abrirPedido=\{abrirPedido\} \/>/)
+  assert.match(nir, /<PainelNir unidadeId=\{unidadeId\}/)
+  const dossie = readFileSync('src/components/nir/DossieNir.tsx', 'utf8')
+  assert.match(dossie, /<ConversaRegulacao solicitacaoId=\{p\.id\}/)
+  assert.match(dossie, /<AnexosRegulacao solicitacaoId=\{p\.id\} \/>/)
   assert.match(readFileSync('src/pages/regulacao/Regulacao.tsx', 'utf8'), /<PacientesRegulacao unidadeId=\{unidadeId\} modo="gestor" \/>/)
   assert.match(readFileSync('src/pages/regulacao/Regulacao.tsx', 'utf8'), /<ConversaRegulacao solicitacaoId=\{s\.id\}/)
 })

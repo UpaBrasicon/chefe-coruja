@@ -23,7 +23,11 @@ import { INTENCOES, type Conversa, type IntencaoMensagem } from '@/lib/regulacao
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
-export function ConversaRegulacao({ solicitacaoId, aoEnviar }: { solicitacaoId: string; aoEnviar?: () => void }) {
+export function ConversaRegulacao({ solicitacaoId, aoEnviar, rascunho }: {
+  solicitacaoId: string; aoEnviar?: () => void
+  /** Mensagem pronta (NIR, modelo do RT de 25/11/2026): preenche o campo para revisar antes de enviar; vez muda a cada clique. */
+  rascunho?: { texto: string; vez: number } | null
+}) {
   const qc = useQueryClient()
   const chave = ['regulacao-conversa', solicitacaoId]
   const conversa = useQuery({
@@ -41,7 +45,12 @@ export function ConversaRegulacao({ solicitacaoId, aoEnviar }: { solicitacaoId: 
     if (lida) void qc.invalidateQueries({ queryKey: ['regulacao-pacientes'] })
   }, [lida, qc])
 
-  const [texto, setTexto] = React.useState('')
+  const [texto, setTexto] = React.useState(rascunho?.texto ?? '')
+  const [rascunhoVisto, setRascunhoVisto] = React.useState(rascunho)
+  if (rascunho !== rascunhoVisto) {
+    setRascunhoVisto(rascunho)
+    if (rascunho) setTexto(rascunho.texto)
+  }
   const [intencao, setIntencao] = React.useState<IntencaoMensagem>('mensagem')
   const enviar = useMutation({
     mutationFn: async () => {
