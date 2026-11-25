@@ -1,6 +1,6 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
-import { Building2, ChevronRight, Compass, Lock, LogOut, Monitor, Moon, Repeat, ShieldCheck, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
-import { useState } from 'react'
+import { AlignJustify, Building2, Check, ChevronRight, Compass, Globe, Lock, LogOut, Monitor, Moon, Rows3, ShieldCheck, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { BotaoLinha } from '@/components/ui/botao-linha'
@@ -20,6 +20,17 @@ import type { Papel } from '@/types/database'
 // agrupados por unidade, a ativa primeiro (RT, 25/11/2026: dentro da UBS o
 // médico do hospital, o regulador e o NIR pareciam ter sumido). O tema (claro, escuro, automático) aparece quando o escuro
 // for liberado (guia do padrão, 1.4; TEMA_ESCURO_LIBERADO em lib/tema.ts).
+//
+// Revisão das telas novas (RT, 25/11/2026):
+// • ME1: papéis em lista, um por linha, com a marca de seleção à esquerda; o
+//   nome da unidade inteiro (até duas linhas); as outras unidades recolhidas
+//   sem rolagem dentro do menu; "Ver todas as unidades" no pé da lista, e o
+//   cabeçalho do menu sem "Trocar unidade" (a barra de cima já tem).
+// • ME2: o administrador geral aparece uma vez, à parte ("Toda a rede"), em
+//   vez de entrar só na unidade em uso.
+// • ME3: o registro do conselho só vem quando o papel em uso assina com ele
+//   (registroNoMenu, quem chama decide); a densidade saiu da barra de cima e
+//   mora aqui, ao lado do Tema.
 
 const ICONE_TEMA = { claro: Sun, escuro: Moon, automatico: Monitor } as const
 
@@ -38,6 +49,7 @@ export function MenuUsuario({
   unidade,
   podeTrocarUnidade,
   grupos,
+  adminGeral = false,
   papelAtivo,
   onTrocarPerfil,
   onSair,
@@ -45,6 +57,8 @@ export function MenuUsuario({
   primeirosPassos,
   tema = 'automatico',
   onTrocarTema,
+  compacto = false,
+  onTrocarDensidade,
   tamanho = 32,
 }: {
   nome?: string
@@ -54,6 +68,8 @@ export function MenuUsuario({
   podeTrocarUnidade: boolean
   /** Papéis da pessoa por unidade (agruparPerfisPorUnidade), a ativa primeiro. */
   grupos: GrupoDePerfis[]
+  /** Administrador geral da plataforma: o perfil vale em toda a rede e aparece à parte. */
+  adminGeral?: boolean
   papelAtivo: Papel | null
   /** Troca o perfil; de outra unidade, troca a unidade junto. */
   onTrocarPerfil: (papel: Papel, unidadeId: string) => void
@@ -64,6 +80,9 @@ export function MenuUsuario({
   primeirosPassos?: { perfilId?: string; inicio: string; rotas: string[] }
   tema?: Tema
   onTrocarTema?: (tema: Tema) => void
+  /** Densidade da tela (ME3): compacta ou confortável. */
+  compacto?: boolean
+  onTrocarDensidade?: (compacto: boolean) => void
   tamanho?: 32 | 38
 }) {
   const navigate = useNavigate()
@@ -83,6 +102,11 @@ export function MenuUsuario({
     navigate(to)
   }
   const ini = iniciais(nome)
+  const perfis = totalDePerfis(grupos) + (adminGeral ? 1 : 0)
+  const trocar = (p: Papel, unidadeId: string, on: boolean) => {
+    setAberto(false)
+    if (!on) onTrocarPerfil(p, unidadeId)
+  }
 
   return (
     <PopoverPrimitive.Root open={aberto} onOpenChange={setAberto}>
@@ -97,82 +121,87 @@ export function MenuUsuario({
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Positioner side="bottom" align="end" sideOffset={8} className="z-[80]">
-          <PopoverPrimitive.Popup className="flex w-[300px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-container border border-fio bg-superficie text-tinta shadow-popover outline-none data-open:animate-cc-dlg">
+          <PopoverPrimitive.Popup className="flex max-h-[var(--available-height)] w-[300px] max-w-[calc(100vw-32px)] flex-col overflow-y-auto rounded-container border border-fio bg-superficie text-tinta shadow-popover outline-none data-open:animate-cc-dlg">
             <div className="flex items-center gap-3 px-4 pt-4 pb-3.5">
               <span className="grid size-10 shrink-0 place-items-center rounded-capsula bg-fio text-controle font-semibold text-tinta-apoio">{ini}</span>
               <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="truncate text-corpo font-semibold text-tinta">{nome}</span>
                 {registro && <span className="text-apoio text-tinta-apoio">{registro}</span>}
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="text-apoio text-tinta-sussurro">{[papelAtivo ? PAPEL_LABEL[papelAtivo] : '', unidade].filter(Boolean).join(' · ')}</span>
-                  {podeTrocarUnidade && (
-                    <button type="button" onClick={() => ir('/seletor')} className="flex items-center gap-[5px] text-apoio whitespace-nowrap text-acao hover:text-acao-pressionada">
-                      <Repeat className="size-[13px]" aria-hidden />
-                      Trocar unidade
-                    </button>
-                  )}
-                </div>
+                <span className="text-apoio text-tinta-sussurro">{[papelAtivo ? PAPEL_LABEL[papelAtivo] : '', unidade].filter(Boolean).join(' · ')}</span>
               </div>
             </div>
-            {totalDePerfis(grupos) > 1 && (
-              <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
-                <span className="rotulo text-tinta-sussurro">Trocar perfil</span>
-                <div className="-mr-2 flex max-h-[min(45vh,320px)] flex-col gap-2.5 overflow-y-auto pr-2">
-                  {grupos.map((g) => {
+            {(perfis > 1 || podeTrocarUnidade) && (
+              <div className="flex flex-col gap-1 border-t border-trilha px-2 py-2.5">
+                {perfis > 1 && <span className="rotulo px-2 pb-0.5 text-tinta-sussurro">Trocar perfil</span>}
+                {perfis > 1 && adminGeral && (
+                  <ListaDePapeis rotulo="Perfil em toda a rede">
+                    <LinhaDePapel
+                      on={papelAtivo === 'admin'}
+                      rotulo={PAPEL_LABEL.admin}
+                      apoio="Toda a rede"
+                      nomeAcessivel={`${PAPEL_LABEL.admin} · toda a rede`}
+                      onClick={() => {
+                        const ativa = grupos.find((g) => g.ativa) ?? grupos[0]
+                        if (ativa) trocar('admin', ativa.unidadeId, papelAtivo === 'admin')
+                      }}
+                    />
+                  </ListaDePapeis>
+                )}
+                {perfis > 1 &&
+                  grupos.map((g) => {
                     const recolhivel = recolher && !g.ativa
                     const fechado = recolhivel && !abertas.has(g.unidadeId)
+                    const contagem = `${g.papeis.length} ${g.papeis.length === 1 ? 'perfil' : 'perfis'}`
                     return (
-                      <div key={g.unidadeId} className="flex flex-col gap-1">
+                      <div key={g.unidadeId} className="flex flex-col">
                         {recolhivel ? (
                           <button
                             type="button"
                             aria-expanded={!fechado}
+                            aria-label={`${g.nome}, ${contagem}`}
                             onClick={() => alternarGrupo(g.unidadeId)}
-                            className="flex min-h-7 items-center gap-1.5 text-left text-rotulo text-tinta-apoio hover:text-acao"
+                            className="flex min-h-8 items-start gap-1.5 rounded-controle px-2 py-1.5 text-left text-rotulo text-tinta-apoio hover:bg-trilha hover:text-tinta"
                           >
-                            <ChevronRight className={cn('size-3.5 shrink-0 transition-transform', !fechado && 'rotate-90')} aria-hidden />
-                            <span className="min-w-0 flex-1 truncate">{g.nome}</span>
-                            <span className="shrink-0 text-tinta-sussurro">
-                              {g.papeis.length} {g.papeis.length === 1 ? 'perfil' : 'perfis'}
-                            </span>
+                            <ChevronRight className={cn('mt-px size-3.5 shrink-0 transition-transform', !fechado && 'rotate-90')} aria-hidden />
+                            <span className="line-clamp-2 min-w-0 flex-1">{g.nome}</span>
+                            <span className="shrink-0 text-tinta-sussurro">{contagem}</span>
                           </button>
                         ) : (
-                          <span className="flex min-h-7 items-center gap-1.5 text-rotulo text-tinta-apoio">
-                            <Building2 className="size-3.5 shrink-0" aria-hidden />
-                            <span className="min-w-0 truncate">{g.nome}</span>
-                            {g.ativa && <span className="shrink-0 text-tinta-sussurro">· em uso</span>}
+                          <span className="flex min-h-8 items-start gap-1.5 px-2 py-1.5 text-rotulo text-tinta-apoio">
+                            <Building2 className="mt-px size-3.5 shrink-0" aria-hidden />
+                            <span className="line-clamp-2 min-w-0 flex-1">{g.nome}</span>
+                            {g.ativa && <span className="shrink-0 text-tinta-sussurro">em uso</span>}
                           </span>
                         )}
                         {!fechado && (
-                          <div className="flex flex-wrap gap-1.5 pl-5" role="radiogroup" aria-label={`Perfis em ${g.nome}`}>
+                          <ListaDePapeis rotulo={`Perfis em ${g.nome}`}>
                             {g.papeis.map((p) => {
                               const on = g.ativa && p === papelAtivo
                               return (
-                                <button
+                                <LinhaDePapel
                                   key={p}
-                                  type="button"
-                                  role="radio"
-                                  aria-checked={on}
-                                  aria-label={`${PAPEL_LABEL[p]} · ${g.nome}`}
-                                  onClick={() => {
-                                    setAberto(false)
-                                    if (!on) onTrocarPerfil(p, g.unidadeId)
-                                  }}
-                                  className={cn(
-                                    'rounded-capsula px-2.5 py-[3px] text-rotulo whitespace-nowrap hover:text-acao',
-                                    on ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta-sussurro',
-                                  )}
-                                >
-                                  {PAPEL_LABEL[p]}
-                                </button>
+                                  on={on}
+                                  rotulo={PAPEL_LABEL[p]}
+                                  nomeAcessivel={`${PAPEL_LABEL[p]} · ${g.nome}`}
+                                  onClick={() => trocar(p, g.unidadeId, on)}
+                                />
                               )
                             })}
-                          </div>
+                          </ListaDePapeis>
                         )}
                       </div>
                     )
                   })}
-                </div>
+                {podeTrocarUnidade && (
+                  <button
+                    type="button"
+                    onClick={() => ir('/seletor')}
+                    className="mt-0.5 flex min-h-8 items-center gap-2 rounded-controle px-2 text-left text-apoio text-acao hover:bg-trilha hover:text-acao-pressionada"
+                  >
+                    <Globe className="size-3.5 shrink-0" aria-hidden />
+                    Ver todas as unidades
+                  </button>
+                )}
               </div>
             )}
             {TEMA_ESCURO_LIBERADO && onTrocarTema && (
@@ -191,6 +220,25 @@ export function MenuUsuario({
                         aria-checked={on}
                         onClick={() => onTrocarTema(valor)}
                       >
+                        <Icone aria-hidden />
+                        {rotulo}
+                      </Button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {onTrocarDensidade && (
+              <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
+                <span className="rotulo text-tinta-sussurro">Densidade</span>
+                <div className="flex gap-1.5" role="radiogroup" aria-label="Densidade da tela">
+                  {([
+                    { valor: true, rotulo: 'Compacta', icone: Rows3 },
+                    { valor: false, rotulo: 'Confortável', icone: AlignJustify },
+                  ] as const).map(({ valor, rotulo, icone: Icone }) => {
+                    const on = valor === compacto
+                    return (
+                      <Button key={rotulo} size="sm" variant={on ? 'secondary' : 'ghost'} role="radio" aria-checked={on} onClick={() => onTrocarDensidade(valor)}>
                         <Icone aria-hidden />
                         {rotulo}
                       </Button>
@@ -251,5 +299,35 @@ export function MenuUsuario({
         </PopoverPrimitive.Positioner>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>
+  )
+}
+
+/** Os papéis de um grupo, um por linha (ME1). */
+function ListaDePapeis({ rotulo, children }: { rotulo: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col" role="radiogroup" aria-label={rotulo}>
+      {children}
+    </div>
+  )
+}
+
+/** Uma linha de 32 px: a marca de seleção à esquerda, na mesma coluna em todas. */
+function LinhaDePapel({ on, rotulo, apoio, nomeAcessivel, onClick }: { on: boolean; rotulo: string; apoio?: string; nomeAcessivel: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={on}
+      aria-label={nomeAcessivel}
+      onClick={onClick}
+      className={cn(
+        'flex min-h-8 items-center gap-1.5 rounded-controle px-2 text-left text-apoio hover:bg-trilha',
+        on ? 'font-semibold text-acao' : 'text-tinta',
+      )}
+    >
+      <Check className={cn('size-3.5 shrink-0', !on && 'invisible')} aria-hidden />
+      <span className="min-w-0 flex-1">{rotulo}</span>
+      {apoio && <span className="shrink-0 text-rotulo font-normal text-tinta-sussurro">{apoio}</span>}
+    </button>
   )
 }

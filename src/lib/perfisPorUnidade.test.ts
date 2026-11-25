@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { agruparPerfisPorUnidade, recolherOutrasUnidades, totalDePerfis, type VinculoDoPerfil } from './perfisPorUnidade.ts'
+import {
+  BUSCA_DE_UNIDADES_A_PARTIR, agruparPerfisPorUnidade, filtrarGrupos, recolherOutrasUnidades, registroNoMenu, totalDePerfis, type VinculoDoPerfil,
+} from './perfisPorUnidade.ts'
 
 const v = (unidade_id: string, nome: string, tipo: VinculoDoPerfil['unidade']['tipo'], papel: VinculoDoPerfil['papel']): VinculoDoPerfil => ({
   papel,
@@ -46,10 +48,48 @@ test('dentro da unidade, papéis na ordem de precedência e sem repetição', ()
   assert.deepEqual(grupos.find((g) => g.unidadeId === 'ubs')!.papeis, ['plantonista', 'enfermeiro'])
 })
 
-test('os papéis da ativa vindos do contexto (administrador geral) substituem os do vínculo', () => {
-  const grupos = agruparPerfisPorUnidade(vinculos, 'upa', ['admin', 'plantonista', 'enfermeiro'])
-  assert.deepEqual(grupos[0].papeis, ['admin', 'plantonista', 'enfermeiro'])
-  assert.ok(!grupos.slice(1).some((g) => g.papeis.includes('admin')), 'o administrador geral aparece uma vez, na ativa')
+test('ME2: o administrador geral sai dos grupos e não muda com a unidade em uso', () => {
+  const comAdmin = [...vinculos, v('central', 'Central de Regulação', 'clinica', 'admin')]
+  for (const ativa of ['central', 'upa', 'ubs']) {
+    const grupos = agruparPerfisPorUnidade(comAdmin, ativa, true)
+    assert.ok(!grupos.some((g) => g.papeis.includes('admin')), 'o administrador fica à parte, uma vez só')
+    assert.deepEqual(grupos.find((g) => g.unidadeId === 'central')!.papeis, ['regulador'], `a Central tem o mesmo perfil com ${ativa} em uso`)
+  }
+  // sem administrador geral, o vínculo de admin de uma unidade continua no grupo dela
+  assert.deepEqual(agruparPerfisPorUnidade(comAdmin, 'upa').find((g) => g.unidadeId === 'central')!.papeis, ['admin', 'regulador'])
+})
+
+test('ME2: a unidade em uso no topo e as outras sempre em ordem alfabética', () => {
+  for (const ativa of ['upa', 'hosp', 'central']) {
+    const resto = agruparPerfisPorUnidade(vinculos, ativa).slice(1).map((g) => g.nome)
+    assert.deepEqual(resto, [...resto].sort((a, b) => a.localeCompare(b, 'pt-BR')))
+  }
+  assert.equal(BUSCA_DE_UNIDADES_A_PARTIR, 7, 'busca só com mais de seis unidades')
+})
+
+test('ME2: a busca do seletor acha pelo nome da unidade ou do papel, sem acento', () => {
+  const grupos = agruparPerfisPorUnidade(vinculos, 'ubs')
+  const rotulo = (p: string) => ({ regulador: 'Médico regulador', nir: 'NIR' } as Record<string, string>)[p] ?? p
+  assert.deepEqual(filtrarGrupos(grupos, 'homologacao', rotulo).map((g) => g.unidadeId), ['ubs', 'upa'])
+  assert.deepEqual(filtrarGrupos(grupos, 'regulador', rotulo).map((g) => g.unidadeId), ['central'])
+  assert.equal(filtrarGrupos(grupos, '  ', rotulo).length, grupos.length)
+})
+
+test('ME3: o conselho só aparece no papel que assina com ele', () => {
+  const medico = { crm: '000000', uf_crm: 'SP' }
+  assert.equal(registroNoMenu('plantonista', medico), 'CRM 000000/SP')
+  assert.equal(registroNoMenu('regulador', medico), 'CRM 000000/SP')
+  assert.equal(registroNoMenu('telemedicina', medico), 'CRM 000000/SP')
+  for (const papel of ['nir', 'gestor', 'recepcao', 'admin', 'faturamento', 'gestor_secretaria'] as const) {
+    assert.equal(registroNoMenu(papel, medico), null, `${papel} não mostra o CRM`)
+  }
+  const enf = { conselho: 'COREN', registro_numero: '123', registro_uf: 'GO' }
+  assert.equal(registroNoMenu('enfermeiro', enf), 'COREN 123/GO')
+  assert.equal(registroNoMenu('tecnico_enfermagem', enf), 'COREN 123/GO')
+  assert.equal(registroNoMenu('plantonista', enf), null, 'o COREN não vira CRM')
+  assert.equal(registroNoMenu('farmaceutico', enf), null)
+  assert.equal(registroNoMenu('regulador', { conselho: 'CRM', registro_numero: '55', registro_uf: 'GO' }), 'CRM 55/GO')
+  assert.equal(registroNoMenu(null, medico), null)
 })
 
 test('sem unidade ativa conhecida, só ordena pelo nome', () => {
