@@ -11185,6 +11185,13 @@ export type Database = {
       rede_regulacoes: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       nir_cobrar: { Args: { p_ref: string; p_tipo: string; p_unidade: string }; Returns: number }
       nir_pendencias: { Args: { p_unidade: string }; Returns: Json }
+      // Internação do NIR pelo modelo do RT (migration 20270425000030)
+      regulacao_pendencia_unidade_criar: { Args: { p_dono?: string; p_medicos?: string[] | null; p_motivo: string; p_solicitacao: string; p_titulo: string; p_urgencia?: string }; Returns: string }
+      regulacao_pendencia_unidade_reavisar: { Args: { p_id: string }; Returns: number }
+      regulacao_pendencia_unidade_resolver: { Args: { p_id: string; p_nota?: string | null }; Returns: undefined }
+      regulacao_pendencias_da_unidade: { Args: { p_unidade: string }; Returns: Json }
+      nir_medicos_do_setor: { Args: { p_setor?: string | null; p_unidade: string }; Returns: Json }
+      nir_mapa_leitos: { Args: { p_unidade: string }; Returns: Json }
       // regulação dentro do paciente, conversa com a central e NIR (migration 20270421000040)
       regulacao_conversa: { Args: { p_solicitacao: string }; Returns: Json }
       regulacao_conversa_enviar: { Args: { p_intencao?: string; p_solicitacao: string; p_texto: string }; Returns: string }
