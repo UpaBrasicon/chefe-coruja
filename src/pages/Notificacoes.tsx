@@ -130,7 +130,9 @@ export default function Notificacoes() {
   const categorias = new Set(todos.map((n) => categoria(n.tipo)))
   const filtros = [...FILTROS, ...FILTROS_SE_HOUVER.filter((c) => categorias.has(c))]
   const lista = todos.filter((n) => filtro === 'Todos' || (filtro === 'Não lidos' ? !n.lida : categoria(n.tipo) === filtro))
-  const naoLidos = todos.filter((n) => !n.lida).length
+  // SH1/E1: o número de não lidos conta só os avisos do perfil em uso; os de outros perfis têm a contagem deles
+  const naoLidos = separarPorPerfil(todos, papelAtivo).doPerfil.filter((n) => !n.lida).length
+  const algumNaoLido = todos.some((n) => !n.lida)
   // SH1 (revisão do perfil Enfermeiro, RT 24/11/2026): os avisos seguem o perfil em uso
   const { doPerfil, outros } = separarPorPerfil(lista, papelAtivo)
 
@@ -177,7 +179,7 @@ export default function Notificacoes() {
         titulo="Avisos"
         descricao={naoLidos ? `${naoLidos} não ${naoLidos === 1 ? 'lido' : 'lidos'}` : 'Tudo lido'}
         acoes={
-          <Button variant="outline" disabled={!naoLidos || marcar.isPending} onClick={() => marcar.mutate(null)} className="px-[13px] py-2">
+          <Button variant="outline" disabled={!algumNaoLido || marcar.isPending} onClick={() => marcar.mutate(null)} className="px-[13px] py-2">
             <ShieldCheck className="size-[15px]" aria-hidden /> Marcar todas como lidas
           </Button>
         }
