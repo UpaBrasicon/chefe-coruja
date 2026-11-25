@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Spinner } from '@/components/ui/spinner'
 import { useUnidade } from '@/contexts/UnidadeContext'
+import { DesignarGestor } from '@/pages/admin/DesignarGestor'
 import { JanelaUnidade, type NovaUnidadeInicial } from '@/pages/admin/JanelaUnidade'
 import { PAPEL_LABEL, TIPO_UNIDADE_LABEL } from '@/lib/constants'
 import { avaliarUnidade, useUnidadesRede, type UnidadeCadastro } from '@/lib/dadosAdmin'
@@ -665,6 +666,7 @@ function useNaRede() {
 
 function FichaUnidade({ u, org, modo, onEscolher, onEditarUnidade }: { u: UnidadeNaRede; org: OrganizacaoRede } & AcoesFicha) {
   const admin = modo === 'admin'
+  const qc = useQueryClient()
   const sec = org.secretarias.find((s) => s.id === u.secretaria_id)
   const papeis = Object.entries(u.pessoas).sort((a, b) => b[1] - a[1])
   const estado = React.useContext(EstadosDaRede)?.get(u.id)
@@ -707,6 +709,9 @@ function FichaUnidade({ u, org, modo, onEscolher, onEditarUnidade }: { u: Unidad
           <Dado rotulo="Gestão" valor={u.gestores.length ? u.gestores.join(', ') : null} />
           <Dado rotulo="WhatsApp" valor={u.whatsapp} />
         </dl>
+        {/* RT, 25/11/2026: o gestor da unidade é designado pela gestão da secretaria (o banco confere) */}
+        {!admin && u.ativo && !u.eh_sede_rede && <DesignarGestor unidadeId={u.id} unidadeNome={u.nome} onDesignado={() => { void qc.invalidateQueries({ queryKey: CHAVE }) }} />}
+        {!admin && u.ativo && !u.eh_sede_rede && u.gestores.length === 0 && <p className="mt-1.5 text-rotulo text-tinta-sussurro">Esta unidade ainda não tem gestor.</p>}
       </Bloco>
       <Bloco titulo={`Pessoas (${pessoas})`}>
         {papeis.length === 0 ? (

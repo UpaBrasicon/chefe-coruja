@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 
 import {
   montarArvore, normalizar, quemDesigna, ramoParaGravar, resumoRamos, tipoDoRamo, totalPessoas, type OrganizacaoRede, type UnidadeNaRede,
+  termoDeBuscaDeConta,
 } from './redeSecretaria.ts'
 
 // Rede a partir da Secretaria (pedido do RT, 24/11/2026).
@@ -95,6 +96,22 @@ test('quem designa as pessoas da unidade', () => {
     'Quem convida e muda as pessoas desta unidade: o gestor da unidade (hoje sem gestor ativo), a gestão de SMS (ainda sem pessoa designada) e o administrador.')
   assert.equal(quemDesigna(['Ana', 'Davi', 'Eva'], [], null),
     'Quem convida e muda as pessoas desta unidade: o gestor da unidade (Ana, Davi e Eva) e o administrador.')
+})
+
+// RT, 25/11/2026 (teste de fluxo A, A-17): o gestor da secretaria designa o gestor da unidade
+test('Designar gestor: busca por e-mail inteiro ou 3 letras do nome; só o perfil da secretaria vê o botão', () => {
+  assert.equal(termoDeBuscaDeConta('  Maria  Silva '), 'Maria Silva')
+  assert.equal(termoDeBuscaDeConta('ma'), null)
+  assert.equal(termoDeBuscaDeConta('Maria@Rede.gov.br'), 'maria@rede.gov.br')
+  assert.equal(termoDeBuscaDeConta('maria@'), null, 'pedaço de e-mail não busca')
+  const tela = readFileSync('src/pages/admin/RedeSecretaria.tsx', 'utf8')
+  assert.match(tela, /\{!admin && u\.ativo && !u\.eh_sede_rede && <DesignarGestor /)
+  const janela = readFileSync('src/pages/admin/DesignarGestor.tsx', 'utf8')
+  assert.match(janela, /rpc\('secretaria_buscar_contas'/)
+  assert.match(janela, /rpc\('secretaria_designar_gestor'/)
+  const sql = readFileSync('supabase/migrations/20270426000015_secretaria_designar_gestor.sql', 'utf8')
+  assert.equal((sql.match(/NOT private\.secretaria_gere_unidade\(p_unidade\)/g) ?? []).length, 2, 'as duas RPCs conferem a secretaria da unidade')
+  assert.match(sql, /registrar_auditoria\('gestor_designado_pela_secretaria'/)
 })
 
 // A tela fica só no perfil Administrador (a rota /painel) e grava só pelas RPCs.
