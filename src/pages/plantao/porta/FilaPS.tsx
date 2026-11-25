@@ -4,9 +4,9 @@
 // finalizados e excluídos do dia. A cor manda; 80+ e prioridade legal só
 // desempatam dentro da mesma cor.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, ClipboardPlus, Megaphone, RotateCcw, Stethoscope } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, Megaphone, RotateCcw, Stethoscope } from 'lucide-react'
 import * as React from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
@@ -333,18 +333,20 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
               </TabsTrigger>
             ))}
           </TabsList>
-          {/* o que passou do alvo aparece em qualquer aba: não some ao olhar outra lista */}
-          <span className={cn('pb-2.5 text-apoio', acimaDoAlvo ? 'font-medium text-critico' : 'text-tinta-sussurro')}>
-            {ubs ? 'imediato e prioritário da escuta, depois prioridade legal e chegada' : acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
-          </span>
-          {/* M3 (RT, 24/11/2026): chama o primeiro da fila na ordem de sempre, no consultório escolhido no topo */}
-          <span className="mb-1.5 ml-auto flex flex-wrap items-center gap-2">
-            {/* B-08 (RT, 25/11/2026): na emergência o médico também abre ficha; leva à mesma Nova ficha da recepção */}
-            {!ubs && ehPlantonista && (
-              <Button size="sm" variant="outline" render={<Link to="/recepcao" />}>
-                <ClipboardPlus /> Nova ficha
-              </Button>
+          {/* o que passou do alvo aparece em qualquer aba: não some ao olhar outra lista.
+              BT1 (RT, 25/11/2026): junto da ordem da fila, com o ponto vermelho, e não solto em vermelho */}
+          <span className="pb-2.5 text-apoio text-tinta-sussurro">
+            {ubs ? 'imediato e prioritário da escuta, depois prioridade legal e chegada' : 'por cor e tempo de espera'}
+            {acimaDoAlvo > 0 && (
+              <> · <span className="inline-flex items-center gap-1.5 text-tinta">
+                <span aria-hidden className="size-2 shrink-0 rounded-capsula bg-critico" />
+                {acimaDoAlvo === 1 ? '1 acima do alvo da cor' : `${acimaDoAlvo} acima do alvo da cor`}
+              </span></>
             )}
+          </span>
+          {/* M3 (RT, 24/11/2026): chama o primeiro da fila na ordem de sempre, no consultório escolhido no topo.
+              BT1: "Nova ficha" subiu para a linha do título (AtendimentoPorta) */}
+          <span className="mb-1.5 ml-auto flex flex-wrap items-center gap-2">
             {proximo && (
               <Button size="sm" disabled={chamarProximo.isPending || !salaDoProximo}
                 title={!salaDoProximo ? 'Escolha seu consultório no topo da fila' : `Chama ${nomeDe(proximo)}`}
@@ -354,9 +356,6 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
             )}
           </span>
         </div>
-        {proximo && !salaDoProximo && (
-          <p className="-mt-1 text-rotulo text-tinta-sussurro">Para chamar o próximo, escolha seu consultório acima.</p>
-        )}
         <MensagemErro formato="linha" erro={chamarProximo.error} acao="chamar o próximo" className="mt-0" />
         {chamadoAgora && (
           <p role="status" className="-mt-1 text-apoio text-acao">Chamado no painel: {chamadoAgora}.</p>

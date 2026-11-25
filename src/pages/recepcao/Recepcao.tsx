@@ -154,7 +154,11 @@ const termoValido = (t: string) => t.replace(/[^\p{L}]/gu, '').length >= 3 || so
 const cartao = 'rounded-cartao border border-fio bg-superficie'
 const pilula = 'inline-flex items-center rounded-capsula px-2.5 py-1 text-rotulo font-semibold whitespace-nowrap'
 
-export default function Recepcao() {
+/**
+ * embutida (BT1, RT 25/11/2026): a Nova ficha aberta de dentro do Atendimento do
+ * médico (/atendimento?ficha=nova), sem as abas da recepção.
+ */
+export default function Recepcao({ embutida = false }: { embutida?: boolean } = {}) {
   const { unidadeAtiva, papeisDaUnidade, papelAtivo } = useUnidade()
   const unidadeId = unidadeAtiva?.unidade_id
   const ehGestor = papeisDaUnidade.includes('gestor')
@@ -170,13 +174,13 @@ export default function Recepcao() {
   const { tela } = useParams()
   const [params] = useSearchParams()
   // /recepcao/fila-triagem, /fila-medica e /painel (itens da lateral); ?aba= continua valendo
-  const abaPedida: Aba = (Object.entries(ROTA) as [Aba, string][]).find(([, r]) => r === tela)?.[0]
+  const abaPedida: Aba = embutida ? 'ficha' : (Object.entries(ROTA) as [Aba, string][]).find(([, r]) => r === tela)?.[0]
     ?? (['hoje', 'ficha', 'triagem', 'medica', 'painel'] as const).find((a) => a === params.get('aba')) ?? 'ficha'
   // sem poder abrir ficha, /recepcao abre na primeira tela que a pessoa tem
   const aba: Aba = abaPedida === 'ficha' && !podeAbrirFicha ? abasVisiveis[0].aba : abaPedida
   const irPara = (a: Aba) => navigate(a === 'ficha' ? '/recepcao' : `/recepcao/${ROTA[a]}`, { replace: true })
   // a Recepção troca de tela pela lateral; quem abre ficha por outro papel usa as abas
-  const mostrarAbas = papelAtivo !== 'recepcao'
+  const mostrarAbas = !embutida && papelAtivo !== 'recepcao'
   const agora = useAgora(30_000)
 
   // ── portas (setores de emergência; na UBS, consultórios) em que a pessoa pode abrir ficha
