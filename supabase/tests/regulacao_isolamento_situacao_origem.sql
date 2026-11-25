@@ -1,5 +1,5 @@
 -- RO3 da revisão unslop (RT, 25/11/2026) — migration
--- 20270426000044_regulacao_isolamento_situacao_na_origem.sql.
+-- 20270426000044_regulacao_isolamento_situacao_na_origem.sql e 20270426000045 (conversa).
 -- O JSON do pedido (regulacao_detalhe e regulacao_lista) traz a situação e o
 -- agente do isolamento, para a origem mostrar o mesmo que a central.
 -- ROLLBACK no fim (nada é gravado).
@@ -20,6 +20,10 @@ BEGIN
   -- o que já vinha continua vindo
   IF j->>'isolamento_tipo' IS DISTINCT FROM 'goticula' OR NOT (j ? 'vulnerabilidades') OR NOT (j ? 'pendencia_pergunta') THEN
     RAISE EXCEPTION 'RO3: o JSON do pedido perdeu campos que já trazia';
+  END IF;
+  -- RO2 (migration 20270426000045): o estado da conversa vem junto, com a lista do que a central espera
+  IF jsonb_typeof(j->'conversa'->'aguardando') IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION 'RO2: estado da conversa fora do JSON do pedido';
   END IF;
 END $$;
 ROLLBACK;
