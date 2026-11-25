@@ -57,13 +57,6 @@ export type UnidadeRede = { id: string; nome: string; tipo?: string | null }
 export const destinosDoEnvio = (rede: UnidadeRede[], unidadeId: string) =>
   rede.filter((u) => u.id !== unidadeId && (!u.tipo || u.tipo === 'upa' || u.tipo === 'hospital'))
 
-/** Problema do envio feito da escuta (RT, 25/11/2026): um CID-10 ou uma CIAP-2. */
-export type ProblemaDoEnvio = { cid: string; descricao: string } | { ciap: string; descricao: string }
-export const rotuloDoProblema = (p: ProblemaDoEnvio) => `${'ciap' in p ? p.ciap : p.cid}${p.descricao ? ` · ${p.descricao}` : ''}`
-/** Argumentos a mais de encaminhar_upa: p_cid ou p_ciap, só quando há problema (envio pela escuta). */
-export const argsDoProblema = (p: ProblemaDoEnvio | null | undefined): { p_cid?: string; p_ciap?: string } =>
-  !p ? {} : 'ciap' in p ? { p_ciap: p.ciap } : { p_cid: p.cid }
-
 export type Etapa = { titulo: string; detalhe: string; estado: 'feita' | 'atual' | 'falta' | 'falhou' }
 
 /** As etapas do rastreio (opção C): enviado → aguardando a chegada → chegou
