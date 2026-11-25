@@ -86,6 +86,18 @@ test('TM2: o menu do perfil Telemedicina tem Chamados, Escala, Histórico e Pron
   assert.match(bloco, /ITEM_PRONTUARIOS/)
 })
 
+test('CH2: sem a faixa antiga de parâmetros no perfil Telemedicina (contradizia o selo)', () => {
+  const faixa = readFileSync('src/components/casca/FaixaDoPapel.tsx', 'utf8')
+  assert.doesNotMatch(faixa, /FaixaTelemedicina|Chamados esperando/)
+})
+
+test('CH2: o selo só conta o plantão da categoria telemedicina e o check-in dele', () => {
+  const comum = readFileSync('src/pages/telemedicina/comum.tsx', 'utf8')
+  assert.match(comum, /p\.perfil_id === perfil!\.id && p\.papel === 'telemedicina'/)
+  assert.match(comum, /const checkin = turno \?/)
+  assert.match(comum, /\{r\.turno && r\.checkin && \(\s*<Button size="sm" variant="outline"/)
+})
+
 test('CH1: a tela da teleinterconsulta escolhe pelo perfil em uso, não pelos papéis', () => {
   const tela = readFileSync('src/pages/telemedicina/Teleinterconsulta.tsx', 'utf8')
   assert.doesNotMatch(tela, /papeisDaUnidade\.includes\('telemedicina'\)/)

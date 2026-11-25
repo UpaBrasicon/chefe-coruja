@@ -1,18 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { BedDouble, Building2, ClipboardList, Clock, DoorOpen, FlaskConical, Hourglass, MonitorSmartphone, PackageX, ShieldAlert, Users } from 'lucide-react'
+import { BedDouble, Building2, ClipboardList, DoorOpen, FlaskConical, PackageX, ShieldAlert, Users } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
-import { meuPlantaoAgora } from '@/lib/rpcCasca'
-import { formatarDuracao, nivelDoTurno } from '@/domain/plantao'
+import { formatarDuracao } from '@/domain/plantao'
 import { FaixaParametros, Parametro, ResumoParametros, type Nivel } from '@/components/monitor/Parametros'
 import { separarVencidos } from '@/lib/filaValidacao'
 import { LIMITES_PADRAO } from '@/lib/limitesUnidade'
 import type { Papel } from '@/types/database'
-import { data, hora } from '@/lib/formato'
 
 // Faixa de parâmetros dos papéis que a mantêm (P/index.html 32208–32218 e
-// 33383–33430): farmacêutico, administrador e telemedicina, só na página
+// 33383–33430): farmacêutico e administrador, só na página
 // inicial do papel. O plantonista não tem mais faixa (o cartão de turno da
 // Central a substitui) e o gestor também não (as grandezas dele moram no
 // painel). Cada célula lê o banco pela permissão do próprio usuário; o que o
@@ -182,66 +180,13 @@ function FaixaAdmin() {
   )
 }
 
-// ── telemedicina ────────────────────────────────────────────────────────────
-type Tele = { status: string; urgencia: string; criada_em: string; respondida_em: string | null; minha: boolean }
-
-function FaixaTelemedicina({ unidadeId }: { unidadeId: string }) {
-  const { data: d } = useQuery({
-    queryKey: ['faixa-telemedicina', unidadeId],
-    refetchInterval: 30_000,
-    queryFn: async () => {
-      const [agora, teles, plantao] = await Promise.all([
-        horaServidor(),
-        supabase.rpc('teleinterconsultas_da_unidade', { p_unidade: unidadeId, p_dias: 1 }),
-        meuPlantaoAgora(),
-      ])
-      if (teles.error) throw teles.error
-      const meu = ((plantao.data ?? []) as { unidade_id: string; inicio: string; fim: string }[]).find((p) => p.unidade_id === unidadeId) ?? null
-      return { agora, teles: (teles.data ?? []) as Tele[], plantao: meu }
-    },
-  })
-  const teles = d?.teles ?? []
-  const abertas = teles.filter((t) => t.status === 'aberta')
-  const urgentes = abertas.filter((t) => t.urgencia === 'urgente').length
-  const maisAntiga = d && abertas.length ? Math.max(...abertas.map((t) => minutosDesde(t.criada_em, d.agora))) : null
-  const comigo = teles.filter((t) => t.status === 'em_atendimento' && t.minha).length
-  const respondidas = d ? teles.filter((t) => t.status === 'respondida' && t.minha && t.respondida_em && data(t.respondida_em) === data(d.agora)).length : 0
-  const fim = d?.plantao ? new Date(d.plantao.fim) : null
-  const restante = d && fim ? Math.max(0, Math.round((fim.getTime() - d.agora.getTime()) / 60_000)) : null
-  const duracao = d?.plantao ? Math.round((Date.parse(d.plantao.fim) - Date.parse(d.plantao.inicio)) / 60_000) : null
-  return (
-    <FaixaParametros rotulo="Parâmetros da telemedicina">
-      <Parametro
-        grandeza="observacao" icone={Hourglass} rotulo="Chamados esperando"
-        valor={d ? abertas.length : '—'} unidade="na fila"
-        estado={!d ? 'Carregando' : abertas.length ? `Mais antigo há ${formatarDuracao(maisAntiga ?? 0)}${urgentes ? ` · ${urgentes} ${urgentes === 1 ? 'urgente' : 'urgentes'}` : ''}` : 'Fila vazia'}
-        nivel={urgentes ? 'critico' : abertas.length ? 'atencao' : 'ok'}
-      />
-      <Parametro
-        grandeza="leitos" icone={MonitorSmartphone} rotulo="Em atendimento comigo"
-        valor={d ? comigo : '—'} unidade={comigo === 1 ? 'chamado' : 'chamados'}
-        estado={comigo ? 'Aceitos e ainda sem parecer' : 'Nenhum aberto'} nivel="ok"
-      />
-      <Parametro
-        grandeza="turno" icone={Clock} rotulo="Tempo restante do plantão"
-        valor={restante === null ? '—' : formatarDuracao(restante)}
-        estado={d?.plantao ? `Relógio do servidor · até ${hora(fim!)}` : 'Sem plantão remoto na escala agora'}
-        nivel={restante === null ? 'ok' : nivelDoTurno(restante)}
-        pct={restante !== null && duracao ? 1 - restante / duracao : undefined}
-      />
-      <Parametro
-        grandeza="suprimento" icone={ClipboardList} rotulo="Respondidas por mim hoje"
-        valor={d ? respondidas : '—'} unidade="pareceres"
-        estado="Viram documento no prontuário ao responder" nivel="ok"
-      />
-    </FaixaParametros>
-  )
-}
+// Telemedicina sem faixa (revisão do perfil, RT 24/11/2026): os Chamados têm a
+// contagem nas abas e um selo só de situação no topo; a faixa antiga
+// contradizia o selo e ficava em "Carregando".
 
 export function FaixaDoPapel({ papel, unidadeId }: { papel: Papel | null; unidadeId?: string }) {
   if (papel === 'admin') return <FaixaAdmin />
   if (!unidadeId) return null
   if (papel === 'farmaceutico') return <FaixaFarmaceutico unidadeId={unidadeId} />
-  if (papel === 'telemedicina') return <FaixaTelemedicina unidadeId={unidadeId} />
   return null
 }
