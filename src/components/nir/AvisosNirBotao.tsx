@@ -6,7 +6,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
 import * as React from 'react'
 
-import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
@@ -46,10 +45,11 @@ export function AvisosNirBotao({ unidadeId, abrirPedido }: { unidadeId: string; 
   const ano = dataIso().slice(0, 4)
   return (
     <div ref={caixa} className="relative">
-      <Button variant="outline" aria-expanded={aberto} aria-haspopup="dialog" onClick={() => setAberto(!aberto)}>
-        <Bell className={cn(naoLidos > 0 && 'text-atencao')} aria-hidden />
+      <Button size="sm" variant="outline" aria-expanded={aberto} aria-haspopup="dialog" onClick={() => setAberto(!aberto)}
+        aria-label={naoLidos > 0 ? `Avisos, ${naoLidos} não lido${naoLidos === 1 ? '' : 's'}` : 'Avisos'}>
+        <Bell aria-hidden />
         Avisos
-        {naoLidos > 0 && <Badge variant="warning">{naoLidos} não lido{naoLidos === 1 ? '' : 's'}</Badge>}
+        {naoLidos > 0 && <span className="rounded-controle bg-critico px-1.5 font-mono text-rotulo font-semibold text-sobre-acao tabular-nums">{naoLidos}</span>}
       </Button>
       {aberto && (
         <div role="dialog" aria-label="Avisos do NIR"

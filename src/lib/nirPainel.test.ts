@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import {
-  casaBusca, contagens, idsNavegaveis, indicadoresMapa, indicadoresPendencias, linhasDoMapa, listaNir, precisaAcaoNir,
+  casaBusca, contagens, etiquetaIsolamento, idsNavegaveis, indicadoresMapa, indicadoresPendencias, linhasDoMapa, listaNir, precisaAcaoNir,
   precisaCobrarMedico, resumoDoPlantao, rotuloEvolucao, rotuloIsolamento, sinalPrincipal, textoParaWhatsApp, vizinho,
   type MapaLeitos, type PendenciaUnidade,
 } from './nirPainel.ts'
@@ -146,6 +146,8 @@ test('linha do tempo: pendência da unidade e a evolução atualizada pelo NIR',
 test('rótulos: isolamento e a evolução do pedido com o papel', () => {
   assert.equal(rotuloIsolamento(['aerossol', 'goticula', 'contato']), 'Isolamento: aerossol, gotícula e contato')
   assert.equal(rotuloIsolamento([]), null)
+  assert.equal(etiquetaIsolamento(['aerossol', 'goticula']), 'ISO · AEROSSOL + GOTÍCULA')
+  assert.equal(etiquetaIsolamento(null), null)
   assert.equal(rotuloEvolucao(3, 'nir', 'Fulana'), 'Evolução (versão 3) — atualizada pelo NIR, Fulana')
   assert.equal(rotuloEvolucao(1, 'medico', 'Dr. A'), 'Evolução (versão 1) — atualizada pelo médico, Dr. A')
   assert.equal(rotuloEvolucao(2, null, 'Dr. B'), 'Evolução (versão 2) — Dr. B')

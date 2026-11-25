@@ -5,19 +5,19 @@
 // prioridade, o isolamento e o sinal principal colorido. Sem regulação fica
 // recolhido no fim. J/K e as setas andam na lista.
 // À direita: o dossiê do paciente (DossieNir).
-import { ChevronDown, Search, Waypoints } from 'lucide-react'
+import { ChevronDown, Search } from 'lucide-react'
 import * as React from 'react'
 
-import { Chip, Vazio } from '@/components/monitor/Pagina'
+import { AbasLinha } from '@/components/nir/AbasLinha'
 import { DossieNir } from '@/components/nir/DossieNir'
-import { Badge } from '@/components/ui/badge'
+import { CodigoLeito, EtiquetaIso } from '@/components/nir/Etiquetas'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 import { Input } from '@/components/ui/input'
 import { rotuloIdade } from '@/domain/idade'
 import { dataIso, tempoDecorrido } from '@/lib/formato'
 import {
-  FILTROS, contagens, contextoDoLeito, idsNavegaveis, listaNir, pedidoPrincipal, pendenciasAbertas, rotuloIsolamento, sinalPrincipal, vizinho,
+  FILTROS, contagens, contextoDoLeito, idsNavegaveis, listaNir, pedidoPrincipal, pendenciasAbertas, sinalPrincipal, vizinho,
   type FiltroNir, type MapaLeitos, type PendenciaUnidade, type Tom,
 } from '@/lib/nirPainel'
 import { PRIORIDADES, TIPOS_LEITO, prioridadeEfetiva } from '@/lib/regulacao'
@@ -93,62 +93,62 @@ export function PainelNir({ unidadeId, lista, pend, mapa, agora, selecionado, se
 
   const linhaDaLista = (l: PacienteRegulacao) => (
     <LinhaNir key={l.paciente.id} l={l} pend={pend} agora={agora} selecionado={l.paciente.id === atual}
-      isolamento={rotuloIsolamento(mapa?.internados.find((x) => x.paciente_id === l.paciente.id)?.isolamento)}
+      isolamento={mapa?.internados.find((x) => x.paciente_id === l.paciente.id)?.isolamento}
       onClick={() => escolher(l.paciente.id)} />
   )
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
-      <aside aria-label="Pacientes por leito" className={cn('flex min-w-0 flex-col gap-3', verDossie && 'hidden lg:flex')}>
-        <div className="flex flex-wrap gap-2">
-          <label className="relative flex min-w-48 flex-1 items-center">
-            <Search className="pointer-events-none absolute left-2.5 size-4 text-tinta-sussurro" aria-hidden />
-            <Input ref={campoBusca} value={busca} onChange={(e) => setBusca(e.target.value)} className="pr-8 pl-8"
+    <div className="grid min-h-0 flex-1 lg:grid-cols-[420px_minmax(0,1fr)]">
+      <aside aria-label="Pacientes por leito" className={cn('flex min-h-0 min-w-0 flex-col border-fio bg-superficie lg:border-r', verDossie && 'hidden lg:flex')}>
+        <div className="flex shrink-0 gap-2 px-3 pt-2.5">
+          <label className="relative flex min-w-0 flex-1 items-center">
+            <Search className="pointer-events-none absolute left-2.5 size-3.5 text-tinta-sussurro" aria-hidden />
+            <Input ref={campoBusca} value={busca} onChange={(e) => setBusca(e.target.value)} className="min-h-8 py-1 pr-8 pl-8 md:text-apoio"
               placeholder="Leito, paciente, nº, CID ou médico" aria-label="Buscar paciente" />
             <kbd className="cc-tecla absolute right-2">/</kbd>
           </label>
-          <CampoSelecao aria-label="Setor" className="w-auto" value={setor} onChange={(e) => setSetor(e.target.value)}>
+          <CampoSelecao tamanho="compacto" aria-label="Setor" className="w-36 shrink-0" value={setor} onChange={(e) => setSetor(e.target.value)}>
             <option value="">Todos os setores</option>
             {setores.map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
           </CampoSelecao>
         </div>
-        <div role="radiogroup" aria-label="Filtros" className="flex flex-wrap gap-1.5">
-          {FILTROS.map(([k, r]) => <Chip key={k} radio ativo={filtro === k} contagem={conta[k]} onClick={() => setFiltro(k)}>{r}</Chip>)}
-        </div>
-        <div className="flex items-center justify-between text-rotulo text-tinta-sussurro">
+        <AbasLinha rotulo="Filtros" tamanho="compacto" className="shrink-0 border-b border-fio px-1.5" valor={filtro} onChange={setFiltro}
+          abas={FILTROS.map(([k, r]) => ({ valor: k, rotulo: r, contagem: conta[k] }))} />
+        <div className="flex shrink-0 items-center justify-between border-b border-trilha px-3 py-1 text-rotulo text-tinta-sussurro">
           <span>{total === 1 ? '1 paciente listado' : `${total} pacientes listados`}</span>
-          <span>J/K navegar · / buscar</span>
+          <span className="font-mono">J/K navegar · / buscar</span>
         </div>
-        {total === 0 ? <Vazio icone={Waypoints} titulo="Nenhum paciente com estes filtros" /> : (
-          <div role="listbox" aria-label="Pacientes" className="flex max-h-[calc(100dvh-16rem)] flex-col overflow-y-auto rounded-cartao border border-fio bg-superficie">
+        {total === 0 ? <p className="px-3 py-6 text-center text-tinta-sussurro">Nenhum paciente com estes filtros.</p> : (
+          <div role="listbox" aria-label="Pacientes" className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             {grupos.comRegulacao.map(linhaDaLista)}
             {grupos.semRegulacao.length > 0 && filtro !== 'sem_regulacao' && grupos.comRegulacao.length > 0 && (
               <BotaoLinha variante="linha" aria-expanded={semRegVisivel} onClick={() => setSemRegAberto(!semRegAberto)}
-                className="items-center bg-campo py-2 font-medium text-tinta-apoio">
-                <ChevronDown className={cn('size-4 transition-transform', !semRegVisivel && '-rotate-90')} aria-hidden />
+                className="items-center gap-1.5 bg-campo px-3 py-1.5 text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">
+                <ChevronDown className={cn('size-3.5 transition-transform', !semRegVisivel && '-rotate-90')} aria-hidden />
                 Sem regulação ({grupos.semRegulacao.length})
-                <span className="ml-auto text-rotulo font-normal text-tinta-sussurro">internados na unidade</span>
+                <span className="ml-auto font-normal">Internados na unidade</span>
               </BotaoLinha>
             )}
             {semRegVisivel && grupos.semRegulacao.map(linhaDaLista)}
           </div>
         )}
       </aside>
-      <section aria-label="Dossiê do paciente" className={cn('min-w-0 rounded-cartao border border-fio bg-superficie', !verDossie && 'hidden lg:block')}>
+      <section aria-label="Dossiê do paciente" className={cn('min-h-0 min-w-0 overflow-y-auto bg-superficie', !verDossie && 'hidden lg:block')}>
         {linha ? (
           <DossieNir key={linha.paciente.id} unidadeId={unidadeId} linha={linha} pend={pend} agora={agora} contexto={contextoDoLeito(mapa, linha)}
             abrirNovo={abrirNovo && abrirNovo.pacienteId === linha.paciente.id ? abrirNovo.vez : undefined}
             voltar={() => setVerDossie(false)} />
         ) : (
-          <div className="p-6"><Vazio icone={Waypoints} titulo="Escolha um paciente na lista" texto="O dossiê mostra a regulação, as pendências com o médico, a conversa com a central e os anexos." /></div>
+          <p className="p-6 text-center text-tinta-sussurro">Escolha um paciente na lista.</p>
         )}
       </section>
     </div>
   )
 }
 
+
 function LinhaNir({ l, pend, agora, selecionado, isolamento, onClick }: {
-  l: PacienteRegulacao; pend: PendenciaUnidade[]; agora: number; selecionado: boolean; isolamento: string | null; onClick: () => void
+  l: PacienteRegulacao; pend: PendenciaUnidade[]; agora: number; selecionado: boolean; isolamento: readonly string[] | undefined; onClick: () => void
 }) {
   const p = pedidoPrincipal(l)
   const sinal = sinalPrincipal(l, pend, agora)
@@ -156,23 +156,27 @@ function LinhaNir({ l, pend, agora, selecionado, isolamento, onClick }: {
   const avisado = pendenciasAbertas(l, pend).find((x) => x.status === 'medico_avisado')
   return (
     <BotaoLinha id={`nir-linha-${l.paciente.id}`} variante="linha" role="option" aria-selected={selecionado} onClick={onClick}
-      className={cn('scroll-mt-2 flex-col gap-1 border-l-[3px] py-2.5', FAIXA[sinal.tom], selecionado && 'bg-alerta-marca')}>
-      <span className="flex w-full items-baseline gap-2">
-        <span className="font-semibold text-acao">{l.leito ?? (l.internacao ? 'Sem leito' : 'Porta')}</span>
-        <span className="min-w-0 truncate font-medium text-tinta">{l.paciente.nome}</span>
-        {idade && <span className="shrink-0 text-rotulo text-tinta-sussurro">{idade}</span>}
-        <span className={cn('ml-auto shrink-0 text-rotulo', p ? 'text-tinta-apoio' : 'text-tinta-sussurro')}>{p ? `nº ${p.numero}` : 'Sem reg.'}</span>
+      className={cn('scroll-mt-2 flex-col gap-0.5 border-l-[3px] px-3 py-2 text-rotulo', FAIXA[sinal.tom], selecionado && 'bg-alerta-marca')}>
+      <span className="flex w-full min-w-0 items-center gap-1.5">
+        <CodigoLeito>{l.leito ?? (l.internacao ? 'Sem leito' : 'Porta')}</CodigoLeito>
+        <span className="min-w-0 truncate text-apoio font-semibold text-tinta">{l.paciente.nome}</span>
+        {idade && <span className="shrink-0 font-mono text-tinta-sussurro">{idade}</span>}
+        <span className={cn('ml-auto shrink-0 font-mono', p ? 'text-tinta-apoio' : 'text-tinta-sussurro')}>{p ? `nº ${p.numero}` : 'Sem reg.'}</span>
       </span>
-      <span className="flex w-full flex-wrap items-center gap-x-1.5 gap-y-1 text-rotulo text-tinta-apoio">
-        <span>
+      <span className="flex w-full min-w-0 items-center gap-1.5 text-tinta-apoio">
+        <span className="min-w-0 truncate">
           {[l.setor?.nome, p?.tipo_leito ? TIPOS_LEITO[p.tipo_leito] ?? p.tipo_leito : null, p ? PRIORIDADES[prioridadeEfetiva(p)].rotulo : null]
             .filter(Boolean).join(' · ') || 'Sem setor'}
         </span>
-        {isolamento && <Badge variant="warning">{isolamento}</Badge>}
+        <EtiquetaIso tipos={isolamento} />
       </span>
-      <span className="flex w-full flex-wrap items-center gap-1.5">
-        <span className={cn('min-w-0 truncate text-apoio', COR[sinal.tom], sinal.tom !== 'neutro' && 'font-medium')} title={sinal.texto}>{sinal.texto}</span>
-        {avisado && <Badge variant="warning">Médico avisado{avisado.avisado_em ? ` · ${tempoDecorrido(avisado.avisado_em)}` : ''}</Badge>}
+      <span className="flex w-full min-w-0 items-center gap-1.5">
+        <span className={cn('min-w-0 truncate', COR[sinal.tom], sinal.tom !== 'neutro' && 'font-medium')} title={sinal.texto}>{sinal.texto}</span>
+        {avisado && (
+          <span className="shrink-0 rounded-controle bg-atencao/10 px-1 text-atencao">
+            Médico avisado{avisado.avisado_em ? ` · ${tempoDecorrido(avisado.avisado_em, agora).replace(/^há /, '')}` : ''}
+          </span>
+        )}
       </span>
     </BotaoLinha>
   )

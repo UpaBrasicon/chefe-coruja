@@ -16,12 +16,14 @@
 // • Sem regulação: o resumo e "Abrir pedido de regulação" (o formulário que
 //   já existe, com o paciente escolhido).
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Bell, Copy, FileText, PenLine, Plus, Truck } from 'lucide-react'
+import { ArrowLeft, Bell, FileText, PenLine, Plus, Truck } from 'lucide-react'
 import * as React from 'react'
 
-import { Abas, Chip, VazioLinha } from '@/components/monitor/Pagina'
+import { Chip, VazioLinha } from '@/components/monitor/Pagina'
+import { AbasLinha } from '@/components/nir/AbasLinha'
 import { AvisarMedico, type AlvoAviso } from '@/components/nir/AvisarMedico'
 import { tomStatus, useAcoesPendencia, useRecarregarNir } from '@/components/nir/dadosNir'
+import { CodigoLeito, EtiquetaIso } from '@/components/nir/Etiquetas'
 import { EsperaDaCentral, ResponderPergunta } from '@/components/regulacao/AbaRegulacaoPaciente'
 import { AnexosRegulacao, EscolherDocumento } from '@/components/regulacao/AnexosRegulacao'
 import { ConversaRegulacao } from '@/components/regulacao/ConversaRegulacao'
@@ -38,10 +40,10 @@ import { Spinner } from '@/components/ui/spinner'
 import { rotuloIdade } from '@/domain/idade'
 import { dataHora, dataIso, tempoDecorrido } from '@/lib/formato'
 import {
-  MENSAGENS_PRONTAS, MOTIVOS, STATUS_PENDENCIA, STATUS_VAGA, horasSemEvolucao, pedidosAbertos, rotuloIsolamento, textoParaWhatsApp,
+  MENSAGENS_PRONTAS, STATUS_PENDENCIA, STATUS_VAGA, horasSemEvolucao, pedidosAbertos, rotuloIsolamento, textoParaWhatsApp,
   type ContextoLeito, type MotivoPendencia, type PendenciaUnidade,
 } from '@/lib/nirPainel'
-import { CARATER, PRIORIDADES, STATUS, TIPOS_LEITO, TRANSPORTES, prioridadeEfetiva, resumoPedido, type Sla, type StatusRegulacao } from '@/lib/regulacao'
+import { CARATER, ISOLAMENTOS, PRIORIDADES, STATUS, TIPOS_LEITO, TRANSPORTES, prioridadeEfetiva, resumoPedido, type Sla, type StatusRegulacao } from '@/lib/regulacao'
 import { montarLinhaDoTempo, temposComAtual, type EventoPedido, type TempoStatus } from '@/lib/regulacaoLinhaTempo'
 import { esperaAOrigem, type PacienteRegulacao, type PedidoResumo } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
@@ -80,37 +82,39 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
   const [enviado, setEnviado] = React.useState<PedidoEnviado | null>(null)
   const recarregar = useRecarregarNir(unidadeId)
   const idade = linha.paciente.nascimento ? rotuloIdade(linha.paciente.nascimento, dataIso()) : null
-  const isolamento = rotuloIsolamento(contexto.isolamento)
   const medicos = contexto.medicos.map((m) => m.nome).join(', ')
 
   const cabecalho = (
-    <header className="flex flex-col gap-1.5 border-b border-fio px-4 py-3">
-      <Button size="sm" variant="outline" className="self-start lg:hidden" onClick={voltar}><ArrowLeft /> Voltar aos leitos</Button>
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-apoio text-tinta-apoio">
-        <span className="font-semibold text-acao">{linha.leito ?? (linha.internacao ? 'Sem leito' : 'Porta')}</span>
+    <header className="flex flex-col gap-1 border-b border-fio px-4 pt-2.5 pb-2">
+      <Button size="xs" variant="outline" className="self-start lg:hidden" onClick={voltar}><ArrowLeft /> Voltar aos leitos</Button>
+      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-rotulo text-tinta-apoio">
+        <CodigoLeito>{linha.leito ?? (linha.internacao ? 'Sem leito' : 'Porta')}</CodigoLeito>
         {linha.setor && <span>{linha.setor.nome}</span>}
         <span aria-hidden>·</span>
-        <span>Médico: <b className="font-medium text-tinta">{medicos || 'sem escala no setor agora'}</b></span>
-        {linha.internacao && <><span aria-hidden>·</span><span>Internado {tempoDecorrido(linha.internacao.admissao)}</span></>}
-        {isolamento && <Badge variant="warning">{isolamento}</Badge>}
+        <span>Médico: <b className="font-semibold text-tinta">{medicos || 'sem escala no setor'}</b></span>
+        {linha.internacao && <><span aria-hidden>·</span><span className="font-mono">Internado {tempoDecorrido(linha.internacao.admissao, agora)}</span></>}
+        <EtiquetaIso tipos={contexto.isolamento} />
       </div>
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <div className="flex flex-wrap items-baseline gap-x-2">
         <h3 className="text-secao font-semibold text-tinta">{linha.paciente.nome}</h3>
-        <span className="text-apoio text-tinta-sussurro">{[idade, contexto.sexo].filter(Boolean).join(' · ')}</span>
-        {p && <span className="ml-auto text-apoio text-tinta-sussurro">nº {p.numero} · {dataHora(p.criada_em)}</span>}
+        <span className="font-mono text-rotulo text-tinta-sussurro">{[idade, contexto.sexo].filter(Boolean).join(' · ')}</span>
+        {p && <span className="ml-auto font-mono text-rotulo text-tinta-sussurro">nº {p.numero} · {dataHora(p.criada_em)}</span>}
       </div>
       {p && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-apoio font-medium text-tinta">{p.cid}</span>
+          <span className="font-mono text-rotulo font-semibold text-tinta">{p.cid}</span>
           <Badge variant={STATUS_VAGA.includes(p.status) ? 'success' : esperaAOrigem(p) ? 'info' : 'default'}>{STATUS[p.status]}</Badge>
           <Badge variant={TOM_PRIORIDADE[PRIORIDADES[prioridadeEfetiva(p)].tom]}>{PRIORIDADES[prioridadeEfetiva(p)].rotulo}</Badge>
           <Badge variant="outline">{resumoPedido(p)}</Badge>
           <SeloSla sla={p.sla} />
-        </div>
-      )}
-      {abertos.length > 1 && (
-        <div role="radiogroup" aria-label="Pedido" className="flex flex-wrap gap-1.5 pt-1">
-          {abertos.map((x) => <Chip key={x.id} radio ativo={x.id === p?.id} onClick={() => setPedidoId(x.id)}>nº {x.numero} · {resumoPedido(x)}</Chip>)}
+          {abertos.length > 1 && (
+            <span role="radiogroup" aria-label="Pedido" className="ml-auto flex gap-1">
+              {abertos.map((x) => (
+                <Button key={x.id} size="xs" role="radio" aria-checked={x.id === p.id} variant={x.id === p.id ? 'default' : 'outline'}
+                  onClick={() => setPedidoId(x.id)}>nº {x.numero}</Button>
+              ))}
+            </span>
+          )}
         </div>
       )}
     </header>
@@ -132,21 +136,16 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
     return (
       <div className="flex flex-col">
         {cabecalho}
-        <div className="flex flex-col gap-3 p-4 text-apoio">
+        <div className="flex flex-col gap-3 p-4">
           {enviado && <AvisoEnviado enviada={enviado} onde="Ele aparece aqui quando a lista atualizar." />}
-          <dl className="grid gap-3 sm:grid-cols-3">
+          <Resumo>
             <Item rotulo="Leito / setor">{linha.leito ?? '—'}{linha.setor ? ` · ${linha.setor.nome}` : ''}</Item>
-            <Item rotulo="Médico de plantão no setor">{medicos || '—'}</Item>
             <Item rotulo="Internação">{linha.internacao ? `desde ${dataHora(linha.internacao.admissao)}` : '—'}</Item>
-            <Item rotulo="Isolamento">{isolamento ?? 'Precaução padrão'}</Item>
-            <Item rotulo="Regulação">Sem pedido em aberto</Item>
-          </dl>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-controle border border-fio bg-campo px-4 py-3">
-            <span className="flex flex-col gap-0.5">
-              <span className="font-medium text-tinta">Este paciente não tem pedido de regulação em aberto</span>
-              <span className="text-tinta-apoio">Abra o pedido de leito, exame ou transferência a partir deste leito; o pedido já leva o quadro do prontuário para revisar.</span>
-            </span>
-            <Button onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Abrir pedido de regulação</Button>
+            <Item rotulo="Isolamento">{rotuloIsolamento(contexto.isolamento)?.replace('Isolamento: ', '') ?? 'precaução padrão'}</Item>
+          </Resumo>
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-controle border border-fio bg-campo px-3 py-2">
+            <span className="font-medium text-tinta">Sem pedido de regulação em aberto</span>
+            <Button size="sm" onClick={() => { setEnviado(null); setNovo(true) }}><Plus /> Abrir pedido de regulação</Button>
           </div>
         </div>
       </div>
@@ -157,10 +156,15 @@ export function DossieNir({ unidadeId, linha, pend, contexto, agora, abrirNovo, 
     novoPedido={() => { setEnviado(null); setNovo(true) }} />
 }
 
+/** Grade compacta de 3 colunas com rótulos pequenos em caixa. */
+function Resumo({ children }: { children: React.ReactNode }) {
+  return <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-controle border border-fio bg-campo px-3 py-2.5 sm:grid-cols-3">{children}</dl>
+}
+
 function Item({ rotulo, children, className }: { rotulo: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('flex flex-col gap-0.5', className)}>
-      <dt className="text-rotulo text-tinta-sussurro">{rotulo}</dt>
+    <div className={cn('flex min-w-0 flex-col', className)}>
+      <dt className="text-rotulo font-semibold tracking-wide text-tinta-sussurro uppercase">{rotulo}</dt>
       <dd className="text-tinta">{children}</dd>
     </div>
   )
@@ -205,14 +209,6 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
   const h = horasSemEvolucao(p, agora)
   const recarregarTudo = () => { recarregar(p.id); void qc.invalidateQueries({ queryKey: ['regulacao-anexos', p.id] }) }
 
-  const acoes = (tamanho: 'xs' | 'sm') => (
-    <>
-      <Button size={tamanho} variant="outline" onClick={() => avisar(p.sla?.evolucao?.atrasada ? 'evolucao' : undefined)}><Bell /> Avisar médico</Button>
-      <Button size={tamanho} variant="outline" onClick={() => setPuxar(true)}><FileText /> Puxar exame do prontuário</Button>
-      {podeEvoluir && <Button size={tamanho} variant="outline" onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
-    </>
-  )
-
   // faixa do prazo: o que pede ação agora
   let faixa: React.ReactNode = null
   if (vaga) {
@@ -233,7 +229,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
     const risco = p.sla.evolucao.risco_cancelamento
     faixa = (
       <Faixa tom={risco ? 'critico' : 'atencao'} titulo={`${tempoSemEvolucao(h)} sem evolução${risco ? ': risco de cancelamento' : ' (vencida)'}`}
-        texto={`última em ${dataHora(p.sla.evolucao.ultima_em)}; a central pede a cada ${p.sla.evolucao.prazo_h} h`}>
+        texto={`última em ${dataHora(p.sla.evolucao.ultima_em)} · prazo de ${p.sla.evolucao.prazo_h} h`}>
         <Button size="xs" variant={podeEvoluir ? 'outline' : 'default'} onClick={() => avisar('evolucao')}><Bell /> Avisar médico</Button>
         {podeEvoluir && <Button size="xs" onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
       </Faixa>
@@ -246,14 +242,16 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
   return (
     <div className="flex flex-col">
       {cabecalho}
-      <div className="flex flex-wrap items-center gap-2 border-b border-fio bg-campo px-4 py-2">
-        {acoes('sm')}
-        {vaga && <Button size="sm" onClick={() => setRemocao(!remocao)} aria-expanded={remocao}><Truck /> Gerenciar remoção / saída</Button>}
-        <Button size="sm" variant="outline" className="ml-auto" onClick={novoPedido}><Plus /> Novo pedido</Button>
+      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-fio bg-campo px-4 py-1.5">
+        <Button size="xs" variant="outline" onClick={() => avisar(p.sla?.evolucao?.atrasada ? 'evolucao' : undefined)}><Bell /> Avisar médico</Button>
+        <Button size="xs" variant="outline" onClick={() => setPuxar(true)}><FileText /> Puxar exame do prontuário</Button>
+        {podeEvoluir && <Button size="xs" variant="outline" onClick={evoluir}><PenLine /> Atualizar evolução</Button>}
+        {vaga && <Button size="xs" onClick={() => setRemocao(!remocao)} aria-expanded={remocao}><Truck /> Gerenciar remoção / saída</Button>}
+        <Button size="xs" variant="outline" className="ml-auto" onClick={novoPedido}><Plus /> Novo pedido</Button>
       </div>
       {faixa}
       {remocao && vaga && (
-        <section aria-label="Remoção e saída" className="flex flex-col gap-2 border-b border-fio bg-alerta-conforme px-4 py-3 text-apoio">
+        <section aria-label="Remoção e saída" className="flex flex-col gap-1.5 border-b border-fio bg-alerta-conforme px-4 py-2">
           {!s ? <Spinner /> : (
             <>
               <BlocoDestino s={s} />
@@ -261,42 +259,40 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
               {s.status === 'em_transito' && s.saida_em && (
                 <p className="text-tinta">Saída registrada em {dataHora(s.saida_em)}{s.saida_por ? ` por ${s.saida_por}` : ''}.</p>
               )}
-              <p className="text-tinta-apoio">
-                A alta por transferência, que libera o leito {linha.leito ?? ''}, é registrada pelo médico na alta da internação.
-              </p>
+              <p className="text-rotulo text-tinta-apoio">A alta por transferência, que libera o leito, é do médico.</p>
             </>
           )}
         </section>
       )}
-      {enviado && <div className="px-4 pt-3"><AvisoEnviado enviada={enviado} onde="Ele está aberto aqui." /></div>}
-      <div className="px-4 pt-3">
-        <Abas rotulo="Dossiê do pedido" valor={aba} onChange={setAba} className="mb-3" abas={[
-          ['pendencias', 'Pendências & resumo', abertas.length],
-          ['conversa', 'Conversa com a central', p.conversa.total],
-          ['anexos', 'Anexos & exames', anexos.data?.anexos.length],
-          ['tempo', 'Linha do tempo', linhaDoTempo.length],
-        ]} />
-      </div>
-      <div className="flex flex-col gap-3 px-4 pb-4 text-apoio">
+      {enviado && <div className="px-4 pt-2"><AvisoEnviado enviada={enviado} onde="Ele está aberto aqui." /></div>}
+      <AbasLinha rotulo="Dossiê do pedido" tamanho="compacto" className="border-b border-fio px-2.5" valor={aba} onChange={setAba} abas={[
+        { valor: 'pendencias', rotulo: 'Pendências & resumo', contagem: abertas.length },
+        { valor: 'conversa', rotulo: 'Conversa com a central', contagem: p.conversa.total },
+        { valor: 'anexos', rotulo: 'Anexos & exames', contagem: anexos.data?.anexos.length },
+        { valor: 'tempo', rotulo: 'Linha do tempo', contagem: linhaDoTempo.length },
+      ]} />
+      <div className="flex flex-col gap-3 px-4 py-3">
         {d.error && <MensagemErro texto={(d.error as Error).message} />}
         {aba === 'pendencias' && (
           <>
             {esperaAOrigem(p) && <div className="rounded-controle border border-fio"><EsperaDaCentral p={p} /></div>}
             {p.status === 'pendencia' && <ResponderPergunta id={p.id} aoFim={() => recarregar(p.id)} />}
             <ListaPendencias pend={doPedido} aoMudar={() => recarregar(p.id)} />
-            <section aria-label="Resumo da regulação" className="flex flex-col gap-2">
-              <h3 className="font-medium text-tinta">Resumo da regulação</h3>
-              <dl className="grid gap-3 rounded-controle border border-fio bg-superficie p-3 sm:grid-cols-3">
-                <Item rotulo="Procedimento" className="sm:col-span-2">{p.procedimento ? `${p.procedimento} · ${p.procedimento_nome ?? ''}` : resumoPedido(p)}</Item>
+            <section aria-label="Resumo da regulação" className="flex flex-col gap-1.5">
+              <h3 className="text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">Resumo da regulação</h3>
+              <Resumo>
+                <Item rotulo="Procedimento" className="col-span-2"><span className="font-mono text-rotulo">{p.procedimento ?? ''}</span> {p.procedimento_nome ?? resumoPedido(p)}</Item>
                 <Item rotulo="Caráter">{CARATER[p.carater]}</Item>
                 <Item rotulo="Tipo de leito">{p.tipo_leito ? TIPOS_LEITO[p.tipo_leito] ?? p.tipo_leito : '—'}</Item>
-                <Item rotulo="Destino">{p.destino ?? 'a definir pela central'}</Item>
+                <Item rotulo="Destino">{p.destino ?? 'a definir'}</Item>
                 <Item rotulo="Transporte">{p.transporte ? TRANSPORTES[p.transporte] ?? p.transporte : '—'}</Item>
-                <Item rotulo="CID">{p.cid}{s?.cid_descricao ? ` · ${s.cid_descricao}` : ''}</Item>
+                <Item rotulo="Isolamento">{s?.isolamento_tipo ? ISOLAMENTOS[s.isolamento_tipo] ?? s.isolamento_tipo : 'precaução padrão'}</Item>
                 <Item rotulo="Solicitante">{s?.solicitante ?? '—'}</Item>
                 <Item rotulo="Médico assistente">{s?.medico_assistente ?? '—'}</Item>
-                {s?.quadro_clinico && <Item rotulo="Quadro clínico do pedido" className="sm:col-span-3"><span className="whitespace-pre-wrap">{s.quadro_clinico}</span></Item>}
-              </dl>
+                {s?.quadro_clinico && (
+                  <Item rotulo="Quadro clínico do pedido" className="col-span-2 border-t border-fio pt-2 sm:col-span-3"><span className="whitespace-pre-wrap">{s.quadro_clinico}</span></Item>
+                )}
+              </Resumo>
             </section>
             {d.isLoading ? <Spinner /> : s && (
               <EvolucaoPedidoNir id={p.id} sla={s.sla} status={s.status} tempos={temposComAtual(s.tempos ?? [], s.status)} evolucoes={s.evolucoes ?? []}
@@ -306,11 +302,11 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
         )}
         {aba === 'conversa' && (
           <>
-            <div role="group" aria-label="Mensagens prontas" className="flex flex-wrap gap-2">
-              <span className="self-center text-rotulo text-tinta-sussurro">Mensagens prontas:</span>
+            <div role="group" aria-label="Mensagens prontas" className="flex flex-wrap items-center gap-1.5">
+              <span className="text-rotulo text-tinta-sussurro">Prontas:</span>
               {MENSAGENS_PRONTAS.map((m) => (
-                <Chip key={m.rotulo} variante="opcao" ativo={rascunho?.texto === m.texto}
-                  onClick={() => setRascunho((r) => ({ texto: m.texto, vez: (r?.vez ?? 0) + 1 }))}>{m.rotulo}</Chip>
+                <Button key={m.rotulo} size="xs" variant="outline" aria-pressed={rascunho?.texto === m.texto}
+                  onClick={() => setRascunho((r) => ({ texto: m.texto, vez: (r?.vez ?? 0) + 1 }))}>{m.rotulo}</Button>
               ))}
             </div>
             <ConversaRegulacao solicitacaoId={p.id} rascunho={rascunho} aoEnviar={() => { setRascunho(null); recarregar(p.id) }} />
@@ -341,15 +337,13 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
 
 function Faixa({ tom, titulo, texto, children }: { tom: 'sucesso' | 'info' | 'atencao' | 'critico'; titulo: string; texto?: string | null; children: React.ReactNode }) {
   return (
-    <div role="status" className={cn('flex flex-wrap items-center gap-2 border-b px-4 py-2.5 text-apoio', {
+    <div role="status" className={cn('flex flex-wrap items-center gap-x-2 gap-y-1 border-b px-4 py-1.5', {
       sucesso: 'border-conforme/30 bg-alerta-conforme', info: 'border-suprimento/30 bg-alerta-marca',
       atencao: 'border-atencao/30 bg-alerta-atencao', critico: 'border-critico/30 bg-alerta-critico',
     }[tom])}>
-      <span className="flex flex-col">
-        <b className={cn('font-semibold', { sucesso: 'text-conforme', info: 'text-suprimento', atencao: 'text-atencao', critico: 'text-critico' }[tom])}>{titulo}</b>
-        {texto && <span className="text-tinta-apoio">{texto}</span>}
-      </span>
-      <span className="ml-auto flex flex-wrap gap-2">{children}</span>
+      <b className={cn('font-semibold', { sucesso: 'text-conforme', info: 'text-suprimento', atencao: 'text-atencao', critico: 'text-critico' }[tom])}>{titulo}</b>
+      {texto && <span className="font-mono text-rotulo text-tinta-apoio">· {texto}</span>}
+      <span className="ml-auto flex flex-wrap gap-1.5">{children}</span>
     </div>
   )
 }
@@ -358,11 +352,11 @@ function Faixa({ tom, titulo, texto, children }: { tom: 'sucesso' | 'info' | 'at
 function ListaPendencias({ pend, aoMudar }: { pend: PendenciaUnidade[]; aoMudar: () => void }) {
   const abertas = pend.filter((x) => x.status !== 'resolvida').length
   return (
-    <section aria-label="Pendências da unidade" className="flex flex-col gap-2">
-      <h3 className="flex items-baseline gap-2 font-medium text-tinta">
-        Pendências com o médico e do NIR <span className="text-rotulo font-normal text-tinta-sussurro">{abertas === 1 ? '1 aberta' : `${abertas} abertas`}</span>
+    <section aria-label="Pendências da unidade" className="flex flex-col gap-1.5">
+      <h3 className="flex items-baseline justify-between text-rotulo font-semibold tracking-wide text-tinta-apoio uppercase">
+        Pendências (central ↔ médico ↔ NIR) <span className="font-mono font-normal normal-case">{abertas === 1 ? '1 aberta' : `${abertas} abertas`}</span>
       </h3>
-      {pend.length === 0 ? <VazioLinha>Nenhuma pendência registrada neste pedido.</VazioLinha> : (
+      {pend.length === 0 ? <VazioLinha className="py-1">Nenhuma pendência neste pedido.</VazioLinha> : (
         <ul className="flex flex-col divide-y divide-fio rounded-controle border border-fio bg-superficie">
           {pend.map((x) => <LinhaPendencia key={x.id} x={x} aoMudar={aoMudar} />)}
         </ul>
@@ -376,27 +370,27 @@ function LinhaPendencia({ x, aoMudar }: { x: PendenciaUnidade; aoMudar: () => vo
   const [copiado, setCopiado] = React.useState(false)
   const aberta = x.status !== 'resolvida'
   return (
-    <li className={cn('flex flex-wrap items-start gap-2 px-3 py-2', !aberta && 'opacity-70')}>
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="text-tinta">{x.titulo}</span>
-        <span className="flex flex-wrap items-center gap-1.5 text-rotulo text-tinta-sussurro">
+    <li className={cn('flex items-center gap-2 px-3 py-1.5', !aberta && 'opacity-70')}>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate font-medium text-tinta" title={x.titulo}>{x.titulo}</span>
+        <span className="flex flex-wrap items-center gap-1 text-rotulo text-tinta-sussurro">
           <Badge variant={x.dono === 'medico' ? 'warning' : 'info'}>Dono: {x.dono === 'medico' ? 'Médico' : 'NIR'}</Badge>
-          <Badge variant={tomStatus(x.status)}>{STATUS_PENDENCIA[x.status]}{x.status === 'medico_avisado' && x.avisado_em ? ` · ${tempoDecorrido(x.avisado_em)}` : ''}</Badge>
+          <Badge variant={tomStatus(x.status)}>{STATUS_PENDENCIA[x.status]}{x.status === 'medico_avisado' && x.avisado_em ? ` · ${tempoDecorrido(x.avisado_em).replace(/^há /, '')}` : ''}</Badge>
           {x.urgencia === 'alta' && <Badge variant="destructive">Urgente</Badge>}
           {x.responsaveis.length > 0 && <span>{x.responsaveis.map((r) => r.nome).join(', ')}</span>}
-          <span>· {MOTIVOS[x.motivo as keyof typeof MOTIVOS]?.botao ?? 'Outro'} · {dataHora(x.criada_em)} por {x.criada_por ?? '—'}</span>
+          <span className="font-mono">· {dataHora(x.criada_em)}</span>
           {x.avisos > 1 && <span>· {x.avisos} avisos</span>}
-          {!aberta && <span>· resolvida {x.resolvida_em ? dataHora(x.resolvida_em) : ''} por {x.resolvida_por ?? '—'}{x.resolucao ? ` (${x.resolucao})` : ''}</span>}
+          {!aberta && <span>· resolvida por {x.resolvida_por ?? '—'}{x.resolvida_em ? `, ${dataHora(x.resolvida_em)}` : ''}</span>}
         </span>
         {erro && <MensagemErro texto={erro.message} />}
       </span>
       {aberta && (
-        <span className="flex flex-wrap gap-1.5">
-          {x.dono === 'medico' && <Button size="xs" variant="outline" disabled={reavisar.isPending} onClick={() => reavisar.mutate(x.id)}><Bell /> Reenviar aviso</Button>}
+        <span className="flex shrink-0 flex-wrap justify-end gap-1">
+          {x.dono === 'medico' && <Button size="xs" variant="outline" disabled={reavisar.isPending} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>}
           <Button size="xs" variant="outline"
             onClick={() => navigator.clipboard.writeText(textoParaWhatsApp({ leito: x.leito, numero: x.numero, setor: x.setor?.nome ?? null, pendencia: x.titulo,
               medico: x.responsaveis.map((r) => r.nome).join(', ') || null })).then(() => setCopiado(true), () => setCopiado(false))}>
-            <Copy /> {copiado ? 'Copiado' : 'Copiar cobrança'}
+            {copiado ? 'Copiado' : 'Copiar cobrança'}
           </Button>
           <Button size="xs" disabled={resolver.isPending} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
         </span>

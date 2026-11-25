@@ -257,6 +257,12 @@ export function rotuloIsolamento(tipos: readonly string[] | null | undefined): s
   return `Isolamento: ${txt}`
 }
 
+/** Etiqueta curta da lista: "ISO · CONTATO", "ISO · AEROSSOL + GOTÍCULA". */
+export function etiquetaIsolamento(tipos: readonly string[] | null | undefined): string | null {
+  if (!tipos || tipos.length === 0) return null
+  return `ISO · ${tipos.map((t) => (t === 'goticula' ? 'gotícula' : t).toUpperCase()).join(' + ')}`
+}
+
 /** Rótulo da evolução do pedido: "Evolução (versão 3) — atualizada pelo NIR, Fulana". */
 export function rotuloEvolucao(versao: number, papel: string | null | undefined, autor: string | null): string {
   const quem = papel === 'nir' ? 'pelo NIR' : papel === 'gestor' ? 'pelo gestor' : papel === 'medico' ? 'pelo médico' : null

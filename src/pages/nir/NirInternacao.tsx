@@ -15,10 +15,10 @@
 //   escreve a evolução médica do prontuário.
 // RPCs regulacao_pacientes (20270421000040) e as da 20270425000030.
 // ─────────────────────────────────────────────────────────────────────────────
-import { Hospital, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import * as React from 'react'
 
-import { Abas, TituloPagina } from '@/components/monitor/Pagina'
+import { AbasLinha } from '@/components/nir/AbasLinha'
 import { AvisosNirBotao } from '@/components/nir/AvisosNirBotao'
 import { MapaLeitosNir } from '@/components/nir/MapaLeitosNir'
 import { PainelNir } from '@/components/nir/PainelNir'
@@ -61,33 +61,39 @@ export default function NirInternacao() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
-      <TituloPagina icone={Hospital} titulo="Internação"
-        descricao="Os pacientes da unidade por leito e o que acontece na regulação de cada um: o que a central espera, quem cobrar e quem já tem vaga." />
-      <div className="flex flex-wrap items-center gap-2">
-        <Abas rotulo="Internação do NIR" valor={aba} onChange={setAba} className="mb-0" abas={[
-          ['painel', 'Painel NIR'], ['pendencias', 'Pendências com médicos', abertasMedico], ['mapa', 'Mapa de leitos'],
+    // largura cheia (desfaz o respiro da coluna) e, no computador, a altura da janela
+    <div className="-mx-4! -mt-5 flex flex-col text-apoio md:-mx-7! md:-mt-7 in-[.cc-den]:-mt-[15px]! lg:-mx-[max(28px,5%)]! lg:-mb-[72px] lg:h-[calc(100dvh-var(--cc-topo))] [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-3 border-b border-fio bg-superficie px-4">
+        <span className="py-2.5 font-semibold text-tinta">NIR · Internação e Regulação</span>
+        <AbasLinha rotulo="Internação do NIR" valor={aba} onChange={setAba} abas={[
+          { valor: 'painel', rotulo: 'Painel NIR' },
+          { valor: 'pendencias', rotulo: 'Pendências com médicos', contagem: abertasMedico, alerta: true },
+          { valor: 'mapa', rotulo: 'Mapa de leitos' },
         ]} />
-        <span className="ml-auto flex flex-wrap gap-2">
+        <span className="ml-auto flex gap-2 py-1.5">
           {unidadeId && <AvisosNirBotao unidadeId={unidadeId} abrirPedido={abrirPedido} />}
-          <Button onClick={() => setEscolherNovo(true)} disabled={lista.length === 0}><Plus /> Novo pedido</Button>
+          <Button size="sm" onClick={() => setEscolherNovo(true)} disabled={lista.length === 0}><Plus /> Novo pedido</Button>
         </span>
       </div>
-      {!unidadeId ? null : pacientes.isLoading ? <EsqueletoLinhas linhas={6} rotulo="Carregando os pacientes…" />
-        : pacientes.error ? <MensagemErro texto={(pacientes.error as Error).message} /> : (
+      {!unidadeId ? null : pacientes.isLoading ? <div className="p-4"><EsqueletoLinhas linhas={6} rotulo="Carregando os pacientes…" /></div>
+        : pacientes.error ? <div className="p-4"><MensagemErro texto={(pacientes.error as Error).message} /></div> : (
           <>
-            {pendencias.error && <MensagemErro texto={`Pendências: ${(pendencias.error as Error).message}`} />}
+            {pendencias.error && <div className="px-4 pt-2"><MensagemErro texto={`Pendências: ${(pendencias.error as Error).message}`} /></div>}
             {aba === 'painel' && (
               <PainelNir unidadeId={unidadeId} lista={lista} pend={pend} mapa={mapa.data} agora={agora} selecionado={selecionado}
                 selecionar={setSelecionado} abrirNovo={abrirNovo} />
             )}
-            {aba === 'pendencias' && (
-              <PendenciasMedicos pend={pend} lista={lista} agora={agora} abrirPaciente={abrirPaciente} aoMudar={() => recarregar()} />
-            )}
-            {aba === 'mapa' && (
-              mapa.isLoading ? <EsqueletoLinhas linhas={6} rotulo="Carregando os leitos…" />
-                : mapa.error ? <MensagemErro texto={(mapa.error as Error).message} />
-                  : mapa.data && <MapaLeitosNir mapa={mapa.data} lista={lista} pend={pend} agora={agora} abrirPaciente={abrirPaciente} />
+            {aba !== 'painel' && (
+              <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                {aba === 'pendencias' && (
+                  <PendenciasMedicos pend={pend} lista={lista} agora={agora} abrirPaciente={abrirPaciente} aoMudar={() => recarregar()} />
+                )}
+                {aba === 'mapa' && (
+                  mapa.isLoading ? <EsqueletoLinhas linhas={6} rotulo="Carregando os leitos…" />
+                    : mapa.error ? <MensagemErro texto={(mapa.error as Error).message} />
+                      : mapa.data && <MapaLeitosNir mapa={mapa.data} lista={lista} pend={pend} agora={agora} abrirPaciente={abrirPaciente} />
+                )}
+              </div>
             )}
           </>
         )}
