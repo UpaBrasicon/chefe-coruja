@@ -34,6 +34,7 @@ import { ABA_NO_PLANTAO } from '../plantao/rotasMedico.ts'
 
 /** Chave da nota numérica (contagem em âmbar ao lado do item). */
 export type ChaveNota = 'avisos' | 'triagem' | 'farmacia' | 'pedidos' | 'tele' | 'revisao' | 'fila_medica' | 'plataformas' | 'chamados'
+  | 'regulacao' | 'aih' | 'apac'
 
 export type ItemNav = {
   to: string
@@ -217,10 +218,13 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { ...ITEM_ESCALA, grupo: 'Equipe' },
   ],
   // Fase 3, tarefa 1: médico regulador — decide a AIH (aprova com número e
-  // competência, ou rejeita com motivo)
+  // competência, ou rejeita com motivo). Revisão do perfil (MR1 = A, RT
+  // 24/11/2026): abre na Regulação; Regulação, AIH, APAC e Escala, cada um com
+  // o número do que espera decisão.
   regulador: [
-    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true },
-    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true },
+    { to: '/regulacao', rotulo: 'Regulação', icone: Waypoints, exato: true, nota: 'regulacao' },
+    { to: '/aih', rotulo: 'AIH', icone: FileText, exato: true, nota: 'aih' },
+    { to: '/apac', rotulo: 'APAC', icone: FileCheck, exato: true, nota: 'apac' },
     ITEM_ESCALA,
   ],
   // Fase 3, tarefa 3: faturamento — conferência e fechamento do BPA, lançamento
@@ -401,8 +405,8 @@ function itensDoPapel(papel: Papel | null, responsavelTecnico: boolean, superAdm
   }
   // R2 (RT, 24/11/2026): a Regulação do médico mora dentro de Atendimento, na
   // aba "Em regulação"; o item volta só na UBS (itensDeNavegacao), onde o
-  // Atendimento é o consultório e a regulação sai das consultas.
-  if (papel === 'regulador') itens.push(ITEM_REGULACAO)
+  // Atendimento é o consultório e a regulação sai das consultas. O regulador já
+  // tem a Regulação no topo da lista dele (MR1).
   if (responsavelTecnico) {
     // o gestor já tem o item; o responsável técnico o ganha com a nota da fila
     const i = itens.findIndex((x) => x.to === ITEM_REVISAO_CLINICA.to)

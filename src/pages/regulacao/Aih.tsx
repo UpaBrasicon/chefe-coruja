@@ -13,6 +13,7 @@ import * as React from 'react'
 
 import { EtapasEmPassos } from '@/components/gestor/EtapasEmPassos'
 import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { InternadosSemLaudo } from '@/components/regulacao/InternadosSemLaudo'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,7 @@ import {
 } from '@/lib/aih'
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
 import { PAGINA, VerMais } from '@/components/ui/ver-mais'
@@ -53,10 +55,13 @@ export default function Aih() {
       return (data ?? { total: 0, itens: [] }) as unknown as { total: number; itens: AihFila[] }
     },
   })
-  const contas = resumo.data && resumo.data.total <= resumo.data.itens.length
+  const completo = !!resumo.data && resumo.data.total <= resumo.data.itens.length
+  const contas = completo
     ? Object.fromEntries((['solicitada', 'aprovada', 'rejeitada', 'cancelada'] as StatusAih[]).map((s) => [s, resumo.data!.itens.filter((a) => a.status === s).length])) as Record<StatusAih, number>
     : null
-  const filtro: Filtro = filtroEscolhido ?? (contas ? (ABAS.find(([k]) => k !== 'todas' && contas[k as StatusAih] > 0)?.[0] ?? 'todas') : 'solicitada')
+  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a decisão dele
+  const filtro: Filtro = filtroEscolhido ?? (regulador ? 'solicitada'
+    : contas ? (ABAS.find(([k]) => k !== 'todas' && contas[k as StatusAih] > 0)?.[0] ?? 'todas') : 'solicitada')
   const abas = ABAS.map(([k, r]) => [k, r, k === 'todas' ? resumo.data?.total : contas?.[k as StatusAih]] as const)
   const lista = useQuery({
     queryKey: ['aihs-da-unidade', unidade, filtro, limite],
@@ -72,13 +77,16 @@ export default function Aih() {
   })
 
   return (
-    <div className="flex w-full max-w-5xl flex-col">
+    // no perfil regulador, fichas em caixa normal (unslop da revisão do perfil)
+    <div className={cn('flex w-full max-w-5xl flex-col', regulador && '[&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case')}>
       <TituloPagina icone={FileText} titulo={regulador ? 'Pedidos de AIH' : 'AIH da unidade'}
         descricao={regulador
           ? 'Laudos de AIH emitidos na unidade. Aprove com o número da AIH e a competência, ou rejeite com o motivo.'
           : 'Acompanhamento das AIHs da unidade. Quem decide é o médico regulador.'} />
-      {ehGestor && unidade && resumo.data && resumo.data.total <= resumo.data.itens.length && (
-        <InternadosSemLaudo unidade={unidade} comAih={new Set(resumo.data.itens.filter((a) => a.status === 'solicitada' || a.status === 'aprovada').map((a) => a.internacao_id).filter((x): x is string => !!x))} />
+      {/* gestor: faixa de alerta (item 17, M1); regulador: linha neutra com leito e tempo (MR3, RT 24/11/2026) */}
+      {(ehGestor || regulador) && unidade && completo && (
+        <InternadosSemLaudo unidade={unidade} tom={regulador ? 'neutro' : 'alerta'}
+          comAih={new Set(resumo.data!.itens.filter((a) => a.status === 'solicitada' || a.status === 'aprovada').map((a) => a.internacao_id).filter((x): x is string => !!x))} />
       )}
       <Abas abas={abas} valor={filtro} onChange={setFiltro} rotulo="Situação da AIH" />
       {lista.isLoading ? <Spinner /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data?.itens ?? []).length === 0 ? (
@@ -90,52 +98,6 @@ export default function Aih() {
         </div>
       )}
     </div>
-  )
-}
-
-type InternadoSemLaudo = {
-  id: string; status: string; data_admissao: string; internado_em: string | null
-  paciente: { nome: string; nome_social: string | null } | null
-  leito: { identificador: string } | null
-}
-
-/**
- * Revisão de perfis (Gestor, item 17, M1): internados sem laudo de AIH. A
- * internação ativa (admitido ou internado) que não tem AIH solicitada nem
- * aprovada aparece aqui com os dias desde a internação, para o gestor cobrar
- * o laudo do médico assistente e o NIR. Leitura só: a internação é do gestor
- * pela política da tabela.
- */
-function InternadosSemLaudo({ unidade, comAih }: { unidade: string; comAih: Set<string> }) {
-  const internados = useQuery({
-    queryKey: ['internados-sem-laudo-aih', unidade],
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase.from('internacoes')
-        .select('id, status, data_admissao, internado_em, paciente:pacientes!internacoes_paciente_id_fkey(nome, nome_social), leito:leitos!internacoes_leito_atual_id_fkey(identificador)')
-        .eq('unidade_id', unidade).in('status', ['admitido', 'internado'])
-      if (error) throw error
-      const agora = Date.now()
-      return ((data ?? []) as unknown as InternadoSemLaudo[])
-        .map((i) => ({ ...i, dias: Math.max(0, Math.floor((agora - new Date(i.internado_em ?? i.data_admissao).getTime()) / 86_400_000)) }))
-    },
-  })
-  const sem = (internados.data ?? []).filter((i) => !comAih.has(i.id)).sort((a, b) => b.dias - a.dias)
-  if (sem.length === 0) return null
-  return (
-    <section aria-label="Internados sem laudo de AIH" className="mb-4 flex flex-col gap-2 rounded-container border border-critico/30 bg-alerta-critico px-3.5 py-3 text-apoio">
-      <span className="font-semibold text-critico">{sem.length === 1 ? '1 internado sem laudo de AIH' : `${sem.length} internados sem laudo de AIH`}</span>
-      <ul className="flex flex-col gap-1">
-        {sem.map((i) => (
-          <li key={i.id} className="flex flex-wrap items-baseline gap-x-3 text-tinta">
-            <span className="font-medium">{i.paciente?.nome_social || i.paciente?.nome || 'Paciente'}</span>
-            {i.leito && <span className="text-tinta-apoio">leito {i.leito.identificador}</span>}
-            <span className="tabular-nums text-critico">{i.dias === 1 ? 'há 1 dia' : `há ${i.dias} dias`}</span>
-          </li>
-        ))}
-      </ul>
-      <span className="text-rotulo text-tinta-apoio">Sem o laudo a internação não é faturada. Cobre o laudo do médico assistente e o NIR; quando emitido, entra em Solicitadas.</span>
-    </section>
   )
 }
 
@@ -174,6 +136,7 @@ function CartaoAih({ a, regulador }: { a: AihFila; regulador: boolean }) {
       setAcao(null); setMotivo(''); setNumero('')
       void qc.invalidateQueries({ queryKey: ['aihs-da-unidade'] })
       void qc.invalidateQueries({ queryKey: ['eventos-aih', a.id] })
+      void qc.invalidateQueries({ queryKey: ['nota-aih'] })
     },
   })
 

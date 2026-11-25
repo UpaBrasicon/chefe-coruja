@@ -108,6 +108,42 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     },
   })
 
+  // Médico regulador (MR1 = A, RT 24/11/2026): o que espera decisão em cada
+  // tela. Regulação: os pedidos esperando decisão (mesma conta do painel de
+  // prazos; a RPC recusa quem não tem acesso e a nota some). AIH e APAC: as
+  // solicitadas (só o total da página, sem trazer as linhas).
+  const regulacao = useQuery({
+    queryKey: ['nota-regulacao', unidadeId],
+    enabled: ativo && papel === 'regulador',
+    refetchInterval: 60_000,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_sla_painel', { p_unidade: unidadeId!, p_filtros: {} })
+      if (error) throw error
+      return (data as unknown as { resumo?: { abertos?: number } } | null)?.resumo?.abertos ?? 0
+    },
+  })
+  const aih = useQuery({
+    queryKey: ['nota-aih', unidadeId],
+    enabled: ativo && papel === 'regulador',
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('aihs_da_unidade_pagina', { p_unidade: unidadeId!, p_status: 'solicitada', p_limite: 1 })
+      if (error) throw error
+      return (data as unknown as { total?: number } | null)?.total ?? 0
+    },
+  })
+  const apac = useQuery({
+    queryKey: ['nota-apac', unidadeId],
+    enabled: ativo && papel === 'regulador',
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('apacs_da_unidade_pagina', { p_unidade: unidadeId!, p_status: 'solicitada', p_limite: 1 })
+      if (error) throw error
+      return (data as unknown as { total?: number } | null)?.total ?? 0
+    },
+  })
+
   // Administrador: unidades que pedem atenção e chamados técnicos abertos
   // (mesmas chaves de cache das telas Plataformas e Pendências)
   const unidadesRede = useQuery({
@@ -141,5 +177,8 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     farmacia: farmacia.data,
     pedidos: pedidos.data?.pedidos_acesso_pendentes,
     tele: tele.data,
+    regulacao: regulacao.data,
+    aih: aih.data,
+    apac: apac.data,
   }
 }

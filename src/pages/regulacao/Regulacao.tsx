@@ -35,7 +35,7 @@
 // Migration 20261107000001_regulacao_solicitacao.sql; src/lib/regulacao.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, Send, Waypoints } from 'lucide-react'
+import { Plus, Send, Waypoints, X } from 'lucide-react'
 import * as React from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -48,10 +48,12 @@ import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransf
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
 import { MapaVagas, OfertaSetores } from '@/components/regulacao/MapaVagas'
-import { PainelSla, PrazosCentral, PrazosDoPedido, PrioridadeCalma, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
+import { FormEvolucao, PainelSla, PrazosCentral, PrioridadeCalma, SeloSla, type Evolucao } from '@/components/regulacao/SlaRegulacao'
+import { LinhaDoTempoPedido } from '@/components/regulacao/LinhaDoTempoPedido'
+import { DialogoMotivo, ListaComPainel, MenuAcoesPedido } from '@/components/regulacao/PainelPedido'
 import { RegulamentacaoCentrais } from '@/components/regulacao/RegulamentacaoCentrais'
 import { CapacidadesReguladas } from '@/components/regulacao/CapacidadesReguladas'
-import { TituloPagina, Vazio } from '@/components/monitor/Pagina'
+import { Abas, TituloPagina, Vazio } from '@/components/monitor/Pagina'
 import { Badge } from '@/components/ui/badge'
 import { BotaoLinha } from '@/components/ui/botao-linha'
 import { Button } from '@/components/ui/button'
@@ -68,6 +70,7 @@ import {
   type Carater, type DestinoTipo, type FiltrosFila, type Prioridade, type StatusRegulacao, type TipoSolicitacao,
   type MotivoNegacao, type Sla, type Vulnerabilidade,
 } from '@/lib/regulacao'
+import { esperandoDecisao, montarLinhaDoTempo } from '@/lib/regulacaoLinhaTempo'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Json } from '@/types/database'
@@ -120,6 +123,15 @@ const TOM: Record<string, 'destructive' | 'warning' | 'info' | 'secondary'> = {
 const docMae = (m?: { nome: string; cns: string | null; cpf: string | null } | null) =>
   m ? ` · mãe: ${m.nome}${m.cns ? ` · CNS ${m.cns}` : m.cpf ? ` · CPF ${m.cpf}` : ' · sem documento'}` : ''
 
+/**
+ * Abas do quadro (MR2 = A, RT 24/11/2026). Na origem: Esperando decisão (com o
+ * prazo), Enviados (o resto, sem repetir os que esperam), Recebidos da central
+ * e Mapa de vagas. Na central: Esperando decisão (a fila), Mapa de vagas e
+ * Prazos e critérios. Indicadores para a central e o gestor; Pacientes por
+ * setor para o gestor da unidade.
+ */
+type AbaQuadro = 'esperando' | 'enviados' | 'recebidos' | 'mapa' | 'pacientes' | 'config' | 'indicadores'
+
 export default function Regulacao() {
   const { unidadeAtiva, papeisDaUnidade, papelAtivo, ehSuperAdmin } = useUnidade()
   // RT, 24/11/2026: no perfil Administrador a página é só a regulamentação das
@@ -131,9 +143,15 @@ export default function Regulacao() {
   // setores ofertados, serviços do mapa) fica com o admin e o gestor. No perfil
   // em foco Médico o mapa é só consulta, mesmo para quem também é gestor.
   const focoConfig = papelAtivo === 'admin' || papelAtivo === 'gestor'
-  const [recemEnviada, setRecemEnviada] = React.useState<string | null>(null)
-  const abrirEnviada = (r: PedidoEnviado) => setRecemEnviada(r.id)
-  const [aba, setAba] = React.useState<'pedidos' | 'indicadores' | 'pacientes'>('pedidos')
+  const [aba, setAba] = React.useState<AbaQuadro>('esperando')
+  // RD1: o pedido aberto fica no painel ao lado da lista
+  const [aberto, setAberto] = React.useState<string | null>(null)
+  const trocarAba = (a: AbaQuadro) => { setAba(a); setAberto(null) }
+  // MR2: no perfil regulador, "Nova solicitação" é um botão no topo; nos outros
+  // perfis o formulário continua aberto de saída, como antes
+  const [novaAberta, setNovaAberta] = React.useState(papelAtivo !== 'regulador')
+  const fecharNova = () => setNovaAberta(false)
+  const abrirEnviada = (r: PedidoEnviado) => { setAba('esperando'); setAberto(r.id) }
   // 5A, tarefa 5 (H2): vindo da consulta da UBS, o formulário abre preenchido
   const [busca] = useSearchParams()
   const pacienteUrl = busca.get('paciente')
@@ -162,63 +180,123 @@ export default function Regulacao() {
     },
   })
   const c = ctx.data
+  const comIndicadores = !!c && (c.sou_central || (!!c.central && souGestorDaUnidade))
+  const origem = !!c && !c.sou_central && !!c.central && c.pode_solicitar
+  const contas = useContasQuadro(unidadeId, !!c && (c.sou_central || origem), origem)
+  const abas: [AbaQuadro, string, number | undefined][] = !c ? [] : c.sou_central ? [
+    ['esperando', 'Esperando decisão', contas.esperando], ['mapa', 'Mapa de vagas', undefined], ['config', 'Prazos e critérios', undefined],
+  ] : origem ? [
+    ['esperando', 'Esperando decisão', contas.esperando], ['enviados', 'Enviados', contas.enviados], ['recebidos', 'Recebidos da central', contas.recebidos],
+    // gestor da unidade (RT, 24/11/2026): o mapa e os internados por setor, com o que está pendente e o que o regulador pergunta
+    ...(souGestorDaUnidade ? [['mapa', 'Mapa de vagas', undefined], ['pacientes', 'Pacientes por setor', undefined]] as [AbaQuadro, string, undefined][] : []),
+  ] : []
+  if (comIndicadores) abas.push(['indicadores', 'Indicadores', undefined])
+  const abaVale = abas.some(([k]) => k === aba) ? aba : 'esperando'
+  // o detalhe é o mesmo nas abas; muda só o lado de quem vê
+  const painel = (id: string) => (
+    <Detalhe key={id} id={id} unidadeId={unidadeId} central={!!c?.sou_central} podeRegistrarExterno={!!c?.sou_central && !!c?.sou_regulador}
+      aoFechar={() => setAberto(null)} />
+  )
+  const comPainel = (lista: React.ReactNode) => (
+    <ListaComPainel lista={lista} aberto={aberto} painel={painel} aoFechar={() => setAberto(null)} rotulo="Pedido de regulação aberto" />
+  )
   if (modoAdmin) return <RegulamentacaoCentrais superAdmin={ehSuperAdmin} />
   return (
-    // fichas calmas (M3 da revisão): sem caixa alta nesta página
-    <div className="flex w-full max-w-5xl flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
+    // fichas calmas (M3 da revisão do Médico e unslop do regulador): a página e o painel
+    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case', aberto ? 'max-w-7xl' : 'max-w-5xl')}>
       <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
           ? `Solicitações recebidas pela ${c.central?.nome ?? 'Central de Regulação'}.`
-          : `Pedidos de consulta, exame, leito ou transferência para a ${c?.central?.nome ?? 'Central de Regulação da rede'}.`} />
+          : `Pedidos de consulta, exame, leito ou transferência para a ${c?.central?.nome ?? 'Central de Regulação da rede'}.`}
+        acoes={origem && !novaAberta && !inicial ? <Button onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button> : undefined} />
       {c?.sou_super_admin && focoConfig && <Centrais />}
-      {/* Indicadores (tarefa 10): central (rede) e gestor da unidade (origem e destino) */}
-      {c && (c.sou_central || (c.central && souGestorDaUnidade)) && (
-        <div className="flex gap-1.5" role="tablist" aria-label="Regulação">
-          <Button size="sm" role="tab" aria-selected={aba === 'pedidos'} variant={aba === 'pedidos' ? 'default' : 'outline'} onClick={() => setAba('pedidos')}>Pedidos</Button>
-          {/* gestor da unidade (RT, 24/11/2026): os internados por setor, o que está pendente e o que o regulador pergunta */}
-          {!c.sou_central && <Button size="sm" role="tab" aria-selected={aba === 'pacientes'} variant={aba === 'pacientes' ? 'default' : 'outline'} onClick={() => setAba('pacientes')}>Pacientes por setor</Button>}
-          <Button size="sm" role="tab" aria-selected={aba === 'indicadores'} variant={aba === 'indicadores' ? 'default' : 'outline'} onClick={() => setAba('indicadores')}>Indicadores</Button>
-        </div>
-      )}
-      {c && aba === 'pacientes' && !c.sou_central && c.central && souGestorDaUnidade ? (
-        <PacientesRegulacao unidadeId={unidadeId} modo="gestor" />
-      ) : c && aba === 'indicadores' && (c.sou_central || (c.central && souGestorDaUnidade)) ? (
-        <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
-      ) : !unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <MensagemErro texto={(ctx.error as Error).message} /> : !c ? null
-        : c.sou_central ? (
-          <>
-            <Fila centralId={unidadeId} souRegulador={c.sou_regulador} />
-            <PainelSla unidadeId={unidadeId} central
-              detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central podeRegistrarExterno={c.sou_regulador} />} />
-            <MapaVagas unidadeId={unidadeId} />
-            <CapacidadesReguladas centralId={unidadeId} />
-            <PrazosCentral unidadeId={unidadeId} editavel />
-            <Criterios unidadeId={unidadeId} editavel />
-          </>
-        )
-        : !c.central ? (
+      {!unidadeId ? null : ctx.isLoading ? <Spinner /> : ctx.error ? <MensagemErro texto={(ctx.error as Error).message} /> : !c ? null
+        : !c.sou_central && !c.central ? (
           <Vazio icone={Waypoints} titulo="A rede ainda não tem Central de Regulação"
             texto="A administração da plataforma define a central da organização. Até lá, não há para onde enviar." />
-        ) : c.pode_solicitar ? (
+        ) : !c.sou_central && !c.pode_solicitar ? (
+          <Vazio icone={Waypoints} titulo="Sem acesso à regulação nesta unidade" texto="Solicitam o médico e o gestor da unidade; quem regula é a central da rede." />
+        ) : (
           <>
-            <NovaSolicitacao key={inicial?.paciente.id ?? 'nova'} unidadeId={unidadeId} ctx={c} aoEnviar={abrirEnviada} inicial={inicial} />
-            <PainelSla unidadeId={unidadeId} central={false}
-              detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
-            <Lista unidadeId={unidadeId} central={false} podeRegistrarExterno={false} abrir={recemEnviada} />
-            <RecebidosDestino unidadeId={unidadeId}
-              detalhe={(id) => <Detalhe id={id} unidadeId={unidadeId} central={false} podeRegistrarExterno={false} />} />
-            {souGestorDaUnidade && (
+            {/* MR2: os três passos do RG1; "Voltar" fecha a nova solicitação (fica aberta quando veio da consulta da UBS) */}
+            {origem && (novaAberta || inicial) && (
+              <NovaSolicitacao key={inicial?.paciente.id ?? 'nova'} unidadeId={unidadeId} ctx={c} aoEnviar={abrirEnviada} aoFechar={inicial ? undefined : fecharNova} emPassos inicial={inicial} />
+            )}
+            <Abas abas={abas} valor={abaVale} onChange={trocarAba} rotulo="Regulação" className="mb-0" />
+            {abaVale === 'indicadores' ? (
+              <IndicadoresRegulacao unidadeId={unidadeId} unidades={c.sou_central ? c.unidades_rede : []} />
+            ) : abaVale === 'pacientes' ? (
+              <PacientesRegulacao unidadeId={unidadeId} modo="gestor" />
+            ) : abaVale === 'mapa' ? (
               <>
-                <MapaVagas unidadeId={unidadeId} consulta={!focoConfig} />
-                {focoConfig && <OfertaSetores unidadeId={unidadeId} />}
+                <MapaVagas unidadeId={unidadeId} consulta={!c.sou_central && !focoConfig} />
+                {c.sou_central && <CapacidadesReguladas centralId={unidadeId} />}
+                {!c.sou_central && focoConfig && <OfertaSetores unidadeId={unidadeId} />}
               </>
+            ) : abaVale === 'config' ? (
+              <>
+                <PrazosCentral unidadeId={unidadeId} editavel />
+                <Criterios unidadeId={unidadeId} editavel />
+              </>
+            ) : c.sou_central ? comPainel(
+              <Fila centralId={unidadeId} souRegulador={c.sou_regulador} selecionado={aberto} aoSelecionar={setAberto} />,
+            ) : abaVale === 'enviados' ? comPainel(
+              <Lista unidadeId={unidadeId} central={false} selecionado={aberto} aoSelecionar={setAberto} />,
+            ) : abaVale === 'recebidos' ? comPainel(
+              <RecebidosDestino unidadeId={unidadeId} selecionado={aberto} aoSelecionar={setAberto} />,
+            ) : comPainel(
+              <PainelSla unidadeId={unidadeId} central={false} selecionado={aberto} aoSelecionar={setAberto} />,
             )}
           </>
-        ) : (
-          <Vazio icone={Waypoints} titulo="Sem acesso à regulação nesta unidade" texto="Solicitam o médico e o gestor da unidade; quem regula é a central da rede." />
         )}
     </div>
   )
+}
+
+/**
+ * Contagens das abas, nas mesmas chaves de cache das listas (abrir a aba não
+ * refaz a consulta): esperando decisão (resumo do painel de prazos), enviados
+ * fora dos que esperam e recebidos da central.
+ */
+function useContasQuadro(unidadeId: string, ativo: boolean, origem: boolean) {
+  const sla = useQuery({
+    queryKey: ['regulacao-sla', unidadeId, {}],
+    enabled: ativo && !!unidadeId,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_sla_painel', { p_unidade: unidadeId, p_filtros: {} })
+      if (error) throw error
+      return data as unknown as { resumo: { abertos: number } }
+    },
+  })
+  const lista = useListaUnidade(unidadeId, origem)
+  const destino = useQuery({
+    queryKey: ['regulacao-destino', unidadeId],
+    enabled: origem && !!unidadeId,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_destino_lista', { p_unidade: unidadeId })
+      if (error) throw error
+      return (data ?? []) as unknown as { id: string }[]
+    },
+  })
+  return {
+    esperando: sla.data?.resumo.abertos,
+    enviados: lista.data ? lista.data.filter((s) => !esperandoDecisao(s.status)).length : undefined,
+    recebidos: destino.data?.length,
+  }
+}
+
+function useListaUnidade(unidadeId: string, ativo = true) {
+  return useQuery({
+    queryKey: ['regulacao-lista', unidadeId],
+    enabled: ativo && !!unidadeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('regulacao_lista', { p_unidade: unidadeId })
+      if (error) throw error
+      return (data ?? []) as unknown as Solicitacao[]
+    },
+  })
 }
 
 function Centrais() {
@@ -262,52 +340,46 @@ function Centrais() {
 }
 
 
-function Lista({ unidadeId, central, podeRegistrarExterno, abrir }: { unidadeId: string; central: boolean; podeRegistrarExterno: boolean; abrir?: string | null }) {
-  const lista = useQuery({
-    queryKey: ['regulacao-lista', unidadeId],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('regulacao_lista', { p_unidade: unidadeId })
-      if (error) throw error
-      return (data ?? []) as unknown as Solicitacao[]
-    },
-  })
-  const [aberta, setAberta] = React.useState<string | null>(null)
-  // pedido recém-enviado: abre o detalhe (com os anexos) na lista
-  const [abrirVisto, setAbrirVisto] = React.useState(abrir)
-  if (abrir !== abrirVisto) {
-    setAbrirVisto(abrir)
-    if (abrir) setAberta(abrir)
-  }
+/**
+ * Enviados (MR2): os pedidos da unidade que já saíram da espera — decididos,
+ * cancelados, chegados. Os que esperam decisão ficam só na aba deles, para o
+ * mesmo pedido não aparecer duas vezes.
+ */
+function Lista({ unidadeId, central, selecionado, aoSelecionar }: {
+  unidadeId: string; central: boolean; selecionado: string | null; aoSelecionar: (id: string | null) => void
+}) {
+  const lista = useListaUnidade(unidadeId)
+  const todos = lista.data ?? []
+  const itens = central ? todos : todos.filter((s) => !esperandoDecisao(s.status))
+  const esperando = todos.length - itens.length
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-corpo">{central ? 'Recebidas' : 'Solicitações da unidade'}</CardTitle>
-        <CardDescription>Clique num pedido para ver o detalhe, os anexos e o histórico.</CardDescription>
-        {central && <CardDescription>As 200 mais recentes.</CardDescription>}
+        <CardTitle className="text-corpo">{central ? 'Recebidas' : 'Enviados'}</CardTitle>
+        <CardDescription>
+          {central ? 'As 200 mais recentes.' : 'Pedidos da unidade já decididos, cancelados ou concluídos.'}
+          {!central && esperando > 0 && ` ${esperando === 1 ? '1 pedido espera' : `${esperando} pedidos esperam`} decisão e está${esperando === 1 ? '' : 'ão'} na aba Esperando decisão.`}
+        </CardDescription>
       </CardHeader>
       <CardContent className="text-apoio">
-        {lista.isLoading ? <EsqueletoLinhas linhas={5} rotulo="Carregando os pedidos…" /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : (lista.data ?? []).length === 0 ? (
-          <Vazio icone={Waypoints} titulo="Nenhuma solicitação" texto={central ? 'As solicitações das unidades da rede aparecem aqui.' : 'As solicitações enviadas pela unidade aparecem aqui.'} />
+        {lista.isLoading ? <EsqueletoLinhas linhas={5} rotulo="Carregando os pedidos…" /> : lista.error ? <MensagemErro texto={(lista.error as Error).message} /> : itens.length === 0 ? (
+          <Vazio icone={Waypoints} titulo="Nenhuma solicitação aqui" texto={central ? 'As solicitações das unidades da rede aparecem aqui.' : 'Quando a central decidir um pedido da unidade, ele passa para cá.'} />
         ) : (
           <ul className="flex flex-col divide-y divide-fio">
-            {(lista.data ?? []).map((s) => (
+            {itens.map((s) => (
               <li key={s.id} className="py-2">
-                <BotaoLinha variante="linha" aria-expanded={aberta === s.id}
-                  className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
-                  onClick={() => setAberta(aberta === s.id ? null : s.id)}>
-                  {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
+                <BotaoLinha variante="linha" aria-current={selecionado === s.id ? 'true' : undefined}
+                  className={cn('flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo', selecionado === s.id && 'bg-campo')}
+                  onClick={() => aoSelecionar(selecionado === s.id ? null : s.id)}>
                   <span className="text-tinta-sussurro">nº {s.numero}</span>
                   <SeloPrioridade s={s} />
-                  <span className="text-tinta-sussurro">{CARATER[s.carater]}</span>
                   <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}{docMae(s.paciente.mae)}</span>
                   <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                   {central && <span className="text-tinta-sussurro">de {s.origem.nome}</span>}
                   <SeloSla sla={s.sla} />
                   <Badge variant={s.status === 'cancelada' ? 'secondary' : 'info'} className="ml-auto">{STATUS[s.status]}</Badge>
                   <span className="text-tinta-sussurro">{fmtDataHora(s.criada_em)}</span>
-                  <span className="text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
                 </BotaoLinha>
-                {aberta === s.id && <Detalhe id={s.id} unidadeId={unidadeId} central={central} podeRegistrarExterno={podeRegistrarExterno} />}
               </li>
             ))}
           </ul>
@@ -322,7 +394,15 @@ function Linha({ rotulo, valor }: { rotulo: string; valor: React.ReactNode }) {
   return <div><dt className="inline text-tinta-sussurro">{rotulo}: </dt><dd className="inline">{valor}</dd></div>
 }
 
-function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string; unidadeId: string; central: boolean; podeRegistrarExterno: boolean }) {
+/**
+ * Detalhe do pedido no painel ao lado da lista (RD1 = A, RT 24/11/2026):
+ * cabeçalho fixo com a prioridade, o pedido, o prazo e "Atualizar evolução";
+ * "Cancelar solicitação" no menu "…", com o diálogo do motivo. Depois, o que
+ * se decide, os dados do pedido, os anexos e a linha do tempo (RD2).
+ */
+function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
+  id: string; unidadeId: string; central: boolean; podeRegistrarExterno: boolean; aoFechar?: () => void
+}) {
   const { papeisDaUnidade } = useUnidade()
   const souNir = papeisDaUnidade.includes('nir')
   const qc = useQueryClient()
@@ -334,7 +414,8 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
       return data as unknown as Solicitacao
     },
   })
-  const [motivo, setMotivo] = React.useState('')
+  const [cancelando, setCancelando] = React.useState(false)
+  const [evoluindo, setEvoluindo] = React.useState(false)
   const [sistema, setSistema] = React.useState('')
   const [protocolo, setProtocolo] = React.useState('')
   const [prioridadeCentral, setPrioridadeCentral] = React.useState('')
@@ -346,6 +427,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
     void qc.invalidateQueries({ queryKey: ['regulacao-fila', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['regulacao-sla', unidadeId] })
     void qc.invalidateQueries({ queryKey: ['regulacao-destino', unidadeId] })
+    void qc.invalidateQueries({ queryKey: ['nota-regulacao'] })
   }
   const priorizar = useMutation({
     mutationFn: async () => {
@@ -355,11 +437,11 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
     onSuccess: () => { setNovaPrioridade(''); setMotivoPrioridade(''); recarregar() },
   })
   const cancelar = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.rpc('regulacao_cancelar', { p_id: id, p_motivo: motivo.trim() })
+    mutationFn: async (motivo: string) => {
+      const { error } = await supabase.rpc('regulacao_cancelar', { p_id: id, p_motivo: motivo })
       if (error) throw error
     },
-    onSuccess: () => { setMotivo(''); recarregar() },
+    onSuccess: () => { setCancelando(false); recarregar() },
   })
   const externo = useMutation({
     mutationFn: async () => {
@@ -370,93 +452,121 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno }: { id: string;
     },
     onSuccess: recarregar,
   })
-  if (d.isLoading) return <Spinner />
-  if (d.error || !d.data) return <MensagemErro texto={d.error ? (d.error as Error).message : 'Não encontrada.'} />
+  if (d.isLoading) return <div className="p-4"><EsqueletoLinhas linhas={6} rotulo="Carregando o pedido…" /></div>
+  if (d.error || !d.data) return <div className="p-4"><MensagemErro texto={d.error ? (d.error as Error).message : 'Não encontrada.'} /></div>
   const s = d.data
   const destino = s.destino_tipo === 'rede' ? s.destino_unidade?.nome : s.destino_tipo === 'externo' ? `${s.destino_externo} (fora da rede)` : 'A definir pela regulação'
   const cancelavel = !central && s.origem_pode_responder
     && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
+  const podeEvoluir = !central && !!s.pode_evoluir
+  // as mensagens aparecem inteiras na conversa, logo acima: o evento "mensagem" sai da linha do tempo
+  const linhaDoTempo = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes: s.evolucoes ?? [], mensagens: [] })
   return (
-    <div className="mt-2 flex flex-col gap-2 rounded-controle border border-fio bg-campo p-3">
-      <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
-        <Linha rotulo="Pedido" valor={resumoPedido(s)} />
-        <Linha rotulo="Procedimento (SIGTAP)" valor={`${s.procedimento} ${s.procedimento_nome ?? ''}`} />
-        {s.cbo && <Linha rotulo="CBO" valor={s.cbo} />}
-        <Linha rotulo="Caráter / modalidade" valor={`${CARATER[s.carater]} · ${s.modalidade}`} />
-        <Linha rotulo="Prioridade proposta" valor={PRIORIDADES[s.prioridade].rotulo} />
-        {s.prioridade_regulador && (
-          <Linha rotulo="Prioridade do regulador" valor={`${PRIORIDADES[s.prioridade_regulador].rotulo} — ${s.prioridade_regulador_por ?? ''}, ${s.prioridade_regulador_em ? fmtDataHora(s.prioridade_regulador_em) : ''}: ${s.prioridade_regulador_motivo ?? ''}`} />
+    <article aria-label={`Pedido nº ${s.numero}`} className="flex flex-col text-apoio [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
+      <header className="sticky top-0 z-10 flex flex-col gap-2 border-b border-fio bg-superficie px-4 py-3">
+        <div className="flex items-start gap-2">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="flex flex-wrap items-center gap-2">
+              <SeloPrioridade s={s} />
+              <Badge variant={s.status === 'cancelada' ? 'secondary' : 'info'}>{STATUS[s.status]}</Badge>
+            </span>
+            <h2 className="text-corpo font-semibold text-tinta">Pedido nº {s.numero} · {resumoPedido(s)}</h2>
+            <span className="text-tinta-apoio">
+              {s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}{docMae(s.paciente.mae)}{central ? ` · de ${s.origem.nome}` : ''}
+            </span>
+          </div>
+          <MenuAcoesPedido itens={cancelavel ? [{ chave: 'cancelar', rotulo: 'Cancelar solicitação', perigo: true, onSelecionar: () => setCancelando(true) }] : []} />
+          {aoFechar && (
+            <Button size="icon-sm" variant="ghost" aria-label="Fechar o pedido" onClick={aoFechar}><X /></Button>
+          )}
+        </div>
+        {(podeEvoluir || s.sla) && (
+          <div className="flex flex-wrap items-center gap-2">
+            <SeloSla sla={s.sla} />
+            {podeEvoluir && !evoluindo && <Button size="xs" className="ml-auto" onClick={() => setEvoluindo(true)}>Atualizar evolução</Button>}
+          </div>
         )}
-        {(s.vulnerabilidades ?? []).length > 0 && <Linha rotulo="Vulnerabilidade" valor={s.vulnerabilidades.map((v) => VULNERABILIDADES[v]).join(', ')} />}
-        <Linha rotulo="Prioridade da central" valor={s.prioridade_central} />
-        {s.tipo_leito && <Linha rotulo="Leito" valor={TIPOS_LEITO[s.tipo_leito] + (s.internacao_psiquiatrica ? ` · ${INTERNACAO_PSIQUIATRICA[s.internacao_psiquiatrica]}` : '')} />}
-        {s.isolamento && <Linha rotulo="Isolamento" valor={s.isolamento_tipo ? ISOLAMENTOS[s.isolamento_tipo] : 'sim'} />}
-        {s.incubadora != null && <Linha rotulo="Incubadora" valor={s.incubadora ? 'sim' : 'não'} />}
-        <Linha rotulo="Destino" valor={destino} />
-        <Linha rotulo="CID" valor={`${s.cid} ${s.cid_descricao ?? ''}`} />
-        <Linha rotulo="Origem" valor={`${s.origem.nome} (CNES ${s.cnes_solicitante})${s.internacao_id ? ' · internação' : s.episodio_id ? ' · atendimento' : ''}`} />
-        <Linha rotulo="Solicitante" valor={`${s.solicitante} (${s.solicitante_papel === 'medico' ? 'médico' : 'gestor/NIR'})`} />
-        <Linha rotulo="Médico assistente" valor={s.medico_assistente} />
-        <Linha rotulo="Telefone" valor={s.telefone_contato} />
-        {s.externo_protocolo && <Linha rotulo="Regulação externa" valor={`${s.externo_sistema} · ${s.externo_protocolo}`} />}
-      </dl>
-      <dl className="flex flex-col gap-1 text-tinta">
-        <div><dt className="text-tinta-sussurro">Quadro clínico</dt><dd className="whitespace-pre-wrap">{s.quadro_clinico}</dd></div>
-        <Linha rotulo="Tempo de evolução" valor={s.tempo_evolucao} />
-        <Linha rotulo="Sinais vitais" valor={s.sinais_vitais} />
-        <Linha rotulo="Exames" valor={s.exames} />
-        <Linha rotulo="Tratamento e medicações" valor={s.medicacoes} />
-        <Linha rotulo="Hipótese" valor={s.hipotese} />
-      </dl>
-      {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
-      <BlocosDecisao s={s} />
-      <BlocoDestino s={s} />
-      <AcoesDestino s={s} aoFim={recarregar} nir={souNir && s.destino_unidade?.id === unidadeId} />
-      {!central && <SaidaOrigem s={s} aoFim={recarregar} nir={souNir && s.origem.id === unidadeId} />}
-      {central && podeRegistrarExterno && <DestinoExterno s={s} aoFim={recarregar} />}
-      <PrazosDoPedido id={s.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
-        podeEvoluir={!central && !!s.pode_evoluir} aoFim={recarregar} />
-      <AnexosRegulacao solicitacaoId={s.id} />
-      {/* R3 (RT, 24/11/2026): a conversa da origem com o médico regulador */}
-      <ConversaRegulacao solicitacaoId={s.id} aoEnviar={recarregar} />
-      {/* lacuna 7 (T9): o documento de transferência da origem (origem, central, NIR e destino na rede) */}
-      {(s.tipo === 'transferencia' || s.tipo === 'leito') && <LeituraTransferencia solicitacaoId={s.id} />}
-      {!central && (s.origem_pode_responder || (souNir && s.origem.id === unidadeId)) && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
-      {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
-      {central && podeRegistrarExterno && emDecisao(s.status) && <PainelDecisao s={s} centralId={unidadeId} aoFim={recarregar} />}
-      <ul className="text-rotulo text-tinta-sussurro">
-        {(s.eventos ?? []).map((e, i) => <li key={i}>{fmtDataHora(e.em)} · {e.evento.replace('_', ' ')} · {e.por ?? '—'}</li>)}
-      </ul>
-      {podeRegistrarExterno && ['enviada', 'em_analise', 'pendencia', 'devolvida'].includes(s.status) && (
-        <div className="flex flex-wrap items-end gap-2">
-          <Campo id={`prio-${id}`} rotulo="Prioridade do regulador">
-            <CampoSelecao id={`prio-${id}`} tamanho="compacto" value={novaPrioridade} onChange={(e) => setNovaPrioridade(e.target.value as Prioridade | '')}>
-              <option value="">Escolha…</option>
-              {(['emergencia', 'urgencia', 'prioritaria', 'eletiva'] as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
-            </CampoSelecao>
-          </Campo>
-          <Campo id={`prio-mot-${id}`} rotulo="Motivo (fica no histórico e a origem vê)" className="min-w-60 flex-1">
-            <Input id={`prio-mot-${id}`} className="h-8" value={motivoPrioridade} onChange={(e) => setMotivoPrioridade(e.target.value)} />
-          </Campo>
-          <Button size="sm" onClick={() => priorizar.mutate()} disabled={priorizar.isPending || !novaPrioridade || motivoPrioridade.trim().length < 10}>Definir prioridade</Button>
-        </div>
-      )}
-      {podeRegistrarExterno && (
-        <div className="flex flex-wrap items-end gap-2">
-          <Campo id={`ext-sis-${id}`} rotulo="Sistema externo"><Input id={`ext-sis-${id}`} className="h-8" placeholder="SISREG, e-SUS Regulação, GERINT…" value={sistema} onChange={(e) => setSistema(e.target.value)} /></Campo>
-          <Campo id={`ext-prot-${id}`} rotulo="Nº do protocolo"><Input id={`ext-prot-${id}`} className="h-8" value={protocolo} onChange={(e) => setProtocolo(e.target.value)} /></Campo>
-          <Campo id={`ext-pri-${id}`} rotulo="Prioridade da central (como veio)"><Input id={`ext-pri-${id}`} className="h-8" placeholder="ex.: Vermelho (P0)" value={prioridadeCentral} onChange={(e) => setPrioridadeCentral(e.target.value)} /></Campo>
-          <Button size="sm" variant="outline" onClick={() => externo.mutate()} disabled={externo.isPending || sistema.trim().length < 2 || protocolo.trim().length < 3}>Registrar</Button>
-        </div>
-      )}
-      {cancelavel && (
-        <div className="flex flex-wrap items-end gap-2">
-          <Campo id={`canc-${id}`} rotulo="Motivo do cancelamento" className="min-w-60 flex-1"><Input id={`canc-${id}`} className="h-8" value={motivo} onChange={(e) => setMotivo(e.target.value)} /></Campo>
-          <Button size="sm" variant="destructive" onClick={() => cancelar.mutate()} disabled={cancelar.isPending || motivo.trim().length < 10}>Cancelar solicitação</Button>
-        </div>
-      )}
-      <MensagemErro texto={(cancelar.error ?? externo.error ?? priorizar.error) ? ((cancelar.error ?? externo.error ?? priorizar.error) as Error).message : null} />
-    </div>
+      </header>
+
+      <div className="flex flex-col gap-4 p-4">
+        {evoluindo && <FormEvolucao id={s.id} aoFim={recarregar} aoVoltar={() => setEvoluindo(false)} />}
+        {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
+        <BlocosDecisao s={s} />
+        {central && podeRegistrarExterno && emDecisao(s.status) && <PainelDecisao s={s} centralId={unidadeId} aoFim={recarregar} />}
+        {!central && (s.origem_pode_responder || (souNir && s.origem.id === unidadeId)) && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={recarregar} />}
+        {!central && s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={recarregar} />}
+        <BlocoDestino s={s} />
+        <AcoesDestino s={s} aoFim={recarregar} nir={souNir && s.destino_unidade?.id === unidadeId} />
+        {!central && <SaidaOrigem s={s} aoFim={recarregar} nir={souNir && s.origem.id === unidadeId} />}
+        {central && podeRegistrarExterno && <DestinoExterno s={s} aoFim={recarregar} />}
+
+        <dl className="grid gap-x-4 gap-y-1">
+          <Linha rotulo="Procedimento (SIGTAP)" valor={`${s.procedimento} ${s.procedimento_nome ?? ''}`} />
+          {s.cbo && <Linha rotulo="CBO" valor={s.cbo} />}
+          <Linha rotulo="Caráter / modalidade" valor={`${CARATER[s.carater]} · ${s.modalidade}`} />
+          <Linha rotulo="Prioridade proposta" valor={PRIORIDADES[s.prioridade].rotulo} />
+          {s.prioridade_regulador && (
+            <Linha rotulo="Prioridade do regulador" valor={`${PRIORIDADES[s.prioridade_regulador].rotulo} — ${s.prioridade_regulador_por ?? ''}, ${s.prioridade_regulador_em ? fmtDataHora(s.prioridade_regulador_em) : ''}: ${s.prioridade_regulador_motivo ?? ''}`} />
+          )}
+          {(s.vulnerabilidades ?? []).length > 0 && <Linha rotulo="Vulnerabilidade" valor={s.vulnerabilidades.map((v) => VULNERABILIDADES[v]).join(', ')} />}
+          <Linha rotulo="Prioridade da central" valor={s.prioridade_central} />
+          {s.tipo_leito && <Linha rotulo="Leito" valor={TIPOS_LEITO[s.tipo_leito] + (s.internacao_psiquiatrica ? ` · ${INTERNACAO_PSIQUIATRICA[s.internacao_psiquiatrica]}` : '')} />}
+          {s.isolamento && <Linha rotulo="Isolamento" valor={s.isolamento_tipo ? ISOLAMENTOS[s.isolamento_tipo] : 'sim'} />}
+          {s.incubadora != null && <Linha rotulo="Incubadora" valor={s.incubadora ? 'sim' : 'não'} />}
+          <Linha rotulo="Destino" valor={destino} />
+          <Linha rotulo="CID" valor={`${s.cid} ${s.cid_descricao ?? ''}`} />
+          <Linha rotulo="Origem" valor={`${s.origem.nome} (CNES ${s.cnes_solicitante})${s.internacao_id ? ' · internação' : s.episodio_id ? ' · atendimento' : ''}`} />
+          <Linha rotulo="Solicitante" valor={`${s.solicitante} (${s.solicitante_papel === 'medico' ? 'médico' : 'gestor/NIR'})`} />
+          <Linha rotulo="Médico assistente" valor={s.medico_assistente} />
+          <Linha rotulo="Telefone" valor={s.telefone_contato} />
+          {s.externo_protocolo && <Linha rotulo="Regulação externa" valor={`${s.externo_sistema} · ${s.externo_protocolo}`} />}
+        </dl>
+        <dl className="flex flex-col gap-1 text-tinta">
+          <div><dt className="text-tinta-sussurro">Quadro clínico</dt><dd className="whitespace-pre-wrap">{s.quadro_clinico}</dd></div>
+          <Linha rotulo="Tempo de evolução" valor={s.tempo_evolucao} />
+          <Linha rotulo="Sinais vitais" valor={s.sinais_vitais} />
+          <Linha rotulo="Exames" valor={s.exames} />
+          <Linha rotulo="Tratamento e medicações" valor={s.medicacoes} />
+          <Linha rotulo="Hipótese" valor={s.hipotese} />
+        </dl>
+
+        {podeRegistrarExterno && ['enviada', 'em_analise', 'pendencia', 'devolvida'].includes(s.status) && (
+          <div className="flex flex-wrap items-end gap-2">
+            <Campo id={`prio-${id}`} rotulo="Prioridade do regulador">
+              <CampoSelecao id={`prio-${id}`} tamanho="compacto" value={novaPrioridade} onChange={(e) => setNovaPrioridade(e.target.value as Prioridade | '')}>
+                <option value="">Escolha…</option>
+                {(['emergencia', 'urgencia', 'prioritaria', 'eletiva'] as Prioridade[]).map((k) => <option key={k} value={k}>{PRIORIDADES[k].rotulo}</option>)}
+              </CampoSelecao>
+            </Campo>
+            <Campo id={`prio-mot-${id}`} rotulo="Motivo (fica no histórico e a origem vê)" className="min-w-60 flex-1">
+              <Input id={`prio-mot-${id}`} className="h-8" value={motivoPrioridade} onChange={(e) => setMotivoPrioridade(e.target.value)} />
+            </Campo>
+            <Button size="sm" onClick={() => priorizar.mutate()} disabled={priorizar.isPending || !novaPrioridade || motivoPrioridade.trim().length < 10}>Definir prioridade</Button>
+          </div>
+        )}
+        {podeRegistrarExterno && (
+          <div className="flex flex-wrap items-end gap-2">
+            <Campo id={`ext-sis-${id}`} rotulo="Sistema externo"><Input id={`ext-sis-${id}`} className="h-8" placeholder="SISREG, e-SUS Regulação, GERINT…" value={sistema} onChange={(e) => setSistema(e.target.value)} /></Campo>
+            <Campo id={`ext-prot-${id}`} rotulo="Nº do protocolo"><Input id={`ext-prot-${id}`} className="h-8" value={protocolo} onChange={(e) => setProtocolo(e.target.value)} /></Campo>
+            <Campo id={`ext-pri-${id}`} rotulo="Prioridade da central (como veio)"><Input id={`ext-pri-${id}`} className="h-8" placeholder="ex.: Vermelho (P0)" value={prioridadeCentral} onChange={(e) => setPrioridadeCentral(e.target.value)} /></Campo>
+            <Button size="sm" variant="outline" onClick={() => externo.mutate()} disabled={externo.isPending || sistema.trim().length < 2 || protocolo.trim().length < 3}>Registrar</Button>
+          </div>
+        )}
+        <MensagemErro texto={(externo.error ?? priorizar.error) ? ((externo.error ?? priorizar.error) as Error).message : null} />
+
+        <AnexosRegulacao solicitacaoId={s.id} />
+        {/* lacuna 7 (T9): o documento de transferência da origem (origem, central, NIR e destino na rede) */}
+        {(s.tipo === 'transferencia' || s.tipo === 'leito') && <LeituraTransferencia solicitacaoId={s.id} />}
+        {/* R3 (RT, 24/11/2026): a conversa da origem com o médico regulador, junto da linha do tempo; as mensagens ficam nela, inteiras */}
+        <ConversaRegulacao solicitacaoId={s.id} aoEnviar={recarregar} />
+        <LinhaDoTempoPedido itens={linhaDoTempo} tempos={s.tempos ?? []} statusAtual={s.status} />
+      </div>
+
+      <DialogoMotivo aberto={cancelando} aoFechar={() => { setCancelando(false); cancelar.reset() }}
+        titulo={`Cancelar a solicitação nº ${s.numero}`}
+        rotulo="Motivo do cancelamento" confirmar="Cancelar solicitação" ocupado={cancelar.isPending} erro={cancelar.error}
+        aoConfirmar={(m) => cancelar.mutate(m)} />
+    </article>
   )
 }
 
@@ -526,11 +636,17 @@ type ItemFila = Solicitacao & {
 }
 type RespostaFila = { dados: ItemFila[]; resumo: Partial<Record<Prioridade, number>>; origens: Ref[]; agora: string }
 
-function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: boolean }) {
+function Fila({ centralId, souRegulador, selecionado, aoSelecionar }: {
+  centralId: string; souRegulador: boolean
+  /** RD1: o pedido escolhido abre no painel ao lado da fila */
+  selecionado: string | null; aoSelecionar: (id: string | null) => void
+}) {
   const qc = useQueryClient()
   const [filtros, setFiltros] = React.useState<FiltrosFila>({})
   const [busca, setBusca] = React.useState('')
-  const [aberta, setAberta] = React.useState<string | null>(null)
+  // o painel de prazos saiu da central (era a mesma lista): o filtro dos atrasados veio para a fila
+  const [soAtrasados, setSoAtrasados] = React.useState(false)
+  const aberta = selecionado
   const [novos, setNovos] = React.useState<Set<string>>(new Set())
   const vistos = React.useRef<Set<string> | null>(null)
   const [lidoEm, setLidoEm] = React.useState(() => Date.now())
@@ -577,6 +693,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
   const r = fila.data
   const decorrido = Math.floor((agora - lidoEm) / 1000)
   const resumo = r?.resumo ?? {}
+  const dados = (r?.dados ?? []).filter((s) => !soAtrasados || !!(s.sla?.atrasado_central || s.sla?.atrasado_origem || s.sla?.atrasado_destino))
   return (
     <Card>
       <CardHeader>
@@ -606,7 +723,7 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
           </CampoSelecao>
           <CampoSelecao aria-label="Status" tamanho="compacto" value={filtros.status?.[0] ?? ''}
             onChange={(e) => setF('status', e.target.value ? [e.target.value as StatusRegulacao] : '')}>
-            <option value="">Em aberto (enviada, em análise, pendência)</option>
+            <option value="">Em aberto (em regulação, em análise, pendência)</option>
             {(Object.keys(STATUS) as StatusRegulacao[]).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
           </CampoSelecao>
           <CampoSelecao aria-label="Caráter" tamanho="compacto" value={filtros.carater ?? ''} onChange={(e) => setF('carater', e.target.value as Carater | '')}>
@@ -627,16 +744,20 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
             <Input aria-label="Buscar" className="h-8" placeholder="Paciente, nº ou protocolo" value={busca} onChange={(e) => setBusca(e.target.value)} />
             <Button size="sm" variant="outline" type="submit">Buscar</Button>
           </form>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" className="size-4" checked={soAtrasados} onChange={(e) => setSoAtrasados(e.target.checked)} />
+            Só com prazo vencido
+          </label>
         </div>
         <MensagemErro texto={(fila.error ?? assumir.error ?? soltar.error) ? ((fila.error ?? assumir.error ?? soltar.error) as Error).message : null} />
-        {fila.isLoading ? <Spinner /> : (r?.dados ?? []).length === 0 ? (
+        {fila.isLoading ? <Spinner /> : dados.length === 0 ? (
           <Vazio icone={Waypoints} titulo="Fila vazia" texto="Nenhuma solicitação com esses filtros." />
         ) : (
           <ul className="flex flex-col divide-y divide-fio">
-            {r!.dados.map((s) => (
+            {dados.map((s) => (
               <li key={s.id} className={`py-2 ${novos.has(s.id) ? 'rounded-controle bg-alerta-atencao/40 px-2' : ''}`}>
                 <div className="flex flex-wrap items-center gap-2">
-                  <BotaoLinha variante="linha" aria-expanded={aberta === s.id} className="w-auto min-w-0 flex-1 flex-wrap items-center gap-2 rounded-controle border-0 px-2 py-1.5" onClick={() => setAberta(aberta === s.id ? null : s.id)}>
+                  <BotaoLinha variante="linha" aria-current={aberta === s.id ? 'true' : undefined} className={cn('w-auto min-w-0 flex-1 flex-wrap items-center gap-2 rounded-controle border-0 px-2 py-1.5', aberta === s.id && 'bg-campo')} onClick={() => aoSelecionar(aberta === s.id ? null : s.id)}>
                     <SeloPrioridade s={s} />
                     {novos.has(s.id) && <Badge variant="warning">novo</Badge>}
                     <span className="font-semibold tabular-nums text-tinta">{formatarEspera(s.espera_segundos + decorrido)}</span>
@@ -646,7 +767,6 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
                     <SeloSla sla={s.sla} />
                     {(s.vulnerabilidades ?? []).map((v) => <Badge key={v} variant="secondary">{VULNERABILIDADES[v]}</Badge>)}
                     <span className="text-tinta-sussurro">{CARATER[s.carater]} · de {s.origem.nome} · nº {s.numero}</span>
-                    <ChevronDown className={cn('ml-auto size-4 shrink-0 text-tinta-sussurro', aberta === s.id && 'rotate-180')} aria-hidden />
                   </BotaoLinha>
                   <Badge variant="info">{STATUS[s.status]}</Badge>
                   {s.assumida_por && !s.assumida_por_mim && <span className="text-tinta-sussurro">com {s.assumida_por}</span>}
@@ -660,7 +780,6 @@ function Fila({ centralId, souRegulador }: { centralId: string; souRegulador: bo
                     </>
                   )}
                 </div>
-                {aberta === s.id && <Detalhe id={s.id} unidadeId={centralId} central podeRegistrarExterno={souRegulador} />}
               </li>
             ))}
           </ul>

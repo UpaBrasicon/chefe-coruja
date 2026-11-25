@@ -28,10 +28,11 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { fmtDataHora } from '@/lib/datas'
 import {
-  NIVEIS_FILA, PRIORIDADES, STATUS, TIPOS, alertasSla, errosPrazos, formatarEspera, prazosParaEnvio, prazosParaForm, resumoPedido,
+  NIVEIS_FILA, PRIORIDADES, STATUS, TIPOS, alertasSla, errosPrazos, prazosParaEnvio, prazosParaForm, resumoPedido,
   type FormPrazos, type Prazos, type Prioridade, type Sla, type StatusRegulacao, type TipoSolicitacao,
 } from '@/lib/regulacao'
 import { resumoPrazosTipo } from '@/lib/regulamentacaoCentrais'
+import { textoTempos } from '@/lib/regulacaoLinhaTempo'
 import { supabase } from '@/lib/supabase'
 import type { Json } from '@/types/database'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -73,11 +74,15 @@ type Resumo = { abertos: number; fila_atrasada: number; fila_sem_prazo: number; 
 type RespostaPainel = { central: boolean; dados: ItemPainel[]; resumo: Resumo; prazos: Prazos | null; agora: string }
 type Filtros = { tipo?: TipoSolicitacao; prioridade?: Prioridade; so_atrasados?: boolean }
 
-export function PainelSla({ unidadeId, central, detalhe }: {
-  unidadeId: string; central: boolean; detalhe: (id: string) => React.ReactNode
+export function PainelSla({ unidadeId, central, detalhe, selecionado, aoSelecionar }: {
+  unidadeId: string; central: boolean; detalhe?: (id: string) => React.ReactNode
+  /** Painel ao lado (RD1): o clique escolhe o pedido e o detalhe abre fora da lista. */
+  selecionado?: string | null; aoSelecionar?: (id: string | null) => void
 }) {
   const [filtros, setFiltros] = React.useState<Filtros>({})
-  const [aberta, setAberta] = React.useState<string | null>(null)
+  const [abertaLocal, setAbertaLocal] = React.useState<string | null>(null)
+  const aberta = aoSelecionar ? selecionado ?? null : abertaLocal
+  const setAberta = aoSelecionar ?? setAbertaLocal
   const painel = useQuery({
     queryKey: ['regulacao-sla', unidadeId, filtros],
     refetchInterval: 60_000,
@@ -137,19 +142,19 @@ export function PainelSla({ unidadeId, central, detalhe }: {
               const ef = s.prioridade_regulador ?? s.prioridade
               return (
                 <li key={s.id} className="py-2">
-                  <BotaoLinha variante="linha" aria-expanded={aberta === s.id}
-                    className="flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo"
+                  <BotaoLinha variante="linha" aria-expanded={aoSelecionar ? undefined : aberta === s.id} aria-current={aoSelecionar && aberta === s.id ? 'true' : undefined}
+                    className={`flex-wrap items-center gap-2 rounded-controle border-0 px-1 py-0.5 hover:bg-campo ${aoSelecionar && aberta === s.id ? 'bg-campo' : ''}`}
                     onClick={() => setAberta(aberta === s.id ? null : s.id)}>
-                    {aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
+                    {aoSelecionar ? null : aberta === s.id ? <ChevronDown className="size-4 text-tinta-sussurro" aria-hidden /> : <ChevronRight className="size-4 text-tinta-sussurro" aria-hidden />}
                     <PrioridadeCalma p={ef} />
                     <span className="font-medium text-tinta">{s.paciente.nome}{s.paciente_nao_identificado && ' (não identificado)'}</span>
                     <span className="text-tinta-apoio">{resumoPedido(s)}</span>
                     <span className="text-tinta-sussurro">nº {s.numero}{central ? ` · de ${s.origem.nome}` : ''}{s.assumida_por ? ` · com ${s.assumida_por}` : ''}</span>
                     <Badge variant="info">{STATUS[s.status]}</Badge>
                     <SeloSla sla={s.sla} />
-                    <span className="ml-auto text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>
+                    {!aoSelecionar && <span className="ml-auto text-rotulo text-acao">{aberta === s.id ? 'Fechar' : 'Ver detalhes'}</span>}
                   </BotaoLinha>
-                  {aberta === s.id && detalhe(s.id)}
+                  {!aoSelecionar && aberta === s.id && detalhe?.(s.id)}
                 </li>
               )
             })}
@@ -247,20 +252,39 @@ export function PrazosCentral({ unidadeId, editavel }: { unidadeId: string; edit
 type Tempo = { status: StatusRegulacao; segundos: number; vezes: number; atual: boolean }
 export type Evolucao = { texto: string; sinais_vitais: string | null; em: string; autor: string | null }
 
-/** Tempo em cada status, evoluções e, para a origem, "Atualizar evolução". */
-export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim }: {
-  id: string; sla: Sla | null; tempos: Tempo[]; evolucoes: Evolucao[]; podeEvoluir: boolean; aoFim: () => void
-}) {
+/** "Atualizar evolução": a origem escreve a evolução e o relógio recomeça. */
+export function FormEvolucao({ id, aoFim, aoVoltar }: { id: string; aoFim: () => void; aoVoltar: () => void }) {
   const [texto, setTexto] = React.useState('')
   const [sinais, setSinais] = React.useState('')
-  const [abrir, setAbrir] = React.useState(false)
   const evoluir = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('regulacao_atualizar_evolucao', { p_id: id, p_texto: texto.trim(), p_sinais_vitais: sinais.trim() || undefined })
       if (error) throw error
     },
-    onSuccess: () => { setTexto(''); setSinais(''); setAbrir(false); aoFim() },
+    onSuccess: () => { setTexto(''); setSinais(''); aoVoltar(); aoFim() },
   })
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={`evol-${id}`} className="text-rotulo">Evolução do paciente (a central vê; o relógio recomeça)</Label>
+      <textarea id={`evol-${id}`} rows={3} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={texto} onChange={(e) => setTexto(e.target.value)} />
+      <Label htmlFor={`evol-sv-${id}`} className="text-rotulo">Sinais vitais, com hora (opcional)</Label>
+      <Input id={`evol-sv-${id}`} className="h-8" value={sinais} onChange={(e) => setSinais(e.target.value)} />
+      <div className="flex gap-2">
+        <Button size="sm" onClick={() => evoluir.mutate()} disabled={evoluir.isPending || texto.trim().length < 10}>Registrar evolução</Button>
+        <Button size="sm" variant="ghost" onClick={aoVoltar}>Voltar</Button>
+      </div>
+      {evoluir.error && <p role="alert" className="text-rotulo text-critico">{(evoluir.error as Error).message}</p>}
+    </div>
+  )
+}
+
+/** Tempo em cada status, evoluções e, para a origem, "Atualizar evolução". */
+export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim, statusAtual }: {
+  id: string; sla: Sla | null; tempos: Tempo[]; evolucoes: Evolucao[]; podeEvoluir: boolean; aoFim: () => void
+  /** A situação do pedido: só ela fica como atual (RD2). Sem ela, a última marcada pelo banco. */
+  statusAtual?: StatusRegulacao
+}) {
+  const [abrir, setAbrir] = React.useState(false)
   return (
     <div className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -269,23 +293,9 @@ export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim 
         {podeEvoluir && !abrir && <Button size="xs" variant="outline" className="ml-auto" onClick={() => setAbrir(true)}>Atualizar evolução</Button>}
       </div>
       {tempos.length > 0 && (
-        <p className="text-rotulo text-tinta-apoio">
-          Tempo em cada status: {tempos.map((t) => `${STATUS[t.status]} ${formatarEspera(t.segundos)}${t.vezes > 1 ? ` (${t.vezes}×)` : ''}${t.atual ? ' — atual' : ''}`).join(' · ')}
-        </p>
+        <p className="text-rotulo text-tinta-apoio">Tempo em cada status: {textoTempos(tempos, statusAtual)}</p>
       )}
-      {abrir && (
-        <div className="flex flex-col gap-2">
-          <Label htmlFor={`evol-${id}`} className="text-rotulo">Evolução do paciente (a central vê; o relógio recomeça)</Label>
-          <textarea id={`evol-${id}`} rows={3} className="rounded-controle border border-fio bg-campo px-2 py-1.5" value={texto} onChange={(e) => setTexto(e.target.value)} />
-          <Label htmlFor={`evol-sv-${id}`} className="text-rotulo">Sinais vitais, com hora (opcional)</Label>
-          <Input id={`evol-sv-${id}`} className="h-8" value={sinais} onChange={(e) => setSinais(e.target.value)} />
-          <div className="flex gap-2">
-            <Button size="sm" onClick={() => evoluir.mutate()} disabled={evoluir.isPending || texto.trim().length < 10}>Registrar evolução</Button>
-            <Button size="sm" variant="ghost" onClick={() => setAbrir(false)}>Voltar</Button>
-          </div>
-          {evoluir.error && <p role="alert" className="text-rotulo text-critico">{(evoluir.error as Error).message}</p>}
-        </div>
-      )}
+      {abrir && <FormEvolucao id={id} aoFim={aoFim} aoVoltar={() => setAbrir(false)} />}
       {evolucoes.length > 0 && (
         <ul className="flex flex-col gap-1.5">
           {evolucoes.map((e, i) => (

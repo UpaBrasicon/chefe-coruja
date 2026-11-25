@@ -31,6 +31,7 @@ import { codigoSigtapNaTela, competenciasNaJanela, type ProfissionalParaFaturar 
 import { fmtData, fmtDataHora } from '@/lib/datas'
 import { dataIso } from '@/lib/formato'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Abas } from '@/components/monitor/Pagina'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -62,8 +63,11 @@ export default function Apac() {
     ['cancelada', 'Canceladas', contas?.cancelada], ['todas', 'Todas', resumo.data?.total],
     ...(faturamento ? [['arquivo', 'Arquivo do APAC Magnético', undefined] as const] : []),
   ]
-  const ordem: StatusApac[] = regulador ? ['solicitada', 'autorizada'] : ['autorizada', 'solicitada']
-  const inicial: Aba = contas ? (ordem.find((s) => contas[s] > 0) ?? (resumo.data!.total > 0 ? 'todas' : ordem[0])) : ordem[0]
+  // MR1 (RT, 24/11/2026): o regulador abre sempre em Solicitadas, o que espera a
+  // decisão dele; os outros perfis abrem na primeira que tem algo
+  const ordem: StatusApac[] = ['autorizada', 'solicitada']
+  const inicial: Aba = regulador ? 'solicitada'
+    : contas ? (ordem.find((s) => contas[s] > 0) ?? (resumo.data!.total > 0 ? 'todas' : ordem[0])) : ordem[0]
   const [abaEscolhida, setAbaBase] = React.useState<Aba | null>(null)
   const aba: Aba = abaEscolhida ?? inicial
   // item 05 do kit de desempenho: páginas de 50, com "Ver mais"
@@ -83,7 +87,8 @@ export default function Apac() {
   // vazio, sem abas zeradas (o total vem do resumo das abas)
   const semNenhuma = resumo.data?.total === 0
   return (
-    <div className="flex w-full max-w-5xl flex-col">
+    // no perfil regulador, fichas em caixa normal (unslop da revisão do perfil)
+    <div className={cn('flex w-full max-w-5xl flex-col', regulador && '[&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case')}>
       <TituloPagina icone={FileCheck} titulo="APAC da unidade"
         descricao={regulador ? 'Autorize com o número e a validade, ou rejeite com o motivo.'
           : 'Registre a execução de cada competência e gere o arquivo do APAC Magnético. Quem autoriza é o médico regulador.'} />
@@ -112,6 +117,7 @@ function CartaoApac({ a, unidade, regulador, faturamento }: { a: Apac; unidade: 
   const invalidar = () => {
     void qc.invalidateQueries({ queryKey: ['apacs-da-unidade', unidade] })
     void qc.invalidateQueries({ queryKey: ['eventos-apac', a.id] })
+    void qc.invalidateQueries({ queryKey: ['nota-apac'] })
   }
   const eventos = useQuery({
     queryKey: ['eventos-apac', a.id],

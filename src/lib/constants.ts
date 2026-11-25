@@ -98,7 +98,8 @@ export const ROTA_INICIAL: Record<Papel, string> = {
   recepcao: '/recepcao',
   farmaceutico: '/farmacia',
   telemedicina: '/teleinterconsulta',
-  regulador: '/aih',
+  // revisão do perfil (MR1 = A, RT 24/11/2026): o regulador abre na Regulação
+  regulador: '/regulacao',
   faturamento: '/faturamento',
   secretaria: '/rede',
   regulacao_regional: '/rede',
