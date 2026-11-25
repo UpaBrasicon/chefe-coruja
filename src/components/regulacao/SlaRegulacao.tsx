@@ -36,6 +36,7 @@ import {
 import { resumoPrazosTipo } from '@/lib/regulamentacaoCentrais'
 import { textoTempos } from '@/lib/regulacaoLinhaTempo'
 import { supabase } from '@/lib/supabase'
+import { rotularSinaisVitais } from '@/lib/vitaisLegiveis'
 import type { Json } from '@/types/database'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 
@@ -308,7 +309,7 @@ export function PrazosDoPedido({ id, sla, tempos, evolucoes, podeEvoluir, aoFim,
             <li key={i} className="text-tinta">
               <span className="text-rotulo text-tinta-sussurro">{fmtDataHora(e.em)} · {e.autor ?? '—'}</span>
               <p className="whitespace-pre-wrap">{e.texto}</p>
-              {e.sinais_vitais && <p className="text-tinta-apoio">Sinais vitais: {e.sinais_vitais}</p>}
+              {e.sinais_vitais && <p className="text-tinta-apoio">Sinais vitais: {rotularSinaisVitais(e.sinais_vitais)}</p>}
             </li>
           ))}
         </ul>

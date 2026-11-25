@@ -84,6 +84,7 @@ import {
   type MotivoNegacao, type Sla, type Vulnerabilidade,
 } from '@/lib/regulacao'
 import { esperandoDecisao, montarLinhaDoTempo } from '@/lib/regulacaoLinhaTempo'
+import { rotularSinaisVitais } from '@/lib/vitaisLegiveis'
 import type { Conversa } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -216,9 +217,11 @@ export default function Regulacao() {
   // Médico regulador numa unidade de origem usam o console — abas no topo,
   // largura cheia, fila densa e dossiê.
   const consoleRegulador = !!c && (c.sou_central || (origem && papelAtivo === 'regulador'))
-  const abasConsole = abas.map(([chave, rotulo, n]) => ({
-    chave, rotulo, contagem: c?.sou_central && chave === 'mapa' ? central.livresTexto : n,
-  }))
+  // RC4 (revisão unslop): na central a aba diz "Mapa de vagas · 1 livre"; o
+  // detalhe (isolamento, pressão negativa) fica dentro da aba
+  const abasConsole = abas.map(([chave, rotulo, n]) => c?.sou_central && chave === 'mapa'
+    ? { chave, rotulo: central.livres === undefined ? rotulo : `${rotulo} · ${central.livres} ${central.livres === 1 ? 'livre' : 'livres'}` }
+    : { chave, rotulo, contagem: n })
   const decisaoOrigem = (id: string, ctrl: ControleDecisao, aoFim: () => void) => (
     <DecisaoOrigem key={ctrl.chave} id={id} unidadeId={unidadeId} ctrl={ctrl} aoFim={aoFim} />
   )
@@ -235,6 +238,12 @@ export default function Regulacao() {
     // fichas calmas (M3 da revisão do Médico e unslop do regulador): a página e o painel
     <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case',
       consoleRegulador ? 'gap-3' : aberto ? 'max-w-7xl' : 'max-w-5xl')}>
+      {/* RO1 (revisão unslop): no console, "Atualizado" e "Nova solicitação" sobem para a linha do título e as abas usam a largura toda */}
+      {consoleRegulador && c && <TituloPagina icone={Waypoints} titulo="Regulação" className="mb-0 items-center"
+        acoes={<>
+          <AtualizadoEm em={c.sou_central ? central.atualizadoEm : contas.atualizadoEm} />
+          {origem && !novaAberta && !inicial && <Button size="sm" {...novaDesligada} onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button>}
+        </>} />}
       {!consoleRegulador && <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
           ? `Solicitações recebidas pela ${c.central?.nome ?? 'Central de Regulação'}.`
@@ -256,11 +265,7 @@ export default function Regulacao() {
               <NovaSolicitacao key={inicial?.paciente.id ?? 'nova'} unidadeId={unidadeId} ctx={c} aoEnviar={abrirEnviada} aoFechar={inicial ? undefined : fecharNova} emPassos inicial={inicial} />
             )}
             {consoleRegulador ? (
-              <AbasConsole abas={abasConsole} valor={abaVale} onChange={trocarAba}
-                direita={<>
-                  <AtualizadoEm em={c.sou_central ? central.atualizadoEm : contas.atualizadoEm} />
-                  {origem && !novaAberta && !inicial && <Button size="sm" {...novaDesligada} onClick={() => setNovaAberta(true)}><Plus /> Nova solicitação</Button>}
-                </>} />
+              <AbasConsole abas={abasConsole} valor={abaVale} onChange={trocarAba} />
             ) : <Abas abas={abas} valor={abaVale} onChange={trocarAba} rotulo="Regulação" className="mb-0" />}
             {abaVale === 'indicadores' ? (
               <>
@@ -345,8 +350,6 @@ function useContasCentral(centralId: string, ativo: boolean) {
   return {
     fila: fila.data ? itens.length : undefined,
     livres: vagas.data ? soma((l) => l.livre) : undefined,
-    // "N · N iso · N p.neg" na aba do mapa (modelo do RT)
-    livresTexto: vagas.data ? `${soma((l) => l.livre)} · ${soma((l) => l.livre_isolamento ?? 0)} iso · ${soma((l) => l.livre_pressao_negativa ?? 0)} p.neg` : undefined,
     municipios: fila.data ? new Set(itens.map((s) => s.municipio ?? '')).size : undefined,
     atualizadoEm,
   }
@@ -593,7 +596,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
         <dl className="flex flex-col gap-1 text-tinta">
           <div><dt className="text-tinta-sussurro">Quadro clínico</dt><dd className="whitespace-pre-wrap">{s.quadro_clinico}</dd></div>
           <Linha rotulo="Tempo de evolução" valor={s.tempo_evolucao} />
-          <Linha rotulo="Sinais vitais" valor={s.sinais_vitais} />
+          <Linha rotulo="Sinais vitais" valor={rotularSinaisVitais(s.sinais_vitais)} />
           <Linha rotulo="Exames" valor={s.exames} />
           <Linha rotulo="Tratamento e medicações" valor={s.medicacoes} />
           <Linha rotulo="Hipótese" valor={s.hipotese} />
@@ -747,8 +750,9 @@ function DecisaoCentral({ id, centralId, podeDecidir, ctrl, aoFim }: {
     <>
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
       <BlocosDecisao s={s} />
-      {podeDecidir && emDecisao(s.status) && (
-        <PainelDecisao key={ctrl.chave} s={s} centralId={centralId} aoFim={aoFim} acaoInicial={ctrl.acao === 'cancelar' ? null : ctrl.acao} destinoInicial={ctrl.destinoUnidade} />
+      {/* RC3: os botões da decisão ficam no pé do dossiê; aqui, só o formulário da ação escolhida */}
+      {podeDecidir && emDecisao(s.status) && ctrl.acao && ctrl.acao !== 'cancelar' && (
+        <PainelDecisao key={ctrl.chave} s={s} centralId={centralId} aoFim={aoFim} acaoInicial={ctrl.acao} destinoInicial={ctrl.destinoUnidade} noDossie />
       )}
       <BlocoDestino s={s} />
       {podeDecidir && <DestinoExterno s={s} aoFim={aoFim} />}
@@ -787,7 +791,8 @@ function DecisaoOrigem({ id, unidadeId, ctrl, aoFim }: { id: string; unidadeId: 
   return (
     <>
       {s.motivo_cancelamento && <p className="text-tinta-apoio">Cancelada ({s.cancelamento_origem}): {s.motivo_cancelamento}</p>}
-      <BlocosDecisao s={s} />
+      {/* RO2: a pergunta sem resposta fica no topo do dossiê, com "Responder" que traz o foco para cá */}
+      <BlocosDecisao s={s} semPerguntaAberta />
       {(s.origem_pode_responder || (souNir && origemDaqui)) && s.status === 'pendencia' && <ResponderPendencia s={s} aoFim={aoFim} />}
       {s.origem_pode_responder && s.status === 'devolvida' && <Reenviar s={s} aoFim={aoFim} />}
       <BlocoDestino s={s} />
@@ -832,7 +837,11 @@ function RegistroExterno({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
 }
 
 // ── decisão do regulador e respostas da origem (Fase 4, tarefa 4) ─────────────
-function BlocosDecisao({ s }: { s: Solicitacao }) {
+function BlocosDecisao({ s, semPerguntaAberta = false }: {
+  s: Solicitacao
+  /** no dossiê da origem a pergunta ainda sem resposta aparece no topo (RO2) */
+  semPerguntaAberta?: boolean
+}) {
   const destino = s.destino_tipo === 'rede' ? s.destino_unidade?.nome : s.destino_tipo === 'externo' ? s.destino_externo : null
   return (
     <>
@@ -856,7 +865,7 @@ function BlocosDecisao({ s }: { s: Solicitacao }) {
           {s.reenviada_em && <span className="block text-tinta-apoio">Corrigida e reenviada em {fmtDataHora(s.reenviada_em)} (mantém a posição na fila).</span>}
         </div>
       )}
-      {s.pendencia_pergunta && (
+      {s.pendencia_pergunta && !(semPerguntaAberta && !s.pendencia_resposta) && (
         <div className="rounded-controle border border-fio bg-superficie px-3 py-2 text-tinta">
           <b>Pergunta da central</b> ({s.pendencia_por ?? '—'}{s.pendencia_em ? `, ${fmtDataHora(s.pendencia_em)}` : ''}): {s.pendencia_pergunta}
           {s.pendencia_resposta
@@ -936,10 +945,12 @@ function Reenviar({ s, aoFim }: { s: Solicitacao; aoFim: () => void }) {
 }
 
 type Acao = 'autorizar' | 'negar' | 'devolver' | 'pendencia'
-function PainelDecisao({ s, centralId, aoFim, acaoInicial = null, destinoInicial }: {
+function PainelDecisao({ s, centralId, aoFim, acaoInicial = null, destinoInicial, noDossie = false }: {
   s: Solicitacao; centralId: string; aoFim: () => void
   /** modelo do RT (25/11/2026): o dossiê abre a decisão já na ação; "Reservar vaga" já com a unidade */
   acaoInicial?: Acao | null; destinoInicial?: string
+  /** RC3: no dossiê a escolha da ação é do pé (DossieRegulador); aqui só o formulário dela */
+  noDossie?: boolean
 }) {
   const ctx = useQuery({
     queryKey: ['regulacao-contexto', centralId],
@@ -982,14 +993,17 @@ function PainelDecisao({ s, centralId, aoFim, acaoInicial = null, destinoInicial
     ['autorizar', 'Autorizar', 'default'], ['pendencia', 'Pergunta à origem', 'outline'],
     ['devolver', 'Devolver à origem', 'outline'], ['negar', 'Negar', 'destructive'],
   ]
+  if (noDossie && !acao) return null
   return (
     <div className="flex flex-col gap-2 rounded-controle border border-acao/30 p-3">
-      <span className="font-medium text-tinta">Decisão da central</span>
-      <div className="flex flex-wrap gap-2">
-        {BOTOES.filter(([a]) => !(a === 'pendencia' && s.status === 'pendencia')).map(([a, rotulo, variante]) => (
-          <Button key={a} size="xs" variant={acao === a ? 'default' : variante === 'destructive' ? 'destructive' : 'outline'} onClick={() => setAcao(acao === a ? null : a)}>{rotulo}</Button>
-        ))}
-      </div>
+      <span className="font-medium text-tinta">{noDossie && acao ? `Decisão da central: ${BOTOES.find(([a]) => a === acao)![1].toLowerCase()}` : 'Decisão da central'}</span>
+      {!noDossie && (
+        <div className="flex flex-wrap gap-2">
+          {BOTOES.filter(([a]) => !(a === 'pendencia' && s.status === 'pendencia')).map(([a, rotulo, variante]) => (
+            <Button key={a} size="xs" variant={acao === a ? 'default' : variante === 'destructive' ? 'destructive' : 'outline'} onClick={() => setAcao(acao === a ? null : a)}>{rotulo}</Button>
+          ))}
+        </div>
+      )}
       {acao === 'autorizar' && (
         <div className="grid gap-2 sm:grid-cols-3">
           <Campo id={`aut-dt-${s.id}`} rotulo="Destino (obrigatório)">
@@ -1061,6 +1075,7 @@ function PainelDecisao({ s, centralId, aoFim, acaoInicial = null, destinoInicial
           <Button size="sm" variant={acao === 'negar' ? 'destructive' : 'default'} onClick={() => decidir.mutate()} disabled={decidir.isPending || !pronto}>
             Confirmar: {BOTOES.find(([a]) => a === acao)![1].toLowerCase()}
           </Button>
+          {noDossie && <Button size="sm" variant="ghost" onClick={() => { setAcao(null); setTexto(''); setMotivo('') }}>Desistir</Button>}
           <span className="text-rotulo text-tinta-sussurro">O solicitante e o médico assistente recebem um aviso.</span>
         </div>
       )}

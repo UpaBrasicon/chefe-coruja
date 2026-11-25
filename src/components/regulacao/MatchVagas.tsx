@@ -5,6 +5,9 @@
 // (src/lib/regulacaoFila.ts). "Reservar vaga" não cria regra: abre a decisão
 // de autorizar com a unidade escolhida; a reserva do leito segue o aceite do
 // destino (tarefa 9, DestinoRegulacao). Migration 20270425000020.
+// RC4 da revisão unslop (RT, 25/11/2026): uma coluna para cada saldo
+// ("Livres", "Isolamento", "Pressão negativa", sem abreviar), a unidade numa
+// linha (corta com reticências e mostra inteira ao focar) e zeros em cinza.
 // ─────────────────────────────────────────────────────────────────────────────
 import * as React from 'react'
 
@@ -16,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { textoIsolamento } from '@/lib/isolamentoPedido'
 import { ISOLAMENTOS, TIPOS_LEITO } from '@/lib/regulacao'
 import { matchVagas } from '@/lib/regulacaoFila'
+import { cn } from '@/lib/utils'
 import { useVagasCentral } from './useRegulacaoCentral'
 
 export function MatchVagas({ centralId, pedido, podeReservar, aoReservar }: {
@@ -56,21 +60,26 @@ export function MatchVagas({ centralId, pedido, podeReservar, aoReservar }: {
               <TableHeader className="bg-campo text-rotulo text-tinta-apoio">
                 <TableRow>
                   <TableHead className="px-2 py-1.5 font-medium">Unidade</TableHead>
-                  <TableHead className="px-2 py-1.5 font-medium" title="Livres: geral / isolamento comum / pressão negativa">Saldo (geral / isol. / p. neg.)</TableHead>
+                  <TableHead className="px-2 py-1.5 text-right font-medium whitespace-nowrap" title="Leitos livres fora de isolamento">Livres</TableHead>
+                  <TableHead className="px-2 py-1.5 text-right font-medium whitespace-nowrap" title="Livres de isolamento comum">Isolamento</TableHead>
+                  <TableHead className="px-2 py-1.5 text-right font-medium whitespace-nowrap" title="Livres de isolamento com pressão negativa">Pressão negativa</TableHead>
                   <TableHead className="px-2 py-1.5 font-medium">Compatibilidade</TableHead>
-                  <TableHead className="px-2 py-1.5 font-medium text-right">Decisão</TableHead>
+                  <TableHead className="px-2 py-1.5 font-medium"><span className="sr-only">Ação</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-fio">
                 {visiveis.map((l) => (
                   <TableRow key={l.unidade.id} className={l.compativel ? undefined : 'text-tinta-sussurro'}>
-                    <TableCell className="px-2 py-1.5">
-                      <span className="font-medium text-tinta">{l.unidade.nome}</span>
-                      <span className="block text-rotulo text-tinta-sussurro">
+                    <TableCell className="max-w-56 px-2 py-1.5">
+                      <span tabIndex={0} title={l.unidade.nome}
+                        className="block truncate rounded-controle font-medium text-tinta outline-none focus-visible:whitespace-normal focus-visible:ring-2 focus-visible:ring-acao/40">{l.unidade.nome}</span>
+                      <span className="block truncate text-rotulo text-tinta-sussurro">
                         {[l.unidade.municipio, l.unidade.cnes ? `CNES ${l.unidade.cnes}` : '', l.km != null ? `${Math.round(l.km)} km` : ''].filter(Boolean).join(' · ')}
                       </span>
                     </TableCell>
-                    <TableCell className="px-2 py-1.5 tabular-nums">{l.saldo.geral} / {l.saldo.isolamento} / {l.saldo.pressao_negativa}</TableCell>
+                    {[l.saldo.geral, l.saldo.isolamento, l.saldo.pressao_negativa].map((n, i) => (
+                      <TableCell key={i} className={cn('px-2 py-1.5 text-right tabular-nums', n === 0 ? 'text-tinta-sussurro' : 'text-tinta')}>{n}</TableCell>
+                    ))}
                     <TableCell className="px-2 py-1.5">{l.texto}</TableCell>
                     <TableCell className="px-2 py-1.5 text-right">
                       {l.compativel && podeReservar && (

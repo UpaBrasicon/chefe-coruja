@@ -5,7 +5,8 @@
 // por município e as tabelas dos indicadores. Os números vêm do banco; nada
 // aqui inventa valor.
 
-import { ISOLAMENTOS, PRIORIDADES, TIPOS_LEITO, prioridadeEfetiva, type Prioridade, type Sla, type StatusRegulacao, type Vulnerabilidade } from './regulacao.ts'
+import { ISOLAMENTOS, PRIORIDADES, SITUACOES_ISOLAMENTO, TIPOS_LEITO, prioridadeEfetiva, type Prioridade, type SituacaoIsolamento, type Sla, type StatusRegulacao, type Vulnerabilidade } from './regulacao.ts'
+import { textoIsolamento } from './isolamentoPedido.ts'
 import { tempoSemEvolucao } from './tempoSemEvolucao.ts'
 
 /** O que a fila precisa de cada pedido (JSON da regulacao_fila + regulacao_fila_extras). */
@@ -68,14 +69,36 @@ export function mensagemCobrarEvolucao(s: { numero: number; sla: Sla | null }, a
 export const temIsolamento = (s: Pick<PedidoFila, 'isolamento' | 'isolamento_tipo'>) => s.isolamento && !!s.isolamento_tipo
 export const rotuloIsolamento = (tipo: string | null | undefined) => (tipo ? ISOLAMENTOS[tipo] ?? tipo : 'Sem isolamento')
 export const ehJudicial = (s: Pick<PedidoFila, 'vulnerabilidades'>) => (s.vulnerabilidades ?? []).includes('judicializado')
+
+/**
+ * RO3 (revisão unslop, RT 25/11/2026): o selo da linha da fila diz o tipo e a
+ * situação ("Gotícula · suspeito"), igual na central e na origem. Sem
+ * situação, só o tipo.
+ */
+export function seloIsolamento(s: Pick<PedidoFila, 'isolamento_tipo' | 'isolamento_tipos' | 'situacao'>): string {
+  const tipo = textoIsolamento(s) ?? rotuloIsolamento(s.isolamento_tipo)
+  const sit = s.situacao ? SITUACOES_ISOLAMENTO[s.situacao as SituacaoIsolamento] ?? s.situacao : null
+  return sit ? `${tipo} · ${sit.charAt(0).toLocaleLowerCase('pt-BR')}${sit.slice(1)}` : tipo
+}
 export const temVulnerabilidade = (s: Pick<PedidoFila, 'vulnerabilidades'>) => (s.vulnerabilidades ?? []).some((v) => v !== 'judicializado')
 
 // ── filtros e atalhos ───────────────────────────────────────────────────────
-export type Atalho = 'isolamento' | 'evolucao_vencida' | 'risco' | 'judicial' | 'vulnerabilidade'
+export type Atalho = 'isolamento' | 'evolucao_vencida' | 'risco' | 'judicial' | 'vulnerabilidade' | 'perguntou' | 'devolvido'
+/** Atalhos da central (modelo do RT). */
 export const ATALHOS: [Atalho, string][] = [
   ['isolamento', 'Com isolamento'], ['evolucao_vencida', 'Evolução vencida'], ['risco', 'Risco de cancelamento'],
   ['judicial', 'Mandado judicial'], ['vulnerabilidade', 'Vulnerabilidade'],
 ]
+/**
+ * RO2 (revisão unslop, RT 25/11/2026): na unidade de origem os atalhos são o
+ * que a origem tem de fazer. Mandado judicial e vulnerabilidade ficam no menu
+ * Filtros (MARCAS).
+ */
+export const ATALHOS_ORIGEM: [Atalho, string][] = [
+  ['perguntou', 'A central perguntou'], ['evolucao_vencida', 'Evolução vencida'], ['devolvido', 'Devolvidos'], ['risco', 'Risco de cancelamento'],
+]
+/** Marcas do pedido que, na origem, ficam no menu Filtros. */
+export const MARCAS: [Atalho, string][] = [['judicial', 'Mandado judicial'], ['vulnerabilidade', 'Vulnerabilidade']]
 export function casaAtalho(s: PedidoFila, a: Atalho): boolean {
   switch (a) {
     case 'isolamento': return temIsolamento(s)
@@ -83,11 +106,15 @@ export function casaAtalho(s: PedidoFila, a: Atalho): boolean {
     case 'risco': return nivelEvolucao(s.sla) === 'risco'
     case 'judicial': return ehJudicial(s)
     case 'vulnerabilidade': return temVulnerabilidade(s)
+    // a pergunta da central sem resposta deixa o pedido em pendência
+    case 'perguntou': return s.status === 'pendencia'
+    case 'devolvido': return s.status === 'devolvida'
   }
 }
-export function contarAtalhos(itens: PedidoFila[]): Record<Atalho, number> {
-  const c = { isolamento: 0, evolucao_vencida: 0, risco: 0, judicial: 0, vulnerabilidade: 0 } as Record<Atalho, number>
-  for (const s of itens) for (const [a] of ATALHOS) if (casaAtalho(s, a)) c[a]++
+/** Contagem de cada atalho da lista (a da central, se nenhuma for dada). */
+export function contarAtalhos(itens: PedidoFila[], lista: [Atalho, string][] = ATALHOS): Partial<Record<Atalho, number>> {
+  const c: Partial<Record<Atalho, number>> = Object.fromEntries(lista.map(([a]) => [a, 0]))
+  for (const s of itens) for (const [a] of lista) if (casaAtalho(s, a)) c[a] = (c[a] ?? 0) + 1
   return c
 }
 

@@ -11,6 +11,9 @@
 //   NIR da unidade só consultam (RT, 24/11/2026, migration 20270421000071).
 //   Edita só o gestor da própria unidade. Só consulta: reserva e aceite são da tarefa 9.
 // Migration 20261114000001_mapa_vagas.sql.
+// RC4 da revisão unslop (RT, 25/11/2026): a aba diz só "Mapa de vagas · N
+// livres"; os livres de isolamento e de pressão negativa ficam aqui dentro,
+// com os nomes inteiros, e os zeros em cinza.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BedDouble } from 'lucide-react'
@@ -30,6 +33,7 @@ import {
   type FormServico, type SituacaoServico, type TipoServico,
 } from '@/lib/regulacao'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 import type { Json } from '@/types/database'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
 
@@ -58,6 +62,9 @@ export function MapaVagas({ unidadeId, compacto = false, consulta = false }: { u
     },
   })
   const m = mapa.data
+  const soma = (f: (l: Leitos) => number | undefined) => (m?.unidades ?? []).reduce((t, u) => t + u.leitos.reduce((a, l) => a + (f(l) ?? 0), 0), 0)
+  const livresIso = soma((l) => l.livre_isolamento)
+  const livresPn = soma((l) => l.livre_pressao_negativa)
   const conteudo = mapa.isLoading ? <Spinner /> : mapa.error ? (
     <p role="alert" className="text-critico">{(mapa.error as Error).message}</p>
   ) : !m || m.unidades.length === 0 ? (
@@ -72,6 +79,10 @@ export function MapaVagas({ unidadeId, compacto = false, consulta = false }: { u
               {TIPOS_LEITO[t.tipo_leito] ?? t.tipo_leito}: {t.livre} livre{t.livre === 1 ? '' : 's'} de {t.total}{t.higienizacao > 0 ? ` · ${t.higienizacao} em higienização` : ''}
             </Badge>
           ))}
+          <span className="text-tinta-apoio">
+            · de isolamento: <b className={livresIso ? 'text-tinta' : 'font-normal text-tinta-sussurro'}>{livresIso}</b>
+            {' '}· com pressão negativa: <b className={livresPn ? 'text-tinta' : 'font-normal text-tinta-sussurro'}>{livresPn}</b>
+          </span>
         </div>
       )}
       {m.unidades.map((u) => <UnidadeDoMapa key={u.id} u={u} unidadeConsulta={unidadeId} compacto={compacto || consulta} />)}
@@ -105,15 +116,16 @@ function UnidadeDoMapa({ u, unidadeConsulta, compacto }: { u: UnidadeMapa; unida
       {u.leitos.length > 0 ? (
         <Table variante="referencia" className="w-full min-w-[36rem] text-left">
           <TableHeader className="text-rotulo text-tinta-sussurro">
-            <TableRow><TableHead className="py-1 font-normal">Leito</TableHead><TableHead className="font-normal">Livre</TableHead><TableHead className="font-normal" title="Livres de isolamento comum (sem pressão negativa)">Isol. livre</TableHead><TableHead className="font-normal" title="Livres de isolamento com pressão negativa">P. neg. livre</TableHead><TableHead className="font-normal">Reservado</TableHead><TableHead className="font-normal">Higienização</TableHead><TableHead className="font-normal">Bloqueado</TableHead><TableHead className="font-normal">Ocupado</TableHead><TableHead className="font-normal">Total</TableHead></TableRow>
+            <TableRow><TableHead className="py-1 font-normal">Leito</TableHead><TableHead className="font-normal">Livre</TableHead><TableHead className="font-normal" title="Livres de isolamento comum (sem pressão negativa)">Isolamento livre</TableHead><TableHead className="font-normal" title="Livres de isolamento com pressão negativa">Pressão negativa livre</TableHead><TableHead className="font-normal">Reservado</TableHead><TableHead className="font-normal">Higienização</TableHead><TableHead className="font-normal">Bloqueado</TableHead><TableHead className="font-normal">Ocupado</TableHead><TableHead className="font-normal">Total</TableHead></TableRow>
           </TableHeader>
           <TableBody className="tabular-nums">
             {u.leitos.map((l) => (
               <TableRow key={l.tipo_leito} className="border-t border-fio">
                 <TableCell className="py-1 text-tinta">{TIPOS_LEITO[l.tipo_leito] ?? l.tipo_leito}</TableCell>
                 <TableCell className={l.livre > 0 ? 'font-semibold text-conforme' : 'text-tinta-sussurro'}>{l.livre}</TableCell>
-                <TableCell>{l.livre_isolamento ?? '—'}</TableCell><TableCell>{l.livre_pressao_negativa ?? '—'}</TableCell>
-                <TableCell>{l.reservado}</TableCell><TableCell>{l.higienizacao}</TableCell><TableCell>{l.bloqueado}</TableCell><TableCell>{l.ocupado}</TableCell><TableCell>{l.total}</TableCell>
+                {[l.livre_isolamento, l.livre_pressao_negativa, l.reservado, l.higienizacao, l.bloqueado, l.ocupado, l.total].map((n, i) => (
+                  <TableCell key={i} className={cn(!n && 'text-tinta-sussurro')}>{n ?? '—'}</TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>
