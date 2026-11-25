@@ -45,6 +45,7 @@ import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { Spinner } from '@/components/ui/spinner'
 import { rotuloIdade } from '@/domain/idade'
 import { dataHora, dataIso, tempoDecorrido } from '@/lib/formato'
+import { textoIsolamento } from '@/lib/isolamentoPedido'
 import {
   MENSAGENS_PRONTAS, STATUS_PENDENCIA, STATUS_VAGA, horasSemEvolucao, pedidosAbertos, rotuloIsolamento, textoParaWhatsApp,
   type ContextoLeito, type MotivoPendencia, type PendenciaUnidade,
@@ -63,6 +64,8 @@ type Detalhe = PedidoDestino & {
   tempos?: TempoStatus[]
   evolucoes?: EvolucaoNir[]; pode_evoluir?: boolean
   quadro_clinico?: string | null; cid_descricao?: string | null; isolamento_tipo?: string | null
+  /** B-04 (RT, 25/11/2026): todos os tipos do pedido; vazio ou ausente = só o principal */
+  isolamento_tipos?: string[] | null
   vulnerabilidades?: string[] | null; medico_assistente?: string | null; solicitante?: string | null
 }
 
@@ -306,7 +309,7 @@ function PedidoNir({ unidadeId, linha, p, pend, agora, cabecalho, enviado, novoP
                 <Item rotulo="Tipo de leito">{p.tipo_leito ? TIPOS_LEITO[p.tipo_leito] ?? p.tipo_leito : '—'}</Item>
                 <Item rotulo="Destino">{p.destino ?? 'a definir'}</Item>
                 <Item rotulo="Transporte">{p.transporte ? TRANSPORTES[p.transporte] ?? p.transporte : '—'}</Item>
-                <Item rotulo="Isolamento">{s?.isolamento_tipo ? ISOLAMENTOS[s.isolamento_tipo] ?? s.isolamento_tipo : 'precaução padrão'}</Item>
+                <Item rotulo="Isolamento">{s?.isolamento_tipo ? textoIsolamento(s) ?? ISOLAMENTOS[s.isolamento_tipo] ?? s.isolamento_tipo : 'precaução padrão'}</Item>
                 <Item rotulo="Solicitante">{s?.solicitante ?? '—'}</Item>
                 <Item rotulo="Médico assistente">{s?.medico_assistente ?? '—'}</Item>
                 {s?.quadro_clinico && (
