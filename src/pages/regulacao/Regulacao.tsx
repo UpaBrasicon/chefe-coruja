@@ -32,6 +32,7 @@ import { useSearchParams } from 'react-router-dom'
 
 import { ESPECIALIDADES } from '@/components/encaminhamento/useEncaminhamentos'
 import { AnexosRegulacao } from '@/components/regulacao/AnexosRegulacao'
+import { ROTULO_DOCUMENTO } from '@/components/documento/documentos'
 import { LeituraTransferencia } from '@/components/transferencia/DocumentoTransferencia'
 import { IndicadoresRegulacao } from '@/components/regulacao/IndicadoresRegulacao'
 import { AcoesDestino, BlocoDestino, DestinoExterno, RecebidosDestino, SaidaOrigem, type PedidoDestino } from '@/components/regulacao/DestinoRegulacao'
@@ -837,7 +838,7 @@ function Detalhe({ id, unidadeId, central, podeRegistrarExterno, aoFechar }: {
   const cancelavel = !central && s.origem_pode_responder
     && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
   const podeEvoluir = !central && !!s.pode_evoluir
-  const linhaDoTempo = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes: s.evolucoes ?? [] })
+  const linhaDoTempo = montarLinhaDoTempo({ eventos: s.eventos ?? [], evolucoes: s.evolucoes ?? [], rotulosDocumento: ROTULO_DOCUMENTO })
   return (
     <article aria-label={`Pedido nº ${s.numero}`} className="flex flex-col text-apoio [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case">
       <header className="sticky top-0 z-10 flex flex-col gap-2 border-b border-fio bg-superficie px-4 py-3">
