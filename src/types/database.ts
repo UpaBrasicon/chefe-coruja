@@ -10856,6 +10856,15 @@ export type Database = {
       regulacao_centrais: { Args: never; Returns: Json }
       regulacao_contexto: { Args: { p_unidade: string }; Returns: Json }
       regulacao_definir_central: { Args: { p_unidade: string }; Returns: undefined }
+      // regulamentação das centrais pelo administrador (migration 20270421000010)
+      regulacao_regulamentacao: { Args: never; Returns: Json }
+      regulacao_cadastrar_central: { Args: { p_unidade: string }; Returns: undefined }
+      regulacao_retirar_central: { Args: { p_central: string }; Returns: undefined }
+      regulacao_definir_unidades_central: { Args: { p_central: string; p_unidades: string[] }; Returns: Json }
+      regulacao_salvar_capacidades: { Args: { p_itens: Json; p_unidade: string }; Returns: number }
+      regulacao_definir_prazos_tipo: { Args: { p_central: string; p_prazos: Json }; Returns: Json }
+      // o que as unidades reguladas têm, para o regulador (migration 20270421000012)
+      regulacao_capacidades_reguladas: { Args: { p_central: string }; Returns: Json }
       regulacao_detalhe: { Args: { p_id: string }; Returns: Json }
       regulacao_lista: { Args: { p_unidade: string }; Returns: Json }
       regulacao_assumir: { Args: { p_id: string }; Returns: Json }
@@ -10911,6 +10920,11 @@ export type Database = {
       rede_regulacoes: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       nir_cobrar: { Args: { p_ref: string; p_tipo: string; p_unidade: string }; Returns: number }
       nir_pendencias: { Args: { p_unidade: string }; Returns: Json }
+      // regulação dentro do paciente, conversa com a central e NIR (migration 20270421000040)
+      regulacao_conversa: { Args: { p_solicitacao: string }; Returns: Json }
+      regulacao_conversa_enviar: { Args: { p_intencao?: string; p_solicitacao: string; p_texto: string }; Returns: string }
+      regulacao_pacientes: { Args: { p_unidade: string }; Returns: Json }
+      regulacao_do_paciente: { Args: { p_paciente: string; p_unidade: string }; Returns: Json }
       regulacao_indicadores: { Args: { p_filtros?: Json; p_unidade: string }; Returns: Json }
       regulacao_registrar_externo: { Args: { p_id: string; p_prioridade_central?: string | null; p_protocolo: string; p_sistema: string }; Returns: undefined }
       regulacao_solicitar: { Args: { p_dados: Json; p_paciente: string; p_unidade: string }; Returns: Json }

@@ -116,6 +116,9 @@ test('prazos (SLA): formulário, validação e selos', async () => {
   assert.deepEqual(alertasSla({ ...base, fila: { prazo_min: 60, central_seg: 7200, correndo: true, atrasado: true } }, agora),
     [{ texto: 'Fila: prazo vencido (2 h 00 min de 1 h 00 min)', tom: 'critico' }])
   assert.equal(alertasSla({ ...base, fila: { prazo_min: 60, central_seg: 7200, correndo: false, atrasado: true } }, agora)[0].tom, 'neutro')
+  // prazo da central para o tipo do pedido (migration 20270421000012)
+  assert.deepEqual(alertasSla({ ...base, fila: { prazo_min: 120, central_seg: 600, correndo: true, atrasado: false, prazo_por: 'tipo' } }, agora),
+    [{ texto: 'Fila (prazo do tipo): 10 min de 2 h 00 min', tom: 'neutro' }])
   const evol = (atrasada: boolean, risco: boolean, vence: string) => ({
     ...base, fila: { prazo_min: null, central_seg: 0, correndo: true, atrasado: false },
     evolucao: { ultima_em: '2026-10-11T00:00:00Z', prazo_h: 12, vence_em: vence, atrasada, limite_h: 72, risco_cancelamento: risco },

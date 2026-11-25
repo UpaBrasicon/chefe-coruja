@@ -262,7 +262,8 @@ export function caminhoAnexo(solicitacaoId: string, nome: string, agora: number)
 
 // ── prazos (SLA) da regulação (Fase 4, tarefa 7) ────────────────────────────
 export type Sla = {
-  fila: { prazo_min: number | null; central_seg: number; correndo: boolean; atrasado: boolean }
+  /** prazo_por (migration 20270421000012): de onde veio o prazo — o da central para o tipo ou o por prioridade. */
+  fila: { prazo_min: number | null; central_seg: number; correndo: boolean; atrasado: boolean; prazo_por?: 'tipo' | 'prioridade' | null }
   pendencia: { desde: string; prazo_h: number; vence_em: string; atrasada: boolean } | null
   evolucao: { ultima_em: string; prazo_h: number; vence_em: string; atrasada: boolean; limite_h: number; risco_cancelamento: boolean } | null
   atrasado_central: boolean
@@ -277,6 +278,8 @@ export type Prazos = {
   central_id: string; fila: Record<NivelFila, number | null>
   evolucao_h: number; pendencia_h: number; sem_evolucao_h: number; destino_h: number
   ajustado: boolean; atualizado_em: string | null; atualizado_por: string | null
+  /** Prazo da central por tipo de pedido, em minutos (definido pelo administrador). Quando há, vale no lugar do por prioridade. */
+  por_tipo?: Partial<Record<TipoSolicitacao, number>>
 }
 /** Formulário dos prazos: texto, como digitado. Fila vazia = sem prazo. */
 export type FormPrazos = { fila: Record<NivelFila, string>; evolucao_h: string; pendencia_h: string; sem_evolucao_h: string; destino_h: string }
@@ -328,8 +331,10 @@ export function alertasSla(sla: Sla | null | undefined, agoraMs: number): Alerta
   const fila = sla.fila
   if (fila.prazo_min != null) {
     const usado = `${formatarEspera(fila.central_seg)} de ${formatarEspera(fila.prazo_min * 60)}`
-    if (fila.atrasado) a.push({ texto: `Fila: prazo vencido (${usado})${fila.correndo ? '' : ', pausado'}`, tom: fila.correndo ? 'critico' : 'neutro' })
-    else a.push({ texto: `Fila: ${usado}${fila.correndo ? '' : ' (pausado)'}`, tom: 'neutro' })
+    // prazo da central para o tipo do pedido (no lugar do por prioridade)
+    const rotulo = fila.prazo_por === 'tipo' ? 'Fila (prazo do tipo)' : 'Fila'
+    if (fila.atrasado) a.push({ texto: `${rotulo}: prazo vencido (${usado})${fila.correndo ? '' : ', pausado'}`, tom: fila.correndo ? 'critico' : 'neutro' })
+    else a.push({ texto: `${rotulo}: ${usado}${fila.correndo ? '' : ' (pausado)'}`, tom: 'neutro' })
   }
   if (sla.pendencia) {
     a.push(sla.pendencia.atrasada
