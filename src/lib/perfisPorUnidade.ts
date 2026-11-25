@@ -22,18 +22,25 @@ export type GrupoDePerfis = {
 }
 
 /**
- * Agrupa os papéis por unidade: a ativa primeiro, as demais pelo nome; dentro
- * de cada unidade, os papéis na ordem de precedência (ORDEM_PAPEL), sem
- * repetição. `papeisDaAtiva` substitui os papéis da unidade ativa quando vier
- * (o contexto já soma o administrador geral a ela).
+ * Agrupa os papéis por unidade: a ativa (ou a última usada) primeiro, as
+ * demais SEMPRE pelo nome (pt-BR); dentro de cada unidade, os papéis na ordem
+ * de precedência (ORDEM_PAPEL), sem repetição. Só os vínculos contam.
+ *
+ * ME2 (revisão das telas novas, RT 25/11/2026): antes o administrador geral
+ * (super admin) entrava só no grupo da unidade ativa, pelos papéis do
+ * contexto; a Central aparecia com "Administrador e Médico regulador" quando
+ * estava em uso e com 1 perfil nas outras visitas. Agora, com `adminGeral`, o
+ * papel admin sai dos grupos e a tela mostra o administrador uma vez, à parte
+ * ("toda a rede"), em qualquer unidade.
  */
 export function agruparPerfisPorUnidade(
   vinculos: readonly VinculoDoPerfil[],
   unidadeAtivaId: string | null | undefined,
-  papeisDaAtiva?: readonly Papel[],
+  adminGeral = false,
 ): GrupoDePerfis[] {
   const grupos = new Map<string, GrupoDePerfis>()
   for (const v of vinculos) {
+    if (adminGeral && v.papel === 'admin') continue
     const g = grupos.get(v.unidade_id)
     if (g) {
       if (!g.papeis.includes(v.papel)) g.papeis.push(v.papel)
@@ -46,10 +53,6 @@ export function agruparPerfisPorUnidade(
       ativa: v.unidade_id === unidadeAtivaId,
       papeis: [v.papel],
     })
-  }
-  if (unidadeAtivaId && papeisDaAtiva) {
-    const ativa = grupos.get(unidadeAtivaId)
-    if (ativa) ativa.papeis = [...new Set(papeisDaAtiva)]
   }
   const lista = [...grupos.values()]
   for (const g of lista) g.papeis.sort((a, b) => (ORDEM_PAPEL[a] ?? 99) - (ORDEM_PAPEL[b] ?? 99))
@@ -67,4 +70,52 @@ export function totalDePerfis(grupos: readonly GrupoDePerfis[]): number {
  */
 export function recolherOutrasUnidades(grupos: readonly GrupoDePerfis[]): boolean {
   return totalDePerfis(grupos) > 6 || grupos.length > 3
+}
+
+/** O seletor ganha busca quando há mais de seis unidades (ME2). */
+export const BUSCA_DE_UNIDADES_A_PARTIR = 7
+
+const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+/** Unidades cujo nome (ou o nome de um papel) casa com a busca, na mesma ordem. */
+export function filtrarGrupos(grupos: readonly GrupoDePerfis[], busca: string, rotulo: (p: Papel) => string): GrupoDePerfis[] {
+  const q = semAcento(busca.trim())
+  if (!q) return [...grupos]
+  return grupos.filter((g) => semAcento(g.nome).includes(q) || g.papeis.some((p) => semAcento(rotulo(p)).includes(q)))
+}
+
+export type RegistroDoPerfil = {
+  crm?: string | null
+  uf_crm?: string | null
+  conselho?: string | null
+  registro_numero?: string | null
+  registro_uf?: string | null
+}
+
+/** Papéis que assinam com o CRM (médico, médico regulador e telemedicina). */
+const ASSINA_COM_CRM: readonly Papel[] = ['plantonista', 'regulador', 'telemedicina']
+/** O conselho próprio de outros papéis que assinam, quando o cadastro tem. */
+const CONSELHO_DO_PAPEL: Partial<Record<Papel, string>> = {
+  enfermeiro: 'COREN', tecnico_enfermagem: 'COREN', farmaceutico: 'CRF',
+}
+
+/**
+ * ME3 (decisão do RT, 25/11/2026): o registro do conselho só aparece no menu
+ * quando o perfil em uso assina com ele. Médico, médico regulador e
+ * telemedicina: "CRM 000000/SP". Enfermagem e farmácia: o registro próprio
+ * (COREN, CRF), se o cadastro tiver. NIR, gestor, recepção e os demais: nada.
+ */
+export function registroNoMenu(papel: Papel | null | undefined, p: RegistroDoPerfil | null | undefined): string | null {
+  if (!papel || !p) return null
+  const num = (p.registro_numero ?? '').trim()
+  const uf = (p.registro_uf ?? '').trim()
+  const conselho = (p.conselho ?? '').trim().toUpperCase()
+  if (ASSINA_COM_CRM.includes(papel)) {
+    const crm = (p.crm ?? '').trim()
+    if (crm) return `CRM ${crm}${p.uf_crm ? `/${p.uf_crm}` : ''}`
+    return conselho === 'CRM' && num ? `CRM ${num}${uf ? `/${uf}` : ''}` : null
+  }
+  const proprio = CONSELHO_DO_PAPEL[papel]
+  if (proprio && conselho === proprio && num) return `${proprio} ${num}${uf ? `/${uf}` : ''}`
+  return null
 }

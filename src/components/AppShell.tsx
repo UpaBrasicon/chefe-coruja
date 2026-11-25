@@ -29,7 +29,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { AvisoBarraMedico, BarraMedico, BuscaFlutuante } from '@/components/casca/BarraMedico'
 import { agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, telaAoEntrar, type ItemNav } from '@/components/casca/navegacao'
-import { agruparPerfisPorUnidade } from '@/lib/perfisPorUnidade'
+import { agruparPerfisPorUnidade, registroNoMenu } from '@/lib/perfisPorUnidade'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
@@ -73,17 +73,16 @@ function useDensidade() {
       return false
     }
   })
-  const alternar = React.useCallback(() => {
-    setCompacto((v) => {
-      try {
-        window.localStorage.setItem(CHAVE_DENSIDADE, v ? 'normal' : 'compacta')
-      } catch {
-        /* storage indisponível: a densidade vale só nesta sessão */
-      }
-      return !v
-    })
+  // ME3 (RT, 25/11/2026): a densidade é escolhida no menu do usuário (Compacta / Confortável)
+  const definir = React.useCallback((v: boolean) => {
+    try {
+      window.localStorage.setItem(CHAVE_DENSIDADE, v ? 'compacta' : 'normal')
+    } catch {
+      /* storage indisponível: a densidade vale só nesta sessão */
+    }
+    setCompacto(v)
   }, [])
-  return { compacto, alternar }
+  return { compacto, definir }
 }
 
 function useLarguraAte(px: number) {
@@ -218,11 +217,11 @@ export function AppShell() {
 
 function Casca() {
   const { signOut, perfil, definirTema } = useAuth()
-  const { unidades, vinculos, unidadeAtiva, papelAtivo, setPapelAtivo, setUnidadeAtivaId, papeisDaUnidade, status, ehSuperAdmin } = useUnidade()
+  const { unidades, vinculos, unidadeAtiva, papelAtivo, setPapelAtivo, setUnidadeAtivaId, status, ehSuperAdmin } = useUnidade()
   const navigate = useNavigate()
   const location = useLocation()
   const [chatAberto, setChatAberto] = React.useState(false)
-  const { compacto, alternar: alternarDensidade } = useDensidade()
+  const { compacto, definir: definirDensidade } = useDensidade()
   const paleta = usePaleta()
   const segundoFator = useSegundoFator()
   // rascunho cifrado (item 13): a chave da sessão chega depois do 2FA e antes das telas
@@ -349,9 +348,11 @@ function Casca() {
 
   // Trocar perfil com os papéis de todas as unidades (RT, 25/11/2026): um papel
   // de outra unidade troca a unidade e o papel de uma vez, como o seletor.
+  // ME2: só os vínculos montam os grupos; o administrador geral fica à parte
+  // no menu (antes entrava só na unidade em uso e "sumia" nas outras visitas).
   const gruposDePerfis = React.useMemo(
-    () => agruparPerfisPorUnidade(vinculos, unidadeId, papeisDaUnidade),
-    [vinculos, unidadeId, papeisDaUnidade],
+    () => agruparPerfisPorUnidade(vinculos, unidadeId, !!ehSuperAdmin),
+    [vinculos, unidadeId, ehSuperAdmin],
   )
   function trocarPerfil(p: Papel, unidadeDoPapel: string) {
     if (unidadeDoPapel === unidadeId) {
@@ -374,7 +375,8 @@ function Casca() {
 
   const papelTexto = papelAtivo ? PAPEL_LABEL[papelAtivo] : ''
   const podeTrocarUnidade = unidades.length > 1 && !ehAdmin
-  const registro = perfil?.crm ? `CRM ${perfil.crm}${perfil.uf_crm ? `/${perfil.uf_crm}` : ''}` : null
+  // ME3 (decisão do RT, 25/11/2026): o conselho só aparece no papel que assina com ele
+  const registro = registroNoMenu(papelAtivo, perfil)
 
   const menu = (tamanho: 32 | 38) => (
     <MenuUsuario
@@ -384,6 +386,7 @@ function Casca() {
       unidade={!ehAdmin && !ehTele ? unidadeAtiva?.unidade.nome : undefined}
       podeTrocarUnidade={podeTrocarUnidade}
       grupos={gruposDePerfis}
+      adminGeral={!!ehSuperAdmin}
       papelAtivo={papelAtivo}
       onTrocarPerfil={trocarPerfil}
       onSair={() => setSaidaAberta(true)}
@@ -391,6 +394,8 @@ function Casca() {
       primeirosPassos={{ perfilId: perfil?.id, inicio, rotas: itens.map((i) => i.to) }}
       tema={ehTema(perfil?.tema) ? perfil.tema : 'automatico'}
       onTrocarTema={(t) => void definirTema(t)}
+      compacto={compacto}
+      onTrocarDensidade={definirDensidade}
       tamanho={tamanho}
     />
   )
@@ -514,9 +519,7 @@ function Casca() {
           <Topo
             contexto={contexto}
             extra={extraTopo}
-            compacto={compacto}
             onBuscar={() => paleta.setAberta(true)}
-            onCompacto={alternarDensidade}
             sino={ehPlantonista ? <SinoAvisos unidadeId={unidadeId} habilitado /> : undefined}
             fila={pilulaFila}
             avatar={menu(32)}

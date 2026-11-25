@@ -1,4 +1,4 @@
-import { History, LogOut, Repeat, Search, SlidersHorizontal, Users, WifiOff } from 'lucide-react'
+import { History, LogOut, Repeat, Search, Users, WifiOff } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 
@@ -10,21 +10,19 @@ import { hm, type Sinal } from './useSinal'
 
 // A topbar (P/index.html 1009–1053): contexto do papel à esquerda (a unidade;
 // a rede, para o administrador; o médico, para a telemedicina), e à direita o
-// que o papel precisa ver sempre — o sino, a busca, o compacto e o avatar.
-// Buscar e Compacto são pílulas com borda; o rótulo some no modo compacto.
+// que o papel precisa ver sempre — o sino, a busca e o avatar. Buscar é
+// pílula com borda; o rótulo some no modo compacto. A densidade (Compacta /
+// Confortável) mora no menu do usuário desde a revisão de 25/11/2026 (ME3):
+// a pílula dizia o estado e o nome acessível dizia a ação.
 
-function Pilula({ rotulo, titulo, icone: Icone, onClick, ativo }: { rotulo: string; titulo: string; icone: typeof Search; onClick: () => void; ativo?: boolean }) {
+function Pilula({ rotulo, titulo, icone: Icone, onClick }: { rotulo: string; titulo: string; icone: typeof Search; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={titulo}
       aria-label={titulo}
-      aria-pressed={ativo}
-      className={cn(
-        'flex h-8 items-center gap-1.5 rounded-capsula border px-[11px] text-apoio whitespace-nowrap transition-colors hover:border-fio-forte',
-        ativo ? 'border-acao/35 bg-acao/10 text-acao' : 'border-fio bg-superficie text-tinta-sussurro',
-      )}
+      className="flex h-8 items-center gap-1.5 rounded-capsula border border-fio bg-superficie px-[11px] text-apoio whitespace-nowrap text-tinta-sussurro transition-colors hover:border-fio-forte"
     >
       <Icone className="size-[15px]" aria-hidden />
       <span className="cc-den-rot max-[1023px]:hidden">{rotulo}</span>
@@ -35,9 +33,7 @@ function Pilula({ rotulo, titulo, icone: Icone, onClick, ativo }: { rotulo: stri
 export function Topo({
   contexto,
   extra,
-  compacto,
   onBuscar,
-  onCompacto,
   sino,
   fila,
   avatar,
@@ -46,9 +42,7 @@ export function Topo({
   contexto: ReactNode
   /** "4 em plantão agora", "9 unidades · 37 em plantão", status da telemedicina. */
   extra?: ReactNode
-  compacto: boolean
   onBuscar: () => void
-  onCompacto: () => void
   sino?: ReactNode
   fila?: ReactNode
   avatar: ReactNode
@@ -70,13 +64,6 @@ export function Topo({
         {fila}
         {sino}
         <Pilula rotulo="Buscar" titulo="Buscar ferramenta, leito ou tela (Ctrl+K)" icone={Search} onClick={onBuscar} />
-        <Pilula
-          rotulo={compacto ? 'Compacto' : 'Confortável'}
-          titulo={compacto ? 'Voltar ao modo confortável' : 'Modo compacto: menos ar, mesmos tamanhos de leitura'}
-          icone={SlidersHorizontal}
-          onClick={onCompacto}
-          ativo={compacto}
-        />
         {avatar}
       </div>
     </header>
