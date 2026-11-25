@@ -1,5 +1,5 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
-import { Building2, Compass, Lock, LogOut, Monitor, Moon, Repeat, ShieldCheck, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
+import { Building2, ChevronRight, Compass, Lock, LogOut, Monitor, Moon, Repeat, ShieldCheck, SlidersHorizontal, Sun, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -8,6 +8,7 @@ import { guiaDoPapel } from '@/domain/primeirosPassos'
 import { reabrirPrimeirosPassos } from '@/hooks/usePrimeirosPassos'
 import { Button } from '@/components/ui/button'
 import { PAPEL_LABEL } from '@/lib/constants'
+import { recolherOutrasUnidades, totalDePerfis, type GrupoDePerfis } from '@/lib/perfisPorUnidade'
 import { TEMA_ESCURO_LIBERADO, TEMAS, type Tema } from '@/lib/tema'
 import { cn } from '@/lib/utils'
 import type { Papel } from '@/types/database'
@@ -15,7 +16,9 @@ import type { Papel } from '@/types/database'
 // Menu do usuário (P/index.html 1057–1092, 25/09): o avatar com as iniciais
 // abre nome, registro, perfil e unidade; troca de unidade e de perfil; as
 // preferências de prescrição (só plantonista); e Sair, que passa pela
-// pergunta de saída. O tema (claro, escuro, automático) aparece quando o escuro
+// pergunta de saída. "Trocar perfil" mostra os papéis de todas as unidades,
+// agrupados por unidade, a ativa primeiro (RT, 25/11/2026: dentro da UBS o
+// médico do hospital, o regulador e o NIR pareciam ter sumido). O tema (claro, escuro, automático) aparece quando o escuro
 // for liberado (guia do padrão, 1.4; TEMA_ESCURO_LIBERADO em lib/tema.ts).
 
 const ICONE_TEMA = { claro: Sun, escuro: Moon, automatico: Monitor } as const
@@ -34,9 +37,9 @@ export function MenuUsuario({
   fotoUrl,
   unidade,
   podeTrocarUnidade,
-  papeis,
+  grupos,
   papelAtivo,
-  onTrocarPapel,
+  onTrocarPerfil,
   onSair,
   onBloquear,
   primeirosPassos,
@@ -49,9 +52,11 @@ export function MenuUsuario({
   fotoUrl?: string | null
   unidade?: string
   podeTrocarUnidade: boolean
-  papeis: Papel[]
+  /** Papéis da pessoa por unidade (agruparPerfisPorUnidade), a ativa primeiro. */
+  grupos: GrupoDePerfis[]
   papelAtivo: Papel | null
-  onTrocarPapel: (p: Papel) => void
+  /** Troca o perfil; de outra unidade, troca a unidade junto. */
+  onTrocarPerfil: (papel: Papel, unidadeId: string) => void
   onSair: () => void
   /** Bloqueia a tela agora (quem sai da frente do computador). */
   onBloquear: () => void
@@ -63,6 +68,16 @@ export function MenuUsuario({
 }) {
   const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
+  // outras unidades abertas à mão quando a lista vem recolhida
+  const [abertas, setAbertas] = useState<ReadonlySet<string>>(() => new Set())
+  const recolher = recolherOutrasUnidades(grupos)
+  const alternarGrupo = (id: string) =>
+    setAbertas((a) => {
+      const n = new Set(a)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
   const ir = (to: string) => {
     setAberto(false)
     navigate(to)
@@ -89,7 +104,7 @@ export function MenuUsuario({
                 <span className="truncate text-corpo font-semibold text-tinta">{nome}</span>
                 {registro && <span className="text-apoio text-tinta-apoio">{registro}</span>}
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="text-apoio text-tinta-sussurro">{papelAtivo ? PAPEL_LABEL[papelAtivo] : ''}</span>
+                  <span className="text-apoio text-tinta-sussurro">{[papelAtivo ? PAPEL_LABEL[papelAtivo] : '', unidade].filter(Boolean).join(' · ')}</span>
                   {podeTrocarUnidade && (
                     <button type="button" onClick={() => ir('/seletor')} className="flex items-center gap-[5px] text-apoio whitespace-nowrap text-acao hover:text-acao-pressionada">
                       <Repeat className="size-[13px]" aria-hidden />
@@ -99,35 +114,62 @@ export function MenuUsuario({
                 </div>
               </div>
             </div>
-            {unidade && (
-              <div className="flex items-center gap-[7px] px-4 pb-3.5 text-apoio text-tinta-sussurro">
-                <Building2 className="size-3.5 shrink-0" aria-hidden />
-                <span>{unidade}</span>
-              </div>
-            )}
-            {papeis.length > 1 && (
+            {totalDePerfis(grupos) > 1 && (
               <div className="flex flex-col gap-2 border-t border-trilha px-4 py-3">
                 <span className="rotulo text-tinta-sussurro">Trocar perfil</span>
-                <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Perfil em uso">
-                  {papeis.map((p) => {
-                    const on = p === papelAtivo
+                <div className="-mr-2 flex max-h-[min(45vh,320px)] flex-col gap-2.5 overflow-y-auto pr-2">
+                  {grupos.map((g) => {
+                    const recolhivel = recolher && !g.ativa
+                    const fechado = recolhivel && !abertas.has(g.unidadeId)
                     return (
-                      <button
-                        key={p}
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        onClick={() => {
-                          setAberto(false)
-                          if (!on) onTrocarPapel(p)
-                        }}
-                        className={cn(
-                          'rounded-capsula px-2.5 py-[3px] text-rotulo whitespace-nowrap hover:text-acao',
-                          on ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta-sussurro',
+                      <div key={g.unidadeId} className="flex flex-col gap-1">
+                        {recolhivel ? (
+                          <button
+                            type="button"
+                            aria-expanded={!fechado}
+                            onClick={() => alternarGrupo(g.unidadeId)}
+                            className="flex min-h-7 items-center gap-1.5 text-left text-rotulo text-tinta-apoio hover:text-acao"
+                          >
+                            <ChevronRight className={cn('size-3.5 shrink-0 transition-transform', !fechado && 'rotate-90')} aria-hidden />
+                            <span className="min-w-0 flex-1 truncate">{g.nome}</span>
+                            <span className="shrink-0 text-tinta-sussurro">
+                              {g.papeis.length} {g.papeis.length === 1 ? 'perfil' : 'perfis'}
+                            </span>
+                          </button>
+                        ) : (
+                          <span className="flex min-h-7 items-center gap-1.5 text-rotulo text-tinta-apoio">
+                            <Building2 className="size-3.5 shrink-0" aria-hidden />
+                            <span className="min-w-0 truncate">{g.nome}</span>
+                            {g.ativa && <span className="shrink-0 text-tinta-sussurro">· em uso</span>}
+                          </span>
                         )}
-                      >
-                        {PAPEL_LABEL[p]}
-                      </button>
+                        {!fechado && (
+                          <div className="flex flex-wrap gap-1.5 pl-5" role="radiogroup" aria-label={`Perfis em ${g.nome}`}>
+                            {g.papeis.map((p) => {
+                              const on = g.ativa && p === papelAtivo
+                              return (
+                                <button
+                                  key={p}
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={on}
+                                  aria-label={`${PAPEL_LABEL[p]} · ${g.nome}`}
+                                  onClick={() => {
+                                    setAberto(false)
+                                    if (!on) onTrocarPerfil(p, g.unidadeId)
+                                  }}
+                                  className={cn(
+                                    'rounded-capsula px-2.5 py-[3px] text-rotulo whitespace-nowrap hover:text-acao',
+                                    on ? 'bg-acao/10 font-semibold text-acao' : 'text-tinta-sussurro',
+                                  )}
+                                >
+                                  {PAPEL_LABEL[p]}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
                     )
                   })}
                 </div>

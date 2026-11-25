@@ -28,7 +28,8 @@ import { SinoAvisos } from '@/components/plantonista/SinoAvisos'
 import { Spinner } from '@/components/ui/spinner'
 import { ErroBoundary } from '@/components/ErroBoundary'
 import { AvisoBarraMedico, BarraMedico, BuscaFlutuante } from '@/components/casca/BarraMedico'
-import { agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, type ItemNav } from '@/components/casca/navegacao'
+import { agruparNavegacao, dividirBarraCelular, inicioDoPapel, itensDeNavegacao, telaAoEntrar, type ItemNav } from '@/components/casca/navegacao'
+import { agruparPerfisPorUnidade } from '@/lib/perfisPorUnidade'
 import { Gaveta, GavetaCabeca } from '@/components/ui/gaveta'
 import { useMeuPapelTecnico } from '@/hooks/useFerramentaClinica'
 import { Paleta } from '@/components/casca/Paleta'
@@ -217,7 +218,7 @@ export function AppShell() {
 
 function Casca() {
   const { signOut, perfil, definirTema } = useAuth()
-  const { unidades, unidadeAtiva, papelAtivo, setPapelAtivo, papeisDaUnidade, status, ehSuperAdmin } = useUnidade()
+  const { unidades, vinculos, unidadeAtiva, papelAtivo, setPapelAtivo, setUnidadeAtivaId, papeisDaUnidade, status, ehSuperAdmin } = useUnidade()
   const navigate = useNavigate()
   const location = useLocation()
   const [chatAberto, setChatAberto] = React.useState(false)
@@ -346,9 +347,21 @@ function Casca() {
     window.setTimeout(() => void sair(), SAIDA_MS)
   }
 
-  function trocarPapel(p: Papel) {
-    setPapelAtivo(p)
-    navigate(inicioDoPapel(p, tipoUnidade))
+  // Trocar perfil com os papéis de todas as unidades (RT, 25/11/2026): um papel
+  // de outra unidade troca a unidade e o papel de uma vez, como o seletor.
+  const gruposDePerfis = React.useMemo(
+    () => agruparPerfisPorUnidade(vinculos, unidadeId, papeisDaUnidade),
+    [vinculos, unidadeId, papeisDaUnidade],
+  )
+  function trocarPerfil(p: Papel, unidadeDoPapel: string) {
+    if (unidadeDoPapel === unidadeId) {
+      setPapelAtivo(p)
+      navigate(inicioDoPapel(p, tipoUnidade))
+      return
+    }
+    const grupo = gruposDePerfis.find((g) => g.unidadeId === unidadeDoPapel)
+    setUnidadeAtivaId(unidadeDoPapel, p)
+    navigate(telaAoEntrar(p, grupo?.tipo ?? null))
   }
 
   const papelTexto = papelAtivo ? PAPEL_LABEL[papelAtivo] : ''
@@ -362,9 +375,9 @@ function Casca() {
       fotoUrl={perfil?.foto_url}
       unidade={!ehAdmin && !ehTele ? unidadeAtiva?.unidade.nome : undefined}
       podeTrocarUnidade={podeTrocarUnidade}
-      papeis={papeisDaUnidade}
+      grupos={gruposDePerfis}
       papelAtivo={papelAtivo}
-      onTrocarPapel={trocarPapel}
+      onTrocarPerfil={trocarPerfil}
       onSair={() => setSaidaAberta(true)}
       onBloquear={bloqueio.bloquear}
       primeirosPassos={{ perfilId: perfil?.id, inicio, rotas: itens.map((i) => i.to) }}

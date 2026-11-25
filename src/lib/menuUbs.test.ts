@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { barraMedicoCelular, inicioDoPapel, itensDeNavegacao, menuMedicoCelular } from '../components/casca/navegacao.ts'
+import { barraMedicoCelular, inicioDoPapel, itensDeNavegacao, menuMedicoCelular, telaAoEntrar } from '../components/casca/navegacao.ts'
 
 // 5A, tarefa 1 (D3 do RT em 02/11/2026): numa UBS não há porta, leito,
 // internação nem AIH; esses itens somem do menu. Numa UPA nada muda.
@@ -54,9 +54,16 @@ test('a casca e a tela inicial passam o tipo da unidade ao menu', () => {
   assert.match(casca, /<BarraMedico itens=\{itens\} notas=\{notas\} tipoUnidade=\{tipoUnidade\} \/>/)
   assert.match(readFileSync('src/routes/RedirectHome.tsx', 'utf8'), /foraDoTipo\(inicial, tipo\)/)
   // "Trocar unidade" segue a mesma regra: escolher uma UBS não cai em tela de porta
+  // (a regra mora em telaAoEntrar; a troca de perfil de outra unidade usa a mesma, RT 25/11/2026)
   const seletor = readFileSync('src/pages/SeletorUnidade.tsx', 'utf8')
-  assert.match(seletor, /foraDoTipo\(inicial, tipo\) \? inicioDoPapel\(unidade\.papel, tipo\)/)
-  assert.match(seletor, /tipo === 'ubs' && unidade\.papel === 'recepcao' \? '\/recepcao\/hoje'/)
+  assert.match(seletor, /telaAoEntrar\(papel, grupo\.tipo\)/)
+  assert.match(casca, /telaAoEntrar\(p, grupo\?\.tipo \?\? null\)/)
+  assert.equal(telaAoEntrar('recepcao', 'ubs'), '/recepcao/hoje')
+  assert.equal(telaAoEntrar('enfermeiro', 'ubs'), inicioDoPapel('enfermeiro', 'ubs'), 'a triagem não existe na UBS')
+  assert.equal(telaAoEntrar('plantonista', 'ubs'), inicioDoPapel('plantonista', 'ubs'))
+  assert.equal(telaAoEntrar('plantonista', 'hospital'), '/plantonista')
+  assert.equal(telaAoEntrar('enfermeiro', 'upa'), '/triagem')
+  assert.equal(telaAoEntrar('recepcao', 'upa'), '/recepcao')
 })
 
 test('5A, parte 2.4: a escuta inicial só existe na UBS e é o começo do enfermeiro nela', () => {

@@ -31,6 +31,7 @@ import { Baby, CalendarCheck, CalendarDays, Ear, Flag, HeartPulse, House, Messag
 
 import type { Papel, TipoUnidade } from '@/types/database'
 import { ABA_NO_PLANTAO } from '../plantao/rotasMedico.ts'
+import { ROTA_INICIAL } from '../../lib/constants.ts'
 
 /** Chave da nota numérica (contagem em âmbar ao lado do item). */
 export type ChaveNota = 'avisos' | 'triagem' | 'farmacia' | 'pedidos' | 'tele' | 'revisao' | 'fila_medica' | 'plataformas' | 'chamados'
@@ -517,6 +518,17 @@ export function barraMedicoCelular(tipoUnidade: TipoUnidade | null = null): Item
 export function menuMedicoCelular(itens: ItemNav[], tipoUnidade: TipoUnidade | null = null): ItemNav[] {
   const naBarra = new Set(barraMedicoCelular(tipoUnidade).map((i) => i.to.split('?')[0]))
   return itens.filter((i) => !naBarra.has(i.to))
+}
+
+/**
+ * Tela em que o papel abre ao entrar numa unidade (seletor e troca de perfil
+ * de outra unidade): a rota inicial do papel; numa UBS a tela de porta ou de
+ * leito dá lugar ao primeiro item do menu, e a recepção abre em "Hoje" (U4).
+ */
+export function telaAoEntrar(papel: Papel, tipoUnidade: TipoUnidade | null = null): string {
+  if (tipoUnidade === 'ubs' && papel === 'recepcao') return '/recepcao/hoje'
+  const inicial = ROTA_INICIAL[papel]
+  return !inicial || foraDoTipo(inicial, tipoUnidade) ? inicioDoPapel(papel, tipoUnidade) : inicial
 }
 
 /** Página inicial do papel: o logotipo leva a ela. */
