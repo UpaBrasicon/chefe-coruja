@@ -90,7 +90,7 @@ BEGIN
   SELECT x.u, x.p INTO v_unidade, v_papel FROM (VALUES
     ('rec', e2e.fb_upa(), 'recepcao'), ('enf', e2e.fb_upa(), 'enfermeiro'), ('tec', e2e.fb_upa(), 'tecnico_enfermagem'),
     ('med', e2e.fb_upa(), 'plantonista'), ('nir', e2e.fb_upa(), 'nir'), ('ges', e2e.fb_upa(), 'gestor'), ('far', e2e.fb_upa(), 'farmaceutico'),
-    ('reg', e2e.fb_central(), 'regulador'), ('regupa', e2e.fb_upa(), 'regulador'), ('dmed', e2e.fb_hosp(), 'plantonista'), ('dges', e2e.fb_hosp(), 'gestor')) x(k, u, p)
+    ('fat', e2e.fb_upa(), 'faturamento'), ('tele', e2e.fb_upa(), 'telemedicina'), ('reg', e2e.fb_central(), 'regulador'), ('regupa', e2e.fb_upa(), 'regulador'), ('dmed', e2e.fb_hosp(), 'plantonista'), ('dges', e2e.fb_hosp(), 'gestor')) x(k, u, p)
    WHERE x.k = p_papel;
   IF v_papel IS NULL AND p_papel NOT IN ('login', 'banco') THEN RAISE EXCEPTION 'papel de teste desconhecido: %', p_papel; END IF;
   BEGIN
