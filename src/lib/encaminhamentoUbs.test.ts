@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { argsDoProblema, rotuloDoProblema, DESFECHO_RETORNO, destinosDoEnvio, envioDaFicha, etapasDoEnvio, separarEnviosDaRecepcao, linkRegulacaoDaConsulta, pedeBuscaAtiva, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
+import { DESFECHO_RETORNO, destinosDoEnvio, envioDaFicha, etapasDoEnvio, separarEnviosDaRecepcao, linkRegulacaoDaConsulta, pedeBuscaAtiva, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
 import { linkMarcarNaAgenda } from '../domain/agenda.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
@@ -183,18 +183,16 @@ test('o resumo clínico do envio não vai para a recepção', () => {
   assert.match(readFileSync('src/components/encaminhamento/ResumoDaUbs.tsx', 'utf8'), /e\.resumo_clinico === false/)
 })
 
-// RT, 25/11/2026 (teste de fluxo A, A-13): no envio pela escuta o médico escolhe o
-// CID-10 ou a CIAP-2, e a ficha da UBS fecha como encaminhamento com esse problema.
-test('envio pela escuta: CID-10 ou CIAP-2 obrigatório, só nesse caso', () => {
-  assert.deepEqual(argsDoProblema({ cid: 'I64', descricao: 'AVC' }), { p_cid: 'I64' })
-  assert.deepEqual(argsDoProblema({ ciap: 'K90', descricao: 'Trombose/AVC' }), { p_ciap: 'K90' })
-  assert.deepEqual(argsDoProblema(null), {}, 'envio da consulta: o problema vem da aba Conduta')
-  assert.equal(rotuloDoProblema({ cid: 'I64', descricao: 'AVC' }), 'I64 · AVC')
+// RT, 25/11/2026 (teste de fluxo A, A-13): o envio à UPA é sempre depois de o
+// médico abrir o atendimento; da escuta não se envia e a ficha encerra pela conduta.
+test('o envio à UPA só com o atendimento aberto; o diálogo não tem modo da escuta', () => {
+  const sql = readFileSync('supabase/migrations/20270426000019_envio_upa_so_com_atendimento_aberto.sql', 'utf8').replace(/\r/g, '')
+  assert.match(sql, /IF e\.etapa <> 'atendimento' OR e\.atendimento_iniciado_em IS NULL THEN/)
+  assert.match(sql, /O envio à UPA é feito depois de o médico abrir o atendimento/)
+  assert.match(sql, /DROP FUNCTION IF EXISTS public\.encaminhar_upa\(uuid, uuid, text, text, text\);/)
+  // o envio não encerra mais a ficha da UBS
+  assert.doesNotMatch(sql.split('\n').filter((l) => !l.trimStart().startsWith('--')).join('\n'), /SET etapa = 'encerrado'/)
   const tela = readFileSync('src/components/encaminhamento/EnviarUpa.tsx', 'utf8')
-  assert.match(tela, /\(daEscuta && !problema\)/)
-  assert.match(tela, /argsDoProblema\(daEscuta \? problema : null\)/)
-  const sql = readFileSync('supabase/migrations/20270426000017_envio_da_escuta_cid_ou_ciap.sql', 'utf8')
-  assert.match(sql, /IF e\.etapa = ''triagem'' THEN/)
-  assert.match(sql, /No envio pela escuta, informe o CID-10 ou a CIAP-2 do problema/)
-  assert.match(sql, /DROP FUNCTION public\.encaminhar_upa\(uuid, uuid, text\);/)
+  assert.doesNotMatch(tela, /daEscuta|p_cid|p_ciap/)
+  assert.match(tela, /rpc\('encaminhar_upa', \{ p_episodio: episodioId, p_destino: destino, p_motivo: motivo\.trim\(\) \}\)/)
 })

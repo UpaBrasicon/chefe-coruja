@@ -25,10 +25,24 @@ SELECT e2e.passo('F5b.2.ficha', 2, 'f5_rec_ubs', '/recepcao', 'Ficha da escuta',
     'f5300000-0000-4000-8000-000000000001'), 'ok', 'f5ep2');
 SELECT e2e.passo('F5b.2.recepcao_nao_envia', 2, 'f5_rec_ubs', '/escuta', 'Recepção não envia à UPA (deve ser recusado)',
   format($q$SELECT public.encaminhar_upa(%L::uuid, %L::uuid, 'Dor torácica típica na escuta')::text$q$, e2e.u('f5ep2'), 'f5100000-0000-4000-8000-000000000002'),
-  'erro:Acesso negado: envia');
-SELECT e2e.passo('F5b.2.enviar', 2, 'f5_enf_ubs', '/escuta (vermelho)', 'Enfermeira envia à UPA da rede pela escuta',
+  'erro:Acesso negado: o envio');
+-- RT, 25/11/2026 (migration 20270426000019): o envio à UPA é sempre depois de o médico abrir o
+-- atendimento. A enfermeira faz a escuta; da escuta não se envia; a médica abre, registra, envia e
+-- encerra a ficha pela conduta.
+SELECT e2e.passo('F5b.2.escuta', 2, 'f5_enf_ubs', '/escuta (vermelho)', 'Enfermeira faz a escuta inicial: vermelho, vai à consulta',
+  format($q$SELECT public.registrar_escuta_aps(%L::uuid, 'vermelho', 'consulta')::text$q$, e2e.u('f5ep2')));
+SELECT e2e.passo('F5b.2.sem_abrir_nao_envia', 2, 'f5_med_ubs', '/plantao', 'Sem abrir o atendimento a médica não envia (deve ser recusado)',
+  format($q$SELECT public.encaminhar_upa(%L::uuid, %L::uuid, 'Dor torácica típica, sudorese, sem ECG na UBS')::text$q$,
+    e2e.u('f5ep2'), 'f5100000-0000-4000-8000-000000000002'), 'erro:O envio à UPA é feito depois de o médico abrir o atendimento');
+SELECT e2e.passo('F5b.2.abrir', 2, 'f5_med_ubs', '/plantao (janela do atendimento)', 'Médica abre o atendimento',
+  format($q$SELECT public.iniciar_atendimento(%L::uuid)::text$q$, e2e.u('f5ep2')));
+SELECT e2e.passo('F5b.2.soap', 2, 'f5_med_ubs', '/plantao (aba Atendimento)', 'Médica registra o SOAP',
+  format($q$SELECT public.registrar_soap(%L::uuid, 'Dor em aperto há 1 hora', 'Sudorese, sem ECG na UBS', 'Dor torácica típica', 'Enviar à UPA', 'R07.4')::text$q$, e2e.u('f5ep2')));
+SELECT e2e.passo('F5b.2.enviar', 2, 'f5_med_ubs', '/plantao (aba Conduta → Enviar à UPA)', 'Médica envia à UPA da rede',
   format($q$SELECT public.encaminhar_upa(%L::uuid, %L::uuid, 'Dor torácica típica, sudorese, sem ECG na UBS')::text$q$,
     e2e.u('f5ep2'), 'f5100000-0000-4000-8000-000000000002'), 'ok', 'f5env2');
+SELECT e2e.passo('F5b.2.conduta', 2, 'f5_med_ubs', '/plantao (aba Conduta)', 'Médica encerra a ficha da UBS pela conduta (encaminhamento de urgência)',
+  format($q$SELECT public.registrar_conduta_aps(%L::uuid, 'escuta_inicial', '{}'::text[], '{}'::text[], '{encaminhamento_urgencia}'::text[])::text$q$, e2e.u('f5ep2')));
 SELECT e2e.passo('F5b.2.vindo', 2, 'f5_rec_upa', '/recepcao (Vindo da UBS)', 'UPA vê o paciente vindo da UBS',
   format($q$SELECT e2e.confere(EXISTS (SELECT 1 FROM jsonb_array_elements(public.encaminhamentos_upa_destino(%L::uuid)) e WHERE (e ->> 'id')::uuid = %L::uuid), 'vindo da UBS')$q$,
     'f5100000-0000-4000-8000-000000000002', e2e.u('f5env2')));

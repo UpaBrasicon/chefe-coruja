@@ -5,8 +5,8 @@
 -- 1. quem envia: o médico de plantão no consultório (recepção não; o enfermeiro
 --    também não, desde o percurso da UBS, D2, 17/11/2026);
 --    destino: UPA ou hospital da mesma rede; motivo; um envio aberto por vez;
--- 2. da consulta: o resumo leva o SOAP e o episódio da UBS segue aberto; da
---    escuta: a ficha da UBS encerra; o destino é avisado;
+-- 2. o envio é sempre com o atendimento aberto (20270426000019): o resumo leva
+--    o SOAP e o episódio da UBS segue aberto; da escuta não se envia; o destino é avisado;
 -- 3. a UPA vê; a ficha aberta na UPA marca a chegada sozinha (U9); o não chegou; quem
 --    enviou é avisado; a UBS não vê a lista do destino;
 -- 4. o prazo de 12 h marca "não chegou" e avisa; a UPA ainda corrige;
@@ -101,6 +101,10 @@ INSERT INTO v SELECT 'ep3', (public.registrar_ficha(pg_temp.id('cons'), 'Tontura
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa'), 'Dor torácica típica, sem ECG na UBS')$$,
   'Acesso negado: o envio à UPA é do médico', 'recepção não envia');
 SELECT pg_temp.como('med');
+-- 20270426000019: o envio é sempre com o atendimento aberto; sem isso a recusa vem antes do destino
+SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa'), 'Dor torácica típica, sem ECG na UBS')$$,
+  'O envio à UPA é feito depois de o médico abrir o atendimento', 'sem atendimento aberto não se envia');
+SELECT public.iniciar_atendimento(pg_temp.v('ep1'));
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa2'), 'Dor torácica típica, sem ECG na UBS')$$,
   'Escolha uma UPA ou um hospital da rede', 'UPA de outra rede é recusada');
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('ubs'), 'Dor torácica típica, sem ECG na UBS')$$,
@@ -108,8 +112,7 @@ SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa'), 'Dor')$$,
   'Escreva o motivo do envio', 'motivo obrigatório');
 
--- ── 2. da consulta e da escuta ──────────────────────────────────────────────
-SELECT public.iniciar_atendimento(pg_temp.v('ep1'));
+-- ── 2. da consulta (da escuta não se envia) ─────────────────────────────────
 SELECT public.registrar_soap(pg_temp.v('ep1'), 'Dor em aperto há 1 h', 'PA 160x100, sudorese', 'Suspeita de síndrome coronariana aguda',
   'Enviar à UPA', 'I20.0');
 INSERT INTO v SELECT 'x1', public.encaminhar_upa(pg_temp.v('ep1'), pg_temp.id('upa'), 'Dor torácica típica, sem ECG na UBS');
@@ -119,19 +122,23 @@ SELECT pg_temp.como('enf');
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, sem médico na UBS')$$,
   'Acesso negado: o envio à UPA é do médico', 'D2: o enfermeiro não envia à UPA');
 SELECT pg_temp.como('med');
--- 20270426000017 (RT, 25/11/2026): no envio pela escuta o médico informa o CID-10 ou a CIAP-2
+-- 20270426000019 (RT, 25/11/2026): o envio é sempre depois de o médico abrir o atendimento
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, vai à UPA')$$,
-  'No envio pela escuta, informe o CID-10 ou a CIAP-2', 'envio pela escuta pede o problema');
-INSERT INTO v SELECT 'x2', public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, vai à UPA', 'R06.0');
-SELECT pg_temp.ok((SELECT cid_aps = ARRAY['R06.0'] AND conduta_aps = ARRAY['encaminhamento_urgencia'] FROM public.episodios WHERE id = pg_temp.v('ep2')),
-  'a ficha da escuta fecha como encaminhamento, com o CID informado');
+  'O envio à UPA é feito depois de o médico abrir o atendimento', 'da escuta não se envia');
+SELECT pg_temp.como('enf');
+SELECT public.registrar_escuta_aps(pg_temp.v('ep2'), 'vermelho', 'consulta');
+SELECT pg_temp.como('med');
+SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave, vai à UPA')$$,
+  'O envio à UPA é feito depois de o médico abrir o atendimento', 'sem abrir o atendimento não se envia');
+SELECT public.iniciar_atendimento(pg_temp.v('ep2'));
+INSERT INTO v SELECT 'x2', public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave, vai à UPA');
 RESET ROLE;
 SELECT pg_temp.ok((SELECT resumo -> 'soap' ->> 'avaliacao' = 'Suspeita de síndrome coronariana aguda' AND resumo -> 'paciente' ->> 'cns' = '898001160000001'
                           AND prazo_em > now() + interval '11 hours' FROM public.encaminhamentos_upa WHERE id = pg_temp.v('x1')),
   'o resumo leva o SOAP e o paciente; prazo de 12 h');
 SELECT pg_temp.ok((SELECT etapa = 'atendimento' FROM public.episodios WHERE id = pg_temp.v('ep1')), 'da consulta: a ficha da UBS segue aberta para a conduta');
-SELECT pg_temp.ok((SELECT etapa = 'encerrado' AND desfecho_motivo LIKE 'Enviado à UPA do 5A5:%' FROM public.episodios WHERE id = pg_temp.v('ep2')),
-  'da escuta: a ficha da UBS encerra com o envio');
+SELECT pg_temp.ok((SELECT etapa = 'atendimento' AND conduta_aps IS NULL FROM public.episodios WHERE id = pg_temp.v('ep2')),
+  'o envio não encerra a ficha da UBS: ela fecha pela conduta');
 SELECT pg_temp.ok((SELECT count(*) = 2 FROM public.notificacoes_plantonista WHERE perfil_id = pg_temp.id('recu') AND tipo LIKE 'ubs_upa_%'),
   'a recepção da UPA é avisada de cada envio');
 SET LOCAL ROLE authenticated;
