@@ -10511,7 +10511,7 @@ export type Database = {
       encaminhamentos_upa_destino: { Args: { p_unidade: string }; Returns: Json }
       encaminhamentos_upa_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       encaminhamentos_upa_origem: { Args: { p_dias?: number; p_unidade: string }; Returns: Json }
-      encaminhar_upa: { Args: { p_destino: string; p_episodio: string; p_motivo: string }; Returns: string }
+      encaminhar_upa: { Args: { p_ciap?: string; p_cid?: string; p_destino: string; p_episodio: string; p_motivo: string }; Returns: string }
       contrarreferencia_abrir: { Args: { p_id: string }; Returns: Json }
       hiperdia_do_paciente: { Args: { p_paciente: string }; Returns: Json }
       hiperdia_sugestoes: { Args: { p_unidade: string }; Returns: Json }
