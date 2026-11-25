@@ -123,6 +123,9 @@ export function conteudoDaFolha(exames: readonly ExameParaFolha[], modo: ModoFol
   const urgente = geral?.urgente ?? exames.some((e) => e.urgencia === 'urgente')
   return {
     pedido: {
+      // o servidor só emite o pedido com `itens` preenchido (private.faltas_documento:
+      // "Marcar ao menos um exame"); a folha usa `folhas` e ignora `itens` quando há folhas
+      itens: exames.map(linha),
       folhas,
       carater: urgente ? 'Urgência' : 'Rotina',
       indicacao: geral?.indicacao?.trim() || juntarDiferentes(exames.map((e) => e.indicacao)),
