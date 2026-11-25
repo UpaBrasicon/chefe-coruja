@@ -435,7 +435,8 @@
         "pedido de vaga, quadro clínico e anexos",
         "respostas dos destinos e da central",
         "tempos de cada etapa",
-        "conversa da unidade com o médico regulador e quem leu"
+        "conversa da unidade com o médico regulador e quem leu",
+        "pendências da unidade no pedido (aviso do NIR ao médico, quem avisou e quem resolveu)"
       ],
       "sensivel": true,
       "acesso": [
@@ -474,7 +475,8 @@
         "public.regulacao_centrais_cadastro",
         "public.regulacao_central_unidades",
         "public.regulacao_unidade_capacidades",
-        "public.regulacao_prazos_tipo"
+        "public.regulacao_prazos_tipo",
+        "public.regulacao_pendencias_unidade"
       ]
     },
     {

@@ -35,6 +35,10 @@ export const ROTULO_EVENTO: Record<string, string> = {
   anexo_retirado: 'anexo retirado',
   anexo_aberto: 'anexo aberto',
   mensagem: 'mensagem na conversa',
+  // Internação do NIR (migration 20270425000030)
+  pendencia_unidade: 'pendência da unidade registrada',
+  pendencia_unidade_reaviso: 'aviso ao médico reenviado',
+  pendencia_unidade_resolvida: 'pendência da unidade resolvida',
 }
 
 /** Rótulo do evento; o que não está no mapa sai sem os sublinhados. */
@@ -48,7 +52,7 @@ export type ItemLinhaDoTempo = {
 }
 
 export type EventoPedido = { evento: string; por: string | null; em: string; detalhes: Record<string, unknown> | null }
-export type EvolucaoPedido = { texto: string; sinais_vitais: string | null; em: string; autor: string | null }
+export type EvolucaoPedido = { texto: string; sinais_vitais: string | null; em: string; autor: string | null; papel?: string | null }
 export type MensagemPedido = { id: string; lado: 'origem' | 'central'; texto: string; em: string; autor: string | null; intencao?: string }
 
 function tipoDoEvento(evento: string): TipoItem {
@@ -64,7 +68,7 @@ export function textoDoEvento(e: Pick<EventoPedido, 'evento' | 'detalhes'>): str
   const txt = (k: string) => (typeof d[k] === 'string' && (d[k] as string).trim() ? (d[k] as string).trim() : null)
   // na negação o motivo é um código (a tela do pedido já mostra o motivo por extenso)
   const motivo = e.evento === 'negada' ? null : txt('motivo')
-  const partes = [txt('nome'), txt('pergunta'), txt('resposta'), txt('texto'), txt('observacao'), motivo].filter((x): x is string => !!x)
+  const partes = [txt('nome'), txt('pergunta'), txt('resposta'), txt('texto'), txt('titulo'), txt('observacao'), txt('nota'), motivo].filter((x): x is string => !!x)
   return partes.length > 0 ? partes.join(' · ') : null
 }
 
@@ -90,7 +94,7 @@ export function montarLinhaDoTempo({ eventos = [], evolucoes = [], mensagens, ro
   })
   evolucoes.forEach((v, i) => {
     const texto = v.sinais_vitais ? `${v.texto}\nSinais vitais: ${v.sinais_vitais}` : v.texto
-    itens.push({ chave: `v${i}`, em: v.em, tipo: 'evolucao', titulo: 'evolução atualizada', texto, por: v.autor })
+    itens.push({ chave: `v${i}`, em: v.em, tipo: 'evolucao', titulo: v.papel === 'nir' ? 'evolução atualizada pelo NIR' : 'evolução atualizada', texto, por: v.autor })
   })
   for (const m of mensagens ?? []) {
     itens.push({ chave: `m${m.id}`, em: m.em, tipo: 'conversa', titulo: m.lado === 'central' ? 'mensagem do regulador' : 'mensagem da origem', texto: m.texto, por: m.autor })

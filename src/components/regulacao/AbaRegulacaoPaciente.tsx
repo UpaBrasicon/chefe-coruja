@@ -197,7 +197,8 @@ function PedidoAberto({ p }: { p: PedidoResumo }) {
   )
 }
 
-function ResponderPergunta({ id, aoFim }: { id: string; aoFim: () => void }) {
+/** Resposta à pergunta formal da central (médico, gestor e NIR da origem). */
+export function ResponderPergunta({ id, aoFim }: { id: string; aoFim: () => void }) {
   const [resposta, setResposta] = React.useState('')
   const enviar = useMutation({
     mutationFn: async () => {
