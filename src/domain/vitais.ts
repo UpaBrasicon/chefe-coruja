@@ -67,6 +67,18 @@ export function textoVitais(sinais: Record<string, number> | null | undefined): 
   return partes.join(' · ')
 }
 
+/**
+ * Os limites que a triagem já conferia (classificar_risco e a tela Triar): dor
+ * de 0 a 10 e Glasgow de 3 a 15, inteiros. Valem em todo registro de sinal
+ * vital, na tela e no servidor (RT, 25/11/2026; migration 20270426000013). As
+ * mensagens são as do servidor. Não há outro limite: os demais sinais entram crus.
+ */
+export function erroDeLimite(k: string, n: number): string | null {
+  if (k === VITAL_DOR && (!Number.isInteger(n) || n < 0 || n > 10)) return 'Dor pela escala numérica vai de 0 a 10.'
+  if (k === 'glasgow' && (!Number.isInteger(n) || n < 3 || n > 15)) return 'Glasgow vai de 3 a 15.'
+  return null
+}
+
 /** Texto do formulário → números para o servidor. Lança erro com o rótulo do campo. */
 export function paraNumeros(valores: Record<string, string>): Record<string, number> {
   return Object.fromEntries(
@@ -75,6 +87,8 @@ export function paraNumeros(valores: Record<string, string>): Record<string, num
       .map(([k, v]) => {
         const n = Number(v.replace(',', '.'))
         if (Number.isNaN(n)) throw new Error(`Valor inválido em ${rotuloVital(k)}`)
+        const limite = erroDeLimite(k, n)
+        if (limite) throw new Error(limite)
         return [k, n]
       })
   )
