@@ -589,7 +589,9 @@ function pedidoExames(d: Json, ctx: ContextoFolha): string {
     cel(5, 'Prioridade', carater ? opcoes(['Rotina', 'Urgência'], carater) : opcoes(['Rotina', 'Urgência'], '')) +
     cel(4, 'CID-10', `<b style="font-size:11pt">${V(String(p.cid ?? '').trim().split(/\s/)[0])}</b>`) +
     cel(12, 'Hipótese diagnóstica', V(pri(p.hipotese, pac.diagnostico))) +
-    (vz(p.indicacao) ? '' : cel(12, 'Indicação clínica / justificativa', V(p.indicacao), 't')))
+    (vz(p.indicacao) ? '' : cel(12, 'Indicação clínica / justificativa', V(p.indicacao), 't')) +
+    // pedido do leito (RT, 25/11/2026): uma observação para o pedido todo, no cabeçalho
+    (vz(p.obs_pedido) ? '' : cel(12, 'Observação do pedido', V(p.obs_pedido), 't')))
   // CNS de quem pede, do retrato gravado no documento (o protótipo assina "registro · CNS")
   const cnsMedico = pri(d?.retrato?.usuario?.cns, d?.usuario?.cns)
   const ass: Assinante = { ...assMedico(ctx), linha: junta(' · ', registroOuBranco(ctx.autor), cnsMedico ? `CNS ${cnsMedico}` : '') }

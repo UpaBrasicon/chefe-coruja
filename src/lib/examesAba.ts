@@ -1,9 +1,11 @@
 // Aba Exames do leito no modelo do RT (25/11/2026; EXM1 a EXM11). Só regras e
 // montagens, sem tela: os testes rodam no node (examesAba.test.ts).
 //
-// - Cesta do pedido: um item por exame, com a observação do item (EXM4); a
-//   indicação clínica e o CID valem para o pedido todo (EXM3). O servidor faz
-//   um pedido por setor (pedir_exames_internacao), e cada item leva os campos.
+// - Cesta do pedido: um item por exame (setor e nome). Observação, indicação
+//   clínica e CID valem para o pedido todo (EXM3; o RT pediu em 25/11/2026 uma
+//   observação só, não uma por exame). O servidor faz um pedido por setor
+//   (pedir_exames_internacao), e cada item leva a indicação e o CID; a
+//   observação vai no parâmetro do pedido.
 // - "Já pedido": quantas vezes e a data do mais recente ("2× · 27/10").
 // - Folha A4 (EXM6): folha única ou uma por setor, no formato que a folha de
 //   pedido de exames (lib/folhas, pedidoExames) já lê. Médico e CRM vêm do
@@ -19,18 +21,18 @@ const ORDEM_SETOR: GrupoExame[] = ['laboratorio', 'imagem', 'grafico', 'citopato
 
 // ── cesta ───────────────────────────────────────────────────────────────────
 
-export type ItemCesta = { rotulo: string; procedimento: string | null; grupo: GrupoExame; obs: string }
+export type ItemCesta = { rotulo: string; procedimento: string | null; grupo: GrupoExame }
 
 export const mesmoExame = (a: { rotulo: string; procedimento: string | null }, b: { rotulo: string; procedimento: string | null }) =>
   a.procedimento || b.procedimento ? a.procedimento === b.procedimento : a.rotulo.trim().toLowerCase() === b.rotulo.trim().toLowerCase()
 
 /** Põe na cesta o que ainda não está (combo, frequente ou busca); devolve a cesta nova e quantos entraram. */
-export function porNaCesta(cesta: readonly ItemCesta[], novos: readonly Omit<ItemCesta, 'obs'>[]): { cesta: ItemCesta[]; entraram: number } {
+export function porNaCesta(cesta: readonly ItemCesta[], novos: readonly ItemCesta[]): { cesta: ItemCesta[]; entraram: number } {
   const saida = [...cesta]
   let entraram = 0
   for (const n of novos) {
     if (saida.some((m) => mesmoExame(m, n))) continue
-    saida.push({ ...n, obs: '' })
+    saida.push({ ...n })
     entraram++
   }
   return { cesta: saida, entraram }
@@ -55,7 +57,7 @@ export function cidDoCampo(t: string): string | null | undefined {
   return v.length > 3 ? `${v.slice(0, 3)}.${v.slice(3)}` : v
 }
 
-/** Os pedidos ao servidor: um por setor, cada item com a observação, a indicação e o CID. */
+/** Os pedidos ao servidor: um por setor, cada item com a indicação e o CID (a observação vai no parâmetro do pedido). */
 export function pedidosDaCesta(cesta: readonly ItemCesta[], extra: { indicacao: string; cid: string | null }): {
   grupo: GrupoExame; itens: Record<string, string>[]
 }[] {
@@ -64,7 +66,6 @@ export function pedidosDaCesta(cesta: readonly ItemCesta[], extra: { indicacao: 
     grupo: g,
     itens: cesta.filter((m) => m.grupo === g).map((m) => ({
       ...(m.procedimento ? { procedimento: m.procedimento } : { nome: m.rotulo.trim() }),
-      ...(m.obs.trim() ? { obs: m.obs.trim() } : {}),
       ...(ind ? { indicacao: ind } : {}),
       ...(extra.cid ? { cid: extra.cid } : {}),
     })),
@@ -108,10 +109,12 @@ const juntarDiferentes = (xs: (string | null | undefined)[]) => [...new Set(xs.m
  * `folhas` com um grupo por setor (folha única) ou uma folha por setor. Sem
  * `texto`: o pedido já está gravado nos exames, e o documento emitido só imprime
  * (o gatilho que transforma o texto do documento em exames não repete nada).
+ * A observação sai uma vez, no cabeçalho do pedido (`obs_pedido`), não em cada
+ * linha (RT, 25/11/2026).
  */
-export function conteudoDaFolha(exames: readonly ExameParaFolha[], modo: ModoFolha, geral?: { indicacao?: string; cid?: string | null; urgente?: boolean }) {
+export function conteudoDaFolha(exames: readonly ExameParaFolha[], modo: ModoFolha, geral?: { indicacao?: string; cid?: string | null; urgente?: boolean; obs?: string }) {
   const setor = (e: ExameParaFolha): GrupoExame => e.grupo ?? 'laboratorio'
-  const linha = (e: ExameParaFolha) => (e.obs?.trim() ? `${e.exame.trim()} (obs.: ${e.obs.trim()})` : e.exame.trim())
+  const linha = (e: ExameParaFolha) => e.exame.trim()
   const setores = ORDEM_SETOR.filter((g) => exames.some((e) => setor(e) === g))
   const grupoDe = (g: GrupoExame) => ({ nome: NOME_SETOR[g], itens: exames.filter((e) => setor(e) === g).map(linha) })
   const folhas = modo === 'setor'
@@ -124,6 +127,7 @@ export function conteudoDaFolha(exames: readonly ExameParaFolha[], modo: ModoFol
       carater: urgente ? 'Urgência' : 'Rotina',
       indicacao: geral?.indicacao?.trim() || juntarDiferentes(exames.map((e) => e.indicacao)),
       cid: geral?.cid ?? (juntarDiferentes(exames.map((e) => e.cid)).split('; ')[0] || ''),
+      obs_pedido: geral?.obs?.trim() || juntarDiferentes(exames.map((e) => e.obs)),
       itens_n: exames.length,
     },
   }

@@ -5,6 +5,7 @@ import {
   analitosConhecidos, cidDoCampo, conteudoDaFolha, envioPorSetor, instanteDoCampo, itensDoLancamento, montarPlanilha, pedidosDaCesta, porNaCesta,
   resumoJaPedido, setorSugerido, textoJaPedido, type ResultadoLido,
 } from './examesAba.ts'
+import { montarFolha } from './folhas.ts'
 
 test('cesta: combo e frequente não repetem o que já está', () => {
   const r1 = porNaCesta([], [{ rotulo: 'Hemograma', procedimento: '0202020380', grupo: 'laboratorio' }, { rotulo: 'PCR', procedimento: '0202030202', grupo: 'laboratorio' }])
@@ -12,18 +13,18 @@ test('cesta: combo e frequente não repetem o que já está', () => {
   const r2 = porNaCesta(r1.cesta, [{ rotulo: 'Hemograma completo', procedimento: '0202020380', grupo: 'laboratorio' }, { rotulo: 'ECG', procedimento: null, grupo: 'grafico' }])
   assert.equal(r2.entraram, 1)
   assert.equal(r2.cesta.length, 3)
-  assert.equal(r2.cesta[0].obs, '')
 })
 
-test('pedido: um por setor, cada item com a observação, a indicação e o CID', () => {
+// RT, 25/11/2026: uma observação para o pedido todo (vai em p_observacao), não por item
+test('pedido: um por setor, cada item com a indicação e o CID, sem observação por item', () => {
   const cesta = [
-    { rotulo: 'Hemograma', procedimento: '0202020380', grupo: 'laboratorio' as const, obs: ' jejum ' },
-    { rotulo: 'Radiografia de tórax', procedimento: null, grupo: 'imagem' as const, obs: '' },
-    { rotulo: 'PCR', procedimento: '0202030202', grupo: 'laboratorio' as const, obs: '' },
+    { rotulo: 'Hemograma', procedimento: '0202020380', grupo: 'laboratorio' as const },
+    { rotulo: 'Radiografia de tórax', procedimento: null, grupo: 'imagem' as const },
+    { rotulo: 'PCR', procedimento: '0202030202', grupo: 'laboratorio' as const },
   ]
   const p = pedidosDaCesta(cesta, { indicacao: ' Febre ', cid: 'A41.9' })
   assert.deepEqual(p.map((x) => x.grupo), ['laboratorio', 'imagem'])
-  assert.deepEqual(p[0].itens[0], { procedimento: '0202020380', obs: 'jejum', indicacao: 'Febre', cid: 'A41.9' })
+  assert.deepEqual(p[0].itens[0], { procedimento: '0202020380', indicacao: 'Febre', cid: 'A41.9' })
   assert.deepEqual(p[0].itens[1], { procedimento: '0202030202', indicacao: 'Febre', cid: 'A41.9' })
   assert.deepEqual(p[1].itens[0], { nome: 'Radiografia de tórax', indicacao: 'Febre', cid: 'A41.9' })
   // sem indicação e sem CID, o item vai como antes
@@ -66,16 +67,23 @@ test('folha: única com um grupo por setor, ou uma folha por setor', () => {
   const u = conteudoDaFolha(ex, 'unica')
   assert.equal(u.pedido.folhas.length, 1)
   assert.deepEqual(u.pedido.folhas[0].grupos.map((g) => g.nome), ['Laboratório', 'ECG'])
-  assert.deepEqual(u.pedido.folhas[0].grupos[0].itens, ['Hemograma (obs.: jejum)'])
+  // a observação sai uma vez, no cabeçalho, não na linha do exame
+  assert.deepEqual(u.pedido.folhas[0].grupos[0].itens, ['Hemograma'])
+  assert.equal(u.pedido.obs_pedido, 'jejum')
   assert.equal(u.pedido.carater, 'Urgência')
   assert.equal(u.pedido.indicacao, 'Febre')
   assert.equal(u.pedido.cid, 'A41.9')
   assert.equal('texto' in u.pedido, false)
-  const s = conteudoDaFolha(ex, 'setor', { urgente: false, indicacao: 'Dor', cid: null })
+  const s = conteudoDaFolha(ex, 'setor', { urgente: false, indicacao: 'Dor', cid: null, obs: ' sem contraste ' })
   assert.equal(s.pedido.folhas.length, 2)
   assert.equal(s.pedido.folhas[1].documento, 'Solicitação de métodos gráficos (ECG)')
   assert.equal(s.pedido.carater, 'Rotina')
   assert.equal(s.pedido.indicacao, 'Dor')
+  assert.equal(s.pedido.obs_pedido, 'sem contraste')
+  // na folha impressa: uma vez por folha, no cabeçalho
+  const html = montarFolha('pedido_exames', conteudoDaFolha(ex, 'unica', { obs: 'Jejum de 8 horas' }), { emissao: { modo: 'provisoria', em: '2026-11-25T12:00:00Z' } })
+  assert.equal(html.split('Jejum de 8 horas').length - 1, 1)
+  assert.match(html, /Observação do pedido/)
 })
 
 const res = (p: Partial<ResultadoLido>): ResultadoLido => ({
