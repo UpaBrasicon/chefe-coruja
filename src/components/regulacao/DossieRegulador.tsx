@@ -62,6 +62,8 @@ export type PedidoDossie = {
   sla: Sla | null
   tempos?: { status: StatusRegulacao; segundos: number; vezes: number; atual: boolean }[]
   evolucoes?: Evolucao[]; pode_evoluir?: boolean
+  /** quem pede pode responder, cancelar e mudar o isolamento */
+  origem_pode_responder?: boolean
 }
 
 /** O que a fila sabe do pedido e o detalhe não traz. */
@@ -71,7 +73,8 @@ export type ContextoFila = {
   origem_coord?: { latitude: number | null; longitude: number | null } | null
 }
 
-export type AcaoDecisao = 'autorizar' | 'negar' | 'devolver' | 'pendencia'
+/** Na central: autorizar, negar, devolver, pendência. Na origem: cancelar (menu "…"). */
+export type AcaoDecisao = 'autorizar' | 'negar' | 'devolver' | 'pendencia' | 'cancelar'
 export type ControleDecisao = { acao: AcaoDecisao | null; destinoUnidade?: string; chave: number }
 
 /** A conversa com a origem, de quem monta a página (onde existe). */
@@ -113,8 +116,13 @@ function useSemContagem(id: string): number | undefined { void id; return undefi
 
 type AbaDossie = 'conversa' | 'anexos' | 'linha'
 
-export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, conversa, aoVoltar, aoFechar }: {
-  id: string; centralId: string; souRegulador: boolean; fila: ContextoFila | null
+export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, souRegulador, fila, decisao, conversa, aoVoltar, aoFechar }: {
+  id: string
+  /** central: decide e reserva; origem (perfil Médico regulador numa unidade que pede): as ações da origem, sem decidir nem reservar */
+  lado?: 'central' | 'origem'
+  /** unidade de quem vê, no lado da origem */
+  unidadeId?: string
+  centralId: string; souRegulador: boolean; fila: ContextoFila | null
   decisao: (id: string, ctrl: ControleDecisao, aoFim: () => void) => React.ReactNode
   conversa?: ConversaSlot
   /** celular: volta à fila */
@@ -149,8 +157,9 @@ export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, co
   const [agora] = React.useState(() => Date.now())
 
   const recarregar = () => {
-    for (const k of [['regulacao-detalhe', id], ['regulacao-fila', centralId], ['regulacao-fila-extras', centralId], ['regulacao-sla', centralId],
-      ['regulacao-vagas-compativeis', centralId], ['regulacao-anexos', id], ['nota-regulacao']]) void qc.invalidateQueries({ queryKey: k })
+    const u = lado === 'central' ? centralId : unidadeId ?? ''
+    for (const k of [['regulacao-detalhe', id], ['regulacao-fila', u], ['regulacao-fila-extras', u], ['regulacao-sla', u], ['regulacao-lista', u],
+      ['regulacao-destino', u], ['regulacao-vagas-compativeis', u], ['regulacao-anexos', id], ['nota-regulacao']]) void qc.invalidateQueries({ queryKey: k })
   }
   const abrirDecisao = (acao: AcaoDecisao, destinoUnidade?: string) => {
     setCtrl((c) => ({ acao, destinoUnidade, chave: c.chave + 1 }))
@@ -185,14 +194,22 @@ export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, co
   const destino = s.destino_tipo === 'rede' ? s.destino_unidade?.nome : s.destino_tipo === 'externo' ? `${s.destino_externo} (fora da rede)` : 'A definir pela regulação'
   const leitoOuTransf = s.tipo === 'leito' || s.tipo === 'transferencia'
   const anos = idade(s.paciente.nascimento)
+  const central = lado === 'central'
+  const souOrigem = !central && !!unidadeId && s.origem.id === unidadeId
+  const origemResponde = souOrigem && !!s.origem_pode_responder
+  const cancelavel = origemResponde
+    && ['rascunho', 'enviada', 'em_analise', 'pendencia', 'devolvida', 'aguardando_destino', 'autorizada', 'agendada'].includes(s.status)
+  // isolamento: o regulador da central ou quem pede (a RPC confere)
+  const mudaIsolamento = aberto && ((central && souRegulador) || origemResponde)
 
   const menu: AcaoMenu[] = [
     ...(decide ? [{ chave: 'pendencia', rotulo: 'Pergunta à origem (pendência)', onSelecionar: () => abrirDecisao('pendencia') }] : []),
     ...(souRegulador && aberto ? [{ chave: 'prioridade', rotulo: 'Reclassificar prioridade', onSelecionar: () => setPainel('prioridade') }] : []),
-    ...(souRegulador && aberto ? [{ chave: 'isolamento', rotulo: s.isolamento ? 'Alterar isolamento' : 'Definir isolamento', onSelecionar: () => setPainel('isolamento') }] : []),
+    ...(mudaIsolamento ? [{ chave: 'isolamento', rotulo: s.isolamento ? 'Alterar isolamento' : 'Definir isolamento', onSelecionar: () => setPainel('isolamento') }] : []),
     ...(fila?.assumida_por_mim ? [{ chave: 'soltar', rotulo: 'Devolver à fila (deixar de assumir)', onSelecionar: () => assumir.mutate('regulacao_soltar') }] : []),
     ...(decide ? [{ chave: 'devolver', rotulo: 'Devolver à origem', perigo: true, onSelecionar: () => abrirDecisao('devolver') },
       { chave: 'negar', rotulo: 'Negar', perigo: true, onSelecionar: () => abrirDecisao('negar') }] : []),
+    ...(cancelavel ? [{ chave: 'cancelar', rotulo: 'Cancelar solicitação', perigo: true, onSelecionar: () => abrirDecisao('cancelar') }] : []),
   ]
   const abas: [AbaDossie, string, number | undefined][] = [
     ...(conversa ? [['conversa', 'Conversa', nConversa] as [AbaDossie, string, number | undefined]] : []),
@@ -215,7 +232,7 @@ export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, co
             {souRegulador && emDecisao(s.status) && fila && !fila.assumida_por && (
               <Button size="xs" onClick={() => assumir.mutate('regulacao_assumir')} disabled={assumir.isPending}>Assumir</Button>
             )}
-            {conversa && s.sla?.evolucao && aberto && (
+            {central && conversa && s.sla?.evolucao && aberto && (
               <Button size="xs" variant={nivel === 'em_dia' ? 'outline' : 'default'} disabled={cobrar.isPending}
                 onClick={() => cobrar.mutate(mensagemCobrarEvolucao(s, Date.now()))}>Cobrar evolução</Button>
             )}
@@ -250,7 +267,7 @@ export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, co
                 : `evolução vencida (prazo da central: ${s.sla.evolucao.prazo_h} h)`}
             </span>
             <span className="ml-auto flex gap-1.5">
-              {conversa && aberto && (
+              {central && conversa && aberto && (
                 <Button size="xs" variant="outline" disabled={cobrar.isPending} onClick={() => cobrar.mutate(mensagemCobrarEvolucao(s, Date.now()))}>Cobrar na conversa</Button>
               )}
               {s.pode_evoluir && <Button size="xs" onClick={() => setPainel('evolucao')}>Atualizar evolução</Button>}
@@ -259,7 +276,7 @@ export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, co
         )}
         {s.isolamento && s.isolamento_tipo && (
           <FaixaIsolamento tipo={s.isolamento_tipo} situacao={situacao} agente={agente}
-            acao={souRegulador && aberto ? <Button size="xs" variant="outline" onClick={() => setPainel('isolamento')}>Alterar isolamento</Button> : undefined} />
+            acao={mudaIsolamento ? <Button size="xs" variant="outline" onClick={() => setPainel('isolamento')}>Alterar isolamento</Button> : undefined} />
         )}
         {painel === 'isolamento' && (
           <EditarIsolamento solicitacaoId={s.id} aoCancelar={() => setPainel(null)} aoFim={() => { setPainel(null); recarregar() }}
@@ -307,7 +324,7 @@ export function DossieRegulador({ id, centralId, souRegulador, fila, decisao, co
 
         <div ref={decisaoRef} className="flex flex-col gap-3">{decisao(s.id, ctrl, recarregar)}</div>
 
-        {leitoOuTransf && aberto && (
+        {central && leitoOuTransf && aberto && (
           <MatchVagas centralId={centralId} podeReservar={decide} aoReservar={(u) => abrirDecisao('autorizar', u)}
             pedido={{ tipo_leito: s.tipo_leito, isolamento_tipo: s.isolamento ? s.isolamento_tipo : null, origem_id: s.origem.id, origem: fila?.origem_coord }} />
         )}
