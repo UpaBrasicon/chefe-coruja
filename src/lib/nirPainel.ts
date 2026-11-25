@@ -10,6 +10,7 @@
 
 import { STATUS, TRANSPORTES, type StatusRegulacao } from './regulacao.ts'
 import { esperaAOrigem, rotuloAguardando, separarParaNir, type PacienteRegulacao, type PedidoResumo } from './regulacaoPaciente.ts'
+import { tempoSemEvolucao } from './tempoSemEvolucao.ts'
 
 export type MotivoPendencia = 'evolucao' | 'exame' | 'isolamento' | 'duvida' | 'outro'
 export type StatusPendencia = 'pendente' | 'medico_avisado' | 'resolvida'
@@ -162,8 +163,8 @@ export function sinalPrincipal(l: PacienteRegulacao, pend: readonly PendenciaUni
   const nir = pendenciasAbertas(l, pend).find((x) => x.dono === 'nir')
   if (nir) return { texto: nir.titulo, tom: 'info' }
   const h = horasSemEvolucao(p, agora)
-  if (p.sla?.evolucao?.risco_cancelamento) return { texto: `${h ?? '—'} h sem evolução · risco de cancelamento`, tom: 'critico' }
-  if (p.sla?.evolucao?.atrasada) return { texto: `${h ?? '—'} h sem evolução (vencida)`, tom: 'atencao' }
+  if (p.sla?.evolucao?.risco_cancelamento) return { texto: `${tempoSemEvolucao(h)} sem evolução · risco de cancelamento`, tom: 'critico' }
+  if (p.sla?.evolucao?.atrasada) return { texto: `${tempoSemEvolucao(h)} sem evolução (vencida)`, tom: 'atencao' }
   return { texto: STATUS[p.status], tom: 'neutro' }
 }
 
