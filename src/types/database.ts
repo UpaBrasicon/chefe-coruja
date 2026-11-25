@@ -9453,6 +9453,54 @@ export type Database = {
           },
         ]
       }
+      metas_contrato: {
+        Row: {
+          atualizado_em: string
+          atualizado_por: string | null
+          criado_em: string
+          criado_por: string
+          id: string
+          indicador: string
+          meta: number
+          observacao: string | null
+          peso: number | null
+          sentido: string
+          unidade_id: string
+          vigente_ate: string | null
+          vigente_de: string
+        }
+        Insert: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          criado_em?: string
+          criado_por: string
+          id?: string
+          indicador: string
+          meta: number
+          observacao?: string | null
+          peso?: number | null
+          sentido: string
+          unidade_id: string
+          vigente_ate?: string | null
+          vigente_de: string
+        }
+        Update: {
+          atualizado_em?: string
+          atualizado_por?: string | null
+          criado_em?: string
+          criado_por?: string
+          id?: string
+          indicador?: string
+          meta?: number
+          observacao?: string | null
+          peso?: number | null
+          sentido?: string
+          unidade_id?: string
+          vigente_ate?: string | null
+          vigente_de?: string
+        }
+        Relationships: []
+      }
       secretaria_pessoas: {
         Row: {
           aceito_em: string | null
@@ -9601,6 +9649,7 @@ export type Database = {
           ativo: boolean
           created_at: string
           especialidade: string | null
+          estabilizacao: boolean
           id: string
           nome: string
           ordem: number
@@ -9613,6 +9662,7 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           especialidade?: string | null
+          estabilizacao?: boolean
           id?: string
           nome: string
           ordem?: number
@@ -9625,6 +9675,7 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           especialidade?: string | null
+          estabilizacao?: boolean
           id?: string
           nome?: string
           ordem?: number
@@ -14455,6 +14506,26 @@ export type Database = {
         Args: { p_ano: number; p_mes: number; p_secretaria?: string }
         Returns: Json
       }
+      secretaria_boletim: {
+        Args: { p_mes_a: string; p_mes_b: string; p_unidade: string | null }
+        Returns: Json
+      }
+      secretaria_estado_unidades: { Args: never; Returns: Json }
+      salvar_meta_contrato: {
+        Args: {
+          p_id?: string | null
+          p_indicador: string
+          p_meta: number
+          p_observacao?: string | null
+          p_peso?: number | null
+          p_sentido: string
+          p_unidade: string
+          p_vigente_ate?: string | null
+          p_vigente_de: string
+        }
+        Returns: string
+      }
+      remover_meta_contrato: { Args: { p_id: string }; Returns: undefined }
       segundo_fator_status: {
         Args: never
         Returns: {

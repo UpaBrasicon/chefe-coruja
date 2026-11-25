@@ -69,7 +69,8 @@ export async function criarSetor(input: {
 export async function atualizarSetor(
   id: string,
   unidadeId: string,
-  campos: { nome?: string; tipo?: TipoSetor; ordem?: number; ativo?: boolean }
+  // estabilizacao: o setor conta como estabilização no boletim da secretaria (migration 20270421000080)
+  campos: { nome?: string; tipo?: TipoSetor; ordem?: number; ativo?: boolean; estabilizacao?: boolean }
 ) {
   const { data, error } = await supabase
     .from('setores')

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -15,12 +15,15 @@ import * as React from 'react'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { useLeitos, useSetores } from '@/hooks/useDadosUnidade'
 import {
+  atualizarSetor,
   criarLeitos,
   criarSetor,
   excluirLeito,
   excluirSetor,
   salvarOrdemSetores,
 } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
+import { CaixaMarcar } from '@/components/ui/caixa-marcar'
 import { STATUS_LEITO_LABEL, STATUS_LEITO_VARIANT, TIPO_LEITO_LABEL, TIPO_SETOR_LABEL } from '@/lib/constants'
 import type { TipoLeito, TipoSetor } from '@/types/database'
 import { AcoesLeito } from '@/components/leito/AcoesLeito'
@@ -152,6 +155,25 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
   const excluirLeitoMutation = useMutation({
     mutationFn: (id: string) => excluirLeito(id, unidadeId!),
     onSuccess: invalidar,
+    onError: (e) => setErro(e.message),
+  })
+
+  // Setor da estabilização no boletim da secretaria (decisão do RT, 24/11/2026;
+  // migration 20270421000080). Consulta à parte: sem a coluna no banco, a
+  // marca some e o resto da tela segue igual.
+  const estabilizacaoQuery = useQuery({
+    queryKey: ['setores-estabilizacao', unidadeId],
+    enabled: !!unidadeId,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('setores').select('id, estabilizacao').eq('unidade_id', unidadeId!)
+      if (error) throw error
+      return new Map((data ?? []).map((s) => [s.id, s.estabilizacao]))
+    },
+  })
+  const estabilizacaoMutation = useMutation({
+    mutationFn: (v: { id: string; marcado: boolean }) => atualizarSetor(v.id, unidadeId!, { estabilizacao: v.marcado }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['setores-estabilizacao', unidadeId] }),
     onError: (e) => setErro(e.message),
   })
 
@@ -288,6 +310,20 @@ export function Setores({ embutido = false }: { embutido?: boolean } = {}) {
               <p className="py-6 text-center text-apoio text-tinta-sussurro">
                 Selecione um setor para ver os leitos.
               </p>
+            )}
+
+            {setorSelecionado && estabilizacaoQuery.data?.has(setorSelecionado.id) && (
+              <CaixaMarcar
+                className="mb-4"
+                marcado={!!estabilizacaoQuery.data.get(setorSelecionado.id)}
+                desabilitado={estabilizacaoMutation.isPending}
+                onChange={(marcado) => estabilizacaoMutation.mutate({ id: setorSelecionado.id, marcado })}
+              >
+                <span className="text-apoio text-tinta">Este setor é a estabilização</span>
+                <span className="text-rotulo text-tinta-sussurro">
+                  Entra na seção Estabilização do boletim da secretaria, com ocupação, giro, permanência, origem e óbitos.
+                </span>
+              </CaixaMarcar>
             )}
 
             {setorSelecionado && leitosQuery.isLoading && (

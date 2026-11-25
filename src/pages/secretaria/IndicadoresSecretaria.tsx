@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { BarChart3, ChevronLeft, ChevronRight } from 'lucide-react'
 import * as React from 'react'
 
-import { TituloPagina } from '@/components/monitor/Pagina'
+import { TabsPagina } from '@/components/TabsPagina'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
@@ -14,17 +14,37 @@ import {
   cobertura, contagem, papeisComGente, porcento, totalDaSecretaria, type IndicadorUnidade, type Indicadores,
 } from '@/lib/secretariaCompleta'
 import { supabase } from '@/lib/supabase'
+import BoletimSecretaria from '@/pages/secretaria/BoletimSecretaria'
+import MetasContrato from '@/pages/secretaria/MetasContrato'
 import type { Papel, TipoUnidade } from '@/types/database'
 
 // Indicadores do perfil Gestor da secretaria (pedido do RT, 24/11/2026): as
 // unidades da secretaria lado a lado no mês. Só agregado (secretaria_indicadores,
 // migration 20270421000024): contagem de paciente de 1 a 4 aparece como "< 5".
+// Abas (pedido do RT, 24/11/2026): Unidades (o mês lado a lado), Boletim (o
+// boletim bimestral ou mensal no modelo da secretaria, número exato) e Metas
+// do contrato (migration 20270421000080).
 
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 
 const tipo = (t: string) => TIPO_UNIDADE_LABEL[t as TipoUnidade] ?? t
 
 export default function IndicadoresSecretaria() {
+  return (
+    <TabsPagina
+      icone={BarChart3}
+      titulo="Indicadores da secretaria"
+      descricao="As unidades da secretaria no mês, o boletim no modelo da secretaria e as metas do contrato. Só números agregados, sem identificar paciente."
+      abas={[
+        { valor: 'unidades', rotulo: 'Unidades', conteudo: () => <PainelUnidades /> },
+        { valor: 'boletim', rotulo: 'Boletim', conteudo: () => <BoletimSecretaria /> },
+        { valor: 'metas', rotulo: 'Metas do contrato', conteudo: () => <MetasContrato /> },
+      ]}
+    />
+  )
+}
+
+function PainelUnidades() {
   const [mes, setMes] = React.useState(() => dataIso().slice(0, 7))
   const [ano, mesNum] = mes.split('-').map(Number)
   const mudarMes = (n: number) => {
@@ -45,19 +65,14 @@ export default function IndicadoresSecretaria() {
 
   return (
     <div className="flex flex-col gap-4">
-      <TituloPagina
-        icone={BarChart3}
-        titulo="Indicadores da secretaria"
-        descricao="As unidades da secretaria lado a lado: leitos, pessoas, escala e movimento do mês. Só números agregados, sem identificar paciente."
-        className="mb-0"
-        acoes={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon-sm" aria-label="Mês anterior" onClick={() => mudarMes(-1)}><ChevronLeft /></Button>
-            <span className="min-w-[132px] text-center text-apoio font-semibold text-tinta">{MESES[mesNum - 1]} de {ano}</span>
-            <Button variant="outline" size="icon-sm" aria-label="Próximo mês" onClick={() => mudarMes(1)}><ChevronRight /></Button>
-          </div>
-        }
-      />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-apoio text-tinta-sussurro">Leitos, pessoas, escala e movimento de cada unidade no mês.</p>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon-sm" aria-label="Mês anterior" onClick={() => mudarMes(-1)}><ChevronLeft /></Button>
+          <span className="min-w-[132px] text-center text-apoio font-semibold text-tinta">{MESES[mesNum - 1]} de {ano}</span>
+          <Button variant="outline" size="icon-sm" aria-label="Próximo mês" onClick={() => mudarMes(1)}><ChevronRight /></Button>
+        </div>
+      </div>
 
       {dados.isLoading && <div className="flex justify-center py-8"><Spinner /></div>}
       {dados.error && <MensagemErro erro={dados.error} acao="carregar os indicadores" />}
