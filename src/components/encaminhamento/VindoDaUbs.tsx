@@ -57,8 +57,8 @@ export function VindoDaUbs({ unidadeId, fichas }: { unidadeId: string; fichas: F
                   <strong>{nomeDoEnvio(e)}</strong>
                   <span className="text-apoio text-tinta-sussurro">{p.data_nascimento ? ` · ${rotuloIdade(p.data_nascimento, hoje)}` : ''}{p.cns ? ` · CNS ${p.cns}` : ''}</span>
                 </span>
-                <span className="text-apoio text-tinta-apoio">{e.unidade_origem} · {e.motivo}</span>
-                {e.resumo.soap?.avaliacao && <span className="text-rotulo text-tinta-sussurro">Avaliação na UBS: {e.resumo.soap.avaliacao}{e.resumo.soap.cid ? ` · CID ${e.resumo.soap.cid}` : ''}</span>}
+                {/* RT, 25/11/2026: a recepção vê a ficha (identificação, origem, hora); o resumo clínico é da enfermagem e do médico */}
+                <span className="text-apoio text-tinta-apoio">{e.unidade_origem}{p.nome_mae ? ` · mãe: ${p.nome_mae}` : ''}</span>
                 <span className="text-rotulo text-tinta-sussurro">Enviado às {hora(e.enviado_em)}{e.enviado_por ? ` por ${e.enviado_por}` : ''}</span>
               </div>
               <Estado tom={SITUACAO_ENVIO[e.situacao].tom}>{SITUACAO_ENVIO[e.situacao].rotulo}</Estado>
@@ -79,7 +79,7 @@ export function VindoDaUbs({ unidadeId, fichas }: { unidadeId: string; fichas: F
               <li key={e.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1.5">
                 <span className="min-w-0 flex-[1_1_260px] text-apoio text-tinta">
                   <strong className="font-semibold">{nomeDoEnvio(e)}</strong>
-                  <span className="text-tinta-sussurro">{e.resumo.paciente.data_nascimento ? ` · ${rotuloIdade(e.resumo.paciente.data_nascimento, hoje)}` : ''} · {e.unidade_origem} · {e.motivo}</span>
+                  <span className="text-tinta-sussurro">{e.resumo.paciente.data_nascimento ? ` · ${rotuloIdade(e.resumo.paciente.data_nascimento, hoje)}` : ''} · {e.unidade_origem}</span>
                 </span>
                 <span className="text-rotulo text-tinta-sussurro">{e.chegada_em ? `registrado às ${hora(e.chegada_em)}` : e.cancelado_em ? `cancelado às ${hora(e.cancelado_em)}` : `enviado às ${hora(e.enviado_em)}`}</span>
                 <Estado tom={SITUACAO_ENVIO[e.situacao].tom}>{SITUACAO_ENVIO[e.situacao].rotulo}</Estado>

@@ -24,7 +24,8 @@ export function ResumoDaUbs({ unidadeId, episodioId }: { unidadeId: string | nul
     },
   })
   const e = envioDaFicha(lista.data ?? [], episodioId)
-  if (!e) return null
+  // sem o resumo clínico (quem não é da enfermagem nem médico), nada a mostrar
+  if (!e || e.resumo_clinico === false || !e.motivo) return null
   const r = e.resumo
   const sinais = textoVitais(r.sinais)
   return (

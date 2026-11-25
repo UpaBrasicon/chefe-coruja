@@ -26,7 +26,7 @@ export function EnviosDoPaciente({ pacienteId }: { pacienteId: string }) {
         {envios.map((e) => (
           <li key={e.id} className="flex flex-wrap items-center gap-2 text-apoio text-tinta-apoio">
             <Estado tom={SITUACAO_ENVIO[e.situacao].tom}>{SITUACAO_ENVIO[e.situacao].rotulo}</Estado>
-            <span>{e.unidade_destino} · {e.motivo}</span>
+            <span>{e.unidade_destino}{e.motivo ? ` · ${e.motivo}` : ''}</span>
             <span className="text-rotulo text-tinta-sussurro">{diaMesHora(e.enviado_em)}{e.observacao_chegada ? ` · ${e.observacao_chegada}` : ''}</span>
           </li>
         ))}

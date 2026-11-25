@@ -9,16 +9,19 @@ export type EnvioUpa = {
   id: string
   numero: number
   situacao: SituacaoEnvio
-  motivo: string
+  /** nulo para quem não é da enfermagem nem médico (RT, 25/11/2026) */
+  motivo: string | null
+  /** false: o servidor mandou só a identificação (recepção, gestor e demais papéis) */
+  resumo_clinico?: boolean
   resumo: {
     paciente: { nome: string; nome_social: string | null; data_nascimento: string | null; sexo: string | null; cns: string | null; cpf: string | null; nome_mae: string | null }
-    queixa: string | null
-    tipo_atendimento: string | null
-    prioridades_legais: string[] | null
-    cor_escuta: string | null
-    soap: { subjetivo: string | null; objetivo: string | null; avaliacao: string | null; plano: string | null; cid: string | null; em: string } | null
-    sinais: Record<string, number> | null
-    sinais_em: string | null
+    queixa?: string | null
+    tipo_atendimento?: string | null
+    prioridades_legais?: string[] | null
+    cor_escuta?: string | null
+    soap?: { subjetivo: string | null; objetivo: string | null; avaliacao: string | null; plano: string | null; cid: string | null; em: string } | null
+    sinais?: Record<string, number> | null
+    sinais_em?: string | null
   }
   unidade_origem_id: string
   unidade_origem: string
