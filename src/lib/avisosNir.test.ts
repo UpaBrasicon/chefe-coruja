@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { acaoDoAviso, linhasDeAvisos, motivoDoAviso, numeroDoPedido } from './avisosNir.ts'
+import { acaoDoAviso, contarNaoLidos, linhasDeAvisos, motivoComTempoReal, motivoDoAviso, numeroDoPedido, textoRepeticao } from './avisosNir.ts'
 import { pacientes, prazoVencido, separarParaNir, type PacienteRegulacao, type PedidoResumo } from './regulacaoPaciente.ts'
 import type { Sla } from './regulacao.ts'
 
@@ -37,6 +37,21 @@ test('NI1: os avisos repetidos do mesmo pedido viram uma linha só', () => {
   assert.equal(um.desde.slice(0, 10), '2026-11-14')
   assert.equal(um.acao, 'evolucao')
   assert.equal(linhas.find((l) => l.numero === null)!.vezes, 2)
+  // NI6: o selo conta linhas não lidas (3), não as 33 repetições
+  assert.equal(contarNaoLidos(linhas), 3)
+  const lidas = linhasDeAvisos(lista, { lidos: true })
+  assert.equal(lidas.length, 1)
+  assert.equal(lidas[0].numero, 1)
+  assert.deepEqual(lidas[0].naoLidos, [], 'na aba Lidos não há o que marcar')
+  assert.equal(contarNaoLidos(lidas), 0)
+})
+
+test('NI6: tempo real no lugar do texto do dia e repetição em texto mudo', () => {
+  assert.equal(motivoComTempoReal({ motivo: '72 h sem evolução', acao: 'evolucao' }, '45 d 0 h sem evolução'), '45 d 0 h sem evolução')
+  assert.equal(motivoComTempoReal({ motivo: '72 h sem evolução', acao: 'evolucao' }, null), '72 h sem evolução', 'sem o pedido aberto fica o texto do aviso')
+  assert.equal(motivoComTempoReal({ motivo: 'Leito 3 liberado.', acao: null }, 'x'), 'Leito 3 liberado.')
+  assert.equal(textoRepeticao(24, '21/10'), 'repetido 24× desde 21/10')
+  assert.equal(textoRepeticao(1, '21/10'), null)
 })
 
 const sla = (x: Partial<Sla>): Sla => ({

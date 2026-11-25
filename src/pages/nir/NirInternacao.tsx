@@ -36,8 +36,9 @@ import { EsqueletoLinhas } from '@/components/ui/esqueleto-linhas'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { useUnidade } from '@/contexts/UnidadeContext'
-import { pedidosAbertos } from '@/lib/nirPainel'
+import { horasSemEvolucao, pedidosAbertos } from '@/lib/nirPainel'
 import type { PacienteRegulacao } from '@/lib/regulacaoPaciente'
+import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
 
 type AbaNir = 'painel' | 'pendencias' | 'mapa'
 
@@ -66,6 +67,11 @@ export default function NirInternacao() {
     const alvo = lista.find((l) => l.pedidos.some((p) => p.numero === numero))
     if (alvo) abrirPaciente(alvo.paciente.id)
   }
+  // NI6: o aviso diário diz "72 h sem evolução"; a linha mostra o tempo de hoje do pedido em aberto
+  const tempoReal = (numero: number) => {
+    const p = lista.flatMap((l) => pedidosAbertos(l)).find((x) => x.numero === numero)
+    return p?.sla?.evolucao?.atrasada ? `${tempoSemEvolucao(horasSemEvolucao(p, agora))} sem evolução` : null
+  }
 
   return (
     // largura cheia (desfaz o respiro da coluna) e, no computador, a altura da janela
@@ -78,7 +84,7 @@ export default function NirInternacao() {
           { valor: 'mapa', rotulo: 'Mapa de leitos' },
         ]} />
         <span className="ml-auto flex gap-2 py-1.5">
-          {unidadeId && <AvisosNirBotao unidadeId={unidadeId} abrirPedido={abrirPedido} />}
+          {unidadeId && <AvisosNirBotao unidadeId={unidadeId} abrirPedido={abrirPedido} tempoReal={tempoReal} />}
           <Button size="sm" onClick={() => setEscolherNovo(true)} disabled={lista.length === 0 || !!foraDoPlantao} title={foraDoPlantao ?? undefined}><Plus /> Novo pedido</Button>
         </span>
       </div>

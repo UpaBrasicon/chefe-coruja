@@ -41,7 +41,8 @@ test('as telas ligam a aba Regulação do paciente e a lista', () => {
   // NI1 e NIR1 (modelo do RT, 25/11/2026): o aviso do topo abre o paciente do
   // pedido no Painel NIR; o dossiê traz a conversa e os anexos do pedido
   const nir = readFileSync('src/pages/nir/NirInternacao.tsx', 'utf8')
-  assert.match(nir, /<AvisosNirBotao unidadeId=\{unidadeId\} abrirPedido=\{abrirPedido\} \/>/)
+  // NI6 (revisão unslop): o aviso também recebe o tempo real sem evolução
+  assert.match(nir, /<AvisosNirBotao unidadeId=\{unidadeId\} abrirPedido=\{abrirPedido\} tempoReal=\{tempoReal\} \/>/)
   assert.match(nir, /<PainelNir unidadeId=\{unidadeId\}/)
   const dossie = readFileSync('src/components/nir/DossieNir.tsx', 'utf8')
   assert.match(dossie, /<ConversaRegulacao solicitacaoId=\{p\.id\}/)

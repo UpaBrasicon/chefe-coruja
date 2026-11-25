@@ -38,12 +38,16 @@ export function acaoDoAviso(tipo: string): AcaoAviso | null {
   return tipo.startsWith('reg_') ? 'abrir' : null
 }
 
-/** Uma linha por pedido (os da regulação) ou pelo mesmo texto (os outros); mais novo primeiro. Só os não lidos. */
-export function linhasDeAvisos(lista: readonly Aviso[]): LinhaAviso[] {
-  const naoLidos = lista.filter((n) => !n.lida)
+/**
+ * Uma linha por pedido (os da regulação) ou pelo mesmo texto (os outros); mais
+ * novo primeiro. Só os não lidos; com `lidos`, só os já lidos (aba "Lidos",
+ * NI6 da revisão unslop, RT 25/11/2026).
+ */
+export function linhasDeAvisos(lista: readonly Aviso[], o: { lidos?: boolean } = {}): LinhaAviso[] {
+  const escolhidos = lista.filter((n) => n.lida === !!o.lidos)
   const porPedido = new Map<number, Aviso[]>()
   const outros: Aviso[] = []
-  for (const n of naoLidos) {
+  for (const n of escolhidos) {
     const numero = numeroDoPedido(n.tipo)
     if (numero == null) outros.push(n)
     else porPedido.set(numero, [...(porPedido.get(numero) ?? []), n])
@@ -53,7 +57,7 @@ export function linhasDeAvisos(lista: readonly Aviso[]): LinhaAviso[] {
     const ultimo = ordem[0]
     return {
       chave: `pedido-${numero}`, numero, motivo: motivoDoAviso(ultimo.mensagem), vezes: avs.length,
-      desde: ordem[ordem.length - 1].created_at, ultimo: ultimo.created_at, naoLidos: avs.map((a) => a.id), acao: acaoDoAviso(ultimo.tipo),
+      desde: ordem[ordem.length - 1].created_at, ultimo: ultimo.created_at, naoLidos: avs.filter((a) => !a.lida).map((a) => a.id), acao: acaoDoAviso(ultimo.tipo),
     }
   })
   for (const g of agruparAvisos(outros)) {
@@ -63,3 +67,24 @@ export function linhasDeAvisos(lista: readonly Aviso[]): LinhaAviso[] {
 }
 
 export const ROTULO_ACAO: Record<AcaoAviso, string> = { evolucao: 'Atualizar evolução', responder: 'Responder', abrir: 'Abrir' }
+
+/**
+ * NI6: o selo conta o que a pessoa precisa ler (avisos distintos não lidos,
+ * uma linha por pedido ou texto), não as repetições: 24 avisos diários do
+ * mesmo pedido + 1 outro = 2, não 25.
+ */
+export const contarNaoLidos = (linhas: readonly LinhaAviso[]) => linhas.filter((l) => l.naoLidos.length > 0).length
+
+/**
+ * NI6: o motivo da linha com o tempo real. O aviso diário guarda o texto do
+ * dia em que nasceu ("72 h sem evolução"); se o pedido segue sem evolução, a
+ * linha mostra quanto tempo é hoje (`atual`, ex.: "45 d 0 h sem evolução").
+ */
+export function motivoComTempoReal(l: Pick<LinhaAviso, 'motivo' | 'acao'>, atual: string | null | undefined): string {
+  return l.acao === 'evolucao' && atual ? atual : l.motivo
+}
+
+/** NI6: a repetição em texto mudo: "repetido 24× desde 21/10". */
+export function textoRepeticao(vezes: number, desde: string): string | null {
+  return vezes > 1 ? `repetido ${vezes}× desde ${desde}` : null
+}

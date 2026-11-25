@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 import {
-  casaBusca, contagens, etiquetaIsolamento, idsNavegaveis, indicadoresMapa, indicadoresPendencias, linhasDoMapa, listaNir, precisaAcaoNir,
-  precisaCobrarMedico, resumoDoPlantao, rotuloEvolucao, rotuloIsolamento, sinalPrincipal, textoParaWhatsApp, vizinho,
+  casaBusca, contagens, estadoDoLeito, etiquetaIsolamento, idsNavegaveis, indicadoresMapa, indicadoresPendencias, linhasDoMapa, listaNir, precisaAcaoNir,
+  precisaCobrarMedico, resumoDoPlantao, rotuloEvolucao, rotuloIsolamento, sinalPrincipal, tempoDesde, textoParaWhatsApp, vizinho,
   type MapaLeitos, type PendenciaUnidade,
 } from './nirPainel.ts'
 import { montarLinhaDoTempo } from './regulacaoLinhaTempo.ts'
@@ -113,7 +113,18 @@ test('NIR3: indicadores das pendências com médicos', () => {
     pend('p4', 'r2', { status: 'resolvida', resolvida_em: horasAtras(20) }),
     pend('p5', 'r2', { dono: 'nir', status: 'pendente' }),
   ]
-  assert.deepEqual(indicadoresPendencias(ps, lista, AGORA), { abertas: 2, avisados: 1, risco72h: 1, resolvidasTurno: 1 })
+  // NI4: a janela das resolvidas é a do filtro (24 h): a de 20 h conta
+  assert.deepEqual(indicadoresPendencias(ps, lista, AGORA), { abertas: 2, avisados: 1, risco72h: 1, resolvidas: 2 })
+  assert.equal(indicadoresPendencias([pend('p6', 'r2', { status: 'resolvida', resolvida_em: horasAtras(25) })], lista, AGORA).resolvidas, 0)
+})
+
+test('NI4: tempo no mesmo formato da tela', () => {
+  const antes = (min: number) => new Date(AGORA - min * 60_000).toISOString()
+  assert.equal(tempoDesde(antes(0), AGORA), 'menos de 1 min')
+  assert.equal(tempoDesde(antes(42), AGORA), '42 min')
+  assert.equal(tempoDesde(antes(4 * 60 + 42), AGORA), '4 h 42 min')
+  assert.equal(tempoDesde(antes(5 * 60), AGORA), '5 h')
+  assert.equal(tempoDesde(antes(51 * 60), AGORA), '2 d 3 h')
 })
 
 test('NIR4: mapa de leitos com o paciente da regulação e os indicadores', () => {
@@ -130,7 +141,13 @@ test('NIR4: mapa de leitos com o paciente da regulação e os indicadores', () =
   const linhas = linhasDoMapa(mapa, lista)
   assert.equal(linhas[0].paciente?.paciente.id, 'a')
   assert.equal(linhas[2].paciente, null)
-  assert.deepEqual(indicadoresMapa(linhas), { total: 4, ocupados: 2, livres: 1, ocupacao: 50, emRegulacao: 1, semRegulacao: 1, comVaga: 1 })
+  assert.deepEqual(indicadoresMapa(linhas), { total: 4, ocupados: 2, livres: 1, ocupacao: 50, emRegulacao: 1, semRegulacao: 1, comVaga: 1, semLeito: 0 })
+  assert.deepEqual([estadoDoLeito(linhas[0]), estadoDoLeito(linhas[2]), estadoDoLeito(linhas[3])], ['Ocupado', 'Livre', 'Higienização'])
+  // NI5: os internados sem leito entram nas contas de pacientes, como no painel
+  const comSemLeito = [...lista, pac('c', null, []), pac('d', null, [pedido('r4')])]
+  assert.deepEqual(indicadoresMapa(linhas, comSemLeito),
+    { total: 4, ocupados: 2, livres: 1, ocupacao: 50, emRegulacao: 2, semRegulacao: 2, comVaga: 1, semLeito: 2 })
+  assert.equal(contagens(comSemLeito, []).sem_regulacao, 2, 'o painel conta os mesmos')
 })
 
 test('linha do tempo: pendência da unidade e a evolução atualizada pelo NIR', () => {
@@ -146,7 +163,7 @@ test('linha do tempo: pendência da unidade e a evolução atualizada pelo NIR',
 test('rótulos: isolamento e a evolução do pedido com o papel', () => {
   assert.equal(rotuloIsolamento(['aerossol', 'goticula', 'contato']), 'Isolamento: aerossol, gotícula e contato')
   assert.equal(rotuloIsolamento([]), null)
-  assert.equal(etiquetaIsolamento(['aerossol', 'goticula']), 'ISO · AEROSSOL + GOTÍCULA')
+  assert.equal(etiquetaIsolamento(['aerossol', 'goticula']), 'Isolamento: aerossol + gotícula')
   assert.equal(etiquetaIsolamento(null), null)
   assert.equal(rotuloEvolucao(3, 'nir', 'Fulana'), 'Evolução (versão 3) — atualizada pelo NIR, Fulana')
   assert.equal(rotuloEvolucao(1, 'medico', 'Dr. A'), 'Evolução (versão 1) — atualizada pelo médico, Dr. A')
