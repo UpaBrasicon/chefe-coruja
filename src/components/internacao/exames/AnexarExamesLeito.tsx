@@ -8,6 +8,9 @@
 // - O médico pode marcar "alterado", com autor e hora (25/11/2026). O crítico
 //   continua só do laboratório: aqui não há como marcar crítico.
 // - Exame externo, sem pedido no app, não entra (pergunta ao RT).
+// - EX4 da revisão unslop (25/11/2026): o caminho principal é soltar o arquivo
+//   no topo e dizer "Para quais exames?" (busca com seleção múltipla); o botão
+//   da linha só aparece ao passar o mouse ou com a linha em foco.
 import { FileText, Paperclip, Trash2 } from 'lucide-react'
 import * as React from 'react'
 
@@ -133,7 +136,9 @@ export function AnexarExamesLeito({ pedidos, resultados, medico, recarregar }: {
                 <span className="shrink-0 text-rotulo text-tinta-sussurro tabular-nums">{laudoEhImagem(p.arquivo.name) ? 'imagem' : 'PDF'} · {tamanhoLegivel(p.arquivo.size)}</span>
                 <Button size="icon-xs" variant="ghost" aria-label={`Tirar ${p.arquivo.name}`} disabled={salvando} onClick={() => tirar(p.chave)}><Trash2 aria-hidden /></Button>
               </div>
-              <span className="text-rotulo font-semibold text-tinta-sussurro">Exames que recebem este arquivo</span>
+              <label htmlFor={`anexo-exames-${p.chave}`} className="text-rotulo font-semibold text-tinta-sussurro">
+                Para quais exames?{p.exames.length > 0 ? ` ${p.exames.length} ${p.exames.length === 1 ? 'escolhido' : 'escolhidos'}` : ''}
+              </label>
               {aguardando.length === 0
                 ? <VazioLinha>Nenhum exame aguardando laudo nesta internação.</VazioLinha>
                 : <BuscaMultipla id={`anexo-exames-${p.chave}`} opcoes={opcoes} selecionados={p.exames} onChange={(ids) => mudar(p.chave, { exames: ids })}
@@ -162,14 +167,19 @@ export function AnexarExamesLeito({ pedidos, resultados, medico, recarregar }: {
               <TableRow><TableHead>Exame</TableHead><TableHead>Setor</TableHead><TableHead>Solicitado em</TableHead><TableHead>Situação</TableHead><TableHead className="text-right">Ação</TableHead></TableRow>
             </TableHeader>
             <TableBody>
+              {/* EX4: a situação em cor neutra; "Anexar arquivo" só ao passar o mouse ou com a linha em foco
+                  (em tela de toque, sempre à vista) */}
               {aguardando.map((x) => (
-                <TableRow key={x.id}>
+                <TableRow key={x.id} className="group">
                   <TableCell className="font-medium text-tinta">{x.exame}</TableCell>
                   <TableCell><EtiquetaSetor grupo={x.grupo} /></TableCell>
                   <TableCell className="whitespace-nowrap text-apoio text-tinta-apoio">{dataHora(x.pedido_em)}</TableCell>
-                  <TableCell className="text-apoio text-atencao">{SITUACAO_EXAME[x.situacao as SituacaoExame] ?? x.situacao}</TableCell>
+                  <TableCell className="text-apoio text-tinta-apoio">{SITUACAO_EXAME[x.situacao as SituacaoExame] ?? x.situacao}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="xs" variant="outline" disabled={salvando} onClick={() => escolherPara(x.id)}><Paperclip aria-hidden /> Anexar arquivo</Button>
+                    <Button size="xs" variant="outline" disabled={salvando} onClick={() => escolherPara(x.id)} aria-label={`Anexar arquivo a ${x.exame}`}
+                      className="[@media(hover:hover)]:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100">
+                      <Paperclip aria-hidden /> Anexar arquivo
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
