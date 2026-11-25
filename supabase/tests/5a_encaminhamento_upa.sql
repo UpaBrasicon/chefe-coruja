@@ -119,7 +119,12 @@ SELECT pg_temp.como('enf');
 SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, sem médico na UBS')$$,
   'Acesso negado: o envio à UPA é do médico', 'D2: o enfermeiro não envia à UPA');
 SELECT pg_temp.como('med');
-INSERT INTO v SELECT 'x2', public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, vai à UPA');
+-- 20270426000017 (RT, 25/11/2026): no envio pela escuta o médico informa o CID-10 ou a CIAP-2
+SELECT pg_temp.falha($$SELECT public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, vai à UPA')$$,
+  'No envio pela escuta, informe o CID-10 ou a CIAP-2', 'envio pela escuta pede o problema');
+INSERT INTO v SELECT 'x2', public.encaminhar_upa(pg_temp.v('ep2'), pg_temp.id('upa'), 'Dispneia grave na escuta, vai à UPA', 'R06.0');
+SELECT pg_temp.ok((SELECT cid_aps = ARRAY['R06.0'] AND conduta_aps = ARRAY['encaminhamento_urgencia'] FROM public.episodios WHERE id = pg_temp.v('ep2')),
+  'a ficha da escuta fecha como encaminhamento, com o CID informado');
 RESET ROLE;
 SELECT pg_temp.ok((SELECT resumo -> 'soap' ->> 'avaliacao' = 'Suspeita de síndrome coronariana aguda' AND resumo -> 'paciente' ->> 'cns' = '898001160000001'
                           AND prazo_em > now() + interval '11 hours' FROM public.encaminhamentos_upa WHERE id = pg_temp.v('x1')),
