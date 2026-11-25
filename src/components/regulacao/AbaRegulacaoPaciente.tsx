@@ -28,7 +28,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useUnidade } from '@/contexts/UnidadeContext'
 import { fmtDataHora } from '@/lib/datas'
-import { PRIORIDADES, STATUS, prioridadeEfetiva, resumoPedido, type Sla } from '@/lib/regulacao'
+import { PRIORIDADES, STATUS, prioridadeEfetiva, resumoPedido, type Sla, type StatusRegulacao } from '@/lib/regulacao'
+import { temposComAtual } from '@/lib/regulacaoLinhaTempo'
 import { esperaAOrigem, rotuloAguardando, type PedidoResumo } from '@/lib/regulacaoPaciente'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -186,7 +187,8 @@ function PedidoAberto({ p }: { p: PedidoResumo }) {
       {d.isLoading ? <Spinner /> : d.error ? <MensagemErro texto={(d.error as Error).message} /> : s && (
         <>
           {/* atualizar os dados clínicos para a central (evolução) e os prazos */}
-          <PrazosDoPedido id={p.id} sla={s.sla} tempos={s.tempos ?? []} evolucoes={s.evolucoes ?? []}
+          {/* NI3 e RD2 (RT, 24/11/2026): uma situação atual só, a do pedido */}
+          <PrazosDoPedido id={p.id} sla={s.sla} tempos={temposComAtual(s.tempos ?? [], s.status as StatusRegulacao)} evolucoes={s.evolucoes ?? []}
             podeEvoluir={!!s.pode_evoluir} aoFim={recarregar} />
           <AnexosRegulacao solicitacaoId={p.id} />
         </>
