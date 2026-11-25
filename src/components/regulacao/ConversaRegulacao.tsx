@@ -11,6 +11,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { MessageSquare, Send } from 'lucide-react'
 import * as React from 'react'
 
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -75,6 +77,9 @@ export function ConversaRegulacao({ solicitacaoId, aoEnviar, rascunho }: {
   const { papelAtivo } = useUnidade()
   const ladoCentral = c?.meu_lado === 'central'
   const central = ladoCentral && papelAtivo !== 'nir'
+  // B-07 (RT, 25/11/2026): fora do plantão a origem não escreve à central; o regulador da central não passa por isso
+  const plantao = usePlantaoOrigem(enviar.error)
+  const foraDoPlantao = ladoCentral ? null : plantao.motivo
   return (
     <section aria-label="Conversa com a regulação" className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3 text-apoio">
       <h4 className="flex items-center gap-2 font-medium text-tinta">
@@ -104,7 +109,7 @@ export function ConversaRegulacao({ solicitacaoId, aoEnviar, rascunho }: {
             </ol>
           )}
           {c?.pode_escrever && (
-            <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim().length >= 2) enviar.mutate() }}>
+            <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim().length >= 2 && !foraDoPlantao) enviar.mutate() }}>
               <label htmlFor={`conversa-${solicitacaoId}`} className="sr-only">Mensagem</label>
               <Textarea id={`conversa-${solicitacaoId}`} value={texto} maxLength={4000} onChange={(e) => setTexto(e.target.value)}
                 placeholder={central ? 'Pergunte ou peça um dado ou exame à unidade' : 'Responda ou atualize a regulação'} />
@@ -114,9 +119,10 @@ export function ConversaRegulacao({ solicitacaoId, aoEnviar, rascunho }: {
                     {(Object.keys(INTENCOES) as IntencaoMensagem[]).map((k) => <option key={k} value={k}>{INTENCOES[k]}</option>)}
                   </CampoSelecao>
                 )}
-                <Button type="submit" size="sm" className="ml-auto" disabled={enviar.isPending || texto.trim().length < 2}><Send /> Enviar</Button>
+                <Button type="submit" size="sm" className="ml-auto" disabled={enviar.isPending || texto.trim().length < 2 || !!foraDoPlantao} title={foraDoPlantao ?? undefined}><Send /> Enviar</Button>
               </div>
-              <MensagemErro texto={enviar.error ? (enviar.error as Error).message : null} />
+              <AvisoPlantao texto={plantao.recusa} />
+              <MensagemErro texto={enviar.error && !plantao.recusa ? (enviar.error as Error).message : null} />
             </form>
           )}
         </>

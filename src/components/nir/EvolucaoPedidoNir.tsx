@@ -11,7 +11,9 @@ import { useMutation } from '@tanstack/react-query'
 import { Timer } from 'lucide-react'
 import * as React from 'react'
 
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
 import { SeloSla } from '@/components/regulacao/SlaRegulacao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -46,16 +48,18 @@ export function EvolucaoPedidoNir({ id, sla, status, tempos, evolucoes, podeEvol
     },
     onSuccess: () => { setTexto(''); setSinais(''); setAbrir(false); aoFim() },
   })
+  // B-07 (RT, 25/11/2026): fora do plantão o NIR não atualiza a evolução do pedido
+  const plantao = usePlantaoOrigem(evoluir.error)
   return (
     <section aria-label="Prazos e evolução do pedido" className="flex flex-col gap-2 rounded-controle border border-fio bg-superficie p-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 font-medium text-tinta"><Timer className="size-4" aria-hidden /> Prazos e evolução do pedido</span>
         <SeloSla sla={sla} />
-        {podeEvoluir && !abrir && <Button size="xs" variant="outline" className="ml-auto" onClick={() => setAbrir(true)}>Atualizar evolução</Button>}
+        {podeEvoluir && !abrir && <Button size="xs" variant="outline" className="ml-auto" disabled={!!plantao.motivo} title={plantao.motivo ?? undefined} onClick={() => setAbrir(true)}>Atualizar evolução</Button>}
       </div>
       {tempos.length > 0 && <p className="text-rotulo text-tinta-apoio">Tempo em cada status: {textoTempos(tempos, status)}</p>}
       {abrir && (
-        <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim().length >= 10) evoluir.mutate() }}>
+        <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim().length >= 10 && !plantao.motivo) evoluir.mutate() }}>
           <Label htmlFor={`evol-nir-${id}`} className="text-rotulo">
             Evolução do pedido: a central vê e o prazo recomeça; não vai para o prontuário.
           </Label>
@@ -63,10 +67,11 @@ export function EvolucaoPedidoNir({ id, sla, status, tempos, evolucoes, podeEvol
           <Label htmlFor={`evol-nir-sv-${id}`} className="text-rotulo">Sinais vitais, com hora (opcional)</Label>
           <Input id={`evol-nir-sv-${id}`} className="h-8" value={sinais} onChange={(e) => setSinais(e.target.value)} />
           <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={evoluir.isPending || texto.trim().length < 10}>Registrar evolução</Button>
+            <Button type="submit" size="sm" disabled={evoluir.isPending || texto.trim().length < 10 || !!plantao.motivo} title={plantao.motivo ?? undefined}>Registrar evolução</Button>
             <Button type="button" size="sm" variant="outline" onClick={() => setAbrir(false)}>Voltar</Button>
           </div>
-          {evoluir.error && <p role="alert" className="text-rotulo text-critico">{(evoluir.error as Error).message}</p>}
+          <AvisoPlantao texto={plantao.recusa} />
+          {evoluir.error && !plantao.recusa && <p role="alert" className="text-rotulo text-critico">{(evoluir.error as Error).message}</p>}
         </form>
       )}
       {evolucoes.length > 0 && (

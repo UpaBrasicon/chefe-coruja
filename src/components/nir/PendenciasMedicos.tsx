@@ -11,6 +11,8 @@ import * as React from 'react'
 import { Chip, TituloCartao, Vazio } from '@/components/monitor/Pagina'
 import { tomStatus, useAcoesPendencia } from '@/components/nir/dadosNir'
 import { CodigoLeito } from '@/components/nir/Etiquetas'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -29,6 +31,8 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
   const [ver, setVer] = React.useState<'pendentes' | 'resolvidas'>('pendentes')
   const [copiado, setCopiado] = React.useState<string | null>(null)
   const { reavisar, resolver, erro } = useAcoesPendencia(aoMudar)
+  // B-07 (RT, 25/11/2026): fora do plantão o NIR não reenvia nem resolve; a recusa do servidor vira aviso
+  const plantao = usePlantaoOrigem(reavisar.error, resolver.error)
   const doMedico = pend.filter((x) => x.dono === 'medico')
   const ind = indicadoresPendencias(pend, lista, agora)
   const setores = [...new Map(doMedico.filter((x) => x.setor).map((x) => [x.setor!.id, x.setor!.nome])).entries()]
@@ -62,7 +66,8 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
           <Button className="ml-auto" onClick={copiarResumo}><Copy /> Copiar resumo do plantão</Button>
         </div>
         {copiado && <p role="status" className="mb-2 text-rotulo text-tinta-sussurro">{copiado}</p>}
-        {erro && <MensagemErro texto={erro.message} />}
+        <AvisoPlantao texto={plantao.recusa} className="mb-2" />
+        {erro && !plantao.recusa && <MensagemErro texto={erro.message} />}
         {linhas.length === 0 ? (
           <Vazio icone={ClipboardList} titulo={ver === 'pendentes' ? 'Nenhuma pendência aberta com médicos' : 'Nenhuma pendência resolvida nas últimas 24 h'} />
         ) : (
@@ -108,8 +113,8 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
                     <span className="inline-flex flex-wrap justify-end gap-1.5">
                       {x.status !== 'resolvida' && (
                         <>
-                          <Button size="xs" variant="outline" disabled={reavisar.isPending} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>
-                          <Button size="xs" disabled={resolver.isPending} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
+                          <Button size="xs" variant="outline" disabled={reavisar.isPending || !!plantao.motivo} title={plantao.motivo ?? undefined} onClick={() => reavisar.mutate(x.id)}>Reenviar aviso</Button>
+                          <Button size="xs" disabled={resolver.isPending || !!plantao.motivo} title={plantao.motivo ?? undefined} onClick={() => resolver.mutate(x.id)}>Marcar resolvida</Button>
                         </>
                       )}
                       <Button size="xs" variant="outline" onClick={() => abrirPaciente(x.paciente.id)}>Abrir paciente</Button>

@@ -12,6 +12,8 @@ import * as React from 'react'
 
 import { Chip } from '@/components/monitor/Pagina'
 import { useMedicosDoSetor } from '@/components/nir/dadosNir'
+import { AvisoPlantao } from '@/components/regulacao/AvisoPlantao'
+import { usePlantaoOrigem } from '@/components/regulacao/usePlantaoOrigem'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -68,7 +70,9 @@ function Formulario({ unidadeId, alvo, motivoInicial, aoFechar, aoSalvar }: {
     },
     onSuccess: () => { aoSalvar(alvo.solicitacaoId); aoFechar() },
   })
-  const podeSalvar = texto.trim().length >= 5 && (dono === 'nir' || marcados.length > 0) && !salvar.isPending
+  // B-07 (RT, 25/11/2026): fora do plantão o NIR não registra pendência nem avisa; a frase é a do servidor
+  const plantao = usePlantaoOrigem(salvar.error)
+  const podeSalvar = texto.trim().length >= 5 && (dono === 'nir' || marcados.length > 0) && !salvar.isPending && !plantao.motivo
 
   return (
     <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); if (podeSalvar) salvar.mutate() }}>
@@ -122,7 +126,8 @@ function Formulario({ unidadeId, alvo, motivoInicial, aoFechar, aoSalvar }: {
           placeholder="O que o médico precisa atualizar, pedir ou responder" />
       </div>
 
-      <MensagemErro texto={salvar.error ? (salvar.error as Error).message : null} />
+      <AvisoPlantao texto={plantao.motivo ?? plantao.recusa} />
+      <MensagemErro texto={salvar.error && !plantao.recusa ? (salvar.error as Error).message : null} />
       <DialogFooter className="flex-wrap gap-2 sm:justify-between">
         <Button type="button" variant="outline" disabled={texto.trim().length < 5}
           onClick={() => {
