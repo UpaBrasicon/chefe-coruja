@@ -36,6 +36,7 @@ import {
   type Agrupamento, type Atalho, type Ordem,
 } from '@/lib/regulacaoFila'
 import { cn } from '@/lib/utils'
+import { tempoSemEvolucao } from '@/lib/tempoSemEvolucao'
 
 const BORDA: Record<string, string> = { critico: 'border-l-critico', atencao: 'border-l-atencao', info: 'border-l-acao', neutro: 'border-l-fio' }
 const COR_EVOL = { em_dia: 'text-tinta-sussurro', vencida: 'text-atencao font-medium', risco: 'text-critico font-medium' } as const
@@ -56,7 +57,7 @@ function LinhaFila({ s, selecionado, agora, onClick }: { s: ItemConsole; selecio
       <span className="flex items-center gap-2 text-rotulo">
         <span className="min-w-0 flex-1 truncate text-tinta-apoio">{[s.municipio, s.origem.nome].filter(Boolean).join(' · ')}</span>
         <span className="shrink-0 tabular-nums text-tinta-apoio">{formatarEspera(s.espera_segundos)}</span>
-        {h != null && <span className={cn('shrink-0 tabular-nums', COR_EVOL[nivel])} title="Horas sem evolução">{h} h s/ evol.</span>}
+        {h != null && <span className={cn('shrink-0 tabular-nums', COR_EVOL[nivel])} title="Horas sem evolução">{tempoSemEvolucao(h)} s/ evol.</span>}
       </span>
       {temIsolamento(s) && (
         <span className="flex items-center gap-2 text-rotulo">
