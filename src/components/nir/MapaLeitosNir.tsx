@@ -7,6 +7,7 @@
 import { BedDouble } from 'lucide-react'
 
 import { TituloCartao, Vazio } from '@/components/monitor/Pagina'
+import { CodigoLeito, EtiquetaIso } from '@/components/nir/Etiquetas'
 import { Indicador } from '@/components/nir/PendenciasMedicos'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { rotuloIdade } from '@/domain/idade'
 import { dataIso } from '@/lib/formato'
 import {
-  ROTULO_LEITO, indicadoresMapa, leitoOcupado, linhasDoMapa, pedidoPrincipal, pendenciasAbertas, rotuloIsolamento, sinalPrincipal,
+  ROTULO_LEITO, indicadoresMapa, leitoOcupado, linhasDoMapa, pedidoPrincipal, pendenciasAbertas, sinalPrincipal,
   type MapaLeitos, type PendenciaUnidade,
 } from '@/lib/nirPainel'
 import { STATUS } from '@/lib/regulacao'
@@ -30,18 +31,18 @@ export function MapaLeitosNir({ mapa, lista, pend, agora, abrirPaciente }: {
   }
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <Indicador rotulo="Ocupação" valor={`${ind.ocupacao}%`} apoio={`${ind.ocupados} de ${ind.total} leitos ocupados`} />
-        <Indicador rotulo="Leitos livres" valor={ind.livres} tom="conforme" apoio="prontos para receber" />
+        <Indicador rotulo="Leitos livres" valor={ind.livres} tom="conforme" />
         <Indicador rotulo="Pacientes em regulação" valor={ind.emRegulacao} apoio={`${ind.comVaga} com vaga e destino`} />
-        <Indicador rotulo="Sem regulação" valor={ind.semRegulacao} apoio="em observação ou conduta na unidade" />
+        <Indicador rotulo="Sem regulação" valor={ind.semRegulacao} />
       </div>
       {mapa.setores.map((setor) => {
         const doSetor = linhas.filter((x) => x.setor.id === setor.id)
         const ocupados = doSetor.filter(leitoOcupado).length
         return (
-          <section key={setor.id} aria-label={setor.nome} className="rounded-cartao border border-fio bg-superficie p-4">
-            <TituloCartao extra={`${ocupados}/${doSetor.length} ocupados · Médico: ${setor.medicos.map((m) => m.nome).join(', ') || 'sem escala no setor agora'}`}>
+          <section key={setor.id} aria-label={setor.nome} className="rounded-cartao border border-fio bg-superficie p-3">
+            <TituloCartao extra={`${ocupados}/${doSetor.length} ocupados · Médico: ${setor.medicos.map((m) => m.nome).join(', ') || 'sem escala no setor'}`}>
               {setor.nome}
             </TituloCartao>
             <Table>
@@ -57,18 +58,18 @@ export function MapaLeitosNir({ mapa, lista, pend, agora, abrirPaciente }: {
               <TableBody>
                 {doSetor.map(({ leito, paciente: l }) => {
                   const p = l ? pedidoPrincipal(l) : null
-                  const iso = l ? rotuloIsolamento(mapa.internados.find((i) => i.paciente_id === l.paciente.id)?.isolamento) : null
+                  const iso = l ? mapa.internados.find((i) => i.paciente_id === l.paciente.id)?.isolamento : null
                   const sinal = l && p ? sinalPrincipal(l, pend, agora) : null
                   const abertas = l ? pendenciasAbertas(l, pend).length : 0
                   return (
                     <TableRow key={leito.id}>
-                      <TableCell className={leitoOcupado({ leito, paciente: l }) ? 'font-semibold text-acao' : 'font-semibold text-conforme'}>{leito.identificador}</TableCell>
+                      <TableCell><CodigoLeito livre={!leitoOcupado({ leito, paciente: l })}>{leito.identificador}</CodigoLeito></TableCell>
                       <TableCell className="whitespace-normal">
                         {l ? (
                           <>
                             <span className="font-medium text-tinta">{l.paciente.nome}</span>
                             {l.paciente.nascimento && <span className="ml-1 text-rotulo text-tinta-sussurro">{rotuloIdade(l.paciente.nascimento, dataIso())}</span>}
-                            {iso && <Badge variant="warning" className="ml-1.5">{iso}</Badge>}
+                            <span className="ml-1.5 inline-flex"><EtiquetaIso tipos={iso} /></span>
                           </>
                         ) : leito.paciente_id ? <span className="text-tinta-apoio">Ocupado</span>
                           : <Badge variant={leito.status === 'livre' ? 'success' : 'secondary'}>{ROTULO_LEITO[leito.status] ?? leito.status}</Badge>}

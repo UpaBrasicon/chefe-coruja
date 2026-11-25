@@ -57,7 +57,7 @@ export function EvolucaoPedidoNir({ id, sla, status, tempos, evolucoes, podeEvol
       {abrir && (
         <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim().length >= 10) evoluir.mutate() }}>
           <Label htmlFor={`evol-nir-${id}`} className="text-rotulo">
-            Evolução do pedido (a central vê; o prazo recomeça). Fica com o seu nome e o seu papel; não vai para o prontuário.
+            Evolução do pedido: a central vê e o prazo recomeça; não vai para o prontuário.
           </Label>
           <Textarea id={`evol-nir-${id}`} rows={3} value={texto} onChange={(e) => setTexto(e.target.value)} />
           <Label htmlFor={`evol-nir-sv-${id}`} className="text-rotulo">Sinais vitais, com hora (opcional)</Label>

@@ -10,6 +10,7 @@ import * as React from 'react'
 
 import { Chip, TituloCartao, Vazio } from '@/components/monitor/Pagina'
 import { tomStatus, useAcoesPendencia } from '@/components/nir/dadosNir'
+import { CodigoLeito } from '@/components/nir/Etiquetas'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CampoSelecao } from '@/components/ui/campo-selecao'
@@ -41,14 +42,14 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicador rotulo="Pendências abertas com médicos" valor={ind.abertas} tom={ind.abertas > 0 ? 'atencao' : undefined} apoio="esperando o retorno do plantão" />
-        <Indicador rotulo="Médicos já avisados" valor={ind.avisados} apoio="em acompanhamento pelo NIR" />
-        <Indicador rotulo="Risco de cancelamento (72 h)" valor={ind.risco72h} tom={ind.risco72h > 0 ? 'critico' : undefined} apoio="pedidos sem evolução no limite" />
-        <Indicador rotulo={`Resolvidas nas últimas ${HORAS_TURNO} h`} valor={ind.resolvidasTurno} tom="conforme" apoio="com autor e hora" />
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <Indicador rotulo="Pendências abertas com médicos" valor={ind.abertas} tom={ind.abertas > 0 ? 'atencao' : undefined} />
+        <Indicador rotulo="Médicos já avisados" valor={ind.avisados} />
+        <Indicador rotulo="Risco de cancelamento (72 h)" valor={ind.risco72h} tom={ind.risco72h > 0 ? 'critico' : undefined} />
+        <Indicador rotulo={`Resolvidas nas últimas ${HORAS_TURNO} h`} valor={ind.resolvidasTurno} tom="conforme" />
       </div>
-      <section aria-label="Pendências com médicos" className="rounded-cartao border border-fio bg-superficie p-4">
-        <TituloCartao extra="Cobranças de evolução, exames e respostas sem abrir prontuário por prontuário">Pendências com médicos</TituloCartao>
+      <section aria-label="Pendências com médicos" className="rounded-cartao border border-fio bg-superficie p-3">
+        <TituloCartao>Pendências com médicos</TituloCartao>
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <CampoSelecao aria-label="Setor" className="w-auto" value={setor} onChange={(e) => setSetor(e.target.value)}>
             <option value="">Todos os setores</option>
@@ -81,7 +82,7 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
             <TableBody>
               {linhas.map((x) => (
                 <TableRow key={x.id}>
-                  <TableCell className="font-semibold text-acao">{x.leito ?? '—'}</TableCell>
+                  <TableCell><CodigoLeito>{x.leito ?? '—'}</CodigoLeito></TableCell>
                   <TableCell>
                     <span className="font-medium text-tinta">{x.paciente.nome}</span>
                     {x.paciente.nascimento && <span className="ml-1 text-rotulo text-tinta-sussurro">{rotuloIdade(x.paciente.nascimento, dataIso())}</span>}
@@ -126,7 +127,7 @@ export function PendenciasMedicos({ pend, lista, agora, abrirPaciente, aoMudar }
 
 export function Indicador({ rotulo, valor, apoio, tom }: { rotulo: string; valor: React.ReactNode; apoio?: string; tom?: 'atencao' | 'critico' | 'conforme' }) {
   return (
-    <div className="flex flex-col gap-0.5 rounded-cartao border border-fio bg-superficie px-4 py-3">
+    <div className="flex flex-col gap-0.5 rounded-cartao border border-fio bg-superficie px-3 py-2">
       <span className="text-rotulo text-tinta-sussurro">{rotulo}</span>
       <span className={cn('text-numeral-compacto font-semibold tabular-nums', tom === 'atencao' ? 'text-atencao' : tom === 'critico' ? 'text-critico' : tom === 'conforme' ? 'text-conforme' : 'text-tinta')}>{valor}</span>
       {apoio && <span className="text-rotulo text-tinta-sussurro">{apoio}</span>}
