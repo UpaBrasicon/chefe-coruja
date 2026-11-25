@@ -12,7 +12,9 @@
 --    número exato, sem "< 5";
 -- 3. metas do contrato: a secretaria e o administrador gravam; vigência
 --    sobreposta é recusada; o gestor da unidade só lê; o boletim traz a meta;
--- 4. Rede: a linha da unidade conta a pessoa uma vez, não o vínculo.
+-- 4. Rede: a linha da unidade conta a pessoa uma vez, não o vínculo, e traz
+--    leitos ocupados e regulações vencidas com número exato (migration
+--    20270422000095, decisão do RT de 25/11/2026).
 -- ════════════════════════════════════════════════════════════════════════════
 BEGIN;
 UPDATE public.configuracao_plataforma SET valor = false WHERE chave = 'exigir_segundo_fator';
@@ -252,9 +254,10 @@ SELECT pg_temp.ok((SELECT count(*) = 1 FROM public.metas_contrato WHERE unidade_
 -- ── 4. Rede: pessoa uma vez ───────────────────────────────────────────────
 SELECT pg_temp.como('seca');
 SELECT pg_temp.ok((SELECT (u ->> 'pessoas')::int = 3 AND (u ->> 'leitos')::int = 5
-                          AND (u ->> 'ocupados') IS NULL     -- 1 ocupado: suprimido, como nos Indicadores
+                          AND (u ->> 'ocupados')::int = 1 AND (u ->> 'ocupacao')::numeric = 20.0  -- número exato (RT, 25/11; migration 20270422000095)
+                          AND (u ->> 'regulacoes_vencidas')::int = 0
                      FROM jsonb_array_elements(public.secretaria_estado_unidades()) u WHERE (u ->> 'id')::uuid = pg_temp.id('upaA')),
-  'a linha da Rede conta a pessoa uma vez (4 vínculos, 3 pessoas)');
+  'a linha da Rede conta a pessoa uma vez (4 vínculos, 3 pessoas) e traz 1 ocupado com número exato');
 SELECT pg_temp.ok((SELECT jsonb_array_length(public.secretaria_estado_unidades()) = 2),
   'a linha da Rede: as duas unidades da secretaria');
 SELECT pg_temp.como('gest');
