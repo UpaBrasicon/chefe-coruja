@@ -35,6 +35,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MensagemErro } from '@/components/ui/mensagem-erro'
 import { fmtDataHora } from '@/lib/datas'
+import { textoIsolamento, tiposDoIsolamento } from '@/lib/isolamentoPedido'
 import {
   CARATER, ISOLAMENTOS, PRIORIDADES, SITUACOES_ISOLAMENTO, STATUS, TIPOS_LEITO, VULNERABILIDADES, emDecisao, formatarEspera, prioridadeEfetiva,
   type Carater, type Prioridade, type Sla, type SituacaoIsolamento, type StatusRegulacao, type TipoSolicitacao, type Vulnerabilidade,
@@ -52,6 +53,8 @@ export type PedidoDossie = {
   vulnerabilidades: Vulnerabilidade[] | null
   procedimento: string; procedimento_nome: string | null; especialidade: string | null
   tipo_leito: string | null; isolamento: boolean; isolamento_tipo: string | null
+  /** B-04 (RT, 25/11/2026): todos os tipos do pedido; vazio ou ausente = só o principal */
+  isolamento_tipos?: string[] | null
   isolamento_situacao?: string | null; isolamento_agente?: string | null
   destino_tipo: 'rede' | 'externo' | 'a_definir'; destino_unidade: { id: string; nome: string } | null; destino_externo: string | null
   cid: string; cid_descricao: string | null
@@ -284,7 +287,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
           </div>
         )}
         {s.isolamento && s.isolamento_tipo && (
-          <FaixaIsolamento tipo={s.isolamento_tipo} situacao={situacao} agente={agente}
+          <FaixaIsolamento tipo={s.isolamento_tipo} tipos={tiposDoIsolamento(s)} situacao={situacao} agente={agente}
             acao={mudaIsolamento ? <Button size="xs" variant="outline" {...desligado} onClick={() => setPainel('isolamento')}>Alterar isolamento</Button> : undefined} />
         )}
         {painel === 'isolamento' && (
@@ -306,7 +309,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
           <Item rotulo="Leito solicitado">{s.tipo_leito ? TIPOS_LEITO[s.tipo_leito] ?? s.tipo_leito : '—'}</Item>
           <Item rotulo="CID-10" className="sm:col-span-2">{s.cid} {s.cid_descricao ?? ''}</Item>
           <Item rotulo="Isolamento">
-            {s.isolamento && s.isolamento_tipo ? `${ISOLAMENTOS[s.isolamento_tipo] ?? s.isolamento_tipo}${situacao ? ` · ${SITUACOES_ISOLAMENTO[situacao as SituacaoIsolamento] ?? situacao}` : ''}` : 'Precaução padrão'}
+            {s.isolamento && s.isolamento_tipo ? `${textoIsolamento(s) ?? ISOLAMENTOS[s.isolamento_tipo] ?? s.isolamento_tipo}${situacao ? ` · ${SITUACOES_ISOLAMENTO[situacao as SituacaoIsolamento] ?? situacao}` : ''}` : 'Precaução padrão'}
           </Item>
           <Item rotulo="Destino" className="sm:col-span-2">{destino}</Item>
           <Item rotulo="Origem (CNES)">{s.origem.nome} · {s.cnes_solicitante}</Item>
@@ -335,7 +338,7 @@ export function DossieRegulador({ id, lado = 'central', unidadeId, centralId, so
 
         {central && leitoOuTransf && aberto && (
           <MatchVagas centralId={centralId} podeReservar={decide} aoReservar={(u) => abrirDecisao('autorizar', u)}
-            pedido={{ tipo_leito: s.tipo_leito, isolamento_tipo: s.isolamento ? s.isolamento_tipo : null, origem_id: s.origem.id, origem: fila?.origem_coord }} />
+            pedido={{ tipo_leito: s.tipo_leito, isolamento_tipo: s.isolamento ? s.isolamento_tipo : null, isolamento_tipos: s.isolamento ? s.isolamento_tipos : null, origem_id: s.origem.id, origem: fila?.origem_coord }} />
         )}
 
         <Abas abas={abas} valor={abas.some(([k]) => k === aba) ? aba : abas[0][0]} onChange={setAba} rotulo="Do pedido" className="mb-0" />
