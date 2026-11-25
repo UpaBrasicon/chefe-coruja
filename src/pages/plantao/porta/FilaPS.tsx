@@ -4,9 +4,9 @@
 // finalizados e excluídos do dia. A cor manda; 80+ e prioridade legal só
 // desempatam dentro da mesma cor.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, ArrowUpDown, Check, Megaphone, RotateCcw, Stethoscope } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, ClipboardPlus, Megaphone, RotateCcw, Stethoscope } from 'lucide-react'
 import * as React from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { supabase } from '@/lib/supabase'
 import { setoresNaEscalaAgora } from '@/lib/rpcCasca'
@@ -338,13 +338,21 @@ export function FilaPS({ aviso, onAbrir }: { aviso: string | null; onAbrir: (e: 
             {ubs ? 'imediato e prioritário da escuta, depois prioridade legal e chegada' : acimaDoAlvo ? `${acimaDoAlvo} acima do alvo da cor` : 'por cor e tempo de espera'}
           </span>
           {/* M3 (RT, 24/11/2026): chama o primeiro da fila na ordem de sempre, no consultório escolhido no topo */}
-          {proximo && (
-            <Button size="sm" className="mb-1.5 ml-auto" disabled={chamarProximo.isPending || !salaDoProximo}
-              title={!salaDoProximo ? 'Escolha seu consultório no topo da fila' : `Chama ${nomeDe(proximo)}`}
-              onClick={() => chamarProximo.mutate(proximo)}>
-              <Megaphone /> Chamar o próximo
-            </Button>
-          )}
+          <span className="mb-1.5 ml-auto flex flex-wrap items-center gap-2">
+            {/* B-08 (RT, 25/11/2026): na emergência o médico também abre ficha; leva à mesma Nova ficha da recepção */}
+            {!ubs && ehPlantonista && (
+              <Button size="sm" variant="outline" render={<Link to="/recepcao" />}>
+                <ClipboardPlus /> Nova ficha
+              </Button>
+            )}
+            {proximo && (
+              <Button size="sm" disabled={chamarProximo.isPending || !salaDoProximo}
+                title={!salaDoProximo ? 'Escolha seu consultório no topo da fila' : `Chama ${nomeDe(proximo)}`}
+                onClick={() => chamarProximo.mutate(proximo)}>
+                <Megaphone /> Chamar o próximo
+              </Button>
+            )}
+          </span>
         </div>
         {proximo && !salaDoProximo && (
           <p className="-mt-1 text-rotulo text-tinta-sussurro">Para chamar o próximo, escolha seu consultório acima.</p>
