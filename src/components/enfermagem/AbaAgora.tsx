@@ -46,14 +46,15 @@ export function AbaAgora({ ctx, dados, publico, onIr }: {
   const escala = publico === 'pediatrico' ? 'dini' : 'fugulin'
   const doDia = useQuery({
     queryKey: [`${escala}-hoje`, internacaoId ?? ''],
-    enabled: souEnfermeiro && !!internacaoId && publico !== null && dados.atendimento_aberto,
+    enabled: !!internacaoId && publico !== null && dados.atendimento_aberto,
     queryFn: async () => {
       const { data, error } = await supabase.rpc(escala === 'dini' ? 'dini_de_hoje' : 'fugulin_de_hoje', { p_internacoes: [internacaoId!] })
       if (error) throw error
       return (data ?? {}) as unknown as Record<string, { total: number; categoria: string } | null>
     },
   })
-  const escalaPendente = !!doDia.data && !doDia.data[internacaoId!]
+  // o dado do dia vale para os dois perfis; só o enfermeiro classifica (TE2, COFEN 736/2024)
+  const escalaPendente = !!internacaoId && publico !== null && dados.atendimento_aberto && !!doDia.data && !doDia.data[internacaoId]
 
   const ultimaSv = dados.sinais_vitais.reduce<string | null>((m, s) => (!m || s.aferido_em > m ? s.aferido_em : m), null)
 
@@ -85,8 +86,9 @@ export function AbaAgora({ ctx, dados, publico, onIr }: {
       {escalaPendente && (
         <Secao titulo="Classificação do dia">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-apoio text-atencao">{escala === 'dini' ? 'Dini' : 'Fugulin'} de hoje pendente.</span>
-            <Button size="sm" variant="outline" onClick={() => onIr('esc')}>Abrir as escalas</Button>
+            {/* TE-a (RT 24/11/2026): no Técnico as escalas são só leitura; fica o aviso, sem o botão */}
+            <span className="text-apoio text-atencao">{escala === 'dini' ? 'Dini' : 'Fugulin'} de hoje pendente{souEnfermeiro ? '.' : ' (enfermeiro)'}</span>
+            {souEnfermeiro && <Button size="sm" variant="outline" onClick={() => onIr('esc')}>Abrir as escalas</Button>}
           </div>
         </Secao>
       )}

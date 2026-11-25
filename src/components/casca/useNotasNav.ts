@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import type { MinhaNotificacao, Papel } from '@/types/database'
 import { avaliarUnidade, type ChamadoTecnico, type UnidadeRede } from '@/lib/dadosAdmin'
 import { contarNaoLidos } from '@/lib/avisos'
+import { separarPorPerfil } from '@/lib/avisosPerfil'
 import { chaveFilaTriagem, lerFilaTriagem } from '@/lib/filaTriagem'
 
 import type { ChaveNota } from './navegacao'
@@ -171,8 +172,9 @@ export function useNotasNav(unidadeId: string | undefined, papel: Papel | null):
     fila_medica: filaMedica.data,
     plataformas: unidadesRede.data?.filter((u) => avaliarUnidade(u, unidadesRede.dataUpdatedAt).estado > 0).length,
     chamados: chamados.data?.length,
-    // repetidos contam uma vez (revisão de Avisos, M1): o mesmo número da tela
-    avisos: contarNaoLidos(avisos.data ?? []),
+    // repetidos contam uma vez (revisão de Avisos, M1): o mesmo número da tela;
+    // SH1/E1: só os avisos do perfil em uso (o mesmo filtro da tela Avisos)
+    avisos: contarNaoLidos(separarPorPerfil(avisos.data ?? [], papel).doPerfil),
     triagem: papel === 'enfermeiro' ? triagemEnfermagem.data?.length : triagem.data,
     farmacia: farmacia.data,
     pedidos: pedidos.data?.pedidos_acesso_pendentes,

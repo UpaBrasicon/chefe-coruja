@@ -1,5 +1,6 @@
 // SH1 (revisão do perfil Enfermeiro, RT 24/11/2026)
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 import { avisoDoPerfil, perfisDoAviso, separarPorPerfil } from './avisosPerfil.ts'
@@ -26,3 +27,16 @@ test('sem perfil escolhido tudo é do perfil; a separação mantém a ordem', ()
   assert.deepEqual(doPerfil.map((x) => x.tipo), ['presc_vencida_2', 'vaga_4'])
   assert.deepEqual(outros.map((x) => x.tipo), ['reg_prazo_1', 'reg_evolucao_3'])
 })
+
+test('E1: o número de não lidos (tela e menu) conta só os avisos do perfil em uso', () => {
+  // a lista simples (master) ou a agrupada (homologação): o número vem do que é do perfil
+  assert.match(readFileSync('src/pages/Notificacoes.tsx', 'utf8'), /separarPorPerfil\((todos|grupos), papelAtivo\)\.doPerfil/)
+  assert.ok(readFileSync('src/components/casca/useNotasNav.ts', 'utf8').includes('separarPorPerfil(avisos.data ?? [], papel).doPerfil'))
+})
+
+test('TE-a: no Técnico a classificação do dia aparece sem o botão das escalas', () => {
+  const agora = readFileSync('src/components/enfermagem/AbaAgora.tsx', 'utf8')
+  assert.ok(agora.includes("de hoje pendente{souEnfermeiro ? '.' : ' (enfermeiro)'}"))
+  assert.ok(agora.includes("{souEnfermeiro && <Button size=\"sm\" variant=\"outline\" onClick={() => onIr('esc')}>"))
+})
+

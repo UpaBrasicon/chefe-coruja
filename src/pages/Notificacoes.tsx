@@ -157,13 +157,17 @@ export default function Notificacoes() {
 
   const rotas = new Set(itensDeNavegacao(papelAtivo, false, false, unidadeAtiva?.unidade.tipo ?? null).map((i) => i.to))
   const grupos = agruparAvisos(notificacoes ?? [])
-  const naoLidos = grupos.filter((g) => g.naoLidos.length > 0)
-  const daAba = aba === 'nao-lidos' ? naoLidos : grupos
+  // SH1/E1 (RT 24/11/2026): os contadores (cabeçalho, abas, assuntos) contam só os avisos do perfil em uso;
+  // os de outros perfis têm a contagem própria na linha recolhida
+  const meusGrupos = separarPorPerfil(grupos, papelAtivo).doPerfil
+  const naoLidos = meusGrupos.filter((g) => g.naoLidos.length > 0)
+  const algumNaoLido = grupos.some((g) => g.naoLidos.length > 0)
+  const daAba = aba === 'nao-lidos' ? grupos.filter((g) => g.naoLidos.length > 0) : grupos
 
   // filtros do perfil: só categorias que têm aviso; AIH e APAC só para quem tem essas telas
   const permitida = (c: Categoria) => (c === 'AIH' ? rotas.has('/aih') : c === 'APAC' ? rotas.has('/apac') : true)
   const contagem = new Map<Categoria, number>()
-  for (const g of daAba) if (permitida(g.categoria)) contagem.set(g.categoria, (contagem.get(g.categoria) ?? 0) + 1)
+  for (const g of separarPorPerfil(daAba, papelAtivo).doPerfil) if (permitida(g.categoria)) contagem.set(g.categoria, (contagem.get(g.categoria) ?? 0) + 1)
   const categorias = [...contagem.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c)
   const aVista = categorias.slice(0, FILTROS_A_VISTA)
   const naGaveta = categorias.slice(FILTROS_A_VISTA)
@@ -184,13 +188,13 @@ export default function Notificacoes() {
         titulo="Avisos"
         descricao={naoLidos.length ? `${naoLidos.length} não ${naoLidos.length === 1 ? 'lido' : 'lidos'}` : 'Tudo lido'}
         acoes={
-          <Button variant="outline" disabled={!naoLidos.length || marcar.isPending} onClick={() => marcar.mutate(null)} className="px-[13px] py-2">
+          <Button variant="outline" disabled={!algumNaoLido || marcar.isPending} onClick={() => marcar.mutate(null)} className="px-[13px] py-2">
             <ShieldCheck className="size-[15px]" aria-hidden /> Marcar todas como lidas
           </Button>
         }
       />
       <Abas
-        abas={[['nao-lidos', 'Não lidos', naoLidos.length], ['todos', 'Todos', grupos.length]]}
+        abas={[['nao-lidos', 'Não lidos', naoLidos.length], ['todos', 'Todos', meusGrupos.length]]}
         valor={aba}
         onChange={(k) => { setAba(k); setFiltro('Todas') }}
         rotulo="Quais avisos"
