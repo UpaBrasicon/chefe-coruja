@@ -148,7 +148,7 @@ SELECT pg_temp.falha($$SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v
   'Escreva o que aconteceu', 'não chegou pede o relato');
 -- 20270426000002: a ficha que já é a chegada de um envio não serve de chegada a outro
 SELECT pg_temp.falha($$SELECT public.encaminhamento_upa_marcar_chegada(pg_temp.v('x2'), true, pg_temp.v('epu'))$$,
-  'já é a chegada do envio', 'uma ficha é a chegada de um envio só');
+  'Esta ficha já é a chegada do envio', 'uma ficha é a chegada de um envio só');
 RESET ROLE;
 SELECT pg_temp.ok((SELECT count(*) = 1 FROM public.notificacoes_plantonista WHERE perfil_id = pg_temp.id('med') AND tipo LIKE 'ubs_upa_%'
                      AND mensagem LIKE '%chegou à UPA do 5A5%'), 'quem enviou é avisado da chegada');
