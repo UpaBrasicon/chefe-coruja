@@ -82,6 +82,9 @@ const POR_PAPEL: Record<Papel, ItemNav[]> = {
     { to: '/passometro', rotulo: 'Passômetro', icone: ClipboardList, exato: true },
     { to: '/contingencia', rotulo: 'Contingência', icone: FileWarning, exato: true },
     { to: '/atendimento', rotulo: 'Atendimento', icone: DoorOpen, exato: true },
+    // B-08 (RT, 25/11/2026): a ficha é da recepção e, na emergência, do médico. A mesma
+    // tela de Nova ficha da recepção (a rota já aceitava o médico; faltava o caminho).
+    { to: '/recepcao', rotulo: 'Nova ficha', curto: 'Ficha', icone: ClipboardPlus, exato: true },
     ITEM_AGENDA_CONSULTAS,
     ITEM_ENCAMINHADOS,
     ITEM_HIPERDIA,
@@ -297,7 +300,8 @@ const FORA_DA_UBS = new Set([
 const FORA_DA_UBS_NO_PAPEL: Partial<Record<Papel, Set<string>>> = {
   recepcao: new Set(['/encaminhados']),
   enfermeiro: new Set(['/alta-vigilancia']),
-  plantonista: new Set(['/pareceres', '/notificacao-compulsoria']),
+  // '/recepcao': a Nova ficha do médico é da emergência (B-08); na UBS a ficha segue com a recepção
+  plantonista: new Set(['/pareceres', '/notificacao-compulsoria', '/recepcao']),
   // U13, PR 3: o faturamento de porta e internação (contas, BPA, glosas e
   // materiais) sai do gestor da UBS; a produção da UBS vai ao SISAB (U15). Fica o
   // Envio ao ERP, que leva os plantões do mês.
