@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { DESFECHO_RETORNO, destinosDoEnvio, etapasDoEnvio, linkRegulacaoDaConsulta, pedeBuscaAtiva, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
+import { DESFECHO_RETORNO, destinosDoEnvio, envioDaFicha, etapasDoEnvio, separarEnviosDaRecepcao, linkRegulacaoDaConsulta, pedeBuscaAtiva, regulacaoDaFolha, SITUACAO_ENVIO, type EnvioUpa } from '../domain/encaminhamento.ts'
 import { linkMarcarNaAgenda } from '../domain/agenda.ts'
 import { itensDeNavegacao } from '../components/casca/navegacao.ts'
 
@@ -139,4 +139,33 @@ test('Enviar à UPA: só UPA e hospital da rede, sem a própria unidade (pendên
   assert.deepEqual(destinosDoEnvio(rede, 'eu').map((u) => u.id), ['h', 'u'])
   // banco sem o tipo: não esconde nada (o servidor recusa o que não for UPA ou hospital)
   assert.deepEqual(destinosDoEnvio([{ id: 'v', nome: 'UBS vizinha' }, { id: 'eu', nome: 'UBS daqui' }], 'eu').map((u) => u.id), ['v'])
+})
+
+// Teste de fluxo UBS → UPA (25/11/2026): o resumo do envio aparece na ficha da
+// UPA que a chegada ligou, e o painel da recepção recolhe o que já chegou.
+test('o resumo da UBS vai para a ficha da UPA ligada pela chegada, e só para ela', () => {
+  const envios = [
+    envio('chegou', { id: 'a', episodio_destino_id: 'ficha-1' }),
+    envio('enviado', { id: 'b' }),
+    envio('cancelado', { id: 'c', episodio_destino_id: 'ficha-3' }),
+  ]
+  assert.equal(envioDaFicha(envios, 'ficha-1')?.id, 'a')
+  assert.equal(envioDaFicha(envios, 'ficha-2'), null)
+  // envio que não chegou não mostra resumo, mesmo com ficha gravada
+  assert.equal(envioDaFicha(envios, 'ficha-3'), null)
+  assert.equal(envioDaFicha(envios, null), null)
+  assert.equal(envioDaFicha([], 'ficha-1'), null)
+})
+
+test('painel da recepção: aguardando à vista, já registrados recolhidos', () => {
+  const envios = [
+    envio('chegou', { id: 'a', chegada_por: 'Recepção' }),
+    envio('enviado', { id: 'b' }),
+    envio('nao_chegou', { id: 'c' }), // prazo de 12 h: a recepção ainda corrige
+    envio('nao_chegou', { id: 'd', chegada_por: 'Recepção' }), // marcado pela recepção
+    envio('cancelado', { id: 'e' }),
+  ]
+  const r = separarEnviosDaRecepcao(envios)
+  assert.deepEqual(r.aguardando.map((e) => e.id), ['b', 'c'])
+  assert.deepEqual(r.resolvidos.map((e) => e.id), ['a', 'd', 'e'])
 })

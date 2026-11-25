@@ -33,6 +33,7 @@ import { AbaParecer } from '@/components/parecer/AbaParecer'
 import { AbaAvaliacaoCrescimento } from '@/components/avaliacao/AbaAvaliacaoCrescimento'
 import { AbaEncaminhamento } from '@/components/encaminhamento/AbaEncaminhamento'
 import { EnviosDoPaciente } from '@/components/encaminhamento/EnviosDoPaciente'
+import { ResumoDaUbs } from '@/components/encaminhamento/ResumoDaUbs'
 import { RetornosDoPaciente } from '@/components/encaminhamento/RetornosDoPaciente'
 import { HistoricoRegulacao } from '@/components/regulacao/HistoricoRegulacao'
 import { AbaEncaminhamentoInterno } from '@/components/encaminhamento/AbaEncaminhamentoInterno'
@@ -249,6 +250,8 @@ export function JanelaAtendimento({ ep, onFechar }: { ep: EpFila; onFechar: (avi
           className="border-0 p-0 shadow-none"
         />
         {verHistorico && <HistoricoEncerrado pacienteId={ep.paciente_id} />}
+        {/* veio da UBS: o resumo do envio (motivo, escuta, sinais, SOAP) na ficha da UPA */}
+        {!ubs && <ResumoDaUbs unidadeId={unidadeJanela} episodioId={ep.id} />}
         {/* Fase 1, tarefa 12: marca de reentrada de contingência (papel) */}
         {unidadeJanela && <ReentradaContingencia unidadeId={unidadeJanela} episodioId={ep.id} chegadaEm={ep.chegada_em} />}
         {/* lacuna 4: contenção mecânica (o médico também inicia e retira; a prescrição é o item da prescrição).

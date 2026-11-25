@@ -57,6 +57,20 @@ export type UnidadeRede = { id: string; nome: string; tipo?: string | null }
 export const destinosDoEnvio = (rede: UnidadeRede[], unidadeId: string) =>
   rede.filter((u) => u.id !== unidadeId && (!u.tipo || u.tipo === 'upa' || u.tipo === 'hospital'))
 
+/** O envio da UBS que chegou nesta ficha da UPA (a chegada liga o envio ao
+ *  episódio). A triagem e o médico da UPA leem o resumo por aqui: o paciente
+ *  tem outro cadastro na UPA, então não dá para achar pelo paciente. */
+export const envioDaFicha = (envios: EnvioUpa[], episodioId: string | null | undefined): EnvioUpa | null =>
+  (episodioId && envios.find((e) => e.situacao === 'chegou' && e.episodio_destino_id === episodioId)) || null
+
+/** Painel "Vindo da UBS" da recepção: quem ainda espera a chegada fica à
+ *  vista; o que já foi registrado (chegou, não chegou marcado pela recepção)
+ *  fica recolhido, para não empurrar a busca da Nova ficha para fora da tela. */
+export function separarEnviosDaRecepcao(envios: EnvioUpa[]): { aguardando: EnvioUpa[]; resolvidos: EnvioUpa[] } {
+  const espera = (e: EnvioUpa) => e.situacao === 'enviado' || (e.situacao === 'nao_chegou' && !e.chegada_por)
+  return { aguardando: envios.filter(espera), resolvidos: envios.filter((e) => !espera(e)) }
+}
+
 export type Etapa = { titulo: string; detalhe: string; estado: 'feita' | 'atual' | 'falta' | 'falhou' }
 
 /** As etapas do rastreio (opção C): enviado → aguardando a chegada → chegou
