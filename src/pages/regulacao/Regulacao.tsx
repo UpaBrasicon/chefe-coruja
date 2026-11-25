@@ -197,7 +197,7 @@ export default function Regulacao() {
   )
   return (
     // fichas em caixa normal (unslop da revisão do regulador): a página e o painel
-    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case', aberto ? 'max-w-7xl' : 'max-w-5xl')}>
+    <div className={cn('flex w-full flex-col gap-4 [&_[data-slot=badge]]:tracking-normal [&_[data-slot=badge]]:normal-case', aberto || c?.sou_central ? 'max-w-7xl' : 'max-w-5xl')}>
       <TituloPagina icone={Waypoints} titulo="Regulação"
         descricao={c?.sou_central
           ? 'Solicitações recebidas pela Central de Regulação da rede.'
